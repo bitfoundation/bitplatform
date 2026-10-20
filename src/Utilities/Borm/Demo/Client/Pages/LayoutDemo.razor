@@ -1,10 +1,10 @@
 ﻿@page "/layout"
 
-<PageTitle>Layout &amp; field types</PageTitle>
+<PageTitle>Layout &amp; field types · Borm</PageTitle>
 
-<div class="demo-intro">
+<div class="bb-intro">
     <h1>Layout &amp; field types</h1>
-    <p>
+    <p class="bb-subtitle">
         Forms are not always one field per row. Set <code>Columns</code> on the definition and
         <code>ColumnSpan</code> on individual fields to get a responsive grid that collapses to a single
         column on small screens. This form also shows a <code>[Flags]</code> enum <em>and</em> a plain
@@ -12,18 +12,19 @@
     </p>
 </div>
 
-<div class="demo-card" style="max-width:900px">
+<div class="bb-demo">
+    <div class="bb-demo-bar"><span class="bb-demo-label">Live form</span></div>
     <BormView Definition="_schema" Model="_model" OnValidSubmit="HandleSubmit" SubmitText="Save profile" ShowResetButton="true" />
 </div>
 
 @if (_submitted)
 {
-    <div class="demo-result"><strong>Saved ✓</strong> <pre>@_json</pre></div>
+    <div class="bb-note bb-note-success demo-result"><strong>Saved ✓</strong><pre>@_json</pre></div>
 }
 
-<details class="demo-source">
-    <summary>View source</summary>
-    <pre><code>@Source</code></pre>
+<details class="bb-source demo-source">
+    <summary class="btn btn-secondary">View source</summary>
+    <pre class="bb-code"><code>@Source</code></pre>
 </details>
 
 @code {

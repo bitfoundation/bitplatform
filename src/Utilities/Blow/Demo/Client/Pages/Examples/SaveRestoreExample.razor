@@ -1,15 +1,15 @@
 ﻿@page "/examples/save-restore"
 @inject IJSRuntime JS
 
-<PageTitle>Save & Restore - bit Blow</PageTitle>
+<PageTitle>Save & Restore · Blow</PageTitle>
 
 <ExampleScaffold Title="Save & Restore"
                  Summary="Persist the flow (nodes, edges and viewport) to the browser's local storage and reload it later. Move some nodes, Save, change things, then Restore.">
     <Toolbar>
-        <button class="btn btn-sm btn-primary" @onclick="Save">Save</button>
-        <button class="btn btn-sm" @onclick="Restore">Restore</button>
-        <button class="btn btn-sm" @onclick="AddNode">Add node</button>
-        <span class="text-muted">@_status</span>
+        <button class="btn btn-primary" @onclick="Save">Save</button>
+        <button class="btn btn-secondary" @onclick="Restore">Restore</button>
+        <button class="btn btn-secondary" @onclick="AddNode">Add node</button>
+        <span class="bb-muted">@_status</span>
     </Toolbar>
     <ChildContent>
         <BlowCanvas @ref="_flow" Nodes="_nodes" Edges="_edges" FitViewOnInit="true">

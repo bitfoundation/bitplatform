@@ -9,22 +9,23 @@
    The tool, prompt and resource tables are fetched rather than written out, for the same reason:
    they come from GetMcpCatalog, which reflects over the attributes that declare them. *@
 
-<PageTitle>MCP server - Bit.Bmage</PageTitle>
+<PageTitle>MCP server · Bmage</PageTitle>
 
-<h1>MCP server</h1>
+<div class="bb-intro">
+    <h1>MCP server</h1>
+    <p class="bb-subtitle">
+        This site ships a <strong>Model Context Protocol</strong> server, so an AI agent writes Bmage
+        code from what the library <em>actually</em> is rather than from what it remembers. Half of its
+        tools answer from this build's own text - the guides, the XML documentation compiled into the
+        package, the source of every page you have been reading. The other half answer by
+        <strong>running the real engine on the server</strong>: how many bytes a pipeline really
+        produces, whether a size budget is reachable, what the optimiser does, and whether the export
+        still carries the GPS position.
+    </p>
+</div>
 
-<p class="page-intro">
-    This site ships a <strong>Model Context Protocol</strong> server, so an AI agent writes Bmage
-    code from what the library <em>actually</em> is rather than from what it remembers. Half of its
-    tools answer from this build's own text - the guides, the XML documentation compiled into the
-    package, the source of every page you have been reading. The other half answer by
-    <strong>running the real engine on the server</strong>: how many bytes a pipeline really
-    produces, whether a size budget is reachable, what the optimiser does, and whether the export
-    still carries the GPS position.
-</p>
-
-<div class="demo-section">
-    <h2>Why an image library needs one</h2>
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Why an image library needs one</h3>
     <p>
         Almost every way of getting image code wrong compiles. There is no warning for a capability
         probe that runs during prerendering, for a 48 MB buffer nobody disposes, or for an avatar
@@ -32,20 +33,20 @@
         directly:
     </p>
 
-    <div class="grid mcp-why">
+    <div class="bb-grid mcp-why">
         @foreach (var problem in Problems)
         {
-            <div class="card">
-                <p class="card-title">@problem.Symptom</p>
-                <p>@problem.Cause</p>
+            <div class="bb-card">
+                <p class="bb-card-title">@problem.Symptom</p>
+                <p class="bb-card-desc">@problem.Cause</p>
                 <code>@problem.Tool</code>
             </div>
         }
     </div>
 </div>
 
-<div class="demo-section">
-    <h2>Connect your agent</h2>
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Connect your agent</h3>
     <p>
         The server speaks MCP over HTTP. Point any MCP client at this site's endpoint, at the deployed
         <code>https://bmage.bitplatform.dev/mcp</code>, or at <code>https://bitplatform.dev/mcp</code>,
@@ -54,30 +55,30 @@
         which is what the panels further down this page call.
     </p>
 
-    <div class="field" role="group" aria-labelledby="mcp-endpoint-label">
-        <span class="field-label" id="mcp-endpoint-label">Endpoint</span>
-        <div class="chip-row">
+    <div class="demo-field" role="group" aria-labelledby="mcp-endpoint-label">
+        <span class="demo-field-label" id="mcp-endpoint-label">Endpoint</span>
+        <div class="bb-segmented">
             @foreach (var endpoint in Endpoints)
             {
-                <button type="button" class="chip" aria-pressed="@(_endpoint == endpoint.Name ? "true" : "false")"
+                <button type="button" aria-pressed="@(_endpoint == endpoint.Name ? "true" : "false")"
                         @onclick="() => _endpoint = endpoint.Name">
                     @endpoint.Name
                 </button>
             }
         </div>
-        <span class="field-hint">@CurrentEndpoint.Note</span>
+        <span class="bb-field-hint">@CurrentEndpoint.Note</span>
     </div>
 
     @* A tablist is one stop in the tab order: tab moves past the whole group, and the arrow keys move
        between the tabs inside it. The roles come with the behaviour they promise: every tab names the
        panel it controls, and only the selected one is tabbable. aria-selected is written out as a word
        rather than bound to the bool, because a false bool renders as no attribute at all. *@
-    <div class="chip-row mcp-tabs" role="tablist" aria-label="MCP client">
+    <div class="bb-tabs mcp-tabs" role="tablist" aria-label="MCP client">
         @foreach (var client in Clients)
         {
             var isSelected = _client == client.Name;
 
-            <button type="button" role="tab" class="chip"
+            <button type="button" role="tab"
                     id="@TabId(client.Name)"
                     aria-selected="@(isSelected ? "true" : "false")"
                     aria-controls="@PanelId(client.Name)"
@@ -96,14 +97,14 @@
     {
         <div role="tabpanel" id="@PanelId(client.Name)" aria-labelledby="@TabId(client.Name)"
              hidden="@(_client != client.Name)">
-            <p class="small muted">@client.Note</p>
+            <p class="demo-small bb-muted">@client.Note</p>
             <CodeSnippet Code="@client.Config(CurrentEndpoint.Key, CurrentEndpoint.Url)" Language="@client.Language" Expanded="true" />
         </div>
     }
 </div>
 
-<div class="demo-section">
-    <h2>The pipeline lab</h2>
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> The pipeline lab</h3>
     <p>
         <code>RunBmagePipeline</code> runs a pipeline on the real engine against a generated test
         image - a photo with sensor grain, a flat-colour screenshot or a transparent graphic - and
@@ -112,184 +113,187 @@
         pipeline is the C# you would write; every <code>ImagePipeline</code> method is accepted.
     </p>
 
-    <div class="split">
-        <div>
-            <div class="field">
-                <label class="field-label" for="mcp-pipeline">Pipeline</label>
-                <textarea id="mcp-pipeline" class="mcp-input mcp-pipeline" rows="3" spellcheck="false"
-                          value="@_pipeline" @onchange="e => _pipeline = e.Value?.ToString() ?? string.Empty"
-                          disabled="@(_running || IsHydrating)"></textarea>
-            </div>
-
-            <div class="chip-row mcp-presets">
-                @foreach (var preset in Presets)
-                {
-                    <button type="button" class="chip" disabled="@(_running || IsHydrating)" @onclick="() => RunPresetAsync(preset)">
-                        @preset.Name
-                    </button>
-                }
-            </div>
-
-            @if (_runError is not null)
-            {
-                <div class="alert alert-error" role="alert">@_runError</div>
-            }
-            else if (_run?.Error is { } error)
-            {
-                @* The server read the pipeline and could not run it, and said why - a better message than
-                   anything this page could compose about it. *@
-                <div class="alert alert-error" role="alert">@error</div>
-            }
-            else if (_run is not null)
-            {
-                <div class="stat-grid mcp-run-stats">
-                    <div class="stat">
-                        <span class="stat-label">Output</span>
-                        <span class="stat-value">@_run.OutputWidth &times; @_run.OutputHeight</span>
-                    </div>
-                    <div class="stat">
-                        <span class="stat-label">Run</span>
-                        <span class="stat-value">@_run.ExecuteMilliseconds.ToString("0.#") ms</span>
-                    </div>
-                    <div class="stat">
-                        <span class="stat-label">Unoptimised</span>
-                        <span class="stat-value">@(_run.UnoptimizedMilliseconds is { } ms ? $"{ms:0.#} ms" : "same")</span>
-                    </div>
-                    <div class="stat">
-                        <span class="stat-label">Smallest file</span>
-                        <span class="stat-value">@SmallestFile</span>
-                    </div>
+    <div class="bb-demo bb-page-wide">
+        <div class="bb-demo-bar"><span class="bb-demo-label">Live</span></div>
+        <div class="demo-split">
+            <div>
+                <div class="demo-field">
+                    <label class="demo-field-label" for="mcp-pipeline">Pipeline</label>
+                    <textarea id="mcp-pipeline" class="mcp-input mcp-pipeline" rows="3" spellcheck="false"
+                              value="@_pipeline" @onchange="e => _pipeline = e.Value?.ToString() ?? string.Empty"
+                              disabled="@(_running || IsHydrating)"></textarea>
                 </div>
 
-                <div class="table-scroll" tabindex="0" role="region" aria-label="Encoded sizes">
-                    <table class="data">
-                        <thead>
-                            <tr>
-                                <th scope="col">Format</th>
-                                <th scope="col" class="num">Quality</th>
-                                <th scope="col" class="num">Bytes</th>
-                                <th scope="col" class="num">Bits/px</th>
-                                <th scope="col" class="num">Encode</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach (var encoding in _run.Encodings ?? [])
-                            {
+                <div class="bb-toolbar mcp-presets">
+                    @foreach (var preset in Presets)
+                    {
+                        <button type="button" class="btn btn-secondary demo-btn-sm" disabled="@(_running || IsHydrating)" @onclick="() => RunPresetAsync(preset)">
+                            @preset.Name
+                        </button>
+                    }
+                </div>
+
+                @if (_runError is not null)
+                {
+                    <div class="bb-note bb-note-danger demo-error" role="alert">@_runError</div>
+                }
+                else if (_run?.Error is { } error)
+                {
+                    @* The server read the pipeline and could not run it, and said why - a better message than
+                       anything this page could compose about it. *@
+                    <div class="bb-note bb-note-danger demo-error" role="alert">@error</div>
+                }
+                else if (_run is not null)
+                {
+                    <div class="bb-stats demo-stats-compact mcp-run-stats">
+                        <div class="bb-stat">
+                            <span class="bb-stat-label">Output</span>
+                            <span class="bb-stat-value">@_run.OutputWidth &times; @_run.OutputHeight</span>
+                        </div>
+                        <div class="bb-stat">
+                            <span class="bb-stat-label">Run</span>
+                            <span class="bb-stat-value">@_run.ExecuteMilliseconds.ToString("0.#") ms</span>
+                        </div>
+                        <div class="bb-stat">
+                            <span class="bb-stat-label">Unoptimised</span>
+                            <span class="bb-stat-value">@(_run.UnoptimizedMilliseconds is { } ms ? $"{ms:0.#} ms" : "same")</span>
+                        </div>
+                        <div class="bb-stat">
+                            <span class="bb-stat-label">Smallest file</span>
+                            <span class="bb-stat-value">@SmallestFile</span>
+                        </div>
+                    </div>
+
+                    <div class="bb-scroll" tabindex="0" role="region" aria-label="Encoded sizes">
+                        <table class="bb-table">
+                            <thead>
                                 <tr>
-                                    <th scope="row">@encoding.Format.ToUpperInvariant()</th>
-                                    @if (encoding.Bytes is null)
-                                    {
-                                        <td colspan="4" class="small muted">@encoding.Note</td>
-                                    }
-                                    else
-                                    {
-                                        <td class="num">@(encoding.Quality?.ToString("0.##") ?? "lossless")</td>
-                                        <td class="num">@Display.Bytes(encoding.Bytes.Value)</td>
-                                        <td class="num">@encoding.BitsPerPixel?.ToString("0.##")</td>
-                                        <td class="num">@encoding.EncodeMilliseconds?.ToString("0.#") ms</td>
-                                    }
+                                    <th scope="col">Format</th>
+                                    <th scope="col" class="demo-num">Quality</th>
+                                    <th scope="col" class="demo-num">Bytes</th>
+                                    <th scope="col" class="demo-num">Bits/px</th>
+                                    <th scope="col" class="demo-num">Encode</th>
                                 </tr>
-                            }
-                            @foreach (var budget in _run.Budgets ?? [])
-                            {
-                                <tr>
-                                    <th scope="row">@budget.Format.ToUpperInvariant() &le; @Display.Bytes(budget.MaxFileSize)</th>
-                                    @if (budget.Met)
-                                    {
-                                        <td class="num">@(budget.Quality?.ToString("0.##") ?? "lossless")</td>
-                                        <td class="num text-good">@Display.Bytes(budget.Bytes ?? 0)</td>
-                                        <td colspan="2" class="small muted">@budget.Width &times; @budget.Height</td>
-                                    }
-                                    else
-                                    {
-                                        <td colspan="4" class="small text-bad">@budget.Error</td>
-                                    }
-                                </tr>
-                            }
-                        </tbody>
-                    </table>
-                </div>
+                            </thead>
+                            <tbody>
+                                @foreach (var encoding in _run.Encodings ?? [])
+                                {
+                                    <tr>
+                                        <th scope="row">@encoding.Format.ToUpperInvariant()</th>
+                                        @if (encoding.Bytes is null)
+                                        {
+                                            <td colspan="4" class="demo-small bb-muted">@encoding.Note</td>
+                                        }
+                                        else
+                                        {
+                                            <td class="demo-num">@(encoding.Quality?.ToString("0.##") ?? "lossless")</td>
+                                            <td class="demo-num">@Display.Bytes(encoding.Bytes.Value)</td>
+                                            <td class="demo-num">@encoding.BitsPerPixel?.ToString("0.##")</td>
+                                            <td class="demo-num">@encoding.EncodeMilliseconds?.ToString("0.#") ms</td>
+                                        }
+                                    </tr>
+                                }
+                                @foreach (var budget in _run.Budgets ?? [])
+                                {
+                                    <tr>
+                                        <th scope="row">@budget.Format.ToUpperInvariant() &le; @Display.Bytes(budget.MaxFileSize)</th>
+                                        @if (budget.Met)
+                                        {
+                                            <td class="demo-num">@(budget.Quality?.ToString("0.##") ?? "lossless")</td>
+                                            <td class="demo-num demo-good">@Display.Bytes(budget.Bytes ?? 0)</td>
+                                            <td colspan="2" class="demo-small bb-muted">@budget.Width &times; @budget.Height</td>
+                                        }
+                                        else
+                                        {
+                                            <td colspan="4" class="demo-small demo-bad">@budget.Error</td>
+                                        }
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
 
-                <p class="card-title">What the optimiser runs</p>
-                <pre class="code mcp-operations">@string.Join("\n", (_run.OptimizedOperations ?? []).Select((op, i) => $"{i + 1}. {op}"))</pre>
-                <ul class="mcp-notes">
-                    @foreach (var note in _run.OptimizerNotes ?? [])
+                    <p class="bb-overline demo-label">What the optimiser runs</p>
+                    <pre class="demo-readout mcp-operations">@string.Join("\n", (_run.OptimizedOperations ?? []).Select((op, i) => $"{i + 1}. {op}"))</pre>
+                    <ul class="mcp-notes">
+                        @foreach (var note in _run.OptimizerNotes ?? [])
+                        {
+                            <li>@note</li>
+                        }
+                    </ul>
+
+                    <p class="demo-small mcp-reading">@_run.Reading</p>
+
+                    @foreach (var warning in _run.Warnings ?? [])
                     {
-                        <li>@note</li>
+                        <p class="demo-small demo-bad">@warning</p>
                     }
-                </ul>
-
-                <p class="small mcp-reading">@_run.Reading</p>
-
-                @foreach (var warning in _run.Warnings ?? [])
-                {
-                    <p class="small text-bad">@warning</p>
                 }
-            }
-        </div>
+            </div>
 
-        <div class="card">
-            <p class="card-title">
-                Run settings
-                @if (_running)
-                {
-                    <span class="working" role="status">Running on the server&hellip;</span>
-                }
-            </p>
-
-            <div class="field" role="group" aria-labelledby="mcp-source-label">
-                <span class="field-label" id="mcp-source-label">Test image</span>
-                <div class="chip-row">
-                    @foreach (var source in Sources)
+            <div class="demo-panel">
+                <p class="bb-overline demo-label">
+                    Run settings
+                    @if (_running)
                     {
-                        <button type="button" class="chip" aria-pressed="@(_source == source ? "true" : "false")"
-                                disabled="@_running" @onclick="() => _source = source">@source</button>
+                        <span class="working" role="status"><span class="bb-spinner" aria-hidden="true"></span>Running on the server&hellip;</span>
                     }
+                </p>
+
+                <div class="demo-field" role="group" aria-labelledby="mcp-source-label">
+                    <span class="demo-field-label" id="mcp-source-label">Test image</span>
+                    <div class="bb-segmented">
+                        @foreach (var source in Sources)
+                        {
+                            <button type="button" aria-pressed="@(_source == source ? "true" : "false")"
+                                    disabled="@_running" @onclick="() => _source = source">@source</button>
+                        }
+                    </div>
                 </div>
-            </div>
 
-            <div class="field">
-                <label class="field-label" for="mcp-size">Source size <span class="field-value">@_width &times; @_height</span></label>
-                <select id="mcp-size" class="bmg-select" disabled="@_running" @onchange="OnSizeChanged">
-                    @foreach (var size in Sizes)
-                    {
-                        <option value="@size" selected="@($"{_width}x{_height}" == size)">@size.Replace("x", " × ")</option>
-                    }
-                </select>
-            </div>
-
-            <div class="field" role="group" aria-labelledby="mcp-formats-label">
-                <span class="field-label" id="mcp-formats-label">Formats</span>
-                <div class="chip-row">
-                    @foreach (var format in Formats)
-                    {
-                        <button type="button" class="chip" aria-pressed="@(_formats.Contains(format) ? "true" : "false")"
-                                disabled="@_running" @onclick="() => ToggleFormat(format)">@format</button>
-                    }
+                <div class="demo-field">
+                    <label class="demo-field-label" for="mcp-size">Source size <span class="demo-field-value">@_width &times; @_height</span></label>
+                    <select id="mcp-size" disabled="@_running" @onchange="OnSizeChanged">
+                        @foreach (var size in Sizes)
+                        {
+                            <option value="@size" selected="@($"{_width}x{_height}" == size)">@size.Replace("x", " × ")</option>
+                        }
+                    </select>
                 </div>
-            </div>
 
-            <div class="field">
-                <label class="field-label" for="mcp-qualities">Qualities</label>
-                <input id="mcp-qualities" type="text" value="@_qualities" disabled="@_running"
-                       @onchange="e => _qualities = e.Value?.ToString() ?? string.Empty" />
-            </div>
+                <div class="demo-field" role="group" aria-labelledby="mcp-formats-label">
+                    <span class="demo-field-label" id="mcp-formats-label">Formats</span>
+                    <div class="bb-segmented">
+                        @foreach (var format in Formats)
+                        {
+                            <button type="button" aria-pressed="@(_formats.Contains(format) ? "true" : "false")"
+                                    disabled="@_running" @onclick="() => ToggleFormat(format)">@format</button>
+                        }
+                    </div>
+                </div>
 
-            <div class="field">
-                <label class="field-label" for="mcp-budget">Size budget <span class="field-value">@(_budgetKb > 0 ? $"{_budgetKb} KB" : "none")</span></label>
-                <input id="mcp-budget" type="range" min="0" max="500" step="10" value="@_budgetKb" disabled="@_running"
-                       @oninput="OnBudgetChanged" />
-            </div>
+                <div class="demo-field">
+                    <label class="demo-field-label" for="mcp-qualities">Qualities</label>
+                    <input id="mcp-qualities" type="text" value="@_qualities" disabled="@_running"
+                           @onchange="e => _qualities = e.Value?.ToString() ?? string.Empty" />
+                </div>
 
-            <button type="button" class="btn btn-accent btn-block" disabled="@(_running || IsHydrating)" @onclick="RunAsync">
-                @(_running ? "Running..." : "Run it on the engine")
-            </button>
+                <div class="demo-field">
+                    <label class="demo-field-label" for="mcp-budget">Size budget <span class="demo-field-value">@(_budgetKb > 0 ? $"{_budgetKb} KB" : "none")</span></label>
+                    <input id="mcp-budget" type="range" min="0" max="500" step="10" value="@_budgetKb" disabled="@_running"
+                           @oninput="OnBudgetChanged" />
+                </div>
+
+                <button type="button" class="btn btn-primary demo-btn-block" disabled="@(_running || IsHydrating)" @onclick="RunAsync">
+                    @(_running ? "Running..." : "Run it on the engine")
+                </button>
+            </div>
         </div>
     </div>
 </div>
 
-<div class="demo-section">
-    <h2>What leaves with the file</h2>
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> What leaves with the file</h3>
     <p>
         <code>CompareBmageMetadataPolicies</code> writes a phone photo - GPS position, serial number,
         owner, camera, lens, ISO, date and copyright - through the real encoder under each
@@ -297,29 +301,31 @@
         A privacy decision then rests on the exported bytes, not on what a policy's name suggests.
     </p>
 
-    <div class="btn-row toolbar-row">
-        @foreach (var format in MetadataFormats)
-        {
-            <button type="button" class="chip" aria-pressed="@(_metadataFormat == format ? "true" : "false")"
-                    disabled="@_comparing" @onclick="() => _metadataFormat = format">@format</button>
-        }
-        <button type="button" class="btn btn-accent" disabled="@(_comparing || IsHydrating)" @onclick="CompareAsync">
+    <div class="bb-toolbar">
+        <div class="bb-segmented" role="group" aria-label="Format to export">
+            @foreach (var format in MetadataFormats)
+            {
+                <button type="button" aria-pressed="@(_metadataFormat == format ? "true" : "false")"
+                        disabled="@_comparing" @onclick="() => _metadataFormat = format">@format</button>
+            }
+        </div>
+        <button type="button" class="btn btn-primary" disabled="@(_comparing || IsHydrating)" @onclick="CompareAsync">
             @(_comparing ? "Encoding..." : "Export it three ways")
         </button>
     </div>
 
     @if (_compareError is not null)
     {
-        <div class="alert alert-error" role="alert">@_compareError</div>
+        <div class="bb-note bb-note-danger demo-error" role="alert">@_compareError</div>
     }
     else if (_comparison?.Error is { } comparisonError)
     {
-        <div class="alert alert-error" role="alert">@comparisonError</div>
+        <div class="bb-note bb-note-danger demo-error" role="alert">@comparisonError</div>
     }
     else if (_comparison is { Policies: { Length: > 0 } policies })
     {
-        <div class="table-scroll" tabindex="0" role="region" aria-label="Metadata kept per policy">
-            <table class="data">
+        <div class="bb-scroll" tabindex="0" role="region" aria-label="Metadata kept per policy">
+            <table class="bb-table">
                 <thead>
                     <tr>
                         <th scope="col">Field</th>
@@ -354,12 +360,12 @@
             </table>
         </div>
 
-        <p class="small mcp-reading">@_comparison.Reading</p>
+        <p class="demo-small mcp-reading">@_comparison.Reading</p>
     }
 </div>
 
-<div class="demo-section">
-    <h2>Review your code</h2>
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Review your code</h3>
     <p>
         <code>ReviewBmageCode</code> is the pass that closes the loop after an agent writes code. Its
         rules look for the mistakes that compile cleanly - a capability probe in
@@ -368,28 +374,28 @@
         below has several on purpose.
     </p>
 
-    <div class="field">
-        <label class="field-label" for="mcp-review">Code</label>
+    <div class="demo-field">
+        <label class="demo-field-label" for="mcp-review">Code</label>
         <textarea id="mcp-review" class="mcp-input mcp-code" rows="12" spellcheck="false"
                   value="@_review" @onchange="e => _review = e.Value?.ToString() ?? string.Empty"
                   disabled="@(_reviewing || IsHydrating)"></textarea>
     </div>
 
-    <div class="btn-row">
-        <button type="button" class="btn btn-accent" disabled="@(_reviewing || IsHydrating)" @onclick="ReviewAsync">
+    <div class="bb-toolbar">
+        <button type="button" class="btn btn-primary" disabled="@(_reviewing || IsHydrating)" @onclick="ReviewAsync">
             @(_reviewing ? "Reviewing..." : "Review it")
         </button>
     </div>
 
     @if (_reviewError is not null)
     {
-        <div class="alert alert-error mcp-results" role="alert">@_reviewError</div>
+        <div class="bb-note bb-note-danger demo-error mcp-results" role="alert">@_reviewError</div>
     }
     else if (_findings is not null)
     {
         @if (_findings.Findings is null or { Length: 0 })
         {
-            <p class="small mcp-results">Nothing to report - all @(_findings.RulesApplied?.Length ?? 0) rules passed.</p>
+            <p class="demo-small mcp-results">Nothing to report - all @(_findings.RulesApplied?.Length ?? 0) rules passed.</p>
         }
         else
         {
@@ -398,11 +404,11 @@
                 {
                     <li class="mcp-finding @finding.Severity?.ToLowerInvariant()">
                         <span class="mcp-finding-head">
-                            <span class="badge @SeverityBadge(finding.Severity)">@finding.Severity</span>
+                            <span class="bb-badge @SeverityBadge(finding.Severity)">@finding.Severity</span>
                             <code>@finding.Rule</code>
                             @if (finding.Line is { } line)
                             {
-                                <span class="small muted">line @line</span>
+                                <span class="demo-small bb-muted">line @line</span>
                             }
                         </span>
                         <span class="mcp-finding-message">@finding.Message</span>
@@ -414,8 +420,8 @@
     }
 </div>
 
-<div class="demo-section">
-    <h2>One search across everything</h2>
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> One search across everything</h3>
     <p>
         An agent rarely knows which corpus holds the answer. <code>SearchBmage</code> covers every
         guide section, every public member of the package, the setup guides, the recipes, the
@@ -427,7 +433,7 @@
         <input type="search" class="mcp-input" value="@_query" disabled="@(_searching || IsHydrating)"
                @onchange="e => _query = e.Value?.ToString() ?? string.Empty"
                placeholder="avatar under 100 KB" aria-label="Search Bmage" />
-        <button type="button" class="btn btn-accent" disabled="@(_searching || IsHydrating)" @onclick="SearchAsync">
+        <button type="button" class="btn btn-primary" disabled="@(_searching || IsHydrating)" @onclick="SearchAsync">
             <Icon Path="@Icons.Search" />
             @(_searching ? "Searching..." : "Search")
         </button>
@@ -435,7 +441,7 @@
 
     @if (_searchError is not null)
     {
-        <div class="alert alert-error" role="alert">@_searchError</div>
+        <div class="bb-note bb-note-danger demo-error" role="alert">@_searchError</div>
     }
     else if (_hits is { Length: > 0 })
     {
@@ -443,7 +449,7 @@
             @foreach (var hit in _hits)
             {
                 <li>
-                    <span class="badge badge-neutral">@hit.Kind</span>
+                    <span class="bb-badge demo-badge-off">@hit.Kind</span>
                     <span class="mcp-hit-title">@hit.Title</span>
                     <code>@hit.Tool</code>
                 </li>
@@ -452,16 +458,16 @@
     }
     else if (_hits is not null)
     {
-        <p class="small muted">Nothing matched that.</p>
+        <p class="demo-small bb-muted">Nothing matched that.</p>
     }
 </div>
 
-<div class="demo-section">
-    <h2>Tools</h2>
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Tools</h3>
 
     @if (_catalog is null)
     {
-        <p class="working" role="status">Loading the catalog&hellip;</p>
+        <p class="working" role="status"><span class="bb-spinner" aria-hidden="true"></span>Loading the catalog&hellip;</p>
     }
     else
     {
@@ -470,8 +476,8 @@
             this table cannot fall out of step with the server, and neither can this count.
         </p>
 
-        <div class="table-scroll" tabindex="0" role="region" aria-label="MCP tools">
-            <table class="ref mcp-tools">
+        <div class="bb-scroll" tabindex="0" role="region" aria-label="MCP tools">
+            <table class="bb-table mcp-tools">
                 <thead>
                     <tr><th scope="col">Tool</th><th scope="col">Parameters</th><th scope="col">What it answers</th></tr>
                 </thead>
@@ -479,18 +485,20 @@
                     @foreach (var tool in _catalog.Tools)
                     {
                         <tr>
-                            <th scope="row"><code>@tool.Name</code></th>
-                            <td class="mcp-params">
+                            <th scope="row" class="bb-table-key"><code>@tool.Name</code></th>
+                            <td>
                                 @if (tool.Parameters is null or { Length: 0 })
                                 {
-                                    <span class="muted">none</span>
+                                    <span class="bb-muted">none</span>
                                 }
                                 else
                                 {
-                                    @foreach (var parameter in tool.Parameters)
-                                    {
-                                        <code>@parameter</code>
-                                    }
+                                    <div class="mcp-params">
+                                        @foreach (var parameter in tool.Parameters)
+                                        {
+                                            <code>@parameter</code>
+                                        }
+                                    </div>
                                 }
                             </td>
                             <td>@Shorten(tool.Description)</td>
@@ -502,8 +510,8 @@
     }
 </div>
 
-<div class="demo-section">
-    <h2>Prompts</h2>
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Prompts</h3>
     <p>
         Prompts are the workflows: the order to call the tools in for a whole task. They exist because
         the failure mode of an agent holding a shelf of tools is not ignorance - it is calling them in
@@ -512,15 +520,15 @@
 
     @if (_catalog is not null)
     {
-        <div class="grid">
+        <div class="bb-grid">
             @foreach (var prompt in _catalog.Prompts)
             {
-                <div class="card">
-                    <p class="card-title"><code>@prompt.Name</code></p>
-                    <p>@prompt.Description</p>
+                <div class="bb-card">
+                    <p class="bb-card-title"><code>@prompt.Name</code></p>
+                    <p class="bb-card-desc">@prompt.Description</p>
                     @if (prompt.Parameters is { Length: > 0 })
                     {
-                        <p class="small muted">@string.Join(" · ", prompt.Parameters)</p>
+                        <p class="demo-small bb-muted">@string.Join(" · ", prompt.Parameters)</p>
                     }
                 </div>
             }
@@ -528,8 +536,8 @@
     }
 </div>
 
-<div class="demo-section">
-    <h2>Resources</h2>
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Resources</h3>
     <p>
         The same knowledge as URIs, for clients that attach documentation to a conversation up front
         or let a person browse and pin it. They read the same catalogs the tools do, so neither can go
@@ -541,20 +549,20 @@
         <ul class="mcp-resources">
             @foreach (var resource in _catalog.Resources)
             {
-                <li><code>@resource.Name</code> <span class="small muted">@resource.Description</span></li>
+                <li><code>@resource.Name</code> <span class="demo-small bb-muted">@resource.Description</span></li>
             }
         </ul>
     }
 </div>
 
-<div class="demo-section">
-    <h2>How it stays true</h2>
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> How it stays true</h3>
     <p>
         Documentation that is written down separately drifts, and an agent cannot tell a stale answer
         from a fresh one. So nothing here is written down twice:
     </p>
 
-    <ul>
+    <ul class="bb-detail-list">
         <li>
             <strong>The API reference is reflected</strong> out of the shipped assembly and
             paired with the XML documentation compiled into it, with each type's namespace and
@@ -985,14 +993,14 @@
 
     /// <summary>Kept or removed; a sensitive field that was kept is the one that matters, so it reads as a failure.</summary>
     private static MarkupString Badge(bool kept, bool sensitive) => kept
-        ? new(sensitive ? "<span class=\"badge badge-no\">kept</span>" : "<span class=\"badge badge-neutral\">kept</span>")
-        : new(sensitive ? "<span class=\"badge badge-yes\">removed</span>" : "<span class=\"badge badge-neutral\">removed</span>");
+        ? new(sensitive ? "<span class=\"bb-badge bb-badge-danger\">kept</span>" : "<span class=\"bb-badge demo-badge-off\">kept</span>")
+        : new(sensitive ? "<span class=\"bb-badge bb-badge-success\">removed</span>" : "<span class=\"bb-badge demo-badge-off\">removed</span>");
 
     private static string SeverityBadge(string? severity) => severity switch
     {
-        "Error" => "badge-no",
-        "Warning" => "badge-warning",
-        _ => "badge-neutral"
+        "Error" => "bb-badge-danger",
+        "Warning" => "bb-badge-warn",
+        _ => "demo-badge-off"
     };
 
     private static string Shorten(string description)

@@ -1,9 +1,9 @@
 ﻿@namespace Bit.BevTools.Demo.Client.Components
 @inject FilterState Filter
 
-<div class="row">
-    <input placeholder="Search products (every keystroke notifies FilterState)" value="@Filter.Query" @oninput="OnQuery" style="min-width:320px" />
-    <select value="@Filter.Category" @onchange="OnCategory">
+<div class="bb-toolbar">
+    <input type="search" class="demo-search" aria-label="Search products" placeholder="Search products (every keystroke notifies FilterState)" value="@Filter.Query" @oninput="OnQuery" />
+    <select aria-label="Category" value="@Filter.Category" @onchange="OnCategory">
         <option>All</option>
         <option>Office</option>
         <option>Audio</option>
@@ -11,8 +11,8 @@
         <option>Outdoor</option>
         <option>Accessories</option>
     </select>
-    <label>Max price <input type="range" min="10" max="1000" value="@Filter.MaxPrice" @oninput="OnPrice" /> @Filter.MaxPrice.ToString("C0")</label>
-    <button @onclick="Filter.Touch">Notify without change (@Filter.ChangeCount)</button>
+    <label class="bb-check">Max price <input type="range" min="10" max="1000" value="@Filter.MaxPrice" @oninput="OnPrice" /> <span class="demo-range-value">@Filter.MaxPrice.ToString("C0")</span></label>
+    <button type="button" class="btn btn-secondary" @onclick="Filter.Touch">Notify without change (@Filter.ChangeCount)</button>
 </div>
 
 @code {

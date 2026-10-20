@@ -2,11 +2,11 @@
 @implements IDisposable
 @using Bit.Borm.Demo.Client.Forms
 
-<PageTitle>Editing an existing record</PageTitle>
+<PageTitle>Editing an existing record · Borm</PageTitle>
 
-<div class="demo-intro">
+<div class="bb-intro">
     <h1>Editing an existing record</h1>
-    <p>
+    <p class="bb-subtitle">
         A form that opens blank and is submitted once needs almost none of this. A form that loads a
         record, is saved, reloads what the server actually stored and carries on being edited needs all
         of it: rebasing onto new data so "unsaved changes" means something, checking one answer without
@@ -15,41 +15,40 @@
     </p>
 </div>
 
-<div class="demo-card">
-    <div class="demo-toolbar">
-        <button type="button" class="bit-borm-btn" @onclick="LoadRecord">Load record from server</button>
-        <button type="button" class="bit-borm-btn" @onclick="SaveRoundTrip" disabled="@(!_state.IsFormDirty)">Save &amp; rebase</button>
-        <button type="button" class="bit-borm-btn" @onclick="SwapFirstTwoLines" disabled="@(LineCount < 2)">Swap first two lines</button>
-        <button type="button" class="bit-borm-btn bit-borm-btn--danger" @onclick="ClearLines" disabled="@(LineCount == 0)">Clear all lines</button>
-        <button type="button" class="bit-borm-btn" @onclick="CheckCustomer">Check just the customer</button>
-        <button type="button" class="bit-borm-btn" @onclick="StashDraft">Stash a draft</button>
-        <button type="button" class="bit-borm-btn" @onclick="RestoreDraft" disabled="@(_draft is null)">Restore the draft</button>
-        <label class="demo-toggle"><input type="checkbox" checked="@_reviewMode" @onchange="ToggleReview" /> Review mode</label>
-        <label class="demo-toggle"><input type="checkbox" checked="@_state.SingleErrorPerField" @onchange="ToggleSingleError" /> One error per field</label>
+<div class="bb-demo">
+    <div class="bb-demo-bar">
+        <span class="bb-demo-label">Live form</span>
+        <label class="bb-check"><input type="checkbox" checked="@_reviewMode" @onchange="ToggleReview" /> Review mode</label>
+        <label class="bb-check"><input type="checkbox" checked="@_state.SingleErrorPerField" @onchange="ToggleSingleError" /> One error per field</label>
+    </div>
+
+    <div class="bb-toolbar">
+        <button type="button" class="btn btn-secondary" @onclick="LoadRecord">Load record from server</button>
+        <button type="button" class="btn btn-secondary" @onclick="SaveRoundTrip" disabled="@(!_state.IsFormDirty)">Save &amp; rebase</button>
+        <button type="button" class="btn btn-secondary" @onclick="SwapFirstTwoLines" disabled="@(LineCount < 2)">Swap first two lines</button>
+        <button type="button" class="btn btn-secondary" @onclick="ClearLines" disabled="@(LineCount == 0)">Clear all lines</button>
+        <button type="button" class="btn btn-secondary" @onclick="CheckCustomer">Check just the customer</button>
+        <button type="button" class="btn btn-secondary" @onclick="StashDraft">Stash a draft</button>
+        <button type="button" class="btn btn-secondary" @onclick="RestoreDraft" disabled="@(_draft is null)">Restore the draft</button>
     </div>
 
     <BormView State="_state" OnValidSubmit="HandleSubmit" SubmitText="Submit order" TitleLevel="2" />
-</div>
 
-<div class="demo-result" style="background:#eef2ff; border-color:#c7d2fe;">
-    <strong>State</strong>
-    <pre>@StateReadout</pre>
+    <div class="demo-readout">
+        <p class="bb-overline">State</p>
+        <pre>@StateReadout</pre>
+    </div>
 </div>
 
 @if (_saved)
 {
-    <div class="demo-result"><strong>Saved ✓</strong> The stored record is now the baseline — the form is clean again.</div>
+    <div class="bb-note bb-note-success demo-result"><strong>Saved ✓</strong> The stored record is now the baseline — the form is clean again.</div>
 }
 
-<details class="demo-source">
-    <summary>View source</summary>
-    <pre><code>@Source</code></pre>
+<details class="bb-source demo-source">
+    <summary class="btn btn-secondary">View source</summary>
+    <pre class="bb-code"><code>@Source</code></pre>
 </details>
-
-<style>
-    .demo-toolbar { display: flex; flex-wrap: wrap; gap: .5rem; align-items: center; margin-bottom: 1.5rem; }
-    .demo-toggle { display: inline-flex; align-items: center; gap: .35rem; font-size: .85rem; color: #475569; }
-</style>
 
 @code {
     private const string Source =

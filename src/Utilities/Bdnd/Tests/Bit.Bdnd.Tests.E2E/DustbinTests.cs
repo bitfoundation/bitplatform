@@ -160,7 +160,7 @@ public sealed class DustbinTests : BdndTest
         var anythingBox = await BoxAsync(Bin(page, "Anything"));
         var empty = new Point(anythingBox.Right + 150, anythingBox.Centre.Y);
         await MoveAsync(page, empty);
-        var overPage = await DragOverAtAsync(page, page.Locator(".demo-stage"), empty);
+        var overPage = await DragOverAtAsync(page, page.Locator(".bb-demo"), empty);
         Assert.IsFalse(overPage.Prevented, $"a dragover over no drop target was accepted: {overPage}");
 
         await DragToAsync(page, piecesBox.Centre, async () =>

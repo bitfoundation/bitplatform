@@ -2,92 +2,125 @@
 @using System.Numerics
 @implements IAsyncDisposable
 
-<PageTitle>Collaboration - bit Bink</PageTitle>
+<PageTitle>Collaboration · Bink</PageTitle>
 
-<h1>Collaboration</h1>
-<p class="page-intro">
-    Two independent canvases with two independent documents, synchronized by exchanging operations. Draw on
-    either side and the stroke appears on the other, with the other person's cursor and their stroke in progress
-    shown live. This runs entirely in the browser over an in-memory transport; a real application implements the
-    same interface over SignalR or WebSockets.
-</p>
+<div class="bb-intro">
+    <h1>Collaboration</h1>
+    <p class="bb-subtitle">
+        Two independent canvases with two independent documents, synchronized by exchanging operations. Draw on
+        either side and the stroke appears on the other, with the other person's cursor and their stroke in progress
+        shown live. This runs entirely in the browser over an in-memory transport; a real application implements the
+        same interface over SignalR or WebSockets.
+    </p>
+</div>
 
-<div class="toolbar panel" style="border-radius:10px 10px 0 0;border-bottom:none">
-    <label class="field">
-        Latency
-        <input type="range" min="0" max="400" step="25" value="@_latency" aria-label="Simulated latency"
-               @onchange="OnLatencyChanged" />
-        <span style="min-width:6ch">@_latency ms</span>
-    </label>
-    <div class="toolbar-separator"></div>
-    @for (int index = 0; index < 2; index++)
-    {
-        int i = index;
-        <label class="field">
-            <input type="checkbox" checked="@_online[i]" @onchange="e => SetOnlineAsync(i, e.Value is true)" />
-            @Participants[i].Name online
+<div class="bb-demo bink-editor bb-page-wide">
+    <div class="bb-toolbar bink-toolbar" role="toolbar" aria-label="Network">
+        <label class="bink-field">
+            Latency
+            <input type="range" min="0" max="400" step="25" value="@_latency" aria-label="Simulated latency"
+                   @onchange="OnLatencyChanged" />
+            <span class="bink-field-value bink-field-value--wide">@_latency ms</span>
         </label>
-    }
-    <div class="toolbar-spacer"></div>
-    <span class="field">Queued while offline: <strong>@(_sessions[0]?.PendingCount ?? 0)</strong> / <strong>@(_sessions[1]?.PendingCount ?? 0)</strong></span>
-    <span class="badge @(Converged ? "on" : null)" role="status">@(Converged ? "replicas identical" : "replicas differ")</span>
+        <span class="bink-sep" aria-hidden="true"></span>
+        @for (int index = 0; index < 2; index++)
+        {
+            int i = index;
+            <label class="bb-check">
+                <input type="checkbox" checked="@_online[i]" @onchange="e => SetOnlineAsync(i, e.Value is true)" />
+                @Participants[i].Name online
+            </label>
+        }
+        <span class="bb-spacer"></span>
+        <span class="bink-hint">Queued while offline: <strong>@(_sessions[0]?.PendingCount ?? 0)</strong> / <strong>@(_sessions[1]?.PendingCount ?? 0)</strong></span>
+        <span class="@CanvasStatus.Badge(Converged)" role="status">@(Converged ? "replicas identical" : "replicas differ")</span>
+    </div>
+
+    <div class="bink-pair">
+        @for (int index = 0; index < 2; index++)
+        {
+            int i = index;
+            <div class="bink-peer">
+                <div class="bb-toolbar bink-toolbar">
+                    <span class="bink-participant">
+                        <span class="bink-participant-dot" style="background:@Participants[i].Color" aria-hidden="true"></span>
+                        @Participants[i].Name
+                    </span>
+                    <span class="bink-sep" aria-hidden="true"></span>
+                    <ColorSwatches Colors="Palette" Value="@_colors[i]" ValueChanged="color => SetColor(i, color)"
+                                   Label="@($"{Participants[i].Name}'s colour")" Prefix="@Participants[i].Name" />
+                    <span class="bb-spacer"></span>
+                    <div class="bink-group" role="group" aria-label="History">
+                        <button type="button" class="btn btn-secondary" disabled="@(_canvases[i] is not { History.CanUndo: true })" @onclick="() => _canvases[i]?.Undo()">Undo</button>
+                        <button type="button" class="btn btn-secondary" disabled="@(_canvases[i] is not { History.CanRedo: true })" @onclick="() => _canvases[i]?.Redo()">Redo</button>
+                        <button type="button" class="btn btn-secondary bink-danger" disabled="@_documents[i].IsEmpty" @onclick="() => _canvases[i]?.Clear()">Clear</button>
+                    </div>
+                </div>
+
+                <div class="bink-surface">
+                    <PointerTracker Moved="(position, pressed) => OnPointerMoved(i, position, pressed)" Left="() => OnPointerLeft(i)">
+                        <BinkCanvas @ref="_canvases[i]" HistoryChanged="() => StateHasChanged()"
+                                   EnableTouchGestures="true"
+                                   Document="_documents[i]"
+                                   Height="380px"
+                                   Brush="_brushes[i]"
+                                   AriaLabel="@($"{Participants[i].Name}'s canvas")"
+                                   StrokeCompleted="() => OnStrokeCompleted(i)"
+                                   DocumentChanged="() => StateHasChanged()"
+                                   Ready="() => StateHasChanged()" />
+                        <PresenceOverlay Session="_sessions[i]" Canvas="_canvases[i]" />
+                    </PointerTracker>
+                </div>
+
+                <div class="bink-status">
+                    <span><strong>@_documents[i].ElementCount</strong> elements</span>
+                    <span>sent <strong>@(_transports[i]?.SentCount ?? 0)</strong> messages, <strong>@FormatBytes(_transports[i]?.SentBytes ?? 0)</strong></span>
+                    @if (_transports[i]?.InboxCount is > 0 and var waiting)
+                    {
+                        <span><strong>@waiting</strong> waiting on the server</span>
+                    }
+                    <span class="@CanvasStatus.Badge(_online[i])">@(_online[i] ? "connected" : "offline")</span>
+                </div>
+            </div>
+        }
+    </div>
 </div>
 
-<div class="split" style="gap:1rem">
-    @for (int index = 0; index < 2; index++)
-    {
-        int i = index;
-        <div class="panel">
-            <div class="toolbar">
-                <strong style="color:@Participants[i].Color">@Participants[i].Name</strong>
-                <div class="toolbar-separator"></div>
-                <ColorSwatches Colors="Palette" Value="@_colors[i]" ValueChanged="color => SetColor(i, color)"
-                               Label="@($"{Participants[i].Name}'s colour")" Prefix="@Participants[i].Name" />
-                <div class="toolbar-spacer"></div>
-                <button type="button" class="btn" disabled="@(_canvases[i] is not { History.CanUndo: true })" @onclick="() => _canvases[i]?.Undo()">Undo</button>
-                <button type="button" class="btn" disabled="@(_canvases[i] is not { History.CanRedo: true })" @onclick="() => _canvases[i]?.Redo()">Redo</button>
-                <button type="button" class="btn danger" disabled="@_documents[i].IsEmpty" @onclick="() => _canvases[i]?.Clear()">Clear</button>
-            </div>
-
-            <PointerTracker Moved="(position, pressed) => OnPointerMoved(i, position, pressed)" Left="() => OnPointerLeft(i)">
-                <BinkCanvas @ref="_canvases[i]" HistoryChanged="() => StateHasChanged()"
-                           EnableTouchGestures="true"
-                           Document="_documents[i]"
-                           Height="380px"
-                           Brush="_brushes[i]"
-                           AriaLabel="@($"{Participants[i].Name}'s canvas")"
-                           StrokeCompleted="() => OnStrokeCompleted(i)"
-                           DocumentChanged="() => StateHasChanged()"
-                           Ready="() => StateHasChanged()" />
-                <PresenceOverlay Session="_sessions[i]" Canvas="_canvases[i]" />
-            </PointerTracker>
-
-            <div class="statusbar">
-                <span><strong>@_documents[i].ElementCount</strong> elements</span>
-                <span>sent <strong>@(_transports[i]?.SentCount ?? 0)</strong> messages, <strong>@FormatBytes(_transports[i]?.SentBytes ?? 0)</strong></span>
-                @if (_transports[i]?.InboxCount is > 0 and var waiting)
-                {
-                    <span><strong>@waiting</strong> waiting on the server</span>
-                }
-                <span class="badge @(_online[i] ? "on" : null)">@(_online[i] ? "connected" : "offline")</span>
-            </div>
-        </div>
-    }
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> What travels on the wire</h3>
+    <p class="bb-card-desc">
+        Drawing a stroke sends that stroke once, as a single operation. Nothing else is transmitted: not the other
+        strokes, not the document. While the pen is down, the stroke in progress travels as presence, throttled, so
+        the other side sees it being drawn. The most recent operation is shown below exactly as it was sent.
+    </p>
+    <pre class="bb-code bink-output">@(_lastMessage ?? "Draw on one of the canvases to see the operation that is sent.")</pre>
 </div>
 
-<h2>What travels on the wire</h2>
-<p class="page-intro">
-    Drawing a stroke sends that stroke once, as a single operation. Nothing else is transmitted: not the other
-    strokes, not the document. While the pen is down, the stroke in progress travels as presence, throttled, so
-    the other side sees it being drawn. The most recent operation is shown below exactly as it was sent.
-</p>
-<pre class="output"><code>@(_lastMessage ?? "Draw on one of the canvases to see the operation that is sent.")</code></pre>
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Conflicts and going offline</h3>
+    <p class="bb-card-desc">
+        Conflicts are resolved by last-writer-wins on each element's version, with the participant id breaking ties so
+        every replica reaches the same result. Two people drawing at once never conflict, because each stroke is a new
+        element with its own id. Take a participant offline and draw on both sides: the offline side queues what it
+        sends, the server keeps what is sent to it, and on reconnect both catch up until the replicas are identical.
+    </p>
+</div>
 
-<div class="note">
-    Conflicts are resolved by last-writer-wins on each element's version, with the participant id breaking ties so
-    every replica reaches the same result. Two people drawing at once never conflict, because each stroke is a new
-    element with its own id. Take a participant offline and draw on both sides: the offline side queues what it
-    sends, the server keeps what is sent to it, and on reconnect both catch up until the replicas are identical.
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Wiring a session</h3>
+    <p class="bb-card-desc">
+        Both participants start from the same document, layer ids included - which is what joining a session does in a
+        real application: load a snapshot. A session then joins that document to a transport. The transport here is
+        the demo's in-memory <code>LoopbackTransport</code> (<code>Shared/LoopbackTransport.cs</code>); anything that
+        implements <code>IBinkCollaborationTransport</code> - a SignalR hub, a WebSocket - takes its place unchanged.
+    </p>
+    <pre class="bb-code">_documents[1] = BinkSerializer.Deserialize(BinkSerializer.Serialize(_documents[0]));
+
+LoopbackTransport transport = _hub.CreateClient();
+<span class="k">var</span> session = <span class="k">new</span> BinkCollaborationSession(_documents[i], transport, Participants[i].Id);
+
+<span class="c">// Cursors and the stroke in progress travel as presence, not as operations.</span>
+<span class="k">await</span> session.UpdatePresenceAsync(<span class="k">new</span> BinkPresenceState { ParticipantId = <span class="s">"alex"</span>, Cursor = position });</pre>
 </div>
 
 @code {

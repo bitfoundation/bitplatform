@@ -1,151 +1,161 @@
 ﻿@page "/camera"
 
-<PageTitle>Camera control - bit BbScanner</PageTitle>
+<PageTitle>Camera control · BbScanner</PageTitle>
 
-<h1>Camera, torch and zoom</h1>
-<p class="lede">
-    Camera selection, torch and zoom are all capabilities of the running media track. The
-    component reports what the browser says is available and never offers a control the hardware
-    will refuse.
-</p>
+<div class="bb-intro">
+    <h1>Camera, torch and zoom</h1>
+    <p class="bb-subtitle">
+        Camera selection, torch and zoom are all capabilities of the running media track. The
+        component reports what the browser says is available and never offers a control the hardware
+        will refuse.
+    </p>
+</div>
 
-<div class="split">
-    <div class="stack">
-        <BbScanner @ref="_scanner"
-                   Facing="_facing"
-                   ShowControls="true"
-                   OnScan="r => _last = r"
-                   OnCameraChanged="OnCameraChanged"
-                   OnStatusChanged="OnStatusChanged"
-                   OnError="e => _error = e" />
-
-        @if (_error is not null)
-        {
-            <div class="note note--warning"><strong>@_error.Kind</strong> — @_error.Message</div>
-        }
+<div class="bb-demo bb-page-wide">
+    <div class="bb-demo-bar">
+        <span class="bb-demo-label">Live</span>
+        <StatusBadge Status="_scanner?.Status" />
     </div>
 
-    <div class="stack">
-        <div class="card">
-            <h3 style="margin-block-start:0;">Available cameras</h3>
-            <div class="button-row" style="margin-block-end:0.6rem;">
-                <button class="button" type="button" @onclick="RefreshCameras">Enumerate</button>
+    <div class="scan-sample">
+        <div class="scan-layout">
+            <div class="scan-view">
+                <BbScanner @ref="_scanner"
+                           Facing="_facing"
+                           ShowControls="true"
+                           OnScan="r => _last = r"
+                           OnCameraChanged="OnCameraChanged"
+                           OnStatusChanged="OnStatusChanged"
+                           OnError="e => _error = e" />
+
+                @if (_error is not null)
+                {
+                    <div class="bb-note bb-note-warn"><strong>@_error.Kind</strong> — @_error.Message</div>
+                }
+
+                @if (_last is not null)
+                {
+                    <dl class="bb-params">
+                        <dt>Last scan</dt>
+                        <dd><span class="bb-badge">@_last.Format</span> @_last.Text</dd>
+                    </dl>
+                }
             </div>
 
-            @if (_cameras.Count == 0)
-            {
-                <p class="empty" style="padding:0.25rem;">
-                    None listed yet. Browsers withhold the list, and camera labels, until permission
-                    has been granted at least once.
-                </p>
-            }
-            else
-            {
-                <table>
-                    <tbody>
-                        @foreach (var camera in _cameras)
-                        {
-                            <tr>
-                                <td>@camera.Label</td>
-                                <td style="text-align:end;">
-                                    <button class="button" type="button" @onclick="() => Switch(camera.DeviceId)">Use</button>
-                                </td>
-                            </tr>
-                        }
-                    </tbody>
-                </table>
-            }
+            <div class="scan-panels">
+                <section class="scan-panel">
+                    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Available cameras</h3>
+                    <div class="bb-toolbar">
+                        <button class="btn btn-secondary" type="button" @onclick="RefreshCameras">Enumerate</button>
+                    </div>
 
-            <div class="field" style="margin-block-start:0.75rem;">
-                <label class="field__label" for="facing">Preferred facing for the next start</label>
-                <select id="facing" value="@_facing" @onchange="OnFacingChanged">
-                    <option value="@BbCameraFacing.Rear">Rear</option>
-                    <option value="@BbCameraFacing.Front">Front</option>
-                    <option value="@BbCameraFacing.Any">Any</option>
-                </select>
-            </div>
-        </div>
+                    @if (_cameras.Count == 0)
+                    {
+                        <div class="bb-empty">
+                            None listed yet. Browsers withhold the list, and camera labels, until permission
+                            has been granted at least once.
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="bb-scroll">
+                            <table class="bb-table">
+                                <tbody>
+                                    @foreach (var camera in _cameras)
+                                    {
+                                        <tr>
+                                            <td>@camera.Label</td>
+                                            <td class="bb-table-action">
+                                                <button class="btn btn-secondary" type="button" @onclick="() => Switch(camera.DeviceId)">Use</button>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
 
-        <div class="card">
-            <h3 style="margin-block-start:0;">Negotiated track</h3>
-            @if (_camera is null)
-            {
-                <p class="empty" style="padding:0.25rem;">No camera open.</p>
-            }
-            else
-            {
-                <table>
-                    <tbody>
-                        <tr><th>Label</th><td>@_camera.Label</td></tr>
-                        <tr><th>Resolution</th><td class="mono">@_camera.Width × @_camera.Height</td></tr>
-                        <tr><th>Frame rate</th><td class="mono">@_camera.FrameRate.ToString("0.#") fps</td></tr>
-                        <tr><th>Facing</th><td>@(_camera.FacingMode.Length == 0 ? "unreported" : _camera.FacingMode)</td></tr>
-                        <tr>
-                            <th>Torch</th>
-                            <td>
+                    <label class="bb-field">
+                        <span>Preferred facing for the next start</span>
+                        <select id="facing" value="@_facing" @onchange="OnFacingChanged">
+                            <option value="@BbCameraFacing.Rear">Rear</option>
+                            <option value="@BbCameraFacing.Front">Front</option>
+                            <option value="@BbCameraFacing.Any">Any</option>
+                        </select>
+                    </label>
+                </section>
+
+                <section class="scan-panel">
+                    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Negotiated track</h3>
+                    @if (_camera is null)
+                    {
+                        <div class="bb-empty">No camera open.</div>
+                    }
+                    else
+                    {
+                        <dl class="bb-params">
+                            <dt>Label</dt>
+                            <dd>@_camera.Label</dd>
+                            <dt>Resolution</dt>
+                            <dd>@_camera.Width × @_camera.Height</dd>
+                            <dt>Frame rate</dt>
+                            <dd>@_camera.FrameRate.ToString("0.#") fps</dd>
+                            <dt>Facing</dt>
+                            <dd>@(_camera.FacingMode.Length == 0 ? "unreported" : _camera.FacingMode)</dd>
+                            <dt>Torch</dt>
+                            <dd>
                                 @if (_camera.SupportsTorch)
                                 {
-                                    <span class="pill pill--success">supported</span>
+                                    <span class="bb-badge bb-badge-success">supported</span>
                                 }
                                 else
                                 {
-                                    <span class="pill pill--muted">not supported</span>
+                                    <span class="bb-soft">not supported</span>
                                 }
-                            </td>
-                        </tr>
-                        <tr>
-                            <th>Zoom</th>
-                            <td>
+                            </dd>
+                            <dt>Zoom</dt>
+                            <dd>
                                 @if (_camera.SupportsZoom)
                                 {
-                                    <span class="pill pill--success">@_camera.ZoomMin.ToString("0.#") to @_camera.ZoomMax.ToString("0.#")</span>
+                                    <span class="bb-badge bb-badge-success">@_camera.ZoomMin.ToString("0.#") to @_camera.ZoomMax.ToString("0.#")</span>
                                 }
                                 else
                                 {
-                                    <span class="pill pill--muted">not supported</span>
+                                    <span class="bb-soft">not supported</span>
                                 }
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            }
-        </div>
+                            </dd>
+                        </dl>
+                    }
+                </section>
 
-        <div class="card">
-            <h3 style="margin-block-start:0;">Controls</h3>
-            <div class="button-row">
-                <button class="button" type="button" disabled="@(_camera?.SupportsTorch != true)" @onclick="ToggleTorch">
-                    @(_scanner?.IsTorchOn == true ? "Torch off" : "Torch on")
-                </button>
+                <section class="scan-panel">
+                    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Controls</h3>
+                    <div class="bb-toolbar">
+                        <button class="btn btn-secondary" type="button" disabled="@(_camera?.SupportsTorch != true)" @onclick="ToggleTorch">
+                            @(_scanner?.IsTorchOn == true ? "Torch off" : "Torch on")
+                        </button>
+                    </div>
+
+                    @if (_camera?.SupportsZoom == true)
+                    {
+                        <label class="bb-field">
+                            <span class="scan-field-head"><span>Zoom</span><output>@(_scanner?.Zoom.ToString("0.##"))</output></span>
+                            <input type="range"
+                                   min="@Invariant(_camera.ZoomMin)"
+                                   max="@Invariant(_camera.ZoomMax)"
+                                   step="@Invariant(_camera.ZoomStep > 0 ? _camera.ZoomStep : 0.1)"
+                                   value="@Invariant(_scanner?.Zoom ?? 0)"
+                                   @onchange="OnZoomChanged" />
+                        </label>
+                    }
+
+                    <p class="bb-card-desc">
+                        Torch and zoom are almost always rear-camera-only, and support varies by browser.
+                        Both calls report whether the browser accepted them rather than throwing.
+                    </p>
+                </section>
             </div>
-
-            @if (_camera?.SupportsZoom == true)
-            {
-                <div class="field" style="margin-block-start:0.75rem;">
-                    <label class="field__label">Zoom: @(_scanner?.Zoom.ToString("0.##"))</label>
-                    <input type="range"
-                           min="@Invariant(_camera.ZoomMin)"
-                           max="@Invariant(_camera.ZoomMax)"
-                           step="@Invariant(_camera.ZoomStep > 0 ? _camera.ZoomStep : 0.1)"
-                           value="@Invariant(_scanner?.Zoom ?? 0)"
-                           @onchange="OnZoomChanged" />
-                </div>
-            }
-
-            <p class="field__hint" style="margin-block-start:0.6rem;">
-                Torch and zoom are almost always rear-camera-only, and support varies by browser.
-                Both calls report whether the browser accepted them rather than throwing.
-            </p>
         </div>
-
-        @if (_last is not null)
-        {
-            <div class="card">
-                <h3 style="margin-block-start:0;">Last scan</h3>
-                <p style="margin:0;"><span class="pill">@_last.Format</span></p>
-                <pre style="margin:0.5rem 0 0;"><code>@_last.Text</code></pre>
-            </div>
-        }
     </div>
 </div>
 

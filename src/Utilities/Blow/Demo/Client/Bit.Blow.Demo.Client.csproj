@@ -60,10 +60,10 @@ foreach (var file in Directory.GetFiles(SourceDir, "*.razor", SearchOption.AllDi
     content = Regex.Replace(content, @"(?m)^[ \t]*@page[ \t]+""[^""]*""[ \t]*\r?\n", "");
     // 2. The <PageTitle> that sets the browser tab title.
     content = Regex.Replace(content, @"(?s)[ \t]*<PageTitle>.*?</PageTitle>[ \t]*\r?\n", "");
-    // 3. The demo-header description block on the hand-written demo pages. Its end is found by
+    // 3. The bb-intro title block on the hand-written demo pages. Its end is found by
     //    balancing <div> tags rather than with a lazy match, which would stop at the first
     //    </div> nested inside the header and leave the rest of it behind.
-    var header = Regex.Match(content, @"[ \t]*<div class=""demo-header"">");
+    var header = Regex.Match(content, @"[ \t]*<div class=""bb-intro"">");
     if (header.Success)
     {
         var depth = 0;

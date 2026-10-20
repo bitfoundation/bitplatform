@@ -1,193 +1,230 @@
 ﻿@page "/performance"
 
-<PageTitle>Performance - bit BbScanner</PageTitle>
+<PageTitle>Performance · BbScanner</PageTitle>
 
-<h1>Performance</h1>
-<p class="lede">
-    The decoder runs on the same thread as the UI, so the only number that matters is how long a
-    frame takes. Everything below measures that in this browser, on this device, right now.
-</p>
-
-<h2>Decoder benchmark</h2>
-<p>
-    Decodes generated symbols in a loop with no camera involved, so the result isolates the
-    managed pipeline from capture and compositing.
-</p>
-
-<div class="card">
-    <div class="grid grid--3">
-        <div class="field">
-            <label class="field__label" for="bench-size">Frame size</label>
-            <select id="bench-size" value="@_benchSize" @onchange="e => _benchSize = ToInt(e, 640)">
-                <option value="320">320 × 240</option>
-                <option value="640">640 × 480</option>
-                <option value="960">960 × 720</option>
-                <option value="1280">1280 × 960</option>
-            </select>
-        </div>
-        <div class="field">
-            <label class="field__label" for="bench-iterations">Iterations</label>
-            <select id="bench-iterations" value="@_iterations" @onchange="e => _iterations = ToInt(e, 30)">
-                <option value="10">10</option>
-                <option value="30">30</option>
-                <option value="100">100</option>
-            </select>
-        </div>
-        <div class="field">
-            <label class="field__label" for="bench-formats">Enabled formats</label>
-            <select id="bench-formats" value="@_benchFormats" @onchange="OnBenchFormatsChanged">
-                <option value="@BbBarcodeFormat.All">All</option>
-                <option value="@BbBarcodeFormat.AllMatrix">Matrix only</option>
-                <option value="@BbBarcodeFormat.AllLinear">Linear only</option>
-                <option value="@BbBarcodeFormat.QrCode">QR only</option>
-            </select>
-        </div>
-    </div>
-
-    <div class="button-row">
-        <button class="button button--primary" type="button" @onclick="RunBenchmark" disabled="@_running">
-            @(_running ? "Running..." : "Run benchmark")
-        </button>
-        <button class="button" type="button" @onclick="() => _benchmarks.Clear()" disabled="@(_benchmarks.Count == 0)">Clear</button>
-    </div>
-
-    @if (_benchmarks.Count > 0)
-    {
-        <table style="margin-block-start:1rem;">
-            <thead>
-                <tr>
-                    <th>Case</th>
-                    <th>Median</th>
-                    <th>Best</th>
-                    <th>Worst</th>
-                    <th>Throughput</th>
-                    <th>Found</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var row in _benchmarks)
-                {
-                    <tr>
-                        <td>@row.Name</td>
-                        <td class="mono">@row.Median.ToString("0.00") ms</td>
-                        <td class="mono">@row.Best.ToString("0.00") ms</td>
-                        <td class="mono">@row.Worst.ToString("0.00") ms</td>
-                        <td class="mono">@((1000 / Math.Max(row.Median, 0.001)).ToString("0")) fps</td>
-                        <td>
-                            @if (row.Found)
-                            {
-                                <span class="pill pill--success">yes</span>
-                            }
-                            else if (row.ExpectedFound)
-                            {
-                                <span class="pill pill--danger">not found</span>
-                            }
-                            else
-                            {
-                                <span class="pill pill--muted">empty frame</span>
-                            }
-                        </td>
-                    </tr>
-                }
-            </tbody>
-        </table>
-    }
+<div class="bb-intro">
+    <h1>Performance</h1>
+    <p class="bb-subtitle">
+        The decoder runs on the same thread as the UI, so the only number that matters is how long a
+        frame takes. Everything below measures that in this browser, on this device, right now.
+    </p>
 </div>
 
-<h2>Live camera cost</h2>
-<div class="split">
-    <div>
-        <BbScanner @ref="_scanner"
-                   Formats="_liveFormats"
-                   TargetFrameRate="_frameRate"
-                   MaxProcessingSize="_processingSize"
-                   Region="_region"
-                   DuplicateSuppressionWindow="TimeSpan.Zero"
-                   OnDiagnostics="OnDiagnostics" />
-    </div>
-    <div class="stack">
-        <DiagnosticsPanel Diagnostics="_diagnostics"
-                          FramesDecoded="_scanner?.FramesDecoded ?? 0"
-                          FramesWithSymbol="_scanner?.FramesWithSymbol ?? 0" />
+<div class="bb-card bb-page-wide">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Decoder benchmark</h3>
+    <p class="bb-card-desc">
+        Decodes generated symbols in a loop with no camera involved, so the result isolates the
+        managed pipeline from capture and compositing.
+    </p>
 
-        <div class="card">
-            <h3 style="margin-block-start:0;">Knobs</h3>
+    <div class="bb-demo">
+        <div class="bb-demo-bar">
+            <span class="bb-demo-label">Benchmark</span>
+            @if (_running)
+            {
+                <span class="bb-spinner"></span>
+            }
+        </div>
 
-            <div class="field">
-                <label class="field__label">Processing size: @_processingSize px</label>
-                <input type="range" min="240" max="1280" step="40" value="@_processingSize"
-                       @onchange="e => _processingSize = ToInt(e, 640)" />
-                <span class="field__hint">Cost scales with area, so halving this quarters most of the pipeline.</span>
-            </div>
-
-            <div class="field">
-                <label class="field__label">Frame rate: @_frameRate fps</label>
-                <input type="range" min="1" max="30" step="1" value="@_frameRate"
-                       @onchange="e => _frameRate = ToInt(e, 15)" />
-            </div>
-
-            <div class="field">
-                <label class="field__label">Region: @((_regionFraction * 100).ToString("0"))%</label>
-                <input type="range" min="20" max="100" step="10" value="@(_regionFraction * 100)"
-                       @onchange="OnRegionChanged" />
-            </div>
-
-            <div class="field">
-                <label class="field__label">Formats</label>
-                <select value="@_liveFormats" @onchange="OnLiveFormatsChanged">
+        <div class="bb-fields">
+            <label class="bb-field">
+                Frame size
+                <select id="bench-size" value="@_benchSize" @onchange="e => _benchSize = ToInt(e, 640)">
+                    <option value="320">320 × 240</option>
+                    <option value="640">640 × 480</option>
+                    <option value="960">960 × 720</option>
+                    <option value="1280">1280 × 960</option>
+                </select>
+            </label>
+            <label class="bb-field">
+                Iterations
+                <select id="bench-iterations" value="@_iterations" @onchange="e => _iterations = ToInt(e, 30)">
+                    <option value="10">10</option>
+                    <option value="30">30</option>
+                    <option value="100">100</option>
+                </select>
+            </label>
+            <label class="bb-field">
+                Enabled formats
+                <select id="bench-formats" value="@_benchFormats" @onchange="OnBenchFormatsChanged">
                     <option value="@BbBarcodeFormat.All">All</option>
                     <option value="@BbBarcodeFormat.AllMatrix">Matrix only</option>
                     <option value="@BbBarcodeFormat.AllLinear">Linear only</option>
                     <option value="@BbBarcodeFormat.QrCode">QR only</option>
                 </select>
+            </label>
+            <div class="bb-toolbar perf-actions">
+                <button class="btn btn-primary" type="button" @onclick="RunBenchmark" disabled="@_running">
+                    @(_running ? "Running..." : "Run benchmark")
+                </button>
+                <button class="btn btn-secondary" type="button" @onclick="() => _benchmarks.Clear()" disabled="@(_benchmarks.Count == 0)">Clear</button>
+            </div>
+        </div>
+
+        @if (_benchmarks.Count > 0)
+        {
+            <div class="bb-scroll">
+                <table class="bb-table">
+                    <thead>
+                        <tr>
+                            <th>Case</th>
+                            <th>Median</th>
+                            <th>Best</th>
+                            <th>Worst</th>
+                            <th>Throughput</th>
+                            <th>Found</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var row in _benchmarks)
+                        {
+                            <tr>
+                                <td class="bb-table-key">@row.Name</td>
+                                <td class="bb-mono bb-nowrap">@row.Median.ToString("0.00") ms</td>
+                                <td class="bb-mono bb-nowrap">@row.Best.ToString("0.00") ms</td>
+                                <td class="bb-mono bb-nowrap">@row.Worst.ToString("0.00") ms</td>
+                                <td class="bb-mono bb-nowrap">@((1000 / Math.Max(row.Median, 0.001)).ToString("0")) fps</td>
+                                <td>
+                                    @if (row.Found)
+                                    {
+                                        <span class="bb-badge bb-badge-success">yes</span>
+                                    }
+                                    else if (row.ExpectedFound)
+                                    {
+                                        <span class="bb-badge bb-badge-danger">not found</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="bb-soft">empty frame</span>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+        else
+        {
+            <div class="bb-empty">Run the benchmark to time six symbologies and an empty frame on this device.</div>
+        }
+    </div>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Live camera cost</h3>
+    <p class="bb-card-desc">
+        The same pipeline on real camera frames, with duplicate suppression off so every decoded
+        frame counts. Turn the knobs and watch the stage split move.
+    </p>
+
+    <div class="bb-demo">
+        <div class="bb-demo-bar">
+            <span class="bb-demo-label">Live</span>
+        </div>
+
+        <div class="scan-sample">
+            <div class="scan-layout">
+                <div class="scan-view">
+                    <BbScanner @ref="_scanner"
+                               Formats="_liveFormats"
+                               TargetFrameRate="_frameRate"
+                               MaxProcessingSize="_processingSize"
+                               Region="_region"
+                               DuplicateSuppressionWindow="TimeSpan.Zero"
+                               OnDiagnostics="OnDiagnostics" />
+
+                    <DiagnosticsPanel Diagnostics="_diagnostics"
+                                      FramesDecoded="_scanner?.FramesDecoded ?? 0"
+                                      FramesWithSymbol="_scanner?.FramesWithSymbol ?? 0" />
+                </div>
+
+                <div class="scan-panels">
+                    <section class="scan-panel">
+                        <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Knobs</h3>
+
+                        <label class="bb-field">
+                            <span class="scan-field-head"><span>Processing size</span><output>@_processingSize px</output></span>
+                            <input type="range" min="240" max="1280" step="40" value="@_processingSize"
+                                   @onchange="e => _processingSize = ToInt(e, 640)" />
+                            <small>Cost scales with area, so halving this quarters most of the pipeline.</small>
+                        </label>
+
+                        <label class="bb-field">
+                            <span class="scan-field-head"><span>Frame rate</span><output>@_frameRate fps</output></span>
+                            <input type="range" min="1" max="30" step="1" value="@_frameRate"
+                                   @onchange="e => _frameRate = ToInt(e, 15)" />
+                        </label>
+
+                        <label class="bb-field">
+                            <span class="scan-field-head"><span>Region</span><output>@((_regionFraction * 100).ToString("0"))%</output></span>
+                            <input type="range" min="20" max="100" step="10" value="@(_regionFraction * 100)"
+                                   @onchange="OnRegionChanged" />
+                        </label>
+
+                        <label class="bb-field">
+                            <span>Formats</span>
+                            <select value="@_liveFormats" @onchange="OnLiveFormatsChanged">
+                                <option value="@BbBarcodeFormat.All">All</option>
+                                <option value="@BbBarcodeFormat.AllMatrix">Matrix only</option>
+                                <option value="@BbBarcodeFormat.AllLinear">Linear only</option>
+                                <option value="@BbBarcodeFormat.QrCode">QR only</option>
+                            </select>
+                        </label>
+                    </section>
+                </div>
             </div>
         </div>
     </div>
 </div>
 
-<h2>What costs what</h2>
-<table>
-    <thead>
-        <tr><th>Setting</th><th>Effect</th><th>When to change it</th></tr>
-    </thead>
-    <tbody>
-        <tr>
-            <td><code>MaxProcessingSize</code></td>
-            <td>Quadratic. The dominant control.</td>
-            <td>Lower until the smallest symbol you care about stops decoding, then go one step back.</td>
-        </tr>
-        <tr>
-            <td><code>Formats</code></td>
-            <td>Linear in the number of decoders that run.</td>
-            <td>Always. Most applications need one or two symbologies.</td>
-        </tr>
-        <tr>
-            <td><code>Region</code></td>
-            <td>Proportional to the area kept.</td>
-            <td>Whenever the interface asks the user to aim.</td>
-        </tr>
-        <tr>
-            <td><code>MaxScanLines</code></td>
-            <td>Linear, and only for linear symbologies.</td>
-            <td>Lower for aimed scanning, raise for hands-off scanning.</td>
-        </tr>
-        <tr>
-            <td><code>TryHarder</code></td>
-            <td>Roughly triples matrix detection cost.</td>
-            <td>Still images only; it is off for live frames by design.</td>
-        </tr>
-        <tr>
-            <td><code>AllowInverted</code></td>
-            <td>Doubles the cost of frames that find nothing.</td>
-            <td>Only when white-on-black symbols are expected.</td>
-        </tr>
-        <tr>
-            <td><code>DownsampleFactor</code></td>
-            <td>Quadratic, applied inside the grayscale pass.</td>
-            <td>When frames arrive larger than you asked for and you cannot change the source.</td>
-        </tr>
-    </tbody>
-</table>
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> What costs what</h3>
+    <div class="bb-scroll">
+        <table class="bb-table">
+            <thead>
+                <tr><th>Setting</th><th>Effect</th><th>When to change it</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td class="bb-table-key">MaxProcessingSize</td>
+                    <td>Quadratic. The dominant control.</td>
+                    <td>Lower until the smallest symbol you care about stops decoding, then go one step back.</td>
+                </tr>
+                <tr>
+                    <td class="bb-table-key">Formats</td>
+                    <td>Linear in the number of decoders that run.</td>
+                    <td>Always. Most applications need one or two symbologies.</td>
+                </tr>
+                <tr>
+                    <td class="bb-table-key">Region</td>
+                    <td>Proportional to the area kept.</td>
+                    <td>Whenever the interface asks the user to aim.</td>
+                </tr>
+                <tr>
+                    <td class="bb-table-key">MaxScanLines</td>
+                    <td>Linear, and only for linear symbologies.</td>
+                    <td>Lower for aimed scanning, raise for hands-off scanning.</td>
+                </tr>
+                <tr>
+                    <td class="bb-table-key">TryHarder</td>
+                    <td>Roughly triples matrix detection cost.</td>
+                    <td>Still images only; it is off for live frames by design.</td>
+                </tr>
+                <tr>
+                    <td class="bb-table-key">AllowInverted</td>
+                    <td>Doubles the cost of frames that find nothing.</td>
+                    <td>Only when white-on-black symbols are expected.</td>
+                </tr>
+                <tr>
+                    <td class="bb-table-key">DownsampleFactor</td>
+                    <td>Quadratic, applied inside the grayscale pass.</td>
+                    <td>When frames arrive larger than you asked for and you cannot change the source.</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
 
 @code {
     private sealed record BenchmarkRow(string Name, double Median, double Best, double Worst, bool Found, bool ExpectedFound);

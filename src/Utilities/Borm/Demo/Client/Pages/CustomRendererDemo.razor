@@ -1,24 +1,25 @@
 ﻿@page "/custom-renderer"
 
-<PageTitle>Custom renderer</PageTitle>
+<PageTitle>Custom renderer · Borm</PageTitle>
 
-<div class="demo-intro">
+<div class="bb-intro">
     <h1>Custom renderer</h1>
-    <p>Renderers are pluggable. The <em>rating</em> field below is drawn by a custom star-rating component registered against the key <code>"rating"</code> — the engine, validation and state are unchanged.</p>
+    <p class="bb-subtitle">Renderers are pluggable. The <em>rating</em> field below is drawn by a custom star-rating component registered against the key <code>"rating"</code> — the engine, validation and state are unchanged.</p>
 </div>
 
-<div class="demo-card">
+<div class="bb-demo">
+    <div class="bb-demo-bar"><span class="bb-demo-label">Live form</span></div>
     <BormView Definition="_schema" Data="_data" OnValidSubmit="HandleSubmit" SubmitText="Send feedback" />
 </div>
 
 @if (_submitted)
 {
-    <div class="demo-result"><strong>Thanks ✓</strong> <pre>@_json</pre></div>
+    <div class="bb-note bb-note-success demo-result"><strong>Thanks ✓</strong><pre>@_json</pre></div>
 }
 
-<details class="demo-source">
-    <summary>View source</summary>
-    <pre><code>@Source</code></pre>
+<details class="bb-source demo-source">
+    <summary class="btn btn-secondary">View source</summary>
+    <pre class="bb-code"><code>@Source</code></pre>
 </details>
 
 @code {

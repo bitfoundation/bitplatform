@@ -4,9 +4,9 @@
     <td>@Product.Name</td>
     <td>@Product.Category</td>
     <td>@Product.Price.ToString("C")</td>
-    <td class="@(Product.Stock == 0 ? "error" : "")">@(Product.Stock == 0 ? "sold out" : Product.Stock.ToString())</td>
-    <td>@Product.Rating ★</td>
-    <td><button @onclick="() => OnAdd.InvokeAsync(Product)" disabled="@(Product.Stock == 0)">Add</button></td>
+    <td class="@(Product.Stock == 0 ? "demo-sold-out" : "")">@(Product.Stock == 0 ? "sold out" : Product.Stock.ToString())</td>
+    <td class="bb-nowrap">@Product.Rating ★</td>
+    <td class="bb-table-action"><button type="button" class="btn btn-secondary demo-btn-sm" @onclick="() => OnAdd.InvokeAsync(Product)" disabled="@(Product.Stock == 0)">Add</button></td>
 </tr>
 
 @code {

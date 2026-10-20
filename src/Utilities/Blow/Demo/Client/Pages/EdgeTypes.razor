@@ -1,10 +1,10 @@
 ﻿@page "/edge-types"
 
-<PageTitle>Edge Types - bit Blow</PageTitle>
+<PageTitle>Edge Types · Blow</PageTitle>
 
-<div class="demo-header">
-    <h3>Edge Types &amp; Markers</h3>
-    <p class="text-muted">
+<div class="bb-intro">
+    <h1>Edge Types &amp; Markers</h1>
+    <p class="bb-subtitle">
         Four of the five built-in edge path algorithms: bezier, straight, step and smoothstep.
         The last two show <strong>arrow markers</strong> - a closed arrowhead and a double-ended edge.
     </p>
@@ -12,12 +12,14 @@
 
 <DemoCode />
 
-<div class="demo-canvas">
-    <BlowCanvas Nodes="_nodes" Edges="_edges" FitViewOnInit="true" DefaultEdgeType="BlowEdgeType.SmoothStep">
-        <BlowBackground />
-        <BlowControls />
-        <BlowMiniMap />
-    </BlowCanvas>
+<div class="bb-demo blow-demo bb-page-wide">
+    <div class="demo-canvas">
+        <BlowCanvas Nodes="_nodes" Edges="_edges" FitViewOnInit="true" DefaultEdgeType="BlowEdgeType.SmoothStep">
+            <BlowBackground />
+            <BlowControls />
+            <BlowMiniMap />
+        </BlowCanvas>
+    </div>
 </div>
 
 @code {

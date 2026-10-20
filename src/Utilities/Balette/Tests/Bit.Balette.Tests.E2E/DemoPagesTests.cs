@@ -5,14 +5,15 @@ namespace Bit.Balette.Tests.E2E;
 
 /// <summary>
 /// Whether every page of the demo actually works: it turns interactive, logs no error, and every button on it runs
-/// without one - the palette it opens included. An address that does not exist gets the not-found page, which is
-/// still a working page of the app.
+/// without one - the palette it opens and the site's own chrome (the docs search, the theme toggle) included. An
+/// address that does not exist gets the not-found page, which is still a working page of the app.
 /// </summary>
 [TestClass]
 public sealed class DemoPagesTests : BaletteTest
 {
     [TestMethod]
-    [DataRow("/", "bit Balette")]
+    [DataRow("/", LandingHeading)]
+    [DataRow("/getting-started", "Getting started")]
     [DataRow("/commands", "Registering commands")]
     [DataRow("/pages", "Nested pages & flows")]
     [DataRow("/search", "Search & ranking")]
@@ -23,7 +24,11 @@ public sealed class DemoPagesTests : BaletteTest
     [DataRow("/mcp-server", "MCP server")]
     public async Task Every_demo_page_loads_and_every_button_on_it_runs_without_console_errors(string path, string heading)
     {
-        var page = await NewPageAsync(await NewContextAsync());
+        // The copy button the site kit puts on every code sample writes to the clipboard, which a browser lets a
+        // click do; headless Chromium asks for the permission first, and refuses the write without it.
+        var options = DefaultContextOptions();
+        options.Permissions = ["clipboard-read", "clipboard-write"];
+        var page = await NewPageAsync(await NewContextAsync(options));
 
         var problems = new List<string>();
         page.Console += (_, message) => { if (message.Type == "error") lock (problems) problems.Add("console: " + message.Text); };
@@ -34,11 +39,12 @@ public sealed class DemoPagesTests : BaletteTest
         await WaitForReadyAsync(page);
         await Assertions.Expect(page.Locator("h1")).ToHaveTextAsync(heading);
 
-        // Every enabled button of the page, the top bar's included, must run without throwing: a dead or broken
-        // control is a demo bug. Many of them open the palette, which is modal - it is closed before the next click,
-        // so each click lands on its own button rather than on the backdrop.
-        var buttons = page.Locator(".app button:enabled:visible");
-        int count = Math.Min(await buttons.CountAsync(), 40);
+        // Every enabled button of the page, the site header's and the palette bar's included, must run without
+        // throwing: a dead or broken control is a demo bug. Many of them open a palette - Balette's, or the header's
+        // docs search - which is modal: it is closed before the next click, so each click lands on its own button
+        // rather than on a backdrop.
+        var buttons = page.Locator(".page button:enabled:visible");
+        int count = Math.Min(await buttons.CountAsync(), 60);
         for (int i = 0; i < count; i++)
         {
             await CloseThePaletteAsync(page);
@@ -75,19 +81,31 @@ public sealed class DemoPagesTests : BaletteTest
 
         Assert.AreEqual(404, response?.Status, "an unknown address did not answer 404");
         await WaitForReadyAsync(page);
-        await Assertions.Expect(page.Locator("h1")).ToHaveTextAsync("Not found");
+        await Assertions.Expect(page.Locator("h1")).ToHaveTextAsync("404");
 
         // The layout is there, and with it the palette: the way out is one search away.
         await OpenPaletteAsync(page);
         await TypeAsync(page, "introduction");
         await ExpectFirstItemAsync(page, "navigation.introduction");
         await page.Keyboard.PressAsync("Enter");
-        await Assertions.Expect(page.Locator("h1")).ToHaveTextAsync("bit Balette");
+        await Assertions.Expect(page.Locator("h1")).ToHaveTextAsync(LandingHeading);
     }
 
-    /// <summary>Esc until the palette is closed: a page or a confirmation takes one Esc each before the close.</summary>
+    /// <summary>The landing page's title (Pages/Home.razor).</summary>
+    private const string LandingHeading = "A command palette for Blazor, every decision in C#.";
+
+    /// <summary>
+    /// Esc until both palettes are closed: the header's docs search takes one, and in Balette's a page or a
+    /// confirmation takes one Esc each before the close.
+    /// </summary>
     private static async Task CloseThePaletteAsync(IPage page)
     {
+        if (await SiteSearch(page).IsVisibleAsync())
+        {
+            await page.Keyboard.PressAsync("Escape");
+            await Assertions.Expect(SiteSearch(page)).ToHaveCountAsync(0);
+        }
+
         for (int i = 0; i < 6; i++)
         {
             if (await Dialog(page).IsVisibleAsync() is false) return;

@@ -1,18 +1,19 @@
 ﻿@page "/wasm"
 
-<PageTitle>Standalone WebAssembly - bit Belemetry</PageTitle>
+<PageTitle>Standalone WebAssembly · Belemetry</PageTitle>
 
-<h1>Standalone WebAssembly</h1>
+<div class="bb-intro">
+    <h1>Standalone WebAssembly</h1>
+    <p class="bb-subtitle">
+        A standalone Blazor WebAssembly app has no server that renders its head, so there is no
+        <code>&lt;BelemetryScript /&gt;</code>: one registration in <code>Program.cs</code> and
+        <code>&lt;BelemetryInitializer /&gt;</code> in the root component are the whole setup. Both halves -
+        the browser script and the .NET pipeline - run in the reader's browser.
+    </p>
+</div>
 
-<p class="page-intro">
-    A standalone Blazor WebAssembly app has no server that renders its head, so there is no
-    <code>&lt;BelemetryScript /&gt;</code>: one registration in <code>Program.cs</code> and
-    <code>&lt;BelemetryInitializer /&gt;</code> in the root component are the whole setup. Both halves -
-    the browser script and the .NET pipeline - run in the reader's browser.
-</p>
-
-<div class="demo-section">
-    <h2>Register in Program.cs</h2>
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Register in Program.cs</h3>
     <p>
         The host kind is detected: no ASP.NET Core hosting in the container and a browser underneath means
         WebAssembly, so the .NET pipeline runs here and exports with the browser's own <code>fetch</code>.
@@ -22,8 +23,8 @@
     <CodeSnippet Code="@ProgramCode" Language="C#" Expanded="true" />
 </div>
 
-<div class="demo-section">
-    <h2>The initializer in App.razor</h2>
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> The initializer in App.razor</h3>
     <p>
         <code>&lt;BelemetryInitializer /&gt;</code> imports the script, starts it with the configuration from
         <code>Program.cs</code>, and connects it to .NET: consent and the session are shared, and the
@@ -32,8 +33,8 @@
     <CodeSnippet Code="@AppRazorCode" Language="Razor" Expanded="true" />
 </div>
 
-<div class="demo-section">
-    <h2>The optional script tag</h2>
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> The optional script tag</h3>
     <p>
         Adding the module to <code>index.html</code> makes the browser download it in parallel with the
         .NET runtime instead of after it, and puts <code>window.BitBelemetry</code> on the page before Blazor
@@ -41,7 +42,7 @@
         configuration.
     </p>
     <CodeSnippet Code="@IndexHtmlCode" Language="HTML" Expanded="true" />
-    <div class="callout">
+    <div class="bb-note">
         <p>
             Starting late costs less than it sounds: web vitals, the document-load span, resource timing and
             long tasks are read from the browser's buffered performance entries, so the script sees them
@@ -50,15 +51,15 @@
     </div>
 </div>
 
-<div class="demo-section">
-    <h2>Endpoints and CORS</h2>
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Endpoints and CORS</h3>
     <p>
         Everything is exported from the page's origin to the collector's, so the receiver has to allow the
         app's origin. For the OpenTelemetry Collector that is <code>cors.allowed_origins</code> on the OTLP
         HTTP receiver; for the .NET Aspire dashboard, <code>DASHBOARD__OTLP__CORS__ALLOWEDORIGINS</code>.
     </p>
     <CodeSnippet Code="@CollectorCode" Language="YAML" />
-    <div class="callout warn">
+    <div class="bb-note bb-note-warn">
         <p>
             A WebAssembly app's configuration is downloaded by every visitor, so exporter headers - API keys
             included - are public. For a vendor that needs a key, put a collector in between that adds it.
@@ -66,10 +67,10 @@
     </div>
 </div>
 
-<div class="demo-section">
-    <h2>What runs where</h2>
-    <div class="doc-table-wrap">
-        <table class="doc-table">
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> What runs where</h3>
+    <div class="bb-scroll">
+        <table class="bb-table">
             <tbody>
                 <tr><td>Browser instrumentation</td><td>The script: page views, clicks, web vitals, errors, fetch and XHR spans</td></tr>
                 <tr><td>.NET logs, traces, metrics</td><td>In the browser, exported every <code>Batch.FlushInterval</code> and <code>Metrics.ExportInterval</code>. Metrics rely on <code>System.Diagnostics.Metrics</code>, which the WebAssembly SDK turns off by default and the package turns back on (<code>MetricsSupport</code>)</td></tr>
@@ -87,8 +88,8 @@
     </p>
 </div>
 
-<div class="demo-section">
-    <h2>API</h2>
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> API</h3>
     <ApiTable TypeName="BelemetryInitializer" />
     <ApiTable TypeName="BelemetryOtlpExporterOptions" />
 </div>

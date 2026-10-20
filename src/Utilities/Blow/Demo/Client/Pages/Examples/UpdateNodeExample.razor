@@ -1,6 +1,6 @@
 ﻿@page "/examples/update-node"
 
-<PageTitle>Update Node - bit Blow</PageTitle>
+<PageTitle>Update Node · Blow</PageTitle>
 
 <ExampleScaffold Title="Update Node"
                  Summary="Update a node's label, color and position imperatively from outside the canvas, mirroring React Flow's updateNode example.">
@@ -8,13 +8,14 @@
         <label>label: <input value="@_label" @oninput="e => SetLabel(e.Value?.ToString())" /></label>
         <label>bg:
             <select @onchange="e => SetColor(e.Value?.ToString())">
-                <option value="#ffffff">white</option>
-                <option value="#dbeafe">blue</option>
-                <option value="#dcfce7">green</option>
-                <option value="#fee2e2">red</option>
+                @* Tints mixed into the node's own fill, so each one reads in both colour modes. *@
+                <option value="var(--bit-blow-node-bg)">default</option>
+                <option value="color-mix(in srgb, #3b82f6 22%, var(--bit-blow-node-bg))">blue</option>
+                <option value="color-mix(in srgb, #22c55e 22%, var(--bit-blow-node-bg))">green</option>
+                <option value="color-mix(in srgb, #ef4444 22%, var(--bit-blow-node-bg))">red</option>
             </select>
         </label>
-        <button class="btn btn-sm" @onclick="MoveRandom">Move randomly</button>
+        <button class="btn btn-secondary" @onclick="MoveRandom">Move randomly</button>
     </Toolbar>
     <ChildContent>
         <BlowCanvas @ref="_flow" Nodes="_nodes" Edges="_edges" FitViewOnInit="true">
@@ -33,7 +34,7 @@
 
     protected override void OnInitialized()
     {
-        _target = new BlowNode { Id = "1", Label = _label, Position = new(250, 120), Style = "background:#ffffff;" };
+        _target = new BlowNode { Id = "1", Label = _label, Position = new(250, 120), Style = "background:var(--bit-blow-node-bg);" };
         _nodes =
         [
             _target,

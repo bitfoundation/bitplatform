@@ -11,227 +11,231 @@
     silently vanish the day OPFS becomes available.
 </PageHeader>
 
+<StorageSwitcher />
+
 @if (_error is not null)
 {
-    <p class="error">@_error</p>
+    <div class="bb-note bb-note-danger" role="alert">@_error</div>
 }
 
-<div class="stack-lg">
-    <DemoCard Step="Configure"
-              Title="Preference order, and what counts as acceptable"
-              CodeTitle="Program.cs"
-              Code="@Snippets.Storage.Selection">
-        <Description>
-            <span>
-                Every registered provider is a candidate. <code>AllowNonPersistentFallback()</code>
-                is what makes in-memory acceptable at all - without it, an origin with no persistent
-                backend fails to open rather than quietly losing data on reload.
-            </span>
-        </Description>
-        <Try>
-            <span>
-                The session bar above is this API in action:
-                <strong>Move data</strong> migrates the image, <strong>Start empty</strong>
-                binds a fresh file without copying.
-            </span>
-        </Try>
-        <Extra>
-            <CodeBlock Title="Migrating an existing database" Language="csharp"
-                       Code="@Snippets.Storage.Migrate" Open="false" />
-        </Extra>
-    </DemoCard>
+<DemoCard Step="Configure"
+          Title="Preference order, and what counts as acceptable"
+          CodeTitle="Program.cs"
+          Code="@Snippets.Storage.Selection">
+    <Description>
+        Every registered provider is a candidate. <code>AllowNonPersistentFallback()</code>
+        is what makes in-memory acceptable at all - without it, an origin with no persistent
+        backend fails to open rather than quietly losing data on reload.
+    </Description>
+    <Try>
+        The session bar above is this API in action:
+        <strong>Move data</strong> migrates the image, <strong>Start empty</strong>
+        binds a fresh file without copying.
+    </Try>
+    <Extra>
+        <CodeBlock Title="Migrating an existing database" Language="csharp"
+                   Code="@Snippets.Storage.Migrate" Open="false" />
+    </Extra>
+</DemoCard>
 
-    <DemoCard Step="Inspect"
-              Title="Why this session landed where it did"
-              CodeTitle="BsqliteStorageResolution"
-              Code="@Snippets.Storage.Resolution">
-        <Description>
-            A resolution is a record of the whole decision, not just its outcome: every candidate,
-            its probe, and the reason it was passed over. That is what makes a support question
-            answerable without reproducing the user's browser.
-        </Description>
-        <ChildContent>
-            @if (_resolution is not null)
-            {
-                <p>
-                    Chosen backend: <span class="pill">@_resolution.Provider.Name</span>
-                    @if (_resolution.IsFirstChoice)
-                    {
-                        <span> - first choice in the configured order.</span>
-                    }
-                    else
-                    {
-                        <span> - a fallback; see the attempt table.</span>
-                    }
-                    @if (_resolution.WasDecidedByExistingData)
-                    {
-                        <span> The file was already bound here, so preference did not move it.</span>
-                    }
-                </p>
-                @if (_resolution.BetterProviderAvailable is { } better)
-                {
-                    <p class="warn">
-                        @better.Name is available and ranked higher, but the data lives here.
-                        <code>BsqliteStorageMigrationMode.AutomaticOnOpen</code> would copy, check the
-                        image, then flip the binding. This demo uses the default,
-                        <code>KeepExisting</code>.
-                    </p>
-                }
-                <p>
-                    Sticky binding in <code>localStorage</code>:
-                    <code>@(_binding ?? "(none - first create on this origin)")</code>
-                </p>
-                <div class="scroll-x">
-                    <table>
-                        <thead>
-                        <tr><th>Provider</th><th>Status</th><th>Explanation</th></tr>
-                        </thead>
-                        <tbody>
-                        @foreach (var attempt in _resolution.Attempts)
-                        {
-                            <tr>
-                                <td><code>@attempt.ProviderName</code></td>
-                                <td>@attempt.Status</td>
-                                <td>@(attempt.Explanation ?? attempt.Probe?.UnavailableReason ?? "-")</td>
-                            </tr>
-                        }
-                        </tbody>
-                    </table>
-                </div>
-            }
-        </ChildContent>
-    </DemoCard>
-
-    <DemoCard Step="Capabilities"
-              Title="What this backend can honour"
-              CodeTitle="Provider capabilities"
-              Code="@Snippets.Storage.Capabilities">
-        <Description>
-            <span>
-                The core enforces these flags; it never special-cases OPFS against IndexedDB in
-                SQL. A backend that cannot honour <code>ATTACH</code> or
-                <code>PRAGMA page_size</code> fails in <code>BsqliteFeatureGuards</code> instead of
-                corrupting the file - see <a href="limits">Limits</a>.
-            </span>
-        </Description>
-        <ChildContent>
-            @if (_caps is not null)
-            {
-                <div class="scroll-x">
-                    <table>
-                        <tbody>
-                        <tr><th>Engine build</th><td>@_caps.RequiredBuild</td></tr>
-                        <tr><th>Survives reload</th><td>@SampleFormat.YesNo(_caps.IsPersistent)</td></tr>
-                        <tr><th>Multiple connections</th><td>@SampleFormat.YesNo(_caps.SupportsMultipleConnections)</td></tr>
-                        <tr><th>Concurrent reads</th><td>@SampleFormat.YesNo(_caps.SupportsConcurrentReads)</td></tr>
-                        <tr><th>Relaxed durability</th><td>@SampleFormat.YesNo(_caps.SupportsRelaxedDurability)</td></tr>
-                        <tr><th>Multi-database transactions</th><td>@SampleFormat.YesNo(_caps.SupportsMultiDatabaseTransactions)</td></tr>
-                        <tr><th>Can change page size</th><td>@SampleFormat.YesNo(_caps.CanChangePageSize)</td></tr>
-                        <tr><th>Contexts</th><td>@_caps.SupportedContexts</td></tr>
-                        </tbody>
-                    </table>
-                </div>
-            }
-        </ChildContent>
-    </DemoCard>
-
-    <DemoCard Step="Probe"
-              Title="Ask every backend what it can do here"
-              CodeTitle="Probing providers"
-              Code="@Snippets.Storage.Probe">
-        <Description>
-            A probe reports availability, quota when the browser will say, and the raw environment
-            facts behind the verdict. Unavailable is a result, never an exception, so selection can
-            continue and still explain itself afterwards.
-        </Description>
-        <Try>
-            <span>Probe now, then compare the numbers after importing a larger database on Admin.</span>
-        </Try>
-        <ChildContent>
-            <button type="button" class="secondary" @onclick="ProbeAllAsync" disabled="@_busy">Probe now</button>
-            @if (_probes.Count > 0)
-            {
-                <div class="scroll-x">
-                    <table>
-                        <thead>
-                        <tr><th>Provider</th><th>Available</th><th>Usage / quota</th><th>Why / environment</th></tr>
-                        </thead>
-                        <tbody>
-                        @foreach (var row in _probes)
-                        {
-                            <tr>
-                                <td><code>@row.Name</code></td>
-                                <td>@SampleFormat.YesNo(row.Probe.IsAvailable)</td>
-                                <td>
-                                    @SampleFormat.Bytes(row.Probe.UsageBytes)
-                                    /
-                                    @SampleFormat.Bytes(row.Probe.QuotaBytes)
-                                </td>
-                                <td>
-                                    @if (!row.Probe.IsAvailable)
-                                    {
-                                        @row.Probe.UnavailableReason
-                                    }
-                                    else if (row.Probe.Environment.Count == 0)
-                                    {
-                                        <span>-</span>
-                                    }
-                                    else
-                                    {
-                                        @string.Join(", ", row.Probe.Environment.Select(kv => $"{kv.Key}={kv.Value}"))
-                                    }
-                                </td>
-                            </tr>
-                        }
-                        </tbody>
-                    </table>
-                </div>
-            }
-        </ChildContent>
-    </DemoCard>
-
-    <DemoCard Step="Permission"
-              Title="Ask the browser not to evict you"
-              CodeTitle="Persistent storage"
-              Code="@Snippets.Storage.Persistence">
-        <Description>
-            Persistent storage is granted per origin, not per backend. Without it, any of the
-            persistent backends may be cleared under storage pressure - which is a product
-            decision, so the library exposes the call rather than making it for you.
-        </Description>
-        <ChildContent>
+<DemoCard Step="Inspect"
+          Title="Why this session landed where it did"
+          CodeTitle="BsqliteStorageResolution"
+          Code="@Snippets.Storage.Resolution">
+    <Description>
+        A resolution is a record of the whole decision, not just its outcome: every candidate,
+        its probe, and the reason it was passed over. That is what makes a support question
+        answerable without reproducing the user's browser.
+    </Description>
+    <ChildContent>
+        @if (_resolution is null)
+        {
+            <p class="bb-muted"><span class="bb-spinner"></span> Opening this tab's database…</p>
+        }
+        else
+        {
             <p>
-                Currently:
-                <strong>@(_persisted is null ? "not requested yet" : _persisted.Value ? "granted" : "denied")</strong>
+                Chosen backend: <span class="bb-badge">@_resolution.Provider.Name</span>
+                @if (_resolution.IsFirstChoice)
+                {
+                    <span> - first choice in the configured order.</span>
+                }
+                else
+                {
+                    <span> - a fallback; see the attempt table.</span>
+                }
+                @if (_resolution.WasDecidedByExistingData)
+                {
+                    <span> The file was already bound here, so preference did not move it.</span>
+                }
             </p>
-            <button type="button" class="secondary" @onclick="RequestPersistenceAsync" disabled="@_busy">
+            @if (_resolution.BetterProviderAvailable is { } better)
+            {
+                <div class="bb-note bb-note-warn">
+                    @better.Name is available and ranked higher, but the data lives here.
+                    <code>BsqliteStorageMigrationMode.AutomaticOnOpen</code> would copy, check the
+                    image, then flip the binding. This demo uses the default,
+                    <code>KeepExisting</code>.
+                </div>
+            }
+            <p>
+                Sticky binding in <code>localStorage</code>:
+                <code>@(_binding ?? "(none - first create on this origin)")</code>
+            </p>
+            <div class="bb-scroll">
+                <table class="bb-table bq-grid">
+                    <thead>
+                    <tr><th>Provider</th><th>Status</th><th>Explanation</th></tr>
+                    </thead>
+                    <tbody>
+                    @foreach (var attempt in _resolution.Attempts)
+                    {
+                        <tr>
+                            <td class="bq-nowrap">@attempt.ProviderName</td>
+                            <td>@attempt.Status</td>
+                            <td>@(attempt.Explanation ?? attempt.Probe?.UnavailableReason ?? "-")</td>
+                        </tr>
+                    }
+                    </tbody>
+                </table>
+            </div>
+        }
+    </ChildContent>
+</DemoCard>
+
+<DemoCard Step="Capabilities"
+          Title="What this backend can honour"
+          CodeTitle="Provider capabilities"
+          Code="@Snippets.Storage.Capabilities">
+    <Description>
+        The core enforces these flags; it never special-cases OPFS against IndexedDB in
+        SQL. A backend that cannot honour <code>ATTACH</code> or
+        <code>PRAGMA page_size</code> fails in <code>BsqliteFeatureGuards</code> instead of
+        corrupting the file - see <a href="limits">Limits</a>.
+    </Description>
+    <ChildContent>
+        @if (_caps is null)
+        {
+            <p class="bb-muted"><span class="bb-spinner"></span> Opening this tab's database…</p>
+        }
+        else
+        {
+            <dl class="bb-params">
+                <dt>Engine build</dt><dd>@_caps.RequiredBuild</dd>
+                <dt>Survives reload</dt><dd>@SampleFormat.YesNo(_caps.IsPersistent)</dd>
+                <dt>Multiple connections</dt><dd>@SampleFormat.YesNo(_caps.SupportsMultipleConnections)</dd>
+                <dt>Concurrent reads</dt><dd>@SampleFormat.YesNo(_caps.SupportsConcurrentReads)</dd>
+                <dt>Relaxed durability</dt><dd>@SampleFormat.YesNo(_caps.SupportsRelaxedDurability)</dd>
+                <dt>Multi-database transactions</dt><dd>@SampleFormat.YesNo(_caps.SupportsMultiDatabaseTransactions)</dd>
+                <dt>Can change page size</dt><dd>@SampleFormat.YesNo(_caps.CanChangePageSize)</dd>
+                <dt>Contexts</dt><dd>@_caps.SupportedContexts</dd>
+            </dl>
+        }
+    </ChildContent>
+</DemoCard>
+
+<DemoCard Step="Probe"
+          Title="Ask every backend what it can do here"
+          CodeTitle="Probing providers"
+          Code="@Snippets.Storage.Probe">
+    <Description>
+        A probe reports availability, quota when the browser will say, and the raw environment
+        facts behind the verdict. Unavailable is a result, never an exception, so selection can
+        continue and still explain itself afterwards.
+    </Description>
+    <Try>Probe now, then compare the numbers after importing a larger database on <a href="admin">Database files</a>.</Try>
+    <ChildContent>
+        <div class="bb-toolbar">
+            <button type="button" class="btn btn-secondary" @onclick="ProbeAllAsync" disabled="@_busy">Probe now</button>
+        </div>
+        @if (_probes.Count > 0)
+        {
+            <div class="bb-scroll">
+                <table class="bb-table bq-grid">
+                    <thead>
+                    <tr><th>Provider</th><th>Available</th><th>Usage / quota</th><th>Why / environment</th></tr>
+                    </thead>
+                    <tbody>
+                    @foreach (var row in _probes)
+                    {
+                        <tr>
+                            <td class="bq-nowrap">@row.Name</td>
+                            <td>@SampleFormat.YesNo(row.Probe.IsAvailable)</td>
+                            <td class="bq-nowrap">
+                                @SampleFormat.Bytes(row.Probe.UsageBytes)
+                                /
+                                @SampleFormat.Bytes(row.Probe.QuotaBytes)
+                            </td>
+                            <td>
+                                @if (!row.Probe.IsAvailable)
+                                {
+                                    @row.Probe.UnavailableReason
+                                }
+                                else if (row.Probe.Environment.Count == 0)
+                                {
+                                    <span>-</span>
+                                }
+                                else
+                                {
+                                    @string.Join(", ", row.Probe.Environment.Select(kv => $"{kv.Key}={kv.Value}"))
+                                }
+                            </td>
+                        </tr>
+                    }
+                    </tbody>
+                </table>
+            </div>
+        }
+    </ChildContent>
+</DemoCard>
+
+<DemoCard Step="Permission"
+          Title="Ask the browser not to evict you"
+          CodeTitle="Persistent storage"
+          Code="@Snippets.Storage.Persistence">
+    <Description>
+        Persistent storage is granted per origin, not per backend. Without it, any of the
+        persistent backends may be cleared under storage pressure - which is a product
+        decision, so the library exposes the call rather than making it for you.
+    </Description>
+    <ChildContent>
+        <div class="bb-toolbar">
+            <button type="button" class="btn btn-secondary" @onclick="RequestPersistenceAsync" disabled="@_busy">
                 Request persistent storage
             </button>
-        </ChildContent>
-    </DemoCard>
-
-    <section class="card">
-        <h2>The four backends</h2>
-        <div class="scroll-x">
-            <table>
-                <thead><tr><th>Provider</th><th>Character</th></tr></thead>
-                <tbody>
-                @foreach (var provider in Database.Providers)
-                {
-                    <tr>
-                        <td>
-                            <span class="storage-dot" data-name="@provider.Name"></span>
-                            <strong>@SampleStorage.Title(provider.Name)</strong>
-                            <span class="mono"> @provider.Name</span>
-                        </td>
-                        <td>@SampleStorage.Blurb(provider.Name)</td>
-                    </tr>
-                }
-                </tbody>
-            </table>
+            <span>
+                Currently:
+                <strong>@(_persisted is null ? "not requested yet" : _persisted.Value ? "granted" : "denied")</strong>
+            </span>
         </div>
-    </section>
-</div>
+    </ChildContent>
+</DemoCard>
+
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> The four backends</h3>
+    <p class="bb-card-desc">
+        Every provider this site registers, in its preference order. Each lives in a namespace of its own and is
+        registered with <code>AddStorageProvider&lt;T&gt;()</code>.
+    </p>
+    <div class="bb-scroll">
+        <table class="bb-table bq-grid bq-grid-prose">
+            <thead><tr><th>Provider</th><th>Character</th></tr></thead>
+            <tbody>
+            @foreach (var provider in Database.Providers)
+            {
+                <tr>
+                    <td class="bq-nowrap">
+                        <span class="bq-storage-dot" data-name="@provider.Name" aria-hidden="true"></span>
+                        <strong>@SampleStorage.Title(provider.Name)</strong>
+                        <span class="bb-mono bb-soft"> @provider.Name</span>
+                    </td>
+                    <td>@SampleStorage.Blurb(provider.Name)</td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    </div>
+</section>
 
 @code {
     private BsqliteStorageResolution? _resolution;

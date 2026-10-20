@@ -1,10 +1,10 @@
 ﻿@page "/json-schema"
 
-<PageTitle>JSON Schema</PageTitle>
+<PageTitle>JSON Schema · Borm</PageTitle>
 
-<div class="demo-intro">
+<div class="bb-intro">
     <h1>JSON Schema</h1>
-    <p>
+    <p class="bb-subtitle">
         Edit the JSON Schema on the left and the form regenerates on the right — no compiled model
         required. Alongside the standard keywords (<code>$ref</code>, <code>allOf</code>,
         <code>if</code>/<code>then</code>, <code>dependentRequired</code>, <code>enum</code>,
@@ -14,22 +14,24 @@
     </p>
 </div>
 
-<div class="demo-split">
-    <div>
-        <textarea @bind="_json" @bind:event="oninput" spellcheck="false" aria-label="JSON Schema"></textarea>
-        <div style="margin-top:.75rem; display:flex; gap:.5rem; flex-wrap:wrap">
-            <button class="bit-borm-btn bit-borm-btn--primary" @onclick="Rebuild">Apply schema</button>
-            <button class="bit-borm-btn" @onclick="ExportRoundTrip">Export (round-trip)</button>
-            <button class="bit-borm-btn" @onclick="LoadConditional">Load conditional example</button>
-            <button class="bit-borm-btn" @onclick="LoadWizard">Load wizard example</button>
+<div class="bb-split bb-page-wide">
+    <div class="bb-demo">
+        <div class="bb-demo-bar"><span class="bb-demo-label">Schema</span></div>
+        <textarea class="demo-json-editor" @bind="_json" @bind:event="oninput" spellcheck="false" aria-label="JSON Schema"></textarea>
+        <div class="bb-toolbar">
+            <button type="button" class="btn btn-primary" @onclick="Rebuild">Apply schema</button>
+            <button type="button" class="btn btn-secondary" @onclick="ExportRoundTrip">Export (round-trip)</button>
+            <button type="button" class="btn btn-secondary" @onclick="LoadConditional">Load conditional example</button>
+            <button type="button" class="btn btn-secondary" @onclick="LoadWizard">Load wizard example</button>
         </div>
         @if (_error is not null)
         {
-            <p style="color:#dc2626; font-size:.85rem" role="alert">@_error</p>
+            <p class="bb-note bb-note-danger demo-json-error" role="alert">@_error</p>
         }
     </div>
 
-    <div class="demo-card">
+    <div class="bb-demo">
+        <div class="bb-demo-bar"><span class="bb-demo-label">The form it becomes</span></div>
         @if (_schema is not null)
         {
             <BormView @key="_version" Definition="_schema" Data="_data"
@@ -40,12 +42,12 @@
 
 @if (_submitted)
 {
-    <div class="demo-result"><strong>Submitted values ✓</strong> <pre>@_resultJson</pre></div>
+    <div class="bb-note bb-note-success demo-result"><strong>Submitted values ✓</strong><pre>@_resultJson</pre></div>
 }
 
-<details class="demo-source">
-    <summary>View source</summary>
-    <pre><code>@Source</code></pre>
+<details class="bb-source demo-source">
+    <summary class="btn btn-secondary">View source</summary>
+    <pre class="bb-code"><code>@Source</code></pre>
 </details>
 
 @code {

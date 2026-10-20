@@ -1,6 +1,6 @@
 using System.Text;
 using Bit.Bmotion.Demo.Server.Dtos;
-using Bit.Bmotion.Demo.Client.Shared;
+using Bit.Bmotion.Demo.Client;
 
 namespace Bit.Bmotion.Demo.Server.Services;
 
@@ -298,10 +298,10 @@ public static class BmotionSearchIndex
                 "GetBmotionEasings()", easing.Feel, $"{easing.Direction} {easing.Family}"));
         }
 
-        foreach (var page in NavItem.All)
+        foreach (var page in DocsCatalog.AllPages)
         {
             entries.Add(new Entry("Demo page", page.Title, "Live example",
-                $"GetBmotionSourceFile(path: \"{page.SourcePath}\")", page.Description, page.Keywords));
+                $"GetBmotionSourceFile(path: \"{BmotionSourceCatalog.SourcePathOf(page)}\")", page.Description, page.Keywords));
         }
 
         foreach (var file in BmotionSourceCatalog.SourceFiles)

@@ -1,0 +1,66 @@
+﻿@implements IDisposable
+@inject DemoDbService Db
+
+@* Where this tab's demo database lives, on every page: OPFS when this tab won the Web Locks election,
+   an in-memory fallback when it did not, and how many rows it holds right now. Mounted next to the
+   router (Routes.razor) rather than inside a layout, so it opens the database once whichever page the
+   visitor lands on and survives every navigation.
+
+   data-storage says where the database ended up once it is open (Opfs, LockedFallback or
+   UnavailableFallback; Opening until then), which is what the E2E suite waits for before it acts. *@
+
+<div class="bd-status" data-storage="@(Db.IsOpen ? Db.Mode : StorageMode.Opening)"
+     title="@(Db.StorageNote ?? "Where this tab's demo database lives, and the todos it holds in memory")">
+    <span class="bb-dot @Dot" aria-hidden="true"></span>
+    <span class="bd-status-label">@Db.StorageLabel</span>
+    @if (Db.IsOpen)
+    {
+        <span class="bd-status-rows">@RowCount</span>
+    }
+</div>
+
+@code {
+    private bool _disposed;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            // Opening here means every page finds the database ready.
+            await Db.GetDatabaseAsync();
+        }
+        catch (Exception)
+        {
+            // The label reports the degraded state; individual pages surface the details.
+            return;
+        }
+
+        // The row count would otherwise only refresh when this component happens to re-render. Every
+        // write reaches storage within a flush interval and the trace fires on each storage call, so it
+        // is a cheap signal.
+        if (_disposed is false && Db.Trace is not null)
+        {
+            Db.Trace.Changed += OnStorageActivity;
+        }
+    }
+
+    private void OnStorageActivity() => InvokeAsync(StateHasChanged);
+
+    private string Dot => Db.Mode switch
+    {
+        StorageMode.Opfs => "bb-dot-success",
+        StorageMode.LockedFallback or StorageMode.UnavailableFallback => "bb-dot-warning",
+        _ => "",
+    };
+
+    private string RowCount => $"{Db.Todos.Count:N0} todos";
+
+    public void Dispose()
+    {
+        _disposed = true;
+        if (Db.Trace is not null)
+        {
+            Db.Trace.Changed -= OnStorageActivity;
+        }
+    }
+}

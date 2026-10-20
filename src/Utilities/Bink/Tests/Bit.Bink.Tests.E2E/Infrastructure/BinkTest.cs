@@ -79,7 +79,7 @@ public abstract class BinkTest
         await page.WaitForFunctionAsync(
             """
             () => {
-              if (document.querySelector('.app')?.dataset.interactive !== 'true') return false;
+              if (document.querySelector('.page')?.dataset.interactive !== 'true') return false;
               const canvases = [...document.querySelectorAll('canvas[data-bink-layer="document"]')];
               return canvases.length > 0 && canvases.every(c => c.width > 0 && c.style.width !== '');
             }

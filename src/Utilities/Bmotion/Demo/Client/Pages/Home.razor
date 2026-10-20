@@ -1,337 +1,314 @@
 ﻿@page "/"
-@inject IJSRuntime JS
-
-@* The landing page. It is not a documentation page and does not get the docs shell around it -
-   no nav panel, no "on this page" rail, no reading column (see Layout/MainLayout.razor). Instead
-   it lays out its own full-bleed sections, alternating surfaces, and prints its own index into the
-   docs - which is the job the nav panel would otherwise be doing here.
-
-   Every animation on it is Bmotion animating itself. That is the whole argument the page has to
-   make, so the page makes it with the library rather than about it: the hero assembles, the tiles
-   answer the pointer, and the quick-start sample is the same four lines printed underneath it.
-
-   Its styles live under "Landing page" in wwwroot/css/app.css. *@
+@layout MainLayout
 
 <PageTitle>Bmotion - a Blazor-native animation library</PageTitle>
 
-<div class="homepage">
+@* The landing page: hero → proof strip → capability grid → code walkthrough → comparison with a
+   JavaScript animation library → persona tiles → FAQ → final call to action. Everything else on the
+   site is a documentation page under DocsLayout.
 
-    @* ── Hero ──────────────────────────────────────────────────────────────── *@
-    <section class="homepage-section hero-section">
-        <div class="homepage-section-content">
-            <div class="hero-copy">
-                <Bmotion Initial="Bm.To(opacity: 0, y: 12)"
-                         Animate="Bm.To(opacity: 1, y: 0)"
-                         Transition="Bm.Tween(0.4)">
-                    <a class="hero-eyebrow" href="/mcp-server">
-                        <Icon Path="@Icons.Sparkle" />
-                        Ships with an MCP server for AI agents
-                    </a>
-                </Bmotion>
+   Every animation on it is Bmotion animating itself. That is the whole argument the page has to
+   make, so it makes it with the library rather than about it: the hero assembles, and the tiles in
+   the window are the sample printed above them, live - they enter on a stagger and answer the
+   pointer. The site prerenders with BmPrerenderMode.Animate, so the entrance plays from the served
+   HTML before the runtime has loaded. *@
 
-                <Bmotion Initial="Bm.To(opacity: 0, y: 30)"
-                         Animate="Bm.To(opacity: 1, y: 0)"
-                         Transition="Bm.Spring(stiffness: 80, damping: 15)">
-                    <h1>Motion for Blazor, <span class="accent">written in C#</span></h1>
-                </Bmotion>
+<div class="bb-landing">
 
-                <Bmotion Initial="Bm.To(opacity: 0, y: 20)"
-                         Animate="Bm.To(opacity: 1, y: 0)"
-                         Transition="Bm.Tween(0.6, delay: 0.15)">
-                    <p class="hero-lead">
-                        Springs, gestures, layout animations and variants, inspired by Framer
-                        Motion and rebuilt for Blazor. All of the maths runs in C#, none of the
-                        JavaScript wiring is yours, and no animation library ships alongside it.
-                    </p>
-                </Bmotion>
+    @* ============================== Hero ============================== *@
 
-                <Bmotion Initial="Bm.To(opacity: 0, y: 15)"
-                         Animate="Bm.To(opacity: 1, y: 0)"
-                         Transition="Bm.Tween(0.5, delay: 0.28)">
-                    <div class="hero-actions">
-                        <a class="btn-primary" href="/basic">
-                            Get started
-                            <Icon Path="@Icons.ArrowRight" />
-                        </a>
-                        <a class="btn-secondary" target="_blank" rel="noopener noreferrer"
-                           href="https://github.com/bitfoundation/bitplatform">
-                            <span class="github-mark" aria-hidden="true"></span>
-                            View on GitHub
-                        </a>
-                    </div>
-                </Bmotion>
-
-                <Bmotion Initial="Bm.To(opacity: 0, y: 15)"
-                         Animate="Bm.To(opacity: 1, y: 0)"
-                         Transition="Bm.Tween(0.5, delay: 0.36)">
-                    <div class="install-line">
-                        <code><span class="prompt" aria-hidden="true">&gt;&nbsp;</span>@_install</code>
-                        <button type="button" class="install-copy" @onclick="CopyInstallAsync"
-                                aria-label="@(_installCopied ? "Install command copied to the clipboard" : "Copy the install command")">
-                            <Icon Path="@(_installCopied ? Icons.Check : Icons.Copy)" />
-                            @(_installCopied ? "Copied" : "Copy")
-                        </button>
-                    </div>
-                </Bmotion>
-            </div>
-
-            @* The hero says what the library does; this shows it. Each tile plays its own entrance
-               and answers the pointer, so the first thing a reader sees on the page is the thing
-               the page is about. *@
-            <div class="hero-stage">
-                @for (var i = 0; i < _tiles.Length; i++)
-                {
-                    var tile = _tiles[i];
-                    var delay = 0.45 + (i * 0.09);
-                    <Bmotion Initial="Bm.To(opacity: 0, y: 26, scale: 0.9)"
-                             Animate="Bm.To(opacity: 1, y: 0, scale: 1)"
-                             WhileHover="Bm.To(scale: 1.05, y: -6)"
-                             WhileTap="Bm.To(scale: 0.96)"
-                             Transition="Bm.Spring(stiffness: 220, damping: 20, delay: delay)">
-                        <a class="hero-tile" href="@($"/{tile.Href}")">
-                            <span class="hero-tile-icon">
-                                <Icon Path="@tile.Icon" />
-                            </span>
-                            <span class="hero-tile-title">@tile.Title</span>
-                            <span class="hero-tile-desc">@tile.Description</span>
-                        </a>
-                    </Bmotion>
-                }
+    <section class="bb-hero">
+        <div class="bb-hero-copy">
+            <Bmotion Initial="Bm.To(opacity: 0, y: 12)" Animate="Bm.To(opacity: 1, y: 0)" Transition="Bm.Tween(0.4)">
+                <span class="bb-hero-eyebrow">
+                    <span class="bb-dot bb-dot-success"></span>
+                    Open source · MIT · net8.0 / net9.0 / net10.0
+                </span>
+            </Bmotion>
+            <Bmotion Initial="Bm.To(opacity: 0, y: 30)" Animate="Bm.To(opacity: 1, y: 0)"
+                     Transition="Bm.Spring(stiffness: 80, damping: 15)">
+                <h1>Motion for Blazor,<br /><span class="bb-hero-accent">written in C#.</span></h1>
+            </Bmotion>
+            <Bmotion Initial="Bm.To(opacity: 0, y: 20)" Animate="Bm.To(opacity: 1, y: 0)" Transition="Bm.Tween(0.6, delay: 0.15)">
+                <p class="bb-hero-sub">
+                    Springs, gestures, keyframes, variants, drag, layout and exit animations, inspired by Framer
+                    Motion and rebuilt for Blazor. All of the maths runs in C#, none of the JavaScript wiring is
+                    yours, and no animation library ships alongside it.
+                </p>
+            </Bmotion>
+            <pre class="bb-code bb-hero-install">dotnet add package Bit.Bmotion</pre>
+            <div class="bb-hero-actions">
+                <a href="getting-started" class="btn btn-primary bb-btn-lg">Get started →</a>
+                <a href="basic" class="btn btn-secondary bb-btn-lg">Live demos</a>
+                <a class="btn btn-secondary bb-btn-lg" href="@SiteInfo.ProjectUrl" target="_blank" rel="noopener noreferrer">GitHub ↗</a>
             </div>
         </div>
-    </section>
 
-    @* ── Quick start ───────────────────────────────────────────────────────── *@
-    <section class="homepage-section alt-section">
-        <div class="homepage-section-content">
-            <span class="section-eyebrow">Quick start</span>
-            <h2>One component, two parameters</h2>
-            <p class="section-lead">
-                Where the element starts, and where it is going. Everything else &mdash; springs,
-                gestures, keyframes, drag, layout &mdash; is the same component with more of them.
-                Hover the box, then press it; the code underneath is the whole sample.
-            </p>
-
-            <div class="quick-start-body">
-                <div class="demo-row">
-                    <div class="demo-card">
-                        <Bmotion Initial="Bm.To(scale: 0, opacity: 0)"
-                                 Animate="Bm.To(scale: 1, opacity: 1)"
-                                 WhileHover="Bm.To(scale: 1.15, rotate: 5)"
-                                 WhileTap="Bm.To(scale: 0.9)"
-                                 Transition="Bm.Spring(stiffness: 300, damping: 20)">
-                            <div class="box" />
-                        </Bmotion>
-                    </div>
+        @* The sample, framed as a window: the markup on top, and what it renders underneath - live, so
+           the first thing a visitor can do here is hover or press something that springs back. *@
+        <div class="bb-hero-code">
+            <div class="bb-browser">
+                <div class="bb-browser-bar">
+                    <span class="bb-browser-dots" aria-hidden="true"><i></i><i></i><i></i></span>
+                    <span class="bb-browser-url">Tile.razor</span>
                 </div>
-
-                <CodeSnippet Code="@_quickStart" />
+                <pre class="bb-code">&lt;<span class="k">Bmotion</span> Initial=<span class="s">"Bm.To(opacity: 0, y: 26, scale: 0.9)"</span>
+         Animate=<span class="s">"Bm.To(opacity: 1, y: 0, scale: 1)"</span>
+         WhileHover=<span class="s">"Bm.To(scale: 1.05, y: -6)"</span>
+         WhileTap=<span class="s">"Bm.To(scale: 0.96)"</span>
+         Transition=<span class="s">"Bm.Spring(stiffness: 220, damping: 20)"</span>&gt;
+    &lt;<span class="k">a</span> class=<span class="s">"tile"</span> href=<span class="s">"springs"</span>&gt;Springs&lt;/<span class="k">a</span>&gt;
+&lt;/<span class="k">Bmotion</span>&gt;</pre>
+                <div class="home-hero-live">
+                    @for (var i = 0; i < _tiles.Length; i++)
+                    {
+                        var tile = _tiles[i];
+                        <Bmotion @key="tile.Href"
+                                 Initial="Bm.To(opacity: 0, y: 26, scale: 0.9)"
+                                 Animate="Bm.To(opacity: 1, y: 0, scale: 1)"
+                                 WhileHover="Bm.To(scale: 1.05, y: -6)"
+                                 WhileTap="Bm.To(scale: 0.96)"
+                                 Transition="@Bm.Spring(stiffness: 220, damping: 20).WithDelay(0.35 + i * 0.09)">
+                            <a class="home-tile" href="@tile.Href">
+                                <span class="home-tile-title">@tile.Title</span>
+                                <span class="home-tile-desc">@tile.Description</span>
+                            </a>
+                        </Bmotion>
+                    }
+                </div>
             </div>
         </div>
     </section>
 
-    @* ── Why ───────────────────────────────────────────────────────────────── *@
-    <section class="homepage-section">
-        <div class="homepage-section-content">
-            <span class="section-eyebrow">Why Bmotion</span>
-            <h2>A C# engine, and the browser's own compositor</h2>
-            <p class="section-lead">
-                Compositor-eligible work &mdash; tweens and settled springs on transform and
-                opacity, which is most enter, exit, hover and variant animation &mdash; is
-                pre-sampled in C# and handed to the browser's Web Animations API, so it plays off
-                the main thread with no per-frame interop at all. Everything else runs on the C#
-                rAF engine.
-            </p>
+    @* ============================== Proof strip ============================== *@
 
-            <div class="stat-row">
-                @foreach (var stat in _stats)
-                {
-                    <div class="stat">
-                        <span class="stat-value">@stat.Value</span>
-                        <span class="stat-label">@stat.Label</span>
-                    </div>
-                }
+    <section class="bb-proof">
+        <div><strong>Maths in C#</strong><span>springs, tweens, inertia, easing and colour interpolation</span></div>
+        <div><strong>Compositor first</strong><span>enter, exit, hover and variants run on the Web Animations API</span></div>
+        <div><strong>No JavaScript to write</strong><span>the small bridge imports itself on first use</span></div>
+        <div><strong>Prerender friendly</strong><span>enter animations play from the served HTML</span></div>
+    </section>
+
+    @* ============================== Feature grid ============================== *@
+
+    <section class="bb-section">
+        <p class="bb-overline">Capabilities</p>
+        <h2>What you can build with it</h2>
+        <p class="bb-section-sub">
+            Every card links to the demo that proves it, and every demo ships its own source one click away.
+        </p>
+        <div class="bb-grid">
+            @foreach (var (feature, index) in _capabilities.Select((feature, index) => (feature, index)))
+            {
+                <section class="bb-card" @key="feature.Href">
+                    <h3 class="bb-card-title"><span class="bb-dot @Dots[index % Dots.Length]"></span> @feature.Title</h3>
+                    <p class="bb-card-desc">@feature.Description</p>
+                    <a href="@feature.Href" class="btn btn-outline">@feature.Link →</a>
+                </section>
+            }
+        </div>
+    </section>
+
+    @* ============================== Code walkthrough ============================== *@
+
+    <section class="bb-section">
+        <p class="bb-overline">In practice</p>
+        <h2>See it in code</h2>
+        <div class="bb-walkthrough">
+            <div class="bb-walkthrough-row">
+                <div class="bb-walkthrough-copy">
+                    <span class="bb-step">01</span>
+                    <h3>One component, two states</h3>
+                    <p>
+                        <code>Initial</code> is where the element starts, <code>Animate</code> is where it is going.
+                        Change <code>Animate</code> in your own state and the element animates there from wherever
+                        it currently is - there is nothing to start or stop.
+                    </p>
+                    <a href="basic">Basics →</a>
+                </div>
+                <pre class="bb-code">&lt;<span class="k">Bmotion</span> Initial=<span class="s">"Bm.To(opacity: 0, y: 20)"</span>
+         Animate=<span class="s">"@@(_open ? Bm.To(opacity: 1, y: 0) : Bm.To(opacity: 0, y: 20))"</span>
+         Transition=<span class="s">"Bm.Spring(bounce: 0.4, duration: 0.6)"</span>&gt;
+    &lt;<span class="k">div</span>&gt;Hello, Bmotion!&lt;/<span class="k">div</span>&gt;
+&lt;/<span class="k">Bmotion</span>&gt;</pre>
             </div>
-
-            <p class="section-note">Everything in the box:</p>
-            <div class="badge-list">
-                @foreach (var feature in _features)
-                {
-                    <span class="badge">@feature</span>
-                }
+            <div class="bb-walkthrough-row">
+                <div class="bb-walkthrough-copy">
+                    <span class="bb-step">02</span>
+                    <h3>Name the states, stagger the children</h3>
+                    <p>
+                        Variants are named states declared once. A container switches its whole subtree to one of
+                        them, and its transition's <code>staggerChildren</code> brings the children in one after
+                        another.
+                    </p>
+                    <a href="variants">Variants →</a>
+                </div>
+                <pre class="bb-code">&lt;<span class="k">Bmotion</span> Variants=<span class="s">"_list"</span> InitialState=<span class="s">"hidden"</span>
+         State=<span class="s">'@@(_open ? "visible" : "hidden")'</span>
+         Transition=<span class="s">"Bm.Tween(staggerChildren: 0.08, delayChildren: 0.2)"</span>&gt;
+    &lt;<span class="k">ul</span>&gt;
+        &lt;<span class="k">Bmotion</span> Variants=<span class="s">"_item"</span>&gt;&lt;<span class="k">li</span>&gt;Item 1&lt;/<span class="k">li</span>&gt;&lt;/<span class="k">Bmotion</span>&gt;
+        &lt;<span class="k">Bmotion</span> Variants=<span class="s">"_item"</span>&gt;&lt;<span class="k">li</span>&gt;Item 2&lt;/<span class="k">li</span>&gt;&lt;/<span class="k">Bmotion</span>&gt;
+    &lt;/<span class="k">ul</span>&gt;
+&lt;/<span class="k">Bmotion</span>&gt;</pre>
+            </div>
+            <div class="bb-walkthrough-row">
+                <div class="bb-walkthrough-copy">
+                    <span class="bb-step">03</span>
+                    <h3>Animate out before Blazor removes it</h3>
+                    <p>
+                        An element that has left the DOM cannot animate. <code>BmotionAnimatePresence</code> keeps
+                        removed content rendered until its <code>Exit</code> has played - you still just flip a bool.
+                    </p>
+                    <a href="presence">AnimatePresence →</a>
+                </div>
+                <pre class="bb-code">&lt;<span class="k">BmotionAnimatePresence</span> IsPresent=<span class="s">"@@_show"</span> Mode=<span class="s">"BmPresenceMode.Wait"</span>&gt;
+    &lt;<span class="k">Bmotion</span> Initial=<span class="s">"Bm.To(opacity: 0)"</span>
+             Animate=<span class="s">"Bm.To(opacity: 1)"</span>
+             Exit=<span class="s">"Bm.To(opacity: 0)"</span>&gt;
+        &lt;<span class="k">div</span>&gt;I animate in and out!&lt;/<span class="k">div</span>&gt;
+    &lt;/<span class="k">Bmotion</span>&gt;
+&lt;/<span class="k">BmotionAnimatePresence</span>&gt;</pre>
             </div>
         </div>
     </section>
 
-    @* ── What is in the box ────────────────────────────────────────────────── *@
-    <section class="homepage-section alt-section">
-        <div class="homepage-section-content">
-            <span class="section-eyebrow">Capabilities</span>
-            <h2>What you can build with it</h2>
-            <p class="section-lead">
-                Every card below links to the demo that proves it, and every one of those demos
-                ships its own source.
-            </p>
+    @* ============================== Comparison ============================== *@
 
-            <div class="feature-grid">
-                @foreach (var feature in _capabilities)
-                {
-                    <a class="feature-card" href="@($"/{feature.Href}")">
-                        <span class="feature-card-icon">
-                            <Icon Path="@feature.Icon" />
-                        </span>
-                        <h3>@feature.Title</h3>
-                        <p>@feature.Description</p>
-                    </a>
-                }
-            </div>
+    <section class="bb-section">
+        <p class="bb-overline">Comparison</p>
+        <h2>Why not wrap a JavaScript animation library?</h2>
+        <p class="bb-section-sub">
+            A wrapper drives the DOM from a second engine behind Blazor's back, and every value it needs has to
+            cross the interop boundary. Bmotion keeps the engine in C#, next to the state it animates.
+        </p>
+        <div class="bb-scroll" tabindex="0" role="region" aria-label="A JavaScript animation library compared with Bmotion">
+            <table class="bb-table bb-compare">
+                <thead>
+                    <tr><th>Concern</th><th>JavaScript library + interop</th><th>Bmotion</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td>Where the maths runs</td><td>In the browser's JavaScript engine</td><td>In C# - springs, tweens, inertia, easing, colours and transforms</td></tr>
+                    <tr><td>What you write</td><td>Element ids, option objects and interop glue</td><td>Razor parameters: <code>Initial</code>, <code>Animate</code>, <code>WhileHover</code>, <code>Exit</code>...</td></tr>
+                    <tr><td>Exit animations</td><td>Hand-timed removal after the animation ends</td><td>Presence components hold the element until its exit has played</td></tr>
+                    <tr><td>Cheap animations</td><td>Up to the library</td><td>Pre-sampled in C# and handed to the Web Animations API - no per-frame interop</td></tr>
+                    <tr><td>Prerendering</td><td>Nothing moves until the script runs</td><td><code>BmPrerenderMode.Animate</code> plays enter animations in CSS from the served HTML</td></tr>
+                    <tr><td>Script to ship</td><td>The library plus its wrapper</td><td>One small module, imported on demand</td></tr>
+                </tbody>
+            </table>
         </div>
     </section>
 
-    @* ── Every demo ────────────────────────────────────────────────────────── *@
-    @* The landing page has no nav panel, so the full index of the docs lives here instead: a
-       reader who arrives at the root should be able to reach any page without first having to
-       find their way into them. It is grouped exactly as the panel groups it, from the same
-       list. *@
-    <section class="homepage-section">
-        <div class="homepage-section-content">
-            <span class="section-eyebrow">Documentation</span>
-            <h2>Explore every demo</h2>
-            <p class="section-lead">
-                Twenty pages, in the order they are meant to be read. Press
-                <span class="kbd">Ctrl K</span> anywhere on the site to jump straight to one.
-            </p>
+    @* ============================== Persona CTAs ============================== *@
 
-            <div class="demo-index">
-                @foreach (var group in NavItem.Groups)
-                {
-                    <div class="demo-index-group">
-                        <h3>
-                            <Icon Path="@group.Icon" />
-                            @group.Category
-                        </h3>
-                        @foreach (var item in group.Items)
-                        {
-                            <a class="demo-index-link" href="@item.Url">@item.Title</a>
-                        }
-                    </div>
-                }
-            </div>
+    <section class="bb-section">
+        <p class="bb-overline">Where to start</p>
+        <h2>Choose your path</h2>
+        <div class="bb-grid">
+            <section class="bb-card">
+                <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> New to Bmotion?</h3>
+                <p class="bb-card-desc">Install the package, register one service and animate your first element in five minutes.</p>
+                <a href="getting-started" class="btn btn-primary">Getting started →</a>
+            </section>
+            <section class="bb-card">
+                <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Want to see it move?</h3>
+                <p class="bb-card-desc">A page of live samples for every feature - hover, press, drag and scroll them, each with its source.</p>
+                <a href="basic" class="btn btn-outline">Open the demos →</a>
+            </section>
+            <section class="bb-card">
+                <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Building with an AI agent?</h3>
+                <p class="bb-card-desc">This site is an MCP server: point your agent at <code>/mcp</code> and it measures a spring on the real engine instead of guessing.</p>
+                <a href="mcp-server" class="btn btn-outline">Try the MCP server →</a>
+            </section>
         </div>
     </section>
 
-    @* ── Closing call to action ────────────────────────────────────────────── *@
-    <section class="homepage-section alt-section cta-section">
-        <div class="homepage-section-content">
-            <h2>Start animating</h2>
-            <p class="section-lead">
-                Bmotion is part of bit platform, free and open source. The whole engine lives in
-                the repository, so you can read it, file an issue against it, or send a pull
-                request.
-            </p>
-            <div class="hero-actions">
-                <a class="btn-primary" href="/basic">
-                    Get started
-                    <Icon Path="@Icons.ArrowRight" />
-                </a>
-                <a class="btn-secondary" target="_blank" rel="noopener noreferrer"
-                   href="https://github.com/bitfoundation/bitplatform">
-                    <span class="github-mark" aria-hidden="true"></span>
-                    View on GitHub
-                </a>
-            </div>
+    @* ============================== FAQ ============================== *@
+
+    <section class="bb-section">
+        <p class="bb-overline">Questions</p>
+        <h2>Frequently asked</h2>
+        <div class="bb-faq">
+            <details>
+                <summary>Is this Framer Motion running through JavaScript interop?</summary>
+                <p>
+                    No. It is inspired by Motion (Framer Motion) and keeps its vocabulary, but the engine - springs,
+                    tweens, inertia, keyframes, easing, colour interpolation, gesture state and transform composition -
+                    is C#. JavaScript is used only as a thin bridge to browser APIs, and it imports itself the first
+                    time an animation runs.
+                </p>
+            </details>
+            <details>
+                <summary>Which render modes does it work in?</summary>
+                <p>
+                    Blazor WebAssembly is fully supported. On Blazor Server the compositor path works, so enter, exit,
+                    hover, tap and variant animations on transform and opacity play normally; features that need the
+                    per-frame loop - inertia, colour and dimension interpolation - become instant changes. It targets
+                    .NET 8, 9 and 10.
+                </p>
+            </details>
+            <details>
+                <summary>What happens while the page is still prerendered?</summary>
+                <p>
+                    By default an element is served at its <code>Initial</code> state and animates once the runtime is
+                    interactive. <code>BmPrerenderMode.Final</code> serves it at rest, and <code>BmPrerenderMode.Animate</code>
+                    - what this site uses - plays the enter animation in pure CSS straight from the served HTML.
+                </p>
+            </details>
+            <details>
+                <summary>Does it respect prefers-reduced-motion?</summary>
+                <p>
+                    Yes, by the policy you choose at registration. With <code>BmReducedMotionMode.User</code> transforms,
+                    layout and dimension changes snap while opacity and colour still animate - softer than switching
+                    everything off. <code>&lt;BmotionConfig ReduceMotion="true"&gt;</code> forces it for a subtree.
+                </p>
+            </details>
+        </div>
+    </section>
+
+    @* ============================== Final CTA ============================== *@
+
+    <section class="bb-final-cta">
+        <h2>Start animating</h2>
+        <p class="bb-section-sub">One package, one service - and every element on the page can move.</p>
+        <pre class="bb-code bb-hero-install">dotnet add package Bit.Bmotion</pre>
+        <div class="bb-hero-actions">
+            <a href="getting-started" class="btn btn-primary bb-btn-lg">Get started →</a>
+            <a href="basic" class="btn btn-secondary bb-btn-lg">Browse the demos</a>
         </div>
     </section>
 </div>
 
 @code {
-    /// <summary>A hero or feature tile: a headline capability, its one-line pitch and where it is shown.</summary>
-    private sealed record Tile(string Title, string Description, string Href, string Icon);
+    /// <summary>A capability: its headline, its one-line pitch, the demo that shows it and that link's label.</summary>
+    private sealed record Feature(string Title, string Description, string Href, string Link);
 
-    /// <summary>One of the numbers under the pitch, which is the part of it that can be checked.</summary>
-    private sealed record Stat(string Value, string Label);
+    /// <summary>A tile in the hero's live sample.</summary>
+    private sealed record Tile(string Title, string Description, string Href);
 
-    private const string _install = "dotnet add package Bit.Bmotion";
+    private static readonly string[] Dots = ["bb-dot-primary", "bb-dot-success", "bb-dot-warning"];
 
-    private bool _installCopied;
-
-    private readonly Stat[] _stats =
+    private static readonly Tile[] _tiles =
     [
-        new(".NET 8+", "Targets .NET 8, 9 and 10"),
-        new("0", "JavaScript dependencies"),
-        new("20", "Worked examples, with source"),
-        new("MIT", "Free and open source"),
+        new("Springs", "Real physics, not eased curves.", "springs"),
+        new("Gestures", "Hover, tap, focus and drag states.", "gestures"),
+        new("Variants", "Named states that cascade to children.", "variants"),
+        new("Layout", "FLIP transitions between two layouts.", "layout"),
     ];
 
-    private readonly string[] _features =
+    private static readonly Feature[] _capabilities =
     [
-        "Spring physics", "Tween", "Inertia", "Keyframes",
-        "Gestures", "Drag", "Reorder", "AnimatePresence", "Variants", "Split text",
-        "whileInView", "Layout FLIP", "MotionValue", "Scroll timelines",
-        "Sequences", "SVG paths", "OKLab", "Reduced motion", "Minimal JS"
+        new("Springs, tweens and inertia", "Stiffness and damping, or bounce and duration if that is how you think - plus the full easings.net family, per property if you want.", "springs", "Springs"),
+        new("Gestures", "WhileHover, WhileTap and WhileFocus overlay a state on the base animation and revert themselves. Tap is keyboard-accessible out of the box.", "gestures", "Gestures"),
+        new("Variants", "Name your states once, then switch a whole subtree to one of them and stagger the children into place - even from a per-element function.", "variants", "Variants"),
+        new("Keyframes", "Sequences of values with their own offsets, per-segment easing and repeat behaviour, written as plain collection expressions.", "keyframes", "Keyframes"),
+        new("Split text", "Headlines that assemble a character, a word or a line at a time - split in C#, so nothing re-splits on re-render and a screen reader still reads the sentence.", "split-text", "Split text"),
+        new("AnimatePresence", "Exit animations that run before the element actually leaves the DOM - for one element, a keyed list, or content being replaced.", "presence", "AnimatePresence"),
+        new("Drag and reorder", "Axis locks, container constraints, elastic edges, momentum - and lists that reorder themselves under the pointer without re-rendering.", "drag", "Drag"),
+        new("Layout animations", "FLIP the gap between two layouts, with border-radius correction and child counter-scaling handled for you.", "layout", "Layout"),
+        new("Scroll and viewport", "Hand a scroll-linked animation to the browser's native scroll timelines - no handler, no interop - or scrub it yourself as a motion value, or trigger it the first time an element comes into view.", "scroll", "Scroll"),
+        new("Programmatic control", "Animate by selector, interpolate a bare number, build a timeline with overlapping steps, then pause it and change its speed.", "programmatic", "Programmatic"),
+        new("SVG and motion paths", "Send an element along a path, draw a stroke on with pathLength, or morph one shape into another.", "motion-path", "Motion path"),
+        new("Accessibility and diagnostics", "prefers-reduced-motion that softens rather than deletes, keyboard-accessible taps, and an inspector that shows what the engine is doing.", "accessibility", "Accessibility"),
     ];
-
-    private readonly Tile[] _tiles =
-    [
-        new("Springs", "Real physics, not eased curves.", "springs", Icons.Pulse),
-        new("Gestures", "Hover, tap, focus and drag states.", "gestures", Icons.Pointer),
-        new("Variants", "Named states that cascade to children.", "variants", Icons.Layers),
-        new("Layout", "FLIP transitions between two layouts.", "layout", Icons.Layout),
-    ];
-
-    private readonly Tile[] _capabilities =
-    [
-        new("Springs, tweens and inertia", "Stiffness and damping, or bounce and duration if that is how you think - plus the full easings.net family, per property if you want.", "springs", Icons.Pulse),
-        new("Gestures", "WhileHover, WhileTap and WhileFocus overlay a state on the base animation and revert themselves. Tap is keyboard-accessible out of the box.", "gestures", Icons.Pointer),
-        new("Variants", "Name your states once, then switch a whole subtree to one of them and stagger the children into place - even from a per-element function.", "variants", Icons.Layers),
-        new("Keyframes", "Sequences of values with their own offsets, per-segment easing and repeat behaviour, written as plain collection expressions.", "keyframes", Icons.Keyframe),
-        new("Split text", "Headlines that assemble a character, a word or a line at a time - split in C#, so nothing re-splits on re-render and a screen reader still reads the sentence.", "split-text", Icons.Text),
-        new("AnimatePresence", "Exit animations that run before the element actually leaves the DOM - for one element, a keyed list, or content being replaced.", "presence", Icons.Presence),
-        new("Drag and reorder", "Axis locks, container constraints, elastic edges, momentum - and lists that reorder themselves under the pointer without re-rendering.", "drag", Icons.Drag),
-        new("Layout animations", "FLIP the gap between two layouts, with border-radius correction and child counter-scaling handled for you.", "layout", Icons.Layout),
-        new("Scroll and viewport", "Hand a scroll-linked animation to the browser's native scroll timelines - no handler, no interop - or scrub it yourself as a MotionValue, or trigger it the first time an element comes into view.", "scroll", Icons.Scroll),
-        new("Programmatic control", "Animate by selector, interpolate a bare number, build a timeline with overlapping steps, then pause it and change its speed.", "programmatic", Icons.Controls),
-        new("SVG and motion paths", "Send an element along a path, draw a stroke on with pathLength, or morph one shape into another.", "motion-path", Icons.Path),
-        new("Accessibility and diagnostics", "prefers-reduced-motion that softens rather than deletes, keyboard-accessible taps, and an inspector that shows what the engine is doing.", "accessibility", Icons.Accessibility),
-    ];
-
-    private async Task CopyInstallAsync()
-    {
-        try
-        {
-            _installCopied = await JS.InvokeAsync<bool>("bmCopyToClipboard", _install);
-        }
-        catch
-        {
-            // The command is printed next to the button, so a clipboard the browser refuses to
-            // hand over costs the reader a selection rather than the information.
-            _installCopied = false;
-        }
-    }
-
-    private const string _quickStart = """
-        @using Bit.Bmotion
-
-        <style>
-            .demo-card {
-                background: #F5F5F5; border: 1px solid #E0E0E0;
-                border-radius: 6px; padding: 2rem; min-height: 160px;
-                display: flex; align-items: center; justify-content: center;
-            }
-            .box {
-                width: 80px; height: 80px; border-radius: 10px; cursor: pointer;
-                background: linear-gradient(135deg, #1276C6, #FD7F36);
-            }
-        </style>
-
-        <div class="demo-card">
-            <Bmotion Initial="Bm.To(scale: 0, opacity: 0)"
-                     Animate="Bm.To(scale: 1, opacity: 1)"
-                     WhileHover="Bm.To(scale: 1.15, rotate: 5)"
-                     WhileTap="Bm.To(scale: 0.9)"
-                     Transition="Bm.Spring(stiffness: 300, damping: 20)">
-                <div class="box" />
-            </Bmotion>
-        </div>
-        """;
 }

@@ -36,7 +36,7 @@ public sealed class GlobalShortcutTests : BaletteTest
         await page.Keyboard.TypeAsync("gsc");
         await Assertions.Expect(field).ToHaveValueAsync("gsc");
         Assert.IsTrue(page.Url.EndsWith("/keyboard", StringComparison.Ordinal), $"typing in a text field ran a shortcut and moved to {page.Url}");
-        await Assertions.Expect(page.Locator(".statusbar")).ToContainTextAsync("nothing yet");
+        await Assertions.Expect(page.Locator(".demo-statusbar")).ToContainTextAsync("nothing yet");
 
         // A chord with a modifier is not typing, so it still opens the palette from the field.
         await OpenPaletteAsync(page);
@@ -97,10 +97,10 @@ public sealed class GlobalShortcutTests : BaletteTest
     public async Task Chords_run_their_commands_with_the_palette_closed()
     {
         var page = await OpenAsync("/commands");
-        var wordWrap = page.Locator("label.setting", new() { HasTextString = "Word wrap" }).Locator("input[type=checkbox]");
+        var wordWrap = page.Locator("label.demo-setting", new() { HasTextString = "Word wrap" }).Locator("input[type=checkbox]");
         await Assertions.Expect(wordWrap).ToBeCheckedAsync();
 
-        // Alt+Z, registered app-wide by the layout. Both commands answer KeepOpen, which keeps an open palette where it
+        // Alt+Z, registered app-wide by the palette host. Both commands answer KeepOpen, which keeps an open palette where it
         // was; with the palette closed - here it has not even been opened once since the page loaded - there is no
         // input to focus, and nothing may try to (a failure to do so is a fatal page error; see BaletteTest).
         await page.Keyboard.PressAsync("Alt+z");
@@ -111,7 +111,7 @@ public sealed class GlobalShortcutTests : BaletteTest
         // Ctrl+Up, registered by this page only, while it is on screen.
         await page.Keyboard.PressAsync("Control+ArrowUp");
         await page.Keyboard.PressAsync("Control+ArrowUp");
-        await Assertions.Expect(page.Locator(".counter")).ToHaveTextAsync("Counter: 2");
+        await Assertions.Expect(page.Locator(".demo-counter")).ToHaveTextAsync("Counter: 2");
         await ExpectClosedAsync(page);
     }
 

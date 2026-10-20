@@ -4,18 +4,33 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="bit Bortable (Bit.Bortable) - a Blazor-native drag-and-drop sortable list inspired by SortableJS: reorder items, drag them between lists, clone, swap and multi-drag, with the sorting engine written in C#." />
+    <meta name="theme-color" content="#FFFFFF" />
     <base href="/" />
+    @* No static <title> here: every page supplies its own through <PageTitle>, and with
+       prerendering the HeadOutlet emits a real <title> element into this head. *@
+    <meta name="description" content="bit Bortable (Bit.Bortable) - a Blazor-native drag-and-drop sortable list inspired by SortableJS: reorder items, drag them between lists, clone, swap and multi-drag, with the sorting engine written in C#." />
+
+    @* Link previews: the card a chat client or a social site unfurls is the first impression a
+       shared link makes. *@
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Bit.Bortable" />
+    <meta property="og:title" content="Bortable - drag-and-drop sortable lists for Blazor" />
+    <meta property="og:description" content="Reorder items, drag them between lists, clone, swap and multi-drag - with the sorting engine written in C#, not a JavaScript wrapper." />
+    <meta name="twitter:card" content="summary" />
+
     <ResourcePreloader />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    @* The site kit (app.css, theme.js, site.js - shared by every Utilities demo), then this demo's
+       own sample styles. *@
     <link rel="stylesheet" href="@Assets["app.css"]" />
+    <link rel="stylesheet" href="@Assets["demo.css"]" />
     @* The library's stylesheet. Unlike its script, it is not loaded on demand: without it the drag states -
        the ghost, the hidden original of an item previewed in another list, the swap target, the multi-drag
-       selection - are not drawn. It comes after app.css so its state rules win over the demo's item styles. *@
+       selection - are not drawn. It comes after demo.css so its state rules win over the demo's item styles. *@
     <link rel="stylesheet" href="@Assets["_content/Bit.Bortable/bit-bortable.css"]" />
+    @* Scoped-CSS bundle: includes the client project's *.razor.css files as well. *@
     <link rel="stylesheet" href="@Assets["Bit.Bortable.Demo.Server.styles.css"]" />
+    @* Synchronous on purpose: applies the light/dark theme before first paint. *@
+    <script src="@Assets["theme.js"]"></script>
     <ImportMap />
     <link rel="icon" type="image/png" href="favicon.png" />
     <HeadOutlet @rendermode="InteractiveWebAssembly" />
@@ -32,6 +47,7 @@
         <span class="dismiss">&#128473;</span>
     </div>
     <script src="@Assets["_framework/blazor.web.js"]"></script>
+    <script src="@Assets["site.js"]"></script>
 </body>
 
 </html>

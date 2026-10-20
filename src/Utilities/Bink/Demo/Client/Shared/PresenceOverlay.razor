@@ -3,9 +3,11 @@
 @implements IDisposable
 
 @* Draws the other participants' cursors and the stroke they are drawing right now. It sits over the canvas as
-   plain SVG and only this component re-renders when presence changes, not the page or the canvas. *@
+   plain SVG and only this component re-renders when presence changes, not the page or the canvas. Every colour
+   in it is the participant's own - content, like the ink - and it is drawn over the paper, so it needs nothing
+   from the site's theme; the label takes the site's typeface (demo.css, .bink-presence). *@
 
-<svg aria-hidden="true" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none;overflow:visible">
+<svg class="bink-presence" aria-hidden="true">
     @if (Session is not null && Canvas is not null)
     {
         BinkViewport viewport = Canvas.CurrentViewport;
@@ -24,7 +26,7 @@
                 <g transform="translate(@Number(at.X) @Number(at.Y))">
                     <path d="M0 0 L0 15 L4 11 L7 18 L10 17 L7 10 L12 10 Z" fill="@color" stroke="white" stroke-width="1" />
                     <rect x="12" y="16" rx="4" width="@Number(8 + (presence.Name?.Length ?? 0) * 7)" height="18" fill="@color" />
-                    <text x="16" y="29" fill="white" font-size="12" font-family="system-ui, sans-serif">@presence.Name</text>
+                    <text x="16" y="29" fill="white" font-size="12">@presence.Name</text>
                 </g>
             }
         }

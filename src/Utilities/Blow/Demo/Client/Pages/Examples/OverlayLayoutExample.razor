@@ -1,6 +1,6 @@
 ﻿@page "/examples/overlay-layout"
 
-<PageTitle>Overlay Layout - bit Blow</PageTitle>
+<PageTitle>Overlay Layout · Blow</PageTitle>
 
 <ExampleScaffold Title="Overlay Layout"
                  Summary="Controls, the minimap, panels and the attribution badge can all be anchored to any corner, and the control bar can hide individual buttons or show a lock toggle that freezes the canvas.">
@@ -22,7 +22,7 @@
             </select>
         </label>
         <label><input type="checkbox" checked="@_horizontal" @onchange="@(e => _horizontal = (bool)e.Value!)" /> Horizontal controls</label>
-        <span class="text-muted">Interactive: @(_interactive ? "on" : "locked")</span>
+        <span class="bb-muted">Interactive: @(_interactive ? "on" : "locked")</span>
     </Toolbar>
     <ChildContent>
         <BlowCanvas Nodes="_nodes"
@@ -32,7 +32,7 @@
                     NodesConnectable="_interactive"
                     ElementsSelectable="_interactive"
                     AttributionPosition="BlowPanelPosition.TopCenter">
-            <BlowBackground Variant="BlowBackgroundVariant.Cross" Gap="30" BgColor="#fbfbfd" Color="#cbd5e1" />
+            <BlowBackground Variant="BlowBackgroundVariant.Cross" Gap="30" BgColor="var(--bit-blow-surface)" Color="#94a3b8" />
             <BlowControls Position="_controlsPosition"
                       Orientation="@(_horizontal ? BlowControlsOrientation.Horizontal : BlowControlsOrientation.Vertical)"
                       ShowInteractive="true"

@@ -2,25 +2,78 @@
 @implements IAsyncDisposable
 @inject IJSRuntime JS
 
-<PageTitle>JS Interop</PageTitle>
+<PageTitle>JS interop · BevTools</PageTitle>
 
-<h1>JS Interop</h1>
-<p class="muted">Every call below goes through the <code>IJSRuntime</code> injected into this component, so BevTools → JS Interop attributes it to <code>Interop</code> with duration and result. JS → .NET callbacks are reported by the browser bridge.</p>
-
-<div class="row">
-    <button class="primary" @onclick="Measure">Measure element</button>
-    <button @onclick="() => Slow(400)">Slow call (400 ms busy JS)</button>
-    <button @onclick="Chatty">Chatty loop (120 calls)</button>
-    <button @onclick="ToggleCallbacks">@(_callbacks ? "Stop" : "Start") JS → .NET callbacks (every 200 ms)</button>
-    <button @onclick="ThrowInJs">JS function throws</button>
-    <button @onclick="UnhandledJs">Unhandled JS error + rejection</button>
-    <button @onclick="WriteStorage">Write localStorage/sessionStorage</button>
+<div class="bb-intro">
+    <p class="bb-overline">Scenario · JS interop</p>
+    <h1>JS interop</h1>
+    <p class="bb-subtitle">
+        Every call below goes through the <code>IJSRuntime</code> injected into this component and the JS module it
+        imports, so BevTools → JS Interop attributes it to <code>Interop</code> with its duration and result. JS → .NET
+        callbacks are reported by the browser bridge.
+    </p>
 </div>
 
-<div id="measure-target" class="card">
-    <h3>Measured element</h3>
-    <div>@_result</div>
-    <div class="muted">callbacks received: @_ticks</div>
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> The calls</h3>
+    <p class="bb-card-desc">
+        The functions live in <code>wwwroot/js/interop.js</code>: one measures the box below, one busy-waits for
+        400 ms, one is called 120 times in a loop, one throws, one leaves an error and a rejected promise unhandled,
+        one writes to <code>localStorage</code> and <code>sessionStorage</code>, and one calls back into .NET every
+        200 ms.
+    </p>
+
+    <div class="bb-demo">
+        <div class="bb-demo-bar"><span class="bb-demo-label">Live</span><RendererStatus /></div>
+
+        <div class="bb-toolbar">
+            <button type="button" class="btn btn-primary" @onclick="Measure">Measure element</button>
+            <button type="button" class="btn btn-secondary" @onclick="() => Slow(400)">Slow call (400 ms busy JS)</button>
+            <button type="button" class="btn btn-secondary" @onclick="Chatty">Chatty loop (120 calls)</button>
+            <button type="button" class="btn btn-secondary" @onclick="ToggleCallbacks">@(_callbacks ? "Stop" : "Start") JS → .NET callbacks (every 200 ms)</button>
+            <button type="button" class="btn btn-secondary" @onclick="ThrowInJs">JS function throws</button>
+            <button type="button" class="btn btn-secondary" @onclick="UnhandledJs">Unhandled JS error + rejection</button>
+            <button type="button" class="btn btn-secondary" @onclick="WriteStorage">Write localStorage/sessionStorage</button>
+        </div>
+
+        <div id="measure-target" class="demo-tile">
+            <h4 class="demo-tile-title">Measured element</h4>
+            <div class="bb-mono">@_result</div>
+            <div class="bb-muted">callbacks received: @_ticks</div>
+        </div>
+    </div>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> JS Interop: per call and per identifier</h3>
+    <p class="bb-card-desc">
+        The <strong>JS Interop</strong> panel counts the calls per identifier with their total, average and maximum
+        duration and how many failed, and lists the recent calls with the component that made each one and its
+        result. On the Server renderer every one of those calls is a round trip to the browser.
+    </p>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Diagnostics, Errors and Browser</h3>
+    <ul class="bb-detail-list">
+        <li><strong>Diagnostics</strong>: <em>Chatty loop</em> is excessive interop (more than 50 calls to one identifier in a second) and <em>Slow call</em> is slow interop (over 250 ms). The fix for both: batch the work into one JS function.</li>
+        <li><strong>Errors</strong>: the JS exception the page catches, and the unhandled error and rejection the browser bridge reports.</li>
+        <li><strong>Browser</strong> → read storage: <code>demo:auth_token</code> is redacted before it ever reaches .NET.</li>
+    </ul>
+    <div class="bb-try">
+        <a href="problems#problem-5" class="btn btn-outline">Problem 5 →</a>
+    </div>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Calls that are not this page's</h3>
+    <p class="bb-card-desc">
+        The panel shows every tracked call in the app, so the site around this page shows up too: the search box in
+        the header registers its keyboard shortcut once (<code>bitDemoSite.registerPalette</code>, from
+        <code>CommandPalette</code>) and locks the page scroll while it is open (<code>bitDemoSite.lockScroll</code>),
+        and the theme button calls <code>bitDemoTheme.toggle</code> from <code>Header</code>. The framework's own
+        calls - <code>FocusOnNavigate</code> moving focus after each navigation - are listed as well.
+    </p>
 </div>
 
 @code {

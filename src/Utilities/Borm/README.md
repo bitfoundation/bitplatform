@@ -92,12 +92,14 @@ Then render a `BormView` with a `Definition` and a `Model`, as above. The full w
 
 ## The demo
 
-The demo site, [borm.bitplatform.dev](https://borm.bitplatform.dev), is a set of working forms, one per topic of
-this guide: `/quickstart` (a schema from a C# type), `/builder` (the fluent builder and conditions), `/array`
-(repeaters and computed totals), `/wizard`, `/layout`, `/field-polish`, `/combobox-tags`, `/per-row-conditions`,
-`/settled-answers`, `/composition`, `/state-api`, `/validation`, `/dependent-fields`, `/cascading`, `/files`,
-`/json-schema` (a live JSON Schema editor with round-trip export), `/data-annotations`, `/fluent-validation` and
-`/custom-renderer`. Every page can show its own source.
+The demo site, [borm.bitplatform.dev](https://borm.bitplatform.dev), opens on an overview with a live form, and its
+documentation - starting at `/getting-started` - is a set of working forms, one per topic of this guide:
+`/quickstart` (a schema from a C# type), `/builder` (the fluent builder and conditions), `/array` (repeaters and
+computed totals), `/wizard`, `/layout`, `/field-polish`, `/combobox-tags`, `/per-row-conditions`, `/settled-answers`,
+`/composition`, `/state-api`, `/validation`, `/dependent-fields`, `/cascading`, `/files`, `/json-schema` (a live JSON
+Schema editor with round-trip export), `/data-annotations`, `/fluent-validation` and `/custom-renderer`. Every page can
+show its own source, and Ctrl+K (or `/`) searches them all. The site re-tints Borm's `--bit-borm-*` tokens to its own
+light and dark theme, which is what [Theming](#theming) describes.
 
 To run it locally:
 

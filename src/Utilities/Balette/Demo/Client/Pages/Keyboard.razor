@@ -3,112 +3,138 @@
 @inject IBaletteService Palette
 @inject BaletteOptions Options
 
-<PageTitle>Keyboard and shortcuts - bit Balette</PageTitle>
+<PageTitle>Keyboard and shortcuts · Balette</PageTitle>
 
-<h1>Keyboard &amp; shortcuts</h1>
-<p class="page-intro">
-    The palette is built to be driven without a mouse. Inside it every key has a job; outside it, any command can
-    carry a global shortcut - a chord such as <kbd>@Mod</kbd> <kbd>/</kbd> or a sequence such as <kbd>G</kbd> then
-    <kbd>S</kbd> - that runs it with the palette closed. Shortcuts are written once, as text, and displayed in the
-    platform's own symbols.
-</p>
-
-<h2 id="shortcuts">Inside the palette</h2>
-<table>
-    <thead>
-        <tr><th>Keys</th><th>Does</th></tr>
-    </thead>
-    <tbody>
-        <tr>
-            <td>
-                @foreach (var toggle in ToggleShortcuts)
-                {
-                    <BaletteShortcutHint Shortcut="toggle" IsMac="Palette.IsMac" Class="inline-hint" />
-                }
-            </td>
-            <td>Open or close (the toggle shortcuts of this app)</td>
-        </tr>
-        <tr><td><kbd>↑</kbd> <kbd>↓</kbd>, <kbd>Ctrl</kbd> <kbd>N</kbd> / <kbd>P</kbd>, <kbd>Ctrl</kbd> <kbd>J</kbd> / <kbd>K</kbd></td><td>Move, wrapping around at either end (J/K with <code>VimBindings</code>)</td></tr>
-        <tr><td><kbd>Home</kbd> <kbd>End</kbd> <kbd>PgUp</kbd> <kbd>PgDn</kbd></td><td>Jump to the first, the last, or ten rows on</td></tr>
-        <tr><td><kbd>Enter</kbd></td><td>Run, open a page, flip a toggle, or check a row on a multi-select page</td></tr>
-        <tr><td><kbd>@Mod</kbd> <kbd>Enter</kbd></td><td>Apply a multi-select page, or run the row's first secondary action</td></tr>
-        <tr><td><kbd>Tab</kbd>, <kbd>→</kbd> (empty box)</td><td>Open the action panel of the active row</td></tr>
-        <tr><td><kbd>Backspace</kbd>, <kbd>←</kbd> (empty box)</td><td>Back one page</td></tr>
-        <tr><td><kbd>Esc</kbd></td><td>Cancel a confirmation, then go back, then close</td></tr>
-        <tr><td><kbd>@Mod</kbd> <kbd>Shift</kbd> <kbd>P</kbd></td><td>Pin or unpin the active row</td></tr>
-        <tr><td><kbd>Shift</kbd> <kbd>Del</kbd></td><td>Forget the active row from the recents</td></tr>
-    </tbody>
-</table>
-
-<h2>Global shortcuts in this app</h2>
-<p>
-    Every command registered with a global shortcut, read from the registry right now - leave a page and its own
-    shortcuts disappear from this table, because they disappear from the palette. Close the palette and press one.
-</p>
-<div class="panel">
-    <table>
-        <thead>
-            <tr><th>Shortcut</th><th>Command</th><th>Group</th><th>Kind</th></tr>
-        </thead>
-        <tbody>
-            @foreach (var command in Palette.Commands.Where(c => c.Shortcut is not null && c.GlobalShortcut).OrderBy(c => c.Shortcut!.IsSequence).ThenBy(c => c.Group))
-            {
-                <tr>
-                    <td><BaletteShortcutHint Shortcut="command.Shortcut" IsMac="Palette.IsMac" /></td>
-                    <td>@command.Title</td>
-                    <td class="muted">@command.Group</td>
-                    <td>@(command.Shortcut!.IsSequence ? "sequence" : "chord")</td>
-                </tr>
-            }
-            <tr>
-                <td><BaletteShortcutHint Shortcut="NewIssueShortcut" IsMac="Palette.IsMac" /></td>
-                <td>New issue</td>
-                <td class="muted">Quick create</td>
-                <td>chord, declared in markup</td>
-            </tr>
-        </tbody>
-    </table>
-    <div class="statusbar" role="status">
-        <span>Last run: <strong>@(_last ?? "nothing yet")</strong></span>
-    </div>
+<div class="bb-intro">
+    <h1>Keyboard &amp; shortcuts</h1>
+    <p class="bb-subtitle">
+        The palette is built to be driven without a mouse. Inside it every key has a job; outside it, any command can
+        carry a global shortcut - a chord such as <kbd>@Mod</kbd> <kbd>/</kbd> or a sequence such as <kbd>G</kbd> then
+        <kbd>S</kbd> - that runs it with the palette closed. Shortcuts are written once, as text, and displayed in the
+        platform's own symbols.
+    </p>
 </div>
 
-<h2>Typing is not a shortcut</h2>
-<p>
-    A plain key pressed in a text box is typing, so <kbd>G</kbd> then <kbd>S</kbd> does nothing here. A chord with a
-    modifier still works - <kbd>@Mod</kbd> <kbd>K</kbd> opens the palette and <kbd>Alt</kbd> <kbd>Z</kbd> flips word
-    wrap - because nobody types those by accident.
-</p>
-<label class="field try-box">
-    Try it
-    <input type="text" placeholder="Type g then s here…" aria-label="Typing area" />
-</label>
+<PaletteBar />
 
-<h2>The options behind it</h2>
-<table>
-    <thead>
-        <tr><th>Option</th><th>Here</th><th>Effect</th></tr>
-    </thead>
-    <tbody>
-        <tr><td><code>ToggleShortcut</code></td><td><code>@Options.ToggleShortcut</code></td><td>Opens and closes the palette; <code>Mod</code> is ⌘ on macOS and Ctrl elsewhere.</td></tr>
-        <tr><td><code>AdditionalToggleShortcuts</code></td><td><code>@string.Join(", ", Options.AdditionalToggleShortcuts)</code></td><td>More keys for the same.</td></tr>
-        <tr><td><code>SequenceTimeoutMs</code></td><td><code>@Options.SequenceTimeoutMs</code></td><td>How long <kbd>G</kbd> waits for the next key.</td></tr>
-        <tr><td><code>SuppressShortcutsInEditableElements</code></td><td><code>@Options.SuppressShortcutsInEditableElements</code></td><td>Plain keys in inputs are typing, as above.</td></tr>
-        <tr><td><code>VimBindings</code></td><td><code>@Options.VimBindings</code></td><td><kbd>Ctrl</kbd> <kbd>J</kbd> / <kbd>K</kbd> move inside the list.</td></tr>
-    </tbody>
-</table>
-<pre><code>@ShortcutExample</code></pre>
+<section class="bb-card" id="shortcuts">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Inside the palette</h3>
+    <div class="bb-scroll">
+        <table class="bb-table">
+            <thead>
+                <tr><th>Keys</th><th>Does</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>
+                        @foreach (var toggle in ToggleShortcuts)
+                        {
+                            <BaletteShortcutHint Shortcut="toggle" IsMac="Palette.IsMac" Class="demo-inline-hint" />
+                        }
+                    </td>
+                    <td>Open or close (the toggle shortcuts of this app)</td>
+                </tr>
+                <tr><td><kbd>↑</kbd> <kbd>↓</kbd>, <kbd>Ctrl</kbd> <kbd>N</kbd> / <kbd>P</kbd>, <kbd>Ctrl</kbd> <kbd>J</kbd> / <kbd>K</kbd></td><td>Move, wrapping around at either end (J/K with <code>VimBindings</code>)</td></tr>
+                <tr><td><kbd>Home</kbd> <kbd>End</kbd> <kbd>PgUp</kbd> <kbd>PgDn</kbd></td><td>Jump to the first, the last, or ten rows on</td></tr>
+                <tr><td><kbd>Enter</kbd></td><td>Run, open a page, flip a toggle, or check a row on a multi-select page</td></tr>
+                <tr><td><kbd>@Mod</kbd> <kbd>Enter</kbd></td><td>Apply a multi-select page, or run the row's first secondary action</td></tr>
+                <tr><td><kbd>Tab</kbd>, <kbd>→</kbd> (empty box)</td><td>Open the action panel of the active row</td></tr>
+                <tr><td><kbd>Backspace</kbd>, <kbd>←</kbd> (empty box)</td><td>Back one page</td></tr>
+                <tr><td><kbd>Esc</kbd></td><td>Cancel a confirmation, then go back, then close</td></tr>
+                <tr><td><kbd>@Mod</kbd> <kbd>Shift</kbd> <kbd>P</kbd></td><td>Pin or unpin the active row</td></tr>
+                <tr><td><kbd>Shift</kbd> <kbd>Del</kbd></td><td>Forget the active row from the recents</td></tr>
+            </tbody>
+        </table>
+    </div>
+</section>
 
-<h2 id="accessibility">Accessibility</h2>
-<ul>
-    <li>A native <code>&lt;dialog&gt;</code>: the top layer, a focus trap, focus restored on close, and the page's scroll locked.</li>
-    <li>The WAI-ARIA combobox pattern: the input owns a listbox, <code>aria-activedescendant</code> follows the active row and
-        <code>aria-selected</code> marks it, so focus never leaves the input.</li>
-    <li>A polite live region announces how many results there are as the query changes.</li>
-    <li>Shortcut hints read the platform: ⌘ ⇧ ⌥ on macOS, Ctrl Shift Alt elsewhere, and <code>aria-keyshortcuts</code> on the trigger.</li>
-    <li>Mouse hover moves the active row only after the pointer actually moves, so a list that scrolls under a resting
-        pointer does not steal the selection from the keyboard.</li>
-</ul>
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Global shortcuts in this app</h3>
+    <p>
+        Every command registered with a global shortcut, read from the registry right now - leave a page and its own
+        shortcuts disappear from this table, because they disappear from the palette. Close the palette and press one.
+    </p>
+    <div class="bb-demo">
+        <div class="bb-demo-bar"><span class="bb-demo-label">The registry's shortcuts</span></div>
+        <div class="bb-scroll">
+            <table class="bb-table">
+                <thead>
+                    <tr><th>Shortcut</th><th>Command</th><th>Group</th><th>Kind</th></tr>
+                </thead>
+                <tbody>
+                    @foreach (var command in Palette.Commands.Where(c => c.Shortcut is not null && c.GlobalShortcut).OrderBy(c => c.Shortcut!.IsSequence).ThenBy(c => c.Group))
+                    {
+                        <tr>
+                            <td><BaletteShortcutHint Shortcut="command.Shortcut" IsMac="Palette.IsMac" /></td>
+                            <td>@command.Title</td>
+                            <td class="bb-soft">@command.Group</td>
+                            <td>@(command.Shortcut!.IsSequence ? "sequence" : "chord")</td>
+                        </tr>
+                    }
+                    <tr>
+                        <td><BaletteShortcutHint Shortcut="NewIssueShortcut" IsMac="Palette.IsMac" /></td>
+                        <td>New issue</td>
+                        <td class="bb-soft">Quick create</td>
+                        <td>chord, declared in markup</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="demo-statusbar" role="status">
+            <span>Last run: <strong>@(_last ?? "nothing yet")</strong></span>
+        </div>
+    </div>
+</section>
+
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Typing is not a shortcut</h3>
+    <p>
+        A plain key pressed in a text box is typing, so <kbd>G</kbd> then <kbd>S</kbd> does nothing here. A chord with a
+        modifier still works - <kbd>@Mod</kbd> <kbd>K</kbd> opens the palette and <kbd>Alt</kbd> <kbd>Z</kbd> flips word
+        wrap - because nobody types those by accident.
+    </p>
+    <label class="bb-field demo-try-box">
+        Try it
+        <input type="text" placeholder="Type g then s here…" aria-label="Typing area" />
+    </label>
+    <div class="bb-note">
+        This site has a second palette: the documentation search in its header, which answers to <kbd>/</kbd> because
+        <kbd>@Mod</kbd> <kbd>K</kbd> is Balette's. Whichever of the two is open owns the keyboard - a chord pressed in the
+        docs search does not open Balette on top of it, and a <kbd>/</kbd> pressed in Balette does not open the search.
+    </div>
+</section>
+
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> The options behind it</h3>
+    <div class="bb-scroll">
+        <table class="bb-table">
+            <thead>
+                <tr><th>Option</th><th>Here</th><th>Effect</th></tr>
+            </thead>
+            <tbody>
+                <tr><td class="bb-table-key"><code>ToggleShortcut</code></td><td><code>@Options.ToggleShortcut</code></td><td>Opens and closes the palette; <code>Mod</code> is ⌘ on macOS and Ctrl elsewhere.</td></tr>
+                <tr><td class="bb-table-key"><code>AdditionalToggleShortcuts</code></td><td><code>@string.Join(", ", Options.AdditionalToggleShortcuts)</code></td><td>More keys for the same.</td></tr>
+                <tr><td class="bb-table-key"><code>SequenceTimeoutMs</code></td><td><code>@Options.SequenceTimeoutMs</code></td><td>How long <kbd>G</kbd> waits for the next key.</td></tr>
+                <tr><td class="bb-table-key"><code>SuppressShortcutsInEditableElements</code></td><td><code>@Options.SuppressShortcutsInEditableElements</code></td><td>Plain keys in inputs are typing, as above.</td></tr>
+                <tr><td class="bb-table-key"><code>VimBindings</code></td><td><code>@Options.VimBindings</code></td><td><kbd>Ctrl</kbd> <kbd>J</kbd> / <kbd>K</kbd> move inside the list.</td></tr>
+            </tbody>
+        </table>
+    </div>
+    <pre class="bb-code">@ShortcutExample</pre>
+</section>
+
+<section class="bb-card" id="accessibility">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Accessibility</h3>
+    <ul class="bb-detail-list">
+        <li>A native <code>&lt;dialog&gt;</code>: the top layer, a focus trap, focus restored on close, and the page's scroll locked.</li>
+        <li>The WAI-ARIA combobox pattern: the input owns a listbox, <code>aria-activedescendant</code> follows the active row and
+            <code>aria-selected</code> marks it, so focus never leaves the input.</li>
+        <li>A polite live region announces how many results there are as the query changes.</li>
+        <li>Shortcut hints read the platform: ⌘ ⇧ ⌥ on macOS, Ctrl Shift Alt elsewhere, and <code>aria-keyshortcuts</code> on the trigger.</li>
+        <li>Mouse hover moves the active row only after the pointer actually moves, so a list that scrolls under a resting
+            pointer does not steal the selection from the keyboard.</li>
+    </ul>
+</section>
 
 @code {
     private const string ShortcutExample = """

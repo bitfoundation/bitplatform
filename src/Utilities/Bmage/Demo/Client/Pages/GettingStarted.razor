@@ -6,18 +6,19 @@
    image - with that first-image snippet runnable right here against the generated sample, so the
    page ends on something the reader has seen work rather than on something they have to trust. *@
 
-<PageTitle>Getting started - Bit.Bmage</PageTitle>
+<PageTitle>Getting started · Bmage</PageTitle>
 
-<h1>Getting started</h1>
+<div class="bb-intro">
+    <h1>Getting started</h1>
+    <p class="bb-subtitle">
+        Bmage is <strong>browser-side image processing for Blazor</strong>: load, transform, annotate and
+        export images on the user's device from strongly typed C#. Install the package, register the
+        services, and an image is three calls away.
+    </p>
+</div>
 
-<p class="page-intro">
-    Bmage is <strong>browser-side image processing for Blazor</strong>: load, transform, annotate and
-    export images on the user's device from strongly typed C#. Install the package, register the
-    services, and an image is three calls away.
-</p>
-
-<div class="demo-section">
-    <h2>Install the package</h2>
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Install the package</h3>
     <p>
         One package holds everything: the engine, the browser codecs, loading and export, headless
         processing on a server, and the <code>BmageEditor</code> component. It depends only on
@@ -31,8 +32,8 @@
     </p>
 </div>
 
-<div class="demo-section">
-    <h2>Register the services</h2>
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Register the services</h3>
     <p>
         In <code>Program.cs</code> of the project that runs in the browser. For a Blazor Web App using
         WebAssembly or Auto render modes that is the client project - and the server project too when
@@ -53,8 +54,8 @@
     </p>
 </div>
 
-<div class="demo-section">
-    <h2>Add the stylesheet</h2>
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Add the stylesheet</h3>
     <p>
         Only the editor components need one. Link it from <code>App.razor</code> in a Blazor
         Web App, or from <code>wwwroot/index.html</code> in a standalone WebAssembly app. The browser
@@ -63,61 +64,61 @@
     <CodeSnippet Code="@StylesheetSnippet" Language="HTML" Expanded="true" />
 </div>
 
-<div class="demo-section">
-    <h2>Your first image</h2>
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Your first image</h3>
     <p>
         Decode with the browser's codecs (honouring the phone's EXIF rotation), process the decoded
         pixels, and encode - preferring WebP, falling back where it is unavailable.
     </p>
     <CodeSnippet Code="@FirstImageSnippet" Language="Razor" Expanded="true" />
 
-    <h3>Run it here</h3>
+    <h4>Run it here</h4>
     <p>
         The same pipeline, run in your browser against a generated 1200 &times; 800 scene - no upload
         involved.
     </p>
-    <div class="sample-row">
-        <button type="button" class="btn btn-accent" disabled="@(_busy || IsHydrating)" @onclick="RunAsync">
+    <div class="bb-toolbar">
+        <button type="button" class="btn btn-primary" disabled="@(_busy || IsHydrating)" @onclick="RunAsync">
             <Icon Path="@Icons.Play" />
             Run the snippet
         </button>
         @if (_busy)
         {
-            <span class="working" role="status">Running&hellip;</span>
+            <span class="working" role="status"><span class="bb-spinner" aria-hidden="true"></span>Running&hellip;</span>
         }
     </div>
     @if (_error is not null)
     {
-        <div class="alert alert-error first-image-result" role="alert">@_error</div>
+        <div class="bb-note bb-note-danger demo-error first-image-result" role="alert">@_error</div>
     }
     @if (_preview is not null && _encoded is not null)
     {
         <div class="preview-row first-image-result">
             <img class="preview-image first-image" src="@_preview" alt="The generated sample scene, processed by the snippet" />
-            <div class="stat-grid first-image-stats" role="status">
-                <div class="stat">
-                    <span class="stat-label">Output</span>
-                    <span class="stat-value">@_width &times; @_height</span>
+            <div class="bb-stats demo-stats-compact first-image-stats" role="status">
+                <div class="bb-stat">
+                    <span class="bb-stat-label">Output</span>
+                    <span class="bb-stat-value">@_width &times; @_height</span>
                 </div>
-                <div class="stat">
-                    <span class="stat-label">Format</span>
-                    <span class="stat-value">@_encoded.Format.ToString().ToUpperInvariant()</span>
+                <div class="bb-stat">
+                    <span class="bb-stat-label">Format</span>
+                    <span class="bb-stat-value">@_encoded.Format.ToString().ToUpperInvariant()</span>
                 </div>
-                <div class="stat">
-                    <span class="stat-label">Size</span>
-                    <span class="stat-value">@Display.Bytes(_encoded.Length)</span>
+                <div class="bb-stat">
+                    <span class="bb-stat-label">Size</span>
+                    <span class="bb-stat-value">@Display.Bytes(_encoded.Length)</span>
                 </div>
-                <div class="stat">
-                    <span class="stat-label">Took</span>
-                    <span class="stat-value">@_elapsed.TotalMilliseconds.ToString("0") ms</span>
+                <div class="bb-stat">
+                    <span class="bb-stat-label">Took</span>
+                    <span class="bb-stat-value">@_elapsed.TotalMilliseconds.ToString("0") ms</span>
                 </div>
             </div>
         </div>
     }
 </div>
 
-<div class="demo-section">
-    <h2>Two things that are easy to miss</h2>
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Two things that are easy to miss</h3>
     <p>
         <strong>Dispose your images.</strong> An <code>ImageBuffer</code> holds pooled memory: a 4000
         &times; 3000 image is 48 MB. <code>using</code> returns it to the pool immediately instead of
@@ -133,8 +134,8 @@
     </p>
 </div>
 
-<div class="demo-section">
-    <h2>The full editor instead</h2>
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> The full editor instead</h3>
     <p>
         If what you want is an editing UI rather than a pipeline, the editor is one component. It
         fills its container, and a container with no height collapses to nothing - so give it one.
@@ -146,8 +147,8 @@
     </p>
 </div>
 
-<div class="demo-section">
-    <h2>When things run</h2>
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> When things run</h3>
     <p>
         Browser features need a live browser. During prerendering there is not one yet, so call them
         from <code>OnAfterRenderAsync</code> or an event handler rather than from

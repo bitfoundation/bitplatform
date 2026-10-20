@@ -70,9 +70,11 @@
 
     <!-- Every demo page - each one runs real queries against a database in the browser - plus the components
          and helpers they share and the client half of the hosting. The MCP page describes this server rather
-         than the library, and the error and not-found pages teach nothing about databases. -->
+         than the library, and the error and not-found pages teach nothing about databases. Neither does the
+         site chrome in Layout\ with DocsCatalog.cs - the header, docs shell, search palette and footer every
+         Utilities demo shares, and the page list they are built from. -->
     <EmbeddedResource Include="..\Client\**\*.razor;..\Client\**\*.cs"
-                      Exclude="..\Client\bin\**;..\Client\obj\**;..\Client\Pages\McpServer.razor;..\Client\Pages\NotFoundPage.razor;..\Client\Pages\ErrorPage.razor">
+                      Exclude="..\Client\bin\**;..\Client\obj\**;..\Client\Layout\**;..\Client\DocsCatalog.cs;..\Client\Pages\McpServer.razor;..\Client\Pages\NotFoundPage.razor;..\Client\Pages\ErrorPage.razor">
       <LogicalName>BsqliteSource/Demo/Client/%(RecursiveDir)%(Filename)%(Extension)</LogicalName>
     </EmbeddedResource>
 

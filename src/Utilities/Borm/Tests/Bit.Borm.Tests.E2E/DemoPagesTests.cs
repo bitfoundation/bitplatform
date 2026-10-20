@@ -7,8 +7,9 @@ namespace Bit.Borm.Tests.E2E;
 
 /// <summary>
 /// Every page of the demo: each one is prerendered with its forms in the first response, turns interactive on
-/// WebAssembly with the library's stylesheet applied, and survives every button on it without an error. An unknown
-/// address gets the not-found page, and moving through the demos inside the app leaves working forms behind.
+/// WebAssembly with the library's stylesheet applied and the site's theme on its tokens, and survives every button on
+/// it without an error. An unknown address gets the not-found page, and moving through the demos inside the app leaves
+/// working forms behind.
 /// </summary>
 [TestClass]
 public sealed class DemoPagesTests : BormTest
@@ -43,16 +44,20 @@ public sealed class DemoPagesTests : BormTest
             @"() => [...document.styleSheets].some(s => s.href && /^\/_content\/Bit\.Borm\/bit-borm(\.\w+)?\.css$/.test(new URL(s.href).pathname) && s.cssRules.length > 0)"),
             $"{path} did not load _content/Bit.Borm/bit-borm.css");
 
-        // ...and it styles the forms: the theme tokens and the width cap exist only in that stylesheet.
+        // ...and it styles the forms: the field gap and the width cap exist only in that stylesheet, and the demo's
+        // re-tint puts the site's brand on the accent (wwwroot/demo.css) - in the light theme this context asks for.
         for (int i = 0; i < forms; i++)
         {
             var form = page.Locator("form.bit-borm-form").Nth(i);
-            Assert.AreEqual("#4f46e5", await ComputedAsync(form, "--bit-borm-accent"), $"form {i} of {path} has no theme tokens");
+            Assert.AreEqual("1rem", await ComputedAsync(form, "--bit-borm-gap"), $"form {i} of {path} has no theme tokens");
             Assert.AreEqual("720px", await ComputedAsync(form, "max-width"), $"form {i} of {path} is not capped by the stylesheet");
+            Assert.AreEqual("#1276C6", await ComputedAsync(form, "--bit-borm-accent"), $"form {i} of {path} is not on the site's theme");
         }
 
-        // Every enabled button of the page must run without throwing: a dead or broken control is a demo bug.
-        var buttons = page.Locator(".app-main button:enabled:visible");
+        // Every enabled button of the page must run without throwing: a dead or broken control is a demo bug. The page
+        // is the docs column (or the landing page), not the site chrome around it; the copy buttons the site script
+        // hangs on its code blocks are that chrome too.
+        var buttons = page.Locator(":is(.bb-docs-content, .bb-landing) button:enabled:visible:not(.bb-copy-btn)");
         int count = Math.Min(await buttons.CountAsync(), 40);
         for (int i = 0; i < count; i++)
         {
@@ -88,10 +93,12 @@ public sealed class DemoPagesTests : BormTest
 
         Assert.AreEqual(404, response?.Status, "an unknown address did not answer 404");
         await WaitForInteractiveAsync(page);
-        await Expect(page.Locator("h1")).ToHaveTextAsync("Not found");
+        await Expect(page.Locator("h1")).ToHaveTextAsync("404");
+        await Expect(page.Locator("main")).ToContainTextAsync("There is no page at this address");
 
-        // The layout is there, and with it the way back to every demo.
-        await page.Locator(".app-nav-links a", new() { HasTextString = "Fluent builder" }).ClickAsync();
+        // The site shell is there, and with it the way back to every demo.
+        await Expect(page.Locator("header.bb-header")).ToBeVisibleAsync();
+        await page.Locator("footer.bb-footer").GetByRole(AriaRole.Link, new() { Name = "Fluent builder + conditions", Exact = true }).ClickAsync();
         await page.WaitForURLAsync(BaseUrl + "/builder");
         await Expect(Form(page)).ToBeVisibleAsync();
     }
@@ -99,19 +106,19 @@ public sealed class DemoPagesTests : BormTest
     [TestMethod]
     public async Task Navigating_between_the_demos_in_the_app_leaves_a_working_form_behind()
     {
-        var page = await OpenAsync("/");
+        var page = await OpenAsync("/getting-started");
         var problems = TrackProblems(page, BaseUrl);
 
         // Client-side navigation through every demo: each page's form state is disposed (an options lookup or an
         // async rule still in flight cancelled) and the next one built, all in the same WebAssembly instance.
-        var links = page.Locator(".app-nav-links a");
+        var links = page.Locator(".bb-docs-sidebar .bb-docs-section a");
         int count = await links.CountAsync();
         Assert.IsTrue(count > 15, $"the sidebar offers only {count} demos");
         for (int i = 1; i < count; i++)
         {
             var href = await links.Nth(i).GetAttributeAsync("href");
             await links.Nth(i).ClickAsync();
-            await page.WaitForURLAsync($"{BaseUrl}/{href}");
+            await page.WaitForURLAsync($"{BaseUrl}/{href!.TrimStart('/')}");
             await Expect(page.Locator("h1")).ToBeVisibleAsync();
             await WaitForQuietAsync(page);
         }

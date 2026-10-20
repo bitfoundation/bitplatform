@@ -22,7 +22,10 @@
         return darkQuery.matches ? 'dark' : 'light';
     }
 
+    var current = null;
+
     function apply(theme) {
+        current = theme;
         document.documentElement.setAttribute('bit-theme', theme);
         var themeColor = document.querySelector('meta[name="theme-color"]');
         if (themeColor) {
@@ -33,6 +36,15 @@
     }
 
     apply(getStoredTheme() || getSystemTheme());
+
+    /* Blazor's enhanced navigation - a link followed before the app is interactive, or a redirect
+       handed back to the page loader - fetches the next page and merges it into this document,
+       <html> included. The server's markup carries no bit-theme, so the merge removes it and the
+       page falls back to the light palette, and this script does not run again to put it back.
+       Restoring it from an observer happens before the merged page is painted. */
+    new MutationObserver(function () {
+        if (document.documentElement.getAttribute('bit-theme') !== current) apply(current);
+    }).observe(document.documentElement, { attributes: true, attributeFilter: ['bit-theme'] });
 
     darkQuery.addEventListener('change', function () {
         if (getStoredTheme() === null) {

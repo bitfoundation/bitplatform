@@ -6,44 +6,45 @@
    reader's browser, so whether the site they are on was compiled ahead of time shows up in their
    own measurements rather than in a claim. *@
 
-<PageTitle>Performance - Bit.Bmage</PageTitle>
+<PageTitle>Performance · Bmage</PageTitle>
 
-<h1>Performance</h1>
+<div class="bb-intro">
+    <h1>Performance</h1>
+    <p class="bb-subtitle">
+        Every number here was measured with BenchmarkDotNet, not estimated - and in the browser, they only
+        hold with <strong>ahead-of-time compilation</strong>. Read the first section before anything else.
+    </p>
+</div>
 
-<p class="page-intro">
-    Every number here was measured with BenchmarkDotNet, not estimated - and in the browser, they only
-    hold with <strong>ahead-of-time compilation</strong>. Read the first section before anything else.
-</p>
-
-<div class="demo-section">
-    <h2>Measure this browser</h2>
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Measure this browser</h3>
     <p>
         The operations from the table below, on a generated 1920 &times; 1080 image, best of three
         after a warm-up. Hundreds of milliseconds per row means the interpreter; tens means AOT.
         This site is published with AOT; under <code>dotnet run</code> it is interpreted, and the
         run takes minutes rather than seconds - which is the point.
     </p>
-    <div class="sample-row">
-        <button type="button" class="btn btn-accent" disabled="@(_busy || IsHydrating)" @onclick="RunAsync">
+    <div class="bb-toolbar">
+        <button type="button" class="btn btn-primary" disabled="@(_busy || IsHydrating)" @onclick="RunAsync">
             <Icon Path="@Icons.Gauge" />
             Run the benchmark
         </button>
         @if (_busy)
         {
-            <span class="working" role="status">Measuring @_current&hellip;</span>
+            <span class="working" role="status"><span class="bb-spinner" aria-hidden="true"></span>Measuring @_current&hellip;</span>
         }
     </div>
 
     @if (_results.Count > 0)
     {
-        <div class="table-scroll perf-results" tabindex="0" role="region" aria-label="Benchmark results for this browser">
-            <table class="data">
+        <div class="bb-scroll perf-results" tabindex="0" role="region" aria-label="Benchmark results for this browser">
+            <table class="bb-table">
                 <thead>
                     <tr>
                         <th scope="col">Operation</th>
-                        <th scope="col" class="num">This browser</th>
-                        <th scope="col" class="num">Interpreter</th>
-                        <th scope="col" class="num">AOT</th>
+                        <th scope="col" class="demo-num">This browser</th>
+                        <th scope="col" class="demo-num">Interpreter</th>
+                        <th scope="col" class="demo-num">AOT</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -51,9 +52,9 @@
                     {
                         <tr>
                             <th scope="row">@result.Name</th>
-                            <td class="num"><strong>@result.Elapsed.TotalMilliseconds.ToString("0") ms</strong></td>
-                            <td class="num">@result.Interpreter ms</td>
-                            <td class="num">@result.Aot ms</td>
+                            <td class="demo-num"><strong>@result.Elapsed.TotalMilliseconds.ToString("0") ms</strong></td>
+                            <td class="demo-num">@result.Interpreter ms</td>
+                            <td class="demo-num">@result.Aot ms</td>
                         </tr>
                     }
                 </tbody>
@@ -62,23 +63,23 @@
     }
 </div>
 
-<div class="demo-section">
-    <h2>WebAssembly: compile ahead of time</h2>
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> WebAssembly: compile ahead of time</h3>
     <p>
         By default Blazor WebAssembly runs .NET code on an IL interpreter. Tight pixel loops are its
         worst case: every <code>Vector4</code> operation RyuJIT turns into one SIMD instruction becomes
         a separate interpreted step. Measured on a 1920 &times; 1080 image in Chrome, best of three after
         a warm-up:
     </p>
-    <div class="table-scroll" tabindex="0" role="region" aria-label="Interpreter against AOT">
-        <table class="ref">
+    <div class="bb-scroll" tabindex="0" role="region" aria-label="Interpreter against AOT">
+        <table class="bb-table">
             <thead>
-                <tr><th scope="col">Operation</th><th scope="col" class="num">Interpreter</th><th scope="col" class="num">AOT</th><th scope="col" class="num">Desktop .NET</th></tr>
+                <tr><th scope="col">Operation</th><th scope="col" class="demo-num">Interpreter</th><th scope="col" class="demo-num">AOT</th><th scope="col" class="demo-num">Desktop .NET</th></tr>
             </thead>
             <tbody>
                 @foreach (var row in Reference)
                 {
-                    <tr><th scope="row">@row.Name</th><td class="num">@row.Interpreter ms</td><td class="num"><strong>@row.Aot ms</strong></td><td class="num">@row.Desktop ms</td></tr>
+                    <tr><th scope="row">@row.Name</th><td class="demo-num">@row.Interpreter ms</td><td class="demo-num"><strong>@row.Aot ms</strong></td><td class="demo-num">@row.Desktop ms</td></tr>
                 }
             </tbody>
         </table>
@@ -91,20 +92,20 @@
     <CodeSnippet Code="@AotSnippet" Language="XML" Expanded="true" />
 </div>
 
-<div class="demo-section">
-    <h2>Resizing</h2>
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Resizing</h3>
     <p>Downscaling to 1280px on the long edge, and generating a 200px thumbnail (desktop .NET 10, AVX2):</p>
-    <div class="table-scroll" tabindex="0" role="region" aria-label="Resize timings">
-        <table class="ref">
+    <div class="bb-scroll" tabindex="0" role="region" aria-label="Resize timings">
+        <table class="bb-table">
             <thead>
-                <tr><th scope="col">Operation</th><th scope="col" class="num">1920&times;1080</th><th scope="col" class="num">3840&times;2160</th><th scope="col" class="num">6000&times;4000</th></tr>
+                <tr><th scope="col">Operation</th><th scope="col" class="demo-num">1920&times;1080</th><th scope="col" class="demo-num">3840&times;2160</th><th scope="col" class="demo-num">6000&times;4000</th></tr>
             </thead>
             <tbody>
-                <tr><th scope="row">Box</th><td class="num">15.0 ms</td><td class="num">35.4 ms</td><td class="num">127 ms</td></tr>
-                <tr><th scope="row">Bilinear</th><td class="num">17.4 ms</td><td class="num">40.2 ms</td><td class="num">114 ms</td></tr>
-                <tr><th scope="row">Bicubic</th><td class="num">21.9 ms</td><td class="num">49.0 ms</td><td class="num">124 ms</td></tr>
-                <tr><th scope="row">Lanczos3</th><td class="num">26.8 ms</td><td class="num">67.7 ms</td><td class="num">134 ms</td></tr>
-                <tr><th scope="row">Thumbnail to 200px (Auto)</th><td class="num">6.6 ms</td><td class="num">19.2 ms</td><td class="num">52.4 ms</td></tr>
+                <tr><th scope="row">Box</th><td class="demo-num">15.0 ms</td><td class="demo-num">35.4 ms</td><td class="demo-num">127 ms</td></tr>
+                <tr><th scope="row">Bilinear</th><td class="demo-num">17.4 ms</td><td class="demo-num">40.2 ms</td><td class="demo-num">114 ms</td></tr>
+                <tr><th scope="row">Bicubic</th><td class="demo-num">21.9 ms</td><td class="demo-num">49.0 ms</td><td class="demo-num">124 ms</td></tr>
+                <tr><th scope="row">Lanczos3</th><td class="demo-num">26.8 ms</td><td class="demo-num">67.7 ms</td><td class="demo-num">134 ms</td></tr>
+                <tr><th scope="row">Thumbnail to 200px (Auto)</th><td class="demo-num">6.6 ms</td><td class="demo-num">19.2 ms</td><td class="demo-num">52.4 ms</td></tr>
             </tbody>
         </table>
     </div>
@@ -117,26 +118,26 @@
     </p>
 </div>
 
-<div class="demo-section">
-    <h2>Operations and pipelines</h2>
-    <div class="table-scroll" tabindex="0" role="region" aria-label="Operation timings">
-        <table class="ref">
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Operations and pipelines</h3>
+    <div class="bb-scroll" tabindex="0" role="region" aria-label="Operation timings">
+        <table class="bb-table">
             <thead>
-                <tr><th scope="col">Operation</th><th scope="col" class="num">1920&times;1080</th><th scope="col" class="num">3840&times;2160</th></tr>
+                <tr><th scope="col">Operation</th><th scope="col" class="demo-num">1920&times;1080</th><th scope="col" class="demo-num">3840&times;2160</th></tr>
             </thead>
             <tbody>
-                <tr><th scope="row">Crop</th><td class="num">0.04 ms</td><td class="num">0.41 ms</td></tr>
-                <tr><th scope="row">Rotate 90 (lossless)</th><td class="num">2.0 ms</td><td class="num">20.2 ms</td></tr>
-                <tr><th scope="row">Brightness (one pass)</th><td class="num">18.0 ms</td><td class="num">70.7 ms</td></tr>
-                <tr><th scope="row">Four adjustments, fused</th><td class="num">47.4 ms</td><td class="num">188.9 ms</td></tr>
-                <tr><th scope="row">Four adjustments, unfused</th><td class="num">76.7 ms</td><td class="num">292.3 ms</td></tr>
-                <tr><th scope="row">Gaussian blur, radius 8</th><td class="num">55.7 ms</td><td class="num">226.1 ms</td></tr>
-                <tr><th scope="row">Unsharp mask</th><td class="num">103.8 ms</td><td class="num">331.0 ms</td></tr>
-                <tr><th scope="row">Rotate 37&deg; (resampled)</th><td class="num">222.0 ms</td><td class="num">888.6 ms</td></tr>
+                <tr><th scope="row">Crop</th><td class="demo-num">0.04 ms</td><td class="demo-num">0.41 ms</td></tr>
+                <tr><th scope="row">Rotate 90 (lossless)</th><td class="demo-num">2.0 ms</td><td class="demo-num">20.2 ms</td></tr>
+                <tr><th scope="row">Brightness (one pass)</th><td class="demo-num">18.0 ms</td><td class="demo-num">70.7 ms</td></tr>
+                <tr><th scope="row">Four adjustments, fused</th><td class="demo-num">47.4 ms</td><td class="demo-num">188.9 ms</td></tr>
+                <tr><th scope="row">Four adjustments, unfused</th><td class="demo-num">76.7 ms</td><td class="demo-num">292.3 ms</td></tr>
+                <tr><th scope="row">Gaussian blur, radius 8</th><td class="demo-num">55.7 ms</td><td class="demo-num">226.1 ms</td></tr>
+                <tr><th scope="row">Unsharp mask</th><td class="demo-num">103.8 ms</td><td class="demo-num">331.0 ms</td></tr>
+                <tr><th scope="row">Rotate 37&deg; (resampled)</th><td class="demo-num">222.0 ms</td><td class="demo-num">888.6 ms</td></tr>
             </tbody>
         </table>
     </div>
-    <ul>
+    <ul class="bb-detail-list">
         <li><strong>Fusing adjustments is worth 1.55&times;.</strong> Four adjustments in one pass beat four passes, because the cost is reading and writing pixels rather than the arithmetic.</li>
         <li><strong>A right angle is 100&times; cheaper than an arbitrary one</strong>, because it moves pixels rather than resampling them. The optimiser routes multiples of 90&deg; to the lossless path automatically.</li>
         <li><strong>Blur is independent of radius</strong>: three box passes approximating a gaussian, so radius 40 costs the same as radius 4.</li>
@@ -144,19 +145,19 @@
     </ul>
 </div>
 
-<div class="demo-section">
-    <h2>Codecs</h2>
-    <div class="table-scroll" tabindex="0" role="region" aria-label="Codec timings">
-        <table class="ref">
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Codecs</h3>
+    <div class="bb-scroll" tabindex="0" role="region" aria-label="Codec timings">
+        <table class="bb-table">
             <thead>
-                <tr><th scope="col">Operation</th><th scope="col" class="num">1024&times;768</th><th scope="col" class="num">3840&times;2160</th><th scope="col" class="num">Allocated (4K)</th></tr>
+                <tr><th scope="col">Operation</th><th scope="col" class="demo-num">1024&times;768</th><th scope="col" class="demo-num">3840&times;2160</th><th scope="col" class="demo-num">Allocated (4K)</th></tr>
             </thead>
             <tbody>
-                <tr><th scope="row">PNG decode</th><td class="num">10.5 ms</td><td class="num">104 ms</td><td class="num">37 MB</td></tr>
-                <tr><th scope="row">JPEG decode</th><td class="num">10.7 ms</td><td class="num">117 ms</td><td class="num">14 MB</td></tr>
-                <tr><th scope="row">JPEG encode, quality 85</th><td class="num">17.0 ms</td><td class="num">175 ms</td><td class="num">6.7 MB</td></tr>
-                <tr><th scope="row">PNG encode, level 1</th><td class="num">25.1 ms</td><td class="num">252 ms</td><td class="num">98 MB</td></tr>
-                <tr><th scope="row">PNG encode, level 6</th><td class="num">82.1 ms</td><td class="num">848 ms</td><td class="num">46 MB</td></tr>
+                <tr><th scope="row">PNG decode</th><td class="demo-num">10.5 ms</td><td class="demo-num">104 ms</td><td class="demo-num">37 MB</td></tr>
+                <tr><th scope="row">JPEG decode</th><td class="demo-num">10.7 ms</td><td class="demo-num">117 ms</td><td class="demo-num">14 MB</td></tr>
+                <tr><th scope="row">JPEG encode, quality 85</th><td class="demo-num">17.0 ms</td><td class="demo-num">175 ms</td><td class="demo-num">6.7 MB</td></tr>
+                <tr><th scope="row">PNG encode, level 1</th><td class="demo-num">25.1 ms</td><td class="demo-num">252 ms</td><td class="demo-num">98 MB</td></tr>
+                <tr><th scope="row">PNG encode, level 6</th><td class="demo-num">82.1 ms</td><td class="demo-num">848 ms</td><td class="demo-num">46 MB</td></tr>
             </tbody>
         </table>
     </div>
@@ -167,8 +168,8 @@
     </p>
 </div>
 
-<div class="demo-section">
-    <h2>Interactive editing</h2>
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Interactive editing</h3>
     <p>
         The editor works on a proxy no larger than 2048px on its longest edge and replays the edit at
         full resolution on export: for a 24 megapixel photo, a 25&times; reduction in the pixels each
@@ -178,9 +179,9 @@
     </p>
 </div>
 
-<div class="demo-section">
-    <h2>Guidance</h2>
-    <ul>
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Guidance</h3>
+    <ul class="bb-detail-list">
         <li><strong>Cap dimensions before anything else.</strong> Every later operation costs proportionally less.</li>
         <li><strong>Group adjustments together.</strong> Consecutive per-pixel operations fuse into one pass; a geometric operation between them prevents that.</li>
         <li><strong>Prefer right angles.</strong> <code>Rotate(90)</code> takes the lossless path; <code>Rotate(90.5)</code> resamples the whole image.</li>

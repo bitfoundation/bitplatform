@@ -1,12 +1,21 @@
 ﻿@*
     The whole app lives inside <BlexProvider>: it registers every store with the manager,
     restores persisted state, starts undo/redo recording and connects the Redux DevTools bridge.
+
+    Every page but the landing page renders inside the docs shell (Layout/DocsLayout.razor); the
+    landing, not-found and error pages opt out with @layout MainLayout. After a navigation the
+    page's own H1 takes focus, so a screen reader starts reading at the new page.
+
+    The Inspector dock sits after the router rather than in a layout: it is the same component on
+    every page, so it is mounted once and keeps its open tab and scroll across navigations.
 *@
 <BlexProvider>
-    <Router AppAssembly="typeof(Routes).Assembly" NotFoundPage="typeof(Pages.NotFoundPage)">
+    <Router AppAssembly="typeof(Routes).Assembly" NotFoundPage="typeof(Pages.NotFound)">
         <Found Context="routeData">
-            <RouteView RouteData="routeData" DefaultLayout="typeof(DocsLayout)" />
+            <RouteView RouteData="routeData" DefaultLayout="typeof(Layout.DocsLayout)" />
             <FocusOnNavigate RouteData="routeData" Selector="h1" />
         </Found>
     </Router>
+
+    <InspectorDock />
 </BlexProvider>

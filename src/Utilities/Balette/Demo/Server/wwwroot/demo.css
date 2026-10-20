@@ -1,0 +1,446 @@
+﻿/* ============================================================================================
+   Balette demo - the palette's tokens, and the styles of the live samples.
+
+   The site's chrome, tokens and shared surfaces live in app.css (the site kit every Utilities demo
+   shares); this file only draws what is Balette's own - the palette's colours, the bar that opens
+   it, the icons and the detail pane its commands render, and the readouts of the demo pages - and
+   it is written against the kit's --bb-* names, so it follows the light/dark theme with no rules
+   of its own for either.
+   ============================================================================================ */
+
+/* ---------- The palette's tokens, on the site's theme and in the bit brand ----------
+
+   bit-balette.css follows prefers-color-scheme, or <html data-theme>. This site's theme is the kit's
+   <html bit-theme="light|dark"> instead, which the header's toggle sets - so the same custom
+   properties are given again here, once for each theme, in the site's own palette. The trigger and
+   the shortcut hints outside the dialog read them from :root too, so they follow along.
+
+   html:root rather than :root: the library's prefers-color-scheme rule has the specificity of
+   :root[...] and would otherwise win on a dark OS with the site switched to light. The dialog's own
+   Theme parameter (data-theme on the dialog) gets the same values, so a dark palette over a light
+   page - or the other way round - is still this brand's. */
+html:root,
+html:root[bit-theme="light"],
+:root dialog[data-balette="dialog"][data-theme="light"] {
+    --bit-balette-font: var(--bb-font-sans);
+    --bit-balette-mono: var(--bb-mono);
+
+    --bit-balette-bg: #FFFFFF;
+    --bit-balette-bg-elevated: #F5F5F5;
+    --bit-balette-fg: #1A1A1A;
+    --bit-balette-fg-muted: #525252;
+    --bit-balette-fg-subtle: #6B6B6B;
+    --bit-balette-border: #E0E0E0;
+    --bit-balette-accent: #1276C6;
+    --bit-balette-accent-fg: #FFFFFF;
+    --bit-balette-accent-soft: rgba(18, 118, 198, .10);
+    --bit-balette-active-bg: rgba(0, 0, 0, .05);
+    --bit-balette-danger: #D2393B;
+    --bit-balette-danger-soft: rgba(210, 57, 59, .10);
+    --bit-balette-mark-bg: rgba(18, 118, 198, .18);
+    --bit-balette-kbd-bg: #F5F5F5;
+    --bit-balette-kbd-fg: #424242;
+    --bit-balette-kbd-border: #D1D1D1;
+    --bit-balette-backdrop: rgba(0, 0, 0, .40);
+    --bit-balette-shadow: 0 32px 64px rgba(0, 0, 0, .24), 0 0 8px rgba(0, 0, 0, .20);
+    --bit-balette-scrollbar: #ADADAD;
+}
+
+html:root[bit-theme="dark"],
+:root dialog[data-balette="dialog"][data-theme="dark"] {
+    --bit-balette-bg: #171C22;
+    --bit-balette-bg-elevated: #1D2329;
+    --bit-balette-fg: #E6ECF2;
+    --bit-balette-fg-muted: #B9BEC4;
+    --bit-balette-fg-subtle: #8E9398;
+    --bit-balette-border: #2B3138;
+    --bit-balette-accent: #4FA3F4;
+    --bit-balette-accent-fg: #0F1318;
+    --bit-balette-accent-soft: rgba(79, 163, 244, .16);
+    --bit-balette-active-bg: rgba(255, 255, 255, .07);
+    --bit-balette-danger: #E67A73;
+    --bit-balette-danger-soft: rgba(230, 122, 115, .14);
+    --bit-balette-mark-bg: rgba(79, 163, 244, .28);
+    --bit-balette-kbd-bg: #22272C;
+    --bit-balette-kbd-fg: #D0D5DA;
+    --bit-balette-kbd-border: #454C53;
+    --bit-balette-backdrop: rgba(0, 0, 0, .62);
+    --bit-balette-shadow: 0 32px 64px rgba(0, 0, 0, .40), 0 0 8px rgba(0, 0, 0, .36), 0 0 0 1px rgba(255, 255, 255, .06);
+    --bit-balette-scrollbar: #454C53;
+}
+
+/* The kit dresses every text input as a Fluent field. The palette's input is the dialog's own -
+   borderless, filling its row - so the field's padding, height and corners are taken back off it. */
+.bit-balette-dialog .bit-balette-input,
+.bit-balette-dialog .bit-balette-input:focus-visible {
+    min-height: 0;
+    max-width: none;
+    padding: 0;
+    border-radius: 0;
+    line-height: normal;
+}
+
+/* The palette host: a wrapper for the ready marker that lays nothing out of its own. A closed
+   <dialog> takes no space, and an open one is in the top layer. */
+.demo-palette {
+    display: contents;
+}
+
+/* ---------- The bar that opens it: the trigger and a button per mode ---------- */
+
+.demo-palette-bar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: .5rem;
+    margin: 0 0 2rem;
+}
+
+/* The trigger drawn as a Fluent search box: the field's hairline with the heavier bottom stroke. */
+.demo-palette-bar .demo-trigger {
+    flex: 1 1 260px;
+    max-width: 420px;
+    min-width: 0;
+    height: 2rem;
+    padding: 0 .375rem 0 .625rem;
+    background: var(--bb-surface);
+    color: var(--bb-text-soft);
+    border: 1px solid var(--bb-border-strong);
+    border-bottom-color: var(--bb-text-soft);
+    border-radius: var(--bb-radius);
+    font-size: var(--fl-font-size-200);
+    transition: border-color var(--bb-motion-duration-short) var(--bb-motion-easing);
+}
+
+.demo-palette-bar .demo-trigger:hover {
+    color: var(--bb-text-muted);
+    border-color: var(--bb-text-soft);
+}
+
+.demo-palette-bar .demo-trigger .bit-balette-trigger-label {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.demo-palette-modes {
+    display: flex;
+    gap: .375rem;
+}
+
+.demo-palette-modes .btn kbd {
+    min-width: 1.25rem;
+    padding: 0 .25rem;
+}
+
+/* The mode buttons keep their prefix and lose their label before they wrap under the trigger. */
+@media (max-width: 560px) {
+    .demo-palette-modes .btn span {
+        display: none;
+    }
+}
+
+/* ---------- Inside the palette: the icons the commands name through IconCss, and the detail template ---------- */
+
+.demo-avatar {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--bb-primary), var(--bb-accent));
+}
+
+.demo-plus::before {
+    content: "+";
+    font-style: normal;
+    font-weight: 700;
+    font-size: 16px;
+    line-height: 1;
+}
+
+.demo-dot {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+}
+
+.demo-dot-red { background: #D2393B; }
+.demo-dot-blue { background: #1276C6; }
+.demo-dot-green { background: #228422; }
+.demo-dot-yellow { background: #EDAE12; }
+.demo-dot-purple { background: #8B5CF6; }
+
+.demo-detail h3 {
+    margin: 4px 0 8px;
+    font-family: var(--bit-balette-font);
+    font-size: 1rem;
+    color: var(--bit-balette-fg);
+}
+
+.demo-detail p {
+    margin: 0 0 8px;
+}
+
+.demo-detail-kind {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    color: var(--bit-balette-fg-subtle);
+}
+
+.demo-detail-sub {
+    color: var(--bit-balette-fg-muted);
+}
+
+.demo-detail dl {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 2px 12px;
+    margin: 8px 0;
+}
+
+.demo-detail dt {
+    color: var(--bit-balette-fg-subtle);
+    font-weight: 500;
+}
+
+.demo-detail dd {
+    margin: 0;
+    overflow-wrap: anywhere;
+}
+
+/* The command's id: a caption, not an inline identifier chip. */
+.demo-detail-id {
+    padding: 0;
+    border: 0;
+    background: none;
+    font-size: 11px;
+    color: var(--bit-balette-fg-subtle);
+}
+
+/* ---------- The landing hero: the app the palette runs in ---------- */
+
+.demo-hero-app {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    padding: 1.25rem;
+    background: var(--bb-surface);
+}
+
+.demo-hero-app .demo-palette-bar {
+    margin: 0;
+}
+
+/* The frame is narrower than a docs column: the trigger takes the whole first row, so its label is
+   never cut short, and the mode buttons go under it. */
+.demo-hero-app .demo-palette-bar .demo-trigger {
+    flex-basis: 100%;
+    max-width: none;
+}
+
+.demo-hero-try {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: .375rem;
+}
+
+.demo-hero-try .bb-overline {
+    margin-inline-end: .25rem;
+}
+
+/* A query to open the palette with: the query itself is the label. */
+.demo-chip.btn {
+    min-height: 1.75rem;
+    padding: .125rem .5rem;
+    border-radius: var(--bb-radius-pill);
+}
+
+.demo-chip code {
+    padding: 0;
+    border: 0;
+    background: none;
+    color: inherit;
+}
+
+.demo-hero-state {
+    margin: 0;
+    font-size: var(--fl-font-size-200);
+    color: var(--bb-text-muted);
+    overflow-wrap: anywhere;
+}
+
+.demo-hero-state strong {
+    color: var(--bb-text);
+}
+
+.demo-hero-log {
+    height: 9rem;
+    margin: 0;
+}
+
+.demo-hero-log kbd {
+    color: var(--bb-code-fg);
+    background: transparent;
+}
+
+/* ---------- Readouts and controls of the demo pages ---------- */
+
+.demo-small {
+    font-size: var(--fl-font-size-100);
+}
+
+.demo-stack {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: .5rem;
+    margin: 0 0 1rem;
+}
+
+.demo-stack .btn {
+    white-space: normal;
+    text-align: start;
+}
+
+.demo-counter {
+    font-size: var(--fl-font-size-400);
+    color: var(--bb-text);
+}
+
+/* A bar of live numbers under a sample. */
+.demo-statusbar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .25rem 1rem;
+    margin-top: 1rem;
+    padding-top: .75rem;
+    border-top: 1px solid var(--bb-border);
+    font-size: var(--fl-font-size-100);
+    color: var(--bb-text-muted);
+}
+
+.demo-statusbar strong {
+    color: var(--bb-text);
+    font-weight: var(--fl-weight-semibold);
+}
+
+/* A list of settings: the label at the start, its control at the end. */
+.demo-settings {
+    max-width: 560px;
+    margin: 0 0 1.25rem;
+    background: var(--bb-surface);
+    border: 1px solid var(--bb-border);
+    border-radius: var(--bb-radius-lg);
+    box-shadow: var(--bb-shadow-card);
+}
+
+.demo-setting {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: .625rem 1rem;
+    border-bottom: 1px solid var(--bb-border);
+    font-size: var(--fl-font-size-200);
+    color: var(--bb-text);
+    cursor: pointer;
+}
+
+.demo-setting:last-child {
+    border-bottom: 0;
+}
+
+.demo-setting > span {
+    display: inline-flex;
+    align-items: center;
+    gap: .5rem;
+}
+
+/* Numbers line up on their right edge, digit under digit. */
+.bb-table th.demo-num,
+.bb-table td.demo-num {
+    text-align: end;
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+}
+
+/* Matched characters in the search lab: the same mark the palette draws. */
+.bb-table mark.bit-balette-mark {
+    padding: 0 1px;
+    margin: 0 -1px;
+    border-radius: 2px;
+    background: var(--bit-balette-mark-bg);
+    color: inherit;
+}
+
+/* The lab's command column holds titles of two or three words: never narrower than that. */
+.demo-lab td:nth-child(2) {
+    min-width: 13rem;
+}
+
+.demo-weights {
+    max-width: 360px;
+}
+
+.bb-field.demo-grow {
+    flex: 1 1 260px;
+}
+
+.bb-field.demo-grow input {
+    width: 100%;
+}
+
+.demo-try-box {
+    display: flex;
+    max-width: 420px;
+    margin: 0 0 1.25rem;
+}
+
+.demo-try-box input {
+    width: 100%;
+}
+
+.demo-inline-hint {
+    margin-inline-end: .625rem;
+}
+
+.demo-card-heading {
+    margin: 0 0 .375rem;
+}
+
+/* The palette's accents, as round swatches; the pressed one is ringed. */
+.demo-swatches {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .5rem;
+    min-height: 2rem;
+    align-items: center;
+}
+
+.demo-swatch {
+    width: 1.625rem;
+    height: 1.625rem;
+    padding: 0;
+    border: 2px solid var(--bb-surface);
+    border-radius: 50%;
+    box-shadow: 0 0 0 1px var(--bb-border-strong);
+    cursor: pointer;
+}
+
+.demo-swatch-default {
+    background: var(--bit-balette-accent);
+}
+
+.demo-swatch[aria-pressed="true"] {
+    box-shadow: 0 0 0 2px var(--bb-text);
+}
+
+.demo-output {
+    max-height: 16rem;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+}

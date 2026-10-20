@@ -1,34 +1,30 @@
-﻿@inject IJSRuntime Js
-
-@* Shows the code that powers the demo next to the demo itself. *@
-<div class="codeblock" data-open="@(_open ? "true" : "false")">
-    <div class="codeblock-head">
-        <span class="codeblock-lang">@Language</span>
-        <span class="codeblock-title">@Title</span>
-        <span class="grow"></span>
+﻿@* Shows the code that powers the demo next to the demo itself: the site kit's pre.bb-code - which
+   site.js gives a copy button - coloured by CodeHighlighter.cs (its token classes are mapped onto the
+   kit's code colours in demo.css), under the file it comes from and, for a long listing, behind a
+   Show / Hide toggle. *@
+<div class="bb-source bq-code">
+    <div class="bq-code-head">
+        <span class="bq-code-lang">@Language</span>
+        <span class="bb-source-file bq-code-title">@Title</span>
         @if (Collapsible)
         {
-            <button type="button" class="codeblock-btn" aria-expanded="@(_open ? "true" : "false")"
+            <button type="button" class="btn btn-secondary bq-code-toggle" aria-expanded="@(_open ? "true" : "false")"
                     @onclick="() => _open = !_open">
-                @(_open ? "Hide" : "Show")
+                <span class="bq-code-caret" aria-hidden="true">@(_open ? "▾" : "▸")</span>
+                @(_open ? "Hide code" : "Show code")
             </button>
         }
-        <button type="button" class="codeblock-btn @(_copied ? "copied" : null)" @onclick="CopyAsync">
-            <Icon Name="@(_copied ? "check" : "copy")" />
-            @(_copied ? "Copied" : "Copy")
-        </button>
     </div>
     @if (_open)
     {
-        <pre><code>@CodeHighlighter.Highlight(Code, Language)</code></pre>
+        <pre class="bb-code"><code>@CodeHighlighter.Highlight(Code, Language)</code></pre>
     }
 </div>
 
 @code {
     private bool _open;
-    private bool _copied;
 
-    /// <summary>File name or label shown in the header, e.g. <c>Pages/Catalog.razor</c>.</summary>
+    /// <summary>File name or label shown over the code, e.g. <c>Pages/Catalog.razor</c>.</summary>
     [Parameter, EditorRequired]
     public string Title { get; set; } = string.Empty;
 
@@ -47,24 +43,4 @@
     public bool Open { get; set; } = true;
 
     protected override void OnInitialized() => _open = Open;
-
-    private async Task CopyAsync()
-    {
-        try
-        {
-            _copied = await Js.InvokeAsync<bool>("bsqliteDemo.copy", Code);
-        }
-        catch (Exception ex)
-        {
-            SampleLog.Exception(ex);
-            _copied = false;
-        }
-
-        if (_copied)
-        {
-            // Blazor re-renders around the await, so the label flips back on its own.
-            await Task.Delay(1400);
-            _copied = false;
-        }
-    }
 }

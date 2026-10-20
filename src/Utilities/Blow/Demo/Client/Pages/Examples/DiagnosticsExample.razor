@@ -1,14 +1,14 @@
 ﻿@page "/examples/diagnostics"
 
-<PageTitle>Diagnostics - bit Blow</PageTitle>
+<PageTitle>Diagnostics · Blow</PageTitle>
 
 <ExampleScaffold Title="Diagnostics"
                  Summary="A graph assembled from real data is not always well formed. Rather than throwing, the canvas reports what it found through OnError and carries on drawing what it can - each distinct problem once, not on every render. Break the graph with the buttons and watch the log.">
     <Toolbar>
-        <button class="btn btn-sm btn-outline-secondary" @onclick="AddDanglingEdge">Add dangling edge</button>
-        <button class="btn btn-sm btn-outline-secondary" @onclick="AddDuplicateId">Add duplicate id</button>
-        <button class="btn btn-sm btn-outline-secondary" @onclick="AddOrphan">Add orphan child</button>
-        <button class="btn btn-sm btn-outline-secondary" @onclick="Reset">Reset</button>
+        <button class="btn btn-secondary" @onclick="AddDanglingEdge">Add dangling edge</button>
+        <button class="btn btn-secondary" @onclick="AddDuplicateId">Add duplicate id</button>
+        <button class="btn btn-secondary" @onclick="AddOrphan">Add orphan child</button>
+        <button class="btn btn-secondary" @onclick="Reset">Reset</button>
     </Toolbar>
     <ChildContent>
         @* The canvas reports each distinct problem once for its lifetime, so Reset mounts a new
@@ -53,7 +53,7 @@
     }
     .diag-empty { color: var(--bit-blow-text-muted); }
     .diag-row { margin-top: 6px; }
-    .diag-row code { color: #b91c1c; }
+    .diag-row code { color: #ef4444; }
 
     @@media (max-width: 640px) {
         .diag-log { width: 200px; max-height: 140px; }

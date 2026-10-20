@@ -3,35 +3,36 @@
 @using Bit.Borm.Demo.Client.Forms
 @using FluentValidation
 
-<PageTitle>DataAnnotations &amp; IValidatableObject</PageTitle>
+<PageTitle>DataAnnotations &amp; IValidatableObject · Borm</PageTitle>
 
-<div class="demo-intro">
+<div class="bb-intro">
     <h1>DataAnnotations &amp; IValidatableObject</h1>
-    <p>
+    <p class="bb-subtitle">
         The schema generator already reads the attributes it can turn into field rules, so
         <code>[Required]</code> and <code>[Range]</code> need nothing extra. What no attribute can
         express is a rule that reads more than one property — check out after check in, guests within
         the room's capacity — and in .NET that is <code>IValidatableObject</code>.
         <code>UseDataAnnotations()</code> runs it, exactly as <code>UseFluentValidation()</code> runs a
         FluentValidation validator — and the two <em>compose</em>, so a model that carries both gets
-        both. The rule below about a reference for large bookings is a FluentValidation rule sitting
+        both. The rule about single spaces in the guest's name is a FluentValidation rule sitting
         alongside the model's own; a complaint the two layers would word identically on the same field
         is still read once.
     </p>
 </div>
 
-<div class="demo-card">
+<div class="bb-demo">
+    <div class="bb-demo-bar"><span class="bb-demo-label">Live form</span></div>
     <BormView State="_state" OnValidSubmit="HandleSubmit" SubmitText="Book the room" ShowErrorSummary="true" />
 </div>
 
 @if (_submitted)
 {
-    <div class="demo-result"><strong>Booked ✓</strong> <pre>@_json</pre></div>
+    <div class="bb-note bb-note-success demo-result"><strong>Booked ✓</strong><pre>@_json</pre></div>
 }
 
-<details class="demo-source">
-    <summary>View source</summary>
-    <pre><code>@Source</code></pre>
+<details class="bb-source demo-source">
+    <summary class="btn btn-secondary">View source</summary>
+    <pre class="bb-code"><code>@Source</code></pre>
 </details>
 
 @code {

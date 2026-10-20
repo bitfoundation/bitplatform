@@ -1,11 +1,11 @@
 ﻿@page "/dependent-fields"
 @implements IDisposable
 
-<PageTitle>Dependent fields</PageTitle>
+<PageTitle>Dependent fields · Borm</PageTitle>
 
-<div class="demo-intro">
+<div class="bb-intro">
     <h1>Dependent fields</h1>
-    <p>
+    <p class="bb-subtitle">
         A rule that reads two values lives on one of them, so only one of the two changes ever runs it.
         Get the confirmation wrong, then fix the <em>first</em> box to agree with what you typed — the
         complaint underneath the confirmation is now wrong, and without <code>RevalidateOn</code> it
@@ -14,17 +14,31 @@
     </p>
 </div>
 
-<div class="demo-card">
-    <div class="demo-toolbar">
-        <label class="demo-toolbar__check">
-            <input type="checkbox" checked="@_wired" @onchange="ToggleWiring" />
-            Revalidate dependents
-        </label>
+<div class="bb-note">
+    Try each of these:
+    <ol class="bb-detail-list">
+        <li>Type an email, then a different one below it, then <em>correct the first</em>.</li>
+        <li>Set a return date before the departure date, then move the <em>departure</em> back.</li>
+        <li>Book fewer rooms than travellers, then reduce the <em>travellers</em>.</li>
+        <li>
+            Tick the hire car, give it some days, then untick it — the estimate drops the car again,
+            because clearing a hidden field is a change like any other.
+        </li>
+    </ol>
+</div>
+
+<div class="bb-demo">
+    <div class="bb-demo-bar">
+        <span class="bb-demo-label">Live form</span>
         <span class="demo-hint">
             @(_wired
                 ? "As shipped. Fixing either side settles both."
                 : "Turned off, so you can watch the stale message the declaration exists to prevent.")
         </span>
+        <label class="bb-check">
+            <input type="checkbox" checked="@_wired" @onchange="ToggleWiring" />
+            Revalidate dependents
+        </label>
     </div>
 
     <BormView State="_state"
@@ -34,31 +48,15 @@
               SubmitText="Request trip" />
 </div>
 
-<p class="demo-status">
-    Try each of these:
-    <br />1. Type an email, then a different one below it, then <em>correct the first</em>.
-    <br />2. Set a return date before the departure date, then move the <em>departure</em> back.
-    <br />3. Book fewer rooms than travellers, then reduce the <em>travellers</em>.
-    <br />4. Tick the hire car, give it some days, then untick it — the estimate drops the car again,
-    because clearing a hidden field is a change like any other.
-</p>
-
 @if (_submitted)
 {
-    <div class="demo-result"><strong>Trip requested ✓</strong> <pre>@_json</pre></div>
+    <div class="bb-note bb-note-success demo-result"><strong>Trip requested ✓</strong><pre>@_json</pre></div>
 }
 
-<details class="demo-source">
-    <summary>View source</summary>
-    <pre><code>@Source</code></pre>
+<details class="bb-source demo-source">
+    <summary class="btn btn-secondary">View source</summary>
+    <pre class="bb-code"><code>@Source</code></pre>
 </details>
-
-<style>
-    .demo-toolbar { display: flex; gap: 1rem; flex-wrap: wrap; align-items: center; margin-bottom: 1.5rem; font-size: .85rem; color: #475569; }
-    .demo-toolbar__check { display: inline-flex; align-items: center; gap: .4rem; font-weight: 600; }
-    .demo-hint { color: #64748b; }
-    .demo-status { max-width: 760px; margin-top: 1rem; font-size: .85rem; color: #475569; line-height: 1.7; }
-</style>
 
 @code {
     private const string Source =

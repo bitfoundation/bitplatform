@@ -1,18 +1,19 @@
 ﻿@page "/azure-mapping"
 
-<PageTitle>Azure mapping - bit Belemetry</PageTitle>
+<PageTitle>Azure mapping · Belemetry</PageTitle>
 
-<h1>Azure mapping</h1>
+<div class="bb-intro">
+    <h1>Azure mapping</h1>
+    <p class="bb-subtitle">
+        The Azure Monitor exporter does not go through a collector: it turns each OpenTelemetry-shaped record into an
+        Application Insights envelope and posts it to the ingestion endpoint itself. This page is the mapping, record
+        by record - the same in the .NET encoder and in the browser script, so a page view from the browser and a
+        request span from the server land in the tables and on the Application Map node you expect.
+    </p>
+</div>
 
-<p class="page-intro">
-    The Azure Monitor exporter does not go through a collector: it turns each OpenTelemetry-shaped record into an
-    Application Insights envelope and posts it to the ingestion endpoint itself. This page is the mapping, record
-    by record - the same in the .NET encoder and in the browser script, so a page view from the browser and a
-    request span from the server land in the tables and on the Application Map node you expect.
-</p>
-
-<div class="demo-section">
-    <h2>Endpoint</h2>
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Endpoint</h3>
     <p>
         Envelopes are posted to <code>{IngestionEndpoint}/v2.1/track</code>, with the ingestion endpoint read from the
         connection string - <code>https://dc.services.visualstudio.com</code> when the connection string has none. The
@@ -23,8 +24,8 @@
     <CodeSnippet Code="@ExporterCode" Language="C#" />
 </div>
 
-<div class="demo-section">
-    <h2>Envelope</h2>
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Envelope</h3>
     <p>
         Every record becomes one envelope (a metric becomes one per point). <code>name</code> is
         <code>Microsoft.ApplicationInsights.&lt;Type&gt;</code>, <code>baseType</code> is <code>&lt;Type&gt;Data</code>,
@@ -33,10 +34,10 @@
     <CodeSnippet Code="@EnvelopeCode" Language="JSON" Expanded="true" />
 </div>
 
-<div class="demo-section">
-    <h2>Tags</h2>
-    <div class="doc-table-wrap">
-        <table class="doc-table">
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Tags</h3>
+    <div class="bb-scroll">
+        <table class="bb-table">
             <thead>
                 <tr><th scope="col">Tag</th><th scope="col">Value</th></tr>
             </thead>
@@ -64,10 +65,10 @@
     </p>
 </div>
 
-<div class="demo-section">
-    <h2>Record types</h2>
-    <div class="doc-table-wrap">
-        <table class="doc-table">
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Record types</h3>
+    <div class="bb-scroll">
+        <table class="bb-table">
             <thead>
                 <tr><th scope="col">Source record</th><th scope="col">Envelope type</th><th scope="col">Table</th><th scope="col">Fields</th></tr>
             </thead>
@@ -144,10 +145,10 @@
     </p>
 </div>
 
-<div class="demo-section">
-    <h2>Severity levels</h2>
-    <div class="doc-table-wrap">
-        <table class="doc-table">
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Severity levels</h3>
+    <div class="bb-scroll">
+        <table class="bb-table">
             <thead>
                 <tr><th scope="col">OTLP severity number</th><th scope="col"><code>severityLevel</code></th></tr>
             </thead>
@@ -162,8 +163,8 @@
     </div>
 </div>
 
-<div class="demo-section">
-    <h2>Properties</h2>
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Properties</h3>
     <p>
         Every attribute not consumed by a field becomes a custom property, stringified - so a structured log value, a
         <code>TrackEvent</code> attribute or a processor's enrichment is queryable as
@@ -173,8 +174,8 @@
     <CodeSnippet Code="@KustoCode" Language="Shell" />
 </div>
 
-<div class="demo-section">
-    <h2>Retries</h2>
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Retries</h3>
     <p>
         Status codes <code>408</code>, <code>429</code>, <code>439</code> (daily quota), <code>500</code>, <code>502</code>,
         <code>503</code> and <code>504</code> are retried with backoff, honouring <code>Retry-After</code>, and kept for
@@ -189,8 +190,8 @@
     <CodeSnippet Code="@PartialCode" Language="JSON" />
 </div>
 
-<div class="demo-section">
-    <h2>API</h2>
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> API</h3>
     <ApiTable TypeName="BelemetryAzureMonitorExporterOptions" />
 </div>
 

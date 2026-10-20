@@ -9,120 +9,124 @@
    pixels with the browser's own text engine through ImageCanvas - so system fonts, emoji and
    right-to-left scripts work without shipping a font file. *@
 
-<PageTitle>Social images - Bit.Bmage</PageTitle>
+<PageTitle>Social images · Bmage</PageTitle>
 
-<h1>Social images</h1>
+<div class="bb-intro">
+    <h1>Social images</h1>
+    <p class="bb-subtitle">
+        Compose to a platform's exact canvas, apply a look, and burn in a caption. The text is rendered by
+        the <strong>browser's own text engine</strong>, so system fonts, emoji and right-to-left scripts
+        all work without shipping a font file.
+    </p>
+</div>
 
-<p class="page-intro">
-    Compose to a platform's exact canvas, apply a look, and burn in a caption. The text is rendered by
-    the <strong>browser's own text engine</strong>, so system fonts, emoji and right-to-left scripts
-    all work without shipping a font file.
-</p>
-
-<div class="demo-section">
-    <h2>Try it</h2>
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Try it</h3>
 
     @if (_error is not null)
     {
-        <div class="alert alert-error" role="alert">@_error</div>
+        <div class="bb-note bb-note-danger demo-error" role="alert">@_error</div>
     }
 
-    <div class="split">
-        <div>
-            @if (_source is null)
-            {
-                <BmageDropZone Label="Drop a photo here" OnFilesSelected="OnFilesSelected" />
-                <div class="sample-row">
-                    <button type="button" class="btn" disabled="@(_busy || IsHydrating)" @onclick="UseSample">Use a sample image</button>
+    <div class="bb-demo bb-page-wide">
+        <div class="bb-demo-bar"><span class="bb-demo-label">Live</span></div>
+        <div class="demo-split">
+            <div>
+                @if (_source is null)
+                {
+                    <BmageDropZone Label="Drop a photo here" OnFilesSelected="OnFilesSelected" />
+                    <div class="bb-toolbar">
+                        <button type="button" class="btn btn-secondary" disabled="@(_busy || IsHydrating)" @onclick="UseSample">Use a sample image</button>
+                    </div>
+                }
+                else
+                {
+                    <ImagePreview Image="_result" Version="_version" Alt="Composed social image" Class="social-preview" />
+                    <div class="social-meta">
+                        <span class="demo-small bb-muted">
+                            @if (_result is not null)
+                            {
+                                <text>@_result.Width &times; @_result.Height</text>
+                            }
+                            @if (_encoded is not null)
+                            {
+                                <text> &middot; @Display.Bytes(_encoded.Length) @_encoded.Format.ToString().ToUpperInvariant()</text>
+                            }
+                            @if (_busy)
+                            {
+                                <span class="working" role="status"><span class="bb-spinner" aria-hidden="true"></span>Composing&hellip;</span>
+                            }
+                        </span>
+                        <div class="bb-toolbar">
+                            <button type="button" class="btn btn-primary" disabled="@(_encoded is null || _busy)" @onclick="Download">
+                                <Icon Path="@Icons.Download" />
+                                Download
+                            </button>
+                            <button type="button" class="btn btn-secondary" @onclick="Clear">Start over</button>
+                        </div>
+                    </div>
+                }
+            </div>
+
+            <div class="demo-panel">
+                <p class="bb-overline demo-label">Canvas</p>
+                <div class="demo-field">
+                    <label class="demo-field-label" for="preset">Preset</label>
+                    <select id="preset" @onchange="OnPresetChanged">
+                        @foreach (var preset in Presets)
+                        {
+                            <option value="@preset.Name" selected="@(_preset.Name == preset.Name)">@preset.Name (@preset.Width×@preset.Height)</option>
+                        }
+                    </select>
                 </div>
-            }
-            else
-            {
-                <ImagePreview Image="_result" Version="_version" Alt="Composed social image" Class="social-preview" />
-                <div class="social-meta">
-                    <span class="small muted">
-                        @if (_result is not null)
+
+                <hr class="demo-divider" />
+                <p class="bb-overline demo-label">Look</p>
+                <div class="demo-field" role="group" aria-labelledby="look-label">
+                    <span class="demo-field-label" id="look-label">Filter</span>
+                    <div class="bb-segmented">
+                        @foreach (var look in Looks)
                         {
-                            <text>@_result.Width &times; @_result.Height</text>
+                            <button type="button" aria-pressed="@(_look == look ? "true" : "false")" @onclick="() => SetLook(look)">@look</button>
                         }
-                        @if (_encoded is not null)
-                        {
-                            <text> &middot; @Display.Bytes(_encoded.Length) @_encoded.Format.ToString().ToUpperInvariant()</text>
-                        }
-                        @if (_busy)
-                        {
-                            <span class="working" role="status">Composing&hellip;</span>
-                        }
-                    </span>
-                    <div class="btn-row">
-                        <button type="button" class="btn btn-accent" disabled="@(_encoded is null || _busy)" @onclick="Download">
-                            <Icon Path="@Icons.Download" />
-                            Download
-                        </button>
-                        <button type="button" class="btn" @onclick="Clear">Start over</button>
                     </div>
                 </div>
-            }
-        </div>
 
-        <div class="card">
-            <p class="card-title">Canvas</p>
-            <div class="field">
-                <label class="field-label" for="preset">Preset</label>
-                <select id="preset" class="bmg-select" @onchange="OnPresetChanged">
-                    @foreach (var preset in Presets)
-                    {
-                        <option value="@preset.Name" selected="@(_preset.Name == preset.Name)">@preset.Name (@preset.Width×@preset.Height)</option>
-                    }
-                </select>
-            </div>
-
-            <hr class="divider" />
-            <p class="card-title">Look</p>
-            <div class="field" role="group" aria-labelledby="look-label">
-                <span class="field-label" id="look-label">Filter</span>
-                <div class="chip-row">
-                    @foreach (var look in Looks)
-                    {
-                        <button type="button" class="chip" aria-pressed="@(_look == look ? "true" : "false")" @onclick="() => SetLook(look)">@look</button>
-                    }
+                <div class="demo-field">
+                    <label class="demo-field-label" for="warmth">Warmth <span class="demo-field-value">@_warmth.ToString("0.00")</span></label>
+                    <input id="warmth" type="range" min="-0.6" max="0.6" step="0.02" value="@_warmth.ToString(System.Globalization.CultureInfo.InvariantCulture)" @oninput="e => SetDouble(v => _warmth = (float)v, e)" />
                 </div>
-            </div>
 
-            <div class="field">
-                <label class="field-label" for="warmth">Warmth <span class="field-value">@_warmth.ToString("0.00")</span></label>
-                <input id="warmth" type="range" min="-0.6" max="0.6" step="0.02" value="@_warmth.ToString(System.Globalization.CultureInfo.InvariantCulture)" @oninput="e => SetDouble(v => _warmth = (float)v, e)" />
-            </div>
+                <div class="demo-field">
+                    <label class="demo-field-label" for="vig">Vignette <span class="demo-field-value">@_vignette.ToString("0.00")</span></label>
+                    <input id="vig" type="range" min="0" max="1" step="0.02" value="@_vignette.ToString(System.Globalization.CultureInfo.InvariantCulture)" @oninput="e => SetDouble(v => _vignette = (float)v, e)" />
+                </div>
 
-            <div class="field">
-                <label class="field-label" for="vig">Vignette <span class="field-value">@_vignette.ToString("0.00")</span></label>
-                <input id="vig" type="range" min="0" max="1" step="0.02" value="@_vignette.ToString(System.Globalization.CultureInfo.InvariantCulture)" @oninput="e => SetDouble(v => _vignette = (float)v, e)" />
-            </div>
-
-            <hr class="divider" />
-            <p class="card-title">Caption</p>
-            <div class="field">
-                <label class="field-label" for="caption">Text</label>
-                <input id="caption" type="text" placeholder="Add a caption" value="@_caption" @oninput="OnCaptionChanged" />
-            </div>
-            <div class="field">
-                <label class="field-label" for="capsize">Size <span class="field-value">@_captionSize%</span></label>
-                <input id="capsize" type="range" min="3" max="14" step="1" value="@_captionSize" @oninput="e => SetDouble(v => _captionSize = (int)v, e)" />
-            </div>
-            <div class="field">
-                <label class="field-label" for="capcolor">Colour</label>
-                <input id="capcolor" type="color" class="bmg-color" value="@_captionColor.ToHex(false)" @onchange="OnCaptionColorChanged" />
-            </div>
-            <div class="field field-inline">
-                <input id="scrim" type="checkbox" checked="@_scrim" @onchange="OnScrimChanged" />
-                <label class="field-label" for="scrim">Darken behind the caption</label>
+                <hr class="demo-divider" />
+                <p class="bb-overline demo-label">Caption</p>
+                <div class="demo-field">
+                    <label class="demo-field-label" for="caption">Text</label>
+                    <input id="caption" type="text" placeholder="Add a caption" value="@_caption" @oninput="OnCaptionChanged" />
+                </div>
+                <div class="demo-field">
+                    <label class="demo-field-label" for="capsize">Size <span class="demo-field-value">@_captionSize%</span></label>
+                    <input id="capsize" type="range" min="3" max="14" step="1" value="@_captionSize" @oninput="e => SetDouble(v => _captionSize = (int)v, e)" />
+                </div>
+                <div class="demo-field">
+                    <label class="demo-field-label" for="capcolor">Colour</label>
+                    <input id="capcolor" type="color" class="bmg-color" value="@_captionColor.ToHex(false)" @onchange="OnCaptionColorChanged" />
+                </div>
+                <div class="demo-field demo-field-inline">
+                    <input id="scrim" type="checkbox" checked="@_scrim" @onchange="OnScrimChanged" />
+                    <label class="demo-field-label" for="scrim">Darken behind the caption</label>
+                </div>
             </div>
         </div>
     </div>
 </div>
 
-<div class="demo-section">
-    <h2>Composing with the canvas API</h2>
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Composing with the canvas API</h3>
     <p>
         <code>Cover</code> fills the preset exactly, cropping the overflow rather than distorting.
         The look is a run of per-pixel adjustments, which the optimiser fuses into a single pass over
@@ -131,7 +135,7 @@
         the text that wraps.
     </p>
     <CodeSnippet Code="@Snippet" Language="C#" Expanded="true" />
-    <div class="callout">
+    <div class="bb-note">
         <p>
             <code>BrowserTextRasterizer</code> needs a browser. On a server, register a font with
             <code>FontTextRasterizer</code> instead - see the <a href="/headless">Headless API</a>.

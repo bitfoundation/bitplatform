@@ -7,40 +7,46 @@ public partial class Header : IDisposable
 {
     private bool isHeaderMenuOpen;
     private bool isProductsMenuOpen;
+    private bool isUtilitiesMenuOpen;
     private bool isMobileProductsOpen;
+    private bool isMobileUtilitiesOpen;
     private bool isProductsMenuForceClosed;
 
 
     private sealed record ProductMenuItem(string Title, string Description, string Url, bool External = false, bool Disabled = false);
 
-    private static readonly ProductMenuItem[][] productMenuColumns =
+    private static readonly ProductMenuItem[] mainProductMenuItems =
     [
-        [
-            new("Boilerplate", "Feature-rich project template", Urls.Templates),
-            new("Butil", "Blazor utils for browser APIs", Urls.Butil, External: true),
-            new("Bswup", "Blazor PWA on steroids", Urls.Bswup, External: true),
-            new("Besql", "Blazor Entity Framework SQLite", Urls.Besql),
-        ],
-        [
-            new("Brouter", "Modern declarative Blazor router", Urls.Brouter, External: true),
-            new("Bmotion", "Blazor-native animation library", Urls.Bmotion, External: true),
-            new("Bmage", "Blazor-native image processing", Urls.Bmage, External: true),
-            new("Bsqlite", "SQLite and EF Core in the browser", Urls.Bsqlite, External: true),
-            new("Bink", "Blazor-native drawing and ink", Urls.Bink, External: true),
-            new("Balette", "Blazor-native command palette", Urls.Balette, External: true),
-            new("BbScanner", "Blazor-native barcode scanner", Urls.BbScanner, External: true),
-            new("Bdnd", "Declarative drag and drop for Blazor", Urls.Bdnd, External: true),
-            new("BlazeDb", "Memory-first database for Blazor", Urls.BlazeDb, External: true),
-            new("Blow", "Blazor-native node-based editors", Urls.Blow, External: true),
-            new("Borm", "Schema-driven forms for Blazor", Urls.Borm, External: true),
-            new("Bcrdt", "Real-time collaborative editing for Blazor", Urls.Bcrdt, External: true),
-            new("Bonboarding", "Blazor-native product tours", Urls.Bonboarding, External: true),
-            new("Bortable", "Blazor-native sortable lists", Urls.Bortable, External: true),
-            new("Blex", "Reactive state management for Blazor and MAUI", Urls.Blex, External: true),
-            new("Belemetry", "OpenTelemetry for every Blazor app", Urls.Belemetry, External: true),
-            new("BlazorUI", "Native Blazor UI components", Urls.BlazorUI, External: true),
-        ]
+        new("Boilerplate", "Feature-rich project template", Urls.Templates),
+        new("BlazorUI", "Native Blazor UI components", Urls.BlazorUI, External: true),
+        new("Butil", "Blazor utils for browser APIs", Urls.Butil, External: true),
+        new("Bswup", "Blazor PWA on steroids", Urls.Bswup, External: true),
+        new("Besql", "Blazor Entity Framework SQLite", Urls.Besql),
+        new("Brouter", "Modern declarative Blazor router", Urls.Brouter, External: true),
     ];
+
+    // Listed under the Utilities submenu (the projects under src/Utilities), so the root of the
+    // Products menu stays focused on the main products.
+    private static readonly ProductMenuItem[] utilityMenuItems =
+    [
+        new("Bmotion", "Blazor-native animation library", Urls.Bmotion, External: true),
+        new("Bmage", "Blazor-native image processing", Urls.Bmage, External: true),
+        new("Bsqlite", "SQLite and EF Core in the browser", Urls.Bsqlite, External: true),
+        new("Bink", "Blazor-native drawing and ink", Urls.Bink, External: true),
+        new("Balette", "Blazor-native command palette", Urls.Balette, External: true),
+        new("BbScanner", "Blazor-native barcode scanner", Urls.BbScanner, External: true),
+        new("Bdnd", "Declarative drag and drop for Blazor", Urls.Bdnd, External: true),
+        new("BlazeDb", "Memory-first database for Blazor", Urls.BlazeDb, External: true),
+        new("Blow", "Blazor-native node-based editors", Urls.Blow, External: true),
+        new("Borm", "Schema-driven forms for Blazor", Urls.Borm, External: true),
+        new("Bcrdt", "Real-time collaborative editing for Blazor", Urls.Bcrdt, External: true),
+        new("Bonboarding", "Blazor-native product tours", Urls.Bonboarding, External: true),
+        new("Bortable", "Blazor-native sortable lists", Urls.Bortable, External: true),
+        new("Blex", "Reactive state management for Blazor and MAUI", Urls.Blex, External: true),
+        new("Belemetry", "OpenTelemetry for every Blazor app", Urls.Belemetry, External: true),
+    ];
+
+    private static readonly string utilitiesMenuDescription = $"{utilityMenuItems.Length} focused Blazor libraries";
 
 
     [AutoInject] public NavMenuService navMenuService = default!;
@@ -71,7 +77,9 @@ public partial class Header : IDisposable
     private void CloseMenus()
     {
         isProductsMenuOpen = false;
+        isUtilitiesMenuOpen = false;
         isMobileProductsOpen = false;
+        isMobileUtilitiesOpen = false;
 
         if (isHeaderMenuOpen)
         {
@@ -88,6 +96,7 @@ public partial class Header : IDisposable
     private async Task ToggleProductsMenu()
     {
         isProductsMenuOpen = !isProductsMenuOpen;
+        isUtilitiesMenuOpen = false;
 
         if (isProductsMenuOpen)
         {
@@ -104,7 +113,14 @@ public partial class Header : IDisposable
         if (e.Key is not "Escape") return;
 
         isProductsMenuOpen = false;
+        isUtilitiesMenuOpen = false;
         await SuppressProductsMenu();
+    }
+
+    // Only the click/tap/Enter path goes through here; a mouse hover opens the submenu with pure CSS.
+    private void ToggleUtilitiesMenu()
+    {
+        isUtilitiesMenuOpen = !isUtilitiesMenuOpen;
     }
 
     // The popup is also held open by the :hover / :focus-within CSS rules, so closing takes both:
@@ -127,11 +143,22 @@ public partial class Header : IDisposable
     private void ToggleMobileProducts()
     {
         isMobileProductsOpen = !isMobileProductsOpen;
+
+        if (isMobileProductsOpen is false)
+        {
+            isMobileUtilitiesOpen = false;
+        }
+    }
+
+    private void ToggleMobileUtilities()
+    {
+        isMobileUtilitiesOpen = !isMobileUtilitiesOpen;
     }
 
     private async Task HandleProductMenuItemClick()
     {
         isProductsMenuOpen = false;
+        isUtilitiesMenuOpen = false;
         await SuppressProductsMenu();
     }
 
@@ -139,6 +166,13 @@ public partial class Header : IDisposable
     {
         isProductsMenuForceClosed = false;
     }
+
+    // Attached only while force-closed. It has to be a default EventCallback otherwise, which renders
+    // no handler at all: `cond ? handler : null` still builds a callback bound to this component with
+    // a null delegate, which Blazor wires up anyway and then throws a NullReferenceException on in
+    // DispatchEventAsync on every hover.
+    private EventCallback<MouseEventArgs> ProductsMenuMouseEnterCallback =>
+        isProductsMenuForceClosed ? EventCallback.Factory.Create<MouseEventArgs>(this, WrapHandled(HandleProductsMenuMouseEnter)) : default;
 
     private bool IsMenuItemActive(ProductMenuItem item)
     {
@@ -174,6 +208,7 @@ public partial class Header : IDisposable
         if (isHeaderMenuOpen is false)
         {
             isMobileProductsOpen = false;
+            isMobileUtilitiesOpen = false;
         }
 
         await JSRuntime.ToggleBodyOverflow(isHeaderMenuOpen);

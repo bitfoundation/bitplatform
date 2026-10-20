@@ -2,92 +2,97 @@
 @implements IDisposable
 @inject IBonboardingService BonboardingService
 
-<PageTitle>Events and persistence</PageTitle>
+<PageTitle>Events &amp; persistence · Bonboarding</PageTitle>
 
-<h1>Events &amp; persistence</h1>
+<div class="bb-intro">
+    <h1>Events &amp; persistence</h1>
+    <p class="bb-subtitle">
+        Every moment of a tour is published as an event, including how long each step was on screen. Subscribe to
+        <code>IBonboardingService.EventRaised</code> for something quick, or register an <code>IBonboardingObserver</code>
+        in DI to forward the stream to your analytics provider.
+    </p>
+</div>
 
-<p class="page-intro">
-    Every moment of a tour is published as an event, including how long each step was on screen.
-    Subscribe to <code>IBonboardingService.EventRaised</code> for something quick, or register an
-    <code>IBonboardingObserver</code> in DI to forward the stream to your analytics provider.
-</p>
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Live event stream</h3>
 
-<section class="demo-section">
-    <h2>Live event stream</h2>
+    <div class="bb-demo">
+        <div class="bb-demo-bar">
+            <span class="bb-demo-label">Live</span>
+            <button type="button" class="btn btn-primary" @onclick="StartAsync">Run a tour and watch the log</button>
+            <button type="button" class="btn btn-secondary" @onclick="Clear">Clear the log</button>
+        </div>
 
-    <div class="demo-actions">
-        <button type="button" class="btn btn-primary" @onclick="StartAsync">Run a tour and watch the log</button>
-        <button type="button" class="btn" @onclick="Clear">Clear the log</button>
-    </div>
+        <AppWindow />
 
-    <AppWindow />
-
-    @if (_log.Count == 0)
-    {
-        <p class="muted">Nothing yet. Start the tour above.</p>
-    }
-    else
-    {
-        <div class="log" role="log" aria-label="Tour events">
+        <div class="bb-log event-log" role="log" aria-label="Tour events">
+            @if (_log.Count == 0)
+            {
+                <div class="bb-log-empty">Nothing yet. Start the tour above.</div>
+            }
             @foreach (var entry in _log)
             {
-                <div class="log-row">
-                    <span class="log-time">@entry.Time.ToString("HH:mm:ss.fff")</span>
-                    <span class="log-kind">@entry.Kind</span>
+                <div class="bb-log-line event-log-row">
+                    <span class="event-log-time">@entry.Time.ToString("HH:mm:ss.fff")</span>
+                    <span class="event-log-kind">@entry.Kind</span>
                     <span>@entry.Detail</span>
                 </div>
             }
         </div>
-    }
+    </div>
 </section>
 
-<section class="demo-section">
-    <h2>Persistence</h2>
-
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Persistence</h3>
     <p>
-        Progress is written to the registered <code>IBonboardingStore</code> after every step. The default
-        store uses <code>localStorage</code> with an in-memory mirror, so reads still work while
-        prerendering and in private browsing. Swap it for a server-side store with one call.
+        Progress is written to the registered <code>IBonboardingStore</code> after every step. The default store uses
+        <code>localStorage</code> with an in-memory mirror, so reads still work while prerendering and in private
+        browsing. Swap it for a server-side store with one call.
     </p>
 
-    <div class="demo-actions">
-        <button type="button" class="btn" @onclick="RefreshRecordAsync">Read the saved record</button>
-        <button type="button" class="btn" @onclick="ResetAsync">Forget this tour</button>
-        <button type="button" class="btn" @onclick="ResetAllAsync">Forget every tour</button>
-    </div>
-
-    @if (_record is not null)
-    {
-        <div class="table-wrap">
-            <table class="facts">
-                <tbody>
-                    <tr><th>Tour</th><td>@_record.TourId</td></tr>
-                    <tr><th>Version</th><td>@_record.Version</td></tr>
-                    <tr><th>Current step</th><td>@(_record.CurrentStepId ?? "-")</td></tr>
-                    <tr><th>Completed</th><td>@_record.Completed</td></tr>
-                    <tr><th>Dismissed</th><td>@_record.Dismissed</td></tr>
-                    <tr><th>Visited</th><td>@string.Join(", ", _record.VisitedStepIds)</td></tr>
-                    <tr><th>Updated</th><td>@_record.UpdatedAt.ToLocalTime().ToString("g")</td></tr>
-                </tbody>
-            </table>
+    <div class="bb-demo">
+        <div class="bb-demo-bar">
+            <span class="bb-demo-label">Store</span>
+            <button type="button" class="btn btn-secondary" @onclick="RefreshRecordAsync">Read the saved record</button>
+            <button type="button" class="btn btn-secondary" @onclick="ResetAsync">Forget this tour</button>
+            <button type="button" class="btn btn-secondary" @onclick="ResetAllAsync">Forget every tour</button>
         </div>
-    }
-    else if (_recordChecked)
-    {
-        <p class="muted">No saved record for <code>@TourId</code>.</p>
-    }
+
+        @if (_record is not null)
+        {
+            <dl class="bb-params">
+                <dt>Tour</dt><dd>@_record.TourId</dd>
+                <dt>Version</dt><dd>@_record.Version</dd>
+                <dt>Current step</dt><dd>@(_record.CurrentStepId ?? "-")</dd>
+                <dt>Completed</dt><dd>@_record.Completed</dd>
+                <dt>Dismissed</dt><dd>@_record.Dismissed</dd>
+                <dt>Visited</dt><dd>@string.Join(", ", _record.VisitedStepIds)</dd>
+                <dt>Updated</dt><dd>@_record.UpdatedAt.ToLocalTime().ToString("g")</dd>
+            </dl>
+        }
+        else if (_recordChecked)
+        {
+            <p class="bb-empty">No saved record for <code>@TourId</code>.</p>
+        }
+        else
+        {
+            <p class="bb-muted">Run the tour above, then read what the store kept of it.</p>
+        }
+    </div>
 </section>
 
-<section class="demo-section">
-    <h2>Wiring it up</h2>
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Wiring it up</h3>
+    <p>An observer receives every event of every tour, and is registered once in DI.</p>
 
-    <pre><code>@ObserverExample</code></pre>
+    <pre class="bb-code">@ObserverExample</pre>
 </section>
 
-<section class="demo-section">
-    <h2>A custom store</h2>
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> A custom store</h3>
+    <p>Progress can live wherever your users' other data does - a profile, a table, a document.</p>
 
-    <pre><code>@StoreExample</code></pre>
+    <pre class="bb-code">@StoreExample</pre>
 </section>
 
 @code {

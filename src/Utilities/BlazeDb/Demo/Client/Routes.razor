@@ -1,6 +1,15 @@
-﻿<Router AppAssembly="typeof(Program).Assembly" NotFoundPage="typeof(Pages.NotFound)">
+﻿@* Every page but the landing page renders inside the docs shell (Layout/DocsLayout.razor); the
+   landing page and the not-found page opt out with @layout MainLayout. After a navigation the
+   page's own H1 takes focus, so a screen reader starts reading at the new page.
+
+   StorageStatus sits beside the router rather than inside a layout: it opens the tab's demo
+   database once, whichever page the visitor lands on, and stays mounted across navigations. *@
+
+<Router AppAssembly="typeof(Program).Assembly" NotFoundPage="typeof(Pages.NotFound)">
     <Found Context="routeData">
-        <RouteView RouteData="routeData" DefaultLayout="typeof(MainLayout)" />
+        <RouteView RouteData="routeData" DefaultLayout="typeof(Layout.DocsLayout)" />
         <FocusOnNavigate RouteData="routeData" Selector="h1" />
     </Found>
 </Router>
+
+<StorageStatus />

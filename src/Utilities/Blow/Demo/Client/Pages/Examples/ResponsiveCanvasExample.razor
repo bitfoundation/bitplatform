@@ -1,15 +1,15 @@
 ﻿@page "/examples/responsive-canvas"
 
-<PageTitle>Responsive Canvas - bit Blow</PageTitle>
+<PageTitle>Responsive Canvas · Blow</PageTitle>
 
 <ExampleScaffold Title="Responsive Canvas"
                  Summary="The flow watches its own container and its nodes for size changes, so resizing the canvas or growing a node's content keeps hit-testing, edge anchors and the minimap correct without any work on your part. Drive the viewport from your own state at the same time.">
     <Toolbar>
-        <button class="btn btn-sm btn-primary" @onclick="@(() => Resize(-120))">Narrower</button>
-        <button class="btn btn-sm btn-primary" @onclick="@(() => Resize(120))">Wider</button>
-        <button class="btn btn-sm btn-primary" @onclick="GrowNode">Grow node content</button>
-        <button class="btn btn-sm btn-primary" @onclick="Center">Recenter viewport</button>
-        <span class="text-muted">Canvas width: @_width px</span>
+        <button class="btn btn-primary" @onclick="@(() => Resize(-120))">Narrower</button>
+        <button class="btn btn-primary" @onclick="@(() => Resize(120))">Wider</button>
+        <button class="btn btn-primary" @onclick="GrowNode">Grow node content</button>
+        <button class="btn btn-primary" @onclick="Center">Recenter viewport</button>
+        <span class="bb-muted">Canvas width: @_width px</span>
     </Toolbar>
     <ChildContent>
         <div style="@($"width:{_width}px;max-width:100%;height:100%;")">
@@ -49,7 +49,7 @@
 
 <style>
     .resp-node { padding: 2px; text-align: left; }
-    .resp-line { font-size: 11px; color: #6b7280; }
+    .resp-line { font-size: 11px; color: var(--bit-blow-text-muted); }
     .resp-readout { padding: 6px 10px; font-size: 12px; font-variant-numeric: tabular-nums; background: var(--bit-blow-surface); color: var(--bit-blow-text); border: 1px solid var(--bit-blow-border); border-radius: 6px; }
 </style>
 

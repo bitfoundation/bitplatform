@@ -4,21 +4,23 @@
 @inject ProductApi Api
 @inject CartState Cart
 
-<div class="card">
-    <h3>Products <span class="muted">(@_visible.Count of @_all.Count) · rendered @_renders times · @(SearchOnType ? "searching the API on every keystroke" : "filtering locally")</span></h3>
+<div class="demo-tile">
+    <h4 class="demo-tile-title">Products <span class="bb-muted">(@_visible.Count of @_all.Count) · rendered @_renders times · @(SearchOnType ? "searching the API on every keystroke" : "filtering locally")</span></h4>
     @if (_error is not null)
     {
-        <div class="error">@_error</div>
+        <div class="bb-note bb-note-danger">@_error</div>
     }
-    <table>
-        <thead><tr><th>Name</th><th>Category</th><th>Price</th><th>Stock</th><th>Rating</th><th></th></tr></thead>
-        <tbody>
-            @foreach (var p in _visible)
-            {
-                <ProductRow Product="p" Highlight="@(p.Id % 7 == 0)" OnAdd="Cart.Add" />
-            }
-        </tbody>
-    </table>
+    <div class="bb-scroll demo-table-scroll">
+        <table class="bb-table demo-products">
+            <thead><tr><th>Name</th><th>Category</th><th>Price</th><th>Stock</th><th>Rating</th><th></th></tr></thead>
+            <tbody>
+                @foreach (var p in _visible)
+                {
+                    <ProductRow Product="p" Highlight="@(p.Id % 7 == 0)" OnAdd="Cart.Add" />
+                }
+            </tbody>
+        </table>
+    </div>
 </div>
 
 @code {

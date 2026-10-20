@@ -1,13 +1,13 @@
 ﻿@page "/examples/localization"
 
-<PageTitle>Localization - bit Blow</PageTitle>
+<PageTitle>Localization · Blow</PageTitle>
 
 <ExampleScaffold Title="Localization"
                  Summary="Every string the canvas reads out or labels itself with comes from one AriaLabels object, so a flow can be translated without reimplementing its accessibility. Switch language, then Tab to a node and press Enter - the live region below shows what a screen reader would hear. The starting pan and zoom come from DefaultViewport.">
     <Toolbar>
         @foreach (var (code, name) in _languages)
         {
-            <button class="btn btn-sm @(code == _language ? "btn-primary" : "btn-outline-secondary")"
+            <button class="btn @(code == _language ? "btn-primary" : "btn-secondary")"
                     @onclick="@(() => _language = code)">
                 @name
             </button>

@@ -8,11 +8,17 @@ namespace Bit.Balette.Tests.E2E;
 /// coming and going, and the full-screen layout on a phone-sized viewport. Every value is read back with
 /// getComputedStyle or getBoundingClientRect, never from the markup.
 /// </summary>
+/// <remarks>
+/// The colours are this site's, not the library's defaults: demo.css points the palette's custom properties at the
+/// site kit's bit-theme attribute, in the bit brand - which is itself what these tests prove reaches the dialog.
+/// </remarks>
 [TestClass]
 public sealed class ThemingAndLayoutTests : BaletteTest
 {
     private const string LightBackground = "rgb(255, 255, 255)";
-    private const string DarkBackground = "rgb(23, 24, 28)";
+    private const string DarkBackground = "rgb(23, 28, 34)";
+    private const string DarkForeground = "rgb(230, 236, 242)";
+    private const string BrandAccent = "rgb(18, 118, 198)";
 
     [TestMethod]
     public async Task The_theme_buttons_change_the_colours_the_dialog_is_painted_with()
@@ -22,33 +28,65 @@ public sealed class ThemingAndLayoutTests : BaletteTest
         // The palette's own Theme parameter: a dark palette over the light page.
         await ThemeButton(page, "Palette theme", "Dark").ClickAsync();
         Assert.AreEqual(DarkBackground, await OpenAndReadAsync(page, "backgroundColor"));
-        Assert.AreEqual("rgb(243, 244, 246)", await OpenAndReadAsync(page, "color"));
+        Assert.AreEqual(DarkForeground, await OpenAndReadAsync(page, "color"));
         await Assertions.Expect(Dialog(page)).ToHaveAttributeAsync("data-theme", "dark");
 
         await ThemeButton(page, "Palette theme", "Light").ClickAsync();
         Assert.AreEqual(LightBackground, await OpenAndReadAsync(page, "backgroundColor"));
 
-        // Back to following the page, and the page turned dark: <html data-theme> restyles the palette with it.
+        // Back to following the page, and the page turned dark: <html bit-theme> restyles the palette with it.
         await ThemeButton(page, "Palette theme", "Follows the page").ClickAsync();
         await ThemeButton(page, "Site theme", "Dark").ClickAsync();
-        await Assertions.Expect(page.Locator("html")).ToHaveAttributeAsync("data-theme", "dark");
+        await Assertions.Expect(page.Locator("html")).ToHaveAttributeAsync("bit-theme", "dark");
         Assert.AreEqual(DarkBackground, await OpenAndReadAsync(page, "backgroundColor"));
+
+        // And a light palette over the dark page: the palette's own Theme wins for the palette alone.
+        await ThemeButton(page, "Palette theme", "Light").ClickAsync();
+        Assert.AreEqual(LightBackground, await OpenAndReadAsync(page, "backgroundColor"));
+    }
+
+    [TestMethod]
+    public async Task The_header_toggle_is_the_site_theme_the_palette_follows_and_the_Theme_command_shows()
+    {
+        var page = await OpenAsync("/theming");
+        Assert.AreEqual(LightBackground, await OpenAndReadAsync(page, "backgroundColor"));
+
+        // The site kit's own toggle, not one of the demo's: the palette follows it like any other change of theme,
+        // and the demo's state hears of it, so the Site buttons and the Theme command show what is on screen.
+        await page.Locator(".bb-theme-toggle").ClickAsync();
+        await Assertions.Expect(page.Locator("html")).ToHaveAttributeAsync("bit-theme", "dark");
+        await Assertions.Expect(ThemeButton(page, "Site theme", "Dark")).ToHaveAttributeAsync("aria-pressed", "true");
+        Assert.AreEqual(DarkBackground, await OpenAndReadAsync(page, "backgroundColor"));
+
+        await OpenPaletteAsync(page);
+        await TypeAsync(page, "theme");
+        await ExpectFirstItemAsync(page, "preferences.theme");
+        await Assertions.Expect(Item(page, "preferences.theme")).ToContainTextAsync("Dark");
+        await page.Keyboard.PressAsync("Enter");
+        await Assertions.Expect(Item(page, "theme:dark").Locator(".bit-balette-toggle")).ToHaveAttributeAsync("data-on", "true");
+
+        // Back to the system's light theme from the palette: the toggle's choice is dropped rather than pinned.
+        await TypeAsync(page, "auto");
+        await ExpectFirstItemAsync(page, "theme:auto");
+        await page.Keyboard.PressAsync("Enter");
+        await Assertions.Expect(page.Locator("html")).ToHaveAttributeAsync("bit-theme", "light");
+        Assert.IsNull(await page.EvaluateAsync<string?>("() => localStorage.getItem('bit-demo-theme')"), "auto left a theme pinned");
     }
 
     [TestMethod]
     public async Task The_accent_token_recolours_the_mode_chip_and_the_highlights()
     {
         var page = await OpenAsync("/theming");
-        await page.Locator(".topbar-modes button[title='Commands mode']").ClickAsync();
+        await ModeButton(page, "Commands mode").ClickAsync();
         await ExpectOpenAsync(page);
         await TypeAsync(page, "ren");
         var defaultMark = await ComputedAsync(page, "[data-balette='mark']", "backgroundColor");
-        Assert.AreEqual("rgb(79, 70, 229)", await ComputedAsync(page, "[data-balette='mode']", "color"), "the default accent is not the stylesheet's");
+        Assert.AreEqual(BrandAccent, await ComputedAsync(page, "[data-balette='mode']", "color"), "the default accent is not the site's");
         await page.Keyboard.PressAsync("Escape");
         await ExpectClosedAsync(page);
 
         await page.GetByRole(AriaRole.Button, new() { Name = "Teal", Exact = true }).ClickAsync();
-        await page.Locator(".topbar-modes button[title='Commands mode']").ClickAsync();
+        await ModeButton(page, "Commands mode").ClickAsync();
         await ExpectOpenAsync(page);
         await TypeAsync(page, "ren");
         await Assertions.Expect(page.Locator("[data-balette='mark']").First).ToBeVisibleAsync();
@@ -72,7 +110,7 @@ public sealed class ThemingAndLayoutTests : BaletteTest
         await ExpectClosedAsync(page);
 
         // The checkbox on the page...
-        await page.Locator("label.field", new() { HasTextString = "Detail pane" }).Locator("input").UncheckAsync();
+        await page.Locator("label.bb-check", new() { HasTextString = "Detail pane" }).Locator("input").UncheckAsync();
         await OpenPaletteAsync(page);
         await Assertions.Expect(Detail(page)).ToHaveCountAsync(0);
         await Assertions.Expect(Dialog(page)).ToHaveAttributeAsync("data-has-detail", "false");

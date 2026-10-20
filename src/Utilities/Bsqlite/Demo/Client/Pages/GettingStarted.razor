@@ -1,0 +1,98 @@
+﻿@page "/getting-started"
+
+<PageHeader Kicker="Introduction" Title="Getting started">
+    One package, one registration and a context factory - then EF Core runs against a SQLite database in the
+    user's browser tab, on the storage backend your preference order picks. Every page after this one runs
+    against that database, in this tab.
+</PageHeader>
+
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Install</h3>
+    <p class="bb-card-desc">
+        <code>Bit.Bsqlite</code> is the whole install: the ADO.NET surface, the EF Core integration, the worker
+        transport and every storage backend - OPFS, IndexedDB, Cache Storage and in-memory. It targets .NET 8, 9 and
+        10, each with the EF Core of the same major version. Browser-free unit tests add
+        <code>Bit.Bsqlite.Testing</code> to the test project.
+    </p>
+    <CodeBlock Title="Terminal" Language="shell" Code="@Snippets.Start.Install" Collapsible="false" />
+</section>
+
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Register the services</h3>
+    <p class="bb-card-desc">
+        Register the backends you ship, the order you prefer them in, and the database. The first available backend
+        wins, but existing data outranks preference: a database created on IndexedDB stays there once OPFS becomes
+        available. <code>AllowNonPersistentFallback()</code> is what makes in-memory acceptable at all.
+    </p>
+    <CodeBlock Title="Program.cs" Language="csharp" Code="@Snippets.Start.Registration" Collapsible="false" />
+    <div class="bb-note">
+        In a Blazor Web App whose pages are prerendered, register the same services in the server project too: the
+        prerender pass instantiates the pages there, so what they inject has to resolve. Nothing touches the browser
+        until a page opens the database. This site keeps both registrations in one <code>AddDemoServices</code>
+        extension method that both Program.cs files call.
+    </div>
+</section>
+
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Open a context and query</h3>
+    <p class="bb-card-desc">
+        Inject the context factory wherever you would have opened a <code>DbContext</code>. The first context opens
+        the database and runs the migrations once per session; later ones reuse the session's connection. From there
+        it is ordinary EF Core - with the async API throughout, because the engine runs in a worker the UI thread
+        cannot wait on.
+    </p>
+    <CodeBlock Title="Pages/Products.razor" Language="razor" Code="@Snippets.Start.Page" Collapsible="false" />
+    <div class="bb-note bb-note-warn">
+        Synchronous members - <code>SaveChanges()</code>, <code>ToList()</code>, <code>DbConnection.Open()</code> -
+        throw <code>BsqliteSynchronousApiNotSupportedException</code> naming the async overload. The
+        <a href="limits">Limits</a> page runs that on purpose.
+    </div>
+</section>
+
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Prerendering and render modes</h3>
+    <p class="bb-card-desc">
+        A prerendered page runs once on the server, where there is no browser to open a database in. Open it only once
+        the page is interactive - <code>RendererInfo.IsInteractive</code> on Interactive WebAssembly, and
+        <code>OperatingSystem.IsBrowser()</code> on Interactive Auto, where a page on the server circuit is
+        interactive too. This site renders <code>&lt;Routes&gt;</code> with InteractiveWebAssembly and lets its
+        <code>SessionLifecycle</code> component do the check for every page.
+    </p>
+    <CodeBlock Title="A page that is prerendered" Language="csharp" Code="@Snippets.Start.Prerendered" Collapsible="false" />
+    <p class="bb-card-desc">
+        Interactive Server is not supported: the engine runs in the user's tab, and EF Core on the server would need a
+        native SQLite of its own.
+    </p>
+</section>
+
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Nothing in the host page</h3>
+    <p class="bb-card-desc">
+        The engine (<code>.wasm</code>), the worker and the backends' VFSes are static web assets under
+        <code>_content/Bit.Bsqlite/</code>, each imported on demand: registering a backend costs nothing until it is
+        selected, and a session downloads one engine build and the VFS of the backend it selected. There is no script
+        tag or stylesheet to add.
+    </p>
+</section>
+
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Where to go next</h3>
+    <div class="bb-grid">
+        <a class="bb-card" href="catalog">
+            <span class="bq-panel-title">Catalog →</span>
+            <span class="bb-card-desc">CRUD over a related graph, with the types a browser database is usually worst at.</span>
+        </a>
+        <a class="bb-card" href="queries">
+            <span class="bq-panel-title">SQL and live queries →</span>
+            <span class="bb-card-desc">The SQL EF generates, decimals compared in SQL, REGEXP and queries that re-run themselves.</span>
+        </a>
+        <a class="bb-card" href="storage">
+            <span class="bq-panel-title">Storage backends →</span>
+            <span class="bb-card-desc">Why this tab's database landed where it did, and what each backend can honour.</span>
+        </a>
+        <a class="bb-card" href="mcp-server">
+            <span class="bq-panel-title">MCP server →</span>
+            <span class="bb-card-desc">Point a coding agent at this site so it reads the library instead of guessing.</span>
+        </a>
+    </div>
+</section>

@@ -18,7 +18,6 @@ public static class IServiceCollectionExtensions
         // --- Site services (not part of Blex; they power the live panels) ----------------------
         services.AddScoped<ActionFeed>();
         services.AddScoped<DemoGuard>();
-        services.AddScoped<ThemeService>();
 
         // OnError is captured on the singleton options object, so the sink it writes to must outlive
         // any single scope. In a Blazor Server app you would forward to ILogger instead.
@@ -81,7 +80,7 @@ public static class IServiceCollectionExtensions
                 return null;
             };
 
-            // Open this site in two tabs and change the theme in one: without this, whichever tab acted
+            // Open this site in two tabs and change the accent in one: without this, whichever tab acted
             // last would silently win and the other would only catch up on its next reload.
             options.SyncAcrossTabs = true;
         });

@@ -1,18 +1,19 @@
 ﻿@page "/hybrid"
 
-<PageTitle>Blazor Hybrid - bit Belemetry</PageTitle>
+<PageTitle>Blazor Hybrid · Belemetry</PageTitle>
 
-<h1>Blazor Hybrid</h1>
+<div class="bb-intro">
+    <h1>Blazor Hybrid</h1>
+    <p class="bb-subtitle">
+        In MAUI, WPF and WinForms the components run in the app process and render into a WebView. Belemetry
+        instruments both: the script in the WebView records page views, clicks, web vitals and errors, and
+        <strong>relays</strong> them over JS interop to the .NET pipeline, which exports them together with the
+        app's logs, traces and metrics - and keeps them in files while the device is offline.
+    </p>
+</div>
 
-<p class="page-intro">
-    In MAUI, WPF and WinForms the components run in the app process and render into a WebView. Belemetry
-    instruments both: the script in the WebView records page views, clicks, web vitals and errors, and
-    <strong>relays</strong> them over JS interop to the .NET pipeline, which exports them together with the
-    app's logs, traces and metrics - and keeps them in files while the device is offline.
-</p>
-
-<div class="demo-section">
-    <h2>MAUI</h2>
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> MAUI</h3>
     <p>
         Register Belemetry next to the BlazorWebView. The host kind is detected - no ASP.NET Core hosting
         and no browser underneath means Hybrid - and with it come the Hybrid defaults: the Relay transport
@@ -27,8 +28,8 @@
     <CodeSnippet Code="@RoutesCode" Language="Razor" Expanded="true" />
 </div>
 
-<div class="demo-section">
-    <h2>Flush before the app is suspended</h2>
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Flush before the app is suspended</h3>
     <p>
         A mobile OS may suspend a backgrounded app and end it later without another callback, so export what
         is queued as soon as the app goes to the background. <code>IBelemetry</code> is scoped (one per
@@ -37,8 +38,8 @@
     <CodeSnippet Code="@OnSleepCode" Language="C#" Expanded="true" />
 </div>
 
-<div class="demo-section">
-    <h2>WPF and WinForms</h2>
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> WPF and WinForms</h3>
     <p>
         The same registration, on the service collection the BlazorWebView is given. A desktop app is not
         suspended, but it does exit: flush on the way out, bounded so a missing network cannot hold the
@@ -49,14 +50,14 @@
     <CodeSnippet Code="@WinFormsCode" Language="C#" />
 </div>
 
-<div class="demo-section">
-    <h2>Relay: no CORS, no credentials in the WebView</h2>
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Relay: no CORS, no credentials in the WebView</h3>
     <p>
         <code>options.Browser.Transport</code> defaults to <code>Auto</code>, which is <code>Relay</code> in
         Hybrid. The script never calls an exporter itself; it hands its records to .NET, where they go through
         the same consent, privacy rules and processors as the app's own records. That means:
     </p>
-    <ul>
+    <ul class="bb-detail-list">
         <li>No CORS configuration on the collector - the app process is not a web page.</li>
         <li>Exporter headers and connection strings stay in the app process, never in the WebView.</li>
         <li>An <code>IBelemetryProcessor</code> sees the browser's records too.</li>
@@ -66,16 +67,16 @@
     </p>
 </div>
 
-<div class="demo-section">
-    <h2>Offline, in files</h2>
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Offline, in files</h3>
     <p>
         With the <code>Persistence</code> feature granted, exports that fail with a network error or a
         retryable status are written to files and retried every <code>RetryInterval</code>, for up to
         <code>MaxAge</code>. The consent decision is remembered in a file too, so it survives restarts even
         when the app never shows a page that could keep it in <code>localStorage</code>.
     </p>
-    <div class="doc-table-wrap">
-        <table class="doc-table">
+    <div class="bb-scroll">
+        <table class="bb-table">
             <thead>
                 <tr><th scope="col">Option</th><th scope="col">Default</th></tr>
             </thead>
@@ -89,8 +90,8 @@
     </div>
 </div>
 
-<div class="demo-section">
-    <h2>Endpoints from a device</h2>
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Endpoints from a device</h3>
     <p>
         The app process exports, so the endpoint has to be reachable from the device. The Android emulator
         reaches the development machine's <code>localhost</code> at <code>10.0.2.2</code>. Outside the browser,
@@ -102,8 +103,8 @@
     <CodeSnippet Code="@EmulatorCode" Language="C#" />
 </div>
 
-<div class="demo-section">
-    <h2>API</h2>
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> API</h3>
     <ApiTable TypeName="BelemetryBrowserTransport" />
     <ApiTable TypeName="BelemetryPersistenceOptions" />
     <ApiTable TypeName="IBelemetry" />

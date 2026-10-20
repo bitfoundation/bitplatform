@@ -1,6 +1,6 @@
 ﻿@page "/examples/intersection"
 
-<PageTitle>Intersection - bit Blow</PageTitle>
+<PageTitle>Intersection · Blow</PageTitle>
 
 <ExampleScaffold Title="Intersection"
                  Summary="Drag the highlighted node around. Any node it overlaps is detected with GetIntersectingNodes and turns orange in real time.">
@@ -23,10 +23,10 @@
     .bit-blow-node.ix-shell.selected { box-shadow:0 0 0 2px var(--bit-blow-node-selected); }
     .ix-node {
         display:flex; align-items:center; justify-content:center; width:100%; height:100%; box-sizing:border-box;
-        border:1px solid #bbb; border-radius:8px; background:#fff; font-weight:600;
+        border:1px solid var(--bit-blow-edge-stroke); border-radius:8px; background:var(--bit-blow-node-bg); color:var(--bit-blow-node-color); font-weight:600;
     }
-    .ix-node.dragging { border-color:#6366f1; background:#eef2ff; }
-    .ix-node.intersecting { border-color:#ea580c; background:#ffedd5; }
+    .ix-node.dragging { border-color:#6366f1; background:color-mix(in srgb, #6366f1 14%, var(--bit-blow-node-bg)); }
+    .ix-node.intersecting { border-color:#ea580c; background:color-mix(in srgb, #ea580c 20%, var(--bit-blow-node-bg)); }
 </style>
 
 @code {

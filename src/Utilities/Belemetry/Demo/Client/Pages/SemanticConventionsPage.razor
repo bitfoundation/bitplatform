@@ -1,26 +1,27 @@
 ﻿@page "/semantic-conventions"
 
-<PageTitle>Semantic conventions - bit Belemetry</PageTitle>
+<PageTitle>Semantic conventions · Belemetry</PageTitle>
 
-<h1>Semantic conventions</h1>
+<div class="bb-intro">
+    <h1>Semantic conventions</h1>
+    <p class="bb-subtitle">
+        Belemetry follows the OpenTelemetry data model and its semantic conventions, so a page view, a fetch or an
+        exception arrives with the attribute names every OTLP backend already knows how to query. This page is the
+        reference: what each record looks like, the resource that describes where it came from, the feature bit it
+        belongs to, and what the script keeps in browser storage.
+    </p>
+</div>
 
-<p class="page-intro">
-    Belemetry follows the OpenTelemetry data model and its semantic conventions, so a page view, a fetch or an
-    exception arrives with the attribute names every OTLP backend already knows how to query. This page is the
-    reference: what each record looks like, the resource that describes where it came from, the feature bit it
-    belongs to, and what the script keeps in browser storage.
-</p>
-
-<div class="demo-section">
-    <h2>Feature bits</h2>
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Feature bits</h3>
     <p>
         Every record belongs to exactly one feature, and is only collected while that feature is both switched on
         by configuration (<code>options.Features</code>) and granted by the user. The numbers are the same in C#
         (<code>BelemetryFeatures</code>) and in the script (<code>Features</code>), and they are what
         <code>BitBelemetry.setConsent</code> takes.
     </p>
-    <div class="doc-table-wrap">
-        <table class="doc-table">
+    <div class="bb-scroll">
+        <table class="bb-table">
             <thead>
                 <tr><th scope="col">Name</th><th scope="col">Bit</th><th scope="col">Covers</th></tr>
             </thead>
@@ -40,8 +41,8 @@
             </tbody>
         </table>
     </div>
-    <div class="doc-table-wrap">
-        <table class="doc-table">
+    <div class="bb-scroll">
+        <table class="bb-table">
             <thead>
                 <tr><th scope="col">Group</th><th scope="col">Value</th><th scope="col">Members</th></tr>
             </thead>
@@ -56,16 +57,16 @@
     <ApiTable TypeName="BelemetryFeatures" />
 </div>
 
-<div class="demo-section">
-    <h2>Browser records</h2>
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Browser records</h3>
     <p>
         Events are log records with an <code>eventName</code>, the way the OpenTelemetry Events API models them.
         Spans use the OTLP span kinds (1 internal, 2 server, 3 client) and status codes (0 unset, 1 ok, 2 error),
         and log severities use the OTLP <code>SeverityNumber</code>. Times are milliseconds since the Unix epoch,
         from <code>performance.timeOrigin + performance.now()</code>.
     </p>
-    <div class="doc-table-wrap">
-        <table class="doc-table">
+    <div class="bb-scroll">
+        <table class="bb-table">
             <thead>
                 <tr><th scope="col">Record</th><th scope="col">Shape</th><th scope="col">Scope</th><th scope="col">Feature</th></tr>
             </thead>
@@ -147,10 +148,10 @@
     </div>
 </div>
 
-<div class="demo-section">
-    <h2>.NET records</h2>
-    <div class="doc-table-wrap">
-        <table class="doc-table">
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> .NET records</h3>
+    <div class="bb-scroll">
+        <table class="bb-table">
             <thead>
                 <tr><th scope="col">Record</th><th scope="col">Shape</th></tr>
             </thead>
@@ -186,14 +187,14 @@
     </div>
 </div>
 
-<div class="demo-section">
-    <h2>Resource attributes</h2>
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Resource attributes</h3>
     <p>
         The resource describes the producer rather than the event, and travels once per batch. The first eight are
         common to both sides; the rest say which side the record came from.
     </p>
-    <div class="doc-table-wrap">
-        <table class="doc-table">
+    <div class="bb-scroll">
+        <table class="bb-table">
             <thead>
                 <tr><th scope="col">Attribute</th><th scope="col">Value</th><th scope="col">Side</th></tr>
             </thead>
@@ -223,11 +224,11 @@
     </p>
 </div>
 
-<div class="demo-section">
-    <h2>Browser storage keys</h2>
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Browser storage keys</h3>
     <p>Belemetry sets no cookies. These are the only keys it writes, and each one is gated by the feature it serves.</p>
-    <div class="doc-table-wrap">
-        <table class="doc-table">
+    <div class="bb-scroll">
+        <table class="bb-table">
             <thead>
                 <tr><th scope="col">Key</th><th scope="col">Storage</th><th scope="col">Gated by</th><th scope="col">Content</th></tr>
             </thead>
@@ -246,8 +247,8 @@
     </p>
 </div>
 
-<div class="demo-section">
-    <h2>Browser configuration</h2>
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Browser configuration</h3>
     <p>
         <code>&lt;BelemetryScript /&gt;</code> writes this object into
         <code>&lt;script type="application/json" id="bit-belemetry-config"&gt;</code>, built from the server's
@@ -256,14 +257,14 @@
         <code>BitBelemetry.start</code> yourself - every field is optional.
     </p>
     <CodeSnippet Code="@ConfigCode" Language="JSON" Expanded="true" />
-    <ul>
+    <ul class="bb-detail-list">
         <li><code>propagateTraceContextTo</code> entries are <code>"same-origin"</code>, <code>"*"</code>, or a regex source matched against the absolute URL.</li>
         <li><code>ignoreUrls</code> and <code>ignoreMessages</code> are regex sources.</li>
     </ul>
 </div>
 
-<div class="demo-section">
-    <h2>The constants</h2>
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> The constants</h3>
     <p>
         <code>BelemetrySemanticConventions</code> holds every attribute and event name above as a
         <code>const string</code>, for processors and custom exporters that read or write them - so a typo is a

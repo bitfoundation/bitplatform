@@ -1,9 +1,9 @@
 ﻿@namespace Bit.BevTools.Demo.Client.Components
 
-<div class="card @(Settings?.Dense == true ? "dense" : "")" style="border-top: 3px solid @(Settings?.Accent ?? "#0969da")">
-    <h3>@Title</h3>
-    <div class="big">@Value</div>
-    <div class="muted">@Trend · settings v@(Settings?.Version ?? 0)</div>
+<div class="demo-tile demo-stat @(Settings?.Dense == true ? "dense" : "")" style="border-top-color: @(Settings?.Accent ?? DashboardSettings.DefaultAccent)">
+    <h4 class="demo-tile-title">@Title</h4>
+    <div class="demo-big">@Value</div>
+    <div class="bb-muted">@Trend · settings v@(Settings?.Version ?? 0)</div>
 </div>
 
 @code {

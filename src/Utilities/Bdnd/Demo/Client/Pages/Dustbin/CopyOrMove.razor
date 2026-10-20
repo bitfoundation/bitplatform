@@ -1,10 +1,10 @@
 ﻿@page "/dustbin/copy-or-move"
 
-<PageTitle>Dustbin · Copy or Move - bit Bdnd</PageTitle>
+<PageTitle>Dustbin - Copy or Move · Bdnd</PageTitle>
 
-<div class="demo-header">
-    <h3>Dustbin - Copy or Move</h3>
-    <p class="text-muted">
+<div class="bb-intro">
+    <h1>Dustbin - Copy or Move</h1>
+    <p class="bb-subtitle">
         A drag source can describe whether it should be copied or moved. Here the
         <em>copy</em> box can be dropped any number of times, while the <em>move</em> box is
         removed from the palette once it has been accepted by the dustbin (using the
@@ -15,7 +15,7 @@
 
 <DemoCode />
 
-<section class="demo-stage">
+<div class="bb-demo">
     <BdndProvider>
         <BdndDropTarget TItem="DragBox" Accept="@ItemTypes.Box" Context="t"
                         style="display:contents" OnDrop="HandleDrop">
@@ -43,7 +43,7 @@
             }
         </div>
     </BdndProvider>
-</section>
+</div>
 
 @code {
     public enum DropEffect { Copy, Move }

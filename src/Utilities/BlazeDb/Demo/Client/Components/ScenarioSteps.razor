@@ -1,35 +1,43 @@
-﻿@if (Steps.Count == 0)
+﻿@* The numbered trace an interactive page writes while a scenario runs: what the engine was asked,
+   the call that asked it, and what came back - each step tinted by how it went. *@
+
+@if (Steps.Count == 0)
 {
-    <div class="empty">
-        <Icon Name="play" />
-        <div>@EmptyText</div>
-    </div>
+    <div class="bb-empty">@EmptyText</div>
 }
 else
 {
-    <div class="steps">
+    <ol class="bd-steps">
         @foreach (var step in Steps)
         {
-            <div class="step @step.Tone">
-                <div class="step-num">@step.Number</div>
-                <div class="step-body">
-                    <div class="step-title">@step.Title</div>
+            <li class="bd-step @ToneClass(step.Tone)">
+                <span class="bd-step-num" aria-hidden="true">@step.Number</span>
+                <div class="bd-step-body">
+                    <div class="bd-step-title">@step.Title</div>
                     @if (!string.IsNullOrWhiteSpace(step.Code))
                     {
-                        <div class="step-code">@step.Code</div>
+                        <div class="bd-step-code">@step.Code</div>
                     }
                     @if (!string.IsNullOrWhiteSpace(step.Note))
                     {
-                        <div class="step-note">@step.Note</div>
+                        <div class="bd-step-note">@step.Note</div>
                     }
                 </div>
-            </div>
+            </li>
         }
-    </div>
+    </ol>
 }
 
 @code {
     [Parameter] public IReadOnlyList<ScenarioStep> Steps { get; set; } = [];
 
     [Parameter] public string EmptyText { get; set; } = "Run a scenario to see what the engine does, step by step.";
+
+    private static string? ToneClass(string tone) => tone switch
+    {
+        "ok" => "bd-step-ok",
+        "err" => "bd-step-err",
+        "run" => "bd-step-run",
+        _ => null,
+    };
 }

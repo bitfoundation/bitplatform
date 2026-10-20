@@ -2,19 +2,20 @@
 @using System.Text.Json
 @inject IJSRuntime JS
 
-<PageTitle>Server pipeline - bit Belemetry</PageTitle>
+<PageTitle>Server pipeline · Belemetry</PageTitle>
 
-<h1>Server pipeline</h1>
+<div class="bb-intro">
+    <h1>Server pipeline</h1>
+    <p class="bb-subtitle">
+        On an ASP.NET Core host Belemetry's .NET pipeline is <strong>off by default</strong>: the server
+        serves the browser script and nothing more, because such hosts usually have an OpenTelemetry setup of
+        their own. <code>Server.CollectDotnetTelemetry</code> turns it on, and the server's logs, request spans
+        and metrics go to the same exporters as everything else - joined to the browser by trace context.
+    </p>
+</div>
 
-<p class="page-intro">
-    On an ASP.NET Core host Belemetry's .NET pipeline is <strong>off by default</strong>: the server
-    serves the browser script and nothing more, because such hosts usually have an OpenTelemetry setup of
-    their own. <code>Server.CollectDotnetTelemetry</code> turns it on, and the server's logs, request spans
-    and metrics go to the same exporters as everything else - joined to the browser by trace context.
-</p>
-
-<div class="demo-section">
-    <h2>Turning it on</h2>
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Turning it on</h3>
     <p>
         One switch, in the server project's registration. It applies to every ASP.NET Core host Belemetry
         detects: Blazor Server, static SSR, and the server half of the Auto and WebAssembly render modes.
@@ -31,16 +32,16 @@
     <CodeSnippet Code="@SetupCode" Language="C#" Expanded="true" />
 </div>
 
-<div class="demo-section">
-    <h2>Operator features, not consent</h2>
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Operator features, not consent</h3>
     <p>
         Everything else in Belemetry is governed by one user's consent. The server pipeline cannot be: it is
         process-wide, and serves every user at once - there is no single "user" whose choice a request span for
         a shared endpoint, a Kestrel metric or a startup log belongs to. So it is governed by
         <code>Server.Features</code>, a decision the operator makes, in the same way a server's access logs are.
     </p>
-    <div class="doc-table-wrap">
-        <table class="doc-table">
+    <div class="bb-scroll">
+        <table class="bb-table">
             <thead>
                 <tr><th scope="col">Collected by</th><th scope="col">Governed by</th></tr>
             </thead>
@@ -59,10 +60,10 @@
     </p>
 </div>
 
-<div class="demo-section">
-    <h2>What it records</h2>
-    <div class="doc-table-wrap">
-        <table class="doc-table">
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> What it records</h3>
+    <div class="bb-scroll">
+        <table class="bb-table">
             <thead>
                 <tr><th scope="col">Signal</th><th scope="col">What</th><th scope="col">From</th></tr>
             </thead>
@@ -92,8 +93,8 @@
     </div>
 </div>
 
-<div class="demo-section">
-    <h2>One trace from click to server</h2>
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> One trace from click to server</h3>
     <p>
         When the browser script records a <code>fetch</code> or XHR, it adds a W3C <code>traceparent</code>
         header for targets matched by <code>Browser.PropagateTraceContextTo</code> (same-origin by default).
@@ -106,36 +107,35 @@
         plain <code>fetch</code>, the endpoint answers with the <code>traceparent</code> it received and the trace
         id of its own request span, and the feed below shows the server's records that joined your trace.
     </p>
-    <div class="demo-row">
-        <div class="demo-card stack">
-            <div class="demo-actions">
-                <button type="button" class="btn-bl" disabled="@(RendererInfo.IsInteractive is false || _busy)" @onclick="CallEchoAsync">
-                    @(_busy ? "Calling..." : "Call /api/demo/echo")
-                </button>
-            </div>
-            @if (_result is not null)
-            {
-                <dl class="kv">
-                    <dt>Status</dt>
-                    <dd>@_result.Status (@_result.Ms ms)</dd>
-                    <dt>traceparent sent</dt>
-                    <dd><code>@(_traceparent ?? "(none - is Dependencies granted?)")</code></dd>
-                    <dt>Browser trace id</dt>
-                    <dd><code>@(BrowserTraceId ?? "-")</code></dd>
-                    <dt>Server trace id</dt>
-                    <dd><code>@(_serverTraceId ?? "-")</code></dd>
-                    <dt>Joined</dt>
-                    <dd>
-                        <span class="state-pill @(Joined ? "on" : null)">@(Joined ? "same trace" : "not joined")</span>
-                    </dd>
-                </dl>
-            }
-            <TelemetryFeedView Compact="true"
-                               Match="@(r => r.Source == "server" || r.Correlated)"
-                               EmptyText="Nothing yet - call the endpoint. The server's request span and its log arrive once your fetch span has been exported." />
+    <div class="bb-demo">
+        <div class="bb-demo-bar"><span class="bb-demo-label">Live<span class="demo-sample-title">traceparent</span></span></div>
+        <div class="bb-toolbar">
+            <button type="button" class="btn btn-primary" disabled="@(RendererInfo.IsInteractive is false || _busy)" @onclick="CallEchoAsync">
+                @(_busy ? "Calling..." : "Call /api/demo/echo")
+            </button>
         </div>
+        @if (_result is not null)
+        {
+            <dl class="bb-params">
+                <dt>Status</dt>
+                <dd>@_result.Status (@_result.Ms ms)</dd>
+                <dt>traceparent sent</dt>
+                <dd><code>@(_traceparent ?? "(none - is Dependencies granted?)")</code></dd>
+                <dt>Browser trace id</dt>
+                <dd><code>@(BrowserTraceId ?? "-")</code></dd>
+                <dt>Server trace id</dt>
+                <dd><code>@(_serverTraceId ?? "-")</code></dd>
+                <dt>Joined</dt>
+                <dd>
+                    <span class="bb-badge @(Joined ? "bb-badge-success" : "demo-badge-off")">@(Joined ? "same trace" : "not joined")</span>
+                </dd>
+            </dl>
+        }
+        <TelemetryFeedView Compact="true"
+                           Match="@(r => r.Source == "server" || r.Correlated)"
+                           EmptyText="Nothing yet - call the endpoint. The server's request span and its log arrive once your fetch span has been exported." />
     </div>
-    <div class="callout">
+    <div class="bb-note">
         <p>
             The <code>traceparent</code> is only added while <code>Dependencies</code> is granted - without it the
             script does not instrument <code>fetch</code> at all. The server records the request either way: it is
@@ -145,8 +145,8 @@
     <CodeSnippet Code="@PropagationCode" Language="C#" />
 </div>
 
-<div class="demo-section">
-    <h2>Where it runs</h2>
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Where it runs</h3>
     <p>
         A server describes where it runs, the way the OpenTelemetry resource detectors do, from environment
         variables and <code>/proc</code> alone - no metadata-service call, nothing at request time:
@@ -160,8 +160,8 @@
     </p>
 </div>
 
-<div class="demo-section">
-    <h2>Living next to OpenTelemetry</h2>
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Living next to OpenTelemetry</h3>
     <p>
         If the server already exports with the OpenTelemetry SDK, leave <code>CollectDotnetTelemetry</code> off:
         Belemetry keeps serving the browser script, the browser still sends <code>traceparent</code>, and your
@@ -170,8 +170,8 @@
     </p>
 </div>
 
-<div class="demo-section">
-    <h2>API</h2>
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> API</h3>
     <ApiTable TypeName="BelemetryServerOptions" />
 </div>
 

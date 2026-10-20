@@ -1,11 +1,11 @@
 ﻿@page "/thresholds"
 @using System.Globalization
 
-<PageTitle>Thresholds - bit Bortable</PageTitle>
+<PageTitle>Thresholds · Bortable</PageTitle>
 
-<div class="demo-header">
-    <h3>Swap thresholds</h3>
-    <p class="text-muted">
+<div class="bb-intro">
+    <h1>Swap thresholds</h1>
+    <p class="bb-subtitle">
         The swap zone is the part of an item that, when dragged over, makes the dragged item swap places with it.
         <code>SwapThreshold</code> sets how much of the item (from the centre out) is an active swap zone - the
         rest is a "dead zone" that does not trigger a swap. <code>InvertSwap</code> moves the active zones to the
@@ -17,61 +17,63 @@
 
 <DemoCode />
 
-<div class="threshold-controls">
-    <label>
-        SwapThreshold: <strong id="swap-threshold-value">@Format(_swapThreshold)</strong>
-        <input id="swap-threshold" type="range" min="0.1" max="1" step="0.05"
-               value="@Format(_swapThreshold)" @oninput="OnSwapThresholdChanged" />
-    </label>
+<div class="bb-demo">
+    <div class="threshold-controls">
+        <label>
+            SwapThreshold: <strong id="swap-threshold-value">@Format(_swapThreshold)</strong>
+            <input id="swap-threshold" type="range" min="0.1" max="1" step="0.05"
+                   value="@Format(_swapThreshold)" @oninput="OnSwapThresholdChanged" />
+        </label>
 
-    <label class="threshold-check">
-        <input id="invert-swap" type="checkbox" checked="@_invertSwap" @onchange="OnInvertSwapChanged" />
-        InvertSwap
-    </label>
+        <label class="threshold-check">
+            <input id="invert-swap" type="checkbox" checked="@_invertSwap" @onchange="OnInvertSwapChanged" />
+            InvertSwap
+        </label>
 
-    <label>
-        InvertedSwapThreshold: <strong id="inverted-swap-threshold-value">@Format(_invertedSwapThreshold)</strong>
-        <input id="inverted-swap-threshold" type="range" min="0.1" max="1" step="0.05"
-               value="@Format(_invertedSwapThreshold)" @oninput="OnInvertedSwapThresholdChanged" />
-    </label>
+        <label>
+            InvertedSwapThreshold: <strong id="inverted-swap-threshold-value">@Format(_invertedSwapThreshold)</strong>
+            <input id="inverted-swap-threshold" type="range" min="0.1" max="1" step="0.05"
+                   value="@Format(_invertedSwapThreshold)" @oninput="OnInvertedSwapThresholdChanged" />
+        </label>
 
-    <label class="threshold-check">
-        <input id="show-zones" type="checkbox" checked="@_showZones" @onchange="OnShowZonesChanged" />
-        Show the swap zones
-    </label>
-</div>
-
-<div class="demo-columns">
-    <div class="demo-col">
-        <div class="demo-col-title">Vertical list</div>
-        <Bortable @bind-Items="_list" TItem="string" Id="thresholds-list"
-                  SwapThreshold="_swapThreshold"
-                  InvertSwap="_invertSwap"
-                  InvertedSwapThreshold="_invertedSwapThreshold"
-                  Direction="BortableDirection.Vertical"
-                  Class="@($"demo-list threshold-list {ZoneClass}")" Style="@ZoneStyle"
-                  ItemClass="demo-item" GhostClass="demo-ghost">
-            <ItemTemplate Context="item">@item</ItemTemplate>
-        </Bortable>
+        <label class="threshold-check">
+            <input id="show-zones" type="checkbox" checked="@_showZones" @onchange="OnShowZonesChanged" />
+            Show the swap zones
+        </label>
     </div>
-    <div class="demo-col">
-        <div class="demo-col-title">Grid</div>
-        <Bortable @bind-Items="_grid" TItem="int" Id="thresholds-grid"
-                  SwapThreshold="_swapThreshold"
-                  InvertSwap="_invertSwap"
-                  InvertedSwapThreshold="_invertedSwapThreshold"
-                  Direction="BortableDirection.Horizontal"
-                  Class="@($"demo-grid threshold-grid {ZoneClass}")" Style="@ZoneStyle"
-                  GhostClass="demo-ghost">
-            <ItemTemplate Context="n">
-                <div class="grid-square">@n</div>
-            </ItemTemplate>
-        </Bortable>
-    </div>
-</div>
 
-<p class="demo-order"><strong>List:</strong> <span id="thresholds-list-order">@string.Join(", ", _list)</span></p>
-<p class="demo-order"><strong>Grid:</strong> <span id="thresholds-grid-order">@string.Join(", ", _grid)</span></p>
+    <div class="demo-columns">
+        <div class="demo-col">
+            <div class="demo-col-title">Vertical list</div>
+            <Bortable @bind-Items="_list" TItem="string" Id="thresholds-list"
+                      SwapThreshold="_swapThreshold"
+                      InvertSwap="_invertSwap"
+                      InvertedSwapThreshold="_invertedSwapThreshold"
+                      Direction="BortableDirection.Vertical"
+                      Class="@($"demo-list threshold-list {ZoneClass}")" Style="@ZoneStyle"
+                      ItemClass="demo-item" GhostClass="demo-ghost">
+                <ItemTemplate Context="item">@item</ItemTemplate>
+            </Bortable>
+        </div>
+        <div class="demo-col">
+            <div class="demo-col-title">Grid</div>
+            <Bortable @bind-Items="_grid" TItem="int" Id="thresholds-grid"
+                      SwapThreshold="_swapThreshold"
+                      InvertSwap="_invertSwap"
+                      InvertedSwapThreshold="_invertedSwapThreshold"
+                      Direction="BortableDirection.Horizontal"
+                      Class="@($"demo-grid threshold-grid {ZoneClass}")" Style="@ZoneStyle"
+                      GhostClass="demo-ghost">
+                <ItemTemplate Context="n">
+                    <div class="grid-square">@n</div>
+                </ItemTemplate>
+            </Bortable>
+        </div>
+    </div>
+
+    <p class="demo-order"><strong>List:</strong> <span id="thresholds-list-order">@string.Join(", ", _list)</span></p>
+    <p class="demo-order"><strong>Grid:</strong> <span id="thresholds-grid-order">@string.Join(", ", _grid)</span></p>
+</div>
 
 @code {
     private double _swapThreshold = 0.65;

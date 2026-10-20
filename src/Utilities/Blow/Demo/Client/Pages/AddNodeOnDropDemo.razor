@@ -1,10 +1,10 @@
 ﻿@page "/add-node-on-drop"
 
-<PageTitle>Add Node on Edge Drop - bit Blow</PageTitle>
+<PageTitle>Add Node on Edge Drop · Blow</PageTitle>
 
-<div class="demo-header">
-    <h3>Add Node on Edge Drop</h3>
-    <p class="text-muted">
+<div class="bb-intro">
+    <h1>Add Node on Edge Drop</h1>
+    <p class="bb-subtitle">
         Demonstrates the enriched <code>OnConnectEnd</code> callback. Its <code>BlowConnectEndInfo</code> payload
         carries the originating handle, the drop position in flow coordinates, whether the drop landed on a
         valid handle, and whether the gesture really was a drop (<code>IsDropped</code>) of a new connection
@@ -16,18 +16,19 @@
 
 <DemoCode />
 
-<div class="example-toolbar">
-    <button class="btn btn-sm" @onclick="Reset">Reset</button>
-    <span class="text-muted">@_nodes.Count nodes · @_edges.Count edges · last drop: @_lastDrop</span>
-</div>
-
-<div class="demo-canvas" style="height: calc(100vh - 250px);">
-    <BlowCanvas @ref="_flow" Nodes="_nodes" Edges="_edges" FitViewOnInit="true"
-                OnConnectEnd="OnConnectEnd">
-        <BlowBackground Variant="BlowBackgroundVariant.Dots" Gap="16" />
-        <BlowControls />
-        <BlowMiniMap />
-    </BlowCanvas>
+<div class="bb-demo blow-demo bb-page-wide">
+    <div class="bb-demo-bar example-toolbar">
+        <button class="btn btn-secondary" @onclick="Reset">Reset</button>
+        <span class="bb-muted">@_nodes.Count nodes · @_edges.Count edges · last drop: @_lastDrop</span>
+    </div>
+    <div class="demo-canvas">
+        <BlowCanvas @ref="_flow" Nodes="_nodes" Edges="_edges" FitViewOnInit="true"
+                    OnConnectEnd="OnConnectEnd">
+            <BlowBackground Variant="BlowBackgroundVariant.Dots" Gap="16" />
+            <BlowControls />
+            <BlowMiniMap />
+        </BlowCanvas>
+    </div>
 </div>
 
 @code {

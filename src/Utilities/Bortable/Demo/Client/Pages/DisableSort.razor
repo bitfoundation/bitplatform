@@ -1,10 +1,10 @@
 ﻿@page "/disable-sort"
 
-<PageTitle>Disabling sorting - bit Bortable</PageTitle>
+<PageTitle>Disabling sorting · Bortable</PageTitle>
 
-<div class="demo-header">
-    <h3>Disabling sorting</h3>
-    <p class="text-muted">
+<div class="bb-intro">
+    <h1>Disabling sorting</h1>
+    <p class="bb-subtitle">
         The left list has <code>Sort="false"</code> and <code>Put="false"</code>, so its items cannot be reordered
         or received, but they can still be dragged out into the right list.
     </p>
@@ -12,26 +12,28 @@
 
 <DemoCode />
 
-<div class="demo-columns">
-    <div class="demo-col">
-        <div class="demo-col-title">Source (no sorting, no put)</div>
-        <Bortable @bind-Items="_left" TItem="string" Group="ds-shared" Id="disable-sort-source"
-                  Sort="false" Put="false"
-                  Class="demo-list" ItemClass="demo-item" GhostClass="demo-ghost">
-            <ItemTemplate Context="item">@item</ItemTemplate>
-        </Bortable>
+<div class="bb-demo">
+    <div class="demo-columns">
+        <div class="demo-col">
+            <div class="demo-col-title">Source (no sorting, no put)</div>
+            <Bortable @bind-Items="_left" TItem="string" Group="ds-shared" Id="disable-sort-source"
+                      Sort="false" Put="false"
+                      Class="demo-list" ItemClass="demo-item" GhostClass="demo-ghost">
+                <ItemTemplate Context="item">@item</ItemTemplate>
+            </Bortable>
+        </div>
+        <div class="demo-col">
+            <div class="demo-col-title">Target</div>
+            <Bortable @bind-Items="_right" TItem="string" Group="ds-shared" Id="disable-sort-target"
+                      Class="demo-list" ItemClass="demo-item tinted" GhostClass="demo-ghost">
+                <ItemTemplate Context="item">@item</ItemTemplate>
+            </Bortable>
+        </div>
     </div>
-    <div class="demo-col">
-        <div class="demo-col-title">Target</div>
-        <Bortable @bind-Items="_right" TItem="string" Group="ds-shared" Id="disable-sort-target"
-                  Class="demo-list" ItemClass="demo-item tinted" GhostClass="demo-ghost">
-            <ItemTemplate Context="item">@item</ItemTemplate>
-        </Bortable>
-    </div>
-</div>
 
-<p class="demo-order"><strong>Source:</strong> <span id="disable-sort-source-order">@string.Join(", ", _left)</span></p>
-<p class="demo-order"><strong>Target:</strong> <span id="disable-sort-target-order">@string.Join(", ", _right)</span></p>
+    <p class="demo-order"><strong>Source:</strong> <span id="disable-sort-source-order">@string.Join(", ", _left)</span></p>
+    <p class="demo-order"><strong>Target:</strong> <span id="disable-sort-target-order">@string.Join(", ", _right)</span></p>
+</div>
 
 @code {
     private IList<string> _left = new List<string> { "Item 1", "Item 2", "Item 3", "Item 4", "Item 5" };

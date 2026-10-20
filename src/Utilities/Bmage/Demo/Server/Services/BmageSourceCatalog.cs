@@ -2,7 +2,7 @@
 using System.Reflection;
 using System.Collections.Frozen;
 using Bit.Bmage.Demo.Server.Dtos;
-using Bit.Bmage.Demo.Client.Shared;
+using Bit.Bmage.Demo.Client;
 using System.Text.RegularExpressions;
 
 namespace Bit.Bmage.Demo.Server.Services;
@@ -40,6 +40,29 @@ public static partial class BmageSourceCatalog
 
     /// <summary>Every embedded source file, described.</summary>
     public static BmageSourceFileDto[] SourceFiles => _sourceFileList.Value;
+
+    /// <summary>
+    /// The <see cref="BmageSourceFileDto.Kind"/> of the documentation site's own shell - the header,
+    /// the nav panel, the search palette and the footer under Demo/Client/Layout/. They are embedded
+    /// with the rest of the client, but they are the site rather than a worked example of Bit.Bmage,
+    /// so the search index leaves them out.
+    /// </summary>
+    public const string SiteChromeKind = "Site chrome";
+
+    /// <summary>
+    /// The embedded path of a documentation page's source, e.g. <c>Demo/Client/Pages/Avatar.razor</c>
+    /// for the page at <c>/avatar</c>. Razor gives a component the namespace of its folder, so the
+    /// path below Demo/Client is the page type's namespace past the client's root, one folder a
+    /// segment - the same derivation the "Edit this page on GitHub" link under every page uses.
+    /// </summary>
+    public static string SourcePathOf(DocsPageInfo page)
+    {
+        var root = typeof(DocsCatalog).Namespace!;
+        var name = page.PageType.FullName!;
+        var relative = name.StartsWith(root + ".", StringComparison.Ordinal) ? name[(root.Length + 1)..] : page.PageType.Name;
+
+        return $"Demo/Client/{relative.Replace('.', '/')}.razor";
+    }
 
     /// <summary>
     /// The order docs/README.md lists the guides in, which is the order they are meant to be read.
@@ -288,10 +311,11 @@ public static partial class BmageSourceCatalog
 
     private static BmageSourceFileDto[] BuildSourceFileList()
     {
-        // A demo page describes itself in the navigation, in a sentence written to say what the page
-        // demonstrates. Scraping the file for a description instead reaches whatever comment comes
-        // first, which for a page is usually a note about prerendering, not what the page is for.
-        var pages = NavItem.All.ToDictionary(page => Normalize(page.SourcePath), StringComparer.OrdinalIgnoreCase);
+        // A demo page describes itself in the site's catalog (Demo/Client/DocsCatalog.cs), in a
+        // sentence written to say what the page demonstrates. Scraping the file for a description
+        // instead reaches whatever comment comes first, which for a page is usually a note about
+        // prerendering, not what the page is for.
+        var pages = DocsCatalog.AllPages.ToDictionary(page => Normalize(SourcePathOf(page)), StringComparer.OrdinalIgnoreCase);
 
         return [.. _sourceFiles.Value
             .Select(file =>
@@ -303,11 +327,12 @@ public static partial class BmageSourceCatalog
                     Path = file.Key,
                     Kind = file.Key.Contains("/Pages/", StringComparison.OrdinalIgnoreCase) ? "Demo page"
                          : file.Key.StartsWith("Demo/Server/", StringComparison.OrdinalIgnoreCase) ? "Host"
+                         : file.Key.StartsWith("Demo/Client/Layout/", StringComparison.OrdinalIgnoreCase) ? SiteChromeKind
                          : "Demo",
                     Description = page?.Description ?? DescribeSource(file.Key, file.Value),
                     Lines = CountLines(file.Value),
                     Title = page?.Title,
-                    Slug = page?.Href,
+                    Slug = page?.Url.TrimStart('/'),
                     Keywords = page?.Keywords
                 };
             })

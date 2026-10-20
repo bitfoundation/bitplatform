@@ -10,102 +10,104 @@
     them and read the real message.
 </PageHeader>
 
+<StorageSwitcher />
+
 @if (_error is not null)
 {
-    <p class="error">@_error</p>
+    <div class="bb-note bb-note-danger" role="alert">@_error</div>
 }
 
-<div class="stack-lg">
-    <DemoCard Title="Synchronous EF and ADO.NET"
-              CodeTitle="Calling SaveChanges()"
-              Code="@Snippets.Limits.Sync">
-        <Description>
-            <span>
-                <code>SaveChanges()</code>, <code>ToList()</code>, and
-                <code>DbConnection.Open()</code> throw
-                <code>BsqliteSynchronousApiNotSupportedException</code>, and the message names
-                the async overload to use. The opt-in tier that would lift this (COOP/COEP plus a
-                native <code>ISQLite3Provider</code>) slipped past 1.0. EF wraps a failed save, so
-                the panel below unwraps to the exception that actually explains the refusal.
-            </span>
-        </Description>
-        <Try>
-            <span>Run it: this is the exception your users would see, not a paraphrase of it.</span>
-        </Try>
-        <ChildContent>
-            <button type="button" @onclick="TrySyncSaveAsync" disabled="@_busy">Call SaveChanges()</button>
-            @if (_syncResult is not null)
-            {
-                <pre class="output">@_syncResult</pre>
-            }
-        </ChildContent>
-    </DemoCard>
+<DemoCard Title="Synchronous EF and ADO.NET"
+          CodeTitle="Calling SaveChanges()"
+          Code="@Snippets.Limits.Sync">
+    <Description>
+        <code>SaveChanges()</code>, <code>ToList()</code>, and
+        <code>DbConnection.Open()</code> throw
+        <code>BsqliteSynchronousApiNotSupportedException</code>, and the message names
+        the async overload to use. The opt-in tier that would lift this (COOP/COEP plus a
+        native <code>ISQLite3Provider</code>) slipped past 1.0. EF wraps a failed save, so
+        the panel below unwraps to the exception that actually explains the refusal.
+    </Description>
+    <Try>Run it: this is the exception your users would see, not a paraphrase of it.</Try>
+    <ChildContent>
+        <div class="bb-toolbar">
+            <button type="button" class="btn btn-primary" @onclick="TrySyncSaveAsync" disabled="@_busy">Call SaveChanges()</button>
+        </div>
+        @if (_syncResult is not null)
+        {
+            <pre class="bb-log bq-output">@_syncResult</pre>
+        }
+    </ChildContent>
+</DemoCard>
 
-    <DemoCard Title="WAL journal mode"
-              CodeTitle="PRAGMA journal_mode=WAL"
-              Code="@Snippets.Limits.Wal">
-        <Description>
-            No web VFS implements WAL: WASM lacks the shared-memory primitives it needs, and the
-            official SQLite WASM build cannot even <em>read</em> a WAL-mode file. Journal mode here
-            is DELETE or TRUNCATE. Concurrent reads, where a backend offers them, come from the VFS
-            instead.
-        </Description>
-        <ChildContent>
-            <button type="button" class="secondary" @onclick='() => RunSqlAsync("PRAGMA journal_mode=WAL")' disabled="@_busy">
+<DemoCard Title="WAL journal mode"
+          CodeTitle="PRAGMA journal_mode=WAL"
+          Code="@Snippets.Limits.Wal">
+    <Description>
+        No web VFS implements WAL: WASM lacks the shared-memory primitives it needs, and the
+        official SQLite WASM build cannot even <em>read</em> a WAL-mode file. Journal mode here
+        is DELETE or TRUNCATE. Concurrent reads, where a backend offers them, come from the VFS
+        instead.
+    </Description>
+    <ChildContent>
+        <div class="bb-toolbar">
+            <button type="button" class="btn btn-secondary bb-mono" @onclick='() => RunSqlAsync("PRAGMA journal_mode=WAL")' disabled="@_busy">
                 Run PRAGMA journal_mode=WAL
             </button>
-        </ChildContent>
-    </DemoCard>
+        </div>
+    </ChildContent>
+</DemoCard>
 
-    <DemoCard Title="ATTACH across two databases"
-              CodeTitle="Guarding on capability"
-              Code="@Snippets.Limits.Attach">
-        <Description>
-            <span>
-                Gated by <code>SupportsMultiDatabaseTransactions</code>: OPFS CoopSync cannot run a
-                transaction spanning two files, IndexedDB can. The guard reads the selected
-                backend's capabilities - it does not test the provider name, so a new backend
-                inherits the rule for free.
-            </span>
-        </Description>
-        <ChildContent>
-            <p>
-                This session supports multi-database transactions:
-                <strong>@SampleFormat.YesNo(_supportsAttach)</strong>
-            </p>
-            <button type="button" class="secondary" @onclick="TryAttachAsync" disabled="@_busy">
+<DemoCard Title="ATTACH across two databases"
+          CodeTitle="Guarding on capability"
+          Code="@Snippets.Limits.Attach">
+    <Description>
+        Gated by <code>SupportsMultiDatabaseTransactions</code>: OPFS CoopSync cannot run a
+        transaction spanning two files, IndexedDB can. The guard reads the selected
+        backend's capabilities - it does not test the provider name, so a new backend
+        inherits the rule for free.
+    </Description>
+    <ChildContent>
+        <p>
+            This session supports multi-database transactions:
+            <strong>@SampleFormat.YesNo(_supportsAttach)</strong>
+        </p>
+        <div class="bb-toolbar">
+            <button type="button" class="btn btn-secondary bb-mono" @onclick="TryAttachAsync" disabled="@_busy">
                 Run ATTACH DATABASE 'other.db' AS other
             </button>
-        </ChildContent>
-    </DemoCard>
+        </div>
+    </ChildContent>
+</DemoCard>
 
-    <DemoCard Title="Changing the page size"
-              CodeTitle="PRAGMA page_size"
-              Code="@Snippets.Limits.PageSize">
-        <Description>
-            Block-oriented backends pin the page size to their block size - IndexedDB batch-atomic
-            is the usual case. Letting the PRAGMA through would report success and then corrupt the
-            image on the next write, so it is refused up front.
-        </Description>
-        <ChildContent>
-            <p>
-                This session can change page size:
-                <strong>@SampleFormat.YesNo(_canChangePageSize)</strong>
-            </p>
-            <button type="button" class="secondary" @onclick='() => RunSqlAsync("PRAGMA page_size=512")' disabled="@_busy">
+<DemoCard Title="Changing the page size"
+          CodeTitle="PRAGMA page_size"
+          Code="@Snippets.Limits.PageSize">
+    <Description>
+        Block-oriented backends pin the page size to their block size - IndexedDB batch-atomic
+        is the usual case. Letting the PRAGMA through would report success and then corrupt the
+        image on the next write, so it is refused up front.
+    </Description>
+    <ChildContent>
+        <p>
+            This session can change page size:
+            <strong>@SampleFormat.YesNo(_canChangePageSize)</strong>
+        </p>
+        <div class="bb-toolbar">
+            <button type="button" class="btn btn-secondary bb-mono" @onclick='() => RunSqlAsync("PRAGMA page_size=512")' disabled="@_busy">
                 Run PRAGMA page_size=512
             </button>
-        </ChildContent>
-    </DemoCard>
+        </div>
+    </ChildContent>
+</DemoCard>
 
-    @if (_sqlResult is not null)
-    {
-        <section class="card">
-            <h2>Last statement</h2>
-            <pre class="output">@_sqlResult</pre>
-        </section>
-    }
-</div>
+@if (_sqlResult is not null)
+{
+    <section class="bb-card">
+        <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Last statement</h3>
+        <pre class="bb-log bq-output">@_sqlResult</pre>
+    </section>
+}
 
 @code {
     private bool _supportsAttach = true;

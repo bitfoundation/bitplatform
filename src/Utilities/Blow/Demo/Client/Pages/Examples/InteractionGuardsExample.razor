@@ -1,6 +1,6 @@
 ﻿@page "/examples/interaction-guards"
 
-<PageTitle>Interaction Guards - bit Blow</PageTitle>
+<PageTitle>Interaction Guards · Blow</PageTitle>
 
 <ExampleScaffold Title="Interaction Guards"
                  Summary="Three CSS classes carve interactivity back out of the canvas. Drag the slider or select the text in the top node: neither moves it, because they sit in a 'nodrag' area. Scroll the list in the second node and the list scrolls instead of the canvas zooming, because it is marked 'nowheel'. The panel top-right is marked 'nopan', so dragging it does not pan.">
@@ -55,14 +55,14 @@
     .guard-body { padding: 4px 2px; cursor: default; }
     .guard-body input { width: 100%; }
     .guard-value { font-variant-numeric: tabular-nums; }
-    .guard-hint { margin: 6px 0 0; font-size: 11px; color: #6b7280; user-select: text; }
+    .guard-hint { margin: 6px 0 0; font-size: 11px; color: var(--bit-blow-text-muted); user-select: text; }
     .guard-log {
         max-height: 70px;
         overflow-y: auto;
         text-align: left;
         font-size: 11px;
         line-height: 1.6;
-        border: 1px solid #e5e7eb;
+        border: 1px solid var(--bit-blow-border);
         border-radius: 4px;
         padding: 4px 6px;
     }

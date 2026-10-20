@@ -2,61 +2,127 @@
 @inject CartState Cart
 @inject AppState AppState
 
-<PageTitle>Checkout</PageTitle>
+<PageTitle>Checkout · BevTools</PageTitle>
 
-<h1>Checkout</h1>
-<p class="muted">Forms, validation and state changes. Every cart action is a named state change in BevTools → State → CartState with a before/after diff.</p>
+<div class="bb-intro">
+    <p class="bb-overline">Scenario · State</p>
+    <h1>Checkout</h1>
+    <p class="bb-subtitle">
+        A cart, a validated form and a few application settings. <code>CartState</code> and <code>AppState</code> are
+        ordinary scoped services that implement <code>IBevStateProvider</code>, so every action on them is a named state
+        change in BevTools, with a before/after diff and the click that made it.
+    </p>
+</div>
 
-<div class="cards">
-    <div class="card">
-        <h3>Cart (@Cart.ItemCount items)</h3>
-        @if (Cart.Lines.Count == 0)
-        {
-            <div class="muted">Empty. Add products from the <a href="products">products page</a> or:</div>
-            <div class="row"><button @onclick="AddSample">Add sample items</button></div>
-        }
-        else
-        {
-            <table>
-                <tbody>
-                    @foreach (var line in Cart.Lines)
-                    {
-                        <tr><td>@line.Product.Name</td><td>× @line.Quantity</td><td>@line.LineTotal.ToString("C")</td><td><button @onclick="() => Cart.Remove(line.Product.Id)">✕</button></td></tr>
-                    }
-                </tbody>
-            </table>
-            <div><strong>Total @Cart.Total.ToString("C")</strong> @(Cart.CouponCode is null ? "" : $"(coupon {Cart.CouponCode})")</div>
-            <div class="row">
-                <button @onclick='() => Cart.ApplyCoupon("SAVE10")'>Apply coupon</button>
-                <button @onclick="Cart.Clear">Clear</button>
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> The checkout</h3>
+    <p class="bb-card-desc">
+        Add, remove, apply the coupon or clear the cart, then fill the form in and place the order - nothing is sent
+        anywhere. The two toggles change <code>AppState</code> values only; the site's own light/dark theme is the
+        button in the header.
+    </p>
+
+    <div class="bb-demo">
+        <div class="bb-demo-bar"><span class="bb-demo-label">Live</span><RendererStatus /></div>
+
+        <div class="demo-tiles demo-tiles-pair">
+            <div class="demo-tile">
+                <h4 class="demo-tile-title">Cart (@Cart.ItemCount items)</h4>
+                @if (Cart.Lines.Count == 0)
+                {
+                    <div class="bb-muted">Empty. Add products from the <a href="products">products page</a> or:</div>
+                    <div class="bb-toolbar"><button type="button" class="btn btn-secondary" @onclick="AddSample">Add sample items</button></div>
+                }
+                else
+                {
+                    <div class="bb-scroll">
+                        <table class="bb-table demo-cart">
+                            <tbody>
+                                @foreach (var line in Cart.Lines)
+                                {
+                                    <tr><td>@line.Product.Name</td><td class="bb-nowrap">× @line.Quantity</td><td class="bb-nowrap">@line.LineTotal.ToString("C")</td><td class="bb-table-action"><button type="button" class="bb-icon-btn" aria-label="Remove @line.Product.Name" @onclick="() => Cart.Remove(line.Product.Id)">✕</button></td></tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                    <div><strong>Total @Cart.Total.ToString("C")</strong> @(Cart.CouponCode is null ? "" : $"(coupon {Cart.CouponCode})")</div>
+                    <div class="bb-toolbar">
+                        <button type="button" class="btn btn-secondary" @onclick='() => Cart.ApplyCoupon("SAVE10")'>Apply coupon</button>
+                        <button type="button" class="btn btn-secondary" @onclick="Cart.Clear">Clear</button>
+                    </div>
+                }
             </div>
-        }
+
+            <div class="demo-tile demo-span-2">
+                <h4 class="demo-tile-title">Shipping details</h4>
+                <EditForm Model="_model" OnValidSubmit="Submit" FormName="checkout">
+                    <DataAnnotationsValidator />
+                    <div class="demo-form">
+                        <label class="bb-field">Full name <InputText @bind-Value="_model.FullName" /></label>
+                        <label class="bb-field">Email <InputText @bind-Value="_model.Email" /></label>
+                        <label class="bb-field">Address <InputText @bind-Value="_model.Address" /></label>
+                        <label class="bb-field">Postal code <InputText @bind-Value="_model.PostalCode" /></label>
+                        <label class="bb-field demo-form-wide">Notes <InputTextArea @bind-Value="_model.Notes" /></label>
+                        <label class="bb-check demo-form-wide"><InputCheckbox @bind-Value="_model.AcceptTerms" /> I accept the terms</label>
+                    </div>
+                    <ValidationSummary />
+                    <div class="bb-toolbar">
+                        <button type="submit" class="btn btn-primary">Place order</button>
+                        <button type="button" class="btn btn-secondary" @onclick="ToggleTheme">Toggle AppState.Theme (@AppState.Theme)</button>
+                        <button type="button" class="btn btn-secondary" @onclick="() => AppState.NotificationsEnabled = !AppState.NotificationsEnabled">Toggle notifications (@AppState.NotificationsEnabled)</button>
+                    </div>
+                </EditForm>
+                @if (_submitted)
+                {
+                    <p class="bb-note bb-note-success">Order placed for @_model.FullName. (Nothing was actually sent.)</p>
+                }
+            </div>
+        </div>
     </div>
+</div>
 
-    <div class="card" style="grid-column: span 2">
-        <h3>Shipping details</h3>
-        <EditForm Model="_model" OnValidSubmit="Submit" FormName="checkout">
-            <DataAnnotationsValidator />
-            <div class="form-grid">
-                <label>Full name</label><InputText @bind-Value="_model.FullName" />
-                <label>Email</label><InputText @bind-Value="_model.Email" />
-                <label>Address</label><InputText @bind-Value="_model.Address" />
-                <label>Postal code</label><InputText @bind-Value="_model.PostalCode" />
-                <label>Notes</label><InputTextArea @bind-Value="_model.Notes" />
-                <label></label><label><InputCheckbox @bind-Value="_model.AcceptTerms" /> I accept the terms</label>
-            </div>
-            <ValidationSummary />
-            <div class="row">
-                <button type="submit" class="primary">Place order</button>
-                <button type="button" @onclick="ToggleTheme">Toggle AppState.Theme (@AppState.Theme)</button>
-                <button type="button" @onclick="() => AppState.NotificationsEnabled = !AppState.NotificationsEnabled">Toggle notifications (@AppState.NotificationsEnabled)</button>
-            </div>
-        </EditForm>
-        @if (_submitted)
-        {
-            <p class="ok">Order placed for @_model.FullName. (Nothing was actually sent.)</p>
-        }
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> State: history with diffs</h3>
+    <p class="bb-card-desc">
+        Open <strong>State</strong> and select <code>CartState</code>: the change history names each action
+        (<code>Add</code>, <code>Remove</code>, <code>ApplyCoupon</code>, <code>Clear</code>), with the values before and
+        after and a link to the UI event that triggered it. <code>AppState</code> records <code>SetTheme</code>,
+        <code>ToggleNotifications</code>, <code>Click</code> and a <code>Visit</code> per navigation - and shows its
+        <code>ApiKey</code> redacted.
+    </p>
+    <div class="bb-try">
+        <a href="problems#problem-10" class="btn btn-outline">Problem 10 →</a>
     </div>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Exposing your own state</h3>
+    <p class="bb-card-desc">
+        A state container becomes a provider by implementing <code>IBevStateProvider</code> - a name, a snapshot and a
+        <code>Changed</code> event carrying the action - and being registered with
+        <code>AddBevToolsStateProvider</code>. This is the cart above, shortened:
+    </p>
+    <pre class="bb-code"><span class="k">public sealed class</span> CartState : IBevStateProvider
+{
+    <span class="k">public</span> List&lt;CartLine&gt; Lines { <span class="k">get</span>; } = [];
+
+    <span class="k">public string</span> Name =&gt; <span class="s">"CartState"</span>;
+
+    <span class="k">public string</span>? Description =&gt; <span class="s">"scoped service, one per circuit / app"</span>;
+
+    <span class="k">public event</span> Action&lt;BevStateChangeInfo&gt;? Changed;
+
+    <span class="k">public object</span>? GetSnapshot() =&gt; <span class="k">this</span>;
+
+    <span class="k">public void</span> Add(Product product)
+    {
+        <span class="c">// … update Lines …</span>
+        Changed?.Invoke(<span class="k">new</span> BevStateChangeInfo(<span class="s">"Add"</span>, product.Name));
+    }
+}
+
+<span class="c">// Program.cs - registers it as a scoped service and as a state provider</span>
+builder.Services.AddBevToolsStateProvider&lt;CartState&gt;();</pre>
 </div>
 
 @code {

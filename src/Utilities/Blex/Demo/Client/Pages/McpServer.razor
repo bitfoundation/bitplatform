@@ -3,43 +3,52 @@
 <DocPage Href="mcp" Title="MCP server"
          Lead="This site hosts a Model Context Protocol server, so an AI agent can work against Blex's real API, docs and generator instead of guessing at them.">
 
-    <p>
-        Point an MCP client at <code>https://blex.bitplatform.dev/mcp</code> - or at
-        <code>http://localhost:5280/mcp</code> when you run the documentation site locally. It speaks the
-        streamable HTTP transport, needs no authentication, and every tool on it is read-only.
-    </p>
+    <div class="bb-card">
+        <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Connect a client</h3>
+        <p>
+            Point an MCP client at <code>https://blex.bitplatform.dev/mcp</code> - or at
+            <code>http://localhost:5280/mcp</code> when you run the documentation site locally. It speaks the
+            streamable HTTP transport, needs no authentication, and every tool on it is read-only.
+        </p>
 
-    <CodeBlock Code="@ClaudeCode" Language="bash" Title="Claude Code" />
-    <CodeBlock Code="@VsCode" Language="json" FileName=".vscode/mcp.json" />
+        <CodeBlock Code="@ClaudeCode" Language="bash" Title="Claude Code" />
+        <CodeBlock Code="@VsCode" Language="json" FileName=".vscode/mcp.json" />
+    </div>
 
-    <h2>Tools</h2>
-    <p>
-        One rule holds across the reference tools: pass the key of the thing you want and you get that thing;
-        leave it out and you get the index of what there is. Every tool is also a plain HTTP GET under
-        <code>/api/mcp/...</code> - <a href="api/mcp/GetBlexApi" target="_blank" rel="noopener">/api/mcp/GetBlexApi</a> is the type list -
-        so you can look at any answer in a browser.
-    </p>
-    <ApiTable Rows="@Tools" MemberHeader="Tool" />
+    <div class="bb-card">
+        <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Tools</h3>
+        <p>
+            One rule holds across the reference tools: pass the key of the thing you want and you get that thing;
+            leave it out and you get the index of what there is. Every tool is also a plain HTTP GET under
+            <code>/api/mcp/...</code> - <a href="api/mcp/GetBlexApi" target="_blank" rel="noopener">/api/mcp/GetBlexApi</a> is the type list -
+            so you can look at any answer in a browser.
+        </p>
+        <ApiTable Rows="@Tools" MemberHeader="Tool" />
+    </div>
 
-    <h2>InspectBlexStore</h2>
-    <p>
-        The one question documentation cannot answer is "what does the generator do with <em>this</em> class?".
-        <code>InspectBlexStore</code> answers it by running the real <code>Bit.Blex.Generators</code> over the
-        source it is given. It returns every <code>BLEX</code> diagnostic a build would report, the compiler
-        errors in the result, and the exact public members the generator adds - so an agent calls
-        <code>Increment()</code> because the generator said so, not because it guessed the naming convention.
-    </p>
-    <CodeBlock Code="@InspectRequest" Language="bash" Title="Try it from a terminal" />
+    <div class="bb-card">
+        <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> InspectBlexStore</h3>
+        <p>
+            The one question documentation cannot answer is "what does the generator do with <em>this</em> class?".
+            <code>InspectBlexStore</code> answers it by running the real <code>Bit.Blex.Generators</code> over the
+            source it is given. It returns every <code>BLEX</code> diagnostic a build would report, the compiler
+            errors in the result, and the exact public members the generator adds - so an agent calls
+            <code>Increment()</code> because the generator said so, not because it guessed the naming convention.
+        </p>
+        <CodeBlock Code="@InspectRequest" Language="bash" Title="Try it from a terminal" />
+    </div>
 
-    <h2>Resources and prompts</h2>
-    <ApiTable Rows="@Resources" MemberHeader="Resource" />
-    <ApiTable Rows="@Prompts" MemberHeader="Prompt" />
+    <div class="bb-card">
+        <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Resources and prompts</h3>
+        <ApiTable Rows="@Resources" MemberHeader="Resource" />
+        <ApiTable Rows="@Prompts" MemberHeader="Prompt" />
 
-    <p>
-        The server also hands the model a short set of working rules at <code>initialize</code>, before any tool
-        is called, and completes every argument that is a key into a closed set - the docs slugs, the guide
-        headings, the type names, the diagnostic ids and the source paths.
-    </p>
+        <p>
+            The server also hands the model a short set of working rules at <code>initialize</code>, before any tool
+            is called, and completes every argument that is a key into a closed set - the docs slugs, the guide
+            headings, the type names, the diagnostic ids and the source paths.
+        </p>
+    </div>
 
 </DocPage>
 

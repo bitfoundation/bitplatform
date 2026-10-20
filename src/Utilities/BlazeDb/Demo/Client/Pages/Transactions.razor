@@ -1,26 +1,25 @@
 ﻿@page "/transactions"
 @implements IAsyncDisposable
 
-<PageTitle>Transactions - BlazeDb</PageTitle>
+<PageTitle>Transactions · BlazeDb</PageTitle>
 
-<PageHeader Eyebrow="Engine" IconName="txn" Title="One writer, one ambient batch"
+<PageHeader Eyebrow="Transactions" Title="One writer, one ambient batch"
             Lead="A transaction makes a group of writes atomic in the log. Writes still land in memory immediately, so reads inside the batch see them - but nothing is durable until commit, and a rollback reverts every change through an undo log.">
-    <span class="chip"><Icon Name="lock" /> Single writer</span>
-    <span class="chip"><Icon Name="layers" /> Ambient enrolment</span>
-    <span class="chip"><Icon Name="close" /> No nesting, no savepoints</span>
+    <span class="bb-badge bd-badge-neutral">Single writer</span>
+    <span class="bb-badge bd-badge-neutral">Ambient enrolment</span>
+    <span class="bb-badge bd-badge-neutral">No nesting, no savepoints</span>
 </PageHeader>
 
-<Section Title="Run a scenario" IconName="play"
+<Section Title="Run a scenario"
          Lead="Each run starts a fresh private database seeded with three rows, so results are always reproducible.">
-    <div class="grid grid-sidebar">
-        <div class="flex-col gap-lg">
+    <div class="bd-main-side">
+        <div class="bb-flex">
             <Panel Title="Scenarios" IconName="list">
-                <div class="flex-col">
+                <div class="bd-actions">
                     @foreach (var scenario in Scenarios)
                     {
                         var key = scenario.Key;
-                        <button class="btn btn-sm btn-block @(_selected == key ? "btn-primary" : null)"
-                                style="justify-content:flex-start"
+                        <button type="button" class="btn @(_selected == key ? "btn-primary" : "btn-secondary")"
                                 disabled="@_running"
                                 @onclick="() => RunAsync(key)">
                             <Icon Name="@scenario.Icon" />
@@ -37,16 +36,16 @@
             }
         </div>
 
-        <div class="flex-col gap-lg">
+        <div class="bb-flex">
             <Panel Title="Trace" IconName="history" Flush="true">
                 <Actions>
                     @if (_running)
                     {
-                        <span class="spinner"></span>
+                        <span class="bb-spinner"></span>
                     }
                 </Actions>
                 <ChildContent>
-                    <ScenarioSteps Steps="_log.Steps" EmptyText="Pick a scenario on the left." />
+                    <ScenarioSteps Steps="_log.Steps" EmptyText="Pick a scenario to run it." />
                 </ChildContent>
             </Panel>
 
@@ -54,35 +53,35 @@
             {
                 <Panel Title="Resulting table" IconName="database" Flush="true">
                     <Actions>
-                        <span class="panel-sub mono">Count = @_table.Count</span>
+                        <span class="bd-panel-sub">Count = @_table.Count</span>
                     </Actions>
                     <ChildContent>
                         @if (_table.Count == 0)
                         {
-                            <div class="empty">Empty.</div>
+                            <div class="bb-empty">Empty.</div>
                         }
                         else
                         {
-                            <div class="rows">
+                            <div class="bd-rows">
                                 @foreach (var row in _table.OrderBy(TodoEntry.Indexes.Effort))
                                 {
-                                    <div class="row-item @(row.Done ? "done" : null)">
-                                        <div class="row-main">
-                                            <div class="row-title">@row.Title</div>
-                                            <div class="row-meta">
-                                                <span class="mono">effort @row.Effort</span>
-                                                <span class="mono">@(row.Done ? "done" : "open")</span>
+                                    <div class="bd-row @(row.Done ? "bd-done" : null)">
+                                        <div class="bd-row-main">
+                                            <div class="bd-row-title">@row.Title</div>
+                                            <div class="bd-row-meta">
+                                                <span class="bb-mono">effort @row.Effort</span>
+                                                <span class="bb-mono">@(row.Done ? "done" : "open")</span>
                                             </div>
                                         </div>
-                                </div>
-                            }
-                        </div>
+                                    </div>
+                                }
+                            </div>
                         }
 
                         @if (_storage is not null)
                         {
-                            <div class="panel-body" style="border-top:1px solid var(--border)">
-                                <div class="tiny muted mono">
+                            <div class="bd-panel-pad bd-panel-foot">
+                                <div class="bd-foot bb-mono">
                                     storage:
                                     @(_storage.FileNames.Count == 0
                                         ? "nothing written yet - commits are buffered until a flush"
@@ -97,50 +96,50 @@
     </div>
 </Section>
 
-<Section Title="Batching is also the fast path" IconName="gauge"
+<Section Title="Batching is also the fast path"
          Lead="Outside a transaction every write is its own log record. Inside one, they share a single commit.">
-    <div class="grid grid-2">
+    <div class="bb-flex">
         <Panel Title="Measure it" IconName="bolt">
-            <div class="form-row">
-                <div class="field">
-                    <label class="field-label" for="batch-rows">Rows per run</label>
-                    <select id="batch-rows" class="select" @bind="_batchRows">
+            <div class="bb-fields">
+                <div class="bb-field">
+                    <label for="batch-rows">Rows per run</label>
+                    <select id="batch-rows" @bind="_batchRows">
                         <option value="500">500</option>
                         <option value="2000">2,000</option>
                         <option value="10000">10,000</option>
                     </select>
                 </div>
-                <button class="btn btn-primary" disabled="@_benchRunning" @onclick="RunBatchBenchAsync">
+                <button type="button" class="btn btn-primary" disabled="@_benchRunning" @onclick="RunBatchBenchAsync">
                     <Icon Name="play" /> Run
                 </button>
             </div>
 
             @if (_batchResult is not null)
             {
-                <div class="table-wrap mt-2">
-                    <table class="data">
+                <div class="bb-scroll">
+                    <table class="bb-table">
                         <thead>
-                            <tr><th>Mode</th><th class="num">Total</th><th class="num">Per row</th></tr>
+                            <tr><th>Mode</th><th class="bd-num">Total</th><th class="bd-num">Per row</th></tr>
                         </thead>
                         <tbody>
                             <tr>
-                                <td class="mono">autocommit - one record each</td>
-                                <td class="num mono">@_autoTotal</td>
-                                <td class="num mono">@_autoPer</td>
+                                <td class="bb-mono">autocommit - one record each</td>
+                                <td class="bd-num">@_autoTotal</td>
+                                <td class="bd-num">@_autoPer</td>
                             </tr>
                             <tr>
-                                <td class="mono">one transaction</td>
-                                <td class="num mono ok-text">@_txnTotal</td>
-                                <td class="num mono ok-text">@_txnPer</td>
+                                <td class="bb-mono">one transaction</td>
+                                <td class="bd-num bd-ok">@_txnTotal</td>
+                                <td class="bd-num bd-ok">@_txnPer</td>
                             </tr>
                         </tbody>
                     </table>
                 </div>
-                <p class="small muted mt-2 mb-0">@_batchResult</p>
+                <p class="bb-muted">@_batchResult</p>
             }
         </Panel>
 
-        <div class="flex-col gap-lg">
+        <div class="bb-flex">
             <CodeBlock Title="Bulk loading" Code="@BatchSnippet" />
             <Callout Tone="info" Title="Both paths are durable.">
                 Autocommit is not “unsafe” - each write still becomes a log record. A transaction
@@ -150,52 +149,52 @@
     </div>
 </Section>
 
-<Section Title="What a transaction guarantees across a crash" IconName="shield"
+<Section Title="What a transaction guarantees across a crash"
          Lead="A committed batch is replayed in full. An uncommitted one leaves no trace, even if its writes were already visible in memory.">
-    <div class="grid grid-2">
+    <div class="bb-split">
         <Panel Title="Committed batch" IconName="check">
-            <p class="small">
+            <p>
                 Three rows inserted in a transaction, committed, flushed, then the database instance is
                 abandoned without disposing it - the same thing a closed tab does.
             </p>
-            <button class="btn btn-sm btn-block" disabled="@_crashRunning" @onclick="() => RunCrashAsync(true)">
+            <button type="button" class="btn btn-secondary" disabled="@_crashRunning" @onclick="() => RunCrashAsync(true)">
                 <Icon Name="play" /> Commit, crash, reopen
             </button>
             @if (_commitCrashResult is not null)
             {
-                <div class="api-call mt-2">@_commitCrashResult</div>
+                <div class="bb-log bd-out">@_commitCrashResult</div>
             }
         </Panel>
 
         <Panel Title="Abandoned batch" IconName="close">
-            <p class="small">
+            <p>
                 The same three inserts, but the transaction is disposed without committing. Memory saw
                 them; the log never did.
             </p>
-            <button class="btn btn-sm btn-block" disabled="@_crashRunning" @onclick="() => RunCrashAsync(false)">
+            <button type="button" class="btn btn-secondary" disabled="@_crashRunning" @onclick="() => RunCrashAsync(false)">
                 <Icon Name="play" /> Roll back, crash, reopen
             </button>
             @if (_rollbackCrashResult is not null)
             {
-                <div class="api-call mt-2">@_rollbackCrashResult</div>
+                <div class="bb-log bd-out">@_rollbackCrashResult</div>
             }
         </Panel>
     </div>
 </Section>
 
-<Section Title="The rules" IconName="info">
-    <div class="grid grid-2">
+<Section Title="The rules">
+    <div class="bb-flex">
         <Panel Title="Ambient by design" IconName="layers">
-            <p class="small">
+            <p>
                 <code>BeginTransaction</code> does not hand you a scoped writer. While a transaction is
                 active, <em>every</em> write against <em>any</em> table on that database is enrolled -
                 including writes made deep inside code that never saw the transaction object.
             </p>
-            <CodeBlock ShowHeader="false" Code="@AmbientSnippet" />
+            <CodeBlock Code="@AmbientSnippet" />
         </Panel>
 
         <Panel Title="Deliberate omissions" IconName="close">
-            <ul class="small mb-0">
+            <ul class="bb-detail-list">
                 <li><strong>No nesting.</strong> A second <code>BeginTransaction</code> throws.</li>
                 <li><strong>No savepoints.</strong> Rollback is all or nothing.</li>
                 <li><strong>No isolation levels.</strong> There is one writer, so there is nothing to isolate from.</li>

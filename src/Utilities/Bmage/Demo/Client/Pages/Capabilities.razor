@@ -7,44 +7,45 @@
    live browser, so the prerendered page says it is probing and the numbers arrive once the runtime
    is interactive. *@
 
-<PageTitle>Capabilities - Bit.Bmage</PageTitle>
+<PageTitle>Capabilities · Bmage</PageTitle>
 
-<h1>Browser capabilities</h1>
+<div class="bb-intro">
+    <h1>Browser capabilities</h1>
+    <p class="bb-subtitle">
+        Every one of these is <strong>measured, not guessed</strong>. Format support is confirmed by
+        actually encoding a pixel and checking what came back, and the canvas limit is found by
+        allocating until the browser refuses.
+    </p>
+</div>
 
-<p class="page-intro">
-    Every one of these is <strong>measured, not guessed</strong>. Format support is confirmed by
-    actually encoding a pixel and checking what came back, and the canvas limit is found by
-    allocating until the browser refuses.
-</p>
-
-<div class="demo-section">
-    <h2>This browser</h2>
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> This browser</h3>
 
     @if (_capabilities is null)
     {
-        <p class="working" role="status">Probing this browser&hellip;</p>
+        <p class="working" role="status"><span class="bb-spinner" aria-hidden="true"></span>Probing this browser&hellip;</p>
     }
     else
     {
-        <div class="grid">
-            <div class="card">
-                <p class="card-title">Environment</p>
-                <table class="data">
+        <div class="bb-grid capabilities-report">
+            <div class="bb-card">
+                <p class="bb-overline demo-label">Environment</p>
+                <table class="bb-table">
                     <tbody>
                         <tr><th scope="row">Runtime</th><td>@_capabilities.Environment</td></tr>
-                        <tr><th scope="row">Device pixel ratio</th><td class="num">@_capabilities.DevicePixelRatio.ToString("0.##")</td></tr>
-                        <tr><th scope="row">Logical processors</th><td class="num">@(_capabilities.HardwareConcurrency?.ToString() ?? "unknown")</td></tr>
-                        <tr><th scope="row">Device memory</th><td class="num">@(_capabilities.DeviceMemoryGb is { } gb ? $"{gb:0.#} GB" : "unknown")</td></tr>
-                        <tr><th scope="row">Max canvas edge</th><td class="num">@_capabilities.MaxCanvasDimension px</td></tr>
-                        <tr><th scope="row">Max canvas area</th><td class="num">@($"{_capabilities.MaxCanvasArea / 1_000_000.0:0.#} MP")</td></tr>
-                        <tr><th scope="row">Suggested working size</th><td class="num">@_capabilities.SuggestedMaxWorkingDimension px</td></tr>
+                        <tr><th scope="row">Device pixel ratio</th><td class="demo-num">@_capabilities.DevicePixelRatio.ToString("0.##")</td></tr>
+                        <tr><th scope="row">Logical processors</th><td class="demo-num">@(_capabilities.HardwareConcurrency?.ToString() ?? "unknown")</td></tr>
+                        <tr><th scope="row">Device memory</th><td class="demo-num">@(_capabilities.DeviceMemoryGb is { } gb ? $"{gb:0.#} GB" : "unknown")</td></tr>
+                        <tr><th scope="row">Max canvas edge</th><td class="demo-num">@_capabilities.MaxCanvasDimension px</td></tr>
+                        <tr><th scope="row">Max canvas area</th><td class="demo-num">@($"{_capabilities.MaxCanvasArea / 1_000_000.0:0.#} MP")</td></tr>
+                        <tr><th scope="row">Suggested working size</th><td class="demo-num">@_capabilities.SuggestedMaxWorkingDimension px</td></tr>
                     </tbody>
                 </table>
             </div>
 
-            <div class="card">
-                <p class="card-title">Formats</p>
-                <table class="data">
+            <div class="bb-card">
+                <p class="bb-overline demo-label">Formats</p>
+                <table class="bb-table">
                     <thead>
                         <tr><th scope="col">Format</th><th scope="col">Decode</th><th scope="col">Encode</th></tr>
                     </thead>
@@ -61,9 +62,9 @@
                 </table>
             </div>
 
-            <div class="card">
-                <p class="card-title">Platform features</p>
-                <table class="data">
+            <div class="bb-card">
+                <p class="bb-overline demo-label">Platform features</p>
+                <table class="bb-table">
                     <tbody>
                         @foreach (var (label, value) in Features)
                         {
@@ -76,8 +77,8 @@
     }
 </div>
 
-<div class="demo-section">
-    <h2>Choosing a format from this</h2>
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Choosing a format from this</h3>
     <p>
         Never assume: ask for a preference order and take the best one this browser can actually
         write.
@@ -92,8 +93,8 @@
     <CodeSnippet Code="@Snippet" Language="C#" Expanded="true" />
 </div>
 
-<div class="demo-section">
-    <h2>Why probe at all</h2>
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Why probe at all</h3>
     <p>
         Browsers lie in a specific way: asked to encode a format they cannot write, they silently hand
         back a PNG. A library that trusted the request would label that PNG as AVIF and corrupt
@@ -158,5 +159,5 @@
     }
 
     private static MarkupString Badge(bool value)
-        => new(value ? "<span class=\"badge badge-yes\">yes</span>" : "<span class=\"badge badge-no\">no</span>");
+        => new(value ? "<span class=\"bb-badge bb-badge-success\">yes</span>" : "<span class=\"bb-badge bb-badge-danger\">no</span>");
 }

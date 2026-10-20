@@ -9,41 +9,42 @@
 @*
     The docs site is itself a Blex app, so this dock shows the real pipeline: every action you
     dispatch anywhere on the site, the live global state tree, the undo stack and any isolated
-    pipeline error. Nothing here is mocked.
+    pipeline error. Nothing here is mocked. Routes.razor mounts it once, outside the page shell, so
+    it stays put across navigations; its styles are in demo.css.
 *@
-<aside class="dock @(_open ? "dock--open" : null)">
-    <button type="button" class="dock__handle" @onclick="() => _open = !_open">
+<aside class="dock @(_open ? "dock--open" : null)" aria-label="Blex inspector">
+    <button type="button" class="dock__handle" aria-expanded="@(_open ? "true" : "false")" @onclick="() => _open = !_open">
         <span class="dock__handle-label">Inspector</span>
-        <span class="dock__handle-count">@Feed.TotalSeen</span>
-        <span class="dock__handle-caret">@(_open ? "▾" : "▴")</span>
+        <span class="bb-badge">@Feed.TotalSeen</span>
+        <span class="dock__handle-caret" aria-hidden="true">@(_open ? "▾" : "▴")</span>
     </button>
 
     @if (_open)
     {
         <div class="dock__body">
-            <div class="dock__tabs" role="tablist">
+            <div class="bb-tabs dock__tabs" role="tablist">
                 @foreach (var tab in Tabs)
                 {
                     <button type="button"
                             role="tab"
-                            class="dock__tab @(_tab == tab ? "dock__tab--active" : null)"
+                            aria-selected="@(_tab == tab ? "true" : "false")"
                             @onclick="() => _tab = tab">
                         @tab
                         @if (tab == "Errors" && Errors.Errors.Count > 0)
                         {
-                            <span class="dock__tab-badge">@Errors.Errors.Count</span>
+                            <span class="bb-badge bb-badge-danger">@Errors.Errors.Count</span>
                         }
                     </button>
                 }
             </div>
 
-            <div class="dock__panel">
+            <div class="dock__panel" role="tabpanel">
                 @switch (_tab)
                 {
                     case "Actions":
-                        <div class="dock__toolbar">
-                            <span class="muted">@Feed.TotalSeen dispatched since load</span>
-                            <button type="button" class="btn btn-ghost btn-sm" @onclick="Feed.Clear">Clear</button>
+                        <div class="bb-toolbar dock__toolbar">
+                            <span class="bb-muted">@Feed.TotalSeen dispatched since load</span>
+                            <button type="button" class="btn btn-secondary" @onclick="Feed.Clear">Clear</button>
                         </div>
                         @if (Feed.Entries.Count == 0)
                         {
@@ -70,37 +71,37 @@
                         break;
 
                     case "State":
-                        <div class="dock__toolbar">
-                            <span class="muted">@Manager.Stores.Count stores · live global tree</span>
+                        <div class="bb-toolbar dock__toolbar">
+                            <span class="bb-muted">@Manager.Stores.Count stores · live global tree</span>
                         </div>
-                        <pre class="dock__json"><code>@CodeHighlighter.Highlight(StateJson, "json")</code></pre>
+                        <pre class="bb-code dock__json"><code>@CodeHighlighter.Highlight(StateJson, "json")</code></pre>
                         break;
 
                     case "History":
-                        <div class="dock__toolbar">
-                            <button type="button" class="btn btn-sm" disabled="@(!History.CanUndo)" @onclick="History.Undo">
+                        <div class="bb-toolbar dock__toolbar">
+                            <button type="button" class="btn btn-secondary" disabled="@(!History.CanUndo)" @onclick="History.Undo">
                                 Undo @History.NextUndoLabel
                             </button>
-                            <button type="button" class="btn btn-sm" disabled="@(!History.CanRedo)" @onclick="History.Redo">
+                            <button type="button" class="btn btn-secondary" disabled="@(!History.CanRedo)" @onclick="History.Redo">
                                 Redo @History.NextRedoLabel
                             </button>
-                            <button type="button" class="btn btn-ghost btn-sm" @onclick="History.Clear">Clear</button>
+                            <button type="button" class="btn btn-secondary" @onclick="History.Clear">Clear</button>
                         </div>
-                        <dl class="stat-grid">
-                            <div><dt>Undo depth</dt><dd>@History.UndoCount</dd></div>
-                            <div><dt>Redo depth</dt><dd>@History.RedoCount</dd></div>
-                            <div><dt>Max entries</dt><dd>@History.MaxEntries</dd></div>
-                        </dl>
-                        <p class="muted small">
+                        <div class="bb-stats dock__stats">
+                            <div class="bb-stat"><span class="bb-stat-label">Undo depth</span><span class="bb-stat-value">@History.UndoCount</span></div>
+                            <div class="bb-stat"><span class="bb-stat-label">Redo depth</span><span class="bb-stat-value">@History.RedoCount</span></div>
+                            <div class="bb-stat"><span class="bb-stat-label">Max entries</span><span class="bb-stat-value">@History.MaxEntries</span></div>
+                        </div>
+                        <p class="dock__note">
                             Undo and redo restore every store at once and never record a new action,
                             so stepping back does not pollute the history.
                         </p>
                         break;
 
                     case "Errors":
-                        <div class="dock__toolbar">
-                            <span class="muted">options.OnError sink</span>
-                            <button type="button" class="btn btn-ghost btn-sm" @onclick="Errors.Clear">Clear</button>
+                        <div class="bb-toolbar dock__toolbar">
+                            <span class="bb-muted">options.OnError sink</span>
+                            <button type="button" class="btn btn-secondary" @onclick="Errors.Clear">Clear</button>
                         </div>
                         @if (Errors.Errors.Count == 0)
                         {
@@ -128,7 +129,7 @@
                 <div class="dock__banner">
                     Read-only guard is ON - middleware is vetoing every action
                     (@Guard.BlockedCount blocked).
-                    <button type="button" class="btn btn-sm" @onclick="() => Guard.IsReadOnly = false">Turn off</button>
+                    <button type="button" class="btn btn-secondary" @onclick="() => Guard.IsReadOnly = false">Turn off</button>
                 </div>
             }
         </div>

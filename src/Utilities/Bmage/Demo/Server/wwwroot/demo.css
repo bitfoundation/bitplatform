@@ -1,0 +1,887 @@
+﻿/* ============================================================================================
+   Bmage demo - the styles of the live samples.
+
+   The site's chrome, tokens and shared surfaces live in app.css (the site kit every Utilities demo
+   shares); this file only draws what is this site's own - the syntax highlighter's tokens, the
+   workbenches the scenario pages are built from (an image beside its controls), the previews and
+   readouts they report back in, and the bridge that points the editor component's custom
+   properties at the site's theme. It is written against the kit's --bb-* names, so it follows the
+   light/dark theme with no rules of its own for either, except where a value has no token.
+
+   The line this file will not cross: it styles the frame around a sample and the controls that
+   drive it, never the pixels it produces. A preview is shown at its real colours on a
+   checkerboard, because transparency is part of the output and a page that hid it would be
+   misreporting it.
+   ============================================================================================ */
+
+/* ---------- Values the kit has no token for ---------- */
+
+:root {
+    /* The stage an image is shown on: a mid neutral, so neither a white product shot nor a black
+       night sky disappears into it. The editor's canvas area uses the same. */
+    --demo-stage: #707070;
+
+    /* The transparency checkerboard under every preview. */
+    --demo-checker-a: #FFFFFF;
+    --demo-checker-b: #E3E3E3;
+
+    /* The highlighter tells more kinds apart than the kit's four (keyword, string, comment,
+       parameter), so the extra ones get colours of their own, picked to hold their contrast on
+       --bb-code-bg in both themes. */
+    --demo-code-type: #8250DF;
+    --demo-code-number: #CF222E;
+    --demo-code-razor: #A21CAF;
+}
+
+:root[bit-theme="dark"] {
+    --demo-stage: #292D32;
+    --demo-checker-a: #2A2F35;
+    --demo-checker-b: #1E2328;
+    --demo-code-type: #D2A8FF;
+    --demo-code-number: #FF7B72;
+    --demo-code-razor: #F0ABFC;
+}
+
+/* ---------- The editor component, on the site's theme ----------
+
+   The Bmage editor is themed entirely through custom properties on .bmg-editor (see
+   _content/Bit.Bmage/bit-bmage-editor.css), and out of the box it follows the operating system's
+   prefers-color-scheme. This site has a theme switch of its own in the header, so an editor left
+   on the defaults would be dark on a light page whenever the two disagree. These rules are the fix
+   a real host would write too: they point the editor's tokens at the site's, which already follow
+   bit-theme on <html> - and they are the demonstration of the editor's theming contract, because
+   nothing below reaches for a class inside the component, only for the variables it publishes.
+
+   Two scopes:
+
+     * :root, so the drop zones and colour wells the scenario pages use outside an editor
+       (BmageDropZone, .bmg-color) pick the tokens up by inheritance.
+     * .bmg-editor without a forced theme. The editor declares its defaults on itself, so
+       inheritance from :root cannot reach inside it; this selector outranks both its defaults and
+       its prefers-color-scheme block, whichever stylesheet loads last, while an editor given
+       bmg-theme-light or bmg-theme-dark - as the editor page's theme buttons do - keeps the
+       component's own palette, which is the point of those classes. */
+
+:root,
+.bmg-editor:not(.bmg-theme-light):not(.bmg-theme-dark) {
+    --bmg-bg: var(--bb-surface);
+    --bmg-bg-subtle: var(--bb-surface-sunken);
+    --bmg-bg-sunken: var(--bb-surface-2);
+    --bmg-canvas-bg: var(--demo-stage);
+    --bmg-border: var(--bb-border);
+
+    --bmg-text: var(--bb-text);
+    --bmg-text-muted: var(--bb-text-muted);
+
+    --bmg-accent: var(--bb-primary);
+    --bmg-accent-text: var(--bb-primary-text);
+    --bmg-accent-subtle: var(--bb-primary-soft);
+    --bmg-danger: var(--bb-danger);
+
+    --bmg-radius: var(--bb-radius-lg);
+    --bmg-radius-sm: var(--bb-radius);
+    --bmg-focus-ring: 2px solid var(--fl-stroke-focus-outer);
+    --bmg-shadow: var(--bb-shadow-card);
+    --bmg-transition: var(--fl-duration-faster) var(--fl-curve-easy-ease);
+}
+
+/* The editor sets its own system font stack; the site's is the same family of faces, named so the
+   component and the page around it render their labels identically on every platform. html in
+   front so the rule wins over the component's own, which is linked after this file. */
+html .bmg-editor {
+    font-family: var(--bb-font-sans);
+}
+
+/* ---------- Code: SyntaxHighlighter's tokens on the kit's code surface ---------- */
+
+.bb-code .tok-com { color: var(--bb-code-comment); font-style: italic; }
+.bb-code .tok-tag,
+.bb-code .tok-key { color: var(--bb-code-keyword); }
+.bb-code .tok-attr { color: var(--bb-code-param); }
+.bb-code .tok-str { color: var(--bb-code-string); }
+.bb-code .tok-type { color: var(--demo-code-type); }
+.bb-code .tok-num { color: var(--demo-code-number); }
+.bb-code .tok-raz { color: var(--demo-code-razor); font-weight: var(--fl-weight-semibold); }
+
+/* The lines where a Bmage component is used, so they stand out from the markup around them. The
+   tint runs out to the block's padding on both sides; top-aligned so the line keeps the height of
+   the plain ones around it. */
+.bb-code .hl-line {
+    display: inline-block;
+    vertical-align: top;
+    min-width: calc(100% + 4rem);
+    min-height: 1lh;
+    margin: 0 -3rem 0 -1rem;
+    padding: 0 3rem 0 calc(1rem - 3px);
+    background: color-mix(in srgb, var(--bb-primary) 9%, transparent);
+    border-inline-start: 3px solid var(--bb-primary);
+}
+
+/* The "Show code" toggle in front of a collapsed snippet. */
+.demo-source-caret {
+    font-size: .8em;
+    color: var(--bb-text-soft);
+}
+
+.demo-source-glyph {
+    font-family: var(--bb-mono);
+    color: var(--bb-primary);
+}
+
+.demo-source-lang {
+    padding-inline-start: .5rem;
+    margin-inline-start: .125rem;
+    border-inline-start: 1px solid var(--bb-border);
+    font-size: var(--fl-font-size-100);
+    font-weight: var(--fl-weight-regular);
+    letter-spacing: .04em;
+    text-transform: uppercase;
+    color: var(--bb-text-soft);
+}
+
+/* A short, live readout set as code: the document behind the editor, the steps of a pipeline, the
+   snippet under a headless example. Plain text that changes as the reader works, so it is not
+   highlighted, and it carries no copy button - it is read, not taken. */
+.demo-readout {
+    margin: 0 0 1rem;
+    padding: .75rem 1rem;
+    overflow-x: auto;
+    direction: ltr;
+    background: var(--bb-code-bg);
+    color: var(--bb-code-fg);
+    border: 1px solid var(--bb-border);
+    border-radius: var(--bb-radius-lg);
+    font-family: var(--bb-mono);
+    font-size: .8125rem;
+    line-height: 1.6;
+    white-space: pre;
+    tab-size: 4;
+}
+
+.bb-card .bb-card .demo-readout {
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+}
+
+/* ---------- Icons on the samples' buttons ---------- */
+
+svg.icon {
+    width: 1em;
+    height: 1em;
+    flex: none;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.75;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+/* ---------- Tables ----------
+
+   The reference tables lead each row with a <th scope="row"> rather than a cell, which the kit's
+   table leaves to the browser; it gets the identifier column's treatment here. */
+.bb-table tbody th {
+    padding: .625rem .875rem;
+    border-top: 1px solid var(--bb-border);
+    vertical-align: top;
+    text-align: start;
+    font-weight: var(--fl-weight-semibold);
+    color: var(--bb-text);
+    /* A row header is a name: it wraps between its words, never inside one. */
+    overflow-wrap: normal;
+}
+
+/* The capability report's values are names too - "BrowserWebAssembly" broken in half reads as two
+   words - and its tables are short enough to fit their tile without breaking them. */
+.capabilities-report .bb-table td {
+    overflow-wrap: normal;
+}
+
+.bb-table tbody tr:first-child th {
+    border-top: 0;
+}
+
+.bb-table tbody tr:hover th {
+    background: var(--bb-surface-hover);
+}
+
+.bb-table td code,
+.bb-table th code {
+    white-space: nowrap;
+}
+
+.bb-table .demo-num {
+    text-align: end;
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+}
+
+/* ---------- The workbench: an image beside the controls that shape it ----------
+
+   The image takes what is left once the controls have their column, and the two stack when the
+   frame - not the window - is too narrow for both: the main column may not shrink below just over
+   half the frame, so the controls wrap under it instead. */
+.demo-split {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    gap: 1.5rem;
+}
+
+.demo-split > :first-child {
+    flex: 999 1 0;
+    min-inline-size: min(100%, 55%);
+}
+
+.demo-split > :last-child {
+    flex: 1 1 17rem;
+    min-width: 0;
+}
+
+/* The controls: one surface step down from the frame around them. */
+.demo-panel {
+    min-width: 0;
+    padding: 1rem;
+    background: var(--bb-surface-sunken);
+    border: 1px solid var(--bb-border);
+    border-radius: var(--bb-radius-lg);
+}
+
+.demo-panel > :last-child {
+    margin-bottom: 0;
+}
+
+/* The small label over a group of controls or a result, with a status beside it. */
+.demo-label {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: .5rem;
+    margin-bottom: .75rem;
+}
+
+.demo-divider {
+    margin: 1rem 0;
+}
+
+/* A row of buttons under a drop zone. */
+.bmg-dropzone + .bb-toolbar {
+    margin-top: .75rem;
+}
+
+/* A labelled group of toggles in a toolbar: the editor page's theme, direction and language. */
+.demo-toolbar-group {
+    display: inline-flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: .5rem;
+}
+
+.demo-toolbar-label {
+    font-size: var(--fl-font-size-200);
+    font-weight: var(--fl-weight-semibold);
+    color: var(--bb-text-muted);
+}
+
+/* ---------- Controls ---------- */
+
+/* A labelled control in a panel. The label carries the current value at its far end, so a slider
+   reads as "Output size  256 px" without a second line. */
+.demo-field {
+    display: flex;
+    flex-direction: column;
+    gap: .375rem;
+    margin-bottom: 1rem;
+}
+
+.demo-field:last-child {
+    margin-bottom: 0;
+}
+
+.demo-field-label {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: .5rem;
+    font-size: var(--fl-font-size-200);
+    font-weight: var(--fl-weight-semibold);
+    color: var(--bb-text);
+}
+
+.demo-field-value {
+    font-weight: var(--fl-weight-regular);
+    font-variant-numeric: tabular-nums;
+    color: var(--bb-text-muted);
+}
+
+.demo-field > select,
+.demo-field > input[type="text"],
+.demo-field > input[type="range"],
+.demo-field > textarea {
+    width: 100%;
+}
+
+/* A choice inside a panel spans the panel, two options to a row, so a group too long for one row
+   reads as one control rather than as a row and a stray. */
+.demo-panel .bb-segmented {
+    display: flex;
+}
+
+.demo-panel .bb-segmented > button {
+    flex: 1 1 40%;
+}
+
+.demo-field-inline {
+    flex-direction: row;
+    align-items: center;
+    gap: .5rem;
+}
+
+.demo-field-inline .demo-field-label {
+    font-weight: var(--fl-weight-regular);
+    cursor: pointer;
+}
+
+/* A smaller button, for an action on a row of a table or a tile. */
+.btn.demo-btn-sm {
+    min-height: 1.625rem;
+    padding: .125rem .5rem;
+    font-size: var(--fl-font-size-100);
+}
+
+.btn.demo-btn-block {
+    width: 100%;
+}
+
+/* ---------- Results ---------- */
+
+/* Stats inside a narrow panel: more to a row, at a size the column has room for. */
+.bb-stats.demo-stats-compact {
+    grid-template-columns: repeat(auto-fit, minmax(min(7rem, 100%), 1fr));
+}
+
+.demo-stats-compact .bb-stat {
+    padding: .625rem .75rem;
+}
+
+.demo-stats-compact .bb-stat-value {
+    font-size: var(--fl-font-size-400);
+}
+
+.demo-good {
+    color: var(--bb-success-text);
+}
+
+.demo-bad {
+    color: var(--bb-danger-text);
+}
+
+/* A state that is off, next to the tinted badges of states that are on. */
+.bb-badge.demo-badge-off {
+    background: var(--bb-surface-sunken);
+    color: var(--bb-text-muted);
+    box-shadow: inset 0 0 0 1px var(--bb-border);
+}
+
+/* A swatch reporting a colour rather than a control: the dominant colours of an upload. Its own
+   background and text colour are set inline, from the colour it reports. */
+.demo-swatches {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .375rem;
+}
+
+.demo-swatch {
+    display: inline-flex;
+    align-items: center;
+    min-height: 1.75rem;
+    padding: 0 .625rem;
+    border-radius: var(--bb-radius-pill);
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--bb-text) 12%, transparent);
+    font-size: var(--fl-font-size-100);
+    font-weight: var(--fl-weight-semibold);
+    font-variant-numeric: tabular-nums;
+}
+
+.demo-small {
+    font-size: var(--fl-font-size-200);
+    line-height: 1.5;
+}
+
+.bb-docs-content > .bb-card > p.demo-small {
+    font-size: var(--fl-font-size-200);
+}
+
+.visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    clip-path: inset(50%);
+    white-space: nowrap;
+}
+
+/* Shown next to a result while it is being recomputed, so a slow run never looks like a frozen
+   page. It is a status, so the element carrying it is role="status". It can sit inside an
+   overline label, so it resets the label's lettering. */
+.working {
+    display: inline-flex;
+    align-items: center;
+    gap: .4375rem;
+    margin: 0;
+    font-size: var(--fl-font-size-200);
+    font-weight: var(--fl-weight-regular);
+    letter-spacing: normal;
+    text-transform: none;
+    color: var(--bb-text-muted);
+}
+
+.working .bb-spinner {
+    width: .875rem;
+    height: .875rem;
+}
+
+/* What a pipeline produced, at its real colours, on the checkerboard. */
+.preview-image {
+    display: block;
+    max-width: 100%;
+    height: auto;
+    border-radius: var(--bb-radius);
+    border: 1px solid var(--bb-border);
+    background-color: var(--demo-checker-a);
+    background-image:
+        linear-gradient(45deg, var(--demo-checker-b) 25%, transparent 25%),
+        linear-gradient(-45deg, var(--demo-checker-b) 25%, transparent 25%),
+        linear-gradient(45deg, transparent 75%, var(--demo-checker-b) 75%),
+        linear-gradient(-45deg, transparent 75%, var(--demo-checker-b) 75%);
+    background-size: 1rem 1rem;
+    background-position: 0 0, 0 .5rem, .5rem -.5rem, -.5rem 0;
+}
+
+div.preview-image[aria-busy="true"] {
+    min-height: 8rem;
+}
+
+.preview-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    gap: 1.5rem;
+}
+
+.preview-meta {
+    margin-top: .5rem;
+}
+
+.thumb-grid {
+    display: grid;
+    gap: .75rem;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 9rem), 1fr));
+}
+
+.thumb {
+    overflow: hidden;
+    background: var(--bb-surface);
+    border: 1px solid var(--bb-border);
+    border-radius: var(--bb-radius-lg);
+    box-shadow: var(--bb-shadow-card);
+}
+
+.thumb .thumb-image {
+    width: 100%;
+    height: 8rem;
+    object-fit: contain;
+    border: none;
+    border-radius: 0;
+}
+
+.thumb-meta {
+    padding: .5rem;
+    font-size: var(--fl-font-size-100);
+    line-height: 1.5;
+    color: var(--bb-text-muted);
+}
+
+.thumb-name {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    font-weight: var(--fl-weight-semibold);
+    color: var(--bb-text);
+}
+
+.thumb-save {
+    margin-top: .375rem;
+}
+
+.demo-progress {
+    height: .375rem;
+    overflow: hidden;
+    background: var(--bb-surface-2);
+    border-radius: var(--bb-radius-pill);
+}
+
+.demo-progress-bar {
+    height: 100%;
+    background: var(--bb-primary);
+    transition: width var(--fl-duration-fast) var(--fl-curve-easy-ease);
+}
+
+.optimize-progress .demo-progress {
+    flex: 1 1 8rem;
+}
+
+/* Results under a drop zone or a run button: the progress row, the totals, the actions and the
+   per-file table each get the same breathing room from the thing above them. */
+.results-stats,
+.results-actions,
+.results-table,
+.formats-results,
+.metadata-report,
+.perf-results,
+.metadata-warning,
+.first-image-result {
+    margin-top: 1rem;
+}
+
+/* ---------- The editor's frame ----------
+
+   The editor fills its container, so the page gives it one. Never taller than the window under the
+   header, so the whole working surface - toolbar, canvas, panel - is on screen at once once it has
+   been scrolled to; and it scrolls to just under the header rather than under it. */
+.editor-frame {
+    height: clamp(24rem, calc(100dvh - var(--bb-header-height) - 2rem), 40rem);
+    scroll-margin-top: calc(var(--bb-header-height) + 1rem);
+}
+
+@media (max-width: 47.9375rem) {
+    /* Below the editor's own breakpoint its panel moves under the canvas, so the frame needs the
+       height of both. */
+    .editor-frame {
+        height: 46rem;
+    }
+}
+
+/* ---------- Page specifics ---------- */
+
+/* Avatar: the result is clipped to its shape as an app would show it - the exported pixels are
+   round on their own, this only keeps the square preview box from framing them as a square. */
+.avatar-frame {
+    overflow: hidden;
+    border: 1px solid var(--bb-border);
+}
+
+.avatar-frame .avatar-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border: none;
+    border-radius: 0;
+}
+
+.avatar-source {
+    flex: 1 1 12rem;
+    min-width: 0;
+}
+
+/* Social: tall presets (a story is 9:16) are held to the window, so the whole composition and its
+   controls stay in view together. */
+.social-preview {
+    max-height: 60vh;
+    margin-inline: auto;
+}
+
+.social-meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: .5rem;
+    margin-top: .75rem;
+}
+
+.social-meta .bb-toolbar {
+    margin: 0;
+}
+
+/* Headless: the source's facts sit beside it, and every example tile shows its result whole. */
+.headless-source {
+    flex: 1 1 16rem;
+    min-width: 0;
+    margin-bottom: 0;
+}
+
+.headless-preview {
+    width: 100%;
+    max-height: 12.5rem;
+    object-fit: contain;
+}
+
+.headless-description {
+    margin: .5rem 0 .25rem;
+}
+
+/* Pipelines: the playground's readouts. */
+.pipeline-preview {
+    max-height: 22rem;
+    margin-inline: auto;
+}
+
+.playground-label {
+    margin-top: 1rem;
+}
+
+.playground-stats {
+    margin-top: 1rem;
+}
+
+/* Getting started: the snippet's output beside its numbers. */
+.first-image {
+    flex: 0 1 20rem;
+    min-width: 0;
+}
+
+.first-image-stats {
+    flex: 1 1 14rem;
+}
+
+/* Formats: an exporter's refusal is long - it names the format it was handed instead - so it wraps
+   under the badge rather than stretching the table. */
+.formats-error {
+    display: block;
+    margin-top: .25rem;
+    max-width: 32rem;
+    white-space: normal;
+}
+
+/* ---------- MCP server: the panels that call the demo's own /api/mcp endpoints ---------- */
+
+.mcp-why .bb-card code {
+    align-self: flex-start;
+    margin-top: auto;
+}
+
+.mcp-tabs {
+    margin: 1rem 0 .75rem;
+}
+
+/* Free text sent to a tool: a pipeline, a piece of code. Monospace, so what the reader types lines
+   up the way it will in their editor. */
+textarea.mcp-input {
+    font-family: var(--bb-mono);
+    font-size: .8125rem;
+    line-height: 1.55;
+    white-space: pre;
+    overflow-x: auto;
+}
+
+.mcp-pipeline {
+    min-height: 6.5rem;
+}
+
+.mcp-code {
+    min-height: 16rem;
+}
+
+.mcp-presets {
+    margin-bottom: 1rem;
+}
+
+.mcp-run-stats {
+    margin-bottom: 1rem;
+}
+
+.mcp-operations {
+    margin-bottom: .5rem;
+    white-space: pre-wrap;
+}
+
+.mcp-notes,
+.mcp-resources {
+    margin: 0 0 .75rem;
+    padding-inline-start: 1rem;
+    color: var(--bb-text-muted);
+    font-size: var(--fl-font-size-200);
+    line-height: 1.6;
+}
+
+.mcp-notes li + li,
+.mcp-resources li + li {
+    margin-top: .25rem;
+}
+
+/* A resource's description quotes URIs such as bmage://source/Demo%2FClient%2F..., one unbreakable
+   word wider than a phone; it breaks anywhere rather than pushing the page sideways. */
+.mcp-resources li {
+    min-width: 0;
+    overflow-wrap: anywhere;
+}
+
+.mcp-reading {
+    max-width: var(--bb-measure);
+    color: var(--bb-text-muted);
+}
+
+.mcp-results {
+    margin-top: 1rem;
+}
+
+/* One finding per row, its severity on the leading edge so a list of them sorts itself by eye. */
+.mcp-findings {
+    list-style: none;
+    margin: 1rem 0 0;
+    padding: 0;
+    display: grid;
+    gap: .5rem;
+}
+
+.mcp-finding {
+    display: flex;
+    flex-direction: column;
+    gap: .25rem;
+    min-width: 0;
+    padding: .75rem 1rem;
+    font-size: var(--fl-font-size-200);
+    background: var(--bb-surface);
+    border: 1px solid var(--bb-border);
+    border-inline-start: 3px solid var(--bb-border-strong);
+    border-radius: var(--bb-radius-lg);
+}
+
+.mcp-finding.error {
+    border-inline-start-color: var(--bb-danger);
+}
+
+.mcp-finding.warning {
+    border-inline-start-color: var(--bb-warning);
+}
+
+.mcp-finding.suggestion {
+    border-inline-start-color: var(--bb-primary);
+}
+
+.mcp-finding-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: .5rem;
+}
+
+.mcp-finding-message {
+    color: var(--bb-text-muted);
+}
+
+.mcp-finding-fix {
+    color: var(--bb-text);
+    font-weight: var(--fl-weight-semibold);
+}
+
+.mcp-search {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .5rem;
+    margin-bottom: 1rem;
+}
+
+.mcp-search .mcp-input {
+    flex: 1 1 14rem;
+}
+
+.mcp-hits {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: .25rem;
+}
+
+.mcp-hits li {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: .25rem .75rem;
+    min-width: 0;
+    padding: .5rem .75rem;
+    background: var(--bb-surface-sunken);
+    border: 1px solid var(--bb-border);
+    border-radius: var(--bb-radius);
+    font-size: var(--fl-font-size-200);
+}
+
+.mcp-hit-title {
+    font-weight: var(--fl-weight-semibold);
+    color: var(--bb-text);
+    overflow-wrap: anywhere;
+}
+
+/* The parameters stack in their cell; a tool with seven of them is a column, not a paragraph. */
+.mcp-params {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: .125rem;
+}
+
+/* A parameter is one token - "maxFileSize?: long?" broken over two lines reads as two. */
+.mcp-params code {
+    white-space: nowrap;
+}
+
+/* ---------- The landing page ---------- */
+
+/* Six capability tiles read as two rows of three rather than a row of four and a row of two. */
+.bb-grid.home-grid {
+    grid-template-columns: repeat(auto-fit, minmax(min(340px, 100%), 1fr));
+}
+
+/* ---------- The landing page's hero: the live pipeline under its code, in the window frame ---------- */
+
+.home-hero-live {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 1rem 1.25rem;
+    padding: 1rem;
+    background: var(--bb-surface);
+    border-top: 1px solid var(--bb-border);
+}
+
+.home-hero-result {
+    flex: none;
+}
+
+.home-hero-image {
+    width: 10rem;
+    height: 10rem;
+    border-radius: var(--bb-radius-pill);
+    box-shadow: var(--bb-shadow-raised);
+}
+
+/* The same shape while the runtime is still loading, so nothing moves when the image arrives. */
+.home-hero-placeholder {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+    text-align: center;
+    background: var(--bb-surface-sunken);
+    border: 1px dashed var(--bb-border-strong);
+    color: var(--bb-text-soft);
+    font-size: var(--fl-font-size-100);
+    box-shadow: none;
+}
+
+.home-hero-controls {
+    flex: 1 1 14rem;
+    min-width: 0;
+}
+
+.home-hero-caption {
+    margin: .625rem 0 0;
+    color: var(--bb-text-muted);
+    font-size: var(--fl-font-size-200);
+    line-height: 1.55;
+}

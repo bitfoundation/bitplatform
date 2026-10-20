@@ -1,20 +1,21 @@
 @page "/accessibility"
 @inject BmotionCapabilities Caps
 
-<PageTitle>Accessibility and diagnostics - Bit.Bmotion</PageTitle>
+<PageTitle>Accessibility and diagnostics · Bmotion</PageTitle>
 
-<h1>Accessibility and diagnostics</h1>
+<div class="bb-intro">
+    <h1>Accessibility and diagnostics</h1>
+    <p class="bb-subtitle">
+        Motion is not free for everyone who sees it. For some people a page that slides, parallaxes and
+        springs is nausea, not delight - which is why browsers ship
+        <strong>prefers-reduced-motion</strong>. Bmotion honours it, but not by throwing every animation
+        away: opacity and colour keep animating while transforms, layout and dimension changes snap.
+        That is the difference between a page that stops moving and a page that stops working.
+    </p>
+</div>
 
-<p class="page-intro">
-    Motion is not free for everyone who sees it. For some people a page that slides, parallaxes and
-    springs is nausea, not delight - which is why browsers ship
-    <strong>prefers-reduced-motion</strong>. Bmotion honours it, but not by throwing every animation
-    away: opacity and colour keep animating while transforms, layout and dimension changes snap.
-    That is the difference between a page that stops moving and a page that stops working.
-</p>
-
-<div class="demo-section">
-    <h2>Reduced motion, four ways</h2>
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Reduced motion, four ways</h3>
     <p>
         Pick the policy once, at registration. <code>User</code> is the recommended setting and the
         web-platform default: follow the operating system everywhere. The default is
@@ -23,8 +24,8 @@
         can never have its animations silently switched off underneath it.
     </p>
 
-    <div class="a11y-table-wrap">
-        <table class="a11y-table">
+    <div class="bb-scroll">
+        <table class="bb-table">
             <thead>
                 <tr><th>BmReducedMotionMode</th><th>Behaviour</th></tr>
             </thead>
@@ -32,7 +33,7 @@
                 @foreach (var mode in _modes)
                 {
                     <tr>
-                        <td><code>@mode.Name</code></td>
+                        <td class="bb-table-key"><code>@mode.Name</code></td>
                         <td>@mode.Description</td>
                     </tr>
                 }
@@ -41,10 +42,10 @@
     </div>
 
     <CodeSnippet Code="@_modesCode" />
-</div>
+</section>
 
-<div class="demo-section">
-    <h2>What "reduced" actually does</h2>
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> What "reduced" actually does</h3>
     <p>
         Both boxes below animate <code>x</code>, <code>rotate</code> <em>and</em>
         <code>backgroundColor</code>. The right one sits inside
@@ -77,15 +78,15 @@
         </div>
     </div>
 
-    <div class="demo-actions">
-        <button class="btn-bm" @onclick="@(() => _shifted = !_shifted)">Move both</button>
+    <div class="bb-toolbar">
+        <button class="btn btn-primary" @onclick="@(() => _shifted = !_shifted)">Move both</button>
     </div>
 
     <CodeSnippet Code="@_reducedCode" />
-</div>
+</section>
 
-<div class="demo-section">
-    <h2>Slowing everything down</h2>
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Slowing everything down</h3>
     <p>
         <code>TransitionSpeed</code> is a playback multiplier over a whole subtree, and it scales
         every time-based field - duration, delay, repeat delay, a spring's visual duration - so the
@@ -112,15 +113,15 @@
         }
     </div>
 
-    <div class="demo-actions">
-        <button class="btn-bm" @onclick="@(() => _runId++)">Replay all</button>
+    <div class="bb-toolbar">
+        <button class="btn btn-primary" @onclick="@(() => _runId++)">Replay all</button>
     </div>
 
     <CodeSnippet Code="@_speedCode" />
-</div>
+</section>
 
-<div class="demo-section">
-    <h2>Keyboard-accessible taps</h2>
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Keyboard-accessible taps</h3>
     <p>
         <code>WhileTap</code> is not a mouse-only state. When a tappable element has focus,
         <kbd>Enter</kbd> and <kbd>Space</kbd> press and release it exactly like a pointer -
@@ -144,10 +145,10 @@
     </div>
 
     <CodeSnippet Code="@_keyboardCode" />
-</div>
+</section>
 
-<div class="demo-section">
-    <h2>Knowing what the runtime can do</h2>
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Knowing what the runtime can do</h3>
     <p>
         Rather than guessing which render mode you are in, inject <strong>BmotionCapabilities</strong>.
         On Blazor Server there is no synchronous interop, so the per-frame loop cannot run: inertia,
@@ -161,17 +162,17 @@
         <div class="demo-card stack">
             <span class="demo-label">This runtime</span>
             <div class="caps-list">
-                <span class="badge">SupportsFrameLoop: @Caps.SupportsFrameLoop</span>
-                <span class="badge">SupportsCompositor: @Caps.SupportsCompositor</span>
+                <span class="bb-badge">SupportsFrameLoop: @Caps.SupportsFrameLoop</span>
+                <span class="bb-badge">SupportsCompositor: @Caps.SupportsCompositor</span>
             </div>
         </div>
     </div>
 
     <CodeSnippet Code="@_capsCode" />
-</div>
+</section>
 
-<div class="demo-section">
-    <h2>Watching the engine</h2>
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Watching the engine</h3>
     <p>
         <strong>OnUpdate</strong> hands you the exact CSS the engine flushed to an element this
         frame. It is a plain delegate rather than an <code>EventCallback</code> on purpose: it runs
@@ -199,8 +200,8 @@
         ask from the outside.
     </p>
 
-    <div class="demo-actions">
-        <button class="btn-bm" @onclick="@(() => _inspector = !_inspector)">
+    <div class="bb-toolbar">
+        <button class="btn btn-primary" @onclick="@(() => _inspector = !_inspector)">
             @(_inspector ? "Hide" : "Show") the inspector
         </button>
     </div>
@@ -211,38 +212,7 @@
     }
 
     <CodeSnippet Code="@_diagnosticsCode" />
-</div>
-
-<style>
-    .a11y-table-wrap { overflow-x: auto; }
-
-    .a11y-table { width: 100%; border-collapse: collapse; font-size: .9rem; }
-
-    .a11y-table th, .a11y-table td {
-        padding: .6rem .75rem;
-        text-align: left;
-        vertical-align: top;
-        border-bottom: 1px solid var(--bit-clr-brd-ter);
-    }
-
-    .a11y-table th { font-weight: 700; color: var(--bit-clr-fg-pri); }
-
-    .a11y-table td { color: var(--bit-clr-fg-sec); }
-
-    .caps-list { display: flex; flex-wrap: wrap; gap: .5rem; justify-content: center; }
-
-    /* Monospace and fixed-height so the per-frame readout does not reflow the card as the
-       numbers change width. */
-    .frame-readout {
-        display: block;
-        min-height: 2.5rem;
-        max-width: 100%;
-        overflow-wrap: anywhere;
-        font-size: .72rem;
-        text-align: center;
-        color: var(--bit-clr-fg-sec);
-    }
-</style>
+</section>
 
 @code {
     private bool _shifted;

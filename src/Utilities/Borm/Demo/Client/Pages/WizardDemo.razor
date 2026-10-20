@@ -1,30 +1,32 @@
 ﻿@page "/wizard"
 
-<PageTitle>Multi-step wizard</PageTitle>
+<PageTitle>Multi-step wizard · Borm</PageTitle>
 
-<div class="demo-intro">
+<div class="bb-intro">
     <h1>Multi-step wizard</h1>
-    <p>Group fields into steps. Each step validates before advancing, and steps can be shown conditionally — the company step here only appears for business accounts.</p>
-    <p>
-        Walk to the last step and then click back through the stepper. Every step you have already been
-        past stays clickable in <em>both</em> directions — it was validated on the way through, so
-        making you press Next through the rest just to fix one answer would be busywork. A step you
-        have never reached stays inert.
-    </p>
+    <p class="bb-subtitle">Group fields into steps. Each step validates before advancing, and steps can be shown conditionally — the company step here only appears for business accounts.</p>
 </div>
 
-<div class="demo-card">
+<div class="bb-note">
+    Walk to the last step and then click back through the stepper. Every step you have already been
+    past stays clickable in <em>both</em> directions — it was validated on the way through, so
+    making you press Next through the rest just to fix one answer would be busywork. A step you
+    have never reached stays inert.
+</div>
+
+<div class="bb-demo">
+    <div class="bb-demo-bar"><span class="bb-demo-label">Live form</span></div>
     <BormView Definition="_schema" Model="_model" OnValidSubmit="HandleSubmit" SubmitText="Finish" />
 </div>
 
 @if (_submitted)
 {
-    <div class="demo-result"><strong>All done ✓</strong> <pre>@_json</pre></div>
+    <div class="bb-note bb-note-success demo-result"><strong>All done ✓</strong><pre>@_json</pre></div>
 }
 
-<details class="demo-source">
-    <summary>View source</summary>
-    <pre><code>@Source</code></pre>
+<details class="bb-source demo-source">
+    <summary class="btn btn-secondary">View source</summary>
+    <pre class="bb-code"><code>@Source</code></pre>
 </details>
 
 @code {

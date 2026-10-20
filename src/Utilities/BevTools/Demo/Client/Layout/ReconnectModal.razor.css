@@ -1,3 +1,9 @@
+/* The reconnect dialog of a Blazor Server circuit (the Circuit page kills one on purpose), drawn
+   as a Fluent dialog on the site's tokens so it follows the light/dark theme: a raised surface at
+   the dialog elevation over the shared scrim, the brand spinner, and a primary button. The class
+   names and ids are the framework's contract with ReconnectModal.razor.js and blazor.web.js -
+   only their looks are this file's. */
+
 .components-reconnect-first-attempt-visible,
 .components-reconnect-repeated-attempt-visible,
 .components-reconnect-failed-visible,
@@ -19,36 +25,39 @@
     display: block;
 }
 
-
 #components-reconnect-modal {
-    background-color: white;
-    width: 20rem;
+    width: min(22rem, calc(100vw - 2rem));
     margin: 20vh auto;
-    padding: 2rem;
-    border: 0;
-    border-radius: 0.5rem;
-    box-shadow: 0 3px 6px 2px rgba(0, 0, 0, 0.3);
+    padding: 2rem 1.5rem 1.75rem;
+    border: 1px solid var(--bb-border);
+    border-radius: var(--bb-radius-xl);
+    background: var(--bb-surface);
+    color: var(--bb-text);
+    box-shadow: var(--bb-shadow-dialog);
+    font-family: var(--bb-font-sans);
+    font-size: var(--fl-font-size-200);
+    line-height: 1.5;
     opacity: 0;
-    transition: display 0.5s allow-discrete, overlay 0.5s allow-discrete;
-    animation: components-reconnect-modal-fadeOutOpacity 0.5s both;
-    &[open]
+    transition: display .5s allow-discrete, overlay .5s allow-discrete;
+    animation: components-reconnect-modal-fadeOutOpacity .5s both;
+}
 
-{
-    animation: components-reconnect-modal-slideUp 1.5s cubic-bezier(.05, .89, .25, 1.02) 0.3s, components-reconnect-modal-fadeInOpacity 0.5s ease-in-out 0.3s;
+#components-reconnect-modal[open] {
+    animation: components-reconnect-modal-slideUp 1.5s cubic-bezier(.05, .89, .25, 1.02) .3s, components-reconnect-modal-fadeInOpacity .5s ease-in-out .3s;
     animation-fill-mode: both;
 }
 
-}
-
+/* ::backdrop inherits the custom properties of its dialog in current browsers; the literal is the
+   kit's own light scrim, for the ones that do not. */
 #components-reconnect-modal::backdrop {
-    background-color: rgba(0, 0, 0, 0.4);
-    animation: components-reconnect-modal-fadeInOpacity 0.5s ease-in-out;
+    background-color: var(--bb-scrim, rgba(0, 0, 0, .4));
+    animation: components-reconnect-modal-fadeInOpacity .5s ease-in-out;
     opacity: 1;
 }
 
 @keyframes components-reconnect-modal-slideUp {
     0% {
-        transform: translateY(30px) scale(0.95);
+        transform: translateY(30px) scale(.95);
     }
 
     100% {
@@ -86,23 +95,33 @@
 #components-reconnect-modal p {
     margin: 0;
     text-align: center;
+    color: var(--bb-text);
 }
 
+/* Fluent's primary button, restated here because these buttons are the framework's markup. */
 #components-reconnect-modal button {
-    border: 0;
-    background-color: #6b9ed2;
-    color: white;
-    padding: 4px 24px;
-    border-radius: 4px;
+    min-height: 2rem;
+    padding: .3125rem 1.5rem;
+    border: 1px solid var(--bb-primary);
+    border-radius: var(--bb-radius);
+    background: var(--bb-primary);
+    color: var(--bb-primary-text);
+    font-family: inherit;
+    font-size: var(--fl-font-size-200);
+    font-weight: var(--fl-weight-semibold);
+    cursor: pointer;
+    transition: background var(--bb-motion-duration-short) var(--bb-motion-easing);
 }
 
-    #components-reconnect-modal button:hover {
-        background-color: #3b6ea2;
-    }
+#components-reconnect-modal button:hover {
+    background: var(--bb-primary-hover);
+    border-color: var(--bb-primary-hover);
+}
 
-    #components-reconnect-modal button:active {
-        background-color: #6b9ed2;
-    }
+#components-reconnect-modal button:active {
+    background: var(--bb-primary-active);
+    border-color: var(--bb-primary-active);
+}
 
 .components-rejoining-animation {
     position: relative;
@@ -110,17 +129,17 @@
     height: 80px;
 }
 
-    .components-rejoining-animation div {
-        position: absolute;
-        border: 3px solid #0087ff;
-        opacity: 1;
-        border-radius: 50%;
-        animation: components-rejoining-animation 1.5s cubic-bezier(0, 0.2, 0.8, 1) infinite;
-    }
+.components-rejoining-animation div {
+    position: absolute;
+    border: 3px solid var(--bb-primary);
+    opacity: 1;
+    border-radius: 50%;
+    animation: components-rejoining-animation 1.5s cubic-bezier(0, .2, .8, 1) infinite;
+}
 
-        .components-rejoining-animation div:nth-child(2) {
-            animation-delay: -0.5s;
-        }
+.components-rejoining-animation div:nth-child(2) {
+    animation-delay: -.5s;
+}
 
 @keyframes components-rejoining-animation {
     0% {
@@ -148,10 +167,18 @@
     }
 
     100% {
-        top: 0px;
-        left: 0px;
+        top: 0;
+        left: 0;
         width: 80px;
         height: 80px;
         opacity: 0;
+    }
+}
+
+/* No slide under reduced motion: the dialog only fades in. The spinner keeps turning - it is the
+   progress indicator, not decoration. */
+@media (prefers-reduced-motion: reduce) {
+    #components-reconnect-modal[open] {
+        animation: components-reconnect-modal-fadeInOpacity .2s ease-in-out both;
     }
 }

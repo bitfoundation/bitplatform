@@ -249,7 +249,6 @@ public static partial class BonboardingSourceCatalog
         if (path.StartsWith("Demo/Client/Pages/", StringComparison.OrdinalIgnoreCase)) return "Page";
         if (path.StartsWith("Demo/Server/", StringComparison.OrdinalIgnoreCase) ||
             path.StartsWith("Demo/Client/Extensions/", StringComparison.OrdinalIgnoreCase) ||
-            path.StartsWith("Demo/Client/Layout/", StringComparison.OrdinalIgnoreCase) ||
             path.Equals("Demo/Client/Program.cs", StringComparison.OrdinalIgnoreCase) ||
             path.Equals("Demo/Client/Routes.razor", StringComparison.OrdinalIgnoreCase) ||
             path.Equals("Demo/Client/_Imports.razor", StringComparison.OrdinalIgnoreCase)) return "Hosting";
@@ -279,7 +278,7 @@ public static partial class BonboardingSourceCatalog
 
     /// <summary>
     /// A one-line description of a source file, taken from whatever the file itself already says:
-    /// its leading razor/C# comment, or - for a page - its &lt;PageTitle&gt;.
+    /// its leading razor/C# comment, or - for a page - the subtitle of its title block, or its &lt;PageTitle&gt;.
     /// </summary>
     private static string? DescribeSource(string content)
     {
@@ -299,6 +298,10 @@ public static partial class BonboardingSourceCatalog
 
             return Summarize(XmlTagRegex().Replace(text, string.Empty));
         }
+
+        // A demo page opens with its title block, whose subtitle says what the page shows.
+        var intro = IntroSubtitleRegex().Match(content);
+        if (intro.Success) return Summarize(XmlTagRegex().Replace(intro.Groups["text"].Value, string.Empty));
 
         var title = PageTitleRegex().Match(content);
         if (title.Success) return Summarize(title.Groups["text"].Value);
@@ -373,6 +376,9 @@ public static partial class BonboardingSourceCatalog
 
     [GeneratedRegex(@"///\s*<summary>(?<text>.*?)</summary>", RegexOptions.Singleline)]
     private static partial Regex XmlSummaryRegex();
+
+    [GeneratedRegex(@"<div class=""bb-intro"">\s*<h1>.*?</h1>\s*<p[^>]*>(?<text>.*?)</p>", RegexOptions.Singleline)]
+    private static partial Regex IntroSubtitleRegex();
 
     [GeneratedRegex(@"<PageTitle>(?<text>.*?)</PageTitle>", RegexOptions.Singleline | RegexOptions.IgnoreCase)]
     private static partial Regex PageTitleRegex();

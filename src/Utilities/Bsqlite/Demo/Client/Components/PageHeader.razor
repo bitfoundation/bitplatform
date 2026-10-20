@@ -1,13 +1,14 @@
-﻿@* Every demo page opens the same way: what part of the library it exercises, its title, and one
-   paragraph of what to look for. It also owns the document title, so a bookmarked demo page is
-   named after the demo rather than after the site. *@
+﻿@* Every demo page opens the same way - the site kit's .bb-intro: what part of the library it
+   exercises as the overline, its title as the page's one H1 (which FocusOnNavigate moves focus to),
+   and one paragraph of what to look for. It also owns the document title, so a bookmarked demo page
+   is named after the demo rather than after the site. *@
 <PageTitle>@Title · Bsqlite</PageTitle>
 
-<header class="page-head">
-    <p class="eyebrow">@Kicker</p>
+<div class="bb-intro">
+    <p class="bb-overline">@Kicker</p>
     <h1>@Title</h1>
-    <p class="lead">@ChildContent</p>
-</header>
+    <p class="bb-subtitle">@ChildContent</p>
+</div>
 
 @code {
     [Parameter, EditorRequired]

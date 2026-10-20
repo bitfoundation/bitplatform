@@ -1,7 +1,7 @@
-﻿@* A plain read-out of one replica's connection state. Purely presentational: it re-renders when its
-   parent does, and the parent is what subscribes to the sync provider. *@
+﻿@* A plain read-out of one replica's connection state: a status light and a word. Purely presentational:
+   it re-renders when its parent does, and the parent is what subscribes to the sync provider. *@
 
-<span class="badge badge-@Tone" title="@Description">@Label</span>
+<span class="badge bb-badge @BadgeClass" title="@Description"><span class="bb-dot @DotClass" aria-hidden="true"></span>@Label</span>
 
 @code {
     /// <summary>The connection state to display.</summary>
@@ -22,15 +22,33 @@
         _ => "disconnected",
     };
 
-    private string Tone => !WantsConnection ? "offline" : Status switch
+    private Tone Kind => !WantsConnection ? Tone.Idle : Status switch
     {
-        BcrdtConnectionStatus.Synced => "good",
-        BcrdtConnectionStatus.Handshaking or BcrdtConnectionStatus.Connecting or BcrdtConnectionStatus.Reconnecting => "busy",
-        BcrdtConnectionStatus.Faulted => "bad",
-        _ => "offline",
+        BcrdtConnectionStatus.Synced => Tone.Good,
+        BcrdtConnectionStatus.Handshaking or BcrdtConnectionStatus.Connecting or BcrdtConnectionStatus.Reconnecting => Tone.Busy,
+        BcrdtConnectionStatus.Faulted => Tone.Bad,
+        _ => Tone.Idle,
+    };
+
+    private string BadgeClass => Kind switch
+    {
+        Tone.Good => "bb-badge-success",
+        Tone.Busy => "bb-badge-warn",
+        Tone.Bad => "bb-badge-danger",
+        _ => "badge-idle",
+    };
+
+    private string? DotClass => Kind switch
+    {
+        Tone.Good => "bb-dot-success",
+        Tone.Busy => "bb-dot-warning",
+        Tone.Bad => "bb-dot-danger",
+        _ => null,
     };
 
     private string Description => !WantsConnection
         ? "Disconnected on purpose. Edits still work and are kept locally until this replica reconnects."
         : $"BcrdtConnectionStatus.{Status}";
+
+    private enum Tone { Good, Busy, Bad, Idle }
 }

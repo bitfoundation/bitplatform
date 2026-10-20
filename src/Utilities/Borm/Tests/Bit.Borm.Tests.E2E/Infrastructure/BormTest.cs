@@ -17,8 +17,11 @@ namespace Bit.Borm.Tests.E2E.Infrastructure;
 /// </remarks>
 public abstract class BormTest
 {
-    /// <summary>The colour the stylesheet paints errors with under the light theme (<c>--bit-borm-error</c>).</summary>
-    protected const string ErrorColour = "rgb(220, 38, 38)";
+    /// <summary>
+    /// The colour errors are painted with under the light theme: <c>--bit-borm-error</c>, which the demo re-tints to the
+    /// site's own danger colour (<c>--bb-danger</c>, <c>#D2393B</c>) - see wwwroot/demo.css.
+    /// </summary>
+    protected const string ErrorColour = "rgb(210, 57, 59)";
 
     // What Blazor writes to the console when something went wrong for real: the WebAssembly renderer's
     // "Unhandled exception rendering component", and the critical log line every unhandled exception produces.
@@ -94,10 +97,10 @@ public abstract class BormTest
     }
 
     /// <summary>
-    /// A desktop-sized viewport with a light colour scheme, so the stylesheet's <c>prefers-color-scheme</c> theme is
-    /// the same on every machine, and reduced motion, which the stylesheet answers by dropping the border and
-    /// background transitions: a colour read right after a field turned invalid is its resting colour, not a frame of
-    /// the 150 ms fade towards it.
+    /// A desktop-sized viewport with a light colour scheme, so the site's theme - which follows the preference until
+    /// the toggle is used - is the same on every machine, and reduced motion, which the stylesheet answers by dropping
+    /// the border and background transitions: a colour read right after a field turned invalid is its resting colour,
+    /// not a frame of the 150 ms fade towards it.
     /// </summary>
     protected static BrowserNewContextOptions DefaultContextOptions(ColorScheme colorScheme = ColorScheme.Light, int width = 1280) => new()
     {
@@ -135,14 +138,14 @@ public abstract class BormTest
     /// <summary>
     /// Waits until the page runs in the browser and has settled. Every page is prerendered, so its form - inputs,
     /// buttons and all - is on screen long before anything handles a keystroke: a value typed then is overwritten
-    /// when WebAssembly takes the page over, and a click is simply lost. The layout's <c>data-interactive</c> marker
-    /// says the handlers are attached; a quiet DOM afterwards says the first interactive renders (the focus moved
-    /// to the heading, an options provider answering) are done.
+    /// when WebAssembly takes the page over, and a click is simply lost. The site shell's <c>data-interactive</c> marker
+    /// (on <c>.page</c>, Layout/MainLayout.razor) says the handlers are attached; a quiet DOM afterwards says the first
+    /// interactive renders (the focus moved to the heading, an options provider answering) are done.
     /// </summary>
     protected static async Task WaitForInteractiveAsync(IPage page)
     {
         await page.WaitForFunctionAsync(
-            "() => document.querySelector('.app-shell')?.dataset.interactive === 'true'",
+            "() => document.querySelector('.page')?.dataset.interactive === 'true'",
             null, new PageWaitForFunctionOptions { Timeout = 90_000 });
 
         await WaitForQuietAsync(page);
@@ -156,7 +159,7 @@ public abstract class BormTest
     protected static Task WaitForQuietAsync(IPage page, int quietMs = 250) => page.EvaluateAsync(
         """
         (quietMs) => new Promise(resolve => {
-          const root = document.querySelector('.app-main') ?? document.body;
+          const root = document.querySelector('main') ?? document.body;
           let timer;
           const done = () => { observer.disconnect(); clearTimeout(cap); resolve(); };
           const arm = () => { clearTimeout(timer); timer = setTimeout(done, quietMs); };

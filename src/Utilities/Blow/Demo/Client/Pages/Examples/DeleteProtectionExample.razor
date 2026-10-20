@@ -1,12 +1,12 @@
 ﻿@page "/examples/delete-protection"
 
-<PageTitle>Delete Protection - bit Blow</PageTitle>
+<PageTitle>Delete Protection · Blow</PageTitle>
 
 <ExampleScaffold Title="Delete Protection"
                  Summary="Nodes and edges carry Deletable and Selectable flags. Select everything (Ctrl+A) and press Delete: the locked node survives, the read-only node never even selects, and edges dangling off a deleted node are still cleaned up.">
     <Toolbar>
-        <button class="btn btn-sm btn-primary" @onclick="Reset">Reset</button>
-        <span class="text-muted">Ctrl+A selects all · Delete removes · Escape clears</span>
+        <button class="btn btn-primary" @onclick="Reset">Reset</button>
+        <span class="bb-muted">Ctrl+A selects all · Delete removes · Escape clears</span>
     </Toolbar>
     <ChildContent>
         <BlowCanvas @ref="_flow"
@@ -41,7 +41,7 @@
 
 <style>
     .prot-node { padding: 4px 2px; }
-    .prot-flags { margin-top: 4px; font-size: 10px; color: #6b7280; }
+    .prot-flags { margin-top: 4px; font-size: 10px; color: var(--bit-blow-text-muted); }
     .prot-log { min-width: 180px; padding: 8px 10px; font-size: 12px; background: var(--bit-blow-surface); color: var(--bit-blow-text); border: 1px solid var(--bit-blow-border); border-radius: 6px; }
 </style>
 

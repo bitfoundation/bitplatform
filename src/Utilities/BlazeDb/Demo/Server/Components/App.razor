@@ -1,42 +1,50 @@
 ﻿<!DOCTYPE html>
-<html lang="en" data-theme="dark">
+<html lang="en">
 
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="bit BlazeDb (Bit.BlazeDb) - a SQL-free, memory-first embedded database engine for .NET and Blazor WebAssembly, with source-generated schemas, transactions, an EF Core provider and OPFS-backed durability. Every page drives the real engine in your browser." />
-    <meta name="theme-color" content="#08090d" />
+    <meta name="theme-color" content="#FFFFFF" />
     <base href="/" />
-    <script>
-        // Applied before first paint so the theme never flashes.
-        (function () {
-            try {
-                var saved = localStorage.getItem('blazedb-theme');
-                var dark = saved ? saved === 'dark' : !window.matchMedia('(prefers-color-scheme: light)').matches;
-                document.documentElement.dataset.theme = dark ? 'dark' : 'light';
-            } catch (e) { /* storage blocked - keep the default */ }
-        })();
-    </script>
+    @* No static <title> here: every page supplies its own through <PageTitle>, which the HeadOutlet
+       writes into this head once the app is running. *@
+    <meta name="description" content="bit BlazeDb (Bit.BlazeDb) - a SQL-free, memory-first embedded database engine for .NET and Blazor WebAssembly, with source-generated schemas, transactions, an EF Core provider and OPFS-backed durability. Every page drives the real engine in your browser." />
+
+    @* Link previews: the card a chat client or a social site unfurls is the first impression a
+       shared link makes. *@
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Bit.BlazeDb" />
+    <meta property="og:title" content="BlazeDb - a memory-first database for Blazor" />
+    <meta property="og:description" content="Live rows in managed memory, typed index lookups with no SQL and no interop, atomic transactions, an EF Core provider and a write-ahead log persisted to OPFS." />
+    <meta name="twitter:card" content="summary" />
+
     <ResourcePreloader />
+    @* The site kit (app.css, theme.js, site.js - shared by every Utilities demo), then this demo's
+       own sample styles. *@
     <link rel="stylesheet" href="@Assets["app.css"]" />
+    <link rel="stylesheet" href="@Assets["demo.css"]" />
+    @* Scoped-CSS bundle: includes the client project's *.razor.css files as well. *@
+    <link rel="stylesheet" href="@Assets["Bit.BlazeDb.Demo.Server.styles.css"]" />
+    @* Synchronous on purpose: applies the light/dark theme before first paint - the boot screen
+       below included. *@
+    <script src="@Assets["theme.js"]"></script>
     <ImportMap />
     <link rel="icon" type="image/svg+xml" href="favicon.svg" />
-    <link rel="mask-icon" href="favicon.svg" color="#f2610c" />
     <HeadOutlet @rendermode="RenderMode" />
 </head>
 
 <body>
-    @* Shown until the app's shell replaces it (app.css hides it once a .shell exists): nothing is
+    @* Shown until the app's shell replaces it (demo.css hides it once a .page exists): nothing is
        prerendered, so this is what the first response carries while the runtime downloads. *@
-    <div class="boot">
-        <div class="boot-mark">
-            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+    <div class="bd-boot">
+        <div class="bd-boot-mark">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                 <path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.4-.5-2-1-3-1.1-2.1-.2-4 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.2.4-2.3 1-3a2.5 2.5 0 0 0 2.5 2.5Z" />
             </svg>
         </div>
-        <div class="boot-name">BlazeDb</div>
-        <div class="boot-track"></div>
-        <div class="boot-text"></div>
+        <div class="bd-boot-name">BlazeDb</div>
+        <div class="bd-boot-track"></div>
+        <div class="bd-boot-text"></div>
     </div>
 
     <Routes @rendermode="RenderMode" />
@@ -44,10 +52,11 @@
     <div id="blazor-error-ui" data-nosnippet>
         An unhandled error has occurred.
         <a href="." class="reload">Reload</a>
-        <span class="dismiss">&times;</span>
+        <span class="dismiss">&#128473;</span>
     </div>
 
     <script src="@Assets["_framework/blazor.web.js"]"></script>
+    <script src="@Assets["site.js"]"></script>
 </body>
 
 </html>

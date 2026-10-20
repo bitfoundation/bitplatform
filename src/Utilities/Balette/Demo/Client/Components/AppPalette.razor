@@ -1,0 +1,149 @@
+﻿@implements IAsyncDisposable
+@inject DemoState State
+@inject IBaletteService Palette
+@inject IJSRuntime JSRuntime
+
+@* The one palette of the whole app, with its app-wide commands. Routes.razor renders it next to the router, so it
+   is on every page - the landing page, the docs and the not-found page alike - and outlives them all.
+
+   Everything it is passed comes from DemoState, which the theming, search and performance pages change, so they
+   restyle this very palette rather than a copy of it.
+
+   data-palette-ready turns true once the palette's browser layer listens for keys (it reports the platform as it
+   starts). Prerendered markup is on screen long before its event handlers are, and a Ctrl+K pressed between the
+   page turning interactive and this reaches no listener at all, so the E2E suite waits for both. The wrapper is
+   display: contents - a closed <dialog> lays nothing out, and an open one is in the top layer. *@
+
+<div class="demo-palette" data-palette-ready="@(_paletteReady ? "true" : "false")">
+    @* The app-wide commands. A new list is handed over whenever the demo state changes, and BaletteCommands
+       swaps the registration, so a toggle's switch and a setting's value are never stale. *@
+    <BaletteCommands Commands="_globalCommands" />
+
+    <Balette Theme="@State.PaletteTheme"
+             Style="@State.PaletteStyle"
+             DetailTemplate="@(State.ShowDetail ? _detailPane : null)"
+             ShowFooter="State.ShowFooter"
+             HighlightMatches="State.HighlightMatches"
+             GroupWhenSearching="State.GroupWhenSearching"
+             Virtualize="State.Virtualize"
+             OnCommandExecuted="OnExecuted">
+        @* Declarative commands live next to the markup that owns them. An item with nested items becomes a page. *@
+        <BaletteGroup Heading="Quick create" Priority="20">
+            <BaletteItem Title="New issue" Shortcut="C" Keywords="create add" IconCss="demo-plus"
+                         Description="Declared in Components/AppPalette.razor as a BaletteItem, with a single-key global shortcut."
+                         OnExecute='_ => State.Record("New issue dialog opened")' />
+            <BaletteItem Title="New…" Keywords="create add" ChildrenPlaceholder="What do you want to create?"
+                         Description="A page made of nested BaletteItem markup.">
+                <BaletteItem Title="Project" OnExecute='_ => State.Record("New project")' />
+                <BaletteItem Title="Document" OnExecute='_ => State.Record("New document")' />
+                <BaletteItem Title="Team" Badge="Beta" OnExecute='_ => State.Record("New team")' />
+            </BaletteItem>
+        </BaletteGroup>
+    </Balette>
+</div>
+
+@code {
+    private List<BaletteCommand> _globalCommands = [];
+    private RenderFragment<BaletteCommand>? _detailPane;
+    private DotNetObjectReference<AppPalette>? _self;
+    private bool _paletteReady;
+
+    protected override void OnInitialized()
+    {
+        _globalCommands = [.. DemoCommands.Global(State)];
+        State.Changed += OnStateChanged;
+        // The detail pane's shortcut hint reads IsMac, which is only known once the palette has started.
+        Palette.PlatformDetected += OnPlatformDetected;
+
+        // A Raycast-style preview of the active row. It is a template like any other, so it can show whatever a
+        // command carries - here the Person record the people source attaches as Data.
+        _detailPane = command =>
+            @<div class="demo-detail">
+                <div class="demo-detail-kind">@command.Kind</div>
+                <h3>@command.Title</h3>
+                @if (command.Subtitle is not null)
+                {
+                    <p class="demo-detail-sub">@command.Subtitle</p>
+                }
+                @if (command.Description is not null)
+                {
+                    <p>@command.Description</p>
+                }
+                @if (command.Shortcut is not null)
+                {
+                    <p>Shortcut: <BaletteShortcutHint Shortcut="command.Shortcut" IsMac="Palette.IsMac" /></p>
+                }
+                @if (command.Keywords.Count > 0)
+                {
+                    <p class="demo-detail-sub">Also matches: @string.Join(", ", command.Keywords)</p>
+                }
+                @if (command.Data is Person person)
+                {
+                    <dl>
+                        <dt>Role</dt><dd>@person.Role</dd>
+                        <dt>E-mail</dt><dd>@person.Email</dd>
+                    </dl>
+                }
+                <code class="demo-detail-id">@command.Id</code>
+            </div>;
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender is false) return;
+
+        // The site's theme is the site kit's (theme.js applied it before the first paint, and the header's toggle
+        // flips it). The demo's Theme command shows it, so the state follows it: demo.js calls back once now and
+        // again on every change, whoever made it.
+        _self = DotNetObjectReference.Create(this);
+        try
+        {
+            await JSRuntime.InvokeVoidAsync("baletteDemo.watchTheme", _self);
+        }
+        catch (JSException)
+        {
+            // demo.js is not on the page: the Theme command still works, it just cannot see the header's toggle.
+        }
+    }
+
+    /// <summary>The site theme changed - from this demo, the header's toggle or the OS - to "auto", "light" or "dark".</summary>
+    [JSInvokable]
+    public void OnSiteThemeChanged(string theme) => State.FollowSiteTheme(theme);
+
+    private void OnStateChanged()
+    {
+        _globalCommands = [.. DemoCommands.Global(State)];
+        _ = InvokeAsync(StateHasChanged);
+    }
+
+    // The component's own callback sees every execution - declarative items included - with how long the
+    // handler took. The pages listen to IBaletteService.CommandExecuted for the same thing.
+    private void OnExecuted(BaletteCommandExecutedEventArgs e)
+        => Console.WriteLine($"[balette] {e.Command.Id} -> {e.Result.GetType().Name} in {e.Duration.TotalMilliseconds:F0} ms");
+
+    private void OnPlatformDetected()
+    {
+        _paletteReady = true;
+        _ = InvokeAsync(StateHasChanged);
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        State.Changed -= OnStateChanged;
+        Palette.PlatformDetected -= OnPlatformDetected;
+
+        if (_self is null) return;
+
+        try
+        {
+            await JSRuntime.InvokeVoidAsync("baletteDemo.unwatchTheme");
+        }
+        catch (Exception ex) when (ex is JSException or JSDisconnectedException)
+        {
+            // The page is going away with the runtime; there is nothing left to unsubscribe from.
+        }
+
+        _self.Dispose();
+        _self = null;
+    }
+}

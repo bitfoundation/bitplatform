@@ -1,11 +1,11 @@
 ﻿@page "/examples/use-key-press"
 
-<PageTitle>Use Key Press - bit Blow</PageTitle>
+<PageTitle>Use Key Press · Blow</PageTitle>
 
 <ExampleScaffold Title="Use Key Press"
                  Summary="Click the canvas area to focus it, then use keyboard shortcuts: 'a' adds a node, Delete removes the selection. The last key pressed is shown.">
     <Toolbar>
-        <span class="text-muted">last key: <strong>@_lastKey</strong></span>
+        <span class="bb-muted">last key: <strong>@_lastKey</strong></span>
     </Toolbar>
     <ChildContent>
         <div class="keypress" tabindex="0" @onkeydown="OnKeyDown">

@@ -1,0 +1,393 @@
+﻿/* ============================================================================================
+   Bdnd demo - the styles of the live samples.
+
+   The site's chrome, tokens and shared surfaces live in app.css (the site kit every Utilities demo
+   shares); this file only draws what is Bdnd's own - the boxes, dustbins, boards and cards the
+   examples drag around - and it is written against the kit's --bb-* names, so it follows the
+   light/dark theme with no rules of its own for either.
+
+   The colors an example sets inline (a dustbin's dark fill, its hover green, the chessboard, the
+   nested targets' shades) are the example's own, ported from React DnD's: each is a state the
+   example shows, they read on either theme, and the end-to-end suite asserts them.
+   ============================================================================================ */
+
+/* A row of sources or targets, wrapping under itself once the column is too narrow. */
+.row-wrap {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+/* The line under a sample that says what it did: the knight's square, the list's order. */
+.demo-caption {
+    margin: 1rem 0 0;
+    font-size: var(--fl-font-size-200);
+    color: var(--bb-text-muted);
+    overflow-wrap: anywhere;
+}
+
+.demo-result-title {
+    margin: 1.5rem 0 .75rem;
+}
+
+/* A draggable box: React DnD's dashed box, drawn as a Fluent card. */
+.box {
+    display: inline-block;
+    max-width: 100%;
+    padding: .5rem 1rem;
+    background: var(--bb-surface);
+    border: 1px dashed var(--bb-border-strong);
+    border-radius: var(--bb-radius);
+    box-shadow: var(--bb-shadow-card);
+    color: var(--bb-text);
+    font-size: var(--fl-font-size-200);
+    font-weight: var(--fl-weight-medium);
+    cursor: move;
+    transition: border-color var(--bb-motion-duration-short) var(--bb-motion-easing);
+}
+
+.box:hover {
+    border-color: var(--bb-primary);
+}
+
+.box small {
+    color: var(--bb-text-soft);
+}
+
+/* A dustbin. The example paints its fill inline (dark at rest, green while a box hovers); the
+   hairline keeps a dark bin's edge visible on the dark theme's surface, and the outline an
+   accepting bin shows while a box is in the air is drawn inside its edge, so it reads on both. */
+.dustbin {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 9rem;
+    max-width: 100%;
+    height: 9rem;
+    padding: 1rem;
+    border: 1px solid color-mix(in srgb, var(--bb-text) 16%, transparent);
+    border-radius: var(--bb-radius-lg);
+    box-shadow: var(--bb-shadow-card);
+    outline-offset: -7px;
+    color: #FFFFFF;
+    font-size: var(--fl-font-size-300);
+    font-weight: var(--fl-weight-medium);
+    line-height: 1.4;
+    text-align: center;
+    overflow-wrap: anywhere;
+}
+
+/* ---------- Chessboard (the tutorial) ---------- */
+
+.chessboard {
+    display: flex;
+    flex-wrap: wrap;
+    width: 320px;
+    max-width: 100%;
+    aspect-ratio: 1;
+    border: 2px solid #333333;
+    border-radius: var(--bb-radius-sm);
+    overflow: hidden;
+}
+
+.chess-square {
+    position: relative;
+    width: 12.5%;
+    height: 12.5%;
+}
+
+.chess-overlay {
+    position: absolute;
+    inset: 0;
+    opacity: .5;
+    pointer-events: none;
+}
+
+/* A chess piece is drawn on the board, not on the page: it keeps its dark ink in the dark theme,
+   where the page's text color would put a white knight on a cream square. */
+.knight {
+    color: #1A1A1A;
+    font-size: 2.2rem;
+    line-height: 40px;
+    cursor: grab;
+    user-select: none;
+}
+
+/* ---------- Drag around ---------- */
+
+/* The board the boxes are positioned on: a recessed area, like the kit's .bb-stage. */
+.drag-around-container {
+    position: relative;
+    width: 100%;
+    height: 420px;
+    background: var(--bb-bg);
+    border: 1px solid var(--bb-border);
+    border-radius: var(--bb-radius-lg);
+}
+
+.drag-around-box {
+    position: absolute;
+    padding: .5rem 1rem;
+    background: var(--bb-surface);
+    border: 1px dashed var(--bb-border-strong);
+    border-radius: var(--bb-radius);
+    box-shadow: var(--bb-shadow-card);
+    color: var(--bb-text);
+    font-size: var(--fl-font-size-200);
+    font-weight: var(--fl-weight-medium);
+    white-space: nowrap;
+    cursor: move;
+}
+
+/* The custom drag layer's preview. Its position is the example's (inline, from the layer's
+   offsets); its look is the brand's, raised, so it reads as the thing in the hand. */
+.drag-layer-preview {
+    padding: .5rem 1rem;
+    background: var(--bb-primary);
+    border: 1px solid var(--bb-primary);
+    border-radius: var(--bb-radius);
+    box-shadow: var(--bb-shadow-raised);
+    color: var(--bb-primary-text);
+    font-size: var(--fl-font-size-200);
+    font-weight: var(--fl-weight-semibold);
+    white-space: nowrap;
+}
+
+/* ---------- Sortable ---------- */
+
+/* A card: the kit's card at rest, raised a step on hover. The margin (rather than a flex gap) is
+   the gap between two cards, which the list - a drop target of its own - still takes a drop in. */
+.sortable-card {
+    margin-bottom: .5rem;
+    padding: .625rem 1rem;
+    background: var(--bb-surface);
+    border: 1px solid var(--bb-border);
+    border-radius: var(--bb-radius);
+    box-shadow: var(--bb-shadow-card);
+    color: var(--bb-text);
+    font-size: var(--fl-font-size-200);
+    font-weight: var(--fl-weight-medium);
+    cursor: move;
+    transition: border-color var(--bb-motion-duration-short) var(--bb-motion-easing),
+                box-shadow var(--bb-motion-duration-short) var(--bb-motion-easing);
+}
+
+.sortable-card:hover {
+    border-color: color-mix(in srgb, var(--bb-primary) 45%, transparent);
+    box-shadow: var(--fl-shadow-4);
+}
+
+/* The hundred-card list scrolls in a tray of its own. */
+.sortable-scroll {
+    max-height: 480px;
+    overflow-y: auto;
+    padding: .5rem;
+    background: var(--bb-bg);
+    border: 1px solid var(--bb-border);
+    border-radius: var(--bb-radius-lg);
+    scrollbar-width: thin;
+    scrollbar-color: var(--bit-clr-brd-sec) transparent;
+}
+
+/* ---------- Nesting ---------- */
+
+.nest-box {
+    padding: 1rem;
+    border-radius: var(--bb-radius-lg);
+    color: #FFFFFF;
+    font-size: var(--fl-font-size-200);
+    font-weight: var(--fl-weight-medium);
+    text-align: center;
+}
+
+/* ---------- Handles ---------- */
+
+/* The grip of the Handles page: the only part of its box a drag starts from. */
+.handle {
+    margin-inline-end: .625rem;
+    color: var(--bb-text-soft);
+    font-size: 1.0625rem;
+    font-weight: var(--fl-weight-semibold);
+    line-height: 1;
+    user-select: none;
+}
+
+.handle:hover {
+    color: var(--bb-primary);
+}
+
+/* ---------- Native drags ---------- */
+
+/* The rich text a reader drags onto the target. */
+.native-source {
+    max-width: 18rem;
+    padding: 1rem;
+    border: 1px dashed var(--bb-border-strong);
+    border-radius: var(--bb-radius-lg);
+    color: var(--bb-text);
+    font-size: var(--fl-font-size-200);
+}
+
+.native-source > :last-child {
+    margin-bottom: 0;
+}
+
+.native-drop-result {
+    max-width: 42rem;
+    margin-top: 1.5rem;
+    color: var(--bb-text);
+    font-size: var(--fl-font-size-200);
+    overflow-wrap: anywhere;
+}
+
+/* The dropped markup, raw. It wraps: a page's HTML is one long line more often than not. */
+.native-drop-html {
+    max-height: 18rem;
+    margin: .5rem 0 0;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+}
+
+/* ---------- Within an iframe ---------- */
+
+.demo-iframe {
+    display: block;
+    width: 100%;
+    height: 264px;
+    border: 1px dashed var(--bb-border-strong);
+    border-radius: var(--bb-radius-lg);
+    background: var(--bb-surface);
+}
+
+/* The page inside that iframe (App.razor marks it bdnd-framed): its sample and nothing else. The
+   site's chrome is the parent page's, and drawn twice it would be a site inside a site. */
+html.bdnd-framed,
+html.bdnd-framed body,
+html.bdnd-framed .bb-site-content {
+    background: var(--bb-surface);
+}
+
+html.bdnd-framed .page {
+    min-height: 0;
+}
+
+html.bdnd-framed .bb-skip-link,
+html.bdnd-framed .bb-header,
+html.bdnd-framed .bb-footer,
+html.bdnd-framed .bb-docs-sidebar,
+html.bdnd-framed .bb-docs-scrim,
+html.bdnd-framed .bb-docs-topbar,
+html.bdnd-framed .bb-docs-foot,
+html.bdnd-framed .bb-pager,
+html.bdnd-framed .bb-rail,
+html.bdnd-framed .bb-intro,
+html.bdnd-framed .bb-source {
+    display: none;
+}
+
+html.bdnd-framed .bb-docs {
+    display: block;
+}
+
+html.bdnd-framed main {
+    padding: 1.25rem;
+}
+
+/* The parent's frame is the sample's frame; the sample itself need not draw another. */
+html.bdnd-framed .bb-demo {
+    margin: 0;
+    padding: 0;
+    background: none;
+    border: 0;
+    box-shadow: none;
+}
+
+/* ---------- The "View code" toggle: the kit's secondary button, with the caret and the code glyph in it. ---------- */
+
+.demo-code__caret {
+    font-size: .8em;
+    color: var(--bb-text-soft);
+}
+
+.demo-code__glyph {
+    font-family: var(--bb-mono);
+    color: var(--bb-primary);
+}
+
+/* ---------- The landing page's hero: the live sample under its markup, inside the window frame. ---------- */
+
+.home-hero-live {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 1rem;
+    align-items: start;
+    padding: 1.25rem;
+    background: var(--bb-surface);
+    border-top: 1px solid var(--bb-border);
+}
+
+.home-hero-cards {
+    display: flex;
+    flex-direction: column;
+    gap: .5rem;
+    min-width: 0;
+}
+
+.home-hero-cards .box {
+    display: block;
+}
+
+/* The bin: a recessed tray at rest, the brand's tint while a card is in the air (CanDrop), the
+   success tint while one is over it (IsOver). */
+.home-hero-bin {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 10rem;
+    min-height: 8.5rem;
+    padding: 1rem;
+    background: var(--bb-bg);
+    border: 1px dashed var(--bb-border-strong);
+    border-radius: var(--bb-radius-lg);
+    color: var(--bb-text-muted);
+    font-size: var(--fl-font-size-200);
+    font-weight: var(--fl-weight-medium);
+    text-align: center;
+    transition: background var(--bb-motion-duration-short) var(--bb-motion-easing),
+                border-color var(--bb-motion-duration-short) var(--bb-motion-easing),
+                color var(--bb-motion-duration-short) var(--bb-motion-easing);
+}
+
+.home-hero-bin.is-ready {
+    background: var(--bb-primary-soft);
+    border-color: var(--bb-primary);
+    color: var(--bb-primary);
+}
+
+.home-hero-bin.is-over {
+    background: var(--bb-success-soft);
+    border-style: solid;
+    border-color: var(--bb-success);
+    color: var(--bb-success-text);
+}
+
+.home-hero-done {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: .5rem .75rem;
+    margin: 0;
+    color: var(--bb-text-muted);
+    font-size: var(--fl-font-size-200);
+}
+
+@media (max-width: 600px) {
+    .home-hero-live {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .home-hero-bin {
+        width: 100%;
+        min-height: 6rem;
+    }
+}

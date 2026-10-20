@@ -1,20 +1,21 @@
 @page "/variants"
 @inject BmotionAnimateService Motion
 
-<PageTitle>Variants - Bit.Bmotion</PageTitle>
+<PageTitle>Variants · Bmotion</PageTitle>
 
-<h1>Variants</h1>
+<div class="bb-intro">
+    <h1>Variants</h1>
+    <p class="bb-subtitle">
+        Variants let you name your animation states once and then move a whole subtree between them by
+        name. The parent switches to <code>"visible"</code>; every descendant that declares a
+        <code>"visible"</code> variant of its own resolves it and plays. Nothing has to be threaded
+        down, nothing has to be kept in sync - and because the parent owns the timing, staggering the
+        children is one parameter rather than a list of hand-computed delays.
+    </p>
+</div>
 
-<p class="page-intro">
-    Variants let you name your animation states once and then move a whole subtree between them by
-    name. The parent switches to <code>"visible"</code>; every descendant that declares a
-    <code>"visible"</code> variant of its own resolves it and plays. Nothing has to be threaded
-    down, nothing has to be kept in sync - and because the parent owns the timing, staggering the
-    children is one parameter rather than a list of hand-computed delays.
-</p>
-
-<div class="demo-section">
-    <h2>Named states</h2>
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Named states</h3>
     <p>
         Declare the states in a <strong>BmVariants</strong> dictionary and select one with the
         razor-literal-friendly <code>State</code> and <code>InitialState</code> parameters. The
@@ -41,17 +42,17 @@
         </div>
     </div>
 
-    <div class="demo-actions">
-        <button class="btn-bm" @onclick="@(() => _visible = !_visible)">
+    <div class="bb-toolbar">
+        <button class="btn btn-primary" @onclick="@(() => _visible = !_visible)">
             @(_visible ? "Hide" : "Show") list
         </button>
     </div>
 
     <CodeSnippet Code="@_variantsCode" />
-</div>
+</section>
 
-<div class="demo-section">
-    <h2>Orchestration</h2>
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Orchestration</h3>
     <p>
         <code>staggerChildren</code> spaces the descendants' starts apart and
         <code>delayChildren</code> holds all of them back until the container has had its moment -
@@ -191,17 +192,17 @@
         </div>
     </div>
 
-    <div class="demo-actions">
-        <button class="btn-bm" @onclick="@(() => _visible2 = !_visible2)">
+    <div class="bb-toolbar">
+        <button class="btn btn-primary" @onclick="@(() => _visible2 = !_visible2)">
             @(_visible2 ? "Hide" : "Show") boxes
         </button>
     </div>
 
     <CodeSnippet Code="@_orchestrationCode" />
-</div>
+</section>
 
-<div class="demo-section">
-    <h2>Dynamic variants</h2>
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Dynamic variants</h3>
     <p>
         A variant can be a <em>function</em> of the data behind the element rather than a fixed
         target. Register it with <code>Add(name, custom =&gt; …)</code> and pass each element its
@@ -228,17 +229,17 @@
         </div>
     </div>
 
-    <div class="demo-actions">
-        <button class="btn-bm" @onclick="@(() => _fanned = !_fanned)">
+    <div class="bb-toolbar">
+        <button class="btn btn-primary" @onclick="@(() => _fanned = !_fanned)">
             @(_fanned ? "Collapse" : "Fan out")
         </button>
     </div>
 
     <CodeSnippet Code="@_dynamicCode" />
-</div>
+</section>
 
-<div class="demo-section">
-    <h2>Grid stagger</h2>
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Grid stagger</h3>
     <p>
         <strong>Bm.Stagger</strong> is a delay <em>generator</em>, and it radiates across two
         dimensions as happily as one: pass <code>grid: (cols, rows)</code> and a <code>from</code>
@@ -258,68 +259,13 @@
         </div>
     </div>
 
-    <div class="demo-actions">
-        <button class="btn-bm" @onclick="RippleAsync">Ripple from center</button>
-        <button class="btn-bm" @onclick="RippleFromFirstAsync">Ripple from first</button>
+    <div class="bb-toolbar">
+        <button class="btn btn-primary" @onclick="RippleAsync">Ripple from center</button>
+        <button class="btn btn-secondary" @onclick="RippleFromFirstAsync">Ripple from first</button>
     </div>
 
     <CodeSnippet Code="@_gridStaggerCode" />
-</div>
-
-<style>
-    .variant-list { display: flex; flex-direction: column; gap: .5rem; list-style: none; margin: 0; padding: 0; }
-
-    .variant-row {
-        padding: .6rem 1rem;
-        font-size: .9rem;
-        border-radius: 8px;
-        color: var(--bm-text);
-        background: var(--bm-accent-soft);
-        border: 1px solid var(--bm-accent-line);
-    }
-
-    .variant-boxes { display: flex; gap: .5rem; }
-
-    /* The row that sits out the cascade. Drawn flat rather than gradient-filled so it reads as
-       "not part of this group" before it moves at all. */
-    .box-muted {
-        background: var(--bm-track);
-        border: 1px dashed var(--bm-accent-line);
-    }
-
-    /* A fixed stage the fanned cards overlap inside: they start stacked, so the container has to
-       hold its size rather than track the widest arrangement. */
-    .fan-stage { position: relative; width: 100%; height: 8rem; }
-
-    .fan-card {
-        position: absolute;
-        top: 1.5rem;
-        left: 50%;
-        width: 3.25rem;
-        height: 4.5rem;
-        margin-left: -1.625rem;
-        display: flex;
-        color: #fff;
-        font-weight: 700;
-        /* 20px/700 counts as large text, which is the bar white can clear over the light half of
-           this gradient - see .box in motion-samples.css, which is sized for the same reason. */
-        font-size: 1.25rem;
-        align-items: center;
-        justify-content: center;
-        border-radius: 8px;
-        background: linear-gradient(135deg, var(--bm-primary), var(--bm-secondary));
-        box-shadow: 0 4px 12px rgba(0, 0, 0, .2);
-    }
-
-    .stagger-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: .5rem; }
-
-    .grid-dot {
-        width: 1.625rem;
-        height: 1.625rem;
-        border-radius: 6px;
-        background: linear-gradient(135deg, var(--bm-primary), var(--bm-secondary));
-    }
-</style>
+</section>
 
 @code {
     private bool _visible = true;

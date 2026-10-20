@@ -30,6 +30,7 @@ public class ComponentTrackingTests : BunitContext
         Assert.IsTrue(BlazorReflection.CanResolveRenderer);
         Assert.IsTrue(BlazorReflection.CanResolveHierarchy);
         Assert.IsTrue(BlazorReflection.CanDetectBatches);
+        Assert.IsTrue(BlazorReflection.CanReadRenderQueue);
     }
 
     [TestMethod]

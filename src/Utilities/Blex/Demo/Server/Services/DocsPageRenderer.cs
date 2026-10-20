@@ -1,5 +1,4 @@
 ﻿using System.Text;
-using System.Reflection;
 using System.Collections.Concurrent;
 using Bit.Blex.Demo.Client;
 using Microsoft.AspNetCore.Components;
@@ -8,15 +7,15 @@ using Microsoft.AspNetCore.Components.Web;
 namespace Bit.Blex.Demo.Server.Services;
 
 /// <summary>One page of the documentation site, as the MCP tools address it.</summary>
-/// <param name="Slug">The key a caller passes: the page's route, or "introduction" for the site's root page.</param>
+/// <param name="Slug">The key a caller passes: the page's route, without its leading slash.</param>
 /// <param name="Title">The page title, as the sidebar shows it.</param>
 /// <param name="Summary">The one-line description from the site map.</param>
 /// <param name="Section">The sidebar group the page belongs to.</param>
 /// <param name="PageType">The routable component that renders the page.</param>
-public sealed record DocsPageInfo(string Slug, string Title, string Summary, string Section, Type PageType)
+public sealed record BlexDocsPage(string Slug, string Title, string Summary, string Section, Type PageType)
 {
     /// <summary>The page on the live documentation site.</summary>
-    public string Url => $"{DocsPageRenderer.SiteUrl}/{(Slug == DocsPageRenderer.RootSlug ? string.Empty : Slug)}";
+    public string Url => $"{DocsPageRenderer.SiteUrl}/{Slug}";
 }
 
 /// <summary>
@@ -24,11 +23,13 @@ public sealed record DocsPageInfo(string Slug, string Title, string Summary, str
 /// that both hand out the docs.
 /// <para>
 /// The component is the very one the site serves, so what an MCP client reads is what a human reads.
-/// The site map (DocsNav) names the pages and the component that renders each one is found by its
-/// <c>@page</c> route, so there is no second list of pages here to fall out of step with the sidebar.
-/// A page renders on its own - outside the app's layout and its &lt;BlexProvider&gt; - so a page that
-/// reaches for JS interop while initializing throws instead of producing HTML. That comes back as a
-/// page-shaped answer explaining itself, never as a failed tool call that tells the agent nothing.
+/// The site map (the client's DocsCatalog) names the pages and the component that renders each one,
+/// so there is no second list of pages here to fall out of step with the sidebar. The landing page is
+/// not in it - it is a front door, not documentation - and neither is the site chrome: a page renders
+/// on its own, outside the app's layouts and its &lt;BlexProvider&gt;, so what comes back is the page's
+/// title block and its sections and nothing of the header, nav panel, pager or footer around them. A
+/// page that reaches for JS interop while initializing throws instead of producing HTML. That comes back
+/// as a page-shaped answer explaining itself, never as a failed tool call that tells the agent nothing.
 /// </para>
 /// </summary>
 public static class DocsPageRenderer
@@ -36,39 +37,30 @@ public static class DocsPageRenderer
     /// <summary>The live documentation site, which every page's URL points into.</summary>
     public const string SiteUrl = "https://blex.bitplatform.dev";
 
-    /// <summary>The slug of the site's root page, whose route is the empty string - which nobody can type.</summary>
+    /// <summary>The page a caller means when they ask for the root of the docs - an empty slug, "overview", "home".</summary>
     public const string RootSlug = "introduction";
 
     private static readonly ConcurrentDictionary<string, string> _markdown = new(StringComparer.Ordinal);
 
-    private static readonly Lazy<DocsPageInfo[]> _pages = new(BuildPages);
+    private static readonly Lazy<BlexDocsPage[]> _pages = new(BuildPages);
 
     /// <summary>Every documentation page, in the order the sidebar lists them.</summary>
-    public static DocsPageInfo[] Pages => _pages.Value;
+    public static BlexDocsPage[] Pages => _pages.Value;
 
-    private static DocsPageInfo[] BuildPages()
-    {
-        var routes = typeof(DocsNav).Assembly.GetExportedTypes()
-            .Where(type => typeof(IComponent).IsAssignableFrom(type))
-            .SelectMany(type => type.GetCustomAttributes<Microsoft.AspNetCore.Components.RouteAttribute>().Select(route => (Route: route.Template.Trim('/'), Type: type)))
-            .ToDictionary(entry => entry.Route, entry => entry.Type, StringComparer.OrdinalIgnoreCase);
-
-        return [.. DocsNav.Sections.SelectMany(section => section.Pages
-            .Where(page => routes.ContainsKey(page.Href))
-            .Select(page => new DocsPageInfo(
-                page.Href.Length == 0 ? RootSlug : page.Href,
-                page.Title,
-                page.Summary,
-                section.Title,
-                routes[page.Href])))];
-    }
+    private static BlexDocsPage[] BuildPages()
+        => [.. DocsCatalog.Sections.SelectMany(section => section.Pages.Select(page => new BlexDocsPage(
+               page.Url.Trim('/'),
+               page.Title,
+               page.Description,
+               section.Title,
+               page.PageType)))];
 
     /// <summary>
     /// The page a slug names, or null when none does. The words a caller reaches for to mean the root
     /// page stand in for it, and slashes and case are ignored - the tool and the resource resolve slugs
     /// through this one method, so a slug that works in one cannot fail in the other.
     /// </summary>
-    public static DocsPageInfo? FindPage(string? slug)
+    public static BlexDocsPage? FindPage(string? slug)
     {
         var trimmed = (slug ?? string.Empty).Trim().Trim('/');
 
@@ -105,7 +97,7 @@ public static class DocsPageRenderer
     }
 
     /// <summary>The page as Markdown, or a null <c>Markdown</c> and the reason it could not be rendered.</summary>
-    public static async ValueTask<(string? Markdown, string? Error)> TryRenderMarkdownAsync(HtmlRenderer htmlRenderer, DocsPageInfo page)
+    public static async ValueTask<(string? Markdown, string? Error)> TryRenderMarkdownAsync(HtmlRenderer htmlRenderer, BlexDocsPage page)
     {
         if (_markdown.TryGetValue(page.Slug, out var cached)) return (cached, null);
 
@@ -133,7 +125,7 @@ public static class DocsPageRenderer
     }
 
     /// <summary>What to answer with when the page did not render - and where its content is anyway.</summary>
-    public static string Unavailable(DocsPageInfo page, string? error) =>
+    public static string Unavailable(BlexDocsPage page, string? error) =>
         $"The '{page.Title}' documentation page could not be rendered on the server{(error is null ? null : $": {error}")}. " +
         $"It is readable at {page.Url} on the live documentation site. For the same material as text, " +
         $"call SearchBlex(query: \"{page.Title}\") or GetBlexGuideSection.";

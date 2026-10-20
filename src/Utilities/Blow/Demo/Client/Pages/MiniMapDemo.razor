@@ -1,10 +1,10 @@
 ﻿@page "/minimap"
 
-<PageTitle>MiniMap Customization - bit Blow</PageTitle>
+<PageTitle>MiniMap Customization · Blow</PageTitle>
 
-<div class="demo-header">
-    <h3>MiniMap Customization</h3>
-    <p class="text-muted">
+<div class="bb-intro">
+    <h1>MiniMap Customization</h1>
+    <p class="bb-subtitle">
         The BlowMiniMap gained per-node styling and interactivity: <code>NodeColorFunc</code>,
         <code>NodeStrokeColorFunc</code>, <code>BorderRadius</code>, an SVG <code>NodeTemplate</code>, plus
         <code>Pannable</code> and <code>Zoomable</code>. Drag inside the minimap to pan and scroll over it to
@@ -14,34 +14,35 @@
 
 <DemoCode />
 
-<div class="example-toolbar">
-    <label><input type="checkbox" checked="@_pannable" @onchange="e => _pannable = (bool)e.Value!" /> pannable</label>
-    <label><input type="checkbox" checked="@_zoomable" @onchange="e => _zoomable = (bool)e.Value!" /> zoomable</label>
-    <label><input type="checkbox" checked="@_useTemplate" @onchange="e => _useTemplate = (bool)e.Value!" /> custom SVG node template</label>
-</div>
-
-<div class="demo-canvas" style="height: calc(100vh - 250px);">
-    <BlowCanvas Nodes="_nodes" Edges="_edges" FitViewOnInit="true">
-        <BlowBackground Variant="BlowBackgroundVariant.Dots" Gap="16" />
-        <BlowControls />
-        @if (_useTemplate)
-        {
-            <BlowMiniMap Width="240" Height="180" Pannable="_pannable" Zoomable="_zoomable">
-                <NodeTemplate Context="node">
-                    <circle cx="@Inv(node.GetRect().Width / 2)" cy="@Inv(node.GetRect().Height / 2)"
-                            r="@Inv(Math.Min(node.GetRect().Width, node.GetRect().Height) / 2)"
-                            fill="@NodeColor(node)" stroke="@(node.Selected ? "#111827" : "transparent")" stroke-width="3" />
-                </NodeTemplate>
-            </BlowMiniMap>
-        }
-        else
-        {
-            <BlowMiniMap Width="240" Height="180" Pannable="_pannable" Zoomable="_zoomable"
-                     NodeColorFunc="NodeColor"
-                     NodeStrokeColorFunc="@(n => n.Selected ? "#111827" : "transparent")"
-                     NodeStrokeWidth="3" BorderRadius="6" />
-        }
-    </BlowCanvas>
+<div class="bb-demo blow-demo bb-page-wide">
+    <div class="bb-demo-bar example-toolbar">
+        <label><input type="checkbox" checked="@_pannable" @onchange="e => _pannable = (bool)e.Value!" /> pannable</label>
+        <label><input type="checkbox" checked="@_zoomable" @onchange="e => _zoomable = (bool)e.Value!" /> zoomable</label>
+        <label><input type="checkbox" checked="@_useTemplate" @onchange="e => _useTemplate = (bool)e.Value!" /> custom SVG node template</label>
+    </div>
+    <div class="demo-canvas">
+        <BlowCanvas Nodes="_nodes" Edges="_edges" FitViewOnInit="true">
+            <BlowBackground Variant="BlowBackgroundVariant.Dots" Gap="16" />
+            <BlowControls />
+            @if (_useTemplate)
+            {
+                <BlowMiniMap Width="240" Height="180" Pannable="_pannable" Zoomable="_zoomable">
+                    <NodeTemplate Context="node">
+                        <circle cx="@Inv(node.GetRect().Width / 2)" cy="@Inv(node.GetRect().Height / 2)"
+                                r="@Inv(Math.Min(node.GetRect().Width, node.GetRect().Height) / 2)"
+                                fill="@NodeColor(node)" stroke="@(node.Selected ? "var(--bit-blow-text)" : "transparent")" stroke-width="3" />
+                    </NodeTemplate>
+                </BlowMiniMap>
+            }
+            else
+            {
+                <BlowMiniMap Width="240" Height="180" Pannable="_pannable" Zoomable="_zoomable"
+                         NodeColorFunc="NodeColor"
+                         NodeStrokeColorFunc="@(n => n.Selected ? "var(--bit-blow-text)" : "transparent")"
+                         NodeStrokeWidth="3" BorderRadius="6" />
+            }
+        </BlowCanvas>
+    </div>
 </div>
 
 @code {

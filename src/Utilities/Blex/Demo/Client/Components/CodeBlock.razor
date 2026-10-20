@@ -1,68 +1,38 @@
-﻿@inject IJSRuntime Js
-
-<div class="code-block @(Compact ? "code-block--compact" : null)">
-    @if (!string.IsNullOrEmpty(Title) || ShowChrome)
-    {
-        <div class="code-block__bar">
-            <span class="code-block__title">@(Title ?? LanguageLabel)</span>
-            <div class="code-block__actions">
-                @if (!string.IsNullOrEmpty(FileName))
-                {
-                    <span class="code-block__file">@FileName</span>
-                }
-                <button type="button" class="code-block__copy" @onclick="CopyAsync" title="Copy to clipboard">
-                    @(_copied ? "Copied" : "Copy")
-                </button>
-            </div>
-        </div>
-    }
-    <pre class="code-block__pre"><code class="language-@Language">@CodeHighlighter.Highlight(Code.TrimEnd(), Language)</code></pre>
-</div>
+﻿@*
+    A code sample: CodeHighlighter's tokens inside the site kit's pre.bb-code, which is what gives it
+    the site's code surface - and the copy button site.js adds to every pre.bb-code. A title or a
+    file name, when given, is the caption above it. The token colors are in demo.css.
+*@
+@if (!string.IsNullOrEmpty(Title) || !string.IsNullOrEmpty(FileName))
+{
+    <div class="demo-code-label">
+        @if (!string.IsNullOrEmpty(Title))
+        {
+            <span>@Title</span>
+        }
+        @if (!string.IsNullOrEmpty(FileName))
+        {
+            <span class="bb-mono">@FileName</span>
+        }
+    </div>
+}
+<pre class="bb-code"><code class="language-@Language">@CodeHighlighter.Highlight(Normalized, Language)</code></pre>
 
 @code {
-    private bool _copied;
-
     /// <summary>The snippet to render. Trailing whitespace is trimmed.</summary>
     [Parameter, EditorRequired] public string Code { get; set; } = "";
 
     /// <summary>Language token understood by <see cref="CodeHighlighter"/>.</summary>
     [Parameter] public string Language { get; set; } = "csharp";
 
-    /// <summary>Optional heading shown in the title bar.</summary>
+    /// <summary>Optional caption shown above the code.</summary>
     [Parameter] public string? Title { get; set; }
 
-    /// <summary>Optional file name shown on the right of the title bar.</summary>
+    /// <summary>Optional file name shown in the caption.</summary>
     [Parameter] public string? FileName { get; set; }
 
-    /// <summary>Whether to render the title bar even when no title is set.</summary>
-    [Parameter] public bool ShowChrome { get; set; } = true;
-
-    /// <summary>Tightens the padding, for snippets embedded inside demo cards.</summary>
-    [Parameter] public bool Compact { get; set; }
-
-    private string LanguageLabel => Language.ToLowerInvariant() switch
-    {
-        "csharp" or "cs" => "C#",
-        "razor" or "cshtml" => "Razor",
-        "xml" or "csproj" => "XML",
-        "json" => "JSON",
-        "bash" or "sh" or "shell" => "Shell",
-        _ => Language,
-    };
-
-    private async Task CopyAsync()
-    {
-        try
-        {
-            await Js.InvokeVoidAsync("blexDocs.copy", Code.TrimEnd());
-            _copied = true;
-            StateHasChanged();
-            await Task.Delay(1400);
-            _copied = false;
-        }
-        catch (JSException)
-        {
-            // Clipboard access can be denied; the snippet is still selectable by hand.
-        }
-    }
+    // The samples are raw string literals, so they carry the source file's line endings. A CR left
+    // inside a token's span (a // comment runs to the LF) is a line break of its own in a <pre>, which
+    // double-spaced every commented line - so the snippet is reduced to LF before it is scanned.
+    private string Normalized => Code.ReplaceLineEndings("\n").TrimEnd();
 }

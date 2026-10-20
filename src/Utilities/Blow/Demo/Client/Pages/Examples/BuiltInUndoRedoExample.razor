@@ -1,16 +1,16 @@
 ﻿@page "/examples/built-in-undo-redo"
-<PageTitle>Built-in Undo &amp; Redo - bit Blow</PageTitle>
+<PageTitle>Built-in Undo &amp; Redo · Blow</PageTitle>
 
 <ExampleScaffold Title="Built-in Undo &amp; Redo"
                  Summary="Set HistoryEnabled and the canvas keeps its own undo stack, recording a step at each point a user would recognise as one - a drag finished, an edge connected, something deleted, pasted, resized, aligned or nudged - and binding Ctrl/Cmd+Z and Ctrl/Cmd+Shift+Z. Selecting and panning are not edits, so they are not steps.">
     <Toolbar>
-        <button class="btn" disabled="@(!_state.CanUndo)" @onclick="Undo">↶ Undo</button>
-        <button class="btn" disabled="@(!_state.CanRedo)" @onclick="Redo">↷ Redo</button>
+        <button class="btn btn-secondary" disabled="@(!_state.CanUndo)" @onclick="Undo">↶ Undo</button>
+        <button class="btn btn-secondary" disabled="@(!_state.CanRedo)" @onclick="Redo">↷ Redo</button>
 
         <span class="group-label">Make an edit</span>
-        <button class="btn" @onclick="AddNode">Add node</button>
-        <button class="btn" @onclick="DeleteSelection">Delete selection</button>
-        <button class="btn" @onclick="AlignLeft">Align left</button>
+        <button class="btn btn-secondary" @onclick="AddNode">Add node</button>
+        <button class="btn btn-secondary" @onclick="DeleteSelection">Delete selection</button>
+        <button class="btn btn-secondary" @onclick="AlignLeft">Align left</button>
 
         <span class="depth">@_state.UndoDepth back · @_state.RedoDepth forward</span>
     </Toolbar>
@@ -38,8 +38,8 @@
 </ExampleScaffold>
 
 <style>
-    .group-label { font-size: 11px; text-transform: uppercase; letter-spacing: .04em; color: #6b7280; margin-left: .75rem; }
-    .depth { margin-left: auto; font-size: 12px; color: #6b7280; }
+    .group-label { font-size: 11px; text-transform: uppercase; letter-spacing: .04em; color: var(--bb-text-soft); margin-left: .75rem; }
+    .depth { margin-left: auto; font-size: 12px; color: var(--bb-text-soft); }
     .hint {
         max-width: 250px;
         padding: 8px 10px;

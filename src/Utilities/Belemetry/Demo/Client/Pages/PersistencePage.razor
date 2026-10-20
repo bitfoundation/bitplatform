@@ -4,33 +4,34 @@
 @inject IJSRuntime JS
 @inject IBelemetryConsent Consent
 
-<PageTitle>Offline persistence - bit Belemetry</PageTitle>
+<PageTitle>Offline persistence · Belemetry</PageTitle>
 
-<h1>Offline persistence</h1>
+<div class="bb-intro">
+    <h1>Offline persistence</h1>
+    <p class="bb-subtitle">
+        A train goes into a tunnel, a laptop lid closes mid-export, a collector restarts. Without persistence
+        the telemetry of exactly those moments - often the interesting ones - is lost. With it, an export
+        request that fails with a network error or a retryable status is kept on the device and sent again
+        later: in <code>localStorage</code> in the browser, and in files in Blazor Hybrid and on servers.
+    </p>
+</div>
 
-<p class="page-intro">
-    A train goes into a tunnel, a laptop lid closes mid-export, a collector restarts. Without persistence
-    the telemetry of exactly those moments - often the interesting ones - is lost. With it, an export
-    request that fails with a network error or a retryable status is kept on the device and sent again
-    later: in <code>localStorage</code> in the browser, and in files in Blazor Hybrid and on servers.
-</p>
-
-<div class="demo-section">
-    <h2>What is kept, and when</h2>
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> What is kept, and when</h3>
     <p>
         Persistence works on whole export requests, already serialized, rather than on records: what is
         stored is exactly the body that could not be delivered, so it is sent again unchanged. A request is
         kept when it fails with a network error, or with one of the statuses a receiver uses to say
         "later":
     </p>
-    <div class="badge-list">
-        <span class="badge">408 Request Timeout</span>
-        <span class="badge">429 Too Many Requests</span>
-        <span class="badge">439 (Azure daily quota)</span>
-        <span class="badge">500</span>
-        <span class="badge">502</span>
-        <span class="badge">503</span>
-        <span class="badge">504</span>
+    <div class="demo-badges">
+        <span class="bb-badge">408 Request Timeout</span>
+        <span class="bb-badge">429 Too Many Requests</span>
+        <span class="bb-badge">439 (Azure daily quota)</span>
+        <span class="bb-badge">500</span>
+        <span class="bb-badge">502</span>
+        <span class="bb-badge">503</span>
+        <span class="bb-badge">504</span>
     </div>
     <p>
         Before a request is stored it is first retried in place a few times, with backoff that honours
@@ -39,7 +40,7 @@
         <code>206</code> partial success retries only the items the response lists as retryable.
     </p>
     <p>Persistence needs two things at once:</p>
-    <ul>
+    <ul class="bb-detail-list">
         <li><code>options.Persistence.Enabled</code> - on by default - which is the operator's switch.</li>
         <li>
             The user's consent for the <code>Persistence</code> feature. Keeping data on someone's device is a
@@ -50,10 +51,10 @@
     <CodeSnippet Code="@OptionsCode" Language="C#" Expanded="true" />
 </div>
 
-<div class="demo-section">
-    <h2>Where it is kept</h2>
-    <div class="doc-table-wrap">
-        <table class="doc-table">
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Where it is kept</h3>
+    <div class="bb-scroll">
+        <table class="bb-table">
             <thead>
                 <tr><th scope="col">Host</th><th scope="col">Store</th><th scope="col">Size cap</th><th scope="col">Retried</th></tr>
             </thead>
@@ -92,8 +93,8 @@
     <CodeSnippet Code="@QueueShapeCode" Language="JSON" />
 </div>
 
-<div class="demo-section">
-    <h2>Look at the queue</h2>
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Look at the queue</h3>
     <p>
         This panel reads <code>localStorage['bit-belemetry-queue']</code> directly. On a healthy connection it
         is empty - nothing failed, so nothing was kept. To fill it, open your browser's developer tools, set the
@@ -101,51 +102,50 @@
         queue again. Then go back online: the script hears the <code>online</code> event, resends, and the
         queue empties.
     </p>
-    <div class="demo-row">
-        <div class="demo-card stack">
-            <dl class="kv">
-                <dt>Persistence consent</dt>
-                <dd><span class="state-pill @(_persistenceGranted is true ? "on" : null)">@(_persistenceGranted switch { true => "granted", false => "not granted", null => "unknown" })</span></dd>
-                <dt>bit-belemetry-queue</dt>
-                <dd>
-                    @if (_queueRead is false)
-                    {
-                        <span>not read yet</span>
-                    }
-                    else if (_queueEntries is null)
-                    {
-                        <span class="state-pill">empty</span>
-                    }
-                    else
-                    {
-                        <span class="state-pill on">@_queueEntries request(s), @FormatBytes(_queueBytes)</span>
-                    }
-                </dd>
-                @if (_queueExporters.Length > 0)
+    <div class="bb-demo">
+        <div class="bb-demo-bar"><span class="bb-demo-label">Live<span class="demo-sample-title">bit-belemetry-queue</span></span></div>
+        <dl class="bb-params">
+            <dt>Persistence consent</dt>
+            <dd><span class="bb-badge @(_persistenceGranted is true ? "bb-badge-success" : "demo-badge-off")">@(_persistenceGranted switch { true => "granted", false => "not granted", null => "unknown" })</span></dd>
+            <dt>bit-belemetry-queue</dt>
+            <dd>
+                @if (_queueRead is false)
                 {
-                    <dt>Waiting for</dt>
-                    <dd>@string.Join(", ", _queueExporters)</dd>
+                    <span>not read yet</span>
                 }
-            </dl>
-            <div class="demo-actions">
-                <button type="button" class="btn-bl" disabled="@(RendererInfo.IsInteractive is false)" @onclick="ReadQueueAsync">Read the queue</button>
-                <button type="button" class="btn-bl-subtle" disabled="@(RendererInfo.IsInteractive is false)" @onclick="TrackEventAsync">Track an event</button>
-                @if (_persistenceGranted is true)
+                else if (_queueEntries is null)
                 {
-                    <button type="button" class="btn-bl btn-bl-danger" disabled="@(RendererInfo.IsInteractive is false)" @onclick="RevokeAsync">Revoke Persistence</button>
+                    <span class="bb-badge demo-badge-off">empty</span>
                 }
                 else
                 {
-                    <button type="button" class="btn-bl-subtle" disabled="@(RendererInfo.IsInteractive is false)" @onclick="GrantAsync">Grant Persistence</button>
+                    <span class="bb-badge bb-badge-success">@_queueEntries request(s), @FormatBytes(_queueBytes)</span>
                 }
-            </div>
-            @if (_message is not null)
+            </dd>
+            @if (_queueExporters.Length > 0)
             {
-                <p class="demo-label">@_message</p>
+                <dt>Waiting for</dt>
+                <dd>@string.Join(", ", _queueExporters)</dd>
+            }
+        </dl>
+        <div class="bb-toolbar">
+            <button type="button" class="btn btn-primary" disabled="@(RendererInfo.IsInteractive is false)" @onclick="ReadQueueAsync">Read the queue</button>
+            <button type="button" class="btn btn-secondary" disabled="@(RendererInfo.IsInteractive is false)" @onclick="TrackEventAsync">Track an event</button>
+            @if (_persistenceGranted is true)
+            {
+                <button type="button" class="btn demo-btn-danger" disabled="@(RendererInfo.IsInteractive is false)" @onclick="RevokeAsync">Revoke Persistence</button>
+            }
+            else
+            {
+                <button type="button" class="btn btn-secondary" disabled="@(RendererInfo.IsInteractive is false)" @onclick="GrantAsync">Grant Persistence</button>
             }
         </div>
+        @if (_message is not null)
+        {
+            <p class="demo-status">@_message</p>
+        }
     </div>
-    <div class="callout">
+    <div class="bb-note">
         <p>
             <strong>Track an event</strong> needs the <code>Events</code> feature granted, and the queue only
             fills with <code>Persistence</code> granted. Revoking <code>Persistence</code> clears the queue at once:
@@ -155,8 +155,8 @@
     <CodeSnippet Code="@ReadQueueCode" Language="C#" />
 </div>
 
-<div class="demo-section">
-    <h2>Revoking clears it</h2>
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Revoking clears it</h3>
     <p>
         Withdrawing consent has to reach data already stored, not only data still to come. Revoking
         <code>Persistence</code> - from the banner, from <code>IBelemetryConsent.RevokeAsync</code> or from
@@ -167,8 +167,8 @@
     <CodeSnippet Code="@RevokeCode" Language="Razor" />
 </div>
 
-<div class="demo-section">
-    <h2>Hybrid apps</h2>
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Hybrid apps</h3>
     <p>
         In MAUI, WPF and WinForms the browser script relays its records to .NET, and the .NET pipeline exports
         everything - so the file store is the one that matters. A phone is suspended long before it loses its
@@ -178,8 +178,8 @@
     <CodeSnippet Code="@HybridCode" Language="C#" />
 </div>
 
-<div class="demo-section">
-    <h2>API</h2>
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> API</h3>
     <ApiTable TypeName="BelemetryPersistenceOptions" />
 </div>
 

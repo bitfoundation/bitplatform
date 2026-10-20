@@ -90,8 +90,9 @@ public sealed class KeyboardTests : BormTest
         await page.Keyboard.TypeAsync("XYZ");
         await Expect(reference).ToHaveValueAsync("bk-1024");
 
-        // The stylesheet marks the locked box as such.
-        Assert.AreEqual("rgb(250, 250, 250)", await ComputedAsync(reference, "background-color"), "the read-only background");
+        // The stylesheet marks the locked box as such: --bit-borm-surface-muted, which the demo re-tints to the site's
+        // sunken surface (--bb-surface-sunken, #F5F5F5).
+        Assert.AreEqual("rgb(245, 245, 245)", await ComputedAsync(reference, "background-color"), "the read-only background");
 
         // Unlocking gives it back.
         await Control(page, "Confirmed").FocusAsync();

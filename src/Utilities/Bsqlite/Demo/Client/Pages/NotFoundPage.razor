@@ -1,16 +1,20 @@
 ﻿@page "/not-found"
+@layout MainLayout
 
 @* The router shows this for an unknown route in the browser, and the host re-executes a deep link to one
    through the same route (UseStatusCodePagesWithReExecute), keeping the status code at 404. *@
 
 <PageTitle>Not found · Bsqlite</PageTitle>
 
-<header class="page-head">
-    <p class="eyebrow">404</p>
-    <h1>That page is not in this demo</h1>
-    <p class="lead">
-        The sidebar lists every demo. If you followed a link from the documentation, the
-        page may have been renamed - the overview links to all of them.
+<div class="bb-error bb-error-404">
+    <h1>404</h1>
+    <p>
+        That page is not in this demo. If you followed a link from the documentation, the page may have been
+        renamed - the docs list every demo.
     </p>
-</header>
-<a class="btn" href="">Back to the overview <Icon Name="arrow-right" /></a>
+    <div class="bb-try bb-error-actions">
+        <a href="" class="btn btn-primary">Go to the home page</a>
+        <a href="getting-started" class="btn btn-secondary">Browse the docs</a>
+    </div>
+    <p class="bb-error-hint">Looking for something specific? Press <kbd>/</kbd> to search.</p>
+</div>

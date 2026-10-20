@@ -1,0 +1,22 @@
+﻿@inject IBaletteService Palette
+
+@* The palette's visible way in: a BaletteTrigger, and a button per mode that opens the palette with the mode's
+   prefix typed. The palette is one keystroke away on every page, but a visitor who has not learnt the keystroke
+   yet needs something to click - so every demo page opens with this bar, and the landing page has it in its hero.
+
+   The trigger reads the toggle shortcut from the options, so its hint is always the real one, in the platform's
+   own symbols once the palette has detected it. *@
+
+<div class="demo-palette-bar @Class">
+    <BaletteTrigger Label="Search or run a command…" Class="demo-trigger" />
+    <div class="demo-palette-modes" role="group" aria-label="Open the palette in a mode">
+        <button type="button" class="btn btn-secondary" title="Commands mode" @onclick='() => Palette.OpenAsync(">")'><kbd>&gt;</kbd><span>Commands</span></button>
+        <button type="button" class="btn btn-secondary" title="Issues mode" @onclick='() => Palette.OpenAsync("#")'><kbd>#</kbd><span>Issues</span></button>
+        <button type="button" class="btn btn-secondary" title="People mode" @onclick="@(() => Palette.OpenAsync("@"))"><kbd>@@</kbd><span>People</span></button>
+    </div>
+</div>
+
+@code {
+    /// <summary>Extra classes for the bar, for the place it sits in.</summary>
+    [Parameter] public string? Class { get; set; }
+}

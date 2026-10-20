@@ -1,5 +1,5 @@
 using System.Text.RegularExpressions;
-using Bit.Bmotion.Demo.Client.Shared;
+using Bit.Bmotion.Demo.Client;
 
 namespace Bit.Bmotion.Tests.Mcp.Services;
 
@@ -95,7 +95,7 @@ public class RecipeCatalogTests
     [TestMethod]
     public void All_TheSeeAlsoLinks_PointAtRealDemoPages()
     {
-        var routes = NavItem.All.Select(page => $"/{page.Href}").ToArray();
+        var routes = DocsCatalog.AllPages.Select(page => page.Url).ToArray();
 
         foreach (var recipe in BmotionRecipeCatalog.All.Where(recipe => recipe.SeeAlso is not null))
         {

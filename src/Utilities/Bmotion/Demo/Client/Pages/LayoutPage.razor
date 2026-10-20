@@ -1,20 +1,21 @@
 @page "/layout"
 
-<PageTitle>Layout animations - Bit.Bmotion</PageTitle>
+<PageTitle>Layout animations · Bmotion</PageTitle>
 
-<h1>Layout animations</h1>
+<div class="bb-intro">
+    <h1>Layout animations</h1>
+    <p class="bb-subtitle">
+        Layout properties are the ones you cannot animate cheaply: change <code>justify-content</code>
+        or a width and the browser reflows, it does not tween. FLIP sidesteps that - measure where the
+        element was (<strong>F</strong>irst), let the real layout change happen (<strong>L</strong>ast),
+        <strong>I</strong>nvert the difference with a transform, then <strong>P</strong>lay it back to
+        zero. The result animates on the compositor while the DOM is already in its final state.
+        <code>Layout="true"</code> is the whole opt-in; Bmotion does the measuring.
+    </p>
+</div>
 
-<p class="page-intro">
-    Layout properties are the ones you cannot animate cheaply: change <code>justify-content</code>
-    or a width and the browser reflows, it does not tween. FLIP sidesteps that - measure where the
-    element was (<strong>F</strong>irst), let the real layout change happen (<strong>L</strong>ast),
-    <strong>I</strong>nvert the difference with a transform, then <strong>P</strong>lay it back to
-    zero. The result animates on the compositor while the DOM is already in its final state.
-    <code>Layout="true"</code> is the whole opt-in; Bmotion does the measuring.
-</p>
-
-<div class="demo-section">
-    <h2>Animating a reflow</h2>
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Animating a reflow</h3>
     <p>
         Add <strong>Layout="true"</strong> to any Bmotion element and every re-render that moves or
         resizes it plays a FLIP. Nothing below animates a property directly: the buttons change the
@@ -37,16 +38,16 @@
         </div>
     </div>
 
-    <div class="demo-actions">
-        <button class="btn-bm" @onclick="Shuffle">Shuffle</button>
-        <button class="btn-bm" @onclick="ToggleLayout">Justify: @_justifyContent</button>
+    <div class="bb-toolbar">
+        <button class="btn btn-primary" @onclick="Shuffle">Shuffle</button>
+        <button class="btn btn-secondary" @onclick="ToggleLayout">Justify: @_justifyContent</button>
     </div>
 
     <CodeSnippet Code="@_layoutCode" />
-</div>
+</section>
 
-<div class="demo-section">
-    <h2>Shared elements</h2>
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Shared elements</h3>
     <p>
         <strong>LayoutId</strong> connects elements <em>across</em> mounts. When one unmounts and
         another mounts carrying the same id, the new one FLIPs from where the old one was - so a
@@ -57,13 +58,13 @@
     </p>
 
     <div class="demo-row">
-        <div class="demo-card tab-stage">
-            <div class="tab-strip" role="tablist">
+        <div class="demo-card layout-tab-stage">
+            <div class="layout-tab-strip" role="tablist">
                 @foreach (var tab in _tabs)
                 {
                     var t = tab;
-                    <div class="tab @(t == _activeTab ? "active" : null)"
-                         role="tab" tabindex="0" aria-selected="@(t == _activeTab)"
+                    <div class="layout-tab @(t == _activeTab ? "active" : null)"
+                         role="tab" tabindex="0" aria-selected="@(t == _activeTab ? "true" : "false")"
                          @onclick="@(() => _activeTab = t)"
                          @onkeydown="@(e => { if (e.Key is "Enter" or " ") _activeTab = t; })">
                         @t
@@ -72,7 +73,7 @@
                             <Bmotion LayoutId="tab-underline"
                                     Layout="BmLayout.Position"
                                     Transition="Bm.Tween(0.3, BmEase.InOut)">
-                                <div class="tab-underline" />
+                                <div class="layout-tab-underline" />
                             </Bmotion>
                         }
                     </div>
@@ -82,10 +83,10 @@
     </div>
 
     <CodeSnippet Code="@_layoutIdCode" />
-</div>
+</section>
 
-<div class="demo-section">
-    <h2>Size correction</h2>
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Size correction</h3>
     <p>
         Animating a box's size by scaling it is fast but wrong: the text inside stretches and the
         corners go oval. With <strong>Layout="true"</strong> Bmotion still scales - that is what
@@ -105,15 +106,15 @@
         </div>
     </div>
 
-    <div class="demo-actions">
-        <button class="btn-bm" @onclick="@(() => _big = !_big)">@(_big ? "Shrink" : "Grow")</button>
+    <div class="bb-toolbar">
+        <button class="btn btn-primary" @onclick="@(() => _big = !_big)">@(_big ? "Shrink" : "Grow")</button>
     </div>
 
     <CodeSnippet Code="@_sizeCode" />
-</div>
+</section>
 
-<div class="demo-section">
-    <h2>Anchoring and measurement</h2>
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Anchoring and measurement</h3>
     <p>
         A FLIP is a comparison between two measurements, and four parameters decide what is being
         compared. <strong>LayoutAnchor</strong> picks the point that appears to stay still: the
@@ -144,8 +145,8 @@
         </div>
     </div>
 
-    <div class="demo-actions">
-        <button class="btn-bm" @onclick="@(() => _anchored = !_anchored)">@(_anchored ? "Shrink" : "Grow")</button>
+    <div class="bb-toolbar">
+        <button class="btn btn-primary" @onclick="@(() => _anchored = !_anchored)">@(_anchored ? "Shrink" : "Grow")</button>
         <span class="demo-label">layout animations completed: @_layoutCompletions</span>
     </div>
 
@@ -160,101 +161,7 @@
     </p>
 
     <CodeSnippet Code="@_projectionCode" />
-</div>
-
-<style>
-    /* Fixed footprint so the two anchor stages are directly comparable: the same size change
-       reads differently only because of where it is projected from. */
-    .anchor-box {
-        width: 3.5rem;
-        height: 3.5rem;
-        border-radius: 10px;
-        background: linear-gradient(135deg, var(--bm-primary), var(--bm-secondary));
-    }
-
-    .anchor-box.big { width: 7rem; height: 7rem; }
-</style>
-
-<style>
-    .layout-stage { align-items: stretch; }
-
-    .layout-strip { display: flex; gap: .75rem; flex-wrap: wrap; width: 100%; }
-
-    /* 20px at 700 is deliberate rather than decorative: at that size and weight the label counts
-       as large text, which is the bar the lighter tones below can actually clear against white. */
-    .layout-tile {
-        width: 3.75rem;
-        height: 3.75rem;
-        display: flex;
-        color: #fff;
-        font-weight: 700;
-        font-size: 1.25rem;
-        border-radius: 8px;
-        align-items: center;
-        justify-content: center;
-    }
-
-    /* Five distinguishable tiles, fixed rather than derived from the theme's accents.
-
-       They were derived once, and it did not survive the dark theme: the accent that is dark
-       enough for a white label in the light theme is the light end of the ramp in the dark one,
-       where the same label stops reading. What these tiles are demonstrating is FLIP, not colour,
-       so they are pinned to five shades that each clear 4.5:1 against white in both themes and
-       stay clearly apart from one another. */
-    .tone-0 { background: #1276C6; }
-    .tone-1 { background: #124265; }
-    .tone-2 { background: #C25520; }
-    .tone-3 { background: #7E3714; }
-    .tone-4 { background: #4D4D4D; }
-
-    .tab-stage { align-items: flex-start; }
-
-    .tab-strip { display: flex; gap: 1.5rem; }
-
-    /* position: relative is what the shared underline FLIPs against - it is absolutely placed
-       inside whichever tab is active. */
-    .tab {
-        cursor: pointer;
-        font-weight: 600;
-        position: relative;
-        padding-bottom: 6px;
-        color: var(--bm-muted);
-    }
-
-    .tab.active { color: var(--bm-text); }
-
-    .tab:focus-visible { outline: 2px solid var(--bm-primary); outline-offset: 4px; }
-
-    .tab-underline {
-        left: 0;
-        right: 0;
-        bottom: 0;
-        height: 3px;
-        position: absolute;
-        border-radius: 2px;
-        background: linear-gradient(90deg, var(--bm-primary), var(--bm-secondary));
-    }
-
-    .resize-stage { min-height: 13.75rem; }
-
-    .resize-card {
-        gap: .6rem;
-        width: 7.5rem;
-        height: 7.5rem;
-        display: flex;
-        border-radius: 20px;
-        align-items: center;
-        flex-direction: column;
-        justify-content: center;
-        background: linear-gradient(135deg, var(--bm-primary), var(--bm-secondary));
-    }
-
-    .resize-card.big { width: 16.25rem; height: 11.25rem; }
-
-    .resize-label { font-weight: 800; font-size: 1.3rem; color: #fff; }
-
-    .resize-dot { width: 2.125rem; height: 2.125rem; border-radius: 50%; background: rgba(255, 255, 255, .85); }
-</style>
+</section>
 
 @code {
     private readonly string[] _tabs = ["Home", "Projects", "About", "Contact"];

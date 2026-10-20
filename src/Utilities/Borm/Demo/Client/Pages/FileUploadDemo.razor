@@ -1,11 +1,11 @@
 ﻿@page "/files"
 @implements IDisposable
 
-<PageTitle>File upload</PageTitle>
+<PageTitle>File upload · Borm</PageTitle>
 
-<div class="demo-intro">
+<div class="bb-intro">
     <h1>File upload</h1>
-    <p>
+    <p class="bb-subtitle">
         <code>BormFieldType.File</code> renders Blazor's <code>InputFile</code>, keeps the chosen
         <code>IBrowserFile</code>s on the model, and lists them back with their sizes. The browser's
         <code>accept</code> attribute is only a filter in the picker, so size and type are validated again
@@ -13,18 +13,19 @@
     </p>
 </div>
 
-<div class="demo-card">
+<div class="bb-demo">
+    <div class="bb-demo-bar"><span class="bb-demo-label">Live form</span></div>
     <BormView State="_state" OnValidSubmit="HandleSubmit" SubmitText="Upload" ShowErrorSummary="true" />
 </div>
 
 @if (_submitted)
 {
-    <div class="demo-result"><strong>Received ✓</strong> <pre>@_summary</pre></div>
+    <div class="bb-note bb-note-success demo-result"><strong>Received ✓</strong><pre>@_summary</pre></div>
 }
 
-<details class="demo-source">
-    <summary>View source</summary>
-    <pre><code>@Source</code></pre>
+<details class="bb-source demo-source">
+    <summary class="btn btn-secondary">View source</summary>
+    <pre class="bb-code"><code>@Source</code></pre>
 </details>
 
 @code {

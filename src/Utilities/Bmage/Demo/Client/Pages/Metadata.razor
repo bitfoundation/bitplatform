@@ -8,18 +8,19 @@
    carrying a camera, a serial number and a location) under each of the three policies, decodes
    every result again, and reports what actually survived in the bytes. *@
 
-<PageTitle>Metadata and privacy - Bit.Bmage</PageTitle>
+<PageTitle>Metadata and privacy · Bmage</PageTitle>
 
-<h1>Metadata and privacy</h1>
+<div class="bb-intro">
+    <h1>Metadata and privacy</h1>
+    <p class="bb-subtitle">
+        A photograph from a phone usually carries the location it was taken, the device's serial number
+        and the exact time. Pass the file through untouched and you have published all of that. Bmage
+        <strong>removes metadata by default</strong>; you have to ask for it to be kept.
+    </p>
+</div>
 
-<p class="page-intro">
-    A photograph from a phone usually carries the location it was taken, the device's serial number
-    and the exact time. Pass the file through untouched and you have published all of that. Bmage
-    <strong>removes metadata by default</strong>; you have to ask for it to be kept.
-</p>
-
-<div class="demo-section">
-    <h2>See what survives</h2>
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> See what survives</h3>
     <p>
         Drop a photo straight off a phone - or use a generated one that carries a camera, a serial
         number and GPS coordinates. It is exported as a JPEG under each policy, and each export is
@@ -28,15 +29,15 @@
 
     @if (_error is not null)
     {
-        <div class="alert alert-error" role="alert">@_error</div>
+        <div class="bb-note bb-note-danger demo-error" role="alert">@_error</div>
     }
 
     <BmageDropZone Label="Drop a photo here to inspect its metadata" OnFilesSelected="OnFilesSelected" />
-    <div class="sample-row">
-        <button type="button" class="btn" disabled="@(_busy || IsHydrating)" @onclick="UseSample">Use a photo with metadata</button>
+    <div class="bb-toolbar">
+        <button type="button" class="btn btn-secondary" disabled="@(_busy || IsHydrating)" @onclick="UseSample">Use a photo with metadata</button>
         @if (_busy)
         {
-            <span class="working" role="status">Exporting under each policy&hellip;</span>
+            <span class="working" role="status"><span class="bb-spinner" aria-hidden="true"></span>Exporting under each policy&hellip;</span>
         }
     </div>
 
@@ -44,20 +45,20 @@
     {
         @if (_report.Original.Location is { } location)
         {
-            <div class="alert alert-error metadata-warning" role="status">
+            <div class="bb-note bb-note-warn metadata-warning" role="status">
                 This photo records where it was taken (@location). The default policy removes it on export.
             </div>
         }
         else if (_report.Original.IsEmpty)
         {
-            <div class="alert alert-info metadata-warning" role="status">
+            <div class="bb-note metadata-warning" role="status">
                 @_report.Name carries no EXIF metadata, so there is nothing for a policy to remove - try
                 a photo straight from a phone camera, or the generated one.
             </div>
         }
 
-        <div class="table-scroll metadata-report" tabindex="0" role="region" aria-label="Metadata by policy">
-            <table class="data">
+        <div class="bb-scroll metadata-report" tabindex="0" role="region" aria-label="Metadata by policy">
+            <table class="bb-table">
                 <thead>
                     <tr>
                         <th scope="col">Field</th>
@@ -80,15 +81,15 @@
                                 <td>
                                     @if (original is null)
                                     {
-                                        <span class="muted">—</span>
+                                        <span class="bb-muted">—</span>
                                     }
                                     else if (value is null)
                                     {
-                                        <span class="badge badge-neutral">removed</span>
+                                        <span class="bb-badge demo-badge-off">removed</span>
                                     }
                                     else
                                     {
-                                        <span class="badge @(field.Sensitive ? "badge-no" : "badge-yes")">kept</span>
+                                        <span class="bb-badge @(field.Sensitive ? "bb-badge-danger" : "bb-badge-success")">kept</span>
                                     }
                                 </td>
                             }
@@ -97,18 +98,18 @@
                 </tbody>
             </table>
         </div>
-        <p class="small muted">
+        <p class="demo-small bb-muted">
             Read back from the exported bytes, not predicted. A red <em>kept</em> is a field that can
             identify a person or a place.
         </p>
     }
 </div>
 
-<div class="demo-section">
-    <h2>The three policies</h2>
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> The three policies</h3>
     <CodeSnippet Code="@PolicySnippet" Language="C#" Expanded="true" />
-    <div class="table-scroll" tabindex="0" role="region" aria-label="Metadata policies">
-        <table class="ref">
+    <div class="bb-scroll" tabindex="0" role="region" aria-label="Metadata policies">
+        <table class="bb-table">
             <thead>
                 <tr><th scope="col">Policy</th><th scope="col">Keeps</th><th scope="col">Removes</th></tr>
             </thead>
@@ -128,8 +129,8 @@
     </p>
 </div>
 
-<div class="demo-section">
-    <h2>Reading what is there</h2>
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Reading what is there</h3>
     <CodeSnippet Code="@ReadSnippet" Language="C#" Expanded="true" />
     <p>
         The <a href="/headless">Headless API</a> page shows the pattern for warning users: read the
@@ -137,8 +138,8 @@
     </p>
 </div>
 
-<div class="demo-section">
-    <h2>Writing metadata</h2>
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Writing metadata</h3>
     <CodeSnippet Code="@WriteSnippet" Language="C#" Expanded="true" />
     <p>
         <code>ExifValue.FromString</code> writes UTF-8. The EXIF specification calls the type ASCII, but
@@ -147,8 +148,8 @@
     </p>
 </div>
 
-<div class="demo-section">
-    <h2>Orientation</h2>
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Orientation</h3>
     <p>
         Phones do not rotate pixels when you turn the device; they record a rotation flag. An image that
         looks upright in a photo viewer appears sideways on a canvas unless that flag is applied. Bmage
@@ -164,10 +165,10 @@
     </p>
 </div>
 
-<div class="demo-section">
-    <h2>What each format can carry</h2>
-    <div class="table-scroll" tabindex="0" role="region" aria-label="Metadata support by format">
-        <table class="ref">
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> What each format can carry</h3>
+    <div class="bb-scroll" tabindex="0" role="region" aria-label="Metadata support by format">
+        <table class="bb-table">
             <thead>
                 <tr><th scope="col">Format</th><th scope="col">EXIF</th><th scope="col">ICC</th><th scope="col">XMP</th></tr>
             </thead>
@@ -189,9 +190,9 @@
     </p>
 </div>
 
-<div class="demo-section">
-    <h2>A checklist for user uploads</h2>
-    <ol>
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> A checklist for user uploads</h3>
+    <ol class="bb-detail-list">
         <li>Leave the default <code>MetadataPolicy.Remove</code> unless you have a reason.</li>
         <li>If you keep metadata for a gallery, use <code>StripSensitive</code>, not <code>Preserve</code>.</li>
         <li>Tell users what is in their file before they publish it.</li>

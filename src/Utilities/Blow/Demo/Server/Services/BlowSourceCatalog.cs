@@ -287,7 +287,8 @@ public static partial class BlowSourceCatalog
     /// <summary>
     /// What a file is for: an example is one entry of the gallery, a page is one of the hand-written
     /// tours of a feature, the hosting files are the wiring every app needs once, a library file is
-    /// shipped by the package itself, and the rest is what the pages share.
+    /// shipped by the package itself, and the rest is what the pages share. The site's chrome - the
+    /// layouts and the catalog they are driven from - is hosting, not an example.
     /// </summary>
     private static string KindOf(string path)
     {
@@ -297,6 +298,7 @@ public static partial class BlowSourceCatalog
         if (path.StartsWith("Demo/Server/", StringComparison.OrdinalIgnoreCase) ||
             path.StartsWith("Demo/Client/Extensions/", StringComparison.OrdinalIgnoreCase) ||
             path.StartsWith("Demo/Client/Layout/", StringComparison.OrdinalIgnoreCase) ||
+            path.Equals("Demo/Client/DocsCatalog.cs", StringComparison.OrdinalIgnoreCase) ||
             path.Equals("Demo/Client/Program.cs", StringComparison.OrdinalIgnoreCase) ||
             path.Equals("Demo/Client/Routes.razor", StringComparison.OrdinalIgnoreCase) ||
             path.Equals("Demo/Client/_Imports.razor", StringComparison.OrdinalIgnoreCase)) return "Hosting";
@@ -461,7 +463,7 @@ public static partial class BlowSourceCatalog
     [GeneratedRegex(@"<ExampleScaffold\b[^>]*?\bSummary=""(?<text>[^""]*)""", RegexOptions.Singleline)]
     private static partial Regex ScaffoldSummaryRegex();
 
-    [GeneratedRegex(@"<div class=""demo-header"">\s*<h3>.*?</h3>\s*<p[^>]*>(?<text>.*?)</p>", RegexOptions.Singleline)]
+    [GeneratedRegex(@"<div class=""bb-intro"">\s*<h1>.*?</h1>\s*<p[^>]*>(?<text>.*?)</p>", RegexOptions.Singleline)]
     private static partial Regex DemoHeaderRegex();
 
     [GeneratedRegex(@"<PageTitle>(?<text>.*?)</PageTitle>", RegexOptions.Singleline | RegexOptions.IgnoreCase)]

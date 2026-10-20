@@ -1,20 +1,20 @@
 ﻿@page "/examples/multi-flows"
 
-<PageTitle>Multi Flows - bit Blow</PageTitle>
+<PageTitle>Multi Flows · Blow</PageTitle>
 
 <ExampleScaffold Title="Multi Flows"
                  Summary="Two independent BlowCanvas instances on one page, each with its own nodes, edges, viewport and overlays.">
     <div class="multi">
         <div class="multi__pane">
             <BlowCanvas Nodes="_a" Edges="_ea" FitViewOnInit="true">
-                <BlowBackground Variant="BlowBackgroundVariant.Dots" Gap="16" Color="#c7d2fe" />
+                <BlowBackground Variant="BlowBackgroundVariant.Dots" Gap="16" Color="rgba(99, 102, 241, 0.5)" />
                 <BlowControls />
                 <BlowPanel Position="top-left"><strong>Flow A</strong></BlowPanel>
             </BlowCanvas>
         </div>
         <div class="multi__pane">
             <BlowCanvas Nodes="_b" Edges="_eb" FitViewOnInit="true">
-                <BlowBackground Variant="BlowBackgroundVariant.Lines" Gap="20" Color="#bbf7d0" />
+                <BlowBackground Variant="BlowBackgroundVariant.Lines" Gap="20" Color="rgba(34, 197, 94, 0.3)" />
                 <BlowControls />
                 <BlowPanel Position="top-left"><strong>Flow B</strong></BlowPanel>
             </BlowCanvas>
@@ -24,8 +24,15 @@
 
 <style>
     .multi { display:flex; height:100%; }
-    .multi__pane { flex:1; position:relative; border-right:1px solid var(--demo-border); }
+    .multi__pane { flex:1; position:relative; min-width:0; border-right:1px solid var(--bb-border); }
     .multi__pane:last-child { border-right:0; }
+
+    /* On a phone two flows side by side are each a sliver: stack them instead. */
+    @@media (max-width: 640px) {
+        .multi { flex-direction:column; }
+        .multi__pane { border-right:0; border-bottom:1px solid var(--bb-border); }
+        .multi__pane:last-child { border-bottom:0; }
+    }
 </style>
 
 @code {

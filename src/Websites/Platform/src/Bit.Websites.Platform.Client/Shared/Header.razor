@@ -21,7 +21,7 @@
             @* The mouseenter handler is attached only while force-closed is set (it just lifts that
                flag), so the common hover path stays pure CSS with no interop roundtrip or re-render. *@
             <div class="header-link header-ps-btn @(navMenuService.IsProductsRoute ? "header-link--active" : null) @(isProductsMenuOpen ? "open" : null) @(isProductsMenuForceClosed ? "force-closed" : null)"
-                 @onmouseenter="@(isProductsMenuForceClosed ? WrapHandled(HandleProductsMenuMouseEnter) : null)"
+                 @onmouseenter="ProductsMenuMouseEnterCallback"
                  @onkeydown="WrapHandled<KeyboardEventArgs>(HandleProductsMenuKeyDown)">
                 <button type="button"
                         class="header-ps-trigger"
@@ -35,15 +35,36 @@
                     </svg>
                 </button>
                 <div class="header-menu-popup" id="header-products-menu">
-                    @foreach (var column in productMenuColumns)
-                    {
-                        <div class="col">
-                            @foreach (var item in column)
-                            {
-                                @ProductMenuItemTemplate(item, HandleProductMenuItemClick)
-                            }
+                    <div class="col">
+                        @foreach (var item in mainProductMenuItems)
+                        {
+                            @ProductMenuItemTemplate(item, HandleProductMenuItemClick)
+                        }
+                        @* The flyout is positioned against the popup (not this wrapper), so it opens flush
+                           with the popup's top-right corner whatever the trigger's row. *@
+                        <div class="menu-sub @(isUtilitiesMenuOpen ? "open" : null)">
+                            <button type="button"
+                                    class="menu-item menu-sub-trigger"
+                                    aria-haspopup="true"
+                                    aria-controls="header-utilities-menu"
+                                    aria-expanded="@(isUtilitiesMenuOpen ? "true" : "false")"
+                                    @onclick=@WrapHandled(ToggleUtilitiesMenu)>
+                                <div class="menu-item-content">
+                                    <div class="item-title">Utilities</div>
+                                    <div class="item-desc">@utilitiesMenuDescription</div>
+                                </div>
+                                <svg class="menu-sub-chevron" width="14" height="14" viewBox="0 0 24 24" aria-hidden="true">
+                                    <path d="M9 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                                </svg>
+                            </button>
+                            <div class="menu-sub-popup" id="header-utilities-menu">
+                                @foreach (var item in utilityMenuItems)
+                                {
+                                    @ProductMenuItemTemplate(item, HandleProductMenuItemClick)
+                                }
+                            </div>
                         </div>
-                    }
+                    </div>
                 </div>
             </div>
             <a class="header-link @(navMenuService.CurrentUrl == Urls.Demos ? "header-link--active" : null)" href="@Urls.Demos">Demos</a>
@@ -102,10 +123,34 @@
             @if (isMobileProductsOpen)
             {
                 <div class="header-nav-products" id="header-nav-products">
-                    @foreach (var item in productMenuColumns.SelectMany(c => c))
+                    @foreach (var item in mainProductMenuItems)
                     {
                         @ProductMenuItemTemplate(item, ToggleHeaderMenu)
                     }
+                    <div class="header-nav-sub">
+                        <button type="button"
+                                class="menu-item header-nav-utilities-trigger"
+                                aria-controls="@(isMobileUtilitiesOpen ? "header-nav-utilities" : null)"
+                                aria-expanded="@(isMobileUtilitiesOpen ? "true" : "false")"
+                                @onclick=@WrapHandled(ToggleMobileUtilities)>
+                            <div class="menu-item-content">
+                                <div class="item-title">Utilities</div>
+                                <div class="item-desc">@utilitiesMenuDescription</div>
+                            </div>
+                            <svg class="ps-chevron @(isMobileUtilitiesOpen ? "open" : null)" width="12" height="12" viewBox="0 0 24 24" aria-hidden="true">
+                                <path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                            </svg>
+                        </button>
+                        @if (isMobileUtilitiesOpen)
+                        {
+                            <div class="header-nav-utilities" id="header-nav-utilities">
+                                @foreach (var item in utilityMenuItems)
+                                {
+                                    @ProductMenuItemTemplate(item, ToggleHeaderMenu)
+                                }
+                            </div>
+                        }
+                    </div>
                 </div>
             }
         </div>
@@ -117,8 +162,8 @@
 }
 
 @code {
-    // Shared between the desktop popup columns and the flattened mobile list; only the click
-    // behavior differs.
+    // Shared between the desktop popup (and its Utilities flyout) and the mobile list; only the
+    // click behavior differs.
     private RenderFragment ProductMenuItemTemplate(ProductMenuItem item, Func<Task> onClick) =>
         @<text>
             @if (item.Disabled)

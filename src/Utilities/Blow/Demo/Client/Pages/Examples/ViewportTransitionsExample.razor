@@ -1,6 +1,6 @@
 ﻿@page "/examples/viewport-transitions"
 
-<PageTitle>Viewport Transitions - bit Blow</PageTitle>
+<PageTitle>Viewport Transitions · Blow</PageTitle>
 
 <ExampleScaffold Title="Viewport Transitions"
                  Summary="Every viewport helper has an async twin that takes a duration. Jumping between two far-apart parts of a graph loses the reader; a short eased transition tells them which way they travelled. Grabbing the pane mid-flight abandons the transition rather than fighting it.">
@@ -11,10 +11,10 @@
                    @oninput="@(e => SetDuration(e.Value))" />
             <span class="duration">@(_duration == 0 ? "instant" : $"{_duration} ms")</span>
         </label>
-        <button class="btn" @onclick="FlyToStart">Fly to Start</button>
-        <button class="btn" @onclick="FlyToFinish">Fly to Finish</button>
-        <button class="btn" @onclick="FitAll">Fit all</button>
-        <button class="btn" @onclick="ZoomInSlowly">Zoom to 200%</button>
+        <button class="btn btn-secondary" @onclick="FlyToStart">Fly to Start</button>
+        <button class="btn btn-secondary" @onclick="FlyToFinish">Fly to Finish</button>
+        <button class="btn btn-secondary" @onclick="FitAll">Fit all</button>
+        <button class="btn btn-secondary" @onclick="ZoomInSlowly">Zoom to 200%</button>
         <span class="state">@_state</span>
     </Toolbar>
     <ChildContent>
@@ -40,7 +40,7 @@
 
 <style>
     .duration { display: inline-block; min-width: 5rem; text-align: right; }
-    .state { margin-left: auto; font-size: 12px; color: #6b7280; }
+    .state { margin-left: auto; font-size: 12px; color: var(--bb-text-soft); }
     .hint {
         max-width: 230px;
         padding: 6px 10px;

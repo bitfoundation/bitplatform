@@ -1,0 +1,162 @@
+﻿@page "/getting-started"
+
+<PageTitle>Getting started · Bink</PageTitle>
+
+<div class="bb-intro">
+    <h1>Getting started</h1>
+    <p class="bb-subtitle">
+        One package and one tag: there are no services to register and no stylesheet to link, because the
+        package's Blazor initializer adds the canvas stylesheet by itself. Everything else - brushes, tools,
+        saving and export - is plain C# on the component and its document.
+    </p>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Install</h3>
+    <p class="bb-card-desc">
+        In a Blazor Web App the package belongs in the <code>.Client</code> project, so the component's assembly
+        is downloaded to the browser; the server project gets it transitively and prerenders the same pages.
+    </p>
+    <pre class="bb-code">dotnet add package Bit.Bink</pre>
+    <p class="bb-card-desc">
+        Then the namespace, in <code>_Imports.razor</code>. Points and sizes in the API are
+        <code>System.Numerics.Vector2</code>, so code that builds documents usually wants that namespace too:
+    </p>
+    <pre class="bb-code"><span class="k">@@using</span> Bit.Bink
+<span class="k">@@using</span> System.Numerics</pre>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> The stylesheet</h3>
+    <p class="bb-card-desc">
+        The component's stylesheet, <code>_content/Bit.Bink/bit-bink.css</code>, is injected when the app starts by
+        the package's initializer (<code>Bit.Bink.lib.module.js</code>). It is layout only - the stacked canvases,
+        the input surface, the text editor - and leaves the look of the surrounding UI to you. To control it
+        yourself, link it in the host page and the automatic injection stands down:
+    </p>
+    <pre class="bb-code">&lt;<span class="k">link</span> rel=<span class="s">"stylesheet"</span> href=<span class="s">"_content/Bit.Bink/bit-bink.css"</span> /&gt;</pre>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> A first canvas</h3>
+    <p class="bb-card-desc">
+        <code>&lt;BinkCanvas Height="400px" /&gt;</code> is already a working canvas: pointer and stylus input,
+        pressure-aware ink, and undo and redo on the keyboard. Touch draws once <code>EnableTouchGestures</code> is
+        set. Bind <code>DocumentChanged</code> or <code>HistoryChanged</code> whenever your own markup reads canvas
+        state such as <code>CurrentDocument.IsEmpty</code> or <code>History.CanUndo</code>: a child component cannot
+        re-render its parent by itself, and drawing never re-renders anything.
+    </p>
+    <pre class="bb-code">&lt;<span class="k">BinkCanvas</span> @@ref=<span class="s">"_canvas"</span> Height=<span class="s">"260px"</span> EnableTouchGestures=<span class="s">"true"</span>
+            DocumentChanged=<span class="s">"() =&gt; StateHasChanged()"</span> /&gt;
+
+&lt;<span class="k">button</span> @@onclick=<span class="s">"() =&gt; _canvas!.Undo()"</span>&gt;Undo&lt;/<span class="k">button</span>&gt;
+&lt;<span class="k">button</span> @@onclick=<span class="s">"() =&gt; _canvas!.Clear()"</span> disabled=<span class="s">"@@IsEmpty"</span>&gt;Clear&lt;/<span class="k">button</span>&gt;
+
+<span class="k">@@code</span> {
+    <span class="k">private</span> BinkCanvas? _canvas;
+
+    <span class="k">private bool</span> IsEmpty =&gt; _canvas?.CurrentDocument.IsEmpty ?? <span class="k">true</span>;
+}</pre>
+
+    <div class="bb-demo bink-editor">
+        <div class="bb-toolbar bink-toolbar">
+            <span class="bb-demo-label">Live</span>
+            <span class="bb-spacer"></span>
+            <button type="button" class="btn btn-secondary" disabled="@(_canvas is not { History.CanUndo: true })" @onclick="() => _canvas?.Undo()">Undo</button>
+            <button type="button" class="btn btn-secondary bink-danger" disabled="@IsEmpty" @onclick="() => _canvas?.Clear()">Clear</button>
+        </div>
+        <div class="bink-surface">
+            <BinkCanvas @ref="_canvas" Height="260px" EnableTouchGestures="true" AriaLabel="First canvas"
+                        DocumentChanged="() => StateHasChanged()"
+                        HistoryChanged="() => StateHasChanged()" />
+        </div>
+        <CanvasStatus Canvas="_canvas" />
+    </div>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Brushes and tools</h3>
+    <p class="bb-card-desc">
+        <code>Brush</code> decides how ink looks and <code>Tool</code> what pointer input does. The built-in brushes
+        are <code>BinkPenBrush</code>, <code>BinkPencilBrush</code>, <code>BinkMarkerBrush</code>,
+        <code>BinkHighlighterBrush</code> and <code>BinkPixelEraserBrush</code>; the tools are
+        <code>BinkDrawTool</code>, <code>BinkEraserTool</code>, <code>BinkSelectTool</code>,
+        <code>BinkShapeTool</code>, <code>BinkTextTool</code> and <code>BinkPanTool</code>. Brushes are immutable
+        records, so a variant is derived with <code>with</code>.
+    </p>
+    <pre class="bb-code">&lt;<span class="k">BinkCanvas</span> Tool=<span class="s">"_tool"</span> Brush=<span class="s">"_brush"</span> Height=<span class="s">"400px"</span> /&gt;
+
+<span class="k">@@code</span> {
+    <span class="k">private</span> IBinkTool _tool = <span class="k">new</span> BinkDrawTool();
+    <span class="k">private</span> BinkBrush _brush = <span class="k">new</span> BinkPenBrush { Color = BinkColor.Parse(<span class="s">"#1d4ed8"</span>), Width = 5f };
+
+    <span class="k">private void</span> UseRed() =&gt; _brush = _brush <span class="k">with</span> { Color = BinkColor.Parse(<span class="s">"#dc2626"</span>) };
+    <span class="k">private void</span> UseEraser() =&gt; _tool = <span class="k">new</span> BinkEraserTool { Mode = BinkEraserMode.Stroke, Radius = 12f };
+    <span class="k">private void</span> UseArrow() =&gt; _tool = <span class="k">new</span> BinkShapeTool(BinkShapeKind.Arrow);
+}</pre>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Render modes</h3>
+    <p class="bb-card-desc">
+        The same component works in every hosting model; what differs is where the engine runs, and so what
+        happens between a pen moving and ink appearing. This site runs on <code>InteractiveWebAssembly</code>.
+    </p>
+    <div class="bb-scroll">
+        <table class="bb-table">
+            <thead>
+                <tr><th>Hosting model</th><th>Where the engine runs, and what to know</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td class="bb-table-key">WebAssembly</td>
+                    <td>In the browser - the model the library is designed for. The command buffer reaches JavaScript as a view over managed memory, so a redraw is one call with no serialization; <code>UsesFastRenderPath</code> reports it.</td>
+                </tr>
+                <tr>
+                    <td class="bb-table-key">Server</td>
+                    <td>On the server: input travels over the circuit once per animation frame, and <code>WetInk</code> (on by default) draws a provisional trail while a batch is in flight.</td>
+                </tr>
+                <tr>
+                    <td class="bb-table-key">Web App</td>
+                    <td>Mark the page interactive - <code>@@rendermode InteractiveWebAssembly</code> for drawing pages. Prerendering is handled: the canvas renders inert markup and attaches when interactivity arrives.</td>
+                </tr>
+                <tr>
+                    <td class="bb-table-key">Hybrid</td>
+                    <td>In-process in MAUI, WPF or Windows Forms, with the canvas in the embedded WebView over the standard <code>IJSRuntime</code> path.</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> How it fits together</h3>
+    <p class="bb-card-desc">
+        One rendering path serves the screen, SVG export and PNG export, so an exported file always matches what was
+        drawn. Pointer input never triggers a Blazor render: samples arrive once per frame, the active tool processes
+        them, and only the affected canvas layer is redrawn.
+    </p>
+    <pre class="bb-code">Pointer events (browser)
+  -&gt; batched once per animation frame
+  -&gt; BinkStrokeBuilder        spacing filter, streamline smoothing, pressure
+  -&gt; BinkStroke + BinkBrush   immutable vector model
+  -&gt; BinkDrawingOperation     the unit of undo, diffing and collaboration
+  -&gt; BinkDocument             layers of elements
+  -&gt; IBinkRenderContext       canvas commands, SVG, or the built-in rasterizer</pre>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Where to go next</h3>
+    <div class="bb-try">
+        <a href="signature" class="btn btn-outline">A signature field →</a>
+        <a href="whiteboard" class="btn btn-outline">Every tool at once →</a>
+        <a href="serialization" class="btn btn-outline">Save and load →</a>
+        <a href="collaboration" class="btn btn-outline">Draw together →</a>
+    </div>
+</div>
+
+@code {
+    private BinkCanvas? _canvas;
+
+    private bool IsEmpty => _canvas?.CurrentDocument.IsEmpty ?? true;
+}

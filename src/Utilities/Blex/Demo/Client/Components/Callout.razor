@@ -1,12 +1,13 @@
-﻿<div class="callout callout--@Kind.ToString().ToLowerInvariant()">
-    <div class="callout__icon" aria-hidden="true">@Icon</div>
-    <div class="callout__body">
-        @if (!string.IsNullOrEmpty(Title))
-        {
-            <p class="callout__title">@Title</p>
-        }
-        @ChildContent
-    </div>
+﻿@*
+    An aside in the prose, drawn as the site kit's bb-note (Fluent 2's MessageBar): the tone picks the
+    note's color, and the optional title is its bold lead-in.
+*@
+<div class="@NoteClass" role="note">
+    @if (!string.IsNullOrEmpty(Title))
+    {
+        <strong class="demo-note-title">@Title</strong>
+    }
+    @ChildContent
 </div>
 
 @code {
@@ -35,11 +36,11 @@
     /// <summary>The callout body.</summary>
     [Parameter] public RenderFragment? ChildContent { get; set; }
 
-    private string Icon => Kind switch
+    private string NoteClass => Kind switch
     {
-        CalloutKind.Tip => "★",
-        CalloutKind.Warning => "!",
-        CalloutKind.Gotcha => "⚠",
-        _ => "i",
+        CalloutKind.Tip => "bb-note bb-note-success",
+        CalloutKind.Warning => "bb-note bb-note-warn",
+        CalloutKind.Gotcha => "bb-note bb-note-danger",
+        _ => "bb-note",
     };
 }

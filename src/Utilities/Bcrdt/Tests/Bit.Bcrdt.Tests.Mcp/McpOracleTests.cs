@@ -337,7 +337,9 @@ public partial class McpOracleTests
     public void Every_demo_source_file_is_embedded()
     {
         // The pages, the shared collaboration code and the hosting are what the index promises; a new page
-        // that the .csproj's patterns miss would silently be absent from every answer.
+        // that the .csproj's patterns miss would silently be absent from every answer. The site chrome - the
+        // shared Layout/ components and the DocsCatalog.cs they are driven by - is left out on purpose, with
+        // the MCP and not-found pages.
         var client = FindDemoDirectory("Client");
         if (client is null) Assert.Inconclusive("The demo's sources are not next to this build.");
 
@@ -345,7 +347,8 @@ public partial class McpOracleTests
             .Where(path => path.EndsWith(".razor", StringComparison.Ordinal) || path.EndsWith(".cs", StringComparison.Ordinal))
             .Select(path => $"Demo/Client/{Path.GetRelativePath(client, path).Replace('\\', '/')}")
             .Where(path => path.Contains("/bin/", StringComparison.Ordinal) is false && path.Contains("/obj/", StringComparison.Ordinal) is false)
-            .Where(path => path is not "Demo/Client/Pages/McpServer.razor" and not "Demo/Client/Pages/NotFound.razor")
+            .Where(path => path.StartsWith("Demo/Client/Layout/", StringComparison.Ordinal) is false)
+            .Where(path => path is not "Demo/Client/Pages/McpServer.razor" and not "Demo/Client/Pages/NotFound.razor" and not "Demo/Client/DocsCatalog.cs")
             .ToArray();
 
         var embedded = BcrdtSourceCatalog.SourceFiles.Select(file => file.Path).Where(path => path.StartsWith("Demo/Client/", StringComparison.Ordinal)).ToArray();
@@ -446,12 +449,16 @@ public partial class McpOracleTests
     }
 
     [TestMethod]
-    public void The_demos_nav_menu_links_the_mcp_page()
+    public void The_demos_navigation_links_the_mcp_page()
     {
-        var menu = McpSurfaceTests.FindRepositoryFile("Demo", "Client", "Layout", "NavMenu.razor");
-        if (menu is null) Assert.Inconclusive("The demo's NavMenu.razor is not next to this build.");
+        // The header's primary links and the docs nav panel are both built from the demo's catalog.
+        var catalog = McpSurfaceTests.FindRepositoryFile("Demo", "Client", "DocsCatalog.cs");
+        if (catalog is null) Assert.Inconclusive("The demo's DocsCatalog.cs is not next to this build.");
 
-        Assert.Contains("<NavLink href=\"mcp-server\">", File.ReadAllText(menu));
+        var source = File.ReadAllText(catalog);
+
+        Assert.Contains("new(\"/mcp-server\", \"MCP server\")", source, "the header does not link the MCP page");
+        Assert.Contains("typeof(McpServer)", source, "the docs nav panel does not list the MCP page");
     }
 
     private static string? FindDemoDirectory(string name)

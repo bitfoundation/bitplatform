@@ -272,6 +272,9 @@ public class McpToolTests
         Assert.DoesNotContain("Error.razor", index);
         Assert.DoesNotContain("CodeHighlighter.cs", index);
         Assert.DoesNotContain("Icon.razor", index);
+        Assert.DoesNotContain("Demo/Client/Layout/", index, "The header, docs shell, palette and footer are the shared site kit, not BlazeDb code.");
+        Assert.DoesNotContain("DocsCatalog.cs", index);
+        Assert.Contains("Demo/Client/Pages/GettingStarted.razor", index);
     }
 
     [TestMethod]

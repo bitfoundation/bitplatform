@@ -13,9 +13,12 @@ public sealed class DemoNoiseFilter : IBelemetryProcessor
     private static readonly string[] _noise =
     [
         .. DemoTelemetry.SelfUrls,
-        "/_framework/", "/_content/", "/_blazor", "/css/", "/js/", "/images/", "/favicon", "/icon-",
-        "/.well-known/", "/_vs/", "/browserLink",
+        "/_framework/", "/_content/", "/_blazor", "/images/", "/.well-known/", "/_vs/", "/browserLink",
     ];
+
+    // The site's stylesheets, scripts and icons sit at the root (app.css, site.js, favicon.ico, ...), and
+    // MapStaticAssets serves them under fingerprinted names, so they are told apart by their extension.
+    private static readonly string[] _staticFiles = [".css", ".js", ".map", ".svg", ".png", ".ico", ".woff2"];
 
     /// <inheritdoc />
     public bool OnSpan(BelemetrySpan span)
@@ -30,6 +33,15 @@ public sealed class DemoNoiseFilter : IBelemetryProcessor
         foreach (var noise in _noise)
         {
             if (url.Contains(noise, StringComparison.OrdinalIgnoreCase)) return false;
+        }
+
+        var path = url.AsSpan();
+        var end = path.IndexOfAny('?', '#');
+        if (end >= 0) path = path[..end];
+
+        foreach (var extension in _staticFiles)
+        {
+            if (path.EndsWith(extension, StringComparison.OrdinalIgnoreCase)) return false;
         }
 
         return true;

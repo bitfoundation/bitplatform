@@ -1,11 +1,13 @@
-﻿@* A colour picker made of real toggle buttons, so the choice is announced by name and reachable by keyboard. *@
+﻿@* A colour picker made of real toggle buttons, so the choice is announced by name and reachable by keyboard.
+   The colours are ink - content, not chrome - so each swatch is painted with the colour itself and the ring
+   around it, drawn from the theme's tokens (demo.css), is what keeps a black ink visible on a dark toolbar. *@
 
-<div class="toolbar-group" role="group" aria-label="@Label">
+<div class="bink-swatches" role="group" aria-label="@Label">
     @foreach (string color in Colors)
     {
         bool active = string.Equals(color, Value, StringComparison.OrdinalIgnoreCase);
         <button type="button"
-                class="swatch @(active ? "active" : null)"
+                class="bink-swatch"
                 style="background:@color"
                 title="@NameOf(color)"
                 aria-label="@(Prefix is null ? NameOf(color) : $"{Prefix} {NameOf(color)}")"

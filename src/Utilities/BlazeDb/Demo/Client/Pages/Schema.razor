@@ -1,20 +1,20 @@
 ﻿@page "/schema"
 @inject DemoDbService Db
 
-<PageTitle>Schema &amp; codegen - BlazeDb</PageTitle>
+<PageTitle>Schema &amp; codegen · BlazeDb</PageTitle>
 
-<PageHeader Eyebrow="Engine" IconName="schema" Title="Schema comes from your types"
+<PageHeader Eyebrow="Schema & codegen" Title="Schema comes from your types"
             Lead="A Roslyn incremental generator turns an annotated partial class into a table descriptor, binary serializers, a key extractor and index definitions - all at compile time, so nothing is reflected at runtime.">
-    <span class="chip"><Icon Name="cpu" /> Trimming &amp; AOT safe</span>
-    <span class="chip"><Icon Name="index" /> @TodoEntry.Table.Indexes.Count index definitions generated</span>
-    <span class="chip"><Icon Name="code" /> 10 compile-time diagnostics</span>
+    <span class="bb-badge bd-badge-neutral">Trimming &amp; AOT safe</span>
+    <span class="bb-badge bd-badge-neutral">@TodoEntry.Table.Indexes.Count index definitions generated</span>
+    <span class="bb-badge bd-badge-neutral">@DiagnosticsCatalog.All.Count compile-time diagnostics</span>
 </PageHeader>
 
-<Section Title="The model this whole site runs on" IconName="code"
+<Section Title="The model this whole site runs on"
          Lead="One class covers every property kind the generator supports, both index kinds, a custom index name and an ignored property.">
-    <div class="grid grid-2">
+    <div class="bb-flex">
         <CodeBlock Title="Data/DemoModels.cs" Code="@ModelSource" />
-        <div class="flex-col gap-lg">
+        <div class="bb-flex">
             <CodeBlock Title="Generated: TodoEntry.BlazeDb.g.cs (shape)" Code="@GeneratedSource" />
             <Callout Tone="accent" Title="Why a generator rather than reflection?">
                 Emitting the reader, writer and key extractor as ordinary C# means the wasm linker can
@@ -24,11 +24,11 @@
     </div>
 </Section>
 
-<Section Title="The generated descriptor, inspected live" IconName="database"
+<Section Title="The generated descriptor, inspected live"
          Lead="These values are read from the actual static members the generator produced for this build.">
-    <div class="grid grid-2">
+    <div class="bb-flex">
         <Panel Title="TodoEntry.Table" IconName="layers" Sub="the generated descriptor">
-            <dl class="kv">
+            <dl class="bb-params">
                 <dt>Name</dt>
                 <dd>"@TodoEntry.Table.Name"</dd>
                 <dt>Key type</dt>
@@ -45,8 +45,8 @@
         </Panel>
 
         <Panel Title="TodoEntry.Indexes" IconName="index" Sub="one static field per indexed property">
-            <div class="table-wrap">
-                <table class="data">
+            <div class="bb-scroll">
+                <table class="bb-table">
                     <thead>
                         <tr><th>Member</th><th>Kind</th><th>Runtime type</th></tr>
                     </thead>
@@ -55,78 +55,78 @@
                         {
                             var name = index.GetType().Name.StartsWith("Hash") ? "hash" : "ordered";
                             <tr>
-                                <td class="mono strong">@index.Name</td>
-                                <td><span class="badge @(name == "hash" ? "info" : "accent")">@name</span></td>
-                                <td class="mono">@TypeName(index.GetType())</td>
+                                <td class="bd-strong">@index.Name</td>
+                                <td><span class="@Tones.Badge(name == "hash" ? "info" : "accent")">@name</span></td>
+                                <td class="bb-mono">@TypeName(index.GetType())</td>
                             </tr>
                         }
                     </tbody>
                 </table>
             </div>
-            <p class="small muted mt-2">
+            <p class="bb-muted">
                 <code>ByPriority</code> is named through <code>[BlazeDbIndex(Name = "ByPriority")]</code>; the
                 others default to their property name.
             </p>
         </Panel>
     </div>
 
-    <div class="grid grid-3 mt-2">
-        <StatTile Label="todos rows" IconName="database" Value="@RowCount(TodoEntry.Table.Name)" Note="live table" />
-        <StatTile Label="settings rows" IconName="key" Value="@(Db.IsOpen ? Db.Settings.Count.ToString() : "-")" Note="string keys, explicit field numbers" />
-        <StatTile Label="metrics rows" IconName="gauge" Value="@(_metrics?.Count.ToString() ?? "-")" Note="hand-written descriptor" />
+    <div class="bb-stats">
+        <StatTile Label="todos rows" Value="@RowCount(TodoEntry.Table.Name)" Note="live table" />
+        <StatTile Label="settings rows" Value="@(Db.IsOpen ? Db.Settings.Count.ToString() : "-")" Note="string keys, explicit field numbers" />
+        <StatTile Label="metrics rows" Value="@(_metrics?.Count.ToString() ?? "-")" Note="hand-written descriptor" />
     </div>
 </Section>
 
-<Section Title="Attributes" IconName="tag" Lead="Eight attributes describe everything the engine needs.">
+<Section Title="Attributes" Lead="Eight attributes describe everything the engine needs.">
     <Panel Flush="true">
-        <div class="table-wrap">
-            <table class="data">
+        <div class="bb-scroll">
+            <table class="bb-table">
                 <thead>
                     <tr><th>Attribute</th><th>Target</th><th>Effect</th></tr>
                 </thead>
                 <tbody>
                     <tr>
-                        <td class="mono strong">[BlazeDbTable(name?)]</td>
+                        <td class="bd-strong">[BlazeDbTable(name?)]</td>
                         <td>class · struct</td>
                         <td>Marks a <code>partial</code> type as a table. The name defaults to the type name and becomes the persisted table identity.</td>
                     </tr>
                     <tr>
-                        <td class="mono strong">[BlazeDbKey]</td>
+                        <td class="bd-strong">[BlazeDbKey]</td>
                         <td>property</td>
                         <td>Exactly one per table. Must be a non-nullable scalar - <code>int?</code>, <code>string?</code> and <code>byte[]</code> are rejected.</td>
                     </tr>
                     <tr>
-                        <td class="mono strong">[BlazeDbIndex]</td>
+                        <td class="bd-strong">[BlazeDbIndex]</td>
                         <td>property</td>
                         <td>Hash equality index for O(1) <code>Lookup</code> and <code>CountBy</code>. Optional <code>Name</code>.</td>
                     </tr>
                     <tr>
-                        <td class="mono strong">[BlazeDbOrderedIndex]</td>
+                        <td class="bd-strong">[BlazeDbOrderedIndex]</td>
                         <td>property</td>
                         <td>Ordered index for <code>OrderBy</code> and <code>Range</code>. A property may carry both index attributes.</td>
                     </tr>
                     <tr>
-                        <td class="mono strong">[BlazeDbField(n)]</td>
+                        <td class="bd-strong">[BlazeDbField(n)]</td>
                         <td>property</td>
                         <td>Pins the wire field number. Without it numbers follow declaration order, so reordering properties would break existing data.</td>
                     </tr>
                     <tr>
-                        <td class="mono strong">[BlazeDbIgnore]</td>
+                        <td class="bd-strong">[BlazeDbIgnore]</td>
                         <td>property</td>
                         <td>Excluded from serialization entirely. Still a normal property in memory.</td>
                     </tr>
                     <tr>
-                        <td class="mono strong">[BlazeDbIndex(Unique = true)]</td>
+                        <td class="bd-strong">[BlazeDbIndex(Unique = true)]</td>
                         <td>property</td>
                         <td>Either index attribute can be unique: a write that would duplicate a non-null value throws <code>BlazeDbUniqueConstraintViolationException</code> before anything is changed.</td>
                     </tr>
                     <tr>
-                        <td class="mono strong">[BlazeDbCompoundIndex(name, props…)]</td>
+                        <td class="bd-strong">[BlazeDbCompoundIndex(name, props…)]</td>
                         <td>class · struct</td>
                         <td>One hash index over several properties, keyed by their value tuple, so a filter on all of them is a single lookup. Repeatable; optional <code>Unique</code>.</td>
                     </tr>
                     <tr>
-                        <td class="mono strong">[BlazeDbCompoundOrderedIndex(name, props…)]</td>
+                        <td class="bd-strong">[BlazeDbCompoundOrderedIndex(name, props…)]</td>
                         <td>class · struct</td>
                         <td>The ordered equivalent: rows sort by the tuple, so a range over a leading-property prefix is one contiguous scan.</td>
                     </tr>
@@ -142,35 +142,35 @@
     </Callout>
 </Section>
 
-<Section Title="Supported property types" IconName="binary"
+<Section Title="Supported property types"
          Lead="Anything in this table can be a column. Index keys may be any supported scalar; collections cannot be indexed.">
-    <div class="grid grid-2">
+    <div class="bb-flex">
         <Panel Title="Scalars" IconName="check" Flush="true">
-            <div class="table-wrap">
-                <table class="data">
+            <div class="bb-scroll">
+                <table class="bb-table">
                     <thead><tr><th>C# type</th><th>Encoding</th></tr></thead>
                     <tbody>
-                        <tr><td class="mono">bool</td><td class="mono">varint</td></tr>
-                        <tr><td class="mono">sbyte · short · int · long</td><td class="mono">zig-zag varint</td></tr>
-                        <tr><td class="mono">byte · ushort · uint · ulong · char</td><td class="mono">varint</td></tr>
-                        <tr><td class="mono">float</td><td class="mono">fixed32</td></tr>
-                        <tr><td class="mono">double</td><td class="mono">fixed64</td></tr>
-                        <tr><td class="mono">decimal</td><td class="mono">length-delimited</td></tr>
-                        <tr><td class="mono">string</td><td class="mono">length-delimited UTF-8</td></tr>
-                        <tr><td class="mono">Guid</td><td class="mono">length-delimited, 16 bytes</td></tr>
-                        <tr><td class="mono">DateTime</td><td class="mono">fixed64, Kind preserved</td></tr>
-                        <tr><td class="mono">DateTimeOffset</td><td class="mono">length-delimited, 16 bytes</td></tr>
-                        <tr><td class="mono">TimeSpan</td><td class="mono">fixed64 ticks</td></tr>
-                        <tr><td class="mono">any enum</td><td class="mono">varint</td></tr>
-                        <tr><td class="mono">byte[]</td><td class="mono">length-delimited blob</td></tr>
+                        <tr><td class="bb-mono">bool</td><td class="bb-mono">varint</td></tr>
+                        <tr><td class="bb-mono">sbyte · short · int · long</td><td class="bb-mono">zig-zag varint</td></tr>
+                        <tr><td class="bb-mono">byte · ushort · uint · ulong · char</td><td class="bb-mono">varint</td></tr>
+                        <tr><td class="bb-mono">float</td><td class="bb-mono">fixed32</td></tr>
+                        <tr><td class="bb-mono">double</td><td class="bb-mono">fixed64</td></tr>
+                        <tr><td class="bb-mono">decimal</td><td class="bb-mono">length-delimited</td></tr>
+                        <tr><td class="bb-mono">string</td><td class="bb-mono">length-delimited UTF-8</td></tr>
+                        <tr><td class="bb-mono">Guid</td><td class="bb-mono">length-delimited, 16 bytes</td></tr>
+                        <tr><td class="bb-mono">DateTime</td><td class="bb-mono">fixed64, Kind preserved</td></tr>
+                        <tr><td class="bb-mono">DateTimeOffset</td><td class="bb-mono">length-delimited, 16 bytes</td></tr>
+                        <tr><td class="bb-mono">TimeSpan</td><td class="bb-mono">fixed64 ticks</td></tr>
+                        <tr><td class="bb-mono">any enum</td><td class="bb-mono">varint</td></tr>
+                        <tr><td class="bb-mono">byte[]</td><td class="bb-mono">length-delimited blob</td></tr>
                     </tbody>
                 </table>
             </div>
         </Panel>
 
-        <div class="flex-col gap-lg">
+        <div class="bb-flex">
             <Panel Title="Nullable and repeated" IconName="layers">
-                <ul class="small">
+                <ul class="bb-detail-list">
                     <li><code>T?</code> for any supported value scalar - omitted from the wire when null.</li>
                     <li><code>string?</code> - omitted when null.</li>
                     <li><code>T[]</code> and <code>List&lt;T&gt;</code> of any supported scalar - written as repeated tags.</li>
@@ -184,7 +184,7 @@
             </Panel>
 
             <Panel Title="Not supported" IconName="alert">
-                <ul class="small">
+                <ul class="bb-detail-list">
                     <li>Nested or complex property types (another class, struct or record).</li>
                     <li><code>Dictionary&lt;,&gt;</code>, <code>HashSet&lt;T&gt;</code>, <code>IEnumerable&lt;T&gt;</code>.</li>
                     <li><code>byte[]</code> as a collection element - <code>List&lt;byte[]&gt;</code> is out.</li>
@@ -193,7 +193,7 @@
                     <li>Properties without both a getter and a setter - silently skipped.</li>
                     <li>Indexing a collection property.</li>
                 </ul>
-                <p class="small muted mb-0">
+                <p class="bb-muted">
                     Everything in this list is a compile error or a deliberate omission, never a
                     silent runtime failure.
                 </p>
@@ -202,11 +202,11 @@
     </div>
 </Section>
 
-<Section Title="Generator diagnostics" IconName="alert"
+<Section Title="Generator diagnostics"
          Lead="Misuse is caught at build time, on the attribute or property at fault. These are the diagnostics the generator can report.">
     <Panel Flush="true">
-        <div class="table-wrap">
-            <table class="data">
+        <div class="bb-scroll">
+            <table class="bb-table">
                 <thead>
                     <tr><th>ID</th><th>Meaning</th><th>Triggered by</th></tr>
                 </thead>
@@ -214,9 +214,9 @@
                     @foreach (var diagnostic in DiagnosticsCatalog.All)
                     {
                         <tr>
-                            <td class="mono strong">@diagnostic.Code @(diagnostic.IsError ? null : "(warning)")</td>
+                            <td class="bd-strong">@diagnostic.Code @(diagnostic.IsError ? null : "(warning)")</td>
                             <td>@diagnostic.Title</td>
-                            <td class="mono">@diagnostic.Trigger</td>
+                            <td class="bb-mono">@diagnostic.Trigger</td>
                         </tr>
                     }
                 </tbody>
@@ -230,43 +230,43 @@
     </Callout>
 </Section>
 
-<Section Title="The generator is optional" IconName="key"
+<Section Title="The generator is optional"
          Lead="A BlazeDbTableDescriptor is a plain object. Write one by hand and positional records, custom comparers and computed keys all become available.">
-    <div class="grid grid-2">
+    <div class="bb-flex">
         <CodeBlock Title="Hand-written descriptor" Code="@ManualSource" />
 
         <Panel Title="metrics - live, hand-written" IconName="gauge">
             <Actions>
-                <button class="btn btn-sm" @onclick="AddMetric"><Icon Name="plus" /> Insert</button>
+                <button type="button" class="btn btn-secondary" @onclick="AddMetric"><Icon Name="plus" /> Insert</button>
             </Actions>
             <ChildContent>
                 @if (_metrics is null)
                 {
-                    <div class="empty">Opening…</div>
+                    <div class="bb-empty">Opening…</div>
                 }
                 else if (_metricRows.Count == 0)
                 {
-                    <div class="empty"><Icon Name="gauge" /><div>No metrics yet - insert one.</div></div>
+                    <div class="bb-empty">No metrics yet - insert one.</div>
                 }
                 else
                 {
-                    <div class="table-wrap">
-                        <table class="data">
-                            <thead><tr><th>Id</th><th>Name</th><th class="num">Value</th><th>At</th></tr></thead>
+                    <div class="bb-scroll">
+                        <table class="bb-table">
+                            <thead><tr><th>Id</th><th>Name</th><th class="bd-num">Value</th><th>At</th></tr></thead>
                             <tbody>
                                 @foreach (var metric in _metricRows)
                                 {
                                     <tr>
-                                        <td class="mono">@metric.Id</td>
-                                        <td class="mono strong">@metric.Name</td>
-                                        <td class="num mono">@metric.Value.ToString("0.000")</td>
-                                        <td class="mono tiny">@metric.At.ToLocalTime().ToString("HH:mm:ss")</td>
+                                        <td class="bb-mono">@metric.Id</td>
+                                        <td class="bd-strong">@metric.Name</td>
+                                        <td class="bd-num">@metric.Value.ToString("0.000")</td>
+                                        <td class="bb-mono bd-small">@metric.At.ToLocalTime().ToString("HH:mm:ss")</td>
                                     </tr>
                                 }
                             </tbody>
                         </table>
                     </div>
-                    <div class="api-call mt-2">@_metricNote</div>
+                    <div class="bb-log bd-out">@_metricNote</div>
                 }
             </ChildContent>
         </Panel>

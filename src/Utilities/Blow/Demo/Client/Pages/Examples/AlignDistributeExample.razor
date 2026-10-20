@@ -1,27 +1,27 @@
 ﻿@page "/examples/align-distribute"
-<PageTitle>Align &amp; Distribute - bit Blow</PageTitle>
+<PageTitle>Align &amp; Distribute · Blow</PageTitle>
 
 <ExampleScaffold Title="Align &amp; Distribute"
                  Summary="Select two or more nodes - shift-drag a box round them, or shift-click them one at a time - and line them up or space them out. This is the tidy-up pass every drawing tool has, and it writes nothing but Node.Position, so it composes with undo, extents and sub-flows.">
     <Toolbar>
         <span class="group-label">Align</span>
-        <button class="btn" disabled="@TooFew" @onclick="() => Align(BlowAlignEdge.Left)" title="Align left edges">⇤</button>
-        <button class="btn" disabled="@TooFew" @onclick="() => Align(BlowAlignEdge.CenterX)" title="Centre horizontally">⇹</button>
-        <button class="btn" disabled="@TooFew" @onclick="() => Align(BlowAlignEdge.Right)" title="Align right edges">⇥</button>
-        <button class="btn" disabled="@TooFew" @onclick="() => Align(BlowAlignEdge.Top)" title="Align top edges">⤒</button>
-        <button class="btn" disabled="@TooFew" @onclick="() => Align(BlowAlignEdge.CenterY)" title="Centre vertically">⇳</button>
-        <button class="btn" disabled="@TooFew" @onclick="() => Align(BlowAlignEdge.Bottom)" title="Align bottom edges">⤓</button>
+        <button class="btn btn-secondary" disabled="@TooFew" @onclick="() => Align(BlowAlignEdge.Left)" title="Align left edges">⇤</button>
+        <button class="btn btn-secondary" disabled="@TooFew" @onclick="() => Align(BlowAlignEdge.CenterX)" title="Centre horizontally">⇹</button>
+        <button class="btn btn-secondary" disabled="@TooFew" @onclick="() => Align(BlowAlignEdge.Right)" title="Align right edges">⇥</button>
+        <button class="btn btn-secondary" disabled="@TooFew" @onclick="() => Align(BlowAlignEdge.Top)" title="Align top edges">⤒</button>
+        <button class="btn btn-secondary" disabled="@TooFew" @onclick="() => Align(BlowAlignEdge.CenterY)" title="Centre vertically">⇳</button>
+        <button class="btn btn-secondary" disabled="@TooFew" @onclick="() => Align(BlowAlignEdge.Bottom)" title="Align bottom edges">⤓</button>
 
         <span class="group-label">Distribute</span>
-        <button class="btn" disabled="@(_selected < 3)" @onclick="() => Distribute(true)">Horizontally</button>
-        <button class="btn" disabled="@(_selected < 3)" @onclick="() => Distribute(false)">Vertically</button>
+        <button class="btn btn-secondary" disabled="@(_selected < 3)" @onclick="() => Distribute(true)">Horizontally</button>
+        <button class="btn btn-secondary" disabled="@(_selected < 3)" @onclick="() => Distribute(false)">Vertically</button>
 
         <span class="group-label">Gap</span>
-        <button class="btn" disabled="@TooFew" @onclick="() => Pack(true)">Pack 24px →</button>
-        <button class="btn" disabled="@TooFew" @onclick="() => Pack(false)">Pack 24px ↓</button>
+        <button class="btn btn-secondary" disabled="@TooFew" @onclick="() => Pack(true)">Pack 24px →</button>
+        <button class="btn btn-secondary" disabled="@TooFew" @onclick="() => Pack(false)">Pack 24px ↓</button>
 
-        <button class="btn" @onclick="SelectAll">Select all</button>
-        <button class="btn" @onclick="Scatter">Scatter</button>
+        <button class="btn btn-secondary" @onclick="SelectAll">Select all</button>
+        <button class="btn btn-secondary" @onclick="Scatter">Scatter</button>
 
         <span class="selection-count">@_selected selected</span>
     </Toolbar>
@@ -46,9 +46,9 @@
 </ExampleScaffold>
 
 <style>
-    .group-label { font-size: 11px; text-transform: uppercase; letter-spacing: .04em; color: #6b7280; margin-left: .75rem; }
+    .group-label { font-size: 11px; text-transform: uppercase; letter-spacing: .04em; color: var(--bb-text-soft); margin-left: .75rem; }
     .group-label:first-child { margin-left: 0; }
-    .selection-count { margin-left: auto; font-size: 12px; color: #6b7280; }
+    .selection-count { margin-left: auto; font-size: 12px; color: var(--bb-text-soft); }
     .hint {
         max-width: 240px;
         padding: 6px 10px;

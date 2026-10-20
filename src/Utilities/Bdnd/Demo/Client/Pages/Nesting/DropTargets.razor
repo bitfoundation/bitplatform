@@ -1,10 +1,10 @@
 ﻿@page "/nesting/drop-targets"
 
-<PageTitle>Nesting · Drop Targets - bit Bdnd</PageTitle>
+<PageTitle>Nesting - Drop Targets · Bdnd</PageTitle>
 
-<div class="demo-header">
-    <h3>Nesting - Drop Targets</h3>
-    <p class="text-muted">
+<div class="bb-intro">
+    <h1>Nesting - Drop Targets</h1>
+    <p class="bb-subtitle">
         Drop targets can be nested. <code>IsOver</code> is true for every target under the
         pointer, while <code>IsOverShallow</code> (React DnD's <code>isOver({ shallow: true })</code>)
         is true only for the innermost one. Drag the box over the nested squares to see the
@@ -14,7 +14,7 @@
 
 <DemoCode />
 
-<section class="demo-stage">
+<div class="bb-demo">
     <BdndProvider>
         <BdndDraggable TItem="string" Type="@ItemTypes.Box" Item="@("payload")" Context="d">
             <div class="box" style="margin-bottom:1.5rem;opacity:@(d.IsDragging ? "0.4" : "1")">
@@ -25,13 +25,13 @@
         @RenderNest(0)
     </BdndProvider>
 
-    <p style="margin-top:1rem;">
+    <p class="demo-caption">
         <span style="display:inline-block;width:14px;height:14px;background:#ffeb3b;border:1px solid #999;"></span>
         = shallow hover (innermost) &nbsp;
         <span style="display:inline-block;width:14px;height:14px;background:rgba(255,235,59,0.25);border:1px solid #999;"></span>
         = also over (ancestor)
     </p>
-</section>
+</div>
 
 @code {
     private const int Depth = 3;
@@ -69,6 +69,9 @@
         if (t.IsOverShallow) bg = "#ffeb3b";
         else if (t.IsOver) bg = "rgba(255,235,59,0.25)";
         var margin = level == 0 ? "" : "margin-top:0.75rem;";
-        return $"background:{bg};{margin}color:#222;";
+        // dark ink on the yellow highlight and the light levels, white on the dark ones; a level that is only
+        // "also over" is see-through, so it takes the ink of the page it lets show through
+        var ink = t.IsOverShallow ? "#222" : t.IsOver ? "inherit" : shade < 128 ? "#fff" : "#222";
+        return $"background:{bg};{margin}color:{ink};";
     }
 }

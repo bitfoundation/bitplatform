@@ -1,76 +1,86 @@
 ﻿@page "/region"
 
-<PageTitle>Scan region - bit BbScanner</PageTitle>
+<PageTitle>Scan region · BbScanner</PageTitle>
 
-<h1>Scan region</h1>
-<p class="lede">
-    A region is expressed in normalized coordinates, so it survives whatever resolution the
-    browser negotiates. Cropping happens before any pixel is touched, which makes every later
-    stage cheaper in proportion to the area removed.
-</p>
+<div class="bb-intro">
+    <h1>Scan region</h1>
+    <p class="bb-subtitle">
+        A region is expressed in normalized coordinates, so it survives whatever resolution the
+        browser negotiates. Cropping happens before any pixel is touched, which makes every later
+        stage cheaper in proportion to the area removed.
+    </p>
+</div>
 
-<div class="split">
-    <div class="stack">
-        <BbScanner Region="_region"
-                   ShowMask="_showMask"
-                   Formats="BbBarcodeFormat.All"
-                   OnScan="r => _last = r"
-                   OnDiagnostics="d => { _diagnostics = d; StateHasChanged(); }" />
-
-        <DiagnosticsPanel Diagnostics="_diagnostics" />
+<div class="bb-demo bb-page-wide">
+    <div class="bb-demo-bar">
+        <span class="bb-demo-label">Live</span>
+        <span class="bb-badge">@_label</span>
     </div>
 
-    <div class="stack">
-        <div class="card">
-            <h3 style="margin-block-start:0;">Presets</h3>
-            <div class="button-row">
-                <button class="button" type="button" @onclick='() => Set(BbScanRegion.Full, "Full frame")'>Full frame</button>
-                <button class="button" type="button" @onclick='() => Set(BbScanRegion.CenteredSquare(0.7), "Centred square")'>Centred square</button>
-                <button class="button" type="button" @onclick='() => Set(new BbScanRegion(0.05, 0.35, 0.9, 0.3), "Linear band")'>Linear band</button>
-                <button class="button" type="button" @onclick='() => Set(new BbScanRegion(0.5, 0, 0.5, 1), "Right half")'>Right half</button>
-            </div>
-            <p class="field__hint" style="margin-block-start:0.6rem;">Current: @_label</p>
-        </div>
+    <div class="scan-sample">
+        <div class="scan-layout">
+            <div class="scan-view">
+                <BbScanner Region="_region"
+                           ShowMask="_showMask"
+                           Formats="BbBarcodeFormat.All"
+                           OnScan="r => _last = r"
+                           OnDiagnostics="d => { _diagnostics = d; StateHasChanged(); }" />
 
-        <div class="card">
-            <h3 style="margin-block-start:0;">Custom</h3>
-            <div class="field">
-                <label class="field__label">X: @_x.ToString("0.00")</label>
-                <input type="range" min="0" max="0.9" step="0.05" value="@_x" @onchange="e => Update(x: ToDouble(e))" />
+                <DiagnosticsPanel Diagnostics="_diagnostics" />
             </div>
-            <div class="field">
-                <label class="field__label">Y: @_y.ToString("0.00")</label>
-                <input type="range" min="0" max="0.9" step="0.05" value="@_y" @onchange="e => Update(y: ToDouble(e))" />
-            </div>
-            <div class="field">
-                <label class="field__label">Width: @_w.ToString("0.00")</label>
-                <input type="range" min="0.1" max="1" step="0.05" value="@_w" @onchange="e => Update(w: ToDouble(e))" />
-            </div>
-            <div class="field">
-                <label class="field__label">Height: @_h.ToString("0.00")</label>
-                <input type="range" min="0.1" max="1" step="0.05" value="@_h" @onchange="e => Update(h: ToDouble(e))" />
-            </div>
-            <label class="checkbox">
-                <input type="checkbox" checked="@_showMask" @onchange="e => _showMask = (bool)(e.Value ?? true)" />
-                Dim the area outside the region
-            </label>
-        </div>
 
-        <div class="card">
-            <h3 style="margin-block-start:0;">Result positions</h3>
-            <p style="font-size:0.9rem;color:var(--fg-muted);">
-                Corner points are always reported in the coordinates of the frame the camera
-                produced, not of the cropped region, so an overlay drawn from them lines up with
-                what the user sees.
-            </p>
-            @if (_last is not null)
-            {
-                <pre style="margin:0;"><code>@Describe(_last)</code></pre>
-            }
-            else
-            {
-                <p class="empty" style="padding:0.25rem;">Scan something to see its corner points.</p>
-            }
+            <div class="scan-panels">
+                <section class="scan-panel">
+                    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Presets</h3>
+                    <div class="bb-segmented" role="group" aria-label="Region presets">
+                        <button type="button" aria-pressed="@Pressed("Full frame")" @onclick='() => Set(BbScanRegion.Full, "Full frame")'>Full frame</button>
+                        <button type="button" aria-pressed="@Pressed("Centred square")" @onclick='() => Set(BbScanRegion.CenteredSquare(0.7), "Centred square")'>Centred square</button>
+                        <button type="button" aria-pressed="@Pressed("Linear band")" @onclick='() => Set(new BbScanRegion(0.05, 0.35, 0.9, 0.3), "Linear band")'>Linear band</button>
+                        <button type="button" aria-pressed="@Pressed("Right half")" @onclick='() => Set(new BbScanRegion(0.5, 0, 0.5, 1), "Right half")'>Right half</button>
+                    </div>
+                </section>
+
+                <section class="scan-panel">
+                    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Custom</h3>
+                    <label class="bb-field">
+                        <span class="scan-field-head"><span>X</span><output>@_x.ToString("0.00")</output></span>
+                        <input type="range" min="0" max="0.9" step="0.05" value="@_x" @onchange="e => Update(x: ToDouble(e))" />
+                    </label>
+                    <label class="bb-field">
+                        <span class="scan-field-head"><span>Y</span><output>@_y.ToString("0.00")</output></span>
+                        <input type="range" min="0" max="0.9" step="0.05" value="@_y" @onchange="e => Update(y: ToDouble(e))" />
+                    </label>
+                    <label class="bb-field">
+                        <span class="scan-field-head"><span>Width</span><output>@_w.ToString("0.00")</output></span>
+                        <input type="range" min="0.1" max="1" step="0.05" value="@_w" @onchange="e => Update(w: ToDouble(e))" />
+                    </label>
+                    <label class="bb-field">
+                        <span class="scan-field-head"><span>Height</span><output>@_h.ToString("0.00")</output></span>
+                        <input type="range" min="0.1" max="1" step="0.05" value="@_h" @onchange="e => Update(h: ToDouble(e))" />
+                    </label>
+                    <label class="bb-check">
+                        <input type="checkbox" checked="@_showMask" @onchange="e => _showMask = (bool)(e.Value ?? true)" />
+                        Dim the area outside the region
+                    </label>
+                </section>
+
+                <section class="scan-panel">
+                    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Result positions</h3>
+                    <p class="bb-card-desc">
+                        Corner points are always reported in the coordinates of the frame the camera
+                        produced, not of the cropped region, so an overlay drawn from them lines up with
+                        what the user sees.
+                    </p>
+                    @if (_last is not null)
+                    {
+                        <pre class="bb-code">@Describe(_last)</pre>
+                    }
+                    else
+                    {
+                        <div class="bb-empty">Scan something to see its corner points.</div>
+                    }
+                </section>
+            </div>
         </div>
     </div>
 </div>
@@ -86,6 +96,8 @@
     private double _y = 0.15;
     private double _w = 0.7;
     private double _h = 0.7;
+
+    private string Pressed(string label) => _label == label ? "true" : "false";
 
     private void Set(BbScanRegion region, string label)
     {

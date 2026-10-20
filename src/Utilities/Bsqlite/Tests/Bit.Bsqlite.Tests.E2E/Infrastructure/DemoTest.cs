@@ -31,13 +31,6 @@ public abstract class DemoTest : BsqliteTest
     protected async Task<IPage> NewDemoPageAsync(List<string> errors)
     {
         var context = await NewContextAsync(new BrowserNewContextOptions { BaseURL = DemoUrl });
-
-        // The site loads its typefaces from Google Fonts. Answered locally, with nothing: a runner that cannot reach
-        // them - or reaches them slowly - says nothing about Bsqlite, and would otherwise hold every page load up
-        // and report a failed resource as a console error.
-        await context.RouteAsync(new System.Text.RegularExpressions.Regex(@"^https://fonts\.(googleapis|gstatic)\.com/"),
-            route => route.FulfillAsync(new RouteFulfillOptions { Status = 200, ContentType = "text/css", Body = "" }));
-
         var page = await context.NewPageAsync();
 
         page.Console += (_, message) =>
@@ -49,28 +42,32 @@ public abstract class DemoTest : BsqliteTest
         return page;
     }
 
-    /// <summary>Navigates and waits until the page runs in the browser: every page is prerendered first.</summary>
+    /// <summary>
+    /// Navigates and waits until the page runs in the browser: every page is prerendered first, and the site's
+    /// shell (Layout/MainLayout.razor) turns its data-interactive marker to true once it is hydrated.
+    /// </summary>
     protected static async Task<IResponse?> GotoInteractiveAsync(IPage page, string path)
     {
         var response = await page.GotoAsync(path, new PageGotoOptions { Timeout = 90_000 });
-        await page.WaitForSelectorAsync("main[data-interactive='true']", new PageWaitForSelectorOptions { Timeout = 90_000 });
+        await page.WaitForSelectorAsync(".page[data-interactive='true']", new PageWaitForSelectorOptions { Timeout = 90_000 });
         return response;
     }
 
     /// <summary>
-    /// Waits until the session bar reports an open database and returns the backend it landed on. Only the
-    /// documentation pages have the bar; the overview opens its database without one.
+    /// Waits until the session bar reports an open database and returns the backend it landed on. Every page that
+    /// runs against the database opens with the bar (Components/StorageSwitcher.razor); the landing page opens its
+    /// database without one.
     /// </summary>
     protected static async Task<string> WaitForSessionAsync(IPage page, string? expected = null)
     {
         await page.WaitForFunctionAsync(
             """
             expected => {
-              const session = document.querySelector('section.session-bar')?.dataset.session;
+              const session = document.querySelector('section[data-session]')?.dataset.session;
               return expected === null ? !!session && session !== 'closed' : session === expected;
             }
             """, expected, new PageWaitForFunctionOptions { Timeout = 60_000 });
 
-        return (await page.Locator("section.session-bar").GetAttributeAsync("data-session"))!;
+        return (await page.Locator("section[data-session]").GetAttributeAsync("data-session"))!;
     }
 }

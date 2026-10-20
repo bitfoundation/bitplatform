@@ -50,7 +50,9 @@ public sealed class DemoPagesTests : BdndTest
         }
 
         // Every other enabled button of the page must run without throwing: a dead or broken control is a demo bug.
-        var buttons = page.Locator(".content button:enabled:visible:not(.demo-code__toggle)");
+        // The page is the docs column (or the landing page), not the site chrome around it; the copy buttons the
+        // site script hangs on its code blocks are that chrome too.
+        var buttons = page.Locator(":is(.bb-docs-content, .bb-landing) button:enabled:visible:not(.demo-code__toggle, .bb-copy-btn)");
         int count = await buttons.CountAsync();
         for (int i = 0; i < count; i++)
         {
@@ -88,11 +90,11 @@ public sealed class DemoPagesTests : BdndTest
     [TestMethod]
     public async Task Navigating_through_the_sidebar_leaves_a_page_that_still_drags()
     {
-        var page = await OpenAsync("/");
+        var page = await OpenAsync("/getting-started");
 
         // Client-side navigation through every page: each one's draggables and drop targets are torn down (their
         // browser registrations disposed) and the next page's set up, all in the same WebAssembly instance.
-        var links = page.Locator(".sidebar a.nav-link");
+        var links = page.Locator(".bb-docs-sidebar .bb-docs-section a");
         int count = await links.CountAsync();
         Assert.IsGreaterThan(15, count, $"the sidebar offers only {count} pages");
         for (int i = 1; i < count; i++)
@@ -104,14 +106,15 @@ public sealed class DemoPagesTests : BdndTest
             await WaitForQuietAsync(page);
         }
 
-        await links.Nth(0).ClickAsync();
-        await page.WaitForURLAsync(BaseUrl + "/");
+        // Back on the first dustbin, torn down and set up again on the way, a box still drops into it. (The first
+        // page, Getting started, has its sample below the fold, where the mouse cannot reach it.)
+        await links.Filter(new LocatorFilterOptions { HasText = "Single target" }).ClickAsync();
+        await page.WaitForURLAsync(BaseUrl + "/dustbin/single");
 
-        // Back on the overview, a box still drops into the dustbin.
         var bin = page.Locator(".dustbin");
         await DragAsync(page, page.Locator(".box", new() { HasText = "Banana" }), bin,
             () => Expect(bin).ToHaveTextAsync("Release to drop"));
-        await Expect(bin).ToHaveTextAsync("Dropped: Banana");
+        await Expect(bin).ToHaveTextAsync("Last dropped: Banana (total 1)");
         Assert.IsFalse(await page.Locator("#blazor-error-ui").IsVisibleAsync(), "the unhandled-error banner is showing");
     }
 }

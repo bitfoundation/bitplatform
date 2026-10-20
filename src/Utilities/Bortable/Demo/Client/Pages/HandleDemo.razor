@@ -1,10 +1,10 @@
 ﻿@page "/handle"
 
-<PageTitle>Handle - bit Bortable</PageTitle>
+<PageTitle>Handle · Bortable</PageTitle>
 
-<div class="demo-header">
-    <h3>Handle</h3>
-    <p class="text-muted">
+<div class="bb-intro">
+    <h1>Handle</h1>
+    <p class="bb-subtitle">
         With <code>Handle=".handle"</code> a row can only be dragged by grabbing the handle icon. The rest of the
         row stays selectable and clickable.
     </p>
@@ -12,14 +12,16 @@
 
 <DemoCode />
 
-<Bortable @bind-Items="_items" TItem="string" Handle=".handle" Id="handle-list"
-          Class="demo-list" ItemClass="demo-item" GhostClass="demo-ghost">
-    <ItemTemplate Context="item">
-        <span class="handle">☰</span>@item
-    </ItemTemplate>
-</Bortable>
+<div class="bb-demo">
+    <Bortable @bind-Items="_items" TItem="string" Handle=".handle" Id="handle-list"
+              Class="demo-list" ItemClass="demo-item" GhostClass="demo-ghost">
+        <ItemTemplate Context="item">
+            <span class="handle">☰</span>@item
+        </ItemTemplate>
+    </Bortable>
 
-<p class="demo-order"><strong>Order:</strong> <span id="handle-order">@string.Join(", ", _items)</span></p>
+    <p class="demo-order"><strong>Order:</strong> <span id="handle-order">@string.Join(", ", _items)</span></p>
+</div>
 
 @code {
     private IList<string> _items = new List<string>

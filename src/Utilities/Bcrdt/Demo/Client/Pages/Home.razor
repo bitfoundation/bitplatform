@@ -1,116 +1,329 @@
 ﻿@page "/"
+@layout MainLayout
+@inherits ReplicaPageBase
 
-<h1>Collaboration, in C#, with no server in the middle</h1>
+<PageTitle>Bcrdt - real-time collaboration for .NET and Blazor</PageTitle>
 
-<p class="lede">
-    bit Bcrdt is a native .NET implementation of a conflict-free replicated data type - a
-    CRDT - together with the synchronization, presence, persistence and Blazor integration that a
-    collaborative feature actually needs. There is no JavaScript CRDT library underneath it and no
-    port of one: the engine, the wire format and the merge algorithm are all C#.
-</p>
+@* The landing page: hero → proof strip → capability grid → code walkthrough → comparison with the
+   usual alternatives → persona tiles → FAQ → final call to action. Everything else on the site is a
+   documentation page under DocsLayout. The hero's sample is two live replicas rather than a picture
+   of them - a collaboration library is best introduced by typing into two copies of one document. *@
 
-<section class="prose">
-    <h2>What a CRDT gives you</h2>
-    <p>
-        Suppose two people edit the same paragraph at the same moment and neither can see the other's
-        change yet. Without a CRDT you have to pick a loser. The usual approaches are to lock the
-        document so only one person can type, to funnel every keystroke through a server that
-        rewrites everyone's edits into a single agreed order, or to save last and overwrite the other
-        person's work. All three either need a permanently reachable authority or silently destroy
-        something somebody wrote.
-    </p>
-    <p>
-        A CRDT removes the need to choose. Every edit is expressed so that applying edits in any
-        order, more than once, or after an arbitrarily long delay always produces the same result on
-        every copy. That single property has consequences that stack up quickly: no server is
-        required to arbitrate, replicas can be edited while completely disconnected and reconciled
-        later, updates are small deltas rather than whole documents, and nobody's work is thrown
-        away. What you give up is the ability to say <em>which</em> of two truly simultaneous writes
-        to the same single value wins - the answer is deterministic and identical everywhere, but it
-        is arbitrary. Where losing a write is unacceptable, you model the value as a nested
-        collaborative type instead of a scalar, and both sides survive.
-    </p>
+<div class="bb-landing">
 
-    <h2>What the smallest useful program looks like</h2>
-    <p>
-        Opening a document does everything in the right order - load from storage so the document is
-        usable immediately and offline, then connect and let the handshake reconcile whatever changed
-        while it was away. After that, editing is ordinary method calls.
-    </p>
+    @* ============================== Hero ============================== *@
 
-    <pre class="code"><code>// Program.cs - one registration configures transport and storage.
-builder.Services.AddBitBcrdtServices(collaboration => collaboration
-    .UseTransport(documentId =&gt; BcrdtInMemoryNetwork.Shared.CreateTransport(documentId))
-    .UseInMemoryStore());
+    <section class="bb-hero">
+        <div class="bb-hero-copy">
+            <span class="bb-hero-eyebrow">
+                <span class="bb-dot bb-dot-success"></span>
+                Open source · MIT · net8.0 / net9.0 / net10.0
+            </span>
+            <h1>Live collaboration,<br /><span class="bb-hero-accent">merged in C#.</span></h1>
+            <p class="bb-hero-sub">
+                A CRDT engine for text, lists, maps and sets, with the synchronization, presence, offline-first
+                persistence and selective undo a collaborative feature actually needs - and no Yjs, no JavaScript
+                CRDT library, no interop in the engine. Two people editing the same document end up with the same
+                document, whether they were online at the time or not.
+            </p>
+            <pre class="bb-code bb-hero-install">dotnet add package Bit.Bcrdt</pre>
+            <div class="bb-hero-actions">
+                <a href="getting-started" class="btn btn-primary bb-btn-lg">Get started →</a>
+                <a href="text" class="btn btn-secondary bb-btn-lg">Live demos</a>
+                <a class="btn btn-secondary bb-btn-lg" href="@SiteInfo.ProjectUrl" target="_blank" rel="noopener noreferrer">GitHub ↗</a>
+            </div>
+        </div>
 
-// Anywhere with the service injected.
-BcrdtCollaborativeDocument document = await collaboration.OpenAsync("my-document");
+        @* The sample, framed as a window: the markup on top, and two replicas of one document
+           underneath - live, each with its own client id and its own connection, so the first thing a
+           visitor can do here is type into one and watch the other follow. *@
+        <div class="bb-hero-code">
+            <div class="bb-browser">
+                <div class="bb-browser-bar">
+                    <span class="bb-browser-dots" aria-hidden="true"><i></i><i></i><i></i></span>
+                    <span class="bb-browser-url">Notes.razor</span>
+                </div>
+                <pre class="bb-code">&lt;<span class="k">BcrdtCollaborationScope</span> DocumentId=<span class="s">"notes-42"</span> User=<span class="s">"_me"</span>
+                         Context=<span class="s">"document"</span>&gt;
+    &lt;<span class="k">BcrdtTextArea</span> Text=<span class="s">"@@document.Text("body")"</span>
+                   Presence=<span class="s">"document.Presence"</span> /&gt;
+&lt;/<span class="k">BcrdtCollaborationScope</span>&gt;</pre>
+                <div class="home-hero-live">
+                    @if (!Ready)
+                    {
+                        <p class="loading bb-empty"><span class="bb-spinner" aria-hidden="true"></span> Opening two replicas…</p>
+                    }
+                    else
+                    {
+                        <div class="bb-split replicas home-hero-replicas">
+                            @foreach (DemoReplica replica in Replicas)
+                            {
+                                <ReplicaPanel Replica="replica" ShowPresence="false" ShowClientId="false">
+                                    <ChildContent>
+                                        <BcrdtTextArea Text="replica.Document.Text(Field)"
+                                                       Presence="replica.Document.Presence"
+                                                       Field="@Field"
+                                                       Rows="4"
+                                                       Class="editor"
+                                                       Placeholder="@($"Type as {replica.Label}…")" />
+                                    </ChildContent>
+                                </ReplicaPanel>
+                            }
+                        </div>
+                    }
+                    <p class="home-hero-hint">Type into either one. Then take one offline, type into both, and bring it back.</p>
+                </div>
+            </div>
+        </div>
+    </section>
 
-document.Text("body").Insert(0, "Hello, everyone.");
-document.Map.Set("title", "Draft");
-document.Presence.SetUser(new BcrdtCollaboratorInfo("ada", "Ada", BcrdtPresenceService.SuggestColor("ada")));
+    @* ============================== Proof strip ============================== *@
 
-// That is the whole thing. The edits are already merged locally, already encoded as a delta,
-// already on their way to every other replica, and already written to storage.</code></pre>
+    <section class="bb-proof">
+        <div><strong>Engine in C#</strong><span>no Yjs, no JavaScript CRDT, no interop</span></div>
+        <div><strong>Offline-first</strong><span>edits merge whenever a replica comes back</span></div>
+        <div><strong>Deltas, not documents</strong><span>one small update per transaction</span></div>
+        <div><strong>Every hosting model</strong><span>WebAssembly, Server, Web App and Hybrid</span></div>
+    </section>
 
-    <h2>The demos</h2>
-    <p>
-        Each page below - except the live one - shows several replicas of one document, side by side, in this single browser
-        page. They are not views onto a shared object - each panel is a genuinely separate replica
-        with its own client identifier, its own presence identity, its own local storage and its own
-        connection, talking to the others through the library's in-memory transport. That is what
-        makes the merges you see real merges rather than a shared variable being redrawn.
-    </p>
+    @* ============================== Capability grid ============================== *@
 
-    <dl class="demo-list">
-        <dt><a href="text">Collaborative text</a></dt>
-        <dd>
-            Three replicas editing one paragraph. Type in any of them and watch it appear in the
-            others. Take one offline, edit it and the others, bring it back, and watch a genuine
-            divergence be reconciled without anybody losing a word. This is the headline demo.
-        </dd>
+    <section class="bb-section">
+        <p class="bb-overline">Capabilities</p>
+        <h2>Everything a collaborative feature needs</h2>
+        <p class="bb-section-sub">
+            The hard part of collaboration is never the UI: it is two edits crossing in flight, a connection dropping
+            mid-sentence, a client coming back after a week offline. Every page of this site is a set of real,
+            separate replicas, so the merges you watch are real merges.
+        </p>
+        <div class="bb-grid">
+            <section class="bb-card">
+                <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Collaborative text</h3>
+                <p class="bb-card-desc">
+                    <code>BcrdtTextArea</code> turns every keystroke into the minimal insertion or deletion and keeps
+                    your caret in place while somebody types above it.
+                </p>
+                <a href="text" class="btn btn-outline">Collaborative text →</a>
+            </section>
+            <section class="bb-card">
+                <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Nested types</h3>
+                <p class="bb-card-desc">
+                    A <code>BcrdtArray</code> of <code>BcrdtMap</code>s: a rename and a concurrent tick of the same
+                    item touch different keys, so both survive.
+                </p>
+                <a href="list" class="btn btn-outline">Collaborative list →</a>
+            </section>
+            <section class="bb-card">
+                <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> A merge you choose</h3>
+                <p class="bb-card-desc">
+                    A map entry is last-writer-wins, a nested text merges character by character - the field type you
+                    pick decides what happens when two people edit it at once.
+                </p>
+                <a href="form" class="btn btn-outline">Collaborative form →</a>
+            </section>
+            <section class="bb-card">
+                <h3 class="bb-card-title"><span class="bb-dot bb-dot-danger"></span> Conflicts, on purpose</h3>
+                <p class="bb-card-desc">
+                    Concurrent insertion at the same position, deletion of the same element, writes to the same key -
+                    each provoked, with its outcome stated before it runs.
+                </p>
+                <a href="conflicts" class="btn btn-outline">Conflict lab →</a>
+            </section>
+            <section class="bb-card">
+                <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Selective undo</h3>
+                <p class="bb-card-desc">
+                    <code>BcrdtUndoManager</code> reverses your own edits and leaves everyone else's alone - and the
+                    undo itself synchronizes like any other edit.
+                </p>
+                <a href="undo" class="btn btn-outline">Collaborative undo →</a>
+            </section>
+            <section class="bb-card">
+                <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Live, across tabs</h3>
+                <p class="bb-card-desc">
+                    One replica per browser tab, through a SignalR hub or a WebSocket endpoint that only relays - no
+                    copy of the document lives on the server.
+                </p>
+                <a href="live" class="btn btn-outline">Live, across tabs →</a>
+            </section>
+        </div>
+    </section>
 
-        <dt><a href="list">Collaborative list</a></dt>
-        <dd>
-            A shared to-do list: a sequence whose elements are themselves collaborative maps. Shows
-            what nesting buys you - editing an item's title merges with a concurrent tick of its
-            checkbox, because they are different keys of a real map rather than two writes of one
-            blob.
-        </dd>
+    @* ============================== Code walkthrough ============================== *@
 
-        <dt><a href="form">Collaborative form</a></dt>
-        <dd>
-            Several fields on a map, plus one long-text field, so the difference in merge behaviour
-            between a scalar and a text type is visible next to each other in the same form.
-        </dd>
+    <section class="bb-section">
+        <p class="bb-overline">In practice</p>
+        <h2>See it in code</h2>
+        <div class="bb-walkthrough">
+            <div class="bb-walkthrough-row">
+                <div class="bb-walkthrough-copy">
+                    <span class="bb-step">01</span>
+                    <h3>Register it once</h3>
+                    <p>
+                        One registration configures the transport and the store, in every project that renders
+                        collaborative components. Each seam is optional: with none of them you still get a working,
+                        purely local document.
+                    </p>
+                    <a href="getting-started">Getting started →</a>
+                </div>
+                <pre class="bb-code">builder.Services.AddBitBcrdtServices(collaboration =&gt; collaboration
+    .UseTransport(<span class="k">new</span> BcrdtSignalRTransportFactory(hubUrl))
+    .UseInMemoryStore());</pre>
+            </div>
+            <div class="bb-walkthrough-row">
+                <div class="bb-walkthrough-copy">
+                    <span class="bb-step">02</span>
+                    <h3>Map a relay that only relays</h3>
+                    <p>
+                        <code>BcrdtHub</code> forwards each message to the other clients of a document without
+                        decoding it, and holds no copy of it. The WebSocket endpoint does the same for the built-in
+                        WebSocket transport.
+                    </p>
+                    <a href="live">Live, across tabs →</a>
+                </div>
+                <pre class="bb-code">builder.Services.AddBitBcrdtHub();
+<span class="c">// ...</span>
+app.MapHub&lt;BcrdtHub&gt;(<span class="s">"/hub/bcrdt"</span>);</pre>
+            </div>
+            <div class="bb-walkthrough-row">
+                <div class="bb-walkthrough-copy">
+                    <span class="bb-step">03</span>
+                    <h3>Open a document and edit it</h3>
+                    <p>
+                        Opening loads from storage first, so the document is usable at once and offline, then connects
+                        and lets the handshake reconcile whatever changed meanwhile. A transaction is one update and
+                        one round of events.
+                    </p>
+                    <a href="internals">Internals →</a>
+                </div>
+                <pre class="bb-code"><span class="k">var</span> document = <span class="k">await</span> collaboration.OpenAsync(<span class="s">"design-review"</span>);
 
-        <dt><a href="conflicts">Conflict lab</a></dt>
-        <dd>
-            The page that proves the claims. Pause each replica's sync, make specific conflicting
-            edits on purpose - concurrent insert at the same position, concurrent delete of the same
-            element, concurrent write of the same key - then resume and compare the raw state of both
-            replicas as JSON.
-        </dd>
+<span class="k">using</span> (<span class="k">var</span> transaction = document.BeginTransaction())
+{
+    document.Map.Set(<span class="s">"title"</span>, <span class="s">"Q3 planning"</span>);
+    document.Array(<span class="s">"attendees"</span>).Push(<span class="s">"Ada"</span>, <span class="s">"Grace"</span>);
+    document.Text(<span class="s">"notes"</span>).Insert(0, <span class="s">"Agenda:\n"</span>);
+}</pre>
+            </div>
+        </div>
+    </section>
 
-        <dt><a href="undo">Collaborative undo</a></dt>
-        <dd>
-            Undo that reverses your own last action and leaves everyone else's work alone, which is
-            what users expect and what a naïve "restore the previous state" undo gets badly wrong in
-            a shared document.
-        </dd>
+    @* ============================== Comparison ============================== *@
 
-        <dt><a href="internals">Internals</a></dt>
-        <dd>
-            An inspector: live state vector, block count, encoded size and a log of updates as they
-            are produced. Type five hundred characters and watch the block count stay in single
-            figures - that is the run-length encoding that makes large documents affordable.
-        </dd>
+    <section class="bb-section">
+        <p class="bb-overline">Comparison</p>
+        <h2>Why a CRDT?</h2>
+        <p class="bb-section-sub">
+            Without one you have to pick a loser: lock the document, funnel every keystroke through a server that
+            rewrites everyone's edits into one agreed order, or save last and overwrite somebody's work. A CRDT is
+            built so that applying edits in any order, more than once, or after any delay gives the same result on
+            every copy.
+        </p>
+        <div class="bb-scroll" tabindex="0" role="region" aria-label="Last write wins and operational transformation compared with Bcrdt">
+            <table class="bb-table bb-compare">
+                <thead>
+                    <tr><th>Concern</th><th>Last write wins</th><th>Operational transformation</th><th>Bcrdt</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td>Two people typing at once</td><td>One of them loses their work</td><td>Both survive, ordered by the server</td><td>Both survive, in the same order on every replica</td></tr>
+                    <tr><td>Editing offline</td><td>Overwrites whatever changed meanwhile</td><td>Not possible - every edit needs the server</td><td>A replica that has not heard anything for a while</td></tr>
+                    <tr><td>Central authority</td><td>The store - the last write to reach it wins</td><td>An ordering server, for every keystroke</td><td>None - a relay only forwards bytes</td></tr>
+                    <tr><td>What goes over the wire</td><td>The whole record</td><td>Every operation, transformed</td><td>One small delta per transaction</td></tr>
+                    <tr><td>A message delivered twice</td><td>A late duplicate can overwrite a newer value</td><td>Has to be prevented</td><td>Harmless - applying it again changes nothing</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
 
-        <dt><a href="live">Live, across tabs</a></dt>
-        <dd>
-            The same text editor, one replica per browser tab, meeting through the demo server's
-            SignalR hub or WebSocket endpoint - which relay messages and hold no copy of the document.
-            Share the link with another tab or device and type in both.
-        </dd>
-    </dl>
-</section>
+    @* ============================== Persona CTAs ============================== *@
+
+    <section class="bb-section">
+        <p class="bb-overline">Where to start</p>
+        <h2>Choose your path</h2>
+        <div class="bb-grid">
+            <section class="bb-card">
+                <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> New to Bcrdt?</h3>
+                <p class="bb-card-desc">Install, register, map the relay - a collaborative editor in five minutes.</p>
+                <a href="getting-started" class="btn btn-primary">Getting started →</a>
+            </section>
+            <section class="bb-card">
+                <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Need to see it to believe it?</h3>
+                <p class="bb-card-desc">Provoke the conflicts that break naïve synchronization, and compare both replicas' raw state.</p>
+                <a href="conflicts" class="btn btn-outline">Open the conflict lab →</a>
+            </section>
+            <section class="bb-card">
+                <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Building with an AI agent?</h3>
+                <p class="bb-card-desc">This site is an MCP server: point your agent at <code>/mcp</code> and it runs the real engine instead of guessing what a merge decides.</p>
+                <a href="mcp-server" class="btn btn-outline">Try the MCP server →</a>
+            </section>
+        </div>
+    </section>
+
+    @* ============================== FAQ ============================== *@
+
+    <section class="bb-section">
+        <p class="bb-overline">Questions</p>
+        <h2>Frequently asked</h2>
+        <div class="bb-faq">
+            <details>
+                <summary>Is this Yjs running through JavaScript interop?</summary>
+                <p>
+                    No. The engine, the wire format and the merge algorithm are C#. The only JavaScript is a small module
+                    that reads and sets the caret of a <code>&lt;textarea&gt;</code>, because the browser does not expose
+                    one to .NET - and nothing in the engine calls it.
+                </p>
+            </details>
+            <details>
+                <summary>What happens when two people change the same field at once?</summary>
+                <p>
+                    It depends on the type you chose. A <code>BcrdtMap</code> key keeps one of the two values -
+                    deterministically, the same one everywhere, but arbitrarily. A nested <code>BcrdtText</code> keeps
+                    both edits. Where losing a write is unacceptable, model the value as a nested collaborative type.
+                </p>
+            </details>
+            <details>
+                <summary>Does it need a server?</summary>
+                <p>
+                    Not to merge. Replicas need a way to exchange messages, and the relays in <code>Bit.Bcrdt.Server</code>
+                    forward them without decoding one or holding a replica. Replicas in one process - as on every page of
+                    this site but the live one - talk over the in-memory transport and need nothing at all.
+                </p>
+            </details>
+            <details>
+                <summary>What happens while a replica is offline?</summary>
+                <p>
+                    Nothing special. Local edits accumulate in the document, the sync provider reconnects with jittered
+                    backoff, and the handshake sends each side what the other is missing - in both directions. There is no
+                    outbound queue: the document is the queue, and it compacts itself.
+                </p>
+            </details>
+            <details>
+                <summary>Which render modes does it work in?</summary>
+                <p>
+                    All of them - WebAssembly, Server, Web App and Hybrid, on .NET 8, 9 and 10. The service is registered
+                    scoped, so on Blazor Server every circuit gets its own replica and its own client identity.
+                </p>
+            </details>
+        </div>
+    </section>
+
+    @* ============================== Final CTA ============================== *@
+
+    <section class="bb-final-cta">
+        <h2>Let them all type at once</h2>
+        <p class="bb-section-sub">One registration, one relay, one component - and nobody's work is overwritten again.</p>
+        <pre class="bb-code bb-hero-install">dotnet add package Bit.Bcrdt</pre>
+        <div class="bb-hero-actions">
+            <a href="getting-started" class="btn btn-primary bb-btn-lg">Get started →</a>
+            <a href="text" class="btn btn-secondary bb-btn-lg">Browse the demos</a>
+        </div>
+    </section>
+</div>
+
+@code {
+    private const string Field = "body";
+
+    protected override string DocumentId => "demo-home";
+
+    // Two replicas of one note, each with its own service, client id, store and connection.
+    protected override string[] ReplicaLabels => ["Ada", "Grace"];
+}

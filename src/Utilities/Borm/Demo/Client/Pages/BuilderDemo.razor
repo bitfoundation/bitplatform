@@ -1,27 +1,25 @@
 ﻿@page "/builder"
 
-<PageTitle>Fluent builder + conditions</PageTitle>
+<PageTitle>Fluent builder + conditions · Borm</PageTitle>
 
-<div class="demo-intro">
+<div class="bb-intro">
     <h1>Fluent builder + conditions</h1>
-    <p>Configure fields with a type-safe fluent API. The company fields below appear only when the account type is <em>Business</em>.</p>
+    <p class="bb-subtitle">Configure fields with a type-safe fluent API. The company fields below appear only when the account type is <em>Business</em>.</p>
 </div>
 
-<div class="demo-card">
+<div class="bb-demo">
+    <div class="bb-demo-bar"><span class="bb-demo-label">Live form</span></div>
     <BormView Definition="_schema" Model="_model" OnValidSubmit="HandleSubmit" SubmitText="Sign up" />
 </div>
 
 @if (_submitted)
 {
-    <div class="demo-result">
-        <strong>Submitted ✓</strong>
-        <pre>@_json</pre>
-    </div>
+    <div class="bb-note bb-note-success demo-result"><strong>Submitted ✓</strong><pre>@_json</pre></div>
 }
 
-<details class="demo-source">
-    <summary>View source</summary>
-    <pre><code>@Source</code></pre>
+<details class="bb-source demo-source">
+    <summary class="btn btn-secondary">View source</summary>
+    <pre class="bb-code"><code>@Source</code></pre>
 </details>
 
 @code {

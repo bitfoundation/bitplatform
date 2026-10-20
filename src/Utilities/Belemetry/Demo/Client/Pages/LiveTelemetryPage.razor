@@ -4,19 +4,20 @@
 @inject ILogger<LiveTelemetryPage> Logger
 @inject IJSRuntime JS
 
-<PageTitle>Live telemetry - bit Belemetry</PageTitle>
+<PageTitle>Live telemetry · Belemetry</PageTitle>
 
-<h1>Live telemetry</h1>
+<div class="bb-intro">
+    <h1>Live telemetry</h1>
+    <p class="bb-subtitle">
+        This site is instrumented with Belemetry and exports to itself. Everything you do here - page views,
+        clicks, web vitals, errors, fetch spans, the WebAssembly app's logs, traces and metrics - is sent to the
+        demo server as OTLP/JSON, decoded, and handed back to you below. Only you see your records, and nothing
+        is sent until you have answered the consent banner.
+    </p>
+</div>
 
-<p class="page-intro">
-    This site is instrumented with Belemetry and exports to itself. Everything you do here - page views,
-    clicks, web vitals, errors, fetch spans, the WebAssembly app's logs, traces and metrics - is sent to the
-    demo server as OTLP/JSON, decoded, and handed back to you below. Only you see your records, and nothing
-    is sent until you have answered the consent banner.
-</p>
-
-<div class="demo-section">
-    <h2>Your records</h2>
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Your records</h3>
     <p>
         Make something happen, and watch it arrive within a couple of seconds. Each row opens to show its
         attributes, trace and span ids, and the resource it came with. The source column says who recorded
@@ -24,33 +25,36 @@
         tab) or <strong>server</strong> (the demo server's own pipeline).
     </p>
 
-    <div class="demo-actions">
-        <button type="button" class="btn-bl" data-bit-belemetry-name="live.track-event" @onclick="TrackEvent" disabled="@(RendererInfo.IsInteractive is false)">
-            Track an event
-        </button>
-        <button type="button" class="btn-bl-subtle" data-bit-belemetry-name="live.write-log" @onclick="WriteLog" disabled="@(RendererInfo.IsInteractive is false)">
-            Log with ILogger
-        </button>
-        <button type="button" class="btn-bl-subtle" data-bit-belemetry-name="live.throw-error" @onclick="ThrowErrorAsync" disabled="@(RendererInfo.IsInteractive is false)">
-            Throw a JS error
-        </button>
-        <button type="button" class="btn-bl-subtle" data-bit-belemetry-name="live.fetch-echo" @onclick="FetchEchoAsync" disabled="@(RendererInfo.IsInteractive is false)">
-            Fetch /api/demo/echo
-        </button>
+    <div class="bb-demo">
+        <div class="bb-demo-bar"><span class="bb-demo-label">Live<span class="demo-sample-title">your session</span></span></div>
+        <div class="bb-toolbar">
+            <button type="button" class="btn btn-primary" data-bit-belemetry-name="live.track-event" @onclick="TrackEvent" disabled="@(RendererInfo.IsInteractive is false)">
+                Track an event
+            </button>
+            <button type="button" class="btn btn-secondary" data-bit-belemetry-name="live.write-log" @onclick="WriteLog" disabled="@(RendererInfo.IsInteractive is false)">
+                Log with ILogger
+            </button>
+            <button type="button" class="btn btn-secondary" data-bit-belemetry-name="live.throw-error" @onclick="ThrowErrorAsync" disabled="@(RendererInfo.IsInteractive is false)">
+                Throw a JS error
+            </button>
+            <button type="button" class="btn btn-secondary" data-bit-belemetry-name="live.fetch-echo" @onclick="FetchEchoAsync" disabled="@(RendererInfo.IsInteractive is false)">
+                Fetch /api/demo/echo
+            </button>
+        </div>
+
+        @if (_status is not null)
+        {
+            <p class="demo-status" role="status">@_status</p>
+        }
+
+        <TelemetryFeedView />
     </div>
-
-    @if (_status is not null)
-    {
-        <p class="demo-label" role="status">@_status</p>
-    }
-
-    <TelemetryFeedView />
 </div>
 
-<div class="demo-section">
-    <h2>What each button records</h2>
-    <div class="doc-table-wrap">
-        <table class="doc-table">
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> What each button records</h3>
+    <div class="bb-scroll">
+        <table class="bb-table">
             <thead>
                 <tr><th scope="col">Button</th><th scope="col">Call</th><th scope="col">What arrives</th><th scope="col">Feature</th></tr>
             </thead>
@@ -84,9 +88,9 @@
     </div>
 </div>
 
-<div class="demo-section">
-    <h2>How this works</h2>
-    <ol>
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> How this works</h3>
+    <ol class="bb-detail-list">
         <li>
             <strong>Export.</strong> The browser script and the WebAssembly app's .NET pipeline both export
             OTLP/HTTP with the JSON encoding to this site's own server - <code>/otlp/v1/traces</code>,
@@ -116,7 +120,7 @@
             child. <em>Include server telemetry</em> shows the rest of the shared bucket too.
         </li>
     </ol>
-    <div class="callout">
+    <div class="bb-note">
         <p>
             Nothing showing up? The feed says so when nothing is granted. Answer the banner, or choose per
             feature on the <a href="/consent">consent page</a>. Before you decide, records are held in memory
@@ -125,8 +129,8 @@
     </div>
 </div>
 
-<div class="demo-section">
-    <h2>The demo's configuration</h2>
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> The demo's configuration</h3>
     <p>
         This is the real setup of this site, copied from its source. Both projects call
         <code>AddBitBelemetryServices(DemoTelemetry.ConfigureShared)</code>, and each adds its own exporter on top;

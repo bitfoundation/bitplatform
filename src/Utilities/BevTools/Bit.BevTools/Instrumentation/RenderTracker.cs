@@ -24,6 +24,9 @@ public sealed class BevRenderBatchInfo
     /// <summary>Every render seen in this batch, BevTools' own and paused ones included; compared with the renderer's diff count to detect a new pass.</summary>
     internal int ObservedRenders { get; set; }
 
+    /// <summary>Position among every batch the session has seen, bookkept ones included, so "the next batch" can be named before it starts.</summary>
+    internal long Sequence { get; init; }
+
     public long EventId { get; set; }
 
     public long StartTicks { get; init; }
@@ -69,6 +72,7 @@ internal sealed class RenderTracker
     private readonly int _maxAwaitingDiff;
     private BevRenderBatchInfo? _lastDiffBatch;
     private long _batchSequence;
+    private long _batchStarts;
     private long _renderSequence;
     private long _lastRenderEndTicks;
 
@@ -82,6 +86,9 @@ internal sealed class RenderTracker
     public BevRenderBatchInfo? CurrentBatch { get; private set; }
 
     public long BatchCount => Volatile.Read(ref _batchSequence);
+
+    /// <summary>The <see cref="BevRenderBatchInfo.Sequence"/> of the latest batch; the next one gets this plus one.</summary>
+    internal long BatchStarts => Volatile.Read(ref _batchStarts);
 
     public bool DiffAttributionLost { get; private set; }
 
@@ -386,24 +393,24 @@ internal sealed class RenderTracker
             if (track && !current.IsTracked)
             {
                 // The first application render in a batch that so far held only unrecorded renders.
-                StartTracking(current);
+                StartTracking(current, record);
             }
 
             return current;
         }
 
         CloseBatch();
-        var batch = new BevRenderBatchInfo { StartTicks = Stopwatch.GetTimestamp(), ObservedRenders = 1 };
+        var batch = new BevRenderBatchInfo { StartTicks = Stopwatch.GetTimestamp(), ObservedRenders = 1, Sequence = Interlocked.Increment(ref _batchStarts) };
         if (track)
         {
-            StartTracking(batch);
+            StartTracking(batch, record);
         }
 
         CurrentBatch = batch;
         return batch;
     }
 
-    private void StartTracking(BevRenderBatchInfo batch)
+    private void StartTracking(BevRenderBatchInfo batch, BevComponentRecord firstRender)
     {
         batch.IsTracked = true;
         batch.Id = Interlocked.Increment(ref _batchSequence);
@@ -413,7 +420,7 @@ internal sealed class RenderTracker
             Category = "render-batch",
             Title = "Render batch #" + batch.Id,
             Detail = "in progress",
-            ParentEventId = ActivityObserver.CurrentTriggerEvent(_session)?.Id,
+            ParentEventId = ActivityObserver.CurrentTriggerEvent(_session, firstRender, batch)?.Id,
             StartTicks = batch.StartTicks,
             Data = new Dictionary<string, object?> { ["batch"] = batch.Id },
         });
@@ -559,7 +566,7 @@ internal sealed class RenderTracker
     {
         if (!record.HasRendered)
         {
-            return (BevRenderCause.Initial, InitialCauseDetail, ActivityObserver.CurrentTriggerEvent(_session)?.Id);
+            return (BevRenderCause.Initial, InitialCauseDetail, ActivityObserver.CurrentTriggerEvent(_session, record, batch)?.Id);
         }
 
         if (!_options.TrackRenderCauses)
@@ -587,8 +594,8 @@ internal sealed class RenderTracker
             }
         }
 
-        // 2. A UI event or navigation is executing on this session.
-        var trigger = ActivityObserver.CurrentTriggerEvent(_session);
+        // 2. A UI event or navigation is executing on this session, or this batch renders what one had queued.
+        var trigger = ActivityObserver.CurrentTriggerEvent(_session, record, batch);
         if (trigger is not null)
         {
             return trigger.Kind == BevToolsEventKind.Navigation

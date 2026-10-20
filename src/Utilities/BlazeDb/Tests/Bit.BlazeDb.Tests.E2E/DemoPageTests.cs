@@ -12,9 +12,10 @@ namespace Bit.BlazeDb.Tests.E2E;
 [TestClass]
 public class DemoPageTests : BlazeDbTest
 {
-    /// <summary>The site map, page by page: the route, and a heading the page renders once it is running.</summary>
+    /// <summary>The docs, page by page: the route, and the heading the page renders once it is running.</summary>
     private static readonly (string Path, string Heading)[] _pages =
     [
+        ("getting-started", "From package to query in five minutes"),
         ("todos", "A working app on the real engine"),
         ("schema", "Schema comes from your types"),
         ("indexes", "Two index kinds, both maintained for you"),
@@ -33,13 +34,18 @@ public class DemoPageTests : BlazeDbTest
     [TestMethod]
     public async Task Every_page_renders_through_the_navigation_without_an_error()
     {
+        // The landing page has no docs panel; the header's Docs link is the way into it.
         var page = await OpenAsync("/");
         var errors = CollectErrors(page);
         var misses = new List<string>();
 
+        await Assertions.Expect(page.Locator("h1")).ToContainTextAsync("Your data lives in memory.");
+        await page.Locator(".bb-nav a", new() { HasText = "Docs" }).ClickAsync();
+        await page.WaitForURLAsync("**/getting-started");
+
         foreach (var (path, heading) in _pages)
         {
-            await page.Locator($"a.nav-link[href='{path}']").First.ClickAsync();
+            await page.Locator($".bb-docs-sidebar a[href='/{path}']").First.ClickAsync();
             await page.WaitForURLAsync($"**/{path}");
 
             try
@@ -64,7 +70,7 @@ public class DemoPageTests : BlazeDbTest
         var page = await OpenAsync("/efcore");
 
         await Assertions.Expect(page.Locator("h1")).ToHaveTextAsync("The same engine, reached through LINQ");
-        await Assertions.Expect(page.Locator(".crumbs .here")).ToHaveTextAsync("EF Core");
+        await Assertions.Expect(page.Locator(".bb-crumbs [aria-current='page']")).ToHaveTextAsync("EF Core");
     }
 
     [TestMethod]
@@ -76,7 +82,8 @@ public class DemoPageTests : BlazeDbTest
         await WaitForDatabaseAsync(page);
 
         Assert.AreEqual((int)HttpStatusCode.NotFound, response!.Status);
-        await Assertions.Expect(page.Locator("h1")).ToContainTextAsync("That page does not exist");
+        await Assertions.Expect(page.Locator(".bb-error-404 h1")).ToHaveTextAsync("404");
+        await Assertions.Expect(page.Locator(".bb-error-404")).ToContainTextAsync("That page does not exist");
     }
 
     [TestMethod]
@@ -86,9 +93,10 @@ public class DemoPageTests : BlazeDbTest
 
         var html = await http.GetStringAsync(BaseUrl + "/todos");
 
-        Assert.Contains("class=\"boot\"", html);
+        Assert.Contains("class=\"bd-boot\"", html);
         Assert.Contains("_framework/blazor.web.js", html);
-        Assert.DoesNotContain("class=\"shell", html, "Nothing is prerendered: the database a page shows lives only in the browser.");
+        Assert.DoesNotContain("class=\"page\"", html, "Nothing is prerendered: the database a page shows lives only in the browser.");
+        Assert.DoesNotContain("data-storage", html, "Nothing is prerendered: the database a page shows lives only in the browser.");
     }
 
     [TestMethod]

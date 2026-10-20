@@ -1,18 +1,19 @@
 ﻿@page "/configuration"
 
-<PageTitle>Configuration - bit Belemetry</PageTitle>
+<PageTitle>Configuration · Belemetry</PageTitle>
 
-<h1>Configuration</h1>
+<div class="bb-intro">
+    <h1>Configuration</h1>
+    <p class="bb-subtitle">
+        Everything Belemetry does is set on one <code>BelemetryOptions</code>, passed to
+        <code>AddBitBelemetryServices</code>. The tables on this page are reflected from the shipped assembly - names,
+        types, the defaults a fresh options object really has, and the XML documentation you see in IntelliSense - so
+        they cannot describe an option that does not exist.
+    </p>
+</div>
 
-<p class="page-intro">
-    Everything Belemetry does is set on one <code>BelemetryOptions</code>, passed to
-    <code>AddBitBelemetryServices</code>. The tables on this page are reflected from the shipped assembly - names,
-    types, the defaults a fresh options object really has, and the XML documentation you see in IntelliSense - so
-    they cannot describe an option that does not exist.
-</p>
-
-<div class="demo-section">
-    <h2>One registration</h2>
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> One registration</h3>
     <p>
         <code>AddBitBelemetryServices</code> follows the Options pattern and is idempotent: call it in every project
         that hosts Blazor, and every configure callback passed across calls runs, in order, on the same
@@ -23,8 +24,8 @@
     <CodeSnippet Code="@FullCode" Language="C#" Expanded="true" />
 </div>
 
-<div class="demo-section">
-    <h2>From appsettings</h2>
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> From appsettings</h3>
     <p>
         Every option can come from configuration instead. Bind the section the way a trimmed or AOT app binds any
         options: the configuration binder's source generator (<code>EnableConfigurationBindingGenerator</code> in the
@@ -42,8 +43,8 @@
     </p>
 </div>
 
-<div class="demo-section">
-    <h2>Per-category log levels</h2>
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Per-category log levels</h3>
     <p>
         <code>Logs.MinimumLevel</code> is the floor: nothing below it is collected, whatever a category says.
         Above it, per-category levels use the standard logging configuration, under the <code>Belemetry</code>
@@ -52,15 +53,15 @@
     <CodeSnippet Code="@LoggingCode" Language="JSON" Expanded="true" />
 </div>
 
-<div class="demo-section">
-    <h2>Environment variables</h2>
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Environment variables</h3>
     <p>
         Outside the browser, with <code>options.UseEnvironmentVariables</code> (on by default), the standard
         variables fill in what the code leaves unset - this is how the .NET Aspire AppHost and most container
         platforms wire telemetry in. Explicit options always win.
     </p>
-    <div class="doc-table-wrap">
-        <table class="doc-table">
+    <div class="bb-scroll">
+        <table class="bb-table">
             <thead>
                 <tr><th scope="col">Variable</th><th scope="col">Effect</th></tr>
             </thead>
@@ -77,7 +78,7 @@
             </tbody>
         </table>
     </div>
-    <div class="callout">
+    <div class="bb-note">
         <p>
             The browser has no environment. In a Blazor Web App the browser script gets its configuration from the
             <em>server's</em> options through <code>&lt;BelemetryScript /&gt;</code>, so variables set on the server reach
@@ -86,115 +87,115 @@
     </div>
 </div>
 
-<div class="demo-section">
-    <h2>BelemetryOptions</h2>
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> <span>Belemetry<wbr>Options</span></h3>
     <ApiTable TypeName="BelemetryOptions" />
 </div>
 
-<div class="demo-section">
-    <h2>BelemetryConsentOptions</h2>
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> <span>Belemetry<wbr>Consent<wbr>Options</span></h3>
     <p><code>options.Consent</code> - see <a href="/consent">Consent and GDPR</a>.</p>
     <ApiTable TypeName="BelemetryConsentOptions" />
 </div>
 
-<div class="demo-section">
-    <h2>BelemetryPrivacyOptions</h2>
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> <span>Belemetry<wbr>Privacy<wbr>Options</span></h3>
     <p><code>options.Privacy</code> - see <a href="/privacy">Privacy</a>.</p>
     <ApiTable TypeName="BelemetryPrivacyOptions" />
 </div>
 
-<div class="demo-section">
-    <h2>BelemetryBrowserOptions</h2>
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> <span>Belemetry<wbr>Browser<wbr>Options</span></h3>
     <p><code>options.Browser</code> - see <a href="/browser">Browser instrumentation</a> and <a href="/transport">Transport</a>.</p>
     <ApiTable TypeName="BelemetryBrowserOptions" />
 </div>
 
-<div class="demo-section">
-    <h2>BelemetryLoggingOptions</h2>
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> <span>Belemetry<wbr>Logging<wbr>Options</span></h3>
     <p><code>options.Logs</code> - see <a href="/dotnet">.NET instrumentation</a>.</p>
     <ApiTable TypeName="BelemetryLoggingOptions" />
 </div>
 
-<div class="demo-section">
-    <h2>BelemetryTracingOptions</h2>
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> <span>Belemetry<wbr>Tracing<wbr>Options</span></h3>
     <p><code>options.Traces</code>.</p>
     <ApiTable TypeName="BelemetryTracingOptions" />
 </div>
 
-<div class="demo-section">
-    <h2>BelemetryMetricsOptions</h2>
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> <span>Belemetry<wbr>Metrics<wbr>Options</span></h3>
     <p><code>options.Metrics</code>.</p>
     <ApiTable TypeName="BelemetryMetricsOptions" />
 </div>
 
-<div class="demo-section">
-    <h2>BelemetryBatchOptions</h2>
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> <span>Belemetry<wbr>Batch<wbr>Options</span></h3>
     <p><code>options.Batch</code> - the .NET pipeline. The browser script batches with <code>options.Browser.FlushInterval</code>, <code>MaxBatchSize</code> and <code>MaxQueueSize</code>.</p>
     <ApiTable TypeName="BelemetryBatchOptions" />
 </div>
 
-<div class="demo-section">
-    <h2>BelemetryPersistenceOptions</h2>
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> <span>Belemetry<wbr>Persistence<wbr>Options</span></h3>
     <p><code>options.Persistence</code> - see <a href="/persistence">Offline persistence</a>.</p>
     <ApiTable TypeName="BelemetryPersistenceOptions" />
 </div>
 
-<div class="demo-section">
-    <h2>BelemetryServerOptions</h2>
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> <span>Belemetry<wbr>Server<wbr>Options</span></h3>
     <p><code>options.Server</code> - see <a href="/server-pipeline">Server pipeline</a>.</p>
     <ApiTable TypeName="BelemetryServerOptions" />
 </div>
 
-<div class="demo-section">
-    <h2>BelemetryOtlpExporterOptions</h2>
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> <span>Belemetry<wbr>Otlp<wbr>Exporter<wbr>Options</span></h3>
     <p>Configured by <code>options.AddOtlpExporter(...)</code> - see <a href="/otlp">OTLP</a>.</p>
     <ApiTable TypeName="BelemetryOtlpExporterOptions" />
 </div>
 
-<div class="demo-section">
-    <h2>BelemetryAzureMonitorExporterOptions</h2>
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> <span>Belemetry<wbr>Azure<wbr>Monitor<wbr>Exporter<wbr>Options</span></h3>
     <p>Configured by <code>options.AddAzureMonitorExporter(...)</code> - see <a href="/azure-monitor">Azure Monitor</a>.</p>
     <ApiTable TypeName="BelemetryAzureMonitorExporterOptions" />
 </div>
 
-<div class="demo-section">
-    <h2>BelemetryConsoleExporterOptions</h2>
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> <span>Belemetry<wbr>Console<wbr>Exporter<wbr>Options</span></h3>
     <p>Configured by <code>options.AddConsoleExporter(...)</code> - see <a href="/exporters">Console, in-memory and custom</a>.</p>
     <ApiTable TypeName="BelemetryConsoleExporterOptions" />
 </div>
 
-<div class="demo-section">
-    <h2>BelemetryFeatures</h2>
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> <span>Belemetry<wbr>Features</span></h3>
     <ApiTable TypeName="BelemetryFeatures" />
 </div>
 
-<div class="demo-section">
-    <h2>BelemetryHostKind</h2>
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> <span>Belemetry<wbr>Host<wbr>Kind</span></h3>
     <ApiTable TypeName="BelemetryHostKind" />
 </div>
 
-<div class="demo-section">
-    <h2>BelemetryBrowserTransport</h2>
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> <span>Belemetry<wbr>Browser<wbr>Transport</span></h3>
     <ApiTable TypeName="BelemetryBrowserTransport" />
 </div>
 
-<div class="demo-section">
-    <h2>BelemetryOtlpProtocol</h2>
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> <span>Belemetry<wbr>Otlp<wbr>Protocol</span></h3>
     <ApiTable TypeName="BelemetryOtlpProtocol" />
 </div>
 
-<div class="demo-section">
-    <h2>BelemetryCompression</h2>
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> <span>Belemetry<wbr>Compression</span></h3>
     <ApiTable TypeName="BelemetryCompression" />
 </div>
 
-<div class="demo-section">
-    <h2>BelemetrySignals</h2>
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> <span>Belemetry<wbr>Signals</span></h3>
     <ApiTable TypeName="BelemetrySignals" />
 </div>
 
-<div class="demo-section">
-    <h2>BelemetryMetricTemporality</h2>
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> <span>Belemetry<wbr>Metric<wbr>Temporality</span></h3>
     <ApiTable TypeName="BelemetryMetricTemporality" />
 </div>
 

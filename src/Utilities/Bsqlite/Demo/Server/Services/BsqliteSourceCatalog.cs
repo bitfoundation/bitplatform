@@ -465,7 +465,6 @@ public static partial class BsqliteSourceCatalog
             path.StartsWith("Demo/Domain/", StringComparison.OrdinalIgnoreCase)) return "Model";
         if (path.StartsWith("Demo/Server/", StringComparison.OrdinalIgnoreCase) ||
             path.StartsWith("Demo/Client/Extensions/", StringComparison.OrdinalIgnoreCase) ||
-            path.StartsWith("Demo/Client/Layout/", StringComparison.OrdinalIgnoreCase) ||
             path.Equals("Demo/Client/Program.cs", StringComparison.OrdinalIgnoreCase) ||
             path.Equals("Demo/Client/Routes.razor", StringComparison.OrdinalIgnoreCase) ||
             path.Equals("Demo/Client/_Imports.razor", StringComparison.OrdinalIgnoreCase)) return "Hosting";

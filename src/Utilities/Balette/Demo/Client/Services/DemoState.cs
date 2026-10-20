@@ -10,9 +10,6 @@ namespace Bit.Balette.Demo.Client.Services;
 /// </summary>
 public sealed class DemoState
 {
-    // The same key the inline script in App.razor reads before the first paint.
-    private const string ThemeStorageKey = "bit-balette-demo.theme";
-
     private readonly IJSRuntime _js;
     private readonly List<string> _log = [];
 
@@ -24,7 +21,11 @@ public sealed class DemoState
     /// <summary>Raised after any value changed. The layout re-registers its commands on it, so toggles show their new state.</summary>
     public event Action? Changed;
 
-    /// <summary><c>auto</c>, <c>light</c> or <c>dark</c>, written to <c>&lt;html data-theme&gt;</c> - which the site and the palette both follow.</summary>
+    /// <summary>
+    /// The site theme as the reader chose it: <c>auto</c> follows the operating system, <c>light</c> and <c>dark</c>
+    /// pin one. The site kit applies it as <c>&lt;html bit-theme="light|dark"&gt;</c>, which the site and - through
+    /// demo.css - the palette both follow; the header's toggle changes it too, and <see cref="FollowSiteTheme"/> hears it.
+    /// </summary>
     public string Theme { get; private set; } = "auto";
 
     public bool WordWrap { get; private set; } = true;
@@ -98,38 +99,32 @@ public sealed class DemoState
 
     public async Task SetThemeAsync(string theme)
     {
-        Theme = theme;
         try
         {
-            await _js.InvokeVoidAsync("document.documentElement.setAttribute", "data-theme", theme);
-            await _js.InvokeVoidAsync("localStorage.setItem", ThemeStorageKey, theme);
+            // demo.js hands the choice to the site kit's theme.js, which repaints the page and remembers it, and
+            // answers with what is in effect now.
+            Theme = await _js.InvokeAsync<string>("baletteDemo.setThemeMode", theme);
         }
         catch (Exception ex) when (ex is JSException or InvalidOperationException or JSDisconnectedException)
         {
-            // Storage can be disabled; the theme still applies for this visit.
+            // Not interactive yet, or the script is missing: the choice is remembered for this visit only.
+            Theme = theme;
         }
 
         Record($"Theme set to {theme}");
     }
 
     /// <summary>
-    /// Picks up the theme the inline script in App.razor already applied from storage, so a reload does not show
-    /// "auto" in the palette while the page is dark. Called once the layout runs interactively.
+    /// The site theme changed without this state being asked - the header's toggle, the OS, or the theme theme.js
+    /// applied from storage before the first paint, reported once the palette is interactive - so a reload does not
+    /// show "auto" in the palette while the page is dark.
     /// </summary>
-    public async Task RestoreThemeAsync()
+    public void FollowSiteTheme(string theme)
     {
-        try
-        {
-            var applied = await _js.InvokeAsync<string?>("document.documentElement.getAttribute", "data-theme");
-            if (applied is "light" or "dark" && applied != Theme)
-            {
-                Theme = applied;
-                Changed?.Invoke();
-            }
-        }
-        catch (Exception ex) when (ex is JSException or InvalidOperationException or JSDisconnectedException)
-        {
-        }
+        if (theme is not ("auto" or "light" or "dark") || theme == Theme) return;
+
+        Theme = theme;
+        Changed?.Invoke();
     }
 
     // ---- Preferences ---------------------------------------------------------------------------------------------

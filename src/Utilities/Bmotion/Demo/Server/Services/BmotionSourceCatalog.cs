@@ -2,7 +2,7 @@ using System.Text;
 using System.Reflection;
 using System.Collections.Frozen;
 using Bit.Bmotion.Demo.Server.Dtos;
-using Bit.Bmotion.Demo.Client.Shared;
+using Bit.Bmotion.Demo.Client;
 using System.Text.RegularExpressions;
 
 namespace Bit.Bmotion.Demo.Server.Services;
@@ -82,6 +82,22 @@ public static partial class BmotionSourceCatalog
 
         return start < 0 ? null : string.Join('\n', lines[start..]).TrimEnd();
     }
+
+    /// <summary>
+    /// The path a demo page's source is handed out under - its component type's namespace below the
+    /// client assembly's root, one folder a segment, the way Razor names a component after its folder.
+    /// </summary>
+    public static string SourcePathOf(DocsPageInfo page)
+    {
+        var root = typeof(SiteInfo).Namespace!;
+        var type = page.PageType.FullName!;
+        var relative = type.StartsWith(root + ".", StringComparison.Ordinal) ? type[(root.Length + 1)..] : page.PageType.Name;
+
+        return $"Demo/Client/{relative.Replace('.', '/')}.razor";
+    }
+
+    /// <summary>A demo page's route as the listing reports it: the address without its leading slash.</summary>
+    public static string SlugOf(DocsPageInfo page) => page.Url.Trim('/');
 
     /// <summary>The content of an embedded source file, or null when the path is unknown.</summary>
     public static string? GetSourceFile(string path)
@@ -185,13 +201,13 @@ public static partial class BmotionSourceCatalog
 
     private static BmotionSourceFileDto[] BuildSourceFileList()
     {
-        // A demo page describes itself in the navigation, in a sentence written to say what the page
-        // demonstrates. Scraping the file for a description instead - which is all DescribeSource can
-        // do for the files that have no nav entry - reached whatever comment came first, and for a
-        // page that is usually a nested record's doc comment or the <PageTitle>. "Drag - Bit.Bmotion"
-        // and "A shuffled tile: its label and which of the palette's five tones it uses" are not
-        // descriptions of a file anyone would choose to open.
-        var pages = NavItem.All.ToDictionary(page => Normalize(page.SourcePath), StringComparer.OrdinalIgnoreCase);
+        // A demo page describes itself in the docs catalog (Demo/Client/DocsCatalog.cs), in a sentence
+        // written to say what the page demonstrates. Scraping the file for a description instead - which
+        // is all DescribeSource can do for the files that have no catalog entry - reached whatever
+        // comment came first, and for a page that is usually a nested record's doc comment or the
+        // <PageTitle>. "Drag · Bmotion" and "A shuffled tile: its label and which of the palette's five
+        // tones it uses" are not descriptions of a file anyone would choose to open.
+        var pages = DocsCatalog.AllPages.ToDictionary(page => Normalize(SourcePathOf(page)), StringComparer.OrdinalIgnoreCase);
 
         return [.. _sourceFiles.Value
             .Select(file =>
@@ -207,7 +223,7 @@ public static partial class BmotionSourceCatalog
                     Description = page?.Description ?? DescribeSource(file.Value),
                     Lines = CountLines(file.Value),
                     Title = page?.Title,
-                    Slug = page?.Href,
+                    Slug = page is null ? null : SlugOf(page),
                     Keywords = page?.Keywords
                 };
             })

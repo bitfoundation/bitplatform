@@ -1,14 +1,51 @@
 ﻿@page "/counter"
 
-<PageTitle>Counter</PageTitle>
+<PageTitle>Counter · BevTools</PageTitle>
 
-<h1>Counter</h1>
-<p class="muted">The classic. Useful as a baseline: one click → one <em>onclick → Counter.IncrementCount</em> event → one render of <code>Counter</code>, nothing else.</p>
+<div class="bb-intro">
+    <p class="bb-overline">Scenario · Rendering</p>
+    <h1>Counter</h1>
+    <p class="bb-subtitle">
+        The classic, and the baseline every other scenario is measured against: one click is one
+        <em>onclick → Counter.IncrementCount</em> event and one render of <code>Counter</code>, nothing else.
+    </p>
+</div>
 
-<p role="status">Current count: @currentCount</p>
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> The counter</h3>
+    <p class="bb-card-desc">
+        The second button increments ten times from one event, calling <code>StateHasChanged</code> and awaiting
+        between the steps - ten renders that all trace back to a single click.
+    </p>
 
-<button class="primary" @onclick="IncrementCount">Click me</button>
-<button @onclick="IncrementTenTimes">Increment 10× with awaits (10 renders from one event)</button>
+    <div class="bb-demo">
+        <div class="bb-demo-bar"><span class="bb-demo-label">Live</span><RendererStatus /></div>
+
+        <p role="status" class="demo-count">Current count: <strong>@currentCount</strong></p>
+
+        <div class="bb-toolbar">
+            <button type="button" class="btn btn-primary" @onclick="IncrementCount">Click me</button>
+            <button type="button" class="btn btn-secondary" @onclick="IncrementTenTimes">Increment 10× with awaits (10 renders from one event)</button>
+        </div>
+    </div>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Timeline: one click, one render</h3>
+    <p class="bb-card-desc">
+        Open the <strong>Timeline</strong> and click <em>Click me</em>: the <em>onclick → Counter.IncrementCount</em>
+        event, the one batch it produced and the render of <code>Counter</code> inside it - no layout, header or
+        other page component renders with it. The ten-step button shows ten renders caused by the same event.
+    </p>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Profiler: what did this one click cost?</h3>
+    <p class="bb-card-desc">
+        In the <strong>Profiler</strong>, press <em>Reset</em>, click once and tick <em>since reset</em>: one row, one
+        render. Compare with one keystroke on the <a href="products">Products</a> page.
+    </p>
+</div>
 
 @code {
     private int currentCount = 0;

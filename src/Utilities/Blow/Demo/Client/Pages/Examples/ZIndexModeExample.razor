@@ -1,19 +1,19 @@
 ﻿@page "/examples/zindex-mode"
 
-<PageTitle>Z-Index Mode - bit Blow</PageTitle>
+<PageTitle>Z-Index Mode · Blow</PageTitle>
 
 <ExampleScaffold Title="Z-Index Mode"
                  Summary="How much of the stacking order the canvas manages. Auto lifts the selection and keeps a child above the group it sits in; Basic lifts the selection only; Manual leaves everything to the ZIndex you set yourself. The child node is deliberately listed before its group, so only Auto draws it on top.">
     <Toolbar>
         @foreach (var mode in Enum.GetValues<BlowZIndexMode>())
         {
-            <button class="btn btn-sm @(mode == _mode ? "btn-primary" : "btn-outline-secondary")"
+            <button class="btn @(mode == _mode ? "btn-primary" : "btn-secondary")"
                     @onclick="@(() => _mode = mode)">
                 @mode
             </button>
         }
         <span class="zi-sep"></span>
-        <button class="btn btn-sm btn-outline-secondary" @onclick="Swap">Swap explicit z-index</button>
+        <button class="btn btn-secondary" @onclick="Swap">Swap explicit z-index</button>
     </Toolbar>
     <ChildContent>
         <BlowCanvas Nodes="_nodes" Edges="_edges" ZIndexMode="_mode" FitViewOnInit="true">
@@ -62,13 +62,13 @@
         {
             Id = "red", Position = new(360, 60),
             Width = 140, Height = 90, ZIndex = 1,
-            Style = "background:#fee2e2;border-color:#ef4444;",
+            Style = "background:color-mix(in srgb, #ef4444 20%, var(--bit-blow-node-bg));border-color:#ef4444;",
         };
         _blue = new BlowNode
         {
             Id = "blue", Position = new(430, 110),
             Width = 140, Height = 90, ZIndex = 2,
-            Style = "background:#dbeafe;border-color:#3b82f6;",
+            Style = "background:color-mix(in srgb, #3b82f6 20%, var(--bit-blow-node-bg));border-color:#3b82f6;",
         };
         Relabel();
 

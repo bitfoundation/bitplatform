@@ -1,10 +1,10 @@
 ﻿@page "/dustbin/multiple"
 
-<PageTitle>Dustbin · Multiple Targets - bit Bdnd</PageTitle>
+<PageTitle>Dustbin - Multiple Targets · Bdnd</PageTitle>
 
-<div class="demo-header">
-    <h3>Dustbin - Multiple Targets</h3>
-    <p class="text-muted">
+<div class="bb-intro">
+    <h1>Dustbin - Multiple Targets</h1>
+    <p class="bb-subtitle">
         Each dustbin <code>Accept</code>s a different set of types, so a box only highlights
         the dustbins that can receive it. Boxes themselves carry a type.
     </p>
@@ -12,7 +12,7 @@
 
 <DemoCode />
 
-<section class="demo-stage">
+<div class="bb-demo">
     <BdndProvider>
         <div class="row-wrap">
             @foreach (var bin in _bins)
@@ -48,7 +48,7 @@
             }
         </div>
     </BdndProvider>
-</section>
+</div>
 
 @code {
     public record SourceBox(string Name, string Type);

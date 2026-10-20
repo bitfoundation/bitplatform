@@ -1,4 +1,4 @@
-﻿using Bit.Bmotion.Demo.Client.Shared;
+﻿using Bit.Bmotion.Demo.Client;
 
 namespace Bit.Bmotion.Tests.Mcp.Controllers;
 
@@ -323,14 +323,15 @@ public class McpControllerTests
     {
         var files = _controller.GetBmotionSourceFiles();
 
-        foreach (var page in NavItem.All)
+        foreach (var page in DocsCatalog.AllPages)
         {
-            var file = files.SingleOrDefault(entry => entry.Path == page.SourcePath);
+            var path = BmotionSourceCatalog.SourcePathOf(page);
+            var file = files.SingleOrDefault(entry => entry.Path == path);
 
-            Assert.IsNotNull(file, $"'{page.Title}' points at '{page.SourcePath}', which is not embedded.");
+            Assert.IsNotNull(file, $"'{page.Title}' points at '{path}', which is not embedded.");
             Assert.AreEqual("Demo page", file.Kind);
             Assert.AreEqual(page.Title, file.Title);
-            Assert.AreEqual(page.Href, file.Slug);
+            Assert.AreEqual(page.Url.Trim('/'), file.Slug);
             Assert.AreEqual(page.Keywords, file.Keywords);
 
             // Not merely non-empty: the description has to be the page's own sentence rather than
@@ -346,12 +347,12 @@ public class McpControllerTests
 
         Assert.IsTrue(pages.All(page => page.Kind == "Demo page"));
 
-        // Every navigable page, plus the handful under Pages/ that have no nav entry - the error and
-        // not-found pages - which is why this is not an equality against NavItem.All.
-        Assert.IsTrue(pages.Length >= NavItem.All.Length);
-        Assert.IsTrue(NavItem.All.All(page => pages.Any(file => file.Path == page.SourcePath)));
+        // Every docs page, plus the handful under Pages/ that have no catalog entry - the landing,
+        // error and not-found pages - which is why this is not an equality against DocsCatalog.AllPages.
+        Assert.IsTrue(pages.Length >= DocsCatalog.AllPages.Length);
+        Assert.IsTrue(DocsCatalog.AllPages.All(page => pages.Any(file => file.Path == BmotionSourceCatalog.SourcePathOf(page))));
 
-        // A keyword only a nav entry knows, so a hit proves the merged fields are searched.
+        // A keyword only a catalog entry knows, so a hit proves the merged fields are searched.
         var dragging = _controller.GetBmotionSourceFiles("constraints");
 
         Assert.IsTrue(dragging.Any(file => file.Path.EndsWith("DragPage.razor", StringComparison.Ordinal)));

@@ -1,52 +1,54 @@
 ﻿@page "/custom-nodes"
 
-<PageTitle>Custom Nodes - bit Blow</PageTitle>
+<PageTitle>Custom Nodes · Blow</PageTitle>
 
-<div class="demo-header">
-    <h3>Custom Nodes</h3>
-    <p class="text-muted">
+<div class="bb-intro">
+    <h1>Custom Nodes</h1>
+    <p class="bb-subtitle">
         Nodes rendered with a custom template. The "color" node has multiple labelled source handles.
     </p>
 </div>
 
 <DemoCode />
 
-<div class="demo-canvas">
-    <BlowCanvas Nodes="_nodes" Edges="_edges" FitViewOnInit="true">
-        <NodeTemplate Context="node">
-            @if (node.Type == "color" && node.Data is ColorData data)
-            {
-                <BlowHandle Type="BlowHandleType.Target" Position="BlowPosition.Left" />
-                <div class="custom-node">
-                    <div class="custom-node__swatch" style="background:@data.Color"></div>
-                    <div class="custom-node__body">
-                        <strong>@node.Label</strong>
-                        <div class="custom-node__hex">@data.Color</div>
+<div class="bb-demo blow-demo bb-page-wide">
+    <div class="demo-canvas">
+        <BlowCanvas Nodes="_nodes" Edges="_edges" FitViewOnInit="true">
+            <NodeTemplate Context="node">
+                @if (node.Type == "color" && node.Data is ColorData data)
+                {
+                    <BlowHandle Type="BlowHandleType.Target" Position="BlowPosition.Left" />
+                    <div class="custom-node">
+                        <div class="custom-node__swatch" style="background:@data.Color"></div>
+                        <div class="custom-node__body">
+                            <strong>@node.Label</strong>
+                            <div class="custom-node__hex">@data.Color</div>
+                        </div>
                     </div>
-                </div>
-                <BlowHandle Type="BlowHandleType.Source" Id="a" Position="BlowPosition.Right" Style="top:35%" />
-                <BlowHandle Type="BlowHandleType.Source" Id="b" Position="BlowPosition.Right" Style="top:65%" />
-            }
-            else
-            {
-                <BlowHandle Type="BlowHandleType.Target" Position="BlowPosition.Top" />
-                <div>@node.Label</div>
-                <BlowHandle Type="BlowHandleType.Source" Position="BlowPosition.Bottom" />
-            }
-        </NodeTemplate>
+                    <BlowHandle Type="BlowHandleType.Source" Id="a" Position="BlowPosition.Right" Style="top:35%" />
+                    <BlowHandle Type="BlowHandleType.Source" Id="b" Position="BlowPosition.Right" Style="top:65%" />
+                }
+                else
+                {
+                    <BlowHandle Type="BlowHandleType.Target" Position="BlowPosition.Top" />
+                    <div>@node.Label</div>
+                    <BlowHandle Type="BlowHandleType.Source" Position="BlowPosition.Bottom" />
+                }
+            </NodeTemplate>
 
-        <ChildContent>
-            <BlowBackground Variant="BlowBackgroundVariant.Lines" Gap="24" Color="#eee" />
-            <BlowControls />
-        </ChildContent>
-    </BlowCanvas>
+            <ChildContent>
+                <BlowBackground Variant="BlowBackgroundVariant.Lines" Gap="24" Color="var(--bit-blow-border-subtle)" />
+                <BlowControls />
+            </ChildContent>
+        </BlowCanvas>
+    </div>
 </div>
 
 <style>
     .custom-node { display:flex; align-items:center; gap:10px; padding:2px; }
     .custom-node__swatch { width:28px; height:28px; border-radius:6px; border:1px solid rgba(0,0,0,0.15); }
     .custom-node__body { text-align:left; }
-    .custom-node__hex { font-size:11px; color:#888; }
+    .custom-node__hex { font-size:11px; color:var(--bit-blow-text-muted); }
 </style>
 
 @code {

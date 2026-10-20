@@ -1,11 +1,11 @@
-﻿using Bit.Belemetry.Demo.Client.Shared;
+﻿using Bit.Belemetry.Demo.Client;
 using Bit.Belemetry.Demo.Server.Dtos;
 
 namespace Bit.Belemetry.Demo.Server.Services;
 
 /// <summary>
 /// One search over everything the MCP server knows - the README's sections, the demo pages (by the words
-/// <see cref="NavItem"/> describes them with), every public type of the reflected API, and the reference
+/// <see cref="DocsCatalog"/> describes them with), every public type of the reflected API, and the reference
 /// tables - each hit carrying the exact tool call that returns its full text.
 /// </summary>
 /// <remarks>
@@ -92,10 +92,10 @@ public static class BelemetrySearchIndex
                             $"GetBelemetrySourceFile(path: \"README.md#{section.Anchor}\")"));
         }
 
-        foreach (var page in NavItem.All)
+        foreach (var (page, section) in DocsCatalog.Sections.SelectMany(s => s.Pages.Select(p => (p, s.Title))).Prepend((DocsCatalog.Landing, "")))
         {
-            entries.Add(new("page", page.Title, $"{page.Keywords} {page.Category}", page.Description, page.Url,
-                            $"GetBelemetrySourceFile(path: \"{page.SourcePath}\")"));
+            entries.Add(new("page", page.Title, $"{page.Keywords} {section}".TrimEnd(), page.Description, page.Url,
+                            $"GetBelemetrySourceFile(path: \"{SiteInfo.SourcePathOf(page.PageType)}\")"));
         }
 
         foreach (var type in BelemetryApiCatalog.All)

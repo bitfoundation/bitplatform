@@ -1,5 +1,35 @@
-﻿<Router AppAssembly="typeof(Program).Assembly" NotFoundPage="typeof(Pages.NotFoundPage)">
+﻿@inject NavigationManager Nav
+@implements IDisposable
+
+@* Every page but the landing page renders inside the docs shell (Layout/DocsLayout.razor); the
+   landing page and the error pages opt out with @layout MainLayout. After a navigation the page's own
+   H1 takes focus, so a screen reader starts reading at the new page.
+
+   A page that throws while rendering is replaced by UnhandledExceptionView, inside the site's shell so
+   the header still leads elsewhere, and the next navigation recovers the boundary. *@
+
+<Router AppAssembly="typeof(Program).Assembly" NotFoundPage="typeof(Pages.NotFoundPage)">
     <Found Context="routeData">
-        <RouteView RouteData="routeData" DefaultLayout="typeof(MainLayout)" />
+        <ErrorBoundary @ref="_boundary">
+            <ChildContent>
+                <RouteView RouteData="routeData" DefaultLayout="typeof(Layout.DocsLayout)" />
+            </ChildContent>
+            <ErrorContent Context="exception">
+                <LayoutView Layout="typeof(Layout.MainLayout)">
+                    <UnhandledExceptionView Exception="exception" />
+                </LayoutView>
+            </ErrorContent>
+        </ErrorBoundary>
+        <FocusOnNavigate RouteData="routeData" Selector="h1" />
     </Found>
 </Router>
+
+@code {
+    private ErrorBoundary? _boundary;
+
+    protected override void OnInitialized() => Nav.LocationChanged += OnLocationChanged;
+
+    private void OnLocationChanged(object? sender, LocationChangedEventArgs e) => _boundary?.Recover();
+
+    public void Dispose() => Nav.LocationChanged -= OnLocationChanged;
+}

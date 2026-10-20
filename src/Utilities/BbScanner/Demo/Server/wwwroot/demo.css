@@ -1,0 +1,509 @@
+﻿/* ============================================================================================
+   BbScanner demo - the styles of the live samples.
+
+   The site's chrome, tokens and shared surfaces live in app.css (the site kit every Utilities demo
+   shares); this file only draws what is BbScanner's own - the scanner pages' layout, the
+   diagnostics readout, the result log, the generated barcodes and the landing page's live decode -
+   and it is written against the kit's --bb-* names, so it follows the light/dark theme with no
+   rules of its own for either.
+   ============================================================================================ */
+
+/* The scanner, tinted with the site's design. Its defaults sit in a zero-specificity :where()
+   block, so one class selector outranks them wherever bit-bbscanner.css lands in the head (the
+   package's initializer injects it at runtime). The viewport is a camera feed - dark in either
+   theme - so the accent stays the brand's light-theme blue in both: it is the fill of a pressed
+   control under white text, and the dark theme's lighter blue would not hold that contrast. The
+   focus ring takes the lighter one, which is what reads against the video. A page that sets these
+   inline (the customisation page) still wins. */
+.bit-bbscanner {
+    --bit-bbscanner-accent: #1276C6;
+    --bit-bbscanner-focus-ring: 0 0 0 3px rgba(79, 163, 244, .6);
+    --bit-bbscanner-radius: var(--bb-radius-xl);
+    --bit-bbscanner-font: var(--bb-font-sans);
+}
+
+/* ---------- The scanner pages: viewfinder on one side, the knobs on the other ----------
+
+   Sized by the sample's own width rather than the window's: the docs column is flanked by the nav
+   panel (and on some pages the rail), so the same window can leave it wide or narrow. */
+.scan-sample {
+    container: scan-sample / inline-size;
+}
+
+.scan-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+    gap: 1.5rem;
+    align-items: start;
+}
+
+@container scan-sample (max-width: 720px) {
+    .scan-layout {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}
+
+.scan-view {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    min-width: 0;
+}
+
+.scan-view > .bb-toolbar,
+.scan-view > .bb-note,
+.scan-view > .bb-params {
+    margin: 0;
+}
+
+/* Side by side, the viewfinder stays in view while the knobs beside it scroll - a change shows up
+   on the camera it was made for. Only where the window is tall enough to hold the column whole. */
+@media (min-height: 760px) {
+    @container scan-sample (min-width: 721px) {
+        .scan-view {
+            position: sticky;
+            top: calc(var(--bb-header-height) + 1rem);
+        }
+    }
+}
+
+/* The knobs: one recessed pane, its groups divided by hairlines - Fluent's property pane. */
+.scan-panels {
+    container: scan-panels / inline-size;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    padding: 0 1.25rem;
+    background: var(--bb-bg);
+    border: 1px solid var(--bb-border);
+    border-radius: var(--bb-radius-lg);
+}
+
+.scan-panels > .bb-note {
+    margin: 0 0 1.125rem;
+}
+
+.scan-panel {
+    padding: 1.125rem 0;
+}
+
+.scan-panel + .scan-panel {
+    border-top: 1px solid var(--bb-border);
+}
+
+.scan-panel > .bb-card-title {
+    margin-bottom: .625rem;
+}
+
+.scan-panel > :last-child {
+    margin-bottom: 0;
+}
+
+.scan-panel .bb-card-desc {
+    margin-bottom: .75rem;
+}
+
+/* A field takes the pane's width: the sliders are the controls here, and a short one is hard to
+   set precisely. */
+.scan-panel .bb-field {
+    display: flex;
+    width: 100%;
+    margin-bottom: .875rem;
+}
+
+.scan-panel .bb-field:last-child {
+    margin-bottom: 0;
+}
+
+.scan-panel .bb-field input[type="range"],
+.scan-panel .bb-field select {
+    width: 100%;
+}
+
+.scan-field-spaced {
+    margin-top: 1rem;
+}
+
+/* The label on the left, the value it is set to on the right. */
+.scan-field-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: .75rem;
+}
+
+.scan-field-head output {
+    color: var(--bb-text-muted);
+    font-family: var(--bb-mono);
+    font-size: .8125rem;
+    font-weight: var(--fl-weight-regular);
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+}
+
+.scan-checks {
+    display: flex;
+    flex-direction: column;
+    gap: .5rem;
+    margin-bottom: .875rem;
+}
+
+.scan-checks-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(9.5rem, 100%), 1fr));
+    gap: .5rem 1rem;
+}
+
+.scan-checks .bb-check {
+    align-items: flex-start;
+    line-height: 1.43;
+}
+
+.scan-checks .bb-check input {
+    margin-top: .125rem;
+}
+
+.scan-presets {
+    margin-top: .25rem;
+}
+
+@container scan-sample (max-width: 480px) {
+    .scan-panels {
+        padding: 0 1rem;
+    }
+}
+
+/* Counters in a pane: one row of them, so no cell of the hairline grid is left empty - and one
+   column once the pane is too narrow for their labels. */
+.scan-panel .bb-stats {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    margin-bottom: 0;
+}
+
+@container scan-panels (max-width: 20rem) {
+    .scan-panel .bb-stats {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}
+
+/* The badge the live playground draws over the viewfinder through ChildContent. It sits on the
+   camera feed, so its colors are the scanner's own rather than the page's. */
+.scan-badge {
+    position: absolute;
+    inset-block-start: 2.5rem;
+    inset-inline-end: .75rem;
+    padding: .1875rem .5625rem;
+    border-radius: var(--bb-radius-pill);
+    background: var(--bit-bbscanner-success, #35c77c);
+    color: #06240f;
+    font-size: var(--fl-font-size-100);
+    font-weight: var(--fl-weight-semibold);
+    pointer-events: none;
+}
+
+/* The custom message template used on the customisation page. */
+.demo-message {
+    display: inline-block;
+    font-weight: var(--fl-weight-semibold);
+    letter-spacing: .02em;
+}
+
+/* ---------- Frame diagnostics (Shared/DiagnosticsPanel) ---------- */
+
+.diag {
+    container: diag / inline-size;
+}
+
+.diag > .bb-card-title {
+    margin-bottom: .75rem;
+}
+
+/* Four readings: one row of four, or two by two - never three and an empty cell. */
+.diag .bb-stats {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    margin-bottom: 1rem;
+}
+
+@container diag (max-width: 30rem) {
+    .diag .bb-stats {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+.diag .bb-stat {
+    padding: .625rem .75rem;
+}
+
+.diag .bb-stat-value {
+    font-family: var(--bb-mono);
+    font-size: var(--fl-font-size-300);
+}
+
+/* The time split between the stages: one stacked bar, a segment per stage. The stage colors have
+   no role token of their own, so they are set here for both themes. */
+.diag {
+    --diag-gray: var(--bb-primary);
+    --diag-binarize: #8764B8;
+    --diag-matrix: var(--bb-success);
+    --diag-linear: var(--bb-warning);
+}
+
+:root[bit-theme="dark"] .diag {
+    --diag-binarize: #B696E0;
+}
+
+.diag-bar {
+    display: flex;
+    height: .5rem;
+    overflow: hidden;
+    border-radius: var(--bb-radius-pill);
+    background: var(--bb-surface-2);
+}
+
+.diag-seg {
+    height: 100%;
+    transition: width var(--bb-motion-duration) var(--bb-motion-easing);
+}
+
+.diag-seg-gray { background: var(--diag-gray); }
+.diag-seg-binarize { background: var(--diag-binarize); }
+.diag-seg-matrix { background: var(--diag-matrix); }
+.diag-seg-linear { background: var(--diag-linear); }
+
+.diag-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .375rem 1rem;
+    margin-top: .625rem;
+    color: var(--bb-text-muted);
+    font-size: var(--fl-font-size-100);
+    font-variant-numeric: tabular-nums;
+}
+
+.diag-legend > span {
+    display: inline-flex;
+    align-items: center;
+    gap: .375rem;
+}
+
+.diag-swatch {
+    display: inline-block;
+    width: .625rem;
+    height: .625rem;
+    border-radius: var(--bb-radius-sm);
+}
+
+.diag-foot {
+    margin: .75rem 0 0;
+    color: var(--bb-text-soft);
+    font-size: var(--fl-font-size-100);
+}
+
+/* ---------- The result log (Shared/ResultLog) ---------- */
+
+.result-log {
+    margin-top: 1.5rem;
+}
+
+.result-log-head {
+    margin-bottom: .75rem;
+}
+
+.result-log-head > .bb-card-title {
+    margin: 0;
+}
+
+.result-log .bb-empty {
+    margin-bottom: 0;
+}
+
+.result-value {
+    color: var(--bb-text);
+}
+
+/* ---------- Generated barcodes (Shared/BarcodeSvg) ---------- */
+
+.sample-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(13rem, 100%), 1fr));
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.sample-grid-linear {
+    grid-template-columns: repeat(auto-fill, minmax(min(22rem, 100%), 1fr));
+}
+
+/* A tile in the theme, holding a sheet of white "paper": a scanner reads dark modules on a light
+   ground, so the symbol keeps its own colors in the dark theme while the frame around it follows. */
+.sample {
+    display: flex;
+    flex-direction: column;
+    gap: .625rem;
+    /* figure carries a 40px inline margin by default, which would shrink the tile under its own
+       contents; and a grid item defaults to its min-content width, so a wide symbol would push the
+       track instead of fitting it. */
+    margin: 0;
+    min-width: 0;
+    padding: .75rem;
+    background: var(--bb-surface);
+    border: 1px solid var(--bb-border);
+    border-radius: var(--bb-radius-lg);
+    box-shadow: var(--bb-shadow-card);
+}
+
+/* The paper takes whatever height the row gives the tile, with the symbol centred on it, so the
+   sheets of one row line up and the captions under them share a baseline. */
+.sample-paper {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: .5rem;
+    background: #FFFFFF;
+    border-radius: var(--bb-radius);
+}
+
+/* The symbol keeps its aspect ratio from the viewBox and never exceeds the tile. */
+.sample-svg {
+    display: block;
+    width: 100%;
+    height: auto;
+}
+
+.sample-caption {
+    display: flex;
+    flex-direction: column;
+    gap: .125rem;
+    min-width: 0;
+    text-align: center;
+    color: var(--bb-text);
+    font-size: var(--fl-font-size-200);
+}
+
+.sample-caption strong {
+    font-weight: var(--fl-weight-semibold);
+}
+
+.sample-value {
+    color: var(--bb-text-muted);
+    font-family: var(--bb-mono);
+    font-size: var(--fl-font-size-100);
+    overflow-wrap: anywhere;
+}
+
+/* ---------- The performance page ---------- */
+
+.perf-actions {
+    margin: 0;
+}
+
+/* ---------- The landing page's hero: a symbol, and the decoder reading it ---------- */
+
+.home-live {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: 1.25rem;
+    align-items: center;
+    padding: 1.25rem;
+    background: var(--bb-surface);
+    border-top: 1px solid var(--bb-border);
+}
+
+/* A viewfinder in miniature, drawn the way the scanner draws its own: the camera's dark ground,
+   the corner reticle, and the green outline it puts round a symbol it has read. */
+.home-viewfinder {
+    position: relative;
+    display: grid;
+    place-items: center;
+    width: 12rem;
+    aspect-ratio: 1;
+    border-radius: var(--bb-radius-xl);
+    background: #0b0d12;
+}
+
+.home-viewfinder .sample {
+    padding: 0;
+    background: none;
+    border: 0;
+    box-shadow: none;
+}
+
+.home-viewfinder .sample-paper {
+    padding: .25rem;
+    outline: 2px solid transparent;
+    outline-offset: 3px;
+    transition: outline-color var(--bb-motion-duration) var(--bb-motion-easing);
+}
+
+.home-viewfinder-found .sample-paper {
+    outline-color: #35c77c;
+}
+
+.home-corner {
+    position: absolute;
+    width: 1.375rem;
+    height: 1.375rem;
+    border: 0 solid #FFFFFF;
+}
+
+.home-corner-tl { top: .625rem; left: .625rem; border-top-width: 3px; border-left-width: 3px; border-top-left-radius: .5rem; }
+.home-corner-tr { top: .625rem; right: .625rem; border-top-width: 3px; border-right-width: 3px; border-top-right-radius: .5rem; }
+.home-corner-bl { bottom: .625rem; left: .625rem; border-bottom-width: 3px; border-left-width: 3px; border-bottom-left-radius: .5rem; }
+.home-corner-br { bottom: .625rem; right: .625rem; border-bottom-width: 3px; border-right-width: 3px; border-bottom-right-radius: .5rem; }
+
+.home-live-side {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: .625rem;
+    min-width: 0;
+}
+
+.home-live-side > .bb-overline {
+    color: var(--bb-primary);
+}
+
+.home-live-copy {
+    margin: 0;
+    color: var(--bb-text-muted);
+    font-size: var(--fl-font-size-200);
+    line-height: 1.6;
+}
+
+.home-live-result {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: .375rem .5rem;
+    min-height: 1.75rem;
+    font-size: var(--fl-font-size-200);
+}
+
+@media (max-width: 480px) {
+    .home-live {
+        grid-template-columns: minmax(0, 1fr);
+        justify-items: center;
+        text-align: center;
+    }
+
+    .home-live-side {
+        align-items: center;
+    }
+}
+
+@media (forced-colors: active) {
+    .diag-seg,
+    .diag-swatch {
+        forced-color-adjust: none;
+        border-inline-end: 1px solid CanvasText;
+    }
+
+    .home-corner {
+        border-color: CanvasText;
+    }
+
+    .home-viewfinder-found .sample-paper {
+        outline-color: Highlight;
+    }
+}

@@ -1,12 +1,12 @@
 ﻿@page "/examples/drag-n-drop"
 
-<PageTitle>Drag and Drop - bit Blow</PageTitle>
+<PageTitle>Drag and Drop · Blow</PageTitle>
 
 <ExampleScaffold Title="Drag and Drop"
                  Summary="Drag a node type from the sidebar and drop it onto the canvas. The drop position is converted from screen to flow coordinates so the node lands under the cursor.">
     <div class="dnd">
         <aside class="dnd__sidebar">
-            <p class="text-muted">Drag these onto the canvas →</p>
+            <p class="bb-muted">Drag these onto the canvas →</p>
             <div class="dnd__item dnd__item--input" draggable="true" @ondragstart="@(() => _dragType = "input")">Input Node</div>
             <div class="dnd__item" draggable="true" @ondragstart="@(() => _dragType = "default")">Default Node</div>
             <div class="dnd__item dnd__item--output" draggable="true" @ondragstart="@(() => _dragType = "output")">Output Node</div>
@@ -22,12 +22,13 @@
 
 <style>
     .dnd { display:flex; height:100%; }
-    .dnd__sidebar { width:180px; padding:12px; border-right:1px solid var(--demo-border); background:#fafafa; }
+    /* Outside the canvas, so it takes the site's own surfaces rather than the flow's. */
+    .dnd__sidebar { width:180px; padding:12px; border-right:1px solid var(--bb-border); background:var(--bb-surface-sunken); color:var(--bb-text); }
     .dnd__sidebar p { font-size:12px; margin:0 0 10px; }
     .dnd__canvas { flex:1; position:relative; }
     .dnd__item {
-        padding:10px; margin-bottom:10px; border:1px solid #ccc; border-radius:8px;
-        background:#fff; cursor:grab; text-align:center; font-size:13px; font-weight:600;
+        padding:10px; margin-bottom:10px; border:1px solid var(--bb-border-strong); border-radius:8px;
+        background:var(--bb-surface); cursor:grab; text-align:center; font-size:13px; font-weight:600;
     }
     .dnd__item--input { border-color:#16a34a; }
     .dnd__item--output { border-color:#6366f1; }
@@ -35,7 +36,7 @@
     /* On a phone a fixed-width sidebar leaves the canvas a sliver: stack it above instead. */
     @@media (max-width: 640px) {
         .dnd { flex-direction:column; }
-        .dnd__sidebar { width:auto; display:flex; flex-wrap:wrap; gap:8px; border-right:0; border-bottom:1px solid var(--demo-border); }
+        .dnd__sidebar { width:auto; display:flex; flex-wrap:wrap; gap:8px; border-right:0; border-bottom:1px solid var(--bb-border); }
         .dnd__sidebar p { flex-basis:100%; margin:0; }
         .dnd__item { flex:1; margin-bottom:0; padding:6px; }
         .dnd__canvas { min-height:0; }

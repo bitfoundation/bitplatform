@@ -1,5 +1,4 @@
-﻿using Bit.BlazeDb.Demo.Client.Components;
-using Bit.BlazeDb.Demo.Client.Data;
+﻿using Bit.BlazeDb.Demo.Client.Data;
 
 namespace Microsoft.Extensions.DependencyInjection;
 
@@ -17,7 +16,6 @@ public static class IServiceCollectionExtensions
     public static IServiceCollection AddDemoServices(this IServiceCollection services)
     {
         services.AddSingleton<DemoDbService>();
-        services.AddSingleton<AppInterop>();
 
         return services;
     }

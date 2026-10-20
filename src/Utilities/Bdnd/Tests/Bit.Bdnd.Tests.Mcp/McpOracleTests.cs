@@ -274,11 +274,12 @@ public partial class McpOracleTests
     {
         var pages = BdndSourceCatalog.SourceFiles.Where(file => file.Kind == "Page").ToArray();
 
-        // The demo's navigation names every page; each of them has to be readable here, title and route included.
-        var nav = BdndSourceCatalog.GetSourceFile("Demo/Client/Layout/NavMenu.razor")!;
-        var linked = NavLinkRegex().Matches(nav).Select(match => $"/{match.Groups["href"].Value}").Where(route => route != "/mcp-server").ToArray();
+        // The demo's docs catalog - the source of its navigation - names every page; each of them has to be readable
+        // here, title and route included.
+        var catalog = BdndSourceCatalog.GetSourceFile("Demo/Client/DocsCatalog.cs")!;
+        var linked = CatalogPageRegex().Matches(catalog).Select(match => match.Groups["href"].Value).Where(route => route != "/mcp-server").ToArray();
 
-        Assert.IsNotEmpty(linked);
+        Assert.IsGreaterThan(15, linked.Length, $"the catalog names only {linked.Length} pages");
         foreach (var route in linked) Assert.IsTrue(pages.Any(page => page.Route == route && page.Title is not null), $"The navigation links {route}, and no embedded page with a title declares it.");
 
         foreach (var component in new[] { "BdndDraggable.cs", "BdndDropTarget.cs", "BdndProvider.razor", "BdndDragLayer.razor", "BdndDragHandle.razor" })
@@ -349,6 +350,8 @@ public partial class McpOracleTests
     [GeneratedRegex(@"^#{2,4} (?<text>.+)$")]
     private static partial Regex HeadingRegex();
 
-    [GeneratedRegex(@"<NavLink[^>]*\bhref=""(?<href>[^""]+)""")]
-    private static partial Regex NavLinkRegex();
+    // A page's entry opens with its address and its title: new("/dustbin/single", "Single target", "...", ...). The
+    // header's links (new("/", "Home")) end after the label.
+    [GeneratedRegex(@"\bnew\(""(?<href>/[^""]*)"",\s*""[^""]*"",")]
+    private static partial Regex CatalogPageRegex();
 }

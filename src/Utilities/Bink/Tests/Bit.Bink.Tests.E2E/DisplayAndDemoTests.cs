@@ -197,6 +197,7 @@ public sealed class DisplayAndDemoTests : BinkTest
 
     [TestMethod]
     [DataRow("/")]
+    [DataRow("/getting-started")]
     [DataRow("/signature")]
     [DataRow("/handwriting")]
     [DataRow("/whiteboard")]
@@ -225,7 +226,9 @@ public sealed class DisplayAndDemoTests : BinkTest
         await page.WaitForTimeoutAsync(700);
 
         // Every enabled button on the page must run without throwing: a dead or broken control is a demo bug.
-        var buttons = page.Locator("button:enabled:visible");
+        // The page is what <main> holds; the site header and footer around it are the same on every page, and
+        // counting their buttons would only push the page's own past the cap.
+        var buttons = page.Locator("main button:enabled:visible");
         int count = Math.Min(await buttons.CountAsync(), 30);
         for (int i = 0; i < count; i++)
         {
@@ -253,7 +256,7 @@ public sealed class DisplayAndDemoTests : BinkTest
     {
         var page = await OpenAsync("/whiteboard");
 
-        var buttons = page.Locator(".toolbar button:enabled:visible");
+        var buttons = page.Locator(".bink-toolbar button:enabled:visible");
         int count = await buttons.CountAsync();
         TestContext.WriteLine($"toolbar buttons: {count}");
         Assert.IsTrue(count > 5, "the whiteboard toolbar should offer more than a handful of controls");

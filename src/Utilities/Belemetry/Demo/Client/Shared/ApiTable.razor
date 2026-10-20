@@ -14,37 +14,33 @@
    the persisted component state, so the table is in the served HTML and is not fetched a second time
    when the WebAssembly runtime takes over. *@
 
-<div class="api-table-wrap">
+<div class="demo-api">
     @if (_info is null)
     {
-        <p class="api-loading" role="status">
+        <p class="bb-soft demo-api-loading" role="status">
             @(_failed ? $"The reference of {TypeName} could not be loaded." : $"Loading the reference of {TypeName}...")
         </p>
     }
     else
     {
-        <p class="api-title">
+        <p class="demo-api-head">
             <code>@_info.Name</code>
-            <span class="api-kind">@_info.Kind</span>
+            <span class="bb-badge">@_info.Kind</span>
         </p>
 
         @if (string.IsNullOrWhiteSpace(_info.Summary) is false)
         {
-            <p class="api-summary">@_info.Summary</p>
+            <p class="demo-api-summary">@_info.Summary</p>
         }
 
         @if (_rows.Length > 0)
         {
-            <div class="doc-table-wrap">
-                <table class="doc-table api-table">
+            <div class="bb-scroll">
+                <table class="bb-table demo-api-table">
                     <thead>
                         <tr>
                             <th scope="col">@(_isEnum ? "Value" : "Name")</th>
-                            <th scope="col">@(_isEnum ? "Number" : "Type")</th>
-                            @if (_isEnum is false)
-                            {
-                                <th scope="col">Default</th>
-                            }
+                            <th scope="col">@(_isEnum ? "Number" : "Type and default")</th>
                             <th scope="col">Description</th>
                         </tr>
                     </thead>
@@ -60,13 +56,15 @@
                                     }
                                     else
                                     {
+                                        @* One column for both, so the description keeps the width: the docs column is
+                                           narrow enough that four would leave it a few words a line. *@
                                         <code>@member.Type</code>
+                                        @if (member.Default is not null)
+                                        {
+                                            <span class="demo-api-default">= <code>@member.Default</code></span>
+                                        }
                                     }
                                 </td>
-                                @if (_isEnum is false)
-                                {
-                                    <td>@if (member.Default is not null) { <code>@member.Default</code> }</td>
-                                }
                                 <td>@member.Summary</td>
                             </tr>
                         }

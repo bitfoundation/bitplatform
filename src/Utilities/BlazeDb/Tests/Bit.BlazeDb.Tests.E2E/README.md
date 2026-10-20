@@ -22,9 +22,10 @@ WebAssembly without prerendering) and drives it in Chromium with Playwright.
 | `BrowserModuleTests` | The four modules the package ships, called the way the `[JSImport]` bindings call them: IndexedDB and OPFS writes, appends, reads and deletes, and their no-create opens; the Web Lock won once and handed over on release; AES-GCM sealing through WebCrypto, with a tampered frame and a frame moved to another file both refused; a BroadcastChannel announcement reaching the other tab and not echoing back. |
 | `DemoPageTests` | Every page of the site renders through the navigation without a console error or the error UI; a deep link opens its page; an unknown route answers 404 with the site's own page; the host page carries the boot screen and nothing prerendered; the modules are served as static web assets. |
 
-Nothing is prerendered, so the app's shell replacing the boot screen is the app running. Each test then waits
-until the demo database is open - `data-storage` on the shell turns from `Opening` to where it ended up
-(`Opfs`, or one of the in-memory fallbacks) - before it touches the page.
+Nothing is prerendered, so the app replacing the boot screen is the app running. Each test then waits
+until the demo database is open - `data-storage` on the storage badge (`.bd-status`, mounted beside the
+router on every page) turns from `Opening` to where it ended up (`Opfs`, or one of the in-memory
+fallbacks) - before it touches the page.
 
 ## Running locally
 

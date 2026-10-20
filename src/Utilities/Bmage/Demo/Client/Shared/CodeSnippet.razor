@@ -1,54 +1,46 @@
-﻿@inject IJSRuntime JS
-
-@* A code sample, behind a toggle.
-
-   One frame around the toolbar and the code rather than a button floating above a slab: the bar
-   is the code box's own header, so opening a snippet grows a panel instead of adding a second
-   thing to the page. The copy button is there whether or not the code is showing - a reader who
-   wants the snippet in their editor should not first have to read it here.
+﻿@* A code sample: SyntaxHighlighter's tokens inside the site kit's pre.bb-code, which is what gives
+   it the site's code surface - and the copy button site.js adds to every pre.bb-code. The token
+   colours are in wwwroot/demo.css.
 
    Snippets that are the point of their section - the install command, the Program.cs a reader is
-   about to paste - start open (Expanded); the full source behind a worked scenario starts closed,
-   so the scenario itself stays the first thing on the page. *@
+   about to paste - are shown as they are (Expanded); the full source behind a worked scenario sits
+   behind a "Show code" toggle, so the scenario itself stays the first thing on the page. *@
 
-<div class="code-snippet @(_show ? "open" : null)">
-    <div class="code-snippet-bar">
-        <button type="button" class="code-toggle" @onclick="Toggle"
+@if (Expanded)
+{
+    @* tabindex="0": a block wider than the column scrolls sideways, and a keyboard reader can only
+       scroll what can take focus. *@
+    <pre class="bb-code" tabindex="0"><code>@Highlighted</code></pre>
+}
+else
+{
+    <div class="bb-source">
+        <button type="button" class="btn btn-secondary" @onclick="() => _show = !_show"
                 aria-expanded="@(_show ? "true" : "false")" aria-controls="@_bodyId">
-            <span class="code-toggle-icon">
-                <Icon Path="@Icons.ChevronRight" />
-            </span>
+            <span class="demo-source-caret" aria-hidden="true">@(_show ? "▾" : "▸")</span>
+            <span class="demo-source-glyph" aria-hidden="true">&lt;/&gt;</span>
             @(_show ? "Hide code" : "Show code")
+            <span class="demo-source-lang">@Language</span>
         </button>
 
-        <span class="code-lang">@Language</span>
-
-        <button type="button" class="code-copy @(_copied ? "copied" : null)" @onclick="CopyAsync"
-                aria-label="@(_copied ? "Code copied to the clipboard" : "Copy the code to the clipboard")">
-            <Icon Path="@(_copied ? Icons.Check : Icons.Copy)" />
-            @(_copied ? "Copied" : "Copy")
-        </button>
+        @if (_show)
+        {
+            <pre class="bb-code" id="@_bodyId" tabindex="0"><code>@Highlighted</code></pre>
+        }
     </div>
-
-    @if (_show)
-    {
-        @* tabindex="0": a block wider than the column scrolls sideways, and a keyboard reader can
-           only scroll what can take focus. *@
-        <pre class="code-block" id="@_bodyId" tabindex="0"><code>@((MarkupString)SyntaxHighlighter.Highlight(Code.Trim('\n'), Language))</code></pre>
-    }
-</div>
+}
 
 @code {
     /// <summary>The source to display, copy/paste-ready.</summary>
     [Parameter, EditorRequired] public string Code { get; set; } = "";
 
     /// <summary>
-    /// The label printed on the bar, which also picks the highlighter: Razor (the default) and
-    /// C# are tokenised, anything else - a shell command, a JSON or XML file - is shown as written.
+    /// The language, which picks the highlighter: Razor (the default), HTML and XML are lexed as
+    /// markup and C# as C#; anything else - a shell command, CSS, JSON - is shown as written.
     /// </summary>
     [Parameter] public string Language { get; set; } = "Razor";
 
-    /// <summary>Whether the code starts open. Off for the full source behind a sample, on for a snippet that is the point of its section.</summary>
+    /// <summary>Whether the code is shown as it is rather than behind a toggle. On for a snippet that is the point of its section.</summary>
     [Parameter] public bool Expanded { get; set; }
 
     // The toggle points at the block it opens, so a screen reader following aria-controls lands on
@@ -57,27 +49,8 @@
     private readonly string _bodyId = $"code-{Guid.NewGuid():N}";
 
     private bool _show;
-    private bool _copied;
 
-    protected override void OnInitialized() => _show = Expanded;
-
-    private void Toggle()
-    {
-        _show = !_show;
-        _copied = false;
-    }
-
-    private async Task CopyAsync()
-    {
-        try
-        {
-            _copied = await JS.InvokeAsync<bool>("bmdCopyToClipboard", Code.Trim('\n'));
-        }
-        catch
-        {
-            // A clipboard the browser refuses to hand over is not something the reader can act on,
-            // and the code is on the page either way; the button simply does not confirm.
-            _copied = false;
-        }
-    }
+    // The samples are raw string literals, so they carry the source file's line endings; a trailing
+    // line break would otherwise render as an empty last line.
+    private MarkupString Highlighted => new(SyntaxHighlighter.Highlight(Code.ReplaceLineEndings("\n").Trim('\n'), Language));
 }

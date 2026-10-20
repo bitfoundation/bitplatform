@@ -1,18 +1,19 @@
 ﻿@page "/processors"
 @inject HttpClient Http
 
-<PageTitle>Processors - bit Belemetry</PageTitle>
+<PageTitle>Processors · Belemetry</PageTitle>
 
-<h1>Processors</h1>
+<div class="bb-intro">
+    <h1>Processors</h1>
+    <p class="bb-subtitle">
+        A processor sees every record the .NET pipeline handles before it is queued, and can change it or drop it: add a
+        tenant id to every span, rename a noisy log, drop health checks and static files, strip an attribute only your
+        app knows is sensitive. It is one small interface with three optional methods.
+    </p>
+</div>
 
-<p class="page-intro">
-    A processor sees every record the .NET pipeline handles before it is queued, and can change it or drop it: add a
-    tenant id to every span, rename a noisy log, drop health checks and static files, strip an attribute only your
-    app knows is sensitive. It is one small interface with three optional methods.
-</p>
-
-<div class="demo-section">
-    <h2>IBelemetryProcessor</h2>
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> IBelemetryProcessor</h3>
     <p>
         <code>OnSpan</code>, <code>OnLog</code> and <code>OnMetric</code> each receive the record - a
         <code>BelemetrySpan</code>, <code>BelemetryLogRecord</code> or <code>BelemetryMetric</code>, every member of
@@ -21,17 +22,17 @@
         <code>options.AddProcessor</code>; they run in the order they were added, after the built-in privacy rules.
     </p>
     <CodeSnippet Code="@ReadmeCode" Language="C#" Expanded="true" />
-    <div class="callout warn">
+    <div class="bb-note bb-note-warn">
         Processors run synchronously, on the thread that produced the record - inside the code that logged, or
         stopped the activity. They must be fast and must not block, await or call out over the network. A processor
         that throws is skipped for that record; the record itself is kept.
     </div>
 </div>
 
-<div class="demo-section">
-    <h2>Which records they see</h2>
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Which records they see</h3>
     <p>Processors run on every record of the .NET pipeline:</p>
-    <ul>
+    <ul class="bb-detail-list">
         <li><code>ILogger</code> entries, <code>Activity</code> spans and <code>Meter</code> metrics.</li>
         <li><code>IBelemetry</code> calls on WebAssembly and Hybrid, where they go through the .NET pipeline.</li>
         <li>
@@ -47,8 +48,8 @@
     </p>
 </div>
 
-<div class="demo-section">
-    <h2>A real one: DemoNoiseFilter</h2>
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> A real one: DemoNoiseFilter</h3>
     <p>
         This site runs the processor below on both of its pipelines, the WebAssembly one and the server's. The live
         feeds poll <code>/api/telemetry</code> every two seconds with <code>HttpClient</code>, and the .NET side
@@ -56,25 +57,24 @@
         record a request span for every static file and every piece of the WebAssembly payload. The browser script
         does not need it: the same URLs are in its <code>IgnoreUrls</code>.
     </p>
-    <div class="demo-row">
-        <div class="demo-card stack">
-            <div class="demo-actions">
-                <button type="button" class="btn-bl" disabled="@(RendererInfo.IsInteractive is false)" @onclick="@(() => GetAsync(EchoUrl, keep: true))">
-                    HttpClient GET /api/demo/echo (kept: @_kept)
-                </button>
-                <button type="button" class="btn-bl-subtle" disabled="@(RendererInfo.IsInteractive is false)" @onclick="@(() => GetAsync(FeedUrl, keep: false))">
-                    HttpClient GET /api/telemetry (dropped: @_dropped)
-                </button>
-            </div>
-            <TelemetryFeedView Compact="true" Match="@IsWasmHttpSpan"
-                               EmptyText="No .NET HTTP spans yet - press the first button; the second never shows up here." />
+    <div class="bb-demo">
+        <div class="bb-demo-bar"><span class="bb-demo-label">Live<span class="demo-sample-title">DemoNoiseFilter</span></span></div>
+        <div class="bb-toolbar">
+            <button type="button" class="btn btn-primary" disabled="@(RendererInfo.IsInteractive is false)" @onclick="@(() => GetAsync(EchoUrl, keep: true))">
+                HttpClient GET /api/demo/echo (kept: @_kept)
+            </button>
+            <button type="button" class="btn btn-secondary" disabled="@(RendererInfo.IsInteractive is false)" @onclick="@(() => GetAsync(FeedUrl, keep: false))">
+                HttpClient GET /api/telemetry (dropped: @_dropped)
+            </button>
         </div>
+        <TelemetryFeedView Compact="true" Match="@IsWasmHttpSpan"
+                           EmptyText="No .NET HTTP spans yet - press the first button; the second never shows up here." />
     </div>
     <CodeSnippet Code="@NoiseFilterCode" Language="C#" Expanded="true" />
 </div>
 
-<div class="demo-section">
-    <h2>Enrich, rewrite, drop</h2>
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Enrich, rewrite, drop</h3>
     <p>
         Enriching is setting attributes. Rewriting is assigning members: a span's <code>Name</code>, a log's
         <code>Body</code> or <code>Severity</code>, a metric's points. Dropping is returning <code>false</code>. The
@@ -83,8 +83,8 @@
     <CodeSnippet Code="@ExamplesCode" Language="C#" />
 </div>
 
-<div class="demo-section">
-    <h2>API</h2>
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> API</h3>
     <ApiTable TypeName="IBelemetryProcessor" />
 </div>
 
@@ -138,20 +138,32 @@
             private static readonly string[] _noise =
             [
                 .. DemoTelemetry.SelfUrls,          // "/otlp/", "/api/telemetry"
-                "/_framework/", "/_content/", "/_blazor", "/css/", "/js/", "/images/", "/favicon", "/icon-",
-                "/.well-known/", "/_vs/", "/browserLink",
+                "/_framework/", "/_content/", "/_blazor", "/images/", "/.well-known/", "/_vs/", "/browserLink",
             ];
+
+            // The site's stylesheets, scripts and icons, served at the root under fingerprinted names.
+            private static readonly string[] _staticFiles = [".css", ".js", ".map", ".svg", ".png", ".ico", ".woff2"];
 
             public bool OnSpan(BelemetrySpan span)
             {
                 var url = span.Attributes.GetString(BelemetrySemanticConventions.UrlFull)
-                       ?? span.Attributes.GetString(BelemetrySemanticConventions.UrlPath);
+                       ?? span.Attributes.GetString(BelemetrySemanticConventions.UrlPath)
+                       ?? span.Attributes.GetString(BelemetrySemanticConventions.HttpRoute);
 
                 if (url is null) return true;
 
                 foreach (var noise in _noise)
                 {
                     if (url.Contains(noise, StringComparison.OrdinalIgnoreCase)) return false;
+                }
+
+                var path = url.AsSpan();
+                var end = path.IndexOfAny('?', '#');
+                if (end >= 0) path = path[..end];
+
+                foreach (var extension in _staticFiles)
+                {
+                    if (path.EndsWith(extension, StringComparison.OrdinalIgnoreCase)) return false;
                 }
 
                 return true;

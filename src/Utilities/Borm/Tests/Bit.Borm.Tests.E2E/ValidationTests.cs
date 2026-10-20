@@ -196,7 +196,7 @@ public sealed class ValidationTests : BormTest
     public async Task Values_are_tidied_on_the_way_in_and_a_date_outside_its_window_is_reported()
     {
         var page = await OpenAsync("/settled-answers");
-        var model = page.Locator(".demo-split pre");
+        var model = page.Locator(".demo-readout pre");
 
         // Normalize and Trim fix the value rather than complain about it, in the box and in the model alike.
         await EnterAsync(Control(page, "Reference"), "  bk-2048 ");

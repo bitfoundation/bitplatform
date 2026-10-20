@@ -1,10 +1,10 @@
 ﻿@page "/interactions"
 
-<PageTitle>Interactions - bit Blow</PageTitle>
+<PageTitle>Interactions · Blow</PageTitle>
 
-<div class="demo-header">
-    <h3>Interactions Playground</h3>
-    <p class="text-muted">
+<div class="bb-intro">
+    <h1>Interactions Playground</h1>
+    <p class="bb-subtitle">
         Toggle behaviours on the left and watch the event log. <strong>Shift-drag</strong> the background
         to box-select, select an edge to drag its endpoints (<strong>reconnect</strong>), and use the
         imperative API buttons. Arrow keys nudge selected nodes.
@@ -13,71 +13,73 @@
 
 <DemoCode />
 
-<div class="demo-canvas" style="height: calc(100vh - 240px);">
-    <BlowCanvas @ref="_flow"
-                Nodes="_nodes"
-                Edges="_edges"
-                FitViewOnInit="true"
-                SnapToGrid="_snapToGrid"
-                SnapGridX="20" SnapGridY="20"
-                ConnectOnClick="_connectOnClick"
-                SelectionOnDrag="_selectionOnDrag"
-                PanOnScroll="_panOnScroll"
-                ZoomOnDoubleClick="_zoomOnDoubleClick"
-                OnlyRenderVisibleElements="_cullOffscreen"
-                OnConnect="OnConnect"
-                OnConnectStart="@(_ => Log("connect: start"))"
-                OnConnectEnd="@(() => Log("connect: end"))"
-                OnReconnect="OnReconnect"
-                OnSelectionChange="OnSelectionChange"
-                OnNodeDoubleClick="@(e => Log($"dblclick node {e.Node.Id}"))"
-                OnNodeContextMenu="@(e => Log($"context menu on node {e.Node.Id}"))"
-                OnNodeDragStop="@(n => Log($"drag stop {n.Id} @ {n.Position}"))">
-        <BlowBackground Variant="BlowBackgroundVariant.Dots" Gap="20" />
-        <BlowControls />
-        <BlowMiniMap Pannable="true" />
+<div class="bb-demo blow-demo bb-page-wide">
+    <div class="demo-canvas">
+        <BlowCanvas @ref="_flow"
+                    Nodes="_nodes"
+                    Edges="_edges"
+                    FitViewOnInit="true"
+                    SnapToGrid="_snapToGrid"
+                    SnapGridX="20" SnapGridY="20"
+                    ConnectOnClick="_connectOnClick"
+                    SelectionOnDrag="_selectionOnDrag"
+                    PanOnScroll="_panOnScroll"
+                    ZoomOnDoubleClick="_zoomOnDoubleClick"
+                    OnlyRenderVisibleElements="_cullOffscreen"
+                    OnConnect="OnConnect"
+                    OnConnectStart="@(_ => Log("connect: start"))"
+                    OnConnectEnd="@(() => Log("connect: end"))"
+                    OnReconnect="OnReconnect"
+                    OnSelectionChange="OnSelectionChange"
+                    OnNodeDoubleClick="@(e => Log($"dblclick node {e.Node.Id}"))"
+                    OnNodeContextMenu="@(e => Log($"context menu on node {e.Node.Id}"))"
+                    OnNodeDragStop="@(n => Log($"drag stop {n.Id} @ {n.Position}"))">
+            <BlowBackground Variant="BlowBackgroundVariant.Dots" Gap="20" />
+            <BlowControls />
+            <BlowMiniMap Pannable="true" />
 
-        <BlowPanel Position="top-left">
-            <div class="toolbar">
-                <label><input type="checkbox" @bind="_snapToGrid" /> Snap to grid</label>
-                <label><input type="checkbox" @bind="_connectOnClick" /> Connect on click</label>
-                <label><input type="checkbox" @bind="_selectionOnDrag" /> Selection on drag</label>
-                <label><input type="checkbox" @bind="_panOnScroll" /> Pan on scroll</label>
-                <label><input type="checkbox" @bind="_zoomOnDoubleClick" /> Zoom on double-click</label>
-                <label><input type="checkbox" @bind="_cullOffscreen" /> Cull off-screen</label>
-            </div>
-        </BlowPanel>
+            <BlowPanel Position="top-left">
+                <div class="toolbar">
+                    <label><input type="checkbox" @bind="_snapToGrid" /> Snap to grid</label>
+                    <label><input type="checkbox" @bind="_connectOnClick" /> Connect on click</label>
+                    <label><input type="checkbox" @bind="_selectionOnDrag" /> Selection on drag</label>
+                    <label><input type="checkbox" @bind="_panOnScroll" /> Pan on scroll</label>
+                    <label><input type="checkbox" @bind="_zoomOnDoubleClick" /> Zoom on double-click</label>
+                    <label><input type="checkbox" @bind="_cullOffscreen" /> Cull off-screen</label>
+                </div>
+            </BlowPanel>
 
-        <BlowPanel Position="top-right">
-            <div class="toolbar">
-                <button class="btn btn-sm btn-primary" @onclick="AddNode">Add node</button>
-                <button class="btn btn-sm" @onclick="DeleteSelected">Delete selected</button>
-                <button class="btn btn-sm" @onclick="() => _flow?.FitView()">Fit view</button>
-                <button class="btn btn-sm" @onclick="() => _flow?.ZoomTo(1.5)">Zoom 1.5×</button>
-                <button class="btn btn-sm" @onclick="Export">Export</button>
-            </div>
-        </BlowPanel>
+            <BlowPanel Position="top-right">
+                <div class="toolbar">
+                    <button class="btn btn-primary" @onclick="AddNode">Add node</button>
+                    <button class="btn btn-secondary" @onclick="DeleteSelected">Delete selected</button>
+                    <button class="btn btn-secondary" @onclick="() => _flow?.FitView()">Fit view</button>
+                    <button class="btn btn-secondary" @onclick="() => _flow?.ZoomTo(1.5)">Zoom 1.5×</button>
+                    <button class="btn btn-secondary" @onclick="Export">Export</button>
+                </div>
+            </BlowPanel>
 
-        @* Bottom-centre: the corners below are taken by the controls and the minimap. *@
-        <BlowPanel Position="bottom-center">
-            <div class="event-log">
-                <div class="event-log__title">Event log &middot; selected: @_selectedCount</div>
-                @foreach (var line in _log)
-                {
-                    <div class="event-log__line">@line</div>
-                }
-            </div>
-        </BlowPanel>
-    </BlowCanvas>
+            @* Bottom-centre: the corners below are taken by the controls and the minimap. *@
+            <BlowPanel Position="bottom-center">
+                <div class="event-log">
+                    <div class="event-log__title">Event log &middot; selected: @_selectedCount</div>
+                    @foreach (var line in _log)
+                    {
+                        <div class="event-log__line">@line</div>
+                    }
+                </div>
+            </BlowPanel>
+        </BlowCanvas>
+    </div>
 </div>
 
 <style>
     .toolbar { display:flex; flex-direction:column; gap:4px; font-size:13px; }
     .toolbar label { display:flex; align-items:center; gap:6px; white-space:nowrap; }
     .toolbar button { width:100%; }
-    .event-log { width:230px; max-height:200px; overflow:auto; font-size:12px; font-family:monospace; }
+    .event-log { width:230px; max-height:200px; overflow:auto; padding:6px 8px; font-size:12px; font-family:monospace; color:var(--bit-blow-text); background:var(--bit-blow-surface-translucent); border:1px solid var(--bit-blow-border); border-radius:6px; }
     .event-log__title { font-weight:600; margin-bottom:4px; font-family:inherit; }
-    .event-log__line { color:#444; padding:1px 0; border-top:1px solid #f0f0f0; }
+    .event-log__line { color:var(--bit-blow-text-muted); padding:1px 0; border-top:1px solid var(--bit-blow-border-subtle); }
 </style>
 
 @code {

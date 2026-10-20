@@ -1,6 +1,6 @@
 ﻿@page "/examples/backgrounds"
 
-<PageTitle>Backgrounds - bit Blow</PageTitle>
+<PageTitle>Backgrounds · Blow</PageTitle>
 
 <ExampleScaffold Title="Backgrounds"
                  Summary="The Background component supports dots, lines and cross patterns. Adjust the variant, gap and color, or stack two backgrounds for a grid-with-dots effect.">
@@ -20,7 +20,7 @@
         <BlowCanvas Nodes="_nodes" Edges="_edges" FitViewOnInit="true">
             @if (_stacked)
             {
-                <BlowBackground Variant="BlowBackgroundVariant.Lines" Gap="_gap * 4" Color="#e5e7eb" />
+                <BlowBackground Variant="BlowBackgroundVariant.Lines" Gap="_gap * 4" Color="var(--bit-blow-border)" />
             }
             <BlowBackground Variant="_variant" Gap="_gap" Color="#9ca3af" />
             <BlowControls />

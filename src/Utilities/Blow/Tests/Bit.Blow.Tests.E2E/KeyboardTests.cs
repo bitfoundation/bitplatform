@@ -30,6 +30,10 @@ public sealed class KeyboardTests : BlowTest
         await page.Keyboard.PressAsync("Enter");
         await EventuallyAsync(async () => (await SelectedNodesAsync(page)).SequenceEqual([focused]), $"Enter selected node {focused}");
 
+        // Focus landing on a node within AutoPanMargin of the pane's edge pans it into view, an eased 200ms
+        // move (AutoPanOnNodeFocus): the node is measured once that has settled, not while it is still sliding.
+        await WaitForQuietAsync(page);
+
         var zoom = (await ViewportAsync(page)).Zoom;
         var before = await NodeBoxAsync(page, focused);
         var scrolled = await page.EvaluateAsync<double>("() => window.scrollY");
@@ -54,7 +58,7 @@ public sealed class KeyboardTests : BlowTest
     [TestMethod]
     public async Task Escape_clears_the_selection()
     {
-        var page = await OpenAsync("/");
+        var page = await OpenAsync("/basic-flow");
         var two = await NodeBoxAsync(page, "2");
         var three = await NodeBoxAsync(page, "3");
 
@@ -72,7 +76,7 @@ public sealed class KeyboardTests : BlowTest
     [TestMethod]
     public async Task Escape_abandons_a_drag_and_puts_the_node_back()
     {
-        var page = await OpenAsync("/");
+        var page = await OpenAsync("/basic-flow");
         var before = await NodeBoxAsync(page, "3");
 
         await DragAsync(page, before.Centre, before.Centre.Offset(-90, 60), release: false);

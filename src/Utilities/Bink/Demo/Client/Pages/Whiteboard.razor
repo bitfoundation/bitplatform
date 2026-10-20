@@ -2,40 +2,42 @@
 @using System.Numerics
 @inject FileDownloads Downloads
 
-<PageTitle>Whiteboard - bit Bink</PageTitle>
+<PageTitle>Whiteboard · Bink</PageTitle>
 
-<h1>Whiteboard</h1>
-<p class="page-intro">
-    The full editor: pens, markers, highlighters, three kinds of eraser, shapes, text, selection with move,
-    resize and rotate, layers, pan and zoom. Everything here is built from the public API.
-</p>
+<div class="bb-intro">
+    <h1>Whiteboard</h1>
+    <p class="bb-subtitle">
+        The full editor: pens, markers, highlighters, three kinds of eraser, shapes, text, selection with move,
+        resize and rotate, layers, pan and zoom. Everything here is built from the public API.
+    </p>
+</div>
 
-<div class="panel">
-    <div class="toolbar" role="toolbar" aria-label="Whiteboard tools">
-        <div class="toolbar-group" role="group" aria-label="Tool">
+<div class="bb-demo bink-editor bb-page-wide">
+    <div class="bb-toolbar bink-toolbar" role="toolbar" aria-label="Whiteboard tools">
+        <div class="bb-segmented" role="group" aria-label="Tool">
             @foreach ((string id, string label, string title) in ToolButtons)
             {
-                <button type="button" class="btn @(_toolId == id ? "active" : null)" title="@title"
+                <button type="button" title="@title"
                         aria-pressed="@(_toolId == id ? "true" : "false")"
                         @onclick="() => SelectTool(id)">@label</button>
             }
         </div>
 
-        <div class="toolbar-separator"></div>
+        <span class="bink-sep" aria-hidden="true"></span>
 
         <ColorSwatches Colors="Palette" Value="@_color" ValueChanged="SetColor" />
 
-        <div class="toolbar-separator"></div>
+        <span class="bink-sep" aria-hidden="true"></span>
 
-        <label class="field">
+        <label class="bink-field">
             Size
             <input type="range" min="1" max="40" step="1" value="@_width" aria-label="Size" @onchange="OnWidthChanged" />
-            <span style="min-width:2ch">@((int)_width)</span>
+            <span class="bink-field-value">@((int)_width)</span>
         </label>
 
         @if (_toolId is "rect" or "ellipse")
         {
-            <label class="field">
+            <label class="bb-check">
                 <input type="checkbox" checked="@_fill" @onchange="OnFillChanged" />
                 Fill
             </label>
@@ -43,7 +45,7 @@
 
         @if (_toolId == "eraser")
         {
-            <label class="field">
+            <label class="bink-field">
                 Eraser
                 <select value="@_eraserMode" @onchange="OnEraserModeChanged" aria-label="Eraser mode">
                     <option value="Stroke">Whole stroke</option>
@@ -53,29 +55,29 @@
             </label>
         }
 
-        <div class="toolbar-spacer"></div>
+        <span class="bb-spacer"></span>
 
-        <div class="toolbar-group" role="group" aria-label="History">
-            <button type="button" class="btn" disabled="@(_canvas is null || !_canvas.History.CanUndo)"
+        <div class="bink-group" role="group" aria-label="History">
+            <button type="button" class="btn btn-secondary" disabled="@(_canvas is null || !_canvas.History.CanUndo)"
                     title="Undo (Ctrl+Z)" @onclick="() => _canvas?.Undo()">Undo</button>
-            <button type="button" class="btn" disabled="@(_canvas is null || !_canvas.History.CanRedo)"
+            <button type="button" class="btn btn-secondary" disabled="@(_canvas is null || !_canvas.History.CanRedo)"
                     title="Redo (Ctrl+Shift+Z)" @onclick="() => _canvas?.Redo()">Redo</button>
-            <button type="button" class="btn danger" disabled="@_document.IsEmpty" @onclick="() => _canvas?.Clear()">Clear</button>
+            <button type="button" class="btn btn-secondary bink-danger" disabled="@_document.IsEmpty" @onclick="() => _canvas?.Clear()">Clear</button>
         </div>
     </div>
 
-    <div class="toolbar" style="border-top:none">
-        <div class="toolbar-group" role="group" aria-label="View">
-            <button type="button" class="btn" @onclick="() => _canvas?.ZoomBy(1.25f)" aria-label="Zoom in">+</button>
-            <button type="button" class="btn" @onclick="() => _canvas?.ZoomBy(0.8f)" aria-label="Zoom out">-</button>
-            <button type="button" class="btn" @onclick="() => _canvas?.ZoomToFit()">Fit</button>
-            <button type="button" class="btn" @onclick="() => _canvas?.ResetViewport()">100%</button>
+    <div class="bb-toolbar bink-toolbar">
+        <div class="bink-group" role="group" aria-label="View">
+            <button type="button" class="btn btn-secondary bink-btn-square" @onclick="() => _canvas?.ZoomBy(1.25f)" aria-label="Zoom in" title="Zoom in (Ctrl++)">+</button>
+            <button type="button" class="btn btn-secondary bink-btn-square" @onclick="() => _canvas?.ZoomBy(0.8f)" aria-label="Zoom out" title="Zoom out (Ctrl+-)">&minus;</button>
+            <button type="button" class="btn btn-secondary" @onclick="() => _canvas?.ZoomToFit()" title="Zoom to fit (Ctrl+9)">Fit</button>
+            <button type="button" class="btn btn-secondary" @onclick="() => _canvas?.ResetViewport()" title="Actual size (Ctrl+0)">100%</button>
         </div>
 
-        <div class="toolbar-separator"></div>
+        <span class="bink-sep" aria-hidden="true"></span>
 
-        <div class="toolbar-group" role="group" aria-label="Layers">
-            <label class="field">
+        <div class="bink-group" role="group" aria-label="Layers">
+            <label class="bink-field">
                 Layer
                 <select value="@_activeLayer" @onchange="OnLayerChanged" aria-label="Active layer">
                     @foreach (BinkLayer layer in _document.Layers.Reverse())
@@ -84,42 +86,42 @@
                     }
                 </select>
             </label>
-            <button type="button" class="btn" @onclick="AddLayer">Add layer</button>
-            <button type="button" class="btn" aria-pressed="@(ActiveLayer?.IsVisible == false ? "true" : "false")"
+            <button type="button" class="btn btn-secondary" @onclick="AddLayer">Add layer</button>
+            <button type="button" class="btn btn-secondary" aria-pressed="@(ActiveLayer?.IsVisible == false ? "true" : "false")"
                     @onclick="ToggleLayerVisibility">@(ActiveLayer?.IsVisible == false ? "Show" : "Hide")</button>
-            <button type="button" class="btn" aria-pressed="@(ActiveLayer?.IsLocked == true ? "true" : "false")"
+            <button type="button" class="btn btn-secondary" aria-pressed="@(ActiveLayer?.IsLocked == true ? "true" : "false")"
                     @onclick="ToggleLayerLock">@(ActiveLayer?.IsLocked == true ? "Unlock" : "Lock")</button>
-            <button type="button" class="btn danger" disabled="@(_document.Layers.Count < 2)" @onclick="DeleteLayer">Delete layer</button>
+            <button type="button" class="btn btn-secondary bink-danger" disabled="@(_document.Layers.Count < 2)" @onclick="DeleteLayer">Delete layer</button>
         </div>
 
-        <div class="toolbar-spacer"></div>
+        <span class="bb-spacer"></span>
 
-        <div class="toolbar-group" role="group" aria-label="File">
-            <label class="btn">
+        <div class="bink-group" role="group" aria-label="File">
+            <label class="btn btn-secondary">
                 Open
-                <InputFile OnChange="OpenAsync" accept=".json,.bink,application/json" style="display:none" />
+                <InputFile OnChange="OpenAsync" accept=".json,.bink,application/json" class="bink-file-input" />
             </label>
-            <button type="button" class="btn" @onclick="SaveAsync">Save</button>
-            <button type="button" class="btn" disabled="@_document.IsEmpty" @onclick="ExportSvgAsync">Export SVG</button>
-            <button type="button" class="btn" disabled="@_document.IsEmpty" @onclick="ExportPngAsync">Export PNG</button>
+            <button type="button" class="btn btn-secondary" @onclick="SaveAsync">Save</button>
+            <button type="button" class="btn btn-secondary" disabled="@_document.IsEmpty" @onclick="ExportSvgAsync">Export SVG</button>
+            <button type="button" class="btn btn-secondary" disabled="@_document.IsEmpty" @onclick="ExportPngAsync">Export PNG</button>
         </div>
     </div>
 
-    <div class="toolbar" style="border-top:none" role="toolbar" aria-label="Selection">
-        <div class="toolbar-group" role="group" aria-label="Arrange">
-            <button type="button" class="btn" disabled="@_document.IsEmpty" title="Select all (Ctrl+A)" @onclick="SelectAll">Select all</button>
-            <button type="button" class="btn" disabled="@(!HasSelection)" title="Duplicate (Ctrl+D)" @onclick="Duplicate">Duplicate</button>
-            <button type="button" class="btn" disabled="@(!HasSelection)" @onclick="() => Arrange(toFront: true)">Bring to front</button>
-            <button type="button" class="btn" disabled="@(!HasSelection)" @onclick="() => Arrange(toFront: false)">Send to back</button>
-            <button type="button" class="btn danger" disabled="@(!HasSelection)" title="Delete" @onclick="() => _canvas?.DeleteSelection()">Delete</button>
+    <div class="bb-toolbar bink-toolbar" role="toolbar" aria-label="Selection">
+        <div class="bink-group" role="group" aria-label="Arrange">
+            <button type="button" class="btn btn-secondary" disabled="@_document.IsEmpty" title="Select all (Ctrl+A)" @onclick="SelectAll">Select all</button>
+            <button type="button" class="btn btn-secondary" disabled="@(!HasSelection)" title="Duplicate (Ctrl+D)" @onclick="Duplicate">Duplicate</button>
+            <button type="button" class="btn btn-secondary" disabled="@(!HasSelection)" @onclick="() => Arrange(toFront: true)">Bring to front</button>
+            <button type="button" class="btn btn-secondary" disabled="@(!HasSelection)" @onclick="() => Arrange(toFront: false)">Send to back</button>
+            <button type="button" class="btn btn-secondary bink-danger" disabled="@(!HasSelection)" title="Delete" @onclick="() => _canvas?.DeleteSelection()">Delete</button>
         </div>
         @if (_message is not null)
         {
-            <span class="field" role="status">@_message</span>
+            <span class="bink-hint" role="status">@_message</span>
         }
     </div>
 
-    <div class="canvas-host">
+    <div class="bink-surface">
         <BinkCanvas @ref="_canvas"
                    Document="_document"
                    Height="520px"
@@ -141,11 +143,53 @@
     </CanvasStatus>
 </div>
 
-<div class="note">
+<div class="bb-note">
     Selection has real handles: drag inside the box to move, the corners and edges to resize, the circle above it
-    to rotate. Manipulation only changes each element's transform, so the vector data is never rewritten and undo
-    restores it exactly. Arrow keys nudge, Shift makes larger steps, Delete removes. A locked layer is skipped by
-    selection and erasing, and saving writes the whole board, layers included, as a file you can open again.
+    to rotate. Arrow keys nudge, Shift makes larger steps, Delete removes. A locked layer is skipped by selection
+    and erasing, and saving writes the whole board, layers included, as a file you can open again.
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> A tool is a parameter</h3>
+    <p class="bb-card-desc">
+        Every button in the first row swaps the canvas's <code>Tool</code> - and, for the drawing tools, its
+        <code>Brush</code>. Shapes take their stroke and fill from <code>ShapeStyle</code>, text its look from the
+        text tool's own style. Nothing about the canvas has to be told that the tool changed.
+    </p>
+    <pre class="bb-code"><span class="k">switch</span> (id)
+{
+    <span class="k">case</span> <span class="s">"marker"</span>:
+        _brush = <span class="k">new</span> BinkMarkerBrush { Width = MathF.Max(_width * 1.5f, 6f), Color = color };
+        _tool = <span class="k">new</span> BinkDrawTool();
+        <span class="k">break</span>;
+    <span class="k">case</span> <span class="s">"eraser"</span>:
+        _tool = <span class="k">new</span> BinkEraserTool { Mode = Enum.Parse&lt;BinkEraserMode&gt;(_eraserMode), Radius = MathF.Max(_width * 2f, 8f) };
+        <span class="k">break</span>;
+    <span class="k">case</span> <span class="s">"arrow"</span>:
+        _tool = <span class="k">new</span> BinkShapeTool(BinkShapeKind.Arrow);
+        <span class="k">break</span>;
+    <span class="k">case</span> <span class="s">"text"</span>:
+        _tool = <span class="k">new</span> BinkTextTool { Style = BinkTextStyle.Default <span class="k">with</span> { FontSize = MathF.Max(_width * 4f, 14f), Color = color } };
+        <span class="k">break</span>;
+}</pre>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Transforms, not rewrites</h3>
+    <p class="bb-card-desc">
+        Moving, resizing and rotating only change each element's transform, so the vector data is never rewritten
+        and undo restores it exactly. Edits the page makes itself - duplicating, bringing to front - go through the
+        same document API, grouped into one undo step with <code>BeginBatch</code>.
+    </p>
+    <pre class="bb-code"><span class="k">using</span> (_document.BeginBatch(<span class="s">"Duplicate"</span>))
+{
+    <span class="k">foreach</span> (BinkElement element <span class="k">in</span> _canvas.Selection.Elements.ToList())
+    {
+        Guid? layer = _document.GetLayerOf(element.Id)?.Id;
+        BinkElement copy = element.Translate(<span class="k">new</span> Vector2(16f, 16f)) <span class="k">with</span> { Id = Guid.NewGuid(), Version = 0 };
+        _document.AddElement(copy, layer);
+    }
+}</pre>
 </div>
 
 @code {

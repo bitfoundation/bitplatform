@@ -1,14 +1,14 @@
 ﻿@page "/examples/moving-handles"
 @using System.Globalization
 
-<PageTitle>Moving Handles - bit Blow</PageTitle>
+<PageTitle>Moving Handles · Blow</PageTitle>
 
 <ExampleScaffold Title="Moving Handles"
                  Summary="Add or remove handles on a node at runtime. After the handle layout changes, the canvas re-measures so connected edges snap to the correct anchors.">
     <Toolbar>
-        <button class="btn btn-sm btn-primary" @onclick="AddHandle">Add handle</button>
-        <button class="btn btn-sm" @onclick="RemoveHandle">Remove handle</button>
-        <span class="text-muted">@_handleCount source handle(s)</span>
+        <button class="btn btn-primary" @onclick="AddHandle">Add handle</button>
+        <button class="btn btn-secondary" @onclick="RemoveHandle">Remove handle</button>
+        <span class="bb-muted">@_handleCount source handle(s)</span>
     </Toolbar>
     <ChildContent>
         <BlowCanvas @ref="_flow" Nodes="_nodes" Edges="_edges" FitViewOnInit="true">

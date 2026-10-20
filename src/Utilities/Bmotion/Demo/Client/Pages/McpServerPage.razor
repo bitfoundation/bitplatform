@@ -10,23 +10,24 @@
    The tool, prompt and resource tables are fetched rather than written out, for the same reason:
    they come from GetMcpCatalog, which reflects over the attributes that declare them. *@
 
-<PageTitle>MCP server - Bit.Bmotion</PageTitle>
+<PageTitle>MCP server · Bmotion</PageTitle>
 
-<h1>MCP server</h1>
+<div class="bb-intro">
+    <h1>MCP server</h1>
+    <p class="bb-subtitle">
+        This demo ships a <strong>Model Context Protocol</strong> server, so an AI agent can write
+        Bmotion code from what the library <em>actually</em> is rather than from what it remembers.
+        Half of its tools answer from this build's own text - the guide, the XML documentation compiled
+        into the assembly, the source of every page you have been reading. The other half answer by
+        <strong>running the real animation engine off-screen</strong> and reporting what it did. That
+        second half is the reason it exists: no amount of documentation can tell you that
+        <code>Bm.Spring(stiffness: 400, damping: 2)</code> wobbles for five seconds, or that animating
+        <code>height</code> stops moving the moment your app is served over Blazor Server.
+    </p>
+</div>
 
-<p class="page-intro">
-    This demo ships a <strong>Model Context Protocol</strong> server, so an AI agent can write
-    Bmotion code from what the library <em>actually</em> is rather than from what it remembers.
-    Half of its tools answer from this build's own text - the guide, the XML documentation compiled
-    into the assembly, the source of every page you have been reading. The other half answer by
-    <strong>running the real animation engine off-screen</strong> and reporting what it did. That
-    second half is the reason it exists: no amount of documentation can tell you that
-    <code>Bm.Spring(stiffness: 400, damping: 2)</code> wobbles for five seconds, or that animating
-    <code>height</code> stops moving the moment your app is served over Blazor Server.
-</p>
-
-<div class="demo-section">
-    <h2>Why an animation library needs one</h2>
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Why an animation library needs one</h3>
     <p>
         Almost every way of getting an animation wrong is silent. There is no compiler error, no
         exception, and nothing in the browser console - the page simply does not move, or moves
@@ -34,25 +35,25 @@
         directly:
     </p>
 
-    <div class="mcp-why">
+    <div class="bb-grid mcp-why">
         @foreach (var (index, problem) in _problems.Index())
         {
             <Bmotion Initial="Bm.To(opacity: 0, y: 18)"
                      WhileInView="Bm.To(opacity: 1, y: 0)"
                      Once="true"
                      Transition="@Bm.Spring(bounce: 0.2, duration: 0.5).WithDelay(index * 0.08)">
-                <div class="mcp-why-card">
-                    <span class="mcp-why-symptom">@problem.Symptom</span>
-                    <p>@problem.Cause</p>
-                    <code>@problem.Tool</code>
+                <div class="bb-card mcp-why-card">
+                    <strong class="mcp-why-symptom">@problem.Symptom</strong>
+                    <p class="bb-card-desc">@problem.Cause</p>
+                    <code>@WordBreaks(problem.Tool)</code>
                 </div>
             </Bmotion>
         }
     </div>
-</div>
+</section>
 
-<div class="demo-section">
-    <h2>Connect your agent</h2>
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Connect your agent</h3>
     <p>
         The server speaks MCP over HTTP at <code>/mcp</code>. Run this demo, then point any MCP
         client at it. The same methods are also plain <code>GET</code> endpoints under
@@ -67,7 +68,7 @@
 
        aria-selected is written out as a word rather than bound to the bool: a false bool renders
        as no attribute at all, and an unselected tab has to say so. *@
-    <div class="mcp-tabs" role="tablist" aria-label="MCP client">
+    <div class="bb-tabs mcp-tabs" role="tablist" aria-label="MCP client">
         @foreach (var client in _clients)
         {
             var isSelected = _client == client.Name;
@@ -86,19 +87,20 @@
     </div>
 
     @* Every panel is rendered, and the ones that are not selected are hidden: aria-controls has to
-       point at an element that exists, on the tabs that are not the current one too. *@
+       point at an element that exists, on the tabs that are not the current one too. The config is
+       shown rather than folded away - it is the one thing on the page a reader came to copy. *@
     @foreach (var client in _clients)
     {
         <div role="tabpanel" id="@PanelId(client.Name)" aria-labelledby="@TabId(client.Name)"
              hidden="@(_client != client.Name)">
             <p class="mcp-tab-note">@client.Note</p>
-            <CodeSnippet Code="@client.Config(McpUrl)" />
+            <pre class="bb-code">@client.Config(McpUrl)</pre>
         </div>
     }
-</div>
+</section>
 
-<div class="demo-section">
-    <h2>The transition lab</h2>
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> The transition lab</h3>
     <p>
         <code>SimulateBmotionTransition</code> plays a transition on the real engine with no browser
         involved, and reports what the motion does. Nothing in a transition states its own settle
@@ -111,47 +113,55 @@
         measured, handed back as keyframes.
     </p>
 
-    <div class="mcp-lab">
-        <div class="mcp-lab-controls">
-            <label for="mcp-spec">Transition</label>
-            <input id="mcp-spec" type="text" value="@_spec" @onchange="OnSpecChanged" disabled="@_busy" />
+    <div class="bb-demo mcp-lab">
+        <div class="bb-demo-bar"><span class="bb-demo-label">SimulateBmotionTransition</span></div>
 
-            <div class="mcp-presets">
-                @foreach (var preset in _presets)
-                {
-                    <button type="button" class="mcp-chip" disabled="@_busy"
-                            @onclick="@(() => RunSimulationAsync(preset))">
-                        @preset
+        <div class="mcp-lab-body">
+            <div class="mcp-form">
+                <div class="bb-field mcp-field">
+                    <label for="mcp-spec">Transition</label>
+                    <input id="mcp-spec" type="text" class="bb-mono" value="@_spec" @onchange="OnSpecChanged" disabled="@_busy" />
+                </div>
+
+                <div class="mcp-presets">
+                    @foreach (var preset in _presets)
+                    {
+                        <button type="button" class="mcp-chip" disabled="@_busy"
+                                @onclick="@(() => RunSimulationAsync(preset))">
+                            @preset
+                        </button>
+                    }
+                </div>
+
+                <div class="bb-toolbar">
+                    <button type="button" class="btn btn-primary" @onclick="@(() => RunSimulationAsync(_spec))" disabled="@_busy">
+                        @(_busy ? "Measuring..." : "Measure it")
                     </button>
-                }
+                </div>
             </div>
 
-            <button class="btn-bm" @onclick="@(() => RunSimulationAsync(_spec))" disabled="@_busy">
-                @(_busy ? "Measuring..." : "Measure it")
-            </button>
-        </div>
-
-        <div class="mcp-lab-stage">
-            @if (_replayOf is { Samples.Length: > 1 })
-            {
-                @* @key on the replay counter: changing it re-mounts the element, which is what makes
-                   the keyframe animation play again rather than sit at its resting value. *@
-                <Bmotion Animate="Bm.To(x: _replayFrames)"
-                         Transition="Bm.Tween(_replayOf.SettleSeconds, BmEase.Linear)"
-                         @key="_replay">
-                    <div class="box box-sm" />
-                </Bmotion>
-            }
-            else
-            {
-                <div class="box box-sm mcp-box-idle" />
-            }
+            <div class="bb-stage mcp-lab-stage">
+                @if (_replayOf is { Samples.Length: > 1 })
+                {
+                    @* @key on the replay counter: changing it re-mounts the element, which is what makes
+                       the keyframe animation play again rather than sit at its resting value. *@
+                    <Bmotion Animate="Bm.To(x: _replayFrames)"
+                             Transition="Bm.Tween(_replayOf.SettleSeconds, BmEase.Linear)"
+                             @key="_replay">
+                        <div class="box box-sm" />
+                    </Bmotion>
+                }
+                else
+                {
+                    <div class="box box-sm mcp-box-idle" />
+                }
+            </div>
         </div>
     </div>
 
     @if (_error is not null)
     {
-        <p class="mcp-error">@_error</p>
+        <p class="bb-note bb-note-danger mcp-error">@_error</p>
     }
 
     @* One block per transition asked about, in the order asked, and one for every transition asked
@@ -164,44 +174,44 @@
         <div class="mcp-result">
             @if (_simulations.Length > 1)
             {
-                <h3 class="mcp-result-title">
+                <h4 class="mcp-result-title">
                     @simulation.Transition
                     @if (ReferenceEquals(simulation, _replayOf))
                     {
-                        <span class="mcp-result-tag">replaying</span>
+                        <span class="bb-badge">replaying</span>
                     }
-                </h3>
+                </h4>
             }
 
             @if (simulation.Error is not null)
             {
                 @* The server read the spec and could not make sense of it, and said why - which is a
                    better message than anything this page could compose about it. *@
-                <p class="mcp-error">@simulation.Error</p>
+                <p class="bb-note bb-note-danger mcp-error">@simulation.Error</p>
             }
             else
             {
-                <div class="mcp-metrics">
-                    <div><span>Settles in</span><strong>@simulation.SettleSeconds.ToString("0.00")s</strong></div>
-                    <div><span>Overshoot</span><strong>@simulation.OvershootPercent.ToString("0.#")%</strong></div>
-                    <div><span>Crossings</span><strong>@simulation.TargetCrossings</strong></div>
-                    <div><span>90% at</span><strong>@simulation.TimeTo90Percent.ToString("0.00")s</strong></div>
+                <div class="bb-stats mcp-metrics">
+                    <div class="bb-stat"><span class="bb-stat-label">Settles in</span><strong class="bb-stat-value">@simulation.SettleSeconds.ToString("0.00")s</strong></div>
+                    <div class="bb-stat"><span class="bb-stat-label">Overshoot</span><strong class="bb-stat-value">@simulation.OvershootPercent.ToString("0.#")%</strong></div>
+                    <div class="bb-stat"><span class="bb-stat-label">Crossings</span><strong class="bb-stat-value">@simulation.TargetCrossings</strong></div>
+                    <div class="bb-stat"><span class="bb-stat-label">90% at</span><strong class="bb-stat-value">@simulation.TimeTo90Percent.ToString("0.00")s</strong></div>
                 </div>
 
-                <pre class="mcp-sparkline">@simulation.Sparkline</pre>
+                <pre class="bb-code mcp-sparkline">@simulation.Sparkline</pre>
                 <p class="mcp-reading">@simulation.Reading</p>
 
                 @foreach (var warning in simulation.Warnings ?? [])
                 {
-                    <p class="mcp-warning">@warning</p>
+                    <p class="bb-note bb-note-warn mcp-warning">@warning</p>
                 }
             }
         </div>
     }
-</div>
+</section>
 
-<div class="demo-section">
-    <h2>Will it work on Blazor Server?</h2>
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Will it work on Blazor Server?</h3>
     <p>
         Only animations the browser compositor can own play on Blazor Server; everything else needs
         the C# per-frame loop, which does not exist there, and becomes an instant jump.
@@ -209,29 +219,35 @@
         the real engine and watches which path the engine takes.
     </p>
 
-    <div class="mcp-check">
-        <div class="mcp-check-row">
-            <label for="mcp-props">Properties</label>
-            <input id="mcp-props" type="text" value="@_properties" @onchange="OnPropertiesChanged" disabled="@_checking" />
-        </div>
-        <div class="mcp-check-row">
-            <label for="mcp-trans">Transition</label>
-            <input id="mcp-trans" type="text" value="@_checkSpec" @onchange="OnCheckSpecChanged" disabled="@_checking" />
-        </div>
+    <div class="bb-demo mcp-check">
+        <div class="bb-demo-bar"><span class="bb-demo-label">AnalyzeBmotionAnimation</span></div>
 
-        <div class="mcp-presets">
-            @foreach (var example in _checkExamples)
-            {
-                <button type="button" class="mcp-chip" disabled="@_checking"
-                        @onclick="@(() => RunCheckAsync(example.Properties, example.Transition))">
-                    @example.Properties
+        <div class="mcp-form">
+            <div class="bb-field mcp-field">
+                <label for="mcp-props">Properties</label>
+                <input id="mcp-props" type="text" class="bb-mono" value="@_properties" @onchange="OnPropertiesChanged" disabled="@_checking" />
+            </div>
+            <div class="bb-field mcp-field">
+                <label for="mcp-trans">Transition</label>
+                <input id="mcp-trans" type="text" class="bb-mono" value="@_checkSpec" @onchange="OnCheckSpecChanged" disabled="@_checking" />
+            </div>
+
+            <div class="mcp-presets">
+                @foreach (var example in _checkExamples)
+                {
+                    <button type="button" class="mcp-chip" disabled="@_checking"
+                            @onclick="@(() => RunCheckAsync(example.Properties, example.Transition))">
+                        @example.Properties
+                    </button>
+                }
+            </div>
+
+            <div class="bb-toolbar">
+                <button type="button" class="btn btn-primary" @onclick="@(() => RunCheckAsync(_properties, _checkSpec))" disabled="@_checking">
+                    @(_checking ? "Asking the engine..." : "Ask the engine")
                 </button>
-            }
+            </div>
         </div>
-
-        <button class="btn-bm" @onclick="@(() => RunCheckAsync(_properties, _checkSpec))" disabled="@_checking">
-            @(_checking ? "Asking the engine..." : "Ask the engine")
-        </button>
     </div>
 
     @* An unreadable transition comes back as data rather than as a failed call, so the verdict is
@@ -239,24 +255,24 @@
        never analysed would be a claim about the animation, and a wrong one. *@
     @if (_checkError is not null)
     {
-        <p class="mcp-error">@_checkError</p>
+        <p class="bb-note bb-note-danger mcp-error">@_checkError</p>
     }
     else if (_playback?.Error is not null)
     {
-        <p class="mcp-error">@_playback.Error</p>
+        <p class="bb-note bb-note-danger mcp-error">@_playback.Error</p>
     }
     else if (_playback is not null)
     {
-        <div class="mcp-verdict @(_playback.WorksOnBlazorServer ? "ok" : "warn")">
+        <div class="bb-note @(_playback.WorksOnBlazorServer ? "bb-note-success" : "bb-note-warn") mcp-verdict">
             <strong>@(_playback.WorksOnBlazorServer ? "Plays on Blazor Server" : "Snaps on Blazor Server")</strong>
-            <span>@_playback.Path</span>
+            <span class="bb-mono">@_playback.Path</span>
         </div>
 
         <p class="mcp-reading">@_playback.Reason</p>
 
         @if (_playback.HowToOffload is { Length: > 0 })
         {
-            <ul class="mcp-fixes">
+            <ul class="bb-detail-list mcp-fixes">
                 @foreach (var fix in _playback.HowToOffload)
                 {
                     <li>@fix</li>
@@ -264,10 +280,10 @@
             </ul>
         }
     }
-</div>
+</section>
 
-<div class="demo-section">
-    <h2>Review your markup</h2>
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Review your markup</h3>
     <p>
         <code>ReviewBmotionCode</code> is the pass that closes the loop after an agent writes code.
         It looks for the mistakes that compile cleanly and then do nothing - an <code>Exit</code>
@@ -275,24 +291,24 @@
         spring whose duration the engine ignores. The sample below contains several on purpose.
     </p>
 
-    <textarea class="mcp-code" rows="9" spellcheck="false"
+    <textarea class="bb-mono mcp-code" rows="9" spellcheck="false" aria-label="Markup to review"
               value="@_review" @onchange="OnReviewChanged" disabled="@_reviewing"></textarea>
 
-    <div class="demo-actions">
-        <button class="btn-bm" @onclick="RunReviewAsync" disabled="@_reviewing">
+    <div class="bb-toolbar mcp-review-actions">
+        <button type="button" class="btn btn-primary" @onclick="RunReviewAsync" disabled="@_reviewing">
             @(_reviewing ? "Reviewing..." : "Review it")
         </button>
     </div>
 
     @if (_reviewError is not null)
     {
-        <p class="mcp-error">@_reviewError</p>
+        <p class="bb-note bb-note-danger mcp-error">@_reviewError</p>
     }
     else if (_findings is not null)
     {
         @if (_findings.Findings is null or { Length: 0 })
         {
-            <p class="mcp-reading">Nothing to report - all @(_findings.RulesApplied?.Length ?? 0) rules passed.</p>
+            <p class="bb-note bb-note-success mcp-reading">Nothing to report - all @(_findings.RulesApplied?.Length ?? 0) rules passed.</p>
         }
         else
         {
@@ -303,7 +319,7 @@
                              Animate="Bm.To(opacity: 1, x: 0)"
                              Transition="Bm.Tween(0.25)">
                         <li class="mcp-finding @finding.Severity?.ToLowerInvariant()">
-                            <span class="mcp-severity">@finding.Severity</span>
+                            <span class="bb-badge @SeverityBadge(finding.Severity)">@finding.Severity</span>
                             <span class="mcp-rule">@finding.Rule</span>
                             <span class="mcp-line">line @finding.Line</span>
                             <p>@finding.Message</p>
@@ -314,10 +330,10 @@
             </ul>
         }
     }
-</div>
+</section>
 
-<div class="demo-section">
-    <h2>One search across everything</h2>
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> One search across everything</h3>
     <p>
         An agent rarely knows which corpus holds the answer. <code>SearchBmotion</code> covers the
         guide, every public member, the animatable properties, the easing presets, the recipes, the
@@ -325,17 +341,17 @@
         that returns it in full.
     </p>
 
-    <div class="mcp-search">
+    <div class="bb-toolbar mcp-search">
         <input type="search" value="@_query" @onchange="OnQueryChanged" disabled="@_searching"
                placeholder="make a list appear one item at a time" aria-label="Search Bmotion" />
-        <button class="btn-bm" @onclick="RunSearchAsync" disabled="@_searching">
+        <button type="button" class="btn btn-primary" @onclick="RunSearchAsync" disabled="@_searching">
             @(_searching ? "Searching..." : "Search")
         </button>
     </div>
 
     @if (_searchError is not null)
     {
-        <p class="mcp-error">@_searchError</p>
+        <p class="bb-note bb-note-danger mcp-error">@_searchError</p>
     }
     else if (_hits is { Length: > 0 })
     {
@@ -343,7 +359,7 @@
             @foreach (var hit in _hits)
             {
                 <li>
-                    <span class="mcp-hit-kind">@hit.Kind</span>
+                    <span class="bb-badge">@hit.Kind</span>
                     <span class="mcp-hit-title">@hit.Title</span>
                     <code>@hit.Tool</code>
                 </li>
@@ -352,16 +368,16 @@
     }
     else if (_hits is not null)
     {
-        <p class="mcp-reading">Nothing matched that.</p>
+        <p class="bb-empty mcp-reading">Nothing matched that.</p>
     }
-</div>
+</section>
 
-<div class="demo-section">
-    <h2>Tools</h2>
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Tools</h3>
 
     @if (_catalog is null)
     {
-        <p class="mcp-reading">Loading the catalog...</p>
+        <p class="mcp-reading"><span class="bb-spinner"></span> Loading the catalog...</p>
     }
     else
     {
@@ -370,8 +386,8 @@
             them - so this table cannot fall out of step with the server, and neither can this count.
         </p>
 
-        <div class="mcp-table-wrap">
-            <table class="mcp-table">
+        <div class="bb-scroll">
+            <table class="bb-table mcp-table">
                 <thead>
                     <tr><th>Tool</th><th>Parameters</th><th>What it answers</th></tr>
                 </thead>
@@ -379,11 +395,11 @@
                     @foreach (var tool in _catalog.Tools)
                     {
                         <tr>
-                            <td><code>@tool.Name</code></td>
+                            <td class="bb-table-key"><code>@tool.Name</code></td>
                             <td class="mcp-params">
                                 @if (tool.Parameters.Length == 0)
                                 {
-                                    <span class="mcp-none">none</span>
+                                    <span class="bb-soft">none</span>
                                 }
                                 else
                                 {
@@ -400,10 +416,10 @@
             </table>
         </div>
     }
-</div>
+</section>
 
-<div class="demo-section">
-    <h2>Prompts</h2>
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Prompts</h3>
     <p>
         Prompts are the workflows: the order to call the tools in for a whole task. They exist
         because the failure mode of an agent holding eighteen tools is not ignorance - it is calling
@@ -412,13 +428,13 @@
 
     @if (_catalog is not null)
     {
-        <div class="mcp-cards">
+        <div class="bb-grid mcp-cards">
             @foreach (var prompt in _catalog.Prompts)
             {
                 <Bmotion WhileHover="Bm.To(y: -3, scale: 1.01)" Transition="Bm.Spring(stiffness: 400, damping: 28)">
-                    <div class="mcp-card">
+                    <div class="bb-card mcp-card">
                         <code>@prompt.Name</code>
-                        <p>@prompt.Description</p>
+                        <p class="bb-card-desc">@prompt.Description</p>
                         @if (prompt.Parameters.Length > 0)
                         {
                             <span class="mcp-card-params">@string.Join(" · ", prompt.Parameters)</span>
@@ -428,10 +444,10 @@
             }
         </div>
     }
-</div>
+</section>
 
-<div class="demo-section">
-    <h2>Resources</h2>
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Resources</h3>
     <p>
         The same knowledge as URIs, for clients that attach documentation to a conversation up front
         or let a person browse and pin it. They read the same catalogs the tools do, so neither can
@@ -440,23 +456,33 @@
 
     @if (_catalog is not null)
     {
-        <ul class="mcp-resources">
-            @foreach (var resource in _catalog.Resources)
-            {
-                <li><code>@resource.Name</code><span>@resource.Description</span></li>
-            }
-        </ul>
+        <div class="bb-scroll">
+            <table class="bb-table mcp-resources">
+                <thead>
+                    <tr><th>Resource</th><th>What it holds</th></tr>
+                </thead>
+                <tbody>
+                    @foreach (var resource in _catalog.Resources)
+                    {
+                        <tr>
+                            <td class="bb-table-key"><code>@resource.Name</code></td>
+                            <td>@resource.Description</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
     }
-</div>
+</section>
 
-<div class="demo-section">
-    <h2>How it stays true</h2>
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> How it stays true</h3>
     <p>
         Documentation that is written down separately drifts, and an agent cannot tell a stale answer
         from a fresh one. So nothing here is written down twice:
     </p>
 
-    <ul class="mcp-principles">
+    <ul class="bb-detail-list">
         <li>
             <strong>The API reference is reflected</strong> out of the shipped assembly and paired
             with the XML documentation compiled into it. A new component parameter appears the moment
@@ -484,8 +510,8 @@
         </li>
     </ul>
 
-    <CodeSnippet Code="@_architectureCode" />
-</div>
+    <CodeSnippet Code="@_architectureCode" Language="C#" />
+</section>
 
 @code {
     private sealed record Problem(string Symptom, string Cause, string Tool);
@@ -865,6 +891,22 @@
         }
     }
 
+    /// <summary>
+    /// A tool name with a line-break opportunity before each word of it, so one too long for a narrow
+    /// tile wraps between "SimulateBmotion" and "Transition" rather than letter by letter.
+    /// </summary>
+    private static MarkupString WordBreaks(string name)
+        => new(string.Join("<wbr>", System.Text.RegularExpressions.Regex.Split(name, "(?<=[a-z])(?=[A-Z])")
+                                                                    .Select(System.Net.WebUtility.HtmlEncode)));
+
+    /// <summary>The kit badge tint for a finding's severity: an error, a warning, or a suggestion.</summary>
+    private static string? SeverityBadge(string? severity) => severity?.ToLowerInvariant() switch
+    {
+        "error" => "bb-badge-danger",
+        "warning" => "bb-badge-warn",
+        _ => null,
+    };
+
     private static string Shorten(string description)
     {
         // The tool descriptions are written for an agent deciding whether to call the tool, so they
@@ -874,289 +916,3 @@
         return stop > 0 ? description[..(stop + 1)] : description;
     }
 }
-
-<style>
-    .mcp-why {
-        display: grid;
-        gap: 1rem;
-        grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr));
-        margin-block: 1.25rem;
-    }
-
-    .mcp-why-card {
-        height: 100%;
-        display: flex;
-        flex-direction: column;
-        gap: .5rem;
-        padding: 1rem;
-        border: 1px solid var(--bit-clr-brd-sec);
-        border-radius: .5rem;
-        background-color: var(--bit-clr-bg-sec);
-    }
-
-    .mcp-why-symptom { font-weight: 700; color: var(--bit-clr-fg-pri); }
-
-    .mcp-why-card p { margin: 0; font-size: .875rem; color: var(--bit-clr-fg-sec); }
-
-    .mcp-why-card code { align-self: flex-start; margin-top: auto; }
-
-    .mcp-tabs { display: flex; flex-wrap: wrap; gap: .5rem; margin-block: 1rem .75rem; }
-
-    .mcp-tab {
-        padding: .4rem .85rem;
-        border: 1px solid var(--bit-clr-brd-sec);
-        border-radius: 2rem;
-        background: none;
-        color: var(--bit-clr-fg-sec);
-        font: inherit;
-        font-size: .875rem;
-        cursor: pointer;
-    }
-
-    .mcp-tab:hover { border-color: var(--bit-clr-pri); color: var(--bit-clr-fg-pri); }
-
-    .mcp-tab.active {
-        border-color: var(--bit-clr-pri);
-        background-color: var(--bit-clr-pri);
-        color: var(--bit-clr-pri-text, #fff);
-    }
-
-    .mcp-tab-note { font-size: .875rem; color: var(--bit-clr-fg-sec); }
-
-    .mcp-lab {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 1.5rem;
-        align-items: center;
-        padding: 1.25rem;
-        border: 1px solid var(--bit-clr-brd-sec);
-        border-radius: .5rem;
-        background-color: var(--bit-clr-bg-sec);
-    }
-
-    .mcp-lab-controls { flex: 1 1 20rem; display: flex; flex-direction: column; gap: .6rem; }
-
-    .mcp-lab-controls label { font-size: .8125rem; color: var(--bit-clr-fg-sec); }
-
-    .mcp-lab-controls input,
-    .mcp-check input,
-    .mcp-search input,
-    .mcp-code {
-        width: 100%;
-        padding: .5rem .65rem;
-        border: 1px solid var(--bit-clr-brd-sec);
-        border-radius: .375rem;
-        background-color: var(--bit-clr-bg-pri);
-        color: var(--bit-clr-fg-pri);
-        font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-        font-size: .8125rem;
-    }
-
-    .mcp-lab-controls .btn-bm { align-self: flex-start; }
-
-    .mcp-presets { display: flex; flex-wrap: wrap; gap: .4rem; }
-
-    .mcp-chip {
-        padding: .25rem .6rem;
-        border: 1px solid var(--bit-clr-brd-sec);
-        border-radius: 2rem;
-        background: none;
-        color: var(--bit-clr-fg-sec);
-        font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-        font-size: .75rem;
-        cursor: pointer;
-    }
-
-    .mcp-chip:hover { border-color: var(--bit-clr-pri); color: var(--bit-clr-fg-pri); }
-
-    .mcp-lab-stage {
-        flex: 1 1 16rem;
-        min-height: 5rem;
-        display: flex;
-        align-items: center;
-    }
-
-    .mcp-box-idle { opacity: .35; }
-
-    .mcp-metrics {
-        display: grid;
-        gap: .75rem;
-        grid-template-columns: repeat(auto-fit, minmax(7rem, 1fr));
-        margin-block: 1rem .75rem;
-    }
-
-    .mcp-metrics div { display: flex; flex-direction: column; gap: .15rem; }
-
-    .mcp-metrics span { font-size: .75rem; color: var(--bit-clr-fg-sec); }
-
-    .mcp-metrics strong { font-size: 1.25rem; color: var(--bit-clr-fg-pri); }
-
-    .mcp-sparkline {
-        overflow-x: auto;
-        margin: 0 0 .75rem;
-        padding: .6rem .75rem;
-        border-radius: .375rem;
-        background-color: var(--bit-clr-bg-sec);
-        color: var(--bit-clr-pri);
-        font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-        font-size: .8125rem;
-        white-space: pre;
-    }
-
-    .mcp-result + .mcp-result { margin-block-start: 1.5rem; border-block-start: 1px solid var(--bit-clr-brd-sec); }
-
-    .mcp-result-title {
-        margin-block: 1rem 0;
-        font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-        font-size: .875rem;
-        font-weight: 600;
-        color: var(--bit-clr-fg-pri);
-    }
-
-    .mcp-result-tag {
-        margin-inline-start: .5rem;
-        font-size: .6875rem;
-        font-weight: 400;
-        color: var(--bit-clr-pri);
-    }
-
-    .mcp-reading, .mcp-warning, .mcp-error { font-size: .875rem; color: var(--bit-clr-fg-sec); }
-
-    .mcp-warning, .mcp-error { color: #d2691e; }
-
-    .mcp-check { display: flex; flex-direction: column; gap: .6rem; margin-block: 1rem; }
-
-    .mcp-check-row { display: flex; flex-direction: column; gap: .25rem; }
-
-    .mcp-check-row label { font-size: .8125rem; color: var(--bit-clr-fg-sec); }
-
-    .mcp-check .btn-bm { align-self: flex-start; }
-
-    .mcp-verdict {
-        display: flex;
-        flex-wrap: wrap;
-        gap: .5rem 1rem;
-        align-items: baseline;
-        padding: .75rem 1rem;
-        border-left: 3px solid;
-        border-radius: .375rem;
-        background-color: var(--bit-clr-bg-sec);
-    }
-
-    .mcp-verdict.ok { border-color: #2fa35e; }
-
-    .mcp-verdict.warn { border-color: #d2691e; }
-
-    .mcp-verdict span { font-size: .8125rem; color: var(--bit-clr-fg-sec); }
-
-    .mcp-fixes { margin: .5rem 0 0; padding-left: 1.25rem; font-size: .875rem; color: var(--bit-clr-fg-sec); }
-
-    .mcp-code { min-height: 9rem; resize: vertical; line-height: 1.5; }
-
-    .mcp-findings { list-style: none; margin: 1rem 0 0; padding: 0; display: grid; gap: .6rem; }
-
-    .mcp-finding {
-        padding: .75rem 1rem;
-        border-left: 3px solid var(--bit-clr-brd-sec);
-        border-radius: .375rem;
-        background-color: var(--bit-clr-bg-sec);
-    }
-
-    .mcp-finding.error { border-color: #d9534f; }
-
-    .mcp-finding.warning { border-color: #d2691e; }
-
-    .mcp-finding.suggestion { border-color: var(--bit-clr-pri); }
-
-    .mcp-severity, .mcp-rule, .mcp-line { font-size: .75rem; margin-right: .5rem; }
-
-    .mcp-severity { font-weight: 700; color: var(--bit-clr-fg-pri); }
-
-    .mcp-rule { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; color: var(--bit-clr-pri); }
-
-    .mcp-line { color: var(--bit-clr-fg-sec); }
-
-    .mcp-finding p { margin: .4rem 0 0; font-size: .875rem; color: var(--bit-clr-fg-sec); }
-
-    .mcp-fix { color: var(--bit-clr-fg-pri) !important; }
-
-    .mcp-search { display: flex; flex-wrap: wrap; gap: .6rem; margin-block: 1rem; }
-
-    .mcp-search input { flex: 1 1 18rem; }
-
-    .mcp-hits { list-style: none; margin: 0; padding: 0; display: grid; gap: .5rem; }
-
-    .mcp-hits li {
-        display: flex;
-        flex-wrap: wrap;
-        gap: .35rem .75rem;
-        align-items: baseline;
-        padding: .5rem .75rem;
-        border-radius: .375rem;
-        background-color: var(--bit-clr-bg-sec);
-    }
-
-    .mcp-hit-kind { font-size: .6875rem; text-transform: uppercase; letter-spacing: .04em; color: var(--bit-clr-fg-sec); }
-
-    .mcp-hit-title { font-weight: 600; color: var(--bit-clr-fg-pri); }
-
-    .mcp-table-wrap { overflow-x: auto; }
-
-    .mcp-table { width: 100%; border-collapse: collapse; font-size: .8125rem; }
-
-    .mcp-table th, .mcp-table td {
-        padding: .5rem .6rem;
-        border-bottom: 1px solid var(--bit-clr-brd-sec);
-        text-align: left;
-        vertical-align: top;
-    }
-
-    .mcp-table th { font-weight: 700; color: var(--bit-clr-fg-pri); }
-
-    .mcp-table td { color: var(--bit-clr-fg-sec); }
-
-    .mcp-params { display: flex; flex-direction: column; gap: .2rem; }
-
-    .mcp-none { opacity: .6; }
-
-    .mcp-cards {
-        display: grid;
-        gap: .75rem;
-        grid-template-columns: repeat(auto-fit, minmax(min(100%, 17rem), 1fr));
-    }
-
-    .mcp-card {
-        height: 100%;
-        padding: .9rem 1rem;
-        border: 1px solid var(--bit-clr-brd-sec);
-        border-radius: .5rem;
-        background-color: var(--bit-clr-bg-sec);
-    }
-
-    .mcp-card p { margin: .45rem 0 0; font-size: .8125rem; color: var(--bit-clr-fg-sec); }
-
-    .mcp-card-params {
-        display: block;
-        margin-top: .5rem;
-        font-size: .75rem;
-        color: var(--bit-clr-fg-sec);
-        opacity: .8;
-    }
-
-    /* minmax(0, 1fr) rather than the implicit auto track: an auto column is sized from its
-       contents, so one long resource name makes the row wider than the column it is in and the
-       whole page scrolls sideways on a phone. */
-    .mcp-resources { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: minmax(0, 1fr); gap: .5rem; }
-
-    .mcp-resources li { display: flex; flex-wrap: wrap; gap: .35rem .75rem; align-items: baseline; min-width: 0; }
-
-    .mcp-resources code, .mcp-resources span { min-width: 0; overflow-wrap: anywhere; }
-
-    .mcp-resources span { font-size: .8125rem; color: var(--bit-clr-fg-sec); }
-
-    .mcp-principles { margin: 1rem 0 1.25rem; padding-left: 1.25rem; display: grid; grid-template-columns: minmax(0, 1fr); gap: .6rem; }
-
-    .mcp-principles li { color: var(--bit-clr-fg-sec); }
-
-    .mcp-principles strong { color: var(--bit-clr-fg-pri); }
-</style>

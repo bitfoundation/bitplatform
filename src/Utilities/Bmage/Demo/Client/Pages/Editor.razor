@@ -6,44 +6,51 @@
    pipeline and a list of annotations) rather than a mutated bitmap. The rest of the page is the
    component's reference. *@
 
-<PageTitle>The editor - Bit.Bmage</PageTitle>
+<PageTitle>The editor · Bmage</PageTitle>
 
-<h1>The editor</h1>
+<div class="bb-intro">
+    <h1>The editor</h1>
+    <p class="bb-subtitle">
+        Everything in one component: crop, rotate, adjustments, filters, drawing, annotations, layers,
+        history and export. Drop an image on it, or open one from its own drop zone - then try the
+        <strong>theme</strong>, <strong>direction</strong> and <strong>language</strong> switches.
+    </p>
+</div>
 
-<p class="page-intro">
-    Everything in one component: crop, rotate, adjustments, filters, drawing, annotations, layers,
-    history and export. Drop an image on it, or open one from its own drop zone - then try the
-    <strong>theme</strong>, <strong>direction</strong> and <strong>language</strong> switches.
-</p>
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Try it</h3>
 
-<div class="demo-section">
-    <h2>Try it</h2>
-
-    <div class="toolbar-row">
-        <div class="toolbar-group" role="group" aria-labelledby="editor-theme-label">
-            <span class="toolbar-label" id="editor-theme-label">Theme</span>
-            @foreach (var theme in new[] { "site", "light", "dark" })
-            {
-                <button type="button" class="chip" aria-pressed="@(_theme == theme ? "true" : "false")" @onclick="() => _theme = theme">@theme</button>
-            }
+    <div class="bb-toolbar">
+        <div class="demo-toolbar-group" role="group" aria-labelledby="editor-theme-label">
+            <span class="demo-toolbar-label" id="editor-theme-label">Theme</span>
+            <div class="bb-segmented">
+                @foreach (var theme in new[] { "site", "light", "dark" })
+                {
+                    <button type="button" aria-pressed="@(_theme == theme ? "true" : "false")" @onclick="() => _theme = theme">@theme</button>
+                }
+            </div>
         </div>
-        <div class="toolbar-group" role="group" aria-labelledby="editor-direction-label">
-            <span class="toolbar-label" id="editor-direction-label">Direction</span>
-            @foreach (var dir in new[] { "ltr", "rtl" })
-            {
-                <button type="button" class="chip" aria-pressed="@(_direction == dir ? "true" : "false")" @onclick="() => _direction = dir">@dir</button>
-            }
+        <div class="demo-toolbar-group" role="group" aria-labelledby="editor-direction-label">
+            <span class="demo-toolbar-label" id="editor-direction-label">Direction</span>
+            <div class="bb-segmented">
+                @foreach (var dir in new[] { "ltr", "rtl" })
+                {
+                    <button type="button" aria-pressed="@(_direction == dir ? "true" : "false")" @onclick="() => _direction = dir">@dir</button>
+                }
+            </div>
         </div>
-        <div class="toolbar-group" role="group" aria-labelledby="editor-language-label">
-            <span class="toolbar-label" id="editor-language-label">Language</span>
-            @foreach (var lang in Languages)
-            {
-                <button type="button" class="chip" lang="@lang.Value.Tag" aria-pressed="@(_language == lang.Key ? "true" : "false")" @onclick="() => SetLanguage(lang.Key)">@lang.Key</button>
-            }
+        <div class="demo-toolbar-group" role="group" aria-labelledby="editor-language-label">
+            <span class="demo-toolbar-label" id="editor-language-label">Language</span>
+            <div class="bb-segmented">
+                @foreach (var lang in Languages)
+                {
+                    <button type="button" lang="@lang.Value.Tag" aria-pressed="@(_language == lang.Key ? "true" : "false")" @onclick="() => SetLanguage(lang.Key)">@lang.Key</button>
+                }
+            </div>
         </div>
     </div>
 
-    <div class="editor-frame">
+    <div class="editor-frame bb-page-wide">
         <BmageEditor @ref="_editor"
                      Class="@ThemeClass"
                      Direction="@_direction"
@@ -54,8 +61,8 @@
     </div>
 </div>
 
-<div class="demo-section">
-    <h2>The document behind the editor</h2>
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> The document behind the editor</h3>
     <p>
         This is the whole edit: a list of pixel operations and a list of annotation objects. It is a
         value, so it can be stored, sent to a server, replayed on the original file, or applied to a
@@ -63,23 +70,23 @@
     </p>
     @if (_document is null)
     {
-        <p class="small muted">Load an image into the editor above to see its document here.</p>
+        <p class="demo-small bb-muted">Load an image into the editor above to see its document here.</p>
     }
     else
     {
-        <pre class="code">@DocumentText</pre>
+        <pre class="demo-readout">@DocumentText</pre>
     }
 </div>
 
-<div class="demo-section">
-    <h2>Using it</h2>
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Using it</h3>
     <p>
         The simple path stays simple: the editor fills its container, so give it a height, and
         everything else has a working default. The advanced path is the same component with more
         parameters.
     </p>
     <CodeSnippet Code="@Snippet" Expanded="true" />
-    <div class="callout">
+    <div class="bb-note">
         <p>
             The editor needs the stylesheet <code>_content/Bit.Bmage/bit-bmage-editor.css</code>
             linked from <code>App.razor</code> or <code>index.html</code> - see
@@ -88,10 +95,10 @@
     </div>
 </div>
 
-<div class="demo-section">
-    <h2>Parameters</h2>
-    <div class="table-scroll" tabindex="0" role="region" aria-label="Editor parameters">
-        <table class="ref">
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Parameters</h3>
+    <div class="bb-scroll" tabindex="0" role="region" aria-label="Editor parameters">
+        <table class="bb-table">
             <thead>
                 <tr><th scope="col">Parameter</th><th scope="col">Purpose</th></tr>
             </thead>
@@ -112,8 +119,8 @@
     </div>
 </div>
 
-<div class="demo-section">
-    <h2>Driving it from code</h2>
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Driving it from code</h3>
     <p>
         Everything the built-in toolbar can do is a public method, and the same surface is handed to
         custom chrome through <code>BmageEditorContext</code> - so a toolbar you write can do
@@ -127,8 +134,8 @@
     <CodeSnippet Code="@TransientSnippet" Language="C#" />
 </div>
 
-<div class="demo-section">
-    <h2>Replacing the chrome</h2>
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Replacing the chrome</h3>
     <p>
         <code>Toolbar</code>, <code>Panel</code> and <code>Footer</code> take a render fragment with a
         <code>BmageEditorContext</code>: the current tool and settings, the document, the annotations,
@@ -139,8 +146,8 @@
     <CodeSnippet Code="@ToolbarSnippet" Expanded="true" />
 </div>
 
-<div class="demo-section">
-    <h2>Theming</h2>
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Theming</h3>
     <p>
         Every colour and metric is a CSS custom property on <code>.bmg-editor</code>. Override the
         ones you care about - this site does exactly that to make the editor follow the theme switch
@@ -155,22 +162,22 @@
     </p>
 </div>
 
-<div class="demo-section">
-    <h2 id="localisation">Localisation</h2>
+<div class="bb-card" id="localisation">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Localisation</h3>
     <p>
         <code>BmageEditorStrings</code> is a record with a property for every label, so a translation
         is an object rather than a resource file - and you can override only the words you care
         about. Number and size formatting are functions on the same record. For a right-to-left
         language set <code>Direction="rtl"</code>: the panel, the crop handles and the toolbar all
-        mirror. The Persian chip above switches both at once.
+        mirror. The Persian button above switches both at once.
     </p>
     <CodeSnippet Code="@LocalisationSnippet" Language="C#" Expanded="true" />
 </div>
 
-<div class="demo-section">
-    <h2>Tools and keyboard</h2>
-    <div class="table-scroll" tabindex="0" role="region" aria-label="Editor tools">
-        <table class="ref">
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Tools and keyboard</h3>
+    <div class="bb-scroll" tabindex="0" role="region" aria-label="Editor tools">
+        <table class="bb-table">
             <thead>
                 <tr><th scope="col">Tool</th><th scope="col">Behaviour</th></tr>
             </thead>
@@ -188,19 +195,19 @@
             </tbody>
         </table>
     </div>
-    <div class="table-scroll" tabindex="0" role="region" aria-label="Editor keyboard shortcuts">
-        <table class="ref">
+    <div class="bb-scroll" tabindex="0" role="region" aria-label="Editor keyboard shortcuts">
+        <table class="bb-table">
             <thead>
                 <tr><th scope="col">Keys</th><th scope="col">Action</th></tr>
             </thead>
             <tbody>
-                <tr><th scope="row"><kbd class="kbd">Ctrl</kbd> / <kbd class="kbd">&#8984;</kbd> + <kbd class="kbd">Z</kbd></th><td>Undo</td></tr>
-                <tr><th scope="row"><kbd class="kbd">Ctrl</kbd> + <kbd class="kbd">Shift</kbd> + <kbd class="kbd">Z</kbd>, <kbd class="kbd">Ctrl</kbd> + <kbd class="kbd">Y</kbd></th><td>Redo</td></tr>
-                <tr><th scope="row"><kbd class="kbd">Delete</kbd>, <kbd class="kbd">Backspace</kbd></th><td>Delete the selected annotation</td></tr>
+                <tr><th scope="row"><kbd>Ctrl</kbd> / <kbd>&#8984;</kbd> + <kbd>Z</kbd></th><td>Undo</td></tr>
+                <tr><th scope="row"><kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>Z</kbd>, <kbd>Ctrl</kbd> + <kbd>Y</kbd></th><td>Redo</td></tr>
+                <tr><th scope="row"><kbd>Delete</kbd>, <kbd>Backspace</kbd></th><td>Delete the selected annotation</td></tr>
                 <tr><th scope="row">Arrow keys</th><td>Nudge the selection by 1px, or 10px with Shift</td></tr>
-                <tr><th scope="row"><kbd class="kbd">Esc</kbd></th><td>Clear the selection, or cancel a pending crop</td></tr>
-                <tr><th scope="row"><kbd class="kbd">+</kbd>, <kbd class="kbd">-</kbd></th><td>Zoom</td></tr>
-                <tr><th scope="row"><kbd class="kbd">Ctrl</kbd> + <kbd class="kbd">0</kbd></th><td>Fit to window</td></tr>
+                <tr><th scope="row"><kbd>Esc</kbd></th><td>Clear the selection, or cancel a pending crop</td></tr>
+                <tr><th scope="row"><kbd>+</kbd>, <kbd>-</kbd></th><td>Zoom</td></tr>
+                <tr><th scope="row"><kbd>Ctrl</kbd> + <kbd>0</kbd></th><td>Fit to window</td></tr>
             </tbody>
         </table>
     </div>
@@ -213,8 +220,8 @@
     </p>
 </div>
 
-<div class="demo-section">
-    <h2>Large images</h2>
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Large images</h3>
     <p>
         By default the editor edits through a proxy no larger than 2048px on its longest edge and
         replays the edit at full resolution on export - for a 24 megapixel photo, a 25&times; cut in
@@ -245,7 +252,7 @@
         Metadata = MetadataPolicy.StripSensitive,
     };
 
-    // "site" leaves the class off, which is what lets editor-theme.css point the editor at the
+    // "site" leaves the class off, which is what lets wwwroot/demo.css point the editor at the
     // site's own tokens; the other two force the component's built-in palettes.
     private string ThemeClass => _theme switch
     {

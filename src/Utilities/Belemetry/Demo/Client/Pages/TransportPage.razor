@@ -1,22 +1,23 @@
 ﻿@page "/transport"
 @inject IJSRuntime JS
 
-<PageTitle>Transport - bit Belemetry</PageTitle>
+<PageTitle>Transport · Belemetry</PageTitle>
 
-<h1>Transport</h1>
+<div class="bb-intro">
+    <h1>Transport</h1>
+    <p class="bb-subtitle">
+        The browser script records page views, clicks, web vitals, errors and fetches - and then has to get them
+        somewhere. <code>options.Browser.Transport</code> decides how: <strong>Direct</strong>, where the page posts
+        to your endpoints itself, or <strong>Relay</strong>, where it hands its records to .NET over JS interop and
+        the .NET pipeline exports them. The choice is about where the network call happens - and therefore about
+        CORS and about who can see your exporter credentials.
+    </p>
+</div>
 
-<p class="page-intro">
-    The browser script records page views, clicks, web vitals, errors and fetches - and then has to get them
-    somewhere. <code>options.Browser.Transport</code> decides how: <strong>Direct</strong>, where the page posts
-    to your endpoints itself, or <strong>Relay</strong>, where it hands its records to .NET over JS interop and
-    the .NET pipeline exports them. The choice is about where the network call happens - and therefore about
-    CORS and about who can see your exporter credentials.
-</p>
-
-<div class="demo-section">
-    <h2>Auto, Direct and Relay</h2>
-    <div class="doc-table-wrap">
-        <table class="doc-table">
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Auto, Direct and Relay</h3>
+    <div class="bb-scroll">
+        <table class="bb-table">
             <thead>
                 <tr><th scope="col">Value</th><th scope="col">What happens</th></tr>
             </thead>
@@ -52,8 +53,8 @@
     <CodeSnippet Code="@SetupCode" Language="C#" Expanded="true" />
 </div>
 
-<div class="demo-section">
-    <h2>Direct: CORS and public endpoints</h2>
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Direct: CORS and public endpoints</h3>
     <p>
         With Direct, the request to your collector comes from the page's origin, so the receiver must allow
         that origin - a browser blocks a cross-origin <code>POST</code> with a <code>Content-Type</code> of
@@ -69,7 +70,7 @@
         to the origin it was served from, behind any proxy.
     </p>
     <CodeSnippet Code="@BrowserEndpointCode" Language="C#" />
-    <div class="callout warn">
+    <div class="bb-note bb-note-warn">
         <p>
             <strong>Everything the script exports with is in the page.</strong> The browser configuration is
             written into the HTML by <code>&lt;BelemetryScript /&gt;</code>, so an exporter's <code>Headers</code> -
@@ -81,8 +82,8 @@
     </div>
 </div>
 
-<div class="demo-section">
-    <h2>Relay: no credentials in the page</h2>
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Relay: no credentials in the page</h3>
     <p>
         With Relay, the page never talks to a collector. Each batch goes to the
         <code>Belemetry.Relay</code> callback of <code>&lt;BelemetryInitializer /&gt;</code>, and from there into
@@ -90,8 +91,8 @@
         custom exporters (an in-memory viewer, your own <code>IBelemetryExporter</code>) receive them. The user's
         consent was already applied in the page, so a relayed record is not filtered a second time.
     </p>
-    <div class="doc-table-wrap">
-        <table class="doc-table">
+    <div class="bb-scroll">
+        <table class="bb-table">
             <thead>
                 <tr><th scope="col">Host</th><th scope="col">Where the relayed records are exported from</th></tr>
             </thead>
@@ -115,7 +116,7 @@
             </tbody>
         </table>
     </div>
-    <div class="callout">
+    <div class="bb-note">
         <p>
             Relay depends on an interactive component. Until <code>&lt;BelemetryInitializer /&gt;</code> attaches,
             the script keeps its records queued in memory; a static SSR page that never becomes interactive has
@@ -124,8 +125,8 @@
     </div>
 </div>
 
-<div class="demo-section">
-    <h2>This site</h2>
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> This site</h3>
     <p>
         The demo runs as a Blazor Web App with the WebAssembly render mode and leaves <code>Transport</code> on
         <code>Auto</code>, which resolves to <strong>Direct</strong>: the script posts OTLP/JSON to
@@ -133,24 +134,23 @@
         an event and watch it arrive - it went from the page to the server's receiver with a plain
         <code>fetch</code>.
     </p>
-    <div class="demo-row">
-        <div class="demo-card stack">
-            <div class="demo-actions">
-                <button type="button" class="btn-bl" disabled="@(RendererInfo.IsInteractive is false)" @onclick="SendAsync">Send an event</button>
-            </div>
-            @if (_message is not null)
-            {
-                <p class="demo-label">@_message</p>
-            }
-            <TelemetryFeedView Compact="true"
-                               Match="@(r => r.Source == "browser" && r.Name == "demo.transport")"
-                               EmptyText="Nothing yet - send an event (it needs the Events feature granted)." />
+    <div class="bb-demo">
+        <div class="bb-demo-bar"><span class="bb-demo-label">Live<span class="demo-sample-title">Direct</span></span></div>
+        <div class="bb-toolbar">
+            <button type="button" class="btn btn-primary" disabled="@(RendererInfo.IsInteractive is false)" @onclick="SendAsync">Send an event</button>
         </div>
+        @if (_message is not null)
+        {
+            <p class="demo-status">@_message</p>
+        }
+        <TelemetryFeedView Compact="true"
+                           Match="@(r => r.Source == "browser" && r.Name == "demo.transport")"
+                           EmptyText="Nothing yet - send an event (it needs the Events feature granted)." />
     </div>
 </div>
 
-<div class="demo-section">
-    <h2>API</h2>
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> API</h3>
     <ApiTable TypeName="BelemetryBrowserTransport" />
 </div>
 

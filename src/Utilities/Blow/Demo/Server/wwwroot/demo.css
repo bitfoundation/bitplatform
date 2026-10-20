@@ -1,0 +1,146 @@
+﻿/* ============================================================================================
+   Blow demo - the styles of the live samples.
+
+   The site's chrome, tokens and shared surfaces live in app.css (the site kit every Utilities demo
+   shares); this file only draws what is Blow's own - the frame a flow runs in, the toolbar over it,
+   the examples gallery, the landing page's live flow - and it ties the library's own theme to the
+   site's: the canvas follows the light/dark toggle, and its selection colours are the bit brand.
+   Each page keeps the styles of its own nodes and panels next to its markup, written against the
+   library's --bit-blow-* properties, so they follow the colour mode with the canvas.
+   ============================================================================================ */
+
+/* ---------- The library's theme, tinted with the bit brand ----------
+
+   One accent paints the selection, the selection box, focus rings, resize controls and the line
+   drawn while connecting. :root in front of the class makes these outrank bit-blow.css, which
+   declares the same properties on .bit-blow and is linked after this file; the dark mode copies
+   --bit-blow-dark-accent over the three, so it is tinted through that. */
+:root .bit-blow {
+    --bit-blow-node-selected: #1276C6;
+    --bit-blow-edge-selected: #1276C6;
+    --bit-blow-connection-stroke: #1276C6;
+    --bit-blow-dark-accent: #4FA3F4;
+}
+
+/* ---------- Every flow follows the site's theme ----------
+
+   Under the dark site theme a flow takes the library's own dark palette - the very rule
+   ColorMode="Dark" applies with .bit-blow-dark, copied here because the pages leave ColorMode at its
+   default rather than each wiring it to the theme toggle. A canvas that picks its colour mode itself
+   (the Color Mode example, the Theming page) carries .own-color-mode and is left alone, so the mode
+   chosen there is the one on screen. */
+:root[bit-theme="dark"] .bit-blow:not(.own-color-mode) {
+    --bit-blow-bg: var(--bit-blow-dark-bg);
+    --bit-blow-node-bg: var(--bit-blow-dark-node-bg);
+    --bit-blow-node-border: var(--bit-blow-dark-node-border);
+    --bit-blow-node-color: var(--bit-blow-dark-node-color);
+    --bit-blow-node-selected: var(--bit-blow-dark-accent);
+    --bit-blow-edge-stroke: var(--bit-blow-dark-edge-stroke);
+    --bit-blow-edge-selected: var(--bit-blow-dark-accent);
+    --bit-blow-connection-stroke: var(--bit-blow-dark-accent);
+    --bit-blow-handle-bg: var(--bit-blow-dark-handle-bg);
+    --bit-blow-node-input-border: var(--bit-blow-dark-node-input-border);
+    --bit-blow-node-output-border: var(--bit-blow-dark-node-output-border);
+    --bit-blow-surface: var(--bit-blow-dark-surface);
+    --bit-blow-surface-hover: var(--bit-blow-dark-surface-hover);
+    --bit-blow-surface-muted: var(--bit-blow-dark-surface-muted);
+    --bit-blow-surface-muted-hover: var(--bit-blow-dark-surface-muted-hover);
+    --bit-blow-surface-translucent: var(--bit-blow-dark-surface-translucent);
+    --bit-blow-border: var(--bit-blow-dark-border);
+    --bit-blow-border-subtle: var(--bit-blow-dark-border-subtle);
+    --bit-blow-text: var(--bit-blow-dark-text);
+    --bit-blow-text-muted: var(--bit-blow-dark-text-muted);
+    --bit-blow-shadow: var(--bit-blow-dark-shadow);
+    --bit-blow-group-bg: var(--bit-blow-dark-group-bg);
+    --bit-blow-group-border: var(--bit-blow-dark-group-border);
+    --bit-blow-background-pattern: var(--bit-blow-dark-background-pattern);
+    --bit-blow-minimap-node: var(--bit-blow-dark-minimap-node);
+    --bit-blow-minimap-mask: var(--bit-blow-dark-minimap-mask);
+    color: var(--bit-blow-node-color);
+    color-scheme: dark;
+}
+
+/* ---------- The frame a flow runs in ----------
+
+   The kit's live-sample surface, with the canvas edge to edge inside it rather than on a padded
+   stage: a flow is the whole sample. The toolbar over it is the kit's demo bar, flush with the
+   frame. */
+.blow-demo {
+    padding: 0;
+    overflow: hidden;
+}
+
+.blow-demo > .bb-demo-bar {
+    margin: 0;
+    padding: .5rem .875rem;
+    border-radius: 0;
+}
+
+/* A canvas fills its container, so the container is what has the height: as much of the window as
+   the header, the page's title block and the "View code" toggle leave, so the whole flow - the
+   controls and the minimap at its bottom included - is on screen without scrolling; within bounds
+   that keep a flow usable on a phone and stop it towering over a reader on a tall monitor. */
+.demo-canvas {
+    position: relative;
+    height: clamp(24rem, calc(100vh - 25rem), 46rem);
+}
+
+/* The toolbar's controls: labels hold their control and its value on one line, and the row wraps
+   on a narrow screen rather than pushing the page sideways. */
+.example-toolbar {
+    gap: .5rem 1rem;
+    font-size: var(--fl-font-size-200);
+    color: var(--bb-text);
+}
+
+.example-toolbar label {
+    display: inline-flex;
+    align-items: center;
+    gap: .375rem;
+    min-width: 0;
+}
+
+.example-toolbar input[type="range"] {
+    max-width: 10rem;
+}
+
+/* ---------- The "View code" toggle: the kit's secondary button, with the caret and the code glyph in it. ---------- */
+
+.demo-code__caret {
+    font-size: .8em;
+    color: var(--bb-text-soft);
+}
+
+.demo-code__glyph {
+    font-family: var(--bb-mono);
+    color: var(--bb-primary);
+}
+
+/* ---------- The examples gallery ---------- */
+
+.example-card {
+    gap: .25rem;
+}
+
+.example-card__title {
+    color: var(--bb-text);
+    font-weight: var(--fl-weight-semibold);
+}
+
+.example-card__summary {
+    font-size: var(--fl-font-size-200);
+    line-height: 1.5;
+}
+
+/* ---------- The landing page's hero: the live flow under its markup, inside the window frame. ---------- */
+
+.home-hero-flow {
+    position: relative;
+    height: 300px;
+    border-top: 1px solid var(--bb-border);
+}
+
+/* The getting-started page's first flow: the same frame as every other sample, a little shorter. */
+.demo-canvas.demo-canvas--short {
+    height: 22rem;
+}

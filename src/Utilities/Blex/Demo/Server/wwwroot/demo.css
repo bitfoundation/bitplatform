@@ -1,0 +1,432 @@
+﻿/* ============================================================================================
+   Blex demo - the styles of the live samples.
+
+   The site's chrome, tokens and shared surfaces live in app.css (the site kit every Utilities demo
+   shares); this file only draws what is this site's own - the syntax highlighter's tokens, the
+   pieces the doc components (Components/*.razor) add to the kit's markup, the widgets inside the
+   samples and the Inspector dock - and it is written against the kit's --bb-* names, so it follows
+   the light/dark theme with no rules of its own for either. Bit.Blex itself ships no stylesheet.
+   ============================================================================================ */
+
+/* ---------- Code: CodeHighlighter's tokens on the kit's code surface ----------
+
+   The highlighter tells more kinds apart than the kit's four (keyword, string, comment, parameter),
+   so the extra ones get colors of their own here, light and dark, picked to hold their contrast on
+   --bb-code-bg in both themes. */
+:root {
+    --demo-code-type: #8250DF;
+    --demo-code-fn: #A21CAF;
+    --demo-code-number: #CF222E;
+}
+
+:root[bit-theme="dark"] {
+    --demo-code-type: #D2A8FF;
+    --demo-code-fn: #F0ABFC;
+    --demo-code-number: #FF7B72;
+}
+
+.c-kw,
+.c-tag { color: var(--bb-code-keyword); }
+.c-razor { color: var(--bb-code-keyword); font-weight: var(--fl-weight-semibold); }
+.c-str { color: var(--bb-code-string); }
+.c-com { color: var(--bb-code-comment); font-style: italic; }
+.c-punc { color: var(--bb-code-comment); }
+.c-attr,
+.c-attrname { color: var(--bb-code-param); }
+.c-type { color: var(--demo-code-type); }
+.c-fn { color: var(--demo-code-fn); }
+.c-num { color: var(--demo-code-number); }
+
+/* A CodeBlock's caption: its title, and the file the sample belongs in. */
+.demo-code-label {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: .25rem .75rem;
+    margin: 0 0 .5rem;
+    font-size: var(--fl-font-size-200);
+    font-weight: var(--fl-weight-semibold);
+    line-height: 1.43;
+    color: var(--bb-text);
+}
+
+.demo-code-label > .bb-mono {
+    font-size: var(--fl-font-size-100);
+    font-weight: var(--fl-weight-regular);
+    color: var(--bb-text-soft);
+}
+
+/* ---------- The doc components' additions to the kit ---------- */
+
+/* DemoCard: the sample's name in the title bar, after the "Live" label and a hairline. */
+.demo-card-title {
+    margin-inline-start: .625rem;
+    padding-inline-start: .625rem;
+    border-inline-start: 1px solid var(--bb-border-strong);
+    font-size: var(--fl-font-size-200);
+    letter-spacing: normal;
+    text-transform: none;
+    color: var(--bb-text);
+}
+
+/* Callout: the bold lead-in of a note. */
+.demo-note-title {
+    display: block;
+    margin-bottom: .25rem;
+    color: var(--bb-text);
+}
+
+/* ApiTable: its heading, and a member column that wraps between the words of a signature but never
+   inside one - a member name broken letter by letter cannot be read. A signature longer than the
+   column widens the table, which then scrolls inside its .bb-scroll. */
+.demo-api-title {
+    margin: 1.5rem 0 .5rem;
+}
+
+.demo-api-table td:first-child {
+    width: 38%;
+    overflow-wrap: normal;
+}
+
+.demo-api-table td:first-child code {
+    overflow-wrap: normal;
+}
+
+/* ---------- Inside the samples ---------- */
+
+/* The headline number of a readout. */
+.bb-stat-value.demo-accent,
+.demo-accent {
+    color: var(--bb-primary);
+}
+
+/* A readout whose value is text - a list, a payload, a key - rather than a number. */
+.bb-stat-value.demo-stat-text {
+    font-family: var(--bb-mono);
+    font-size: var(--fl-font-size-200);
+    font-weight: var(--fl-weight-regular);
+    line-height: 1.5;
+}
+
+/* The one destructive or deliberately-wrong action in a row: danger-stroked, never filled, so it
+   reads as "careful" rather than as the thing to press. */
+.btn.demo-btn-danger {
+    background: transparent;
+    color: var(--bb-danger-text);
+    border-color: color-mix(in srgb, var(--bb-danger) 45%, transparent);
+}
+
+.btn.demo-btn-danger:hover {
+    background: var(--bb-danger-soft);
+    border-color: var(--bb-danger);
+    color: var(--bb-danger-text);
+}
+
+/* A state that is off, next to the tinted badges of states that are on. */
+.bb-badge.demo-badge-off {
+    background: var(--bb-surface-sunken);
+    color: var(--bb-text-muted);
+    box-shadow: inset 0 0 0 1px var(--bb-border);
+}
+
+.demo-input-name { min-width: 150px; }
+.demo-input-qty { width: 5rem; }
+
+.demo-input-grow {
+    flex: 1;
+    min-width: min(220px, 100%);
+}
+
+.demo-qty {
+    min-width: 1.5rem;
+    text-align: center;
+    font-variant-numeric: tabular-nums;
+    color: var(--bb-text);
+}
+
+/* A tile nested in a sample ends flush with its frame. */
+.bb-demo .bb-card > :last-child {
+    margin-bottom: 0;
+}
+
+/* The rows of a sample's list - the cart, the contacts, the search results. */
+.demo-list {
+    list-style: none;
+    margin: 0 0 1rem;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: .375rem;
+}
+
+.demo-list li {
+    display: flex;
+    align-items: center;
+    gap: .625rem;
+    min-height: 2.5rem;
+    padding: .375rem .625rem;
+    background: var(--bb-surface);
+    border: 1px solid var(--bb-border);
+    border-radius: var(--bb-radius);
+    font-size: var(--fl-font-size-200);
+    color: var(--bb-text);
+}
+
+.demo-list-name {
+    flex: 1;
+    min-width: 0;
+    overflow-wrap: anywhere;
+}
+
+.demo-list-meta {
+    font-size: var(--fl-font-size-100);
+    color: var(--bb-text-soft);
+}
+
+.demo-star {
+    flex: none;
+    padding: .125rem;
+    border: 0;
+    background: none;
+    font-size: 1.125rem;
+    line-height: 1;
+    color: var(--bb-text-soft);
+    cursor: pointer;
+}
+
+.demo-star--on {
+    color: var(--bb-warning);
+}
+
+/* The effects lab's timeline: one line per run event, in the code surface's colors. */
+.timeline {
+    list-style: none;
+    margin: 0 0 1rem;
+    padding: .5rem .875rem;
+    max-height: 14rem;
+    overflow-y: auto;
+    background: var(--bb-code-bg);
+    color: var(--bb-code-fg);
+    border: 1px solid var(--bb-border);
+    border-radius: var(--bb-radius-lg);
+    font-family: var(--bb-mono);
+    font-size: .8125rem;
+    line-height: 1.6;
+    scrollbar-width: thin;
+}
+
+.timeline li {
+    display: flex;
+    gap: .75rem;
+    padding: .125rem 0;
+    border-bottom: 1px dashed var(--bb-border);
+}
+
+.timeline li:last-child {
+    border-bottom: 0;
+}
+
+.timeline__at { min-width: 4.5rem; color: var(--bb-code-comment); }
+.timeline__mode { min-width: 5rem; font-weight: var(--fl-weight-semibold); }
+.timeline__mode--Parallel { color: var(--bb-primary); }
+.timeline__mode--Latest { color: var(--demo-code-type); }
+.timeline__mode--Drop { color: var(--bb-warning-text); }
+.timeline__mode--Queue { color: var(--bb-success-text); }
+.timeline__phase--finished { color: var(--bb-success-text); }
+.timeline__phase--cancelled { color: var(--bb-danger-text); }
+.timeline__phase--dropped { color: var(--bb-code-comment); }
+
+/* The landing page's live counter, under the store's source in the hero's window frame. */
+.home-hero-live {
+    padding: 1rem;
+    background: var(--bb-surface);
+    border-top: 1px solid var(--bb-border);
+}
+
+.home-hero-live > .bb-stats {
+    margin-bottom: 1rem;
+}
+
+.home-hero-live > .bb-toolbar {
+    margin-bottom: .75rem;
+}
+
+.home-hero-live > :last-child {
+    margin-bottom: 0;
+}
+
+/* ---------- The Inspector dock (Components/InspectorDock.razor) ----------
+
+   Fixed to the bottom of the window on every page: a tab at rest, a panel of the real pipeline when
+   opened. The tab sits at the inline end, where it clears the docs nav panel and the footer's
+   address column, and it is no taller than the footer's bottom padding. Above the page, below the
+   header, its drawers and the palette - an overlay the reader opened on purpose has to cover the
+   dock, not the other way round. */
+.dock {
+    position: fixed;
+    inset-inline: 0;
+    bottom: 0;
+    z-index: 900;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    pointer-events: none;
+}
+
+.dock__handle {
+    pointer-events: auto;
+    display: inline-flex;
+    align-items: center;
+    gap: .5rem;
+    margin-inline-end: 1.25rem;
+    padding: .3125rem .75rem;
+    border: 1px solid var(--bb-border-strong);
+    border-bottom: 0;
+    border-radius: var(--bb-radius-lg) var(--bb-radius-lg) 0 0;
+    background: var(--bb-surface);
+    color: var(--bb-text-muted);
+    font-family: inherit;
+    font-size: var(--fl-font-size-100);
+    font-weight: var(--fl-weight-semibold);
+    box-shadow: var(--bb-shadow-flyout);
+    cursor: pointer;
+    transition: color var(--bb-motion-duration-short) var(--bb-motion-easing);
+}
+
+.dock__handle:hover {
+    color: var(--bb-text);
+}
+
+.dock__handle-caret {
+    font-size: .625rem;
+}
+
+.dock__body {
+    pointer-events: auto;
+    width: 100%;
+    max-height: 46vh;
+    display: flex;
+    flex-direction: column;
+    background: var(--bb-surface);
+    border-top: 1px solid var(--bb-border-strong);
+    box-shadow: var(--bb-shadow-flyout);
+    color: var(--bb-text);
+}
+
+.dock__tabs {
+    flex: none;
+    margin: 0;
+    padding: 0 .75rem;
+}
+
+.dock__tabs > button {
+    display: inline-flex;
+    align-items: center;
+    gap: .375rem;
+}
+
+.dock__panel {
+    overflow: auto;
+    padding: .25rem 1rem 1rem;
+}
+
+.dock__toolbar {
+    margin: .375rem 0 .625rem;
+    font-size: var(--fl-font-size-200);
+}
+
+.dock__empty,
+.dock__note {
+    margin: .5rem 0 0;
+    font-size: var(--fl-font-size-200);
+    color: var(--bb-text-soft);
+}
+
+.dock__json {
+    margin: 0;
+    font-size: .75rem;
+}
+
+.dock__stats {
+    margin-bottom: .75rem;
+}
+
+.dock__banner {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: .75rem;
+    padding: .5rem 1rem;
+    background: var(--bb-warning-soft);
+    border-top: 1px solid var(--bb-warning);
+    font-size: var(--fl-font-size-200);
+}
+
+.feed {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    font-family: var(--bb-mono);
+    font-size: .8125rem;
+}
+
+.feed__row {
+    display: flex;
+    align-items: baseline;
+    gap: .625rem;
+    padding: .25rem 0;
+    border-bottom: 1px solid var(--bb-border);
+}
+
+.feed__seq { min-width: 3rem; color: var(--bb-text-soft); }
+.feed__store { color: var(--demo-code-type); }
+.feed__action { color: var(--bb-primary); font-weight: var(--fl-weight-semibold); }
+
+.feed__args {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: var(--bb-text-muted);
+}
+
+.feed__time {
+    margin-inline-start: auto;
+    color: var(--bb-text-soft);
+}
+
+.err-list {
+    list-style: none;
+    margin: 0 0 1rem;
+    padding: 0;
+    font-size: var(--fl-font-size-200);
+}
+
+.err-list li {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .625rem;
+    padding: .3125rem 0;
+    border-bottom: 1px solid var(--bb-border);
+}
+
+.err-list__source { font-family: var(--bb-mono); font-weight: var(--fl-weight-semibold); color: var(--bb-danger-text); }
+.err-list__detail { font-family: var(--bb-mono); color: var(--bb-text-muted); }
+.err-list__msg { color: var(--bb-text); }
+
+@media (max-width: 600px) {
+    .dock__handle {
+        margin-inline-end: .75rem;
+    }
+
+    .feed__time {
+        display: none;
+    }
+}
+
+@media print {
+    .dock {
+        display: none;
+    }
+}

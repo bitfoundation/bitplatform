@@ -47,7 +47,7 @@ public abstract class BlowTest
 
     /// <summary>
     /// A fresh browser context, closed when the test ends. The suite is hermetic: a request that leaves the
-    /// demo's origin (the demo's web font, today) is answered with an empty response here, so a runner
+    /// demo's origin is answered with an empty response here, so a runner
     /// without internet access neither waits out a connection timeout nor logs a load error for it.
     /// </summary>
     protected async Task<IBrowserContext> NewContextAsync(BrowserNewContextOptions? options = null)
@@ -332,6 +332,14 @@ public abstract class BlowTest
     protected readonly record struct Point(double X, double Y)
     {
         public Point Offset(double dx, double dy) => new(X + dx, Y + dy);
+
+        /// <summary>
+        /// The nearest whole-pixel point. Chromium reports a mouse or wheel event at whole pixels, so a test that
+        /// asserts on exactly where the event landed has to aim at one: a pane at a fractional offset (a title
+        /// block above it whose line height is 25.6px puts it there) would otherwise be hit up to a pixel away
+        /// from the point the assertion computes with.
+        /// </summary>
+        public Point Snapped() => new(Math.Round(X), Math.Round(Y));
 
         public double DistanceTo(Point other) => Math.Sqrt((X - other.X) * (X - other.X) + (Y - other.Y) * (Y - other.Y));
 

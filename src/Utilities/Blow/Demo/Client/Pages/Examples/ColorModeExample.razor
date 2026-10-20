@@ -1,13 +1,14 @@
 ﻿@page "/examples/color-mode"
 @inject IJSRuntime JS
 
-<PageTitle>Color Mode - bit Blow</PageTitle>
+<PageTitle>Color Mode · Blow</PageTitle>
 
 <ExampleScaffold Title="Color Mode"
-                 Summary="Switch between light, dark and system colour themes. Every part of the component follows - not only the canvas and its nodes, but the control bar, the minimap, node toolbars, edge labels and the attribution badge, all of which take their colours from the same set of CSS custom properties.">
+                 Summary="Switch between light, dark and system colour themes - or leave the flow to this site's own light/dark toggle. Every part of the component follows - not only the canvas and its nodes, but the control bar, the minimap, node toolbars, edge labels and the attribution badge, all of which take their colours from the same set of CSS custom properties.">
     <Toolbar>
         <label>theme:
-            <select @onchange="e => _mode = Enum.Parse<BlowColorMode>(e.Value!.ToString()!)">
+            <select @bind="_choice">
+                <option value="Site">Site theme</option>
                 <option value="Light">Light</option>
                 <option value="Dark">Dark</option>
                 <option value="System">System</option>
@@ -19,8 +20,8 @@
         <span class="note">Select a node to see its toolbar; the whole surface is themed.</span>
     </Toolbar>
     <ChildContent>
-        <BlowCanvas @ref="_flow" Nodes="_nodes" Edges="_edges" FitViewOnInit="true" ColorMode="_mode"
-                    Class="@(_teal ? "teal-accent" : null)">
+        <BlowCanvas @ref="_flow" Nodes="_nodes" Edges="_edges" FitViewOnInit="true" ColorMode="Mode"
+                    Class="@CanvasClass">
             <NodeTemplate Context="node">
                 <BlowNodeToolbar Position="BlowPosition.Top">
                     <button @onclick="@(() => Rename(node))">Rename</button>
@@ -58,9 +59,10 @@
         --bit-blow-node-selected: #0d9488;
         --bit-blow-edge-selected: #0d9488;
         --bit-blow-connection-stroke: #0d9488;
+        --bit-blow-dark-accent: #2dd4bf;       /* the same three in dark mode */
     }
 
-    .note { margin-left: auto; font-size: 11px; color: #6b7280; }
+    .note { margin-left: auto; font-size: 11px; color: var(--bb-text-soft); }
     .hint {
         max-width: 220px;
         padding: 6px 10px;
@@ -77,7 +79,20 @@
     private BlowCanvas? _flow;
     private List<BlowNode> _nodes = [];
     private List<BlowEdge> _edges = [];
-    private BlowColorMode _mode = BlowColorMode.Light;
+    private string _choice = "Site";
+
+    private BlowColorMode Mode => _choice switch
+    {
+        "Dark" => BlowColorMode.Dark,
+        "System" => BlowColorMode.System,
+        _ => BlowColorMode.Light,
+    };
+
+    // This site paints every flow in its own light/dark theme (its stylesheet copies the dark palette over the
+    // light one while the site is dark). "Site theme" leaves the canvas to that; any other choice is the
+    // canvas's own ColorMode, and own-color-mode tells the site's stylesheet to keep out of it.
+    private string CanvasClass => $"{(_choice == "Site" ? "" : "own-color-mode")} {(_teal ? "teal-accent" : "")}".Trim();
+
     private bool _teal;
 
     protected override void OnInitialized()

@@ -55,6 +55,11 @@
 .bb-palette-scrim {
     position: fixed;
     inset: 0;
+    /* The header's backdrop-filter makes it the containing block of its fixed descendants, so
+       `inset: 0` alone would span only the 56px bar. The header is pinned to the top of the
+       viewport, so a viewport-tall box from its top edge is the whole screen. */
+    bottom: auto;
+    height: 100vh;
     z-index: 1100;
     display: flex;
     justify-content: center;

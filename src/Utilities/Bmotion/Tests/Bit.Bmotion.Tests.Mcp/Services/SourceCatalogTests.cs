@@ -1,4 +1,4 @@
-using Bit.Bmotion.Demo.Client.Shared;
+using Bit.Bmotion.Demo.Client;
 
 namespace Bit.Bmotion.Tests.Mcp.Services;
 
@@ -176,7 +176,7 @@ public class SourceCatalogTests
     /// <summary>
     /// GetBmotionSourceFiles reports every demo page under the path an agent is told to pass to
     /// GetBmotionSourceFile. Every one of them has to be a path that resolves - and to carry the page's
-    /// own words: a page describes itself once, in <see cref="NavItem"/>, and the nav panel, the site's
+    /// own words: a page describes itself once, in <see cref="DocsCatalog"/>, and the nav panel, the site's
     /// search box and the MCP listing all read that one description. A listing that quietly fell back
     /// to a scraped comment would answer "which file demonstrates drag" with the doc comment of some
     /// nested record, and nothing else in the suite would notice.
@@ -184,25 +184,26 @@ public class SourceCatalogTests
     [TestMethod]
     public void SourceFiles_CoverEveryPageTheNavigationPointsAt()
     {
-        var missing = NavItem.All
-            .Where(page => BmotionSourceCatalog.GetSourceFile(page.SourcePath) is null)
-            .Select(page => $"{page.Title} -> {page.SourcePath}")
+        var missing = DocsCatalog.AllPages
+            .Where(page => BmotionSourceCatalog.GetSourceFile(BmotionSourceCatalog.SourcePathOf(page)) is null)
+            .Select(page => $"{page.Title} -> {BmotionSourceCatalog.SourcePathOf(page)}")
             .ToArray();
 
         Assert.AreEqual(0, missing.Length, $"Advertised but not embedded: {string.Join("; ", missing)}.");
 
-        foreach (var page in NavItem.All)
+        foreach (var page in DocsCatalog.AllPages)
         {
+            var path = BmotionSourceCatalog.SourcePathOf(page);
             var listed = BmotionSourceCatalog.SourceFiles.SingleOrDefault(
-                file => string.Equals(file.Path, page.SourcePath, StringComparison.OrdinalIgnoreCase));
+                file => string.Equals(file.Path, path, StringComparison.OrdinalIgnoreCase));
 
-            Assert.IsNotNull(listed, $"'{page.SourcePath}' resolves but is not in the listing.");
+            Assert.IsNotNull(listed, $"'{path}' resolves but is not in the listing.");
 
-            Assert.AreEqual(page.Title, listed.Title, $"'{page.SourcePath}' is listed under another title.");
-            Assert.AreEqual(page.Href, listed.Slug, $"'{page.SourcePath}' is listed under another route.");
+            Assert.AreEqual(page.Title, listed.Title, $"'{path}' is listed under another title.");
+            Assert.AreEqual(page.Url.Trim('/'), listed.Slug, $"'{path}' is listed under another route.");
             Assert.AreEqual(page.Description, listed.Description,
-                            $"'{page.SourcePath}' is described by something other than its nav entry.");
-            Assert.AreEqual(page.Keywords, listed.Keywords, $"'{page.SourcePath}' lost its keywords.");
+                            $"'{path}' is described by something other than its catalog entry.");
+            Assert.AreEqual(page.Keywords, listed.Keywords, $"'{path}' lost its keywords.");
         }
     }
 

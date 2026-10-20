@@ -1,6 +1,6 @@
 ﻿@page "/examples/edge-toolbar"
 
-<PageTitle>Edge Toolbar - bit Blow</PageTitle>
+<PageTitle>Edge Toolbar · Blow</PageTitle>
 
 <ExampleScaffold Title="Edge Toolbar"
                  Summary="Selecting an edge reveals an BlowEdgeToolbar anchored at its midpoint (constant screen size). Use it to relabel, recolor or delete the edge.">
@@ -31,9 +31,11 @@
 </ExampleScaffold>
 
 <style>
-    .btn-mini { border:1px solid #ddd; background:#fff; border-radius:4px; cursor:pointer; padding:1px 6px; font-size:13px; }
-    .btn-mini.danger { background:#fee2e2; color:#b91c1c; border-color:#fca5a5; }
-    .btn-mini:hover { background:#f3f4f6; }
+    /* Painted with the canvas's own --bit-blow-* colours, so the toolbar follows its colour mode. */
+    .btn-mini { border:1px solid var(--bit-blow-border); background:var(--bit-blow-surface); color:var(--bit-blow-text); border-radius:4px; cursor:pointer; padding:1px 6px; font-size:13px; }
+    .btn-mini:hover { background:var(--bit-blow-surface-hover); }
+    .btn-mini.danger { color:#ef4444; border-color:color-mix(in srgb, #ef4444 45%, transparent); }
+    .btn-mini.danger:hover { background:color-mix(in srgb, #ef4444 14%, var(--bit-blow-surface)); }
 </style>
 
 @code {

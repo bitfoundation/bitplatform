@@ -1,6 +1,20 @@
-﻿<Router AppAssembly="typeof(Program).Assembly" NotFoundPage="typeof(Pages.NotFound)">
+﻿@* Every page but the landing page renders inside the docs shell (Layout/DocsLayout.razor); the
+   landing page and the not-found page opt out with @layout MainLayout. After a navigation the
+   page's own H1 takes focus, so a screen reader starts reading at the new page. *@
+
+<Router AppAssembly="typeof(Program).Assembly" NotFoundPage="typeof(Pages.NotFound)">
     <Found Context="routeData">
-        <RouteView RouteData="routeData" DefaultLayout="typeof(Layout.MainLayout)" />
+        <RouteView RouteData="routeData" DefaultLayout="typeof(Layout.DocsLayout)" />
         <FocusOnNavigate RouteData="routeData" Selector="h1" />
     </Found>
 </Router>
+
+@* One host renders every tour the application starts, wherever it is started from - the part of
+   this file every application needs. It sits beside the router rather than inside a layout so a
+   tour survives every navigation, including the ones a multi-page tour makes itself.
+
+   No Theme is passed: a tour that leaves its own Theme unset is drawn with data-bonboarding-theme
+   "system", which leaves the choice to the application's stylesheet - and this site's (demo.css)
+   follows its own light/dark switch there. A tour that sets Light or Dark keeps it whichever theme
+   the site is in, which is what the theming page demonstrates. *@
+<BonboardingRoot />

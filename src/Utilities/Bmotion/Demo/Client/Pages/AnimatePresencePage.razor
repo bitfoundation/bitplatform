@@ -1,19 +1,20 @@
 @page "/presence"
 
-<PageTitle>AnimatePresence - Bit.Bmotion</PageTitle>
+<PageTitle>AnimatePresence · Bmotion</PageTitle>
 
-<h1>AnimatePresence</h1>
+<div class="bb-intro">
+    <h1>AnimatePresence</h1>
+    <p class="bb-subtitle">
+        An element that has already left the DOM cannot animate. That is the whole problem exit
+        animations exist to solve, and the presence components solve it by <strong>keeping removed
+        content rendered until its exit has finished</strong>. You still write ordinary Blazor - flip a
+        bool, remove a list item, change a page number - and the removal is what schedules the
+        animation.
+    </p>
+</div>
 
-<p class="page-intro">
-    An element that has already left the DOM cannot animate. That is the whole problem exit
-    animations exist to solve, and the presence components solve it by <strong>keeping removed
-    content rendered until its exit has finished</strong>. You still write ordinary Blazor - flip a
-    bool, remove a list item, change a page number - and the removal is what schedules the
-    animation.
-</p>
-
-<div class="demo-section">
-    <h2>Exit animations</h2>
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Exit animations</h3>
     <p>
         Wrap conditional content in <strong>BmotionAnimatePresence</strong> and give the child an
         <code>Exit</code> target. When <code>IsPresent</code> goes false the child plays that target
@@ -35,15 +36,15 @@
         </div>
     </div>
 
-    <div class="demo-actions">
-        <button class="btn-bm" @onclick="@(() => _visible = !_visible)">@(_visible ? "Remove" : "Add")</button>
+    <div class="bb-toolbar">
+        <button class="btn btn-primary" @onclick="@(() => _visible = !_visible)">@(_visible ? "Remove" : "Add")</button>
     </div>
 
     <CodeSnippet Code="@_presenceCode" />
-</div>
+</section>
 
-<div class="demo-section">
-    <h2>Keyed lists</h2>
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Keyed lists</h3>
     <p>
         <strong>BmotionPresenceGroup</strong> does the same job for a collection, tracked by key:
         removed items play their <code>Exit</code> before leaving, added items play their enter, and
@@ -69,16 +70,16 @@
         </div>
     </div>
 
-    <div class="demo-actions">
-        <button class="btn-bm" @onclick="AddItem">Add item</button>
+    <div class="bb-toolbar">
+        <button class="btn btn-primary" @onclick="AddItem">Add item</button>
         <span class="demo-label">@_items.Count item(s)</span>
     </div>
 
     <CodeSnippet Code="@_listCode" />
-</div>
+</section>
 
-<div class="demo-section">
-    <h2>Pop layout</h2>
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Pop layout</h3>
     <p>
         By default an exiting item still occupies its space, so the row it sits in only closes up
         once the animation ends - a visible beat of dead air in a chip row or a grid.
@@ -102,15 +103,15 @@
         </div>
     </div>
 
-    <div class="demo-actions">
-        <button class="btn-bm" @onclick="ResetChips">Reset chips</button>
+    <div class="bb-toolbar">
+        <button class="btn btn-primary" @onclick="ResetChips">Reset chips</button>
     </div>
 
     <CodeSnippet Code="@_popLayoutCode" />
-</div>
+</section>
 
-<div class="demo-section">
-    <h2>Switching between items</h2>
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Switching between items</h3>
     <p>
         <strong>BmotionPresenceSwitch</strong> covers the case where content is <em>replaced</em>
         rather than added or removed - paging, toasts, a wizard step. Change <code>Item</code> and
@@ -132,72 +133,13 @@
         </div>
     </div>
 
-    <div class="demo-actions">
-        <button class="btn-bm" @onclick="@(() => _page++)">Next page</button>
-        <button class="btn-bm" @onclick="@(() => _page = _page > 1 ? _page - 1 : 1)">Previous page</button>
+    <div class="bb-toolbar">
+        <button class="btn btn-primary" @onclick="@(() => _page++)">Next page</button>
+        <button class="btn btn-secondary" @onclick="@(() => _page = _page > 1 ? _page - 1 : 1)">Previous page</button>
     </div>
 
     <CodeSnippet Code="@_switchCode" />
-</div>
-
-<style>
-    /* Exit targets move content past the edge of its stage; clipping keeps the departure inside
-       the card instead of letting it slide across the page. */
-    .presence-stage { min-height: 12.5rem; position: relative; overflow: hidden; }
-
-    .list-stage {
-        gap: .5rem;
-        width: 100%;
-        min-width: 17.5rem;
-        flex-direction: column;
-        align-items: stretch;
-    }
-
-    .presence-row {
-        display: flex;
-        padding: .6rem 1rem;
-        border-radius: 8px;
-        align-items: center;
-        color: var(--bm-text);
-        justify-content: space-between;
-        background: var(--bm-accent-soft);
-        border: 1px solid var(--bm-accent-line);
-    }
-
-    /* The glyph sits on the accent-tinted row, where the secondary accent is too low-contrast to
-       read; the foreground token carries it in both themes. */
-    .row-remove {
-        border: none;
-        cursor: pointer;
-        font-size: 1.1rem;
-        background: none;
-        color: var(--bm-text);
-    }
-
-    /* position: relative is what anchors the popped (absolute) chips; without it they would
-       fall back to the nearest positioned ancestor and jump across the page. */
-    .chip-stage {
-        gap: .5rem;
-        flex-wrap: wrap;
-        position: relative;
-        min-height: 7.5rem;
-        align-content: flex-start;
-        justify-content: flex-start;
-    }
-
-    .chip {
-        cursor: pointer;
-        user-select: none;
-        white-space: nowrap;
-        padding: .35rem .9rem;
-        border-radius: 999px;
-        color: var(--bm-text);
-        background: color-mix(in srgb, var(--bm-secondary) 15%, transparent);
-        border: 1px solid color-mix(in srgb, var(--bm-secondary) 35%, transparent);
-    }
-
-    .page-box { font-size: 2rem; }
-</style>
+</section>
 
 @code {
     private bool _visible = true;

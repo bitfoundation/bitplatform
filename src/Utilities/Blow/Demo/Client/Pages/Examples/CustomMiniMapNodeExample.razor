@@ -1,6 +1,6 @@
 ﻿@page "/examples/custom-minimap-node"
 
-<PageTitle>Custom MiniMap Node - bit Blow</PageTitle>
+<PageTitle>Custom MiniMap Node · Blow</PageTitle>
 
 <ExampleScaffold Title="Custom MiniMap Node"
                  Summary="Color the minimap nodes by type and outline the selected node, using the BlowMiniMap's NodeColorFunc and NodeStrokeColorFunc. Select a node to see its minimap outline.">
@@ -44,5 +44,6 @@
         _ => "#fbbf24",
     };
 
-    private string NodeStroke(BlowNode n) => n.Selected ? "#111827" : "transparent";
+    // A theme property rather than a fixed colour, so the outline stays visible in the dark colour mode.
+    private string NodeStroke(BlowNode n) => n.Selected ? "var(--bit-blow-text)" : "transparent";
 }

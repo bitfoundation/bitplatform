@@ -70,7 +70,7 @@ public sealed class GuardTests : BlowTest
     [TestMethod]
     public async Task A_wheel_over_the_flow_never_scrolls_the_page_but_one_over_its_controls_does()
     {
-        var page = await OpenAsync("/");
+        var page = await OpenAsync("/basic-flow");
         Assert.IsTrue(await page.EvaluateAsync<bool>("() => document.documentElement.scrollHeight > window.innerHeight + 40"),
             "the page is not tall enough to scroll");
         await page.EvaluateAsync("() => window.scrollTo(0, 0)");

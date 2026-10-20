@@ -29,7 +29,7 @@ public static partial class BaletteSetupGuide
         "Demo/Client/Program.cs",
         "Demo/Server/Components/App.razor",
         "Demo/Client/Routes.razor",
-        "Demo/Client/Layout/MainLayout.razor",
+        BaletteSourceCatalog.PaletteHostPath,
         "Demo/Client/_Imports.razor",
     ];
 
@@ -143,7 +143,9 @@ public static partial class BaletteSetupGuide
         {
             builder.AppendLine("## The files, from this demo").AppendLine();
             builder.AppendLine("Everything below compiles as-is once the projects and namespaces are renamed to your own - except what is the ")
-                   .AppendLine("demo's own: `<NavMenu />` and the `DemoState`/`DemoCommands` the layout uses stand for your navigation and your commands.")
+                   .AppendLine("demo's own: the `DocsLayout` `Routes.razor` names stands for your layout, and the `DemoState`/`DemoCommands` the ")
+                   .AppendLine("palette host uses for your state and your commands. The host is rendered by `Routes.razor`, next to the router, ")
+                   .AppendLine("so the one palette is interactive on every page and outlives every layout - a layout of your own works as well.")
                    .AppendLine();
 
             foreach (var path in _hostingFiles)
@@ -186,10 +188,11 @@ public static partial class BaletteSetupGuide
            `<link rel="stylesheet" href="_content/Bit.Balette/bit-balette.css" />`. It is NOT injected for you: without it the
            palette opens as unstyled markup.
         4. Add `@using Bit.Balette` to the `_Imports.razor` of every project with palette markup or commands.
-        5. Render exactly one `<Balette />`, in a layout that is rendered interactively (global interactivity, as below). In a
-           statically rendered layout it never attaches its keyboard handling, so Ctrl+K does nothing. With per-page
-           interactivity, wrap it in a small component rendered with an interactive mode, and register commands from
-           components in that same mode - the registry is scoped to one circuit or one WebAssembly runtime.
+        5. Render exactly one `<Balette />`, in a layout - or, as in the demo, a component `Routes.razor` renders next to the
+           router - that is rendered interactively (global interactivity, as below). Rendered statically it never attaches
+           its keyboard handling, so Ctrl+K does nothing. With per-page interactivity, wrap it in a small component
+           rendered with an interactive mode, and register commands from components in that same mode - the registry is
+           scoped to one circuit or one WebAssembly runtime.
         6. Register commands with `IBaletteService.Register(...)` - and dispose the handle it returns when the page goes - or
            with `<BaletteCommands Commands="_commands" />`, which does both for you; app-wide ones once, from the layout or
            through `options.Commands`. Commands are immutable: to change one, hand over a new list or call `Update`.

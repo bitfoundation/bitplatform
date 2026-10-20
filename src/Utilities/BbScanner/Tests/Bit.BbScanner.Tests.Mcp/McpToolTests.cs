@@ -249,10 +249,26 @@ public class McpToolTests
 
         Assert.Contains("Demo/Client/Pages/Scan.razor", index);
         Assert.Contains("Demo/Client/Pages/Camera.razor", index);
+        Assert.Contains("Demo/Client/Pages/GettingStarted.razor", index);
         Assert.Contains(BbScannerSourceCatalog.StylesheetPath, index);
         Assert.DoesNotContain("McpServer.razor", index);
         Assert.DoesNotContain("NotFound.razor", index);
         Assert.DoesNotContain("Error.razor", index);
+
+        // The docs site around the demos - the landing page, the shell and the catalog it is drawn
+        // from - is the same in every Utilities demo and teaches nothing about scanning.
+        Assert.DoesNotContain("Pages/Home.razor", index);
+        Assert.DoesNotContain("Demo/Client/Layout/", index);
+        Assert.DoesNotContain("DocsCatalog.cs", index);
+    }
+
+    [TestMethod]
+    public async Task A_demo_page_is_described_by_the_intro_it_opens_with()
+    {
+        var index = await McpCall.TextAsync("GetBbScannerSourceFile");
+        var line = index.Split('\n').Single(l => l.Contains("`Demo/Client/Pages/Region.razor`", StringComparison.Ordinal));
+
+        Assert.Contains("normalized coordinates", line);
     }
 
     [TestMethod]

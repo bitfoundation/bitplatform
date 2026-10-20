@@ -1,6 +1,6 @@
 ﻿@page "/examples/drag-handle"
 
-<PageTitle>Drag Handle - bit Blow</PageTitle>
+<PageTitle>Drag Handle · Blow</PageTitle>
 
 <ExampleScaffold Title="Drag Handle"
                  Summary="The node only moves when you drag the small grip area. Dragging the body does nothing, so the body can host interactive content.">
@@ -29,7 +29,7 @@
 
 <style>
     .dh-node { display:flex; align-items:stretch; }
-    .dh-node__grip { display:flex; align-items:center; padding:0 6px; cursor:grab; color:#888; border-right:1px solid #eee; user-select:none; }
+    .dh-node__grip { display:flex; align-items:center; padding:0 6px; cursor:grab; color:var(--bit-blow-text-muted); border-right:1px solid var(--bit-blow-border-subtle); user-select:none; }
     .dh-node__grip:active { cursor:grabbing; }
     .dh-node__body { padding:8px 12px; }
 </style>

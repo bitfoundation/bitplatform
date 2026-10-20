@@ -1,25 +1,26 @@
 ﻿@page "/fluent-validation"
 @inject global::FluentValidation.IValidator<JobApplication> Validator
 
-<PageTitle>FluentValidation</PageTitle>
+<PageTitle>FluentValidation · Borm</PageTitle>
 
-<div class="demo-intro">
+<div class="bb-intro">
     <h1>FluentValidation</h1>
-    <p>Reuse your existing <code>AbstractValidator&lt;T&gt;</code>. Borm runs it against the bound model and maps each failure onto its field by property path — including cross-field rules. Try entering 5+ years of experience and leaving the motivation short.</p>
+    <p class="bb-subtitle">Reuse your existing <code>AbstractValidator&lt;T&gt;</code>. Borm runs it against the bound model and maps each failure onto its field by property path — including cross-field rules. Try entering 5+ years of experience and leaving the motivation short.</p>
 </div>
 
-<div class="demo-card">
+<div class="bb-demo">
+    <div class="bb-demo-bar"><span class="bb-demo-label">Live form</span></div>
     <BormView State="_state" OnValidSubmit="HandleSubmit" SubmitText="Apply" />
 </div>
 
 @if (_submitted)
 {
-    <div class="demo-result"><strong>Application received ✓</strong> <pre>@_json</pre></div>
+    <div class="bb-note bb-note-success demo-result"><strong>Application received ✓</strong><pre>@_json</pre></div>
 }
 
-<details class="demo-source">
-    <summary>View source</summary>
-    <pre><code>@Source</code></pre>
+<details class="bb-source demo-source">
+    <summary class="btn btn-secondary">View source</summary>
+    <pre class="bb-code"><code>@Source</code></pre>
 </details>
 
 @code {

@@ -1,30 +1,107 @@
 ﻿@page "/list"
 @inherits ReplicaPageBase
 
-<h1>Collaborative list</h1>
+<PageTitle>Collaborative list · Bcrdt</PageTitle>
 
-<section class="prose">
-    <p>
-        A shared to-do list, held as a <code>BcrdtArray</code> whose elements are each a
-        <code>BcrdtMap</code> with a <code>title</code> and a <code>done</code> flag. Two independent
-        replicas of the document <code>demo-list</code> are shown; add, rename, tick and reorder in
-        either one.
+<div class="bb-intro">
+    <h1>Collaborative list</h1>
+    <p class="bb-subtitle">
+        A shared to-do list, held as a <code>BcrdtArray</code> whose elements are each a <code>BcrdtMap</code> with a
+        <code>title</code> and a <code>done</code> flag. Two independent replicas of the document <code>demo-list</code>
+        are shown; add, rename, tick and reorder in either one.
     </p>
-    <p>
-        The nesting is the point. If each item were stored as a single string or a serialized blob,
-        then one person renaming an item while another ticks it would be two writes of the same
-        value, and one of them would have to lose. Because an item is a real collaborative map, the
-        rename touches the <code>title</code> key and the tick touches the <code>done</code> key,
-        they never contend, and both survive. Two people editing the <em>same</em> key of the same
-        item still resolves last-writer-wins - the merge is per key, not per keystroke.
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Two replicas of one list</h3>
+    <p class="bb-card-desc">
+        Add an item in either replica, rename it, tick it, move it up or down - and watch the other follow.
     </p>
-    <p>
-        Ordering is handled by the sequence itself. Concurrent insertions at the same position are
-        placed in an order every replica independently agrees on, and a run inserted by one person
-        stays contiguous rather than interleaving with a run inserted by someone else. Concurrent
-        deletion of the same item is idempotent: it disappears once and never comes back.
-    </p>
-    <p class="callout">
+
+    @if (!Ready)
+    {
+        <p class="loading bb-empty"><span class="bb-spinner" aria-hidden="true"></span> Opening two replicas…</p>
+    }
+    else
+    {
+        <div class="bb-split replicas">
+            @foreach (DemoReplica replica in Replicas)
+            {
+                <ReplicaPanel Replica="replica">
+                    <ChildContent>
+                        <div class="list-add">
+                            <input type="text"
+                                   aria-label="New item"
+                                   placeholder="New item…"
+                                   value="@Draft(replica)"
+                                   @oninput="args => SetDraft(replica, args.Value as string)"
+                                   @onkeydown="args => OnDraftKey(replica, args)" />
+                            <button type="button" class="btn btn-primary" @onclick="() => Add(replica)">Add</button>
+                        </div>
+
+                        @{
+                            BcrdtArray items = Items(replica);
+                        }
+
+                        @if (items.Count == 0)
+                        {
+                            <p class="todo-empty">Nothing on the list yet.</p>
+                        }
+                        else
+                        {
+                            <ul class="todo">
+                                @for (int index = 0; index < items.Count; index++)
+                                {
+                                    int position = index;
+                                    BcrdtMap? item = items.GetMap(position);
+                                    if (item is null) continue;
+
+                                    @*
+                                        Keyed by the item itself. Remote insertions and deletions shift
+                                        positions; without a key the renderer would reuse the DOM row at
+                                        each index for a different item, overwriting a title somebody is
+                                        halfway through typing and sending their change to the wrong item.
+                                    *@
+                                    <li @key="item" class="todo-item @(IsDone(item) ? "todo-done" : "")">
+                                        <input type="checkbox"
+                                               aria-label="Done"
+                                               checked="@IsDone(item)"
+                                               @onchange="args => ToggleDone(item, args)" />
+
+                                        <input type="text"
+                                               class="todo-title"
+                                               aria-label="Title"
+                                               value="@Title(item)"
+                                               @onchange="args => Rename(item, args.Value as string)" />
+
+                                        <button type="button" class="bb-icon-btn"
+                                                title="Move up" aria-label="Move up"
+                                                disabled="@(position == 0)"
+                                                @onclick="() => MoveUp(replica, position)">↑</button>
+                                        <button type="button" class="bb-icon-btn"
+                                                title="Move down" aria-label="Move down"
+                                                disabled="@(position == items.Count - 1)"
+                                                @onclick="() => MoveDown(replica, position)">↓</button>
+                                        <button type="button" class="bb-icon-btn icon-danger"
+                                                title="Delete" aria-label="Delete"
+                                                @onclick="() => Delete(replica, position)">✕</button>
+                                    </li>
+                                }
+                            </ul>
+                        }
+                    </ChildContent>
+
+                    <Footer>
+                        <span class="metric">@Items(replica).Count items</span>
+                        <span class="metric">@DoneCount(replica) done</span>
+                        <span class="metric">@Blocks(replica) blocks</span>
+                    </Footer>
+                </ReplicaPanel>
+            }
+        </div>
+    }
+
+    <div class="bb-note bb-note-warn">
         <strong>Worth trying.</strong> Take Replica B offline. In A, rename an item. In B, tick the
         same item and add a new one. Bring B back: the rename and the tick both survive on the same
         item, and B's new item is now in A as well. Then try the reorder arrows on both replicas
@@ -34,104 +111,46 @@
         because it lands on the element the move removed. Those are genuine limitations of the
         operation rather than bugs, and they are called out in the library's own documentation for
         <code>Move</code>.
-    </p>
-</section>
-
-@if (!Ready)
-{
-    <p class="loading">Opening two replicas…</p>
-}
-else
-{
-    <div class="panel-grid panel-grid-2">
-        @foreach (DemoReplica replica in Replicas)
-        {
-            <ReplicaPanel Replica="replica">
-                <ChildContent>
-                    <div class="list-add">
-                        <input class="input"
-                               placeholder="New item…"
-                               value="@Draft(replica)"
-                               @oninput="args => SetDraft(replica, args.Value as string)"
-                               @onkeydown="args => OnDraftKey(replica, args)" />
-                        <button class="button" @onclick="() => Add(replica)">Add</button>
-                    </div>
-
-                    @{
-                        BcrdtArray items = Items(replica);
-                    }
-
-                    @if (items.Count == 0)
-                    {
-                        <p class="empty">Nothing on the list yet.</p>
-                    }
-                    else
-                    {
-                        <ul class="todo">
-                            @for (int index = 0; index < items.Count; index++)
-                            {
-                                int position = index;
-                                BcrdtMap? item = items.GetMap(position);
-                                if (item is null) continue;
-
-                                @*
-                                    Keyed by the item itself. Remote insertions and deletions shift
-                                    positions; without a key the renderer would reuse the DOM row at
-                                    each index for a different item, overwriting a title somebody is
-                                    halfway through typing and sending their change to the wrong item.
-                                *@
-                                <li @key="item" class="todo-item @(IsDone(item) ? "todo-done" : "")">
-                                    <input type="checkbox"
-                                           checked="@IsDone(item)"
-                                           @onchange="args => ToggleDone(item, args)" />
-
-                                    <input class="input todo-title"
-                                           value="@Title(item)"
-                                           @onchange="args => Rename(item, args.Value as string)" />
-
-                                    <button class="icon-button"
-                                            title="Move up"
-                                            disabled="@(position == 0)"
-                                            @onclick="() => MoveUp(replica, position)">↑</button>
-                                    <button class="icon-button"
-                                            title="Move down"
-                                            disabled="@(position == items.Count - 1)"
-                                            @onclick="() => MoveDown(replica, position)">↓</button>
-                                    <button class="icon-button icon-danger"
-                                            title="Delete"
-                                            @onclick="() => Delete(replica, position)">✕</button>
-                                </li>
-                            }
-                        </ul>
-                    }
-                </ChildContent>
-
-                <Footer>
-                    <span class="metric">@Items(replica).Count items</span>
-                    <span class="metric">@DoneCount(replica) done</span>
-                    <span class="metric">@Blocks(replica) blocks</span>
-                </Footer>
-            </ReplicaPanel>
-        }
     </div>
+</div>
 
-    <section class="prose">
-        <h2>The raw state of each replica</h2>
-        <p>
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Why a list of maps</h3>
+    <p class="bb-card-desc">
+        The nesting is the point. If each item were stored as a single string or a serialized blob,
+        then one person renaming an item while another ticks it would be two writes of the same
+        value, and one of them would have to lose. Because an item is a real collaborative map, the
+        rename touches the <code>title</code> key and the tick touches the <code>done</code> key,
+        they never contend, and both survive. Two people editing the <em>same</em> key of the same
+        item still resolves last-writer-wins - the merge is per key, not per keystroke.
+    </p>
+    <p class="bb-card-desc">
+        Ordering is handled by the sequence itself. Concurrent insertions at the same position are
+        placed in an order every replica independently agrees on, and a run inserted by one person
+        stays contiguous rather than interleaving with a run inserted by someone else. Concurrent
+        deletion of the same item is idempotent: it disappears once and never comes back.
+    </p>
+</div>
+
+@if (Ready)
+{
+    <div class="bb-card">
+        <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> The raw state of each replica</h3>
+        <p class="bb-card-desc">
             The same list as the engine holds it. When both replicas are online and idle these two
             projections are identical, character for character - that is the convergence property,
             and it is exactly the assertion the library's own correctness tests make.
         </p>
-        <div class="panel-grid panel-grid-2">
+        <div class="bb-split">
             @foreach (DemoReplica replica in Replicas)
             {
-                <div>
-                    <h3 class="json-title" style="border-color: @replica.Color">@replica.Label</h3>
-                    <pre class="json">@DemoJson.Format(replica.Document.ToJson())</pre>
+                <div class="projection" style="--replica-color: @replica.Color">
+                    <p class="projection-title"><span class="replica-dot" aria-hidden="true"></span>@replica.Label</p>
+                    <pre class="json bb-code">@DemoJson.Format(replica.Document.ToJson())</pre>
                 </div>
             }
         </div>
-    </section>
+    </div>
 }
 
 @code {

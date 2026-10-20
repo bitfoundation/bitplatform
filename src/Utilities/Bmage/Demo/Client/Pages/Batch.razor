@@ -9,158 +9,162 @@
    cancellation, and hands back every item's own outcome, so one unreadable file is a row in the
    table rather than the end of the run. *@
 
-<PageTitle>Batch processing - Bit.Bmage</PageTitle>
+<PageTitle>Batch processing · Bmage</PageTitle>
 
-<h1>Batch processing</h1>
+<div class="bb-intro">
+    <h1>Batch processing</h1>
+    <p class="bb-subtitle">
+        The same pipeline over many files with <strong>bounded concurrency</strong>, live progress,
+        cancellation, and a per-file result rather than one failure aborting the run. This is the
+        headless batch API driving a UI, not a separate code path.
+    </p>
+</div>
 
-<p class="page-intro">
-    The same pipeline over many files with <strong>bounded concurrency</strong>, live progress,
-    cancellation, and a per-file result rather than one failure aborting the run. This is the
-    headless batch API driving a UI, not a separate code path.
-</p>
-
-<div class="demo-section">
-    <h2>Try it</h2>
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Try it</h3>
 
     @if (_error is not null)
     {
-        <div class="alert alert-error" role="alert">@_error</div>
+        <div class="bb-note bb-note-danger demo-error" role="alert">@_error</div>
     }
 
-    <div class="split">
-        <div>
-            <BmageDropZone Label="Drop several images here" Multiple="true" MaxFiles="200" OnFilesSelected="OnFilesSelected" />
+    <div class="bb-demo bb-page-wide">
+        <div class="bb-demo-bar"><span class="bb-demo-label">Live</span></div>
+        <div class="demo-split">
+            <div>
+                <BmageDropZone Label="Drop several images here" Multiple="true" MaxFiles="200" OnFilesSelected="OnFilesSelected" />
 
-            @if (_running || _result is not null)
-            {
-                <div class="sample-row optimize-progress">
-                    <div class="progress" role="progressbar" aria-label="Batch progress" aria-valuenow="@_completed" aria-valuemin="0" aria-valuemax="@_total">
-                        <div class="progress-bar" style="width:@(_total == 0 ? 0 : _completed * 100 / _total)%"></div>
+                @if (_running || _result is not null)
+                {
+                    <div class="bb-toolbar optimize-progress">
+                        <div class="demo-progress" role="progressbar" aria-label="Batch progress" aria-valuenow="@_completed" aria-valuemin="0" aria-valuemax="@_total">
+                            <div class="demo-progress-bar" style="width:@(_total == 0 ? 0 : _completed * 100 / _total)%"></div>
+                        </div>
+                        <span class="demo-small bb-muted" role="status">@_completed of @_total</span>
+                        @if (_running)
+                        {
+                            <button type="button" class="btn btn-secondary demo-btn-sm" @onclick="Cancel">Stop</button>
+                        }
                     </div>
-                    <span class="small muted" role="status">@_completed of @_total</span>
-                    @if (_running)
-                    {
-                        <button type="button" class="btn btn-small" @onclick="Cancel">Stop</button>
-                    }
-                </div>
-            }
+                }
 
-            @if (_result is not null)
-            {
-                <div class="stat-grid results-stats">
-                    <div class="stat">
-                        <span class="stat-label">Succeeded</span>
-                        <span class="stat-value good">@_result.SuccessCount</span>
+                @if (_result is not null)
+                {
+                    <div class="bb-stats results-stats">
+                        <div class="bb-stat">
+                            <span class="bb-stat-label">Succeeded</span>
+                            <span class="bb-stat-value demo-good">@_result.SuccessCount</span>
+                        </div>
+                        <div class="bb-stat">
+                            <span class="bb-stat-label">Failed</span>
+                            <span class="bb-stat-value @(_result.FailureCount > 0 ? "demo-bad" : null)">@_result.FailureCount</span>
+                        </div>
+                        <div class="bb-stat">
+                            <span class="bb-stat-label">Input</span>
+                            <span class="bb-stat-value">@Display.Bytes(_result.TotalInputBytes)</span>
+                        </div>
+                        <div class="bb-stat">
+                            <span class="bb-stat-label">Output</span>
+                            <span class="bb-stat-value">@Display.Bytes(_result.TotalOutputBytes)</span>
+                        </div>
+                        <div class="bb-stat">
+                            <span class="bb-stat-label">Elapsed</span>
+                            <span class="bb-stat-value">@_result.Duration.TotalSeconds.ToString("0.0")s</span>
+                        </div>
+                        <div class="bb-stat">
+                            <span class="bb-stat-label">Per image</span>
+                            <span class="bb-stat-value">@((_result.Results.Count == 0 ? 0 : _result.Duration.TotalMilliseconds / _result.Results.Count).ToString("0"))ms</span>
+                        </div>
                     </div>
-                    <div class="stat">
-                        <span class="stat-label">Failed</span>
-                        <span class="stat-value @(_result.FailureCount > 0 ? "bad" : null)">@_result.FailureCount</span>
-                    </div>
-                    <div class="stat">
-                        <span class="stat-label">Input</span>
-                        <span class="stat-value">@Display.Bytes(_result.TotalInputBytes)</span>
-                    </div>
-                    <div class="stat">
-                        <span class="stat-label">Output</span>
-                        <span class="stat-value">@Display.Bytes(_result.TotalOutputBytes)</span>
-                    </div>
-                    <div class="stat">
-                        <span class="stat-label">Elapsed</span>
-                        <span class="stat-value">@_result.Duration.TotalSeconds.ToString("0.0")s</span>
-                    </div>
-                    <div class="stat">
-                        <span class="stat-label">Per image</span>
-                        <span class="stat-value">@((_result.Results.Count == 0 ? 0 : _result.Duration.TotalMilliseconds / _result.Results.Count).ToString("0"))ms</span>
-                    </div>
-                </div>
 
-                <div class="table-scroll results-table" tabindex="0" role="region" aria-label="Batch results">
-                    <table class="data">
-                        <thead>
-                            <tr>
-                                <th scope="col">File</th>
-                                <th scope="col">Result</th>
-                                <th scope="col" class="num">In</th>
-                                <th scope="col" class="num">Out</th>
-                                <th scope="col" class="num">Time</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach (var item in _result.Results)
-                            {
+                    <div class="bb-scroll results-table" tabindex="0" role="region" aria-label="Batch results">
+                        <table class="bb-table">
+                            <thead>
                                 <tr>
-                                    <td>@(item.FileName ?? "—")</td>
-                                    <td>
-                                        @if (item.IsSuccess)
-                                        {
-                                            <span class="badge badge-yes">@item.Output!.Width×@item.Output.Height @item.Output.Format.ToString().ToUpperInvariant()</span>
-                                        }
-                                        else if (item.WasCancelled)
-                                        {
-                                            <span class="badge badge-neutral">stopped</span>
-                                        }
-                                        else
-                                        {
-                                            <span class="badge badge-no">@Describe(item.Error!)</span>
-                                        }
-                                    </td>
-                                    <td class="num">@Display.Bytes(item.Item.Data.Length)</td>
-                                    <td class="num">@(item.Output is null ? "—" : Display.Bytes(item.Output.Length))</td>
-                                    <td class="num">@item.Duration.TotalMilliseconds.ToString("0")ms</td>
+                                    <th scope="col">File</th>
+                                    <th scope="col">Result</th>
+                                    <th scope="col" class="demo-num">In</th>
+                                    <th scope="col" class="demo-num">Out</th>
+                                    <th scope="col" class="demo-num">Time</th>
                                 </tr>
-                            }
-                        </tbody>
-                    </table>
+                            </thead>
+                            <tbody>
+                                @foreach (var item in _result.Results)
+                                {
+                                    <tr>
+                                        <td>@(item.FileName ?? "—")</td>
+                                        <td>
+                                            @if (item.IsSuccess)
+                                            {
+                                                <span class="bb-badge bb-badge-success">@item.Output!.Width×@item.Output.Height @item.Output.Format.ToString().ToUpperInvariant()</span>
+                                            }
+                                            else if (item.WasCancelled)
+                                            {
+                                                <span class="bb-badge demo-badge-off">stopped</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="bb-badge bb-badge-danger">@Describe(item.Error!)</span>
+                                            }
+                                        </td>
+                                        <td class="demo-num">@Display.Bytes(item.Item.Data.Length)</td>
+                                        <td class="demo-num">@(item.Output is null ? "—" : Display.Bytes(item.Output.Length))</td>
+                                        <td class="demo-num">@item.Duration.TotalMilliseconds.ToString("0")ms</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="bb-toolbar">
+                        <button type="button" class="btn btn-primary" disabled="@(_running || _result.SuccessCount == 0)" @onclick="DownloadAll">
+                            <Icon Path="@Icons.Download" />
+                            Download results
+                        </button>
+                    </div>
+                }
+            </div>
+
+            <div class="demo-panel">
+                <p class="bb-overline demo-label">Pipeline</p>
+
+                <div class="demo-field">
+                    <label class="demo-field-label" for="edge">Longest edge <span class="demo-field-value">@_maxEdge px</span></label>
+                    <input id="edge" type="range" min="240" max="3840" step="80" value="@_maxEdge" @oninput="e => SetInt(ref _maxEdge, e)" />
                 </div>
 
-                <div class="btn-row">
-                    <button type="button" class="btn btn-accent" disabled="@(_running || _result.SuccessCount == 0)" @onclick="DownloadAll">
-                        <Icon Path="@Icons.Download" />
-                        Download results
-                    </button>
+                <div class="demo-field">
+                    <label class="demo-field-label" for="conc">Concurrency <span class="demo-field-value">@_concurrency</span></label>
+                    <input id="conc" type="range" min="1" max="8" step="1" value="@_concurrency" @oninput="e => SetInt(ref _concurrency, e)" aria-describedby="conc-hint" />
+                    <span class="bb-field-hint" id="conc-hint">Each worker holds a decoded image, so this is a memory dial as much as a speed dial.</span>
                 </div>
-            }
-        </div>
 
-        <div class="card">
-            <p class="card-title">Pipeline</p>
+                <div class="demo-field">
+                    <label class="demo-field-label" for="bformat">Format</label>
+                    <select id="bformat" disabled="@(_capabilities is null)" @onchange="OnFormatChanged">
+                        @foreach (var format in AvailableFormats)
+                        {
+                            <option value="@format" selected="@(_format == format)">@format.ToString().ToUpperInvariant()</option>
+                        }
+                    </select>
+                </div>
 
-            <div class="field">
-                <label class="field-label" for="edge">Longest edge <span class="field-value">@_maxEdge px</span></label>
-                <input id="edge" type="range" min="240" max="3840" step="80" value="@_maxEdge" @oninput="e => SetInt(ref _maxEdge, e)" />
-            </div>
+                <div class="demo-field demo-field-inline">
+                    <input id="grayscale" type="checkbox" checked="@_grayscale" @onchange="e => _grayscale = (bool)(e.Value ?? false)" />
+                    <label class="demo-field-label" for="grayscale">Convert to grayscale</label>
+                </div>
 
-            <div class="field">
-                <label class="field-label" for="conc">Concurrency <span class="field-value">@_concurrency</span></label>
-                <input id="conc" type="range" min="1" max="8" step="1" value="@_concurrency" @oninput="e => SetInt(ref _concurrency, e)" aria-describedby="conc-hint" />
-                <span class="field-hint" id="conc-hint">Each worker holds a decoded image, so this is a memory dial as much as a speed dial.</span>
-            </div>
-
-            <div class="field">
-                <label class="field-label" for="bformat">Format</label>
-                <select id="bformat" class="bmg-select" disabled="@(_capabilities is null)" @onchange="OnFormatChanged">
-                    @foreach (var format in AvailableFormats)
-                    {
-                        <option value="@format" selected="@(_format == format)">@format.ToString().ToUpperInvariant()</option>
-                    }
-                </select>
-            </div>
-
-            <div class="field field-inline">
-                <input id="grayscale" type="checkbox" checked="@_grayscale" @onchange="e => _grayscale = (bool)(e.Value ?? false)" />
-                <label class="field-label" for="grayscale">Convert to grayscale</label>
-            </div>
-
-            <div class="field field-inline">
-                <input id="stopfirst" type="checkbox" checked="@_stopOnFirstError" @onchange="e => _stopOnFirstError = (bool)(e.Value ?? false)" />
-                <label class="field-label" for="stopfirst">Stop on first error</label>
+                <div class="demo-field demo-field-inline">
+                    <input id="stopfirst" type="checkbox" checked="@_stopOnFirstError" @onchange="e => _stopOnFirstError = (bool)(e.Value ?? false)" />
+                    <label class="demo-field-label" for="stopfirst">Stop on first error</label>
+                </div>
             </div>
         </div>
     </div>
 </div>
 
-<div class="demo-section">
-    <h2>The batch API</h2>
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> The batch API</h3>
     <p>
         <code>ProcessBatchAsync</code> is on <code>ImageProcessor</code>, which in a browser comes from
         <code>ImageProcessorFactory.GetAsync()</code> once the codec probe has run; on a server,
@@ -169,7 +173,7 @@
         <code>StopOnFirstError</code> is opt-in.
     </p>
     <CodeSnippet Code="@Snippet" Language="C#" Expanded="true" />
-    <div class="callout">
+    <div class="bb-note">
         <p>
             Size <code>MaxConcurrency</code> against memory, not cores: four workers on 24 megapixel
             photos is roughly 400 MB of live pixels. Two is a safe default on phones.

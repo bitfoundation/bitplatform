@@ -35,8 +35,10 @@ public sealed class DemoPagesTests : BlowTest
                 $"{path} has {flows} flow(s) but never loaded bit-blow.js");
         }
 
-        // Every enabled button of the page must run without throwing: a dead or broken control is a demo bug.
-        var buttons = page.Locator(".content button:enabled:visible");
+        // Every enabled button of the page must run without throwing: a dead or broken control is a demo bug. The
+        // page is the docs column (or the landing page), not the site chrome around it; the copy buttons the site
+        // script hangs on its code blocks are that chrome too.
+        var buttons = page.Locator(":is(.bb-docs-content, .bb-landing) button:enabled:visible:not(.bb-copy-btn)");
         int count = Math.Min(await buttons.CountAsync(), 40);
         for (int i = 0; i < count; i++)
         {
@@ -68,11 +70,11 @@ public sealed class DemoPagesTests : BlowTest
         var expected = RepoLayout.DemoRoutes().Where(r => r.StartsWith("/examples/", StringComparison.Ordinal)).ToArray();
         Assert.IsTrue(expected.Length > 50, $"only {expected.Length} example pages were found in the sources");
 
-        // The cards on the index and the links in the gallery's own sidebar both have to reach every page.
-        foreach (var selector in new[] { "a.example-card", "a.ex-sublink" })
+        // The cards on the index and the example links in the docs navigation both have to reach every page.
+        foreach (var selector in new[] { "a.example-card", ".bb-docs-sidebar .bb-docs-section a" })
         {
             var links = await page.EvaluateAsync<string[]>(
-                "(s) => [...document.querySelectorAll(s)].map(a => new URL(a.href).pathname)", selector);
+                "(s) => [...document.querySelectorAll(s)].map(a => new URL(a.href).pathname).filter(p => p.startsWith('/examples/'))", selector);
             CollectionAssert.AreEquivalent(expected, links, $"the {selector} links do not match the example pages");
         }
     }
@@ -80,21 +82,25 @@ public sealed class DemoPagesTests : BlowTest
     [TestMethod]
     public async Task Navigating_between_the_demos_in_the_app_leaves_a_working_canvas_behind()
     {
-        var page = await OpenAsync("/");
+        var page = await OpenAsync("/basic-flow");
         var problems = TrackProblems(page, BaseUrl);
 
-        // Client-side navigation through every main demo: each canvas is torn down (its resize observer and
-        // input guards disposed) and the next one set up, all in the same WebAssembly instance.
-        var links = page.Locator(".sidebar a.nav-link");
+        // Client-side navigation through every main demo - the introduction and the feature tours of the docs
+        // navigation: each canvas is torn down (its resize observer and input guards disposed) and the next one
+        // set up, all in the same WebAssembly instance.
+        var links = page.Locator(".bb-docs-sidebar :is(ul[aria-label='Introduction'], ul[aria-label='Feature Tours']) a");
         int count = await links.CountAsync();
         Assert.IsTrue(count > 5, $"the sidebar offers only {count} demos");
-        for (int i = 1; i < count; i++)
+        for (int i = 0; i < count; i++)
         {
+            var href = await links.Nth(i).GetAttributeAsync("href");
+            if (href == "/basic-flow") continue;
             await links.Nth(i).ClickAsync();
+            await page.WaitForURLAsync(BaseUrl + href);
             await WaitForQuietAsync(page);
         }
-        await links.Nth(0).ClickAsync();
-        await page.WaitForURLAsync(BaseUrl + "/");
+        await links.Filter(new LocatorFilterOptions { HasText = "Basic Flow" }).ClickAsync();
+        await page.WaitForURLAsync(BaseUrl + "/basic-flow");
         await WaitForFlowAsync(page);
         await ScrollFlowIntoViewAsync(page);
         await WaitForEdgesAnchoredAsync(page);

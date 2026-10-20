@@ -1,0 +1,399 @@
+﻿/* ============================================================================================
+   BevTools demo - the styles of the sample app and of the BevTools panel's place on the page.
+
+   The site's chrome, tokens and shared surfaces live in app.css (the site kit every Utilities demo
+   shares); this file only draws what is this demo's own - the dashboard tiles, the product and
+   order tables, the checkout form - and it is written against the kit's --bb-* names, so it
+   follows the light/dark theme with no rules of its own for either.
+
+   Nothing here may change what a scenario renders: the classes are on markup the scenario
+   components already emit, so BevTools sees the same components, parameters and renders it saw
+   before the site was restyled.
+   ============================================================================================ */
+
+/* ---------- The live sample's status line (RendererStatus) ---------- */
+
+.demo-renderer {
+    display: inline-flex;
+    align-items: center;
+    gap: .375rem;
+    font-size: var(--fl-font-size-200);
+    color: var(--bb-text-muted);
+}
+
+.demo-renderer strong {
+    color: var(--bb-text);
+}
+
+.demo-shortcut {
+    display: inline-flex;
+    align-items: center;
+    gap: .25rem;
+    font-size: var(--fl-font-size-100);
+    color: var(--bb-text-soft);
+}
+
+@media (max-width: 600px) {
+    .demo-shortcut {
+        display: none;
+    }
+}
+
+/* ---------- Tiles: the dashboard's cards and the other samples' panes ----------
+
+   A tile is a raised surface inside a sample. Its title is an h4 on purpose: site.js builds the
+   "on this page" rail from h2 and h3.bb-card-title, and a tile is a part of a sample, not a
+   section of the page. */
+
+.demo-tiles {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(9rem, 100%), 1fr));
+    gap: .75rem;
+    margin: 0 0 .75rem;
+    container-type: inline-size;
+}
+
+.demo-tiles:last-child {
+    margin-bottom: 0;
+}
+
+.demo-tile {
+    min-width: 0;
+    padding: 1rem;
+    background: var(--bb-surface);
+    border: 1px solid var(--bb-border);
+    border-radius: var(--bb-radius-lg);
+    box-shadow: var(--bb-shadow-card);
+    color: var(--bb-text);
+    font-size: var(--fl-font-size-200);
+}
+
+.demo-tile.dense {
+    padding: .5rem .75rem;
+}
+
+.demo-tile > .bb-toolbar:last-child,
+.demo-tile > .bb-scroll:last-child,
+.demo-tile > :last-child {
+    margin-bottom: 0;
+}
+
+/* StatsCard: the accent comes from the cascading DashboardSettings, inline, as border-top-color. */
+.demo-stat {
+    border-top-width: 3px;
+}
+
+/* Fluent's Overline: small, spaced and uppercase, so it reads as a label over the value. */
+.demo-tile-title {
+    margin: 0 0 .5rem;
+    font-family: var(--bb-font-sans);
+    font-size: var(--fl-font-size-100);
+    font-weight: var(--fl-weight-semibold);
+    line-height: 1.33;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    color: var(--bb-text-soft);
+}
+
+.demo-tile-title .bb-muted {
+    text-transform: none;
+    letter-spacing: 0;
+    font-weight: var(--fl-weight-regular);
+}
+
+.demo-tile-note {
+    margin: .75rem 0 0;
+    font-size: var(--fl-font-size-100);
+    line-height: 1.5;
+    color: var(--bb-text-soft);
+}
+
+/* A row of one narrow and one wide pane (the profile and the orders, the cart and the form): wider
+   tracks, three of them on a desktop column, the wide pane taking two. Once the sample is too
+   narrow for that, the wide pane takes a single track like the other - a span of two in a
+   one-track grid would add a track and push the page sideways. */
+.demo-tiles.demo-tiles-pair {
+    grid-template-columns: repeat(auto-fill, minmax(min(11rem, 100%), 1fr));
+    align-items: start;
+}
+
+.demo-span-2 {
+    grid-column: span 2;
+}
+
+@container (max-width: 34rem) {
+    .demo-span-2 {
+        grid-column: auto;
+    }
+}
+
+.demo-big {
+    font-family: var(--bb-font-display);
+    font-size: var(--fl-font-size-600);
+    font-weight: var(--fl-weight-semibold);
+    line-height: 1.2;
+    letter-spacing: -.01em;
+    color: var(--bb-text);
+    font-variant-numeric: tabular-nums;
+}
+
+.demo-tile.dense .demo-big {
+    font-size: var(--fl-font-size-400);
+}
+
+/* Monospaced so the ticking digits do not shift, and a step smaller than the stats: ten characters
+   of it have to fit the narrowest tile of the row. */
+.demo-clock {
+    font-family: var(--bb-mono);
+    font-size: 1.125rem;
+    white-space: nowrap;
+}
+
+.demo-loading {
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+    margin: 0 0 1rem;
+}
+
+.demo-count {
+    font-size: var(--fl-font-size-400);
+    margin-bottom: 1rem;
+}
+
+/* ---------- Tables ---------- */
+
+/* A long table scrolls inside its own frame rather than making the page a list of 120 rows. The
+   frame moves from the table to the box so the sticky header stays inside it. */
+.bb-scroll.demo-table-scroll {
+    max-height: 30rem;
+    overflow: auto;
+    background: var(--bb-surface);
+    border: 1px solid var(--bb-border);
+    border-radius: var(--bb-radius-lg);
+}
+
+.demo-table-scroll > .bb-table {
+    border: 0;
+    border-radius: 0;
+    overflow: visible;
+}
+
+.demo-table-scroll > .bb-table thead th {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+}
+
+/* Product names and cart lines are prose, not identifiers. */
+.demo-products td:first-child,
+.demo-cart td:first-child {
+    font-family: inherit;
+    font-size: inherit;
+}
+
+.demo-products td,
+.demo-cart td {
+    vertical-align: middle;
+}
+
+/* Every seventh product is highlighted (the Highlight parameter of ProductRow). */
+.bb-table tbody tr.product-row.highlight td {
+    background: var(--bb-warning-soft);
+}
+
+.bb-table tbody tr.product-row.highlight:hover td {
+    background: color-mix(in srgb, var(--bb-warning-soft) 70%, var(--bb-surface-hover));
+}
+
+.demo-sold-out {
+    color: var(--bb-danger-text);
+    font-weight: var(--fl-weight-semibold);
+}
+
+.demo-cart {
+    margin-bottom: .75rem;
+}
+
+/* ---------- Controls ---------- */
+
+/* The scenario buttons say what they do, at length, so on a narrow sample they wrap rather than
+   push the page sideways. */
+.bb-demo .bb-toolbar > .btn {
+    max-width: 100%;
+    white-space: normal;
+}
+
+.btn.demo-btn-sm {
+    min-height: 1.5rem;
+    padding: .0625rem .625rem;
+    font-size: var(--fl-font-size-100);
+}
+
+/* Fluent has no danger button; the scenario that ends a circuit is the one place that needs one. */
+/* The text takes the primary button's on-fill color: white on the light theme's dark red, the
+   dark surface color on the dark theme's light one. */
+.btn.demo-btn-danger {
+    background: var(--bb-danger);
+    border-color: var(--bb-danger);
+    color: var(--bb-primary-text);
+}
+
+.btn.demo-btn-danger:hover {
+    background: var(--bb-danger-text);
+    border-color: var(--bb-danger-text);
+    color: var(--bb-primary-text);
+}
+
+.demo-search {
+    flex: 1 1 18rem;
+    min-width: 0;
+}
+
+.demo-range-value {
+    min-width: 3.5rem;
+    font-variant-numeric: tabular-nums;
+}
+
+.bb-demo input[type="range"] {
+    max-width: 100%;
+}
+
+/* ---------- The checkout form ---------- */
+
+.demo-form {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(14rem, 100%), 1fr));
+    gap: .75rem 1rem;
+    margin: 0 0 1rem;
+}
+
+.demo-form > .bb-field > :is(input, textarea) {
+    width: 100%;
+}
+
+.demo-form-wide {
+    grid-column: 1 / -1;
+}
+
+/* EditForm's own markup: the classes InputBase and ValidationSummary write. */
+.demo-form :is(input, textarea).invalid {
+    border-color: var(--bb-danger);
+}
+
+.demo-form :is(input, textarea).modified.valid {
+    border-bottom-color: var(--bb-success);
+}
+
+.validation-errors {
+    margin: 0 0 1rem;
+    padding: .75rem 1rem .75rem 2.25rem;
+    border: 1px solid color-mix(in srgb, var(--bb-danger) 40%, transparent);
+    border-inline-start: 3px solid var(--bb-danger);
+    border-radius: var(--bb-radius-lg);
+    background: var(--bb-danger-soft);
+}
+
+.validation-message {
+    color: var(--bb-danger-text);
+    font-size: var(--fl-font-size-200);
+}
+
+/* ---------- Landing page: the live strip under the hero's code ---------- */
+
+.home-hero-live {
+    padding: 1rem 1.25rem 1.25rem;
+    background: var(--bb-surface);
+    border-top: 1px solid var(--bb-border);
+    font-size: var(--fl-font-size-200);
+    color: var(--bb-text-muted);
+}
+
+.home-hero-live p {
+    margin-bottom: .75rem;
+}
+
+.home-hero-live .bb-toolbar {
+    margin-bottom: 0;
+}
+
+/* ============================================================================================
+   The BevTools panel on this page.
+
+   The panel is rendered into the page like any component, so the site's element styles reach it:
+   app.css draws every <code> as a chip and gives text fields a Fluent height. bit-bevtools.css
+   only sets what it needs, so those two are put back here - the panel should look the way it does
+   in any application, not like a page of this site.
+   ============================================================================================ */
+
+.bev-root code {
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    background: none;
+    color: inherit;
+    overflow-wrap: normal;
+}
+
+.bev-root input:where(:not([type]), [type="text"], [type="search"]) {
+    min-height: 0;
+    line-height: inherit;
+}
+
+/* The panel's Auto theme follows the system preference. On this site "the system" is the
+   header's light/dark toggle, which can differ from the OS once it has been used, so Auto here
+   follows the site: the panel's own two palettes (bit-bevtools.css), keyed to bit-theme instead of
+   prefers-color-scheme. An explicit Light or Dark choice in the panel is left alone. */
+:root[bit-theme="light"] .bev-root[data-theme="auto"] {
+    --bev-bg: #ffffff;
+    --bev-bg2: #f3f4f6;
+    --bev-bg3: #e8eaee;
+    --bev-fg: #1f2328;
+    --bev-fg2: #59636e;
+    --bev-border: #d0d7de;
+    --bev-accent: #0969da;
+    --bev-accent-bg: #ddf4ff;
+    --bev-warn: #9a6700;
+    --bev-warn-bg: #fff8c5;
+    --bev-err: #cf222e;
+    --bev-err-bg: #ffebe9;
+    --bev-ok: #1a7f37;
+    --bev-ok-bg: #dafbe1;
+    --bev-render: #8250df;
+    --bev-event: #0969da;
+    --bev-http: #1a7f37;
+    --bev-js: #bf8700;
+    --bev-state: #cf222e;
+    --bev-nav: #0a7ea4;
+    --bev-error: #cf222e;
+    --bev-lifecycle: #6e7781;
+    --bev-flash: #fff8c5;
+    color-scheme: light;
+}
+
+:root[bit-theme="dark"] .bev-root[data-theme="auto"] {
+    --bev-bg: #0d1117;
+    --bev-bg2: #161b22;
+    --bev-bg3: #21262d;
+    --bev-fg: #e6edf3;
+    --bev-fg2: #8b949e;
+    --bev-border: #30363d;
+    --bev-accent: #58a6ff;
+    --bev-accent-bg: #0c2d6b;
+    --bev-warn: #d29922;
+    --bev-warn-bg: #3b2e00;
+    --bev-err: #f85149;
+    --bev-err-bg: #4a1414;
+    --bev-ok: #3fb950;
+    --bev-ok-bg: #0f3a1c;
+    --bev-render: #bc8cff;
+    --bev-event: #58a6ff;
+    --bev-http: #3fb950;
+    --bev-js: #e3b341;
+    --bev-state: #ff7b72;
+    --bev-nav: #39c5cf;
+    --bev-error: #ff7b72;
+    --bev-lifecycle: #8b949e;
+    --bev-flash: #3b2e00;
+    color-scheme: dark;
+}

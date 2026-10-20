@@ -1,8 +1,8 @@
 ﻿@namespace Bit.BevTools.Demo.Client.Components
 @implements IDisposable
 
-<div class="big clock">@_now.ToString("HH:mm:ss.f")</div>
-<div class="muted">ticks every 500 ms (StateHasChanged from a timer)</div>
+<div class="demo-big demo-clock">@_now.ToString("HH:mm:ss.f")</div>
+<div class="bb-muted">ticks every 500 ms (StateHasChanged from a timer)</div>
 
 @code {
     private DateTime _now = DateTime.Now;

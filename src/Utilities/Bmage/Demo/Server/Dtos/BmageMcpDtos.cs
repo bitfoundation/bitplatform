@@ -190,7 +190,7 @@ public record BmageSourceFileDto
     /// <summary>The path to pass to GetBmageSourceFile.</summary>
     public required string Path { get; init; }
 
-    /// <summary>"Demo page", "Demo" or "Host".</summary>
+    /// <summary>"Demo page", "Demo", "Host" or "Site chrome" (the documentation site's own shell, under Demo/Client/Layout/).</summary>
     public required string Kind { get; init; }
 
     /// <summary>What the file is. For a demo page, what the page demonstrates.</summary>
@@ -198,12 +198,12 @@ public record BmageSourceFileDto
 
     public required int Lines { get; init; }
 
-    /// <summary>The demo page's title, e.g. "Avatar editor". Null for a file that is not a demo page.</summary>
+    /// <summary>The demo page's title, e.g. "Avatar editor". Null for a file that is not a documentation page.</summary>
     public string? Title { get; init; }
 
     /// <summary>
-    /// The route the demo page is served at, e.g. "avatar" - empty for the landing page, null for a
-    /// file that is not a demo page.
+    /// The route the demo page is served at, e.g. "avatar" - null for a file that is not a
+    /// documentation page (the landing page included).
     /// </summary>
     public string? Slug { get; init; }
 

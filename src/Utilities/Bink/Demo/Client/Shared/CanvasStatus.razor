@@ -1,22 +1,23 @@
-﻿@* Shows what the engine and the device are actually doing. Useful for judging the library, not decoration. *@
+﻿@* Shows what the engine and the device are actually doing. Useful for judging the library, not decoration.
+   The first number is the element count, which is what the E2E suite reads back from it. *@
 
 @if (Canvas is not null)
 {
-    <div class="statusbar" aria-live="off">
+    <div class="bink-status" aria-live="off">
         <span><strong>@Canvas.CurrentDocument.ElementCount</strong> elements</span>
         <span><strong>@Canvas.CurrentDocument.TotalPointCount</strong> points</span>
         <span><strong>@Canvas.History.UndoCount</strong> undo steps</span>
         <span>Zoom <strong>@((Canvas.CurrentViewport.Zoom * 100).ToString("0"))%</strong></span>
-        <span class="badge @(Canvas.UsesFastRenderPath ? "on" : null)">
+        <span class="@Badge(Canvas.UsesFastRenderPath)">
             @(Canvas.UsesFastRenderPath ? "zero-copy render" : "standard interop")
         </span>
-        <span class="badge @(Canvas.Capabilities.CoalescedEvents ? "on" : null)">coalesced input</span>
-        <span class="badge @(Canvas.Capabilities.ObservedPressure ? "on" : null)">
+        <span class="@Badge(Canvas.Capabilities.CoalescedEvents)">coalesced input</span>
+        <span class="@Badge(Canvas.Capabilities.ObservedPressure)">
             @(Canvas.Capabilities.ObservedPressure ? "pen pressure" : "no pressure hardware")
         </span>
         @if (Canvas.Capabilities.ObservedTilt)
         {
-            <span class="badge on">tilt</span>
+            <span class="@Badge(true)">tilt</span>
         }
         <span>DPR <strong>@Canvas.Capabilities.DevicePixelRatio.ToString("0.##")</strong></span>
         @ChildContent
@@ -27,4 +28,7 @@
     [Parameter] public BinkCanvas? Canvas { get; set; }
 
     [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    /// <summary>A capability the canvas has is a success badge; one it lacks is a neutral one.</summary>
+    public static string Badge(bool on) => on ? "bb-badge bb-badge-success" : "bb-badge bink-badge-off";
 }

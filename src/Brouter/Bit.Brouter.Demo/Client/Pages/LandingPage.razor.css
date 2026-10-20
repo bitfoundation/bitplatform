@@ -181,8 +181,12 @@
 
 /* ---------- Proof strip ----------
 
-   A single hairline grid: the 1px gap IS the rule between cells, so the four claims read as one
-   row of facts rather than as four more cards. It is also the one child of the stack that is a
+   A single hairline grid: the rules between cells are drawn in the 1px gap, so the four claims
+   read as one row of facts rather than as four more cards. They are the cells' own outlines
+   meeting in the gap, not the strip's color showing through it: when the cells wrap with room to
+   spare, the empty end of the last row stays the surface color instead of turning into a grey
+   block. Outlines paint above the siblings next to them, and the strip's overflow clips them at
+   its own frame. It is also the one child of the stack that is a
    control rather than a band, so it opts out of the full-bleed treatment and keeps the
    container's gutters. */
 .bb-landing > section.bb-proof {
@@ -192,7 +196,7 @@
     width: min(100% - 3rem, var(--bb-content-width));
     margin: 3.5rem auto;
     padding: 0;
-    background: var(--bb-border);
+    background: var(--bb-surface);
     border: 1px solid var(--bb-border);
     border-radius: var(--bb-radius-lg);
     box-shadow: var(--bb-shadow-card);
@@ -201,6 +205,7 @@
 
 .bb-proof > div {
     background: var(--bb-surface);
+    outline: 1px solid var(--bb-border);
     padding: 1.25rem 1.5rem;
     display: flex;
     flex-direction: column;

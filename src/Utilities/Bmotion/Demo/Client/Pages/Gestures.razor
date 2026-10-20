@@ -1,19 +1,20 @@
 @page "/gestures"
 
-<PageTitle>Gestures - Bit.Bmotion</PageTitle>
+<PageTitle>Gestures · Bmotion</PageTitle>
 
-<h1>Gestures</h1>
+<div class="bb-intro">
+    <h1>Gestures</h1>
+    <p class="bb-subtitle">
+        Gesture states are <strong>overlays</strong>, not replacements. <code>WhileHover</code>,
+        <code>WhileTap</code>, <code>WhileFocus</code>, <code>WhileDrag</code> and
+        <code>WhileInView</code> layer on top of whatever <code>Animate</code> is currently showing and
+        revert themselves the moment the gesture ends - so you never write the "back to normal"
+        animation, and overlapping gestures resolve without any state of your own.
+    </p>
+</div>
 
-<p class="page-intro">
-    Gesture states are <strong>overlays</strong>, not replacements. <code>WhileHover</code>,
-    <code>WhileTap</code>, <code>WhileFocus</code>, <code>WhileDrag</code> and
-    <code>WhileInView</code> layer on top of whatever <code>Animate</code> is currently showing and
-    revert themselves the moment the gesture ends - so you never write the "back to normal"
-    animation, and overlapping gestures resolve without any state of your own.
-</p>
-
-<div class="demo-section">
-    <h2>Hover and tap</h2>
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Hover and tap</h3>
     <p>
         The two workhorses. Both take an ordinary target, so anything animatable is fair game -
         here a lift with a coloured shadow, and a press that scales down. Tap is
@@ -39,16 +40,16 @@
                     WhileHover='Bm.To(scale: 1.07, backgroundColor: "#0B6AB4")'
                     WhileTap="Bm.To(scale: 0.95)"
                     Transition="Bm.Tween(0.15)">
-                <button class="btn-bm">Animated button</button>
+                <button type="button" class="sample-btn">Animated button</button>
             </Bmotion>
         </div>
     </div>
 
     <CodeSnippet Code="@_hoverTapCode" />
-</div>
+</section>
 
-<div class="demo-section">
-    <h2>Focus</h2>
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Focus</h3>
     <p>
         <strong>WhileFocus</strong> plays while the element or any of its descendants holds focus.
         It is the accessible half of a hover effect: keyboard users get the same affordance pointer
@@ -66,10 +67,10 @@
     </div>
 
     <CodeSnippet Code="@_focusCode" />
-</div>
+</section>
 
-<div class="demo-section">
-    <h2>Pan</h2>
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Pan</h3>
     <p>
         A pan is a pointer drag <em>reported</em> rather than applied: <code>OnPan</code> hands you
         a <strong>BmPanInfo</strong> - the pointer position, the delta since the last event, the
@@ -96,10 +97,10 @@
     </div>
 
     <CodeSnippet Code="@_panCode" />
-</div>
+</section>
 
-<div class="demo-section">
-    <h2>Gesture events</h2>
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Gesture events</h3>
     <p>
         Every gesture also reports itself as a callback, so an animation can be paired with real
         work. Note the ordering below: <code>TapCancel</code> fires instead of <code>Tap</code> when
@@ -132,10 +133,10 @@
     </div>
 
     <CodeSnippet Code="@_eventsCode" />
-</div>
+</section>
 
-<div class="demo-section">
-    <h2>Nested gestures</h2>
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Nested gestures</h3>
     <p>
         Pointer gestures bubble, so a tappable button inside a tappable card presses both. That is
         usually right - a card that reacts to being pressed anywhere feels alive - but not when the
@@ -173,10 +174,10 @@
     </div>
 
     <CodeSnippet Code="@_propagationCode" />
-</div>
+</section>
 
-<div class="demo-section">
-    <h2>Owning the transform string</h2>
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Owning the transform string</h3>
     <p>
         Bmotion composes one <code>transform</code> from every animated component, in a fixed order.
         <strong>TransformTemplate</strong> hands that string back to you before it is written -
@@ -205,78 +206,12 @@
         </div>
     </div>
 
-    <div class="demo-actions">
-        <button class="btn-bm" @onclick="@(() => _pinned = !_pinned)">@(_pinned ? "Shrink" : "Grow")</button>
+    <div class="bb-toolbar">
+        <button class="btn btn-primary" @onclick="@(() => _pinned = !_pinned)">@(_pinned ? "Shrink" : "Grow")</button>
     </div>
 
     <CodeSnippet Code="@_templateCode" />
-</div>
-
-<style>
-    .nest-card {
-        display: flex;
-        padding: 1.5rem;
-        cursor: pointer;
-        border-radius: 12px;
-        align-items: center;
-        justify-content: center;
-        background: var(--bm-accent-soft);
-        border: 1px solid var(--bm-accent-line);
-    }
-
-    /* Filled with the accent rather than with the accent-to-secondary gradient the boxes use: this
-       one carries a word, and white does not clear 4.5:1 over the light half of that gradient. The
-       gradient is decoration here; the label is not. */
-    .nest-btn {
-        border: none;
-        cursor: pointer;
-        font-weight: 600;
-        padding: .6rem 1.1rem;
-        border-radius: 8px;
-        color: var(--bm-primary-text);
-        background: var(--bm-primary);
-    }
-
-    /* A fixed stage with a marked centre, so "the pin slipped off its anchor" is visible rather
-       than something you have to take on faith. */
-    .pin-stage { position: relative; min-height: 11rem; }
-
-    .pin {
-        top: 50%;
-        left: 50%;
-        width: 2.5rem;
-        height: 2.5rem;
-        position: absolute;
-        border-radius: 50%;
-        background: linear-gradient(135deg, var(--bm-primary), var(--bm-secondary));
-    }
-</style>
-
-<style>
-    .focus-input {
-        width: 15rem;
-        outline: none;
-        padding: .5rem 1rem;
-        color: var(--bm-text);
-        background: var(--bm-surface);
-        border: 2px solid var(--bm-border);
-        border-radius: 8px;
-        font-family: inherit;
-        font-size: .875rem;
-    }
-
-    /* A quiet, fixed-height panel so a live readout under a stage never resizes the stage. */
-    .readout {
-        width: 100%;
-        font-size: .78rem;
-        line-height: 1.6;
-        text-align: center;
-        font-family: var(--demo-font-mono);
-        color: var(--bm-muted);
-    }
-
-    .event-log { max-height: 7.5rem; overflow: auto; }
-</style>
+</section>
 
 @code {
     private readonly List<string> _events = [];

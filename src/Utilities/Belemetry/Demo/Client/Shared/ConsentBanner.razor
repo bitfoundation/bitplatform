@@ -12,8 +12,8 @@
 
 @if (_ready && Consent.IsDecided is false)
 {
-    <section class="consent-banner" aria-label="Telemetry consent" data-bit-belemetry-name="consent.banner">
-        <div class="consent-banner-text">
+    <section class="demo-consent-banner" aria-label="Telemetry consent" data-bit-belemetry-name="consent.banner">
+        <div class="demo-consent-banner-text">
             <strong>This site measures itself - for you to watch.</strong>
             <p>
                 bit Belemetry is demonstrating itself. With your consent, the page views, clicks, web
@@ -22,10 +22,10 @@
                 <a href="/live">Live telemetry</a> page. Choose per feature on the <a href="/consent">consent page</a>.
             </p>
         </div>
-        <div class="consent-banner-actions">
-            <button type="button" class="btn-bl" @onclick="() => SetAsync(BelemetryFeatures.All)">Accept all</button>
-            <button type="button" class="btn-bl-subtle" @onclick="() => SetAsync(BelemetryFeatures.Diagnostics)">Diagnostics only</button>
-            <button type="button" class="btn-bl-subtle" @onclick="() => SetAsync(BelemetryFeatures.None)">Reject</button>
+        <div class="demo-consent-banner-actions">
+            <button type="button" class="btn btn-primary" @onclick="() => SetAsync(BelemetryFeatures.All)">Accept all</button>
+            <button type="button" class="btn btn-secondary" @onclick="() => SetAsync(BelemetryFeatures.Diagnostics)">Diagnostics only</button>
+            <button type="button" class="btn btn-secondary" @onclick="() => SetAsync(BelemetryFeatures.None)">Reject</button>
         </div>
     </section>
 }

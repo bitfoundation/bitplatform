@@ -1,10 +1,10 @@
 ﻿@page "/nested"
 
-<PageTitle>Nested - bit Bortable</PageTitle>
+<PageTitle>Nested · Bortable</PageTitle>
 
-<div class="demo-header">
-    <h3>Nested sortables</h3>
-    <p class="text-muted">
+<div class="bb-intro">
+    <h1>Nested sortables</h1>
+    <p class="bb-subtitle">
         Each item can hold its own sortable list. All levels share the same group, so items can be dragged between
         branches and depths - into the empty list under any item, too. An item is never dropped inside itself.
     </p>
@@ -12,9 +12,11 @@
 
 <DemoCode Files="NestedList.razor, NestedItem.cs" />
 
-<NestedList Items="_tree" OnTreeChanged="StateHasChanged" />
+<div class="bb-demo">
+    <NestedList Items="_tree" OnTreeChanged="StateHasChanged" />
 
-<p class="demo-order"><strong>Tree:</strong> <span id="nested-order">@Describe(_tree)</span></p>
+    <p class="demo-order"><strong>Tree:</strong> <span id="nested-order">@Describe(_tree)</span></p>
+</div>
 
 @code {
     private List<NestedItem> _tree = new()

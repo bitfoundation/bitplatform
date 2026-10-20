@@ -2,19 +2,14 @@
 <html lang="en">
 
 <head>
-    <base href="/" />
     <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#FFFFFF" />
+    <base href="/" />
     @* No static <title> here: every page supplies its own through <PageTitle>, and with
        prerendering the HeadOutlet emits a real <title> element into this head. A second,
        earlier one would win in the served HTML (browsers and crawlers take the first). *@
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content="Bit.Bmotion - a Blazor-native animation library inspired by Framer Motion: springs, gestures, variants, drag, layout and scroll animations, with all of the maths in C#." />
-    <meta name="color-scheme" content="light dark" />
-    @* Painted behind the browser's own chrome on the platforms that colour it. Two declarations,
-       one per scheme, so the bar matches the theme the page is actually in - the values are the
-       --bm-clr-bg-1 of each theme in theme.css, which a meta tag cannot read a variable for. *@
-    <meta name="theme-color" content="#FFFFFF" media="(prefers-color-scheme: light)" />
-    <meta name="theme-color" content="#1F1F1F" media="(prefers-color-scheme: dark)" />
 
     @* What a link to the site looks like when it is shared. *@
     <meta property="og:type" content="website" />
@@ -23,29 +18,21 @@
     <meta property="og:description" content="Springs, gestures, layout animations and variants for Blazor. All of the maths in C#, none of the JavaScript wiring, and no animation library shipped alongside it." />
     <meta name="twitter:card" content="summary" />
 
+    <ResourcePreloader />
+    @* The site kit (app.css, theme.js, site.js - shared by every Utilities demo), then this demo's
+       own sample styles. *@
+    <link rel="stylesheet" href="@Assets["app.css"]" />
+    <link rel="stylesheet" href="@Assets["demo.css"]" />
+    @* The library's stylesheet. It plays the prerendered enter animations (BmPrerenderMode.Animate,
+       set in AddDemoServices): without it an element prerendered that way is simply served at rest. *@
+    <link rel="stylesheet" href="@Assets["_content/Bit.Bmotion/bit-bmotion.css"]" />
+    @* Scoped-CSS bundle: includes the client project's *.razor.css files as well. *@
+    <link rel="stylesheet" href="@Assets["Bit.Bmotion.Demo.Server.styles.css"]" />
+    @* Synchronous on purpose: applies the light/dark theme before first paint. *@
+    <script src="@Assets["theme.js"]"></script>
+    <ImportMap />
     <link rel="icon" href="favicon.ico" type="image/x-icon" />
     <link rel="apple-touch-icon" sizes="512x512" href="icon-512.png" />
-    <link rel="stylesheet" href="css/theme.css" />
-    <link rel="stylesheet" href="css/app.css" />
-    <link rel="stylesheet" href="css/motion-samples.css" />
-    @* Plays the prerendered enter animations (BmPrerenderMode.Animate, set in AddDemoServices). *@
-    <link rel="stylesheet" href="_content/Bit.Bmotion/bit-bmotion.css" />
-
-    @* The theme is applied here, in the head, rather than from js/demo.js at the end of the body:
-       the stylesheets key off the data-theme attribute, and setting it after the first paint would
-       show the reader a flash of the other theme. This is the same decision js/demo.js makes for
-       the app's lifetime - see window.bmTheme there - kept short enough to inline. *@
-    <script>
-        (function () {
-            var stored = null;
-            try { stored = localStorage.getItem('bm-theme'); } catch (e) { /* no stored preference */ }
-            var theme = (stored === 'light' || stored === 'dark')
-                ? stored
-                : (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
-            document.documentElement.setAttribute('data-theme', theme);
-        })();
-    </script>
-
     @* Same render mode as the app itself, so <PageTitle> keeps working after hydration. *@
     <HeadOutlet @rendermode="InteractiveWebAssembly" />
 </head>
@@ -55,19 +42,19 @@
        during the prerender pass, so Bit.Bmotion (in BmPrerenderMode.Animate) serves each element at
        rest with its enter animation compiled to CSS - it plays as soon as the HTML arrives, and the
        runtime takes the element over where that animation got to. Gestures and everything else
-       start once the runtime is interactive. See Layout/MainLayout.razor for the
-       RendererInfo-driven hydration hint. *@
+       start once the runtime is interactive, which the shell marks with data-interactive (see
+       Layout/MainLayout.razor). The library's script is not linked here: it is imported on demand
+       the first time an animation runs. *@
     <Routes @rendermode="InteractiveWebAssembly" />
 
-    <div id="blazor-error-ui">
+    <div id="blazor-error-ui" data-nosnippet>
         An unhandled error has occurred.
         <a href="." class="reload">Reload</a>
-        <span class="dismiss">🗙</span>
+        <span class="dismiss">&#128473;</span>
     </div>
 
-    @* Loaded before the Blazor script so the window.bm* helpers exist by the time the app boots. *@
-    <script src="js/demo.js"></script>
-    <script src="_framework/blazor.web.js"></script>
+    <script src="@Assets["_framework/blazor.web.js"]"></script>
+    <script src="@Assets["site.js"]"></script>
 </body>
 
 </html>

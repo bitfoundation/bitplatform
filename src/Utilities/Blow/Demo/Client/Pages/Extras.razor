@@ -1,10 +1,10 @@
 ﻿@page "/extras"
 
-<PageTitle>Theming &amp; Extras - bit Blow</PageTitle>
+<PageTitle>Theming &amp; Extras · Blow</PageTitle>
 
-<div class="demo-header">
-    <h3>Theming, Viewport Portal, Single Resize &amp; Graph Utils</h3>
-    <p class="text-muted">
+<div class="bb-intro">
+    <h1>Theming, Viewport Portal, Single Resize &amp; Graph Utils</h1>
+    <p class="bb-subtitle">
         Switch the <strong>color mode</strong>, toggle <strong>loose connections</strong> (connect any handle
         to any handle) and <strong>node origin</strong> (center vs top-left). The teal box is a
         <strong>BlowViewportPortal</strong> annotation (pans/zooms with the graph). The green node uses a single
@@ -14,60 +14,71 @@
 
 <DemoCode />
 
-<div class="demo-canvas" style="height: calc(100vh - 240px);">
-    <BlowCanvas @ref="_flow"
-                Nodes="_nodes"
-                Edges="_edges"
-                FitViewOnInit="true"
-                ColorMode="_colorMode"
-                ConnectionMode="_loose ? BlowConnectionMode.Loose : BlowConnectionMode.Strict"
-                NodeOrigin="_centerOrigin ? new BlowXYPosition(0.5, 0.5) : new BlowXYPosition(0, 0)"
-                HideAttribution="_hideAttribution"
-                OnNodeClick="n => _selected = n">
-        <NodeTemplate Context="node">
-            @if (node.Type == "sized")
-            {
-                <BlowNodeResizeControl Position="BlowResizeDirection.BottomRight" MinWidth="120" MinHeight="60" />
-                <BlowHandle Type="BlowHandleType.Target" Position="BlowPosition.Top" />
-                <div style="display:flex;align-items:center;justify-content:center;height:100%;font-weight:600;">@node.Label</div>
-                <BlowHandle Type="BlowHandleType.Source" Position="BlowPosition.Bottom" />
-            }
-            else
-            {
-                <BlowDefaultNode Node="node" />
-            }
-        </NodeTemplate>
+<div class="bb-demo blow-demo bb-page-wide">
+    <div class="demo-canvas">
+        <BlowCanvas @ref="_flow"
+                    Nodes="_nodes"
+                    Edges="_edges"
+                    FitViewOnInit="true"
+                    ColorMode="Mode"
+                    Class="@CanvasClass"
+                    ConnectionMode="_loose ? BlowConnectionMode.Loose : BlowConnectionMode.Strict"
+                    NodeOrigin="_centerOrigin ? new BlowXYPosition(0.5, 0.5) : new BlowXYPosition(0, 0)"
+                    HideAttribution="_hideAttribution"
+                    OnNodeClick="n => _selected = n">
+            <NodeTemplate Context="node">
+                @if (node.Type == "sized")
+                {
+                    <BlowNodeResizeControl Position="BlowResizeDirection.BottomRight" MinWidth="120" MinHeight="60" />
+                    <BlowHandle Type="BlowHandleType.Target" Position="BlowPosition.Top" />
+                    <div style="display:flex;align-items:center;justify-content:center;height:100%;font-weight:600;">@node.Label</div>
+                    <BlowHandle Type="BlowHandleType.Source" Position="BlowPosition.Bottom" />
+                }
+                else
+                {
+                    <BlowDefaultNode Node="node" />
+                }
+            </NodeTemplate>
 
-        <ChildContent>
-            <BlowBackground Variant="BlowBackgroundVariant.Dots" Gap="20" />
-            <BlowControls />
-            <BlowMiniMap />
+            <ChildContent>
+                <BlowBackground Variant="BlowBackgroundVariant.Dots" Gap="20" />
+                <BlowControls />
+                <BlowMiniMap />
 
-            <BlowViewportPortal>
-                <div class="portal-annotation">Region A &middot; flow-space annotation</div>
-            </BlowViewportPortal>
+                <BlowViewportPortal>
+                    <div class="portal-annotation">Region A &middot; flow-space annotation</div>
+                </BlowViewportPortal>
 
-            <BlowPanel Position="top-left">
-                <div class="toolbar">
-                    <label><input type="checkbox" @bind="_dark" @bind:after="ApplyTheme" /> Dark mode</label>
-                    <label><input type="checkbox" @bind="_loose" /> Loose connections</label>
-                    <label><input type="checkbox" @bind="_centerOrigin" /> Center node origin</label>
-                    <label><input type="checkbox" @bind="_hideAttribution" /> Hide attribution</label>
-                    <button class="btn btn-sm btn-primary" @onclick="ShowNeighbors">Neighbors of selected</button>
-                    <div class="hint">@_info</div>
-                </div>
-            </BlowPanel>
-        </ChildContent>
-    </BlowCanvas>
+                <BlowPanel Position="top-left">
+                    <div class="toolbar">
+                        <label>
+                            Colour mode
+                            <select @bind="_mode">
+                                <option value="site">Site theme</option>
+                                <option value="light">Light</option>
+                                <option value="dark">Dark</option>
+                                <option value="system">System</option>
+                            </select>
+                        </label>
+                        <label><input type="checkbox" @bind="_loose" /> Loose connections</label>
+                        <label><input type="checkbox" @bind="_centerOrigin" /> Center node origin</label>
+                        <label><input type="checkbox" @bind="_hideAttribution" /> Hide attribution</label>
+                        <button class="btn btn-primary" @onclick="ShowNeighbors">Neighbors of selected</button>
+                        <div class="hint">@_info</div>
+                    </div>
+                </BlowPanel>
+            </ChildContent>
+        </BlowCanvas>
+    </div>
 </div>
 
 <style>
     .portal-annotation {
         position:absolute; transform:translate(440px, 40px);
-        background:rgba(13,148,136,0.12); border:1px dashed #0d9488; color:#0f766e;
+        background:rgba(13,148,136,0.12); border:1px dashed #0d9488; color:color-mix(in srgb, #0d9488 70%, var(--bit-blow-text));
         padding:6px 10px; border-radius:6px; font-size:12px; white-space:nowrap; pointer-events:none;
     }
-    .toolbar { display:flex; flex-direction:column; gap:5px; font-size:13px; }
+    .toolbar { display:flex; flex-direction:column; gap:5px; padding:8px 10px; font-size:13px; color:var(--bit-blow-text); background:var(--bit-blow-surface-translucent); border:1px solid var(--bit-blow-border); border-radius:6px; }
     .toolbar label { display:flex; align-items:center; gap:6px; white-space:nowrap; }
     .toolbar .hint { font-size:12px; color:var(--bit-blow-text-muted); max-width:220px; }
 </style>
@@ -77,11 +88,13 @@
     private List<BlowNode> _nodes = new();
     private List<BlowEdge> _edges = new();
 
-    private bool _dark;
     private bool _loose;
     private bool _centerOrigin;
     private bool _hideAttribution;
-    private BlowColorMode _colorMode = BlowColorMode.Light;
+
+    // "site" leaves the canvas to this site's light/dark toggle; any other choice is the canvas's own
+    // ColorMode, and the own-color-mode class tells the site's stylesheet to keep out of it.
+    private string _mode = "site";
     private BlowNode? _selected;
     private string _info = "No node selected.";
 
@@ -91,7 +104,7 @@
         [
             new BlowNode { Id = "1", Type = "input",  Label = "Source", Position = new(240, 30) },
             new BlowNode { Id = "2", Type = "sized",  Label = "Resize ↘", Position = new(120, 170), Width = 150, Height = 70,
-                       Style = "background:#dcfce7;border-color:#16a34a;" },
+                       Style = "background:color-mix(in srgb, #16a34a 18%, var(--bit-blow-node-bg));border-color:#16a34a;" },
             new BlowNode { Id = "3",                  Label = "Node C", Position = new(400, 180) },
             new BlowNode { Id = "4", Type = "output", Label = "Sink",   Position = new(260, 320) },
         ];
@@ -105,7 +118,14 @@
         ];
     }
 
-    private void ApplyTheme() => _colorMode = _dark ? BlowColorMode.Dark : BlowColorMode.Light;
+    private BlowColorMode Mode => _mode switch
+    {
+        "dark" => BlowColorMode.Dark,
+        "system" => BlowColorMode.System,
+        _ => BlowColorMode.Light,
+    };
+
+    private string? CanvasClass => _mode == "site" ? null : "own-color-mode";
 
     private void ShowNeighbors()
     {

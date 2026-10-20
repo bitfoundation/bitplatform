@@ -276,7 +276,6 @@ public static partial class BormSourceCatalog
         if (path.StartsWith("Library/", StringComparison.OrdinalIgnoreCase)) return "Library";
         if (path.StartsWith("Demo/Server/", StringComparison.OrdinalIgnoreCase) ||
             path.StartsWith("Demo/Client/Extensions/", StringComparison.OrdinalIgnoreCase) ||
-            path.StartsWith("Demo/Client/Layout/", StringComparison.OrdinalIgnoreCase) ||
             path.Equals("Demo/Client/Program.cs", StringComparison.OrdinalIgnoreCase) ||
             path.Equals("Demo/Client/Routes.razor", StringComparison.OrdinalIgnoreCase) ||
             path.Equals("Demo/Client/_Imports.razor", StringComparison.OrdinalIgnoreCase)) return "Hosting";
@@ -449,7 +448,8 @@ public static partial class BormSourceCatalog
     [GeneratedRegex(@"///\s*<summary>(?<text>.*?)</summary>", RegexOptions.Singleline)]
     private static partial Regex XmlSummaryRegex();
 
-    [GeneratedRegex(@"<div class=""demo-intro"">\s*<h1>.*?</h1>\s*<p[^>]*>(?<text>.*?)</p>", RegexOptions.Singleline)]
+    // A page opens with its title block: the h1, then the paragraph that says what the page shows.
+    [GeneratedRegex(@"<div class=""bb-intro"">\s*<h1>.*?</h1>\s*<p[^>]*>(?<text>.*?)</p>", RegexOptions.Singleline)]
     private static partial Regex DemoIntroRegex();
 
     [GeneratedRegex(@"<h1>(?<text>.*?)</h1>", RegexOptions.Singleline)]

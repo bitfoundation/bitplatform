@@ -1,28 +1,17 @@
-﻿@inject AppInterop Interop
+﻿@* A code sample - the site kit's pre.bb-code, which site.js gives a copy button - coloured by the
+   demo's own highlighter (CodeHighlighter.cs; its token classes are mapped onto the kit's code colours
+   in demo.css), with an optional file name above it. *@
 
-<div class="code @(Wrap ? "wrap" : null) @Class">
-    @if (ShowHeader)
+<div class="bd-code @Class">
+    @if (!string.IsNullOrWhiteSpace(Title))
     {
-        <div class="code-head">
-            @if (!string.IsNullOrWhiteSpace(Title))
-            {
-                <span class="code-title">@Title</span>
-            }
-            <span class="code-lang">@LanguageLabel</span>
-            @if (AllowCopy)
-            {
-                <button type="button" class="icon-btn" title="@(_copied ? "Copied" : "Copy to clipboard")" @onclick="CopyAsync">
-                    <Icon Name="@(_copied ? "check" : "copy")" />
-                </button>
-            }
-        </div>
+        <p class="bb-source-file">@Title</p>
     }
-    <pre><code>@_html</code></pre>
+    <pre class="bb-code @(Wrap ? "bd-wrap" : null)"><code>@_html</code></pre>
 </div>
 
 @code {
     private MarkupString _html;
-    private bool _copied;
     private string? _rendered;
 
     [Parameter, EditorRequired] public string Code { get; set; } = "";
@@ -31,23 +20,10 @@
 
     [Parameter] public string? Title { get; set; }
 
-    [Parameter] public bool AllowCopy { get; set; } = true;
-
+    /// <summary>Wraps long lines instead of scrolling them - for generated calls whose length changes as you click.</summary>
     [Parameter] public bool Wrap { get; set; }
 
-    [Parameter] public bool ShowHeader { get; set; } = true;
-
     [Parameter] public string? Class { get; set; }
-
-    private string LanguageLabel => Language.ToLowerInvariant() switch
-    {
-        "csharp" or "cs" or "c#" => "C#",
-        "razor" => "Razor",
-        "xml" => "XML",
-        "json" => "JSON",
-        "bash" or "shell" => "Shell",
-        _ => Language,
-    };
 
     protected override void OnParametersSet()
     {
@@ -59,17 +35,6 @@
 
         _rendered = source + "\u0000" + Language;
         _html = (MarkupString)CodeHighlighter.ToHtml(Dedent(source), Language);
-        _copied = false;
-    }
-
-    private async Task CopyAsync()
-    {
-        _copied = await Interop.CopyAsync(Dedent(Code ?? ""));
-        if (_copied)
-        {
-            await Task.Delay(1400);
-            _copied = false;
-        }
     }
 
     /// <summary>Strips the leading indentation shared by every line.</summary>

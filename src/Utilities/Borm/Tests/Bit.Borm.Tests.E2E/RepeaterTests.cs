@@ -104,7 +104,7 @@ public sealed class RepeaterTests : BormTest
         await Expect(Rows(page, "Lines")).ToHaveCountAsync(0);
         await Expect(AddButton(page)).ToBeFocusedAsync();
         await Expect(page.Locator("#borm_Lines [aria-live=polite]")).ToHaveTextAsync("No lines yet.");
-        await Expect(page.Locator(".demo-result pre").First).ToContainTextAsync("Lines     0   total: €0.00");
+        await Expect(page.Locator(".demo-readout pre")).ToContainTextAsync("Lines     0   total: €0.00");
     }
 
     [TestMethod]
@@ -169,7 +169,7 @@ public sealed class RepeaterTests : BormTest
         var page = await OpenAsync("/array");
         await AddLineAsync(page, "Chai");
 
-        await page.Locator(".demo-card label", new() { HasTextString = "Lock the invoice" }).Locator("input").CheckAsync();
+        await page.Locator("label", new() { HasTextString = "Lock the invoice" }).Locator("input").CheckAsync();
 
         await Expect(Control(page, "Customer")).ToBeDisabledAsync();
         await Expect(Control(page, "Lines[0].Description")).ToBeDisabledAsync();

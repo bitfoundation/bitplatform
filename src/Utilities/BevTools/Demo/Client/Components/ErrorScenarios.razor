@@ -4,19 +4,19 @@
 @* A component of its own so the Errors page can wrap it in an ErrorBoundary: event handler exceptions are routed to
    the boundary above the component that owns the handler, so a boundary inside the page could not catch them. *@
 
-<div class="row">
-    <button @onclick="ThrowInHandler">Throw in event handler</button>
-    <button @onclick="ThrowAsync">Throw after await</button>
-    <button @onclick="() => _renderBomb = true">Throw during render (inside ErrorBoundary)</button>
-    <button @onclick="() => _initBomb = true">Child throws in OnInitialized (inside ErrorBoundary)</button>
-    <button @onclick="Http404">HTTP 404</button>
-    <button @onclick="() => { _renderBomb = false; _initBomb = false; _boundary?.Recover(); }">Reset</button>
+<div class="bb-toolbar">
+    <button type="button" class="btn btn-secondary" @onclick="ThrowInHandler">Throw in event handler</button>
+    <button type="button" class="btn btn-secondary" @onclick="ThrowAsync">Throw after await</button>
+    <button type="button" class="btn btn-secondary" @onclick="() => _renderBomb = true">Throw during render (inside ErrorBoundary)</button>
+    <button type="button" class="btn btn-secondary" @onclick="() => _initBomb = true">Child throws in OnInitialized (inside ErrorBoundary)</button>
+    <button type="button" class="btn btn-secondary" @onclick="Http404">HTTP 404</button>
+    <button type="button" class="btn btn-outline" @onclick="() => { _renderBomb = false; _initBomb = false; _boundary?.Recover(); }">Reset</button>
 </div>
 
 <ErrorBoundary @ref="_boundary">
     <ChildContent>
-        <div class="card">
-            <h3>Protected area</h3>
+        <div class="demo-tile">
+            <h4 class="demo-tile-title">Protected area</h4>
             @if (_renderBomb)
             {
                 <div>@ThrowingValue</div>
@@ -25,11 +25,11 @@
             {
                 <BrokenChild />
             }
-            <div class="muted">Nothing exploded (yet).</div>
+            <div class="bb-muted">Nothing exploded (yet).</div>
         </div>
     </ChildContent>
     <ErrorContent Context="ex">
-        <div class="card error">ErrorBoundary caught: @ex.GetType().Name — @ex.Message</div>
+        <div class="bb-note bb-note-danger">ErrorBoundary caught: @ex.GetType().Name — @ex.Message</div>
     </ErrorContent>
 </ErrorBoundary>
 

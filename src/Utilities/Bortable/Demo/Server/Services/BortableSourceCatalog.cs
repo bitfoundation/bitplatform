@@ -469,7 +469,7 @@ public static partial class BortableSourceCatalog
     [GeneratedRegex(@"///\s*<summary>(?<text>.*?)</summary>", RegexOptions.Singleline)]
     private static partial Regex XmlSummaryRegex();
 
-    [GeneratedRegex(@"<div class=""demo-header"">\s*<h3>.*?</h3>\s*<p[^>]*>(?<text>.*?)</p>", RegexOptions.Singleline)]
+    [GeneratedRegex(@"<div class=""bb-intro"">\s*<h1>.*?</h1>\s*<p[^>]*>(?<text>.*?)</p>", RegexOptions.Singleline)]
     private static partial Regex DemoHeaderRegex();
 
     [GeneratedRegex(@"<PageTitle>(?<text>.*?)</PageTitle>", RegexOptions.Singleline | RegexOptions.IgnoreCase)]

@@ -1,19 +1,20 @@
 @page "/color"
 
-<PageTitle>Color spaces - Bit.Bmotion</PageTitle>
+<PageTitle>Color spaces · Bmotion</PageTitle>
 
-<h1>Color spaces</h1>
+<div class="bb-intro">
+    <h1>Color spaces</h1>
+    <p class="bb-subtitle">
+        Interpolating a color means walking a straight line between two points - but <em>which</em>
+        space you draw that line in decides what the midpoints look like. In sRGB the channels are
+        mixed numerically, which is why complementary colors pass through a desaturated grey on the
+        way. <strong>OKLab</strong> is built so that equal steps look like equal steps, so the same
+        journey keeps its chroma the whole way across.
+    </p>
+</div>
 
-<p class="page-intro">
-    Interpolating a color means walking a straight line between two points - but <em>which</em>
-    space you draw that line in decides what the midpoints look like. In sRGB the channels are
-    mixed numerically, which is why complementary colors pass through a desaturated grey on the
-    way. <strong>OKLab</strong> is built so that equal steps look like equal steps, so the same
-    journey keeps its chroma the whole way across.
-</p>
-
-<div class="demo-section">
-    <h2>sRGB and OKLab side by side</h2>
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> sRGB and OKLab side by side</h3>
     <p>
         sRGB is the default, matching Framer Motion. Opt into the perceptual space per transition
         with <code>colorSpace: BmColorSpace.Oklab</code>, or for a whole subtree with
@@ -46,15 +47,15 @@
         }
     </div>
 
-    <div class="demo-actions">
-        <button class="btn-bm" @onclick="@(() => _on = !_on)">@(_on ? "Reverse" : "Cross-fade")</button>
+    <div class="bb-toolbar">
+        <button class="btn btn-primary" @onclick="@(() => _on = !_on)">@(_on ? "Reverse" : "Cross-fade")</button>
     </div>
 
     <CodeSnippet Code="@_code" />
-</div>
+</section>
 
-<div class="demo-section">
-    <h2>When it matters</h2>
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> When it matters</h3>
     <p>
         Not every transition needs it. The two colors have to be far enough apart for the midpoint
         to be visible at all, so the difference is obvious on opposites - blue to yellow, red to
@@ -62,22 +63,12 @@
         the sensible default is what Bmotion does: sRGB unless you ask, and OKLab where the
         midpoints are actually on screen long enough to be seen.
     </p>
-    <ul class="feature-list">
+    <ul class="bb-detail-list">
         <li><strong>Reach for OKLab</strong> when a slow transition crosses the color wheel, or when a hue animates through a keyframe palette.</li>
         <li><strong>Leave it at sRGB</strong> for short state changes, hover tints, and any pair of nearby colors.</li>
         <li><strong>Set it globally</strong> on <code>BmotionConfig</code> when a whole surface should behave consistently rather than deciding per animation.</li>
     </ul>
-</div>
-
-<style>
-    .swatch-pair { display: flex; gap: 1rem; }
-
-    .swatch-cell { display: flex; flex-direction: column; gap: .4rem; align-items: center; }
-
-    .swatch { width: 5.5rem; height: 5rem; border-radius: 10px; }
-
-    .feature-list { line-height: 1.9; color: var(--bm-muted); }
-</style>
+</section>
 
 @code {
     private bool _on;

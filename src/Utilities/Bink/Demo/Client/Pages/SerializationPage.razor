@@ -2,91 +2,115 @@
 @using System.Numerics
 @inject FileDownloads Downloads
 
-<PageTitle>Serialization - bit Bink</PageTitle>
+<PageTitle>Serialization · Bink</PageTitle>
 
-<h1>Serialization</h1>
-<p class="page-intro">
-    Drawings are vector documents, not pictures. Draw on the left, then save, reload and export on the right.
-    The compact format stores a handwriting point in a few bytes; the readable format is the same data as plain
-    JSON for diffing and inspection.
-</p>
+<div class="bb-intro">
+    <h1>Serialization</h1>
+    <p class="bb-subtitle">
+        Drawings are vector documents, not pictures. Draw on the left, then save, reload and export on the right.
+        The compact format stores a handwriting point in a few bytes; the readable format is the same data as plain
+        JSON for diffing and inspection.
+    </p>
+</div>
 
-<div class="split">
-    <div class="panel">
-        <div class="toolbar">
-            <span class="field">Draw something, then save it.</span>
-            <div class="toolbar-spacer"></div>
-            <button type="button" class="btn" disabled="@(_canvas is not { History.CanUndo: true })" @onclick="() => _canvas?.Undo()">Undo</button>
-            <button type="button" class="btn danger" disabled="@(_canvas is null || _canvas.CurrentDocument.IsEmpty)" @onclick="() => _canvas?.Clear()">Clear</button>
-        </div>
-        <BinkCanvas @ref="_canvas" HistoryChanged="() => StateHasChanged()" Height="340px" Brush="_brush" AriaLabel="Source drawing"
-                   DocumentChanged="() => StateHasChanged()"
-                   Ready="() => StateHasChanged()" />
-        <CanvasStatus Canvas="_canvas" />
-    </div>
-
-    <div class="panel">
-        <div class="toolbar">
-            <button type="button" class="btn primary" @onclick="Save">Save</button>
-            <button type="button" class="btn" disabled="@(_saved is null)" @onclick="Load">Load into the canvas</button>
-            <button type="button" class="btn" disabled="@(_saved is null)" @onclick="DownloadAsync">Download</button>
-            <label class="btn">
-                Open file
-                <InputFile OnChange="OpenAsync" accept=".json,.bink,application/json" style="display:none" />
-            </label>
-            <div class="toolbar-spacer"></div>
-            <label class="field">
-                <input type="checkbox" checked="@_readable" @onchange="OnReadableChanged" />
-                Readable JSON
-            </label>
+<div class="bb-demo bink-editor bb-page-wide">
+    <div class="bink-pair">
+        <div class="bink-peer">
+            <div class="bb-toolbar bink-toolbar">
+                <span class="bink-hint">Draw something, then save it.</span>
+                <span class="bb-spacer"></span>
+                <div class="bink-group" role="group" aria-label="History">
+                    <button type="button" class="btn btn-secondary" disabled="@(_canvas is not { History.CanUndo: true })" @onclick="() => _canvas?.Undo()">Undo</button>
+                    <button type="button" class="btn btn-secondary bink-danger" disabled="@(_canvas is null || _canvas.CurrentDocument.IsEmpty)" @onclick="() => _canvas?.Clear()">Clear</button>
+                </div>
+            </div>
+            <div class="bink-surface">
+                <BinkCanvas @ref="_canvas" HistoryChanged="() => StateHasChanged()" Height="340px" Brush="_brush" AriaLabel="Source drawing"
+                           DocumentChanged="() => StateHasChanged()"
+                           Ready="() => StateHasChanged()" />
+            </div>
+            <CanvasStatus Canvas="_canvas" />
         </div>
 
-        @if (_stats is not null)
-        {
-            <table>
-                <thead>
-                    <tr><th>Measure</th><th>Value</th></tr>
-                </thead>
-                <tbody>
-                    <tr><td>Elements</td><td>@_stats.Elements</td></tr>
-                    <tr><td>Stroke points</td><td>@_stats.Points</td></tr>
-                    <tr><td>Compact document</td><td>@FormatBytes(_stats.CompactBytes)</td></tr>
-                    <tr><td>Readable document</td><td>@FormatBytes(_stats.ReadableBytes)</td></tr>
-                    <tr><td>Bytes per point (compact)</td><td>@(_stats.Points == 0 ? "-" : (_stats.CompactBytes / (double)_stats.Points).ToString("0.0"))</td></tr>
-                    <tr><td>SVG export</td><td>@FormatBytes(_stats.SvgBytes)</td></tr>
-                    <tr><td>PNG export (1x)</td><td>@FormatBytes(_stats.PngBytes)</td></tr>
-                    <tr><td>Round trip identical</td><td>@(_stats.RoundTripStable ? "yes" : "no")</td></tr>
-                </tbody>
-            </table>
-        }
-        else
-        {
-            <p style="padding:1rem;color:var(--text-muted)">Save the drawing to see how it is stored.</p>
-        }
+        <div class="bink-peer">
+            <div class="bb-toolbar bink-toolbar">
+                <button type="button" class="btn btn-primary" @onclick="Save">Save</button>
+                <button type="button" class="btn btn-secondary" disabled="@(_saved is null)" @onclick="Load">Load into the canvas</button>
+                <button type="button" class="btn btn-secondary" disabled="@(_saved is null)" @onclick="DownloadAsync">Download</button>
+                <label class="btn btn-secondary">
+                    Open file
+                    <InputFile OnChange="OpenAsync" accept=".json,.bink,application/json" class="bink-file-input" />
+                </label>
+                <span class="bb-spacer"></span>
+                <label class="bb-check">
+                    <input type="checkbox" checked="@_readable" @onchange="OnReadableChanged" />
+                    Readable JSON
+                </label>
+            </div>
+
+            <div class="bink-pane">
+                @if (_stats is not null)
+                {
+                    <dl class="bb-params">
+                        <dt>Elements</dt><dd>@_stats.Elements</dd>
+                        <dt>Stroke points</dt><dd>@_stats.Points</dd>
+                        <dt>Compact document</dt><dd>@FormatBytes(_stats.CompactBytes)</dd>
+                        <dt>Readable document</dt><dd>@FormatBytes(_stats.ReadableBytes)</dd>
+                        <dt>Bytes per point (compact)</dt><dd>@(_stats.Points == 0 ? "-" : (_stats.CompactBytes / (double)_stats.Points).ToString("0.0"))</dd>
+                        <dt>SVG export</dt><dd>@FormatBytes(_stats.SvgBytes)</dd>
+                        <dt>PNG export (1x)</dt><dd>@FormatBytes(_stats.PngBytes)</dd>
+                        <dt>Round trip identical</dt><dd>@(_stats.RoundTripStable ? "yes" : "no")</dd>
+                    </dl>
+                }
+                else
+                {
+                    <div class="bb-empty">Save the drawing to see how it is stored.</div>
+                }
+            </div>
+        </div>
     </div>
 </div>
 
 @if (_error is not null)
 {
-    <p role="alert" style="color:var(--danger)">@_error</p>
+    <div class="bb-note bb-note-danger" role="alert">@_error</div>
 }
 
 @if (_saved is not null)
 {
-    <h2>Stored document</h2>
-    <p class="page-intro">
-        This is the text that was saved, and you can edit it. Change a number and load it to see the edit take
-        effect, or break the JSON to see the loader refuse it with a reason instead of loading half a drawing.
-    </p>
-    <textarea class="output" aria-label="Stored document" spellcheck="false" rows="14"
-              style="width:100%;font-family:ui-monospace,monospace;font-size:0.8rem"
-              value="@_saved" @onchange="e => _saved = e.Value?.ToString()"></textarea>
+    <div class="bb-card">
+        <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Stored document</h3>
+        <p class="bb-card-desc">
+            This is the text that was saved, and you can edit it. Change a number and load it to see the edit take
+            effect, or break the JSON to see the loader refuse it with a reason instead of loading half a drawing.
+        </p>
+        <textarea class="bink-json" aria-label="Stored document" spellcheck="false" rows="14"
+                  value="@_saved" @onchange="e => _saved = e.Value?.ToString()"></textarea>
+    </div>
 }
 
-<div class="note">
-    The format carries a schema version. A document written by a newer version is refused with an explanation
-    rather than being partially read, and elements of unknown types are preserved untouched through a load and
-    save, so an old build never silently destroys work made by a new one.
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> The API</h3>
+    <p class="bb-card-desc">
+        Saving is one call and so is loading. For anything that came from outside your own code - a file a person
+        opened, a request body - use <code>TryDeserialize</code>, which reports a message instead of throwing.
+    </p>
+    <pre class="bb-code"><span class="k">string</span> compact = BinkSerializer.Serialize(document);
+<span class="k">string</span> readable = BinkSerializer.Serialize(document, BinkSerializerOptions.Readable);
+
+<span class="k">if</span> (BinkSerializer.TryDeserialize(json, <span class="k">out</span> BinkDocument? loaded, <span class="k">out string</span>? error) &amp;&amp; loaded <span class="k">is not null</span>)
+{
+    _canvas.LoadDocument(loaded);
+}</pre>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Compatibility</h3>
+    <p class="bb-card-desc">
+        The format carries a schema version. A document written by a newer version is refused with an explanation
+        rather than being partially read, and elements of unknown types are preserved untouched through a load and
+        save, so an old build never silently destroys work made by a new one.
+    </p>
 </div>
 
 @code {

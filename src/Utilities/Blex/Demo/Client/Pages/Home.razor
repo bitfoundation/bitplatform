@@ -1,0 +1,352 @@
+﻿@page "/"
+@layout MainLayout
+@inherits BlexComponentBase
+@inject CounterStore Counter
+
+<PageTitle>Blex - reactive state management for Blazor</PageTitle>
+
+@* The landing page: hero → proof strip → capability grid → code walkthrough → comparison with
+   Fluxor → persona tiles → FAQ → final call to action. Everything else on the site is a
+   documentation page under DocsLayout. The hero's sample is the real CounterStore the docs use,
+   resolved from DI and persisted - a state library is best introduced by changing some state. *@
+
+<div class="bb-landing">
+
+    @* ============================== Hero ============================== *@
+
+    <section class="bb-hero">
+        <div class="bb-hero-copy">
+            <span class="bb-hero-eyebrow">
+                <span class="bb-dot bb-dot-success"></span>
+                Open source · MIT · net8.0 / net9.0 / net10.0
+            </span>
+            <h1>State management for Blazor,<br /><span class="bb-hero-accent">minus the ceremony.</span></h1>
+            <p class="bb-hero-sub">
+                Write one <code>[BlexState]</code> field and one <code>[BlexAction]</code> method. A Roslyn
+                source generator writes the reactive properties, the batched dispatch, the JSON snapshots
+                and the loading and error lifecycle of your effects - and every action streams into the
+                Redux DevTools with time travel built in.
+            </p>
+            <pre class="bb-code bb-hero-install">dotnet add package Bit.Blex</pre>
+            <div class="bb-hero-actions">
+                <a href="quick-start" class="btn btn-primary bb-btn-lg">Get started →</a>
+                <a href="introduction" class="btn btn-secondary bb-btn-lg">Read the docs</a>
+                <a class="btn btn-secondary bb-btn-lg" href="@SiteInfo.ProjectUrl" target="_blank" rel="noopener noreferrer">GitHub ↗</a>
+            </div>
+        </div>
+
+        @* The store, framed as a window: its source on top, and that very store running underneath -
+           live, so the first thing a visitor can do here is dispatch an action. *@
+        <div class="bb-hero-code">
+            <div class="bb-browser">
+                <div class="bb-browser-bar">
+                    <span class="bb-browser-dots" aria-hidden="true"><i></i><i></i><i></i></span>
+                    <span class="bb-browser-url">CounterStore.cs</span>
+                </div>
+                <CodeBlock Code="@HeroStore" />
+                <div class="home-hero-live">
+                    <div class="bb-stats">
+                        <div class="bb-stat">
+                            <span class="bb-stat-label">Count</span>
+                            <span class="bb-stat-value demo-accent">@Counter.Count</span>
+                        </div>
+                        <div class="bb-stat">
+                            <span class="bb-stat-label">DoubleCount</span>
+                            <span class="bb-stat-value">@Counter.DoubleCount</span>
+                        </div>
+                        <div class="bb-stat">
+                            <span class="bb-stat-label">IsEven</span>
+                            <span class="bb-stat-value">@Counter.IsEven</span>
+                        </div>
+                    </div>
+                    <div class="bb-toolbar">
+                        <button type="button" class="btn btn-primary" @onclick="Counter.Increment">Increment()</button>
+                        <button type="button" class="btn btn-secondary" @onclick="Counter.Decrement">Decrement()</button>
+                        <button type="button" class="btn btn-secondary" @onclick="Counter.ResetState">ResetState()</button>
+                    </div>
+                    <p class="bb-card-desc">
+                        Persisted to <code>localStorage</code> - reload and the count survives. The Inspector at the
+                        bottom of the window shows every action.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    @* ============================== Proof strip ============================== *@
+
+    <section class="bb-proof">
+        <div><strong>Generated, not written</strong><span>properties, dispatch and snapshots</span></div>
+        <div><strong>Time travel built in</strong><span>Redux DevTools and in-app undo/redo</span></div>
+        <div><strong>Effects with a lifecycle</strong><span>loading, error, cancellation, concurrency</span></div>
+        <div><strong>Every host</strong><span>Server, WebAssembly, Auto, Hybrid and MAUI</span></div>
+    </section>
+
+    @* ============================== Capability grid ============================== *@
+
+    <section class="bb-section">
+        <p class="bb-overline">Capabilities</p>
+        <h2>The Flux model, without the boilerplate</h2>
+        <p class="bb-section-sub">
+            One observable state tree, named actions and a middleware pipeline - the parts of Flux that pay
+            for themselves - with the action classes, reducers and feature registrations generated away.
+        </p>
+        <div class="bb-grid">
+            <section class="bb-card">
+                <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Stores and computed state</h3>
+                <p class="bb-card-desc">
+                    A <code>partial class</code> with <code>[BlexState]</code> fields becomes a reactive store;
+                    <code>[BlexComputed]</code> methods become memoized properties that invalidate themselves.
+                </p>
+                <a href="stores" class="btn btn-outline">Stores &amp; state →</a>
+            </section>
+            <section class="bb-card">
+                <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Batched, named actions</h3>
+                <p class="bb-card-desc">
+                    Every mutation inside an <code>[BlexAction]</code> folds into one notification, one render
+                    and one history entry, with its arguments captured as the payload.
+                </p>
+                <a href="actions" class="btn btn-outline">Actions →</a>
+            </section>
+            <section class="bb-card">
+                <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Effects</h3>
+                <p class="bb-card-desc">
+                    <code>[BlexEffect]</code> generates <code>XxxIsLoading</code>, <code>XxxError</code> and
+                    <code>CancelXxx()</code>, with <code>Latest</code>, <code>Drop</code> and <code>Queue</code>
+                    concurrency and a built-in debounce.
+                </p>
+                <a href="effects" class="btn btn-outline">Effects →</a>
+            </section>
+            <section class="bb-card">
+                <h3 class="bb-card-title"><span class="bb-dot bb-dot-danger"></span> Selectors</h3>
+                <p class="bb-card-desc">
+                    Subscribe a component to a projection and it re-renders only when that value changes -
+                    across stores too, with <code>CreateSelector</code>.
+                </p>
+                <a href="subscriptions" class="btn btn-outline">Components &amp; selectors →</a>
+            </section>
+            <section class="bb-card">
+                <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Persistence</h3>
+                <p class="bb-card-desc">
+                    <code>Persist = true</code> and a provider: rehydrated on startup, debounced writes,
+                    versioned payloads with migrations, and sync across tabs.
+                </p>
+                <a href="persistence" class="btn btn-outline">Persistence →</a>
+            </section>
+            <section class="bb-card">
+                <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Undo, redo and time travel</h3>
+                <p class="bb-card-desc">
+                    <code>BlexHistory</code> steps the whole state tree back and forth in the app; the
+                    DevTools bridge rewinds it from the browser extension.
+                </p>
+                <a href="history" class="btn btn-outline">Undo &amp; redo →</a>
+            </section>
+        </div>
+    </section>
+
+    @* ============================== Code walkthrough ============================== *@
+
+    <section class="bb-section">
+        <p class="bb-overline">In practice</p>
+        <h2>See it in code</h2>
+        <div class="bb-walkthrough">
+            <div class="bb-walkthrough-row">
+                <div class="bb-walkthrough-copy">
+                    <span class="bb-step">01</span>
+                    <h3>Write the store</h3>
+                    <p>
+                        A <code>partial class</code> marked <code>[BlexStore]</code>. Fields become reactive
+                        properties and <code>OnXxx</code> methods become public, recorded actions - the
+                        generator enforces the conventions at compile time.
+                    </p>
+                    <a href="quick-start">Quick start →</a>
+                </div>
+                <CodeBlock Code="@StepStore" />
+            </div>
+            <div class="bb-walkthrough-row">
+                <div class="bb-walkthrough-copy">
+                    <span class="bb-step">02</span>
+                    <h3>Register it, wrap the router</h3>
+                    <p>
+                        One call for Blex, one per store, and <code>&lt;BlexProvider&gt;</code> around the
+                        router - it registers the stores, restores persisted state and connects the DevTools.
+                    </p>
+                    <a href="installation">Installation →</a>
+                </div>
+                <CodeBlock Code="@StepRegister" />
+            </div>
+            <div class="bb-walkthrough-row">
+                <div class="bb-walkthrough-copy">
+                    <span class="bb-step">03</span>
+                    <h3>Use it in a component</h3>
+                    <p>
+                        <code>Subscribe(store)</code> re-renders the component when the store changes and
+                        detaches itself on dispose - no <code>StateHasChanged</code>, nothing to unsubscribe.
+                    </p>
+                    <a href="subscriptions">Components &amp; selectors →</a>
+                </div>
+                <CodeBlock Code="@StepComponent" Language="razor" />
+            </div>
+        </div>
+    </section>
+
+    @* ============================== Comparison ============================== *@
+
+    <section class="bb-section">
+        <p class="bb-overline">Comparison</p>
+        <h2>Why not Fluxor?</h2>
+        <p class="bb-section-sub">
+            Fluxor is the de-facto Redux library for Blazor, and it works - but a single counter costs a state
+            class, an action class, a reducer and often an effect class, and there is no DevTools time travel.
+        </p>
+        <div class="bb-scroll" tabindex="0" role="region" aria-label="Fluxor compared with Blex">
+            <table class="bb-table bb-compare">
+                <thead>
+                    <tr><th>Task</th><th>Fluxor</th><th>Blex</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td>Define a piece of state</td><td>Feature + State class</td><td>one <code>[BlexState]</code> field</td></tr>
+                    <tr><td>Define an action</td><td>Action class + Reducer method</td><td>one <code>[BlexAction]</code> method</td></tr>
+                    <tr><td>Derived state</td><td>manual selectors</td><td><code>[BlexComputed]</code>, memoized</td></tr>
+                    <tr><td>Async side-effects</td><td>Effect classes</td><td><code>[BlexEffect]</code> with generated loading and error</td></tr>
+                    <tr><td>Persistence</td><td>third-party</td><td>built in, with debounce and migrations</td></tr>
+                    <tr><td>Undo / redo</td><td>✗</td><td><code>BlexHistory</code></td></tr>
+                    <tr><td>Redux DevTools time travel</td><td>✗</td><td>built in</td></tr>
+                    <tr><td>Test helpers</td><td>✗</td><td>the <code>Bit.Blex.Testing</code> harness</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    @* ============================== Persona CTAs ============================== *@
+
+    <section class="bb-section">
+        <p class="bb-overline">Where to start</p>
+        <h2>Choose your path</h2>
+        <div class="bb-grid">
+            <section class="bb-card">
+                <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> New to Blex?</h3>
+                <p class="bb-card-desc">A complete, reactive, time-travelable counter in three files and about twenty lines.</p>
+                <a href="quick-start" class="btn btn-primary">Quick start →</a>
+            </section>
+            <section class="bb-card">
+                <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Coming from Fluxor?</h3>
+                <p class="bb-card-desc">What maps to what - stores for features, actions for reducers, effects for effects - and what is new.</p>
+                <a href="introduction" class="btn btn-outline">The introduction →</a>
+            </section>
+            <section class="bb-card">
+                <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Building with an AI agent?</h3>
+                <p class="bb-card-desc">This site is an MCP server: point your agent at <code>/mcp</code> and it runs the real generator over its stores instead of guessing.</p>
+                <a href="mcp" class="btn btn-outline">Try the MCP server →</a>
+            </section>
+        </div>
+    </section>
+
+    @* ============================== FAQ ============================== *@
+
+    <section class="bb-section">
+        <p class="bb-overline">Questions</p>
+        <h2>Frequently asked</h2>
+        <div class="bb-faq">
+            <details>
+                <summary>Which hosting models does it support?</summary>
+                <p>
+                    Blazor Server, WebAssembly, Auto and static server-side rendering, MAUI Blazor Hybrid and native .NET MAUI,
+                    on .NET 8, 9 and 10. Prerendered store state is handed to the interactive render through
+                    <code>PersistentComponentState</code>, so a page does not flicker back to its defaults.
+                </p>
+            </details>
+            <details>
+                <summary>Do I need the Redux DevTools extension?</summary>
+                <p>
+                    No. The bridge connects when the extension is there and disables itself when it is not - as in a
+                    MAUI WebView. Set <code>&lt;BlexProvider EnableDevTools="false"&gt;</code> in production so the state
+                    tree is never handed to an installed extension, or redact keys with <code>RedactDevToolsKeys</code>.
+                </p>
+            </details>
+            <details>
+                <summary>Is there reflection at runtime?</summary>
+                <p>
+                    The store plumbing is generated at compile time, and a malformed store fails the build with a
+                    <code>BLEX</code> diagnostic. Snapshots go through <code>System.Text.Json</code>; for a trimmed or AOT
+                    publish, point <code>BlexJson.Configure</code> at a source-generated context of your state types.
+                </p>
+            </details>
+            <details>
+                <summary>Can I test a store without a browser?</summary>
+                <p>
+                    Yes - stores, the manager and persistence never touch Blazor or JavaScript. A store tests like a plain
+                    object, and <code>Bit.Blex.Testing</code> adds a harness that records every action, its payload and
+                    the state after it.
+                </p>
+            </details>
+        </div>
+    </section>
+
+    @* ============================== Final CTA ============================== *@
+
+    <section class="bb-final-cta">
+        <h2>Delete the boilerplate</h2>
+        <p class="bb-section-sub">One package, one service call, one provider - and a store is a field and a method.</p>
+        <pre class="bb-code bb-hero-install">dotnet add package Bit.Blex</pre>
+        <div class="bb-hero-actions">
+            <a href="quick-start" class="btn btn-primary bb-btn-lg">Get started →</a>
+            <a href="introduction" class="btn btn-secondary bb-btn-lg">Browse the docs</a>
+        </div>
+    </section>
+</div>
+
+@code {
+    protected override void OnInitialized() => Subscribe(Counter);
+
+    private const string HeroStore = """
+        [BlexStore(Name = "counter", Persist = true)]
+        public partial class CounterStore
+        {
+            [BlexState] private int _count;
+            [BlexState] private int _step = 1;
+
+            [BlexComputed] private int  ComputeDoubleCount() => Count * 2;
+            [BlexComputed] private bool ComputeIsEven()      => Count % 2 == 0;
+
+            [BlexAction] private void OnIncrement() => Count += Step;
+            [BlexAction] private void OnDecrement() => Count -= Step;
+        }
+        """;
+
+    private const string StepStore = """
+        [BlexStore(Name = "cart", Persist = true)]
+        public partial class CartStore
+        {
+            [BlexState] private IReadOnlyList<CartLine> _lines = [];
+
+            [BlexComputed] private decimal ComputeTotal() => Lines.Sum(l => l.Total);
+
+            [BlexAction] private void OnAdd(CartLine line) => Lines = [.. Lines, line];
+        }
+        """;
+
+    private const string StepRegister = """
+        // Program.cs
+        builder.Services.AddBitBlexServices();
+        builder.Services.AddBitBlexStore<CartStore>();
+        builder.Services.AddBitBlexLocalStoragePersistence();
+
+        // App.razor
+        <BlexProvider>
+            <Router AppAssembly="@typeof(App).Assembly">...</Router>
+        </BlexProvider>
+        """;
+
+    private const string StepComponent = """
+        @inherits BlexComponentBase
+        @inject CartStore Cart
+
+        <p>@Cart.Lines.Count items · @Cart.Total.ToString("C")</p>
+        <button @onclick="() => Cart.Add(new(...))">Add</button>
+
+        @code {
+            protected override void OnInitialized() => Subscribe(Cart);
+        }
+        """;
+}

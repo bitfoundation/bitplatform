@@ -26,6 +26,7 @@ internal static class ActivityObserver
     private const string EventProperty = "Bit.BevTools.Event";
     private const string SessionProperty = "Bit.BevTools.Session";
     private const string ComponentTypeProperty = "Bit.BevTools.ComponentType";
+    private const string QueuedRendersProperty = "Bit.BevTools.QueuedRenders";
 
     private static readonly object Lock = new();
     private static ActivityListener? _listener;
@@ -331,6 +332,8 @@ internal static class ActivityObserver
             return;
         }
 
+        NoteQueuedRenders(activity, session);
+
         var duration = activity.Duration.TotalMilliseconds;
         var failed = activity.Status == ActivityStatusCode.Error;
         string? errorType = null;
@@ -381,8 +384,17 @@ internal static class ActivityObserver
         }
     }
 
-    /// <summary>Returns the UI event or navigation executing right now on the given session (walks Activity.Current).</summary>
-    public static BevToolsEvent? CurrentTriggerEvent(BevToolsSession session)
+    /// <summary>
+    /// Returns the UI event or navigation the current work belongs to on the given session (walks Activity.Current).
+    /// <para>
+    /// Activity.Current flows with the execution context, so a timer, background loop or fire-and-forget task started
+    /// inside an event or navigation still sees its activity long after it ended; what that work does is not the
+    /// trigger's. A trigger therefore counts while its activity runs, and once stopped only for the batch that
+    /// renders what it had queued (see <see cref="QueuedRenders"/>). <paramref name="rendering"/> and
+    /// <paramref name="batch"/> name the render asking; without them the question is about the batch in progress.
+    /// </para>
+    /// </summary>
+    public static BevToolsEvent? CurrentTriggerEvent(BevToolsSession session, BevComponentRecord? rendering = null, BevRenderBatchInfo? batch = null)
     {
         var activity = Activity.Current;
         var hops = 0;
@@ -390,12 +402,19 @@ internal static class ActivityObserver
         {
             if (activity.OperationName == HandleEventName || activity.OperationName == NavigateName)
             {
-                if (activity.GetCustomProperty(EventProperty) is BevToolsEvent evt)
+                var property = activity.GetCustomProperty(EventProperty);
+                if (activity.IsStopped)
+                {
+                    if (property is BevToolsEvent stopped && OwnsQueuedRenders(activity, session, rendering, batch))
+                    {
+                        return stopped;
+                    }
+                }
+                else if (property is BevToolsEvent evt)
                 {
                     return ReferenceEquals(evt, IgnoredEvent) || !ReferenceEquals(activity.GetCustomProperty(SessionProperty), session) ? null : evt;
                 }
-
-                if (activity.GetCustomProperty(EventProperty) is null && !activity.IsStopped)
+                else if (property is null)
                 {
                     return Adopt(activity, session);
                 }
@@ -405,6 +424,81 @@ internal static class ActivityObserver
         }
 
         return null;
+    }
+
+    /// <summary>
+    /// Remembers which renders a trigger had queued when its activity stopped. The framework stops a synchronous
+    /// handler's activity as soon as the handler returns, and renders what it queued only afterwards (in
+    /// DispatchEventAsync's finally block), so without this the click's own render would look like StateHasChanged.
+    /// </summary>
+    private static void NoteQueuedRenders(Activity activity, BevToolsSession session)
+    {
+        try
+        {
+            // The queue belongs to the dispatcher; an activity stopped anywhere else has nothing of its own in it.
+            if (session.Components.Renderer is not { } renderer || !renderer.Dispatcher.CheckAccess()
+                || BlazorReflection.QueuedComponents(renderer) is not { Length: > 0 } queued)
+            {
+                return;
+            }
+
+            List<long>? instanceIds = null;
+            foreach (var component in queued)
+            {
+                if (session.Components.TryGet(component, out var record))
+                {
+                    (instanceIds ??= []).Add(record.InstanceId);
+                }
+            }
+
+            if (instanceIds is not null)
+            {
+                activity.SetCustomProperty(QueuedRendersProperty, new QueuedRenders(instanceIds.ToArray(), session.RenderTracker.BatchStarts + 1));
+            }
+        }
+        catch
+        {
+            // some renderers throw for Dispatcher before initialization; nothing is queued then.
+        }
+    }
+
+    private static bool OwnsQueuedRenders(Activity activity, BevToolsSession session, BevComponentRecord? rendering, BevRenderBatchInfo? batch)
+    {
+        if (activity.GetCustomProperty(QueuedRendersProperty) is not QueuedRenders queued || !ReferenceEquals(activity.GetCustomProperty(SessionProperty), session))
+        {
+            return false;
+        }
+
+        if (rendering is not null)
+        {
+            return batch is not null && queued.Owns(rendering, batch);
+        }
+
+        // Not a render - a component being created, an HTTP request, a JS call: it is the trigger's only while the
+        // renderer is still processing that batch. The tracker's batch outlives the pass (without diff metrics it stays
+        // current until the next render), so the renderer's own in-progress flag decides.
+        return session.RenderTracker.CurrentBatch is { } current && queued.Owns(null, current)
+            && session.Components.Renderer is { } renderer && BlazorReflection.GetIsBatchInProgress?.Invoke(renderer) == true;
+    }
+
+    /// <summary>
+    /// What a trigger had queued for rendering when its activity stopped, and the one batch it keeps for it. That
+    /// batch is the one in progress at the stop or the next one, and it is identified by rendering one of those
+    /// components: a later batch - a timer tick re-rendering the same component - is never the trigger's.
+    /// </summary>
+    private sealed class QueuedRenders(long[] instanceIds, long lastCandidateBatch)
+    {
+        private BevRenderBatchInfo? _batch;
+
+        public bool Owns(BevComponentRecord? rendering, BevRenderBatchInfo batch)
+        {
+            if (_batch is null && rendering is not null && batch.Sequence <= lastCandidateBatch && Array.IndexOf(instanceIds, rendering.InstanceId) >= 0)
+            {
+                _batch = batch;
+            }
+
+            return ReferenceEquals(_batch, batch);
+        }
     }
 
     private static void OnMeasurement<T>(Instrument instrument, T value, ReadOnlySpan<KeyValuePair<string, object?>> tags) where T : struct

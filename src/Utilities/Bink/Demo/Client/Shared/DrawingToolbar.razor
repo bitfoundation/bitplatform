@@ -1,15 +1,16 @@
 ﻿@* A reusable toolbar built entirely from real HTML controls, so it is keyboard and screen reader accessible.
-   The canvas itself never needs to handle these interactions. *@
+   The canvas itself never needs to handle these interactions. The tools are a segmented group of toggle
+   buttons (one choice, all of them visible), the colours are a ColorSwatches group, and the history buttons
+   sit at the far end - the same arrangement every editor page on this site uses. *@
 
-<div class="toolbar" role="toolbar" aria-label="Drawing tools">
+<div class="bb-toolbar bink-toolbar" role="toolbar" aria-label="Drawing tools">
 
     @if (ShowTools)
     {
-        <div class="toolbar-group" role="group" aria-label="Tool">
+        <div class="bb-segmented" role="group" aria-label="Tool">
             @foreach (ToolChoice choice in Tools)
             {
                 <button type="button"
-                        class="btn @(IsToolActive(choice) ? "active" : null)"
                         aria-pressed="@(IsToolActive(choice) ? "true" : "false")"
                         title="@choice.Title"
                         @onclick="() => SelectToolAsync(choice)">
@@ -21,44 +22,34 @@
 
     @if (ShowColors)
     {
-        <div class="toolbar-separator"></div>
-        <div class="toolbar-group" role="group" aria-label="Colour">
-            @foreach (string color in Palette)
-            {
-                <button type="button"
-                        class="swatch @(string.Equals(color, CurrentColor, StringComparison.OrdinalIgnoreCase) ? "active" : null)"
-                        style="background:@color"
-                        aria-label="@ColorName(color)"
-                        aria-pressed="@(string.Equals(color, CurrentColor, StringComparison.OrdinalIgnoreCase) ? "true" : "false")"
-                        @onclick="() => SetColorAsync(color)"></button>
-            }
-        </div>
+        <span class="bink-sep" aria-hidden="true"></span>
+        <ColorSwatches Colors="Palette" Value="@CurrentColor" ValueChanged="SetColorAsync" />
     }
 
     @if (ShowWidth)
     {
-        <div class="toolbar-separator"></div>
-        <label class="field">
+        <span class="bink-sep" aria-hidden="true"></span>
+        <label class="bink-field">
             Size
             <input type="range" min="1" max="40" step="1" value="@((int)Width)"
                    aria-label="Brush size"
                    @onchange="OnWidthChanged" />
-            <span style="min-width:2ch">@((int)Width)</span>
+            <span class="bink-field-value">@((int)Width)</span>
         </label>
     }
 
     @ChildContent
 
-    <div class="toolbar-spacer"></div>
+    <span class="bb-spacer"></span>
 
     @if (ShowHistory && Canvas is not null)
     {
-        <div class="toolbar-group" role="group" aria-label="History">
-            <button type="button" class="btn" disabled="@(!Canvas.History.CanUndo)" @onclick="() => Canvas.Undo()"
+        <div class="bink-group" role="group" aria-label="History">
+            <button type="button" class="btn btn-secondary" disabled="@(!Canvas.History.CanUndo)" @onclick="() => Canvas.Undo()"
                     title="Undo (Ctrl+Z)">Undo</button>
-            <button type="button" class="btn" disabled="@(!Canvas.History.CanRedo)" @onclick="() => Canvas.Redo()"
+            <button type="button" class="btn btn-secondary" disabled="@(!Canvas.History.CanRedo)" @onclick="() => Canvas.Redo()"
                     title="Redo (Ctrl+Shift+Z)">Redo</button>
-            <button type="button" class="btn danger" disabled="@(Canvas.CurrentDocument.IsEmpty)" @onclick="() => Canvas.Clear()">Clear</button>
+            <button type="button" class="btn btn-secondary bink-danger" disabled="@(Canvas.CurrentDocument.IsEmpty)" @onclick="() => Canvas.Clear()">Clear</button>
         </div>
     }
 
@@ -140,17 +131,4 @@
         }
         return Task.CompletedTask;
     }
-
-    private static string ColorName(string hex) => hex switch
-    {
-        "#111827" => "Black",
-        "#dc2626" => "Red",
-        "#ea580c" => "Orange",
-        "#ca8a04" => "Yellow",
-        "#16a34a" => "Green",
-        "#2563eb" => "Blue",
-        "#7c3aed" => "Purple",
-        "#db2777" => "Pink",
-        _ => hex,
-    };
 }

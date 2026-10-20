@@ -1,12 +1,12 @@
 ﻿@page "/examples/handle-rules"
 
-<PageTitle>Handle Rules - bit Blow</PageTitle>
+<PageTitle>Handle Rules · Blow</PageTitle>
 
 <ExampleScaffold Title="Handle Rules"
                  Summary="Validation can live on the handle it belongs to rather than in one canvas-wide predicate. The 'number' input only accepts the number output, the 'text' input only the text output, and each input announces what arrived. Both ends of a prospective connection get a say, so a rule sits wherever it reads best.">
     <Toolbar>
         <span class="rules-log">@(_lastConnected ?? "No connection made yet.")</span>
-        <button class="btn btn-sm btn-outline-secondary" @onclick="Reset">Reset</button>
+        <button class="btn btn-secondary" @onclick="Reset">Reset</button>
     </Toolbar>
     <ChildContent>
         <BlowCanvas Nodes="_nodes" Edges="_edges" FitViewOnInit="true" ConnectionRadius="30">
@@ -57,11 +57,11 @@
 
 <style>
     .rules-title { font-weight: 600; }
-    .rules-sub { font-size: 11px; color: #6b7280; }
+    .rules-sub { font-size: 11px; color: var(--bit-blow-text-muted); }
     /* The negative margin carries each row out over the node's 14px side padding, so a handle
        pinned to the row's right edge lands on the node's edge like any other handle. */
     .rules-port { position: relative; font-size: 11px; text-align: right; margin-right: -14px; padding-right: 20px; }
-    .rules-log { font-size: 12px; color: #374151; margin-right: 0.75rem; }
+    .rules-log { font-size: 12px; color: var(--bb-text-muted); margin-right: 0.75rem; }
     /* Set through the handle's own colour token rather than a background with !important, so the
        live valid/invalid highlight still shows while a connection is being dragged. */
     .port-number { --bit-blow-handle-bg: #2563eb; }

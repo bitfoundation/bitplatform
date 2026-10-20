@@ -37,9 +37,11 @@
             <LogicalName>BelemetryDocs/%(Filename)%(Extension)</LogicalName>
         </EmbeddedResource>
 
-        <!-- Every demo page, which is also every worked example the tools can point an agent at. -->
+        <!-- Every demo page, which is also every worked example the tools can point an agent at. Not Layout\:
+             that is the site chrome every Utilities demo shares (header, docs shell, palette, footer), and it
+             says nothing about Belemetry. -->
         <EmbeddedResource Include="..\Client\**\*.razor;..\Client\**\*.cs"
-                          Exclude="..\Client\bin\**;..\Client\obj\**">
+                          Exclude="..\Client\bin\**;..\Client\obj\**;..\Client\Layout\**">
             <LogicalName>BelemetrySource/Demo/Client/%(RecursiveDir)%(Filename)%(Extension)</LogicalName>
         </EmbeddedResource>
 

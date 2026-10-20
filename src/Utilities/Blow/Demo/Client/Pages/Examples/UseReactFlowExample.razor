@@ -1,16 +1,16 @@
 ﻿@page "/examples/use-reactflow"
 
-<PageTitle>Use Flow API - bit Blow</PageTitle>
+<PageTitle>Use Flow API · Blow</PageTitle>
 
 <ExampleScaffold Title="Use Flow API"
                  Summary="Call the imperative flow API through a captured reference (the equivalent of React Flow's useReactFlow hook): zoom, fit, add nodes/edges, delete the selection and snapshot the state.">
     <Toolbar>
-        <button class="btn btn-sm" @onclick="@(() => _flow?.ZoomIn())">Zoom in</button>
-        <button class="btn btn-sm" @onclick="@(() => _flow?.ZoomOut())">Zoom out</button>
-        <button class="btn btn-sm" @onclick="@(() => _flow?.FitView())">Fit view</button>
-        <button class="btn btn-sm btn-primary" @onclick="AddRandom">Add node</button>
-        <button class="btn btn-sm" @onclick="DeleteSelected">Delete selected</button>
-        <button class="btn btn-sm" @onclick="Snapshot">Snapshot</button>
+        <button class="btn btn-secondary" @onclick="@(() => _flow?.ZoomIn())">Zoom in</button>
+        <button class="btn btn-secondary" @onclick="@(() => _flow?.ZoomOut())">Zoom out</button>
+        <button class="btn btn-secondary" @onclick="@(() => _flow?.FitView())">Fit view</button>
+        <button class="btn btn-primary" @onclick="AddRandom">Add node</button>
+        <button class="btn btn-secondary" @onclick="DeleteSelected">Delete selected</button>
+        <button class="btn btn-secondary" @onclick="Snapshot">Snapshot</button>
     </Toolbar>
     <ChildContent>
         <BlowCanvas @ref="_flow" Nodes="_nodes" Edges="_edges" FitViewOnInit="true">

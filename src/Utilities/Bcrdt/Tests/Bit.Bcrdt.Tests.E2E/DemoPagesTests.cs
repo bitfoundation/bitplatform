@@ -65,7 +65,7 @@ public sealed class DemoPagesTests : BcrdtTest
     {
         // A sanity check on the sweep's own source: if the routes stopped being found, the sweep would pass on nothing.
         var routes = RepoLayout.DemoPages().Select(page => page.Route).ToArray();
-        foreach (var route in new[] { "/", "/text", "/list", "/form", "/conflicts", "/undo", "/internals", "/live", "/live/{Room}", "/not-found" })
+        foreach (var route in new[] { "/", "/getting-started", "/text", "/list", "/form", "/conflicts", "/undo", "/internals", "/live", "/live/{Room}", "/mcp-server", "/not-found" })
             CollectionAssert.Contains(routes, route, $"the sweep no longer finds {route}");
     }
 
@@ -80,11 +80,12 @@ public sealed class DemoPagesTests : BcrdtTest
 
         Assert.AreEqual(404, response?.Status, "an unknown address did not answer 404");
         await WaitForInteractiveAsync(page);
-        await Assertions.Expect(page.Locator("h1")).ToHaveTextAsync("Not Found");
-        await Assertions.Expect(page.Locator("main")).ToContainTextAsync("the content you are looking for does not exist");
+        await Assertions.Expect(page.Locator("h1")).ToHaveTextAsync("404");
+        await Assertions.Expect(page.Locator("main")).ToContainTextAsync("There is no page at this address");
 
-        // The layout is there, and with it the way back: the menu still navigates, in the browser.
-        await page.Locator("nav.nav").GetByRole(AriaRole.Link, new() { Name = "Collaborative text", Exact = true }).ClickAsync();
+        // The layout is there, and with it the way back: the site's links still navigate, in the browser.
+        await Assertions.Expect(page.Locator("header.bb-header")).ToBeVisibleAsync();
+        await page.Locator("footer.bb-footer").GetByRole(AriaRole.Link, new() { Name = "Collaborative text", Exact = true }).ClickAsync();
         await page.WaitForURLAsync(BaseUrl + "/text");
         await WaitForReplicasAsync(page, 3);
 

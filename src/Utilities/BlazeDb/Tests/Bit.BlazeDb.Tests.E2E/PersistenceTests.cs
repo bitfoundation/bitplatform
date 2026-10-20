@@ -21,7 +21,7 @@ public class PersistenceTests : BlazeDbTest
 
         await page.Locator("#new-title").FillAsync(title);
         await page.Locator("button.btn-primary").Filter(new() { HasText = "Insert" }).ClickAsync();
-        await Assertions.Expect(page.Locator(".row-title", new() { HasText = title })).ToBeVisibleAsync();
+        await Assertions.Expect(page.Locator(".bd-row-title", new() { HasText = title })).ToBeVisibleAsync();
 
         // The demo flushes every 100 ms; the write-ahead log has reached OPFS well within this.
         await page.WaitForTimeoutAsync(1_500);
@@ -33,7 +33,7 @@ public class PersistenceTests : BlazeDbTest
         Assert.AreEqual("Opfs", await WaitForDatabaseAsync(page));
 
         await page.Locator("input[placeholder='Filter titles…']").FillAsync(title);
-        await Assertions.Expect(page.Locator(".row-title", new() { HasText = title })).ToBeVisibleAsync();
+        await Assertions.Expect(page.Locator(".bd-row-title", new() { HasText = title })).ToBeVisibleAsync();
     }
 
     [TestMethod]
@@ -50,7 +50,9 @@ public class PersistenceTests : BlazeDbTest
 
         Assert.AreEqual("LockedFallback", await WaitForDatabaseAsync(second),
             "Two tabs of one origin must not both write the same OPFS files: the second one has to lose the Web Lock election.");
-        await Assertions.Expect(second.Locator(".storage-pill")).ToContainTextAsync("another tab owns OPFS");
+        await Assertions.Expect(second.Locator(".bd-status")).ToContainTextAsync("another tab owns OPFS");
+        // The landing page tells the visitor in its hero, where the database it is showing is named.
+        await Assertions.Expect(second.Locator(".bb-browser-url")).ToContainTextAsync("another tab owns OPFS");
     }
 
     [TestMethod]

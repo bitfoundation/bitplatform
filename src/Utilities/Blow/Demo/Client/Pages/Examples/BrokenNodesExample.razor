@@ -1,11 +1,11 @@
 ﻿@page "/examples/broken-nodes"
 
-<PageTitle>Broken Nodes - bit Blow</PageTitle>
+<PageTitle>Broken Nodes · Blow</PageTitle>
 
 <ExampleScaffold Title="Broken Nodes"
                  Summary="Edges that reference missing nodes or handles are simply skipped instead of throwing. Toggle the missing node to see its edges appear and disappear.">
     <Toolbar>
-        <button class="btn btn-sm" @onclick="ToggleGhost">@(_hasGhost ? "Remove" : "Add") node 3</button>
+        <button class="btn btn-secondary" @onclick="ToggleGhost">@(_hasGhost ? "Remove" : "Add") node 3</button>
     </Toolbar>
     <ChildContent>
         <BlowCanvas Nodes="_nodes" Edges="_edges" FitViewOnInit="true">

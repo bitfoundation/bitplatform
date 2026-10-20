@@ -16,7 +16,7 @@ public sealed class GestureTests : BlowTest
     [TestMethod]
     public async Task Dragging_a_node_moves_it_with_the_pointer_and_its_edges_follow()
     {
-        var page = await OpenAsync("/");
+        var page = await OpenAsync("/basic-flow");
         await WaitForEdgesAnchoredAsync(page);
 
         var before = await NodeBoxAsync(page, "2");
@@ -40,7 +40,7 @@ public sealed class GestureTests : BlowTest
     [TestMethod]
     public async Task A_drag_keeps_following_the_pointer_after_it_leaves_the_canvas()
     {
-        var page = await OpenAsync("/");
+        var page = await OpenAsync("/basic-flow");
         var pane = await PaneBoxAsync(page);
         var node = await NodeBoxAsync(page, "2");
         var grab = node.Centre;
@@ -70,7 +70,7 @@ public sealed class GestureTests : BlowTest
     [TestMethod]
     public async Task Dragging_from_a_source_handle_to_a_target_handle_connects_them()
     {
-        var page = await OpenAsync("/");
+        var page = await OpenAsync("/basic-flow");
         await WaitForEdgesAnchoredAsync(page);
 
         var source = await HandleCentreAsync(page, "3", "source");
@@ -105,7 +105,7 @@ public sealed class GestureTests : BlowTest
     [TestMethod]
     public async Task A_connection_dropped_on_empty_space_is_abandoned()
     {
-        var page = await OpenAsync("/");
+        var page = await OpenAsync("/basic-flow");
         var pane = await PaneBoxAsync(page);
 
         await DragAsync(page, await HandleCentreAsync(page, "3", "source"), new Point(pane.Right - 60, pane.Bottom - 230));
@@ -117,11 +117,11 @@ public sealed class GestureTests : BlowTest
     [TestMethod]
     public async Task The_wheel_zooms_about_the_cursor()
     {
-        var page = await OpenAsync("/");
+        var page = await OpenAsync("/basic-flow");
         var pane = await PaneBoxAsync(page);
         var before = await ViewportAsync(page);
 
-        var cursor = new Point(pane.X + pane.Width * 0.3, pane.Y + pane.Height * 0.6);
+        var cursor = new Point(pane.X + pane.Width * 0.3, pane.Y + pane.Height * 0.6).Snapped();
         await WheelAsync(page, cursor, -150);
 
         var after = await ViewportAsync(page);
@@ -141,7 +141,7 @@ public sealed class GestureTests : BlowTest
     [TestMethod]
     public async Task Dragging_the_background_pans_the_viewport()
     {
-        var page = await OpenAsync("/");
+        var page = await OpenAsync("/basic-flow");
         var pane = await PaneBoxAsync(page);
         var before = await ViewportAsync(page);
         var node = await NodeBoxAsync(page, "3");
@@ -160,11 +160,11 @@ public sealed class GestureTests : BlowTest
     [TestMethod]
     public async Task A_double_click_on_the_background_zooms_in_about_that_point()
     {
-        var page = await OpenAsync("/");
+        var page = await OpenAsync("/basic-flow");
         var pane = await PaneBoxAsync(page);
         var before = await ViewportAsync(page);
 
-        var at = EmptySpot(pane);
+        var at = EmptySpot(pane).Snapped();
         await page.Mouse.DblClickAsync((float)at.X, (float)at.Y);
         await EventuallyAsync(async () => (await ViewportAsync(page)).Zoom > before.Zoom, "the double click zoomed in");
 
@@ -177,7 +177,7 @@ public sealed class GestureTests : BlowTest
     [TestMethod]
     public async Task Shift_dragging_a_box_selects_the_nodes_it_catches_and_Delete_removes_them()
     {
-        var page = await OpenAsync("/");
+        var page = await OpenAsync("/basic-flow");
         var two = await NodeBoxAsync(page, "2");
         var three = await NodeBoxAsync(page, "3");
 
@@ -205,7 +205,7 @@ public sealed class GestureTests : BlowTest
     [TestMethod]
     public async Task Clicking_an_edge_selects_it_and_Delete_removes_only_that_edge()
     {
-        var page = await OpenAsync("/");
+        var page = await OpenAsync("/basic-flow");
         await WaitForEdgesAnchoredAsync(page);
 
         // The middle of the path, read from the painted geometry.
@@ -232,7 +232,7 @@ public sealed class GestureTests : BlowTest
     [TestMethod]
     public async Task The_controls_zoom_in_zoom_out_and_fit_the_view()
     {
-        var page = await OpenAsync("/");
+        var page = await OpenAsync("/basic-flow");
         var pane = await PaneBoxAsync(page);
         var fitted = await ViewportAsync(page);
 
@@ -263,7 +263,7 @@ public sealed class GestureTests : BlowTest
     [TestMethod]
     public async Task The_minimap_mirrors_the_nodes_and_the_visible_area()
     {
-        var page = await OpenAsync("/");
+        var page = await OpenAsync("/basic-flow");
         Assert.AreEqual(4, await page.Locator(".bit-blow-minimap-node").CountAsync(), "one minimap rectangle per node");
 
         var pane = await PaneBoxAsync(page);
@@ -282,7 +282,7 @@ public sealed class GestureTests : BlowTest
     [TestMethod]
     public async Task Clicking_a_node_on_the_minimap_brings_it_to_the_middle_of_the_view()
     {
-        var page = await OpenAsync("/");
+        var page = await OpenAsync("/basic-flow");
         var pane = await PaneBoxAsync(page);
 
         // Out of the way first, so the click has somewhere to bring it back from.
@@ -300,7 +300,7 @@ public sealed class GestureTests : BlowTest
     [TestMethod]
     public async Task Clicking_the_minimap_centres_the_view_exactly_on_the_clicked_point()
     {
-        var page = await OpenAsync("/");
+        var page = await OpenAsync("/basic-flow");
         var pane = await PaneBoxAsync(page);
 
         var rect = await BoxAsync(page, ".bit-blow-minimap-node:nth-of-type(4)");

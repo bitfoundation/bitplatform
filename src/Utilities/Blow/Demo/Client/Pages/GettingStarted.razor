@@ -1,0 +1,165 @@
+﻿@page "/getting-started"
+
+<PageTitle>Getting Started · Blow</PageTitle>
+
+<div class="bb-intro">
+    <h1>Getting Started</h1>
+    <p class="bb-subtitle">
+        One package, one namespace and one stylesheet - no services to register. Then a <code>BlowCanvas</code>
+        in a container that has a height is a working node editor over your own <code>List&lt;BlowNode&gt;</code>
+        and <code>List&lt;BlowEdge&gt;</code>.
+    </p>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Install</h3>
+    <p class="bb-card-desc">
+        The package runs on .NET 8, 9 and 10, in Blazor WebAssembly, Blazor Server, a Blazor Web App and Blazor
+        Hybrid. In a Web App it belongs in the project that holds the pages with a canvas - the <code>.Client</code>
+        project, for pages rendered with <code>InteractiveWebAssembly</code>.
+    </p>
+    <pre class="bb-code">dotnet add package Bit.Blow</pre>
+    <p class="bb-card-desc">
+        Add the namespace to <code>_Imports.razor</code>. Everything in the library - the components, the model,
+        layout, history and the clipboard - lives in it:
+    </p>
+    <pre class="bb-code"><span class="k">@@using</span> Bit.Blow</pre>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Link the stylesheet</h3>
+    <p class="bb-card-desc">
+        From the host page - <code>Components/App.razor</code> in a Blazor Web App, <code>wwwroot/index.html</code>
+        in a standalone WebAssembly or a Hybrid app. The link is required: the library does not inject its
+        stylesheet, so leaving it out gives an unstyled canvas rather than an error. Put your own overrides after it.
+    </p>
+    <pre class="bb-code">&lt;<span class="k">link</span> rel=<span class="s">"stylesheet"</span> href=<span class="s">"_content/Bit.Blow/bit-blow.css"</span> /&gt;</pre>
+    <p class="bb-card-desc">
+        On .NET 9 and later, <code>href="@@Assets["_content/Bit.Blow/bit-blow.css"]"</code> in <code>App.razor</code>
+        serves the fingerprinted copy. The script module, <code>_content/Bit.Blow/bit-blow.js</code>, needs no tag:
+        the component imports it the first time it needs it.
+    </p>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> A first flow</h3>
+    <p class="bb-card-desc">
+        The canvas fills its container (<code>width: 100%; height: 100%</code>), so the container needs a height -
+        or give the canvas one directly with <code>Style="height: 600px"</code>. The graph is plain C#: the canvas
+        edits the lists you hand it in place as the user works.
+    </p>
+    <pre class="bb-code">&lt;<span class="k">div</span> style=<span class="s">"height: 400px"</span>&gt;
+    &lt;<span class="k">BlowCanvas</span> @@ref=<span class="s">"_flow"</span> Nodes=<span class="s">"_nodes"</span> Edges=<span class="s">"_edges"</span> FitViewOnInit=<span class="s">"true"</span>&gt;
+        &lt;<span class="k">BlowBackground</span> /&gt;
+        &lt;<span class="k">BlowControls</span> /&gt;
+    &lt;/<span class="k">BlowCanvas</span>&gt;
+&lt;/<span class="k">div</span>&gt;
+
+<span class="k">@@code</span> {
+    <span class="k">private</span> BlowCanvas? _flow;
+
+    <span class="k">private</span> List&lt;BlowNode&gt; _nodes =
+    [
+        <span class="k">new</span> BlowNode { Id = <span class="s">"1"</span>, Type = <span class="s">"input"</span>, Label = <span class="s">"Order placed"</span>, Position = <span class="k">new</span>(0, 0) },
+        <span class="k">new</span> BlowNode { Id = <span class="s">"2"</span>, Label = <span class="s">"Payment"</span>, Position = <span class="k">new</span>(0, 100) },
+        <span class="k">new</span> BlowNode { Id = <span class="s">"3"</span>, Type = <span class="s">"output"</span>, Label = <span class="s">"Shipped"</span>, Position = <span class="k">new</span>(0, 200) },
+    ];
+
+    <span class="k">private</span> List&lt;BlowEdge&gt; _edges =
+    [
+        <span class="k">new</span> BlowEdge { Id = <span class="s">"e1-2"</span>, Source = <span class="s">"1"</span>, Target = <span class="s">"2"</span> },
+        <span class="k">new</span> BlowEdge { Id = <span class="s">"e2-3"</span>, Source = <span class="s">"2"</span>, Target = <span class="s">"3"</span>, Animated = <span class="k">true</span> },
+    ];
+}</pre>
+
+    <div class="bb-demo blow-demo">
+        <div class="bb-demo-bar">
+            <span class="bb-demo-label">Live</span>
+            <button type="button" class="btn btn-secondary" @onclick="AddStep">Add step</button>
+        </div>
+        <div class="demo-canvas demo-canvas--short">
+            <BlowCanvas @ref="_flow" Nodes="_nodes" Edges="_edges" FitViewOnInit="true">
+                <BlowBackground />
+                <BlowControls />
+            </BlowCanvas>
+        </div>
+    </div>
+
+    <p class="bb-card-desc">
+        That is a working editor. Nodes drag; dragging from a handle to another node connects them; clicking selects,
+        <kbd>Shift</kbd>+click adds to the selection and <kbd>Shift</kbd>+drag on the background draws a selection
+        box; <kbd>Delete</kbd> removes the selection; the wheel zooms toward the cursor, dragging the background pans
+        and two fingers pinch. <kbd>Tab</kbd> reaches every node and edge, <kbd>Enter</kbd> selects, the arrow keys
+        move the selection and <kbd>Escape</kbd> clears it.
+    </p>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Reacting to edits</h3>
+    <p class="bb-card-desc">
+        Your state is always the graph on screen. What the canvas raises tells you when something worth knowing
+        has happened:
+    </p>
+    <ul class="bb-detail-list">
+        <li><code>NodesChanged</code> and <code>EdgesChanged</code> once an edit is complete - a drag released, a resize ended, a connection made, something deleted or pasted. Not on every pointer move.</li>
+        <li><code>OnNodeDrag</code>, <code>OnNodeResize</code> and <code>OnMove</code> while a gesture runs, for live readouts.</li>
+        <li><code>OnSelectionChange</code> when the selected set actually changes.</li>
+        <li><code>OnConnect</code>, <code>OnReconnect</code> and <code>OnDelete</code> for the specific edits. A connection adds its own edge; <code>OnConnect</code> is for side effects.</li>
+    </ul>
+    <p class="bb-card-desc">
+        When your own code changes the graph outside a render of your component - a timer, a message from a server -
+        call <code>_flow.Refresh(remeasure: true)</code>, or <code>InvokeAsync(StateHasChanged)</code> on your component.
+    </p>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Calling the canvas from code</h3>
+    <p class="bb-card-desc">
+        Capture the canvas with <code>@@ref</code> for the imperative API - the counterpart of React Flow's
+        <code>useReactFlow()</code>:
+    </p>
+    <pre class="bb-code">_flow.FitView();
+<span class="k">await</span> _flow.SetCenterAsync(x: 400, y: 200, zoom: 1.5, durationMs: 300);
+BlowXYPosition point = _flow.ScreenToFlowPosition(e.ClientX, e.ClientY);
+
+_flow.AddNodes(node);
+<span class="k">await</span> _flow.DeleteElementsAsync(nodes: [node]);
+BlowNode? found = _flow.GetNode(<span class="s">"2"</span>);
+
+BlowSnapshot snapshot = _flow.ToObject();
+<span class="k">await</span> _flow.RestoreAsync(snapshot);</pre>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Where to go next</h3>
+    <ul class="bb-link-list">
+        <li><a href="basic-flow">Basic Flow</a> - every default gesture on one canvas.</li>
+        <li><a href="custom-nodes">Custom Nodes</a> - your own node markup, with handles wherever you put them.</li>
+        <li><a href="examples">All Examples</a> - more than eighty working pages, most of them ports of React Flow's own.</li>
+        <li><a href="mcp-server">MCP server</a> - point an AI agent at this site and it reads the library instead of guessing.</li>
+    </ul>
+</div>
+
+@code {
+    private BlowCanvas? _flow;
+    private int _next = 4;
+
+    private List<BlowNode> _nodes =
+    [
+        new BlowNode { Id = "1", Type = "input", Label = "Order placed", Position = new(0, 0) },
+        new BlowNode { Id = "2", Label = "Payment", Position = new(0, 100) },
+        new BlowNode { Id = "3", Type = "output", Label = "Shipped", Position = new(0, 200) },
+    ];
+
+    private List<BlowEdge> _edges =
+    [
+        new BlowEdge { Id = "e1-2", Source = "1", Target = "2" },
+        new BlowEdge { Id = "e2-3", Source = "2", Target = "3", Animated = true },
+    ];
+
+    private void AddStep()
+    {
+        var id = (_next++).ToString();
+        _flow?.AddNodes(new BlowNode { Id = id, Label = $"Step {id}", Position = new(220, (_next - 5) * 70) });
+    }
+}
