@@ -27,8 +27,8 @@ public class DemoRegressionTests : DemoTest
         await page.WaitForTimeoutAsync(800);
     }
 
-    /// <summary>The live document readout under the editor; on the editor page it is the only <c>pre.code</c>.</summary>
-    private static Task<string> ReadDocumentAsync(IPage page) => page.Locator("pre.code").First.InnerTextAsync();
+    /// <summary>The live document readout under the editor; on the editor page it is the only <c>pre.demo-readout</c>.</summary>
+    private static Task<string> ReadDocumentAsync(IPage page) => page.Locator("pre.demo-readout").First.InnerTextAsync();
 
     [TestMethod]
     public async Task TheImageIsFittedInsideTheEditingArea()
@@ -176,8 +176,8 @@ public class DemoRegressionTests : DemoTest
         try
         {
             await page.SetInputFilesAsync("input[type=file]", path);
-            await page.WaitForSelectorAsync("table.data", new PageWaitForSelectorOptions { Timeout = 60_000 });
-            Assert.Contains("Not a readable image", await page.Locator("table.data").InnerTextAsync(), StringComparison.Ordinal);
+            await page.WaitForSelectorAsync("table.optimize-results", new PageWaitForSelectorOptions { Timeout = 60_000 });
+            Assert.Contains("Not a readable image", await page.Locator("table.optimize-results").InnerTextAsync(), StringComparison.Ordinal);
         }
         finally
         {
@@ -198,8 +198,8 @@ public class DemoRegressionTests : DemoTest
     {
         var page = await OpenAsync("headless");
         await page.GetByRole(AriaRole.Button, new PageGetByRoleOptions { Name = "Use a sample image" }).ClickAsync();
-        await page.WaitForFunctionAsync("() => document.querySelectorAll('.grid .card img').length === 7 && !document.querySelector('.working')", null,
+        await page.WaitForFunctionAsync("() => document.querySelectorAll('.headless-results .headless-result img').length === 7 && !document.querySelector('.working')", null,
             new PageWaitForFunctionOptions { Timeout = 180_000 });
-        Assert.AreEqual(7, await page.Locator(".grid .card").CountAsync());
+        Assert.AreEqual(7, await page.Locator(".headless-results .headless-result").CountAsync());
     }
 }

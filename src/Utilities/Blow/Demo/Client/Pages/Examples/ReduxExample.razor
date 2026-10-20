@@ -1,15 +1,15 @@
 ﻿@page "/examples/redux"
 @implements IDisposable
 
-<PageTitle>External Store - bit Blow</PageTitle>
+<PageTitle>External Store · Blow</PageTitle>
 
 <ExampleScaffold Title="External Store"
                  Summary="Both the canvas and an external toolbar read and mutate a single shared store object (the Redux/Zustand pattern). Dispatching an action updates the store and re-renders the flow.">
     <Toolbar>
-        <button class="btn btn-sm btn-primary" @onclick="@(() => _store.Dispatch(StoreAction.AddNode))">Add node</button>
-        <button class="btn btn-sm" @onclick="@(() => _store.Dispatch(StoreAction.ConnectRandom))">Connect random</button>
-        <button class="btn btn-sm" @onclick="@(() => _store.Dispatch(StoreAction.Reset))">Reset</button>
-        <span class="text-muted">store: @_store.Nodes.Count nodes, @_store.Edges.Count edges</span>
+        <button class="btn btn-primary" @onclick="@(() => _store.Dispatch(StoreAction.AddNode))">Add node</button>
+        <button class="btn btn-secondary" @onclick="@(() => _store.Dispatch(StoreAction.ConnectRandom))">Connect random</button>
+        <button class="btn btn-secondary" @onclick="@(() => _store.Dispatch(StoreAction.Reset))">Reset</button>
+        <span class="bb-muted">store: @_store.Nodes.Count nodes, @_store.Edges.Count edges</span>
     </Toolbar>
     <ChildContent>
         <BlowCanvas Nodes="_store.Nodes" Edges="_store.Edges" FitViewOnInit="true"

@@ -2,57 +2,51 @@
 @using System.Runtime.InteropServices
 @implements IAsyncDisposable
 
-<PageTitle>Benchmarks - BlazeDb</PageTitle>
+<PageTitle>Benchmarks · BlazeDb</PageTitle>
 
-<PageHeader Eyebrow="Performance" IconName="gauge" Title="Measured here, in your browser, right now"
+<PageHeader Eyebrow="Benchmarks" Title="Measured here, in your browser, right now"
             Lead="These are not numbers from a README. Every figure below is produced by running the operation in this tab against a real database, on your machine, in the WebAssembly runtime you are using to read this page.">
-    <span class="chip"><Icon Name="database" /> @_rowCount.ToString("N0") rows loaded</span>
-    <span class="chip"><Icon Name="cpu" /> @Runtime</span>
-    <span class="chip @(IsDebug ? "warn" : "ok")">
-        <Icon Name="@(IsDebug ? "alert" : "check")" /> @(IsDebug ? "Debug build" : "Release build")
-    </span>
+    <span class="bb-badge bd-badge-neutral">@_rowCount.ToString("N0") rows loaded</span>
+    <span class="bb-badge bd-badge-neutral">@Runtime</span>
+    <span class="@Tones.Badge(IsDebug ? "warn" : "ok")">@(IsDebug ? "Debug build" : "Release build")</span>
 </PageHeader>
 
-<Section Title="Run the suite" IconName="play">
+<Section Title="Run the suite">
     <Panel Title="Configuration" IconName="cpu">
-        <div class="form-row">
-            <div class="field" style="flex:0 1 190px">
-                <label class="field-label" for="b-rows">Rows in the table</label>
-                <select id="b-rows" class="input" value="@_requestedRows" disabled="@_busy"
+        <div class="bb-fields">
+            <div class="bb-field" style="flex:0 1 190px">
+                <label for="b-rows">Rows in the table</label>
+                <select id="b-rows" value="@_requestedRows" disabled="@_busy"
                         @onchange="OnRowsChanged">
                     @foreach (var option in RowOptions)
                     {
                         <option value="@option">@option.ToString("N0")</option>
                     }
                 </select>
-                <span class="field-hint">rebuilds the fixtures</span>
+                <span class="bb-field-hint">rebuilds the fixtures</span>
             </div>
-            <div class="field" style="flex:0 1 190px">
-                <label class="field-label" for="b-scale">Work per benchmark</label>
-                <select id="b-scale" class="input" value="@_scale" disabled="@_busy" @onchange="OnScaleChanged">
+            <div class="bb-field" style="flex:0 1 190px">
+                <label for="b-scale">Work per benchmark</label>
+                <select id="b-scale" value="@_scale" disabled="@_busy" @onchange="OnScaleChanged">
                     <option value="1">Quick</option>
                     <option value="4">Thorough</option>
                     <option value="12">Punishing</option>
                 </select>
-                <span class="field-hint">longer runs, steadier numbers</span>
+                <span class="bb-field-hint">longer runs, steadier numbers</span>
             </div>
-            <div class="field" style="flex:1 1 auto; align-self:flex-end">
-                <div class="flex wrap">
-                    <button class="btn btn-primary" disabled="@_busy" @onclick="RunAllAsync">
-                        <Icon Name="play" /> @(_busy ? "Running…" : "Run all benchmarks")
-                    </button>
-                    <button class="btn" disabled="@(_busy || _results.Count == 0)" @onclick="() => _results.Clear()">
-                        <Icon Name="refresh" /> Clear
-                    </button>
-                </div>
-            </div>
+            <button type="button" class="btn btn-primary" disabled="@_busy" @onclick="RunAllAsync">
+                <Icon Name="play" /> @(_busy ? "Running…" : "Run all benchmarks")
+            </button>
+            <button type="button" class="btn btn-secondary" disabled="@(_busy || _results.Count == 0)" @onclick="() => _results.Clear()">
+                <Icon Name="refresh" /> Clear
+            </button>
         </div>
 
         @if (_busy)
         {
-            <div class="mt-2">
-                <div class="bar-track"><div class="bar-fill" style="width:@(_progress)%"></div></div>
-                <p class="tiny muted mt-1 mb-0">@_currentName</p>
+            <div class="bd-progress">
+                <div class="bd-bar"><div class="bd-bar-fill" style="width:@(_progress)%"></div></div>
+                <p class="bd-foot">@_currentName</p>
             </div>
         }
     </Panel>
@@ -61,17 +55,17 @@
     {
         @foreach (var group in _results.GroupBy(r => r.Group))
         {
-            <Panel Title="@group.Key" IconName="@GroupIcon(group.Key)" Flush="true" Class="mt-3">
-                <div class="table-wrap">
-                    <table class="data">
+            <Panel Title="@group.Key" IconName="@GroupIcon(group.Key)" Flush="true">
+                <div class="bb-scroll">
+                    <table class="bb-table bb-compare">
                         <thead>
                             <tr>
                                 <th>Operation</th>
-                                <th class="num">Operations</th>
-                                <th class="num">Total</th>
-                                <th class="num">Per op</th>
-                                <th class="num">Throughput</th>
-                                <th style="width:180px">Relative</th>
+                                <th class="bd-num">Operations</th>
+                                <th class="bd-num">Total</th>
+                                <th class="bd-num">Per op</th>
+                                <th class="bd-num">Throughput</th>
+                                <th class="bd-bar-col">Relative</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -79,16 +73,16 @@
                             {
                                 <tr>
                                     <td>
-                                        <div class="strong">@result.Name</div>
-                                        <div class="tiny muted">@result.Note</div>
+                                        <div class="bd-strong">@result.Name</div>
+                                        <div class="bd-foot">@result.Note</div>
                                     </td>
-                                    <td class="num mono">@result.Operations.ToString("N0")</td>
-                                    <td class="num mono">@DemoSandbox.Duration(result.Milliseconds)</td>
-                                    <td class="num mono strong">@DemoSandbox.Duration(result.PerOpMs)</td>
-                                    <td class="num mono">@FormatRate(result.OpsPerSecond)</td>
+                                    <td class="bd-num">@result.Operations.ToString("N0")</td>
+                                    <td class="bd-num">@DemoSandbox.Duration(result.Milliseconds)</td>
+                                    <td class="bd-num bd-strong">@DemoSandbox.Duration(result.PerOpMs)</td>
+                                    <td class="bd-num">@FormatRate(result.OpsPerSecond)</td>
                                     <td>
-                                        <div class="bar-track">
-                                            <div class="bar-fill @BarTone(result.OpsPerSecond)"
+                                        <div class="bd-bar">
+                                            <div class="bd-bar-fill @BarTone(result.OpsPerSecond)"
                                                  style="width:@(BarWidth(result.OpsPerSecond))%"></div>
                                         </div>
                                     </td>
@@ -102,15 +96,10 @@
     }
     else
     {
-        <Panel Class="mt-3">
-            <div class="empty">
-                <Icon Name="gauge" Size="26" />
-                <p class="mb-0">Nothing measured yet. Run the suite to fill this in.</p>
-            </div>
-        </Panel>
+        <div class="bb-empty">Nothing measured yet. Run the suite to fill this in.</div>
     }
 
-    <Callout Tone="warn" Title="Read these numbers honestly." Class="mt-3">
+    <Callout Tone="warn" Title="Read these numbers honestly.">
         The bars use a logarithmic scale because the spread between a dictionary lookup and a
         storage append is four orders of magnitude. Browser timers are deliberately coarse, so
         very fast operations are measured in bulk and averaged.
@@ -124,37 +113,37 @@
     </Callout>
 </Section>
 
-<Section Title="What the shape of these numbers means" IconName="info">
-    <div class="grid grid-3">
+<Section Title="What the shape of these numbers means">
+    <div class="bb-grid">
         <Panel Title="Reads are free" IconName="bolt" Sub="no I/O at all">
-            <p class="small mb-2">
+            <p>
                 A point read is a <code>Dictionary</code> lookup on a live object graph. There is no
                 deserialization, no copy, no cache layer, no async state machine - which is why the
                 per-op figure lands in nanoseconds rather than microseconds.
             </p>
-            <p class="small mb-0">
+            <p>
                 Nothing to await also means no re-render churn: a Blazor component can call
                 <code>TryGet</code> straight from its render logic.
             </p>
         </Panel>
         <Panel Title="Writes are memory plus a buffer" IconName="disk" Sub="durability is a background job">
-            <p class="small mb-2">
+            <p>
                 A commit applies the change to memory and appends encoded bytes to an in-memory
                 buffer. Storage is touched by the flush loop, on its own schedule, so write latency
                 does not include a round trip to OPFS.
             </p>
-            <p class="small mb-0">
+            <p>
                 Compare the per-row and single-transaction insert rows above: batching removes one
                 WAL record per row and is the single biggest write optimisation available.
             </p>
         </Panel>
         <Panel Title="Indexes change the exponent" IconName="index" Sub="not the constant">
-            <p class="small mb-2">
+            <p>
                 The scan and the index lookup do the same logical work at these row counts, and the
                 scan is not far behind. The difference is what happens as the table grows: one is
                 O(n), the other O(1) or O(log n).
             </p>
-            <p class="small mb-0">
+            <p>
                 Re-run at a larger row count to watch the scan row degrade while the index rows
                 stay flat.
             </p>
@@ -162,59 +151,59 @@
     </div>
 </Section>
 
-<Section Title="What it costs on disk" IconName="disk"
+<Section Title="What it costs on disk"
          Lead="Throughput is only half the story. These figures come from the real encoder and the real snapshot writer, measured against an in-memory storage backend.">
-    <div class="grid grid-sidebar">
+    <div class="bd-main-side">
         <Panel Title="Space" IconName="file" Flush="true">
-            <div class="table-wrap">
-                <table class="data">
-                    <thead><tr><th>Measurement</th><th class="num">Value</th><th>Notes</th></tr></thead>
+            <div class="bb-scroll">
+                <table class="bb-table bb-compare">
+                    <thead><tr><th>Measurement</th><th class="bd-num">Value</th><th>Notes</th></tr></thead>
                     <tbody>
                         <tr>
                             <td>Encoded row</td>
-                            <td class="num mono strong">@(_space is null ? "-" : DemoSandbox.Bytes(_space.RowBytes))</td>
-                            <td class="small muted">average across the loaded table</td>
+                            <td class="bd-num bd-strong">@(_space is null ? "-" : DemoSandbox.Bytes(_space.RowBytes))</td>
+                            <td>average across the loaded table</td>
                         </tr>
                         <tr>
                             <td>WAL record per insert</td>
-                            <td class="num mono strong">@(_space is null ? "-" : DemoSandbox.Bytes(_space.WalBytesPerRow))</td>
-                            <td class="small muted">16-byte header, table name, key, row</td>
+                            <td class="bd-num bd-strong">@(_space is null ? "-" : DemoSandbox.Bytes(_space.WalBytesPerRow))</td>
+                            <td>16-byte header, table name, key, row</td>
                         </tr>
                         <tr>
                             <td>Snapshot</td>
-                            <td class="num mono strong">@(_space is null ? "-" : DemoSandbox.Bytes(_space.SnapshotBytes))</td>
-                            <td class="small muted">@(_space is null ? "" : $"{_space.Rows:N0} rows, checksummed")</td>
+                            <td class="bd-num bd-strong">@(_space is null ? "-" : DemoSandbox.Bytes(_space.SnapshotBytes))</td>
+                            <td>@(_space is null ? "" : $"{_space.Rows:N0} rows, checksummed")</td>
                         </tr>
                         <tr>
                             <td>Snapshot per row</td>
-                            <td class="num mono strong">@(_space is null ? "-" : DemoSandbox.Bytes(_space.SnapshotBytesPerRow))</td>
-                            <td class="small muted">length prefix plus the encoded row</td>
+                            <td class="bd-num bd-strong">@(_space is null ? "-" : DemoSandbox.Bytes(_space.SnapshotBytesPerRow))</td>
+                            <td>length prefix plus the encoded row</td>
                         </tr>
                         <tr>
                             <td>Checkpoint</td>
-                            <td class="num mono strong">@(_space is null ? "-" : DemoSandbox.Duration(_space.CheckpointMs))</td>
-                            <td class="small muted">encode every row and write atomically</td>
+                            <td class="bd-num bd-strong">@(_space is null ? "-" : DemoSandbox.Duration(_space.CheckpointMs))</td>
+                            <td>encode every row and write atomically</td>
                         </tr>
                     </tbody>
                 </table>
             </div>
         </Panel>
 
-        <div class="flex-col gap-lg">
+        <div class="bb-flex">
             <Panel Title="Where the bytes go" IconName="binary">
-                <p class="small mb-2">
+                <p>
                     A WAL record costs a little more than the row itself: the record header carries a
                     length, an LSN and a CRC32, and each operation names its table so replay can find
                     it again.
                 </p>
-                <p class="small mb-0">
+                <p>
                     Checkpointing is what stops that from mattering. The snapshot holds one copy of
                     each live row, so a table rewritten a thousand times compacts back down to its
                     real size.
                 </p>
             </Panel>
             <Panel Title="Budgeting for OPFS" IconName="shield">
-                <p class="small mb-0">
+                <p>
                     Multiply the per-row snapshot figure by your expected row count, then double it:
                     a checkpoint writes the new snapshot before deleting the old one, so peak usage
                     is roughly two snapshots plus the WAL.
@@ -224,9 +213,9 @@
     </div>
 </Section>
 
-<Section Title="How the suite is written" IconName="code"
+<Section Title="How the suite is written"
          Lead="No harness, no attributes, no build step - the benchmark code is ordinary application code, which is the point.">
-    <div class="grid grid-2">
+    <div class="bb-flex">
         <CodeBlock Title="The measurement loop" Code="@HarnessSnippet" />
         <CodeBlock Title="A representative case" Code="@CaseSnippet" />
     </div>
@@ -654,9 +643,9 @@
 
     private static string BarTone(double opsPerSecond) => opsPerSecond switch
     {
-        >= 1_000_000 => "ok",
-        >= 10_000 => "accent",
-        _ => "info",
+        >= 1_000_000 => "bd-bar-ok",
+        >= 10_000 => "bd-bar-accent",
+        _ => "bd-bar-info",
     };
 
     private const string HarnessSnippet = """

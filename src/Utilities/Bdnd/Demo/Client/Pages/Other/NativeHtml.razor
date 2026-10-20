@@ -1,10 +1,10 @@
 ﻿@page "/other/native-html"
 
-<PageTitle>Other · Native HTML - bit Bdnd</PageTitle>
+<PageTitle>Other - Native HTML, Text &amp; URLs · Bdnd</PageTitle>
 
-<div class="demo-header">
-    <h3>Other - Native HTML, Text &amp; URLs</h3>
-    <p class="text-muted">
+<div class="bb-intro">
+    <h1>Other - Native HTML, Text &amp; URLs</h1>
+    <p class="bb-subtitle">
         The target below accepts <code>BdndNativeTypes.Html</code>, <code>BdndNativeTypes.Text</code> and
         <code>BdndNativeTypes.Url</code>. Select some text on another page (or in the box on the right)
         and drag it here, or drag a link / image - the dropped HTML, plain text and any URLs
@@ -14,7 +14,7 @@
 
 <DemoCode />
 
-<section class="demo-stage">
+<div class="bb-demo">
     <BdndProvider>
         <div class="row-wrap" style="align-items:flex-start;">
             <BdndDropTarget TItem="object" Context="t" style="display:contents"
@@ -25,7 +25,7 @@
                 </div>
             </BdndDropTarget>
 
-            <div style="border:1px dashed #aaa;padding:1rem;max-width:18rem;">
+            <div class="native-source">
                 <p>Try selecting and dragging <b>this rich text</b> with a
                     <a href="https://react-dnd.github.io/react-dnd" target="_blank" rel="noopener">link inside</a>.</p>
             </div>
@@ -34,7 +34,7 @@
 
     @if (_last is not null)
     {
-        <div class="native-drop-result" style="margin-top:1.5rem;max-width:42rem;">
+        <div class="native-drop-result">
             <h4>Last native drop - <code>@_last.ItemType</code></h4>
             @if (string.IsNullOrEmpty(_last.Text) is false)
             {
@@ -48,12 +48,12 @@
             {
                 <div>
                     <b>HTML (raw):</b>
-                    <pre style="white-space:pre-wrap;background:#f1f2f4;padding:0.5rem;border-radius:6px;">@_last.Html</pre>
+                    <pre class="bb-code native-drop-html">@_last.Html</pre>
                 </div>
             }
         </div>
     }
-</section>
+</div>
 
 @code {
     private readonly string[] _accepted =

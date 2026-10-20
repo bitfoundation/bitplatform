@@ -1,11 +1,11 @@
 ﻿@page "/drag-around/custom-layer"
 @using System.Globalization
 
-<PageTitle>Drag Around · Custom Drag Layer - bit Bdnd</PageTitle>
+<PageTitle>Drag Around - Custom Drag Layer · Bdnd</PageTitle>
 
-<div class="demo-header">
-    <h3>Drag Around - Custom Drag Layer</h3>
-    <p class="text-muted">
+<div class="bb-intro">
+    <h1>Drag Around - Custom Drag Layer</h1>
+    <p class="bb-subtitle">
         The boxes set <code>UseCustomDragLayer="true"</code> to hide the native preview, and a
         <code>&lt;BdndDragLayer&gt;</code> renders our own preview positioned at
         <code>Monitor.GetSourceClientOffset()</code>. This gives full control over how the
@@ -36,7 +36,7 @@
     <BdndDragLayer TItem="DragBox" Context="layer">
         @if (layer.IsDragging && layer.SourceClientOffset is { } pos && layer.Item is { } item)
         {
-            <div class="drag-layer-preview" style="@($"position:fixed;left:{Px(pos.X)};top:{Px(pos.Y)};z-index:1000;pointer-events:none;margin:0;padding:0.5rem 1rem;background:#4f46e5;color:white;border:1px solid #4f46e5;border-radius:6px;white-space:nowrap;")">
+            <div class="drag-layer-preview" style="@($"position:fixed;left:{Px(pos.X)};top:{Px(pos.Y)};z-index:1000;pointer-events:none;margin:0;")">
                 @item.Title
             </div>
         }

@@ -2,11 +2,11 @@
 @implements IDisposable
 @inject DemoDirectory Directory
 
-<PageTitle>Groups, custom layout &amp; resilience</PageTitle>
+<PageTitle>Groups, custom layout &amp; resilience · Borm</PageTitle>
 
-<div class="demo-intro">
+<div class="bb-intro">
     <h1>Groups, custom layout &amp; resilience</h1>
-    <p>
+    <p class="bb-subtitle">
         Three things a form needs once it stops being a demo. Fields that cluster into named
         <code>&lt;fieldset&gt;</code>s a screen reader announces; a layout the page owns, built from
         <code>&lt;BormField&gt;</code>; and a dropdown whose service is allowed to fall over
@@ -15,10 +15,10 @@
     </p>
 </div>
 
-<div class="demo-split">
-    <div class="demo-card">
-        <h2 style="margin-top:0;font-size:1.05rem;">Grouped, rendered whole</h2>
-        <p style="color:#64748b;font-size:.85rem;">
+<div class="bb-split bb-page-wide">
+    <div class="bb-demo">
+        <div class="bb-demo-bar"><span class="bb-demo-label">Grouped, rendered whole</span></div>
+        <p class="bb-card-desc">
             <code>[Display(GroupName = "…")]</code> — or <code>f.Group("…")</code> — clusters a run of
             fields into one labelled fieldset.
         </p>
@@ -27,67 +27,69 @@
         <BormView State="_grouped" ShowSubmitButton="false" IdPrefix="grouped_" />
     </div>
 
-    <div class="demo-card">
-        <h2 style="margin-top:0;font-size:1.05rem;">The same schema, the page's layout</h2>
-        <p style="color:#64748b;font-size:.85rem;">
+    <div class="bb-demo">
+        <div class="bb-demo-bar"><span class="bb-demo-label">The same schema, the page's layout</span></div>
+        <p class="bb-card-desc">
             Placed one field at a time, interleaved with the page's own markup. Labels, validation,
             conditions and the <code>aria-*</code> wiring all still come from the schema.
         </p>
 
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;align-items:start;">
-            <BormField State="_custom" Name="ReporterName" />
-            <BormField State="_custom" Name="ReporterEmail" />
-        </div>
+        @* The theme's custom properties are declared on .bit-borm-form - the element BormView renders -
+           so a layout of the page's own carries the class to dress its fields the same way. *@
+        <div class="bit-borm-form demo-own-layout">
+            <div class="demo-two-up">
+                <BormField State="_custom" Name="ReporterName" />
+                <BormField State="_custom" Name="ReporterEmail" />
+            </div>
 
-        <p style="margin:1rem 0 .5rem;font-size:.8rem;text-transform:uppercase;letter-spacing:.04em;color:#64748b;">
-            Routing
-        </p>
-        <BormField State="_custom" Name="Team" />
+            <p class="bb-overline">Routing</p>
+            <BormField State="_custom" Name="Team" />
 
-        <div style="display:flex;gap:.5rem;align-items:flex-end;">
-            <div style="flex:1;"><BormField State="_custom" Name="Component" /></div>
-            <button type="button" class="bit-borm-btn bit-borm-btn--sm" @onclick="RetryComponents">Retry</button>
-        </div>
+            <BormField State="_custom" Name="Component" />
 
-        <label style="display:flex;gap:.4rem;align-items:center;font-size:.82rem;color:#475569;margin-top:.6rem;">
-            <input type="checkbox" checked="@_breakTheService" @onchange="ToggleService" />
-            Break the component service
-        </label>
-        @if (_lastFailure is not null)
-        {
-            <p style="font-size:.8rem;color:#b45309;margin:.4rem 0 0;">
-                Logged from <code>OnOptionsLoadFailed</code>: @_lastFailure
-            </p>
-        }
+            <div class="demo-service">
+                <button type="button" class="bit-borm-btn bit-borm-btn--sm" @onclick="RetryComponents">Retry</button>
+                <label class="bb-check">
+                    <input type="checkbox" checked="@_breakTheService" @onchange="ToggleService" />
+                    Break the component service
+                </label>
+            </div>
+            @if (_lastFailure is not null)
+            {
+                <p class="demo-failure">
+                    Logged from <code>OnOptionsLoadFailed</code>: @_lastFailure
+                </p>
+            }
 
-        <hr style="border:none;border-top:1px solid #e2e8f0;margin:1.25rem 0;" />
+            <hr />
 
-        @* AsSearch(): the same string value, but the browser gives it a clear affordance, a search key
-           on the on-screen keyboard and history from previous searches. *@
-        <BormField State="_custom" Name="RelatedTicket" />
-        <div style="margin-top:.75rem;"><BormField State="_custom" Name="Subject" /></div>
-        <div style="margin-top:.75rem;"><BormField State="_custom" Name="Details" /></div>
+            @* AsSearch(): the same string value, but the browser gives it a clear affordance, a search key
+               on the on-screen keyboard and history from previous searches. *@
+            <BormField State="_custom" Name="RelatedTicket" />
+            <BormField State="_custom" Name="Subject" />
+            <BormField State="_custom" Name="Details" />
 
-        <div class="bit-borm-form__actions">
-            <button type="button" class="bit-borm-btn bit-borm-btn--primary" @onclick="Submit">Raise ticket</button>
-            <button type="button" class="bit-borm-btn" disabled="@(!_custom.IsDirty("Subject"))" @onclick='() => _custom.ResetField("Subject")'>
-                Undo subject
-            </button>
-            <span style="align-self:center;font-size:.82rem;color:#64748b;">
-                @(_custom.IsFormDirty ? $"{_custom.DirtyFields.Count} unsaved change(s)" : "No unsaved changes")
-            </span>
+            <div class="bit-borm-form__actions">
+                <button type="button" class="bit-borm-btn bit-borm-btn--primary" @onclick="Submit">Raise ticket</button>
+                <button type="button" class="bit-borm-btn" disabled="@(!_custom.IsDirty("Subject"))" @onclick='() => _custom.ResetField("Subject")'>
+                    Undo subject
+                </button>
+                <span class="bb-soft">
+                    @(_custom.IsFormDirty ? $"{_custom.DirtyFields.Count} unsaved change(s)" : "No unsaved changes")
+                </span>
+            </div>
         </div>
     </div>
 </div>
 
 @if (_submitted)
 {
-    <div class="demo-result"><strong>Raised ✓</strong> <pre>@_json</pre></div>
+    <div class="bb-note bb-note-success demo-result"><strong>Raised ✓</strong><pre>@_json</pre></div>
 }
 
-<details class="demo-source">
-    <summary>View source</summary>
-    <pre><code>@Source</code></pre>
+<details class="bb-source demo-source">
+    <summary class="btn btn-secondary">View source</summary>
+    <pre class="bb-code"><code>@Source</code></pre>
 </details>
 
 @code {
@@ -118,12 +120,15 @@ var state = new BormState(schema, new BormModelDataAccessor(model));
 state.OptionsLoadFailed += (path, ex) => logger.LogWarning(ex, "Options for {Path} failed", path);
 
 // 3. The page owns the layout. BormField places one field wherever you want it while the
-//    schema keeps the label, the rules, the conditions and the accessibility wiring.
-<div style="display:grid;grid-template-columns:1fr 1fr;">
-    <BormField State="state" Name="ReporterName" />
-    <BormField State="state" Name="ReporterEmail" />
+//    schema keeps the label, the rules, the conditions and the accessibility wiring. The theme's
+//    custom properties live on .bit-borm-form, so the page's own wrapper carries the class.
+<div class="bit-borm-form">
+    <div style="display:grid;grid-template-columns:1fr 1fr;">
+        <BormField State="state" Name="ReporterName" />
+        <BormField State="state" Name="ReporterEmail" />
+    </div>
+    <BormField State="state" Name="Subject" />
 </div>
-<BormField State="state" Name="Subject" />
 
 // 4. Per-field undo, and dirtiness that is a comparison rather than a flag: typing a character and
 //    deleting it again leaves the field clean, so this button switches itself off.

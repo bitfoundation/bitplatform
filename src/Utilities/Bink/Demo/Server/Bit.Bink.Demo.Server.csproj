@@ -43,9 +43,11 @@
 
     <!-- Every demo page - each one is a working drawing surface - plus the toolbars and helpers they
          share and the client half of the hosting. The MCP page describes this server rather than the
-         library, and the not-found page teaches nothing about drawing. -->
+         library, and the not-found page teaches nothing about drawing. Layout\ and DocsCatalog.cs are
+         the site chrome every Utilities demo shares (header, docs shell, search palette, footer and
+         the catalog that drives them): an agent asking how to draw must not be handed those. -->
     <EmbeddedResource Include="..\Client\**\*.razor;..\Client\**\*.cs"
-                      Exclude="..\Client\bin\**;..\Client\obj\**;..\Client\Pages\McpServer.razor;..\Client\Pages\NotFound.razor">
+                      Exclude="..\Client\bin\**;..\Client\obj\**;..\Client\Layout\**;..\Client\DocsCatalog.cs;..\Client\Pages\McpServer.razor;..\Client\Pages\NotFound.razor">
       <LogicalName>BinkSource/Demo/Client/%(RecursiveDir)%(Filename)%(Extension)</LogicalName>
     </EmbeddedResource>
 

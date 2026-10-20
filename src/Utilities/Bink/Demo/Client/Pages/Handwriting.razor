@@ -1,44 +1,50 @@
 ﻿@page "/handwriting"
 
-<PageTitle>Handwriting - bit Bink</PageTitle>
+<PageTitle>Handwriting · Bink</PageTitle>
 
-<h1>Handwriting</h1>
-<p class="page-intro">
-    A note-taking surface tuned for writing rather than sketching: tight point spacing, light smoothing so fast
-    corners stay sharp, and a pressure curve with a wide dynamic range. Draw with a stylus to see real pressure
-    and tilt; with a mouse or finger, width is derived from writing speed instead.
-</p>
+<div class="bb-intro">
+    <h1>Handwriting</h1>
+    <p class="bb-subtitle">
+        A note-taking surface tuned for writing rather than sketching: tight point spacing, light smoothing so fast
+        corners stay sharp, and a pressure curve with a wide dynamic range. Draw with a stylus to see real pressure
+        and tilt; with a mouse or finger, width is derived from writing speed instead.
+    </p>
+</div>
 
-<div class="panel">
-    <div class="toolbar" role="toolbar" aria-label="Writing tools">
-        <div class="toolbar-group" role="group" aria-label="Instrument">
+<div class="bb-demo bink-editor bb-page-wide">
+    <div class="bb-toolbar bink-toolbar" role="toolbar" aria-label="Writing tools">
+        <div class="bb-segmented" role="group" aria-label="Instrument">
             @foreach ((string id, string label) in Instruments)
             {
-                <button type="button" class="btn @(_instrument == id ? "active" : null)"
-                        aria-pressed="@(_instrument == id ? "true" : "false")"
+                <button type="button" aria-pressed="@(_instrument == id ? "true" : "false")"
                         @onclick="() => SetInstrument(id)">@label</button>
             }
         </div>
-        <div class="toolbar-separator"></div>
+        <span class="bink-sep" aria-hidden="true"></span>
         <ColorSwatches Colors="Palette" Value="@_color" ValueChanged="SetColor" Label="Ink colour" />
-        <div class="toolbar-separator"></div>
-        <label class="field">
+        <span class="bink-sep" aria-hidden="true"></span>
+        <label class="bink-field">
             Size
             <input type="range" min="1" max="24" step="0.5" value="@_width" aria-label="Nib size" @onchange="OnWidthChanged" />
-            <span style="min-width:3ch">@_width.ToString("0.#")</span>
+            <span class="bink-field-value">@_width.ToString("0.#")</span>
         </label>
-        <label class="field">
+        <label class="bb-check">
             <input type="checkbox" checked="@_ruled" @onchange="OnRuledChanged" aria-label="Show ruled lines" />
             Ruled
         </label>
-        <div class="toolbar-spacer"></div>
-        <button type="button" class="btn" disabled="@(_canvas is null || !_canvas.History.CanUndo)" @onclick="() => _canvas?.Undo()">Undo</button>
-        <button type="button" class="btn" disabled="@(_canvas is null || !_canvas.History.CanRedo)" @onclick="() => _canvas?.Redo()">Redo</button>
-        <button type="button" class="btn danger" disabled="@(_canvas is null || _canvas.CurrentDocument.IsEmpty)" @onclick="() => _canvas?.Clear()">Clear</button>
-        <button type="button" class="btn" disabled="@(_canvas is null || _canvas.CurrentDocument.IsEmpty)" @onclick="DownloadPngAsync">Download PNG</button>
+        <span class="bb-spacer"></span>
+        <div class="bink-group" role="group" aria-label="History">
+            <button type="button" class="btn btn-secondary" disabled="@(_canvas is null || !_canvas.History.CanUndo)" @onclick="() => _canvas?.Undo()">Undo</button>
+            <button type="button" class="btn btn-secondary" disabled="@(_canvas is null || !_canvas.History.CanRedo)" @onclick="() => _canvas?.Redo()">Redo</button>
+            <button type="button" class="btn btn-secondary bink-danger" disabled="@(_canvas is null || _canvas.CurrentDocument.IsEmpty)" @onclick="() => _canvas?.Clear()">Clear</button>
+            <button type="button" class="btn btn-secondary" disabled="@(_canvas is null || _canvas.CurrentDocument.IsEmpty)" @onclick="DownloadPngAsync">Download PNG</button>
+        </div>
     </div>
 
-    <div style="@(_ruled ? RuledBackground : null)">
+    @* The rules are printed over the paper rather than drawn into the document: they are a writing aid, so
+       they stay out of the saved drawing and its export, and they are multiplied onto the page so the ink
+       still reads as being on top of them (demo.css, .bink-ruled). *@
+    <div class="bink-surface @(_ruled ? "bink-ruled" : null)">
         <BinkCanvas @ref="_canvas" HistoryChanged="() => StateHasChanged()"
                    EnableTouchGestures="true"
                    Height="420px"
@@ -59,9 +65,43 @@
     </CanvasStatus>
 </div>
 
-<div class="note">
+<div class="bb-note">
     Palm rejection is on: while a pen is in contact, touch contacts are ignored, so a hand resting on a tablet
     does not draw. Turn it off with <code>RejectTouchWhilePen="false"</code> when the surface is finger-first.
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> A brush tuned for writing</h3>
+    <p class="bb-card-desc">
+        Writing benefits from keeping detail: less smoothing and closer point spacing than a sketching brush, and
+        a short taper at the end of each stroke. The draw tool simplifies each finished stroke only lightly, so the
+        shape of the letters survives.
+    </p>
+    <pre class="bb-code"><span class="k">private</span> IBinkTool _tool = <span class="k">new</span> BinkDrawTool { SimplifyTolerance = 0.08f };
+
+<span class="k">private</span> BinkBrush _brush = <span class="k">new</span> BinkPenBrush
+{
+    Width = 3f,
+    Color = BinkColor.Parse(<span class="s">"#111827"</span>),
+    Smoothing = 0.35f,
+    Spacing = 0.12f,
+    TaperEnd = 5f,
+};</pre>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> What the device reported</h3>
+    <p class="bb-card-desc">
+        <code>StrokeCompleted</code> hands over the finished stroke and the kind of pointer that drew it. The line
+        under the canvas reads its point count, length, duration and pressure range - and the badges above it say
+        whether this device delivered real pressure, tilt and coalesced samples at all.
+    </p>
+    <pre class="bb-code"><span class="k">private void</span> OnStrokeCompleted(BinkStrokeEventArgs args)
+{
+    <span class="k">if</span> (args.Stroke <span class="k">is not</span> { } stroke) <span class="k">return</span>;
+    <span class="k">bool</span> realPressure = args.Device == BinkPointerKind.Pen &amp;&amp; stroke.Input.HasRealPressure;
+    <span class="c">// stroke.Points.Count, .Length, .Duration and .Pressure describe what was captured</span>
+}</pre>
 </div>
 
 @code {
@@ -83,10 +123,6 @@
     ];
 
     private static readonly string[] Palette = ["#111827", "#1d4ed8", "#b91c1c", "#15803d"];
-
-    private const string RuledBackground =
-        "background-image:repeating-linear-gradient(transparent,transparent 35px,var(--border) 35px,var(--border) 36px);" +
-        "background-position:0 12px";
 
     private BinkBrush _brush = new BinkPenBrush
     {

@@ -3,131 +3,157 @@
 <DocPage Href="testing" Title="Testing"
          Lead="Stores are plain objects, so they test like plain objects - and Bit.Blex.Testing adds a harness for asserting on the dispatch pipeline itself.">
 
-    <h2>The simplest test</h2>
-    <p>
-        A store needs no host, no DI container and no Blazor. Construct it, call an action, assert on
-        a property.
-    </p>
-    <CodeBlock Code="@Plain" FileName="CounterTests.cs" />
-
-    <p>
-        That covers state. What it does not cover is whether the <em>right action</em> was dispatched,
-        with the right payload, exactly once. That is what the harness is for.
-    </p>
-
-    <h2>The harness</h2>
-    <p>
-        <code>BlexTestHarness&lt;TStore&gt;</code> creates a fresh <code>BlexManager</code>,
-        registers your store with it, and starts recording every action.
-    </p>
-    <CodeBlock Code="@Harness" />
-    <ApiTable Title="BlexTestHarness&lt;TStore&gt;" Rows="@HarnessRows" />
-
-    <h2>The action log</h2>
-    <p>
-        <code>BlexActionLog</code> records each dispatch with its name, sequence, arguments and the global
-        state immediately afterwards.
-    </p>
-    <CodeBlock Code="@Log" />
-    <ApiTable Title="BlexActionLog" Rows="@LogRows" />
-    <ApiTable Title="BlexRecordedAction" Rows="@RecordedRows" />
-
-    <h2>Asserting on payloads</h2>
-    <p>Action arguments are captured automatically, so you can assert on exactly what was dispatched.</p>
-    <CodeBlock Code="@Payload" />
-
-    <h2>Testing effects</h2>
-    <p>
-        Awaiting the effect wrapper is usually enough. When you need to observe an intermediate state
-        - a loading flag, say - <code>WaitForAsync</code> beats sprinkling <code>Task.Delay</code>
-        through the test: it re-evaluates the condition on every store change and throws
-        <code>TimeoutException</code> if it never becomes true.
-    </p>
-    <CodeBlock Code="@Effects" />
-
-    <h3>Errors and cancellation</h3>
-    <CodeBlock Code="@EffectErrors" />
-
-    <h2>Asserting on batching</h2>
-    <p>
-        <code>CountNotifications</code> counts how many times a store raised
-        <code>StateChanged</code> while an action ran - the direct way to prove that a multi-field
-        action really does render once.
-    </p>
-    <CodeBlock Code="@Notifications" />
-
-    <h2>Testing middleware</h2>
-    <p>
-        A store is rarely alone in production - a veto filter, an audit logger or a metrics recorder
-        usually wraps it, and those guard rails deserve tests too.
-        <code>BlexTestHarness.WithFilter</code> and <code>WithMiddleware</code> give you the same
-        zero-setup harness with the pipeline attached.
-    </p>
-    <CodeBlock Code="@MiddlewareTest" />
-
-    <p>
-        Reach for a hand-built <code>BlexManager</code> only when the test needs a manager configured
-        before any store is registered.
-    </p>
-
-    <h2>More than one store</h2>
-    <p>
-        Cross-store coordination is exactly the kind of thing worth testing, and abandoning the
-        harness to hand-wire a manager for it defeats the point. <code>harness.Register(store)</code>
-        brings a second store onto the same manager: its actions land in the same log and its slice
-        in the same <code>State</code> tree, and it is disposed with the harness.
-    </p>
-    <CodeBlock Code="@MultiStore" />
-
-    <p>
-        For a condition that spans stores - or one the store you are driving will not report -
-        <code>manager.WaitForAsync</code> re-checks after every action <em>and</em> every restore in
-        the application, where <code>store.WaitForAsync</code> only watches one store.
-    </p>
-
-    <h2>Asserting on failures</h2>
-    <p>
-        An effect captures its exception into <code>XxxError</code> instead of propagating it, so a
-        test that only watches for a throw sees nothing at all. <code>harness.Failures</code> records
-        every action whose body threw, with the arguments it was called with.
-    </p>
-    <CodeBlock Code="@FailureTest" />
-
-    <h2>Testing persistence</h2>
-    <p>
-        <code>IBlexStorage</code> is a three-method interface, so an in-memory fake is trivial.
-        Remember to <code>FlushAsync</code> when the persistor is debounced.
-    </p>
-    <CodeBlock Code="@PersistenceTest" />
-
-    <h2>Testing undo/redo</h2>
-    <CodeBlock Code="@HistoryTest" />
-
-    <h2>Extension methods</h2>
-    <ApiTable Title="BlexTestExtensions" Rows="@ExtensionRows" />
-
-    <Callout Kind="Callout.CalloutKind.Tip" Title="Snapshots make good assertions">
-        <p style="margin-bottom:0">
-            <code>harness.Snapshot()</code> and <code>harness.State</code> return the same JSON the
-            library uses for persistence and time-travel. Asserting against a snapshot checks the
-            whole store at once, and it fails loudly when a field you forgot about changes.
+    <div class="bb-card">
+        <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> The simplest test</h3>
+        <p>
+            A store needs no host, no DI container and no Blazor. Construct it, call an action, assert on
+            a property.
         </p>
-    </Callout>
+        <CodeBlock Code="@Plain" FileName="CounterTests.cs" />
 
-    <Callout Kind="Callout.CalloutKind.Gotcha" Title="Dispose the harness">
-        <p style="margin-bottom:0">
-            The harness holds a live subscription on its manager. Use <code>using var</code> - or
-            <code>Dispose()</code> - so a long test class does not accumulate recorders. The
-            harness's manager is its own, so tests never interfere with each other.
+        <p>
+            That covers state. What it does not cover is whether the <em>right action</em> was dispatched,
+            with the right payload, exactly once. That is what the harness is for.
         </p>
-    </Callout>
+    </div>
 
-    <h2>Testing components</h2>
-    <p>
-        For component-level tests with bUnit, register the store the same way the app does and let
-        the component subscribe. There is nothing Blex-specific to mock.
-    </p>
-    <CodeBlock Code="@Bunit" />
+    <div class="bb-card">
+        <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> The harness</h3>
+        <p>
+            <code>BlexTestHarness&lt;TStore&gt;</code> creates a fresh <code>BlexManager</code>,
+            registers your store with it, and starts recording every action.
+        </p>
+        <CodeBlock Code="@Harness" />
+        <ApiTable Title="BlexTestHarness&lt;TStore&gt;" Rows="@HarnessRows" />
+    </div>
+
+    <div class="bb-card">
+        <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> The action log</h3>
+        <p>
+            <code>BlexActionLog</code> records each dispatch with its name, sequence, arguments and the global
+            state immediately afterwards.
+        </p>
+        <CodeBlock Code="@Log" />
+        <ApiTable Title="BlexActionLog" Rows="@LogRows" />
+        <ApiTable Title="BlexRecordedAction" Rows="@RecordedRows" />
+    </div>
+
+    <div class="bb-card">
+        <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Asserting on payloads</h3>
+        <p>Action arguments are captured automatically, so you can assert on exactly what was dispatched.</p>
+        <CodeBlock Code="@Payload" />
+    </div>
+
+    <div class="bb-card">
+        <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Testing effects</h3>
+        <p>
+            Awaiting the effect wrapper is usually enough. When you need to observe an intermediate state
+            - a loading flag, say - <code>WaitForAsync</code> beats sprinkling <code>Task.Delay</code>
+            through the test: it re-evaluates the condition on every store change and throws
+            <code>TimeoutException</code> if it never becomes true.
+        </p>
+        <CodeBlock Code="@Effects" />
+
+        <h4>Errors and cancellation</h4>
+        <CodeBlock Code="@EffectErrors" />
+    </div>
+
+    <div class="bb-card">
+        <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Asserting on batching</h3>
+        <p>
+            <code>CountNotifications</code> counts how many times a store raised
+            <code>StateChanged</code> while an action ran - the direct way to prove that a multi-field
+            action really does render once.
+        </p>
+        <CodeBlock Code="@Notifications" />
+    </div>
+
+    <div class="bb-card">
+        <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Testing middleware</h3>
+        <p>
+            A store is rarely alone in production - a veto filter, an audit logger or a metrics recorder
+            usually wraps it, and those guard rails deserve tests too.
+            <code>BlexTestHarness.WithFilter</code> and <code>WithMiddleware</code> give you the same
+            zero-setup harness with the pipeline attached.
+        </p>
+        <CodeBlock Code="@MiddlewareTest" />
+
+        <p>
+            Reach for a hand-built <code>BlexManager</code> only when the test needs a manager configured
+            before any store is registered.
+        </p>
+    </div>
+
+    <div class="bb-card">
+        <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> More than one store</h3>
+        <p>
+            Cross-store coordination is exactly the kind of thing worth testing, and abandoning the
+            harness to hand-wire a manager for it defeats the point. <code>harness.Register(store)</code>
+            brings a second store onto the same manager: its actions land in the same log and its slice
+            in the same <code>State</code> tree, and it is disposed with the harness.
+        </p>
+        <CodeBlock Code="@MultiStore" />
+
+        <p>
+            For a condition that spans stores - or one the store you are driving will not report -
+            <code>manager.WaitForAsync</code> re-checks after every action <em>and</em> every restore in
+            the application, where <code>store.WaitForAsync</code> only watches one store.
+        </p>
+    </div>
+
+    <div class="bb-card">
+        <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Asserting on failures</h3>
+        <p>
+            An effect captures its exception into <code>XxxError</code> instead of propagating it, so a
+            test that only watches for a throw sees nothing at all. <code>harness.Failures</code> records
+            every action whose body threw, with the arguments it was called with.
+        </p>
+        <CodeBlock Code="@FailureTest" />
+    </div>
+
+    <div class="bb-card">
+        <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Testing persistence</h3>
+        <p>
+            <code>IBlexStorage</code> is a three-method interface, so an in-memory fake is trivial.
+            Remember to <code>FlushAsync</code> when the persistor is debounced.
+        </p>
+        <CodeBlock Code="@PersistenceTest" />
+    </div>
+
+    <div class="bb-card">
+        <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Testing undo/redo</h3>
+        <CodeBlock Code="@HistoryTest" />
+    </div>
+
+    <div class="bb-card">
+        <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Extension methods</h3>
+        <ApiTable Title="BlexTestExtensions" Rows="@ExtensionRows" />
+
+        <Callout Kind="Callout.CalloutKind.Tip" Title="Snapshots make good assertions">
+            <p>
+                <code>harness.Snapshot()</code> and <code>harness.State</code> return the same JSON the
+                library uses for persistence and time-travel. Asserting against a snapshot checks the
+                whole store at once, and it fails loudly when a field you forgot about changes.
+            </p>
+        </Callout>
+
+        <Callout Kind="Callout.CalloutKind.Gotcha" Title="Dispose the harness">
+            <p>
+                The harness holds a live subscription on its manager. Use <code>using var</code> - or
+                <code>Dispose()</code> - so a long test class does not accumulate recorders. The
+                harness's manager is its own, so tests never interfere with each other.
+            </p>
+        </Callout>
+    </div>
+
+    <div class="bb-card">
+        <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Testing components</h3>
+        <p>
+            For component-level tests with bUnit, register the store the same way the app does and let
+            the component subscribe. There is nothing Blex-specific to mock.
+        </p>
+        <CodeBlock Code="@Bunit" />
+    </div>
 
 </DocPage>
 

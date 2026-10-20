@@ -1,14 +1,14 @@
 ﻿@page "/examples/set-nodes-batching"
 
-<PageTitle>setNodes Batching - bit Blow</PageTitle>
+<PageTitle>setNodes Batching · Blow</PageTitle>
 
 <ExampleScaffold Title="setNodes Batching"
                  Summary="Add many nodes in a single batched update. AddNodes appends them all and triggers one measure pass instead of one per node.">
     <Toolbar>
-        <button class="btn btn-sm btn-primary" @onclick="@(() => AddBatch(25))">Add 25</button>
-        <button class="btn btn-sm btn-primary" @onclick="@(() => AddBatch(100))">Add 100</button>
-        <button class="btn btn-sm" @onclick="Clear">Clear</button>
-        <span class="text-muted">@_nodes.Count nodes</span>
+        <button class="btn btn-primary" @onclick="@(() => AddBatch(25))">Add 25</button>
+        <button class="btn btn-primary" @onclick="@(() => AddBatch(100))">Add 100</button>
+        <button class="btn btn-secondary" @onclick="Clear">Clear</button>
+        <span class="bb-muted">@_nodes.Count nodes</span>
     </Toolbar>
     <ChildContent>
         <BlowCanvas @ref="_flow" Nodes="_nodes" Edges="_edges" OnlyRenderVisibleElements="true">

@@ -126,8 +126,8 @@ public abstract class BdndTest
     /// <summary>
     /// A fresh page in a browser context of its own, closed when the test ends, whose console errors, unhandled
     /// exceptions and failed requests fail the test (see <see cref="CloseContextsAsync"/>). The suite is hermetic:
-    /// a request that leaves the demo's origin (the demo's web font, today) is answered with an empty response
-    /// here, so a runner without internet access neither waits out a connection timeout nor logs a load error.
+    /// a request that leaves the demo's origin is answered with an empty response here, so a runner without
+    /// internet access neither waits out a connection timeout nor logs a load error.
     /// </summary>
     protected async Task<IPage> NewPageAsync()
     {

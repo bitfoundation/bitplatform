@@ -10,167 +10,195 @@
     is a normal EF Core call; the snippet under each panel is the code it runs.
 </PageHeader>
 
+<StorageSwitcher />
+
 @if (_error is not null)
 {
-    <p class="error">@_error</p>
+    <div class="bb-note bb-note-danger" role="alert">@_error</div>
 }
 
-<div class="split">
-    <section class="card">
-        <div class="card-head">
-            <h2>Products</h2>
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Products</h3>
+    <p class="bb-card-desc">
+        The whole catalog, read with one query that includes each product's category. Click a row to edit it;
+        the editor and the categories sit under the table.
+    </p>
+    <div class="bb-note bq-try">
+        <strong>Try</strong>
+        Edit a row and save, then reload the tab - the row is still there, because the write went to the
+        storage backend named in the bar above.
+    </div>
+
+    @* Wide: a six- or seven-column grid with its editor under it does not fit beside the "On this page"
+       rail, so this page gives the rail up. *@
+    <div class="bb-demo bb-page-wide">
+        <div class="bb-demo-bar">
+            <span class="bb-demo-label">Live</span>
+            <input type="search" placeholder="Filter name, SKU, tags" aria-label="Filter products" @bind="_filter" @bind:event="oninput" />
+            <button type="button" class="btn btn-primary" @onclick="NewProduct" disabled="@(_busy || _context is null)">New product</button>
         </div>
-        <p class="try">
-            <b>Try</b>
-            <span>
-                Edit a row and save, then reload the tab - the row is still there, because the
-                write went to the storage backend named in the bar above.
-            </span>
-        </p>
-        <div class="toolbar">
-            <input type="search" placeholder="Filter name, SKU, tags" @bind="_filter" @bind:event="oninput" />
-            <span class="grow"></span>
-            <button type="button" @onclick="NewProduct" disabled="@(_busy || _context is null)">New product</button>
-        </div>
-        <div class="scroll-x">
-            <table>
+
+        <div class="bb-scroll">
+            <table class="bb-table bq-grid" data-rows="products">
                 <thead>
                 <tr>
-                    <th>SKU</th><th>Name</th><th>Category</th><th>Price</th><th>Lead</th><th>Status</th><th></th>
+                    <th>SKU</th><th>Name</th><th>Category</th><th>Price</th><th>Lead</th><th>Status</th><th><span class="bq-sr">Actions</span></th>
                 </tr>
                 </thead>
                 <tbody>
                 @foreach (var product in VisibleProducts)
                 {
-                    <tr class="clickable @(product.Id == _editProduct?.Id ? "selected" : null)" @onclick="() => EditProduct(product)">
-                        <td class="mono">@product.Sku</td>
-                        <td>@product.Name</td>
-                        <td>
-                            <span class="swatch" style="background:@product.Category?.Color"></span>
+                    <tr class="bq-clickable @(product.Id == _editProduct?.Id ? "bq-selected" : null)" @onclick="() => EditProduct(product)">
+                        <td class="bq-nowrap">@product.Sku</td>
+                        <td class="bq-name">@product.Name</td>
+                        <td class="bq-nowrap">
+                            <span class="bq-swatch" style="background:@product.Category?.Color"></span>
                             @product.Category?.Name
                         </td>
-                        <td>@SampleFormat.Money(product.Price)</td>
-                        <td>@SampleFormat.Lead(product.LeadTime)</td>
+                        <td class="bq-num">@SampleFormat.Money(product.Price)</td>
+                        <td class="bq-nowrap">@SampleFormat.Lead(product.LeadTime)</td>
                         <td>
                             @if (!product.IsActive)
                             {
-                                <span class="pill muted">discontinued @SampleFormat.Day(product.DiscontinuedOn)</span>
+                                <span class="bb-badge bq-badge-neutral">discontinued @SampleFormat.Day(product.DiscontinuedOn)</span>
                             }
                             else
                             {
-                                <span class="pill ok">active</span>
+                                <span class="bb-badge bb-badge-success">active</span>
                             }
                         </td>
-                        <td class="actions">
-                            <button type="button" class="danger" @onclick="() => DeleteProductAsync(product)" @onclick:stopPropagation="true">Delete</button>
+                        <td class="bb-table-action">
+                            <button type="button" class="btn bq-btn-danger bq-btn-sm" @onclick="() => DeleteProductAsync(product)" @onclick:stopPropagation="true">Delete</button>
                         </td>
                     </tr>
                 }
                 </tbody>
             </table>
         </div>
-        <CodeBlock Title="Loading this table" Language="csharp" Code="@Snippets.Catalog.Read" />
-    </section>
-    <div class="stack">
-        <section class="card">
-            <h2>@(_editProduct?.Id == 0 ? "New product" : "Edit product")</h2>
-            @if (_editProduct is null)
-            {
-                <p class="empty">Select a row, or create one.</p>
-            }
-            else
-            {
-                <form class="stack-form" @onsubmit="SaveProductAsync" @onsubmit:preventDefault="true">
-                    <label>SKU <input @bind="_editProduct.Sku" required /></label>
-                    <label>Name <input @bind="_editProduct.Name" required /></label>
-                    <label>Category
-                        <select @bind="_editProduct.CategoryId">
-                            @foreach (var category in _categories)
-                            {
-                                <option value="@category.Id">@category.Name</option>
-                            }
-                        </select>
-                    </label>
-                    <label>Price <input type="number" step="0.01" @bind="_editProduct.Price" /></label>
-                    <label>Weight (kg) <input type="number" step="0.01" @bind="_editProduct.WeightKg" /></label>
-                    <label>Lead time (days) <input type="number" step="1" @bind="_leadDays" /></label>
-                    <label>Tags <input @bind="_editProduct.Tags" placeholder="comma separated" /></label>
-                    <label><input type="checkbox" @bind="_editProduct.IsActive" /> Active</label>
-                    <label>Discontinued on <input type="date" @bind="_editProduct.DiscontinuedOn" /></label>
-                    <p class="mono">PublicId @_editProduct.PublicId</p>
-                    <div class="row">
-                        <button type="submit" disabled="@_busy">Save</button>
-                        <button type="button" class="secondary" @onclick="() => _editProduct = null">Cancel</button>
+
+        <div class="bb-split">
+            <div class="bb-stage">
+                <p class="bq-panel-title">@(_editProduct?.Id == 0 ? "New product" : "Edit product")</p>
+                @if (_editProduct is null)
+                {
+                    <p class="bb-muted">Select a row, or create one.</p>
+                }
+                else
+                {
+                    <form class="bq-form" @onsubmit="SaveProductAsync" @onsubmit:preventDefault="true">
+                        <label class="bb-field">SKU <input @bind="_editProduct.Sku" required /></label>
+                        <label class="bb-field">Name <input @bind="_editProduct.Name" required /></label>
+                        <label class="bb-field">Category
+                            <select @bind="_editProduct.CategoryId">
+                                @foreach (var category in _categories)
+                                {
+                                    <option value="@category.Id">@category.Name</option>
+                                }
+                            </select>
+                        </label>
+                        <label class="bb-field">Price <input type="number" step="0.01" @bind="_editProduct.Price" /></label>
+                        <label class="bb-field">Weight (kg) <input type="number" step="0.01" @bind="_editProduct.WeightKg" /></label>
+                        <label class="bb-field">Lead time (days) <input type="number" step="1" @bind="_leadDays" /></label>
+                        <label class="bb-field">Tags <input @bind="_editProduct.Tags" placeholder="comma separated" /></label>
+                        <label class="bb-check"><input type="checkbox" @bind="_editProduct.IsActive" /> Active</label>
+                        <label class="bb-field">Discontinued on <input type="date" @bind="_editProduct.DiscontinuedOn" /></label>
+                        <p class="bb-mono bb-soft bq-small">PublicId @_editProduct.PublicId</p>
+                        <div class="bb-toolbar">
+                            <button type="submit" class="btn btn-primary" disabled="@_busy">Save</button>
+                            <button type="button" class="btn btn-secondary" @onclick="() => _editProduct = null">Cancel</button>
+                        </div>
+                    </form>
+                }
+            </div>
+
+            <div class="bb-stage">
+                <p class="bq-panel-title">Categories</p>
+                <p class="bb-muted bq-small">A category cascades to its products; a product on an order does not delete at all.</p>
+                <form class="bq-form" @onsubmit="SaveCategoryAsync" @onsubmit:preventDefault="true">
+                    <label class="bb-field">Name <input @bind="_categoryName" required /></label>
+                    <label class="bb-field">Color <input type="color" @bind="_categoryColor" /></label>
+                    <div class="bb-toolbar">
+                        <button type="submit" class="btn btn-primary" disabled="@_busy">Add category</button>
                     </div>
                 </form>
-            }
-        </section>
-        <section class="card">
-            <h2>Categories</h2>
-            <p>A category cascades to its products; a product on an order does not delete at all.</p>
-            <form class="stack-form" @onsubmit="SaveCategoryAsync" @onsubmit:preventDefault="true">
-                <label>Name <input @bind="_categoryName" required /></label>
-                <label>Color <input type="color" @bind="_categoryColor" /></label>
-                <button type="submit" disabled="@_busy">Add category</button>
-            </form>
-            <table>
-                <thead><tr><th>Name</th><th>Items</th></tr></thead>
-                <tbody>
-                @foreach (var category in _categories)
-                {
-                    <tr>
-                        <td><span class="swatch" style="background:@category.Color"></span>@category.Name</td>
-                        <td>@_products.Count(p => p.CategoryId == category.Id)</td>
-                    </tr>
-                }
-                </tbody>
-            </table>
-        </section>
+                <table class="bb-table bq-grid bq-grid-prose">
+                    <thead><tr><th>Name</th><th>Items</th></tr></thead>
+                    <tbody>
+                    @foreach (var category in _categories)
+                    {
+                        <tr>
+                            <td><span class="bq-swatch" style="background:@category.Color"></span>@category.Name</td>
+                            <td class="bq-num">@_products.Count(p => p.CategoryId == category.Id)</td>
+                        </tr>
+                    }
+                    </tbody>
+                </table>
+            </div>
+        </div>
     </div>
-</div>
 
-<div class="stack-lg">
-    <DemoCard Title="Inserting and updating"
-              CodeTitle="Saving the form"
-              Code="@Snippets.Catalog.Write">
-        <Description>
-            <span>
-                One code path for both: EF decides insert or update from the key. The write goes
-                through the worker and lands in the storage backend named in the bar above, so it
-                is still there after a reload.
-            </span>
-        </Description>
-    </DemoCard>
+    <CodeBlock Title="Loading this table" Language="csharp" Code="@Snippets.Catalog.Read" />
+</section>
 
-    <DemoCard Title="Foreign keys are enforced, not simulated"
-              CodeTitle="Deleting a product"
-              Code="@Snippets.Catalog.Delete">
-        <Description>
-            The engine in the worker is real SQLite with foreign keys on. Nothing in the browser
-            re-implements referential integrity, so a constraint failure comes back as the
-            <code>DbUpdateException</code> you would get on a server.
-        </Description>
-        <Try>
-            <span>
-                Delete a product that appears on an <a href="orders">order</a>. The message above
-                the table is SQLite's, surfaced through EF.
-            </span>
-        </Try>
-    </DemoCard>
+<DemoCard Title="Inserting and updating"
+          CodeTitle="Saving the form"
+          Code="@Snippets.Catalog.Write">
+    <Description>
+        One code path for both: EF decides insert or update from the key. The write goes
+        through the worker and lands in the storage backend named in the bar above, so it
+        is still there after a reload.
+    </Description>
+</DemoCard>
 
-    <DemoCard Title="The model that shapes these tables"
-              CodeTitle="ProductConfiguration.cs"
-              Code="@Snippets.Catalog.Configuration"
-              CodeOpen="false">
-        <Description>
-            <span>
-                Ordinary <code>IEntityTypeConfiguration</code>. The same class compiles against the
-                server's <code>UseSqlite</code>, and the same migration creates both databases -
-                nothing here is browser-specific.
-            </span>
-        </Description>
-    </DemoCard>
-</div>
+<DemoCard Title="Foreign keys are enforced, not simulated"
+          CodeTitle="Deleting a product"
+          Code="@Snippets.Catalog.Delete">
+    <Description>
+        The engine in the worker is real SQLite with foreign keys on. Nothing in the browser
+        re-implements referential integrity, so a constraint failure comes back as the
+        <code>DbUpdateException</code> you would get on a server.
+    </Description>
+    <Try>
+        Delete a product that appears on an <a href="orders">order</a>. The message above
+        the table is SQLite's, surfaced through EF.
+    </Try>
+</DemoCard>
+
+<DemoCard Title="The model that shapes these tables"
+          CodeTitle="ProductConfiguration.cs"
+          Code="@Snippets.Catalog.Configuration"
+          CodeOpen="false">
+    <Description>
+        Ordinary <code>IEntityTypeConfiguration</code>. The same class compiles against the
+        server's <code>UseSqlite</code>, and the same migration creates both databases -
+        nothing here is browser-specific.
+    </Description>
+</DemoCard>
+
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> CLR types stored in SQLite</h3>
+    <p class="bb-card-desc">
+        SQLite has four storage classes. The ADO.NET binder decides which one each CLR value takes, so the worker
+        never guesses and values round-trip as the type you wrote.
+    </p>
+    <div class="bb-scroll">
+        <table class="bb-table bq-grid">
+            <thead><tr><th>CLR</th><th>SQLite</th><th>Where in this demo</th></tr></thead>
+            <tbody>
+            <tr><td>decimal</td><td>TEXT + <code>ef_*</code></td><td>Price, credit limit</td></tr>
+            <tr><td>DateTime</td><td>TEXT ISO</td><td>CreatedUtc</td></tr>
+            <tr><td>DateTimeOffset</td><td>TEXT + offset</td><td>OrderedAt</td></tr>
+            <tr><td>DateOnly</td><td>TEXT date</td><td>Date of birth, ship-by</td></tr>
+            <tr><td>TimeSpan</td><td>TEXT <code>c</code></td><td>Lead time</td></tr>
+            <tr><td>Guid</td><td>TEXT</td><td>PublicId</td></tr>
+            <tr><td>bool</td><td>INTEGER 0/1</td><td>IsActive, IsVip</td></tr>
+            <tr><td>enum</td><td>TEXT</td><td>Order status</td></tr>
+            <tr><td>double</td><td>REAL</td><td>Weight</td></tr>
+            </tbody>
+        </table>
+    </div>
+    <CodeBlock Title="Product.cs" Language="csharp" Code="@Snippets.Catalog.Entity" Open="false" />
+</section>
 
 @code {
     private AppDbContext? _context;

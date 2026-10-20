@@ -265,7 +265,10 @@ public class McpToolTests
         Assert.Contains(BaletteSourceCatalog.GetSourceFile("Demo/Client/Extensions/IServiceCollectionExtensions.cs")!.TrimEnd(), guide);
         Assert.Contains(BaletteSourceCatalog.GetSourceFile("Demo/Server/Program.cs")!.TrimEnd(), guide);
         Assert.Contains("### `Demo/Server/Components/App.razor`", guide);
-        Assert.Contains("### `Demo/Client/Layout/MainLayout.razor`", guide);
+        Assert.Contains("### `Demo/Client/Routes.razor`", guide);
+        Assert.Contains($"### `{BaletteSourceCatalog.PaletteHostPath}`", guide);
+        Assert.Contains(BaletteSourceCatalog.GetSourceFile(BaletteSourceCatalog.PaletteHostPath)!.TrimEnd(), guide);
+        Assert.Contains("<Balette Theme=", BaletteSourceCatalog.GetSourceFile(BaletteSourceCatalog.PaletteHostPath)!, "the palette host no longer renders the palette");
     }
 
     [TestMethod]
@@ -311,6 +314,24 @@ public class McpToolTests
         Assert.DoesNotContain("McpServer.razor", index);
         Assert.DoesNotContain("NotFound.razor", index);
         Assert.DoesNotContain("Error.razor", index);
+
+        // The header, the docs shell, the docs search and the footer are the site kit every Utilities demo shares,
+        // not palette code - an agent asking how to build a command palette must not be handed the site's search.
+        Assert.DoesNotContain("Demo/Client/Layout/", index);
+        Assert.DoesNotContain("DocsCatalog.cs", index);
+        Assert.IsFalse(BaletteSourceCatalog.SourceFiles.Any(file => file.Path.StartsWith("Demo/Client/Layout/", StringComparison.OrdinalIgnoreCase)));
+
+        // The palette host is, though: it is where this app renders its one <Balette />.
+        Assert.Contains(BaletteSourceCatalog.PaletteHostPath, index);
+        Assert.AreEqual("Hosting", BaletteSourceCatalog.SourceFiles.Single(file => file.Path == BaletteSourceCatalog.PaletteHostPath).Kind);
+    }
+
+    [TestMethod]
+    public void A_demo_page_is_described_by_its_own_introduction()
+    {
+        var commands = BaletteSourceCatalog.SourceFiles.Single(file => file.Path == "Demo/Client/Pages/Commands.razor");
+
+        Assert.AreEqual("A command is an immutable record: a title, where it is listed, what it matches and what it does.", commands.Description);
     }
 
     [TestMethod]

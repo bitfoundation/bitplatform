@@ -1,12 +1,12 @@
 ﻿@page "/examples/node-type-change"
 
-<PageTitle>Node Type Change - bit Blow</PageTitle>
+<PageTitle>Node Type Change · Blow</PageTitle>
 
 <ExampleScaffold Title="Node Type Change"
                  Summary="Change a node's type at runtime. The renderer and handle layout update immediately when the type cycles between input, default and output.">
     <Toolbar>
-        <button class="btn btn-sm btn-primary" @onclick="CycleType">Cycle node 2 type</button>
-        <span class="text-muted">node 2 is currently: <strong>@_node2.Type</strong></span>
+        <button class="btn btn-primary" @onclick="CycleType">Cycle node 2 type</button>
+        <span class="bb-muted">node 2 is currently: <strong>@_node2.Type</strong></span>
     </Toolbar>
     <ChildContent>
         <BlowCanvas Nodes="_nodes" Edges="_edges" FitViewOnInit="true">

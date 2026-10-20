@@ -234,7 +234,7 @@ public sealed class DrawingTests : BinkTest
 
         // The demo reports which path the canvas took. In WebAssembly the command buffer is handed to JavaScript
         // as a view over managed memory; if that ever silently fell back to JSON interop, this is what notices.
-        await Expect(page.Locator(".statusbar .badge.on", new() { HasText = "zero-copy render" })).ToBeVisibleAsync();
+        await Expect(page.Locator(".bink-status .bb-badge-success", new() { HasText = "zero-copy render" })).ToBeVisibleAsync();
     }
 
     [TestMethod]

@@ -1,11 +1,11 @@
 ﻿@page "/examples/cancel-connection"
 
-<PageTitle>Cancel Connection - bit Blow</PageTitle>
+<PageTitle>Cancel Connection · Blow</PageTitle>
 
 <ExampleScaffold Title="Cancel Connection"
                  Summary="Start dragging a connection from a handle, then press Escape to cancel it before releasing. The status line tracks the connection lifecycle.">
     <Toolbar>
-        <span class="text-muted">status: <strong>@_status</strong></span>
+        <span class="bb-muted">status: <strong>@_status</strong></span>
     </Toolbar>
     <ChildContent>
         <BlowCanvas Nodes="_nodes" Edges="_edges" FitViewOnInit="true"

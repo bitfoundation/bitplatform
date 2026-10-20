@@ -1,86 +1,92 @@
 ﻿@page "/theming"
 @inject IBonboardingService BonboardingService
 
-<PageTitle>Theming and RTL</PageTitle>
+<PageTitle>Theming &amp; RTL · Bonboarding</PageTitle>
 
-<h1>Theming &amp; RTL</h1>
+<div class="bb-intro">
+    <h1>Theming &amp; RTL</h1>
+    <p class="bb-subtitle">
+        Every value in the default look is a CSS custom property under <code>.bit-bonboarding-root</code>. Restyling the
+        library is a matter of overriding variables in your own stylesheet, with no selector fights and no framework
+        to install.
+    </p>
+</div>
 
-<p class="page-intro">
-    Every value in the default look is a CSS custom property under <code>.bit-bonboarding-root</code>. Restyling
-    the library is a matter of overriding variables in your own stylesheet, with no selector fights
-    and no framework to install.
-</p>
-
-<section class="demo-section">
-    <h2>Try it</h2>
-
-    <div class="controls">
-        <div class="field">
-            <label for="theme">Theme</label>
-            <select id="theme" @bind="_theme">
-                <option value="">Not set (follows the site)</option>
-                @foreach (var value in Enum.GetValues<BonboardingTheme>())
-                {
-                    <option value="@value">@value</option>
-                }
-            </select>
-        </div>
-
-        <div class="field">
-            <label for="direction">Direction</label>
-            <select id="direction" @bind="_direction">
-                @foreach (var value in Enum.GetValues<BonboardingDirection>())
-                {
-                    <option value="@value">@value</option>
-                }
-            </select>
-        </div>
-
-        <div class="field">
-            <label for="progress">Progress</label>
-            <select id="progress" @bind="_progress">
-                @foreach (var value in Enum.GetValues<BonboardingProgressStyle>())
-                {
-                    <option value="@value">@value</option>
-                }
-            </select>
-        </div>
-
-        <div class="field">
-            <label for="skin">Skin</label>
-            <select id="skin" @bind="_skin">
-                <option value="">Fluent 2 (this site)</option>
-                <option value="brand-popover">Brand (amber on navy)</option>
-            </select>
-        </div>
-
-        <button type="button" class="btn btn-primary" @onclick="StartAsync">Run the tour</button>
-    </div>
-
-    <div class="note">
-        <Icon Path="@Icons.Info" />
-        <span>
-            Left unset, the tour follows this site's theme switch. Any other value wins over the switch:
-            <code>System</code> leaves the choice to your stylesheet, which here means the light palette.
-        </span>
-    </div>
-
-    <AppWindow />
-</section>
-
-<section class="demo-section">
-    <h2>Localisation</h2>
-
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Try it</h3>
     <p>
-        Button text comes from an <code>BonboardingLabels</code> instance, set globally or per tour. For
-        resource files or a translation service, register your own
-        <code>IBonboardingLocalizer</code> instead.
+        Pick a theme, a direction, a progress style and a skin, then run the tour over the product below. With the
+        theme left to the site, its last step points at the header's light/dark switch - press it while the card is
+        up.
     </p>
 
-    <div class="demo-actions">
-        <button type="button" class="btn" @onclick='() => StartLocalizedAsync("en")'>English</button>
-        <button type="button" class="btn" @onclick='() => StartLocalizedAsync("de")'>Deutsch</button>
-        <button type="button" class="btn" @onclick='() => StartLocalizedAsync("ar")'>العربية (RTL)</button>
+    <div class="bb-demo">
+        <div class="bb-demo-bar">
+            <span class="bb-demo-label">Live</span>
+            <button type="button" class="btn btn-primary" @onclick="StartAsync">Run the tour</button>
+        </div>
+
+        <div class="bb-fields">
+            <label class="bb-field">
+                Theme
+                <select @bind="_theme">
+                    <option value="">Not set (follows the site)</option>
+                    @foreach (var value in Enum.GetValues<BonboardingTheme>())
+                    {
+                        <option value="@value">@value</option>
+                    }
+                </select>
+            </label>
+
+            <label class="bb-field">
+                Direction
+                <select @bind="_direction">
+                    @foreach (var value in Enum.GetValues<BonboardingDirection>())
+                    {
+                        <option value="@value">@value</option>
+                    }
+                </select>
+            </label>
+
+            <label class="bb-field">
+                Progress
+                <select @bind="_progress">
+                    @foreach (var value in Enum.GetValues<BonboardingProgressStyle>())
+                    {
+                        <option value="@value">@value</option>
+                    }
+                </select>
+            </label>
+
+            <label class="bb-field">
+                Skin
+                <select @bind="_skin">
+                    <option value="">Fluent 2 (this site)</option>
+                    <option value="brand-popover">Brand (amber on navy)</option>
+                </select>
+            </label>
+        </div>
+
+        <div class="bb-note">
+            Left unset - or set to <code>System</code> - the tour leaves its colours to your stylesheet, and this site's
+            stylesheet follows its own light/dark switch. <code>Light</code> and <code>Dark</code> win over the switch.
+        </div>
+
+        <AppWindow />
+    </div>
+</section>
+
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Localisation</h3>
+    <p>
+        Button text comes from an <code>BonboardingLabels</code> instance, set globally or per tour. For resource files
+        or a translation service, register your own <code>IBonboardingLocalizer</code> instead.
+    </p>
+
+    <div class="bb-try">
+        <button type="button" class="btn btn-secondary" @onclick='() => StartLocalizedAsync("en")'>English</button>
+        <button type="button" class="btn btn-secondary" @onclick='() => StartLocalizedAsync("de")'>Deutsch</button>
+        <button type="button" class="btn btn-secondary" @onclick='() => StartLocalizedAsync("ar")'>العربية (RTL)</button>
     </div>
 
     <p>
@@ -89,16 +95,27 @@
     </p>
 </section>
 
-<section class="demo-section">
-    <h2>The variables</h2>
-
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> The variables</h3>
     <p>
-        This site does exactly what the snippet below shows: every tour card on it is the library's
-        default markup with Fluent 2 values poured into these variables, light and dark, in the demo's
-        <code>wwwroot/css/app.css</code>. Not one of the library's selectors is overridden.
+        This site does exactly what the snippet below shows: every tour card on it is the library's default markup
+        with Fluent 2 values poured into these variables, light and dark, in the demo's <code>wwwroot/demo.css</code>.
+        Apart from shielding the card from the site's own global element styles, none of the library's rules is
+        overridden.
     </p>
 
-    <pre><code>@ThemeExample</code></pre>
+    <pre class="bb-code">@ThemeExample</pre>
+</section>
+
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Following your own theme switch</h3>
+    <p>
+        A tour that leaves its theme unset is drawn with <code>data-bonboarding-theme="system"</code>, and the library's
+        stylesheet gives that the light palette. Map it to your application's dark theme in CSS, as this site does - or
+        bind the switch to the host instead, which overrides the tour and the global setting alike.
+    </p>
+
+    <pre class="bb-code">@FollowExample</pre>
 </section>
 
 @code {
@@ -184,6 +201,20 @@
                 Description = "Change the skin above to see a completely different visual identity, with no library changes.",
                 Placement = BonboardingPlacement.BottomEnd,
             },
+            new BonboardingStepDefinition
+            {
+                Id = "site-theme",
+                // The site's own header, found by CSS selector: a target does not have to be marked up
+                // for the tour.
+                Target = BonboardingStepTarget.Css(".bb-theme-toggle"),
+                Title = "Follows the site",
+                Description = "This tour leaves its colours to the stylesheet, and this site's follows its own switch. Press it: the card changes theme with the page.",
+                Placement = BonboardingPlacement.BottomEnd,
+                // The spotlight hole is click-through, so the switch can be used while the card is up.
+                Interaction = BonboardingInteractionMode.TargetOnly,
+                // Only true of a tour that has not chosen a palette of its own.
+                When = _ => ValueTask.FromResult(_theme is null or BonboardingTheme.System),
+            },
         },
     };
 
@@ -200,5 +231,18 @@
 
         /* Or scope it to one tour with PopoverClass. */
         .checkout-tour { --bit-bonboarding-accent: #16a34a; }
+        """;
+
+    private const string FollowExample = """
+        /* This site: a tour with no theme of its own goes dark with the page. */
+        :root[bit-theme="dark"] .bit-bonboarding-root[data-bonboarding-theme="system"] {
+            --bit-bonboarding-surface: #15191E;
+            --bit-bonboarding-text: #E6ECF2;
+            --bit-bonboarding-accent: #4FA3F4;
+            /* ... */
+        }
+
+        @* Or from C#: the host's Theme overrides the tour's and the global one. *@
+        <BonboardingRoot Theme="@(_dark ? BonboardingTheme.Dark : BonboardingTheme.Light)" />
         """;
 }

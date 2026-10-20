@@ -1,6 +1,6 @@
 ﻿@page "/examples/edge-renderer"
 
-<PageTitle>Edge Renderer - bit Blow</PageTitle>
+<PageTitle>Edge Renderer · Blow</PageTitle>
 
 <ExampleScaffold Title="Edge Renderer"
                  Summary="A custom edge that renders an interactive HTML button at its midpoint using the edge label layer (React Flow's EdgeLabelRenderer). Click the × to delete the edge.">
@@ -18,12 +18,12 @@
 <style>
     .edge-button {
         width: 20px; height: 20px; border-radius: 50%;
-        border: 1px solid #ddd; background: #fff; cursor: pointer;
-        line-height: 1; font-size: 14px; color: #555;
+        border: 1px solid var(--bit-blow-border); background: var(--bit-blow-surface); cursor: pointer;
+        line-height: 1; font-size: 14px; color: var(--bit-blow-text-muted);
         display: inline-flex; align-items: center; justify-content: center;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.15);
+        box-shadow: 0 1px 3px var(--bit-blow-shadow);
     }
-    .edge-button:hover { background: #fee2e2; color: #b91c1c; border-color: #fca5a5; }
+    .edge-button:hover { background: color-mix(in srgb, #ef4444 16%, var(--bit-blow-surface)); color: #ef4444; border-color: color-mix(in srgb, #ef4444 45%, transparent); }
 </style>
 
 @code {

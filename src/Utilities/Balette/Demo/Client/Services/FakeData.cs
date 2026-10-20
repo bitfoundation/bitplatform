@@ -47,7 +47,7 @@ public sealed class FakeDirectory
     // Every entry points at the demo page that shows it, so a documentation hit is a working link.
     public IReadOnlyList<Doc> Docs { get; } =
     [
-        new("Getting started", "/#get-started", "Install the package, add the services, put the component in your layout."),
+        new("Getting started", "/getting-started", "Install the package, add the services, put the component in your layout."),
         new("Registering commands", "/commands", "Fluent builder, declarative markup, page-scoped registration."),
         new("Nested pages and prompts", "/pages", "Multi-step flows, action panels, free-text prompts, multi-select."),
         new("Search operators", "/search#operators", "Exact, prefix, suffix and negated terms, combined with AND."),

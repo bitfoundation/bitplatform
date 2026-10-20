@@ -1,6 +1,6 @@
 ﻿@page "/examples/editable-node"
 
-<PageTitle>Editable Node - bit Blow</PageTitle>
+<PageTitle>Editable Node · Blow</PageTitle>
 
 <ExampleScaffold Title="Editable Node"
                  Summary="Nodes can host real form controls. Type in a field and use Backspace freely - the flow detects that focus is inside an editable element and leaves the graph alone. To delete a node, click its grip - that selects it and takes focus out of the fields - then press Delete, and it is removed as usual.">
@@ -20,7 +20,7 @@
                 <BlowHandle Type="BlowHandleType.Source" Position="BlowPosition.Bottom" />
             </NodeTemplate>
             <ChildContent>
-                <BlowBackground Variant="BlowBackgroundVariant.Lines" Gap="24" Color="#e5e7eb" />
+                <BlowBackground Variant="BlowBackgroundVariant.Lines" Gap="24" Color="var(--bit-blow-border)" />
                 <BlowControls />
             </ChildContent>
         </BlowCanvas>
@@ -29,9 +29,10 @@
 
 <style>
     .edit-node { display: flex; flex-direction: column; gap: 6px; width: 190px; padding: 2px; text-align: left; }
-    .edit-grip { padding: 2px 4px; font-size: 10px; color: #9ca3af; border-radius: 4px; background: #f9fafb; }
-    .edit-input { width: 100%; padding: 4px 6px; font: inherit; border: 1px solid #d1d5db; border-radius: 4px; }
-    .edit-notes { width: 100%; height: 48px; padding: 4px 6px; font: inherit; resize: none; border: 1px solid #d1d5db; border-radius: 4px; }
+    /* The canvas's own --bit-blow-* colours, so the fields follow its colour mode. */
+    .edit-grip { padding: 2px 4px; font-size: 10px; color: var(--bit-blow-text-muted); border-radius: 4px; background: var(--bit-blow-surface-muted); }
+    .edit-input { width: 100%; padding: 4px 6px; font: inherit; color: var(--bit-blow-text); background: var(--bit-blow-surface); border: 1px solid var(--bit-blow-border); border-radius: 4px; }
+    .edit-notes { width: 100%; height: 48px; padding: 4px 6px; font: inherit; resize: none; color: var(--bit-blow-text); background: var(--bit-blow-surface); border: 1px solid var(--bit-blow-border); border-radius: 4px; }
 </style>
 
 @code {

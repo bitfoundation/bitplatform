@@ -3,52 +3,55 @@
 @* Describes the MCP server this demo's host maps at /mcp. Its route differs from the endpoint's on
    purpose: two literal endpoints on /mcp would make a GET of it ambiguous. *@
 
-<PageTitle>MCP server - BlazeDb</PageTitle>
+<PageTitle>MCP server · BlazeDb</PageTitle>
 
-<PageHeader Eyebrow="Reference" IconName="cpu" Title="An MCP server for AI agents"
+<PageHeader Eyebrow="MCP server" Title="An MCP server for AI agents"
             Lead="This site hosts a Model Context Protocol server at /mcp, so an AI agent writing database code with Bit.BlazeDb reads the library itself - its compiled API documentation, its guide, its source generator and these demo pages - instead of guessing at an API it half remembers. Every tool is read-only." />
 
-<Section Title="Connect a client" IconName="code"
-         Lead="The endpoint is plain Streamable HTTP, so any MCP client connects with a URL and nothing else. The same tools are also served, version by version, through the bit platform's own server at https://bitplatform.dev/mcp, next to the other bit libraries.">
-    <CodeBlock Title=".mcp.json" Language="text" Code="@ClientConfig" />
+<Section Title="Connect a client">
+    <p>
+        The endpoint is plain Streamable HTTP, so any MCP client connects with a URL and nothing else. The same tools
+        are also served, version by version, through the bit platform's own server at
+        <code>https://bitplatform.dev/mcp</code>, next to the other bit libraries.
+    </p>
+    <CodeBlock Title=".mcp.json (Claude Code, VS Code, and anything else reading this shape)" Language="json" Code="@ClientConfig" />
 </Section>
 
-<Section Title="Tools" IconName="list">
-    <Panel Flush="true">
-        <div class="table-wrap">
-            <table class="data">
-                <thead>
-                    <tr><th>Tool</th><th>What it answers</th></tr>
-                </thead>
-                <tbody>
-                    @foreach (var (tool, answer) in Tools)
-                    {
-                        <tr>
-                            <td class="mono strong">@tool</td>
-                            <td>@answer</td>
-                        </tr>
-                    }
-                </tbody>
-            </table>
-        </div>
-    </Panel>
-    <Callout Tone="info" Title="Resources and prompts too.">
+<Section Title="Tools">
+    <div class="bb-scroll">
+        <table class="bb-table">
+            <thead>
+                <tr><th>Tool</th><th>What it answers</th></tr>
+            </thead>
+            <tbody>
+                @foreach (var (tool, answer) in Tools)
+                {
+                    <tr>
+                        <td class="bb-table-key"><code>@tool</code></td>
+                        <td>@answer</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+    <p>
         The guide, the API, the diagnostics and the sources are also exposed as <code>blazedb://</code>
         resources, and three prompts - <code>add-blazedb-to-app</code>, <code>implement-blazedb-feature</code>
         and <code>debug-blazedb-database</code> - walk an agent through the common jobs in the right order.
-    </Callout>
+    </p>
 </Section>
 
-<Section Title="The same tools over plain HTTP" IconName="query"
-         Lead="Every tool is also a GET under /api/mcp/...: open one in a browser tab to read exactly what an agent is handed.">
-    <Panel>
-        <ul class="ticks">
-            @foreach (var (label, href) in Links)
-            {
-                <li><a href="@href" target="_blank" rel="noopener">@label</a></li>
-            }
-        </ul>
-    </Panel>
+<Section Title="The same tools over plain HTTP">
+    <p>
+        Every tool is also a <code>GET</code> under <code>/api/mcp/...</code>: open one in a browser tab to read
+        exactly what an agent is handed.
+    </p>
+    <ul class="bb-detail-list">
+        @foreach (var (label, href) in Links)
+        {
+            <li><a href="@href" target="_blank" rel="noopener">@label</a></li>
+        }
+    </ul>
 </Section>
 
 @code {

@@ -1,6 +1,6 @@
 ﻿using System.Text;
 using Bit.Bmage.Demo.Server.Dtos;
-using Bit.Bmage.Demo.Client.Shared;
+using Bit.Bmage.Demo.Client;
 
 namespace Bit.Bmage.Demo.Server.Services;
 
@@ -285,13 +285,15 @@ public static class BmageSearchIndex
             }
         }
 
-        foreach (var page in NavItem.All)
+        foreach (var page in DocsCatalog.AllPages)
         {
             entries.Add(new Entry("Demo page", page.Title, "Live example",
-                $"GetBmageSourceFile(path: \"{page.SourcePath}\")", page.Description, page.Keywords));
+                $"GetBmageSourceFile(path: \"{BmageSourceCatalog.SourcePathOf(page)}\")", page.Description, page.Keywords));
         }
 
-        foreach (var file in BmageSourceCatalog.SourceFiles)
+        // The site's own shell is not an example of anything an agent would write with Bit.Bmage;
+        // a search for "palette" or "header" should not hand it back as one.
+        foreach (var file in BmageSourceCatalog.SourceFiles.Where(file => file.Kind != BmageSourceCatalog.SiteChromeKind))
         {
             entries.Add(new Entry("Source file", file.Path, file.Kind,
                 $"GetBmageSourceFile(path: \"{file.Path}\")", file.Description ?? string.Empty, string.Empty));

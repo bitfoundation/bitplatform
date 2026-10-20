@@ -258,7 +258,6 @@ public static partial class BcrdtSourceCatalog
         if (path.StartsWith("Demo/Client/Pages/", StringComparison.OrdinalIgnoreCase)) return "Page";
         if (path.StartsWith("Demo/Server/", StringComparison.OrdinalIgnoreCase) ||
             path.StartsWith("Demo/Client/Extensions/", StringComparison.OrdinalIgnoreCase) ||
-            path.StartsWith("Demo/Client/Layout/", StringComparison.OrdinalIgnoreCase) ||
             path.Equals("Demo/Client/Program.cs", StringComparison.OrdinalIgnoreCase) ||
             path.Equals("Demo/Client/Routes.razor", StringComparison.OrdinalIgnoreCase) ||
             path.Equals("Demo/Client/_Imports.razor", StringComparison.OrdinalIgnoreCase)) return "Hosting";
@@ -397,8 +396,8 @@ public static partial class BcrdtSourceCatalog
     [GeneratedRegex(@"///\s*<summary>(?<text>.*?)</summary>", RegexOptions.Singleline)]
     private static partial Regex XmlSummaryRegex();
 
-    // The overview opens with a lede; every other page with the first paragraph of its prose section.
-    [GeneratedRegex(@"<p class=""lede"">(?<text>.*?)</p>|<section class=""prose"">\s*<p>(?<text>.*?)</p>", RegexOptions.Singleline)]
+    // A page opens with its title block: the h1, then the paragraph that says what the page shows.
+    [GeneratedRegex(@"<div class=""bb-intro"">\s*<h1>.*?</h1>\s*<p[^>]*>(?<text>.*?)</p>", RegexOptions.Singleline)]
     private static partial Regex PageIntroRegex();
 
     [GeneratedRegex(@"<PageTitle>(?<text>.*?)</PageTitle>", RegexOptions.Singleline | RegexOptions.IgnoreCase)]

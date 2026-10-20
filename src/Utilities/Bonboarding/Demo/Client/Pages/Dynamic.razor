@@ -1,106 +1,115 @@
 ﻿@page "/dynamic"
 @inject IBonboardingService BonboardingService
 
-<PageTitle>Dynamic targets</PageTitle>
+<PageTitle>Dynamic targets · Bonboarding</PageTitle>
 
-<h1>Dynamic targets</h1>
+<div class="bb-intro">
+    <h1>Dynamic targets</h1>
+    <p class="bb-subtitle">
+        Real applications render late, re-render often, and sometimes never show the element a tour expects. Each
+        step declares what should happen in that case, and waiting is driven by a mutation observer rather than a
+        polling timer.
+    </p>
+</div>
 
-<p class="page-intro">
-    Real applications render late, re-render often, and sometimes never show the element a tour
-    expects. Each step declares what should happen in that case, and waiting is driven by a mutation
-    observer rather than a polling timer.
-</p>
-
-<section class="demo-section">
-    <h2>Waiting for an element that does not exist yet</h2>
-
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Waiting for an element that does not exist yet</h3>
     <p>
         Start the tour, then reveal the panel. The second step is waiting for
         <code>data-bonboarding-anchor="late-panel"</code> and picks it up the moment it appears.
     </p>
 
-    <div class="demo-actions">
-        <button type="button" class="btn btn-primary" @onclick="StartWaitTourAsync">Run the waiting tour</button>
-        <button type="button" class="btn" data-bonboarding-anchor="reveal" @onclick="Reveal">
-            @(_revealed ? "Hide the panel" : "Reveal the panel")
-        </button>
-        <button type="button" class="btn" @onclick="RevealSlowly">Reveal after 2 seconds</button>
-    </div>
-
-    @if (_revealed)
-    {
-        <div class="card" data-bonboarding-anchor="late-panel">
-            <h3>Rendered on demand</h3>
-            <p>
-                This panel did not exist when the tour started. The step waited for it, scrolled it into
-                view and positioned against it.
-            </p>
+    <div class="bb-demo">
+        <div class="bb-demo-bar"><span class="bb-demo-label">Live</span></div>
+        <div class="bb-toolbar">
+            <button type="button" class="btn btn-primary" @onclick="StartWaitTourAsync">Run the waiting tour</button>
+            <button type="button" class="btn btn-secondary" data-bonboarding-anchor="reveal" @onclick="Reveal">
+                @(_revealed ? "Hide the panel" : "Reveal the panel")
+            </button>
+            <button type="button" class="btn btn-secondary" @onclick="RevealSlowly">Reveal after 2 seconds</button>
         </div>
-    }
+
+        @if (_revealed)
+        {
+            <div class="demo-panel" data-bonboarding-anchor="late-panel">
+                <p class="demo-panel-title">Rendered on demand</p>
+                <p>
+                    This panel did not exist when the tour started. The step waited for it, scrolled it into
+                    view and positioned against it.
+                </p>
+            </div>
+        }
+    </div>
 </section>
 
-<section class="demo-section">
-    <h2>Missing-target strategies</h2>
-
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Missing-target strategies</h3>
     <p>
         Each button runs a two-step tour whose first step points at an element that is not on this page.
         Only the strategy differs.
     </p>
 
-    <div class="demo-actions">
-        <button type="button" class="btn" @onclick="() => StartMissingAsync(BonboardingMissingTargetBehavior.Skip)">Skip</button>
-        <button type="button" class="btn" @onclick="() => StartMissingAsync(BonboardingMissingTargetBehavior.Center)">Centre</button>
-        <button type="button" class="btn" @onclick="() => StartMissingAsync(BonboardingMissingTargetBehavior.Wait)">Wait, then skip</button>
-        <button type="button" class="btn" @onclick="() => StartMissingAsync(BonboardingMissingTargetBehavior.Fail)">Fail</button>
-    </div>
-
-    @if (_failure is not null)
-    {
-        <div class="note note-danger" role="alert">
-            <Icon Path="@Icons.Error" />
-            <span><strong>The tour failed, as asked:</strong> @_failure</span>
+    <div class="bb-demo">
+        <div class="bb-demo-bar"><span class="bb-demo-label">MissingTarget</span></div>
+        <div class="bb-toolbar">
+            <button type="button" class="btn btn-secondary" @onclick="() => StartMissingAsync(BonboardingMissingTargetBehavior.Skip)">Skip</button>
+            <button type="button" class="btn btn-secondary" @onclick="() => StartMissingAsync(BonboardingMissingTargetBehavior.Center)">Centre</button>
+            <button type="button" class="btn btn-secondary" @onclick="() => StartMissingAsync(BonboardingMissingTargetBehavior.Wait)">Wait, then skip</button>
+            <button type="button" class="btn btn-secondary" @onclick="() => StartMissingAsync(BonboardingMissingTargetBehavior.Fail)">Fail</button>
         </div>
-    }
+
+        @if (_failure is not null)
+        {
+            <div class="bb-note bb-note-danger" role="alert">
+                <strong>The tour failed, as asked:</strong> @_failure
+            </div>
+        }
+    </div>
 </section>
 
-<section class="demo-section">
-    <h2>Let the user do it</h2>
-
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Let the user do it</h3>
     <p>
         A step with an <code>BonboardingAdvanceTrigger</code> waits for a real interaction. The overlay becomes
         click-through around the target automatically, so the user can actually press the button they are
         being told about.
     </p>
 
-    <div class="demo-actions">
-        <button type="button" class="btn btn-primary" @onclick="StartInteractiveTourAsync">Run the interactive tour</button>
-        <button type="button" class="btn" data-bonboarding-anchor="do-it" @onclick="Increment">
-            Clicked @_clicks @(_clicks == 1 ? "time" : "times")
-        </button>
+    <div class="bb-demo">
+        <div class="bb-demo-bar"><span class="bb-demo-label">Live</span></div>
+        <div class="bb-toolbar">
+            <button type="button" class="btn btn-primary" @onclick="StartInteractiveTourAsync">Run the interactive tour</button>
+            <button type="button" class="btn btn-secondary" data-bonboarding-anchor="do-it" @onclick="Increment">
+                Clicked @_clicks @(_clicks == 1 ? "time" : "times")
+            </button>
+        </div>
     </div>
 </section>
 
-<section class="demo-section">
-    <h2>Targets chosen at run time</h2>
-
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Targets chosen at run time</h3>
     <p>
         <code>BonboardingStepTarget.Dynamic</code> defers the decision until the step activates, so a tour can point
         at whichever row, tab or card is relevant right now.
     </p>
 
-    <div class="demo-actions">
-        @foreach (var row in Rows)
-        {
-            <button type="button"
-                    class="btn @(row == _selectedRow ? "btn-primary" : null)"
-                    aria-pressed="@(row == _selectedRow ? "true" : "false")"
-                    data-bonboarding-anchor="row-@row"
-                    @onclick="() => _selectedRow = row">Row @row</button>
-        }
-        <button type="button" class="btn" @onclick="StartDynamicTourAsync">Point at the selected row</button>
+    <div class="bb-demo">
+        <div class="bb-demo-bar"><span class="bb-demo-label">Live</span></div>
+        <div class="bb-toolbar">
+            <div class="bb-segmented" role="group" aria-label="Selected row">
+                @foreach (var row in Rows)
+                {
+                    <button type="button"
+                            aria-pressed="@(row == _selectedRow ? "true" : "false")"
+                            data-bonboarding-anchor="row-@row"
+                            @onclick="() => _selectedRow = row">Row @row</button>
+                }
+            </div>
+            <button type="button" class="btn btn-primary" @onclick="StartDynamicTourAsync">Point at the selected row</button>
+        </div>
     </div>
 
-    <pre><code>@DynamicExample</code></pre>
+    <pre class="bb-code">@DynamicExample</pre>
 </section>
 
 @code {

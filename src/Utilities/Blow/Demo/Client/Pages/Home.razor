@@ -1,69 +1,337 @@
 ﻿@page "/"
+@layout MainLayout
 
-<PageTitle>Basic - bit Blow</PageTitle>
+<PageTitle>Blow - node-based editors and diagrams for Blazor</PageTitle>
 
-<div class="demo-header">
-    <h3>Basic Flow</h3>
-    <p class="text-muted">
-        Drag nodes, drag from a handle to another node to connect, scroll to zoom, drag the background to pan.
-        Click a node/edge to select, press <kbd>Delete</kbd> to remove. Hold <kbd>Shift</kbd> for multi-select,
-        or <kbd>Shift</kbd>-drag the background to box-select. See the <strong>Interactions</strong> page for more.
-    </p>
-</div>
+@* The landing page: hero → proof strip → feature grid → code walkthrough → the React Flow mapping →
+   persona tiles → FAQ → final call to action. Everything else on the site is a documentation page
+   under DocsLayout. The hero's flow is live rather than a picture of one - a node editor is best
+   introduced by dragging a node. *@
 
-<DemoCode />
+<div class="bb-landing">
 
-<div class="demo-canvas">
-    <BlowCanvas Nodes="_nodes"
-                Edges="_edges"
-                FitViewOnInit="true"
-                OnConnect="OnConnect">
-        <BlowBackground Variant="BlowBackgroundVariant.Dots" Gap="20" />
-        <BlowControls />
-        <BlowMiniMap />
-        <BlowPanel Position="top-right">
-            <button class="btn btn-sm btn-primary" @onclick="AddNode">Add node</button>
-        </BlowPanel>
-    </BlowCanvas>
+    @* ============================== Hero ============================== *@
+
+    <section class="bb-hero">
+        <div class="bb-hero-copy">
+            <span class="bb-hero-eyebrow">
+                <span class="bb-dot bb-dot-success"></span>
+                Open source · MIT · net8.0 / net9.0 / net10.0
+            </span>
+            <h1>Node-based editors for Blazor,<br /><span class="bb-hero-accent">the React Flow way.</span></h1>
+            <p class="bb-hero-sub">
+                Workflow editors, pipelines, state machines and diagrams: a pannable, zoomable <code>BlowCanvas</code>
+                over your own <code>List&lt;BlowNode&gt;</code> and <code>List&lt;BlowEdge&gt;</code>, with custom
+                nodes, handles, five edge paths, sub-flows, a minimap, auto-layout and undo. Dragging, connecting,
+                keyboard handling, layout and edge geometry are written in C# - there is no JavaScript diagram library
+                underneath.
+            </p>
+            <pre class="bb-code bb-hero-install">dotnet add package Bit.Blow</pre>
+            <div class="bb-hero-actions">
+                <a href="getting-started" class="btn btn-primary bb-btn-lg">Get started →</a>
+                <a href="examples" class="btn btn-secondary bb-btn-lg">Browse the examples</a>
+                <a class="btn btn-secondary bb-btn-lg" href="@SiteInfo.ProjectUrl" target="_blank" rel="noopener noreferrer">GitHub ↗</a>
+            </div>
+        </div>
+
+        @* The sample, framed as a window: the markup on top, and what it renders underneath - live, so
+           the first thing a visitor can do here is drag a node or draw an edge. *@
+        <div class="bb-hero-code">
+            <div class="bb-browser">
+                <div class="bb-browser-bar">
+                    <span class="bb-browser-dots" aria-hidden="true"><i></i><i></i><i></i></span>
+                    <span class="bb-browser-url">Workflow.razor</span>
+                </div>
+                <pre class="bb-code">&lt;<span class="k">BlowCanvas</span> Nodes=<span class="s">"_nodes"</span> Edges=<span class="s">"_edges"</span> FitViewOnInit=<span class="s">"true"</span>&gt;
+    &lt;<span class="k">BlowBackground</span> /&gt;
+    &lt;<span class="k">BlowControls</span> /&gt;
+&lt;/<span class="k">BlowCanvas</span>&gt;
+
+<span class="k">private</span> List&lt;BlowNode&gt; _nodes =
+[
+    <span class="k">new</span>() { Id = <span class="s">"1"</span>, Type = <span class="s">"input"</span>, Label = <span class="s">"Request"</span>, Position = <span class="k">new</span>(0, 0) },
+    <span class="k">new</span>() { Id = <span class="s">"2"</span>, Label = <span class="s">"Review"</span>, Position = <span class="k">new</span>(-90, 110) },
+    <span class="k">new</span>() { Id = <span class="s">"3"</span>, Type = <span class="s">"output"</span>, Label = <span class="s">"Approve"</span>, Position = <span class="k">new</span>(0, 220) },
+];</pre>
+                <div class="home-hero-flow">
+                    <BlowCanvas Nodes="_nodes" Edges="_edges" FitViewOnInit="true" AriaLabel="A live approval workflow">
+                        <BlowBackground />
+                        <BlowControls />
+                    </BlowCanvas>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    @* ============================== Proof strip ============================== *@
+
+    <section class="bb-proof">
+        <div><strong>Written in C#</strong><span>interaction, layout and edge geometry</span></div>
+        <div><strong>80+ working examples</strong><span>most of them ports of React Flow's own</span></div>
+        <div><strong>Every hosting model</strong><span>WebAssembly, Server, Web App and Hybrid</span></div>
+        <div><strong>Keyboard &amp; screen reader</strong><span>every node and edge in the tab order</span></div>
+    </section>
+
+    @* ============================== Feature grid ============================== *@
+
+    <section class="bb-section">
+        <p class="bb-overline">Capabilities</p>
+        <h2>Everything a node editor needs - as Blazor components</h2>
+        <p class="bb-section-sub">
+            Blow follows React Flow's concepts and, wherever C# allows, its names. The graph is plain C#: the same
+            lists can be built, validated, laid out, copied and saved with no UI at all, which is what makes a flow
+            testable and usable on a server.
+        </p>
+        <div class="bb-grid">
+            <section class="bb-card">
+                <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Nodes and handles</h3>
+                <p class="bb-card-desc">
+                    Built-in <code>input</code>, <code>default</code>, <code>output</code> and <code>group</code>
+                    nodes, and a <code>NodeTemplate</code> for anything else - with <code>BlowHandle</code>s wherever
+                    you put them, measured in the browser so edges always meet them.
+                </p>
+                <a href="custom-nodes" class="btn btn-outline">Custom nodes →</a>
+            </section>
+            <section class="bb-card">
+                <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Five edge paths</h3>
+                <p class="bb-card-desc">
+                    Bezier, simple bezier, straight, step and smooth step, each tunable per edge, with labels,
+                    arrowheads in any colour and size, animation, and self-connections that loop clear of their node.
+                </p>
+                <a href="edge-types" class="btn btn-outline">Edge types →</a>
+            </section>
+            <section class="bb-card">
+                <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Connections with rules</h3>
+                <p class="bb-card-desc">
+                    Drag or click from handle to handle, with proximity snapping, duplicate and self-connection rules,
+                    <code>IsValidConnection</code> on the canvas or on each handle, and reconnection of existing edges.
+                </p>
+                <a href="examples/validation" class="btn btn-outline">Validation →</a>
+            </section>
+            <section class="bb-card">
+                <h3 class="bb-card-title"><span class="bb-dot bb-dot-danger"></span> Sub-flows and resizing</h3>
+                <p class="bb-card-desc">
+                    Children move with their parent and can be pinned inside it or grow it; <code>BlowNodeResizer</code>,
+                    node and edge toolbars and a portal into the zoomed layer sit right next to them.
+                </p>
+                <a href="advanced" class="btn btn-outline">Groups &amp; resizing →</a>
+            </section>
+            <section class="bb-card">
+                <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Layout without JavaScript</h3>
+                <p class="bb-card-desc">
+                    <code>BlowLayout</code>'s layered (with crossing reduction), grid and circle layouts, the align and
+                    distribute commands of a drawing tool, and alignment guides while you drag - all in C#.
+                </p>
+                <a href="examples/layouting" class="btn btn-outline">Layouting →</a>
+            </section>
+            <section class="bb-card">
+                <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Undo, clipboard and saving</h3>
+                <p class="bb-card-desc">
+                    <code>HistoryEnabled</code> keeps the undo stack and binds Ctrl/Cmd+Z; copy and paste rewire edges
+                    and keep groups intact; <code>ToObject()</code> and <code>RestoreAsync</code> save and reload a flow.
+                </p>
+                <a href="examples/built-in-undo-redo" class="btn btn-outline">Built-in undo →</a>
+            </section>
+        </div>
+    </section>
+
+    @* ============================== Code walkthrough ============================== *@
+
+    <section class="bb-section">
+        <p class="bb-overline">In practice</p>
+        <h2>See it in code</h2>
+        <div class="bb-walkthrough">
+            <div class="bb-walkthrough-row">
+                <div class="bb-walkthrough-copy">
+                    <span class="bb-step">01</span>
+                    <h3>Install and link the stylesheet</h3>
+                    <p>
+                        One package and one stylesheet link - there are no services to register, and the script module
+                        is imported by the component the first time it needs it.
+                    </p>
+                    <a href="getting-started">Getting started →</a>
+                </div>
+                <pre class="bb-code">dotnet add package Bit.Blow
+
+<span class="c">&lt;!-- App.razor or index.html --&gt;</span>
+&lt;<span class="k">link</span> rel=<span class="s">"stylesheet"</span> href=<span class="s">"_content/Bit.Blow/bit-blow.css"</span> /&gt;
+
+<span class="c">@@* _Imports.razor *@@</span>
+<span class="k">@@using</span> Bit.Blow</pre>
+            </div>
+            <div class="bb-walkthrough-row">
+                <div class="bb-walkthrough-copy">
+                    <span class="bb-step">02</span>
+                    <h3>Render your own nodes</h3>
+                    <p>
+                        A <code>NodeTemplate</code> switches on <code>node.Type</code>, with <code>BlowDefaultNode</code>
+                        for the rest. Handles go wherever the markup puts them; give each its own <code>Id</code> to tell
+                        an edge which one it starts from.
+                    </p>
+                    <a href="custom-nodes">Custom nodes →</a>
+                </div>
+                <pre class="bb-code">&lt;<span class="k">BlowCanvas</span> Nodes=<span class="s">"_nodes"</span> Edges=<span class="s">"_edges"</span>&gt;
+    &lt;<span class="k">NodeTemplate</span> Context=<span class="s">"node"</span>&gt;
+        @@if (node.Type == <span class="s">"color"</span>)
+        {
+            &lt;<span class="k">BlowHandle</span> Type=<span class="s">"BlowHandleType.Target"</span> Position=<span class="s">"BlowPosition.Left"</span> /&gt;
+            &lt;<span class="k">div</span>&gt;@@node.Label&lt;/<span class="k">div</span>&gt;
+            &lt;<span class="k">BlowHandle</span> Type=<span class="s">"BlowHandleType.Source"</span> Id=<span class="s">"a"</span> Position=<span class="s">"BlowPosition.Right"</span> /&gt;
+        }
+        <span class="k">else</span>
+        {
+            &lt;<span class="k">BlowDefaultNode</span> Node=<span class="s">"node"</span> /&gt;
+        }
+    &lt;/<span class="k">NodeTemplate</span>&gt;
+&lt;/<span class="k">BlowCanvas</span>&gt;</pre>
+            </div>
+            <div class="bb-walkthrough-row">
+                <div class="bb-walkthrough-copy">
+                    <span class="bb-step">03</span>
+                    <h3>React to edits, drive it from code</h3>
+                    <p>
+                        The canvas edits your lists in place and raises <code>NodesChanged</code> once an edit is
+                        complete - not on every pointer move. A <code>@@ref</code> is the imperative API, the counterpart
+                        of <code>useReactFlow()</code>.
+                    </p>
+                    <a href="examples/use-reactflow">Use the flow API →</a>
+                </div>
+                <pre class="bb-code">&lt;<span class="k">BlowCanvas</span> @@ref=<span class="s">"_flow"</span> Nodes=<span class="s">"_nodes"</span> Edges=<span class="s">"_edges"</span>
+            NodesChanged=<span class="s">"Save"</span> OnConnect=<span class="s">"OnConnect"</span> /&gt;
+
+_flow.FitView();
+<span class="k">await</span> _flow.SetCenterAsync(x: 400, y: 200, zoom: 1.5, durationMs: 300);
+BlowSnapshot snapshot = _flow.ToObject();   <span class="c">// nodes, edges and viewport</span></pre>
+            </div>
+        </div>
+    </section>
+
+    @* ============================== Comparison ============================== *@
+
+    <section class="bb-section">
+        <p class="bb-overline">Comparison</p>
+        <h2>Coming from React Flow?</h2>
+        <p class="bb-section-sub">
+            The same concepts under the names a Blazor component gives them. The main difference is state: there are
+            no change objects to apply - the canvas edits your lists in place and tells you afterwards, and a
+            connection adds its own edge.
+        </p>
+        <div class="bb-scroll" tabindex="0" role="region" aria-label="React Flow compared with Bit.Blow">
+            <table class="bb-table bb-compare">
+                <thead>
+                    <tr><th>Concern</th><th>React Flow</th><th>Bit.Blow</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td>The component</td><td><code>&lt;ReactFlow&gt;</code></td><td><code>&lt;BlowCanvas&gt;</code></td></tr>
+                    <tr><td>The imperative API</td><td><code>useReactFlow()</code></td><td>a <code>@@ref</code> to <code>BlowCanvas</code></td></tr>
+                    <tr><td>Applying edits</td><td><code>onNodesChange</code> + <code>applyNodeChanges</code></td><td>nothing to apply; <code>NodesChanged</code> after the edit</td></tr>
+                    <tr><td>Custom nodes</td><td><code>nodeTypes</code></td><td><code>NodeTemplate</code> switching on <code>node.Type</code></td></tr>
+                    <tr><td>Handles</td><td><code>&lt;Handle type="source" position={Position.Right} /&gt;</code></td><td><code>&lt;BlowHandle Type="BlowHandleType.Source" Position="BlowPosition.Right" /&gt;</code></td></tr>
+                    <tr><td>Auto-layout</td><td>dagre or elkjs, outside the library</td><td><code>BlowLayout</code>, built in</td></tr>
+                    <tr><td>Undo and redo</td><td>yours to write</td><td><code>HistoryEnabled</code>, or <code>BlowHistory</code> driven by you</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    @* ============================== Persona CTAs ============================== *@
+
+    <section class="bb-section">
+        <p class="bb-overline">Where to start</p>
+        <h2>Choose your path</h2>
+        <div class="bb-grid">
+            <section class="bb-card">
+                <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> New to Blow?</h3>
+                <p class="bb-card-desc">Install, link the stylesheet, give the canvas a height - a working editor in five minutes.</p>
+                <a href="getting-started" class="btn btn-primary">Getting started →</a>
+            </section>
+            <section class="bb-card">
+                <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Coming from React Flow?</h3>
+                <p class="bb-card-desc">Its examples are ported one for one, so the one you know is a click away - with its Blazor source.</p>
+                <a href="examples" class="btn btn-outline">Browse the examples →</a>
+            </section>
+            <section class="bb-card">
+                <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Building with an AI agent?</h3>
+                <p class="bb-card-desc">This site is an MCP server: point your agent at <code>/mcp</code> and it reads the shipped library instead of guessing.</p>
+                <a href="mcp-server" class="btn btn-outline">Try the MCP server →</a>
+            </section>
+        </div>
+    </section>
+
+    @* ============================== FAQ ============================== *@
+
+    <section class="bb-section">
+        <p class="bb-overline">Questions</p>
+        <h2>Frequently asked</h2>
+        <div class="bb-faq">
+            <details>
+                <summary>Is this React Flow running through JavaScript interop?</summary>
+                <p>
+                    No. Dragging, selecting, connecting, resizing, keyboard handling, layout and edge geometry are written
+                    in C# and run on Blazor's own event system. A small script module does only what the browser alone
+                    can: measure DOM rectangles, notice when they change, find the handle under a point, hold pointer
+                    capture and keep the page from scrolling under a gesture.
+                </p>
+            </details>
+            <details>
+                <summary>Which render modes does it work in?</summary>
+                <p>
+                    All of them, on .NET 8, 9 and 10. WebAssembly is the recommended model for editing - every pointer
+                    move is handled in the browser. Server works with the same features, a round trip per move; Auto and
+                    Hybrid work too. A statically rendered page shows the canvas but never becomes interactive.
+                </p>
+            </details>
+            <details>
+                <summary>Why does my canvas not show up?</summary>
+                <p>
+                    The canvas fills its container, so the container needs a height - or give the canvas one with
+                    <code>Style</code>. And the stylesheet is not injected for you: without the
+                    <code>_content/Bit.Blow/bit-blow.css</code> link the canvas renders unstyled.
+                </p>
+            </details>
+            <details>
+                <summary>How large a graph can it handle?</summary>
+                <p>
+                    Every node's position is resolved once per render and edge paths are cached, so a pan rebuilds no
+                    path strings. With <code>OnlyRenderVisibleElements</code> only what intersects the view is rendered -
+                    the stress example builds grids of up to 900 nodes.
+                </p>
+            </details>
+            <details>
+                <summary>Does it have a dark mode?</summary>
+                <p>
+                    Yes: <code>ColorMode</code> is <code>Light</code>, <code>Dark</code> or <code>System</code>, and every
+                    colour - the canvas, the control bar, the minimap, toolbars and labels - is a <code>--bit-blow-*</code>
+                    custom property, so a theme is a handful of overrides. This site's flows follow its theme toggle.
+                </p>
+            </details>
+        </div>
+    </section>
+
+    @* ============================== Final CTA ============================== *@
+
+    <section class="bb-final-cta">
+        <h2>Draw the first edge</h2>
+        <p class="bb-section-sub">One package, one stylesheet, a container with a height - and your app has a node editor.</p>
+        <pre class="bb-code bb-hero-install">dotnet add package Bit.Blow</pre>
+        <div class="bb-hero-actions">
+            <a href="getting-started" class="btn btn-primary bb-btn-lg">Get started →</a>
+            <a href="examples" class="btn btn-secondary bb-btn-lg">Browse the examples</a>
+        </div>
+    </section>
 </div>
 
 @code {
-    private List<BlowNode> _nodes = new();
-    private List<BlowEdge> _edges = new();
-    private int _counter = 4;
+    private readonly List<BlowNode> _nodes =
+    [
+        new() { Id = "1", Type = "input", Label = "Request", Position = new(0, 0) },
+        new() { Id = "2", Label = "Review", Position = new(-90, 110) },
+        new() { Id = "3", Type = "output", Label = "Approve", Position = new(0, 220) },
+    ];
 
-    protected override void OnInitialized()
-    {
-        _nodes =
-        [
-            new BlowNode { Id = "1", Type = "input",  Label = "Input Node",  Position = new(250, 25) },
-            new BlowNode { Id = "2",                  Label = "Default Node", Position = new(150, 150) },
-            new BlowNode { Id = "3",                  Label = "Another Node", Position = new(400, 150) },
-            new BlowNode { Id = "4", Type = "output", Label = "Output Node",  Position = new(280, 300) },
-        ];
-
-        _edges =
-        [
-            new BlowEdge { Id = "e1-2", Source = "1", Target = "2", Animated = true },
-            new BlowEdge { Id = "e1-3", Source = "1", Target = "3" },
-            new BlowEdge { Id = "e2-4", Source = "2", Target = "4", Label = "edge label" },
-        ];
-    }
-
-    private void AddNode()
-    {
-        _counter++;
-        _nodes.Add(new BlowNode
-        {
-            Id = _counter.ToString(),
-            Label = $"Node {_counter}",
-            Position = new(Random.Shared.Next(50, 450), Random.Shared.Next(50, 350)),
-        });
-    }
-
-    private void OnConnect(BlowConnection c)
-    {
-        // The edge is already added by the canvas; hook here for side effects.
-        Console.WriteLine($"Connected {c.Source} -> {c.Target}");
-    }
+    private readonly List<BlowEdge> _edges =
+    [
+        new() { Id = "e1-2", Source = "1", Target = "2", Animated = true },
+        new() { Id = "e2-3", Source = "2", Target = "3", Label = "ok" },
+    ];
 }

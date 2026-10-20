@@ -109,10 +109,11 @@ the first time it needs it. The full walkthrough is in [getting started](#gettin
 The demo site, [blow.bitplatform.dev](https://blow.bitplatform.dev), is a catalogue of more than eighty working
 examples under `/examples`, grouped the way this guide is: basics, nodes, edges, handles and connections,
 interaction, viewport and layout, state and API, and add-ons. Most of them are ports of React Flow's own examples,
-so a React Flow user can open the same example on both sides. A handful of hand-written tour pages sit next to the
-catalogue (`/custom-nodes`, `/edge-types`, `/custom-edges`, `/interactions`, `/labels-handles`, `/extras`,
-`/advanced`, `/connection-line`, `/add-node-on-drop`, `/floating-edges`, `/minimap`, `/drag-threshold`). Every
-page can show its own source.
+so a React Flow user can open the same example on both sides. A getting-started page (`/getting-started`) and a
+handful of hand-written tour pages sit next to the catalogue (`/basic-flow`, `/custom-nodes`, `/edge-types`,
+`/custom-edges`, `/interactions`, `/labels-handles`, `/extras`, `/advanced`, `/connection-line`, `/add-node-on-drop`,
+`/floating-edges`, `/minimap`, `/drag-threshold`), all of them reachable from the docs navigation and the search
+palette (`/` or Ctrl+K). Every page can show its own source, and every flow on the site follows its light/dark theme.
 
 To run it locally:
 

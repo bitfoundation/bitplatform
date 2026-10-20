@@ -118,7 +118,7 @@ public sealed class OpenAndCloseTests : BaletteTest
         var probe = await page.EvaluateAsync<bool[]>(
             """
             () => {
-              const button = document.querySelector('.topbar-modes button');
+              const button = document.querySelector('.demo-palette-modes button');
               button.focus();
               const r = button.getBoundingClientRect();
               const hit = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2);

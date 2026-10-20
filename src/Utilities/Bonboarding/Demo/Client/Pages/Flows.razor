@@ -1,86 +1,95 @@
 ﻿@page "/flows"
 @inject IBonboardingService BonboardingService
 
-<PageTitle>Conditional and branching flows</PageTitle>
+<PageTitle>Conditional &amp; branching · Bonboarding</PageTitle>
 
-<h1>Conditional &amp; branching</h1>
+<div class="bb-intro">
+    <h1>Conditional &amp; branching</h1>
+    <p class="bb-subtitle">
+        Not every user should see every step. Steps can be gated by a condition, tours can fork on an answer, and
+        Back walks the path the user actually took rather than the order the steps were declared in.
+    </p>
+</div>
 
-<p class="page-intro">
-    Not every user should see every step. Steps can be gated by a condition, tours can fork on an
-    answer, and Back walks the path the user actually took rather than the order the steps were
-    declared in.
-</p>
-
-<section class="demo-section">
-    <h2>Conditional steps</h2>
-
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Conditional steps</h3>
     <p>
-        The billing step only appears for an administrator, and the progress indicator counts only the
-        steps that will actually be shown. Change the role and run the tour again.
+        The billing step only appears for an administrator, and the progress indicator counts only the steps that
+        will actually be shown. Change the role and run the tour again.
     </p>
 
-    <div class="controls">
-        <div class="field">
-            <label for="role">Signed in as</label>
-            <select id="role" @bind="_role">
-                <option value="Viewer">Viewer</option>
-                <option value="Member">Member</option>
-                <option value="Administrator">Administrator</option>
-            </select>
+    <div class="bb-demo">
+        <div class="bb-demo-bar">
+            <span class="bb-demo-label">Live</span>
+            <button type="button" class="btn btn-primary" @onclick="StartConditionalAsync">Run the conditional tour</button>
         </div>
 
-        <div class="field">
-            <label for="beta">Feature flag</label>
-            <select id="beta" @bind="_betaEnabled">
-                <option value="false">Beta off</option>
-                <option value="true">Beta on</option>
-            </select>
+        <div class="bb-fields">
+            <label class="bb-field">
+                Signed in as
+                <select @bind="_role">
+                    <option value="Viewer">Viewer</option>
+                    <option value="Member">Member</option>
+                    <option value="Administrator">Administrator</option>
+                </select>
+            </label>
+
+            <label class="bb-field">
+                Feature flag
+                <select @bind="_betaEnabled">
+                    <option value="false">Beta off</option>
+                    <option value="true">Beta on</option>
+                </select>
+            </label>
         </div>
 
-        <button type="button" class="btn btn-primary" @onclick="StartConditionalAsync">Run the conditional tour</button>
+        <AppWindow>
+            @if (_betaEnabled)
+            {
+                <div class="tile" data-bonboarding-anchor="beta-panel">
+                    <div class="tile-title">Beta</div>
+                    <div class="tile-value">Insights</div>
+                </div>
+            }
+        </AppWindow>
     </div>
-
-    <AppWindow>
-        @if (_betaEnabled)
-        {
-            <div class="tile" data-bonboarding-anchor="beta-panel">
-                <div class="tile-title">Beta</div>
-                <div class="tile-value">Insights</div>
-            </div>
-        }
-    </AppWindow>
 </section>
 
-<section class="demo-section">
-    <h2>Branching on an answer</h2>
-
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Branching on an answer</h3>
     <p>
-        Footer buttons carry an effect. Combined with <code>BonboardingStepActionEffect.GoTo</code> this is the
-        whole of a branching tour: no state machine to write.
+        Footer buttons carry an effect. Combined with <code>BonboardingStepActionEffect.GoTo</code> this is the whole
+        of a branching tour: no state machine to write.
     </p>
 
-    <div class="demo-actions">
-        <button type="button" class="btn btn-primary" @onclick="StartBranchingAsync">Run the branching tour</button>
-        @if (_branchTaken is not null)
-        {
-            <span class="pill">Branch taken: @_branchTaken</span>
-        }
+    <div class="bb-demo">
+        <div class="bb-demo-bar"><span class="bb-demo-label">Live</span></div>
+        <div class="bb-toolbar">
+            <button type="button" class="btn btn-primary" @onclick="StartBranchingAsync">Run the branching tour</button>
+            @if (_branchTaken is not null)
+            {
+                <span class="bb-badge bb-badge-success">Branch taken: @_branchTaken</span>
+            }
+        </div>
+        <p class="bb-muted">The branches point at the product on the conditional tour's sample above.</p>
     </div>
 
-    <pre><code>@BranchExample</code></pre>
+    <pre class="bb-code">@BranchExample</pre>
 </section>
 
-<section class="demo-section">
-    <h2>Validation before advancing</h2>
-
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Validation before advancing</h3>
     <p>
-        <code>CanAdvance</code> blocks the forward button until the step is satisfied. Here the tour will
-        not move on until the field contains something.
+        <code>CanAdvance</code> blocks the forward button until the step is satisfied. Here the tour will not move on
+        until the field contains something.
     </p>
 
-    <div class="demo-actions">
-        <input type="text" data-bonboarding-anchor="project-name" placeholder="Project name" aria-label="Project name" @bind="_projectName" @bind:event="oninput" />
-        <button type="button" class="btn btn-primary" @onclick="StartValidatingAsync">Run the validating tour</button>
+    <div class="bb-demo">
+        <div class="bb-demo-bar"><span class="bb-demo-label">Live</span></div>
+        <div class="bb-toolbar">
+            <input type="text" data-bonboarding-anchor="project-name" placeholder="Project name" aria-label="Project name" @bind="_projectName" @bind:event="oninput" />
+            <button type="button" class="btn btn-primary" @onclick="StartValidatingAsync">Run the validating tour</button>
+        </div>
     </div>
 </section>
 

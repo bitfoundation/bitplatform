@@ -24,6 +24,9 @@ public static partial class BaletteSourceCatalog
     /// <summary>The path the shipped stylesheet is served under, next to the demo's files.</summary>
     public const string StylesheetPath = "Library/Styles/bit-balette.css";
 
+    /// <summary>The demo file that renders the app's one palette, with its declarative items and its detail pane.</summary>
+    public const string PaletteHostPath = "Demo/Client/Components/AppPalette.razor";
+
     /// <summary>Separates a parent heading from a child one in the key of a heading the README uses twice.</summary>
     public const string KeySeparator = " > ";
 
@@ -271,8 +274,9 @@ public static partial class BaletteSourceCatalog
 
     /// <summary>
     /// What a file is for: a demo page is a working palette feature to copy, the hosting files are
-    /// the wiring every app needs once, a library file is shipped by the package itself, and the rest
-    /// is the commands, state and sources the pages share.
+    /// the wiring every app needs once - the palette host included, which is where the one
+    /// <c>&lt;Balette /&gt;</c> is rendered - a library file is shipped by the package itself, and the
+    /// rest is the commands, state, sources and the trigger bar the pages share.
     /// </summary>
     private static string KindOf(string path)
     {
@@ -280,7 +284,7 @@ public static partial class BaletteSourceCatalog
         if (path.StartsWith("Library/", StringComparison.OrdinalIgnoreCase)) return "Library";
         if (path.StartsWith("Demo/Server/", StringComparison.OrdinalIgnoreCase) ||
             path.StartsWith("Demo/Client/Extensions/", StringComparison.OrdinalIgnoreCase) ||
-            path.StartsWith("Demo/Client/Layout/", StringComparison.OrdinalIgnoreCase) ||
+            path.Equals(PaletteHostPath, StringComparison.OrdinalIgnoreCase) ||
             path.Equals("Demo/Client/Program.cs", StringComparison.OrdinalIgnoreCase) ||
             path.Equals("Demo/Client/Routes.razor", StringComparison.OrdinalIgnoreCase) ||
             path.Equals("Demo/Client/_Imports.razor", StringComparison.OrdinalIgnoreCase)) return "Hosting";
@@ -435,7 +439,7 @@ public static partial class BaletteSourceCatalog
     [GeneratedRegex(@"///\s*<summary>(?<text>.*?)</summary>", RegexOptions.Singleline)]
     private static partial Regex XmlSummaryRegex();
 
-    [GeneratedRegex(@"<p class=""page-intro"">(?<text>.*?)</p>", RegexOptions.Singleline)]
+    [GeneratedRegex(@"<div class=""bb-intro"">\s*<h1>.*?</h1>\s*<p[^>]*>(?<text>.*?)</p>", RegexOptions.Singleline)]
     private static partial Regex PageIntroRegex();
 
     [GeneratedRegex(@"<PageTitle>(?<text>.*?)</PageTitle>", RegexOptions.Singleline | RegexOptions.IgnoreCase)]

@@ -1,6 +1,6 @@
 ﻿@page "/examples/custom-node"
 
-<PageTitle>Custom Node - bit Blow</PageTitle>
+<PageTitle>Custom Node · Blow</PageTitle>
 
 <ExampleScaffold Title="Custom Node"
                  Summary="A custom 'text updater' node with its own markup, an input bound to node data, and explicitly placed handles. Edits flow through to a connected output.">
@@ -31,8 +31,8 @@
 
 <style>
     .text-updater { padding: 4px 2px; font-size: 12px; text-align: left; }
-    .text-updater label { display:block; color:#555; margin-bottom:3px; }
-    .text-updater input { width: 130px; padding: 3px 6px; border:1px solid #ddd; border-radius:5px; }
+    .text-updater label { display:block; color:var(--bit-blow-text-muted); margin-bottom:3px; }
+    .text-updater input { width: 130px; padding: 3px 6px; color:var(--bit-blow-text); background:var(--bit-blow-surface); border:1px solid var(--bit-blow-border); border-radius:5px; }
 </style>
 
 @code {

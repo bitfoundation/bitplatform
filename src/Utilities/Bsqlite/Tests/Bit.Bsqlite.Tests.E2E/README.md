@@ -28,7 +28,7 @@ its pages.
 | `LiveQueryTests` | Change notifications from the update and commit hooks, in one tab and across tabs. |
 | `OpfsTests`, `IndexedDbTests`, `CacheStorageTests`, `StorageIsolationTests` | Each backend's persistence, crash safety, admin surface and multi-tab behaviour, the Bit.Besql import, and that two backends never see each other's data under the same name. |
 | `SubPathTests` | Every module is reached relative to the document, so an app under `<base href="/nested/">` works unchanged. |
-| `DemoTests` | Every demo page is prerendered, hydrates and opens its database without a console error; moving the database between backends from the session bar keeps the data and the binding sticks; the browser and the server seed the same catalog through the same model. |
+| `DemoTests` | Every page in the docs panel, and the landing page, is prerendered, hydrates and opens its database without a console error; an unknown route answers 404 with the site's own page; moving the database between backends from the session bar keeps the data and the binding sticks; the browser and the server seed the same catalog through the same model. |
 | `SoakTests` (category `Soak`) | Per storage, a worker killed mid-transaction a thousand times, and four then eight tabs committing at once, each ending on `PRAGMA integrity_check`. Opt-in: minutes, not seconds. |
 | `BenchmarkTests` (category `Benchmark`) | Runs `TestPages/benchmarks.html` per backend and prints its numbers. Opt-in, and never a gate. |
 
@@ -74,8 +74,8 @@ Without PowerShell 7, the browser can be installed with the Node.js runtime Play
 The tests run one at a time, each in a browser context of its own - a fresh origin storage, so no database, OPFS file
 or sticky binding leaks from one test into the next. The demo server is started on the first demo test
 (`dotnet Bit.Bsqlite.Demo.Server.dll --urls http://127.0.0.1:<free port>`, in the Development environment so the build
-output finds its static web assets) and stopped when the run ends. The demo's Google Fonts requests are answered locally
-with nothing, so a runner that cannot reach them is not slowed down or failed by it.
+output finds its static web assets) and stopped when the run ends. The site loads nothing from another origin - its
+typefaces are the system's - so a runner without internet access runs the demo tests the same way.
 
 When no browser can be launched, the assets have not been built or the demo does not start, every affected test
 reports **Inconclusive** with the reason. On a build server (`CI=true`) the same tests **fail** instead, so a suite that

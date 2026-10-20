@@ -1,6 +1,6 @@
 ﻿@page "/examples/floating-edges"
 
-<PageTitle>Floating Edges - bit Blow</PageTitle>
+<PageTitle>Floating Edges · Blow</PageTitle>
 
 <ExampleScaffold Title="Floating Edges"
                  Summary="Edges attach to the point on each node's border that faces the other node, recomputed live as you drag. The custom EdgeTemplate uses BlowGraphUtils.GetFloatingEdgeParams.">
@@ -34,7 +34,7 @@
     .floating-node {
         display:flex; align-items:center; justify-content:center;
         width:100%; height:100%; box-sizing:border-box; border-radius:12px;
-        background:#fff; border:2px solid #6366f1; font-weight:600; font-size:12px;
+        background:var(--bit-blow-node-bg); color:var(--bit-blow-node-color); border:2px solid #6366f1; font-weight:600; font-size:12px;
     }
     .floating-handle { opacity:0; }
 </style>

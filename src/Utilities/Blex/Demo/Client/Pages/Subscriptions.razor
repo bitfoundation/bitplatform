@@ -6,190 +6,200 @@
 <DocPage Href="subscriptions" Title="Components & selectors"
          Lead="Re-render on the state you actually use - from a whole store down to a single projected value.">
 
-    <h2>BlexComponentBase</h2>
-    <p>
-        Inherit from <code>BlexComponentBase</code> and call <code>Subscribe(...)</code> in
-        <code>OnInitialized</code>. The component re-renders whenever a subscribed store changes and
-        detaches every handler on dispose - there is no <code>StateHasChanged</code> to call and
-        nothing to clean up.
-    </p>
-
-    <CodeBlock Code="@Basic" Language="razor" />
-
-    <p>You can subscribe to several stores at once; the call is idempotent per store.</p>
-    <CodeBlock Code="@Multi" />
-
-    <ApiTable Title="BlexComponentBase" Rows="@BaseRows" />
-
-    <h2>Selector subscriptions</h2>
-    <p>
-        <code>Subscribe(store)</code> fires on <em>any</em> change to that store. On a store with
-        many independent fields - or one big collection - that re-renders components that do not care.
-        Subscribe to a projection instead, and the component only wakes up when the projected value
-        actually changes.
-    </p>
-
-    <CodeBlock Code="@Selector" />
-
-    <DemoCard Title="Whole store vs. selector"
-              Description="Two identical panels, subscribed differently. Change only the Step field and watch which one re-renders."
-              Source="@WatcherSource" SourceLanguage="razor">
-        <div class="grid grid--2" style="margin:0 0 0.9rem">
-            <WholeStoreWatcher />
-            <SelectorWatcher />
-        </div>
-        <div class="row">
-            <button class="btn btn-primary" @onclick="Counter.Increment">Change Count (both re-render)</button>
-            <button class="btn" @onclick="() => Counter.SetStep(Counter.Step == 1 ? 5 : 1)">
-                Change Step only (left re-renders, right does not)
-            </button>
-            <button class="btn btn-ghost" @onclick="Counter.ResetState">Reset</button>
-        </div>
-        <div class="readout" style="margin-top:0.9rem">
-            <div class="readout__item">
-                <span class="readout__label">Count</span>
-                <span class="readout__value">@Counter.Count</span>
-            </div>
-            <div class="readout__item">
-                <span class="readout__label">Step</span>
-                <span class="readout__value">@Counter.Step</span>
-            </div>
-        </div>
-    </DemoCard>
-
-    <h2>Outside components</h2>
-    <p>
-        The same primitive is a plain extension method on <code>IBlexStore</code>, usable anywhere. It
-        returns a token - dispose it to stop observing.
-    </p>
-
-    <CodeBlock Code="@Standalone" />
-
-    <ApiTable Title="BlexStoreSubscriptionExtensions" Rows="@ExtensionRows" />
-
-    <h3>Previous and current</h3>
-    <p>
-        The two-argument overload delivers <code>(previous, current)</code>, which is what you want
-        for transition logic - analytics, animations, "changed from X to Y" logging. This is MobX's
-        <code>reaction</code> shape.
-    </p>
-    <CodeBlock Code="@PrevCurrent" />
-
-    <h3>Custom equality</h3>
-    <p>
-        Both overloads take an optional <code>IEqualityComparer&lt;T&gt;</code>. Supply one when the
-        projection returns something whose default equality is not what you mean - a collection, for
-        instance, where you want to compare contents rather than references.
-    </p>
-    <p>
-        This is the case that quietly defeats selectors. A projection like
-        <code>() =&gt; Contacts.All.Where(c =&gt; c.Starred)</code> builds a <em>new</em> object on
-        every evaluation, so the default reference comparison always reports a change and the
-        subscription fires on every action - precisely what selecting a projection was meant to
-        avoid. <code>BlexComparers</code> supplies the two comparers that fix it, the same job
-        zustand's <code>shallow</code> does.
-    </p>
-    <CodeBlock Code="@Comparer" />
-
-    <ApiTable Title="BlexComparers" Rows="@ComparerRows" />
-
-    <DemoCard Title="Same projection, two comparers"
-              Description="Both watch the starred contacts. Star and unstar to change the projection; add or remove an unstarred contact to leave it alone but still run it."
-              Source="@ComparerSource">
-        <div class="row">
-            <button class="btn btn-sm" @onclick="() => Contacts.ToggleStar(1)">Toggle Ada's star</button>
-            <button class="btn btn-sm" @onclick="AddUnstarred">Add an unstarred contact</button>
-            <button class="btn btn-sm btn-ghost" @onclick="ResetCounters">Reset counters</button>
-        </div>
-
-        <div class="readout" style="margin-top:0.8rem">
-            <div class="readout__item">
-                <span class="readout__label">Starred now</span>
-                <span class="readout__value readout__value--accent">@Contacts.Starred</span>
-            </div>
-            <div class="readout__item">
-                <span class="readout__label">Default equality: fired</span>
-                <span class="readout__value">@_defaultFired</span>
-            </div>
-            <div class="readout__item">
-                <span class="readout__label">Sequence comparer: fired</span>
-                <span class="readout__value readout__value--accent">@_sequenceFired</span>
-            </div>
-        </div>
-
-        <p class="small muted" style="margin-top:0.8rem;margin-bottom:0">
-            Adding an unstarred contact re-runs both projections and produces an identical sequence.
-            Only the left-hand counter moves - and it is the one that would have re-rendered a
-            component for nothing.
+    <div class="bb-card">
+        <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> BlexComponentBase</h3>
+        <p>
+            Inherit from <code>BlexComponentBase</code> and call <code>Subscribe(...)</code> in
+            <code>OnInitialized</code>. The component re-renders whenever a subscribed store changes and
+            detaches every handler on dispose - there is no <code>StateHasChanged</code> to call and
+            nothing to clean up.
         </p>
-    </DemoCard>
 
-    <h3>fireImmediately</h3>
-    <p>
-        Pass <code>fireImmediately: true</code> to invoke the callback once at subscription time with
-        the current value, so an observer does not have to seed itself. With the two-argument
-        overload, <code>previous</code> and <code>current</code> are both the value at subscription.
-        If that first call throws, the subscription is detached before the exception surfaces - the
-        caller never received a token, so a handler left attached would be unstoppable.
-    </p>
+        <CodeBlock Code="@Basic" Language="razor" />
 
-    <h3>Across stores</h3>
-    <p>
-        <code>BlexManager</code> carries the same pair of overloads for a projection that spans
-        stores. Without it, a value derived from two stores has to be recomputed on every action of
-        every store - the cross-store equivalent of re-rendering the whole app on any change.
-    </p>
-    <CodeBlock Code="@ManagerSelector" Title="One callback, two stores" />
+        <p>You can subscribe to several stores at once; the call is idempotent per store.</p>
+        <CodeBlock Code="@Multi" />
 
-    <Callout Kind="Callout.CalloutKind.Gotcha" Title="A manager selector runs after every action">
-        <p style="margin-bottom:0">
-            The store-level overload only runs when <em>that</em> store changes; the manager-level one
-            runs after every action in the application. Keep the projection cheap - read
-            already-memoized <a href="computed"><code>[BlexComputed]</code></a> properties
-            rather than recomputing over collections inside it.
+        <ApiTable Title="BlexComponentBase" Rows="@BaseRows" />
+    </div>
+
+    <div class="bb-card">
+        <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Selector subscriptions</h3>
+        <p>
+            <code>Subscribe(store)</code> fires on <em>any</em> change to that store. On a store with
+            many independent fields - or one big collection - that re-renders components that do not care.
+            Subscribe to a projection instead, and the component only wakes up when the projected value
+            actually changes.
         </p>
-    </Callout>
 
-    <h2>Owning other subscriptions</h2>
-    <p>
-        <code>OwnsSubscription(IDisposable)</code> hands any token to the component so it is disposed
-        along with it - a manager subscription, a selector token you made yourself, anything.
-    </p>
-    <CodeBlock Code="@Owns" Language="razor" />
+        <CodeBlock Code="@Selector" />
 
-    <h2>The raw event</h2>
-    <p>
-        Under everything is <code>IBlexStore.StateChanged</code>, a plain <code>Action</code> raised once
-        per action after the state has settled. Use it directly when you want no machinery at all -
-        just remember to unsubscribe.
-    </p>
-    <CodeBlock Code="@Raw" />
+        <DemoCard Title="Whole store vs. selector"
+                  Description="Two identical panels, subscribed differently. Change only the Step field and watch which one re-renders."
+                  Source="@WatcherSource" SourceLanguage="razor">
+            <div class="bb-grid">
+                <WholeStoreWatcher />
+                <SelectorWatcher />
+            </div>
+            <div class="bb-toolbar">
+                <button class="btn btn-primary" @onclick="Counter.Increment">Change Count (both re-render)</button>
+                <button class="btn btn-secondary" @onclick="() => Counter.SetStep(Counter.Step == 1 ? 5 : 1)">
+                    Change Step only (left re-renders, right does not)
+                </button>
+                <button class="btn btn-secondary" @onclick="Counter.ResetState">Reset</button>
+            </div>
+            <div class="bb-stats">
+                <div class="bb-stat">
+                    <span class="bb-stat-label">Count</span>
+                    <span class="bb-stat-value">@Counter.Count</span>
+                </div>
+                <div class="bb-stat">
+                    <span class="bb-stat-label">Step</span>
+                    <span class="bb-stat-value">@Counter.Step</span>
+                </div>
+            </div>
+        </DemoCard>
+    </div>
 
-    <Callout Kind="Callout.CalloutKind.Tip" Title="Rendering is already batched">
-        <p style="margin-bottom:0">
-            An action that changes five fields raises <code>StateChanged</code> once, not five times,
-            so you do not need selectors to avoid render storms <em>within</em> an action. Reach for
-            them when a component should ignore whole categories of change on a shared store.
+    <div class="bb-card">
+        <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Outside components</h3>
+        <p>
+            The same primitive is a plain extension method on <code>IBlexStore</code>, usable anywhere. It
+            returns a token - dispose it to stop observing.
         </p>
-    </Callout>
 
-    <Callout Kind="Callout.CalloutKind.Gotcha" Title="Selectors compare, they do not deep-compare">
-        <p style="margin-bottom:0">
-            A selector returning <code>Store.Items</code> (a list) fires whenever the
-            <em>reference</em> changes - which, if you follow the immutable-assignment rule, is every
-            time the collection is replaced, even when the contents are equal. Project to something
-            small and comparable (<code>Items.Count</code>, an id, a formatted string), or pass
-            <code>BlexComparers.Sequence&lt;T&gt;()</code>.
-        </p>
-    </Callout>
+        <CodeBlock Code="@Standalone" />
 
-    <Callout Kind="Callout.CalloutKind.Note" Title="Manager selectors also see restores">
-        <p style="margin-bottom:0">
-            Undo/redo, a DevTools time-travel jump and an incoming cross-tab change all move state
-            without dispatching an action. A manager-level projection is re-evaluated after those too,
-            so it never keeps reporting a value the application no longer holds.
+        <ApiTable Title="BlexStoreSubscriptionExtensions" Rows="@ExtensionRows" />
+
+        <h4>Previous and current</h4>
+        <p>
+            The two-argument overload delivers <code>(previous, current)</code>, which is what you want
+            for transition logic - analytics, animations, "changed from X to Y" logging. This is MobX's
+            <code>reaction</code> shape.
         </p>
-    </Callout>
+        <CodeBlock Code="@PrevCurrent" />
+
+        <h4>Custom equality</h4>
+        <p>
+            Both overloads take an optional <code>IEqualityComparer&lt;T&gt;</code>. Supply one when the
+            projection returns something whose default equality is not what you mean - a collection, for
+            instance, where you want to compare contents rather than references.
+        </p>
+        <p>
+            This is the case that quietly defeats selectors. A projection like
+            <code>() =&gt; Contacts.All.Where(c =&gt; c.Starred)</code> builds a <em>new</em> object on
+            every evaluation, so the default reference comparison always reports a change and the
+            subscription fires on every action - precisely what selecting a projection was meant to
+            avoid. <code>BlexComparers</code> supplies the two comparers that fix it, the same job
+            zustand's <code>shallow</code> does.
+        </p>
+        <CodeBlock Code="@Comparer" />
+
+        <ApiTable Title="BlexComparers" Rows="@ComparerRows" />
+
+        <DemoCard Title="Same projection, two comparers"
+                  Description="Both watch the starred contacts. Star and unstar to change the projection; add or remove an unstarred contact to leave it alone but still run it."
+                  Source="@ComparerSource">
+            <div class="bb-toolbar">
+                <button class="btn btn-secondary" @onclick="() => Contacts.ToggleStar(1)">Toggle Ada's star</button>
+                <button class="btn btn-secondary" @onclick="AddUnstarred">Add an unstarred contact</button>
+                <button class="btn btn-secondary" @onclick="ResetCounters">Reset counters</button>
+            </div>
+
+            <div class="bb-stats">
+                <div class="bb-stat">
+                    <span class="bb-stat-label">Starred now</span>
+                    <span class="bb-stat-value demo-accent">@Contacts.Starred</span>
+                </div>
+                <div class="bb-stat">
+                    <span class="bb-stat-label">Default equality: fired</span>
+                    <span class="bb-stat-value">@_defaultFired</span>
+                </div>
+                <div class="bb-stat">
+                    <span class="bb-stat-label">Sequence comparer: fired</span>
+                    <span class="bb-stat-value demo-accent">@_sequenceFired</span>
+                </div>
+            </div>
+
+            <p class="bb-card-desc">
+                Adding an unstarred contact re-runs both projections and produces an identical sequence.
+                Only the left-hand counter moves - and it is the one that would have re-rendered a
+                component for nothing.
+            </p>
+        </DemoCard>
+
+        <h4>fireImmediately</h4>
+        <p>
+            Pass <code>fireImmediately: true</code> to invoke the callback once at subscription time with
+            the current value, so an observer does not have to seed itself. With the two-argument
+            overload, <code>previous</code> and <code>current</code> are both the value at subscription.
+            If that first call throws, the subscription is detached before the exception surfaces - the
+            caller never received a token, so a handler left attached would be unstoppable.
+        </p>
+
+        <h4>Across stores</h4>
+        <p>
+            <code>BlexManager</code> carries the same pair of overloads for a projection that spans
+            stores. Without it, a value derived from two stores has to be recomputed on every action of
+            every store - the cross-store equivalent of re-rendering the whole app on any change.
+        </p>
+        <CodeBlock Code="@ManagerSelector" Title="One callback, two stores" />
+
+        <Callout Kind="Callout.CalloutKind.Gotcha" Title="A manager selector runs after every action">
+            <p>
+                The store-level overload only runs when <em>that</em> store changes; the manager-level one
+                runs after every action in the application. Keep the projection cheap - read
+                already-memoized <a href="computed"><code>[BlexComputed]</code></a> properties
+                rather than recomputing over collections inside it.
+            </p>
+        </Callout>
+    </div>
+
+    <div class="bb-card">
+        <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Owning other subscriptions</h3>
+        <p>
+            <code>OwnsSubscription(IDisposable)</code> hands any token to the component so it is disposed
+            along with it - a manager subscription, a selector token you made yourself, anything.
+        </p>
+        <CodeBlock Code="@Owns" Language="razor" />
+    </div>
+
+    <div class="bb-card">
+        <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> The raw event</h3>
+        <p>
+            Under everything is <code>IBlexStore.StateChanged</code>, a plain <code>Action</code> raised once
+            per action after the state has settled. Use it directly when you want no machinery at all -
+            just remember to unsubscribe.
+        </p>
+        <CodeBlock Code="@Raw" />
+
+        <Callout Kind="Callout.CalloutKind.Tip" Title="Rendering is already batched">
+            <p>
+                An action that changes five fields raises <code>StateChanged</code> once, not five times,
+                so you do not need selectors to avoid render storms <em>within</em> an action. Reach for
+                them when a component should ignore whole categories of change on a shared store.
+            </p>
+        </Callout>
+
+        <Callout Kind="Callout.CalloutKind.Gotcha" Title="Selectors compare, they do not deep-compare">
+            <p>
+                A selector returning <code>Store.Items</code> (a list) fires whenever the
+                <em>reference</em> changes - which, if you follow the immutable-assignment rule, is every
+                time the collection is replaced, even when the contents are equal. Project to something
+                small and comparable (<code>Items.Count</code>, an id, a formatted string), or pass
+                <code>BlexComparers.Sequence&lt;T&gt;()</code>.
+            </p>
+        </Callout>
+
+        <Callout Kind="Callout.CalloutKind.Note" Title="Manager selectors also see restores">
+            <p>
+                Undo/redo, a DevTools time-travel jump and an incoming cross-tab change all move state
+                without dispatching an action. A manager-level projection is re-evaluated after those too,
+                so it never keeps reporting a value the application no longer holds.
+            </p>
+        </Callout>
+    </div>
 
 </DocPage>
 

@@ -1,0 +1,378 @@
+﻿/* ============================================================================================
+   Bonboarding demo - the styles of the live samples.
+
+   The site's chrome, tokens and shared surfaces live in app.css (the site kit every Utilities demo
+   shares); this file only draws what is Bonboarding's own: the tour card, restyled through the
+   library's custom properties, and the small fake product the tours point at. The product is
+   written against the kit's --bb-* names, so it follows the light/dark theme with no rules of its
+   own for either.
+   ============================================================================================ */
+
+/* ---------- The tour card, in Fluent 2 ----------
+
+   Restyled purely through the --bit-bonboarding-* custom properties the library publishes, which is
+   exactly what the theming page tells an application to do. This file is linked after the library's
+   stylesheet, so a plain .bit-bonboarding-root here wins over its defaults.
+
+   A tour picks its palette independently of the page around it - Theme = Light stays light on a
+   dark site - so the light and the dark palettes are spelled out in full below, with the values of
+   the site kit's own two palettes, rather than through the --bb-* roles, which follow the site. */
+
+.bit-bonboarding-root {
+    --bit-bonboarding-surface: #FFFFFF;
+    --bit-bonboarding-surface-subtle: #F5F5F5;
+    --bit-bonboarding-text: #1A1A1A;
+    --bit-bonboarding-text-muted: #525252;
+    --bit-bonboarding-border: #E0E0E0;
+    --bit-bonboarding-border-strong: #ADADAD;
+
+    --bit-bonboarding-accent: #1276C6;
+    --bit-bonboarding-accent-hover: #0B6AB4;
+    --bit-bonboarding-accent-active: #095A9B;
+    --bit-bonboarding-accent-text: #FFFFFF;
+    --bit-bonboarding-accent-soft: rgba(18, 118, 198, .35);
+
+    --bit-bonboarding-danger: #D2393B;
+    --bit-bonboarding-danger-hover: #9D2225;
+
+    --bit-bonboarding-spotlight-ring: rgba(255, 255, 255, .9);
+    --bit-bonboarding-spotlight-glow: rgba(18, 118, 198, .40);
+
+    /* Fluent's flyout: the XLarge corner every floating surface takes, and shadow16 to lift it off
+       the overlay. */
+    --bit-bonboarding-radius: var(--fl-radius-xlarge);
+    --bit-bonboarding-radius-sm: var(--fl-radius-medium);
+    --bit-bonboarding-shadow: 0 8px 16px rgba(0, 0, 0, .14), 0 0 2px rgba(0, 0, 0, .12);
+    /* Fluent's focus stroke: neutral rather than brand, so it still shows on a brand-filled button. */
+    --bit-bonboarding-focus-ring: 0 0 0 1px #FFFFFF, 0 0 0 3px #000000;
+
+    --bit-bonboarding-font: var(--bb-font-sans);
+    --bit-bonboarding-font-size: var(--fl-font-size-200);
+    --bit-bonboarding-font-size-sm: var(--fl-font-size-200);
+    --bit-bonboarding-title-size: var(--fl-font-size-300);
+    --bit-bonboarding-title-weight: var(--fl-weight-semibold);
+    --bit-bonboarding-line-height: 1.43;
+
+    --bit-bonboarding-ease: var(--fl-curve-decelerate-mid);
+}
+
+/* The dark palette: a tour that asked for it, and - since "system" leaves the choice to the
+   application's stylesheet - a tour that left its theme unset while the site is dark. That second
+   selector is the whole of "the tours follow the site's theme switch". */
+.bit-bonboarding-root[data-bonboarding-theme="dark"],
+:root[bit-theme="dark"] .bit-bonboarding-root[data-bonboarding-theme="system"] {
+    --bit-bonboarding-surface: #15191E;
+    --bit-bonboarding-surface-subtle: #22272C;
+    --bit-bonboarding-text: #E6ECF2;
+    --bit-bonboarding-text-muted: #B9BEC4;
+    --bit-bonboarding-border: #2B3138;
+    --bit-bonboarding-border-strong: #454C53;
+
+    --bit-bonboarding-accent: #4FA3F4;
+    --bit-bonboarding-accent-hover: #61AEFB;
+    --bit-bonboarding-accent-active: #7DBEFF;
+    --bit-bonboarding-accent-text: #0F1318;
+    --bit-bonboarding-accent-soft: rgba(79, 163, 244, .45);
+
+    --bit-bonboarding-danger: #E67A73;
+    --bit-bonboarding-danger-hover: #FEA199;
+
+    --bit-bonboarding-overlay-opacity: .68;
+
+    --bit-bonboarding-spotlight-ring: rgba(255, 255, 255, .42);
+    --bit-bonboarding-spotlight-glow: rgba(79, 163, 244, .32);
+
+    --bit-bonboarding-shadow: 0 8px 16px rgba(0, 0, 0, .28), 0 0 2px rgba(0, 0, 0, .24);
+    --bit-bonboarding-focus-ring: 0 0 0 1px #0F1318, 0 0 0 3px #FFFFFF;
+}
+
+/* A deliberately different identity, for the theming page's skin picker. It is applied with the
+   tour's PopoverClass, which lands on the card rather than on the root, so these win over the
+   Fluent values above without a single extra selector. */
+.brand-popover {
+    --bit-bonboarding-surface: #101828;
+    --bit-bonboarding-surface-subtle: #1D2939;
+    --bit-bonboarding-text: #F9FAFB;
+    --bit-bonboarding-text-muted: #CBD5E1;
+    --bit-bonboarding-border: #1F2A3D;
+    --bit-bonboarding-border-strong: #344054;
+    --bit-bonboarding-accent: #F59E0B;
+    --bit-bonboarding-accent-hover: #FBBF24;
+    --bit-bonboarding-accent-active: #D97706;
+    --bit-bonboarding-accent-text: #1F1300;
+    --bit-bonboarding-accent-soft: rgba(245, 158, 11, .35);
+    --bit-bonboarding-radius: 6px;
+}
+
+/* The site kit styles a few elements globally - headings take the page's text color and display
+   face, and anything focusable with tabindex="-1" (which the router's focus target and the card
+   both are) drops its ring and its shadow. Neither belongs inside the card, whose colors come from
+   the tour's own palette, so the card is shielded from them here. */
+.bit-bonboarding-root :is(h1, h2, h3, h4, h5, h6) {
+    color: inherit;
+    font-family: inherit;
+    text-wrap: wrap;
+}
+
+.bit-bonboarding-root .bit-bonboarding-popover:focus-visible {
+    box-shadow: var(--bit-bonboarding-shadow), var(--bit-bonboarding-focus-ring);
+}
+
+/* ---------- The fake product the tours point at ----------
+
+   A small application window: a toolbar, a sidebar and a dashboard. It is a container so it can
+   rearrange itself for the room it actually has - the docs column, the landing page's hero and a
+   phone are three very different widths. Every element a tour points at carries a
+   data-bonboarding-anchor attribute and nothing else. */
+.app-window {
+    container-type: inline-size;
+    overflow: hidden;
+    margin-top: 1rem;
+    color: var(--bb-text);
+    background: var(--bb-surface);
+    border: 1px solid var(--bb-border);
+    border-radius: var(--bb-radius-xl);
+    box-shadow: var(--bb-shadow-card);
+}
+
+.bb-demo > .app-window:first-child,
+.bb-demo-bar + .app-window {
+    margin-top: 0;
+}
+
+/* In the landing page's window frame the frame is the chrome, so the product drops its own. */
+.bb-browser .app-window {
+    margin: 0;
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+}
+
+.app-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: .5rem;
+    padding: .5rem .75rem;
+    background: var(--bb-surface-sunken);
+    border-bottom: 1px solid var(--bb-border);
+}
+
+.app-toolbar input[type="text"] {
+    flex: 0 1 13rem;
+    min-width: 0;
+}
+
+.app-toolbar .spacer {
+    margin-inline-start: auto;
+}
+
+.app-body {
+    display: grid;
+    min-height: 16rem;
+    grid-template-columns: 11rem minmax(0, 1fr);
+}
+
+.app-side {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: .5rem;
+    font-size: var(--fl-font-size-200);
+    line-height: 1.43;
+    border-inline-end: 1px solid var(--bb-border);
+}
+
+.app-side span {
+    position: relative;
+    padding: .3125rem .75rem;
+    color: var(--bb-text-muted);
+    border-radius: var(--bb-radius);
+}
+
+/* The same selected-row treatment as the site's own docs navigation. */
+.app-side span.sel {
+    font-weight: var(--fl-weight-semibold);
+    color: var(--bb-text);
+    background: var(--bb-surface-hover);
+}
+
+.app-side span.sel::before {
+    content: "";
+    position: absolute;
+    top: 20%;
+    bottom: 20%;
+    inset-inline-start: 0;
+    width: 3px;
+    border-radius: var(--bb-radius-pill);
+    background: var(--bb-primary);
+}
+
+.app-main {
+    display: flex;
+    flex-direction: column;
+    gap: .75rem;
+    padding: 1rem;
+    background: var(--bb-bg);
+}
+
+.app-metrics {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(8.5rem, 1fr));
+    gap: .75rem;
+}
+
+.tile {
+    padding: .75rem 1rem;
+    background: var(--bb-surface);
+    border: 1px solid var(--bb-border);
+    border-radius: var(--bb-radius-lg);
+    box-shadow: var(--bb-shadow-card);
+}
+
+.tile-title {
+    font-size: var(--fl-font-size-100);
+    line-height: 1.33;
+    color: var(--bb-text-soft);
+}
+
+.tile-value {
+    margin-top: .25rem;
+    font-family: var(--bb-font-display);
+    font-size: var(--fl-font-size-500);
+    font-weight: var(--fl-weight-semibold);
+    line-height: 1.33;
+    letter-spacing: -.02em;
+    color: var(--bb-text);
+}
+
+@container (max-width: 34rem) {
+    .app-body {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .app-side {
+        flex-flow: row wrap;
+        border-inline-end: 0;
+        border-bottom: 1px solid var(--bb-border);
+    }
+
+    .app-side span.sel::before {
+        top: auto;
+        bottom: 0;
+        left: .75rem;
+        right: .75rem;
+        width: auto;
+        height: 3px;
+    }
+}
+
+/* A panel a page renders on demand or files settings under - a plain surface with a title. */
+.demo-panel {
+    min-width: 0;
+    margin-top: 1rem;
+    padding: 1rem 1.25rem;
+    background: var(--bb-surface);
+    border: 1px solid var(--bb-border);
+    border-radius: var(--bb-radius-lg);
+    box-shadow: var(--bb-shadow-card);
+    color: var(--bb-text-muted);
+    font-size: var(--fl-font-size-200);
+}
+
+.demo-panel > :last-child {
+    margin-bottom: 0;
+}
+
+.demo-panel-title {
+    margin-bottom: .5rem;
+    color: var(--bb-text);
+    font-size: var(--fl-font-size-300);
+    font-weight: var(--fl-weight-semibold);
+}
+
+/* The settings page: three panels that wrap under each other once the column is too narrow. */
+.demo-settings {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(16rem, 100%), 1fr));
+    gap: 1rem;
+}
+
+.demo-settings > .demo-panel {
+    margin-top: 0;
+}
+
+.demo-panel .bb-field input {
+    width: 100%;
+}
+
+/* ---------- The placement playground ----------
+
+   A scrolling canvas with targets pinned near its edges. The dot grid is there so it reads as a
+   surface to place things on rather than as an empty box. */
+.playground {
+    position: relative;
+    height: 22rem;
+    overflow: auto;
+    background-color: var(--bb-bg);
+    background-image: radial-gradient(var(--bb-border-strong) 1px, transparent 1px);
+    background-size: 1rem 1rem;
+    border: 1px dashed var(--bb-border-strong);
+    border-radius: var(--bb-radius-lg);
+    scrollbar-width: thin;
+}
+
+.playground-inner {
+    position: relative;
+    width: 100%;
+    height: 40rem;
+}
+
+.dot-target {
+    position: absolute;
+    display: grid;
+    place-items: center;
+    width: 5.5rem;
+    height: 2.5rem;
+    font-size: var(--fl-font-size-100);
+    font-weight: var(--fl-weight-semibold);
+    color: var(--bb-text);
+    background: var(--bb-surface);
+    border: 1px solid var(--bb-border-strong);
+    border-radius: var(--bb-radius);
+    box-shadow: var(--fl-shadow-4);
+}
+
+/* ---------- The events page's live stream - the kit's .bb-log, one column per field ---------- */
+.event-log {
+    max-height: 20rem;
+    margin: 1rem 0 0;
+}
+
+.event-log-row {
+    display: flex;
+    gap: .75rem;
+}
+
+.event-log-time {
+    flex: none;
+    color: var(--bb-code-comment);
+}
+
+.event-log-kind {
+    flex: none;
+    min-width: 9rem;
+    font-weight: var(--fl-weight-semibold);
+    color: var(--bb-code-keyword);
+}
+
+@media (max-width: 600px) {
+    .event-log-row {
+        flex-wrap: wrap;
+        gap: 0 .75rem;
+    }
+
+    .event-log-kind {
+        min-width: 0;
+    }
+}

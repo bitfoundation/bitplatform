@@ -32,14 +32,16 @@ public static class SyntaxHighlighter
         catch { return System.Net.WebUtility.HtmlEncode(code); }
     }
 
-    /// <summary>One encoded block per line, the same shape the lexer produces, with no tokens.</summary>
+    /// <summary>One encoded span per line, the same shape the lexer produces, with no tokens.</summary>
     private static string Plain(string code)
     {
         var sb = new StringBuilder();
-        foreach (var line in code.Split('\n'))
+        var lines = code.Split('\n');
+        for (int k = 0; k < lines.Length; k++)
         {
+            if (k > 0) sb.Append('\n');
             sb.Append("<span class=\"code-line\">")
-              .Append(line.Length == 0 ? "​" : System.Net.WebUtility.HtmlEncode(line))
+              .Append(System.Net.WebUtility.HtmlEncode(lines[k]))
               .Append("</span>");
         }
         return sb.ToString();
@@ -95,14 +97,13 @@ public static class SyntaxHighlighter
             for (int k = 0; k < lines.Count; k++)
             {
                 var ln = lines[k];
-                // Each line is rendered as its own block-level span. Empty lines get a
-                // zero-width space so they keep their height. Newlines are intentionally
-                // NOT emitted: the block layout provides the line breaks, and a literal
-                // '\n' next to a display:block span would render as an extra blank line.
+                // One span per line, joined by real line feeds: the <pre> breaks the lines, and the
+                // block's text is the code itself - which is what the copy button site.js adds to
+                // every pre.bb-code takes (textContent), so it must carry no extra characters.
+                if (k > 0) outSb.Append('\n');
                 var cls = ln.Hl ? "code-line hl-line" : "code-line";
                 outSb.Append("<span class=\"").Append(cls).Append("\">");
-                if (ln.Sb.Length == 0) outSb.Append("\u200b");
-                else outSb.Append(ln.Sb);
+                outSb.Append(ln.Sb);
                 outSb.Append("</span>");
             }
             return outSb.ToString();

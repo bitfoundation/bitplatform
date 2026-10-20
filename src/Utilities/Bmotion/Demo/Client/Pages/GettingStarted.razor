@@ -1,0 +1,133 @@
+﻿@page "/getting-started"
+
+<PageTitle>Getting started · Bmotion</PageTitle>
+
+<div class="bb-intro">
+    <h1>Getting started</h1>
+    <p class="bb-subtitle">
+        One package and one service registration - then any element on an interactively rendered page can
+        spring, fade, follow the pointer or animate out before it is removed. All of the maths runs in C#;
+        the small browser bridge loads itself the first time an animation runs.
+    </p>
+</div>
+
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Install</h3>
+    <p class="bb-card-desc">
+        The package targets .NET 8, 9 and 10. Its browser bridge, <code>bit-bmotion.js</code>, ships as a static
+        web asset and is imported on demand, so there is no <code>&lt;script&gt;</code> tag to add and no
+        JavaScript to write. In a Blazor Web App the package belongs in the project whose components animate -
+        the <code>.Client</code> project for WebAssembly pages.
+    </p>
+    <pre class="bb-code">dotnet add package Bit.Bmotion</pre>
+</section>
+
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Register the services</h3>
+    <p class="bb-card-desc">
+        A Blazor Web App has two DI containers: the client's components are instantiated once on the server for
+        the prerender pass and again in the browser, so the registration goes in both <code>Program.cs</code> files.
+        This site keeps it in one extension method that both call.
+    </p>
+    <pre class="bb-code"><span class="c">// Program.cs - in every project that renders animations</span>
+<span class="k">using</span> Bit.Bmotion;
+
+builder.Services.AddBitBmotionServices();</pre>
+    <p class="bb-card-desc">
+        The options are global. The two worth deciding on day one are how <code>prefers-reduced-motion</code> is
+        honoured - <code>BmReducedMotionMode.User</code> is the recommended setting - and what prerendered markup
+        shows before the runtime takes over:
+    </p>
+    <pre class="bb-code">builder.Services.AddBitBmotionServices(o =&gt;
+{
+    o.ReducedMotion = BmReducedMotionMode.User;   <span class="c">// follow the OS everywhere</span>
+    o.Prerender = BmPrerenderMode.Animate;        <span class="c">// play enter animations from the served HTML</span>
+});</pre>
+</section>
+
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Make the components reachable</h3>
+    <p class="bb-card-desc">
+        One line in <code>_Imports.razor</code>, in every project that renders animations. Without it
+        <code>&lt;Bmotion&gt;</code> is not a known component and the build fails with RZ10012.
+    </p>
+    <pre class="bb-code"><span class="k">@@using</span> Bit.Bmotion</pre>
+</section>
+
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Pick a render mode</h3>
+    <p class="bb-card-desc">
+        Animations need an interactive render mode. <strong>InteractiveWebAssembly</strong> supports every feature,
+        because the engine can run its per-frame loop in the browser - it is what this site uses.
+    </p>
+    <div class="bb-note bb-note-warn">
+        On <strong>Blazor Server</strong> the compositor path still works, so enter, exit, hover, tap and variant
+        animations on transform and opacity play normally, and drag follows the pointer a round trip behind.
+        What needs the per-frame loop - inertia, colour and dimension interpolation, keyframe arrays off the
+        compositor - becomes an instant change. Inject <code>BmotionCapabilities</code> to tell which runtime you
+        are on rather than guessing; the <a href="accessibility">Accessibility</a> page shows it live.
+    </div>
+</section>
+
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Prerendered enter animations</h3>
+    <p class="bb-card-desc">
+        A prerendered page has no runtime yet, so by default an element is served at its <code>Initial</code> state
+        and animates once the page is interactive - which for <code>Initial="Bm.To(opacity: 0)"</code> means
+        invisible content until the runtime has downloaded. With <code>BmPrerenderMode.Animate</code> the enter
+        animation is compiled to CSS and plays straight from the served HTML; it needs the library's stylesheet in
+        the page head. <code>BmPrerenderMode.Final</code> serves elements at rest instead, with no stylesheet.
+    </p>
+    <pre class="bb-code"><span class="c">&lt;!-- App.razor, in &lt;head&gt; - only needed for BmPrerenderMode.Animate --&gt;</span>
+&lt;<span class="k">link</span> rel=<span class="s">"stylesheet"</span> href=<span class="s">"_content/Bit.Bmotion/bit-bmotion.css"</span> /&gt;</pre>
+</section>
+
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> A first animation</h3>
+    <p class="bb-card-desc">
+        <code>&lt;Bmotion&gt;</code> renders no element of its own: it animates the one element inside it.
+        <code>Initial</code> is where that element starts, <code>Animate</code> is where it is going, and
+        <code>Transition</code> says how it gets there. Gesture states such as <code>WhileHover</code> and
+        <code>WhileTap</code> layer on top and revert by themselves.
+    </p>
+    <pre class="bb-code">&lt;<span class="k">Bmotion</span> Initial=<span class="s">"Bm.To(opacity: 0, y: 20)"</span>
+         Animate=<span class="s">"Bm.To(opacity: 1, y: 0)"</span>
+         WhileHover=<span class="s">"Bm.To(scale: 1.1)"</span>
+         WhileTap=<span class="s">"Bm.To(scale: 0.95)"</span>
+         Transition=<span class="s">"Bm.Spring(bounce: 0.4, duration: 0.6)"</span>&gt;
+    &lt;<span class="k">div</span> class=<span class="s">"box"</span>&gt;Hello&lt;/<span class="k">div</span>&gt;
+&lt;/<span class="k">Bmotion</span>&gt;</pre>
+
+    <div class="demo-row">
+        <div class="demo-card stack">
+            <span class="demo-label">Live &middot; hover it, press it</span>
+            <Bmotion @key="_run"
+                     Initial="Bm.To(opacity: 0, y: 20)"
+                     Animate="Bm.To(opacity: 1, y: 0)"
+                     WhileHover="Bm.To(scale: 1.1)"
+                     WhileTap="Bm.To(scale: 0.95)"
+                     Transition="Bm.Spring(bounce: 0.4, duration: 0.6)">
+                <div class="box box-label">Hello</div>
+            </Bmotion>
+        </div>
+    </div>
+
+    <div class="bb-toolbar">
+        <button type="button" class="btn btn-primary" @onclick="() => _run++">Replay the entrance</button>
+    </div>
+</section>
+
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Where to go next</h3>
+    <div class="bb-try">
+        <a href="basic" class="btn btn-outline">The shape of every animation →</a>
+        <a href="springs" class="btn btn-outline">Tune a spring →</a>
+        <a href="gestures" class="btn btn-outline">React to the pointer →</a>
+        <a href="presence" class="btn btn-outline">Animate an exit →</a>
+        <a href="mcp-server" class="btn btn-outline">Let an AI agent write it →</a>
+    </div>
+</section>
+
+@code {
+    private int _run;
+}

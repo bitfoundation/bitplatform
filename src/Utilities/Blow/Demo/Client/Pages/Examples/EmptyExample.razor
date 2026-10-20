@@ -1,13 +1,13 @@
 ﻿@page "/examples/empty"
 
-<PageTitle>Empty - bit Blow</PageTitle>
+<PageTitle>Empty · Blow</PageTitle>
 
 <ExampleScaffold Title="Empty"
                  Summary="An empty canvas. Use the buttons to add nodes at runtime, then connect them.">
     <Toolbar>
-        <button class="btn btn-sm btn-primary" @onclick="AddNode">Add node</button>
-        <button class="btn btn-sm" @onclick="Reset">Clear</button>
-        <span class="text-muted">@_nodes.Count node(s)</span>
+        <button class="btn btn-primary" @onclick="AddNode">Add node</button>
+        <button class="btn btn-secondary" @onclick="Reset">Clear</button>
+        <span class="bb-muted">@_nodes.Count node(s)</span>
     </Toolbar>
     <ChildContent>
         <BlowCanvas @ref="_flow" Nodes="_nodes" Edges="_edges">

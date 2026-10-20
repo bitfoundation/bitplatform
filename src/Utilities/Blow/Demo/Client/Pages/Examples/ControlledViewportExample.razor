@@ -1,14 +1,14 @@
 ﻿@page "/examples/controlled-viewport"
 
-<PageTitle>Controlled Viewport - bit Blow</PageTitle>
+<PageTitle>Controlled Viewport · Blow</PageTitle>
 
 <ExampleScaffold Title="Controlled Viewport"
                  Summary="Drive the viewport from your own state. The canvas's Viewport parameter is bound to a field that OnViewportChanged keeps up to date as you pan and zoom; Reset and Center write that field directly and the canvas follows. Fit goes through the imperative API, which reports back through the same callback.">
     <Toolbar>
-        <span class="text-muted">x: @_vp.X.ToString("0") · y: @_vp.Y.ToString("0") · zoom: @_vp.Zoom.ToString("0.00")</span>
-        <button class="btn btn-sm" @onclick="@(() => _vp = new BlowViewport(0, 0, 1))">Reset</button>
-        <button class="btn btn-sm" @onclick="CenterOrigin">Center origin</button>
-        <button class="btn btn-sm" @onclick="@(() => _flow?.FitView())">Fit</button>
+        <span class="bb-muted">x: @_vp.X.ToString("0") · y: @_vp.Y.ToString("0") · zoom: @_vp.Zoom.ToString("0.00")</span>
+        <button class="btn btn-secondary" @onclick="@(() => _vp = new BlowViewport(0, 0, 1))">Reset</button>
+        <button class="btn btn-secondary" @onclick="CenterOrigin">Center origin</button>
+        <button class="btn btn-secondary" @onclick="@(() => _flow?.FitView())">Fit</button>
     </Toolbar>
     <ChildContent>
         <BlowCanvas @ref="_flow" Nodes="_nodes" Edges="_edges" FitViewOnInit="true"

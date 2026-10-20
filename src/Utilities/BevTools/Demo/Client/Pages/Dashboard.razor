@@ -1,0 +1,117 @@
+﻿@page "/dashboard"
+@inject AppState AppState
+
+<PageTitle>Dashboard · BevTools</PageTitle>
+
+<div class="bb-intro">
+    <p class="bb-overline">Scenario · Rendering</p>
+    <h1>Dashboard</h1>
+    <p class="bb-subtitle">
+        A realistic component hierarchy: stat cards under a cascading value, a live clock, a user profile and the
+        recent orders loaded over HTTP. It is where the component tree, the cause of every render and the most common
+        avoidable cost in a Blazor app - renders driven only by a parent - are easiest to see.
+    </p>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> The dashboard</h3>
+    <p class="bb-card-desc">
+        Plain application code, with one problem left in on purpose: tick <em>clock re-renders whole dashboard</em>
+        and the clock's timer calls <code>StateHasChanged</code> on the whole page twice a second.
+    </p>
+
+    <div class="bb-demo">
+        <div class="bb-demo-bar"><span class="bb-demo-label">Live</span><RendererStatus /></div>
+
+        <CascadingValue Value="_settings">
+            <div class="bb-toolbar">
+                <button type="button" class="btn btn-secondary" @onclick="() => { _settings.Dense = !_settings.Dense; _settings.Version++; }">Toggle dense (cascading value → re-renders subscribers)</button>
+                <button type="button" class="btn btn-secondary" @onclick="ChangeAccent">Change accent</button>
+                <button type="button" class="btn btn-secondary" @onclick="AppState.Click">Click counter (AppState) = @AppState.Counters["clicks"]</button>
+                <label class="bb-check"><input type="checkbox" @bind="_clockRerendersDashboard" /> clock re-renders whole dashboard (intentional problem)</label>
+            </div>
+
+            <div class="demo-tiles">
+                <StatsCard Title="Revenue" Value="@_revenue.ToString("C0")" Trend="+4.2%" />
+                <StatsCard Title="Orders" Value="@_orders.ToString()" Trend="+12" />
+                <StatsCard Title="Visitors" Value="@_visitors.ToString("N0")" Trend="-1.8%" />
+                <div class="demo-tile">
+                    <h4 class="demo-tile-title">Server time</h4>
+                    <LiveClock OnTick="OnClockTick" />
+                </div>
+            </div>
+
+            <div class="demo-tiles demo-tiles-pair">
+                <UserProfile />
+                <RecentOrders />
+            </div>
+        </CascadingValue>
+    </div>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Components: the tree and the inspector</h3>
+    <p class="bb-card-desc">
+        Open BevTools (<kbd>Ctrl</kbd><kbd>Shift</kbd><kbd>D</kbd>) on the <strong>Components</strong> tab.
+        <code>Dashboard</code> sits under the site's layouts with its children: three <code>StatsCard</code>s,
+        <code>LiveClock</code>, <code>UserProfile</code> and <code>RecentOrders</code>.
+    </p>
+    <ul class="bb-detail-list">
+        <li>Select a <code>StatsCard</code>: its parameters (<code>Title</code>, <code>Value</code>, <code>Trend</code>), the cascading <code>DashboardSettings</code> it reads, and <em>Why did it render?</em> for every render it has had.</li>
+        <li>Select <code>UserProfile</code>: its injected <code>UserSession</code> shows <code>AccessToken</code> and <code>Nickname</code> redacted - one by its name, the other by <code>[BevToolsSensitive]</code>.</li>
+        <li>Press <em>Toggle dense</em> or <em>Change accent</em>: the cascading value changes and every card that reads it renders again.</li>
+    </ul>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Profiler and Diagnostics: renders nobody asked for</h3>
+    <p class="bb-card-desc">
+        Tick the checkbox, then open the <strong>Profiler</strong> and sort by renders: <code>Dashboard</code> and every
+        card climb together. Selected in the inspector, the Revenue card says <em>Parent Dashboard re-rendered
+        (parameters re-applied)</em> and marks those renders <em>forced</em>, because none of its parameter values
+        changed - unlike the Visitors card, whose <code>Value</code> does. <strong>Diagnostics</strong> reports
+        <em>Renders driven only by the parent</em> for each card.
+    </p>
+    <div class="bb-note bb-note-warn">
+        Load this page fresh (reload it) before you tick the box. The clock's timer starts on the page's first
+        render, and when the page was reached through a link its ticks are attributed to that navigation instead of
+        to <em>StateHasChanged outside an event</em>.
+    </div>
+    <div class="bb-try">
+        <a href="problems#problem-1" class="btn btn-outline">Problem 1, step by step →</a>
+        <a href="products" class="btn btn-outline">A bigger cascade: Products →</a>
+    </div>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> State, Network and Services</h3>
+    <ul class="bb-detail-list">
+        <li><strong>State</strong> → <code>AppState</code>: every press of <em>Click counter</em> is a named <code>Click</code> change, and every navigation a <code>Visit</code>. Its <code>ApiKey</code> is redacted.</li>
+        <li><strong>Network</strong>: <code>GET /api/orders</code>, slow on purpose, and <code>GET /api/profile</code>, whose <code>Authorization</code> header is redacted.</li>
+        <li><strong>Services</strong>: search <code>LeakyCache</code> and <code>ReportService</code> - a singleton capturing a scoped service and a circular dependency, registered in this app and never resolved.</li>
+    </ul>
+</div>
+
+@code {
+    private readonly DashboardSettings _settings = new();
+    private decimal _revenue = 128_430;
+    private int _orders = 1_204;
+    private int _visitors = 48_213;
+    private bool _clockRerendersDashboard;
+
+    private void ChangeAccent()
+    {
+        _settings.Accent = _settings.Accent == DashboardSettings.DefaultAccent ? DashboardSettings.AlternateAccent : DashboardSettings.DefaultAccent;
+        _settings.Version++;
+    }
+
+    private void OnClockTick()
+    {
+        // Intentional problem #1: a timer in a child bubbles up and re-renders the entire dashboard twice a second.
+        if (_clockRerendersDashboard)
+        {
+            _visitors++;
+            StateHasChanged();
+        }
+    }
+}

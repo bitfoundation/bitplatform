@@ -1,43 +1,88 @@
 ﻿@page "/orders"
 @inject ProductApi Api
 
-<PageTitle>Orders</PageTitle>
+<PageTitle>Orders · BevTools</PageTitle>
 
-<h1>Orders</h1>
-<p class="muted">Network problems to diagnose: a slow endpoint, a flaky endpoint that fails two thirds of the time, a burst of identical requests and a 404.</p>
-
-<div class="row">
-    <button class="primary" @onclick="() => Load()">Load orders (slow, 1.2–2.6 s)</button>
-    <button @onclick="() => Load(4000)">Load orders (very slow, 4 s)</button>
-    <button @onclick="Flaky">Call flaky endpoint</button>
-    <button @onclick="Burst">Fire 8 identical requests</button>
-    <button @onclick="Missing">Request a missing URL (404)</button>
-    <button @onclick="() => _log.Clear()">Clear log</button>
+<div class="bb-intro">
+    <p class="bb-overline">Scenario · Network</p>
+    <h1>Orders</h1>
+    <p class="bb-subtitle">
+        Network problems to diagnose: a slow endpoint, a flaky endpoint that fails two thirds of the time, a burst of
+        identical requests and a 404. Every request goes through <code>IHttpClientFactory</code>, so BevTools sees it
+        with no change to the code that sends it.
+    </p>
 </div>
 
-@if (_loading)
-{
-    <p class="muted">loading…</p>
-}
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> The orders client</h3>
+    <p class="bb-card-desc">
+        Each button calls the demo's own API (<code>/api/orders</code>, <code>/api/flaky</code>,
+        <code>/api/products</code>, and an address that does not exist). On the Server renderer these requests are made
+        by the server, so the browser's own network tab never sees them.
+    </p>
 
-@if (_orders is not null)
-{
-    <table>
-        <thead><tr><th>#</th><th>Customer</th><th>Total</th><th>Status</th><th>Placed</th></tr></thead>
-        <tbody>
-            @foreach (var o in _orders)
+    <div class="bb-demo">
+        <div class="bb-demo-bar"><span class="bb-demo-label">Live</span><RendererStatus /></div>
+
+        <div class="bb-toolbar">
+            <button type="button" class="btn btn-primary" @onclick="() => Load()">Load orders (slow, 1.2–2.6 s)</button>
+            <button type="button" class="btn btn-secondary" @onclick="() => Load(4000)">Load orders (very slow, 4 s)</button>
+            <button type="button" class="btn btn-secondary" @onclick="Flaky">Call flaky endpoint</button>
+            <button type="button" class="btn btn-secondary" @onclick="Burst">Fire 8 identical requests</button>
+            <button type="button" class="btn btn-secondary" @onclick="Missing">Request a missing URL (404)</button>
+            <button type="button" class="btn btn-outline" @onclick="() => _log.Clear()">Clear log</button>
+        </div>
+
+        @if (_loading)
+        {
+            <p class="bb-muted demo-loading"><span class="bb-spinner" aria-hidden="true"></span> loading…</p>
+        }
+
+        @if (_orders is not null)
+        {
+            <div class="bb-scroll demo-table-scroll">
+                <table class="bb-table">
+                    <thead><tr><th>#</th><th>Customer</th><th>Total</th><th>Status</th><th>Placed</th></tr></thead>
+                    <tbody>
+                        @foreach (var o in _orders)
+                        {
+                            <tr><td>@o.Id</td><td>@o.Customer</td><td>@o.Total.ToString("C")</td><td>@o.Status</td><td>@o.PlacedAt.ToLocalTime().ToString("g")</td></tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+
+        <div class="bb-log">
+            @if (_log.Count == 0)
             {
-                <tr><td>@o.Id</td><td>@o.Customer</td><td>@o.Total.ToString("C")</td><td>@o.Status</td><td>@o.PlacedAt.ToLocalTime().ToString("g")</td></tr>
+                <div class="bb-log-empty">No requests yet…</div>
             }
-        </tbody>
-    </table>
-}
+            @foreach (var line in _log)
+            {
+                <div class="bb-log-line">@line</div>
+            }
+        </div>
+    </div>
+</div>
 
-<div class="log">
-    @foreach (var line in _log)
-    {
-        <div>@line</div>
-    }
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Network: durations, statuses, triggers</h3>
+    <p class="bb-card-desc">
+        The <strong>Network</strong> panel lists every request with its method, address, status, duration, headers -
+        sensitive ones redacted, bodies never captured - and the UI event that triggered it.
+    </p>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Errors and Diagnostics: what went wrong</h3>
+    <ul class="bb-detail-list">
+        <li><strong>Errors</strong>: the failed flaky calls and the 404, each with the UI event that preceded it.</li>
+        <li><strong>Diagnostics</strong>: slow HTTP (the 4 s load), repeated failures (call the flaky endpoint a few times) and duplicate requests (the burst of 8).</li>
+    </ul>
+    <div class="bb-try">
+        <a href="problems#problem-4" class="btn btn-outline">Problem 4 →</a>
+    </div>
 </div>
 
 @code {

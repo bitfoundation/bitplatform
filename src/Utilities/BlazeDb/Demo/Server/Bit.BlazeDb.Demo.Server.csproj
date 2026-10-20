@@ -47,11 +47,13 @@
 
     <!-- What this site can teach about the engine, and nothing else of it: the pages - each one drives a
          real database - the models, the database service and the instrumented storage, the diagnostics
-         catalog and the client half of the hosting. The site chrome in Components\ (the icon set, the code
-         highlighter, the panels, the theme toggle, the site map) answers no question about BlazeDb; the MCP
-         page describes this server rather than the library, and the not-found page teaches nothing. -->
+         catalog and the client half of the hosting. The site chrome answers no question about BlazeDb:
+         Components\ (the icon set, the code highlighter, the panels, the storage badge), and Layout\ with
+         DocsCatalog.cs - the header, docs shell, search palette and footer every Utilities demo shares, and
+         the page list they are built from. The MCP page describes this server rather than the library, and
+         the not-found page teaches nothing. -->
     <EmbeddedResource Include="..\Client\**\*.razor;..\Client\**\*.cs"
-                      Exclude="..\Client\bin\**;..\Client\obj\**;..\Client\Components\**;..\Client\Pages\McpServer.razor;..\Client\Pages\NotFound.razor">
+                      Exclude="..\Client\bin\**;..\Client\obj\**;..\Client\Components\**;..\Client\Layout\**;..\Client\DocsCatalog.cs;..\Client\Pages\McpServer.razor;..\Client\Pages\NotFound.razor">
       <LogicalName>BlazeDbSource/Demo/Client/%(RecursiveDir)%(Filename)%(Extension)</LogicalName>
     </EmbeddedResource>
 

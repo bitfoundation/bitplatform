@@ -1,10 +1,10 @@
 ﻿@page "/nesting/drag-sources"
 
-<PageTitle>Nesting · Drag Sources - bit Bdnd</PageTitle>
+<PageTitle>Nesting - Drag Sources · Bdnd</PageTitle>
 
-<div class="demo-header">
-    <h3>Nesting - Drag Sources</h3>
-    <p class="text-muted">
+<div class="bb-intro">
+    <h1>Nesting - Drag Sources</h1>
+    <p class="bb-subtitle">
         Drag sources can be nested. Grabbing an inner box drags <em>that</em> box, not its parent,
         because the inner <code>BdndDraggable</code> stops the <code>dragstart</code> from bubbling.
         Drop any of them on the bin to see which item was actually dragged.
@@ -13,7 +13,7 @@
 
 <DemoCode />
 
-<section class="demo-stage">
+<div class="bb-demo">
     <BdndProvider>
         <BdndDraggable TItem="string" Type="@ItemTypes.Box" Item="@("OUTER")" Context="o">
             <div class="nest-box" style="@($"background:#1565c0;opacity:{(o.IsDragging ? "0.4" : "1")};padding:2rem;")">
@@ -38,7 +38,7 @@
             </div>
         </BdndDropTarget>
     </BdndProvider>
-</section>
+</div>
 
 @code {
     private string? _last;

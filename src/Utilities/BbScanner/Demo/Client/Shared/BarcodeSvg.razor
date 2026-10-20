@@ -7,22 +7,31 @@
     The demo needs real, scannable barcodes on screen so that a visitor can point a phone at the
     page, and so that the file scanning page has something to load. Emitting SVG keeps that free
     of any image encoder: the module grid becomes a single path, which stays crisp at any size.
+
+    The symbol sits on white "paper" in either theme: a scanner reads dark modules on a light
+    ground, and a symbol inverted along with the page would only decode with AllowInverted. The
+    frame and the caption around it follow the theme.
 *@
 
 <figure class="sample">
-    <svg class="sample__svg"
-         viewBox="@_viewBox"
-         style="max-inline-size:@(Size)px;aspect-ratio:@_aspectRatio;"
-         shape-rendering="crispEdges"
-         role="img"
-         aria-label="@($"{Caption} barcode encoding {Value}")">
-        <rect width="100%" height="100%" fill="#ffffff" />
-        <path d="@_path" fill="#000000" />
-    </svg>
-    <figcaption class="sample__caption">
-        <strong>@Caption</strong>
-        <span class="sample__value">@Value</span>
-    </figcaption>
+    <div class="sample-paper">
+        <svg class="sample-svg"
+             viewBox="@_viewBox"
+             style="max-inline-size:@(Size)px;aspect-ratio:@_aspectRatio;"
+             shape-rendering="crispEdges"
+             role="img"
+             aria-label="@($"{Caption} barcode encoding {Value}")">
+            <rect width="100%" height="100%" fill="#ffffff" />
+            <path d="@_path" fill="#000000" />
+        </svg>
+    </div>
+    @if (ShowCaption)
+    {
+        <figcaption class="sample-caption">
+            <strong>@Caption</strong>
+            <span class="sample-value">@Value</span>
+        </figcaption>
+    }
 </figure>
 
 @code {
@@ -57,6 +66,10 @@
     /// <summary>The encoded value, shown under the caption.</summary>
     [Parameter]
     public string Value { get; set; } = string.Empty;
+
+    /// <summary>Whether the caption and the value are shown under the symbol. The accessible name always carries both.</summary>
+    [Parameter]
+    public bool ShowCaption { get; set; } = true;
 
     protected override void OnParametersSet()
     {

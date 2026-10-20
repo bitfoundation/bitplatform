@@ -15,7 +15,7 @@ public sealed class RenderingTests : BlowTest
     [TestMethod]
     public async Task The_basic_flow_draws_its_edges_between_the_measured_handles()
     {
-        var page = await OpenAsync("/");
+        var page = await OpenAsync("/basic-flow");
         await WaitForEdgesAnchoredAsync(page);
 
         CollectionAssert.AreEquivalent(new[] { "1", "2", "3", "4" }, await IdsAsync(page));
@@ -45,7 +45,7 @@ public sealed class RenderingTests : BlowTest
     [TestMethod]
     public async Task The_browser_layer_measures_nodes_and_handles_in_flow_units_at_any_zoom()
     {
-        var page = await OpenAsync("/");
+        var page = await OpenAsync("/basic-flow");
 
         // Zoom in further, so screen pixels and flow units differ by a factor that is not the initial one.
         await WheelAsync(page, (await PaneBoxAsync(page)).Centre, -200);
@@ -76,7 +76,7 @@ public sealed class RenderingTests : BlowTest
     [TestMethod]
     public async Task The_browser_layer_finds_the_handle_under_a_point_and_nothing_elsewhere()
     {
-        var page = await OpenAsync("/");
+        var page = await OpenAsync("/basic-flow");
         var target = await HandleCentreAsync(page, "3", "target");
         var node = await NodeBoxAsync(page, "3");
 

@@ -4,19 +4,20 @@
 @inject IBelemetryConsent Consent
 @inject IJSRuntime JS
 
-<PageTitle>Consent and GDPR - bit Belemetry</PageTitle>
+<PageTitle>Consent and GDPR · Belemetry</PageTitle>
 
-<h1>Consent and GDPR</h1>
+<div class="bb-intro">
+    <h1>Consent and GDPR</h1>
+    <p class="bb-subtitle">
+        Every record Belemetry produces belongs to exactly one of twelve <strong>features</strong>, and a feature
+        is collected only while it is both enabled by configuration and granted by the user. Nothing is sent
+        before the user decides, each feature can be granted and revoked on its own at runtime, and revoking one
+        purges what it queued and what it stored on the device.
+    </p>
+</div>
 
-<p class="page-intro">
-    Every record Belemetry produces belongs to exactly one of twelve <strong>features</strong>, and a feature
-    is collected only while it is both enabled by configuration and granted by the user. Nothing is sent
-    before the user decides, each feature can be granted and revoked on its own at runtime, and revoking one
-    purges what it queued and what it stored on the device.
-</p>
-
-<div class="demo-section">
-    <h2>Your consent, live</h2>
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Your consent, live</h3>
     <p>
         This panel is wired straight to <code>IBelemetryConsent</code> - the same service the site's banner
         uses. Tick a feature to grant it, untick it to revoke it, or set a whole group at once. The decision is
@@ -24,73 +25,72 @@
         through.
     </p>
 
-    <div class="demo-row">
-        <div class="demo-card stack">
-            <span class="demo-label">Per feature</span>
-            <div class="consent-grid">
-                @foreach (var feature in _features)
-                {
-                    var available = (Consent.Available & feature.Flag) == feature.Flag;
-                    <label class="consent-feature">
-                        <input type="checkbox"
-                               checked="@Consent.IsGranted(feature.Flag)"
-                               disabled="@(_ready is false || available is false)"
-                               @onchange="e => ToggleAsync(feature.Flag, e.Value is true)" />
-                        <span>
-                            <strong>@feature.Flag</strong>
-                            <small>@feature.Description</small>
-                        </span>
-                    </label>
-                }
-            </div>
-
-            <span class="demo-label">Groups</span>
-            <div class="demo-actions">
-                <button type="button" class="btn-bl-subtle" disabled="@(_ready is false)" @onclick="() => SetAsync(BelemetryFeatures.Diagnostics)">Diagnostics</button>
-                <button type="button" class="btn-bl-subtle" disabled="@(_ready is false)" @onclick="() => SetAsync(BelemetryFeatures.Analytics)">Analytics</button>
-                <button type="button" class="btn-bl-subtle" disabled="@(_ready is false)" @onclick="() => SetAsync(BelemetryFeatures.Monitoring)">Monitoring</button>
-                <button type="button" class="btn-bl" disabled="@(_ready is false)" @onclick="() => SetAsync(BelemetryFeatures.All)">All</button>
-                <button type="button" class="btn-bl btn-bl-danger" disabled="@(_ready is false)" @onclick="() => SetAsync(BelemetryFeatures.None)">None</button>
-            </div>
-
-            @if (_error is not null)
+    <div class="bb-demo">
+        <div class="bb-demo-bar"><span class="bb-demo-label">Live<span class="demo-sample-title">per-feature consent</span></span></div>
+        <p class="bb-overline demo-sublabel">Per feature</p>
+        <div class="demo-consent-grid">
+            @foreach (var feature in _features)
             {
-                <p class="demo-label" role="status">@_error</p>
+                var available = (Consent.Available & feature.Flag) == feature.Flag;
+                <label class="demo-consent-feature">
+                    <input type="checkbox"
+                           checked="@Consent.IsGranted(feature.Flag)"
+                           disabled="@(_ready is false || available is false)"
+                           @onchange="e => ToggleAsync(feature.Flag, e.Value is true)" />
+                    <span>
+                        <strong>@feature.Flag</strong>
+                        <small>@feature.Description</small>
+                    </span>
+                </label>
             }
         </div>
+
+        <p class="bb-overline demo-sublabel">Groups</p>
+        <div class="bb-toolbar">
+            <button type="button" class="btn btn-secondary" disabled="@(_ready is false)" @onclick="() => SetAsync(BelemetryFeatures.Diagnostics)">Diagnostics</button>
+            <button type="button" class="btn btn-secondary" disabled="@(_ready is false)" @onclick="() => SetAsync(BelemetryFeatures.Analytics)">Analytics</button>
+            <button type="button" class="btn btn-secondary" disabled="@(_ready is false)" @onclick="() => SetAsync(BelemetryFeatures.Monitoring)">Monitoring</button>
+            <button type="button" class="btn btn-primary" disabled="@(_ready is false)" @onclick="() => SetAsync(BelemetryFeatures.All)">All</button>
+            <button type="button" class="btn demo-btn-danger" disabled="@(_ready is false)" @onclick="() => SetAsync(BelemetryFeatures.None)">None</button>
+        </div>
+
+        @if (_error is not null)
+        {
+            <p class="demo-status" role="status">@_error</p>
+        }
     </div>
 
-    <div class="demo-row">
-        <div class="demo-card stack">
-            <span class="demo-label">.NET - IBelemetryConsent</span>
-            <dl class="kv">
+    <div class="bb-split">
+        <div class="bb-demo">
+            <div class="bb-demo-bar"><span class="bb-demo-label">.NET<span class="demo-sample-title">IBelemetryConsent</span></span></div>
+            <dl class="bb-params">
                 <dt>Available</dt>
                 <dd><code>@Describe(Consent.Available)</code></dd>
                 <dt>Granted</dt>
                 <dd><code>@Describe(Consent.Granted)</code></dd>
                 <dt>IsDecided</dt>
-                <dd><span class="state-pill @(Consent.IsDecided ? "on" : null)">@(Consent.IsDecided ? "decided" : "not decided")</span></dd>
+                <dd><span class="bb-badge @(Consent.IsDecided ? "bb-badge-success" : "demo-badge-off")">@(Consent.IsDecided ? "decided" : "not decided")</span></dd>
             </dl>
 
-            <span class="demo-label">Effective (configured and granted)</span>
-            <div class="badge-list">
+            <p class="bb-overline demo-sublabel">Effective (configured and granted)</p>
+            <div class="demo-badges">
                 @foreach (var feature in _features)
                 {
                     var effective = (Consent.Available & Consent.Granted & feature.Flag) == feature.Flag;
-                    <span class="state-pill @(effective ? "on" : null)">@feature.Flag</span>
+                    <span class="bb-badge @(effective ? "bb-badge-success" : "demo-badge-off")">@feature.Flag</span>
                 }
             </div>
         </div>
 
-        <div class="demo-card stack">
-            <span class="demo-label">Browser - BitBelemetry.getContext()</span>
+        <div class="bb-demo">
+            <div class="bb-demo-bar"><span class="bb-demo-label">Browser<span class="demo-sample-title">BitBelemetry.getContext()</span></span></div>
             @if (_browser is { } context)
             {
-                <dl class="kv">
+                <dl class="bb-params">
                     <dt>consent</dt>
                     <dd><code>@Describe(context.Consent)</code></dd>
                     <dt>decided</dt>
-                    <dd><span class="state-pill @(context.Decided ? "on" : null)">@(context.Decided ? "decided" : "not decided")</span></dd>
+                    <dd><span class="bb-badge @(context.Decided ? "bb-badge-success" : "demo-badge-off")">@(context.Decided ? "decided" : "not decided")</span></dd>
                     <dt>sessionId</dt>
                     <dd><code>@(context.SessionId ?? "-")</code></dd>
                     <dt>pseudoId</dt>
@@ -98,7 +98,7 @@
                     <dt>userId</dt>
                     <dd><code>@(context.UserId ?? "-")</code></dd>
                 </dl>
-                <p class="demo-label">
+                <p class="demo-status">
                     @(context.Consent == (int)Consent.Granted && context.Decided == Consent.IsDecided
                         ? "Both sides agree."
                         : "The two sides differ - the browser applies Global Privacy Control, or a change is still on its way.")
@@ -106,23 +106,23 @@
             }
             else
             {
-                <p class="demo-label">@(RendererInfo.IsInteractive ? "Waiting for the browser script..." : "Shown once the page is interactive.")</p>
+                <p class="demo-status">@(RendererInfo.IsInteractive ? "Waiting for the browser script..." : "Shown once the page is interactive.")</p>
             }
-            <div class="demo-actions">
-                <button type="button" class="btn-bl-subtle" disabled="@(_ready is false)" @onclick="ReadBrowserAsync">Read again</button>
+            <div class="bb-toolbar">
+                <button type="button" class="btn btn-secondary" disabled="@(_ready is false)" @onclick="ReadBrowserAsync">Read again</button>
             </div>
         </div>
     </div>
 </div>
 
-<div class="demo-section">
-    <h2>Features</h2>
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Features</h3>
     <p>
         The bit values are a wire contract shared by C# and the browser script: they cross the interop
         boundary as plain integers and are persisted in the browser, so they never change.
     </p>
-    <div class="doc-table-wrap">
-        <table class="doc-table">
+    <div class="bb-scroll">
+        <table class="bb-table">
             <thead>
                 <tr><th scope="col">Feature</th><th scope="col">Bit</th><th scope="col">Covers</th></tr>
             </thead>
@@ -140,14 +140,14 @@
     </div>
 </div>
 
-<div class="demo-section">
-    <h2>Groups</h2>
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Groups</h3>
     <p>
         Banners rarely ask about twelve things. The groups are the usual three questions, as flags you can pass
         to <code>SetAsync</code> or combine with others:
     </p>
-    <div class="doc-table-wrap">
-        <table class="doc-table">
+    <div class="bb-scroll">
+        <table class="bb-table">
             <thead>
                 <tr><th scope="col">Group</th><th scope="col">Features</th><th scope="col">Answers</th></tr>
             </thead>
@@ -166,9 +166,9 @@
     </p>
 </div>
 
-<div class="demo-section">
-    <h2>How consent behaves</h2>
-    <ul>
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> How consent behaves</h3>
+    <ul class="bb-detail-list">
         <li>
             <strong>Effective = configured AND granted.</strong> <code>BelemetryOptions.Features</code> (all by
             default) is what the app collects at all; <code>IBelemetryConsent.Available</code> reports it.
@@ -215,8 +215,8 @@
     <CodeSnippet Code="@OptionsCode" Language="C#" Expanded="true" />
 </div>
 
-<div class="demo-section">
-    <h2>A banner of your own</h2>
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> A banner of your own</h3>
     <p>
         A banner needs three things from <code>IBelemetryConsent</code>: whether to show itself
         (<code>IsDecided</code>), a way to record the answer (<code>SetAsync</code>), and
@@ -229,8 +229,8 @@
     <CodeSnippet Code="@JsCode" Language="JavaScript" />
 </div>
 
-<div class="demo-section">
-    <h2>API</h2>
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> API</h3>
     <ApiTable TypeName="IBelemetryConsent" />
     <ApiTable TypeName="BelemetryFeatures" />
     <ApiTable TypeName="BelemetryConsentOptions" />

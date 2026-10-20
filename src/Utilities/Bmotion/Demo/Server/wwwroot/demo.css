@@ -1,0 +1,1592 @@
+﻿/* ============================================================================================
+   Bmotion demo - the styles of the live samples.
+
+   The site's chrome, tokens and shared surfaces live in app.css (the site kit every Utilities demo
+   shares); this file only draws what is Bmotion's own - the stages a sample plays on, the moving
+   parts, the snippet highlighter's tokens and the widgets of the MCP console - and it is written
+   against the kit's --bb-* names, so it follows the light/dark theme with no rules of its own for
+   either.
+
+   The line this file will not cross: it styles the frame around a sample, never the motion. Every
+   transform, opacity, colour and size that moves on this site is Bit.Bmotion's, written inline by
+   the engine or played by the browser from bit-bmotion.css - which is why nothing below is built on
+   the kit's --bb-motion-* durations (they collapse under prefers-reduced-motion; the library has a
+   reduced-motion policy of its own, demonstrated on the Accessibility page).
+   ============================================================================================ */
+
+/* ---------- The sample palette ----------
+
+   The moving parts are painted bit blue into bit orange in BOTH themes, rather than in the theme's
+   primary: they are the subject of the page, the C# samples animate between exactly these two
+   colours (backgroundColor: "#1276C6" / "#FD7F36"), and the white labels some of them carry need
+   the darker blue the dark theme's primary is not. */
+:root {
+    --demo-blue: #1276C6;
+    --demo-orange: #FD7F36;
+    --demo-gradient: linear-gradient(135deg, var(--demo-blue), var(--demo-orange));
+    /* The hairline around a brand-tinted row or panel. */
+    --demo-accent-line: color-mix(in srgb, var(--bb-primary) 35%, transparent);
+    /* The faint measure grid printed on every stage. */
+    --demo-grid-dot: color-mix(in srgb, var(--bb-text) 8%, transparent);
+}
+
+/* ---------- Code: SyntaxHighlighter's tokens on the kit's code surface ----------
+
+   The highlighter tells more kinds apart than the kit's four (keyword, string, comment, parameter),
+   so the extra ones get colours of their own here, light and dark, picked to hold their contrast on
+   --bb-code-bg in both themes. */
+:root {
+    --demo-code-type: #8250DF;
+    --demo-code-number: #CF222E;
+    --demo-code-razor: #A21CAF;
+}
+
+:root[bit-theme="dark"] {
+    --demo-code-type: #D2A8FF;
+    --demo-code-number: #FF7B72;
+    --demo-code-razor: #F0ABFC;
+}
+
+.bb-code .tok-com { color: var(--bb-code-comment); font-style: italic; }
+.bb-code .tok-tag,
+.bb-code .tok-key { color: var(--bb-code-keyword); }
+.bb-code .tok-str { color: var(--bb-code-string); }
+.bb-code .tok-attr { color: var(--bb-code-param); }
+.bb-code .tok-type { color: var(--demo-code-type); }
+.bb-code .tok-num { color: var(--demo-code-number); }
+.bb-code .tok-raz { color: var(--demo-code-razor); }
+
+/* The lines where a Bmotion component is used, so they stand out from the markup around them. An
+   inline-block rather than a block, so the newline after it ends the line instead of adding a blank
+   one; pulled into the code block's start padding for the rule, and no further than its content
+   edge at the end, so a highlighted line never gives the block a scrollbar of its own. */
+.bb-code .hl-line {
+    display: inline-block;
+    vertical-align: top;
+    /* As wide as its own text when that runs past the edge (an inline-block is otherwise capped at
+       the width available to it, and the rest of the line would hang outside the band), and never
+       narrower than the row. */
+    width: max-content;
+    min-width: calc(100% + 1rem);
+    margin-inline-start: -1rem;
+    padding-inline-start: calc(1rem - 3px);
+    background: color-mix(in srgb, var(--bb-primary) 9%, transparent);
+    box-shadow: inset 3px 0 0 var(--bb-primary);
+}
+
+/* The "Show code" toggle: the kit's secondary button, with the caret, the code glyph and the
+   language it opens. */
+.code-snippet-toggle {
+    margin-top: .25rem;
+}
+
+.code-snippet-caret {
+    font-size: .8em;
+    color: var(--bb-text-soft);
+}
+
+.code-snippet-glyph {
+    font-family: var(--bb-mono);
+    color: var(--bb-primary);
+}
+
+.code-snippet-lang {
+    margin-inline-start: .25rem;
+    padding-inline-start: .5rem;
+    border-inline-start: 1px solid var(--bb-border);
+    font-size: var(--fl-font-size-100);
+    font-weight: var(--fl-weight-regular);
+    letter-spacing: .04em;
+    text-transform: uppercase;
+    color: var(--bb-text-soft);
+}
+
+/* ---------- Stages ----------
+
+   The stage a sample is played on: a raised surface printed with a faint measure grid. An animation
+   about position or scale is far easier to read against something regular than against a blank
+   field, and the grid is the quietest possible way to give the eye that reference. */
+.demo-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    align-items: stretch;
+    margin: 0 0 1rem;
+}
+
+.demo-card {
+    flex: 1 1 13.75rem;
+    min-width: 0;
+    min-height: 10rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    color: var(--bb-text);
+    background-color: var(--bb-surface);
+    background-image: radial-gradient(circle at center, var(--demo-grid-dot) 1px, transparent 1px);
+    background-size: 1.25rem 1.25rem;
+    border: 1px solid var(--bb-border);
+    border-radius: var(--bb-radius-xl);
+    box-shadow: var(--bb-shadow-card);
+}
+
+/* A stage that stacks a caption above the moving part instead of centring one thing in the middle. */
+.demo-card.stack {
+    flex-direction: column;
+    gap: .75rem;
+}
+
+.demo-card.align-start {
+    align-items: flex-start;
+    justify-content: flex-start;
+}
+
+/* The stages whose sample needs a known width - a row of four boxes, a pair of swatches, a journey
+   of 150px - ask for it, so a row of them wraps before any one is squeezed under its sample. */
+.demo-card:has(> .variant-boxes),
+.demo-card:has(> .swatch-pair),
+.demo-card.arc-stage {
+    flex-basis: 17rem;
+}
+
+/* The caption naming what a stage is showing - a spring's constants, an easing's name, the CSS
+   property being animated. Deliberately quiet: it labels the sample, it is not part of it. */
+.demo-label {
+    font-size: .8125rem;
+    line-height: 1.5;
+    text-align: center;
+    color: var(--bb-text-muted);
+}
+
+.bb-toolbar > .demo-label {
+    text-align: start;
+}
+
+/* ---------- The moving parts ----------
+
+   They keep their own rounding and their gradient fill: they are the subject of the page, not
+   chrome. A label on one is set at 20px/700, the size at which white has to clear WCAG's large-text
+   3:1 over the lightest point of the gradient it covers, rather than 4.5:1. */
+.box {
+    width: 5rem;
+    height: 5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    color: #fff;
+    font-size: 1.25rem;
+    font-weight: 700;
+    line-height: 1.4;
+    cursor: pointer;
+    user-select: none;
+    border-radius: .625rem;
+    background: var(--demo-gradient);
+}
+
+.box-sm {
+    width: 3.125rem;
+    height: 3.125rem;
+    border-radius: .5rem;
+}
+
+.box:focus-visible,
+.box-sm:focus-visible {
+    outline: 2px solid var(--fl-stroke-focus-outer);
+    outline-offset: 3px;
+}
+
+/* A box carrying a word rather than a glyph (Getting started). */
+.box-label {
+    width: 6rem;
+    font-size: 1.125rem;
+}
+
+/* ---------- Accessibility ---------- */
+
+.caps-list {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: .5rem;
+}
+
+/* Monospace and fixed-height so the per-frame readout does not reflow the stage as the numbers
+   change width. */
+.frame-readout {
+    display: block;
+    min-height: 2.5rem;
+    max-width: 100%;
+    padding: 0;
+    overflow-wrap: anywhere;
+    font-size: .75rem;
+    text-align: center;
+    color: var(--bb-text-muted);
+    background: none;
+    border: 0;
+}
+
+/* ---------- AnimatePresence ---------- */
+
+/* Exit targets move content past the edge of its stage; clipping keeps the departure inside the
+   stage instead of letting it slide across the page. */
+.presence-stage {
+    position: relative;
+    min-height: 12.5rem;
+    overflow: hidden;
+}
+
+/* A list stage stacks its rows edge to edge (AnimatePresence and Reorder). */
+.list-stage {
+    flex-direction: column;
+    align-items: stretch;
+    gap: .5rem;
+    width: 100%;
+    min-width: min(17.5rem, 100%);
+}
+
+.presence-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: .6rem 1rem;
+    border-radius: var(--bb-radius-lg);
+    color: var(--bb-text);
+    background: var(--bb-primary-soft);
+    border: 1px solid var(--demo-accent-line);
+}
+
+.row-remove {
+    border: none;
+    border-radius: var(--bb-radius);
+    cursor: pointer;
+    font-size: 1.1rem;
+    background: none;
+    color: var(--bb-text);
+}
+
+.row-remove:hover {
+    background: var(--bb-surface-hover);
+}
+
+/* position: relative is what anchors the popped (absolute) chips; without it they would fall back
+   to the nearest positioned ancestor and jump across the page. */
+.chip-stage {
+    position: relative;
+    flex-wrap: wrap;
+    align-content: flex-start;
+    justify-content: flex-start;
+    gap: .5rem;
+    min-height: 7.5rem;
+}
+
+.chip {
+    padding: .35rem .9rem;
+    border-radius: var(--bb-radius-pill);
+    white-space: nowrap;
+    cursor: pointer;
+    user-select: none;
+    color: var(--bb-text);
+    background: color-mix(in srgb, var(--bb-accent) 15%, transparent);
+    border: 1px solid color-mix(in srgb, var(--bb-accent) 40%, transparent);
+}
+
+.page-box {
+    font-size: 2rem;
+}
+
+/* ---------- Color ---------- */
+
+.swatch-pair {
+    display: flex;
+    gap: 1rem;
+}
+
+.swatch-cell {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: .4rem;
+}
+
+.swatch {
+    width: 5.5rem;
+    height: 5rem;
+    border-radius: .625rem;
+}
+
+/* ---------- CSS properties ---------- */
+
+.css-headline {
+    font-weight: 800;
+    font-size: 1.4rem;
+    letter-spacing: 0;
+    color: var(--bb-text);
+}
+
+.css-prose {
+    max-width: 190px;
+    color: var(--bb-text);
+    font-size: .95rem;
+    text-align: left;
+}
+
+.css-row {
+    display: flex;
+}
+
+/* A left/top-anchored track so margin / position offsets are visible against an edge. */
+.css-track {
+    width: 100%;
+    display: flex;
+    justify-content: flex-start;
+    align-items: flex-start;
+}
+
+.css-track-wide {
+    min-height: 60px;
+}
+
+/* Solid, so its label stays readable: what this sample shows is the padding animating, which the
+   fill has nothing to do with. */
+.pad-box {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: .625rem;
+    color: var(--bb-primary-text);
+    background: var(--bb-primary);
+    font-weight: 700;
+    font-size: .8rem;
+}
+
+.fill-box {
+    width: 120px;
+    height: 120px;
+    border-radius: .75rem;
+}
+
+.grad-a {
+    background: var(--demo-gradient);
+}
+
+.grad-pos {
+    background: linear-gradient(90deg, var(--demo-blue), var(--demo-orange), #ffb347);
+    background-size: 300% 100%;
+}
+
+.grad-size {
+    background: radial-gradient(circle at 50% 50%, var(--demo-orange) 0%, var(--demo-blue) 60%);
+    background-repeat: no-repeat;
+    background-position: center;
+}
+
+/* Three declarations, one animated variable. The variable is set on .glow-card by the engine and
+   inherited by .glow-ring, which is why the inner element needs no animation of its own. */
+.glow-card {
+    width: 7.5rem;
+    height: 7.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 1rem;
+    background: var(--demo-gradient);
+    border: 2px solid color-mix(in srgb, var(--demo-orange) 60%, transparent);
+    box-shadow: 0 0 var(--glow, 0px) color-mix(in srgb, var(--demo-blue) 70%, transparent);
+}
+
+.glow-ring {
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, .9);
+    box-shadow: 0 0 var(--glow, 0px) rgba(255, 255, 255, .9);
+}
+
+/* ---------- Drag ---------- */
+
+/* Every drag stage is its own positioning context: the captions below are absolutely placed, and
+   BmDragConstraints.Parent() measures this element. */
+/* Wide enough for the ±120px journeys and the 248px snap grid. */
+.drag-stage {
+    position: relative;
+    flex-basis: 18rem;
+    overflow: hidden;
+    height: 12.5rem;
+}
+
+.drag-stage.tall {
+    height: 13.75rem;
+}
+
+.drag-stage.taller {
+    height: 15rem;
+}
+
+.stage-note {
+    position: absolute;
+    top: .5rem;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: .75rem;
+    white-space: nowrap;
+    color: var(--bb-text-muted);
+}
+
+.stage-note.bottom {
+    top: auto;
+    bottom: .75rem;
+}
+
+/* The free-drag samples start dead centre so there is room to throw them in any direction. */
+.drag-centred {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    margin: -2.5rem 0 0 -2.5rem;
+    cursor: grab;
+}
+
+.drag-centred-sm {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    margin: -1.5625rem 0 0 -1.5625rem;
+    cursor: grab;
+}
+
+.grabbable {
+    cursor: grab;
+}
+
+.handle-row {
+    display: flex;
+    align-items: center;
+    gap: .6rem;
+    padding: .8rem 1rem;
+    border-radius: .625rem;
+    color: var(--bb-text);
+    background: var(--bb-primary-soft);
+    border: 1px solid var(--demo-accent-line);
+}
+
+/* The grip a drag or a reorder starts from (Drag and Reorder). */
+.grip {
+    cursor: grab;
+    user-select: none;
+    font-size: 1.1rem;
+    color: var(--bb-text-muted);
+}
+
+.thumb-track {
+    position: relative;
+    display: flex;
+    align-items: center;
+    width: 100%;
+    height: 1.75rem;
+    padding: 0 4px;
+    cursor: pointer;
+    border-radius: var(--bb-radius-pill);
+    background: var(--bb-surface-2);
+}
+
+.thumb {
+    width: 1.25rem;
+    height: 1.25rem;
+    border-radius: 50%;
+    background: var(--demo-gradient);
+}
+
+.drag-parent {
+    width: 9.375rem;
+    height: 9.375rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: grab;
+    border-radius: .75rem;
+    background: var(--bb-primary-soft);
+    border: 1px solid var(--demo-accent-line);
+}
+
+.drag-child {
+    width: 3.375rem;
+    height: 3.375rem;
+    cursor: grab;
+    border-radius: .625rem;
+    background: var(--demo-gradient);
+}
+
+/* The stops the snap sample lands on, drawn so the settle is visibly ON something. */
+.snap-grid {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 15.5rem;
+    height: 1px;
+    transform: translate(-50%, -50%);
+    background: repeating-linear-gradient(to right, var(--demo-accent-line) 0 1px, transparent 1px 3.75rem);
+}
+
+.snap-pages {
+    display: flex;
+    gap: .5rem;
+    padding: .75rem;
+    cursor: grab;
+    border-radius: .625rem;
+    background: var(--bb-primary-soft);
+    border: 1px solid var(--demo-accent-line);
+}
+
+.snap-pages span {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 5rem;
+    height: 3.5rem;
+    color: #fff;
+    font-size: 1.25rem;
+    font-weight: 700;
+    border-radius: .5rem;
+    background: var(--demo-gradient);
+}
+
+/* ---------- Easing ---------- */
+
+/* One row per curve, all sharing a track of the same length: the comparison only means anything if
+   the distance and the duration are held constant across them. */
+.ease-list {
+    display: flex;
+    flex-direction: column;
+    gap: .5rem;
+    margin: 0 0 1rem;
+}
+
+.ease-row {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.ease-name {
+    flex: none;
+    width: 7.5rem;
+    text-align: left;
+    font-family: var(--bb-mono);
+    font-size: .75rem;
+}
+
+/* flex: none so the track keeps its height when it is a column item inside a stacked stage. */
+.ease-track {
+    position: relative;
+    flex: none;
+    width: 100%;
+    height: 2rem;
+}
+
+.ease-row .ease-track {
+    flex: 1;
+    min-width: 0;
+    border-radius: var(--bb-radius);
+    background: color-mix(in srgb, var(--bb-surface-2) 60%, transparent);
+}
+
+.ease-dot {
+    width: 1.75rem;
+    height: 1.75rem;
+}
+
+/* ---------- Gestures ---------- */
+
+/* A real button, which IS the sample: its hover animates the fill to a darker brand blue, so it
+   keeps a fixed brand fill and white label in both themes - and carries none of the kit button's
+   own colour transitions, which would fight the animation. */
+.sample-btn {
+    min-height: 2.25rem;
+    padding: .5rem 1.1rem;
+    border: none;
+    border-radius: var(--bb-radius);
+    cursor: pointer;
+    font-family: inherit;
+    font-size: var(--fl-font-size-200);
+    font-weight: var(--fl-weight-semibold);
+    color: #fff;
+    background-color: var(--demo-blue);
+}
+
+.nest-card {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1.5rem;
+    cursor: pointer;
+    border-radius: .75rem;
+    background: var(--bb-primary-soft);
+    border: 1px solid var(--demo-accent-line);
+}
+
+/* Filled with the theme's primary rather than the boxes' gradient: this one carries a word. */
+.nest-btn {
+    padding: .6rem 1.1rem;
+    border: none;
+    border-radius: var(--bb-radius);
+    cursor: pointer;
+    font-family: inherit;
+    font-weight: var(--fl-weight-semibold);
+    color: var(--bb-primary-text);
+    background: var(--bb-primary);
+}
+
+/* A fixed stage with a marked centre, so "the pin slipped off its anchor" is visible. */
+.pin-stage {
+    position: relative;
+    min-height: 11rem;
+}
+
+.pin {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 50%;
+    background: var(--demo-gradient);
+}
+
+/* The field WhileFocus animates - its border colour included - so it draws its own border rather
+   than the kit's field underline, which would change under the animation on focus. */
+.focus-input {
+    width: 15rem;
+    max-width: 100%;
+    padding: .5rem 1rem;
+    outline: none;
+    color: var(--bb-text);
+    background: var(--bb-surface);
+    border: 2px solid var(--bb-border-strong);
+    border-radius: var(--bb-radius-lg);
+}
+
+/* A quiet panel so a live readout under a stage never resizes the stage. */
+.readout {
+    width: 100%;
+    font-family: var(--bb-mono);
+    font-size: .78rem;
+    line-height: 1.6;
+    text-align: center;
+    color: var(--bb-text-muted);
+}
+
+.event-log {
+    max-height: 7.5rem;
+    overflow: auto;
+}
+
+/* ---------- Keyframes ---------- */
+
+.keyframe-bar {
+    height: 1.875rem;
+    border-radius: var(--bb-radius);
+}
+
+.color-orb {
+    width: 7.5rem;
+    height: 7.5rem;
+    border-radius: 50%;
+    background-image: none;
+}
+
+/* The ball falls to the floor of its stage, so the stage is anchored at the bottom. */
+.ball-stage {
+    height: 13.75rem;
+    align-items: flex-end;
+    padding-bottom: 2.5rem;
+}
+
+.ball {
+    width: 3.5rem;
+    height: 3.5rem;
+    border-radius: 50%;
+}
+
+.current-track {
+    position: relative;
+    width: 100%;
+    height: 3.125rem;
+}
+
+/* ---------- Layout ---------- */
+
+.layout-stage {
+    align-items: stretch;
+}
+
+.layout-strip {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .75rem;
+    width: 100%;
+}
+
+.layout-tile {
+    width: 3.75rem;
+    height: 3.75rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-weight: 700;
+    font-size: 1.25rem;
+    border-radius: .5rem;
+}
+
+/* Five distinguishable tiles, fixed rather than derived from the theme: what they demonstrate is
+   FLIP, not colour, so they are pinned to five shades that each clear 4.5:1 against white in both
+   themes and stay clearly apart from one another. */
+.tone-0 { background: #1276C6; }
+.tone-1 { background: #124265; }
+.tone-2 { background: #C25520; }
+.tone-3 { background: #7E3714; }
+.tone-4 { background: #4D4D4D; }
+
+.layout-tab-stage {
+    align-items: flex-start;
+}
+
+.layout-tab-strip {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.5rem;
+}
+
+/* position: relative is what the shared underline FLIPs against - it is absolutely placed inside
+   whichever tab is active. */
+.layout-tab {
+    position: relative;
+    padding-bottom: 6px;
+    cursor: pointer;
+    font-weight: var(--fl-weight-semibold);
+    color: var(--bb-text-muted);
+}
+
+.layout-tab.active {
+    color: var(--bb-text);
+}
+
+.layout-tab:focus-visible {
+    outline: 2px solid var(--fl-stroke-focus-outer);
+    outline-offset: 4px;
+    border-radius: var(--bb-radius-sm);
+}
+
+.layout-tab-underline {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 3px;
+    border-radius: 2px;
+    background: linear-gradient(90deg, var(--demo-blue), var(--demo-orange));
+}
+
+.resize-stage {
+    min-height: 13.75rem;
+}
+
+.resize-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: .6rem;
+    width: 7.5rem;
+    height: 7.5rem;
+    border-radius: 1.25rem;
+    background: var(--demo-gradient);
+}
+
+.resize-card.big {
+    width: 16.25rem;
+    height: 11.25rem;
+    max-width: 100%;
+}
+
+.resize-label {
+    font-weight: 800;
+    font-size: 1.3rem;
+    color: #fff;
+}
+
+.resize-dot {
+    width: 2.125rem;
+    height: 2.125rem;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, .85);
+}
+
+/* Fixed footprint so the two anchor stages are directly comparable. */
+.anchor-box {
+    width: 3.5rem;
+    height: 3.5rem;
+    border-radius: .625rem;
+    background: var(--demo-gradient);
+}
+
+.anchor-box.big {
+    width: 7rem;
+    height: 7rem;
+}
+
+/* ---------- Motion path ---------- */
+
+.path-stage {
+    min-height: 13.75rem;
+}
+
+/* Fixed-size stage so the SVG guide (viewBox 0 0 300 180) and the dot's pixel-based offset-path
+   share one coordinate system. */
+.mpath-stage {
+    position: relative;
+    width: 300px;
+    height: 180px;
+    max-width: 100%;
+    margin: 0 auto;
+}
+
+.mpath-guide {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    opacity: .45;
+}
+
+.mpath-dot {
+    width: 1.5rem;
+    height: 1.5rem;
+    border-radius: 50%;
+    background: var(--demo-gradient);
+}
+
+.draw-svg {
+    width: 100%;
+    max-width: 200px;
+    height: 120px;
+}
+
+/* The arc samples travel 150px right and 40px down, so the stage holds that journey without
+   reflowing - the box starts pinned to the top-left of the space it has to cross. */
+.arc-stage {
+    justify-content: flex-start;
+    min-height: 11rem;
+}
+
+.arc-start {
+    align-self: flex-start;
+}
+
+.arc-card {
+    font-size: 1.25rem;
+    color: #fff;
+}
+
+/* ---------- Programmatic ---------- */
+
+.dot-row {
+    display: flex;
+    gap: .5rem;
+}
+
+.prog-dot {
+    width: 1.5rem;
+    height: 2.75rem;
+    border-radius: 6px;
+    background: var(--demo-gradient);
+}
+
+.counter {
+    font-family: var(--bb-mono);
+    font-weight: 800;
+    font-size: 2.75rem;
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+    color: var(--bb-text);
+}
+
+.seq-stage {
+    flex-direction: column;
+    gap: 1.5rem;
+    min-height: 12.5rem;
+}
+
+.seq-box {
+    width: 3.75rem;
+    height: 3.75rem;
+}
+
+.seq-dots {
+    display: flex;
+    gap: .6rem;
+}
+
+.seq-dot {
+    width: 1rem;
+    height: 1rem;
+    border-radius: 50%;
+    background: var(--demo-orange);
+}
+
+.value-slider {
+    width: 100%;
+    max-width: 22rem;
+}
+
+.value-row {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 1.5rem;
+}
+
+.value-cell {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: .5rem;
+}
+
+/* ---------- Reorder ---------- */
+
+.track-row {
+    display: flex;
+    align-items: center;
+    gap: .7rem;
+    padding: .7rem 1rem;
+    border-radius: var(--bb-radius-lg);
+    color: var(--bb-text);
+    background: var(--bb-primary-soft);
+    border: 1px solid var(--demo-accent-line);
+}
+
+.track-title {
+    flex: 1;
+    min-width: 0;
+}
+
+.track-time {
+    font-size: .8rem;
+    font-variant-numeric: tabular-nums;
+    color: var(--bb-text-muted);
+}
+
+.track-move {
+    padding: 0 .25rem;
+    border: none;
+    border-radius: var(--bb-radius);
+    cursor: pointer;
+    background: none;
+    font-family: inherit;
+    color: var(--bb-text-muted);
+}
+
+.track-move:hover:not(:disabled) {
+    color: var(--bb-text);
+    background: var(--bb-surface-hover);
+}
+
+.track-move:disabled {
+    opacity: .35;
+    cursor: default;
+}
+
+.chip-rail {
+    display: flex;
+    flex-wrap: nowrap;
+    gap: .5rem;
+}
+
+/* The rail cannot wrap - the group reorders along one line - so on a narrow screen its stage
+   scrolls instead, starting at the first chip rather than centring the overflow off both edges. */
+.demo-card:has(> .chip-rail) {
+    justify-content: safe center;
+    overflow-x: auto;
+}
+
+.rail-chip {
+    padding: .5rem 1rem;
+    border-radius: var(--bb-radius-pill);
+    white-space: nowrap;
+    cursor: grab;
+    user-select: none;
+    color: var(--bb-text);
+    background: var(--bb-primary-soft);
+    border: 1px solid var(--demo-accent-line);
+}
+
+.reorder-readout {
+    margin: .75rem 0 1rem;
+    font-size: .875rem;
+    color: var(--bb-text-muted);
+}
+
+/* ---------- Scroll ---------- */
+
+/* The window-progress readout parks under the sticky site header rather than behind it. */
+.scroll-progress {
+    position: sticky;
+    top: calc(var(--bb-header-height) + .5rem);
+    z-index: 50;
+    margin-bottom: 2rem;
+    padding: 1rem 1.25rem;
+    background: var(--bb-surface);
+    border: 1px solid var(--bb-border);
+    border-radius: var(--bb-radius-xl);
+    box-shadow: var(--bb-shadow-flyout);
+}
+
+.progress-caption {
+    margin: .4rem 0;
+    text-align: left;
+}
+
+/* The timeline-driven bar sits on its own, above the row of stages, with the caption it needs to be
+   readable as a sample rather than as page chrome. */
+.timeline-bar-wrap {
+    display: flex;
+    flex-direction: column;
+    gap: .5rem;
+    margin-bottom: 1.5rem;
+}
+
+.timeline-bar-wrap > .demo-label {
+    text-align: start;
+}
+
+.scroll-track {
+    width: 100%;
+    height: .5rem;
+    overflow: hidden;
+    border-radius: var(--bb-radius-pill);
+    background: var(--bb-surface-2);
+}
+
+.scroll-fill {
+    height: 100%;
+    border-radius: var(--bb-radius-pill);
+    transition: width .05s;
+    background: linear-gradient(90deg, var(--demo-blue), var(--demo-orange));
+}
+
+/* The motion-value bound fills are scaled, not resized: they start full width and the engine drives
+   scaleX from the left edge. */
+.full-width {
+    width: 100%;
+    transition: none;
+    transform-origin: 0 50%;
+}
+
+.target-panel {
+    width: 100%;
+    height: 8rem;
+    border-radius: var(--bb-radius-lg);
+    background: repeating-linear-gradient(45deg, var(--bb-primary-soft) 0 12px, transparent 12px 24px);
+    border: 1px solid var(--demo-accent-line);
+}
+
+/* overflow-x: clip rather than hidden: hidden would make this a scroll container and break
+   position: sticky for anything inside it. */
+.inview-strip {
+    overflow-x: clip;
+}
+
+.inview-band {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 5rem;
+    margin-bottom: 1rem;
+    color: #fff;
+    font-weight: 700;
+    border-radius: var(--bb-radius-xl);
+}
+
+.from-left {
+    background: linear-gradient(135deg, var(--demo-blue), var(--demo-orange));
+}
+
+.from-right {
+    background: linear-gradient(135deg, var(--demo-orange), var(--demo-blue));
+}
+
+/* ---------- Split text ---------- */
+
+/* The split-text stages animate type, not boxes, so they need a type scale of their own - the
+   samples only read as a headline treatment if they are headline-sized. */
+.split-headline {
+    font-family: var(--bb-font-display);
+    font-weight: 700;
+    font-size: var(--fl-font-size-500);
+    line-height: 1.33;
+    letter-spacing: -.02em;
+    text-align: center;
+    color: var(--bb-text);
+}
+
+.split-lines,
+.split-body {
+    font-size: var(--fl-font-size-300);
+    line-height: 1.625;
+    color: var(--bb-text);
+}
+
+/* Deliberately narrow: the point of the sample is to force the text to wrap, so the reader can see
+   that the break lands between words rather than inside one. */
+.split-narrow {
+    max-width: 15rem;
+}
+
+/* ---------- Variants ---------- */
+
+.variant-list {
+    display: flex;
+    flex-direction: column;
+    gap: .5rem;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.variant-row {
+    padding: .6rem 1rem;
+    font-size: .9rem;
+    border-radius: var(--bb-radius-lg);
+    color: var(--bb-text);
+    background: var(--bb-primary-soft);
+    border: 1px solid var(--demo-accent-line);
+}
+
+.variant-boxes {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: .5rem;
+}
+
+/* The box that sits out the cascade. Drawn flat rather than gradient-filled so it reads as "not
+   part of this group" before it moves at all. */
+.box-muted {
+    background: var(--bb-surface-2);
+    border: 1px dashed var(--demo-accent-line);
+}
+
+/* A fixed stage the fanned cards overlap inside: they start stacked, so the container holds its size
+   rather than tracking the widest arrangement. */
+.fan-stage {
+    position: relative;
+    width: 100%;
+    height: 8rem;
+}
+
+.fan-card {
+    position: absolute;
+    top: 1.5rem;
+    left: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 3.25rem;
+    height: 4.5rem;
+    margin-left: -1.625rem;
+    color: #fff;
+    font-weight: 700;
+    font-size: 1.25rem;
+    border-radius: .5rem;
+    background: var(--demo-gradient);
+    box-shadow: var(--fl-shadow-8);
+}
+
+.stagger-grid {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: .5rem;
+}
+
+.grid-dot {
+    width: 1.625rem;
+    height: 1.625rem;
+    border-radius: 6px;
+    background: var(--demo-gradient);
+}
+
+/* ---------- View transitions ---------- */
+
+.vt-panel {
+    min-height: 7.5rem;
+    margin: 0 0 1rem;
+    padding: 1.5rem 1.75rem;
+    color: var(--bb-text-muted);
+    background: var(--bb-surface);
+    border: 1px solid var(--bb-border);
+    border-radius: var(--bb-radius-xl);
+    box-shadow: var(--bb-shadow-card);
+    /* Naming the element gives it its own snapshot pair, which the rule below can then target
+       independently of the rest of the page. The site chrome is named too (bb-header,
+       bb-docs-sidebar, bb-rail), so the header, the nav panel and the rail sit still while this
+       panel cross-fades. */
+    view-transition-name: vt-panel;
+}
+
+.vt-panel > :last-child {
+    margin-bottom: 0;
+}
+
+::view-transition-old(vt-panel),
+::view-transition-new(vt-panel) {
+    animation-duration: .4s;
+}
+
+/* ---------- MCP console ---------- */
+
+/* Three symptoms side by side in the reading column, rather than the kit grid's two and a straggler. */
+.bb-grid.mcp-why {
+    grid-template-columns: repeat(auto-fit, minmax(min(12rem, 100%), 1fr));
+}
+
+.mcp-why-card {
+    gap: .5rem;
+    height: 100%;
+}
+
+.mcp-why-symptom {
+    color: var(--bb-text);
+}
+
+.mcp-why-card .bb-card-desc {
+    margin: 0;
+}
+
+.mcp-why-card > code {
+    align-self: flex-start;
+    margin-top: auto;
+    /* A tool's name is one identifier: it may break between its words (the page marks them with
+       <wbr>), never inside one. */
+    overflow-wrap: normal;
+}
+
+.mcp-tab-note {
+    font-size: var(--fl-font-size-200);
+    color: var(--bb-text-muted);
+}
+
+.mcp-lab-body {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: stretch;
+    gap: 1.25rem;
+}
+
+.mcp-lab-body > .mcp-form {
+    flex: 1 1 20rem;
+    min-width: 0;
+}
+
+.mcp-form {
+    display: flex;
+    flex-direction: column;
+    gap: .75rem;
+}
+
+.mcp-form > .bb-toolbar {
+    margin: 0;
+}
+
+.mcp-field {
+    display: flex;
+    width: 100%;
+}
+
+.mcp-field > input,
+textarea.mcp-code,
+.mcp-search > input {
+    width: 100%;
+    font-family: var(--bb-mono);
+    font-size: .8125rem;
+}
+
+.mcp-presets {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .375rem;
+}
+
+/* A preset: a pill that fills the field and runs it in one press. */
+.mcp-chip {
+    padding: .25rem .625rem;
+    border: 1px solid var(--bb-border-strong);
+    border-radius: var(--bb-radius-pill);
+    background: var(--bb-surface);
+    color: var(--bb-text-muted);
+    font-family: var(--bb-mono);
+    font-size: .75rem;
+    cursor: pointer;
+}
+
+.mcp-chip:hover:not(:disabled) {
+    border-color: var(--bb-primary);
+    color: var(--bb-primary);
+    background: var(--bb-primary-soft);
+}
+
+.mcp-chip:disabled {
+    cursor: not-allowed;
+    opacity: .5;
+}
+
+/* The replay: the box travels 220px along the measured curve. */
+.mcp-lab-stage {
+    flex: 1 1 18rem;
+    min-width: 0;
+    min-height: 6rem;
+    display: flex;
+    align-items: center;
+    overflow: hidden;
+}
+
+.mcp-box-idle {
+    opacity: .35;
+    cursor: default;
+}
+
+.mcp-result {
+    margin-top: 1.25rem;
+}
+
+.mcp-result + .mcp-result {
+    padding-top: 1.25rem;
+    border-top: 1px solid var(--bb-border);
+}
+
+.mcp-result-title {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: .5rem;
+    margin: 0 0 .75rem;
+    font-family: var(--bb-mono);
+    font-size: var(--fl-font-size-200);
+    font-weight: var(--fl-weight-semibold);
+}
+
+.mcp-metrics {
+    margin-bottom: .75rem;
+}
+
+.mcp-sparkline {
+    padding-inline-end: 3rem;
+    margin-bottom: .75rem;
+    color: var(--bb-primary);
+}
+
+.mcp-reading {
+    max-width: var(--bb-measure);
+    font-size: var(--fl-font-size-200);
+    line-height: 1.65;
+    color: var(--bb-text-muted);
+}
+
+.mcp-verdict {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: .5rem 1rem;
+}
+
+.mcp-verdict > .bb-mono {
+    font-size: .8125rem;
+    color: var(--bb-text-muted);
+}
+
+textarea.mcp-code {
+    min-height: 12rem;
+    margin-bottom: .75rem;
+    line-height: 1.55;
+    tab-size: 4;
+}
+
+.mcp-findings {
+    display: grid;
+    gap: .625rem;
+    margin: 1rem 0 0;
+    padding: 0;
+    list-style: none;
+}
+
+.mcp-finding {
+    padding: .75rem 1rem;
+    background: var(--bb-surface);
+    border: 1px solid var(--bb-border);
+    border-inline-start: 3px solid var(--bb-primary);
+    border-radius: var(--bb-radius-lg);
+}
+
+.mcp-finding.error {
+    border-inline-start-color: var(--bb-danger);
+}
+
+.mcp-finding.warning {
+    border-inline-start-color: var(--bb-warning);
+}
+
+.mcp-rule,
+.mcp-line {
+    margin-inline-start: .5rem;
+    font-size: .75rem;
+}
+
+.mcp-rule {
+    font-family: var(--bb-mono);
+    color: var(--bb-primary);
+}
+
+.mcp-line {
+    color: var(--bb-text-soft);
+}
+
+.mcp-finding p {
+    margin: .4rem 0 0;
+    font-size: var(--fl-font-size-200);
+    color: var(--bb-text-muted);
+}
+
+.mcp-finding p.mcp-fix {
+    color: var(--bb-text);
+}
+
+.mcp-search > input {
+    flex: 1 1 18rem;
+    min-width: 0;
+}
+
+.mcp-hits {
+    display: grid;
+    gap: .375rem;
+    margin: 0 0 1rem;
+    padding: 0;
+    list-style: none;
+}
+
+.mcp-hits li {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: .375rem .75rem;
+    min-width: 0;
+    padding: .5rem .75rem;
+    background: var(--bb-surface);
+    border: 1px solid var(--bb-border);
+    border-radius: var(--bb-radius-lg);
+}
+
+.mcp-hit-title {
+    font-weight: var(--fl-weight-semibold);
+    color: var(--bb-text);
+    overflow-wrap: anywhere;
+}
+
+.mcp-hits code {
+    min-width: 0;
+    overflow-wrap: anywhere;
+}
+
+/* A parameter broken across lines cannot be read as one, so this column, like the tool names
+   beside it, takes the width its longest parameter needs. */
+.mcp-table td.mcp-params {
+    width: 1%;
+    white-space: nowrap;
+    overflow-wrap: normal;
+}
+
+.mcp-params > code {
+    display: table;
+    margin-bottom: .2rem;
+}
+
+.mcp-card {
+    gap: .25rem;
+    height: 100%;
+}
+
+.mcp-card > code {
+    align-self: flex-start;
+}
+
+.mcp-card .bb-card-desc {
+    margin: .375rem 0 0;
+}
+
+.mcp-card-params {
+    display: block;
+    margin-top: .5rem;
+    font-family: var(--bb-mono);
+    font-size: .75rem;
+    color: var(--bb-text-soft);
+}
+
+/* ---------- Landing page: the live tiles in the hero's window ---------- */
+
+.home-hero-live {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: .75rem;
+    padding: 1.25rem;
+    background-color: var(--bb-surface);
+    background-image: radial-gradient(circle at center, var(--demo-grid-dot) 1px, transparent 1px);
+    background-size: 1.25rem 1.25rem;
+    border-top: 1px solid var(--bb-border);
+}
+
+.home-tile {
+    display: flex;
+    flex-direction: column;
+    gap: .25rem;
+    min-width: 0;
+    padding: 1rem 1.125rem;
+    color: #fff;
+    border-radius: var(--bb-radius-xl);
+    background: linear-gradient(135deg, var(--demo-blue), #124265);
+    box-shadow: var(--fl-shadow-8);
+}
+
+/* The deep ends of the two brand hues, laid out on a diagonal, so every tile's white label clears
+   4.5:1 wherever it sits on its gradient. */
+.home-tile:nth-child(2),
+.home-tile:nth-child(3) {
+    background: linear-gradient(135deg, #C25520, #7E3714);
+}
+
+.home-tile:hover {
+    color: #fff;
+    text-decoration: none;
+}
+
+.home-tile-title {
+    font-size: var(--fl-font-size-400);
+    font-weight: 700;
+    line-height: 1.3;
+}
+
+.home-tile-desc {
+    font-size: .8125rem;
+    line-height: 1.45;
+    opacity: .92;
+}
+
+@media (max-width: 600px) {
+    .demo-card {
+        padding: 1.25rem;
+    }
+
+    .ease-name {
+        width: 5.5rem;
+    }
+}

@@ -1,13 +1,13 @@
 ﻿@page "/examples/use-update-node-internals"
 @using System.Globalization
 
-<PageTitle>Update Node Internals - bit Blow</PageTitle>
+<PageTitle>Update Node Internals · Blow</PageTitle>
 
 <ExampleScaffold Title="Update Node Internals"
                  Summary="When a node's handles change side or count, the canvas must re-measure so edges stay attached. Flip the handle side and the connected edge re-anchors after the internals update.">
     <Toolbar>
-        <button class="btn btn-sm btn-primary" @onclick="FlipSide">Flip handle side (@_side)</button>
-        <button class="btn btn-sm" @onclick="AddHandle">Add handle</button>
+        <button class="btn btn-primary" @onclick="FlipSide">Flip handle side (@_side)</button>
+        <button class="btn btn-secondary" @onclick="AddHandle">Add handle</button>
     </Toolbar>
     <ChildContent>
         <BlowCanvas @ref="_flow" Nodes="_nodes" Edges="_edges" FitViewOnInit="true">

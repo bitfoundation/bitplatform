@@ -1,25 +1,29 @@
 ﻿@namespace Bit.Blow.Demo.Client.Examples
 
-@* Shared shell for every ported React Flow example: a titled header, an optional
-   summary and toolbar, and a bordered canvas area that hosts the BlowCanvas. *@
+@* Shared shell for every ported React Flow example: the page's title block, the "View code" toggle,
+   and a live sample frame - an optional toolbar over a canvas area that hosts the BlowCanvas. The
+   frame is marked bb-page-wide, so the docs shell gives the canvas the "on this page" rail's column
+   as well. *@
 
-<div class="demo-header">
-    <h3>@Title</h3>
+<div class="bb-intro">
+    <h1>@Title</h1>
     @if (!string.IsNullOrWhiteSpace(Summary))
     {
-        <p class="text-muted">@Summary</p>
+        <p class="bb-subtitle">@Summary</p>
     }
 </div>
 
 <DemoCode />
 
-@if (Toolbar is not null)
-{
-    <div class="example-toolbar">@Toolbar</div>
-}
+<div class="bb-demo blow-demo bb-page-wide">
+    @if (Toolbar is not null)
+    {
+        <div class="bb-demo-bar example-toolbar">@Toolbar</div>
+    }
 
-<div class="demo-canvas" style="@CanvasStyle">
-    @ChildContent
+    <div class="demo-canvas">
+        @ChildContent
+    </div>
 </div>
 
 @code {
@@ -27,9 +31,4 @@
     [Parameter] public string? Summary { get; set; }
     [Parameter] public RenderFragment? Toolbar { get; set; }
     [Parameter] public RenderFragment? ChildContent { get; set; }
-
-    /// <summary>Optional override for the canvas height (defaults to the standard demo height).</summary>
-    [Parameter] public string? Height { get; set; }
-
-    private string CanvasStyle => Height is null ? string.Empty : $"height:{Height};";
 }

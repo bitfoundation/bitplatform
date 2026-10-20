@@ -4,110 +4,134 @@
          Lead="Every public type Blex ships, grouped by assembly and namespace, with a pointer to the page that explains it.">
 
     <Callout Kind="Callout.CalloutKind.Note">
-        <p style="margin-bottom:0">
+        <p>
             Members are documented in depth on the topic pages - this page is the index. Everything
             here is also XML-documented, so IntelliSense carries the same text.
         </p>
     </Callout>
 
-    <h2>Blex - attributes</h2>
-    <p>Namespace <code>Bit.Blex</code>. These are the entire authoring surface of a store.</p>
-    <ApiTable Rows="@Attributes" MemberHeader="Type" />
+    <div class="bb-card">
+        <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Blex - attributes</h3>
+        <p>Namespace <code>Bit.Blex</code>. These are the entire authoring surface of a store.</p>
+        <ApiTable Rows="@Attributes" MemberHeader="Type" />
 
-    <CodeBlock Code="@AttributeSummary" Title="At a glance" />
-
-    <h2>Blex - core</h2>
-    <ApiTable Rows="@Core" MemberHeader="Type" />
-
-    <h2>Blex - middleware</h2>
-    <ApiTable Rows="@MiddlewareTypes" MemberHeader="Type" />
-
-    <h2>Blex - collections</h2>
-    <ApiTable Rows="@Collections" MemberHeader="Type" />
-
-    <h2>Blex - persistence</h2>
-    <ApiTable Rows="@PersistenceTypes" MemberHeader="Type" />
-
-    <h2>Blex - history</h2>
-    <ApiTable Rows="@HistoryTypes" MemberHeader="Type" />
-
-    <h2>Blex - extension methods</h2>
-    <ApiTable Rows="@Extensions" MemberHeader="Type" />
-
-    <h2>Blex - Blazor</h2>
-    <p>Namespace <code>Bit.Blex.Blazor</code>, in the same <code>Bit.Blex</code> package. Everything that touches JavaScript or the Blazor render tree lives here; the rest of Blex never does.</p>
-    <ApiTable Rows="@BlazorTypes" MemberHeader="Type" />
-
-    <h2>Bit.Blex.Testing</h2>
-    <p>Namespace <code>Bit.Blex.Testing</code>.</p>
-    <ApiTable Rows="@TestingTypes" MemberHeader="Type" />
-
-    <h2>Generated members, by declaration</h2>
-    <p>What the generator adds to your partial class, for each thing you declare.</p>
-    <div class="table-scroll">
-        <table>
-            <thead><tr><th>You declare</th><th>Generated</th></tr></thead>
-            <tbody>
-                <tr>
-                    <td><code>[BlexStore]</code> on <code>partial class Foo</code></td>
-                    <td>
-                        <code>partial class Foo : BlexStoreBase</code>,
-                        <code>override string Name</code>,
-                        <code>override JsonObject SerializeState()</code>,
-                        <code>override void DeserializeState(JsonObject)</code>
-                    </td>
-                </tr>
-                <tr>
-                    <td><code>[BlexStore(Persist = true)]</code></td>
-                    <td><code>override bool Persist =&gt; true</code></td>
-                </tr>
-                <tr>
-                    <td><code>[BlexState] private T _foo;</code></td>
-                    <td><code>public T Foo { get; set; }</code> - the setter routes through <code>SetState</code>; the field is included in both snapshot methods</td>
-                </tr>
-                <tr>
-                    <td><code>[BlexComputed] T ComputeFoo()</code></td>
-                    <td><code>public T Foo { get; }</code> plus <code>__FooValid</code> / <code>__FooValue</code>, and an entry in <code>InvalidateComputed()</code></td>
-                </tr>
-                <tr>
-                    <td><code>[BlexAction] void OnFoo(A a)</code></td>
-                    <td><code>public void Foo(A a)</code></td>
-                </tr>
-                <tr>
-                    <td><code>[BlexAction] Task OnFoo(A a)</code></td>
-                    <td><code>public Task Foo(A a)</code></td>
-                </tr>
-                <tr>
-                    <td><code>[BlexEffect] Task OnFoo(A a)</code></td>
-                    <td>
-                        <code>public Task Foo(A a)</code>,
-                        <code>public bool FooIsLoading</code>,
-                        <code>public Exception? FooError</code>
-                    </td>
-                </tr>
-                <tr>
-                    <td><code>[BlexEffect] Task OnFoo(A a, CancellationToken ct)</code></td>
-                    <td>the above, plus <code>public void CancelFoo()</code> - and note the token is <em>not</em> on the public signature</td>
-                </tr>
-            </tbody>
-        </table>
+        <CodeBlock Code="@AttributeSummary" Title="At a glance" />
     </div>
 
-    <h2>Reserved names</h2>
-    <p>
-        A generated member may not take one of these - they are inherited from <code>BlexStoreBase</code>
-        or emitted by the generator itself. Collisions are reported as <code>BLEX005</code>.
-    </p>
-    <CodeBlock Code="@Reserved" Language="text" Title="Reserved" Compact="true" />
+    <div class="bb-card">
+        <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Blex - core</h3>
+        <ApiTable Rows="@Core" MemberHeader="Type" />
+    </div>
 
-    <h2>JSON conventions</h2>
-    <p>
-        Snapshots use <code>BlexJson.Options</code>: <code>JsonSerializerDefaults.Web</code>,
-        case-insensitive property matching and enums written as strings. Slices are keyed by the
-        generated <em>property</em> name (<code>Count</code>, not <code>_count</code>), and the global
-        tree is keyed by store name.
-    </p>
-    <CodeBlock Code="@JsonShape" Language="json" />
+    <div class="bb-card">
+        <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Blex - middleware</h3>
+        <ApiTable Rows="@MiddlewareTypes" MemberHeader="Type" />
+    </div>
+
+    <div class="bb-card">
+        <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Blex - collections</h3>
+        <ApiTable Rows="@Collections" MemberHeader="Type" />
+    </div>
+
+    <div class="bb-card">
+        <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Blex - persistence</h3>
+        <ApiTable Rows="@PersistenceTypes" MemberHeader="Type" />
+    </div>
+
+    <div class="bb-card">
+        <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Blex - history</h3>
+        <ApiTable Rows="@HistoryTypes" MemberHeader="Type" />
+    </div>
+
+    <div class="bb-card">
+        <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Blex - extension methods</h3>
+        <ApiTable Rows="@Extensions" MemberHeader="Type" />
+    </div>
+
+    <div class="bb-card">
+        <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Blex - Blazor</h3>
+        <p>Namespace <code>Bit.Blex.Blazor</code>, in the same <code>Bit.Blex</code> package. Everything that touches JavaScript or the Blazor render tree lives here; the rest of Blex never does.</p>
+        <ApiTable Rows="@BlazorTypes" MemberHeader="Type" />
+    </div>
+
+    <div class="bb-card">
+        <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Bit.Blex.Testing</h3>
+        <p>Namespace <code>Bit.Blex.Testing</code>.</p>
+        <ApiTable Rows="@TestingTypes" MemberHeader="Type" />
+    </div>
+
+    <div class="bb-card">
+        <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Generated members, by declaration</h3>
+        <p>What the generator adds to your partial class, for each thing you declare.</p>
+        <div class="bb-scroll">
+            <table class="bb-table">
+                <thead><tr><th>You declare</th><th>Generated</th></tr></thead>
+                <tbody>
+                    <tr>
+                        <td><code>[BlexStore]</code> on <code>partial class Foo</code></td>
+                        <td>
+                            <code>partial class Foo : BlexStoreBase</code>,
+                            <code>override string Name</code>,
+                            <code>override JsonObject SerializeState()</code>,
+                            <code>override void DeserializeState(JsonObject)</code>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><code>[BlexStore(Persist = true)]</code></td>
+                        <td><code>override bool Persist =&gt; true</code></td>
+                    </tr>
+                    <tr>
+                        <td><code>[BlexState] private T _foo;</code></td>
+                        <td><code>public T Foo { get; set; }</code> - the setter routes through <code>SetState</code>; the field is included in both snapshot methods</td>
+                    </tr>
+                    <tr>
+                        <td><code>[BlexComputed] T ComputeFoo()</code></td>
+                        <td><code>public T Foo { get; }</code> plus <code>__FooValid</code> / <code>__FooValue</code>, and an entry in <code>InvalidateComputed()</code></td>
+                    </tr>
+                    <tr>
+                        <td><code>[BlexAction] void OnFoo(A a)</code></td>
+                        <td><code>public void Foo(A a)</code></td>
+                    </tr>
+                    <tr>
+                        <td><code>[BlexAction] Task OnFoo(A a)</code></td>
+                        <td><code>public Task Foo(A a)</code></td>
+                    </tr>
+                    <tr>
+                        <td><code>[BlexEffect] Task OnFoo(A a)</code></td>
+                        <td>
+                            <code>public Task Foo(A a)</code>,
+                            <code>public bool FooIsLoading</code>,
+                            <code>public Exception? FooError</code>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><code>[BlexEffect] Task OnFoo(A a, CancellationToken ct)</code></td>
+                        <td>the above, plus <code>public void CancelFoo()</code> - and note the token is <em>not</em> on the public signature</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="bb-card">
+        <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Reserved names</h3>
+        <p>
+            A generated member may not take one of these - they are inherited from <code>BlexStoreBase</code>
+            or emitted by the generator itself. Collisions are reported as <code>BLEX005</code>.
+        </p>
+        <CodeBlock Code="@Reserved" Language="text" Title="Reserved" />
+    </div>
+
+    <div class="bb-card">
+        <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> JSON conventions</h3>
+        <p>
+            Snapshots use <code>BlexJson.Options</code>: <code>JsonSerializerDefaults.Web</code>,
+            case-insensitive property matching and enums written as strings. Slices are keyed by the
+            generated <em>property</em> name (<code>Count</code>, not <code>_count</code>), and the global
+            tree is keyed by store name.
+        </p>
+        <CodeBlock Code="@JsonShape" Language="json" />
+    </div>
 
 </DocPage>
 

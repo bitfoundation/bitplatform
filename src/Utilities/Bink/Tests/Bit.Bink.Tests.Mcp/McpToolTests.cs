@@ -260,6 +260,10 @@ public class McpToolTests
         Assert.DoesNotContain("McpServer.razor", index);
         Assert.DoesNotContain("NotFound.razor", index);
         Assert.DoesNotContain("Error.razor", index);
+        // The shared site kit - header, docs shell, search palette, footer and the catalog driving them -
+        // is the demo site's chrome, not an example of drawing with Bink.
+        Assert.DoesNotContain("Demo/Client/Layout/", index);
+        Assert.DoesNotContain("DocsCatalog.cs", index);
     }
 
     [TestMethod]

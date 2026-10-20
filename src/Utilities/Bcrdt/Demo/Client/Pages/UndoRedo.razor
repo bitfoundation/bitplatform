@@ -1,92 +1,117 @@
 ﻿@page "/undo"
 @inherits ReplicaPageBase
 
-<h1>Collaborative undo</h1>
+<PageTitle>Collaborative undo · Bcrdt</PageTitle>
 
-<section class="prose">
-    <p>
-        Undo in a single-user editor means "put the document back how it was". In a collaborative
-        document that would be a disaster: restoring an earlier state would throw away everything
-        your collaborators did in the meantime, and they would watch their work vanish because
-        somebody else pressed a key.
+<div class="bb-intro">
+    <h1>Collaborative undo</h1>
+    <p class="bb-subtitle">
+        Undo that reverses your own last action and leaves everyone else's work alone - which is what users expect,
+        and what a naïve "restore the previous state" undo gets badly wrong in a shared document.
     </p>
-    <p>
-        What users actually expect is <em>selective</em> undo - reverse my last action, leave
-        everybody else's alone - and that is what these two replicas implement. Each has its own undo
-        stack tracking only its own edits.
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Two replicas, two undo stacks</h3>
+    <p class="bb-card-desc">
+        Each replica has its own undo stack, tracking only its own edits.
     </p>
-    <p class="callout">
+
+    @if (!Ready)
+    {
+        <p class="loading bb-empty"><span class="bb-spinner" aria-hidden="true"></span> Opening two replicas…</p>
+    }
+    else
+    {
+        <div class="bb-split replicas">
+            @foreach (DemoReplica replica in Replicas)
+            {
+                <ReplicaPanel Replica="replica">
+                    <ChildContent>
+                        <BcrdtTextArea Text="replica.Document.Text(Field)"
+                                       Presence="replica.Document.Presence"
+                                       Field="@Field"
+                                       Rows="8"
+                                       Class="editor"
+                                       Placeholder="Type here, then undo it." />
+
+                        <div class="toolbar bb-toolbar">
+                            <button type="button" class="btn btn-primary"
+                                    @onclick="() => Undo(replica)"
+                                    disabled="@(!CanUndo(replica))">
+                                Undo
+                            </button>
+                            <button type="button" class="btn btn-secondary"
+                                    @onclick="() => Redo(replica)"
+                                    disabled="@(!CanRedo(replica))">
+                                Redo
+                            </button>
+                            <button type="button" class="btn btn-secondary" @onclick="() => Break(replica)">
+                                End the current step
+                            </button>
+                        </div>
+                    </ChildContent>
+
+                    <Footer>
+                        <span class="metric">@Stack(replica).UndoCount undoable step(s)</span>
+                        <span class="metric">@Stack(replica).RedoCount redoable step(s)</span>
+                    </Footer>
+                </ReplicaPanel>
+            }
+        </div>
+    }
+
+    <div class="bb-note bb-note-warn">
         <strong>The thing worth trying.</strong> Type a sentence into A and wait for it to appear in
         B. Then type a different sentence into B. Now press <em>Undo</em> on A. A's sentence
         disappears from <em>both</em> panels - because undo is an ordinary edit that synchronizes
         like any other - while B's sentence is untouched, even though it came later. A's undo stack
         never contained it.
+    </div>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Undo mine, not yours</h3>
+    <p class="bb-card-desc">
+        Undo in a single-user editor means "put the document back how it was". In a collaborative
+        document that would be a disaster: restoring an earlier state would throw away everything
+        your collaborators did in the meantime, and they would watch their work vanish because
+        somebody else pressed a key.
     </p>
-    <p>
+    <p class="bb-card-desc">
+        What users actually expect is <em>selective</em> undo - reverse my last action, leave
+        everybody else's alone - and that is what these two replicas implement.
+    </p>
+    <p class="bb-card-desc">
         Note also that consecutive keystrokes collapse into one undo step, so undo removes a word or
         a phrase rather than a single character. A remote edit arriving between two of your
         keystrokes ends the current step, which is what keeps the boundaries sensible when several
         people are working at once.
     </p>
-</section>
+</div>
 
-@if (!Ready)
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Why this is not a rewind</h3>
+    <p class="bb-card-desc">
+        An undo here does not restore a previous state. It creates <em>new</em> operations that
+        delete what the action inserted and re-insert what it deleted, and those operations
+        travel to peers exactly like a keystroke. That is why the effect appears on the other
+        replica, why it merges rather than clobbering, and why it can itself be undone.
+    </p>
+    <p class="bb-card-desc">
+        It is also why an undo can survive a disconnection: take a replica offline, undo
+        something, bring it back, and the undo reaches its peer whenever the connection returns.
+    </p>
+    <pre class="bb-code"><span class="c">// One stack per editing surface, scoped to the text it edits.</span>
+<span class="k">var</span> undo = <span class="k">new</span> BcrdtUndoManager(document.Text(<span class="s">"body"</span>), <span class="k">new</span> BcrdtUndoManagerOptions
 {
-    <p class="loading">Opening two replicas…</p>
-}
-else
-{
-    <div class="panel-grid panel-grid-2">
-        @foreach (DemoReplica replica in Replicas)
-        {
-            <ReplicaPanel Replica="replica">
-                <ChildContent>
-                    <BcrdtTextArea Text="replica.Document.Text(Field)"
-                                   Presence="replica.Document.Presence"
-                                   Field="@Field"
-                                   Rows="8"
-                                   Class="editor"
-                                   Placeholder="Type here, then undo it." />
+    <span class="c">// Adds to the default set, which already tracks untagged (null-origin) edits.</span>
+    TrackedOrigins = { <span class="k">typeof</span>(BcrdtTextArea) },
+});
 
-                    <div class="toolbar">
-                        <button class="button"
-                                @onclick="() => Undo(replica)"
-                                disabled="@(!CanUndo(replica))">
-                            Undo
-                        </button>
-                        <button class="button"
-                                @onclick="() => Redo(replica)"
-                                disabled="@(!CanRedo(replica))">
-                            Redo
-                        </button>
-                        <button class="button button-quiet" @onclick="() => Break(replica)">
-                            End the current step
-                        </button>
-                    </div>
-                </ChildContent>
-
-                <Footer>
-                    <span class="metric">@Stack(replica).UndoCount undoable step(s)</span>
-                    <span class="metric">@Stack(replica).RedoCount redoable step(s)</span>
-                </Footer>
-            </ReplicaPanel>
-        }
-    </div>
-
-    <section class="prose">
-        <h2>Why this is not a rewind</h2>
-        <p>
-            An undo here does not restore a previous state. It creates <em>new</em> operations that
-            delete what the action inserted and re-insert what it deleted, and those operations
-            travel to peers exactly like a keystroke. That is why the effect appears on the other
-            replica, why it merges rather than clobbering, and why it can itself be undone.
-        </p>
-        <p>
-            It is also why an undo can survive a disconnection: take a replica offline, undo
-            something, bring it back, and the undo reaches its peer whenever the connection returns.
-        </p>
-    </section>
-}
+undo.Undo();   <span class="c">// removes what I did, not what they did</span>
+undo.Redo();</pre>
+</div>
 
 @code {
     private const string Field = "body";

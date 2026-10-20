@@ -167,7 +167,7 @@ public sealed class ChoiceTests : BormTest
 
         // The failure is shown in place of the choices, and reported to the page - not thrown at it.
         await Expect(component.Locator("option").First).ToHaveTextAsync("Options could not be loaded");
-        await Expect(page.Locator(".demo-card", new() { HasTextString = "OnOptionsLoadFailed" })).ToContainTextAsync("The component service is unavailable.");
+        await Expect(page.Locator(".bb-demo", new() { HasTextString = "OnOptionsLoadFailed" })).ToContainTextAsync("The component service is unavailable.");
 
         // Mended, a retry loads the team's components.
         await page.Locator("label", new() { HasTextString = "Break the component service" }).Locator("input").UncheckAsync();

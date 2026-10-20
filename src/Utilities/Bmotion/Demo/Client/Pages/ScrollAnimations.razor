@@ -3,20 +3,21 @@
 @inject BmotionScrollTracker TargetScroll
 @implements IAsyncDisposable
 
-<PageTitle>Scroll animations - Bit.Bmotion</PageTitle>
+<PageTitle>Scroll animations · Bmotion</PageTitle>
 
-<h1>Scroll animations</h1>
-
-<p class="page-intro">
-    There are two ways to tie motion to a scrollbar, and they answer different questions.
-    <strong>Scroll-linked</strong> motion asks <em>"how far along are we?"</em> and maps that
-    progress continuously onto a property - the reader scrubs the animation.
-    <strong>Scroll-triggered</strong> motion asks <em>"is this on screen yet?"</em> and plays a
-    normal animation once the answer changes. For the first there is a fast path -
-    <code>Timeline</code>, which hands the scrubbing to the browser outright - and a general one,
-    <code>BmotionScrollTracker</code>, for when you need the number itself.
-    <code>WhileInView</code> covers the second.
-</p>
+<div class="bb-intro">
+    <h1>Scroll animations</h1>
+    <p class="bb-subtitle">
+        There are two ways to tie motion to a scrollbar, and they answer different questions.
+        <strong>Scroll-linked</strong> motion asks <em>"how far along are we?"</em> and maps that
+        progress continuously onto a property - the reader scrubs the animation.
+        <strong>Scroll-triggered</strong> motion asks <em>"is this on screen yet?"</em> and plays a
+        normal animation once the answer changes. For the first there is a fast path -
+        <code>Timeline</code>, which hands the scrubbing to the browser outright - and a general one,
+        <code>BmotionScrollTracker</code>, for when you need the number itself.
+        <code>WhileInView</code> covers the second.
+    </p>
+</div>
 
 @* Offset by the site header's own height so the readout parks under it rather than behind it. *@
 <div class="scroll-progress">
@@ -29,8 +30,8 @@
     </div>
 </div>
 
-<div class="demo-section">
-    <h2>Scroll timelines: let the browser do it</h2>
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Scroll timelines: let the browser do it</h3>
     <p>
         A scroll handler that calls back into .NET on every scroll event is the expensive way to
         scrub an animation, and it is the one thing you cannot make fast from the outside.
@@ -75,10 +76,10 @@
     </div>
 
     <CodeSnippet Code="@_timelineCode" />
-</div>
+</section>
 
-<div class="demo-section">
-    <h2>Tracking the scroll position</h2>
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Tracking the scroll position</h3>
     <p>
         Inject <strong>BmotionScrollTracker</strong> and call <code>ObserveAsync</code> to receive a
         <code>BmScrollInfo</code> on every scroll: absolute offsets and normalised
@@ -89,10 +90,10 @@
     </p>
 
     <CodeSnippet Code="@_scrollTrackCode" />
-</div>
+</section>
 
-<div class="demo-section">
-    <h2>Scroll-linked motion values</h2>
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Scroll-linked motion values</h3>
     <p>
         A callback that calls <code>StateHasChanged</code> on every scroll event is a diff per
         frame. Motion values skip that entirely: bind them with the <code>Values</code> parameter
@@ -116,10 +117,10 @@
     </div>
 
     <CodeSnippet Code="@_valuesCode" />
-</div>
+</section>
 
-<div class="demo-section">
-    <h2>Motion templates</h2>
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Motion templates</h3>
     <p>
         Some properties are not a number - they are a sentence made of numbers.
         <strong>Bm.Template</strong> composes motion values into a CSS string and
@@ -138,10 +139,10 @@
     </div>
 
     <CodeSnippet Code="@_templateCode" />
-</div>
+</section>
 
-<div class="demo-section">
-    <h2>An element's own progress</h2>
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> An element's own progress</h3>
     <p>
         Window progress is the wrong measure for anything that is not the whole page. Pass
         <strong>BmScrollOptions</strong> a <code>TargetId</code> and a pair of
@@ -167,10 +168,10 @@
     </div>
 
     <CodeSnippet Code="@_targetCode" />
-</div>
+</section>
 
-<div class="demo-section">
-    <h2>whileInView</h2>
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> whileInView</h3>
     <p>
         <strong>WhileInView</strong> is the trigger half: an ordinary gesture state, activated by an
         <code>IntersectionObserver</code> rather than a pointer. <code>Once="true"</code> keeps it
@@ -200,72 +201,7 @@
     </div>
 
     <CodeSnippet Code="@_inViewCode" />
-</div>
-
-<style>
-    .scroll-progress {
-        top: calc(var(--demo-header-height) + .5rem);
-        z-index: 50;
-        padding: 1.5rem;
-        position: sticky;
-        margin-bottom: 1.5rem;
-        background: var(--bm-card);
-        border: 1px solid var(--bm-border);
-        border-radius: 12px;
-        box-shadow: 0 4px 20px rgba(0, 0, 0, .15);
-    }
-
-    .progress-caption { text-align: left; margin: .4rem 0; }
-
-    /* The timeline-driven bar sits on its own, above the row of stages, with the caption it
-       needs to be readable as a sample rather than as page chrome. */
-    .timeline-bar-wrap { display: flex; flex-direction: column; gap: .5rem; margin-bottom: 1.5rem; }
-
-    .scroll-track {
-        width: 100%;
-        height: .5rem;
-        overflow: hidden;
-        border-radius: 6px;
-        background: var(--bm-track);
-    }
-
-    .scroll-fill {
-        height: 100%;
-        border-radius: 6px;
-        transition: width .05s;
-        background: linear-gradient(90deg, var(--bm-primary), var(--bm-secondary));
-    }
-
-    /* The motion-value bound fills are scaled, not resized: they start full width and the
-       engine drives scaleX from the left edge. */
-    .full-width { width: 100%; transition: none; transform-origin: 0 50%; }
-
-    .target-panel {
-        width: 100%;
-        height: 8rem;
-        border-radius: 8px;
-        background: repeating-linear-gradient(45deg,
-            var(--bm-accent-soft) 0 12px,
-            transparent 12px 24px);
-        border: 1px solid var(--bm-accent-line);
-    }
-
-    .inview-strip { overflow-x: clip; }
-
-    .inview-band {
-        height: 5rem;
-        display: flex;
-        color: #fff;
-        font-weight: 700;
-        align-items: center;
-        border-radius: 12px;
-        justify-content: center;
-        margin-bottom: 1.5rem;
-    }
-
-    .from-left { background: linear-gradient(135deg, var(--bm-primary), var(--bm-secondary)); }
-    .from-right { background: linear-gradient(135deg, var(--bm-secondary), var(--bm-primary)); }
-</style>
+</section>
 
 @code {
     private double _progressX;

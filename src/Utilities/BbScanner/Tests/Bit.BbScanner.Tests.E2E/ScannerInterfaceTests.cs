@@ -13,8 +13,8 @@ public class ScannerInterfaceTests : BbScannerTest
 {
     private static readonly string[] Routes =
     [
-        "", "samples", "scan", "lifecycle", "camera", "region",
-        "image", "performance", "customize", "errors", "api",
+        "", "getting-started", "samples", "scan", "lifecycle", "camera", "region",
+        "image", "performance", "customize", "errors", "api", "mcp-server",
     ];
 
     [TestMethod]
@@ -42,6 +42,7 @@ public class ScannerInterfaceTests : BbScannerTest
         var body = await session.Page.TextContentAsync("body");
         Assert.IsNotNull(body);
         Assert.Contains("not found", body, StringComparison.OrdinalIgnoreCase);
+        Assert.AreEqual("404", (await session.Page.TextContentAsync("h1"))?.Trim());
         Assert.IsEmpty(session.PageErrors);
     }
 

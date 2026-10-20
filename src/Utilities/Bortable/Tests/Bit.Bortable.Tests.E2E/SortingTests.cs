@@ -20,7 +20,7 @@ public sealed class SortingTests : BortableTest
     [TestMethod]
     public async Task Dragging_an_item_down_reorders_the_list_live_and_binds_the_order_on_drop()
     {
-        var page = await OpenAsync("/");
+        var page = await OpenAsync("/simple-list");
         await AssertOrderAsync(page, "simple-list", "simple-order", Simple);
 
         var from = (await BoxAsync(Item(page, "simple-list", "Item 1"))).Centre;
@@ -45,7 +45,7 @@ public sealed class SortingTests : BortableTest
     [TestMethod]
     public async Task Dragging_an_item_up_moves_it_above_the_item_it_is_dropped_on()
     {
-        var page = await OpenAsync("/");
+        var page = await OpenAsync("/simple-list");
 
         await DragAsync(page,
             (await BoxAsync(Item(page, "simple-list", "Item 5"))).Centre,
@@ -57,7 +57,7 @@ public sealed class SortingTests : BortableTest
     [TestMethod]
     public async Task Successive_drags_keep_sorting_the_already_sorted_list()
     {
-        var page = await OpenAsync("/");
+        var page = await OpenAsync("/simple-list");
 
         await DragAsync(page,
             (await BoxAsync(Item(page, "simple-list", "Item 6"))).Centre,
@@ -95,7 +95,7 @@ public sealed class SortingTests : BortableTest
     [TestMethod]
     public async Task The_FLIP_animation_slides_items_without_disturbing_the_final_order()
     {
-        var page = await OpenAsync("/");
+        var page = await OpenAsync("/simple-list");
 
         // Counts the slides the browser runs: a FLIP inverts a moved item with a transform and transitions it back
         // to none, all within one task, so the transition itself is the trace it leaves.

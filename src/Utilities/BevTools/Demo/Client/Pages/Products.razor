@@ -2,18 +2,81 @@
 @implements IDisposable
 @inject CartState Cart
 
-<PageTitle>Products</PageTitle>
+<PageTitle>Products · BevTools</PageTitle>
 
-<h1>Products</h1>
-<p class="muted">Type in the search box and watch the Profiler: <code>ProductList</code> and every <code>ProductRow</code> re-render on each keystroke because <code>FilterState</code> notifies without coalescing and rows never override <code>ShouldRender</code>. Enable "search on type" to also fire one HTTP request per keystroke.</p>
-
-<div class="row">
-    <label><input type="checkbox" @bind="_searchOnType" /> search the API on every keystroke (duplicate/overlapping requests)</label>
-    <span class="muted">Cart: @Cart.ItemCount items, @Cart.Total.ToString("C") — see BevTools → State → CartState</span>
+<div class="bb-intro">
+    <p class="bb-overline">Scenario · Rendering</p>
+    <h1>Products</h1>
+    <p class="bb-subtitle">
+        A searchable list of 120 products, built the way lists often are at first: a state container that notifies on
+        every change, a list that re-renders on every notification, and rows that never override
+        <code>ShouldRender</code>. Each keystroke costs a render of every row - and, with search on type, an HTTP request.
+    </p>
 </div>
 
-<FilterBar />
-<ProductList SearchOnType="_searchOnType" />
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> The product list</h3>
+    <p class="bb-card-desc">
+        Type in the search box. <code>FilterBar</code> writes to <code>FilterState</code>, which raises
+        <code>Changed</code> without coalescing; <code>ProductList</code> re-renders, and every <code>ProductRow</code>
+        with it. <em>Add</em> puts a product in the cart, a named change of <code>CartState</code>.
+    </p>
+
+    <div class="bb-demo">
+        <div class="bb-demo-bar"><span class="bb-demo-label">Live</span><RendererStatus /></div>
+
+        <div class="bb-toolbar">
+            <label class="bb-check"><input type="checkbox" @bind="_searchOnType" /> search the API on every keystroke (duplicate/overlapping requests)</label>
+            <span class="bb-spacer"></span>
+            <span class="bb-muted">Cart: @Cart.ItemCount items, @Cart.Total.ToString("C") — see BevTools → State → CartState</span>
+        </div>
+
+        <FilterBar />
+        <ProductList SearchOnType="_searchOnType" />
+    </div>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Profiler: what one keystroke costs</h3>
+    <p class="bb-card-desc">
+        Open the <strong>Profiler</strong>, press <em>Reset</em>, type one character and read <em>since reset</em>; tick
+        <em>by type</em> to see all the rows as one line - what 120 <code>ProductRow</code>s cost together, and that every
+        one of their renders was a parent re-render. <strong>Diagnostics</strong> names the pattern: a render storm on
+        <code>ProductList</code> and a render cascade of 100+ components per batch.
+    </p>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Timeline: from the keystroke to the batch</h3>
+    <p class="bb-card-desc">
+        Each <em>oninput → FilterBar</em> event is followed by a state notification and one batch with 121 renders.
+        Select the event and the Timeline lists what it <em>caused</em>; select one of those renders and
+        <em>caused by</em> leads back to the keystroke.
+    </p>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-danger"></span> Network: a request per keystroke</h3>
+    <p class="bb-card-desc">
+        Tick <em>search the API on every keystroke</em> and type quickly. The <strong>Network</strong> panel fills with
+        overlapping <code>GET /api/search?q=…</code> requests, each triggered by an <em>oninput</em> event (the Trigger
+        column), none cancelled, answers arriving out of order. <strong>Diagnostics</strong> reports duplicate HTTP
+        requests.
+    </p>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> The fixes to try</h3>
+    <ul class="bb-detail-list">
+        <li>Debounce <code>FilterState</code>, so a burst of keystrokes is one notification.</li>
+        <li>Override <code>ShouldRender</code> in <code>ProductRow</code>, use <code>@@key</code> and immutable rows.</li>
+        <li>Pass a <code>CancellationToken</code> to the search and cancel it on the next keystroke.</li>
+    </ul>
+    <div class="bb-try">
+        <a href="problems#problem-2" class="btn btn-outline">Problem 2 →</a>
+        <a href="problems#problem-3" class="btn btn-outline">Problem 3 →</a>
+    </div>
+</div>
 
 @code {
     private bool _searchOnType;

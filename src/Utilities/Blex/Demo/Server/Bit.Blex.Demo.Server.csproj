@@ -46,11 +46,11 @@
 
         <!-- What this site can teach about state management, and nothing else of it: the stores, the services
              and middleware, the registration and the components that show subscriptions. Site chrome - the
-             layout, the code highlighter, the page shell, the site map - answers no question about Blex. The
-             documentation pages among the components are dropped again at runtime by BlexSourceCatalog: their
-             prose is served rendered, by the docs tool. -->
+             layout (the shared site kit), the code highlighter, the page shell, the site map, the landing and
+             error pages - answers no question about Blex. The documentation pages among the components are
+             dropped again at runtime by BlexSourceCatalog: their prose is served rendered, by the docs tool. -->
         <EmbeddedResource Include="..\Client\**\*.razor;..\Client\**\*.cs;..\Client\*.csproj"
-                          Exclude="..\Client\bin\**;..\Client\obj\**;..\Client\Layout\**;..\Client\Components\CodeHighlighter.cs;..\Client\Components\CodeBlock.razor;..\Client\Components\Callout.razor;..\Client\Components\ApiTable.razor;..\Client\Components\DocPage.razor;..\Client\Components\DemoCard.razor;..\Client\DocsNav.cs;..\Client\DiagnosticsCatalog.cs;..\Client\Services\ThemeService.cs;..\Client\Pages\NotFoundPage.razor;..\Client\Pages\ErrorPage.razor">
+                          Exclude="..\Client\bin\**;..\Client\obj\**;..\Client\Layout\**;..\Client\Components\CodeHighlighter.cs;..\Client\Components\CodeBlock.razor;..\Client\Components\Callout.razor;..\Client\Components\ApiTable.razor;..\Client\Components\DocPage.razor;..\Client\Components\DemoCard.razor;..\Client\DocsCatalog.cs;..\Client\DiagnosticsCatalog.cs;..\Client\Pages\Home.razor;..\Client\Pages\NotFound.razor;..\Client\Pages\ErrorPage.razor">
             <LogicalName>BlexSource/Demo/Client/%(RecursiveDir)%(Filename)%(Extension)</LogicalName>
         </EmbeddedResource>
 

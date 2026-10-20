@@ -69,7 +69,7 @@ public abstract class DemoTest
 
     /// <summary>Waits until the prerendered markup has been taken over by the WebAssembly runtime.</summary>
     protected static Task WaitForInteractiveAsync(IPage page) =>
-        page.WaitForSelectorAsync(".app-shell[data-interactive='true']", new PageWaitForSelectorOptions { Timeout = 120_000 });
+        page.WaitForSelectorAsync(".page[data-interactive='true']", new PageWaitForSelectorOptions { Timeout = 120_000 });
 
     /// <summary>
     /// Drops the sample image on the editor's own file input and waits for its first preview, which is

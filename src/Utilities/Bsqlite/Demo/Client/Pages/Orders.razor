@@ -10,157 +10,166 @@
     deleted.
 </PageHeader>
 
+<StorageSwitcher />
+
 @if (_error is not null)
 {
-    <p class="error">@_error</p>
+    <div class="bb-note bb-note-danger" role="alert">@_error</div>
 }
 
-<div class="split">
-    <section class="card">
-        <h2>Orders</h2>
-        <p class="try">
-            <b>Try</b>
-            <span>
-                Move an order to <em>Shipped</em>. The <a href="queries">SQL</a> page holds a live
-                query over this table - open it in a second tab and watch it re-run.
-            </span>
-        </p>
-        <div class="toolbar">
-            <input type="search" placeholder="Filter number or customer" @bind="_filter" @bind:event="oninput" />
-            <span class="grow"></span>
-            <button type="button" @onclick="NewOrder" disabled="@(_busy || _context is null)">New order</button>
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Orders</h3>
+    <p class="bb-card-desc">
+        Every order with its customer and its lines, newest first. Click a row to open its header and its lines
+        in the panel under the table.
+    </p>
+    <div class="bb-note bq-try">
+        <strong>Try</strong>
+        Move an order to <em>Shipped</em>. The <a href="queries">SQL</a> page holds a live
+        query over this table - open it in a second tab and watch it re-run.
+    </div>
+
+    @* Wide: a six- or seven-column grid with its editor under it does not fit beside the "On this page"
+       rail, so this page gives the rail up. *@
+    <div class="bb-demo bb-page-wide">
+        <div class="bb-demo-bar">
+            <span class="bb-demo-label">Live</span>
+            <input type="search" placeholder="Filter number or customer" aria-label="Filter orders" @bind="_filter" @bind:event="oninput" />
+            <button type="button" class="btn btn-primary" @onclick="NewOrder" disabled="@(_busy || _context is null)">New order</button>
         </div>
-        <div class="scroll-x">
-        <table>
-            <thead>
-            <tr><th>Number</th><th>Customer</th><th>Status</th><th>Ordered</th><th>Ship by</th><th>Total</th></tr>
-            </thead>
-            <tbody>
-            @foreach (var order in Visible)
-            {
-                <tr class="clickable @(order.Id == _selected?.Id ? "selected" : null)" @onclick="() => Select(order)">
-                    <td class="mono">@order.Number</td>
-                    <td>@order.Customer?.DisplayName</td>
-                    <td><span class="pill @StatusClass(order.Status)">@order.Status</span></td>
-                    <td>@SampleFormat.When(order.OrderedAt)</td>
-                    <td>@SampleFormat.Day(order.ShipBy)</td>
-                    <td>@SampleFormat.Money(order.Lines.Sum(l => l.UnitPrice * l.Quantity))</td>
-                </tr>
-            }
-            </tbody>
-        </table>
-        </div>
-        <CodeBlock Title="Loading the graph" Language="csharp" Code="@Snippets.Orders.Read" />
-    </section>
-    <section class="card">
-        @if (_selected is null)
-        {
-            <h2>Detail</h2>
-            <p>Select an order, or create one.</p>
-        }
-        else
-        {
-            <h2>@_selected.Number</h2>
-            <form class="stack-form" @onsubmit="SaveHeaderAsync" @onsubmit:preventDefault="true">
-                <label>Customer
-                    <select @bind="_selected.CustomerId">
-                        @foreach (var customer in _customers)
-                        {
-                            <option value="@customer.Id">@customer.DisplayName</option>
-                        }
-                    </select>
-                </label>
-                <label>Status
-                    <select @bind="_status">
-                        @foreach (var status in Enum.GetValues<OrderStatus>())
-                        {
-                            <option value="@status">@status</option>
-                        }
-                    </select>
-                </label>
-                <label>Ship by <input type="date" @bind="_selected.ShipBy" /></label>
-                <label>Notes <textarea @bind="_selected.Notes"></textarea></label>
-                <div class="row">
-                    <button type="submit" disabled="@_busy">Save header</button>
-                    <button type="button" class="danger" @onclick="DeleteOrderAsync" disabled="@_busy">Delete order</button>
-                </div>
-            </form>
-            <h3>Lines</h3>
-            <table>
-                <thead><tr><th>Product</th><th>Qty</th><th>Unit</th><th></th></tr></thead>
+
+        <div class="bb-scroll">
+            <table class="bb-table bq-grid" data-rows="orders">
+                <thead>
+                <tr><th>Number</th><th>Customer</th><th>Status</th><th>Ordered</th><th>Ship by</th><th>Total</th></tr>
+                </thead>
                 <tbody>
-                @foreach (var line in _selected.Lines)
+                @foreach (var order in Visible)
                 {
-                    <tr>
-                        <td>@(line.Product?.Name ?? $"#{line.ProductId}")</td>
-                        <td>@line.Quantity</td>
-                        <td>@SampleFormat.Money(line.UnitPrice)</td>
-                        <td class="actions">
-                            <button type="button" class="danger" @onclick="() => RemoveLineAsync(line)">Remove</button>
-                        </td>
+                    <tr class="bq-clickable @(order.Id == _selected?.Id ? "bq-selected" : null)" @onclick="() => Select(order)">
+                        <td class="bq-nowrap">@order.Number</td>
+                        <td class="bq-name">@order.Customer?.DisplayName</td>
+                        <td><span class="@StatusClass(order.Status)">@order.Status</span></td>
+                        <td>@SampleFormat.When(order.OrderedAt)</td>
+                        <td class="bq-nowrap">@SampleFormat.Day(order.ShipBy)</td>
+                        <td class="bq-num">@SampleFormat.Money(order.Lines.Sum(l => l.UnitPrice * l.Quantity))</td>
                     </tr>
                 }
                 </tbody>
             </table>
-            <form class="stack-form" @onsubmit="AddLineAsync" @onsubmit:preventDefault="true">
-                <label>Add product
-                    <select @bind="_newProductId">
-                        @foreach (var product in _products)
-                        {
-                            <option value="@product.Id">@product.Sku - @product.Name</option>
-                        }
-                    </select>
-                </label>
-                <label>Quantity <input type="number" min="1" @bind="_newQty" /></label>
-                <button type="submit" disabled="@(_busy || _selected.Id == 0)">Add line</button>
-            </form>
-            @if (_selected.Id == 0)
+        </div>
+
+        <div class="bb-stage">
+            @if (_selected is null)
             {
-                <p class="empty">Save the header before adding lines.</p>
+                <p class="bq-panel-title">Detail</p>
+                <p class="bb-muted">Select an order, or create one.</p>
             }
-        }
-    </section>
-</div>
+            else
+            {
+                <p class="bq-panel-title">@_selected.Number</p>
+                <div class="bb-split">
+                    <form class="bq-form" @onsubmit="SaveHeaderAsync" @onsubmit:preventDefault="true">
+                        <label class="bb-field">Customer
+                            <select @bind="_selected.CustomerId">
+                                @foreach (var customer in _customers)
+                                {
+                                    <option value="@customer.Id">@customer.DisplayName</option>
+                                }
+                            </select>
+                        </label>
+                        <label class="bb-field">Status
+                            <select @bind="_status">
+                                @foreach (var status in Enum.GetValues<OrderStatus>())
+                                {
+                                    <option value="@status">@status</option>
+                                }
+                            </select>
+                        </label>
+                        <label class="bb-field">Ship by <input type="date" @bind="_selected.ShipBy" /></label>
+                        <label class="bb-field">Notes <textarea @bind="_selected.Notes"></textarea></label>
+                        <div class="bb-toolbar">
+                            <button type="submit" class="btn btn-primary" disabled="@_busy">Save header</button>
+                            <button type="button" class="btn bq-btn-danger" @onclick="DeleteOrderAsync" disabled="@_busy">Delete order</button>
+                        </div>
+                    </form>
 
-<div class="stack-lg">
-    <DemoCard Title="Saving a header, then its lines"
-              CodeTitle="Adding a line"
-              Code="@Snippets.Orders.Graph">
-        <Description>
-            <span>
-                The header is saved first because the lines need its generated key, and the unit
-                price is copied onto the line so later price changes do not rewrite history. Both
-                saves go through the same connection in the same worker.
-            </span>
-        </Description>
-    </DemoCard>
+                    <div>
+                        <p class="bq-panel-title">Lines</p>
+                        <table class="bb-table bq-grid bq-grid-prose">
+                            <thead><tr><th>Product</th><th>Qty</th><th>Unit</th><th><span class="bq-sr">Actions</span></th></tr></thead>
+                            <tbody>
+                            @foreach (var line in _selected.Lines)
+                            {
+                                <tr>
+                                    <td>@(line.Product?.Name ?? $"#{line.ProductId}")</td>
+                                    <td class="bq-num">@line.Quantity</td>
+                                    <td class="bq-num">@SampleFormat.Money(line.UnitPrice)</td>
+                                    <td class="bb-table-action">
+                                        <button type="button" class="btn bq-btn-danger bq-btn-sm" @onclick="() => RemoveLineAsync(line)">Remove</button>
+                                    </td>
+                                </tr>
+                            }
+                            </tbody>
+                        </table>
+                        <form class="bq-form" @onsubmit="AddLineAsync" @onsubmit:preventDefault="true">
+                            <label class="bb-field">Add product
+                                <select @bind="_newProductId">
+                                    @foreach (var product in _products)
+                                    {
+                                        <option value="@product.Id">@product.Sku - @product.Name</option>
+                                    }
+                                </select>
+                            </label>
+                            <label class="bb-field">Quantity <input type="number" min="1" @bind="_newQty" /></label>
+                            <div class="bb-toolbar">
+                                <button type="submit" class="btn btn-primary" disabled="@(_busy || _selected.Id == 0)">Add line</button>
+                            </div>
+                        </form>
+                        @if (_selected.Id == 0)
+                        {
+                            <p class="bb-muted bq-small">Save the header before adding lines.</p>
+                        }
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
 
-    <DemoCard Title="Why the grid sorts by Id"
-              CodeTitle="Sorting a DateTimeOffset column"
-              Code="@Snippets.Orders.Offset">
-        <Description>
-            <span>
-                A <code>DateTimeOffset</code> round-trips correctly, but SQLite has no type that
-                can order one, so the stock SQLite provider refuses <code>ORDER BY</code> on it -
-                on a server exactly as here. Bsqlite does not paper over that: same provider,
-                same rules.
-            </span>
-        </Description>
-    </DemoCard>
+    <CodeBlock Title="Loading the graph" Language="csharp" Code="@Snippets.Orders.Read" />
+</section>
 
-    <DemoCard Title="The relationships behind this page"
-              CodeTitle="SalesOrderConfiguration.cs"
-              Code="@Snippets.Orders.Configuration"
-              CodeOpen="false">
-        <Description>
-            <span>
-                Status is stored as TEXT so an exported <code>.db</code> stays readable and
-                reordering the enum cannot silently change history. Deleting a customer who has
-                orders, or a product on a line, is refused by <code>Restrict</code>.
-            </span>
-        </Description>
-    </DemoCard>
-</div>
+<DemoCard Title="Saving a header, then its lines"
+          CodeTitle="Adding a line"
+          Code="@Snippets.Orders.Graph">
+    <Description>
+        The header is saved first because the lines need its generated key, and the unit
+        price is copied onto the line so later price changes do not rewrite history. Both
+        saves go through the same connection in the same worker.
+    </Description>
+</DemoCard>
+
+<DemoCard Title="Why the grid sorts by Id"
+          CodeTitle="Sorting a DateTimeOffset column"
+          Code="@Snippets.Orders.Offset">
+    <Description>
+        A <code>DateTimeOffset</code> round-trips correctly, but SQLite has no type that
+        can order one, so the stock SQLite provider refuses <code>ORDER BY</code> on it -
+        on a server exactly as here. Bsqlite does not paper over that: same provider,
+        same rules.
+    </Description>
+</DemoCard>
+
+<DemoCard Title="The relationships behind this page"
+          CodeTitle="SalesOrderConfiguration.cs"
+          Code="@Snippets.Orders.Configuration"
+          CodeOpen="false">
+    <Description>
+        Status is stored as TEXT so an exported <code>.db</code> stays readable and
+        reordering the enum cannot silently change history. Deleting a customer who has
+        orders, or a product on a line, is refused by <code>Restrict</code>.
+    </Description>
+</DemoCard>
 
 @code {
     private AppDbContext? _context;
@@ -193,11 +202,11 @@
 
     private static string StatusClass(OrderStatus status) => status switch
     {
-        OrderStatus.Shipped => "ok",
-        OrderStatus.Cancelled => "danger",
-        OrderStatus.Draft => "muted",
-        OrderStatus.Packed => "warn",
-        _ => string.Empty,
+        OrderStatus.Shipped => "bb-badge bb-badge-success",
+        OrderStatus.Cancelled => "bb-badge bb-badge-danger",
+        OrderStatus.Draft => "bb-badge bq-badge-neutral",
+        OrderStatus.Packed => "bb-badge bb-badge-warn",
+        _ => "bb-badge",
     };
 
     private async Task LoadAsync()

@@ -1,11 +1,30 @@
 ﻿@inherits LayoutComponentBase
 
-@* data-interactive turns true once the page runs in the browser. Prerendered markup is on screen
-   long before its event handlers are, which is what the E2E suite waits out with it. *@
-<div class="app" data-interactive="@(RendererInfo.IsInteractive ? "true" : "false")">
-    <a class="skip-link" href="#main">Skip to content</a>
-    <NavMenu />
-    <main class="main" id="main" tabindex="-1">
-        @Body
-    </main>
+@* The app shell - part of the site kit every Utilities demo shares (see wwwroot/app.css): a skip
+   link, the sticky header, the content band, and the footer. The landing page renders straight
+   into it; every other page goes through DocsLayout, which adds the nav panel, the breadcrumb and
+   the "on this page" rail.
+
+   The band is painted with the secondary background so the surfaces inside it read as raised -
+   the arrangement Fluent uses for a page built out of cards.
+
+   data-interactive turns true once the page runs in the browser. Prerendered markup is on screen
+   long before its event handlers are, which is what an E2E suite waits out with it. *@
+
+<div class="page" data-interactive="@(RendererInfo.IsInteractive ? "true" : "false")">
+    @* First in the tab order on purpose: a keyboard reader lands here before the navigation and
+       can jump straight past the chrome to the page. *@
+    <a class="bb-skip-link" href="#bb-main">Skip to content</a>
+
+    <Header />
+
+    <div class="bb-site-content">
+        <main id="bb-main" tabindex="-1">
+            <article>
+                @Body
+            </article>
+        </main>
+    </div>
+
+    <Footer />
 </div>

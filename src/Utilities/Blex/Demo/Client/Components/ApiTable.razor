@@ -1,27 +1,29 @@
-﻿<div class="api-table">
-    @if (!string.IsNullOrEmpty(Title))
-    {
-        <h3 class="api-table__title">@Title</h3>
-    }
-    <div class="table-scroll">
-        <table>
-            <thead>
+﻿@*
+    A member/description table in the site kit's bb-table, scrolling inside its own box on a narrow
+    screen. The member column wraps between the words of a signature, never inside one (demo.css).
+*@
+@if (!string.IsNullOrEmpty(Title))
+{
+    <h4 class="demo-api-title">@Title</h4>
+}
+<div class="bb-scroll">
+    <table class="bb-table demo-api-table">
+        <thead>
+            <tr>
+                <th>@MemberHeader</th>
+                <th>@DescriptionHeader</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var row in Rows)
+            {
                 <tr>
-                    <th class="api-table__member">@MemberHeader</th>
-                    <th>@DescriptionHeader</th>
+                    <td><code>@row.Member</code></td>
+                    <td>@((MarkupString)row.Description)</td>
                 </tr>
-            </thead>
-            <tbody>
-                @foreach (var row in Rows)
-                {
-                    <tr>
-                        <td><code>@row.Member</code></td>
-                        <td>@((MarkupString)row.Description)</td>
-                    </tr>
-                }
-            </tbody>
-        </table>
-    </div>
+            }
+        </tbody>
+    </table>
 </div>
 
 @code {

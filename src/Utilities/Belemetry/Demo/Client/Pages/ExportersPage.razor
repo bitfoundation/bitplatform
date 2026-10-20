@@ -1,17 +1,18 @@
 ﻿@page "/exporters"
 
-<PageTitle>Console, in-memory and custom exporters - bit Belemetry</PageTitle>
+<PageTitle>Console, in-memory and custom exporters · Belemetry</PageTitle>
 
-<h1>Console, in-memory and custom exporters</h1>
+<div class="bb-intro">
+    <h1>Console, in-memory and custom exporters</h1>
+    <p class="bb-subtitle">
+        Besides OTLP and Azure Monitor, Belemetry ships a console exporter for development and an in-memory exporter for
+        tests and in-app viewers, and takes any <code>IBelemetryExporter</code> of your own. All of them can be combined
+        with the others: every exporter receives every batch.
+    </p>
+</div>
 
-<p class="page-intro">
-    Besides OTLP and Azure Monitor, Belemetry ships a console exporter for development and an in-memory exporter for
-    tests and in-app viewers, and takes any <code>IBelemetryExporter</code> of your own. All of them can be combined
-    with the others: every exporter receives every batch.
-</p>
-
-<div class="demo-section">
-    <h2>Console</h2>
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Console</h3>
     <p>
         <code>AddConsoleExporter</code> prints one line per span, log record and metric point - the kind, the name, the
         duration or severity, the ids and the attributes. The .NET side writes to the process's standard output, which
@@ -23,8 +24,8 @@
     <CodeSnippet Code="@ConsoleOutput" Language="Text" />
 </div>
 
-<div class="demo-section">
-    <h2>In-memory</h2>
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> In-memory</h3>
     <p>
         <code>BelemetryInMemoryExporter</code> keeps what it is handed in three queues - <code>Spans</code>,
         <code>Logs</code> and <code>Metrics</code>, oldest first, each capped at the <code>capacity</code> passed to
@@ -43,8 +44,8 @@
     <CodeSnippet Code="@ViewerCode" Language="Razor" />
 </div>
 
-<div class="demo-section">
-    <h2>Your own exporter</h2>
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Your own exporter</h3>
     <p>
         Implement <code>IBelemetryExporter</code> - a <code>Name</code> for diagnostics and
         <code>ExportAsync</code> - and add an instance with <code>options.AddExporter</code>. A
@@ -52,7 +53,7 @@
         <code>Logs</code> and <code>Metrics</code>, already shaped like their OTLP messages (see the model types
         <code>BelemetrySpan</code>, <code>BelemetryLogRecord</code> and <code>BelemetryMetric</code>).
     </p>
-    <ul>
+    <ul class="bb-detail-list">
         <li>
             Calls are serialized: the pipeline never calls <code>ExportAsync</code> on one exporter concurrently, so
             no locking is needed inside it.
@@ -81,8 +82,8 @@
     <CodeSnippet Code="@CustomSetupCode" Language="C#" />
 </div>
 
-<div class="demo-section">
-    <h2>API</h2>
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> API</h3>
     <ApiTable TypeName="IBelemetryExporter" />
     <ApiTable TypeName="BelemetryInMemoryExporter" />
     <ApiTable TypeName="BelemetryConsoleExporterOptions" />
@@ -163,7 +164,7 @@
         @implements IDisposable
         @inject BelemetryInMemoryExporter Memory
 
-        <ul>
+        <ul class="bb-detail-list">
             @foreach (var log in Memory.Logs.Reverse().Take(20))
             {
                 <li>@log.SeverityText @(log.EventName ?? log.Body)</li>

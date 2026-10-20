@@ -1,36 +1,36 @@
 ﻿@page "/durability"
 @implements IAsyncDisposable
 
-<PageTitle>Durability &amp; recovery - BlazeDb</PageTitle>
+<PageTitle>Durability &amp; recovery · BlazeDb</PageTitle>
 
-<PageHeader Eyebrow="Persistence" IconName="shield" Title="Crash it on purpose"
+<PageHeader Eyebrow="Durability & recovery" Title="Crash it on purpose"
             Lead="This page drives a private database whose storage is a byte dictionary you can vandalise. Flush it, snapshot it, abandon it mid-flight, tear the tail off the log, corrupt a checksum - then reopen and see exactly what survived.">
-    <span class="chip"><Icon Name="file" /> @_files.Count files</span>
-    <span class="chip"><Icon Name="database" /> @(_table?.Count ?? 0) rows in memory</span>
-    <span class="chip"><Icon Name="disk" /> @DemoSandbox.Bytes(_totalBytes) on "disk"</span>
+    <span class="bb-badge bd-badge-neutral">@_files.Count files</span>
+    <span class="bb-badge bd-badge-neutral">@(_table?.Count ?? 0) rows in memory</span>
+    <span class="bb-badge bd-badge-neutral">@DemoSandbox.Bytes(_totalBytes) on "disk"</span>
 </PageHeader>
 
-<Section Title="How a write becomes durable" IconName="arrow-down">
-    <div class="grid grid-4">
+<Section Title="How a write becomes durable">
+    <div class="bb-grid">
         <Panel Title="1 · Memory" IconName="database">
-            <p class="small mb-0">
+            <p>
                 The row store and every index are updated synchronously. Your call has already
                 returned by the time anything else happens.
             </p>
         </Panel>
         <Panel Title="2 · Log record" IconName="file">
-            <p class="small mb-0">
+            <p>
                 A set-or-delete record with a CRC is buffered. A commit closes the batch.
             </p>
         </Panel>
         <Panel Title="3 · Append" IconName="download">
-            <p class="small mb-0">
+            <p>
                 A background loop appends buffered records to <code>wal-N.blz</code> every
                 <code>FlushInterval</code>. <code>FlushAsync</code> does it now.
             </p>
         </Panel>
         <Panel Title="4 · Checkpoint" IconName="layers">
-            <p class="small mb-0">
+            <p>
                 Once the log passes <code>CheckpointWalSize</code>, a full snapshot is written, the
                 manifest is swapped atomically and the old log is deleted.
             </p>
@@ -38,26 +38,26 @@
     </div>
 </Section>
 
-<Section Title="The sandbox" IconName="cpu"
+<Section Title="The sandbox"
          Lead="Options are read when a database is opened, so changing either one reopens the database over the same storage - which is itself a recovery.">
     <Panel Title="Options" IconName="code">
         <Actions>
-            <span class="panel-sub mono">@_optionsCode</span>
+            <span class="bd-panel-sub">@_optionsCode</span>
         </Actions>
         <ChildContent>
-            <div class="form-row">
-                <div class="field">
-                    <label class="field-label" for="d-flush">FlushInterval</label>
-                    <select id="d-flush" class="select" @bind="_flushChoice" @bind:after="ReopenAsync">
+            <div class="bb-fields">
+                <div class="bb-field">
+                    <label for="d-flush">FlushInterval</label>
+                    <select id="d-flush" @bind="_flushChoice" @bind:after="ReopenAsync">
                         <option value="never">never (1 hour - explicit flushes only)</option>
                         <option value="fast">20 ms</option>
                         <option value="default">100 ms (the default)</option>
                         <option value="slow">1 second</option>
                     </select>
                 </div>
-                <div class="field">
-                    <label class="field-label" for="d-ckpt">CheckpointWalSize</label>
-                    <select id="d-ckpt" class="select" @bind="_checkpointChoice" @bind:after="ReopenAsync">
+                <div class="bb-field">
+                    <label for="d-ckpt">CheckpointWalSize</label>
+                    <select id="d-ckpt" @bind="_checkpointChoice" @bind:after="ReopenAsync">
                         <option value="never">disabled (long.MaxValue)</option>
                         <option value="tiny">2 KB - checkpoints constantly</option>
                         <option value="small">32 KB</option>
@@ -68,53 +68,53 @@
         </ChildContent>
     </Panel>
 
-    <div class="grid grid-sidebar mt-2">
-        <div class="flex-col gap-lg">
+    <div class="bd-main-side">
+        <div class="bb-flex">
             <Panel Title="Normal operation" IconName="play">
-                <div class="grid grid-2">
-                    <button class="btn btn-sm" disabled="@_busy" @onclick="() => InsertRowsAsync(20)">
+                <div class="bd-btn-grid">
+                    <button type="button" class="btn btn-secondary" disabled="@_busy" @onclick="() => InsertRowsAsync(20)">
                         <Icon Name="plus" /> Insert 20 rows
                     </button>
-                    <button class="btn btn-sm" disabled="@_busy" @onclick="() => InsertRowsAsync(400)">
+                    <button type="button" class="btn btn-secondary" disabled="@_busy" @onclick="() => InsertRowsAsync(400)">
                         <Icon Name="plus" /> Insert 400 rows
                     </button>
-                    <button class="btn btn-sm" disabled="@_busy" @onclick="FlushAsync">
+                    <button type="button" class="btn btn-secondary" disabled="@_busy" @onclick="FlushAsync">
                         <Icon Name="download" /> FlushAsync
                     </button>
-                    <button class="btn btn-sm" disabled="@_busy" @onclick="CheckpointAsync">
+                    <button type="button" class="btn btn-secondary" disabled="@_busy" @onclick="CheckpointAsync">
                         <Icon Name="layers" /> CheckpointAsync
                     </button>
-                    <button class="btn btn-sm" disabled="@_busy" @onclick="WaitForAutoCheckpointAsync">
+                    <button type="button" class="btn btn-secondary" disabled="@_busy" @onclick="WaitForAutoCheckpointAsync">
                         <Icon Name="clock" /> Fill until it self-checkpoints
                     </button>
-                    <button class="btn btn-sm" disabled="@_busy" @onclick="CleanCloseAsync">
+                    <button type="button" class="btn btn-secondary" disabled="@_busy" @onclick="CleanCloseAsync">
                         <Icon Name="check" /> Clean close, then reopen
                     </button>
                 </div>
             </Panel>
 
             <Panel Title="Failure injection" IconName="alert">
-                <div class="grid grid-2">
-                    <button class="btn btn-sm btn-danger" disabled="@_busy" @onclick="CrashAsync">
+                <div class="bd-btn-grid">
+                    <button type="button" class="btn bd-btn-danger" disabled="@_busy" @onclick="CrashAsync">
                         <Icon Name="bolt" /> Crash and reopen
                     </button>
-                    <button class="btn btn-sm btn-danger" disabled="@_busy" @onclick="LoseUnflushedAsync">
+                    <button type="button" class="btn bd-btn-danger" disabled="@_busy" @onclick="LoseUnflushedAsync">
                         <Icon Name="close" /> Lose unflushed writes
                     </button>
-                    <button class="btn btn-sm btn-danger" disabled="@_busy" @onclick="TearWalAsync">
+                    <button type="button" class="btn bd-btn-danger" disabled="@_busy" @onclick="TearWalAsync">
                         <Icon Name="file" /> Tear the log tail
                     </button>
-                    <button class="btn btn-sm btn-danger" disabled="@_busy" @onclick="CorruptRecordAsync">
+                    <button type="button" class="btn bd-btn-danger" disabled="@_busy" @onclick="CorruptRecordAsync">
                         <Icon Name="binary" /> Corrupt the last record
                     </button>
-                    <button class="btn btn-sm btn-danger" disabled="@_busy" @onclick="CorruptManifestAsync">
+                    <button type="button" class="btn bd-btn-danger" disabled="@_busy" @onclick="CorruptManifestAsync">
                         <Icon Name="key" /> Corrupt the manifest
                     </button>
-                    <button class="btn btn-sm" disabled="@_busy" @onclick="ResetAsync">
+                    <button type="button" class="btn btn-secondary" disabled="@_busy" @onclick="ResetAsync">
                         <Icon Name="refresh" /> Start over
                     </button>
                 </div>
-                <p class="tiny muted mt-2 mb-0">
+                <p class="bd-foot">
                     “Crash” abandons the <code>BlazeDbDatabase</code> instance - whatever it had not flushed is
                     gone and it never touches storage again - then opens a new one over the same bytes,
                     exactly what closing a tab does.
@@ -126,33 +126,30 @@
             </Panel>
         </div>
 
-        <div class="flex-col gap-lg">
+        <div class="bb-flex">
             <Panel Title="Storage contents" IconName="disk" Flush="true">
                 <Actions>
-                    <span class="panel-sub mono">@DemoSandbox.Bytes(_totalBytes)</span>
+                    <span class="bd-panel-sub">@DemoSandbox.Bytes(_totalBytes)</span>
                 </Actions>
                 <ChildContent>
                     @if (_files.Count == 0)
                     {
-                        <div class="empty">
-                            <Icon Name="file" />
-                            <div>Nothing on storage.</div>
-                        </div>
+                        <div class="bb-empty">Nothing on storage.</div>
                     }
                     else
                     {
-                        <div class="table-wrap">
-                            <table class="data">
+                        <div class="bb-scroll">
+                            <table class="bb-table">
                                 <thead>
-                                    <tr><th>File</th><th>Role</th><th class="num">Size</th></tr>
+                                    <tr><th>File</th><th>Role</th><th class="bd-num">Size</th></tr>
                                 </thead>
                                 <tbody>
                                     @foreach (var file in _files)
                                     {
                                         <tr>
-                                            <td class="mono strong">@file.Name</td>
-                                            <td><span class="badge @file.Tone">@file.Role</span></td>
-                                            <td class="num mono">@DemoSandbox.Bytes(file.Bytes)</td>
+                                            <td class="bd-strong">@file.Name</td>
+                                            <td><span class="@Tones.Badge(file.Tone)">@file.Role</span></td>
+                                            <td class="bd-num">@DemoSandbox.Bytes(file.Bytes)</td>
                                         </tr>
                                     }
                                 </tbody>
@@ -163,7 +160,7 @@
             </Panel>
 
             <Panel Title="State" IconName="database">
-                <dl class="kv">
+                <dl class="bb-params">
                     <dt>Rows in memory</dt>
                     <dd>@(_table?.Count.ToString("N0") ?? "-")</dd>
                     <dt>Log size</dt>
@@ -178,23 +175,23 @@
             </Panel>
 
             <Panel Title="File roles" IconName="info">
-                <dl class="kv">
+                <dl class="bb-params bd-params-prose">
                     <dt>manifest.blz</dt>
-                    <dd class="small">Names the newest valid snapshot and its log sequence number. Replaced atomically.</dd>
+                    <dd>Names the newest valid snapshot and its log sequence number. Replaced atomically.</dd>
                     <dt>snapshot-N.blz</dt>
-                    <dd class="small">A complete image of every table at one point in time.</dd>
+                    <dd>A complete image of every table at one point in time.</dd>
                     <dt>wal-N.blz</dt>
-                    <dd class="small">Append-only records written since that snapshot, each with a CRC.</dd>
+                    <dd>Append-only records written since that snapshot, each with a CRC.</dd>
                 </dl>
             </Panel>
         </div>
     </div>
 </Section>
 
-<Section Title="What recovery actually does" IconName="refresh">
-    <div class="grid grid-2">
+<Section Title="What recovery actually does">
+    <div class="bb-flex">
         <CodeBlock Title="Recovery, in order" Code="@RecoverySnippet" Language="text" />
-        <div class="flex-col gap-lg">
+        <div class="bb-flex">
             <Callout Tone="ok" Title="A torn tail is expected, not exceptional.">
                 A process can die mid-append, leaving a partial record. Replay stops at the last record
                 whose checksum verifies and truncates the rest. Everything committed before that point

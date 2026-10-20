@@ -3,72 +3,77 @@
 <DocPage Href="diagnostics" Title="Compile-time diagnostics"
          Lead="The generator validates every store and fails the build with a precise message rather than emitting code that does not compile.">
 
-    <p>
-        All nineteen diagnostics live in the <code>Bit.Blex.Generators</code> category. Sixteen are errors - they
-        describe shapes the generator genuinely cannot emit - and three are warnings about code that
-        compiles but almost certainly does not do what you meant.
-    </p>
+    <div class="bb-card">
+        <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Overview</h3>
+        <p>
+            All nineteen diagnostics live in the <code>Bit.Blex.Generators</code> category. Sixteen are errors - they
+            describe shapes the generator genuinely cannot emit - and three are warnings about code that
+            compiles but almost certainly does not do what you meant.
+        </p>
 
-    <div class="table-scroll">
-        <table>
-            <thead>
-                <tr><th>Code</th><th>Severity</th><th>Summary</th></tr>
-            </thead>
-            <tbody>
-                @foreach (var d in DiagnosticsCatalog.All)
-                {
-                    <tr>
-                        <td><a href="#@d.Code.ToLowerInvariant()"><code>@d.Code</code></a></td>
-                        <td>
-                            @if (d.IsError)
-                            {
-                                <span class="pill pill--err">Error</span>
-                            }
-                            else
-                            {
-                                <span class="pill pill--busy">Warning</span>
-                            }
-                        </td>
-                        <td>@d.Title</td>
-                    </tr>
-                }
-            </tbody>
-        </table>
+        <div class="bb-scroll">
+            <table class="bb-table">
+                <thead>
+                    <tr><th>Code</th><th>Severity</th><th>Summary</th></tr>
+                </thead>
+                <tbody>
+                    @foreach (var d in DiagnosticsCatalog.All)
+                    {
+                        <tr>
+                            <td class="bb-table-key"><a href="diagnostics#@d.Code.ToLowerInvariant()"><code>@d.Code</code></a></td>
+                            <td class="bb-table-key">
+                                @if (d.IsError)
+                                {
+                                    <span class="bb-badge bb-badge-danger">Error</span>
+                                }
+                                else
+                                {
+                                    <span class="bb-badge bb-badge-warn">Warning</span>
+                                }
+                            </td>
+                            <td>@d.Title</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        <Callout Kind="Callout.CalloutKind.Note" Title="Nothing is emitted for a rejected store">
+            <p>
+                When a store fails validation, the generator reports the diagnostic and emits
+                <em>no</em> partial for it. Expect a cascade of "does not contain a definition for
+                <code>Count</code>" errors alongside the Blex diagnostic - fix the Blex one first and
+                the rest disappear.
+            </p>
+        </Callout>
+    </div>
+
+    <div class="bb-card">
+        <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Suppressing a warning</h3>
+        <p>
+            The three warnings are suppressible like any other. Blex's own test project suppresses
+            <code>BLEX011</code> project-wide, because it has a fixture that deliberately declares a
+            value-returning action.
+        </p>
+        <CodeBlock Code="@Suppress" Language="xml" FileName="MyApp.csproj" />
+        <CodeBlock Code="@SuppressLocal" Title="Or locally" />
     </div>
 
     @foreach (var d in DiagnosticsCatalog.All)
     {
-        <h2 id="@d.Code.ToLowerInvariant()">
-            <code>@d.Code</code> - @d.Title
-        </h2>
-        <p>@((MarkupString)d.Cause)</p>
-        @if (!string.IsNullOrEmpty(d.Bad))
-        {
-            <CodeBlock Code="@d.Bad" Title="Rejected" Compact="true" />
-        }
-        @if (!string.IsNullOrEmpty(d.Good))
-        {
-            <CodeBlock Code="@d.Good" Title="Fix" Compact="true" />
-        }
+        <div class="bb-card" id="@d.Code.ToLowerInvariant()">
+            <h3 class="bb-card-title"><span class="bb-dot @(d.IsError ? "bb-dot-danger" : "bb-dot-warning")"></span> <code>@d.Code</code> - @d.Title</h3>
+            <p>@((MarkupString)d.Cause)</p>
+            @if (!string.IsNullOrEmpty(d.Bad))
+            {
+                <CodeBlock Code="@d.Bad" Title="Rejected" />
+            }
+            @if (!string.IsNullOrEmpty(d.Good))
+            {
+                <CodeBlock Code="@d.Good" Title="Fix" />
+            }
+        </div>
     }
-
-    <h2>Suppressing a warning</h2>
-    <p>
-        The three warnings are suppressible like any other. Blex's own test project suppresses
-        <code>BLEX011</code> project-wide, because it has a fixture that deliberately declares a
-        value-returning action.
-    </p>
-    <CodeBlock Code="@Suppress" Language="xml" FileName="MyApp.csproj" />
-    <CodeBlock Code="@SuppressLocal" Title="Or locally" Compact="true" />
-
-    <Callout Kind="Callout.CalloutKind.Note" Title="Nothing is emitted for a rejected store">
-        <p style="margin-bottom:0">
-            When a store fails validation, the generator reports the diagnostic and emits
-            <em>no</em> partial for it. Expect a cascade of "does not contain a definition for
-            <code>Count</code>" errors alongside the Blex diagnostic - fix the Blex one first and
-            the rest disappear.
-        </p>
-    </Callout>
 
 </DocPage>
 

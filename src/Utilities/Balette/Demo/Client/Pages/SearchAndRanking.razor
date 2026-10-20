@@ -8,23 +8,28 @@
 @inject BaletteHistory History
 @inject DemoState State
 
-<PageTitle>Search and ranking - bit Balette</PageTitle>
+<PageTitle>Search and ranking · Balette</PageTitle>
 
-<h1>Search &amp; ranking</h1>
-<p class="page-intro">
-    Every keystroke runs two public pieces of the library: a matcher that scores each command and says which
-    characters to highlight, and a ranker that folds in priority and how often and how recently a command was used.
-    The lab below runs exactly those two over this app's registry, so the numbers are the ones the palette sorts by.
-</p>
+<div class="bb-intro">
+    <h1>Search &amp; ranking</h1>
+    <p class="bb-subtitle">
+        Every keystroke runs two public pieces of the library: a matcher that scores each command and says which
+        characters to highlight, and a ranker that folds in priority and how often and how recently a command was used.
+        The lab below runs exactly those two over this app's registry, so the numbers are the ones the palette sorts by.
+    </p>
+</div>
 
-<div class="panel">
-    <div class="toolbar" role="toolbar" aria-label="Search lab">
-        <label class="field grow">
+<PaletteBar />
+
+<div class="bb-demo bb-page-wide">
+    <div class="bb-demo-bar"><span class="bb-demo-label">Search lab</span></div>
+    <div class="bb-fields" role="toolbar" aria-label="Search lab">
+        <label class="bb-field demo-grow">
             Query
-            <input type="text" class="grow" value="@_query" @oninput="OnQueryInput" placeholder="Type to search the registry…"
+            <input type="text" value="@_query" @oninput="OnQueryInput" placeholder="Type to search the registry…"
                    aria-label="Query" autocomplete="off" spellcheck="false" />
         </label>
-        <label class="field">
+        <label class="bb-field">
             Matcher
             <select value="@_matcherName" @onchange="OnMatcherChanged" aria-label="Matcher">
                 <option value="fuzzy">Fuzzy, smart case</option>
@@ -32,48 +37,50 @@
                 <option value="substring">Substring</option>
             </select>
         </label>
-        <button type="button" class="btn" @onclick="() => Palette.OpenAsync(_query)">Open the palette with it</button>
+        <button type="button" class="btn btn-secondary" @onclick="() => Palette.OpenAsync(_query)">Open the palette with it</button>
     </div>
 
-    <table class="lab">
-        <thead>
-            <tr>
-                <th>#</th>
-                <th>Command</th>
-                <th>Matched on</th>
-                <th class="num">Score</th>
-                <th class="num">Priority</th>
-                <th class="num">Frecency</th>
-                <th class="num">Rank</th>
-            </tr>
-        </thead>
-        <tbody>
-            @if (_results.Count == 0)
-            {
-                <tr><td colspan="7" class="muted">No command matches. The palette would still list the always-shown feedback row.</td></tr>
-            }
-            @foreach (var (match, index) in _results.Take(MaxRows).Select((m, i) => (m, i)))
-            {
+    <div class="bb-scroll">
+        <table class="bb-table demo-lab">
+            <thead>
                 <tr>
-                    <td class="muted">@(index + 1)</td>
-                    <td>
-                        <BaletteHighlightedText Text="@match.Command.Title" Positions="@match.TitlePositions" />
-                        @if (match.Command.Subtitle is not null)
-                        {
-                            <div class="muted small"><BaletteHighlightedText Text="@match.Command.Subtitle" Positions="@match.SubtitlePositions" /></div>
-                        }
-                    </td>
-                    <td>@MatchedOn(match)</td>
-                    <td class="num">@Format(match.Score)</td>
-                    <td class="num">@match.Command.Priority</td>
-                    <td class="num">@Format(match.Frecency)</td>
-                    <td class="num"><strong>@Format(match.Rank)</strong></td>
+                    <th>#</th>
+                    <th>Command</th>
+                    <th>Matched on</th>
+                    <th class="demo-num">Score</th>
+                    <th class="demo-num">Priority</th>
+                    <th class="demo-num">Frecency</th>
+                    <th class="demo-num">Rank</th>
                 </tr>
-            }
-        </tbody>
-    </table>
+            </thead>
+            <tbody>
+                @if (_results.Count == 0)
+                {
+                    <tr><td colspan="7" class="bb-muted">No command matches. The palette would still list the always-shown feedback row.</td></tr>
+                }
+                @foreach (var (match, index) in _results.Take(MaxRows).Select((m, i) => (m, i)))
+                {
+                    <tr>
+                        <td class="bb-soft">@(index + 1)</td>
+                        <td>
+                            <BaletteHighlightedText Text="@match.Command.Title" Positions="@match.TitlePositions" />
+                            @if (match.Command.Subtitle is not null)
+                            {
+                                <div class="bb-soft demo-small"><BaletteHighlightedText Text="@match.Command.Subtitle" Positions="@match.SubtitlePositions" /></div>
+                            }
+                        </td>
+                        <td>@MatchedOn(match)</td>
+                        <td class="demo-num">@Format(match.Score)</td>
+                        <td class="demo-num">@match.Command.Priority</td>
+                        <td class="demo-num">@Format(match.Frecency)</td>
+                        <td class="demo-num"><strong>@Format(match.Rank)</strong></td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
 
-    <div class="statusbar" role="status">
+    <div class="demo-statusbar" role="status">
         <span><strong>@_candidates</strong> root commands</span>
         <span><strong>@_results.Count</strong> matched</span>
         <span>matched and ranked in <strong>@_elapsed.TotalMilliseconds.ToString("0.00", CultureInfo.InvariantCulture) ms</strong></span>
@@ -84,82 +91,90 @@
     </div>
 </div>
 
-<h2 id="operators">Operators</h2>
-<p>
-    A query is split on spaces and every term has to match (AND), each against whichever field scores it best. A term
-    can carry an fzf operator; the rest are fuzzy.
-</p>
-<table>
-    <thead>
-        <tr><th>Query</th><th>Means</th><th></th></tr>
-    </thead>
-    <tbody>
-        @foreach (var example in Examples)
-        {
-            <tr>
-                <td><code>@example.Query</code></td>
-                <td>@example.Meaning</td>
-                <td><button type="button" class="btn" @onclick="() => SetQuery(example.Query)">Try</button></td>
-            </tr>
-        }
-    </tbody>
-</table>
-
-<h2>How a score is made</h2>
-<div class="split">
-    <div>
-        <p>
-            The fuzzy matcher is fzf's algorithm: a dynamic programme that finds the best alignment of the term inside
-            the text, rewarding matches at word starts, camel humps and consecutive runs, and the first character most,
-            while gaps cost. A lower-case term ignores case; a term with a capital letter respects it.
-        </p>
-        <p>
-            Each field's score is multiplied by its weight, so a hit in the title beats the same hit in a keyword,
-            which beats one in the subtitle. These are this app's weights, from <code>BaletteOptions.Weights</code>:
-        </p>
+<section class="bb-card" id="operators">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Operators</h3>
+    <p>
+        A query is split on spaces and every term has to match (AND), each against whichever field scores it best. A term
+        can carry an fzf operator; the rest are fuzzy.
+    </p>
+    <div class="bb-scroll">
+        <table class="bb-table">
+            <thead>
+                <tr><th>Query</th><th>Means</th><th></th></tr>
+            </thead>
+            <tbody>
+                @foreach (var example in Examples)
+                {
+                    <tr>
+                        <td class="bb-table-key"><code>@example.Query</code></td>
+                        <td>@example.Meaning</td>
+                        <td class="bb-table-action"><button type="button" class="btn btn-secondary" @onclick="() => SetQuery(example.Query)">Try</button></td>
+                    </tr>
+                }
+            </tbody>
+        </table>
     </div>
-    <table>
-        <thead>
-            <tr><th>Field</th><th class="num">Weight</th></tr>
-        </thead>
-        <tbody>
-            <tr><td>Title</td><td class="num">@Format(Options.Weights.Title)</td></tr>
-            <tr><td>Keywords</td><td class="num">@Format(Options.Weights.Keyword)</td></tr>
-            <tr><td>Subtitle</td><td class="num">@Format(Options.Weights.Subtitle)</td></tr>
-            <tr><td>Group</td><td class="num">@Format(Options.Weights.Group)</td></tr>
-            <tr><td>Description</td><td class="num">@Format(Options.Weights.Description)</td></tr>
-            <tr><td>Tags</td><td class="num">@Format(Options.Weights.Tag)</td></tr>
-        </tbody>
-    </table>
-</div>
+</section>
 
-<h2>Priority and frecency</h2>
-<p>With a query, the match decides and the rest only nudges it:</p>
-<pre><code>rank = score + priority × @Format(Options.PriorityWeight) + ln(1 + frecency) × @Format(Options.FrecencyWeight)</code></pre>
-<p>
-    On the empty query there is nothing to match, so priority leads and frecency orders what is left
-    (<code>priority × 1000 + frecency</code>), inside each group. Frecency is Firefox's idea: a capped use count weighted
-    by how recent the last use was. Run a command a few times from the palette and watch its row climb in the lab -
-    the history is kept in <code>localStorage</code>, so it survives a reload.
-</p>
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> How a score is made</h3>
+    <p>
+        The fuzzy matcher is fzf's algorithm: a dynamic programme that finds the best alignment of the term inside
+        the text, rewarding matches at word starts, camel humps and consecutive runs, and the first character most,
+        while gaps cost. A lower-case term ignores case; a term with a capital letter respects it.
+    </p>
+    <p>
+        Each field's score is multiplied by its weight, so a hit in the title beats the same hit in a keyword,
+        which beats one in the subtitle. These are this app's weights, from <code>BaletteOptions.Weights</code>:
+    </p>
+    <div class="bb-scroll demo-weights">
+        <table class="bb-table">
+            <thead>
+                <tr><th>Field</th><th class="demo-num">Weight</th></tr>
+            </thead>
+            <tbody>
+                <tr><td>Title</td><td class="demo-num">@Format(Options.Weights.Title)</td></tr>
+                <tr><td>Keywords</td><td class="demo-num">@Format(Options.Weights.Keyword)</td></tr>
+                <tr><td>Subtitle</td><td class="demo-num">@Format(Options.Weights.Subtitle)</td></tr>
+                <tr><td>Group</td><td class="demo-num">@Format(Options.Weights.Group)</td></tr>
+                <tr><td>Description</td><td class="demo-num">@Format(Options.Weights.Description)</td></tr>
+                <tr><td>Tags</td><td class="demo-num">@Format(Options.Weights.Tag)</td></tr>
+            </tbody>
+        </table>
+    </div>
+</section>
 
-<h2>In the palette</h2>
-<div class="panel settings">
-    <label class="setting">
-        <span>Highlight matched characters</span>
-        <input type="checkbox" checked="@State.HighlightMatches" @onchange="() => State.SetHighlightMatches(!State.HighlightMatches)" />
-    </label>
-    <label class="setting">
-        <span>Keep group headings while searching (off: one flat ranked list)</span>
-        <input type="checkbox" checked="@State.GroupWhenSearching" @onchange="() => State.SetGroupWhenSearching(!State.GroupWhenSearching)" />
-    </label>
-</div>
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Priority and frecency</h3>
+    <p>With a query, the match decides and the rest only nudges it:</p>
+    <pre class="bb-code">rank = score + priority × @Format(Options.PriorityWeight) + ln(1 + frecency) × @Format(Options.FrecencyWeight)</pre>
+    <p>
+        On the empty query there is nothing to match, so priority leads and frecency orders what is left
+        (<code>priority × 1000 + frecency</code>), inside each group. Frecency is Firefox's idea: a capped use count weighted
+        by how recent the last use was. Run a command a few times from the palette and watch its row climb in the lab -
+        the history is kept in <code>localStorage</code>, so it survives a reload.
+    </p>
+</section>
 
-<div class="note">
-    The matcher is an interface: <code>options.Matcher = BaletteSubstringMatcher.Default</code> trades typo tolerance for
-    speed, and any <code>IBaletteMatcher</code> can replace both. Matching runs over the fields of the command only;
-    asynchronous sources opt into it with <code>ApplyMatcher</code>, or keep their own order.
-</div>
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> In the palette</h3>
+    <div class="demo-settings">
+        <label class="demo-setting">
+            <span>Highlight matched characters</span>
+            <input type="checkbox" checked="@State.HighlightMatches" @onchange="() => State.SetHighlightMatches(!State.HighlightMatches)" />
+        </label>
+        <label class="demo-setting">
+            <span>Keep group headings while searching (off: one flat ranked list)</span>
+            <input type="checkbox" checked="@State.GroupWhenSearching" @onchange="() => State.SetGroupWhenSearching(!State.GroupWhenSearching)" />
+        </label>
+    </div>
+
+    <div class="bb-note">
+        The matcher is an interface: <code>options.Matcher = BaletteSubstringMatcher.Default</code> trades typo tolerance for
+        speed, and any <code>IBaletteMatcher</code> can replace both. Matching runs over the fields of the command only;
+        asynchronous sources opt into it with <code>ApplyMatcher</code>, or keep their own order.
+    </div>
+</section>
 
 @code {
     private const int MaxRows = 15;

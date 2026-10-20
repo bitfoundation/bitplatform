@@ -16,24 +16,25 @@
 <div class="feed @(Compact ? "feed-compact" : null)">
     @if (Compact is false)
     {
-        <div class="feed-toolbar">
-            <div class="feed-chips" role="group" aria-label="Show">
+        <div class="bb-toolbar">
+            <div class="bb-segmented" role="group" aria-label="Show">
                 @foreach (var kind in _kinds)
                 {
-                    <button type="button" class="feed-chip @(_kind == kind ? "active" : null)"
+                    <button type="button" class="@(_kind == kind ? "active" : null)"
                             aria-pressed="@(_kind == kind ? "true" : "false")" @onclick="() => _kind = kind">
                         @kind <span class="feed-chip-count">@Count(kind)</span>
                     </button>
                 }
             </div>
-            <div class="feed-actions">
-                <label class="feed-toggle" title="Server metrics and logs that belong to no session, shared by every reader">
-                    <input type="checkbox" checked="@_includeShared" @onchange="OnSharedChanged" />
-                    Include server telemetry
-                </label>
-                <button type="button" class="btn-bl-subtle" @onclick="() => _paused = !_paused">@(_paused ? "Resume" : "Pause")</button>
-                <button type="button" class="btn-bl-subtle" @onclick="Clear">Clear</button>
-            </div>
+        </div>
+        <div class="bb-toolbar">
+            <label class="bb-check" title="Server metrics and logs that belong to no session, shared by every reader">
+                <input type="checkbox" checked="@_includeShared" @onchange="OnSharedChanged" />
+                Include server telemetry
+            </label>
+            <span class="bb-spacer"></span>
+            <button type="button" class="btn btn-secondary" @onclick="() => _paused = !_paused">@(_paused ? "Resume" : "Pause")</button>
+            <button type="button" class="btn btn-secondary" @onclick="Clear">Clear</button>
         </div>
     }
 
@@ -67,7 +68,7 @@
 
     @if (visible.Length == 0)
     {
-        <p class="feed-empty">@(Compact ? EmptyText : "Nothing yet. Click around the site - page views, clicks, web vitals and your .NET logs land here within a few seconds.")</p>
+        <p class="bb-empty feed-empty">@(Compact ? EmptyText : "Nothing yet. Click around the site - page views, clicks, web vitals and your .NET logs land here within a few seconds.")</p>
     }
     else
     {
@@ -87,7 +88,7 @@
                     @if (open)
                     {
                         <div class="feed-detail">
-                            <dl class="feed-ids">
+                            <dl class="bb-params feed-ids">
                                 @if (record.Scope is not null) { <dt>scope</dt><dd><code>@record.Scope</code></dd> }
                                 @if (record.TraceId is not null) { <dt>trace</dt><dd><code>@record.TraceId</code></dd> }
                                 @if (record.SpanId is not null) { <dt>span</dt><dd><code>@record.SpanId</code>@if (record.ParentSpanId is not null) { <text> &larr; </text><code>@record.ParentSpanId</code> }</dd> }
@@ -96,7 +97,7 @@
                             </dl>
                             @if (record.Attributes.Count > 0)
                             {
-                                <table class="doc-table feed-attrs">
+                                <table class="bb-table feed-attrs">
                                     <thead><tr><th scope="col">Attribute</th><th scope="col">Value</th></tr></thead>
                                     <tbody>
                                         @foreach (var (key, value) in record.Attributes.OrderBy(a => a.Key, StringComparer.Ordinal))
@@ -110,7 +111,7 @@
                             {
                                 <details class="feed-resource">
                                     <summary>Resource (@record.Resource.Count attributes)</summary>
-                                    <table class="doc-table feed-attrs">
+                                    <table class="bb-table feed-attrs">
                                         <tbody>
                                             @foreach (var (key, value) in record.Resource.OrderBy(a => a.Key, StringComparer.Ordinal))
                                             {

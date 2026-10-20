@@ -1,10 +1,10 @@
 ﻿@page "/shared"
 
-<PageTitle>Shared lists - bit Bortable</PageTitle>
+<PageTitle>Shared lists · Bortable</PageTitle>
 
-<div class="demo-header">
-    <h3>Shared lists</h3>
-    <p class="text-muted">
+<div class="bb-intro">
+    <h1>Shared lists</h1>
+    <p class="bb-subtitle">
         Both lists use the same <code>Group</code> name, so you can drag items from one into the other. Drop onto
         an item or into the empty space of a list. The "B" items keep their tint wherever they go: the class comes
         from <code>ItemClassSelector</code>, which styles the item rather than the list.
@@ -13,25 +13,27 @@
 
 <DemoCode />
 
-<div class="demo-columns">
-    <div class="demo-col">
-        <div class="demo-col-title">List A</div>
-        <Bortable @bind-Items="_left" TItem="string" Group="shared" Id="shared-a"
-                  Class="demo-list" ItemClass="demo-item" ItemClassSelector="Tint" GhostClass="demo-ghost">
-            <ItemTemplate Context="item">@item</ItemTemplate>
-        </Bortable>
+<div class="bb-demo">
+    <div class="demo-columns">
+        <div class="demo-col">
+            <div class="demo-col-title">List A</div>
+            <Bortable @bind-Items="_left" TItem="string" Group="shared" Id="shared-a"
+                      Class="demo-list" ItemClass="demo-item" ItemClassSelector="Tint" GhostClass="demo-ghost">
+                <ItemTemplate Context="item">@item</ItemTemplate>
+            </Bortable>
+        </div>
+        <div class="demo-col">
+            <div class="demo-col-title">List B</div>
+            <Bortable @bind-Items="_right" TItem="string" Group="shared" Id="shared-b"
+                      Class="demo-list" ItemClass="demo-item" ItemClassSelector="Tint" GhostClass="demo-ghost">
+                <ItemTemplate Context="item">@item</ItemTemplate>
+            </Bortable>
+        </div>
     </div>
-    <div class="demo-col">
-        <div class="demo-col-title">List B</div>
-        <Bortable @bind-Items="_right" TItem="string" Group="shared" Id="shared-b"
-                  Class="demo-list" ItemClass="demo-item" ItemClassSelector="Tint" GhostClass="demo-ghost">
-            <ItemTemplate Context="item">@item</ItemTemplate>
-        </Bortable>
-    </div>
-</div>
 
-<p class="demo-order"><strong>A:</strong> <span id="shared-a-order">@string.Join(", ", _left)</span></p>
-<p class="demo-order"><strong>B:</strong> <span id="shared-b-order">@string.Join(", ", _right)</span></p>
+    <p class="demo-order"><strong>A:</strong> <span id="shared-a-order">@string.Join(", ", _left)</span></p>
+    <p class="demo-order"><strong>B:</strong> <span id="shared-b-order">@string.Join(", ", _right)</span></p>
+</div>
 
 @code {
     private IList<string> _left = new List<string> { "A1", "A2", "A3", "A4", "A5" };

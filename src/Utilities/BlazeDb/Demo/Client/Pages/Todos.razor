@@ -1,129 +1,131 @@
 ﻿@page "/todos"
 @inject DemoDbService Db
 
-<PageTitle>Live data - BlazeDb</PageTitle>
+<PageTitle>Live data · BlazeDb</PageTitle>
 
-<PageHeader Eyebrow="Start" IconName="list" Title="A working app on the real engine"
-            Lead="Every list, count and filter below is served by BlazeDb primitives against rows held in this tab's memory. The panel on the right shows the exact code producing what you see.">
-    <span class="chip"><Icon Name="database" /> @(_todos?.Count ?? 0) rows</span>
-    <span class="chip"><Icon Name="disk" /> @Db.StorageLabel</span>
+@* A dashboard rather than a document: it gives up the "on this page" rail for the width its two
+   columns need. *@
+<PageHeader Eyebrow="Live data" Title="A working app on the real engine"
+            Lead="Every list, count and filter below is served by BlazeDb primitives against rows held in this tab's memory. The query panel beside the rows shows the exact code producing what you see.">
+    <span class="bb-badge bd-badge-neutral">@(_todos?.Count ?? 0) rows</span>
+    <span class="bb-badge bd-badge-neutral">@Db.StorageLabel</span>
     @if (Db.IsPersistent)
     {
-        <span class="chip on"><Icon Name="shield" /> Survives reload</span>
+        <span class="bb-badge bb-badge-success">Survives reload</span>
     }
 </PageHeader>
 
-@if (_error is not null)
-{
-    <Callout Tone="err" Title="The database could not be opened.">@_error</Callout>
-}
-else if (_todos is null)
-{
-    <Panel><div class="empty"><div class="spinner" style="margin:0 auto 0.6rem"></div>Opening the database…</div></Panel>
-}
-else
-{
-    <div class="stats mb-3">
-        <StatTile Label="Total" IconName="database" Value="@_todos.Count.ToString("N0")" Note="table.Count" />
-        <StatTile Label="Open" IconName="clock" Tone="accent" Value="@_openCount.ToString("N0")"
-                  Note="CountBy(Done, false)" />
-        <StatTile Label="Done" IconName="check" Tone="ok" Value="@_doneCount.ToString("N0")"
-                  Note="CountBy(Done, true)" />
-        <StatTile Label="Matching filters" IconName="filter" Value="@_matchTotal.ToString("N0")"
-                  Note="@($"page {_page + 1} of {Math.Max(1, (_matchTotal + PageSize - 1) / PageSize)}")" />
-        <StatTile Label="Last operation" IconName="bolt" Value="@_lastOpTime" Note="@_lastOp" />
-    </div>
-
-    <Panel Title="Add a row" IconName="plus" Sub="table.Insert(row)">
-        <div class="form-row">
-            <div class="field" style="flex: 3 1 240px">
-                <label class="field-label" for="new-title">Title</label>
-                <input id="new-title" class="input" placeholder="What needs doing?" @bind="_newTitle"
-                       @bind:event="oninput" @onkeydown="OnAddKey" />
-            </div>
-            <div class="field">
-                <label class="field-label" for="new-cat">Category</label>
-                <select id="new-cat" class="select" @bind="_newCategory">
-                    <option value="">(null - not indexed)</option>
-                    @foreach (var c in DemoData.Categories)
-                    {
-                        <option value="@c">@c</option>
-                    }
-                </select>
-            </div>
-            <div class="field">
-                <label class="field-label" for="new-prio">Priority</label>
-                <select id="new-prio" class="select" @bind="_newPriority">
-                    @foreach (var p in Enum.GetValues<Priority>())
-                    {
-                        <option value="@p">@p</option>
-                    }
-                </select>
-            </div>
-            <div class="field" style="flex: 0 1 110px">
-                <label class="field-label" for="new-effort">Effort</label>
-                <input id="new-effort" class="input mono" type="number" min="0" max="600" @bind="_newEffort" />
-            </div>
-            <button class="btn btn-primary" disabled="@string.IsNullOrWhiteSpace(_newTitle)" @onclick="Add">
-                <Icon Name="plus" /> Insert
-            </button>
+<div class="bb-page-wide">
+    @if (_error is not null)
+    {
+        <Callout Tone="err" Title="The database could not be opened.">@_error</Callout>
+    }
+    else if (_todos is null)
+    {
+        <div class="bb-empty"><span class="bb-spinner"></span> Opening the database…</div>
+    }
+    else
+    {
+        <div class="bb-stats">
+            <StatTile Label="Total" Value="@_todos.Count.ToString("N0")" Note="table.Count" />
+            <StatTile Label="Open" Tone="accent" Value="@_openCount.ToString("N0")"
+                      Note="CountBy(Done, false)" />
+            <StatTile Label="Done" Tone="ok" Value="@_doneCount.ToString("N0")"
+                      Note="CountBy(Done, true)" />
+            <StatTile Label="Matching filters" Value="@_matchTotal.ToString("N0")"
+                      Note="@($"page {_page + 1} of {Math.Max(1, (_matchTotal + PageSize - 1) / PageSize)}")" />
+            <StatTile Label="Last operation" Value="@_lastOpTime" Note="@_lastOp" />
         </div>
 
-        @if (_showMore)
-        {
-            <div class="form-row mt-2">
-                <div class="field" style="flex: 0 1 120px">
-                    <label class="field-label" for="new-rating">Rating</label>
-                    <input id="new-rating" class="input mono" type="number" min="1" max="5" @bind="_newRating" />
-                    <span class="field-hint">int? - null when blank</span>
+        <Panel Title="Add a row" IconName="plus" Sub="table.Insert(row)">
+            <div class="bb-fields">
+                <div class="bb-field" style="flex: 3 1 240px">
+                    <label for="new-title">Title</label>
+                    <input id="new-title" placeholder="What needs doing?" @bind="_newTitle"
+                           @bind:event="oninput" @onkeydown="OnAddKey" />
                 </div>
-                <div class="field" style="flex: 0 1 160px">
-                    <label class="field-label" for="new-due">Due</label>
-                    <input id="new-due" class="input mono" type="date" @bind="_newDue" />
-                    <span class="field-hint">DateTimeOffset?</span>
+                <div class="bb-field">
+                    <label for="new-cat">Category</label>
+                    <select id="new-cat" @bind="_newCategory">
+                        <option value="">(null)</option>
+                        @foreach (var c in DemoData.Categories)
+                        {
+                            <option value="@c">@c</option>
+                        }
+                    </select>
                 </div>
-                <div class="field" style="flex: 2 1 200px">
-                    <label class="field-label" for="new-tags">Tags</label>
-                    <input id="new-tags" class="input" placeholder="wal, format" @bind="_newTags" />
-                    <span class="field-hint">List&lt;string&gt;, comma separated</span>
+                <div class="bb-field">
+                    <label for="new-prio">Priority</label>
+                    <select id="new-prio" @bind="_newPriority">
+                        @foreach (var p in Enum.GetValues<Priority>())
+                        {
+                            <option value="@p">@p</option>
+                        }
+                    </select>
                 </div>
-                <div class="field" style="flex: 0 1 130px">
-                    <label class="field-label" for="new-cost">Cost</label>
-                    <input id="new-cost" class="input mono" type="number" step="0.01" @bind="_newCost" />
-                    <span class="field-hint">decimal</span>
+                <div class="bb-field" style="flex: 0 1 110px">
+                    <label for="new-effort">Effort</label>
+                    <input id="new-effort" class="bb-mono" type="number" min="0" max="600" @bind="_newEffort" />
                 </div>
+                <button type="button" class="btn btn-primary" disabled="@string.IsNullOrWhiteSpace(_newTitle)" @onclick="Add">
+                    <Icon Name="plus" /> Insert
+                </button>
             </div>
-        }
 
-        <div class="toolbar mt-2">
-            <button class="btn btn-ghost btn-sm" @onclick="() => _showMore = !_showMore">
-                <Icon Name="@(_showMore ? "close" : "layers")" />
-                @(_showMore ? "Fewer fields" : "More fields (nullable, collections, decimal)")
-            </button>
-            @if (_addError is not null)
+            @if (_showMore)
             {
-                <span class="badge err">@_addError</span>
+                <div class="bb-fields">
+                    <div class="bb-field" style="flex: 0 1 120px">
+                        <label for="new-rating">Rating</label>
+                        <input id="new-rating" class="bb-mono" type="number" min="1" max="5" @bind="_newRating" />
+                        <span class="bb-field-hint">int? - null when blank</span>
+                    </div>
+                    <div class="bb-field" style="flex: 0 1 160px">
+                        <label for="new-due">Due</label>
+                        <input id="new-due" class="bb-mono" type="date" @bind="_newDue" />
+                        <span class="bb-field-hint">DateTimeOffset?</span>
+                    </div>
+                    <div class="bb-field" style="flex: 2 1 200px">
+                        <label for="new-tags">Tags</label>
+                        <input id="new-tags" placeholder="wal, format" @bind="_newTags" />
+                        <span class="bb-field-hint">List&lt;string&gt;, comma separated</span>
+                    </div>
+                    <div class="bb-field" style="flex: 0 1 130px">
+                        <label for="new-cost">Cost</label>
+                        <input id="new-cost" class="bb-mono" type="number" step="0.01" @bind="_newCost" />
+                        <span class="bb-field-hint">decimal</span>
+                    </div>
+                </div>
             }
-        </div>
-    </Panel>
 
-    <div class="grid grid-sidebar mt-3">
-        <div>
+            <div class="bb-toolbar">
+                <button type="button" class="btn" @onclick="() => _showMore = !_showMore">
+                    <Icon Name="@(_showMore ? "close" : "layers")" />
+                    @(_showMore ? "Fewer fields" : "More fields (nullable, collections, decimal)")
+                </button>
+                @if (_addError is not null)
+                {
+                    <span class="bb-badge bb-badge-danger">@_addError</span>
+                }
+            </div>
+        </Panel>
+
+        <div class="bd-main-side">
             <Panel Flush="true" Title="Rows" IconName="list">
                 <Actions>
-                    <span class="panel-sub mono">@_matchTotal matched</span>
+                    <span class="bd-panel-sub">@_matchTotal matched</span>
                 </Actions>
                 <ChildContent>
-                    <div class="panel-head" style="border-bottom:1px solid var(--border); background:transparent; flex-wrap:wrap; gap:0.5rem">
-                        <div class="seg">
+                    <div class="bd-filterbar">
+                        <div class="bb-segmented" role="group" aria-label="Status">
                             @foreach (var s in new[] { StatusFilter.All, StatusFilter.Open, StatusFilter.Done })
                             {
                                 var value = s;
-                                <button class="@(_status == value ? "on" : null)" @onclick="() => SetStatus(value)">@value</button>
+                                <button type="button" aria-pressed="@(_status == value ? "true" : "false")" @onclick="() => SetStatus(value)">@value</button>
                             }
                         </div>
 
-                        <select class="select" style="width:auto" @bind="_category" @bind:after="OnFilterChanged">
+                        <select aria-label="Category" @bind="_category" @bind:after="OnFilterChanged">
                             <option value="">All categories</option>
                             @foreach (var c in DemoData.Categories)
                             {
@@ -131,7 +133,7 @@ else
                             }
                         </select>
 
-                        <select class="select" style="width:auto" @bind="_priorityText" @bind:after="OnFilterChanged">
+                        <select aria-label="Priority" @bind="_priorityText" @bind:after="OnFilterChanged">
                             <option value="">Any priority</option>
                             @foreach (var p in Enum.GetValues<Priority>())
                             {
@@ -139,75 +141,63 @@ else
                             }
                         </select>
 
-                        <select class="select" style="width:auto" @bind="_sort" @bind:after="OnFilterChanged">
+                        <select aria-label="Sort order" @bind="_sort" @bind:after="OnFilterChanged">
                             <option value="@SortMode.Newest">Newest first</option>
                             <option value="@SortMode.Oldest">Oldest first</option>
                             <option value="@SortMode.Effort">Highest effort</option>
                             <option value="@SortMode.Title">Title A→Z</option>
                         </select>
 
-                        <div class="field" style="flex:1 1 150px; min-width:140px">
-                            <input class="input" placeholder="Filter titles…" @bind="_search"
-                                   @bind:event="oninput" @bind:after="OnFilterChanged" />
-                        </div>
+                        <input type="search" class="bd-grow" aria-label="Filter titles" placeholder="Filter titles…" @bind="_search"
+                               @bind:event="oninput" @bind:after="OnFilterChanged" />
                     </div>
 
                     @if (_uncategorized > 0)
                     {
-                        <div class="panel-body" style="padding-bottom:0">
+                        <div class="bd-panel-pad">
                             <Callout Tone="info" Title="@($"{_uncategorized} rows have a null Category.")">
-                                Null index values are never added to a secondary index, so those rows
-                                appear under “All categories” but never in a category lookup.
+                                Null is an index key like any other - <code>Lookup(Category, null)</code> finds
+                                them in one probe - but the category filter above lists only the named
+                                categories, so those rows show up under “All categories” alone.
                             </Callout>
                         </div>
                     }
 
                     @if (_visible.Count == 0)
                     {
-                        <div class="empty">
-                            <Icon Name="search" />
-                            <div>No rows match this combination of filters.</div>
-                        </div>
+                        <div class="bb-empty">No rows match this combination of filters.</div>
                     }
                     else
                     {
-                        <div class="rows">
+                        <div class="bd-rows">
                             @foreach (var todo in _visible)
                             {
                                 @if (_editing == todo.Id)
                                 {
-                                    <div class="row-item" style="align-items:flex-start; flex-wrap:wrap">
-                                        <div class="row-main">
-                                            <div class="form-row">
-                                                <div class="field" style="flex:3 1 200px">
-                                                    <input class="input" @bind="_editTitle" />
-                                                </div>
-                                                <div class="field" style="flex:0 1 130px">
-                                                    <select class="select" @bind="_editCategory">
-                                                        <option value="">(null)</option>
-                                                        @foreach (var c in DemoData.Categories)
-                                                        {
-                                                            <option value="@c">@c</option>
-                                                        }
-                                                    </select>
-                                                </div>
-                                                <div class="field" style="flex:0 1 120px">
-                                                    <select class="select" @bind="_editPriority">
-                                                        @foreach (var p in Enum.GetValues<Priority>())
-                                                        {
-                                                            <option value="@p">@p</option>
-                                                        }
-                                                    </select>
-                                                </div>
-                                                <div class="field" style="flex:0 1 90px">
-                                                    <input class="input mono" type="number" @bind="_editEffort" />
-                                                </div>
-                                                <button class="btn btn-primary btn-sm" @onclick="() => SaveEdit(todo)">
+                                    <div class="bd-row bd-row-editing">
+                                        <div class="bd-row-main">
+                                            <div class="bb-fields">
+                                                <input style="flex: 3 1 200px" aria-label="Title" @bind="_editTitle" />
+                                                <select aria-label="Category" @bind="_editCategory">
+                                                    <option value="">(null)</option>
+                                                    @foreach (var c in DemoData.Categories)
+                                                    {
+                                                        <option value="@c">@c</option>
+                                                    }
+                                                </select>
+                                                <select aria-label="Priority" @bind="_editPriority">
+                                                    @foreach (var p in Enum.GetValues<Priority>())
+                                                    {
+                                                        <option value="@p">@p</option>
+                                                    }
+                                                </select>
+                                                <input class="bb-mono" style="flex: 0 1 90px" type="number" aria-label="Effort" @bind="_editEffort" />
+                                                <button type="button" class="btn btn-primary" @onclick="() => SaveEdit(todo)">
                                                     <Icon Name="check" /> Update
                                                 </button>
-                                                <button class="btn btn-ghost btn-sm" @onclick="() => _editing = null">Cancel</button>
+                                                <button type="button" class="btn" @onclick="() => _editing = null">Cancel</button>
                                             </div>
-                                            <div class="tiny muted mt-1 mono">
+                                            <div class="bd-foot bb-mono">
                                                 table.Update(row) - rewrites the row and every index entry that changed
                                             </div>
                                         </div>
@@ -215,23 +205,22 @@ else
                                 }
                                 else
                                 {
-                                    <div class="row-item @(todo.Done ? "done" : null)">
-                                        <label class="check" title="Toggle Done - table.Update(row)">
-                                            <input type="checkbox" checked="@todo.Done" @onchange="() => Toggle(todo)" />
-                                        </label>
-                                        <div class="row-main">
-                                            <div class="row-title">@todo.Title</div>
-                                            <div class="row-meta">
-                                                <span class="prio @todo.Priority">@todo.Priority</span>
+                                    <div class="bd-row @(todo.Done ? "bd-done" : null)">
+                                        <input type="checkbox" checked="@todo.Done" title="Toggle Done - table.Update(row)"
+                                               aria-label="@($"Done: {todo.Title}")" @onchange="() => Toggle(todo)" />
+                                        <div class="bd-row-main">
+                                            <div class="bd-row-title">@todo.Title</div>
+                                            <div class="bd-row-meta">
+                                                <span class="bd-prio bd-prio-@todo.Priority">@todo.Priority</span>
                                                 @if (todo.Category is null)
                                                 {
-                                                    <span class="badge">null category</span>
+                                                    <span class="bb-badge bd-badge-neutral">null category</span>
                                                 }
                                                 else
                                                 {
-                                                    <span class="badge accent">@todo.Category</span>
+                                                    <span class="bb-badge bd-badge-accent">@todo.Category</span>
                                                 }
-                                                <span class="mono">@todo.Effort min</span>
+                                                <span class="bb-mono">@todo.Effort min</span>
                                                 @if (todo.Rating is { } rating)
                                                 {
                                                     <span title="Rating">@Stars(rating)</span>
@@ -239,18 +228,18 @@ else
                                                 <span>@todo.CreatedAt.ToLocalTime().ToString("MMM d, HH:mm")</span>
                                                 @foreach (var tag in todo.Tags)
                                                 {
-                                                    <span class="badge mono">#@tag</span>
+                                                    <span class="bb-badge bd-badge-neutral bb-mono">#@tag</span>
                                                 }
                                             </div>
                                         </div>
-                                        <div class="row-actions">
-                                            <button class="icon-btn" title="Edit" @onclick="() => BeginEdit(todo)">
+                                        <div class="bd-row-actions">
+                                            <button type="button" class="bb-icon-btn" title="Edit" aria-label="Edit" @onclick="() => BeginEdit(todo)">
                                                 <Icon Name="code" />
                                             </button>
-                                            <button class="icon-btn" title="Copy key" @onclick="() => _keyInput = todo.Id.ToString()">
+                                            <button type="button" class="bb-icon-btn" title="Copy key" aria-label="Copy key" @onclick="() => _keyInput = todo.Id.ToString()">
                                                 <Icon Name="key" />
                                             </button>
-                                            <button class="icon-btn" title="Delete" @onclick="() => Delete(todo)">
+                                            <button type="button" class="bb-icon-btn" title="Delete" aria-label="Delete" @onclick="() => Delete(todo)">
                                                 <Icon Name="trash" />
                                             </button>
                                         </div>
@@ -261,97 +250,98 @@ else
 
                         @if (_matchTotal > PageSize)
                         {
-                            <div class="panel-head" style="border-bottom:0; border-top:1px solid var(--border); background:transparent">
-                                <span class="panel-sub mono">
-                                    Skip(@(_page * PageSize)).Take(@PageSize)
-                                </span>
-                                <div class="panel-actions">
-                                    <button class="btn btn-sm" disabled="@(_page == 0)" @onclick="() => SetPage(_page - 1)">Previous</button>
-                                    <span class="tiny muted mono">@(_page + 1) / @PageCount</span>
-                                    <button class="btn btn-sm" disabled="@(_page + 1 >= PageCount)" @onclick="() => SetPage(_page + 1)">Next</button>
+                            <div class="bd-pagerbar">
+                                <span class="bd-panel-sub">Skip(@(_page * PageSize)).Take(@PageSize)</span>
+                                <div class="bd-panel-actions">
+                                    <button type="button" class="btn btn-secondary" disabled="@(_page == 0)" @onclick="() => SetPage(_page - 1)">Previous</button>
+                                    <span class="bd-foot bb-mono">@(_page + 1) / @PageCount</span>
+                                    <button type="button" class="btn btn-secondary" disabled="@(_page + 1 >= PageCount)" @onclick="() => SetPage(_page + 1)">Next</button>
                                 </div>
                             </div>
                         }
                     }
                 </ChildContent>
             </Panel>
-        </div>
 
-        <div class="flex-col gap-lg">
-            <Panel Title="The query behind this view" IconName="query" Sub="@(_isIndexOrdered ? "index-ordered" : "sorted in memory")">
-                <CodeBlock Code="@_queryCode" ShowHeader="false" Wrap="true" />
-                <dl class="kv mt-2">
-                    <dt>Source</dt>
-                    <dd>@_sourceLabel</dd>
-                    <dt>IsIndexOrdered</dt>
-                    <dd>@_isIndexOrdered.ToString().ToLowerInvariant()</dd>
-                    <dt>Matched</dt>
-                    <dd>@_matchTotal.ToString("N0") of @_todos.Count.ToString("N0")</dd>
-                    <dt>Elapsed</dt>
-                    <dd>@_lastQueryTime</dd>
-                </dl>
-            </Panel>
+            <div class="bb-flex">
+                <Panel Title="The query behind this view" IconName="query" Sub="@(_isIndexOrdered ? "index-ordered" : "sorted in memory")">
+                    <CodeBlock Code="@_queryCode" Wrap="true" />
+                    <dl class="bb-params">
+                        <dt>Source</dt>
+                        <dd>@_sourceLabel</dd>
+                        <dt>IsIndexOrdered</dt>
+                        <dd>@_isIndexOrdered.ToString().ToLowerInvariant()</dd>
+                        <dt>Matched</dt>
+                        <dd>@_matchTotal.ToString("N0") of @_todos.Count.ToString("N0")</dd>
+                        <dt>Elapsed</dt>
+                        <dd>@_lastQueryTime</dd>
+                    </dl>
+                </Panel>
 
-            <Panel Title="Key lookups" IconName="key" Sub="Get · TryGet · Contains">
-                <div class="field">
-                    <input class="input mono" placeholder="paste a row key (Guid)" @bind="_keyInput" />
-                    <span class="field-hint">Use the key button on any row to fill this in.</span>
-                </div>
-                <div class="toolbar mt-2">
-                    <button class="btn btn-sm" @onclick="RunGet">Get</button>
-                    <button class="btn btn-sm" @onclick="RunTryGet">TryGet</button>
-                    <button class="btn btn-sm" @onclick="RunContains">Contains</button>
-                </div>
-                @if (_keyResult is not null)
-                {
-                    <div class="api-call mt-2">@_keyResult</div>
-                }
-            </Panel>
-
-            <Panel Title="Bulk and durability" IconName="shield" Sub="transactions, flush, checkpoint">
-                <div class="flex-col">
-                    <button class="btn btn-sm btn-block" @onclick="SeedMore">
-                        <Icon Name="plus" /> Insert 25 rows in one transaction
-                    </button>
-                    <button class="btn btn-sm btn-block" @onclick="UpsertPinned">
-                        <Icon Name="refresh" /> Upsert a fixed row (idempotent)
-                    </button>
-                    <button class="btn btn-sm btn-block" @onclick="DeleteDone">
-                        <Icon Name="trash" /> Delete every done row
-                    </button>
-                    <button class="btn btn-sm btn-block" @onclick="FlushNow">
-                        <Icon Name="download" /> FlushAsync - force durability
-                    </button>
-                    <button class="btn btn-sm btn-block" @onclick="CheckpointNow">
-                        <Icon Name="layers" /> CheckpointAsync - snapshot &amp; truncate WAL
-                    </button>
-                    <button class="btn btn-sm btn-block btn-danger" @onclick="ClearAll">
-                        <Icon Name="close" /> Delete all rows
-                    </button>
-                </div>
-                @if (_maintenance is not null)
-                {
-                    <div class="api-call mt-2">@_maintenance</div>
-                }
-            </Panel>
-
-            <Panel Title="View preferences" IconName="database" Sub="a second table, string keys">
-                <p class="small">
-                    The status filter and sort order you pick are written to the
-                    <code>settings</code> table with <code>Upsert</code> and read back with
-                    <code>Get</code> on load - so they survive a reload alongside your rows.
-                </p>
-                <dl class="kv">
-                    @foreach (var setting in _todosSettings)
+                <Panel Title="Key lookups" IconName="key" Sub="Get · TryGet · Contains">
+                    <div class="bb-fields">
+                        <div class="bb-field bd-grow">
+                            <label for="key-input">Row key</label>
+                            <input id="key-input" class="bb-mono" placeholder="paste a row key (Guid)" @bind="_keyInput" />
+                            <span class="bb-field-hint">Use the key button on any row to fill this in.</span>
+                        </div>
+                    </div>
+                    <div class="bb-toolbar">
+                        <button type="button" class="btn btn-secondary" @onclick="RunGet">Get</button>
+                        <button type="button" class="btn btn-secondary" @onclick="RunTryGet">TryGet</button>
+                        <button type="button" class="btn btn-secondary" @onclick="RunContains">Contains</button>
+                    </div>
+                    @if (_keyResult is not null)
                     {
-                        <dt>@setting.Name</dt>
-                        <dd>@setting.Value</dd>
+                        <div class="bb-log bd-out">@_keyResult</div>
                     }
-                </dl>
-            </Panel>
+                </Panel>
+
+                <Panel Title="Bulk and durability" IconName="shield" Sub="transactions, flush, checkpoint">
+                    <div class="bd-actions">
+                        <button type="button" class="btn btn-secondary" @onclick="SeedMore">
+                            <Icon Name="plus" /> Insert 25 rows in one transaction
+                        </button>
+                        <button type="button" class="btn btn-secondary" @onclick="UpsertPinned">
+                            <Icon Name="refresh" /> Upsert a fixed row (idempotent)
+                        </button>
+                        <button type="button" class="btn btn-secondary" @onclick="DeleteDone">
+                            <Icon Name="trash" /> Delete every done row
+                        </button>
+                        <button type="button" class="btn btn-secondary" @onclick="FlushNow">
+                            <Icon Name="download" /> FlushAsync - force durability
+                        </button>
+                        <button type="button" class="btn btn-secondary" @onclick="CheckpointNow">
+                            <Icon Name="layers" /> CheckpointAsync - snapshot &amp; truncate WAL
+                        </button>
+                        <button type="button" class="btn bd-btn-danger" @onclick="ClearAll">
+                            <Icon Name="close" /> Delete all rows
+                        </button>
+                    </div>
+                    @if (_maintenance is not null)
+                    {
+                        <div class="bb-log bd-out">@_maintenance</div>
+                    }
+                </Panel>
+
+                <Panel Title="View preferences" IconName="database" Sub="a second table, string keys">
+                    <p>
+                        The status filter and sort order you pick are written to the
+                        <code>settings</code> table with <code>Upsert</code> and read back with
+                        <code>Get</code> on load - so they survive a reload alongside your rows.
+                    </p>
+                    <dl class="bb-params">
+                        @foreach (var setting in _todosSettings)
+                        {
+                            <dt>@setting.Name</dt>
+                            <dd>@setting.Value</dd>
+                        }
+                    </dl>
+                </Panel>
+            </div>
         </div>
-    </div>
-}
+    }
+</div>
 
 @code {
     private const int PageSize = 8;

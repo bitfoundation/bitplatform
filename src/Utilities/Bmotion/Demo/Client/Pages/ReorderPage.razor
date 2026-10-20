@@ -1,19 +1,20 @@
 @page "/reorder"
 
-<PageTitle>Reorder - Bit.Bmotion</PageTitle>
+<PageTitle>Reorder · Bmotion</PageTitle>
 
-<h1>Reorder</h1>
+<div class="bb-intro">
+    <h1>Reorder</h1>
+    <p class="bb-subtitle">
+        Drag-to-reorder is the one interaction where the naive implementation is always wrong: re-render
+        the list on every pointer move and you drop frames, lose focus and reset component state.
+        <strong>BmotionReorderGroup</strong> previews the new order with transforms only - the list
+        itself re-renders <em>once</em>, on release - so the drag stays smooth and the bound list is the
+        single source of truth throughout.
+    </p>
+</div>
 
-<p class="page-intro">
-    Drag-to-reorder is the one interaction where the naive implementation is always wrong: re-render
-    the list on every pointer move and you drop frames, lose focus and reset component state.
-    <strong>BmotionReorderGroup</strong> previews the new order with transforms only - the list
-    itself re-renders <em>once</em>, on release - so the drag stays smooth and the bound list is the
-    single source of truth throughout.
-</p>
-
-<div class="demo-section">
-    <h2>Drag to reorder</h2>
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Drag to reorder</h3>
     <p>
         Bind a list, give the items a stable key, and every row becomes draggable along the list
         axis while its siblings spring out of the way. <code>HandleSelector</code> restricts the
@@ -48,10 +49,10 @@
     </p>
 
     <CodeSnippet Code="@_reorderCode" />
-</div>
+</section>
 
-<div class="demo-section">
-    <h2>Horizontal lists</h2>
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Horizontal lists</h3>
     <p>
         <code>Axis="BmDragAxis.X"</code> runs the same machinery sideways for a row of tabs, a
         toolbar or a card rail. Only the axis changes - the displacement, the commit and the binding
@@ -72,10 +73,10 @@
     <p class="reorder-readout">Current order: @string.Join(" → ", _stages)</p>
 
     <CodeSnippet Code="@_horizontalCode" />
-</div>
+</section>
 
-<div class="demo-section">
-    <h2>Keyboard access</h2>
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Keyboard access</h3>
     <p>
         A pointer drag is not reachable by keyboard, so a reorderable list needs a second way in -
         and it does not need to be a separate mechanism. The group observes external mutations of
@@ -85,59 +86,7 @@
     </p>
 
     <CodeSnippet Code="@_keyboardCode" />
-</div>
-
-<style>
-    .list-stage {
-        gap: .6rem;
-        width: 100%;
-        min-width: 17.5rem;
-        flex-direction: column;
-        align-items: stretch;
-    }
-
-    .track-row {
-        gap: .7rem;
-        display: flex;
-        padding: .7rem 1rem;
-        align-items: center;
-        border-radius: 8px;
-        color: var(--bm-text);
-        background: var(--bm-accent-soft);
-        border: 1px solid var(--bm-accent-line);
-    }
-
-    .track-title { flex: 1; }
-    .track-time { font-size: .8rem; color: var(--bm-muted); }
-
-    .track-move {
-        border: none;
-        cursor: pointer;
-        background: none;
-        padding: 0 .15rem;
-        font-family: inherit;
-        color: var(--bm-muted);
-    }
-
-    .track-move:disabled { opacity: .35; cursor: default; }
-
-    .grip { cursor: grab; user-select: none; color: var(--bm-muted); }
-
-    .chip-rail { display: flex; gap: .5rem; flex-wrap: nowrap; }
-
-    .rail-chip {
-        cursor: grab;
-        user-select: none;
-        white-space: nowrap;
-        padding: .5rem 1rem;
-        border-radius: 999px;
-        color: var(--bm-text);
-        background: var(--bm-accent-soft);
-        border: 1px solid var(--bm-accent-line);
-    }
-
-    .reorder-readout { font-size: .85rem; margin-top: .75rem; color: var(--bm-muted); }
-</style>
+</section>
 
 @code {
     private sealed record Track(int Id, string Title, string Duration);

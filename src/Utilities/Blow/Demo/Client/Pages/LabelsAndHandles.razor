@@ -1,10 +1,10 @@
 ﻿@page "/labels-handles"
 
-<PageTitle>Labels &amp; Drag Handles - bit Blow</PageTitle>
+<PageTitle>Labels &amp; Drag Handles · Blow</PageTitle>
 
-<div class="demo-header">
-    <h3>HTML Edge Labels &amp; Drag Handles</h3>
-    <p class="text-muted">
+<div class="bb-intro">
+    <h1>HTML Edge Labels &amp; Drag Handles</h1>
+    <p class="bb-subtitle">
         Edges use <strong>HTML labels</strong> (interactive buttons rendered in a non-transformed overlay,
         so they stay a constant size). The purple nodes can only be dragged by their <strong>⠿ handle</strong>
         - clicking the body just selects.
@@ -13,55 +13,58 @@
 
 <DemoCode />
 
-<div class="demo-canvas" style="height: calc(100vh - 240px);">
-    <BlowCanvas Nodes="_nodes" Edges="_edges" FitViewOnInit="true">
-        <NodeTemplate Context="node">
-            @if (node.Type == "panel")
-            {
-                <BlowHandle Type="BlowHandleType.Target" Position="BlowPosition.Top" />
-                <div class="panel-node">
-                    <BlowDragHandle Class="panel-node__grip">⠿</BlowDragHandle>
-                    <div class="panel-node__title">@node.Label</div>
+<div class="bb-demo blow-demo bb-page-wide">
+    <div class="demo-canvas">
+        <BlowCanvas Nodes="_nodes" Edges="_edges" FitViewOnInit="true">
+            <NodeTemplate Context="node">
+                @if (node.Type == "panel")
+                {
+                    <BlowHandle Type="BlowHandleType.Target" Position="BlowPosition.Top" />
+                    <div class="panel-node">
+                        <BlowDragHandle Class="panel-node__grip">⠿</BlowDragHandle>
+                        <div class="panel-node__title">@node.Label</div>
+                    </div>
+                    <BlowHandle Type="BlowHandleType.Source" Position="BlowPosition.Bottom" />
+                }
+                else
+                {
+                    <BlowDefaultNode Node="node" />
+                }
+            </NodeTemplate>
+
+            <EdgeLabelTemplate Context="ctx">
+                <div class="edge-label">
+                    <span>@(ctx.Edge.Label ?? ctx.Edge.Id)</span>
+                    <button class="edge-label__btn" title="Delete edge" @onclick="() => RemoveEdge(ctx.Edge)">×</button>
                 </div>
-                <BlowHandle Type="BlowHandleType.Source" Position="BlowPosition.Bottom" />
-            }
-            else
-            {
-                <BlowDefaultNode Node="node" />
-            }
-        </NodeTemplate>
+            </EdgeLabelTemplate>
 
-        <EdgeLabelTemplate Context="ctx">
-            <div class="edge-label">
-                <span>@(ctx.Edge.Label ?? ctx.Edge.Id)</span>
-                <button class="edge-label__btn" title="Delete edge" @onclick="() => RemoveEdge(ctx.Edge)">×</button>
-            </div>
-        </EdgeLabelTemplate>
-
-        <ChildContent>
-            <BlowBackground Variant="BlowBackgroundVariant.Dots" Gap="20" />
-            <BlowControls />
-            <BlowMiniMap />
-        </ChildContent>
-    </BlowCanvas>
+            <ChildContent>
+                <BlowBackground Variant="BlowBackgroundVariant.Dots" Gap="20" />
+                <BlowControls />
+                <BlowMiniMap />
+            </ChildContent>
+        </BlowCanvas>
+    </div>
 </div>
 
 <style>
     .panel-node { display:flex; align-items:center; gap:8px; padding:2px 4px; }
-    .panel-node__grip { font-size:16px; color:#7c3aed; user-select:none; }
+    .panel-node__grip { font-size:16px; color:#8b5cf6; user-select:none; }
     .panel-node__title { font-weight:600; }
-    .bit-blow-node-panel { background:#f5f3ff; border-color:#7c3aed; }
+    /* A violet tint mixed into the node's own fill, so it reads in the light and the dark mode alike. */
+    .bit-blow-node-panel { background:color-mix(in srgb, #8b5cf6 14%, var(--bit-blow-node-bg)); border-color:#8b5cf6; }
 
     .edge-label {
         display:flex; align-items:center; gap:6px;
-        background:#fff; border:1px solid #ddd; border-radius:6px;
-        padding:2px 6px; font-size:12px; box-shadow:0 1px 3px rgba(0,0,0,0.12);
+        background:var(--bit-blow-surface); color:var(--bit-blow-text); border:1px solid var(--bit-blow-border); border-radius:6px;
+        padding:2px 6px; font-size:12px; box-shadow:0 1px 3px var(--bit-blow-shadow);
     }
     .edge-label__btn {
-        border:none; background:#fee2e2; color:#b91c1c; border-radius:4px;
+        border:none; background:color-mix(in srgb, #ef4444 16%, var(--bit-blow-surface)); color:#ef4444; border-radius:4px;
         width:18px; height:18px; line-height:1; cursor:pointer; padding:0;
     }
-    .edge-label__btn:hover { background:#fecaca; }
+    .edge-label__btn:hover { background:color-mix(in srgb, #ef4444 28%, var(--bit-blow-surface)); }
 </style>
 
 @code {

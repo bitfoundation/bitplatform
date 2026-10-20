@@ -1,7 +1,14 @@
 ﻿@page "/not-found"
 @layout MainLayout
 
-<PageTitle>Not found</PageTitle>
+<PageTitle>Not found · BevTools</PageTitle>
 
-<h3>Not Found</h3>
-<p>Sorry, the content you are looking for does not exist.</p>
+<div class="bb-error bb-error-404">
+    <h1>404</h1>
+    <p>There is no page at this address. It may have moved, or the link that led here may be mistyped.</p>
+    <div class="bb-try bb-error-actions">
+        <a href="" class="btn btn-primary">Go to the home page</a>
+        <a href="problems" class="btn btn-secondary">Problems to diagnose</a>
+    </div>
+    <p class="bb-error-hint">Looking for something specific? Press <kbd>/</kbd> to search.</p>
+</div>

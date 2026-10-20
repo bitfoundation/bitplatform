@@ -11,10 +11,10 @@ namespace Bit.Bink.Tests.E2E;
 [TestClass]
 public sealed class DemoRegressionTests : BinkTest
 {
-    private static Task<string> StatusAsync(IPage page, int index = 0) => page.Locator(".statusbar").Nth(index).InnerTextAsync();
+    private static Task<string> StatusAsync(IPage page, int index = 0) => page.Locator(".bink-status").Nth(index).InnerTextAsync();
 
     private static async Task<int> ElementCountAsync(IPage page, int index = 0)
-        => int.Parse(await page.Locator(".statusbar").Nth(index).Locator("strong").First.InnerTextAsync(), CultureInfo.InvariantCulture);
+        => int.Parse(await page.Locator(".bink-status").Nth(index).Locator("strong").First.InnerTextAsync(), CultureInfo.InvariantCulture);
 
     private static ILocator Button(IPage page, string name)
         => page.GetByRole(AriaRole.Button, new PageGetByRoleOptions { Name = name, Exact = true });
@@ -91,7 +91,7 @@ public sealed class DemoRegressionTests : BinkTest
         await Button(page, "Undo").ClickAsync();
         await page.WaitForTimeoutAsync(250);
         Assert.AreEqual(page0, await ElementCountAsync(page), "one undo did not remove the highlight");
-        Assert.AreEqual(0, await page.Locator("li.card").CountAsync(), "the annotation list still shows the highlight");
+        Assert.AreEqual(0, await page.Locator("li.bink-annotation").CountAsync(), "the annotation list still shows the highlight");
     }
 
     [TestMethod]
@@ -133,6 +133,6 @@ public sealed class DemoRegressionTests : BinkTest
         // Sam missed Alex's stroke while offline; it has to arrive on reconnect, not be lost.
         Assert.AreEqual(2, await ElementCountAsync(page, 0), "Alex does not have both strokes");
         Assert.AreEqual(2, await ElementCountAsync(page, 1), "Sam does not have both strokes");
-        Assert.AreEqual("replicas identical", await page.Locator(".badge[role=status]").InnerTextAsync());
+        Assert.AreEqual("replicas identical", await page.Locator(".bb-badge[role=status]").InnerTextAsync());
     }
 }

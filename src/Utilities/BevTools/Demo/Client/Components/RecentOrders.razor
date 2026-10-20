@@ -1,25 +1,33 @@
 ﻿@namespace Bit.BevTools.Demo.Client.Components
 @inject ProductApi Api
 
-<div class="card" style="grid-column: span 2">
-    <h3>Recent orders <span class="muted">(HTTP, 1.2–2.6 s server delay)</span></h3>
+<div class="demo-tile demo-span-2">
+    <h4 class="demo-tile-title">Recent orders <span class="bb-muted">(HTTP, 1.2–2.6 s server delay)</span></h4>
     @if (_orders is null)
     {
-        <div class="muted">@(_error ?? "loading…")</div>
+        <div class="bb-muted demo-loading">
+            @if (_error is null)
+            {
+                <span class="bb-spinner" aria-hidden="true"></span>
+            }
+            @(_error ?? "loading…")
+        </div>
     }
     else
     {
-        <table>
-            <thead><tr><th>#</th><th>Customer</th><th>Total</th><th>Status</th></tr></thead>
-            <tbody>
-                @foreach (var o in _orders.Take(5))
-                {
-                    <tr><td>@o.Id</td><td>@o.Customer</td><td>@o.Total.ToString("C")</td><td>@o.Status</td></tr>
-                }
-            </tbody>
-        </table>
+        <div class="bb-scroll">
+            <table class="bb-table">
+                <thead><tr><th>#</th><th>Customer</th><th>Total</th><th>Status</th></tr></thead>
+                <tbody>
+                    @foreach (var o in _orders.Take(5))
+                    {
+                        <tr><td>@o.Id</td><td>@o.Customer</td><td>@o.Total.ToString("C")</td><td>@o.Status</td></tr>
+                    }
+                </tbody>
+            </table>
+        </div>
     }
-    <div class="row"><button @onclick="Reload">Reload</button></div>
+    <div class="bb-toolbar"><button type="button" class="btn btn-secondary" @onclick="Reload">Reload</button></div>
 </div>
 
 @code {

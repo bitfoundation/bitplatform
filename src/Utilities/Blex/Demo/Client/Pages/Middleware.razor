@@ -9,233 +9,249 @@
 <DocPage Href="middleware" Title="Middleware"
          Lead="A hook on every action: observe it after it applies, or veto it before it runs.">
 
-    <h2>The interface</h2>
-    <p>
-        Middleware runs synchronously on the dispatch path. <code>BeforeAction</code> sees an action
-        that is about to mutate state and can cancel it; <code>OnAction</code> sees one that already
-        has, together with its payload and the resulting state tree.
-    </p>
-
-    <CodeBlock Code="@Interface" />
-
-    <h2>Registering</h2>
-    <p>Four ways, depending on what the middleware needs:</p>
-    <CodeBlock Code="@Register" FileName="Program.cs" />
-
-    <ApiTable Title="Registration" Rows="@RegisterRows" MemberHeader="Call" />
-
-    <Callout Kind="Callout.CalloutKind.Warning" Title="Instances are shared across scopes">
-        <p style="margin-bottom:0">
-            <code>UseMiddleware(instance)</code> and the delegate overloads store the object on the
-            singleton options, so under Blazor Server it is shared by <em>every circuit</em>. Never
-            hold per-user state in one. Use <code>UseMiddleware&lt;T&gt;()</code> for anything scoped.
-            Ordering is registration order, whichever kind you mix - which matters, because the
-            first veto short-circuits the rest. Middleware registered straight into the service
-            collection rather than through the options runs after everything registered here.
+    <div class="bb-card">
+        <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> The interface</h3>
+        <p>
+            Middleware runs synchronously on the dispatch path. <code>BeforeAction</code> sees an action
+            that is about to mutate state and can cancel it; <code>OnAction</code> sees one that already
+            has, together with its payload and the resulting state tree.
         </p>
-    </Callout>
 
-    <h2>Observing</h2>
-    <p>
-        This is how you get logging, analytics or an audit trail. The Inspector at the bottom of this
-        page is exactly this - an <code>ActionFeedMiddleware</code> registered in the site's
-        <code>Program.cs</code>, writing into a service the UI renders.
-    </p>
+        <CodeBlock Code="@Interface" />
+    </div>
 
-    <CodeBlock Code="@Observe" />
+    <div class="bb-card">
+        <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Registering</h3>
+        <p>Four ways, depending on what the middleware needs:</p>
+        <CodeBlock Code="@Register" FileName="Program.cs" />
 
-    <DemoCard Title="The feed you are already looking at"
-              Description="Dispatch an action and watch the same middleware that powers the Inspector pick it up."
-              Source="@FeedSource">
-        <div class="row">
-            <button class="btn btn-primary" @onclick="Counter.Increment">counter/Increment</button>
-            <button class="btn" @onclick="() => Counter.SetStep(Counter.Step + 1)">counter/SetStep</button>
-            <button class="btn btn-ghost" @onclick="Feed.Clear">Clear feed</button>
-        </div>
-        <div class="readout" style="margin-top:0.8rem">
-            <div class="readout__item">
-                <span class="readout__label">Actions seen</span>
-                <span class="readout__value readout__value--accent">@Feed.TotalSeen</span>
+        <ApiTable Title="Registration" Rows="@RegisterRows" MemberHeader="Call" />
+
+        <Callout Kind="Callout.CalloutKind.Warning" Title="Instances are shared across scopes">
+            <p>
+                <code>UseMiddleware(instance)</code> and the delegate overloads store the object on the
+                singleton options, so under Blazor Server it is shared by <em>every circuit</em>. Never
+                hold per-user state in one. Use <code>UseMiddleware&lt;T&gt;()</code> for anything scoped.
+                Ordering is registration order, whichever kind you mix - which matters, because the
+                first veto short-circuits the rest. Middleware registered straight into the service
+                collection rather than through the options runs after everything registered here.
+            </p>
+        </Callout>
+    </div>
+
+    <div class="bb-card">
+        <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Observing</h3>
+        <p>
+            This is how you get logging, analytics or an audit trail. The Inspector at the bottom of this
+            page is exactly this - an <code>ActionFeedMiddleware</code> registered in the site's
+            <code>Program.cs</code>, writing into a service the UI renders.
+        </p>
+
+        <CodeBlock Code="@Observe" />
+
+        <DemoCard Title="The feed you are already looking at"
+                  Description="Dispatch an action and watch the same middleware that powers the Inspector pick it up."
+                  Source="@FeedSource">
+            <div class="bb-toolbar">
+                <button class="btn btn-primary" @onclick="Counter.Increment">counter/Increment</button>
+                <button class="btn btn-secondary" @onclick="() => Counter.SetStep(Counter.Step + 1)">counter/SetStep</button>
+                <button class="btn btn-secondary" @onclick="Feed.Clear">Clear feed</button>
             </div>
-            <div class="readout__item">
-                <span class="readout__label">Most recent</span>
-                <span class="readout__value" style="font-size:0.9rem">
-                    @(Feed.Entries.Count > 0 ? $"{Feed.Entries[0].Store}/{Feed.Entries[0].Action}" : "-")
-                </span>
+            <div class="bb-stats">
+                <div class="bb-stat">
+                    <span class="bb-stat-label">Actions seen</span>
+                    <span class="bb-stat-value demo-accent">@Feed.TotalSeen</span>
+                </div>
+                <div class="bb-stat">
+                    <span class="bb-stat-label">Most recent</span>
+                    <span class="bb-stat-value demo-stat-text">
+                        @(Feed.Entries.Count > 0 ? $"{Feed.Entries[0].Store}/{Feed.Entries[0].Action}" : "-")
+                    </span>
+                </div>
+                <div class="bb-stat">
+                    <span class="bb-stat-label">Payload</span>
+                    <span class="bb-stat-value demo-stat-text">
+                        @(Feed.Entries.Count > 0 && Feed.Entries[0].Args.Length > 0 ? Feed.Entries[0].Args : "-")
+                    </span>
+                </div>
             </div>
-            <div class="readout__item">
-                <span class="readout__label">Payload</span>
-                <span class="readout__value" style="font-size:0.9rem">
-                    @(Feed.Entries.Count > 0 && Feed.Entries[0].Args.Length > 0 ? Feed.Entries[0].Args : "-")
-                </span>
+        </DemoCard>
+    </div>
+
+    <div class="bb-card">
+        <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Vetoing</h3>
+        <p>
+            <code>BeforeAction</code> runs ahead of the mutation. Calling <code>Cancel()</code> stops the
+            action completely: the body never runs, nothing changes, nothing is recorded and no
+            notification fires. Use it for read-only modes, permission checks and payload validation.
+        </p>
+
+        <CodeBlock Code="@Veto" />
+
+        <DemoCard Title="A read-only guard"
+                  Description="Turn the guard on and every action is cancelled before it can mutate anything. The counter stops responding - and the action feed stays silent, because a vetoed action is never recorded."
+                  Source="@GuardSource">
+            <div class="bb-toolbar">
+                <label class="bb-check">
+                    <input type="checkbox" checked="@Guard.IsReadOnly" @onchange="OnGuardToggle" />
+                    <strong>Read-only mode</strong>
+                </label>
+                @if (Guard.IsReadOnly)
+                {
+                    <span class="bb-badge bb-badge-danger">vetoing</span>
+                }
+                else
+                {
+                    <span class="bb-badge bb-badge-success">allowing</span>
+                }
             </div>
-        </div>
-    </DemoCard>
 
-    <h2>Vetoing</h2>
-    <p>
-        <code>BeforeAction</code> runs ahead of the mutation. Calling <code>Cancel()</code> stops the
-        action completely: the body never runs, nothing changes, nothing is recorded and no
-        notification fires. Use it for read-only modes, permission checks and payload validation.
-    </p>
+            <div class="bb-stats">
+                <div class="bb-stat">
+                    <span class="bb-stat-label">Count</span>
+                    <span class="bb-stat-value demo-accent">@Counter.Count</span>
+                </div>
+                <div class="bb-stat">
+                    <span class="bb-stat-label">Actions blocked</span>
+                    <span class="bb-stat-value">@Guard.BlockedCount</span>
+                </div>
+                <div class="bb-stat">
+                    <span class="bb-stat-label">Last blocked</span>
+                    <span class="bb-stat-value demo-stat-text">@(Guard.LastBlocked ?? "-")</span>
+                </div>
+            </div>
 
-    <CodeBlock Code="@Veto" />
+            <div class="bb-toolbar">
+                <button class="btn btn-primary" @onclick="Counter.Increment">Try to increment</button>
+                <button class="btn btn-secondary" @onclick="AssignDirectly">Try a direct assignment</button>
+                <button class="btn btn-secondary" @onclick="Guard.Reset">Reset counters</button>
+            </div>
+            <p class="bb-card-desc">
+                Direct assignment is vetoable too - a <code>Set Count</code> goes through the same
+                pipeline as any named action.
+            </p>
+        </DemoCard>
+    </div>
 
-    <DemoCard Title="A read-only guard"
-              Description="Turn the guard on and every action is cancelled before it can mutate anything. The counter stops responding - and the action feed stays silent, because a vetoed action is never recorded."
-              Source="@GuardSource">
-        <div class="row">
-            <label class="check">
-                <input type="checkbox" checked="@Guard.IsReadOnly" @onchange="OnGuardToggle" />
-                <strong>Read-only mode</strong>
-            </label>
-            @if (Guard.IsReadOnly)
+    <div class="bb-card">
+        <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> The pre-action context</h3>
+        <ApiTable Title="BlexPreActionContext" Rows="@PreRows" />
+
+        <p>
+            Because the payload is available before the mutation, a filter can validate arguments and
+            reject the action rather than letting it write bad state:
+        </p>
+        <CodeBlock Code="@Validate" />
+    </div>
+
+    <div class="bb-card">
+        <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> When the action itself throws</h3>
+        <p>
+            The third hook, <code>OnActionError</code>, fires when an action <em>body</em> throws. It is
+            the counterpart to Pinia's <code>$onAction</code> <code>onError</code>, and it is where a
+            crash reporter belongs: an effect swallows its exception into <code>XxxError</code> so the UI
+            can render it, which means nothing else would ever hear about the failure.
+        </p>
+
+        <CodeBlock Code="@ErrorHook" />
+
+        <p>
+            The hook observes; it cannot handle. The exception continues on its way exactly as it would
+            have - captured by the effect wrapper, or surfaced to the caller of a plain action - so
+            adding a reporter never changes what the application does. For the one-liner case, wire
+            <code>options.OnActionError</code> instead of writing a middleware.
+        </p>
+        <CodeBlock Code="@ErrorOption" FileName="Program.cs" />
+
+        <DemoCard Title="A reporter over failing actions"
+                  Description="Both buttons fail on purpose. The failure still reaches SearchError for the UI to render - and the reporter below hears about it too."
+                  Source="@ErrorDemoSource">
+            <div class="bb-toolbar">
+                <button class="btn btn-primary" @onclick="FailingSearch">Run a failing search</button>
+                <button class="btn btn-secondary" @onclick="SucceedingSearch">Run a search that works</button>
+                <button class="btn btn-secondary" @onclick="Failures.Clear">Clear</button>
+            </div>
+
+            <div class="bb-stats">
+                <div class="bb-stat">
+                    <span class="bb-stat-label">search/SearchIsLoading</span>
+                    <span class="bb-stat-value">@Search.SearchIsLoading</span>
+                </div>
+                <div class="bb-stat">
+                    <span class="bb-stat-label">search/SearchError</span>
+                    <span class="bb-stat-value demo-accent">@(Search.SearchError is null ? "null" : "set")</span>
+                </div>
+                <div class="bb-stat">
+                    <span class="bb-stat-label">Reported</span>
+                    <span class="bb-stat-value">@Failures.Failures.Count</span>
+                </div>
+            </div>
+
+            @if (Failures.Failures.Count == 0)
             {
-                <span class="pill pill--err">vetoing</span>
+                <p class="bb-card-desc">
+                    Nothing reported yet. Cancellation is not a failure, so superseded runs never appear here.
+                </p>
             }
             else
             {
-                <span class="pill pill--on">allowing</span>
+                <ul class="bb-detail-list">
+                    @foreach (var failure in Failures.Failures)
+                    {
+                        <li>
+                            <code>@failure.Action</code>
+                            @if (failure.Args.Length > 0)
+                            {
+                                <span class="bb-muted"> (@failure.Args)</span>
+                            }
+                            - @failure.Message
+                        </li>
+                    }
+                </ul>
             }
-        </div>
+        </DemoCard>
 
-        <div class="readout" style="margin-top:0.8rem">
-            <div class="readout__item">
-                <span class="readout__label">Count</span>
-                <span class="readout__value readout__value--accent">@Counter.Count</span>
-            </div>
-            <div class="readout__item">
-                <span class="readout__label">Actions blocked</span>
-                <span class="readout__value">@Guard.BlockedCount</span>
-            </div>
-            <div class="readout__item">
-                <span class="readout__label">Last blocked</span>
-                <span class="readout__value" style="font-size:0.9rem">@(Guard.LastBlocked ?? "-")</span>
-            </div>
-        </div>
+        <ApiTable Title="BlexActionErrorContext" Rows="@ErrorRows" />
 
-        <div class="row" style="margin-top:0.8rem">
-            <button class="btn btn-primary" @onclick="Counter.Increment">Try to increment</button>
-            <button class="btn" @onclick="AssignDirectly">Try a direct assignment</button>
-            <button class="btn btn-ghost" @onclick="Guard.Reset">Reset counters</button>
-        </div>
-        <p class="small muted" style="margin-top:0.7rem;margin-bottom:0">
-            Direct assignment is vetoable too - a <code>Set Count</code> goes through the same
-            pipeline as any named action.
-        </p>
-    </DemoCard>
-
-    <h2>The pre-action context</h2>
-    <ApiTable Title="BlexPreActionContext" Rows="@PreRows" />
-
-    <p>
-        Because the payload is available before the mutation, a filter can validate arguments and
-        reject the action rather than letting it write bad state:
-    </p>
-    <CodeBlock Code="@Validate" />
-
-    <h2>When the action itself throws</h2>
-    <p>
-        The third hook, <code>OnActionError</code>, fires when an action <em>body</em> throws. It is
-        the counterpart to Pinia's <code>$onAction</code> <code>onError</code>, and it is where a
-        crash reporter belongs: an effect swallows its exception into <code>XxxError</code> so the UI
-        can render it, which means nothing else would ever hear about the failure.
-    </p>
-
-    <CodeBlock Code="@ErrorHook" />
-
-    <p>
-        The hook observes; it cannot handle. The exception continues on its way exactly as it would
-        have - captured by the effect wrapper, or surfaced to the caller of a plain action - so
-        adding a reporter never changes what the application does. For the one-liner case, wire
-        <code>options.OnActionError</code> instead of writing a middleware.
-    </p>
-    <CodeBlock Code="@ErrorOption" FileName="Program.cs" />
-
-    <DemoCard Title="A reporter over failing actions"
-              Description="Both buttons fail on purpose. The failure still reaches SearchError for the UI to render - and the reporter below hears about it too."
-              Source="@ErrorDemoSource">
-        <div class="row">
-            <button class="btn btn-primary" @onclick="FailingSearch">Run a failing search</button>
-            <button class="btn" @onclick="SucceedingSearch">Run a search that works</button>
-            <button class="btn btn-ghost" @onclick="Failures.Clear">Clear</button>
-        </div>
-
-        <div class="readout" style="margin-top:0.8rem">
-            <div class="readout__item">
-                <span class="readout__label">search/SearchIsLoading</span>
-                <span class="readout__value">@Search.SearchIsLoading</span>
-            </div>
-            <div class="readout__item">
-                <span class="readout__label">search/SearchError</span>
-                <span class="readout__value readout__value--accent">@(Search.SearchError is null ? "null" : "set")</span>
-            </div>
-            <div class="readout__item">
-                <span class="readout__label">Reported</span>
-                <span class="readout__value">@Failures.Failures.Count</span>
-            </div>
-        </div>
-
-        @if (Failures.Failures.Count == 0)
-        {
-            <p class="small muted" style="margin-top:0.8rem;margin-bottom:0">
-                Nothing reported yet. Cancellation is not a failure, so superseded runs never appear here.
+        <Callout Kind="Callout.CalloutKind.Note" Title="Cancellation is not a failure">
+            <p>
+                An <code>OperationCanceledException</code> is the documented outcome of
+                <code>CancelXxx()</code>, of a <code>Latest</code> run being superseded, and of disposing
+                a store with work in flight. Reporting those would bury the real failures under a
+                type-ahead's worth of noise, so they never reach this hook - exactly as they never reach
+                <code>XxxError</code>.
             </p>
-        }
-        else
-        {
-            <ul class="small" style="margin-top:0.8rem;margin-bottom:0">
-                @foreach (var failure in Failures.Failures)
-                {
-                    <li>
-                        <code>@failure.Action</code>
-                        @if (failure.Args.Length > 0)
-                        {
-                            <span class="muted"> (@failure.Args)</span>
-                        }
-                        - @failure.Message
-                    </li>
-                }
-            </ul>
-        }
-    </DemoCard>
+        </Callout>
+    </div>
 
-    <ApiTable Title="BlexActionErrorContext" Rows="@ErrorRows" />
-
-    <Callout Kind="Callout.CalloutKind.Note" Title="Cancellation is not a failure">
-        <p style="margin-bottom:0">
-            An <code>OperationCanceledException</code> is the documented outcome of
-            <code>CancelXxx()</code>, of a <code>Latest</code> run being superseded, and of disposing
-            a store with work in flight. Reporting those would bury the real failures under a
-            type-ahead's worth of noise, so they never reach this hook - exactly as they never reach
-            <code>XxxError</code>.
+    <div class="bb-card">
+        <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Error isolation</h3>
+        <p>
+            Middleware must not be able to break dispatch. An exception thrown from
+            <code>BeforeAction</code> or <code>OnAction</code> is caught, reported to
+            <a href="errors"><code>OnError</code></a> with the source <code>"middleware"</code>, and the
+            pipeline carries on to the next middleware. A throwing filter therefore does <em>not</em>
+            veto the action - if you mean to cancel, call <code>Cancel()</code>.
         </p>
-    </Callout>
+    </div>
 
-    <h2>Error isolation</h2>
-    <p>
-        Middleware must not be able to break dispatch. An exception thrown from
-        <code>BeforeAction</code> or <code>OnAction</code> is caught, reported to
-        <a href="errors"><code>OnError</code></a> with the source <code>"middleware"</code>, and the
-        pipeline carries on to the next middleware. A throwing filter therefore does <em>not</em>
-        veto the action - if you mean to cancel, call <code>Cancel()</code>.
-    </p>
-
-    <h2>Cost when nothing is listening</h2>
-    <p>
-        With no middleware, no DevTools connection and no subscribers, the manager reports
-        <code>HasObservers == false</code> and the whole recording step is skipped. Generated
-        wrappers check the same flag before allocating their <code>BlexActionArg[]</code>, so an app that
-        observes nothing pays nothing for the machinery.
-    </p>
-
-    <Callout Kind="Callout.CalloutKind.Tip" Title="Middleware is also a coordination point">
-        <p style="margin-bottom:0">
-            Anything you can do in a <a href="cross-store">manager subscription</a> you can do in
-            middleware, with the difference that middleware is registered at startup and always on,
-            while subscriptions come and go with the component or service that owns them.
+    <div class="bb-card">
+        <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Cost when nothing is listening</h3>
+        <p>
+            With no middleware, no DevTools connection and no subscribers, the manager reports
+            <code>HasObservers == false</code> and the whole recording step is skipped. Generated
+            wrappers check the same flag before allocating their <code>BlexActionArg[]</code>, so an app that
+            observes nothing pays nothing for the machinery.
         </p>
-    </Callout>
+
+        <Callout Kind="Callout.CalloutKind.Tip" Title="Middleware is also a coordination point">
+            <p>
+                Anything you can do in a <a href="cross-store">manager subscription</a> you can do in
+                middleware, with the difference that middleware is registered at startup and always on,
+                while subscriptions come and go with the component or service that owns them.
+            </p>
+        </Callout>
+    </div>
 
 </DocPage>
 

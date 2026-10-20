@@ -1,8 +1,15 @@
 ﻿@page "/Error"
+@layout MainLayout
 
 @* Target of app.UseExceptionHandler("/Error") in the host's Program.cs. *@
 
 <PageTitle>Error · Blex</PageTitle>
-<h1>Error</h1>
-<p class="lead">An error occurred while processing your request.</p>
-<a class="btn btn-primary" href="">Back to the introduction</a>
+
+<div class="bb-error">
+    <h1>Error</h1>
+    <p>An error occurred while processing your request.</p>
+    <div class="bb-try bb-error-actions">
+        <a href="" class="btn btn-primary">Go to the home page</a>
+        <a href="introduction" class="btn btn-secondary">Browse the docs</a>
+    </div>
+</div>

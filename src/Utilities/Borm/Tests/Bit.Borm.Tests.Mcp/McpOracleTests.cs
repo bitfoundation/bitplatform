@@ -312,16 +312,17 @@ public partial class McpOracleTests
     [TestMethod]
     public void Every_page_of_the_demo_menu_has_its_source()
     {
-        // The menu is the demo's own list of its forms; every one of them must be a file an agent can read.
-        var menu = BormSourceCatalog.GetSourceFile("Demo/Client/Layout/NavMenu.razor")!;
-        var routes = NavLinkRegex().Matches(menu).Select(match => $"/{match.Groups["route"].Value}").Where(route => route != "/mcp-server").ToArray();
+        // The docs catalog is the demo's own list of its forms - the nav panel, the search palette and the pager are all
+        // built from it; every one of them must be a file an agent can read. The catalog itself is site chrome, which
+        // the server does not hand out, so it is read here as the type it compiles to.
+        var routes = Bit.Borm.Demo.Client.DocsCatalog.AllPages.Select(page => page.Url).Where(route => route != "/mcp-server").ToArray();
 
         Assert.IsGreaterThan(15, routes.Length);
 
         foreach (var route in routes)
         {
-            Assert.IsTrue(BormSourceCatalog.SourceFiles.Any(file => string.Equals(file.Route, route, StringComparison.OrdinalIgnoreCase)),
-                $"The menu links to '{route}', and no embedded page declares it.");
+            Assert.IsTrue(BormSourceCatalog.SourceFiles.Any(file => file.Kind == "Page" && file.Title is not null && string.Equals(file.Route, route, StringComparison.OrdinalIgnoreCase)),
+                $"The menu links to '{route}', and no embedded page with a title declares it.");
         }
     }
 
@@ -373,7 +374,4 @@ public partial class McpOracleTests
 
     [GeneratedRegex(@"^#{2,4} (?<text>.+)$")]
     private static partial Regex HeadingRegex();
-
-    [GeneratedRegex(@"<NavLink href=""(?<route>[^""]+)""")]
-    private static partial Regex NavLinkRegex();
 }

@@ -1,15 +1,12 @@
-﻿<div class="stat @Tone">
-    <div class="stat-label">
-        @if (!string.IsNullOrWhiteSpace(IconName))
-        {
-            <Icon Name="@IconName" />
-        }
-        @Label
-    </div>
-    <div class="stat-value">@Value@if (!string.IsNullOrWhiteSpace(Unit)) {<span class="unit">@Unit</span>}</div>
+﻿@* One measured number - a cell of the site kit's .bb-stats strip: the label, the value, and an
+   optional note saying where the number came from (usually the call that produced it). *@
+
+<div class="bb-stat @ToneClass">
+    <span class="bb-stat-label">@Label</span>
+    <span class="bb-stat-value">@Value</span>
     @if (!string.IsNullOrWhiteSpace(Note))
     {
-        <div class="stat-note">@Note</div>
+        <span class="bd-stat-note">@Note</span>
     }
 </div>
 
@@ -18,12 +15,15 @@
 
     [Parameter, EditorRequired] public string Value { get; set; } = "";
 
-    [Parameter] public string? Unit { get; set; }
-
     [Parameter] public string? Note { get; set; }
-
-    [Parameter] public string? IconName { get; set; }
 
     /// <summary>One of <c>""</c>, <c>accent</c> or <c>ok</c>.</summary>
     [Parameter] public string? Tone { get; set; }
+
+    private string? ToneClass => Tone switch
+    {
+        "accent" => "bd-stat-accent",
+        "ok" => "bd-stat-ok",
+        _ => null,
+    };
 }

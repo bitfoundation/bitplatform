@@ -1,87 +1,87 @@
 ﻿@page "/serialization"
 
-<PageTitle>Wire format - BlazeDb</PageTitle>
+<PageTitle>Wire format · BlazeDb</PageTitle>
 
-<PageHeader Eyebrow="Persistence" IconName="binary" Title="See the bytes a row becomes"
+<PageHeader Eyebrow="Wire format" Title="See the bytes a row becomes"
             Lead="Rows are encoded with a tagged, self-describing binary format: a varint tag carrying a field number and a wire type, then the payload. Property names never appear, unknown fields can be skipped, and nulls cost nothing at all.">
-    <span class="chip"><Icon Name="file" /> @_bytes.Length bytes for the row below</span>
-    <span class="chip"><Icon Name="layers" /> @_fields.Count fields on the wire</span>
-    <span class="chip"><Icon Name="check" /> Round-trip verified</span>
+    <span class="bb-badge bd-badge-neutral">@_bytes.Length bytes for the row below</span>
+    <span class="bb-badge bd-badge-neutral">@_fields.Count fields on the wire</span>
+    <span class="bb-badge bd-badge-neutral">Round-trip verified</span>
 </PageHeader>
 
-<Section Title="Build a row, watch it encode" IconName="play"
+<Section Title="Build a row, watch it encode"
          Lead="Every control here changes the row that is serialized with the generated writer. Nothing is simulated - the bytes below come from TodoEntry.Table.RowWriter.">
-    <div class="grid grid-sidebar">
-        <div class="flex-col gap-lg">
+    <div class="bd-main-side">
+        <div class="bb-flex">
             <Panel Title="The row" IconName="code">
-                <div class="form-row">
-                    <div class="field" style="flex:3 1 220px">
-                        <label class="field-label" for="w-title">Title - string</label>
-                        <input id="w-title" class="input" @bind="_title" @bind:event="oninput" @bind:after="Encode" />
+                <div class="bb-fields">
+                    <div class="bb-field" style="flex:3 1 220px">
+                        <label for="w-title">Title - string</label>
+                        <input id="w-title" @bind="_title" @bind:event="oninput" @bind:after="Encode" />
                     </div>
-                    <div class="field" style="flex:0 1 120px">
-                        <label class="field-label" for="w-effort">Effort - int</label>
-                        <input id="w-effort" class="input mono" type="number" @bind="_effort" @bind:after="Encode" />
+                    <div class="bb-field" style="flex:0 1 120px">
+                        <label for="w-effort">Effort - int</label>
+                        <input id="w-effort" class="bb-mono" type="number" @bind="_effort" @bind:after="Encode" />
                     </div>
                 </div>
 
-                <div class="form-row mt-2">
-                    <div class="field" style="flex:2 1 200px">
-                        <label class="field-label" for="w-notes">Notes - string?</label>
-                        <input id="w-notes" class="input" disabled="@_notesNull" placeholder="(null)"
+                <div class="bb-fields">
+                    <div class="bb-field" style="flex:2 1 200px">
+                        <label for="w-notes">Notes - string?</label>
+                        <input id="w-notes" disabled="@_notesNull" placeholder="(null)"
                                @bind="_notes" @bind:event="oninput" @bind:after="Encode" />
-                        <label class="check mt-1">
+                        <label class="bb-check">
                             <input type="checkbox" @bind="_notesNull" @bind:after="Encode" /> null
                         </label>
                     </div>
-                    <div class="field" style="flex:0 1 130px">
-                        <label class="field-label" for="w-rating">Rating - int?</label>
-                        <input id="w-rating" class="input mono" type="number" min="1" max="5" disabled="@_ratingNull"
+                    <div class="bb-field" style="flex:0 1 130px">
+                        <label for="w-rating">Rating - int?</label>
+                        <input id="w-rating" class="bb-mono" type="number" min="1" max="5" disabled="@_ratingNull"
                                @bind="_rating" @bind:after="Encode" />
-                        <label class="check mt-1">
+                        <label class="bb-check">
                             <input type="checkbox" @bind="_ratingNull" @bind:after="Encode" /> null
                         </label>
                     </div>
-                    <div class="field" style="flex:0 1 140px">
-                        <label class="field-label" for="w-tags">Tags - List&lt;string&gt;</label>
-                        <input id="w-tags" class="input mono" type="number" min="0" max="6" @bind="_tagCount" @bind:after="Encode" />
-                        <span class="field-hint">repeated field 14</span>
+                    <div class="bb-field" style="flex:0 1 140px">
+                        <label for="w-tags">Tags - List&lt;string&gt;</label>
+                        <input id="w-tags" class="bb-mono" type="number" min="0" max="6" @bind="_tagCount" @bind:after="Encode" />
+                        <span class="bb-field-hint">repeated field 14</span>
                     </div>
-                    <div class="field" style="flex:0 1 140px">
-                        <label class="field-label" for="w-payload">Payload - byte[]</label>
-                        <input id="w-payload" class="input mono" type="number" min="0" max="16" @bind="_payloadSize" @bind:after="Encode" />
-                        <span class="field-hint">length-delimited blob</span>
+                    <div class="bb-field" style="flex:0 1 140px">
+                        <label for="w-payload">Payload - byte[]</label>
+                        <input id="w-payload" class="bb-mono" type="number" min="0" max="16" @bind="_payloadSize" @bind:after="Encode" />
+                        <span class="bb-field-hint">length-delimited blob</span>
                     </div>
                 </div>
             </Panel>
 
             <Panel Title="Fields on the wire" IconName="layers" Flush="true">
                 <Actions>
-                    <span class="panel-sub mono">@_bytes.Length bytes total</span>
+                    <span class="bd-panel-sub">@_bytes.Length bytes total</span>
                 </Actions>
                 <ChildContent>
-                    <div class="table-wrap">
-                        <table class="data">
+                    <div class="bb-scroll">
+                        <table class="bb-table">
                             <thead>
                                 <tr>
-                                    <th class="num">#</th>
+                                    <th class="bd-num">#</th>
                                     <th>Property</th>
                                     <th>Wire type</th>
-                                    <th class="num">Tag</th>
-                                    <th class="num">Payload</th>
-                                    <th class="num">Offset</th>
+                                    <th class="bd-num">Tag</th>
+                                    <th class="bd-num">Payload</th>
+                                    <th class="bd-num">Offset</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 @foreach (var field in _fields)
                                 {
                                     <tr>
-                                        <td class="num mono strong">@field.Number</td>
-                                        <td class="mono">@PropertyName(field.Number)</td>
-                                        <td><span class="badge @WireTone(field.Wire)">@field.Wire</span></td>
-                                        <td class="num mono">@field.TagBytes B</td>
-                                        <td class="num mono">@field.PayloadBytes B</td>
-                                        <td class="num mono">@field.Offset</td>
+                                        <td class="bd-num bd-strong">@field.Number</td>
+                                        <td class="bb-mono">@PropertyName(field.Number)</td>
+                                        <td><span class="@Tones.Badge(WireTone(field.Wire))">@field.Wire</span></td>
+                                        <td class="bd-num">@field.TagBytes B</td>
+                                        <td class="bd-num">@field.PayloadBytes B</td>
+                                        <td class="bd-num">@field.Offset</td>
                                     </tr>
                                 }
                             </tbody>
@@ -92,16 +92,16 @@
 
             <Panel Title="Hex dump" IconName="binary" Flush="true">
                 <Actions>
-                    <span class="panel-sub mono">@_bytes.Length bytes</span>
+                    <span class="bd-panel-sub">@_bytes.Length bytes</span>
                 </Actions>
                 <ChildContent>
-                    <div class="hex">
+                    <div class="bd-hex">
                         @foreach (var line in _hex)
                         {
-                            <div class="hex-row">
-                                <span class="hex-off">@line.Offset</span>
-                                <span class="hex-bytes">@line.Bytes</span>
-                                <span class="hex-ascii">@line.Ascii</span>
+                            <div class="bd-hex-row">
+                                <span class="bd-hex-off">@line.Offset</span>
+                                <span class="bd-hex-bytes">@line.Bytes</span>
+                                <span class="bd-hex-ascii">@line.Ascii</span>
                             </div>
                         }
                     </div>
@@ -109,12 +109,12 @@
             </Panel>
         </div>
 
-        <div class="flex-col gap-lg">
+        <div class="bb-flex">
             <Panel Title="Round trip" IconName="refresh">
-                <p class="small mb-2">
+                <p>
                     The same bytes read back through the generated reader.
                 </p>
-                <dl class="kv">
+                <dl class="bb-params">
                     <dt>Title</dt>
                     <dd>@_decoded.Title</dd>
                     <dt>Notes</dt>
@@ -130,39 +130,39 @@
                     <dt>Duration</dt>
                     <dd>@_decoded.Duration</dd>
                     <dt>Transient</dt>
-                    <dd class="@(_decoded.Transient == "computed at runtime" ? "ok-text" : "err-text")">@_decoded.Transient</dd>
+                    <dd class="@(_decoded.Transient == "computed at runtime" ? "bd-ok" : "bd-err")">@_decoded.Transient</dd>
                 </dl>
-                <p class="tiny muted mt-2 mb-0">
+                <p class="bd-foot">
                     <code>Transient</code> carries <code>[BlazeDbIgnore]</code>, so it comes back as its field
                     initialiser rather than the value that was written.
                 </p>
             </Panel>
 
             <Panel Title="Nulls are free" IconName="bolt">
-                <p class="small mb-2">
+                <p>
                     A null value is not a marker byte - the field is simply absent.
                 </p>
-                <div class="table-wrap">
-                    <table class="data">
-                        <thead><tr><th>Row</th><th class="num">Bytes</th></tr></thead>
+                <div class="bb-scroll">
+                    <table class="bb-table bb-compare">
+                        <thead><tr><th>Row</th><th class="bd-num">Bytes</th></tr></thead>
                         <tbody>
-                            <tr><td>everything populated</td><td class="num mono">@_sizeFull B</td></tr>
-                            <tr><td>Notes and Rating null</td><td class="num mono">@_sizeNulls B</td></tr>
-                            <tr><td>no tags, no payload</td><td class="num mono">@_sizeMinimal B</td></tr>
+                            <tr><td>everything populated</td><td class="bd-num">@_sizeFull B</td></tr>
+                            <tr><td>Notes and Rating null</td><td class="bd-num">@_sizeNulls B</td></tr>
+                            <tr><td>no tags, no payload</td><td class="bd-num">@_sizeMinimal B</td></tr>
                         </tbody>
                     </table>
                 </div>
             </Panel>
 
             <Panel Title="Wire types" IconName="info" Flush="true">
-                <div class="table-wrap">
-                    <table class="data">
-                        <thead><tr><th>Name</th><th class="num">Id</th><th>Payload</th></tr></thead>
+                <div class="bb-scroll">
+                    <table class="bb-table">
+                        <thead><tr><th>Name</th><th class="bd-num">Id</th><th>Payload</th></tr></thead>
                         <tbody>
-                            <tr><td class="mono">VarInt</td><td class="num mono">0</td><td>1–10 bytes, 7 bits each</td></tr>
-                            <tr><td class="mono">Fixed64</td><td class="num mono">1</td><td>exactly 8 bytes</td></tr>
-                            <tr><td class="mono">LengthDelimited</td><td class="num mono">2</td><td>varint length, then bytes</td></tr>
-                            <tr><td class="mono">Fixed32</td><td class="num mono">5</td><td>exactly 4 bytes</td></tr>
+                            <tr><td class="bb-mono">VarInt</td><td class="bd-num">0</td><td>1–10 bytes, 7 bits each</td></tr>
+                            <tr><td class="bb-mono">Fixed64</td><td class="bd-num">1</td><td>exactly 8 bytes</td></tr>
+                            <tr><td class="bb-mono">LengthDelimited</td><td class="bd-num">2</td><td>varint length, then bytes</td></tr>
+                            <tr><td class="bb-mono">Fixed32</td><td class="bd-num">5</td><td>exactly 4 bytes</td></tr>
                         </tbody>
                     </table>
                 </div>
@@ -171,17 +171,17 @@
     </div>
 </Section>
 
-<Section Title="How a tag is built" IconName="code">
-    <div class="grid grid-2">
+<Section Title="How a tag is built">
+    <div class="bb-flex">
         <CodeBlock Title="Tag encoding" Code="@TagSnippet" Language="text" />
-        <div class="flex-col gap-lg">
+        <div class="bb-flex">
             <Panel Title="Why field numbers, not names" IconName="key">
-                <p class="small">
+                <p>
                     Names would cost bytes in every row and would tie the format to your identifiers.
                     Numbers keep rows compact and let you rename a property freely - the persisted data
                     does not notice.
                 </p>
-                <p class="small mb-0">
+                <p>
                     The trade-off is that numbers are the contract. Without <code>[BlazeDbField]</code> they are
                     assigned by declaration order, so inserting a property in the middle shifts every
                     number after it and silently reinterprets existing data.
@@ -195,27 +195,27 @@
     </div>
 </Section>
 
-<Section Title="Schema evolution" IconName="history"
+<Section Title="Schema evolution"
          Lead="The reader loop skips any field number it does not recognise, which is what makes rolling upgrades survivable in both directions.">
-    <div class="grid grid-2">
+    <div class="bb-flex">
         <Panel Title="An older reader meets a newer writer" IconName="play">
-            <p class="small mb-2">
+            <p>
                 This appends a field number the current model has never heard of, then decodes with the
                 generated reader.
             </p>
-            <button class="btn btn-sm btn-block" @onclick="RunForwardCompat">
+            <button type="button" class="btn btn-secondary" @onclick="RunForwardCompat">
                 <Icon Name="play" /> Append field 999 and decode
             </button>
             @if (_forwardResult is not null)
             {
-                <div class="api-call mt-2">@_forwardResult</div>
+                <div class="bb-log bd-out">@_forwardResult</div>
             }
-            <CodeBlock Class="mt-2" ShowHeader="false" Code="@ForwardSnippet" />
+            <CodeBlock Code="@ForwardSnippet" />
         </Panel>
 
-        <div class="flex-col gap-lg">
+        <div class="bb-flex">
             <Panel Title="A newer reader meets an older writer" IconName="info">
-                <p class="small mb-0">
+                <p>
                     The reverse case needs no machinery: a field that is absent leaves its local
                     variable at its default, so a property added later reads back as
                     <code>null</code>, <code>0</code> or an empty collection. Adding a property is
@@ -224,42 +224,42 @@
             </Panel>
 
             <Panel Title="Truncated input is rejected" IconName="alert">
-                <p class="small mb-2">
+                <p>
                     Skipping unknown fields is not the same as tolerating damage. A length prefix that
                     overruns the buffer throws.
                 </p>
-                <button class="btn btn-sm btn-block" @onclick="RunTruncated">
+                <button type="button" class="btn btn-secondary" @onclick="RunTruncated">
                     <Icon Name="play" /> Decode a truncated buffer
                 </button>
                 @if (_truncatedResult is not null)
                 {
-                    <div class="api-call mt-2">@_truncatedResult</div>
+                    <div class="bb-log bd-out">@_truncatedResult</div>
                 }
             </Panel>
         </div>
     </div>
 </Section>
 
-<Section Title="Keys and explicit numbering" IconName="key"
+<Section Title="Keys and explicit numbering"
          Lead="Keys are serialized separately from rows - the log needs a key on its own to record a delete.">
-    <div class="grid grid-2">
+    <div class="bb-flex">
         <Panel Title="Setting - [BlazeDbField(1)], [BlazeDbField(2)], [BlazeDbField(3)]" IconName="file" Flush="true">
             <Actions>
-                <span class="panel-sub mono">@_settingBytes.Length bytes</span>
+                <span class="bd-panel-sub">@_settingBytes.Length bytes</span>
             </Actions>
             <ChildContent>
-                <div class="hex">
+                <div class="bd-hex">
                     @foreach (var line in _settingHex)
                     {
-                        <div class="hex-row">
-                            <span class="hex-off">@line.Offset</span>
-                            <span class="hex-bytes">@line.Bytes</span>
-                            <span class="hex-ascii">@line.Ascii</span>
+                        <div class="bd-hex-row">
+                            <span class="bd-hex-off">@line.Offset</span>
+                            <span class="bd-hex-bytes">@line.Bytes</span>
+                            <span class="bd-hex-ascii">@line.Ascii</span>
                         </div>
                     }
                 </div>
-                <div class="panel-body" style="border-top:1px solid var(--border)">
-                    <p class="small mb-0">
+                <div class="bd-panel-pad bd-panel-foot">
+                    <p>
                         The two strings are visible in the ASCII column because UTF-8 text is stored
                         verbatim. Note what is <em>not</em> there: no <code>"Name"</code>, no
                         <code>"Value"</code>, no type information.
@@ -268,25 +268,25 @@
             </ChildContent>
         </Panel>
 
-        <div class="flex-col gap-lg">
+        <div class="bb-flex">
             <Panel Title="Key round trip" IconName="refresh">
-                <CodeBlock ShowHeader="false" Code="@KeySnippet" />
-                <dl class="kv mt-2">
+                <CodeBlock Code="@KeySnippet" />
+                <dl class="bb-params">
                     <dt>Guid key</dt>
                     <dd>@_keyBytes bytes</dd>
                     <dt>Round-tripped</dt>
-                    <dd class="@(_keyMatched ? "ok-text" : "err-text")">@(_keyMatched ? "identical" : "mismatch")</dd>
+                    <dd class="@(_keyMatched ? "bd-ok" : "bd-err")">@(_keyMatched ? "identical" : "mismatch")</dd>
                     <dt>string key</dt>
                     <dd>@_stringKeyBytes bytes for "todos.sort"</dd>
                 </dl>
             </Panel>
 
             <Panel Title="The primitives" IconName="code">
-                <p class="small mb-2">
+                <p>
                     <code>BlazeDbBufferWriter</code> and <code>BlazeDbBufferReader</code> are public, so a hand-written
                     descriptor has exactly the same tools the generator uses.
                 </p>
-                <CodeBlock ShowHeader="false" Code="@PrimitivesSnippet" />
+                <CodeBlock Code="@PrimitivesSnippet" />
             </Panel>
         </div>
     </div>

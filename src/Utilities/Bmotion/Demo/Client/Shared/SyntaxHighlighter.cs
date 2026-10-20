@@ -7,7 +7,8 @@ namespace Bit.Bmotion.Demo.Client.Shared;
 /// Produces HTML with <c>&lt;span class="tok-*"&gt;</c> token wrappers (already HTML-encoded)
 /// and wraps the lines that belong to a Bmotion component tag (<c>&lt;Bmotion&gt;</c>,
 /// <c>&lt;BmotionAnimatePresence&gt;</c>, <c>&lt;BmotionConfig&gt;</c>) in a <c>hl-line</c> span so they
-/// stand out among the surrounding markup.
+/// stand out among the surrounding markup. The output goes inside the site kit's <c>pre.bb-code</c>
+/// (see CodeSnippet.razor); the token colours are in wwwroot/demo.css.
 /// It is intentionally pragmatic - it covers the constructs used by the demo snippets rather
 /// than being a fully spec-compliant Razor lexer.
 /// </summary>
@@ -55,15 +56,15 @@ public static class SyntaxHighlighter
             for (int k = 0; k < lines.Count; k++)
             {
                 var ln = lines[k];
-                // Each line is rendered as its own block-level span. Empty lines get a
-                // zero-width space so they keep their height. Newlines are intentionally
-                // NOT emitted: the block layout provides the line breaks, and a literal
-                // '\n' next to a display:block span would render as an extra blank line.
-                var cls = ln.Hl ? "code-line hl-line" : "code-line";
-                outSb.Append("<span class=\"").Append(cls).Append("\">");
-                if (ln.Sb.Length == 0) outSb.Append("\u200b");
+                // The lines are joined with real newlines: they are what the <pre> breaks on, and
+                // what the copy button site.js hangs on every pre.bb-code reads back out of the
+                // element's text, so a copied snippet keeps its lines. A highlighted line is an
+                // inline-block wrapper (.hl-line in demo.css) rather than a block, so the newline
+                // after it ends its line instead of adding a blank one. An empty line has nothing to
+                // highlight and is left bare.
+                if (k > 0) outSb.Append('\n');
+                if (ln.Hl && ln.Sb.Length > 0) outSb.Append("<span class=\"hl-line\">").Append(ln.Sb).Append("</span>");
                 else outSb.Append(ln.Sb);
-                outSb.Append("</span>");
             }
             return outSb.ToString();
         }

@@ -2,11 +2,11 @@
 @implements IDisposable
 @inject DemoDirectory Directory
 
-<PageTitle>Validation modes</PageTitle>
+<PageTitle>Validation modes · Borm</PageTitle>
 
-<div class="demo-intro">
+<div class="bb-intro">
     <h1>Validation modes, summary &amp; reset</h1>
-    <p>
+    <p class="bb-subtitle">
         Choose <em>when</em> a field revalidates, independently for before and after the first submit —
         the same <code>mode</code>/<code>reValidateMode</code> split React Hook Form popularised. The
         summary below lists every error in schema order and links to the control that needs fixing.
@@ -16,9 +16,11 @@
     </p>
 </div>
 
-<div class="demo-card">
-    <div class="demo-toolbar">
-        <label>
+<div class="bb-demo">
+    <div class="bb-demo-bar"><span class="bb-demo-label">Live form</span></div>
+
+    <div class="bb-fields">
+        <label class="bb-field">
             Before submit
             <select @onchange="e => SetTrigger(before: true, e)">
                 @foreach (var t in Triggers)
@@ -27,7 +29,7 @@
                 }
             </select>
         </label>
-        <label>
+        <label class="bb-field">
             After submit
             <select @onchange="e => SetTrigger(before: false, e)">
                 @foreach (var t in Triggers)
@@ -36,7 +38,7 @@
                 }
             </select>
         </label>
-        <label class="demo-toolbar__check">
+        <label class="bb-check">
             <input type="checkbox" checked="@_readOnly" @onchange="ToggleReadOnly" /> Read-only (review mode)
         </label>
     </div>
@@ -47,33 +49,26 @@
               ShowResetButton="true"
               OnValidSubmit="HandleSubmit"
               SubmitText="Create account" />
-</div>
 
-<p class="demo-status">
-    dirty: <strong>@_state.IsFormDirty</strong> ·
-    submitted: <strong>@_state.SubmitCount</strong> time(s) ·
-    saved: <strong>@_state.IsSubmitSuccessful</strong> ·
-    errors: <strong>@_state.AllMessages.Count()</strong> ·
-    @* Per field, not per form: a lookup on one box should not declare the whole form busy. *@
-    checking username: <strong>@(_state.IsValidatingField("Username") ? "yes — remote lookup in flight" : "no")</strong>
-</p>
+    <p class="demo-status">
+        dirty: <strong>@_state.IsFormDirty</strong> ·
+        submitted: <strong>@_state.SubmitCount</strong> time(s) ·
+        saved: <strong>@_state.IsSubmitSuccessful</strong> ·
+        errors: <strong>@_state.AllMessages.Count()</strong> ·
+        @* Per field, not per form: a lookup on one box should not declare the whole form busy. *@
+        checking username: <strong>@(_state.IsValidatingField("Username") ? "yes — remote lookup in flight" : "no")</strong>
+    </p>
+</div>
 
 @if (_submitted)
 {
-    <div class="demo-result"><strong>Account created ✓</strong> <pre>@_json</pre></div>
+    <div class="bb-note bb-note-success demo-result"><strong>Account created ✓</strong><pre>@_json</pre></div>
 }
 
-<details class="demo-source">
-    <summary>View source</summary>
-    <pre><code>@Source</code></pre>
+<details class="bb-source demo-source">
+    <summary class="btn btn-secondary">View source</summary>
+    <pre class="bb-code"><code>@Source</code></pre>
 </details>
-
-<style>
-    .demo-toolbar { display: flex; gap: 1.25rem; flex-wrap: wrap; align-items: center; margin-bottom: 1.5rem; font-size: .85rem; color: #475569; }
-    .demo-toolbar select { margin-left: .4rem; padding: .25rem .4rem; border: 1px solid #cbd5e1; border-radius: 6px; }
-    .demo-toolbar__check { display: inline-flex; align-items: center; gap: .4rem; }
-    .demo-status { max-width: 760px; margin-top: 1rem; font-size: .85rem; color: #475569; }
-</style>
 
 @code {
     private const string Source =

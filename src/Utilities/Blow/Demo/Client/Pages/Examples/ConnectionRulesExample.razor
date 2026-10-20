@@ -1,13 +1,13 @@
 ﻿@page "/examples/connection-rules"
 
-<PageTitle>Connection Rules - bit Blow</PageTitle>
+<PageTitle>Connection Rules · Blow</PageTitle>
 
 <ExampleScaffold Title="Connection Rules"
                  Summary="The canvas rejects connections that would duplicate an existing edge, touch a node that opted out of connecting, or loop a node back to itself - unless you allow it. Toggle the rules and watch which handles light up green while you drag.">
     <Toolbar>
         <label><input type="checkbox" checked="@_preventDuplicates" @onchange="@(e => _preventDuplicates = (bool)e.Value!)" /> Prevent duplicate edges</label>
         <label><input type="checkbox" checked="@_allowSelf" @onchange="@(e => _allowSelf = (bool)e.Value!)" /> Allow self-connections</label>
-        <button class="btn btn-sm btn-primary" @onclick="Reset">Reset edges</button>
+        <button class="btn btn-primary" @onclick="Reset">Reset edges</button>
     </Toolbar>
     <ChildContent>
         <BlowCanvas @ref="_flow"
@@ -48,7 +48,7 @@
 
 <style>
     .rule-node { padding: 4px 2px; }
-    .rule-flag { margin-top: 4px; font-size: 10px; color: #b91c1c; }
+    .rule-flag { margin-top: 4px; font-size: 10px; color: #ef4444; }
     .rule-log { min-width: 150px; padding: 8px 10px; font-size: 12px; background: var(--bit-blow-surface); color: var(--bit-blow-text); border: 1px solid var(--bit-blow-border); border-radius: 6px; }
 </style>
 

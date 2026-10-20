@@ -95,7 +95,8 @@ fonts. Every page drives the real engine in your browser rather than describing 
 
 | Page | What it demonstrates |
 | --- | --- |
-| `/` | Architecture, benchmarks and a quick start, with live stats from the demo database. |
+| `/` | The landing page: what the engine is, a live insert into the tab's database, and how it compares with SQLite. |
+| `/getting-started` | Install, declare a table, open a database once per tab, and how a read and a write travel. |
 | `/todos` | A working CRUD app: index-backed filters, sorting, paging and persisted preferences. |
 | `/schema` | Attributes, the generated descriptor inspected at runtime, supported types, diagnostics. |
 | `/indexes` | Hash lookups, ordered ranges, `BlazeDbBound<T>`, and indexed versus scanned counting. |

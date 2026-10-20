@@ -1,30 +1,329 @@
 ﻿@page "/"
+@layout MainLayout
 
-<PageTitle>bit Borm</PageTitle>
+<PageTitle>Borm - schema-driven forms for Blazor</PageTitle>
 
-<div class="demo-intro">
-    <h1>Borm</h1>
-    <p>A schema-driven form engine for Blazor. Define a form once — from a C# type or JSON Schema — and Borm renders it, validates it, and manages its state.</p>
+@* The landing page: hero → proof strip → capability grid → code walkthrough → comparison with a
+   hand-written EditForm → persona tiles → FAQ → final call to action. Everything else on the site is
+   a documentation page under DocsLayout. The hero's sample is a live form rather than a picture of
+   one: the schema in the window is the one rendered under it. *@
+
+<div class="bb-landing">
+
+    @* ============================== Hero ============================== *@
+
+    <section class="bb-hero">
+        <div class="bb-hero-copy">
+            <span class="bb-hero-eyebrow">
+                <span class="bb-dot bb-dot-success"></span>
+                Open source · MIT · net8.0 / net9.0 / net10.0
+            </span>
+            <h1>Blazor forms, <br /><span class="bb-hero-accent">described once.</span></h1>
+            <p class="bb-hero-sub">
+                Describe a form from a C# type, with a fluent builder or as a JSON Schema document - and
+                Borm renders it, validates it and keeps its state: conditions, computed values, cascading
+                options, wizards and repeaters included. Every decision is made in C#, and there is no
+                JavaScript at all.
+            </p>
+            <pre class="bb-code bb-hero-install">dotnet add package Bit.Borm</pre>
+            <div class="bb-hero-actions">
+                <a href="getting-started" class="btn btn-primary bb-btn-lg">Get started →</a>
+                <a href="quickstart" class="btn btn-secondary bb-btn-lg">Live demos</a>
+                <a class="btn btn-secondary bb-btn-lg" href="@SiteInfo.ProjectUrl" target="_blank" rel="noopener noreferrer">GitHub ↗</a>
+            </div>
+        </div>
+
+        @* The sample, framed as a window: the schema on top, and the form it renders underneath -
+           live, so the first thing a visitor can do here is tick the box and watch a field appear. *@
+        <div class="bb-hero-code">
+            <div class="bb-browser">
+                <div class="bb-browser-bar">
+                    <span class="bb-browser-dots" aria-hidden="true"><i></i><i></i><i></i></span>
+                    <span class="bb-browser-url">ContactUs.razor</span>
+                </div>
+                <pre class="bb-code">BormBuilder.For&lt;<span class="k">Contact</span>&gt;()
+    .Title(<span class="s">"Contact us"</span>)
+    .Field(x =&gt; x.Name, f =&gt; f.Required().Placeholder(<span class="s">"Your name"</span>))
+    .Field(x =&gt; x.Email, f =&gt; f.AsEmail().Required().Trim())
+    .Field(x =&gt; x.IsBusiness, f =&gt; f.Label(<span class="s">"I'm asking for a company"</span>))
+    .Field(x =&gt; x.Company, f =&gt; f
+        .VisibleWhen(nameof(Contact.IsBusiness), BormConditionOperator.IsTrue))
+    .Build();</pre>
+                <div class="home-hero-live">
+                    <BormView Definition="_hero" Model="_contact" OnValidSubmit="Send" SubmitText="Send" IdPrefix="hero_" />
+                    @if (_sent)
+                    {
+                        <p class="home-hero-sent" role="status">Valid ✓ - <code>OnValidSubmit</code> has a populated <code>Contact</code>.</p>
+                    }
+                </div>
+            </div>
+        </div>
+    </section>
+
+    @* ============================== Proof strip ============================== *@
+
+    <section class="bb-proof">
+        <div><strong>Three ways in</strong><span>a C# type, a fluent builder or a JSON Schema document</span></div>
+        <div><strong>Decided in C#</strong><span>rules, conditions and computed values - no JavaScript</span></div>
+        <div><strong>Accessible by default</strong><span>real labels, <code>aria-*</code>, focus that goes where the error is</span></div>
+        <div><strong>Every hosting model</strong><span>WebAssembly, Server, Web App and Hybrid</span></div>
+    </section>
+
+    @* ============================== Capability grid ============================== *@
+
+    <section class="bb-section">
+        <p class="bb-overline">Capabilities</p>
+        <h2>Everything a form needs once it stops being a demo</h2>
+        <p class="bb-section-sub">
+            The schema is plain C# - a <code>BormDefinition</code> you can generate, build, import, check, tailor
+            and export with no UI at all - and the state, <code>BormState</code>, runs the rules and walks the
+            wizard without a browser. The components only draw what it decided.
+        </p>
+        <div class="bb-grid">
+            <section class="bb-card">
+                <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Three ways to define a form</h3>
+                <p class="bb-card-desc">
+                    Generate one from a model and its DataAnnotations, build one with typed expressions
+                    (<code>x =&gt; x.Address.City</code>), or import a JSON Schema document - and export any of them back out.
+                </p>
+                <a href="quickstart" class="btn btn-outline">From a C# type →</a>
+            </section>
+            <section class="bb-card">
+                <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Validation that runs when you say</h3>
+                <p class="bb-card-desc">
+                    Built-in, custom, cross-field and async rules, <code>IValidatableObject</code> and FluentValidation -
+                    on submit, blur or change, separately before and after the first submit.
+                </p>
+                <a href="validation" class="btn btn-outline">Validation modes →</a>
+            </section>
+            <section class="bb-card">
+                <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Conditional fields</h3>
+                <p class="bb-card-desc">
+                    Show, hide, disable, lock or require a field from other answers - per row inside a repeater - and
+                    clear what the user abandoned, so it never reaches your model.
+                </p>
+                <a href="builder" class="btn btn-outline">Fluent builder + conditions →</a>
+            </section>
+            <section class="bb-card">
+                <h3 class="bb-card-title"><span class="bb-dot bb-dot-danger"></span> Wizards and repeaters</h3>
+                <p class="bb-card-desc">
+                    Steps that validate before advancing and a clickable stepper; rows that add, remove and reorder,
+                    with errors and the caret that follow their row.
+                </p>
+                <a href="wizard" class="btn btn-outline">Multi-step wizard →</a>
+            </section>
+            <section class="bb-card">
+                <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Data that follows the form</h3>
+                <p class="bb-card-desc">
+                    Computed values, options loaded on demand and reloaded when what they depend on changes, change
+                    handlers, dirty tracking, snapshots and resets onto a stored record.
+                </p>
+                <a href="cascading" class="btn btn-outline">Async &amp; cascading options →</a>
+            </section>
+            <section class="bb-card">
+                <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Yours to restyle and extend</h3>
+                <p class="bb-card-desc">
+                    Every colour is a <code>--bit-borm-*</code> custom property - this site re-tints them to its own
+                    theme - every string goes through <code>IBormMessageProvider</code>, and any control can be replaced.
+                </p>
+                <a href="custom-renderer" class="btn btn-outline">Custom renderer →</a>
+            </section>
+        </div>
+    </section>
+
+    @* ============================== Code walkthrough ============================== *@
+
+    <section class="bb-section">
+        <p class="bb-overline">In practice</p>
+        <h2>See it in code</h2>
+        <div class="bb-walkthrough">
+            <div class="bb-walkthrough-row">
+                <div class="bb-walkthrough-copy">
+                    <span class="bb-step">01</span>
+                    <h3>Describe the form</h3>
+                    <p>
+                        A field is configured where it is named, with the property's own type: rename the property
+                        and the form follows. Conditions, rules and layout live in the same place.
+                    </p>
+                    <a href="builder">Fluent builder →</a>
+                </div>
+                <pre class="bb-code"><span class="k">var</span> schema = BormBuilder.For&lt;AccountSignup&gt;()
+    .Field(x =&gt; x.FullName, f =&gt; f.Required().MinLength(2))
+    .Field(x =&gt; x.AccountKind, f =&gt; f.AsRadio())
+    .Field(x =&gt; x.CompanyName, f =&gt; f
+        .Required(<span class="s">"Company name is required for business accounts."</span>)
+        .VisibleWhen(<span class="s">"AccountKind"</span>, BormConditionOperator.Equals, <span class="s">"Business"</span>))
+    .Build();</pre>
+            </div>
+            <div class="bb-walkthrough-row">
+                <div class="bb-walkthrough-copy">
+                    <span class="bb-step">02</span>
+                    <h3>Render it</h3>
+                    <p>
+                        <code>BormView</code> draws every field, the error summary and the buttons, and calls you back
+                        only once the submit is valid. Want the layout yourself? Place fields one at a time with
+                        <code>BormField</code>.
+                    </p>
+                    <a href="getting-started">Getting started →</a>
+                </div>
+                <pre class="bb-code">&lt;<span class="k">BormView</span> Definition=<span class="s">"schema"</span> Model=<span class="s">"_model"</span>
+          ShowErrorSummary=<span class="s">"true"</span> OnValidSubmit=<span class="s">"Save"</span> /&gt;</pre>
+            </div>
+            <div class="bb-walkthrough-row">
+                <div class="bb-walkthrough-copy">
+                    <span class="bb-step">03</span>
+                    <h3>Hold the state</h3>
+                    <p>
+                        Stash a draft and put it back as the new baseline, check one answer without judging the whole
+                        form, read everything known about a field - <code>BormState</code> is the form, minus the drawing.
+                    </p>
+                    <a href="state-api">Editing an existing record →</a>
+                </div>
+                <pre class="bb-code"><span class="k">var</span> state = <span class="k">new</span> BormState(schema, <span class="k">new</span> BormModelDataAccessor(model));
+
+<span class="k">var</span> draft = state.Snapshot();                  <span class="c">// every path the schema binds, with its value</span>
+state.Reset(draft);                            <span class="c">// written back, and made the new baseline</span>
+<span class="k">await</span> state.ValidateFieldAsync(<span class="s">"Customer"</span>);    <span class="c">// one answer, not the whole form</span>
+<span class="k">var</span> field = state.GetFieldState(<span class="s">"Customer"</span>);   <span class="c">// IsDirty, IsTouched, Error, Messages</span></pre>
+            </div>
+        </div>
+    </section>
+
+    @* ============================== Comparison ============================== *@
+
+    <section class="bb-section">
+        <p class="bb-overline">Comparison</p>
+        <h2>Why not write the EditForm by hand?</h2>
+        <p class="bb-section-sub">
+            Blazor's <code>EditForm</code> gives you validation plumbing and leaves every field, every condition and
+            every step to markup you write and keep in step. Borm moves all of that into a schema.
+        </p>
+        <div class="bb-scroll" tabindex="0" role="region" aria-label="A hand-written EditForm compared with Borm">
+            <table class="bb-table bb-compare">
+                <thead>
+                    <tr><th>Concern</th><th>Hand-written EditForm</th><th>Borm</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td>Field markup</td><td>A label, an input and a message written per field</td><td>Rendered from the schema, labels and <code>aria-*</code> included</td></tr>
+                    <tr><td>Conditional fields</td><td><code>@@if</code> blocks, and clearing what was hidden by hand</td><td><code>VisibleWhen</code>, <code>RequiredWhen</code>, <code>ClearOnHide()</code></td></tr>
+                    <tr><td>Cross-field rules</td><td>Revalidating the other field yourself</td><td><code>RevalidateOn(...)</code>, and <code>[Compare]</code> wired automatically</td></tr>
+                    <tr><td>Wizards and repeaters</td><td>Built from scratch</td><td><code>Step(...)</code> and <code>Array(...)</code>, with focus management</td></tr>
+                    <tr><td>A schema from the server</td><td>Not supported</td><td>JSON Schema import and export</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    @* ============================== Persona CTAs ============================== *@
+
+    <section class="bb-section">
+        <p class="bb-overline">Where to start</p>
+        <h2>Choose your path</h2>
+        <div class="bb-grid">
+            <section class="bb-card">
+                <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> New to Borm?</h3>
+                <p class="bb-card-desc">Install, register, link the stylesheet - and render a validated form from an annotated model.</p>
+                <a href="getting-started" class="btn btn-primary">Getting started →</a>
+            </section>
+            <section class="bb-card">
+                <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Does the server own the schema?</h3>
+                <p class="bb-card-desc">Paste a JSON Schema document into the live editor and watch the form it becomes - then export it back.</p>
+                <a href="json-schema" class="btn btn-outline">Open the JSON Schema editor →</a>
+            </section>
+            <section class="bb-card">
+                <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Building with an AI agent?</h3>
+                <p class="bb-card-desc">This site is an MCP server: point your agent at <code>/mcp</code> and it reads the shipped library instead of guessing.</p>
+                <a href="mcp-server" class="btn btn-outline">Try the MCP server →</a>
+            </section>
+        </div>
+    </section>
+
+    @* ============================== FAQ ============================== *@
+
+    <section class="bb-section">
+        <p class="bb-overline">Questions</p>
+        <h2>Frequently asked</h2>
+        <div class="bb-faq">
+            <details>
+                <summary>Is there any JavaScript?</summary>
+                <p>
+                    None. Every decision - validation, conditions, computed values, the wizard's position - is made
+                    in C#, and the renderers are plain HTML elements, so there is no script to ship or to load.
+                </p>
+            </details>
+            <details>
+                <summary>Which render modes does it work in?</summary>
+                <p>
+                    Any interactive one, on .NET 8, 9 and 10: WebAssembly, Server, Auto and Hybrid. A form prerenders
+                    as plain HTML and becomes interactive with the page; in static server rendering it cannot respond to
+                    input, so give its page an interactive render mode.
+                </p>
+            </details>
+            <details>
+                <summary>Can I keep my DataAnnotations and FluentValidation validators?</summary>
+                <p>
+                    Yes. The generator turns attributes into field rules, <code>UseDataAnnotations()</code> runs a
+                    model's <code>IValidatableObject</code>, and <code>UseFluentValidation()</code> from
+                    <code>Bit.Borm.FluentValidation</code> runs an <code>AbstractValidator&lt;T&gt;</code> - and the two compose.
+                </p>
+            </details>
+            <details>
+                <summary>Can I lay the form out myself?</summary>
+                <p>
+                    Yes - <code>Columns</code> and <code>ColumnSpan</code> for a grid, named groups for fieldsets, and
+                    <code>BormField</code> to place one field at a time in markup of your own, keeping its label, rules and
+                    accessibility wiring. Any control can be replaced through the renderer registry.
+                </p>
+            </details>
+            <details>
+                <summary>Is it trimming or AOT safe?</summary>
+                <p>
+                    No. Generating a schema reads a model's properties by reflection, so <code>Bit.Borm</code> is not
+                    marked as trimmable: a trimmed app keeps it whole, and the models it binds to are kept by the app that
+                    declares them.
+                </p>
+            </details>
+        </div>
+    </section>
+
+    @* ============================== Final CTA ============================== *@
+
+    <section class="bb-final-cta">
+        <h2>Describe it once</h2>
+        <p class="bb-section-sub">One package, one service and one stylesheet - and a model becomes a form.</p>
+        <pre class="bb-code bb-hero-install">dotnet add package Bit.Borm</pre>
+        <div class="bb-hero-actions">
+            <a href="getting-started" class="btn btn-primary bb-btn-lg">Get started →</a>
+            <a href="quickstart" class="btn btn-secondary bb-btn-lg">Browse the demos</a>
+        </div>
+    </section>
 </div>
 
-<div class="demo-card">
-    <h2 style="margin-top:0">What's in the box</h2>
-    <ul style="line-height:1.9; color:#334155">
-        <li><strong>Schema from C# types</strong> — zero-config generation via reflection + DataAnnotations.</li>
-        <li><strong>Schema from JSON Schema</strong> — <code>$ref</code>, <code>allOf</code>, <code>if</code>/<code>then</code> and <code>dependentRequired</code> included; export any form back to JSON, conditions and steps intact.</li>
-        <li><strong>Fluent builder</strong> — type-safe, expression-based field configuration, including nested members, object groups and arrays.</li>
-        <li><strong>Validation</strong> — built-in rules, custom sync/async rules, cross-field and form-level rules, <code>IValidatableObject</code>, and FluentValidation through the <code>Bit.Borm.FluentValidation</code> package.</li>
-        <li><strong>Validation modes</strong> — decide when fields revalidate, before and after the first submit.</li>
-        <li><strong>Conditional behaviour</strong> — show, hide, disable or conditionally require fields, and clear hidden values.</li>
-        <li><strong>Async &amp; cascading options</strong> — load choices from a service and reload them when a dependency changes.</li>
-        <li><strong>Multi-step wizards</strong> — per-step validation, conditional steps and a clickable stepper.</li>
-        <li><strong>Array / repeater fields</strong> — add, insert, remove and reorder, with errors that follow their item.</li>
-        <li><strong>File upload</strong> — <code>IBrowserFile</code> binding with size and type rules.</li>
-        <li><strong>Accessible by default</strong> — labelled controls, <code>aria-*</code> wiring, and an error summary that takes focus and links to each field.</li>
-        <li><strong>Pluggable renderers</strong> — dependency-free HTML by default; register your own widgets.</li>
-    </ul>
-    <p style="color:#475569">
-        Install it with <code>dotnet add package Bit.Borm</code>, call <code>builder.Services.AddBorm()</code> and link
-        <code>_content/Bit.Borm/bit-borm.css</code> - then pick a demo from the sidebar to see each capability in action.
-    </p>
-</div>
+@code {
+    private readonly Contact _contact = new();
+    private bool _sent;
+
+    private readonly BormDefinition _hero = BormBuilder.For<Contact>()
+        .Title("Contact us")
+        .Field(x => x.Name, f => f.Required().Placeholder("Your name"))
+        .Field(x => x.Email, f => f.AsEmail().Required().Trim())
+        .Field(x => x.IsBusiness, f => f.Label("I'm asking for a company"))
+        .Field(x => x.Company, f => f
+            .VisibleWhen(nameof(Contact.IsBusiness), BormConditionOperator.IsTrue))
+        .Build();
+
+    private Task Send(BormState state)
+    {
+        _sent = true;
+        return Task.CompletedTask;
+    }
+
+    // The hero's model: the README's opening example.
+    public sealed class Contact
+    {
+        public string Name { get; set; } = "";
+        public string Email { get; set; } = "";
+        public bool IsBusiness { get; set; }
+        public string? Company { get; set; }
+    }
+}

@@ -1,6 +1,6 @@
 ﻿@page "/examples/stress"
 
-<PageTitle>Stress - bit Blow</PageTitle>
+<PageTitle>Stress · Blow</PageTitle>
 
 <ExampleScaffold Title="Stress"
                  Summary="A large grid of nodes and edges. 'Only render visible elements' culls off-screen items so panning and zooming stay responsive.">
@@ -13,7 +13,7 @@
             </select>
         </label>
         <label><input type="checkbox" checked="@_cull" @onchange="e => _cull = (bool)e.Value!" /> only render visible</label>
-        <span class="text-muted">@_nodes.Count nodes, @_edges.Count edges</span>
+        <span class="bb-muted">@_nodes.Count nodes, @_edges.Count edges</span>
     </Toolbar>
     <ChildContent>
         <BlowCanvas Nodes="_nodes" Edges="_edges" FitViewOnInit="true"

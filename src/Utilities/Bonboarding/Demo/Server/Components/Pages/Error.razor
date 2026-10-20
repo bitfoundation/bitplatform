@@ -1,28 +1,27 @@
 ﻿@page "/Error"
+@layout MainLayout
 @using System.Diagnostics
 
-<PageTitle>Error - Bit.Bonboarding</PageTitle>
+<PageTitle>Error · Bonboarding</PageTitle>
 
-<div class="error-page">
-    <span class="error-code" aria-hidden="true">500</span>
-
-    <h1>An error occurred while processing your request</h1>
+<div class="bb-error">
+    <h1>500</h1>
+    <p>An error occurred while processing your request.</p>
 
     @if (ShowRequestId)
     {
-        <p>Request ID: <code>@RequestId</code></p>
+        <p class="bb-error-hint">Request ID: <code>@RequestId</code></p>
     }
 
-    <p>
-        Swapping to the <strong>Development</strong> environment will display more detailed information
-        about the error that occurred. It should never be enabled for a deployed application: it can show
-        sensitive information from exceptions to end users. For local debugging, set the
-        <strong>ASPNETCORE_ENVIRONMENT</strong> environment variable to <strong>Development</strong> and
-        restart the app.
+    <p class="bb-error-hint">
+        Swapping to the <strong>Development</strong> environment will display more detailed information about the
+        error that occurred. It should never be enabled for a deployed application: it can show sensitive information
+        from exceptions to end users. For local debugging, set the <strong>ASPNETCORE_ENVIRONMENT</strong> environment
+        variable to <strong>Development</strong> and restart the app.
     </p>
 
-    <div class="hero-actions">
-        <a class="btn btn-primary btn-lg" href="/">Back to home</a>
+    <div class="bb-try bb-error-actions">
+        <a href="" class="btn btn-primary">Go to the home page</a>
     </div>
 </div>
 

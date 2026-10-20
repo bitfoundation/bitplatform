@@ -1,7 +1,10 @@
-﻿<Router AppAssembly="typeof(Routes).Assembly" NotFoundPage="typeof(Pages.NotFoundPage)">
+﻿@* Every page but the landing page renders inside the docs shell (Layout/DocsLayout.razor); the landing
+   page and the not-found page opt out with @layout MainLayout. After a navigation the page's own H1
+   takes focus, so a screen reader starts reading at the new page. *@
+<Router AppAssembly="typeof(Routes).Assembly" NotFoundPage="typeof(Pages.NotFound)">
     <Found Context="routeData">
-        <RouteView RouteData="routeData" DefaultLayout="typeof(Layout.MainLayout)" />
-        <FocusOnNavigate RouteData="routeData" Selector="h1, h2" />
+        <RouteView RouteData="routeData" DefaultLayout="typeof(Layout.DocsLayout)" />
+        <FocusOnNavigate RouteData="routeData" Selector="h1" />
     </Found>
 </Router>
 
@@ -9,3 +12,7 @@
    the app is interactive: consent and the session flow both ways, and the WebAssembly pipeline gets
    its unload flush. Placed once, here, so every page has it; it renders nothing. *@
 <BelemetryInitializer />
+
+@* The site's consent banner, on every page (see Shared/ConsentBanner.razor). The demo is opt-in
+   (Consent.Default = None), so nothing leaves the browser until it is answered. *@
+<ConsentBanner />

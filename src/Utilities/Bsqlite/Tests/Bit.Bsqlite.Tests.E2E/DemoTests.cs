@@ -16,10 +16,17 @@ namespace Bit.Bsqlite.Tests.E2E;
 public sealed class DemoTests : DemoTest
 {
     /// <summary>
-    /// Every page in the sidebar, discovered from the sidebar itself so a new page is covered without a new
+    /// The documentation pages that open no database of this tab: they describe the setup, or the MCP server,
+    /// whose labs the server answers. Every other page in the docs panel runs against the database and opens
+    /// with the session bar.
+    /// </summary>
+    private static readonly string[] PagesWithoutADatabase = ["/getting-started", "/mcp-server"];
+
+    /// <summary>
+    /// Every page in the docs panel, discovered from the panel itself so a new page is covered without a new
     /// test: the server answers it prerendered, and in the browser - reached the way a reader reaches it, through
-    /// the sidebar, with the runtime and the database already up - it renders against the open database without
-    /// anything reaching the console.
+    /// the panel, with the runtime and the database already up - it renders against the open database without
+    /// anything reaching the console. The landing page last, through the header, with its live window open.
     /// </summary>
     [TestMethod]
     public async Task Every_page_prerenders_hydrates_and_opens_its_database_without_a_console_error()
@@ -30,13 +37,13 @@ public sealed class DemoTests : DemoTest
         await GotoInteractiveAsync(page, "/catalog");
         await WaitForSessionAsync(page);
 
-        var routes = await page.Locator("nav a.nav-link").EvaluateAllAsync<string[]>(
+        var routes = await page.Locator(".bb-docs-sidebar .bb-docs-section a").EvaluateAllAsync<string[]>(
             "links => [...new Set(links.map(a => a.getAttribute('href')).filter(h => h !== null && !/^[a-z]+:/i.test(h)))]");
 
-        Assert.IsGreaterThan(5, routes.Length, $"The sidebar lists {routes.Length} pages: {string.Join(", ", routes)}.");
+        Assert.IsGreaterThan(5, routes.Length, $"The docs panel lists {routes.Length} pages: {string.Join(", ", routes)}.");
 
         using var client = new HttpClient();
-        foreach (var route in routes)
+        foreach (var route in routes.Append("/"))
         {
             var path = "/" + route.TrimStart('/');
             using var response = await client.GetAsync(DemoUrl + path);
@@ -44,19 +51,26 @@ public sealed class DemoTests : DemoTest
             Assert.MatchesRegex(new Regex("<title>[^<]*Bsqlite[^<]*</title>"), await response.Content.ReadAsStringAsync(), $"{path} is not prerendered with a title of its own.");
         }
 
-        // The overview last: it runs full-bleed, without the sidebar or the session bar.
-        foreach (var route in routes.OrderBy(r => r.Trim('/').Length == 0))
+        foreach (var route in routes)
         {
-            await page.Locator($"nav a.nav-link[href='{route}']").First.ClickAsync();
+            await page.Locator($".bb-docs-sidebar a[href='{route}']").First.ClickAsync();
             await page.WaitForURLAsync(DemoUrl + "/" + route.TrimStart('/'));
 
-            if (route.Trim('/').Length > 0)
+            if (PagesWithoutADatabase.Contains(route) is false)
             {
                 await WaitForSessionAsync(page);
             }
 
-            await Assertions.Expect(page.Locator("main[data-interactive='true'] h1").First).ToBeVisibleAsync();
+            await Assertions.Expect(page.Locator(".page[data-interactive='true'] main h1").First).ToBeVisibleAsync();
+            await Assertions.Expect(page.Locator(".bb-docs-sidebar a.active")).ToHaveAttributeAsync("href", route);
         }
+
+        // The landing page is not in the docs panel; the header's Home link leads to it. Its hero window is a live
+        // query over this tab's database.
+        await page.Locator(".bb-nav a[href='/']").ClickAsync();
+        await page.WaitForURLAsync(DemoUrl + "/");
+        await Assertions.Expect(page.Locator(".page[data-interactive='true'] main h1").First).ToBeVisibleAsync();
+        await Assertions.Expect(page.Locator("[data-live='open'] .bq-hero-rows li").First).ToBeVisibleAsync(new() { Timeout = 60_000 });
 
         Assert.AreEqual(0, errors.Count, "Console errors:" + Environment.NewLine + string.Join(Environment.NewLine, errors));
     }
@@ -85,7 +99,8 @@ public sealed class DemoTests : DemoTest
 
         Assert.IsNotNull(response);
         Assert.AreEqual((int)HttpStatusCode.NotFound, response.Status);
-        await Assertions.Expect(page.Locator("h1")).ToHaveTextAsync("That page is not in this demo");
+        await Assertions.Expect(page.Locator(".bb-error-404 h1")).ToHaveTextAsync("404");
+        await Assertions.Expect(page.Locator(".bb-error-404")).ToContainTextAsync("That page is not in this demo");
     }
 
     /// <summary>
@@ -101,19 +116,19 @@ public sealed class DemoTests : DemoTest
 
         await GotoInteractiveAsync(page, "/catalog");
         var first = await WaitForSessionAsync(page);
-        var products = page.Locator("section.card:has(h2:text-is('Products')) tbody tr");
+        var products = page.Locator("table[data-rows='products'] tbody tr");
         await Assertions.Expect(products.First).ToBeVisibleAsync();
         var count = await products.CountAsync();
 
         var target = first == "indexeddb" ? "cache-storage" : "indexeddb";
-        await page.Locator("section.session-bar select").SelectOptionAsync(target);
-        await page.Locator("section.session-bar button", new PageLocatorOptions { HasText = "Move data" }).ClickAsync();
+        await page.Locator("section[data-session] select").SelectOptionAsync(target);
+        await page.Locator("section[data-session] button", new PageLocatorOptions { HasText = "Move data" }).ClickAsync();
 
         Assert.AreEqual(target, await WaitForSessionAsync(page, target));
         await Assertions.Expect(products).ToHaveCountAsync(count);
 
         await page.ReloadAsync();
-        await page.WaitForSelectorAsync("main[data-interactive='true']");
+        await page.WaitForSelectorAsync(".page[data-interactive='true']");
         Assert.AreEqual(target, await WaitForSessionAsync(page, target), "The reload did not reopen the database where it was moved to.");
         await Assertions.Expect(products).ToHaveCountAsync(count);
 
@@ -136,10 +151,11 @@ public sealed class DemoTests : DemoTest
         await GotoInteractiveAsync(page, "/catalog");
         await WaitForSessionAsync(page);
 
-        var products = page.Locator("section.card:has(h2:text-is('Products')) tbody tr");
+        var products = page.Locator("table[data-rows='products'] tbody tr");
         await Assertions.Expect(products).ToHaveCountAsync(serverSkus.Length);
 
-        var browserSkus = (await products.Locator("td.mono").AllTextContentsAsync()).Select(s => s.Trim()).Order().ToArray();
+        // The SKU is the grid's first column.
+        var browserSkus = (await products.Locator("td:first-child").AllTextContentsAsync()).Select(s => s.Trim()).Order().ToArray();
         CollectionAssert.AreEqual(serverSkus, browserSkus);
     }
 }

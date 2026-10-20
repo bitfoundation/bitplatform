@@ -1,0 +1,147 @@
+﻿@page "/getting-started"
+@using System.ComponentModel.DataAnnotations
+
+<PageTitle>Getting started · Borm</PageTitle>
+
+<div class="bb-intro">
+    <h1>Getting started</h1>
+    <p class="bb-subtitle">
+        One package, one service registration and one stylesheet - then an annotated model becomes a
+        working form: labelled, validated, accessible, and handed back to you populated once it is valid.
+    </p>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Install</h3>
+    <p class="bb-card-desc">
+        <code>Bit.Borm</code> is the whole engine - the schema, the builders, JSON Schema import and export,
+        the state, the rules, the components and the stylesheet - with no dependency beyond Blazor itself. It
+        targets .NET 8, 9 and 10. FluentValidation support is a separate, optional package.
+    </p>
+    <pre class="bb-code">dotnet add package Bit.Borm
+<span class="c"># only if your models already have FluentValidation validators</span>
+dotnet add package Bit.Borm.FluentValidation</pre>
+    <p class="bb-card-desc">Every public type lives in one namespace, prefixed <code>Borm</code>, so one line in <code>_Imports.razor</code> brings them all into scope:</p>
+    <pre class="bb-code"><span class="k">@@using</span> Bit.Borm</pre>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Register the services</h3>
+    <p class="bb-card-desc">
+        <code>AddBorm()</code> registers the field renderer registry - the map from a field type to the
+        component that draws it. Register it in every container that renders a form: in a Blazor Web App that
+        is both the server and the client project, because every page is prerendered on the server first.
+    </p>
+    <pre class="bb-code"><span class="c">// Program.cs - in every project that renders a form</span>
+builder.Services.AddBorm();</pre>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Link the stylesheet</h3>
+    <p class="bb-card-desc">
+        It is not injected for you. Without it a form still works, as plain HTML; the stylesheet adds the
+        theme, the grid and the error colours. There is no script to add - Borm has no JavaScript at all.
+    </p>
+    <pre class="bb-code">&lt;<span class="k">link</span> rel=<span class="s">"stylesheet"</span> href=<span class="s">"_content/Bit.Borm/bit-borm.css"</span> /&gt;</pre>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> A first form</h3>
+    <p class="bb-card-desc">
+        Annotate a plain model and let the schema generator do the work. <code>BormView</code> builds a
+        <code>BormState</code> for the definition and the model, renders every field, and calls
+        <code>OnValidSubmit</code> once the submit passes validation.
+    </p>
+    <pre class="bb-code"><span class="k">public class</span> Contact
+{
+    [Required, MaxLength(80)]
+    <span class="k">public string</span> Name { <span class="k">get</span>; <span class="k">set</span>; } = <span class="s">""</span>;
+
+    [Required, EmailAddress]
+    <span class="k">public string</span> Email { <span class="k">get</span>; <span class="k">set</span>; } = <span class="s">""</span>;
+
+    [Range(18, 120)]
+    <span class="k">public int</span> Age { <span class="k">get</span>; <span class="k">set</span>; }
+}</pre>
+    <pre class="bb-code">&lt;<span class="k">BormView</span> Definition=<span class="s">"_definition"</span>
+          Model=<span class="s">"_model"</span>
+          OnValidSubmit=<span class="s">"HandleValidSubmit"</span> /&gt;
+
+<span class="k">@@code</span> {
+    <span class="k">private readonly</span> BormDefinition _definition = BormSchemaGenerator.Generate&lt;Contact&gt;();
+    <span class="k">private readonly</span> Contact _model = <span class="k">new</span>();
+
+    <span class="k">private</span> Task HandleValidSubmit(BormState state)
+    {
+        <span class="c">// _model is populated and valid here</span>
+        <span class="k">return</span> Task.CompletedTask;
+    }
+}</pre>
+
+    <div class="bb-demo">
+        <div class="bb-demo-bar"><span class="bb-demo-label">Live</span></div>
+        <BormView Definition="_definition" Model="_model" OnValidSubmit="HandleValidSubmit" />
+        @if (_submitted is not null)
+        {
+            <div class="bb-note bb-note-success demo-result"><strong>Valid ✓</strong><pre>@_submitted</pre></div>
+        }
+    </div>
+
+    <div class="bb-note">
+        Supply a <code>State</code> instead of a <code>Definition</code> when the page wants to hold the state
+        itself - to wire up a validator, read its dirty fields or drive it from code. Every DOM id the form
+        renders starts with <code>borm_</code> and is derived from the field's path, so two forms on one page
+        that share field names each need their own <code>IdPrefix</code>.
+    </div>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Hosting models</h3>
+    <p class="bb-card-desc">
+        Borm has no JavaScript and no browser-only API, so it runs the same way under every Blazor hosting model.
+        A form prerenders as plain HTML and becomes interactive once the page does - give the page an interactive
+        render mode, since a form in static server rendering cannot respond to input.
+    </p>
+    <ul class="bb-detail-list">
+        <li><strong>Blazor WebAssembly</strong> - <code>AddBorm()</code> in <code>Program.cs</code>, the stylesheet in <code>index.html</code>.</li>
+        <li><strong>Blazor Server</strong> - the same, in the server's <code>Program.cs</code> and <code>App.razor</code>. A field that updates on input sends every keystroke over the circuit, so prefer the default update-on-change, or a debounce, on a busy form.</li>
+        <li><strong>Blazor Web App</strong> - <code>AddBorm()</code> in both the server and the client project, so both containers resolve the renderer registry.</li>
+        <li><strong>Blazor Hybrid</strong> - <code>AddBorm()</code> in <code>MauiProgram.cs</code>, the stylesheet in <code>wwwroot/index.html</code>.</li>
+    </ul>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Where to go next</h3>
+    <ul class="bb-detail-list">
+        <li><a href="quickstart">From a C# type</a> - what the generator reads from a model and its attributes.</li>
+        <li><a href="builder">Fluent builder + conditions</a> - typed, refactor-safe field configuration, and fields that show and hide.</li>
+        <li><a href="json-schema">JSON Schema</a> - a form from a document the server owns, and back out again.</li>
+        <li><a href="validation">Validation modes</a> - when fields revalidate, the error summary, and async rules.</li>
+        <li><a href="mcp-server">MCP server</a> - point an AI agent at this site and it reads the library instead of guessing.</li>
+    </ul>
+</div>
+
+@code {
+    private readonly BormDefinition _definition = BormSchemaGenerator.Generate<Contact>();
+    private readonly Contact _model = new();
+    private string? _submitted;
+
+    private Task HandleValidSubmit(BormState state)
+    {
+        _submitted = $"Name: {_model.Name}{Environment.NewLine}Email: {_model.Email}{Environment.NewLine}Age: {_model.Age}";
+        return Task.CompletedTask;
+    }
+
+    /// <summary>The model of the guide's first form, exactly as the README writes it.</summary>
+    public sealed class Contact
+    {
+        [Required, MaxLength(80)]
+        public string Name { get; set; } = "";
+
+        [Required, EmailAddress]
+        public string Email { get; set; } = "";
+
+        [Range(18, 120)]
+        public int Age { get; set; }
+    }
+}

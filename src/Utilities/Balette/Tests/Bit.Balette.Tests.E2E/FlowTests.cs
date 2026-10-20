@@ -24,13 +24,26 @@ public sealed class FlowTests : BaletteTest
         Assert.AreEqual("theme:auto,theme:light,theme:dark", string.Join(",", await ItemIdsAsync(page)));
         await Assertions.Expect(Item(page, "theme:auto").Locator(".bit-balette-toggle")).ToHaveAttributeAsync("data-on", "true");
 
-        // The option's handler answers Back: the theme is set on <html>, and the palette lands on the list again.
+        // The option's handler answers Back: the site theme is set on <html> (the site kit's bit-theme, which the
+        // header's toggle sets too), and the palette lands on the list again - painted dark with the page.
         await TypeAsync(page, "dark");
         await ExpectFirstItemAsync(page, "theme:dark");
         await page.Keyboard.PressAsync("Enter");
-        await Assertions.Expect(page.Locator("html")).ToHaveAttributeAsync("data-theme", "dark");
+        await Assertions.Expect(page.Locator("html")).ToHaveAttributeAsync("bit-theme", "dark");
         await Assertions.Expect(Crumbs(page)).ToHaveCountAsync(0);
         await Assertions.Expect(Dialog(page)).ToBeVisibleAsync();
+        await Assertions.Expect(Dialog(page)).ToHaveCSSAsync("background-color", "rgb(23, 28, 34)");
+
+        // The choice is the reader's, so it is remembered: after a reload the page is still dark, and the Theme
+        // command still says so rather than "auto".
+        await page.Keyboard.PressAsync("Escape");
+        await ExpectClosedAsync(page);
+        await ReloadAsync(page);
+        await Assertions.Expect(page.Locator("html")).ToHaveAttributeAsync("bit-theme", "dark");
+        await OpenPaletteAsync(page);
+        await TypeAsync(page, "theme");
+        await ExpectFirstItemAsync(page, "preferences.theme");
+        await Assertions.Expect(Item(page, "preferences.theme")).ToContainTextAsync("Dark");
     }
 
     [TestMethod]

@@ -1,10 +1,10 @@
 ﻿@page "/dustbin/single"
 
-<PageTitle>Dustbin · Single Target - bit Bdnd</PageTitle>
+<PageTitle>Dustbin - Single Target · Bdnd</PageTitle>
 
-<div class="demo-header">
-    <h3>Dustbin - Single Target</h3>
-    <p class="text-muted">
+<div class="bb-intro">
+    <h1>Dustbin - Single Target</h1>
+    <p class="bb-subtitle">
         The simplest setup: a single <code>BdndDropTarget</code> that accepts one item type.
         Drag a box onto the dustbin and it reacts to hover and records the drop.
     </p>
@@ -12,7 +12,7 @@
 
 <DemoCode />
 
-<section class="demo-stage">
+<div class="bb-demo">
     <BdndProvider>
         <BdndDropTarget TItem="BoxItem" Accept="@ItemTypes.Box" Context="t"
                         OnDrop="HandleDrop" style="display:contents">
@@ -39,7 +39,7 @@
             }
         </div>
     </BdndProvider>
-</section>
+</div>
 
 @code {
     public record BoxItem(string Name);

@@ -1,4 +1,4 @@
-﻿using Bit.Bmage.Demo.Client.Shared;
+﻿using Bit.Bmage.Demo.Client;
 
 namespace Bit.Bmage.Tests.Mcp.Services;
 
@@ -70,15 +70,37 @@ public class SourceCatalogTests
     [TestMethod]
     public void Sources_EveryDemoPageInTheNavigation_IsEmbedded_AndDescribedByIt()
     {
-        foreach (var page in NavItem.All)
+        foreach (var page in DocsCatalog.AllPages)
         {
-            var file = BmageSourceCatalog.SourceFiles.SingleOrDefault(entry => entry.Path == page.SourcePath);
+            var path = BmageSourceCatalog.SourcePathOf(page);
+            var file = BmageSourceCatalog.SourceFiles.SingleOrDefault(entry => entry.Path == path);
 
-            Assert.IsNotNull(file, $"{page.SourcePath} is not embedded.");
+            Assert.IsNotNull(file, $"{path} is not embedded.");
             Assert.AreEqual("Demo page", file.Kind);
             Assert.AreEqual(page.Description, file.Description);
-            Assert.AreEqual(page.Href, file.Slug);
+            Assert.AreEqual(page.Url.TrimStart('/'), file.Slug);
+            Assert.AreEqual(page.Title, file.Title);
         }
+
+        // The path is derived from the page's type, so it has to name the file that really is the page.
+        Assert.AreEqual("Demo/Client/Pages/Avatar.razor", BmageSourceCatalog.SourcePathOf(DocsCatalog.FindByPath("avatar")!));
+        Assert.AreEqual("Demo/Client/Pages/McpServerPage.razor", BmageSourceCatalog.SourcePathOf(DocsCatalog.FindByPath("mcp-server")!));
+    }
+
+    [TestMethod]
+    public void Sources_TheSitesOwnShell_IsChrome_AndNotOfferedAsAnExample()
+    {
+        var chrome = BmageSourceCatalog.SourceFiles.Where(file => file.Path.StartsWith("Demo/Client/Layout/", StringComparison.Ordinal)).ToArray();
+
+        Assert.IsTrue(chrome.Any(file => file.Path == "Demo/Client/Layout/MainLayout.razor"), "The layout is not embedded.");
+        Assert.IsTrue(chrome.All(file => file.Kind == BmageSourceCatalog.SiteChromeKind), string.Join(", ", chrome.Where(file => file.Kind != BmageSourceCatalog.SiteChromeKind).Select(file => file.Path)));
+        Assert.IsFalse(BmageSourceCatalog.SourceFiles.Any(file => file.Kind == BmageSourceCatalog.SiteChromeKind && file.Path.StartsWith("Demo/Client/Layout/", StringComparison.Ordinal) is false));
+
+        var hits = BmageSearchIndex.Search("command palette header footer navigation layout", 50);
+
+        Assert.IsNotEmpty(hits);
+        Assert.IsFalse(hits.Any(hit => hit.Title.StartsWith("Demo/Client/Layout/", StringComparison.Ordinal)),
+            string.Join(", ", hits.Select(hit => hit.Title)));
     }
 
     [TestMethod]

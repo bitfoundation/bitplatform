@@ -1,18 +1,18 @@
 ﻿@page "/efcore"
 @inject DemoDbService Db
 
-<PageTitle>EF Core - BlazeDb</PageTitle>
+<PageTitle>EF Core · BlazeDb</PageTitle>
 
-<PageHeader Eyebrow="Engine" IconName="layers" Title="The same engine, reached through LINQ"
+<PageHeader Eyebrow="EF Core" Title="The same engine, reached through LINQ"
             Lead="The EF Core provider is a translation layer, not a second database. AddDbContext and UseBlazeDb are the whole setup: tables come from your DbSets, LINQ becomes a query plan, and SaveChanges is one engine transaction. The rows you get back are the objects the table already holds.">
-    <span class="chip"><Icon Name="bolt" /> No SQL, no materialisation</span>
-    <span class="chip"><Icon Name="txn" /> SaveChanges is a memory commit</span>
-    <span class="chip"><Icon Name="close" /> No Include, no navigations</span>
+    <span class="bb-badge bd-badge-neutral">No SQL, no materialisation</span>
+    <span class="bb-badge bd-badge-neutral">SaveChanges is a memory commit</span>
+    <span class="bb-badge bd-badge-neutral">No Include, no navigations</span>
 </PageHeader>
 
-<Section Title="The usual EF Core setup" IconName="code"
+<Section Title="The usual EF Core setup"
          Lead="A DbContext, a UseBlazeDb call, and AddDbContext (or OnConfiguring). There is no OpenAsync and no AddTable: entity types on the context are the model.">
-    <div class="grid grid-2">
+    <div class="bb-flex">
         <CodeBlock Title="AppContext.cs" Code="@ContextSnippet" />
         <CodeBlock Title="Program.cs" Code="@UseSnippet" />
     </div>
@@ -25,58 +25,58 @@
     </Callout>
 </Section>
 
-<Section Title="How EF Core concepts land on the engine" IconName="schema">
+<Section Title="How EF Core concepts land on the engine">
     <Panel Flush="true">
-        <div class="table-wrap">
-            <table class="data">
+        <div class="bb-scroll">
+            <table class="bb-table">
                 <thead>
                     <tr><th>EF Core</th><th>BlazeDb</th><th>Notes</th></tr>
                 </thead>
                 <tbody>
                     <tr>
-                        <td class="mono">DbContext</td>
-                        <td class="mono">BlazeDbDatabase</td>
-                        <td class="small muted">one instance, one write lock, tables from the model</td>
+                        <td class="bb-mono">DbContext</td>
+                        <td class="bb-mono">BlazeDbDatabase</td>
+                        <td class="bb-muted">one instance, one write lock, tables from the model</td>
                     </tr>
                     <tr>
-                        <td class="mono">DbSet&lt;T&gt;</td>
-                        <td class="mono">BlazeDbTable&lt;TKey, TRow&gt;</td>
-                        <td class="small muted">entity type to generated descriptor</td>
+                        <td class="bb-mono">DbSet&lt;T&gt;</td>
+                        <td class="bb-mono">BlazeDbTable&lt;TKey, TRow&gt;</td>
+                        <td class="bb-muted">entity type to generated descriptor</td>
                     </tr>
                     <tr>
-                        <td class="mono">SaveChanges</td>
-                        <td class="mono">BeginTransaction / Commit</td>
-                        <td class="small muted">change-tracker entries become one atomic batch</td>
+                        <td class="bb-mono">SaveChanges</td>
+                        <td class="bb-mono">BeginTransaction / Commit</td>
+                        <td class="bb-muted">change-tracker entries become one atomic batch</td>
                     </tr>
                     <tr>
-                        <td class="mono">Find(key)</td>
-                        <td class="mono">table.Get(key)</td>
-                        <td class="small muted">already O(1) with no materialisation step</td>
+                        <td class="bb-mono">Find(key)</td>
+                        <td class="bb-mono">table.Get(key)</td>
+                        <td class="bb-muted">already O(1) with no materialisation step</td>
                     </tr>
                     <tr>
-                        <td class="mono">Where(x =&gt; x.Done)</td>
-                        <td class="mono">UseIndex(hash index)</td>
-                        <td class="small muted">equality on an indexed member becomes a lookup</td>
+                        <td class="bb-mono">Where(x =&gt; x.Done)</td>
+                        <td class="bb-mono">UseIndex(hash index)</td>
+                        <td class="bb-muted">equality on an indexed member becomes a lookup</td>
                     </tr>
                     <tr>
-                        <td class="mono">Where(x =&gt; x.At &gt;= a)</td>
-                        <td class="mono">UseIndex(ordered index)</td>
-                        <td class="small muted">comparisons become a range scan</td>
+                        <td class="bb-mono">Where(x =&gt; x.At &gt;= a)</td>
+                        <td class="bb-mono">UseIndex(ordered index)</td>
+                        <td class="bb-muted">comparisons become a range scan</td>
                     </tr>
                     <tr>
-                        <td class="mono">OrderBy / Skip / Take</td>
-                        <td class="mono">OrderBy / Skip / Take</td>
-                        <td class="small muted">already a 1:1 mapping on the plan</td>
+                        <td class="bb-mono">OrderBy / Skip / Take</td>
+                        <td class="bb-mono">OrderBy / Skip / Take</td>
+                        <td class="bb-muted">already a 1:1 mapping on the plan</td>
                     </tr>
                     <tr>
-                        <td class="mono">Select / GroupBy / aggregates</td>
+                        <td class="bb-mono">Select / GroupBy / aggregates</td>
                         <td>LINQ to Objects</td>
-                        <td class="small muted">runs over the rows the plan returned, at no extra cost</td>
+                        <td class="bb-muted">runs over the rows the plan returned, at no extra cost</td>
                     </tr>
                     <tr>
-                        <td class="mono">Include / navigations</td>
+                        <td class="bb-mono">Include / navigations</td>
                         <td>-</td>
-                        <td class="small muted">not supported: rows are flat, relationships are key properties</td>
+                        <td class="bb-muted">not supported: rows are flat, relationships are key properties</td>
                     </tr>
                 </tbody>
             </table>
@@ -86,19 +86,19 @@
 
 @if (!Db.IsOpen)
 {
-    <Panel><div class="empty">Opening the database…</div></Panel>
+    <div class="bb-empty"><span class="bb-spinner"></span> Opening the database…</div>
 }
 else
 {
-    <Section Title="LINQ against this tab's database" IconName="query"
-             Lead="Each sample is a real DbContext query over the todos table this site opened on start. The LINQ on the right is what ran; the note under it is the plan the translator produced.">
-        <div class="grid grid-sidebar">
-            <div class="flex-col gap-lg">
+    <Section Title="LINQ against this tab's database"
+             Lead="Each sample is a real DbContext query over the todos table this site opened on start. The generated call is the LINQ that ran; the panel under it is the plan the translator produced.">
+        <div class="bd-main-side">
+            <div class="bb-flex">
                 <Panel Title="Samples" IconName="list">
-                    <div class="chip-row">
+                    <div class="bb-segmented" role="group" aria-label="Samples">
                         @foreach (var sample in Samples)
                         {
-                            <button type="button" class="chip @(_sample == sample.Kind ? "on" : null)"
+                            <button type="button" aria-pressed="@(_sample == sample.Kind ? "true" : "false")"
                                     @onclick="() => RunSample(sample.Kind)">
                                 @sample.Label
                             </button>
@@ -108,32 +108,32 @@ else
 
                 <Panel Title="Result" IconName="play" Flush="true">
                     <Actions>
-                        <span class="panel-sub mono">@_querySummary</span>
+                        <span class="bd-panel-sub">@_querySummary</span>
                     </Actions>
                     <ChildContent>
                         @if (_queryLines.Count > 0)
                         {
-                            <div class="log">
+                            <div class="bb-log">
                                 @foreach (var line in _queryLines)
                                 {
-                                    <div class="log-row"><span class="log-name">@line</span></div>
+                                    <div class="bb-log-line">@line</div>
                                 }
                             </div>
                         }
                         else if (_queryRows.Count == 0)
                         {
-                            <div class="empty"><Icon Name="search" /><div>No rows matched.</div></div>
+                            <div class="bb-empty">No rows matched.</div>
                         }
                         else
                         {
-                            <div class="table-wrap">
-                                <table class="data">
+                            <div class="bb-scroll">
+                                <table class="bb-table bb-compare">
                                     <thead>
                                         <tr>
                                             <th>Title</th>
                                             <th>Category</th>
                                             <th>Priority</th>
-                                            <th class="num">Effort</th>
+                                            <th class="bd-num">Effort</th>
                                             <th>Created</th>
                                         </tr>
                                     </thead>
@@ -141,11 +141,11 @@ else
                                         @foreach (var row in _queryRows)
                                         {
                                             <tr>
-                                                <td class="strong">@row.Title</td>
-                                                <td class="mono">@(row.Category ?? "null")</td>
-                                                <td><span class="prio @row.Priority">@row.Priority</span></td>
-                                                <td class="num mono">@row.Effort</td>
-                                                <td class="mono tiny">@row.CreatedAt.ToLocalTime().ToString("MMM d HH:mm")</td>
+                                                <td class="bd-strong">@row.Title</td>
+                                                <td class="bb-mono">@(row.Category ?? "null")</td>
+                                                <td><span class="bd-prio bd-prio-@row.Priority">@row.Priority</span></td>
+                                                <td class="bd-num">@row.Effort</td>
+                                                <td class="bb-mono bd-small">@row.CreatedAt.ToLocalTime().ToString("MMM d HH:mm")</td>
                                             </tr>
                                         }
                                     </tbody>
@@ -156,12 +156,12 @@ else
                 </Panel>
             </div>
 
-            <div class="flex-col gap-lg">
+            <div class="bb-flex">
                 <Panel Title="Generated call" IconName="code">
-                    <CodeBlock Code="@_queryCode" ShowHeader="false" Wrap="true" />
+                    <CodeBlock Code="@_queryCode" Wrap="true" />
                 </Panel>
                 <Panel Title="What the translator did" IconName="layers">
-                    <dl class="kv">
+                    <dl class="bb-params">
                         <dt>Source</dt>
                         <dd>@_querySource</dd>
                         <dt>Remainder</dt>
@@ -171,23 +171,22 @@ else
                         <dt>Elapsed</dt>
                         <dd>@_queryElapsed</dd>
                     </dl>
-                    <p class="small muted mb-0 mt-2">@_queryNote</p>
+                    <p class="bb-muted">@_queryNote</p>
                 </Panel>
             </div>
         </div>
     </Section>
 }
 
-<Section Title="SaveChanges is a memory operation" IconName="txn"
+<Section Title="SaveChanges is a memory operation"
          Lead="Each run opens a throwaway database so the demo todos stay untouched. The trace is what the provider actually did, including the parts that surprise people coming from a relational provider.">
-    <div class="grid grid-sidebar">
-        <div class="flex-col gap-lg">
+    <div class="bd-main-side">
+        <div class="bb-flex">
             <Panel Title="Scenarios" IconName="list">
-                <div class="flex-col">
+                <div class="bd-actions">
                     @foreach (var scenario in TrackScenarios)
                     {
-                        <button type="button" class="btn btn-sm btn-block @(_trackKind == scenario.Kind ? "btn-primary" : null)"
-                                style="justify-content:flex-start"
+                        <button type="button" class="btn @(_trackKind == scenario.Kind ? "btn-primary" : "btn-secondary")"
                                 disabled="@_running"
                                 @onclick="() => RunTrackAsync(scenario.Kind)">
                             <Icon Name="@scenario.Icon" />
@@ -204,27 +203,27 @@ else
             }
         </div>
 
-        <div class="flex-col gap-lg">
+        <div class="bb-flex">
             <Panel Title="Trace" IconName="history" Flush="true">
                 <Actions>
                     @if (_running)
                     {
-                        <span class="spinner"></span>
+                        <span class="bb-spinner"></span>
                     }
                 </Actions>
                 <ChildContent>
-                    <ScenarioSteps Steps="_log.Steps" EmptyText="Pick a scenario on the left." />
+                    <ScenarioSteps Steps="_log.Steps" EmptyText="Pick a scenario to run it." />
                 </ChildContent>
             </Panel>
         </div>
     </div>
 </Section>
 
-<Section Title="Where the translation stops" IconName="query"
+<Section Title="Where the translation stops"
          Lead="The translator consumes the longest prefix of the operator chain that fits the plan - filters, then ordering, then paging, in that order - and chooses an index from the predicates and the sort.">
-    <div class="grid grid-2">
+    <div class="bb-split">
         <Panel Title="Absorbed into the plan" IconName="check">
-            <ul class="ticks">
+            <ul class="bd-ticks">
                 <li><code>Where</code> equalities on a key or hash index, including <code>ids.Contains(e.Id)</code> and <code>e.Category == null</code>.</li>
                 <li><code>Where</code> ranges on an ordered index, with residual filters for exclusive bounds.</li>
                 <li>A compound index when several equalities match its members.</li>
@@ -234,7 +233,7 @@ else
             </ul>
         </Panel>
         <Panel Title="Left as LINQ to Objects" IconName="cpu">
-            <ul class="ticks">
+            <ul class="bd-ticks">
                 <li>Projections, grouping, aggregates, joins and subqueries - including ones over another <code>DbSet</code>, which is read as a scan.</li>
                 <li>A <code>Where</code> after a <code>Take</code> - that is not the same as filtering first.</li>
                 <li>A <code>Skip</code> after a <code>Take</code>, which reorders paging.</li>
@@ -242,7 +241,7 @@ else
             </ul>
         </Panel>
     </div>
-    <Callout Tone="info" Title="In a relational provider that fallback is a disaster." Class="mt-2">
+    <Callout Tone="info" Title="In a relational provider that fallback is a disaster.">
         It means pulling rows over a wire and filtering client-side. Here the rows are already
         managed objects in the same heap, so the worst case is a delegate over an in-memory
         sequence - which is what the fast path is too, minus the index.
@@ -250,11 +249,11 @@ else
     </Callout>
 </Section>
 
-<Section Title="Include is refused on purpose" IconName="alert"
+<Section Title="Include is refused on purpose"
          Lead="BlazeDb rows have no navigations. Relationships are modelled as key properties and queried against the other table directly.">
-    <div class="grid grid-2">
+    <div class="bb-flex">
         <Panel Title="Trigger it" IconName="play">
-            <p class="small">
+            <p>
                 This calls <code>context.Todos.Include("Anything")</code> against the live database
                 and prints the exception the provider actually throws.
             </p>
@@ -263,7 +262,7 @@ else
             </button>
             @if (_includeError is not null)
             {
-                <div class="api-call mt-2">@_includeError</div>
+                <div class="bb-log bd-out">@_includeError</div>
             }
         </Panel>
         <CodeBlock Title="Query the related table yourself" Code="@RelatedSnippet" />

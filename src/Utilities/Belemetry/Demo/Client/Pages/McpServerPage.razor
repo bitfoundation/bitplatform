@@ -10,39 +10,40 @@
    The tool, prompt and resource tables are fetched rather than written out, for the same reason:
    they come from GetMcpCatalog, which reflects over the attributes that declare them. *@
 
-<PageTitle>MCP Server - bit Belemetry</PageTitle>
+<PageTitle>MCP server · Belemetry</PageTitle>
 
-<h1>MCP Server</h1>
+<div class="bb-intro">
+    <h1>MCP server</h1>
+    <p class="bb-subtitle">
+        This site ships a <strong>Model Context Protocol</strong> server, so an AI agent can set up Belemetry from what
+        the library <em>actually</em> is rather than from what it remembers. Its tools answer from this build's own
+        text - the README, the XML documentation compiled into the assembly, the source of every page you have been
+        reading - and two of them go further: one writes a configuration for your host, and one reviews a
+        configuration for the mistakes that compile cleanly and then send nothing, or send too much.
+    </p>
+</div>
 
-<p class="page-intro">
-    This site ships a <strong>Model Context Protocol</strong> server, so an AI agent can set up Belemetry from what
-    the library <em>actually</em> is rather than from what it remembers. Its tools answer from this build's own
-    text - the README, the XML documentation compiled into the assembly, the source of every page you have been
-    reading - and two of them go further: one writes a configuration for your host, and one reviews a
-    configuration for the mistakes that compile cleanly and then send nothing, or send too much.
-</p>
-
-<div class="demo-section">
-    <h2>Why a telemetry SDK needs one</h2>
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Why a telemetry SDK needs one</h3>
     <p>
         Telemetry fails quietly. There is no exception when the collector rejects the page's origin, and no warning
         when an API key ships to every visitor. The mistakes an agent is most likely to make are exactly the ones
         nobody notices until the dashboard is empty - or until a privacy review:
     </p>
-    <div class="demo-row">
+    <div class="bb-grid">
         @foreach (var problem in _problems)
         {
-            <div class="demo-card stack">
-                <span class="demo-label">@problem.Symptom</span>
-                <p>@problem.Cause</p>
-                <code>@problem.Tool</code>
+            <div class="bb-card">
+                <p class="bb-card-title"><span class="bb-dot bb-dot-danger"></span> @problem.Symptom</p>
+                <p class="bb-card-desc">@problem.Cause</p>
+                <p class="bb-card-desc">Answered by <code>@problem.Tool</code></p>
             </div>
         }
     </div>
 </div>
 
-<div class="demo-section">
-    <h2>Connect your agent</h2>
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Connect your agent</h3>
     <p>
         The server speaks MCP over Streamable HTTP at <code>@PublicUrl</code>. When you run this demo yourself it is at
         <code>@LocalUrl</code>. The same tools are also plain <code>GET</code> endpoints under
@@ -51,12 +52,12 @@
 
     @* A tablist is one stop in the tab order: tab moves past the group, and the arrow keys move between
        the tabs inside it. Only the selected tab is tabbable, and each names the panel it controls. *@
-    <div class="demo-actions" role="tablist" aria-label="MCP client">
+    <div class="bb-tabs" role="tablist" aria-label="MCP client">
         @foreach (var client in _clients)
         {
             var isSelected = _client == client.Name;
 
-            <button type="button" role="tab" class="@(isSelected ? "btn-bl" : "btn-bl-subtle")"
+            <button type="button" role="tab" class="@(isSelected ? "active" : null)"
                     id="@TabId(client.Name)"
                     aria-selected="@(isSelected ? "true" : "false")"
                     aria-controls="@PanelId(client.Name)"
@@ -79,35 +80,36 @@
     }
 </div>
 
-<div class="demo-section">
-    <h2>Search everything</h2>
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Search everything</h3>
     <p>
         An agent rarely knows which corpus holds the answer. <code>SearchBelemetry</code> covers the guide, every
         public type and member, the semantic conventions and the demo pages at once - and every hit names the
         follow-up call that returns it in full.
     </p>
-    <div class="demo-row">
-        <div class="demo-card stack">
-            <label class="demo-label" for="mcp-search">Query</label>
-            <input id="mcp-search" type="search" value="@_query" @onchange="OnQueryChanged"
-                   disabled="@(_searching || RendererInfo.IsInteractive is false)" style="width: 100%"
-                   placeholder="keep the api key out of the browser" />
-            <div class="demo-actions">
-                <button type="button" class="btn-bl" @onclick="RunSearchAsync" disabled="@(_searching || RendererInfo.IsInteractive is false)">
-                    @(_searching ? "Searching..." : "Search")
-                </button>
+    <div class="bb-demo">
+        <div class="bb-demo-bar"><span class="bb-demo-label">Live<span class="demo-sample-title">SearchBelemetry</span></span></div>
+        <div class="bb-fields">
+            <div class="bb-field demo-field-grow">
+                <label for="mcp-search">Query</label>
+                <input id="mcp-search" type="search" value="@_query" @onchange="OnQueryChanged"
+                       disabled="@(_searching || RendererInfo.IsInteractive is false)"
+                       placeholder="keep the api key out of the browser" />
             </div>
+            <button type="button" class="btn btn-primary" @onclick="RunSearchAsync" disabled="@(_searching || RendererInfo.IsInteractive is false)">
+                @(_searching ? "Searching..." : "Search")
+            </button>
         </div>
     </div>
 
     @if (_searchError is not null)
     {
-        <div class="callout warn"><p>@_searchError</p></div>
+        <div class="bb-note bb-note-warn"><p>@_searchError</p></div>
     }
     else if (_hits is { Length: > 0 })
     {
-        <div class="doc-table-wrap">
-            <table class="doc-table">
+        <div class="bb-scroll">
+            <table class="bb-table">
                 <thead>
                     <tr><th scope="col">Kind</th><th scope="col">Hit</th><th scope="col">Follow up with</th></tr>
                 </thead>
@@ -115,7 +117,7 @@
                     @foreach (var hit in _hits)
                     {
                         <tr>
-                            <td>@hit.Kind</td>
+                            <td class="bb-table-key">@hit.Kind</td>
                             <td>
                                 <strong>@hit.Title</strong>
                                 @if (string.IsNullOrWhiteSpace(hit.Summary) is false)
@@ -140,68 +142,72 @@
     }
 </div>
 
-<div class="demo-section">
-    <h2>Generate a configuration</h2>
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Generate a configuration</h3>
     <p>
         <code>GenerateBelemetryConfiguration</code> writes every file a host needs - the registrations, where
         <code>&lt;BelemetryScript /&gt;</code> and <code>&lt;BelemetryInitializer /&gt;</code> go, a consent banner when the
         app needs one - from the same rules the reviewer below checks against. Pick a host, the exporters and the
         consent model.
     </p>
-    <div class="demo-row">
-        <div class="demo-card stack">
-            <label class="demo-label" for="mcp-host">Host</label>
-            <select id="mcp-host" value="@_host" @onchange="OnHostChanged" disabled="@(_generating || RendererInfo.IsInteractive is false)">
-                @foreach (var host in _hosts)
-                {
-                    <option value="@host.Value">@host.Label</option>
-                }
-            </select>
-
-            <span class="demo-label">Exporters</span>
-            <div class="consent-grid">
-                @foreach (var exporter in _exporterChoices)
-                {
-                    <label class="consent-feature">
-                        <input type="checkbox" checked="@_exporters.Contains(exporter.Value)"
-                               disabled="@(_generating || RendererInfo.IsInteractive is false)"
-                               @onchange="@(e => OnExporterChanged(exporter.Value, e))" />
-                        <span><strong>@exporter.Label</strong><small>@exporter.Description</small></span>
-                    </label>
-                }
+    <div class="bb-demo">
+        <div class="bb-demo-bar"><span class="bb-demo-label">Live<span class="demo-sample-title">GenerateBelemetryConfiguration</span></span></div>
+        <div class="bb-fields">
+            <div class="bb-field">
+                <label for="mcp-host">Host</label>
+                <select id="mcp-host" value="@_host" @onchange="OnHostChanged" disabled="@(_generating || RendererInfo.IsInteractive is false)">
+                    @foreach (var host in _hosts)
+                    {
+                        <option value="@host.Value">@host.Label</option>
+                    }
+                </select>
             </div>
-
-            <label class="demo-label" for="mcp-consent">Consent</label>
-            <select id="mcp-consent" value="@_consent" @onchange="OnConsentChanged" disabled="@(_generating || RendererInfo.IsInteractive is false)">
-                <option value="opt-in">opt-in - nothing is sent before the user agrees (the default)</option>
-                <option value="opt-out">opt-out - everything until the user says no</option>
-                <option value="none">none - no consent UI, the operator decides</option>
-            </select>
-
-            <div class="demo-actions">
-                <button type="button" class="btn-bl" @onclick="RunGenerateAsync" disabled="@(_generating || RendererInfo.IsInteractive is false)">
-                    @(_generating ? "Generating..." : "Generate")
-                </button>
+            <div class="bb-field">
+                <label for="mcp-consent">Consent</label>
+                <select id="mcp-consent" value="@_consent" @onchange="OnConsentChanged" disabled="@(_generating || RendererInfo.IsInteractive is false)">
+                    <option value="opt-in">opt-in - nothing is sent before the user agrees (the default)</option>
+                    <option value="opt-out">opt-out - everything until the user says no</option>
+                    <option value="none">none - no consent UI, the operator decides</option>
+                </select>
             </div>
+        </div>
+
+        <p class="bb-overline demo-sublabel">Exporters</p>
+        <div class="demo-consent-grid">
+            @foreach (var exporter in _exporterChoices)
+            {
+                <label class="demo-consent-feature">
+                    <input type="checkbox" checked="@_exporters.Contains(exporter.Value)"
+                           disabled="@(_generating || RendererInfo.IsInteractive is false)"
+                           @onchange="@(e => OnExporterChanged(exporter.Value, e))" />
+                    <span><strong>@exporter.Label</strong><small>@exporter.Description</small></span>
+                </label>
+            }
+        </div>
+
+        <div class="bb-toolbar">
+            <button type="button" class="btn btn-primary" @onclick="RunGenerateAsync" disabled="@(_generating || RendererInfo.IsInteractive is false)">
+                @(_generating ? "Generating..." : "Generate")
+            </button>
         </div>
     </div>
 
     @if (_generateError is not null)
     {
-        <div class="callout warn"><p>@_generateError</p></div>
+        <div class="bb-note bb-note-warn"><p>@_generateError</p></div>
     }
     else if (_generated is not null)
     {
         @foreach (var file in _generated.Files ?? [])
         {
-            <h3><code>@file.Path</code></h3>
+            <p class="bb-source-file">@file.Path</p>
             <CodeSnippet @key="@($"{_generation}:{file.Path}")" Code="@(file.Content ?? "")" Language="@SnippetLanguage(file.Language)" Expanded="true" />
         }
 
         @if (_generated.Notes is { Length: > 0 })
         {
-            <div class="callout">
-                <ul>
+            <div class="bb-note">
+                <ul class="bb-detail-list">
                     @foreach (var note in _generated.Notes)
                     {
                         <li>@note</li>
@@ -212,25 +218,28 @@
     }
 </div>
 
-<div class="demo-section">
-    <h2>Review a configuration</h2>
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Review a configuration</h3>
     <p>
         <code>ReviewBelemetryConfiguration</code> is the pass that closes the loop after an agent writes code. It looks
         for the mistakes that compile: a consent default that sends everything before anyone agreed, an OTLP
         endpoint that already ends in <code>/v1/traces</code> (Belemetry appends the signal path itself), a vendor API
         key in an exporter the browser script will use. The sample below makes all three on purpose.
     </p>
-    <textarea class="code-block" rows="16" spellcheck="false" aria-label="Configuration to review" style="width: 100%"
-              value="@_review" @onchange="OnReviewChanged" disabled="@(_reviewing || RendererInfo.IsInteractive is false)"></textarea>
-    <div class="demo-actions">
-        <button type="button" class="btn-bl" @onclick="RunReviewAsync" disabled="@(_reviewing || RendererInfo.IsInteractive is false)">
-            @(_reviewing ? "Reviewing..." : "Review it")
-        </button>
+    <div class="bb-demo">
+        <div class="bb-demo-bar"><span class="bb-demo-label">Live<span class="demo-sample-title">ReviewBelemetryConfiguration</span></span></div>
+        <textarea class="demo-code-input" rows="16" spellcheck="false" aria-label="Configuration to review"
+                  value="@_review" @onchange="OnReviewChanged" disabled="@(_reviewing || RendererInfo.IsInteractive is false)"></textarea>
+        <div class="bb-toolbar">
+            <button type="button" class="btn btn-primary" @onclick="RunReviewAsync" disabled="@(_reviewing || RendererInfo.IsInteractive is false)">
+                @(_reviewing ? "Reviewing..." : "Review it")
+            </button>
+        </div>
     </div>
 
     @if (_reviewError is not null)
     {
-        <div class="callout warn"><p>@_reviewError</p></div>
+        <div class="bb-note bb-note-warn"><p>@_reviewError</p></div>
     }
     else if (_findings is not null)
     {
@@ -241,8 +250,8 @@
 
         @if (_findings.Findings is { Length: > 0 })
         {
-            <div class="doc-table-wrap">
-                <table class="doc-table">
+            <div class="bb-scroll">
+                <table class="bb-table">
                     <thead>
                         <tr><th scope="col">Severity</th><th scope="col">Rule</th><th scope="col">Line</th><th scope="col">Finding</th><th scope="col">Fix</th></tr>
                     </thead>
@@ -250,7 +259,7 @@
                         @foreach (var finding in _findings.Findings)
                         {
                             <tr>
-                                <td><strong>@finding.Severity</strong></td>
+                                <td class="bb-table-key"><strong>@finding.Severity</strong></td>
                                 <td><code>@finding.Rule</code></td>
                                 <td>@(finding.Line?.ToString() ?? "-")</td>
                                 <td>@finding.Message</td>
@@ -268,38 +277,42 @@
     }
 </div>
 
-<div class="demo-section">
-    <h2>Look up a convention</h2>
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Look up a convention</h3>
     <p>
         <code>LookupBelemetryConventions</code> answers "what is this attribute called" and "where does this record land
         in Application Insights" from the same tables as the <a href="/semantic-conventions">Semantic conventions</a>
         and <a href="/azure-mapping">Azure mapping</a> pages - an attribute, an event name, a feature, a storage key or an
         Azure table.
     </p>
-    <div class="demo-row">
-        <div class="demo-card stack">
-            <label class="demo-label" for="mcp-conventions">Attribute, event, feature or table</label>
-            <input id="mcp-conventions" type="search" value="@_lookup" @onchange="OnLookupChanged" style="width: 100%"
-                   disabled="@(_looking || RendererInfo.IsInteractive is false)" placeholder="web_vital.rating" />
-            <div class="demo-actions">
-                @foreach (var example in _lookupExamples)
-                {
-                    <button type="button" class="btn-bl-subtle" disabled="@(_looking || RendererInfo.IsInteractive is false)"
-                            @onclick="@(() => RunLookupAsync(example))">
-                        @example
-                    </button>
-                }
-                <button type="button" class="btn-bl" disabled="@(_looking || RendererInfo.IsInteractive is false)"
-                        @onclick="@(() => RunLookupAsync(_lookup))">
-                    @(_looking ? "Looking up..." : "Look up")
-                </button>
+    <div class="bb-demo">
+        <div class="bb-demo-bar"><span class="bb-demo-label">Live<span class="demo-sample-title">LookupBelemetryConventions</span></span></div>
+        <div class="bb-fields">
+            <div class="bb-field demo-field-grow">
+                <label for="mcp-conventions">Attribute, event, feature or table</label>
+                <input id="mcp-conventions" type="search" value="@_lookup" @onchange="OnLookupChanged"
+                       disabled="@(_looking || RendererInfo.IsInteractive is false)" placeholder="web_vital.rating" />
             </div>
+            <button type="button" class="btn btn-primary" disabled="@(_looking || RendererInfo.IsInteractive is false)"
+                    @onclick="@(() => RunLookupAsync(_lookup))">
+                @(_looking ? "Looking up..." : "Look up")
+            </button>
+        </div>
+        <div class="bb-toolbar">
+            <span class="bb-soft demo-toolbar-label">Try</span>
+            @foreach (var example in _lookupExamples)
+            {
+                <button type="button" class="btn btn-secondary" disabled="@(_looking || RendererInfo.IsInteractive is false)"
+                        @onclick="@(() => RunLookupAsync(example))">
+                    @example
+                </button>
+            }
         </div>
     </div>
 
     @if (_lookupError is not null)
     {
-        <div class="callout warn"><p>@_lookupError</p></div>
+        <div class="bb-note bb-note-warn"><p>@_lookupError</p></div>
     }
     else if (_conventions is not null)
     {
@@ -307,11 +320,11 @@
     }
 </div>
 
-<div class="demo-section">
-    <h2>Tools</h2>
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Tools</h3>
     @if (_catalogError is not null)
     {
-        <div class="callout warn"><p>@_catalogError</p></div>
+        <div class="bb-note bb-note-warn"><p>@_catalogError</p></div>
     }
     else if (_catalog is null)
     {
@@ -323,8 +336,8 @@
             @(_catalog.Tools?.Length ?? 0) of them, listed straight from the attributes that declare them - so this table
             cannot fall out of step with the server. Each is also <code>GET /api/mcp/{Name}?parameter=...</code>.
         </p>
-        <div class="doc-table-wrap">
-            <table class="doc-table">
+        <div class="bb-scroll">
+            <table class="bb-table">
                 <thead>
                     <tr><th scope="col">Tool</th><th scope="col">Parameters</th><th scope="col">What it answers</th></tr>
                 </thead>
@@ -332,7 +345,7 @@
                     @foreach (var tool in _catalog.Tools ?? [])
                     {
                         <tr>
-                            <td><code>@tool.Name</code></td>
+                            <td class="bb-table-key"><code>@tool.Name</code></td>
                             <td>
                                 @if (tool.Parameters is null or { Length: 0 })
                                 {
@@ -358,8 +371,8 @@
     }
 </div>
 
-<div class="demo-section">
-    <h2>Prompts</h2>
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Prompts</h3>
     <p>
         Prompts are the workflows: which tools to call, in which order, for a whole task. They exist because an agent
         holding seven tools rarely fails for lack of knowledge - it fails by skipping the review that would have caught
@@ -367,15 +380,15 @@
     </p>
     @if (_catalog?.Prompts is { Length: > 0 } prompts)
     {
-        <div class="doc-table-wrap">
-            <table class="doc-table">
+        <div class="bb-scroll">
+            <table class="bb-table">
                 <thead>
                     <tr><th scope="col">Prompt</th><th scope="col">What it does</th></tr>
                 </thead>
                 <tbody>
                     @foreach (var prompt in prompts)
                     {
-                        <tr><td><code>@prompt.Name</code></td><td>@prompt.Description</td></tr>
+                        <tr><td class="bb-table-key"><code>@prompt.Name</code></td><td>@prompt.Description</td></tr>
                     }
                 </tbody>
             </table>
@@ -383,8 +396,8 @@
     }
 </div>
 
-<div class="demo-section">
-    <h2>Resources</h2>
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Resources</h3>
     <p>
         The same knowledge as URIs, for clients that attach documentation to a conversation up front or let a person
         browse and pin it. <code>belemetry://source/{path}</code> is a template: any path
@@ -392,8 +405,8 @@
     </p>
     @if (_catalog?.Resources is { Length: > 0 } resources)
     {
-        <div class="doc-table-wrap">
-            <table class="doc-table">
+        <div class="bb-scroll">
+            <table class="bb-table">
                 <thead>
                     <tr><th scope="col">URI</th><th scope="col">Name</th><th scope="col">What it holds</th></tr>
                 </thead>
@@ -408,13 +421,13 @@
     }
 </div>
 
-<div class="demo-section">
-    <h2>How it stays true</h2>
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> How it stays true</h3>
     <p>
         Documentation that is written down separately drifts, and an agent cannot tell a stale answer from a fresh
         one. So nothing the server says is written down twice:
     </p>
-    <ul>
+    <ul class="bb-detail-list">
         <li>
             <strong>The API reference is reflected</strong> out of the shipped Bit.Belemetry assembly and paired with the
             XML documentation compiled into it - the same catalog behind the API tables on every page of this site. A new

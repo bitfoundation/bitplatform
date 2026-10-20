@@ -20,7 +20,7 @@ public sealed class FieldTests : BormTest
     {
         var page = await OpenAsync("/field-polish");
         var title = Control(page, "Title");
-        var preview = page.Locator(".demo-split > .demo-card").Nth(1);
+        var preview = page.Locator(".demo-preview");
 
         // UpdateOnInput(): the model is written while the caret is still in the box - no blur, no Enter.
         await title.PressSequentiallyAsync("Sunny loft");
@@ -58,7 +58,7 @@ public sealed class FieldTests : BormTest
         await Expect(city).ToHaveAttributeAsync("data-testid", "city");
         await city.PressSequentiallyAsync("Lisbon");
         await Expect(clear).ToBeVisibleAsync();
-        await Expect(page.Locator(".demo-split > .demo-card").Nth(1)).ToContainTextAsync("Lisbon");
+        await Expect(page.Locator(".demo-preview")).ToContainTextAsync("Lisbon");
 
         await clear.ClickAsync();
 
@@ -66,7 +66,7 @@ public sealed class FieldTests : BormTest
         await Expect(city).ToHaveValueAsync("");
         await Expect(city).ToBeFocusedAsync();
         await Expect(clear).ToHaveCountAsync(0);
-        await Expect(page.Locator(".demo-split > .demo-card").Nth(1)).Not.ToContainTextAsync("Lisbon");
+        await Expect(page.Locator(".demo-preview")).Not.ToContainTextAsync("Lisbon");
 
         // The suggestions are hints for the browser's own list, not a closed set.
         Assert.AreEqual("Amsterdam,Berlin,Lisbon,Paris,Warsaw",

@@ -26,7 +26,7 @@ public static partial class BonboardingSetupGuide
         "Demo/Server/Program.cs",
         "Demo/Client/Program.cs",
         "Demo/Server/Components/App.razor",
-        "Demo/Client/Layout/MainLayout.razor",
+        "Demo/Client/Routes.razor",
         "Demo/Client/_Imports.razor",
     ];
 
@@ -81,8 +81,9 @@ public static partial class BonboardingSetupGuide
         builder.AppendLine(summary).AppendLine();
         builder.AppendLine(Checklist).AppendLine();
         builder.AppendLine("## The files, from this demo").AppendLine();
-        builder.AppendLine("Everything below compiles as-is once the projects and namespaces are renamed to your own - except `<SiteShell>` in `MainLayout.razor`, ")
-               .AppendLine("which is the demo's own header, navigation and footer: put your layout's markup in its place.").AppendLine();
+        builder.AppendLine("Everything below compiles as-is once the projects and namespaces are renamed to your own - except what `Routes.razor` ")
+               .AppendLine("points at: `Layout.DocsLayout` and `Pages.NotFound` are the demo's own site chrome, so name your layout and not-found page instead. ")
+               .AppendLine("The part every application needs is the one `<BonboardingRoot />` beside the router.").AppendLine();
 
         foreach (var path in _hostingFiles)
         {

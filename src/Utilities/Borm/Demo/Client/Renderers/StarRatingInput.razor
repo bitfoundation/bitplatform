@@ -1,5 +1,9 @@
 ﻿@inherits BormInputBase
 
+@* A custom renderer: a row of star buttons, registered under the key "rating" (AddBorm in
+   Extensions/IServiceCollectionExtensions.cs) and asked for with CustomRenderer("rating"). It paints
+   itself with the form's own --bit-borm-* tokens, so it follows the form's theme - light, dark, or an
+   app's override - the way the built-in controls do. *@
 <div class="star-rating" role="radiogroup" aria-label="@Field.Label">
     @for (var n = 1; n <= Max; n++)
     {
@@ -14,10 +18,10 @@
 
 <style>
     .star-rating { display: inline-flex; align-items: center; gap: .15rem; }
-    .star { background: none; border: none; cursor: pointer; font-size: 1.6rem; line-height: 1; color: #d1d5db; padding: 0 .05rem; }
+    .star { background: none; border: none; cursor: pointer; font-size: 1.6rem; line-height: 1; color: var(--bit-borm-border); padding: 0 .05rem; }
     .star--on { color: #f59e0b; }
     .star:disabled { cursor: not-allowed; }
-    .star-rating__value { margin-left: .6rem; color: #6b7280; font-size: .85rem; }
+    .star-rating__value { margin-left: .6rem; color: var(--bit-borm-muted); font-size: .85rem; }
 </style>
 
 @code {

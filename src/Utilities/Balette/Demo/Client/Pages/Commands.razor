@@ -3,117 +3,130 @@
 @inject IBaletteService Palette
 @inject DemoState State
 
-<PageTitle>Registering commands - bit Balette</PageTitle>
+<PageTitle>Registering commands · Balette</PageTitle>
 
-<h1>Registering commands</h1>
-<p class="page-intro">
-    A command is an immutable record: a title, where it is listed, what it matches and what it does. There are three
-    ways to hand one to the palette, and this app uses all of them at once - the palette merges them into one list and
-    nothing in it says where a row came from.
-</p>
+<div class="bb-intro">
+    <h1>Registering commands</h1>
+    <p class="bb-subtitle">
+        A command is an immutable record: a title, where it is listed, what it matches and what it does. There are three
+        ways to hand one to the palette, and this app uses all of them at once - the palette merges them into one list and
+        nothing in it says where a row came from.
+    </p>
+</div>
+
+<PaletteBar />
 
 @* Exists only while this page is rendered: leave the page and the three counter commands are gone from the
    palette, shortcuts included (kbar calls this useRegisterActions). *@
 <BaletteCommands Commands="_pageCommands" />
 
-<div class="split">
-    <section class="panel padded">
-        <h2>Page-scoped commands</h2>
-        <p class="counter" aria-live="polite">Counter: <strong>@_count</strong></p>
+<div class="bb-split">
+    <div class="bb-demo">
+        <div class="bb-demo-bar"><span class="bb-demo-label">Page-scoped commands</span></div>
+        <p class="demo-counter" aria-live="polite">Counter: <strong>@_count</strong></p>
         <p>
             Open the palette and look for <em>Increment counter</em> and <em>Decrement counter</em> under "This page",
             or press <kbd>Ctrl</kbd> <kbd>↑</kbd> / <kbd>Ctrl</kbd> <kbd>↓</kbd> with the palette closed. Both keep the
             palette open, so the value can be stepped from inside it.
         </p>
-        <div class="actions">
-            <button type="button" class="btn" @onclick='() => Palette.OpenAsync("counter")'>Search "counter"</button>
-            <button type="button" class="btn" @onclick="() => _count++">+1 from the page</button>
+        <div class="bb-try">
+            <button type="button" class="btn btn-secondary" @onclick='() => Palette.OpenAsync("counter")'>Search "counter"</button>
+            <button type="button" class="btn btn-secondary" @onclick="() => _count++">+1 from the page</button>
         </div>
-    </section>
+    </div>
 
-    <section class="panel padded">
-        <h2>The programmatic API</h2>
+    <div class="bb-demo">
+        <div class="bb-demo-bar"><span class="bb-demo-label">The programmatic API</span></div>
         <p>
             <code>IBaletteService</code> is the palette's remote control: register, update, find, open, close and execute
             from anywhere that can inject it.
         </p>
-        <div class="stack">
-            <button type="button" class="btn" @onclick='() => Palette.ExecuteAsync("toggle:wordwrap")'>Execute "Word wrap" without opening</button>
-            <button type="button" class="btn" @onclick='() => Palette.OpenAsync("!delete")'>Open with a negated query: <code>!delete</code></button>
-            <button type="button" class="btn" @onclick='() => Palette.OpenAsync(pageCommandId: "actions.set-labels")'>Open on the "Set labels…" page</button>
+        <div class="demo-stack">
+            <button type="button" class="btn btn-secondary" @onclick='() => Palette.ExecuteAsync("toggle:wordwrap")'>Execute "Word wrap" without opening</button>
+            <button type="button" class="btn btn-secondary" @onclick='() => Palette.OpenAsync("!delete")'>Open with a negated query: <code>!delete</code></button>
+            <button type="button" class="btn btn-secondary" @onclick='() => Palette.OpenAsync(pageCommandId: "actions.set-labels")'>Open on the "Set labels…" page</button>
         </div>
-        <p class="muted" role="status">
+        <p class="bb-muted demo-small" role="status">
             Executed this visit: <strong>@_executed</strong> · Last: <strong>@(_lastExecuted ?? "nothing yet")</strong>
             · The palette is <strong>@(Palette.IsOpen ? "open" : "closed")</strong>
             · The registry holds <strong>@Palette.Commands.Count</strong> commands
         </p>
-    </section>
+    </div>
 </div>
 
-<h2>The fluent builder</h2>
-<p>
-    Every command in this app's <em>Navigation</em>, <em>Actions</em>, <em>Preferences</em>, <em>Danger zone</em> and
-    <em>Help</em> groups is built in <code>Services/DemoCommands.cs</code> and registered once, from the layout.
-    <code>BaletteCmd</code> is the entry point; a builder converts to a command on its own, so a list of them needs no
-    <code>Build()</code> calls.
-</p>
-<pre><code>@BuilderExample</code></pre>
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> The fluent builder</h3>
+    <p>
+        Every command in this app's <em>Navigation</em>, <em>Actions</em>, <em>Preferences</em>, <em>Danger zone</em> and
+        <em>Help</em> groups is built in <code>Services/DemoCommands.cs</code> and registered once, from
+        <code>Components/AppPalette.razor</code>. <code>BaletteCmd</code> is the entry point; a builder converts to a
+        command on its own, so a list of them needs no <code>Build()</code> calls.
+    </p>
+    <pre class="bb-code">@BuilderExample</pre>
+</section>
 
-<h2>Declarative markup</h2>
-<p>
-    Commands can live in markup next to the component that owns them. A <code>BaletteItem</code> inside a
-    <code>BaletteItem</code> turns the outer one into a page, and a <code>BaletteGroup</code> hands its heading and
-    priority to every item in it. The <em>Quick create</em> group of this app is declared like this in
-    <code>Layout/MainLayout.razor</code>:
-</p>
-<pre><code>@MarkupExample</code></pre>
-<div class="actions">
-    <button type="button" class="btn" @onclick='() => Palette.OpenAsync("new")'>Search "new"</button>
-</div>
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Declarative markup</h3>
+    <p>
+        Commands can live in markup next to the component that owns them. A <code>BaletteItem</code> inside a
+        <code>BaletteItem</code> turns the outer one into a page, and a <code>BaletteGroup</code> hands its heading and
+        priority to every item in it. The <em>Quick create</em> group of this app is declared like this in
+        <code>Components/AppPalette.razor</code>:
+    </p>
+    <pre class="bb-code">@MarkupExample</pre>
+    <div class="bb-try">
+        <button type="button" class="btn btn-secondary" @onclick='() => Palette.OpenAsync("new")'>Search "new"</button>
+    </div>
+</section>
 
-<h2>Scoped to a page</h2>
-<p>
-    <code>BaletteCommands</code> registers its list when it renders and removes it when it is disposed, and hands a
-    new registration over when it is passed a different list. <code>IBaletteService.Register</code> does the same from
-    code and returns the handle to dispose.
-</p>
-<pre><code>@ScopedExample</code></pre>
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Scoped to a page</h3>
+    <p>
+        <code>BaletteCommands</code> registers its list when it renders and removes it when it is disposed, and hands a
+        new registration over when it is passed a different list. <code>IBaletteService.Register</code> does the same from
+        code and returns the handle to dispose.
+    </p>
+    <pre class="bb-code">@ScopedExample</pre>
+</section>
 
-<h2 id="settings">Settings that stay in sync</h2>
-<p>
-    These values are what the palette's <em>Preferences</em> commands change. Change one here and open the palette:
-    the toggle shows it. Change it there and this page shows it. The layout rebuilds its command list from
-    <code>DemoState</code> whenever it changes, so a toggle's switch is never stale.
-</p>
+<section class="bb-card" id="settings">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Settings that stay in sync</h3>
+    <p>
+        These values are what the palette's <em>Preferences</em> commands change. Change one here and open the palette:
+        the toggle shows it. Change it there and this page shows it. The palette host rebuilds its command list from
+        <code>DemoState</code> whenever it changes, so a toggle's switch is never stale. The theme is the site's own - the
+        header's toggle flips it too.
+    </p>
 
-<div class="panel settings">
-    <label class="setting">
-        <span>Theme</span>
-        <select value="@State.Theme" @onchange="OnThemeChanged" aria-label="Theme">
-            <option value="auto">Auto</option>
-            <option value="light">Light</option>
-            <option value="dark">Dark</option>
-        </select>
-    </label>
-    <label class="setting">
-        <span>Word wrap <BaletteShortcutHint Shortcut="WordWrapShortcut" IsMac="Palette.IsMac" /></span>
-        <input type="checkbox" checked="@State.WordWrap" @onchange="State.ToggleWordWrap" />
-    </label>
-    <label class="setting">
-        <span>Desktop notifications</span>
-        <input type="checkbox" checked="@State.Notifications" @onchange="State.ToggleNotifications" />
-    </label>
-    <label class="setting">
-        <span>Show minimap</span>
-        <input type="checkbox" checked="@State.ShowMinimap" @onchange="State.ToggleMinimap" />
-    </label>
-</div>
+    <div class="demo-settings">
+        <label class="demo-setting">
+            <span>Theme</span>
+            <select value="@State.Theme" @onchange="OnThemeChanged" aria-label="Theme">
+                <option value="auto">Auto</option>
+                <option value="light">Light</option>
+                <option value="dark">Dark</option>
+            </select>
+        </label>
+        <label class="demo-setting">
+            <span>Word wrap <BaletteShortcutHint Shortcut="WordWrapShortcut" IsMac="Palette.IsMac" /></span>
+            <input type="checkbox" checked="@State.WordWrap" @onchange="State.ToggleWordWrap" />
+        </label>
+        <label class="demo-setting">
+            <span>Desktop notifications</span>
+            <input type="checkbox" checked="@State.Notifications" @onchange="State.ToggleNotifications" />
+        </label>
+        <label class="demo-setting">
+            <span>Show minimap</span>
+            <input type="checkbox" checked="@State.ShowMinimap" @onchange="State.ToggleMinimap" />
+        </label>
+    </div>
 
-<div class="note">
-    Rebuilding the whole list is the simplest way to keep it current, and cheap: it is a few dozen records.
-    <code>IBaletteService.Update(command)</code> replaces a single command by id instead, which suits a registry
-    too large to rebuild on every change.
-</div>
+    <div class="bb-note">
+        Rebuilding the whole list is the simplest way to keep it current, and cheap: it is a few dozen records.
+        <code>IBaletteService.Update(command)</code> replaces a single command by id instead, which suits a registry
+        too large to rebuild on every change.
+    </div>
+</section>
 
 @code {
     private const string BuilderExample = """

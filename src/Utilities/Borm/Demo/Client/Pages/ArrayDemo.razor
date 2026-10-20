@@ -1,35 +1,36 @@
 ﻿@page "/array"
 @implements IDisposable
 
-<PageTitle>Array / repeater</PageTitle>
+<PageTitle>Array / repeater · Borm</PageTitle>
 
-<div class="demo-intro">
+<div class="bb-intro">
     <h1>Array / repeater</h1>
-    <p>
+    <p class="bb-subtitle">
         Array fields render a repeating editor with add, remove and reorder. Each item is a nested
         object validated like any other field, and its errors travel with it when rows move. The
         <em>Total</em> below is a <strong>computed field</strong>: the schema derives it from the lines,
         so no page code keeps it in sync.
     </p>
-    <p>
-        Try it with the keyboard. Adding a line puts the caret in it; removing one moves the caret to
-        the line that took its place — rather than dropping it on the page body, which is where a
-        button that deletes itself normally leaves you. An invoice needs at least one line, so the last
-        one cannot be removed; on a repeater that can be emptied, the caret goes to the add button.
-    </p>
 </div>
 
-<div class="demo-card">
+<div class="bb-note">
+    Try it with the keyboard. Adding a line puts the caret in it; removing one moves the caret to
+    the line that took its place — rather than dropping it on the page body, which is where a
+    button that deletes itself normally leaves you. An invoice needs at least one line, so the last
+    one cannot be removed; on a repeater that can be emptied, the caret goes to the add button.
+</div>
+
+<div class="bb-demo">
+    <div class="bb-demo-bar">
+        <span class="bb-demo-label">Live form</span>
+        <label class="bb-check">
+            <input type="checkbox" checked="@_locked" @onchange="@(e => _locked = e.Value is bool b && b)" />
+            <span>Lock the invoice (<code>Disabled</code>)</span>
+        </label>
+    </div>
     <BormView State="_state" OnValidSubmit="HandleSubmit" SubmitText="Save invoice"
               ShowErrorSummary="true" Disabled="_locked" />
-</div>
-
-<div class="demo-card" style="margin-top:1rem;">
-    <label style="display:flex;gap:.5rem;align-items:center;font-size:.9rem;">
-        <input type="checkbox" checked="@_locked" @onchange="@(e => _locked = e.Value is bool b && b)" />
-        Lock the invoice (<code>Disabled</code>)
-    </label>
-    <p style="color:#64748b;font-size:.82rem;margin:.4rem 0 0;">
+    <p class="demo-footnote">
         <code>Disabled</code> makes the form inoperable — every control and button, the repeater's
         buttons included. It is deliberately not the same as <code>ReadOnly</code>, which keeps the
         fields focusable and readable for a review screen.
@@ -38,12 +39,12 @@
 
 @if (_submitted)
 {
-    <div class="demo-result"><strong>Saved ✓</strong> <pre>@_json</pre></div>
+    <div class="bb-note bb-note-success demo-result"><strong>Saved ✓</strong><pre>@_json</pre></div>
 }
 
-<details class="demo-source">
-    <summary>View source</summary>
-    <pre><code>@Source</code></pre>
+<details class="bb-source demo-source">
+    <summary class="btn btn-secondary">View source</summary>
+    <pre class="bb-code"><code>@Source</code></pre>
 </details>
 
 @code {

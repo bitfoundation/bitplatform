@@ -1,18 +1,18 @@
 ﻿@page "/examples/undo-redo"
-<PageTitle>Undo & Redo - bit Blow</PageTitle>
+<PageTitle>Undo & Redo · Blow</PageTitle>
 
 <ExampleScaffold Title="Undo & Redo"
                  Summary="BlowHistory holds snapshots and hands back the one to restore. It is something you drive rather than something the canvas does for you, because only your app knows what counts as one undoable step - dragging five nodes is one step, not five hundred pointer moves. Capture when a gesture ends; identical captures are ignored, so pressing undo always does something.">
     <Toolbar>
-        <button class="btn btn-sm btn-primary" disabled="@(!_history.CanUndo)" @onclick="Undo">
+        <button class="btn btn-primary" disabled="@(!_history.CanUndo)" @onclick="Undo">
             Undo (@_history.UndoDepth)
         </button>
-        <button class="btn btn-sm btn-primary" disabled="@(!_history.CanRedo)" @onclick="Redo">
+        <button class="btn btn-primary" disabled="@(!_history.CanRedo)" @onclick="Redo">
             Redo (@_history.RedoDepth)
         </button>
         <span class="hist-sep"></span>
-        <button class="btn btn-sm btn-outline-secondary" @onclick="AddNode">Add node</button>
-        <button class="btn btn-sm btn-outline-secondary" @onclick="Scramble">Scramble</button>
+        <button class="btn btn-secondary" @onclick="AddNode">Add node</button>
+        <button class="btn btn-secondary" @onclick="Scramble">Scramble</button>
     </Toolbar>
     <ChildContent>
         <BlowCanvas @ref="_flow"

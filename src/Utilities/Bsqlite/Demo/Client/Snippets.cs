@@ -6,7 +6,11 @@
 /// </summary>
 internal static class Snippets
 {
-    public static class Setup
+    /// <summary>
+    /// The Getting started page: the README's own registration and page, rather than this demo's - the
+    /// demo's wiring carries a seed and four backends a first app does not need.
+    /// </summary>
+    public static class Start
     {
         public const string Install =
             """
@@ -15,91 +19,119 @@ internal static class Snippets
 
         public const string Registration =
             """
-            // Program.cs - Blazor WebAssembly. One call registers selection, sticky bindings in
-            // localStorage, the worker transport, and the shared database.
+            using Bit.Bsqlite.Storage.IndexedDb;
+            using Bit.Bsqlite.Storage.InMemory;
+            using Bit.Bsqlite.Storage.Opfs;
+
             builder.Services.AddBitBsqliteServices(sqlite => sqlite
                 .AddStorageProvider<BsqliteOpfsStorageProvider>()
                 .AddStorageProvider<BsqliteIndexedDbStorageProvider>()
-                .AddStorageProvider<BsqliteCacheStorageProvider>()
                 .AddStorageProvider<BsqliteInMemoryStorageProvider>()
                 .UseStorage(s => s
                     .Prefer(BsqliteOpfsStorageProvider.ProviderName)
                     .Fallback(BsqliteIndexedDbStorageProvider.ProviderName)
-                    .Fallback(BsqliteCacheStorageProvider.ProviderName)
                     .Fallback(BsqliteInMemoryStorageProvider.ProviderName)
                     .AllowNonPersistentFallback())
                 .AddDatabase("app.db"));
 
-            // Contexts come from a factory bound to that database. Migrations run once per
-            // session, then the demo catalog is seeded if the database is empty.
-            builder.Services.AddBitBsqliteDbContext<AppDbContext>(options =>
-                options.OnFirstUse = (db, ct) => DemoData.SeedIfEmptyAsync(db, ct));
-            """;
-
-        /// <summary>The condensed version on the landing page: register, open, query.</summary>
-        public const string Hero =
-            """
-            // Program.cs - one preference order, one database, one context factory.
-            builder.Services.AddBitBsqliteServices(sqlite => sqlite
-                .AddStorageProvider<BsqliteOpfsStorageProvider>()
-                .AddStorageProvider<BsqliteIndexedDbStorageProvider>()
-                .UseStorage(s => s.Prefer("opfs").Fallback("indexeddb"))
-                .AddDatabase("app.db"));
             builder.Services.AddBitBsqliteDbContext<AppDbContext>();
-
-            // Anywhere you would have opened a DbContext. Migrations ran on first use.
-            await using var context = await contexts.CreateDbContextAsync();
-
-            // From here it is ordinary EF Core - running inside the browser tab.
-            var open = await context.Orders
-                .Include(o => o.Customer)
-                .Where(o => o.Status == OrderStatus.Draft)
-                .ToListAsync();
             """;
 
-        public const string OpenContext =
+        public const string Page =
             """
-            // One session per tab, owned by the registered BsqliteDatabase: it holds the
-            // worker, the transport, and the ADO.NET connection. The factory opens it on first use
-            // and runs the same migrations that run against the server database, once per session.
-            await using var context = await contexts.CreateDbContextAsync(cancellationToken);
+            @page "/products"
+            @using Bit.Bsqlite.EntityFrameworkCore
+            @using Microsoft.EntityFrameworkCore
+            @inject IBsqliteDbContextFactory<AppDbContext> Contexts
+
+            @code {
+                private List<Product> _products = [];
+
+                protected override async Task OnInitializedAsync()
+                {
+                    // The first context opens the database and applies the migrations; later ones reuse the session.
+                    await using var db = await Contexts.CreateDbContextAsync();
+                    _products = await db.Products.OrderBy(p => p.Name).ToListAsync();
+                }
+
+                private async Task AddAsync()
+                {
+                    await using var db = await Contexts.CreateDbContextAsync();
+                    db.Products.Add(new Product { Name = "Widget", Price = 19.99m });
+                    await db.SaveChangesAsync();
+                }
+            }
+            """;
+
+        public const string Prerendered =
+            """
+            protected override async Task OnInitializedAsync()
+            {
+                // Prerendering runs this on the server first, where there is no browser to open a database in.
+                // It runs again once the page is interactive on WebAssembly.
+                if (RendererInfo.IsInteractive is false) return;
+
+                await using var db = await Contexts.CreateDbContextAsync();
+                _orders = await db.Orders.Where(o => o.Status == OrderStatus.Draft).ToListAsync();
+            }
             """;
     }
 
     public static class Home
     {
-        public const string Counts =
+        /// <summary>The landing page's window: the live query the rows under it come from.</summary>
+        public const string Hero =
             """
-            await using var context = await Database.OpenContextAsync();
+            _context = await contexts.CreateDbContextAsync();
 
-            _products = await context.Products.CountAsync();
-            _customers = await context.Customers.CountAsync();
-            _openOrders = await context.Orders.CountAsync(o =>
-                o.Status != OrderStatus.Shipped && o.Status != OrderStatus.Cancelled);
-            """;
-
-        public const string LiveQuery =
-            """
-            // Table-level: any write to Products re-runs this, including from another tab
-            // (BroadcastChannel), including from raw SQL that never touched EF.
-            _live = context.Products
-                .AsNoTracking()
-                .OrderBy(p => p.Sku)
-                .Take(8)
+            // Re-runs whenever Products is written - by this tab, by another
+            // tab, or by raw SQL that never touched EF. Nothing polls it.
+            _live = _context.Products.AsNoTracking()
+                .OrderBy(p => p.Sku).Take(4)
                 .AsLiveQuery();
 
             _live.Changed += (_, rows) =>
             {
-                _liveRows = rows;
+                _rows = rows;
                 _ = InvokeAsync(StateHasChanged);
             };
-
-            _liveRows = await _live.RefreshAsync();
-
-            // Disposing the live query unsubscribes it from the connection's change feed.
-            await _live.DisposeAsync();
+            _rows = await _live.RefreshAsync();
             """;
 
+        public const string Register =
+            """
+            builder.Services.AddBitBsqliteServices(sqlite => sqlite
+                .AddStorageProvider<BsqliteOpfsStorageProvider>()
+                .AddStorageProvider<BsqliteIndexedDbStorageProvider>()
+                .UseStorage(s => s.Prefer("opfs").Fallback("indexeddb"))
+                .AddDatabase("app.db"));
+
+            builder.Services.AddBitBsqliteDbContext<AppDbContext>();
+            """;
+
+        public const string Query =
+            """
+            await using var db = await Contexts.CreateDbContextAsync();
+
+            var drafts = await db.Orders
+                .Include(o => o.Customer)
+                .Include(o => o.Lines).ThenInclude(l => l.Product)
+                .Where(o => o.Status == OrderStatus.Draft)
+                .ToListAsync();
+            """;
+
+        public const string Export =
+            """
+            // The backend this database landed on: "opfs", "indexeddb", ...
+            var provider = Database.Resolution!.Provider;
+
+            // The database as a file: a plain SQLite image any desktop tool opens.
+            byte[] image = await provider.Admin.ExportAsync("app.db");
+            """;
+    }
+
+    public static class Catalog
+    {
         public const string Entity =
             """
             public sealed class Product
@@ -117,10 +149,7 @@ internal static class Snippets
                 public Category? Category { get; set; }
             }
             """;
-    }
 
-    public static class Catalog
-    {
         public const string Read =
             """
             _categories = await context.Categories

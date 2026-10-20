@@ -8,44 +8,45 @@
    is how the library is used in an upload handler, a thumbnail service or a console tool - the
    editor is one consumer of this API, not the API itself. *@
 
-<PageTitle>Headless API - Bit.Bmage</PageTitle>
+<PageTitle>Headless API · Bmage</PageTitle>
 
-<h1>The headless API</h1>
+<div class="bb-intro">
+    <h1>The headless API</h1>
+    <p class="bb-subtitle">
+        Not a single component on this page uses the editor. Everything below is <strong>the same engine
+        driven from plain C#</strong>, which is how you would use it in an upload handler, a thumbnail
+        service, or a console tool.
+    </p>
+</div>
 
-<p class="page-intro">
-    Not a single component on this page uses the editor. Everything below is <strong>the same engine
-    driven from plain C#</strong>, which is how you would use it in an upload handler, a thumbnail
-    service, or a console tool.
-</p>
-
-<div class="demo-section">
-    <h2>Run every example</h2>
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Run every example</h3>
 
     @if (_error is not null)
     {
-        <div class="alert alert-error" role="alert">@_error</div>
+        <div class="bb-note bb-note-danger demo-error" role="alert">@_error</div>
     }
 
     <BmageDropZone Label="Drop an image to run every example against it" OnFilesSelected="OnFilesSelected" />
-    <div class="sample-row">
-        <button type="button" class="btn" disabled="@(_busy || IsHydrating)" @onclick="UseSample">Use a sample image</button>
+    <div class="bb-toolbar">
+        <button type="button" class="btn btn-secondary" disabled="@(_busy || IsHydrating)" @onclick="UseSample">Use a sample image</button>
         @if (_busy)
         {
-            <span class="working" role="status">Running example @(_examples.Count + 1) of @ExampleCount&hellip;</span>
+            <span class="working" role="status"><span class="bb-spinner" aria-hidden="true"></span>Running example @(_examples.Count + 1) of @ExampleCount&hellip;</span>
         }
     </div>
 
     @if (_source is not null)
     {
-        <hr class="divider" />
-        <p class="card-title">Source</p>
+        <hr class="demo-divider" />
+        <p class="bb-overline demo-label">Source</p>
         <div class="preview-row">
             <ImagePreview Image="_source" Alt="Source image" Style="max-height:180px" />
-            <div class="table-scroll headless-source" tabindex="0" role="region" aria-label="Source image details">
-                <table class="data">
+            <div class="bb-scroll headless-source" tabindex="0" role="region" aria-label="Source image details">
+                <table class="bb-table">
                     <tbody>
-                        <tr><th scope="row">Dimensions</th><td class="num">@_source.Width &times; @_source.Height</td></tr>
-                        <tr><th scope="row">Pixels in memory</th><td class="num">@Display.Bytes(_source.ByteLength)</td></tr>
+                        <tr><th scope="row">Dimensions</th><td class="demo-num">@_source.Width &times; @_source.Height</td></tr>
+                        <tr><th scope="row">Pixels in memory</th><td class="demo-num">@Display.Bytes(_source.ByteLength)</td></tr>
                         <tr><th scope="row">Source format</th><td>@(_source.Metadata?.SourceFormat.ToString() ?? "unknown")</td></tr>
                         <tr><th scope="row">Transparency</th><td>@(_hasAlpha ? "yes" : "no")</td></tr>
                         @if (_exif is not null)
@@ -57,7 +58,7 @@
                                 <td>
                                     @if (_exif.Location is { } location)
                                     {
-                                        <span class="text-bad">@location.ToString() — removed on export</span>
+                                        <span class="demo-bad">@location.ToString() — removed on export</span>
                                     }
                                     else
                                     {
@@ -75,25 +76,25 @@
 
 @if (_source is not null)
 {
-    <div class="demo-section">
-        <h2>The results</h2>
-        <div class="grid">
+    <div class="bb-card">
+        <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> The results</h3>
+        <div class="bb-grid headless-results">
             @foreach (var example in _examples)
             {
-                <div class="card" @key="example.Version">
-                    <p class="card-title">@example.Title</p>
+                <div class="bb-card headless-result" @key="example.Version">
+                    <p class="bb-card-title">@example.Title</p>
                     <ImagePreview Image="example.Image" Version="example.Version" Alt="@example.Title" Class="headless-preview" />
-                    <p class="small muted headless-description">@example.Description</p>
-                    <p class="small mono">@example.Image.Width &times; @example.Image.Height &middot; @Display.Bytes(example.Bytes)</p>
-                    <pre class="code">@example.Code</pre>
+                    <p class="demo-small bb-muted headless-description">@example.Description</p>
+                    <p class="demo-small bb-mono">@example.Image.Width &times; @example.Image.Height &middot; @Display.Bytes(example.Bytes)</p>
+                    <pre class="demo-readout">@example.Code</pre>
                 </div>
             }
         </div>
     </div>
 }
 
-<div class="demo-section">
-    <h2>No browser at all</h2>
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> No browser at all</h3>
     <p>
         The same package works in an ASP.NET Core endpoint or a console app. Register the headless
         services and you get the managed PNG, JPEG, BMP and GIF codecs with no JavaScript involved -
@@ -103,10 +104,10 @@
     <CodeSnippet Code="@ServerSnippet" Language="C#" Expanded="true" />
 </div>
 
-<div class="demo-section">
-    <h2>The pieces</h2>
-    <div class="table-scroll" tabindex="0" role="region" aria-label="Headless types">
-        <table class="ref">
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> The pieces</h3>
+    <div class="bb-scroll" tabindex="0" role="region" aria-label="Headless types">
+        <table class="bb-table">
             <thead>
                 <tr><th scope="col">Type</th><th scope="col">Purpose</th></tr>
             </thead>
@@ -125,8 +126,8 @@
     </div>
 </div>
 
-<div class="demo-section">
-    <h2>Drawing without a UI</h2>
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Drawing without a UI</h3>
     <p>
         <code>ImageCanvas</code> is a complete drawing surface - the last example above was composed
         with it. Paths come from <code>PathBuilder</code> (lines, quadratic and cubic curves, arcs,
@@ -143,8 +144,8 @@
     <CodeSnippet Code="@FontSnippet" Language="C#" />
 </div>
 
-<div class="demo-section">
-    <h2>Analysing an image</h2>
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Analysing an image</h3>
     <p>
         <code>ImageStatistics</code> samples on a regular grid by default, which keeps a 24 megapixel
         photo well under a frame while staying indistinguishable from a full pass. The dominant
@@ -159,8 +160,8 @@
     <CodeSnippet Code="@PlaceholderSnippet" Language="C#" />
 </div>
 
-<div class="demo-section">
-    <h2>Non-destructive editing without the editor</h2>
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Non-destructive editing without the editor</h3>
     <p>
         The editor's document model is public. A document is a value: serialise it, send it to a
         server, or apply it to a different image - rendering never modifies the source.

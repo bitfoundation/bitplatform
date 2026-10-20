@@ -265,7 +265,6 @@ public static partial class BbScannerSourceCatalog
         if (path.StartsWith("Library/", StringComparison.OrdinalIgnoreCase)) return "Library";
         if (path.StartsWith("Demo/Server/", StringComparison.OrdinalIgnoreCase) ||
             path.StartsWith("Demo/Client/Extensions/", StringComparison.OrdinalIgnoreCase) ||
-            path.StartsWith("Demo/Client/Layout/", StringComparison.OrdinalIgnoreCase) ||
             path.Equals("Demo/Client/Program.cs", StringComparison.OrdinalIgnoreCase) ||
             path.Equals("Demo/Client/Routes.razor", StringComparison.OrdinalIgnoreCase) ||
             path.Equals("Demo/Client/_Imports.razor", StringComparison.OrdinalIgnoreCase)) return "Hosting";
@@ -410,7 +409,7 @@ public static partial class BbScannerSourceCatalog
     [GeneratedRegex(@"///\s*<summary>(?<text>.*?)</summary>", RegexOptions.Singleline)]
     private static partial Regex XmlSummaryRegex();
 
-    [GeneratedRegex(@"<p class=""lede"">(?<text>.*?)</p>", RegexOptions.Singleline)]
+    [GeneratedRegex(@"<p class=""bb-subtitle"">(?<text>.*?)</p>", RegexOptions.Singleline)]
     private static partial Regex PageIntroRegex();
 
     [GeneratedRegex(@"<PageTitle>(?<text>.*?)</PageTitle>", RegexOptions.Singleline | RegexOptions.IgnoreCase)]

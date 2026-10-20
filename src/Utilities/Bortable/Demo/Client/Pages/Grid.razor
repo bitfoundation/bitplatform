@@ -1,10 +1,10 @@
 ﻿@page "/grid"
 
-<PageTitle>Grid - bit Bortable</PageTitle>
+<PageTitle>Grid · Bortable</PageTitle>
 
-<div class="demo-header">
-    <h3>Grid</h3>
-    <p class="text-muted">
+<div class="bb-intro">
+    <h1>Grid</h1>
+    <p class="bb-subtitle">
         The component doesn't care about layout - point it at a CSS grid container and you get a sortable grid.
         Drag the squares to rearrange them.
     </p>
@@ -12,14 +12,16 @@
 
 <DemoCode />
 
-<Bortable @bind-Items="_items" TItem="int" Id="grid-list"
-          Class="demo-grid" GhostClass="demo-ghost">
-    <ItemTemplate Context="n">
-        <div class="grid-square">@n</div>
-    </ItemTemplate>
-</Bortable>
+<div class="bb-demo">
+    <Bortable @bind-Items="_items" TItem="int" Id="grid-list"
+              Class="demo-grid" GhostClass="demo-ghost">
+        <ItemTemplate Context="n">
+            <div class="grid-square">@n</div>
+        </ItemTemplate>
+    </Bortable>
 
-<p class="demo-order"><strong>Order:</strong> <span id="grid-order">@string.Join(", ", _items)</span></p>
+    <p class="demo-order"><strong>Order:</strong> <span id="grid-order">@string.Join(", ", _items)</span></p>
+</div>
 
 @code {
     private IList<int> _items = Enumerable.Range(1, 16).ToList();

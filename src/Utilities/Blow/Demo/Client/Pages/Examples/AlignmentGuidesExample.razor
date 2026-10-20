@@ -1,6 +1,6 @@
 ﻿@page "/examples/alignment-guides"
 
-<PageTitle>Alignment Guides - bit Blow</PageTitle>
+<PageTitle>Alignment Guides · Blow</PageTitle>
 
 <ExampleScaffold Title="Alignment Guides"
                  Summary="Drag a node near another and it clicks into line with it - by left edge, centre or right edge, and the same three on the other axis. A thin guide shows what it lined up with. The snap distance is measured on screen, so it feels the same however far you have zoomed in.">
@@ -27,7 +27,7 @@
                     SnapGridX="20"
                     SnapGridY="20"
                     FitViewOnInit="true">
-            <BlowBackground Variant="BlowBackgroundVariant.Lines" Gap="20" Color="#eee" />
+            <BlowBackground Variant="BlowBackgroundVariant.Lines" Gap="20" Color="var(--bit-blow-border-subtle)" />
             <BlowControls />
             <BlowPanel Anchor="BlowPanelPosition.TopRight">
                 <div class="guide-hint">

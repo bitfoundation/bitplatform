@@ -1,0 +1,161 @@
+﻿@page "/getting-started"
+
+<PageTitle>Getting started · Bcrdt</PageTitle>
+
+<div class="bb-intro">
+    <h1>Getting started</h1>
+    <p class="bb-subtitle">
+        One package for the engine and the Blazor components, one for the transport, one for the relay - then a
+        <code>BcrdtTextArea</code> inside a <code>BcrdtCollaborationScope</code> is a working collaborative editor
+        with live presence, automatic reconnection and offline support.
+    </p>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Install</h3>
+    <p class="bb-card-desc">
+        <code>Bit.Bcrdt</code> carries the engine, the synchronization, presence and persistence, the in-memory and
+        WebSocket transports and the Blazor components. The SignalR client transport is a package of its own with no
+        ASP.NET Core server dependency, so it runs in WebAssembly and Hybrid apps too.
+    </p>
+    <pre class="bb-code"><span class="c"># the engine and the Blazor components</span>
+dotnet add package Bit.Bcrdt
+
+<span class="c"># the SignalR transport - or use the WebSocket transport built into Bit.Bcrdt, or none</span>
+dotnet add package Bit.Bcrdt.SignalR</pre>
+    <div class="bb-scroll">
+        <table class="bb-table">
+            <thead>
+                <tr><th>Package</th><th>Contents</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td class="bb-table-key">Bit.Bcrdt</td>
+                    <td>The engine - <code>BcrdtText</code>, <code>BcrdtArray</code>, <code>BcrdtMap</code> and <code>BcrdtSet</code>, updates, snapshots and selective undo - with presence, the stores, the sync protocol, <code>AddBitBcrdtServices</code>, the input bindings, the in-memory and WebSocket transports and the Blazor components.</td>
+                </tr>
+                <tr>
+                    <td class="bb-table-key">Bit.Bcrdt.SignalR</td>
+                    <td>The SignalR client transport.</td>
+                </tr>
+                <tr>
+                    <td class="bb-table-key">Bit.Bcrdt.Server</td>
+                    <td>The ASP.NET Core relays: <code>BcrdtHub</code> for the SignalR transport and <code>MapBitBcrdtWebSocket</code> for the WebSocket transport.</td>
+                </tr>
+                <tr>
+                    <td class="bb-table-key">Bit.Bcrdt.Testing</td>
+                    <td>A deterministic, seeded network simulator, random operation generators, a convergence harness and an update corrupter for fuzzing.</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Register the services</h3>
+    <p class="bb-card-desc">
+        Register it once, in every project that renders collaborative components - in a Blazor Web App, that is both
+        the server and the client project. The .NET SignalR client needs an <strong>absolute</strong> hub URL, so
+        resolve it against the host; in Blazor WebAssembly that is the host page's base address.
+    </p>
+    <pre class="bb-code"><span class="k">using</span> Bit.Bcrdt;
+<span class="k">using</span> Bit.Bcrdt.SignalR;
+
+<span class="k">string</span> hubUrl = <span class="k">new</span> Uri(<span class="k">new</span> Uri(builder.HostEnvironment.BaseAddress), <span class="s">"hub/bcrdt"</span>).ToString();
+
+builder.Services.AddBitBcrdtServices(collaboration =&gt; collaboration
+    .UseTransport(<span class="k">new</span> BcrdtSignalRTransportFactory(hubUrl))
+    .UseInMemoryStore());</pre>
+    <p class="bb-card-desc">
+        <code>AddBitBcrdtSignalRTransport(hubUrl)</code> is the same registration as a one-liner. Each of the three
+        seams - transport, store and options - is optional: an application that configures none of them still gets a
+        working, purely local collaborative document, so a feature can be built and tested without a server and then
+        connected to one without changing how it reads or writes state.
+    </p>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Map the relay</h3>
+    <p class="bb-card-desc">
+        The hub lives in a separate server-side package, so that the client transport carries no ASP.NET Core server
+        dependency. Use <code>AddBitBcrdtHub</code> rather than a bare <code>AddSignalR</code>: SignalR's default
+        32 KB receive limit is smaller than the handshake reply for any document of real size.
+    </p>
+    <pre class="bb-code">dotnet add package Bit.Bcrdt.Server    <span class="c"># in the server project</span></pre>
+    <pre class="bb-code"><span class="k">using</span> Bit.Bcrdt.Server;
+
+builder.Services.AddBitBcrdtHub();   <span class="c">// AddSignalR, with a receive limit sized for sync messages</span>
+<span class="c">// ...</span>
+app.MapHub&lt;BcrdtHub&gt;(<span class="s">"/hub/bcrdt"</span>);</pre>
+    <p class="bb-card-desc">
+        The raw WebSocket transport has its relay in the same package: call <code>app.UseWebSockets()</code> and map
+        it with <code>app.MapBitBcrdtWebSocket("/ws/bcrdt/{documentId}")</code>. Neither relay decodes a message or
+        holds a replica - they only forward bytes between the clients of a document.
+    </p>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> A first editor</h3>
+    <p class="bb-card-desc">
+        <code>BcrdtCollaborationScope</code> opens the document, renders its content with the document as context,
+        shows <code>LoadingContent</code> while it opens and releases the document when it goes away.
+        <code>BcrdtTextArea</code> turns every keystroke into the minimal edit and publishes the caret through
+        presence. There is no stylesheet to reference and no script tag to add: the one small module the textarea
+        needs is imported on demand.
+    </p>
+    <pre class="bb-code"><span class="k">@@using</span> Bit.Bcrdt
+<span class="k">@@using</span> Bit.Bcrdt.Blazor
+
+&lt;<span class="k">BcrdtCollaborationScope</span> DocumentId=<span class="s">"notes-42"</span> User=<span class="s">"_me"</span> Context=<span class="s">"document"</span>&gt;
+    &lt;<span class="k">BcrdtPresenceView</span> Presence=<span class="s">"document.Presence"</span> /&gt;
+    &lt;<span class="k">BcrdtTextArea</span> Text=<span class="s">"@@document.Text("body")"</span> Presence=<span class="s">"document.Presence"</span> /&gt;
+&lt;/<span class="k">BcrdtCollaborationScope</span>&gt;
+
+<span class="k">@@code</span> {
+    <span class="k">private readonly</span> BcrdtCollaboratorInfo _me = <span class="k">new</span>(<span class="s">"u-1"</span>, <span class="s">"Ada"</span>, BcrdtPresenceService.SuggestColor(<span class="s">"u-1"</span>));
+}</pre>
+    <p class="bb-card-desc">
+        In a page that is prerendered and then becomes interactive, open documents only once the component is
+        interactive (<code>RendererInfo.IsInteractive</code>) - a document opened while prerendering belongs to a
+        request that is already over. The <a href="live">live page</a> is exactly this, across browser tabs.
+    </p>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-danger"></span> Choose the data type</h3>
+    <p class="bb-card-desc">
+        This is the decision that matters most: the merge is decided by the data structure rather than by your
+        application, so it is worth knowing what each one will decide.
+    </p>
+    <div class="bb-scroll">
+        <table class="bb-table">
+            <thead>
+                <tr><th>Type</th><th>Concurrent edits resolve as</th><th>Reach for it when</th></tr>
+            </thead>
+            <tbody>
+                <tr><td class="bb-table-key">BcrdtText</td><td>Both edits survive, each author's run stays contiguous</td><td>Anything a person types into at length</td></tr>
+                <tr><td class="bb-table-key">BcrdtArray</td><td>Both insertions survive, in a stable order</td><td>Lists, ordered collections</td></tr>
+                <tr><td class="bb-table-key">BcrdtMap</td><td><strong>One value wins</strong>, deterministically but arbitrarily</td><td>Fields where a later value legitimately replaces an earlier one</td></tr>
+                <tr><td class="bb-table-key">BcrdtSet</td><td>An add wins over a concurrent remove - if it added something</td><td>Tags, membership, flags</td></tr>
+            </tbody>
+        </table>
+    </div>
+    <p class="bb-card-desc">
+        The trap is a <code>BcrdtMap</code> with a long string in it: two people editing that field concurrently
+        means one of them loses everything they typed. If a field is something a human types prose into, make it a
+        nested <code>BcrdtText</code> and both edits merge - the <a href="form">collaborative form</a> shows the two
+        side by side.
+    </p>
+    <pre class="bb-code">document.Map.EnsureText(<span class="s">"description"</span>).Insert(0, <span class="s">"..."</span>);   <span class="c">// merges</span>
+document.Map.Set(<span class="s">"description"</span>, <span class="s">"..."</span>);                    <span class="c">// one side wins</span></pre>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Where to go next</h3>
+    <ul class="bb-detail-list">
+        <li><a href="text">Collaborative text</a> - three replicas of one paragraph, and what happens when one goes offline.</li>
+        <li><a href="conflicts">Conflict lab</a> - six conflicts provoked on purpose, each with its outcome stated before it runs.</li>
+        <li><a href="undo">Collaborative undo</a> - a stack per replica that undoes only its own edits.</li>
+        <li><a href="mcp-server">MCP server</a> - point an AI agent at this site and it reads the real API, the guide and these pages.</li>
+        <li>The full reference guide - persistence, presence, transports, the architecture and the correctness tests - is the <a href="@SiteInfo.ProjectUrl" target="_blank" rel="noopener noreferrer">README on GitHub</a>.</li>
+    </ul>
+</div>

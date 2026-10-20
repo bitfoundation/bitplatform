@@ -1,19 +1,20 @@
 ﻿@page "/web-app"
 
-<PageTitle>Blazor Web App - bit Belemetry</PageTitle>
+<PageTitle>Blazor Web App · Belemetry</PageTitle>
 
-<h1>Blazor Web App</h1>
+<div class="bb-intro">
+    <h1>Blazor Web App</h1>
+    <p class="bb-subtitle">
+        A Blazor Web App has two projects and up to four ways of rendering a page - Server, WebAssembly,
+        Auto and static SSR. Belemetry is set up the same way for all of them: one registration in each
+        project, <code>&lt;BelemetryScript /&gt;</code> in the document head, and
+        <code>&lt;BelemetryInitializer /&gt;</code> in <code>Routes.razor</code>. What differs between the
+        render modes is where the .NET half runs, and that is decided for you.
+    </p>
+</div>
 
-<p class="page-intro">
-    A Blazor Web App has two projects and up to four ways of rendering a page - Server, WebAssembly,
-    Auto and static SSR. Belemetry is set up the same way for all of them: one registration in each
-    project, <code>&lt;BelemetryScript /&gt;</code> in the document head, and
-    <code>&lt;BelemetryInitializer /&gt;</code> in <code>Routes.razor</code>. What differs between the
-    render modes is where the .NET half runs, and that is decided for you.
-</p>
-
-<div class="demo-section">
-    <h2>Install</h2>
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Install</h3>
     <p>
         One package, referenced by the project that renders <code>App.razor</code> (the server) and by
         the client project when there is one. It brings the browser script with it as a static web
@@ -22,8 +23,8 @@
     <CodeSnippet Code="@InstallCode" Language="Shell" Expanded="true" />
 </div>
 
-<div class="demo-section">
-    <h2>Register in both projects</h2>
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Register in both projects</h3>
     <p>
         Call <code>AddBitBelemetryServices</code> in the server's <code>Program.cs</code> and in the
         client's. Every component is instantiated twice - once on the server for the prerender pass and
@@ -38,8 +39,8 @@
     <CodeSnippet Code="@ClientProgramCode" Language="C#" Expanded="true" />
 
     <p>Each container has its own job:</p>
-    <div class="doc-table-wrap">
-        <table class="doc-table">
+    <div class="bb-scroll">
+        <table class="bb-table">
             <thead>
                 <tr><th scope="col">Container</th><th scope="col">What Belemetry does there</th></tr>
             </thead>
@@ -70,8 +71,8 @@
     </div>
 </div>
 
-<div class="demo-section">
-    <h2>The script in App.razor</h2>
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> The script in App.razor</h3>
     <p>
         <code>&lt;BelemetryScript /&gt;</code> renders the configuration as an inline JSON element and the
         module after it. Because it is static markup in the head, the script starts before Blazor boots -
@@ -79,7 +80,7 @@
         it also covers static SSR pages that never become interactive.
     </p>
     <CodeSnippet Code="@AppRazorCode" Language="Razor" Expanded="true" />
-    <div class="callout">
+    <div class="bb-note">
         <p>
             With <code>MapStaticAssets</code> and fingerprinted assets, pass the fingerprinted path:
             <code>&lt;BelemetryScript Src="@@Assets["_content/Bit.Belemetry/bit-belemetry.js"]" /&gt;</code>.
@@ -88,8 +89,8 @@
     </div>
 </div>
 
-<div class="demo-section">
-    <h2>The initializer in Routes.razor</h2>
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> The initializer in Routes.razor</h3>
     <p>
         <code>&lt;BelemetryInitializer /&gt;</code> connects the script to .NET once the app is interactive:
         consent and the session flow both ways, browser records can be relayed to .NET, and the WebAssembly
@@ -99,14 +100,14 @@
     <CodeSnippet Code="@RoutesCode" Language="Razor" Expanded="true" />
 </div>
 
-<div class="demo-section">
-    <h2>Per render mode</h2>
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Per render mode</h3>
     <p>
         The setup above does not change between render modes. What changes is where .NET telemetry is
         collected and how <code>IBelemetry</code> calls travel:
     </p>
-    <div class="doc-table-wrap">
-        <table class="doc-table">
+    <div class="bb-scroll">
+        <table class="bb-table">
             <thead>
                 <tr>
                     <th scope="col">Render mode</th>
@@ -153,8 +154,8 @@
     <CodeSnippet Code="@StaticSsrConsentCode" Language="HTML" />
 </div>
 
-<div class="demo-section">
-    <h2>The server pipeline</h2>
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> The server pipeline</h3>
     <p>
         On an ASP.NET Core host Belemetry's .NET pipeline is off by default - such hosts usually have an
         OpenTelemetry setup of their own - and the server registration only renders and serves the script.
@@ -172,8 +173,8 @@
     </p>
 </div>
 
-<div class="demo-section">
-    <h2>What this site does</h2>
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> What this site does</h3>
     <p>
         This documentation site is a Blazor Web App in the InteractiveWebAssembly render mode, prerendered,
         and it is set up exactly as above: <code>AddBitBelemetryServices</code> in both projects through a
@@ -182,7 +183,7 @@
         and the server pipeline turned on. It exports OTLP/JSON to itself, and an in-process receiver
         hands each reader their own records back.
     </p>
-    <div class="callout">
+    <div class="bb-note">
         <p>
             Answer the consent banner, then open <a href="/live">Live telemetry</a>: the page views, clicks,
             web vitals and .NET logs you produce on this site arrive there within a couple of seconds, with
@@ -191,8 +192,8 @@
     </div>
 </div>
 
-<div class="demo-section">
-    <h2>API</h2>
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> API</h3>
     <ApiTable TypeName="BelemetryScript" />
     <ApiTable TypeName="BelemetryInitializer" />
     <ApiTable TypeName="BelemetryServerOptions" />

@@ -3,31 +3,34 @@
 
 <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-    <meta name="description" content="bit Balette (Bit.Balette) - a Blazor-native, accessible, keyboard-first command palette: fuzzy search, nested pages, prefix modes, async sources, recents and frecency, global shortcuts and sequences, multi-select, prompts, theming and templates, with every decision made in C#." />
-    <meta name="color-scheme" content="light dark" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#FFFFFF" />
     <base href="/" />
+    @* No static <title> here: every page supplies its own through <PageTitle>, and with
+       prerendering the HeadOutlet emits a real <title> element into this head. *@
+    <meta name="description" content="bit Balette (Bit.Balette) - a Blazor-native, accessible, keyboard-first command palette: fuzzy search, nested pages, prefix modes, async sources, recents and frecency, global shortcuts and sequences, multi-select, prompts, theming and templates, with every decision made in C#." />
+
+    @* Link previews: the card a chat client or a social site unfurls is the first impression a
+       shared link makes. *@
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Bit.Balette" />
+    <meta property="og:title" content="Balette - a command palette for Blazor" />
+    <meta property="og:description" content="The Ctrl+K box for Blazor apps: fuzzy search, nested pages, modes, async sources and global shortcuts - with matching, ranking and every decision in C#." />
+    <meta name="twitter:card" content="summary" />
+
     <ResourcePreloader />
-    @* The library's stylesheet is linked by the host page - Bit.Balette does not add it by itself - and it
-       comes first: the site's own one restyles the palette through the library's custom properties, which
-       only works if it comes later in the cascade. *@
-    <link rel="stylesheet" href="@Assets["_content/Bit.Balette/bit-balette.css"]" />
+    @* The site kit's stylesheet (app.css - shared by every Utilities demo), then the library's.
+       Bit.Balette does not add its stylesheet by itself: the host page links it, before any rule
+       that restyles the palette through its custom properties. demo.css is that rule here - it
+       styles this demo's samples and points the palette's tokens at the site's theme - so it comes
+       after it. *@
     <link rel="stylesheet" href="@Assets["app.css"]" />
-
-    @* A stored theme is applied here, in the head, rather than once the app is interactive: both
-       stylesheets key off the data-theme attribute, and setting it after the first paint would show
-       the reader a flash of the other theme. "auto", or nothing stored, leaves it to the system. *@
-    <script>
-        (function () {
-            try {
-                var stored = localStorage.getItem('bit-balette-demo.theme');
-                if (stored === 'light' || stored === 'dark') {
-                    document.documentElement.setAttribute('data-theme', stored);
-                }
-            } catch (e) { /* storage disabled: follow the system */ }
-        })();
-    </script>
-
+    <link rel="stylesheet" href="@Assets["_content/Bit.Balette/bit-balette.css"]" />
+    <link rel="stylesheet" href="@Assets["demo.css"]" />
+    @* Scoped-CSS bundle: includes the client project's *.razor.css files as well. *@
+    <link rel="stylesheet" href="@Assets["Bit.Balette.Demo.Server.styles.css"]" />
+    @* Synchronous on purpose: applies the light/dark theme before first paint. *@
+    <script src="@Assets["theme.js"]"></script>
     <ImportMap />
     <link rel="icon" type="image/svg+xml" href="favicon.svg" />
     <HeadOutlet @rendermode="InteractiveWebAssembly" />
@@ -44,6 +47,11 @@
         <span class="dismiss">&#128473;</span>
     </div>
     <script src="@Assets["_framework/blazor.web.js"]"></script>
+    <script src="@Assets["site.js"]"></script>
+    @* The demo's own glue between the site kit and the palette: the site theme as the Theme command knows it,
+       and which of the two palettes on this site a key belongs to. Its key listener is on the window, so it
+       hears a key before the library's, which is on the document. *@
+    <script src="@Assets["demo.js"]"></script>
 </body>
 
 </html>

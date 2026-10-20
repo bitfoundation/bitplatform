@@ -1,6 +1,6 @@
 ﻿@page "/examples/controlled-uncontrolled"
 
-<PageTitle>Controlled vs Uncontrolled - bit Blow</PageTitle>
+<PageTitle>Controlled vs Uncontrolled · Blow</PageTitle>
 
 <ExampleScaffold Title="Controlled vs Uncontrolled"
                  Summary="Controlled: the page subscribes to NodesChanged/EdgesChanged and keeps its own view of the graph in step with every edit as it happens. Uncontrolled: the page subscribes to nothing - the canvas edits the lists it was handed on its own, and the page only learns what changed when it asks the canvas through a component reference. Toggle, drag, connect or delete, and compare.">
@@ -8,12 +8,12 @@
         <label><input type="checkbox" checked="@_controlled" @onchange="OnModeChanged" /> controlled</label>
         @if (_controlled)
         {
-            <span class="text-muted">page state: @_nodeCount nodes, @_edgeCount edges (last change @_lastChange)</span>
+            <span class="bb-muted">page state: @_nodeCount nodes, @_edgeCount edges (last change @_lastChange)</span>
         }
         else
         {
-            <button class="btn btn-sm" @onclick="ReadFromCanvas">Ask the canvas</button>
-            <span class="text-muted">last read: @_lastRead</span>
+            <button class="btn btn-secondary" @onclick="ReadFromCanvas">Ask the canvas</button>
+            <span class="bb-muted">last read: @_lastRead</span>
         }
     </Toolbar>
     <ChildContent>

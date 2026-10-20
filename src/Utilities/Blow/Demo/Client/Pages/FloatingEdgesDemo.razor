@@ -1,10 +1,10 @@
 ﻿@page "/floating-edges"
 
-<PageTitle>Floating Edges - bit Blow</PageTitle>
+<PageTitle>Floating Edges · Blow</PageTitle>
 
-<div class="demo-header">
-    <h3>Floating Edges</h3>
-    <p class="text-muted">
+<div class="bb-intro">
+    <h1>Floating Edges</h1>
+    <p class="bb-subtitle">
         Uses the new <code>BlowGraphUtils.GetFloatingEdgeParams</code> helper (a port of React Flow's floating-edge
         math) inside a custom <code>EdgeTemplate</code>. Each edge attaches to the point on a node's border that
         faces the other node and re-anchors live as you drag. Every node is one big handle apart from a thin
@@ -15,41 +15,42 @@
 
 <DemoCode />
 
-<div class="example-toolbar">
-    <label>edge path:
-        <select @onchange="e => _edgeType = Enum.Parse<BlowEdgeType>(e.Value!.ToString()!)">
-            <option value="Straight">Straight</option>
-            <option value="Bezier" selected>Bezier</option>
-            <option value="SmoothStep">SmoothStep</option>
-        </select>
-    </label>
-</div>
+<div class="bb-demo blow-demo bb-page-wide">
+    <div class="bb-demo-bar example-toolbar">
+        <label>edge path:
+            <select @onchange="e => _edgeType = Enum.Parse<BlowEdgeType>(e.Value!.ToString()!)">
+                <option value="Straight">Straight</option>
+                <option value="Bezier" selected>Bezier</option>
+                <option value="SmoothStep">SmoothStep</option>
+            </select>
+        </label>
+    </div>
+    <div class="demo-canvas">
+        <BlowCanvas Nodes="_nodes" Edges="_edges" FitViewOnInit="true" ConnectionMode="BlowConnectionMode.Loose">
+            <NodeTemplate Context="node">
+                <div class="fl-node" style="@($"background:{Color(node)}")">@node.Label</div>
+                @* Inset, not edge to edge: a handle covering the whole node would leave nothing to
+                   press that drags the node instead of starting a connection. *@
+                <BlowHandle Type="BlowHandleType.Source" Position="BlowPosition.Top"
+                        Style="position:absolute;inset:10px;width:auto;height:auto;border-radius:8px;background:transparent;border:1px dashed rgba(255,255,255,0.55);transform:none;" />
+            </NodeTemplate>
 
-<div class="demo-canvas" style="height: calc(100vh - 250px);">
-    <BlowCanvas Nodes="_nodes" Edges="_edges" FitViewOnInit="true" ConnectionMode="BlowConnectionMode.Loose">
-        <NodeTemplate Context="node">
-            <div class="fl-node" style="@($"background:{Color(node)}")">@node.Label</div>
-            @* Inset, not edge to edge: a handle covering the whole node would leave nothing to
-               press that drags the node instead of starting a connection. *@
-            <BlowHandle Type="BlowHandleType.Source" Position="BlowPosition.Top"
-                    Style="position:absolute;inset:10px;width:auto;height:auto;border-radius:8px;background:transparent;border:1px dashed rgba(255,255,255,0.55);transform:none;" />
-        </NodeTemplate>
+            <EdgeTemplate Context="ctx">
+                <BlowBaseEdge Path="@FloatingPath(ctx.Edge)" StrokeWidth="@(ctx.Edge.Selected ? 3 : 1.5)" />
+            </EdgeTemplate>
 
-        <EdgeTemplate Context="ctx">
-            <BlowBaseEdge Path="@FloatingPath(ctx.Edge)" StrokeWidth="@(ctx.Edge.Selected ? 3 : 1.5)" />
-        </EdgeTemplate>
+            <ConnectionLineTemplate Context="c">
+                <path d="@BlowEdgePath.Compute(_edgeType, c.From.X, c.From.Y, c.FromPosition, c.To.X, c.To.Y, c.ToPosition).Path"
+                      fill="none" stroke="#6366f1" stroke-width="2" stroke-dasharray="6 4" />
+            </ConnectionLineTemplate>
 
-        <ConnectionLineTemplate Context="c">
-            <path d="@BlowEdgePath.Compute(_edgeType, c.From.X, c.From.Y, c.FromPosition, c.To.X, c.To.Y, c.ToPosition).Path"
-                  fill="none" stroke="#6366f1" stroke-width="2" stroke-dasharray="6 4" />
-        </ConnectionLineTemplate>
-
-        <ChildContent>
-            <BlowBackground Variant="BlowBackgroundVariant.Dots" Gap="16" />
-            <BlowControls />
-            <BlowMiniMap NodeColorFunc="Color" />
-        </ChildContent>
-    </BlowCanvas>
+            <ChildContent>
+                <BlowBackground Variant="BlowBackgroundVariant.Dots" Gap="16" />
+                <BlowControls />
+                <BlowMiniMap NodeColorFunc="Color" />
+            </ChildContent>
+        </BlowCanvas>
+    </div>
 </div>
 
 <style>

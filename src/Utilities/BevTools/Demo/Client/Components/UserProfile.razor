@@ -2,18 +2,18 @@
 @inject UserSession Session
 @inject ProductApi Api
 
-<div class="card">
-    <h3>User profile</h3>
-    <div><strong>@Session.DisplayName</strong> <span class="muted">(@Session.UserName)</span></div>
+<div class="demo-tile">
+    <h4 class="demo-tile-title">User profile</h4>
+    <div><strong>@Session.DisplayName</strong> <span class="bb-muted">(@Session.UserName)</span></div>
     @if (_profile is null)
     {
-        <div class="muted">@(_error ?? "loading profile…")</div>
+        <div class="bb-muted">@(_error ?? "loading profile…")</div>
     }
     else
     {
         <div>@_profile.Email · plan @_profile.Plan</div>
     }
-    <div class="muted">The access token, api key and the Bearer header are redacted in BevTools (Components → State / Network → headers).</div>
+    <p class="demo-tile-note">The access token, api key and the Bearer header are redacted in BevTools (Components → State / Network → headers).</p>
 </div>
 
 @code {

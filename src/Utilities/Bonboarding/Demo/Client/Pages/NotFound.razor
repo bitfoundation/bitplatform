@@ -4,23 +4,14 @@
 @* Covers both a deep link the server could not route (Program.cs re-executes it here) and client-side
    navigation to an unknown route (via the router's NotFoundPage parameter). *@
 
-<PageTitle>Not found - Bit.Bonboarding</PageTitle>
+<PageTitle>Not found · Bonboarding</PageTitle>
 
-<div class="error-page">
-    <span class="error-code" aria-hidden="true">404</span>
-
-    <h1>This page does not exist</h1>
-
-    <p>
-        There is nothing at this address. Every page of the docs is a working tour, and they start with
-        placement and the spotlight.
-    </p>
-
-    <div class="hero-actions">
-        <a class="btn btn-primary btn-lg" href="@NavItem.All[0].Url">
-            Read the docs
-            <Icon Path="@Icons.ArrowRight" />
-        </a>
-        <a class="btn btn-lg" href="/">Back to home</a>
+<div class="bb-error bb-error-404">
+    <h1>404</h1>
+    <p>There is no page at this address. It may have moved, or the link that led here may be mistyped.</p>
+    <div class="bb-try bb-error-actions">
+        <a href="" class="btn btn-primary">Go to the home page</a>
+        <a href="getting-started" class="btn btn-secondary">Browse the docs</a>
     </div>
+    <p class="bb-error-hint">Looking for something specific? Press <kbd>/</kbd> to search.</p>
 </div>

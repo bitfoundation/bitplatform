@@ -1,19 +1,20 @@
 @page "/keyframes"
 
-<PageTitle>Keyframes - Bit.Bmotion</PageTitle>
+<PageTitle>Keyframes · Bmotion</PageTitle>
 
-<h1>Keyframes</h1>
+<div class="bb-intro">
+    <h1>Keyframes</h1>
+    <p class="bb-subtitle">
+        A property does not have to travel from one value to one other value. Hand it a
+        <strong>sequence</strong> and it walks through every entry in turn - the same collection
+        expression syntax C# already gives you, no separate keyframe type to learn. The transition
+        then controls how that walk is timed: <code>times</code> for where each stop falls,
+        <code>eases</code> for how each leg is curved, <code>repeat</code> for what happens at the end.
+    </p>
+</div>
 
-<p class="page-intro">
-    A property does not have to travel from one value to one other value. Hand it a
-    <strong>sequence</strong> and it walks through every entry in turn - the same collection
-    expression syntax C# already gives you, no separate keyframe type to learn. The transition
-    then controls how that walk is timed: <code>times</code> for where each stop falls,
-    <code>eases</code> for how each leg is curved, <code>repeat</code> for what happens at the end.
-</p>
-
-<div class="demo-section">
-    <h2>Keyframe sequences</h2>
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Keyframe sequences</h3>
     <p>
         Any animatable property accepts one: <code>Bm.To(scale: [1, 1.3, 0.8, 1])</code>. By
         default the stops are spaced evenly over the duration; <code>times</code> on the transition
@@ -40,10 +41,10 @@
     </div>
 
     <CodeSnippet Code="@_keyframesCode" />
-</div>
+</section>
 
-<div class="demo-section">
-    <h2>Color keyframes</h2>
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Color keyframes</h3>
     <p>
         Colors interpolate as colors, not as strings, so a palette cycle is just another sequence.
         Repeating one needs the first and last entries to match - otherwise every loop jumps back
@@ -59,10 +60,10 @@
     </div>
 
     <CodeSnippet Code="@_colorKeyframesCode" />
-</div>
+</section>
 
-<div class="demo-section">
-    <h2>Per-segment easing</h2>
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Per-segment easing</h3>
     <p>
         One curve across a five-stop sequence rarely reads right - a ball that falls and lands
         should accelerate on the way down and decelerate on the way up, not ease symmetrically
@@ -82,10 +83,10 @@
     </div>
 
     <CodeSnippet Code="@_easesCode" />
-</div>
+</section>
 
-<div class="demo-section">
-    <h2>Continuing from the current value</h2>
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Continuing from the current value</h3>
     <p>
         A sequence normally snaps to its first entry before it starts - fine on mount, jarring when
         the element is already mid-flight somewhere else. <strong>Bm.Current</strong> is a wildcard
@@ -116,26 +117,12 @@
         </div>
     </div>
 
-    <div class="demo-actions">
-        <button class="btn-bm" @onclick="@(() => _pulse = !_pulse)">@(_pulse ? "Send back" : "Run")</button>
+    <div class="bb-toolbar">
+        <button class="btn btn-primary" @onclick="@(() => _pulse = !_pulse)">@(_pulse ? "Send back" : "Run")</button>
     </div>
 
     <CodeSnippet Code="@_currentCode" />
-</div>
-
-<style>
-    .keyframe-bar { height: 1.875rem; border-radius: 4px; }
-
-    .color-orb { width: 7.5rem; height: 7.5rem; border-radius: 50%; background-image: none; }
-
-    /* The ball falls to the floor of its stage, so the stage is anchored at the bottom rather
-       than centring its content the way an ordinary card does. */
-    .ball-stage { height: 13.75rem; align-items: flex-end; padding-bottom: 2.5rem; }
-
-    .ball { width: 3.5rem; height: 3.5rem; border-radius: 50%; }
-
-    .current-track { position: relative; width: 100%; height: 3.125rem; }
-</style>
+</section>
 
 @code {
     private bool _pulse;

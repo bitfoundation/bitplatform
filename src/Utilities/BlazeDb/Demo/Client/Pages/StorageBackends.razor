@@ -2,32 +2,32 @@
 @implements IDisposable
 @inject DemoDbService Db
 
-<PageTitle>Storage backends - BlazeDb</PageTitle>
+<PageTitle>Storage backends · BlazeDb</PageTitle>
 
-<PageHeader Eyebrow="Persistence" IconName="disk" Title="Four methods are the entire storage contract"
+<PageHeader Eyebrow="Storage backends" Title="Four methods are the entire storage contract"
             Lead="The engine never assumes a file system. It asks for bytes by name, replaces them atomically, appends to them and deletes them. Everything else - OPFS, a directory on disk, a dictionary in a test - is an implementation detail.">
-    <span class="chip @(Db.IsPersistent ? "on" : null)"><Icon Name="disk" /> @Db.StorageLabel</span>
-    <span class="chip"><Icon Name="history" /> @(Db.Trace?.CallCount ?? 0) calls traced</span>
+    <span class="@(Db.IsPersistent ? "bb-badge bb-badge-success" : "bb-badge bd-badge-neutral")">@Db.StorageLabel</span>
+    <span class="bb-badge bd-badge-neutral">@(Db.Trace?.CallCount ?? 0) calls traced</span>
     @if (_quota > 0)
     {
-        <span class="chip"><Icon Name="database" /> @DemoSandbox.Bytes(_usage) of @DemoSandbox.Bytes(_quota) origin storage used</span>
+        <span class="bb-badge bd-badge-neutral">@DemoSandbox.Bytes(_usage) of @DemoSandbox.Bytes(_quota) origin storage used</span>
     }
 </PageHeader>
 
-<Section Title="The interface" IconName="code">
-    <div class="grid grid-2">
+<Section Title="The interface">
+    <div class="bb-flex">
         <CodeBlock Title="Bit.BlazeDb.Storage.IBlazeDbStorage" Code="@InterfaceSnippet" />
-        <div class="flex-col gap-lg">
+        <div class="bb-flex">
             <Panel Title="Contract notes" IconName="info">
-                <dl class="kv">
+                <dl class="bb-params bd-params-prose">
                     <dt>ReadAsync</dt>
-                    <dd class="small">Returns the whole file, or <code>null</code> when it does not exist. Never throws for a missing name.</dd>
+                    <dd>Returns the whole file, or <code>null</code> when it does not exist. Never throws for a missing name.</dd>
                     <dt>WriteAtomicAsync</dt>
-                    <dd class="small">After a crash the reader must see either the old bytes or the new bytes, never a mixture. Used for the manifest and snapshots.</dd>
+                    <dd>After a crash the reader must see either the old bytes or the new bytes, never a mixture. Used for the manifest and snapshots.</dd>
                     <dt>AppendAsync</dt>
-                    <dd class="small">Appends to the end, creating the file if needed. Used for the log, where a torn tail is acceptable.</dd>
+                    <dd>Appends to the end, creating the file if needed. Used for the log, where a torn tail is acceptable.</dd>
                     <dt>DeleteAsync</dt>
-                    <dd class="small">Removes the file if present. Used to retire superseded logs and snapshots.</dd>
+                    <dd>Removes the file if present. Used to retire superseded logs and snapshots.</dd>
                 </dl>
             </Panel>
             <Callout Tone="accent" Title="Atomicity is the only hard requirement.">
@@ -39,42 +39,42 @@
     </div>
 </Section>
 
-<Section Title="Backends that ship" IconName="layers">
+<Section Title="Backends that ship">
     <Panel Flush="true">
-        <div class="table-wrap">
-            <table class="data">
+        <div class="bb-scroll">
+            <table class="bb-table">
                 <thead>
                     <tr><th>Type</th><th>Namespace</th><th>Construction</th><th>Where it fits</th></tr>
                 </thead>
                 <tbody>
                     <tr>
-                        <td class="mono strong">BlazeDbOpfsStorage</td>
-                        <td class="mono">Bit.BlazeDb.Browser</td>
-                        <td class="mono">await BlazeDbOpfsStorage.CreateAsync("name")</td>
+                        <td class="bd-strong">BlazeDbOpfsStorage</td>
+                        <td class="bb-mono">Bit.BlazeDb.Browser</td>
+                        <td class="bb-mono">await BlazeDbOpfsStorage.CreateAsync("name")</td>
                         <td>Blazor WebAssembly. Private per-origin files, no user prompt, no quota dialog for reasonable sizes.</td>
                     </tr>
                     <tr>
-                        <td class="mono strong">BlazeDbFileStorage</td>
-                        <td class="mono">Bit.BlazeDb.Storage</td>
-                        <td class="mono">new BlazeDbFileStorage(directory)</td>
+                        <td class="bd-strong">BlazeDbFileStorage</td>
+                        <td class="bb-mono">Bit.BlazeDb.Storage</td>
+                        <td class="bb-mono">new BlazeDbFileStorage(directory)</td>
                         <td>Desktop, server and integration tests. Atomic writes via temp file plus rename.</td>
                     </tr>
                     <tr>
-                        <td class="mono strong">BlazeDbInMemoryStorage</td>
-                        <td class="mono">Bit.BlazeDb.Storage</td>
-                        <td class="mono">new BlazeDbInMemoryStorage()</td>
+                        <td class="bd-strong">BlazeDbInMemoryStorage</td>
+                        <td class="bb-mono">Bit.BlazeDb.Storage</td>
+                        <td class="bb-mono">new BlazeDbInMemoryStorage()</td>
                         <td>Unit tests and the failure injection on the durability page. Exposes <code>GetFile</code>/<code>SetFile</code> so you can corrupt bytes deliberately.</td>
                     </tr>
                     <tr>
-                        <td class="mono strong">null</td>
-                        <td class="mono">-</td>
-                        <td class="mono">Storage = null</td>
+                        <td class="bd-strong">null</td>
+                        <td class="bb-mono">-</td>
+                        <td class="bb-mono">Storage = null</td>
                         <td>No persistence at all. Nothing is serialized, so this is the fastest configuration.</td>
                     </tr>
                     <tr>
-                        <td class="mono strong">your own</td>
-                        <td class="mono">-</td>
-                        <td class="mono">class X : IBlazeDbStorage</td>
+                        <td class="bd-strong">your own</td>
+                        <td class="bb-mono">-</td>
+                        <td class="bb-mono">class X : IBlazeDbStorage</td>
                         <td>Anything addressable by name: a remote blob store, an encrypting wrapper, a tracing decorator like the one below.</td>
                     </tr>
                 </tbody>
@@ -83,39 +83,36 @@
     </Panel>
 </Section>
 
-<Section Title="Live engine I/O" IconName="history"
+<Section Title="Live engine I/O"
          Lead="Every call in this trace was made by the engine against this tab's real storage. The demo wraps its backend in a decorator that records what passes through.">
-    <div class="grid grid-sidebar">
+    <div class="bd-main-side">
         <Panel Title="Trace" IconName="file" Flush="true">
             <Actions>
-                <button class="btn btn-sm" @onclick="ClearTrace"><Icon Name="close" /> Clear</button>
+                <button type="button" class="btn btn-secondary" @onclick="ClearTrace"><Icon Name="close" /> Clear</button>
             </Actions>
             <ChildContent>
-                <div class="stats" style="padding:1rem; padding-bottom:0">
-                    <StatTile Label="Calls" IconName="history" Value="@((Db.Trace?.CallCount ?? 0).ToString("N0"))" />
-                    <StatTile Label="Bytes written" IconName="download" Tone="accent"
+                <div class="bb-stats bd-panel-stats">
+                    <StatTile Label="Calls" Value="@((Db.Trace?.CallCount ?? 0).ToString("N0"))" />
+                    <StatTile Label="Bytes written" Tone="accent"
                               Value="@DemoSandbox.Bytes(Db.Trace?.BytesWritten ?? 0)" />
-                    <StatTile Label="Bytes read" IconName="file" Value="@DemoSandbox.Bytes(Db.Trace?.BytesRead ?? 0)" />
+                    <StatTile Label="Bytes read" Value="@DemoSandbox.Bytes(Db.Trace?.BytesRead ?? 0)" />
                 </div>
 
                 @if (Db.Trace is null || Db.Trace.Ops.Count == 0)
                 {
-                    <div class="empty">
-                        <Icon Name="history" />
-                        <div>No I/O recorded yet. Generate some with the buttons on the right.</div>
-                    </div>
+                    <div class="bb-empty">No I/O recorded yet. Generate some with the buttons under “Generate I/O”.</div>
                 }
                 else
                 {
-                    <div class="log" style="max-height:420px">
+                    <div class="bd-trace">
                         @foreach (var op in Db.Trace.Ops)
                         {
-                            <div class="log-row">
-                                <span class="log-seq">@op.Seq</span>
-                                <span class="log-op @OpClass(op.Operation)">@op.Operation</span>
-                                <span class="log-name">@op.File</span>
-                                <span class="log-meta">@(op.Bytes > 0 ? DemoSandbox.Bytes(op.Bytes) : "-")</span>
-                                <span class="log-meta">@DemoSandbox.Duration(op.Ms)</span>
+                            <div class="bd-trace-row">
+                                <span class="bd-trace-seq">@op.Seq</span>
+                                <span class="bd-trace-op @OpClass(op.Operation)">@op.Operation</span>
+                                <span class="bd-trace-name">@op.File</span>
+                                <span class="bd-trace-meta">@(op.Bytes > 0 ? DemoSandbox.Bytes(op.Bytes) : "-")</span>
+                                <span class="bd-trace-meta">@DemoSandbox.Duration(op.Ms)</span>
                             </div>
                         }
                     </div>
@@ -123,27 +120,27 @@
             </ChildContent>
         </Panel>
 
-        <div class="flex-col gap-lg">
+        <div class="bb-flex">
             <Panel Title="Generate I/O" IconName="play">
-                <div class="flex-col">
-                    <button class="btn btn-sm btn-block" disabled="@_busy" @onclick="WriteAndFlushAsync">
+                <div class="bd-actions">
+                    <button type="button" class="btn btn-secondary" disabled="@_busy" @onclick="WriteAndFlushAsync">
                         <Icon Name="plus" /> Insert a row, then FlushAsync
                     </button>
-                    <button class="btn btn-sm btn-block" disabled="@_busy" @onclick="CheckpointAsync">
+                    <button type="button" class="btn btn-secondary" disabled="@_busy" @onclick="CheckpointAsync">
                         <Icon Name="layers" /> CheckpointAsync
                     </button>
-                    <button class="btn btn-sm btn-block" disabled="@_busy" @onclick="ReadRawAsync">
+                    <button type="button" class="btn btn-secondary" disabled="@_busy" @onclick="ReadRawAsync">
                         <Icon Name="file" /> Read manifest.blz directly
                     </button>
                 </div>
                 @if (_note is not null)
                 {
-                    <div class="api-call mt-2">@_note</div>
+                    <div class="bb-log bd-out">@_note</div>
                 }
             </Panel>
 
             <Panel Title="Reads never appear here" IconName="bolt">
-                <p class="small mb-0">
+                <p>
                     Query the <a href="todos">live data</a> page as much as you like and this trace will
                     not grow. Reads are served from memory, so the storage layer is only ever touched by
                     the flush loop, checkpoints and recovery.
@@ -155,13 +152,13 @@
     </div>
 </Section>
 
-<Section Title="OPFS and the single-writer rule" IconName="lock"
+<Section Title="OPFS and the single-writer rule"
          Lead="The browser backend adds one constraint the others do not have: exactly one tab may own a database at a time.">
-    <div class="grid grid-2">
-        <div class="flex-col gap-lg">
+    <div class="bb-flex">
+        <div class="bb-flex">
             <CodeBlock Title="Opening the browser backend" Code="@OpfsSnippet" />
             <Panel Title="How the election works" IconName="key">
-                <ol class="small mb-0">
+                <ol class="bb-detail-list">
                     <li><code>CreateAsync</code> requests a Web Lock named <code>blazedb:&lt;database&gt;</code> with <code>ifAvailable: true</code>.</li>
                     <li>If the lock is already held, the request resolves immediately as unavailable and <code>BlazeDbDatabaseLockedException</code> is thrown.</li>
                     <li>Otherwise the lock is held for the lifetime of the <code>BlazeDbOpfsStorage</code> instance and released by <code>Dispose</code> or when the tab closes.</li>
@@ -170,9 +167,9 @@
             </Panel>
         </div>
 
-        <div class="flex-col gap-lg">
+        <div class="bb-flex">
             <Panel Title="This tab" IconName="info">
-                <dl class="kv">
+                <dl class="bb-params">
                     <dt>Backend</dt>
                     <dd>@Db.StorageLabel</dd>
                     <dt>Database name</dt>
@@ -189,25 +186,25 @@
                 </dl>
                 @if (Db.StorageNote is not null)
                 {
-                    <Callout Tone="warn" Class="mt-2">@Db.StorageNote</Callout>
+                    <Callout Tone="warn">@Db.StorageNote</Callout>
                 }
             </Panel>
 
             <Panel Title="Try to take the lock twice" IconName="lock">
-                <p class="small mb-1">
+                <p>
                     Asking for the same database again from this tab exercises the same path a second tab
                     would take.
                 </p>
-                <button class="btn btn-sm btn-block" disabled="@_busy" @onclick="TryLockAsync">
+                <button type="button" class="btn btn-secondary" disabled="@_busy" @onclick="TryLockAsync">
                     <Icon Name="play" /> await BlazeDbOpfsStorage.CreateAsync("@DemoDbService.DatabaseName")
                 </button>
                 @if (_lockResult is not null)
                 {
-                    <div class="api-call mt-2">@_lockResult</div>
+                    <div class="bb-log bd-out">@_lockResult</div>
                 }
-                <p class="tiny muted mt-2 mb-0">
+                <p class="bd-foot">
                     Open this page in a second tab for the real thing: the newcomer falls back to
-                    in-memory storage and says so in the sidebar.
+                    in-memory storage and says so in the storage badge in the corner of the window.
                 </p>
             </Panel>
 
@@ -222,24 +219,24 @@
     </div>
 </Section>
 
-<Section Title="The JavaScript surface" IconName="code"
+<Section Title="The JavaScript surface"
          Lead="One small ES module per concern - OPFS, IndexedDB, WebCrypto, BroadcastChannel - shipped as static web assets inside the package. This is the OPFS one.">
-    <div class="grid grid-2">
+    <div class="bb-flex">
         <CodeBlock Title="_content/Bit.BlazeDb/bit-blazedb-opfs.js" Code="@JsSnippet" Language="text" />
-        <div class="flex-col gap-lg">
+        <div class="bb-flex">
             <Panel Title="Why so little JavaScript" IconName="bolt">
-                <p class="small">
+                <p>
                     OPFS handles cannot be marshalled into .NET, so the module exists purely to hold them
                     and to move byte arrays across the boundary. No querying, no serialization and no
                     application logic happens in JavaScript.
                 </p>
-                <p class="small mb-0">
+                <p>
                     The interop cost is therefore proportional to how often you flush, not to how often
                     you read or write rows.
                 </p>
             </Panel>
             <Panel Title="Interop bindings" IconName="cpu">
-                <CodeBlock ShowHeader="false" Code="@InteropSnippet" />
+                <CodeBlock Code="@InteropSnippet" />
             </Panel>
         </div>
     </div>
@@ -279,10 +276,10 @@
 
     private static string OpClass(string operation) => operation switch
     {
-        "ReadAsync" => "read",
-        "AppendAsync" => "append",
-        "WriteAtomicAsync" => "write",
-        "DeleteAsync" => "delete",
+        "ReadAsync" => "bd-op-read",
+        "AppendAsync" => "bd-op-append",
+        "WriteAtomicAsync" => "bd-op-write",
+        "DeleteAsync" => "bd-op-delete",
         _ => "",
     };
 

@@ -1,6 +1,6 @@
 ﻿@page "/examples/click-distance"
 
-<PageTitle>Click Distance - bit Blow</PageTitle>
+<PageTitle>Click Distance · Blow</PageTitle>
 
 <ExampleScaffold Title="Click Distance"
                  Summary="NodeClickDistance and PaneClickDistance set how far the pointer may travel between press and release and still count as a click. Press a node or the empty pane, move a little, and let go: within the distance OnNodeClick / OnPaneClick still fire; past it the gesture was a drag or a pan, and the click is suppressed.">
@@ -15,7 +15,7 @@
                    @oninput="e => _paneDistance = int.Parse(e.Value!.ToString()!)" />
             @_paneDistance px
         </label>
-        <span class="text-muted">
+        <span class="bb-muted">
             node clicks: <strong>@_nodeClicks</strong> · pane clicks: <strong>@_paneClicks</strong> · last: @_last
         </span>
     </Toolbar>

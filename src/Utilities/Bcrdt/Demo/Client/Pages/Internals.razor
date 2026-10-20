@@ -1,140 +1,159 @@
 ﻿@page "/internals"
 @inherits ReplicaPageBase
 
-<h1>Inside the engine</h1>
+<PageTitle>Internals · Bcrdt</PageTitle>
 
-<section class="prose">
-    <p>
-        This page shows the machinery the other pages hide: what a replica knows, how much it is
-        storing, and what actually goes over the wire. It is the page to open when you want to check
-        that the efficiency claims are true rather than take them on faith.
+<div class="bb-intro">
+    <h1>Internals</h1>
+    <p class="bb-subtitle">
+        The machinery the other pages hide: what a replica knows, how much it is storing, and what actually goes over
+        the wire - the page to open when you want to check that the efficiency claims are true rather than take them
+        on faith.
     </p>
-    <p>
+</div>
+
+@* Each panel carries a table of measurements under its editor, so the panels take the width the "on this page" rail would. *@
+<div class="bb-card bb-page-wide">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Two replicas, measured</h3>
+    <p class="bb-card-desc">
+        Type into either replica, or let the buttons do it, and watch what each one stores and what it would send.
+    </p>
+
+    @if (!Ready)
+    {
+        <p class="loading bb-empty"><span class="bb-spinner" aria-hidden="true"></span> Opening two replicas…</p>
+    }
+    else
+    {
+        <div class="bb-split replicas">
+            @foreach (DemoReplica replica in Replicas)
+            {
+                <ReplicaPanel Replica="replica" ShowPresence="false">
+                    <ChildContent>
+                        <BcrdtTextArea Text="replica.Document.Text(Field)"
+                                       Presence="replica.Document.Presence"
+                                       Field="@Field"
+                                       Rows="6"
+                                       Class="editor"
+                                       Placeholder="Type here and watch the numbers below." />
+
+                        <div class="toolbar bb-toolbar">
+                            <button type="button" class="btn btn-primary" @onclick="() => TypeBurst(replica, 500)">
+                                Type 500 characters
+                            </button>
+                            <button type="button" class="btn btn-secondary" @onclick="() => Scatter(replica, 200)">
+                                Make 200 scattered edits
+                            </button>
+                        </div>
+
+                        <dl class="stats bb-params">
+                            <dt>Characters</dt>
+                            <dd>@replica.Document.Text(Field).Count.ToString("N0")</dd>
+
+                            <dt title="One per contiguous run of content. Far fewer than the character count is the point.">
+                                Blocks
+                            </dt>
+                            <dd>@BlockCount(replica).ToString("N0")</dd>
+
+                            <dt title="Characters per block. Higher means run-length encoding is working harder for you.">
+                                Characters per block
+                            </dt>
+                            <dd>@Ratio(replica)</dd>
+
+                            <dt title="What a peer sends to ask for exactly what it is missing.">
+                                State vector
+                            </dt>
+                            <dd>@replica.Document.Crdt.GetStateVector().Encode().Length bytes</dd>
+
+                            <dt title="The whole document, encoded. What a brand-new peer would receive.">
+                                Full document
+                            </dt>
+                            <dd>@FullSize(replica).ToString("N0") bytes</dd>
+
+                            <dt title="What this replica would send to a peer that is already up to date.">
+                                Delta for an up-to-date peer
+                            </dt>
+                            <dd>@NoOpSize(replica).ToString("N0") bytes</dd>
+                        </dl>
+                    </ChildContent>
+
+                    <Footer>
+                        <span class="metric">clients known: @replica.Document.Crdt.GetStateVector().Count</span>
+                    </Footer>
+                </ReplicaPanel>
+            }
+        </div>
+    }
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-danger"></span> What the numbers mean</h3>
+    <p class="bb-card-desc">
         The <strong>state vector</strong> is a replica's complete summary of what it has seen - one
         entry per author, a few bytes each. It is the whole of what a peer needs in order to compute
         the exact delta this replica is missing, which is why reconnecting after a long absence costs
         one small message rather than a full document transfer.
     </p>
-    <p>
+    <p class="bb-card-desc">
         <strong>Blocks</strong> are the engine's internal unit of storage. Watch the ratio between
         characters and blocks as you type: a run of consecutive typing collapses into a single block,
         so a long document typically holds a few dozen blocks rather than one per character. That
         collapse is the single most important reason collaborative text is affordable at all.
     </p>
-</section>
+</div>
 
-@if (!Ready)
+@if (Ready)
 {
-    <p class="loading">Opening two replicas…</p>
-}
-else
-{
-    <div class="panel-grid panel-grid-2">
-        @foreach (DemoReplica replica in Replicas)
-        {
-            <ReplicaPanel Replica="replica" ShowPresence="false">
-                <ChildContent>
-                    <BcrdtTextArea Text="replica.Document.Text(Field)"
-                                   Presence="replica.Document.Presence"
-                                   Field="@Field"
-                                   Rows="6"
-                                   Class="editor"
-                                   Placeholder="Type here and watch the numbers below." />
-
-                    <div class="toolbar">
-                        <button class="button" @onclick="() => TypeBurst(replica, 500)">
-                            Type 500 characters
-                        </button>
-                        <button class="button button-quiet" @onclick="() => Scatter(replica, 200)">
-                            Make 200 scattered edits
-                        </button>
-                    </div>
-
-                    <dl class="stats">
-                        <dt>Characters</dt>
-                        <dd>@replica.Document.Text(Field).Count.ToString("N0")</dd>
-
-                        <dt title="One per contiguous run of content. Far fewer than the character count is the point.">
-                            Blocks
-                        </dt>
-                        <dd>@BlockCount(replica).ToString("N0")</dd>
-
-                        <dt title="Characters per block. Higher means run-length encoding is working harder for you.">
-                            Characters per block
-                        </dt>
-                        <dd>@Ratio(replica)</dd>
-
-                        <dt title="What a peer sends to ask for exactly what it is missing.">
-                            State vector
-                        </dt>
-                        <dd>@replica.Document.Crdt.GetStateVector().Encode().Length bytes</dd>
-
-                        <dt title="The whole document, encoded. What a brand-new peer would receive.">
-                            Full document
-                        </dt>
-                        <dd>@FullSize(replica).ToString("N0") bytes</dd>
-
-                        <dt title="What this replica would send to a peer that is already up to date.">
-                            Delta for an up-to-date peer
-                        </dt>
-                        <dd>@NoOpSize(replica).ToString("N0") bytes</dd>
-                    </dl>
-                </ChildContent>
-
-                <Footer>
-                    <span class="metric">clients known: @replica.Document.Crdt.GetStateVector().Count</span>
-                </Footer>
-            </ReplicaPanel>
-        }
-    </div>
-
-    <section class="prose">
-        <h2>Updates as they happen</h2>
-        <p>
+    <div class="bb-card">
+        <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Updates as they happen</h3>
+        <p class="bb-card-desc">
             Every committed change produces exactly one update, whatever it contained - this is why a
             paste of five hundred rows is one network message rather than five hundred. The most
             recent are listed newest first, with the replica that produced them.
         </p>
         @if (_updates.Count == 0)
         {
-            <p class="hint">Nothing yet. Type into a panel above.</p>
+            <p class="bb-empty">Nothing yet. Type into a panel above.</p>
         }
         else
         {
-            <table class="log-table">
-                <thead>
-                    <tr><th>Replica</th><th>Size</th><th>Origin</th><th>Content</th></tr>
-                </thead>
-                <tbody>
-                    @foreach (UpdateRecord record in _updates)
-                    {
-                        <tr>
-                            <td><span class="swatch" style="background: @record.Color"></span>@record.Label</td>
-                            <td>@record.Size bytes</td>
-                            <td>@record.Origin</td>
-                            <td class="mono">@record.Preview</td>
-                        </tr>
-                    }
-                </tbody>
-            </table>
+            <div class="bb-scroll">
+                <table class="bb-table log-table">
+                    <thead>
+                        <tr><th>Replica</th><th>Size</th><th>Origin</th><th>Content</th></tr>
+                    </thead>
+                    <tbody>
+                        @foreach (UpdateRecord record in _updates)
+                        {
+                            <tr>
+                                <td class="bb-table-key"><span class="replica-dot" style="--replica-color: @record.Color" aria-hidden="true"></span>@record.Label</td>
+                                <td class="bb-nowrap">@record.Size bytes</td>
+                                <td>@record.Origin</td>
+                                <td class="bb-mono">@record.Preview</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
         }
-        <p>
-            <button class="button button-quiet" @onclick="() => _updates.Clear()">Clear the log</button>
-        </p>
-    </section>
+        <div class="bb-toolbar">
+            <button type="button" class="btn btn-secondary" @onclick="() => _updates.Clear()">Clear the log</button>
+        </div>
+    </div>
 
-    <section class="prose">
-        <h2>Full projection</h2>
-        <div class="panel-grid panel-grid-2">
+    <div class="bb-card">
+        <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Full projection</h3>
+        <p class="bb-card-desc">The whole document as each replica projects it, which is what <code>ToJson()</code> hands an application.</p>
+        <div class="bb-split">
             @foreach (DemoReplica replica in Replicas)
             {
-                <div>
-                    <h3 class="json-title" style="border-color: @replica.Color">@replica.Label</h3>
-                    <pre class="json">@DemoJson.Format(replica.Document.ToJson())</pre>
+                <div class="projection" style="--replica-color: @replica.Color">
+                    <p class="projection-title"><span class="replica-dot" aria-hidden="true"></span>@replica.Label</p>
+                    <pre class="json bb-code">@DemoJson.Format(replica.Document.ToJson())</pre>
                 </div>
             }
         </div>
-    </section>
+    </div>
 }
 
 @code {

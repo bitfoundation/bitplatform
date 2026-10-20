@@ -30,9 +30,12 @@
   <ItemGroup>
     <EmbeddedResource Include="..\..\README.md" LogicalName="BmotionDocs/README.md" />
 
-    <!-- Every demo page, which is also every worked example the tools can point an agent at. -->
-    <EmbeddedResource Include="..\Client\**\*.razor;..\Client\**\*.cs;..\Client\**\*.css"
-                      Exclude="..\Client\bin\**;..\Client\obj\**">
+    <!-- Every demo page, which is also every worked example the tools can point an agent at, and the
+         client half of the hosting. Layout\ is left out: it is the site chrome every Utilities demo
+         shares - the header, the docs shell, the search palette and the footer - and says nothing
+         about animation, so an agent searching the sources must not be handed it as an example. -->
+    <EmbeddedResource Include="..\Client\**\*.razor;..\Client\**\*.cs"
+                      Exclude="..\Client\bin\**;..\Client\obj\**;..\Client\Layout\**">
       <LogicalName>BmotionSource/Demo/Client/%(RecursiveDir)%(Filename)%(Extension)</LogicalName>
     </EmbeddedResource>
 

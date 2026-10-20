@@ -271,6 +271,7 @@ public static partial class BdndSourceCatalog
     /// What a file is for: a page is one of the demo's working examples, the hosting files are the
     /// wiring every app needs once, a library file is shipped by the package itself, and the rest -
     /// the sortable card several pages render, the item types, the code viewer - is what the pages share.
+    /// The site's chrome - the layouts and the catalog they are driven from - is hosting, not an example.
     /// </summary>
     private static string KindOf(string path, string content)
     {
@@ -279,6 +280,7 @@ public static partial class BdndSourceCatalog
         if (path.StartsWith("Demo/Server/", StringComparison.OrdinalIgnoreCase) ||
             path.StartsWith("Demo/Client/Extensions/", StringComparison.OrdinalIgnoreCase) ||
             path.StartsWith("Demo/Client/Layout/", StringComparison.OrdinalIgnoreCase) ||
+            path.Equals("Demo/Client/DocsCatalog.cs", StringComparison.OrdinalIgnoreCase) ||
             path.Equals("Demo/Client/Program.cs", StringComparison.OrdinalIgnoreCase) ||
             path.Equals("Demo/Client/Routes.razor", StringComparison.OrdinalIgnoreCase) ||
             path.Equals("Demo/Client/_Imports.razor", StringComparison.OrdinalIgnoreCase)) return "Hosting";
@@ -477,10 +479,10 @@ public static partial class BdndSourceCatalog
     [GeneratedRegex(@"<(?<name>Bdnd[A-Z][A-Za-z]*)\b")]
     private static partial Regex BdndComponentRegex();
 
-    [GeneratedRegex(@"<div class=""demo-header"">\s*<h3>.*?</h3>\s*<p[^>]*>(?<text>.*?)</p>", RegexOptions.Singleline)]
+    [GeneratedRegex(@"<div class=""bb-intro"">\s*<h1>.*?</h1>\s*<p[^>]*>(?<text>.*?)</p>", RegexOptions.Singleline)]
     private static partial Regex DemoHeaderRegex();
 
-    [GeneratedRegex(@"<div class=""demo-header"">\s*<h3>(?<text>.*?)</h3>", RegexOptions.Singleline)]
+    [GeneratedRegex(@"<div class=""bb-intro"">\s*<h1>(?<text>.*?)</h1>", RegexOptions.Singleline)]
     private static partial Regex DemoTitleRegex();
 
     [GeneratedRegex(@"<PageTitle>(?<text>.*?)</PageTitle>", RegexOptions.Singleline | RegexOptions.IgnoreCase)]

@@ -8,40 +8,41 @@
    listener, a clipboard button, and annotations placed from code - which is most of what a real
    app's integration would look like. *@
 
-<PageTitle>Screenshot annotation - Bit.Bmage</PageTitle>
+<PageTitle>Screenshot annotation · Bmage</PageTitle>
 
-<h1>Screenshot annotation</h1>
+<div class="bb-intro">
+    <h1>Screenshot annotation</h1>
+    <p class="bb-subtitle">
+        Paste a screenshot, point at the problem, and black out anything that must not leave the
+        building. Annotations stay <strong>editable objects</strong> until you export, so nothing is
+        baked in until you say so.
+    </p>
+</div>
 
-<p class="page-intro">
-    Paste a screenshot, point at the problem, and black out anything that must not leave the
-    building. Annotations stay <strong>editable objects</strong> until you export, so nothing is
-    baked in until you say so.
-</p>
-
-<div class="demo-section">
-    <h2>Annotate a screenshot</h2>
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Annotate a screenshot</h3>
 
     @if (_error is not null)
     {
-        <div class="alert alert-error" role="alert">@_error</div>
+        <div class="bb-note bb-note-danger demo-error" role="alert">@_error</div>
     }
     @if (!HasImage)
     {
-        <div class="alert alert-info">
+        <div class="bb-note">
             Press <strong>Ctrl+V</strong> (<strong>&#8984;V</strong> on a Mac) anywhere on this page to
             bring in a screenshot, or drop an image on the editor below.
         </div>
     }
 
-    <div class="btn-row toolbar-row">
-        <button type="button" class="btn" disabled="@(_capabilities?.SupportsClipboardRead != true)" @onclick="PasteAsync"
+    <div class="bb-toolbar">
+        <button type="button" class="btn btn-secondary" disabled="@(_capabilities?.SupportsClipboardRead != true)" @onclick="PasteAsync"
                 title="Reads the clipboard directly; the browser asks for permission the first time">Paste from clipboard</button>
-        <button type="button" class="btn" disabled="@(HasImage || IsHydrating)" @onclick="UseSample">Use a sample image</button>
-        <button type="button" class="btn" disabled="@(!HasImage)" @onclick="AddSampleAnnotations">Add a worked example</button>
-        <button type="button" class="btn" disabled="@(!HasImage)" @onclick="Clear">Start over</button>
+        <button type="button" class="btn btn-secondary" disabled="@(HasImage || IsHydrating)" @onclick="UseSample">Use a sample image</button>
+        <button type="button" class="btn btn-secondary" disabled="@(!HasImage)" @onclick="AddSampleAnnotations">Add a worked example</button>
+        <button type="button" class="btn btn-secondary" disabled="@(!HasImage)" @onclick="Clear">Start over</button>
     </div>
 
-    <div class="editor-frame">
+    <div class="editor-frame bb-page-wide">
         <BmageEditor @ref="_editor"
                      Image="_source"
                      ExportOptions="ExportOptions"
@@ -50,8 +51,8 @@
     </div>
 </div>
 
-<div class="demo-section">
-    <h2>Redaction that actually redacts</h2>
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Redaction that actually redacts</h3>
     <p>
         The redaction tool replaces the pixels underneath it, so the hidden content is genuinely gone
         from the exported file rather than covered by a layer someone can move. Solid blocks are the
@@ -59,7 +60,7 @@
         all doubt. Redactions are always drawn before other annotations, so an arrow you place on top
         is never blurred away.
     </p>
-    <div class="callout">
+    <div class="bb-note">
         <p>
             Redaction is about pixels; metadata is a separate leak. This page exports with
             <code>MetadataPolicy.Remove</code> - see <a href="/metadata">Metadata and privacy</a>.
@@ -68,8 +69,8 @@
     <CodeSnippet Code="@Snippet" Language="C#" Expanded="true" />
 </div>
 
-<div class="demo-section">
-    <h2>Pasting from anywhere on the page</h2>
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Pasting from anywhere on the page</h3>
     <p>
         <code>ListenForPasteAsync</code> listens for the browser's own paste event, which carries the
         image with it - so <strong>Ctrl+V</strong> works without the clipboard permission prompt.

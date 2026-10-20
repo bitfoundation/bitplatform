@@ -2,15 +2,38 @@
 <html lang="en">
 
 <head>
+    @* The host page. Borm itself needs one line of it - the bit-borm.css link below; the rest is this
+       documentation site's: the site kit's stylesheets and scripts and the demo's own sample styles. *@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="bit Borm (Bit.Borm) - a schema-driven form engine for Blazor: forms from C# types, a fluent builder or JSON Schema, with validation, conditions, wizards and repeaters decided in C#." />
+    <meta name="theme-color" content="#FFFFFF" />
     <base href="/" />
+    @* No static <title> here: every page supplies its own through <PageTitle>, and with
+       prerendering the HeadOutlet emits a real <title> element into this head. *@
+    <meta name="description" content="bit Borm (Bit.Borm) - a schema-driven form engine for Blazor: forms from C# types, a fluent builder or JSON Schema, with validation, conditions, wizards and repeaters decided in C#." />
+
+    @* Link previews: the card a chat client or a social site unfurls is the first impression a
+       shared link makes. *@
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Bit.Borm" />
+    <meta property="og:title" content="Borm - schema-driven forms for Blazor" />
+    <meta property="og:description" content="Describe a form once - from a C# type, a fluent builder or JSON Schema - and Borm renders it, validates it and keeps its state, with every decision made in C#." />
+    <meta name="twitter:card" content="summary" />
+
     <ResourcePreloader />
+    @* The site kit (app.css, theme.js, site.js - shared by every Utilities demo), then this demo's
+       own sample styles. *@
     <link rel="stylesheet" href="@Assets["app.css"]" />
+    <link rel="stylesheet" href="@Assets["demo.css"]" />
     @* The library's stylesheet. It is not injected for you: without it the form renders as plain,
-       unstyled HTML - usable, but without the theme, the grid or the error colours. *@
+       unstyled HTML - usable, but without the theme, the grid or the error colours. demo.css re-tints
+       its tokens to the site's theme with selectors that outrank the library's own, so the order of
+       the two links does not decide which wins. *@
     <link rel="stylesheet" href="@Assets["_content/Bit.Borm/bit-borm.css"]" />
+    @* Scoped-CSS bundle: includes the client project's *.razor.css files as well. *@
+    <link rel="stylesheet" href="@Assets["Bit.Borm.Demo.Server.styles.css"]" />
+    @* Synchronous on purpose: applies the light/dark theme before first paint. *@
+    <script src="@Assets["theme.js"]"></script>
     <ImportMap />
     <link rel="icon" type="image/svg+xml" href="favicon.svg" />
     <HeadOutlet @rendermode="InteractiveWebAssembly" />
@@ -27,6 +50,7 @@
         <span class="dismiss">&#128473;</span>
     </div>
     <script src="@Assets["_framework/blazor.web.js"]"></script>
+    <script src="@Assets["site.js"]"></script>
 </body>
 
 </html>

@@ -1,0 +1,155 @@
+﻿@page "/getting-started"
+@inject IBonboardingService BonboardingService
+
+<PageTitle>Getting started · Bonboarding</PageTitle>
+
+<div class="bb-intro">
+    <h1>Getting started</h1>
+    <p class="bb-subtitle">
+        Four pieces of wiring and a first tour: install the package, register the services, reference the
+        stylesheet and host one <code>BonboardingRoot</code> - then mark an element and point a step at it.
+    </p>
+</div>
+
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Install the package</h3>
+    <p>Bit.Bonboarding targets .NET 8, .NET 9 and .NET 10, and depends on nothing but Blazor itself.</p>
+    <pre class="bb-code">dotnet add package Bit.Bonboarding</pre>
+</section>
+
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Register the services</h3>
+    <p>
+        Everything is registered as scoped - per circuit on Blazor Server, per application on WebAssembly - which
+        matches the lifetime of a user's onboarding state. Global defaults are set in the same call.
+    </p>
+    <pre class="bb-code"><span class="k">using</span> Bit.Bonboarding;
+
+builder.Services.AddBitBonboardingServices(options =>
+{
+    options.Placement = BonboardingPlacement.Bottom;
+    options.Progress = BonboardingProgressStyle.Bar;
+    options.Labels.Skip = <span class="s">"Not now"</span>;
+    options.StorageKeyPrefix = <span class="s">"acme:onboarding:"</span>;
+});</pre>
+    <div class="bb-note bb-note-warn">
+        A Blazor Web App has two projects and two DI containers: register in <strong>both</strong>, with the same
+        options. A missing registration surfaces as a failure to resolve <code>IBonboardingService</code> during
+        prerendering. This site does it through one extension method both <code>Program.cs</code> files call.
+    </div>
+</section>
+
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Reference the stylesheet</h3>
+    <p>
+        In <code>App.razor</code> (Blazor Web App) or <code>index.html</code> (WebAssembly), before your own stylesheet
+        so your overrides of its <code>--bit-bonboarding-*</code> variables win. There is no script tag to add: the
+        library imports its own JavaScript module.
+    </p>
+    <pre class="bb-code">&lt;<span class="k">link</span> rel=<span class="s">"stylesheet"</span> href=<span class="s">"@@Assets["_content/Bit.Bonboarding/bit-bonboarding.css"]"</span> /&gt;</pre>
+</section>
+
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Host one BonboardingRoot</h3>
+    <p>
+        One host renders whichever tour is running, from anywhere in the application. Put it somewhere that outlives
+        navigation - the main layout, or beside the router as this site does - because a host on a page would be
+        disposed by the navigation a multi-page tour performs. Then import the namespace in <code>_Imports.razor</code>.
+    </p>
+    <pre class="bb-code"><span class="c">@@* MainLayout.razor *@@</span>
+&lt;<span class="k">div</span> class=<span class="s">"page"</span>&gt;
+    @@Body
+&lt;/<span class="k">div</span>&gt;
+
+&lt;<span class="k">BonboardingRoot</span> /&gt;
+
+<span class="c">@@* _Imports.razor *@@</span>
+@@using Bit.Bonboarding</pre>
+</section>
+
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Write a first tour</h3>
+    <p>
+        Mark the element a step is about with <code>data-bonboarding-anchor</code>, then start a tour that points at it.
+        This is the setup check from the guide, running on this page: if the card appears next to the button, with
+        the spotlight around it and the arrow keys working, the wiring is complete.
+    </p>
+
+    <div class="bb-demo">
+        <div class="bb-demo-bar"><span class="bb-demo-label">Live</span></div>
+        <button type="button" class="btn btn-primary" data-bonboarding-anchor="probe" @onclick="RunAsync">Test the setup</button>
+    </div>
+
+    <pre class="bb-code">@ProbeExample</pre>
+
+    <p>
+        The same tour can be declared in markup with <code>&lt;BonboardingTour&gt;</code> and
+        <code>&lt;BonboardingStep&gt;</code> - the landing page's welcome tour is written that way.
+    </p>
+</section>
+
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Where to start a tour</h3>
+    <p>
+        The library is prerender-safe, but <code>OnInitializedAsync</code> runs during prerendering and again after
+        hydration - in two different scopes. Start tours from <code>OnAfterRenderAsync(firstRender: true)</code>, from a
+        user action, or with <code>AutoStart</code>, which already does the right thing.
+    </p>
+    <pre class="bb-code">&lt;<span class="k">BonboardingTour</span> Id=<span class="s">"welcome"</span> AutoStart=<span class="s">"BonboardingAutoStart.Once"</span>&gt;
+    ...
+&lt;/<span class="k">BonboardingTour</span>&gt;
+
+<span class="k">await</span> BonboardingService.StartAsync(tour);       <span class="c">// always start, resuming saved progress</span>
+<span class="k">await</span> BonboardingService.StartOnceAsync(tour);   <span class="c">// only if not already completed or dismissed</span>
+<span class="k">await</span> BonboardingService.RestartAsync(tour);     <span class="c">// forget progress and start from the top</span></pre>
+</section>
+
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Where to go next</h3>
+    <ul class="bb-detail-list">
+        <li><a href="placement">Placement &amp; spotlight</a> - where the popover goes, and what the overlay does with a click.</li>
+        <li><a href="dynamic">Dynamic targets</a> - elements that render late, re-render or never appear.</li>
+        <li><a href="flows">Conditional &amp; branching</a> - different tours for different users.</li>
+        <li><a href="theming">Theming &amp; RTL</a> - make the card look like your product.</li>
+    </ul>
+</section>
+
+@code {
+    private Task RunAsync() => BonboardingService.StartAsync(new BonboardingTourDefinition
+    {
+        Id = "probe",
+        Persist = false,
+        Steps =
+        {
+            new BonboardingStepDefinition
+            {
+                Target = BonboardingStepTarget.Anchor("probe"),
+                Title = "It works",
+                Description = "Positioning, spotlight and keyboard navigation are all live.",
+            },
+        },
+    });
+
+    private const string ProbeExample = """
+        @inject IBonboardingService BonboardingService
+
+        <button data-bonboarding-anchor="probe" @onclick="RunAsync">Test</button>
+
+        @code {
+            private Task RunAsync() => BonboardingService.StartAsync(new BonboardingTourDefinition
+            {
+                Id = "probe",
+                Persist = false,
+                Steps =
+                {
+                    new BonboardingStepDefinition
+                    {
+                        Target = BonboardingStepTarget.Anchor("probe"),
+                        Title = "It works",
+                        Description = "Positioning, spotlight and keyboard navigation are all live.",
+                    },
+                },
+            });
+        }
+        """;
+}

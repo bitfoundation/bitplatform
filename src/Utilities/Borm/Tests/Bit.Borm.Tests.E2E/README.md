@@ -12,8 +12,9 @@ browser:
   mouse press causes before the click it starts, the implicit submission Enter triggers (which a form only gets with a
   submit button or a single text box), a tag box that belongs to no form, a debounced field written while the caret is
   still in it;
-- there is no stylesheet, so no theme tokens, no dark palette following the operating system, no grid that collapses
-  on a narrow screen and no error colours, and no `<datalist>` or `<input type="file">` doing their part;
+- there is no stylesheet, so no theme tokens, no dark palette following the operating system or the site's toggle, no
+  grid that collapses on a narrow screen and no error colours, and no `<datalist>` or `<input type="file">` doing their
+  part;
 - the demo pages, prerendered on the server and then run on WebAssembly with real application code, never run.
 
 This suite boots the demo (`Bit.Borm.Demo.Server`, which prerenders the pages and runs them on WebAssembly) and drives
@@ -32,13 +33,13 @@ the page around the form shows after a submit, the attributes a screen reader re
 | `ChoiceTests` | A label typed into the combobox, in any casing, stores the value behind it, and an answer on no list is kept and reported; choosing a country loads its cities and changing it clears the old city and reloads them; a plan fills in the seats, which stay editable; Enter or a comma adds a tag without submitting the form, a repeat is ignored, and Backspace on an empty box removes the last; a select's cities reload with the country and a city that no longer exists is dropped; an options service that fails says so and the form recovers once it is back. |
 | `FieldTests` | A field written on every keystroke drives the live preview and its counter while the caret is still in it, and the counter turns red instead of truncating; the clear button empties the field and leaves the caret in it; the reveal button shows the password and says so with `aria-pressed`; chosen files are listed and judged by type and size, clearing them puts the focus back on the field and the same file can be chosen again; a custom renderer takes part in validation like a built-in control. |
 | `JsonSchemaTests` | An edited schema regenerates the form, rules included; an invalid one is reported and the last good form stays; the conditional example brings `x-visibleWhen`, `dependentRequired`, `$ref` and its two-column layout through; the wizard example survives the round trip out to JSON and back, and Enter in its one-field step advances. |
-| `ThemingAndLayoutTests` | A dark colour-scheme preference switches the form's tokens and the controls with them, and switches back on the spot; a `data-theme` on an ancestor wins over the preference; two columns side by side collapse into one on a narrow screen, and a field spanning both is as wide as the two; reduced motion turns the transitions off. |
+| `ThemingAndLayoutTests` | On the demo, a dark colour-scheme preference puts the site in its dark theme and the forms' tokens, controls, `color-scheme` and error colours with it (the demo re-tints Borm's tokens to the site's), and switches back on the spot; the header's toggle wins over the preference in both directions, survives a page load, and toggling to what the system asks for hands the choice back to it. On a page that links nothing but `bit-borm.css`, the shipped palettes follow the preference and a `data-theme` on an ancestor wins over it in both directions. Two columns side by side collapse into one on a narrow screen, and a field spanning both is as wide as the two; reduced motion turns the transitions off. |
 | `KeyboardTests` | The signup form can be filled in and sent from the keyboard alone (Tab, the arrow keys in a radio group, Space, Enter); a field marked to autofocus has the caret when the page opens; a read-only answer stays in the tab order but cannot be changed. |
-| `DemoPagesTests` | Every demo page (the routes are read from the `@page` directives under `Demo/Client/Pages`, so a new page is swept without being listed) answers, is prerendered with its forms in the first response, turns interactive with `bit-borm.css` loaded and styling its forms, and runs every button on it without a console error, an unhandled exception, a failed request or the error banner; an unknown address gets the not-found page inside the app; navigating through every demo in the app leaves a working form behind; "View source" shows the page's code. |
+| `DemoPagesTests` | Every demo page (the routes are read from the `@page` directives under `Demo/Client/Pages`, so a new page is swept without being listed) answers, is prerendered with its forms in the first response, turns interactive with `bit-borm.css` loaded and styling its forms on the site's theme, and runs every button in its content (the docs column, or the landing page) without a console error, an unhandled exception, a failed request or the error banner; an unknown address gets the 404 page inside the site shell, whose footer still leads back to a demo; navigating through every page of the docs nav panel in the app leaves a working form behind; "View source" shows the page's code. |
 
 Every page is prerendered, so its form - inputs, buttons and all - is on screen before anything handles a keystroke:
 a value typed then is overwritten when WebAssembly takes the page over, and a click is lost. Each test waits until the
-page runs in the browser (`data-interactive="true"` on the layout's `.app-shell`) and the page has stopped changing,
+page runs in the browser (`data-interactive="true"` on the site shell's `.page`) and the page has stopped changing,
 and from then on waits for conditions (a message, a focused control, a value), never for a fixed time.
 
 Every test also fails on any uncaught page error and on any console error in which Blazor reports an unhandled
@@ -85,7 +86,8 @@ the Development environment so the build output finds its static web assets), wa
 between all tests and stops it when the run ends. Rebuilding the demo while a run is in progress changes the
 fingerprinted assets under the running server and fails the pages that boot afterwards, so rebuild between runs.
 Each test gets a browser context of its own - its own WebAssembly instance, so no form state leaks between tests -
-with a light colour scheme, so the stylesheet's `prefers-color-scheme` theme is the same on every machine, and reduced
+with a light colour scheme, so the site's theme (which follows `prefers-color-scheme` until its toggle is used) is the
+same on every machine, and reduced
 motion, which the stylesheet answers by dropping its transitions, so a colour read right after a field turned invalid
 is its resting colour. Every request that leaves the demo's origin is answered with an empty response, so a machine
 without internet access runs the suite just the same. The tests run one at a time: many of them race a keystroke

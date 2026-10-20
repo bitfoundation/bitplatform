@@ -1,11 +1,11 @@
 ﻿@page "/examples/reconnect-edge"
 
-<PageTitle>Reconnect Edge - bit Blow</PageTitle>
+<PageTitle>Reconnect Edge · Blow</PageTitle>
 
 <ExampleScaffold Title="Reconnect Edge"
                  Summary="Select an edge, then drag either endpoint (the small circles) onto a different handle to rewire it. The log shows reconnect events.">
     <Toolbar>
-        <span class="text-muted">@_log</span>
+        <span class="bb-muted">@_log</span>
     </Toolbar>
     <ChildContent>
         <BlowCanvas Nodes="_nodes" Edges="_edges" FitViewOnInit="true"

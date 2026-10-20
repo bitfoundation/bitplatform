@@ -1,12 +1,12 @@
 ﻿@page "/examples/keyboard-a11y"
 
-<PageTitle>Keyboard Accessibility - bit Blow</PageTitle>
+<PageTitle>Keyboard Accessibility · Blow</PageTitle>
 
 <ExampleScaffold Title="Keyboard Accessibility"
                  Summary="Nodes and edges are both in the tab order. Tab to one, press Enter or Space to select it (Shift to add to the selection), move a selection with the arrow keys, press Escape to clear it and Delete to remove it. Every change is announced through an aria-live region.">
     <Toolbar>
         <label><input type="checkbox" checked="@_edgesFocusable" @onchange="@(e => _edgesFocusable = (bool)e.Value!)" /> Edges focusable</label>
-        <button class="btn btn-sm btn-primary" @onclick="Reset">Reset</button>
+        <button class="btn btn-primary" @onclick="Reset">Reset</button>
     </Toolbar>
     <ChildContent>
         <BlowCanvas @ref="_flow"

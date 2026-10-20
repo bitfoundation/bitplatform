@@ -1,0 +1,91 @@
+﻿@page "/getting-started"
+
+<PageTitle>Getting started · Bortable</PageTitle>
+
+<div class="bb-intro">
+    <h1>Getting started</h1>
+    <p class="bb-subtitle">
+        One package, one service registration and one stylesheet - then any <code>IList&lt;TItem&gt;</code>
+        on an interactively rendered page becomes a list people can put in order by hand.
+    </p>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Install</h3>
+    <p class="bb-card-desc">
+        In a Blazor Web App with an interactive client, the package belongs in the <code>.Client</code>
+        project, and the services are registered in both projects - the server prerenders the same
+        components the client runs.
+    </p>
+    <pre class="bb-code">dotnet add package Bit.Bortable</pre>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Register the services</h3>
+    <p class="bb-card-desc">
+        It registers one scoped service: the coordinator that holds the drag in progress, so lists
+        sharing a group can hand an item to each other. Scoped means one per circuit on Blazor Server
+        and one per application on WebAssembly, so two users never share a drag.
+    </p>
+    <pre class="bb-code"><span class="c">// Program.cs - in every project that renders a list</span>
+builder.Services.AddBitBortableServices();</pre>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Reference the stylesheet</h3>
+    <p class="bb-card-desc">
+        It styles the drag states only - the ghost, the chosen item, the hidden original, the swap
+        target, the multi-drag selection - and leaves the look of the list to you. The script module
+        needs no tag: the lists import it on demand, once for all of them.
+    </p>
+    <pre class="bb-code">&lt;<span class="k">link</span> rel=<span class="s">"stylesheet"</span> href=<span class="s">"_content/Bit.Bortable/bit-bortable.css"</span> /&gt;</pre>
+    <p class="bb-card-desc">And the namespace, in <code>_Imports.razor</code>:</p>
+    <pre class="bb-code"><span class="k">@@using</span> Bit.Bortable</pre>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> A first list</h3>
+    <p class="bb-card-desc">
+        Each item is wrapped in a <code>&lt;div&gt;</code> that carries the drag handlers;
+        <code>ItemTemplate</code> renders what goes inside it. <code>Class</code> and <code>Style</code> go
+        to the list container, <code>ItemClass</code> to every item wrapper. <code>@@bind-Items</code> keeps
+        your field in step: the list is changed in place, so the order a user makes is the order your
+        code reads back.
+    </p>
+    <pre class="bb-code">&lt;<span class="k">Bortable</span> @@bind-Items=<span class="s">"_items"</span> TItem=<span class="s">"string"</span> Class=<span class="s">"todo"</span> ItemClass=<span class="s">"todo-item"</span>&gt;
+    &lt;<span class="k">ItemTemplate</span> Context=<span class="s">"item"</span>&gt;@@item&lt;/<span class="k">ItemTemplate</span>&gt;
+&lt;/<span class="k">Bortable</span>&gt;
+
+<span class="k">@@code</span> {
+    <span class="k">private</span> IList&lt;<span class="k">string</span>&gt; _items = <span class="k">new</span> List&lt;<span class="k">string</span>&gt; { <span class="s">"Write the spec"</span>, <span class="s">"Review the PR"</span>, <span class="s">"Ship it"</span> };
+}</pre>
+
+    <div class="bb-demo">
+        <div class="bb-demo-bar"><span class="bb-demo-label">Live</span></div>
+        <Bortable @bind-Items="_items" TItem="string" Id="getting-started-list"
+                  Class="demo-list" ItemClass="demo-item" GhostClass="demo-ghost">
+            <ItemTemplate Context="item">@item</ItemTemplate>
+        </Bortable>
+        <p class="demo-order"><strong>Order:</strong> <span id="getting-started-order">@string.Join(", ", _items)</span></p>
+    </div>
+
+    <div class="bb-note">
+        The list must be mutable - a <code>List&lt;T&gt;</code> or anything else whose
+        <code>IsReadOnly</code> is <code>false</code>. Items are rendered with <code>@@key</code>, so they
+        must be unique within a list.
+    </div>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Where to go next</h3>
+    <div class="bb-try">
+        <a href="shared" class="btn btn-outline">Drag between lists →</a>
+        <a href="cloning" class="btn btn-outline">Copy instead of move →</a>
+        <a href="handle" class="btn btn-outline">Drag by a handle →</a>
+        <a href="events" class="btn btn-outline">React to a drop →</a>
+    </div>
+</div>
+
+@code {
+    private IList<string> _items = new List<string> { "Write the spec", "Review the PR", "Ship it" };
+}

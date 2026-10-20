@@ -1,5 +1,5 @@
 ﻿using System.Text.RegularExpressions;
-using Bit.Bmage.Demo.Client.Shared;
+using Bit.Bmage.Demo.Client;
 
 namespace Bit.Bmage.Tests.Mcp.Services;
 
@@ -41,7 +41,7 @@ public class RecipeCatalogTests
     {
         foreach (var recipe in BmageRecipeCatalog.All.Where(recipe => recipe.SeeAlso is not null))
         {
-            Assert.IsNotNull(NavItem.ByHref(recipe.SeeAlso!.TrimStart('/')), $"{recipe.Id} points at {recipe.SeeAlso}, which is not a demo page.");
+            Assert.IsNotNull(DocsCatalog.FindByPath(recipe.SeeAlso!), $"{recipe.Id} points at {recipe.SeeAlso}, which is not a demo page.");
         }
     }
 

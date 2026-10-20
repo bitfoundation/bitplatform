@@ -1,55 +1,52 @@
 ﻿@page "/errors"
 
-<PageTitle>Errors &amp; edge cases - BlazeDb</PageTitle>
+<PageTitle>Errors &amp; limits · BlazeDb</PageTitle>
 
-<PageHeader Eyebrow="Behaviour under stress" IconName="alert" Title="Every way BlazeDb says no"
+<PageHeader Eyebrow="Errors & limits" Title="Every way BlazeDb says no"
             Lead="A database earns trust by failing predictably. Each case below is executed for real against a throwaway database and reports the exception type and message it actually produced.">
-    <span class="chip"><Icon Name="play" /> @Cases.Length executable cases</span>
+    <span class="bb-badge bd-badge-neutral">@Cases.Length executable cases</span>
     @if (_ran > 0)
     {
-        <span class="chip @(_failed == 0 ? "ok" : "err")">
-            <Icon Name="@(_failed == 0 ? "check" : "alert")" />
-            @(_ran - _failed)/@_ran behaved as documented
-        </span>
+        <span class="@Tones.Badge(_failed == 0 ? "ok" : "err")">@(_ran - _failed)/@_ran behaved as documented</span>
     }
 </PageHeader>
 
-<Section Title="Run the failure modes" IconName="play"
+<Section Title="Run the failure modes"
          Lead="Nothing here is a screenshot. Each row opens its own database, provokes the failure and prints what came back.">
-    <div class="flex wrap mb-3">
-        <button class="btn btn-primary" disabled="@_busy" @onclick="RunAllAsync">
+    <div class="bb-toolbar">
+        <button type="button" class="btn btn-primary" disabled="@_busy" @onclick="RunAllAsync">
             <Icon Name="play" /> @(_busy ? "Running…" : "Run every case")
         </button>
-        <button class="btn" disabled="@(_busy || _results.Count == 0)" @onclick="Clear">
+        <button type="button" class="btn btn-secondary" disabled="@(_busy || _results.Count == 0)" @onclick="Clear">
             <Icon Name="refresh" /> Clear results
         </button>
     </div>
 
     @foreach (var group in Cases.GroupBy(c => c.Group))
     {
-        <Panel Title="@group.Key" IconName="@GroupIcon(group.Key)" Flush="true" Class="mb-3">
-            <div class="case-list">
+        <Panel Title="@group.Key" IconName="@GroupIcon(group.Key)" Flush="true">
+            <div class="bd-cases">
                 @foreach (var item in group)
                 {
                     var result = _results.GetValueOrDefault(item.Id);
-                    <div class="case">
-                        <div class="case-head">
-                            <div class="case-what">
-                                <div class="case-title">@item.Title</div>
-                                <code class="case-api">@item.Api</code>
+                    <div class="bd-case">
+                        <div class="bd-case-head">
+                            <div class="bd-case-what">
+                                <div class="bd-case-title">@item.Title</div>
+                                <code class="bd-case-api">@item.Api</code>
                             </div>
-                            <div class="case-side">
-                                <span class="badge @ExpectedTone(item)">@item.Expected</span>
-                                <button class="btn btn-sm" disabled="@_busy" @onclick="() => RunCaseAsync(item)">
+                            <div class="bd-case-side">
+                                <span class="@Tones.Badge(ExpectedTone(item)) bb-mono">@item.Expected</span>
+                                <button type="button" class="btn btn-secondary" disabled="@_busy" @onclick="() => RunCaseAsync(item)">
                                     <Icon Name="play" /> Run
                                 </button>
                             </div>
                         </div>
-                        <p class="case-note">@item.Note</p>
+                        <p class="bd-case-note">@item.Note</p>
                         @if (result is not null)
                         {
-                            <div class="case-result @result.Tone">
-                                <Icon Name="@(result.Tone == "ok" ? "check" : "alert")" />
+                            <div class="bd-case-result @(result.Tone == "ok" ? "bd-case-ok" : "bd-case-err")">
+                                <Icon Name="@(result.Tone == "ok" ? "check" : "alert")" Size="14" />
                                 <span>@result.Detail</span>
                             </div>
                         }
@@ -60,28 +57,28 @@
     }
 </Section>
 
-<Section Title="Things that look like errors but are not" IconName="info"
+<Section Title="Things that look like errors but are not"
          Lead="Several operations that other databases treat as exceptional are ordinary return values here, because they are ordinary situations.">
-    <div class="grid grid-3">
+    <div class="bb-flex">
         <Panel Title="Missing rows" IconName="search">
-            <CodeBlock ShowHeader="false" Code="@MissingSnippet" />
-            <p class="small mt-2 mb-0">
+            <CodeBlock Code="@MissingSnippet" />
+            <p>
                 <code>Get</code> returns <code>default</code>, <code>TryGet</code> returns
                 <code>false</code>, and <code>Delete</code> returns <code>false</code>. Only
                 <code>Update</code> insists the row exists.
             </p>
         </Panel>
         <Panel Title="Null index keys" IconName="key">
-            <CodeBlock ShowHeader="false" Code="@NullIndexSnippet" />
-            <p class="small mt-2 mb-0">
+            <CodeBlock Code="@NullIndexSnippet" />
+            <p>
                 A null is an index key like any other: a lookup with a null key returns the rows
                 whose value is null, never an error, and unique indexes still allow any number of
                 them. Only a bounded range excludes them, since null lies inside no interval.
             </p>
         </Panel>
         <Panel Title="Empty results" IconName="query">
-            <CodeBlock ShowHeader="false" Code="@EmptySnippet" />
-            <p class="small mt-2 mb-0">
+            <CodeBlock Code="@EmptySnippet" />
+            <p>
                 A range with no matches, a lookup on an absent value and a query with an
                 impossible predicate all yield an empty sequence - never null.
             </p>
@@ -89,20 +86,20 @@
     </div>
 </Section>
 
-<Section Title="Handling patterns" IconName="shield"
+<Section Title="Handling patterns"
          Lead="Three patterns cover almost everything an application needs to do about failure.">
-    <div class="grid grid-3">
+    <div class="bb-flex">
         <Panel Title="Open with a fallback" IconName="database" Sub="the one you must write">
-            <CodeBlock ShowHeader="false" Code="@OpenPatternSnippet" />
-            <p class="small mt-2 mb-0">
+            <CodeBlock Code="@OpenPatternSnippet" />
+            <p>
                 This site does the same, except that a locked or unavailable OPFS falls back to an
-                in-memory database rather than a replica - the badge in the sidebar reflects which
+                in-memory database rather than a replica - the storage badge in the corner of the window shows which
                 branch it took.
             </p>
         </Panel>
         <Panel Title="Guard a durability point" IconName="disk">
-            <CodeBlock ShowHeader="false" Code="@FlushPatternSnippet" />
-            <p class="small mt-2 mb-0">
+            <CodeBlock Code="@FlushPatternSnippet" />
+            <p>
                 A background flush failure never loses data - the bytes go back into the buffer and
                 the flusher retries on its next tick. <code>db.LastBackgroundError</code> exposes the
                 standing failure (and clears once a flush succeeds), and an explicit
@@ -110,15 +107,15 @@
             </p>
         </Panel>
         <Panel Title="Keep memory and disk in step" IconName="txn">
-            <CodeBlock ShowHeader="false" Code="@TxnPatternSnippet" />
-            <p class="small mt-2 mb-0">
+            <CodeBlock Code="@TxnPatternSnippet" />
+            <p>
                 Rollback reverses in-memory state and index entries in reverse order and writes
                 nothing to the log, so an abandoned transaction leaves no trace on either side.
             </p>
         </Panel>
     </div>
 
-    <Callout Tone="warn" Title="One caveat worth internalising." Class="mt-3">
+    <Callout Tone="warn" Title="One caveat worth internalising.">
         Rows are live objects, not copies. Mutating a row you fetched changes the table immediately,
         before and regardless of any <code>Update</code> call, and a rollback cannot undo it. Clone
         before editing if you need transactional semantics - the <a href="todos">CRUD page</a> does
@@ -549,7 +546,7 @@
     };
 
     private static string ExpectedTone(Case item) =>
-        item.Expected.EndsWith("Exception", StringComparison.Ordinal) ? "warn mono" : "ok mono";
+        item.Expected.EndsWith("Exception", StringComparison.Ordinal) ? "warn" : "ok";
 
     private const string MissingSnippet = """
         var row = table.Get(missingKey);          // null

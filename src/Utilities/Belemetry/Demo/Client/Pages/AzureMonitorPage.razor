@@ -1,19 +1,20 @@
 ﻿@page "/azure-monitor"
 
-<PageTitle>Azure Monitor - bit Belemetry</PageTitle>
+<PageTitle>Azure Monitor · Belemetry</PageTitle>
 
-<h1>Azure Monitor</h1>
+<div class="bb-intro">
+    <h1>Azure Monitor</h1>
+    <p class="bb-subtitle">
+        The Azure Monitor exporter posts straight to the Application Insights ingestion endpoint
+        (<code>/v2.1/track</code>), with no collector in between. Page views, requests, dependencies, exceptions, custom
+        events and metrics land in their usual tables - <code>pageViews</code>, <code>requests</code>,
+        <code>dependencies</code>, <code>exceptions</code>, <code>customEvents</code>, <code>customMetrics</code> - so the
+        portal's Application Map, Failures, Performance and Usage blades work as they do with Microsoft's own SDKs.
+    </p>
+</div>
 
-<p class="page-intro">
-    The Azure Monitor exporter posts straight to the Application Insights ingestion endpoint
-    (<code>/v2.1/track</code>), with no collector in between. Page views, requests, dependencies, exceptions, custom
-    events and metrics land in their usual tables - <code>pageViews</code>, <code>requests</code>,
-    <code>dependencies</code>, <code>exceptions</code>, <code>customEvents</code>, <code>customMetrics</code> - so the
-    portal's Application Map, Failures, Performance and Usage blades work as they do with Microsoft's own SDKs.
-</p>
-
-<div class="demo-section">
-    <h2>Connection string</h2>
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Connection string</h3>
     <p>
         The exporter needs the resource's connection string: the instrumentation key and the regional
         <code>IngestionEndpoint</code> (records go to <code>{IngestionEndpoint}/v2.1/track</code>; without one, to
@@ -32,8 +33,8 @@
     </p>
 </div>
 
-<div class="demo-section">
-    <h2>Microsoft Entra ID</h2>
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Microsoft Entra ID</h3>
     <p>
         A resource with local authentication disabled only accepts telemetry with an Entra ID token.
         <code>AccessTokenProvider</code> supplies one, sent as <code>Authorization: Bearer</code>, for the scope
@@ -50,8 +51,8 @@
     <CodeSnippet Code="@EntraCode" Language="C#" Expanded="true" />
 </div>
 
-<div class="demo-section">
-    <h2>MaskIp</h2>
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> MaskIp</h3>
     <p>
         Application Insights derives each record's city and country from the client IP address it was sent from.
         With <code>MaskIp</code> (on by default) Belemetry sends <code>ai.location.ip = 0.0.0.0</code>, so no
@@ -61,8 +62,8 @@
     <CodeSnippet Code="@MaskIpCode" Language="C#" />
 </div>
 
-<div class="demo-section">
-    <h2>Live Metrics</h2>
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Live Metrics</h3>
     <p>
         With <code>EnableLiveMetrics</code> the .NET side streams requests, dependencies, exceptions, CPU and memory to
         the portal's Live Metrics blade once per second while someone is watching it - following the Application
@@ -73,8 +74,8 @@
     <CodeSnippet Code="@LiveMetricsCode" Language="C#" />
 </div>
 
-<div class="demo-section">
-    <h2>Compression, timeout and signals</h2>
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Compression, timeout and signals</h3>
     <p>
         <code>Compression = BelemetryCompression.Gzip</code> compresses the envelope array (<code>Content-Encoding:
         gzip</code>), in the browser too. <code>Timeout</code> bounds one request (30 s). <code>Signals</code> restricts
@@ -94,8 +95,8 @@
     </p>
 </div>
 
-<div class="demo-section">
-    <h2>API</h2>
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> API</h3>
     <ApiTable TypeName="BelemetryAzureMonitorExporterOptions" />
 </div>
 

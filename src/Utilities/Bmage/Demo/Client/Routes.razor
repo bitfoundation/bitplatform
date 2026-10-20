@@ -1,6 +1,14 @@
-﻿<Router AppAssembly="typeof(Routes).Assembly" NotFoundPage="typeof(Pages.NotFoundPage)">
+﻿@* Every page but the landing page renders inside the docs shell (Layout/DocsLayout.razor); the
+   landing page and the error pages opt out with @layout MainLayout. After a navigation the page's
+   own H1 takes focus, so a screen reader starts reading at the new page.
+
+   NotFound is the router's page for a client-side navigation to an unknown route, and also the
+   target the host re-executes a deep link it could not route to (UseStatusCodePagesWithReExecute
+   in the server's Program.cs), so both kinds of miss render the same page. *@
+
+<Router AppAssembly="typeof(Routes).Assembly" NotFoundPage="typeof(Pages.NotFound)">
     <Found Context="routeData">
-        <RouteView RouteData="routeData" DefaultLayout="typeof(Layout.MainLayout)" />
-        <FocusOnNavigate RouteData="routeData" Selector="h1, h2" />
+        <RouteView RouteData="routeData" DefaultLayout="typeof(Layout.DocsLayout)" />
+        <FocusOnNavigate RouteData="routeData" Selector="h1" />
     </Found>
 </Router>

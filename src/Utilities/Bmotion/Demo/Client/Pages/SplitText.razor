@@ -1,19 +1,20 @@
 @page "/split-text"
 
-<PageTitle>Split text - Bit.Bmotion</PageTitle>
+<PageTitle>Split text · Bmotion</PageTitle>
 
-<h1>Split text</h1>
+<div class="bb-intro">
+    <h1>Split text</h1>
+    <p class="bb-subtitle">
+        The headline that assembles itself one letter at a time is the oldest trick in motion design,
+        and everywhere else it means cutting a sentence into spans with a script and hoping nothing
+        re-renders underneath it. <strong>BmotionSplitText</strong> does the splitting in C#: each
+        character, word or line becomes a real animated element in the render tree, so there is nothing
+        to re-split, nothing to undo, and the text still wraps, selects and copies like the original.
+    </p>
+</div>
 
-<p class="page-intro">
-    The headline that assembles itself one letter at a time is the oldest trick in motion design,
-    and everywhere else it means cutting a sentence into spans with a script and hoping nothing
-    re-renders underneath it. <strong>BmotionSplitText</strong> does the splitting in C#: each
-    character, word or line becomes a real animated element in the render tree, so there is nothing
-    to re-split, nothing to undo, and the text still wraps, selects and copies like the original.
-</p>
-
-<div class="demo-section">
-    <h2>Characters, words, lines</h2>
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Characters, words, lines</h3>
     <p>
         One parameter picks the unit. <code>By="BmSplitBy.Chars"</code> is the headline treatment;
         <code>Words</code> keeps the count sane on longer copy; <code>Lines</code> splits on the
@@ -56,15 +57,15 @@
         </div>
     </div>
 
-    <div class="demo-actions">
-        <button class="btn-bm" @onclick="Replay">Replay</button>
+    <div class="bb-toolbar">
+        <button class="btn btn-primary" @onclick="Replay">Replay</button>
     </div>
 
     <CodeSnippet Code="@_basicsCode" />
-</div>
+</section>
 
-<div class="demo-section">
-    <h2>Where the cascade starts</h2>
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Where the cascade starts</h3>
     <p>
         The stagger is a <code>Bm.Stagger</code> like any other, so the same origins apply:
         <code>First</code> runs left to right, <code>Last</code> right to left, and
@@ -88,15 +89,15 @@
         }
     </div>
 
-    <div class="demo-actions">
-        <button class="btn-bm" @onclick="Replay">Replay</button>
+    <div class="bb-toolbar">
+        <button class="btn btn-primary" @onclick="Replay">Replay</button>
     </div>
 
     <CodeSnippet Code="@_staggerCode" />
-</div>
+</section>
 
-<div class="demo-section">
-    <h2>On scroll, and under the pointer</h2>
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> On scroll, and under the pointer</h3>
     <p>
         Because every unit is a full <code>Bmotion</code> element, it takes the gesture parameters
         too. <code>WhileInView</code> with <code>Once</code> gives the classic reveal-as-you-scroll
@@ -127,10 +128,10 @@
     </div>
 
     <CodeSnippet Code="@_gestureCode" />
-</div>
+</section>
 
-<div class="demo-section">
-    <h2>It still reads as a sentence</h2>
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> It still reads as a sentence</h3>
     <p>
         Splitting text is the classic way to break it for everyone who is not looking at it: a
         screen reader handed forty one-character spans spells the headline out. By default the
@@ -155,12 +156,12 @@
         </div>
     </div>
 
-    <div class="demo-actions">
-        <button class="btn-bm" @onclick="Replay">Replay</button>
+    <div class="bb-toolbar">
+        <button class="btn btn-primary" @onclick="Replay">Replay</button>
     </div>
 
     <CodeSnippet Code="@_a11yCode" />
-</div>
+</section>
 
 @code {
     // Every sample keys off this counter so "Replay" remounts them and their enter animations run

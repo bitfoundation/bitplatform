@@ -1,60 +1,60 @@
 ﻿@page "/privacy"
 @inject IJSRuntime JS
 
-<PageTitle>Privacy - bit Belemetry</PageTitle>
+<PageTitle>Privacy · Belemetry</PageTitle>
 
-<h1>Privacy</h1>
+<div class="bb-intro">
+    <h1>Privacy</h1>
+    <p class="bb-subtitle">
+        Consent decides <em>whether</em> a record is collected; the privacy rules decide <em>what is in it</em>. They run
+        before a record is queued - in the browser script and in the .NET pipeline alike - so secrets in URLs, e-mail
+        addresses in error messages and card numbers in logs are gone before anything leaves the device or the process.
+        The defaults are on; most apps only ever add to them.
+    </p>
+</div>
 
-<p class="page-intro">
-    Consent decides <em>whether</em> a record is collected; the privacy rules decide <em>what is in it</em>. They run
-    before a record is queued - in the browser script and in the .NET pipeline alike - so secrets in URLs, e-mail
-    addresses in error messages and card numbers in logs are gone before anything leaves the device or the process.
-    The defaults are on; most apps only ever add to them.
-</p>
-
-<div class="demo-section">
-    <h2>See it happen</h2>
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> See it happen</h3>
     <p>
         Each button below makes a real request, or throws a real error, carrying something that must not be recorded.
         Open a record in the feed to see what was actually exported: the server received the original URL, the
         telemetry did not.
     </p>
-    <div class="demo-row">
-        <div class="demo-card stack">
-            <div class="demo-actions">
-                <button type="button" class="btn-bl" disabled="@(RendererInfo.IsInteractive is false)" @onclick="@(() => FetchAsync(SecretsUrl))">Secrets in the query</button>
-                <button type="button" class="btn-bl-subtle" disabled="@(RendererInfo.IsInteractive is false)" @onclick="@(() => FetchAsync(PatternsUrl))">An e-mail and an IP in the query</button>
-                <button type="button" class="btn-bl-subtle" disabled="@(RendererInfo.IsInteractive is false)" @onclick="@(() => FetchAsync(FragmentUrl))">A token in the fragment</button>
-                <button type="button" class="btn-bl btn-bl-danger" disabled="@(RendererInfo.IsInteractive is false)" @onclick="ThrowAsync">An error mentioning a card</button>
-            </div>
-            <div class="doc-table-wrap">
-                <table class="doc-table">
-                    <thead><tr><th scope="col">The page used</th><th scope="col">The telemetry carries</th></tr></thead>
-                    <tbody>
-                        <tr><td><code>@SecretsUrl</code></td><td><code>.../api/demo/echo?token=REDACTED&amp;email=REDACTED&amp;q=ok</code></td></tr>
-                        <tr><td><code>@PatternsUrl</code></td><td><code>.../api/demo/echo?q=[email]&amp;from=[ip]</code></td></tr>
-                        <tr><td><code>@FragmentUrl</code></td><td><code>.../api/demo/echo</code></td></tr>
-                        <tr><td><code>@ErrorMessage</code></td><td><code>Payment failed for [email] with card [card]</code></td></tr>
-                    </tbody>
-                </table>
-            </div>
-            <TelemetryFeedView Compact="true" Match="@IsPrivacyRecord"
-                               EmptyText="Nothing yet - press a button, then open the record and read its url.full or exception.message." />
+    <div class="bb-demo">
+        <div class="bb-demo-bar"><span class="bb-demo-label">Live<span class="demo-sample-title">the privacy rules</span></span></div>
+        <div class="bb-toolbar">
+            <button type="button" class="btn btn-primary" disabled="@(RendererInfo.IsInteractive is false)" @onclick="@(() => FetchAsync(SecretsUrl))">Secrets in the query</button>
+            <button type="button" class="btn btn-secondary" disabled="@(RendererInfo.IsInteractive is false)" @onclick="@(() => FetchAsync(PatternsUrl))">An e-mail and an IP in the query</button>
+            <button type="button" class="btn btn-secondary" disabled="@(RendererInfo.IsInteractive is false)" @onclick="@(() => FetchAsync(FragmentUrl))">A token in the fragment</button>
+            <button type="button" class="btn demo-btn-danger" disabled="@(RendererInfo.IsInteractive is false)" @onclick="ThrowAsync">An error mentioning a card</button>
         </div>
+        <div class="bb-scroll">
+            <table class="bb-table">
+                <thead><tr><th scope="col">The page used</th><th scope="col">The telemetry carries</th></tr></thead>
+                <tbody>
+                    <tr><td><code>@SecretsUrl</code></td><td><code>.../api/demo/echo?token=REDACTED&amp;email=REDACTED&amp;q=ok</code></td></tr>
+                    <tr><td><code>@PatternsUrl</code></td><td><code>.../api/demo/echo?q=[email]&amp;from=[ip]</code></td></tr>
+                    <tr><td><code>@FragmentUrl</code></td><td><code>.../api/demo/echo</code></td></tr>
+                    <tr><td><code>@ErrorMessage</code></td><td><code>Payment failed for [email] with card [card]</code></td></tr>
+                </tbody>
+            </table>
+        </div>
+        <TelemetryFeedView Compact="true" Match="@IsPrivacyRecord"
+                           EmptyText="Nothing yet - press a button, then open the record and read its url.full or exception.message." />
     </div>
 </div>
 
-<div class="demo-section">
-    <h2>Query parameters</h2>
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Query parameters</h3>
     <p>
         The values of the parameters in <code>RedactQueryParameters</code> are replaced with <code>REDACTED</code> in
         every URL attribute (<code>url.full</code>, <code>page.referrer</code>, ...), matched case-insensitively and
         after URL decoding. The parameter stays, so a dashboard can still tell the requests apart. The default list:
     </p>
-    <div class="badge-list">
+    <div class="demo-badges">
         @foreach (var name in _defaultRedacted)
         {
-            <span class="badge">@name</span>
+            <span class="bb-badge">@name</span>
         }
     </div>
     <p>
@@ -65,16 +65,16 @@
     <CodeSnippet Code="@QueryCode" Language="C#" Expanded="true" />
 </div>
 
-<div class="demo-section">
-    <h2>Pattern scrubbing</h2>
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Pattern scrubbing</h3>
     <p>
         With <code>ScrubPatterns</code> (on) these patterns are replaced wherever free text can carry them - log
         bodies, exception messages and stack traces, span status messages and URLs. In the browser every string
         attribute is scrubbed (the session and user ids excepted); on the .NET side, the URL attributes,
         <code>exception.message</code>, <code>exception.stacktrace</code>, <code>url.query</code> and the log body.
     </p>
-    <div class="doc-table-wrap">
-        <table class="doc-table">
+    <div class="bb-scroll">
+        <table class="bb-table">
             <thead><tr><th scope="col">Pattern</th><th scope="col">Becomes</th><th scope="col">Notes</th></tr></thead>
             <tbody>
                 <tr><td>E-mail addresses</td><td><code>[email]</code></td><td><code>name&#64;domain.tld</code></td></tr>
@@ -91,8 +91,8 @@
     </p>
 </div>
 
-<div class="demo-section">
-    <h2>Blocked attributes and the user agent</h2>
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Blocked attributes and the user agent</h3>
     <p>
         <code>BlockedAttributes</code> removes attributes by exact key from every record and span event, on both
         sides: the browser script gets the list in its configuration, and the .NET pipeline applies it to its own
@@ -108,8 +108,8 @@
     <CodeSnippet Code="@AttributesCode" Language="C#" Expanded="true" />
 </div>
 
-<div class="demo-section">
-    <h2>API</h2>
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> API</h3>
     <ApiTable TypeName="BelemetryPrivacyOptions" />
 </div>
 

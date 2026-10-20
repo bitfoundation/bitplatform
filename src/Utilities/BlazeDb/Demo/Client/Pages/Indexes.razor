@@ -2,46 +2,46 @@
 @implements IAsyncDisposable
 @inject DemoDbService Db
 
-<PageTitle>Indexes - BlazeDb</PageTitle>
+<PageTitle>Indexes · BlazeDb</PageTitle>
 
-<PageHeader Eyebrow="Engine" IconName="index" Title="Two index kinds, both maintained for you"
+<PageHeader Eyebrow="Indexes" Title="Two index kinds, both maintained for you"
             Lead="A hash index answers equality in constant time. An ordered index answers range and sort questions in logarithmic time. Every insert, update and delete keeps both in step - there is no reindex step and no stale index.">
-    <span class="chip on"><Icon Name="index" /> 3 hash</span>
-    <span class="chip on"><Icon Name="sort" /> 2 ordered</span>
-    <span class="chip"><Icon Name="database" /> @(_todos?.Count ?? 0) rows</span>
+    <span class="bb-badge">3 hash</span>
+    <span class="bb-badge">2 ordered</span>
+    <span class="bb-badge bd-badge-neutral">@(_todos?.Count ?? 0) rows</span>
 </PageHeader>
 
 @if (_todos is null)
 {
-    <Panel><div class="empty">Opening the database…</div></Panel>
+    <div class="bb-empty"><span class="bb-spinner"></span> Opening the database…</div>
 }
 else
 {
-    <Section Title="Hash indexes - equality in O(1)" IconName="index"
+    <Section Title="Hash indexes - equality in O(1)"
              Lead="Lookup returns every row whose indexed value equals the key. CountBy answers the same question without materialising anything.">
-        <div class="grid grid-sidebar">
+        <div class="bd-main-side">
             <Panel Title="Try a lookup" IconName="search">
-                <div class="form-row">
-                    <div class="field">
-                        <label class="field-label" for="hash-index">Index</label>
-                        <select id="hash-index" class="select" @bind="_hashIndex" @bind:after="RunHash">
+                <div class="bb-fields">
+                    <div class="bb-field">
+                        <label for="hash-index">Index</label>
+                        <select id="hash-index" @bind="_hashIndex" @bind:after="RunHash">
                             <option value="Done">Indexes.Done - bool</option>
                             <option value="Category">Indexes.Category - string?</option>
                             <option value="ByPriority">Indexes.ByPriority - Priority enum</option>
                         </select>
                     </div>
-                    <div class="field">
-                        <label class="field-label" for="hash-value">Key</label>
+                    <div class="bb-field">
+                        <label for="hash-value">Key</label>
                         @if (_hashIndex == "Done")
                         {
-                            <select id="hash-value" class="select" @bind="_doneKey" @bind:after="RunHash">
+                            <select id="hash-value" @bind="_doneKey" @bind:after="RunHash">
                                 <option value="false">false</option>
                                 <option value="true">true</option>
                             </select>
                         }
                         else if (_hashIndex == "Category")
                         {
-                            <select id="hash-value" class="select" @bind="_categoryKey" @bind:after="RunHash">
+                            <select id="hash-value" @bind="_categoryKey" @bind:after="RunHash">
                                 @foreach (var c in DemoData.Categories)
                                 {
                                     <option value="@c">@c</option>
@@ -52,7 +52,7 @@ else
                         }
                         else
                         {
-                            <select id="hash-value" class="select" @bind="_priorityKey" @bind:after="RunHash">
+                            <select id="hash-value" @bind="_priorityKey" @bind:after="RunHash">
                                 @foreach (var p in Enum.GetValues<Priority>())
                                 {
                                     <option value="@p">Priority.@p</option>
@@ -62,26 +62,26 @@ else
                     </div>
                 </div>
 
-                <div class="api-call mt-2">@_hashCode</div>
+                <div class="bb-log bd-out">@_hashCode</div>
 
-                <div class="stats mt-2">
-                    <StatTile Label="Lookup rows" IconName="database" Value="@_hashRows.Count.ToString("N0")" Tone="accent" />
-                    <StatTile Label="CountBy" IconName="index" Value="@_hashCount.ToString("N0")" Note="no rows materialised" />
-                    <StatTile Label="Elapsed" IconName="clock" Value="@_hashTime" Note="both calls" />
+                <div class="bb-stats">
+                    <StatTile Label="Lookup rows" Value="@_hashRows.Count.ToString("N0")" Tone="accent" />
+                    <StatTile Label="CountBy" Value="@_hashCount.ToString("N0")" Note="no rows materialised" />
+                    <StatTile Label="Elapsed" Value="@_hashTime" Note="both calls" />
                 </div>
 
                 @if (_hashRows.Count > 0)
                 {
-                    <div class="rows mt-2" style="border:1px solid var(--border); border-radius:var(--r-sm)">
+                    <div class="bd-rows bd-rows-framed">
                         @foreach (var row in _hashRows.Take(6))
                         {
-                            <div class="row-item">
-                                <div class="row-main">
-                                    <div class="row-title">@row.Title</div>
-                                    <div class="row-meta">
-                                        <span class="prio @row.Priority">@row.Priority</span>
-                                        <span class="badge @(row.Category is null ? "" : "accent")">@(row.Category ?? "null")</span>
-                                        <span class="mono">@(row.Done ? "done" : "open")</span>
+                            <div class="bd-row">
+                                <div class="bd-row-main">
+                                    <div class="bd-row-title">@row.Title</div>
+                                    <div class="bd-row-meta">
+                                        <span class="bd-prio bd-prio-@row.Priority">@row.Priority</span>
+                                        <span class="@Tones.Badge(row.Category is null ? "" : "accent")">@(row.Category ?? "null")</span>
+                                        <span class="bb-mono">@(row.Done ? "done" : "open")</span>
                                     </div>
                                 </div>
                             </div>
@@ -89,25 +89,25 @@ else
                     </div>
                     @if (_hashRows.Count > 6)
                     {
-                        <p class="tiny muted mt-1 mb-0">…and @(_hashRows.Count - 6) more.</p>
+                        <p class="bd-foot">…and @(_hashRows.Count - 6) more.</p>
                     }
                 }
                 else
                 {
-                    <div class="empty"><Icon Name="search" /><div>@_hashEmptyNote</div></div>
+                    <div class="bb-empty">@_hashEmptyNote</div>
                 }
             </Panel>
 
-            <div class="flex-col gap-lg">
+            <div class="bb-flex">
                 <Panel Title="Null keys are indexed like any other" IconName="alert">
-                    <p class="small">
+                    <p>
                         A row whose indexed property is <code>null</code> is recorded in that index
                         under null, so <code>Lookup(Category, null)</code> finds the uncategorised rows
                         in one probe and an ordered index lists them first. Only a bounded
                         <code>Range</code> leaves them out - null is inside no interval - and a unique
                         index never counts them as duplicates.
                     </p>
-                    <dl class="kv">
+                    <dl class="bb-params">
                         <dt>Rows in table</dt>
                         <dd>@_todos.Count</dd>
                         <dt>Sum over categories</dt>
@@ -117,38 +117,38 @@ else
                         <dt>Lookup(Category, null)</dt>
                         <dd>@_nullLookupCount rows</dd>
                     </dl>
-                    <p class="tiny muted mb-0">
+                    <p class="bd-foot">
                         <code>CountBy</code> over the named categories plus the null bucket adds up to
                         <code>table.Count</code>.
                     </p>
                 </Panel>
 
                 <Panel Title="Index versus scan" IconName="gauge">
-                    <p class="small">
+                    <p>
                         Both of these compute the same number. One reads a bucket count; the other
                         walks every row.
                     </p>
-                    <button class="btn btn-sm btn-block" @onclick="CompareCounting">
+                    <button type="button" class="btn btn-secondary" @onclick="CompareCounting">
                         <Icon Name="play" /> Measure @CompareIterations iterations of each
                     </button>
                     @if (_compareDone)
                     {
-                        <div class="table-wrap mt-2">
-                            <table class="data">
-                                <thead><tr><th>Call</th><th class="num">Per op</th></tr></thead>
+                        <div class="bb-scroll">
+                            <table class="bb-table">
+                                <thead><tr><th>Call</th><th class="bd-num">Per op</th></tr></thead>
                                 <tbody>
                                     <tr>
-                                        <td class="mono">CountBy(Done, true)</td>
-                                        <td class="num mono ok-text">@_countByTime</td>
+                                        <td class="bb-mono">CountBy(Done, true)</td>
+                                        <td class="bd-num bd-ok">@_countByTime</td>
                                     </tr>
                                     <tr>
-                                        <td class="mono">Scan().Count(t =&gt; t.Done)</td>
-                                        <td class="num mono">@_scanTime</td>
+                                        <td class="bb-mono">Scan().Count(t =&gt; t.Done)</td>
+                                        <td class="bd-num">@_scanTime</td>
                                     </tr>
                                 </tbody>
                             </table>
                         </div>
-                        <p class="tiny muted mt-1 mb-0">
+                        <p class="bd-foot">
                             Same answer (@_compareResult rows) - @_compareFactor.
                         </p>
                     }
@@ -157,44 +157,44 @@ else
         </div>
     </Section>
 
-    <Section Title="Ordered indexes - ranges and sort order" IconName="sort"
+    <Section Title="Ordered indexes - ranges and sort order"
              Lead="Range takes two inclusive bounds and walks the index in either direction. An unbounded end leaves the range open, and an implicit conversion means a bare value is accepted wherever a bound is expected.">
-        <div class="grid grid-sidebar">
+        <div class="bd-main-side">
             <Panel Title="Compose a range" IconName="filter">
-                <div class="form-row">
-                    <div class="field">
-                        <label class="field-label" for="ord-index">Index</label>
-                        <select id="ord-index" class="select" @bind="_orderedIndex" @bind:after="RunOrdered">
+                <div class="bb-fields">
+                    <div class="bb-field">
+                        <label for="ord-index">Index</label>
+                        <select id="ord-index" @bind="_orderedIndex" @bind:after="RunOrdered">
                             <option value="Effort">Indexes.Effort - int</option>
                             <option value="CreatedAt">Indexes.CreatedAt - DateTime</option>
                         </select>
                     </div>
-                    <div class="field" style="flex:0 0 auto">
-                        <label class="field-label">Direction</label>
-                        <div class="seg">
-                            <button class="@(!_descending ? "on" : null)" @onclick="() => SetDirection(false)">Ascending</button>
-                            <button class="@(_descending ? "on" : null)" @onclick="() => SetDirection(true)">Descending</button>
+                    <div class="bb-field">
+                        <span id="ord-direction">Direction</span>
+                        <div class="bb-segmented" role="group" aria-labelledby="ord-direction">
+                            <button type="button" aria-pressed="@(!_descending ? "true" : "false")" @onclick="() => SetDirection(false)">Ascending</button>
+                            <button type="button" aria-pressed="@(_descending ? "true" : "false")" @onclick="() => SetDirection(true)">Descending</button>
                         </div>
                     </div>
                 </div>
 
                 @if (_orderedIndex == "Effort")
                 {
-                    <div class="form-row mt-2">
-                        <div class="field">
-                            <label class="field-label" for="eff-from">From (inclusive)</label>
-                            <input id="eff-from" class="input mono" type="number" min="0" max="600" disabled="@_fromUnbounded"
+                    <div class="bb-fields">
+                        <div class="bb-field">
+                            <label for="eff-from">From (inclusive)</label>
+                            <input id="eff-from" class="bb-mono" type="number" min="0" max="600" disabled="@_fromUnbounded"
                                    @bind="_effortFrom" @bind:after="RunOrdered" />
-                            <label class="check mt-1">
+                            <label class="bb-check">
                                 <input type="checkbox" @bind="_fromUnbounded" @bind:after="RunOrdered" />
                                 BlazeDbBound&lt;int&gt;.Unbounded
                             </label>
                         </div>
-                        <div class="field">
-                            <label class="field-label" for="eff-to">To (inclusive)</label>
-                            <input id="eff-to" class="input mono" type="number" min="0" max="600" disabled="@_toUnbounded"
+                        <div class="bb-field">
+                            <label for="eff-to">To (inclusive)</label>
+                            <input id="eff-to" class="bb-mono" type="number" min="0" max="600" disabled="@_toUnbounded"
                                    @bind="_effortTo" @bind:after="RunOrdered" />
-                            <label class="check mt-1">
+                            <label class="bb-check">
                                 <input type="checkbox" @bind="_toUnbounded" @bind:after="RunOrdered" />
                                 BlazeDbBound&lt;int&gt;.Unbounded
                             </label>
@@ -203,21 +203,21 @@ else
                 }
                 else
                 {
-                    <div class="form-row mt-2">
-                        <div class="field">
-                            <label class="field-label" for="date-from">From (inclusive)</label>
-                            <input id="date-from" class="input mono" type="date" disabled="@_fromUnbounded"
+                    <div class="bb-fields">
+                        <div class="bb-field">
+                            <label for="date-from">From (inclusive)</label>
+                            <input id="date-from" class="bb-mono" type="date" disabled="@_fromUnbounded"
                                    @bind="_dateFrom" @bind:after="RunOrdered" />
-                            <label class="check mt-1">
+                            <label class="bb-check">
                                 <input type="checkbox" @bind="_fromUnbounded" @bind:after="RunOrdered" />
                                 BlazeDbBound&lt;DateTime&gt;.Unbounded
                             </label>
                         </div>
-                        <div class="field">
-                            <label class="field-label" for="date-to">To (inclusive)</label>
-                            <input id="date-to" class="input mono" type="date" disabled="@_toUnbounded"
+                        <div class="bb-field">
+                            <label for="date-to">To (inclusive)</label>
+                            <input id="date-to" class="bb-mono" type="date" disabled="@_toUnbounded"
                                    @bind="_dateTo" @bind:after="RunOrdered" />
-                            <label class="check mt-1">
+                            <label class="bb-check">
                                 <input type="checkbox" @bind="_toUnbounded" @bind:after="RunOrdered" />
                                 BlazeDbBound&lt;DateTime&gt;.Unbounded
                             </label>
@@ -225,23 +225,23 @@ else
                     </div>
                 }
 
-                <div class="api-call mt-2">@_orderedCode</div>
+                <div class="bb-log bd-out">@_orderedCode</div>
 
-                <div class="stats mt-2">
-                    <StatTile Label="Rows in range" IconName="database" Tone="accent" Value="@_orderedRows.Count.ToString("N0")" />
-                    <StatTile Label="Elapsed" IconName="clock" Value="@_orderedTime" />
-                    <StatTile Label="Full traversal" IconName="sort" Value="@_orderByCount.ToString("N0")"
+                <div class="bb-stats">
+                    <StatTile Label="Rows in range" Tone="accent" Value="@_orderedRows.Count.ToString("N0")" />
+                    <StatTile Label="Elapsed" Value="@_orderedTime" />
+                    <StatTile Label="Full traversal" Value="@_orderByCount.ToString("N0")"
                               Note="OrderBy(index) - every row" />
                 </div>
 
                 @if (_orderedRows.Count > 0)
                 {
-                    <div class="table-wrap mt-2">
-                        <table class="data">
+                    <div class="bb-scroll">
+                        <table class="bb-table bb-compare">
                             <thead>
                                 <tr>
                                     <th>Title</th>
-                                    <th class="num">Effort</th>
+                                    <th class="bd-num">Effort</th>
                                     <th>Created</th>
                                 </tr>
                             </thead>
@@ -249,9 +249,9 @@ else
                                 @foreach (var row in _orderedRows.Take(10))
                                 {
                                     <tr>
-                                        <td class="strong">@row.Title</td>
-                                        <td class="num mono">@row.Effort</td>
-                                        <td class="mono tiny">@row.CreatedAt.ToLocalTime().ToString("MMM d HH:mm")</td>
+                                        <td class="bd-strong">@row.Title</td>
+                                        <td class="bd-num">@row.Effort</td>
+                                        <td class="bb-mono bd-small">@row.CreatedAt.ToLocalTime().ToString("MMM d HH:mm")</td>
                                     </tr>
                                 }
                             </tbody>
@@ -259,95 +259,95 @@ else
                     </div>
                     @if (_orderedRows.Count > 10)
                     {
-                        <p class="tiny muted mt-1 mb-0">First 10 of @_orderedRows.Count in index order.</p>
+                        <p class="bd-foot">First 10 of @_orderedRows.Count in index order.</p>
                     }
                 }
                 else
                 {
-                    <div class="empty"><Icon Name="filter" /><div>Nothing in that range.</div></div>
+                    <div class="bb-empty">Nothing in that range.</div>
                 }
             </Panel>
 
-            <div class="flex-col gap-lg">
+            <div class="bb-flex">
                 <Panel Title="Every form of a range bound" IconName="code">
-                    <CodeBlock ShowHeader="false" Code="@BoundSnippet" />
+                    <CodeBlock Code="@BoundSnippet" />
                 </Panel>
 
                 <Panel Title="An inverted range is empty" IconName="info">
-                    <p class="small mb-1">
+                    <p>
                         Bounds are not reordered for you. When <code>from</code> is greater than
                         <code>to</code> the result is empty rather than an error.
                     </p>
-                    <button class="btn btn-sm btn-block" @onclick="RunInverted">
+                    <button type="button" class="btn btn-secondary" @onclick="RunInverted">
                         <Icon Name="play" /> Range(Effort, 200, 10)
                     </button>
                     @if (_invertedNote is not null)
                     {
-                        <div class="api-call mt-2">@_invertedNote</div>
+                        <div class="bb-log bd-out">@_invertedNote</div>
                     }
                 </Panel>
             </div>
         </div>
     </Section>
 
-    <Section Title="Indexes follow every mutation" IconName="refresh"
+    <Section Title="Indexes follow every mutation"
              Lead="This runs against a private in-memory database so you can watch bucket counts move without touching your own rows.">
-        <div class="grid grid-sidebar">
+        <div class="bd-main-side">
             <Panel Title="Index state" IconName="layers" Flush="true">
-                <div class="table-wrap">
-                    <table class="data">
+                <div class="bb-scroll">
+                    <table class="bb-table">
                         <thead>
-                            <tr><th>Index</th><th>Key</th><th class="num">CountBy</th></tr>
+                            <tr><th>Index</th><th>Key</th><th class="bd-num">CountBy</th></tr>
                         </thead>
                         <tbody>
                             <tr>
-                                <td class="mono">Done</td><td class="mono">false</td>
-                                <td class="num mono">@_sandboxOpen</td>
+                                <td class="bb-mono">Done</td><td class="bb-mono">false</td>
+                                <td class="bd-num">@_sandboxOpen</td>
                             </tr>
                             <tr>
-                                <td class="mono">Done</td><td class="mono">true</td>
-                                <td class="num mono">@_sandboxDone</td>
+                                <td class="bb-mono">Done</td><td class="bb-mono">true</td>
+                                <td class="bd-num">@_sandboxDone</td>
                             </tr>
                             <tr>
-                                <td class="mono">Category</td><td class="mono">"engine"</td>
-                                <td class="num mono">@_sandboxEngine</td>
+                                <td class="bb-mono">Category</td><td class="bb-mono">"engine"</td>
+                                <td class="bd-num">@_sandboxEngine</td>
                             </tr>
                             <tr>
-                                <td class="mono">Category</td><td class="mono">"docs"</td>
-                                <td class="num mono">@_sandboxDocs</td>
+                                <td class="bb-mono">Category</td><td class="bb-mono">"docs"</td>
+                                <td class="bd-num">@_sandboxDocs</td>
                             </tr>
                             <tr>
-                                <td class="mono">ByPriority</td><td class="mono">Critical</td>
-                                <td class="num mono">@_sandboxCritical</td>
+                                <td class="bb-mono">ByPriority</td><td class="bb-mono">Critical</td>
+                                <td class="bd-num">@_sandboxCritical</td>
                             </tr>
                             <tr>
-                                <td class="mono strong">table.Count</td><td></td>
-                                <td class="num mono strong">@_sandboxCount</td>
+                                <td class="bb-mono bd-strong">table.Count</td><td></td>
+                                <td class="bd-num bd-strong">@_sandboxCount</td>
                             </tr>
                         </tbody>
                     </table>
                 </div>
             </Panel>
 
-            <div class="flex-col gap-lg">
+            <div class="bb-flex">
                 <Panel Title="Mutate" IconName="play">
-                    <div class="flex-col">
-                        <button class="btn btn-sm btn-block" @onclick="SandboxInsert">
+                    <div class="bd-actions">
+                        <button type="button" class="btn btn-secondary" @onclick="SandboxInsert">
                             <Icon Name="plus" /> Insert an open "engine" row
                         </button>
-                        <button class="btn btn-sm btn-block" @onclick="SandboxFlipDone" disabled="@(_sandboxCount == 0)">
+                        <button type="button" class="btn btn-secondary" @onclick="SandboxFlipDone" disabled="@(_sandboxCount == 0)">
                             <Icon Name="refresh" /> Update - flip Done on the first row
                         </button>
-                        <button class="btn btn-sm btn-block" @onclick="SandboxRecategorise" disabled="@(_sandboxCount == 0)">
+                        <button type="button" class="btn btn-secondary" @onclick="SandboxRecategorise" disabled="@(_sandboxCount == 0)">
                             <Icon Name="tag" /> Update - move a row to "docs"
                         </button>
-                        <button class="btn btn-sm btn-block" @onclick="SandboxPromote" disabled="@(_sandboxCount == 0)">
+                        <button type="button" class="btn btn-secondary" @onclick="SandboxPromote" disabled="@(_sandboxCount == 0)">
                             <Icon Name="bolt" /> Update - raise priority to Critical
                         </button>
-                        <button class="btn btn-sm btn-block" @onclick="SandboxSetNull" disabled="@(_sandboxCount == 0)">
+                        <button type="button" class="btn btn-secondary" @onclick="SandboxSetNull" disabled="@(_sandboxCount == 0)">
                             <Icon Name="close" /> Update - set Category to null
                         </button>
-                        <button class="btn btn-sm btn-block btn-danger" @onclick="SandboxDelete" disabled="@(_sandboxCount == 0)">
+                        <button type="button" class="btn bd-btn-danger" @onclick="SandboxDelete" disabled="@(_sandboxCount == 0)">
                             <Icon Name="trash" /> Delete the first row
                         </button>
                     </div>

@@ -1,10 +1,10 @@
 ﻿@page "/custom-edges"
 
-<PageTitle>Custom Edges - bit Blow</PageTitle>
+<PageTitle>Custom Edges · Blow</PageTitle>
 
-<div class="demo-header">
-    <h3>Custom Edges, BlowBaseEdge &amp; Edge Toolbar</h3>
-    <p class="text-muted">
+<div class="bb-intro">
+    <h1>Custom Edges, BlowBaseEdge &amp; Edge Toolbar</h1>
+    <p class="bb-subtitle">
         Edges are drawn with a custom <strong>EdgeTemplate</strong> built on <strong>BlowBaseEdge</strong> +
         <strong>BlowEdgeText</strong> (colored by edge data). Selecting an edge reveals an
         <strong>BlowEdgeToolbar</strong> (HTML overlay) to recolor or delete it. The connection line uses a
@@ -14,41 +14,45 @@
 
 <DemoCode />
 
-<div class="demo-canvas" style="height: calc(100vh - 240px);">
-    <BlowCanvas Nodes="_nodes" Edges="_edges" FitViewOnInit="true"
-                ConnectionLineType="BlowEdgeType.SmoothStep"
-                DefaultEdgeType="BlowEdgeType.SmoothStep">
-        <EdgeTemplate Context="ctx">
-            <BlowBaseEdge Path="@ctx.Geometry.Path"
-                      Stroke="@((ctx.Edge.Data as string) ?? "var(--bit-blow-edge-stroke)")"
-                      StrokeWidth="@(ctx.Edge.Selected ? 3 : 2)"
-                      Label="@ctx.Edge.Label"
-                      LabelX="@ctx.Geometry.LabelX"
-                      LabelY="@ctx.Geometry.LabelY" />
-        </EdgeTemplate>
+<div class="bb-demo blow-demo bb-page-wide">
+    <div class="demo-canvas">
+        <BlowCanvas Nodes="_nodes" Edges="_edges" FitViewOnInit="true"
+                    ConnectionLineType="BlowEdgeType.SmoothStep"
+                    DefaultEdgeType="BlowEdgeType.SmoothStep">
+            <EdgeTemplate Context="ctx">
+                <BlowBaseEdge Path="@ctx.Geometry.Path"
+                          Stroke="@((ctx.Edge.Data as string) ?? "var(--bit-blow-edge-stroke)")"
+                          StrokeWidth="@(ctx.Edge.Selected ? 3 : 2)"
+                          Label="@ctx.Edge.Label"
+                          LabelX="@ctx.Geometry.LabelX"
+                          LabelY="@ctx.Geometry.LabelY" />
+            </EdgeTemplate>
 
-        <EdgeLabelTemplate Context="ctx">
-            @if (ctx.Edge.Selected)
-            {
-                <BlowEdgeToolbar>
-                    <button class="btn-mini" @onclick="() => Recolor(ctx.Edge)">🎨</button>
-                    <button class="btn-mini danger" @onclick="() => Remove(ctx.Edge)">×</button>
-                </BlowEdgeToolbar>
-            }
-        </EdgeLabelTemplate>
+            <EdgeLabelTemplate Context="ctx">
+                @if (ctx.Edge.Selected)
+                {
+                    <BlowEdgeToolbar>
+                        <button class="btn-mini" @onclick="() => Recolor(ctx.Edge)">🎨</button>
+                        <button class="btn-mini danger" @onclick="() => Remove(ctx.Edge)">×</button>
+                    </BlowEdgeToolbar>
+                }
+            </EdgeLabelTemplate>
 
-        <ChildContent>
-            <BlowBackground Variant="BlowBackgroundVariant.Dots" Gap="20" />
-            <BlowControls />
-            <BlowMiniMap />
-        </ChildContent>
-    </BlowCanvas>
+            <ChildContent>
+                <BlowBackground Variant="BlowBackgroundVariant.Dots" Gap="20" />
+                <BlowControls />
+                <BlowMiniMap />
+            </ChildContent>
+        </BlowCanvas>
+    </div>
 </div>
 
 <style>
-    .btn-mini { border:1px solid #ddd; background:#fff; border-radius:4px; cursor:pointer; padding:1px 6px; font-size:13px; }
-    .btn-mini.danger { background:#fee2e2; color:#b91c1c; border-color:#fca5a5; }
-    .btn-mini:hover { background:#f3f4f6; }
+    /* Painted with the canvas's own --bit-blow-* colours, so the toolbar follows its colour mode. */
+    .btn-mini { border:1px solid var(--bit-blow-border); background:var(--bit-blow-surface); color:var(--bit-blow-text); border-radius:4px; cursor:pointer; padding:1px 6px; font-size:13px; }
+    .btn-mini:hover { background:var(--bit-blow-surface-hover); }
+    .btn-mini.danger { color:#ef4444; border-color:color-mix(in srgb, #ef4444 45%, transparent); }
+    .btn-mini.danger:hover { background:color-mix(in srgb, #ef4444 14%, var(--bit-blow-surface)); }
 </style>
 
 @code {

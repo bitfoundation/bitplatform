@@ -69,7 +69,7 @@ public static class BaletteSearchLab
         {
             options = _demo.Value.Options;
             candidates = [.. _demo.Value.Commands];
-            source = $"this demo's registry: the {candidates.Count} root commands Layout/MainLayout.razor registers from Services/DemoCommands.cs - the candidates the demo's own Search and ranking page runs its lab over";
+            source = $"this demo's registry: the {candidates.Count} root commands Components/AppPalette.razor registers from Services/DemoCommands.cs - the candidates the demo's own Search and ranking page runs its lab over";
 
             query = ApplyMode(query, options, candidates, notes);
         }

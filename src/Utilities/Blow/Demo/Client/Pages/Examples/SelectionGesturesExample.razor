@@ -1,6 +1,6 @@
 ﻿@page "/examples/selection-gestures"
 
-<PageTitle>Selection Gestures - bit Blow</PageTitle>
+<PageTitle>Selection Gestures · Blow</PageTitle>
 
 <ExampleScaffold Title="Selection Gestures"
                  Summary="A selection is a thing in its own right, not just several selected nodes. Dragging one member moves them all and reports it as a single OnSelectionDrag rather than a burst of node drags; right-clicking one of them offers the whole selection. The key that opens a selection box is configurable separately from the one that adds to a selection.">
@@ -25,7 +25,7 @@
         <label>
             <input type="checkbox" @bind="_selectionOnDrag" /> Selection on plain drag
         </label>
-        <button class="btn" @onclick="ClearLog">Clear log</button>
+        <button class="btn btn-secondary" @onclick="ClearLog">Clear log</button>
     </Toolbar>
     <ChildContent>
         <BlowCanvas Nodes="_nodes"
@@ -72,7 +72,7 @@
         border-radius: 6px;
     }
     .log-title { font-weight: 600; margin-bottom: 4px; }
-    .log-empty { color: #6b7280; line-height: 1.45; }
+    .log-empty { color: var(--bit-blow-text-muted); line-height: 1.45; }
     .log-row { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; padding: 1px 0; }
 </style>
 

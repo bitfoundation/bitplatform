@@ -1,48 +1,52 @@
 ﻿@page "/headless"
 @inject IBonboardingService BonboardingService
 
-<PageTitle>Headless UI</PageTitle>
+<PageTitle>Headless UI · Bonboarding</PageTitle>
 
-<h1>Headless UI</h1>
+<div class="bb-intro">
+    <h1>Headless UI</h1>
+    <p class="bb-subtitle">
+        When the default card is not what you want, replace it. The library still owns the popover element, so
+        measurement, collision-aware placement, focus management and dialog semantics keep working; you own
+        everything inside it.
+    </p>
+</div>
 
-<p class="page-intro">
-    When the default card is not what you want, replace it. The library still owns the popover
-    element, so measurement, collision-aware placement, focus management and dialog semantics keep
-    working; you own everything inside it.
-</p>
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> A card the library did not draw</h3>
 
-<section class="demo-section">
-    <h2>A card the library did not draw</h2>
+    <div class="bb-demo">
+        <div class="bb-demo-bar">
+            <span class="bb-demo-label">Live</span>
+            <button type="button" class="btn btn-primary" @onclick="StartAsync">Run the custom-rendered tour</button>
+            <span class="bb-badge">Rendered by this page, not by the library</span>
+        </div>
 
-    <div class="demo-actions">
-        <button type="button" class="btn btn-primary" @onclick="StartAsync">Run the custom-rendered tour</button>
-        <span class="pill">Rendered by this page, not by the library</span>
+        <AppWindow />
     </div>
-
-    <AppWindow />
 </section>
 
-<section class="demo-section">
-    <h2>Three levels of customisation</h2>
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Three levels of customisation</h3>
 
-    <div class="table-wrap">
-        <table>
+    <div class="bb-scroll">
+        <table class="bb-table">
             <thead>
                 <tr><th>Level</th><th>How</th><th>Use it when</th></tr>
             </thead>
             <tbody>
                 <tr>
-                    <td>Restyle</td>
+                    <td class="bb-table-key">Restyle</td>
                     <td><code>--bit-bonboarding-*</code> custom properties</td>
                     <td>The layout is right, the colours are not.</td>
                 </tr>
                 <tr>
-                    <td>Recompose</td>
+                    <td class="bb-table-key">Recompose</td>
                     <td><code>BonboardingStepDefinition.Header</code>, <code>.Body</code>, <code>.Footer</code></td>
                     <td>One step needs a form, an image or a different set of buttons.</td>
                 </tr>
                 <tr>
-                    <td>Replace</td>
+                    <td class="bb-table-key">Replace</td>
                     <td><code>BonboardingRoot.ChildContent</code>, or a tour or step <code>Template</code></td>
                     <td>The card should look nothing like the default.</td>
                 </tr>
@@ -51,15 +55,15 @@
     </div>
 </section>
 
-<section class="demo-section">
-    <h2>A per-step body</h2>
-
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Replacing the card</h3>
     <p>
-        The second step of the tour above renders a form inside the popover and disables its own Next
-        button until the form is filled in. It is ordinary Razor.
+        The tour above is drawn by a second <code>BonboardingRoot</code> on this page, handed the session it started and
+        given its own <code>ChildContent</code>. A single step can do the same with a template of its own, leaving the
+        rest of the tour on the default chrome. It is ordinary Razor.
     </p>
 
-    <pre><code>@Example</code></pre>
+    <pre class="bb-code">@Example</pre>
 </section>
 
 @* A second, independently rendered host, driven by the session started below. Custom content

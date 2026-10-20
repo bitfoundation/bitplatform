@@ -11,118 +11,117 @@
     surface, and none of it goes through EF.
 </PageHeader>
 
+<StorageSwitcher />
+
 @if (_error is not null)
 {
-    <p class="error">@_error</p>
+    <div class="bb-note bb-note-danger" role="alert">@_error</div>
 }
 @if (_info is not null)
 {
-    <p class="note">@_info</p>
+    <div class="bb-note" role="status">@_info</div>
 }
 
-<div class="stack-lg">
-    <DemoCard Step="List"
-              Title="What each backend holds"
-              CodeTitle="Listing databases"
-              Code="@Snippets.Admin.List">
-        <Description>
-            <span>
-                Names come from the provider, so a backend that has never been used reports empty
-                rather than failing. Related <code>-journal</code> files are not databases and do
-                not appear.
-            </span>
-        </Description>
-        <ChildContent>
-            <button type="button" class="secondary" @onclick="ListAllAsync" disabled="@_busy">Refresh lists</button>
+<DemoCard Step="List"
+          Title="What each backend holds"
+          CodeTitle="Listing databases"
+          Code="@Snippets.Admin.List">
+    <Description>
+        Names come from the provider, so a backend that has never been used reports empty
+        rather than failing. Related <code>-journal</code> files are not databases and do
+        not appear.
+    </Description>
+    <ChildContent>
+        <div class="bb-toolbar">
+            <button type="button" class="btn btn-secondary" @onclick="ListAllAsync" disabled="@_busy">Refresh lists</button>
+        </div>
+        <dl class="bb-params">
             @foreach (var group in _lists)
             {
-                <h3><code>@group.Name</code></h3>
-                @if (group.Names.Count == 0)
-                {
-                    <p class="empty">Empty.</p>
-                }
-                else
-                {
-                    <ul class="plain">
-                        @foreach (var name in group.Names)
-                        {
-                            <li>@name</li>
-                        }
-                    </ul>
-                }
+                <dt>@group.Name</dt>
+                <dd>
+                    @if (group.Names.Count == 0)
+                    {
+                        <span class="bb-soft">empty</span>
+                    }
+                    else
+                    {
+                        @string.Join(", ", group.Names)
+                    }
+                </dd>
             }
-        </ChildContent>
-    </DemoCard>
+        </dl>
+    </ChildContent>
+</DemoCard>
 
-    <DemoCard Step="Export"
-              Title="Download a real .db"
-              CodeTitle="Exporting"
-              Code="@Snippets.Admin.Export">
-        <Description>
-            <span>
-                Exports <code>@BrowserDatabase.DatabaseName</code> from whichever backend currently
-                owns it. On OPFS that is a file read; on IndexedDB and Cache Storage the image is
-                assembled from pages. Either way the result is an ordinary SQLite file.
-            </span>
-        </Description>
-        <Try>
-            <span>Download it and open it in any desktop SQLite tool - the rows you edited are there.</span>
-        </Try>
-        <ChildContent>
-            <button type="button" @onclick="ExportAsync" disabled="@_busy">Download app.db</button>
-        </ChildContent>
-    </DemoCard>
+<DemoCard Step="Export"
+          Title="Download a real .db"
+          CodeTitle="Exporting"
+          Code="@Snippets.Admin.Export">
+    <Description>
+        Exports <code>@BrowserDatabase.DatabaseName</code> from whichever backend currently
+        owns it. On OPFS that is a file read; on IndexedDB and Cache Storage the image is
+        assembled from pages. Either way the result is an ordinary SQLite file.
+    </Description>
+    <Try>Download it and open it in any desktop SQLite tool - the rows you edited are there.</Try>
+    <ChildContent>
+        <div class="bb-toolbar">
+            <button type="button" class="btn btn-primary" @onclick="ExportAsync" disabled="@_busy">Download app.db</button>
+        </div>
+    </ChildContent>
+</DemoCard>
 
-    <DemoCard Step="Import"
-              Title="Seed a tab from a file"
-              CodeTitle="Importing"
-              Code="@Snippets.Admin.Import">
-        <Description>
-            <span>
-                Replaces the named database on the selected backend and records the sticky binding,
-                so the next open finds the imported data instead of creating an empty file
-                elsewhere. The worker is closed first: an open connection would keep writing the
-                image being replaced.
-            </span>
-        </Description>
-        <Try>
-            <span>
-                Export above, delete below, then import the file back. This is also how you ship a
-                pre-built database with an app.
-            </span>
-        </Try>
-        <ChildContent>
-            <div class="row">
+<DemoCard Step="Import"
+          Title="Seed a tab from a file"
+          CodeTitle="Importing"
+          Code="@Snippets.Admin.Import">
+    <Description>
+        Replaces the named database on the selected backend and records the sticky binding,
+        so the next open finds the imported data instead of creating an empty file
+        elsewhere. The worker is closed first: an open connection would keep writing the
+        image being replaced.
+    </Description>
+    <Try>
+        Export above, delete below, then import the file back. This is also how you ship a
+        pre-built database with an app.
+    </Try>
+    <ChildContent>
+        <div class="bb-fields">
+            <label class="bb-field">
+                Backend
                 <select @bind="_importProvider">
                     @foreach (var provider in Database.Providers)
                     {
                         <option value="@provider.Name">@SampleStorage.Title(provider.Name)</option>
                     }
                 </select>
+            </label>
+            <label class="bb-field">
+                SQLite file
                 <InputFile OnChange="OnFile" accept=".db,.sqlite,application/octet-stream" />
-                <button type="button" @onclick="ImportAsync" disabled="@(_busy || _importBytes is null)">Import and reopen</button>
-            </div>
-        </ChildContent>
-    </DemoCard>
+            </label>
+            <button type="button" class="btn btn-primary" @onclick="ImportAsync" disabled="@(_busy || _importBytes is null)">Import and reopen</button>
+        </div>
+    </ChildContent>
+</DemoCard>
 
-    <DemoCard Step="Delete"
-              Title="Start over"
-              CodeTitle="Deleting"
-              Code="@Snippets.Admin.Delete">
-        <Description>
-            <span>
-                Removes <code>@BrowserDatabase.DatabaseName</code> from the current backend and
-                forgets the binding, so the next open is free to pick the preferred provider again,
-                run the migrations, and reseed.
-            </span>
-        </Description>
-        <ChildContent>
-            <button type="button" class="danger" @onclick="DeleteAsync" disabled="@_busy">
+<DemoCard Step="Delete"
+          Title="Start over"
+          CodeTitle="Deleting"
+          Code="@Snippets.Admin.Delete">
+    <Description>
+        Removes <code>@BrowserDatabase.DatabaseName</code> from the current backend and
+        forgets the binding, so the next open is free to pick the preferred provider again,
+        run the migrations, and reseed.
+    </Description>
+    <ChildContent>
+        <div class="bb-toolbar">
+            <button type="button" class="btn bq-btn-danger" @onclick="DeleteAsync" disabled="@_busy">
                 Delete app.db and reopen empty
             </button>
-        </ChildContent>
-    </DemoCard>
-</div>
+        </div>
+    </ChildContent>
+</DemoCard>
 
 @code {
     private readonly List<(string Name, IReadOnlyList<string> Names)> _lists = [];

@@ -1,19 +1,20 @@
 @page "/springs"
 
-<PageTitle>Springs - Bit.Bmotion</PageTitle>
+<PageTitle>Springs · Bmotion</PageTitle>
 
-<h1>Springs</h1>
+<div class="bb-intro">
+    <h1>Springs</h1>
+    <p class="bb-subtitle">
+        A tween asks "how long should this take?". A spring asks "how heavy is this, and how hard is it
+        pulled?" - and the duration falls out of the answer. That is why springs survive interruption:
+        retarget one mid-flight and it carries its current velocity into the new motion instead of
+        restarting. <strong>Bm.Spring(...)</strong> is the whole API, and it accepts either set of
+        knobs below.
+    </p>
+</div>
 
-<p class="page-intro">
-    A tween asks "how long should this take?". A spring asks "how heavy is this, and how hard is it
-    pulled?" - and the duration falls out of the answer. That is why springs survive interruption:
-    retarget one mid-flight and it carries its current velocity into the new motion instead of
-    restarting. <strong>Bm.Spring(...)</strong> is the whole API, and it accepts either set of
-    knobs below.
-</p>
-
-<div class="demo-section">
-    <h2>Stiffness and damping</h2>
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Stiffness and damping</h3>
     <p>
         <strong>Stiffness</strong> is how hard the spring pulls toward the target - raise it and the
         motion gets faster and more urgent. <strong>Damping</strong> is the friction that removes
@@ -36,15 +37,15 @@
         }
     </div>
 
-    <div class="demo-actions">
-        <button class="btn-bm" @onclick="@(() => _on = !_on)">@(_on ? "Send back" : "Animate")</button>
+    <div class="bb-toolbar">
+        <button class="btn btn-primary" @onclick="@(() => _on = !_on)">@(_on ? "Send back" : "Animate")</button>
     </div>
 
     <CodeSnippet Code="@_springCode" />
-</div>
+</section>
 
-<div class="demo-section">
-    <h2>Bounce and duration</h2>
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Bounce and duration</h3>
     <p>
         Stiffness and damping are the physics, but they are not how anyone describes motion out
         loud. The second form takes the two words you would actually use: <strong>bounce</strong>
@@ -66,15 +67,15 @@
         }
     </div>
 
-    <div class="demo-actions">
-        <button class="btn-bm" @onclick="@(() => _bounce = !_bounce)">@(_bounce ? "Send back" : "Animate")</button>
+    <div class="bb-toolbar">
+        <button class="btn btn-primary" @onclick="@(() => _bounce = !_bounce)">@(_bounce ? "Send back" : "Animate")</button>
     </div>
 
     <CodeSnippet Code="@_bounceCode" />
-</div>
+</section>
 
-<div class="demo-section">
-    <h2>Overshoot on mount</h2>
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Overshoot on mount</h3>
     <p>
         An underdamped spring on an entrance is the cheapest way to make an interface feel alive:
         the element passes its resting state, comes back, and settles. Re-mount below to replay it -
@@ -92,15 +93,15 @@
         </div>
     </div>
 
-    <div class="demo-actions">
-        <button class="btn-bm" @onclick="Remount">Re-mount</button>
+    <div class="bb-toolbar">
+        <button class="btn btn-primary" @onclick="Remount">Re-mount</button>
     </div>
 
     <CodeSnippet Code="@_bouncyCode" />
-</div>
+</section>
 
-<div class="demo-section">
-    <h2>Repeating springs</h2>
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Repeating springs</h3>
     <p>
         <strong>BmRepeat</strong> replays a spring without an <code>int.MaxValue</code> sentinel
         anywhere in sight. <em>Mirror</em> ping-pongs back through the motion it just played;
@@ -125,14 +126,14 @@
         </div>
     </div>
 
-    <div class="demo-actions">
-        <button class="btn-bm" @onclick="@(() => _repeat = !_repeat)">
+    <div class="bb-toolbar">
+        <button class="btn btn-primary" @onclick="@(() => _repeat = !_repeat)">
             @(_repeat ? "Reset" : "Start repeating")
         </button>
     </div>
 
     <CodeSnippet Code="@_repeatCode" />
-</div>
+</section>
 
 @code {
     private bool _on;

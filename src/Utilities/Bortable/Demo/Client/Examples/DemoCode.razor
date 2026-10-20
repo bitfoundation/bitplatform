@@ -6,9 +6,9 @@
    built from more than one file names the others in Files (paths relative to Pages, separated
    by commas), and they are shown after it. *@
 
-<div class="demo-code">
+<div class="bb-source demo-code">
     <button type="button"
-            class="demo-code__toggle"
+            class="btn btn-secondary demo-code__toggle"
             aria-expanded="@_open.ToString().ToLowerInvariant()"
             @onclick="Toggle">
         <span class="demo-code__caret">@(_open ? "▾" : "▸")</span>
@@ -20,7 +20,7 @@
     {
         @if (_sources.Count == 0)
         {
-            <div class="demo-code__empty">Source for this page is not available.</div>
+            <div class="bb-empty demo-code__empty">Source for this page is not available.</div>
         }
         else
         {
@@ -28,9 +28,9 @@
             {
                 @if (_sources.Count > 1)
                 {
-                    <div class="demo-code__file">@path</div>
+                    <div class="bb-source-file demo-code__file">@path</div>
                 }
-                <pre class="demo-code__pre"><code class="demo-code__code">@source</code></pre>
+                <pre class="bb-code demo-code__pre"><code class="demo-code__code">@source</code></pre>
             }
         }
     }

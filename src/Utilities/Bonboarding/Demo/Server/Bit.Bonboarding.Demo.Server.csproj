@@ -42,10 +42,13 @@
     <EmbeddedResource Include="..\..\Bit.Bonboarding\Styles\bit-bonboarding.css" LogicalName="BonboardingDocs/bit-bonboarding.css" />
 
     <!-- Every demo page - each one is a working tour - plus the fake product UI they point at and the
-         client half of the hosting. The MCP page describes this server rather than the library, and
-         the reconnect modal is the template's own, so neither teaches anything about tours. -->
+         client half of the hosting, Routes.razor with the one BonboardingRoot among it. The MCP page
+         describes this server rather than the library, and the not-found page teaches nothing about
+         tours. Nor does the site chrome: Layout\ (the header, docs shell, search, footer and the
+         template's reconnect modal) and the DocsCatalog.cs that drives it are what every Utilities
+         demo shares. -->
     <EmbeddedResource Include="..\Client\**\*.razor;..\Client\**\*.cs"
-                      Exclude="..\Client\bin\**;..\Client\obj\**;..\Client\Pages\McpServer.razor;..\Client\Layout\ReconnectModal.razor">
+                      Exclude="..\Client\bin\**;..\Client\obj\**;..\Client\Layout\**;..\Client\DocsCatalog.cs;..\Client\Pages\McpServer.razor;..\Client\Pages\NotFound.razor">
       <LogicalName>BonboardingSource/Demo/Client/%(RecursiveDir)%(Filename)%(Extension)</LogicalName>
     </EmbeddedResource>
 

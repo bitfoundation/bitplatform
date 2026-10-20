@@ -2,11 +2,11 @@
 @implements IDisposable
 @inject DemoDirectory Directory
 
-<PageTitle>Async &amp; cascading options</PageTitle>
+<PageTitle>Async &amp; cascading options · Borm</PageTitle>
 
-<div class="demo-intro">
+<div class="bb-intro">
     <h1>Async &amp; cascading options</h1>
-    <p>
+    <p class="bb-subtitle">
         Options do not have to be baked into the schema. <code>OptionsFrom</code> loads them on demand and
         declares which fields they depend on — pick a country and the city list reloads (dropping any
         selection that no longer exists). The company field below is <em>conditionally required</em> and
@@ -14,18 +14,19 @@
     </p>
 </div>
 
-<div class="demo-card">
+<div class="bb-demo">
+    <div class="bb-demo-bar"><span class="bb-demo-label">Live form</span></div>
     <BormView State="_state" OnValidSubmit="HandleSubmit" SubmitText="Save address" />
 </div>
 
 @if (_submitted)
 {
-    <div class="demo-result"><strong>Saved ✓</strong> <pre>@_json</pre></div>
+    <div class="bb-note bb-note-success demo-result"><strong>Saved ✓</strong><pre>@_json</pre></div>
 }
 
-<details class="demo-source">
-    <summary>View source</summary>
-    <pre><code>@Source</code></pre>
+<details class="bb-source demo-source">
+    <summary class="btn btn-secondary">View source</summary>
+    <pre class="bb-code"><code>@Source</code></pre>
 </details>
 
 @code {

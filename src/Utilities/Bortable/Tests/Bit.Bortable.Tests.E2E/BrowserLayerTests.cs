@@ -43,7 +43,7 @@ public sealed class BrowserLayerTests : BortableTest
     [TestMethod]
     public async Task A_single_item_in_a_flex_row_sorts_along_the_row()
     {
-        var page = await OpenAsync("/");
+        var page = await OpenAsync("/simple-list");
 
         // The right half of the item, its upper half: after it along a row, before it down a column.
         Assert.AreEqual(1, await DropIndexOverSingleItemAsync(page, "display: flex", "", 0.75, 0.25));
@@ -55,7 +55,7 @@ public sealed class BrowserLayerTests : BortableTest
     [TestMethod]
     public async Task A_single_item_in_a_flex_column_sorts_down_the_column()
     {
-        var page = await OpenAsync("/");
+        var page = await OpenAsync("/simple-list");
 
         Assert.AreEqual(0, await DropIndexOverSingleItemAsync(page, "display: flex; flex-direction: column", "", 0.75, 0.25));
         Assert.AreEqual(1, await DropIndexOverSingleItemAsync(page, "display: flex; flex-direction: column", "", 0.25, 0.75));
@@ -64,7 +64,7 @@ public sealed class BrowserLayerTests : BortableTest
     [TestMethod]
     public async Task A_single_item_reads_its_own_layout_in_a_block_list()
     {
-        var page = await OpenAsync("/");
+        var page = await OpenAsync("/simple-list");
 
         Assert.AreEqual(1, await DropIndexOverSingleItemAsync(page, "display: block", "display: inline-block", 0.75, 0.25));
         Assert.AreEqual(1, await DropIndexOverSingleItemAsync(page, "display: block", "float: left", 0.75, 0.25));
@@ -74,7 +74,7 @@ public sealed class BrowserLayerTests : BortableTest
     [TestMethod]
     public async Task Only_a_drag_of_the_lists_own_is_allowed_to_drop_on_a_list()
     {
-        var page = await OpenAsync("/");
+        var page = await OpenAsync("/simple-list");
 
         // A dragover of a list's own drag is cancelled, which is what lets the browser drop it there; a file or
         // a piece of text dragged over the same list keeps its default.

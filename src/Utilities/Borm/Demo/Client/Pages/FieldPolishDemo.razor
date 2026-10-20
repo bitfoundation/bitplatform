@@ -1,11 +1,11 @@
 ﻿@page "/field-polish"
 @implements IDisposable
 
-<PageTitle>Affixes, counters &amp; live updates</PageTitle>
+<PageTitle>Affixes, counters &amp; live updates · Borm</PageTitle>
 
-<div class="demo-intro">
+<div class="bb-intro">
     <h1>Affixes, counters &amp; live updates</h1>
-    <p>
+    <p class="bb-subtitle">
         The details that separate a generated form from a designed one. A price field wearing a currency
         symbol; a summary that counts down to its limit as you type; a section heading that belongs to
         the schema rather than to the page around it. The preview on the right is driven by
@@ -14,23 +14,24 @@
     </p>
 </div>
 
-<div class="demo-split">
-    <div class="demo-card">
+<div class="bb-split bb-page-wide">
+    <div class="bb-demo">
+        <div class="bb-demo-bar"><span class="bb-demo-label">Live form</span></div>
         <BormView State="_state" OnValidSubmit="HandleSubmit" SubmitText="Publish listing" />
     </div>
 
-    <div class="demo-card">
-        <h2 style="margin-top:0;font-size:1.05rem;">Live preview</h2>
-        <p style="color:#64748b;font-size:.85rem;">Updates as you type, straight from the model.</p>
-        <div style="border:1px solid #e2e8f0;border-radius:10px;padding:1rem;">
+    <div class="bb-demo demo-preview">
+        <div class="bb-demo-bar"><span class="bb-demo-label">Live preview</span></div>
+        <p class="bb-card-desc">Updates as you type, straight from the model.</p>
+        <div class="demo-listing">
             <strong>@(string.IsNullOrWhiteSpace(_model.Title) ? "Untitled listing" : _model.Title)</strong>
-            <p style="color:#475569;font-size:.85rem;margin:.35rem 0;">
-                @(string.IsNullOrWhiteSpace(_model.Summary) ? "No summary yet." : _model.Summary)
-            </p>
-            <div style="font-size:.85rem;color:#0f172a;">
-                @_model.Price.ToString("C0") / month · @_model.FloorArea m² · @(_model.City is "" ? "—" : _model.City)
+            <p>@(string.IsNullOrWhiteSpace(_model.Summary) ? "No summary yet." : _model.Summary)</p>
+            <div class="demo-listing__meta">
+                @* The euro the price field's prefix shows: the app runs with invariant globalization, whose
+                   currency symbol is the generic ¤. *@
+                €@_model.Price.ToString("N0") / month · @_model.FloorArea m² · @(_model.City is "" ? "—" : _model.City)
             </div>
-            <div style="font-size:.8rem;color:@(_model.Published ? "#059669" : "#94a3b8");margin-top:.4rem;">
+            <div class="demo-listing__state @(_model.Published ? "demo-listing__state--published" : null)">
                 @(_model.Published ? "● Published" : "○ Draft")
             </div>
         </div>
@@ -39,12 +40,12 @@
 
 @if (_submitted)
 {
-    <div class="demo-result"><strong>Published ✓</strong> <pre>@_json</pre></div>
+    <div class="bb-note bb-note-success demo-result"><strong>Published ✓</strong><pre>@_json</pre></div>
 }
 
-<details class="demo-source">
-    <summary>View source</summary>
-    <pre><code>@Source</code></pre>
+<details class="bb-source demo-source">
+    <summary class="btn btn-secondary">View source</summary>
+    <pre class="bb-code"><code>@Source</code></pre>
 </details>
 
 @code {

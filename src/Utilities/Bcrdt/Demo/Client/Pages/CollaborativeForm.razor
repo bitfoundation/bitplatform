@@ -1,123 +1,148 @@
 ﻿@page "/form"
 @inherits ReplicaPageBase
 
-<h1>Collaborative forms</h1>
+<PageTitle>Collaborative form · Bcrdt</PageTitle>
 
-<section class="prose">
-    <p>
-        Most collaborative features are not documents. They are forms, settings panels and entity
-        editors whose shape is already a C# type. This page is two replicas of one such form, and it
-        exists to make a single decision visible: <strong>which field type you pick determines what
-        happens when two people edit the same thing at once.</strong>
+<div class="bb-intro">
+    <h1>Collaborative form</h1>
+    <p class="bb-subtitle">
+        Two replicas of one form, there to make a single decision visible: which field type you pick determines what
+        happens when two people edit the same thing at once - one value wins for a map entry, both edits survive in a
+        nested text.
     </p>
-    <p>
-        The three fields at the top are plain map entries. Different fields never conflict - one
-        person can change the title while another changes the owner and both survive, which is
-        already better than the usual save-the-whole-record approach. But two people editing
-        <em>the same</em> map field concurrently resolve last-writer-wins: one value survives,
-        deterministically but arbitrarily, and the other is gone.
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Two replicas of one form</h3>
+    <p class="bb-card-desc">
+        Three map entries and one nested text. Edit a field in either replica and watch the other follow.
     </p>
-    <p>
-        The notes field at the bottom is a nested <code>BcrdtText</code> instead. Concurrent edits to
-        it merge character by character, exactly as on the text page.
-    </p>
-    <p class="callout">
+
+    @if (!Ready)
+    {
+        <p class="loading bb-empty"><span class="bb-spinner" aria-hidden="true"></span> Opening two replicas…</p>
+    }
+    else
+    {
+        <div class="bb-split replicas">
+            @foreach (DemoReplica replica in Replicas)
+            {
+                <ReplicaPanel Replica="replica">
+                    <ChildContent>
+                        <label class="field bb-field">
+                            <span class="field-label">Title</span>
+                            <input type="text"
+                                   class="field-input"
+                                   value="@Read(replica, TitleKey)"
+                                   @oninput="@(args => Write(replica, TitleKey, args))" />
+                            <small class="field-note">map entry - last writer wins</small>
+                        </label>
+
+                        <label class="field bb-field">
+                            <span class="field-label">Owner</span>
+                            <input type="text"
+                                   class="field-input"
+                                   value="@Read(replica, OwnerKey)"
+                                   @oninput="@(args => Write(replica, OwnerKey, args))" />
+                            <small class="field-note">map entry - independent of the others</small>
+                        </label>
+
+                        <label class="field bb-field">
+                            <span class="field-label">Status</span>
+                            <select class="field-input"
+                                    value="@Read(replica, StatusKey)"
+                                    @onchange="@(args => Write(replica, StatusKey, args))">
+                                @*
+                                    Shown while the field has no value. Without it the browser would
+                                    display the first real option even though nothing is stored, and
+                                    choosing that option would raise no change at all.
+                                *@
+                                <option value="" disabled selected="@(Read(replica, StatusKey).Length == 0)">Choose a status…</option>
+                                @foreach (string option in StatusOptions)
+                                {
+                                    <option value="@option" selected="@(Read(replica, StatusKey) == option)">@option</option>
+                                }
+                            </select>
+                            <small class="field-note">map entry - a menu is a natural fit for last-writer-wins</small>
+                        </label>
+
+                        <label class="field bb-field">
+                            <span class="field-label">Notes</span>
+                            @*
+                                The same component as the text page. Because the notes are a collaborative
+                                text type rather than a string in a map entry, two people typing here at
+                                once both keep their work.
+                            *@
+                            <BcrdtTextArea Text="Notes(replica)"
+                                           Presence="replica.Document.Presence"
+                                           Field="notes"
+                                           Rows="5"
+                                           Class="editor"
+                                           Placeholder="Both replicas can type here at once." />
+                            <small class="field-note">nested BcrdtText - concurrent edits merge</small>
+                        </label>
+                    </ChildContent>
+
+                    <Footer>
+                        <span class="metric">@Notes(replica).Count characters of notes</span>
+                    </Footer>
+                </ReplicaPanel>
+            }
+        </div>
+    }
+
+    <div class="bb-note bb-note-warn">
         <strong>The thing worth trying.</strong> Take <em>Replica B</em> offline. In A, set the
         title to <em>one thing</em> and add a sentence to the notes. In B, set the title to
         <em>something else</em> and add a different sentence to the notes. Bring B back online.
         One of the two titles wins outright and the other is lost - while <em>both</em> sentences
         appear in the notes. Same two clients, same moment, same conflict; different outcome purely
         because of how the field was modelled.
-    </p>
-</section>
-
-@if (!Ready)
-{
-    <p class="loading">Opening two replicas…</p>
-}
-else
-{
-    <div class="panel-grid panel-grid-2">
-        @foreach (DemoReplica replica in Replicas)
-        {
-            <ReplicaPanel Replica="replica">
-                <ChildContent>
-                    <label class="field">
-                        <span class="field-label">Title</span>
-                        <span class="field-note">map entry - last writer wins</span>
-                        <input class="field-input"
-                               value="@Read(replica, TitleKey)"
-                               @oninput="@(args => Write(replica, TitleKey, args))" />
-                    </label>
-
-                    <label class="field">
-                        <span class="field-label">Owner</span>
-                        <span class="field-note">map entry - independent of the others</span>
-                        <input class="field-input"
-                               value="@Read(replica, OwnerKey)"
-                               @oninput="@(args => Write(replica, OwnerKey, args))" />
-                    </label>
-
-                    <label class="field">
-                        <span class="field-label">Status</span>
-                        <span class="field-note">map entry - a menu is a natural fit for last-writer-wins</span>
-                        <select class="field-input"
-                                value="@Read(replica, StatusKey)"
-                                @onchange="@(args => Write(replica, StatusKey, args))">
-                            @*
-                                Shown while the field has no value. Without it the browser would
-                                display the first real option even though nothing is stored, and
-                                choosing that option would raise no change at all.
-                            *@
-                            <option value="" disabled selected="@(Read(replica, StatusKey).Length == 0)">Choose a status…</option>
-                            @foreach (string option in StatusOptions)
-                            {
-                                <option value="@option" selected="@(Read(replica, StatusKey) == option)">@option</option>
-                            }
-                        </select>
-                    </label>
-
-                    <label class="field">
-                        <span class="field-label">Notes</span>
-                        <span class="field-note">nested BcrdtText - concurrent edits merge</span>
-                        @*
-                            The same component as the text page. Because the notes are a collaborative
-                            text type rather than a string in a map entry, two people typing here at
-                            once both keep their work.
-                        *@
-                        <BcrdtTextArea Text="Notes(replica)"
-                                       Presence="replica.Document.Presence"
-                                       Field="notes"
-                                       Rows="5"
-                                       Class="editor"
-                                       Placeholder="Both replicas can type here at once." />
-                    </label>
-                </ChildContent>
-
-                <Footer>
-                    <span class="metric">@Notes(replica).Count characters of notes</span>
-                </Footer>
-            </ReplicaPanel>
-        }
     </div>
+</div>
 
-    <section class="prose">
-        <h2>What the two replicas hold</h2>
-        <p>
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Map entries and a nested text</h3>
+    <p class="bb-card-desc">
+        Most collaborative features are not documents. They are forms, settings panels and entity
+        editors whose shape is already a C# type. This page is two replicas of one such form, and it
+        exists to make a single decision visible: <strong>which field type you pick determines what
+        happens when two people edit the same thing at once.</strong>
+    </p>
+    <p class="bb-card-desc">
+        The three fields at the top are plain map entries. Different fields never conflict - one
+        person can change the title while another changes the owner and both survive, which is
+        already better than the usual save-the-whole-record approach. But two people editing
+        <em>the same</em> map field concurrently resolve last-writer-wins: one value survives,
+        deterministically but arbitrarily, and the other is gone.
+    </p>
+    <p class="bb-card-desc">
+        The notes field at the bottom is a nested <code>BcrdtText</code> instead. Concurrent edits to
+        it merge character by character, exactly as on the text page.
+    </p>
+    <pre class="bb-code">form.EnsureText(<span class="s">"notes"</span>).Insert(0, <span class="s">"..."</span>);   <span class="c">// a nested text: both edits merge</span>
+form.Set(<span class="s">"title"</span>, <span class="s">"..."</span>);                    <span class="c">// a map entry: one side wins</span></pre>
+</div>
+
+@if (Ready)
+{
+    <div class="bb-card">
+        <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> What the two replicas hold</h3>
+        <p class="bb-card-desc">
             The projection below is what each replica would hand to your application. When both are
             online and idle they are identical; while one is offline they differ, and that is the
             divergence the handshake reconciles.
         </p>
-        <div class="panel-grid panel-grid-2">
+        <div class="bb-split">
             @foreach (DemoReplica replica in Replicas)
             {
-                <div>
-                    <h3 class="json-title" style="border-color: @replica.Color">@replica.Label</h3>
-                    <pre class="json">@DemoJson.Format(replica.Document.GetMap(FormKey).ToJson())</pre>
+                <div class="projection" style="--replica-color: @replica.Color">
+                    <p class="projection-title"><span class="replica-dot" aria-hidden="true"></span>@replica.Label</p>
+                    <pre class="json bb-code">@DemoJson.Format(replica.Document.GetMap(FormKey).ToJson())</pre>
                 </div>
             }
         </div>
-    </section>
+    </div>
 }
 
 @code {

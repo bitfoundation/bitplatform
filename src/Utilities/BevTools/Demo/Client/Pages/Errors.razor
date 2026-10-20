@@ -1,33 +1,78 @@
 ﻿@page "/errors"
 
-<PageTitle>Errors</PageTitle>
+<PageTitle>Errors · BevTools</PageTitle>
 
-<h1>Errors</h1>
-<p class="muted">Each button produces a different kind of failure. BevTools → Errors shows type, message, stack, the component and what happened right before.</p>
+<div class="bb-intro">
+    <p class="bb-overline">Scenario · Errors</p>
+    <h1>Errors</h1>
+    <p class="bb-subtitle">
+        Each button produces a different kind of failure: in an event handler, after an <code>await</code>, while
+        rendering, in a child's <code>OnInitialized</code> and from an HTTP call. BevTools → Errors shows the type,
+        message and stack of each, the component, and what happened right before it.
+    </p>
+</div>
 
-@if (RendererInfo.Name == "Server")
-{
-    <p class="muted">On the <strong>Server</strong> renderer an unhandled exception would terminate the circuit, and this BevTools session with it, so here the scenarios run inside a page-level <code>ErrorBoundary</code>: <em>Throw in event handler</em>, <em>Throw after await</em> and <em>HTTP 404</em> are caught by it instead. On WebAssembly they stay unhandled.</p>
-    <ErrorBoundary @ref="_pageBoundary">
-        <ChildContent>
-            <ErrorScenarios />
-        </ChildContent>
-        <ErrorContent Context="ex">
-            <div class="card error">
-                <div>The page-level ErrorBoundary caught: @ex.GetType().Name — @ex.Message</div>
-                <div class="row"><button @onclick="() => _pageBoundary?.Recover()">Recover</button></div>
-            </div>
-        </ErrorContent>
-    </ErrorBoundary>
-}
-else
-{
-    @if (RendererInfo.IsInteractive)
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-danger"></span> The failures</h3>
+    @if (RendererInfo.Name == "Server")
     {
-        <p class="muted">On <strong>@RendererInfo.Name</strong> <em>Throw in event handler</em>, <em>Throw after await</em> and <em>HTTP 404</em> are genuinely unhandled: Blazor shows its error bar at the bottom of the page and the app keeps running.</p>
+        <p class="bb-card-desc">
+            On the <strong>Server</strong> renderer an unhandled exception would terminate the circuit, and this BevTools
+            session with it, so here the scenarios run inside a page-level <code>ErrorBoundary</code>: <em>Throw in event
+            handler</em>, <em>Throw after await</em> and <em>HTTP 404</em> are caught by it instead. On WebAssembly they
+            stay unhandled.
+        </p>
     }
-    <ErrorScenarios />
-}
+    else if (RendererInfo.IsInteractive)
+    {
+        <p class="bb-card-desc">
+            On <strong>@RendererInfo.Name</strong> <em>Throw in event handler</em>, <em>Throw after await</em> and
+            <em>HTTP 404</em> are genuinely unhandled: Blazor shows its error bar at the bottom of the page and the app
+            keeps running.
+        </p>
+    }
+    <p class="bb-card-desc">
+        <em>Throw during render</em> and <em>Child throws in OnInitialized</em> happen inside an <code>ErrorBoundary</code>
+        of their own on every renderer; <em>Reset</em> recovers it.
+    </p>
+
+    <div class="bb-demo">
+        <div class="bb-demo-bar"><span class="bb-demo-label">Live</span><RendererStatus /></div>
+
+        @if (RendererInfo.Name == "Server")
+        {
+            <ErrorBoundary @ref="_pageBoundary">
+                <ChildContent>
+                    <ErrorScenarios />
+                </ChildContent>
+                <ErrorContent Context="ex">
+                    <div class="bb-note bb-note-danger">
+                        <p>The page-level ErrorBoundary caught: @ex.GetType().Name — @ex.Message</p>
+                        <div class="bb-toolbar"><button type="button" class="btn btn-secondary" @onclick="() => _pageBoundary?.Recover()">Recover</button></div>
+                    </div>
+                </ErrorContent>
+            </ErrorBoundary>
+        }
+        else
+        {
+            <ErrorScenarios />
+        }
+    </div>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Errors: where it came from</h3>
+    <p class="bb-card-desc">
+        For each error the <strong>Errors</strong> panel shows where it was caught - a render, an HTTP call, a JS
+        call, the browser or the framework's log - the component, the source location taken from the stack, the UI event that preceded it and the last ten timeline
+        entries before it - the click, the renders and the requests that led there. <strong>Diagnostics</strong>
+        reports an error that keeps repeating.
+    </p>
+    <div class="bb-try">
+        <a href="problems#problem-6" class="btn btn-outline">Problem 6 →</a>
+        <a href="interop" class="btn btn-outline">JS errors: JS interop →</a>
+    </div>
+</div>
 
 @code {
     private ErrorBoundary? _pageBoundary;

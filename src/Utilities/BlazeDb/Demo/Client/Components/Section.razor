@@ -1,28 +1,22 @@
-﻿<section class="section" id="@Id">
+﻿@* A section of a documentation page - the site kit's .bb-card with an h3.bb-card-title. In the docs
+   column it is drawn as a passage of the document rather than as a box, and its heading feeds the
+   "On this page" rail and gets an anchor link (site.js). *@
+
+<section class="bb-card" id="@Id">
     @if (!string.IsNullOrWhiteSpace(Title))
     {
-        <div class="section-head">
-            <h2>
-                @if (!string.IsNullOrWhiteSpace(IconName))
-                {
-                    <Icon Name="@IconName" />
-                }
-                @Title
-            </h2>
-            @if (!string.IsNullOrWhiteSpace(Lead))
-            {
-                <p class="lead">@Lead</p>
-            }
-            @Description
-        </div>
+        <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> @Title</h3>
+        @if (!string.IsNullOrWhiteSpace(Lead))
+        {
+            <p class="bb-card-desc">@Lead</p>
+        }
+        @Description
     }
     @ChildContent
 </section>
 
 @code {
     [Parameter] public string? Title { get; set; }
-
-    [Parameter] public string? IconName { get; set; }
 
     [Parameter] public string? Lead { get; set; }
 

@@ -41,7 +41,7 @@ public sealed class ModesAndSourcesTests : BaletteTest
     {
         var page = await OpenAsync("/");
 
-        await page.Locator($".topbar-modes button[title='{button}']").ClickAsync();
+        await ModeButton(page, button).ClickAsync();
         await ExpectOpenAsync(page);
         await Assertions.Expect(Input(page)).ToHaveValueAsync(prefix);
 
@@ -106,7 +106,7 @@ public sealed class ModesAndSourcesTests : BaletteTest
 
         // The modes page logs every call that reached a source. Most keystrokes of a burst are swallowed by the
         // debounce, and the call for the whole query is the one that completed.
-        var log = page.Locator("main .panel").Filter(new() { Has = page.GetByRole(AriaRole.Button, new() { Name = "Clear", Exact = true }) });
+        var log = page.Locator("main .bb-demo").Filter(new() { Has = page.GetByRole(AriaRole.Button, new() { Name = "Clear", Exact = true }) });
         var calls = log.Locator("tbody tr").Filter(new() { Has = page.Locator("td:nth-child(2)", new() { HasTextRegex = new Regex("^People$") }) });
         await Assertions.Expect(calls.First.Locator("code")).ToHaveTextAsync(query);
         await Assertions.Expect(calls.First).ToContainTextAsync("Completed");

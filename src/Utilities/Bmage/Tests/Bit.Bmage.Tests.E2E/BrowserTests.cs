@@ -16,8 +16,8 @@ public class CapabilityTests : DemoTest
     public async Task DetectsFormatsByActuallyEncoding()
     {
         var page = await OpenAsync("capabilities");
-        await page.WaitForSelectorAsync("table.data", new PageWaitForSelectorOptions { Timeout = 60_000 });
-        var text = (await page.Locator(".grid").InnerTextAsync()).Replace("\t", " ");
+        await page.WaitForSelectorAsync(".capabilities-report table", new PageWaitForSelectorOptions { Timeout = 60_000 });
+        var text = (await page.Locator(".capabilities-report").InnerTextAsync()).Replace("\t", " ");
 
         // Every browser that can run Blazor can do these; if the probe says otherwise it is broken.
         Assert.Contains("PNG", text, StringComparison.Ordinal);
@@ -30,8 +30,8 @@ public class CapabilityTests : DemoTest
     public async Task ReportsTheRuntimeAsWebAssembly()
     {
         var page = await OpenAsync("capabilities");
-        await page.WaitForSelectorAsync("table.data", new PageWaitForSelectorOptions { Timeout = 60_000 });
-        var text = await page.Locator(".grid").InnerTextAsync();
+        await page.WaitForSelectorAsync(".capabilities-report table", new PageWaitForSelectorOptions { Timeout = 60_000 });
+        var text = await page.Locator(".capabilities-report").InnerTextAsync();
         Assert.Contains("BrowserWebAssembly", text, StringComparison.Ordinal);
     }
 
@@ -39,8 +39,8 @@ public class CapabilityTests : DemoTest
     public async Task FindsARealisticCanvasLimit()
     {
         var page = await OpenAsync("capabilities");
-        await page.WaitForSelectorAsync("table.data", new PageWaitForSelectorOptions { Timeout = 60_000 });
-        var text = await page.Locator(".grid").InnerTextAsync();
+        await page.WaitForSelectorAsync(".capabilities-report table", new PageWaitForSelectorOptions { Timeout = 60_000 });
+        var text = await page.Locator(".capabilities-report").InnerTextAsync();
         var match = Regex.Match(text, @"MAX CANVAS EDGE\s+(\d+)", RegexOptions.IgnoreCase);
         Assert.IsTrue(match.Success, "The canvas limit was not reported");
         var limit = int.Parse(match.Groups[1].Value);
@@ -59,11 +59,11 @@ public class ProcessingTests : DemoTest
         try
         {
             await page.SetInputFilesAsync("input[type=file]", file);
-            await page.WaitForSelectorAsync(".stat-grid", new PageWaitForSelectorOptions { Timeout = 60_000 });
+            await page.WaitForSelectorAsync(".avatar-stats", new PageWaitForSelectorOptions { Timeout = 60_000 });
             await page.WaitForFunctionAsync("() => document.querySelectorAll('img.preview-image').length >= 2", null,
                 new PageWaitForFunctionOptions { Timeout = 60_000 });
 
-            var stats = await page.Locator(".stat-grid").InnerTextAsync();
+            var stats = await page.Locator(".avatar-stats").InnerTextAsync();
             // A gradient at 256px must compress to something far smaller than the source PNG.
             Assert.Contains("KB", stats, StringComparison.Ordinal);
             Assert.DoesNotContain("0 B", stats, StringComparison.Ordinal);
@@ -123,8 +123,8 @@ public class ProcessingTests : DemoTest
         try
         {
             await page.SetInputFilesAsync("input[type=file]", file);
-            await page.WaitForSelectorAsync(".alert-error", new PageWaitForSelectorOptions { Timeout = 60_000 });
-            var message = await page.Locator(".alert-error").InnerTextAsync();
+            await page.WaitForSelectorAsync(".demo-error", new PageWaitForSelectorOptions { Timeout = 60_000 });
+            var message = await page.Locator(".demo-error").InnerTextAsync();
             Assert.IsFalse(string.IsNullOrWhiteSpace(message));
         }
         finally
@@ -357,7 +357,7 @@ public class DemoPageTests : DemoTest
         await page.WaitForTimeoutAsync(2000);
 
         Assert.IsEmpty(errors, string.Join(" | ", errors));
-        Assert.IsEmpty(await page.Locator(".alert-error").AllInnerTextsAsync());
+        Assert.IsEmpty(await page.Locator(".demo-error").AllInnerTextsAsync());
         Assert.IsFalse(string.IsNullOrWhiteSpace(await page.Locator("h1").First.InnerTextAsync()));
     }
 

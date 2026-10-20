@@ -8,131 +8,135 @@
    same pipeline shape against it, so the expensive part - the decode - happens once. Sizes larger
    than the source are skipped and said to be, because upscaling a product photo invents detail. *@
 
-<PageTitle>Product images - Bit.Bmage</PageTitle>
+<PageTitle>Product images · Bmage</PageTitle>
 
-<h1>Product images</h1>
+<div class="bb-intro">
+    <h1>Product images</h1>
+    <p class="bb-subtitle">
+        A catalogue needs the same photo at half a dozen sizes, on a consistent background, cropped the
+        same way every time. One upload produces <strong>the whole set</strong> here, in a single pass,
+        before anything is sent anywhere.
+    </p>
+</div>
 
-<p class="page-intro">
-    A catalogue needs the same photo at half a dozen sizes, on a consistent background, cropped the
-    same way every time. One upload produces <strong>the whole set</strong> here, in a single pass,
-    before anything is sent anywhere.
-</p>
-
-<div class="demo-section">
-    <h2>Try it</h2>
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Try it</h3>
 
     @if (_error is not null)
     {
-        <div class="alert alert-error" role="alert">@_error</div>
+        <div class="bb-note bb-note-danger demo-error" role="alert">@_error</div>
     }
 
-    <div class="split">
-        <div>
-            @if (_source is null)
-            {
-                <BmageDropZone Label="Drop a product photo here" OnFilesSelected="OnFilesSelected" />
-                <div class="sample-row">
-                    <button type="button" class="btn" disabled="@(_busy || IsHydrating)" @onclick="UseSample">Use a sample image</button>
-                </div>
-            }
-            else
-            {
-                @if (_busy)
+    <div class="bb-demo bb-page-wide">
+        <div class="bb-demo-bar"><span class="bb-demo-label">Live</span></div>
+        <div class="demo-split">
+            <div>
+                @if (_source is null)
                 {
-                    <p class="working" role="status">Producing @(_variants.Count + 1) of @_planned&hellip;</p>
+                    <BmageDropZone Label="Drop a product photo here" OnFilesSelected="OnFilesSelected" />
+                    <div class="bb-toolbar">
+                        <button type="button" class="btn btn-secondary" disabled="@(_busy || IsHydrating)" @onclick="UseSample">Use a sample image</button>
+                    </div>
                 }
-
-                <div class="thumb-grid">
-                    @foreach (var variant in _variants)
+                else
+                {
+                    @if (_busy)
                     {
-                        <div class="thumb" @key="variant.Version">
-                            <ImagePreview Image="variant.Image" Version="variant.Version" Alt="@($"Product image, {variant.Name}")"
-                                          Class="thumb-image" />
-                            <div class="thumb-meta">
-                                <div class="thumb-name">@variant.Name</div>
-                                <div>@variant.Image.Width &times; @variant.Image.Height &middot; @Display.Bytes(variant.Bytes)</div>
-                                <button type="button" class="btn btn-small thumb-save" @onclick="() => Download(variant)" aria-label="@($"Save {variant.Name}")">Save</button>
+                        <p class="working" role="status"><span class="bb-spinner" aria-hidden="true"></span>Producing @(_variants.Count + 1) of @_planned&hellip;</p>
+                    }
+
+                    <div class="thumb-grid">
+                        @foreach (var variant in _variants)
+                        {
+                            <div class="thumb" @key="variant.Version">
+                                <ImagePreview Image="variant.Image" Version="variant.Version" Alt="@($"Product image, {variant.Name}")"
+                                              Class="thumb-image" />
+                                <div class="thumb-meta">
+                                    <div class="thumb-name">@variant.Name</div>
+                                    <div>@variant.Image.Width &times; @variant.Image.Height &middot; @Display.Bytes(variant.Bytes)</div>
+                                    <button type="button" class="btn btn-secondary demo-btn-sm thumb-save" @onclick="() => Download(variant)" aria-label="@($"Save {variant.Name}")">Save</button>
+                                </div>
                             </div>
-                        </div>
-                    }
+                        }
+                    </div>
+
+                    <div class="bb-toolbar results-actions">
+                        <button type="button" class="btn btn-primary" disabled="@(_busy || _variants.Count == 0)" @onclick="DownloadAll">
+                            <Icon Path="@Icons.Download" />
+                            Download all @_variants.Count
+                        </button>
+                        <button type="button" class="btn btn-secondary" @onclick="Clear">Start over</button>
+                    </div>
+                    <p class="demo-small bb-muted preview-meta">
+                        @if (_variants.Count > 0)
+                        {
+                            <text>Total output @Display.Bytes(_variants.Sum(v => v.Bytes))@(_sourceBytes > 0 ? $" from a {Display.Bytes(_sourceBytes)} upload" : null).</text>
+                        }
+                        else if (!_busy && _sizes.Count == 0)
+                        {
+                            <text>Pick at least one size.</text>
+                        }
+                        @if (_skipped.Count > 0)
+                        {
+                            <text> Skipped @string.Join(", ", _skipped.OrderByDescending(s => s)) because the source is only @_source.Width &times; @_source.Height and upscaling would invent detail.</text>
+                        }
+                    </p>
+                }
+            </div>
+
+            <div class="demo-panel">
+                <p class="bb-overline demo-label">Recipe</p>
+
+                <div class="demo-field">
+                    <label class="demo-field-label" for="bg">Background</label>
+                    <input id="bg" type="color" class="bmg-color" value="@_background.ToHex(false)" @onchange="OnBackgroundChanged" aria-describedby="bg-hint" />
+                    <span class="bb-field-hint" id="bg-hint">Applied behind transparent pixels and in the padding, so every tile matches.</span>
                 </div>
 
-                <div class="btn-row results-actions">
-                    <button type="button" class="btn btn-accent" disabled="@(_busy || _variants.Count == 0)" @onclick="DownloadAll">
-                        <Icon Path="@Icons.Download" />
-                        Download all @_variants.Count
-                    </button>
-                    <button type="button" class="btn" @onclick="Clear">Start over</button>
+                <div class="demo-field">
+                    <label class="demo-field-label" for="pad">Padding <span class="demo-field-value">@_padding%</span></label>
+                    <input id="pad" type="range" min="0" max="25" step="1" value="@_padding" @oninput="OnPaddingChanged" />
                 </div>
-                <p class="small muted preview-meta">
-                    @if (_variants.Count > 0)
-                    {
-                        <text>Total output @Display.Bytes(_variants.Sum(v => v.Bytes))@(_sourceBytes > 0 ? $" from a {Display.Bytes(_sourceBytes)} upload" : null).</text>
-                    }
-                    else if (!_busy && _sizes.Count == 0)
-                    {
-                        <text>Pick at least one size.</text>
-                    }
-                    @if (_skipped.Count > 0)
-                    {
-                        <text> Skipped @string.Join(", ", _skipped.OrderByDescending(s => s)) because the source is only @_source.Width &times; @_source.Height and upscaling would invent detail.</text>
-                    }
-                </p>
-            }
-        </div>
 
-        <div class="card">
-            <p class="card-title">Recipe</p>
-
-            <div class="field">
-                <label class="field-label" for="bg">Background</label>
-                <input id="bg" type="color" class="bmg-color" value="@_background.ToHex(false)" @onchange="OnBackgroundChanged" aria-describedby="bg-hint" />
-                <span class="field-hint" id="bg-hint">Applied behind transparent pixels and in the padding, so every tile matches.</span>
-            </div>
-
-            <div class="field">
-                <label class="field-label" for="pad">Padding <span class="field-value">@_padding%</span></label>
-                <input id="pad" type="range" min="0" max="25" step="1" value="@_padding" @oninput="OnPaddingChanged" />
-            </div>
-
-            <div class="field">
-                <label class="field-label" for="ratio">Shape</label>
-                <select id="ratio" class="bmg-select" @onchange="OnRatioChanged">
-                    <option value="square" selected="@(_shape == "square")">Square (1:1)</option>
-                    <option value="portrait" selected="@(_shape == "portrait")">Portrait (3:4)</option>
-                    <option value="landscape" selected="@(_shape == "landscape")">Landscape (4:3)</option>
-                </select>
-            </div>
-
-            <div class="field" role="group" aria-labelledby="sizes-label">
-                <span class="field-label" id="sizes-label">Sizes</span>
-                <div class="chip-row">
-                    @foreach (var size in AllSizes)
-                    {
-                        <button type="button" class="chip" aria-pressed="@(_sizes.Contains(size) ? "true" : "false")" @onclick="() => ToggleSize(size)">@size</button>
-                    }
+                <div class="demo-field">
+                    <label class="demo-field-label" for="ratio">Shape</label>
+                    <select id="ratio" @onchange="OnRatioChanged">
+                        <option value="square" selected="@(_shape == "square")">Square (1:1)</option>
+                        <option value="portrait" selected="@(_shape == "portrait")">Portrait (3:4)</option>
+                        <option value="landscape" selected="@(_shape == "landscape")">Landscape (4:3)</option>
+                    </select>
                 </div>
-            </div>
 
-            <div class="field">
-                <label class="field-label" for="pformat">Format</label>
-                <select id="pformat" class="bmg-select" disabled="@(_capabilities is null)" @onchange="OnFormatChanged">
-                    @foreach (var format in AvailableFormats)
-                    {
-                        <option value="@format" selected="@(_format == format)">@format.ToString().ToUpperInvariant()</option>
-                    }
-                </select>
-            </div>
+                <div class="demo-field" role="group" aria-labelledby="sizes-label">
+                    <span class="demo-field-label" id="sizes-label">Sizes</span>
+                    <div class="bb-segmented">
+                        @foreach (var size in AllSizes)
+                        {
+                            <button type="button" aria-pressed="@(_sizes.Contains(size) ? "true" : "false")" @onclick="() => ToggleSize(size)">@size</button>
+                        }
+                    </div>
+                </div>
 
-            <button type="button" class="btn btn-accent btn-block" disabled="@(_source is null || _busy)" @onclick="Generate">
-                @(_busy ? "Working…" : "Regenerate")
-            </button>
+                <div class="demo-field">
+                    <label class="demo-field-label" for="pformat">Format</label>
+                    <select id="pformat" disabled="@(_capabilities is null)" @onchange="OnFormatChanged">
+                        @foreach (var format in AvailableFormats)
+                        {
+                            <option value="@format" selected="@(_format == format)">@format.ToString().ToUpperInvariant()</option>
+                        }
+                    </select>
+                </div>
+
+                <button type="button" class="btn btn-primary demo-btn-block" disabled="@(_source is null || _busy)" @onclick="Generate">
+                    @(_busy ? "Working…" : "Regenerate")
+                </button>
+            </div>
         </div>
     </div>
 </div>
 
-<div class="demo-section">
-    <h2>One source, many outputs</h2>
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> One source, many outputs</h3>
     <p>
         <code>Fit</code> rather than <code>Cover</code>: a product must never be cropped, so it is
         scaled to fit the padded area and centred on an <code>ImageCanvas</code> filled with the

@@ -1,12 +1,16 @@
-﻿<div class="demo">
-    <div class="demo__head">
-        <div>
-            <span class="demo__badge">Live demo</span>
-            <span class="demo__title">@Title</span>
-        </div>
+﻿@*
+    A live sample, in the site kit's bb-demo frame: a title bar naming it (with the "Show code"
+    toggle at its end when the sample has a listing), a line on what to try, the sample itself and,
+    when asked for, its source. The content is rendered straight into the frame rather than into a
+    wrapper, so the frame's own spacing rules reach the sample's last element.
+*@
+<div class="bb-demo">
+    <div class="bb-demo-bar">
+        <span class="bb-demo-label">Live<span class="demo-card-title">@Title</span></span>
         @if (!string.IsNullOrEmpty(Source))
         {
-            <button type="button" class="demo__toggle" @onclick="() => _showSource = !_showSource">
+            <button type="button" class="btn btn-secondary" aria-expanded="@(_showSource ? "true" : "false")"
+                    @onclick="() => _showSource = !_showSource">
                 @(_showSource ? "Hide code" : "Show code")
             </button>
         }
@@ -14,18 +18,14 @@
 
     @if (!string.IsNullOrEmpty(Description))
     {
-        <p class="demo__desc">@Description</p>
+        <p class="bb-card-desc">@Description</p>
     }
 
-    <div class="demo__stage">
-        @ChildContent
-    </div>
+    @ChildContent
 
     @if (_showSource && !string.IsNullOrEmpty(Source))
     {
-        <div class="demo__source">
-            <CodeBlock Code="@Source" Language="@SourceLanguage" ShowChrome="false" Compact="true" />
-        </div>
+        <CodeBlock Code="@Source" Language="@SourceLanguage" />
     }
 </div>
 

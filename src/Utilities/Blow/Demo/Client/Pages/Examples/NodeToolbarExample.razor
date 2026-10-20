@@ -1,6 +1,6 @@
 ﻿@page "/examples/node-toolbar"
 
-<PageTitle>Node Toolbar - bit Blow</PageTitle>
+<PageTitle>Node Toolbar · Blow</PageTitle>
 
 <ExampleScaffold Title="Node Toolbar"
                  Summary="A BlowNodeToolbar anchored to the selected node stays a constant screen size while zooming. Select a node to recolor or delete it; change the toolbar position.">
@@ -18,8 +18,8 @@
         <BlowCanvas Nodes="_nodes" Edges="_edges" FitViewOnInit="true">
             <NodeTemplate Context="node">
                 <BlowNodeToolbar Position="_position">
-                    <button class="btn btn-sm" @onclick="() => Recolor(node)">🎨</button>
-                    <button class="btn btn-sm" @onclick="() => Remove(node)">🗑</button>
+                    <button class="btn btn-secondary" @onclick="() => Recolor(node)">🎨</button>
+                    <button class="btn btn-secondary" @onclick="() => Remove(node)">🗑</button>
                 </BlowNodeToolbar>
                 <BlowHandle Type="BlowHandleType.Target" Position="BlowPosition.Top" />
                 <div class="tb-node">@node.Label</div>
@@ -42,20 +42,24 @@
     private List<BlowEdge> _edges = [];
     private BlowPosition _position = BlowPosition.Top;
 
+    // A tint of the colour mixed into the node's own fill rather than a fixed pastel, so the node reads
+    // in the light and the dark colour mode alike.
+    private static string Tint(string color) => $"background:color-mix(in srgb, {color} 20%, var(--bit-blow-node-bg));";
+
     protected override void OnInitialized()
     {
         _nodes =
         [
-            new BlowNode { Id = "1", Label = "Select me", Position = new(160, 60), Style = "background:#fef9c3;" },
-            new BlowNode { Id = "2", Label = "Or me", Position = new(220, 200), Style = "background:#dbeafe;" },
+            new BlowNode { Id = "1", Label = "Select me", Position = new(160, 60), Style = Tint("#eab308") },
+            new BlowNode { Id = "2", Label = "Or me", Position = new(220, 200), Style = Tint("#3b82f6") },
         ];
         _edges = [ new BlowEdge { Id = "e1-2", Source = "1", Target = "2" } ];
     }
 
     private void Recolor(BlowNode node)
     {
-        var colors = new[] { "#dbeafe", "#dcfce7", "#fee2e2", "#fef9c3", "#f3e8ff" };
-        node.Style = $"background:{colors[Random.Shared.Next(colors.Length)]};";
+        var colors = new[] { "#3b82f6", "#22c55e", "#ef4444", "#eab308", "#a855f7" };
+        node.Style = Tint(colors[Random.Shared.Next(colors.Length)]);
     }
 
     private void Remove(BlowNode node)

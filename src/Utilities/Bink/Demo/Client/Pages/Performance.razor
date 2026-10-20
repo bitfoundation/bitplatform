@@ -2,18 +2,20 @@
 @using System.Diagnostics
 @using System.Numerics
 
-<PageTitle>Performance - bit Bink</PageTitle>
+<PageTitle>Performance · Bink</PageTitle>
 
-<h1>Performance</h1>
-<p class="page-intro">
-    Numbers measured here, in your browser, on this machine. Load a synthetic document and draw over it: the
-    canvas keeps responding because a redraw only touches the visible region, and drawing only redraws the
-    overlay. Every figure below is produced by running the real engine, not quoted from a specification.
-</p>
+<div class="bb-intro">
+    <h1>Performance</h1>
+    <p class="bb-subtitle">
+        Numbers measured here, in your browser, on this machine. Load a synthetic document and draw over it: the
+        canvas keeps responding because a redraw only touches the visible region, and drawing only redraws the
+        overlay. Every figure below is produced by running the real engine, not quoted from a specification.
+    </p>
+</div>
 
-<div class="panel">
-    <div class="toolbar" role="toolbar" aria-label="Performance controls">
-        <label class="field">
+<div class="bb-demo bink-editor bb-page-wide">
+    <div class="bb-toolbar bink-toolbar" role="toolbar" aria-label="Performance controls">
+        <label class="bink-field">
             Strokes
             <select value="@_strokeCount" @onchange="OnCountChanged" aria-label="Number of strokes">
                 <option value="500">500</option>
@@ -22,7 +24,7 @@
                 <option value="10000">10,000</option>
             </select>
         </label>
-        <label class="field">
+        <label class="bink-field">
             Points each
             <select value="@_pointsPerStroke" @onchange="OnPointsChanged" aria-label="Points per stroke">
                 <option value="20">20</option>
@@ -30,13 +32,17 @@
                 <option value="150">150</option>
             </select>
         </label>
-        <button type="button" class="btn primary" disabled="@_busy" @onclick="GenerateAsync">Generate</button>
-        <button type="button" class="btn" disabled="@(_busy || _document.IsEmpty)" @onclick="MeasureAsync">Measure</button>
-        <div class="toolbar-spacer"></div>
-        <button type="button" class="btn danger" disabled="@(_busy || _document.IsEmpty)" @onclick="Clear">Clear</button>
+        <button type="button" class="btn btn-primary" disabled="@_busy" @onclick="GenerateAsync">Generate</button>
+        <button type="button" class="btn btn-secondary" disabled="@(_busy || _document.IsEmpty)" @onclick="MeasureAsync">Measure</button>
+        @if (_busy)
+        {
+            <span class="bink-hint" role="status"><span class="bb-spinner" aria-hidden="true"></span> @(_step ?? "working")...</span>
+        }
+        <span class="bb-spacer"></span>
+        <button type="button" class="btn btn-secondary bink-danger" disabled="@(_busy || _document.IsEmpty)" @onclick="Clear">Clear</button>
     </div>
 
-    <div class="canvas-host">
+    <div class="bink-surface">
         <BinkCanvas @ref="_canvas"
                    Document="_document"
                    Height="420px"
@@ -48,38 +54,50 @@
                    Ready="() => StateHasChanged()" />
     </div>
 
-    <CanvasStatus Canvas="_canvas">
-        @if (_busy)
-        {
-            <span role="status"><strong>@(_step ?? "working")...</strong></span>
-        }
-    </CanvasStatus>
+    <CanvasStatus Canvas="_canvas" />
 </div>
 
 @if (_results.Count > 0)
 {
-    <h2>Measurements</h2>
-    <table>
-        <thead>
-            <tr><th>Operation</th><th>Result</th><th>What it covers</th></tr>
-        </thead>
-        <tbody>
+    <div class="bb-card">
+        <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Measurements</h3>
+        <p class="bb-card-desc">
+            Absolute numbers depend on the machine and the browser; what carries over is the ratio between them - the
+            visible region against the whole document, a click against a redraw.
+        </p>
+        <div class="bb-stats">
             @foreach (Measurement m in _results)
             {
-                <tr>
-                    <td>@m.Name</td>
-                    <td><strong>@m.Value</strong></td>
-                    <td style="color:var(--text-muted)">@m.Detail</td>
-                </tr>
+                <div class="bb-stat">
+                    <span class="bb-stat-label">@m.Name</span>
+                    <span class="bb-stat-value">@m.Value</span>
+                    <span class="bink-stat-detail">@m.Detail</span>
+                </div>
             }
-        </tbody>
-    </table>
+        </div>
+    </div>
 }
 
-<div class="note">
+<div class="bb-note">
     Drawing on a loaded document stays smooth because the live stroke is rendered on a separate overlay canvas:
     the thousands of committed strokes are not touched until the pen lifts. Pointer input is batched once per
     animation frame and never triggers a Blazor render.
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> What is being timed</h3>
+    <p class="bb-card-desc">
+        The document is built in one batch, so it raises a single change and the canvas redraws once. A redraw is a
+        recording of canvas commands; with <code>ClipBounds</code> set to the visible rectangle it records only the
+        elements whose bounds intersect it, which is what a pan or a committed stroke really costs.
+    </p>
+    <pre class="bb-code"><span class="k">using</span> (_document.BeginBatch(<span class="s">"Generate"</span>))
+{
+    <span class="k">for</span> (<span class="k">int</span> i = 0; i &lt; _strokeCount; i++) _document.AddElement(CreateStroke(random), layer);
+}
+
+<span class="k">var</span> culled = <span class="k">new</span> BinkCanvasRenderContext(1 &lt;&lt; 16);
+BinkDocumentRenderer.Render(_document, culled, <span class="k">new</span> BinkRenderOptions { ClipBounds = visible });</pre>
 </div>
 
 @code {

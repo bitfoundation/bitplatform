@@ -1,71 +1,75 @@
 ﻿@page "/queries"
 @inject DemoDbService Db
 
-<PageTitle>Query primitives - BlazeDb</PageTitle>
+<PageTitle>Query primitives · BlazeDb</PageTitle>
 
-<PageHeader Eyebrow="Engine" IconName="query" Title="Querying without a query language"
+<PageHeader Eyebrow="Query primitives" Title="Querying without a query language"
             Lead="Query is a tiny composable pipeline: pick at most one index as the source, add residual predicates, optionally sort, then page. Build one below and watch the code, the plan and the timing update as you go.">
-    <span class="chip"><Icon Name="bolt" /> No parser, no planner cache</span>
-    <span class="chip"><Icon Name="cpu" /> Delegates, not expression trees</span>
+    <span class="bb-badge bd-badge-neutral">No parser, no planner cache</span>
+    <span class="bb-badge bd-badge-neutral">Delegates, not expression trees</span>
 </PageHeader>
 
 @if (_todos is null)
 {
-    <Panel><div class="empty">Opening the database…</div></Panel>
+    <div class="bb-empty"><span class="bb-spinner"></span> Opening the database…</div>
 }
 else
 {
-    <div class="grid grid-sidebar">
-        <div class="flex-col gap-lg">
+    @* A composer rather than a document: it gives up the "on this page" rail for the width its two
+       columns need. *@
+    <div class="bd-main-side bb-page-wide">
+        <div class="bb-flex">
             <Panel Title="1 · Source" IconName="database"
                    Sub="at most one index source per query">
-                <div class="chip-row">
-                    @foreach (var option in SourceOptions)
-                    {
-                        var value = option.Kind;
-                        <button class="chip @(_source == value ? "on" : null)" @onclick="() => SetSource(value)">
-                            @option.Label
-                        </button>
-                    }
+                <div class="bb-toolbar">
+                    <div class="bb-segmented bb-mono" role="group" aria-label="Source">
+                        @foreach (var option in SourceOptions)
+                        {
+                            var value = option.Kind;
+                            <button type="button" aria-pressed="@(_source == value ? "true" : "false")" @onclick="() => SetSource(value)">
+                                @option.Label
+                            </button>
+                        }
+                    </div>
                 </div>
 
                 @if (_source is SourceKind.OrderedCreatedAt or SourceKind.OrderedEffort)
                 {
-                    <div class="form-row mt-2">
+                    <div class="bb-fields">
                         @if (_source == SourceKind.OrderedEffort)
                         {
-                            <div class="field">
-                                <label class="field-label" for="q-from">From</label>
-                                <input id="q-from" class="input mono" type="number" disabled="@_fromUnbounded"
+                            <div class="bb-field">
+                                <label for="q-from">From</label>
+                                <input id="q-from" class="bb-mono" type="number" disabled="@_fromUnbounded"
                                        @bind="_effortFrom" @bind:after="Run" />
                             </div>
-                            <div class="field">
-                                <label class="field-label" for="q-to">To</label>
-                                <input id="q-to" class="input mono" type="number" disabled="@_toUnbounded"
+                            <div class="bb-field">
+                                <label for="q-to">To</label>
+                                <input id="q-to" class="bb-mono" type="number" disabled="@_toUnbounded"
                                        @bind="_effortTo" @bind:after="Run" />
                             </div>
                         }
                         else
                         {
-                            <div class="field">
-                                <label class="field-label" for="q-days">Created within the last</label>
-                                <input id="q-days" class="input mono" type="number" min="1" max="365" disabled="@_fromUnbounded"
+                            <div class="bb-field">
+                                <label for="q-days">Created within the last</label>
+                                <input id="q-days" class="bb-mono" type="number" min="1" max="365" disabled="@_fromUnbounded"
                                        @bind="_days" @bind:after="Run" />
-                                <span class="field-hint">days</span>
+                                <span class="bb-field-hint">days</span>
                             </div>
                         }
-                        <div class="field" style="flex:0 0 auto">
-                            <label class="field-label">Bounds</label>
-                            <label class="check">
+                        <div class="bb-field">
+                            <span>Bounds</span>
+                            <label class="bb-check">
                                 <input type="checkbox" @bind="_fromUnbounded" @bind:after="Run" /> from unbounded
                             </label>
-                            <label class="check">
+                            <label class="bb-check">
                                 <input type="checkbox" @bind="_toUnbounded" @bind:after="Run" /> to unbounded
                             </label>
                         </div>
-                        <div class="field" style="flex:0 0 auto">
-                            <label class="field-label">Direction</label>
-                            <label class="check">
+                        <div class="bb-field">
+                            <span>Direction</span>
+                            <label class="bb-check">
                                 <input type="checkbox" @bind="_sourceDescending" @bind:after="Run" /> descending
                             </label>
                         </div>
@@ -73,10 +77,10 @@ else
                 }
                 else if (_source == SourceKind.HashCategory)
                 {
-                    <div class="form-row mt-2">
-                        <div class="field">
-                            <label class="field-label" for="q-cat">Category key</label>
-                            <select id="q-cat" class="select" @bind="_category" @bind:after="Run">
+                    <div class="bb-fields">
+                        <div class="bb-field">
+                            <label for="q-cat">Category key</label>
+                            <select id="q-cat" @bind="_category" @bind:after="Run">
                                 @foreach (var c in DemoData.Categories)
                                 {
                                     <option value="@c">@c</option>
@@ -87,10 +91,10 @@ else
                 }
                 else if (_source == SourceKind.HashPriority)
                 {
-                    <div class="form-row mt-2">
-                        <div class="field">
-                            <label class="field-label" for="q-prio">Priority key</label>
-                            <select id="q-prio" class="select" @bind="_priority" @bind:after="Run">
+                    <div class="bb-fields">
+                        <div class="bb-field">
+                            <label for="q-prio">Priority key</label>
+                            <select id="q-prio" @bind="_priority" @bind:after="Run">
                                 @foreach (var p in Enum.GetValues<Priority>())
                                 {
                                     <option value="@p">@p</option>
@@ -101,10 +105,10 @@ else
                 }
                 else if (_source == SourceKind.HashDone)
                 {
-                    <div class="form-row mt-2">
-                        <div class="field">
-                            <label class="field-label" for="q-done">Done key</label>
-                            <select id="q-done" class="select" @bind="_doneKey" @bind:after="Run">
+                    <div class="bb-fields">
+                        <div class="bb-field">
+                            <label for="q-done">Done key</label>
+                            <select id="q-done" @bind="_doneKey" @bind:after="Run">
                                 <option value="false">false</option>
                                 <option value="true">true</option>
                             </select>
@@ -115,56 +119,58 @@ else
 
             <Panel Title="2 · Residual predicates" IconName="filter"
                    Sub="every Where is ANDed with the others">
-                <div class="chip-row">
-                    <button class="chip @(_whereOpen ? "on" : null)" @onclick="() => Toggle(ref _whereOpen)">
-                        t =&gt; !t.Done
-                    </button>
-                    <button class="chip @(_whereRated ? "on" : null)" @onclick="() => Toggle(ref _whereRated)">
-                        t =&gt; t.Rating is not null
-                    </button>
-                    <button class="chip @(_whereTagged ? "on" : null)" @onclick="() => Toggle(ref _whereTagged)">
-                        t =&gt; t.Tags.Count &gt; 0
-                    </button>
-                    <button class="chip @(_whereEffort ? "on" : null)" @onclick="() => Toggle(ref _whereEffort)">
-                        t =&gt; t.Effort &gt;= @_minEffort
-                    </button>
+                <div class="bb-toolbar">
+                    <div class="bb-segmented bb-mono" role="group" aria-label="Predicates">
+                        <button type="button" aria-pressed="@(_whereOpen ? "true" : "false")" @onclick="() => Toggle(ref _whereOpen)">
+                            t =&gt; !t.Done
+                        </button>
+                        <button type="button" aria-pressed="@(_whereRated ? "true" : "false")" @onclick="() => Toggle(ref _whereRated)">
+                            t =&gt; t.Rating is not null
+                        </button>
+                        <button type="button" aria-pressed="@(_whereTagged ? "true" : "false")" @onclick="() => Toggle(ref _whereTagged)">
+                            t =&gt; t.Tags.Count &gt; 0
+                        </button>
+                        <button type="button" aria-pressed="@(_whereEffort ? "true" : "false")" @onclick="() => Toggle(ref _whereEffort)">
+                            t =&gt; t.Effort &gt;= @_minEffort
+                        </button>
+                    </div>
                 </div>
-                <div class="form-row mt-2">
-                    <div class="field">
-                        <label class="field-label" for="q-min">Minimum effort</label>
-                        <input id="q-min" class="slider" type="range" min="0" max="140" step="5"
+                <div class="bb-fields">
+                    <div class="bb-field">
+                        <label for="q-min">Minimum effort</label>
+                        <input id="q-min" type="range" min="0" max="140" step="5"
                                @bind="_minEffort" @bind:after="Run" />
                     </div>
-                    <div class="field" style="flex:2 1 200px">
-                        <label class="field-label" for="q-text">Title contains</label>
-                        <input id="q-text" class="input" placeholder="(no text predicate)" @bind="_text"
+                    <div class="bb-field" style="flex:2 1 200px">
+                        <label for="q-text">Title contains</label>
+                        <input id="q-text" placeholder="(no text predicate)" @bind="_text"
                                @bind:event="oninput" @bind:after="Run" />
                     </div>
                 </div>
             </Panel>
 
             <Panel Title="3 · Order, page and execute" IconName="sort">
-                <div class="form-row">
-                    <div class="field">
-                        <label class="field-label" for="q-order">OrderBy</label>
-                        <select id="q-order" class="select" @bind="_order" @bind:after="Run">
+                <div class="bb-fields">
+                    <div class="bb-field">
+                        <label for="q-order">OrderBy</label>
+                        <select id="q-order" @bind="_order" @bind:after="Run">
                             <option value="@OrderKind.None">none - keep source order</option>
                             <option value="@OrderKind.Title">t =&gt; t.Title</option>
                             <option value="@OrderKind.EffortDesc">t =&gt; t.Effort, descending</option>
                             <option value="@OrderKind.CreatedDesc">t =&gt; t.CreatedAt, descending</option>
                         </select>
                     </div>
-                    <div class="field" style="flex:0 1 110px">
-                        <label class="field-label" for="q-skip">Skip</label>
-                        <input id="q-skip" class="input mono" type="number" min="0" @bind="_skip" @bind:after="Run" />
+                    <div class="bb-field" style="flex:0 1 110px">
+                        <label for="q-skip">Skip</label>
+                        <input id="q-skip" class="bb-mono" type="number" min="0" @bind="_skip" @bind:after="Run" />
                     </div>
-                    <div class="field" style="flex:0 1 110px">
-                        <label class="field-label" for="q-take">Take</label>
-                        <input id="q-take" class="input mono" type="number" min="1" max="50" @bind="_take" @bind:after="Run" />
+                    <div class="bb-field" style="flex:0 1 110px">
+                        <label for="q-take">Take</label>
+                        <input id="q-take" class="bb-mono" type="number" min="1" max="50" @bind="_take" @bind:after="Run" />
                     </div>
-                    <div class="field">
-                        <label class="field-label" for="q-exec">Terminal call</label>
-                        <select id="q-exec" class="select" @bind="_execute" @bind:after="Run">
+                    <div class="bb-field">
+                        <label for="q-exec">Terminal call</label>
+                        <select id="q-exec" @bind="_execute" @bind:after="Run">
                             <option value="@ExecuteKind.ToList">ToList()</option>
                             <option value="@ExecuteKind.Projection">Execute(t =&gt; …)</option>
                             <option value="@ExecuteKind.First">FirstOrDefault()</option>
@@ -176,14 +182,14 @@ else
 
             <Panel Title="Result" IconName="play" Flush="true">
                 <Actions>
-                    <span class="panel-sub mono">@_resultSummary</span>
+                    <span class="bd-panel-sub">@_resultSummary</span>
                 </Actions>
                 <ChildContent>
                     @if (_execute == ExecuteKind.Count)
                     {
-                        <div class="panel-body">
-                            <div class="stat-value" style="font-size:2.2rem">@_count.ToString("N0")</div>
-                            <p class="small muted mb-0">
+                        <div class="bd-panel-pad">
+                            <div class="bd-count">@_count.ToString("N0")</div>
+                            <p class="bb-muted">
                                 <code>Count()</code> runs the whole pipeline and counts what comes out -
                                 it is not a shortcut around the predicates.
                             </p>
@@ -193,33 +199,33 @@ else
                     {
                         @if (_projected.Count == 0)
                         {
-                            <div class="empty"><Icon Name="search" /><div>No rows matched.</div></div>
+                            <div class="bb-empty">No rows matched.</div>
                         }
                         else
                         {
-                            <div class="log">
+                            <div class="bb-log">
                                 @foreach (var line in _projected)
                                 {
-                                    <div class="log-row"><span class="log-name">@line</span></div>
+                                    <div class="bb-log-line">@line</div>
                                 }
                             </div>
                         }
                     }
                     else if (_rows.Count == 0)
                     {
-                        <div class="empty"><Icon Name="search" /><div>No rows matched.</div></div>
+                        <div class="bb-empty">No rows matched.</div>
                     }
                     else
                     {
-                        <div class="table-wrap">
-                            <table class="data">
+                        <div class="bb-scroll">
+                            <table class="bb-table bb-compare">
                                 <thead>
                                     <tr>
                                         <th>Title</th>
                                         <th>Category</th>
                                         <th>Priority</th>
-                                        <th class="num">Effort</th>
-                                        <th class="num">Rating</th>
+                                        <th class="bd-num">Effort</th>
+                                        <th class="bd-num">Rating</th>
                                         <th>Created</th>
                                     </tr>
                                 </thead>
@@ -227,12 +233,12 @@ else
                                     @foreach (var row in _rows)
                                     {
                                         <tr>
-                                            <td class="strong">@row.Title</td>
-                                            <td class="mono">@(row.Category ?? "null")</td>
-                                            <td><span class="prio @row.Priority">@row.Priority</span></td>
-                                            <td class="num mono">@row.Effort</td>
-                                            <td class="num mono">@(row.Rating?.ToString() ?? "-")</td>
-                                            <td class="mono tiny">@row.CreatedAt.ToLocalTime().ToString("MMM d HH:mm")</td>
+                                            <td class="bd-strong">@row.Title</td>
+                                            <td class="bb-mono">@(row.Category ?? "null")</td>
+                                            <td><span class="bd-prio bd-prio-@row.Priority">@row.Priority</span></td>
+                                            <td class="bd-num">@row.Effort</td>
+                                            <td class="bd-num">@(row.Rating?.ToString() ?? "-")</td>
+                                            <td class="bb-mono bd-small">@row.CreatedAt.ToLocalTime().ToString("MMM d HH:mm")</td>
                                         </tr>
                                     }
                                 </tbody>
@@ -243,19 +249,19 @@ else
             </Panel>
         </div>
 
-        <div class="flex-col gap-lg">
+        <div class="bb-flex">
             <Panel Title="Generated call" IconName="code">
-                <CodeBlock Code="@_code" ShowHeader="false" Wrap="true" />
+                <CodeBlock Code="@_code" Wrap="true" />
             </Panel>
 
             <Panel Title="Plan" IconName="layers">
-                <dl class="kv">
+                <dl class="bb-params">
                     <dt>Source</dt>
                     <dd>@_sourceLabel</dd>
                     <dt>Predicates</dt>
                     <dd>@_predicateCount</dd>
                     <dt>IsIndexOrdered</dt>
-                    <dd class="@(_isIndexOrdered ? "ok-text" : "")">@_isIndexOrdered.ToString().ToLowerInvariant()</dd>
+                    <dd class="@(_isIndexOrdered ? "bd-ok" : null)">@_isIndexOrdered.ToString().ToLowerInvariant()</dd>
                     <dt>Matched</dt>
                     <dd>@_matched.ToString("N0")</dd>
                     <dt>Returned</dt>
@@ -265,7 +271,7 @@ else
                 </dl>
                 @if (!_isIndexOrdered && _order != OrderKind.None)
                 {
-                    <Callout Tone="info" Class="mt-2">
+                    <Callout Tone="info">
                         <code>OrderBy</code> sorts in memory. When an ordered index already produces the
                         order you want, dropping the sort makes the query allocation-free.
                     </Callout>
@@ -273,7 +279,7 @@ else
             </Panel>
 
             <Panel Title="Execution order" IconName="arrow-down">
-                <ol class="small mb-0">
+                <ol class="bb-detail-list">
                     <li><strong>Source</strong> - index lookup, index range, or a full <code>Scan</code>.</li>
                     <li><strong>Predicates</strong> - each <code>Where</code> in the order added.</li>
                     <li><strong>Order</strong> - only if <code>OrderBy</code> was called.</li>
@@ -282,20 +288,20 @@ else
             </Panel>
 
             <Panel Title="One source per query" IconName="alert">
-                <p class="small mb-1">
+                <p>
                     Calling <code>UseIndex</code> twice is rejected rather than silently intersecting.
                 </p>
-                <button class="btn btn-sm btn-block" @onclick="TryTwoSources">
+                <button type="button" class="btn btn-secondary" @onclick="TryTwoSources">
                     <Icon Name="play" /> Call UseIndex twice
                 </button>
                 @if (_twoSourceError is not null)
                 {
-                    <div class="api-call mt-2">@_twoSourceError</div>
+                    <div class="bb-log bd-out">@_twoSourceError</div>
                 }
             </Panel>
 
             <Panel Title="Beyond these primitives" IconName="map">
-                <p class="small mb-0">
+                <p>
                     There is no join, no grouping and no aggregate beyond counting. Compose the
                     primitives in ordinary C#, or use LINQ over <code>Scan()</code> when a query is
                     genuinely ad hoc - a scan over in-memory objects is already fast. The

@@ -416,6 +416,9 @@ public class McpToolTests
         Assert.DoesNotContain("McpServer.razor", index);
         Assert.DoesNotContain("NotFoundPage.razor", index);
         Assert.DoesNotContain("ErrorPage.razor", index);
+        Assert.DoesNotContain("Demo/Client/Layout/", index, "The header, docs shell, palette and footer are the shared site kit, not Bsqlite code.");
+        Assert.DoesNotContain("DocsCatalog.cs", index);
+        Assert.Contains("Demo/Client/Pages/GettingStarted.razor", index);
         Assert.DoesNotContain("/Migrations/", index);
         Assert.DoesNotContain("/obj/", index);
     }

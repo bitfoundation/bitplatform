@@ -1,0 +1,120 @@
+﻿@page "/getting-started"
+
+<PageTitle>Getting started · BevTools</PageTitle>
+
+<div class="bb-intro">
+    <h1>Getting started</h1>
+    <p class="bb-subtitle">
+        A package, one line in <code>Program.cs</code> and one tag in your layout. BevTools then inspects the running
+        app - its components, renders, state, requests, interop calls, errors, services and circuits - with no change
+        to the components themselves.
+    </p>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Install</h3>
+    <p class="bb-card-desc">
+        <code>Bit.BevTools</code> works in any Blazor host. <code>Bit.BevTools.Server</code> adds the circuit
+        instrumentation of Blazor Server - add it to the server project of a Blazor Server or Interactive Auto app.
+    </p>
+    <pre class="bb-code">dotnet add package Bit.BevTools          <span class="c"># any Blazor host</span>
+dotnet add package Bit.BevTools.Server   <span class="c"># + Blazor Server circuits</span></pre>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Register the services</h3>
+    <p class="bb-card-desc">
+        In the server project, <code>AddBitBevToolsServerServices</code> registers everything plus the circuit
+        diagnostics; elsewhere <code>AddBitBevToolsServices</code> does. An <strong>Interactive Auto</strong> solution
+        calls both - the first in the server project, the second in the <code>.Client</code> project - so BevTools works
+        whichever render mode a page ends up in.
+    </p>
+    <pre class="bb-code"><span class="k">using</span> Bit.BevTools;
+
+<span class="c">// Program.cs of the server project</span>
+builder.Services.AddBitBevToolsServerServices();
+
+<span class="c">// Program.cs of a WebAssembly (.Client) project</span>
+builder.Services.AddBitBevToolsServices(o =&gt;
+    o.Enabled = builder.HostEnvironment.IsDevelopment());</pre>
+    <p class="bb-card-desc">
+        BevTools turns itself on only when the host environment is <code>Development</code>; set
+        <code>options.Enabled</code> to decide yourself. In a WebAssembly client pass the host environment explicitly, as
+        above, so Development-only activation does not depend on the server's environment variables. Disabled, it
+        registers no instrumentation at all.
+    </p>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> WebAssembly: keep the metrics</h3>
+    <p class="bb-card-desc">
+        The WebAssembly SDK compiles <code>System.Diagnostics.Metrics</code> out by default, and render-diff and
+        lifecycle timings come from those meters. Put them back in the WebAssembly project; without it the About panel
+        says that these timings are not available, and everything else still works.
+    </p>
+    <pre class="bb-code">&lt;<span class="k">PropertyGroup</span>&gt;
+    &lt;<span class="k">MetricsSupport</span>&gt;true&lt;/<span class="k">MetricsSupport</span>&gt;
+&lt;/<span class="k">PropertyGroup</span>&gt;</pre>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Place the panel</h3>
+    <p class="bb-card-desc">
+        Once, inside an interactive component - typically the layout. It renders nothing during prerendering, and it
+        loads its own script and stylesheet (static web assets of the package), so no <code>&lt;script&gt;</code> or
+        <code>&lt;link&gt;</code> tag is needed.
+    </p>
+    <pre class="bb-code"><span class="c">@@* _Imports.razor *@@</span>
+<span class="k">@@using</span> Bit.BevTools
+
+<span class="c">@@* MainLayout.razor (or any interactive component) *@@</span>
+&lt;<span class="k">BevToolsPanel</span> /&gt;</pre>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Open it</h3>
+    <p class="bb-card-desc">
+        Press <kbd>Ctrl</kbd><kbd>Shift</kbd><kbd>D</kbd> or click the ⚙ BevTools badge in the bottom corner. Inside
+        the panel, <kbd>Ctrl</kbd><kbd>K</kbd> opens search and the command palette - <code>&gt;pause</code> freezes
+        every buffer, <code>&gt;export</code> exports the session. The panel's defaults are options too:
+    </p>
+    <pre class="bb-code">builder.Services.AddBitBevToolsServerServices(o =&gt;
+{
+    o.Ui.ToggleShortcut = <span class="s">"Ctrl+Shift+D"</span>;   <span class="c">// the default</span>
+    o.Ui.Dock = BevToolsDock.Right;        <span class="c">// or Bottom (the default)</span>
+    o.Ui.Theme = BevToolsTheme.Auto;       <span class="c">// Auto, Light or Dark</span>
+    o.Ui.OpenByDefault = <span class="k">false</span>;
+});</pre>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> How this site does it</h3>
+    <p class="bb-card-desc">
+        This demo is a Blazor Web App in Interactive Auto, and it exists to show BevTools wherever it is deployed, so it
+        enables it explicitly instead of relying on the Development environment. The panel sits in
+        <code>Routes.razor</code>, after the router, so it survives every navigation.
+    </p>
+    <pre class="bb-code"><span class="c">// Demo/Server/Program.cs</span>
+builder.Services.AddBitBevToolsServerServices(o =&gt; o.Enabled = <span class="k">true</span>);
+
+<span class="c">// Demo/Client/Program.cs</span>
+builder.Services.AddBitBevToolsServices(options =&gt;
+{
+    options.Enabled = <span class="k">true</span>;
+    options.Ui.OpenByDefault = <span class="k">false</span>;
+});</pre>
+    <div class="bb-note">
+        The site's own header, docs layout and footer are ordinary application components here, so they appear in
+        the Components tree, the Profiler and the JS Interop panel next to the scenarios, as a layout does in any app.
+    </div>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Where to go next</h3>
+    <div class="bb-try">
+        <a href="problems" class="btn btn-primary">Problems to diagnose →</a>
+        <a href="dashboard" class="btn btn-outline">Why did it render? →</a>
+        <a href="checkout" class="btn btn-outline">Expose your state →</a>
+        <a href="@($"{SiteInfo.ProjectUrl}#extending")" class="btn btn-outline" target="_blank" rel="noopener noreferrer">Extend BevTools ↗</a>
+    </div>
+</div>

@@ -1,16 +1,16 @@
 ﻿@page "/examples/provider"
 
-<PageTitle>Provider - bit Blow</PageTitle>
+<PageTitle>Provider · Blow</PageTitle>
 
 <ExampleScaffold Title="Provider"
                  Summary="A sidebar outside the canvas drives the flow through a shared reference - the Blazor equivalent of wrapping a flow in ReactFlowProvider so sibling components can call the flow API.">
     <div class="provider">
         <aside class="provider__sidebar">
             <h4>Controls</h4>
-            <button class="btn btn-sm btn-primary" @onclick="AddNode">Add node</button>
-            <button class="btn btn-sm" @onclick="@(() => _flow?.FitView())">Fit view</button>
-            <button class="btn btn-sm" @onclick="ConnectLast">Connect last two</button>
-            <p class="text-muted">@_nodes.Count nodes · @_edges.Count edges</p>
+            <button class="btn btn-primary" @onclick="AddNode">Add node</button>
+            <button class="btn btn-secondary" @onclick="@(() => _flow?.FitView())">Fit view</button>
+            <button class="btn btn-secondary" @onclick="ConnectLast">Connect last two</button>
+            <p class="bb-muted">@_nodes.Count nodes · @_edges.Count edges</p>
         </aside>
         <div class="provider__canvas">
             <BlowCanvas @ref="_flow" Nodes="_nodes" Edges="_edges" FitViewOnInit="true">
@@ -23,14 +23,15 @@
 
 <style>
     .provider { display:flex; height:100%; }
-    .provider__sidebar { width:180px; padding:14px; border-right:1px solid var(--demo-border); background:#fafafa; display:flex; flex-direction:column; gap:8px; }
+    /* Outside the canvas, so it takes the site's own surfaces rather than the flow's. */
+    .provider__sidebar { width:180px; padding:14px; border-right:1px solid var(--bb-border); background:var(--bb-surface-sunken); color:var(--bb-text); display:flex; flex-direction:column; gap:8px; }
     .provider__sidebar h4 { margin:0 0 4px; }
     .provider__canvas { flex:1; position:relative; }
 
     /* On a phone a fixed-width sidebar leaves the canvas a sliver: stack it above instead. */
     @@media (max-width: 640px) {
         .provider { flex-direction:column; }
-        .provider__sidebar { width:auto; flex-direction:row; flex-wrap:wrap; align-items:center; padding:10px; border-right:0; border-bottom:1px solid var(--demo-border); }
+        .provider__sidebar { width:auto; flex-direction:row; flex-wrap:wrap; align-items:center; padding:10px; border-right:0; border-bottom:1px solid var(--bb-border); }
         .provider__sidebar h4, .provider__sidebar p { flex-basis:100%; margin:0; }
         .provider__canvas { min-height:0; }
     }

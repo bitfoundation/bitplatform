@@ -1,45 +1,43 @@
 ﻿@page "/roadmap"
 
-<PageTitle>Roadmap - BlazeDb</PageTitle>
+<PageTitle>Roadmap · BlazeDb</PageTitle>
 
-<PageHeader Eyebrow="Reference" IconName="map" Title="What ships, what is next, and what never will"
+<PageHeader Eyebrow="Roadmap" Title="What ships, what is next, and what never will"
             Lead="BlazeDb is a memory-first engine with a deliberately small surface. This page is the honest inventory: everything it does, and the things it will not try to be.">
-    <span class="chip ok"><Icon Name="check" /> @Shipped.Length shipped</span>
-    <span class="chip info"><Icon Name="clock" /> nothing outstanding</span>
-    <span class="chip"><Icon Name="close" /> @NonGoals.Length explicit non-goals</span>
+    <span class="bb-badge bb-badge-success">@Shipped.Length shipped</span>
+    <span class="bb-badge">nothing outstanding</span>
+    <span class="bb-badge bd-badge-neutral">@NonGoals.Length explicit non-goals</span>
 </PageHeader>
 
-<Section Title="Shipped" IconName="check"
+<Section Title="Shipped"
          Lead="Where an item has a page on this site, the link drives it against a real database rather than describing it. The rest are covered by the test suite.">
-    <div class="grid grid-2">
+    <div class="bb-grid">
         @foreach (var item in Shipped)
         {
-            <Panel Title="@item.Title" IconName="@item.Icon" Sub="@item.Sub">
-                <p class="small mb-2">@item.Body</p>
+            <div class="bb-card">
+                <p class="bb-overline bb-mono">@item.Sub</p>
+                <h4 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> @item.Title</h4>
+                <p class="bb-card-desc">@item.Body</p>
                 @if (item.Proof is not null)
                 {
-                    <a class="btn btn-sm" href="@item.Proof">
-                        <Icon Name="arrow-right" /> @item.ProofLabel
-                    </a>
+                    <a class="btn btn-outline" href="@item.Proof">@item.ProofLabel →</a>
                 }
-            </Panel>
+            </div>
         }
     </div>
 </Section>
 
-<Section Title="The EF Core provider" IconName="layers"
+<Section Title="The EF Core provider"
          Lead="A translation layer, not a second database: AddDbContext plus UseBlazeDb is the whole setup, LINQ becomes a query plan, and SaveChanges is one transaction.">
-    <div class="grid grid-2">
+    <div class="bb-split">
         <Panel Title="What it is" IconName="schema">
-            <p class="small mb-2">
+            <p>
                 Entity types are the same <code>[BlazeDbTable]</code> classes the rest of the engine
                 uses. <code>AddDbContext</code> and <code>UseBlazeDb</code> are the setup; queries
                 hand back the live row, so tracking needs no materialisation step, and a mutation is
                 visible in memory before <code>SaveChanges</code> journals it.
             </p>
-            <a class="btn btn-sm" href="efcore">
-                <Icon Name="arrow-right" /> Open the EF Core page
-            </a>
+            <a class="btn btn-outline" href="efcore">Open the EF Core page →</a>
         </Panel>
         <Callout Tone="warn" Title="A query returns the row, not a copy:">
             mutating a tracked entity changes the database in memory straight away. SaveChanges
@@ -49,7 +47,7 @@
     </div>
 </Section>
 
-<Section Title="Planned" IconName="clock"
+<Section Title="Planned"
          Lead="Nothing. Every item this roadmap has ever listed is now in the shipped table above, and the list below is what the engine will not grow into instead.">
     <Callout Tone="ok" Title="The roadmap is empty on purpose:">
         the surface was scoped up front and is now complete. New work should have to argue for
@@ -57,31 +55,33 @@
     </Callout>
 </Section>
 
-<Section Title="Deliberately not doing this" IconName="close"
+<Section Title="Deliberately not doing this"
          Lead="A client-side engine earns its speed by refusing work. These omissions are the reason the numbers on the benchmarks page look the way they do.">
-    <div class="grid grid-2">
+    <div class="bb-grid">
         @foreach (var item in NonGoals)
         {
-            <Panel Title="@item.Title" IconName="close" Sub="@item.Area">
-                <p class="small mb-0">@item.Body</p>
-            </Panel>
+            <div class="bb-card">
+                <p class="bb-overline">@item.Area</p>
+                <h4 class="bb-card-title"><span class="bb-dot bb-dot-danger"></span> @item.Title</h4>
+                <p class="bb-card-desc">@item.Body</p>
+            </div>
         }
     </div>
 </Section>
 
-<Section Title="The repository" IconName="layers">
-    <div class="grid grid-sidebar">
+<Section Title="The repository">
+    <div class="bd-main-side">
         <Panel Title="Projects" IconName="file" Flush="true">
-            <div class="table-wrap">
-                <table class="data">
-                    <thead><tr><th>Project</th><th>Purpose</th><th class="num">State</th></tr></thead>
+            <div class="bb-scroll">
+                <table class="bb-table">
+                    <thead><tr><th>Project</th><th>Purpose</th><th class="bd-num">State</th></tr></thead>
                     <tbody>
                         @foreach (var project in Projects)
                         {
                             <tr>
-                                <td class="mono small">@project.Name</td>
-                                <td class="small">@project.Purpose</td>
-                                <td class="num"><span class="badge @(project.State == "scaffold" ? "warn" : "ok")">@project.State</span></td>
+                                <td class="bb-mono">@project.Name</td>
+                                <td>@project.Purpose</td>
+                                <td class="bd-num"><span class="@Tones.Badge(project.State == "scaffold" ? "warn" : "ok")">@project.State</span></td>
                             </tr>
                         }
                     </tbody>
@@ -89,12 +89,12 @@
             </div>
         </Panel>
 
-        <div class="flex-col gap-lg">
+        <div class="bb-flex">
             <Panel Title="Build and test" IconName="cpu">
-                <CodeBlock ShowHeader="false" Language="bash" Code="@BuildSnippet" />
+                <CodeBlock Language="bash" Code="@BuildSnippet" />
             </Panel>
             <Panel Title="Design rules" IconName="shield">
-                <ul class="ticks">
+                <ul class="bd-ticks">
                     <li>Reads never touch storage and never allocate a copy.</li>
                     <li>Durability is asynchronous, explicit when you need it to be.</li>
                     <li>No reflection at runtime - a generator emits everything.</li>
@@ -108,7 +108,7 @@
 </Section>
 
 @code {
-    private sealed record Feature(string Title, string Icon, string Sub, string Body, string? Proof, string ProofLabel);
+    private sealed record Feature(string Title, string Sub, string Body, string? Proof, string ProofLabel);
 
     private sealed record Item(string Title, string Area, string Body, string Effort = "");
 
@@ -116,75 +116,75 @@
 
     private static readonly Feature[] Shipped =
     [
-        new("Tables over live objects", "database", "Bit.BlazeDb",
+        new("Tables over live objects", "Bit.BlazeDb",
             "A primary-key hash index over the row objects themselves, with Insert, Update, Upsert, Delete, Get, TryGet, Contains and Scan. Reads are synchronous method calls with no I/O and no deserialization.",
             "todos", "See it driving a real app"),
 
-        new("Source-generated schema", "schema", "Bit.BlazeDb.Generators",
+        new("Source-generated schema", "Bit.BlazeDb.Generators",
             "An incremental Roslyn generator turns [BlazeDbTable], [BlazeDbKey], [BlazeDbIndex], [BlazeDbOrderedIndex], [BlazeDbField] and [BlazeDbIgnore] into a descriptor with binary serializers, a key extractor and index definitions. No runtime reflection, so trimming and AOT are safe.",
             "schema", "Inspect the generated descriptor"),
 
-        new("Hash and ordered indexes", "index", "Bit.BlazeDb",
+        new("Hash and ordered indexes", "Bit.BlazeDb",
             "Equality lookups in O(1) and range scans in O(log n) with inclusive or open bounds, maintained automatically on every mutation including rollback.",
             "indexes", "Try the lookups live"),
 
-        new("Composable query plans", "query", "Bit.BlazeDb.Querying",
+        new("Composable query plans", "Bit.BlazeDb.Querying",
             "One index source, any number of residual predicates, ordering, paging and projection - the primitive the EF Core provider translates LINQ onto, usable directly too.",
             "queries", "Build a query"),
 
-        new("Atomic transactions", "txn", "Bit.BlazeDb",
+        new("Atomic transactions", "Bit.BlazeDb",
             "An ambient single-writer transaction with commit, rollback and reverse-order undo of both rows and index entries. A committed batch is one log record.",
             "transactions", "Watch commit and rollback"),
 
-        new("Write-ahead log and snapshots", "shield", "Bit.BlazeDb.Wal",
+        new("Write-ahead log and snapshots", "Bit.BlazeDb.Wal",
             "Group-committed WAL records with per-record CRC32, atomic manifest updates, snapshot compaction, torn-tail truncation and replay on open.",
             "durability", "Crash it on purpose"),
 
-        new("Pluggable storage", "disk", "Bit.BlazeDb.Storage",
+        new("Pluggable storage", "Bit.BlazeDb.Storage",
             "A four-method contract with in-memory and file backends in the core, and an OPFS backend plus Web Locks single-writer election for the browser.",
             "storage", "Trace the engine's I/O"),
 
-        new("Compact binary format", "binary", "Bit.BlazeDb.Serialization",
+        new("Compact binary format", "Bit.BlazeDb.Serialization",
             "Tagged, length-delimited encoding with varints, absent-means-null fields and unknown-field skipping, so old readers survive new writers.",
             "serialization", "Read the actual bytes"),
 
-        new("Predictable failure", "alert", "Bit.BlazeDb",
+        new("Predictable failure", "Bit.BlazeDb",
             "A small exception hierarchy under BlazeDbException, with checksum validation on everything persisted and clear rules about what throws versus what returns false.",
             "errors", "Trigger every one"),
 
-        new("Browser integration", "cpu", "Bit.BlazeDb.Browser",
+        new("Browser integration", "Bit.BlazeDb.Browser",
             "OPFS access through a [JSImport] ES module - atomic writes through createWritable's swap file - plus Web Locks so a second tab cannot corrupt the first one's files.",
             "storage", "See the browser notes"),
 
-        new("Unique constraints", "shield", "Bit.BlazeDb",
+        new("Unique constraints", "Bit.BlazeDb",
             "A uniqueness flag on hash and ordered indexes, checked before anything is mutated so a rejected write leaves the table and its indexes untouched. Null values are exempt, as everywhere else in the indexing layer.",
             null, ""),
 
-        new("Compound indexes", "index", "Bit.BlazeDb",
+        new("Compound indexes", "Bit.BlazeDb",
             "[BlazeDbCompoundIndex] and [BlazeDbCompoundOrderedIndex] build an index keyed by a value tuple, so a filter on several members resolves to one lookup. Ordered ones sort lexicographically, which keeps a leading-key prefix a single contiguous scan.",
             null, ""),
 
-        new("Streaming query results", "query", "Bit.BlazeDb.Querying",
+        new("Streaming query results", "Bit.BlazeDb.Querying",
             "ExecuteAsync hands control back to the browser every N rows, so scanning a large table cannot freeze rendering on WebAssembly's single thread. Filters, ordering and paging apply exactly as in the synchronous path.",
             null, ""),
 
-        new("Encryption at rest", "lock", "Bit.BlazeDb.Storage",
+        new("Encryption at rest", "Bit.BlazeDb.Storage",
             "An IBlazeDbStorage decorator that seals every write into an AES-GCM frame, keeping appends genuine appends. The file name is bound in as associated data, and a torn trailing frame is ignored while a tampered one is reported as corruption.",
             null, ""),
 
-        new("Quota-aware persistence", "disk", "Bit.BlazeDb",
+        new("Quota-aware persistence", "Bit.BlazeDb",
             "The engine consults navigator.storage estimates before flushing, compacts when space runs short, and refuses deliberately rather than discovering the limit as a failed append. Data stays intact in memory and the flush can be retried.",
             null, ""),
 
-        new("IndexedDB fallback", "database", "Bit.BlazeDb.Browser",
+        new("IndexedDB fallback", "Bit.BlazeDb.Browser",
             "A second browser backend for contexts without OPFS, such as Firefox private windows. Same four-method contract, same single-writer lock, so nothing above it changes.",
             null, ""),
 
-        new("Cross-tab read replicas", "refresh", "Bit.BlazeDb.Browser",
+        new("Cross-tab read replicas", "Bit.BlazeDb.Browser",
             "Read-only tabs recover from storage and reload when the writer announces a checkpoint over a BroadcastChannel. Only the signal crosses tabs - the data always travels through storage, so a replica cannot observe an uncommitted state.",
             null, ""),
 
-        new("EF Core provider", "layers", "Bit.BlazeDb.EntityFrameworkCore",
+        new("EF Core provider", "Bit.BlazeDb.EntityFrameworkCore",
             "AddDbContext / UseBlazeDb over the generated descriptors, SaveChanges as one transaction, and LINQ translated onto the query plan with index selection. Queries hand back the live row, so tracking needs no materialization step.",
             "efcore", "Run it against this database"),
     ];

@@ -7,18 +7,27 @@
 @inject BaletteRanker Ranker
 @inject DemoState State
 
-<PageTitle>Large registry - bit Balette</PageTitle>
+<PageTitle>Large registry · Balette</PageTitle>
 
-<h1>Large registry</h1>
-<p class="page-intro">
-    Numbers measured here, in your browser, on this machine. Register a few thousand synthetic commands, open the
-    palette and type: every keystroke matches all of them. The table below times the same matcher and ranker the
-    palette runs, over the same registry, so you can see what a keystroke costs before you feel it.
-</p>
+<div class="bb-intro">
+    <h1>Large registry</h1>
+    <p class="bb-subtitle">
+        Numbers measured here, in your browser, on this machine. Register a few thousand synthetic commands, open the
+        palette and type: every keystroke matches all of them. The table below times the same matcher and ranker the
+        palette runs, over the same registry, so you can see what a keystroke costs before you feel it.
+    </p>
+</div>
 
-<div class="panel">
-    <div class="toolbar" role="toolbar" aria-label="Registry controls">
-        <label class="field">
+<PaletteBar />
+
+<div class="bb-demo">
+    <div class="bb-demo-bar">
+        <span class="bb-demo-label">Registry</span>
+        <button type="button" class="btn btn-secondary" @onclick='() => Palette.OpenAsync("cmd 1234")'>Open with "cmd 1234"</button>
+    </div>
+
+    <div class="bb-fields" role="toolbar" aria-label="Registry controls">
+        <label class="bb-field">
             Commands
             <select value="@_count" @onchange="OnCountChanged" disabled="@(_bulk is not null)" aria-label="Number of commands">
                 <option value="500">500</option>
@@ -26,69 +35,72 @@
                 <option value="10000">10,000</option>
             </select>
         </label>
-        <button type="button" class="btn primary" disabled="@_busy" @onclick="ToggleBulk">@(_bulk is null ? $"Register {_count:N0} commands" : "Unregister them")</button>
-        <button type="button" class="btn" disabled="@_busy" @onclick="MeasureAsync">Measure searches</button>
-        <div class="toolbar-separator"></div>
-        <label class="field">
+        <button type="button" class="btn btn-primary" disabled="@_busy" @onclick="ToggleBulk">@(_bulk is null ? $"Register {_count:N0} commands" : "Unregister them")</button>
+        <button type="button" class="btn btn-secondary" disabled="@_busy" @onclick="MeasureAsync">Measure searches</button>
+        <label class="bb-check">
             <input type="checkbox" checked="@State.Virtualize" @onchange="() => State.SetVirtualize(!State.Virtualize)" />
             Virtualize the list
         </label>
-        <div class="toolbar-spacer"></div>
-        <button type="button" class="btn" @onclick='() => Palette.OpenAsync("cmd 1234")'>Open with "cmd 1234"</button>
     </div>
 
-    <div class="statusbar" role="status">
-        <span>Registry: <strong>@Palette.Commands.Count.ToString("N0", CultureInfo.InvariantCulture)</strong> commands</span>
-        @if (_registration is { } registration)
-        {
-            <span>Last registration: <strong>@Ms(registration)</strong>, the palette's rebuild included</span>
-        }
-        @if (_busy)
-        {
-            <span><strong>Measuring…</strong></span>
-        }
+    <div class="bb-stats" role="status">
+        <div class="bb-stat">
+            <span class="bb-stat-value">@Palette.Commands.Count.ToString("N0", CultureInfo.InvariantCulture)</span>
+            <span class="bb-stat-label">Commands in the registry</span>
+        </div>
+        <div class="bb-stat">
+            <span class="bb-stat-value">@(_registration is { } registration ? Ms(registration) : "-")</span>
+            <span class="bb-stat-label">Last registration, rebuild included</span>
+        </div>
+        <div class="bb-stat">
+            <span class="bb-stat-value">@(_busy ? "Measuring…" : _results.Count == 0 ? "-" : $"{_results.Count} queries")</span>
+            <span class="bb-stat-label">Measured</span>
+        </div>
     </div>
+
+    @if (_results.Count > 0)
+    {
+        <div class="bb-scroll">
+            <table class="bb-table">
+                <thead>
+                    <tr><th>Query</th><th class="demo-num">Matched</th><th class="demo-num">Match</th><th class="demo-num">Rank</th><th class="demo-num">Total</th></tr>
+                </thead>
+                <tbody>
+                    @foreach (var result in _results)
+                    {
+                        <tr>
+                            <td class="bb-table-key"><code>@result.Query</code></td>
+                            <td class="demo-num">@result.Matched.ToString("N0", CultureInfo.InvariantCulture)</td>
+                            <td class="demo-num">@Ms(result.Match)</td>
+                            <td class="demo-num">@Ms(result.Rank)</td>
+                            <td class="demo-num"><strong>@Ms(result.Match + result.Rank)</strong></td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+        <p class="bb-soft demo-small">
+            The median of @Repetitions runs over @_measuredOver.ToString("N0", CultureInfo.InvariantCulture) root commands. The
+            ranking here sorts every match; the palette keeps only the best @Options.MaxResults, which is cheaper still.
+        </p>
+    }
 </div>
 
-@if (_results.Count > 0)
-{
-    <h2>Measurements</h2>
-    <table>
-        <thead>
-            <tr><th>Query</th><th class="num">Matched</th><th class="num">Match</th><th class="num">Rank</th><th class="num">Total</th></tr>
-        </thead>
-        <tbody>
-            @foreach (var result in _results)
-            {
-                <tr>
-                    <td><code>@result.Query</code></td>
-                    <td class="num">@result.Matched.ToString("N0", CultureInfo.InvariantCulture)</td>
-                    <td class="num">@Ms(result.Match)</td>
-                    <td class="num">@Ms(result.Rank)</td>
-                    <td class="num"><strong>@Ms(result.Match + result.Rank)</strong></td>
-                </tr>
-            }
-        </tbody>
-    </table>
-    <p class="muted small">
-        The median of @Repetitions runs over @_measuredOver.ToString("N0", CultureInfo.InvariantCulture) root commands. The
-        ranking here sorts every match; the palette keeps only the best @Options.MaxResults, which is cheaper still.
-    </p>
-}
-
-<div class="note">
+<div class="bb-note">
     On WebAssembly, search and painting share the page's only thread. When a search takes longer than a frame (8 ms),
     the palette lets the keystroke paint first and folds the keys typed meanwhile into one search, so the input never
     lags behind the fingers. Only the best <code>MaxResults</code> rows are rendered, and <code>Virtualize</code>
     renders just the visible ones when that limit is raised.
 </div>
 
-<h2>The registration</h2>
-<pre><code>@RegistrationExample</code></pre>
-<p>
-    The handle comes back from <code>Register</code>; this page disposes it when you leave, so the registry is back to its
-    usual size on every other page.
-</p>
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> The registration</h3>
+    <pre class="bb-code">@RegistrationExample</pre>
+    <p>
+        The handle comes back from <code>Register</code>; this page disposes it when you leave, so the registry is back to its
+        usual size on every other page.
+    </p>
+</section>
 
 @code {
     private const int Repetitions = 5;

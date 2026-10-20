@@ -121,7 +121,11 @@ public static partial class BormSetupGuide
         if (model.IncludeDemo)
         {
             builder.AppendLine("## The files, from this demo").AppendLine();
-            builder.AppendLine("Everything below compiles as-is; rename the projects and namespaces to your own.").AppendLine();
+            builder.AppendLine("Everything below compiles as-is once the projects and namespaces are renamed to your own - except what is ")
+                   .AppendLine("this documentation site's own: in `App.razor`, `app.css`, `demo.css`, `theme.js` and `site.js` are the site's ")
+                   .AppendLine("chrome and theme, and the `DocsLayout` that `Routes.razor` names stands for your own layout. The one line Borm ")
+                   .AppendLine("needs in the host page is the `bit-borm.css` link.")
+                   .AppendLine();
 
             foreach (var path in _hostingFiles)
             {

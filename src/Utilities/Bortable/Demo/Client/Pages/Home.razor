@@ -1,27 +1,285 @@
 ﻿@page "/"
+@layout MainLayout
 
-<PageTitle>Simple list - bit Bortable</PageTitle>
+<PageTitle>Bortable - drag-and-drop sortable lists for Blazor</PageTitle>
 
-<div class="demo-header">
-    <h3>Simple list</h3>
-    <p class="text-muted">
-        Drag the items to reorder them. Reordering happens live as you drag, and the bound list updates with
-        <code>@@bind-Items</code>.
-    </p>
+@* The landing page: hero → proof strip → feature grid → code walkthrough → comparison with a
+   JavaScript wrapper → persona tiles → FAQ → final call to action. Everything else on the site is
+   a documentation page under DocsLayout. The hero's sample is a live list rather than a picture of
+   one - a drag-and-drop library is best introduced by being dragged. *@
+
+<div class="bb-landing">
+
+    @* ============================== Hero ============================== *@
+
+    <section class="bb-hero">
+        <div class="bb-hero-copy">
+            <span class="bb-hero-eyebrow">
+                <span class="bb-dot bb-dot-success"></span>
+                Open source · MIT · net8.0 / net9.0 / net10.0
+            </span>
+            <h1>Sortable lists for Blazor,<br /><span class="bb-hero-accent">dragged in C#.</span></h1>
+            <p class="bb-hero-sub">
+                Reorder items, drag them between lists, clone, swap and multi-drag - with the sorting
+                engine written in C# on the browser's own drag-and-drop events. Not a wrapper around
+                SortableJS: your <code>IList&lt;TItem&gt;</code> is changed in place, so the order a user
+                makes is the order your code reads back.
+            </p>
+            <pre class="bb-code bb-hero-install">dotnet add package Bit.Bortable</pre>
+            <div class="bb-hero-actions">
+                <a href="getting-started" class="btn btn-primary bb-btn-lg">Get started →</a>
+                <a href="simple-list" class="btn btn-secondary bb-btn-lg">Live demos</a>
+                <a class="btn btn-secondary bb-btn-lg" href="@SiteInfo.ProjectUrl" target="_blank" rel="noopener noreferrer">GitHub ↗</a>
+            </div>
+        </div>
+
+        @* The sample, framed as a window: the markup on top, and the list it renders underneath -
+           live, so the first thing a visitor can do here is drag something. *@
+        <div class="bb-hero-code">
+            <div class="bb-browser">
+                <div class="bb-browser-bar">
+                    <span class="bb-browser-dots" aria-hidden="true"><i></i><i></i><i></i></span>
+                    <span class="bb-browser-url">Backlog.razor</span>
+                </div>
+                <pre class="bb-code">&lt;<span class="k">Bortable</span> @@bind-Items=<span class="s">"_backlog"</span> TItem=<span class="s">"string"</span> Group=<span class="s">"board"</span>&gt;
+    &lt;<span class="k">ItemTemplate</span> Context=<span class="s">"task"</span>&gt;@@task&lt;/<span class="k">ItemTemplate</span>&gt;
+&lt;/<span class="k">Bortable</span>&gt;</pre>
+                <div class="home-hero-live">
+                    <Bortable @bind-Items="_hero" TItem="string" Id="hero-list"
+                              Class="demo-list" ItemClass="demo-item" GhostClass="demo-ghost">
+                        <ItemTemplate Context="task">@task</ItemTemplate>
+                    </Bortable>
+                    <p class="demo-order"><strong>_backlog:</strong> <span id="hero-order">@string.Join(", ", _hero)</span></p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    @* ============================== Proof strip ============================== *@
+
+    <section class="bb-proof">
+        <div><strong>Engine in C#</strong><span>where it lands, what moves, what is raised</span></div>
+        <div><strong>Your own list</strong><span><code>@@bind-Items</code> changes it in place</span></div>
+        <div><strong>SortableJS feature set</strong><span>groups, clone, swap, multi-drag, thresholds</span></div>
+        <div><strong>Every hosting model</strong><span>WebAssembly, Server, Web App and Hybrid</span></div>
+    </section>
+
+    @* ============================== Feature grid ============================== *@
+
+    <section class="bb-section">
+        <p class="bb-overline">Capabilities</p>
+        <h2>Everything SortableJS does - in Blazor</h2>
+        <p class="bb-section-sub">
+            The SortableJS feature set and its options, ported to a Blazor component: the same names,
+            the same thresholds, the same plugins - with a strongly typed <code>Bortable&lt;TItem&gt;</code>
+            in front of them.
+        </p>
+        <div class="bb-grid">
+            <section class="bb-card">
+                <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Live reordering</h3>
+                <p class="bb-card-desc">
+                    Items slide out of the way while you drag, with FLIP animations - and the bound list
+                    is reordered in place when you drop.
+                </p>
+                <a href="simple-list" class="btn btn-outline">Simple list →</a>
+            </section>
+            <section class="bb-card">
+                <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Shared lists</h3>
+                <p class="bb-card-desc">
+                    Lists with the same <code>Group</code> exchange items, with a ghost preview of where
+                    the item will land - and pull and put rules per list.
+                </p>
+                <a href="shared" class="btn btn-outline">Shared lists →</a>
+            </section>
+            <section class="bb-card">
+                <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Clone, swap and multi-drag</h3>
+                <p class="bb-card-desc">
+                    Copy an item out of a palette, drop one item onto another to trade places, or select
+                    several and drag them as one block - the SortableJS plugins, built in.
+                </p>
+                <a href="multi-drag" class="btn btn-outline">Multi-drag →</a>
+            </section>
+            <section class="bb-card">
+                <h3 class="bb-card-title"><span class="bb-dot bb-dot-danger"></span> Handles and filters</h3>
+                <p class="bb-card-desc">
+                    Limit dragging to a grip so the rest of the row stays clickable, and lock items with a
+                    predicate so they cannot be picked up.
+                </p>
+                <a href="handle" class="btn btn-outline">Handle →</a>
+            </section>
+            <section class="bb-card">
+                <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Swap thresholds</h3>
+                <p class="bb-card-desc">
+                    <code>SwapThreshold</code>, <code>InvertSwap</code> and <code>Direction</code> ported from
+                    SortableJS, including its guard against items of different sizes swapping back and forth.
+                </p>
+                <a href="thresholds" class="btn btn-outline">Thresholds →</a>
+            </section>
+            <section class="bb-card">
+                <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Any layout</h3>
+                <p class="bb-card-desc">
+                    Vertical lists, horizontal strips, CSS grids and nested trees whose items move between
+                    branches and depths.
+                </p>
+                <a href="nested" class="btn btn-outline">Nested sortables →</a>
+            </section>
+        </div>
+    </section>
+
+    @* ============================== Code walkthrough ============================== *@
+
+    <section class="bb-section">
+        <p class="bb-overline">In practice</p>
+        <h2>See it in code</h2>
+        <div class="bb-walkthrough">
+            <div class="bb-walkthrough-row">
+                <div class="bb-walkthrough-copy">
+                    <span class="bb-step">01</span>
+                    <h3>A kanban board is two lists and a group</h3>
+                    <p>
+                        Give two lists the same <code>Group</code> and their items move between them. Each
+                        list stays your own <code>IList</code>, so the board's state is just two fields.
+                    </p>
+                    <a href="shared">Shared lists →</a>
+                </div>
+                <pre class="bb-code">&lt;<span class="k">Bortable</span> @@bind-Items=<span class="s">"_todo"</span> TItem=<span class="s">"Card"</span> Group=<span class="s">"board"</span>&gt;…&lt;/<span class="k">Bortable</span>&gt;
+&lt;<span class="k">Bortable</span> @@bind-Items=<span class="s">"_done"</span> TItem=<span class="s">"Card"</span> Group=<span class="s">"board"</span>&gt;…&lt;/<span class="k">Bortable</span>&gt;</pre>
+            </div>
+            <div class="bb-walkthrough-row">
+                <div class="bb-walkthrough-copy">
+                    <span class="bb-step">02</span>
+                    <h3>A palette clones, a target accepts</h3>
+                    <p>
+                        <code>Pull="BortablePull.Clone"</code> copies items out and keeps the originals;
+                        <code>Sort="false"</code> and <code>Put="false"</code> make the palette read-only.
+                    </p>
+                    <a href="cloning">Cloning →</a>
+                </div>
+                <pre class="bb-code">&lt;<span class="k">Bortable</span> Items=<span class="s">"_widgets"</span> TItem=<span class="s">"Widget"</span> Group=<span class="s">"form"</span>
+          Pull=<span class="s">"BortablePull.Clone"</span> Sort=<span class="s">"false"</span> Put=<span class="s">"false"</span>&gt;…&lt;/<span class="k">Bortable</span>&gt;</pre>
+            </div>
+            <div class="bb-walkthrough-row">
+                <div class="bb-walkthrough-copy">
+                    <span class="bb-step">03</span>
+                    <h3>React to the drop</h3>
+                    <p>
+                        The SortableJS lifecycle - <code>OnStart</code>, <code>OnAdd</code>,
+                        <code>OnRemove</code>, <code>OnUpdate</code>, <code>OnEnd</code> - is raised in C#,
+                        with the item, the lists and both indexes in its arguments.
+                    </p>
+                    <a href="events">Events →</a>
+                </div>
+                <pre class="bb-code">&lt;<span class="k">Bortable</span> @@bind-Items=<span class="s">"_done"</span> TItem=<span class="s">"Card"</span> OnAdd=<span class="s">"Completed"</span>&gt;…&lt;/<span class="k">Bortable</span>&gt;
+
+<span class="k">private</span> Task Completed(BortableEventArgs&lt;Card&gt; e)
+    =&gt; api.MarkDoneAsync(e.Item.Id);   <span class="c">// e.FromId, e.OldIndex, e.NewIndex …</span></pre>
+            </div>
+        </div>
+    </section>
+
+    @* ============================== Comparison ============================== *@
+
+    <section class="bb-section">
+        <p class="bb-overline">Comparison</p>
+        <h2>Why not wrap SortableJS?</h2>
+        <p class="bb-section-sub">
+            A JavaScript wrapper moves DOM nodes behind Blazor's back and then has to reconcile the
+            render tree with what it did. Bortable keeps the decision in C#, so there is nothing to
+            reconcile.
+        </p>
+        <div class="bb-scroll" tabindex="0" role="region" aria-label="A SortableJS wrapper compared with Bortable">
+            <table class="bb-table bb-compare">
+                <thead>
+                    <tr><th>Concern</th><th>SortableJS wrapper</th><th>Bortable</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td>Who moves the items</td><td>JavaScript, in the DOM</td><td>C#, in your list - Blazor renders the result</td></tr>
+                    <tr><td>Bound data</td><td>Patched after the fact from DOM indexes</td><td><code>@@bind-Items</code>, changed in place</td></tr>
+                    <tr><td>Typed items</td><td>Indexes and element ids</td><td><code>Bortable&lt;TItem&gt;</code> and typed event arguments</td></tr>
+                    <tr><td>Script to ship</td><td>The library plus interop glue</td><td>A small module, imported on demand</td></tr>
+                    <tr><td>Hosting models</td><td>Usually WebAssembly-first</td><td>WebAssembly, Server, Web App and Hybrid</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    @* ============================== Persona CTAs ============================== *@
+
+    <section class="bb-section">
+        <p class="bb-overline">Where to start</p>
+        <h2>Choose your path</h2>
+        <div class="bb-grid">
+            <section class="bb-card">
+                <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> New to Bortable?</h3>
+                <p class="bb-card-desc">Install, register, link the stylesheet - a sortable list in five minutes.</p>
+                <a href="getting-started" class="btn btn-primary">Getting started →</a>
+            </section>
+            <section class="bb-card">
+                <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Want to see it live?</h3>
+                <p class="bb-card-desc">Every feature has a page you can drag around, with its own source one click away.</p>
+                <a href="simple-list" class="btn btn-outline">Open the demos →</a>
+            </section>
+            <section class="bb-card">
+                <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Building with an AI agent?</h3>
+                <p class="bb-card-desc">This site is an MCP server: point your agent at <code>/mcp</code> and it reads the shipped library instead of guessing.</p>
+                <a href="mcp-server" class="btn btn-outline">Try the MCP server →</a>
+            </section>
+        </div>
+    </section>
+
+    @* ============================== FAQ ============================== *@
+
+    <section class="bb-section">
+        <p class="bb-overline">Questions</p>
+        <h2>Frequently asked</h2>
+        <div class="bb-faq">
+            <details>
+                <summary>Is this SortableJS running through JavaScript interop?</summary>
+                <p>
+                    No. The sorting engine - where the item goes, which list may take it, what is moved,
+                    cloned or swapped, and which events are raised - is C#. A small module does only what
+                    needs the DOM: drag handles, measuring the pointer for the swap thresholds, and the
+                    FLIP animations.
+                </p>
+            </details>
+            <details>
+                <summary>Which render modes does it work in?</summary>
+                <p>
+                    Any interactive one: WebAssembly, Server, Auto and Hybrid, on .NET 8, 9 and 10. Pages are
+                    prerendered as usual; the lists become draggable once the page is interactive.
+                </p>
+            </details>
+            <details>
+                <summary>Can the items be anything, not just strings?</summary>
+                <p>
+                    Yes - <code>Bortable&lt;TItem&gt;</code> is generic, and <code>ItemTemplate</code> renders
+                    whatever you like inside each item. Items are rendered with <code>@@key</code>, so they must
+                    be unique within a list.
+                </p>
+            </details>
+            <details>
+                <summary>Does it work on touch screens?</summary>
+                <p>
+                    It runs on the browser's HTML5 drag-and-drop events, so it drags wherever the browser
+                    raises them - every desktop browser, and the mobile browsers that support native drag.
+                </p>
+            </details>
+        </div>
+    </section>
+
+    @* ============================== Final CTA ============================== *@
+
+    <section class="bb-final-cta">
+        <h2>Put your lists in order</h2>
+        <p class="bb-section-sub">One package, one service, one stylesheet - and any list becomes sortable.</p>
+        <pre class="bb-code bb-hero-install">dotnet add package Bit.Bortable</pre>
+        <div class="bb-hero-actions">
+            <a href="getting-started" class="btn btn-primary bb-btn-lg">Get started →</a>
+            <a href="simple-list" class="btn btn-secondary bb-btn-lg">Browse the demos</a>
+        </div>
+    </section>
 </div>
 
-<DemoCode />
-
-<Bortable @bind-Items="_items" TItem="string" Id="simple-list"
-          Class="demo-list" ItemClass="demo-item" GhostClass="demo-ghost">
-    <ItemTemplate Context="item">@item</ItemTemplate>
-</Bortable>
-
-<p class="demo-order"><strong>Order:</strong> <span id="simple-order">@string.Join(", ", _items)</span></p>
-
 @code {
-    private IList<string> _items = new List<string>
-    {
-        "Item 1", "Item 2", "Item 3", "Item 4", "Item 5", "Item 6"
-    };
+    private IList<string> _hero = new List<string> { "Write the spec", "Review the PR", "Ship it", "Celebrate" };
 }

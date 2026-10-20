@@ -1,0 +1,486 @@
+﻿/* ============================================================================================
+   Bsqlite demo - the styles of the live samples.
+
+   The site's chrome, tokens and shared surfaces live in app.css (the site kit every Utilities demo
+   shares); this file only draws what is Bsqlite's own - the session bar, the CRUD grids and their
+   editors, the storage backends' marks, the code blocks' highlighter colours and the landing page's
+   live window - and it is written against the kit's --bb-* names, so it follows the light/dark
+   theme with no rules of its own for either. Its own names start with bq-.
+   ============================================================================================ */
+
+/* ---------- Code colours ----------
+
+   CodeHighlighter.cs tokenizes one kind more than the kit colours - numbers - so that one gets a
+   light and a dark value here, in the same GitHub palette the kit's are taken from. PascalCase
+   names (types, mostly) take the kit's parameter colour. */
+:root {
+    --bq-code-number: #0A3069;
+}
+
+:root[bit-theme="dark"] {
+    --bq-code-number: #A5D6FF;
+}
+
+.bb-code .tok-com { color: var(--bb-code-comment); font-style: italic; }
+.bb-code .tok-str { color: var(--bb-code-string); }
+.bb-code .tok-key { color: var(--bb-code-keyword); }
+.bb-code .tok-typ { color: var(--bb-code-param); }
+.bb-code .tok-num { color: var(--bq-code-number); }
+
+/* ---------- CodeBlock (Components/CodeBlock.razor) ----------
+
+   The language, the file the code comes from and the Show / Hide toggle over the kit's code block. */
+.bq-code {
+    margin: 0 0 1.25rem;
+}
+
+.bq-code-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: .375rem .625rem;
+    margin-bottom: .5rem;
+}
+
+.bq-code-head > .bb-source-file {
+    min-width: 0;
+    margin: 0;
+    overflow-wrap: anywhere;
+}
+
+.bq-code-lang {
+    flex: none;
+    padding: .0625rem .4375rem;
+    border-radius: var(--bb-radius-pill);
+    background: var(--bb-primary-soft);
+    color: var(--bb-primary-hover);
+    font-size: .6875rem;
+    font-weight: var(--fl-weight-semibold);
+    letter-spacing: .06em;
+    line-height: 1.5;
+    text-transform: uppercase;
+}
+
+.btn.bq-code-toggle {
+    margin-inline-start: auto;
+    min-height: 1.75rem;
+    padding: .125rem .625rem;
+    font-size: var(--fl-font-size-100);
+}
+
+.bq-code-caret {
+    font-size: .8em;
+    color: var(--bb-text-soft);
+}
+
+.bq-code > .bb-code {
+    margin: 0;
+}
+
+/* ---------- The parts of a demo section (Components/DemoCard.razor) ---------- */
+
+/* The step over a section's title - "Live", "LINQ", "Raw SQL" - in the brand colour, as the page's
+   own overline is. */
+.bb-overline.bq-step {
+    margin-bottom: .375rem;
+    color: var(--bb-primary);
+}
+
+/* "Try": the one thing to do to see the behaviour, in a note whose label leads it. */
+.bq-try > strong:first-child {
+    margin-inline-end: .375rem;
+    color: var(--bb-primary-hover);
+    font-size: .75rem;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+}
+
+/* A sub-panel's label inside a sample - the editor, the categories - which is not a heading, so the
+   "On this page" rail lists the page's sections rather than every panel in them. */
+.bq-panel-title {
+    display: block;
+    margin: 0 0 .75rem;
+    font-size: var(--fl-font-size-200);
+    font-weight: var(--fl-weight-semibold);
+    color: var(--bb-text);
+}
+
+.bq-small {
+    font-size: var(--fl-font-size-200);
+}
+
+.bq-ok { color: var(--bb-success-text); }
+.bq-err { color: var(--bb-danger-text); }
+
+.bq-grow {
+    flex: 1 1 16rem;
+    min-width: 0;
+}
+
+.bq-verdict {
+    margin: 1rem 0;
+}
+
+/* A list whose items are C# - one unbreakable word to a line breaker - breaks anywhere rather than
+   widening a phone's page. */
+.bq-break li {
+    overflow-wrap: anywhere;
+}
+
+/* What a statement or a call answered: the kit's log surface, wrapping its long exception messages. */
+.bb-log.bq-output {
+    margin: 1rem 0 0;
+    white-space: pre-wrap;
+    border-inline-start: 3px solid var(--bb-primary);
+}
+
+/* Text a screen reader reads and the eye does not need - a header over a column of buttons. Its
+   parent is made its containing block: inside a table that scrolls, an absolutely positioned box
+   would otherwise be placed against the page, outside the scroller, and widen the page. */
+.bq-sr {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+}
+
+:has(> .bq-sr) {
+    position: relative;
+}
+
+/* ---------- Controls ---------- */
+
+/* A destructive action: the secondary button, stroked and lettered in the danger colour. */
+.btn.bq-btn-danger {
+    background: var(--bb-surface);
+    color: var(--bb-danger-text);
+    border-color: color-mix(in srgb, var(--bb-danger) 45%, transparent);
+}
+
+.btn.bq-btn-danger:hover:not(:disabled) {
+    background: var(--bb-danger-soft);
+    border-color: var(--bb-danger);
+    color: var(--bb-danger-text);
+}
+
+/* The button in a table row, and a row of sample statements. */
+.btn.bq-btn-sm {
+    min-height: 1.75rem;
+    padding: .125rem .5rem;
+    font-size: var(--fl-font-size-100);
+}
+
+/* A filter field in a sample's title bar. */
+.bb-demo-bar > input[type="search"] {
+    flex: 0 1 16rem;
+    min-width: 0;
+}
+
+/* An editor: one field to a row, each as wide as its panel. */
+.bq-form {
+    display: grid;
+    gap: .75rem;
+    margin: 0 0 1rem;
+}
+
+.bq-form > .bb-toolbar,
+.bq-form > p {
+    margin: 0;
+}
+
+.bq-form .bb-field > :is(input:not([type="checkbox"]):not([type="radio"]):not([type="color"]), select, textarea) {
+    width: 100%;
+}
+
+.bb-fields .bb-field > select {
+    min-width: 12rem;
+}
+
+.bq-fields-label {
+    align-self: center;
+    font-size: var(--fl-font-size-200);
+    font-weight: var(--fl-weight-semibold);
+    color: var(--bb-text);
+}
+
+/* The colour well of a category: the kit leaves it alone, since it is not a text field. */
+.bb-field > input[type="color"] {
+    width: 3rem;
+    height: 2rem;
+    padding: .125rem;
+    background: var(--bb-surface);
+    border: 1px solid var(--bb-border-strong);
+    border-radius: var(--bb-radius);
+    cursor: pointer;
+}
+
+.bb-stage > .bb-table:last-child,
+.bb-stage > :last-child {
+    margin-bottom: 0;
+}
+
+/* ---------- Data grids ---------- */
+
+.bb-table.bq-grid td {
+    vertical-align: middle;
+}
+
+/* A grid whose first column is prose - a name - rather than an identifier. */
+.bb-table.bq-grid-prose td:first-child {
+    font-family: inherit;
+    font-size: inherit;
+}
+
+.bb-table.bq-grid :is(td, th).bq-nowrap {
+    white-space: nowrap;
+    overflow-wrap: normal;
+}
+
+.bb-table.bq-grid td.bq-num {
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+}
+
+/* A name in a grid that scrolls on a phone: it keeps a readable width rather than breaking to a word a
+   line while the identifier columns around it stay whole. */
+.bb-table.bq-grid td.bq-name {
+    min-width: 10rem;
+}
+
+.bb-table tbody tr.bq-clickable {
+    cursor: pointer;
+}
+
+/* The row the editor under the grid is showing. */
+.bb-table tbody tr.bq-selected td,
+.bb-table tbody tr.bq-selected:hover td {
+    background: var(--bb-primary-soft);
+}
+
+.bb-table tbody tr.bq-selected td:first-child {
+    box-shadow: inset 3px 0 0 var(--bb-primary);
+}
+
+/* A wide grid scrolls inside its box rather than wrapping every cell to four lines - which is what a
+   seven-column grid does in the docs column - and rather than widening the page. */
+.bb-scroll > .bb-table.bq-grid {
+    min-width: 36rem;
+}
+
+/* A category's colour. */
+.bq-swatch {
+    display: inline-block;
+    width: .7rem;
+    height: .7rem;
+    margin-inline-end: .5rem;
+    border: 1px solid var(--bb-border-strong);
+    border-radius: var(--bb-radius-pill);
+    vertical-align: -.05rem;
+}
+
+.bb-badge.bq-badge-neutral {
+    background: var(--bb-surface-2);
+    color: var(--bb-text-muted);
+}
+
+/* ---------- The storage backends' marks ----------
+
+   One colour per backend, everywhere a backend is named: the session bar, the tables of backends and
+   the MCP labs' verdicts. */
+.bq-storage-dot {
+    --bq-backend: var(--bb-primary);
+    display: inline-block;
+    flex: none;
+    width: .625rem;
+    height: .625rem;
+    margin-inline-end: .25rem;
+    border-radius: var(--bb-radius-pill);
+    background: var(--bq-backend);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--bq-backend) 22%, transparent);
+    vertical-align: middle;
+}
+
+.bq-storage-dot[data-name="indexeddb"] { --bq-backend: var(--bb-success); }
+.bq-storage-dot[data-name="cache-storage"] { --bq-backend: var(--bb-accent); }
+.bq-storage-dot[data-name="in-memory"] { --bq-backend: var(--bb-text-soft); }
+
+/* ---------- The session bar (Components/StorageSwitcher.razor) ----------
+
+   The sample frame every database page opens with: the backend and the controls that move the
+   database in its title bar, what that backend is like underneath. */
+.bb-demo.bq-session {
+    margin-bottom: 2.5rem;
+}
+
+.bq-session > .bb-demo-bar {
+    gap: .5rem .625rem;
+}
+
+.bq-session-label {
+    font-size: var(--fl-font-size-100);
+    font-weight: var(--fl-weight-semibold);
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    color: var(--bb-text-soft);
+}
+
+.bq-session-name {
+    margin-inline-end: auto;
+    font-size: var(--fl-font-size-300);
+    font-weight: var(--fl-weight-semibold);
+    color: var(--bb-text);
+}
+
+.bq-session-controls {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: .5rem;
+}
+
+.bq-session-target {
+    display: inline-flex;
+    align-items: center;
+    gap: .5rem;
+    font-size: var(--fl-font-size-200);
+}
+
+.bq-session-blurb {
+    margin: 0;
+    font-size: var(--fl-font-size-200);
+    line-height: 1.6;
+    color: var(--bb-text-muted);
+}
+
+.bq-session-status {
+    margin: .5rem 0 0;
+    font-size: var(--fl-font-size-200);
+    font-weight: var(--fl-weight-semibold);
+}
+
+/* ---------- The error boundary's page (Components/UnhandledExceptionView.razor) ---------- */
+
+.bb-error.bq-crash h1 {
+    font-size: var(--fl-font-size-700);
+    color: var(--bb-danger-text);
+}
+
+/* ---------- The landing page's live window ---------- */
+
+.bq-hero-live {
+    padding: 1rem 1.25rem 1.25rem;
+    background: var(--bb-surface);
+    border-top: 1px solid var(--bb-border);
+}
+
+.bq-hero-live > p {
+    margin: 0;
+}
+
+.bq-hero-stats {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1px;
+    margin: 0 0 1rem;
+    overflow: hidden;
+    background: var(--bb-border);
+    border: 1px solid var(--bb-border);
+    border-radius: var(--bb-radius-lg);
+}
+
+.bq-hero-stats > div {
+    min-width: 0;
+    padding: .5rem .75rem;
+    background: var(--bb-surface);
+}
+
+.bq-hero-stats dt {
+    font-size: var(--fl-font-size-100);
+    font-weight: var(--fl-weight-semibold);
+    letter-spacing: .05em;
+    text-transform: uppercase;
+    color: var(--bb-text-soft);
+}
+
+.bq-hero-stats dd {
+    margin: 0;
+    font-size: var(--fl-font-size-400);
+    font-weight: var(--fl-weight-semibold);
+    color: var(--bb-text);
+    font-variant-numeric: tabular-nums;
+}
+
+.bq-hero-rows {
+    display: flex;
+    flex-direction: column;
+    gap: .25rem;
+    margin: 0 0 .875rem;
+    padding: 0;
+    list-style: none;
+}
+
+.bq-hero-rows > li {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: baseline;
+    gap: .75rem;
+    padding: .375rem .625rem;
+    border-radius: var(--bb-radius);
+    background: var(--bb-surface-sunken);
+    font-size: var(--fl-font-size-200);
+    color: var(--bb-text);
+}
+
+.bq-hero-rows > li > span:nth-child(2) {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.bq-hero-rows .bb-mono {
+    font-size: var(--fl-font-size-100);
+    color: var(--bb-text-soft);
+    font-variant-numeric: tabular-nums;
+}
+
+.bq-hero-live > p.bq-hero-note {
+    font-size: var(--fl-font-size-200);
+    color: var(--bb-text-muted);
+}
+
+.bq-live-dot {
+    display: inline-block;
+    width: .5rem;
+    height: .5rem;
+    margin-inline-end: .375rem;
+    vertical-align: .0625rem;
+    border-radius: var(--bb-radius-pill);
+    background: var(--bb-success);
+    animation: bq-pulse 2.4s var(--bb-motion-easing) infinite;
+}
+
+@keyframes bq-pulse {
+    0%, 100% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--bb-success) 45%, transparent); }
+    50% { box-shadow: 0 0 0 4px color-mix(in srgb, var(--bb-success) 0%, transparent); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .bq-live-dot {
+        animation: none;
+    }
+}
+
+@media (forced-colors: active) {
+    .bq-storage-dot,
+    .bq-live-dot,
+    .bq-swatch {
+        forced-color-adjust: none;
+        border: 1px solid CanvasText;
+    }
+
+    .bb-table tbody tr.bq-selected td {
+        outline: 1px solid Highlight;
+    }
+}

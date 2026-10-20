@@ -1,100 +1,30 @@
 ﻿@inherits LayoutComponentBase
-@inject NavigationManager Nav
-@inject IJSRuntime Js
-@implements IDisposable
 
-@* Two shells, one layout. The overview is a landing page and runs full-bleed with no sidebar;
-   every other route is documentation and gets the docs shell: sidebar, session bar, content. *@
+@* The app shell - part of the site kit every Utilities demo shares (see wwwroot/app.css): a skip
+   link, the sticky header, the content band, and the footer. The landing page renders straight
+   into it; every other page goes through DocsLayout, which adds the nav panel, the breadcrumb and
+   the "on this page" rail.
 
-<a class="skip-link" href="#main">Skip to content</a>
+   The band is painted with the secondary background so the surfaces inside it read as raised -
+   the arrangement Fluent uses for a page built out of cards.
 
-<TopBar NavOpen="_navOpen" OnToggleNav="ToggleNavAsync" />
+   data-interactive turns true once the page runs in the browser. Prerendered markup is on screen
+   long before its event handlers are, which is what an E2E suite waits out with it. *@
 
-@* data-interactive says whether the page runs in the browser yet - prerendered markup is on screen long before
-   anything listens to it - which is what the E2E suite waits for before it touches a page. *@
+<div class="page" data-interactive="@(RendererInfo.IsInteractive ? "true" : "false")">
+    @* First in the tab order on purpose: a keyboard reader lands here before the navigation and
+       can jump straight past the chrome to the page. *@
+    <a class="bb-skip-link" href="#bb-main">Skip to content</a>
 
-@if (IsLanding)
-{
-    <main id="main" data-interactive="@Interactive">
-        <ErrorBoundary @ref="_boundary">
-            <ChildContent>@Body</ChildContent>
-            <ErrorContent Context="exception">
-                <div class="container"><UnhandledExceptionView Exception="exception" /></div>
-            </ErrorContent>
-        </ErrorBoundary>
-    </main>
-}
-else
-{
-    <div class="layout">
-        <button type="button" class="nav-scrim" data-open="@(_navOpen ? "true" : "false")"
-                tabindex="@(_navOpen ? 0 : -1)" aria-label="Close navigation" @onclick="CloseNavAsync"></button>
+    <Header />
 
-        <AppNav Open="_navOpen" OnNavigate="CloseNavAsync" />
-
-        <main id="main" class="content" data-interactive="@Interactive">
-            <StorageSwitcher />
-            <ErrorBoundary @ref="_boundary">
-                <ChildContent>@Body</ChildContent>
-                <ErrorContent Context="exception">
-                    <UnhandledExceptionView Exception="exception" />
-                </ErrorContent>
-            </ErrorBoundary>
+    <div class="bb-site-content">
+        <main id="bb-main" tabindex="-1">
+            <article>
+                @Body
+            </article>
         </main>
     </div>
-}
 
-<footer class="site-footer">
-    <div class="footer-inner">
-        <p>
-            bit Bsqlite @SiteLinks.Version &middot; MIT &middot; EF Core on .NET 8, 9 and 10.
-            Everything on this site runs in your browser.
-        </p>
-        <nav class="footer-links" aria-label="Project links">
-            <a href="@SiteLinks.Repository" target="_blank" rel="noopener">GitHub</a>
-            <a href="@SiteLinks.NuGet" target="_blank" rel="noopener">NuGet</a>
-            <a href="@SiteLinks.Issues" target="_blank" rel="noopener">Issues</a>
-            <a href="@SiteLinks.License" target="_blank" rel="noopener">License</a>
-        </nav>
-    </div>
-</footer>
-
-@code {
-    private ErrorBoundary? _boundary;
-    private bool _navOpen;
-
-    private string Interactive => RendererInfo.IsInteractive ? "true" : "false";
-
-    private bool IsLanding => Nav.ToBaseRelativePath(Nav.Uri).Trim('/').Length == 0;
-
-    protected override void OnInitialized()
-        => Nav.LocationChanged += OnLocationChanged;
-
-    protected override void OnParametersSet()
-        => _boundary?.Recover();
-
-    private void OnLocationChanged(object? sender, Microsoft.AspNetCore.Components.Routing.LocationChangedEventArgs e)
-        => StateHasChanged();
-
-    private Task ToggleNavAsync() => SetNavAsync(!_navOpen);
-
-    private Task CloseNavAsync() => _navOpen ? SetNavAsync(false) : Task.CompletedTask;
-
-    private async Task SetNavAsync(bool open)
-    {
-        _navOpen = open;
-        try
-        {
-            // The drawer covers the viewport under 1024px; letting the page behind it scroll is
-            // the classic mobile-drawer bug.
-            await Js.InvokeVoidAsync("bsqliteDemo.lockScroll", open);
-        }
-        catch (Exception ex)
-        {
-            SampleLog.Exception(ex);
-        }
-    }
-
-    public void Dispose()
-        => Nav.LocationChanged -= OnLocationChanged;
-}
+    <Footer />
+</div>

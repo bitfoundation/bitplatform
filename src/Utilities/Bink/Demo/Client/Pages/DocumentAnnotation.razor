@@ -2,40 +2,43 @@
 @using System.Numerics
 @implements IDisposable
 
-<PageTitle>Document review - bit Bink</PageTitle>
+<PageTitle>Document review · Bink</PageTitle>
 
-<h1>Document review</h1>
-<p class="page-intro">
-    A review surface over a document: select text to highlight it, attach a callout comment, or write freehand in
-    the margin. This is the shape a PDF or contract review interface takes. The annotations are vector objects
-    carrying their own metadata, so an application can list them, filter them and store them next to the document
-    rather than burning them into a picture.
-</p>
+<div class="bb-intro">
+    <h1>Document review</h1>
+    <p class="bb-subtitle">
+        A review surface over a document: select text to highlight it, attach a callout comment, or write freehand in
+        the margin. This is the shape a PDF or contract review interface takes. The annotations are vector objects
+        carrying their own metadata, so an application can list them, filter them and store them next to the document
+        rather than burning them into a picture.
+    </p>
+</div>
 
-<div class="panel">
-    <div class="toolbar" role="toolbar" aria-label="Review tools">
-        <div class="toolbar-group" role="group" aria-label="Tool">
+<div class="bb-demo bink-editor bb-page-wide">
+    <div class="bb-toolbar bink-toolbar" role="toolbar" aria-label="Review tools">
+        <div class="bb-segmented" role="group" aria-label="Tool">
             @foreach ((string id, string label) in Tools)
             {
-                <button type="button" class="btn @(_toolId == id ? "active" : null)"
-                        aria-pressed="@(_toolId == id ? "true" : "false")"
+                <button type="button" aria-pressed="@(_toolId == id ? "true" : "false")"
                         @onclick="() => SelectTool(id)">@label</button>
             }
         </div>
 
-        <div class="toolbar-separator"></div>
+        <span class="bink-sep" aria-hidden="true"></span>
 
         <ColorSwatches Colors="HighlightColors" Value="@_color" ValueChanged="SetColor" Label="Highlight colour" />
 
-        <div class="toolbar-spacer"></div>
-        <button type="button" class="btn" disabled="@(_canvas is null || !_canvas.History.CanUndo)" @onclick="() => _canvas?.Undo()">Undo</button>
-        <button type="button" class="btn" disabled="@(_canvas is null || !_canvas.History.CanRedo)" @onclick="() => _canvas?.Redo()">Redo</button>
-        <button type="button" class="btn" @onclick="ExportSvgAsync">Export SVG</button>
-        <button type="button" class="btn danger" disabled="@(_annotations.Count == 0)" @onclick="ClearAnnotations">Clear annotations</button>
+        <span class="bb-spacer"></span>
+        <div class="bink-group" role="group" aria-label="History and export">
+            <button type="button" class="btn btn-secondary" disabled="@(_canvas is null || !_canvas.History.CanUndo)" @onclick="() => _canvas?.Undo()">Undo</button>
+            <button type="button" class="btn btn-secondary" disabled="@(_canvas is null || !_canvas.History.CanRedo)" @onclick="() => _canvas?.Redo()">Redo</button>
+            <button type="button" class="btn btn-secondary" @onclick="ExportSvgAsync">Export SVG</button>
+            <button type="button" class="btn btn-secondary bink-danger" disabled="@(_annotations.Count == 0)" @onclick="ClearAnnotations">Clear annotations</button>
+        </div>
     </div>
 
-    <div class="split" style="gap:0">
-        <div style="position:relative;background:var(--surface)">
+    <div class="bink-review">
+        <div class="bink-surface">
             <BinkCanvas @ref="_canvas" Ready="() => StateHasChanged()" HistoryChanged="() => StateHasChanged()"
                        EnableTouchGestures="true"
                        Document="_document"
@@ -49,57 +52,75 @@
                        DocumentChanged="OnDocumentChanged" />
         </div>
 
-        <div style="padding:1rem;border-left:1px solid var(--border);overflow:auto;max-height:620px">
-            <h2 style="margin-top:0">Annotations</h2>
+        <aside class="bink-review-panel" aria-labelledby="bink-annotations-title">
+            <h3 class="bink-panel-title" id="bink-annotations-title">Annotations</h3>
             @if (_annotations.Count == 0)
             {
-                <p style="color:var(--text-muted);font-size:0.87rem">
+                <p class="bink-hint">
                     Drag across a line of text to highlight it, or pick "Add comment" and drag where the note should point.
                 </p>
             }
             else
             {
-                <ul style="list-style:none;padding:0;margin:0;display:grid;gap:0.6rem">
+                <ul class="bink-annotations">
                     @foreach (AnnotationEntry entry in _annotations)
                     {
                         bool selected = _canvas?.Selection.Contains(entry.Id) == true;
-                        <li class="card" style="padding:0.7rem 0.8rem;@(selected ? "border-color:var(--accent)" : null)">
-                            <div style="display:flex;justify-content:space-between;gap:0.5rem;align-items:start">
-                                <div style="flex:1;min-width:0">
-                                    <strong style="font-size:0.85rem">@entry.Kind</strong>
-                                    @if (entry.Editable)
-                                    {
-                                        <textarea rows="2" maxlength="500" aria-label="Comment text"
-                                                  style="display:block;width:100%;margin-top:0.3rem;font:inherit;font-size:0.85rem"
-                                                  value="@entry.Text"
-                                                  @onchange="e => EditComment(entry.Id, e.Value?.ToString())"></textarea>
-                                    }
-                                    else
-                                    {
-                                        <div style="color:var(--text-muted);font-size:0.85rem">@entry.Text</div>
-                                    }
-                                </div>
-                                <div style="display:flex;gap:0.3rem">
-                                    <button type="button" class="btn icon" aria-label="@("Select " + entry.Kind.ToLowerInvariant() + " on the page")"
+                        <li class="bink-annotation @(selected ? "is-selected" : null)">
+                            <div class="bink-annotation-head">
+                                <strong class="bink-annotation-kind">@entry.Kind</strong>
+                                <div class="bink-annotation-actions">
+                                    <button type="button" class="bb-icon-btn" aria-label="@("Select " + entry.Kind.ToLowerInvariant() + " on the page")"
                                             title="Select on the page" @onclick="() => Reveal(entry.Id)">&#8599;</button>
-                                    <button type="button" class="btn icon danger" aria-label="@("Delete " + entry.Kind.ToLowerInvariant())"
-                                            @onclick="() => Delete(entry.Id)">&times;</button>
+                                    <button type="button" class="bb-icon-btn bink-danger" aria-label="@("Delete " + entry.Kind.ToLowerInvariant())"
+                                            title="Delete" @onclick="() => Delete(entry.Id)">&times;</button>
                                 </div>
                             </div>
+                            @if (entry.Editable)
+                            {
+                                <textarea rows="2" maxlength="500" aria-label="Comment text"
+                                          value="@entry.Text"
+                                          @onchange="e => EditComment(entry.Id, e.Value?.ToString())"></textarea>
+                            }
+                            else
+                            {
+                                <div class="bink-annotation-text">@entry.Text</div>
+                            }
                         </li>
                     }
                 </ul>
             }
-        </div>
+        </aside>
     </div>
 
     <CanvasStatus Canvas="_canvas" />
 </div>
 
-<div class="note">
+<div class="bb-note">
     Each annotation carries a description, so the exported SVG and the accessible summary of the canvas both
     report what is on the page. That is how a canvas-based review tool stays usable with a screen reader: the
     strokes themselves cannot be described, but the objects around them can.
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Turning a box into a comment</h3>
+    <p class="bb-card-desc">
+        The page listens to the document itself rather than to the canvas callback. That way the conversion - a
+        dragged rectangle becoming a callout, a highlight gaining a description of the text under it - runs while the
+        change is still being reported, and joins the same undo step: one undo removes a comment entirely instead of
+        first turning it back into a plain box.
+    </p>
+    <pre class="bb-code">_document.Changed += OnDocumentEdited;
+
+<span class="k">private void</span> OnDocumentEdited(<span class="k">object</span>? sender, BinkDocumentChangedEventArgs args)
+{
+    <span class="c">// Only fresh local edits are converted: undo and redo replay a conversion that already happened.</span>
+    <span class="k">if</span> (args.Origin != BinkChangeOrigin.Local || args.Depth &gt; 0) <span class="k">return</span>;
+    <span class="k">foreach</span> (BinkAddElementOperation add <span class="k">in</span> AddedElements(args.Operation))
+    {
+        <span class="k">if</span> (add.LayerId == _annotationLayer) Convert(add.Element);
+    }
+}</pre>
 </div>
 
 @code {

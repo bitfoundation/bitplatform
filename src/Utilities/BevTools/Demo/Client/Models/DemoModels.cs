@@ -42,7 +42,12 @@ public sealed record ThemeSettings(string Accent, bool Dense, int Version);
 /// <summary>Cascaded to the whole dashboard; changing it re-renders every subscriber (intentional cascade demo).</summary>
 public sealed class DashboardSettings
 {
-    public string Accent { get; set; } = "#0969da";
+    /// <summary>The site's brand blue; "Change accent" flips to <see cref="AlternateAccent"/> and back.</summary>
+    public const string DefaultAccent = "#1276C6";
+
+    public const string AlternateAccent = "#FD7F36";
+
+    public string Accent { get; set; } = DefaultAccent;
 
     public bool Dense { get; set; }
 

@@ -1,19 +1,20 @@
 @page "/drag"
 
-<PageTitle>Drag - Bit.Bmotion</PageTitle>
+<PageTitle>Drag · Bmotion</PageTitle>
 
-<h1>Drag</h1>
+<div class="bb-intro">
+    <h1>Drag</h1>
+    <p class="bb-subtitle">
+        <strong>Drag="true"</strong> is the entire opt-in. Everything after that is a refinement of the
+        same gesture: which axes it may use, how far it may go, how it behaves at the edges, what
+        happens to the momentum when you let go, and which part of the element is allowed to start it.
+        Drag runs on the per-frame engine, so it is a <strong>Blazor WebAssembly</strong> feature; on
+        Blazor Server the element simply does not move.
+    </p>
+</div>
 
-<p class="page-intro">
-    <strong>Drag="true"</strong> is the entire opt-in. Everything after that is a refinement of the
-    same gesture: which axes it may use, how far it may go, how it behaves at the edges, what
-    happens to the momentum when you let go, and which part of the element is allowed to start it.
-    Drag runs on the per-frame engine, so it is a <strong>Blazor WebAssembly</strong> feature; on
-    Blazor Server the element simply does not move.
-</p>
-
-<div class="demo-section">
-    <h2>Axes and constraints</h2>
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Axes and constraints</h3>
     <p>
         <code>Drag="BmDrag.X"</code> or <code>BmDrag.Y</code> locks the gesture to one axis, and
         <strong>DragConstraints</strong> bounds how far it may travel.
@@ -47,10 +48,10 @@
     </div>
 
     <CodeSnippet Code="@_dragCode" />
-</div>
+</section>
 
-<div class="demo-section">
-    <h2>Constrain to a container</h2>
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Constrain to a container</h3>
     <p>
         Numeric bounds mean re-deriving them every time the layout changes. Element bounds do not:
         <strong>BmDragConstraints.Parent()</strong> keeps the element inside its parent and
@@ -71,10 +72,10 @@
     </div>
 
     <CodeSnippet Code="@_dragParentCode" />
-</div>
+</section>
 
-<div class="demo-section">
-    <h2>Momentum and fling</h2>
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Momentum and fling</h3>
     <p>
         A drag that stops dead where your finger lifted feels like a bug. <strong>DragMomentum</strong>
         (on by default) carries the release velocity into an inertia animation that decelerates on
@@ -123,10 +124,10 @@
     </div>
 
     <CodeSnippet Code="@_momentumCode" />
-</div>
+</section>
 
-<div class="demo-section">
-    <h2>Snapping on release</h2>
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Snapping on release</h3>
     <p>
         Momentum answers <em>how fast</em> the element stops; <strong>modifyTarget</strong> answers
         <em>where</em>. A <code>DragTransition</code> written as an inertia hands the projected
@@ -165,10 +166,10 @@
     </div>
 
     <CodeSnippet Code="@_snapCode" />
-</div>
+</section>
 
-<div class="demo-section">
-    <h2>Handles and drag controls</h2>
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Handles and drag controls</h3>
     <p>
         Making a whole row draggable costs you every click and text selection inside it.
         <strong>DragHandle</strong> restricts the gesture to a grip within the element and leaves
@@ -216,10 +217,10 @@
     </div>
 
     <CodeSnippet Code="@_handleControlsCode" />
-</div>
+</section>
 
-<div class="demo-section">
-    <h2>Drag events</h2>
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Drag events</h3>
     <p>
         <code>OnDragStart</code> and <code>OnDragEnd</code> bracket the gesture, and
         <code>OnDrag</code> fires throughout it - enough to persist a position, mark a form dirty,
@@ -238,10 +239,10 @@
     </div>
 
     <CodeSnippet Code="@_dragEventsCode" />
-</div>
+</section>
 
-<div class="demo-section">
-    <h2>Nested drag and propagation</h2>
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Nested drag and propagation</h3>
     <p>
         A draggable inside a draggable is ambiguous, so Bmotion resolves it the way motion.dev
         does: the child <strong>stops propagation</strong> and only the child moves. Set
@@ -274,123 +275,7 @@
     </div>
 
     <CodeSnippet Code="@_nestedCode" />
-</div>
-
-<style>
-    /* Every drag stage is its own positioning context: the captions below are absolutely placed,
-       and BmDragConstraints.Parent() measures this element. Without it both would resolve
-       against whatever ancestor happened to be positioned. */
-    .drag-stage { position: relative; overflow: hidden; height: 12.5rem; }
-    .drag-stage.tall { height: 13.75rem; }
-    .drag-stage.taller { height: 15rem; }
-
-    .stage-note {
-        top: .5rem;
-        left: 50%;
-        position: absolute;
-        transform: translateX(-50%);
-        font-size: .75rem;
-        white-space: nowrap;
-        color: var(--bm-muted);
-    }
-
-    .stage-note.bottom { top: auto; bottom: .75rem; }
-
-    /* The free-drag samples start dead centre so there is room to throw them in any direction. */
-    .drag-centred { position: absolute; top: 50%; left: 50%; margin: -2.5rem 0 0 -2.5rem; cursor: grab; }
-    .drag-centred-sm { position: absolute; top: 50%; left: 50%; margin: -1.5625rem 0 0 -1.5625rem; cursor: grab; }
-
-    .grabbable { cursor: grab; }
-
-    .handle-row {
-        gap: .6rem;
-        display: flex;
-        padding: .8rem 1rem;
-        align-items: center;
-        border-radius: 10px;
-        color: var(--bm-text);
-        background: var(--bm-accent-soft);
-        border: 1px solid var(--bm-accent-line);
-    }
-
-    .grip { cursor: grab; user-select: none; font-size: 1.1rem; color: var(--bm-muted); }
-
-    .thumb-track {
-        width: 100%;
-        height: 1.75rem;
-        display: flex;
-        padding: 0 4px;
-        cursor: pointer;
-        position: relative;
-        align-items: center;
-        border-radius: 999px;
-        background: var(--bm-track);
-    }
-
-    .thumb {
-        width: 1.25rem;
-        height: 1.25rem;
-        border-radius: 50%;
-        background: linear-gradient(135deg, var(--bm-primary), var(--bm-secondary));
-    }
-
-    .drag-parent {
-        width: 9.375rem;
-        height: 9.375rem;
-        display: flex;
-        cursor: grab;
-        border-radius: 12px;
-        align-items: center;
-        justify-content: center;
-        background: var(--bm-accent-soft);
-        border: 1px solid var(--bm-accent-line);
-    }
-
-    .drag-child {
-        width: 3.375rem;
-        height: 3.375rem;
-        cursor: grab;
-        border-radius: 10px;
-        background: linear-gradient(135deg, var(--bm-primary), var(--bm-secondary));
-    }
-
-    /* The stops the snap demo lands on, drawn so the settle is visibly ON something. */
-    .snap-grid {
-        top: 50%;
-        left: 50%;
-        width: 15.5rem;
-        height: 1px;
-        position: absolute;
-        transform: translate(-50%, -50%);
-        background: repeating-linear-gradient(to right,
-            var(--bm-accent-line) 0 1px, transparent 1px 3.75rem);
-    }
-
-    .snap-pages {
-        gap: .5rem;
-        display: flex;
-        cursor: grab;
-        padding: .75rem;
-        border-radius: 10px;
-        background: var(--bm-accent-soft);
-        border: 1px solid var(--bm-accent-line);
-    }
-
-    .snap-pages span {
-        width: 5rem;
-        display: flex;
-        height: 3.5rem;
-        color: var(--bm-primary-text);
-        /* 20px/700 counts as large text, which is the bar white can clear over the light half of
-           this gradient - see .box in motion-samples.css, which is sized for the same reason. */
-        font-size: 1.25rem;
-        font-weight: 700;
-        border-radius: 8px;
-        align-items: center;
-        justify-content: center;
-        background: linear-gradient(135deg, var(--bm-primary), var(--bm-secondary));
-    }
-</style>
+</section>
 
 @code {
     private string _dragInfo = "Drag the box";

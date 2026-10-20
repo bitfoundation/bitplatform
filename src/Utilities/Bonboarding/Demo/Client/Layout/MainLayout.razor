@@ -1,31 +1,30 @@
 ﻿@inherits LayoutComponentBase
-@implements IDisposable
-@inject IBonboardingService BonboardingService
 
-@* SiteShell is this demo's own chrome - header, navigation, footer - and stands in for your layout's
-   markup. The part every application needs is the BonboardingRoot below it. *@
+@* The app shell - part of the site kit every Utilities demo shares (see wwwroot/app.css): a skip
+   link, the sticky header, the content band, and the footer. The landing page renders straight
+   into it; every other page goes through DocsLayout, which adds the nav panel, the breadcrumb and
+   the "on this page" rail.
 
-<SiteShell @bind-IsDark="_dark">
-    @Body
-</SiteShell>
+   The band is painted with the secondary background so the surfaces inside it read as raised -
+   the arrangement Fluent uses for a page built out of cards.
 
-@* One host renders every tour the application starts, wherever it is started from. *@
-@* The site's theme switch drives the tours as well as the page: in the dark theme, a tour that leaves
-   its own Theme unset is drawn dark. A tour that sets one keeps it whichever theme the site is in,
-   which is what lets the theming page demonstrate the option. *@
-<BonboardingRoot Theme="@HostTheme" />
+   data-interactive turns true once the page runs in the browser. Prerendered markup is on screen
+   long before its event handlers are, which is what an E2E suite waits out with it. *@
 
-@code {
-    private bool _dark;
+<div class="page" data-interactive="@(RendererInfo.IsInteractive ? "true" : "false")">
+    @* First in the tab order on purpose: a keyboard reader lands here before the navigation and
+       can jump straight past the chrome to the page. *@
+    <a class="bb-skip-link" href="#bb-main">Skip to content</a>
 
-    // The host's Theme overrides the tour's, so it is only passed for a tour that has not chosen one.
-    private BonboardingTheme? HostTheme
-        => _dark && BonboardingService.Active?.Tour.Theme is null ? BonboardingTheme.Dark : null;
+    <Header />
 
-    protected override void OnInitialized() => BonboardingService.SessionsChanged += OnSessionsChanged;
+    <div class="bb-site-content">
+        <main id="bb-main" tabindex="-1">
+            <article>
+                @Body
+            </article>
+        </main>
+    </div>
 
-    // HostTheme depends on which tour is active.
-    private void OnSessionsChanged(object? sender, EventArgs e) => _ = InvokeAsync(StateHasChanged);
-
-    public void Dispose() => BonboardingService.SessionsChanged -= OnSessionsChanged;
-}
+    <Footer />
+</div>

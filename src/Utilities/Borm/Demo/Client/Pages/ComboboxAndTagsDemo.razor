@@ -2,11 +2,11 @@
 @implements IDisposable
 @using Bit.Borm.Demo.Client.Forms
 
-<PageTitle>Combobox, tags &amp; change handlers</PageTitle>
+<PageTitle>Combobox, tags &amp; change handlers · Borm</PageTitle>
 
-<div class="demo-intro">
+<div class="bb-intro">
     <h1>Combobox, tags &amp; change handlers</h1>
-    <p>
+    <p class="bb-subtitle">
         Three things a generated form needs once it stops being a demo. A dropdown with two hundred
         countries in it should be typed into, not scrolled. A list of labels should be chips, not a
         repeater with reorder buttons on every word. And "when the country changes, clear the city" is
@@ -15,18 +15,19 @@
     </p>
 </div>
 
-<div class="demo-card">
+<div class="bb-demo">
+    <div class="bb-demo-bar"><span class="bb-demo-label">Live form</span></div>
     <BormView State="_state" OnValidSubmit="HandleSubmit" SubmitText="Save profile" ShowErrorSummary="true" />
 </div>
 
 @if (_submitted)
 {
-    <div class="demo-result"><strong>Saved ✓</strong> <pre>@_json</pre></div>
+    <div class="bb-note bb-note-success demo-result"><strong>Saved ✓</strong><pre>@_json</pre></div>
 }
 
-<details class="demo-source">
-    <summary>View source</summary>
-    <pre><code>@Source</code></pre>
+<details class="bb-source demo-source">
+    <summary class="btn btn-secondary">View source</summary>
+    <pre class="bb-code"><code>@Source</code></pre>
 </details>
 
 @code {

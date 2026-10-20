@@ -7,200 +7,217 @@
 <DocPage Href="cross-store" Title="Cross-store coordination"
          Lead="Let one store react to another's actions without either of them knowing the other exists.">
 
-    <h2>BlexManager</h2>
-    <p>
-        The manager aggregates every registered store into one global state tree, runs the middleware
-        pipeline, feeds the DevTools bridge and applies time-travel snapshots. Most application code
-        never touches it - you inject stores. You reach for the manager when you need coordination,
-        a global snapshot, or dynamic registration.
-    </p>
-
-    <ApiTable Title="Registry" Rows="@RegistryRows" />
-    <ApiTable Title="Observation" Rows="@ObservationRows" />
-    <ApiTable Title="Global state" Rows="@StateRows" />
-
-    <h2>Subscribing to actions</h2>
-    <p>
-        <code>Subscribe</code> and its filtered variants are the building block for coordination:
-        react to one store's action and drive another. Handler exceptions are isolated and routed to
-        <a href="errors"><code>OnError</code></a>, so a misbehaving reactor cannot break dispatch for
-        everyone else.
-    </p>
-
-    <CodeBlock Code="@SubscribeSample" />
-
-    <DemoCard Title="Orders notify, without knowing about notifications"
-              Description="Placing an order dispatches only orders/Place. A manager subscription - registered by this page - turns it into a notification."
-              Source="@WiringSource">
-        <div class="row">
-            <input type="text" placeholder="Item" value="@_item" @oninput="OnItemInput" style="min-width:150px" />
-            <input type="number" min="1" max="99" value="@_qty" @oninput="OnQtyInput" style="width:80px" />
-            <button class="btn btn-primary" @onclick="Place" disabled="@string.IsNullOrWhiteSpace(_item)">Place order</button>
-            <button class="btn" @onclick="Orders.CancelLast" disabled="@(Orders.Count == 0)">Cancel last</button>
-            <button class="btn btn-ghost" @onclick="ClearBoth">Clear both</button>
-            <button class="btn btn-ghost" title="BlexManager.ResetAll()" @onclick="ResetEverything">ResetAll()</button>
-        </div>
-        <p class="small muted" style="margin-top:0.5rem;margin-bottom:0">@_resetNote</p>
-
-        <div class="grid grid--2" style="margin-top:0.9rem">
-            <div class="card">
-                <p class="card__title">orders <span class="card__num">@Orders.Count orders · @Orders.Units units</span></p>
-                @if (Orders.Orders.Count == 0)
-                {
-                    <p class="card__body">No orders yet.</p>
-                }
-                else
-                {
-                    <ul class="list">
-                        @foreach (var order in Orders.Orders)
-                        {
-                            <li><span class="list__name">#@order.Id @order.Item</span><span class="list__meta">×@order.Quantity</span></li>
-                        }
-                    </ul>
-                }
-            </div>
-            <div class="card">
-                <p class="card__title">notifications <span class="card__num">@Notifications.Unread unread</span></p>
-                @if (Notifications.Messages.Count == 0)
-                {
-                    <p class="card__body">Nothing yet.</p>
-                }
-                else
-                {
-                    <ul class="list">
-                        @foreach (var message in Notifications.Messages)
-                        {
-                            <li><span class="list__name">@message</span></li>
-                        }
-                    </ul>
-                }
-            </div>
-        </div>
-        <p class="small muted" style="margin-top:0.7rem;margin-bottom:0">
-            The Inspector's feed shows both actions: <code>orders/Place</code> first, then
-            <code>notifications/Push</code> dispatched by the reactor.
+    <div class="bb-card">
+        <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> BlexManager</h3>
+        <p>
+            The manager aggregates every registered store into one global state tree, runs the middleware
+            pipeline, feeds the DevTools bridge and applies time-travel snapshots. Most application code
+            never touches it - you inject stores. You reach for the manager when you need coordination,
+            a global snapshot, or dynamic registration.
         </p>
-    </DemoCard>
 
-    <h2>The action context</h2>
-    <p>Every observer receives a <code>BlexActionContext</code> describing what just happened.</p>
-    <ApiTable Title="BlexActionContext" Rows="@ContextRows" />
+        <ApiTable Title="Registry" Rows="@RegistryRows" />
+        <ApiTable Title="Observation" Rows="@ObservationRows" />
+        <ApiTable Title="Global state" Rows="@StateRows" />
+    </div>
 
-    <Callout Kind="Callout.CalloutKind.Gotcha" Title="Read GlobalState synchronously">
-        <p style="margin-bottom:0">
-            <code>GlobalState</code> is captured lazily on first access, because serializing every
-            store is expensive and most observers never need it. Read it <em>inside</em> your handler:
-            reading it later - after further actions have run - would capture their state instead.
-            Treat the returned tree as read-only; every observer of that action shares the instance.
+    <div class="bb-card">
+        <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Subscribing to actions</h3>
+        <p>
+            <code>Subscribe</code> and its filtered variants are the building block for coordination:
+            react to one store's action and drive another. Handler exceptions are isolated and routed to
+            <a href="errors"><code>OnError</code></a>, so a misbehaving reactor cannot break dispatch for
+            everyone else.
         </p>
-    </Callout>
 
-    <h2>Async reactors</h2>
-    <p>
-        <code>SubscribeAsync</code> lets a reactor start async work - typically an effect on another
-        store. The returned task is observed, so a failure is reported through <code>OnError</code>
-        rather than surfacing as an unobserved exception.
-    </p>
-    <CodeBlock Code="@AsyncSample" />
+        <CodeBlock Code="@SubscribeSample" />
 
-    <Callout Kind="Callout.CalloutKind.Warning" Title="Watch for reaction loops">
-        <p style="margin-bottom:0">
-            A reactor that dispatches an action which its own filter matches will recurse until the
-            stack gives out. Keep reactors one-directional, or guard them with a flag. Blex freezes
-            the in-flight snapshots of actions still being observed before a reactor's follow-up
-            action mutates state, so attribution stays correct - but it will not stop a genuine loop.
+        <DemoCard Title="Orders notify, without knowing about notifications"
+                  Description="Placing an order dispatches only orders/Place. A manager subscription - registered by this page - turns it into a notification."
+                  Source="@WiringSource">
+            <div class="bb-toolbar">
+                <input type="text" placeholder="Item" value="@_item" @oninput="OnItemInput" class="demo-input-name" />
+                <input type="number" min="1" max="99" value="@_qty" @oninput="OnQtyInput" class="demo-input-qty" />
+                <button class="btn btn-primary" @onclick="Place" disabled="@string.IsNullOrWhiteSpace(_item)">Place order</button>
+                <button class="btn btn-secondary" @onclick="Orders.CancelLast" disabled="@(Orders.Count == 0)">Cancel last</button>
+                <button class="btn btn-secondary" @onclick="ClearBoth">Clear both</button>
+                <button class="btn btn-secondary" title="BlexManager.ResetAll()" @onclick="ResetEverything">ResetAll()</button>
+            </div>
+            @if (_resetNote.Length > 0)
+            {
+                <p class="bb-card-desc">@_resetNote</p>
+            }
+
+            <div class="bb-grid">
+                <div class="bb-card">
+                    <p class="bb-card-title">orders <span class="bb-badge">@Orders.Count orders · @Orders.Units units</span></p>
+                    @if (Orders.Orders.Count == 0)
+                    {
+                        <p class="bb-card-desc">No orders yet.</p>
+                    }
+                    else
+                    {
+                        <ul class="demo-list">
+                            @foreach (var order in Orders.Orders)
+                            {
+                                <li><span class="demo-list-name">#@order.Id @order.Item</span><span class="demo-list-meta">×@order.Quantity</span></li>
+                            }
+                        </ul>
+                    }
+                </div>
+                <div class="bb-card">
+                    <p class="bb-card-title">notifications <span class="bb-badge">@Notifications.Unread unread</span></p>
+                    @if (Notifications.Messages.Count == 0)
+                    {
+                        <p class="bb-card-desc">Nothing yet.</p>
+                    }
+                    else
+                    {
+                        <ul class="demo-list">
+                            @foreach (var message in Notifications.Messages)
+                            {
+                                <li><span class="demo-list-name">@message</span></li>
+                            }
+                        </ul>
+                    }
+                </div>
+            </div>
+            <p class="bb-card-desc">
+                The Inspector's feed shows both actions: <code>orders/Place</code> first, then
+                <code>notifications/Push</code> dispatched by the reactor.
+            </p>
+        </DemoCard>
+    </div>
+
+    <div class="bb-card">
+        <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> The action context</h3>
+        <p>Every observer receives a <code>BlexActionContext</code> describing what just happened.</p>
+        <ApiTable Title="BlexActionContext" Rows="@ContextRows" />
+
+        <Callout Kind="Callout.CalloutKind.Gotcha" Title="Read GlobalState synchronously">
+            <p>
+                <code>GlobalState</code> is captured lazily on first access, because serializing every
+                store is expensive and most observers never need it. Read it <em>inside</em> your handler:
+                reading it later - after further actions have run - would capture their state instead.
+                Treat the returned tree as read-only; every observer of that action shares the instance.
+            </p>
+        </Callout>
+    </div>
+
+    <div class="bb-card">
+        <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Async reactors</h3>
+        <p>
+            <code>SubscribeAsync</code> lets a reactor start async work - typically an effect on another
+            store. The returned task is observed, so a failure is reported through <code>OnError</code>
+            rather than surfacing as an unobserved exception.
         </p>
-    </Callout>
+        <CodeBlock Code="@AsyncSample" />
 
-    <h2>Derived values that span stores</h2>
-    <p>
-        A subscription answers "tell me when this changed". The other half of the problem is "give me
-        this value, cheaply, from several places at once" - and that is what
-        <code>[BlexComputed]</code> does inside one store. <code>CreateSelector</code> lifts it to
-        the manager: a lazy, memoized projection over the whole tree that recomputes at most once per
-        action, however many readers ask for it.
-    </p>
-    <CodeBlock Code="@SelectorSample" />
+        <Callout Kind="Callout.CalloutKind.Warning" Title="Watch for reaction loops">
+            <p>
+                A reactor that dispatches an action which its own filter matches will recurse until the
+                stack gives out. Keep reactors one-directional, or guard them with a flag. Blex freezes
+                the in-flight snapshots of actions still being observed before a reactor's follow-up
+                action mutates state, so attribution stays correct - but it will not stop a genuine loop.
+            </p>
+        </Callout>
+    </div>
 
-    <DemoCard Title="One computation, three readers"
-              Description="Every card below reads the same selector. Place an order and watch the computation counter move once, not three times - and not at all until something reads it."
-              Source="@SelectorDemoSource">
-        <div class="row">
-            <button class="btn btn-primary" @onclick="PlaceOrder">Place an order</button>
-            <button class="btn" @onclick="Orders.CancelLast" disabled="@(Orders.Count == 0)">Cancel last</button>
-            <button class="btn btn-ghost" @onclick="ResetSelectorCounter">Reset counter</button>
-        </div>
-
-        <div class="grid grid--3" style="margin-top:0.9rem">
-            <div class="card">
-                <p class="card__title">Reader A <span class="card__num">@Summary.Value</span></p>
-            </div>
-            <div class="card">
-                <p class="card__title">Reader B <span class="card__num">@Summary.Value</span></p>
-            </div>
-            <div class="card">
-                <p class="card__title">Reader C <span class="card__num">@Summary.Value</span></p>
-            </div>
-        </div>
-
-        <div class="readout" style="margin-top:0.9rem">
-            <div class="readout__item">
-                <span class="readout__label">Projection ran</span>
-                <span class="readout__value readout__value--accent">@_selectorRuns time(s)</span>
-            </div>
-            <div class="readout__item">
-                <span class="readout__label">Renders of this page</span>
-                <span class="readout__value">@_renders</span>
-            </div>
-        </div>
-    </DemoCard>
-
-    <Callout Kind="Callout.CalloutKind.Tip" Title="Subscribe pushes, CreateSelector pulls">
-        <p style="margin-bottom:0">
-            <code>Subscribe(selector, …)</code> evaluates eagerly after every action so it can tell
-            one observer that the value moved - use it when something must <em>happen</em>.
-            <code>CreateSelector</code> evaluates lazily and shares the result - use it when
-            something must be <em>read</em>. An action whose result nobody reads costs a flag write.
-            Dispose the selector (or hand it to <code>OwnsSubscription</code>) to detach it.
+    <div class="bb-card">
+        <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Derived values that span stores</h3>
+        <p>
+            A subscription answers "tell me when this changed". The other half of the problem is "give me
+            this value, cheaply, from several places at once" - and that is what
+            <code>[BlexComputed]</code> does inside one store. <code>CreateSelector</code> lifts it to
+            the manager: a lazy, memoized projection over the whole tree that recomputes at most once per
+            action, however many readers ask for it.
         </p>
-    </Callout>
+        <CodeBlock Code="@SelectorSample" />
 
-    <h2>Where to put the wiring</h2>
-    <p>Three practical options, in rough order of preference:</p>
-    <ul>
-        <li>
-            <strong>A component that owns the lifetime</strong> - <code>OwnsSubscription(...)</code>
-            in <code>OnInitialized</code>. Good when the coordination only matters while some part of
-            the UI is alive. This page does exactly that.
-        </li>
-        <li>
-            <strong>Middleware</strong> - register an <code>IBlexMiddleware</code> that reacts in
-            <code>OnAction</code>. Good for app-wide, always-on rules. See
-            <a href="middleware">Middleware</a>.
-        </li>
-        <li>
-            <strong>A coordinator service</strong> - a scoped service that subscribes in its
-            constructor and disposes its tokens. Resolve it once at startup so it exists.
-        </li>
-    </ul>
+        <DemoCard Title="One computation, three readers"
+                  Description="Every card below reads the same selector. Place an order and watch the computation counter move once, not three times - and not at all until something reads it."
+                  Source="@SelectorDemoSource">
+            <div class="bb-toolbar">
+                <button class="btn btn-primary" @onclick="PlaceOrder">Place an order</button>
+                <button class="btn btn-secondary" @onclick="Orders.CancelLast" disabled="@(Orders.Count == 0)">Cancel last</button>
+                <button class="btn btn-secondary" @onclick="ResetSelectorCounter">Reset counter</button>
+            </div>
 
-    <h2>Dynamic registration</h2>
-    <p>
-        Stores register themselves when first resolved from DI, and
-        <code>&lt;BlexProvider&gt;</code> registers everything up front. For a lazily-loaded
-        feature you can register and unregister by hand. An unregistered store keeps working
-        standalone - its actions simply stop being observed.
-    </p>
-    <CodeBlock Code="@RegisterSample" />
+            <div class="bb-grid">
+                <div class="bb-card">
+                    <p class="bb-card-title">Reader A <span class="bb-badge">@Summary.Value</span></p>
+                </div>
+                <div class="bb-card">
+                    <p class="bb-card-title">Reader B <span class="bb-badge">@Summary.Value</span></p>
+                </div>
+                <div class="bb-card">
+                    <p class="bb-card-title">Reader C <span class="bb-badge">@Summary.Value</span></p>
+                </div>
+            </div>
 
-    <Callout Kind="Callout.CalloutKind.Note" Title="Single-threaded by design">
-        <p style="margin-bottom:0">
-            The manager is built for single-threaded dispatch, matching Blazor's rendering model. Its
-            internal lock protects the store registry and global-state capture only; the pipeline
-            itself - the sequence counter, middleware, DevTools - assumes actions are not dispatched
-            concurrently. If you dispatch from several threads, coordinate externally.
+            <div class="bb-stats">
+                <div class="bb-stat">
+                    <span class="bb-stat-label">Projection ran</span>
+                    <span class="bb-stat-value demo-accent">@_selectorRuns time(s)</span>
+                </div>
+                <div class="bb-stat">
+                    <span class="bb-stat-label">Renders of this page</span>
+                    <span class="bb-stat-value">@_renders</span>
+                </div>
+            </div>
+        </DemoCard>
+
+        <Callout Kind="Callout.CalloutKind.Tip" Title="Subscribe pushes, CreateSelector pulls">
+            <p>
+                <code>Subscribe(selector, …)</code> evaluates eagerly after every action so it can tell
+                one observer that the value moved - use it when something must <em>happen</em>.
+                <code>CreateSelector</code> evaluates lazily and shares the result - use it when
+                something must be <em>read</em>. An action whose result nobody reads costs a flag write.
+                Dispose the selector (or hand it to <code>OwnsSubscription</code>) to detach it.
+            </p>
+        </Callout>
+    </div>
+
+    <div class="bb-card">
+        <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Where to put the wiring</h3>
+        <p>Three practical options, in rough order of preference:</p>
+        <ul class="bb-detail-list">
+            <li>
+                <strong>A component that owns the lifetime</strong> - <code>OwnsSubscription(...)</code>
+                in <code>OnInitialized</code>. Good when the coordination only matters while some part of
+                the UI is alive. This page does exactly that.
+            </li>
+            <li>
+                <strong>Middleware</strong> - register an <code>IBlexMiddleware</code> that reacts in
+                <code>OnAction</code>. Good for app-wide, always-on rules. See
+                <a href="middleware">Middleware</a>.
+            </li>
+            <li>
+                <strong>A coordinator service</strong> - a scoped service that subscribes in its
+                constructor and disposes its tokens. Resolve it once at startup so it exists.
+            </li>
+        </ul>
+    </div>
+
+    <div class="bb-card">
+        <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Dynamic registration</h3>
+        <p>
+            Stores register themselves when first resolved from DI, and
+            <code>&lt;BlexProvider&gt;</code> registers everything up front. For a lazily-loaded
+            feature you can register and unregister by hand. An unregistered store keeps working
+            standalone - its actions simply stop being observed.
         </p>
-    </Callout>
+        <CodeBlock Code="@RegisterSample" />
+
+        <Callout Kind="Callout.CalloutKind.Note" Title="Single-threaded by design">
+            <p>
+                The manager is built for single-threaded dispatch, matching Blazor's rendering model. Its
+                internal lock protects the store registry and global-state capture only; the pipeline
+                itself - the sequence counter, middleware, DevTools - assumes actions are not dispatched
+                concurrently. If you dispatch from several threads, coordinate externally.
+            </p>
+        </Callout>
+    </div>
 
 </DocPage>
 

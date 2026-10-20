@@ -114,14 +114,13 @@ public abstract class BaletteTest
     /// <summary>
     /// Waits until the page runs in the browser and the palette's browser layer listens for keys. Every page is
     /// prerendered, so its markup - the trigger and the mode buttons included - is on screen long before anything
-    /// handles a click, and the layer that hears Ctrl+K starts a moment after the page turns interactive.
+    /// handles a click, and the layer that hears Ctrl+K starts a moment after the page turns interactive. The layout
+    /// says the first (data-interactive on the site shell's .page), the palette host the second (data-palette-ready).
     /// </summary>
     protected static Task WaitForReadyAsync(IPage page) => page.WaitForFunctionAsync(
         """
-        () => {
-          const app = document.querySelector('.app');
-          return app?.dataset.interactive === 'true' && app?.dataset.paletteReady === 'true';
-        }
+        () => document.querySelector('.page')?.dataset.interactive === 'true'
+           && document.querySelector('[data-palette-ready]')?.dataset.paletteReady === 'true'
         """, null, new PageWaitForFunctionOptions { Timeout = 90_000 });
 
     protected static async Task ReloadAsync(IPage page)
@@ -155,6 +154,12 @@ public abstract class BaletteTest
     protected static ILocator Prompt(IPage page) => page.Locator("[data-balette='prompt']");
 
     protected static ILocator Detail(IPage page) => page.Locator("[data-balette='detail']");
+
+    /// <summary>The bar every demo page opens with: the trigger and a button per mode (Components/PaletteBar.razor).</summary>
+    protected static ILocator ModeButton(IPage page, string title) => page.Locator($".demo-palette-modes button[title='{title}']");
+
+    /// <summary>The site's own documentation search (the site kit's CommandPalette), which answers to "/".</summary>
+    protected static ILocator SiteSearch(IPage page) => page.Locator(".bb-palette[role='dialog']");
 
     /// <summary>The polite live region the palette announces result counts in.</summary>
     protected static ILocator LiveRegion(IPage page) => page.Locator("dialog[data-balette='dialog'] [aria-live='polite']");

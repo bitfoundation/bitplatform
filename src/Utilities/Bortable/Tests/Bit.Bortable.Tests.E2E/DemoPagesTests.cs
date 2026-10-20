@@ -26,7 +26,7 @@ public sealed class DemoPagesTests : BortableTest
         var response = await GotoAsync(page, path);
         Assert.AreEqual(200, response?.Status, $"{path} answered {response?.Status}");
         await WaitForListsAsync(page);
-        await Expect(page.Locator("h3").First).ToBeVisibleAsync();
+        await Expect(page.Locator("h1").First).ToBeVisibleAsync();
 
         // A page with lists on it has loaded the library's browser layer (WaitForListsAsync waits for it) and its
         // stylesheet, without which no drag state is drawn; and every list shows its items.
@@ -89,27 +89,27 @@ public sealed class DemoPagesTests : BortableTest
 
         Assert.AreEqual(404, response?.Status);
         await WaitForListsAsync(page);
-        await Expect(page.Locator("h3")).ToHaveTextAsync("Not Found");
-        await Expect(page.Locator(".sidebar")).ToBeVisibleAsync();
+        await Expect(page.Locator("h1")).ToHaveTextAsync("404");
+        await Expect(page.Locator(".bb-header")).ToBeVisibleAsync();
         await Expect(page.Locator(ListSelector)).ToHaveCountAsync(0);
     }
 
     [TestMethod]
     public async Task Navigating_between_the_demos_in_the_app_leaves_working_lists_behind()
     {
-        var page = await OpenAsync("/");
+        var page = await OpenAsync("/simple-list");
         var problems = TrackProblems(page, BaseUrl);
 
         // Client-side navigation through every demo: each page's lists are torn down (their drag handles and module
         // references released) and the next page's set up, all in the same WebAssembly instance.
-        var links = page.Locator(".sidebar a.nav-link");
+        var links = page.Locator(".bb-docs-sidebar .bb-docs-section a");
         int count = await links.CountAsync();
         Assert.IsTrue(count > 10, $"the sidebar offers only {count} demos");
         for (int i = 1; i < count; i++)
         {
             var href = await links.Nth(i).GetAttributeAsync("href");
             await links.Nth(i).ClickAsync();
-            await page.WaitForURLAsync(BaseUrl + "/" + href);
+            await page.WaitForURLAsync(BaseUrl + "/" + href!.TrimStart('/'));
             await WaitForQuietAsync(page);
         }
 
@@ -124,8 +124,8 @@ public sealed class DemoPagesTests : BortableTest
         await AssertOrderAsync(page, "handle-list", "handle-order", "Item 6", "Item 1", "Item 2", "Item 3", "Item 4", "Item 5");
 
         // And back on the first demo, the list still sorts.
-        await links.Nth(0).ClickAsync();
-        await page.WaitForURLAsync(BaseUrl + "/");
+        await links.Filter(new LocatorFilterOptions { HasText = "Simple list" }).ClickAsync();
+        await page.WaitForURLAsync(BaseUrl + "/simple-list");
         await Expect(page.Locator("#simple-list")).ToBeVisibleAsync();
         await WaitForQuietAsync(page);
         await DragAsync(page,

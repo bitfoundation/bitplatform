@@ -1,13 +1,13 @@
 ﻿@page "/examples/handle-positions"
 
-<PageTitle>Handle Positions - bit Blow</PageTitle>
+<PageTitle>Handle Positions · Blow</PageTitle>
 
 <ExampleScaffold Title="Handle Positions"
                  Summary="Built-in nodes place their handles wherever you tell them to. Set SourcePosition/TargetPosition on the node and the default renderer moves the handles - no custom template needed.">
     <Toolbar>
-        <button class="btn btn-sm btn-primary" @onclick="@(() => SetDirection(false))">Top to bottom</button>
-        <button class="btn btn-sm btn-primary" @onclick="@(() => SetDirection(true))">Left to right</button>
-        <span class="text-muted">Current: @(_horizontal ? "left to right" : "top to bottom")</span>
+        <button class="btn btn-primary" @onclick="@(() => SetDirection(false))">Top to bottom</button>
+        <button class="btn btn-primary" @onclick="@(() => SetDirection(true))">Left to right</button>
+        <span class="bb-muted">Current: @(_horizontal ? "left to right" : "top to bottom")</span>
     </Toolbar>
     <ChildContent>
         <BlowCanvas @ref="_flow" Nodes="_nodes" Edges="_edges" FitViewOnInit="true">

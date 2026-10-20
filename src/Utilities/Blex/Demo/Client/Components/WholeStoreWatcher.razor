@@ -5,19 +5,17 @@
     Subscribe(store): re-renders on ANY change to the store, including fields this component
     never displays.
 *@
-<div class="card">
-    <p class="card__title">
-        <span class="card__num">Subscribe(Store)</span>
-    </p>
-    <p class="card__body">Renders on any change to the store.</p>
-    <div class="readout" style="margin-top:0.6rem">
-        <div class="readout__item">
-            <span class="readout__label">Count (displayed)</span>
-            <span class="readout__value">@Counter.Count</span>
+<div class="bb-card">
+    <p class="bb-card-title"><code>Subscribe(Store)</code></p>
+    <p class="bb-card-desc">Renders on any change to the store.</p>
+    <div class="bb-stats">
+        <div class="bb-stat">
+            <span class="bb-stat-label">Count (displayed)</span>
+            <span class="bb-stat-value">@Counter.Count</span>
         </div>
-        <div class="readout__item">
-            <span class="readout__label">Renders</span>
-            <span class="readout__value readout__value--accent">@_renders</span>
+        <div class="bb-stat">
+            <span class="bb-stat-label">Renders</span>
+            <span class="bb-stat-value demo-accent">@_renders</span>
         </div>
     </div>
 </div>

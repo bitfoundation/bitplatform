@@ -102,14 +102,16 @@ navigator.mediaDevices.getUserMedia = async (constraints) => {
     /// <summary>Waits until the page runs in the browser rather than as prerendered markup.</summary>
     public async Task WaitForInteractiveAsync()
     {
-        await Page.WaitForSelectorAsync(".shell[data-interactive='true'] h1", new PageWaitForSelectorOptions { Timeout = 90_000 }).ConfigureAwait(false);
+        await Page.WaitForSelectorAsync(".page[data-interactive='true'] h1", new PageWaitForSelectorOptions { Timeout = 90_000 }).ConfigureAwait(false);
     }
 
-    /// <summary>Navigates within the application without a full page load.</summary>
+    /// <summary>Navigates within the application without a full page load, through the docs nav panel.</summary>
     /// <param name="linkText">Visible text of the navigation link to click.</param>
+    /// <remarks>The panel marks the link of the page on screen as active, which is what says the navigation landed.</remarks>
     public async Task NavigateByLinkAsync(string linkText)
     {
-        await Page.ClickAsync($"nav a:has-text('{linkText}')").ConfigureAwait(false);
+        await Page.ClickAsync($".bb-docs-sidebar a:has-text('{linkText}')").ConfigureAwait(false);
+        await Page.WaitForSelectorAsync($".bb-docs-sidebar a.active:has-text('{linkText}')", new PageWaitForSelectorOptions { Timeout = 30_000 }).ConfigureAwait(false);
         await Page.WaitForSelectorAsync("h1", new PageWaitForSelectorOptions { Timeout = 30_000 }).ConfigureAwait(false);
     }
 

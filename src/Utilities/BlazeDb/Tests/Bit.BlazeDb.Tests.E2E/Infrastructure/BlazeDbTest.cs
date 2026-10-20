@@ -72,15 +72,16 @@ public abstract class BlazeDbTest
     /// <summary>
     /// Waits until the WebAssembly app has replaced the host page's boot screen and the demo database is
     /// open, and returns where it ended up: Opfs, or one of the in-memory fallbacks. Nothing is prerendered,
-    /// so the shell's arrival is the app running; its data-storage attribute is the database being ready.
+    /// so the storage badge's arrival is the app running - it is mounted beside the router, on every page -
+    /// and its data-storage attribute is the database being ready.
     /// </summary>
     protected static async Task<string> WaitForDatabaseAsync(IPage page)
     {
         await page.WaitForFunctionAsync(
-            "() => { const shell = document.querySelector('.shell'); return shell && shell.dataset.storage && shell.dataset.storage !== 'Opening'; }",
+            "() => { const status = document.querySelector('.bd-status'); return status && status.dataset.storage && status.dataset.storage !== 'Opening'; }",
             null, new PageWaitForFunctionOptions { Timeout = 90_000 });
 
-        return await page.Locator(".shell").GetAttributeAsync("data-storage") ?? string.Empty;
+        return await page.Locator(".bd-status").GetAttributeAsync("data-storage") ?? string.Empty;
     }
 
     /// <summary>Collects every uncaught error and console error a page reports, for a test to assert there were none.</summary>

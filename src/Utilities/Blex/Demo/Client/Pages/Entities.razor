@@ -5,187 +5,204 @@
 <DocPage Href="entities" Title="Entity adapter"
          Lead="Normalized, immutable collections with generated CRUD - the same idea as Redux Toolkit's createEntityAdapter.">
 
-    <h2>Why normalize</h2>
-    <p>
-        Keeping a collection as a flat <code>List&lt;T&gt;</code> means every update is a scan, every
-        lookup by id is a scan, and every mutation risks being done in place - which
-        <a href="stores#change-detection">silently defeats change detection</a>.
-        <code>BlexEntityState&lt;TEntity, TKey&gt;</code> stores an ordered id list plus an id-keyed map,
-        and every operation returns a <em>new</em> instance, so notifications, time-travel and
-        persistence all behave.
-    </p>
+    <div class="bb-card">
+        <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Why normalize</h3>
+        <p>
+            Keeping a collection as a flat <code>List&lt;T&gt;</code> means every update is a scan, every
+            lookup by id is a scan, and every mutation risks being done in place - which
+            <a href="stores#change-detection">silently defeats change detection</a>.
+            <code>BlexEntityState&lt;TEntity, TKey&gt;</code> stores an ordered id list plus an id-keyed map,
+            and every operation returns a <em>new</em> instance, so notifications, time-travel and
+            persistence all behave.
+        </p>
 
-    <CodeBlock Code="@Shape" Title="The shape" />
+        <CodeBlock Code="@Shape" Title="The shape" />
+    </div>
 
-    <h2>Declaring one</h2>
-    <p>
-        The adapter holds the id selector, so it is not serializable - keep it as a
-        <code>static readonly</code> field. The <code>[BlexState]</code> field holds the state itself.
-    </p>
+    <div class="bb-card">
+        <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Declaring one</h3>
+        <p>
+            The adapter holds the id selector, so it is not serializable - keep it as a
+            <code>static readonly</code> field. The <code>[BlexState]</code> field holds the state itself.
+        </p>
 
-    <CodeBlock Code="@Declare" />
+        <CodeBlock Code="@Declare" />
+    </div>
 
-    <h2>Sorting</h2>
-    <p>
-        Pass an <code>IComparer&lt;TEntity&gt;</code> and the adapter re-sorts <code>Ids</code> after
-        every operation, so iteration order is always correct without sorting in the view. Without
-        one, insertion order is preserved.
-    </p>
-    <CodeBlock Code="@Sorted" />
+    <div class="bb-card">
+        <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Sorting</h3>
+        <p>
+            Pass an <code>IComparer&lt;TEntity&gt;</code> and the adapter re-sorts <code>Ids</code> after
+            every operation, so iteration order is always correct without sorting in the view. Without
+            one, insertion order is preserved.
+        </p>
+        <CodeBlock Code="@Sorted" />
 
-    <DemoCard Title="Normalized contacts"
-              Description="Every button below is one adapter call inside one action. The list is kept sorted by name automatically."
-              Source="@StoreSource">
-        <div class="row">
-            <input type="text" placeholder="Name" value="@_name" @oninput="OnNameInput" style="min-width:150px" />
-            <select value="@_team" @onchange="OnTeamChange">
-                <option value="Research">Research</option>
-                <option value="Compilers">Compilers</option>
-                <option value="Languages">Languages</option>
-                <option value="Runtime">Runtime</option>
-            </select>
-            <button class="btn btn-primary" @onclick="Add" disabled="@string.IsNullOrWhiteSpace(_name)">AddOne</button>
-        </div>
+        <DemoCard Title="Normalized contacts"
+                  Description="Every button below is one adapter call inside one action. The list is kept sorted by name automatically."
+                  Source="@StoreSource">
+            <div class="bb-toolbar">
+                <input type="text" placeholder="Name" value="@_name" @oninput="OnNameInput" class="demo-input-name" />
+                <select value="@_team" @onchange="OnTeamChange">
+                    <option value="Research">Research</option>
+                    <option value="Compilers">Compilers</option>
+                    <option value="Languages">Languages</option>
+                    <option value="Runtime">Runtime</option>
+                </select>
+                <button class="btn btn-primary" @onclick="Add" disabled="@string.IsNullOrWhiteSpace(_name)">AddOne</button>
+            </div>
 
-        <div class="row">
-            <span class="small muted">Filter:</span>
-            @foreach (var team in Contacts.Teams)
+            <div class="bb-toolbar">
+                <span class="bb-overline">Filter</span>
+                <div class="bb-segmented" role="group" aria-label="Team filter">
+                    @foreach (var team in Contacts.Teams)
+                    {
+                        var current = team;
+                        <button type="button" aria-pressed="@(Contacts.TeamFilter == current ? "true" : "false")"
+                                @onclick="() => Contacts.SetTeamFilter(current)">@current</button>
+                    }
+                </div>
+            </div>
+
+            <div class="bb-stats">
+                <div class="bb-stat">
+                    <span class="bb-stat-label">Count</span>
+                    <span class="bb-stat-value demo-accent">@Contacts.Total</span>
+                </div>
+                <div class="bb-stat">
+                    <span class="bb-stat-label">Starred</span>
+                    <span class="bb-stat-value">@Contacts.Starred</span>
+                </div>
+                <div class="bb-stat">
+                    <span class="bb-stat-label">Ids (ordered)</span>
+                    <span class="bb-stat-value demo-stat-text">[@string.Join(", ", Contacts.Contacts.Ids)]</span>
+                </div>
+            </div>
+
+            <ul class="demo-list">
+                @foreach (var contact in Contacts.Visible)
+                {
+                    var id = contact.Id;
+                    <li>
+                        <button type="button" class="demo-star @(contact.Starred ? "demo-star--on" : null)"
+                                title="UpdateOne" @onclick="() => Contacts.ToggleStar(id)">
+                            @(contact.Starred ? "★" : "☆")
+                        </button>
+                        <span class="demo-list-name">@contact.Name</span>
+                        <span class="demo-list-meta">@contact.Team · id @contact.Id</span>
+                        <button class="btn demo-btn-danger" title="RemoveOne" @onclick="() => Contacts.Remove(id)">Remove</button>
+                    </li>
+                }
+            </ul>
+            @if (Contacts.Visible.Count == 0)
             {
-                var current = team;
-                <button class="btn btn-sm @(Contacts.TeamFilter == current ? "btn-primary" : null)"
-                        @onclick="() => Contacts.SetTeamFilter(current)">
-                    @current
+                <p class="bb-card-desc">Nothing matches this filter.</p>
+            }
+
+            <div class="bb-toolbar">
+                <button class="btn btn-secondary" @onclick="Contacts.StarAll">Map - star everyone</button>
+                <button class="btn btn-secondary" @onclick="Contacts.RemoveUnstarred">RemoveMany - drop unstarred</button>
+                <button class="btn demo-btn-danger" @onclick="Contacts.RemoveAll">RemoveAll</button>
+                <button class="btn btn-secondary" @onclick="Contacts.Reseed">SetAll - reseed</button>
+            </div>
+
+            <div class="bb-toolbar">
+                <button class="btn btn-secondary" title="SetOne with an id that exists" @onclick="() => LateSave(1)">
+                    SetOne - late save for id 1
                 </button>
-            }
-        </div>
-
-        <div class="readout" style="margin-top:0.8rem">
-            <div class="readout__item">
-                <span class="readout__label">Count</span>
-                <span class="readout__value readout__value--accent">@Contacts.Total</span>
+                <button class="btn btn-secondary" title="SetOne with an id that does not exist" @onclick="() => LateSave(99)">
+                    SetOne - late save for id 99
+                </button>
+                <button class="btn btn-secondary" @onclick="ReseedIdentical">SetAll - identical payload</button>
             </div>
-            <div class="readout__item">
-                <span class="readout__label">Starred</span>
-                <span class="readout__value">@Contacts.Starred</span>
-            </div>
-            <div class="readout__item">
-                <span class="readout__label">Ids (ordered)</span>
-                <span class="readout__value" style="font-size:0.85rem">[@string.Join(", ", Contacts.Contacts.Ids)]</span>
-            </div>
-        </div>
-
-        <ul class="list" style="margin-top:0.8rem">
-            @foreach (var contact in Contacts.Visible)
+            @if (_setNote.Length > 0)
             {
-                var id = contact.Id;
-                <li>
-                    <button class="star @(contact.Starred ? "star--on" : null)"
-                            title="UpdateOne" @onclick="() => Contacts.ToggleStar(id)">
-                        @(contact.Starred ? "★" : "☆")
-                    </button>
-                    <span class="list__name">@contact.Name</span>
-                    <span class="list__meta">@contact.Team · id @contact.Id</span>
-                    <button class="btn btn-sm btn-danger" title="RemoveOne" @onclick="() => Contacts.Remove(id)">Remove</button>
-                </li>
+                <p class="bb-card-desc">@_setNote</p>
             }
-        </ul>
-        @if (Contacts.Visible.Count == 0)
-        {
-            <p class="small muted">Nothing matches this filter.</p>
-        }
+        </DemoCard>
+    </div>
 
-        <div class="row" style="margin-top:0.6rem">
-            <button class="btn btn-sm" @onclick="Contacts.StarAll">Map - star everyone</button>
-            <button class="btn btn-sm" @onclick="Contacts.RemoveUnstarred">RemoveMany - drop unstarred</button>
-            <button class="btn btn-sm btn-danger" @onclick="Contacts.RemoveAll">RemoveAll</button>
-            <button class="btn btn-sm btn-ghost" @onclick="Contacts.Reseed">SetAll - reseed</button>
-        </div>
+    <div class="bb-card">
+        <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> BlexEntityState members</h3>
+        <ApiTable Rows="@StateRows" />
+    </div>
 
-        <div class="row" style="margin-top:0.6rem">
-            <button class="btn btn-sm" title="SetOne with an id that exists" @onclick="() => LateSave(1)">
-                SetOne - late save for id 1
-            </button>
-            <button class="btn btn-sm" title="SetOne with an id that does not exist" @onclick="() => LateSave(99)">
-                SetOne - late save for id 99
-            </button>
-            <button class="btn btn-sm btn-ghost" @onclick="ReseedIdentical">SetAll - identical payload</button>
-        </div>
-        <p class="small muted" style="margin-top:0.4rem">@_setNote</p>
-    </DemoCard>
-
-    <h2>BlexEntityState members</h2>
-    <ApiTable Rows="@StateRows" />
-
-    <h2>BlexEntityAdapter operations</h2>
-    <p>
-        Every operation takes the current state and returns the next one. Assign the result back to
-        the <code>[BlexState]</code> property - that assignment is what makes the change visible.
-    </p>
-    <ApiTable Rows="@AdapterRows" />
-
-    <CodeBlock Code="@Usage" Title="Typical actions" />
-
-    <Callout Kind="Callout.CalloutKind.Note" Title="Operations are no-ops when they cannot apply">
-        <p style="margin-bottom:0">
-            <code>AddOne</code> ignores an entity whose id already exists, <code>UpdateOne</code> and
-            <code>RemoveOne</code> ignore a missing id, and <code>UpdateMany</code> skips ids that are
-            not present. Each of those returns the <em>same</em> state instance, so no notification
-            fires and no action is recorded for a change that did not happen.
+    <div class="bb-card">
+        <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> BlexEntityAdapter operations</h3>
+        <p>
+            Every operation takes the current state and returns the next one. Assign the result back to
+            the <code>[BlexState]</code> property - that assignment is what makes the change visible.
         </p>
-    </Callout>
+        <ApiTable Rows="@AdapterRows" />
 
-    <h3>Set vs Upsert</h3>
-    <p>
-        <code>UpsertOne</code> inserts an unknown id; <code>SetOne</code> refuses to. That is the
-        difference between "save this, wherever it came from" and "apply this update to a row I
-        already have". Reach for <code>SetOne</code>/<code>SetMany</code> when a late response must
-        not resurrect a record that was deleted while it was in flight - a stale <code>PUT</code>
-        reply arriving after the user removed the row leaves the list alone instead of putting the
-        row back.
-    </p>
-    <CodeBlock Code="@SetVsUpsert" Title="A late response must not resurrect a deleted row" Compact="true" />
+        <CodeBlock Code="@Usage" Title="Typical actions" />
 
-    <h3>Writing the same value twice costs nothing</h3>
-    <p>
-        Every write operation compares before it commits. Re-applying a value that is already there -
-        <code>SetAll</code> with an unchanged server response, <code>UpsertMany</code> where only one
-        of fifty rows actually moved - returns the same state instance, so nothing notifies, nothing
-        persists, and no undo step appears for a mutation that did not happen. Polling a list
-        endpoint on a timer is therefore free while the data is unchanged.
-    </p>
-    <CodeBlock Code="@NoOpIdentity" Title="Idempotent reseeding" Compact="true" />
+        <Callout Kind="Callout.CalloutKind.Note" Title="Operations are no-ops when they cannot apply">
+            <p>
+                <code>AddOne</code> ignores an entity whose id already exists, <code>UpdateOne</code> and
+                <code>RemoveOne</code> ignore a missing id, and <code>UpdateMany</code> skips ids that are
+                not present. Each of those returns the <em>same</em> state instance, so no notification
+                fires and no action is recorded for a change that did not happen.
+            </p>
+        </Callout>
 
-    <h3>Changing an entity's id</h3>
-    <p>
-        <code>UpdateOne</code> handles an update function that changes the id: the entity moves to
-        the new key and keeps its position in the order. If the new id already belongs to another
-        entity, that one is overwritten and the old slot is dropped, so an id never appears twice in
-        the ordered list.
-    </p>
-
-    <h2>Serialization</h2>
-    <p>
-        <code>BlexEntityState</code> round-trips through JSON as <code>{ "ids": [...], "entities":
-        { ... } }</code>, so a normalized collection persists and time-travels like any other state.
-        <code>Count</code> and <code>All</code> are marked <code>[JsonIgnore]</code> - they are
-        derived from <code>Ids</code>.
-    </p>
-
-    <Callout Kind="Callout.CalloutKind.Gotcha" Title="TKey must survive being a JSON dictionary key">
-        <p style="margin-bottom:0">
-            <code>Entities</code> serializes as a JSON object, whose keys are strings.
-            <code>int</code>, <code>string</code> and <code>Guid</code> all work. A composite or
-            custom key type needs a converter that round-trips it as a dictionary key.
+        <h4>Set vs Upsert</h4>
+        <p>
+            <code>UpsertOne</code> inserts an unknown id; <code>SetOne</code> refuses to. That is the
+            difference between "save this, wherever it came from" and "apply this update to a row I
+            already have". Reach for <code>SetOne</code>/<code>SetMany</code> when a late response must
+            not resurrect a record that was deleted while it was in flight - a stale <code>PUT</code>
+            reply arriving after the user removed the row leaves the list alone instead of putting the
+            row back.
         </p>
-    </Callout>
+        <CodeBlock Code="@SetVsUpsert" Title="A late response must not resurrect a deleted row" />
 
-    <h2>Deriving views</h2>
-    <p>
-        Pair the adapter with <a href="computed"><code>[BlexComputed]</code></a> to project filtered or
-        aggregated views. They are memoized, so a filtered list is rebuilt once per change rather
-        than once per render.
-    </p>
-    <CodeBlock Code="@Computed" />
+        <h4>Writing the same value twice costs nothing</h4>
+        <p>
+            Every write operation compares before it commits. Re-applying a value that is already there -
+            <code>SetAll</code> with an unchanged server response, <code>UpsertMany</code> where only one
+            of fifty rows actually moved - returns the same state instance, so nothing notifies, nothing
+            persists, and no undo step appears for a mutation that did not happen. Polling a list
+            endpoint on a timer is therefore free while the data is unchanged.
+        </p>
+        <CodeBlock Code="@NoOpIdentity" Title="Idempotent reseeding" />
+
+        <h4>Changing an entity's id</h4>
+        <p>
+            <code>UpdateOne</code> handles an update function that changes the id: the entity moves to
+            the new key and keeps its position in the order. If the new id already belongs to another
+            entity, that one is overwritten and the old slot is dropped, so an id never appears twice in
+            the ordered list.
+        </p>
+    </div>
+
+    <div class="bb-card">
+        <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Serialization</h3>
+        <p>
+            <code>BlexEntityState</code> round-trips through JSON as <code>{ "ids": [...], "entities":
+            { ... } }</code>, so a normalized collection persists and time-travels like any other state.
+            <code>Count</code> and <code>All</code> are marked <code>[JsonIgnore]</code> - they are
+            derived from <code>Ids</code>.
+        </p>
+
+        <Callout Kind="Callout.CalloutKind.Gotcha" Title="TKey must survive being a JSON dictionary key">
+            <p>
+                <code>Entities</code> serializes as a JSON object, whose keys are strings.
+                <code>int</code>, <code>string</code> and <code>Guid</code> all work. A composite or
+                custom key type needs a converter that round-trips it as a dictionary key.
+            </p>
+        </Callout>
+    </div>
+
+    <div class="bb-card">
+        <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Deriving views</h3>
+        <p>
+            Pair the adapter with <a href="computed"><code>[BlexComputed]</code></a> to project filtered or
+            aggregated views. They are memoized, so a filtered list is rebuilt once per change rather
+            than once per render.
+        </p>
+        <CodeBlock Code="@Computed" />
+    </div>
 
 </DocPage>
 

@@ -3,11 +3,11 @@
 @* Describes the MCP server this demo's host maps at /mcp. Its route differs from the endpoint's on
    purpose: two literal endpoints on /mcp would make a GET of it ambiguous. *@
 
-<PageTitle>MCP server - bit Bortable</PageTitle>
+<PageTitle>MCP server · Bortable</PageTitle>
 
-<div class="demo-header">
-    <h3>MCP server</h3>
-    <p class="text-muted">
+<div class="bb-intro">
+    <h1>MCP server</h1>
+    <p class="bb-subtitle">
         This site hosts a Model Context Protocol server at <code>/mcp</code>, so an AI agent writing sortable-list,
         kanban and drag-and-drop code with Bit.Bortable reads the library itself - its compiled API documentation,
         its guide, its stylesheet and these demo pages - instead of guessing at an API it half remembers, or
@@ -15,8 +15,8 @@
     </p>
 </div>
 
-<section class="mcp-panel">
-    <h4>Connect a client</h4>
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Connect a client</h3>
 
     <p>
         The endpoint is plain Streamable HTTP, so any MCP client connects with a URL and nothing else. The same tools
@@ -24,26 +24,28 @@
         <code>https://bitplatform.dev/mcp</code>, next to the other bit libraries.
     </p>
 
-    <pre class="mcp-output"><code>@ClientConfig</code></pre>
+    <pre class="bb-code">@ClientConfig</pre>
 </section>
 
-<section class="mcp-panel">
-    <h4>Tools</h4>
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Tools</h3>
 
-    <table class="mcp-table">
-        <thead>
-            <tr><th>Tool</th><th>What it answers</th></tr>
-        </thead>
-        <tbody>
-            @foreach (var tool in Tools)
-            {
-                <tr>
-                    <td><code>@tool.Name</code></td>
-                    <td>@((MarkupString)tool.Description)</td>
-                </tr>
-            }
-        </tbody>
-    </table>
+    <div class="bb-scroll">
+        <table class="bb-table">
+            <thead>
+                <tr><th>Tool</th><th>What it answers</th></tr>
+            </thead>
+            <tbody>
+                @foreach (var tool in Tools)
+                {
+                    <tr>
+                        <td class="bb-table-key"><code>@tool.Name</code></td>
+                        <td>@((MarkupString)tool.Description)</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
 
     <p>
         The guide, the API, the theme, a sample drag and the sources are also exposed as <code>bortable://</code>
@@ -52,15 +54,15 @@
     </p>
 </section>
 
-<section class="mcp-panel">
-    <h4>The same tools over plain HTTP</h4>
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> The same tools over plain HTTP</h3>
 
     <p>
         Every tool is also a <code>GET</code> under <code>/api/mcp/...</code>: open one in a browser tab to read
         exactly what an agent is handed.
     </p>
 
-    <ul>
+    <ul class="bb-detail-list">
         @foreach (var (href, text) in HttpExamples)
         {
             <li><a href="@href" target="_blank" rel="noopener">@text</a></li>

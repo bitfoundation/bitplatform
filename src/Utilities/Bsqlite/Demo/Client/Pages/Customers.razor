@@ -10,119 +10,124 @@
     its scale because it is compared through <code>ef_compare</code>, not floating point.
 </PageHeader>
 
+<StorageSwitcher />
+
 @if (_error is not null)
 {
-    <p class="error">@_error</p>
+    <div class="bb-note bb-note-danger" role="alert">@_error</div>
 }
 
-<div class="split">
-    <section class="card">
-        <h2>Directory</h2>
-        <p class="try">
-            <b>Try</b>
-            <span>
-                Save a customer with an email that already exists. The unique index is SQLite's,
-                so the failure arrives as a <code>DbUpdateException</code> - see the snippet below.
-            </span>
-        </p>
-        <div class="toolbar">
-            <input type="search" placeholder="Filter name or email" @bind="_filter" @bind:event="oninput" />
-            <span class="grow"></span>
-            <button type="button" @onclick="NewCustomer" disabled="@(_busy || _context is null)">New customer</button>
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Directory</h3>
+    <p class="bb-card-desc">
+        Every customer, sorted by name. Click a row to edit it in the panel under the table, next to what each
+        value becomes in the SQLite file.
+    </p>
+    <div class="bb-note bq-try">
+        <strong>Try</strong>
+        Save a customer with an email that already exists. The unique index is SQLite's, so the failure arrives
+        as a <code>DbUpdateException</code> - see the snippet below.
+    </div>
+
+    @* Wide: a six- or seven-column grid with its editor under it does not fit beside the "On this page"
+       rail, so this page gives the rail up. *@
+    <div class="bb-demo bb-page-wide">
+        <div class="bb-demo-bar">
+            <span class="bb-demo-label">Live</span>
+            <input type="search" placeholder="Filter name or email" aria-label="Filter customers" @bind="_filter" @bind:event="oninput" />
+            <button type="button" class="btn btn-primary" @onclick="NewCustomer" disabled="@(_busy || _context is null)">New customer</button>
         </div>
-        <div class="scroll-x">
-            <table>
+
+        <div class="bb-scroll">
+            <table class="bb-table bq-grid bq-grid-prose" data-rows="customers">
                 <thead>
-                <tr><th>Name</th><th>Email</th><th>Born</th><th>Credit</th><th>VIP</th><th></th></tr>
+                <tr><th>Name</th><th>Email</th><th>Born</th><th>Credit</th><th>VIP</th><th><span class="bq-sr">Actions</span></th></tr>
                 </thead>
                 <tbody>
                 @foreach (var customer in Visible)
                 {
-                    <tr class="clickable @(customer.Id == _edit?.Id ? "selected" : null)" @onclick="() => Edit(customer)">
-                        <td>@customer.DisplayName</td>
-                        <td>@customer.Email</td>
-                        <td>@SampleFormat.Day(customer.DateOfBirth)</td>
-                        <td>@SampleFormat.Money(customer.CreditLimit)</td>
+                    <tr class="bq-clickable @(customer.Id == _edit?.Id ? "bq-selected" : null)" @onclick="() => Edit(customer)">
+                        <td class="bq-name">@customer.DisplayName</td>
+                        <td class="bq-name">@customer.Email</td>
+                        <td class="bq-nowrap">@SampleFormat.Day(customer.DateOfBirth)</td>
+                        <td class="bq-num">@SampleFormat.Money(customer.CreditLimit)</td>
                         <td>@(customer.IsVip ? "yes" : "no")</td>
-                        <td class="actions">
-                            <button type="button" class="danger" @onclick="() => DeleteAsync(customer)" @onclick:stopPropagation="true">Delete</button>
+                        <td class="bb-table-action">
+                            <button type="button" class="btn bq-btn-danger bq-btn-sm" @onclick="() => DeleteAsync(customer)" @onclick:stopPropagation="true">Delete</button>
                         </td>
                     </tr>
                 }
                 </tbody>
             </table>
         </div>
-        <CodeBlock Title="Reading and inserting" Language="csharp" Code="@Snippets.Customers.Crud" />
-    </section>
-    <div class="stack">
-        <section class="card">
-            <h2>@(_edit?.Id == 0 ? "New customer" : "Edit customer")</h2>
-            @if (_edit is null)
-            {
-                <p class="empty">Select a row, or create one.</p>
-            }
-            else
-            {
-                <form class="stack-form" @onsubmit="SaveAsync" @onsubmit:preventDefault="true">
-                    <label>Name <input @bind="_edit.DisplayName" required /></label>
-                    <label>Email <input type="email" @bind="_edit.Email" required /></label>
-                    <label>Date of birth <input type="date" @bind="_edit.DateOfBirth" /></label>
-                    <label>Credit limit <input type="number" step="0.01" @bind="_edit.CreditLimit" /></label>
-                    <label><input type="checkbox" @bind="_edit.IsVip" /> VIP</label>
-                    <label>Notes <textarea @bind="_edit.Notes"></textarea></label>
-                    <p class="mono">PublicId @_edit.PublicId</p>
-                    <div class="row">
-                        <button type="submit" disabled="@_busy">Save</button>
-                        <button type="button" class="secondary" @onclick="() => _edit = null">Cancel</button>
-                    </div>
-                </form>
-            }
-        </section>
-        <section class="card">
-            <h2>What the values become</h2>
-            <div class="scroll-x">
-                <table class="type-table">
+
+        <div class="bb-split">
+            <div class="bb-stage">
+                <p class="bq-panel-title">@(_edit?.Id == 0 ? "New customer" : "Edit customer")</p>
+                @if (_edit is null)
+                {
+                    <p class="bb-muted">Select a row, or create one.</p>
+                }
+                else
+                {
+                    <form class="bq-form" @onsubmit="SaveAsync" @onsubmit:preventDefault="true">
+                        <label class="bb-field">Name <input @bind="_edit.DisplayName" required /></label>
+                        <label class="bb-field">Email <input type="email" @bind="_edit.Email" required /></label>
+                        <label class="bb-field">Date of birth <input type="date" @bind="_edit.DateOfBirth" /></label>
+                        <label class="bb-field">Credit limit <input type="number" step="0.01" @bind="_edit.CreditLimit" /></label>
+                        <label class="bb-check"><input type="checkbox" @bind="_edit.IsVip" /> VIP</label>
+                        <label class="bb-field">Notes <textarea @bind="_edit.Notes"></textarea></label>
+                        <p class="bb-mono bb-soft bq-small">PublicId @_edit.PublicId</p>
+                        <div class="bb-toolbar">
+                            <button type="submit" class="btn btn-primary" disabled="@_busy">Save</button>
+                            <button type="button" class="btn btn-secondary" @onclick="() => _edit = null">Cancel</button>
+                        </div>
+                    </form>
+                }
+            </div>
+
+            <div class="bb-stage">
+                <p class="bq-panel-title">What the values become</p>
+                <table class="bb-table bq-grid">
                     <thead><tr><th>Property</th><th>Stored as</th></tr></thead>
                     <tbody>
-                    <tr><td><code>PublicId</code></td><td>TEXT, 36-char Guid</td></tr>
-                    <tr><td><code>DateOfBirth</code></td><td>TEXT <code>yyyy-MM-dd</code></td></tr>
-                    <tr><td><code>IsVip</code></td><td>INTEGER 0/1</td></tr>
-                    <tr><td><code>CreditLimit</code></td><td>TEXT, compared via <code>ef_compare</code></td></tr>
-                    <tr><td><code>CreatedUtc</code></td><td>TEXT, ISO 8601</td></tr>
+                    <tr><td>PublicId</td><td>TEXT, 36-char Guid</td></tr>
+                    <tr><td>DateOfBirth</td><td>TEXT <code>yyyy-MM-dd</code></td></tr>
+                    <tr><td>IsVip</td><td>INTEGER 0/1</td></tr>
+                    <tr><td>CreditLimit</td><td>TEXT, compared via <code>ef_compare</code></td></tr>
+                    <tr><td>CreatedUtc</td><td>TEXT, ISO 8601</td></tr>
                     </tbody>
                 </table>
+                <p class="bb-muted bq-small">
+                    Filtering on <code>CreditLimit</code> - a real decimal comparison in SQL, not in
+                    the CLR - is on the <a href="queries">SQL</a> page.
+                </p>
             </div>
-            <p>
-                Filtering on <code>CreditLimit</code> - a real decimal comparison in SQL, not in
-                the CLR - is on the <a href="queries">SQL</a> page.
-            </p>
-        </section>
+        </div>
     </div>
-</div>
 
-<div class="stack-lg">
-    <DemoCard Title="The entity and its configuration"
-              CodeTitle="Customer.cs"
-              Code="@Snippets.Customers.Entity">
-        <Description>
-            No browser-specific attributes, no converters bolted on for WASM. Precision and the
-            unique index are declared once and apply on the server and in the tab alike.
-        </Description>
-    </DemoCard>
+    <CodeBlock Title="Reading and inserting" Language="csharp" Code="@Snippets.Customers.Crud" />
+</section>
 
-    <DemoCard Title="Handling a constraint failure"
-              CodeTitle="Pages/Customers.razor"
-              Code="@Snippets.Customers.Unique"
-              CodeOpen="false">
-        <Description>
-            <span>
-                After a failed save the change tracker still holds the rejected entity, so the
-                demo clears it before the next read - the same hygiene you would apply on a
-                server. The inner exception carries SQLite's message and result code.
-            </span>
-        </Description>
-    </DemoCard>
-</div>
+<DemoCard Title="The entity and its configuration"
+          CodeTitle="Customer.cs"
+          Code="@Snippets.Customers.Entity">
+    <Description>
+        No browser-specific attributes, no converters bolted on for WASM. Precision and the
+        unique index are declared once and apply on the server and in the tab alike.
+    </Description>
+</DemoCard>
+
+<DemoCard Title="Handling a constraint failure"
+          CodeTitle="Pages/Customers.razor"
+          Code="@Snippets.Customers.Unique"
+          CodeOpen="false">
+    <Description>
+        After a failed save the change tracker still holds the rejected entity, so the
+        demo clears it before the next read - the same hygiene you would apply on a
+        server. The inner exception carries SQLite's message and result code.
+    </Description>
+</DemoCard>
 
 @code {
     private AppDbContext? _context;

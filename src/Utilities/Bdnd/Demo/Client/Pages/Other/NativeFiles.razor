@@ -1,10 +1,10 @@
 ﻿@page "/other/native-files"
 
-<PageTitle>Other · Native Files - bit Bdnd</PageTitle>
+<PageTitle>Other - Native Files · Bdnd</PageTitle>
 
-<div class="demo-header">
-    <h3>Other - Native Files</h3>
-    <p class="text-muted">
+<div class="bb-intro">
+    <h1>Other - Native Files</h1>
+    <p class="bb-subtitle">
         A drop target can accept OS-level drags by listing a <code>BdndNativeTypes</code> value. Here
         the target accepts <code>BdndNativeTypes.File</code>; drag files from your file explorer onto
         it and the <code>OnNativeDrop</code> callback receives the file list.
@@ -13,7 +13,7 @@
 
 <DemoCode />
 
-<section class="demo-stage">
+<div class="bb-demo">
     <BdndProvider>
         <BdndDropTarget TItem="object" Accept="@BdndNativeTypes.File" Context="t"
                         style="display:contents" OnNativeDrop="HandleNativeDrop">
@@ -26,27 +26,29 @@
 
     @if (_files.Count > 0)
     {
-        <h4 style="margin-top:1.5rem;">Dropped files (@_files.Count)</h4>
-        <table class="demo-table" style="max-width:34rem;">
-            <thead><tr><th>Name</th><th>Type</th><th>Size</th></tr></thead>
-            <tbody>
-                @foreach (var f in _files)
-                {
-                    <tr>
-                        <td>@f.Name</td>
-                        <td>@(string.IsNullOrEmpty(f.Type) ? "-" : f.Type)</td>
-                        <td>@FormatSize(f.Size)</td>
-                    </tr>
-                }
-            </tbody>
-        </table>
+        <h4 class="demo-result-title">Dropped files (@_files.Count)</h4>
+        <div class="bb-scroll" style="max-width:34rem;">
+            <table class="bb-table demo-table">
+                <thead><tr><th>Name</th><th>Type</th><th>Size</th></tr></thead>
+                <tbody>
+                    @foreach (var f in _files)
+                    {
+                        <tr>
+                            <td>@f.Name</td>
+                            <td>@(string.IsNullOrEmpty(f.Type) ? "-" : f.Type)</td>
+                            <td>@FormatSize(f.Size)</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
     }
+</div>
 
-    <p class="text-muted" style="margin-top:1rem;">
-        Only file metadata (name, size, MIME type) is exposed by the browser during a drop;
-        reading contents would use an additional file API.
-    </p>
-</section>
+<div class="bb-note">
+    Only file metadata (name, size, MIME type) is exposed by the browser during a drop;
+    reading contents would use an additional file API.
+</div>
 
 @code {
     private readonly List<BdndNativeFile> _files = [];

@@ -261,9 +261,9 @@ public class McpController : ControllerBase
     [HttpGet]
     [McpServerTool(Name = nameof(GetBmageSourceFiles), Title = "List the demo source files",
                    ReadOnly = true, Destructive = false, Idempotent = true, OpenWorld = false)]
-    [Description("Lists the working Bit.Bmage source files this server can hand out: every page of the demo site - one per feature, each a complete working example (avatar, upload optimisation, screenshot annotation, batch, the editor, headless use, metadata, formats, pipelines) - plus the layout, the shared components and the host wiring. Demo pages carry the route they are served at and the terms they cover. Use it to pick the path to pass to GetBmageSourceFile.")]
+    [Description("Lists the working Bit.Bmage source files this server can hand out: every page of the demo site - one per feature, each a complete working example (avatar, upload optimisation, screenshot annotation, batch, the editor, headless use, metadata, formats, pipelines) - plus the shared components, the documentation site's own shell and the host wiring. Demo pages carry the route they are served at and the terms they cover. Use it to pick the path to pass to GetBmageSourceFile.")]
     public BmageSourceFileDto[] GetBmageSourceFiles(
-        [Description("Optional. 'Demo page' for only the feature pages, 'Host' for the server wiring, 'Demo' for the layout and shared components, or any substring of a path, a title or a page's keywords. Omitted, every file is returned.")] string? filter = null)
+        [Description("Optional. 'Demo page' for only the feature pages, 'Host' for the server wiring, 'Demo' for the shared components and the site's page catalog, 'Site chrome' for the documentation site's header, nav, search palette and footer, or any substring of a path, a title or a page's keywords. Omitted, every file is returned.")] string? filter = null)
     {
         var files = BmageSourceCatalog.SourceFiles;
 

@@ -1,0 +1,407 @@
+﻿/* ============================================================================================
+   Bcrdt demo - the styles of the live samples.
+
+   The site's chrome, tokens and shared surfaces live in app.css (the site kit every Utilities demo
+   shares); this file only draws what is Bcrdt's own - the replica panels, the editors and forms
+   inside them, and the read-outs of what each replica holds - and it is written against the kit's
+   --bb-* names, so it follows the light/dark theme with no rules of its own for either.
+
+   Every replica carries its presence colour as --replica-color (set inline from the colour its
+   collaborators see next to its name), so a panel, a projection and a row of the update log can be
+   matched up with a name in a presence list by eye.
+   ============================================================================================ */
+
+/* ---------- The replica's colour mark ---------- */
+
+.replica-dot {
+    display: inline-block;
+    flex: none;
+    width: .625rem;
+    height: .625rem;
+    border-radius: var(--bb-radius-pill);
+    background: var(--replica-color, var(--bb-text-soft));
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--replica-color, var(--bb-text-soft)) 25%, transparent);
+}
+
+/* ---------- A replica panel: a live sample (.bb-demo) whose title bar names the replica ---------- */
+
+.replicas {
+    align-items: start;
+    margin-top: 1.5rem;
+}
+
+/* Three replicas side by side want a little less than the kit's 280px floor per pane, so they still
+   sit in one row on a laptop. */
+.replicas-3 {
+    grid-template-columns: repeat(auto-fit, minmax(min(250px, 100%), 1fr));
+}
+
+.replica {
+    margin-bottom: 0;
+}
+
+/* The presence colour runs along the top of the bar, the way Fluent marks a card with its accent. */
+.replica > .panel-head {
+    flex-wrap: wrap;
+    gap: .375rem .625rem;
+    box-shadow: inset 0 3px 0 var(--replica-color, var(--bb-primary));
+}
+
+.panel-name {
+    font-size: var(--fl-font-size-200);
+    font-weight: var(--fl-weight-semibold);
+    color: var(--bb-text);
+}
+
+.panel-client {
+    font-family: var(--bb-mono);
+    font-size: var(--fl-font-size-100);
+    color: var(--bb-text-soft);
+    white-space: nowrap;
+}
+
+/* The status light and the button sit at the end of the bar. */
+.panel-head > .badge {
+    margin-inline-start: auto;
+}
+
+.panel-toggle.btn {
+    min-height: 1.75rem;
+    padding: .125rem .625rem;
+    font-size: var(--fl-font-size-100);
+}
+
+/* The kit's badge is brand-tinted by default; a replica that is offline on purpose, or simply not
+   connected, reads as neutral rather than as good news. */
+.bb-badge.badge-idle {
+    background: var(--bb-surface-2);
+    color: var(--bb-text-muted);
+}
+
+/* An offline replica is visibly set apart, because "why is this one different" is the question the
+   offline demos are trying to provoke. */
+.replica.panel-offline {
+    border-color: color-mix(in srgb, var(--bb-warning) 55%, var(--bb-border));
+}
+
+.replica.panel-offline > .panel-head {
+    background: var(--bb-warning-soft);
+}
+
+/* Who else this replica can see: a quiet line under the bar. */
+.panel-presence {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: .25rem .5rem;
+    margin: -.5rem 0 1rem;
+    font-size: var(--fl-font-size-100);
+    color: var(--bb-text-muted);
+}
+
+.presence-label {
+    color: var(--bb-text-soft);
+    font-weight: var(--fl-weight-semibold);
+}
+
+.presence-list {
+    display: inline-flex;
+    flex-wrap: wrap;
+    gap: .25rem;
+    color: var(--bb-text);
+}
+
+.presence-empty {
+    color: var(--bb-text-soft);
+    font-style: italic;
+}
+
+.panel-body {
+    min-width: 0;
+}
+
+/* The read-out under a replica: a footer bar mirroring the title bar. The selector outranks the
+   kit's `.bb-demo > :last-child`, which would otherwise take the bar's negative margin away. */
+.bb-demo.replica > .panel-foot {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: .25rem 1rem;
+    margin: 1.25rem -1.25rem -1.25rem;
+    padding: .5rem 1rem;
+    background: var(--bb-surface-sunken);
+    border-top: 1px solid var(--bb-border);
+    border-radius: 0 0 calc(var(--bb-radius-xl) - 1px) calc(var(--bb-radius-xl) - 1px);
+}
+
+/* The engine's client id closes the footer, at its far end. */
+.panel-foot > .panel-client {
+    margin-inline-start: auto;
+}
+
+.metric {
+    font-size: var(--fl-font-size-100);
+    color: var(--bb-text-muted);
+    font-variant-numeric: tabular-nums;
+}
+
+.metric-warn {
+    color: var(--bb-warning-text);
+    font-weight: var(--fl-weight-semibold);
+}
+
+/* The "Opening replicas…" placeholder the prerendered page shows. */
+.loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: .625rem;
+    margin-top: 1.5rem;
+}
+
+/* ---------- Inside a panel: the editor, the form fields, the to-do list ---------- */
+
+.editor {
+    display: block;
+    font-size: var(--fl-font-size-200);
+}
+
+.replica .bb-toolbar {
+    margin: .875rem 0 0;
+}
+
+/* A form field across the panel's width: label, control, then the note on how it merges. */
+.replica .field {
+    display: flex;
+    margin-bottom: 1rem;
+}
+
+.replica .field:last-child {
+    margin-bottom: 0;
+}
+
+.field-input {
+    width: 100%;
+}
+
+.list-add {
+    display: flex;
+    gap: .5rem;
+}
+
+.list-add > input {
+    flex: 1;
+    min-width: 0;
+}
+
+.todo {
+    list-style: none;
+    margin: .75rem 0 0;
+    padding: 0;
+}
+
+/* One row per item: checkbox, title, then the action buttons. The rule targets the rows, not the
+   list - a flex list would lay every item out side by side in a single row. */
+.todo-item {
+    display: flex;
+    align-items: center;
+    gap: .375rem;
+    padding: .375rem 0;
+    border-bottom: 1px solid var(--bb-border);
+}
+
+.todo-item:last-child {
+    border-bottom: 0;
+}
+
+.todo-item > input[type="checkbox"] {
+    margin-inline-end: .25rem;
+}
+
+/* A title is an input, drawn flat until it is pointed at, so a row reads as a list item rather than
+   as a form. */
+input.todo-title {
+    flex: 1;
+    min-width: 0;
+    border-color: transparent;
+    background: transparent;
+}
+
+input.todo-title:hover {
+    border-color: var(--bb-border-strong);
+}
+
+.todo-done input.todo-title {
+    color: var(--bb-text-soft);
+    text-decoration: line-through;
+}
+
+.todo-item .bb-icon-btn {
+    width: 28px;
+    height: 28px;
+    font-size: var(--fl-font-size-200);
+}
+
+.todo-item .bb-icon-btn:disabled {
+    opacity: .35;
+    cursor: not-allowed;
+}
+
+.todo-item .icon-danger:hover {
+    color: var(--bb-danger);
+    background: var(--bb-danger-soft);
+}
+
+.todo-empty {
+    margin: .75rem 0 0;
+    font-size: var(--fl-font-size-200);
+    color: var(--bb-text-soft);
+}
+
+/* ---------- What a replica holds: its JSON projection ---------- */
+
+.projection {
+    min-width: 0;
+}
+
+.projection-title {
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+    margin: 0 0 .5rem;
+    font-size: var(--fl-font-size-200);
+    font-weight: var(--fl-weight-semibold);
+    color: var(--bb-text);
+}
+
+/* State, not a sample: it wraps rather than scrolling sideways, and scrolls once it is long. */
+pre.json {
+    max-height: 340px;
+    margin-bottom: 0;
+    overflow: auto;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+    font-size: .75rem;
+    line-height: 1.55;
+}
+
+/* The conflict lab's three read-outs in each panel. */
+h4.sub {
+    margin: 1rem 0 .375rem;
+    font-size: var(--fl-font-size-100);
+    font-weight: var(--fl-weight-semibold);
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    color: var(--bb-text-soft);
+}
+
+.panel-body > h4.sub:first-child {
+    margin-top: 0;
+}
+
+.panel-body > pre.json {
+    max-height: 200px;
+}
+
+/* ---------- The conflict lab ---------- */
+
+.lab {
+    margin: 1.5rem 0 0;
+}
+
+/* A scenario's title is a tile title, not a section of the page: it stays out of the "on this page"
+   outline, so it is drawn here rather than with .bb-card-title. */
+.lab-case > h3 {
+    margin: 0 0 .375rem;
+    font-size: var(--fl-font-size-300);
+    font-weight: var(--fl-weight-semibold);
+    line-height: 1.4;
+    color: var(--bb-text);
+}
+
+.lab-expect {
+    color: var(--bb-text);
+}
+
+.lab-log {
+    margin-top: 0;
+    padding-inline-start: 2.5rem;
+    max-height: 320px;
+}
+
+.lab-log > li + li {
+    margin-top: .125rem;
+}
+
+/* ---------- Internals ---------- */
+
+/* The labels are the long side here and the values short numbers, so the label column takes what is
+   left and wraps, and the value column keeps its number on one line. */
+.stats.bb-params {
+    grid-template-columns: minmax(0, 1fr) max-content;
+    margin: 1rem 0 0;
+    box-shadow: none;
+}
+
+.stats.bb-params dd {
+    justify-content: flex-end;
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+}
+
+.log-table .replica-dot {
+    margin-inline-end: .5rem;
+}
+
+/* ---------- The live page ---------- */
+
+.live-bar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: .75rem 1.5rem;
+    margin: 1.5rem 0 1rem;
+}
+
+.live-share {
+    display: flex;
+    flex-direction: column;
+    gap: .25rem;
+    min-width: 0;
+}
+
+.live-link {
+    font-family: var(--bb-mono);
+    font-size: var(--fl-font-size-200);
+    overflow-wrap: anywhere;
+}
+
+.live-relays {
+    margin: 0;
+}
+
+/* ---------- The landing page's hero: two replicas under the sample's markup ---------- */
+
+.home-hero-live {
+    padding: 1rem;
+    background: var(--bb-bg);
+    border-top: 1px solid var(--bb-border);
+}
+
+.home-hero-replicas {
+    margin: 0;
+    gap: .75rem;
+}
+
+.home-hero-live .loading {
+    min-height: 11.5rem;
+    margin: 0;
+}
+
+.home-hero-hint {
+    margin: .75rem 0 0;
+    font-size: var(--fl-font-size-100);
+    color: var(--bb-text-soft);
+    text-align: center;
+}

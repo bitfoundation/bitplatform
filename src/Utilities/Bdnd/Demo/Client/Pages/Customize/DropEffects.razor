@@ -1,10 +1,10 @@
 ﻿@page "/customize/drop-effects"
 
-<PageTitle>Customize · Drop Effects - bit Bdnd</PageTitle>
+<PageTitle>Customize - Drop Effects · Bdnd</PageTitle>
 
-<div class="demo-header">
-    <h3>Customize - Drop Effects</h3>
-    <p class="text-muted">
+<div class="bb-intro">
+    <h1>Customize - Drop Effects</h1>
+    <p class="bb-subtitle">
         A drag source can advertise a drop effect through <code>DropEffect</code>, which sets the
         native <code>dataTransfer.effectAllowed</code>. Drag the two boxes below and watch the
         cursor: the <em>copy</em> box shows a “+” badge, the <em>move</em> box does not.
@@ -13,7 +13,7 @@
 
 <DemoCode />
 
-<section class="demo-stage">
+<div class="bb-demo">
     <BdndProvider>
         <div class="row-wrap">
             <BdndDraggable TItem="string" Type="@ItemTypes.Box" Item="@("copy")"
@@ -38,13 +38,13 @@
             </div>
         </BdndDropTarget>
     </BdndProvider>
+</div>
 
-    <p class="text-muted" style="margin-top:1rem;">
-        Tip: the browser only offers the effects a source allows. With <code>DropEffect="copyMove"</code>
-        the user can switch to copying by holding <kbd>Ctrl</kbd> (<kbd>⌥</kbd> on macOS) during the drag;
-        the boxes above allow a single effect each, so modifier keys do not change them.
-    </p>
-</section>
+<div class="bb-note">
+    The browser only offers the effects a source allows. With <code>DropEffect="copyMove"</code>
+    the user can switch to copying by holding <kbd>Ctrl</kbd> (<kbd>⌥</kbd> on macOS) during the drag;
+    the boxes above allow a single effect each, so modifier keys do not change them.
+</div>
 
 @code {
     private string? _last;

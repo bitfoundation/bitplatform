@@ -46,9 +46,11 @@
 
     <!-- Every demo page - each one is a working scanner - plus the components they share and the
          client half of the hosting. The MCP page describes this server rather than the library, and
-         the not-found page teaches nothing about scanning. -->
+         the not-found page teaches nothing about scanning. Nor does the site chrome: the landing
+         page, the shell in Layout\ and the catalog that drives it (DocsCatalog.cs) are the docs site
+         every Utilities demo shares, not code an app needs in order to scan. -->
     <EmbeddedResource Include="..\Client\**\*.razor;..\Client\**\*.cs"
-                      Exclude="..\Client\bin\**;..\Client\obj\**;..\Client\Pages\McpServer.razor;..\Client\Pages\NotFound.razor">
+                      Exclude="..\Client\bin\**;..\Client\obj\**;..\Client\Layout\**;..\Client\DocsCatalog.cs;..\Client\Pages\Home.razor;..\Client\Pages\McpServer.razor;..\Client\Pages\NotFound.razor">
       <LogicalName>BbScannerSource/Demo/Client/%(RecursiveDir)%(Filename)%(Extension)</LogicalName>
     </EmbeddedResource>
 

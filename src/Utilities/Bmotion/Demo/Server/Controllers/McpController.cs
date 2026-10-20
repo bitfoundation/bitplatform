@@ -4,7 +4,6 @@ using System.ComponentModel;
 using ModelContextProtocol.Server;
 using Bit.Bmotion.Demo.Server.Dtos;
 using Bit.Bmotion.Demo.Server.Services;
-using Bit.Bmotion.Demo.Client.Shared;
 
 namespace Bit.Bmotion.Demo.Server.Controllers;
 
@@ -358,9 +357,9 @@ public class McpController : ControllerBase
     // only in that one of them knew what the page was about. That knowledge moved here instead.
     [HttpGet]
     [McpServerTool(Name = nameof(GetBmotionSourceFiles))]
-    [Description("Lists the working Bit.Bmotion source files this server can hand out: every page of the demo site - one per feature area, each a complete working example of the feature it covers - plus the layout, the shared components and the host wiring. Demo pages carry the route they are served at and the terms they cover. Use it to pick the path to pass to GetBmotionSourceFile.")]
+    [Description("Lists the working Bit.Bmotion source files this server can hand out: every page of the demo site - one per feature area, each a complete working example of the feature it covers - plus the client's wiring, its shared components and the host wiring. Demo pages carry the route they are served at and the terms they cover. Use it to pick the path to pass to GetBmotionSourceFile.")]
     public BmotionSourceFileDto[] GetBmotionSourceFiles(
-        [Description("Optional. 'Demo page' for only the feature pages, 'Host' for the server wiring, 'Demo' for the layout and shared components, or any substring of a path, a title or a page's keywords. Omitted, every file is returned.")] string? filter = null)
+        [Description("Optional. 'Demo page' for only the feature pages, 'Host' for the server wiring, 'Demo' for the client's wiring and shared components, or any substring of a path, a title or a page's keywords. Omitted, every file is returned.")] string? filter = null)
     {
         var files = BmotionSourceCatalog.SourceFiles;
 

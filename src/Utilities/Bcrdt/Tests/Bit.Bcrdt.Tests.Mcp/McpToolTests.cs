@@ -320,6 +320,8 @@ public class McpToolTests
         Assert.DoesNotContain("McpServer.razor", index);
         Assert.DoesNotContain("NotFound.razor", index);
         Assert.DoesNotContain("Error.razor", index);
+        Assert.DoesNotContain("Demo/Client/Layout/", index);
+        Assert.DoesNotContain("DocsCatalog.cs", index);
     }
 
     [TestMethod]

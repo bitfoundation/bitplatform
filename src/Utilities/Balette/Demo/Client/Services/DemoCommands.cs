@@ -19,6 +19,8 @@ public static class DemoCommands
     [
         // ---- Navigation: every page, also reachable with G-then-X sequences, the way Linear and GitHub do it ----
         BaletteCmd.Navigate("Introduction", "/").Group("Navigation").Shortcut("G H").Keywords("home", "start", "landing").Priority(BaletteCommandPriority.High),
+        // Not titled "Getting started": its two word starts would outrank Settings for "gs", the sequence's own letters.
+        BaletteCmd.Navigate("Quick start", "/getting-started").Group("Navigation").Shortcut("G I").Keywords("install", "setup", "begin"),
         BaletteCmd.Navigate("Registering commands", "/commands").Group("Navigation").Shortcut("G R").Keywords("register", "builder", "declarative", "counter"),
         BaletteCmd.Navigate("Settings", "/commands#settings").Group("Navigation").Shortcut("G S").Keywords("preferences", "options", "config"),
         BaletteCmd.Navigate("Nested pages and flows", "/pages").Group("Navigation").Shortcut("G P").Keywords("prompt", "multi-select", "confirm", "toast", "actions"),

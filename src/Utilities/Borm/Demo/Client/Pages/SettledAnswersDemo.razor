@@ -2,11 +2,11 @@
 @implements IDisposable
 @using Bit.Borm.Demo.Client.Forms
 
-<PageTitle>Locked fields, tidy values &amp; date windows</PageTitle>
+<PageTitle>Locked fields, tidy values &amp; date windows · Borm</PageTitle>
 
-<div class="demo-intro">
+<div class="bb-intro">
     <h1>Locked fields, tidy values &amp; date windows</h1>
-    <p>
+    <p class="bb-subtitle">
         Three things a form needs once it survives its first submit. <code>ReadOnlyWhen</code> locks an
         answer that has been settled without hiding it from a keyboard or a screen reader.
         <code>Trim()</code> and <code>Normalize(…)</code> fix the value rather than complaining about it.
@@ -14,30 +14,33 @@
     </p>
 </div>
 
-<div class="demo-split">
-    <div class="demo-card">
+<div class="bb-split bb-page-wide">
+    <div class="bb-demo">
+        <div class="bb-demo-bar"><span class="bb-demo-label">Live form</span></div>
         <BormView State="_state" OnValidSubmit="HandleSubmit" SubmitText="Save booking" />
     </div>
 
-    <div class="demo-card">
-        <h2 style="margin-top:0;font-size:1.05rem;">What the model holds</h2>
-        <p style="color:#64748b;font-size:.85rem;">
+    <div class="bb-demo">
+        <div class="bb-demo-bar"><span class="bb-demo-label">What the model holds</span></div>
+        <p class="bb-card-desc">
             Tick <em>confirmed</em> and the reference and arrival lock — still readable, still copyable,
             still in the tab order. Type spaces around the email, or a lower-case reference, then leave
             the field.
         </p>
-        <pre style="background:#0f172a;color:#e2e8f0;border-radius:10px;padding:1rem;font-size:.82rem;overflow-x:auto;">@Dump</pre>
+        <div class="demo-readout">
+            <pre>@Dump</pre>
+        </div>
 
         @if (_state.IsSubmitSuccessful)
         {
-            <p style="color:#059669;font-weight:600;margin-bottom:0;">Saved ✓</p>
+            <p class="bb-note bb-note-success demo-saved">Saved ✓</p>
         }
     </div>
 </div>
 
-<details class="demo-source">
-    <summary>View source</summary>
-    <pre><code>@Source</code></pre>
+<details class="bb-source demo-source">
+    <summary class="btn btn-secondary">View source</summary>
+    <pre class="bb-code"><code>@Source</code></pre>
 </details>
 
 @code {

@@ -1,6 +1,6 @@
 ﻿@page "/examples/auto-pan"
 
-<PageTitle>Auto Pan &amp; Pinch - bit Blow</PageTitle>
+<PageTitle>Auto Pan &amp; Pinch · Blow</PageTitle>
 
 <ExampleScaffold Title="Auto Pan &amp; Pinch"
                  Summary="Drag a node (or a connection) toward the edge of the canvas and hold it there: the viewport scrolls to follow, so you can move things well beyond the visible area. On a touch device, two fingers pinch to zoom about the midpoint between them.">
@@ -26,7 +26,7 @@
                     AutoPanMargin="_margin"
                     ZoomOnPinch="_pinch"
                     OnViewportChanged="@(vp => _viewport = vp)">
-            <BlowBackground Variant="BlowBackgroundVariant.Lines" Gap="40" Color="#e5e7eb" />
+            <BlowBackground Variant="BlowBackgroundVariant.Lines" Gap="40" Color="var(--bit-blow-border)" />
             <BlowControls />
             <BlowMiniMap Pannable="true" Zoomable="true" />
             <BlowPanel Anchor="BlowPanelPosition.TopLeft">

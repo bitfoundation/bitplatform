@@ -1,9 +1,18 @@
 ﻿@page "/not-found"
+@layout MainLayout
 
 @* Target of app.UseStatusCodePagesWithReExecute("/not-found") in the host's Program.cs (a deep
    link to an unknown URL matches no endpoint, so the server re-executes it here), and also the
    router's NotFoundPage for routes missed during client-side navigation. *@
 
-<PageTitle>Not found - Bit.Bmotion</PageTitle>
+<PageTitle>Not found · Bmotion</PageTitle>
 
-<NotFoundContent />
+<div class="bb-error bb-error-404">
+    <h1>404</h1>
+    <p>There is no page at this address. It may have moved, or the link that led here may be mistyped.</p>
+    <div class="bb-try bb-error-actions">
+        <a href="" class="btn btn-primary">Go to the home page</a>
+        <a href="getting-started" class="btn btn-secondary">Browse the docs</a>
+    </div>
+    <p class="bb-error-hint">Looking for something specific? Press <kbd>/</kbd> to search.</p>
+</div>

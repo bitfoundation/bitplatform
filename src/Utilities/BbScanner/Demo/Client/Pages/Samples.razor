@@ -1,93 +1,114 @@
 ﻿@page "/samples"
 
-<PageTitle>Sample barcodes - bit BbScanner</PageTitle>
+<PageTitle>Sample barcodes · BbScanner</PageTitle>
 
-<h1>Sample barcodes</h1>
-<p class="lede">
-    One scannable example of every supported symbology, generated in the browser and drawn as
-    SVG. Point a phone at the screen, or open this page on a second device and scan it with the
-    <a href="scan">playground</a>.
-</p>
+<div class="bb-intro">
+    <h1>Sample barcodes</h1>
+    <p class="bb-subtitle">
+        One scannable example of every supported symbology, generated in the browser and drawn as
+        SVG. Point a phone at the screen, or open this page on a second device and scan it with the
+        <a href="scan">playground</a>.
+    </p>
+</div>
 
-<div class="note">
+<div class="bb-note">
     These are rendered by encoders that live in the test project, not in the library. The library
     itself only reads barcodes; the encoders exist so that the decoders can be validated by round
     trip and so that this page has something real to show.
 </div>
 
-<div class="note note--warning">
+<div class="bb-note bb-note-warn">
     The PDF417 sample is drawn with the library's <em>placeholder</em> symbol character table. It
     round trips here, which is what validates the detector, the GF(929) error correction and the
     compaction modes, but it is not a conforming PDF417 symbol and no other scanner will read it.
     See the PDF417 section of the README for why the real table cannot be derived.
 </div>
 
-<h2>Two dimensional</h2>
-<div class="grid grid--3">
-    @foreach (var sample in SampleCatalog.All.Where(s => (s.Format & BbBarcodeFormat.AllMatrix) != 0))
-    {
-        <BarcodeSvg Matrix="sample.Matrix" Caption="@sample.Caption" Value="@sample.Value" Size="200" />
-    }
+@* The linear symbols are drawn at two pixels a module, up to 720 wide: the page gives up the
+   "on this page" rail for the width. *@
+<div class="bb-card bb-page-wide">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Two dimensional</h3>
+    <div class="sample-grid">
+        @foreach (var sample in SampleCatalog.All.Where(s => (s.Format & BbBarcodeFormat.AllMatrix) != 0))
+        {
+            <BarcodeSvg Matrix="sample.Matrix" Caption="@sample.Caption" Value="@sample.Value" Size="200" />
+        }
+    </div>
 </div>
 
-<h2>Linear</h2>
-<div class="grid grid--2">
-    @foreach (var sample in SampleCatalog.All.Where(s => (s.Format & BbBarcodeFormat.AllLinear) != 0))
-    {
-        @* Two CSS pixels per module, so the bars survive rasterisation on a 1x display and a
-           phone camera can read them off the screen. *@
-        <BarcodeSvg Modules="sample.Modules"
-                    Caption="@sample.Caption"
-                    Value="@sample.Value"
-                    Size="@Math.Clamp((sample.Modules!.Length + 24) * 2, 300, 720)"
-                    LinearHeight="26"
-                    QuietZone="12" />
-    }
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Linear</h3>
+    <div class="sample-grid sample-grid-linear">
+        @foreach (var sample in SampleCatalog.All.Where(s => (s.Format & BbBarcodeFormat.AllLinear) != 0))
+        {
+            @* Two CSS pixels per module, so the bars survive rasterisation on a 1x display and a
+               phone camera can read them off the screen. *@
+            <BarcodeSvg Modules="sample.Modules"
+                        Caption="@sample.Caption"
+                        Value="@sample.Value"
+                        Size="@Math.Clamp((sample.Modules!.Length + 24) * 2, 300, 720)"
+                        LinearHeight="26"
+                        QuietZone="12" />
+        }
+    </div>
 </div>
 
-<h2>Decode them right here</h2>
-<p>
-    The same symbols, decoded in place without a camera: each one is rasterised into a grayscale
-    buffer and pushed through <code>BbBarcodeDecoder</code>, exactly as a camera frame would be.
-</p>
-
-<button class="button button--primary" type="button" @onclick="RunSelfTest" disabled="@_running">
-    @(_running ? "Decoding..." : "Decode every sample")
-</button>
-
-@if (_selfTest.Count > 0)
-{
-    <table style="margin-block-start:1rem;">
-        <thead>
-            <tr><th>Sample</th><th>Expected</th><th>Decoded</th><th>Time</th><th></th></tr>
-        </thead>
-        <tbody>
-            @foreach (var row in _selfTest)
-            {
-                <tr>
-                    <td>@row.Caption</td>
-                    <td class="mono">@row.Expected</td>
-                    <td class="mono">@(row.Actual ?? "-")</td>
-                    <td class="mono">@row.Milliseconds.ToString("0.00") ms</td>
-                    <td>
-                        @if (row.Ok)
-                        {
-                            <span class="pill pill--success">match</span>
-                        }
-                        else
-                        {
-                            <span class="pill pill--danger">miss</span>
-                        }
-                    </td>
-                </tr>
-            }
-        </tbody>
-    </table>
-    <p class="field__hint">
-        @_selfTest.Count(r => r.Ok) of @_selfTest.Count samples decoded in
-        @_selfTest.Sum(r => r.Milliseconds).ToString("0.0") ms total.
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Decode them right here</h3>
+    <p class="bb-card-desc">
+        The same symbols, decoded in place without a camera: each one is rasterised into a grayscale
+        buffer and pushed through <code>BbBarcodeDecoder</code>, exactly as a camera frame would be.
     </p>
-}
+
+    <div class="bb-toolbar">
+        <button class="btn btn-primary" type="button" @onclick="RunSelfTest" disabled="@_running">
+            @if (_running)
+            {
+                <span class="bb-spinner"></span>
+            }
+            @(_running ? "Decoding..." : "Decode every sample")
+        </button>
+        @if (_selfTest.Count > 0 && !_running)
+        {
+            <span class="bb-muted">
+                @_selfTest.Count(r => r.Ok) of @_selfTest.Count samples decoded in
+                @_selfTest.Sum(r => r.Milliseconds).ToString("0.0") ms total.
+            </span>
+        }
+    </div>
+
+    @if (_selfTest.Count > 0)
+    {
+        <div class="bb-scroll">
+            <table class="bb-table">
+                <thead>
+                    <tr><th>Sample</th><th>Expected</th><th>Decoded</th><th>Time</th><th>Result</th></tr>
+                </thead>
+                <tbody>
+                    @foreach (var row in _selfTest)
+                    {
+                        <tr>
+                            <td class="bb-table-key">@row.Caption</td>
+                            <td class="bb-mono">@row.Expected</td>
+                            <td class="bb-mono">@(row.Actual ?? "-")</td>
+                            <td class="bb-mono bb-nowrap">@row.Milliseconds.ToString("0.00") ms</td>
+                            <td>
+                                @if (row.Ok)
+                                {
+                                    <span class="bb-badge bb-badge-success">match</span>
+                                }
+                                else
+                                {
+                                    <span class="bb-badge bb-badge-danger">miss</span>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>
 
 @code {
     private sealed record SelfTestRow(string Caption, string Expected, string? Actual, double Milliseconds, bool Ok);

@@ -4,15 +4,35 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="bit Bdnd (Bit.Bdnd) - a declarative drag-and-drop library for Blazor inspired by React DnD, with typed items, drop targets, custom drag layers, drag handles, sortable lists and native file drops." />
+    <meta name="theme-color" content="#FFFFFF" />
     <base href="/" />
+    @* No static <title> here: every page supplies its own through <PageTitle>, and with
+       prerendering the HeadOutlet emits a real <title> element into this head. *@
+    <meta name="description" content="bit Bdnd (Bit.Bdnd) - a declarative drag-and-drop library for Blazor inspired by React DnD, with typed items, drop targets, custom drag layers, drag handles, sortable lists and native file drops." />
+
+    @* Link previews: the card a chat client or a social site unfurls is the first impression a
+       shared link makes. *@
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Bit.Bdnd" />
+    <meta property="og:title" content="Bdnd - declarative drag and drop for Blazor" />
+    <meta property="og:description" content="React DnD's model in Blazor: draggables, drop targets, custom drag layers, drag handles, nesting and native file drops - with the drag state in C#." />
+    <meta name="twitter:card" content="summary" />
+
     <ResourcePreloader />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    @* The site kit (app.css, theme.js, site.js - shared by every Utilities demo), then this demo's
+       own sample styles. Bit.Bdnd ships no stylesheet: its script module is imported by the
+       components on demand. *@
     <link rel="stylesheet" href="@Assets["app.css"]" />
-    @* Bit.Bdnd ships no stylesheet: its script module is imported by the components on demand. *@
+    <link rel="stylesheet" href="@Assets["demo.css"]" />
+    @* Scoped-CSS bundle: includes the client project's *.razor.css files as well. *@
     <link rel="stylesheet" href="@Assets["Bit.Bdnd.Demo.Server.styles.css"]" />
+    @* Synchronous on purpose: applies the light/dark theme before first paint. *@
+    <script src="@Assets["theme.js"]"></script>
+    @* The "Within an iframe" page frames the Single Target page in an iframe marked data-bdnd-frame.
+       In that frame a page shows its sample and none of the site around it (demo.css), the way React
+       DnD's own iframe example frames just the dustbin. Decided before first paint, or the chrome
+       flashes in the frame; a frame of another origin has no frameElement and gets the whole site. *@
+    <script>try { if (window.frameElement && window.frameElement.hasAttribute('data-bdnd-frame')) document.documentElement.classList.add('bdnd-framed'); } catch (_) { }</script>
     <ImportMap />
     <link rel="icon" type="image/png" href="favicon.png" />
     <HeadOutlet @rendermode="InteractiveWebAssembly" />
@@ -29,6 +49,7 @@
         <span class="dismiss">&#128473;</span>
     </div>
     <script src="@Assets["_framework/blazor.web.js"]"></script>
+    <script src="@Assets["site.js"]"></script>
 </body>
 
 </html>

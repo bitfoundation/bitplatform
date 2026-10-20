@@ -1,57 +1,353 @@
 ﻿@page "/"
+@layout MainLayout
 
-<PageTitle>bit Bdnd - drag and drop for Blazor</PageTitle>
+<PageTitle>Bdnd - declarative drag and drop for Blazor</PageTitle>
 
-<div class="demo-header">
-    <h3>bit Bdnd</h3>
-    <p class="text-muted">
-        A declarative drag-and-drop library for Blazor inspired by
-        <a href="https://react-dnd.github.io/react-dnd" target="_blank" rel="noopener">React DnD</a>.
-        It brings the same data-driven model - items, types, monitors and an HTML5 drag-and-drop
-        backend - to Blazor as composable components. Try it: drag a box onto the dustbin.
-    </p>
-</div>
+@* The landing page: hero → proof strip → feature grid → code walkthrough → the React DnD mapping →
+   persona tiles → FAQ → final call to action. Everything else on the site is a documentation page
+   under DocsLayout. The hero's sample is live rather than a picture of one - a drag-and-drop library
+   is best introduced by being dragged. *@
 
-<DemoCode />
+<div class="bb-landing">
 
-<section class="demo-stage">
-    <BdndProvider>
-        <div class="row-wrap">
-            @foreach (var name in _boxes)
-            {
-                <BdndDraggable TItem="string" Type="@ItemTypes.Box" Item="name" Context="drag">
-                    <div class="box" style="opacity:@(drag.IsDragging ? "0.4" : "1")">@name</div>
-                </BdndDraggable>
-            }
+    @* ============================== Hero ============================== *@
+
+    <section class="bb-hero">
+        <div class="bb-hero-copy">
+            <span class="bb-hero-eyebrow">
+                <span class="bb-dot bb-dot-success"></span>
+                Open source · MIT · net8.0 / net9.0 / net10.0
+            </span>
+            <h1>Drag and drop for Blazor,<br /><span class="bb-hero-accent">the React DnD way.</span></h1>
+            <p class="bb-hero-sub">
+                Declare what can be dragged and where it can go - <code>BdndDraggable</code>,
+                <code>BdndDropTarget</code>, <code>BdndDragLayer</code>, <code>BdndDragHandle</code> - and render
+                from the state they hand you. Typed items matched by type, custom drag previews, handles, nesting
+                and native file drops, on the browser's own HTML5 drag and drop, with the drag state in C#.
+            </p>
+            <pre class="bb-code bb-hero-install">dotnet add package Bit.Bdnd</pre>
+            <div class="bb-hero-actions">
+                <a href="getting-started" class="btn btn-primary bb-btn-lg">Get started →</a>
+                <a href="tutorial" class="btn btn-secondary bb-btn-lg">Live demos</a>
+                <a class="btn btn-secondary bb-btn-lg" href="@SiteInfo.ProjectUrl" target="_blank" rel="noopener noreferrer">GitHub ↗</a>
+            </div>
         </div>
 
-        <BdndDropTarget TItem="string" Accept="@ItemTypes.Box" OnDrop="HandleDrop" Context="drop" style="display:contents">
-            <div class="dustbin" style="margin-top:1.5rem;background:@(drop.IsOver ? "#15803d" : "#1f2430")">
-                @(drop.IsOver ? "Release to drop" : _label)
+        @* The sample, framed as a window: the markup on top, and what it renders underneath - live, so
+           the first thing a visitor can do here is drag something. *@
+        <div class="bb-hero-code">
+            <div class="bb-browser">
+                <div class="bb-browser-bar">
+                    <span class="bb-browser-dots" aria-hidden="true"><i></i><i></i><i></i></span>
+                    <span class="bb-browser-url">Board.razor</span>
+                </div>
+                <pre class="bb-code">&lt;<span class="k">BdndDraggable</span> TItem=<span class="s">"Card"</span> Type=<span class="s">"card"</span> Item=<span class="s">"card"</span>&gt;
+    …
+&lt;/<span class="k">BdndDraggable</span>&gt;
+
+&lt;<span class="k">BdndDropTarget</span> TItem=<span class="s">"Card"</span> Accept=<span class="s">"card"</span> OnDrop=<span class="s">"Archive"</span>&gt;
+    …
+&lt;/<span class="k">BdndDropTarget</span>&gt;
+
+<span class="k">private void</span> Archive(BdndDropEventArgs&lt;Card&gt; e)
+    =&gt; _cards.Remove(e.Item!);</pre>
+                <BdndProvider>
+                    <div class="home-hero-live">
+                        <div class="home-hero-cards">
+                            @foreach (var card in _cards)
+                            {
+                                <BdndDraggable TItem="Card" Type="@ItemTypes.Card" Item="card" Context="drag" @key="card">
+                                    <div class="box" style="opacity:@(drag.IsDragging ? "0.4" : "1")">@card.Title</div>
+                                </BdndDraggable>
+                            }
+                            @if (_cards.Count == 0)
+                            {
+                                <p class="home-hero-done">
+                                    All archived.
+                                    <button type="button" class="btn btn-secondary" @onclick="Reset">Put them back</button>
+                                </p>
+                            }
+                        </div>
+
+                        <BdndDropTarget TItem="Card" Accept="@ItemTypes.Card" OnDrop="Archive" Context="drop" style="display:contents">
+                            <div class="home-hero-bin @(drop.IsOver ? "is-over" : drop.CanDrop ? "is-ready" : null)">
+                                @(drop.IsOver ? "Release to archive" : _archived == 0 ? "Drop a card to archive it" : $"{_archived} archived")
+                            </div>
+                        </BdndDropTarget>
+                    </div>
+                </BdndProvider>
             </div>
-        </BdndDropTarget>
-    </BdndProvider>
-</section>
+        </div>
+    </section>
 
-<section class="demo-notes">
-    <h4>Core concepts</h4>
-    <ul>
-        <li><strong>Items &amp; types</strong> - you drag <em>data</em> (an item object) of a certain <em>type</em> (a string), not a view.</li>
-        <li><strong>Monitor</strong> (<code>IBdndMonitor</code>) - exposes live drag state: <code>IsDragging</code>, <code>IsOver</code>, <code>CanDrop</code>, offsets, the item, and more.</li>
-        <li><strong>Components</strong> - <code>&lt;BdndProvider&gt;</code>, <code>&lt;BdndDraggable&gt;</code>, <code>&lt;BdndDropTarget&gt;</code>, <code>&lt;BdndDragLayer&gt;</code> and <code>&lt;BdndDragHandle&gt;</code> map to React DnD's provider and hooks.</li>
-        <li><strong>Backend</strong> - built on the browser's native HTML5 drag events, so native OS drags of files, text and links work too.</li>
-    </ul>
+    @* ============================== Proof strip ============================== *@
 
-    <h4>Quick start</h4>
-    <p>Register the service in <code>Program.cs</code>:</p>
-    <pre><code>builder.Services.AddBitBdndServices();</code></pre>
-    <p>Then wrap a region in a <code>BdndProvider</code> and declare sources and targets - "View code" above shows this very page.</p>
-    <p>Pick an example from the sidebar to see more.</p>
-</section>
+    <section class="bb-proof">
+        <div><strong>React DnD's model</strong><span>items, types, monitors and drop results</span></div>
+        <div><strong>Drag state in C#</strong><span>the browser layer only does what C# cannot</span></div>
+        <div><strong>Native OS drags</strong><span>files, text, links and HTML</span></div>
+        <div><strong>Every hosting model</strong><span>WebAssembly, Server, Web App and Hybrid</span></div>
+    </section>
+
+    @* ============================== Feature grid ============================== *@
+
+    <section class="bb-section">
+        <p class="bb-overline">Capabilities</p>
+        <h2>Everything React DnD does - as Blazor components</h2>
+        <p class="bb-section-sub">
+            Where React DnD has hooks, Bdnd has components: a draggable, a drop target, a drag layer and a drag
+            handle, each handing its child content the state to render from. The demo ports React DnD's own
+            examples, so every one of them can be opened side by side.
+        </p>
+        <div class="bb-grid">
+            <section class="bb-card">
+                <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Sources and targets</h3>
+                <p class="bb-card-desc">
+                    <code>BdndDraggable</code> is <code>useDrag</code> and <code>BdndDropTarget</code> is
+                    <code>useDrop</code>: <code>Type</code> and <code>Item</code> on one, <code>Accept</code> and
+                    <code>OnDrop</code> on the other, and <code>IsDragging</code>, <code>IsOver</code> and
+                    <code>CanDrop</code> to render from.
+                </p>
+                <a href="dustbin/single" class="btn btn-outline">Single target →</a>
+            </section>
+            <section class="bb-card">
+                <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Typed items, gated drops</h3>
+                <p class="bb-card-desc">
+                    Any C# object is an item, matched by its type string. <code>CanDropPredicate</code> narrows a
+                    target further from the item itself - a chessboard square takes only a legal knight move.
+                </p>
+                <a href="tutorial" class="btn btn-outline">Chessboard tutorial →</a>
+            </section>
+            <section class="bb-card">
+                <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Custom previews and handles</h3>
+                <p class="bb-card-desc">
+                    <code>UseCustomDragLayer</code> hides the browser's ghost and a <code>BdndDragLayer</code> draws
+                    your own from the live offsets; <code>UseHandle</code> starts a drag only from a
+                    <code>BdndDragHandle</code>.
+                </p>
+                <a href="drag-around/custom-layer" class="btn btn-outline">Custom drag layer →</a>
+            </section>
+            <section class="bb-card">
+                <h3 class="bb-card-title"><span class="bb-dot bb-dot-danger"></span> Sortable lists</h3>
+                <p class="bb-card-desc">
+                    Cards that are each a draggable and a drop target, reordered from <code>OnHover</code> as the
+                    dragged card passes their middle - React DnD's algorithm, without the flicker.
+                </p>
+                <a href="sortable/simple" class="btn btn-outline">Sortable →</a>
+            </section>
+            <section class="bb-card">
+                <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Nesting</h3>
+                <p class="bb-card-desc">
+                    Nested sources drag the innermost one; nested targets report <code>IsOver</code> for every
+                    target under the pointer and <code>IsOverShallow</code> for the innermost, and drops reach them
+                    innermost first.
+                </p>
+                <a href="nesting/drop-targets" class="btn btn-outline">Nested drop targets →</a>
+            </section>
+            <section class="bb-card">
+                <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Native drags</h3>
+                <p class="bb-card-desc">
+                    Accept files from the desktop, and text, links and HTML from any page, with
+                    <code>BdndNativeTypes</code> - read in <code>OnNativeDrop</code> while the browser still lets
+                    them be read.
+                </p>
+                <a href="other/native-files" class="btn btn-outline">Native files →</a>
+            </section>
+        </div>
+    </section>
+
+    @* ============================== Code walkthrough ============================== *@
+
+    <section class="bb-section">
+        <p class="bb-overline">In practice</p>
+        <h2>See it in code</h2>
+        <div class="bb-walkthrough">
+            <div class="bb-walkthrough-row">
+                <div class="bb-walkthrough-copy">
+                    <span class="bb-step">01</span>
+                    <h3>Wrap a region in a provider</h3>
+                    <p>
+                        One service registration, then a <code>BdndProvider</code> around whatever drags and drops.
+                        Each provider creates the manager its components share - there is nothing to configure.
+                    </p>
+                    <a href="getting-started">Getting started →</a>
+                </div>
+                <pre class="bb-code">builder.Services.AddBitBdndServices();   <span class="c">// Program.cs</span>
+
+&lt;<span class="k">BdndProvider</span>&gt;
+    …draggables and drop targets…
+&lt;/<span class="k">BdndProvider</span>&gt;</pre>
+            </div>
+            <div class="bb-walkthrough-row">
+                <div class="bb-walkthrough-copy">
+                    <span class="bb-step">02</span>
+                    <h3>Declare a source and a target</h3>
+                    <p>
+                        A draggable carries an item of a type; a target accepts the types it lists. Both hand their
+                        content the collected state, so the hover and the dragging look are one expression each.
+                    </p>
+                    <a href="dustbin/multiple">Multiple targets →</a>
+                </div>
+                <pre class="bb-code">&lt;<span class="k">BdndDraggable</span> TItem=<span class="s">"Box"</span> Type=<span class="s">"box"</span> Item=<span class="s">"box"</span> Context=<span class="s">"drag"</span>&gt;
+    &lt;<span class="k">div</span> style=<span class="s">"opacity: @@(drag.IsDragging ? 0.4 : 1)"</span>&gt;@@box.Name&lt;/<span class="k">div</span>&gt;
+&lt;/<span class="k">BdndDraggable</span>&gt;
+
+&lt;<span class="k">BdndDropTarget</span> TItem=<span class="s">"Box"</span> AcceptTypes=<span class="s">"@@(["box", "crate"])"</span>
+                OnDrop=<span class="s">"Store"</span> Context=<span class="s">"drop"</span>&gt;
+    &lt;<span class="k">div</span> class=<span class="s">"bin @@(drop.CanDrop ? "ready" : "")"</span>&gt;Drop here&lt;/<span class="k">div</span>&gt;
+&lt;/<span class="k">BdndDropTarget</span>&gt;</pre>
+            </div>
+            <div class="bb-walkthrough-row">
+                <div class="bb-walkthrough-copy">
+                    <span class="bb-step">03</span>
+                    <h3>Read the outcome</h3>
+                    <p>
+                        A target can publish a result from <code>OnDrop</code>; the source's <code>OnEnd</code>
+                        receives it with <code>DidDrop</code>, which tells a drop from a cancel - and runs even if
+                        the drop re-rendered the source away.
+                    </p>
+                    <a href="dustbin/copy-or-move">Copy or move →</a>
+                </div>
+                <pre class="bb-code">&lt;<span class="k">BdndDraggable</span> TItem=<span class="s">"Box"</span> Type=<span class="s">"box"</span> Item=<span class="s">"box"</span> OnEnd=<span class="s">"Ended"</span>&gt;…&lt;/<span class="k">BdndDraggable</span>&gt;
+
+<span class="k">private void</span> Ended(BdndDragEndContext&lt;Box&gt; e)
+{
+    <span class="k">if</span> (e.DidDrop) _palette.Remove(e.Item!);   <span class="c">// e.DropResult: what the target set</span>
+}</pre>
+            </div>
+        </div>
+    </section>
+
+    @* ============================== Comparison ============================== *@
+
+    <section class="bb-section">
+        <p class="bb-overline">Comparison</p>
+        <h2>Coming from React DnD?</h2>
+        <p class="bb-section-sub">
+            The same concepts under the names a Blazor component gives them. There are no connector refs to
+            attach - a component's host element is the source or the target - and native drops have a callback of
+            their own.
+        </p>
+        <div class="bb-scroll" tabindex="0" role="region" aria-label="React DnD compared with Bit.Bdnd">
+            <table class="bb-table bb-compare">
+                <thead>
+                    <tr><th>Concern</th><th>React DnD</th><th>Bit.Bdnd</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td>The context</td><td><code>&lt;DndProvider backend={HTML5Backend}&gt;</code></td><td><code>&lt;BdndProvider&gt;</code>, the HTML5 backend built in</td></tr>
+                    <tr><td>A drag source</td><td><code>useDrag({ type, item })</code></td><td><code>&lt;BdndDraggable Type Item&gt;</code></td></tr>
+                    <tr><td>A drop target</td><td><code>useDrop({ accept, drop })</code></td><td><code>&lt;BdndDropTarget Accept OnDrop&gt;</code></td></tr>
+                    <tr><td>Only the innermost target</td><td><code>isOver({ shallow: true })</code></td><td><code>IsOverShallow</code></td></tr>
+                    <tr><td>Your own preview</td><td><code>getEmptyImage()</code> and <code>useDragLayer</code></td><td><code>UseCustomDragLayer</code> and <code>&lt;BdndDragLayer&gt;</code></td></tr>
+                    <tr><td>Files from the desktop</td><td><code>NativeTypes.FILE</code> in <code>drop</code></td><td><code>BdndNativeTypes.File</code> in <code>OnNativeDrop</code></td></tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    @* ============================== Persona CTAs ============================== *@
+
+    <section class="bb-section">
+        <p class="bb-overline">Where to start</p>
+        <h2>Choose your path</h2>
+        <div class="bb-grid">
+            <section class="bb-card">
+                <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> New to Bdnd?</h3>
+                <p class="bb-card-desc">Install, register one service, wrap a region in a provider - a first drop in five minutes.</p>
+                <a href="getting-started" class="btn btn-primary">Getting started →</a>
+            </section>
+            <section class="bb-card">
+                <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Coming from React DnD?</h3>
+                <p class="bb-card-desc">Its examples are ported one for one - start with the chessboard tutorial you already know.</p>
+                <a href="tutorial" class="btn btn-outline">Open the tutorial →</a>
+            </section>
+            <section class="bb-card">
+                <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Building with an AI agent?</h3>
+                <p class="bb-card-desc">This site is an MCP server: point your agent at <code>/mcp</code> and it reads the shipped library instead of guessing.</p>
+                <a href="mcp-server" class="btn btn-outline">Try the MCP server →</a>
+            </section>
+        </div>
+    </section>
+
+    @* ============================== FAQ ============================== *@
+
+    <section class="bb-section">
+        <p class="bb-overline">Questions</p>
+        <h2>Frequently asked</h2>
+        <div class="bb-faq">
+            <details>
+                <summary>Is this React DnD running through JavaScript interop?</summary>
+                <p>
+                    No. The drag state - the item, its type, the source, the offsets, every target's hover and the
+                    drop result - lives in a C# manager shared by the components of a <code>BdndProvider</code>. A
+                    small script module does only what C# cannot: configure the native drag while
+                    <code>dragstart</code> is being dispatched, follow the pointer, track hover and read native drops.
+                </p>
+            </details>
+            <details>
+                <summary>Which render modes does it work in?</summary>
+                <p>
+                    Any interactive one, on .NET 8, 9 and 10: WebAssembly is the best fit, since every
+                    <code>dragover</code> is handled without a network round trip; Server, Auto and Hybrid work the
+                    same, a round trip later. Prerendered markup shows the idle state and starts working once the
+                    page is interactive.
+                </p>
+            </details>
+            <details>
+                <summary>Does it work on touch screens?</summary>
+                <p>
+                    Like React DnD's HTML5 backend, Bdnd has no touch backend: it needs a pointer that raises HTML5
+                    drag events - a mouse, a pen or a trackpad.
+                </p>
+            </details>
+            <details>
+                <summary>Can I read the contents of a dropped file?</summary>
+                <p>
+                    During a drop the browser exposes only a file's name, size and MIME type, and that is what
+                    <code>OnNativeDrop</code> receives. To read the contents, use an <code>InputFile</code> - an
+                    invisible one layered over the drop zone, for instance - or your own interop.
+                </p>
+            </details>
+            <details>
+                <summary>Is there a stylesheet to include?</summary>
+                <p>
+                    No. Bdnd draws nothing of its own - what is dragged and where it lands look the way your markup
+                    says - and its script module is imported by the components the first time they need it.
+                </p>
+            </details>
+        </div>
+    </section>
+
+    @* ============================== Final CTA ============================== *@
+
+    <section class="bb-final-cta">
+        <h2>Pick it up, put it down</h2>
+        <p class="bb-section-sub">One package, one service, one provider - and any part of a page drags and drops.</p>
+        <pre class="bb-code bb-hero-install">dotnet add package Bit.Bdnd</pre>
+        <div class="bb-hero-actions">
+            <a href="getting-started" class="btn btn-primary bb-btn-lg">Get started →</a>
+            <a href="tutorial" class="btn btn-secondary bb-btn-lg">Browse the demos</a>
+        </div>
+    </section>
+</div>
 
 @code {
-    private readonly string[] _boxes = ["Glass", "Banana", "Paper"];
-    private string _label = "Drag a box here";
+    private sealed record Card(string Title);
 
-    private void HandleDrop(BdndDropEventArgs<string> e) => _label = $"Dropped: {e.Item}";
+    private static readonly Card[] Board = [new("Write the docs"), new("Review the PR"), new("Ship the release")];
+
+    private readonly List<Card> _cards = [.. Board];
+    private int _archived;
+
+    private void Archive(BdndDropEventArgs<Card> e)
+    {
+        if (e.Item is not null && _cards.Remove(e.Item)) _archived++;
+    }
+
+    private void Reset()
+    {
+        _cards.Clear();
+        _cards.AddRange(Board);
+        _archived = 0;
+    }
 }
