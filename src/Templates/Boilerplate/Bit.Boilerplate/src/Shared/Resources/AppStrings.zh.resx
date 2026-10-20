@@ -2054,6 +2054,24 @@
     <data name="EditImage" xml:space="preserve">
     <value>编辑图像</value>
   </data>
+    <data name="Crop" xml:space="preserve">
+    <value>裁剪</value>
+  </data>
+    <data name="ApplyCrop" xml:space="preserve">
+    <value>应用裁剪</value>
+  </data>
+    <data name="RotateLeft" xml:space="preserve">
+    <value>向左旋转</value>
+  </data>
+    <data name="RotateRight" xml:space="preserve">
+    <value>向右旋转</value>
+  </data>
+    <data name="Undo" xml:space="preserve">
+    <value>撤销</value>
+  </data>
+    <data name="Redo" xml:space="preserve">
+    <value>重做</value>
+  </data>
     <data name="ImageEditorCropHint" xml:space="preserve">
     <value>在图像上拖动，标出要保留的部分。</value>
   </data>

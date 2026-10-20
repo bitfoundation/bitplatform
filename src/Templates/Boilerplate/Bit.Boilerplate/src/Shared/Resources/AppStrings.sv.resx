@@ -2054,6 +2054,24 @@ Efter att ha nått {0} kommer extra inloggningar att ha reducerade funktioner.</
     <data name="EditImage" xml:space="preserve">
     <value>Redigera bild</value>
   </data>
+    <data name="Crop" xml:space="preserve">
+    <value>Beskär</value>
+  </data>
+    <data name="ApplyCrop" xml:space="preserve">
+    <value>Tillämpa beskärning</value>
+  </data>
+    <data name="RotateLeft" xml:space="preserve">
+    <value>Rotera åt vänster</value>
+  </data>
+    <data name="RotateRight" xml:space="preserve">
+    <value>Rotera åt höger</value>
+  </data>
+    <data name="Undo" xml:space="preserve">
+    <value>Ångra</value>
+  </data>
+    <data name="Redo" xml:space="preserve">
+    <value>Gör om</value>
+  </data>
     <data name="ImageEditorCropHint" xml:space="preserve">
     <value>Dra över bilden för att markera den del som ska behållas.</value>
   </data>

@@ -13,7 +13,7 @@ public partial class ImageEditorUITests : AppPageTest
     [TestMethod]
     [DataRow(nameof(BlazorWebAppMode.BlazorServer))]
     [DataRow(nameof(BlazorWebAppMode.BlazorWebAssembly))]
-    public async Task TheImageEditor_Should_OfferAllOfBmagesTools_AndSaveTheEditedPicture(string blazorMode)
+    public async Task TheImageEditor_Should_OfferCropAndRotate_AndSaveTheEditedPicture(string blazorMode)
     {
         await using var server = new AppTestServer(Context);
         await server.Build(configureTestConfiguration: configuration => configuration["WebAppRender:BlazorMode"] = blazorMode)
@@ -40,13 +40,15 @@ public partial class ImageEditorUITests : AppPageTest
         var save = imageEditor.GetByRole(AriaRole.Button, new() { Name = AppStrings.Save, Exact = true });
         await Expect(save).ToBeEnabledAsync();
 
-        // Bmage's own toolbar and panel, rather than a subset of its tools picked by the app.
-        await Expect(imageEditor.Locator(".bmg-toolbar")).ToBeVisibleAsync();
-        await Expect(imageEditor.Locator(".bmg-panel")).ToBeVisibleAsync();
-        foreach (var tool in (string[])["Draw", "Text", "Redact", "Flip horizontal"])
+        await Expect(imageEditor.Locator(".bmg-toolbar")).ToHaveCountAsync(0);
+        await Expect(imageEditor.Locator(".bmg-panel")).ToHaveCountAsync(0);
+        foreach (var label in (string[])[AppStrings.Crop, AppStrings.RotateLeft, AppStrings.RotateRight, AppStrings.Undo, AppStrings.Redo])
         {
-            await Expect(imageEditor.Locator($".bmg-toolbar [aria-label='{tool}']")).ToHaveCountAsync(1);
+            await Expect(imageEditor.GetByRole(AriaRole.Button, new() { Name = label, Exact = true })).ToHaveCountAsync(1);
         }
+
+        await imageEditor.GetByRole(AriaRole.Button, new() { Name = AppStrings.RotateRight, Exact = true }).ClickAsync();
+        await Expect(imageEditor.GetByRole(AriaRole.Button, new() { Name = AppStrings.Undo, Exact = true })).ToBeEnabledAsync();
 
         await save.ClickAsync();
 

@@ -2054,6 +2054,24 @@ Nach Erreichen von {0} haben zusätzliche Anmeldungen reduzierte Funktionen.</va
     <data name="EditImage" xml:space="preserve">
     <value>Bild bearbeiten</value>
   </data>
+    <data name="Crop" xml:space="preserve">
+    <value>Zuschneiden</value>
+  </data>
+    <data name="ApplyCrop" xml:space="preserve">
+    <value>Zuschnitt anwenden</value>
+  </data>
+    <data name="RotateLeft" xml:space="preserve">
+    <value>Nach links drehen</value>
+  </data>
+    <data name="RotateRight" xml:space="preserve">
+    <value>Nach rechts drehen</value>
+  </data>
+    <data name="Undo" xml:space="preserve">
+    <value>Rückgängig</value>
+  </data>
+    <data name="Redo" xml:space="preserve">
+    <value>Wiederholen</value>
+  </data>
     <data name="ImageEditorCropHint" xml:space="preserve">
     <value>Ziehen Sie über das Bild, um den Teil zu markieren, der bleiben soll.</value>
   </data>

@@ -2054,6 +2054,24 @@
     <data name="EditImage" xml:space="preserve">
     <value>इमेज संपादित करें</value>
   </data>
+    <data name="Crop" xml:space="preserve">
+    <value>क्रॉप करें</value>
+  </data>
+    <data name="ApplyCrop" xml:space="preserve">
+    <value>क्रॉप लागू करें</value>
+  </data>
+    <data name="RotateLeft" xml:space="preserve">
+    <value>बाएँ घुमाएँ</value>
+  </data>
+    <data name="RotateRight" xml:space="preserve">
+    <value>दाएँ घुमाएँ</value>
+  </data>
+    <data name="Undo" xml:space="preserve">
+    <value>पूर्ववत करें</value>
+  </data>
+    <data name="Redo" xml:space="preserve">
+    <value>फिर से करें</value>
+  </data>
     <data name="ImageEditorCropHint" xml:space="preserve">
     <value>जिस हिस्से को रखना है उसे चुनने के लिए इमेज पर खींचें।</value>
   </data>

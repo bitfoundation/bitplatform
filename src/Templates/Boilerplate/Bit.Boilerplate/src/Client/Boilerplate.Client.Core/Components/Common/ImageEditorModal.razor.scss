@@ -2,7 +2,7 @@
 @import '../../Styles/abstracts/_bit-css-variables.scss';
 
 section {
-    width: min(64rem, calc(100vw - 2rem));
+    width: min(44rem, calc(100vw - 2rem));
     max-height: $bit-env-height-available;
 
     @include lt-sm {
@@ -22,7 +22,7 @@ section {
 
     .editor-host {
         width: 100%;
-        height: min(70vh, 40rem);
+        height: min(60vh, 32rem);
 
         .bmg-editor {
             --bmg-bg: #{$bit-color-background-primary};
@@ -35,5 +35,14 @@ section {
             --bmg-accent: #{$bit-color-primary};
             --bmg-accent-text: #{$bit-color-primary-text};
         }
+    }
+
+    .toolbar {
+        padding: 0.25rem 0.5rem;
+        border-block-end: 1px solid $bit-color-border-secondary;
+    }
+
+    .apply-crop {
+        margin-inline-start: auto;
     }
 }

@@ -2054,6 +2054,24 @@ Na het bereiken van {0} zullen extra aanmeldingen verminderde functies hebben.</
     <data name="EditImage" xml:space="preserve">
     <value>Afbeelding bewerken</value>
   </data>
+    <data name="Crop" xml:space="preserve">
+    <value>Bijsnijden</value>
+  </data>
+    <data name="ApplyCrop" xml:space="preserve">
+    <value>Bijsnijden toepassen</value>
+  </data>
+    <data name="RotateLeft" xml:space="preserve">
+    <value>Linksom draaien</value>
+  </data>
+    <data name="RotateRight" xml:space="preserve">
+    <value>Rechtsom draaien</value>
+  </data>
+    <data name="Undo" xml:space="preserve">
+    <value>Ongedaan maken</value>
+  </data>
+    <data name="Redo" xml:space="preserve">
+    <value>Opnieuw</value>
+  </data>
     <data name="ImageEditorCropHint" xml:space="preserve">
     <value>Sleep over de afbeelding om het deel te markeren dat u wilt behouden.</value>
   </data>
