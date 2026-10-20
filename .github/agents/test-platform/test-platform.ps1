@@ -967,6 +967,11 @@ function Add-PrereleasePackages([string] $feed) {
     Write-Host "Bit packages from Prerelease nuget packages run $($run.databaseId), $($run.headBranch) at $($run.headSha.Substring(0, 9))."
 }
 
+function Use-PrereleaseFeedForNewProjects([string] $lab) {
+    Set-BitUnderTestFeed (Join-Path $lab 'source\src\Templates\Boilerplate\Bit.Boilerplate') (Join-Path $lab 'feed')
+    $env:NUGET_PACKAGES = Join-Path $lab 'packages'
+}
+
 function Set-BitUnderTestFeed([string] $project, [string] $feed) {
     $pattern = $PrereleasePackages ? 'Bit.*' : 'Bit.Cli'
 
@@ -1038,9 +1043,15 @@ function Invoke-DevContainerTest {
     $outputEncoding = [Console]::OutputEncoding
     [Console]::OutputEncoding = [Text.Encoding]::UTF8
     $failures = [Collections.Generic.List[string]]::new()
+    $nugetPackages = $env:NUGET_PACKAGES
 
     try {
         $bit = Install-BitUnderTest $lab
+
+        if ($PrereleasePackages) {
+            Use-PrereleaseFeedForNewProjects $lab
+        }
+
         New-BitProject $lab $bit 'DevApp' | Out-Null
 
         $mount = @()
@@ -1082,6 +1093,7 @@ function Invoke-DevContainerTest {
     }
     finally {
         [Console]::OutputEncoding = $outputEncoding
+        $env:NUGET_PACKAGES = $nugetPackages
 
         if ($Keep) {
             Write-Host "Kept the dev container of $project. Run devcontainer exec --workspace-folder $project <command> in it, and run this again without -Keep to start over."
@@ -1246,13 +1258,13 @@ function Invoke-AspireTest {
 
     try {
         $bit = Install-BitUnderTest $lab
-        $project = New-BitProject $lab $bit 'AspireApp' '--database', 'PostgreSQL', '--redis', 'true'
-        $appHost = Join-Path $project "src\Server\$appHostName"
 
         if ($PrereleasePackages) {
-            Set-BitUnderTestFeed $project (Join-Path $lab 'feed')
-            $env:NUGET_PACKAGES = Join-Path $lab 'packages'
+            Use-PrereleaseFeedForNewProjects $lab
         }
+
+        $project = New-BitProject $lab $bit 'AspireApp' '--database', 'PostgreSQL', '--redis', 'true'
+        $appHost = Join-Path $project "src\Server\$appHostName"
 
         $profiles = (Get-Content (Join-Path $project 'src\Server\AspireApp.Server.Web\Properties\launchSettings.json') -Raw | ConvertFrom-Json).profiles.PSObject.Properties.Value
         $aliveUrl = (($profiles | Where-Object { $_.commandName -eq 'Project' -and $_.applicationUrl } | Select-Object -First 1).applicationUrl -split ';')[0].TrimEnd('/') + '/alive'
@@ -1359,7 +1371,11 @@ function Invoke-AspireTest {
             }
 
             Remove-BitUnderTest $lab
-            Remove-Item $project -Recurse -Force -ErrorAction SilentlyContinue
+
+            if ($project) {
+                Remove-Item $project -Recurse -Force -ErrorAction SilentlyContinue
+            }
+
             Write-Host "Logs: $lab"
         }
     }
