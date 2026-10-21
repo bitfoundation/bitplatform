@@ -79,7 +79,7 @@ internal static class BormNumber
             case double or float:
                 var d = Convert.ToDouble(value, CultureInfo.InvariantCulture);
                 if (!double.IsFinite(d) || Math.Abs(d) >= 7.9e28) return d.ToString("R", CultureInfo.InvariantCulture);
-                m = (decimal)d;
+                m = FromDouble(d);
                 // Too small for decimal to hold: keep it apart from a genuine zero.
                 if (m == 0 && d != 0) return d.ToString("R", CultureInfo.InvariantCulture);
                 break;
@@ -89,6 +89,35 @@ internal static class BormNumber
 
         // Dividing by one with the maximum scale normalises the scale away: 1.0m becomes 1m.
         return (m / 1.0000000000000000000000000000m).ToString(CultureInfo.InvariantCulture);
+    }
+
+    /// <summary>
+    /// Reads a <see cref="double"/> as a <see cref="decimal"/> at the fifteen significant digits a double
+    /// can vouch for, so <c>0.3</c> is <c>0.3m</c> on every runtime.
+    /// </summary>
+    /// <remarks>
+    /// The runtime's own conversion did this up to .NET 10. From .NET 11 it keeps the double's exact binary
+    /// value instead, and <c>(decimal)0.3</c> is <c>0.2999999999999999888977697537</c> — a different number
+    /// from the one written, so 0.3 stopped being a multiple of 0.1. Every decimal of up to fifteen digits
+    /// comes back from a double unchanged. Like the cast it replaces, this throws for a value beyond
+    /// decimal's range and for NaN or infinity.
+    /// </remarks>
+    public static decimal FromDouble(double value)
+    {
+        Span<char> text = stackalloc char[32];
+        value.TryFormat(text, out var length, "G15", CultureInfo.InvariantCulture);
+        return decimal.Parse(text[..length], NumberStyles.Float, CultureInfo.InvariantCulture);
+    }
+
+    /// <summary>
+    /// <see cref="FromDouble"/> for a <see cref="float"/>, at the seven significant digits the runtime's
+    /// conversion kept for one before .NET 11 — so <c>0.1f</c> is <c>0.1m</c>, not <c>0.100000001490116m</c>.
+    /// </summary>
+    public static decimal FromSingle(float value)
+    {
+        Span<char> text = stackalloc char[32];
+        value.TryFormat(text, out var length, "G7", CultureInfo.InvariantCulture);
+        return decimal.Parse(text[..length], NumberStyles.Float, CultureInfo.InvariantCulture);
     }
 
     /// <summary>

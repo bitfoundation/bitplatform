@@ -87,6 +87,29 @@ public class ValueConverterTests
     }
 
     [TestMethod]
+    public void A_double_reads_as_a_decimal_at_fifteen_significant_digits()
+    {
+        // From .NET 11 the runtime's own conversion turns 0.3 into 0.2999999999999999888977697537.
+        Assert.AreEqual(0.3m, BormNumber.FromDouble(0.3));
+        Assert.AreEqual(0.3m, BormNumber.FromDouble(0.1 + 0.2));
+        Assert.AreEqual(1234567.89m, BormNumber.FromDouble(1234567.89));
+        Assert.AreEqual(-123.4567m, BormNumber.FromDouble(-123.4567));
+        Assert.AreEqual(0m, BormNumber.FromDouble(1e-30));
+        Assert.AreEqual(0.1m, BormNumber.FromSingle(0.1f));
+    }
+
+    [TestMethod]
+    public void A_double_coerced_to_decimal_is_the_number_it_was_written_as()
+    {
+        Assert.IsTrue(BormValueConverter.TryCoerce(0.3d, typeof(decimal), out var fromDouble));
+        Assert.AreEqual(0.3m, fromDouble);
+        Assert.IsTrue(BormValueConverter.TryCoerce(0.1f, typeof(decimal?), out var fromFloat));
+        Assert.AreEqual(0.1m, fromFloat);
+        Assert.IsFalse(BormValueConverter.TryCoerce(double.NaN, typeof(decimal), out _));
+        Assert.IsFalse(BormValueConverter.TryCoerce(1e30, typeof(decimal), out _));
+    }
+
+    [TestMethod]
     public void Invariant_string_is_stable_across_cultures()
     {
         var previous = CultureInfo.CurrentCulture;
@@ -140,6 +163,19 @@ public class TypedAccessorTests
         data.SetValue("Accounts", new List<string> { "Business" });
 
         Assert.AreSequenceEqual([AccountType.Business], model.Accounts);
+    }
+
+    [TestMethod]
+    public void A_double_written_to_a_decimal_property_keeps_the_value_it_was_written_as()
+    {
+        var model = new TypedModel();
+        var data = new BormModelDataAccessor(model);
+
+        // A default of 9.99 in code or in a JSON schema arrives as a double.
+        data.SetValue("Price", 9.99d);
+
+        Assert.AreEqual(9.99m, model.Price);
+        Assert.IsFalse(data.LastWriteFailed);
     }
 
     [TestMethod]

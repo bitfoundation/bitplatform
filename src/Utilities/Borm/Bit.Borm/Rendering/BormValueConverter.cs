@@ -153,6 +153,13 @@ public static class BormValueConverter
                 result = member;
                 return true;
             }
+            // Convert.ChangeType keeps a double's exact binary value from .NET 11 on, so a default of 0.3
+            // reached a decimal property as 0.2999999999999999888977697537.
+            if (underlying == typeof(decimal) && value is double or float)
+            {
+                result = value is float f ? BormNumber.FromSingle(f) : BormNumber.FromDouble((double)value);
+                return true;
+            }
             if (value is IConvertible && typeof(IConvertible).IsAssignableFrom(underlying))
             {
                 result = Convert.ChangeType(value, underlying, CultureInfo.InvariantCulture);
