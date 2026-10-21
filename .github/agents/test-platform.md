@@ -22,6 +22,9 @@ Three rules for working on it:
 - **Memory is short.** The emulator alone takes over 3 GB. Run one heavy thing at a time - the emulator, an Aspire
   app, the dev container - and stop whatever you started once it isn't needed: the emulator if it was off, and any
   local app or `dotnet watch`. Never run `dotnet build-server shutdown`: other sessions build on this machine too.
+  Docker's VM (`vmmemWSL`) keeps the page cache of every image it built and every container it ran, often several
+  GB, and doesn't give it back on its own: `wsl -d docker-desktop -u root sh -c "sync; echo 1 > /proc/sys/vm/drop_caches"`
+  does, and is safe while containers run.
 - **Read the configuration before changing it.** Before any fix to the machine itself (IIS, permissions, folders,
   tools), query what it really is: an app pool's identity (`appcmd list apppool /text:processModel.userName`,
   elevated), the deployed `appsettings.json` under `C:\inetpub\<site>`, a tool's version. PlatformWebsite's app pool,
@@ -431,10 +434,13 @@ devcontainers CLI brings its container up, and `bit doctor` runs inside it.
   doesn't have compiles against them.
 - It's heavy: a few GB in Docker's VM and about ten minutes, most of them for the container's image and the
   restore, then about half an hour for the Aspire check below. Run it on its own, after the E2E suite, never next to
-  it.
+  it. Run earlier, it waits for the CD's deploy jobs to be done, as `aspire` does: its image build next to them left
+  this machine under 3 GB of free memory.
 - Done means every `bit setup` step passed, `bit doctor` exits with 0, with VS Code not needed inside a container,
   and the Aspire check below passes. `bit doctor`'s memory warning describes Docker's VM, not this machine,
-  and is expected.
+  and is expected. So is a `bit setup` warning that the web app didn't get healthy, when the machine was busy: Aspire
+  gives up on a project that is still starting after about two minutes. An `aspire start` in the container with
+  nothing else running tells that from a broken app.
 - The logs of `bit new`, of the container's start and of `bit doctor` stay in the folder the helper names. `-Keep`
   leaves the container up, to look inside it with the devcontainers CLI; bit's own logs are in its home folder there.
 
@@ -443,9 +449,10 @@ step 6 shows they do on Windows: on Linux the keeper that stops them is a differ
 its own, and the containers run on the dev container's own Docker engine, not on the host's. So run
 `devcontainer` with `-Keep`, and once `bit doctor` has passed, do step 6's check inside the container: three
 `dotnet run`s of the app host, each until the web app answers inside the container and each ended the way closing
-its terminal does, with the same bar for the second run's reuse, the idle stop and the third run's volumes. Then
-remove the kept container, its volumes and its image, the helper's folder, and with `-Sha` the worktree it added: a
-later run of the helper doesn't.
+its terminal does, with the same bar for the second run's reuse, the idle stop and the third run's volumes. Give
+every request to the web app a timeout: Aspire's proxy takes the connection on its port before the app is up, and a
+request without one never returns. Then remove the kept container, its volumes and its image, the helper's folder,
+and with `-Sha` the worktree it added: a later run of the helper doesn't.
 
 A failure in bit or in the template is fixed like a CI failure, and the next `devcontainer -Sha` on the fix proves it;
 no CD is involved.
