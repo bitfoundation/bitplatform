@@ -150,6 +150,16 @@ $cht-side-steps: (lgd: 1, sub: 2, ttl: 3);
         border-radius: $shp-radius-sm;
         @include focus-ring-own(var(--bit-cht-clr-focus));
     }
+
+    // The renderer lays every label out for left-to-right text: an axis's values end at the axis, a
+    // right axis's start at it. SVG text takes the page's direction, and in a right-to-left one `start`
+    // and `end` swap sides, so the labels grew into the plot over the data (#14044). Laid out left to
+    // right, a label still orders its own words by its first letter, so an Arabic or Persian one reads
+    // right to left.
+    text {
+        direction: ltr;
+        unicode-bidi: plaintext;
+    }
 }
 
 // Only the data elements and the hit bands are interactive. Without this, the line drawn over a
