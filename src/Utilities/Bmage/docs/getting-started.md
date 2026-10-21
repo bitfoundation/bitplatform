@@ -54,6 +54,31 @@ builder.Services.AddBitBmageServices(options =>
 Services are registered as scoped. In WebAssembly that scope lasts for the whole application; in Server there is one
 scope per circuit, so browser state is never shared between users.
 
+### Lazy loading Bmage on WebAssembly
+
+`BmageEditor` also works without the registration, so a WebAssembly app can download Bmage only when someone opens the
+editor. When `ImageLoader` is not registered, the editor builds every service it needs itself, once per browser
+connection, with the `BitBmageOptions` the app registered or the defaults. Mark the assembly as lazy loaded and load it
+before the editor first renders:
+
+```xml
+<ItemGroup>
+  <BlazorWebAssemblyLazyLoad Include="Bit.Bmage.wasm" />
+</ItemGroup>
+```
+
+```csharp
+@inject LazyAssemblyLoader LazyAssemblyLoader
+
+await LazyAssemblyLoader.LoadAssembliesAsync(["Bit.Bmage.wasm"]);
+```
+
+Leave `AddBitBmageServices` out of `Program.cs` in that project: calling it references Bmage's types before the assembly
+is there. Code of your own that injects `ImageLoader` or `ImageExporter` needs the registration, so lazy loading suits an
+app whose only use of Bmage is the editor. Do not lazy load in an AOT build: AOT compiles every assembly into
+`dotnet.native.wasm`, so there is nothing left to download later, and lazy loading an AOT-compiled assembly can fail at
+startup.
+
 ## Add the stylesheet
 
 Only needed for the editor component (`BmageEditor`, `BmageDropZone`). Put it in `index.html` or `App.razor`:
@@ -74,9 +99,9 @@ For WebAssembly, add this to the project that runs in the browser:
 </PropertyGroup>
 ```
 
-All image processing is C#, and on Blazor's default interpreter it runs 10 to 35× slower than compiled code. AOT needs
-the `wasm-tools` workload and only takes effect on `dotnet publish`, so a page that feels slow under `dotnet run` may be
-fine once published. [performance.md](performance.md#webassembly-compile-ahead-of-time) has the measurements and the
+Bmage is tuned for Blazor's default interpreter, and the browser does the work it is fastest at, but what stays in .NET
+still runs 4 to 12× faster compiled ahead of time. AOT needs the `wasm-tools` workload and only takes effect on
+`dotnet publish`, so a page that feels slow under `dotnet run` may be fine once published. [performance.md](performance.md#webassembly-compile-ahead-of-time) has the measurements and the
 trade-offs.
 
 ## Your first image

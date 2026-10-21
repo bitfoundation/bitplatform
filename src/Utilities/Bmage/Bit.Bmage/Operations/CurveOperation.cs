@@ -67,6 +67,8 @@ public class CurveOperation : PointOperation
 
     public override bool IsIdentity => IsIdentityTable(_r) && IsIdentityTable(_g) && IsIdentityTable(_b) && IsIdentityTable(_a);
 
+    internal override bool IsChannelSeparable => IsBuiltIn;
+
     private static bool IsIdentityTable(float[]? t)
     {
         if (t is null) return true;

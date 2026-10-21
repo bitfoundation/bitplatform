@@ -20,9 +20,9 @@
     <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Measure this browser</h3>
     <p>
         The operations from the table below, on a generated 1920 &times; 1080 image, best of three
-        after a warm-up. Hundreds of milliseconds per row means the interpreter; tens means AOT.
-        This site is published with AOT; under <code>dotnet run</code> it is interpreted, and the
-        run takes minutes rather than seconds - which is the point.
+        after a warm-up. Around five times the AOT column means the interpreter. This site is
+        published with AOT; under <code>dotnet run</code> it is interpreted, and every row takes
+        several times longer - which is the point.
     </p>
     <div class="bb-toolbar">
         <button type="button" class="btn btn-primary" disabled="@(_busy || IsHydrating)" @onclick="RunAsync">
@@ -68,8 +68,10 @@
     <p>
         By default Blazor WebAssembly runs .NET code on an IL interpreter. Tight pixel loops are its
         worst case: every <code>Vector4</code> operation RyuJIT turns into one SIMD instruction becomes
-        a separate interpreted step. Measured on a 1920 &times; 1080 image in Chrome, best of three after
-        a warm-up:
+        a separate interpreted step. Bmage's loops are written around that, and the browser does the
+        decoding, encoding and the editor's working copy, but what stays in .NET is still several times
+        faster compiled ahead of time. Measured on a 1920 &times; 1080 image in Chromium, best of three
+        after a warm-up:
     </p>
     <div class="bb-scroll" tabindex="0" role="region" aria-label="Interpreter against AOT">
         <table class="bb-table">
@@ -85,7 +87,7 @@
         </table>
     </div>
     <p>
-        The interpreter is 10 to 35&times; slower than desktop .NET; AOT is 1.2 to 2.4&times;. A Debug
+        The interpreter is 5 to 9&times; slower than desktop .NET; AOT is within 1 to 2.3&times; of it. A Debug
         build measured the same as Release on the interpreter, so the build configuration is not the
         issue. <a href="/hosting">Hosting models</a> shows how to switch it on, and how this site does.
     </p>
@@ -101,16 +103,16 @@
                 <tr><th scope="col">Operation</th><th scope="col" class="demo-num">1920&times;1080</th><th scope="col" class="demo-num">3840&times;2160</th><th scope="col" class="demo-num">6000&times;4000</th></tr>
             </thead>
             <tbody>
-                <tr><th scope="row">Box</th><td class="demo-num">15.0 ms</td><td class="demo-num">35.4 ms</td><td class="demo-num">127 ms</td></tr>
-                <tr><th scope="row">Bilinear</th><td class="demo-num">17.4 ms</td><td class="demo-num">40.2 ms</td><td class="demo-num">114 ms</td></tr>
-                <tr><th scope="row">Bicubic</th><td class="demo-num">21.9 ms</td><td class="demo-num">49.0 ms</td><td class="demo-num">124 ms</td></tr>
-                <tr><th scope="row">Lanczos3</th><td class="demo-num">26.8 ms</td><td class="demo-num">67.7 ms</td><td class="demo-num">134 ms</td></tr>
-                <tr><th scope="row">Thumbnail to 200px (Auto)</th><td class="demo-num">6.6 ms</td><td class="demo-num">19.2 ms</td><td class="demo-num">52.4 ms</td></tr>
+                <tr><th scope="row">Box</th><td class="demo-num">9.8 ms</td><td class="demo-num">16.5 ms</td><td class="demo-num">63.1 ms</td></tr>
+                <tr><th scope="row">Bilinear</th><td class="demo-num">10.6 ms</td><td class="demo-num">20.6 ms</td><td class="demo-num">65.0 ms</td></tr>
+                <tr><th scope="row">Bicubic</th><td class="demo-num">13.4 ms</td><td class="demo-num">25.4 ms</td><td class="demo-num">76.1 ms</td></tr>
+                <tr><th scope="row">Lanczos3</th><td class="demo-num">16.0 ms</td><td class="demo-num">40.0 ms</td><td class="demo-num">82.2 ms</td></tr>
+                <tr><th scope="row">Thumbnail to 200px (Auto)</th><td class="demo-num">3.3 ms</td><td class="demo-num">8.1 ms</td><td class="demo-num">22.6 ms</td></tr>
             </tbody>
         </table>
     </div>
     <p>
-        Allocations stay between 22 KB and 180 KB regardless of source size, because pixel buffers are
+        Allocations stay between 23 KB and 185 KB regardless of source size, because pixel buffers are
         pooled and the resampler works a row at a time. Thumbnailing a 24 megapixel photo originally
         took 368 ms; an exact integer box prepass to within 2&times; of the target, finished by the
         requested filter, brought it to 52 ms and cut its allocations tenfold - with quality guarded by
@@ -126,22 +128,22 @@
                 <tr><th scope="col">Operation</th><th scope="col" class="demo-num">1920&times;1080</th><th scope="col" class="demo-num">3840&times;2160</th></tr>
             </thead>
             <tbody>
-                <tr><th scope="row">Crop</th><td class="demo-num">0.04 ms</td><td class="demo-num">0.41 ms</td></tr>
-                <tr><th scope="row">Rotate 90 (lossless)</th><td class="demo-num">2.0 ms</td><td class="demo-num">20.2 ms</td></tr>
-                <tr><th scope="row">Brightness (one pass)</th><td class="demo-num">18.0 ms</td><td class="demo-num">70.7 ms</td></tr>
-                <tr><th scope="row">Four adjustments, fused</th><td class="demo-num">47.4 ms</td><td class="demo-num">188.9 ms</td></tr>
-                <tr><th scope="row">Four adjustments, unfused</th><td class="demo-num">76.7 ms</td><td class="demo-num">292.3 ms</td></tr>
-                <tr><th scope="row">Gaussian blur, radius 8</th><td class="demo-num">55.7 ms</td><td class="demo-num">226.1 ms</td></tr>
-                <tr><th scope="row">Unsharp mask</th><td class="demo-num">103.8 ms</td><td class="demo-num">331.0 ms</td></tr>
-                <tr><th scope="row">Rotate 37&deg; (resampled)</th><td class="demo-num">222.0 ms</td><td class="demo-num">888.6 ms</td></tr>
+                <tr><th scope="row">Crop</th><td class="demo-num">0.06 ms</td><td class="demo-num">0.28 ms</td></tr>
+                <tr><th scope="row">Rotate 90 (lossless)</th><td class="demo-num">1.8 ms</td><td class="demo-num">27.2 ms</td></tr>
+                <tr><th scope="row">Brightness (one pass)</th><td class="demo-num">1.3 ms</td><td class="demo-num">5.1 ms</td></tr>
+                <tr><th scope="row">Four adjustments, fused</th><td class="demo-num">17.2 ms</td><td class="demo-num">67.4 ms</td></tr>
+                <tr><th scope="row">Four adjustments, unfused</th><td class="demo-num">18.4 ms</td><td class="demo-num">75.2 ms</td></tr>
+                <tr><th scope="row">Gaussian blur, radius 8</th><td class="demo-num">25.3 ms</td><td class="demo-num">99.5 ms</td></tr>
+                <tr><th scope="row">Unsharp mask</th><td class="demo-num">27.3 ms</td><td class="demo-num">107 ms</td></tr>
+                <tr><th scope="row">Rotate 37&deg; (resampled)</th><td class="demo-num">65.6 ms</td><td class="demo-num">236 ms</td></tr>
             </tbody>
         </table>
     </div>
     <ul class="bb-detail-list">
-        <li><strong>Fusing adjustments is worth 1.55&times;.</strong> Four adjustments in one pass beat four passes, because the cost is reading and writing pixels rather than the arithmetic.</li>
-        <li><strong>A right angle is 100&times; cheaper than an arbitrary one</strong>, because it moves pixels rather than resampling them. The optimiser routes multiples of 90&deg; to the lossless path automatically.</li>
-        <li><strong>Blur is independent of radius</strong>: three box passes approximating a gaussian, so radius 40 costs the same as radius 4.</li>
-        <li><strong>Resize then crop fuses</strong> into one resample of only the surviving region - 47.9 ms against 117.7 ms on a 4000 &times; 3000 source, bit-identical.</li>
+        <li><strong>Fusing adjustments is worth about 1.1&times;.</strong> Adjustments that map each channel from itself, such as brightness, contrast and gamma, run through 256-entry tables whether fused or not, so fusing mostly saves passes over the pixels.</li>
+        <li><strong>A right angle is 9 to 37&times; cheaper than an arbitrary one</strong>, because it moves pixels rather than resampling them. The optimiser routes multiples of 90&deg; to the lossless path automatically.</li>
+        <li><strong>Blur is independent of radius</strong>: three box passes approximating a gaussian, so radius 40 costs the same as radius 4. Below a radius of about 2, where whole-pixel boxes would miss by more than 10%, a sampled gaussian of at most 13 taps runs instead.</li>
+        <li><strong>Resize then crop fuses</strong> into one resample of only the surviving region - 25.8 ms against 62.2 ms on a 4000 &times; 3000 source, bit-identical.</li>
     </ul>
 </div>
 
@@ -153,16 +155,16 @@
                 <tr><th scope="col">Operation</th><th scope="col" class="demo-num">1024&times;768</th><th scope="col" class="demo-num">3840&times;2160</th><th scope="col" class="demo-num">Allocated (4K)</th></tr>
             </thead>
             <tbody>
-                <tr><th scope="row">PNG decode</th><td class="demo-num">10.5 ms</td><td class="demo-num">104 ms</td><td class="demo-num">37 MB</td></tr>
-                <tr><th scope="row">JPEG decode</th><td class="demo-num">10.7 ms</td><td class="demo-num">117 ms</td><td class="demo-num">14 MB</td></tr>
-                <tr><th scope="row">JPEG encode, quality 85</th><td class="demo-num">17.0 ms</td><td class="demo-num">175 ms</td><td class="demo-num">6.7 MB</td></tr>
-                <tr><th scope="row">PNG encode, level 1</th><td class="demo-num">25.1 ms</td><td class="demo-num">252 ms</td><td class="demo-num">98 MB</td></tr>
-                <tr><th scope="row">PNG encode, level 6</th><td class="demo-num">82.1 ms</td><td class="demo-num">848 ms</td><td class="demo-num">46 MB</td></tr>
+                <tr><th scope="row">PNG decode</th><td class="demo-num">8.7 ms</td><td class="demo-num">88 ms</td><td class="demo-num">37 MB</td></tr>
+                <tr><th scope="row">JPEG decode</th><td class="demo-num">7.4 ms</td><td class="demo-num">77 ms</td><td class="demo-num">14 MB</td></tr>
+                <tr><th scope="row">JPEG encode, quality 85</th><td class="demo-num">11.5 ms</td><td class="demo-num">122 ms</td><td class="demo-num">6.7 MB</td></tr>
+                <tr><th scope="row">PNG encode, level 1</th><td class="demo-num">19.2 ms</td><td class="demo-num">198 ms</td><td class="demo-num">98 MB</td></tr>
+                <tr><th scope="row">PNG encode, level 6</th><td class="demo-num">68.0 ms</td><td class="demo-num">720 ms</td><td class="demo-num">46 MB</td></tr>
             </tbody>
         </table>
     </div>
     <p>
-        PNG compression level matters more than anything else here: level 6 is 3.4&times; slower than
+        PNG compression level matters more than anything else here: level 6 is 3.6&times; slower than
         level 1 for a modest size gain. Level 1 suits a preview that is on screen for a moment; the
         default of 6 suits the file the user keeps.
     </p>
@@ -198,11 +200,11 @@
 
     private static readonly ReferenceRow[] Reference =
     [
-        new("Resize to 1280, Lanczos3", 505, 56, 34),
-        new("Brightness", 406, 27, 21),
-        new("Four adjustments, fused", 1008, 63, 48),
-        new("Gaussian blur, radius 8", 789, 88, 57),
-        new("Unsharp mask", 1267, 119, 86),
+        new("Resize to 1280, Lanczos3", 108, 24, 15),
+        new("Brightness", 11, 3, 1),
+        new("Four adjustments, fused", 118, 23, 25),
+        new("Gaussian blur, radius 8", 125, 24, 24),
+        new("Unsharp mask", 203, 36, 25),
     ];
 
     // The same operations as the reference table, so the reader's numbers line up against it row by row.

@@ -13,10 +13,15 @@ public static class SampleImage
     public static byte[] Png { get; } = Create(Width, Height);
 
     /// <summary>Writes the sample image to a temporary file for upload, returning its path. The caller deletes it.</summary>
-    public static string WriteToTempFile(string name = "sample.png")
+    public static string WriteToTempFile(string name = "sample.png") => WriteToTempFile(Png, name);
+
+    /// <summary>Writes the sample pattern at another size to a temporary file for upload. The caller deletes it.</summary>
+    public static string WriteToTempFile(int width, int height, string name) => WriteToTempFile(Create(width, height), name);
+
+    private static string WriteToTempFile(byte[] png, string name)
     {
         var path = Path.Combine(Path.GetTempPath(), $"bmage-{Guid.NewGuid():N}-{name}");
-        File.WriteAllBytes(path, Png);
+        File.WriteAllBytes(path, png);
         return path;
     }
 

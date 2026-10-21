@@ -1,9 +1,11 @@
 ﻿// Bmage browser bridge.
 //
-// This module exists only for things the browser platform can do and .NET cannot reach directly:
-// format decoding/encoding (WebP, AVIF, JPEG), capability probing, clipboard, camera and pointer
-// gestures. All image processing itself lives in C#. Pixel data crosses the boundary as raw bytes
-// through streams, never as base64, so large images stay cheap.
+// This module does what the browser platform does better than .NET can on its own: format decoding and
+// encoding (WebP, AVIF, JPEG, PNG), capability probing, clipboard, camera and pointer gestures, and the
+// high quality resize that builds the editor's working copy of a large photo. The image processing
+// itself lives in C#. Pixel data never crosses the boundary as base64: on WebAssembly it is copied
+// straight between .NET memory and typed arrays (see pixelTransport), and over a Blazor Server circuit
+// it travels as raw bytes through streams.
 
 /** The DotNetObjectReference surface this module calls back into. */
 interface DotNetObject {
@@ -161,7 +163,12 @@ function bitmapSize(bitmap: ImageBitmap | HTMLImageElement) {
  * Returns a ByteResult whose info() gives the dimensions and bytes() streams the pixels.
  */
 export async function decode(bytes: any, options?: DecodeOptions) {
-    const blob = new Blob([bytes], options?.mimeType ? { type: options.mimeType } : undefined);
+    const { data, width, height } = await decodePixels(bytes, options);
+    return new ByteResult(new Uint8Array(data.buffer, data.byteOffset, data.byteLength), { width, height });
+}
+
+async function decodePixels(bytes: Uint8Array, options?: DecodeOptions) {
+    const blob = new Blob([bytes as BlobPart], options?.mimeType ? { type: options.mimeType } : undefined);
     const bitmap = await decodeToBitmap(blob, options);
     try {
         let { width, height } = bitmapSize(bitmap);
@@ -184,10 +191,11 @@ export async function decode(bytes: any, options?: DecodeOptions) {
         const canvas = rentCanvas(width, height);
         try {
             const ctx = get2d(canvas);
-            ctx.clearRect(0, 0, width, height);
+            // A canvas shrinking the bitmap itself, when the browser could not resize while decoding, must not use
+            // the default low quality smoothing.
+            ctx.imageSmoothingQuality = 'high';
             ctx.drawImage(bitmap, 0, 0, width, height);
-            const data = ctx.getImageData(0, 0, width, height);
-            return new ByteResult(new Uint8Array(data.data.buffer), { width, height });
+            return { data: ctx.getImageData(0, 0, width, height).data, width, height };
         } finally {
             returnCanvas(canvas);
         }
@@ -220,25 +228,29 @@ export async function identify(bytes: any, mimeType?: string) {
  * Returns a ByteResult, or throws when the browser cannot produce that format.
  */
 export async function encode(pixels: any, width: number, height: number, mimeType: string, quality?: number, background?: string) {
+    const { data, type } = await encodePixels(pixels, width, height, mimeType, quality, background);
+    return new ByteResult(data, { mimeType: type, width, height });
+}
+
+/** A view of a byte array as canvas pixels, without copying it. */
+function asClamped(bytes: Uint8Array | Uint8ClampedArray): Uint8ClampedArray<ArrayBuffer> {
+    return new Uint8ClampedArray(bytes.buffer as ArrayBuffer, bytes.byteOffset, bytes.byteLength);
+}
+
+async function encodePixels(pixels: Uint8Array | Uint8ClampedArray, width: number, height: number, mimeType: string, quality?: number, background?: string) {
     // Not pooled: a context's attributes are fixed by its first getContext call, and this one opts out of
     // willReadFrequently. Returned to the pool, it would make later pixel reads on that canvas slow.
     const canvas = createCanvas(width, height);
     try {
         const ctx = get2d(canvas, { willReadFrequently: false });
-        // Formats without an alpha channel need an explicit backdrop, otherwise the browser uses black.
+        ctx.putImageData(new ImageData(asClamped(pixels), width, height), 0, 0);
+        // Formats without an alpha channel need an explicit backdrop, otherwise the browser uses black. Drawing it
+        // behind the pixels already there composites them over it, and leaves opaque pixels exactly as they are.
         if (background) {
+            ctx.globalCompositeOperation = 'destination-over';
             ctx.fillStyle = background;
             ctx.fillRect(0, 0, width, height);
-            const temp = rentCanvas(width, height);
-            try {
-                const tctx = get2d(temp);
-                tctx.putImageData(new ImageData(new Uint8ClampedArray(pixels), width, height), 0, 0);
-                ctx.drawImage(temp, 0, 0);
-            } finally {
-                returnCanvas(temp);
-            }
-        } else {
-            ctx.putImageData(new ImageData(new Uint8ClampedArray(pixels), width, height), 0, 0);
+            ctx.globalCompositeOperation = 'source-over';
         }
 
         const blob = await canvasToBlob(canvas, mimeType, quality);
@@ -247,7 +259,7 @@ export async function encode(pixels: any, width: number, height: number, mimeTyp
             // Browsers silently fall back to PNG for formats they cannot write. Report it instead of lying.
             throw new Error(`unsupported-format:${mimeType}:${blob.type}`);
         }
-        return new ByteResult(new Uint8Array(await blobToArrayBuffer(blob)), { mimeType: blob.type, width, height });
+        return { data: new Uint8Array(await blobToArrayBuffer(blob)), type: blob.type };
     } finally {
         canvas.width = 0;
         canvas.height = 0;
@@ -260,7 +272,18 @@ function canvasToBlob(canvas: AnyCanvas, mimeType: string, quality?: number): Pr
 }
 
 /** Probes what this browser can actually do. Encoding support is verified by really encoding a pixel. */
-export async function getCapabilities() {
+let capabilities: Promise<unknown> | null = null;
+
+/**
+ * Probes once per page and hands every later caller the same answer: the probes encode and decode real images and
+ * allocate a large canvas, which is worth doing once and only once.
+ */
+export function getCapabilities() {
+    // A probe that failed outright is not remembered, so the next caller tries again.
+    return capabilities ??= probeCapabilities().catch((e) => { capabilities = null; throw e; });
+}
+
+async function probeCapabilities() {
     const probe = createCanvas(1, 1);
     const encodable: string[] = [];
     const decodable: string[] = [];
@@ -271,28 +294,29 @@ export async function getCapabilities() {
     if (probeCtx) {
         probeCtx.fillStyle = 'rgba(255,0,0,0.5)';
         probeCtx.fillRect(0, 0, 1, 1);
-        for (const type of ['image/png', 'image/jpeg', 'image/webp', 'image/avif']) {
-            try {
-                const blob = await canvasToBlob(probe, type, 0.9);
-                // Browsers substitute PNG for formats they cannot write, so compare the type rather than trusting success.
-                if (blob && blob.type === type) encodable.push(type);
-            } catch { /* not supported */ }
-        }
+        // All at once: each encode snapshots the canvas when it starts.
+        const types = ['image/png', 'image/jpeg', 'image/webp', 'image/avif'];
+        const blobs = await Promise.all(types.map((type) => canvasToBlob(probe, type, 0.9).catch(() => null)));
+        // Browsers substitute PNG for formats they cannot write, so compare the type rather than trusting success.
+        types.forEach((type, i) => { if (blobs[i]?.type === type) encodable.push(type); });
     }
     // Not returned to the pool: its context was created without willReadFrequently, and a pooled canvas keeps the
     // attributes of its first context, which would make every later pixel read on it slow.
     probe.width = 0;
     probe.height = 0;
 
-    for (const [type, data] of Object.entries(PROBE_IMAGES)) {
+    const decoded = await Promise.all(Object.entries(PROBE_IMAGES).map(async ([type, data]) => {
         try {
             const bytes = Uint8Array.from(atob(data), (c) => c.charCodeAt(0));
             const bitmap = await decodeToBitmap(new Blob([bytes], { type }), { autoOrient: false });
             const size = bitmapSize(bitmap);
             closeBitmap(bitmap);
-            if (size.width > 0) decodable.push(type);
-        } catch { /* not supported */ }
-    }
+            return size.width > 0 ? type : null;
+        } catch {
+            return null;
+        }
+    }));
+    for (const type of decoded) if (type) decodable.push(type);
 
     // deviceMemory is not in the DOM typings, and a worker-like host may have no navigator at all.
     const nav: any = typeof navigator !== 'undefined' ? navigator : {};
@@ -487,7 +511,7 @@ export function paint(canvas: HTMLCanvasElement, pixels: any, width: number, hei
     if (canvas.height !== height) canvas.height = height;
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
-    ctx.putImageData(new ImageData(new Uint8ClampedArray(pixels), width, height), 0, 0);
+    ctx.putImageData(new ImageData(asClamped(pixels), width, height), 0, 0);
 }
 
 /** Measures text with the platform text engine, which handles fonts and scripts .NET cannot resolve alone. */
@@ -660,29 +684,78 @@ export function stopObservingResize(element: Element) {
  */
 const scrollKeys = new Set(['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', ' ', 'Delete', 'Backspace']);
 
+/** Wheel delta that zooms by the same 1.1 a mouse notch (100 pixels of delta) always has. */
+const zoomPerPixel = Math.log(1.1) / 100;
+
 /**
  * Stops the page scrolling or zooming while the user works on an element: touch drags, pinch gestures, the mouse
  * wheel (which the editor uses for zoom), and the keys the editor binds while the element itself has focus. These
  * need non-passive listeners on the element, which Blazor's own event handling cannot register.
+ *
+ * With a .NET reference it also takes over the parts of pointer handling that cost a round trip per event: it
+ * captures the pointer the moment a drag starts, keeps pointer moves that are not part of a drag from reaching
+ * .NET at all, and turns wheel and trackpad pinch input into one zoom call per frame, with a factor proportional to
+ * the distance scrolled so a trackpad zooms smoothly instead of a fixed step per event.
  */
-export function suppressTouchScrolling(element: any) {
+export function suppressTouchScrolling(element: any, dotNetRef?: DotNetObject) {
     if (!element || element.__bitBmageHandlers) return;
     const cancel = (e: Event) => { if (e.cancelable) e.preventDefault(); };
     const keys = (e: KeyboardEvent) => { if (e.target === element && scrollKeys.has(e.key)) e.preventDefault(); };
+    const pointers = new Set<number>();
+    const down = (e: PointerEvent) => {
+        if (e.button > 0) return;
+        pointers.add(e.pointerId);
+        try { element.setPointerCapture(e.pointerId); } catch { /* the pointer is already gone */ }
+    };
+    const up = (e: PointerEvent) => { pointers.delete(e.pointerId); };
+    // Blazor listens for pointer moves further up the document; a hover never gets that far.
+    const move = (e: PointerEvent) => { if (!pointers.has(e.pointerId)) e.stopPropagation(); };
+    let pendingDelta = 0, pendingX = 0, pendingY = 0, frame = 0;
+    const wheel = (e: WheelEvent) => {
+        if (e.cancelable) e.preventDefault();
+        if (!dotNetRef) return;
+        // Firefox reports a mouse notch as 3 lines; at 33 pixels a line it zooms as much as a 100 pixel notch elsewhere.
+        const unit = e.deltaMode === 1 ? 33 : e.deltaMode === 2 ? 800 : 1;
+        const rect = element.getBoundingClientRect();
+        pendingDelta += e.deltaY * unit;
+        pendingX = e.clientX - rect.left;
+        pendingY = e.clientY - rect.top;
+        if (frame) return;
+        frame = requestAnimationFrame(() => {
+            frame = 0;
+            const delta = pendingDelta;
+            pendingDelta = 0;
+            // The component may be gone by the time the frame fires; nothing is left to zoom then.
+            if (delta !== 0) dotNetRef.invokeMethodAsync('OnWheelZoom', Math.exp(-delta * zoomPerPixel), pendingX, pendingY).catch(() => { });
+        });
+    };
     element.addEventListener('touchmove', cancel, { passive: false });
     element.addEventListener('gesturestart', cancel, { passive: false });
-    element.addEventListener('wheel', cancel, { passive: false });
+    element.addEventListener('wheel', wheel, { passive: false });
     element.addEventListener('keydown', keys);
-    element.__bitBmageHandlers = { cancel, keys };
+    if (dotNetRef) {
+        element.addEventListener('pointerdown', down);
+        element.addEventListener('pointerup', up);
+        element.addEventListener('pointercancel', up);
+        element.addEventListener('lostpointercapture', up);
+        element.addEventListener('pointermove', move);
+    }
+    element.__bitBmageHandlers = { cancel, keys, wheel, down, up, move, cancelFrame: () => { if (frame) cancelAnimationFrame(frame); } };
 }
 
 export function restoreTouchScrolling(element: any) {
     const handlers = element?.__bitBmageHandlers;
     if (!handlers) return;
+    handlers.cancelFrame();
     element.removeEventListener('touchmove', handlers.cancel);
     element.removeEventListener('gesturestart', handlers.cancel);
-    element.removeEventListener('wheel', handlers.cancel);
+    element.removeEventListener('wheel', handlers.wheel);
     element.removeEventListener('keydown', handlers.keys);
+    element.removeEventListener('pointerdown', handlers.down);
+    element.removeEventListener('pointerup', handlers.up);
+    element.removeEventListener('pointercancel', handlers.up);
+    element.removeEventListener('lostpointercapture', handlers.up);
+    element.removeEventListener('pointermove', handlers.move);
     delete element.__bitBmageHandlers;
 }
 
@@ -704,3 +777,129 @@ export async function readBlob(blob: Blob) {
 export function releaseResources() {
     canvasPool.length = 0;
 }
+
+// ---- In-process pixel transport ----
+//
+// On WebAssembly, .NET calls these through [JSImport] with views of its own memory, so pixels are copied once in each
+// direction, straight between a .NET buffer and a typed array: no byte[] is allocated for the call, nothing is
+// marshalled through JSON, and nothing is streamed in chunks. A view is only valid during the synchronous call it is
+// passed to, so data that an asynchronous step needs is first copied into a staged entry, and results are copied
+// back into a buffer .NET has sized from the entry's dimensions.
+
+/** A view of .NET memory, as [JSImport] passes a Span. */
+interface MemoryView {
+    set(source: ArrayLike<number>, targetOffset?: number): void;
+    copyTo(target: Uint8Array | Uint8ClampedArray, sourceOffset?: number): void;
+    slice(start?: number, end?: number): Uint8Array;
+    readonly byteLength: number;
+}
+
+interface Staged {
+    data: Uint8Array | Uint8ClampedArray;
+    width: number;
+    height: number;
+    type?: string;
+}
+
+const staged = new Map<number, Staged>();
+let nextStaged = 1;
+const paintData = new WeakMap<HTMLCanvasElement, { image: ImageData; bytes: Uint8Array }>();
+
+function stagedEntry(id: number) {
+    const entry = staged.get(id);
+    if (!entry) throw new Error('This staged image has already been released.');
+    return entry;
+}
+
+const pixelTransport = {
+    /** Copies bytes (pixels, or an encoded file with a zero size) out of .NET memory and returns a handle to them. */
+    stage(view: MemoryView, width: number, height: number) {
+        const id = nextStaged++;
+        staged.set(id, { data: view.slice(), width, height });
+        return id;
+    },
+
+    /** Resizes staged pixels with the browser's high quality resampler. */
+    async scale(id: number, width: number, height: number) {
+        const entry = stagedEntry(id);
+        const source = new ImageData(asClamped(entry.data), entry.width, entry.height);
+        // Firefox's high quality resize returns the wrong alpha for half transparent pixels unless the
+        // premultiplication is asked for explicitly.
+        const bitmap = await createImageBitmap(source, { resizeWidth: width, resizeHeight: height, resizeQuality: 'high', premultiplyAlpha: 'premultiply' });
+        try {
+            const canvas = rentCanvas(width, height);
+            try {
+                const ctx = get2d(canvas);
+                ctx.clearRect(0, 0, width, height);
+                // Where createImageBitmap ignores the resize, this draw does it, and must not use low quality smoothing.
+                ctx.imageSmoothingQuality = 'high';
+                ctx.drawImage(bitmap, 0, 0, width, height);
+                entry.data = ctx.getImageData(0, 0, width, height).data;
+                entry.width = width;
+                entry.height = height;
+            } finally {
+                returnCanvas(canvas);
+            }
+        } finally {
+            bitmap.close();
+        }
+    },
+
+    /** Decodes a staged file into pixels, with the same options and limits as decode(). */
+    async decode(id: number, mimeType: string, autoOrient: boolean, maxWidth: number, maxHeight: number, maxPixels: number, sourceWidth: number, sourceHeight: number) {
+        const entry = stagedEntry(id);
+        const options: DecodeOptions = { mimeType, autoOrient };
+        if (maxWidth > 0) options.maxWidth = maxWidth;
+        if (maxHeight > 0) options.maxHeight = maxHeight;
+        if (maxPixels > 0) options.maxPixels = maxPixels;
+        if (sourceWidth > 0) options.sourceWidth = sourceWidth;
+        if (sourceHeight > 0) options.sourceHeight = sourceHeight;
+        const { data, width, height } = await decodePixels(entry.data as Uint8Array, options);
+        Object.assign(entry, { data, width, height });
+    },
+
+    /** Encodes staged pixels, replacing them with the file; throws as encode() does when the format is unsupported. */
+    async encode(id: number, mimeType: string, quality: number, background: string | null) {
+        const entry = stagedEntry(id);
+        const { data, type } = await encodePixels(entry.data, entry.width, entry.height, mimeType, quality, background ?? undefined);
+        Object.assign(entry, { data, type });
+    },
+
+    width: (id: number) => stagedEntry(id).width,
+    height: (id: number) => stagedEntry(id).height,
+    length: (id: number) => stagedEntry(id).data.byteLength,
+
+    /** Copies a staged entry into .NET memory and releases it. */
+    read(id: number, view: MemoryView) {
+        const entry = stagedEntry(id);
+        staged.delete(id);
+        // A view only accepts a Uint8Array, and canvas pixels come as a Uint8ClampedArray over the same kind of buffer.
+        const data = entry.data;
+        view.set(data instanceof Uint8Array ? data : new Uint8Array(data.buffer, data.byteOffset, data.byteLength));
+    },
+
+    release(id: number) {
+        staged.delete(id);
+    },
+
+    /** Paints pixels straight from .NET memory into a canvas, reusing its ImageData while the size stays the same. */
+    paint(canvasId: string, view: MemoryView, width: number, height: number) {
+        const canvas = document.getElementById(canvasId) as HTMLCanvasElement | null;
+        const ctx = canvas?.getContext('2d');
+        if (!canvas || !ctx) return false;
+        if (canvas.width !== width) canvas.width = width;
+        if (canvas.height !== height) canvas.height = height;
+        let entry = paintData.get(canvas);
+        if (!entry || entry.image.width !== width || entry.image.height !== height) {
+            const image = new ImageData(width, height);
+            // A view only copies into a Uint8Array, so keep one over the ImageData's own buffer.
+            entry = { image, bytes: new Uint8Array(image.data.buffer, image.data.byteOffset, image.data.byteLength) };
+            paintData.set(canvas, entry);
+        }
+        view.copyTo(entry.bytes);
+        ctx.putImageData(entry.image, 0, 0);
+        return true;
+    },
+};
+
+(globalThis as any).BitBmagePixels = pixelTransport;

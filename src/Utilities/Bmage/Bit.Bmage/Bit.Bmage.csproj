@@ -7,6 +7,8 @@
         <RootNamespace>Bit.Bmage</RootNamespace>
         <ImplicitUsings>enable</ImplicitUsings>
         <IsTrimmable>true</IsTrimmable>
+        <!-- The [JSImport] source generator emits unsafe code. -->
+        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
         <Description>bit Bmage: browser-side image processing for Blazor. Load, transform, annotate and export images on the user's device from strongly typed C#, with browser-native WebP and AVIF codecs, capability detection, IBrowserFile/clipboard/camera input and dependency injection wiring. Works in WebAssembly, Server and Auto render modes, and headlessly on a server through its browser-independent engine: pixel buffers, transforms, adjustments, filters, drawing, annotations, EXIF metadata, managed PNG/JPEG/BMP/GIF codecs and composable non-destructive pipelines. Includes BmageEditor, a themeable, accessible, touch-friendly image editor component: crop, rotate, adjust, filter, draw, annotate, redact, undo/redo and export.</Description>
         <PackageDescription>$(Description)</PackageDescription>
         <PackageTags>Bit;Bmage;Blazor;image;editor;canvas;crop;resize;webp;avif;exif;annotation;png;jpeg;wasm</PackageTags>

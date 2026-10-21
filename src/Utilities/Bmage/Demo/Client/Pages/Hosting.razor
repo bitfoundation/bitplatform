@@ -117,10 +117,9 @@
 <div class="bb-card">
     <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Compile ahead of time</h3>
     <p>
-        All image processing is C#, and on Blazor's default IL interpreter it runs <strong>10 to 35
-        times slower</strong> than compiled code. Compiling the browser project ahead of time brings it
-        to within 1.2 to 2.4 times of desktop .NET - see <a href="/performance">Performance</a> for the
-        measurements.
+        Bmage is tuned for Blazor's default IL interpreter, but what stays in .NET still runs
+        <strong>4 to 12 times faster</strong> when the browser project is compiled ahead of time - see
+        <a href="/performance">Performance</a> for the measurements.
     </p>
     <CodeSnippet Code="@AotSnippet" Language="XML" Expanded="true" />
     <ul class="bb-detail-list">

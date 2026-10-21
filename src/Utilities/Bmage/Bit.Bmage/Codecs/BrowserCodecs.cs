@@ -87,13 +87,39 @@ public sealed class BrowserImageDecoder : IImageDecoder
         // ever existing at full size on a memory constrained device. It only preserves the aspect ratio when told a
         // single axis, so pass the header dimensions along and let the browser side pick the constraining one.
         var header = options.MaxSize is not null ? Identify(data.Span) : null;
+        var maxPixels = options.Limits.MaxPixels < long.MaxValue ? options.Limits.MaxPixels : (long?)null;
+        if (OperatingSystem.IsBrowser())
+        {
+            ImageBuffer decoded;
+            try
+            {
+                decoded = await BrowserPixels.DecodeAsync(_interop, data, format.GetMimeType(), options.AutoOrient,
+                    options.MaxSize?.Width ?? 0, options.MaxSize?.Height ?? 0, maxPixels ?? 0,
+                    header?.DisplaySize.Width ?? 0, header?.DisplaySize.Height ?? 0, options.Limits, allocator, cancellationToken).ConfigureAwait(false);
+            }
+            catch (JSException ex)
+            {
+                throw DecodeFailed(format, ex);
+            }
+            try
+            {
+                decoded.Metadata = ReadMetadata(data.Span, format, options);
+                return decoded;
+            }
+            catch
+            {
+                decoded.Dispose();
+                throw;
+            }
+        }
+
         var request = new DecodeRequest
         {
             MimeType = format.GetMimeType(),
             AutoOrient = options.AutoOrient,
             MaxWidth = options.MaxSize?.Width,
             MaxHeight = options.MaxSize?.Height,
-            MaxPixels = options.Limits.MaxPixels < long.MaxValue ? options.Limits.MaxPixels : null,
+            MaxPixels = maxPixels,
             SourceWidth = header?.DisplaySize.Width,
             SourceHeight = header?.DisplaySize.Height,
         };
@@ -105,7 +131,7 @@ public sealed class BrowserImageDecoder : IImageDecoder
         }
         catch (JSException ex)
         {
-            throw new ImageDecodeException($"The browser could not decode this {format} image. It may be corrupt, or the format may not be supported here. The browser reported: {ex.Message}", ex);
+            throw DecodeFailed(format, ex);
         }
 
         using (result)
@@ -131,6 +157,9 @@ public sealed class BrowserImageDecoder : IImageDecoder
             }
         }
     }
+
+    private static ImageDecodeException DecodeFailed(ImageFormat format, JSException ex)
+        => new($"The browser could not decode this {format} image. It may be corrupt, or the format may not be supported here. The browser reported: {ex.Message}", ex);
 
     /// <summary>
     /// Parses metadata from the original file. The browser strips it during decode, and it must survive to the export
@@ -203,13 +232,20 @@ public sealed class BrowserImageEncoder : IImageEncoder
         if (!_formats.Contains(options.Format))
             throw new ImageCapabilityException($"The browser encoder is not configured for {options.Format}.");
 
-        // Formats without alpha need an explicit backdrop; otherwise browsers composite over black.
-        var background = options.Format.SupportsAlpha() || !image.HasTransparency() ? null : options.Background.ToCss();
+        // Formats without alpha need an explicit backdrop; otherwise browsers composite over black. The browser draws it
+        // behind the pixels, which leaves opaque ones untouched, so there is no need to scan for transparency first.
+        var background = options.Format.SupportsAlpha() ? null : options.Background.ToCss();
         var quality = Math.Clamp(options.Quality, 0.01, 1.0);
 
         BrowserBytes<BrowserImageInfo> result;
         try
         {
+            if (OperatingSystem.IsBrowser())
+            {
+                var encoded = await BrowserPixels.EncodeAsync(_interop, image, options.Format.GetMimeType(), quality, background, cancellationToken).ConfigureAwait(false);
+                if (encoded.Length == 0) throw new ImageEncodeException($"The browser produced no output for {options.Format}.");
+                return new EncodedImage(ApplyMetadata(encoded, image, options), options.Format, image.Width, image.Height, options.Format.IsLossy() ? quality : null);
+            }
             result = await _interop.InvokeForBytesAsync<BrowserImageInfo>(
                 "encode", cancellationToken, image.ToArray(), image.Width, image.Height, options.Format.GetMimeType(), quality, background).ConfigureAwait(false);
         }

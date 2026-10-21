@@ -279,9 +279,10 @@
             <details>
                 <summary>Is C# fast enough for pixel work in a browser?</summary>
                 <p>
-                    With ahead-of-time compilation, yes: WebAssembly then lands within 1.2 to 2.4&times; of
-                    desktop .NET. On Blazor's default IL interpreter pixel loops run 10 to 35&times; slower,
-                    so publish the browser project with <code>RunAOTCompilation</code>.
+                    Yes. The pixel loops are written for Blazor's default IL interpreter, and the browser does
+                    the work it is fastest at, so the editor opens a 12 megapixel photo in about 50 ms even
+                    there. Publishing the browser project with <code>RunAOTCompilation</code> makes what stays
+                    in .NET 4 to 12&times; faster still.
                 </p>
             </details>
             <details>

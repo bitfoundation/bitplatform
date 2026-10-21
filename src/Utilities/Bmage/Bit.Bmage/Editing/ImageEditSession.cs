@@ -1,4 +1,5 @@
 ﻿using System.Drawing;
+using Bit.Bmage.Annotations;
 using Bit.Bmage.Drawing;
 using Bit.Bmage.Geometry;
 using Bit.Bmage.Memory;
@@ -23,12 +24,18 @@ namespace Bit.Bmage.Editing;
 /// Preview rendering is serialised and cancellable: a new request cancels the one in flight, so dragging a slider never
 /// queues work faster than it completes.
 /// </para>
+/// <para>
+/// Previews reuse pixels earlier renders computed for the same operation and annotation instances, which relies on
+/// those being immutable, as every built-in one is. A custom operation must not change in place: replace it with a new
+/// instance instead.
+/// </para>
 /// </remarks>
 public sealed class ImageEditSession : IDisposable
 {
     private readonly IPixelAllocator _allocator;
     private readonly ImageLimits _limits;
     private readonly DocumentRenderer _renderer;
+    private readonly Func<ImageBuffer, Size, CancellationToken, ValueTask<ImageBuffer?>>? _proxyScaler;
     private ImageBuffer _original;
     private ImageBuffer? _proxy;
     private ImageBuffer? _preview;
@@ -39,6 +46,14 @@ public sealed class ImageEditSession : IDisposable
     private bool _disposed;
     // Incremented whenever the source changes, so a render that started on the old source cannot publish its result.
     private int _sourceVersion;
+    // The unscaled document the current preview shows, overlay included.
+    private ImageDocument? _previewDocument;
+    // Pixels earlier renders computed, one set per resolution, only touched under the render lock.
+    private readonly RenderLayer _full = new();
+    private readonly RenderLayer _draft = new();
+    private OverlayBase? _overlayBase;
+    // Half the proxy's resolution, built on the first draft render.
+    private ImageBuffer? _draftSource;
 
     /// <summary>Creates a session that takes ownership of <paramref name="original"/>.</summary>
     public ImageEditSession(ImageBuffer original, ImageEditSessionOptions? options = null)
@@ -48,6 +63,7 @@ public sealed class ImageEditSession : IDisposable
         _allocator = o.Allocator ?? PooledPixelAllocator.Shared;
         _limits = o.Limits ?? ImageLimits.Default;
         _renderer = new DocumentRenderer(o.TextRasterizer);
+        _proxyScaler = o.ProxyScaler;
         MaxProxyDimension = o.MaxProxyDimension;
         UpdateProxyGeometry();
         History = new EditHistory(ImageDocument.Create(original), o.MaxHistoryDepth);
@@ -88,6 +104,22 @@ public sealed class ImageEditSession : IDisposable
 
     /// <summary>True when the image is large enough that editing happens on a downscaled proxy.</summary>
     public bool UsesProxy => ProxyScale < 1.0;
+
+    /// <summary>
+    /// The scale <see cref="RenderDraftAsync"/> renders at, relative to the original: half of <see cref="ProxyScale"/>,
+    /// or <see cref="ProxyScale"/> itself when the proxy is already small enough to render quickly.
+    /// </summary>
+    public double DraftScale { get; private set; } = 1.0;
+
+    /// <summary>
+    /// The scale of <see cref="Preview"/> relative to the original: <see cref="ProxyScale"/>, or
+    /// <see cref="DraftScale"/> when the last render was a draft. Previews are meant to be shown at the proxy's size
+    /// either way, so coordinates keep mapping through <see cref="PreviewToOutput"/>.
+    /// </summary>
+    public double PreviewScale { get; private set; } = 1.0;
+
+    /// <summary>How long the last full resolution preview took to render, for deciding when a draft is worth it.</summary>
+    public TimeSpan LastPreviewDuration { get; private set; }
 
     /// <summary>The most recently rendered preview, or null before the first render. Owned by the session.</summary>
     public ImageBuffer? Preview => _preview;
@@ -185,17 +217,25 @@ public sealed class ImageEditSession : IDisposable
         ObjectDisposedException.ThrowIf(_disposed, this);
         var old = _original;
         var oldProxy = _proxy;
+        var oldDraft = _draftSource;
         _original = image;
         _proxy = null;
+        _draftSource = null;
         _sourceVersion++;
         // A render of the old source is now pointless, and must not outlive the buffers it reads.
         CancelQuietly(Interlocked.Exchange(ref _renderCts, null));
         DisposePreview();
         UpdateProxyGeometry();
         History.Clear(ImageDocument.Create(image));
-        DisposeWhenIdle(
-            oldProxy is not null && !ReferenceEquals(oldProxy, old) ? oldProxy : null,
-            disposeExisting && !ReferenceEquals(old, image) ? old : null);
+        var releaseProxy = oldProxy is not null && !ReferenceEquals(oldProxy, old) ? oldProxy : null;
+        var releaseOriginal = disposeExisting && !ReferenceEquals(old, image) ? old : null;
+        WhenIdle(() =>
+        {
+            releaseProxy?.Dispose();
+            releaseOriginal?.Dispose();
+            oldDraft?.Dispose();
+            DisposeStaleCaches();
+        });
         MarkPreviewStale();
         DocumentChanged?.Invoke(Document);
     }
@@ -215,12 +255,24 @@ public sealed class ImageEditSession : IDisposable
         => RenderPreviewAsync(null, cancellationToken);
 
     /// <summary>
+    /// Renders a quick preview at <see cref="DraftScale"/>, for showing while a control is dragged: a quarter of the
+    /// pixels when the proxy is large, so even filters that cost a lot per pixel keep up with the pointer. Render the
+    /// full preview again when the interaction ends. The draft counts as stale.
+    /// </summary>
+    /// <exception cref="OperationCanceledException">The render was superseded by a newer one, or the caller cancelled.</exception>
+    public ValueTask<ImageBuffer> RenderDraftAsync(Func<ImageDocument, ImageDocument>? overlay = null, CancellationToken cancellationToken = default)
+        => RenderAsync(overlay, draft: DraftScale < ProxyScale, cancellationToken);
+
+    /// <summary>
     /// Renders the preview of the document as changed by <paramref name="overlay"/>, without recording that change.
     /// Use it to show something that is not part of the edit yet, such as a shape still being drawn. The resulting
     /// preview counts as stale, since it does not match the document.
     /// </summary>
     /// <exception cref="OperationCanceledException">The render was superseded by a newer one, or the caller cancelled.</exception>
-    public async ValueTask<ImageBuffer> RenderPreviewAsync(Func<ImageDocument, ImageDocument>? overlay, CancellationToken cancellationToken = default)
+    public ValueTask<ImageBuffer> RenderPreviewAsync(Func<ImageDocument, ImageDocument>? overlay, CancellationToken cancellationToken = default)
+        => RenderAsync(overlay, draft: false, cancellationToken);
+
+    private async ValueTask<ImageBuffer> RenderAsync(Func<ImageDocument, ImageDocument>? overlay, bool draft, CancellationToken cancellationToken)
     {
         ObjectDisposedException.ThrowIf(_disposed, this);
 
@@ -246,28 +298,43 @@ public sealed class ImageEditSession : IDisposable
             cts.Token.ThrowIfCancellationRequested();
             if (_disposed) throw new OperationCanceledException(cts.Token);
             var sourceVersion = _sourceVersion;
+            DisposeStaleCaches();
             var source = Document;
-            var proxy = EnsureProxy();
+            // Rendering the document the preview already shows would only produce the same pixels again.
+            if (overlay is null && ReferenceEquals(source, _previewDocument) && _preview is { IsDisposed: false } current)
+            {
+                if (!draft) IsPreviewStale = false;
+                PreviewUpdated?.Invoke(current);
+                return current;
+            }
+            var proxy = await EnsureProxyAsync(cts.Token).ConfigureAwait(false);
+            var target = draft ? await EnsureDraftSourceAsync(proxy, cts.Token).ConfigureAwait(false) : proxy;
+            var scale = draft ? DraftScale : ProxyScale;
             var document = overlay is null ? source : overlay(source);
-            if (UsesProxy) document = document.ForScale(ProxyScale);
-            var rendered = await _renderer.RenderAsync(document, proxy, new PipelineExecutionOptions
+            var started = System.Diagnostics.Stopwatch.GetTimestamp();
+            var rendered = await RenderCachedAsync(source, document, target, scale, draft ? _draft : _full, sourceVersion, new PipelineExecutionOptions
             {
                 Allocator = _allocator,
                 Limits = _limits,
                 CancellationToken = cts.Token,
-            }, ProxyScale).ConfigureAwait(false);
+            }).ConfigureAwait(false);
+            if (!draft) LastPreviewDuration = System.Diagnostics.Stopwatch.GetElapsedTime(started);
 
             if (_disposed || sourceVersion != _sourceVersion)
             {
                 // The session was disposed or given a new source while this ran; the result belongs to neither.
                 rendered.Dispose();
+                if (_disposed) DisposeCaches();
                 throw new OperationCanceledException(cts.Token);
             }
 
             var old = _preview;
             _preview = rendered;
+            PreviewScale = scale;
+            // A draft is never the preview a later render could stand in for.
+            _previewDocument = draft ? null : document;
             // An edit made while this ran is not in the result, so the preview is only fresh if nothing changed.
-            IsPreviewStale = overlay is not null || !ReferenceEquals(source, Document);
+            IsPreviewStale = draft || overlay is not null || !ReferenceEquals(source, Document);
             old?.Dispose();
             PreviewUpdated?.Invoke(rendered);
             return rendered;
@@ -279,6 +346,240 @@ public sealed class ImageEditSession : IDisposable
             cts.Dispose();
         }
     }
+
+    /// <summary>
+    /// Renders <paramref name="document"/> at proxy resolution, reusing pixels earlier renders computed when that gives
+    /// exactly the same result.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// The pipeline is split after its last step the optimiser never rewrites together with a neighbour: anything that
+    /// is not a per-pixel operation, crop, orientation or resize and is not an identity, such as a blur. Optimising and
+    /// running the two halves separately therefore produces the same pixels as running it whole, and the first half is
+    /// kept for as long as the document keeps those same operations. Dragging a slider for an adjustment after a blur
+    /// re-runs only the adjustment.
+    /// </para>
+    /// <para>
+    /// When the document has annotations, the pipeline's output is kept too, so editing annotations never re-runs the
+    /// pipeline. While a shape is drawn as an overlay, the preview of the document without it is kept, and each frame
+    /// only draws the overlay's own annotations on a copy of it.
+    /// </para>
+    /// <para>
+    /// Everything cached is tagged with <c>version</c>, the source version the render started on, so pixels of a source
+    /// replaced while the render ran are never taken for the new source's.
+    /// </para>
+    /// </remarks>
+    private async ValueTask<ImageBuffer> RenderCachedAsync(ImageDocument baseDocument, ImageDocument document, ImageBuffer source, double scale, RenderLayer layer, int version, PipelineExecutionOptions options)
+    {
+        var order = document.GetRenderOrder();
+        if (layer == _full)
+        {
+            if (!ReferenceEquals(document, baseDocument))
+            {
+                if (TryRenderOverBase(baseDocument, document, order, version, options.CancellationToken) is { } overlaid) return overlaid;
+            }
+            else
+            {
+                DisposeOverlayBase();
+            }
+        }
+
+        var (pixels, shared) = await RenderPipelineAsync(document.Pipeline, source, scale, layer, version, options, keepOutput: order.Count > 0).ConfigureAwait(false);
+        var rendered = shared ? pixels.Clone(_allocator) : pixels;
+        try
+        {
+            _renderer.RenderAnnotations(ForScale(order, scale), rendered, scale, options.CancellationToken);
+            return rendered;
+        }
+        catch
+        {
+            rendered.Dispose();
+            throw;
+        }
+    }
+
+    /// <summary>
+    /// The pipeline's output at proxy resolution, and whether a cache (or the proxy itself) still owns it, in which
+    /// case the caller must copy it before drawing on it.
+    /// </summary>
+    private async ValueTask<(ImageBuffer Pixels, bool Shared)> RenderPipelineAsync(ImagePipeline pipeline, ImageBuffer source, double scale, RenderLayer layer, int version, PipelineExecutionOptions options, bool keepOutput)
+    {
+        if (layer.Pipeline?.Matches(pipeline, pipeline.Count, version) == true) return (layer.Pipeline.Pixels, true);
+
+        var scaled = scale < 1 ? pipeline.ForScale(scale) : pipeline;
+        var unoptimised = options with { Optimize = false };
+        var boundary = CacheBoundary(scaled);
+        var start = source;
+        if (boundary == 0)
+        {
+            Replace(ref layer.Stage, null);
+        }
+        else
+        {
+            if (layer.Stage?.Matches(pipeline, boundary, version) != true)
+            {
+                var stage = await Slice(scaled, 0, boundary).Optimize(source.Size).ExecuteAsync(source, unoptimised).ConfigureAwait(false);
+                Replace(ref layer.Stage, new RenderCache(pipeline, boundary, version, stage));
+            }
+            start = layer.Stage!.Pixels;
+        }
+        if (boundary == scaled.Count) return (start, true);
+
+        var rest = Slice(scaled, boundary, scaled.Count).Optimize(SizeAfter(scaled, boundary, source.Size));
+        var output = await rest.ExecuteAsync(start, unoptimised).ConfigureAwait(false);
+        if (!keepOutput)
+        {
+            Replace(ref layer.Pipeline, null);
+            return (output, false);
+        }
+        Replace(ref layer.Pipeline, new RenderCache(pipeline, pipeline.Count, version, output));
+        return (output, true);
+    }
+
+    /// <summary>
+    /// Draws the overlay's extra annotations over a kept preview of <paramref name="baseDocument"/>, or returns null
+    /// when the overlay does more than add annotations on top.
+    /// </summary>
+    private ImageBuffer? TryRenderOverBase(ImageDocument baseDocument, ImageDocument document, IReadOnlyList<Annotation> order, int version, CancellationToken cancellationToken)
+    {
+        if (!ReferenceEquals(document.Pipeline, baseDocument.Pipeline)) return null;
+        if (_overlayBase is not { } overlayBase || !ReferenceEquals(overlayBase.Document, baseDocument) || overlayBase.SourceVersion != version)
+        {
+            // The first overlay frame: the current preview shows exactly the document without the overlay, or nothing can be reused.
+            if (version != _sourceVersion || _preview is not { IsDisposed: false } preview || !ReferenceEquals(_previewDocument, baseDocument)) return null;
+            DisposeOverlayBase();
+            overlayBase = _overlayBase = new OverlayBase(baseDocument, baseDocument.GetRenderOrder(), version, preview.Clone(_allocator));
+        }
+
+        var below = overlayBase.Order;
+        if (order.Count < below.Count) return null;
+        for (var i = 0; i < below.Count; i++)
+            if (!ReferenceEquals(order[i], below[i])) return null;
+
+        var rendered = overlayBase.Pixels.Clone(_allocator);
+        try
+        {
+            var added = new Annotation[order.Count - below.Count];
+            for (var i = 0; i < added.Length; i++) added[i] = order[below.Count + i];
+            _renderer.RenderAnnotations(ForScale(added, ProxyScale), rendered, ProxyScale, cancellationToken);
+            return rendered;
+        }
+        catch
+        {
+            rendered.Dispose();
+            throw;
+        }
+    }
+
+    /// <summary>Annotations expressed for a scaled image, the way <see cref="ImageDocument.ForScale"/> expresses them.</summary>
+    private static IReadOnlyList<Annotation> ForScale(IReadOnlyList<Annotation> order, double scale)
+    {
+        if (scale == 1 || order.Count == 0) return order;
+        var scaled = new Annotation[order.Count];
+        for (var i = 0; i < scaled.Length; i++) scaled[i] = order[i].ForScale(scale);
+        return scaled;
+    }
+
+    /// <summary>
+    /// The index after the pipeline's last step that no optimiser rule combines with a neighbour, or 0 when it has none.
+    /// Identities do not count: the optimiser drops them, and what was on either side becomes neighbours.
+    /// </summary>
+    private static int CacheBoundary(ImagePipeline scaled)
+    {
+        for (var i = scaled.Count - 1; i >= 0; i--)
+        {
+            var op = scaled[i];
+            if (!op.IsIdentity && op is not (PointOperation or CropOperation or OrientationOperation or AutoOrientOperation or ResizeOperation))
+                return i + 1;
+        }
+        return 0;
+    }
+
+    /// <summary>
+    /// The size entering step <paramref name="index"/>, known in advance exactly when the whole pipeline's optimiser
+    /// would know it: never past an auto-orientation, whose output depends on metadata.
+    /// </summary>
+    private static Size? SizeAfter(ImagePipeline pipeline, int index, Size input)
+    {
+        var size = input;
+        for (var i = 0; i < index; i++)
+        {
+            if (pipeline[i] is AutoOrientOperation) return null;
+            try { size = pipeline[i].GetOutputSize(size); }
+            catch (ArgumentException) { return null; }
+        }
+        return size;
+    }
+
+    private static ImagePipeline Slice(ImagePipeline pipeline, int start, int end)
+    {
+        var operations = new IImageOperation[end - start];
+        for (var i = start; i < end; i++) operations[i - start] = pipeline[i];
+        return ImagePipeline.From(operations);
+    }
+
+    private static void Replace(ref RenderCache? cache, RenderCache? next)
+    {
+        var old = cache;
+        cache = next;
+        if (!ReferenceEquals(old, next)) old?.Pixels.Dispose();
+    }
+
+    private void DisposeOverlayBase()
+    {
+        _overlayBase?.Pixels.Dispose();
+        _overlayBase = null;
+    }
+
+    /// <summary>Releases cached pixels of an earlier source. Only called under the render lock.</summary>
+    private void DisposeStaleCaches()
+    {
+        foreach (var layer in new[] { _full, _draft })
+        {
+            if (layer.Stage is { } stage && stage.SourceVersion != _sourceVersion) Replace(ref layer.Stage, null);
+            if (layer.Pipeline is { } pipeline && pipeline.SourceVersion != _sourceVersion) Replace(ref layer.Pipeline, null);
+        }
+        if (_overlayBase is { } overlay && overlay.SourceVersion != _sourceVersion) DisposeOverlayBase();
+    }
+
+    private void DisposeCaches()
+    {
+        foreach (var layer in new[] { _full, _draft })
+        {
+            Replace(ref layer.Stage, null);
+            Replace(ref layer.Pipeline, null);
+        }
+        DisposeOverlayBase();
+    }
+
+    /// <summary>The caches of one resolution: the full preview's, or the draft's.</summary>
+    private sealed class RenderLayer
+    {
+        public RenderCache? Stage;
+        public RenderCache? Pipeline;
+    }
+
+    /// <summary>Pixels a pipeline's first operations produced, valid for the same operations on the same source.</summary>
+    private sealed class RenderCache(ImagePipeline pipeline, int count, int sourceVersion, ImageBuffer pixels)
+    {
+        // The unscaled operations themselves: they are immutable, so the same instances mean the same edit.
+        private readonly IImageOperation[] _operations = [.. pipeline.Take(count)];
+
+        public int SourceVersion { get; } = sourceVersion;
+
+        public ImageBuffer Pixels { get; } = pixels;
+
+        public bool Matches(ImagePipeline other, int count, int sourceVersion)
+        {
+            if (sourceVersion != SourceVersion || count != _operations.Length || other.Count < count) return false;
+            for (var i = 0; i < count; i++)
+                if (!ReferenceEquals(other[i], _operations[i])) return false;
+            return true;
+        }
+    }
+
+    /// <summary>The preview of a document, kept while overlays are drawn on top of it.</summary>
+    private sealed record OverlayBase(ImageDocument Document, IReadOnlyList<Annotation> Order, int SourceVersion, ImageBuffer Pixels);
 
     /// <summary>
     /// Cancels a token source that another call owns. The owner may have disposed it already, which is not an error:
@@ -327,6 +628,7 @@ public sealed class ImageEditSession : IDisposable
         {
             ProxySize = _original.Size;
             ProxyScale = 1.0;
+            UpdateDraftGeometry();
             return;
         }
         var nominal = MaxProxyDimension / (double)longest;
@@ -338,15 +640,71 @@ public sealed class ImageEditSession : IDisposable
         ProxyScale = _original.Width >= _original.Height
             ? width / (double)_original.Width
             : height / (double)_original.Height;
+        UpdateDraftGeometry();
     }
 
-    private ImageBuffer EnsureProxy()
+    /// <summary>Below this many pixels a preview renders quickly anyway, and a draft would only blur it.</summary>
+    private const long DraftThreshold = 1024 * 1024;
+
+    /// <summary>A draft has half the proxy's longest edge, and the other in proportion.</summary>
+    private void UpdateDraftGeometry()
+    {
+        PreviewScale = ProxyScale;
+        DraftSize = ProxySize;
+        DraftScale = ProxyScale;
+        if ((long)ProxySize.Width * ProxySize.Height <= DraftThreshold) return;
+        // Sized from the original the way ImageDocument.ForScale sizes it, so the draft and the document scaled for it agree.
+        var longest = Math.Max(_original.Width, _original.Height);
+        var draftLongest = Math.Max(1, (int)Math.Round(Math.Max(ProxySize.Width, ProxySize.Height) / 2.0));
+        DraftScale = draftLongest / (double)longest;
+        DraftSize = new Size(Math.Max(1, (int)Math.Round(_original.Width * DraftScale)), Math.Max(1, (int)Math.Round(_original.Height * DraftScale)));
+    }
+
+    private Size DraftSize { get; set; }
+
+    private async ValueTask<ImageBuffer> EnsureDraftSourceAsync(ImageBuffer proxy, CancellationToken cancellationToken)
+    {
+        if (_draftSource is { } existing) return existing;
+        var sourceVersion = _sourceVersion;
+        var draft = await ScaleProxyAsync(proxy, DraftSize, cancellationToken).ConfigureAwait(false);
+        if (_disposed || sourceVersion != _sourceVersion)
+        {
+            draft.Dispose();
+            throw new OperationCanceledException(cancellationToken);
+        }
+        _draftSource = draft;
+        return draft;
+    }
+
+    private async ValueTask<ImageBuffer> EnsureProxyAsync(CancellationToken cancellationToken)
     {
         if (_proxy is { } existing) return existing;
         if (!UsesProxy) return _original;
-        _proxy = new ResizeOperation(ProxySize.Width, ProxySize.Height, ResizeMode.Stretch, ResamplingFilter.Auto)
-            .Apply(_original, new OperationContext(_allocator, _limits));
-        return _proxy;
+        var sourceVersion = _sourceVersion;
+        var proxy = await ScaleProxyAsync(_original, ProxySize, cancellationToken).ConfigureAwait(false);
+        if (_disposed || sourceVersion != _sourceVersion)
+        {
+            // Built for a source the session no longer has.
+            proxy.Dispose();
+            throw new OperationCanceledException(cancellationToken);
+        }
+        _proxy = proxy;
+        return proxy;
+    }
+
+    /// <summary>
+    /// The working copy, from the scaler the editor supplies in a browser (whose native resampler is many times faster
+    /// than the managed one on WebAssembly) and from the managed resampler otherwise, or when the scaler cannot help.
+    /// </summary>
+    private async ValueTask<ImageBuffer> ScaleProxyAsync(ImageBuffer original, Size size, CancellationToken cancellationToken)
+    {
+        if (_proxyScaler is not null && await _proxyScaler(original, size, cancellationToken).ConfigureAwait(false) is { } scaled)
+        {
+            if (scaled.Size == size) return scaled;
+            scaled.Dispose();
+        }
+        return new ResizeOperation(size.Width, size.Height, ResizeMode.Stretch, ResamplingFilter.Auto)
+            .Apply(original, new OperationContext(_allocator, _limits, cancellationToken));
     }
 
     private void DisposePreview()
@@ -367,32 +725,34 @@ public sealed class ImageEditSession : IDisposable
         DisposePreview();
         var proxy = _proxy;
         _proxy = null;
-        DisposeWhenIdle(proxy is not null && !ReferenceEquals(proxy, _original) ? proxy : null, _original);
+        var releaseProxy = proxy is not null && !ReferenceEquals(proxy, _original) ? proxy : null;
+        var original = _original;
+        var draft = _draftSource;
+        _draftSource = null;
+        WhenIdle(() =>
+        {
+            releaseProxy?.Dispose();
+            original.Dispose();
+            draft?.Dispose();
+            DisposeCaches();
+        });
     }
 
     /// <summary>
-    /// Disposes source buffers once no render is reading them. A cancelled render only notices at its next check, and
+    /// Releases buffers once no render is reading them. A cancelled render only notices at its next check, and
     /// returning its input to the pool before then would let another image overwrite the pixels mid-read.
     /// </summary>
-    private void DisposeWhenIdle(ImageBuffer? first, ImageBuffer? second)
-    {
-        if (first is null && second is null) return;
-        // A zero timeout only tries the lock and never blocks, so it is safe on the browser's single thread.
-#pragma warning disable CA1416
-        if (_renderLock.Wait(0))
-#pragma warning restore CA1416
-        {
-            try { first?.Dispose(); second?.Dispose(); }
-            finally { _renderLock.Release(); }
-            return;
-        }
-        _ = DisposeAfterRenderAsync(first, second);
-    }
+    /// <remarks>
+    /// Never waits synchronously: <see cref="SemaphoreSlim.Wait(int)"/> is unsupported on the browser, and .NET 11's
+    /// single-threaded WebAssembly runtimes throw even for a zero timeout. Waiting on a free lock completes at once, so
+    /// when no render runs the buffers are still released before this returns.
+    /// </remarks>
+    private void WhenIdle(Action release) => _ = ReleaseAfterRenderAsync(release);
 
-    private async Task DisposeAfterRenderAsync(ImageBuffer? first, ImageBuffer? second)
+    private async Task ReleaseAfterRenderAsync(Action release)
     {
         await _renderLock.WaitAsync().ConfigureAwait(false);
-        try { first?.Dispose(); second?.Dispose(); }
+        try { release(); }
         finally { _renderLock.Release(); }
     }
 }
@@ -417,4 +777,11 @@ public sealed class ImageEditSessionOptions
 
     /// <summary>Rasteriser used for text annotations.</summary>
     public ITextRasterizer? TextRasterizer { get; set; }
+
+    /// <summary>
+    /// Builds the working proxy, or returns null to leave it to the managed resampler. The editor supplies the
+    /// browser's resampler here on WebAssembly. The preview is all it affects: export always replays the edit on the
+    /// original pixels.
+    /// </summary>
+    internal Func<ImageBuffer, Size, CancellationToken, ValueTask<ImageBuffer?>>? ProxyScaler { get; set; }
 }

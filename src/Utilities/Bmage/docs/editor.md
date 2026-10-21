@@ -92,6 +92,16 @@ async Task OnBrightnessCommit()
 Note that `onchange` on a range input is not reliable in Blazor when `oninput` is also handled. Debouncing `oninput`
 is more robust and gives a live preview; the demo application includes a small `Debouncer` that does this.
 
+There is no need to debounce for speed: the editor renders at most one preview at a time and always the latest state,
+so input that arrives while a preview renders is folded into the next one rather than queued behind it.
+
+An edit that touches several steps at once, such as swapping one filter for another, belongs in a single
+`ApplyAsync` call, which records one history entry and renders once:
+
+```csharp
+await context.ApplyAsync(d => d.WithPipeline(d.Pipeline.Add(new SepiaFilter())), "Sepia");
+```
+
 ## Theming
 
 Every colour and metric is a CSS custom property on `.bmg-editor`. Override the ones you care about:
@@ -184,9 +194,11 @@ with 24px hit targets. Status messages use live regions. Focus is visible throug
 ## Touch
 
 Touch works out of the box. The canvas registers a non-passive `touchmove` listener through the JavaScript bridge, which
-Blazor's own event handling cannot do, so drawing on the editor does not scroll the page. Pointer capture keeps a drag
-tracking when the finger leaves the element. Controls use touch-sized targets on narrow screens, and the panel moves
-below the canvas.
+Blazor's own event handling cannot do, so drawing on the editor does not scroll the page. Pointer capture, taken in the
+browser the moment a drag starts, keeps a drag tracking when the finger leaves the element, and pointer moves that are
+not part of a drag never reach .NET. Wheel and trackpad pinch zooming are combined into one zoom per frame, by an amount
+proportional to the distance scrolled, so a trackpad zooms smoothly and a mouse notch still zooms by 1.1. Controls use
+touch-sized targets on narrow screens, and the panel moves below the canvas.
 
 ## Large images
 
@@ -194,6 +206,23 @@ By default the editor edits through a proxy no larger than 2048px on its longest
 resolution when you export. `ImageEditSession.UsesProxy` and `ProxyScale` tell you when this is happening, and the demo
 surfaces it. Set `MaxProxyDimension="0"` to always edit at full resolution, which is only sensible for small images. To change
 the default for every editor in the application, set `MaxInteractiveDimension` when registering the services.
+
+On WebAssembly the browser builds the proxy with its own high quality resampler, so a 12 megapixel photo opens in about
+50 ms even without AOT compilation. Elsewhere, and whenever the browser cannot, the managed resampler builds it.
+
+Previews reuse what earlier renders computed, without changing a pixel:
+
+- The pipeline is split after its last step that the optimiser never combines with a neighbour, such as a blur, and that
+  part is kept while the document keeps the same operations. Dragging a slider for an adjustment after a blur re-runs
+  only the adjustment.
+- When the document has annotations, the pipeline's output is kept, so moving or editing an annotation never re-runs the
+  pipeline.
+- While a shape is being drawn, the preview underneath it is kept, and each frame only draws the shape.
+
+When a full preview still takes longer than 25 ms, the editor shows drafts while a control is dragged: the same document
+rendered at half the proxy's resolution, a quarter of the pixels, by `ImageEditSession.RenderDraftAsync`. It renders the
+full preview again when the drag ends, or once the pointer has rested for 200 ms. `ImageEditSession.PreviewScale` tells
+which resolution the current preview has, and `LastPreviewDuration` how long the last full one took.
 
 ## The document
 

@@ -37,6 +37,10 @@ public static class Rasterizer
     /// Computes per-pixel coverage in [0,1] for a path over <paramref name="clip"/> and hands each covered span to
     /// <paramref name="blend"/>. Coverage is never allocated for the whole image, only one row at a time.
     /// </summary>
+    /// <remarks>
+    /// Each row's span runs from the first to the last column the path covers in that row, not across the whole clip,
+    /// and rows the path does not touch are not handed on at all: columns outside the span have no coverage.
+    /// </remarks>
     public static void Rasterize(VectorPath path, Rectangle clip, FillRule rule, CoverageHandler blend)
     {
         ArgumentNullException.ThrowIfNull(path);
@@ -70,10 +74,14 @@ public static class Rasterizer
         try
         {
             var span = coverage.AsSpan(0, width);
+            span.Clear();
             const float weight = 1f / SubSamples;
+            // The columns the current row's spans touched. Only those are handed on and cleared afterwards, so a thin
+            // diagonal stroke costs its own area per row rather than the width of its bounding box.
+            var dirtyStart = width;
+            var dirtyEnd = 0;
             for (var y = top; y < bottom; y++)
             {
-                span.Clear();
                 var any = false;
                 for (var s = 0; s < SubSamples; s++)
                 {
@@ -105,10 +113,22 @@ public static class Rasterizer
                         var x0 = crossings[i].X;
                         var x1 = crossings[i + 1].X;
                         if (x1 <= left || x0 >= right) continue;
-                        any |= AccumulateSpan(span, left, right, x0, x1, weight);
+                        if (AccumulateSpan(span, left, right, x0, x1, weight, out var from, out var to))
+                        {
+                            any = true;
+                            dirtyStart = Math.Min(dirtyStart, from);
+                            dirtyEnd = Math.Max(dirtyEnd, to);
+                        }
                     }
                 }
-                if (any) blend(y, left, span);
+                if (any)
+                {
+                    var dirty = span[dirtyStart..dirtyEnd];
+                    blend(y, left + dirtyStart, dirty);
+                    dirty.Clear();
+                    dirtyStart = width;
+                    dirtyEnd = 0;
+                }
             }
         }
         finally
@@ -117,22 +137,33 @@ public static class Rasterizer
         }
     }
 
-    /// <summary>Adds horizontal coverage for the span [x0,x1) to a row accumulator, with exact partial pixels at the ends.</summary>
-    private static bool AccumulateSpan(Span<float> row, int left, int right, float x0, float x1, float weight)
+    /// <summary>
+    /// Adds horizontal coverage for the span [x0,x1) to a row accumulator, with exact partial pixels at the ends, and
+    /// reports the accumulator columns it wrote.
+    /// </summary>
+    private static bool AccumulateSpan(Span<float> row, int left, int right, float x0, float x1, float weight, out int from, out int to)
     {
+        from = to = 0;
         if (x0 < left) x0 = left;
         if (x1 > right) x1 = right;
         if (x1 <= x0) return false;
         var ix0 = (int)MathF.Floor(x0);
         var ix1 = (int)MathF.Floor(x1);
+        from = ix0 - left;
         if (ix0 == ix1)
         {
             row[ix0 - left] += (x1 - x0) * weight;
+            to = from + 1;
             return true;
         }
         row[ix0 - left] += (ix0 + 1 - x0) * weight;
         for (var x = ix0 + 1; x < ix1; x++) row[x - left] += weight;
-        if (ix1 < right) row[ix1 - left] += (x1 - ix1) * weight;
+        to = ix1 - left;
+        if (ix1 < right)
+        {
+            row[ix1 - left] += (x1 - ix1) * weight;
+            to++;
+        }
         return true;
     }
 
@@ -172,6 +203,10 @@ public static class Rasterizer
         var area = clip ?? target.Bounds;
         area.Intersect(target.Bounds);
         if (area.IsEmptyArea() || opacity <= 0) return;
+        // Where a pixel is fully covered the composite only depends on the destination pixel, and for an opaque one
+        // only on each of its channels, so those pixels skip the general formula: an opaque colour is written as is,
+        // and a translucent one over an opaque pixel goes through three 256-entry tables built from that formula.
+        using var full = Compositor.SolidFill.Create(color, opacity);
         Rasterize(path, area, rule, (y, x0, coverage) =>
         {
             var row = target.GetRow(y);
@@ -182,7 +217,7 @@ public static class Rasterizer
                 if (a > 1f) a = 1f;
                 var x = x0 + i;
                 if (x < area.Left || x >= area.Right) continue;
-                row[x] = Compositor.SourceOver(row[x], color, a * opacity);
+                row[x] = a == 1f ? full.Apply(row[x]) : Compositor.SourceOver(row[x], color, a * opacity);
             }
         });
     }
@@ -313,6 +348,58 @@ public static class Compositor
             Rgba32.ClampToByte((source.G * sa + destination.G * da * (1 - sa)) * inv),
             Rgba32.ClampToByte((source.B * sa + destination.B * da * (1 - sa)) * inv),
             Rgba32.ClampToByte(outA * 255f));
+    }
+
+    /// <summary>
+    /// <see cref="SourceOver"/> with a fixed colour and factor, exactly as that computes it, for the fully covered
+    /// pixels of a fill.
+    /// </summary>
+    internal sealed class SolidFill : IDisposable
+    {
+        private readonly Rgba32 _color;
+        private readonly float _alpha;
+        private readonly bool _replaces;
+        // The red, green and blue tables one after another, rented from the pool.
+        private byte[]? _tables;
+        private byte _opaqueAlpha;
+
+        private SolidFill(Rgba32 color, float alpha)
+        {
+            _color = color;
+            _alpha = alpha;
+            // SourceOver of an opaque colour at full strength is exactly the colour: its own weight is 1 and the
+            // destination's 0, and each channel converts back to the same byte.
+            _replaces = color.A == 255 && Math.Clamp(alpha, 0f, 1f) == 1f;
+        }
+
+        public static SolidFill Create(Rgba32 color, float alpha) => new(color, alpha);
+
+        public Rgba32 Apply(Rgba32 destination)
+        {
+            if (_replaces) return _color;
+            if (destination.A != 255) return SourceOver(destination, _color, _alpha);
+            var tables = _tables ?? BuildOpaqueTables();
+            return new Rgba32(tables[destination.R], tables[256 + destination.G], tables[512 + destination.B], _opaqueAlpha);
+        }
+
+        public void Dispose()
+        {
+            if (_tables is not null) ArrayPool<byte>.Shared.Return(_tables);
+            _tables = null;
+        }
+
+        /// <summary>SourceOver over every opaque destination value, one channel at a time.</summary>
+        private byte[] BuildOpaqueTables()
+        {
+            var tables = ArrayPool<byte>.Shared.Rent(3 * 256);
+            for (var v = 0; v < 256; v++)
+            {
+                var result = SourceOver(new Rgba32((byte)v, (byte)v, (byte)v, 255), _color, _alpha);
+                tables[v] = result.R; tables[256 + v] = result.G; tables[512 + v] = result.B;
+                _opaqueAlpha = result.A;
+            }
+            return _tables = tables;
+        }
     }
 
     /// <summary>Erases from the destination: reduces its alpha by the coverage.</summary>

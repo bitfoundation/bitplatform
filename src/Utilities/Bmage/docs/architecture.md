@@ -139,17 +139,30 @@ or transform arbitrarily. The font rasteriser can, but does not perform complex 
 
 ## The JavaScript boundary
 
-One module, `bit-bmage.js`, and it exists only for what the browser platform alone can do:
+One module, `bit-bmage.js`. It does what only the browser platform can do, and the few things the browser does far
+faster than .NET running on WebAssembly:
 
 - Decoding and encoding WebP, AVIF and the browser's own JPEG and PNG paths
+- Building the editor's working proxy of a large photo with the browser's high quality resampler (`createImageBitmap`).
+  On WebAssembly's interpreter that takes about 50 ms for a 12 megapixel photo, where the managed resampler takes
+  500 ms. The proxy only shapes the preview: export replays the edit on the original pixels in the managed engine, so
+  the exported file is the same in every browser and on a server.
 - Capability probing
 - Clipboard, camera, downloads, the File System Access API and object URLs
 - Text measurement and rendering with the platform text engine
-- Non-passive touch listeners, which Blazor's event handling cannot register
+- Pointer capture, non-passive touch and wheel listeners, and keeping pointer moves that are not part of a drag from
+  reaching .NET at all, which Blazor's event handling cannot do
 
-No image processing happens there. Pixel and file bytes cross as raw streams, never base64: a JS call returns a small
-handle object, .NET reads a tiny JSON descriptor from it and streams the payload, then releases it. A 24 megapixel image
-costs one buffer copy instead of a 33% inflated string.
+Everything else stays in C#: operations, pipelines, drawing, annotations and the managed codecs, which produce the same
+pixels wherever they run.
+
+Pixel and file bytes never cross as base64. On WebAssembly the module is called through `[JSImport]` with views of .NET
+memory (`BrowserPixels`), so a 12 megapixel image is copied exactly once in each direction, straight between a .NET
+buffer and a typed array, with no 48 MB array allocated for the call. Over a Blazor Server circuit the browser is in
+another process: a JS call returns a small handle object, .NET reads a tiny JSON descriptor from it and streams the
+payload, then releases it. On Server the managed codecs decode and encode PNG, JPEG, BMP and GIF on the server itself,
+so those pixels never cross the network; the browser is used for WebP and AVIF, and for a file the managed decoder
+rejects.
 
 ## Memory
 
@@ -161,6 +174,8 @@ The concern is treated as a design constraint rather than a later optimisation.
   6.7 MB.
 - The PNG encoder emits incremental IDAT chunks rather than buffering the whole compressed stream.
 - Interactive editing runs on a proxy; the full-resolution buffer is touched once, on export.
+- Blurs and sharpening stream rows through their passes, keeping only the rows each pass still needs instead of float
+  copies of the whole image.
 - History stores descriptions, not pixels.
 - `ImageLimits` rejects absurd dimensions before any allocation happens.
 

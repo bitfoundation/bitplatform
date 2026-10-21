@@ -25,8 +25,8 @@ That runs in the browser. The original file never leaves it, the phone's rotatio
 stripped, and the result is a WebP that fits the size budget you asked for.
 
 > Targets **.NET 8, 9, and 10** · Everything works on **Blazor WebAssembly** and **Interactive Auto** once interactive.
-> **Interactive Server** works too, with pixel data crossing the circuit. Prerendering, ASP.NET Core and console hosts
-> get the headless API with the managed codecs.
+> **Interactive Server** works too: PNG, JPEG, BMP and GIF are coded on the server, while WebP, AVIF and editor previews
+> cross the circuit. Prerendering, ASP.NET Core and console hosts get the headless API with the managed codecs.
 
 Bmage's documentation website lives in [`Demo`](https://github.com/bitfoundation/bitplatform/tree/develop/src/Utilities/Bmage/Demo/) - run the
 `Demo/Server` project, or visit [bmage.bitplatform.dev](https://bmage.bitplatform.dev).
@@ -94,14 +94,18 @@ builder.Services.AddBitBmageServices();
 
 For server-side or console use, without any browser integration, register `AddBitBmageHeadlessServices()` instead.
 
+A WebAssembly app whose only use of Bmage is `BmageEditor` can skip the registration and lazy load `Bit.Bmage.wasm`
+instead; see [lazy loading](docs/getting-started.md#lazy-loading-bmage-on-webassembly).
+
 Add the stylesheet if you use the editor:
 
 ```html
 <link rel="stylesheet" href="_content/Bit.Bmage/bit-bmage-editor.css" />
 ```
 
-In the browser, enable AOT compilation in the project that runs on WebAssembly. Pixel loops run 10 to 35× slower on the
-default interpreter:
+In the browser, consider AOT compilation in the project that runs on WebAssembly. Bmage is tuned for the default
+interpreter, where the editor opens a 12 megapixel photo in about 50 ms, but work that stays in .NET still runs 4 to 12×
+faster compiled ahead of time:
 
 ```xml
 <RunAOTCompilation>true</RunAOTCompilation>
@@ -173,17 +177,18 @@ Every part of its UI can be replaced while keeping the engine:
 
 Every number below was measured with BenchmarkDotNet on desktop .NET 10 (see
 [`Tests/Bit.Bmage.Benchmarks`](https://github.com/bitfoundation/bitplatform/tree/develop/src/Utilities/Bmage/Tests/Bit.Bmage.Benchmarks/)). In the browser, with `RunAOTCompilation` enabled,
-WebAssembly lands within 1.2 to 2.4× of these numbers; without it the default interpreter is 10 to 35× slower. See
+WebAssembly lands within about 2.5× of these numbers, and the default interpreter is 4 to 12× slower than that; the WebAssembly
+table in performance.md has both. See
 [docs/performance.md](https://github.com/bitfoundation/bitplatform/blob/develop/src/Utilities/Bmage/docs/performance.md) for the full tables and how to reproduce them.
 
 | Operation | Image | Time | Allocated |
 | --- | --- | ---: | ---: |
-| Thumbnail to 200px | 6000 × 4000 | 52 ms | 23 KB |
-| Downscale to 1280px, Lanczos | 3840 × 2160 | 68 ms | 180 KB |
-| Upload pipeline: orient, cap at 1920, sharpen | 4000 × 3000 | 231 ms | 237 KB |
-| Four adjustments fused into one pass | 3840 × 2160 | 189 ms | 4.8 KB |
-| JPEG encode, quality 85 | 3840 × 2160 | 175 ms | 6.7 MB |
-| PNG decode | 3840 × 2160 | 104 ms | 37 MB |
+| Thumbnail to 200px | 6000 × 4000 | 23 ms | 23 KB |
+| Downscale to 1280px, Lanczos | 3840 × 2160 | 40 ms | 180 KB |
+| Upload pipeline: orient, cap at 1920, sharpen | 4000 × 3000 | 101 ms | 238 KB |
+| Four adjustments fused into one pass | 3840 × 2160 | 67 ms | 4.6 KB |
+| JPEG encode, quality 85 | 3840 × 2160 | 122 ms | 6.7 MB |
+| PNG decode | 3840 × 2160 | 88 ms | 37 MB |
 
 ## Where it runs
 
@@ -192,7 +197,7 @@ WebAssembly lands within 1.2 to 2.4× of these numbers; without it the default i
 | Blazor WebAssembly | Everything |
 | Blazor Web App, Interactive WebAssembly | Everything |
 | Blazor Web App, Interactive Auto | Everything once interactive |
-| Blazor Web App, Interactive Server | Everything, with pixel data crossing the circuit; see [docs/browser-support.md](https://github.com/bitfoundation/bitplatform/blob/develop/src/Utilities/Bmage/docs/browser-support.md) |
+| Blazor Web App, Interactive Server | Everything; PNG, JPEG, BMP and GIF are coded on the server, WebP, AVIF and editor previews cross the circuit; see [docs/browser-support.md](https://github.com/bitfoundation/bitplatform/blob/develop/src/Utilities/Bmage/docs/browser-support.md) |
 | Prerendering | Managed codecs only, and capability detection reports `Prerendering`; call browser features from `OnAfterRenderAsync` |
 | ASP.NET Core, console, worker | Headless API with the managed codecs, no browser involved |
 

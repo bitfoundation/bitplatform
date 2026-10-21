@@ -2,7 +2,8 @@
 @using System.Globalization
 @using Bit.Bmage.Editor.Tools
 @implements IAsyncDisposable
-@inject Interop.BrowserImageInterop Interop
+@implements IHandleEvent
+@inject IServiceProvider Services
 
 @*
     The interactive surface: paints the preview into a real canvas element and turns pointer, touch and wheel input
@@ -17,8 +18,6 @@
      aria-label="@(AriaLabel ?? Strings.CanvasLabel)"
      aria-describedby="@($"{_id}-hint")"
      @onkeydown="OnKeyDown"
-     @onwheel="OnWheel"
-     @onwheel:preventDefault="true"
      @onpointerdown="OnPointerDown"
      @onpointermove="OnPointerMove"
      @onpointerup="OnPointerUp"
@@ -28,6 +27,7 @@
        release still arrive when the pointer is over a crop handle, the selection box, or outside the editor.
        The canvas size attributes are left to the paint call: rendering them would clear the bitmap. *@
     <canvas class="bmg-canvas"
+            id="@($"{_id}-canvas")"
             @ref="_canvasElement"
             style="@CanvasStyle"></canvas>
 
@@ -69,6 +69,9 @@
 </div>
 
 @code {
+    // Resolved rather than injected, so the canvas also works when the app never called AddBitBmageServices.
+    private Interop.BrowserImageInterop Interop => field ??= BitBmage.GetEditorServices(Services).GetRequiredService<Interop.BrowserImageInterop>();
+
     private readonly string _id = $"bi-{Guid.NewGuid():N}";
     private ElementReference _hostElement;
     private ElementReference _canvasElement;
@@ -84,6 +87,13 @@
 
     /// <summary>The pixels to display. The component does not take ownership.</summary>
     [Parameter] public ImageBuffer? Image { get; set; }
+
+    /// <summary>
+    /// The size <see cref="Image"/> is shown at, in the image coordinates <see cref="Zoom"/>, <see cref="Pan"/> and the
+    /// overlays use, when that differs from its pixel size: a quick draft is a smaller image covering the same area.
+    /// Empty means the pixel size.
+    /// </summary>
+    [Parameter] public SizeF DisplaySize { get; set; }
 
     /// <summary>Increment this whenever <see cref="Image"/>'s contents change without the reference changing.</summary>
     [Parameter] public long Version { get; set; }
@@ -147,7 +157,9 @@
     // point * Zoom + Pan. The overlays use the same mapping, which keeps them on top of the pixels they describe.
     private string CanvasStyle => Image is null
         ? "display:none"
-        : $"width:{Css(Image.Width * Zoom)}px; height:{Css(Image.Height * Zoom)}px; transform:translate({Css(Pan.X)}px,{Css(Pan.Y)}px);";
+        : $"width:{Css(ShownSize.Width * Zoom)}px; height:{Css(ShownSize.Height * Zoom)}px; transform:translate({Css(Pan.X)}px,{Css(Pan.Y)}px);";
+
+    private SizeF ShownSize => DisplaySize.IsEmpty && Image is not null ? new SizeF(Image.Width, Image.Height) : DisplaySize;
 
     private double ToCssX(double imageX) => imageX * Zoom + Pan.X;
     private double ToCssY(double imageY) => imageY * Zoom + Pan.Y;
@@ -170,8 +182,9 @@
             try
             {
                 // Registered from JS because Blazor cannot attach a non-passive touch listener, which is required to
-                // stop the page scrolling while the user draws.
-                await Interop.InvokeVoidAsync("suppressTouchScrolling", CancellationToken.None, _hostElement);
+                // stop the page scrolling while the user draws. The same listeners capture the pointer, drop hover
+                // moves and batch wheel zooming, all without a round trip per event.
+                await Interop.InvokeVoidAsync("suppressTouchScrolling", CancellationToken.None, _hostElement, _selfRef);
                 _touchSuppressed = true;
             }
             catch (ImageCapabilityException)
@@ -189,7 +202,10 @@
         if (ReferenceEquals(_painted, Image) && _paintedVersion == Version) return;
         try
         {
-            await Interop.InvokeVoidAsync("paint", CancellationToken.None, _canvasElement, Image.ToArray(), Image.Width, Image.Height);
+            // On WebAssembly the browser module reads the pixels straight out of .NET memory; over a Server circuit
+            // they have to be sent.
+            if (OperatingSystem.IsBrowser()) await global::Bit.Bmage.Interop.BrowserPixels.PaintAsync(Interop, $"{_id}-canvas", Image);
+            else await Interop.InvokeVoidAsync("paint", CancellationToken.None, _canvasElement, Image.ToArray(), Image.Width, Image.Height);
             _painted = Image;
             _paintedVersion = Version;
         }
@@ -236,7 +252,7 @@
         if (Image is null || _activePointerId >= 0 || e.Button > 0) return;
         _activePointerId = (int)e.PointerId;
         _activeHandle = handle;
-        await Interop.InvokeVoidAsync("setPointerCapture", CancellationToken.None, _hostElement, e.PointerId);
+        // The browser module captured the pointer already, before this event reached .NET.
         if (!await UpdateHostOriginAsync())
         {
             _activePointerId = -1;
@@ -258,7 +274,7 @@
     {
         if (_activePointerId != (int)e.PointerId) return;
         _activePointerId = -1;
-        await Interop.InvokeVoidAsync("releasePointerCapture", CancellationToken.None, _hostElement, e.PointerId);
+        // Releasing the button releases the capture too.
         var args = BuildArgs(e);
         _activeHandle = null;
         if (Image is not null) await OnDragEnd.InvokeAsync(args);
@@ -276,13 +292,21 @@
         Screen = new Vector2((float)e.ClientX, (float)e.ClientY),
     };
 
-    private async Task OnWheel(WheelEventArgs e)
+    /// <summary>
+    /// Zooms by <paramref name="factor"/> around a point given in host coordinates. Called by the browser module at
+    /// most once per frame, with every wheel and trackpad pinch event of that frame combined.
+    /// </summary>
+    [JSInvokable]
+    public Task OnWheelZoom(double factor, double x, double y)
     {
-        if (Image is null || e.DeltaY == 0) return;
-        if (!await UpdateHostOriginAsync()) return;
-        var factor = e.DeltaY < 0 ? 1.1 : 1 / 1.1;
-        await OnZoom.InvokeAsync(new ZoomArgs(factor, ToImagePoint(e.ClientX, e.ClientY)));
+        if (Image is null || !double.IsFinite(factor) || factor <= 0) return Task.CompletedTask;
+        var point = new Vector2((float)((x - Pan.X) / Zoom), (float)((y - Pan.Y) / Zoom));
+        return OnZoom.InvokeAsync(new ZoomArgs(factor, point));
     }
+
+    // The canvas renders nothing of its own state: what it shows comes from its parameters, which only change when the
+    // editor re-renders. Skipping the automatic render after each event saves a render and diff per pointer move.
+    Task IHandleEvent.HandleEventAsync(EventCallbackWorkItem item, object? arg) => item.InvokeAsync(arg);
 
     // Scrolling keys are cancelled by a listener registered in JavaScript, because a Blazor preventDefault flag is
     // read before the handler runs and so always reflects the previous key.

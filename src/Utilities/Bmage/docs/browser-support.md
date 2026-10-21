@@ -13,12 +13,13 @@
 
 ### Interactive Server
 
-Everything works, because JavaScript interop works over the circuit. What changes is where the bytes travel: the browser
-decodes an image and the pixels are streamed to the server for processing, then the result is streamed back to be
-encoded.
+Everything works, because JavaScript interop works over the circuit. What changes is where the bytes travel. PNG, JPEG,
+BMP and GIF are decoded and encoded on the server by the managed codecs, so only the file crosses the circuit. WebP and
+AVIF can only be decoded or encoded by a browser: their pixels are streamed between the browser and the server, which
+for a 4000 × 3000 photo is 48 MB. The editor's preview also has to be sent to the browser each time it changes, 12.6 MB
+for a 2048 pixel proxy.
 
-For a 4000 × 3000 photo that is 48 MB in each direction. On a local network this is unremarkable; over a poor mobile
-connection it is not.
+On a local network this is unremarkable; over a poor mobile connection it is not.
 
 If you are targeting Interactive Server and images are central to your application:
 

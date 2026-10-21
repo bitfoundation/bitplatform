@@ -1,16 +1,22 @@
-﻿using Bit.Bmage.Capabilities;
+﻿using System.Runtime.CompilerServices;
+using Bit.Bmage.Capabilities;
 using Bit.Bmage.Input;
 using Bit.Bmage.Interop;
 using Bit.Bmage.Output;
 using Bit.Bmage.Text;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.JSInterop;
 
 namespace Bit.Bmage;
 
 /// <summary>Registers Bmage with the dependency injection container.</summary>
 public static class BitBmage
 {
+    // One container per browser connection for applications that never called AddBitBmageServices. Keyed weakly, so a
+    // closed Blazor Server circuit takes its container with it.
+    private static readonly ConditionalWeakTable<IJSRuntime, IServiceProvider> _ownServices = new();
+
     /// <summary>
     /// Adds the Bmage services: capability detection, image loading, processing and export.
     /// </summary>
@@ -81,5 +87,30 @@ public static class BitBmage
         });
         services.TryAddSingleton<FontTextRasterizer>();
         return services;
+    }
+
+    /// <summary>
+    /// The container the editor components take their services from: the application's own when
+    /// <see cref="AddBitBmageServices"/> registered them, otherwise one Bmage builds once per browser connection.
+    /// </summary>
+    /// <remarks>
+    /// The second case is what lets a WebAssembly app lazy load Bit.Bmage: the assembly is not there yet when
+    /// <c>Program.cs</c> runs, so it cannot be registered. The choice is made once for every service rather than per
+    /// service, so a partial registration (for example <see cref="AddBitBmageHeadlessServices"/> alone) never mixes the
+    /// application's services with Bmage's defaults; its <see cref="BitBmageOptions"/> are still honoured.
+    /// </remarks>
+    internal static IServiceProvider GetEditorServices(IServiceProvider services)
+    {
+        ArgumentNullException.ThrowIfNull(services);
+        if (services.GetService<ImageLoader>() is not null) return services;
+
+        var jsRuntime = services.GetRequiredService<IJSRuntime>();
+        var options = services.GetService<BitBmageOptions>();
+        return _ownServices.GetValue(jsRuntime, js =>
+        {
+            var own = new ServiceCollection().AddSingleton(js);
+            if (options is not null) own.AddSingleton(options);
+            return own.AddBitBmageServices().BuildServiceProvider();
+        });
     }
 }

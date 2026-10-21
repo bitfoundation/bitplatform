@@ -68,7 +68,8 @@ public sealed class OrientationOperation : ImageOperation, IGeometricOperation
             return source;
         }
 
-        var output = context.Allocate(outSize.Width, outSize.Height);
+        // Every pixel is written below, so the buffer needs no clearing.
+        var output = context.Allocate(outSize.Width, outSize.Height, clear: false);
         output.Metadata = source.Metadata;
         try
         {
@@ -81,10 +82,12 @@ public sealed class OrientationOperation : ImageOperation, IGeometricOperation
                 var row = src.Slice(y * w, w);
                 switch (o)
                 {
+                    // Mirrors copy the row and reverse it in place, which the runtime vectorises.
                     case Orientation.FlipHorizontal:
                     {
                         var d = dst.Slice(y * ow, ow);
-                        for (var x = 0; x < w; x++) d[w - 1 - x] = row[x];
+                        row.CopyTo(d);
+                        d.Reverse();
                         break;
                     }
                     case Orientation.FlipVertical:
@@ -93,7 +96,8 @@ public sealed class OrientationOperation : ImageOperation, IGeometricOperation
                     case Orientation.Rotate180:
                     {
                         var d = dst.Slice((h - 1 - y) * ow, ow);
-                        for (var x = 0; x < w; x++) d[w - 1 - x] = row[x];
+                        row.CopyTo(d);
+                        d.Reverse();
                         break;
                     }
                     case Orientation.Rotate90:
@@ -135,13 +139,15 @@ public sealed class OrientationOperation : ImageOperation, IGeometricOperation
                 break;
             case Orientation.FlipVertical:
             {
-                Span<Rgba32> tmp = w <= 4096 ? stackalloc Rgba32[w] : new Rgba32[w];
+                var rented = w <= 4096 ? null : System.Buffers.ArrayPool<Rgba32>.Shared.Rent(w);
+                Span<Rgba32> tmp = rented is null ? stackalloc Rgba32[w] : rented.AsSpan(0, w);
                 for (var y = 0; y < h / 2; y++)
                 {
                     var a = px.Slice(y * w, w);
                     var b = px.Slice((h - 1 - y) * w, w);
                     a.CopyTo(tmp); b.CopyTo(a); tmp.CopyTo(b);
                 }
+                if (rented is not null) System.Buffers.ArrayPool<Rgba32>.Shared.Return(rented);
                 break;
             }
             case Orientation.Rotate180:

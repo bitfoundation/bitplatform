@@ -4,11 +4,7 @@
 @using Bit.Bmage.Operations.Adjustments
 @using Bit.Bmage.Operations.Transforms
 @implements IAsyncDisposable
-@inject ImageLoader Loader
-@inject ImageExporter Exporter
-@inject IImageCapabilityProvider Capabilities
-@inject Bit.Bmage.Text.FontTextRasterizer FontRasterizer
-@inject BitBmageOptions Options
+@inject IServiceProvider Services
 
 @*
     The complete editor. Every visual element is a slot: hosts can replace the toolbar, panels or empty state entirely
@@ -51,6 +47,7 @@
             {
                 <BmageEditorCanvas @ref="_canvas"
                                    Image="_session.Preview"
+                                   DisplaySize="PreviewDisplaySize"
                                    Version="_previewVersion"
                                    Zoom="_zoom"
                                    Pan="_pan"
@@ -93,6 +90,14 @@
 </div>
 
 @code {
+    // Resolved rather than injected, so the editor also works when the app never called AddBitBmageServices.
+    private IServiceProvider EditorServices => field ??= BitBmage.GetEditorServices(Services);
+    private ImageLoader Loader => field ??= EditorServices.GetRequiredService<ImageLoader>();
+    private ImageExporter Exporter => field ??= EditorServices.GetRequiredService<ImageExporter>();
+    private IImageCapabilityProvider Capabilities => field ??= EditorServices.GetRequiredService<IImageCapabilityProvider>();
+    private Bit.Bmage.Text.FontTextRasterizer FontRasterizer => field ??= EditorServices.GetRequiredService<Bit.Bmage.Text.FontTextRasterizer>();
+    private BitBmageOptions Options => field ??= EditorServices.GetRequiredService<BitBmageOptions>();
+
     private ImageEditSession? _session;
     private BmageEditorCanvas? _canvas;
     private ImageCapabilities? _capabilities;
@@ -113,6 +118,15 @@
     private string? _message;
     private bool _messageIsError;
     private CancellationTokenSource? _renderCts;
+    // At most one render runs at a time, always of the latest state; see RenderPreviewAsync.
+    private bool _renderLoopRunning;
+    private bool _renderWanted;
+    private bool _wantedDraft;
+    private int _renderRequests;
+    private Func<ImageDocument, ImageDocument>? _wantedOverlay;
+    private TaskCompletionSource? _renderWaiters;
+    private ImageBuffer? _shownPreview;
+    private ImageDocument? _notifiedDocument;
     private int _stepCounter;
     // The Image parameter last loaded. The session holds a copy, so it cannot be compared with the parameter itself.
     private ImageBuffer? _loadedParameter;
@@ -215,6 +229,22 @@
     /// <summary>Preview pixels per document pixel.</summary>
     private float PreviewScale => _session is { UsesProxy: true } s ? (float)s.ProxyScale : 1f;
 
+    /// <summary>
+    /// The size the preview is shown at, in proxy pixels: a draft has fewer pixels but covers the same area, so the
+    /// canvas, its overlays and the pointer mapping all stay in the proxy's coordinates.
+    /// </summary>
+    private SizeF PreviewDisplaySize => _session?.Preview is { } preview
+        ? new SizeF((float)(preview.Width * _session.ProxyScale / _session.PreviewScale), (float)(preview.Height * _session.ProxyScale / _session.PreviewScale))
+        : SizeF.Empty;
+
+    /// <summary>
+    /// A render slower than this makes the next ones of a drag drafts: a frame and a half at 60 Hz is roughly where
+    /// following the pointer starts to feel heavy.
+    /// </summary>
+    private static readonly TimeSpan DraftBudget = TimeSpan.FromMilliseconds(25);
+
+    private bool DraftsHelp => _session is { } s && s.DraftScale < s.ProxyScale && s.LastPreviewDuration > DraftBudget;
+
     protected override async Task OnInitializedAsync()
     {
         _capabilities = await Capabilities.GetAsync();
@@ -236,10 +266,11 @@
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         // Fitting needs the size of the editing area, which only exists once the canvas has rendered.
-        if (!_fitPending || _canvas is null || _session?.Preview is not { } preview) return;
+        if (!_fitPending || _canvas is null || _session?.Preview is null) return;
         _fitPending = false;
         _viewport = await _canvas.GetViewportSizeAsync();
         if (_viewport is not { } viewport) return;
+        var preview = PreviewDisplaySize;
         const float margin = 24;
         var fit = Math.Min((viewport.Width - margin) / preview.Width, (viewport.Height - margin) / preview.Height);
         _zoom = Math.Clamp(Math.Min(1.0, fit), 0.05, 32);
@@ -275,6 +306,9 @@
             MaxProxyDimension = EffectiveProxyDimension,
             MaxHistoryDepth = MaxHistoryDepth,
             TextRasterizer = EffectiveTextRasterizer,
+            // On WebAssembly the browser builds the working copy of a large photo in native code: about 30 times
+            // faster than resampling it on the interpreter, and the export still replays on the original pixels.
+            ProxyScaler = OperatingSystem.IsBrowser() ? ScaleProxyInBrowserAsync : null,
         });
         _selectedId = null;
         _cropRectangle = null;
@@ -306,20 +340,110 @@
         await LoadImageAsync(image, takeOwnership: true);
     });
 
+    [System.Runtime.Versioning.SupportedOSPlatform("browser")]
+    private ValueTask<ImageBuffer?> ScaleProxyInBrowserAsync(ImageBuffer source, System.Drawing.Size size, CancellationToken cancellationToken)
+        => Bit.Bmage.Interop.BrowserPixels.ScaleAsync(EditorServices.GetRequiredService<Bit.Bmage.Interop.BrowserImageInterop>(), source, size,
+            Options.Allocator ?? Bit.Bmage.Memory.PooledPixelAllocator.Shared, cancellationToken);
+
     // ---- Preview rendering ----
 
-    private async Task RenderPreviewAsync(Func<ImageDocument, ImageDocument>? overlay = null)
+    /// <summary>
+    /// Asks for the preview to show the current document, with <paramref name="overlay"/> drawn over it, and completes
+    /// once a render that includes this request has finished.
+    /// </summary>
+    /// <remarks>
+    /// Renders never queue up behind each other. A request made while one runs only marks the preview as wanted again,
+    /// and the next render shows whatever the document is by then, so a slider dragged faster than frames can render
+    /// skips the values in between instead of falling further and further behind the pointer.
+    /// </remarks>
+    private Task RenderPreviewAsync(Func<ImageDocument, ImageDocument>? overlay = null, bool draft = false)
     {
-        if (_session is null) return;
+        if (_session is null) return Task.CompletedTask;
+        _wantedOverlay = overlay;
+        _wantedDraft = draft;
+        _renderWanted = true;
+        _renderRequests++;
+        var waiters = _renderWaiters ??= new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        // The loop can finish before returning here (an unchanged document renders synchronously), so whether one is
+        // running is a flag it keeps itself rather than the task it returns.
+        if (!_renderLoopRunning) _ = RenderLoopAsync();
+        return waiters.Task;
+    }
 
-        // Each render owns exactly one token source and is the only code that disposes it. Superseding renders only
-        // cancel it: disposing another call's source would pull the token out from under a render still using it.
+    private async Task RenderLoopAsync()
+    {
+        _renderLoopRunning = true;
+        try
+        {
+            while (_renderWanted && _session is not null)
+            {
+                _renderWanted = false;
+                var overlay = _wantedOverlay;
+                var draft = _wantedDraft;
+                var waiters = _renderWaiters;
+                _renderWaiters = null;
+                var error = await RenderOnceAsync(overlay, draft);
+                StateHasChanged();
+                waiters?.TrySetResult();
+                // Reported once the waiters are released and without holding the loop: a handler that edits or renders
+                // in response would otherwise wait for a render that only this loop can start.
+                if (error is not null) _ = ReportRenderErrorAsync(error);
+                if (draft && !_renderWanted) _ = RefineWhenIdleAsync(_renderRequests, overlay);
+                // Let the browser show the frame and deliver the input that arrived meanwhile.
+                if (_renderWanted) await Task.Yield();
+            }
+        }
+        finally
+        {
+            _renderLoopRunning = false;
+            _renderWaiters?.TrySetResult();
+            _renderWaiters = null;
+        }
+    }
+
+    /// <summary>
+    /// Replaces a draft with the full preview once the pointer rests, even before the drag ends: nothing has asked
+    /// for a render since request <paramref name="request"/>.
+    /// </summary>
+    private async Task RefineWhenIdleAsync(int request, Func<ImageDocument, ImageDocument>? overlay)
+    {
+        await Task.Delay(200);
+        if (request == _renderRequests && _session is not null) await RenderPreviewAsync(overlay);
+    }
+
+    private async Task ReportRenderErrorAsync(Exception error)
+    {
+        try
+        {
+            await ReportErrorAsync(error);
+        }
+        catch (Exception ex) when (ex is not OutOfMemoryException)
+        {
+            // The host's OnError handler failed in turn; show that rather than losing it.
+            ShowMessage(Strings.LoadFailed, isError: true);
+        }
+    }
+
+    /// <summary>Renders once and returns the error the render failed with, if any, for the caller to report.</summary>
+    private async Task<Exception?> RenderOnceAsync(Func<ImageDocument, ImageDocument>? overlay, bool draft)
+    {
+        if (_session is null) return null;
+
+        // Each render owns exactly one token source and is the only code that disposes it. Disposal only cancels it:
+        // disposing another call's source would pull the token out from under a render still using it.
         var cts = new CancellationTokenSource();
         CancelQuietly(Interlocked.Exchange(ref _renderCts, cts));
         try
         {
-            await _session.RenderPreviewAsync(overlay, cts.Token);
-            _previewVersion++;
+            var preview = draft
+                ? await _session.RenderDraftAsync(overlay, cts.Token)
+                : await _session.RenderPreviewAsync(overlay, cts.Token);
+            // Rendering an unchanged document hands back the preview already on screen, which needs no repaint.
+            if (!ReferenceEquals(preview, _shownPreview))
+            {
+                _shownPreview = preview;
+                _previewVersion++;
+            }
         }
         catch (OperationCanceledException)
         {
@@ -327,13 +451,14 @@
         }
         catch (Exception ex)
         {
-            await ReportErrorAsync(ex);
+            return ex;
         }
         finally
         {
             Interlocked.CompareExchange(ref _renderCts, null, cts);
             cts.Dispose();
         }
+        return null;
     }
 
     /// <summary>
@@ -352,9 +477,18 @@
         if (_session is null) return;
         if (transient) _session.ApplyTransient(change, label);
         else _session.Apply(change, label);
-        await RenderPreviewAsync();
-        await OnDocumentChanged.InvokeAsync(_session.Document);
+        // While a control is dragged, a slow preview gives way to a draft; the release renders it in full.
+        await RenderPreviewAsync(draft: transient && DraftsHelp);
+        await NotifyDocumentChangedAsync();
         StateHasChanged();
+    }
+
+    /// <summary>Raises <see cref="OnDocumentChanged"/> once per document, however many edits waited for one render.</summary>
+    private async Task NotifyDocumentChangedAsync()
+    {
+        if (_session?.Document is not { } document || ReferenceEquals(document, _notifiedDocument)) return;
+        _notifiedDocument = document;
+        await OnDocumentChanged.InvokeAsync(document);
     }
 
     // ---- Pointer interaction ----
@@ -569,7 +703,8 @@
     private void UpdateCropRectangle(Vector2 point)
     {
         if (_session is null) return;
-        var bounds = new RectangleF(0, 0, _session.Preview?.Width ?? _session.SourceSize.Width, _session.Preview?.Height ?? _session.SourceSize.Height);
+        var shown = PreviewDisplaySize;
+        var bounds = shown.IsEmpty ? new RectangleF(PointF.Empty, _session.ProxySize) : new RectangleF(PointF.Empty, shown);
         if (_cropHandle is { } handle && handle != CropHandle.Move)
         {
             var r = _cropStart;
@@ -639,12 +774,10 @@
         {
             case "z" or "Z" when ctrl && !e.ShiftKey:
                 Undo();
-                await RenderPreviewAsync();
                 break;
             case "y" or "Y" when ctrl:
             case "z" or "Z" when ctrl && e.ShiftKey:
                 Redo();
-                await RenderPreviewAsync();
                 break;
             case "Delete" or "Backspace" when _selectedId is { } id:
                 await DeleteAnnotationAsync(id);
@@ -684,7 +817,8 @@
     /// <summary>The image point at the centre of the visible area, used as the focus of non-pointer zooming.</summary>
     private Vector2 ViewCentre()
     {
-        var viewport = _viewport ?? (_session?.Preview is { } p ? new SizeF((float)(p.Width * _zoom), (float)(p.Height * _zoom)) : SizeF.Empty);
+        var shown = PreviewDisplaySize;
+        var viewport = _viewport ?? new SizeF((float)(shown.Width * _zoom), (float)(shown.Height * _zoom));
         return (new Vector2(viewport.Width / 2, viewport.Height / 2) - _pan) / (float)_zoom;
     }
 
@@ -796,6 +930,13 @@
             return d.WithPipeline(index >= 0 ? pipeline.Replace(index, operation) : pipeline.Add(operation));
         }, label, transient);
 
+    /// <summary>Applies any change to the document as one history entry and one render.</summary>
+    public Task ApplyAsync(Func<ImageDocument, ImageDocument> change, string label, bool transient = false)
+    {
+        ArgumentNullException.ThrowIfNull(change);
+        return ApplyAndRenderAsync(change, label, transient);
+    }
+
     /// <summary>Adds an arbitrary operation.</summary>
     public Task AddOperationAsync(IImageOperation operation, string? label = null)
         => ApplyAndRenderAsync(d => d.AddOperation(operation), label ?? operation.Name);
@@ -860,7 +1001,7 @@
     private async Task RenderAndNotifyAsync()
     {
         await RenderPreviewAsync();
-        if (_session is not null) await OnDocumentChanged.InvokeAsync(_session.Document);
+        await NotifyDocumentChangedAsync();
         StateHasChanged();
     }
 
