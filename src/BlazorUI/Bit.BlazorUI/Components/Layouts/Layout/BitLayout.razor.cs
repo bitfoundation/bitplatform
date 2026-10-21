@@ -1,5 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
-
+﻿
 namespace Bit.BlazorUI;
 
 /// <summary>
@@ -574,7 +573,6 @@ public partial class BitLayout : BitComponentBase
 
 
 
-    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitLayoutParams))]
     protected override void OnParametersSet()
     {
         CascadingParameters?.UpdateParameters(this);

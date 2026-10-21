@@ -577,7 +577,6 @@ public partial class BitOtpInput : BitInputBase<string?>
         base.OnInitialized();
     }
 
-    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitOtpInputParams))]
     protected override void OnParametersSet()
     {
         // Applied before anything below reads a parameter, so that the Length, the restrictions and the

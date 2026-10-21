@@ -16,13 +16,33 @@ namespace Bit.BlazorUI.Tests.Components.Inputs.DatePicker;
 [TestClass]
 public class BitDatePickerTests : BunitTestContext
 {
+    private CultureInfo _culture = default!;
+    private CultureInfo _uiCulture = default!;
+
     // Every path that opens the callout - a click, OpenCallout and an initial IsOpen alike - fits it to the width of
     // the viewport first, and a viewport the script answers no width for is too narrow for anything but overlays. So
     // the picker is laid out on a desktop-wide viewport here, and a test of a narrow one sets the width it needs.
+    // A picker left without a Culture lays itself out in the culture of the machine too, so the tests that pick a day
+    // by its number or read a month's name would read another calendar's days on a machine set to a Persian or a Hijri
+    // one (or another language's names): the thread is pinned to the invariant culture for every test, and put back
+    // afterwards.
     [TestInitialize]
     public void SetupViewportWidth()
     {
+        _culture = CultureInfo.CurrentCulture;
+        _uiCulture = CultureInfo.CurrentUICulture;
+
+        CultureInfo.CurrentCulture = CultureInfo.InvariantCulture;
+        CultureInfo.CurrentUICulture = CultureInfo.InvariantCulture;
+
         Context.JSInterop.Setup<decimal>("BitBlazorUI.Utils.getBodyWidth").SetResult(1920m);
+    }
+
+    [TestCleanup]
+    public void RestoreCulture()
+    {
+        CultureInfo.CurrentCulture = _culture;
+        CultureInfo.CurrentUICulture = _uiCulture;
     }
 
     [TestMethod,
@@ -3212,6 +3232,9 @@ public class BitDatePickerTests : BunitTestContext
             parameters.Add(p => p.IsOpen, true);
             parameters.Add(p => p.HourStep, 3);
             parameters.Add(p => p.ShowTimePicker, true);
+            // A long delay keeps the press-and-hold spin out of the picture, so the press contributes exactly one
+            // step however long a slow machine takes between the pointerdown and the pointerup.
+            parameters.Add(p => p.ContinuousSpinDelay, 60_000);
             parameters.Bind(p => p.Value, value, v => value = v);
         });
 
@@ -3264,6 +3287,8 @@ public class BitDatePickerTests : BunitTestContext
             parameters.Add(p => p.IsOpen, true);
             parameters.Add(p => p.MinuteStep, 15);
             parameters.Add(p => p.ShowTimePicker, true);
+            // A long delay keeps the press-and-hold spin out of the picture, so the press is exactly one step.
+            parameters.Add(p => p.ContinuousSpinDelay, 60_000);
             parameters.Bind(p => p.Value, value, v => value = v);
         });
 
@@ -3413,15 +3438,17 @@ public class BitDatePickerTests : BunitTestContext
     {
         Context.JSInterop.Mode = JSRuntimeMode.Loose;
 
-        var today = DateTimeOffset.Now.Date;
-        var maxDate = new DateTimeOffset(today.AddHours(1), TimeZoneInfo.Local.GetUtcOffset(today));
-        DateTimeOffset? value = new DateTimeOffset(today, TimeZoneInfo.Local.GetUtcOffset(today));
+        // Now is pinned to the afternoon of the day MaxDate ends an hour into, rather than read off the clock: run in
+        // the first hour of a day, the real now would already be inside the bound and leave the clamp untested.
+        var maxDate = GetLocalDate(2026, 1, 15, 1, 0);
+        DateTimeOffset? value = GetLocalDate(2026, 1, 15);
 
         var component = RenderComponent<BitDatePicker>(parameters =>
         {
             parameters.Add(p => p.IsOpen, true);
             parameters.Add(p => p.ShowTimePicker, true);
             parameters.Add(p => p.MaxDate, maxDate);
+            parameters.Add(p => p.Today, GetLocalDate(2026, 1, 15, 14, 30));
             parameters.Bind(p => p.Value, value, v => value = v);
         });
 
@@ -4110,6 +4137,8 @@ public class BitDatePickerTests : BunitTestContext
             parameters.Add(p => p.ShowSeconds, true);
             parameters.Add(p => p.ShowTimePicker, true);
             parameters.Add(p => p.Culture, CultureInfo.GetCultureInfo("en-US"));
+            // A long delay keeps the press-and-hold spin out of the picture, so the press is exactly one step.
+            parameters.Add(p => p.ContinuousSpinDelay, 60_000);
             parameters.Bind(p => p.Value, value, v => value = v);
         });
 
@@ -4136,6 +4165,8 @@ public class BitDatePickerTests : BunitTestContext
             parameters.Add(p => p.SecondStep, 15);
             parameters.Add(p => p.ShowSeconds, true);
             parameters.Add(p => p.ShowTimePicker, true);
+            // A long delay keeps the press-and-hold spin out of the picture, so the press is exactly one step.
+            parameters.Add(p => p.ContinuousSpinDelay, 60_000);
             parameters.Bind(p => p.Value, value, v => value = v);
         });
 
@@ -4160,6 +4191,8 @@ public class BitDatePickerTests : BunitTestContext
             parameters.Add(p => p.ShowTimePicker, true);
             parameters.Add(p => p.MinTime, new TimeSpan(9, 0, 0));
             parameters.Add(p => p.MaxTime, new TimeSpan(17, 30, 0));
+            // A long delay keeps the press-and-hold spin out of the picture, so each press is exactly one step.
+            parameters.Add(p => p.ContinuousSpinDelay, 60_000);
             parameters.Bind(p => p.Value, value, v => value = v);
         });
 
@@ -4198,6 +4231,8 @@ public class BitDatePickerTests : BunitTestContext
             parameters.Add(p => p.IsOpen, true);
             parameters.Add(p => p.ShowTimePicker, true);
             parameters.Add(p => p.AllowedHours, h => h != 13);
+            // A long delay keeps the press-and-hold spin out of the picture, so the press is exactly one step.
+            parameters.Add(p => p.ContinuousSpinDelay, 60_000);
             parameters.Bind(p => p.Value, value, v => value = v);
         });
 
@@ -4220,6 +4255,8 @@ public class BitDatePickerTests : BunitTestContext
             parameters.Add(p => p.IsOpen, true);
             parameters.Add(p => p.ShowTimePicker, true);
             parameters.Add(p => p.AllowedMinutes, m => m % 20 == 0);
+            // A long delay keeps the press-and-hold spin out of the picture, so the press is exactly one step.
+            parameters.Add(p => p.ContinuousSpinDelay, 60_000);
             parameters.Bind(p => p.Value, value, v => value = v);
         });
 
@@ -4262,6 +4299,8 @@ public class BitDatePickerTests : BunitTestContext
         {
             parameters.Add(p => p.IsOpen, true);
             parameters.Add(p => p.ShowTimePicker, true);
+            // A long delay keeps the press-and-hold spin out of the picture, so the press itself is exactly one step.
+            parameters.Add(p => p.ContinuousSpinDelay, 60_000);
             parameters.Bind(p => p.Value, value, v => value = v);
         });
 
@@ -4551,6 +4590,8 @@ public class BitDatePickerTests : BunitTestContext
             parameters.Add(p => p.ShowTimePicker, true);
             parameters.Add(p => p.MinTime, new TimeSpan(9, 30, 0));
             parameters.Add(p => p.MaxTime, new TimeSpan(17, 15, 0));
+            // A long delay keeps the press-and-hold spin out of the picture, so the press is exactly one step.
+            parameters.Add(p => p.ContinuousSpinDelay, 60_000);
             parameters.Bind(p => p.Value, value, v => value = v);
         });
 

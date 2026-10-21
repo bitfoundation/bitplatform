@@ -2767,8 +2767,13 @@ public class BitMapTests : BunitTestContext
 
         init.SetVoidResult();
 
-        component.WaitForAssertion(() => Assert.AreEqual(BitMapLoadState.Ready, component.Instance.LoadState));
-        Assert.IsFalse(component.Find(".bit-map-canvas").HasAttribute("aria-busy"));
+        // The rest of the mount resumes on the renderer's dispatcher, which sets LoadState a moment before it renders the
+        // markup without aria-busy - so the markup is waited for together with the state, not read once the state is seen.
+        component.WaitForAssertion(() =>
+        {
+            Assert.AreEqual(BitMapLoadState.Ready, component.Instance.LoadState);
+            Assert.IsFalse(component.Find(".bit-map-canvas").HasAttribute("aria-busy"));
+        });
     }
 
     // ---------------------------------------------------------------- geographic helpers
@@ -3286,9 +3291,16 @@ public class BitMapTests : BunitTestContext
             parameters.Add(p => p.Clustering, new BitMapClustering());
         });
 
-        Assert.AreEqual(0, Context.JSInterop.Invocations.Count(i => i.Identifier == B_ADD_MARKER),
+        // No add on B only means something once B was actually initialized and the clustering layer was re-pointed at it.
+        // The recorded invocations are grouped by identifier rather than kept in call order, so it is the last configure
+        // naming B, and the last snapshot holding the marker, that show the swap handed the set over.
+        var invocations = Context.JSInterop.Invocations;
+        Assert.AreEqual(1, invocations.Count(i => i.Identifier == B_INIT), "the swap has to reach provider B");
+        Assert.AreEqual(0, invocations.Count(i => i.Identifier == B_ADD_MARKER),
             "the clustering layer owns what the provider draws");
-        Assert.IsTrue(Context.JSInterop.Invocations.Count(i => i.Identifier == CLUSTER_SET_MARKERS) > 0);
+        Assert.AreEqual("TestProviderB", invocations.Last(i => i.Identifier == CLUSTER_CONFIGURE).Arguments[1],
+            "the clustering layer is re-pointed at B");
+        CollectionAssert.AreEqual(new[] { "x" }, (string[])invocations.Last(i => i.Identifier == CLUSTER_SET_MARKERS).Arguments[1]!);
     }
 
     // ---------------------------------------------------------------- provider swap
@@ -3546,7 +3558,10 @@ public class BitMapTests : BunitTestContext
         var component = RenderComponent<BitMap<BitLeafletMapProvider>>(parameters =>
         {
             parameters.Add(p => p.AnnounceViewChanges, true);
-            parameters.Add(p => p.ViewAnnouncementThrottle, TimeSpan.FromMilliseconds(100));
+            // The window is real time measured from the first view, and the two after it have to land inside it: with a
+            // window of 100 ms, a runner stalled that long between the calls closed it early, so the second view was
+            // spoken too, or the third one was spoken at once from the test thread rather than held back.
+            parameters.Add(p => p.ViewAnnouncementThrottle, TimeSpan.FromSeconds(1));
             parameters.Add<Func<BitMapViewState, string>?>(p => p.ViewAnnouncementFormatter, v =>
             {
                 formatted.Add((v.Zoom, Renderer.Dispatcher.CheckAccess()));

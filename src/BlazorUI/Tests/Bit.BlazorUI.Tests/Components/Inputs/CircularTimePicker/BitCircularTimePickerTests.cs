@@ -40,6 +40,29 @@ public class BitCircularTimePickerTests : BunitTestContext
         return com.InvokeAsync(() => com.Find(".bit-ctp-clf").KeyDown(new KeyboardEventArgs { Key = key }));
     }
 
+    private CultureInfo _culture = default!;
+    private CultureInfo _uiCulture = default!;
+
+    // A picker left without a Culture reads and writes its time in the culture of the machine, so a test typing
+    // "21:00" would be refused on a machine whose culture writes the time with another separator (fi-FI writes
+    // "21.00"): the thread is pinned to the invariant culture for every test, and put back afterwards.
+    [TestInitialize]
+    public void PinCulture()
+    {
+        _culture = CultureInfo.CurrentCulture;
+        _uiCulture = CultureInfo.CurrentUICulture;
+
+        CultureInfo.CurrentCulture = CultureInfo.InvariantCulture;
+        CultureInfo.CurrentUICulture = CultureInfo.InvariantCulture;
+    }
+
+    [TestCleanup]
+    public void RestoreCulture()
+    {
+        CultureInfo.CurrentCulture = _culture;
+        CultureInfo.CurrentUICulture = _uiCulture;
+    }
+
 
 
     [TestMethod,
@@ -2001,17 +2024,22 @@ public class BitCircularTimePickerTests : BunitTestContext
             parameters.Bind(p => p.IsOpen, isOpen, v => isOpen = v);
         });
 
-        // the hour only moves the dial on to the minutes, so nothing is waited for yet
-        var elapsed = Stopwatch.StartNew();
-        await Press(component, HourAngle(3), OuterRing);
-        elapsed.Stop();
+        // the hour only moves the dial on to the minutes, so nothing is waited for yet: the press is over by the
+        // time its handlers return. It is checked in one turn of the renderer's dispatcher, which is where a wait
+        // would resume, rather than against a clock that a slow machine can run past without any wait at all.
+        await component.InvokeAsync(() =>
+        {
+            var down = component.Instance._HandlePointerDown(HourAngle(3), OuterRing);
+            var up = component.Instance._HandlePointerUp();
+
+            Assert.IsTrue(down.IsCompleted && up.IsCompleted, "The press that only moves the dial on waited for something.");
+        });
 
         Assert.IsTrue(isOpen);
-        Assert.IsLessThan(150, elapsed.ElapsedMilliseconds);
 
         // the pick that completes the selection is also the one the clock would be taken away on, so the
         // wait is what lets it be seen being made
-        elapsed.Restart();
+        var elapsed = Stopwatch.StartNew();
         await Press(component, MinuteAngle(30), OuterRing);
         elapsed.Stop();
 
@@ -2035,12 +2063,20 @@ public class BitCircularTimePickerTests : BunitTestContext
 
         await Press(component, HourAngle(3), OuterRing);
 
-        var elapsed = Stopwatch.StartNew();
-        await Press(component, MinuteAngle(30), OuterRing);
-        elapsed.Stop();
+        // Without a delay the close is made by the very press that completes the selection, so the press is over -
+        // and the picker closed - by the time its handlers return. It is checked in one turn of the renderer's
+        // dispatcher, which is where a wait would resume, rather than against a clock that a slow machine can run
+        // past without any wait at all.
+        await component.InvokeAsync(() =>
+        {
+            var down = component.Instance._HandlePointerDown(MinuteAngle(30), OuterRing);
+            var up = component.Instance._HandlePointerUp();
+
+            Assert.IsTrue(down.IsCompleted && up.IsCompleted, "The press that completes the selection waited before closing.");
+            Assert.IsFalse(isOpen);
+        });
 
         Assert.IsFalse(isOpen);
-        Assert.IsLessThan(100, elapsed.ElapsedMilliseconds);
     }
 
     [TestMethod]
@@ -2056,11 +2092,16 @@ public class BitCircularTimePickerTests : BunitTestContext
             parameters.Bind(p => p.IsOpen, isOpen, v => isOpen = v);
         });
 
-        await component.InvokeAsync(() => component.Find(".bit-ctp-abn").Click());
-
         // the button sets every part at once, so the selection is complete - and the wait it is closed
-        // after is the same one a pick on the dial gets
-        Assert.IsTrue(isOpen);
+        // after is the same one a pick on the dial gets. The picker is checked to be open in the same turn of the
+        // renderer's dispatcher as the click, where the wait resumes: read afterwards from the test, a slow machine
+        // could let the 150 ms run out first.
+        await component.InvokeAsync(() =>
+        {
+            component.Find(".bit-ctp-abn").Click();
+
+            Assert.IsTrue(isOpen);
+        });
 
         component.WaitForState(() => isOpen is false, TimeSpan.FromSeconds(5));
 

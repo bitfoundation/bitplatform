@@ -185,7 +185,7 @@ public class BitAccentColorServiceTests : BunitTestContext
             "The packaged primary reproduces the packaged palette, so the overrides, the attribute and the stores are cleared instead of ~280 properties being pushed across interop.");
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow(BitAccentColorFirstPaintStrategy.None, false, false),
         DataRow(BitAccentColorFirstPaintStrategy.StaticCss, true, false),
         DataRow(BitAccentColorFirstPaintStrategy.StoredCss, true, true)]
@@ -262,7 +262,7 @@ public class BitAccentColorServiceTests : BunitTestContext
         Assert.AreEqual(1, raised);
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow(null),
         DataRow(""),
         DataRow("not-a-color"),
@@ -320,7 +320,7 @@ public class BitAccentColorServiceTests : BunitTestContext
             "The app-owned copy outranks the web stores, which may lag behind it; they are not even read.");
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow(null),
         DataRow("")]
     public async Task BitAccentColorServiceShouldFallBackToTheWebStoresWhenTheCustomStoreHasNothing(string? stored)

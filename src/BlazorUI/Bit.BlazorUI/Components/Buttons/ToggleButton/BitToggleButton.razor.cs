@@ -1,5 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
-
+﻿
 namespace Bit.BlazorUI;
 
 /// <summary>
@@ -605,7 +604,6 @@ public partial class BitToggleButton : BitComponentBase
         await base.OnInitializedAsync();
     }
 
-    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitToggleButtonParams))]
     protected override void OnParametersSet()
     {
         CascadingParameters?.UpdateParameters(this);

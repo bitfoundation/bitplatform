@@ -143,7 +143,7 @@ public sealed class BitThemeMapperContractTests
         Assert.AreEqual("#333333", merged.Color.Primary.MainHover);
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("red; background:url(https://evil.example/x)", DisplayName = "semicolon injects a declaration")]
     [DataRow("red/* comment-out trailing */", DisplayName = "comment marker")]
     [DataRow("red} body{display:none", DisplayName = "block delimiters")]
@@ -163,7 +163,7 @@ public sealed class BitThemeMapperContractTests
             $"Injection-prone token value '{maliciousValue}' must be dropped, not emitted.");
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("#ABCDEF", DisplayName = "hex color")]
     [DataRow("rgba(0, 0, 0, .5)", DisplayName = "rgba with commas")]
     [DataRow("hsl(210 50% 40%)", DisplayName = "hsl")]

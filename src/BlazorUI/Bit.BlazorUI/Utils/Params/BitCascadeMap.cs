@@ -45,9 +45,9 @@ internal sealed class BitCascadeMap
     /// The map of a component type, or null for one that reads no params object or that has nothing it can take
     /// from one.
     /// </summary>
-    [UnconditionalSuppressMessage("Trimming", "IL2070", Justification = "The public properties of a component type are preserved for its parameters, and every params type by the DynamicDependency of the component that reads it.")]
-    [UnconditionalSuppressMessage("Trimming", "IL2072", Justification = "The public properties of a component type are preserved for its parameters, and every params type by the DynamicDependency of the component that reads it.")]
-    [UnconditionalSuppressMessage("Trimming", "IL2075", Justification = "The public properties of a component type are preserved for its parameters, and every params type by the DynamicDependency of the component that reads it.")]
+    [UnconditionalSuppressMessage("Trimming", "IL2070", Justification = "The public properties of a component type are preserved for its parameters, and every params type an app creates by the DynamicDependency of its constructor. A params type no app creates is cascaded by none, so it has nothing to supply.")]
+    [UnconditionalSuppressMessage("Trimming", "IL2072", Justification = "The public properties of a component type are preserved for its parameters, and every params type an app creates by the DynamicDependency of its constructor. A params type no app creates is cascaded by none, so it has nothing to supply.")]
+    [UnconditionalSuppressMessage("Trimming", "IL2075", Justification = "The public properties of a component type are preserved for its parameters, and every params type an app creates by the DynamicDependency of its constructor. A params type no app creates is cascaded by none, so it has nothing to supply.")]
     public static BitCascadeMap? For(Type type)
     {
         return _maps.GetOrAdd(type, static t =>

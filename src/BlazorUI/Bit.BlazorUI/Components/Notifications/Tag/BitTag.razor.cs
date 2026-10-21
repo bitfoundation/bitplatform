@@ -1,5 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
-
+﻿
 namespace Bit.BlazorUI;
 
 /// <summary>
@@ -630,7 +629,6 @@ public partial class BitTag : BitComponentBase
         await base.OnInitializedAsync();
     }
 
-    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitTagParams))]
     protected override void OnParametersSet()
     {
         CascadingParameters?.UpdateParameters(this);

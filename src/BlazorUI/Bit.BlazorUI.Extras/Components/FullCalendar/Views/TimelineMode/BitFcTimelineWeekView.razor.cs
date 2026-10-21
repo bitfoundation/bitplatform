@@ -44,7 +44,7 @@ public partial class BitFcTimelineWeekView
     private bool _pendingSlotFocus;
 
     private string SlotElementId(string rowKey, DateTime day, int hour, int minute)
-        => $"{_scrollContainerId}-slot-{Math.Max(0, _rowKeys.IndexOf(rowKey))}-{day:yyyyMMdd}-{hour}-{minute}";
+        => FormattableString.Invariant($"{_scrollContainerId}-slot-{Math.Max(0, _rowKeys.IndexOf(rowKey))}-{day:yyyyMMdd}-{hour}-{minute}");
 
     /// <summary>
     /// True when a remembered slot still exists in the grid being rendered: its resource row, its
@@ -304,7 +304,7 @@ public partial class BitFcTimelineWeekView
         }
 
         var weekStart = State.GetVisibleWeekDates()[0];
-        var sig = $"{weekStart:yyyy-MM-dd}|{State.StartOfDayHour}|{State.VisibleStartHour}|{State.VisibleEndHour}|{State.Today:yyyy-MM-dd}";
+        var sig = FormattableString.Invariant($"{weekStart:yyyy-MM-dd}|{State.StartOfDayHour}|{State.VisibleStartHour}|{State.VisibleEndHour}|{State.Today:yyyy-MM-dd}");
         if (sig == _scrollSignature) return;
 
         if (await BitFcTimelineScrollInterop.TryScrollToTargetAsync(JS, _scrollContainerId))

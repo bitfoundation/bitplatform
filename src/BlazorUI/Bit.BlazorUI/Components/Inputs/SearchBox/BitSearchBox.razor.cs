@@ -791,7 +791,6 @@ public partial class BitSearchBox : BitTextInputBase<string?>
         await base.OnInitializedAsync();
     }
 
-    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitSearchBoxParams))]
     protected override void OnParametersSet()
     {
         CascadingParameters?.UpdateParameters(this);

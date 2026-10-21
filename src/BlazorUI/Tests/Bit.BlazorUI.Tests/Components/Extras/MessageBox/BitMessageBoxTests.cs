@@ -106,7 +106,12 @@ public class BitMessageBoxTests : BunitTestContext
             parameters.Add(p => p.Buttons, BitMessageBoxButtons.OkCancel);
         });
 
-        foreach (var button in component.FindAll(".bit-msb .bit-btn"))
+        var buttons = component.FindAll(".bit-msb .bit-btn");
+
+        // The close button and the two of the set, so the loop below cannot pass by finding none.
+        Assert.AreEqual(3, buttons.Count);
+
+        foreach (var button in buttons)
         {
             Assert.AreEqual("true", button.GetAttribute("aria-disabled"));
             Assert.IsTrue(button.ClassList.Contains("bit-dis"));
@@ -292,7 +297,11 @@ public class BitMessageBoxTests : BunitTestContext
 
         // The neutral color is the default the message box gives its buttons rather than a Color of theirs, so an
         // app's --bit-Button-* variables still restyle them: no role class, only the host default read after those.
-        foreach (var button in component.FindAll(".bit-msb-ftr .bit-btn"))
+        var buttons = component.FindAll(".bit-msb-ftr .bit-btn");
+
+        Assert.AreEqual(2, buttons.Count);
+
+        foreach (var button in buttons)
         {
             Assert.IsTrue(button.ClassList.Contains("bit-btn-dft-ter"));
             Assert.IsFalse(button.ClassList.Contains("bit-btn-ter"));
@@ -322,7 +331,11 @@ public class BitMessageBoxTests : BunitTestContext
             parameters.Add(p => p.ButtonColor, BitColor.Tertiary);
         });
 
-        foreach (var button in component.FindAll(".bit-msb-ftr .bit-btn"))
+        var buttons = component.FindAll(".bit-msb-ftr .bit-btn");
+
+        Assert.AreEqual(2, buttons.Count);
+
+        foreach (var button in buttons)
         {
             Assert.IsTrue(button.ClassList.Contains("bit-btn-ter"));
             Assert.IsFalse(button.ClassList.Contains("bit-btn-dft-ter"));
@@ -338,7 +351,11 @@ public class BitMessageBoxTests : BunitTestContext
             parameters.Add(p => p.ButtonColor, BitColor.Primary);
         });
 
-        foreach (var button in component.FindAll(".bit-msb-ftr .bit-btn"))
+        var buttons = component.FindAll(".bit-msb-ftr .bit-btn");
+
+        Assert.AreEqual(2, buttons.Count);
+
+        foreach (var button in buttons)
         {
             Assert.IsTrue(button.ClassList.Contains("bit-btn-pri"));
         }
@@ -369,7 +386,12 @@ public class BitMessageBoxTests : BunitTestContext
             parameters.Add(p => p.Buttons, BitMessageBoxButtons.OkCancel);
         });
 
-        foreach (var button in component.FindAll(".bit-msb .bit-btn"))
+        var buttons = component.FindAll(".bit-msb .bit-btn");
+
+        // The close button and the two of the set, so the loop below cannot pass by finding none.
+        Assert.AreEqual(3, buttons.Count);
+
+        foreach (var button in buttons)
         {
             Assert.IsTrue(button.ClassList.Contains("bit-btn-sm"));
         }

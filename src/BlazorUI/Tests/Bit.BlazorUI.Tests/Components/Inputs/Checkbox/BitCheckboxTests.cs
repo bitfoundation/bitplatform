@@ -437,7 +437,7 @@ public class BitCheckboxTests : BunitTestContext
         var form = component.Find("form");
         form.Submit();
 
-        Assert.AreEqual(checkBoxInput.HasAttribute("aria-invalid"), value);
+        Assert.AreEqual(value, checkBoxInput.HasAttribute("aria-invalid"));
         if (checkBoxInput.HasAttribute("aria-invalid"))
         {
             Assert.AreEqual("true", checkBoxInput.GetAttribute("aria-invalid"));

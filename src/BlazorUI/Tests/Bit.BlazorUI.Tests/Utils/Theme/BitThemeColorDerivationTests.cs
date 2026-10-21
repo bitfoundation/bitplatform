@@ -602,7 +602,7 @@ public sealed class BitThemeColorDerivationTests
 
     // ── Calibration against the packaged palettes ─────────────────────────────
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("Fluent", "colors.fluent-light.scss", BitThemeColorScheme.Light)]
     [DataRow("Fluent", "colors.fluent-dark.scss", BitThemeColorScheme.Dark)]
     [DataRow("Fluent2", "colors.fluent2-light.scss", BitThemeColorScheme.Light)]

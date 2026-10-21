@@ -335,9 +335,11 @@ public class BitCollapseE2ETests : E2ETestBase
         await El("btn-events").ClickAsync();
         // OnExpanding is raised as the new state is taken, ahead of the OnChange that reports it.
         await Expect(El("ev-log")).ToHaveTextAsync(new Regex("^Expanding\\|Change:True"));
-        var started = watch.ElapsedMilliseconds;
         await Expect(El("ev-log")).ToHaveTextAsync("Expanding|Change:True|Expanded");
-        Assert.IsTrue(watch.ElapsedMilliseconds - started >= 400, $"OnExpanded came {watch.ElapsedMilliseconds - started}ms after OnExpanding.");
+        // Timed from the click, which the 600ms Duration can only start after, rather than from the moment OnExpanding
+        // was seen: an expectation can see that one half a second late on a loaded runner, or only once OnExpanded
+        // has come as well.
+        Assert.IsTrue(watch.ElapsedMilliseconds >= 550, $"OnExpanded came {watch.ElapsedMilliseconds}ms after the click.");
 
         await El("btn-events").ClickAsync();
         await Expect(El("ev-log")).ToHaveTextAsync("Expanding|Change:True|Expanded|Collapsing|Change:False|Collapsed");

@@ -1,5 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
-
+﻿
 namespace Bit.BlazorUI;
 
 /// <summary>
@@ -528,7 +527,6 @@ public partial class BitPivot : BitComponentBase
         await base.OnInitializedAsync();
     }
 
-    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitPivotParams))]
     protected override void OnParametersSet()
     {
         CascadingParameters?.UpdateParameters(this);

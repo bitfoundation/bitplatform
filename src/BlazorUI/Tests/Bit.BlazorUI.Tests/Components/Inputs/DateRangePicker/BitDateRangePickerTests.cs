@@ -16,13 +16,32 @@ namespace Bit.BlazorUI.Tests.Components.Inputs.DateRangePicker;
 [TestClass]
 public class BitDateRangePickerTests : BunitTestContext
 {
+    private CultureInfo _culture = default!;
+    private CultureInfo _uiCulture = default!;
+
     // Every path that opens the callout - a click, OpenCallout and an initial IsOpen alike - fits it to the width of
     // the viewport first, and a viewport the script answers no width for is too narrow for anything but overlays. So
     // the range picker is laid out on a desktop-wide viewport here, and a test of a narrow one sets the width it needs.
+    // A range picker left without a Culture lays itself out in the culture of the machine too, so the tests that count
+    // the weeks of a month or pick a day by its number would read another calendar's months on a machine set to a
+    // Persian or a Hijri one: the thread is pinned to the invariant culture for every test, and put back afterwards.
     [TestInitialize]
     public void SetupViewportWidth()
     {
+        _culture = CultureInfo.CurrentCulture;
+        _uiCulture = CultureInfo.CurrentUICulture;
+
+        CultureInfo.CurrentCulture = CultureInfo.InvariantCulture;
+        CultureInfo.CurrentUICulture = CultureInfo.InvariantCulture;
+
         Context.JSInterop.Setup<decimal>("BitBlazorUI.Utils.getBodyWidth").SetResult(1920m);
+    }
+
+    [TestCleanup]
+    public void RestoreCulture()
+    {
+        CultureInfo.CurrentCulture = _culture;
+        CultureInfo.CurrentUICulture = _uiCulture;
     }
 
     [TestMethod,
@@ -1452,6 +1471,9 @@ public class BitDateRangePickerTests : BunitTestContext
         var component = RenderComponent<BitDateRangePicker>(parameters =>
         {
             parameters.Add(p => p.Culture, CultureInfo.InvariantCulture);
+            // Today is a UTC midnight, so the picker reads it in UTC: in the machine's own zone it would be the 3rd
+            // anywhere west of Greenwich.
+            parameters.Add(p => p.TimeZone, TimeZoneInfo.Utc);
             parameters.Add(p => p.IsOpen, true);
             parameters.Add(p => p.Today, new DateTimeOffset(2020, 12, 4, 0, 0, 0, TimeSpan.Zero));
         });
@@ -1809,6 +1831,9 @@ public class BitDateRangePickerTests : BunitTestContext
             parameters.Add(p => p.IsOpen, true);
             parameters.Add(p => p.Today, today);
             parameters.Add(p => p.Culture, CultureInfo.InvariantCulture);
+            // The dates are UTC midnights, so the picker reads them in UTC rather than in the machine's own zone,
+            // where every one of them would be the day before anywhere west of Greenwich.
+            parameters.Add(p => p.TimeZone, TimeZoneInfo.Utc);
             // A gap of disabled days right after today: the arrow key has to jump over it,
             // not stop at its edge.
             parameters.Add(p => p.DisabledDates, new[]
@@ -1840,6 +1865,9 @@ public class BitDateRangePickerTests : BunitTestContext
             parameters.Add(p => p.IsOpen, true);
             parameters.Add(p => p.Today, today);
             parameters.Add(p => p.Culture, CultureInfo.InvariantCulture);
+            // The start date is a UTC midnight, so the picker reads it in UTC rather than in the machine's own zone,
+            // where it would be June 11 anywhere west of Greenwich.
+            parameters.Add(p => p.TimeZone, TimeZoneInfo.Utc);
             parameters.Add(p => p.MinRange, TimeSpan.FromDays(4));
             parameters.Add(p => p.Value, new BitDateRangePickerValue { StartDate = today });
         });
@@ -1868,6 +1896,9 @@ public class BitDateRangePickerTests : BunitTestContext
             parameters.Add(p => p.IsOpen, true);
             parameters.Add(p => p.Today, today);
             parameters.Add(p => p.Culture, CultureInfo.InvariantCulture);
+            // Today and MaxDate are a UTC midnight, so the picker reads them in UTC rather than in the machine's own
+            // zone, where they would be June 11 anywhere west of Greenwich.
+            parameters.Add(p => p.TimeZone, TimeZoneInfo.Utc);
             parameters.Add(p => p.MaxDate, today);
         });
 
@@ -1920,6 +1951,7 @@ public class BitDateRangePickerTests : BunitTestContext
         {
             parameters.Add(p => p.IsOpen, true);
             parameters.Add(p => p.ShowTimePicker, true);
+            parameters.Add(p => p.TimeZone, TimeZoneInfo.Utc);
             parameters.Add(p => p.TimeFormat, BitTimeFormat.TwelveHours);
             parameters.Add(p => p.Value, new BitDateRangePickerValue
             {
@@ -1950,6 +1982,7 @@ public class BitDateRangePickerTests : BunitTestContext
         {
             parameters.Add(p => p.IsOpen, true);
             parameters.Add(p => p.ShowTimePicker, true);
+            parameters.Add(p => p.TimeZone, TimeZoneInfo.Utc);
             parameters.Add(p => p.TimeFormat, BitTimeFormat.TwelveHours);
             parameters.Bind(p => p.Value, value, v => value = v);
         });
@@ -1957,6 +1990,33 @@ public class BitDateRangePickerTests : BunitTestContext
         component.FindAll(".bit-dtrp-eic .bit-dtrp-bam")[0].Click();
 
         Assert.AreEqual(2, component.Instance.Value!.EndDate!.Value.Hour);
+    }
+
+    [TestMethod]
+    public void BitDateRangePickerTimeFieldsShouldReadTheValueInTheTimeZoneOfThePicker()
+    {
+        // The days are read in the TimeZone of the picker, and so are the times: read in the offset the value came in,
+        // 14:00 UTC would show 14:00 beside the day the picker reads ten hours west of it.
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+        var utcMinusTen = TimeZoneInfo.CreateCustomTimeZone("UTC-10", TimeSpan.FromHours(-10), "UTC-10", "UTC-10");
+        BitDateRangePickerValue? value = new()
+        {
+            StartDate = new DateTimeOffset(2024, 3, 1, 14, 0, 0, TimeSpan.Zero),
+            EndDate = new DateTimeOffset(2024, 3, 5, 17, 30, 0, TimeSpan.Zero)
+        };
+
+        var component = RenderComponent<BitDateRangePicker>(parameters =>
+        {
+            parameters.Add(p => p.IsOpen, true);
+            parameters.Add(p => p.ShowTimePicker, true);
+            parameters.Add(p => p.TimeZone, utcMinusTen);
+            parameters.Bind(p => p.Value, value, v => value = v);
+        });
+
+        Assert.AreEqual("4", component.FindAll(".bit-dtrp-sic .bit-dtrp-tin")[0].GetAttribute("value"));
+        Assert.AreEqual("0", component.FindAll(".bit-dtrp-sic .bit-dtrp-tin")[1].GetAttribute("value"));
+        Assert.AreEqual("7", component.FindAll(".bit-dtrp-eic .bit-dtrp-tin")[0].GetAttribute("value"));
+        Assert.AreEqual("30", component.FindAll(".bit-dtrp-eic .bit-dtrp-tin")[1].GetAttribute("value"));
     }
 
     [TestMethod]
@@ -2798,6 +2858,7 @@ public class BitDateRangePickerTests : BunitTestContext
         {
             parameters.Add(p => p.IsOpen, true);
             parameters.Add(p => p.ShowTimePicker, true);
+            parameters.Add(p => p.TimeZone, TimeZoneInfo.Utc);
             parameters.Add(p => p.ShowClearButton, true);
             parameters.Add(p => p.StartingValue, new BitDateRangePickerValue
             {
@@ -2849,6 +2910,7 @@ public class BitDateRangePickerTests : BunitTestContext
         {
             parameters.Add(p => p.IsOpen, true);
             parameters.Add(p => p.ShowTimePicker, true);
+            parameters.Add(p => p.TimeZone, TimeZoneInfo.Utc);
             parameters.Add(p => p.TimeFormat, BitTimeFormat.TwelveHours);
             parameters.Bind(p => p.Value, value, v => value = v);
         });
@@ -2873,6 +2935,7 @@ public class BitDateRangePickerTests : BunitTestContext
         {
             parameters.Add(p => p.IsOpen, true);
             parameters.Add(p => p.ShowTimePicker, true);
+            parameters.Add(p => p.TimeZone, TimeZoneInfo.Utc);
             parameters.Add(p => p.TimeFormat, BitTimeFormat.TwelveHours);
             parameters.Bind(p => p.Value, value, v => value = v);
         });
@@ -3308,6 +3371,7 @@ public class BitDateRangePickerTests : BunitTestContext
         {
             parameters.Add(p => p.IsOpen, true);
             parameters.Add(p => p.ShowTimePicker, true);
+            parameters.Add(p => p.TimeZone, TimeZoneInfo.Utc);
             parameters.Add(p => p.MaxRange, TimeSpan.FromDays(2));
             parameters.Bind(p => p.Value, value, v => value = v);
         });
@@ -3549,6 +3613,7 @@ public class BitDateRangePickerTests : BunitTestContext
             parameters.Add(p => p.IsOpen, true);
             parameters.Add(p => p.HourStep, 3);
             parameters.Add(p => p.ShowTimePicker, true);
+            parameters.Add(p => p.TimeZone, TimeZoneInfo.Utc);
             // A long delay keeps the press-and-hold spin out of the picture, so each press contributes
             // exactly one step no matter how long the test itself takes.
             parameters.Add(p => p.ContinuousSpinDelay, 60_000);
@@ -3585,6 +3650,7 @@ public class BitDateRangePickerTests : BunitTestContext
             parameters.Add(p => p.IsOpen, true);
             parameters.Add(p => p.HourStep, 5);
             parameters.Add(p => p.ShowTimePicker, true);
+            parameters.Add(p => p.TimeZone, TimeZoneInfo.Utc);
             parameters.Add(p => p.ContinuousSpinDelay, 60_000);
             parameters.Bind(p => p.Value, value, v => value = v);
         });
@@ -3612,6 +3678,7 @@ public class BitDateRangePickerTests : BunitTestContext
             parameters.Add(p => p.IsOpen, true);
             parameters.Add(p => p.MinuteStep, 15);
             parameters.Add(p => p.ShowTimePicker, true);
+            parameters.Add(p => p.TimeZone, TimeZoneInfo.Utc);
             // A long delay keeps the press-and-hold spin out of the picture, so each press contributes
             // exactly one step no matter how long the test itself takes.
             parameters.Add(p => p.ContinuousSpinDelay, 60_000);
@@ -4494,6 +4561,9 @@ public class BitDateRangePickerTests : BunitTestContext
             parameters.Add(p => p.IsOpen, true);
             parameters.Add(p => p.Today, today);
             parameters.Add(p => p.Culture, CultureInfo.InvariantCulture);
+            // 10:00 UTC is June 12 in UTC, which the picker is pinned to: in the machine's own zone it would be June 13
+            // from UTC+14 on.
+            parameters.Add(p => p.TimeZone, TimeZoneInfo.Utc);
             parameters.Add(p => p.MaxRange, TimeSpan.FromDays(3));
             parameters.Add(p => p.Value, new BitDateRangePickerValue { StartDate = today });
         });

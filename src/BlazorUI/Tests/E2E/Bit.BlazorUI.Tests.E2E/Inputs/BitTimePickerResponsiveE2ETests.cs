@@ -109,7 +109,7 @@ public class BitTimePickerResponsiveE2ETests : E2ETestBase
         var callout = await OpenCalloutAsync("basic");
         await Expect(callout).Not.ToHaveClassAsync(HasClass("bit-tpc-res"));
         // The callout slides in; its box is read once that entry has run out.
-        await callout.EvaluateAsync("el => Promise.all(el.getAnimations({ subtree: true }).map(a => a.finished))");
+        await callout.EvaluateAsync("el => Promise.all(el.getAnimations({ subtree: true }).map(a => a.finished.catch(() => null)))");
 
         var field = (await Page.Locator("#basic .bit-tpc-icn").BoundingBoxAsync())!;
         var box = (await callout.BoundingBoxAsync())!;

@@ -1,5 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using System.Globalization;
+﻿using System.Globalization;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.JSInterop;
@@ -208,7 +207,6 @@ public partial class BitChart : BitComponentBase
                     .Register(() => Styles?.Root);
     }
 
-    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitChartParams))]
     protected override void OnParametersSet()
     {
         CascadingParameters?.UpdateParameters(this);

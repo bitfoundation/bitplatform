@@ -205,7 +205,7 @@ public class BitInputBaseTests : BunitTestContext
     }
 
     [TestMethod]
-    public void NoValidateShouldKeepTheInputOutOfTheEditContext()
+    public async Task NoValidateShouldKeepTheInputOutOfTheEditContext()
     {
         var model = new BitTextFieldTestModel();
         var editContext = new EditContext(model);
@@ -220,7 +220,9 @@ public class BitInputBaseTests : BunitTestContext
         Assert.AreEqual("not an email", model.Value);
         Assert.IsFalse(editContext.IsModified());
 
-        component.InvokeAsync(() => editContext.Validate());
+        // Awaited, so that what the validation throws fails the test rather than being dropped with the task, and so
+        // that the assertions never run ahead of a validation the dispatcher had to queue.
+        await component.InvokeAsync(() => editContext.Validate());
 
         Assert.IsTrue(editContext.GetValidationMessages().Any());
         Assert.IsFalse(component.Find(".bit-tfl").ClassList.Contains("bit-inv"));

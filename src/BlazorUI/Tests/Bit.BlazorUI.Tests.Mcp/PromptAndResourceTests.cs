@@ -113,7 +113,7 @@ public class PromptAndResourceTests : McpTestBase
         StringAssert.Contains(text, "AllowDisabledFocus");
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("bitblazorui://components/{name}", "name", "Dat", "BitDatePicker")]
     [DataRow("bitblazorui://types/{typeName}", "typeName", "BitCol", "BitColor")]
     [DataRow("bitblazorui://setup/{hostingModel}", "hostingModel", "", "web-app")]

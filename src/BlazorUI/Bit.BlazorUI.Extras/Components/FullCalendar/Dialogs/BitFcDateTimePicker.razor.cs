@@ -108,7 +108,7 @@ public partial class BitFcDateTimePicker : IDisposable
     private bool IsOutOfRange(DateTime date)
         => (MinDate is { } min && date.Date < min.Date) || (MaxDate is { } max && date.Date > max.Date);
 
-    private string DayId(DateTime date) => $"{_id}-{date:yyyyMMdd}";
+    private string DayId(DateTime date) => FormattableString.Invariant($"{_id}-{date:yyyyMMdd}");
 
     /// <summary>
     /// The day that owns the grid's tab stop: the one the arrow keys landed on, else the picked date, else the first

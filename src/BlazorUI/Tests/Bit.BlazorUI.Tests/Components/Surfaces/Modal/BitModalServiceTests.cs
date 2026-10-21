@@ -50,7 +50,7 @@ public class BitModalServiceTests : BunitTestContext
             Assert.AreEqual(1, container.FindAll(".bit-mdl").Count);
         });
 
-        modalRef.Close();
+        await modalRef.Close();
 
         container.WaitForAssertion(() =>
         {

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
@@ -411,17 +412,34 @@ public class BitDataGridParamsTests : BunitTestContext
     [TestMethod]
     public void BitDataGridShouldApplyTheCascadedClipboardCopy()
     {
-        Context.JSInterop.Setup<bool>("BitBlazorUI.DataGrid.copyToClipboard", _ => true).SetResult(true);
+        // The clipboard writes a value in the culture the app runs under (under de-DE 2.5 is "2,5"), so the culture is
+        // pinned - both, because the renderer does its work on a dispatcher thread of its own: the current culture covers
+        // this thread, and the default thread culture is what the other one picks up.
+        var culture = CultureInfo.CurrentCulture;
+        var defaultCulture = CultureInfo.DefaultThreadCurrentCulture;
 
-        var component = RenderWithParams(new BitDataGridParams { ClipboardCopy = true, CellNavigation = true });
-
-        component.Find(".bit-dtg-body > .bit-dtg-row .bit-dtg-cell").KeyDown(new KeyboardEventArgs { Key = "c", CtrlKey = true });
-
-        component.WaitForAssertion(() =>
+        try
         {
-            var payload = (string)Context.JSInterop.Invocations["BitBlazorUI.DataGrid.copyToClipboard"].Single().Arguments[0]!;
-            StringAssert.Contains(payload, "Banana\t2.5");
-        });
+            CultureInfo.CurrentCulture = CultureInfo.InvariantCulture;
+            CultureInfo.DefaultThreadCurrentCulture = CultureInfo.InvariantCulture;
+
+            Context.JSInterop.Setup<bool>("BitBlazorUI.DataGrid.copyToClipboard", _ => true).SetResult(true);
+
+            var component = RenderWithParams(new BitDataGridParams { ClipboardCopy = true, CellNavigation = true });
+
+            component.Find(".bit-dtg-body > .bit-dtg-row .bit-dtg-cell").KeyDown(new KeyboardEventArgs { Key = "c", CtrlKey = true });
+
+            component.WaitForAssertion(() =>
+            {
+                var payload = (string)Context.JSInterop.Invocations["BitBlazorUI.DataGrid.copyToClipboard"].Single().Arguments[0]!;
+                StringAssert.Contains(payload, "Banana\t2.5");
+            });
+        }
+        finally
+        {
+            CultureInfo.CurrentCulture = culture;
+            CultureInfo.DefaultThreadCurrentCulture = defaultCulture;
+        }
     }
 
     [TestMethod]

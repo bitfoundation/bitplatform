@@ -291,7 +291,6 @@ public partial class BitNavBar<[DynamicallyAccessedMembers(DynamicallyAccessedMe
         StyleBuilder.Register(() => Styles?.Root);
     }
 
-    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitNavBarParams))]
     protected override async Task OnInitializedAsync()
     {
         // The cascade is applied here as well as in OnParametersSet, because this method already reads the

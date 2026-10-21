@@ -1,5 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
-
+﻿
 namespace Bit.BlazorUI;
 
 /// <summary>
@@ -573,7 +572,6 @@ public partial class BitShimmer : BitComponentBase
 
     protected override string RootElementClass => "bit-smr";
 
-    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitShimmerParams))]
     protected override void OnParametersSet()
     {
         CascadingParameters?.UpdateParameters(this);

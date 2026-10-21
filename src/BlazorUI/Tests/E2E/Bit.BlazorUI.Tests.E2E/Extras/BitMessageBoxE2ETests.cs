@@ -34,6 +34,15 @@ public class BitMessageBoxE2ETests : E2ETestBase
 
     private ILocator DialogActions => DialogBox.Locator(".bit-msb-ftr > .bit-btn");
 
+    // A round trip to the circuit: once it is back, every event raised before it has been handled and its render
+    // applied, so a render still on its way can no longer put an older value back over what was typed since.
+    private async Task PingAsync()
+    {
+        var pings = int.Parse(await Page.Locator("#msb-pings").TextContentAsync() ?? "0", CultureInfo.InvariantCulture);
+        await Page.Locator("#msb-ping").DispatchEventAsync("click");
+        await Expect(Page.Locator("#msb-pings")).ToHaveTextAsync((pings + 1).ToString(CultureInfo.InvariantCulture));
+    }
+
     // ---------- basic ----------
 
     [TestMethod]
@@ -100,7 +109,7 @@ public class BitMessageBoxE2ETests : E2ETestBase
 
     // ---------- buttons ----------
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("msb-ok", new[] { "Got it" })]
     [DataRow("msb-okcancel", new[] { "Ok", "Not now" })]
     [DataRow("msb-yesno", new[] { "Sure", "Nope" })]
@@ -129,7 +138,7 @@ public class BitMessageBoxE2ETests : E2ETestBase
         }
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("msb-ok", 0, "ok:OnOk,ok:Ok,ok:OnClose")]
     [DataRow("msb-okcancel", 0, "okcancel:OnOk,okcancel:Ok,okcancel:OnClose")]
     [DataRow("msb-okcancel", 1, "okcancel:OnCancel,okcancel:Cancel,okcancel:OnClose")]
@@ -147,7 +156,7 @@ public class BitMessageBoxE2ETests : E2ETestBase
         await Expect(Log).ToHaveTextAsync(log);
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("msb-ok", "ok:None,ok:OnClose")]
     [DataRow("msb-yesnocancel", "ync:None,ync:OnClose")]
     [DataRow("msb-none", "none:None,none:OnClose")]
@@ -391,7 +400,7 @@ public class BitMessageBoxE2ETests : E2ETestBase
         await Expect(Box("msb-only-close").Locator(".bit-msb-spc")).ToBeVisibleAsync();
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("msb-te-default", "H5")]
     [DataRow("msb-te-h2", "H2")]
     [DataRow("msb-te-void", "H5")]
@@ -700,7 +709,7 @@ public class BitMessageBoxE2ETests : E2ETestBase
         await Expect(Dialog).ToHaveCountAsync(0);
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("escape")]
     [DataRow("overlay")]
     [DataRow("close")]
@@ -763,7 +772,7 @@ public class BitMessageBoxE2ETests : E2ETestBase
         await Expect(Page.Locator("#svc-result")).ToHaveTextAsync("Ok");
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("info", "dialog", "Info", "inf")]
     [DataRow("success", "dialog", "Completed", "suc")]
     [DataRow("warning", "alertdialog", "Warning", "wrn")]
@@ -921,7 +930,7 @@ public class BitMessageBoxE2ETests : E2ETestBase
 
     // ---------- Confirm ----------
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("#btn-confirm", 0, "True")]
     [DataRow("#btn-confirm", 1, "False")]
     [DataRow("#btn-confirm-yesno", 0, "True")]
@@ -990,18 +999,23 @@ public class BitMessageBoxE2ETests : E2ETestBase
         await Expect(input).ToHaveValueAsync("report.pdf");
         await Expect(input).ToHaveAttributeAsync("aria-label", "The new name of the file:");
         await Expect(input).ToHaveAttributeAsync("enterkeyhint", "done");
-        Assert.AreEqual(10, await input.EvaluateAsync<int>("e => e.selectionEnd - e.selectionStart"), "The value is selected.");
+        // The value is selected - by a call of its own after the focus, so waited for rather than read once.
+        await Expect(input).ToHaveJSPropertyAsync("selectionStart", 0);
+        await Expect(input).ToHaveJSPropertyAsync("selectionEnd", 10);
         await Expect(Dialog).Not.ToHaveAttributeAsync("aria-describedby", new Regex(".*"));
         await Expect(DialogActions).ToHaveTextAsync(["Ok", "Cancel"]);
 
         await Page.Keyboard.TypeAsync("summary.pdf");
+        // Let the typing round trip first (see Prompt_Multiline): a render still on its way would put a shorter value
+        // back under the Enter.
+        await PingAsync();
         await Page.Keyboard.PressAsync("Enter");
 
         await Expect(Page.Locator("#prompt-result")).ToHaveTextAsync("summary.pdf");
         await Expect(Dialog).ToHaveCountAsync(0);
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("cancel")]
     [DataRow("escape")]
     [DataRow("close")]
@@ -1101,9 +1115,14 @@ public class BitMessageBoxE2ETests : E2ETestBase
         var area = Box("svc-feedback").Locator(".bit-msb-pfl textarea");
         await Expect(area).ToBeFocusedAsync();
         await Expect(area).ToHaveAttributeAsync("rows", "3");
+        // Each part is let round trip before the next: on a loaded circuit the render of a keystroke can come back after
+        // the keystrokes typed since and put the older value back over them.
         await Page.Keyboard.TypeAsync("First");
+        await PingAsync();
         await Page.Keyboard.PressAsync("Enter");
+        await PingAsync();
         await Page.Keyboard.TypeAsync("Second");
+        await PingAsync();
         await Expect(Dialog).ToBeVisibleAsync();
         await Expect(area).ToHaveValueAsync("First\nSecond");
 
@@ -1119,6 +1138,9 @@ public class BitMessageBoxE2ETests : E2ETestBase
         await Page.Locator("#btn-prompt-yesno").ClickAsync();
         await Expect(Box("svc-yesno-prompt").Locator(".bit-msb-pfl input")).ToHaveValueAsync("abc");
         await Expect(Actions("svc-yesno-prompt")).ToHaveTextAsync(["Yes", "No"]);
+        // The Enter answers the prompt from its field, which takes the focus once the box has opened: pressed before
+        // that, it lands on the button that opened the box instead.
+        await Expect(Box("svc-yesno-prompt").Locator(".bit-msb-pfl input")).ToBeFocusedAsync();
         await Page.Keyboard.PressAsync("Enter");
         await Expect(Page.Locator("#prompt-result")).ToHaveTextAsync("abc");
 
@@ -1144,7 +1166,7 @@ public class BitMessageBoxE2ETests : E2ETestBase
 
     // ---------- color & size ----------
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("primary", "pri", "--bit-clr-pri", "Info")]
     [DataRow("secondary", "sec", "--bit-clr-sec", "Info")]
     [DataRow("tertiary", "ter", "--bit-clr-ter", "Info")]
@@ -1339,7 +1361,7 @@ public class BitMessageBoxE2ETests : E2ETestBase
 
     // ---------- RTL ----------
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("msb-rtl")]
     [DataRow("msb-rtl-inherited")]
     public async Task Rtl_TheBox_LaysItsHeaderAndFooterOutRightToLeft(string id)

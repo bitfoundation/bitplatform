@@ -899,7 +899,9 @@ public class BitProgressTests : BunitTestContext
     [TestMethod]
     public void BitProgressDelayShouldDropTheRevealOnceTheWindowIsOver()
     {
-        var component = RenderComponent<BitProgress>(parameters => parameters.Add(p => p.Delay, 30));
+        // Long enough that the read right after the first render is not racing the window on a loaded machine: one that
+        // ran out first would have taken the reveal off before it was ever looked at.
+        var component = RenderComponent<BitProgress>(parameters => parameters.Add(p => p.Delay, 200));
 
         Assert.IsTrue(component.Find(".bit-prb").ClassList.Contains("bit-prb-dly"));
 

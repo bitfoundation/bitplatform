@@ -24,6 +24,18 @@ public class BitFileUploadE2ETests : E2ETestBase
 {
     private const string Route = "/e2e/file-upload";
 
+    // The slow endpoint holds every request until the test lets it through (SlowUploadGate in the host), so an upload
+    // stays in flight for as long as a test needs it to, however long a loaded runner takes to get to its Pause. Every
+    // test starts with it holding them.
+    [TestInitialize]
+    public Task HoldTheSlowUploadsAsync() => SlowUploadsAsync("close");
+
+    private async Task SlowUploadsAsync(string action)
+    {
+        var response = await Page.APIRequest.PostAsync($"{BaseUrl}/api/upload-slow/{action}");
+        Assert.IsTrue(response.Ok, $"The host does not answer /api/upload-slow/{action}: one started from an older build?");
+    }
+
     private ILocator Root(string id) => Page.Locator($"#{id}");
 
     private ILocator FileField(string id) => Page.Locator($"#{id} input.bit-upl-fi");
@@ -736,7 +748,8 @@ public class BitFileUploadE2ETests : E2ETestBase
         await SelectAsync("upl-chunked-slow", Sized("slow.bin", 2500));
         await Action("upl-chunked-slow", "slow.bin", "Upload").ClickAsync();
 
-        // The first chunk lands after the slow endpoint's two seconds; the second is then in flight.
+        // The first chunk is let through; the second is then held in flight.
+        await SlowUploadsAsync("release?count=1");
         await ExpectTextAsync("chunk-slow-progress", "1000");
         await WaitForCountAsync(requests, 2);
         await Action("upl-chunked-slow", "slow.bin", "Pause").ClickAsync();
@@ -871,6 +884,7 @@ public class BitFileUploadE2ETests : E2ETestBase
         await Action("upl-concurrent", "3.txt", "Cancel").ClickAsync();
         await Expect(Status("upl-concurrent", "3.txt")).ToHaveTextAsync("File upload canceled");
 
+        await SlowUploadsAsync("open");
         await ExpectTextAsync("concurrent-done", "1.txt|2.txt|3.txt");
         await Expect(Root("upl-concurrent").Locator(".bit-upl-uld")).ToHaveCountAsync(2);
     }
@@ -948,6 +962,7 @@ public class BitFileUploadE2ETests : E2ETestBase
         await Expect(bar).ToHaveCountAsync(1);
         await Expect(Action("upl-progress", "slow.bin", "Send")).ToHaveCountAsync(1);
 
+        await SlowUploadsAsync("open");
         await Action("upl-progress", "slow.bin", "Send").ClickAsync();
         await Expect(Status("upl-progress", "slow.bin")).ToHaveTextAsync("File upload succeeded", new() { Timeout = 15000 });
         await ExpectTextAsync("progress-overall", "100");

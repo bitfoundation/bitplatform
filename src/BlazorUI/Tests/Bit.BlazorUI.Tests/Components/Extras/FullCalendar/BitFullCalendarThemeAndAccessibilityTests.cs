@@ -17,9 +17,25 @@ namespace Bit.BlazorUI.Tests.Components.Extras.FullCalendar;
 [TestClass]
 public class BitFullCalendarThemeAndAccessibilityTests : BunitTestContext
 {
-    private static List<BitFullCalendarEvent> Events()
+    // "Today" is read once per test, and every calendar the test renders reads the same day off a clock pinned to its
+    // noon. A test reading DateTime.Today and a calendar reading it again could otherwise fall on two sides of midnight,
+    // opening the calendar on another day than the one the test put its events on and asserts.
+    private DateTime Today { get; } = DateTime.Today;
+
+    [TestInitialize]
+    public void PinTheClock()
     {
-        var today = DateTime.Today;
+        // Handed down the way an app hands its users' clock to every calendar, so no render below has to carry it. The
+        // BitParams of the cascading-params tests hands down its own params object, which is the nearer one there.
+        Context.RenderTree.Add<CascadingValue<BitFullCalendarParams>>(parameters => parameters
+            .Add(p => p.Name, BitFullCalendarParams.ParamName)
+            .Add(p => p.IsFixed, true)
+            .Add(p => p.Value, new BitFullCalendarParams { TimeProvider = new FixedTimeProvider(Today.AddHours(12)) }));
+    }
+
+    private List<BitFullCalendarEvent> Events()
+    {
+        var today = Today;
         return
         [
             new() { Id = "1", Title = "Standup", Description = "Daily sync", StartDate = today.AddHours(9), EndDate = today.AddHours(10) }
@@ -328,7 +344,7 @@ public class BitFullCalendarThemeAndAccessibilityTests : BunitTestContext
         var current = component.FindAll("[aria-current='date']");
 
         Assert.IsTrue(current.Count > 0);
-        Assert.IsTrue(current.All(e => (e.GetAttribute("aria-label") ?? "").Contains(DateTime.Today.ToString("D", component.Instance.State.Culture))));
+        Assert.IsTrue(current.All(e => (e.GetAttribute("aria-label") ?? "").Contains(Today.ToString("D", component.Instance.State.Culture))));
     }
 
     [TestMethod]
@@ -427,10 +443,10 @@ public class BitFullCalendarThemeAndAccessibilityTests : BunitTestContext
 
         Assert.AreEqual(1, asked.Count);
         Assert.AreEqual(BitFullCalendarChangeKind.Edit, asked[0].Kind);
-        Assert.AreEqual(DateTime.Today.AddHours(9), asked[0].OldEvent!.StartDate);
+        Assert.AreEqual(Today.AddHours(9), asked[0].OldEvent!.StartDate);
         Assert.AreNotEqual(asked[0].OldEvent!.StartDate, asked[0].Event.StartDate);
         Assert.AreEqual(0, changes.Count);
-        Assert.AreEqual(DateTime.Today.AddHours(9), component.Instance.State.AllEvents.Single().StartDate);
+        Assert.AreEqual(Today.AddHours(9), component.Instance.State.AllEvents.Single().StartDate);
     }
 
     [TestMethod]
@@ -444,7 +460,7 @@ public class BitFullCalendarThemeAndAccessibilityTests : BunitTestContext
 
         Assert.AreEqual(1, asked.Count);
         Assert.AreEqual(1, changes.Count);
-        Assert.AreNotEqual(DateTime.Today.AddHours(9), component.Instance.State.AllEvents.Single().StartDate);
+        Assert.AreNotEqual(Today.AddHours(9), component.Instance.State.AllEvents.Single().StartDate);
     }
 
     [TestMethod]
@@ -484,4 +500,11 @@ public class BitFullCalendarThemeAndAccessibilityTests : BunitTestContext
     }
 
     #endregion
+
+    private sealed class FixedTimeProvider(DateTime localNow) : TimeProvider
+    {
+        public override TimeZoneInfo LocalTimeZone => TimeZoneInfo.Utc;
+
+        public override DateTimeOffset GetUtcNow() => new(DateTime.SpecifyKind(localNow, DateTimeKind.Utc));
+    }
 }

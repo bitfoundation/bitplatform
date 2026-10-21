@@ -31,7 +31,7 @@
     // lands on a control a screen reader has nothing to say about (WCAG 4.1.2). The native disabled attribute is
     // not there to do it here - a disabled button kept interactive does not carry one - so the tab order of both
     // halves is written out rather than left to the browser.
-    var tabIndex = (ariaHidden is false && (Disabled is false || DisabledInteractive)) ? 0 : -1;
+    var tabIndex = (ariaHidden is false && (Disabled is false || DisabledInteractive)) ? "0" : "-1";
     // Autofocus follows the same rule as the tab order: a menu button hidden from assistive technologies, or a
     // disabled one that is not kept focusable, must not pull the focus on the first render - a hand-written
     // autofocus included.

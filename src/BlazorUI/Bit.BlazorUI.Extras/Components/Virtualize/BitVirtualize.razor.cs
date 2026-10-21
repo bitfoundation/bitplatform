@@ -1,5 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using System.Globalization;
+﻿using System.Globalization;
 
 namespace Bit.BlazorUI;
 
@@ -674,7 +673,6 @@ public partial class BitVirtualize<TItem> : BitComponentBase
 
 
 
-    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitVirtualizeParams))]
     protected override void OnParametersSet()
     {
         // The cascade is applied before anything reads the parameters it may fill in.

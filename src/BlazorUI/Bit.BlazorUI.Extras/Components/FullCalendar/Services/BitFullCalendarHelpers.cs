@@ -186,7 +186,7 @@ public static class BitFullCalendarHelpers
             yield return new BitFullCalendarEvent
             {
                 // Derived from the master's id so month positioning and @key stay stable per date.
-                Id = $"{master.Id}@{date:yyyyMMdd}",
+                Id = FormattableString.Invariant($"{master.Id}@{date:yyyyMMdd}"),
                 SeriesId = master.Id,
                 OccurrenceDate = date,
                 Title = master.Title,

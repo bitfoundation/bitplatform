@@ -266,7 +266,6 @@ public partial class BitTimeline<[DynamicallyAccessedMembers(DynamicallyAccessed
     // the bit-tln-btn the script acts on (see _BitTimelineItem); a read-only timeline downloads nothing.
     internal ValueTask EnsureItemKeysScriptAsync() => _js.EnsureScriptAsync("Bit.BlazorUI", "Timelines");
 
-    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitTimelineParams))]
     protected override Task OnParametersSetAsync()
     {
         CascadingParameters?.UpdateParameters(this);

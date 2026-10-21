@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
 using Microsoft.AspNetCore.Components;
@@ -109,6 +110,53 @@ public class BitParamsContractTests
         }
 
         Assert.AreEqual(0, hooked.Count, string.Join(Environment.NewLine, hooked));
+    }
+
+    [TestMethod]
+    public void EveryParamsTypeShouldBeKeptByItsOwnConstructor()
+    {
+        // BitParams reads a params object by reflection - copying it, comparing it, matching its properties to the
+        // parameters of its component - so a trimmed app has to keep all of it. Its constructor says so, which ILLink
+        // follows only where an app creates one: a params type no app creates keeps nothing but the UpdateParameters
+        // its component calls, emptied, rather than every property and the two lambdas per property behind it.
+        var unkept = new List<string>();
+
+        foreach (var type in ParamsTypes())
+        {
+            var keepsItself = type.GetConstructor(Type.EmptyTypes)?
+                                  .GetCustomAttributes<DynamicDependencyAttribute>()
+                                  .Any(d => d.Type == type && d.MemberTypes == DynamicallyAccessedMemberTypes.All) ?? false;
+
+            if (keepsItself is false) unkept.Add(type.Name);
+        }
+
+        Assert.AreEqual(0, unkept.Count, $"No public parameterless constructor carrying [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(<itself>))]: {string.Join(", ", unkept)}");
+    }
+
+    [TestMethod]
+    public void NothingButItsOwnConstructorShouldKeepAParamsType()
+    {
+        // A dependency on a params type from anywhere else - the component reading it, above all - keeps it in every
+        // app that renders the component, constructor and all, so with every lambda its UpdateParameters holds, whether
+        // or not the app ever creates one.
+        var paramsTypes = ParamsTypes().ToHashSet();
+        var keepers = new List<string>();
+
+        foreach (var type in Libraries.SelectMany(a => a.GetTypes()))
+        {
+            foreach (var member in type.GetMembers(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static | BindingFlags.DeclaredOnly))
+            {
+                foreach (var dependency in member.GetCustomAttributes<DynamicDependencyAttribute>())
+                {
+                    if (dependency.Type is null || paramsTypes.Contains(Definition(dependency.Type)) is false) continue;
+                    if (member is ConstructorInfo && Definition(type) == Definition(dependency.Type)) continue;
+
+                    keepers.Add($"{type.Name}.{member.Name} keeps {dependency.Type.Name}");
+                }
+            }
+        }
+
+        Assert.AreEqual(0, keepers.Count, string.Join(Environment.NewLine, keepers));
     }
 
 

@@ -396,7 +396,7 @@ public partial class BitFcWeekView
     }
 
     private string BuildTimeGridScrollSignature() =>
-        $"{State.SelectedDate:yyyy-MM-dd}|{State.StartOfDayHour}|{State.VisibleStartHour}|{State.VisibleEndHour}";
+        FormattableString.Invariant($"{State.SelectedDate:yyyy-MM-dd}|{State.StartOfDayHour}|{State.VisibleStartHour}|{State.VisibleEndHour}");
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {

@@ -186,10 +186,13 @@ public class BitDateRangePickerTimeE2ETests : BitDatePickersE2ETestBase
         await Page.WaitForFunctionAsync("el => +el.value <= 19", await hour.ElementHandleAsync());
         await Page.Mouse.UpAsync();
 
-        // A tick already on its way at the release may still land, so the value is read once it has had the time to;
-        // then only the absence of a change is waited for - a spin going on after the release would move the hour
-        // within this time at its 40ms interval.
-        await Page.WaitForTimeoutAsync(300);
+        // A tick already on its way at the release may still land: a key the picker answers in a round trip of its
+        // own, sent after the release, says the circuit has caught up, so the value read then is the final one. Then
+        // only the absence of a change is waited for - a spin going on after the release would move the hour within
+        // this time at its 40ms interval.
+        await Field(pid, "Start minute").FocusAsync();
+        await Page.Keyboard.PressAsync("PageUp");
+        await Expect(Field(pid, "Start minute")).ToHaveValueAsync("15");
         var released = await hour.InputValueAsync();
         await Page.WaitForTimeoutAsync(500);
 

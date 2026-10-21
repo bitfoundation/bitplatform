@@ -916,7 +916,7 @@ public class BitChartTests : BunitTestContext
 
     // ---- title placement ----
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow(BitPlacement.Left, "bit-cht-lft")]
     [DataRow(BitPlacement.Right, "bit-cht-rgt")]
     [DataRow(BitPlacement.Start, "bit-cht-sta")]
@@ -940,7 +940,7 @@ public class BitChartTests : BunitTestContext
     // of them is: it is what moves them in the row and turns over the ones on the left (Left, and Start in a
     // left-to-right chart), which BitChartStylesheetTests pins and BitDirFallbackBrowserTests reads off the screen.
     // The reading start and end are written where a left-to-right chart shows them.
-    [DataTestMethod]
+    [TestMethod]
     [DataRow(BitPlacement.Left, "bit-cht-lft", true)]
     [DataRow(BitPlacement.Right, "bit-cht-rgt", false)]
     [DataRow(BitPlacement.Start, "bit-cht-sta", true)]

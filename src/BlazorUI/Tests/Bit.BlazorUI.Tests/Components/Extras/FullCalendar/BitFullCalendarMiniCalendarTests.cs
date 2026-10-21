@@ -41,7 +41,7 @@ public class BitFullCalendarMiniCalendarTests : BunitTestContext
         => [.. component.FindAll(".bit-bfc-mini-calendar-day")];
 
     private static AngleSharp.Dom.IElement Day(IRenderedComponent<BitFullCalendar> component, DateTime date)
-        => Days(component).Single(d => d.Id.EndsWith(date.ToString("yyyyMMdd")));
+        => Days(component).Single(d => d.Id.EndsWith(date.ToString("yyyyMMdd", CultureInfo.InvariantCulture)));
 
     private static string RovingDay(IRenderedComponent<BitFullCalendar> component)
         => Days(component).Single(d => d.GetAttribute("tabindex") == "0").Id[^8..];

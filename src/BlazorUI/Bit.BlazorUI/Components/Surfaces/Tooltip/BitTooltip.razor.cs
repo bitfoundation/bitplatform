@@ -1,5 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
-
+﻿
 namespace Bit.BlazorUI;
 
 /// <summary>
@@ -481,16 +480,15 @@ public partial class BitTooltip : BitComponentBase
 
         // The three measurements the placement rules read. They are declared on the root element, so a
         // value handed over here beats the default the stylesheet leaves on that same element.
-        StyleBuilder.Register(() => Offset.HasValue ? $"--bit-ttp-offset:{Offset.Value}px" : string.Empty);
+        StyleBuilder.Register(() => Offset.HasValue ? FormattableString.Invariant($"--bit-ttp-offset:{Offset.Value}px") : string.Empty);
 
         StyleBuilder.Register(() => ArrowSize.HasValue ? $"--bit-ttp-arrow-size:{ArrowSize.Value}px" : string.Empty);
 
         StyleBuilder.Register(() => MaxWidth.HasValue() ? $"--bit-ttp-max-width:{MaxWidth}" : string.Empty);
 
-        StyleBuilder.Register(() => ZIndex.HasValue ? $"--bit-ttp-zindex:{ZIndex.Value}" : string.Empty);
+        StyleBuilder.Register(() => ZIndex.HasValue ? FormattableString.Invariant($"--bit-ttp-zindex:{ZIndex.Value}") : string.Empty);
     }
 
-    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitTooltipParams))]
     protected override async Task OnInitializedAsync()
     {
         // The cascaded values are applied before anything below reads them: LazyRender decides here whether the
@@ -628,6 +626,7 @@ public partial class BitTooltip : BitComponentBase
         if (delay > 0)
         {
             var tokenSource = _showDelayTokenSource = new CancellationTokenSource();
+            var owned = false;
 
             try
             {
@@ -638,11 +637,15 @@ public partial class BitTooltip : BitComponentBase
             {
                 // Only the waiter that still owns the field clears it: a newer show has already put its
                 // own source there, and clearing that one would leave it impossible to cancel.
-                if (ReferenceEquals(_showDelayTokenSource, tokenSource)) _showDelayTokenSource = null;
+                owned = ReferenceEquals(_showDelayTokenSource, tokenSource);
+                if (owned) _showDelayTokenSource = null;
                 tokenSource.Dispose();
             }
 
-            if (IsDisposed || Disabled) return;
+            // A leave (or a newer show) that came once the delay had already run out - while its continuation was
+            // still waiting for the dispatcher - can no longer fault the delay, only take the source out of the
+            // field, so a waiter that no longer owns it was called off all the same.
+            if (owned is false || IsDisposed || Disabled) return;
         }
 
         await SetIsShown(true);
@@ -655,6 +658,7 @@ public partial class BitTooltip : BitComponentBase
         if (delay > 0)
         {
             var tokenSource = _hideDelayTokenSource = new CancellationTokenSource();
+            var owned = false;
 
             try
             {
@@ -663,11 +667,13 @@ public partial class BitTooltip : BitComponentBase
             catch (OperationCanceledException) { return; }
             finally
             {
-                if (ReferenceEquals(_hideDelayTokenSource, tokenSource)) _hideDelayTokenSource = null;
+                owned = ReferenceEquals(_hideDelayTokenSource, tokenSource);
+                if (owned) _hideDelayTokenSource = null;
                 tokenSource.Dispose();
             }
 
-            if (IsDisposed) return;
+            // The same as the show's: an enter that came once the delay had run out still calls the hide off.
+            if (owned is false || IsDisposed) return;
         }
 
         await SetIsShown(false);

@@ -558,7 +558,8 @@ public class BitSliderTests : BunitTestContext
             parameters.Add(p => p.ValueFormat, "0 %");
         });
 
-        Assert.AreEqual("69 %", com.Find(".bit-sld-vlb").TextContent.Trim());
+        // The format is applied in the reader's culture, whose percent sign is not always "%" (fa-IR, ar-SA).
+        Assert.AreEqual(0.69D.ToString("0 %", CultureInfo.CurrentCulture), com.Find(".bit-sld-vlb").TextContent.Trim());
     }
 
     [TestMethod]
@@ -667,15 +668,30 @@ public class BitSliderTests : BunitTestContext
     {
         // A numeric label is not longest at the ends of the scale when the step is fractional: the decimals
         // only appear between them, and reserving the ends alone would leave the track resizing mid-drag.
-        var com = RenderComponent<BitSlider>(parameters =>
+        // The labels are written in the thread's culture, which under fa-IR and ar-SA puts an invisible bidi mark before
+        // the minus sign: it takes no room, so the counts are the same in all of them.
+        var originalCulture = CultureInfo.CurrentCulture;
+        try
         {
-            parameters.Add(p => p.Min, min);
-            parameters.Add(p => p.Max, max);
-            parameters.Add(p => p.Step, step);
-            parameters.Add(p => p.Value, min);
-        });
+            foreach (var culture in new[] { CultureInfo.InvariantCulture, CultureInfo.GetCultureInfo("fa-IR"), CultureInfo.GetCultureInfo("ar-SA") })
+            {
+                CultureInfo.CurrentCulture = culture;
 
-        StringAssert.Contains(com.Find(".bit-sld-vlb").GetAttribute("style"), $"--bit-sld-vlb-min:{chars}ch");
+                var com = RenderComponent<BitSlider>(parameters =>
+                {
+                    parameters.Add(p => p.Min, min);
+                    parameters.Add(p => p.Max, max);
+                    parameters.Add(p => p.Step, step);
+                    parameters.Add(p => p.Value, min);
+                });
+
+                StringAssert.Contains(com.Find(".bit-sld-vlb").GetAttribute("style"), $"--bit-sld-vlb-min:{chars}ch", culture.Name);
+            }
+        }
+        finally
+        {
+            CultureInfo.CurrentCulture = originalCulture;
+        }
     }
 
     [TestMethod]
@@ -2006,14 +2022,16 @@ public class BitSliderTests : BunitTestContext
         var labels = com.FindAll(".bit-sld-mlb");
 
         Assert.AreEqual(3, labels.Count);
-        Assert.AreEqual("0.0", labels[0].TextContent.Trim());
+
+        // A label is written in the reader's culture, as the value label is ("0,0" under de-DE).
+        Assert.AreEqual(0D.ToString("0.0", CultureInfo.CurrentCulture), labels[0].TextContent.Trim());
 
         // A mark that brought a label of its own keeps it, together with its class and its style.
         Assert.AreEqual("Halfway", labels[1].TextContent.Trim());
         Assert.IsTrue(labels[1].ClassList.Contains("own"));
         StringAssert.Contains(labels[1].GetAttribute("style"), "color: tomato;");
 
-        Assert.AreEqual("4.0", labels[^1].TextContent.Trim());
+        Assert.AreEqual(4D.ToString("0.0", CultureInfo.CurrentCulture), labels[^1].TextContent.Trim());
 
         // The list belongs to the caller - it may well be a static one shared by several sliders - so the
         // labelling happens on copies and never writes back into it.
@@ -2186,7 +2204,8 @@ public class BitSliderTests : BunitTestContext
             parameters.Add(p => p.ValueFormat, "0.0");
         });
 
-        Assert.AreEqual("0.0", com.FindAll(".bit-sld-mlb")[0].TextContent.Trim());
+        // The value is written in the reader's culture, and so is the mark label ("0,0" under de-DE).
+        Assert.AreEqual(0D.ToString("0.0", CultureInfo.CurrentCulture), com.FindAll(".bit-sld-mlb")[0].TextContent.Trim());
     }
 
     [TestMethod]

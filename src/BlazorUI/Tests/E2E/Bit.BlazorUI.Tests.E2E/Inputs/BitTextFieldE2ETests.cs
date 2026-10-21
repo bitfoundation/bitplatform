@@ -1214,7 +1214,9 @@ public class BitTextFieldE2ETests : E2ETestBase
 
         await Input("tf-debounce").PressSequentiallyAsync("abcdef", new() { Delay = 20 });
 
-        await Expect(Text("debounce-inputs")).ToHaveTextAsync("6");
+        // Waited for frame by frame rather than through a retrying assertion, whose next look can come up to a second
+        // later: the value is read before the 700ms debounce of the last keystroke can have run out.
+        await Page.WaitForFunctionAsync("() => document.getElementById('debounce-inputs')?.textContent === '6'");
         Assert.AreEqual("[]", await Text("debounce-value").TextContentAsync(), "Nothing is committed while the typing goes on.");
 
         await Expect(Text("debounce-value")).ToHaveTextAsync("[abcdef]");

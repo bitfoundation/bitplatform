@@ -6,6 +6,7 @@ using System.Reflection;
 using System.Reflection.Metadata;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Xml.Linq;
 using Bit.BlazorUI.Build;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -14,8 +15,9 @@ namespace Bit.BlazorUI.Tests.Utils.Trimming;
 /// <summary>
 /// Pins what the lazy scripts (BitBlazorUILazyScripts) rest on: each module is its script's piece behind the imports of
 /// what it uses, the boot module is the one the publish writes again for a trimmed app, every assembly embeds the map the
-/// .NET side imports by, every script a component owns and that acts as it loads is loaded by that component, and no code
-/// of the packages calls into a script around the loader - a call that would find its module never imported.
+/// .NET side imports by and what lets a trimmed app without the modules leave it out, every script a component owns and
+/// that acts as it loads is loaded by that component, and no code of the packages calls into a script around the loader -
+/// a call that would find its module never imported.
 /// </summary>
 [TestClass]
 public sealed partial class BitLazyScriptsContractTests
@@ -96,6 +98,31 @@ public sealed partial class BitLazyScriptsContractTests
 
             using var reader = new StreamReader(stream);
             Assert.AreEqual(File.ReadAllText(SourceFiles.GetPath(package, "obj", "bit-assets", "lazy-scripts.json")), reader.ReadToEnd(), $"{package} embeds lazy scripts other than its build's.");
+        }
+    }
+
+    [TestMethod]
+    public void EveryAssemblyShouldLetATrimmedAppWithoutTheModulesLeaveOutTheirMap()
+    {
+        // An app publishing none of the modules turns the feature switch off (Bit.BlazorUI.targets), and ILLink removes the
+        // map off it, by the instructions each assembly embeds beside the map (Bit.BlazorUI.Assets.targets).
+        StringAssert.Contains(File.ReadAllText(SourceFiles.GetPath("Bit.BlazorUI", "buildTransitive", "Bit.BlazorUI.targets")),
+                              "<RuntimeHostConfigurationOption Include=\"Bit.BlazorUI.IncludeScriptModules\" Value=\"false\" Trim=\"true\" />");
+
+        foreach (var package in Packages)
+        {
+            using var stream = Assembly.Load(package).GetManifestResourceStream("ILLink.Substitutions.xml");
+            Assert.IsNotNull(stream, $"{package} embeds no ILLink.Substitutions.xml.");
+
+            var assembly = XDocument.Load(stream).Root!.Elements("assembly").Single();
+            Assert.AreEqual(package, (string?)assembly.Attribute("fullname"));
+            Assert.AreEqual("Bit.BlazorUI.IncludeScriptModules", (string?)assembly.Attribute("feature"), package);
+            Assert.AreEqual("false", (string?)assembly.Attribute("featurevalue"), package);
+
+            var resource = assembly.Elements().Single();
+            Assert.AreEqual("resource", resource.Name.LocalName, package);
+            Assert.AreEqual("bit-lazy-scripts.json", (string?)resource.Attribute("name"), package);
+            Assert.AreEqual("remove", (string?)resource.Attribute("action"), package);
         }
     }
 

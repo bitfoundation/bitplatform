@@ -1,5 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using System.Globalization;
+﻿using System.Globalization;
 
 namespace Bit.BlazorUI;
 
@@ -481,7 +480,6 @@ public abstract class BitLoadingBase : BitComponentBase
 
 
 
-    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitLoadingParams))]
     protected override void OnParametersSet()
     {
         // Applied before anything below reads the parameters, so that a Delay handed down by a cascade opens

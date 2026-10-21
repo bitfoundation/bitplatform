@@ -66,7 +66,7 @@ public class BitThemeSwitcherTests : BunitTestContext
         Assert.AreEqual("Fluent", SelectedDesignSystem(component));
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow(true, false, ".bit-ths-dds", ".bit-ths-csb")]
     [DataRow(false, true, ".bit-ths-csb", ".bit-ths-dds")]
     public void BitThemeSwitcherShouldRenderOnlyTheRequestedParts(bool noColorScheme, bool noDesignSystem, string kept, string dropped)
@@ -83,7 +83,7 @@ public class BitThemeSwitcherTests : BunitTestContext
         Assert.AreEqual(0, component.FindAll(dropped).Count);
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("material-dark", "Material")]
     [DataRow("cupertino-light", "Cupertino")]
     [DataRow("material", "Material")]
@@ -110,7 +110,7 @@ public class BitThemeSwitcherTests : BunitTestContext
         Assert.AreEqual(expected, SelectedDesignSystem(component));
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("material-light material-dark", "Material")]
     [DataRow("cupertino-light%20cupertino-dark", "Cupertino")]
     // A scheme marker, or anything else that is no pair, names no design system.
@@ -316,7 +316,7 @@ public class BitThemeSwitcherTests : BunitTestContext
         Assert.IsTrue(light.QuerySelector("i")!.ClassList.Contains("bit-icon--Brightness"));
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow(true)]
     [DataRow(false)]
     public void BitThemeSwitcherShouldRespectDisabled(bool isEnabled)
@@ -330,7 +330,12 @@ public class BitThemeSwitcherTests : BunitTestContext
 
         Assert.AreEqual(isEnabled is false, component.Find(".bit-ths").ClassList.Contains("bit-dis"));
 
-        foreach (var button in component.FindAll(".bit-ths-csb"))
+        var buttons = component.FindAll(".bit-ths-csb");
+
+        // The pair the stylesheet picks one of, so the loop below cannot pass by finding none.
+        Assert.AreEqual(2, buttons.Count);
+
+        foreach (var button in buttons)
         {
             Assert.AreEqual(isEnabled is false, button.HasAttribute("disabled"));
         }

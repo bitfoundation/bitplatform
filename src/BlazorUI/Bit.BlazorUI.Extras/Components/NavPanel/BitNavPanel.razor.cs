@@ -734,7 +734,6 @@ public partial class BitNavPanel<[DynamicallyAccessedMembers(DynamicallyAccessed
         StyleBuilder.Register(() => ToggledWidth > 0 ? $"--bit-npn-tw:{ToggledWidth}px" : string.Empty);
     }
 
-    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitNavPanelParams))]
     protected override async Task OnInitializedAsync()
     {
         _searchText = SearchText;
@@ -758,7 +757,6 @@ public partial class BitNavPanel<[DynamicallyAccessedMembers(DynamicallyAccessed
         await base.OnInitializedAsync();
     }
 
-    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitNavPanelParams))]
     protected override void OnParametersSet()
     {
         // The cascade is applied before anything reads the parameters it may fill in.

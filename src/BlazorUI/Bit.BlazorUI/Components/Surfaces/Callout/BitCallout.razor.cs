@@ -1,5 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
-
+﻿
 namespace Bit.BlazorUI;
 
 /// <summary>
@@ -731,7 +730,6 @@ public partial class BitCallout : BitComponentBase
         base.OnInitialized();
     }
 
-    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitCalloutParams))]
     protected override void OnParametersSet()
     {
         CascadingParameters?.UpdateParameters(this);

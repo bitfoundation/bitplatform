@@ -355,7 +355,6 @@ public partial class BitCheckbox : BitInputBase<bool>
 
 
 
-    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitCheckboxParams))]
     protected override async Task OnInitializedAsync()
     {
         // The cascade is read here as well as in OnParametersSet because DefaultIndeterminate is acted on while

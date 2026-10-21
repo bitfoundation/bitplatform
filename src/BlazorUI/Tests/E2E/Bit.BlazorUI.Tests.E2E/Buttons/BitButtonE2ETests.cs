@@ -607,6 +607,7 @@ public class BitButtonE2ETests : E2ETestBase
             el => {
                 window.__delay = {};
                 const start = performance.now();
+                el.addEventListener('click', () => { window.__delay.click ??= performance.now() - start; }, { capture: true });
                 new MutationObserver(() => {
                     if (el.getAttribute('aria-busy') === 'true' && window.__delay.busy === undefined) window.__delay.busy = performance.now() - start;
                     if (el.classList.contains('bit-btn-lda') && window.__delay.spinner === undefined) window.__delay.spinner = performance.now() - start;
@@ -620,9 +621,14 @@ public class BitButtonE2ETests : E2ETestBase
         await Expect(button).ToHaveClassAsync(HasClass("bit-btn-lda"));
         await Expect(button.Locator(".bit-btn-spn")).ToBeVisibleAsync();
 
+        // The delay runs from the click, which is when the loading state starts. It is measured from there rather
+        // than from the busy attribute showing up: that is a render, which a loaded runner (or WebAssembly's first
+        // render after the click) can hold back long enough to eat into the delay without the spinner coming any earlier.
+        var click = await Page.EvaluateAsync<double>("() => window.__delay.click");
         var busy = await Page.EvaluateAsync<double>("() => window.__delay.busy");
         var spinner = await Page.EvaluateAsync<double>("() => window.__delay.spinner");
-        Assert.IsTrue(spinner - busy >= 450, $"The spinner came {spinner - busy}ms after the busy state; the delay is 500ms.");
+        Assert.IsTrue(busy <= spinner, $"The busy state came at {busy}ms, after the spinner at {spinner}ms.");
+        Assert.IsTrue(spinner - click >= 450, $"The spinner came {spinner - click}ms after the click; the delay is 500ms.");
 
         await Btn("btn-release-delay").ClickAsync();
         await Expect(button).Not.ToHaveClassAsync(HasClass("bit-btn-lda"));

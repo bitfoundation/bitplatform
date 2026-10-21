@@ -116,7 +116,7 @@ public class BitEscapeClaimComponentsBrowserTests : PerformanceTestBase
     {
         await OpenSurface(surface, "fc");
 
-        await Page.Locator(".bit-bfc-event-badge[data-bit-bfc-event^=\"r@\"]").First.ClickAsync();
+        await (await RecurringOccurrence()).ClickAsync();
         await Expect(FcDialog).ToHaveCountAsync(1);
         await Settle();
         await FcDialog.Locator(".bit-bfc-btn-danger").ClickAsync();
@@ -627,6 +627,22 @@ public class BitEscapeClaimComponentsBrowserTests : PerformanceTestBase
     // ---- helpers ----
 
     private ILocator FcDialog => Page.Locator(".bit-bfc-overlay > .bit-bfc-dialog");
+
+    // The recurring event starts tomorrow, which the month on the screen leaves out on the last day of a month that ends
+    // its last week (a Saturday the 31st, with weeks starting on Sunday): its occurrences are the next month's then.
+    // Today's events are waited for first, so the month has drawn its events before it is asked for one.
+    private async Task<ILocator> RecurringOccurrence()
+    {
+        await Expect(Page.Locator(".bit-bfc-event-badge").First).ToBeVisibleAsync();
+
+        var occurrence = Page.Locator(".bit-bfc-event-badge[data-bit-bfc-event^=\"r@\"]").First;
+        if (await occurrence.CountAsync() == 0)
+        {
+            await Page.Locator(".bit-bfc-date-nav button[title=\"Next\"]").ClickAsync();
+        }
+
+        return occurrence;
+    }
 
     private async Task OpenFcAddDialog()
     {

@@ -1707,11 +1707,20 @@ public partial class BitErrorBoundaryTests : BunitTestContext
         component.Find(".throw-once-safe");
 
         // The clipboard write lands after the boundary has already cleared the error the copy belonged
-        // to, so it has nothing left to report on.
-        handler.SetVoidResult();
+        // to, so it has nothing left to report on. It is completed on the dispatcher, so the copy's
+        // continuation has run by the time the turn is over - completed from the test thread, it would be
+        // posted to the dispatcher and the assertion below could pass before it ever ran.
+        await component.InvokeAsync(() => handler.SetVoidResult());
 
-        component.WaitForAssertion(() =>
-            Assert.IsFalse(component.Markup.Contains("Copied", StringComparison.Ordinal)));
+        // The error UI went with the recovery, so the markup could not say "Copied" right now either way:
+        // where a stale message would show is on the next error the boundary puts up, whose button has to
+        // offer a copy of its own.
+        await component.InvokeAsync(() => component.Instance.Capture(new InvalidOperationException("the next one")));
+
+        var footer = component.Find(".bit-erb-ftr").TextContent;
+
+        StringAssert.Contains(footer, "Copy details");
+        Assert.IsFalse(footer.Contains("Copied", StringComparison.Ordinal));
     }
 
     private static RenderFragment ThrowingContent(string message) => b =>

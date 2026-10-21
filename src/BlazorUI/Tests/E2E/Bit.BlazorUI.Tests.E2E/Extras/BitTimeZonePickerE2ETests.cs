@@ -193,7 +193,7 @@ public class BitTimeZonePickerE2ETests : E2ETestBase
         await Expect(callout.Locator(".bit-tzp-ilp")).ToHaveCountAsync(1);
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("sao pa", "Sao Paulo")]
     [DataRow("paris fr", "Paris")]
     [DataRow("Asia/Calcutta", "Kolkata")]
@@ -217,6 +217,11 @@ public class BitTimeZonePickerE2ETests : E2ETestBase
         var callout = await OpenCalloutAsync("tzp-search");
         foreach (var term in new[] { "gmt+0530", "utc+5:30", "+05:30" })
         {
+            // Another result first: the list the last term left already holds only +05:30, so the checks below would
+            // pass on it before this term's filter ever came back.
+            await callout.Locator(".bit-tzp-srch").FillAsync("japan");
+            await Expect(callout.Locator("[role=option] .bit-tzp-inm").First).ToHaveTextAsync("Tokyo");
+
             await callout.Locator(".bit-tzp-srch").FillAsync(term);
             await Expect(callout.Locator("[role=option] .bit-tzp-inm", new() { HasTextString = "Kolkata" })).ToHaveCountAsync(1);
             await Expect(callout.Locator("[role=option] .bit-tzp-ofs").Last).ToHaveTextAsync("UTC+05:30");
@@ -506,7 +511,7 @@ public class BitTimeZonePickerE2ETests : E2ETestBase
         Assert.AreNotEqual("0px", await ComputedStyleAsync("#tzp-underlined .bit-tzp-fld", "border-bottom-width"));
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("primary", "bit-tzp-bpr", "--bit-clr-bg-pri")]
     [DataRow("secondary", "bit-tzp-bse", "--bit-clr-bg-sec")]
     [DataRow("tertiary", "bit-tzp-btr", "--bit-clr-bg-ter")]
@@ -520,7 +525,7 @@ public class BitTimeZonePickerE2ETests : E2ETestBase
         Assert.AreEqual(expected, await ComputedStyleAsync($"#tzp-bg-{kind} .bit-tzp-fld", "background-color"));
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("primary", "bit-tzp-brp", "--bit-clr-brd-pri")]
     [DataRow("secondary", "bit-tzp-brs", "--bit-clr-brd-sec")]
     [DataRow("tertiary", "bit-tzp-brt", "--bit-clr-brd-ter")]
@@ -534,7 +539,7 @@ public class BitTimeZonePickerE2ETests : E2ETestBase
         Assert.AreEqual(expected, await ComputedStyleAsync($"#tzp-brd-{kind} .bit-tzp-fld", "border-top-color"));
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("primary", "pri", "--bit-clr-pri")]
     [DataRow("secondary", "sec", "--bit-clr-sec")]
     [DataRow("tertiary", "ter", "--bit-clr-ter")]
@@ -560,7 +565,7 @@ public class BitTimeZonePickerE2ETests : E2ETestBase
         Assert.AreEqual(await ResolveColorAsync(token), await ComputedStyleAsync($"#tzp-color-{name} .bit-tzp-fld", "border-top-color"));
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("small", "sm", "26px")]
     [DataRow("medium", "md", "32px")]
     [DataRow("large", "lg", "40px")]

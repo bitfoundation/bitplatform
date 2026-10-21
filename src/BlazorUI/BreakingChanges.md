@@ -30,6 +30,16 @@ server hosting a WebAssembly client excepted, whose trimmer knows the server alo
 
 The packages no longer ship source maps (`.css.map`): they pointed at stylesheet sources the packages do not carry.
 
+### A trimmed app without the modules of the lazy scripts leaves out their map ([#14005](https://github.com/bitfoundation/bitplatform/issues/14005))
+
+Each package's assembly embeds `bit-lazy-scripts.json`, the map the library imports the modules of the lazy scripts by.
+A trimmed publish of an app that publishes none of the modules - an app in bundle mode, unless
+`BitBlazorUIIncludeScriptModules` is `true` - now leaves it out, since nothing of the app can import them. **An app that
+turns the lazy scripts on at runtime** (`BitBlazorUIScripts.UseLazyScripts`, `AddBitBlazorUIServices(o => o.LazyScripts =
+true)`) without `BitBlazorUILazyScripts` - one importing the modules from a `ContentPath` elsewhere too - sets
+`<BitBlazorUIIncludeScriptModules>true</BitBlazorUIIncludeScriptModules>` in the csproj: without the map, its calls into
+the scripts find no module to import.
+
 ### The item type of the item-based components keeps its public properties in a trimmed app
 
 `BitDropdown`, `BitChoiceGroup`, `BitButtonGroup`, `BitMenuButton`, `BitNav`, `BitNavBar`, `BitNavPanel`,

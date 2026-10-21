@@ -1,5 +1,4 @@
 ﻿using System.Globalization;
-using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Components.CompilerServices;
 
 namespace Bit.BlazorUI;
@@ -374,7 +373,6 @@ public partial class BitSticky : BitComponentBase
         StyleBuilder.Register(() => ZIndex.HasValue ? $"z-index: {ZIndex.Value.ToString(CultureInfo.InvariantCulture)}" : string.Empty);
     }
 
-    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitStickyParams))]
     protected override void OnParametersSet()
     {
         CascadingParameters?.UpdateParameters(this);

@@ -1,5 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using System.Globalization;
+﻿using System.Globalization;
 
 namespace Bit.BlazorUI;
 
@@ -582,7 +581,6 @@ public partial class BitBasicList<TItem> : BitComponentBase
         StyleBuilder.Register(() => (FitSize || FitHeight) ? "height:fit-content" : string.Empty);
     }
 
-    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitBasicListParams))]
     protected override async Task OnParametersSetAsync()
     {
         // The cascade is applied first, since every parameter it may fill in (LoadMore, LoadMoreSize and

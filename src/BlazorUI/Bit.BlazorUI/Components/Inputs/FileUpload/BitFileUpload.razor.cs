@@ -1323,7 +1323,6 @@ public partial class BitFileUpload : BitInputBase<string?>
         return base.OnInitializedAsync();
     }
 
-    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitFileUploadParams))]
     protected override async Task OnParametersSetAsync()
     {
         CascadingParameters?.UpdateParameters(this);

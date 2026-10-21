@@ -39,7 +39,7 @@ public class BitFlagE2ETests : E2ETestBase
         Assert.AreEqual(32, h2, 0.5);
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("flag-iso2", "NL")]
     [DataRow("flag-iso3", "NL")]
     [DataRow("flag-code", "NL")]
@@ -279,7 +279,7 @@ public class BitFlagE2ETests : E2ETestBase
         await Expect(flat).ToHaveAttributeAsync("src", $"{SetPath}BR-flat-48.webp");
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("size16", 16)]
     [DataRow("size24", 24)]
     [DataRow("size32", 32)]
@@ -425,7 +425,7 @@ public class BitFlagE2ETests : E2ETestBase
         await Expect(Page.Locator("#failed-nocountry-errors")).ToHaveTextAsync("1");
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("flag-asp-none", 32d, 32d, false)]
     [DataRow("flag-asp-32", 48d, 32d, true)]
     [DataRow("flag-asp-43", 42.67d, 32d, true)]
@@ -462,7 +462,7 @@ public class BitFlagE2ETests : E2ETestBase
         await Expect(Page.Locator("#flag-asp-32")).Not.ToHaveClassAsync(HasClass("bit-flg-crp"));
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("none", "bit-flg-non", "none", "0% 0%")]
     [DataRow("center", "bit-flg-ctr", "none", "50% 50%")]
     [DataRow("contain", "bit-flg-cnt", "contain", "50% 50%")]
@@ -809,7 +809,7 @@ public class BitFlagE2ETests : E2ETestBase
         Assert.AreEqual(24, h2, 0.5);
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("sm", 12d)]
     [DataRow("md", 16d)]
     [DataRow("lg", 20d)]

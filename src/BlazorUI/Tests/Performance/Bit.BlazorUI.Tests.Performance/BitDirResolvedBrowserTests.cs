@@ -151,12 +151,9 @@ public class BitDirResolvedBrowserTests : PerformanceTestBase
         var box = (await area.BoundingBoxAsync())!;
         await area.ClickAsync(new() { Position = new() { X = box.Width * 0.05f, Y = box.Height / 2 } });
 
-        var saturation = 50d;
-        for (var attempt = 0; attempt < 50 && saturation == 50; attempt++)
-        {
-            await Task.Delay(100);
-            saturation = double.Parse((await area.GetAttributeAsync("aria-valuenow"))!, System.Globalization.CultureInfo.InvariantCulture);
-        }
+        // The value the press picked comes back with a render of its own, after a round trip to the server.
+        await Expect(area).Not.ToHaveAttributeAsync("aria-valuenow", "50");
+        var saturation = double.Parse((await area.GetAttributeAsync("aria-valuenow"))!, System.Globalization.CultureInfo.InvariantCulture);
 
         Assert.IsTrue(rtl ? saturation > 80 : saturation < 20, $"A press near the left edge picked a saturation of {saturation}.");
     }

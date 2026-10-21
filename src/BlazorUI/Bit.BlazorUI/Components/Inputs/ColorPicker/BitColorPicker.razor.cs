@@ -467,7 +467,6 @@ public partial class BitColorPicker : BitInputBase<string?>
         StyleBuilder.Register(() => Styles?.Root);
     }
 
-    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitColorPickerParams))]
     protected override async Task OnInitializedAsync()
     {
         // The cascade is read here as well as in OnParametersSet, since DefaultInputsMode is only acted on

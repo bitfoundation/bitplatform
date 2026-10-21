@@ -312,14 +312,21 @@ public abstract class E2ETestBase
 
     private static async Task<ServerErrors> ReadServerErrorsAsync(int after, IEnumerable<string>? paths = null, string level = "Error")
     {
-        try
+        var query = paths is null ? string.Empty : $"&paths={Uri.EscapeDataString(string.Join(',', paths))}";
+
+        // A read that fails is tried again, and then fails the test, rather than being taken for "no errors": an empty
+        // answer would let the test's own errors through, and a baseline of 0 would blame it for every error the host
+        // logged before it began.
+        for (var attempt = 1; ; attempt++)
         {
-            var query = paths is null ? string.Empty : $"&paths={Uri.EscapeDataString(string.Join(',', paths))}";
-            return await _http.GetFromJsonAsync<ServerErrors>($"{BaseUrl}/api/server-errors?after={after}&level={level}{query}") ?? new(0, []);
-        }
-        catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException)
-        {
-            return new(after, []);
+            try
+            {
+                return await _http.GetFromJsonAsync<ServerErrors>($"{BaseUrl}/api/server-errors?after={after}&level={level}{query}") ?? new(0, []);
+            }
+            catch (Exception ex) when ((ex is HttpRequestException or TaskCanceledException) && attempt < 3)
+            {
+                await Task.Delay(TimeSpan.FromSeconds(attempt));
+            }
         }
     }
 

@@ -229,9 +229,14 @@ public class BitMarkdownPipelineTests
         var pipeline = BitMarkdownPipelines.GitHub;
 
         // A renderer holds nothing but the pipeline's immutable renderer list, so the shared one
-        // is what every render uses instead of allocating a new instance each time.
-        Assert.AreSame(pipeline.Renderer, pipeline.Renderer);
-        Assert.AreNotSame(pipeline.Renderer, pipeline.CreateRenderer());
+        // is what every render uses instead of allocating a new instance each time. The two reads
+        // are kept apart on purpose: a getter that built a renderer per call would hand back two
+        // different instances here.
+        var first = pipeline.Renderer;
+        var second = pipeline.Renderer;
+
+        Assert.AreSame(first, second);
+        Assert.AreNotSame(first, pipeline.CreateRenderer());
     }
 
     [TestMethod]

@@ -1376,7 +1376,11 @@ public class BitRatingTests : BunitTestContext
             parameters.Add(p => p.ValueTextFormat, "{0} out of {1} stars");
         });
 
-        Assert.AreEqual("3.5 out of 5 stars", component.Find("[aria-live]").TextContent);
+        // The spoken text is written in the reader's culture, so the decimal separator of the expected text is that
+        // culture's too ("3,5" under de-DE) rather than a hard-coded ".".
+        var expected = string.Format(CultureInfo.CurrentCulture, "{0} out of {1} stars", 3.5, 5);
+
+        Assert.AreEqual(expected, component.Find("[aria-live]").TextContent);
 
         // The same text is what a read-only rating falls back to when it is given no other label.
         var readOnly = RenderComponent<BitRating>(parameters =>
@@ -1386,7 +1390,7 @@ public class BitRatingTests : BunitTestContext
             parameters.Add(p => p.ValueTextFormat, "{0} out of {1} stars");
         });
 
-        Assert.AreEqual("3.5 out of 5 stars", readOnly.Find(".bit-rtg").GetAttribute("aria-label"));
+        Assert.AreEqual(expected, readOnly.Find(".bit-rtg").GetAttribute("aria-label"));
     }
 
     [TestMethod,

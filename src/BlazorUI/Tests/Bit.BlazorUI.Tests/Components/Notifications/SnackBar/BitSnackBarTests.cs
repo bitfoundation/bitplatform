@@ -1731,18 +1731,25 @@ public class BitSnackBarTests : BunitTestContext
     [TestMethod]
     public async Task BitSnackBarDisposeCancelsTheCountdownTest()
     {
+        var dismissed = 0;
+
         var com = RenderComponent<BitSnackBar>(parameters =>
         {
             parameters.Add(p => p.AutoDismiss, true);
             parameters.Add(p => p.AutoDismissTime, TimeSpan.FromMilliseconds(200));
+            parameters.Add(p => p.OnDismiss, (BitSnackBarItem _) => dismissed++);
         });
 
-        await com.Instance.Show("title");
+        var item = await com.Instance.Show("title");
 
         await ((IAsyncDisposable)com.Instance).DisposeAsync();
 
-        // Nothing should throw once the countdown of a disposed snack bar would have elapsed.
         await Task.Delay(TimeSpan.FromMilliseconds(500));
+
+        // The countdown runs unawaited, so nothing it threw would ever reach this test; what is checked is that it
+        // did nothing once the countdown and the exit animation of a disposed snack bar would have run out.
+        Assert.AreEqual(0, dismissed);
+        Assert.IsNull(item.DismissReason);
     }
     [TestMethod]
     public async Task BitSnackBarHideDismissKeepsTheCountdownTest()
@@ -2046,23 +2053,33 @@ public class BitSnackBarTests : BunitTestContext
         {
             parameters.Add(p => p.AutoDismiss, true);
             parameters.Add(p => p.PreventDuplicates, true);
-            parameters.Add(p => p.AutoDismissTime, TimeSpan.FromMilliseconds(600));
+            parameters.Add(p => p.AutoDismissTime, TimeSpan.FromSeconds(1));
             parameters.Add(p => p.TransitionDuration, 0);
         });
 
-        await com.Instance.Show("title", "body");
+        var item = await com.Instance.Show("title", "body");
 
-        await Task.Delay(400);
+        await Task.Delay(300);
 
-        await com.Instance.Show("title", "body");
+        // Measured from before the repeat to after the item is seen to leave, which is never shorter than the
+        // countdown the repeat started: a slow machine only lengthens it. A fixed wait checked against a countdown
+        // that keeps running instead fails whenever the wait itself runs late.
+        var sinceTheRepeat = System.Diagnostics.Stopwatch.StartNew();
 
-        // The repeat is news of its own, so the notification that stands for it is given its full lifetime back
-        // rather than being left to run out on the clock of the first one.
-        await Task.Delay(400);
+        var repeat = await com.Instance.Show("title", "body");
 
-        Assert.AreEqual(1, com.FindAll(".bit-snb-itm").Count);
+        // The repeat folded into the item that is still showing, which is the one whose countdown is started over.
+        Assert.AreSame(item, repeat);
 
         com.WaitForAssertion(() => Assert.AreEqual(0, com.FindAll(".bit-snb-itm").Count), TimeSpan.FromSeconds(5));
+
+        sinceTheRepeat.Stop();
+
+        // The repeat is news of its own, so the notification that stands for it is given its full lifetime back
+        // rather than being left to run out on the clock of the first one, some 700 ms after the repeat. The margin
+        // is the coarser clock the timers run on.
+        Assert.IsTrue(sinceTheRepeat.Elapsed >= TimeSpan.FromMilliseconds(950),
+                      $"The item left {sinceTheRepeat.ElapsedMilliseconds} ms after the repeat, before a full lifetime.");
     }
 
     [TestMethod,

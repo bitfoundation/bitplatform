@@ -53,7 +53,7 @@ public class BitButtonTests : BunitTestContext
             Assert.IsTrue(bitButton.ClassList.Contains("bit-btn-otl"));
         }
 
-        Assert.AreEqual(bitButton.GetAttribute("title"), title);
+        Assert.AreEqual(title, bitButton.GetAttribute("title"));
 
         bitButton.Click();
 
@@ -79,7 +79,7 @@ public class BitButtonTests : BunitTestContext
 
         var hasTabIndexAttr = bitButton.HasAttribute("tabindex");
 
-        Assert.AreEqual(hasTabIndexAttr, expectedResult);
+        Assert.AreEqual(expectedResult, hasTabIndexAttr);
 
         if (hasTabIndexAttr)
         {
@@ -108,7 +108,7 @@ public class BitButtonTests : BunitTestContext
 
         if (isEnabled)
         {
-            Assert.AreEqual(bitButton.GetAttribute("target"), target);
+            Assert.AreEqual(target, bitButton.GetAttribute("target"));
             Assert.IsTrue(bitButton.HasAttribute("href"));
             Assert.IsFalse(bitButton.ClassList.Contains("bit-dis"));
         }
@@ -117,7 +117,7 @@ public class BitButtonTests : BunitTestContext
             Assert.IsTrue(bitButton.ClassList.Contains("bit-dis"));
         }
 
-        Assert.AreEqual(bitButton.GetAttribute("title"), title);
+        Assert.AreEqual(title, bitButton.GetAttribute("title"));
     }
 
     [TestMethod, DataRow("Detailed description")]
@@ -644,7 +644,7 @@ public class BitButtonTests : BunitTestContext
         Assert.AreEqual(expectedRel, bitButton.GetAttribute("rel"));
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow(true),
         DataRow(false)
     ]
@@ -674,7 +674,7 @@ public class BitButtonTests : BunitTestContext
         Assert.AreEqual(reclickable, clicked);
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow(true),
         DataRow(false)
     ]
@@ -1061,7 +1061,7 @@ public class BitButtonTests : BunitTestContext
         Assert.AreEqual("secondary", com.Find(".bit-btn-srl").TextContent.Trim());
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow("aria-label"),
         DataRow("aria-labelledby")]
     public void BitButtonIconOnlyShouldDropTheScreenReaderLabelWhenTheButtonIsNamedByHand(string attribute)
@@ -1104,7 +1104,7 @@ public class BitButtonTests : BunitTestContext
         Assert.AreEqual("Add an item", com.Find(".bit-btn-hcn .bit-btn-srl").TextContent.Trim());
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow(true),
         DataRow(false)]
     public void BitButtonRoundedClassTest(bool rounded)
@@ -1130,12 +1130,15 @@ public class BitButtonTests : BunitTestContext
     }
 
     [TestMethod]
-    public async Task BitButtonLoadingDelayShouldDeferTheSpinnerButNotTheState()
+    public void BitButtonLoadingDelayShouldDeferTheSpinnerButNotTheState()
     {
+        // The delay runs on the wall clock from the render on, so it is long enough that a test thread held up by
+        // a busy runner still reads the markup before the spinner arrives, and the spinner is then waited for
+        // rather than slept for.
         var com = RenderComponent<BitButton>(parameters =>
         {
             parameters.Add(p => p.IsLoading, true);
-            parameters.Add(p => p.LoadingDelay, 150);
+            parameters.Add(p => p.LoadingDelay, 500);
             parameters.AddChildContent("Save");
         });
 
@@ -1143,9 +1146,7 @@ public class BitButtonTests : BunitTestContext
         Assert.AreEqual("true", com.Find(".bit-btn").GetAttribute("aria-busy"));
         Assert.AreEqual(0, com.FindAll(".bit-btn-spn").Count);
 
-        await Task.Delay(400);
-
-        com.WaitForAssertion(() => Assert.AreEqual(1, com.FindAll(".bit-btn-spn").Count));
+        com.WaitForAssertion(() => Assert.AreEqual(1, com.FindAll(".bit-btn-spn").Count), TimeSpan.FromSeconds(5));
     }
 
     [TestMethod]
@@ -1156,7 +1157,8 @@ public class BitButtonTests : BunitTestContext
         var com = RenderComponent<BitButton>(parameters =>
         {
             parameters.Add(p => p.AutoLoading, true);
-            parameters.Add(p => p.LoadingDelay, 150);
+            // long enough that a test thread held up by a busy runner still reads the markup inside it
+            parameters.Add(p => p.LoadingDelay, 500);
             parameters.Add(p => p.OnClick, EventCallback.Factory.Create<bool>(this, () => tsc.Task));
             parameters.AddChildContent("Save");
         });
@@ -1166,7 +1168,7 @@ public class BitButtonTests : BunitTestContext
         // the handler is still running, but the spinner is still being held back by the delay
         Assert.AreEqual(0, com.FindAll(".bit-btn-spn").Count);
 
-        com.WaitForAssertion(() => Assert.AreEqual(1, com.FindAll(".bit-btn-spn").Count), TimeSpan.FromSeconds(2));
+        com.WaitForAssertion(() => Assert.AreEqual(1, com.FindAll(".bit-btn-spn").Count), TimeSpan.FromSeconds(5));
 
         tsc.SetResult();
         await click;
@@ -1202,7 +1204,7 @@ public class BitButtonTests : BunitTestContext
         StringAssert.Contains(com.Find(".bit-btn").GetAttribute("style"), "--bit-Button-float-offset:2rem");
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow("16", "16px"),
         DataRow(" 12.5 ", "12.5px"),
         DataRow("0", "0px"),

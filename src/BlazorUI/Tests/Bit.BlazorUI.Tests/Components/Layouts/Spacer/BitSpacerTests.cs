@@ -78,7 +78,9 @@ public class BitSpacerTests : BunitTestContext
 
         var style = component.Find(".bit-spc").GetAttribute("style");
 
-        StringAssert.Contains(style, $"margin-inline-start:{width}px");
+        // Written invariantly, as CSS reads it: the culture of the machine would put its own minus sign (fa-IR and
+        // ar-SA lead it with a direction mark) in front of a negative width the spacer writes as plain "-8px".
+        StringAssert.Contains(style, $"margin-inline-start:{width.ToString(CultureInfo.InvariantCulture)}px");
 
         // A fixed spacer must not also absorb the leftover space of its container.
         Assert.IsFalse(style.Contains("flex-grow"));

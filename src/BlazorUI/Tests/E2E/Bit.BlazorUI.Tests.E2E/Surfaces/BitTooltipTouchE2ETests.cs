@@ -26,13 +26,16 @@ public class BitTooltipTouchE2ETests : E2ETestBase
     {
         await OpenAsync(Url);
 
+        // Timed from the tap, which the 800ms TouchHideDelay can only start after, rather than from the moment the
+        // tooltip was seen: an expectation can see it shown half a second late on a loaded runner, which would leave
+        // little of the delay to measure.
+        var watch = Stopwatch.StartNew();
         await Page.Locator("#ttp-touch-anchor").TapAsync();
         await Expect(Tip("ttp-touch")).ToBeVisibleAsync();
         await Expect(Page.Locator("#touch-anchor-clicks")).ToHaveTextAsync("1");
 
-        var watch = Stopwatch.StartNew();
         await Expect(Tip("ttp-touch")).ToBeHiddenAsync();
-        Assert.IsTrue(watch.ElapsedMilliseconds >= 500, $"Hidden {watch.ElapsedMilliseconds}ms after it was shown by the tap.");
+        Assert.IsTrue(watch.ElapsedMilliseconds >= 700, $"Hidden {watch.ElapsedMilliseconds}ms after the tap that showed it.");
         await Expect(Page.Locator("#touch-shows")).ToHaveTextAsync("1");
     }
 

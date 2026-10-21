@@ -1,5 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using System.Globalization;
+﻿using System.Globalization;
 using Microsoft.AspNetCore.Components.CompilerServices;
 
 namespace Bit.BlazorUI;
@@ -602,7 +601,6 @@ public partial class BitGridItem : BitComponentBase
         StyleBuilder.Register(() => GetVar("--bit-grd-ord-xxl", OrderXxl, allowNegative: true));
     }
 
-    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitGridItemParams))]
     protected override void OnParametersSet()
     {
         CascadingParameters?.UpdateParameters(this);

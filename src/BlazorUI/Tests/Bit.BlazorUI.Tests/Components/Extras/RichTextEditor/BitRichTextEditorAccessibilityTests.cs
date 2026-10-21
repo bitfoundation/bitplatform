@@ -366,7 +366,12 @@ public class BitRichTextEditorAccessibilityTests : BunitTestContext
             Assert.IsFalse(string.IsNullOrWhiteSpace(button.GetAttribute("aria-label")), $"A toolbar button has no name: {button.OuterHtml}");
         }
 
-        foreach (var svg in component.FindAll(".bit-rte-tlb svg"))
+        var glyphs = component.FindAll(".bit-rte-tlb svg");
+
+        // The glyphs are inline SVGs, so the loop below cannot pass by finding none.
+        Assert.IsTrue(glyphs.Count > 0);
+
+        foreach (var svg in glyphs)
         {
             Assert.AreEqual("true", svg.GetAttribute("aria-hidden"));
             Assert.AreEqual("false", svg.GetAttribute("focusable"));

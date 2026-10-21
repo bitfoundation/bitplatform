@@ -1731,7 +1731,9 @@ public class BitActionButtonTests : BunitTestContext
         var component = RenderComponent<BitActionButton>(parameters =>
         {
             parameters.Add(p => p.IsLoading, true);
-            parameters.Add(p => p.LoadingDelay, 200);
+            // The delay runs on the wall clock from the render on, so it is long enough that a test thread held
+            // up by a busy runner still reads the markup before the spinner arrives.
+            parameters.Add(p => p.LoadingDelay, 500);
             parameters.AddChildContent("Content");
         });
 

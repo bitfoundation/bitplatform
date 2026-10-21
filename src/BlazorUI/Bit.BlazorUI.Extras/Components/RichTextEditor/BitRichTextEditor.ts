@@ -3036,6 +3036,11 @@
             if (owned) e.preventDefault();
 
             if (!editor._dotNetRef) return;
+            // The command the .NET side answers with restores the saved range, which selectionchange updates only a
+            // task after the selection moved - and in WebAssembly the whole round trip can run before that task: a
+            // shortcut pressed right after a selection was made would act on the selection before it. The live one is
+            // saved here, before the round trip, the way a menu's trigger saves its caret.
+            RichTextEditor.rememberTriggerCaret(editor);
             const handled = await editor._dotNetRef.invokeMethodAsync('OnShortcut', key, primary, e.shiftKey, e.altKey);
             // For non-owned combos the .NET side may still report custom handling; suppress the
             // default in that case too (best-effort, since the await has already yielded).

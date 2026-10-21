@@ -1,5 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using Microsoft.AspNetCore.Components.CompilerServices;
+﻿using Microsoft.AspNetCore.Components.CompilerServices;
 
 namespace Bit.BlazorUI;
 
@@ -197,7 +196,6 @@ public partial class BitElement : BitComponentBase
 
     protected override string RootElementClass => "bit-elm";
 
-    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitElementParams))]
     protected override void OnParametersSet()
     {
         CascadingParameters?.UpdateParameters(this);

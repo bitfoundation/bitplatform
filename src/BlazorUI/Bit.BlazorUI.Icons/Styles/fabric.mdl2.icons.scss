@@ -6,11 +6,14 @@
     src: url('../fonts/FabMDL2.4.66.woff2') format("woff2");
 }
 
+// Linked after the core stylesheet, this rule draws every icon, the core components' built-in ones too. A publish may cut
+// this font down to the icons an app lists (BitBlazorUITrimIcons Explicit), and leave the core's out of it: those come
+// from the core's own font (fabric.mdl2.bit.blazoui.scss), which has every glyph the core components draw.
 .bit-icon {
     font-style: normal;
     font-weight: normal;
     display: inline-block;
-    font-family: 'Fabric MDL2' !important;
+    font-family: 'Fabric MDL2', 'Fabric MDL2 bit BlazorUI' !important;
 }
 
 .bit-icon--12PointStar::before { content: "\F505"; }

@@ -10,9 +10,13 @@
       $(_BitAssetsMinify)    passed to its scripts command: a Release build minifies the pieces, and so the bundle
       the package            the pieces under buildTransitive\bit-assets, where the consumer-side targets read them
                              (Bit.BlazorUI's buildTransitive\Bit.BlazorUI.targets); with BitBlazorUIPackBuildTask set
-                             (Bit.BlazorUI's), the task itself under tasks\ too
+                             (Bit.BlazorUI's), the task itself under tasks\ too, and under tasks\fonttools the
+                             package.json and package-lock.json of what its Node.js cut of the icon font installs
       the assembly           obj\bit-assets\lazy-scripts.json as the resource bit-lazy-scripts.json: which module of the
-                             lazy scripts exports what, read by the .NET side of BitBlazorUILazyScripts (BitScriptLoader)
+                             lazy scripts exports what, read by the .NET side of BitBlazorUILazyScripts (BitScriptLoader);
+                             and beside it an ILLink.Substitutions.xml removing that resource from a trimmed app that
+                             publishes none of the modules (the Bit.BlazorUI.IncludeScriptModules feature switch off,
+                             which Bit.BlazorUI's buildTransitive\Bit.BlazorUI.targets sets)
 
     Imported after the csproj sets TargetFrameworks, which the packing reads.
     -->
@@ -39,11 +43,31 @@
 
     <!-- Embedded from a target because build-assets.mjs writes it during the build, which a clean build has not run yet when
          the project is evaluated; before the build proper, so the resources are prepared with it. A package without scripts
-         (Bit.BlazorUI.Icons) has none to embed. -->
+         (Bit.BlazorUI.Icons) has none to embed.
+
+         The map is of use only to an app that can import the modules it describes, and an app publishing none of them -
+         every bundle-mode app, by default - would otherwise carry it in every trimmed publish. So the assembly also embeds
+         the instructions ILLink reads for it: remove the map where the app turns the Bit.BlazorUI.IncludeScriptModules
+         feature switch off. An app that does not set the switch at all keeps it. -->
     <Target Name="EmbedBitBlazorUILazyScripts" BeforeTargets="BeforeBuild" DependsOnTargets="BeforeBuildTasksOnce" Condition="'$(DesignTimeBuild)' != 'true'">
-        <ItemGroup Condition="Exists('$(BaseIntermediateOutputPath)bit-assets\lazy-scripts.json')">
-            <EmbeddedResource Remove="$(BaseIntermediateOutputPath)bit-assets\lazy-scripts.json" />
-            <EmbeddedResource Include="$(BaseIntermediateOutputPath)bit-assets\lazy-scripts.json" LogicalName="bit-lazy-scripts.json" WithCulture="false" Type="Non-Resx" />
+        <PropertyGroup>
+            <_BitBlazorUILazyScripts>$(BaseIntermediateOutputPath)bit-assets\lazy-scripts.json</_BitBlazorUILazyScripts>
+            <_BitBlazorUILazyScriptsSubstitutions>$(IntermediateOutputPath)bit-lazy-scripts.ILLink.Substitutions.xml</_BitBlazorUILazyScriptsSubstitutions>
+        </PropertyGroup>
+        <ItemGroup Condition="Exists('$(_BitBlazorUILazyScripts)')">
+            <_BitBlazorUILazyScriptsSubstitutionsLine Include="&lt;linker&gt;" />
+            <_BitBlazorUILazyScriptsSubstitutionsLine Include="%20%20%20%20&lt;assembly fullname=&quot;$(AssemblyName)&quot; feature=&quot;Bit.BlazorUI.IncludeScriptModules&quot; featurevalue=&quot;false&quot;&gt;" />
+            <_BitBlazorUILazyScriptsSubstitutionsLine Include="%20%20%20%20%20%20%20%20&lt;resource name=&quot;bit-lazy-scripts.json&quot; action=&quot;remove&quot; /&gt;" />
+            <_BitBlazorUILazyScriptsSubstitutionsLine Include="%20%20%20%20&lt;/assembly&gt;" />
+            <_BitBlazorUILazyScriptsSubstitutionsLine Include="&lt;/linker&gt;" />
+        </ItemGroup>
+        <WriteLinesToFile Condition="Exists('$(_BitBlazorUILazyScripts)')" File="$(_BitBlazorUILazyScriptsSubstitutions)" Lines="@(_BitBlazorUILazyScriptsSubstitutionsLine)" Overwrite="true" WriteOnlyWhenDifferent="true" />
+        <ItemGroup Condition="Exists('$(_BitBlazorUILazyScripts)')">
+            <EmbeddedResource Remove="$(_BitBlazorUILazyScripts);$(_BitBlazorUILazyScriptsSubstitutions)" />
+            <EmbeddedResource Include="$(_BitBlazorUILazyScripts)" LogicalName="bit-lazy-scripts.json" WithCulture="false" Type="Non-Resx" />
+            <EmbeddedResource Include="$(_BitBlazorUILazyScriptsSubstitutions)" LogicalName="ILLink.Substitutions.xml" WithCulture="false" Type="Non-Resx" />
+            <FileWrites Include="$(_BitBlazorUILazyScriptsSubstitutions)" />
+            <_BitBlazorUILazyScriptsSubstitutionsLine Remove="@(_BitBlazorUILazyScriptsSubstitutionsLine)" />
         </ItemGroup>
     </Target>
 
@@ -55,6 +79,9 @@
             <_BitBlazorUIAssetPiece Include="$(BaseIntermediateOutputPath)bit-assets\**\*" />
             <TfmSpecificPackageFile Include="@(_BitBlazorUIAssetPiece)" PackagePath="buildTransitive\bit-assets\%(RecursiveDir)%(Filename)%(Extension)" />
             <TfmSpecificPackageFile Include="@(_BitBlazorUIBuildTaskAssembly)" PackagePath="tasks\%(Filename)%(Extension)" />
+            <!-- What the task's Node.js cut of the icon font installs, pinned (BitBlazorUITrimIconFont). -->
+            <!-- A folder for its PackagePath: %(Filename) here would batch over the pieces above, one copy of each per piece. -->
+            <TfmSpecificPackageFile Include="$(MSBuildThisFileDirectory)fonttools\package.json;$(MSBuildThisFileDirectory)fonttools\package-lock.json" Condition="'$(BitBlazorUIPackBuildTask)' == 'true'" PackagePath="tasks\fonttools\" />
         </ItemGroup>
     </Target>
 
