@@ -1,4 +1,6 @@
-﻿namespace Bit.BlazorUI;
+﻿using System.Diagnostics.CodeAnalysis;
+
+namespace Bit.BlazorUI;
 
 /// <summary>
 /// The parameters for <see cref="BitMap{TMapProvider}"/> component.
@@ -26,6 +28,13 @@ public class BitMapParams : BitComponentBaseParams, IBitComponentParams
     /// neither does the type: it is not generic.
     /// </remarks>
     public const string ParamName = $"{nameof(BitParams)}.{nameof(BitMap<BitLeafletMapProvider>)}";
+
+
+
+    // What BitParams reads of a params object by reflection is kept by its constructor rather than by the component
+    // reading it, so the trimmer keeps it only for the params types an app creates.
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitMapParams))]
+    public BitMapParams() { }
 
 
 

@@ -400,7 +400,6 @@ public partial class BitNav<[DynamicallyAccessedMembers(DynamicallyAccessedMembe
         StyleBuilder.Register(() => Styles?.Root);
     }
 
-    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitNavParams))]
     protected override async Task OnInitializedAsync()
     {
         // The cascade is applied before anything reads the parameters it may fill in: the initial expansion

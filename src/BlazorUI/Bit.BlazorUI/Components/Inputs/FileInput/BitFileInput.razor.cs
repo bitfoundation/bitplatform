@@ -647,7 +647,6 @@ public partial class BitFileInput : BitInputBase<string?>
         return base.OnInitializedAsync();
     }
 
-    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitFileInputParams))]
     protected override async Task OnParametersSetAsync()
     {
         CascadingParameters?.UpdateParameters(this);

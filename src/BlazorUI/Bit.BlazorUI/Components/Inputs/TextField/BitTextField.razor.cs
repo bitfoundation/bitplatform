@@ -841,7 +841,6 @@ public partial class BitTextField : BitTextInputBase<string?>
         await base.OnInitializedAsync();
     }
 
-    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitTextFieldParams))]
     protected override void OnParametersSet()
     {
         // The cascade is read first so that everything below - the counter, the element type, the classes -

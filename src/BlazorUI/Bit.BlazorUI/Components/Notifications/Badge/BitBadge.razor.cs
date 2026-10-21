@@ -1,5 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
-
+﻿
 namespace Bit.BlazorUI;
 
 /// <summary>
@@ -603,7 +602,6 @@ public partial class BitBadge : BitComponentBase
         }
     }
 
-    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitBadgeParams))]
     protected override void OnParametersSet()
     {
         CascadingParameters?.UpdateParameters(this);

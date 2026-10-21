@@ -494,7 +494,6 @@ public partial class BitCountryPicker : BitInputBase<BitCountry?>
         StyleBuilder.Register(() => Styles?.Root);
     }
 
-    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitCountryPickerParams))]
     protected override void OnInitialized()
     {
         // The cascade is read before the default country is applied, since the market of an app is the one default
@@ -531,7 +530,6 @@ public partial class BitCountryPicker : BitInputBase<BitCountry?>
         base.OnInitialized();
     }
 
-    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitCountryPickerParams))]
     protected override void OnParametersSet()
     {
         // The cascade is read first, so that the country list and the classes below are computed from the

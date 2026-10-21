@@ -1,5 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using Microsoft.AspNetCore.Components.Forms;
+﻿using Microsoft.AspNetCore.Components.Forms;
 
 namespace Bit.BlazorUI;
 
@@ -355,7 +354,6 @@ public partial class BitActionButton : BitComponentBase
         StyleBuilder.Register(() => Styles?.Root);
     }
 
-    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitActionButtonParams))]
     protected override void OnParametersSet()
     {
         CascadingParameters?.UpdateParameters(this);

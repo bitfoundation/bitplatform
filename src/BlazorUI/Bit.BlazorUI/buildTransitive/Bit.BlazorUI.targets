@@ -37,6 +37,10 @@
                                          ...), and rendering its <script> tags only for the bundles). Written out in the
                                          csproj, BitBlazorUIIncludeScriptModules=true is also what publishes every module
                                          through a trimmed publish, which otherwise keeps the ones the app can reach.
+                                         Without the modules, a trimmed publish also leaves out the map the .NET side
+                                         imports them by (the bit-lazy-scripts.json each package's assembly embeds): an
+                                         app turning the lazy scripts on at runtime sets BitBlazorUIIncludeScriptModules
+                                         to true, even one importing them from a ContentPath elsewhere.
 
     Trimming switches - they decide WHETHER to trim:
 
@@ -273,6 +277,15 @@
             <_BitBlazorUILazyScriptsInitializerLine Remove="@(_BitBlazorUILazyScriptsInitializerLine)" />
         </ItemGroup>
     </Target>
+
+    <!-- An app publishing none of the modules can import none of them, so a trimmed publish of it leaves out the map the
+         .NET side imports them by: the bit-lazy-scripts.json each package embeds, which ILLink removes off this feature
+         switch (the ILLink.Substitutions.xml beside it, Bit.BlazorUI.Assets.targets). For ILLink only; nothing reads it
+         at runtime. Removed before it is included, so a second import leaves one. -->
+    <ItemGroup Condition="'$(BitBlazorUIIncludeScriptModules)' != 'true'">
+        <RuntimeHostConfigurationOption Remove="Bit.BlazorUI.IncludeScriptModules" />
+        <RuntimeHostConfigurationOption Include="Bit.BlazorUI.IncludeScriptModules" Value="false" Trim="true" />
+    </ItemGroup>
 
     <!-- A separate process for the source tree's build of the task, so the long-lived MSBuild nodes do not hold the dll
          while it is being rebuilt. The package's copy never changes, and loads in-process. -->

@@ -424,7 +424,6 @@ public partial class BitRating : BitInputBase<double>
         StyleBuilder.Register(() => Styles?.Root);
     }
 
-    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitRatingParams))]
     protected override void OnParametersSet()
     {
         CascadingParameters?.UpdateParameters(this);

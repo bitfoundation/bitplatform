@@ -1,5 +1,4 @@
 ﻿using System.Globalization;
-using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Components.CompilerServices;
 
 namespace Bit.BlazorUI;
@@ -580,7 +579,6 @@ public partial class BitText : BitComponentBase
                                     : null);
     }
 
-    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitTextParams))]
     protected override void OnParametersSet()
     {
         CascadingParameters?.UpdateParameters(this);

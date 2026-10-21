@@ -491,6 +491,13 @@ var lazy = BitBlazorUIScripts.LazyScriptsEnabled;</CodeBox>
                         <code>Bit.BlazorUI/</code> and the other packages' folders: a root-relative path or an absolute URL
                         is taken as given, anything else is relative to the base href.
                     </BitText>
+                    <BitText Element="p">
+                        An app that may turn them on here keeps the modules with
+                        <code>&lt;BitBlazorUIIncludeScriptModules&gt;true&lt;/BitBlazorUIIncludeScriptModules&gt;</code>
+                        (below) - even one importing them from a <code>ContentPath</code> elsewhere. Without the modules, a
+                        trimmed publish also leaves out the map the library imports them by, the
+                        <code>bit-lazy-scripts.json</code> each package's assembly embeds.
+                    </BitText>
                 </DocSection>
 
                 <DocSection Level="3" Id="lazy-both" Title="Keeping both shapes">
@@ -726,7 +733,7 @@ var lazy = BitBlazorUIScripts.LazyScriptsEnabled;</CodeBox>
                             <tr>
                                 <th scope="row"><code>BitBlazorUIIncludeScriptModules</code></th>
                                 <td><code>true</code> | <code>false</code></td>
-                                <td><code>BitBlazorUILazyScripts</code>; written out as <code>true</code>, every module is published through a trimmed publish</td>
+                                <td><code>BitBlazorUILazyScripts</code>; written out as <code>true</code>, every module is published through a trimmed publish; <code>false</code> also trims away the map of the modules each package's assembly embeds</td>
                             </tr>
                         </tbody>
                     </table>

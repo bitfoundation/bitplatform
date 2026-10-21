@@ -1,5 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
-
+﻿
 namespace Bit.BlazorUI;
 
 /// <summary>
@@ -785,7 +784,6 @@ public partial class BitDialog : BitComponentBase
         return base.OnInitializedAsync();
     }
 
-    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitDialogParams))]
     protected override void OnParametersSet()
     {
         // The cascade fills in what the dialog left unset before anything reads it: the classes, the size and

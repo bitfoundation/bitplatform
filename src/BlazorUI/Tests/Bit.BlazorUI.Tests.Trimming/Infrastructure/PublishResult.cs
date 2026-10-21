@@ -120,6 +120,15 @@ public sealed class PublishResult(string directory, int exitCode, string output)
     public bool HasAsset(string package, string relativePath) => File.Exists(GetAssetPath(package, relativePath));
 
     /// <summary>
+    /// A package's assembly as ILLink left it in a trimmed WebAssembly publish, which Bit.BlazorUI.Tests.Consumer copies
+    /// beside its publish (trimmed/): the published one is a WebAssembly module no metadata reader opens.
+    /// </summary>
+    public AssemblyMetadata ReadTrimmedAssembly(string package) => AssemblyMetadata.Read(Path.Combine(Directory, "trimmed", package + ".dll"));
+
+    /// <summary>A package's assembly as its Release build wrote it - the one a publish of the source tree trims.</summary>
+    public static AssemblyMetadata ReadUntrimmedAssembly(string package) => AssemblyMetadata.Read(Path.Combine(Publisher.Root, package, "bin", "Release", "net10.0", package + ".dll"));
+
+    /// <summary>
     /// The JavaScript initializers a Blazor Web App's publish lists for Blazor to import as it starts (its modules manifest),
     /// by their routes - fingerprinted on the .NET 9 SDK and later.
     /// </summary>

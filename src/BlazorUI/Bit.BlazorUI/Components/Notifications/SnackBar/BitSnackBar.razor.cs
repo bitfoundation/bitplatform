@@ -1,5 +1,4 @@
 ﻿using System.ComponentModel;
-using System.Diagnostics.CodeAnalysis;
 
 namespace Bit.BlazorUI;
 
@@ -987,7 +986,6 @@ public partial class BitSnackBar : BitComponentBase
         StyleBuilder.Register(() => MaxWidth.HasValue() ? $"--bit-snb-max-w:{MaxWidth}" : string.Empty);
     }
 
-    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitSnackBarParams))]
     protected override async Task OnParametersSetAsync()
     {
         CascadingParameters?.UpdateParameters(this);

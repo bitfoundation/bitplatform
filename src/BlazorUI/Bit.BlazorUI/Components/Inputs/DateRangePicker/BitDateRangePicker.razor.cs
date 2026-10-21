@@ -1404,7 +1404,6 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
         base.OnInitialized();
     }
 
-    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitDateRangePickerParams))]
     protected override void OnParametersSet()
     {
         CascadingParameters?.UpdateParameters(this);

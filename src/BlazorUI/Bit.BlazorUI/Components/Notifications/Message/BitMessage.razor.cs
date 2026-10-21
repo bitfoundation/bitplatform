@@ -1,5 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using System.Globalization;
+﻿using System.Globalization;
 
 namespace Bit.BlazorUI;
 
@@ -753,7 +752,6 @@ public partial class BitMessage : BitComponentBase
         ClassBuilder.Register(() => Tinted && Variant is BitVariant.Outline or BitVariant.Text ? "bit-msg-tnt" : string.Empty);
     }
 
-    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitMessageParams))]
     protected override void OnParametersSet()
     {
         // The cascade fills in what the message left unset before anything below reads it: the countdown is armed,

@@ -1,5 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
-
+﻿
 namespace Bit.BlazorUI;
 
 /// <summary>
@@ -490,7 +489,6 @@ public partial class BitTooltip : BitComponentBase
         StyleBuilder.Register(() => ZIndex.HasValue ? $"--bit-ttp-zindex:{ZIndex.Value}" : string.Empty);
     }
 
-    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitTooltipParams))]
     protected override async Task OnInitializedAsync()
     {
         // The cascaded values are applied before anything below reads them: LazyRender decides here whether the

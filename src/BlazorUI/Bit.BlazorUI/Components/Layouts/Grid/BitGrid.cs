@@ -1,5 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using System.Globalization;
+﻿using System.Globalization;
 using Microsoft.AspNetCore.Components.CompilerServices;
 
 namespace Bit.BlazorUI;
@@ -650,7 +649,6 @@ public partial class BitGrid : BitComponentBase
         StyleBuilder.Register(() => GetSpacingVar("r", "xxl", VerticalSpacingXxl, SpacingXxl));
     }
 
-    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitGridParams))]
     protected override void OnParametersSet()
     {
         CascadingParameters?.UpdateParameters(this);

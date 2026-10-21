@@ -1,5 +1,4 @@
 ﻿using System.Globalization;
-using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Components.CompilerServices;
 
 namespace Bit.BlazorUI;
@@ -250,7 +249,6 @@ public partial class BitLabel : BitComponentBase
         StyleBuilder.Register(() => Styles?.Root);
     }
 
-    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitLabelParams))]
     protected override void OnParametersSet()
     {
         CascadingParameters?.UpdateParameters(this);

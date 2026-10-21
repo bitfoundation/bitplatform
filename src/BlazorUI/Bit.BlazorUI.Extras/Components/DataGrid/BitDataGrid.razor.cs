@@ -1002,7 +1002,6 @@ public partial class BitDataGrid<[DynamicallyAccessedMembers(DynamicallyAccessed
     }
 
     // ------------------------------------------------------- Lifecycle
-    [System.Diagnostics.CodeAnalysis.DynamicDependency(System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.All, typeof(BitDataGridParams))]
     protected override async Task OnParametersSetAsync()
     {
         // Applied first: every decision below reads the parameters, and a cascaded one is a parameter like any other.

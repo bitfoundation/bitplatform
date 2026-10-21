@@ -1,5 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
-
+﻿
 namespace Bit.BlazorUI;
 
 /// <summary>
@@ -809,7 +808,6 @@ public partial class BitFlag : BitComponentBase
                                     : string.Empty);
     }
 
-    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitFlagParams))]
     protected override void OnParametersSet()
     {
         // The cascade is applied before anything reads the parameters it may fill in: the image, the shape and the

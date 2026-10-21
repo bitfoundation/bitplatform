@@ -1,5 +1,4 @@
 ﻿using System.Globalization;
-using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Components.CompilerServices;
 
 namespace Bit.BlazorUI;
@@ -322,7 +321,6 @@ public partial class BitSeparator : BitComponentBase
         StyleBuilder.Register(() => Inset.HasNoValue() ? null : $"--bit-spr-ins:{Inset}");
     }
 
-    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitSeparatorParams))]
     protected override void OnParametersSet()
     {
         CascadingParameters?.UpdateParameters(this);

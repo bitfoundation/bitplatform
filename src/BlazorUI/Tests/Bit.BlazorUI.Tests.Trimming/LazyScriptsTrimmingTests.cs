@@ -41,6 +41,35 @@ public sealed class LazyScriptsTrimmingTests
     }
 
     [TestMethod]
+    public void ATrimmedBundleModeAppShouldLeaveOutTheMapOfTheModules()
+    {
+        // It publishes none of the modules, so nothing of it can import one: the map the .NET side imports them by
+        // (bit-lazy-scripts.json) goes, off the feature switch the app turns off and what each package embeds for ILLink.
+        var publish = Publisher.Publish(Publisher.Consumer);
+        publish.AssertSucceeded();
+
+        foreach (var package in new[] { Core, Extras })
+        {
+            CollectionAssert.DoesNotContain(publish.ReadTrimmedAssembly(package).Resources.ToList(), "bit-lazy-scripts.json", $"{package} keeps the map of the modules in a bundle-mode app.");
+        }
+    }
+
+    [TestMethod]
+    public void ATrimmedAppWithTheModulesShouldKeepTheirMap()
+    {
+        // In lazy mode, and in bundle mode where the csproj keeps the modules for a mode chosen at runtime.
+        foreach (var publish in new[] { LazyWebAssembly, Publisher.Publish(Publisher.Consumer, "BitBlazorUIIncludeScriptModules=true") })
+        {
+            publish.AssertSucceeded();
+
+            foreach (var package in new[] { Core, Extras })
+            {
+                CollectionAssert.Contains(publish.ReadTrimmedAssembly(package).Resources.ToList(), "bit-lazy-scripts.json", $"{package} lost the map of the modules the app publishes.");
+            }
+        }
+    }
+
+    [TestMethod]
     public void ALazyAppShouldPublishEveryModuleAndNoBundleWhereNothingIsTrimmed()
     {
         // A server app trims nothing unless it asks: every module, the full boot modules, no bundle.

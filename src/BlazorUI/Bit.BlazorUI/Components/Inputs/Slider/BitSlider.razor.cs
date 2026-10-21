@@ -592,7 +592,6 @@ public partial class BitSlider : BitInputBase<double>
         base.OnInitialized();
     }
 
-    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitSliderParams))]
     protected override void OnParametersSet()
     {
         // Before anything is read off the parameters, since the cascade fills in the ones the markup left unset -
