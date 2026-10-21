@@ -9,6 +9,7 @@ using Boilerplate.Server.Api.Features.Todo;
 //#if (multitenant == true)
 using System.Reflection;
 using Boilerplate.Server.Api.Features.Tenants;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
 //#endif
 //#if (database == "PostgreSQL" || database == "SqlServer")
 using Boilerplate.Server.Api.Infrastructure.Data.Configurations;
@@ -29,9 +30,18 @@ using CommunityToolkit.Datasync.Server.EntityFrameworkCore;
 
 namespace Boilerplate.Server.Api.Infrastructure.Data;
 
-public partial class AppDbContext(DbContextOptions<AppDbContext> options)
-    : IdentityDbContext<User, Role, Guid, UserClaim, UserRole, UserLogin, RoleClaim, UserToken>(options), IDataProtectionKeyContext
+public partial class AppDbContext
+    : IdentityDbContext<User, Role, Guid, UserClaim, UserRole, UserLogin, RoleClaim, UserToken>, IDataProtectionKeyContext
 {
+    public AppDbContext(DbContextOptions<AppDbContext> options)
+        : base(options)
+    {
+        //#if (multitenant == true)
+        ChangeTracker.Tracked += (_, e) => StampTenantId(e.Entry);
+        ChangeTracker.StateChanged += (_, e) => StampTenantId(e.Entry);
+        //#endif
+    }
+
     public DbSet<UserSession> UserSessions { get; set; } = default!;
 
     //#if (multitenant == true)
@@ -158,13 +168,6 @@ public partial class AppDbContext(DbContextOptions<AppDbContext> options)
     {
         ChangeTracker.DetectChanges();
 
-        //#if (multitenant == true)
-        foreach (var entry in ChangeTracker.Entries<ITenantAware>().Where(e => e.State is EntityState.Added && e.Entity.TenantId == default))
-        {
-            entry.Entity.TenantId = CurrentTenantId;
-        }
-        //#endif
-
         foreach (var entry in ChangeTracker.Entries().Where(e => e.State is EntityState.Added or EntityState.Modified or EntityState.Deleted))
         {
             if (entry.Properties.Any(p => p.Metadata.Name == "UpdatedAt"))
@@ -247,9 +250,17 @@ public partial class AppDbContext(DbContextOptions<AppDbContext> options)
     private TenantProvider tenantProvider => field ??= this.GetService<TenantProvider>();
     private Guid CurrentTenantId => tenantProvider.GetCurrentTenantId();
 
+    private void StampTenantId(EntityEntry entry)
+    {
+        if (entry is { State: EntityState.Added, Entity: ITenantAware { TenantId: var tenantId } } && tenantId == default)
+        {
+            entry.Property(nameof(ITenantAware.TenantId)).CurrentValue = CurrentTenantId;
+        }
+    }
+
     /// <summary>
     /// While reads are protected by the following row level security global query filters, INSERTs/Creates get their
-    /// TenantId stamped by <see cref="OnSavingChanges"/> when it is still default, resolved through TenantProvider.
+    /// TenantId stamped by <see cref="StampTenantId"/> as soon as they're added, when it is still default, resolved through TenantProvider.
     /// A controller only assigns it explicitly when the row belongs to a tenant other than the current one
     /// (See TenantController.Create as an example).
     /// </summary>
