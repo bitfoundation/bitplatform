@@ -10,7 +10,8 @@
       $(_BitAssetsMinify)    passed to its scripts command: a Release build minifies the pieces, and so the bundle
       the package            the pieces under buildTransitive\bit-assets, where the consumer-side targets read them
                              (Bit.BlazorUI's buildTransitive\Bit.BlazorUI.targets); with BitBlazorUIPackBuildTask set
-                             (Bit.BlazorUI's), the task itself under tasks\ too
+                             (Bit.BlazorUI's), the task itself under tasks\ too, and under tasks\fonttools the
+                             package.json and package-lock.json of what its Node.js cut of the icon font installs
       the assembly           obj\bit-assets\lazy-scripts.json as the resource bit-lazy-scripts.json: which module of the
                              lazy scripts exports what, read by the .NET side of BitBlazorUILazyScripts (BitScriptLoader);
                              and beside it an ILLink.Substitutions.xml removing that resource from a trimmed app that
@@ -78,6 +79,9 @@
             <_BitBlazorUIAssetPiece Include="$(BaseIntermediateOutputPath)bit-assets\**\*" />
             <TfmSpecificPackageFile Include="@(_BitBlazorUIAssetPiece)" PackagePath="buildTransitive\bit-assets\%(RecursiveDir)%(Filename)%(Extension)" />
             <TfmSpecificPackageFile Include="@(_BitBlazorUIBuildTaskAssembly)" PackagePath="tasks\%(Filename)%(Extension)" />
+            <!-- What the task's Node.js cut of the icon font installs, pinned (BitBlazorUITrimIconFont). -->
+            <!-- A folder for its PackagePath: %(Filename) here would batch over the pieces above, one copy of each per piece. -->
+            <TfmSpecificPackageFile Include="$(MSBuildThisFileDirectory)fonttools\package.json;$(MSBuildThisFileDirectory)fonttools\package-lock.json" Condition="'$(BitBlazorUIPackBuildTask)' == 'true'" PackagePath="tasks\fonttools\" />
         </ItemGroup>
     </Target>
 

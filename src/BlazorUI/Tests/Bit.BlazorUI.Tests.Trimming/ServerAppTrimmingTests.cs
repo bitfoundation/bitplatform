@@ -1,4 +1,8 @@
-﻿using Bit.BlazorUI.Tests.Trimming.Infrastructure;
+﻿using System.Text;
+using System.Text.Json;
+using System.Text.RegularExpressions;
+using Bit.BlazorUI.Build;
+using Bit.BlazorUI.Tests.Trimming.Infrastructure;
 
 namespace Bit.BlazorUI.Tests.Trimming;
 
@@ -103,6 +107,64 @@ public sealed class ServerAppTrimmingTests
     }
 
     [TestMethod]
+    public void TheIconFontShouldHoldTheGlyphsOfTheIconsKeptAndNothingElse()
+    {
+        // The default (BitBlazorUITrimIconFont Auto) cuts it on Node.js, which this machine has.
+        Trimmed.AssertSucceeded();
+        StringAssert.Contains(Trimmed.Output, "Bit.BlazorUI: Bit.BlazorUI.Icons/fonts/FabMDL2.4.66.woff2 -> ");
+        AssertTheFontDrawsTheStylesheetsGlyphs(Trimmed);
+    }
+
+    [TestMethod]
+    public void WhereNodeJsFailsTheDotNetCutShouldStandIn()
+    {
+        var publish = Publisher.Publish(Publisher.Fixture, "BitBlazorUITrimAssets=true", "BitBlazorUITrimIcons=true", $"BitBlazorUINodePath={NoNode}");
+        publish.AssertSucceeded();
+
+        StringAssert.Contains(publish.Output, "FabMDL2.4.66.woff2 cut down by .NET, since Node.js: ");
+        Assert.IsFalse(publish.Output.Contains("BITBLAZORUI006"), "The font was cut, yet the publish warns it was not.");
+        AssertTheFontDrawsTheStylesheetsGlyphs(publish);
+    }
+
+    [TestMethod]
+    public void WhereNoEngineCanCutTheFontItShouldBePublishedWholeAndSaySo()
+    {
+        var publish = Publisher.Publish(Publisher.Fixture, "BitBlazorUITrimAssets=true", "BitBlazorUITrimIcons=true", "BitBlazorUITrimIconFont=Node", $"BitBlazorUINodePath={NoNode}");
+        publish.AssertSucceeded();
+
+        StringAssert.Contains(publish.Output, "BITBLAZORUI006");
+        CollectionAssert.AreEqual(File.ReadAllBytes(FullFont), File.ReadAllBytes(publish.GetAssetPath(Icons, Font)), "A font no engine could cut was not published whole.");
+        Assert.IsFalse(publish.ReadAsset(Icons, "styles/bit.blazorui.icons.css").Contains(".bit-icon--Delete::before"), "The stylesheet was published whole along with the font.");
+    }
+
+    [TestMethod]
+    public void AnExplicitListShouldBeTheWholeOfTheIconsKept()
+    {
+        // No other trimming and no scan: the list is all Explicit goes on. Delete by its name, Accept by its codepoint - and
+        // not Add, which the code names.
+        var publish = Publisher.Publish(Publisher.Fixture, "BitBlazorUITrimIcons=Explicit", "BitBlazorUITrimIconFont=DotNet", "FixtureIcons=Delete|U+E8FB");
+        publish.AssertSucceeded();
+
+        CollectionAssert.AreEquivalent(new[] { "Delete", "Accept" }, KeptGlyphs(publish).Select(g => g.Name).ToList());
+        StringAssert.Contains(publish.Output, "Bit.BlazorUI: Bit.BlazorUI.Icons/fonts/FabMDL2.4.66.woff2 -> 2 of ");
+        Assert.IsFalse(publish.Output.Contains("since Node.js"), "BitBlazorUITrimIconFont=DotNet tried Node.js.");
+        AssertTheFontDrawsTheStylesheetsGlyphs(publish);
+
+        // Nothing else is trimmed by it.
+        CollectionAssert.AreEqual(File.ReadAllBytes(Path.Combine(Publisher.Root, Core, "wwwroot", "styles", "bit.blazorui.css")), File.ReadAllBytes(publish.GetAssetPath(Core, "styles/bit.blazorui.css")));
+    }
+
+    [TestMethod]
+    public void AnExplicitModeListingNothingShouldKeepNoIconAndSaySo()
+    {
+        var publish = Publisher.Publish(Publisher.Fixture, "BitBlazorUITrimIcons=Explicit", "BitBlazorUITrimIconFont=DotNet");
+        publish.AssertSucceeded();
+
+        StringAssert.Contains(publish.Output, "BITBLAZORUI007");
+        Assert.AreEqual(0, KeptGlyphs(publish).Count);
+    }
+
+    [TestMethod]
     public void TheVendorFoldersNothingLoadsShouldBeLeftOut()
     {
         Trimmed.AssertSucceeded();
@@ -160,6 +222,10 @@ public sealed class ServerAppTrimmingTests
         var asset = Publisher.Publish(Publisher.Fixture, "BitBlazorUITrimAssets=true", "FixtureAssets=NoSuchScript");
         Assert.AreNotEqual(0, asset.ExitCode, "A <BitBlazorUIAsset> naming no piece was let through.");
         StringAssert.Contains(asset.Output, "<BitBlazorUIAsset Include=\"NoSuchScript\" /> names no script or component stylesheet");
+
+        var icon = Publisher.Publish(Publisher.Fixture, "BitBlazorUITrimIcons=Explicit", "FixtureIcons=U+0041");
+        Assert.AreNotEqual(0, icon.ExitCode, "A <BitBlazorUIIcon> naming no glyph was let through.");
+        StringAssert.Contains(icon.Output, "<BitBlazorUIIcon Include=\"U+0041\" /> names no icon of Bit.BlazorUI.Icons");
     }
 
     [TestMethod]
@@ -245,6 +311,14 @@ public sealed class ServerAppTrimmingTests
         }");
         Assert.IsFalse(add is "none" or "normal" or "" or "\"\"", $"The Add glyph the code names is not drawn: {add}");
 
+        // From the font cut down to the icons kept, which loads.
+        var fontStatus = await page.EvaluateAsync<string[]>(@"async glyph => {
+            try { await document.fonts.load('16px ""Fabric MDL2""', glyph); } catch { }
+            return [...document.fonts].filter(f => f.family.replace(/""/g, '') === 'Fabric MDL2').map(f => f.status);
+        }", JsonSerializer.Deserialize<string>(add));
+        CollectionAssert.Contains(fontStatus, "loaded", $"The icon font did not load in {engine}: {string.Join(", ", fontStatus)}");
+        CollectionAssert.DoesNotContain(fontStatus, "error", $"The icon font failed to load in {engine}.");
+
         session.AssertNoErrors($"The trimmed server app in {engine}");
     }
 
@@ -304,5 +378,48 @@ public sealed class ServerAppTrimmingTests
 
         CollectionAssert.Contains(publish.KeptScripts(Core), "BitTheme");
         CollectionAssert.DoesNotContain(Trimmed.KeptScripts(Core), "BitTheme");
+    }
+
+    private const string Font = "fonts/FabMDL2.4.66.woff2";
+
+    private static string FullFont => Path.Combine(Publisher.Root, Icons, "wwwroot", Font.Replace('/', Path.DirectorySeparatorChar));
+
+    // A node executable no machine has, for the Node.js cut to fail on at once.
+    private static string NoNode => Path.Combine(Path.GetTempPath(), "bit-blazorui-trimming", "no-node", "node");
+
+    // The glyphs the published icon stylesheet keeps, each with the codepoint its rule draws.
+    private static List<(string Name, int Codepoint)> KeptGlyphs(PublishResult publish)
+    {
+        var css = publish.ReadAsset(Icons, "styles/bit.blazorui.icons.css");
+        return [.. Regex.Matches(css, @"\.bit-icon--(?<name>[A-Za-z0-9_-]+)::?before\{[^{}]*\}")
+                        .Select(m => (m.Groups["name"].Value, IconFontSubsetter.Codepoint(m.Value) ?? throw new AssertFailedException($"{m.Value} draws no codepoint.")))];
+    }
+
+    // The published font is a WOFF2 holding .notdef and exactly the glyphs the published stylesheet draws - each the full
+    // font's own (by outline: the full font's transformed glyf read back, against whichever engine wrote the cut).
+    private static void AssertTheFontDrawsTheStylesheetsGlyphs(PublishResult publish)
+    {
+        var bytes = File.ReadAllBytes(publish.GetAssetPath(Icons, Font));
+        Assert.AreEqual("wOF2", Encoding.ASCII.GetString(bytes, 0, 4), "The published icon font is not a WOFF2.");
+
+        var full = Woff2.Read(File.ReadAllBytes(FullFont));
+        var cut = Woff2.Read(bytes);
+        var fullCmap = TrueTypeSubsetter.ReadCmap(full.Tables["cmap"]);
+        var cutCmap = TrueTypeSubsetter.ReadCmap(cut.Tables["cmap"]);
+
+        // The font has no glyph for some of the stylesheet's icons (ContactInfoMirrored), cut or not.
+        var drawn = KeptGlyphs(publish).Select(g => g.Codepoint).Where(fullCmap.ContainsKey).ToList();
+        CollectionAssert.AreEquivalent(drawn, cutCmap.Keys.ToList(), "The published font does not hold exactly the glyphs of the published stylesheet.");
+        Assert.AreEqual(drawn.Count + 1, cut.Glyphs.Count, "The published font holds glyphs beside .notdef and those of the published stylesheet.");
+
+        foreach (var codepoint in drawn)
+        {
+            var expected = full.Glyphs[fullCmap[codepoint]];
+            var actual = cut.Glyphs[cutCmap[codepoint]];
+
+            // A glyph read out of glyf and loca carries the padding that aligns the next one.
+            Assert.IsTrue(actual.Length - expected.Length is >= 0 and < 4 && actual.Take(expected.Length).SequenceEqual(expected) && actual.Skip(expected.Length).All(b => b == 0),
+                          $"U+{codepoint:X4} is not drawn with the full font's glyph.");
+        }
     }
 }

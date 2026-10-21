@@ -65,11 +65,29 @@
                                  loading one names its folder (_content/Bit.BlazorUI.Legacy/pdf.js/), and so does markup
                                  of the app's own that links one. They are never downloaded unless asked for, so this
                                  is the size of the publish, not of a page. Default: BitBlazorUITrimAssets.
-      BitBlazorUITrimIcons       Trim bit.blazorui.icons.css (Bit.BlazorUI.Icons) down to the glyphs whose names appear
-                                 in the app's code. Default: false, whatever the switches above say - an app that reads
-                                 icon names out of data (a menu from a database, a user's choice) names them nowhere in
-                                 its code. Turn it on where every icon is named in code, and list the others with
-                                 <BitBlazorUIIcon>.
+      BitBlazorUITrimIcons       Trim bit.blazorui.icons.css (Bit.BlazorUI.Icons), and the icon font it loads, down to the
+                                 glyphs of the icons the app uses. Default: false, whatever the switches above say - an
+                                 app that reads icon names out of data (a menu from a database, a user's choice) names
+                                 them nowhere in its code.
+                                 true      The glyphs whose names appear in the app's code and markup, and the ones
+                                           <BitBlazorUIIcon> lists. Turn it on where every icon is named in code.
+                                 Explicit  Exactly the glyphs <BitBlazorUIIcon> lists, nothing read off the app: for an app
+                                           whose icons the code does not show (names from data, glyphs its own
+                                           stylesheets draw from the font by codepoint). The list is all it goes on, so
+                                           it trims the icons with none of the signals below - with no list, no icon.
+      BitBlazorUITrimIconFont    How the icon font (fonts/FabMDL2.4.66.woff2) is cut down to the glyphs kept, wherever
+                                 BitBlazorUITrimIcons is on.
+                                 Auto      (default) On Node.js - fonttools, which writes the smallest font - and where
+                                           that fails (no Node.js, no network for its first download), on .NET.
+                                 Node      On Node.js alone: fonttools' pyftsubset (@web-alchemy/fonttools on Pyodide),
+                                           installed once per machine with npm ci from the package-lock.json the
+                                           package ships (tasks/fonttools), into the user's local application data.
+                                 DotNet    On .NET alone: no Node.js and no download, a font a little larger. Needs the
+                                           dotnet CLI's MSBuild: the .NET Framework one of Visual Studio has no Brotli
+                                           to read and write WOFF2 with, and publishes the font whole.
+                                 false     The font is published whole.
+      BitBlazorUINodePath        The node executable the Node.js cut runs (npm beside it). Default: the PATH's - set it
+                                 where the build does not see the one a shell would (Visual Studio, a CI agent).
 
     What it goes on - what the trimming KNOWS. With none of these in play it stands down and the full set is published:
 
@@ -113,9 +131,11 @@
                                  in <BitBlazorUIComponent> for everything it needs. A name that is neither fails the
                                  publish.
 
-      <BitBlazorUIIcon Include="Add;Delete" />
+      <BitBlazorUIIcon Include="Add;Delete;U+E8FB" />
                                  Glyphs kept whatever the code says, with BitBlazorUITrimIcons on - the icon names that
-                                 come from data.
+                                 come from data, and the glyphs a stylesheet of the app's own draws from the font by
+                                 codepoint, which it names as the stylesheet writes it (U+E8FB, \E8FB or 0xE8FB). With
+                                 BitBlazorUITrimIcons Explicit, the whole of the glyphs kept.
 
       <BitBlazorUIScanAssembly Include="..." />
                                  Which assemblies BitBlazorUIScan reads. Defaults to this project's own assembly and its
@@ -137,8 +157,10 @@
     uses a function of another package that no package of the app exports - the packages are of different versions),
     BITBLAZORUI002 (the scan read no assembly referencing the packages, so it kept everything), BITBLAZORUI003
     (<BitBlazorUIIcon> items without Bit.BlazorUI.Icons), BITBLAZORUI004 (a service worker assets manifest the trimming
-    could not read, published as it was) and BITBLAZORUI005 (a service worker script that does not carry its manifest's
-    version, so an installed app is not told to update - see BitBlazorUIUpdateServiceWorker).
+    could not read, published as it was), BITBLAZORUI005 (a service worker script that does not carry its manifest's
+    version, so an installed app is not told to update - see BitBlazorUIUpdateServiceWorker), BITBLAZORUI006 (an icon font
+    no engine of BitBlazorUITrimIconFont could cut down, published whole, with each one's reason) and BITBLAZORUI007
+    (BitBlazorUITrimIcons Explicit with no <BitBlazorUIIcon>, which keeps no icon).
 
     Where these go. On the project that publishes the app - the Blazor WebAssembly project, or the server project of a
     Blazor Web App - and not in a shared Directory.Build.props: from there they would also reach the Razor class
@@ -201,6 +223,11 @@
         <BitBlazorUIBuildTasksAssembly Condition="'$(BitBlazorUIBuildTasksAssembly)' == '' and Exists('$(MSBuildThisFileDirectory)..\tasks\Bit.BlazorUI.Build.dll')">$(MSBuildThisFileDirectory)..\tasks\Bit.BlazorUI.Build.dll</BitBlazorUIBuildTasksAssembly>
         <_BitBlazorUITasksFromSource Condition="'$(BitBlazorUIBuildTasksAssembly)' == ''">true</_BitBlazorUITasksFromSource>
         <BitBlazorUIBuildTasksAssembly Condition="'$(BitBlazorUIBuildTasksAssembly)' == ''">$(MSBuildThisFileDirectory)..\..\Bit.BlazorUI.Build\bin\$(Configuration)\netstandard2.0\Bit.BlazorUI.Build.dll</BitBlazorUIBuildTasksAssembly>
+
+        <!-- What the Node.js cut of the icon font installs (BitBlazorUITrimIconFont): a package.json and the package-lock.json
+             pinning it, beside the task - tasks\fonttools in the package, Bit.BlazorUI.Build\fonttools in the source tree. -->
+        <_BitBlazorUIFontToolsDirectory Condition="Exists('$(MSBuildThisFileDirectory)..\tasks\fonttools\package-lock.json')">$(MSBuildThisFileDirectory)..\tasks\fonttools\</_BitBlazorUIFontToolsDirectory>
+        <_BitBlazorUIFontToolsDirectory Condition="'$(_BitBlazorUIFontToolsDirectory)' == ''">$(MSBuildThisFileDirectory)..\..\Bit.BlazorUI.Build\fonttools\</_BitBlazorUIFontToolsDirectory>
 
         <!-- Appended, not assigned: the SDK's own definition of this property, imported after this file, keeps what it
              already holds. The stage at which the WebAssembly SDK swaps in its trimmed assemblies - after ILLink has run,
@@ -474,13 +501,27 @@
             <BitBlazorUITrimVendorAssets Condition="'$(_BitBlazorUITrimVendorAssetsDefaulted)' == 'true'">true</BitBlazorUITrimVendorAssets>
         </PropertyGroup>
 
-        <PropertyGroup>
-            <_BitBlazorUITrimAny>false</_BitBlazorUITrimAny>
-            <_BitBlazorUITrimAny Condition="'$(BitBlazorUITrimScripts)' == 'true' or '$(BitBlazorUITrimStyles)' == 'true' or '$(BitBlazorUITrimIcons)' == 'true' or '$(BitBlazorUITrimVendorAssets)' == 'true'">true</_BitBlazorUITrimAny>
+        <!-- BitBlazorUITrimIcons is true, Explicit or false; MSBuild compares them without regard to case. -->
+        <Error Condition="'$(BitBlazorUITrimIcons)' != 'true' and '$(BitBlazorUITrimIcons)' != 'false' and '$(BitBlazorUITrimIcons)' != 'Explicit'"
+               Text="Bit.BlazorUI: '$(BitBlazorUITrimIcons)' is not a BitBlazorUITrimIcons value; use true, Explicit or false." />
 
-            <!-- On wherever a switch is on, so an app asking for the trimming asks for nothing else: on a publish ILLink
-                 never touched, the scan is the only thing that can answer what to trim to. -->
-            <BitBlazorUIScan Condition="'$(_BitBlazorUIScanRequested)' != 'true' and '$(_BitBlazorUITrimAny)' == 'true'">TypeReferences</BitBlazorUIScan>
+        <PropertyGroup>
+            <_BitBlazorUITrimIcons>false</_BitBlazorUITrimIcons>
+            <_BitBlazorUITrimIcons Condition="'$(BitBlazorUITrimIcons)' == 'true' or '$(BitBlazorUITrimIcons)' == 'Explicit'">true</_BitBlazorUITrimIcons>
+            <_BitBlazorUIExplicitIcons>false</_BitBlazorUIExplicitIcons>
+            <_BitBlazorUIExplicitIcons Condition="'$(BitBlazorUITrimIcons)' == 'Explicit'">true</_BitBlazorUIExplicitIcons>
+
+            <_BitBlazorUITrimAny>false</_BitBlazorUITrimAny>
+            <_BitBlazorUITrimAny Condition="'$(BitBlazorUITrimScripts)' == 'true' or '$(BitBlazorUITrimStyles)' == 'true' or '$(_BitBlazorUITrimIcons)' == 'true' or '$(BitBlazorUITrimVendorAssets)' == 'true'">true</_BitBlazorUITrimAny>
+
+            <!-- Whether anything is trimmed off what the app is read for: everything but the icons of an Explicit list,
+                 which is a signal of its own. -->
+            <_BitBlazorUITrimByApp>false</_BitBlazorUITrimByApp>
+            <_BitBlazorUITrimByApp Condition="'$(BitBlazorUITrimScripts)' == 'true' or '$(BitBlazorUITrimStyles)' == 'true' or '$(BitBlazorUITrimVendorAssets)' == 'true' or ('$(_BitBlazorUITrimIcons)' == 'true' and '$(_BitBlazorUIExplicitIcons)' != 'true')">true</_BitBlazorUITrimByApp>
+
+            <!-- On wherever a switch reading the app is on, so an app asking for the trimming asks for nothing else: on a
+                 publish ILLink never touched, the scan is the only thing that can answer what to trim to. -->
+            <BitBlazorUIScan Condition="'$(_BitBlazorUIScanRequested)' != 'true' and '$(_BitBlazorUITrimByApp)' == 'true'">TypeReferences</BitBlazorUIScan>
             <BitBlazorUIScan Condition="'$(BitBlazorUIScan)' == ''">None</BitBlazorUIScan>
 
             <!-- ILLink's answer supersedes the scan: both answer what the app can use, and the trimmed assemblies answer it
@@ -489,7 +530,7 @@
             <_BitBlazorUIScanMode Condition="'$(_BitBlazorUIUseTrimmedAssemblies)' != 'true'">$(BitBlazorUIScan)</_BitBlazorUIScanMode>
 
             <_BitBlazorUIHasSignal>false</_BitBlazorUIHasSignal>
-            <_BitBlazorUIHasSignal Condition="'$(_BitBlazorUIUseTrimmedAssemblies)' == 'true' or '$(_BitBlazorUIScanMode)' != 'None' or '@(BitBlazorUIComponent)' != ''">true</_BitBlazorUIHasSignal>
+            <_BitBlazorUIHasSignal Condition="'$(_BitBlazorUIUseTrimmedAssemblies)' == 'true' or '$(_BitBlazorUIScanMode)' != 'None' or '@(BitBlazorUIComponent)' != '' or '$(_BitBlazorUIExplicitIcons)' == 'true'">true</_BitBlazorUIHasSignal>
 
             <_BitBlazorUIPublishTrimming>false</_BitBlazorUIPublishTrimming>
             <_BitBlazorUIPublishTrimming Condition="'$(_BitBlazorUITrimAny)' == 'true' and '$(_BitBlazorUIHasSignal)' == 'true' and '$(_BitBlazorUIIsTrimmingHead)' == 'true' and '$(_BitBlazorUIPublishedByHost)' != 'true' and '$(WasmBuildingForNestedPublish)' != 'true' and '$(DesignTimeBuild)' != 'true'">true</_BitBlazorUIPublishTrimming>
@@ -573,7 +614,11 @@
                                TrimScripts="$(_BitBlazorUITrimScriptBundles)"
                                TrimScriptModules="$(_BitBlazorUITrimScriptModules)"
                                TrimStyles="$(BitBlazorUITrimStyles)"
-                               TrimIcons="$(BitBlazorUITrimIcons)"
+                               TrimIcons="$(_BitBlazorUITrimIcons)"
+                               ExplicitIcons="$(_BitBlazorUIExplicitIcons)"
+                               IconFont="$(BitBlazorUITrimIconFont)"
+                               NodePath="$(BitBlazorUINodePath)"
+                               FontToolsDirectory="$(_BitBlazorUIFontToolsDirectory)"
                                VendorFolders="@(BitBlazorUIVendorFolder)"
                                TrimVendorAssets="$(BitBlazorUITrimVendorAssets)"
                                OutputDirectory="$(_BitBlazorUITrimmedAssetsDirectory)"

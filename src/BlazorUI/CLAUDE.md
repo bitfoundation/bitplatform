@@ -81,6 +81,11 @@ trimmed - off the app's type references and everything they reach. A piece left 
   `_content/<package>/<folder>/` is.
 - **A class that only registers services carries `[BitAssetTrimmingRegistrar]`**: the scan does not follow it, since
   registering renders nothing and an app using a service names it itself.
+- **The icon font is cut with the icon stylesheet** (`BitBlazorUITrimIcons`, `IconFontSubsetter.cs`): to the codepoints
+  the kept glyph rules draw, on Node.js (fonttools, pinned by `Bit.BlazorUI.Build/fonttools/package-lock.json` and installed
+  with `npm ci`), with this assembly's own WOFF2 reader, TrueType subsetter and writer as the fallback (`Woff2.cs`,
+  `TrueTypeSubsetter.cs`). A glyph rule always draws one codepoint the font has (`BitIconFontCutTests` lists the one that
+  does not, `ContactInfoMirrored`); a change to the .NET cut's output raises its `DotNetVersion`, so no stale cut is reused.
 - `BitAssetTrimmingContractTests` checks these against the compiled assemblies (every identifier resolves, every owner is a
   type, every component brings the stylesheets of the classes it renders); `Tests/Bit.BlazorUI.Tests.Trimming` publishes
   real apps and reads what came out (`dotnet run`, see its README). Run both after touching a script's exports, a

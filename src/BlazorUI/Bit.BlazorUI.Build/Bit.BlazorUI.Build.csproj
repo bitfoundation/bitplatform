@@ -32,6 +32,9 @@
 
     <ItemGroup>
         <None Include="build-assets.mjs;Bit.BlazorUI.Assets.targets" />
+        <!-- What the Node.js cut of the icon font installs (NodeFontSubsetter.cs), packed beside the task under
+             tasks/fonttools by Bit.BlazorUI.Assets.targets. -->
+        <None Include="fonttools\package.json;fonttools\package-lock.json" />
     </ItemGroup>
 
 </Project>

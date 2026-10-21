@@ -65,7 +65,7 @@ public sealed class TrimBitBlazorUIAssets : Task
     /// <summary>Scripts and component stylesheets the csproj keeps by name (BitBlazorUIAsset).</summary>
     public ITaskItem[] Assets { get; set; } = [];
 
-    /// <summary>Icons the csproj keeps by name (BitBlazorUIIcon).</summary>
+    /// <summary>Icons the csproj keeps by name or by codepoint (BitBlazorUIIcon).</summary>
     public ITaskItem[] Icons { get; set; } = [];
 
     /// <summary>Puts the script bundles back together from the scripts the app keeps.</summary>
@@ -80,6 +80,24 @@ public sealed class TrimBitBlazorUIAssets : Task
     public bool TrimStyles { get; set; }
 
     public bool TrimIcons { get; set; }
+
+    /// <summary>
+    /// Keeps exactly the icons the csproj names (BitBlazorUIIcon) and none the app's code or markup is read for - where
+    /// BitBlazorUITrimIcons is Explicit. The list is the whole signal of the icons then, so it trims them with no other.
+    /// </summary>
+    public bool ExplicitIcons { get; set; }
+
+    /// <summary>
+    /// How the icon font is cut down to the glyphs kept (BitBlazorUITrimIconFont): Auto (Node.js, and the .NET cut where it
+    /// fails - the default), Node, DotNet, or false to publish it whole.
+    /// </summary>
+    public string? IconFont { get; set; }
+
+    /// <summary>The node executable the Node.js cut of the icon font runs on (BitBlazorUINodePath); the PATH's where empty.</summary>
+    public string? NodePath { get; set; }
+
+    /// <summary>The folder of the package.json and package-lock.json pinning what the Node.js cut of the icon font runs.</summary>
+    public string? FontToolsDirectory { get; set; }
 
     /// <summary>
     /// The folders of the packages' static web assets that a component loads at run time (a vendored library, a set of
@@ -131,12 +149,20 @@ public sealed class TrimBitBlazorUIAssets : Task
     private const string UnresolvedExternalCode = "BITBLAZORUI001";
     private const string NothingScannedCode = "BITBLAZORUI002";
     private const string IconsWithoutPackageCode = "BITBLAZORUI003";
+    private const string IconFontWholeCode = "BITBLAZORUI006";
+    private const string NoExplicitIconsCode = "BITBLAZORUI007";
 
     private static readonly string[] ScanModes = ["None", "TypeReferences", "TypeNames"];
 
     private bool Run()
     {
         if (TrimScripts is false && TrimScriptModules is false && TrimStyles is false && TrimIcons is false && TrimVendorAssets is false) return StandDown(null);
+
+        if (TryParseIconFont(out var iconFont) is false)
+        {
+            Log.LogError("Bit.BlazorUI: '{0}' is not a BitBlazorUITrimIconFont value; use Auto, Node, DotNet or false.", IconFont);
+            return false;
+        }
 
         var packages = AssetFolders.Select(f => PackageAssets.Load(f.GetMetadata("FullPath"))).ToList();
         var duplicate = packages.GroupBy(p => p.PackageId, StringComparer.Ordinal).FirstOrDefault(g => g.Count() > 1);
@@ -161,7 +187,19 @@ public sealed class TrimBitBlazorUIAssets : Task
 
         // The components a csproj names are the whole of what it renders where nothing else says so. The scripts,
         // stylesheets and icons it names only add to what something else said: a list of glyphs is no list of components.
-        if (trimmed is false && scan is false && Components.Length == 0) return StandDown("nothing says what this app uses (no trimmed publish, no scan, no <BitBlazorUIComponent> in the csproj)");
+        // Except where BitBlazorUITrimIcons is Explicit, whose list is the whole of the icons kept: it trims the icons alone
+        // then, and everything else is published whole.
+        if (trimmed is false && scan is false && Components.Length == 0)
+        {
+            const string nothing = "nothing says what this app uses (no trimmed publish, no scan, no <BitBlazorUIComponent> in the csproj)";
+            if (TrimIcons is false || ExplicitIcons is false) return StandDown(nothing);
+
+            if (TrimScripts || TrimScriptModules || TrimStyles || TrimVendorAssets)
+            {
+                Log.LogMessage(MessageImportance.High, "Bit.BlazorUI: {0}; publishing the full scripts and stylesheets, and only the icons the <BitBlazorUIIcon> items name (BitBlazorUITrimIcons is Explicit).", nothing);
+            }
+            TrimScripts = TrimScriptModules = TrimStyles = TrimVendorAssets = false;
+        }
 
         var presentNames = new HashSet<string>(StringComparer.Ordinal);
         // Sets, not lists: the library's literals repeat once per type that loads them, and every text is searched for
@@ -281,14 +319,31 @@ public sealed class TrimBitBlazorUIAssets : Task
         if (iconSets.Count > 0)
         {
             var known = iconSets.SelectMany(s => s.Glyphs.Rules.Select(g => g.Key)).ToList();
-            selection.SelectIcons(texts, known, iconSets.Select(s => s.Set.ClassPrefix));
 
+            // Explicit: the csproj's list is the whole of what is kept, nothing read off the app's code and markup.
+            if (ExplicitIcons is false) selection.SelectIcons(texts, known, iconSets.Select(s => s.Set.ClassPrefix));
+
+            // An icon is named by its glyph's name, or by its codepoint - what a stylesheet of the app's own drawing it
+            // straight from the font writes (content: "\E710").
             var knownSet = new HashSet<string>(known, StringComparer.Ordinal);
+            var byCodepoint = new Dictionary<int, string>();
+            foreach (var rule in iconSets.SelectMany(s => s.Glyphs.Rules))
+            {
+                if (IconFontSubsetter.Codepoint(rule.Value) is { } codepoint && byCodepoint.ContainsKey(codepoint) is false) byCodepoint[codepoint] = rule.Key;
+            }
+
             foreach (var item in Icons)
             {
                 var name = item.ItemSpec.Trim();
                 if (knownSet.Contains(name)) selection.Icons.Add(name);
-                else Log.LogError("Bit.BlazorUI: <BitBlazorUIIcon Include=\"{0}\" /> names no icon of Bit.BlazorUI.Icons.", name);
+                else if (IconFontSubsetter.TryParseCodepoint(name, out var codepoint) && byCodepoint.TryGetValue(codepoint, out var glyph)) selection.Icons.Add(glyph);
+                else Log.LogError("Bit.BlazorUI: <BitBlazorUIIcon Include=\"{0}\" /> names no icon of Bit.BlazorUI.Icons: neither a glyph's name (Add) nor its codepoint (U+E710, \\E710 or 0xE710).", name);
+            }
+
+            if (ExplicitIcons && Icons.Length == 0)
+            {
+                Log.LogWarning(null, NoExplicitIconsCode, null, null, 0, 0, 0, 0,
+                    "Bit.BlazorUI: BitBlazorUITrimIcons is Explicit, but no <BitBlazorUIIcon> item names an icon, so every icon of Bit.BlazorUI.Icons is left out. List the icons the app uses, by name or codepoint.");
             }
         }
         else if (Icons.Length > 0 && packages.All(p => p.IconSets.Count == 0))
@@ -323,7 +378,11 @@ public sealed class TrimBitBlazorUIAssets : Task
             if (TrimScriptModules) outputs.AddRange(AssetComposer.ComposeBoot(package, selection, OutputDirectory));
             if (TrimStyles) outputs.AddRange(AssetComposer.ComposeStyles(package, selection, OutputDirectory));
         }
-        foreach (var (package, set, glyphs) in iconSets) outputs.Add(AssetComposer.ComposeIcons(package, set, glyphs, selection, OutputDirectory));
+        foreach (var (package, set, glyphs) in iconSets)
+        {
+            outputs.Add(AssetComposer.ComposeIcons(package, set, glyphs, selection, OutputDirectory));
+            if (iconFont is { } engine && CutIconFont(package, set, glyphs, selection, engine) is { } font) outputs.Add(font);
+        }
 
         Report(packages, selection, outputs);
 
@@ -393,6 +452,54 @@ public sealed class TrimBitBlazorUIAssets : Task
         }
 
         return removed;
+    }
+
+    // The icon font, cut down to the glyphs of the icons kept and swapped in at its own URL like the bundles are. Published
+    // whole where no engine could cut it, with the reason each one gave.
+    private AssetComposer.Output? CutIconFont(PackageAssets package, IconSet set, AssetComposer.IconGlyphs glyphs, AssetSelection selection, IconFontSubsetter.Engine engine)
+    {
+        if (set.Font is null) return null;
+
+        var suffix = "/" + set.Font;
+        var font = StaticWebAssets.FirstOrDefault(a => string.Equals(a.GetMetadata("SourceId"), package.PackageId, StringComparison.OrdinalIgnoreCase)
+            && string.Equals(a.GetMetadata("AssetRole"), "Primary", StringComparison.OrdinalIgnoreCase)
+            && Normalize(a.GetMetadata("FullPath")).EndsWith(suffix, StringComparison.OrdinalIgnoreCase));
+        if (font is null) return null;
+
+        var result = IconFontSubsetter.Subset(package, set, glyphs, selection, font.GetMetadata("FullPath"), engine, OutputDirectory,
+                                              FontToolsDirectory ?? string.Empty, string.IsNullOrWhiteSpace(NodePath) ? null : NodePath!.Trim());
+
+        if (result.Output is null)
+        {
+            if (result.Failures.Count > 0)
+            {
+                Log.LogWarning(null, IconFontWholeCode, null, null, 0, 0, 0, 0,
+                    "Bit.BlazorUI: {0}/{1} is published whole, since it could not be cut down to the icons kept - {2}. Set BitBlazorUITrimIconFont to false to publish it whole without trying.",
+                    package.PackageId, set.Font, string.Join("; ", result.Failures));
+            }
+            return null;
+        }
+
+        // Which cut it took, said where a publish says what it did - out loud where the first engine failed and the second
+        // stood in, since that one's font is a little larger.
+        Log.LogMessage(result.Failures.Count > 0 ? MessageImportance.High : MessageImportance.Normal, "Bit.BlazorUI: {0}/{1} cut down by {2}{3}{4}.",
+            package.PackageId, set.Font, result.CutBy, result.Reused ? " (the cut of an earlier publish, from the same font and icons)" : "",
+            result.Failures.Count > 0 ? $", since {string.Join("; ", result.Failures)}" : "");
+
+        return result.Output;
+    }
+
+    private bool TryParseIconFont(out IconFontSubsetter.Engine? engine)
+    {
+        var value = IconFont?.Trim() ?? string.Empty;
+        engine = null;
+
+        if (value.Length == 0 || value.Equals("true", StringComparison.OrdinalIgnoreCase) || value.Equals(nameof(IconFontSubsetter.Engine.Auto), StringComparison.OrdinalIgnoreCase)) engine = IconFontSubsetter.Engine.Auto;
+        else if (value.Equals(nameof(IconFontSubsetter.Engine.Node), StringComparison.OrdinalIgnoreCase)) engine = IconFontSubsetter.Engine.Node;
+        else if (value.Equals(nameof(IconFontSubsetter.Engine.DotNet), StringComparison.OrdinalIgnoreCase)) engine = IconFontSubsetter.Engine.DotNet;
+        else if (value.Equals("false", StringComparison.OrdinalIgnoreCase) is false) return false;
+
+        return true;
     }
 
     private bool StandDown(string? why, MessageImportance importance = MessageImportance.Normal)

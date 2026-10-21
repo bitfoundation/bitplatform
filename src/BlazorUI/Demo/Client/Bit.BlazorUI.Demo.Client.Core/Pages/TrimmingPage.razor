@@ -179,7 +179,12 @@ Bit.BlazorUI: _content/Bit.BlazorUI.Legacy/pdf.js/ -> left out (2 files): nothin
                             <tr>
                                 <th scope="row"><code>BitBlazorUITrimIcons</code></th>
                                 <td><code>false</code>, whatever the others say</td>
-                                <td><code>bit.blazorui.icons.css</code>, down to the glyphs the code names.</td>
+                                <td><code>bit.blazorui.icons.css</code> and its font, down to the glyphs the code names - or with <code>Explicit</code>, the ones you list (<a href="#icons">Icons</a>).</td>
+                            </tr>
+                            <tr>
+                                <th scope="row"><code>BitBlazorUITrimIconFont</code></th>
+                                <td><code>Auto</code> wherever icons are trimmed</td>
+                                <td>How the icon font is cut: on Node.js, and on .NET where that fails (<a href="#icons-font">The icon font</a>).</td>
                             </tr>
                         </tbody>
                     </table>
@@ -190,7 +195,7 @@ Bit.BlazorUI: _content/Bit.BlazorUI.Legacy/pdf.js/ -> left out (2 files): nothin
     &lt;BitBlazorUITrimScripts>true&lt;/BitBlazorUITrimScripts>
     &lt;BitBlazorUITrimStyles>true&lt;/BitBlazorUITrimStyles>
     &lt;BitBlazorUITrimVendorAssets>true&lt;/BitBlazorUITrimVendorAssets> &lt;!-- pdf.js, quill, leaflet, flags... -->
-    &lt;BitBlazorUITrimIcons>true&lt;/BitBlazorUITrimIcons>               &lt;!-- off unless set -->
+    &lt;BitBlazorUITrimIcons>true&lt;/BitBlazorUITrimIcons>               &lt;!-- or Explicit; off unless set -->
 &lt;/PropertyGroup></CodeBox>
             </DocSection>
 
@@ -288,7 +293,9 @@ Bit.BlazorUI: _content/Bit.BlazorUI.Legacy/pdf.js/ -> left out (2 files): nothin
                         No trimmed publish, the scan set to <code>None</code> and no component named: the full bundles are
                         published. Names of scripts, stylesheets or icons alone trim nothing either - a list of glyphs says
                         nothing of the components an app renders - while <code>&lt;BitBlazorUIComponent&gt;</code> items
-                        are a signal of their own: the whole of what the app renders.
+                        are a signal of their own: the whole of what the app renders. So are the
+                        <code>&lt;BitBlazorUIIcon&gt;</code> items with <code>BitBlazorUITrimIcons</code> set to
+                        <code>Explicit</code>, for the icons alone: the whole of the icons kept.
                     </BitText>
                 </DocSection>
             </DocSection>
@@ -299,7 +306,7 @@ Bit.BlazorUI: _content/Bit.BlazorUI.Legacy/pdf.js/ -> left out (2 files): nothin
                 <CodeBox Language="xml">&lt;ItemGroup>
     &lt;BitBlazorUIComponent Include="BitChart;BitDataGrid" />    &lt;!-- a component, with everything it needs -->
     &lt;BitBlazorUIAsset Include="Callouts;BitButton" />         &lt;!-- a script or a stylesheet, by name -->
-    &lt;BitBlazorUIIcon Include="Add;Delete" />                  &lt;!-- a glyph, with BitBlazorUITrimIcons on -->
+    &lt;BitBlazorUIIcon Include="Add;Delete;U+E8FB" />           &lt;!-- a glyph, by name or codepoint, with BitBlazorUITrimIcons on -->
     &lt;BitBlazorUIScanFile Include="..\Host\wwwroot\index.html" /> &lt;!-- a file to read like the app's own -->
 &lt;/ItemGroup></CodeBox>
 
@@ -322,7 +329,7 @@ Bit.BlazorUI: _content/Bit.BlazorUI.Legacy/pdf.js/ -> left out (2 files): nothin
                             </tr>
                             <tr>
                                 <th scope="row"><code>BitBlazorUIIcon</code></th>
-                                <td>A glyph of Bit.BlazorUI.Icons, with <code>BitBlazorUITrimIcons</code> on - the icon names that come from data. With the switch off the stylesheet is published whole, and the publish says in a line of its own that the items kept nothing.</td>
+                                <td>A glyph of Bit.BlazorUI.Icons, with <code>BitBlazorUITrimIcons</code> on, by its name (<code>Add</code>) or its codepoint (<code>U+E710</code>, <code>\E710</code>, <code>0xE710</code>) - the icon names that come from data, the glyphs a stylesheet of your own draws from the font. With <code>Explicit</code>, the whole of the icons kept. With the switch off the stylesheet is published whole, and the publish says in a line of its own that the items kept nothing.</td>
                             </tr>
                             <tr>
                                 <th scope="row"><code>BitBlazorUIScanFile</code></th>
@@ -350,18 +357,64 @@ Bit.BlazorUI: _content/Bit.BlazorUI.Legacy/pdf.js/ -> left out (2 files): nothin
                         Description="Trimmed only when you ask for it, because an app can read icon names out of data, where no code names them.">
 
                 <CodeBox Language="xml">&lt;PropertyGroup>
-    &lt;BitBlazorUITrimIcons>true&lt;/BitBlazorUITrimIcons>
+    &lt;BitBlazorUITrimIcons>true&lt;/BitBlazorUITrimIcons> &lt;!-- or Explicit -->
 &lt;/PropertyGroup></CodeBox>
 
                 <BitText Element="p">
-                    The glyphs kept are the ones whose names the app's code and markup hold - <code>BitIconName.Add</code>
-                    is a constant, so its value is a string literal of your own code - whether a name stands alone, after
-                    the class prefix (<code>bit-icon--Add</code>), or as one word of a longer string. An app whose menu
-                    comes from a database, or that lets users pick an icon, names those with
-                    <code>&lt;BitBlazorUIIcon&gt;</code>, or leaves the switch off. The <code>@@font-face</code> and the
-                    font files stay either way. Icons named without Bit.BlazorUI.Icons referenced are a warning
-                    (<code>BITBLAZORUI003</code>).
+                    With <code>true</code>, the glyphs kept are the ones whose names the app's code and markup hold -
+                    <code>BitIconName.Add</code> is a constant, so its value is a string literal of your own code -
+                    whether a name stands alone, after the class prefix (<code>bit-icon--Add</code>), or as one word of a
+                    longer string, and the ones <code>&lt;BitBlazorUIIcon&gt;</code> lists. An app whose menu comes from a
+                    database, or that lets users pick an icon, lists those. Icons listed without Bit.BlazorUI.Icons
+                    referenced are a warning (<code>BITBLAZORUI003</code>).
                 </BitText>
+
+                <DocSection Level="3" Id="icons-explicit" Title="Listing every icon yourself">
+                    <BitText Element="p">
+                        With <code>Explicit</code>, the publish reads nothing of the app for icons: the glyphs kept are
+                        exactly the ones <code>&lt;BitBlazorUIIcon&gt;</code> lists - an icon the code names is left out if
+                        the list does not name it too. For an app that knows its icons better than its code shows them,
+                        and wants nothing kept or dropped behind its back. The list is all it goes on, so it trims the icons
+                        with no other signal; a list naming nothing keeps no icon, and says so
+                        (<code>BITBLAZORUI007</code>).
+                    </BitText>
+                    <BitText Element="p">
+                        An icon is listed by its name, or by its codepoint - what a stylesheet of your own drawing the glyph
+                        straight from the font writes (<code>content: "\E8FB"</code>), which no publish reads:
+                    </BitText>
+                    <CodeBox Language="xml">&lt;PropertyGroup>
+    &lt;BitBlazorUITrimIcons>Explicit&lt;/BitBlazorUITrimIcons>
+&lt;/PropertyGroup>
+&lt;ItemGroup>
+    &lt;BitBlazorUIIcon Include="Add;Delete;ChevronDown" />
+    &lt;BitBlazorUIIcon Include="U+E8FB" /> &lt;!-- also \E8FB or 0xE8FB: Accept, drawn by a stylesheet of the app's own -->
+&lt;/ItemGroup></CodeBox>
+                </DocSection>
+
+                <DocSection Level="3" Id="icons-font" Title="The icon font">
+                    <BitText Element="p">
+                        The font the stylesheet loads (<code>fonts/FabMDL2.4.66.woff2</code>, 176,604 bytes) is cut down to
+                        the glyphs kept, and served at its own URL like the trimmed bundles - a few dozen icons are a few
+                        kilobytes. <code>BitBlazorUITrimIconFont</code> says how:
+                    </BitText>
+                    <ul>
+                        <li><code>Auto</code> - the default. On Node.js, and where that fails, on .NET - said in a line of its own, since that font is a little larger.</li>
+                        <li><code>Node</code> - on Node.js alone: fonttools' <code>pyftsubset</code>, which writes the smallest font. It is installed once per machine, into the user's local application data, with <code>npm ci</code> from the <code>package-lock.json</code> the package ships - every byte of it the one pinned there, none of its install scripts run - so the first publish needs the npm registry. <code>BitBlazorUINodePath</code> names the <code>node</code> executable where the build does not see the one a shell would.</li>
+                        <li><code>DotNet</code> - on .NET alone: no Node.js and no download. It needs the dotnet CLI's MSBuild; Visual Studio's, which runs on the .NET Framework, has no Brotli to read and write WOFF2 with, and publishes the font whole.</li>
+                        <li><code>false</code> - the font is published whole.</li>
+                    </ul>
+                    <BitText Element="p">
+                        A cut is kept in the project's <code>obj</code> folder and used again while the font, the icons and
+                        the setting stay the same, so a publish pays for it once - and one whose Node.js cut failed keeps the
+                        .NET cut until something changes. Where no engine can cut it, the font is published whole, with each
+                        engine's reason (<code>BITBLAZORUI006</code>). A stylesheet of your own using the font by codepoint
+                        lists its glyphs with <code>&lt;BitBlazorUIIcon&gt;</code> (above), or the cut leaves them out.
+                    </BitText>
+                    <CodeBox Language="xml">&lt;PropertyGroup>
+    &lt;BitBlazorUITrimIconFont>DotNet&lt;/BitBlazorUITrimIconFont> &lt;!-- Auto (default), Node, DotNet or false -->
+    &lt;BitBlazorUINodePath>C:\Program Files\nodejs\node.exe&lt;/BitBlazorUINodePath> &lt;!-- only where the build cannot find node -->
+&lt;/PropertyGroup></CodeBox>
+                </DocSection>
             </DocSection>
 
             <DocSection Id="vendor-files" Title="Vendor libraries and files"
@@ -600,6 +653,14 @@ var lazy = BitBlazorUIScripts.LazyScriptsEnabled;</CodeBox>
                                 <th scope="row"><code>BITBLAZORUI005</code></th>
                                 <td>The manifest was rewritten, but the service worker script does not carry the manifest's version (<code>/* Manifest version: ... */</code>, which the SDK writes into a <code>&lt;ServiceWorker&gt;</code> item's published content), so an installed app is not told to update.</td>
                             </tr>
+                            <tr>
+                                <th scope="row"><code>BITBLAZORUI006</code></th>
+                                <td>No engine of <code>BitBlazorUITrimIconFont</code> could cut the icon font down - no Node.js and no dotnet CLI's MSBuild, no network for the first download of fonttools - so it is published whole; the warning carries each engine's reason. <code>BitBlazorUITrimIconFont</code> set to <code>false</code> publishes it whole without trying.</td>
+                            </tr>
+                            <tr>
+                                <th scope="row"><code>BITBLAZORUI007</code></th>
+                                <td><code>BitBlazorUITrimIcons</code> is <code>Explicit</code>, but no <code>&lt;BitBlazorUIIcon&gt;</code> item lists an icon, so no icon is kept.</td>
+                            </tr>
                         </tbody>
                     </table>
                 </div>
@@ -644,8 +705,10 @@ var lazy = BitBlazorUIScripts.LazyScriptsEnabled;</CodeBox>
                     <div class="trouble">
                         <p class="trouble-symptom">Icons come out as empty boxes after a publish</p>
                         <p class="trouble-fix">
-                            <code>BitBlazorUITrimIcons</code> is on and the names come from data. List them with
-                            <code>&lt;BitBlazorUIIcon Include="..." /&gt;</code>, or turn the switch off.
+                            <code>BitBlazorUITrimIcons</code> is on and the names come from data, or a stylesheet of
+                            your own draws glyphs from the font by codepoint. List them with
+                            <code>&lt;BitBlazorUIIcon Include="..." /&gt;</code> - by name, or by codepoint
+                            (<code>U+E8FB</code>) - or turn the switch off.
                         </p>
                     </div>
                     <div class="trouble">
@@ -712,8 +775,18 @@ var lazy = BitBlazorUIScripts.LazyScriptsEnabled;</CodeBox>
                             </tr>
                             <tr>
                                 <th scope="row"><code>BitBlazorUITrimIcons</code></th>
-                                <td><code>true</code> | <code>false</code></td>
+                                <td><code>true</code> | <code>Explicit</code> | <code>false</code></td>
                                 <td><code>false</code></td>
+                            </tr>
+                            <tr>
+                                <th scope="row"><code>BitBlazorUITrimIconFont</code></th>
+                                <td><code>Auto</code> | <code>Node</code> | <code>DotNet</code> | <code>false</code></td>
+                                <td><code>Auto</code></td>
+                            </tr>
+                            <tr>
+                                <th scope="row"><code>BitBlazorUINodePath</code></th>
+                                <td>The path of a <code>node</code> executable</td>
+                                <td>The one on the <code>PATH</code></td>
                             </tr>
                             <tr>
                                 <th scope="row"><code>BitBlazorUIScan</code></th>
