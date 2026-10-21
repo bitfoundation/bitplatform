@@ -91,9 +91,6 @@ public class Middlewares
 
         UseSiteMap(app);
 
-        // blazor.web.js is endpoint-served from .NET 9 on, so UseStaticFiles never answers for it.
-        app.MapStaticAssets();
-
         app.MapRazorComponents<App>()
             .AddInteractiveServerRenderMode()
             .AddInteractiveWebAssemblyRenderMode()
