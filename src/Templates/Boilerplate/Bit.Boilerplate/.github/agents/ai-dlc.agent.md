@@ -100,7 +100,7 @@ When the user asks for one of these, or you conclude the task needs it:
 bit Boilerplate, bit BlazorUI and every other bit library ship together under one version number, and `bit.json` records the one this project is on. Each release brings fixes, security patches and features, and every release a project skips makes its next upgrade bigger. Once per session:
 
 1.  Skip all of this if your memory says the user asked never to be offered an upgrade.
-2.  Call the bit platform MCP server's `GetBitPlatformReleases` tool with the version `bit.json` records. If that tool isn't available to you, read the GitHub releases of `bitfoundation/bitplatform` instead. Only stable releases count.
+2.  Call the bit platform MCP server's `GetBitPlatformReleases` tool with the version `bit.json` records.
 3.  Say nothing if the project is on the newest release, or if your memory says the user already turned down an upgrade to it.
 4.  Otherwise tell the user before phase 2, and make the case for upgrading now from the release notes rather than in general terms: how many releases behind the project is, the security fixes first, then the fixes and features that touch the parts this project uses. Add that the **upgrade** skill (`.github/agents/upgrade.agent.md`) does the work on a branch of its own, keeps the team's changes, proves the result builds, passes its tests and runs, and merges nothing without their review. Keep it to a few lines and ask once.
 5.  If they agree, run the upgrade skill before phase 2, so the feature is planned and built on the newer code, then come back here. Until the upgrade is merged, start this feature's branch from the upgrade's.
