@@ -1,4 +1,7 @@
 //+:cnd:noEmit
+//#if (multitenant == true)
+using Boilerplate.Server.Api.Features.Tenants;
+//#endif
 
 namespace Boilerplate.Tests.Features.Identity;
 
@@ -85,9 +88,9 @@ public static class TestAccountUtils
         var userController = client.GetController<IUserController>();
 
         var tenants = await userController.GetTenants(cancellationToken);
-        Assert.IsNotEmpty(tenants, "A global admin should see every active tenant, and the template seeds one.");
+        Assert.Contains(tenant => tenant.Id == TenantConfiguration.FallbackTenantId, tenants, "A global admin should see every active tenant, the seeded one included.");
 
-        Assert.IsTrue(await client.AuthManager.SwitchTenant(tenants[0].Id, cancellationToken),
+        Assert.IsTrue(await client.AuthManager.SwitchTenant(TenantConfiguration.FallbackTenantId, cancellationToken),
             "Switching into the seeded tenant should succeed for a global admin.");
         //#endif
 
