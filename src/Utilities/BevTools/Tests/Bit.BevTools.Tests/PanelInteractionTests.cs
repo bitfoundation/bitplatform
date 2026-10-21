@@ -82,6 +82,25 @@ public class PanelInteractionTests : BunitContext
     }
 
     [TestMethod]
+    public void Opening_the_panel_from_code_wins_over_the_saved_preference_to_keep_it_closed()
+    {
+        Session.Ui.Open();
+
+        var cut = RenderPanel("""{"open":false}""");
+
+        Assert.IsTrue(Session.Ui.IsOpen);
+        Assert.IsNotEmpty(cut.FindAll(".bev-panel"));
+    }
+
+    [TestMethod]
+    public void The_saved_preference_to_keep_the_panel_closed_is_applied_otherwise()
+    {
+        RenderPanel("""{"open":false}""");
+
+        Assert.IsFalse(Session.Ui.IsOpen);
+    }
+
+    [TestMethod]
     public void An_unavailable_saved_panel_is_ignored()
     {
         var cut = RenderPanel("""{"panel":"circuit","open":true}""");

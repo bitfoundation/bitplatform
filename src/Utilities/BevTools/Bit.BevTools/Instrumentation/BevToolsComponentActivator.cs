@@ -63,7 +63,24 @@ internal sealed class BevToolsComponentActivator : IComponentActivator
         return (IComponent)factory(_services, null);
     }
 
-    private void Track(IComponent instance, Type componentType)
+    internal void TrackExisting(IComponent instance)
+    {
+        if (!_session.IsEnabled || _session.Components.TryGet(instance, out _))
+        {
+            return;
+        }
+
+        try
+        {
+            Track(instance, instance.GetType(), existing: true);
+        }
+        catch (Exception ex)
+        {
+            _session.Errors.Record(ex, "bevtools", "Component instrumentation failed for " + instance.GetType().Name);
+        }
+    }
+
+    private void Track(IComponent instance, Type componentType, bool existing = false)
     {
         // Component activation is the earliest point that runs on the renderers synchronization context, and
         // parameter-update metrics fire before any component has rendered; map the context here so those
@@ -82,8 +99,13 @@ internal sealed class BevToolsComponentActivator : IComponentActivator
             return; // tracking budget exhausted; the application keeps working untouched.
         }
 
+        if (existing)
+        {
+            record.RenderedBeforeAttach = instance is not ComponentBase component || BlazorReflection.HasRenderedOrQueued(component);
+        }
+
         _session.RenderTracker.Instrument(record);
-        if (!flags.BevTools && !flags.Hidden)
+        if (!existing && !flags.BevTools && !flags.Hidden)
         {
             _session.Timeline.Record(new BevToolsEvent
             {

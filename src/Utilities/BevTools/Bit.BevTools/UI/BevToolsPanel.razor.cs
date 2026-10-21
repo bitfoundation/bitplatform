@@ -23,9 +23,9 @@ public partial class BevToolsPanel : ComponentBase, IBevToolsCommandContext, IAs
     private string _searchText = "";
     private Task? _loop;
 
-    [Inject] public BevToolsSession Session { get; set; } = default!;
+    public BevToolsSession Session { get; set; } = default!;
 
-    [Inject] public BitBevToolsOptions Options { get; set; } = default!;
+    public BitBevToolsOptions Options { get; set; } = default!;
 
     /// <summary>Part of <see cref="IBevToolsCommandContext"/>: commands contributed by extensions resolve services through it.</summary>
     [Inject] public IServiceProvider Services { get; set; } = default!;
@@ -73,6 +73,9 @@ public partial class BevToolsPanel : ComponentBase, IBevToolsCommandContext, IAs
 
     protected override void OnInitialized()
     {
+        Session = RuntimeAttachment.Resolve(Services)
+            ?? throw new InvalidOperationException("BevTools is not available in this scope: register it with AddBitBevToolsServices, or call BitBevTools.Attach before rendering BevToolsPanel.");
+        Options = Session.Options;
         if (!Session.IsEnabled)
         {
             return;
@@ -90,6 +93,7 @@ public partial class BevToolsPanel : ComponentBase, IBevToolsCommandContext, IAs
             return;
         }
 
+        RuntimeAttachment.AttachToRenderer(Session, this);
         Session.EnsureActivated();
         Navigation.LocationChanged += OnLocationChanged;
     }
@@ -269,10 +273,12 @@ public partial class BevToolsPanel : ComponentBase, IBevToolsCommandContext, IAs
                 return;
             }
 
-            if (prefs.Open is { } open)
+            if (prefs.Open is { } open && !Ui.OpenRequested)
             {
                 Ui.IsOpen = open;
             }
+
+            Ui.OpenRequested = false;
 
             if (Enum.TryParse<BevToolsDock>(prefs.Dock, true, out var dock))
             {
@@ -617,6 +623,11 @@ public partial class BevToolsPanel : ComponentBase, IBevToolsCommandContext, IAs
     public async ValueTask DisposeAsync()
     {
         _cts.Cancel();
+        if (Session is not null)
+        {
+            RuntimeAttachment.OnPanelDisposed(Session);
+        }
+
         if (_loop is not null)
         {
             try

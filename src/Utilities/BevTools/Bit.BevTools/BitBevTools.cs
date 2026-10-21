@@ -62,6 +62,13 @@ public static class BitBevTools
         return services;
     }
 
+    public static BevToolsSession Attach(IServiceProvider services, Action<BitBevToolsOptions>? configure = null)
+    {
+        ArgumentNullException.ThrowIfNull(services);
+
+        return services.GetService<BevToolsSession>() ?? RuntimeAttachment.Attach(services, configure);
+    }
+
     /// <summary>Registers an extension. Safe to combine with other <c>AddBitBevToolsServices</c> calls.</summary>
     public static IServiceCollection AddBitBevToolsServicesExtension<TExtension>(this IServiceCollection services, Action<BitBevToolsOptions>? configure = null) where TExtension : IBevToolsExtension, new()
         => services.AddBitBevToolsServices(o =>

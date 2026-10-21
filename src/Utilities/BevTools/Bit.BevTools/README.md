@@ -29,6 +29,9 @@ For Blazor Server and Interactive Auto apps add `Bit.BevTools.Server` and call `
 server project instead, which adds circuit diagnostics. In Blazor WebAssembly add `<MetricsSupport>true</MetricsSupport>`
 to the project to get render-diff and lifecycle timings.
 
+To lazy load BevTools, skip the registration and call `BitBevTools.Attach` once the assembly is loaded; the repository
+README's *Lazy loading* section says how, and what an attached session can't see.
+
 Libraries integrate through the extension contracts in this package: implement `IBevToolsExtension` to contribute
 panels, state providers (`IBevStateProvider`), diagnostic rules (`IBevDiagnosticRule`), commands (`IBevToolsCommand`)
 and value formatters, write events with `IBevToolsTimeline`, and mark members with `[BevToolsSensitive]` /

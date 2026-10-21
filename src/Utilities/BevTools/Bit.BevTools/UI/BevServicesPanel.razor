@@ -12,7 +12,7 @@
         <div class="bev-scroll">
             @if (Host.Graph is null)
             {
-                <div class="bev-empty">The service collection was not captured (AddBitBevToolsServices was called with a collection that could not be enumerated).</div>
+                <div class="bev-empty">@(Host.Session.IsAttachedAtRuntime ? "BevTools was attached at runtime (BitBevTools.Attach), after the container was built, so the service collection was not captured." : "The service collection was not captured (AddBitBevToolsServices was called with a collection that could not be enumerated).")</div>
             }
             else
             {

@@ -68,6 +68,26 @@ That is the whole setup. BevTools is enabled only when the host environment is `
 the panel itself, so no `<script>` or `<link>` tag is needed.
 Press **Ctrl+Shift+D** or click the badge to open it; **Ctrl+K** opens search and the command palette.
 
+### Lazy loading
+
+An app that should not download BevTools until someone asks for it (a Blazor WebAssembly app with
+`<BlazorWebAssemblyLazyLoad Include="Bit.BevTools.wasm" />`) skips `AddBitBevToolsServices`, loads the assembly with
+`LazyAssemblyLoader` when needed, then attaches BevTools to the running app from a component rendered after the load,
+passing it the component's injected `IServiceProvider`:
+
+```csharp
+BitBevTools.Attach(serviceProvider).Ui.Open();
+```
+
+and renders `<BevToolsPanel />` next to it. Nothing may reference BevTools types before the assembly is loaded, so keep
+both in a component of their own. `Attach` is enabled whatever the environment, since calling it is the decision.
+
+Attached that late, BevTools reads the components that already exist from the renderer and wraps the renderer's
+`IComponentActivator` for the ones created after, adds its logger provider and wraps the `HttpClient` registered in DI.
+It sees nothing from before the attach, `IHttpClientFactory` clients, the DI graph or circuit diagnostics. The
+framework's ActivitySource and meters must be registered at startup (`AddComponentsTracing`, `AddComponentsMetrics`)
+for UI-event render causes and lifecycle timings. The About panel lists exactly what an attached session can see.
+
 ---
 
 ## What it answers

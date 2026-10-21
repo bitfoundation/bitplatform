@@ -57,6 +57,15 @@ public sealed class BevToolsUiState
 
     public void Touch() => Version++;
 
+    internal bool OpenRequested { get; set; }
+
+    public void Open()
+    {
+        IsOpen = true;
+        OpenRequested = true;
+        Touch();
+    }
+
     public void Notify(string message)
     {
         Notification = message;

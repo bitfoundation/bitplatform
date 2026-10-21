@@ -46,13 +46,22 @@ internal static class CapabilityReport
         var bridge = session.Browser.BridgeAttached;
         var metricsSupported = MetricsAreSupported();
         var metricsHint = FrameworkInstrumentationExists ? MetricsHint(metricsSupported) : EarlierRuntimeHint;
-        var eventsHint = FrameworkInstrumentationExists
-            ? "No HandleEvent activities observed yet: interact with the app once. Requires BitBevToolsOptions.UseFrameworkInstrumentation; until an event is seen, renders inside events are labeled StateHasChanged."
-            : EarlierRuntimeHint + " Renders inside events are labeled StateHasChanged.";
+        var attachment = session.Attachment;
+        var eventsHint = !FrameworkInstrumentationExists
+            ? EarlierRuntimeHint + " Renders inside events are labeled StateHasChanged."
+            : attachment is null
+                ? "No HandleEvent activities observed yet: interact with the app once. Requires BitBevToolsOptions.UseFrameworkInstrumentation; until an event is seen, renders inside events are labeled StateHasChanged."
+                : "No HandleEvent activities observed yet. BevTools was attached at runtime, so the framework ActivitySource exists only if the app registered it at startup (AddComponentsTracing); until an event is seen, renders inside events are labeled StateHasChanged.";
 
         return
         [
-            new("Components", "Component instances", BevCapabilityStatus.Available, "Every component is created through the public IComponentActivator hook, so all instances are known without touching application code."),
+            attachment is null
+                ? new("Components", "Component instances", BevCapabilityStatus.Available, "Every component is created through the public IComponentActivator hook, so all instances are known without touching application code.")
+                : new("Components", "Component instances", attachment is { ActivatorWrapped: true, ExistingComponentsRead: true } ? BevCapabilityStatus.Available : BevCapabilityStatus.Partial,
+                    "BitBevTools.Attach attached BevTools to the running app: "
+                    + (attachment.ExistingComponentsRead == true ? "the components that already existed were read from the renderer, and " : "the components that already existed could not be read from the renderer, and ")
+                    + (attachment.ActivatorWrapped == true ? "its IComponentActivator was wrapped to see the ones created after." : "its IComponentActivator could not be wrapped, so the ones created after are not seen.")
+                    + " What happened before the attach was not recorded."),
             new("Components", "Parent/child hierarchy", hierarchyOk ? BevCapabilityStatus.Available : BevCapabilityStatus.NotAvailable, hierarchyOk ? "Resolved from the renderer's ComponentState (public since .NET 8) through a cached reflection accessor." : "The renderer's component state map could not be accessed on this framework version."),
             new("Components", "Parameters and cascading values", BevCapabilityStatus.Available, "Read from [Parameter]/[CascadingParameter] properties on demand; values are inspected lazily and sensitive names are redacted."),
             new("Components", "Component state (fields)", BevCapabilityStatus.Partial, "Fields are read on demand and diffed per render for the selected component only. Changes made without a render are not observed."),
@@ -70,7 +79,11 @@ internal static class CapabilityReport
             new("Events", "Navigation", navObserved || session.LastNavigationEventId is not null ? BevCapabilityStatus.Available : BevCapabilityStatus.Partial, "From NavigationManager.LocationChanged and the Navigate activity when available."),
             new("State", "Registered state providers", BevCapabilityStatus.RequiresIntegration, "Implement IBevStateProvider (or register an adapter) to get snapshots, change history and before/after diffs."),
             new("State", "Cascading values", BevCapabilityStatus.Available, "Read from [CascadingParameter] properties of the selected component."),
-            new("Network", "HTTP requests via IHttpClientFactory", BevCapabilityStatus.Available, "A DelegatingHandler is added to every factory pipeline through IHttpMessageHandlerBuilderFilter. Hand-built HttpClient instances need BevToolsHttpMessageHandler added manually."),
+            attachment is null
+                ? new("Network", "HTTP requests via IHttpClientFactory", BevCapabilityStatus.Available, "A DelegatingHandler is added to every factory pipeline through IHttpMessageHandlerBuilderFilter. Hand-built HttpClient instances need BevToolsHttpMessageHandler added manually.")
+                : new("Network", "HTTP requests", attachment.HttpClientWrapped ? BevCapabilityStatus.Partial : BevCapabilityStatus.RequiresIntegration, attachment.HttpClientWrapped
+                    ? "Attached at runtime: the HttpClient registered in DI was wrapped, so its requests are recorded. IHttpClientFactory clients and other hand-built clients need BevToolsHttpMessageHandler added manually."
+                    : "Attached at runtime, and no HttpClient registered in DI could be wrapped: add BevToolsHttpMessageHandler to the clients whose requests should be recorded."),
             new("Network", "Request/response bodies", BevCapabilityStatus.NotAvailable, "Never captured: bodies routinely contain credentials and personal data."),
             new("Network", "Originating component", BevCapabilityStatus.Partial, "Requests are linked to the UI event that issued them when one is executing; requests from lifecycle methods show no trigger."),
             new("JS interop", ".NET → JS calls from components", BevCapabilityStatus.RequiresInstrumentation, "IJSRuntime injected into tracked components is wrapped on the first render, the earliest point after the framework injects it: calls made from OnInitialized/OnInitializedAsync happen before that and are not attributed. Module references obtained through a wrapped runtime are wrapped too."),
@@ -78,10 +91,12 @@ internal static class CapabilityReport
             new("JS interop", "JS → .NET calls", bridge ? BevCapabilityStatus.Available : BevCapabilityStatus.RequiresInstrumentation, "DotNet.invokeMethodAsync/invokeMethod are wrapped by the browser bridge and reported in batches."),
             new("Errors", "Render and event exceptions", BevCapabilityStatus.Available, "Render exceptions are caught in the wrapper; event exceptions and circuit failures arrive through Blazor's own logger categories."),
             new("Errors", "JS errors and unhandled promise rejections", bridge ? BevCapabilityStatus.Available : BevCapabilityStatus.RequiresInstrumentation, "window.onerror / unhandledrejection via the browser bridge."),
-            new("Circuit", "Circuit lifecycle, connection state, inbound message count", isServer ? BevCapabilityStatus.RequiresInstrumentation : BevCapabilityStatus.NotAvailable, "Blazor Server only, through a CircuitHandler registered by AddBitBevToolsServerServices().") { Platforms = "Server" },
+            new("Circuit", "Circuit lifecycle, connection state, inbound message count", isServer && attachment is null ? BevCapabilityStatus.RequiresInstrumentation : BevCapabilityStatus.NotAvailable, "Blazor Server only, through a CircuitHandler registered by AddBitBevToolsServerServices().") { Platforms = "Server" },
             new("Circuit", "Reconnect attempts", bridge && isServer ? BevCapabilityStatus.Available : BevCapabilityStatus.RequiresInstrumentation, "From the components:reconnect-state-changed browser event.") { Platforms = "Server" },
             new("Circuit", "SignalR message sizes and latency", BevCapabilityStatus.NotAvailable, "Not exposed by the framework; use SignalR logging or browser DevTools WS frames.") { Platforms = "Server" },
-            new("DI", "Registrations, lifetimes, constructor dependencies", BevCapabilityStatus.Available, "From the IServiceCollection captured at AddBitBevToolsServices time. Factory and instance registrations show no dependencies."),
+            attachment is null
+                ? new("DI", "Registrations, lifetimes, constructor dependencies", BevCapabilityStatus.Available, "From the IServiceCollection captured at AddBitBevToolsServices time. Factory and instance registrations show no dependencies.")
+                : new("DI", "Registrations, lifetimes, constructor dependencies", BevCapabilityStatus.NotAvailable, "BevTools was attached at runtime, after the container was built, so the service collection was not captured."),
             new("DI", "Runtime resolutions and consumers", BevCapabilityStatus.NotAvailable, "The container does not expose resolution events; consumers are inferred from constructors and [Inject] properties."),
             new("Browser", "Online/offline, visibility, storage keys, memory, timing", bridge ? BevCapabilityStatus.Available : BevCapabilityStatus.RequiresInstrumentation, "Reported by the browser bridge. Storage is read only on request, and values whose key looks sensitive or whose content looks like a token are redacted in the browser, so BevTools never receives them."),
             new("Browser", "Component ↔ DOM element mapping", BevCapabilityStatus.NotAvailable, "Blazor does not expose a component-to-DOM map to .NET code; highlighting elements is not implemented rather than approximated."),
