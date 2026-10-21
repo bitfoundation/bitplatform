@@ -1677,13 +1677,13 @@ public partial class Balette : ComponentBase, IAsyncDisposable
 
     // ---- JS plumbing ---------------------------------------------------------------------------------------
 
-    private object BuildJsOptions(List<string> toggles) => new
+    private BaletteJsOptions BuildJsOptions(List<string> toggles) => new()
     {
-        toggleShortcuts = toggles,
-        commandShortcuts = GlobalShortcutStrings(),
-        suppressInEditable = Options.SuppressShortcutsInEditableElements,
-        sequenceTimeout = Options.SequenceTimeoutMs,
-        vimBindings = _syncedVim,
+        ToggleShortcuts = toggles,
+        CommandShortcuts = GlobalShortcutStrings(),
+        SuppressInEditable = Options.SuppressShortcutsInEditableElements,
+        SequenceTimeout = Options.SequenceTimeoutMs,
+        VimBindings = _syncedVim,
     };
 
     private List<string> ToggleShortcutStrings()
