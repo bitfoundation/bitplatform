@@ -41,6 +41,10 @@ on:
         description: Bit packages of the latest Prerelease nuget packages run instead of nuget.org
         type: boolean
         default: false
+      windows_stores:
+        description: For WinGet and the Microsoft Store, sign every file of the Windows app, keep its installer at a URL of its own version and submit that version to both
+        type: boolean
+        default: false
   workflow_call:
     inputs:
       server:
@@ -59,6 +63,9 @@ on:
         type: boolean
         default: true
       prerelease_packages:
+        type: boolean
+        default: false
+      windows_stores:
         type: boolean
         default: false
 
@@ -368,13 +375,13 @@ jobs:
       run: |
           @{ Endpoint = '${{ vars.CODE_SIGNING_ENDPOINT }}'; CodeSigningAccountName = '${{ vars.CODE_SIGNING_ACCOUNT }}'; CertificateProfileName = '${{ vars.CODE_SIGNING_CERTIFICATE_PROFILE }}'; ExcludeCredentials = @('ManagedIdentityCredential', 'WorkloadIdentityCredential', 'SharedTokenCacheCredential', 'VisualStudioCredential', 'VisualStudioCodeCredential') } | ConvertTo-Json | Set-Content "$env:RUNNER_TEMP\code-signing.json"
           "VPK_AZURE_TRUSTED_SIGN_FILE=$env:RUNNER_TEMP\code-signing.json" >> $env:GITHUB_ENV
-          'VPK_SIGN_EXCLUDE=\.dll$' >> $env:GITHUB_ENV
+          if ('${{ inputs.windows_stores }}' -ne 'true') { 'VPK_SIGN_EXCLUDE=\.dll$' >> $env:GITHUB_ENV }
 
     - name: Publish
       run: |
           cd AdminPanel\src\Client\AdminPanel.Client.Windows\
           dotnet publish AdminPanel.Client.Windows.csproj -c Release -o .\publish-result -r win-x64 -p:Version="${{ vars.APP_VERSION}}" -p:PublishReadyToRun=true -p:PublishReadyToRunComposite=true --self-contained
-          vpk pack -u AdminPanel.Client.Windows -v "${{ vars.APP_VERSION }}" -p .\publish-result -e AdminPanel.Client.Windows.exe -r win-x64 --framework webview2 --icon .\wwwroot\favicon.ico --packTitle 'AdminPanel'
+          vpk pack -u AdminPanel.Client.Windows -v "${{ vars.APP_VERSION }}" -p .\publish-result -e AdminPanel.Client.Windows.exe -r win-x64 --framework webview2 --icon .\wwwroot\favicon.ico --packTitle 'AdminPanel' --packAuthors BitPlatform
 
     - name: Attest the installer and packages
       uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4.2.2
@@ -389,6 +396,52 @@ jobs:
       run: |
           cd AdminPanel\src\Client\AdminPanel.Client.Windows\
           vpk upload s3 --endpoint ${{ vars.R2_ENDPOINT }} --bucket ${{ env.R2_BUCKET }} --keyId ${{ secrets.R2_ACCESS_KEY_ID }} --secret ${{ secrets.R2_SECRET_ACCESS_KEY }} -o .\Releases --keepMaxReleases 10
+
+    - name: Upload this version's installer to R2
+      if: inputs.windows_stores
+      env:
+        AWS_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+        AWS_DEFAULT_REGION: auto
+        AWS_REQUEST_CHECKSUM_CALCULATION: WHEN_REQUIRED
+        AWS_RESPONSE_CHECKSUM_VALIDATION: WHEN_REQUIRED
+      run: |
+          $key = "${{ vars.APP_VERSION }}/AdminPanel.Client.Windows-win-Setup.exe"
+          aws s3api head-object --bucket ${{ env.R2_BUCKET }} --key $key --endpoint-url ${{ vars.R2_ENDPOINT }} *> $null
+          if ($LASTEXITCODE -eq 0) { throw "$key is already on R2, and WinGet and the Microsoft Store need it unchanged. Raise APP_VERSION." }
+          aws s3 cp AdminPanel\src\Client\AdminPanel.Client.Windows\Releases\AdminPanel.Client.Windows-win-Setup.exe "s3://${{ env.R2_BUCKET }}/$key" --endpoint-url ${{ vars.R2_ENDPOINT }}
+          "::notice title=Installer::https://windows-adminpanel.bitplatform.dev/$key"
+
+    - name: Submit this version to WinGet
+      if: inputs.windows_stores
+      uses: ./.github/actions/submit-to-winget
+      with:
+        id: BitPlatform.AdminPanel
+        version: ${{ vars.APP_VERSION }}
+        installer: AdminPanel\src\Client\AdminPanel.Client.Windows\Releases\AdminPanel.Client.Windows-win-Setup.exe
+        installer-url: https://windows-adminpanel.bitplatform.dev/${{ vars.APP_VERSION }}/AdminPanel.Client.Windows-win-Setup.exe
+        architecture: x64
+        product-code: AdminPanel.Client.Windows
+        name: AdminPanel
+        short-description: An admin panel for products, categories and users, built with bit Boilerplate.
+        package-url: https://adminpanel.bitplatform.dev
+        privacy-url: https://adminpanel.bitplatform.dev/en-US/privacy-policy
+        token: ${{ secrets.WINGET_TOKEN }}
+
+    - name: Set up the Microsoft Store CLI
+      if: inputs.windows_stores
+      uses: microsoft/microsoft-store-apppublisher@cc9910a8d59f2eb55cbb83df0a3800cf3b5300e0 # v1.4
+      with:
+        version: v0.4.3
+
+    - name: Submit this version to the Microsoft Store
+      if: inputs.windows_stores
+      run: |
+          $PSNativeCommandUseErrorActionPreference = $true
+          msstore reconfigure --tenantId ${{ secrets.MSSTORE_TENANT_ID }} --sellerId ${{ secrets.MSSTORE_SELLER_ID }} --clientId ${{ secrets.MSSTORE_CLIENT_ID }} --clientSecret ${{ secrets.MSSTORE_CLIENT_SECRET }}
+          $package = @{ packages = @(@{ packageUrl = "https://windows-adminpanel.bitplatform.dev/${{ vars.APP_VERSION }}/AdminPanel.Client.Windows-win-Setup.exe"; languages = @('en'); architectures = @('X64'); installerParameters = '--silent'; isSilentInstall = $true }) } | ConvertTo-Json -Depth 4 -Compress
+          msstore submission update ${{ vars.ADMINPANEL_MSSTORE_PRODUCT_ID }} $package
+          msstore submission publish ${{ vars.ADMINPANEL_MSSTORE_PRODUCT_ID }}
 
   build_blazor_hybrid_android:
     name: build blazor hybrid (android)
