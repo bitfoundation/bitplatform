@@ -28,6 +28,18 @@ public static partial class IClientCoreServiceCollectionExtensions
             services.AddScoped<CultureService>();
             services.AddScoped<TimeZoneService>();
             services.AddScoped<LazyAssemblyLoader>();
+            //-:cnd:noEmit
+#if Development
+            Bit.BevTools.BitBevTools.AddBitBevToolsServices(services, options =>
+            {
+                options.Enabled = true;
+                options.Ui.ShowBadge = false;
+            });
+#else
+            Microsoft.AspNetCore.Components.Infrastructure.ComponentsMetricsServiceCollectionExtensions.AddComponentsTracing(services);
+            Microsoft.AspNetCore.Components.Infrastructure.ComponentsMetricsServiceCollectionExtensions.AddComponentsMetrics(services);
+#endif
+            //+:cnd:noEmit
             services.AddScoped<SignInModalService>();
             services.AddScoped<ImageEditorService>();
             services.AddScoped<IAuthTokenProvider, ClientSideAuthTokenProvider>();

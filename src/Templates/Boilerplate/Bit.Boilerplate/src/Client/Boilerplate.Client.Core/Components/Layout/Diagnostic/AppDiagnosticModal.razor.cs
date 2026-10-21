@@ -22,6 +22,7 @@ public partial class AppDiagnosticModal
     private bool enableRegExp;
     private string? searchText;
     private bool isLogModalOpen;
+    private int devToolsOpenCount;
     private int selectedLogIndex;
     private DiagnosticLogDto? selectedLog;
     private bool isDescendingSort = true;

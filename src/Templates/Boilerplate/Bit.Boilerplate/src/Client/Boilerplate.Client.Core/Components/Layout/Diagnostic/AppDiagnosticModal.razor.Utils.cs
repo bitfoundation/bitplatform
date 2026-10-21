@@ -15,6 +15,11 @@ public partial class AppDiagnosticModal
     [AutoInject] private IStorageService storageService = default!;
     [AutoInject] private IAppUpdateService appUpdateService = default!;
     [AutoInject] private ILogger<AppDiagnosticModal> logger = default!;
+    //-:cnd:noEmit
+#if !Development
+    [AutoInject] private Microsoft.AspNetCore.Components.WebAssembly.Services.LazyAssemblyLoader lazyAssemblyLoader = default!;
+#endif
+    //+:cnd:noEmit
     //#if (offlineDb == true)
     [AutoInject] private SyncService syncService = default!;
     [AutoInject] private IDbContextFactory<AppOfflineDbContext> dbContextFactory = default!;
@@ -33,7 +38,17 @@ public partial class AppDiagnosticModal
 
     private async Task OpenDevTools()
     {
-        await JSRuntime.InvokeVoidAsync("App.openDevTools");
+        //-:cnd:noEmit
+#if !Development
+        if (AppPlatform.IsAot is false)
+        {
+            await lazyAssemblyLoader.LoadAssembliesAsync(["Bit.BevTools.wasm"]);
+        }
+#endif
+        //+:cnd:noEmit
+
+        isOpen = false;
+        devToolsOpenCount++;
     }
 
     private async Task CallGC()
