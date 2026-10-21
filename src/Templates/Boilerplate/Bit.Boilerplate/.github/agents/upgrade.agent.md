@@ -11,15 +11,15 @@ The work is yours to judge. Ask the user only what the code can't answer and wha
 
 ## 1. Know where the project stands
 
-- `bit.json` records the bit Boilerplate version the project comes from, its name and the value of every option it was created with. The MCP server configurations (`.mcp.json`, `.vscode/mcp.json`, `.cursor/mcp.json`, `.junie/mcp/mcp.json`, `.gemini/settings.json`) pin the bit platform MCP server to a version too. `bit.json` is the one to go by: a team may move those, or the bit platform packages, without upgrading the template.
+- `bit.json` records the bit Boilerplate version the project comes from, its name and the value of every option it was created with. The MCP server configurations (`.mcp.json`, `.vscode/mcp.json`, `.cursor/mcp.json`, `.junie/mcp/mcp.json`, `.gemini/settings.json`, `.codex/config.toml`) pin the bit platform MCP server to a version too. `bit.json` is the one to go by: a team may move those, or the bit platform packages, without upgrading the template.
 - Check the recorded options against the code. The team may have turned something off after creation, switched the database provider, or removed a module, and the diff should be made with the options the project has today.
-- The target is the version the user names. Without one, it's the newest stable bit Boilerplate; take a prerelease only when the user asks. The release notes on GitHub for every version in between say why things changed, and the bit platform MCP server answers questions about any of them.
-- Start from a clean working tree on a new branch, so the whole upgrade can be reviewed as one change. If there are uncommitted changes, ask the user whether to commit or stash them first.
+- The target is the version the user names. Without one, it's the newest stable bit Boilerplate; take a prerelease only when the user asks. The release notes of every version in between say why things changed: the bit platform MCP server's `GetBitPlatformReleases` tool returns them, and its other tools answer questions about any of those versions.
+- Do the whole upgrade on a branch of its own, cut from `develop`, and never on `develop`, `main` or a feature branch: it stays one change the team reviews and merges like any other, and no other work mixes with it. Start from a clean working tree; if there are uncommitted changes, ask the user whether to commit or stash them first.
 - The bit CLI must know the target version: update it, or run it through `dnx` at that version.
 
 ## 2. Get the upstream changes
 
-- Run `bit diff` from the project folder, with the from and to versions when they aren't the defaults and with any option whose recorded value no longer matches the project. It only reads the project's `README.md`; it creates the project with each version in a temporary folder of its own, into one git repository, so the second commit is exactly what the template changed for a project with this name and these options, and it writes that commit as a patch file there too. Its output says where.
+- Run `bit diff` from the project folder, with the from and to versions when they aren't the defaults and with any option whose recorded value no longer matches the project. It only reads the project's `bit.json`; it creates the project with each version in a temporary folder of its own, into one git repository, so the second commit is exactly what the template changed for a project with this name and these options, and it writes that commit as a patch file there too. Its output says where.
 - Some differences come from generating a project, not from the upgrade, and stay as they are in this project: everything the template picks at random on every run, such as ports, GUIDs like the user secrets id, dates and the seeded accounts' password, plus the app certificate, the formatting `bit new` applies, and EF Core migrations, which neither version has.
 - Read the whole change set before touching anything: which areas it touches, which files are new, deleted or renamed, and which changes belong together, such as a package bump and the code that needs it.
 
@@ -56,9 +56,9 @@ Some changes need more than the text of the diff:
 
 ## 6. Report
 
-Tell the user, briefly:
+Commit the upgrade on its branch, then tell the user, briefly:
 
-- from which version to which, and on which branch;
+- from which version to which, and the branch it is on;
 - what came in, grouped by area, with the user-visible changes first;
 - what was left out and why;
 - the decisions that are theirs, and the migrations, settings and secrets that need their attention;

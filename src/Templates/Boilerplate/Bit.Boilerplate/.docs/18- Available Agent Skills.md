@@ -40,8 +40,8 @@ To add a new skill: create `.github/agents/<your-skill>.agent.md` with the full 
 
 **Key capabilities**:
 - Creates Entity Type Configuration for EF Core
-- Generates DTO (Data Transfer Object) with validation attributes
-- Creates Mapper using Mapperly for high-performance object mapping
+- Generates DTO (Data Transfer Object) with validation attributes, or separate request and response DTOs when what the client reads and writes differ a lot
+- Creates Mapper using Mapperly for high-performance object mapping, ignoring on the way in every property the client must not write
 - Generates API Controller with OData support
 - Creates IAppController Interface for strongly-typed HTTP client
 - Adds Resource Strings to AppStrings.resx for localization
@@ -145,6 +145,7 @@ It carries `context: fork` in its frontmatter, so tools that support forked skil
 - Phase 5 - Validation via build, tests and the `review` skill
 - Checks every request against the optional template features this project did not enable, so they are ported from `bitfoundation/bitplatform` instead of reinvented
 - Delegates to `scaffold-entity` and `bitify-ui` where they apply
+- Checks, alongside phase 1, whether the project is on the newest bit platform release, makes the case for upgrading from the release notes, and remembers a no instead of asking again every session
 
 **Example usage**: `/ai-dlc add a customer feedback feature`
 
@@ -184,6 +185,7 @@ Everything lives in the one skill file; it brings no scripts or tools of its own
 
 **Key capabilities**:
 - Reads the project's version and options from `bit.json`, and checks them against the code before diffing
+- Works on a branch of its own, so the upgrade is reviewed and merged as one change and never mixes with other work
 - Treats the old version as the common ancestor: takes files the team never changed, merges files both changed, and leaves out what no longer has anything to attach to
 - Knows which differences come from generating a project (ports, GUIDs, dates, the seeded accounts' password, the app certificate) rather than from the upgrade
 - Adds a migration for every database context whose model changed, instead of editing existing ones

@@ -92,6 +92,11 @@ Generate a complete CRUD implementation for an entity including:
   - Include `Id`, `Version` properties
   - Add calculated properties if needed (e.g., `ProductsCount`)
   - Add `[JsonSerializable(typeof({DtoName}))]` to `AppJsonContext.cs`
+  - Decide for every property who writes it. One the client may read but the server owns (the owner, timestamps,
+    totals, a status only a workflow moves) stays on the DTO and is ignored by the mapper on the way in - see
+    *Mapper*. When what the client reads and what it writes differ a lot, split the DTO instead of piling up ignores:
+    `{EntityName}RequestDto` for what the add/edit form sends and `{EntityName}ResponseDto` for what the grid and
+    the API return. The request DTO keeps `Id` and `Version` too, or updates lose their optimistic concurrency check
 
 ### Mapper
 - **Location**: `src/Server/Boilerplate.Server.Api/Features/{FeatureName}/`
@@ -101,6 +106,10 @@ Generate a complete CRUD implementation for an entity including:
   - Create `static partial class {MapperName}Mapper`
   - Add projection method: `public static partial IQueryable<{DtoName}> Project(this IQueryable<{EntityName}> query);`
   - Add mapping methods: `Map()`, `Patch()` for CRUD operations
+  - Put `[MapperIgnoreTarget]` on the DTO-to-entity `Map()` and `Patch()` for every entity property the client must
+    not write, so a crafted request can't set it - `ProductsMapper.cs` is the shipped example and
+    `.docs/02- DTOs, Mappers, and Mapperly.md` explains why. With split DTOs, `Project()` and the entity-to-DTO
+    `Map()` return the response DTO, and the DTO-to-entity `Map()` and `Patch()` take the request DTO
   - Use `[MapProperty]` for complex mappings if needed
 
 ### API Controller
@@ -114,6 +123,7 @@ Generate a complete CRUD implementation for an entity including:
   - Use `[EnableQuery]` for GET endpoints with OData support
   - Implement validation in private methods
   - Use `Project()` for querying and mapping
+  - With split DTOs, create and update take the request DTO and return the response DTO
   - Handle resource not found scenarios using `ResourceNotFoundException`
 
 ### IAppController Interface
