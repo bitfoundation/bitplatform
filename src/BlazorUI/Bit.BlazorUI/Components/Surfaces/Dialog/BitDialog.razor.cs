@@ -136,6 +136,10 @@ public partial class BitDialog : BitComponentBase
     /// least damage, so a stray Enter or Space cannot carry the destructive one out. A button that is not
     /// being shown is ignored, and the focus falls back to <see cref="AutoFocusSelector"/> or to the first
     /// focusable element.
+    /// <br />
+    /// One a <see cref="BitParams"/> ancestor supplies is a default for every Dialog under it, so it gives way
+    /// to what a Dialog asks for itself: its own <see cref="AutoFocusSelector"/> and an element its content
+    /// marks with <c>data-autofocus</c> or <c>autofocus</c> both win over it.
     /// </remarks>
     [Parameter, Outranks(nameof(AutoFocusSelector))] public BitDialogButton? AutoFocusButton { get; set; }
 
@@ -154,7 +158,8 @@ public partial class BitDialog : BitComponentBase
     /// <br />
     /// An element inside the Dialog carrying a <c>data-autofocus</c> attribute is picked up without a
     /// selector at all, which is the one to reach for when what should be focused is decided by the content
-    /// rather than by the Dialog around it.
+    /// rather than by the Dialog around it - it wins over an <see cref="AutoFocusButton"/> a
+    /// <see cref="BitParams"/> ancestor supplies, but not over one set on the Dialog.
     /// </remarks>
     [Parameter] public string? AutoFocusSelector { get; set; }
 
@@ -989,7 +994,9 @@ public partial class BitDialog : BitComponentBase
     // Puts the focus where the Dialog was asked to open it: on one of its own buttons where AutoFocusButton
     // names one that is actually being shown, on what AutoFocusSelector points at next, and otherwise on the
     // first focusable element it holds - which the JS side falls back from onto the Dialog itself when it
-    // holds nothing focusable.
+    // holds nothing focusable. A button that only a BitParams ancestor names is an app-wide default rather
+    // than this Dialog's own choice, so it is handed to the JS side to fall back on instead: an element the
+    // content marks with data-autofocus or autofocus still wins over it, which nothing on this side can see.
     private async Task FocusAutoTarget()
     {
         // A disabled button is not a place the focus can land - the browser refuses it and leaves the focus
@@ -1009,13 +1016,13 @@ public partial class BitDialog : BitComponentBase
 
         try
         {
-            if (target.HasValue)
+            if (target.HasValue && HasNotBeenSet(nameof(AutoFocusButton)) is false)
             {
                 await target.Value.FocusAsync();
             }
             else
             {
-                await _js.BitUtilsFocusFirstElement(_containerId, AutoFocusSelector);
+                await _js.BitUtilsFocusFirstElement(_containerId, AutoFocusSelector, target);
             }
         }
         catch (JSDisconnectedException) { } // we can ignore this exception here

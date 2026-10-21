@@ -260,8 +260,10 @@ public class BitDialogParamsTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitDialogCascadedAutoFocusButtonShouldFocusThatButton()
+    public void BitDialogCascadedAutoFocusButtonShouldBeTheFallbackOfTheFocusCall()
     {
+        // A cascaded button is an app-wide default, so it is not focused from .NET: the JS side falls back on it only
+        // where the content marks no element with data-autofocus or autofocus, which .NET cannot see.
         var @params = new BitDialogParams { AutoFocusButton = BitDialogButton.Cancel };
 
         var component = RenderWithParams(@params, RenderDialog());
@@ -269,7 +271,24 @@ public class BitDialogParamsTests : BunitTestContext
         var dialog = component.FindComponent<BitDialog>();
 
         Assert.AreEqual(BitDialogButton.Cancel, dialog.Instance.AutoFocusButton);
-        Assert.IsEmpty(Context.JSInterop.Invocations["BitBlazorUI.Utils.focusFirstElement"]);
+        var invocation = Context.JSInterop.Invocations["BitBlazorUI.Utils.focusFirstElement"][0];
+        Assert.IsNull(invocation.Arguments[1]);
+        var fallback = (ElementReference)invocation.Arguments[2]!;
+        Assert.AreEqual(component.Find(".bit-dlg-cnb").GetAttribute("blazor:elementReference"), fallback.Id);
+    }
+
+    [TestMethod]
+    public void BitDialogCascadedAutoFocusButtonThatIsNotShownShouldLeaveNoFallback()
+    {
+        var @params = new BitDialogParams { AutoFocusButton = BitDialogButton.Cancel };
+
+        RenderWithParams(@params, RenderDialog(builder =>
+        {
+            builder.AddAttribute(10, nameof(BitDialog.ShowCancelButton), false);
+        }));
+
+        var invocation = Context.JSInterop.Invocations["BitBlazorUI.Utils.focusFirstElement"][0];
+        Assert.IsNull(invocation.Arguments[2]);
     }
 
     [TestMethod]

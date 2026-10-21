@@ -335,11 +335,16 @@
     <BitParams Parameters="_dialogParams">
         <button id="btn-casc-file-open" @onclick="() => _cascFileOpen = true">Delete file</button>
         <button id="btn-casc-folder-open" @onclick="() => _cascFolderOpen = true">Delete folder</button>
+        <button id="btn-casc-rename-open" @onclick="() => _cascRenameOpen = true">Rename</button>
 
         <BitDialog Id="casc-file-dialog" @bind-IsOpen="_cascFileOpen" Title="Delete this file?" Message="It moves to the trash." />
 
         <BitDialog Id="casc-folder-dialog" @bind-IsOpen="_cascFolderOpen" OkText="Delete folder" Title="Delete this folder?"
                    Message="Everything inside it goes too." />
+
+        <BitDialog Id="casc-rename-dialog" @bind-IsOpen="_cascRenameOpen" OkText="Rename" Title="Rename this file">
+            <input id="casc-rename-input" value="report.pdf" data-autofocus />
+        </BitDialog>
     </BitParams>
 </E2ESection>
 
@@ -565,12 +570,14 @@
 
     private bool _cascFileOpen;
     private bool _cascFolderOpen;
+    private bool _cascRenameOpen;
     private readonly BitDialogParams[] _dialogParams =
     [
         new()
         {
             OkText = "Delete",
             CancelText = "Keep",
+            AutoFocusButton = BitDialogButton.Cancel,
             ShowCloseButton = false,
             Position = BitPosition.TopCenter,
             Color = BitColor.Error,

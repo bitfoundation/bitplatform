@@ -45,7 +45,8 @@ public class BitDialogParams : BitComponentBaseParams, IBitComponentParams
 
     /// <summary>
     /// Which of the dialog's own buttons AutoFocus lands on, e.g. the safe answer of a destructive confirmation.
-    /// A dialog that sets its own AutoFocusSelector keeps it.
+    /// A dialog that sets its own AutoFocusSelector keeps it, and so does one whose content marks an element with
+    /// data-autofocus or autofocus.
     /// </summary>
     public BitDialogButton? AutoFocusButton { get; set; }
 
