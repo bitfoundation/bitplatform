@@ -102,9 +102,11 @@ public sealed class EditSessionCacheTests
         await session.RenderPreviewAsync(d => d.AddAnnotation(new LineAnnotation { Start = Vector2.Zero, End = new Vector2(40, 40) }));
         Assert.AreEqual(1, counting.Applied, "the barrier's output is reused");
 
-        session.ApplyTransient(d => d.ReplaceOperation(0, new CountingOperation()));
+        var replacement = new CountingOperation();
+        session.ApplyTransient(d => d.ReplaceOperation(0, replacement));
         await session.RenderPreviewAsync();
         Assert.AreEqual(1, counting.Applied, "a different operation is not the cached one");
+        Assert.AreEqual(1, replacement.Applied, "the replacement runs instead");
     }
 
     [TestMethod]

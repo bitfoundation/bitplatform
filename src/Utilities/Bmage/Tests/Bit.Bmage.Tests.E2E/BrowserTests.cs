@@ -202,7 +202,7 @@ public class EditorTests : DemoTest
         try
         {
             await page.SetInputFilesAsync(".bmg-editor input[type=file]", file);
-            await page.WaitForFunctionAsync("() => document.querySelector('.bmg-canvas')?.width > 1", null,
+            await page.WaitForFunctionAsync("() => document.querySelector('.bmg-canvas')?.width === 2048", null,
                 new PageWaitForFunctionOptions { Timeout = 60_000 });
         }
         finally

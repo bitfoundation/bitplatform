@@ -94,6 +94,9 @@ An exact integer box average is precisely the low-pass that wide kernel was appr
 | Allocated | 244 KB | **23 KB** |
 | 3840×2160 to 200px | 52 ms | **19 ms** |
 
+Both columns come from the run made when the prepass landed, on .NET 10.0.11 with a shorter BenchmarkDotNet job. Later
+tuning has since brought the thumbnail down to the 22.6 ms and 8.1 ms in the table above.
+
 `ResamplingQualityTests` guards the quality: a ramp stays linear and monotonic to within 4 levels of its analytic value,
 solid colours survive reductions of 2× through 50× to within 1 level, a fine checkerboard averages to mid grey instead of
 aliasing, transparent edges keep their colour, and content stays aligned to within a pixel.
@@ -212,6 +215,9 @@ Sorting the edges by their top and maintaining an active set as the scanline adv
 | --- | ---: | ---: |
 | 480 segment bezier path | 1075 ms | **107 ms** |
 | Stroke 100 arrows | 34.2 ms | 24.4 ms |
+
+Both columns come from the run made when the active edge table landed, on .NET 10.0.11 with a shorter BenchmarkDotNet
+job. Later tuning has since brought the path down to 71.6 ms and the arrows to 8.0 ms, as in the table above.
 
 10× on the complex case. This matters more than a synthetic benchmark suggests, because text is exactly this shape: a
 line of glyphs is hundreds of small contours, and every text annotation pays it.
