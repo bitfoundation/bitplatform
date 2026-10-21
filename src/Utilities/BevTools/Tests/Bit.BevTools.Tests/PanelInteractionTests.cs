@@ -82,6 +82,21 @@ public class PanelInteractionTests : BunitContext
     }
 
     [TestMethod]
+    public void The_panel_waits_for_its_stylesheet_before_it_renders()
+    {
+        var module = JSInterop.SetupModule("./_content/Bit.BevTools/bit-bevtools.js");
+        module.Setup<BevBrowserSnapshot>("attach", _ => true).SetResult(new BevBrowserSnapshot { Online = true, Visibility = "visible" });
+        module.Setup<string?>("loadPrefs", _ => true).SetResult(null);
+        var styles = module.SetupVoid("waitForStyles", _ => true);
+
+        var cut = Render<BevToolsPanel>();
+        Assert.IsEmpty(cut.FindAll(".bev-panel"));
+
+        styles.SetVoidResult();
+        cut.WaitForAssertion(() => Assert.IsNotEmpty(cut.FindAll(".bev-panel")));
+    }
+
+    [TestMethod]
     public void Opening_the_panel_from_code_wins_over_the_saved_preference_to_keep_it_closed()
     {
         Session.Ui.Open();

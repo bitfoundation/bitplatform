@@ -20,6 +20,8 @@ public partial class BevToolsPanel : ComponentBase, IBevToolsCommandContext, IAs
     private long _lastUiVersion = -1;
     private long _viewRevision;
     private bool _interactive;
+    private bool _stylesReady;
+    private ElementReference _styles;
     private string _searchText = "";
     private Task? _loop;
 
@@ -138,6 +140,7 @@ public partial class BevToolsPanel : ComponentBase, IBevToolsCommandContext, IAs
 
             var prefs = await _module.InvokeAsync<string?>("loadPrefs");
             ApplyPrefs(prefs);
+            await _module.InvokeVoidAsync("waitForStyles", _styles, 5000);
         }
         catch (Exception ex)
         {
@@ -153,6 +156,7 @@ public partial class BevToolsPanel : ComponentBase, IBevToolsCommandContext, IAs
             return;
         }
 
+        _stylesReady = true;
         _loop = RefreshLoopAsync(_cts.Token);
         StateHasChanged();
     }
