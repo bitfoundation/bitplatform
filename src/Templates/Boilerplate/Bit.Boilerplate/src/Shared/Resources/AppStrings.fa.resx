@@ -2054,8 +2054,29 @@
     <data name="EditImage" xml:space="preserve">
     <value>ویرایش تصویر</value>
   </data>
+    <data name="Crop" xml:space="preserve">
+    <value>برش</value>
+  </data>
+    <data name="ApplyCrop" xml:space="preserve">
+    <value>اعمال برش</value>
+  </data>
+    <data name="RotateLeft" xml:space="preserve">
+    <value>چرخش به چپ</value>
+  </data>
+    <data name="RotateRight" xml:space="preserve">
+    <value>چرخش به راست</value>
+  </data>
+    <data name="Undo" xml:space="preserve">
+    <value>واگرد</value>
+  </data>
+    <data name="Redo" xml:space="preserve">
+    <value>انجام دوباره</value>
+  </data>
     <data name="ImageEditorCropHint" xml:space="preserve">
     <value>روی تصویر بکشید تا بخشی را که باید بماند مشخص کنید.</value>
+  </data>
+    <data name="ImageEditorMoreFeatures" xml:space="preserve">
+    <value>می‌خواهید امکانات بیشتری برای ویرایش تصویر به پروژه‌تان اضافه کنید؟</value>
   </data>
     <data name="ImageEditorCouldNotOpenImage" xml:space="preserve">
     <value>این تصویر اینجا برای ویرایش باز نمی‌شود. همچنان می‌توانید آن را بدون تغییر بارگذاری کنید.</value>

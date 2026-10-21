@@ -2054,8 +2054,29 @@
     <data name="EditImage" xml:space="preserve">
     <value>تعديل الصورة</value>
   </data>
+    <data name="Crop" xml:space="preserve">
+    <value>اقتصاص</value>
+  </data>
+    <data name="ApplyCrop" xml:space="preserve">
+    <value>تطبيق الاقتصاص</value>
+  </data>
+    <data name="RotateLeft" xml:space="preserve">
+    <value>تدوير لليسار</value>
+  </data>
+    <data name="RotateRight" xml:space="preserve">
+    <value>تدوير لليمين</value>
+  </data>
+    <data name="Undo" xml:space="preserve">
+    <value>تراجع</value>
+  </data>
+    <data name="Redo" xml:space="preserve">
+    <value>إعادة</value>
+  </data>
     <data name="ImageEditorCropHint" xml:space="preserve">
     <value>اسحب فوق الصورة لتحديد الجزء الذي تريد الاحتفاظ به.</value>
+  </data>
+    <data name="ImageEditorMoreFeatures" xml:space="preserve">
+    <value>هل تريد إضافة المزيد من ميزات تحرير الصور إلى مشروعك؟</value>
   </data>
     <data name="ImageEditorCouldNotOpenImage" xml:space="preserve">
     <value>لا يمكن فتح هذه الصورة للتعديل هنا. لا يزال بإمكانك رفعها كما هي.</value>

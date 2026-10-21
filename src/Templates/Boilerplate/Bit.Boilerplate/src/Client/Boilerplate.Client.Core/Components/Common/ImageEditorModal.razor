@@ -39,11 +39,68 @@
         {
             <div class="editor-host">
                 <BmageEditor @ref="editor"
-                             Strings="editorStrings"
+                             ShowPanel="false"
                              MaxProxyDimension="1024"
                              Direction="@(CurrentDir is BitDir.Rtl ? "rtl" : "ltr")"
                              AriaLabel="@Localizer[nameof(AppStrings.EditImage)]"
-                             OnError="HandleEditorError" />
+                             OnError="HandleEditorError">
+                    <Toolbar Context="context">
+                        <BitStack Horizontal Wrap Gap="0.25rem" AutoHeight VerticalAlign="BitAlignment.Center" Class="toolbar">
+                            <BitButton IconOnly
+                                       ButtonType="BitButtonType.Button"
+                                       IconName="@BitIconName.Crop"
+                                       Disabled="@(context.HasImage is false || context.IsBusy)"
+                                       Variant="@(context.Tool is EditorToolKind.Crop ? BitVariant.Fill : BitVariant.Text)"
+                                       OnClick="() => StartCrop(context)"
+                                       Title="@Localizer[nameof(AppStrings.Crop)]"
+                                       AriaLabel="@Localizer[nameof(AppStrings.Crop)]" />
+                            <BitButton IconOnly
+                                       Variant="BitVariant.Text"
+                                       ButtonType="BitButtonType.Button"
+                                       IconName="@BitIconName.Rotate90CounterClockwise"
+                                       Disabled="@(context.HasImage is false || context.IsBusy)"
+                                       OnClick="() => context.RotateAsync(-90)"
+                                       Title="@Localizer[nameof(AppStrings.RotateLeft)]"
+                                       AriaLabel="@Localizer[nameof(AppStrings.RotateLeft)]" />
+                            <BitButton IconOnly
+                                       Variant="BitVariant.Text"
+                                       ButtonType="BitButtonType.Button"
+                                       IconName="@BitIconName.Rotate90Clockwise"
+                                       Disabled="@(context.HasImage is false || context.IsBusy)"
+                                       OnClick="() => context.RotateAsync(90)"
+                                       Title="@Localizer[nameof(AppStrings.RotateRight)]"
+                                       AriaLabel="@Localizer[nameof(AppStrings.RotateRight)]" />
+                            <BitButton IconOnly
+                                       Variant="BitVariant.Text"
+                                       ButtonType="BitButtonType.Button"
+                                       IconName="@BitIconName.Undo"
+                                       Disabled="@(context.CanUndo is false)"
+                                       OnClick="context.Undo"
+                                       Title="@Localizer[nameof(AppStrings.Undo)]"
+                                       AriaLabel="@Localizer[nameof(AppStrings.Undo)]" />
+                            <BitButton IconOnly
+                                       Variant="BitVariant.Text"
+                                       ButtonType="BitButtonType.Button"
+                                       IconName="@BitIconName.Redo"
+                                       Disabled="@(context.CanRedo is false)"
+                                       OnClick="context.Redo"
+                                       Title="@Localizer[nameof(AppStrings.Redo)]"
+                                       AriaLabel="@Localizer[nameof(AppStrings.Redo)]" />
+
+                            @if (context.Tool is EditorToolKind.Crop)
+                            {
+                                <BitButton Size="BitSize.Small"
+                                           Variant="BitVariant.Outline"
+                                           ButtonType="BitButtonType.Button"
+                                           Disabled="@context.IsBusy"
+                                           OnClick="context.ApplyCropAsync"
+                                           Class="apply-crop">
+                                    @Localizer[nameof(AppStrings.ApplyCrop)]
+                                </BitButton>
+                            }
+                        </BitStack>
+                    </Toolbar>
+                </BmageEditor>
             </div>
 
             <BitStack Gap="0.75rem" Padding="0.75rem 1rem 1rem">
@@ -55,6 +112,10 @@
                 {
                     <BitText Typography="BitTypography.Body2" Color="BitColor.SecondaryForeground">@Localizer[nameof(AppStrings.ImageEditorCropHint)]</BitText>
                 }
+
+                <BitText Typography="BitTypography.Body2">
+                    <BitLink Href="https://bmage.bitplatform.dev" Target="_blank">@Localizer[nameof(AppStrings.ImageEditorMoreFeatures)]</BitLink>
+                </BitText>
 
                 <BitStack Horizontal Wrap Gap="0.5rem" AutoHeight HorizontalAlign="BitAlignment.End">
                     <BitButton Variant="BitVariant.Text" ButtonType="BitButtonType.Button" OnClick="Cancel">
