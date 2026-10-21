@@ -204,7 +204,7 @@ public class BitTextShimmerE2ETests : E2ETestBase
 
     // ---------- band ----------
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("tsh-wide", "95px")]          // 19 characters x 5
     [DataRow("tsh-narrow", "10.5px")]      // 21 characters x 0.5
     [DataRow("tsh-spread-length", "2em")]
@@ -237,7 +237,7 @@ public class BitTextShimmerE2ETests : E2ETestBase
         StringAssert.Contains(image, $"50% - {(fontSize * 2).ToString("0.###", CultureInfo.InvariantCulture)}px");
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("tsh-angle", "115deg")]
     [DataRow("tsh-angle-negative", "65deg")]
     [DataRow("tsh-angle-nan", "90deg")]
@@ -283,7 +283,7 @@ public class BitTextShimmerE2ETests : E2ETestBase
 
     // ---------- timing ----------
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("tsh-slow", 4000d, 0d)]
     [DataRow("tsh-fast", 750d, 0d)]
     [DataRow("tsh-repeat", 4000d, 0d)]             // the default 2s sweep doubled by 2s of rest
@@ -316,7 +316,7 @@ public class BitTextShimmerE2ETests : E2ETestBase
 
     // ---------- direction & iterations ----------
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("tsh-basic", "normal")]
     [DataRow("tsh-reversed", "reverse")]
     [DataRow("tsh-alternate", "alternate")]
@@ -453,9 +453,16 @@ public class BitTextShimmerE2ETests : E2ETestBase
         Assert.AreEqual(await ResolveColorAsync("var(--bit-clr-fg-ter)"), color);
 
         await Page.Locator("#btn-toggle-static").ClickAsync();
+        // The time is read on the first frame the sweep is back: an expectation's poll can come up to a second after
+        // the render that brought it back, by when even a restarted sweep is that far in.
+        var restarted = (await (await Page.WaitForFunctionAsync("""
+            () => {
+                const a = document.getElementById('tsh-static').getAnimations().find(x => x.animationName === 'bit-tsh-anim');
+                return a ? [Number(a.currentTime ?? 0)] : null;
+            }
+            """)).JsonValueAsync<double[]>())[0];
         await Expect(shimmer).Not.ToHaveClassAsync(HasClass("bit-tsh-sta"));
         await Expect(shimmer).ToHaveCSSAsync("animation-name", "bit-tsh-anim");
-        var restarted = (await AnimationAsync("#tsh-static"))!.Value.GetProperty("current").GetDouble();
         Assert.IsTrue(restarted < 1000, $"The sweeps start from the beginning, the time was {restarted}.");
 
         // A static shimmer is drawn in its own BaseColor.
@@ -584,7 +591,7 @@ public class BitTextShimmerE2ETests : E2ETestBase
 
     // ---------- color ----------
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("primary", "pri", "--bit-clr-pri")]
     [DataRow("secondary", "sec", "--bit-clr-sec")]
     [DataRow("tertiary", "ter", "--bit-clr-ter")]

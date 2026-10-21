@@ -1961,7 +1961,10 @@ public class BitInfiniteScrollingTests : BunitTestContext
 
         Assert.IsFalse(component.Instance.IsLoading);
 
-        release.SetResult();
+        // Released on the renderer's dispatcher, where the dropped page's load resumes, so it has run by the time this
+        // returns. Released from the test, the items would still read [50, 60] while that load was waiting its turn, and
+        // the check below would pass before what it guards against (the late page landing) could happen.
+        await component.InvokeAsync(release.SetResult);
 
         component.WaitForAssertion(() => CollectionAssert.AreEqual(new List<int> { 50, 60 }, component.Instance.Items.ToList()));
     }

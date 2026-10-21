@@ -18,7 +18,7 @@ namespace Bit.BlazorUI.Tests.Components.Surfaces.ScrollablePane;
 [TestClass]
 public class BitScrollablePaneParamsTests : BunitTestContext
 {
-    private const string Setup = "BitBlazorUI.ScrollablePane.setup";
+    private const string SetupFn = "BitBlazorUI.ScrollablePane.setup";
 
     // Where the pane opens is decided once, for one pane, and the content is per pane; the rest is shared.
     private static readonly string[] _notCascaded =
@@ -174,7 +174,7 @@ public class BitScrollablePaneParamsTests : BunitTestContext
 
         // A cascaded Disabled is read by everything the pane decides from it: out of the tab order, no browser side.
         Assert.AreEqual("-1", root.GetAttribute("tabindex"));
-        Assert.AreEqual(0, Context.JSInterop.Invocations.Count(i => i.Identifier == Setup));
+        Assert.AreEqual(0, Context.JSInterop.Invocations.Count(i => i.Identifier == SetupFn));
     }
 
     [TestMethod]
@@ -219,7 +219,7 @@ public class BitScrollablePaneParamsTests : BunitTestContext
             NoScroll = true,
         });
 
-        var setups = Context.JSInterop.Invocations.Where(i => i.Identifier == Setup).ToArray();
+        var setups = Context.JSInterop.Invocations.Where(i => i.Identifier == SetupFn).ToArray();
 
         Assert.AreEqual(1, setups.Length);
 
@@ -257,7 +257,7 @@ public class BitScrollablePaneParamsTests : BunitTestContext
         Assert.IsTrue(string.IsNullOrEmpty(root.GetAttribute("style")));
         Assert.IsNull(root.GetAttribute("tabindex"));
         Assert.IsNull(root.GetAttribute("role"));
-        Assert.AreEqual(0, Context.JSInterop.Invocations.Count(i => i.Identifier == Setup));
+        Assert.AreEqual(0, Context.JSInterop.Invocations.Count(i => i.Identifier == SetupFn));
     }
 
     private IRenderedComponent<BitParams> RenderInParams(BitScrollablePaneParams @params, Action<RenderTreeBuilder>? attributes = null)

@@ -243,12 +243,15 @@ public class BitBasicListE2ETests : E2ETestBase
         await Expect(list.Locator("[data-id='0']")).ToBeVisibleAsync();
         var before = int.Parse(await Page.Locator("#provider-calls").InnerTextAsync());
 
-        // Twenty regions in a row, faster than the 200ms delay: most of them are never asked for.
-        for (var i = 1; i <= 20; i++)
-        {
-            await list.EvaluateAsync($"el => el.scrollTop = {i * 1000}");
-            await NextFramesAsync();
-        }
+        // Twenty regions in a row, faster than the 200ms delay: most of them are never asked for. They are scrolled
+        // through inside the page, two frames apart, as a round trip of the test per region can take the delay on a
+        // loaded runner and have every region asked for.
+        await list.EvaluateAsync(@"async el => {
+            for (let i = 1; i <= 20; i++) {
+                el.scrollTop = i * 1000;
+                await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+            }
+        }");
 
         await Expect(list.Locator("[data-id='500']")).ToBeVisibleAsync();
         var calls = int.Parse(await Page.Locator("#provider-calls").InnerTextAsync()) - before;

@@ -113,7 +113,8 @@ public class BitButtonFloatE2ETests : E2ETestBase
 
         await Page.Locator("#btn-toggle-float").ClickAsync();
         await Expect(FloatBtn).Not.ToHaveClassAsync(HasClass("bit-btn-ffx"));
-        await Expect(FloatBtn).ToHaveCSSAsync("position", "static");
+        // Back in the flow: the position of every button, which holds its visually hidden label (.bit-btn-srl).
+        await Expect(FloatBtn).ToHaveCSSAsync("position", "relative");
         await Expect(FloatBtn).ToHaveCSSAsync("box-shadow", "none");
     }
 
@@ -292,6 +293,9 @@ public class BitButtonFloatE2ETests : E2ETestBase
         await Expect(FloatBtn).Not.ToHaveClassAsync(HasClass("bit-btn-drg"));
         await Expect(FloatBtn).Not.ToHaveAttributeAsync("aria-keyshortcuts", ButtonsE2EHelpers.AnyValue);
         await Expect(FloatBtn).ToHaveCSSAsync("cursor", "pointer");
+        // The script lets go of the button after the render that took the class away, once that render has come back
+        // to the circuit (OnAfterRenderAsync): a round trip after it, the keys and the pointer are no longer listened to.
+        await PingAsync();
 
         var before = await FloatBtn.BoxAsync();
         await FloatBtn.FocusAsync();
@@ -310,6 +314,8 @@ public class BitButtonFloatE2ETests : E2ETestBase
 
         await Page.Locator("#btn-toggle-draggable").ClickAsync();
         await Expect(FloatBtn).ToHaveClassAsync(HasClass("bit-btn-drg"));
+        // Taken up again by the script the same way, a round trip after the render.
+        await PingAsync();
         await FloatBtn.FocusAsync();
         await Page.Keyboard.PressAsync("ArrowLeft");
         ButtonsE2EHelpers.AreClose(before.X - 8, (await FloatBtn.BoxAsync()).X, Tolerance, "dragging is back");
@@ -346,6 +352,9 @@ public class BitButtonFloatE2ETests : E2ETestBase
 
         await Page.Locator("#btn-remove-float").ClickAsync();
         await Expect(FloatBtn).ToBeVisibleAsync();
+        // The remounted button is made draggable after its first render, once that render has come back to the
+        // circuit (OnAfterRenderAsync): a round trip after it, the keys are listened to.
+        await PingAsync();
         await FloatBtn.FocusAsync();
         var before = await FloatBtn.BoxAsync();
         await Page.Keyboard.PressAsync("ArrowUp");

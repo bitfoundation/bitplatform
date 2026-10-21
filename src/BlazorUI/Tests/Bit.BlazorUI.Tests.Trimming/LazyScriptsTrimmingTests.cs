@@ -168,8 +168,10 @@ public sealed class LazyScriptsTrimmingTests
         await using var session = await BrowserSession.OpenAsync(engine);
         LazyServer.AssertSucceeded();
 
-        var requested = new List<string>();
-        session.Page.Request += (_, request) => requested.Add(request.Url);
+        // Playwright raises Request on its own thread, while the page may still be importing modules as the test reads the
+        // list: a queue enumerates a snapshot, where a List read during an Add throws.
+        var requested = new System.Collections.Concurrent.ConcurrentQueue<string>();
+        session.Page.Request += (_, request) => requested.Enqueue(request.Url);
 
         await using var server = await AppServer.StartPublishedAsync(LazyServer.Directory, "Bit.BlazorUI.Tests.Trimming.Fixture");
         var page = session.Page;

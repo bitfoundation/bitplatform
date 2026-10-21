@@ -387,7 +387,7 @@
                     int index = i;
                     int pageNo = i + 1;
                     <div class="bit-pdv-thumb @(pageNo == CurrentPage ? "bit-pdv-act" : "") @Classes?.Thumbnail" style="@Styles?.Thumbnail" data-thumb="@pageNo"
-                         role="option" tabindex="@(pageNo == CurrentPage ? 0 : -1)" aria-label="@ThumbAriaLabel(index)" aria-selected="@AriaBool(pageNo == CurrentPage)"
+                         role="option" tabindex="@(pageNo == CurrentPage ? "0" : "-1")" aria-label="@ThumbAriaLabel(index)" aria-selected="@AriaBool(pageNo == CurrentPage)"
                          @onclick="() => GoToPage(pageNo)" @onkeydown="e => OnThumbKeyDown(e, pageNo)">
                         @* Inert: the picture of the page is all an option shows. A thumbnail can
                            reuse the page's own markup, links included, and a link inside an
@@ -646,7 +646,7 @@
             bool collapsed = IsOutlineCollapsed(item);
             <li role="treeitem" data-bit-pdv-outline="@(_outlineOrdinal++)"
                 class="bit-pdv-outline-node @(item.PageNumber is null ? "bit-pdv-dis" : "") @Classes?.OutlineItem" style="@Styles?.OutlineItem"
-                tabindex="@(IsOutlineTabStop(item) ? 0 : -1)"
+                tabindex="@(IsOutlineTabStop(item) ? "0" : "-1")"
                 aria-expanded="@(hasChildren ? (collapsed ? "false" : "true") : null)"
                 aria-selected="@AriaBool(item.PageNumber == CurrentPage)"
                 aria-disabled="@(item.PageNumber is null ? "true" : null)"

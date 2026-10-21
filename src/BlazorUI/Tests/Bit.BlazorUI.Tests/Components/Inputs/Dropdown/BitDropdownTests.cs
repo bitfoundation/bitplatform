@@ -610,8 +610,8 @@ public class BitDropdownTests : BunitTestContext
         var form = component.Find("form");
         form.Submit();
 
-        Assert.AreEqual(component.Instance.ValidCount, isValid ? 1 : 0);
-        Assert.AreEqual(component.Instance.InvalidCount, isValid ? 0 : 1);
+        Assert.AreEqual(isValid ? 1 : 0, component.Instance.ValidCount);
+        Assert.AreEqual(isValid ? 0 : 1, component.Instance.InvalidCount);
 
         if (isValid is false)
         {
@@ -1052,58 +1052,65 @@ public class BitDropdownTests : BunitTestContext
         // only a maximum of 100 items will be rendered by default.
         AppContext.SetData("Microsoft.AspNetCore.Components.Web.Virtualization.Virtualize.MaxItemCount", maxItemCount);
 
-        var component = RenderComponent<BitDropdown<BitDropdownItem<string>, string>>(parameters =>
+        // The switch is process-wide, so it is cleared in a finally: a row that fails would otherwise leave the cap of
+        // 100 on every Virtualize rendered by the tests that run after it in this process.
+        try
         {
-            parameters.Add(p => p.Disabled, false);
-            parameters.Add(p => p.Virtualize, virtualize);
-            parameters.Add(p => p.MultiSelect, isMultiSelect);
-            parameters.Add(p => p.Items, items);
-
-            if (itemSize.HasValue)
+            var component = RenderComponent<BitDropdown<BitDropdownItem<string>, string>>(parameters =>
             {
-                parameters.Add(p => p.ItemSize, itemSize.Value);
-            }
+                parameters.Add(p => p.Disabled, false);
+                parameters.Add(p => p.Virtualize, virtualize);
+                parameters.Add(p => p.MultiSelect, isMultiSelect);
+                parameters.Add(p => p.Items, items);
 
-            if (overscanCount.HasValue)
+                if (itemSize.HasValue)
+                {
+                    parameters.Add(p => p.ItemSize, itemSize.Value);
+                }
+
+                if (overscanCount.HasValue)
+                {
+                    parameters.Add(p => p.OverscanCount, overscanCount.Value);
+                }
+            });
+
+            var bitDropdown = component.Find(".bit-drp-wrp");
+            bitDropdown.Click();
+
+            var drpItems = component.FindAll(isMultiSelect ? ".bit-drp-iwr" : ".bit-drp-itm");
+            var actualRenderedItemCount = drpItems.Count;
+
+            if (virtualize)
             {
-                parameters.Add(p => p.OverscanCount, overscanCount.Value);
-            }
-        });
-
-        var bitDropdown = component.Find(".bit-drp-wrp");
-        bitDropdown.Click();
-
-        var drpItems = component.FindAll(isMultiSelect ? ".bit-drp-iwr" : ".bit-drp-itm");
-        var actualRenderedItemCount = drpItems.Count;
-
-        if (virtualize)
-        {
-            //When virtualize is true, number of rendered items is greater than number of items shown in the list by "2 * OverScanCount".
-            var overscanItemsCount = 2 * component.Instance.OverscanCount;
+                //When virtualize is true, number of rendered items is greater than number of items shown in the list by "2 * OverScanCount".
+                var overscanItemsCount = 2 * component.Instance.OverscanCount;
 
 #if NET10_0_OR_GREATER
-            maxItemCount += overscanItemsCount;
+                maxItemCount += overscanItemsCount;
 #endif
 
-            var expectedRenderedItemCount = Math.Ceiling((decimal)(viewportHeight / component.Instance.ItemSize)) + overscanItemsCount;
-            expectedRenderedItemCount = Math.Min(expectedRenderedItemCount, maxItemCount);
+                var expectedRenderedItemCount = Math.Ceiling((decimal)(viewportHeight / component.Instance.ItemSize)) + overscanItemsCount;
+                expectedRenderedItemCount = Math.Min(expectedRenderedItemCount, maxItemCount);
 
-            //When actualRenderedItemCount is smaller than expectedRenderedItemCount, so show all items in viewport then actualRenderedItemCount equals total items count
-            if (actualRenderedItemCount < expectedRenderedItemCount)
-            {
-                Assert.AreEqual(items.Count, actualRenderedItemCount);
+                //When actualRenderedItemCount is smaller than expectedRenderedItemCount, so show all items in viewport then actualRenderedItemCount equals total items count
+                if (actualRenderedItemCount < expectedRenderedItemCount)
+                {
+                    Assert.AreEqual(items.Count, actualRenderedItemCount);
+                }
+                else
+                {
+                    Assert.AreEqual(expectedRenderedItemCount, actualRenderedItemCount);
+                }
             }
             else
             {
-                Assert.AreEqual(expectedRenderedItemCount, actualRenderedItemCount);
+                Assert.AreEqual(items.Count, actualRenderedItemCount);
             }
         }
-        else
+        finally
         {
-            Assert.AreEqual(items.Count, actualRenderedItemCount);
+            AppContext.SetData("Microsoft.AspNetCore.Components.Web.Virtualization.Virtualize.MaxItemCount", null);
         }
-
-        AppContext.SetData("Microsoft.AspNetCore.Components.Web.Virtualization.Virtualize.MaxItemCount", null);
     }
 
     [TestMethod,

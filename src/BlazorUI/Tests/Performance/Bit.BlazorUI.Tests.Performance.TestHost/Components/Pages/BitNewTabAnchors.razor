@@ -1,4 +1,5 @@
 ﻿@page "/regression/new-tab-anchors"
+@inject NavigationManager Navigation
 
 <PageTitle>New-Tab Anchors Regression</PageTitle>
 
@@ -118,7 +119,7 @@
     private readonly List<BitNavItem> _navItems =
     [
         new() { Text = "NavBlank", Url = "/?nav=blank", Target = "_blank" },
-        new() { Text = "NavExternal", Url = "http://127.0.0.1:5280/?nav=external", Target = "_blank" },
+        new() { Text = "NavExternal", Url = "/?nav=external", Target = "_blank" },
         new() { Text = "NavNoReferrer", Url = "/?nav=noreferrer", Target = "_blank", Rel = BitLinkRels.NoReferrer },
         new() { Text = "NavOpener", Url = "/?nav=opener", Target = "_blank", Rel = BitLinkRels.Opener },
         new() { Text = "NavSelf", Url = "https://bitplatform.dev/", Target = "_self" },
@@ -131,6 +132,15 @@
         new() { Text = "BarOpener", Url = "/?bar=opener", Target = "_blank", Rel = BitLinkRels.Opener },
         new() { Text = "BarSelf", Url = "https://bitplatform.dev/", Target = "_self" },
     ];
+
+    protected override void OnInitialized()
+    {
+        // The external item leads to this same host under its other name - 127.0.0.1 for localhost and back - so it is
+        // another origin that still loads, on whatever port TEST_HOST_URL put the host.
+        var external = new UriBuilder(Navigation.BaseUri) { Path = "/", Query = "nav=external" };
+        external.Host = external.Host == "127.0.0.1" ? "localhost" : "127.0.0.1";
+        _navItems.Single(i => i.Text == "NavExternal").Url = external.Uri.AbsoluteUri;
+    }
 
     protected override void OnAfterRender(bool firstRender)
     {

@@ -66,10 +66,11 @@ public class BitCircularTimePickerE2ETests : E2ETestBase
         return await CalloutOfAsync(scope);
     }
 
-    // The callout fades and slides in; its box is read once that entry has run out.
+    // The callout fades and slides in; its box is read once that entry has run out. A transition a render replaces
+    // midway (a number's color as the selection moves under a drag) is cancelled, which rejects its finished promise.
     private static Task SettleAsync(ILocator element)
     {
-        return element.EvaluateAsync("el => Promise.all(el.getAnimations({ subtree: true }).map(a => a.finished))");
+        return element.EvaluateAsync("el => Promise.all(el.getAnimations({ subtree: true }).map(a => a.finished.catch(() => null)))");
     }
 
     private Task<LocatorBoundingBoxResult?> BoxAsync(ILocator locator) => locator.BoundingBoxAsync();
@@ -790,10 +791,13 @@ public class BitCircularTimePickerE2ETests : E2ETestBase
     [TestMethod]
     public async Task DisablePastAndDisableFuture_RuleOutTheHoursOnTheWrongSideOfNow()
     {
+        // The pickers read the clock as the page renders, before the test does: an hour that turns between the two
+        // would put the test's sides of now an hour off the page's.
+        var opened = DateTime.Now;
         await OpenAsync(Url);
 
         var now = DateTime.Now;
-        if (now.Hour is 0 or 23 || (now.Minute == 59 && now.Second > 45)) Assert.Inconclusive("Too close to the turn of an hour, or to the ends of the day, to tell the sides of now apart.");
+        if (now.Hour is 0 or 23 || now.Hour != opened.Hour || (now.Minute == 59 && now.Second > 45)) Assert.Inconclusive("Too close to the turn of an hour, or to the ends of the day, to tell the sides of now apart.");
 
         var past = StandaloneCallout("range-past");
         var future = StandaloneCallout("range-future");

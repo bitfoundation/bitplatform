@@ -1098,7 +1098,7 @@ public partial class BitSlider : BitInputBase<double>
 
     private int MeasureValueChars()
     {
-        var chars = Math.Max(GetDisplayValue(_Min).Length, GetDisplayValue(_Max).Length);
+        var chars = Math.Max(CountChars(GetDisplayValue(_Min)), CountChars(GetDisplayValue(_Max)));
 
         var range = _Range;
 
@@ -1115,17 +1115,31 @@ public partial class BitSlider : BitInputBase<double>
 
         if (count > MaxMeasuredValues)
         {
-            chars = Math.Max(chars, GetDisplayValue(Denoise(_Min + step)).Length);
-            chars = Math.Max(chars, GetDisplayValue(last).Length);
-            return Math.Max(chars, GetDisplayValue(Denoise(last - step)).Length);
+            chars = Math.Max(chars, CountChars(GetDisplayValue(Denoise(_Min + step))));
+            chars = Math.Max(chars, CountChars(GetDisplayValue(last)));
+            return Math.Max(chars, CountChars(GetDisplayValue(Denoise(last - step))));
         }
 
         for (var i = 1; i <= (int)count; i++)
         {
-            chars = Math.Max(chars, GetDisplayValue(Denoise(_Min + i * step)).Length);
+            chars = Math.Max(chars, CountChars(GetDisplayValue(Denoise(_Min + i * step))));
         }
 
         return chars;
+    }
+
+    // The characters a label takes room for: the directional mark a culture writes before a minus sign (fa-IR, ar-SA)
+    // is invisible, so counting it would reserve a ch the label never fills.
+    private static int CountChars(string text)
+    {
+        var count = 0;
+
+        foreach (var c in text)
+        {
+            if (char.GetUnicodeCategory(c) is not UnicodeCategory.Format) count++;
+        }
+
+        return count;
     }
 
     /// <summary>

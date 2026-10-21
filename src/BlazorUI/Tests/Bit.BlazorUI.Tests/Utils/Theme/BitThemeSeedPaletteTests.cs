@@ -59,7 +59,7 @@ public sealed class BitThemeSeedPaletteTests
 
     // ── Calibration pin ───────────────────────────────────────────────────────
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow(BitThemeColorScheme.Light, "colors.fluent-light.scss")]
     [DataRow(BitThemeColorScheme.Dark, "colors.fluent-dark.scss")]
     public void SeedingThePackagedPrimaryReproducesThePackagedPaletteExactly(BitThemeColorScheme scheme, string paletteFile)
@@ -96,7 +96,7 @@ public sealed class BitThemeSeedPaletteTests
             $"{failures.Count} of {packaged.Count} tokens differ from {paletteFile}: {string.Join("; ", failures.Take(12))}");
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow(BitThemeColorScheme.Light)]
     [DataRow(BitThemeColorScheme.Dark)]
     public void SeedingThePackagedPrimaryLeavesTheFocusAliasesAlone(BitThemeColorScheme scheme)
@@ -116,7 +116,7 @@ public sealed class BitThemeSeedPaletteTests
 
     // ── Completeness ──────────────────────────────────────────────────────────
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow(BitThemeColorScheme.Light)]
     [DataRow(BitThemeColorScheme.Dark)]
     public void GeneratedThemeFillsEveryColorSlot(BitThemeColorScheme scheme)
@@ -193,7 +193,7 @@ public sealed class BitThemeSeedPaletteTests
 
     // ── Contrast, for any seed ────────────────────────────────────────────────
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow(BitThemeColorScheme.Light)]
     [DataRow(BitThemeColorScheme.Dark)]
     public void OnColorClearsTheUiFloorOverEveryFillForEverySeed(BitThemeColorScheme scheme)
@@ -232,7 +232,7 @@ public sealed class BitThemeSeedPaletteTests
             $"{failures.Count} on-color pairings fell below {OnColorFloor}:1: {string.Join("; ", failures.Take(12))}");
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow(BitThemeColorScheme.Light)]
     [DataRow(BitThemeColorScheme.Dark)]
     public void ForegroundsAndBordersClearTheirFloorsOverEverySurfaceForEverySeed(BitThemeColorScheme scheme)
@@ -275,7 +275,7 @@ public sealed class BitThemeSeedPaletteTests
             $"{failures.Count} foreground/surface pairings fell below their floor: {string.Join("; ", failures.Take(12))}");
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow(BitThemeColorScheme.Light)]
     [DataRow(BitThemeColorScheme.Dark)]
     public void DisabledTextClearsThreeToOneOverItsFillForEverySeed(BitThemeColorScheme scheme)
@@ -445,7 +445,7 @@ public sealed class BitThemeSeedPaletteTests
 
     // ── Ramp integrity ────────────────────────────────────────────────────────
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow(BitThemeColorScheme.Light)]
     [DataRow(BitThemeColorScheme.Dark)]
     public void TheLightTierKeepsThreeDistinctStepsForEverySeed(BitThemeColorScheme scheme)

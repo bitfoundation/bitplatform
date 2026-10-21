@@ -21,10 +21,28 @@ public class BitTooltipE2ETests : E2ETestBase
     private const string Url = "/e2e/tooltip";
     private const string ShownUrl = "/e2e/tooltip/shown";
 
+    // The ShowDelay of the page's delayed tooltip and of its group. A tooltip held for it is shown no sooner than that
+    // after a watch started ahead of the pointer or the key, so one shown sooner was not held - whatever the pace of the
+    // runner, which only ever adds to both.
+    private const int ShowDelay = 700;
+
     private ILocator El(string id) => Page.Locator($"#{id}");
     private ILocator Tip(string id) => Page.Locator($"#{id} [role=tooltip]");
     private ILocator Wrapper(string id) => Page.Locator($"#{id} > .bit-ttp-wrp");
     private ILocator Arrow(string id) => Page.Locator($"#{id} .bit-ttp-arw");
+
+    // Waits for the tooltip to be on the screen, checked in every frame. A test timing how soon one is shown waits
+    // through this rather than an expectation, whose retries back off to half a second apart: a tooltip shown a little
+    // late on a loaded runner would otherwise only be seen well past the delay it is told apart from.
+    private Task WaitForShownAsync(string id)
+    {
+        return Page.WaitForFunctionAsync(@"id => {
+            const tip = document.querySelector(`#${id} [role=tooltip]`);
+            if (!tip || getComputedStyle(tip).visibility !== 'visible') return false;
+            const r = tip.getBoundingClientRect();
+            return r.width > 0 && r.height > 0;
+        }", id);
+    }
 
     [TestMethod]
     public async Task Prerender_TheServerHtml_ContainsTheTooltipAndTheRelationship()
@@ -215,8 +233,8 @@ public class BitTooltipE2ETests : E2ETestBase
         watch.Restart();
         await Page.Keyboard.PressAsync("Shift+Tab");
         await Expect(El("ttp-showdelay-anchor")).ToBeFocusedAsync();
-        await Expect(Tip("ttp-showdelay")).ToBeVisibleAsync();
-        Assert.IsTrue(watch.ElapsedMilliseconds < 600, $"The keyboard waited {watch.ElapsedMilliseconds}ms.");
+        await WaitForShownAsync("ttp-showdelay");
+        Assert.IsTrue(watch.ElapsedMilliseconds < ShowDelay, $"The keyboard waited {watch.ElapsedMilliseconds}ms.");
     }
 
     [TestMethod]
@@ -227,8 +245,10 @@ public class BitTooltipE2ETests : E2ETestBase
         await El("ttp-hidedelay-anchor").HoverAsync();
         await Expect(Tip("ttp-hidedelay")).ToBeVisibleAsync();
 
-        await El("away-delays").HoverAsync();
+        // Started ahead of the move that starts the HideDelay, so the time the move takes to come back is not taken
+        // off what is measured.
         var watch = Stopwatch.StartNew();
+        await El("away-delays").HoverAsync();
         Assert.IsTrue(await Tip("ttp-hidedelay").IsVisibleAsync(), "Hidden without waiting for HideDelay.");
         await Expect(Tip("ttp-hidedelay")).ToBeHiddenAsync();
         Assert.IsTrue(watch.ElapsedMilliseconds >= 850, $"Hidden after {watch.ElapsedMilliseconds}ms.");
@@ -249,8 +269,8 @@ public class BitTooltipE2ETests : E2ETestBase
 
         watch.Restart();
         await El("ttp-g2-anchor").HoverAsync();
-        await Expect(Tip("ttp-g2")).ToBeVisibleAsync();
-        Assert.IsTrue(watch.ElapsedMilliseconds < 500, $"The next one waited {watch.ElapsedMilliseconds}ms inside the skip window.");
+        await WaitForShownAsync("ttp-g2");
+        Assert.IsTrue(watch.ElapsedMilliseconds < ShowDelay, $"The next one waited {watch.ElapsedMilliseconds}ms inside the skip window.");
 
         await El("away-group").HoverAsync();
         await Expect(Tip("ttp-g2")).ToBeHiddenAsync();
@@ -259,8 +279,8 @@ public class BitTooltipE2ETests : E2ETestBase
         await Page.WaitForTimeoutAsync(1700);
         watch.Restart();
         await El("ttp-g3-anchor").HoverAsync();
-        await Expect(Tip("ttp-g3")).ToBeVisibleAsync();
-        Assert.IsTrue(watch.ElapsedMilliseconds < 500, $"A tooltip with a ShowDelay of its own waited {watch.ElapsedMilliseconds}ms.");
+        await WaitForShownAsync("ttp-g3");
+        Assert.IsTrue(watch.ElapsedMilliseconds < ShowDelay, $"A tooltip with a ShowDelay of its own waited {watch.ElapsedMilliseconds}ms.");
 
         await El("away-group").HoverAsync();
         await Expect(Tip("ttp-g3")).ToBeHiddenAsync();
@@ -281,8 +301,8 @@ public class BitTooltipE2ETests : E2ETestBase
 
         var watch = Stopwatch.StartNew();
         await El("ttp-g2-anchor").HoverAsync();
-        await Expect(Tip("ttp-g2")).ToBeVisibleAsync();
-        Assert.IsTrue(watch.ElapsedMilliseconds < 500, $"The next tooltip along waited {watch.ElapsedMilliseconds}ms while the reader was reading the row.");
+        await WaitForShownAsync("ttp-g2");
+        Assert.IsTrue(watch.ElapsedMilliseconds < ShowDelay, $"The next tooltip along waited {watch.ElapsedMilliseconds}ms while the reader was reading the row.");
         await Expect(Tip("ttp-g1")).ToBeHiddenAsync();
     }
 

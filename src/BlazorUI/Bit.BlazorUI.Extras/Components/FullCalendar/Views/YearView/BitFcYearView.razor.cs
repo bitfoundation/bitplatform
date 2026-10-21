@@ -16,7 +16,7 @@ public partial class BitFcYearView
     private DateTime? _focusedDate;
     private bool _pendingFocus;
 
-    private string DayId(DateTime date) => $"{_gridId}-{date:yyyyMMdd}";
+    private string DayId(DateTime date) => FormattableString.Invariant($"{_gridId}-{date:yyyyMMdd}");
 
     /// <summary>The busy day that owns the tab stop: the one the arrow keys landed on, else today, else the first.</summary>
     private DateTime? RovingDate

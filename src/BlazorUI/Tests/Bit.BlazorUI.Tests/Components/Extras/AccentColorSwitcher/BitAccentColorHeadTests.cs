@@ -224,7 +224,7 @@ public class BitAccentColorHeadTests : BunitTestContext
             "With nothing persisted, no inline script resolves the accent client-side - a guard would only drop the style the server just rendered.");
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow(null, DisplayName = "No persisted accent"),
         DataRow("1276c6", DisplayName = "The packaged primary needs no override"),
         DataRow("garbage", DisplayName = "A tampered cookie value")]
@@ -245,7 +245,7 @@ public class BitAccentColorHeadTests : BunitTestContext
             "The inline script must be emitted regardless - it is what restores the accent from the visitor's own stores.");
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow(BitAccentColorFirstPaintStrategy.StaticCss),
         DataRow(BitAccentColorFirstPaintStrategy.StoredCss)]
     public void BitAccentColorHeadShouldEmitTheSwatchMarkerForEveryCssStrategy(BitAccentColorFirstPaintStrategy strategy)

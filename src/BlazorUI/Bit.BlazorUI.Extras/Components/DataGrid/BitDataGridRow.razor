@@ -160,7 +160,7 @@
     // job a key on the focused cell already does - Space selects, Enter opens the detail or the editor, the arrows open
     // a tree node, Delete deletes - leave the tab order instead of adding a stop or two to every row. They stay
     // clickable, and reachable by a screen reader's own cursor. The Save/Cancel of an open row edit keep theirs.
-    private int? CellControlTabIndex => Grid.CellNavigationActive ? -1 : null;
+    private string? CellControlTabIndex => Grid.CellNavigationActive ? "-1" : null;
 
     // Gives the row-selection checkbox an accessible name so screen readers can identify which row is
     // being selected: the value of the column that heads the rows (RowHeader), else of the first visible one.

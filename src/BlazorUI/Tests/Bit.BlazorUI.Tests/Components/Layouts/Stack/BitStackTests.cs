@@ -1060,7 +1060,9 @@ public class BitStackTests : BunitTestContext
             parameters.Add(p => p.Order, order);
         });
 
-        var style = order.HasValue ? $"order:{order.Value}" : null;
+        // Written invariantly, as CSS reads it: the culture of the machine would put its own minus sign (fa-IR and
+        // ar-SA lead it with a direction mark) in front of a negative order the stack writes as plain "-1".
+        var style = order.HasValue ? FormattableString.Invariant($"order:{order.Value}") : null;
 
         component.MarkupMatches(@$"<div style=""{STYLE}{style}"" class=""bit-stc"" id:ignore></div>");
     }

@@ -5,6 +5,8 @@ var builder = WebApplication.CreateBuilder(args);
 // The errors the host logs are kept for the browser tests to read (/api/server-errors): a component that throws while
 // it is disposed, or a circuit an unhandled exception tears down, shows nothing on the page.
 builder.Logging.AddProvider(new Bit.BlazorUI.Tests.Performance.TestHost.ServerErrorLog());
+// Which circuit is whose, for the log to leave out the errors of a previous test's circuit still being torn down.
+builder.Services.AddScoped<Microsoft.AspNetCore.Components.Server.Circuits.CircuitHandler, Bit.BlazorUI.Tests.Performance.TestHost.CircuitOrder>();
 
 // Add services to the container.
 // The services the components read of the library's own - the theme and the accent color switchers, the page
@@ -97,10 +99,10 @@ app.MapPost("/api/upload-fail", async (HttpRequest request) =>
     return Results.StatusCode(StatusCodes.Status500InternalServerError);
 });
 
-app.MapGet("/api/server-errors",() => Results.Ok(Bit.BlazorUI.Tests.Performance.TestHost.ServerErrorLog.Entries.ToArray()));
+app.MapGet("/api/server-errors",() => Results.Ok(Bit.BlazorUI.Tests.Performance.TestHost.ServerErrorLog.Current()));
 app.MapDelete("/api/server-errors", () =>
 {
-    Bit.BlazorUI.Tests.Performance.TestHost.ServerErrorLog.Entries.Clear();
+    Bit.BlazorUI.Tests.Performance.TestHost.ServerErrorLog.Clear();
     return Results.Ok();
 });
 

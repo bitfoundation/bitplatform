@@ -371,12 +371,14 @@ public class BitThemingE2ETests : E2ETestBase
         await Expect(Page.Locator("html")).ToHaveAttributeAsync("bit-theme", preset);
         await Expect(Page.Locator("#applied")).ToHaveTextAsync(preset);
 
+        // The attribute is on the page before the preset's stylesheet has painted it on a loaded runner, so the paint is
+        // waited for first and the tokens read once it is in.
+        await Expect(Page.Locator("#probe-button")).ToHaveCSSAsync("background-color", ToRgb(primary));
+        await Expect(Page.Locator("#probe-surface")).ToHaveCSSAsync("background-color", ToRgb(background));
+
         var tokens = await Page.EvaluateAsync<string[]>("() => { const s = getComputedStyle(document.documentElement); return [s.getPropertyValue('--bit-clr-pri').trim(), s.getPropertyValue('--bit-clr-bg-pri').trim()]; }");
         Assert.AreEqual(primary, tokens[0], ignoreCase: true, $"--bit-clr-pri of {preset}");
         Assert.AreEqual(background, tokens[1], ignoreCase: true, $"--bit-clr-bg-pri of {preset}");
-
-        await Expect(Page.Locator("#probe-button")).ToHaveCSSAsync("background-color", ToRgb(primary));
-        await Expect(Page.Locator("#probe-surface")).ToHaveCSSAsync("background-color", ToRgb(background));
 
         var radius = ParsePx(await ComputedStyleAsync("#probe-button", "border-top-left-radius"));
         Assert.AreEqual(pillButtons, radius >= 16, $"The button corner of {preset} is {radius}px.");

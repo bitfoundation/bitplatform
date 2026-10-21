@@ -312,7 +312,7 @@
                     var isDisabled = GetIsDisabled(item);
                     <button type="button"
                             role="menuitem"
-                            tabindex="@(isDisabled ? -1 : 0)"
+                            tabindex="@(isDisabled ? "-1" : "0")"
                             title="@GetItemTitle(item, true)"
                             aria-label="@GetItemAriaLabel(item)"
                             aria-current="@(GetIsSelected(item) ? "page" : null)"

@@ -270,7 +270,7 @@ public class BitPhoneInputE2ETests : E2ETestBase
         await Expect(selected).ToBeInViewportAsync();
 
         // Measured once the callout has finished sliding in, not partway through its entry transition.
-        await callout.EvaluateAsync("el => Promise.all(el.getAnimations({ subtree: true }).map(a => a.finished))");
+        await callout.EvaluateAsync("el => Promise.all(el.getAnimations({ subtree: true }).map(a => a.finished.catch(() => null)))");
         var groupBox = (await Root("phi-search").Locator(".bit-phi-fgp").BoundingBoxAsync())!;
         var calloutBox = (await callout.BoundingBoxAsync())!;
         Assert.IsTrue(calloutBox.Y >= groupBox.Y + groupBox.Height - 2);
@@ -838,7 +838,7 @@ public class BitPhoneInputE2ETests : E2ETestBase
         Assert.IsTrue((await Root("phi-notfullwidth").Locator(".bit-phi-fgp").BoundingBoxAsync())!.Width < 590);
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("primary", "bit-phi-bpr", "--bit-clr-bg-pri")]
     [DataRow("secondary", "bit-phi-bse", "--bit-clr-bg-sec")]
     [DataRow("tertiary", "bit-phi-btr", "--bit-clr-bg-ter")]
@@ -852,7 +852,7 @@ public class BitPhoneInputE2ETests : E2ETestBase
         Assert.AreEqual(expected, await ComputedStyleAsync($"#phi-bg-{kind} .bit-phi-fgp", "background-color"));
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("primary", "bit-phi-brp", "--bit-clr-brd-pri")]
     [DataRow("secondary", "bit-phi-brs", "--bit-clr-brd-sec")]
     [DataRow("tertiary", "bit-phi-brt", "--bit-clr-brd-ter")]
@@ -866,7 +866,7 @@ public class BitPhoneInputE2ETests : E2ETestBase
         Assert.AreEqual(expected, await ComputedStyleAsync($"#phi-brd-{kind} .bit-phi-fgp", "border-top-color"));
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("primary", "pri", "--bit-clr-pri")]
     [DataRow("secondary", "sec", "--bit-clr-sec")]
     [DataRow("tertiary", "ter", "--bit-clr-ter")]
@@ -892,7 +892,7 @@ public class BitPhoneInputE2ETests : E2ETestBase
         Assert.AreEqual(await ResolveColorAsync(token), await ComputedStyleAsync($"#phi-color-{name} .bit-phi-fgp", "border-top-color"));
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("small", "sm", "26px")]
     [DataRow("medium", "md", "32px")]
     [DataRow("large", "lg", "40px")]

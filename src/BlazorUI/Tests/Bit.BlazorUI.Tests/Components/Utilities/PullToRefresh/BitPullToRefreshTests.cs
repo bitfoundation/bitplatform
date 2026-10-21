@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using Bunit;
@@ -1259,7 +1260,8 @@ public class BitPullToRefreshTests : BunitTestContext
 
         var component = RenderComponent<BitPullToRefresh>(parameters =>
         {
-            parameters.Add(p => p.IndicatorTemplate, ctx => $"<span class=\"progress\">{ctx.Progress:0.##}</span>");
+            // The template writes the progress invariantly, so the decimal separator it draws does not follow the culture.
+            parameters.Add(p => p.IndicatorTemplate, ctx => $"<span class=\"progress\">{ctx.Progress.ToString("0.##", CultureInfo.InvariantCulture)}</span>");
         });
 
         component.Instance._OnMove(40m).GetAwaiter().GetResult();

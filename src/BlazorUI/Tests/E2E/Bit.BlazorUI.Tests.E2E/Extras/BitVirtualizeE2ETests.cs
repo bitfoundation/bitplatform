@@ -255,7 +255,7 @@ public class BitVirtualizeE2ETests : E2ETestBase
         await Expect(Page.Locator("#vir-at-end")).ToHaveTextAsync("False");
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("#btn-to-500-start", 500 * 48)]
     [DataRow("#btn-to-500-center", 500 * 48 + 24 - 150)]
     [DataRow("#btn-to-500-end", 501 * 48 - 300)]

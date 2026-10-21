@@ -1490,13 +1490,24 @@ public class BitTimePickerTests : BunitTestContext
             parameters.Bind(p => p.Value, value, v => value = v);
         });
 
-        var before = DateTime.Now.TimeOfDay;
+        var before = DateTime.UtcNow;
         component.Find(".bit-tpc-abn").Click();
-        var after = DateTime.Now.TimeOfDay;
+        var after = DateTime.UtcNow;
 
         Assert.IsNotNull(value);
-        Assert.IsTrue(value >= new TimeSpan(before.Hours, before.Minutes, 0));
-        Assert.IsTrue(value <= new TimeSpan(after.Hours, after.Minutes, 0) + TimeSpan.FromMinutes(1));
+
+        // The button reads the clock at some instant between the two reads, in the picker's time zone - the local
+        // one, as it is given no other - and keeps the minute of it. So it lands on one of the minutes the two reads
+        // span, each taken as a time of day in that zone the way the picker takes it. Bounding the value by the two
+        // times of day instead fails when midnight falls between the reads, where the time of day starts over.
+        var minutes = new List<TimeSpan>();
+        for (var instant = before.AddTicks(-(before.Ticks % TimeSpan.TicksPerMinute)); instant <= after; instant = instant.AddMinutes(1))
+        {
+            var timeOfDay = TimeZoneInfo.ConvertTimeFromUtc(instant, TimeZoneInfo.Local).TimeOfDay;
+            minutes.Add(new TimeSpan(timeOfDay.Hours, timeOfDay.Minutes, 0));
+        }
+
+        Assert.IsTrue(minutes.Contains(value.Value), $"{value} is none of the minutes the clock read between {before:O} and {after:O} (UTC).");
         Assert.AreEqual(0, value.Value.Seconds);
     }
 

@@ -93,7 +93,7 @@ public class BitRichTextEditorTests : BunitTestContext
         Assert.AreEqual("toolbar", component.Find(".bit-rte-tlb").GetAttribute("role"));
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow(false)]
     [DataRow(true)]
     public void BitRichTextEditorShouldRenderOnlyValidAttributeNames(bool readOnly)
@@ -597,7 +597,7 @@ public class BitRichTextEditorTests : BunitTestContext
         Assert.IsNotNull(component.Find(".bit-rte-err"));
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("")]
     [DataRow("   ")]
     public void BitRichTextEditorShouldRejectABlankCustomItemId(string id)
@@ -788,7 +788,7 @@ public class BitRichTextEditorTests : BunitTestContext
         Assert.AreEqual(0, component.FindAll(".bit-rte-bar").Count);
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("example.com", "https://example.com")]
     [DataRow("example.com/docs", "https://example.com/docs")]
     [DataRow("example.com:8443", "https://example.com:8443")]
@@ -816,7 +816,7 @@ public class BitRichTextEditorTests : BunitTestContext
         Assert.AreEqual(expected, Context.JSInterop.VerifyInvoke("BitBlazorUI.RichTextEditor.createLink").Arguments[1]);
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("javascript:alert(1)")]
     [DataRow("//evil.example.com")]
     [DataRow("\\\\evil.example.com")]
@@ -893,7 +893,7 @@ public class BitRichTextEditorTests : BunitTestContext
         Assert.AreEqual("A picture", invocation.Arguments[2]);
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("javascript:alert(1)")]
     [DataRow("ftp://example.com/a.png")]
     [DataRow("data:text/html;base64,AAAA")]
@@ -1190,7 +1190,7 @@ public class BitRichTextEditorTests : BunitTestContext
 
     // ---------------------------------------------------------------- media embeds
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("https://www.youtube.com/watch?v=abc123", "youtube-nocookie.com/embed/abc123")]
     [DataRow("https://youtu.be/abc123", "youtube-nocookie.com/embed/abc123")]
     [DataRow("https://www.youtube.com/embed/abc123", "youtube-nocookie.com/embed/abc123")]
@@ -1214,7 +1214,7 @@ public class BitRichTextEditorTests : BunitTestContext
         StringAssert.Contains(html, expected);
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("https://youtube.com.evil.test/watch?v=abc123", "media-not-allowed")]
     [DataRow("https://example.com/page", "media-not-allowed")]
     [DataRow("ftp://example.com/clip.mp4", "invalid-url")]
@@ -1284,7 +1284,7 @@ public class BitRichTextEditorTests : BunitTestContext
         Assert.AreEqual(0, InvokeCount("BitBlazorUI.RichTextEditor.insertTable"));
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("Insert row above", "addRowBefore")]
     [DataRow("Insert row below", "addRow")]
     [DataRow("Insert column before", "addColBefore")]
@@ -1518,7 +1518,7 @@ public class BitRichTextEditorTests : BunitTestContext
 
     // ---------------------------------------------------------------- shortcuts
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("b", false, "bold")]
     [DataRow("i", false, "italic")]
     [DataRow("u", false, "underline")]
@@ -2060,7 +2060,7 @@ public class BitRichTextEditorTests : BunitTestContext
         Assert.IsNull(SetupOption(options, "Policy"));
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow(-1, 0)]
     [DataRow(0, 0)]
     [DataRow(250, 250)]
@@ -2078,7 +2078,7 @@ public class BitRichTextEditorTests : BunitTestContext
         Assert.AreEqual(expected, SetupOption(LastSetupOptions(), "Debounce"));
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow(-5)]
     [DataRow(-1)]
     public void BitRichTextEditorShouldRejectANegativeMaxLength(int given)
@@ -2348,7 +2348,7 @@ public class BitRichTextEditorTests : BunitTestContext
 
     // ---------------------------------------------------------------- content facts
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow(false, false, true)]
     [DataRow(true, false, false)]
     [DataRow(false, true, false)]
@@ -2819,7 +2819,7 @@ public class BitRichTextEditorTests : BunitTestContext
     }
 
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow(true, true)]
     [DataRow(false, false)]
     public void BitRichTextEditorShouldDisableTheSourceViewToggleWhenLocked(bool readOnly, bool isEnabled)
@@ -3094,7 +3094,7 @@ public class BitRichTextEditorTests : BunitTestContext
 
     // ---------------------------------------------------------------- color
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("Remove text color", "fore")]
     [DataRow("Remove highlight", "back")]
     public async Task BitRichTextEditorShouldClearTheColorOfTheSelection(string label, string kind)

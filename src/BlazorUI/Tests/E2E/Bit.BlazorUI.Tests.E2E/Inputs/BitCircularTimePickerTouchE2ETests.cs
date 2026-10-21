@@ -23,7 +23,7 @@ public class BitCircularTimePickerTouchE2ETests : E2ETestBase
 
     private static Task SettleAsync(ILocator element)
     {
-        return element.EvaluateAsync("el => Promise.all(el.getAnimations({ subtree: true }).map(a => a.finished))");
+        return element.EvaluateAsync("el => Promise.all(el.getAnimations({ subtree: true }).map(a => a.finished.catch(() => null)))");
     }
 
     private static async Task<(double X, double Y)> PointAsync(ILocator callout, double degrees, double distance)

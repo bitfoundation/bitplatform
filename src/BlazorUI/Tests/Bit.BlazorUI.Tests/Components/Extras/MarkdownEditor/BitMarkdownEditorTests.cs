@@ -1767,7 +1767,11 @@ public class BitMarkdownEditorTests : BunitTestContext
             parameters.Add(p => p.Disabled, true);
         });
 
-        foreach (var button in component.FindAll(".bit-mde-btn"))
+        // A disabled editor that drew no toolbar would leave the loop below nothing to check.
+        var buttons = component.FindAll(".bit-mde-btn");
+        Assert.IsNotEmpty(buttons);
+
+        foreach (var button in buttons)
         {
             Assert.IsTrue(button.HasAttribute("disabled"), button.GetAttribute("data-cmd"));
         }

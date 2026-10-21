@@ -283,7 +283,9 @@ public class BitMessageParamsTests : BunitTestContext
         {
             Dismissible = true,
             ShowAutoDismissProgress = true,
-            AutoDismissTime = TimeSpan.FromMilliseconds(100),
+            // Long enough that the check of the bar below lands well inside the countdown on a slow agent: one that
+            // ran out first would have taken the message, bar and all, away already.
+            AutoDismissTime = TimeSpan.FromMilliseconds(1000),
         });
 
         Assert.HasCount(1, component.FindAll(".bit-msg-prb"));

@@ -578,8 +578,9 @@ public class BitGridItemTests : BunitTestContext
         var root = component.Find(".bit-grd-itm");
 
         // A negative order is how a single item is moved ahead of the ones that left theirs alone, so it
-        // must survive as it was given.
-        StringAssert.Contains(root.GetAttribute("style"), $"--bit-grd-ord:{order}");
+        // must survive as it was given - written invariantly, as CSS reads it, rather than with the minus sign of the
+        // machine's culture (fa-IR and ar-SA lead it with a direction mark).
+        StringAssert.Contains(root.GetAttribute("style"), $"--bit-grd-ord:{order.ToString(CultureInfo.InvariantCulture)}");
         Assert.IsTrue(root.ClassList.Contains("bit-grd-itm-ord"));
     }
 

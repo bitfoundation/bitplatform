@@ -40,9 +40,9 @@ public class BitToggleButtonTests : BunitTestContext
             Assert.IsTrue(bitToggleButton.ClassList.Contains("bit-dis"));
         }
 
-        Assert.AreEqual(bitLabelTag.TextContent, text);
+        Assert.AreEqual(text, bitLabelTag.TextContent);
 
-        Assert.AreEqual(bitToggleButton.GetAttribute("title"), title);
+        Assert.AreEqual(title, bitToggleButton.GetAttribute("title"));
 
         Assert.IsTrue(bitIconTag.ClassList.Contains($"bit-icon--{iconName}"));
     }
@@ -169,7 +169,7 @@ public class BitToggleButtonTests : BunitTestContext
 
         Assert.IsTrue(bitButton.HasAttribute("aria-label"));
 
-        Assert.AreEqual(bitButton.GetAttribute("aria-label"), ariaLabel);
+        Assert.AreEqual(ariaLabel, bitButton.GetAttribute("aria-label"));
     }
 
     [TestMethod,
@@ -882,7 +882,9 @@ public class BitToggleButtonTests : BunitTestContext
         var component = RenderComponent<BitToggleButton>(parameters =>
         {
             parameters.Add(p => p.IsLoading, true);
-            parameters.Add(p => p.LoadingDelay, 200);
+            // The delay runs on the wall clock from the render on, so it is long enough that a test thread held
+            // up by a busy runner still reads the markup before the spinner arrives.
+            parameters.Add(p => p.LoadingDelay, 500);
             parameters.Bind(p => p.IsChecked, isChecked, v => isChecked = v);
         });
 

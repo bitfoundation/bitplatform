@@ -1998,15 +1998,17 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
         var startingValueStartDateHasValue = StartingValue?.StartDate.HasValue ?? false;
         var startingValueEndDateHasValue = StartingValue?.EndDate.HasValue ?? false;
 
+        // The time fields belong to the TimeZone of the component, as the days do, not to the offset the value
+        // happens to carry: read otherwise, a value given in another offset shows one day with another day's time.
         _startTimeHour = startDateHasValue
-                          ? CurrentValue!.StartDate!.Value.Hour
+                          ? GetDateTime(CurrentValue!.StartDate!.Value).Hour
                           : (startingValueStartDateHasValue
-                             ? StartingValue!.StartDate!.Value.Hour
+                             ? GetDateTime(StartingValue!.StartDate!.Value).Hour
                              : 0);
         _startTimeMinute = startDateHasValue
-                            ? CurrentValue!.StartDate!.Value.Minute
+                            ? GetDateTime(CurrentValue!.StartDate!.Value).Minute
                             : (startingValueStartDateHasValue
-                                ? StartingValue!.StartDate!.Value.Minute
+                                ? GetDateTime(StartingValue!.StartDate!.Value).Minute
                                 : 0);
 
         // An end date holds the end time from now on, so a time chosen before it was picked has done its job; a
@@ -2021,14 +2023,14 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
         if (_endTimeChosen is false)
         {
             _endTimeHour = endDateHasValue
-                            ? CurrentValue!.EndDate!.Value.Hour
+                            ? GetDateTime(CurrentValue!.EndDate!.Value).Hour
                             : (startingValueEndDateHasValue
-                               ? StartingValue!.EndDate!.Value.Hour
+                               ? GetDateTime(StartingValue!.EndDate!.Value).Hour
                                : 23);
             _endTimeMinute = endDateHasValue
-                              ? CurrentValue!.EndDate!.Value.Minute
+                              ? GetDateTime(CurrentValue!.EndDate!.Value).Minute
                               : (startingValueEndDateHasValue
-                                 ? StartingValue!.EndDate!.Value.Minute
+                                 ? GetDateTime(StartingValue!.EndDate!.Value).Minute
                                  : 59);
         }
 

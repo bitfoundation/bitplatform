@@ -389,7 +389,7 @@
                                                 class="bit-dtrp-dbt@(klass) @Classes?.DayButton"
                                                 disabled="@disabled"
                                                 aria-disabled="@(disabled ? "true" : null)"
-                                                tabindex="@(isInMonth && date == focusableDay ? 0 : -1)"
+                                                tabindex="@(isInMonth && date == focusableDay ? "0" : "-1")"
                                                 aria-selected="@(isSelected ? "true" : "false")">
                                             @if (DayCellTemplate is not null)
                                             {
@@ -523,7 +523,7 @@
                                                 aria-label="@monthName"
                                                 disabled="@disabled"
                                                 aria-disabled="@(disabled ? "true" : null)"
-                                                tabindex="@(month == focusableMonth ? 0 : -1)"
+                                                tabindex="@(month == focusableMonth ? "0" : "-1")"
                                                 aria-selected="@(selected ? "true" : "false")"
                                                 style="@Styles?.MonthButton"
                                                 class="bit-dtrp-pkb@(GetMonthCellCssClass(month, todayYear, todayMonth)) @Classes?.MonthButton">
@@ -624,7 +624,7 @@
                                                 id="@GetYearButtonId(year)"
                                                 disabled="@disabled"
                                                 aria-disabled="@(disabled ? "true" : null)"
-                                                tabindex="@(year == focusableYear ? 0 : -1)"
+                                                tabindex="@(year == focusableYear ? "0" : "-1")"
                                                 aria-readonly="@(ReadOnly ? "true" : null)"
                                                 aria-selected="@(selected ? "true" : "false")"
                                                 style="@Styles?.YearButton"

@@ -119,11 +119,12 @@ public class BitScrollablePaneBrowserTests : PerformanceTestBase
         await Page.Mouse.WheelAsync(0, 240);
 
         // How far one turn of the wheel goes is the engine's own (Firefox scales it), but wherever it took the pane,
-        // what is reported is where it is once it has come to rest, and the top edge now has content beyond it.
+        // what is reported is where it is once it has come to rest, and the top edge now has content beyond it. The page
+        // rounds a fractional position half to even, where Math.round of JavaScript rounds it up.
         await Page.WaitForFunctionAsync(@"() => {
                 const el = document.querySelector(`[data-probe='ltr'] .bit-scp`);
                 const reported = document.querySelector(`[data-probe='ltr'] .report .top`).textContent;
-                return el.scrollTop > 100 && reported === String(Math.round(el.scrollTop));
+                return el.scrollTop > 100 && Math.abs(Number(reported) - el.scrollTop) <= 0.5;
             }", null, new() { Timeout = DefaultTimeout });
 
         await ExpectFaded("ltr", "top,bottom,right");
@@ -195,7 +196,10 @@ public class BitScrollablePaneBrowserTests : PerformanceTestBase
             }", new object[] { probe, edges }, new() { Timeout = DefaultTimeout });
     }
 
-    // Where the pane stands, counted from the visual left edge of its content, both on the screen and as reported.
+    // Where the pane stands, counted from the visual left edge of its content, both on the screen and as reported. The
+    // report is held to where the pane came to rest rather than to the goal: a goal half a pixel off the grid (the center
+    // of a pane whose scrollbar is an odd number of pixels wide) is snapped by the engine, up or down as it does, and the
+    // page rounds the position it is told the way Math.Round does.
     private async Task ExpectPosition(string probe, double left, double top)
     {
         await Page.WaitForFunctionAsync(@"([probe, left, top]) => {
@@ -205,8 +209,13 @@ public class BitScrollablePaneBrowserTests : PerformanceTestBase
                 return Math.abs(x - left) < 1 && Math.abs(el.scrollTop - top) < 1;
             }", new object[] { probe, left, top }, new() { Timeout = DefaultTimeout });
 
-        await Expect(Report(probe, "left")).ToHaveTextAsync(Math.Round(left).ToString());
-        await Expect(Report(probe, "top")).ToHaveTextAsync(Math.Round(top).ToString());
+        var at = await Pane(probe).EvaluateAsync<double[]>(@"el => {
+                const max = el.scrollWidth - el.clientWidth;
+                return [getComputedStyle(el).direction === 'rtl' ? max + el.scrollLeft : el.scrollLeft, el.scrollTop];
+            }");
+
+        await Expect(Report(probe, "left")).ToHaveTextAsync(Math.Round(at[0]).ToString(System.Globalization.CultureInfo.InvariantCulture));
+        await Expect(Report(probe, "top")).ToHaveTextAsync(Math.Round(at[1]).ToString(System.Globalization.CultureInfo.InvariantCulture));
     }
 
     private async Task<(double X, double Y)> Max(string probe)

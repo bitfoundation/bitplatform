@@ -127,7 +127,7 @@ public class ReferenceToolTests : McpTestBase
         Assert.IsLessThan(20_000, answer.Length, "BitIconName answered with something close to all two thousand names.");
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("web-app")]
     [DataRow("wasm")]
     [DataRow("server")]
@@ -267,7 +267,7 @@ public class ReferenceToolTests : McpTestBase
     /// that concludes <c>BitThemePresets.MaterialDark</c> does not exist, which is backwards: being
     /// reached from the core type is the whole point of the design.
     /// </summary>
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("BitThemePresets", "material-dark")]
     [DataRow("BitThemeName", "material-dark")]
     public async Task A_type_answers_with_what_another_package_adds_to_it(string typeName, string value)

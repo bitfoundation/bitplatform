@@ -1,4 +1,5 @@
 ﻿using System.Linq;
+using System.Threading.Tasks;
 using Bit.BlazorUI.Tests.Components.Inputs.TextField;
 using Bunit;
 using Microsoft.AspNetCore.Components;
@@ -44,7 +45,7 @@ public class BitInputBaseFieldNotificationTests : BunitTestContext
     }
 
     [TestMethod]
-    public void AnInputBoundToNothingShouldSitThroughTheValidationOfItsForm()
+    public async Task AnInputBoundToNothingShouldSitThroughTheValidationOfItsForm()
     {
         var model = new BitTextFieldTestModel();
         var editContext = new EditContext(model);
@@ -74,7 +75,9 @@ public class BitInputBaseFieldNotificationTests : BunitTestContext
         // have would no longer be skipped as a lookup in an empty table.
         component.FindAll("input")[0].Change("not an email");
 
-        component.InvokeAsync(() => editContext.Validate());
+        // Awaited: a lookup that throws out of the validation would otherwise be dropped with the task, after the
+        // bound field - notified first - had already been marked, and the assertions below would pass regardless.
+        await component.InvokeAsync(() => editContext.Validate());
 
         Assert.IsTrue(component.FindAll(".bit-tfl")[0].ClassList.Contains("bit-inv"));
         Assert.IsFalse(component.FindAll(".bit-tfl")[1].ClassList.Contains("bit-inv"));

@@ -18,7 +18,7 @@ public class BitShimmerTests : BunitTestContext
         var root = component.Find(".bit-smr");
 
         Assert.IsNotNull(root);
-        Assert.AreEqual("div", root.TagName.ToLower());
+        Assert.AreEqual("div", root.TagName.ToLowerInvariant());
     }
 
     [TestMethod]
@@ -1047,7 +1047,7 @@ public class BitShimmerTests : BunitTestContext
 
         // A placeholder standing in a line of text is phrasing content: a div there would be closed out of the
         // paragraph around it by the HTML parser, taking the sentence apart.
-        Assert.AreEqual(expectedTag, component.Find(".bit-smr").TagName.ToLower());
+        Assert.AreEqual(expectedTag, component.Find(".bit-smr").TagName.ToLowerInvariant());
     }
 
     [TestMethod]
@@ -1078,11 +1078,11 @@ public class BitShimmerTests : BunitTestContext
     {
         var component = RenderComponent<BitShimmer>();
 
-        Assert.AreEqual("div", component.Find(".bit-smr").TagName.ToLower());
+        Assert.AreEqual("div", component.Find(".bit-smr").TagName.ToLowerInvariant());
 
         component.Render(parameters => parameters.Add(p => p.Inline, true));
 
-        Assert.AreEqual("span", component.Find(".bit-smr").TagName.ToLower());
+        Assert.AreEqual("span", component.Find(".bit-smr").TagName.ToLowerInvariant());
     }
 
     [TestMethod]
@@ -1096,8 +1096,8 @@ public class BitShimmerTests : BunitTestContext
             parameters.Add(p => p.Lines, 2);
         });
 
-        Assert.AreEqual(expectedTag, component.Find(".bit-smr-wrp").TagName.ToLower());
-        Assert.AreEqual(expectedTag, component.Find(".bit-smr-anm").TagName.ToLower());
+        Assert.AreEqual(expectedTag, component.Find(".bit-smr-wrp").TagName.ToLowerInvariant());
+        Assert.AreEqual(expectedTag, component.Find(".bit-smr-anm").TagName.ToLowerInvariant());
     }
 
     [TestMethod]
@@ -1112,7 +1112,7 @@ public class BitShimmerTests : BunitTestContext
             parameters.AddChildContent("Loaded content");
         });
 
-        Assert.AreEqual(expectedTag, component.Find(".bit-smr-cnt").TagName.ToLower());
+        Assert.AreEqual(expectedTag, component.Find(".bit-smr-cnt").TagName.ToLowerInvariant());
     }
 
     [TestMethod]
@@ -1127,7 +1127,7 @@ public class BitShimmerTests : BunitTestContext
             parameters.AddChildContent("Covered content");
         });
 
-        Assert.AreEqual(expectedTag, component.Find(".bit-smr-cvd").TagName.ToLower());
+        Assert.AreEqual(expectedTag, component.Find(".bit-smr-cvd").TagName.ToLowerInvariant());
     }
 
 
@@ -1676,7 +1676,7 @@ public class BitShimmerTests : BunitTestContext
         Assert.AreEqual("progressbar", root.GetAttribute("role"));
         Assert.IsNull(root.QuerySelector(".bit-smr-vhd"));
         Assert.IsTrue(root.NextElementSibling!.ClassList.Contains("bit-smr-vhd"));
-        Assert.AreEqual("span", region.TagName.ToLower());
+        Assert.AreEqual("span", region.TagName.ToLowerInvariant());
     }
 
     [TestMethod]
@@ -1856,7 +1856,7 @@ public class BitShimmerTests : BunitTestContext
 
         var root = component.Find(".bit-smr");
 
-        Assert.AreEqual("span", root.TagName.ToLower());
+        Assert.AreEqual("span", root.TagName.ToLowerInvariant());
         Assert.AreEqual("progressbar", root.GetAttribute("role"));
     }
 
@@ -2062,7 +2062,7 @@ public class BitShimmerTests : BunitTestContext
 
         var root = component.Find(".bit-smr");
 
-        Assert.AreEqual("span", root.TagName.ToLower());
+        Assert.AreEqual("span", root.TagName.ToLowerInvariant());
         Assert.IsTrue(root.ClassList.Contains("bit-smr-pil"));
         Assert.IsTrue(root.ClassList.Contains("bit-smr-inl"));
         Assert.IsTrue(root.ClassList.Contains("bit-smr-ovl"));

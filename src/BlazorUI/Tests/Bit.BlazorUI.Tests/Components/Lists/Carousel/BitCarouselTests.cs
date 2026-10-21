@@ -1093,15 +1093,19 @@ public partial class BitCarouselTests : BunitTestContext
     [TestMethod]
     public async Task BitCarouselShouldNotAutoPlayWhilePaused()
     {
+        // The timer starts with the first render, so it is only made quick once the carousel is paused: a quick one
+        // could tick - and start a move that lands after the pause - before the pause is reached on a loaded machine.
         var component = RenderComponent<BitCarouselTest>(parameters =>
         {
             parameters.Add(p => p.AutoPlay, true);
-            parameters.Add(p => p.AutoPlayInterval, 50d);
+            parameters.Add(p => p.AutoPlayInterval, 5000d);
         });
 
         var carousel = component.Instance.Carousel;
 
         await component.InvokeAsync(carousel.Pause);
+
+        component.Render(parameters => parameters.Add(p => p.AutoPlayInterval, 50d));
 
         Assert.IsFalse(carousel.IsPlaying);
 

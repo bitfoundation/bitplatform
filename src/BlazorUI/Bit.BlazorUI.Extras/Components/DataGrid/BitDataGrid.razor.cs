@@ -3684,7 +3684,7 @@ public partial class BitDataGrid<[DynamicallyAccessedMembers(DynamicallyAccessed
     {
         await MoveColumnByAsync(column, delta);
         var item = $".bit-dtg-chooser-item[data-col-id=\"{AttributeValue(column.Id)}\"]";
-        _focusAfterRender = [$"{item} [data-move=\"{delta}\"]", $"{item} [data-move]", $"{item} input"];
+        _focusAfterRender = [FormattableString.Invariant($"{item} [data-move=\"{delta}\"]"), $"{item} [data-move]", $"{item} input"];
         StateHasChanged();
     }
 

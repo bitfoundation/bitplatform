@@ -222,7 +222,7 @@ public class BitSplitterTests : BunitTestContext
         Assert.IsTrue(root.ClassList.Contains("bit-spl-vrt"));
     }
 
-    [DataTestMethod,
+    [TestMethod,
      DataRow(false, "vertical"),
      DataRow(true, "horizontal")]
     public void BitSplitterShouldReportTheOrientationOfTheSeparatorItself(bool vertical, string expected)
@@ -360,7 +360,7 @@ public class BitSplitterTests : BunitTestContext
         }
     }
 
-    [DataTestMethod,
+    [TestMethod,
      DataRow(-20d, "0"),
      DataRow(140d, "100"),
      DataRow(33d, "33")]
@@ -420,7 +420,7 @@ public class BitSplitterTests : BunitTestContext
         Assert.AreEqual("Resize the panels", component.Find(".bit-spl-gtr").GetAttribute("aria-label"));
     }
 
-    [DataTestMethod,
+    [TestMethod,
      DataRow(true, true),
      DataRow(false, false)]
     public void BitSplitterThatCannotBeResizedShouldStopBeingAWidget(bool readOnly, bool isEnabled)
@@ -824,7 +824,7 @@ public class BitSplitterTests : BunitTestContext
         Assert.IsFalse(component.Instance.Collapsed);
     }
 
-    [DataTestMethod,
+    [TestMethod,
      DataRow(-5d, 0d),
      DataRow(150d, 100d),
      DataRow(64.25d, 64.25d)]
@@ -1013,7 +1013,7 @@ public class BitSplitterTests : BunitTestContext
         Assert.AreEqual("splitter", component.Find(".bit-spl").GetAttribute("data-test"));
     }
 
-    [DataTestMethod,
+    [TestMethod,
      DataRow(BitVisibility.Visible, ""),
      DataRow(BitVisibility.Hidden, "visibility:hidden"),
      DataRow(BitVisibility.Collapsed, "display:none")]
@@ -1347,7 +1347,7 @@ public class BitSplitterTests : BunitTestContext
         Assert.AreEqual(0, component.FindAll(".bit-spl-cbt").Count);
     }
 
-    [DataTestMethod,
+    [TestMethod,
      DataRow(true, true),
      DataRow(false, false)]
     public void BitSplitterASplitterNobodyMayResizeShouldNotOfferTheCollapseControlEither(bool readOnly, bool isEnabled)
@@ -1411,7 +1411,7 @@ public class BitSplitterTests : BunitTestContext
         Assert.AreEqual(1, component.FindAll(".bit-spl-cbt").Count);
     }
 
-    [DataTestMethod,
+    [TestMethod,
      DataRow(false, false, false, "bit-icon--ChevronRight bit-ico-r180"),
      DataRow(false, true, false, "bit-icon--ChevronRight"),
      DataRow(false, false, true, "bit-icon--ChevronRight"),
@@ -1449,7 +1449,7 @@ public class BitSplitterTests : BunitTestContext
         Assert.AreEqual(expected.Split(' ').Length + 1, icon.ClassList.Count(c => c.StartsWith("bit-ic")));
     }
 
-    [DataTestMethod,
+    [TestMethod,
      DataRow(false, "ClosePane"),
      DataRow(true, "OpenPane")]
     public void BitSplitterTheCollapseControlShouldTakeAnIconOfThePagesOwn(bool collapsed, string expected)
@@ -1469,7 +1469,7 @@ public class BitSplitterTests : BunitTestContext
         Assert.IsFalse(component.Find(".bit-spl-cbi").ClassList.Contains("bit-spl-cbd"));
     }
 
-    [DataTestMethod,
+    [TestMethod,
      DataRow(false, "fa-solid"),
      DataRow(true, "bi")]
     public void BitSplitterTheCollapseControlShouldTakeAnExternalIcon(bool collapsed, string expected)
@@ -1612,7 +1612,7 @@ public class BitSplitterTests : BunitTestContext
         Assert.AreEqual(true, ReadOption(options, "PersistSession"));
     }
 
-    [DataTestMethod,
+    [TestMethod,
      DataRow(double.NaN, null, null),
      DataRow(double.PositiveInfinity, 100d, "100"),
      DataRow(double.NegativeInfinity, 0d, "0"),
@@ -1833,7 +1833,7 @@ public class BitSplitterTests : BunitTestContext
         Assert.AreEqual(true, ReadOption(update.Arguments[1]!, "CollapseSecond"));
     }
 
-    [DataTestMethod,
+    [TestMethod,
      DataRow(false, false, false, "bit-icon--ChevronRight"),
      DataRow(false, true, false, "bit-icon--ChevronRight bit-ico-r180"),
      DataRow(false, false, true, "bit-icon--ChevronRight bit-ico-r180"),
@@ -1978,7 +1978,7 @@ public class BitSplitterTests : BunitTestContext
         Assert.AreEqual("33.33%", gutter.GetAttribute("aria-valuetext"));
     }
 
-    [DataTestMethod,
+    [TestMethod,
      DataRow(false, false, false),
      DataRow(true, false, true),
      DataRow(false, true, true),

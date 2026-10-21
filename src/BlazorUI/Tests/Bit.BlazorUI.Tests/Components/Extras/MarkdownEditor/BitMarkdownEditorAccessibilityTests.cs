@@ -299,7 +299,11 @@ public class BitMarkdownEditorAccessibilityTests : BunitTestContext
 
         component.Find("[data-cmd=find]").Click();
 
-        foreach (var input in component.FindAll(".bit-mde-fni"))
+        // The find and the replace box; with the panel closed the loop below would check nothing and pass.
+        var inputs = component.FindAll(".bit-mde-fni");
+        Assert.HasCount(2, inputs);
+
+        foreach (var input in inputs)
         {
             Assert.AreEqual("off", input.GetAttribute("autocomplete"));
             Assert.AreEqual("false", input.GetAttribute("spellcheck"));
@@ -417,6 +421,10 @@ public class BitMarkdownEditorAccessibilityTests : BunitTestContext
         component.Find("[data-cmd=find]").Click();
 
         var buttons = component.FindAll(".bit-mde-fnb");
+
+        // With the panel closed both loops below would check nothing and pass, so the search buttons have to be there
+        // ahead of the two replace buttons.
+        Assert.IsTrue(buttons.Count > 2, "the find panel of a read-only editor has to open");
 
         // Replace and Replace all are the last two: nothing may change a read-only text, while the search still works.
         foreach (var button in buttons.TakeLast(2))

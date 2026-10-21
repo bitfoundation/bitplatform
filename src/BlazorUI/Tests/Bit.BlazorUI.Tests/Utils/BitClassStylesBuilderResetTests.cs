@@ -140,7 +140,12 @@ public class BitClassStylesBuilderResetTests : BunitTestContext
             parameters.Add(p => p.ChildContent, items);
         });
 
-        foreach (var item in component.FindAll(".bit-crsi"))
+        var renderedItems = component.FindAll(".bit-crsi");
+
+        // Both items are checked, so a carousel that rendered none of them cannot pass for one that restyled them.
+        Assert.HasCount(2, renderedItems);
+
+        foreach (var item in renderedItems)
         {
             Assert.IsTrue(item.ClassList.Contains("second"));
             Assert.IsFalse(item.ClassList.Contains("first"));

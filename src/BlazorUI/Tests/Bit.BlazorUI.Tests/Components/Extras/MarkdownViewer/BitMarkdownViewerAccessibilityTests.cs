@@ -99,7 +99,7 @@ public class BitMarkdownViewerAccessibilityTests : BunitTestContext
 
     private sealed class UninitializedNavigationManager : NavigationManager { }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow(1, "# a\n\n## b", "h2,h3")]
     [DataRow(2, "# a\n\n###### b", "h3,h6")]
     [DataRow(-1, "# a\n\n### b", "h1,h2")]
@@ -243,7 +243,7 @@ public class BitMarkdownViewerAccessibilityTests : BunitTestContext
         Assert.IsFalse(component.Find(".bit-mdv").HasAttribute("role"));
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("aria-labelledby", "post-title")]
     [DataRow("aria-label", "Comment")]
     public void BitMarkdownViewerShouldMakeADocumentNamedBySplattedAttributesARegion(string attribute, string value)
@@ -309,7 +309,7 @@ public class BitMarkdownViewerAccessibilityTests : BunitTestContext
         Assert.AreEqual("auto", component.Find(".bit-mdv dd").GetAttribute("dir"));
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow(null)]
     [DataRow(BitDir.Rtl)]
     public void BitMarkdownViewerShouldNotGiveBlocksADirectionOtherwise(BitDir? dir)
@@ -584,7 +584,12 @@ public class BitMarkdownViewerAccessibilityTests : BunitTestContext
 
         // A read-only box is disabled the way every disabled native control of the library is: with aria-disabled
         // beside the disabled attribute, so either selector finds it - and an interactive one carries neither.
-        foreach (var checkbox in component.FindAll(".bit-mdv input[type=checkbox]"))
+        var checkboxes = component.FindAll(".bit-mdv input[type=checkbox]");
+
+        // Both tasks render a box, so the loop below cannot pass by finding none.
+        Assert.HasCount(2, checkboxes);
+
+        foreach (var checkbox in checkboxes)
         {
             Assert.AreEqual(readOnly, checkbox.HasAttribute("disabled"));
             Assert.AreEqual(readOnly ? "true" : null, checkbox.GetAttribute("aria-disabled"));

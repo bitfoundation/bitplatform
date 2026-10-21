@@ -20,7 +20,7 @@ public partial class BitFcMiniCalendar
     private DateTime? _focusedDate;
     private bool _pendingFocus;
 
-    private string DayButtonId(DateTime date) => $"{_gridId}-{date:yyyyMMdd}";
+    private string DayButtonId(DateTime date) => FormattableString.Invariant($"{_gridId}-{date:yyyyMMdd}");
 
     /// <summary>
     /// The day that owns the tab stop: the one the arrow keys landed on, else the selected date when

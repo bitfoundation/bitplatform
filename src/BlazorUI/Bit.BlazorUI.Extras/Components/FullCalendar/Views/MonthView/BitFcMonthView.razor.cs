@@ -43,7 +43,7 @@ public partial class BitFcMonthView
            && State.CanAdd
            && State.IsDateInAllowedRange(cell.Date);
 
-    private string CellButtonId(DateTime date) => $"{_gridId}-{date:yyyyMMdd}";
+    private string CellButtonId(DateTime date) => FormattableString.Invariant($"{_gridId}-{date:yyyyMMdd}");
 
     /// <summary>
     /// Opens a week from its number on the rail. The date moves in every case; the view only follows

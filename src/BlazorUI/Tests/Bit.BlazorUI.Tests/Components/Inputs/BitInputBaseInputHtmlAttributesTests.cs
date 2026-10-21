@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
+using System.Threading.Tasks;
 using Bit.BlazorUI.Tests.Components.Inputs.TextField;
 using Bunit;
 using Microsoft.AspNetCore.Components;
@@ -17,7 +18,7 @@ namespace Bit.BlazorUI.Tests.Components.Inputs;
 public class BitInputBaseInputHtmlAttributesTests : BunitTestContext
 {
     [TestMethod]
-    public void TheAriaInvalidOfAFailedValidationShouldLeaveTheDictionaryOfTheAppAsItWas()
+    public async Task TheAriaInvalidOfAFailedValidationShouldLeaveTheDictionaryOfTheAppAsItWas()
     {
         var model = new BitTextFieldTestModel();
         var editContext = new EditContext(model);
@@ -40,8 +41,10 @@ public class BitInputBaseInputHtmlAttributesTests : BunitTestContext
             builder.CloseComponent();
         });
 
+        // Every notification is awaited, so that what the input throws while it handles one fails the test rather than
+        // being dropped with the task.
         messages.Add(editContext.Field(nameof(BitTextFieldTestModel.Value)), "Invalid");
-        component.InvokeAsync(editContext.NotifyValidationStateChanged);
+        await component.InvokeAsync(editContext.NotifyValidationStateChanged);
 
         var input = component.Find("input");
 
@@ -50,7 +53,7 @@ public class BitInputBaseInputHtmlAttributesTests : BunitTestContext
         Assert.HasCount(1, inputHtmlAttributes);
 
         messages.Clear();
-        component.InvokeAsync(editContext.NotifyValidationStateChanged);
+        await component.InvokeAsync(editContext.NotifyValidationStateChanged);
 
         input = component.Find("input");
 
@@ -64,7 +67,7 @@ public class BitInputBaseInputHtmlAttributesTests : BunitTestContext
     [TestMethod]
     [DataRow("aria-invalid")]
     [DataRow("Aria-Invalid")]
-    public void AnAriaInvalidTheAppWroteShouldBeLeftWhereItIs(string name)
+    public async Task AnAriaInvalidTheAppWroteShouldBeLeftWhereItIs(string name)
     {
         var model = new BitTextFieldTestModel();
         var editContext = new EditContext(model);
@@ -88,12 +91,12 @@ public class BitInputBaseInputHtmlAttributesTests : BunitTestContext
         });
 
         messages.Add(editContext.Field(nameof(BitTextFieldTestModel.Value)), "Invalid");
-        component.InvokeAsync(editContext.NotifyValidationStateChanged);
+        await component.InvokeAsync(editContext.NotifyValidationStateChanged);
 
         Assert.AreEqual("grammar", component.Find("input").GetAttribute("aria-invalid"));
 
         messages.Clear();
-        component.InvokeAsync(editContext.NotifyValidationStateChanged);
+        await component.InvokeAsync(editContext.NotifyValidationStateChanged);
 
         // A valid field only takes off the aria-invalid it added itself.
         Assert.AreEqual("grammar", component.Find("input").GetAttribute("aria-invalid"));

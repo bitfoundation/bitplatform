@@ -265,7 +265,7 @@ public partial class BitFcTimelineDayView
             await BitFcFocusInterop.TryFocusAsync(JS, SlotElementId(rowKey, hour, minute));
         }
 
-        var sig = $"{State.SelectedDate:yyyy-MM-dd}|{State.StartOfDayHour}|{State.VisibleStartHour}|{State.VisibleEndHour}";
+        var sig = FormattableString.Invariant($"{State.SelectedDate:yyyy-MM-dd}|{State.StartOfDayHour}|{State.VisibleStartHour}|{State.VisibleEndHour}");
         if (sig == _scrollSignature) return;
 
         if (await BitFcTimelineScrollInterop.TryScrollToTargetAsync(JS, _scrollContainerId))

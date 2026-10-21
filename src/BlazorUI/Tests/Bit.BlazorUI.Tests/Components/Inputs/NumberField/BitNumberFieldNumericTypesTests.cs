@@ -1160,6 +1160,9 @@ public class BitNumberFieldNumericTypesTests : BunitTestContext
     {
         var component = RenderComponent<BitNumberField<int>>(parameters =>
         {
+            // A NumberFormat formats in the thread's culture unless the field has one of its own, so the
+            // grouping separator of the expected text is pinned here rather than taken from the machine.
+            parameters.Add(p => p.Culture, System.Globalization.CultureInfo.GetCultureInfo("en-US"));
             parameters.Add(p => p.NumberFormat, "N0");
             parameters.Add(p => p.DefaultValue, 1234567);
         });
@@ -1183,6 +1186,8 @@ public class BitNumberFieldNumericTypesTests : BunitTestContext
         // Without the select-all, swapping the text on focus would move the caret the user just placed.
         var component = RenderComponent<BitNumberField<int>>(parameters =>
         {
+            // The grouping separator of the expected text is pinned (see the test above).
+            parameters.Add(p => p.Culture, System.Globalization.CultureInfo.GetCultureInfo("en-US"));
             parameters.Add(p => p.NumberFormat, "N0");
             parameters.Add(p => p.NoSelectOnFocus, true);
             parameters.Add(p => p.DefaultValue, 1234567);

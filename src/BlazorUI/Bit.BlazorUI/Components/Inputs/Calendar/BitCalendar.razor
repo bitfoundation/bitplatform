@@ -254,7 +254,7 @@
                                             title="@(dayEvents.Count > 0 ? GetEventTooltip(dayEvents) : null)"
                                             style="@style"
                                             class="bit-cal-dbt@(klass) @Classes?.DayButton"
-                                            tabindex="@(date == focusableDay ? 0 : -1)"
+                                            tabindex="@(date == focusableDay ? "0" : "-1")"
                                             aria-selected="@(isSelected ? "true" : null)">
                                         @if (DayCellTemplate is not null)
                                         {
@@ -417,7 +417,7 @@
                                             disabled="@disabled"
                                             aria-disabled="@(disabled ? "true" : null)"
                                             aria-current="@((todayYear == _currentYear && month == todayMonth) ? "date" : null)"
-                                            tabindex="@(month == focusableMonth ? 0 : -1)"
+                                            tabindex="@(month == focusableMonth ? "0" : "-1")"
                                             style="@Styles?.MonthButton"
                                             class="bit-cal-pkb@(GetMonthCellCssClass(month, todayYear, todayMonth)) @Classes?.MonthButton"
                                             aria-selected="@(selected ? "true" : null)">
@@ -521,7 +521,7 @@
                                             disabled="@disabled"
                                             aria-disabled="@(disabled ? "true" : null)"
                                             aria-current="@(year == todayYear ? "date" : null)"
-                                            tabindex="@(year == focusableYear ? 0 : -1)"
+                                            tabindex="@(year == focusableYear ? "0" : "-1")"
                                             style="@Styles?.YearButton"
                                             class="bit-cal-pkb @Classes?.YearButton"
                                             aria-selected="@(selected ? "true" : null)">

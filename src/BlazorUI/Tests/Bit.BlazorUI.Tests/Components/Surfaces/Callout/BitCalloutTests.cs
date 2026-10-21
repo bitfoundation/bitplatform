@@ -93,7 +93,7 @@ public class BitCalloutTests : BunitTestContext
         Assert.AreEqual("dialog", anchor.GetAttribute("aria-haspopup"));
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("menu", "menu")]
     [DataRow("listbox", "listbox")]
     [DataRow("tree", "tree")]
@@ -1370,7 +1370,7 @@ public class BitCalloutTests : BunitTestContext
         Assert.IsTrue(style.Contains("opacity:0.5"));
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow(null)]
     [DataRow(0)]
     [DataRow(-4)]
@@ -1406,7 +1406,7 @@ public class BitCalloutTests : BunitTestContext
         }
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow(BitColorKind.Primary, "bit-clo-bpg")]
     [DataRow(BitColorKind.Secondary, "bit-clo-bsg")]
     [DataRow(BitColorKind.Tertiary, "bit-clo-btg")]
@@ -1421,7 +1421,7 @@ public class BitCalloutTests : BunitTestContext
         Assert.IsTrue(component.Find(".bit-clo-cal").ClassList.Contains(expectedClass));
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow(BitColorKind.Primary, "bit-clo-bpr")]
     [DataRow(BitColorKind.Secondary, "bit-clo-bsr")]
     [DataRow(BitColorKind.Tertiary, "bit-clo-btr")]
@@ -1767,7 +1767,7 @@ public class BitCalloutTests : BunitTestContext
         component.WaitForAssertion(() => Assert.AreEqual(1, component.FindAll(".content").Count));
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow(false)]
     [DataRow(true)]
     public void BitCalloutShouldPassTheForcedSideToThePositioning(bool noFlip)
@@ -1962,7 +1962,7 @@ public class BitCalloutTests : BunitTestContext
 
 
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow(BitResponsiveMode.Panel, null, "bit-clo-end")]
     [DataRow(BitResponsiveMode.Panel, BitPlacement.Start, "bit-clo-sta")]
     [DataRow(BitResponsiveMode.Panel, BitPlacement.End, "bit-clo-end")]
@@ -2218,7 +2218,7 @@ public class BitCalloutTests : BunitTestContext
         Assert.AreEqual("bit", root.GetAttribute("data-val-test"));
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow(null, "")]
     [DataRow(BitPlacement.Top, "top")]
     [DataRow(BitPlacement.Bottom, "bottom")]
@@ -2242,7 +2242,7 @@ public class BitCalloutTests : BunitTestContext
         Assert.AreEqual(expected, toggle[^1].Arguments[21]);
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow(null, "")]
     [DataRow(BitPlacement.Start, "")]
     [DataRow(BitPlacement.Center, "center")]
@@ -2641,11 +2641,12 @@ public class BitCalloutTests : BunitTestContext
 
         component.Find(".bit-clo").MouseLeave();
 
-        component.WaitForAssertion(() => Assert.IsFalse(component.Instance.IsOpen));
+        // The close waits out HoverCloseDelay on the clock, so the wait is given room for a loaded machine.
+        component.WaitForAssertion(() => Assert.IsFalse(component.Instance.IsOpen), TimeSpan.FromSeconds(5));
     }
 
     [TestMethod]
-    public void BitCalloutShouldStayOpenWhileThePointerIsInTheCallout()
+    public async Task BitCalloutShouldStayOpenWhileThePointerIsInTheCallout()
     {
         Context.JSInterop.Setup<bool>("BitBlazorUI.Utils.isHoverDevice").SetResult(true);
 
@@ -2653,6 +2654,8 @@ public class BitCalloutTests : BunitTestContext
         {
             parameters.Add(p => p.OpenOnHover, true);
             parameters.Add(p => p.Anchor, Markup("<button>Anchor</button>"));
+            // Long enough that the pointer arrives in the callout well inside it on a loaded machine too.
+            parameters.Add(p => p.HoverCloseDelay, 300);
         });
 
         component.Find(".bit-clo").MouseEnter();
@@ -2661,6 +2664,10 @@ public class BitCalloutTests : BunitTestContext
         // The close is what bridges the gap between the anchor and the callout, so arriving in the callout
         // before the delay is up calls it off: the pointer is on its way to what it is about to read.
         component.Find(".bit-clo-cal").MouseEnter();
+
+        // Well past the delay: a close that was not called off would have landed by now. Read at once, the
+        // assertion would pass before the close was ever due.
+        await Task.Delay(700);
 
         Assert.IsTrue(component.Instance.IsOpen);
     }
@@ -2833,7 +2840,7 @@ public class BitCalloutTests : BunitTestContext
         Assert.AreEqual("start", Context.JSInterop.Invocations["BitBlazorUI.Swipes.setup"][^1].Arguments[2]);
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow(BitVisibility.Visible, null)]
     [DataRow(BitVisibility.Hidden, "visibility:hidden")]
     [DataRow(BitVisibility.Collapsed, "display:none")]

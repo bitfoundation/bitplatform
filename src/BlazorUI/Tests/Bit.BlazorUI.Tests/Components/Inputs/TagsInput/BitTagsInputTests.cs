@@ -4755,10 +4755,18 @@ public class BitTagsInputTests : BunitTestContext
         });
 
         // The handler of the keystroke is what carries the wait, so the raise is awaited rather than the
-        // typing: what is being asserted is that the callback did not arrive with the keystroke itself.
-        var typing = com.Find(".bit-tgi-inp").InputAsync(new ChangeEventArgs { Value = "bla" });
+        // typing: what is being asserted is that the callback did not arrive with the keystroke itself. The count
+        // is taken in the same turn of the renderer's dispatcher as the keystroke, where the 20 ms wait cannot run
+        // out: taken afterwards, a test thread held up for longer than that would find the callback already raised.
+        Task typing = Task.CompletedTask;
+        var raisedWithTheKeystroke = -1;
+        await com.InvokeAsync(() =>
+        {
+            typing = com.Find(".bit-tgi-inp").InputAsync(new ChangeEventArgs { Value = "bla" });
+            raisedWithTheKeystroke = raised.Count;
+        });
 
-        Assert.AreEqual(0, raised.Count);
+        Assert.AreEqual(0, raisedWithTheKeystroke);
 
         await typing;
 
@@ -4779,10 +4787,18 @@ public class BitTagsInputTests : BunitTestContext
         var input = com.Find(".bit-tgi-inp");
 
         // The typed text is tracked at once however long the wait is, so the Enter arriving while the
-        // callback is still pending commits the tag all the same.
-        var typing = input.InputAsync(new ChangeEventArgs { Value = "blazor" });
+        // callback is still pending commits the tag all the same. Both keys are pressed in one turn of the
+        // renderer's dispatcher, where the 20 ms wait cannot run out: pressed one after the other from the test, a
+        // test thread held up for longer than that would let the callback for "blazor" arrive before the Enter.
+        Task typing = Task.CompletedTask;
+        Task committing = Task.CompletedTask;
+        await com.InvokeAsync(() =>
+        {
+            typing = input.InputAsync(new ChangeEventArgs { Value = "blazor" });
+            committing = input.KeyDownAsync(new KeyboardEventArgs { Key = "Enter" });
+        });
 
-        await input.KeyDownAsync(new KeyboardEventArgs { Key = "Enter" });
+        await committing;
 
         Assert.AreEqual(1, com.FindAll(".bit-tgi-tag").Count);
 
@@ -6234,10 +6250,21 @@ public class BitTagsInputTests : BunitTestContext
             parameters.Add(p => p.OnInput, (string _) => raised++);
         });
 
-        _ = com.Find(".bit-tgi-inp").InputAsync(new ChangeEventArgs { Value = "bla" });
+        // The keystroke and the disposal are made in one turn of the renderer's dispatcher, where the 20 ms wait
+        // cannot run out, so the field is always gone while the callback is still pending. Made one after the other
+        // from the test, a test thread held up for longer than that would let the callback arrive before the
+        // disposal, and the test would fail.
+        Task typing = Task.CompletedTask;
+        await com.InvokeAsync(() =>
+        {
+            typing = com.Find(".bit-tgi-inp").InputAsync(new ChangeEventArgs { Value = "bla" });
 
-        await Context.DisposeComponentsAsync();
-        await Task.Delay(50);
+            return Context.DisposeComponentsAsync();
+        });
+
+        // The keystroke is only done once its wait is, so a callback the disposal had not dropped would have
+        // arrived by now.
+        await typing;
 
         // A debounced OnInput still on the clock would otherwise run against a field that is no longer there.
         Assert.AreEqual(0, raised);
