@@ -2075,6 +2075,9 @@ Na het bereiken van {0} zullen extra aanmeldingen verminderde functies hebben.</
     <data name="ImageEditorCropHint" xml:space="preserve">
     <value>Sleep over de afbeelding om het deel te markeren dat u wilt behouden.</value>
   </data>
+    <data name="ImageEditorMoreFeatures" xml:space="preserve">
+    <value>Wilt u meer functies voor fotobewerking aan uw project toevoegen?</value>
+  </data>
     <data name="ImageEditorCouldNotOpenImage" xml:space="preserve">
     <value>Deze afbeelding kan hier niet worden geopend om te bewerken. U kunt hem nog steeds ongewijzigd uploaden.</value>
   </data>

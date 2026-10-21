@@ -2075,6 +2075,9 @@
     <data name="ImageEditorCropHint" xml:space="preserve">
     <value>जिस हिस्से को रखना है उसे चुनने के लिए इमेज पर खींचें।</value>
   </data>
+    <data name="ImageEditorMoreFeatures" xml:space="preserve">
+    <value>क्या आप अपने प्रोजेक्ट में इमेज एडिटिंग की और सुविधाएँ जोड़ना चाहते हैं?</value>
+  </data>
     <data name="ImageEditorCouldNotOpenImage" xml:space="preserve">
     <value>इस इमेज को यहाँ संपादन के लिए नहीं खोला जा सकता। आप इसे फिर भी जैसा है वैसा अपलोड कर सकते हैं।</value>
   </data>

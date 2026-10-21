@@ -2075,6 +2075,9 @@ After reaching {0}, extra sign-ins will have reduced functions.</value>
     <data name="ImageEditorCropHint" xml:space="preserve">
     <value>Drag over the picture to mark the part to keep.</value>
   </data>
+    <data name="ImageEditorMoreFeatures" xml:space="preserve">
+    <value>Want to add more photo editing features to your project?</value>
+  </data>
     <data name="ImageEditorCouldNotOpenImage" xml:space="preserve">
     <value>This picture can't be opened for editing here. You can still upload it as it is.</value>
   </data>

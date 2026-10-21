@@ -46,6 +46,7 @@ public partial class ImageEditorUITests : AppPageTest
         {
             await Expect(imageEditor.GetByRole(AriaRole.Button, new() { Name = label, Exact = true })).ToHaveCountAsync(1);
         }
+        await Expect(imageEditor.GetByRole(AriaRole.Link, new() { Name = AppStrings.ImageEditorMoreFeatures, Exact = true })).ToHaveAttributeAsync("href", "https://bmage.bitplatform.dev");
 
         await imageEditor.GetByRole(AriaRole.Button, new() { Name = AppStrings.RotateRight, Exact = true }).ClickAsync();
         await Expect(imageEditor.GetByRole(AriaRole.Button, new() { Name = AppStrings.Undo, Exact = true })).ToBeEnabledAsync();

@@ -2075,6 +2075,9 @@ Efter att ha nått {0} kommer extra inloggningar att ha reducerade funktioner.</
     <data name="ImageEditorCropHint" xml:space="preserve">
     <value>Dra över bilden för att markera den del som ska behållas.</value>
   </data>
+    <data name="ImageEditorMoreFeatures" xml:space="preserve">
+    <value>Vill du lägga till fler funktioner för bildredigering i ditt projekt?</value>
+  </data>
     <data name="ImageEditorCouldNotOpenImage" xml:space="preserve">
     <value>Den här bilden kan inte öppnas för redigering här. Du kan fortfarande ladda upp den som den är.</value>
   </data>

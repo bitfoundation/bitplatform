@@ -2075,6 +2075,9 @@
     <data name="ImageEditorCropHint" xml:space="preserve">
     <value>اسحب فوق الصورة لتحديد الجزء الذي تريد الاحتفاظ به.</value>
   </data>
+    <data name="ImageEditorMoreFeatures" xml:space="preserve">
+    <value>هل تريد إضافة المزيد من ميزات تحرير الصور إلى مشروعك؟</value>
+  </data>
     <data name="ImageEditorCouldNotOpenImage" xml:space="preserve">
     <value>لا يمكن فتح هذه الصورة للتعديل هنا. لا يزال بإمكانك رفعها كما هي.</value>
   </data>

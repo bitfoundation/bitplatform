@@ -2075,6 +2075,9 @@ Après avoir atteint {0}, les connexions supplémentaires auront des fonctions r
     <data name="ImageEditorCropHint" xml:space="preserve">
     <value>Faites glisser sur l'image pour délimiter la partie à conserver.</value>
   </data>
+    <data name="ImageEditorMoreFeatures" xml:space="preserve">
+    <value>Vous voulez ajouter plus de fonctions de retouche photo à votre projet ?</value>
+  </data>
     <data name="ImageEditorCouldNotOpenImage" xml:space="preserve">
     <value>Cette image ne peut pas être ouverte ici pour être modifiée. Vous pouvez quand même l'envoyer telle quelle.</value>
   </data>

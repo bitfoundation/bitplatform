@@ -2075,6 +2075,9 @@ Nach Erreichen von {0} haben zusätzliche Anmeldungen reduzierte Funktionen.</va
     <data name="ImageEditorCropHint" xml:space="preserve">
     <value>Ziehen Sie über das Bild, um den Teil zu markieren, der bleiben soll.</value>
   </data>
+    <data name="ImageEditorMoreFeatures" xml:space="preserve">
+    <value>Möchten Sie Ihrem Projekt weitere Funktionen zur Bildbearbeitung hinzufügen?</value>
+  </data>
     <data name="ImageEditorCouldNotOpenImage" xml:space="preserve">
     <value>Dieses Bild kann hier nicht zum Bearbeiten geöffnet werden. Sie können es trotzdem unverändert hochladen.</value>
   </data>
