@@ -451,8 +451,10 @@ its own, and the containers run on the dev container's own Docker engine, not on
 `dotnet run`s of the app host, each until the web app answers inside the container and each ended the way closing
 its terminal does, with the same bar for the second run's reuse, the idle stop and the third run's volumes. Give
 every request to the web app a timeout: Aspire's proxy takes the connection on its port before the app is up, and a
-request without one never returns. Then remove the kept container, its volumes and its image, the helper's folder,
-and with `-Sha` the worktree it added: a later run of the helper doesn't.
+request without one never returns. Start each run only once the previous one's web app has stopped answering, and
+count it as up only once its own app host has started: a web app still shutting down answers the next run's first
+request, and that run then measures nothing. Then remove the kept container, its volumes and its image, the helper's
+folder, and with `-Sha` the worktree it added: a later run of the helper doesn't.
 
 A failure in bit or in the template is fixed like a CI failure, and the next `devcontainer -Sha` on the fix proves it;
 no CD is involved.
@@ -480,6 +482,9 @@ alive for its idle time. `aspire` checks that the way a developer meets it:
   stage. Its containers hold that memory, and Docker's VM keeps it for a while after they stop: IIS sites
   deployed next to them took minutes to start, and one never did ("Managed server didn't initialize after 120000
   ms" in the Application log), which a CD reports as a failed health check.
+- `-Keep` leaves the project and its containers for a closer look. Remove them by hand afterwards, with only the
+  volumes named after the app host: MailPit's volume is called `mailpit` in every project on this machine, so it holds
+  other projects' mail too.
 
 Two things are expected and are not failures. `dotnet test` and a `dotnet run` or `aspire start` re-create each
 other's containers, since the test host picks random ports and the ports are part of the lifecycle key. And a run
