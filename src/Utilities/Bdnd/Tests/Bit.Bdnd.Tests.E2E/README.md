@@ -38,6 +38,13 @@ box landed on screen, and the drag events as the browser raised them and the mod
 No test is `[Ignore]`d. Every test, not only the page sweep, fails when its page logs a console error, throws an
 unhandled exception or has a request fail.
 
+Run against a published demo ([the publish gate](#publish-gate-trimming--aot)), the same tests prove all of it on the
+WebAssembly client as it ships: trimmed, or AOT-compiled. Only there does an interop type the trimmer stripped show
+up. System.Text.Json reads and writes the registrations' options and the callbacks' payloads through reflection, so
+a constructor or property the trimmer removed makes every draggable and drop target throw as it registers, and
+nothing drags at all. A build output is never trimmed, so it cannot show this. The roots that prevent it are checked
+on every pull request by `BdndTrimmingTests` in `Bit.Bdnd.Tests`.
+
 Drags from outside the browser cannot be started with a mouse, so the file and text drops raise `dragenter`,
 `dragover`, `drop` and `dragleave` themselves, on the target, with a `DataTransfer` created in the page - the events
 then run through the module and Blazor exactly as the operating system's would. A link, by contrast, is dragged for
@@ -71,9 +78,9 @@ dotnet test --filter "FullyQualifiedName~Dropping_the_knight"
 dotnet test --filter "FullyQualifiedName!~Every_demo_page"
 ```
 
-The workflow `.github/workflows/bit.ci.Bdnd.e2e.yml` does the same in Release. It is started by hand
-(`workflow_dispatch`) only, since the suite takes far longer than the build-and-unit pipeline in
-`bit.ci.Bdnd.yml`:
+The workflow `.github/workflows/bit.ci.Bdnd.e2e.yml` does the same in Release, and runs the
+[publish gate](#publish-gate-trimming--aot) next to it. It is started by hand (`workflow_dispatch`) only, since the
+suite takes far longer than the build-and-unit pipeline in `bit.ci.Bdnd.yml`:
 
 ```bash
 dotnet build src/Utilities/Bdnd/Demo/Server/Bit.Bdnd.Demo.Server.csproj -c Release
@@ -92,7 +99,8 @@ full build, in its new headless mode (the `chromium` channel), because that is t
 falls back to the headless shell, where it passes as well.
 
 The suite starts the demo server itself (`dotnet Bit.Bdnd.Demo.Server.dll --urls http://127.0.0.1:<free port>`,
-in the Development environment so the build output finds its static web assets), waits until it answers, shares
+in the Development environment so the build output finds its static web assets - or, with
+`BDND_E2E_PUBLISHED_HOST`, from the publish output in Production, as it is deployed), waits until it answers, shares
 it between all tests and stops it when the run ends. Each test gets a browser context of its own, in which every
 request that leaves the demo's origin (its web font) is answered with an empty response, so a machine without
 internet access runs the suite just the same. The tests run one at a time: a drag is a sequence of native events
@@ -107,6 +115,27 @@ On a build server (`CI=true`) the same tests **fail** instead, so a suite that n
 | Variable | Effect |
 |---|---|
 | `BDND_E2E_CONFIGURATION` | Build configuration of the demo server to boot; defaults to the test assembly's own. |
+| `BDND_E2E_PUBLISHED_HOST` | Boot a `dotnet publish` output of the demo server (see `publish-gate.sh`) instead of the build output. |
 | `BDND_E2E_BASE_URL` | Drive an already running demo (for example one started from the IDE) instead of booting one. |
 | `BDND_E2E_CHANNEL` / `BDND_E2E_EXECUTABLE` | Use a specific browser: an installed Chrome/Edge (`chrome`, `msedge`), Playwright's headless shell (`chromium-headless-shell`), or a Chromium binary. Without either, the full Chromium Playwright installed is used, then its headless shell, falling back to an installed Chrome, then Edge. |
 | `BDND_E2E_HEADED=1` | Show the browser. |
+
+### Publish gate (trimming / AOT)
+
+`publish-gate.sh` publishes the demo the way `bdnd.demo.cd.yml` deploys it - its WebAssembly client trimmed, or
+AOT-compiled - and fails on any trim/AOT analysis warning raised inside Bit.Bdnd. It ignores the framework
+assemblies' own warnings and the demo's (`Bit.Bdnd.Demo.*`). The suite then runs against that output. The analysis
+alone is not enough: JS interop takes its arguments as `object`, so the trimmer raises no warning for a type it
+strips from under System.Text.Json, and only the browser run shows it.
+
+```bash
+# From src/Utilities/Bdnd:
+bash Tests/Bit.Bdnd.Tests.E2E/publish-gate.sh ../../artifacts/bdnd-demo-trimmed
+# AOT leg (needs the wasm-tools workload):
+bash Tests/Bit.Bdnd.Tests.E2E/publish-gate.sh ../../artifacts/bdnd-demo-aot -p:RunAOTCompilation=true
+
+dotnet build Tests/Bit.Bdnd.Tests.E2E/Bit.Bdnd.Tests.E2E.csproj
+BDND_E2E_PUBLISHED_HOST=$PWD/../../artifacts/bdnd-demo-trimmed dotnet test --project Tests/Bit.Bdnd.Tests.E2E/Bit.Bdnd.Tests.E2E.csproj --no-build
+```
+
+The `publish-gate` job of `bit.ci.Bdnd.e2e.yml` runs both legs.

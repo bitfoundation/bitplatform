@@ -19,6 +19,13 @@ public static class E2EEnvironment
 #endif
 
     /// <summary>
+    /// <c>BDND_E2E_PUBLISHED_HOST</c>: a folder holding a <c>dotnet publish</c> output of Bit.Bdnd.Demo.Server
+    /// (see publish-gate.sh), whose WebAssembly client the publish trimmed - or AOT-compiled - as it is when the demo
+    /// ships. When set the suite boots that instead of the build output, which is never trimmed.
+    /// </summary>
+    public static string? PublishedHost { get; } = Read("BDND_E2E_PUBLISHED_HOST");
+
+    /// <summary>
     /// <c>BDND_E2E_BASE_URL</c>: an already running demo (for example one started from the IDE). When set
     /// the suite drives that instead of booting the demo server itself.
     /// </summary>

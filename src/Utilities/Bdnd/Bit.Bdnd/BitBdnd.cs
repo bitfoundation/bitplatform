@@ -34,10 +34,14 @@ public static class BitBdnd
     // Roots the public properties + constructors of every type that is (de)serialized across JS
     // interop so the trimmer preserves them. The [DynamicDependency] attributes take effect because
     // this method is reachable from AddBitBdndServices (an app entry point).
+    // The options records have no parameterless constructor: System.Text.Json goes through their
+    // primary one - to serialize them too - and matches its parameters to the properties by name.
+    // The trimmer strips those names from a constructor it does not keep for reflection, so the
+    // records keep their public constructors (a sealed record's copy constructor is private).
     [DynamicDependency(DynamicallyAccessedMemberTypes.PublicProperties | DynamicallyAccessedMemberTypes.PublicParameterlessConstructor, typeof(BdndDomRect))]
     [DynamicDependency(DynamicallyAccessedMemberTypes.PublicProperties | DynamicallyAccessedMemberTypes.PublicParameterlessConstructor, typeof(BdndNativeDropPayload))]
     [DynamicDependency(DynamicallyAccessedMemberTypes.PublicProperties | DynamicallyAccessedMemberTypes.PublicParameterlessConstructor, typeof(BdndNativeFile))]
-    [DynamicDependency(DynamicallyAccessedMemberTypes.PublicProperties, typeof(BdndDragSourceOptions))]
-    [DynamicDependency(DynamicallyAccessedMemberTypes.PublicProperties, typeof(BdndDropTargetOptions))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.PublicProperties | DynamicallyAccessedMemberTypes.PublicConstructors, typeof(BdndDragSourceOptions))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.PublicProperties | DynamicallyAccessedMemberTypes.PublicConstructors, typeof(BdndDropTargetOptions))]
     private static void PreserveInteropContracts() { }
 }

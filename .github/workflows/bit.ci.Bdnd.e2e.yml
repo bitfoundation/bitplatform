@@ -1,7 +1,8 @@
 name: bit platform CI - Bdnd E2E
 
-# The browser suite: the demo (prerendered, then running on WebAssembly) driven in Chromium with Playwright. It
-# takes far longer than the build-and-unit pipeline (bit.ci.Bdnd.yml), so it runs only when started by hand. See
+# The browser suite: the demo (prerendered, then running on WebAssembly) driven in Chromium with Playwright, from its
+# build output and, in the publish gate, from trimmed and AOT-compiled publishes. It takes far longer than the
+# build-and-unit pipeline (bit.ci.Bdnd.yml), so it runs only when started by hand. See
 # src/Utilities/Bdnd/Tests/Bit.Bdnd.Tests.E2E/README.md for what it proves and how to run it locally.
 
 on:
@@ -60,4 +61,68 @@ jobs:
       with:
         name: bdnd-e2e
         path: '**/bdnd-e2e.trx'
+        if-no-files-found: ignore
+
+  # Publishes the demo the way it ships - its WebAssembly client trimmed, and in a second leg AOT-compiled - failing
+  # on any trim/AOT analysis warning raised inside Bit.Bdnd, then runs the browser suite against that published output.
+  # Trimming is where the interop types System.Text.Json reads and writes through reflection lose their members, and
+  # none of it is visible in a build output.
+  publish-gate:
+    name: Bdnd publish gate (${{ matrix.name }})
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+        - name: trimmed
+          properties: ''
+        - name: aot
+          properties: '-p:RunAOTCompilation=true'
+
+    steps:
+
+    - name: Checkout source code
+      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      with:
+          persist-credentials: false
+
+    - name: Setup .NET 10.0
+      uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+      with:
+        global-json-file: src/global.json
+
+    - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+      with:
+        node-version: 24
+
+    # Both from inside src, so src/global.json picks the SDK: the workload has to be installed for the SDK that publishes.
+    - name: Install wasm-tools
+      if: matrix.name == 'aot'
+      run: cd src/Utilities/Bdnd && dotnet workload install wasm-tools
+
+    - name: Publish the demo (fails on trim/AOT warnings from Bit.Bdnd)
+      run: cd src/Utilities/Bdnd && bash Tests/Bit.Bdnd.Tests.E2E/publish-gate.sh ${{ github.workspace }}/artifacts/demo-${{ matrix.name }} ${{ matrix.properties }}
+
+    - name: Build the E2E suite
+      run: dotnet build src/Utilities/Bdnd/Tests/Bit.Bdnd.Tests.E2E/Bit.Bdnd.Tests.E2E.csproj -c Release
+
+    - name: Install Playwright Chromium
+      run: pwsh src/Utilities/Bdnd/Tests/Bit.Bdnd.Tests.E2E/bin/Release/net10.0/playwright.ps1 install --with-deps chromium
+
+    - name: Run E2E tests against the published demo
+      env:
+        BDND_E2E_PUBLISHED_HOST: ${{ github.workspace }}/artifacts/demo-${{ matrix.name }}
+      # Run from inside src so src/global.json's Microsoft.Testing.Platform runner setting applies.
+      run: >
+        cd src/Utilities/Bdnd/Tests/Bit.Bdnd.Tests.E2E &&
+        dotnet test -c Release --no-build
+        --report-trx --report-trx-filename bdnd-publish-${{ matrix.name }}.trx
+
+    - name: Upload test results
+      if: always()
+      uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+      with:
+        name: bdnd-publish-${{ matrix.name }}
+        path: '**/bdnd-publish-*.trx'
         if-no-files-found: ignore
