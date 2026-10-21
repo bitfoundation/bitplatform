@@ -210,8 +210,39 @@ public class PrerenderJsRuntimeTests : BunitContext
         Assert.IsExactInstanceOfType<UnsupportedJavaScriptRuntime>(cut.FindComponent<ChildComponent>().Instance.JS);
     }
 
+    [TestMethod]
+    public void The_js_runtime_of_a_server_prerender_is_not_wrapped_so_libraries_can_still_recognize_it()
+    {
+        Services.AddSingleton<IJSRuntime>(new RemoteJSRuntime());
+        Services.AddBitBevToolsServices(o => o.Enabled = true);
+
+        var cut = Render<ParentComponent>();
+
+        Assert.IsExactInstanceOfType<RemoteJSRuntime>(cut.FindComponent<ChildComponent>().Instance.JS);
+    }
+
+    [TestMethod]
+    public void The_js_runtime_of_a_connected_circuit_is_still_tracked()
+    {
+        Services.AddSingleton<IJSRuntime>(new RemoteJSRuntime { IsInitialized = true });
+        Services.AddBitBevToolsServices(o => o.Enabled = true);
+
+        var cut = Render<ParentComponent>();
+
+        Assert.IsExactInstanceOfType<BevTrackingJSRuntime>(cut.FindComponent<ChildComponent>().Instance.JS);
+    }
+
     private sealed class UnsupportedJavaScriptRuntime : IJSRuntime
     {
+        public ValueTask<TValue> InvokeAsync<TValue>(string identifier, object?[]? args) => throw new InvalidOperationException();
+
+        public ValueTask<TValue> InvokeAsync<TValue>(string identifier, CancellationToken cancellationToken, object?[]? args) => throw new InvalidOperationException();
+    }
+
+    private sealed class RemoteJSRuntime : IJSRuntime
+    {
+        public bool IsInitialized { get; init; }
+
         public ValueTask<TValue> InvokeAsync<TValue>(string identifier, object?[]? args) => throw new InvalidOperationException();
 
         public ValueTask<TValue> InvokeAsync<TValue>(string identifier, CancellationToken cancellationToken, object?[]? args) => throw new InvalidOperationException();
