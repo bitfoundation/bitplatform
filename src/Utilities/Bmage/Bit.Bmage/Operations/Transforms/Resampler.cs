@@ -26,6 +26,10 @@ public static class Resampler
     {
         public Window[] Windows = [];
         public float[] Weights = [];
+        // The same weights in every lane, for the horizontal pass only: WebAssembly's interpreter multiplies two vectors
+        // several times faster than a vector by a float, and the products are identical. Empty for the vertical kernel,
+        // whose weight is the same for a whole row.
+        public Vector4[] Lanes = [];
         public int MaxTaps;
     }
 
@@ -82,7 +86,7 @@ public static class Resampler
     /// holds ceil(n/f) pixels while representing only n/f pixels worth of content, because the last block is partial.
     /// Mapping against the pixel count instead of the true extent stretches the image, so the two are tracked apart.
     /// </remarks>
-    private static Kernel BuildKernel(ResamplingFilter filter, int srcStart, int srcCount, double srcExtent, int dstLength)
+    private static Kernel BuildKernel(ResamplingFilter filter, int srcStart, int srcCount, double srcExtent, int dstLength, bool lanes)
     {
         var scale = dstLength / srcExtent;                   // destination pixels per source pixel
         var filterScale = scale < 1 ? 1 / scale : 1;         // widen when downscaling
@@ -125,7 +129,12 @@ public static class Resampler
             windows[i] = new Window(start, count, offset);
             offset += count;
         }
-        return new Kernel { Windows = windows, Weights = weights, MaxTaps = maxTaps };
+        var kernel = new Kernel { Windows = windows, Weights = weights, MaxTaps = maxTaps };
+        if (!lanes) return kernel;
+        // Rented, since this is the largest array a resize allocates; ResampleCore returns it.
+        kernel.Lanes = ArrayPool<Vector4>.Shared.Rent(Math.Max(1, offset));
+        for (var i = 0; i < offset; i++) kernel.Lanes[i] = new Vector4(weights[i]);
+        return kernel;
     }
 
     /// <summary>
@@ -179,8 +188,8 @@ public static class Resampler
             return;
         }
 
-        var kx = BuildKernel(filter, sourceRect.X, sourceRect.Width, extentX, destinationRect.Width);
-        var ky = BuildKernel(filter, sourceRect.Y, sourceRect.Height, extentY, destinationRect.Height);
+        var kx = BuildKernel(filter, sourceRect.X, sourceRect.Width, extentX, destinationRect.Width, lanes: true);
+        var ky = BuildKernel(filter, sourceRect.Y, sourceRect.Height, extentY, destinationRect.Height, lanes: false);
 
         var srcW = sourceRect.Width;
         var pool = ArrayPool<Vector4>.Shared;
@@ -194,9 +203,6 @@ public static class Resampler
         {
             var accumSpan = accum.AsSpan(0, srcW);
             var outSpan = outRow.AsSpan(0, destinationRect.Width);
-            var scale = new Vector4(255f);
-            var half = new Vector4(0.5f);
-
             for (var dy = clip.Top; dy < clip.Bottom; dy++)
             {
                 if ((dy & 15) == 0)
@@ -224,26 +230,15 @@ public static class Resampler
                     var wx = kx.Windows[dx];
                     var acc = Vector4.Zero;
                     var s = wx.Start - sourceRect.X;
-                    for (var t = 0; t < wx.Count; t++)
-                        acc += accumSpan[s + t] * kx.Weights[wx.Offset + t];
+                    var taps = accumSpan.Slice(s, wx.Count);
+                    var lanes = kx.Lanes.AsSpan(wx.Offset, wx.Count);
+                    for (var t = 0; t < taps.Length; t++)
+                        acc += taps[t] * lanes[t];
                     outSpan[dx] = acc;
                 }
 
                 // Un-premultiply and store.
-                var dst = destination.GetRow(dy);
-                for (var dx = clip.Left; dx < clip.Right; dx++)
-                {
-                    var p = outSpan[dx - destinationRect.X];
-                    var a = p.W;
-                    if (a > 1e-5f)
-                    {
-                        var invA = 1f / a;
-                        p = new Vector4(p.X * invA, p.Y * invA, p.Z * invA, a);
-                    }
-                    else p = Vector4.Zero;
-                    var v = Vector4.Clamp(p, Vector4.Zero, Vector4.One) * scale + half;
-                    dst[dx] = new Rgba32((byte)v.X, (byte)v.Y, (byte)v.Z, (byte)v.W);
-                }
+                PixelRows.StoreUnpremultiplied(outSpan.Slice(clip.Left - destinationRect.X, clip.Width), destination.GetRow(dy).Slice(clip.Left, clip.Width));
             }
             context.ReportProgress(1);
         }
@@ -252,6 +247,7 @@ public static class Resampler
             pool.Return(accum);
             pool.Return(outRow);
             foreach (var r in cacheRows) pool.Return(r);
+            pool.Return(kx.Lanes);
         }
     }
 
@@ -284,6 +280,10 @@ public static class Resampler
         var output = context.Allocate(width, height, clear: false);
         try
         {
+            // The whole image as one span, so each block reads its rows by offset: fetching a row span per output pixel
+            // and source row was most of the cost on WebAssembly's interpreter.
+            ReadOnlySpan<Rgba32> pixels = source.Pixels;
+            var stride = source.Width;
             for (var y = 0; y < height; y++)
             {
                 if ((y & 31) == 0) context.ThrowIfCancellationRequested();
@@ -298,17 +298,17 @@ public static class Resampler
                     var count = 0;
                     for (var sy = y0; sy < y1; sy++)
                     {
-                        var row = source.GetRow(sy);
-                        for (var sx = x0; sx < x1; sx++)
+                        var row = pixels.Slice(sy * stride + x0, x1 - x0);
+                        for (var i = 0; i < row.Length; i++)
                         {
-                            var p = row[sx];
+                            var p = row[i];
                             // Premultiply so fully transparent pixels contribute no colour.
                             r += p.R * p.A;
                             g += p.G * p.A;
                             b += p.B * p.A;
                             a += p.A;
-                            count++;
                         }
+                        count += row.Length;
                     }
                     if (count == 0 || a == 0)
                     {
@@ -334,14 +334,7 @@ public static class Resampler
         var row = cacheRows[slot];
         if (cacheIndex[slot] != y)
         {
-            var src = source.GetRow(y).Slice(x0, width);
-            const float inv = 1f / 255f;
-            for (var x = 0; x < width; x++)
-            {
-                var p = src[x];
-                var a = p.A * inv;
-                row[x] = new Vector4(p.R * inv * a, p.G * inv * a, p.B * inv * a, a);
-            }
+            PixelRows.LoadPremultiplied(source.GetRow(y).Slice(x0, width), row.AsSpan(0, width));
             cacheIndex[slot] = y;
         }
         return row.AsSpan(0, width);

@@ -5,12 +5,14 @@ using Microsoft.JSInterop;
 namespace Bit.Bmage.Interop;
 
 /// <summary>
-/// The single JavaScript boundary in Bmage. Everything the browser must do (format codecs, capability probing,
-/// clipboard, camera, downloads, text measurement) goes through here; all image processing stays in C#.
+/// The JavaScript boundary in Bmage. Everything the browser does for it (format codecs, the editor's working proxy,
+/// capability probing, clipboard, camera, downloads, text measurement) goes through this module; the image processing
+/// engine itself stays in C#.
 /// </summary>
 /// <remarks>
 /// Pixel and file bytes cross the boundary as raw streams rather than base64 JSON, so a 24 megapixel image costs one
-/// buffer copy instead of a 33% inflated string. Metadata travels separately as a tiny JSON payload.
+/// buffer copy instead of a 33% inflated string. Metadata travels separately as a tiny JSON payload. On WebAssembly the
+/// pixel-heavy calls go through <see cref="BrowserPixels"/> instead, which hands the module views of .NET memory.
 /// </remarks>
 public sealed class BrowserImageInterop : IAsyncDisposable
 {

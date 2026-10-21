@@ -127,6 +127,12 @@ public sealed class BmageEditorContext
     public Task SetAdjustmentAsync<TOperation>(TOperation? operation, string label, bool transient = false) where TOperation : class, IImageOperation
         => _editor.SetAdjustmentAsync(operation, label, transient);
 
+    /// <summary>
+    /// Applies any change to the document as one history entry and one render, for edits that touch several steps at
+    /// once. Pass <paramref name="transient"/> while a control is being dragged, as for <see cref="SetAdjustmentAsync"/>.
+    /// </summary>
+    public Task ApplyAsync(Func<ImageDocument, ImageDocument> change, string label, bool transient = false) => _editor.ApplyAsync(change, label, transient);
+
     /// <summary>Adds an arbitrary operation to the pipeline.</summary>
     public Task AddOperationAsync(IImageOperation operation, string? label = null) => _editor.AddOperationAsync(operation, label);
 

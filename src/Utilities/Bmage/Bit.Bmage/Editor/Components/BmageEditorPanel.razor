@@ -330,22 +330,35 @@
         _ => false,
     };
 
-    private async Task ApplyFilterAsync(string key)
+    private Task ApplyFilterAsync(string key)
     {
-        // Filters are mutually exclusive in this panel, so clear the others first.
-        await Context.SetAdjustmentAsync<GrayscaleFilter>(null, Context.Strings.Filters);
-        await Context.SetAdjustmentAsync<SepiaFilter>(null, Context.Strings.Filters);
-        await Context.SetAdjustmentAsync<InvertFilter>(null, Context.Strings.Filters);
-        await Context.SetAdjustmentAsync<PosterizeFilter>(null, Context.Strings.Filters);
-        await Context.SetAdjustmentAsync<ThresholdFilter>(null, Context.Strings.Filters);
-        switch (key)
+        IImageOperation? filter = key switch
         {
-            case "grayscale": await Context.SetAdjustmentAsync(new GrayscaleFilter(), Context.Strings.Grayscale); break;
-            case "sepia": await Context.SetAdjustmentAsync(new SepiaFilter(), Context.Strings.Sepia); break;
-            case "invert": await Context.SetAdjustmentAsync(new InvertFilter(), Context.Strings.Invert); break;
-            case "posterize": await Context.SetAdjustmentAsync(new PosterizeFilter(6), Context.Strings.Posterize); break;
-            case "threshold": await Context.SetAdjustmentAsync(new ThresholdFilter(), Context.Strings.Threshold); break;
-        }
+            "grayscale" => new GrayscaleFilter(),
+            "sepia" => new SepiaFilter(),
+            "invert" => new InvertFilter(),
+            "posterize" => new PosterizeFilter(6),
+            "threshold" => new ThresholdFilter(),
+            _ => null,
+        };
+        var label = key switch
+        {
+            "grayscale" => Context.Strings.Grayscale,
+            "sepia" => Context.Strings.Sepia,
+            "invert" => Context.Strings.Invert,
+            "posterize" => Context.Strings.Posterize,
+            "threshold" => Context.Strings.Threshold,
+            _ => Context.Strings.Filters,
+        };
+        // Filters are mutually exclusive in this panel: one edit removes the others and adds the choice, so it costs
+        // one history entry and one render.
+        return Context.ApplyAsync(d =>
+        {
+            var pipeline = d.Pipeline;
+            for (var i = pipeline.Count - 1; i >= 0; i--)
+                if (pipeline[i] is GrayscaleFilter or SepiaFilter or InvertFilter or PosterizeFilter or ThresholdFilter) pipeline = pipeline.RemoveAt(i);
+            return d.WithPipeline(filter is null ? pipeline : pipeline.Add(filter));
+        }, label);
     }
 
     private Task GoToHistory(int index) => Context.GoToHistoryAsync(index);

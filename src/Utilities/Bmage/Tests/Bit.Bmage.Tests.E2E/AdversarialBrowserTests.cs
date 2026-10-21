@@ -96,6 +96,47 @@ public class JsModuleContractTests : DemoTest
     }
 
     /// <summary>
+    /// The in-process transport's resize, which builds the editor's working copy of a large photo on WebAssembly:
+    /// exactly the requested size, colours kept, and half transparent pixels keeping their alpha (Firefox's high quality
+    /// resize gets that wrong unless premultiplication is asked for). The views .NET would pass are stood in for by
+    /// objects with the same slice and set.
+    /// </summary>
+    [TestMethod]
+    public async Task TheTransportScalesToExactlyTheRequestedSizeAndKeepsTheColours()
+    {
+        var page = await OpenAsync("capabilities");
+
+        var result = await EvaluateAgainstModuleAsync(page, """
+            const t = globalThis.BitBmagePixels;
+            const w = 400, h = 300, tw = 133, th = 100;
+            const pixels = new Uint8Array(w * h * 4);
+            for (let i = 0; i < w * h; i++) pixels.set((i % w) < w / 2 ? [0, 200, 0, 255] : [200, 0, 0, 128], i * 4);
+            const id = t.stage({ slice: () => pixels.slice() }, w, h);
+            await t.scale(id, tw, th);
+            const size = { width: t.width(id), height: t.height(id), length: t.length(id) };
+            let out = null;
+            t.read(id, { set: (data) => { out = data.slice(); } });
+            const at = (x, y) => Array.from(out.slice((y * tw + x) * 4, (y * tw + x) * 4 + 4));
+            let released = false;
+            try { t.width(id); } catch { released = true; }
+            return { size, released, isBytes: out instanceof Uint8Array, left: at(10, 50), right: at(120, 50) };
+            """);
+
+        var size = result.GetProperty("size");
+        Assert.AreEqual(133, size.GetProperty("width").GetInt32());
+        Assert.AreEqual(100, size.GetProperty("height").GetInt32());
+        Assert.AreEqual(133 * 100 * 4, size.GetProperty("length").GetInt32());
+        Assert.IsTrue(result.GetProperty("released").GetBoolean(), "reading a staged image releases it");
+        Assert.IsTrue(result.GetProperty("isBytes").GetBoolean(), "a memory view only accepts a Uint8Array");
+        int[] left = [.. result.GetProperty("left").EnumerateArray().Select(e => e.GetInt32())];
+        int[] right = [.. result.GetProperty("right").EnumerateArray().Select(e => e.GetInt32())];
+        CollectionAssert.AreEqual(new[] { 0, 200, 0, 255 }, left);
+        Assert.AreEqual(200, right[0], 2);
+        Assert.AreEqual(0, right[1]);
+        Assert.AreEqual(128, right[3], 1);
+    }
+
+    /// <summary>
     /// The encoder must never report success for a format the browser silently substituted. Browsers hand back a PNG
     /// when asked for a format they cannot write, and claiming that as AVIF would corrupt a user's export pipeline.
     /// </summary>

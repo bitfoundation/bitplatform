@@ -67,7 +67,11 @@ public sealed record ImageDocument
     public ImageDocument AddOperation(IImageOperation operation) => this with { Pipeline = Pipeline.Add(operation) };
 
     /// <summary>Returns a document with a different pipeline.</summary>
-    public ImageDocument WithPipeline(ImagePipeline pipeline) => this with { Pipeline = pipeline ?? ImagePipeline.Empty };
+    public ImageDocument WithPipeline(ImagePipeline pipeline)
+    {
+        pipeline ??= ImagePipeline.Empty;
+        return ReferenceEquals(pipeline, Pipeline) ? this : this with { Pipeline = pipeline };
+    }
 
     /// <summary>Returns a document with the operation at <paramref name="index"/> replaced, for re-editing a past step.</summary>
     public ImageDocument ReplaceOperation(int index, IImageOperation operation) => this with { Pipeline = Pipeline.Replace(index, operation) };
@@ -221,7 +225,12 @@ public sealed class DocumentRenderer
     {
         ArgumentNullException.ThrowIfNull(document);
         ArgumentNullException.ThrowIfNull(target);
-        var order = document.GetRenderOrder();
+        RenderAnnotations(document.GetRenderOrder(), target, annotationScale, cancellationToken);
+    }
+
+    /// <summary>Draws annotations, already in render order and at the target's scale, onto an existing buffer.</summary>
+    internal void RenderAnnotations(IReadOnlyList<Annotation> order, ImageBuffer target, double annotationScale, CancellationToken cancellationToken)
+    {
         if (order.Count == 0) return;
         var context = new AnnotationRenderContext(_textRasterizer, annotationScale);
         using var canvas = ImageCanvas.FromBuffer(target);

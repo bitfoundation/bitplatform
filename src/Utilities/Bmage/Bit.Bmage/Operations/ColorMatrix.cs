@@ -40,6 +40,13 @@ public readonly struct ColorMatrix : IEquatable<ColorMatrix>
     /// <summary>True when the matrix leaves all pixels unchanged.</summary>
     public bool IsIdentity => Equals(Identity);
 
+    /// <summary>True when every output channel is computed from the same input channel alone.</summary>
+    internal bool IsDiagonal =>
+        R.Y == 0 && R.Z == 0 && R.W == 0 &&
+        G.X == 0 && G.Z == 0 && G.W == 0 &&
+        B.X == 0 && B.Y == 0 && B.W == 0 &&
+        A.X == 0 && A.Y == 0 && A.Z == 0;
+
     /// <summary>True when the alpha channel is affected by this matrix.</summary>
     public bool AffectsAlpha => A != Vector4.UnitW || Offset.W != 0f;
 
@@ -177,6 +184,8 @@ public class ColorMatrixOperation : PointOperation
     public override string Name => _name;
 
     public override bool IsIdentity => Matrix.IsIdentity;
+
+    internal override bool IsChannelSeparable => IsBuiltIn && Matrix.IsDiagonal;
 
     public override void ProcessRow(Span<Vector4> pixels)
     {

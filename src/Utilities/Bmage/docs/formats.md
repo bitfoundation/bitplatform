@@ -15,8 +15,10 @@
 "Managed" means pure C#, working anywhere including a server. "Browser" means the platform's own codecs, which is the
 only way to reach WebP and AVIF in a browser.
 
-When both are available the browser codec wins, because it is hardware accelerated and covers more formats. The managed
-codecs remain the fallback, which is what makes prerendering and server-side use work.
+When both are available the browser codec wins, because it is hardware accelerated and covers more formats. Over a Blazor
+Server circuit it is the other way round: the managed codecs handle every format they can on the server, because a
+browser codec would send every pixel across the network, and the browser only decodes WebP and AVIF, or a file the
+managed decoder rejects. The managed codecs are also the fallback that makes prerendering and server-side use work.
 
 ## Never assume, always probe
 

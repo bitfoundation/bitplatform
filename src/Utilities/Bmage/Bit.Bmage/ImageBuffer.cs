@@ -213,6 +213,9 @@ public sealed class ImageBuffer : IDisposable
     /// <summary>Returns true if any pixel has an alpha value below 255.</summary>
     public bool HasTransparency()
     {
+        // A pixel is opaque exactly when its packed value is 0xFF000000 or above, so the search is one vectorised scan.
+        if (BitConverter.IsLittleEndian)
+            return System.Runtime.InteropServices.MemoryMarshal.Cast<byte, uint>(Bytes).IndexOfAnyInRange(0u, 0xFEFFFFFFu) >= 0;
         var bytes = Bytes;
         for (var i = 3; i < bytes.Length; i += 4)
             if (bytes[i] != 255) return true;

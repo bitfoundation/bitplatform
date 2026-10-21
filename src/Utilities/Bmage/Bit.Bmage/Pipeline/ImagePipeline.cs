@@ -71,6 +71,8 @@ public sealed class ImagePipeline : IReadOnlyList<IImageOperation>
     public ImagePipeline Replace(int index, IImageOperation operation)
     {
         ArgumentNullException.ThrowIfNull(operation);
+        // Replacing a step with itself changes nothing, and keeping the instance lets renders recognise the edit.
+        if ((uint)index < (uint)_operations.Length && ReferenceEquals(_operations[index], operation)) return this;
         return new ImagePipeline(_operations.SetItem(index, operation));
     }
 
@@ -283,6 +285,11 @@ public sealed class ImagePipeline : IReadOnlyList<IImageOperation>
             {
                 var op = pipeline[i];
                 options.CancellationToken.ThrowIfCancellationRequested();
+                if (IsUprightAlready(op, current))
+                {
+                    options.Progress?.Report((i + 1) / (double)count);
+                    continue;
+                }
                 var stageProgress = options.Progress is null ? null : new StageProgress(options.Progress, i, count);
                 var context = new OperationContext(options.Allocator, options.Limits, options.CancellationToken, stageProgress, canMutateSource: owned);
                 ImageBuffer next;
@@ -329,6 +336,11 @@ public sealed class ImagePipeline : IReadOnlyList<IImageOperation>
             {
                 var op = pipeline[i];
                 options.CancellationToken.ThrowIfCancellationRequested();
+                if (IsUprightAlready(op, current))
+                {
+                    options.Progress?.Report((i + 1) / (double)count);
+                    continue;
+                }
                 var stageProgress = options.Progress is null ? null : new StageProgress(options.Progress, i, count);
                 var context = new OperationContext(options.Allocator, options.Limits, options.CancellationToken, stageProgress, canMutateSource: owned);
                 ImageBuffer next;
@@ -358,6 +370,13 @@ public sealed class ImagePipeline : IReadOnlyList<IImageOperation>
             throw;
         }
     }
+
+    /// <summary>
+    /// An auto-orientation of pixels that are already upright changes nothing, but as the first step, where the source
+    /// may not be modified, it would copy the whole image just to return it: a 48 MB copy for every upright photo.
+    /// </summary>
+    private static bool IsUprightAlready(IImageOperation op, ImageBuffer current)
+        => op is AutoOrientOperation && current.Metadata?.Exif?.Orientation is null or Orientation.Normal or Orientation.Unspecified;
 
     /// <summary>Maps an operation's own progress into the pipeline's overall progress range.</summary>
     private sealed class StageProgress : IProgress<double>

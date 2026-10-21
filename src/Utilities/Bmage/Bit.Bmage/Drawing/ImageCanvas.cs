@@ -417,9 +417,10 @@ public sealed class ImageCanvas : IDisposable
         var c10 = Fetch(x0 + 1, y0);
         var c01 = Fetch(x0, y0 + 1);
         var c11 = Fetch(x0 + 1, y0 + 1);
-        var top = c00 + (c10 - c00) * fx;
-        var bottom = c01 + (c11 - c01) * fx;
-        var c = top + (bottom - top) * fy;
+        var tx = new Vector4(fx);
+        var top = c00 + (c10 - c00) * tx;
+        var bottom = c01 + (c11 - c01) * tx;
+        var c = top + (bottom - top) * new Vector4(fy);
         if (c.W <= 1e-5f) return Rgba32.Transparent;
         var inv = 1f / c.W;
         return Rgba32.FromScaled(c.X * inv, c.Y * inv, c.Z * inv, c.W);
