@@ -1033,6 +1033,41 @@ public class BitChartTests : BunitTestContext
         CollectionAssert.Contains(chip, "Feb", string.Join("|", chip));
     }
 
+    // A bar of a group sits beside its category's middle (#14043): the crosshair marks the category, so it stays put from
+    // bar to bar of the group and its chip lands on the category's tick label - hovered through the hit band between the
+    // bars, which stands for the category's first bar, or through a bar of an index interaction.
+    [TestMethod]
+    [DataRow(".bit-cht-band", BitChartInteractionMode.Nearest)]
+    [DataRow(".bit-cht-data > g", BitChartInteractionMode.Index)]
+    public void TheCrosshairOfABarShouldMarkItsCategory(string hovered, BitChartInteractionMode mode)
+    {
+        var component = RenderChart(options: new BitChartOptions { Interaction = { Mode = mode } });
+        var lines = new Dictionary<string, HashSet<double>>();
+        var chips = new Dictionary<string, HashSet<double>>();
+
+        for (int i = 0; i < component.FindAll(hovered).Count; i++)
+        {
+            component.FindAll(hovered)[i].MouseEnter();
+
+            var chip = component.Find(".bit-cht-hover text");
+            var category = chip.TextContent;
+            lines.TryAdd(category, []);
+            lines[category].Add(Coordinate(component.Find(".bit-cht-hover line").GetAttribute("x1")));
+            chips.TryAdd(category, []);
+            chips[category].Add(Coordinate(chip.GetAttribute("x")));
+        }
+
+        Assert.AreEqual(3, lines.Count);
+        foreach (var (category, xs) in lines)
+        {
+            Assert.AreEqual(1, xs.Count, $"{category}: {string.Join(", ", xs)}");
+            var tick = component.FindAll(".bit-cht-bg text").Single(t => t.TextContent == category);
+            Assert.AreEqual(Coordinate(tick.GetAttribute("x")), chips[category].Single(), 0.01, category);
+        }
+
+        static double Coordinate(string? value) => double.Parse(value!, CultureInfo.InvariantCulture);
+    }
+
     [TestMethod]
     public void TheCrosshairCanBeTurnedOff()
     {
