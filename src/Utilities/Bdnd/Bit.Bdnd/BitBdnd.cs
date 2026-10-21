@@ -37,7 +37,7 @@ public static class BitBdnd
     [DynamicDependency(DynamicallyAccessedMemberTypes.PublicProperties | DynamicallyAccessedMemberTypes.PublicParameterlessConstructor, typeof(BdndDomRect))]
     [DynamicDependency(DynamicallyAccessedMemberTypes.PublicProperties | DynamicallyAccessedMemberTypes.PublicParameterlessConstructor, typeof(BdndNativeDropPayload))]
     [DynamicDependency(DynamicallyAccessedMemberTypes.PublicProperties | DynamicallyAccessedMemberTypes.PublicParameterlessConstructor, typeof(BdndNativeFile))]
-    [DynamicDependency(DynamicallyAccessedMemberTypes.PublicProperties, typeof(BdndDragSourceOptions))]
-    [DynamicDependency(DynamicallyAccessedMemberTypes.PublicProperties, typeof(BdndDropTargetOptions))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.PublicProperties | DynamicallyAccessedMemberTypes.PublicConstructors, typeof(BdndDragSourceOptions))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.PublicProperties | DynamicallyAccessedMemberTypes.PublicConstructors, typeof(BdndDropTargetOptions))]
     private static void PreserveInteropContracts() { }
 }
