@@ -1588,8 +1588,16 @@ public class BitOtpInputTests : BunitTestContext
             parameters.Add(p => p.OnInvalid, args => invalids.Add(args.Value));
         });
 
-        var rejected = com.FindAll(".bit-otp-inp")[0].InputAsync(new ChangeEventArgs { Value = "a" });
-        var accepted = com.FindAll(".bit-otp-inp")[0].InputAsync(new ChangeEventArgs { Value = "A" });
+        // Both events are raised in one turn of the renderer's dispatcher, which is where the wait of each resumes: the
+        // first one cannot resume before the second one is raised, however long the render between the two takes on a
+        // slow machine. Raised one after the other from the test, the first one's wait could run out in between.
+        Task rejected = Task.CompletedTask;
+        Task accepted = Task.CompletedTask;
+        await com.InvokeAsync(() =>
+        {
+            rejected = com.FindAll(".bit-otp-inp")[0].InputAsync(new ChangeEventArgs { Value = "a" });
+            accepted = com.FindAll(".bit-otp-inp")[0].InputAsync(new ChangeEventArgs { Value = "A" });
+        });
 
         await Task.WhenAll(rejected, accepted);
 
