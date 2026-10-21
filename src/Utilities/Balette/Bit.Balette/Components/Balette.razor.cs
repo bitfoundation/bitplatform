@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Routing;
 using Microsoft.AspNetCore.Components.Web;
@@ -1677,14 +1678,15 @@ public partial class Balette : ComponentBase, IAsyncDisposable
 
     // ---- JS plumbing ---------------------------------------------------------------------------------------
 
-    private object BuildJsOptions(List<string> toggles) => new
-    {
-        toggleShortcuts = toggles,
-        commandShortcuts = GlobalShortcutStrings(),
-        suppressInEditable = Options.SuppressShortcutsInEditableElements,
-        sequenceTimeout = Options.SequenceTimeoutMs,
-        vimBindings = _syncedVim,
-    };
+    [DynamicDependency(DynamicallyAccessedMemberTypes.PublicProperties | DynamicallyAccessedMemberTypes.PublicConstructors, typeof(JsOptions))]
+    private JsOptions BuildJsOptions(List<string> toggles) => new(
+        toggles,
+        GlobalShortcutStrings(),
+        Options.SuppressShortcutsInEditableElements,
+        Options.SequenceTimeoutMs,
+        _syncedVim);
+
+    private sealed record JsOptions(List<string> ToggleShortcuts, List<string> CommandShortcuts, bool SuppressInEditable, int SequenceTimeout, bool VimBindings);
 
     private List<string> ToggleShortcutStrings()
     {
