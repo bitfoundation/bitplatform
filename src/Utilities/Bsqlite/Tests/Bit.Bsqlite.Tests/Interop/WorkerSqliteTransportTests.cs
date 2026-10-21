@@ -1,4 +1,5 @@
-﻿using Bit.Bsqlite.Data;
+﻿using System.Text.Json.Nodes;
+using Bit.Bsqlite.Data;
 using Bit.Bsqlite.Interop;
 using Bit.Bsqlite.Storage;
 using Microsoft.JSInterop;
@@ -38,10 +39,10 @@ public sealed class WorkerSqliteTransportTests
             StringComparison.Ordinal);
 
         var request = OpenRequest(js);
-        Assert.AreEqual("open", Read(request, "kind"));
-        Assert.AreEqual("app.db", Read(request, "databaseName"));
-        Assert.AreEqual("synchronous", Read(request, "requiredBuild"));
-        Assert.IsNull(Read(request, "vfs"));
+        Assert.AreEqual("open", (string?)request["kind"]);
+        Assert.AreEqual("app.db", (string?)request["databaseName"]);
+        Assert.AreEqual("synchronous", (string?)request["requiredBuild"]);
+        Assert.IsNull(request["vfs"]);
         Assert.AreEqual(nameof(BsqliteWorkerTransport.OnTablesChanged), js.Subscription!.Value.Method);
     }
 
@@ -142,8 +143,8 @@ public sealed class WorkerSqliteTransportTests
         await transport.OpenAsync("app.db", Ct);
 
         var open = OpenRequest(js);
-        Assert.AreEqual(true, Read(open, "foreignKeys"));
-        AssertSequence.Equal(["PRAGMA cache_size=-16000"], Assert.IsInstanceOfType<IEnumerable<string>>(Read(open, "onOpenSql")));
+        Assert.IsTrue((bool?)open["foreignKeys"]);
+        AssertSequence.Equal(["PRAGMA cache_size=-16000"], open["onOpenSql"]!.AsArray().Select(sql => (string?)sql));
     }
 
     [TestMethod]
@@ -160,8 +161,8 @@ public sealed class WorkerSqliteTransportTests
         await transport.OpenAsync("app.db", Ct);
 
         var open = OpenRequest(js);
-        Assert.AreEqual(false, Read(open, "foreignKeys"));
-        Assert.IsEmpty(Assert.IsInstanceOfType<IEnumerable<string>>(Read(open, "onOpenSql")));
+        Assert.IsFalse((bool?)open["foreignKeys"]);
+        Assert.IsEmpty(open["onOpenSql"]!.AsArray());
     }
 
     [TestMethod]
@@ -181,14 +182,14 @@ public sealed class WorkerSqliteTransportTests
         await transport.OpenAsync("app.db", Ct);
 
         var open = OpenRequest(js);
-        var vfs = Read(open, "vfs")!;
-        Assert.AreEqual("asyncCapable", Read(open, "requiredBuild"));
-        Assert.AreEqual("./_content/Bit.Bsqlite/bit-bsqlite-idb-vfs.js", Read(vfs, "moduleUrl"));
-        Assert.AreEqual("register", Read(vfs, "registerExport"));
+        var vfs = open["vfs"]!;
+        Assert.AreEqual("asyncCapable", (string?)open["requiredBuild"]);
+        Assert.AreEqual("./_content/Bit.Bsqlite/bit-bsqlite-idb-vfs.js", (string?)vfs["moduleUrl"]);
+        Assert.AreEqual("register", (string?)vfs["registerExport"]);
 
-        var extension = Assert.ContainsSingle((object?[])Read(open, "extensions")!)!;
-        Assert.AreEqual("./functions.js", Read(extension, "moduleUrl"));
-        Assert.AreEqual("install", Read(extension, "registerExport"));
+        var extension = Assert.ContainsSingle(open["extensions"]!.AsArray())!;
+        Assert.AreEqual("./functions.js", (string?)extension["moduleUrl"]);
+        Assert.AreEqual("install", (string?)extension["registerExport"]);
     }
 
     [TestMethod]
@@ -281,9 +282,6 @@ public sealed class WorkerSqliteTransportTests
         RequiredBuild = BsqliteEngineBuild.Synchronous,
     };
 
-    private static object OpenRequest(ScriptedJsRuntime js)
-        => js.Calls.First(c => c.Identifier == "host.call").Args[0]!;
-
-    private static object? Read(object target, string property)
-        => target.GetType().GetProperty(property)?.GetValue(target);
+    private static JsonObject OpenRequest(ScriptedJsRuntime js)
+        => Assert.IsInstanceOfType<JsonObject>(js.Calls.First(c => c.Identifier == "host.call").Args[0]);
 }
