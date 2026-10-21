@@ -693,9 +693,10 @@ const zoomPerPixel = Math.log(1.1) / 100;
  * need non-passive listeners on the element, which Blazor's own event handling cannot register.
  *
  * With a .NET reference it also takes over the parts of pointer handling that cost a round trip per event: it
- * captures the pointer the moment a drag starts, keeps pointer moves that are not part of a drag from reaching
- * .NET at all, and turns wheel and trackpad pinch input into one zoom call per frame, with a factor proportional to
- * the distance scrolled so a trackpad zooms smoothly instead of a fixed step per event.
+ * captures the pointer the moment a drag starts, passes .NET only the pointer moves of a drag (Blazor itself does not
+ * listen for moves, so hovering costs nothing, and the page's own listeners still see every move), and turns wheel
+ * and trackpad pinch input into one zoom call per frame, with a factor proportional to the distance scrolled so a
+ * trackpad zooms smoothly instead of a fixed step per event.
  */
 export function suppressTouchScrolling(element: any, dotNetRef?: DotNetObject) {
     if (!element || element.__bitBmageHandlers) return;
@@ -708,8 +709,12 @@ export function suppressTouchScrolling(element: any, dotNetRef?: DotNetObject) {
         try { element.setPointerCapture(e.pointerId); } catch { /* the pointer is already gone */ }
     };
     const up = (e: PointerEvent) => { pointers.delete(e.pointerId); };
-    // Blazor listens for pointer moves further up the document; a hover never gets that far.
-    const move = (e: PointerEvent) => { if (!pointers.has(e.pointerId)) e.stopPropagation(); };
+    const move = (e: PointerEvent) => {
+        if (!dotNetRef || !pointers.has(e.pointerId)) return;
+        // The component may be gone by the time the call arrives; the drag ended with it.
+        dotNetRef.invokeMethodAsync('OnDragPointerMove', e.pointerId, e.clientX, e.clientY, e.shiftKey, e.altKey, e.ctrlKey, e.pointerType || 'mouse', e.pressure)
+            .catch(() => { });
+    };
     let pendingDelta = 0, pendingX = 0, pendingY = 0, frame = 0;
     const wheel = (e: WheelEvent) => {
         if (e.cancelable) e.preventDefault();

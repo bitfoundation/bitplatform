@@ -219,6 +219,11 @@ Previews reuse what earlier renders computed, without changing a pixel:
   pipeline.
 - While a shape is being drawn, the preview underneath it is kept, and each frame only draws the shape.
 
+This relies on operations and annotations being immutable, as every built-in one is: give a custom operation a new
+instance rather than changing one in place. When something outside the document changes how it renders, such as a font
+registered after text was drawn, call the editor's `RefreshAsync`, or `ImageEditSession.Invalidate` before rendering a
+session of your own.
+
 When a full preview still takes longer than 25 ms, the editor shows drafts while a control is dragged: the same document
 rendered at half the proxy's resolution, a quarter of the pixels, by `ImageEditSession.RenderDraftAsync`. It renders the
 full preview again when the drag ends, or once the pointer has rested for 200 ms. `ImageEditSession.PreviewScale` tells

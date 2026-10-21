@@ -230,7 +230,8 @@ On top of that, a preview never recomputes what an earlier one already did, and 
 - With annotations present, the pipeline's output is kept, so dragging one of 20 annotations takes about 20 ms on the
   interpreter, and drawing a new shape over them about 2 to 5 ms per frame.
 - The editor renders one preview at a time and always the latest state, so fast input skips intermediate values
-  instead of queueing renders.
+  instead of queueing renders. A full preview that has become pointless, because a drag went back to drafts or the
+  pointer moved again during the refinement of a resting drag, is cancelled rather than finished.
 - When a full preview still takes longer than 25 ms, dragging shows drafts at half the proxy's resolution (a blur
   slider step drops from 192 ms to 41 ms on the interpreter), and the full preview follows when the pointer rests.
 

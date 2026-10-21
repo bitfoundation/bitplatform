@@ -1,4 +1,4 @@
-using System.Drawing;
+﻿using System.Drawing;
 using Bit.Bmage.Editing;
 
 namespace Bit.Bmage.Tests;

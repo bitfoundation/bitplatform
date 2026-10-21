@@ -19,12 +19,12 @@
      aria-describedby="@($"{_id}-hint")"
      @onkeydown="OnKeyDown"
      @onpointerdown="OnPointerDown"
-     @onpointermove="OnPointerMove"
      @onpointerup="OnPointerUp"
      @onpointercancel="OnPointerUp">
 
     @* The pointer handlers live on the host, which captures the pointer for the length of a drag, so moves and the
-       release still arrive when the pointer is over a crop handle, the selection box, or outside the editor.
+       release still arrive when the pointer is over a crop handle, the selection box, or outside the editor. The moves
+       of a drag come from the browser module, which leaves out the rest (see OnDragPointerMove).
        The canvas size attributes are left to the paint call: rendering them would clear the bitmap. *@
     <canvas class="bmg-canvas"
             id="@($"{_id}-canvas")"
@@ -182,8 +182,8 @@
             try
             {
                 // Registered from JS because Blazor cannot attach a non-passive touch listener, which is required to
-                // stop the page scrolling while the user draws. The same listeners capture the pointer, drop hover
-                // moves and batch wheel zooming, all without a round trip per event.
+                // stop the page scrolling while the user draws. The same listeners capture the pointer, pass on the
+                // moves of a drag only and batch wheel zooming, all without a round trip per event.
                 await Interop.InvokeVoidAsync("suppressTouchScrolling", CancellationToken.None, _hostElement, _selfRef);
                 _touchSuppressed = true;
             }
@@ -202,10 +202,10 @@
         if (ReferenceEquals(_painted, Image) && _paintedVersion == Version) return;
         try
         {
-            // On WebAssembly the browser module reads the pixels straight out of .NET memory; over a Server circuit
-            // they have to be sent.
-            if (OperatingSystem.IsBrowser()) await global::Bit.Bmage.Interop.BrowserPixels.PaintAsync(Interop, $"{_id}-canvas", Image);
-            else await Interop.InvokeVoidAsync("paint", CancellationToken.None, _canvasElement, Image.ToArray(), Image.Width, Image.Height);
+            // On WebAssembly the browser module reads the pixels straight out of .NET memory; over a Server circuit, or
+            // where it finds the canvas by its id (inside a shadow root, say), they have to be sent.
+            if (!OperatingSystem.IsBrowser() || !await global::Bit.Bmage.Interop.BrowserPixels.PaintAsync(Interop, $"{_id}-canvas", Image))
+                await Interop.InvokeVoidAsync("paint", CancellationToken.None, _canvasElement, Image.ToArray(), Image.Width, Image.Height);
             _painted = Image;
             _paintedVersion = Version;
         }
@@ -264,10 +264,15 @@
         else await OnDragStart.InvokeAsync(args);
     }
 
-    private async Task OnPointerMove(PointerEventArgs e)
+    /// <summary>
+    /// A pointer move during a drag. Called by the browser module rather than through a Blazor handler, which would
+    /// bring every hover over the editor to .NET too, unless it stopped the moves from reaching the rest of the page.
+    /// </summary>
+    [JSInvokable]
+    public Task OnDragPointerMove(long pointerId, double clientX, double clientY, bool shiftKey, bool altKey, bool ctrlKey, string pointerType, double pressure)
     {
-        if (Image is null || _activePointerId != (int)e.PointerId) return;
-        await OnDragMove.InvokeAsync(BuildArgs(e));
+        if (Image is null || _activePointerId != (int)pointerId) return Task.CompletedTask;
+        return OnDragMove.InvokeAsync(BuildArgs(clientX, clientY, shiftKey, altKey, ctrlKey, pointerType, pressure));
     }
 
     private async Task OnPointerUp(PointerEventArgs e)
@@ -280,16 +285,19 @@
         if (Image is not null) await OnDragEnd.InvokeAsync(args);
     }
 
-    private CanvasPointerArgs BuildArgs(PointerEventArgs e) => new(
-        ToImagePoint(e.ClientX, e.ClientY),
-        e.ShiftKey,
-        e.AltKey,
-        e.CtrlKey,
-        e.PointerType ?? "mouse",
-        (float)e.Pressure,
+    private CanvasPointerArgs BuildArgs(PointerEventArgs e)
+        => BuildArgs(e.ClientX, e.ClientY, e.ShiftKey, e.AltKey, e.CtrlKey, e.PointerType, e.Pressure);
+
+    private CanvasPointerArgs BuildArgs(double clientX, double clientY, bool shiftKey, bool altKey, bool ctrlKey, string? pointerType, double pressure) => new(
+        ToImagePoint(clientX, clientY),
+        shiftKey,
+        altKey,
+        ctrlKey,
+        pointerType ?? "mouse",
+        (float)pressure,
         _activeHandle)
     {
-        Screen = new Vector2((float)e.ClientX, (float)e.ClientY),
+        Screen = new Vector2((float)clientX, (float)clientY),
     };
 
     /// <summary>

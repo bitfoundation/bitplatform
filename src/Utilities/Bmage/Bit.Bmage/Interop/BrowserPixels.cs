@@ -69,9 +69,12 @@ internal static partial class BrowserPixels
         int maxWidth, int maxHeight, long maxPixels, int sourceWidth, int sourceHeight, ImageLimits limits, IPixelAllocator allocator, CancellationToken cancellationToken)
     {
         await interop.GetModuleAsync(cancellationToken).ConfigureAwait(false);
-        var id = Stage(MemoryMarshal.AsMemory(data).Span, 0, 0);
+        var id = 0;
         try
         {
+            // Staging copies the file into the browser, which fails like any other call into it (out of memory, or an
+            // outdated cached module without these functions), so it is converted the same way.
+            id = Stage(MemoryMarshal.AsMemory(data).Span, 0, 0);
             await Decode(id, mimeType, autoOrient, maxWidth, maxHeight, maxPixels, sourceWidth, sourceHeight).ConfigureAwait(false);
             cancellationToken.ThrowIfCancellationRequested();
             int width = Width(id), height = Height(id);
@@ -107,9 +110,10 @@ internal static partial class BrowserPixels
     public static async ValueTask<byte[]> EncodeAsync(BrowserImageInterop interop, ImageBuffer image, string mimeType, double quality, string? background, CancellationToken cancellationToken)
     {
         await interop.GetModuleAsync(cancellationToken).ConfigureAwait(false);
-        var id = Stage(image.Bytes, image.Width, image.Height);
+        var id = 0;
         try
         {
+            id = Stage(image.Bytes, image.Width, image.Height);
             await Encode(id, mimeType, quality, background).ConfigureAwait(false);
             cancellationToken.ThrowIfCancellationRequested();
             var bytes = new byte[Length(id)];

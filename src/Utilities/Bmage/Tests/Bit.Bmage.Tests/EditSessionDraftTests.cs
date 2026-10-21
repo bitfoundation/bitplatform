@@ -1,4 +1,4 @@
-using Bit.Bmage.Editing;
+﻿using Bit.Bmage.Editing;
 using Bit.Bmage.Operations;
 using Bit.Bmage.Operations.Adjustments;
 using Bit.Bmage.Operations.Filters;

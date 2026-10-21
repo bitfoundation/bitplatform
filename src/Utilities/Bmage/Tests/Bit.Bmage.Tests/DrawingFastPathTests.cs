@@ -1,4 +1,4 @@
-using System.Buffers;
+﻿using System.Buffers;
 using System.Drawing;
 using System.Numerics;
 using Bit.Bmage.Drawing;

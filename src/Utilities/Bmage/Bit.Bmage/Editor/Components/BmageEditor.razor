@@ -122,6 +122,8 @@
     private bool _renderLoopRunning;
     private bool _renderWanted;
     private bool _wantedDraft;
+    private bool _wantedRefine;
+    private RenderKind _renderingNow;
     private int _renderRequests;
     private Func<ImageDocument, ImageDocument>? _wantedOverlay;
     private TaskCompletionSource? _renderWaiters;
@@ -356,13 +358,18 @@
     /// and the next render shows whatever the document is by then, so a slider dragged faster than frames can render
     /// skips the values in between instead of falling further and further behind the pointer.
     /// </remarks>
-    private Task RenderPreviewAsync(Func<ImageDocument, ImageDocument>? overlay = null, bool draft = false)
+    private Task RenderPreviewAsync(Func<ImageDocument, ImageDocument>? overlay = null, bool draft = false, bool refine = false)
     {
         if (_session is null) return Task.CompletedTask;
         _wantedOverlay = overlay;
         _wantedDraft = draft;
+        _wantedRefine = refine;
         _renderWanted = true;
         _renderRequests++;
+        // Requests wait for the render in flight, so a drag always gets frames, except where that render is not worth
+        // finishing: a full one, which can take most of a second on a large photo, once a drag asks for drafts again,
+        // and the refinement of a resting drag once anything newer is asked for.
+        if (_renderingNow is RenderKind.Refine || (draft && _renderingNow is RenderKind.Full)) CancelQuietly(_renderCts);
         var waiters = _renderWaiters ??= new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         // The loop can finish before returning here (an unchanged document renders synchronously), so whether one is
         // running is a flag it keeps itself rather than the task it returns.
@@ -382,7 +389,20 @@
                 var draft = _wantedDraft;
                 var waiters = _renderWaiters;
                 _renderWaiters = null;
+                _renderingNow = draft ? RenderKind.Draft : _wantedRefine ? RenderKind.Refine : RenderKind.Full;
                 var error = await RenderOnceAsync(overlay, draft);
+                _renderingNow = RenderKind.None;
+                if (error is OperationCanceledException)
+                {
+                    error = null;
+                    if (_renderWanted)
+                    {
+                        // Cancelled for a newer request: the render that request gets answers this one's callers too.
+                        if (waiters is not null && _renderWaiters is { } next) _ = next.Task.ContinueWith(_ => waiters.TrySetResult(), TaskScheduler.Default);
+                        else _renderWaiters ??= waiters;
+                        continue;
+                    }
+                }
                 StateHasChanged();
                 waiters?.TrySetResult();
                 // Reported once the waiters are released and without holding the loop: a handler that edits or renders
@@ -408,7 +428,7 @@
     private async Task RefineWhenIdleAsync(int request, Func<ImageDocument, ImageDocument>? overlay)
     {
         await Task.Delay(200);
-        if (request == _renderRequests && _session is not null) await RenderPreviewAsync(overlay);
+        if (request == _renderRequests && _session is not null) await RenderPreviewAsync(overlay, refine: true);
     }
 
     private async Task ReportRenderErrorAsync(Exception error)
@@ -424,13 +444,16 @@
         }
     }
 
-    /// <summary>Renders once and returns the error the render failed with, if any, for the caller to report.</summary>
+    /// <summary>
+    /// Renders once and returns the exception the render ended with, if any, for the caller to report: an
+    /// <see cref="OperationCanceledException"/> when it was cancelled, which is not a failure.
+    /// </summary>
     private async Task<Exception?> RenderOnceAsync(Func<ImageDocument, ImageDocument>? overlay, bool draft)
     {
         if (_session is null) return null;
 
-        // Each render owns exactly one token source and is the only code that disposes it. Disposal only cancels it:
-        // disposing another call's source would pull the token out from under a render still using it.
+        // Each render owns exactly one token source and is the only code that disposes it. Newer requests and disposal
+        // only cancel it: disposing another call's source would pull the token out from under a render still using it.
         var cts = new CancellationTokenSource();
         CancelQuietly(Interlocked.Exchange(ref _renderCts, cts));
         try
@@ -444,10 +467,6 @@
                 _shownPreview = preview;
                 _previewVersion++;
             }
-        }
-        catch (OperationCanceledException)
-        {
-            // Superseded by a newer render.
         }
         catch (Exception ex)
         {
@@ -471,6 +490,9 @@
         try { cts.Cancel(); }
         catch (ObjectDisposedException) { /* the owning render already completed */ }
     }
+
+    /// <summary>What the render in flight draws, which decides whether a newer request cancels it.</summary>
+    private enum RenderKind { None, Full, Draft, Refine }
 
     private async Task ApplyAndRenderAsync(Func<ImageDocument, ImageDocument> change, string label, bool transient = false)
     {
@@ -935,6 +957,16 @@
     {
         ArgumentNullException.ThrowIfNull(change);
         return ApplyAndRenderAsync(change, label, transient);
+    }
+
+    /// <summary>
+    /// Renders the preview again from scratch, for when something outside the document changed how it looks, such as a
+    /// font registered after the text was first drawn. See <see cref="ImageEditSession.Invalidate"/>.
+    /// </summary>
+    public Task RefreshAsync()
+    {
+        _session?.Invalidate();
+        return RenderPreviewAsync();
     }
 
     /// <summary>Adds an arbitrary operation.</summary>

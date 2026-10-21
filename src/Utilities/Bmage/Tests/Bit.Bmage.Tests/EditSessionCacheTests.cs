@@ -1,4 +1,4 @@
-using System.Drawing;
+﻿using System.Drawing;
 using System.Numerics;
 using Bit.Bmage.Annotations;
 using Bit.Bmage.Editing;
@@ -105,6 +105,27 @@ public sealed class EditSessionCacheTests
         session.ApplyTransient(d => d.ReplaceOperation(0, new CountingOperation()));
         await session.RenderPreviewAsync();
         Assert.AreEqual(1, counting.Applied, "a different operation is not the cached one");
+    }
+
+    [TestMethod]
+    public async Task InvalidatingMakesTheNextRenderRunTheWholeDocument()
+    {
+        using var source = TestImages.Gradient(200, 150);
+        using var session = new ImageEditSession(source.Clone(), new ImageEditSessionOptions { MaxProxyDimension = 100 });
+        var counting = new CountingOperation();
+        session.AddOperation(counting);
+        var first = await session.RenderPreviewAsync();
+        Assert.AreSame(first, await session.RenderPreviewAsync(), "an unchanged document is not rendered again");
+        Assert.AreEqual(1, counting.Applied);
+
+        // Something outside the document, such as a font, changed what it renders to.
+        session.Invalidate();
+        Assert.IsTrue(session.IsPreviewStale);
+        await session.RenderPreviewAsync();
+        Assert.AreEqual(2, counting.Applied, "nothing from before the invalidation is reused");
+        Assert.IsFalse(session.IsPreviewStale);
+        await session.RenderPreviewAsync();
+        Assert.AreEqual(2, counting.Applied, "the render after it is reused again");
     }
 
     [TestMethod]

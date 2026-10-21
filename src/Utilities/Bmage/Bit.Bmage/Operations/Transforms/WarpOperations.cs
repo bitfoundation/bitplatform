@@ -98,25 +98,11 @@ internal static class Warp
             var origin = Vector2.Transform(new Vector2(0.5f, y + 0.5f), inverse);
             var baseX = origin.X - 0.5f;
             var baseY = origin.Y - 0.5f;
-
-            switch (sampling)
+            for (var x = 0; x < width; x++)
             {
-                case WarpSampling.NearestNeighbor:
-                    for (var x = 0; x < width; x++)
-                    {
-                        var ix = (int)MathF.Floor(baseX + x * stepX + 0.5f);
-                        var iy = (int)MathF.Floor(baseY + x * stepY + 0.5f);
-                        dst[x] = Store((uint)ix < (uint)sw && (uint)iy < (uint)sh ? Load(src[iy * sw + ix]) : bg);
-                    }
-                    break;
-                case WarpSampling.Bicubic:
-                    for (var x = 0; x < width; x++)
-                        dst[x] = Store(SampleBicubic(src, sw, sh, baseX + x * stepX, baseY + x * stepY, bg));
-                    break;
-                default:
-                    for (var x = 0; x < width; x++)
-                        dst[x] = Store(SampleBilinear(src, sw, sh, baseX + x * stepX, baseY + x * stepY, bg));
-                    break;
+                var ix = (int)MathF.Floor(baseX + x * stepX + 0.5f);
+                var iy = (int)MathF.Floor(baseY + x * stepY + 0.5f);
+                dst[x] = Store((uint)ix < (uint)sw && (uint)iy < (uint)sh ? Load(src[iy * sw + ix]) : bg);
             }
         }
         context.ReportProgress(1);

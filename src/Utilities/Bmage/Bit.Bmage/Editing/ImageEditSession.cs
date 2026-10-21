@@ -27,7 +27,8 @@ namespace Bit.Bmage.Editing;
 /// <para>
 /// Previews reuse pixels earlier renders computed for the same operation and annotation instances, which relies on
 /// those being immutable, as every built-in one is. A custom operation must not change in place: replace it with a new
-/// instance instead.
+/// instance instead. When something outside the document changes what it renders to, such as a font registered after
+/// text was drawn, call <see cref="Invalidate"/>.
 /// </para>
 /// </remarks>
 public sealed class ImageEditSession : IDisposable
@@ -54,6 +55,9 @@ public sealed class ImageEditSession : IDisposable
     private OverlayBase? _overlayBase;
     // Half the proxy's resolution, built on the first draft render.
     private ImageBuffer? _draftSource;
+    // Counted by Invalidate; a render that finds more than it last saw starts without anything earlier renders kept.
+    private int _invalidations;
+    private int _invalidationsSeen;
 
     /// <summary>Creates a session that takes ownership of <paramref name="original"/>.</summary>
     public ImageEditSession(ImageBuffer original, ImageEditSessionOptions? options = null)
@@ -243,6 +247,16 @@ public sealed class ImageEditSession : IDisposable
     private void MarkPreviewStale() => IsPreviewStale = true;
 
     /// <summary>
+    /// Makes the next render run the whole document again rather than reuse pixels earlier renders computed, for when
+    /// something outside the document changed what it renders to, such as a font registered after text was drawn.
+    /// </summary>
+    public void Invalidate()
+    {
+        Interlocked.Increment(ref _invalidations);
+        MarkPreviewStale();
+    }
+
+    /// <summary>
     /// Renders the preview at proxy resolution. Cancels any render already running, so rapid edits never pile up.
     /// Returns the preview buffer, which the session continues to own.
     /// </summary>
@@ -299,6 +313,13 @@ public sealed class ImageEditSession : IDisposable
             if (_disposed) throw new OperationCanceledException(cts.Token);
             var sourceVersion = _sourceVersion;
             DisposeStaleCaches();
+            var invalidations = Volatile.Read(ref _invalidations);
+            if (invalidations != _invalidationsSeen)
+            {
+                _invalidationsSeen = invalidations;
+                DisposeCaches();
+                _previewDocument = null;
+            }
             var source = Document;
             // Rendering the document the preview already shows would only produce the same pixels again.
             if (overlay is null && ReferenceEquals(source, _previewDocument) && _preview is { IsDisposed: false } current)
@@ -333,8 +354,8 @@ public sealed class ImageEditSession : IDisposable
             PreviewScale = scale;
             // A draft is never the preview a later render could stand in for.
             _previewDocument = draft ? null : document;
-            // An edit made while this ran is not in the result, so the preview is only fresh if nothing changed.
-            IsPreviewStale = draft || overlay is not null || !ReferenceEquals(source, Document);
+            // An edit or invalidation made while this ran is not in the result, so the preview is only fresh if nothing changed.
+            IsPreviewStale = draft || overlay is not null || !ReferenceEquals(source, Document) || Volatile.Read(ref _invalidations) != _invalidationsSeen;
             old?.Dispose();
             PreviewUpdated?.Invoke(rendered);
             return rendered;
@@ -353,11 +374,10 @@ public sealed class ImageEditSession : IDisposable
     /// </summary>
     /// <remarks>
     /// <para>
-    /// The pipeline is split after its last step the optimiser never rewrites together with a neighbour: anything that
-    /// is not a per-pixel operation, crop, orientation or resize and is not an identity, such as a blur. Optimising and
-    /// running the two halves separately therefore produces the same pixels as running it whole, and the first half is
-    /// kept for as long as the document keeps those same operations. Dragging a slider for an adjustment after a blur
-    /// re-runs only the adjustment.
+    /// The pipeline is split after its last step the optimiser never rewrites together with a neighbour, such as a blur
+    /// (see <see cref="PipelineOptimizer.IsBarrier"/>). Optimising and running the two halves separately therefore
+    /// produces the same pixels as running it whole, and the first half is kept for as long as the document keeps those
+    /// same operations. Dragging a slider for an adjustment after a blur re-runs only the adjustment.
     /// </para>
     /// <para>
     /// When the document has annotations, the pipeline's output is kept too, so editing annotations never re-runs the
@@ -423,9 +443,14 @@ public sealed class ImageEditSession : IDisposable
             }
             start = layer.Stage!.Pixels;
         }
-        if (boundary == scaled.Count) return (start, true);
+        if (boundary == scaled.Count)
+        {
+            // The stage is the output, so a kept output of an earlier pipeline can never match again.
+            Replace(ref layer.Pipeline, null);
+            return (start, true);
+        }
 
-        var rest = Slice(scaled, boundary, scaled.Count).Optimize(SizeAfter(scaled, boundary, source.Size));
+        var rest = Slice(scaled, boundary, scaled.Count).Optimize(PipelineOptimizer.SizeBefore(scaled, boundary, source.Size));
         var output = await rest.ExecuteAsync(start, unoptimised).ConfigureAwait(false);
         if (!keepOutput)
         {
@@ -480,35 +505,12 @@ public sealed class ImageEditSession : IDisposable
         return scaled;
     }
 
-    /// <summary>
-    /// The index after the pipeline's last step that no optimiser rule combines with a neighbour, or 0 when it has none.
-    /// Identities do not count: the optimiser drops them, and what was on either side becomes neighbours.
-    /// </summary>
+    /// <summary>The index after the pipeline's last optimiser barrier, or 0 when it has none.</summary>
     private static int CacheBoundary(ImagePipeline scaled)
     {
         for (var i = scaled.Count - 1; i >= 0; i--)
-        {
-            var op = scaled[i];
-            if (!op.IsIdentity && op is not (PointOperation or CropOperation or OrientationOperation or AutoOrientOperation or ResizeOperation))
-                return i + 1;
-        }
+            if (PipelineOptimizer.IsBarrier(scaled[i])) return i + 1;
         return 0;
-    }
-
-    /// <summary>
-    /// The size entering step <paramref name="index"/>, known in advance exactly when the whole pipeline's optimiser
-    /// would know it: never past an auto-orientation, whose output depends on metadata.
-    /// </summary>
-    private static Size? SizeAfter(ImagePipeline pipeline, int index, Size input)
-    {
-        var size = input;
-        for (var i = 0; i < index; i++)
-        {
-            if (pipeline[i] is AutoOrientOperation) return null;
-            try { size = pipeline[i].GetOutputSize(size); }
-            catch (ArgumentException) { return null; }
-        }
-        return size;
     }
 
     private static ImagePipeline Slice(ImagePipeline pipeline, int start, int end)

@@ -26,8 +26,9 @@ public static class Resampler
     {
         public Window[] Windows = [];
         public float[] Weights = [];
-        // The same weights in every lane: WebAssembly's interpreter multiplies two vectors several times faster than a
-        // vector by a float, and the products are identical.
+        // The same weights in every lane, for the horizontal pass only: WebAssembly's interpreter multiplies two vectors
+        // several times faster than a vector by a float, and the products are identical. Empty for the vertical kernel,
+        // whose weight is the same for a whole row.
         public Vector4[] Lanes = [];
         public int MaxTaps;
     }
@@ -85,7 +86,7 @@ public static class Resampler
     /// holds ceil(n/f) pixels while representing only n/f pixels worth of content, because the last block is partial.
     /// Mapping against the pixel count instead of the true extent stretches the image, so the two are tracked apart.
     /// </remarks>
-    private static Kernel BuildKernel(ResamplingFilter filter, int srcStart, int srcCount, double srcExtent, int dstLength)
+    private static Kernel BuildKernel(ResamplingFilter filter, int srcStart, int srcCount, double srcExtent, int dstLength, bool lanes)
     {
         var scale = dstLength / srcExtent;                   // destination pixels per source pixel
         var filterScale = scale < 1 ? 1 / scale : 1;         // widen when downscaling
@@ -128,10 +129,12 @@ public static class Resampler
             windows[i] = new Window(start, count, offset);
             offset += count;
         }
+        var kernel = new Kernel { Windows = windows, Weights = weights, MaxTaps = maxTaps };
+        if (!lanes) return kernel;
         // Rented, since this is the largest array a resize allocates; ResampleCore returns it.
-        var lanes = ArrayPool<Vector4>.Shared.Rent(Math.Max(1, offset));
-        for (var i = 0; i < offset; i++) lanes[i] = new Vector4(weights[i]);
-        return new Kernel { Windows = windows, Weights = weights, Lanes = lanes, MaxTaps = maxTaps };
+        kernel.Lanes = ArrayPool<Vector4>.Shared.Rent(Math.Max(1, offset));
+        for (var i = 0; i < offset; i++) kernel.Lanes[i] = new Vector4(weights[i]);
+        return kernel;
     }
 
     /// <summary>
@@ -185,8 +188,8 @@ public static class Resampler
             return;
         }
 
-        var kx = BuildKernel(filter, sourceRect.X, sourceRect.Width, extentX, destinationRect.Width);
-        var ky = BuildKernel(filter, sourceRect.Y, sourceRect.Height, extentY, destinationRect.Height);
+        var kx = BuildKernel(filter, sourceRect.X, sourceRect.Width, extentX, destinationRect.Width, lanes: true);
+        var ky = BuildKernel(filter, sourceRect.Y, sourceRect.Height, extentY, destinationRect.Height, lanes: false);
 
         var srcW = sourceRect.Width;
         var pool = ArrayPool<Vector4>.Shared;
@@ -245,7 +248,6 @@ public static class Resampler
             pool.Return(outRow);
             foreach (var r in cacheRows) pool.Return(r);
             pool.Return(kx.Lanes);
-            pool.Return(ky.Lanes);
         }
     }
 

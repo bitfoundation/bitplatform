@@ -65,6 +65,15 @@ public static class PipelineOptimizer
         return ImagePipeline.From(ops);
     }
 
+    /// <summary>
+    /// True when no rule ever rewrites <paramref name="operation"/> together with a neighbour, so optimising the steps
+    /// before it and the steps after it separately gives exactly what optimising the whole pipeline does. Identities are
+    /// not barriers: they are dropped, and what was on either side becomes neighbours.
+    /// </summary>
+    /// <remarks>Keep in step with the rules below: the editor's preview cache splits pipelines at barriers.</remarks>
+    internal static bool IsBarrier(IImageOperation operation)
+        => !operation.IsIdentity && operation is not (PointOperation or CropOperation or OrientationOperation or AutoOrientOperation or ResizeOperation);
+
     private static bool RemoveIdentities(List<IImageOperation> ops)
     {
         var changed = false;
@@ -139,7 +148,7 @@ public static class PipelineOptimizer
     }
 
     /// <summary>The size entering <c>ops[index]</c>, or null when it cannot be known ahead of execution.</summary>
-    private static Size? SizeBefore(List<IImageOperation> ops, int index, Size? inputSize)
+    internal static Size? SizeBefore(IReadOnlyList<IImageOperation> ops, int index, Size? inputSize)
     {
         if (inputSize is not { } current) return null;
         for (var i = 0; i < index; i++)

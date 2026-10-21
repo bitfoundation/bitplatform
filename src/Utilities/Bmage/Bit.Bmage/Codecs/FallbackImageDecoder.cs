@@ -1,4 +1,4 @@
-using Bit.Bmage.Memory;
+﻿using Bit.Bmage.Memory;
 
 namespace Bit.Bmage.Codecs;
 

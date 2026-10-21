@@ -14,7 +14,9 @@ namespace Bit.Bmage;
 public static class BitBmage
 {
     // One container per browser connection for applications that never called AddBitBmageServices. Keyed weakly, so a
-    // closed Blazor Server circuit takes its container with it.
+    // closed Blazor Server circuit takes its container with it. Never disposed, and nothing needs it to be: it lives as
+    // long as the connection, like a scope, and the one thing disposal would add, releasing the module reference held
+    // in the browser, has no page left to do it in by then.
     private static readonly ConditionalWeakTable<IJSRuntime, IServiceProvider> _ownServices = new();
 
     /// <summary>
