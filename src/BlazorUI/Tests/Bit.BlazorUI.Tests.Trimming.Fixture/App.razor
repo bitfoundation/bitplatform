@@ -15,9 +15,10 @@
 <head>
     <meta charset="utf-8" />
     <base href="/" />
-    <link rel="stylesheet" href="_content/Bit.BlazorUI.Icons/styles/bit.blazorui.icons.css" />
+    @* In the order the getting-started page gives: the icons' stylesheet last, so its .bit-icon rule is the one in effect. *@
     <link rel="stylesheet" href="_content/Bit.BlazorUI/styles/bit.blazorui.css" />
     <link rel="stylesheet" href="_content/Bit.BlazorUI.Extras/styles/bit.blazorui.extras.css" />
+    <link rel="stylesheet" href="_content/Bit.BlazorUI.Icons/styles/bit.blazorui.icons.css" />
 </head>
 <body>
     <Routes @rendermode="InteractiveServer" />

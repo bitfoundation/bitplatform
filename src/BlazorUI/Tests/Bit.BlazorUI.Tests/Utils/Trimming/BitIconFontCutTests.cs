@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using Bit.BlazorUI.Build;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -29,7 +30,9 @@ public sealed class BitIconFontCutTests
     // ContactInfoMirrored, U+EA4A. Named here so a new one is not let through unseen.
     private static readonly string[] NoGlyph = ["ContactInfoMirrored"];
 
-    private static readonly Lazy<TrueTypeFont> Icons = new(() => Woff2.Read(File.ReadAllBytes(SourceFiles.GetPath("Bit.BlazorUI.Icons", "wwwroot", "fonts", "FabMDL2.4.66.woff2"))));
+    private static readonly string FontPath = SourceFiles.GetPath("Bit.BlazorUI.Icons", "wwwroot", "fonts", "FabMDL2.4.66.woff2");
+
+    private static readonly Lazy<TrueTypeFont> Icons = new(() => Woff2.Read(File.ReadAllBytes(FontPath)));
 
     [TestMethod]
     public void EveryGlyphOfTheIconFontShouldReadAndBeWrittenBackAsItWas()
@@ -141,6 +144,54 @@ public sealed class BitIconFontCutTests
     }
 
     [TestMethod]
+    public void ACutShouldBeUsedAgainWithItsReasonsUntilWhatItIsCutWithChanges()
+    {
+        var package = PackageAssets.Load(SourceFiles.GetPath("Bit.BlazorUI.Icons", "obj", "bit-assets"));
+        var set = package.IconSets.Single();
+        var glyphs = AssetComposer.ReadGlyphs(package, set);
+        var selection = new AssetSelection([package]);
+        selection.Icons.Add("Add");
+
+        var output = Path.Combine(Path.GetTempPath(), "bit-blazorui-icon-font-cut", Guid.NewGuid().ToString("N"));
+        try
+        {
+            // A tools folder with nothing in it, so Node.js fails and .NET stands in.
+            IconFontSubsetter.Result Cut(string? nodePath) => IconFontSubsetter.Subset(package, set, glyphs, selection, FontPath, IconFontSubsetter.Engine.Auto, output, Path.Combine(output, "no-tools"), nodePath);
+
+            var first = Cut(nodePath: null);
+            Assert.AreEqual(".NET", first.CutBy);
+            Assert.IsFalse(first.Reused);
+            Assert.AreEqual(1, first.Failures.Count);
+            StringAssert.StartsWith(first.Failures[0], "Node.js: ");
+
+            var again = Cut(nodePath: null);
+            Assert.IsTrue(again.Reused, "The cut of the very same inputs was made again.");
+            Assert.AreEqual(".NET", again.CutBy);
+            CollectionAssert.AreEqual(first.Failures, again.Failures, "The cut used again does not say why Node.js failed, as the publish that made it did.");
+
+            // Another node is another try of Node.js.
+            Assert.IsFalse(Cut(Path.Combine(output, "node")).Reused, "The cut .NET stood in for was used again for another node.");
+        }
+        finally
+        {
+            Directory.Delete(output, recursive: true);
+        }
+    }
+
+    [TestMethod]
+    public void TheIconStylesheetShouldDrawWhatACutLeavesOutFromTheCoresOwnFont()
+    {
+        // Linked after the core stylesheet, the icons' .bit-icon rule draws every icon, the core components' built-in ones
+        // too - and a cut of its font (an Explicit list) may hold none of theirs. The core's font, which has them all, is
+        // the one they fall back to.
+        var core = SourceFiles.Read("Bit.BlazorUI", "Styles", "fabric.mdl2.bit.blazoui.scss");
+        var icons = SourceFiles.Read("Bit.BlazorUI.Icons", "Styles", "fabric.mdl2.icons.scss");
+
+        CollectionAssert.AreEqual(new[] { FontFamilies(icons, "@font-face").Single(), FontFamilies(core, "@font-face").Single() }, FontFamilies(icons, ".bit-icon"),
+                                  "The icons' .bit-icon rule does not draw from its own font, then the core's.");
+    }
+
+    [TestMethod]
     [DataRow(".bit-icon--Add::before{content:\"\\E710\"}", 0xE710)]
     [DataRow(".bit-icon--Add::before { content: \"\\e710 \" }", 0xE710)]
     [DataRow(".bit-icon--Add::before{content:\"\uE710\"}", 0xE710)]
@@ -155,6 +206,7 @@ public sealed class BitIconFontCutTests
     [DataRow("U+E710", 0xE710)]
     [DataRow("u+e710", 0xE710)]
     [DataRow("\\E710", 0xE710)]
+    [DataRow("/E710", 0xE710)]
     [DataRow("0xE710", 0xE710)]
     [DataRow(" U+1F600 ", 0x1F600)]
     [DataRow("Add", null)]
@@ -165,6 +217,14 @@ public sealed class BitIconFontCutTests
     {
         Assert.AreEqual(expected.HasValue, IconFontSubsetter.TryParseCodepoint(text, out var codepoint), text);
         if (expected.HasValue) Assert.AreEqual(expected.Value, codepoint);
+    }
+
+    // The families the first rule of a stylesheet for the selector lists, in order.
+    private static List<string> FontFamilies(string stylesheet, string selector)
+    {
+        var match = Regex.Match(stylesheet, $@"{Regex.Escape(selector)}\s*\{{[^}}]*?font-family:\s*(?<families>[^;!}}]+)");
+        Assert.IsTrue(match.Success, $"No {selector} rule with a font-family.");
+        return [.. match.Groups["families"].Value.Split(',').Select(f => f.Trim().Trim('\'', '"'))];
     }
 
     // One point, on the curve at the origin: the header, its end point, no instructions, one flag (on curve, x and y the same).

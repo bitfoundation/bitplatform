@@ -187,18 +187,11 @@ public sealed class TrimBitBlazorUIAssets : Task
 
         // The components a csproj names are the whole of what it renders where nothing else says so. The scripts,
         // stylesheets and icons it names only add to what something else said: a list of glyphs is no list of components.
-        // Except where BitBlazorUITrimIcons is Explicit, whose list is the whole of the icons kept: it trims the icons alone
-        // then, and everything else is published whole.
+        // Except where BitBlazorUITrimIcons is Explicit, whose list is the whole of the icons kept (TrimIconsAlone).
         if (trimmed is false && scan is false && Components.Length == 0)
         {
             const string nothing = "nothing says what this app uses (no trimmed publish, no scan, no <BitBlazorUIComponent> in the csproj)";
-            if (TrimIcons is false || ExplicitIcons is false) return StandDown(nothing);
-
-            if (TrimScripts || TrimScriptModules || TrimStyles || TrimVendorAssets)
-            {
-                Log.LogMessage(MessageImportance.High, "Bit.BlazorUI: {0}; publishing the full scripts and stylesheets, and only the icons the <BitBlazorUIIcon> items name (BitBlazorUITrimIcons is Explicit).", nothing);
-            }
-            TrimScripts = TrimScriptModules = TrimStyles = TrimVendorAssets = false;
+            if (TrimIconsAlone(nothing) is false) return StandDown(nothing);
         }
 
         var presentNames = new HashSet<string>(StringComparer.Ordinal);
@@ -217,9 +210,17 @@ public sealed class TrimBitBlazorUIAssets : Task
                 if (Components.Length > 0 && graph is null) return false;
             }
 
+            // Whether the app was read for what it uses. Where it could not be, the trimming stands down - but for an
+            // Explicit list of icons, which needs nothing read (TrimIconsAlone).
+            var read = true;
             if (trimmed)
             {
-                if (ReadTrimmed(libraryNames, presentNames, strings, appStrings) is false) return StandDown($"no trimmed bit BlazorUI assembly in '{TrimmedAssembliesDirectory}' - the publish was set up to be trimmed and the packages were not");
+                if (ReadTrimmed(libraryNames, presentNames, strings, appStrings) is false)
+                {
+                    var why = $"no trimmed bit BlazorUI assembly in '{TrimmedAssembliesDirectory}' - the publish was set up to be trimmed and the packages were not";
+                    if (TrimIconsAlone(why) is false) return StandDown(why);
+                    read = false;
+                }
             }
             else if (scan)
             {
@@ -227,34 +228,45 @@ public sealed class TrimBitBlazorUIAssets : Task
                 if (graph is null)
                 {
                     if (Log.HasLoggedErrors) return false;
-                    return StandDown(missing!, MessageImportance.High);
+                    if (TrimIconsAlone(missing!) is false) return StandDown(missing!, MessageImportance.High);
+                    read = false;
                 }
-
-                var result = AppScan.Scan(ScanAssemblies.Select(a => a.GetMetadata("FullPath")), libraryNames, graph, byTypeNames: mode == "TypeNames");
-
-                // Every app that renders a component references the packages, so none doing so means the assemblies read
-                // were not the app's: trimming on that would leave out every script and stylesheet it uses.
-                if (result.Referencing == 0)
+                else
                 {
-                    Log.LogWarning(null, NothingScannedCode, null, null, 0, 0, 0, 0,
-                        "Bit.BlazorUI: none of the {0} assemblies read references the bit BlazorUI packages, so there is nothing to tell what this app uses from; publishing the full scripts and stylesheets. Add a <BitBlazorUIScanAssembly> item for each of the app's own assemblies, or set <BitBlazorUIScan>None</BitBlazorUIScan> to silence this.",
-                        ScanAssemblies.Length);
-                    Skipped = true;
-                    return true;
+                    var result = AppScan.Scan(ScanAssemblies.Select(a => a.GetMetadata("FullPath")), libraryNames, graph, byTypeNames: mode == "TypeNames");
+
+                    // Every app that renders a component references the packages, so none doing so means the assemblies
+                    // read were not the app's: trimming on that would leave out every script and stylesheet it uses.
+                    if (result.Referencing == 0)
+                    {
+                        Log.LogWarning(null, NothingScannedCode, null, null, 0, 0, 0, 0,
+                            "Bit.BlazorUI: none of the {0} assemblies read references the bit BlazorUI packages, so there is nothing to tell what this app uses from; publishing the full scripts and stylesheets. Add a <BitBlazorUIScanAssembly> item for each of the app's own assemblies, or set <BitBlazorUIScan>None</BitBlazorUIScan> to silence this.",
+                            ScanAssemblies.Length);
+                        if (TrimIconsAlone(why: null) is false)
+                        {
+                            Skipped = true;
+                            return true;
+                        }
+                        read = false;
+                    }
+                    else
+                    {
+                        foreach (var s in result.Strings) appStrings.Add(s);
+
+                        var reached = graph.Closure(result.Roots);
+                        foreach (var type in reached) presentNames.Add(type.Name);
+                        strings.UnionWith(LibraryGraph.StringsOf(reached));
+
+                        Log.LogMessage(MessageImportance.Low, "Bit.BlazorUI: read {0} for what they use of the packages; the library types they reference: {1}.",
+                            string.Join(", ", result.Scanned.Select(Path.GetFileName)),
+                            string.Join(", ", result.Roots.Where(r => r.FullName.IndexOf('/') < 0).Select(r => r.Name).Distinct().OrderBy(n => n, StringComparer.Ordinal)));
+                    }
                 }
-
-                foreach (var s in result.Strings) appStrings.Add(s);
-
-                var reached = graph.Closure(result.Roots);
-                foreach (var type in reached) presentNames.Add(type.Name);
-                strings.UnionWith(LibraryGraph.StringsOf(reached));
-
-                Log.LogMessage(MessageImportance.Low, "Bit.BlazorUI: read {0} for what they use of the packages; the library types they reference: {1}.",
-                    string.Join(", ", result.Scanned.Select(Path.GetFileName)),
-                    string.Join(", ", result.Roots.Where(r => r.FullName.IndexOf('/') < 0).Select(r => r.Name).Distinct().OrderBy(n => n, StringComparer.Ordinal)));
             }
 
-            foreach (var item in Components)
+            // The components a csproj names are kept for the scripts and stylesheets, which are published whole where the
+            // app was not read.
+            foreach (var item in read ? Components : [])
             {
                 var name = item.ItemSpec.Trim();
                 var types = graph!.FindByName(name).ToList();
@@ -481,10 +493,10 @@ public sealed class TrimBitBlazorUIAssets : Task
         }
 
         // Which cut it took, said where a publish says what it did - out loud where the first engine failed and the second
-        // stood in, since that one's font is a little larger.
+        // stood in, since that one's font is a little larger, and as loud again where it is that cut used again.
         Log.LogMessage(result.Failures.Count > 0 ? MessageImportance.High : MessageImportance.Normal, "Bit.BlazorUI: {0}/{1} cut down by {2}{3}{4}.",
-            package.PackageId, set.Font, result.CutBy, result.Reused ? " (the cut of an earlier publish, from the same font and icons)" : "",
-            result.Failures.Count > 0 ? $", since {string.Join("; ", result.Failures)}" : "");
+            package.PackageId, set.Font, result.CutBy, result.Failures.Count > 0 ? $", since {string.Join("; ", result.Failures)}" : "",
+            result.Reused ? " (the cut of an earlier publish, from the same font, icons and engines)" : "");
 
         return result.Output;
     }
@@ -499,6 +511,21 @@ public sealed class TrimBitBlazorUIAssets : Task
         else if (value.Equals(nameof(IconFontSubsetter.Engine.DotNet), StringComparison.OrdinalIgnoreCase)) engine = IconFontSubsetter.Engine.DotNet;
         else if (value.Equals("false", StringComparison.OrdinalIgnoreCase) is false) return false;
 
+        return true;
+    }
+
+    // Where nothing says what the app uses, an Explicit list of icons still says which icons it does: the publish trims
+    // them alone, and everything else is published whole. False, for the trimming to stand down, where the icons are not
+    // Explicit. The reason is said here unless it was said already (null).
+    private bool TrimIconsAlone(string? why)
+    {
+        if (TrimIcons is false || ExplicitIcons is false) return false;
+
+        if (why is not null && (TrimScripts || TrimScriptModules || TrimStyles || TrimVendorAssets))
+        {
+            Log.LogMessage(MessageImportance.High, "Bit.BlazorUI: {0}; publishing the full scripts and stylesheets, and only the icons the <BitBlazorUIIcon> items name (BitBlazorUITrimIcons is Explicit).", why);
+        }
+        TrimScripts = TrimScriptModules = TrimStyles = TrimVendorAssets = false;
         return true;
     }
 

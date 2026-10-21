@@ -40,7 +40,9 @@
                                          Without the modules, a trimmed publish also leaves out the map the .NET side
                                          imports them by (the bit-lazy-scripts.json each package's assembly embeds): an
                                          app turning the lazy scripts on at runtime sets BitBlazorUIIncludeScriptModules
-                                         to true, even one importing them from a ContentPath elsewhere.
+                                         to true, even one importing them from a ContentPath elsewhere. (The WebAssembly
+                                         client of a Blazor Web App always keeps the map: it is trimmed apart from the
+                                         server, whose csproj says whether the app keeps the modules.)
 
     Trimming switches - they decide WHETHER to trim:
 
@@ -81,7 +83,10 @@
                                            that fails (no Node.js, no network for its first download), on .NET.
                                  Node      On Node.js alone: fonttools' pyftsubset (@web-alchemy/fonttools on Pyodide),
                                            installed once per machine with npm ci from the package-lock.json the
-                                           package ships (tasks/fonttools), into the user's local application data.
+                                           package ships (tasks/fonttools), into the user's local application data
+                                           (bit-blazorui/fonttools). An install that fails is not tried again on the
+                                           same node - an offline machine pays npm's timeouts once - until the .failed
+                                           file it leaves there is deleted.
                                  DotNet    On .NET alone: no Node.js and no download, a font a little larger. Needs the
                                            dotnet CLI's MSBuild: the .NET Framework one of Visual Studio has no Brotli
                                            to read and write WOFF2 with, and publishes the font whole.
@@ -308,8 +313,12 @@
     <!-- An app publishing none of the modules can import none of them, so a trimmed publish of it leaves out the map the
          .NET side imports them by: the bit-lazy-scripts.json each package embeds, which ILLink removes off this feature
          switch (the ILLink.Substitutions.xml beside it, Bit.BlazorUI.Assets.targets). For ILLink only; nothing reads it
-         at runtime. Removed before it is included, so a second import leaves one. -->
-    <ItemGroup Condition="'$(BitBlazorUIIncludeScriptModules)' != 'true'">
+         at runtime. Removed before it is included, so a second import leaves one.
+
+         Not for the WebAssembly client of a Blazor Web App: ILLink trims it in a publish of its own, where the server's
+         csproj - the one the app's switches go in - has no say, so whether the app keeps the modules is not known there.
+         It keeps the map, as a client that turns the lazy scripts on at runtime needs it. -->
+    <ItemGroup Condition="'$(BitBlazorUIIncludeScriptModules)' != 'true' and '$(_BitBlazorUIPublishedByHost)' != 'true'">
         <RuntimeHostConfigurationOption Remove="Bit.BlazorUI.IncludeScriptModules" />
         <RuntimeHostConfigurationOption Include="Bit.BlazorUI.IncludeScriptModules" Value="false" Trim="true" />
     </ItemGroup>

@@ -375,8 +375,10 @@ Bit.BlazorUI: _content/Bit.BlazorUI.Legacy/pdf.js/ -> left out (2 files): nothin
                         exactly the ones <code>&lt;BitBlazorUIIcon&gt;</code> lists - an icon the code names is left out if
                         the list does not name it too. For an app that knows its icons better than its code shows them,
                         and wants nothing kept or dropped behind its back. The list is all it goes on, so it trims the icons
-                        with no other signal; a list naming nothing keeps no icon, and says so
-                        (<code>BITBLAZORUI007</code>).
+                        with no other signal - even where a scan or a trimmed publish has nothing to tell it - and a list
+                        naming nothing keeps no icon, and says so (<code>BITBLAZORUI007</code>). The icons the core
+                        components draw themselves (a dropdown's chevron) need no listing: where the cut font leaves them
+                        out, they are drawn from the core's own.
                     </BitText>
                     <BitText Element="p">
                         An icon is listed by its name, or by its codepoint - what a stylesheet of your own drawing the glyph
@@ -399,15 +401,16 @@ Bit.BlazorUI: _content/Bit.BlazorUI.Legacy/pdf.js/ -> left out (2 files): nothin
                     </BitText>
                     <ul>
                         <li><code>Auto</code> - the default. On Node.js, and where that fails, on .NET - said in a line of its own, since that font is a little larger.</li>
-                        <li><code>Node</code> - on Node.js alone: fonttools' <code>pyftsubset</code>, which writes the smallest font. It is installed once per machine, into the user's local application data, with <code>npm ci</code> from the <code>package-lock.json</code> the package ships - every byte of it the one pinned there, none of its install scripts run - so the first publish needs the npm registry. <code>BitBlazorUINodePath</code> names the <code>node</code> executable where the build does not see the one a shell would.</li>
+                        <li><code>Node</code> - on Node.js alone: fonttools' <code>pyftsubset</code>, which writes the smallest font. It is installed once per machine, into the user's local application data, with <code>npm ci</code> from the <code>package-lock.json</code> the package ships - every byte of it the one pinned there, none of its install scripts run - so the first publish needs the npm registry. An install that fails is not tried again on the same <code>node</code>, so a machine without the registry pays npm's timeouts once: delete the <code>.failed</code> file it leaves in <code>bit-blazorui/fonttools</code> to try again. <code>BitBlazorUINodePath</code> names the <code>node</code> executable where the build does not see the one a shell would.</li>
                         <li><code>DotNet</code> - on .NET alone: no Node.js and no download. It needs the dotnet CLI's MSBuild; Visual Studio's, which runs on the .NET Framework, has no Brotli to read and write WOFF2 with, and publishes the font whole.</li>
                         <li><code>false</code> - the font is published whole.</li>
                     </ul>
                     <BitText Element="p">
-                        A cut is kept in the project's <code>obj</code> folder and used again while the font, the icons and
-                        the setting stay the same, so a publish pays for it once - and one whose Node.js cut failed keeps the
-                        .NET cut until something changes. Where no engine can cut it, the font is published whole, with each
-                        engine's reason (<code>BITBLAZORUI006</code>). A stylesheet of your own using the font by codepoint
+                        A cut is kept in the project's <code>obj</code> folder and used again while the font, the icons, the
+                        setting and the <code>node</code> it runs on stay the same, so a publish pays for it once - and one
+                        whose Node.js cut failed keeps the .NET cut, saying why on every publish, until something changes
+                        (Node.js installed, <code>BitBlazorUINodePath</code> set). Where no engine can cut it, the font is
+                        published whole, with each engine's reason (<code>BITBLAZORUI006</code>). A stylesheet of your own using the font by codepoint
                         lists its glyphs with <code>&lt;BitBlazorUIIcon&gt;</code> (above), or the cut leaves them out.
                     </BitText>
                     <CodeBox Language="xml">&lt;PropertyGroup>
@@ -549,7 +552,8 @@ var lazy = BitBlazorUIScripts.LazyScriptsEnabled;</CodeBox>
                         <code>&lt;BitBlazorUIIncludeScriptModules&gt;true&lt;/BitBlazorUIIncludeScriptModules&gt;</code>
                         (below) - even one importing them from a <code>ContentPath</code> elsewhere. Without the modules, a
                         trimmed publish also leaves out the map the library imports them by, the
-                        <code>bit-lazy-scripts.json</code> each package's assembly embeds.
+                        <code>bit-lazy-scripts.json</code> each package's assembly embeds. The WebAssembly client of a Blazor
+                        Web App always keeps the map: it is trimmed apart from the server, whose csproj the setting goes in.
                     </BitText>
                 </DocSection>
 

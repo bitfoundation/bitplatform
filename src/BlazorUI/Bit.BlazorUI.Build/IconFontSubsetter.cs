@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Security.Cryptography;
 using System.Text.RegularExpressions;
 
@@ -16,8 +17,9 @@ namespace Bit.BlazorUI.Build;
 /// </summary>
 /// <remarks>
 /// A cut is kept beside the trimmed stylesheet (obj) with a stamp of what it was cut from - the font's own bytes, the glyphs,
-/// the engines asked for and their versions - and used again while all of them stay the same: a publish pays for it once,
-/// and one whose first engine failed does not try it again until something changes.
+/// the engines asked for, their versions and the node the Node.js one runs on - and used again while all of them stay the
+/// same: a publish pays for it once, and one whose first engine failed does not try it again until something changes,
+/// saying again why it failed.
 /// </remarks>
 public static class IconFontSubsetter
 {
@@ -30,8 +32,9 @@ public static class IconFontSubsetter
     // A glyph rule's content: an escape (\E710) or the character itself, which is how sass writes a compressed stylesheet.
     private static readonly Regex Content = new(@"content:\s*""(?:\\(?<hex>[0-9A-Fa-f]{1,6})\s?|(?<char>[\uD800-\uDBFF][\uDC00-\uDFFF]|[^""\\]))", RegexOptions.CultureInvariant);
 
-    // A codepoint as a csproj writes it in a <BitBlazorUIIcon>: U+E710, \E710 (as CSS escapes it) or 0xE710.
-    private static readonly Regex CodepointText = new(@"^(?:[Uu]\+|\\|0[xX])(?<hex>[0-9A-Fa-f]{1,6})$", RegexOptions.CultureInvariant);
+    // A codepoint as a csproj writes it in a <BitBlazorUIIcon>: U+E710, \E710 (as CSS escapes it) or 0xE710. And /E710,
+    // which is what MSBuild hands a task for \E710 on Linux and macOS, where it reads an item's backslashes as a path's.
+    private static readonly Regex CodepointText = new(@"^(?:[Uu]\+|[\\/]|0[xX])(?<hex>[0-9A-Fa-f]{1,6})$", RegexOptions.CultureInvariant);
 
     /// <summary>What became of a font: its cut (null where it is published whole), and why each engine that failed did.</summary>
     public sealed class Result
@@ -91,15 +94,22 @@ public static class IconFontSubsetter
         Directory.CreateDirectory(Path.GetDirectoryName(output)!);
 
         var font = File.ReadAllBytes(fontPath);
-        var lockFile = Path.Combine(toolsDirectory, "package-lock.json");
-        var nodeVersion = File.Exists(lockFile) ? Hash(File.ReadAllBytes(lockFile)) : "none";
 
-        var key = string.Join("\n", Hash(font), engine, $"Node.js {nodeVersion}", $".NET {DotNetVersion}", string.Join(" ", codepoints.Select(c => c.ToString("X", CultureInfo.InvariantCulture))));
+        // What the Node.js cut runs - the tool the lockfile pins, on the node named or the PATH's - is in the stamp, so a cut
+        // the .NET one stood in for is made again once Node.js can run.
+        string? pinError = null;
+        var pin = engine == Engine.DotNet ? null : NodeFontSubsetter.Pin.Read(toolsDirectory, out pinError);
+        var node = engine == Engine.DotNet ? "not asked for" : $"{pin?.Hash ?? "none"} on {NodeFontSubsetter.Locate(nodePath) ?? "no node"}";
+
+        var key = string.Join("\n", Hash(font), engine, $"Node.js {node}", $".NET {DotNetVersion}", string.Join(" ", codepoints.Select(c => c.ToString("X", CultureInfo.InvariantCulture))));
         var stamp = File.Exists(stampPath) ? File.ReadAllText(stampPath) : null;
         if (stamp is not null && File.Exists(output) && stamp.StartsWith(key + "\n", StringComparison.Ordinal))
         {
+            // The engine that cut it, then why each one before it failed: said again, as the publish that cut it said it.
+            var lines = stamp.Substring(key.Length + 1).Split('\n');
             result.Reused = true;
-            result.CutBy = stamp.Substring(key.Length + 1);
+            result.CutBy = lines[0];
+            result.Failures.AddRange(lines.Skip(1));
             result.Output = Output(package, set, output, font.LongLength, kept.Count, glyphs.Rules.Count);
             return result;
         }
@@ -109,21 +119,22 @@ public static class IconFontSubsetter
         var partial = output + ".partial";
         foreach (var candidate in engine == Engine.Auto ? [Engine.Node, Engine.DotNet] : new[] { engine })
         {
-            string? error;
+            var error = pinError;
             var cut = candidate == Engine.Node
-                ? NodeFontSubsetter.TrySubset(fontPath, codepoints, partial, toolsDirectory, nodePath, out error)
+                ? pin is not null && NodeFontSubsetter.TrySubset(fontPath, codepoints, partial, pin, nodePath, out error)
                 : TryDotNet(font, codepoints, partial, out error);
 
             var name = candidate == Engine.Node ? "Node.js" : ".NET";
             if (cut is false)
             {
-                result.Failures.Add($"{name}: {error}");
+                // One line each, as the stamp keeps them.
+                result.Failures.Add($"{name}: {error}".Replace('\r', ' ').Replace('\n', ' '));
                 continue;
             }
 
             if (File.Exists(output)) File.Delete(output);
             File.Move(partial, output);
-            File.WriteAllText(stampPath, key + "\n" + name);
+            File.WriteAllText(stampPath, string.Join("\n", new[] { key, name }.Concat(result.Failures)));
 
             result.CutBy = name;
             result.Output = Output(package, set, output, font.LongLength, kept.Count, glyphs.Rules.Count);
@@ -148,17 +159,22 @@ public static class IconFontSubsetter
             File.WriteAllBytes(output, Woff2.Write(TrueTypeSubsetter.Subset(Woff2.Read(font), codepoints)));
             return true;
         }
-        catch (Exception e) when (e is FormatException or NotSupportedException or IOException or IndexOutOfRangeException or ArgumentException or InvalidDataException)
+        // What a font it cannot read, or a runtime whose Brotli it cannot drive, throws - the BrotliStream found by name
+        // throwing from its constructor as a TargetInvocationException: the font is then published whole, never the
+        // publish failed.
+        catch (Exception e) when (e is FormatException or NotSupportedException or IOException or UnauthorizedAccessException or IndexOutOfRangeException
+                                       or ArgumentException or InvalidDataException or InvalidOperationException or TargetInvocationException)
         {
-            error = e.Message;
+            error = (e as TargetInvocationException)?.InnerException?.Message ?? e.Message;
             return false;
         }
     }
 
-    private static string Hash(byte[] bytes)
+    /// <summary>The SHA-256 of what a cut is made from (the font, the lockfile of the Node.js one), in hex.</summary>
+    internal static string Hash(byte[] bytes)
     {
         using var sha = SHA256.Create();
-        return Convert.ToBase64String(sha.ComputeHash(bytes));
+        return string.Concat(sha.ComputeHash(bytes).Select(b => b.ToString("x2", CultureInfo.InvariantCulture)));
     }
 
     private static AssetComposer.Output Output(PackageAssets package, IconSet set, string path, long fullLength, int kept, int all)

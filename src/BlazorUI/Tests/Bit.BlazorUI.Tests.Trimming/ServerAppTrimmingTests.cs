@@ -155,6 +155,21 @@ public sealed class ServerAppTrimmingTests
     }
 
     [TestMethod]
+    public void AnExplicitListShouldTrimTheIconsWhereNothingOfTheAppCanBeRead()
+    {
+        // The scan reads no assembly of the app (BITBLAZORUI002), so the scripts and stylesheets are published whole - but
+        // the list needs nothing read.
+        var publish = Publisher.Publish(Publisher.Fixture, "BitBlazorUITrimAssets=true", "BitBlazorUITrimIcons=Explicit", "BitBlazorUITrimIconFont=DotNet", "FixtureIcons=Delete",
+                                        $"FixtureScanAssemblies={typeof(PackageAssets).Assembly.Location}");
+        publish.AssertSucceeded();
+
+        StringAssert.Contains(publish.Output, "BITBLAZORUI002");
+        CollectionAssert.AreEqual(File.ReadAllBytes(Path.Combine(Publisher.Root, Core, "wwwroot", "styles", "bit.blazorui.css")), File.ReadAllBytes(publish.GetAssetPath(Core, "styles/bit.blazorui.css")));
+        CollectionAssert.AreEqual(new[] { "Delete" }, KeptGlyphs(publish).Select(g => g.Name).ToList());
+        AssertTheFontDrawsTheStylesheetsGlyphs(publish);
+    }
+
+    [TestMethod]
     public void AnExplicitModeListingNothingShouldKeepNoIconAndSaySo()
     {
         var publish = Publisher.Publish(Publisher.Fixture, "BitBlazorUITrimIcons=Explicit", "BitBlazorUITrimIconFont=DotNet");
