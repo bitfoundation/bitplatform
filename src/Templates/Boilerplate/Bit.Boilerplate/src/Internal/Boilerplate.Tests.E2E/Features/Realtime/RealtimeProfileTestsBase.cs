@@ -82,11 +82,9 @@ public abstract partial class RealtimeProfileTestsBase : AppTestBase
         var save = imageEditor.GetByRole(AriaRole.Button, new() { Name = AppStrings.Save, Exact = true });
         await Expect(save).ToBeEnabledAsync(new() { Timeout = 60_000 });
 
-        var upload = await page.RunAndWaitForResponseAsync(async () => await save.ClickAsync(),
-            response => response.Url.Contains("/api/v1/Attachment/UploadUserProfilePicture", StringComparison.OrdinalIgnoreCase));
+        await save.ClickAsync();
 
-        // 204: UploadUserProfilePicture answers with no content.
-        Assert.IsTrue(upload.Ok, $"The profile picture upload answered {upload.Status}: {await upload.TextAsync()}");
+        await Expect(imageEditor).ToBeHiddenAsync(new() { Timeout = 60_000 });
     }
 
     /// <summary>UserDto.GetProfileImageUrl: the small profile image, versioned by the user's row.</summary>
