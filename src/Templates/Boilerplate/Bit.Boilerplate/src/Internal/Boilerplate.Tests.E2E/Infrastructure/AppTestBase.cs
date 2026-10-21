@@ -380,8 +380,10 @@ public abstract class AppTestBase : AppPageTest
     /// account can never text a real person. Random within it, and unique per run, because these accounts are found by
     /// their identifiers.
     /// </summary>
+    private static readonly int[] usAreaCodes = [201, 202, 212, 213, 305, 312, 404, 415, 512, 617, 702, 713];
+
     protected static string NewTestPhoneNumber()
-        => FormattableString.Invariant($"+1{Random.Shared.Next(200, 1000)}555{Random.Shared.Next(100, 200):D4}");
+        => FormattableString.Invariant($"+1{usAreaCodes[Random.Shared.Next(usAreaCodes.Length)]}555{Random.Shared.Next(100, 200):D4}");
 
     /// <summary>
     /// Deletes whichever account ended up holding any of these identifiers, with everything hanging off it. Not by the
