@@ -195,3 +195,25 @@ public class ComponentTrackingTests : BunitContext
         Assert.IsNotExactInstanceOfType<BevTrackingJSRuntime>(((ChildComponent)child.Component!).JS);
     }
 }
+
+[TestClass]
+public class PrerenderJsRuntimeTests : BunitContext
+{
+    [TestMethod]
+    public void The_js_runtime_of_a_prerender_is_not_wrapped_so_libraries_can_still_recognize_it()
+    {
+        Services.AddSingleton<IJSRuntime>(new UnsupportedJavaScriptRuntime());
+        Services.AddBitBevToolsServices(o => o.Enabled = true);
+
+        var cut = Render<ParentComponent>();
+
+        Assert.IsExactInstanceOfType<UnsupportedJavaScriptRuntime>(cut.FindComponent<ChildComponent>().Instance.JS);
+    }
+
+    private sealed class UnsupportedJavaScriptRuntime : IJSRuntime
+    {
+        public ValueTask<TValue> InvokeAsync<TValue>(string identifier, object?[]? args) => throw new InvalidOperationException();
+
+        public ValueTask<TValue> InvokeAsync<TValue>(string identifier, CancellationToken cancellationToken, object?[]? args) => throw new InvalidOperationException();
+    }
+}
