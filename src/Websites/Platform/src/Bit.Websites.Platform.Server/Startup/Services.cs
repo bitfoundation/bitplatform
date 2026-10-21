@@ -157,6 +157,7 @@ public static class Services
         services.AddSingleton<McpVersions>();
         services.AddSingleton<CodebaseMemoryCli>();
         services.AddSingleton<McpProxyService>();
+        services.AddSingleton<McpReleasesTool>();
         services.AddHostedService<McpVersionsService>();
 
         services.AddScoped<McpFeedbackTool>();

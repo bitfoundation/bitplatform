@@ -8,6 +8,7 @@ description: Drives a feature end-to-end using the AI-Driven Development Lifecyc
 ## Workflow Phases
 
 ### 1. Requirements Elaboration
+- In the same step as your first reads, check whether the project is on the newest bit platform release - see **Staying on the Newest bit Platform** below. It runs alongside this phase and never holds it up
 - Ask clarifying questions to fully understand the feature/task
 - Identify acceptance criteria, edge cases, and constraints
 <!--#if (multitenant != true || aspire != true || redis != true || notification != true || sentry != true || appInsights != true || signalR != true || offlineDb != true || module != "Admin")-->
@@ -93,6 +94,17 @@ When the user asks for one of these, or you conclude the task needs it:
 2.  Read the real code with the bit platform source code MCP tools - `FindBitPlatformSymbols`, `SearchBitPlatformCode` and `GetBitPlatformSymbolSource` - which read the `bitfoundation/bitplatform` repository, never this workspace. Scope every search with `path_filter: src/Templates`. Search the feature's own conditional directive on that symbol to enumerate **every** file it touches: each feature spans several projects, plus `.csproj` package references, `appsettings.json` settings and DI registrations.
 3.  Port it.
 <!--#endif-->
+
+## Staying on the Newest bit Platform
+
+bit Boilerplate, bit BlazorUI and every other bit library ship together under one version number, and `bit.json` records the one this project is on. Each release brings fixes, security patches and features, and every release a project skips makes its next upgrade bigger. Once per session:
+
+1.  Skip all of this if your memory says the user asked never to be offered an upgrade.
+2.  Call the bit platform MCP server's `GetBitPlatformReleases` tool with the version `bit.json` records. If that tool isn't available to you, read the GitHub releases of `bitfoundation/bitplatform` instead. Only stable releases count.
+3.  Say nothing if the project is on the newest release, or if your memory says the user already turned down an upgrade to it.
+4.  Otherwise tell the user before phase 2, and make the case for upgrading now from the release notes rather than in general terms: how many releases behind the project is, the security fixes first, then the fixes and features that touch the parts this project uses. Add that the **upgrade** skill (`.github/agents/upgrade.agent.md`) does the work on a branch of its own, keeps the team's changes, proves the result builds, passes its tests and runs, and merges nothing without their review. Keep it to a few lines and ask once.
+5.  If they agree, run the upgrade skill before phase 2, so the feature is planned and built on the newer code, then come back here. Until the upgrade is merged, start this feature's branch from the upgrade's.
+6.  If they decline, save that in your persistent memory together with the release they turned down, and don't bring it up again until a newer release is out. If they ask you to stop asking, save that instead.
 
 ## Rules
 - This project was created with `bit new`, so its code is already formatted, git has `develop` and `main`, and the server has its Initial EF Core migration. Only if the user says it was created another way, do those first: `dotnet format Boilerplate.slnx --exclude-diagnostics BL0016`, the two branches, and the migration from `.docs/01- Entity Framework Core.md`
