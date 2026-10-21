@@ -126,7 +126,7 @@ public sealed class PublishResult(string directory, int exitCode, string output)
     public AssemblyMetadata ReadTrimmedAssembly(string package) => AssemblyMetadata.Read(Path.Combine(Directory, "trimmed", package + ".dll"));
 
     /// <summary>A package's assembly as its Release build wrote it - the one a publish of the source tree trims.</summary>
-    public static AssemblyMetadata ReadUntrimmedAssembly(string package) => AssemblyMetadata.Read(Path.Combine(Publisher.Root, package, "bin", "Release", "net10.0", package + ".dll"));
+    public static AssemblyMetadata ReadUntrimmedAssembly(string package) => AssemblyMetadata.Read(Path.Combine(Publisher.Root, package, "bin", "Release", "net11.0", package + ".dll"));
 
     /// <summary>
     /// The JavaScript initializers a Blazor Web App's publish lists for Blazor to import as it starts (its modules manifest),
