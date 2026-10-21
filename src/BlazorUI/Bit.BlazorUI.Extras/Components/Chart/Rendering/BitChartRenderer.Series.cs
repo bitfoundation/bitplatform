@@ -262,6 +262,7 @@ public sealed partial class BitChartRenderer
                     DataIndex = di,
                     CenterX = IsVertical ? cx : (rect.X + rect.Width / 2),
                     CenterY = IsVertical ? (rect.Y + rect.Height / 2) : cy,
+                    GroupCenter = centerAlong,
                     Value = tooltipVal,
                     SeriesLabel = ds.Label,
                     Tooltip = new BitChartTooltipInfo

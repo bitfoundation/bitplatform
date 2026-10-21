@@ -12,6 +12,12 @@ public sealed class BitChartDataElement
     public double CenterX { get; init; }
     public double CenterY { get; init; }
     /// <summary>
+    /// Where along the index axis the renderer centered the group this element is drawn in, for an element drawn
+    /// beside that position rather than on it - a bar of a group sits in a slot of its index's band. Null for an
+    /// element that sits where its centroid says, on its index or at its own x.
+    /// </summary>
+    internal double? GroupCenter { get; init; }
+    /// <summary>
     /// The shape drawn on top of this element while it is active (hovered or keyboard-focused). It is
     /// precomputed by the renderer with the dataset's hover styling - and with
     /// <see cref="BitChartScriptableContext.Active"/> set - so hovering never costs a re-layout.

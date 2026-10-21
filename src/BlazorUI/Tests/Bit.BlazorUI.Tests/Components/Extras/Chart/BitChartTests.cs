@@ -1033,6 +1033,105 @@ public class BitChartTests : BunitTestContext
         CollectionAssert.Contains(chip, "Feb", string.Join("|", chip));
     }
 
+    // A bar of a group sits beside its category's middle (#14043): the crosshair marks the category, so it stays put from
+    // bar to bar of the group and both the line and its chip land on the category's tick label - hovered through the hit
+    // band between the bars, which stands for the category's first bar, or through a bar of an index interaction, on
+    // vertical and on horizontal bars alike.
+    [TestMethod]
+    [DataRow(".bit-cht-band", BitChartInteractionMode.Nearest, BitChartIndexAxis.X)]
+    [DataRow(".bit-cht-data > g", BitChartInteractionMode.Index, BitChartIndexAxis.X)]
+    [DataRow(".bit-cht-band", BitChartInteractionMode.Nearest, BitChartIndexAxis.Y)]
+    [DataRow(".bit-cht-data > g", BitChartInteractionMode.Index, BitChartIndexAxis.Y)]
+    public void TheCrosshairOfABarShouldMarkItsCategory(string hovered, BitChartInteractionMode mode, BitChartIndexAxis indexAxis)
+    {
+        var component = RenderChart(options: new BitChartOptions { IndexAxis = indexAxis, Interaction = { Mode = mode } });
+        // The coordinate along the index axis: x on a vertical-bar chart, y on a horizontal one.
+        string along = indexAxis == BitChartIndexAxis.X ? "x" : "y";
+        var lines = new Dictionary<string, HashSet<double>>();
+        var chips = new Dictionary<string, HashSet<double>>();
+
+        for (int i = 0; i < component.FindAll(hovered).Count; i++)
+        {
+            component.FindAll(hovered)[i].MouseEnter();
+
+            var chip = component.Find(".bit-cht-hover text");
+            var category = chip.TextContent;
+            lines.TryAdd(category, []);
+            lines[category].Add(Coordinate(component.Find(".bit-cht-hover line").GetAttribute(along + "1")));
+            chips.TryAdd(category, []);
+            chips[category].Add(Coordinate(chip.GetAttribute(along)));
+        }
+
+        Assert.AreEqual(3, lines.Count);
+        foreach (var (category, positions) in lines)
+        {
+            Assert.AreEqual(1, positions.Count, $"{category}: {string.Join(", ", positions)}");
+            var tick = Coordinate(component.FindAll(".bit-cht-bg text").Single(t => t.TextContent == category).GetAttribute(along));
+            Assert.AreEqual(tick, positions.Single(), 0.01, category);
+            Assert.AreEqual(tick, chips[category].Single(), 0.01, category);
+        }
+    }
+
+    // Only a bar is drawn beside its index's middle (#14043): a point placed by its own x - one of a dataset's explicit
+    // points, listed out of order here so that a point's index is not its category - keeps the crosshair on itself.
+    [TestMethod]
+    [DataRow(BitChartType.Line)]
+    [DataRow(BitChartType.Scatter)]
+    public void TheCrosshairOfAPointPlacedByItsOwnXShouldStayOnIt(BitChartType datasetType)
+    {
+        var data = new BitChartData
+        {
+            Labels = { "A", "B", "C" },
+            Datasets =
+            {
+                new BitChartDataset
+                {
+                    Type = datasetType,
+                    Points = [new BitChartDataPoint(2, 5), new BitChartDataPoint(0, 1), new BitChartDataPoint(1, 3)]
+                }
+            }
+        };
+
+        AssertTheCrosshairStaysOnEveryPoint(RenderChart(BitChartType.Line, data,
+            new BitChartOptions { Interaction = { Mode = BitChartInteractionMode.Index } }));
+    }
+
+    // A line bound to a secondary x axis is placed by that axis rather than at its index's category - which, beside bars,
+    // is the middle of the category's band - so it keeps the crosshair on itself too.
+    [TestMethod]
+    public void TheCrosshairOfAPointOnASecondaryXAxisShouldStayOnIt()
+    {
+        var data = new BitChartData
+        {
+            Labels = { "Jan", "Feb", "Mar" },
+            Datasets =
+            {
+                new BitChartDataset { Label = "Alpha", Data = { 1, 2, 3 } },
+                new BitChartDataset { Label = "Beta", Type = BitChartType.Line, XAxisID = "x2", Data = { 3, 2, 1 } }
+            }
+        };
+
+        AssertTheCrosshairStaysOnEveryPoint(RenderChart(BitChartType.Bar, data,
+            new BitChartOptions { Interaction = { Mode = BitChartInteractionMode.Index } }));
+    }
+
+    private static void AssertTheCrosshairStaysOnEveryPoint(IRenderedComponent<BitChart> component)
+    {
+        int count = component.FindAll(".bit-cht-data > g circle").Count;
+        Assert.AreEqual(3, count);
+
+        for (int i = 0; i < count; i++)
+        {
+            var point = component.FindAll(".bit-cht-data > g circle")[i];
+            double cx = Coordinate(point.GetAttribute("cx"));
+            point.ParentElement!.MouseEnter();
+
+            Assert.AreEqual(cx, Coordinate(component.Find(".bit-cht-hover line").GetAttribute("x1")), 0.01, $"point {i}");
+        }
+    }
+
+    private static double Coordinate(string? value) => double.Parse(value!, CultureInfo.InvariantCulture);
+
     [TestMethod]
     public void TheCrosshairCanBeTurnedOff()
     {

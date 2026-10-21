@@ -895,20 +895,25 @@ public partial class BitChart : BitComponentBase
         if (indexMode && interaction.Crosshair && _scene.PlotArea is { } pa)
         {
             bool horizontalIndex = _config.Options.IndexAxis == BitChartIndexAxis.Y;
+            // The crosshair marks the hovered index, not the hovered element: a bar of a group sits beside its
+            // index's middle, so following the bar would move the line and the chip from bar to bar while the
+            // active index stays the same, and put the chip beside its category's tick label. Any other element
+            // sits where its centroid says - on its index, or at its own x - and is followed as it is.
+            double at = e.GroupCenter ?? (horizontalIndex ? e.CenterY : e.CenterX);
             _hoverNodes.Add(horizontalIndex
                 ? new BitChartSvgLine
                 {
-                    X1 = pa.Left, Y1 = e.CenterY, X2 = pa.Right, Y2 = e.CenterY,
+                    X1 = pa.Left, Y1 = at, X2 = pa.Right, Y2 = at,
                     Stroke = interaction.CrosshairColor, StrokeWidth = 1, Dash = "4,3"
                 }
                 : new BitChartSvgLine
                 {
-                    X1 = e.CenterX, Y1 = pa.Top, X2 = e.CenterX, Y2 = pa.Bottom,
+                    X1 = at, Y1 = pa.Top, X2 = at, Y2 = pa.Bottom,
                     Stroke = interaction.CrosshairColor, StrokeWidth = 1, Dash = "4,3"
                 });
 
             if (interaction.CrosshairLabel && e.Tooltip.Title is { Length: > 0 } indexLabel)
-                AddCrosshairLabel(indexLabel, e, pa, horizontalIndex);
+                AddCrosshairLabel(indexLabel, at, pa, horizontalIndex);
         }
 
         // The renderer precomputed each element's hover appearance, so highlighting costs no re-layout.
@@ -920,9 +925,9 @@ public partial class BitChart : BitComponentBase
     /// <summary>
     /// Draws the active index in a chip where the crosshair meets the index axis. It reuses the tooltip
     /// colors so the two read as one piece of chrome, and is clamped into the plot so it cannot spill
-    /// out at either end.
+    /// out at either end. <paramref name="at"/> is the crosshair's position along the index axis.
     /// </summary>
-    private void AddCrosshairLabel(string text, BitChartDataElement e, BitChartArea pa, bool horizontalIndex)
+    private void AddCrosshairLabel(string text, double at, BitChartArea pa, bool horizontalIndex)
     {
         var t = _config.Options.Plugins.Tooltip;
         double fontSize = t.BodyFont.Size;
@@ -935,11 +940,11 @@ public partial class BitChart : BitComponentBase
             // A chip wider or taller than the room it is clamped into would leave Math.Clamp with a
             // minimum above its maximum, so each upper bound is held at or above its lower one.
             cx = Math.Clamp(pa.Left - w / 2 - 4, w / 2, Math.Max(w / 2, _vw - w / 2));
-            cy = Math.Clamp(e.CenterY, pa.Top + h / 2, Math.Max(pa.Top + h / 2, pa.Bottom - h / 2));
+            cy = Math.Clamp(at, pa.Top + h / 2, Math.Max(pa.Top + h / 2, pa.Bottom - h / 2));
         }
         else
         {
-            cx = Math.Clamp(e.CenterX, pa.Left + w / 2, Math.Max(pa.Left + w / 2, pa.Right - w / 2));
+            cx = Math.Clamp(at, pa.Left + w / 2, Math.Max(pa.Left + w / 2, pa.Right - w / 2));
             cy = Math.Min(pa.Bottom + h / 2 + 3, _vh - h / 2);
         }
 
