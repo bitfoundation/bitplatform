@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Routing;
 using Microsoft.AspNetCore.Components.Web;
@@ -1677,14 +1678,20 @@ public partial class Balette : ComponentBase, IAsyncDisposable
 
     // ---- JS plumbing ---------------------------------------------------------------------------------------
 
-    private object BuildJsOptions(List<string> toggles) => new
-    {
-        toggleShortcuts = toggles,
-        commandShortcuts = GlobalShortcutStrings(),
-        suppressInEditable = Options.SuppressShortcutsInEditableElements,
-        sequenceTimeout = Options.SequenceTimeoutMs,
-        vimBindings = _syncedVim,
-    };
+    // A named type is required here (not an anonymous type): the trimmer strips anonymous type constructor
+    // parameter names, which System.Text.Json needs even to serialize. JsOptions is only ever constructed
+    // (never read) from C#, so without this hint the trimmer would also strip its constructor parameter
+    // names and its property getters, failing the init call or silently sending an empty object instead.
+    [DynamicDependency(DynamicallyAccessedMemberTypes.PublicProperties | DynamicallyAccessedMemberTypes.PublicConstructors, typeof(JsOptions))]
+    private JsOptions BuildJsOptions(List<string> toggles) => new(
+        toggles,
+        GlobalShortcutStrings(),
+        Options.SuppressShortcutsInEditableElements,
+        Options.SequenceTimeoutMs,
+        _syncedVim);
+
+    // The options sent to the browser layer's init; serialized to camelCase by the JS interop serializer.
+    private sealed record JsOptions(List<string> ToggleShortcuts, List<string> CommandShortcuts, bool SuppressInEditable, int SequenceTimeout, bool VimBindings);
 
     private List<string> ToggleShortcutStrings()
     {

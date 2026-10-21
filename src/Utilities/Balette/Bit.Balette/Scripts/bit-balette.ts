@@ -21,7 +21,7 @@ interface DotNetObjectReference {
     invokeMethodAsync(method: string, ...args: unknown[]): Promise<unknown>;
 }
 
-/** The options Balette.razor.cs sends to `init` (camelCase JSON of an anonymous object). */
+/** The options Balette.razor.cs sends to `init` (camelCase JSON of its JsOptions record). */
 interface BaletteInitOptions {
     toggleShortcuts?: string[] | null;
     commandShortcuts?: string[] | null;
