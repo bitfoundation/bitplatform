@@ -1,5 +1,4 @@
 ﻿using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Routing;
 using Microsoft.AspNetCore.Components.Web;
@@ -50,6 +49,7 @@ public partial class Balette : ComponentBase, IAsyncDisposable
     private bool _selectionReset;
     private bool _syncedVim;
     private string _syncedToggles = string.Empty;
+    private string _syncedShortcuts = string.Empty;
     private bool _inputPending;
     private int _inputVersion;
     private TimeSpan _lastSearchCost;
@@ -229,7 +229,6 @@ public partial class Balette : ComponentBase, IAsyncDisposable
         {
             _lastCommandsParameter = Commands;
             Rebuild();
-            SyncShortcuts();
         }
 
         SyncBrowserOptions();
@@ -256,17 +255,25 @@ public partial class Balette : ComponentBase, IAsyncDisposable
                 _module = await JS.InvokeAsync<IJSObjectReference>("import", "./_content/Bit.Balette/bit-balette.js");
                 _selfRef = DotNetObjectReference.Create(this);
                 var toggles = ToggleShortcutStrings();
+                var shortcuts = GlobalShortcutStrings();
                 _syncedToggles = string.Join('\n', toggles);
+                _syncedShortcuts = string.Join('\n', shortcuts);
                 _syncedVim = EffectiveVim;
-                _handle = await _module.InvokeAsync<IJSObjectReference>("init", _dialogEl, _selfRef, BuildJsOptions(toggles));
-                SyncBrowserOptions(); // parameters set while init was on its way
+                // Plain values rather than one options object: the serializer discovers an object's shape through
+                // reflection, and a trimmed app no longer has the metadata it needs for that.
+                _handle = await _module.InvokeAsync<IJSObjectReference>("init", _dialogEl, _selfRef,
+                    toggles, shortcuts, Options.SuppressShortcutsInEditableElements, Options.SequenceTimeoutMs, _syncedVim);
+                // Parameters set and commands registered while init was on its way.
+                SyncBrowserOptions();
+                SyncShortcuts();
                 _isMac = await _handle.InvokeAsync<bool>("isMac");
                 Service.SetPlatform(_isMac);
                 StateHasChanged();
             }
-            catch (JSException)
+            catch (Exception ex) when (ex is JSException or JSDisconnectedException or OperationCanceledException or InvalidOperationException or NotSupportedException)
             {
-                // Prerendering without JS or module blocked: palette will still render but without hotkeys.
+                // Prerendering without JS, module blocked, circuit gone or the arguments not serializable: palette will
+                // still render but without hotkeys.
             }
         }
 
@@ -356,7 +363,6 @@ public partial class Balette : ComponentBase, IAsyncDisposable
         _declarative.RemoveAll(c => c.Id == command.Id);
         _declarative.Add(command);
         Rebuild();
-        SyncShortcuts();
         _ = InvokeAsync(StateHasChanged);
     }
 
@@ -368,7 +374,6 @@ public partial class Balette : ComponentBase, IAsyncDisposable
         if (_declarative.RemoveAll(c => c.Id == id) > 0)
         {
             Rebuild();
-            SyncShortcuts();
             _ = InvokeAsync(StateHasChanged);
         }
     }
@@ -378,7 +383,6 @@ public partial class Balette : ComponentBase, IAsyncDisposable
     private void OnRegistryChanged() => _ = InvokeAsync(() =>
     {
         Rebuild();
-        SyncShortcuts();
         StateHasChanged();
     });
 
@@ -748,8 +752,8 @@ public partial class Balette : ComponentBase, IAsyncDisposable
     [JSInvokable]
     public Task OnGlobalShortcut(string normalized) => InvokeAsync(async () =>
     {
-        var cmd = _all.FirstOrDefault(c => c.Shortcut is not null && c.GlobalShortcut && c.Shortcut.Normalized == normalized);
-        if (cmd is null || cmd.Disabled || cmd.IsVisible?.Invoke() == false)
+        var cmd = _all.FirstOrDefault(c => ClaimsGlobalShortcut(c) && c.Shortcut!.Normalized == normalized);
+        if (cmd is null)
         {
             return;
         }
@@ -1399,6 +1403,8 @@ public partial class Balette : ComponentBase, IAsyncDisposable
         if (!reuse)
         {
             RefreshSnapshot();
+            // Every snapshot re-evaluates IsVisible, so the global shortcuts follow it as well.
+            SyncShortcuts();
         }
 
         var rows = new List<BaletteRow>();
@@ -1678,21 +1684,6 @@ public partial class Balette : ComponentBase, IAsyncDisposable
 
     // ---- JS plumbing ---------------------------------------------------------------------------------------
 
-    // A named type is required here (not an anonymous type): the trimmer strips anonymous type constructor
-    // parameter names, which System.Text.Json needs even to serialize. JsOptions is only ever constructed
-    // (never read) from C#, so without this hint the trimmer would also strip its constructor parameter
-    // names and its property getters, failing the init call or silently sending an empty object instead.
-    [DynamicDependency(DynamicallyAccessedMemberTypes.PublicProperties | DynamicallyAccessedMemberTypes.PublicConstructors, typeof(JsOptions))]
-    private JsOptions BuildJsOptions(List<string> toggles) => new(
-        toggles,
-        GlobalShortcutStrings(),
-        Options.SuppressShortcutsInEditableElements,
-        Options.SequenceTimeoutMs,
-        _syncedVim);
-
-    // The options sent to the browser layer's init; serialized to camelCase by the JS interop serializer.
-    private sealed record JsOptions(List<string> ToggleShortcuts, List<string> CommandShortcuts, bool SuppressInEditable, int SequenceTimeout, bool VimBindings);
-
     private List<string> ToggleShortcutStrings()
     {
         var toggles = new List<string>();
@@ -1732,8 +1723,15 @@ public partial class Balette : ComponentBase, IAsyncDisposable
         }
     }
 
-    private List<string> GlobalShortcutStrings() => AllCommands()
-        .Where(c => c.Shortcut is not null && c.GlobalShortcut)
+    // Only a command that can run now: the browser layer claims a matched key before .NET sees it, so the shortcut of a
+    // disabled or hidden command would swallow the key and run nothing.
+    private static bool ClaimsGlobalShortcut(BaletteCommand c)
+        => c is { Shortcut: not null, GlobalShortcut: true, Disabled: false } && c.IsVisible?.Invoke() != false;
+
+    // From the snapshot, one command per id: OnGlobalShortcut looks the command up there, so a shortcut of a duplicate
+    // it never finds must not be claimed either.
+    private List<string> GlobalShortcutStrings() => _all
+        .Where(ClaimsGlobalShortcut)
         .Select(c => c.Shortcut!.Normalized)
         .Distinct(StringComparer.Ordinal)
         .ToList();
@@ -1745,7 +1743,13 @@ public partial class Balette : ComponentBase, IAsyncDisposable
             return;
         }
 
-        InvokeInBackground("setCommandShortcuts", GlobalShortcutStrings());
+        var shortcuts = GlobalShortcutStrings();
+        var key = string.Join('\n', shortcuts);
+        if (key != _syncedShortcuts)
+        {
+            _syncedShortcuts = key;
+            InvokeInBackground("setCommandShortcuts", shortcuts);
+        }
     }
 
     private void InvokeInBackground(string identifier, object argument)
