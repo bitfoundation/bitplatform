@@ -174,6 +174,11 @@
     <div class="box"><BitChart Id="cht-rtl" Dir="BitDir.Rtl" Type="BitChartType.Bar" Data="_barData" Options="LegendAt(BitPlacement.Start)" /></div>
     <div class="box"><BitChart Id="cht-ltr-start" Type="BitChartType.Bar" Data="_barData" Options="LegendAt(BitPlacement.Start)" /></div>
     <div class="box" dir="rtl"><BitChart Id="cht-rtl-inherited" Type="BitChartType.Bar" Data="_barData" Options="LegendAt(BitPlacement.Start)" /></div>
+    <div class="box"><BitChart @ref="_rtlLabelsChart" Id="cht-rtl-labels" Dir="BitDir.Rtl" Type="BitChartType.Line" Data="_rtlLabelsData" Options="RtlLabels()" /></div>
+    <div class="box" dir="rtl"><BitChart Id="cht-rtl-labels-inherited" Type="BitChartType.Line" Data="_rtlLabelsData" Options="RtlLabels()" /></div>
+    @* The exported file, in a right-to-left page of its own that has none of the chart's stylesheet. *@
+    <button id="btn-rtl-svg" @onclick="EmbedRtlLabelsSvg">ToSvgStringAsync into a right-to-left page</button>
+    <iframe id="rtl-svg-frame" class="box" style="height: 480px; border: 0;" title="The exported chart" srcdoc="@_rtlLabelsSvgPage"></iframe>
 </E2ESection>
 
 <E2ESection Id="motion" Title="Animation & reduced motion">
@@ -306,6 +311,17 @@
         }
     };
 
+    // Long values in Persian on a left and a right axis, the labels of a right-to-left app (#14044).
+    private readonly BitChartData _rtlLabelsData = new()
+    {
+        Labels = { "فروردین", "اردیبهشت", "خرداد", "تیر" },
+        Datasets =
+        {
+            new BitChartDataset { Label = "فروش", Data = [12000, 25000, 18000, 40000], BorderColor = "rgb(0, 128, 0)" },
+            new BitChartDataset { Label = "سهم", Data = [20, 45, 30, 60], BorderColor = "rgb(0, 0, 255)", YAxisID = "y1" }
+        }
+    };
+
     private readonly BitChartData _emptyData = new();
 
     private readonly BitChartData _zoomData = new()
@@ -361,6 +377,9 @@
     private string? _csv;
     private string? _svgString;
     private string? _base64;
+
+    private BitChart _rtlLabelsChart = default!;
+    private string? _rtlLabelsSvgPage;
 
     private bool _loading = true;
 
@@ -423,6 +442,30 @@
         Animation = new() { Animate = false },
         Plugins = new BitChartPluginOptions { Legend = new BitChartLegendOptions { Placement = placement } }
     };
+
+    private static BitChartOptions RtlLabels() => new()
+    {
+        Animation = new() { Animate = false },
+        Scales =
+        {
+            ["y"] = new BitChartScaleOptions
+            {
+                Id = "y", BeginAtZero = true,
+                Ticks = new() { Callback = (v, _) => $"{v.ToString("N0", System.Globalization.CultureInfo.InvariantCulture)} میلیون" }
+            },
+            ["y1"] = new BitChartScaleOptions
+            {
+                Id = "y1", Placement = BitPlacement.Right, BeginAtZero = true,
+                Ticks = new() { Callback = (v, _) => $"{v.ToString(System.Globalization.CultureInfo.InvariantCulture)} درصد" }
+            }
+        }
+    };
+
+    private async Task EmbedRtlLabelsSvg()
+    {
+        var svg = await _rtlLabelsChart.ToSvgStringAsync();
+        _rtlLabelsSvgPage = $"<!doctype html><html dir=\"rtl\"><body style=\"margin: 0;\">{svg}</body></html>";
+    }
 
     private static BitChartOptions StaticLegend() => new()
     {

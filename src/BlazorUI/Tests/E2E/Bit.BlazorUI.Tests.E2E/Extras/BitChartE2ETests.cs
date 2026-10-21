@@ -852,6 +852,19 @@ public class BitChartE2ETests : E2ETestBase
     }
 
     [TestMethod]
+    public async Task Rtl_KeepsTheValuesBesideTheirAxisReadingRightToLeft()
+    {
+        await OpenAsync(Route);
+
+        await AssertValuesBesideTheirAxisAsync(Page.Locator("#cht-rtl-labels svg.bit-cht-svg"), "Dir=Rtl");
+        await AssertValuesBesideTheirAxisAsync(Page.Locator("#cht-rtl-labels-inherited svg.bit-cht-svg"), "inherited rtl");
+
+        // The exported file keeps them there in a right-to-left page of its own, which has none of the chart's stylesheet.
+        await Page.Locator("#btn-rtl-svg").ClickAsync();
+        await AssertValuesBesideTheirAxisAsync(Page.FrameLocator("#rtl-svg-frame").Locator("svg.bit-cht-svg"), "exported");
+    }
+
+    [TestMethod]
     public async Task ReducedMotion_DrawsTheChartAtOnceAndForceAnimationAnimates()
     {
         await OpenAsync(Route);
@@ -943,6 +956,45 @@ public class BitChartE2ETests : E2ETestBase
             const ox = box.left + (box.width - vb.width * k) / 2, oy = box.top + (box.height - vb.height * k) / 2;
             return [ox + r.x.baseVal.value * k, oy + r.y.baseVal.value * k, r.width.baseVal.value * k, r.height.baseVal.value * k];
         }");
+    }
+
+    // The values of the two y axes of an RTL labels chart, a number followed by a Persian word (#14044): those of the
+    // left axis end before the plot starts, those of the right one start after it ends, and each reads right to left,
+    // its number - the first thing it says - on the right of its word.
+    private static async Task AssertValuesBesideTheirAxisAsync(ILocator svg, string name)
+    {
+        // [the plot's left edge, its right edge], then a row per value: [its axis (0 left, 1 right), its left edge, its
+        // right edge] in the user units of the SVG, and [the middle of its first character, the middle of its last one]
+        // on the screen. The characters are measured through a Range, which every engine places where they are drawn:
+        // WebKit's getExtentOfChar reports them where they would be before the bidi reordering.
+        var rows = await svg.EvaluateAsync<double[][]>(@"svg => {
+            const clip = svg.querySelector('defs clipPath rect');
+            const rows = [[clip.x.baseVal.value, clip.x.baseVal.value + clip.width.baseVal.value]];
+            for (const t of svg.querySelectorAll('text')) {
+                const axis = t.textContent.endsWith('میلیون') ? 0 : t.textContent.endsWith('درصد') ? 1 : -1;
+                if (axis < 0) continue;
+                const text = t.firstChild, box = t.getBBox(), middle = (start, end) => {
+                    const range = t.ownerDocument.createRange();
+                    range.setStart(text, start);
+                    range.setEnd(text, end);
+                    const rect = range.getBoundingClientRect();
+                    return rect.x + rect.width / 2;
+                };
+                rows.push([axis, box.x, box.x + box.width, middle(0, 1), middle(text.length - 1, text.length)]);
+            }
+            return rows;
+        }");
+        var (plotLeft, plotRight) = (rows[0][0], rows[0][1]);
+        var left = rows.Skip(1).Where(r => r[0] < 0.5).ToArray();
+        var right = rows.Skip(1).Where(r => r[0] > 0.5).ToArray();
+
+        Assert.IsTrue(left.Length > 1 && right.Length > 1, $"{name}: the values of both axes are drawn");
+        foreach (var value in left)
+            Assert.IsTrue(value[2] <= plotLeft + 0.5, $"{name}: a value of the left axis runs to {value[2]:0.#}, into the plot that starts at {plotLeft:0.#}");
+        foreach (var value in right)
+            Assert.IsTrue(value[1] >= plotRight - 0.5, $"{name}: a value of the right axis starts at {value[1]:0.#}, inside the plot that ends at {plotRight:0.#}");
+        foreach (var value in left.Concat(right))
+            Assert.IsTrue(value[3] > value[4], $"{name}: a value reads left to right, its number on the left of its word");
     }
 
     private ILocator Elements(string id, string shape) => Page.Locator($"#{id} g.bit-cht-data > g.bit-cht-el > {shape}");

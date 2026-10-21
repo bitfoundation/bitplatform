@@ -107,6 +107,17 @@ public class BitChartStylesheetTests
         CollectionAssert.AreEqual(Array.Empty<string>(), sideCompound.Matches(stylesheet).Select(m => m.Value).ToArray());
     }
 
+    [TestMethod]
+    public void BitChartShouldLayItsLabelsOutLeftToRightInEitherDirection()
+    {
+        // The renderer places every label of the plot as left-to-right text; an inherited right-to-left direction swaps
+        // the sides start and end fall on and drew the axis values over the data (#14044). Plaintext keeps each label
+        // reading in the direction of its own first letter.
+        var svg = SourceFiles.GetScssBlock(ReadStylesheet(), ".bit-cht-svg {");
+
+        StringAssert.Contains(svg, "    text {\n        direction: ltr;\n        unicode-bidi: plaintext;\n    }");
+    }
+
     private static string Normalize(string name)
         => name.StartsWith("--bit-Chart-series-color-", StringComparison.Ordinal) ? "--bit-Chart-series-color-N" : name;
 
