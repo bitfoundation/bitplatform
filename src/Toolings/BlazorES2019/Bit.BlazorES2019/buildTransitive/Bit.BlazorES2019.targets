@@ -16,5 +16,11 @@
             <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
             <Link>wwwroot\_framework\%(Filename)%(Extension)</Link>
         </Content>
+        <Content Remove="$(_BitBlazorES2019ContentFilesDir)net11.0/wwwroot/_framework/*.js" Condition="$(TargetFramework.Contains('net11.0'))" />
+        <Content Include="$(_BitBlazorES2019ContentFilesDir)net11.0/wwwroot/_framework/*.js" Condition="$(TargetFramework.Contains('net11.0'))">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+            <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+            <Link>wwwroot\_framework\%(Filename)%(Extension)</Link>
+        </Content>
     </ItemGroup>
 </Project>

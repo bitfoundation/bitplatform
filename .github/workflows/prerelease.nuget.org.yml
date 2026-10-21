@@ -78,6 +78,23 @@ jobs:
         cp aspnetcore/src/Components/Web.JS/dist/Release/blazor.*.js src/Toolings/BlazorES2019/wwwroot.net10/
         rm -rf aspnetcore
 
+    - name: Generate ES2019 based blazor.*.js files for .NET 11
+      run: |
+        git clone https://github.com/dotnet/aspnetcore.git
+        cd aspnetcore
+        git switch release/11.0
+        git submodule update --init --recursive
+        sed -i 's/"target": "ES2024"/"target": "ES2019"/' src/Components/Shared.JS/tsconfig.json
+        npm install
+        npm run-script build
+        cd src/Components/Web.JS
+        npm install
+        npm run-script build:production
+        cd ../../../../
+        mkdir -p src/Toolings/BlazorES2019/wwwroot.net11/
+        cp aspnetcore/src/Components/Web.JS/dist/Release/blazor.*.js aspnetcore/src/Components/Web.JS/dist/Release/_framework/blazor.*.js src/Toolings/BlazorES2019/wwwroot.net11/
+        rm -rf aspnetcore
+
     - name: dotnet pack BlazorES2019
       run: |
           dotnet build src/Toolings/BlazorES2019/Bit.BlazorES2019/Bit.BlazorES2019.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false

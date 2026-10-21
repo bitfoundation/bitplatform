@@ -5,6 +5,7 @@
         <PackageVersion Include="Bit.Butil" Version="11.0.0-pre-10" />
         <PackageVersion Include="Bit.Brouter" Version="11.0.0-pre-10" />
         <PackageVersion Include="Bit.BlazorUI" Version="11.0.0-pre-10" />
+        <PackageVersion Include="Bit.BlazorES2019" Version="11.0.0-pre-10" />
         <PackageVersion Include="Bit.BlazorUI.Icons" Version="11.0.0-pre-10" />
         <PackageVersion Include="Bit.BlazorUI.Assets" Version="11.0.0-pre-10" />
         <PackageVersion Include="Bit.BlazorUI.Extras" Version="11.0.0-pre-10" />
