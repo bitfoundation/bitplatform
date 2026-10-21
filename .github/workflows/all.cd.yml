@@ -30,6 +30,10 @@ on:
         description: Bit packages of the latest Prerelease nuget packages run instead of nuget.org (AdminPanel, Sales, Todo, and the platform and sales websites)
         type: boolean
         default: false
+      windows_stores:
+        description: For WinGet and the Microsoft Store, sign every file of the Windows apps, keep their installers at a URL of their own version and submit that version to both (AdminPanel, Sales, Todo and the Blazor UI demo)
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -181,6 +185,7 @@ jobs:
       windows: ${{ inputs.windows }}
       android: ${{ inputs.android }}
       ios: ${{ inputs.ios }}
+      windows_stores: ${{ inputs.windows_stores }}
 
   sales_module_demo:
     name: sales module demo
@@ -195,6 +200,7 @@ jobs:
       server: ${{ inputs.server }}
       windows: ${{ inputs.windows }}
       prerelease_packages: ${{ inputs.prerelease_packages }}
+      windows_stores: ${{ inputs.windows_stores }}
 
   admin_sample:
     name: admin sample
@@ -212,6 +218,7 @@ jobs:
       android: ${{ inputs.android }}
       ios: ${{ inputs.ios }}
       prerelease_packages: ${{ inputs.prerelease_packages }}
+      windows_stores: ${{ inputs.windows_stores }}
 
   todo_sample:
     name: todo sample
@@ -229,3 +236,4 @@ jobs:
       android: ${{ inputs.android }}
       ios: ${{ inputs.ios }}
       prerelease_packages: ${{ inputs.prerelease_packages }}
+      windows_stores: ${{ inputs.windows_stores }}

@@ -1,0 +1,61 @@
+name: Submit to WinGet
+description: Sends one version of a Windows app to the WinGet community repository, as a new package the first time and as an update after that.
+
+inputs:
+  id:
+    description: The WinGet package identifier, such as BitPlatform.Todo.
+    required: true
+  version:
+    description: The app's version.
+    required: true
+  installer:
+    description: Path of the installer the job built.
+    required: true
+  installer-url:
+    description: The URL of that installer, whose file must never change.
+    required: true
+  architecture:
+    description: x64 or x86.
+    required: true
+  product-code:
+    description: The key of the app's Add/Remove Programs entry.
+    required: true
+  name:
+    description: The package's name.
+    required: true
+  short-description:
+    description: One sentence about the app.
+    required: true
+  package-url:
+    description: The app's web page.
+    required: true
+  privacy-url:
+    description: The app's privacy policy.
+    default: ''
+  token:
+    description: A classic GitHub token with the public_repo scope. The pull request comes from its owner's fork of winget-pkgs.
+    required: true
+
+runs:
+  using: composite
+
+  steps:
+
+    - name: Submit to WinGet
+      shell: pwsh
+      env:
+        WINGET_CREATE_GITHUB_TOKEN: ${{ inputs.token }}
+        DOTNET_ROLL_FORWARD: Major
+      run: >
+        & "${{ github.action_path }}/submit-to-winget.ps1"
+        -Id "${{ inputs.id }}"
+        -Version "${{ inputs.version }}"
+        -Installer "${{ inputs.installer }}"
+        -InstallerUrl "${{ inputs.installer-url }}"
+        -Architecture "${{ inputs.architecture }}"
+        -ProductCode "${{ inputs.product-code }}"
+        -Name "${{ inputs.name }}"
+        -ShortDescription "${{ inputs.short-description }}"
+        -PackageUrl "${{ inputs.package-url }}"
+        -PrivacyUrl "${{ inputs.privacy-url }}"
+        -WorkFolder "${{ runner.temp }}/winget"
