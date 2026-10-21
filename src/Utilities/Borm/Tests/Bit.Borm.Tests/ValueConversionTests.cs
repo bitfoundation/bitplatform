@@ -87,26 +87,92 @@ public class ValueConverterTests
     }
 
     [TestMethod]
-    public void A_double_reads_as_a_decimal_at_fifteen_significant_digits()
+    public void A_number_reads_as_the_decimal_it_is_written_as()
     {
         // From .NET 11 the runtime's own conversion turns 0.3 into 0.2999999999999999888977697537.
-        Assert.AreEqual(0.3m, BormNumber.FromDouble(0.3));
-        Assert.AreEqual(0.3m, BormNumber.FromDouble(0.1 + 0.2));
-        Assert.AreEqual(1234567.89m, BormNumber.FromDouble(1234567.89));
-        Assert.AreEqual(-123.4567m, BormNumber.FromDouble(-123.4567));
-        Assert.AreEqual(0m, BormNumber.FromDouble(1e-30));
-        Assert.AreEqual(0.1m, BormNumber.FromSingle(0.1f));
+        Assert.AreEqual("0.3", ToDecimal(0.3));
+        Assert.AreEqual("1234567.89", ToDecimal(1234567.89));
+        Assert.AreEqual("-123.4567", ToDecimal(-123.4567));
+        Assert.AreEqual("0.1", ToDecimal(0.1f));
+        Assert.AreEqual("100000000000000000000", ToDecimal(1e20));
+        // Distinct doubles and floats stay distinct; up to .NET 10 the runtime merged them at 15 and 7 digits.
+        Assert.AreEqual("1000000000000001", ToDecimal(1000000000000001.0));
+        Assert.AreEqual("0.30000000000000004", ToDecimal(0.1 + 0.2));
+        Assert.AreEqual("16777215", ToDecimal(16777215f));
+        // Integers are exact, and a zero is a plain one.
+        Assert.AreEqual("1000000000000001", ToDecimal(1000000000000001L));
+        Assert.AreEqual("18446744073709551615", ToDecimal(ulong.MaxValue));
+        Assert.AreEqual("0", ToDecimal(-0.0));
+        Assert.AreEqual("1.50", ToDecimal(1.50m));
+
+        Assert.IsFalse(BormNumber.TryToDecimal(double.NaN, out _));
+        Assert.IsFalse(BormNumber.TryToDecimal(float.PositiveInfinity, out _));
+        Assert.IsFalse(BormNumber.TryToDecimal(1e-30, out _));
+        Assert.IsFalse(BormNumber.TryToDecimal(7.9228162514264337593543950336e28, out _));
+        Assert.IsFalse(BormNumber.TryToDecimal("0.3", out _));
+
+        static string ToDecimal(object value)
+        {
+            Assert.IsTrue(BormNumber.TryToDecimal(value, out var result));
+            return result.ToString(CultureInfo.InvariantCulture);
+        }
     }
 
     [TestMethod]
-    public void A_double_coerced_to_decimal_is_the_number_it_was_written_as()
+    public void A_double_reads_at_fifteen_digits_only_when_asked_to()
+    {
+        Assert.IsTrue(BormNumber.TryToDecimalAtFifteenDigits(0.1 + 0.2, out var rounded));
+        Assert.AreEqual(0.3m, rounded);
+        Assert.IsFalse(BormNumber.TryToDecimalAtFifteenDigits(1e-30, out _));
+        Assert.IsFalse(BormNumber.TryToDecimalAtFifteenDigits(double.NaN, out _));
+    }
+
+    [TestMethod]
+    public void A_number_has_one_canonical_text_whatever_its_type()
+    {
+        Assert.AreEqual("0.1", BormNumber.Canonical(0.1));
+        Assert.AreEqual("0.1", BormNumber.Canonical(0.1f));
+        Assert.AreEqual("0.1", BormNumber.Canonical(0.10m));
+        Assert.AreEqual("5", BormNumber.Canonical(5L));
+        Assert.AreEqual("5", BormNumber.Canonical(5.0));
+        Assert.AreEqual(BormNumber.Canonical(79100000000000000000000000000m), BormNumber.Canonical(7.91e28));
+        Assert.AreNotEqual(BormNumber.Canonical(1000000000000001.0), BormNumber.Canonical(1000000000000002.0));
+        // Too small for decimal to hold, too large, or not a number: the double's own text.
+        Assert.AreEqual("1E-30", BormNumber.Canonical(1e-30));
+        Assert.AreEqual("1E+30", BormNumber.Canonical(1e30));
+        Assert.AreEqual("1E+30", BormNumber.Canonical(1e30f));
+        Assert.AreEqual("NaN", BormNumber.Canonical(double.NaN));
+        Assert.IsNull(BormNumber.Canonical("1"));
+    }
+
+    [TestMethod]
+    public void A_float_widens_to_the_double_it_prints_as()
+    {
+        Assert.AreEqual(0.1, BormNumber.Widen(0.1f));
+        Assert.IsTrue(BormNumber.TryToDouble(0.1f, out var widened));
+        Assert.AreEqual(0.1, widened);
+        Assert.IsTrue(double.IsPositiveInfinity(BormNumber.Widen(float.PositiveInfinity)));
+        Assert.IsTrue(double.IsNaN(BormNumber.Widen(float.NaN)));
+    }
+
+    [TestMethod]
+    public void A_number_coerced_to_decimal_or_double_is_the_number_it_was_written_as()
     {
         Assert.IsTrue(BormValueConverter.TryCoerce(0.3d, typeof(decimal), out var fromDouble));
         Assert.AreEqual(0.3m, fromDouble);
         Assert.IsTrue(BormValueConverter.TryCoerce(0.1f, typeof(decimal?), out var fromFloat));
         Assert.AreEqual(0.1m, fromFloat);
+        Assert.IsTrue(BormValueConverter.TryCoerce(1000000000000001L, typeof(decimal), out var fromLong));
+        Assert.AreEqual(1000000000000001m, fromLong);
+        Assert.IsTrue(BormValueConverter.TryCoerce(0.1f, typeof(double), out var widened));
+        Assert.AreEqual(0.1, widened);
+
         Assert.IsFalse(BormValueConverter.TryCoerce(double.NaN, typeof(decimal), out _));
         Assert.IsFalse(BormValueConverter.TryCoerce(1e30, typeof(decimal), out _));
+        // 2^96: the runtime's cast refuses it, and so does this, rather than rounding it into range.
+        Assert.IsFalse(BormValueConverter.TryCoerce(7.9228162514264337593543950336e28, typeof(decimal), out _));
+        // Too small for decimal to hold: refused, not stored as a zero.
+        Assert.IsFalse(BormValueConverter.TryCoerce(1e-30, typeof(decimal), out _));
     }
 
     [TestMethod]

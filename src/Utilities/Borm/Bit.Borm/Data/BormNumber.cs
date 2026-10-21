@@ -10,6 +10,12 @@ namespace Bit.Borm;
 /// </summary>
 internal static class BormNumber
 {
+    // 2^96, the first magnitude decimal cannot hold. A double states it exactly.
+    private const double DecimalLimit = 79228162514264337593543950336d;
+
+    // 2^53: every whole double below it is an integer a long holds exactly.
+    private const double ExactIntegerLimit = 9007199254740992d;
+
     /// <summary>Attempts to widen <paramref name="value"/> to a <see cref="double"/>.</summary>
     /// <remarks>
     /// Text is read as invariant first and in the ambient culture second, but the invariant pass does
@@ -25,7 +31,7 @@ internal static class BormNumber
                 result = 0;
                 return false;
             case double d: result = d; return true;
-            case float f: result = f; return true;
+            case float f: result = Widen(f); return true;
             case decimal m: result = (double)m; return true;
             case int i: result = i; return true;
             case long l: result = l; return true;
@@ -57,67 +63,99 @@ internal static class BormNumber
     /// <paramref name="value"/> is not a number.
     /// </summary>
     /// <remarks>
-    /// Everything that fits goes through <see cref="decimal"/>, which holds every integer type exactly
-    /// and reads a <see cref="double"/> at the fifteen significant digits it can be trusted to — the
-    /// precision at which <c>0.1</c> is still <c>0.1</c>. Trailing zeros are then dropped, because
-    /// <c>1.0m</c> and <c>1m</c> are one number that decimal merely prints two ways.
+    /// Everything that fits goes through <see cref="TryToDecimal"/>, so a <see cref="double"/> reads as
+    /// the number it prints as and <c>0.1</c> is still <c>0.1</c>. Trailing zeros are then dropped,
+    /// because <c>1.0m</c> and <c>1m</c> are one number that decimal merely prints two ways.
     /// </remarks>
     public static string? Canonical(object? value)
     {
-        decimal m;
-        switch (value)
-        {
-            case decimal dm: m = dm; break;
-            case int i: m = i; break;
-            case long l: m = l; break;
-            case short s: m = s; break;
-            case byte b: m = b; break;
-            case sbyte sb: m = sb; break;
-            case ushort us: m = us; break;
-            case uint ui: m = ui; break;
-            case ulong ul: m = ul; break;
-            case double or float:
-                var d = Convert.ToDouble(value, CultureInfo.InvariantCulture);
-                if (!double.IsFinite(d) || Math.Abs(d) >= 7.9e28) return d.ToString("R", CultureInfo.InvariantCulture);
-                m = FromDouble(d);
-                // Too small for decimal to hold: keep it apart from a genuine zero.
-                if (m == 0 && d != 0) return d.ToString("R", CultureInfo.InvariantCulture);
-                break;
-            default:
-                return null;
-        }
+        if (TryToDecimal(value, out var m))
+            // Dividing by one with the maximum scale normalises the scale away: 1.0m becomes 1m.
+            return (m / 1.0000000000000000000000000000m).ToString(CultureInfo.InvariantCulture);
 
-        // Dividing by one with the maximum scale normalises the scale away: 1.0m becomes 1m.
-        return (m / 1.0000000000000000000000000000m).ToString(CultureInfo.InvariantCulture);
+        // NaN, infinity, or beyond decimal's range or resolution: the value's own round-trip text, which
+        // also keeps one too small for decimal to hold apart from a genuine zero.
+        return value is double or float && TryToDouble(value, out var d) ? d.ToString("R", CultureInfo.InvariantCulture) : null;
     }
 
     /// <summary>
-    /// Reads a <see cref="double"/> as a <see cref="decimal"/> at the fifteen significant digits a double
-    /// can vouch for, so <c>0.3</c> is <c>0.3m</c> on every runtime.
+    /// Reads a boxed CLR number as the <see cref="decimal"/> it is written as: a decimal as it is, every
+    /// integer type exactly, and a <see cref="double"/> or <see cref="float"/> as the shortest decimal
+    /// that reads back as the same value — what it prints as, so <c>0.3</c> is <c>0.3m</c> and
+    /// <c>0.1f</c> is <c>0.1m</c> on every runtime. False for text, for NaN or infinity, beyond decimal's
+    /// range, and for a non-zero value too small for decimal to hold, which would otherwise read as zero.
     /// </summary>
     /// <remarks>
-    /// The runtime's own conversion did this up to .NET 10. From .NET 11 it keeps the double's exact binary
-    /// value instead, and <c>(decimal)0.3</c> is <c>0.2999999999999999888977697537</c> — a different number
-    /// from the one written, so 0.3 stopped being a multiple of 0.1. Every decimal of up to fifteen digits
-    /// comes back from a double unchanged. Like the cast it replaces, this throws for a value beyond
-    /// decimal's range and for NaN or infinity.
+    /// The runtime's own conversion is not that. Up to .NET 10 it rounded a double to fifteen significant
+    /// digits, which made distinct doubles one decimal (<c>1000000000000001.0</c> and
+    /// <c>1000000000000002.0</c> both read as <c>1000000000000000</c>), and a float to seven
+    /// (<c>16777215f</c> read as <c>16777220</c>). From .NET 11 it keeps the double's exact binary value,
+    /// and <c>(decimal)0.3</c> is <c>0.2999999999999999888977697537</c> — a different number from the one
+    /// written, so 0.3 stopped being a multiple of 0.1.
     /// </remarks>
-    public static decimal FromDouble(double value)
+    public static bool TryToDecimal(object? value, out decimal result)
     {
-        Span<char> text = stackalloc char[32];
-        value.TryFormat(text, out var length, "G15", CultureInfo.InvariantCulture);
-        return decimal.Parse(text[..length], NumberStyles.Float, CultureInfo.InvariantCulture);
+        switch (value)
+        {
+            case decimal m: result = m; return true;
+            case int i: result = i; return true;
+            case long l: result = l; return true;
+            case short s: result = s; return true;
+            case byte b: result = b; return true;
+            case sbyte sb: result = sb; return true;
+            case ushort us: result = us; return true;
+            case uint ui: result = ui; return true;
+            case ulong ul: result = ul; return true;
+            // A whole double below 2^53 is an exact integer; only a fraction needs reading as text.
+            case double d when double.IsInteger(d) && Math.Abs(d) < ExactIntegerLimit: result = (long)d; return true;
+            case double d: return TryParseDecimal(d, "R", out result);
+            case float f: return TryParseDecimal(Widen(f), "R", out result);
+            default:
+                result = 0;
+                return false;
+        }
     }
 
     /// <summary>
-    /// <see cref="FromDouble"/> for a <see cref="float"/>, at the seven significant digits the runtime's
-    /// conversion kept for one before .NET 11 — so <c>0.1f</c> is <c>0.1m</c>, not <c>0.100000001490116m</c>.
+    /// Reads a <see cref="double"/> as a <see cref="decimal"/> at the fifteen significant digits every
+    /// double can vouch for, which drops the noise binary arithmetic leaves past them:
+    /// <c>0.1 + 0.2</c> is <c>0.30000000000000004</c>, and reads here as <c>0.3m</c>. False where
+    /// <see cref="TryToDecimal"/> is.
     /// </summary>
-    public static decimal FromSingle(float value)
+    public static bool TryToDecimalAtFifteenDigits(double value, out decimal result)
+        => TryParseDecimal(value, "G15", out result);
+
+    /// <summary>
+    /// Widens a <see cref="float"/> to the <see cref="double"/> of the number it prints as. A plain
+    /// widening keeps the float's binary noise, so <c>0.1f</c> became <c>0.10000000149011612</c> and
+    /// failed a maximum of <c>0.1</c>.
+    /// </summary>
+    public static double Widen(float value)
     {
+        if (!float.IsFinite(value)) return value;
+
+        Span<char> text = stackalloc char[16];
+        value.TryFormat(text, out var length, "R", CultureInfo.InvariantCulture);
+        return double.Parse(text[..length], NumberStyles.Float, CultureInfo.InvariantCulture);
+    }
+
+    private static bool TryParseDecimal(double value, string format, out decimal result)
+    {
+        result = 0;
+        if (!double.IsFinite(value) || Math.Abs(value) >= DecimalLimit) return false;
+
         Span<char> text = stackalloc char[32];
-        value.TryFormat(text, out var length, "G7", CultureInfo.InvariantCulture);
-        return decimal.Parse(text[..length], NumberStyles.Float, CultureInfo.InvariantCulture);
+        value.TryFormat(text, out var length, format, CultureInfo.InvariantCulture);
+        var parsed = decimal.Parse(text[..length], NumberStyles.Float, CultureInfo.InvariantCulture);
+        if (parsed != 0)
+        {
+            result = parsed;
+            return true;
+        }
+
+        // A plain zero: parsing "1E-30" or "-0" leaves a zero carrying a sign or a scale of 28, which
+        // shows wherever the decimal is printed. A non-zero value that rounds to it is no zero at all.
+        return value == 0;
     }
 
     /// <summary>
