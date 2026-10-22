@@ -370,12 +370,17 @@ public static partial class ToolCatalog
                     [
                         PackageManagers.Sudo("bash", "-c", "curl -fsSL https://deb.nodesource.com/setup_lts.x | bash -"),
                         PackageManagers.Sudo("apt-get", "install", "-y", "nodejs")
-                    ]
+                    ],
+                    InstalledExecutables = PackageExecutables
                 };
             }
 
-            return context.PackageManagers.LinuxInstall(Id, title, "nodejs npm", "nodejs npm", "nodejs npm");
+            return context.PackageManagers.LinuxInstall(Id, title, "nodejs npm", "nodejs npm", "nodejs npm") is { } install
+                ? install with { InstalledExecutables = PackageExecutables }
+                : null;
         }
+
+        private static readonly string[] PackageExecutables = ["/usr/bin/node", "/usr/bin/npm", "/usr/bin/npx"];
 
         public override string? ManualInstructions(ToolContext context) => "https://nodejs.org/en/download";
 
