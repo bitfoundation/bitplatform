@@ -128,6 +128,9 @@
     <data name="MaxLengthAttribute_InvalidMaxLength" xml:space="preserve">
     <value>MaxLengthAttribute باید مقدار Length بزرگ‌تر از صفر داشته باشد. برای اینکه مشخص شود رشته یا آرایه می‌تواند بیشترین طول مجاز را داشته باشد، از MaxLength() بدون پارامتر استفاده کنید.</value>
   </data>
+    <data name="MaxLengthAttribute_ValidationError" xml:space="preserve">
+    <value>مقدار {0} باید یک نوع رشته یا لیستی با حداکثر طول "{1}" باشد.</value>
+  </data>
     <data name="MinLengthAttribute_ValidationError" xml:space="preserve">
     <value>مقدار {0} باید یک نوع رشته یا لیستی با حداقل طول "{1}" باشد.</value>
   </data>

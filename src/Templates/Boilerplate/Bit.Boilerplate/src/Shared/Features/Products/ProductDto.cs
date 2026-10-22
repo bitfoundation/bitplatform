@@ -15,7 +15,7 @@ public partial class ProductDto
     public int ShortId { get; set; }
 
     [Required(ErrorMessage = nameof(AppStrings.RequiredAttribute_ValidationError))]
-    [MaxLength(64, ErrorMessage = nameof(AppStrings.MaxLengthAttribute_InvalidMaxLength))]
+    [MaxLength(64, ErrorMessage = nameof(AppStrings.MaxLengthAttribute_ValidationError))]
     [Display(Name = nameof(AppStrings.Name))]
     public string? Name { get; set; }
 
@@ -27,7 +27,7 @@ public partial class ProductDto
     /// <summary>
     /// The ISO 4217 code of the currency <see cref="Price"/> is an amount of. Null falls back to USD.
     /// </summary>
-    [MaxLength(3, ErrorMessage = nameof(AppStrings.MaxLengthAttribute_InvalidMaxLength))]
+    [MaxLength(3, ErrorMessage = nameof(AppStrings.MaxLengthAttribute_ValidationError))]
     public string? CurrencyIso { get; set; }
 
     /// <summary>
@@ -35,14 +35,14 @@ public partial class ProductDto
     /// <see cref="CurrencyIso"/> so no currency-to-symbol table has to live in code. Null falls back to
     /// <see cref="CurrencyIso"/>, then to $.
     /// </summary>
-    [MaxLength(8, ErrorMessage = nameof(AppStrings.MaxLengthAttribute_InvalidMaxLength))]
+    [MaxLength(8, ErrorMessage = nameof(AppStrings.MaxLengthAttribute_ValidationError))]
     public string? CurrencySymbol { get; set; }
 
-    [MaxLength(4096, ErrorMessage = nameof(AppStrings.MaxLengthAttribute_InvalidMaxLength))]
+    [MaxLength(4096, ErrorMessage = nameof(AppStrings.MaxLengthAttribute_ValidationError))]
     [Display(Name = nameof(AppStrings.Description))]
     public string? DescriptionHTML { get; set; }
 
-    [MaxLength(4096, ErrorMessage = nameof(AppStrings.MaxLengthAttribute_InvalidMaxLength))]
+    [MaxLength(4096, ErrorMessage = nameof(AppStrings.MaxLengthAttribute_ValidationError))]
     public string? DescriptionText { get; set; }
 
     [Required(ErrorMessage = nameof(AppStrings.RequiredAttribute_ValidationError))]

@@ -128,6 +128,9 @@
   <data name="MaxLengthAttribute_InvalidMaxLength" xml:space="preserve">
     <value>يجب أن تكون قيمة Length في MaxLengthAttribute أكبر من صفر. استخدم MaxLength() بدون معاملات للإشارة إلى أن السلسلة أو المصفوفة يمكن أن تكون بأقصى طول مسموح.</value>
   </data>
+  <data name="MaxLengthAttribute_ValidationError" xml:space="preserve">
+    <value>يجب أن يكون حقل {0} من نوع سلسلة أو مصفوفة بطول أقصى '{1}'</value>
+  </data>
   <data name="MinLengthAttribute_ValidationError" xml:space="preserve">
     <value>يجب أن يكون حقل {0} من نوع سلسلة أو مصفوفة بطول أدنى '{1}'</value>
   </data>

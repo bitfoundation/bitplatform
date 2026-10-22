@@ -1,76 +1,31 @@
 ---
 name: localize-strings
-description: Moves hardcoded user-facing strings out of Razor/C# files into AppStrings.resx and rewrites the call sites to use IStringLocalizer with nameof(AppStrings.Key). Use only when explicitly asked to localize or apply translations.
+description: Moves hardcoded user-facing strings out of Razor/C# files into AppStrings.resx, rewrites the call sites to use IStringLocalizer with nameof(AppStrings.Key), and fills in the new keys for every other language the project ships. Use when explicitly asked to localize or apply translations, or when the changes are about to be pushed.
 ---
 
-# Move Hardcoded Strings to Resource Files
+# Move user-facing text into the resource files
 
-You are an expert at localizing .NET applications using resource files (.resx) and `IStringLocalizer<AppStrings>`.
+This is the pass `AGENTS.md` section 5 leaves for later: it moves the English literals written through the `IStringLocalizer` indexer into `AppStrings.resx` and into every other language the project ships.
 
-## Instructions
+## What moves
 
-1. **Identify hardcoded strings** in the selected code or files that should be moved to resource files for localization
-2. **Add new resource entries** to `src/Shared/Resources/AppStrings.resx` if they don't already exist
-3. **Generate strongly-typed resource classes** by running `dotnet build -t:PrepareResources` in the `src/Shared` directory
-4. **Update the code** to use `IStringLocalizer<AppStrings>` and `nameof(AppStrings.ResourceKey)` pattern
+- Every literal passed to the `Localizer` indexer, and every raw user-visible string, in the files the user named; without that, in the changes on the current branch.
+- Not CSS classes or ids, configuration keys, URLs and routes, technical constants such as file extensions or MIME types, or log messages.
 
-## Context
+## Keys
 
-- **Resource File Location**: `src/Shared/Resources/AppStrings.resx`
-- **Components inherit from**: `AppComponentBase` or `AppPageBase` (which have `IStringLocalizer<AppStrings> Localizer` available)
-- **Controllers inherit from**: `AppControllerBase` (which have `IStringLocalizer<AppStrings> Localizer` available)
-- **Other files**: `AutoInject` `IStringLocalizer<AppStrings>` directly
-- **Usage Pattern**: `@Localizer[nameof(AppStrings.ResourceKey)]` in Razor files, `Localizer[nameof(AppStrings.ResourceKey)]` in C# code
+- Reuse a key when `AppStrings.resx` already holds the same text.
+- Otherwise add one with a short name that says what the text is for; related keys share a prefix, as the existing `SignIn*` and `Email*` ones do. A placeholder such as `{0}` stays in the value, and the call site keeps passing its argument.
+- Each call site becomes `Localizer[nameof(AppStrings.Key)]`, and the strongly typed class is regenerated with the command in `AGENTS.md` section 4.
 
-## Rules
+## Every language
 
-1. **Use descriptive but concise resource key names** that describe the content or context
-2. **Group related strings** with common prefixes when appropriate (e.g., `SignIn*`, `Email*`, `Password*`)
-3. **Always use `nameof(AppStrings.ResourceKey)`** instead of string literals for resource keys
-4. **Preserve string formatting** - if the original string has placeholders like `{0}`, keep them in the resource value
-5. **Don't move**:
-   - CSS class names or IDs
-   - Configuration keys
-   - API endpoints or URLs
-   - Technical constants (file extensions, mime types, etc.)
-   - Log messages
+`AppStrings.resx` holds the English text. `Bit.ResxTranslator.json` lists every other language the project ships, each with its own `AppStrings.<language>.resx`, and a key missing there shows in English to that language's users.
 
-## Workflow
+Run `bit translate` from the project folder. It fills in every key the other languages lack, keeps the translations they already have, and uses the AI provider set in `Bit.ResxTranslator.json`. Its API key belongs in the `OpenAI__ApiKey` environment variable, not in the file. If no key is set, ask the user to set it in their environment, never to paste it into the conversation, or whether you should write the translations yourself.
 
-1. **Analyze the provided code** to identify hardcoded user-facing strings
-2. **Check existing AppStrings.resx** to see if suitable resource entries already exist
-3. **Add new entries to AppStrings.resx** for any missing resources using the XML format:
-   ```xml
-   <data name="ResourceKeyName" xml:space="preserve">
-     <value>Resource Value Here</value>
-   </data>
-   ```
-4. **Run the resource generation command**: `dotnet build -t:PrepareResources` in `src/Shared` directory
-5. **Update the code files** to use the localizer pattern
-6. **Verify the build succeeds** after all changes
+## Done means
 
-## Examples
-
-### Before:
-```razor
-<BitButton>Save Changes</BitButton>
-<BitText>Welcome to our application!</BitText>
-```
-
-### After (AppStrings.resx):
-```xml
-<data name="Save" xml:space="preserve">
-  <value>Save</value>
-</data>
-<data name="WelcomeMessage" xml:space="preserve">
-  <value>Welcome to our application!</value>
-</data>
-```
-
-### After (Razor file):
-```razor
-<BitButton>@Localizer[nameof(AppStrings.Save)]</BitButton>
-<BitText>@Localizer[nameof(AppStrings.WelcomeMessage)]</BitText>
-```
-
-Now proceed to identify and move hardcoded strings in the selected code to the resource file following these guidelines.
+- No literal from the list above is left in the files in scope.
+- `bit translate --check` reports no missing translation.
+- The solution builds, and the pages show the same English text as before.

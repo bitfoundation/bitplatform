@@ -1,4 +1,4 @@
-description = "Move hardcoded user-facing strings into AppStrings.resx and rewrite call sites to use IStringLocalizer with nameof(AppStrings.Key)."
+description = "Move hardcoded user-facing strings into AppStrings.resx, rewrite call sites to use IStringLocalizer with nameof(AppStrings.Key), and translate the new keys into every other language."
 
 prompt = """
 Follow these instructions exactly:

@@ -128,6 +128,9 @@
   <data name="MaxLengthAttribute_InvalidMaxLength" xml:space="preserve">
     <value>MaxLengthAttribute doit avoir une valeur Length supérieure à zéro. Utilisez MaxLength() sans paramètres pour indiquer que la chaîne ou le tableau peut avoir la longueur maximale autorisée.</value>
   </data>
+  <data name="MaxLengthAttribute_ValidationError" xml:space="preserve">
+    <value>Le champ {0} doit être de type chaîne ou tableau avec une longueur maximale de « {1} ».</value>
+  </data>
   <data name="MinLengthAttribute_ValidationError" xml:space="preserve">
     <value>Le champ {0} doit être de type chaîne ou tableau avec une longueur minimale de « {1} ».</value>
   </data>

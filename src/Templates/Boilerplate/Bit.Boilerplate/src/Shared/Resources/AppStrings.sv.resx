@@ -128,6 +128,9 @@
   <data name="MaxLengthAttribute_InvalidMaxLength" xml:space="preserve">
     <value>MaxLengthAttribute måste ha ett Length-värde som är större än noll. Använd MaxLength() utan parametrar för att ange att strängen eller arrayen kan ha den maximalt tillåtna längden.</value>
   </data>
+  <data name="MaxLengthAttribute_ValidationError" xml:space="preserve">
+    <value>Fältet {0} måste vara en sträng- eller arraytyp med en största längd på '{1}'.</value>
+  </data>
   <data name="MinLengthAttribute_ValidationError" xml:space="preserve">
     <value>Fältet {0} måste vara en sträng- eller arraytyp med en minsta längd på '{1}'.</value>
   </data>
