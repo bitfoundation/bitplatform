@@ -95,6 +95,8 @@ public static partial class Program
                 await next.Invoke();
             });
 
+            app.UsePrecompressedStaticFiles();
+
             app.UseStaticFiles();
 
             // https://yurl.chayev.com/
