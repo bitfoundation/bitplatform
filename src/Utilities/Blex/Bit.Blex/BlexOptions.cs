@@ -51,6 +51,14 @@ public sealed class BlexOptions
     public Action<BlexActionErrorContext>? OnActionError { get; set; }
 
     /// <summary>
+    /// The clock the manager reads time from (<see cref="BlexManager.TimeProvider"/>): action
+    /// timestamps, debounced effects and debounced persistence. When unset, a
+    /// <see cref="System.TimeProvider"/> registered in the service collection is used, and
+    /// <see cref="System.TimeProvider.System"/> otherwise.
+    /// </summary>
+    public TimeProvider? TimeProvider { get; set; }
+
+    /// <summary>
     /// Convenience: redacts the named keys (recursively, anywhere in the tree -- including inside
     /// arrays and action payloads) from the state sent to DevTools, replacing their values with
     /// <c>"&lt;redacted&gt;"</c>.
@@ -156,4 +164,32 @@ public sealed class BlexOptions
     /// </summary>
     public BlexOptions UseFilter(Func<BlexPreActionContext, bool> filter)
         => UseMiddleware(new BlexFilterMiddleware(filter));
+
+    /// <summary>
+    /// Registers a veto filter for one parameterless action, named by its generated descriptor
+    /// (<c>CartStore.Actions.Checkout</c>). Return <c>false</c> to cancel it; every other action passes.
+    /// </summary>
+    public BlexOptions UseFilter<TStore>(BlexAction<TStore> action, Func<TStore, bool> filter)
+        where TStore : class, IBlexStore
+    {
+        ArgumentNullException.ThrowIfNull(action);
+        ArgumentNullException.ThrowIfNull(filter);
+        return UseFilter(ctx => !action.Matches(ctx) || filter((TStore)ctx.Store));
+    }
+
+    /// <summary>
+    /// Registers a veto filter for one action, named by its generated descriptor
+    /// (<c>CounterStore.Actions.Add</c>), that receives the action's payload as the type the action
+    /// takes. Return <c>false</c> to cancel it; every other action passes.
+    /// </summary>
+    /// <example><code>
+    /// options.UseFilter(CounterStore.Actions.Add, (counter, amount) => amount is > 0 and &lt;= 100);
+    /// </code></example>
+    public BlexOptions UseFilter<TStore, TPayload>(BlexAction<TStore, TPayload> action, Func<TStore, TPayload, bool> filter)
+        where TStore : class, IBlexStore
+    {
+        ArgumentNullException.ThrowIfNull(action);
+        ArgumentNullException.ThrowIfNull(filter);
+        return UseFilter(ctx => !action.Matches(ctx) || filter((TStore)ctx.Store, action.GetPayload(ctx)));
+    }
 }

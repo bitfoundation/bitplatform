@@ -86,6 +86,7 @@
                     <tr><td class="bb-table-key"><code>IMPORT_STATE</code></td><td>Applies the last computed state from an imported session.</td></tr>
                     <tr><td class="bb-table-key"><code>PAUSE_RECORDING</code></td><td>Stops streaming actions to the monitor. The app keeps running: actions still apply, and still reach middleware and subscribers.</td></tr>
                     <tr><td class="bb-table-key"><code>LOCK_CHANGES</code></td><td>Freezes the app - every action is vetoed until it is unlocked. Time-travel restores keep working, which is the point.</td></tr>
+                    <tr><td class="bb-table-key"><code>ACTION</code></td><td>The dispatcher: dispatches the action typed into it by its qualified name, through the generated wrapper. See below.</td></tr>
                 </tbody>
             </table>
         </div>
@@ -144,6 +145,24 @@
                 Disconnecting the bridge clears both flags.
             </p>
         </Callout>
+
+        <h4 id="dispatcher">The dispatcher</h4>
+        <p>
+            The monitor's dispatcher button fires an action against the running app - handy for driving a
+            store into a state that is awkward to reach through the UI. It works because every generated
+            action can be <a href="actions#dispatch-by-name">dispatched by name</a>: Blex reads what you
+            typed as JSON, finds the action by its qualified name - the label the monitor already shows -
+            and calls the generated wrapper, so the action passes the filters, reaches middleware and lands
+            in the timeline like any other.
+        </p>
+        <CodeBlock Code="@Dispatcher" Language="json" Title="What to type" />
+        <p>
+            The extension hands the text over exactly as typed, and Blex does not evaluate JavaScript, so
+            write strict JSON - quoted keys, double quotes. Anything that goes wrong - text that is not
+            JSON, no <code>type</code>, an unknown action, a missing argument, an action that throws - is
+            reported through <a href="errors"><code>OnError</code></a> with source
+            <code>"devtools"</code> and never reaches the interop callback.
+        </p>
     </div>
 
     <div class="bb-card">
@@ -222,7 +241,7 @@
             <li>If the extension is not installed, <code>connect</code> returns <code>false</code> and everything becomes a no-op - no errors, no cost.</li>
             <li>Interop calls are dispatched without blocking the dispatch pipeline, but their tasks are still observed so a transient failure cannot surface as an unobserved exception.</li>
             <li>Disconnecting detaches only Blex's own subscription, rather than killing every DevTools instance on the page.</li>
-            <li>The bridge advertises exactly what it implements: <code>jump</code> and <code>export</code> yes; <code>dispatch</code>, <code>skip</code> and <code>reorder</code> no.</li>
+            <li>The bridge advertises exactly what it implements: <code>jump</code>, <code>export</code> and <code>dispatch</code> yes; <code>skip</code> and <code>reorder</code> no - they need the extension's lifted action log, and Blex streams state rather than replaying reducers.</li>
         </ul>
     </div>
 
@@ -258,6 +277,21 @@
         new("options.DevToolsStateSanitizer", "<code>Func&lt;JsonObject, JsonObject&gt;</code>. Full control over the tree before it is sent. Display only."),
         new("options.DevToolsActionSanitizer", "<code>Func&lt;string, string&gt;</code>. Rewrites the action label - useful for stripping ids out of names."),
     ];
+
+    private const string Dispatcher = """
+        // Arguments in "payload", keyed by parameter name:
+        { "type": "counter/Apply preset", "payload": { "count": 7, "step": 2 } }
+
+        // ...or inline, next to "type":
+        { "type": "counter/Apply preset", "count": 7, "step": 2 }
+
+        // A one-parameter action takes a bare value:
+        { "type": "counter/SetStep", "payload": 5 }
+
+        // Assignments and resets are actions too:
+        { "type": "counter/Set Count", "payload": 42 }
+        { "type": "counter/ResetState" }
+        """;
 
     private const string PauseLock = """
         // Paused: actions apply and are observed, they are just not streamed to the monitor.

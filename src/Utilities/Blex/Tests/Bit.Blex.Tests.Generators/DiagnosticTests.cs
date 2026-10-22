@@ -347,11 +347,12 @@ public class DiagnosticTests
 
         Assert.IsEmpty(result.CompileErrors());
         var generated = result.SingleGenerated;
-        Assert.Contains("Task.Delay(250", generated);
+        // On the manager's clock, so a test can advance a fake TimeProvider through the quiet period.
+        Assert.Contains("Task.Delay(global::System.TimeSpan.FromMilliseconds(250), base.TimeProvider", generated);
 
         // The gate must precede BeginAction: a superseded invocation is never offered to
         // middleware and records nothing.
-        Assert.IsTrue(generated.IndexOf("Task.Delay(250") < generated.IndexOf("BeginAction(\"Search\""));
+        Assert.IsTrue(generated.IndexOf("FromMilliseconds(250)") < generated.IndexOf("BeginAction(\"Search\""));
     }
 
     [TestMethod]

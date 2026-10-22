@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 
@@ -28,14 +29,39 @@ public sealed class BlexManager
     private JsonObject? _initialState;
     private JsonObject? _committedState;
     private int _sequence;
+    private int _scopeSequence;
+    private int _restoreBatchDepth;
     private bool _connected;
     private bool _devToolsPaused;
     private bool _changesLocked;
+    private TimeProvider _timeProvider = TimeProvider.System;
 
     /// <summary>Creates a manager with the supplied middleware (order preserved).</summary>
     public BlexManager(IEnumerable<IBlexMiddleware>? middleware = null)
     {
         _middleware = middleware?.ToList() ?? [];
+    }
+
+    /// <summary>
+    /// The clock Blex reads time from: action timestamps, the <c>DebounceMilliseconds</c> wait of
+    /// generated effects and the persistence debounce. Defaults to <see cref="TimeProvider.System"/>.
+    /// </summary>
+    /// <remarks>
+    /// Swap in a fake clock (for example <c>FakeTimeProvider</c> from
+    /// <c>Microsoft.Extensions.TimeProvider.Testing</c>) to make debounced effects and debounced saves
+    /// deterministic in tests: advance the clock instead of waiting out the real interval. Set it
+    /// before the work it should govern starts; a wait already in progress keeps the clock it began on.
+    /// In a DI host, <see cref="BlexOptions.TimeProvider"/> or a registered <see cref="System.TimeProvider"/>
+    /// sets it.
+    /// </remarks>
+    public TimeProvider TimeProvider
+    {
+        get => _timeProvider;
+        set
+        {
+            ArgumentNullException.ThrowIfNull(value);
+            _timeProvider = value;
+        }
     }
 
     /// <summary>
@@ -69,6 +95,13 @@ public sealed class BlexManager
     /// Lets hot paths skip payload capture when nobody is listening.
     /// </summary>
     internal bool HasObservers => _middleware.Count > 0 || _connected || ActionDispatched is not null;
+
+    /// <summary>
+    /// Whether generated wrappers should capture action arguments: whenever anything observes actions,
+    /// and also when only an <see cref="ActionFailed"/> handler is attached -- a failure report that
+    /// cannot name the input that failed is missing the one thing it is for.
+    /// </summary>
+    internal bool CapturesArgs => HasObservers || ActionFailed is not null;
 
     /// <summary>
     /// Whether the Redux DevTools monitor is paused ("Pause recording"). Actions still apply and
@@ -121,6 +154,11 @@ public sealed class BlexManager
     }
 
     /// <summary>Returns the first registered store of type <typeparamref name="TStore"/>, or <c>null</c>.</summary>
+    /// <remarks>
+    /// With several <see cref="CreateScope{TStore}(TStore, string)">scoped</see> instances of one store
+    /// type registered, which one is first is unspecified; look a scoped instance up by its keyed
+    /// <see cref="GetStore(string)">name</see> instead.
+    /// </remarks>
     public TStore? GetStore<TStore>() where TStore : class, IBlexStore
     {
         foreach (var store in _stores)
@@ -212,6 +250,36 @@ public sealed class BlexManager
     {
         ArgumentNullException.ThrowIfNull(actionName);
         return Subscribe(handler, ctx => ctx.ActionName == actionName || ctx.QualifiedName == actionName);
+    }
+
+    /// <summary>
+    /// Subscribes to one parameterless action, by its generated descriptor
+    /// (<c>CounterStore.Actions.Increment</c>) rather than by name, so a rename breaks the build instead
+    /// of silently ending the subscription. The handler receives the store instance that dispatched it.
+    /// </summary>
+    public IDisposable SubscribeToAction<TStore>(BlexAction<TStore> action, Action<TStore> handler)
+        where TStore : class, IBlexStore
+    {
+        ArgumentNullException.ThrowIfNull(action);
+        ArgumentNullException.ThrowIfNull(handler);
+        return Subscribe(ctx => handler((TStore)ctx.Store), action.Matches);
+    }
+
+    /// <summary>
+    /// Subscribes to one action by its generated descriptor (<c>CounterStore.Actions.Add</c>), handing
+    /// the handler the store that dispatched it and the action's payload as the type the action takes
+    /// -- the argument itself for a single-parameter action, a named tuple for several.
+    /// </summary>
+    /// <example><code>
+    /// using var sub = manager.SubscribeToAction(OrdersStore.Actions.Place,
+    ///     (orders, order) => notifications.Push($"{order.Quantity} x {order.Name}"));
+    /// </code></example>
+    public IDisposable SubscribeToAction<TStore, TPayload>(BlexAction<TStore, TPayload> action, Action<TStore, TPayload> handler)
+        where TStore : class, IBlexStore
+    {
+        ArgumentNullException.ThrowIfNull(action);
+        ArgumentNullException.ThrowIfNull(handler);
+        return Subscribe(ctx => handler((TStore)ctx.Store, action.GetPayload(ctx)), action.Matches);
     }
 
     /// <summary>
@@ -419,6 +487,68 @@ public sealed class BlexManager
                 new InvalidOperationException($"More than one store is named '{store.Name}'."),
                 $"duplicate store name '{store.Name}'; state slices, DevTools entries and persistence keys will collide -- set a unique [BlexStoreAttribute(Name = \"...\")]");
         }
+
+        InvokeIsolated(StoreRegistered, store, "register", store.Name);
+    }
+
+    /// <summary>
+    /// Raised after a store joins the manager -- at startup, and later for a lazily loaded feature or a
+    /// <see cref="CreateScope{TStore}(TStore, string)">scoped</see> instance. Persistence uses it to
+    /// hydrate a persistent store that arrives after startup. Handler exceptions are isolated and
+    /// reported through <see cref="OnError"/>.
+    /// </summary>
+    public event Action<IBlexStore>? StoreRegistered;
+
+    /// <summary>
+    /// Raised after a store leaves the manager (see <see cref="Unregister"/>). Persistence uses it to
+    /// write a debounced save the store still owes before it is gone. Handler exceptions are isolated
+    /// and reported through <see cref="OnError"/>.
+    /// </summary>
+    public event Action<IBlexStore>? StoreUnregistered;
+
+    /// <summary>
+    /// Registers <paramref name="store"/> as one instance among several of the same store type, under
+    /// the name <c>"{name}:{key}"</c>, and returns a scope that unregisters and disposes it again.
+    /// </summary>
+    /// <param name="store">A store that is not registered with any manager yet.</param>
+    /// <param name="key">
+    /// Distinguishes this instance from the others: an order id, a document id, a tab index. Give a
+    /// stable one to a store marked <c>Persist = true</c>, so the next instance for the same entity
+    /// finds its saved state. When omitted, a key unique within this manager is assigned.
+    /// </param>
+    /// <remarks>
+    /// Stores are otherwise one per DI scope, keyed by their generated name, so a second instance --
+    /// the form inside one of two open dialogs, one of several editor tabs -- would collide with the
+    /// first in the state tree, DevTools and storage. A scope gives each instance its own slice while
+    /// keeping it a full citizen: its actions reach middleware, subscribers, DevTools and history, and
+    /// persistence hydrates it the moment it registers.
+    /// </remarks>
+    /// <example><code>
+    /// using var editor = manager.CreateScope(new DocumentStore(api), key: documentId);
+    /// editor.Store.Rename("Draft");   // recorded as "document:42/Rename"
+    /// </code></example>
+    public BlexStoreScope<TStore> CreateScope<TStore>(TStore store, string? key = null)
+        where TStore : BlexStoreBase
+    {
+        ArgumentNullException.ThrowIfNull(store);
+        if (key is not null && string.IsNullOrWhiteSpace(key))
+            throw new ArgumentException("An instance key must not be empty.", nameof(key));
+
+        key ??= Interlocked.Increment(ref _scopeSequence).ToString(CultureInfo.InvariantCulture);
+
+        var unkeyed = store.Name;
+        store.AssignInstanceKey(key);
+        if (store.Name == unkeyed)
+        {
+            // A hand-written store whose Name ignores the key would silently share one slice, one
+            // DevTools entry and one storage key with every other instance.
+            store.AssignInstanceKey(null);
+            throw new NotSupportedException(
+                $"The store '{unkeyed}' cannot be scoped: its Name does not include the instance key. Generated stores support it; a hand-written one must return WithInstanceKey(\"...\") from Name.");
+        }
+
+        Register(store);
+        return new BlexStoreScope<TStore>(this, store, key);
     }
 
     /// <summary>
@@ -443,6 +573,8 @@ public sealed class BlexManager
             if (store is BlexStoreBase sb)
                 sb.Detach();
         }
+
+        InvokeIsolated(StoreUnregistered, store, "register", store.Name);
     }
 
     /// <summary>
@@ -516,10 +648,6 @@ public sealed class BlexManager
     }
 
     /// <summary>
-    /// Runs the before-action pipeline. Returns <c>false</c> if any middleware vetoed the action,
-    /// in which case the caller must skip the mutation. Cheap no-op when no middleware is registered.
-    /// </summary>
-    /// <summary>
     /// Actions whose observers are currently being notified. A reactor that dispatches a
     /// follow-up action would otherwise change state before a later observer of the *original*
     /// action lazily captures its snapshot; freezing in-flight snapshots first keeps attribution
@@ -533,6 +661,10 @@ public sealed class BlexManager
             _ = _inFlight[i].GlobalState;
     }
 
+    /// <summary>
+    /// Runs the before-action pipeline. Returns <c>false</c> if any middleware vetoed the action,
+    /// in which case the caller must skip the mutation. Cheap no-op when no middleware is registered.
+    /// </summary>
     internal bool BeforeAction(IBlexStore source, string actionName, IReadOnlyList<BlexActionArg>? args = null)
     {
         // This runs just before a new mutation; pin the snapshots of any actions still being
@@ -577,7 +709,7 @@ public sealed class BlexManager
         if (!HasObservers)
             return;
 
-        var context = new BlexActionContext(source, actionName, CaptureGlobalState, ++_sequence, args);
+        var context = new BlexActionContext(source, actionName, CaptureGlobalState, ++_sequence, args, _timeProvider.GetUtcNow());
 
         _inFlight.Add(context);
         try
@@ -626,17 +758,17 @@ public sealed class BlexManager
     /// </remarks>
     public event Action<BlexActionErrorContext>? ActionFailed;
 
-    /// <summary>
-    /// Reports that an action body threw. Runs the middleware error hooks and raises
-    /// <see cref="ActionFailed"/>, both isolated: reporting a failure must never replace it with a
-    /// different one.
-    /// </summary>
     // The exception most recently reported, so one failure travelling out through nested actions
     // is reported once rather than once per frame. Held weakly: the reference exists only to
     // compare against the next report, and keeping a strong one would pin an exception (and its
     // whole captured stack) alive for the lifetime of the manager.
     private readonly WeakReference<Exception> _lastReportedError = new(null!);
 
+    /// <summary>
+    /// Reports that an action body threw. Runs the middleware error hooks and raises
+    /// <see cref="ActionFailed"/>, both isolated: reporting a failure must never replace it with a
+    /// different one.
+    /// </summary>
     internal void RecordActionError(IBlexStore source, string actionName, IReadOnlyList<BlexActionArg>? args, Exception exception)
     {
         // A cancelled action (CancelXxx(), a superseded Latest run, a disposed store) is a normal
@@ -656,7 +788,7 @@ public sealed class BlexManager
         if (_middleware.Count == 0 && ActionFailed is null)
             return;
 
-        var context = new BlexActionErrorContext(source, actionName, args, exception);
+        var context = new BlexActionErrorContext(source, actionName, args, exception, _timeProvider.GetUtcNow());
         foreach (var mw in _middleware)
         {
             try
@@ -736,8 +868,88 @@ public sealed class BlexManager
     }
 
     /// <summary>
-    /// Handles a raw message from the Redux DevTools extension (JSON serialized). Drives time-travel:
-    /// JUMP_TO_STATE / JUMP_TO_ACTION / ROLLBACK / COMMIT / RESET.
+    /// Dispatches an action by its qualified name (<c>"counter/Add"</c>), with its arguments given as a
+    /// JSON object keyed by parameter name (<c>{ "amount": 5 }</c>) -- the shape DevTools shows an
+    /// action's payload in. The action runs through its generated wrapper, so it passes the filters,
+    /// reaches middleware and is recorded exactly as a direct call would be.
+    /// </summary>
+    /// <param name="qualifiedName">
+    /// <c>"{store name}/{action name}"</c>: a generated action or effect, <c>"Set {Property}"</c> for a
+    /// state property, or <c>"ResetState"</c>.
+    /// </param>
+    /// <param name="payload">The arguments; omit for a parameterless action.</param>
+    /// <returns>The action's task; already completed for a synchronous action.</returns>
+    /// <exception cref="InvalidOperationException">No registered store has an action with that name.</exception>
+    /// <remarks>
+    /// This is what makes actions data: a log recorded in one session can be replayed in another
+    /// (<c>Bit.Blex.Testing</c>'s <c>ReplayAsync</c>), and the Redux DevTools dispatcher can fire an action
+    /// against the running app. Arguments are matched by parameter name and converted with
+    /// <see cref="BlexJson.Options"/>.
+    /// </remarks>
+    public Task DispatchAsync(string qualifiedName, JsonObject? payload = null)
+    {
+        ArgumentNullException.ThrowIfNull(qualifiedName);
+        var (store, action) = ResolveActionOrThrow(qualifiedName);
+        return action.InvokeAsync(store, ToArgs(payload));
+    }
+
+    /// <summary>
+    /// Dispatches an action by its qualified name with already-materialized arguments -- typically
+    /// the <see cref="BlexActionContext.Args"/> recorded when it ran before.
+    /// </summary>
+    /// <param name="qualifiedName"><c>"{store name}/{action name}"</c>, as <see cref="BlexActionContext.QualifiedName"/> reports it.</param>
+    /// <param name="args">The arguments, matched to the action's parameters by name.</param>
+    public Task DispatchAsync(string qualifiedName, IReadOnlyList<BlexActionArg> args)
+    {
+        ArgumentNullException.ThrowIfNull(qualifiedName);
+        ArgumentNullException.ThrowIfNull(args);
+        var (store, action) = ResolveActionOrThrow(qualifiedName);
+        return action.InvokeAsync(store, args);
+    }
+
+    private (IBlexStore Store, BlexActionDescriptor Action) ResolveActionOrThrow(string qualifiedName)
+        => ResolveAction(qualifiedName)
+            ?? throw new InvalidOperationException($"No registered store has an action named '{qualifiedName}'. Use \"store/Action\", as DevTools labels it.");
+
+    /// <summary>
+    /// Finds the store and action a qualified name refers to. Matched against each store's name as a
+    /// prefix rather than split at a '/', because both a store name and an action label may contain one.
+    /// </summary>
+    private (IBlexStore Store, BlexActionDescriptor Action)? ResolveAction(string qualifiedName)
+    {
+        foreach (var store in _stores)
+        {
+            var name = store.Name;
+            if (store is BlexStoreBase sb
+                && qualifiedName.Length > name.Length + 1
+                && qualifiedName[name.Length] == '/'
+                && qualifiedName.StartsWith(name, StringComparison.Ordinal)
+                && sb.FindAction(qualifiedName[(name.Length + 1)..]) is { } action)
+            {
+                return (store, action);
+            }
+        }
+
+        return null;
+    }
+
+    private static BlexActionArg[] ToArgs(JsonObject? payload)
+    {
+        if (payload is null || payload.Count == 0)
+            return [];
+
+        var args = new BlexActionArg[payload.Count];
+        var i = 0;
+        foreach (var (key, value) in payload)
+            args[i++] = new BlexActionArg(key, value);
+
+        return args;
+    }
+
+    /// <summary>
+    /// Handles a raw message from the Redux DevTools extension (JSON serialized). Drives time-travel
+    /// (JUMP_TO_STATE / JUMP_TO_ACTION / ROLLBACK / COMMIT / RESET / IMPORT_STATE), the recording
+    /// controls (PAUSE_RECORDING / LOCK_CHANGES) and the dispatcher (ACTION).
     /// </summary>
     public void HandleDevToolsMessage(string messageJson)
     {
@@ -784,6 +996,13 @@ public sealed class BlexManager
                 _devTools.Init(SanitizeState(state));
             }
 
+            return;
+        }
+
+        // The monitor's dispatcher: the text typed into it, which names an action of this app.
+        if (type == "ACTION")
+        {
+            DispatchFromDevTools(message["payload"]);
             return;
         }
 
@@ -839,6 +1058,94 @@ public sealed class BlexManager
     }
 
     /// <summary>
+    /// Dispatches the action typed into the DevTools dispatcher. The extension hands the text over as
+    /// typed, so it is parsed here as JSON: <c>{ "type": "counter/Add", "payload": { "amount": 5 } }</c>,
+    /// the arguments inline beside <c>type</c>, or a bare <c>payload</c> value for a one-parameter action.
+    /// </summary>
+    /// <remarks>
+    /// Nothing typed into the monitor can be allowed to throw back into the interop callback, and the
+    /// author is looking at the monitor, not at the app -- so every way it can go wrong is reported
+    /// through <see cref="OnError"/> with what to type instead.
+    /// </remarks>
+    private void DispatchFromDevTools(JsonNode? payload)
+    {
+        JsonObject? action;
+        try
+        {
+            action = payload switch
+            {
+                JsonObject obj => obj,
+                JsonValue value when value.TryGetValue<string>(out var text) => JsonNode.Parse(text) as JsonObject,
+                _ => null,
+            };
+        }
+        catch (JsonException ex)
+        {
+            ReportError("devtools", ex, "the dispatched action is not JSON; write it as {\"type\": \"store/Action\", \"payload\": { \"argument\": value }}");
+            return;
+        }
+
+        var name = AsString(action?["type"]);
+        if (action is null || name is null)
+        {
+            ReportError("devtools", new InvalidOperationException("The dispatched action has no \"type\"."),
+                "write it as {\"type\": \"store/Action\", \"payload\": { \"argument\": value }}");
+            return;
+        }
+
+        if (ResolveAction(name) is not { } resolved)
+        {
+            ReportError("devtools", new InvalidOperationException($"No registered store has an action named '{name}'."), $"dispatching '{name}'");
+            return;
+        }
+
+        var (store, descriptor) = resolved;
+        BlexActionArg[] args;
+        if (action["payload"] is JsonObject arguments)
+        {
+            args = ToArgs(arguments);
+        }
+        else if (action.TryGetPropertyValue("payload", out var single) && descriptor.ParameterNames.Count == 1)
+        {
+            args = [new BlexActionArg(descriptor.ParameterNames[0], single)];
+        }
+        else
+        {
+            args = [.. action.Where(p => p.Key != "type").Select(p => new BlexActionArg(p.Key, p.Value))];
+        }
+
+        Task task;
+        try
+        {
+            task = descriptor.InvokeAsync(store, args);
+        }
+        catch (Exception ex)
+        {
+            ReportError("devtools", ex, $"dispatching '{name}'");
+            return;
+        }
+
+        if (task.IsCompleted is false || task.IsFaulted)
+            _ = ObserveDevToolsDispatch(task, name);
+    }
+
+    private async Task ObserveDevToolsDispatch(Task task, string name)
+    {
+        try
+        {
+            await task.ConfigureAwait(false);
+        }
+        catch (OperationCanceledException)
+        {
+            // Cancelled, as any dispatch may be; not a failure.
+        }
+        catch (Exception ex)
+        {
+            ReportError("devtools", ex, $"dispatching '{name}'");
+        }
+    }
+
+    /// <summary>
     /// Reads a node as a string without throwing when the extension sent a different JSON kind
     /// (<c>JsonNode.GetValue&lt;string&gt;()</c> would throw on a number/object/array).
     /// </summary>
@@ -870,12 +1177,36 @@ public sealed class BlexManager
     }
 
     /// <summary>
-    /// Raised after <see cref="RestoreGlobalState"/> applies a snapshot (time-travel, undo/redo).
-    /// Persistence uses this to write the restored state back to storage so a reload does not
-    /// resurrect the pre-restore state. Handler exceptions are isolated and reported through
-    /// <see cref="OnError"/>.
+    /// Raised after state moved without an action: <see cref="RestoreGlobalState"/> (time-travel,
+    /// undo/redo) once per call, and a single store's restore -- persistence hydration, a change
+    /// arriving from another tab, the prerender handoff, <see cref="BlexStoreBase.RestoreState"/> --
+    /// once per store. Persistence uses this to write the restored state back to storage so a reload
+    /// does not resurrect the pre-restore state; cross-store selectors and subscriptions use it to
+    /// re-evaluate. Handler exceptions are isolated and reported through <see cref="OnError"/>.
     /// </summary>
     public event Action? StateRestored;
+
+    /// <summary>Pins in-flight snapshots before a single store's state is restored.</summary>
+    internal void PrepareForRestore()
+    {
+        if (_restoreBatchDepth == 0 && _inFlight.Count > 0)
+            FreezeInFlightSnapshots();
+    }
+
+    /// <summary>
+    /// Announces that a single store's state was restored outside <see cref="RestoreGlobalState"/>.
+    /// Without it, every observer that keeps derived state -- a cross-store selector's memo, a
+    /// manager subscription's last value, the undo baseline -- would go on reporting the value from
+    /// before a hydration or a cross-tab change, because no action ever told it otherwise.
+    /// </summary>
+    internal void OnStoreRestored()
+    {
+        // A whole-tree restore raises StateRestored once, after its last store.
+        if (_restoreBatchDepth > 0)
+            return;
+
+        InvokeIsolated<object?>(StateRestored, null, "restore", "state restored handler");
+    }
 
     /// <summary>
     /// Applies a global state tree to every store without recording new actions. A store whose
@@ -894,21 +1225,29 @@ public sealed class BlexManager
 
         // Read the registry once: ApplyRestoredState raises StateChanged, and a handler that
         // registers/unregisters a store swaps in a new array rather than mutating this one.
-        foreach (var store in _stores)
+        _restoreBatchDepth++;
+        try
         {
-            if (global[store.Name] is JsonObject slice && store is BlexStoreBase sb)
+            foreach (var store in _stores)
             {
-                try
+                if (global[store.Name] is JsonObject slice && store is BlexStoreBase sb)
                 {
-                    // Clone so the store owns its node (a JsonNode can't be parented twice).
-                    var clone = (JsonObject)slice.DeepClone();
-                    sb.ApplyRestoredState(clone);
-                }
-                catch (Exception ex)
-                {
-                    ReportError("restore", ex, store.Name);
+                    try
+                    {
+                        // Clone so the store owns its node (a JsonNode can't be parented twice).
+                        var clone = (JsonObject)slice.DeepClone();
+                        sb.ApplyRestoredState(clone);
+                    }
+                    catch (Exception ex)
+                    {
+                        ReportError("restore", ex, store.Name);
+                    }
                 }
             }
+        }
+        finally
+        {
+            _restoreBatchDepth--;
         }
 
         InvokeIsolated<object?>(StateRestored, null, "restore", "state restored handler");

@@ -20,7 +20,7 @@
         <ApiTable Title="Providers" Rows="@ProviderRows" MemberHeader="Call" />
 
         <DemoCard Title="This page's settings are persisted"
-                  Description="Change something, then reload the browser. The values come back - and so does the raw payload below, read straight out of localStorage."
+                  Description="Change something, then reload the browser. The values come back - and so does the raw payload below, read straight out of localStorage. The store's Token is marked Persist = false, so it never appears there."
                   Source="@StoreSource">
             <div class="bb-toolbar">
                 <span class="bb-overline">Accent</span>
@@ -120,15 +120,27 @@
             </p>
         </Callout>
 
-        <h4>Persisting only part of a store</h4>
+        <h4 id="transient">Persisting only part of a store</h4>
+        <p>
+            Some state belongs to one visit: a search box's text, an "is the drawer open" flag, a cached
+            response that must be re-fetched rather than restored. Mark such a field
+            <code>[BlexState(Persist = false)]</code> and it never reaches storage - right next to the
+            field, where the next person to edit the store will see it, instead of in a string list in
+            <code>Program.cs</code>.
+        </p>
+        <CodeBlock Code="@Transient" Title="Declarative: on the field" />
+        <ul class="bb-detail-list">
+            <li>A value still in storage for it - written before the field was excluded - is ignored on hydration and on cross-tab sync, so excluding a field takes effect on the very next load.</li>
+            <li>It stays part of the store's snapshot: DevTools shows it, undo/redo restores it, and the prerender handoff carries it.</li>
+            <li><code>Partialize</code>, below, runs on what is left.</li>
+        </ul>
         <p>
             <code>Partialize</code> receives each store's snapshot on its way to storage and returns what
-            should actually be written - zustand's option of the same name. Use it to keep transient
-            state out of storage: a search box's text, an "is the drawer open" flag, a cached response
-            that must be re-fetched rather than restored. Returning <code>null</code> skips that store's
+            should actually be written - zustand's option of the same name. Reach for it when the decision
+            depends on the value rather than the field. Returning <code>null</code> skips that store's
             write entirely and leaves whatever is already stored untouched.
         </p>
-        <CodeBlock Code="@Partialize" Title="Drop transient fields" />
+        <CodeBlock Code="@Partialize" Title="Imperative: per write" />
 
         <Callout Kind="Callout.CalloutKind.Note" Title="Omitted keys come back as their declared defaults">
             <p>
@@ -233,11 +245,19 @@
         <p>Resolve it from DI when you need to control persistence directly.</p>
         <ApiTable Rows="@PersistorRows" />
 
-        <Callout Kind="Callout.CalloutKind.Note" Title="Only registered stores rehydrate">
+        <Callout Kind="Callout.CalloutKind.Note" Title="Stores that register late are hydrated as they arrive">
             <p>
                 <code>StartAsync</code> walks the manager's registry. <code>&lt;BlexProvider&gt;</code>
                 registers everything before calling it, so in Blazor this is automatic. In a host without
                 the provider, resolve every store from DI first - resolution is what registers them.
+            </p>
+            <p>
+                A persistent store that registers <em>after</em> startup - a lazily loaded feature, a
+                <a href="scoped-stores">scoped instance</a> - is hydrated the moment it registers, and its
+                saves wait until its stored state has been read, so its declared defaults can never
+                overwrite the user's data. A store that unregisters writes any debounced save it still owes
+                first. <code>OnRehydrated</code> reports late stores too; with <code>SkipHydration</code>,
+                they wait for <code>RehydrateAsync</code> like the rest.
             </p>
         </Callout>
     </div>
@@ -281,7 +301,8 @@
         <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> What you can rely on</h3>
         <ul class="bb-detail-list">
             <li><strong>Corrupt data never breaks startup.</strong> An unreadable payload is reported through <code>OnError</code>, discarded and removed from storage.</li>
-            <li><strong>Restores are written back.</strong> Undo/redo and DevTools time-travel save the restored state, so a reload cannot resurrect the pre-restore state.</li>
+            <li><strong>Restores are written back.</strong> Undo/redo, DevTools time-travel and a manual <code>RestoreState</code> save the restored state, so a reload cannot resurrect the pre-restore state.</li>
+            <li><strong>Hydration reaches derived state.</strong> Hydration and an incoming cross-tab change raise <code>StateRestored</code>, so cross-store selectors, manager subscriptions and the undo baseline move to the loaded state rather than keep the defaults they saw first.</li>
             <li><strong>Writes are ordered.</strong> Saves are chained in dispatch order, so a stale payload can never overwrite a newer one.</li>
             <li><strong>Rehydration does not echo.</strong> Saving is suspended while <code>StartAsync</code> restores, so loading state does not immediately rewrite it.</li>
             <li><strong>Only persisted stores are written.</strong> A store without <code>Persist = true</code> is ignored entirely.</li>
@@ -389,7 +410,7 @@
             [BlexState] private string _accent = "violet";
             [BlexState] private Density _density = Density.Comfortable;
             [BlexState] private bool _showLineNumbers = true;
-            [BlexState] private string _token = "sk-live-...";   // redacted from DevTools
+            [BlexState(Persist = false)] private string _token = "sk-live-...";   // redacted from DevTools, never stored
 
             [BlexComputed]
             private string ComputeSummary()
@@ -433,17 +454,25 @@
         });
         """;
 
+    private const string Transient = """
+        [BlexStore(Name = "search", Persist = true)]
+        public partial class SearchStore
+        {
+            [BlexState] private string[] _savedFilters = [];                    // persisted
+
+            [BlexState(Persist = false)] private string _query = "";            // per visit
+            [BlexState(Persist = false)] private IReadOnlyList<Hit> _results = [];
+        }
+        """;
+
     private const string Partialize = """
         builder.Services.AddBitBlexLocalStoragePersistence(options =>
         {
             options.Partialize = (storeName, state) =>
             {
-                if (storeName == "search")
-                {
-                    // The query text and the fetched results are per-visit; the saved filters are not.
-                    state.Remove("Query");
-                    state.Remove("Results");
-                }
+                // Keep the token only while the user asked to stay signed in.
+                if (storeName == "session" && state["RememberMe"]?.GetValue<bool>() != true)
+                    state.Remove("Token");
 
                 // Never write a half-finished upload back to storage.
                 if (storeName == "uploads" && state["Status"]?.GetValue<string>() == "InFlight")

@@ -347,6 +347,29 @@ public static class DiagnosticsCatalog
             [BlexEffect]
             private async Task OnSearch(string query) { }
             """),
+
+        new("BLEX020", "Typed action descriptors are not generated", false,
+            "The generator puts a typed descriptor for every action and effect into a nested <code>Actions</code> class (<code>CartStore.Actions.Add</code>), which subscribers, filters and tests match instead of a string. A store that already has a member called <code>Actions</code> - a property, a method, a nested type, or state whose generated property is <code>Actions</code> - keeps compiling exactly as before, but goes without the typed descriptors. Its actions can still be dispatched by name. Rename the member to get them.",
+            """
+            [BlexStore]
+            public partial class AuditStore                // BLEX020
+            {
+                [BlexState] private string[] _actions = [];  // generates "Actions"
+
+                [BlexAction] private void OnLog(string entry) => Actions = [.. Actions, entry];
+            }
+            """,
+            """
+            [BlexStore]
+            public partial class AuditStore
+            {
+                [BlexState] private string[] _entries = [];
+
+                [BlexAction] private void OnLog(string entry) => Entries = [.. Entries, entry];
+            }
+
+            // AuditStore.Actions.Log is now a BlexAction<AuditStore, string>.
+            """),
     ];
 
     /// <summary>The entry for one diagnostic id (case-insensitive), or <c>null</c>.</summary>

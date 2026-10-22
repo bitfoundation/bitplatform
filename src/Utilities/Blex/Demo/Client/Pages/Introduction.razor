@@ -19,6 +19,7 @@
             <li>reactive <code>Count</code> / <code>Step</code> properties whose setters flow through the dispatch pipeline,</li>
             <li>memoized <code>DoubleCount</code> / <code>IsEven</code> accessors that invalidate themselves on every state change,</li>
             <li>public <code>Increment()</code>, <code>Decrement()</code> and <code>SetStep(int)</code> wrappers that batch their mutations into one named, recorded action,</li>
+            <li>typed descriptors of those actions - <code>CounterStore.Actions.SetStep</code> - to match and dispatch them as data,</li>
             <li><code>SerializeState()</code> / <code>DeserializeState()</code> for snapshots, persistence and time-travel,</li>
             <li>and the <code>BlexStoreBase</code> base type itself.</li>
         </ul>
@@ -77,17 +78,21 @@
                     <tr><td>Define a piece of state</td><td>Feature + State class</td><td>one <code>[BlexState]</code> field</td></tr>
                     <tr><td>Define an action</td><td>Action class + Reducer method</td><td>one <code>[BlexAction]</code> method</td></tr>
                     <tr><td>Action payloads in DevTools / middleware</td><td>manual</td><td>automatic (<code>ctx.Args</code>)</td></tr>
+                    <tr><td>Match an action and read its payload, typed</td><td>by action class</td><td>generated <code>Store.Actions.Xxx</code> descriptors</td></tr>
+                    <tr><td>State changes only through actions</td><td>by convention</td><td><code>[BlexStore(EnforceActions = true)]</code>, checked by the compiler</td></tr>
                     <tr><td>Derived state</td><td>manual selectors</td><td><code>[BlexComputed]</code>, memoized</td></tr>
                     <tr><td>Async side-effects</td><td>Effect classes</td><td><code>[BlexEffect]</code> with generated loading/error</td></tr>
                     <tr><td>Effect cancellation &amp; concurrency</td><td>manual</td><td><code>CancellationToken</code> + <code>Latest</code>/<code>Drop</code>/<code>Queue</code></td></tr>
                     <tr><td>Ad-hoc batched mutations</td><td class="bb-soft">✗</td><td><code>store.Batch(name, …)</code></td></tr>
                     <tr><td>Reset to initial state</td><td>manual</td><td><code>store.ResetState()</code></td></tr>
-                    <tr><td>Granular re-render</td><td>manual selectors</td><td>selector <code>Subscribe(…)</code></td></tr>
+                    <tr><td>Granular re-render</td><td>manual selectors</td><td>selector <code>Subscribe(…)</code>, <code>&lt;BlexSelect&gt;</code> in markup</td></tr>
+                    <tr><td>One store instance per dialog / tab</td><td>manual</td><td><code>&lt;BlexScope&gt;</code> / <code>manager.CreateScope</code></td></tr>
                     <tr><td>Normalized collections</td><td>manual</td><td><code>BlexEntityAdapter</code> / <code>BlexEntityState</code></td></tr>
-                    <tr><td>Persistence</td><td>3rd-party</td><td>built in, with debounce + migrations</td></tr>
-                    <tr><td>Undo / redo</td><td class="bb-soft">✗</td><td><code>BlexHistory</code></td></tr>
-                    <tr><td>Redux DevTools time-travel</td><td class="bb-soft">✗</td><td>✓ built in</td></tr>
-                    <tr><td>Test helpers</td><td class="bb-soft">✗</td><td><code>Bit.Blex.Testing</code> harness</td></tr>
+                    <tr><td>Persistence</td><td>3rd-party</td><td>built in, with debounce + migrations + per-field opt-out</td></tr>
+                    <tr><td>Undo / redo</td><td class="bb-soft">✗</td><td><code>BlexHistory</code>, app-wide or scoped to chosen stores</td></tr>
+                    <tr><td>Redux DevTools time-travel</td><td class="bb-soft">✗</td><td>✓ built in, dispatcher included</td></tr>
+                    <tr><td>Test helpers</td><td class="bb-soft">✗</td><td><code>Bit.Blex.Testing</code> harness, typed log, replay</td></tr>
+                    <tr><td>Deterministic time in tests</td><td class="bb-soft">✗</td><td><code>TimeProvider</code> for debounces and timestamps</td></tr>
                     <tr><td>Boilerplate</td><td>high</td><td>generated away</td></tr>
                 </tbody>
             </table>
@@ -130,7 +135,7 @@
     [
         new("Bit.Blex", "Everything a Blazor app needs: the runtime (<code>BlexStoreBase</code>, attributes, dispatch, middleware, persistence, entity adapter, undo/redo and <code>BlexManager</code>), the Roslyn incremental generator that writes the store plumbing (packed as an analyzer), and the Blazor integration in <code>Bit.Blex.Blazor</code>: <code>&lt;BlexProvider&gt;</code>, <code>BlexComponentBase</code>, browser-storage persistence and the Redux DevTools bridge."),
         new("Bit.Blex.Maui", ".NET MAUI integration: <code>UseBitBlex()</code> startup initializer, <code>Preferences</code>-backed persistence and XAML-bindable stores."),
-        new("Bit.Blex.Testing", "Test harness and assertions: <code>BlexTestHarness</code>, <code>BlexActionLog</code>, <code>WaitForAsync</code>."),
+        new("Bit.Blex.Testing", "Test harness and assertions: <code>BlexTestHarness</code>, <code>BlexActionLog</code>, <code>WaitForAsync</code>, <code>ReplayAsync</code>."),
     ];
 
     private const string StoreSample = """

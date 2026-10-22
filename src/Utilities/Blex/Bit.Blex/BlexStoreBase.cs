@@ -23,15 +23,117 @@ public abstract class BlexStoreBase : IBlexStore, INotifyPropertyChanged, IDispo
     // whenever any state field changes, so a per-field raise would leave computed bindings stale.
     private static readonly PropertyChangedEventArgs AllPropertiesChanged = new(string.Empty);
 
+    // Dispatchable by name on every store, generated or not -- the base class implements it.
+    private static readonly BlexAction<BlexStoreBase> ResetStateAction =
+        new("ResetState", static store =>
+        {
+            store.ResetState();
+            return Task.CompletedTask;
+        });
+
     private int _recordDepth;
     private int _notifyDepth;
     private bool _dirty;
     private bool _disposed;
     private BlexManager? _manager;
     private JsonObject? _initialState;
+    private string? _instanceKey;
+    private string? _keyedName;
+    private IReadOnlyList<BlexActionDescriptor>? _actionDescriptors;
 
     /// <inheritdoc />
+    /// <remarks>
+    /// Generated stores return their declared name (<c>[BlexStoreAttribute(Name = "...")]</c>, or the
+    /// class name) passed through <see cref="WithInstanceKey"/>, so a scoped instance is named
+    /// <c>"{name}:{key}"</c>.
+    /// </remarks>
     public abstract string Name { get; }
+
+    /// <summary>
+    /// The key telling this instance apart from other instances of the same store, or <c>null</c> for
+    /// the usual single instance. Assigned by <see cref="BlexManager.CreateScope{TStore}(TStore, string)"/>.
+    /// </summary>
+    public string? InstanceKey => _instanceKey;
+
+    /// <summary>
+    /// Returns <paramref name="name"/> -- the store's declared name -- with the
+    /// <see cref="InstanceKey"/> appended as <c>"{name}:{key}"</c> for a scoped instance, or unchanged
+    /// otherwise. The generated <see cref="Name"/> returns it; a hand-written store that should support
+    /// <see cref="BlexManager.CreateScope{TStore}(TStore, string)">scoping</see> must return it too.
+    /// </summary>
+    protected string WithInstanceKey(string name)
+    {
+        if (_instanceKey is null)
+            return name;
+
+        // Name is read on every dispatch (qualified names, the state tree, storage keys); compose once.
+        return _keyedName ??= name + ":" + _instanceKey;
+    }
+
+    internal void AssignInstanceKey(string? key)
+    {
+        // The name keys the state tree, DevTools and storage; changing it under a registered store
+        // would orphan its slice and its persisted state.
+        if (_manager is not null)
+            throw new InvalidOperationException($"The store '{Name}' is already registered; an instance key can only be given before it is registered.");
+
+        _instanceKey = key;
+        _keyedName = null;
+    }
+
+    /// <summary>
+    /// The clock of the manager this store is registered with (<see cref="BlexManager.TimeProvider"/>),
+    /// or the system clock while it is not registered. Generated <c>DebounceMilliseconds</c> effects wait
+    /// on it; read it in an action for timestamps a test can control.
+    /// </summary>
+    protected TimeProvider TimeProvider => _manager?.TimeProvider ?? global::System.TimeProvider.System;
+
+    /// <summary>
+    /// Every action of this store as a <see cref="BlexActionDescriptor"/>: the generated actions and
+    /// effects (the same instances as the store's nested <c>Actions</c> class), a <c>"Set X"</c>
+    /// descriptor per assignable state property, and <c>"ResetState"</c>. What
+    /// <see cref="BlexManager.DispatchAsync(string, JsonObject?)"/> dispatches by name.
+    /// </summary>
+    public IReadOnlyList<BlexActionDescriptor> ActionDescriptors
+        => _actionDescriptors ??= [.. DescribeActions(), ResetStateAction];
+
+    /// <summary>Returns the descriptor of the action dispatched as <paramref name="actionName"/>, or <c>null</c>.</summary>
+    public BlexActionDescriptor? FindAction(string actionName)
+    {
+        ArgumentNullException.ThrowIfNull(actionName);
+        foreach (var action in ActionDescriptors)
+        {
+            if (string.Equals(action.Name, actionName, StringComparison.Ordinal))
+                return action;
+        }
+
+        return null;
+    }
+
+    /// <summary>
+    /// Describes the store's own actions for <see cref="ActionDescriptors"/>. Overridden by the
+    /// generator; the base implementation describes none.
+    /// </summary>
+    protected virtual IReadOnlyList<BlexActionDescriptor> DescribeActions() => [];
+
+    /// <summary>
+    /// Whether state may only change inside one of the store's actions
+    /// (<c>[BlexStoreAttribute(EnforceActions = true)]</c>). The generator makes the state setters
+    /// private for such a store; this is the runtime half, which rejects an assignment made by the
+    /// store's own code outside any action once the store is registered.
+    /// </summary>
+    protected virtual bool EnforcesActions => false;
+
+    /// <summary>
+    /// The property names of state marked <c>[BlexStateAttribute(Persist = false)]</c>: left out of
+    /// what durable persistence writes and stripped from what it reads, while still part of snapshots,
+    /// DevTools, undo/redo and the prerender handoff. Overridden by the generator.
+    /// </summary>
+    protected virtual IReadOnlyCollection<string> TransientStateKeys => [];
+
+    // Plain protected rather than protected internal: an override's modifiers would then have to
+    // depend on whether the store's assembly can see Blex's internals, which generated code cannot know.
+    internal IReadOnlyCollection<string> GetTransientStateKeys() => TransientStateKeys;
 
     /// <inheritdoc />
     public virtual bool Persist => false;
@@ -56,10 +158,11 @@ public abstract class BlexStoreBase : IBlexStore, INotifyPropertyChanged, IDispo
     protected bool IsRestoring { get; private set; }
 
     /// <summary>
-    /// Whether anything (middleware, DevTools, subscribers) observes dispatched actions.
-    /// Generated wrappers use this to skip argument capture when nobody is listening.
+    /// Whether anything (middleware, DevTools, subscribers, <see cref="BlexManager.ActionFailed"/>
+    /// handlers) observes dispatched actions. Generated wrappers use this to skip argument capture
+    /// when nobody is listening.
     /// </summary>
-    protected bool IsObserved => _manager?.HasObservers ?? false;
+    protected bool IsObserved => _manager?.CapturesArgs ?? false;
 
     /// <summary>Called by the generator to invalidate memoized computed values.</summary>
     protected virtual void InvalidateComputed()
@@ -166,6 +269,15 @@ public abstract class BlexStoreBase : IBlexStore, INotifyPropertyChanged, IDispo
     {
         if (EqualityComparer<T>.Default.Equals(field, value))
             return;
+
+        // EnforceActions: outside code cannot reach the (private) setter at all, so an assignment
+        // here outside any action is the store's own non-action code. Only once registered: a
+        // constructor setting up its initial state is not a mutation anyone observes.
+        if (_recordDepth == 0 && _manager is not null && EnforcesActions)
+        {
+            throw new InvalidOperationException(
+                $"The store '{Name}' enforces actions, so '{propertyName}' can only change inside one of its actions. Move the assignment into a [BlexAction] method.");
+        }
 
         // A record depth above zero means an action of this store is running -- either lexically
         // around this assignment or still awaiting -- and the assignment belongs to it. Unlike a
@@ -442,10 +554,15 @@ public abstract class BlexStoreBase : IBlexStore, INotifyPropertyChanged, IDispo
 
     /// <summary>
     /// Applies a restored snapshot without recording a new action. Invoked by the manager during
-    /// time-travel. Raises <see cref="StateChanged"/> exactly once.
+    /// time-travel, and by persistence, the prerender handoff and <see cref="RestoreState"/>. Raises
+    /// <see cref="StateChanged"/> exactly once, then <see cref="BlexManager.StateRestored"/> -- once
+    /// for the whole tree when the manager is restoring every store.
     /// </summary>
     internal void ApplyRestoredState(JsonObject state)
     {
+        var manager = _manager;
+        manager?.PrepareForRestore();
+
         IsRestoring = true;
         try
         {
@@ -457,7 +574,14 @@ public abstract class BlexStoreBase : IBlexStore, INotifyPropertyChanged, IDispo
         }
 
         InvalidateComputed();
-        NotifyStateChanged();
+        try
+        {
+            NotifyStateChanged();
+        }
+        finally
+        {
+            manager?.OnStoreRestored();
+        }
     }
 
     /// <summary>Whether <see cref="Dispose()"/> has run on this store.</summary>

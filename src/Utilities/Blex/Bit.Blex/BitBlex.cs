@@ -72,6 +72,7 @@ public static class BitBlex
                 DevToolsStateSanitizer = opts.DevToolsStateSanitizer,
                 DevToolsActionSanitizer = opts.DevToolsActionSanitizer,
                 OnError = opts.OnError,
+                TimeProvider = opts.TimeProvider ?? sp.GetService<TimeProvider>() ?? TimeProvider.System,
             };
 
             if (opts.OnActionError is { } onActionError)
@@ -167,6 +168,76 @@ public static class BitBlex
         services.Add(new ServiceDescriptor(
             typeof(BlexHistory),
             sp => new BlexHistory(sp.GetRequiredService<BlexManager>(), maxEntries, filter, groupBy),
+            lifetime));
+        return services;
+    }
+
+    /// <summary>
+    /// Registers in-app undo/redo (<see cref="BlexHistory"/>) over only the stores
+    /// <paramref name="scope"/> admits, so an undo never reverts a store outside it -- the session, the
+    /// theme, a cart. <c>&lt;BlexProvider&gt;</c> starts recording automatically.
+    /// </summary>
+    /// <param name="services">The service collection.</param>
+    /// <param name="scope">Decides which stores the history covers (<c>s =&gt; s is not SessionStore</c>).</param>
+    /// <param name="maxEntries">Maximum number of undo entries retained.</param>
+    /// <param name="lifetime">
+    /// Defaults to <see cref="ServiceLifetime.Scoped"/>; must match the lifetime passed to
+    /// <see cref="AddBitBlexServices"/>.
+    /// </param>
+    /// <param name="filter">Optional predicate deciding which covered actions become their own undo step.</param>
+    /// <param name="groupBy">Optional key selector that merges consecutive covered actions into a single undo step.</param>
+    public static IServiceCollection AddBitBlexHistory(
+        this IServiceCollection services,
+        Func<IBlexStore, bool> scope,
+        int maxEntries = 100,
+        ServiceLifetime lifetime = ServiceLifetime.Scoped,
+        Func<BlexActionContext, bool>? filter = null,
+        Func<BlexActionContext, string?>? groupBy = null)
+    {
+        ArgumentNullException.ThrowIfNull(services);
+        ArgumentNullException.ThrowIfNull(scope);
+        services.Add(new ServiceDescriptor(
+            typeof(BlexHistory),
+            sp => new BlexHistory(sp.GetRequiredService<BlexManager>(), scope, maxEntries, filter, groupBy),
+            lifetime));
+        return services;
+    }
+
+    /// <summary>
+    /// Registers undo/redo for one store type only (<see cref="BlexHistory{TStore}"/>), alongside or
+    /// instead of the application-wide <see cref="BlexHistory"/>. Inject
+    /// <c>BlexHistory&lt;TStore&gt;</c>; it starts recording when it is first resolved.
+    /// </summary>
+    /// <param name="services">The service collection.</param>
+    /// <param name="maxEntries">Maximum number of undo entries retained.</param>
+    /// <param name="lifetime">
+    /// Defaults to <see cref="ServiceLifetime.Scoped"/>; must match the lifetime passed to
+    /// <see cref="AddBitBlexServices"/>.
+    /// </param>
+    /// <param name="filter">Optional predicate deciding which actions become their own undo step.</param>
+    /// <param name="groupBy">Optional key selector that merges consecutive actions into a single undo step.</param>
+    /// <remarks>
+    /// It starts on resolution rather than waiting for <c>&lt;BlexProvider&gt;</c>, because a component
+    /// typically resolves it after the stores exist. If that happens before persistence has hydrated
+    /// the store, hydration is a restore, and the history moves its baseline to the hydrated state.
+    /// </remarks>
+    public static IServiceCollection AddBitBlexHistory<TStore>(
+        this IServiceCollection services,
+        int maxEntries = 100,
+        ServiceLifetime lifetime = ServiceLifetime.Scoped,
+        Func<BlexActionContext, bool>? filter = null,
+        Func<BlexActionContext, string?>? groupBy = null)
+        where TStore : class, IBlexStore
+    {
+        ArgumentNullException.ThrowIfNull(services);
+        services.Add(new ServiceDescriptor(
+            typeof(BlexHistory<TStore>),
+            sp =>
+            {
+                var history = new BlexHistory<TStore>(sp.GetRequiredService<BlexManager>(), maxEntries, filter, groupBy);
+                history.Start();
+                return history;
+            },
             lifetime));
         return services;
     }

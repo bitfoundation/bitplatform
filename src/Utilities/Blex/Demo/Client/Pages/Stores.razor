@@ -23,7 +23,8 @@
                 <code>Name</code> is what identifies the store in the global state tree, in DevTools, in
                 action labels (<code>counter/Increment</code>) and in persistence keys. Changing it
                 changes the persistence key, which strands previously saved data - bump
-                <code>options.Version</code> and migrate if you rename a persisted store.
+                <code>options.Version</code> and migrate if you rename a persisted store. A
+                <a href="scoped-stores">scoped instance</a> appends its key: <code>counter:left</code>.
             </p>
         </Callout>
     </div>
@@ -71,6 +72,18 @@
         <p>
             A <code>[BlexState]</code> field must be a writable instance field: <code>static</code>,
             <code>const</code> and <code>readonly</code> are rejected with <code>BLEX008</code>.
+        </p>
+        <p>
+            In a store marked <code>Persist = true</code>, <code>[BlexState(Persist = false)]</code> keeps one
+            field out of storage - a search box's text, a selection, a cached response - while it stays
+            part of the snapshot that DevTools, undo/redo and the prerender handoff see. See
+            <a href="persistence">Persistence</a>.
+        </p>
+        <p>
+            By default the properties have public setters, and an outside assignment becomes a
+            <code>Set X</code> action. <code>[BlexStore(EnforceActions = true)]</code> makes the setters
+            private instead, so state can only change through the store's own actions - see
+            <a href="actions">Actions</a>.
         </p>
     </div>
 
@@ -181,6 +194,11 @@
             state - which is what you want. The same applies to <code>BlexManager</code>,
             <code>BlexStatePersistor</code> and <code>BlexHistory</code>.
         </p>
+        <p>
+            That is one instance per DI scope. When a part of the page needs its <em>own</em> instance -
+            the form in each of two open dialogs, one editor per tab - see
+            <a href="scoped-stores">Scoped stores</a>.
+        </p>
     </div>
 
 </DocPage>
@@ -195,7 +213,8 @@
     private static readonly IReadOnlyList<ApiTable.Row> StoreAttrRows =
     [
         new("Name", "Display name and slice key. Defaults to the class name. Used in the state tree, DevTools, qualified action names and persistence keys."),
-        new("Persist", "When <code>true</code>, the store is rehydrated on startup and saved after every action - provided a persistence provider is registered. See <a href=\"persistence\">Persistence</a>."),
+        new("Persist", "When <code>true</code>, the store is rehydrated on startup and saved after every action - provided a persistence provider is registered. Single fields opt out with <code>[BlexState(Persist = false)]</code>. See <a href=\"persistence\">Persistence</a>."),
+        new("EnforceActions", "When <code>true</code>, state changes only through the store's own actions: the generated setters are <code>private</code> (an outside assignment does not compile), and an assignment the store's own code makes outside an action throws once it is registered. See <a href=\"actions\">Actions</a>."),
     ];
 
     private static readonly IReadOnlyList<ApiTable.Row> PublicRows =
@@ -208,12 +227,21 @@
         new("void RestoreState(JsonObject)", "The safe public way to hydrate a store by hand: applies the snapshot, invalidates computed values and raises <code>StateChanged</code> exactly once, without recording an action."),
         new("void Batch(string, Action)", "Groups ad-hoc mutations into one named action - one notification, one history entry, one middleware pass. The equivalent of Pinia's <code>$patch</code>."),
         new("void ResetState()", "Restores the state the store had when it was first registered, recorded as a normal, vetoable <code>ResetState</code> action. No-op if the store was never registered."),
+        new("string? InstanceKey", "The key of a <a href=\"scoped-stores\">scoped</a> instance, or <code>null</code> for the usual single instance."),
+        new("IReadOnlyList&lt;BlexActionDescriptor&gt; ActionDescriptors", "Every action of the store as data: its actions and effects, a <code>Set X</code> per assignable property, and <code>ResetState</code>. What dispatch by name uses."),
+        new("BlexActionDescriptor? FindAction(string)", "The descriptor of the action dispatched under that name, or <code>null</code>."),
+        new("void Dispose()", "Cancels in-flight effects and pending debounce waits. The DI container calls it when the scope ends."),
     ];
 
     private static readonly IReadOnlyList<ApiTable.Row> ProtectedRows =
     [
         new("bool IsRestoring", "True while the manager is applying a time-travel or restore snapshot. Use it to skip side-effects that should not run during a rewind."),
-        new("bool IsObserved", "Whether anything (middleware, DevTools, subscribers) is watching. Generated wrappers use it to skip argument capture when nobody is listening."),
+        new("bool IsObserved", "Whether anything (middleware, DevTools, subscribers, <code>ActionFailed</code> handlers) is watching. Generated wrappers use it to skip argument capture when nobody is listening."),
+        new("TimeProvider TimeProvider", "The manager's clock (<code>BlexManager.TimeProvider</code>), or the system clock while unregistered. Debounced effects wait on it; read it in an action for timestamps a test can control."),
+        new("string WithInstanceKey(string)", "Appends the instance key to the declared name. The generated <code>Name</code> returns it; a hand-written store that should support scoping must too."),
+        new("IReadOnlyList&lt;BlexActionDescriptor&gt; DescribeActions()", "Generated override listing the store's own action descriptors."),
+        new("bool EnforcesActions", "Generated <code>true</code> for <code>EnforceActions</code> stores: the runtime half of the guarantee."),
+        new("IReadOnlyCollection&lt;string&gt; TransientStateKeys", "Generated: the properties marked <code>[BlexState(Persist = false)]</code>."),
         new("void SetState&lt;T&gt;(ref T, T, string?)", "The generated property setter. Compares, assigns, invalidates, notifies, and records a standalone <code>Set X</code> action when called outside a dispatch."),
         new("void SetEffectState&lt;T&gt;(ref T, T)", "Assigns a transient effect field (loading/error). Notifies, but never records a time-travel action."),
         new("void BeginEffect(ref int) / EndEffect(ref int)", "Reference-count an effect's in-flight runs so <code>IsLoading</code> stays true until the last one finishes."),

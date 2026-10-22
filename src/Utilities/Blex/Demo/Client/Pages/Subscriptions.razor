@@ -61,6 +61,38 @@
         </DemoCard>
     </div>
 
+    <div class="bb-card" id="markup">
+        <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Selective rendering in markup</h3>
+        <p>
+            <code>BlexComponentBase</code> re-renders the <em>whole</em> component, and it has to be the
+            component's base class - which is a non-starter for an app whose components already derive from
+            its own base. <code>&lt;BlexSelect&gt;</code> and <code>&lt;BlexView&gt;</code> move the
+            subscription into the markup instead: only their content follows the store, the component
+            hosting them never re-renders for it, and it can inherit whatever it likes.
+        </p>
+
+        <CodeBlock Code="@Markup" Language="razor" />
+
+        <ul class="bb-detail-list">
+            <li><code>&lt;BlexSelect&gt;</code> renders its content from a projection and re-renders it only when the projection changes - a cart total in a page header, re-rendering when the total differs and not when a line is added that leaves it unchanged. <code>Comparer</code> takes the same <code>BlexComparers</code> as every other selector.</li>
+            <li>The selector is re-read whenever the host re-renders, so it may capture the host's parameters (an id, a filter) freely: changes are always compared against what is on screen.</li>
+            <li><code>&lt;BlexView&gt;</code> re-renders its content on any change to <code>Store</code> or any of <code>Stores</code> - <code>Subscribe(store)</code> as markup.</li>
+        </ul>
+
+        <DemoCard Title="A host that never re-renders"
+                  Description="The panel's own markup renders once. Change Count and both counters move; change only Step and only the BlexView moves."
+                  Source="@MarkupSource" SourceLanguage="razor">
+            <MarkupWatcher />
+            <div class="bb-toolbar">
+                <button class="btn btn-primary" @onclick="Counter.Increment">Change Count</button>
+                <button class="btn btn-secondary" @onclick="() => Counter.SetStep(Counter.Step == 1 ? 5 : 1)">Change Step only</button>
+            </div>
+        </DemoCard>
+
+        <ApiTable Title="BlexSelect&lt;TValue&gt;" Rows="@SelectRows" MemberHeader="Parameter" />
+        <ApiTable Title="BlexView" Rows="@ViewRows" MemberHeader="Parameter" />
+    </div>
+
     <div class="bb-card">
         <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Outside components</h3>
         <p>
@@ -156,6 +188,21 @@
         </Callout>
     </div>
 
+    <div class="bb-card" id="observable">
+        <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> IObservable, for Rx</h3>
+        <p>
+            Code that already composes change streams with Reactive Extensions - <code>System.Reactive</code>,
+            ReactiveUI - can take a store's changes as an <code>IObservable&lt;T&gt;</code> and use every Rx
+            operator on them. Blex itself takes no dependency on Rx: these return the BCL interface.
+        </p>
+        <CodeBlock Code="@Observable" />
+        <ul class="bb-detail-list">
+            <li><code>store.Observe(selector, comparer?)</code> delivers the current value when an observer subscribes - a <code>BehaviorSubject</code>'s semantics - then every value that differs from the last one delivered.</li>
+            <li>A selector that throws ends the subscription with <code>OnError</code>, the Rx contract for a failed source, rather than being reported and retried on the next change. The sequence never completes on its own; dispose the subscription.</li>
+            <li><code>manager.ObserveActions()</code> is every dispatched action, the stream an NgRx effect consumes - filter it with a generated descriptor's <code>Matches</code>.</li>
+        </ul>
+    </div>
+
     <div class="bb-card">
         <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Owning other subscriptions</h3>
         <p>
@@ -194,9 +241,11 @@
 
         <Callout Kind="Callout.CalloutKind.Note" Title="Manager selectors also see restores">
             <p>
-                Undo/redo, a DevTools time-travel jump and an incoming cross-tab change all move state
-                without dispatching an action. A manager-level projection is re-evaluated after those too,
-                so it never keeps reporting a value the application no longer holds.
+                Undo/redo, a DevTools time-travel jump, persistence hydration, an incoming cross-tab
+                change and the prerender handoff all move state without dispatching an action. A
+                manager-level projection is re-evaluated after those too - and a
+                <code>CreateSelector</code> memo is invalidated - so neither keeps reporting a value the
+                application no longer holds.
             </p>
         </Callout>
     </div>
@@ -236,6 +285,63 @@
         new("BlexComparers.Sequence&lt;T&gt;(comparer?)", "Element-by-element, in order. The default choice for a projected list, filter or LINQ query."),
         new("BlexComparers.Set&lt;T&gt;(comparer?)", "Same elements, order and repetition ignored - for a selection whose order is incidental."),
     ];
+
+    private static readonly IReadOnlyList<ApiTable.Row> SelectRows =
+    [
+        new("IBlexStore Store", "Required. The store whose changes re-evaluate the selector."),
+        new("Func&lt;TValue&gt; Selector", "Required. Projects the rendered value; <code>TValue</code> is inferred from it."),
+        new("IEqualityComparer&lt;TValue&gt;? Comparer", "What counts as a change. Defaults to <code>EqualityComparer&lt;TValue&gt;.Default</code>; use <code>BlexComparers.Sequence&lt;T&gt;()</code> for a projected collection."),
+        new("RenderFragment&lt;TValue&gt;? ChildContent", "The content, rendered with the selected value as its <code>context</code> (rename it with <code>Context=\"...\"</code>)."),
+        new("TValue Value", "Not a parameter: the value the content was last rendered with."),
+    ];
+
+    private static readonly IReadOnlyList<ApiTable.Row> ViewRows =
+    [
+        new("IBlexStore? Store", "A store whose changes re-render the content."),
+        new("IEnumerable&lt;IBlexStore&gt;? Stores", "Several, combined with <code>Store</code>. A host re-render passing the same stores re-subscribes nothing."),
+        new("RenderFragment? ChildContent", "The content to keep current."),
+    ];
+
+    private const string Markup = """
+        @* Any component - no base class required. *@
+        @inject CartStore Cart
+
+        <header>
+            <BlexSelect Store="Cart" Selector="() => Cart.Total" Context="total">
+                <strong>@total.ToString("C")</strong>
+            </BlexSelect>
+        </header>
+
+        <BlexView Stores="[Cart, Profile]">
+            @Cart.ItemCount items for @Profile.UserName
+        </BlexView>
+        """;
+
+    private const string MarkupSource = """
+        @* A plain ComponentBase: it never subscribes, so it renders once. *@
+        @inject CounterStore Counter
+
+        <BlexSelect Store="Counter" Selector="() => Counter.Count" Context="count">
+            Count @count            @* re-renders when Count changes *@
+        </BlexSelect>
+
+        <BlexView Store="Counter">
+            @Counter.Count / step @Counter.Step   @* re-renders on any change *@
+        </BlexView>
+        """;
+
+    private const string Observable = """
+        // System.Reactive: search when the query settles, without a debounce of your own.
+        using var sub = store.Observe(() => store.Query)
+            .Throttle(TimeSpan.FromMilliseconds(300))
+            .DistinctUntilChanged()
+            .Subscribe(query => store.Search(query));
+
+        // Every action, as a stream; descriptors filter it by type.
+        manager.ObserveActions()
+            .Where(ctx => OrdersStore.Actions.Place.Matches(ctx))
+            .Subscribe(ctx => _analytics.Track(ctx.QualifiedName));
+        """;
 
     private static readonly IReadOnlyList<ApiTable.Row> BaseRows =
     [

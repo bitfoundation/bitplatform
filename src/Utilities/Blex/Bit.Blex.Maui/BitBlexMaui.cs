@@ -79,6 +79,50 @@ public static class BitBlexMaui
     }
 
     /// <summary>
+    /// Registers in-app undo/redo over only the stores <paramref name="scope"/> admits, as a singleton.
+    /// Pairs with <see cref="UseBitBlex"/>.
+    /// </summary>
+    /// <param name="builder">The MAUI app builder.</param>
+    /// <param name="scope">
+    /// Decides which stores the history covers. See
+    /// <see cref="BlexHistory(BlexManager, Func{IBlexStore, bool}, int, Func{BlexActionContext, bool}, Func{BlexActionContext, string})"/>.
+    /// </param>
+    /// <param name="maxEntries">Maximum number of undo entries retained.</param>
+    /// <param name="filter">Optional predicate deciding which covered actions become their own undo step.</param>
+    /// <param name="groupBy">Optional key selector that merges consecutive covered actions into a single undo step.</param>
+    public static MauiAppBuilder AddBitBlexHistory(
+        this MauiAppBuilder builder,
+        Func<IBlexStore, bool> scope,
+        int maxEntries = 100,
+        Func<BlexActionContext, bool>? filter = null,
+        Func<BlexActionContext, string?>? groupBy = null)
+    {
+        ArgumentNullException.ThrowIfNull(builder);
+        builder.Services.AddBitBlexHistory(scope, maxEntries, ServiceLifetime.Singleton, filter, groupBy);
+        return builder;
+    }
+
+    /// <summary>
+    /// Registers undo/redo for one store type only (<see cref="BlexHistory{TStore}"/>) as a singleton.
+    /// Pairs with <see cref="UseBitBlex"/>.
+    /// </summary>
+    /// <param name="builder">The MAUI app builder.</param>
+    /// <param name="maxEntries">Maximum number of undo entries retained.</param>
+    /// <param name="filter">Optional predicate deciding which actions become their own undo step.</param>
+    /// <param name="groupBy">Optional key selector that merges consecutive actions into a single undo step.</param>
+    public static MauiAppBuilder AddBitBlexHistory<TStore>(
+        this MauiAppBuilder builder,
+        int maxEntries = 100,
+        Func<BlexActionContext, bool>? filter = null,
+        Func<BlexActionContext, string?>? groupBy = null)
+        where TStore : class, IBlexStore
+    {
+        ArgumentNullException.ThrowIfNull(builder);
+        builder.Services.AddBitBlexHistory<TStore>(maxEntries, ServiceLifetime.Singleton, filter, groupBy);
+        return builder;
+    }
+
+    /// <summary>
     /// Persists stores marked <c>[BlexStoreAttribute(Persist = true)]</c> to MAUI <c>Preferences</c> as a
     /// singleton. Pairs with <see cref="UseBitBlex"/>.
     /// </summary>

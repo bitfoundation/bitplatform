@@ -71,9 +71,10 @@
                         <td><code>[BlexStore]</code> on <code>partial class Foo</code></td>
                         <td>
                             <code>partial class Foo : BlexStoreBase</code>,
-                            <code>override string Name</code>,
+                            <code>override string Name =&gt; base.WithInstanceKey("foo")</code> (the declared name, plus <code>:{key}</code> for a scoped instance),
                             <code>override JsonObject SerializeState()</code>,
-                            <code>override void DeserializeState(JsonObject)</code>
+                            <code>override void DeserializeState(JsonObject)</code>,
+                            and <code>override DescribeActions()</code> listing the store's action descriptors - its actions and effects, plus a <code>"Set Foo"</code> per state property
                         </td>
                     </tr>
                     <tr>
@@ -81,8 +82,16 @@
                         <td><code>override bool Persist =&gt; true</code></td>
                     </tr>
                     <tr>
+                        <td><code>[BlexStore(EnforceActions = true)]</code></td>
+                        <td>every state setter is <code>private set</code>, <code>override bool EnforcesActions =&gt; true</code>, and no <code>"Set Foo"</code> descriptors</td>
+                    </tr>
+                    <tr>
                         <td><code>[BlexState] private T _foo;</code></td>
                         <td><code>public T Foo { get; set; }</code> - the setter routes through <code>SetState</code>; the field is included in both snapshot methods</td>
+                    </tr>
+                    <tr>
+                        <td><code>[BlexState(Persist = false)] private T _foo;</code></td>
+                        <td>the same property, and <code>"Foo"</code> in an <code>override TransientStateKeys</code> - kept out of durable persistence</td>
                     </tr>
                     <tr>
                         <td><code>[BlexComputed] T ComputeFoo()</code></td>
@@ -108,6 +117,16 @@
                         <td><code>[BlexEffect] Task OnFoo(A a, CancellationToken ct)</code></td>
                         <td>the above, plus <code>public void CancelFoo()</code> - and note the token is <em>not</em> on the public signature</td>
                     </tr>
+                    <tr>
+                        <td>any <code>[BlexAction]</code> or <code>[BlexEffect]</code></td>
+                        <td>
+                            a field in the nested <code>public static class Actions</code>:
+                            <code>BlexAction&lt;Foo&gt; Bar</code> for <code>OnBar()</code>,
+                            <code>BlexAction&lt;Foo, A&gt; Bar</code> for <code>OnBar(A a)</code>,
+                            <code>BlexAction&lt;Foo, (A A, B B)&gt; Bar</code> for <code>OnBar(A a, B b)</code>.
+                            Not generated - with warning <code>BLEX020</code> - when the store already has a member named <code>Actions</code>.
+                        </td>
+                    </tr>
                 </tbody>
             </table>
         </div>
@@ -117,7 +136,8 @@
         <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Reserved names</h3>
         <p>
             A generated member may not take one of these - they are inherited from <code>BlexStoreBase</code>
-            or emitted by the generator itself. Collisions are reported as <code>BLEX005</code>.
+            or emitted by the generator itself. Collisions are reported as <code>BLEX005</code>. The name
+            <code>Actions</code> is different: taking it costs only the typed descriptors (<code>BLEX020</code>).
         </p>
         <CodeBlock Code="@Reserved" Language="text" Title="Reserved" />
     </div>
@@ -138,8 +158,8 @@
 @code {
     private static readonly IReadOnlyList<ApiTable.Row> Attributes =
     [
-        new("BlexStoreAttribute", "Marks a partial class as a store. Properties: <code>Name</code>, <code>Persist</code>. See <a href=\"stores\">Stores &amp; state</a>."),
-        new("BlexStateAttribute", "Marks a field as reactive state. See <a href=\"stores\">Stores &amp; state</a>."),
+        new("BlexStoreAttribute", "Marks a partial class as a store. Properties: <code>Name</code>, <code>Persist</code>, <code>EnforceActions</code>. See <a href=\"stores\">Stores &amp; state</a>."),
+        new("BlexStateAttribute", "Marks a field as reactive state. Property: <code>Persist</code> (set <code>false</code> to keep the field out of storage). See <a href=\"stores\">Stores &amp; state</a>."),
         new("BlexComputedAttribute", "Marks a parameterless <code>ComputeXxx()</code>/<code>GetXxx()</code> method as memoized derived state. See <a href=\"computed\">Computed state</a>."),
         new("BlexActionAttribute", "Marks an <code>OnXxx</code> method as an action. Property: <code>Name</code>. See <a href=\"actions\">Actions</a>."),
         new("BlexEffectAttribute", "Marks an async <code>OnXxx</code> method as an effect. Properties: <code>Name</code>, <code>Concurrency</code>, <code>DebounceMilliseconds</code>. See <a href=\"effects\">Effects</a>."),
@@ -149,13 +169,17 @@
     private static readonly IReadOnlyList<ApiTable.Row> Core =
     [
         new("IBlexStore", "The store contract: <code>Name</code>, <code>Persist</code>, <code>StateChanged</code>, <code>SerializeState()</code>, <code>DeserializeState()</code>."),
-        new("BlexStoreBase", "Base class for every store. Change notification, batched dispatch, <code>Batch</code>, <code>ResetState</code>, <code>RestoreState</code>, <code>Dispose()</code> (cancels in-flight effects) and the protected hooks the generator uses."),
-        new("BlexManager", "The central manager: store registry, middleware pipeline, action subscriptions, global state capture and restore, <code>ResetAll</code>, DevTools connection, error sink. See <a href=\"cross-store\">Cross-store coordination</a>."),
+        new("BlexStoreBase", "Base class for every store. Change notification, batched dispatch, <code>Batch</code>, <code>ResetState</code>, <code>RestoreState</code>, <code>InstanceKey</code>, <code>ActionDescriptors</code> / <code>FindAction</code>, <code>Dispose()</code> (cancels in-flight effects) and the protected hooks the generator uses."),
+        new("BlexManager", "The central manager: store registry, <code>CreateScope</code>, middleware pipeline, action subscriptions (typed ones included), <code>DispatchAsync</code> by name, global state capture and restore, <code>ResetAll</code>, <code>TimeProvider</code>, DevTools connection, error sink. See <a href=\"cross-store\">Cross-store coordination</a>."),
+        new("BlexActionDescriptor", "One action described as data: <code>Name</code>, <code>StoreType</code>, <code>ParameterNames</code>, <code>Matches(...)</code> and an untyped <code>InvokeAsync(store, args)</code>. See <a href=\"actions#typed-actions\">Typed actions</a>."),
+        new("BlexAction&lt;TStore&gt;", "The generated descriptor of a parameterless action (<code>CounterStore.Actions.Increment</code>): <code>InvokeAsync(store)</code>."),
+        new("BlexAction&lt;TStore, TPayload&gt;", "The generated descriptor of an action with arguments: <code>TryGetPayload</code>, <code>GetPayload</code>, <code>ReadPayload</code>, <code>InvokeAsync(store, payload)</code>. The payload is the single argument, or a tuple named after the parameters."),
+        new("BlexStoreScope&lt;TStore&gt;", "One instance of a store registered under <code>\"{name}:{key}\"</code> by <code>manager.CreateScope</code>: <code>Store</code>, <code>Key</code>, <code>Dispose()</code>. See <a href=\"scoped-stores\">Scoped stores</a>."),
         new("BlexActionContext", "What observers receive after an action: <code>Store</code>, <code>ActionName</code>, <code>QualifiedName</code>, <code>Args</code>, <code>Sequence</code>, <code>Timestamp</code>, <code>GlobalState</code>."),
         new("BlexPreActionContext", "What middleware receives before an action, plus <code>IsCancelled</code> and <code>Cancel()</code>."),
         new("BlexActionErrorContext", "What the error hooks receive when an action body throws: <code>Store</code>, <code>ActionName</code>, <code>QualifiedName</code>, <code>Args</code>, <code>Exception</code>, <code>Timestamp</code>. See <a href=\"middleware\">Middleware</a>."),
         new("BlexActionArg", "<code>readonly record struct (string Name, object? Value)</code> - one captured action argument."),
-        new("BlexOptions", "Configuration passed to <code>AddBitBlexServices</code>: <code>DevToolsName</code>, sanitizers, <code>RedactDevToolsKeys</code>, <code>UseMiddleware</code>, <code>UseFilter</code>, <code>OnError</code>, <code>OnActionError</code>."),
+        new("BlexOptions", "Configuration passed to <code>AddBitBlexServices</code>: <code>DevToolsName</code>, sanitizers, <code>RedactDevToolsKeys</code>, <code>UseMiddleware</code>, <code>UseFilter</code> (typed overloads included), <code>OnError</code>, <code>OnActionError</code>, <code>TimeProvider</code>."),
         new("BlexComparers", "Collection equality for selector subscriptions: <code>Sequence&lt;T&gt;()</code> and <code>Set&lt;T&gt;()</code>. See <a href=\"subscriptions\">Components &amp; selectors</a>."),
         new("BlexSelector&lt;T&gt;", "A lazy, memoized derived value over the whole state tree, created with <code>manager.CreateSelector(...)</code>: <code>Value</code>, <code>IsValid</code>, <code>Invalidate()</code>, <code>Dispose()</code>. See <a href=\"cross-store\">Cross-store coordination</a>."),
         new("BlexError", "<code>readonly record struct (string Source, Exception Exception, string? Detail)</code> - an isolated pipeline failure. See <a href=\"errors\">Error isolation</a>."),
@@ -186,19 +210,24 @@
 
     private static readonly IReadOnlyList<ApiTable.Row> HistoryTypes =
     [
-        new("BlexHistory", "In-app undo/redo over the global state tree: <code>Undo</code>/<code>Redo</code>, <code>Jump</code>/<code>JumpToPast</code>/<code>JumpToFuture</code>, <code>UndoLabels</code>/<code>RedoLabels</code>, <code>Checkpoint</code>, plus an optional <code>filter</code> and <code>groupBy</code>. See <a href=\"history\">Undo &amp; redo</a>."),
+        new("BlexHistory", "In-app undo/redo over the state tree, or over the stores a <code>scope</code> admits: <code>Undo</code>/<code>Redo</code>, <code>Jump</code>/<code>JumpToPast</code>/<code>JumpToFuture</code>, <code>UndoLabels</code>/<code>RedoLabels</code>, <code>Checkpoint</code>, <code>IsScoped</code>/<code>Covers</code>, plus an optional <code>filter</code> and <code>groupBy</code>. See <a href=\"history\">Undo &amp; redo</a>."),
+        new("BlexHistory&lt;TStore&gt;", "Undo/redo for one store type only, every instance of it included. Registered with <code>AddBitBlexHistory&lt;TStore&gt;()</code>. See <a href=\"history#scope\">Scoping history</a>."),
     ];
 
     private static readonly IReadOnlyList<ApiTable.Row> Extensions =
     [
-        new("BitBlex", "<code>AddBitBlexServices</code>, <code>AddBitBlexStore&lt;T&gt;</code>, <code>AddBitBlexPersistence</code>, <code>AddBitBlexHistory</code>."),
+        new("BitBlex", "<code>AddBitBlexServices</code>, <code>AddBitBlexStore&lt;T&gt;</code>, <code>AddBitBlexPersistence</code>, <code>AddBitBlexHistory</code> (with an optional <code>scope</code>), <code>AddBitBlexHistory&lt;TStore&gt;</code>."),
         new("BlexStoreSubscriptionExtensions", "<code>store.Subscribe(selector, onChanged, comparer, fireImmediately)</code> in both single-value and previous/current forms. See <a href=\"subscriptions\">Components &amp; selectors</a>."),
+        new("BlexObservableExtensions", "<code>store.Observe(selector, comparer)</code> and <code>manager.ObserveActions()</code> as <code>IObservable&lt;T&gt;</code>, for Rx. See <a href=\"subscriptions#observable\">Components &amp; selectors</a>."),
     ];
 
     private static readonly IReadOnlyList<ApiTable.Row> BlazorTypes =
     [
         new("BlexProvider", "Root component: registers stores, restores prerendered and persisted state, starts history, connects DevTools. Parameters: <code>EnableDevTools</code>, <code>PersistComponentState</code>, <code>ChildContent</code>."),
         new("BlexComponentBase", "Optional component base with <code>Subscribe</code>, selector <code>Subscribe</code>, <code>OwnsSubscription</code> and a <code>Dispose(bool)</code> hook."),
+        new("BlexSelect&lt;TValue&gt;", "Renders its content from a projection of a store and re-renders only that content, only when the projection changes. Parameters: <code>Store</code>, <code>Selector</code>, <code>Comparer</code>, <code>ChildContent</code>. See <a href=\"subscriptions#markup\">Components &amp; selectors</a>."),
+        new("BlexView", "Re-renders its content on any change to <code>Store</code> / <code>Stores</code> - no base class required."),
+        new("BlexScope&lt;TStore&gt;", "Gives its content its own instance of a store - created from DI, registered as <code>\"{name}:{key}\"</code>, cascaded, and disposed with the scope. Parameters: <code>Key</code>, <code>Factory</code>, <code>ChildContent</code>. See <a href=\"scoped-stores\">Scoped stores</a>."),
         new("BlexBrowserStorage", "<code>IBlexStorage</code> over <code>localStorage</code>/<code>sessionStorage</code> through a small JS module. Also implements <code>IBlexExternalStorageChange</code> via the browser's <code>storage</code> event, which powers <code>SyncAcrossTabs</code>."),
         new("BlexBrowserStorageKind", "Enum: <code>Local</code>, <code>Session</code>."),
         new("BitBlexBlazor", "<code>AddBitBlexLocalStoragePersistence</code>, <code>AddBitBlexSessionStoragePersistence</code>."),
@@ -208,11 +237,11 @@
 
     private static readonly IReadOnlyList<ApiTable.Row> TestingTypes =
     [
-        new("BlexTestHarness&lt;TStore&gt;", "Store + manager + action log in one object."),
+        new("BlexTestHarness&lt;TStore&gt;", "Store + manager + action log in one object, plus <code>Failures</code>, <code>Register</code> and a settable <code>TimeProvider</code>."),
         new("BlexTestHarness", "Static factory: <code>For&lt;TStore&gt;()</code>, <code>For(store)</code>, <code>WithMiddleware</code>, <code>WithFilter</code>."),
-        new("BlexActionLog", "Records dispatches: <code>Actions</code>, <code>Last</code>, <code>Count</code>, <code>Names</code>, <code>QualifiedNames</code>, <code>Contains</code>, <code>CountOf</code>, <code>Clear</code>."),
+        new("BlexActionLog", "Records dispatches: <code>Actions</code>, <code>Last</code>, <code>Count</code>, <code>Names</code>, <code>QualifiedNames</code>, <code>Contains</code>, <code>CountOf</code> (by name or descriptor), <code>PayloadsOf</code>, <code>Clear</code>."),
         new("BlexRecordedAction", "One recorded dispatch with its store, names, sequence, state snapshot and args."),
-        new("BlexTestExtensions", "<code>RecordActions</code>, <code>Snapshot</code>, <code>store.WaitForAsync</code>, <code>manager.WaitForAsync</code>, <code>CountNotifications</code>. See <a href=\"testing\">Testing</a>."),
+        new("BlexTestExtensions", "<code>RecordActions</code>, <code>Snapshot</code>, <code>store.WaitForAsync</code>, <code>manager.WaitForAsync</code>, <code>CountNotifications</code>, <code>manager.ReplayAsync</code>. See <a href=\"testing\">Testing</a>."),
     ];
 
     private const string AttributeSummary = """
@@ -236,7 +265,9 @@
         SetEffectState    BeginEffect       EndEffect         Dispatch
         DispatchAsync     Batch             ResetState        RestoreState
         IsRestoring       IsObserved        BeginAction       DispatchApprovedAsync
-        Dispose           IsDisposed        CancelEffects
+        Dispose           IsDisposed        CancelEffects     InstanceKey
+        WithInstanceKey   TimeProvider      ActionDescriptors FindAction
+        DescribeActions   EnforcesActions   TransientStateKeys
         """;
 
     private const string JsonShape = """

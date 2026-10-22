@@ -23,3 +23,4 @@ BLEX016 | Bit.Blex.Generators | Error | Store cannot have another base class
 BLEX017 | Bit.Blex.Generators | Error | Computed method must return a value
 BLEX018 | Bit.Blex.Generators | Warning | Blex member attribute outside a store
 BLEX019 | Bit.Blex.Generators | Error | Effect debounce cannot be negative
+BLEX020 | Bit.Blex.Generators | Warning | Typed action descriptors are not generated

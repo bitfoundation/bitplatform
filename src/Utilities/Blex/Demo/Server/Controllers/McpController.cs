@@ -83,7 +83,7 @@ public class McpController(HtmlRenderer htmlRenderer) : ControllerBase
 
     [HttpGet]
     [McpServerTool(Name = nameof(GetBlexDocsPage), Title = "Read a documentation page", ReadOnly = true, OpenWorld = false)]
-    [Description("Gets one page of the Bit.Blex documentation site as Markdown, code samples included - the narrative behind the guide: 'stores', 'computed', 'actions', 'effects', 'subscriptions', 'cross-store', 'entities', 'middleware', 'errors', 'persistence', 'history', 'devtools', 'testing', 'diagnostics', 'api', plus 'introduction', 'installation', 'quick-start' and 'mcp'. Omit the slug for the index of pages.")]
+    [Description("Gets one page of the Bit.Blex documentation site as Markdown, code samples included - the narrative behind the guide: 'stores', 'computed', 'actions', 'effects', 'scoped-stores', 'subscriptions', 'cross-store', 'entities', 'middleware', 'errors', 'persistence', 'history', 'devtools', 'testing', 'diagnostics', 'api', plus 'introduction', 'installation', 'quick-start' and 'mcp'. Omit the slug for the index of pages.")]
     public async Task<string> GetBlexDocsPage(
         [Description("The page's slug, e.g. 'effects'. Omit it for the index of pages.")] string? slug = null)
     {

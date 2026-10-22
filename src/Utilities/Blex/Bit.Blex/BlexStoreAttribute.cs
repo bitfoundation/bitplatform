@@ -15,6 +15,26 @@ public sealed class BlexStoreAttribute : Attribute
     /// When <c>true</c>, the store opts in to automatic persistence: its state is saved through the
     /// registered <see cref="IBlexStorage"/> after every action and rehydrated on startup.
     /// Has no effect unless a persistence provider is wired up (see <c>AddBitBlexPersistence</c>).
+    /// Individual fields can opt out with <c>[BlexStateAttribute(Persist = false)]</c>.
     /// </summary>
     public bool Persist { get; set; }
+
+    /// <summary>
+    /// When <c>true</c>, the store's state can only change through its own actions: the generated
+    /// state properties get <c>private</c> setters, so assigning one from outside the store is a
+    /// compile-time error, and an assignment the store's own code makes outside any action throws at
+    /// runtime once the store is registered. Defaults to <c>false</c>.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// The guarantee this buys is the one a Flux store is supposed to give: every state change has a
+    /// name, passes the filters, reaches middleware and lands in DevTools as a deliberate action -- never
+    /// as an anonymous <c>"Set X"</c> from whichever component happened to hold the store.
+    /// </para>
+    /// <para>
+    /// Blazor two-way binding needs a setter, so bind such a store's state through an action instead:
+    /// <c>&lt;input @bind:get="Store.Query" @bind:set="Store.SetQuery" /&gt;</c>.
+    /// </para>
+    /// </remarks>
+    public bool EnforceActions { get; set; }
 }

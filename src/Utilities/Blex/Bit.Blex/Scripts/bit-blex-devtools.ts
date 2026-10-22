@@ -41,8 +41,9 @@ export function connect(dotNetRef: DotNetObjectReference, name: string): number 
         name: name || 'Blex',
         // Only advertise what the .NET side actually implements: the extension allows exactly the
         // features listed as true and hides the rest, so a button left false here can never send
-        // its message. `skip`/`reorder`/`dispatch`/`test` need the extension's lifted action log,
-        // which Blex does not keep - it streams state, it does not replay reducers.
+        // its message. `dispatch` works because every generated action can be dispatched by name
+        // (BlexManager.DispatchAsync); `skip`/`reorder`/`test` need the extension's lifted action
+        // log, which Blex does not keep - it streams state, it does not replay reducers.
         features: {
             pause: true,
             lock: true,
@@ -51,7 +52,7 @@ export function connect(dotNetRef: DotNetObjectReference, name: string): number 
             jump: true,
             skip: false,
             reorder: false,
-            dispatch: false,
+            dispatch: true,
             test: false
         }
     });

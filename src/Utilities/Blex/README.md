@@ -36,7 +36,10 @@ instead of guessing at it - or at Fluxor's. Point an MCP client at `https://blex
 |---|---|---|
 | Define a piece of state | Feature + State class | one `[BlexState]` field |
 | Define an action | Action class + Reducer method | one `[BlexAction]` method |
+| Typed actions | the action class | generated `Store.Actions.X` descriptors (typed payloads, match, dispatch) |
 | Action payloads in DevTools/middleware | manual | automatic (`ctx.Args`, DevTools payload) |
+| Dispatch an action as data | yes | `manager.DispatchAsync("store/Action", payload)` (DevTools dispatcher, replay) |
+| State only changes through actions | ✓ (immutable state, reducers) | opt-in: `[BlexStore(EnforceActions = true)]` (compile-time + runtime) |
 | Derived state | manual / selectors | `[BlexComputed]` (memoized) |
 | Derived state *across* stores | manual | `manager.CreateSelector(...)` (lazy, shared, memoized) |
 | Async side-effects | Effect classes | `[BlexEffect]` (auto loading/error) |
@@ -46,12 +49,15 @@ instead of guessing at it - or at Fluxor's. Point an MCP client at `https://blex
 | Middleware | yes | yes (with veto/filter hooks + payload access) |
 | Action failure hook | ✗ | `OnActionError` (Pinia `$onAction`'s `onError`) |
 | Granular re-render | manual selectors | selector `Subscribe(...)` (+ prev/current, fireImmediately, `BlexComparers`) |
+| Selective rendering without a base class | manual (`IStateSelection` + `StateHasChanged`) | `<BlexSelect>` / `<BlexView>` |
+| Rx interop | ✗ | `store.Observe(...)` / `manager.ObserveActions()` as `IObservable<T>` |
+| Several instances of one store | ✗ | scoped stores: `manager.CreateScope(...)` / `<BlexScope>` |
 | Normalized collections | manual | `BlexEntityAdapter` / `BlexEntityState` (+ sorting, `UpdateMany`, `Map`) |
-| Persistence | 3rd-party | `[BlexStore(Persist = true)]` + debounce + versioning/migrations + hydration status |
-| Undo / redo | ✗ | `BlexHistory` (in-app, labeled entries, `Jump`, `groupBy`) |
-| Redux DevTools time-travel | ✗ | ✓ built in (+ state/action sanitizers) |
+| Persistence | 3rd-party | `[BlexStore(Persist = true)]` + debounce + versioning/migrations + hydration status + `[BlexState(Persist = false)]` |
+| Undo / redo | ✗ | `BlexHistory` (in-app, labeled entries, `Jump`, `groupBy`, scoped to chosen stores) |
+| Redux DevTools time-travel | ✗ | ✓ built in (+ state/action sanitizers, dispatcher) |
 | Error isolation hook | ✗ | `options.OnError` |
-| Test helpers | ✗ | `Bit.Blex.Testing` harness (multi-store `Register`, `Failures`, `WaitForAsync`) |
+| Test helpers | ✗ | `Bit.Blex.Testing` harness (multi-store `Register`, `Failures`, `WaitForAsync`, typed log, replay, fake clock) |
 | Boilerplate | high | minimal (generated) |
 
 ## Install
@@ -92,8 +98,9 @@ public partial class CounterStore
 ```
 
 The generator emits the reactive `Count`/`Step` properties, the memoized `DoubleCount`/`IsEven`
-accessors, the public `Increment()`/`SetStep(int)`/`Reset()` action wrappers, JSON snapshot
-support and the `BlexStoreBase` base type.
+accessors, the public `Increment()`/`SetStep(int)`/`Reset()` action wrappers, typed descriptors of
+those actions (`CounterStore.Actions.Increment`, ...), JSON snapshot support and the `BlexStoreBase`
+base type.
 
 ### Conventions
 
@@ -111,6 +118,33 @@ support and the `BlexStoreBase` base type.
   equivalent).
 - **Reset**: `store.ResetState()` returns the store to the state it had when first registered,
   recorded as a normal, vetoable `ResetState` action.
+- **Typed actions**: every action and effect also gets a descriptor in the nested `Actions` class -
+  see [Typed actions](#typed-actions).
+
+### Enforcing actions
+
+Direct assignment is convenient, but it lets any component that holds the store change it - as an
+anonymous `Set Count` rather than a named, deliberate action. `EnforceActions` closes that door, the way
+Vuex's strict mode and MobX's `enforceActions` do:
+
+```csharp
+[BlexStore(Name = "cart", EnforceActions = true)]
+public partial class CartStore
+{
+    [BlexState] private decimal _total;
+
+    [BlexAction] private void OnAdd(decimal price) => Total += price;
+}
+
+cart.Add(9.99m);    // fine
+cart.Total = 0;     // CS0272: the setter is private
+```
+
+The generated setters become `private`, so an assignment from outside the store does not compile. The
+store's own code is policed at runtime: an assignment it makes outside any action throws once the store is
+registered (a constructor setting up initial state is fine). Restores, `ResetState` and effects are
+unaffected. Two-way binding needs a setter, so bind through an action instead:
+`<input @bind:get="Store.Query" @bind:set="Store.SetQuery" />`.
 
 ## Setup
 
@@ -147,6 +181,52 @@ builder.Services.AddBitBlexStore<TodoStore>();
 
 `BlexComponentBase.Subscribe(...)` re-renders the component whenever a subscribed store changes
 and unsubscribes automatically on dispose.
+
+## Typed actions
+
+An action is a method call to the code that dispatches it, but everything else that cares about it -
+a subscriber, a filter, a test, DevTools - sees it as data. The generator gives each store a nested
+`Actions` class with one typed descriptor per action and effect, so that data is typed too:
+
+```csharp
+[BlexStore(Name = "orders")]
+public partial class OrdersStore
+{
+    [BlexState] private int _units;
+
+    [BlexAction] private void OnClear() { ... }                   // Actions.Clear : BlexAction<OrdersStore>
+    [BlexAction] private void OnAdd(int units) { ... }            // Actions.Add   : BlexAction<OrdersStore, int>
+    [BlexAction] private void OnPlace(string name, int quantity)  // Actions.Place : BlexAction<OrdersStore, (string Name, int Quantity)>
+        { ... }
+}
+```
+
+A single parameter is the payload as is; several become a tuple named after the parameters. Match an
+action by its descriptor instead of a string - a rename then breaks the build rather than silently
+ending a subscription - and read its payload as the type the action takes:
+
+```csharp
+using var sub = manager.SubscribeToAction(OrdersStore.Actions.Place,
+    (orders, order) => notifications.Push($"{order.Quantity} x {order.Name}"));
+
+options.UseFilter(OrdersStore.Actions.Add, (orders, units) => units is > 0 and <= 100);
+
+if (OrdersStore.Actions.Place.TryGetPayload(ctx, out var order)) { ... }   // in any middleware or subscriber
+await OrdersStore.Actions.Place.InvokeAsync(orders, ("lamp", 2));           // dispatch it
+```
+
+The same descriptors make every action dispatchable by its qualified name with a JSON payload - which
+is what the [DevTools dispatcher](#time-travel-debugging) and [replay in tests](#testing) are built on.
+It runs through the generated wrapper, so filters, middleware and DevTools see an ordinary action:
+
+```csharp
+await manager.DispatchAsync("orders/Place", new JsonObject { ["name"] = "desk", ["quantity"] = 1 });
+await manager.DispatchAsync("orders/Set Units", new JsonObject { ["Units"] = 0 });   // a state assignment
+await manager.DispatchAsync("orders/ResetState");
+```
+
+`store.ActionDescriptors` lists everything a store can dispatch this way. A store that already has a
+member called `Actions` keeps compiling and goes without the typed class (`BLEX020`).
 
 ## Granular subscriptions (selectors)
 
@@ -189,6 +269,40 @@ builds a new object every time it runs, so the default reference comparison alwa
 ```csharp
 Subscribe(Store, () => Store.Todos.All.Where(t => !t.Done), BlexComparers.Sequence<Todo>());
 using var sub = store.Subscribe(() => store.SelectedIds, Refresh, BlexComparers.Set<int>());
+```
+
+### Selective rendering in markup
+
+A component subscribing to a store re-renders as a whole. `<BlexSelect>` narrows that to a fragment:
+only its content re-renders, and only when the selected value changes - the host component neither
+subscribes nor re-renders, so it does not need to inherit `BlexComponentBase` at all (useful when it
+already has a base class of its own):
+
+```razor
+<header>
+    @* the page around it never re-renders for the cart *@
+    <BlexSelect Store="Cart" Selector="() => Cart.Total" Context="total">
+        <strong>@total.ToString("C")</strong>
+    </BlexSelect>
+</header>
+```
+
+The selector may capture the host's parameters (an id, a filter): it is re-read whenever the host
+re-renders. `Comparer` takes a `BlexComparers` comparer for collection projections. For content that
+follows a whole store, `<BlexView Store="Cart">` (or `Stores="[Cart, Profile]"`) re-renders its content
+on every change of those stores.
+
+### Observables
+
+For code that composes change streams with Reactive Extensions, `Observe` and `ObserveActions` return the
+BCL's `IObservable<T>` - no Rx dependency in Blex, but every Rx operator accepts them:
+
+```csharp
+store.Observe(() => store.Query)          // the current value, then each distinct change
+     .Throttle(TimeSpan.FromMilliseconds(300))
+     .Subscribe(query => store.Search(query));
+
+manager.ObserveActions().Where(OrdersStore.Actions.Place.Matches).Subscribe(ctx => ...);
 ```
 
 ## Effects (async with managed loading/error)
@@ -375,10 +489,18 @@ builder.Services.AddBitBlexLocalStoragePersistence(options =>
   storage, so a reload never resurrects the pre-restore state.
 - **Ordered writes** - saves are serialized in dispatch order; a stale payload can't overwrite a
   newer one.
+- **Transient fields** - `[BlexState(Persist = false)]` keeps one field of a persistent store out of
+  storage, declared where the field is: it is never written, and a value stored for it before it was
+  excluded is ignored on hydration and on cross-tab sync. It is still part of the store's snapshot, so
+  DevTools, undo/redo and the prerender handoff see it as usual.
 - **Partial persistence** - `options.Partialize` projects each snapshot on its way to storage, so
   transient fields (a search box's text, a cached response) never get written. Keys you omit come
   back as their declared defaults rather than being wiped. Return `null` to skip that store's write
   entirely.
+- **Stores that arrive later** - a persistent store registered after startup (a lazily loaded
+  feature, a [scoped store](#scoped-stores)) is hydrated the moment it registers, and its saves wait until
+  that has happened - writing its declared defaults first would overwrite the user's data. A store
+  that leaves the manager writes the debounced save it still owes on its way out.
 - **Rehydration hooks** - `options.OnRehydrated` fires once per persistent store with the slice that
   was applied, or `null` when nothing was stored - which is how you tell a returning user from a
   first visit.
@@ -399,12 +521,21 @@ builder.Services.AddBitBlexLocalStoragePersistence(options =>
   `IBlexExternalStorageChange`.
 
 ```csharp
+[BlexStore(Name = "search", Persist = true)]
+public partial class SearchStore
+{
+    [BlexState] private string[] _recent = [];
+    [BlexState(Persist = false)] private string _query = "";   // per-visit, never persisted
+}
+```
+
+```csharp
 builder.Services.AddBitBlexLocalStoragePersistence(options =>
 {
     options.Partialize = (storeName, state) =>
     {
-        if (storeName == "search")
-            state.Remove("Query");     // per-visit, never persisted
+        if (storeName == "search" && state["Recent"] is JsonArray recent && recent.Count > 20)
+            state["Recent"] = new JsonArray([.. recent.Take(20).Select(n => n?.DeepClone())]);
 
         return state;                  // return null to skip this store's write
     };
@@ -452,7 +583,8 @@ React to one store's actions from elsewhere (e.g. trigger an effect on another s
 
 ```csharp
 manager.SubscribeTo<CounterStore>(ctx => { /* runs after each CounterStore action */ });
-manager.SubscribeToAction("Increment", ctx => { ... });
+manager.SubscribeToAction(CounterStore.Actions.Add, (counter, amount) => { ... });   // typed
+manager.SubscribeToAction("Increment", ctx => { ... });                               // by name
 manager.SubscribeAsync(async ctx => await otherStore.Reload());
 ```
 
@@ -467,6 +599,38 @@ using var summary = manager.CreateSelector(() => $"{orders.Units} units, {cart.T
 var text = summary.Value;   // recomputed at most once per action, however many readers
 ```
 
+Both stay correct when state moves without an action: undo/redo, DevTools time-travel, persistence
+hydration, a change arriving from another tab and the prerender handoff all raise
+`manager.StateRestored`, which re-evaluates manager subscriptions and invalidates selectors.
+
+## Scoped stores
+
+A store registered with `AddBitBlexStore` exists once per DI scope, keyed by its name. State that belongs
+to one part of the page rather than to the app - the form inside each of two open dialogs, one editor
+per tab, a wizard that must start fresh every time - needs an instance of its own. A scoped store is one:
+registered under `"{name}:{key}"`, a full citizen of the state tree, DevTools, middleware and history for
+as long as it lives, and unregistered and disposed when it goes away.
+
+```razor
+<BlexScope TStore="DocumentStore" Key="@DocumentId">
+    <Toolbar />   @* [CascadingParameter] public DocumentStore Document { get; set; } *@
+    <Editor />
+</BlexScope>
+```
+
+`<BlexScope>` creates the store from DI (constructor dependencies resolved as usual; `Factory` builds one
+DI cannot), cascades it to every descendant, and disposes it with the component. Changing `Key` replaces
+the instance; omitting it assigns a unique one. Outside Blazor:
+
+```csharp
+using var editor = manager.CreateScope(new DocumentStore(api), key: "42");
+editor.Store.Rename("Draft");   // recorded as "document:42/Rename"
+```
+
+A scoped store marked `Persist = true` is hydrated as soon as it registers and saved under its keyed name,
+so give it a stable key (the document's id) for the next instance to find its state. Scoped stores are not
+registered with `AddBitBlexStore` and are not part of the prerender handoff.
+
 ## Middleware: observe and veto
 
 Middleware sees every action after it applies (including its argument payload via `ctx.Args`), and
@@ -477,6 +641,7 @@ builder.Services.AddBitBlexServices(options =>
 {
     options.UseMiddleware(ctx => Console.WriteLine($"{ctx.QualifiedName}({string.Join(", ", ctx.Args)})"));
     options.UseFilter(ctx => !IsReadOnly);   // return false to cancel
+    options.UseFilter(CartStore.Actions.Add, (cart, price) => price > 0);   // one action, typed payload
     options.OnError = err => _logger.LogWarning(err.Exception, "[blex:{Source}] {Detail}", err.Source, err.Detail);
 });
 ```
@@ -590,6 +755,30 @@ storage write and one `Changed` raise rather than ten of each:
 }
 ```
 
+### Scoping undo to what the user is editing
+
+By default the history spans every store, and an undo restores the whole tree - so undoing an edit can
+also sign the user out, switch the theme back or empty a cart a background refresh just filled. A scope
+keeps undo inside the stores it covers: only their actions become steps, and only their slices are
+restored.
+
+```csharp
+// The application's history, minus the stores undo must never revert:
+builder.Services.AddBitBlexHistory(scope: s => s is not SessionStore and not ThemeStore);
+
+// Or an undo stack per store type, alongside it (starts recording when first resolved):
+builder.Services.AddBitBlexHistory<EditorStore>();
+```
+
+```razor
+@inject BlexHistory<EditorStore> EditorHistory
+<button @onclick="EditorHistory.Undo" disabled="@(!EditorHistory.CanUndo)">Undo</button>
+```
+
+`BlexHistory<TStore>` covers every instance of the type, [scoped](#scoped-stores) ones included. A restore
+that changes nothing a history covers - another history's undo, a store hydrating - leaves its stack and
+labels alone. Outside DI: `new BlexHistory(manager, scope: s => s is EditorStore)`.
+
 ## Resetting
 
 `store.ResetState()` returns one store to the state it had when it was registered;
@@ -673,6 +862,57 @@ Assert.Empty(harness.Log.Actions);
 using var audited = BlexTestHarness.WithMiddleware<CounterStore>(new AuditMiddleware());
 ```
 
+The log speaks in [typed actions](#typed-actions) too, so a test asserts on payloads as the types the
+actions take:
+
+```csharp
+harness.Store.Place("pen", 2);
+Assert.IsTrue(harness.Log.Contains(OrdersStore.Actions.Place));
+var order = harness.Log.PayloadsOf(OrdersStore.Actions.Place)[0];   // (string Name, int Quantity)
+Assert.AreEqual(2, order.Quantity);
+```
+
+### Deterministic time
+
+Debounced effects and debounced persistence wait on `manager.TimeProvider`, and action timestamps read
+it. Give the harness a fake clock (`FakeTimeProvider` from `Microsoft.Extensions.TimeProvider.Testing`)
+and a 300 ms debounce is tested by advancing the clock - no real waiting, no flakiness:
+
+```csharp
+var time = new FakeTimeProvider();
+using var harness = BlexTestHarness.For<SearchStore>();
+harness.TimeProvider = time;
+
+var search = harness.Store.Search("blex");     // [BlexEffect(DebounceMilliseconds = 300)]
+time.Advance(TimeSpan.FromMilliseconds(299));
+Assert.AreEqual(0, harness.Log.Count);
+time.Advance(TimeSpan.FromMilliseconds(1));
+await search;
+```
+
+In an app, `options.TimeProvider` sets it, or a `TimeProvider` registered in the container; stores read
+it as `TimeProvider` inside their actions, for timestamps a test controls.
+
+### Record and replay
+
+The same actions applied to the same initial state must arrive at the same state. `ReplayAsync`
+dispatches a recorded log again - through the generated wrappers, so filters, middleware and effects behave
+as they did the first time - which proves a store deterministic, and turns the actions behind a bug report
+into a test:
+
+```csharp
+using var original = BlexTestHarness.For<CartStore>();
+original.Store.Add("apple");
+original.Store.Add("pear");
+
+using var replica = BlexTestHarness.For<CartStore>();
+await replica.Manager.ReplayAsync(original.Log.Actions);
+Assert.AreEqual(original.Snapshot().ToJsonString(), replica.Snapshot().ToJsonString());
+```
+
+Generated actions and effects, `Set X` assignments and `ResetState` replay; a `Batch` carries a closure
+rather than data, so it cannot, and the replay says which action stopped it.
+
 ## Trimming and AOT
 
 Store snapshots (`SerializeState`/`DeserializeState`, persistence, DevTools) go through
@@ -707,7 +947,8 @@ parameters · `BLEX014` generic action/effect methods · `BLEX015` record stores
 `BLEX016` conflicting base class · `BLEX017` `void` computed methods · `BLEX018` a Blex member
 attribute used outside a `[BlexStore]` class (warning) - the one mistake that otherwise
 compiles cleanly and silently generates nothing at all · `BLEX019` negative
-`DebounceMilliseconds`.
+`DebounceMilliseconds` · `BLEX020` a store member already named `Actions`, so the typed action
+descriptors are not generated (warning).
 
 ## Time-travel debugging
 
@@ -719,6 +960,18 @@ compiles cleanly and silently generates nothing at all · `BLEX019` negative
 Under the hood the JS bridge (`_content/Bit.Blex/bit-blex-devtools.js`) talks to `window.__REDUX_DEVTOOLS_EXTENSION__`,
 sends each action via `send(action, state)`, and applies `JUMP_TO_STATE` / `JUMP_TO_ACTION` /
 `ROLLBACK` / `RESET` / `COMMIT` / `IMPORT_STATE` messages back onto the stores.
+
+The monitor's **dispatcher** fires actions at the running app, because every generated action can be
+[dispatched by name](#typed-actions). Type the action as JSON, named the way the monitor labels it:
+
+```json
+{ "type": "cart/Add", "payload": { "price": 9.99 } }
+```
+
+The arguments may also sit inline beside `type`, and a one-parameter action takes a bare value
+(`{ "type": "cart/Add", "payload": 9.99 }`). It runs through the filters and middleware like any other
+action; a typo, an unknown action or an action that throws is reported through `OnError` rather than
+breaking the bridge.
 
 The monitor's two recording controls are honoured as well, and they differ in kind. **Pause
 recording** is about the timeline: actions still apply and still reach middleware and subscribers,

@@ -47,8 +47,10 @@ public static class BlexServerInstructions
         - Call `GetBlexSetupGuide` before writing any wiring: which DI container registers the stores, and with which lifetime,
           depends on the hosting model, and a store registered in only one of a Web App's two containers fails during prerendering.
         - Prefer the library's own mechanism to a hand-rolled one: [BlexEffect] over manual loading/error flags, [BlexComputed]
-          over recomputing in the component, a selector subscription over re-rendering on every change, BlexEntityAdapter over a
-          hand-maintained dictionary, middleware over wrapping every action.
+          over recomputing in the component, a selector subscription or <BlexSelect> over re-rendering on every change,
+          BlexEntityAdapter over a hand-maintained dictionary, middleware over wrapping every action, the generated
+          `Store.Actions.Xxx` descriptors over matching action names as strings, <BlexScope> over registering a second
+          instance by hand.
 
         Every tool on this server is read-only and cheap: none of them changes anything, anywhere, so there is no reason to
         ration them or to ask before calling one.

@@ -1,4 +1,6 @@
 ﻿@page "/actions"
+@using System.Text.Json
+@using System.Text.Json.Nodes
 @inherits BlexComponentBase
 @inject CounterStore Counter
 
@@ -66,6 +68,121 @@
         </ul>
     </div>
 
+    <div class="bb-card" id="typed-actions">
+        <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Typed actions</h3>
+        <p>
+            A method call is only half of what an action is. Middleware, subscribers, history filters and
+            tests also need to <em>recognize</em> an action after the fact and read its payload - and a
+            string like <code>"Apply preset"</code> plus an <code>object</code> looked up by parameter name
+            breaks silently the day someone renames either. So the generator also emits a descriptor for
+            every action and effect, in a nested <code>Actions</code> class on the store.
+        </p>
+
+        <CodeBlock Code="@Typed" />
+        <CodeBlock Code="@TypedGenerated" Title="Generated" />
+
+        <p>The payload type follows the parameters:</p>
+        <div class="bb-scroll">
+            <table class="bb-table">
+                <thead><tr><th>Declaration</th><th>Descriptor</th></tr></thead>
+                <tbody>
+                    <tr><td><code>void OnIncrement()</code></td><td><code>BlexAction&lt;CounterStore&gt;</code></td></tr>
+                    <tr><td><code>void OnSetStep(int step)</code></td><td><code>BlexAction&lt;CounterStore, int&gt;</code> - the argument itself</td></tr>
+                    <tr><td><code>void OnApplyPreset(int count, int step)</code></td><td><code>BlexAction&lt;CounterStore, (int Count, int Step)&gt;</code> - a tuple named after the parameters</td></tr>
+                    <tr><td><code>Task OnSearch(string query, CancellationToken ct)</code></td><td><code>BlexAction&lt;SearchStore, string&gt;</code> - an effect's token is supplied by the wrapper, so it is not part of the payload</td></tr>
+                    <tr><td><code>void OnTag(params string[] tags)</code></td><td><code>BlexAction&lt;S, string[]&gt;</code></td></tr>
+                </tbody>
+            </table>
+        </div>
+        <p>
+            When a parameter cannot name a tuple element - <code>rest</code>, <code>toString</code>, an
+            <code>item2</code> in first position, two parameters that differ only in case - the tuple is
+            simply left unnamed (<code>(string, int)</code>, read as <code>Item1</code>,
+            <code>Item2</code>).
+        </p>
+
+        <CodeBlock Code="@TypedUse" Title="Matching, reading and dispatching" />
+
+        <ApiTable Title="BlexAction&lt;TStore, TPayload&gt;" Rows="@DescriptorRows" />
+
+        <p>
+            The descriptor also plugs straight into the pipeline APIs:
+            <a href="cross-store">manager.SubscribeToAction(CounterStore.Actions.ApplyPreset, ...)</a>,
+            <a href="middleware">options.UseFilter(CounterStore.Actions.SetStep, ...)</a>, and the test
+            harness's <a href="testing"><code>Log.PayloadsOf(...)</code></a>.
+        </p>
+
+        <Callout Kind="Callout.CalloutKind.Note" Title="When the name Actions is taken">
+            <p>
+                A store that already declares something called <code>Actions</code> - a property, a nested
+                type, or state whose generated property is <code>Actions</code> - keeps compiling exactly
+                as before, but without the typed descriptors, and the generator says so with warning
+                <code>BLEX020</code>. Its actions stay dispatchable by name. Rename the member to get them.
+            </p>
+        </Callout>
+    </div>
+
+    <div class="bb-card" id="dispatch-by-name">
+        <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Dispatching by name</h3>
+        <p>
+            Because every action is described as data, it can also be <em>sent</em> as data:
+            <code>manager.DispatchAsync("store/Action", payload)</code> finds the action by its qualified
+            name - the label DevTools shows - converts a JSON payload keyed by parameter name, and calls the
+            generated wrapper. The action passes the filters, reaches middleware and is recorded exactly as
+            a direct call would be. Direct assignments (<code>"counter/Set Count"</code>) and
+            <code>"counter/ResetState"</code> are dispatchable too.
+        </p>
+        <CodeBlock Code="@ByName" />
+        <p>
+            It is what the <a href="devtools">DevTools dispatcher</a> and the testing package's
+            <a href="testing">action replay</a> are built on: a log recorded in one session dispatches
+            again in another, which is the practical meaning of "a predictable state model".
+        </p>
+
+        <DemoCard Title="Actions as data"
+                  Description="Pick a preset or write your own: the qualified name and the JSON payload are all DispatchAsync needs. The typed subscription below reads Apply preset's payload as (int Count, int Step)."
+                  Source="@ByNameSource">
+            <div class="bb-toolbar">
+                @foreach (var preset in DispatchPresets)
+                {
+                    <button class="btn btn-secondary" @onclick="() => Preset(preset)">@preset.Label</button>
+                }
+            </div>
+            <div class="bb-toolbar">
+                <input type="text" value="@_dispatchName" @oninput="e => _dispatchName = e.Value?.ToString() ?? string.Empty" class="demo-input-name" />
+                <input type="text" value="@_dispatchPayload" @oninput="e => _dispatchPayload = e.Value?.ToString() ?? string.Empty" class="demo-input-grow" />
+                <button class="btn btn-primary" @onclick="DispatchByName">DispatchAsync</button>
+            </div>
+
+            @if (_dispatchError is not null)
+            {
+                <div class="bb-note bb-note-danger" role="alert">
+                    <strong class="demo-note-title">Not dispatched</strong>
+                    <p>@_dispatchError</p>
+                </div>
+            }
+
+            <div class="bb-stats">
+                <div class="bb-stat">
+                    <span class="bb-stat-label">Count</span>
+                    <span class="bb-stat-value demo-accent">@Counter.Count</span>
+                </div>
+                <div class="bb-stat">
+                    <span class="bb-stat-label">Step</span>
+                    <span class="bb-stat-value">@Counter.Step</span>
+                </div>
+                <div class="bb-stat">
+                    <span class="bb-stat-label">Last Apply preset payload</span>
+                    <span class="bb-stat-value">@_lastPreset</span>
+                </div>
+            </div>
+            <p class="bb-card-desc">
+                Dispatchable on <code>counter</code>:
+                @string.Join(", ", Counter.ActionDescriptors.Select(a => a.Name))
+            </p>
+        </DemoCard>
+    </div>
+
     <div class="bb-card">
         <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Batching</h3>
         <p>
@@ -110,12 +227,34 @@
     <div class="bb-card">
         <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Direct assignment: the "Set X" action</h3>
         <p>
-            Generated properties have public setters, and assigning one from outside any action is still
-            a first-class action named <code>Set X</code>, carrying the assigned value as its payload. It
-            is vetoable by middleware, recorded for undo/redo and visible in DevTools - so nothing can
-            change state behind the pipeline's back.
+            Generated properties have public setters (unless the store
+            <a href="actions#enforce-actions">enforces actions</a>), and assigning one from outside any
+            action is still a first-class action named <code>Set X</code>, carrying the assigned value as
+            its payload. It is vetoable by middleware, recorded for undo/redo and visible in DevTools - so
+            nothing can change state behind the pipeline's back.
         </p>
         <CodeBlock Code="@SetX" />
+    </div>
+
+    <div class="bb-card" id="enforce-actions">
+        <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Enforcing actions</h3>
+        <p>
+            A <code>Set X</code> is still an anonymous change: it says <em>what</em> moved, never
+            <em>why</em>, and any component holding the store can make one. A Flux store is supposed to
+            guarantee the opposite - every change is a deliberate, named action. Opt in with
+            <code>EnforceActions</code> and the guarantee is checked by the compiler:
+        </p>
+        <CodeBlock Code="@Enforce" />
+        <ul class="bb-detail-list">
+            <li>The generated state setters are <code>private</code>, so assigning one from outside the store does not compile (<code>CS0272</code>).</li>
+            <li>An assignment the store's <em>own</em> code makes outside any action throws <code>InvalidOperationException</code> once the store is registered. Assignments in the constructor, before anyone can observe the store, are fine.</li>
+            <li>Restores, hydration and <code>ResetState</code> are not assignments and work as usual; so do effects, whose bodies run inside their action.</li>
+            <li>No <code>Set X</code> descriptors are offered for dispatch by name - such an action can never have been recorded.</li>
+        </ul>
+        <p>
+            Two-way binding needs a setter, so bind such a store's state through an action instead:
+        </p>
+        <CodeBlock Code="@EnforceBind" Language="razor" />
     </div>
 
     <div class="bb-card">
@@ -208,6 +347,22 @@
 
     [Inject] private BlexManager Manager { get; set; } = default!;
 
+    private sealed record DispatchPreset(string Label, string Name, string Payload);
+
+    private static readonly DispatchPreset[] DispatchPresets =
+    [
+        new("Apply preset", "counter/Apply preset", """{ "count": 7, "step": 2 }"""),
+        new("SetStep", "counter/SetStep", """{ "step": 3 }"""),
+        new("Set Count", "counter/Set Count", """{ "Count": 42 }"""),
+        new("ResetState", "counter/ResetState", ""),
+        new("An unknown action", "counter/Teleport", ""),
+    ];
+
+    private string _dispatchName = DispatchPresets[0].Name;
+    private string _dispatchPayload = DispatchPresets[0].Payload;
+    private string? _dispatchError;
+    private string _lastPreset = "-";
+
     protected override void OnInitialized()
     {
         Subscribe(Counter);
@@ -215,6 +370,31 @@
 
         // OwnsSubscription hands the token to the base class, which disposes it with the component.
         OwnsSubscription(Manager.SubscribeTo<CounterStore>(_ => _actions++));
+
+        // Typed: the payload arrives as the (int Count, int Step) tuple the action takes.
+        OwnsSubscription(Manager.SubscribeToAction(CounterStore.Actions.ApplyPreset,
+            (_, preset) => _lastPreset = $"Count {preset.Count}, Step {preset.Step}"));
+    }
+
+    private Task Preset(DispatchPreset preset)
+    {
+        _dispatchName = preset.Name;
+        _dispatchPayload = preset.Payload;
+        return DispatchByName();
+    }
+
+    private async Task DispatchByName()
+    {
+        _dispatchError = null;
+        try
+        {
+            var payload = string.IsNullOrWhiteSpace(_dispatchPayload) ? null : JsonNode.Parse(_dispatchPayload) as JsonObject;
+            await Manager.DispatchAsync(_dispatchName.Trim(), payload);
+        }
+        catch (Exception ex) when (ex is InvalidOperationException or ArgumentException or JsonException)
+        {
+            _dispatchError = ex.Message;
+        }
     }
 
     private void CountNotification() => _notifications++;
@@ -277,6 +457,107 @@
         //   ActionName   "SetStep"
         //   Args         [ { Name = "step", Value = 5 } ]
         //   DevTools     { "step": 5 }
+        """;
+
+    private static readonly IReadOnlyList<ApiTable.Row> DescriptorRows =
+    [
+        new("string Name", "The action name as dispatched - the display label when it has one (<code>\"Apply preset\"</code>)."),
+        new("Type StoreType", "The store type the action belongs to."),
+        new("IReadOnlyList&lt;string&gt; ParameterNames", "The parameter names, in declaration order."),
+        new("bool Matches(BlexActionContext / BlexPreActionContext / BlexActionErrorContext)", "Whether the dispatched, about-to-run or failed action is this one: same store type, same name. Every instance of the store matches, scoped ones included."),
+        new("bool TryGetPayload(context, out TPayload)", "Reads the payload as the type the action takes, when the context is this action and its arguments were captured."),
+        new("TPayload GetPayload(context)", "The same, throwing when it is another action."),
+        new("TPayload ReadPayload(IReadOnlyList&lt;BlexActionArg&gt;)", "Rebuilds the payload from any argument list - a recorded one, or one assembled by hand."),
+        new("Task InvokeAsync(TStore, TPayload)", "Dispatches the action through its generated wrapper. Completed already for a synchronous action. <code>BlexAction&lt;TStore&gt;</code> has <code>InvokeAsync(TStore)</code>."),
+        new("Task InvokeAsync(IBlexStore, IReadOnlyList&lt;BlexActionArg&gt;?)", "The untyped form on <code>BlexActionDescriptor</code>: arguments matched by name, JSON values converted with <code>BlexJson.Options</code>."),
+    ];
+
+    private const string Typed = """
+        [BlexStore(Name = "counter")]
+        public partial class CounterStore
+        {
+            [BlexState] private int _count;
+            [BlexState] private int _step = 1;
+
+            [BlexAction] private void OnIncrement() => Count += Step;
+            [BlexAction] private void OnSetStep(int step) => Step = step;
+
+            [BlexAction(Name = "Apply preset")]
+            private void OnApplyPreset(int count, int step) { Count = count; Step = step; }
+        }
+        """;
+
+    private const string TypedGenerated = """
+        public static class Actions
+        {
+            public static readonly BlexAction<CounterStore> Increment = ...;
+            public static readonly BlexAction<CounterStore, int> SetStep = ...;
+            public static readonly BlexAction<CounterStore, (int Count, int Step)> ApplyPreset = ...;  // Name: "Apply preset"
+        }
+        """;
+
+    private const string TypedUse = """
+        // Recognize an action in any context, by symbol - a rename breaks the build, not the feature.
+        if (CounterStore.Actions.ApplyPreset.TryGetPayload(ctx, out var preset))
+            Console.WriteLine($"count {preset.Count}, step {preset.Step}");
+
+        bool isStep = CounterStore.Actions.SetStep.Matches(ctx);
+
+        // Dispatch as data, through the generated wrapper:
+        await CounterStore.Actions.ApplyPreset.InvokeAsync(counter, (10, 2));
+        await CounterStore.Actions.Increment.InvokeAsync(counter);
+        """;
+
+    private const string ByName = """
+        @inject BlexManager Manager
+
+        await Manager.DispatchAsync("counter/Apply preset", new JsonObject { ["count"] = 7, ["step"] = 2 });
+        await Manager.DispatchAsync("counter/Set Count", new JsonObject { ["Count"] = 42 });
+        await Manager.DispatchAsync("counter/ResetState");
+
+        // Arguments match by name (case-insensitively as a fallback) and convert the way stored
+        // state does: "High" for an enum, 12.5 for a decimal, an array for params.
+        // An unknown action throws InvalidOperationException; a missing argument, ArgumentException.
+
+        // Already-materialized arguments, e.g. the ones recorded when the action first ran:
+        await Manager.DispatchAsync(ctx.QualifiedName, ctx.Args);
+        """;
+
+    private const string ByNameSource = """
+        @inject BlexManager Manager
+
+        private async Task DispatchByName()
+        {
+            var payload = JsonNode.Parse(_payload) as JsonObject;   // { "count": 7, "step": 2 }
+            await Manager.DispatchAsync(_name, payload);             // "counter/Apply preset"
+        }
+
+        protected override void OnInitialized()
+            => OwnsSubscription(Manager.SubscribeToAction(CounterStore.Actions.ApplyPreset,
+                   (_, preset) => _lastPreset = $"Count {preset.Count}, Step {preset.Step}"));
+
+        // Everything the store can be dispatched as:
+        Counter.ActionDescriptors.Select(a => a.Name)
+        """;
+
+    private const string Enforce = """
+        [BlexStore(Name = "account", EnforceActions = true)]
+        public partial class AccountStore
+        {
+            [BlexState] private decimal _balance;
+
+            [BlexAction] private void OnDeposit(decimal amount) => Balance += amount;
+
+            public void Sneak() => Balance = 0;     // compiles, but throws at runtime: not inside an action
+        }
+
+        account.Deposit(10);     // fine
+        account.Balance = 0;     // CS0272: the setter is private
+        """;
+
+    private const string EnforceBind = """
+        @* @bind needs a setter; route it through an action instead *@
+        <input @bind:get="Search.Query" @bind:set="Search.SetQuery" />
         """;
 
     private const string BatchSource = """

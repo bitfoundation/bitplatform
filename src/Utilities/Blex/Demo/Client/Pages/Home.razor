@@ -104,7 +104,8 @@
                 <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Batched, named actions</h3>
                 <p class="bb-card-desc">
                     Every mutation inside an <code>[BlexAction]</code> folds into one notification, one render
-                    and one history entry, with its arguments captured as the payload.
+                    and one history entry, with its arguments captured as the payload - and a generated, typed
+                    descriptor to match it and dispatch it as data.
                 </p>
                 <a href="actions" class="btn btn-outline">Actions →</a>
             </section>
@@ -121,7 +122,8 @@
                 <h3 class="bb-card-title"><span class="bb-dot bb-dot-danger"></span> Selectors</h3>
                 <p class="bb-card-desc">
                     Subscribe a component to a projection and it re-renders only when that value changes -
-                    across stores too, with <code>CreateSelector</code>.
+                    or let <code>&lt;BlexSelect&gt;</code> re-render just one fragment of it, and go across
+                    stores with <code>CreateSelector</code>.
                 </p>
                 <a href="subscriptions" class="btn btn-outline">Components &amp; selectors →</a>
             </section>
@@ -136,8 +138,8 @@
             <section class="bb-card">
                 <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Undo, redo and time travel</h3>
                 <p class="bb-card-desc">
-                    <code>BlexHistory</code> steps the whole state tree back and forth in the app; the
-                    DevTools bridge rewinds it from the browser extension.
+                    <code>BlexHistory</code> steps the state tree - or just the stores being edited - back and
+                    forth in the app; the DevTools bridge rewinds it from the browser extension.
                 </p>
                 <a href="history" class="btn btn-outline">Undo &amp; redo →</a>
             </section>

@@ -205,9 +205,16 @@
             Stores register themselves when first resolved from DI, and
             <code>&lt;BlexProvider&gt;</code> registers everything up front. For a lazily-loaded
             feature you can register and unregister by hand. An unregistered store keeps working
-            standalone - its actions simply stop being observed.
+            standalone - its actions simply stop being observed. A persistent store registered after
+            startup is hydrated as it registers, and one that leaves writes any debounced save it still
+            owes first.
         </p>
         <CodeBlock Code="@RegisterSample" />
+        <p>
+            For a second <em>instance</em> of a store that is already registered - one per dialog, one per
+            tab - use <code>CreateScope</code>, which gives each instance its own name. See
+            <a href="scoped-stores">Scoped stores</a>.
+        </p>
 
         <Callout Kind="Callout.CalloutKind.Note" Title="Single-threaded by design">
             <p>
@@ -248,21 +255,14 @@
         // The selector holds a manager subscription, so the component owns its lifetime.
         OwnsSubscription(Summary);
 
-        // The wiring: react to one store's actions by driving another. The token is handed to the
-        // base class so it is disposed with this component.
-        OwnsSubscription(Manager.SubscribeTo<OrdersStore>(ctx =>
-        {
-            if (ctx.ActionName == "Place")
-            {
-                var item = ctx.Args.FirstOrDefault(a => a.Name == "item").Value;
-                var quantity = ctx.Args.FirstOrDefault(a => a.Name == "quantity").Value;
-                Notifications.Push($"Order #{Orders.Count}: {quantity}× {item}");
-            }
-            else if (ctx.ActionName == "CancelLast")
-            {
-                Notifications.Push("An order was cancelled.");
-            }
-        }));
+        // The wiring: react to one store's actions by driving another. Matched by the generated
+        // descriptors, so the payload arrives as the (string Item, int Quantity) the action takes. The
+        // tokens are handed to the base class so they are disposed with this component.
+        OwnsSubscription(Manager.SubscribeToAction(OrdersStore.Actions.Place,
+            (orders, order) => Notifications.Push($"Order #{orders.Count}: {order.Quantity}× {order.Item}")));
+
+        OwnsSubscription(Manager.SubscribeToAction(OrdersStore.Actions.CancelLast,
+            _ => Notifications.Push("An order was cancelled.")));
     }
 
     protected override void OnAfterRender(bool firstRender) => _renders++;
@@ -307,9 +307,14 @@
     private static readonly IReadOnlyList<ApiTable.Row> RegistryRows =
     [
         new("IReadOnlyList&lt;IBlexStore&gt; Stores", "Every registered store."),
-        new("TStore? GetStore&lt;TStore&gt;()", "The first registered store of that type, or <code>null</code>."),
+        new("IBlexStore? GetStore(string name)", "The store registered under that name (<code>\"counter\"</code>, <code>\"counter:left\"</code>), or <code>null</code>."),
+        new("TStore? GetStore&lt;TStore&gt;()", "The first registered store of that type, or <code>null</code>. With several scoped instances, which is first is unspecified - look one up by name."),
         new("void Register(IBlexStore)", "Adds a store. Idempotent. Captures its initial state so <code>ResetState()</code> has somewhere to return to."),
         new("void Unregister(IBlexStore)", "Removes a store; it keeps working, but its actions are no longer observed."),
+        new("BlexStoreScope&lt;TStore&gt; CreateScope&lt;TStore&gt;(TStore, string? key)", "Registers one instance among several, as <code>\"{name}:{key}\"</code>; disposing the scope unregisters and disposes it. See <a href=\"scoped-stores\">Scoped stores</a>."),
+        new("event Action&lt;IBlexStore&gt;? StoreRegistered / StoreUnregistered", "Raised as stores join and leave. Persistence uses them to hydrate a late store and to write the save a leaving one still owes."),
+        new("Task DispatchAsync(string qualifiedName, JsonObject? payload)", "Dispatches an action by name with a JSON payload, through its generated wrapper. See <a href=\"actions#dispatch-by-name\">Dispatching by name</a>."),
+        new("TimeProvider TimeProvider", "The clock for action timestamps, debounced effects and debounced saves. Swap in a fake one in tests. See <a href=\"testing\">Testing</a>."),
         new("void ResetAll()", "Resets every registered store to its registered state, each as its own normal <code>ResetState</code> action. Stores already holding that state are skipped; one that fails is reported and skipped, and the rest still reset."),
     ];
 
@@ -318,6 +323,7 @@
         new("event Action&lt;BlexActionContext&gt;? ActionDispatched", "Raised after every action, once the per-store event has fired. Prefer <code>Subscribe</code>, which isolates handler exceptions."),
         new("IDisposable Subscribe(Action&lt;BlexActionContext&gt;, Func&lt;…, bool&gt;? filter)", "Observe actions, optionally filtered. Handler exceptions are caught and reported."),
         new("IDisposable SubscribeTo&lt;TStore&gt;(Action&lt;…&gt;)", "Only actions from that store type."),
+        new("IDisposable SubscribeToAction&lt;TStore, TPayload&gt;(BlexAction&lt;TStore, TPayload&gt;, Action&lt;TStore, TPayload&gt;)", "One action, by its generated descriptor (<code>OrdersStore.Actions.Place</code>). The handler gets the dispatching store and the typed payload. A <code>BlexAction&lt;TStore&gt;</code> overload takes <code>Action&lt;TStore&gt;</code>. See <a href=\"actions#typed-actions\">Typed actions</a>."),
         new("IDisposable SubscribeToAction(string, Action&lt;…&gt;)", "Matches the bare name (<code>\"Increment\"</code>) or the qualified name (<code>\"counter/Increment\"</code>)."),
         new("IDisposable SubscribeAsync(Func&lt;…, Task&gt;, Func&lt;…, bool&gt;? filter)", "An async reactor. The task is observed; failures are reported rather than left unobserved."),
         new("IDisposable Subscribe&lt;T&gt;(Func&lt;T&gt; selector, Action&lt;T&gt;, IEqualityComparer&lt;T&gt;?, bool fireImmediately)", "Fires only when a projection <em>spanning stores</em> changes. An <code>Action&lt;T, T&gt;</code> overload delivers <code>(previous, current)</code>. Re-evaluated after restores too. See <a href=\"subscriptions\">Subscriptions</a>."),
@@ -329,7 +335,7 @@
     [
         new("JsonObject CaptureGlobalState()", "Builds the whole tree: <code>{ \"storeName\": { …state… }, … }</code>."),
         new("void RestoreGlobalState(JsonObject)", "Applies a tree to every store without recording actions. A slice that fails to deserialize is reported and skipped; the other stores still restore."),
-        new("event Action? StateRestored", "Raised after a restore. Persistence uses it to write the restored state back so a reload does not resurrect the pre-restore state."),
+        new("event Action? StateRestored", "Raised after state moved without an action: once per <code>RestoreGlobalState</code> (undo/redo, time travel), and once per store for hydration, a cross-tab change, the prerender handoff or <code>RestoreState</code>. Persistence writes the restored state back on it; cross-store selectors and subscriptions re-evaluate on it."),
         new("Func&lt;JsonObject, JsonObject&gt;? DevToolsStateSanitizer", "Applied to the tree before it reaches DevTools. See <a href=\"devtools\">DevTools</a>."),
         new("Func&lt;string, string&gt;? DevToolsActionSanitizer", "Applied to the action label before it reaches DevTools."),
         new("Action&lt;BlexError&gt;? OnError", "Sink for isolated pipeline failures. See <a href=\"errors\">Error isolation</a>."),
@@ -387,7 +393,13 @@
         // Everything from one store type
         manager.SubscribeTo<CounterStore>(ctx => Console.WriteLine(ctx.QualifiedName));
 
-        // One action, by bare or qualified name
+        // One action, by its generated descriptor: the handler gets the store that dispatched it and
+        // the payload as the type the action takes. A rename is a build error, not a silent no-op.
+        manager.SubscribeToAction(CounterStore.Actions.Increment, counter => _analytics.Track("increment"));
+        manager.SubscribeToAction(OrdersStore.Actions.Place,
+            (orders, order) => _analytics.Track("order", order.Item, order.Quantity));
+
+        // ...or by bare or qualified name
         manager.SubscribeToAction("Increment", ctx => _analytics.Track("increment"));
         manager.SubscribeToAction("counter/Increment", ctx => { });
 
@@ -405,15 +417,12 @@
         {
             Subscribe(Orders, Notifications);
 
-            OwnsSubscription(Manager.SubscribeTo<OrdersStore>(ctx =>
-            {
-                if (ctx.ActionName == "Place")
-                {
-                    var item = ctx.Args.FirstOrDefault(a => a.Name == "item").Value;
-                    var quantity = ctx.Args.FirstOrDefault(a => a.Name == "quantity").Value;
-                    Notifications.Push($"Order #{Orders.Count}: {quantity}x {item}");
-                }
-            }));
+            // OrdersStore.Actions.Place is a BlexAction<OrdersStore, (string Item, int Quantity)>.
+            OwnsSubscription(Manager.SubscribeToAction(OrdersStore.Actions.Place,
+                (orders, order) => Notifications.Push($"Order #{orders.Count}: {order.Quantity}x {order.Item}")));
+
+            OwnsSubscription(Manager.SubscribeToAction(OrdersStore.Actions.CancelLast,
+                _ => Notifications.Push("An order was cancelled.")));
         }
         """;
 

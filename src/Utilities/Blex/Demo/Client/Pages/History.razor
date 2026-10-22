@@ -1,11 +1,12 @@
 ﻿@page "/history"
 @inherits BlexComponentBase
 @inject BlexHistory HistoryStack
+@inject BlexHistory<CounterStore> CounterHistory
 @inject CounterStore Counter
 @inject ContactsStore Contacts
 
 <DocPage Href="history" Title="Undo & redo"
-         Lead="In-app history over the entire application state, independent of the browser extension.">
+         Lead="In-app history over the application state - or the part of it the user is editing - independent of the browser extension.">
 
     <div class="bb-card">
         <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Setup</h3>
@@ -214,10 +215,11 @@
 
         <Callout Kind="Callout.CalloutKind.Note" Title="External restores are absorbed">
             <p>
-                If something else changes the state without an action - a DevTools time-travel jump, or a
-                manual <code>RestoreGlobalState</code> - history refreshes its present snapshot so the
-                next undo diffs from what the user can actually see, rather than from a stale pre-jump
-                state.
+                If something else changes the state without an action - a DevTools time-travel jump, a
+                manual <code>RestoreGlobalState</code>, persistence hydration, a change from another tab,
+                another history's undo - history refreshes its present snapshot so the next undo diffs from
+                what the user can actually see, rather than from a stale pre-jump state. A restore that
+                changed nothing the history covers is ignored, so it keeps its labels.
             </p>
         </Callout>
 
@@ -273,20 +275,82 @@
         </p>
     </div>
 
-    <div class="bb-card">
-        <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Scoping history to one store</h3>
+    <div class="bb-card" id="scope">
+        <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Scoping history to part of the app</h3>
         <p>
-            <code>BlexHistory</code> is deliberately global: it snapshots the whole tree, which is what
-            makes cross-store undo coherent. For per-store history, keep your own stack of that store's
-            snapshots and restore them with <code>RestoreState</code>, which applies a snapshot without
-            recording an action.
+            By default <code>BlexHistory</code> covers every store, which is what the demos above show - and
+            rarely what a user means. Undoing a text edit restores the <em>whole</em> tree, so it can also
+            sign the user out, switch the theme back, or empty a cart that a background refresh just filled.
+            The undo stack the user has in mind is about the document they are editing.
         </p>
-        <CodeBlock Code="@PerStore" />
+        <p>
+            Give the history a <em>scope</em>: a predicate over stores. Only the actions of the stores it
+            admits become undo steps, and an undo or redo restores only their slices - every other store is
+            never touched. The predicate is consulted on every action and snapshot, so stores registered
+            later (a lazily loaded feature, a <a href="scoped-stores">scoped instance</a>) are covered as
+            soon as they match.
+        </p>
+        <CodeBlock Code="@Scoped" Title="Registration" />
+        <CodeBlock Code="@ScopedSemantics" Title="What the user experiences" />
+
+        <DemoCard Title="Two undo stacks over the same changes"
+                  Description="This site registers an app-wide history and a BlexHistory<CounterStore>. Increment, add a contact, increment again - then compare what each Undo reverts."
+                  Source="@ScopedDemoSource" SourceLanguage="razor">
+            <div class="bb-toolbar">
+                <button class="btn btn-secondary" @onclick="Counter.Increment">Increment counter</button>
+                <button class="btn btn-secondary" @onclick="AddContact">Add a contact</button>
+            </div>
+            <div class="bb-grid">
+                <div class="bb-card">
+                    <p class="bb-card-title">BlexHistory <span class="bb-badge">@HistoryStack.UndoCount steps</span></p>
+                    <button class="btn btn-primary" @onclick="HistoryStack.Undo" disabled="@(!HistoryStack.CanUndo)">
+                        ↶ Undo @HistoryStack.NextUndoLabel
+                    </button>
+                </div>
+                <div class="bb-card">
+                    <p class="bb-card-title">BlexHistory&lt;CounterStore&gt; <span class="bb-badge">@CounterHistory.UndoCount steps</span></p>
+                    <button class="btn btn-primary" @onclick="CounterHistory.Undo" disabled="@(!CounterHistory.CanUndo)">
+                        ↶ Undo @CounterHistory.NextUndoLabel
+                    </button>
+                </div>
+            </div>
+            <div class="bb-stats">
+                <div class="bb-stat">
+                    <span class="bb-stat-label">counter/Count</span>
+                    <span class="bb-stat-value demo-accent">@Counter.Count</span>
+                </div>
+                <div class="bb-stat">
+                    <span class="bb-stat-label">contacts</span>
+                    <span class="bb-stat-value">@Contacts.Total</span>
+                </div>
+            </div>
+            <p class="bb-card-desc">
+                The counter's undo never touches the contacts, however the two were interleaved.
+            </p>
+        </DemoCard>
+
+        <p>
+            For an undo stack per editor, <code>BlexHistory&lt;TStore&gt;</code> covers every instance of
+            one store type, scoped instances included. It can sit beside the application-wide history;
+            inject it by its type. The DI registration starts recording as soon as it is resolved, since a
+            component typically resolves it after the stores exist - and if that happens before hydration,
+            hydration is a restore, and the history moves its baseline to the loaded state.
+        </p>
+        <CodeBlock Code="@Typed" Language="razor" Title="One undo stack per store type" />
+
+        <Callout Kind="Callout.CalloutKind.Note" Title="A scope that throws covers nothing">
+            <p>
+                A predicate that throws is reported through <code>OnError</code> with source
+                <code>"history"</code> and treated as "not covered". That fails closed on purpose: a store
+                the history cannot decide about is left alone rather than reverted.
+            </p>
+        </Callout>
 
         <Callout Kind="Callout.CalloutKind.Warning" Title="Snapshots cost memory">
             <p>
-                Every entry is a full serialized copy of every registered store. With large collections
-                in state, lower <code>maxEntries</code> - or scope history to the store that needs it.
+                Every entry is a serialized copy of every store the history covers. With large collections
+                in state, lower <code>maxEntries</code> - or scope the history to the stores that need it,
+                which also makes each snapshot cheaper.
             </p>
         </Callout>
     </div>
@@ -300,6 +364,7 @@
     {
         Subscribe(Counter, Contacts);
         HistoryStack.Changed += OnHistoryChanged;
+        CounterHistory.Changed += OnHistoryChanged;
     }
 
     private void OnHistoryChanged() => _ = InvokeAsync(StateHasChanged);
@@ -318,7 +383,11 @@
             : "Committed the current state as an undo step.";
     }
 
-    protected override void Dispose(bool disposing) => HistoryStack.Changed -= OnHistoryChanged;
+    protected override void Dispose(bool disposing)
+    {
+        HistoryStack.Changed -= OnHistoryChanged;
+        CounterHistory.Changed -= OnHistoryChanged;
+    }
 
     private static readonly IReadOnlyList<ApiTable.Row> HistoryRows =
     [
@@ -337,6 +406,8 @@
         new("string? NextUndoLabel", "Qualified name of the action <code>Undo()</code> would revert, or <code>null</code>."),
         new("string? NextRedoLabel", "Qualified name of the action <code>Redo()</code> would re-apply, or <code>null</code>."),
         new("int MaxEntries", "Retention cap, set at construction. Default 100."),
+        new("bool IsScoped", "Whether the history covers only some stores."),
+        new("bool Covers(IBlexStore)", "Whether that store is one the history records and restores. Always <code>true</code> without a scope."),
         new("event Action? Changed", "Raised whenever availability changes - bind button state to it."),
         new("void Dispose()", "Detaches from the manager and stops recording."),
     ];
@@ -344,6 +415,9 @@
     private const string Setup = """
         builder.Services.AddBitBlexHistory();              // default: 100 entries
         builder.Services.AddBitBlexHistory(maxEntries: 50);
+
+        // Covering only part of the app - see "Scoping history" below:
+        builder.Services.AddBitBlexHistory(scope: s => s is not SessionStore);
         """;
 
     private const string JumpApi = """
@@ -476,15 +550,47 @@
         }
         """;
 
-    private const string PerStore = """
-        private readonly Stack<JsonObject> _undo = new();
+    private const string Scoped = """
+        // Everything except the stores an undo must never revert:
+        builder.Services.AddBitBlexHistory(scope: s => s is not SessionStore and not ThemeStore);
 
-        void Checkpoint() => _undo.Push(store.SerializeState());
+        // Only the editor:
+        builder.Services.AddBitBlexHistory(scope: s => s is EditorStore, maxEntries: 200);
 
-        void UndoOne()
-        {
-            if (_undo.TryPop(out var snapshot))
-                store.RestoreState(snapshot);   // applies it without recording an action
-        }
+        // Without DI:
+        var history = new BlexHistory(manager, scope: s => s.Name.StartsWith("editor"));
+        history.Start();
+        """;
+
+    private const string ScopedSemantics = """
+        // scope: s => s is EditorStore
+
+        editor.Rename("Draft 2");   // an undo step
+        session.SignIn("ada");      // out of scope: no step, and never reverted
+
+        History.Undo();             // -> "Draft 1", and still signed in as ada
+        """;
+
+    private const string ScopedDemoSource = """
+        // Program.cs
+        builder.Services.AddBitBlexHistory(maxEntries: 50);                  // everything
+        builder.Services.AddBitBlexHistory<CounterStore>(maxEntries: 50);    // the counter alone
+
+        @* The page *@
+        @inject BlexHistory History
+        @inject BlexHistory<CounterStore> CounterHistory
+
+        <button @onclick="History.Undo">Undo @History.NextUndoLabel</button>
+        <button @onclick="CounterHistory.Undo">Undo @CounterHistory.NextUndoLabel</button>
+        """;
+
+    private const string Typed = """
+        // Program.cs - beside, or instead of, the app-wide AddBitBlexHistory():
+        builder.Services.AddBitBlexHistory<EditorStore>(filter: ctx => !ctx.ActionName.StartsWith("Set "));
+
+        @* Editor.razor *@
+        @inject BlexHistory<EditorStore> History
+
+        <button @onclick="History.Undo" disabled="@(!History.CanUndo)">Undo @History.NextUndoLabel</button>
         """;
 }

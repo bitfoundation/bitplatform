@@ -10,14 +10,14 @@ public sealed class BlexActionContext
     private readonly Func<JsonObject>? _capture;
     private JsonObject? _globalState;
 
-    internal BlexActionContext(IBlexStore store, string actionName, Func<JsonObject> captureGlobalState, int sequence, IReadOnlyList<BlexActionArg>? args)
+    internal BlexActionContext(IBlexStore store, string actionName, Func<JsonObject> captureGlobalState, int sequence, IReadOnlyList<BlexActionArg>? args, DateTimeOffset timestamp)
     {
         Store = store;
         ActionName = actionName;
         _capture = captureGlobalState;
         Sequence = sequence;
         Args = args ?? [];
-        Timestamp = DateTimeOffset.UtcNow;
+        Timestamp = timestamp;
     }
 
     /// <summary>The store that produced the action.</summary>
@@ -44,7 +44,7 @@ public sealed class BlexActionContext
     /// </summary>
     public IReadOnlyList<BlexActionArg> Args { get; }
 
-    /// <summary>When the action completed (UTC).</summary>
+    /// <summary>When the action completed (UTC), read from <see cref="BlexManager.TimeProvider"/>.</summary>
     public DateTimeOffset Timestamp { get; }
 
     private string? _qualifiedName;

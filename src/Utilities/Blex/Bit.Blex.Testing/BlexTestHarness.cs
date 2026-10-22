@@ -65,6 +65,27 @@ public sealed class BlexTestHarness<TStore> : IDisposable
     /// <summary>The manager backing the harness.</summary>
     public BlexManager Manager { get; }
 
+    /// <summary>
+    /// The clock the harness's manager reads time from -- the <c>DebounceMilliseconds</c> wait of
+    /// effects included. Assign a fake (<c>FakeTimeProvider</c> from
+    /// <c>Microsoft.Extensions.TimeProvider.Testing</c>) and advance it instead of waiting out real
+    /// intervals, so a debounced effect is tested in microseconds and never flakes.
+    /// </summary>
+    /// <example><code>
+    /// var time = new FakeTimeProvider();
+    /// using var harness = BlexTestHarness.For&lt;SearchStore&gt;();
+    /// harness.TimeProvider = time;
+    ///
+    /// var search = harness.Store.Search("blex");          // DebounceMilliseconds = 300
+    /// time.Advance(TimeSpan.FromMilliseconds(300));
+    /// await search;
+    /// </code></example>
+    public TimeProvider TimeProvider
+    {
+        get => Manager.TimeProvider;
+        set => Manager.TimeProvider = value;
+    }
+
     /// <summary>The action log recording all dispatches.</summary>
     public BlexActionLog Log { get; }
 

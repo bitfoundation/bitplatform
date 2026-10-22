@@ -142,6 +142,15 @@
             reject the action rather than letting it write bad state:
         </p>
         <CodeBlock Code="@Validate" />
+
+        <p>
+            Matching a qualified name by string and fishing an argument out by parameter name works, but
+            it fails silently - and open - the day the action or its parameter is renamed. Name the action
+            by its <a href="actions#typed-actions">generated descriptor</a> instead: the filter then runs
+            for that action only, receives the store and the payload as the type the action takes, and a
+            rename becomes a build error.
+        </p>
+        <CodeBlock Code="@TypedFilter" Title="Typed filters" />
     </div>
 
     <div class="bb-card">
@@ -307,6 +316,7 @@
         new("options.UseMiddleware(instance)", "Registers a pre-built instance. Shared across every scope."),
         new("options.UseMiddleware(Action&lt;BlexActionContext&gt;)", "Wraps a delegate in <code>BlexDelegateMiddleware</code>. Handy for one-line logging."),
         new("options.UseFilter(Func&lt;BlexPreActionContext, bool&gt;)", "Wraps a predicate in <code>BlexFilterMiddleware</code>. Return <code>false</code> to veto."),
+        new("options.UseFilter(BlexAction&lt;TStore, TPayload&gt;, Func&lt;TStore, TPayload, bool&gt;)", "A veto filter for one action, named by its generated descriptor, handed the store and the typed payload. Every other action passes. A <code>BlexAction&lt;TStore&gt;</code> overload takes <code>Func&lt;TStore, bool&gt;</code>."),
     ];
 
     private static readonly IReadOnlyList<ApiTable.Row> PreRows =
@@ -458,6 +468,20 @@
 
             var quantity = ctx.Args.FirstOrDefault(a => a.Name == "quantity").Value;
             return quantity is int q && q is >= 0 and <= 99;   // false -> vetoed
+        });
+        """;
+
+    private const string TypedFilter = """
+        builder.Services.AddBitBlexServices(options =>
+        {
+            // CartStore.Actions.SetQuantity is a BlexAction<CartStore, (string Sku, int Quantity)>.
+            options.UseFilter(CartStore.Actions.SetQuantity, (cart, line) => line.Quantity is >= 0 and <= 99);
+
+            // A single-parameter action's payload is the argument itself.
+            options.UseFilter(CartStore.Actions.SetDiscount, (cart, rate) => rate <= 0.5m);
+
+            // A parameterless action gets the store only.
+            options.UseFilter(CheckoutStore.Actions.Submit, checkout => checkout.Lines.Count > 0);
         });
         """;
 }

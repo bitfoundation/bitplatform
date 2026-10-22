@@ -42,6 +42,53 @@
         <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Asserting on payloads</h3>
         <p>Action arguments are captured automatically, so you can assert on exactly what was dispatched.</p>
         <CodeBlock Code="@Payload" />
+
+        <p>
+            Indexing <code>Args</code> by position and casting <code>Value</code> works, but it breaks
+            silently - or with an <code>InvalidCastException</code> nobody can read - the day the action
+            changes shape. The log also answers in terms of the generated
+            <a href="actions#typed-actions">descriptors</a>, handing back each payload as the type the action
+            takes:
+        </p>
+        <CodeBlock Code="@TypedPayload" Title="Typed" />
+    </div>
+
+    <div class="bb-card" id="time">
+        <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Deterministic time</h3>
+        <p>
+            A <code>DebounceMilliseconds</code> effect waits for real time to pass, and so does a debounced
+            persistor. A test that waits along with them is slow, and on a loaded CI runner it is flaky.
+            Everything Blex times - action timestamps, the debounce of generated effects, the persistence
+            debounce and its cap - reads the manager's <code>TimeProvider</code>, so a test swaps in a fake
+            clock and <em>advances</em> it instead of sleeping.
+        </p>
+        <CodeBlock Code="@Time" />
+        <ul class="bb-detail-list">
+            <li><code>FakeTimeProvider</code> comes from <code>Microsoft.Extensions.TimeProvider.Testing</code>; any <code>TimeProvider</code> works.</li>
+            <li>Set the clock before the work it should govern starts: a wait already in progress keeps the clock it began on.</li>
+            <li>In a DI host, <code>options.TimeProvider</code> sets it; when unset, a <code>TimeProvider</code> registered in the container is used, and <code>TimeProvider.System</code> otherwise.</li>
+            <li>A store reads the same clock through its protected <code>TimeProvider</code> - stamp an action with <code>TimeProvider.GetUtcNow()</code> and the test controls that too.</li>
+        </ul>
+    </div>
+
+    <div class="bb-card" id="replay">
+        <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Replaying actions</h3>
+        <p>
+            The defining property of a predictable state model is that the same actions, applied to the same
+            initial state, arrive at the same state - whichever session produced them. Because every action
+            is <a href="actions#dispatch-by-name">dispatchable by name</a>, a recorded log can be replayed
+            onto a fresh store and the two compared. It is also how a bug report becomes a test: record the
+            actions that led to it, then replay them.
+        </p>
+        <CodeBlock Code="@Replay" />
+        <p>
+            Each action runs through its generated wrapper again, so filters, middleware and effects behave
+            exactly as they did the first time. Generated actions and effects, <code>Set X</code>
+            assignments and <code>ResetState</code> replay; a <code>Batch</code> carries a closure rather
+            than data, so it cannot, and the replay stops with an <code>InvalidOperationException</code>
+            naming the first action it could not dispatch. The list is copied first, so replaying into the
+            manager that is recording it is safe.
+        </p>
     </div>
 
     <div class="bb-card">
@@ -171,6 +218,7 @@
         new("JsonObject Snapshot()", "The current snapshot of the store under test."),
         new("TOther Register&lt;TOther&gt;(TOther store)", "Adds another store to the harness's manager, for cross-store tests. Returns it, so it can be captured inline."),
         new("IReadOnlyList&lt;BlexActionErrorContext&gt; Failures", "Every action whose body threw - including effect failures, which are otherwise hidden inside <code>XxxError</code>."),
+        new("TimeProvider TimeProvider", "The manager's clock. Assign a <code>FakeTimeProvider</code> and advance it instead of waiting out real debounce intervals."),
         new("void Dispose()", "Detaches the log and disposes every registered store, cancelling effects still in flight."),
     ];
 
@@ -183,6 +231,8 @@
         new("IReadOnlyList&lt;string&gt; QualifiedNames", "The qualified names in order."),
         new("bool Contains(string)", "Whether an action with that bare or qualified name was recorded."),
         new("int CountOf(string)", "How many times it was recorded."),
+        new("bool Contains(BlexActionDescriptor) / int CountOf(BlexActionDescriptor)", "The same, naming the action by its generated descriptor (<code>CounterStore.Actions.Add</code>)."),
+        new("IReadOnlyList&lt;TPayload&gt; PayloadsOf(BlexAction&lt;TStore, TPayload&gt;)", "The payload of every recorded run of that action, in order, as the type it takes - the argument itself, or a named tuple."),
         new("void Clear()", "Empties the log - handy between arrange and act."),
     ];
 
@@ -202,6 +252,7 @@
         new("store.WaitForAsync(Func&lt;bool&gt;, TimeSpan?)", "Waits until the condition holds, re-checking on every store change. Throws <code>TimeoutException</code> after the timeout (default 5 s)."),
         new("manager.WaitForAsync(Func&lt;bool&gt;, TimeSpan?)", "The same, for a condition spanning stores - re-checked after every action and every restore in the application."),
         new("store.CountNotifications(Action)", "Counts <code>StateChanged</code> notifications raised while the delegate runs."),
+        new("manager.ReplayAsync(IEnumerable&lt;BlexRecordedAction&gt;)", "Dispatches recorded actions again, in order, against the stores of that manager with the same names. See <a href=\"testing#replay\">Replaying actions</a>."),
     ];
 
     private const string Plain = """
@@ -266,6 +317,64 @@
         harness.Store.Count = 42;
         Assert.Equal("Set Count", harness.Log.Last!.ActionName);
         Assert.Equal(42, harness.Log.Last!.Args[0].Value);
+        """;
+
+    private const string TypedPayload = """
+        harness.Store.SetStep(2);
+        harness.Store.ApplyPreset(10, 5);
+        harness.Store.SetStep(3);
+
+        Assert.Equal([2, 3], harness.Log.PayloadsOf(CounterStore.Actions.SetStep));
+        Assert.Equal(2, harness.Log.CountOf(CounterStore.Actions.SetStep));
+
+        // Several parameters come back as a tuple named after them:
+        var preset = Assert.Single(harness.Log.PayloadsOf(CounterStore.Actions.ApplyPreset));
+        Assert.Equal((10, 5), (preset.Count, preset.Step));
+
+        // A failure reads the same way:
+        Assert.True(UserStore.Actions.LoadUser.TryGetPayload(harness.Failures[0], out var userId));
+        """;
+
+    private const string Time = """
+        using Microsoft.Extensions.Time.Testing;
+
+        [Fact]
+        public async Task Search_runs_once_the_typing_settles()
+        {
+            var time = new FakeTimeProvider();
+            using var harness = BlexTestHarness.For(new SearchStore(new FakeApi()));
+            harness.TimeProvider = time;                       // [BlexEffect(DebounceMilliseconds = 300)]
+
+            var first = harness.Store.TypeAhead("bl");
+            var second = harness.Store.TypeAhead("blex");
+
+            time.Advance(TimeSpan.FromMilliseconds(299));
+            Assert.Empty(harness.Log.Actions);                 // still inside the quiet period
+
+            time.Advance(TimeSpan.FromMilliseconds(1));
+            await Task.WhenAll(first, second);
+
+            Assert.Equal(["blex"], harness.Log.PayloadsOf(SearchStore.Actions.TypeAhead));
+        }
+
+        // Without the harness - and for a debounced persistor, which reads the manager's clock too:
+        var manager = new BlexManager { TimeProvider = time };
+        """;
+
+    private const string Replay = """
+        [Fact]
+        public async Task The_same_actions_arrive_at_the_same_state()
+        {
+            using var original = BlexTestHarness.For<CartStore>();
+            original.Store.Add("apple");
+            original.Store.SetQuantity("apple", 3);
+            await original.Store.ApplyCoupon("SPRING");          // effects replay too
+
+            using var replica = BlexTestHarness.For<CartStore>();
+            await replica.Manager.ReplayAsync(original.Log.Actions);
+
+            Assert.Equal(original.Snapshot().ToJsonString(), replica.Snapshot().ToJsonString());
+        }
         """;
 
     private const string Effects = """

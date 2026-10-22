@@ -89,6 +89,10 @@ public static class IServiceCollectionExtensions
         // No filter here: the docs demo is more useful when every action is its own step.
         services.AddBitBlexHistory(maxEntries: 50);
 
+        // ...and, beside it, an undo stack that covers the counter alone, for the history page's
+        // scoping demo. It starts recording when it is first resolved.
+        services.AddBitBlexHistory<CounterStore>(maxEntries: 50);
+
         return services;
     }
 }

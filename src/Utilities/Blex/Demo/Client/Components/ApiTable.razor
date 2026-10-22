@@ -18,7 +18,7 @@
             @foreach (var row in Rows)
             {
                 <tr>
-                    <td><code>@row.Member</code></td>
+                    <td><code>@((MarkupString)row.Member)</code></td>
                     <td>@((MarkupString)row.Description)</td>
                 </tr>
             }
@@ -28,7 +28,7 @@
 
 @code {
     /// <summary>One documented member.</summary>
-    /// <param name="Member">Signature or name, rendered as code.</param>
+    /// <param name="Member">Signature or name, rendered as code. HTML-encoded like the description (<c>List&amp;lt;T&amp;gt;</c>), so generics display as written.</param>
     /// <param name="Description">Description; may contain inline HTML such as <c>&lt;code&gt;</c>.</param>
     public sealed record Row(string Member, string Description);
 
