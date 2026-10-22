@@ -458,6 +458,37 @@ public class BitChartRendererTests
         Assert.AreEqual(plot.Width, scene.HitBands[0].Width, 0.5);
     }
 
+    // A band stands for its category (#14043), so it is centered on the category's tick - where the crosshair marks it -
+    // and not on the average of where its elements are drawn, which the fuller of two stacks pulls to one side and a line
+    // drawn against a secondary x axis pulls anywhere.
+    [TestMethod]
+    public void HitBandsShouldBeCenteredOnTheirCategory()
+    {
+        var data = new BitChartData
+        {
+            Labels = { "A", "B", "C" },
+            Datasets =
+            {
+                new BitChartDataset { Data = { 1, 2, 3 }, Stack = "s1" },
+                new BitChartDataset { Data = { 2, 1, 2 }, Stack = "s1" },
+                new BitChartDataset { Data = { 3, 3, 1 }, Stack = "s2" },
+                new BitChartDataset { Type = BitChartType.Line, XAxisID = "x2", YAxisID = "y2", Data = { 3, 2, 1 } }
+            }
+        };
+        var scene = Render(new BitChartConfig(BitChartType.Bar, data, new BitChartOptions
+        {
+            Scales = { ["y"] = new BitChartScaleOptions { Id = "y", Stacked = true } }
+        }));
+
+        var plot = scene.PlotArea!.Value;
+        Assert.AreEqual(3, scene.HitBands.Count);
+        for (int k = 0; k < 3; k++)
+        {
+            var band = scene.HitBands.Single(b => b.DataIndex == k);
+            Assert.AreEqual(plot.Left + (k + 0.5) * plot.Width / 3, band.X + band.Width / 2, 0.01, $"category {k}");
+        }
+    }
+
     // ---- hover shapes ----
 
     [TestMethod]
