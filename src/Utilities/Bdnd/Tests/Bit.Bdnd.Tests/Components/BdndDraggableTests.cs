@@ -130,7 +130,15 @@ public class BdndDraggableTests : BdndComponentTestBase
             .Add(x => x.DropEffect, "copyMove"));
 
         var options = Assert.ContainsSingle(SourceRegistrations);
-        Assert.AreEqual(new BdndDragSourceOptions(SourceIdOf(cut.Instance), false, true, true, "copyMove", false), options);
+        Assert.AreEqual(new BdndDragSourceOptions
+        {
+            Id = SourceIdOf(cut.Instance),
+            CanDrag = false,
+            UseHandle = true,
+            UseEmptyPreview = true,
+            EffectAllowed = "copyMove",
+            TrackPointer = false,
+        }, options);
     }
 
     [TestMethod]
@@ -168,7 +176,7 @@ public class BdndDraggableTests : BdndComponentTestBase
 
         Assert.ContainsSingle(SourceRegistrations);
         Assert.AreSequenceEqual(
-            new[] { new BdndDragSourceOptions(id, false, false, false, "move", false), new BdndDragSourceOptions(id, false, false, false, "copy", false) },
+            new[] { new BdndDragSourceOptions { Id = id, EffectAllowed = "move" }, new BdndDragSourceOptions { Id = id, EffectAllowed = "copy" } },
             SourceUpdates);
     }
 

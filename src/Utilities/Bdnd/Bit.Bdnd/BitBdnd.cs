@@ -34,14 +34,14 @@ public static class BitBdnd
     // Roots the public properties + constructors of every type that is (de)serialized across JS
     // interop so the trimmer preserves them. The [DynamicDependency] attributes take effect because
     // this method is reachable from AddBitBdndServices (an app entry point).
-    // The options records have no parameterless constructor: System.Text.Json goes through their
-    // primary one - to serialize them too - and matches its parameters to the properties by name.
-    // The trimmer strips those names from a constructor it does not keep for reflection, so the
-    // records keep their public constructors (a sealed record's copy constructor is private).
+    // Each of these classes has a public parameterless constructor (the options records take init-only
+    // properties, not positional parameters): without one System.Text.Json goes through a parameterized
+    // constructor, even to serialize, and matches its parameters to the properties by name - names the
+    // trimmer strips from a constructor it does not keep for reflection.
     [DynamicDependency(DynamicallyAccessedMemberTypes.PublicProperties | DynamicallyAccessedMemberTypes.PublicParameterlessConstructor, typeof(BdndDomRect))]
     [DynamicDependency(DynamicallyAccessedMemberTypes.PublicProperties | DynamicallyAccessedMemberTypes.PublicParameterlessConstructor, typeof(BdndNativeDropPayload))]
     [DynamicDependency(DynamicallyAccessedMemberTypes.PublicProperties | DynamicallyAccessedMemberTypes.PublicParameterlessConstructor, typeof(BdndNativeFile))]
-    [DynamicDependency(DynamicallyAccessedMemberTypes.PublicProperties | DynamicallyAccessedMemberTypes.PublicConstructors, typeof(BdndDragSourceOptions))]
-    [DynamicDependency(DynamicallyAccessedMemberTypes.PublicProperties | DynamicallyAccessedMemberTypes.PublicConstructors, typeof(BdndDropTargetOptions))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.PublicProperties | DynamicallyAccessedMemberTypes.PublicParameterlessConstructor, typeof(BdndDragSourceOptions))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.PublicProperties | DynamicallyAccessedMemberTypes.PublicParameterlessConstructor, typeof(BdndDropTargetOptions))]
     private static void PreserveInteropContracts() { }
 }

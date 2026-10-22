@@ -63,22 +63,26 @@ jobs:
         path: '**/bdnd-e2e.trx'
         if-no-files-found: ignore
 
-  # Publishes the demo the way it ships - its WebAssembly client trimmed, and in a second leg AOT-compiled - failing
-  # on any trim/AOT analysis warning raised inside Bit.Bdnd, then runs the browser suite against that published output.
-  # Trimming is where the interop types System.Text.Json reads and writes through reflection lose their members, and
-  # none of it is visible in a build output.
+  # Publishes the demo the way bdnd.demo.cd.yml deploys it - its WebAssembly client trimmed, with the wasm-tools
+  # workload installed so the runtime is relinked as well - and in a second leg AOT-compiled, as the deployed demo is
+  # not but an app using the library may be. Either leg fails on any trim/AOT analysis warning raised inside Bit.Bdnd,
+  # then runs the browser suite against that published output. Trimming is where the interop types System.Text.Json
+  # reads and writes through reflection lose their members, and none of it is visible in a build output.
   publish-gate:
     name: Bdnd publish gate (${{ matrix.name }})
     runs-on: ubuntu-24.04
-    timeout-minutes: 60
+    # The whole browser suite runs after the publish, which in the AOT leg compiles the entire client ahead of time.
+    timeout-minutes: ${{ matrix.timeout }}
     strategy:
       fail-fast: false
       matrix:
         include:
         - name: trimmed
           properties: ''
+          timeout: 90
         - name: aot
           properties: '-p:RunAOTCompilation=true'
+          timeout: 150
 
     steps:
 
@@ -96,9 +100,10 @@ jobs:
       with:
         node-version: 24
 
-    # Both from inside src, so src/global.json picks the SDK: the workload has to be installed for the SDK that publishes.
+    # In both legs, as bdnd.demo.cd.yml installs it: with it the trimmed publish relinks the runtime too, as the deployed
+    # demo's does. Both from inside src, so src/global.json picks the SDK: the workload has to be installed for the SDK
+    # that publishes.
     - name: Install wasm-tools
-      if: matrix.name == 'aot'
       run: cd src/Utilities/Bdnd && dotnet workload install wasm-tools
 
     - name: Publish the demo (fails on trim/AOT warnings from Bit.Bdnd)

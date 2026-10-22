@@ -1,14 +1,26 @@
 ﻿namespace Bit.Bdnd;
 
 /// <summary>Options of a drag source registration in <c>bit-bdnd.js</c>.</summary>
-/// <param name="Id">The draggable's handler id (also part of the drag's DataTransfer type).</param>
-/// <param name="CanDrag">Whether a drag may start.</param>
-/// <param name="UseHandle">Whether a drag must start on a <see cref="BdndDragHandle"/>.</param>
-/// <param name="UseEmptyPreview">Hide the native drag image (custom drag layers).</param>
-/// <param name="EffectAllowed">The value assigned to <c>dataTransfer.effectAllowed</c>.</param>
-/// <param name="TrackPointer">
-/// Whether to report the pointer on every animation frame of a drag (only a drag layer, or another
-/// <see cref="BdndDragDropManager.OffsetChanged"/> listener, follows it).
-/// </param>
-internal sealed record BdndDragSourceOptions(
-    string Id, bool CanDrag, bool UseHandle, bool UseEmptyPreview, string EffectAllowed, bool TrackPointer);
+internal sealed record BdndDragSourceOptions
+{
+    /// <summary>The draggable's handler id (also part of the drag's DataTransfer type).</summary>
+    public string Id { get; init; } = "";
+
+    /// <summary>Whether a drag may start.</summary>
+    public bool CanDrag { get; init; }
+
+    /// <summary>Whether a drag must start on a <see cref="BdndDragHandle"/>.</summary>
+    public bool UseHandle { get; init; }
+
+    /// <summary>Hide the native drag image (custom drag layers).</summary>
+    public bool UseEmptyPreview { get; init; }
+
+    /// <summary>The value assigned to <c>dataTransfer.effectAllowed</c>.</summary>
+    public string EffectAllowed { get; init; } = "move";
+
+    /// <summary>
+    /// Whether to report the pointer on every animation frame of a drag (only a drag layer, or another
+    /// <see cref="BdndDragDropManager.OffsetChanged"/> listener, follows it).
+    /// </summary>
+    public bool TrackPointer { get; init; }
+}

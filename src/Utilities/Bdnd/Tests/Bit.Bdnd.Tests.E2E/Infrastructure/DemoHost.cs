@@ -21,38 +21,40 @@ public sealed class DemoHost : IAsyncDisposable
 
     public static async Task<DemoHost> StartAsync()
     {
+        if (E2EEnvironment.PublishedHost is { } publishOutput)
+        {
+            // Each names a demo to drive. Taking one of them would leave the build the other names untested, and a
+            // published one is set precisely to test what the trimmer did.
+            if (E2EEnvironment.BaseUrl is { } running)
+                throw new InvalidOperationException(
+                    $"BDND_E2E_BASE_URL ({running}) and BDND_E2E_PUBLISHED_HOST ({publishOutput}) are both set. Unset one of them.");
+
+            if (Path.IsPathFullyQualified(publishOutput) is false)
+                throw new InvalidOperationException(
+                    $"BDND_E2E_PUBLISHED_HOST ({publishOutput}) is a relative path. Set it to the full path of the publish output: " +
+                    "dotnet test runs the suite in its output folder, not in the folder it was started from.");
+        }
+
         if (E2EEnvironment.BaseUrl is { } external)
             return new DemoHost(external, process: null);
 
+        // A publish output runs as it does in production: its static web assets come from its own wwwroot. A build output
+        // only finds the static web assets of its references (the WebAssembly client, the demo's stylesheet and
+        // bit-bdnd.js among them) through the development manifest, which Development switches on.
+        var (assembly, directory, environment, missing) = E2EEnvironment.PublishedHost is { } published
+            ? (Path.Combine(published, $"{RepoLayout.DemoServerName}.dll"), published, "Production",
+                $"{published} holds no published demo server. Publish it first, from src/Utilities/Bdnd (inside src, so " +
+                $"src/global.json picks the SDK), with 'bash Tests/Bit.Bdnd.Tests.E2E/publish-gate.sh {published}'")
+            : (RepoLayout.DemoServerAssembly(E2EEnvironment.Configuration), Path.GetDirectoryName(RepoLayout.DemoServerProject())!, "Development",
+                $"The demo server has not been built in the {E2EEnvironment.Configuration} configuration. Build it first with " +
+                $"'dotnet build src/Utilities/Bdnd/Demo/Server/Bit.Bdnd.Demo.Server.csproj -c {E2EEnvironment.Configuration}'");
+
+        if (File.Exists(assembly) is false)
+            throw new FileNotFoundException(missing, assembly);
+
         var baseUrl = $"http://127.0.0.1:{ChildProcess.FreePort()}";
-
-        ChildProcess process;
-        if (E2EEnvironment.PublishedHost is { } published)
-        {
-            var assembly = Path.Combine(published, $"{RepoLayout.DemoServerName}.dll");
-            if (File.Exists(assembly) is false)
-                throw new FileNotFoundException(
-                    $"{published} holds no published demo server. Publish it first with " +
-                    $"'bash src/Utilities/Bdnd/Tests/Bit.Bdnd.Tests.E2E/publish-gate.sh {published}'", assembly);
-
-            // A publish output runs as it does in production: its static web assets come from its own wwwroot.
-            process = ChildProcess.Start("dotnet", [assembly, "--urls", baseUrl], published,
-                new Dictionary<string, string> { ["ASPNETCORE_ENVIRONMENT"] = "Production" });
-        }
-        else
-        {
-            var assembly = RepoLayout.DemoServerAssembly(E2EEnvironment.Configuration);
-            if (File.Exists(assembly) is false)
-                throw new FileNotFoundException(
-                    $"The demo server has not been built in the {E2EEnvironment.Configuration} configuration. Build it first with " +
-                    $"'dotnet build src/Utilities/Bdnd/Demo/Server/Bit.Bdnd.Demo.Server.csproj -c {E2EEnvironment.Configuration}'", assembly);
-
-            // A build output only finds the static web assets of its references (the WebAssembly client,
-            // the demo's stylesheet and bit-bdnd.js among them) through the development manifest, which Development
-            // switches on.
-            process = ChildProcess.Start("dotnet", [assembly, "--urls", baseUrl], Path.GetDirectoryName(RepoLayout.DemoServerProject())!,
-                new Dictionary<string, string> { ["ASPNETCORE_ENVIRONMENT"] = "Development" });
-        }
+        var process = ChildProcess.Start("dotnet", [assembly, "--urls", baseUrl], directory,
+            new Dictionary<string, string> { ["ASPNETCORE_ENVIRONMENT"] = environment });
 
         try
         {
