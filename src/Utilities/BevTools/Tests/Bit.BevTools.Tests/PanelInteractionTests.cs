@@ -38,7 +38,7 @@ public class PanelInteractionTests : BunitContext
     }
 
     [TestMethod]
-    public void Every_built_in_panel_can_be_opened_from_its_tab()
+    public async Task Every_built_in_panel_can_be_opened_from_its_tab()
     {
         var cut = RenderPanel();
         var tabs = cut.FindAll(".bev-tab").Select(t => t.TextContent.Trim().Split('\n')[0].Trim()).ToList();
@@ -46,7 +46,7 @@ public class PanelInteractionTests : BunitContext
 
         foreach (var tab in tabs)
         {
-            cut.FindAll(".bev-tab").First(t => t.TextContent.Trim().StartsWith(tab, StringComparison.Ordinal)).Click();
+            await cut.InvokeAsync(() => cut.FindAll(".bev-tab").First(t => t.TextContent.Trim().StartsWith(tab, StringComparison.Ordinal)).Click());
             Assert.IsNotEmpty(cut.FindAll(".bev-body"));
             Assert.DoesNotContain(e => e.TextContent.Contains("Unknown panel", StringComparison.Ordinal), cut.FindAll(".bev-empty"));
         }
