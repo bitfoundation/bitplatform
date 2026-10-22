@@ -62,7 +62,7 @@ const configureProfiler = writeAt => {
             await page.locator(step.slice('click:'.length)).first().click();
         } else if (step.startsWith('role:')) {
             const [role, name] = step.slice('role:'.length).split('|');
-            await page.getByRole(role, { name: new RegExp(name, 'i') }).first().click();
+            await page.getByRole(role, { name }).first().click();
         } else if (step.startsWith('key:')) {
             await page.locator('body').click({ position: { x: 5, y: 5 } });
             await page.keyboard.press(step.slice('key:'.length));
