@@ -1,3 +1,5 @@
+using Boilerplate.Client.Core;
+using Boilerplate.Client.Core.Components.Layout;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.AspNetCore.Components.Web;
@@ -11,10 +13,16 @@ public partial class App
 
     [AutoInject] ServerWebSettings serverWebSettings = default!;
     [AutoInject] AbsoluteServerAddressProvider absoluteServerAddress = default!;
+    [AutoInject] ClientCoreSettings clientCoreSettings = default!;
 
     protected override void OnInitialized()
     {
         base.OnInitialized();
+
+        if (AppEnvironment.IsDevelopment() is false)
+        {
+            HttpContext.Response.Headers.Append("Content-Security-Policy", ContentSecurityPolicy.BuildCspString(clientCoreSettings, absoluteServerAddress));
+        }
 
         // Not written when the response is headed for a shared cache: a Set-Cookie of ANY name makes a CDN refuse to
         // cache the whole response (Cloudflare answers cf-cache-status: BYPASS), which would cost every pre-rendered
