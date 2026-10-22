@@ -130,7 +130,7 @@ This project ships reusable [Agent Skills](https://agentskills.io), canonical in
 | Skill | Read it when | Canonical file |
 | --- | --- | --- |
 | `scaffold-entity` | Adding a new entity or a new feature that needs full CRUD | `.github/agents/scaffold-entity.agent.md` |
-| `localize-strings` | Explicitly asked to move user-facing text into `AppStrings.resx` | `.github/agents/localize-strings.agent.md` |
+| `localize-strings` | Explicitly asked to move user-facing text into `AppStrings.resx`, or the changes are about to be pushed | `.github/agents/localize-strings.agent.md` |
 | `bitify-ui` | Replacing raw HTML/CSS in a Blazor page with Bit.BlazorUI components | `.github/agents/bitify-ui.agent.md` |
 | `review` | Reviewing a diff or PR against this project's conventions | `.github/agents/review.agent.md` |
 | `ai-dlc` | Driving a feature end-to-end through requirements, plan, design, implement, validate | `.github/agents/ai-dlc.agent.md` |

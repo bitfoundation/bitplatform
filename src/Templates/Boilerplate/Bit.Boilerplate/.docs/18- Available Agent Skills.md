@@ -63,7 +63,7 @@ To add a new skill: create `.github/agents/<your-skill>.agent.md` with the full 
 
 **What it does**: Identifies hardcoded strings in your code and moves them to resource files (.resx) for proper localization support.
 
-**When to use it**: When you explicitly want hardcoded user-facing text in your Blazor components, pages, or controllers moved into `AppStrings.resx` - for example as a dedicated translation pass before a release. (Day-to-day, new text stays in the `Localizer["..."]` literal indexer per `AGENTS.md` section 5, because `.resx` edits break hot reload.)
+**When to use it**: When you explicitly want hardcoded user-facing text in your Blazor components, pages, or controllers moved into `AppStrings.resx` - for example as a dedicated translation pass before a release - and when the changes are about to be pushed. (Day-to-day, new text stays in the `Localizer["..."]` literal indexer per `AGENTS.md` section 5, because `.resx` edits break hot reload.)
 
 **Key capabilities**:
 - Identifies hardcoded user-facing strings in selected code

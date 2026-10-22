@@ -41,7 +41,7 @@ description: Drives a feature end-to-end using the AI-Driven Development Lifecyc
 - Confirm acceptance criteria are met
 - When the change shows in the Windows or Android app, check it there too. Each renders inside a WebView with remote debugging on, so drive it like the web app:
     - **Windows** (`Boilerplate.Client.Windows`): the app starts WebView2 with `--remote-debugging-port=9222`, so attach Playwright over CDP with `chromium.connectOverCDP('http://localhost:9222')` and use the page it already has.
-    - **Android**: the WebView's CDP endpoint is a local abstract socket on the device. Find the app's process id with `adb shell pidof <applicationId>`, forward it with `adb forward tcp:9222 localabstract:webview_devtools_remote_<pid>` (another local port if the Windows app already holds 9222), and attach the same way.
+    - **Android**: the WebView's CDP endpoint is a local abstract socket on the device. Find the app's process id with `adb shell pidof <applicationId>`, forward it with `adb forward tcp:9222 localabstract:webview_devtools_remote_<pid>` (another local port if the Windows app already holds 9222), and attach the same way with Playwright's `noDefaults` connect option on, since the Android WebView refuses the browser context set-up a plain connection sends.
 - Against a deployment, read its real state through **dev-mcp** (below) rather than guessing
 - Surface any issues found and resolve them before handing back
 

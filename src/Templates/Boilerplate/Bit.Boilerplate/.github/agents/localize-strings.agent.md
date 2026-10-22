@@ -1,6 +1,6 @@
 ---
 name: localize-strings
-description: Moves hardcoded user-facing strings out of Razor/C# files into AppStrings.resx, rewrites the call sites to use IStringLocalizer with nameof(AppStrings.Key), and fills in the new keys for every other language the project ships. Use only when explicitly asked to localize or apply translations.
+description: Moves hardcoded user-facing strings out of Razor/C# files into AppStrings.resx, rewrites the call sites to use IStringLocalizer with nameof(AppStrings.Key), and fills in the new keys for every other language the project ships. Use when explicitly asked to localize or apply translations, or when the changes are about to be pushed.
 ---
 
 # Move user-facing text into the resource files
@@ -22,7 +22,7 @@ This is the pass `AGENTS.md` section 5 leaves for later: it moves the English li
 
 `AppStrings.resx` holds the English text. `Bit.ResxTranslator.json` lists every other language the project ships, each with its own `AppStrings.<language>.resx`, and a key missing there shows in English to that language's users.
 
-Run `bit translate` from the project folder. It fills in every key the other languages lack, keeps the translations they already have, and uses the AI provider set in `Bit.ResxTranslator.json`. Its API key belongs in the `OpenAI__ApiKey` environment variable, not in the file. If no key is set, ask the user for one, or whether you should write the translations yourself.
+Run `bit translate` from the project folder. It fills in every key the other languages lack, keeps the translations they already have, and uses the AI provider set in `Bit.ResxTranslator.json`. Its API key belongs in the `OpenAI__ApiKey` environment variable, not in the file. If no key is set, ask the user to set it in their environment, never to paste it into the conversation, or whether you should write the translations yourself.
 
 ## Done means
 

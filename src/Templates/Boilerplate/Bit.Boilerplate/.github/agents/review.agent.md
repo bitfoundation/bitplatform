@@ -27,7 +27,7 @@ A deliberately global entity is the one exception the **scaffold-entity** skill 
 <!--#endif-->
 
 ### Security
-When a change touches sign-in, permissions, user input, uploaded files or data that belongs to someone else, and neither the change nor the request says how it stays safe, raise that as a finding even without a proven exploit:
+When a change touches sign-in, permissions, user input, uploaded files or data that belongs to someone else, look for the safeguard in the code around it as well (the controller and its base class, the query, what the server registers) and raise a finding when you cannot find one, even without a proven exploit:
 - [ ] A new or changed endpoint has the authorization it needs, and one that allows anonymous access does so on purpose
 - [ ] A user can read or change only the rows they may: the ownership or tenant check is in the server's query, not only in the UI
 - [ ] Input is validated on the server, and properties the server owns are ignored on the way in (`[MapperIgnoreTarget]`)
