@@ -7,7 +7,7 @@ description: Drives every task that is not a small, obvious edit through the AI-
 
 ## Size the Work First
 
-If the current branch already has a pull request whose description holds a plan, the work was started in an earlier session or another tool: pick it up from that plan instead of starting over.
+If this branch already added a plan under `specs/changes/`, the work was started in an earlier session or another tool: pick it up from its unticked tasks instead of starting over.
 
 Before phase 1, decide which track the task takes, and tell the user in one line:
 
@@ -22,6 +22,7 @@ A short-track task that turns out bigger moves to the full track, and you stop a
 - In the same step as your first reads, check whether the project is on the newest bit platform release - see **Staying on the Newest bit Platform** below. It runs alongside this phase and never holds it up
 - Ask clarifying questions to fully understand the feature/task
 - Identify acceptance criteria, edge cases, and constraints
+- Write the agreed requirements and acceptance criteria into the specs of the features the request touches (`specs/README.md`), and settle the open questions there that this work depends on
 <!--#if (multitenant != true || aspire != true || redis != true || notification != true || sentry != true || appInsights != true || signalR != true || offlineDb != true || module != "Admin")-->
 - Check the requested feature against **Optional Features This Project Has Not Enabled Yet** (below) before treating any of it as new work
 <!--#endif-->
@@ -33,16 +34,16 @@ A short-track task that turns out bigger moves to the full track, and you stop a
 - **If the design involves CRUD operations**, invoke the **scaffold-entity** skill (`.github/agents/scaffold-entity.agent.md`) for structure and conventions - it is a recipe, not a lifecycle: its steps are tasks inside this plan, and when they're done you continue with the next phase here
 - Break the work into small, verifiable, independently completable tasks
 - Order tasks by dependency
-- Present the plan to the user for approval before starting
+- Write the plan into a new file under `specs/changes/` and present it to the user for approval before starting
 
 ### 3. Design
 - Identify affected files, components, APIs, and data models
-- Propose the approach and key design decisions
+- Propose the approach and key design decisions, and record them in the change plan
 - Flag any trade-offs or risks
 
 ### 4. Implementation
 - Work on a branch off `develop`; it reaches `main` through a PR, never a direct push
-- On the full track, the approved plan lives in that branch's pull request, not only in this conversation. Open it as a draft with the branch's first commit, its description holding the requirements with their acceptance criteria, the design decisions from phase 3 and the tasks as a checklist. Keep it current: tick each task when it is done, and write down any change to the plan with its reason, so another session, another tool or a reviewer can pick the work up from the PR alone. When you hand back, the description matches the diff - every acceptance criterion has its change and its test, and nothing in the diff goes unexplained. Where you cannot open a PR, give the user the description to paste
+- On the full track, commit the specs and the plan with the work. Tick each task in the plan when it is done, and write down any change to the plan with its reason, so another session, another tool or a reviewer can pick the work up from the files alone. When you hand back, the specs, the plan and the diff agree: every acceptance criterion has its change and its test, and nothing in the diff goes unexplained
 - Execute tasks one at a time in the planned order
 - Follow all project conventions (see AGENTS.md)
 - Use the **bitify-ui** skill (`.github/agents/bitify-ui.agent.md`) when building UI, so new markup starts from Bit.BlazorUI components rather than raw HTML

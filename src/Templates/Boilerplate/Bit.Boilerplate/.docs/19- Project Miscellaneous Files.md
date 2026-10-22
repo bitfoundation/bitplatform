@@ -597,6 +597,14 @@ When you open the project in VS Code, you'll be prompted to install these extens
 
 **Keep it**: the bit CLI may keep more of what it needs to know about the project here. Edit an option's value when you change the project in a way that matches another option, such as removing Aspire, so the next upgrade compares the right templates.
 
+### 8.3 `specs/`
+
+**Location**: [`/specs/`](/specs/README.md)
+
+**Purpose**: What the product does and why, kept next to the code: one spec per feature area with its requirements, acceptance criteria, decisions and open questions, plus one plan per larger change. [`specs/README.md`](/specs/README.md) describes both.
+
+**Who uses it**: the whole team, product people included, and every AI tool. `AGENTS.md` has the agents read a feature's spec before changing it and write the product decisions a conversation settles into it, and the `ai-dlc` skill keeps its plans there, so work can be resumed in another session or tool and reviewed with the code.
+
 ---
 
 ## 9. Spell Checking

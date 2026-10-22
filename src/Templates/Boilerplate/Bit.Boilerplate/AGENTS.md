@@ -57,6 +57,7 @@ The solution is organized into the following projects. Understand their roles to
 ## 3. Information Gathering & Codebase Investigation
 
 Before implementing any changes, you **MUST** complete the following:
+*   Before changing a feature, read its spec under `specs/`. Build on its decisions, and when a request contradicts one, point that out instead of silently overriding it.
 *   If the user provides a **URL**, you **MUST** use the `fetch`, `WebFetch` or `get_web_pages` tools to retrieve its content.
 *   If the user provides a **git commit id/hash**, you **MUST** run the `git --no-pager show <commit-id>` command to retrieve its details.
 *   Only if the user **explicitly** asks about their uncommitted/current changes (e.g. "review my current changes", "what did I just change") you **MUST** run the `git --no-pager diff` and `git --no-pager diff --staged` commands.
@@ -140,6 +141,7 @@ Example 2: `OnClick="WrapHandled(async () => await MyMethod())"` instead of `OnC
 ## 6. Behavioral Directives
 
 -   If you have access to persistent **memory**, at the start of the collaboration you **MUST** ask for the **role** of the person writing the prompts (e.g. Developer, Product Owner, QA, Designer, etc.), store it in memory, and from then on tailor the tone, depth, terminology, and focus of every conversation to that role.
+-   **Write product decisions into `specs/`.** When a conversation settles what the product should do - even one where no code is asked for - write it into that feature's spec, and what is still undecided under its open questions (`specs/README.md` describes the files). A decision left only in a chat is lost to the next session and to every other tool.
 -   **Never wait unbounded.** Cap every long-running command with `timeout <seconds> <command>` and report the exit code (`124` = hit the cap), and pair the wait with a stall check - a process at ~0% CPU is hung, not slow. Re-arm in ~5 minute slices, inspecting the state between them.
 -   **Report platform bugs upstream.** Whenever something looks like a defect in the section 3 bit platform libraries or in the `bit-bp` template, tell the user, and tell them that if they agree you will write the report and submit it yourself. Once they approve, depending on whether you have GitHub access, either open an issue on <https://github.com/bitfoundation/bitplatform> or submit it through the feedback tool the bit platform MCP server exposes.
 
