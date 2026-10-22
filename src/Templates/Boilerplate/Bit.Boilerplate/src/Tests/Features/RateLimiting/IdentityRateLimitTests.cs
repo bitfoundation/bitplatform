@@ -46,7 +46,7 @@ public class IdentityRateLimitTests
             try
             {
                 await identityController.SendConfirmEmailToken(new() { Email = $"{Guid.NewGuid()}@example.com" }, TestContext.CancellationToken);
-                served++;
+                served++; // The endpoint's own answer for an unknown e-mail, the same as for any other address.
             }
             catch (TooManyRequestsException)
             {
