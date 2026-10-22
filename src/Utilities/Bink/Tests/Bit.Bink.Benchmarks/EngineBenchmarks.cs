@@ -133,6 +133,104 @@ public class RenderBenchmarks
     }
 }
 
+/// <summary>
+/// Recording a redraw of the document surface the way the canvas does: with the browser already holding every
+/// visible path, which is the case for every redraw after the first.
+/// </summary>
+[MemoryDiagnoser]
+public class RetainedRenderBenchmarks
+{
+    private BinkDocument _document = null!;
+    private BinkCanvasRenderContext _context = null!;
+    private BinkRenderOptions _options = null!;
+
+    /// <summary>Strokes in the document.</summary>
+    [Params(500, 5_000)]
+    public int Strokes { get; set; }
+
+    [GlobalSetup]
+    public void Setup()
+    {
+        _document = Workloads.Document(Strokes);
+        _context = new BinkCanvasRenderContext(1 << 20, new BinkCanvasResourceCache());
+        _options = new BinkRenderOptions { ClipBounds = new BinkRect(0, 0, 1600, 1000) };
+        // The first frame defines every path; the benchmarks measure the ones after it, so the buffer is left holding
+        // a retained frame for PackForTransport too.
+        RecordRetained();
+        RecordRetained();
+    }
+
+    /// <summary>A whole-page redraw that refers to retained paths.</summary>
+    [Benchmark]
+    public int RecordRetained()
+    {
+        _context.Reset();
+        BinkDocumentRenderer.Render(_document, _context, _options);
+        _context.EndFrame();
+        return _context.Count;
+    }
+
+    /// <summary>The same frame packed as 32-bit floats, which is what crosses a Blazor Server circuit.</summary>
+    [Benchmark]
+    public int PackForTransport() => _context.ToSingleBytes().Length;
+}
+
+/// <summary>Editing a large selection: what dragging it costs per frame, and what undoing the drag costs.</summary>
+[MemoryDiagnoser]
+public class EditingBenchmarks : IDisposable
+{
+    private BinkDocument _document = null!;
+    private BinkSelection _selection = null!;
+    private BinkHistoryManager _history = null!;
+    private Dictionary<Guid, System.Numerics.Matrix3x2> _start = null!;
+    private int _frame;
+
+    /// <summary>Strokes in the document, all of them selected.</summary>
+    [Params(1_000, 10_000)]
+    public int Strokes { get; set; }
+
+    [GlobalSetup]
+    public void Setup()
+    {
+        _document = Workloads.Document(Strokes);
+        _selection = new BinkSelection(_document);
+        _selection.SelectAll();
+        _start = _document.AllElements.ToDictionary(e => e.Id, e => e.Transform);
+        _history = new BinkHistoryManager(_document, limit: 10_000);
+        // A one-second drag at 60 frames a second, recorded the way the selection tool records it.
+        using (_history.BeginGroup("Move"))
+        {
+            for (int i = 1; i <= 60; i++) DragFrame();
+        }
+    }
+
+    [GlobalCleanup]
+    public void Cleanup() => Dispose();
+
+    /// <summary>Releases the history manager and selection.</summary>
+    public void Dispose()
+    {
+        _history?.Dispose();
+        _selection?.Dispose();
+        GC.SuppressFinalize(this);
+    }
+
+    /// <summary>One frame of dragging every element: a transform per element, replaced in one batch.</summary>
+    [Benchmark]
+    public int DragFrame()
+    {
+        var m = System.Numerics.Matrix3x2.CreateTranslation(++_frame % 100, 0);
+        var moved = new List<BinkElement>(_selection.Count);
+        foreach (BinkElement e in _selection.Elements) moved.Add(e with { Transform = _start[e.Id] * m });
+        _document.ReplaceElements(moved, "Move");
+        return _selection.Bounds.IsEmpty ? 0 : moved.Count;
+    }
+
+    /// <summary>Undoing and redoing the one-second drag of every element.</summary>
+    [Benchmark]
+    public bool UndoRedoDrag() => _history.Undo() && _history.Redo();
+}
+
 /// <summary>Hit testing and rectangle selection over a full document.</summary>
 [MemoryDiagnoser]
 public class QueryBenchmarks

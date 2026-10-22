@@ -109,19 +109,20 @@ public sealed class BinkTextTool : BinkToolBase
     /// </summary>
     /// <param name="context">Tool context.</param>
     /// <param name="text">The new text.</param>
-    /// <param name="measuredSize">Size measured by the host in document units, or null to estimate.</param>
+    /// <param name="measuredSize">
+    /// Size measured by the host in document units. Null keeps the size the element already has, or estimates
+    /// one for a box placed for this edit, whose size only ever sized the editor.
+    /// </param>
     public void CommitEdit(IBinkToolContext context, string text, Vector2? measuredSize = null)
     {
         ArgumentNullException.ThrowIfNull(context);
-        BinkTextElement? element = Editing;
+        BinkTextElement? editing = Editing;
         Editing = null;
         EditFinished?.Invoke();
-        if (element is null)
-        {
-            EndCreationGroup();
-            return;
-        }
-        if (!context.Document.ContainsElement(element.Id))
+        // The editor stays open for as long as the user types, and the element can change meanwhile: a
+        // collaborator moves it, the application restyles it. The edit is applied to the element as it is now, not
+        // to the snapshot taken when editing began, which would silently undo those changes.
+        if (editing is null || !context.Document.TryGetElement(editing.Id, out BinkElement? found) || found is not BinkTextElement element)
         {
             EndCreationGroup();
             return;
@@ -138,7 +139,8 @@ public sealed class BinkTextTool : BinkToolBase
                 context.InvalidateDocument(element.Bounds);
                 return;
             }
-            var updated = element with { Text = text, Size = measuredSize };
+            Vector2? size = measuredSize ?? (_createdElementId == element.Id ? null : element.Size);
+            var updated = element with { Text = text, Size = size };
             context.Document.ReplaceElement(updated);
             context.InvalidateDocument(updated.Bounds.Union(element.Bounds));
             context.Announce("Text updated.");

@@ -31,6 +31,12 @@ public interface IBinkToolContext
     /// <summary>Size of the drawing surface in view (CSS pixel) units.</summary>
     Vector2 ViewSize { get; }
 
+    /// <summary>
+    /// How moving, resizing and drawing shapes snap. Defaults to no snapping, so a host written before snapping
+    /// existed keeps compiling and behaving as it did.
+    /// </summary>
+    BinkSnapOptions Snapping => BinkSnapOptions.None;
+
     /// <summary>Requests that the overlay (live stroke, selection handles, marquee) be redrawn on the next frame.</summary>
     void InvalidateOverlay();
 

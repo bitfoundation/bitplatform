@@ -29,6 +29,8 @@ public sealed class BinkShapeTool : BinkToolBase
     private Vector2 _current;
     private bool _constrain;
     private Guid _targetLayerId;
+    private BinkSnapper _snapper = BinkSnapper.Disabled;
+    private readonly List<BinkSnapGuide> _guides = new();
 
     /// <summary>Creates a shape tool.</summary>
     /// <param name="kind">Which shape to draw.</param>
@@ -62,7 +64,12 @@ public sealed class BinkShapeTool : BinkToolBase
         _pointerId = sample.PointerId;
         // The shape belongs to the layer the gesture started on, even if the active layer changes meanwhile.
         _targetLayerId = context.ActiveLayerId;
-        _start = context.Viewport.ToDocument(sample.Position);
+        // Both ends snap, so a box drawn next to another lines up with it, or with the grid.
+        _snapper = context.Snapping is { IsEnabled: true } snapping
+            ? BinkSnapper.Create(context.Document, snapping, null, context.Viewport.VisibleRect(context.ViewSize))
+            : BinkSnapper.Disabled;
+        _guides.Clear();
+        _start = Snap(context, context.Viewport.ToDocument(sample.Position), null);
         _current = _start;
         _constrain = sample.Shift;
         context.CapturePointer(sample.PointerId);
@@ -75,9 +82,17 @@ public sealed class BinkShapeTool : BinkToolBase
     {
         ArgumentNullException.ThrowIfNull(context);
         if (!_dragging || sample.PointerId != _pointerId) return;
-        _current = context.Viewport.ToDocument(sample.Position);
+        _guides.Clear();
+        _current = Snap(context, context.Viewport.ToDocument(sample.Position), _guides);
         _constrain = sample.Shift;
         context.InvalidateOverlay();
+    }
+
+    private Vector2 Snap(IBinkToolContext context, Vector2 point, List<BinkSnapGuide>? guides)
+    {
+        if (!_snapper.IsEnabled) return point;
+        float tolerance = context.Snapping.Threshold / MathF.Max(context.Viewport.Zoom, 0.001f);
+        return _snapper.SnapPoint(point, tolerance, guides: guides);
     }
 
     /// <inheritdoc />
@@ -86,7 +101,7 @@ public sealed class BinkShapeTool : BinkToolBase
         ArgumentNullException.ThrowIfNull(context);
         if (!_dragging || sample.PointerId != _pointerId) return;
         context.ReleasePointer(sample.PointerId);
-        _current = context.Viewport.ToDocument(sample.Position);
+        _current = Snap(context, context.Viewport.ToDocument(sample.Position), null);
         _constrain = sample.Shift;
         _dragging = false;
         _pointerId = -1;
@@ -185,6 +200,7 @@ public sealed class BinkShapeTool : BinkToolBase
         if (!_dragging) return;
         BinkElement? preview = Build(context);
         preview?.Draw(render);
+        BinkSnapper.DrawGuides(render, _guides, context.Viewport.Zoom);
     }
 
     /// <inheritdoc />

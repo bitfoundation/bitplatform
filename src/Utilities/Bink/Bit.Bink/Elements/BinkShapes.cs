@@ -94,6 +94,8 @@ public abstract record BinkShapeElement : BinkElement
 /// <summary>A rectangle annotation, optionally with rounded corners.</summary>
 public sealed record BinkRectangleShape : BinkShapeElement
 {
+    private BinkCachedPath<(BinkRect, float)>? _path;
+
     /// <summary>Creates a rectangle.</summary>
     public BinkRectangleShape(BinkRect rect) { Rect = rect.Normalize(); }
 
@@ -110,7 +112,19 @@ public sealed record BinkRectangleShape : BinkShapeElement
     protected override BinkRect GeometryBounds => Rect;
 
     /// <inheritdoc />
-    public override BinkPathGeometry GetPath() => CornerRadius > 0 ? new BinkPathBuilder(12).AddRoundedRect(Rect, CornerRadius).ToGeometry() : new BinkPathBuilder(6).AddRect(Rect).ToGeometry();
+    /// <remarks>
+    /// Built once per geometry and reused by every redraw, hit test and export. The canvas keeps a drawn path in
+    /// the browser and refers to it by identity, so a shape that rebuilt its path on every draw would resend it
+    /// every frame; moving the shape changes only its transform and keeps the path.
+    /// </remarks>
+    public override BinkPathGeometry GetPath()
+    {
+        (BinkRect, float) key = (Rect, CornerRadius);
+        if (_path is { } cached && cached.Matches(key)) return cached.Path;
+        BinkPathGeometry path = CornerRadius > 0 ? new BinkPathBuilder(12).AddRoundedRect(Rect, CornerRadius).ToGeometry() : new BinkPathBuilder(6).AddRect(Rect).ToGeometry();
+        _path = new(key, path);
+        return path;
+    }
 
     /// <inheritdoc />
     protected override bool HitTestCore(Vector2 localPoint, float tolerance) => HitTestPath(localPoint, tolerance);
@@ -119,6 +133,8 @@ public sealed record BinkRectangleShape : BinkShapeElement
 /// <summary>An ellipse annotation inscribed in a rectangle.</summary>
 public sealed record BinkEllipseShape : BinkShapeElement
 {
+    private BinkCachedPath<BinkRect>? _path;
+
     /// <summary>Creates an ellipse.</summary>
     public BinkEllipseShape(BinkRect rect) { Rect = rect.Normalize(); }
 
@@ -132,7 +148,14 @@ public sealed record BinkEllipseShape : BinkShapeElement
     protected override BinkRect GeometryBounds => Rect;
 
     /// <inheritdoc />
-    public override BinkPathGeometry GetPath() => new BinkPathBuilder(8).AddEllipse(Rect).ToGeometry();
+    /// <remarks>Built once per geometry and reused; see <see cref="BinkRectangleShape.GetPath"/>.</remarks>
+    public override BinkPathGeometry GetPath()
+    {
+        if (_path is { } cached && cached.Matches(Rect)) return cached.Path;
+        BinkPathGeometry path = new BinkPathBuilder(8).AddEllipse(Rect).ToGeometry();
+        _path = new(Rect, path);
+        return path;
+    }
 
     /// <inheritdoc />
     protected override bool HitTestCore(Vector2 localPoint, float tolerance) => HitTestPath(localPoint, tolerance);
@@ -141,6 +164,8 @@ public sealed record BinkEllipseShape : BinkShapeElement
 /// <summary>A straight line annotation with optional arrow heads at either end.</summary>
 public sealed record BinkLineShape : BinkShapeElement
 {
+    private BinkCachedPath<(Vector2, Vector2, bool, bool, float, float)>? _path;
+
     /// <summary>Creates a line.</summary>
     public BinkLineShape(Vector2 start, Vector2 end)
     {
@@ -172,7 +197,18 @@ public sealed record BinkLineShape : BinkShapeElement
     private float HeadLength => (StartArrow || EndArrow) ? MathF.Max(Style.StrokeWidth, 1f) * ArrowSize : 0f;
 
     /// <inheritdoc />
+    /// <remarks>Built once per geometry and reused; see <see cref="BinkRectangleShape.GetPath"/>.</remarks>
     public override BinkPathGeometry GetPath()
+    {
+        // The arrow heads are sized from the stroke width, so it is part of the geometry's identity.
+        (Vector2, Vector2, bool, bool, float, float) key = (Start, End, StartArrow, EndArrow, ArrowSize, Style.StrokeWidth);
+        if (_path is { } cached && cached.Matches(key)) return cached.Path;
+        BinkPathGeometry path = BuildPath();
+        _path = new(key, path);
+        return path;
+    }
+
+    private BinkPathGeometry BuildPath()
     {
         var b = new BinkPathBuilder(12);
         b.MoveTo(Start).LineTo(End);

@@ -23,6 +23,12 @@ public sealed class BinkHistoryManager : IDisposable
     private string? _groupLabel;
     private int _groupDepth;
     private bool _discardGroup;
+    // Whether every change recorded in the open group so far replaced elements in place, which is what dragging,
+    // resizing and rotating produce. Such a group is compacted as it grows; see TryCompact.
+    private bool _groupCompactable;
+
+    /// <summary>Entries an open group collects before it is compacted again.</summary>
+    private const int CompactionInterval = 16;
     private bool _applying;
     private bool _disposed;
     private int _limit;
@@ -148,6 +154,7 @@ public sealed class BinkHistoryManager : IDisposable
         {
             _group = new List<BinkHistoryEntry>();
             _groupLabel = label;
+            _groupCompactable = true;
         }
         _groupDepth++;
         return new GroupScope(this);
@@ -165,8 +172,89 @@ public sealed class BinkHistoryManager : IDisposable
         bool discard = _discardGroup;
         _discardGroup = false;
         if (discard || entries.Count == 0) return;
-        BinkHistoryEntry merged = Merge(entries, _groupLabel);
+        BinkHistoryEntry merged = (_groupCompactable && entries.Count > 1 ? TryCompact(entries, _groupLabel) : null) ?? Merge(entries, _groupLabel);
         Push(merged);
+    }
+
+    /// <summary>
+    /// Folds a group that only replaced elements in place into one replacement per element: the state it ended
+    /// in going forward, and the state it started from going back. A drag records every frame, so without this a
+    /// two-second drag of a thousand strokes kept over a hundred thousand operations, and undoing it replayed all
+    /// of them to arrive where the first frame's inverse alone would have.
+    /// </summary>
+    /// <remarks>
+    /// An element the group added and then kept replacing, which is what dragging a fresh copy does, folds into its
+    /// addition: forward it is added as it ended up, and going back it is removed.
+    /// </remarks>
+    /// <returns>The compacted entry, or null when the group holds anything else.</returns>
+    private static BinkHistoryEntry? TryCompact(List<BinkHistoryEntry> entries, string? label)
+    {
+        var steps = new List<(BinkDrawingOperation Forward, BinkDrawingOperation Inverse)>();
+        var slots = new Dictionary<Guid, int>();
+        var forward = new List<BinkDrawingOperation>();
+        var inverse = new List<BinkDrawingOperation>();
+        foreach (BinkHistoryEntry entry in entries)
+        {
+            forward.Clear();
+            inverse.Clear();
+            if (!Flatten(entry.Forward, forward) || !Flatten(entry.Inverse, inverse) || forward.Count != inverse.Count) return null;
+            // An inverse runs its parts in reverse order, so the i-th forward operation pairs with the i-th from
+            // the end of the inverse. A pair that does not name the same element means the shapes differ and the
+            // group is left as recorded rather than guessed at.
+            for (int i = 0; i < forward.Count; i++)
+            {
+                BinkDrawingOperation next = forward[i];
+                BinkDrawingOperation undo = inverse[forward.Count - 1 - i];
+                switch (next)
+                {
+                    case BinkReplaceElementOperation replace when undo is BinkReplaceElementOperation previous && previous.Element.Id == replace.Element.Id:
+                        if (!slots.TryGetValue(replace.Element.Id, out int slot))
+                        {
+                            slots[replace.Element.Id] = steps.Count;
+                            steps.Add((replace, previous));
+                        }
+                        // A later state of an element added in this group is still an addition, at its new state.
+                        else if (steps[slot].Forward is BinkAddElementOperation added) steps[slot] = (added with { Element = replace.Element }, steps[slot].Inverse);
+                        else steps[slot] = (replace, steps[slot].Inverse);
+                        break;
+                    case BinkAddElementOperation add when undo is BinkRemoveElementOperation remove && remove.ElementId == add.Element.Id && !slots.ContainsKey(add.Element.Id):
+                        slots[add.Element.Id] = steps.Count;
+                        steps.Add((add, remove));
+                        break;
+                    default:
+                        return null;
+                }
+            }
+        }
+        if (steps.Count == 0) return null;
+
+        var forwardOps = new BinkDrawingOperation[steps.Count];
+        var inverseOps = new BinkDrawingOperation[steps.Count];
+        for (int i = 0; i < steps.Count; i++)
+        {
+            forwardOps[i] = steps[i].Forward;
+            inverseOps[steps.Count - 1 - i] = steps[i].Inverse;
+        }
+        string l = label ?? entries[0].Label;
+        return new BinkHistoryEntry(new BinkBatchOperation(forwardOps, l), new BinkBatchOperation(inverseOps, l), l, entries[^1].Timestamp);
+    }
+
+    private static bool Flatten(BinkDrawingOperation operation, List<BinkDrawingOperation> into)
+    {
+        switch (operation)
+        {
+            case BinkReplaceElementOperation or BinkAddElementOperation or BinkRemoveElementOperation:
+                into.Add(operation);
+                return true;
+            case BinkBatchOperation batch:
+                foreach (BinkDrawingOperation inner in batch.Operations)
+                {
+                    if (!Flatten(inner, into)) return false;
+                }
+                return true;
+            default:
+                return false;
+        }
     }
 
     /// <summary>
@@ -215,6 +303,18 @@ public sealed class BinkHistoryManager : IDisposable
         if (_groupDepth > 0)
         {
             _group!.Add(entry);
+            // Compacted as the gesture runs, not only when it ends, so a long drag does not hold every frame in
+            // memory until the pointer lifts. Once anything other than a replacement joins, the group is kept as
+            // recorded for good.
+            if (_groupCompactable && _group.Count >= CompactionInterval)
+            {
+                if (TryCompact(_group, _groupLabel) is { } compacted)
+                {
+                    _group.Clear();
+                    _group.Add(compacted);
+                }
+                else _groupCompactable = false;
+            }
             return;
         }
         Push(entry);

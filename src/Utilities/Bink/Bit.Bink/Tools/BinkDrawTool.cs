@@ -17,6 +17,8 @@ public class BinkDrawTool : BinkToolBase
     private Guid _targetLayerId;
     private int _lastGeometryCount = -1;
     private BinkRect _liveBounds = BinkRect.Empty;
+    // Where the browser predicts the pointer is going, in view coordinates, since the last real sample.
+    private readonly List<System.Numerics.Vector2> _prediction = new(4);
 
     /// <inheritdoc />
     public override string Id => "draw";
@@ -61,6 +63,7 @@ public class BinkDrawTool : BinkToolBase
         _builder.Begin(sample, brush, context.Viewport.ViewToDocument);
         _liveGeometry = null;
         _lastGeometryCount = -1;
+        _prediction.Clear();
         _liveBounds = BinkRect.Empty;
         context.CapturePointer(sample.PointerId);
         context.InvalidateOverlay();
@@ -82,8 +85,31 @@ public class BinkDrawTool : BinkToolBase
     {
         ArgumentNullException.ThrowIfNull(context);
         if (!_builder.IsActive || sample.PointerId != _builder.PointerId) return;
-        if (_builder.Add(sample)) context.InvalidateOverlay();
+        if (sample.IsPredicted)
+        {
+            // A prediction is drawn, never stored: it extends the live stroke to where the pen probably is by the
+            // time the frame reaches the screen, hiding a frame of latency, and the next real sample replaces it.
+            if (!UsePrediction) return;
+            _prediction.Add(sample.Position);
+            context.InvalidateOverlay();
+            return;
+        }
+        bool hadPrediction = _prediction.Count > 0;
+        _prediction.Clear();
+        if (_builder.Add(sample) || hadPrediction) context.InvalidateOverlay();
     }
+
+    /// <summary>
+    /// Whether the live stroke is extended by the browser's prediction of where the pointer is going, when the
+    /// canvas delivers predictions. The prediction is only ever drawn on the overlay; the committed stroke contains
+    /// measured points alone.
+    /// </summary>
+    /// <remarks>
+    /// The canvas hands predictions to drawing tools only, through <see cref="OnPointerMove"/> with
+    /// <see cref="BinkInputSample.IsPredicted"/> set. A subclass that overrides it and acts on positions itself
+    /// must ignore predicted samples, as the eraser does: they are where the pointer may be, not where it was.
+    /// </remarks>
+    public bool UsePrediction { get; set; } = true;
 
     /// <inheritdoc />
     public override void OnPointerUp(IBinkToolContext context, in BinkInputSample sample)
@@ -96,6 +122,7 @@ public class BinkDrawTool : BinkToolBase
         ActiveBrush = null;
         _liveGeometry = null;
         _lastGeometryCount = -1;
+        _prediction.Clear();
         CommitStroke(context, points, brush);
         context.InvalidateOverlay();
     }
@@ -150,6 +177,7 @@ public class BinkDrawTool : BinkToolBase
         ActiveBrush = null;
         _liveGeometry = null;
         _lastGeometryCount = -1;
+        _prediction.Clear();
         context.InvalidateOverlay();
     }
 
@@ -166,6 +194,7 @@ public class BinkDrawTool : BinkToolBase
         ActiveBrush = null;
         _liveGeometry = null;
         _lastGeometryCount = -1;
+        _prediction.Clear();
         context?.InvalidateOverlay();
     }
 
@@ -189,6 +218,22 @@ public class BinkDrawTool : BinkToolBase
     private BinkStrokeGeometry GetLiveGeometry(BinkBrush brush)
     {
         // The live stroke changes every frame, so geometry is rebuilt into a reused path builder rather than cached.
+        if (_prediction.Count > 0)
+        {
+            // The predicted points are appended for this one build and taken off again, so the stroke's own points,
+            // and what is committed when the pen lifts, never contain them.
+            int predicted = _builder.AppendPrediction(System.Runtime.InteropServices.CollectionsMarshal.AsSpan(_prediction));
+            try
+            {
+                _liveGeometry = brush.BuildGeometry(_builder.Points.AsView(), _pathBuilder);
+            }
+            finally
+            {
+                _builder.RemovePrediction(predicted);
+            }
+            _lastGeometryCount = -1;
+            return _liveGeometry;
+        }
         if (_liveGeometry is not null && _lastGeometryCount == _builder.Count) return _liveGeometry;
         _liveGeometry = brush.BuildGeometry(_builder.Points.AsView(), _pathBuilder);
         _lastGeometryCount = _builder.Count;

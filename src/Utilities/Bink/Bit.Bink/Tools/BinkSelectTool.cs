@@ -27,13 +27,28 @@ public enum BinkSelectionHandle : byte
     Rotate = 9,
 }
 
+/// <summary>The shape a drag on empty space selects with.</summary>
+public enum BinkMarqueeShape : byte
+{
+    /// <summary>A rectangle: everything it touches is selected.</summary>
+    Rectangle = 0,
+
+    /// <summary>
+    /// A freehand loop: what it encloses is selected. The natural way to pick up handwriting, where a rectangle
+    /// around one word also catches the lines above and below it.
+    /// </summary>
+    Lasso = 1,
+}
+
 /// <summary>
-/// Select, move, resize, rotate, duplicate and delete elements. Dragging on empty space draws a marquee;
-/// dragging an element moves it; dragging a handle resizes or rotates the whole selection.
+/// Select, move, resize, rotate, duplicate and delete elements. Dragging on empty space draws a marquee or a lasso;
+/// dragging an element moves it, and with Alt held moves a copy of it; dragging a handle resizes or rotates the
+/// whole selection.
 /// </summary>
 /// <remarks>
 /// Manipulation only changes each element's transform, so stroke points, text and images are never rewritten and
-/// the operation is exactly reversible. The whole gesture is one undo step.
+/// the operation is exactly reversible. The whole gesture is one undo step. Moving and resizing snap to the grid
+/// and to other elements as <see cref="IBinkToolContext.Snapping"/> says, showing a guide while lined up.
 /// </remarks>
 public sealed class BinkSelectTool : BinkToolBase
 {
@@ -45,12 +60,19 @@ public sealed class BinkSelectTool : BinkToolBase
     private Vector2 _currentDocument;
     private BinkRect _startBounds;
     private BinkSelectionHandle _handle;
+    private Vector2 _handleStart;
     private IDisposable? _historyGroup;
     private readonly Dictionary<Guid, Matrix3x2> _startTransforms = new();
     private readonly List<BinkElement> _pending = new();
+    private readonly List<Vector2> _lasso = new();
+    private readonly List<BinkSnapGuide> _guides = new();
+    private BinkSnapper _snapper = BinkSnapper.Disabled;
+    // The copies an Alt-drag made and what was selected before, so cancelling the drag can take them away again.
+    private (IReadOnlyList<Guid> Originals, Guid[] Copies)? _copies;
     private bool _addToSelection;
     private bool _movedPastThreshold;
     private bool _constrain;
+    private bool _lassoActive;
 
     /// <inheritdoc />
     public override string Id => "select";
@@ -80,8 +102,26 @@ public sealed class BinkSelectTool : BinkToolBase
     /// <summary>Whether resizing keeps the aspect ratio unless Shift is held (the default inverts this for corners).</summary>
     public bool PreserveAspectByDefault { get; set; }
 
+    /// <summary>What a drag on empty space selects with. Holding Alt while starting the drag uses the other shape.</summary>
+    public BinkMarqueeShape MarqueeShape { get; set; }
+
+    /// <summary>
+    /// How much of an element a lasso has to enclose to select it, from 0 (just touching) to 1 (all of it). Half
+    /// picks up the strokes of a loosely circled word without the neighbours the loop grazes.
+    /// </summary>
+    public float LassoCoverage { get; set; } = 0.5f;
+
+    /// <summary>Whether dragging an element with Alt held moves a copy of the selection, leaving the original in place.</summary>
+    public bool DuplicateOnAltDrag { get; set; } = true;
+
     /// <summary>The marquee rectangle in document coordinates while dragging one, otherwise empty.</summary>
-    public BinkRect Marquee => _drag == DragKind.Marquee ? BinkRect.FromPoints(_startDocument, _currentDocument) : BinkRect.Empty;
+    public BinkRect Marquee => _drag == DragKind.Marquee && !_lassoActive ? BinkRect.FromPoints(_startDocument, _currentDocument) : BinkRect.Empty;
+
+    /// <summary>The lasso drawn so far in document coordinates, empty when not dragging one.</summary>
+    public IReadOnlyList<Vector2> Lasso => _drag == DragKind.Marquee && _lassoActive ? _lasso : [];
+
+    /// <summary>The alignment guides the gesture in progress is snapped to.</summary>
+    public IReadOnlyList<BinkSnapGuide> Guides => _guides;
 
     /// <inheritdoc />
     public override bool OnPointerDown(IBinkToolContext context, in BinkInputSample sample)
@@ -110,7 +150,9 @@ public sealed class BinkSelectTool : BinkToolBase
                 _handle = handle;
                 _drag = handle == BinkSelectionHandle.Rotate ? DragKind.Rotate : DragKind.Resize;
                 _startBounds = selection.Bounds;
+                _handleStart = HandlePosition(_startBounds, handle);
                 CaptureTransforms(context);
+                if (_drag == DragKind.Resize) PrepareSnapping(context);
                 _historyGroup = context.History.BeginGroup(_drag == DragKind.Rotate ? "Rotate" : "Resize");
                 context.CapturePointer(sample.PointerId);
                 return true;
@@ -122,6 +164,9 @@ public sealed class BinkSelectTool : BinkToolBase
         {
             if (!_addToSelection) selection.Clear();
             _drag = DragKind.Marquee;
+            _lassoActive = (MarqueeShape == BinkMarqueeShape.Lasso) ^ sample.Alt;
+            _lasso.Clear();
+            if (_lassoActive) _lasso.Add(doc);
             context.CapturePointer(sample.PointerId);
             context.InvalidateOverlay();
             return true;
@@ -144,13 +189,68 @@ public sealed class BinkSelectTool : BinkToolBase
                 ? "Selected: " + hit.GetAccessibleDescription()
                 : $"{selection.Count} elements selected.");
         }
+        // Alt-dragging moves a copy. The copies are made in the same history group as the drag, so the copy and
+        // where it was put are one undo step, and cancelling the drag removes them again.
+        bool duplicate = DuplicateOnAltDrag && sample.Alt && !_addToSelection;
+        _historyGroup = context.History.BeginGroup(duplicate ? "Duplicate" : "Move");
+        if (duplicate)
+        {
+            IReadOnlyList<Guid> originals = selection.Ids;
+            IReadOnlyList<BinkElement> copies = [];
+            TryApplyChange(context, () => copies = context.Document.DuplicateElements(originals, Vector2.Zero));
+            if (copies.Count > 0)
+            {
+                _copies = (originals, copies.Select(static e => e.Id).ToArray());
+                selection.Set(_copies.Value.Copies);
+                context.InvalidateDocument();
+            }
+        }
         _drag = DragKind.Move;
         _startBounds = selection.Bounds;
         CaptureTransforms(context);
-        _historyGroup = context.History.BeginGroup("Move");
+        PrepareSnapping(context);
         context.CapturePointer(sample.PointerId);
-        context.SetCursor("grabbing");
+        context.SetCursor(duplicate ? "copy" : "grabbing");
         return true;
+    }
+
+    private static bool TryApplyChange(IBinkToolContext context, Action change)
+    {
+        try
+        {
+            change();
+            return true;
+        }
+        catch (InvalidOperationException ex)
+        {
+            context.Announce("That change was refused: " + ex.Message);
+            return false;
+        }
+    }
+
+    /// <summary>
+    /// Collects what the gesture can snap to: everything visible that is not part of the selection. Built once per
+    /// gesture, so a frame of dragging costs a couple of binary searches.
+    /// </summary>
+    private void PrepareSnapping(IBinkToolContext context)
+    {
+        _guides.Clear();
+        BinkSnapOptions options = context.Snapping;
+        if (options is null || !options.IsEnabled)
+        {
+            _snapper = BinkSnapper.Disabled;
+            return;
+        }
+        var moving = new HashSet<Guid>(context.Selection.Ids);
+        _snapper = BinkSnapper.Create(context.Document, options, moving, context.Viewport.VisibleRect(context.ViewSize));
+    }
+
+    private static Vector2 HandlePosition(BinkRect bounds, BinkSelectionHandle handle)
+    {
+        Span<(BinkSelectionHandle Handle, Vector2 Position)> handles = stackalloc (BinkSelectionHandle, Vector2)[9];
+        int count = GetHandlePositions(bounds, 0f, handles);
+        for (int i = 0; i < count; i++) if (handles[i].Handle == handle) return handles[i].Position;
+        return bounds.Center;
     }
 
     private void CaptureTransforms(IBinkToolContext context)
@@ -169,20 +269,35 @@ public sealed class BinkSelectTool : BinkToolBase
         Vector2 delta = _currentDocument - _startDocument;
         if (!_movedPastThreshold && delta.Length() * context.Viewport.Zoom < 3f) return;
         _movedPastThreshold = true;
+        float zoom = MathF.Max(context.Viewport.Zoom, 0.001f);
+        float tolerance = (context.Snapping?.Threshold ?? 0f) / zoom;
 
         switch (_drag)
         {
             case DragKind.Marquee:
+                // A point every couple of screen pixels is plenty for a selection outline and keeps the polygon
+                // test cheap however long the user loops around.
+                if (_lassoActive && (_lasso.Count == 0 || Vector2.DistanceSquared(_lasso[^1], _currentDocument) * zoom * zoom >= 4f)) _lasso.Add(_currentDocument);
                 context.InvalidateOverlay();
                 break;
             case DragKind.Move:
+                _guides.Clear();
+                delta += _snapper.SnapRect(_startBounds.Offset(delta), tolerance, _guides);
                 ApplyTransform(context, Matrix3x2.CreateTranslation(delta));
                 break;
             case DragKind.Resize:
+                _guides.Clear();
+                if (_snapper.IsEnabled)
+                {
+                    // The dragged corner or edge snaps, on the axes it moves along.
+                    bool movesX = _handle is not (BinkSelectionHandle.Top or BinkSelectionHandle.Bottom);
+                    bool movesY = _handle is not (BinkSelectionHandle.Left or BinkSelectionHandle.Right);
+                    delta = _snapper.SnapPoint(_handleStart + delta, tolerance, movesX, movesY, _guides) - _handleStart;
+                }
                 ApplyTransform(context, BuildResize(delta, _constrain));
                 break;
             case DragKind.Rotate:
-                ApplyTransform(context, BuildRotate());
+                ApplyTransform(context, BuildRotate(_constrain));
                 break;
         }
     }
@@ -199,8 +314,10 @@ public sealed class BinkSelectTool : BinkToolBase
 
         if (_drag == DragKind.Marquee && _movedPastThreshold)
         {
-            BinkRect rect = BinkRect.FromPoints(_startDocument, _currentDocument);
-            List<BinkElement> found = BinkDocumentQuery.FindInRect(context.Document, rect);
+            if (_lassoActive) _lasso.Add(_currentDocument);
+            List<BinkElement> found = _lassoActive
+                ? BinkDocumentQuery.FindInPolygon(context.Document, System.Runtime.InteropServices.CollectionsMarshal.AsSpan(_lasso), LassoCoverage)
+                : BinkDocumentQuery.FindInRect(context.Document, BinkRect.FromPoints(_startDocument, _currentDocument));
             var ids = found.Select(static e => e.Id).ToList();
             if (_addToSelection) foreach (Guid id in ids) context.Selection.Add(id);
             else context.Selection.Set(ids);
@@ -231,8 +348,15 @@ public sealed class BinkSelectTool : BinkToolBase
     private void Cancel(IBinkToolContext context)
     {
         // The restore is collected into the same group as the move, and the group is then discarded: a cancelled
-        // drag should leave the document unchanged and the undo stack untouched.
-        RestoreTransforms(context);
+        // drag should leave the document unchanged and the undo stack untouched. Copies an Alt-drag made are
+        // removed the same way, and the originals are selected again.
+        if (_copies is { } copies)
+        {
+            TryApplyChange(context, () => context.Document.RemoveElements(copies.Copies));
+            context.Selection.Set(copies.Originals);
+            context.InvalidateDocument();
+        }
+        else RestoreTransforms(context);
         context.History.CancelGroup();
         Finish(context);
     }
@@ -245,6 +369,11 @@ public sealed class BinkSelectTool : BinkToolBase
         _startTransforms.Clear();
         _historyGroup?.Dispose();
         _historyGroup = null;
+        _copies = null;
+        _lasso.Clear();
+        _lassoActive = false;
+        _guides.Clear();
+        _snapper = BinkSnapper.Disabled;
         context.SetCursor(Cursor);
         context.InvalidateOverlay();
     }
@@ -315,12 +444,15 @@ public sealed class BinkSelectTool : BinkToolBase
         return Matrix3x2.CreateTranslation(-anchor) * Matrix3x2.CreateScale(sx, sy) * Matrix3x2.CreateTranslation(anchor);
     }
 
-    private Matrix3x2 BuildRotate()
+    private Matrix3x2 BuildRotate(bool constrain)
     {
         Vector2 center = _startBounds.Center;
         float a0 = MathF.Atan2(_startDocument.Y - center.Y, _startDocument.X - center.X);
         float a1 = MathF.Atan2(_currentDocument.Y - center.Y, _currentDocument.X - center.X);
-        return Matrix3x2.CreateRotation(a1 - a0, center);
+        float angle = a1 - a0;
+        // Shift turns in steps of 15 degrees, the same step the keyboard and the line tool use.
+        if (constrain) angle = MathF.Round(angle / KeyboardRotationStep) * KeyboardRotationStep;
+        return Matrix3x2.CreateRotation(angle, center);
     }
 
     private void ApplyTransform(IBinkToolContext context, Matrix3x2 matrix)
@@ -399,23 +531,27 @@ public sealed class BinkSelectTool : BinkToolBase
 
         if (_drag == DragKind.Marquee && _movedPastThreshold)
         {
-            BinkRect rect = BinkRect.FromPoints(_startDocument, _currentDocument);
-            BinkPathGeometry path = new BinkPathBuilder(6).AddRect(rect).ToGeometry();
+            BinkPathGeometry path = _lassoActive
+                ? new BinkPathBuilder(_lasso.Count + 1).AddPolygon(System.Runtime.InteropServices.CollectionsMarshal.AsSpan(_lasso)).ToGeometry()
+                : new BinkPathBuilder(6).AddRect(BinkRect.FromPoints(_startDocument, _currentDocument)).ToGeometry();
             render.FillPath(path, new BinkFillPaint(accent.WithAlpha(0.12f)));
-            render.StrokePath(path, new BinkStrokePaint(accent, 1f / zoom, 1f, BinkBlendMode.Normal, BinkLineCap.Butt, BinkLineJoin.Miter, [4f / zoom, 3f / zoom]));
+            render.StrokePath(path, new BinkStrokePaint(accent, 1f / zoom, 1f, BinkBlendMode.Normal, BinkLineCap.Round, BinkLineJoin.Round, [4f / zoom, 3f / zoom]));
             return;
         }
+
+        if (_guides.Count > 0 && _drag is DragKind.Move or DragKind.Resize) BinkSnapper.DrawGuides(render, _guides, zoom);
 
         BinkRect bounds = context.Selection.Bounds;
         if (bounds.IsEmpty) return;
 
-        // Outline each selected element so multi-selections are readable, then the overall box and handles.
-        if (context.Selection.Count > 1)
+        // Outline each selected element so multi-selections are readable, then the overall box and handles. Past a
+        // few hundred the outlines are a solid blur that tells nobody anything, and drawing them is the whole cost
+        // of an overlay frame, so a very large selection shows only its box. All outlines are one path.
+        if (context.Selection.Count is > 1 and <= MaxOutlinedElements)
         {
-            foreach (BinkElement e in context.Selection.Elements)
-            {
-                render.StrokePath(new BinkPathBuilder(6).AddRect(e.Bounds).ToGeometry(), new BinkStrokePaint(accent.WithAlpha(0.4f), 1f / zoom, 1f, BinkBlendMode.Normal, BinkLineCap.Butt, BinkLineJoin.Miter));
-            }
+            var outlines = new BinkPathBuilder(context.Selection.Count * 5);
+            foreach (BinkElement e in context.Selection.Elements) outlines.AddRect(e.Bounds);
+            render.StrokePath(outlines.ToGeometry(), new BinkStrokePaint(accent.WithAlpha(0.4f), 1f / zoom, 1f, BinkBlendMode.Normal, BinkLineCap.Butt, BinkLineJoin.Miter));
         }
 
         render.StrokePath(new BinkPathBuilder(6).AddRect(bounds).ToGeometry(), new BinkStrokePaint(accent, 1.5f / zoom, 1f, BinkBlendMode.Normal, BinkLineCap.Butt, BinkLineJoin.Miter));
@@ -503,6 +639,9 @@ public sealed class BinkSelectTool : BinkToolBase
 
     /// <summary>Rotation applied by one press of the rotate key, in radians.</summary>
     private const float KeyboardRotationStep = MathF.PI / 12f;
+
+    /// <summary>The largest selection whose elements are outlined one by one.</summary>
+    private const int MaxOutlinedElements = 400;
 
     /// <summary>
     /// Moves the selection to another element in document order. Offset 0 selects the first element, which is how

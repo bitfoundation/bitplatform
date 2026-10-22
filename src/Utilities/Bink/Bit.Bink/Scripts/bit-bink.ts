@@ -27,7 +27,16 @@ interface BinkSurfaceOptions {
     preventDefaultOnDown?: boolean;
     wetInk?: boolean;
     handleKeyboard?: boolean;
+    // 0: the wheel scrolls the page. 1: the wheel pans and Ctrl+wheel or a trackpad pinch zooms. 2: the wheel zooms.
+    wheelMode?: number;
+    // Whether Ctrl+C, Ctrl+X and Ctrl+V reach the system clipboard.
+    clipboard?: boolean;
+    // Whether the browser's predicted pointer positions are delivered, flagged as predictions.
+    predict?: boolean;
 }
+
+// What a paste carried, reported to .NET.
+type PasteKind = 'bink' | 'text' | 'image' | 'internal';
 
 // What the surface reports back. Either wired to a DotNetObjectReference by setDotNetCallbacks or supplied
 // directly through setCallbacks.
@@ -37,7 +46,27 @@ interface BinkSurfaceCallbacks {
     key(key: string, ctrl: boolean, shift: boolean, alt: boolean): unknown;
     textKey(key: string, value: string | null | undefined): unknown;
     redraw?(): unknown;
+    resourcesLost?(): unknown;
+    wheel?(panX: number, panY: number, zoom: number, x: number, y: number): unknown;
+    paste?(kind: PasteKind, text: string | null, data: Blob | null): unknown;
 }
+
+// The shape of Blazor's DotNet global, for passing a Blob to .NET as a stream rather than inside a message: a
+// Blazor Server circuit refuses any single message from the browser above 32 KB by default.
+interface DotNetGlobal {
+    createJSStreamReference(data: Blob | ArrayBuffer | ArrayBufferView): unknown;
+}
+
+// A copy waits for .NET to serialize the selection. The clipboard item is created inside the key event, which is
+// what browsers require, and filled when the payload arrives.
+interface PendingClipboardWrite {
+    resolve(blob: Blob): void;
+    reject(reason: Error): void;
+    timer: number;
+}
+
+// A payload copied from a canvas starts with this, which is how a paste tells it from ordinary text.
+const CLIPBOARD_MARKER = '{"format":"bink"';
 
 // camelCase JSON of BinkAttachResult.
 interface BinkAttachResult {
@@ -167,6 +196,9 @@ const OWNED_KEYS = new Set(['Escape', 'Delete', 'Backspace', 'ArrowLeft', 'Arrow
 // Of those, the ones that only do something when the selection is not empty.
 const SELECTION_KEYS = new Set(['Delete', 'Backspace', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown']);
 const OWNED_SHORTCUTS = new Set(['z', 'y', 'a', '0', '9', '+', '=', '-']);
+// Shortcuts that act on the selection: duplicate and the four arrange commands (Shift turns ] and [ into } and {).
+// Ctrl+D would otherwise bookmark the page.
+const SELECTION_SHORTCUTS = new Set(['d', ']', '[', '}', '{']);
 
 // Command opcodes, matching BinkCanvasCommand in C#.
 const OP = {
@@ -190,6 +222,12 @@ const OP = {
     SET_TRANSFORM: 17,
     SET_DASH: 18,
     CLEAR_RECT: 19,
+    DEFINE_PATH: 20,
+    END_PATH: 21,
+    USE_PATH: 22,
+    FREE_PATHS: 23,
+    RETAIN_STRING: 24,
+    FREE_STRINGS: 25,
 };
 
 const BLEND_NAMES: GlobalCompositeOperation[] = ['source-over', 'multiply', 'screen', 'destination-out'];
@@ -198,21 +236,37 @@ const JOIN_NAMES: CanvasLineJoin[] = ['miter', 'round', 'bevel'];
 const ALIGN_NAMES: CanvasTextAlign[] = ['left', 'center', 'right'];
 
 // The zero-copy WebAssembly path hands over a MemoryView, which exposes slice/set but not element access.
-// One slice is a memcpy of the frame's commands, still far cheaper than serializing them.
+// One slice is a memcpy of the frame's commands, still far cheaper than serializing them. Every other host sends
+// the buffer as bytes holding little-endian 32-bit floats, which Blazor transfers as binary.
 function normalizeBuffer(buffer: CommandSource, count: number): ArrayLike<number> | null {
     if (!buffer) return null;
+    if (buffer instanceof Uint8Array) {
+        const length = Math.min(count, buffer.byteLength >> 2);
+        // A Float32Array view needs a 4-byte aligned offset; a misaligned one is copied into a buffer of its own.
+        return buffer.byteOffset % 4 === 0
+            ? new Float32Array(buffer.buffer, buffer.byteOffset, length)
+            : new Float32Array(buffer.slice(0, length * 4).buffer);
+    }
     if (Array.isArray(buffer) || ArrayBuffer.isView(buffer)) return buffer as ArrayLike<number>;
     if (typeof (buffer as MemoryViewLike).slice === 'function') return (buffer as MemoryViewLike).slice(0, count);
     return null;
 }
 
-function cssColor(packed: number): string {
-    // Packed as 0xAARRGGBB.
-    const a = (packed >>> 24) & 0xff;
-    const r = (packed >>> 16) & 0xff;
-    const g = (packed >>> 8) & 0xff;
-    const b = packed & 0xff;
-    return a === 255 ? `rgb(${r},${g},${b})` : `rgba(${r},${g},${b},${(a / 255).toFixed(4)})`;
+// Colours arrive as a 24-bit RGB value and an alpha byte. The CSS strings are cached because a page of strokes in a
+// handful of colours would otherwise build the same string, and have the canvas parse it, once per element per frame.
+const colorStrings = new Map<number, string>();
+
+function cssColor(rgb: number, a: number): string {
+    const key = rgb * 256 + a;
+    let css = colorStrings.get(key);
+    if (css !== undefined) return css;
+    const r = (rgb >>> 16) & 0xff;
+    const g = (rgb >>> 8) & 0xff;
+    const b = rgb & 0xff;
+    css = a >= 255 ? `rgb(${r},${g},${b})` : `rgba(${r},${g},${b},${(a / 255).toFixed(4)})`;
+    if (colorStrings.size >= 512) colorStrings.clear();
+    colorStrings.set(key, css);
+    return css;
 }
 
 class Surface {
@@ -248,6 +302,20 @@ class Surface {
     onPixelRatioChange: (() => void) | null;
     groupStack: IsolatedGroup[];
     scratchCanvases: HTMLCanvasElement[];
+    // Paths and long strings .NET asked this surface to keep, by slot. .NET decides what is kept and for how long;
+    // this side only stores what it is told to and releases what it is told to.
+    paths: Map<number, Path2D>;
+    retainedStrings: Map<number, string>;
+    // Wheel movement since the last frame, delivered with it: a trackpad fires far more wheel events than frames.
+    wheelPanX: number;
+    wheelPanY: number;
+    wheelZoom: number;
+    wheelX: number;
+    wheelY: number;
+    pendingClipboard: PendingClipboardWrite | null;
+    // Set when writing the system clipboard failed, so the next paste uses the copy .NET kept instead of whatever
+    // older content the system clipboard still holds.
+    clipboardWriteFailed: boolean;
     contexts: SurfaceContexts;
     resizeObserver: ResizeObserver;
     // Assigned after construction (or lazily) rather than in the constructor.
@@ -262,6 +330,8 @@ class Surface {
     onContextMenu: (event: MouseEvent) => void;
     onKeyDown: (event: KeyboardEvent) => void;
     onFocusOut: (event: FocusEvent) => void;
+    onWheel: (event: WheelEvent) => void;
+    onPaste: (event: ClipboardEvent) => void;
     onFrame: () => void;
     onLostPointerCapture: (event: PointerEvent) => void;
     onContextRestored: () => void;
@@ -299,6 +369,15 @@ class Surface {
         this.onPixelRatioChange = null;
         this.groupStack = [];
         this.scratchCanvases = [];
+        this.paths = new Map();
+        this.retainedStrings = new Map();
+        this.wheelPanX = 0;
+        this.wheelPanY = 0;
+        this.wheelZoom = 0;
+        this.wheelX = 0;
+        this.wheelY = 0;
+        this.pendingClipboard = null;
+        this.clipboardWriteFailed = false;
 
         this.contexts = {
             document: this.createContext(this.documentCanvas),
@@ -312,6 +391,8 @@ class Surface {
         this.onContextMenu = (e) => { if (this.options.suppressContextMenu) e.preventDefault(); };
         this.onKeyDown = this.handleKeyDown.bind(this);
         this.onFocusOut = this.handleFocusOut.bind(this);
+        this.onWheel = this.handleWheel.bind(this);
+        this.onPaste = this.handlePaste.bind(this);
         this.onFrame = this.flush.bind(this);
         this.onLostPointerCapture = this.handleLostPointerCapture.bind(this);
         this.onContextRestored = () => this.requestRedraw();
@@ -324,8 +405,12 @@ class Surface {
         target.addEventListener('pointerleave', this.onPointerCancel);
         target.addEventListener('lostpointercapture', this.onLostPointerCapture);
         target.addEventListener('contextmenu', this.onContextMenu);
+        // Not passive: a canvas that pans and zooms with the wheel must stop the page from scrolling at the same
+        // time. With the wheel off the handler returns at once and the page scrolls as usual.
+        target.addEventListener('wheel', this.onWheel, { passive: false });
         root.addEventListener('keydown', this.onKeyDown);
         root.addEventListener('focusout', this.onFocusOut);
+        root.addEventListener('paste', this.onPaste);
         // A browser may discard a canvas's backing store (GPU reset, a long-backgrounded tab on a phone) and later
         // restore it blank. Nothing in the document changed, so without this nothing would ever repaint it.
         for (const canvas of [this.documentCanvas, this.overlayCanvas]) canvas?.addEventListener('contextrestored', this.onContextRestored);
@@ -518,6 +603,12 @@ class Surface {
             } else {
                 this.push(event, PHASE_MOVE, 0);
             }
+            // Where the browser expects the pointer to be next, after the measured samples. .NET draws them as the tip
+            // of the live stroke and drops them as soon as the next measured sample arrives.
+            if (this.options.predict && typeof event.getPredictedEvents === 'function') {
+                const predicted = event.getPredictedEvents();
+                if (predicted) for (const sample of predicted) this.push(sample, PHASE_MOVE, FLAG_PREDICTED);
+            }
         } else {
             this.push(event, isDown ? PHASE_MOVE : PHASE_HOVER, 0);
         }
@@ -575,7 +666,14 @@ class Surface {
         if (event.target !== this.root && this.isInteractiveTarget(event.target as HTMLElement | null)) return;
 
         if (this.ownsKey(event)) event.preventDefault();
-        this.callback.key(event.key, event.ctrlKey || event.metaKey, event.shiftKey, event.altKey);
+        const ctrl = event.ctrlKey || event.metaKey;
+        const lower = event.key.toLowerCase();
+        if (ctrl && !event.altKey && (lower === 'c' || lower === 'x') && this.options.clipboard && this.ownsSelectionKeys) this.beginClipboardWrite();
+        // Pointer samples wait for the next animation frame, a key does not. A shortcut pressed right after the mouse
+        // was released would otherwise reach .NET before the release did: Ctrl+Z while the drag's undo group is still
+        // open is refused, and Delete would act on the selection as it was before the click that changed it.
+        if (this.sampleCount > 0) this.flush();
+        this.callback.key(event.key, ctrl, event.shiftKey, event.altKey);
     }
 
     isInteractiveTarget(target: HTMLElement | null): boolean {
@@ -588,7 +686,15 @@ class Surface {
     // is not would leave a keyboard user unable to scroll the page while the canvas has focus.
     ownsKey(event: KeyboardEvent): boolean {
         const key = event.key;
-        if ((event.ctrlKey || event.metaKey) && OWNED_SHORTCUTS.has(key.toLowerCase())) return true;
+        const ctrl = event.ctrlKey || event.metaKey;
+        const lower = key.toLowerCase();
+        if (ctrl && OWNED_SHORTCUTS.has(lower)) return true;
+        // Copy and cut are the canvas's only while something is selected and the clipboard is on; with nothing
+        // selected they belong to the page, so copying text next to the canvas still works. Paste is never taken
+        // here: suppressing the key would also suppress the paste event, which is the only way to read the clipboard
+        // without a permission prompt.
+        if (ctrl && (lower === 'c' || lower === 'x')) return !!this.options.clipboard && this.ownsSelectionKeys;
+        if (ctrl && SELECTION_SHORTCUTS.has(lower)) return this.ownsSelectionKeys;
         if (key === 'Escape') return true;
         // Tab only belongs to the canvas while the user is stepping through elements. With nothing selected it moves
         // browser focus out as usual, so the canvas is never a keyboard trap: Escape clears the selection and leaves.
@@ -601,6 +707,129 @@ class Surface {
     // Told by .NET whether anything is selected, because only .NET knows.
     setSelectionActive(active: boolean): void {
         this.ownsSelectionKeys = !!active;
+    }
+
+    // ---- Wheel ---------------------------------------------------------------------------------------------------
+
+    // A mouse wheel and a trackpad both arrive as wheel events; a trackpad pinch arrives as a wheel event with
+    // ctrlKey set, which is what Chrome, Edge and Firefox send. Movement is accumulated and delivered once per frame.
+    handleWheel(event: WheelEvent): void {
+        const mode = this.options.wheelMode || 0;
+        if (!mode || this.disposed || !this.callback) return;
+        event.preventDefault();
+        // The view must not move under a stroke or a drag that is still in progress: its points are being mapped
+        // through the viewport they started with.
+        if (this.activePointers.size > 0) return;
+
+        let dx = event.deltaX;
+        let dy = event.deltaY;
+        if (event.deltaMode === 1) {
+            dx *= 16;
+            dy *= 16;
+        } else if (event.deltaMode === 2) {
+            dx *= this.cssWidth || 800;
+            dy *= this.cssHeight || 600;
+        }
+        const zoom = event.ctrlKey || event.metaKey || (mode === 2 && !event.shiftKey);
+        if (zoom) {
+            // Clamped per event so one notch of a coarse mouse wheel and the fine steps of a pinch both feel even.
+            this.wheelZoom -= Math.max(-50, Math.min(50, dy)) * 0.006;
+        } else {
+            // Shift turns a vertical wheel into horizontal panning, for mice without a horizontal wheel.
+            if (event.shiftKey && dx === 0) {
+                dx = dy;
+                dy = 0;
+            }
+            this.wheelPanX += dx;
+            this.wheelPanY += dy;
+        }
+        const rect = this.currentRect();
+        this.wheelX = event.clientX - rect.left;
+        this.wheelY = event.clientY - rect.top;
+        this.requestFlush();
+    }
+
+    // ---- Clipboard -----------------------------------------------------------------------------------------------
+
+    // Browsers only allow writing the clipboard while handling the user's key press, and the payload is serialized in
+    // .NET, a round trip away on Blazor Server. A clipboard item accepts a promise for its content, so the item is
+    // created here, inside the key event, and the promise is resolved when .NET delivers the payload.
+    beginClipboardWrite(): void {
+        this.settleClipboard(null);
+        const clipboard = typeof navigator !== 'undefined' ? navigator.clipboard : undefined;
+        const Item = (globalThis as { ClipboardItem?: typeof ClipboardItem }).ClipboardItem;
+        if (!clipboard || typeof clipboard.write !== 'function' || !Item) return;
+        let resolve!: (blob: Blob) => void;
+        let reject!: (reason: Error) => void;
+        const content = new Promise<Blob>((res, rej) => { resolve = res; reject = rej; });
+        // A payload that never comes (the circuit dropped) must not hold the clipboard write open for ever.
+        const timer = setTimeout(() => this.settleClipboard(null), 10000) as unknown as number;
+        this.pendingClipboard = { resolve, reject, timer };
+        try {
+            clipboard.write([new Item({ 'text/plain': content })]).then(
+                () => { this.clipboardWriteFailed = false; },
+                () => { this.clipboardWriteFailed = true; });
+        } catch {
+            this.clipboardWriteFailed = true;
+            this.settleClipboard(null);
+        }
+    }
+
+    // Called by .NET with the serialized selection, or null when there was nothing to copy.
+    provideClipboard(text: string | null): void {
+        if (this.pendingClipboard) {
+            this.settleClipboard(text);
+            return;
+        }
+        // A copy started from the application rather than the keyboard has no clipboard item waiting. Writing text
+        // directly works wherever the page still has the user activation of the click that started it.
+        if (!text) return;
+        const clipboard = typeof navigator !== 'undefined' ? navigator.clipboard : undefined;
+        if (!clipboard || typeof clipboard.writeText !== 'function') {
+            this.clipboardWriteFailed = true;
+            return;
+        }
+        clipboard.writeText(text).then(
+            () => { this.clipboardWriteFailed = false; },
+            () => { this.clipboardWriteFailed = true; });
+    }
+
+    settleClipboard(text: string | null): void {
+        const pending = this.pendingClipboard;
+        if (!pending) return;
+        this.pendingClipboard = null;
+        clearTimeout(pending.timer);
+        if (text) pending.resolve(new Blob([text], { type: 'text/plain' }));
+        else pending.reject(new Error('Nothing to copy.'));
+    }
+
+    // The paste event is the one way to read the clipboard without a permission prompt. A drawing copied from a
+    // canvas, an image and plain text are each reported for .NET to decide what to do with.
+    handlePaste(event: ClipboardEvent): void {
+        if (!this.options.clipboard || this.disposed || !this.callback || !this.callback.paste) return;
+        if (event.target !== this.root && this.isInteractiveTarget(event.target as HTMLElement | null)) return;
+        const data = event.clipboardData;
+        event.preventDefault();
+        // As for keys: what the pointer did before the paste has to reach .NET before the paste does.
+        if (this.sampleCount > 0) this.flush();
+        if (data) {
+            for (const item of Array.from(data.items)) {
+                if (item.kind !== 'file' || !item.type.startsWith('image/')) continue;
+                const file = item.getAsFile();
+                if (file) {
+                    this.callback.paste('image', null, file);
+                    return;
+                }
+            }
+        }
+        const text = data ? data.getData('text/plain') : '';
+        // Copying from this canvas failed to reach the system clipboard, so what it holds is older than what the user
+        // just copied here; .NET kept its own copy for exactly this case.
+        if (this.clipboardWriteFailed || !text) {
+            this.callback.paste('internal', null, null);
+            return;
+        }
+        this.callback.paste(text.startsWith(CLIPBOARD_MARKER) ? 'bink' : 'text', text, null);
     }
 
     textEditor(): HTMLTextAreaElement | null {
@@ -653,6 +882,15 @@ class Surface {
         // would otherwise accumulate for ever and grow the buffer without bound.
         this.sampleCount = 0;
         if (this.pendingBlur) this.sendPendingBlur();
+        if (this.wheelPanX !== 0 || this.wheelPanY !== 0 || this.wheelZoom !== 0) {
+            const panX = this.wheelPanX;
+            const panY = this.wheelPanY;
+            const zoom = this.wheelZoom;
+            this.wheelPanX = 0;
+            this.wheelPanY = 0;
+            this.wheelZoom = 0;
+            if (!this.disposed && this.callback && this.callback.wheel) this.callback.wheel(panX, panY, zoom, this.wheelX, this.wheelY);
+        }
         if (this.disposed || !this.callback || count === 0) return;
         this.callback.samples(this.samples, count);
     }
@@ -736,61 +974,133 @@ class Surface {
 
         const commands = normalizeBuffer(buffer, count);
         if (!commands) return;
+        count = Math.min(count, commands.length);
 
+        try {
+            this.replay(rootContext, commands, count, strings);
+        } catch (error) {
+            // An export has a caller waiting for its result, which should hear about the failure.
+            if (layer === 'export') throw error;
+            // A throw part way through would leave the retained paths after it undefined while .NET believes they
+            // exist, so the next frames would draw nothing for them. Starting both sides over repairs that.
+            console.error('[Bit.Bink] drawing failed', error);
+            this.reportResourcesLost();
+        }
+    }
+
+    reportResourcesLost(): void {
+        if (!this.disposed && this.callback && this.callback.resourcesLost) this.callback.resourcesLost();
+    }
+
+    replay(rootContext: CanvasRenderingContext2D, commands: ArrayLike<number>, count: number, strings: string[]): void {
         let ctx: CanvasRenderingContext2D = rootContext;
         const groups: IsolatedGroup[] = [];
         let i = 0;
         let dash: number[] | null = null;
+        // Where path verbs go: the context's current path, or a retained Path2D being defined.
+        let target: CanvasPath = ctx;
+        let defining: Path2D | null = null;
+        let definingSlot = 0;
+        // What the next fill or stroke paints: null for the context's current path, otherwise a retained path.
+        let current: Path2D | null = null;
+        let missing = false;
+        let lost = false;
+        const paths = this.paths;
+        const retained = this.retainedStrings;
+        const text = (index: number): string | undefined => index >= 0 ? strings[index] : retained.get(-index - 1);
 
         while (i < count) {
             const op = commands[i++];
             switch (op) {
                 case OP.BEGIN_PATH:
                     ctx.beginPath();
+                    current = null;
+                    missing = false;
                     break;
                 case OP.MOVE_TO:
-                    ctx.moveTo(commands[i++], commands[i++]);
+                    target.moveTo(commands[i++], commands[i++]);
                     break;
                 case OP.LINE_TO:
-                    ctx.lineTo(commands[i++], commands[i++]);
+                    target.lineTo(commands[i++], commands[i++]);
                     break;
                 case OP.QUAD_TO:
-                    ctx.quadraticCurveTo(commands[i++], commands[i++], commands[i++], commands[i++]);
+                    target.quadraticCurveTo(commands[i++], commands[i++], commands[i++], commands[i++]);
                     break;
                 case OP.CUBIC_TO:
-                    ctx.bezierCurveTo(commands[i++], commands[i++], commands[i++], commands[i++], commands[i++], commands[i++]);
+                    target.bezierCurveTo(commands[i++], commands[i++], commands[i++], commands[i++], commands[i++], commands[i++]);
                     break;
                 case OP.CLOSE_PATH:
-                    ctx.closePath();
+                    target.closePath();
                     break;
+                case OP.DEFINE_PATH:
+                    definingSlot = commands[i++];
+                    defining = new Path2D();
+                    target = defining;
+                    break;
+                case OP.END_PATH:
+                    if (defining) paths.set(definingSlot, defining);
+                    defining = null;
+                    target = ctx;
+                    break;
+                case OP.USE_PATH: {
+                    const path = paths.get(commands[i++]);
+                    current = path || null;
+                    missing = !path;
+                    if (missing) lost = true;
+                    break;
+                }
+                case OP.FREE_PATHS: {
+                    const n = commands[i++];
+                    for (let k = 0; k < n; k++) paths.delete(commands[i++]);
+                    break;
+                }
+                case OP.RETAIN_STRING: {
+                    const slot = commands[i++];
+                    retained.set(slot, strings[commands[i++]]);
+                    break;
+                }
+                case OP.FREE_STRINGS: {
+                    const n = commands[i++];
+                    for (let k = 0; k < n; k++) retained.delete(commands[i++]);
+                    break;
+                }
                 case OP.FILL: {
-                    const color = commands[i++];
+                    const rgb = commands[i++];
+                    const a = commands[i++];
                     const alpha = commands[i++];
                     const blend = commands[i++];
                     const evenOdd = commands[i++];
+                    if (missing) break;
                     ctx.globalAlpha = alpha;
                     ctx.globalCompositeOperation = BLEND_NAMES[blend] || 'source-over';
-                    ctx.fillStyle = cssColor(color);
-                    ctx.fill(evenOdd ? 'evenodd' : 'nonzero');
+                    ctx.fillStyle = cssColor(rgb, a);
+                    if (current) ctx.fill(current, evenOdd ? 'evenodd' : 'nonzero');
+                    else ctx.fill(evenOdd ? 'evenodd' : 'nonzero');
                     ctx.globalAlpha = 1;
                     ctx.globalCompositeOperation = 'source-over';
                     break;
                 }
                 case OP.STROKE: {
-                    const color = commands[i++];
+                    const rgb = commands[i++];
+                    const a = commands[i++];
                     const width = commands[i++];
                     const alpha = commands[i++];
                     const blend = commands[i++];
                     const cap = commands[i++];
                     const join = commands[i++];
+                    if (missing) { dash = null; break; }
                     ctx.globalAlpha = alpha;
                     ctx.globalCompositeOperation = BLEND_NAMES[blend] || 'source-over';
-                    ctx.strokeStyle = cssColor(color);
+                    ctx.strokeStyle = cssColor(rgb, a);
                     ctx.lineWidth = width;
                     ctx.lineCap = CAP_NAMES[cap] || 'round';
                     ctx.lineJoin = JOIN_NAMES[join] || 'round';
+                    // The canvas default is 10. SVG export and the built-in rasterizer bevel beyond 4, and centerline
+                    // bounds are padded for 4, so a sharper miter would draw past the element's bounds on screen only.
+                    ctx.miterLimit = 4;
                     if (dash) { ctx.setLineDash(dash); dash = null; } else { ctx.setLineDash([]); }
-                    ctx.stroke();
+                    if (current) ctx.stroke(current);
+                    else ctx.stroke();
                     ctx.globalAlpha = 1;
                     ctx.globalCompositeOperation = 'source-over';
                     ctx.setLineDash([]);
@@ -822,17 +1132,20 @@ class Surface {
                     ctx.beginPath();
                     ctx.rect(x, y, w, h);
                     ctx.clip();
+                    current = null;
+                    missing = false;
                     break;
                 }
                 case OP.CLEAR: {
-                    const color = commands[i++];
+                    const rgb = commands[i++];
+                    const a = commands[i++];
                     const transform = ctx.getTransform();
                     ctx.setTransform(1, 0, 0, 1, 0, 0);
-                    if (color === 0) {
+                    if (a === 0) {
                         ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
                     } else {
                         ctx.globalCompositeOperation = 'copy';
-                        ctx.fillStyle = cssColor(color);
+                        ctx.fillStyle = cssColor(rgb, a);
                         ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
                         ctx.globalCompositeOperation = 'source-over';
                     }
@@ -859,7 +1172,8 @@ class Surface {
                     const sw = commands[i++];
                     const sh = commands[i++];
                     const alpha = commands[i++];
-                    const uri = strings[index];
+                    const uri = text(index);
+                    if (uri === undefined) { lost = true; break; }
                     const image = this.images.get(uri);
                     if (image) {
                         // Touching the entry moves it to the back of the Map's insertion order, which is the LRU position.
@@ -883,17 +1197,24 @@ class Surface {
                     const y = commands[i++];
                     const size = commands[i++];
                     const lineHeight = commands[i++];
-                    const color = commands[i++];
+                    const rgb = commands[i++];
+                    const a = commands[i++];
                     const alpha = commands[i++];
                     const align = commands[i++];
+                    const content = text(textIndex);
+                    const font = text(fontIndex);
+                    if (content === undefined || font === undefined) { lost = true; break; }
                     ctx.globalAlpha = alpha;
-                    ctx.fillStyle = cssColor(color);
-                    ctx.font = strings[fontIndex];
+                    ctx.fillStyle = cssColor(rgb, a);
+                    ctx.font = font;
                     ctx.textAlign = ALIGN_NAMES[align] || 'left';
                     ctx.textBaseline = 'alphabetic';
-                    const lines = strings[textIndex].split('\n');
+                    const lines = content.split('\n');
                     for (let l = 0; l < lines.length; l++) {
-                        ctx.fillText(lines[l], x, y + size * 0.82 + l * lineHeight);
+                        // Text pasted from Windows ends its lines with \r\n. The \r would be drawn as a space and
+                        // shift right- and centre-aligned lines, where SVG export trims it.
+                        const line = lines[l];
+                        ctx.fillText(line.endsWith('\r') ? line.slice(0, -1) : line, x, y + size * 0.82 + l * lineHeight);
                     }
                     ctx.globalAlpha = 1;
                     break;
@@ -915,6 +1236,7 @@ class Surface {
                     scratchCtx.setTransform(ctx.getTransform());
                     groups.push({ parent: ctx, canvas: scratch, opacity, blend });
                     ctx = scratchCtx;
+                    if (!defining) target = ctx;
                     break;
                 }
                 case OP.POP_GROUP: {
@@ -922,6 +1244,7 @@ class Surface {
                     if (!group) break;
                     const parent = group.parent;
                     ctx = parent;
+                    if (!defining) target = ctx;
                     parent.save();
                     parent.setTransform(1, 0, 0, 1, 0, 0);
                     parent.globalAlpha = group.opacity;
@@ -932,8 +1255,11 @@ class Surface {
                     break;
                 }
                 default:
-                    // An unknown opcode means the buffer is out of sync; stopping is safer than misinterpreting it.
-                    return;
+                    // An unknown opcode means the buffer is out of sync; stopping is safer than misinterpreting it,
+                    // and whatever it would have defined has to be defined again.
+                    lost = true;
+                    i = count;
+                    break;
             }
         }
 
@@ -941,6 +1267,7 @@ class Surface {
             const group = groups.pop() as IsolatedGroup;
             this.releaseScratch(group.canvas);
         }
+        if (lost) this.reportResourcesLost();
     }
 
     async loadImage(uri: string): Promise<BinkImageMetrics> {
@@ -1031,8 +1358,11 @@ class Surface {
         target.removeEventListener('pointerleave', this.onPointerCancel);
         target.removeEventListener('lostpointercapture', this.onLostPointerCapture);
         target.removeEventListener('contextmenu', this.onContextMenu);
+        target.removeEventListener('wheel', this.onWheel);
         this.root.removeEventListener('keydown', this.onKeyDown);
         this.root.removeEventListener('focusout', this.onFocusOut);
+        this.root.removeEventListener('paste', this.onPaste);
+        this.settleClipboard(null);
         for (const canvas of [this.documentCanvas, this.overlayCanvas]) canvas?.removeEventListener('contextrestored', this.onContextRestored);
         if (this.frameHandle) cancelAnimationFrame(this.frameHandle);
         this.frameHandle = 0;
@@ -1046,6 +1376,8 @@ class Surface {
         this.images.clear();
         this.imagesUsedThisFrame.clear();
         this.scratchCanvases.length = 0;
+        this.paths.clear();
+        this.retainedStrings.clear();
         this.callback = null;
     }
 }
@@ -1110,6 +1442,16 @@ export function setDotNetCallbacks(id: string, reference: DotNetObjectReference)
         key: (key: string, ctrl: boolean, shift: boolean, alt: boolean) => reference.invokeMethodAsync('OnKeyDown', key, ctrl, shift, alt).catch(report('keyboard input')),
         textKey: (key: string, value: string | null | undefined) => reference.invokeMethodAsync('OnTextEditorKey', key, value ?? '').catch(report('text editing')),
         redraw: () => reference.invokeMethodAsync('OnRedrawRequested').catch(report('redraw')),
+        resourcesLost: () => reference.invokeMethodAsync('OnResourcesLost').catch(report('redraw')),
+        wheel: (panX: number, panY: number, zoom: number, x: number, y: number) => reference.invokeMethodAsync('OnWheel', panX, panY, zoom, x, y).catch(report('wheel input')),
+        paste: (kind: PasteKind, text: string | null, data: Blob | null) => {
+            // Anything sizeable travels as a stream: an image, or a long payload copied from a large selection.
+            const dotNet = (globalThis as { DotNet?: DotNetGlobal }).DotNet;
+            if (text && text.length > 8192) data = new Blob([text], { type: 'text/plain' });
+            if (data && !dotNet) return;
+            const stream = data && dotNet ? dotNet.createJSStreamReference(data) : null;
+            reference.invokeMethodAsync('OnPaste', kind, stream ? null : text, stream, data ? data.type : null).catch(report('paste'));
+        },
     };
 }
 
@@ -1134,6 +1476,26 @@ export function setWetInkStyle(id: string, color: string | null | undefined, wid
 
 export function setSelectionActive(id: string, active: boolean): void {
     surfaces.get(id)?.setSelectionActive(active);
+}
+
+export function provideClipboard(id: string, text: string | null | undefined): void {
+    surfaces.get(id)?.provideClipboard(text || null);
+}
+
+// Reads the system clipboard for a paste the application started (a toolbar button rather than Ctrl+V). The browser
+// may ask the user for permission; anything but text, or a refusal, reads as null and .NET falls back to its own copy.
+// Returned as a stream because a Blazor Server circuit refuses a large payload inside a single message.
+export async function readClipboard(): Promise<unknown> {
+    try {
+        const clipboard = typeof navigator !== 'undefined' ? navigator.clipboard : undefined;
+        if (!clipboard || typeof clipboard.readText !== 'function') return null;
+        const text = await clipboard.readText();
+        const dotNet = (globalThis as { DotNet?: DotNetGlobal }).DotNet;
+        if (!text || !dotNet) return null;
+        return dotNet.createJSStreamReference(new Blob([text], { type: 'text/plain' }));
+    } catch {
+        return null;
+    }
 }
 
 export function setCursor(id: string, cursor: string): void {

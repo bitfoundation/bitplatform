@@ -224,6 +224,109 @@ public static class BinkDocumentQuery
         return result;
     }
 
+    /// <summary>
+    /// Finds selectable elements enclosed by a freehand lasso, bottom-most first. A stroke counts when at least
+    /// <paramref name="coverage"/> of its points lie inside, which is what lets a loose loop around a handwritten
+    /// word pick up its strokes without the ones it merely brushes; other elements are judged by their corners and
+    /// centre the same way.
+    /// </summary>
+    /// <param name="document">Document.</param>
+    /// <param name="lasso">The lasso, in document coordinates; it is closed implicitly.</param>
+    /// <param name="coverage">The fraction of an element that must be inside, from just touching (0) to all of it (1).</param>
+    /// <param name="includeLocked">Whether elements on locked layers are candidates.</param>
+    public static List<BinkElement> FindInPolygon(BinkDocument document, ReadOnlySpan<Vector2> lasso, float coverage = 0.5f, bool includeLocked = false)
+    {
+        ArgumentNullException.ThrowIfNull(document);
+        var result = new List<BinkElement>();
+        if (lasso.Length < 3) return result;
+        BinkRect area = BinkGeometryMath.Bounds(lasso);
+        coverage = float.IsFinite(coverage) ? Math.Clamp(coverage, 0f, 1f) : 0.5f;
+        foreach (BinkLayer layer in document.Layers)
+        {
+            if (!layer.IsVisible || (layer.IsLocked && !includeLocked)) continue;
+            foreach (BinkElement e in layer.Elements)
+            {
+                if (!e.IsSelectable || !e.Bounds.Intersects(area)) continue;
+                if (Covered(e, lasso, area, coverage)) result.Add(e);
+            }
+        }
+        return result;
+    }
+
+    private static bool Covered(BinkElement element, ReadOnlySpan<Vector2> lasso, BinkRect area, float coverage)
+    {
+        int inside = 0;
+        int total;
+        Matrix3x2 transform = element.Transform;
+        bool identity = transform.IsIdentity;
+        if (element is BinkStroke { Points.Count: > 0 } stroke)
+        {
+            ReadOnlySpan<float> xs = stroke.Points.X;
+            ReadOnlySpan<float> ys = stroke.Points.Y;
+            total = xs.Length;
+            for (int i = 0; i < xs.Length; i++)
+            {
+                var p = new Vector2(xs[i], ys[i]);
+                if (!identity) p = Vector2.Transform(p, transform);
+                if (area.Contains(p) && BinkGeometryMath.PointInPolygon(p, lasso)) inside++;
+            }
+        }
+        else
+        {
+            BinkRect local = element.LocalBounds;
+            Span<Vector2> probes = [local.TopLeft, new(local.Right, local.Top), new(local.Right, local.Bottom), new(local.Left, local.Bottom), local.Center];
+            total = probes.Length;
+            foreach (Vector2 probe in probes)
+            {
+                Vector2 p = identity ? probe : Vector2.Transform(probe, transform);
+                if (area.Contains(p) && BinkGeometryMath.PointInPolygon(p, lasso)) inside++;
+            }
+        }
+        return coverage <= 0f ? inside > 0 : inside >= MathF.Ceiling(total * coverage - 1e-4f);
+    }
+
+    /// <summary>
+    /// Measures the ink in a document: how many strokes, how long they are and how long they took to draw. This is
+    /// what a signature field should validate, rather than whether anything at all was drawn: a dot or a stray
+    /// line is not a signature, and a rule on length and duration says so.
+    /// </summary>
+    /// <param name="document">Document.</param>
+    /// <param name="includeHiddenLayers">Whether strokes on hidden layers count.</param>
+    public static BinkInkMetrics MeasureInk(BinkDocument document, bool includeHiddenLayers = false)
+    {
+        ArgumentNullException.ThrowIfNull(document);
+        int strokes = 0;
+        long points = 0;
+        double length = 0;
+        double milliseconds = 0;
+        BinkRect bounds = BinkRect.Empty;
+        foreach (BinkLayer layer in document.Layers)
+        {
+            if (!layer.IsVisible && !includeHiddenLayers) continue;
+            foreach (BinkElement element in layer.Elements)
+            {
+                if (element is not BinkStroke { IsEraser: false, Points.Count: > 0 } stroke) continue;
+                strokes++;
+                points += stroke.Points.Count;
+                bounds = bounds.Union(stroke.Bounds);
+                ReadOnlySpan<float> xs = stroke.Points.X;
+                ReadOnlySpan<float> ys = stroke.Points.Y;
+                Matrix3x2 transform = stroke.Transform;
+                bool identity = transform.IsIdentity;
+                Vector2 previous = identity ? new Vector2(xs[0], ys[0]) : Vector2.Transform(new Vector2(xs[0], ys[0]), transform);
+                for (int i = 1; i < xs.Length; i++)
+                {
+                    Vector2 next = identity ? new Vector2(xs[i], ys[i]) : Vector2.Transform(new Vector2(xs[i], ys[i]), transform);
+                    length += Vector2.Distance(previous, next);
+                    previous = next;
+                }
+                ReadOnlySpan<float> times = stroke.Points.Time;
+                if (times.Length > 1 && float.IsFinite(times[^1] - times[0])) milliseconds += Math.Max(times[^1] - times[0], 0f);
+            }
+        }
+        return new BinkInkMetrics(strokes, points, (float)length, TimeSpan.FromMilliseconds(milliseconds), bounds);
+    }
+
     /// <summary>Finds elements (including non-selectable ones) whose bounds intersect a rectangle, on visible layers.</summary>
     public static IEnumerable<BinkElement> ElementsInBounds(BinkDocument document, BinkRect rect)
     {
@@ -234,4 +337,16 @@ public static class BinkDocumentQuery
             foreach (BinkElement e in layer.Elements) if (e.Bounds.Intersects(rect)) yield return e;
         }
     }
+}
+
+/// <summary>What <see cref="BinkDocumentQuery.MeasureInk"/> found.</summary>
+/// <param name="StrokeCount">Strokes drawn, eraser strokes not counted.</param>
+/// <param name="PointCount">Points across those strokes.</param>
+/// <param name="Length">The total length of the ink in document units, as drawn (transforms applied).</param>
+/// <param name="Duration">The time the pen was down, summed over strokes; zero for strokes without timing.</param>
+/// <param name="Bounds">The area the ink covers.</param>
+public readonly record struct BinkInkMetrics(int StrokeCount, long PointCount, float Length, TimeSpan Duration, BinkRect Bounds)
+{
+    /// <summary>True when there is no ink at all.</summary>
+    public bool IsEmpty => StrokeCount == 0;
 }

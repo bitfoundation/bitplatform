@@ -31,6 +31,9 @@ public static class BinkSerializer
     /// <summary>The oldest schema version this library can read.</summary>
     public const int MinimumSupportedVersion = 1;
 
+    /// <summary>The longest unregistered brush kind kept as it is; a longer one is read as a pen.</summary>
+    private const int MaxBrushKindLength = 256;
+
     /// <summary>Characters never allowed in a font family, because the value is emitted into CSS and SVG.</summary>
     private static readonly SearchValues<char> UnsafeFontCharacters = SearchValues.Create("<>\"'{}();\\");
 
@@ -290,13 +293,21 @@ public static class BinkSerializer
         writer.WriteString("kind", brush.Kind);
         writer.WriteString("color", brush.Color.ToCss());
         writer.WriteNumber("width", Round(brush.Width, 3));
-        if (brush.Opacity < 1f) writer.WriteNumber("opacity", Round(brush.Opacity, 3));
-        if (brush.BlendMode != BinkBlendMode.Normal) writer.WriteString("blend", BlendName(brush.BlendMode));
-        if (brush.Smoothing != 0.5f) writer.WriteNumber("smoothing", Round(brush.Smoothing, 3));
-        if (brush.Spacing != 0.25f) writer.WriteNumber("spacing", Round(brush.Spacing, 3));
-        if (!brush.SimulatePressure) writer.WriteBoolean("simulatePressure", false);
-        if (brush.TaperStart != 0) writer.WriteNumber("taperStart", Round(brush.TaperStart, 3));
-        if (brush.TaperEnd != 0) writer.WriteNumber("taperEnd", Round(brush.TaperEnd, 3));
+
+        // A field is left out only when it holds BinkBrush's own default, which is what a reader assumes for a
+        // missing field. Older readers assumed the kind's default instead, which differs for most brushes (a pen
+        // tapers its end, a highlighter multiplies at 45%), so a field is also written whenever the kind's default
+        // is not BinkBrush's: both kinds of reader then read the same brush. A kind this build cannot construct
+        // has no known default, so all of its fields are written.
+        BinkBrush? kind = options.BrushRegistry.GetDefault(brush.Kind);
+        BinkBrush standard = BaseBrush;
+        if (Differs(brush.Opacity, standard.Opacity, kind?.Opacity)) writer.WriteNumber("opacity", Round(brush.Opacity, 3));
+        if (Differs(brush.BlendMode, standard.BlendMode, kind?.BlendMode)) writer.WriteString("blend", BlendName(brush.BlendMode));
+        if (Differs(brush.Smoothing, standard.Smoothing, kind?.Smoothing)) writer.WriteNumber("smoothing", Round(brush.Smoothing, 3));
+        if (Differs(brush.Spacing, standard.Spacing, kind?.Spacing)) writer.WriteNumber("spacing", Round(brush.Spacing, 3));
+        if (Differs(brush.SimulatePressure, standard.SimulatePressure, kind?.SimulatePressure)) writer.WriteBoolean("simulatePressure", brush.SimulatePressure);
+        if (Differs(brush.TaperStart, standard.TaperStart, kind?.TaperStart)) writer.WriteNumber("taperStart", Round(brush.TaperStart, 3));
+        if (Differs(brush.TaperEnd, standard.TaperEnd, kind?.TaperEnd)) writer.WriteNumber("taperEnd", Round(brush.TaperEnd, 3));
 
         BinkPressureCurve curve = brush.PressureCurve;
         writer.WritePropertyName("pressure");
@@ -308,6 +319,16 @@ public static class BinkSerializer
         writer.WriteEndObject();
         writer.WriteEndObject();
     }
+
+    /// <summary>
+    /// A brush holding <see cref="BinkBrush"/>'s own defaults for every field the writer may leave out: the meaning
+    /// of a missing field in every file this format has produced.
+    /// </summary>
+    private static readonly BinkBrush BaseBrush = new BinkFallbackBrush(BinkPenBrush.KindName);
+
+    /// <summary>Whether a brush field has to be written; see <see cref="WriteBrush"/>.</summary>
+    private static bool Differs<T>(T value, T standard, T? kindDefault) where T : struct
+        => kindDefault is not { } fallback || !EqualityComparer<T>.Default.Equals(value, standard) || !EqualityComparer<T>.Default.Equals(fallback, standard);
 
     private static void WriteShapeStyle(Utf8JsonWriter writer, BinkShapeStyle style, BinkSerializerOptions options)
     {
@@ -727,6 +748,13 @@ public static class BinkSerializer
             if (ts.Length != 0 && ts.Length != xs.Length) throw new BinkFormatException("Stroke time array length must match the point count.");
             if (tx.Length != ty.Length || (tx.Length != 0 && tx.Length != xs.Length)) throw new BinkFormatException("Stroke tilt array lengths must match the point count.");
             if (tw.Length != 0 && tw.Length != xs.Length) throw new BinkFormatException("Stroke twist array length must match the point count.");
+            // Only positions are range-checked below. A time the binary encoding cannot carry loaded fine and then
+            // made every save, and every operation a collaborator sent for the stroke, fail; tilt and twist are kept
+            // to the ranges the encoding stores, so both encodings read the same file the same way.
+            ClampAll(ts, -BinkPointCodec.MaxTime, BinkPointCodec.MaxTime);
+            ClampAll(tx, -BinkPointCodec.MaxTilt, BinkPointCodec.MaxTilt);
+            ClampAll(ty, -BinkPointCodec.MaxTilt, BinkPointCodec.MaxTilt);
+            ClampAll(tw, 0f, BinkPointCodec.MaxTwist);
             points = BinkStrokePoints.FromArrays(xs, ys, ps, ts, tx, ty, tw);
         }
 
@@ -746,6 +774,11 @@ public static class BinkSerializer
             input = new BinkStrokeInputInfo(kind, ReadBool(inputElement, "pressure", false));
         }
         return new BinkStroke(points, brush) { Input = input };
+    }
+
+    private static void ClampAll(Span<float> values, float min, float max)
+    {
+        for (int i = 0; i < values.Length; i++) values[i] = Math.Clamp(values[i], min, max);
     }
 
     private static void ValidateCoordinates(BinkStrokePoints points, BinkDocumentLimits limits)
@@ -768,8 +801,10 @@ public static class BinkSerializer
         string kind = ReadString(brushElement, "kind") ?? BinkPenBrush.KindName;
         if (!options.BrushRegistry.TryCreate(kind, out BinkBrush? brush) || brush is null)
         {
-            // An unknown brush still renders with its stored appearance rather than being dropped.
-            brush = new BinkPenBrush();
+            // An unknown brush still renders with its stored appearance rather than being dropped, and keeps its
+            // kind so saving or sending the stroke on does not turn it into a pen for everyone downstream. A blank
+            // kind, which no registration could ever match, or an absurdly long one is read as a plain pen.
+            brush = string.IsNullOrWhiteSpace(kind) || kind.Length > MaxBrushKindLength ? new BinkPenBrush() : new BinkFallbackBrush(kind);
         }
 
         BinkPressureCurve curve = brush.PressureCurve;
@@ -801,17 +836,22 @@ public static class BinkSerializer
         if (!float.IsFinite(width) || width <= 0) width = 1f;
         width = MathF.Min(width, options.Limits.MaxStrokeWidth);
 
+        // A missing field means BinkBrush's own default, not the kind's: the writer has only ever left a field out
+        // when it held that value. Falling back to the kind's default turned a pen without a taper into one with
+        // a 6-unit taper, and a normal-blend highlighter into a multiplied one at 45%, on every load and on every
+        // collaborator's screen.
+        BinkBrush standard = BaseBrush;
         return brush with
         {
             Color = ReadColor(brushElement, "color", brush.Color),
             Width = width,
-            Opacity = Math.Clamp(ReadFloat(brushElement, "opacity", brush.Opacity), 0f, 1f),
-            BlendMode = ReadBlend(brushElement, "blend", brush.BlendMode),
-            Smoothing = Math.Clamp(ReadFloat(brushElement, "smoothing", brush.Smoothing), 0f, 1f),
-            Spacing = Math.Clamp(ReadFloat(brushElement, "spacing", brush.Spacing), 0f, 10f),
-            SimulatePressure = ReadBool(brushElement, "simulatePressure", brush.SimulatePressure),
-            TaperStart = MathF.Max(ReadFloat(brushElement, "taperStart", brush.TaperStart), 0f),
-            TaperEnd = MathF.Max(ReadFloat(brushElement, "taperEnd", brush.TaperEnd), 0f),
+            Opacity = Math.Clamp(ReadFloat(brushElement, "opacity", standard.Opacity), 0f, 1f),
+            BlendMode = ReadBlend(brushElement, "blend", standard.BlendMode),
+            Smoothing = Math.Clamp(ReadFloat(brushElement, "smoothing", standard.Smoothing), 0f, 1f),
+            Spacing = Math.Clamp(ReadFloat(brushElement, "spacing", standard.Spacing), 0f, 10f),
+            SimulatePressure = ReadBool(brushElement, "simulatePressure", standard.SimulatePressure),
+            TaperStart = MathF.Max(ReadFloat(brushElement, "taperStart", standard.TaperStart), 0f),
+            TaperEnd = MathF.Max(ReadFloat(brushElement, "taperEnd", standard.TaperEnd), 0f),
             PressureCurve = curve,
         };
     }

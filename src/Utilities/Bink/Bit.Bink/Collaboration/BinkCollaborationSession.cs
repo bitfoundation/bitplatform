@@ -1,4 +1,6 @@
 ﻿using System.Collections.Concurrent;
+using System.Numerics;
+using System.Text.Json;
 
 namespace Bit.Bink;
 
@@ -55,6 +57,21 @@ public sealed record BinkCollaborationOptions
 /// </remarks>
 public sealed class BinkCollaborationSession : IAsyncDisposable
 {
+    /// <summary>How many removed element and layer ids are remembered to tell a stale operation from an early one.</summary>
+    private const int MaxRemovedIds = 10_000;
+
+    /// <summary>How many remote operations may wait for an element or layer that has not arrived yet.</summary>
+    private const int MaxDeferredOperations = 1_000;
+
+    /// <summary>How long a remote operation waits for what it depends on before it is dropped as stale after all.</summary>
+    private static readonly TimeSpan DeferredLifetime = TimeSpan.FromSeconds(30);
+
+    /// <summary>How many operations are kept, while a requested snapshot is awaited, to replay on top of it.</summary>
+    private const int MaxReplayedOperations = 5_000;
+
+    /// <summary>The most points of another participant's in-progress stroke that are kept.</summary>
+    private const int MaxLiveStrokePoints = 10_000;
+
     private readonly BinkDocument _document;
     private readonly IBinkCollaborationTransport _transport;
     private readonly BinkCollaborationOptions _options;
@@ -65,8 +82,24 @@ public sealed class BinkCollaborationSession : IAsyncDisposable
     private readonly SemaphoreSlim _flushGate = new(1, 1);
     // Who wrote the version of each element this replica holds, which is what a version tie is settled on.
     private readonly Dictionary<Guid, string> _writers = new();
+    // Elements and layers this replica has removed, oldest first. An operation on something missing is stale when
+    // the id is here (the removal is the newer intent) and early when it is not: it depends on an addition another
+    // participant made that has not reached this replica yet.
+    private readonly HashSet<Guid> _removed = new();
+    private readonly Queue<Guid> _removedOrder = new();
+    // Early remote operations, in the order they arrived, retried whenever a remote operation lands.
+    private readonly List<PendingOperation> _deferred = new();
+    // While a requested snapshot is awaited: every operation sent and received, replayed on top of the answer.
+    private readonly Queue<PendingOperation> _replay = new();
+    // Message numbers, seeded from the clock rather than starting at zero. A participant that reloads the page or
+    // crashes rejoins under the same id without having sent Leave, and the others still hold its old high-water
+    // mark, so a counter that started over had everything the new session sent discarded as retransmissions. The
+    // seed is in microseconds since 1970, which stays below 2^53 so a JSON or JavaScript transport carries it
+    // exactly, and leaves room for a thousand messages a millisecond before a later session could start below an
+    // earlier one. The counter is shared by every session in the process, so a session that replaces another
+    // there, as a Blazor Server circuit that reconnects does, always continues above it whatever the clock says.
+    private static long s_sequence = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() * 1000;
     private DateTimeOffset _lastExpiryCheck = DateTimeOffset.MinValue;
-    private long _sequence;
     private DateTimeOffset _lastPresenceSent = DateTimeOffset.MinValue;
     private BinkPresenceState? _pendingPresence;
     private bool _applyingRemote;
@@ -97,6 +130,13 @@ public sealed class BinkCollaborationSession : IAsyncDisposable
     /// <summary>This participant's identifier.</summary>
     public string ParticipantId { get; }
 
+    /// <summary>The clock presence expiry and waiting operations are measured against. Replaced by tests.</summary>
+    internal TimeProvider Clock { get; set; } = TimeProvider.System;
+
+    private DateTimeOffset UtcNow => Clock.GetUtcNow();
+
+    private static long NextSequence() => Interlocked.Increment(ref s_sequence);
+
     /// <summary>The other participants currently present.</summary>
     public IReadOnlyCollection<BinkPresenceState> Participants
     {
@@ -107,7 +147,10 @@ public sealed class BinkCollaborationSession : IAsyncDisposable
         }
     }
 
-    /// <summary>Number of operations waiting to be sent because the transport is disconnected.</summary>
+    /// <summary>
+    /// Number of operations waiting to be sent because the transport is disconnected, together with any snapshot or
+    /// snapshot request waiting behind them so it does not overtake them.
+    /// </summary>
     public int PendingCount
     {
         get { lock (_queueGate) return _pending.Count; }
@@ -128,37 +171,64 @@ public sealed class BinkCollaborationSession : IAsyncDisposable
     /// <summary>
     /// Asks the other participants for a full document, used when joining an existing session. Every participant
     /// that serves snapshots answers, addressed to this one alone; the first answer is applied and the rest are
-    /// ignored, so edits made after it are not overwritten by a slower, older copy.
+    /// ignored, so edits made after it are not overwritten by a slower, older copy. Changes made here or received
+    /// while the answer is on its way are applied again on top of it, because it may have been written before they
+    /// reached whoever answered.
     /// </summary>
     public Task RequestSnapshotAsync(CancellationToken cancellationToken = default)
     {
-        // Set before sending: over an in-process transport the answer can arrive before the send returns.
+        // Set before sending: over an in-process transport the answer can arrive before the send returns. The
+        // replay log starts with the first request; a repeated one keeps what the first has collected, because the
+        // answer it gets may be just as old.
+        if (!_awaitingSnapshot) _replay.Clear();
         _awaitingSnapshot = true;
         return SendAsync(new BinkCollaborationMessage
         {
             Kind = BinkCollaborationMessageKind.SnapshotRequest,
             SenderId = ParticipantId,
             DocumentId = _document.Id,
-            Sequence = Interlocked.Increment(ref _sequence),
+            Sequence = NextSequence(),
         }, cancellationToken);
     }
 
     /// <summary>
     /// Sends the current document to every other participant, each of whom replaces their own copy with it. Use it
-    /// to reset everyone to one version, for example after restoring a saved document.
+    /// to reset everyone to one version, for example after restoring a saved document. A document that cannot be
+    /// serialized is reported through <see cref="RemoteOperationRejected"/> and nothing is sent.
     /// </summary>
     public Task SendSnapshotAsync(CancellationToken cancellationToken = default) => SendSnapshotAsync(null, cancellationToken);
 
     private Task SendSnapshotAsync(string? recipientId, CancellationToken cancellationToken)
-        => SendAsync(new BinkCollaborationMessage
+    {
+        string snapshot;
+        try
+        {
+            snapshot = BinkSerializer.Serialize(_document, _options.SerializerOptions);
+        }
+        catch (Exception ex) when (IsSerializationFailure(ex))
+        {
+            // This runs inside the receive callback when answering a request, where an exception would take the
+            // transport down with it; on Blazor Server, the circuit.
+            RemoteOperationRejected?.Invoke("The document could not be shared: " + ex.Message);
+            return Task.CompletedTask;
+        }
+        return SendAsync(new BinkCollaborationMessage
         {
             Kind = BinkCollaborationMessageKind.Snapshot,
             SenderId = ParticipantId,
             RecipientId = recipientId,
             DocumentId = _document.Id,
-            Sequence = Interlocked.Increment(ref _sequence),
-            Snapshot = BinkSerializer.Serialize(_document, _options.SerializerOptions),
+            Sequence = NextSequence(),
+            Snapshot = snapshot,
         }, cancellationToken);
+    }
+
+    /// <summary>
+    /// The exceptions writing a document or an operation reports problems with: an element type that cannot be
+    /// written, or a value the format cannot carry.
+    /// </summary>
+    private static bool IsSerializationFailure(Exception ex)
+        => ex is InvalidOperationException or ArgumentException or FormatException or OverflowException or JsonException;
 
     /// <summary>
     /// Publishes this participant's presence. Calls are throttled to <see cref="BinkCollaborationOptions.PresenceInterval"/>;
@@ -167,9 +237,9 @@ public sealed class BinkCollaborationSession : IAsyncDisposable
     public async Task UpdatePresenceAsync(BinkPresenceState presence, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(presence);
-        _pendingPresence = presence with { ParticipantId = ParticipantId, Timestamp = DateTimeOffset.UtcNow };
+        DateTimeOffset now = UtcNow;
+        _pendingPresence = presence with { ParticipantId = ParticipantId, Timestamp = now };
 
-        DateTimeOffset now = DateTimeOffset.UtcNow;
         if (now - _lastPresenceSent < _options.PresenceInterval) return;
         _lastPresenceSent = now;
 
@@ -182,7 +252,7 @@ public sealed class BinkCollaborationSession : IAsyncDisposable
             Kind = BinkCollaborationMessageKind.Presence,
             SenderId = ParticipantId,
             DocumentId = _document.Id,
-            Sequence = Interlocked.Increment(ref _sequence),
+            Sequence = NextSequence(),
             Presence = state,
         }, cancellationToken).ConfigureAwait(false);
     }
@@ -191,16 +261,17 @@ public sealed class BinkCollaborationSession : IAsyncDisposable
     public async Task FlushPresenceAsync(CancellationToken cancellationToken = default)
     {
         if (_pendingPresence is null) return;
-        if (DateTimeOffset.UtcNow - _lastPresenceSent < _options.PresenceInterval) return;
+        DateTimeOffset now = UtcNow;
+        if (now - _lastPresenceSent < _options.PresenceInterval) return;
         BinkPresenceState state = _pendingPresence;
         _pendingPresence = null;
-        _lastPresenceSent = DateTimeOffset.UtcNow;
+        _lastPresenceSent = now;
         await SendAsync(new BinkCollaborationMessage
         {
             Kind = BinkCollaborationMessageKind.Presence,
             SenderId = ParticipantId,
             DocumentId = _document.Id,
-            Sequence = Interlocked.Increment(ref _sequence),
+            Sequence = NextSequence(),
             Presence = state,
         }, cancellationToken).ConfigureAwait(false);
     }
@@ -275,15 +346,22 @@ public sealed class BinkCollaborationSession : IAsyncDisposable
 #pragma warning restore CA1031
             lock (_queueGate)
             {
-                if (_pending.Count > 0) _pending.Dequeue();
+                // Only the message that was sent leaves the queue. While the send was awaited, a change made past
+                // MaxOfflineQueue could have trimmed it from the front, or ClearPending emptied the queue and new
+                // messages arrived; dequeuing the head regardless dropped a message that was never sent.
+                if (_pending.Count > 0 && ReferenceEquals(_pending.Peek(), message)) _pending.Dequeue();
             }
         }
     }
 
     private void OnDocumentChanged(object? sender, BinkDocumentChangedEventArgs e)
     {
+        if (_disposed) return;
+        // Whatever caused it, a removal is remembered, so a late edit of what it removed is recognised as stale.
+        RecordRemovals(e.Inverse);
+
         // Remote changes are not echoed back, but local undo and redo are: to everyone else they are ordinary edits.
-        if (_applyingRemote || _disposed) return;
+        if (_applyingRemote) return;
         if (e.Origin is BinkChangeOrigin.Remote or BinkChangeOrigin.Load) return;
         RecordWriter(e.Operation, ParticipantId);
 
@@ -292,18 +370,24 @@ public sealed class BinkCollaborationSession : IAsyncDisposable
         {
             payload = BinkOperationCodec.Serialize(e.Operation, _options.SerializerOptions);
         }
-        catch (InvalidOperationException ex)
+        catch (Exception ex) when (IsSerializationFailure(ex))
         {
+            // This runs inside the document's Changed event, so anything thrown here would surface in whatever
+            // tool or API call made the change, after the change was already applied.
             RemoteOperationRejected?.Invoke("A local change could not be shared: " + ex.Message);
             return;
         }
+
+        // The answer to a pending snapshot request may have been serialized before this change reached whoever
+        // answered; it is applied again on top of the answer rather than wiped by it.
+        if (_awaitingSnapshot) Log(e.Operation, ParticipantId);
 
         _ = SendAsync(new BinkCollaborationMessage
         {
             Kind = BinkCollaborationMessageKind.Operation,
             SenderId = ParticipantId,
             DocumentId = _document.Id,
-            Sequence = Interlocked.Increment(ref _sequence),
+            Sequence = NextSequence(),
             Operation = payload,
         }, CancellationToken.None);
     }
@@ -316,11 +400,19 @@ public sealed class BinkCollaborationSession : IAsyncDisposable
         // messages arrive in order, and a receiver discards anything that arrives behind a later sequence.
         bool queued = false;
         bool heldBack = false;
-        if (message.Kind == BinkCollaborationMessageKind.Operation)
+        if (message.Kind is BinkCollaborationMessageKind.Operation or BinkCollaborationMessageKind.Snapshot or BinkCollaborationMessageKind.SnapshotRequest)
         {
+            // Operations are queued while offline. Snapshots and requests are not, because a stale answer is worse
+            // than none, but every kind shares the sequence and the receiver discards whatever arrives behind a
+            // later one, so while the queue drains they wait behind it too: a request sent past queued operations,
+            // which is what reconnecting and then asking for a snapshot does, would make everyone drop them.
             lock (_queueGate)
             {
-                if (!_transport.IsConnected || _pending.Count > 0)
+                bool connected = _transport.IsConnected;
+                bool queue = message.Kind == BinkCollaborationMessageKind.Operation
+                    ? !connected || _pending.Count > 0
+                    : connected && _pending.Count > 0;
+                if (queue)
                 {
                     _pending.Enqueue(message);
                     while (_pending.Count > _options.MaxOfflineQueue) _pending.Dequeue();
@@ -381,20 +473,26 @@ public sealed class BinkCollaborationSession : IAsyncDisposable
 
         // A host that renders presence from the event rather than polling Participants would otherwise never
         // expire anyone, so expiry is also driven by traffic. The check is throttled to stay off the hot path.
-        DateTimeOffset now = DateTimeOffset.UtcNow;
+        DateTimeOffset now = UtcNow;
         if (now - _lastExpiryCheck >= _options.PresenceInterval)
         {
             _lastExpiryCheck = now;
             ExpireParticipants();
+            ExpireDeferred();
         }
 
         // Duplicate delivery is harmless to ignore, and a lower sequence means a retransmission we already saw.
-        if (message.Kind == BinkCollaborationMessageKind.Operation || message.Kind == BinkCollaborationMessageKind.Presence)
+        // Every kind is checked, because they all share the sender's counter: a snapshot that skipped the check
+        // and arrived twice, the second time after a later edit, replaced the document again and lost that edit.
+        long previous = _lastSequence.GetValueOrDefault(message.SenderId, -1);
+        if (message.Sequence <= previous && message.Sequence != 0)
         {
-            long previous = _lastSequence.GetValueOrDefault(message.SenderId, -1);
-            if (message.Sequence <= previous && message.Sequence != 0) return;
-            _lastSequence[message.SenderId] = message.Sequence;
+            // A snapshot request is the first thing a participant sends when it joins. One that is not above the
+            // cursor comes from a new session under the same id whose clock is behind the old one's, for example
+            // the same user on another device. Discarding it, and everything sent after it, would freeze them.
+            if (message.Kind != BinkCollaborationMessageKind.SnapshotRequest) return;
         }
+        _lastSequence[message.SenderId] = message.Sequence;
 
         switch (message.Kind)
         {
@@ -404,16 +502,24 @@ public sealed class BinkCollaborationSession : IAsyncDisposable
             case BinkCollaborationMessageKind.Presence:
                 if (message.Presence is { } presence)
                 {
-                    _participants[message.SenderId] = presence;
-                    PresenceChanged?.Invoke(presence);
+                    BinkPresenceState state = Sanitize(presence, message.SenderId, now);
+                    _participants[message.SenderId] = state;
+                    PresenceChanged?.Invoke(state);
                 }
                 break;
             case BinkCollaborationMessageKind.Snapshot:
                 // An answer to a request is applied once, by the participant that asked: replacing the document
                 // with every answer, or answers meant for someone else joining, would throw away whatever was
                 // drawn since the first one. A snapshot sent to everyone is a deliberate reset and always applies.
-                if (message.RecipientId is null) ApplySnapshot(message);
-                else if (_awaitingSnapshot && ApplySnapshot(message)) _awaitingSnapshot = false;
+                if (message.RecipientId is null)
+                {
+                    ApplySnapshot(message);
+                }
+                else if (_awaitingSnapshot && ApplySnapshot(message))
+                {
+                    _awaitingSnapshot = false;
+                    ReplayOnSnapshot();
+                }
                 break;
             case BinkCollaborationMessageKind.SnapshotRequest:
                 if (_options.ServeSnapshots) await SendSnapshotAsync(message.SenderId, CancellationToken.None).ConfigureAwait(false);
@@ -438,31 +544,258 @@ public sealed class BinkCollaborationSession : IAsyncDisposable
             return;
         }
 
-        BinkDrawingOperation? resolved = ResolveConflicts(operation, message.SenderId);
-        if (resolved is null) return;
-        operation = resolved;
-        if (!operation.CanApply(_document))
-        {
-            // A stale operation, for example an edit to something already deleted. Dropping it is correct:
-            // the deletion is the newer intent.
-            return;
-        }
+        var received = new PendingOperation(operation, message.SenderId, UtcNow);
+        // The answer to a pending snapshot request may have been serialized before this change reached whoever
+        // answered, so the change is applied again on top of the answer rather than wiped by it.
+        if (_awaitingSnapshot) Log(received);
 
         _applyingRemote = true;
         try
         {
-            _document.Apply(operation, BinkChangeOrigin.Remote);
-            RecordWriter(operation, message.SenderId);
-        }
-        catch (InvalidOperationException ex)
-        {
-            RemoteOperationRejected?.Invoke($"A change from {message.SenderId} could not be applied: {ex.Message}");
+            if (ApplyRemote(received, defer: true, report: true) > 0) RetryDeferred();
         }
         finally
         {
             _applyingRemote = false;
         }
     }
+
+    /// <summary>
+    /// Applies a remote operation as far as it still applies, and returns how many operations were applied.
+    /// </summary>
+    /// <remarks>
+    /// A batch is applied one operation at a time inside one batch scope, so it still reports a single change, and
+    /// an operation in it that no longer applies is skipped rather than failing the whole batch. Applied whole, one
+    /// stale operation inside a batch (an element a collaborator deleted meanwhile) made it roll back, and the
+    /// replicas diverged for good: clearing the page while someone else deleted one stroke left every other stroke
+    /// behind on the side that had deleted it.
+    /// </remarks>
+    /// <param name="received">The operation, its sender and when it arrived.</param>
+    /// <param name="defer">Whether an operation that depends on something not yet here waits for it.</param>
+    /// <param name="report">Whether an operation that fails to apply is reported.</param>
+    private int ApplyRemote(PendingOperation received, bool defer, bool report)
+    {
+        if (received.Operation is not BinkBatchOperation batch) return ApplyOne(received, defer, report) ? 1 : 0;
+
+        int applied = 0;
+        using (_document.BeginBatch(batch.Label, BinkChangeOrigin.Remote))
+        {
+            foreach (BinkDrawingOperation inner in batch.Operations) applied += ApplyRemote(received with { Operation = inner }, defer, report);
+        }
+        return applied;
+    }
+
+    /// <summary>Applies one operation that is not a batch. Returns true when it was applied.</summary>
+    private bool ApplyOne(PendingOperation received, bool defer, bool report)
+    {
+        BinkDrawingOperation? operation = ResolveConflicts(received.Operation, received.SenderId);
+        if (operation is null) return false;
+        if (!operation.CanApply(_document))
+        {
+            // Either stale, an edit of something already deleted, which is dropped because the deletion is the
+            // newer intent; or early. Each sender's messages arrive in order, but not messages from different
+            // senders, so over a mesh an edit of what another participant just added can arrive before the
+            // addition. Dropping that one lost the edit on this replica alone, so it waits for the addition.
+            if (defer && AwaitsDependency(operation)) Defer(received);
+            return false;
+        }
+
+        try
+        {
+            _document.Apply(operation, BinkChangeOrigin.Remote);
+            RecordWriter(operation, received.SenderId);
+            return true;
+        }
+        catch (InvalidOperationException ex)
+        {
+            if (report) RemoteOperationRejected?.Invoke($"A change from {received.SenderId} could not be applied: {ex.Message}");
+            return false;
+        }
+    }
+
+    /// <summary>
+    /// Whether an operation that cannot be applied refers to an element or layer this replica has never had, as
+    /// opposed to one it has removed.
+    /// </summary>
+    private bool AwaitsDependency(BinkDrawingOperation operation) => operation switch
+    {
+        BinkAddElementOperation add => !_document.ContainsElement(add.Element.Id) && IsUnknownLayer(add.LayerId),
+        BinkRemoveElementOperation remove => IsUnknownElement(remove.ElementId),
+        BinkReplaceElementOperation replace => IsUnknownElement(replace.Element.Id),
+        BinkReorderElementOperation reorder => _document.ContainsElement(reorder.ElementId)
+            ? IsUnknownLayer(reorder.TargetLayerId)
+            : IsUnknownElement(reorder.ElementId) && !_removed.Contains(reorder.TargetLayerId),
+        BinkRemoveLayerOperation removeLayer => IsUnknownLayer(removeLayer.LayerId),
+        BinkUpdateLayerOperation updateLayer => IsUnknownLayer(updateLayer.LayerId),
+        BinkReorderLayerOperation reorderLayer => IsUnknownLayer(reorderLayer.LayerId),
+        _ => false,
+    };
+
+    private bool IsUnknownElement(Guid id) => !_document.ContainsElement(id) && !_removed.Contains(id);
+
+    private bool IsUnknownLayer(Guid id) => !_document.TryGetLayer(id, out _) && !_removed.Contains(id);
+
+    /// <summary>Holds an early operation until what it depends on arrives. The oldest makes room when full.</summary>
+    private void Defer(PendingOperation received)
+    {
+        ExpireDeferred();
+        if (_deferred.Count >= MaxDeferredOperations) _deferred.RemoveAt(0);
+        _deferred.Add(received);
+    }
+
+    /// <summary>
+    /// Applies whatever early operations have become applicable, until none is left that can be. Runs after every
+    /// remote operation that landed, because each one can be what another was waiting for.
+    /// </summary>
+    private void RetryDeferred()
+    {
+        bool progress = true;
+        while (progress && _deferred.Count > 0)
+        {
+            progress = false;
+            ExpireDeferred();
+            for (int i = 0; i < _deferred.Count; i++)
+            {
+                PendingOperation entry = _deferred[i];
+                if (!entry.Operation.CanApply(_document))
+                {
+                    // Still early, or stale by now: what it refers to arrived and was removed again.
+                    if (!AwaitsDependency(entry.Operation)) _deferred.RemoveAt(i--);
+                    continue;
+                }
+                _deferred.RemoveAt(i--);
+                if (ApplyOne(entry, defer: false, report: true)) progress = true;
+            }
+        }
+    }
+
+    /// <summary>
+    /// Drops early operations that have waited too long. What they refer to is not coming, so they were stale after
+    /// all, for example an edit of an element that was removed before this participant joined; stale operations
+    /// have always been dropped silently.
+    /// </summary>
+    private void ExpireDeferred()
+    {
+        if (_deferred.Count == 0) return;
+        DateTimeOffset cutoff = UtcNow - DeferredLifetime;
+        _deferred.RemoveAll(entry => entry.Received < cutoff);
+    }
+
+    /// <summary>Remembers an operation to replay on top of the snapshot that answers a pending request.</summary>
+    private void Log(BinkDrawingOperation operation, string senderId) => Log(new PendingOperation(operation, senderId, UtcNow));
+
+    private void Log(PendingOperation entry)
+    {
+        _replay.Enqueue(entry);
+        // Bounded like the offline queue: past this a joiner has been waiting for an answer for a very long time,
+        // and the oldest changes are the likeliest to be in it already.
+        while (_replay.Count > MaxReplayedOperations) _replay.Dequeue();
+    }
+
+    /// <summary>
+    /// Applies again, on top of a snapshot that answered this participant's request, what was sent and received
+    /// while waiting for it. The answer was serialized when the request arrived, so a stroke drawn here, or one from
+    /// a third participant that reached this replica first, would otherwise be on everyone's copy but this one.
+    /// The replay is lenient: what the snapshot already holds, or holds a newer version of, is skipped. It is applied
+    /// as a remote change, so it is neither sent again nor recorded in the undo history.
+    /// </summary>
+    private void ReplayOnSnapshot()
+    {
+        if (_replay.Count == 0) return;
+        PendingOperation[] log = _replay.ToArray();
+        _replay.Clear();
+        _applyingRemote = true;
+        try
+        {
+            int applied = 0;
+            using (_document.BeginBatch("Synchronize", BinkChangeOrigin.Remote))
+            {
+                foreach (PendingOperation entry in log) applied += ApplyRemote(entry, defer: true, report: false);
+            }
+            if (applied > 0) RetryDeferred();
+        }
+        finally
+        {
+            _applyingRemote = false;
+        }
+    }
+
+    /// <summary>
+    /// Remembers what a change removed, read from the additions that would undo it, so a late operation on it is
+    /// recognised as stale rather than held as early.
+    /// </summary>
+    private void RecordRemovals(BinkDrawingOperation inverse)
+    {
+        switch (inverse)
+        {
+            case BinkAddElementOperation add:
+                Tombstone(add.Element.Id);
+                break;
+            case BinkAddLayerOperation addLayer:
+                Tombstone(addLayer.LayerId);
+                if (addLayer.Elements is { } elements)
+                {
+                    foreach (BinkElement element in elements) Tombstone(element.Id);
+                }
+                break;
+            case BinkBatchOperation batch:
+                foreach (BinkDrawingOperation inner in batch.Operations) RecordRemovals(inner);
+                break;
+        }
+    }
+
+    private void Tombstone(Guid id)
+    {
+        if (!_removed.Add(id)) return;
+        _removedOrder.Enqueue(id);
+        // Forgetting the oldest only means a very late edit of it waits, and then expires, instead of being dropped.
+        if (_removedOrder.Count > MaxRemovedIds) _removed.Remove(_removedOrder.Dequeue());
+    }
+
+    /// <summary>
+    /// Presence as this replica stores it. The identity is the sender's, because the id inside the state is
+    /// whatever the sender wrote and could name someone else, and the time is this replica's, because expiry
+    /// compared the sender's clock with this one: a peer whose clock ran behind expired at once, and one that sent
+    /// a far-future time never did. The live stroke and the selection are bounded, and points that are not finite
+    /// or lie outside the coordinate limit are dropped, since all of it is drawn on every frame.
+    /// </summary>
+    private BinkPresenceState Sanitize(BinkPresenceState presence, string senderId, DateTimeOffset now)
+    {
+        float max = _options.Limits.MaxCoordinate;
+        bool Valid(Vector2 p) => float.IsFinite(p.X) && float.IsFinite(p.Y) && MathF.Abs(p.X) <= max && MathF.Abs(p.Y) <= max;
+
+        IReadOnlyList<Vector2>? live = presence.LiveStroke;
+        if (live is { Count: > 0 } && (live.Count > MaxLiveStrokePoints || !live.All(Valid)))
+        {
+            // The newest points are kept: they are where the pen is.
+            int start = Math.Max(0, live.Count - MaxLiveStrokePoints);
+            var kept = new List<Vector2>(live.Count - start);
+            for (int i = start; i < live.Count; i++)
+            {
+                if (Valid(live[i])) kept.Add(live[i]);
+            }
+            live = kept;
+        }
+
+        IReadOnlyList<Guid>? selection = presence.Selection;
+        if (selection is not null && selection.Count > _options.Limits.MaxElements) selection = selection.Take(_options.Limits.MaxElements).ToArray();
+
+        float width = presence.LiveStrokeWidth;
+        width = float.IsFinite(width) ? Math.Clamp(width, 0f, _options.Limits.MaxStrokeWidth) : 0f;
+
+        return presence with
+        {
+            ParticipantId = senderId,
+            Timestamp = now,
+            Cursor = presence.Cursor is { } cursor && Valid(cursor) ? cursor : null,
+            LiveStroke = live,
+            LiveStrokeWidth = width,
+            Selection = selection,
+        };
+    }
+
+    /// <summary>An operation, who sent it and when it arrived.</summary>
+    private readonly record struct PendingOperation(BinkDrawingOperation Operation, string SenderId, DateTimeOffset Received);
 
     /// <summary>
     /// Applies last-writer-wins to element edits. When the local element is newer the remote edit is dropped;
@@ -491,16 +824,8 @@ public sealed class BinkCollaborationSession : IAsyncDisposable
                 }
                 return replace;
             }
-            case BinkBatchOperation batch:
-            {
-                var resolved = new List<BinkDrawingOperation>(batch.Operations.Count);
-                foreach (BinkDrawingOperation inner in batch.Operations)
-                {
-                    BinkDrawingOperation? r = ResolveConflicts(inner, senderId);
-                    if (r is not null) resolved.Add(r);
-                }
-                return resolved.Count == 0 ? null : new BinkBatchOperation(resolved, batch.Label);
-            }
+            // A batch is never resolved as a whole: ApplyRemote resolves each operation in it just before applying
+            // it, against the state the earlier ones left.
             default:
                 return operation;
         }
@@ -546,10 +871,13 @@ public sealed class BinkCollaborationSession : IAsyncDisposable
 
         // Build the whole change first, then apply it. Removing the local content before discovering that the
         // incoming document does not fit would destroy the user's work and leave nothing in its place.
+        // Each layer is emptied from the top down. A removal looks its element up from the top of the layer and
+        // closes the gap behind it, so removing bottom-first cost a scan and a shift of the whole layer per element:
+        // quadratic, seconds for a few tens of thousands of strokes.
         var operations = new List<BinkDrawingOperation>();
         foreach (BinkLayer layer in _document.Layers)
         {
-            foreach (BinkElement element in layer.Elements) operations.Add(new BinkRemoveElementOperation(element.Id));
+            for (int i = layer.Elements.Count - 1; i >= 0; i--) operations.Add(new BinkRemoveElementOperation(layer.Elements[i].Id));
         }
 
         // Add the incoming layers before removing the local ones that are gone: a document must always keep at
@@ -595,6 +923,9 @@ public sealed class BinkCollaborationSession : IAsyncDisposable
             _document.Apply(new BinkBatchOperation(operations, "Synchronize"), BinkChangeOrigin.Remote);
             // Who wrote each incoming version is not part of a snapshot.
             _writers.Clear();
+            // Operations still waiting for something to arrive are superseded: every other replica that applied
+            // them has had its copy replaced as well. A joiner replays what it received while waiting instead.
+            _deferred.Clear();
             return true;
         }
         catch (InvalidOperationException ex)
@@ -615,7 +946,7 @@ public sealed class BinkCollaborationSession : IAsyncDisposable
 
     private void ExpireParticipants()
     {
-        DateTimeOffset cutoff = DateTimeOffset.UtcNow - _options.PresenceTimeout;
+        DateTimeOffset cutoff = UtcNow - _options.PresenceTimeout;
         foreach ((string id, BinkPresenceState state) in _participants)
         {
             if (state.Timestamp < cutoff) Forget(id);
@@ -651,7 +982,7 @@ public sealed class BinkCollaborationSession : IAsyncDisposable
                     Kind = BinkCollaborationMessageKind.Leave,
                     SenderId = ParticipantId,
                     DocumentId = _document.Id,
-                    Sequence = Interlocked.Increment(ref _sequence),
+                    Sequence = NextSequence(),
                 }).ConfigureAwait(false);
             }
 #pragma warning disable CA1031 // Leaving is best effort.
@@ -662,6 +993,8 @@ public sealed class BinkCollaborationSession : IAsyncDisposable
         }
         _participants.Clear();
         _lastSequence.Clear();
+        _deferred.Clear();
+        _replay.Clear();
         _flushGate.Dispose();
     }
 }

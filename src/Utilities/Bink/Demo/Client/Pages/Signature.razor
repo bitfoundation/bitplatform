@@ -45,7 +45,8 @@
     </div>
 
     <CanvasStatus Canvas="_canvas">
-        <span>Ink length <strong>@_inkLength.ToString("0")</strong> units</span>
+        <span>Ink length <strong>@_ink.Length.ToString("0")</strong> units</span>
+        <span><strong>@_ink.StrokeCount</strong> strokes in <strong>@_ink.Duration.TotalSeconds.ToString("0.0")</strong> s</span>
     </CanvasStatus>
 
     <div class="bb-toolbar bink-toolbar">
@@ -82,15 +83,14 @@
 <div class="bb-card">
     <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Validation and the accepted state</h3>
     <p class="bb-card-desc">
-        A scribble of one dot is not a signature. The page adds up the length of every stroke in the document and
-        enables <strong>Accept signature</strong> only past a minimum - a real validation rule that the vector model
-        makes easy to express. Accepting makes the field <code>ReadOnly</code>, the way ink on paper is final, until
-        the signer chooses to sign again.
+        A scribble of one dot is not a signature. The page measures the ink - its length, the number of strokes and
+        how long the pen was down - and enables <strong>Accept signature</strong> only past a minimum length: a real
+        validation rule that the vector model makes easy to express. Accepting makes the field
+        <code>ReadOnly</code>, the way ink on paper is final, until the signer chooses to sign again. The clipboard
+        stays off, as it is by default, so nobody can paste a signature in.
     </p>
-    <pre class="bb-code"><span class="k">foreach</span> (BinkElement element <span class="k">in</span> _canvas.CurrentDocument.AllElements)
-{
-    <span class="k">if</span> (element <span class="k">is</span> BinkStroke stroke) _inkLength += stroke.Points.Length;
-}</pre>
+    <pre class="bb-code">BinkInkMetrics ink = BinkDocumentQuery.MeasureInk(_canvas.CurrentDocument);
+<span class="k">bool</span> valid = ink.Length &gt; 120f;   <span class="c">// also ink.StrokeCount, ink.Duration, ink.Bounds</span></pre>
 </div>
 
 <div class="bb-card">
@@ -114,7 +114,7 @@
     private BinkBrush _brush = new BinkPenBrush { Width = 3.5f, Color = BinkColor.Parse("#0f172a"), TaperEnd = 8f };
     private string _color = "#0f172a";
     private float _width = 3.5f;
-    private float _inkLength;
+    private BinkInkMetrics _ink;
     private bool _locked;
 
     private static readonly string[] InkColors = ["#0f172a", "#1d4ed8"];
@@ -133,7 +133,7 @@
 
     // A scribble of one dot is not a signature. Requiring a little ink is a real validation rule that the
     // vector model makes easy to express.
-    private bool IsValid => _inkLength > MinimumInkLength;
+    private bool IsValid => _ink.Length > MinimumInkLength;
 
     private const float MinimumInkLength = 120f;
 
@@ -168,15 +168,7 @@
         StateHasChanged();
     }
 
-    private void MeasureInk()
-    {
-        _inkLength = 0f;
-        if (_canvas is null) return;
-        foreach (BinkElement element in _canvas.CurrentDocument.AllElements)
-        {
-            if (element is BinkStroke stroke) _inkLength += stroke.Points.Length;
-        }
-    }
+    private void MeasureInk() => _ink = _canvas is null ? default : BinkDocumentQuery.MeasureInk(_canvas.CurrentDocument);
 
     private void Clear()
     {

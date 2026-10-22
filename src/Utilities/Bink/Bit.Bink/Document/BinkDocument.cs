@@ -329,14 +329,23 @@ public sealed class BinkDocument
     public void RemoveElements(IEnumerable<Guid> elementIds)
     {
         ArgumentNullException.ThrowIfNull(elementIds);
-        var ops = new List<BinkDrawingOperation>();
+        var targets = new List<(int Layer, int Index, Guid Id)>();
         var seen = new HashSet<Guid>();
         // A repeated id would remove the element and then fail on the second attempt, rolling the batch back.
         foreach (Guid id in elementIds)
         {
-            if (ContainsElement(id) && seen.Add(id)) ops.Add(new BinkRemoveElementOperation(id));
+            if (!seen.Add(id) || !_elementLayers.TryGetValue(id, out BinkLayer? layer)) continue;
+            targets.Add((_layers.IndexOf(layer), layer.IndexOf(id), id));
         }
-        if (ops.Count > 0) Apply(new BinkBatchOperation(ops, "Delete"));
+        if (targets.Count == 0) return;
+        // Removed from the top of each layer down. Removing an element shifts everything above it, so removing in
+        // selection order made every later lookup re-index the layer, and deleting a large selection quadratic.
+        // Top-down, a removal never moves one still to come. The inverse re-inserts bottom-up at the recorded
+        // indices, which restores the original order exactly.
+        targets.Sort(static (a, b) => a.Layer != b.Layer ? b.Layer.CompareTo(a.Layer) : b.Index.CompareTo(a.Index));
+        var ops = new List<BinkDrawingOperation>(targets.Count);
+        foreach ((_, _, Guid id) in targets) ops.Add(new BinkRemoveElementOperation(id));
+        Apply(new BinkBatchOperation(ops, "Delete"));
     }
 
     /// <summary>Replaces an element with a new version (same id).</summary>
@@ -393,6 +402,118 @@ public sealed class BinkDocument
         foreach (BinkLayer layer in _layers)
             for (int i = layer.Elements.Count - 1; i >= 0; i--) ops.Add(new BinkRemoveElementOperation(layer.Elements[i].Id));
         if (ops.Count > 0) Apply(new BinkBatchOperation(ops, "Clear"));
+    }
+
+    /// <summary>
+    /// Changes the stacking order of elements within their layers as one undoable step. Elements keep their order
+    /// relative to each other, and nothing moves to another layer.
+    /// </summary>
+    /// <param name="elementIds">The elements to move; ids not in the document are ignored.</param>
+    /// <param name="arrangement">Where they go.</param>
+    /// <returns>True when anything moved.</returns>
+    public bool Arrange(IEnumerable<Guid> elementIds, BinkArrangement arrangement)
+    {
+        ArgumentNullException.ThrowIfNull(elementIds);
+        var selected = new HashSet<Guid>();
+        foreach (Guid id in elementIds) if (ContainsElement(id)) selected.Add(id);
+        if (selected.Count == 0) return false;
+
+        var ops = new List<BinkDrawingOperation>();
+        var order = new List<Guid>();
+        foreach (BinkLayer layer in _layers)
+        {
+            order.Clear();
+            bool any = false;
+            foreach (BinkElement e in layer.Elements)
+            {
+                order.Add(e.Id);
+                any |= selected.Contains(e.Id);
+            }
+            if (any) ArrangeLayer(layer.Id, order, selected, arrangement, ops);
+        }
+        if (ops.Count == 0) return false;
+        Apply(new BinkBatchOperation(ops, arrangement switch
+        {
+            BinkArrangement.BringToFront => "Bring to front",
+            BinkArrangement.BringForward => "Bring forward",
+            BinkArrangement.SendBackward => "Send backward",
+            _ => "Send to back",
+        }));
+        return true;
+    }
+
+    /// <summary>
+    /// Emits the moves for one layer. Only the chosen elements move, never the ones they pass: bringing one stroke to
+    /// the front of a thousand is one operation, not a thousand.
+    /// </summary>
+    private static void ArrangeLayer(Guid layerId, List<Guid> order, HashSet<Guid> selected, BinkArrangement arrangement, List<BinkDrawingOperation> ops)
+    {
+        int n = order.Count;
+        switch (arrangement)
+        {
+            case BinkArrangement.BringToFront:
+            case BinkArrangement.SendToBack:
+            {
+                var chosen = new List<Guid>();
+                foreach (Guid id in order) if (selected.Contains(id)) chosen.Add(id);
+                bool front = arrangement == BinkArrangement.BringToFront;
+                // Already there, in order: a no-op would still be an undo step and a message to every collaborator.
+                int start = front ? n - chosen.Count : 0;
+                bool inPlace = true;
+                for (int k = 0; k < chosen.Count && inPlace; k++) inPlace = order[start + k] == chosen[k];
+                if (inPlace) return;
+                // Each in turn to the top (bottom-most first) or to the bottom (top-most first), which leaves them in
+                // their original order at the destination.
+                if (front) foreach (Guid id in chosen) ops.Add(new BinkReorderElementOperation(id, layerId, n - 1));
+                else for (int k = chosen.Count - 1; k >= 0; k--) ops.Add(new BinkReorderElementOperation(chosen[k], layerId, 0));
+                break;
+            }
+            case BinkArrangement.BringForward:
+                // From the top down, each chosen element steps over the unchosen one above it; a block of chosen
+                // elements therefore moves up by one as a block.
+                for (int i = n - 2; i >= 0; i--)
+                {
+                    if (!selected.Contains(order[i]) || selected.Contains(order[i + 1])) continue;
+                    (order[i], order[i + 1]) = (order[i + 1], order[i]);
+                    ops.Add(new BinkReorderElementOperation(order[i + 1], layerId, i + 1));
+                }
+                break;
+            case BinkArrangement.SendBackward:
+                for (int i = 1; i < n; i++)
+                {
+                    if (!selected.Contains(order[i]) || selected.Contains(order[i - 1])) continue;
+                    (order[i], order[i - 1]) = (order[i - 1], order[i]);
+                    ops.Add(new BinkReorderElementOperation(order[i - 1], layerId, i - 1));
+                }
+                break;
+        }
+    }
+
+    /// <summary>
+    /// Adds copies of elements, offset by a document-space distance, as one undoable step. Each copy goes on top of
+    /// its original's layer, and the copies keep their relative stacking order.
+    /// </summary>
+    /// <param name="elementIds">The elements to copy; ids not in the document are ignored.</param>
+    /// <param name="offset">How far the copies are moved from the originals.</param>
+    /// <returns>The copies, in the order they were added.</returns>
+    public IReadOnlyList<BinkElement> DuplicateElements(IEnumerable<Guid> elementIds, System.Numerics.Vector2 offset)
+    {
+        ArgumentNullException.ThrowIfNull(elementIds);
+        var wanted = new HashSet<Guid>(elementIds);
+        var copies = new List<(Guid Layer, BinkElement Copy)>();
+        foreach (BinkLayer layer in _layers)
+        {
+            foreach (BinkElement e in layer.Elements)
+            {
+                if (!wanted.Contains(e.Id) || e is BinkStroke { IsEraser: true } or BinkUnknownElement) continue;
+                copies.Add((layer.Id, e.Translate(offset) with { Id = Guid.NewGuid(), Version = 0 }));
+            }
+        }
+        if (copies.Count == 0) return [];
+        var ops = new List<BinkDrawingOperation>(copies.Count);
+        foreach ((Guid layer, BinkElement copy) in copies) ops.Add(new BinkAddElementOperation(layer, copy));
+        Apply(new BinkBatchOperation(ops, "Duplicate"));
+        return copies.ConvertAll(static c => c.Copy);
     }
 
     /// <summary>
@@ -467,9 +588,8 @@ public sealed class BinkDocument
         if (_elementLayers.ContainsKey(element.Id)) throw new InvalidOperationException($"An element with id {element.Id} already exists in the document.");
         ValidateElement(element);
         if (_elementLayers.Count >= Limits.MaxElements) throw new InvalidOperationException($"The document limit of {Limits.MaxElements} elements was reached.");
-        List<BinkElement> list = layer.MutableElements;
-        int at = index is null ? list.Count : Math.Clamp(index.Value, 0, list.Count);
-        list.Insert(at, element);
+        int at = index is null ? layer.Count : Math.Clamp(index.Value, 0, layer.Count);
+        layer.InsertAt(at, element);
         _elementLayers[element.Id] = layer;
         if (element is BinkStroke s) _totalPoints += s.Points.Count;
     }
@@ -479,7 +599,7 @@ public sealed class BinkDocument
         if (!_elementLayers.TryGetValue(elementId, out BinkLayer? layer)) throw new InvalidOperationException($"Element {elementId} is not in the document.");
         int index = layer.IndexOf(elementId);
         BinkElement element = layer.Elements[index];
-        layer.MutableElements.RemoveAt(index);
+        layer.RemoveAt(index);
         _elementLayers.Remove(elementId);
         if (element is BinkStroke s) _totalPoints -= s.Points.Count;
         return (layer, index, element);
@@ -512,7 +632,7 @@ public sealed class BinkDocument
             || Restoring
             || (_keepRemoteVersions && element.Version == previous.Version);
         BinkElement next = keep ? element : element with { Version = NextVersion(previous.Version) };
-        layer.MutableElements[index] = next;
+        layer.SetAt(index, next);
         if (next is BinkStroke incoming) _totalPoints += incoming.Points.Count;
         return previous;
     }
@@ -521,9 +641,8 @@ public sealed class BinkDocument
     {
         BinkLayer target = RequireLayer(targetLayerId);
         (BinkLayer source, int previousIndex, BinkElement element) = RemoveElementCore(elementId);
-        List<BinkElement> list = target.MutableElements;
-        int at = index is null ? list.Count : Math.Clamp(index.Value, 0, list.Count);
-        list.Insert(at, element);
+        int at = index is null ? target.Count : Math.Clamp(index.Value, 0, target.Count);
+        target.InsertAt(at, element);
         _elementLayers[elementId] = target;
         if (element is BinkStroke s) _totalPoints += s.Points.Count;
         return (source.Id, previousIndex);
@@ -650,4 +769,17 @@ public sealed class BinkDocument
 
     /// <inheritdoc />
     public override string ToString() => FormattableString.Invariant($"BinkDocument {Id:N}: {_layers.Count} layers, {ElementCount} elements, revision {Revision}");
+}
+
+/// <summary>Where <see cref="BinkDocument.Arrange"/> moves elements in their layer's stacking order.</summary>
+public enum BinkArrangement : byte
+{
+    /// <summary>Above everything else in the layer.</summary>
+    BringToFront = 0,
+    /// <summary>One step up: above the next element that is not being moved.</summary>
+    BringForward = 1,
+    /// <summary>One step down: below the previous element that is not being moved.</summary>
+    SendBackward = 2,
+    /// <summary>Below everything else in the layer.</summary>
+    SendToBack = 3,
 }

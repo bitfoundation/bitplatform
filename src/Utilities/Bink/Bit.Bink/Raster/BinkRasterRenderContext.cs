@@ -35,9 +35,17 @@ public sealed class BinkRasterRenderContext : IBinkRenderContext, IBinkRenderCon
     private readonly List<Vector2[]> _strokePolygons = new(64);
     private readonly Stack<State> _states = new();
     private readonly Stack<GroupFrame> _groups = new();
-    private readonly Dictionary<string, BinkPngCodec.DecodedImage?> _imageCache = new(StringComparer.Ordinal);
+    private readonly Dictionary<string, CachedImage> _imageCache = new(StringComparer.Ordinal);
+    private long _decodedImagePixels;
     private State _state;
     private BinkRasterSurface _target;
+
+    // One scratch surface per group nesting depth, reused by every group opened at that depth. Each is left fully
+    // transparent when its group closes, by clearing the part the group drew into.
+    private readonly List<BinkRasterSurface> _scratch = new(2);
+
+    // The part of the current target that has been drawn into since its group opened.
+    private BinkPixelRegion _drawn;
 
     private readonly record struct State(Matrix3x2 Transform, BinkRect Clip);
 
@@ -45,7 +53,29 @@ public sealed class BinkRasterRenderContext : IBinkRenderContext, IBinkRenderCon
     /// A group also remembers how deep the transform and clip stack was when it opened. Restoring to that depth
     /// on close stops an unbalanced Save inside the group from leaking its clip into what follows.
     /// </summary>
-    private readonly record struct GroupFrame(BinkRasterSurface Surface, float Opacity, BinkBlendMode Blend, BinkRect Clip, State State, int StateDepth);
+    private readonly record struct GroupFrame(BinkRasterSurface Surface, float Opacity, BinkBlendMode Blend, BinkRect Clip, State State, int StateDepth, BinkPixelRegion ParentDrawn);
+
+    /// <summary>What is known about an embedded image: the size its header claims, and its pixels once decoded.</summary>
+    private sealed class CachedImage
+    {
+        public int Width;
+        public int Height;
+        public BinkPngCodec.DecodedImage? Image;
+        public bool Unusable;
+    }
+
+    /// <summary>
+    /// Images up to this many pixels are decoded wherever they are drawn, so an ordinary photo is never left out
+    /// for being drawn small.
+    /// </summary>
+    private const long SmallImagePixels = 4096L * 4096;
+
+    /// <summary>
+    /// A larger image is decoded only where it is drawn with at most this many source pixels per device pixel
+    /// (eight along each axis): beyond that nearly all of what is decoded is never sampled, and one compressible
+    /// file drawn as a thumbnail could take the whole decode budget.
+    /// </summary>
+    private const float MaxSourcePixelsPerDevicePixel = 64f;
 
     /// <summary>Creates a context drawing into a surface.</summary>
     /// <param name="surface">Target surface.</param>
@@ -63,6 +93,18 @@ public sealed class BinkRasterRenderContext : IBinkRenderContext, IBinkRenderCon
 
     /// <summary>Flattening tolerance in device pixels. Smaller values give smoother curves at more cost.</summary>
     public float Tolerance { get; init; } = 0.2f;
+
+    /// <summary>
+    /// Largest embedded image decoded, in pixels. A larger one is skipped and counted in <see cref="SkippedImages"/>.
+    /// </summary>
+    public long MaxImagePixels { get; init; } = 64_000_000;
+
+    /// <summary>
+    /// Pixels all decoded images together may hold. Decoded images are kept for the context's lifetime so an image
+    /// drawn many times is decoded once; once they fill the budget, further images are skipped and counted in
+    /// <see cref="SkippedImages"/> instead of growing memory without bound.
+    /// </summary>
+    public long ImagePixelBudget { get; init; } = 80_000_000;
 
     /// <summary>Number of text elements that could not be drawn.</summary>
     public int SkippedText { get; private set; }
@@ -102,12 +144,26 @@ public sealed class BinkRasterRenderContext : IBinkRenderContext, IBinkRenderCon
 
         _rasterizer.Reset();
         _rasterizer.AddPath(path, _state.Transform, Tolerance);
-        BinkRasterSurface target = _target;
-        BinkColor color = paint.Color;
-        float opacity = paint.Opacity;
-        BinkBlendMode blend = paint.Blend;
-        _rasterizer.Rasterize(_state.Clip, paint.Rule, (y, x, coverage) => target.Blend(y, x, coverage, color, opacity, blend));
+        Rasterize(paint.Rule, paint.Color, paint.Opacity, paint.Blend);
     }
+
+    /// <summary>Blends the rasterizer's coverage into the target, recording which part of the target it wrote.</summary>
+    private void Rasterize(BinkFillRule rule, BinkColor color, float opacity, BinkBlendMode blend)
+    {
+        BinkRasterSurface target = _target;
+        int left = int.MaxValue, top = int.MaxValue, right = int.MinValue, bottom = int.MinValue;
+        _rasterizer.Rasterize(_state.Clip, rule, (y, x, coverage) =>
+        {
+            target.Blend(y, x, coverage, color, opacity, blend);
+            left = Math.Min(left, x);
+            right = Math.Max(right, x + coverage.Length);
+            top = Math.Min(top, y);
+            bottom = Math.Max(bottom, y + 1);
+        });
+        if (right > left) MarkDrawn(new BinkPixelRegion(left, top, right, bottom));
+    }
+
+    private void MarkDrawn(BinkPixelRegion region) => _drawn = _drawn.Union(region);
 
     /// <inheritdoc />
     public void StrokePath(BinkPathGeometry path, in BinkStrokePaint paint)
@@ -122,7 +178,7 @@ public sealed class BinkRasterRenderContext : IBinkRenderContext, IBinkRenderCon
         if (!float.IsFinite(scale) || scale <= 0) scale = 1f;
         float width = MathF.Max(paint.Width * scale, 0.35f);
         float[]? dash = null;
-        if (paint.Dash is { Length: > 0 } source)
+        if (paint.Dash is { Length: > 0 } source && HasLength(source))
         {
             dash = new float[source.Length];
             for (int i = 0; i < source.Length; i++) dash[i] = MathF.Max(source[i] * scale, 0.05f);
@@ -135,11 +191,23 @@ public sealed class BinkRasterRenderContext : IBinkRenderContext, IBinkRenderCon
 
         _rasterizer.Reset();
         _rasterizer.AddPolygons(_strokePolygons);
-        BinkRasterSurface target = _target;
-        BinkColor color = paint.Color;
-        float opacity = paint.Opacity;
-        BinkBlendMode blend = paint.Blend;
-        _rasterizer.Rasterize(_state.Clip, BinkFillRule.NonZero, (y, x, coverage) => target.Blend(y, x, coverage, color, opacity, blend));
+        Rasterize(BinkFillRule.NonZero, paint.Color, paint.Opacity, paint.Blend);
+    }
+
+    /// <summary>
+    /// True when a dash pattern describes any dashing. The canvas and SVG draw a pattern whose entries add up to
+    /// nothing as a solid line, and the canvas ignores one holding a value that is not finite; raising each entry
+    /// to the minimum dash length would instead turn either into a dense dashed line.
+    /// </summary>
+    private static bool HasLength(float[] dash)
+    {
+        float total = 0;
+        foreach (float d in dash)
+        {
+            if (!float.IsFinite(d)) return false;
+            total += MathF.Max(d, 0f);
+        }
+        return total > 0;
     }
 
     /// <inheritdoc />
@@ -148,7 +216,7 @@ public sealed class BinkRasterRenderContext : IBinkRenderContext, IBinkRenderCon
         ArgumentNullException.ThrowIfNull(image);
         if (destination.IsEmpty || opacity <= 0 || _state.Clip.IsEmpty || image.IsOmitted) return;
 
-        BinkPngCodec.DecodedImage? decoded = GetImage(image);
+        BinkPngCodec.DecodedImage? decoded = GetImage(image, destination, sourceRect);
         if (decoded is null)
         {
             SkippedImages++;
@@ -171,6 +239,7 @@ public sealed class BinkRasterRenderContext : IBinkRenderContext, IBinkRenderCon
 
         float scaleX = crop.Width / destination.Width;
         float scaleY = crop.Height / destination.Height;
+        if (x1 > x0 && y1 > y0) MarkDrawn(new BinkPixelRegion(x0, y0, x1, y1));
 
         for (int y = y0; y < y1; y++)
         {
@@ -220,25 +289,51 @@ public sealed class BinkRasterRenderContext : IBinkRenderContext, IBinkRenderCon
         return (image.Rgba[offset] / 255f * a, image.Rgba[offset + 1] / 255f * a, image.Rgba[offset + 2] / 255f * a, a);
     }
 
-    private BinkPngCodec.DecodedImage? GetImage(BinkImageSource image)
+    /// <summary>
+    /// Returns an embedded image's pixels, decoding it the first time it is drawn if it is within the limits:
+    /// <see cref="MaxImagePixels"/>, what is left of <see cref="ImagePixelBudget"/>, and, for an image beyond
+    /// <see cref="SmallImagePixels"/>, a density sensible for where it is drawn. The size is read from the header
+    /// first, so an image that is refused is never decompressed.
+    /// </summary>
+    private BinkPngCodec.DecodedImage? GetImage(BinkImageSource image, BinkRect destination, BinkRect? sourceRect)
     {
-        if (_imageCache.TryGetValue(image.Uri, out BinkPngCodec.DecodedImage? cached)) return cached;
-        BinkPngCodec.DecodedImage? result = null;
-        if (image.TryGetBytes(out byte[] bytes) && BinkPngCodec.IsPng(bytes))
+        byte[]? bytes = null;
+        if (!_imageCache.TryGetValue(image.Uri, out CachedImage? entry))
         {
-            try
-            {
-                result = BinkPngCodec.Decode(bytes);
-            }
-            catch (Exception ex) when (ex is FormatException or InvalidDataException or ArgumentException or OutOfMemoryException)
-            {
-                // A document may embed any bytes at all. An undecodable image is reported through SkippedImages,
-                // never by aborting the export.
-                result = null;
-            }
+            entry = new CachedImage();
+            _imageCache[image.Uri] = entry;
+            if (!image.TryGetBytes(out bytes) || !BinkPngCodec.TryReadSize(bytes, out entry.Width, out entry.Height)) entry.Unusable = true;
         }
-        _imageCache[image.Uri] = result;
-        return result;
+        if (entry.Image is { } decoded) return decoded;
+        if (entry.Unusable) return null;
+
+        // Refusing for size is not remembered as a failure: the same image drawn larger later may be worth it.
+        long pixels = (long)entry.Width * entry.Height;
+        if (pixels > MaxImagePixels || pixels > ImagePixelBudget - _decodedImagePixels) return null;
+        if (pixels > SmallImagePixels)
+        {
+            float deviceArea = MathF.Abs(_state.Transform.GetDeterminant()) * destination.Width * destination.Height;
+            double shown = sourceRect is { } crop ? (double)MathF.Max(crop.Width, 0) * MathF.Max(crop.Height, 0) : pixels;
+            if (!(shown <= MaxSourcePixelsPerDevicePixel * (double)deviceArea)) return null;
+        }
+
+        if (bytes is null && !image.TryGetBytes(out bytes))
+        {
+            entry.Unusable = true;
+            return null;
+        }
+        try
+        {
+            entry.Image = BinkPngCodec.Decode(bytes, maxPixels: pixels);
+            _decodedImagePixels += pixels;
+        }
+        catch (Exception ex) when (ex is FormatException or InvalidDataException or ArgumentException or OutOfMemoryException)
+        {
+            // A document may embed any bytes at all. An undecodable image is reported through SkippedImages,
+            // never by aborting the export.
+            entry.Unusable = true;
+        }
+        return entry.Image;
     }
 
     /// <inheritdoc />
@@ -252,17 +347,27 @@ public sealed class BinkRasterRenderContext : IBinkRenderContext, IBinkRenderCon
         }
         float scale = MathF.Sqrt(MathF.Abs(_state.Transform.GetDeterminant()));
         if (!float.IsFinite(scale) || scale <= 0) scale = 1f;
+        // The text engine is handed the whole surface and may write anywhere on it, so all of it counts as drawn.
+        MarkDrawn(new BinkPixelRegion(0, 0, _target.Width, _target.Height));
         TextRasterizer.DrawText(_target, text, Vector2.Transform(origin, _state.Transform), style, scale, opacity, _state.Clip);
     }
 
     /// <inheritdoc />
+    /// <remarks>
+    /// The group draws into a scratch surface shared by every group at the same nesting depth, so a document with
+    /// many isolated layers needs one extra surface, not one per layer. Only the part the group drew into is
+    /// composited and then cleared; everywhere else the scratch surface is transparent, which composites to
+    /// nothing, so the result is exactly what a fresh surface per group gave.
+    /// </remarks>
     public void PushGroup(float opacity, BinkBlendMode blend)
     {
         // Always isolate. Callers only open a group when they need it, and skipping the buffer here would let an
         // eraser stroke inside the group erase the background and the layers below it.
-        var surface = new BinkRasterSurface(_root.Width, _root.Height);
-        _groups.Push(new GroupFrame(_target, opacity, blend, _state.Clip, _state, _states.Count));
-        _target = surface;
+        int depth = _groups.Count;
+        if (_scratch.Count == depth) _scratch.Add(new BinkRasterSurface(_root.Width, _root.Height));
+        _groups.Push(new GroupFrame(_target, opacity, blend, _state.Clip, _state, _states.Count, _drawn));
+        _target = _scratch[depth];
+        _drawn = BinkPixelRegion.Empty;
     }
 
     /// <inheritdoc />
@@ -277,8 +382,12 @@ public sealed class BinkRasterRenderContext : IBinkRenderContext, IBinkRenderCon
         _state = frame.State;
 
         BinkRasterSurface group = _target;
+        BinkPixelRegion drawn = _drawn;
+        BinkPixelRegion composited = drawn.Intersect(BinkPixelRegion.Covering(frame.Clip));
         _target = frame.Surface;
-        _target.Composite(group, frame.Opacity, frame.Blend, frame.Clip);
+        _target.Composite(group, frame.Opacity, frame.Blend, composited);
+        group.Clear(drawn);
+        _drawn = frame.ParentDrawn.Union(composited);
     }
 
     /// <summary>The surface everything is ultimately composited onto.</summary>

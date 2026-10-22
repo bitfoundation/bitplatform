@@ -9,6 +9,13 @@ namespace Bit.Bink;
 /// </summary>
 /// <remarks>
 /// <para>
+/// Every await in this component resumes on the renderer's dispatcher (<c>ConfigureAwait(true)</c>). On Blazor
+/// Server an interop call completes on a thread-pool thread, and continuing there raised <see cref="Ready"/> off
+/// the dispatcher, which takes the circuit down the moment a handler calls <c>StateHasChanged</c>; it also let the
+/// overlay be recorded while the dispatcher was processing pointer samples into the same tool, and let an image or
+/// a text edit change the document from a second thread. WebAssembly has one thread, which is why it never showed.
+/// </para>
+/// <para>
 /// The component is a thin shell around the engine in <c>Bit.Bink</c>. It owns two canvases: the document
 /// surface holding committed elements, and an overlay holding the live stroke and tool previews. Pointer input
 /// never triggers a Blazor render: samples arrive from the browser once per animation frame, the active tool
@@ -28,7 +35,11 @@ namespace Bit.Bink;
 /// </remarks>
 public sealed partial class BinkCanvas : ComponentBase, IAsyncDisposable, IBinkInteropClient
 {
-    private readonly BinkCanvasRenderContext _documentContext = new(8192);
+    // The document surface refers to paths and images the browser already holds, so a redraw costs a few numbers
+    // per element rather than every coordinate again. The overlay is redrawn with geometry that is new every
+    // frame (the live stroke, handles, previews), which a cache could only churn through, so it records in full.
+    private readonly BinkCanvasResourceCache _resources = new();
+    private readonly BinkCanvasRenderContext _documentContext;
     private readonly BinkCanvasRenderContext _overlayContext = new(2048);
     private readonly ToolContext _toolContext;
     private readonly string _elementId = "bit-bink-" + Guid.NewGuid().ToString("N")[..12];
@@ -76,6 +87,7 @@ public sealed partial class BinkCanvas : ComponentBase, IAsyncDisposable, IBinkI
     public BinkCanvas()
     {
         _toolContext = new ToolContext(this);
+        _documentContext = new BinkCanvasRenderContext(8192, _resources);
     }
 
     [Inject]
@@ -163,6 +175,52 @@ public sealed partial class BinkCanvas : ComponentBase, IAsyncDisposable, IBinkI
     /// <summary>Whether a finger touch is ignored while a pen is in contact, so a resting palm does not draw.</summary>
     [Parameter]
     public bool RejectTouchWhilePen { get; set; } = true;
+
+    /// <summary>
+    /// Whether the live stroke is drawn reaching where the browser predicts the pen is going, which hides about a
+    /// frame of latency on a stylus. Predictions are drawn, never stored. Defaults to on in WebAssembly and off
+    /// elsewhere, where the round trip to the server is far longer than the frame a prediction covers.
+    /// </summary>
+    [Parameter]
+    public bool? PredictInk { get; set; }
+
+    /// <summary>
+    /// What the mouse wheel and a trackpad do over the canvas. The default, <see cref="BinkWheelMode.None"/>,
+    /// leaves the wheel to the page, which is right for a canvas embedded in a form that has to stay scrollable.
+    /// </summary>
+    [Parameter]
+    public BinkWheelMode WheelMode { get; set; }
+
+    /// <summary>
+    /// How moving, resizing and drawing shapes snap to a grid and to other elements. Null, the default, snaps to
+    /// nothing; <c>new BinkSnapOptions()</c> lines edges and centres up with other elements and the page.
+    /// </summary>
+    [Parameter]
+    public BinkSnapOptions? Snapping { get; set; }
+
+    /// <summary>The smallest zoom the wheel, pinch gestures, the keyboard and <see cref="ZoomBy"/> allow.</summary>
+    [Parameter]
+    public float MinZoom { get; set; } = 0.05f;
+
+    /// <summary>The largest zoom the wheel, pinch gestures, the keyboard and <see cref="ZoomBy"/> allow.</summary>
+    [Parameter]
+    public float MaxZoom { get; set; } = 64f;
+
+    /// <summary>
+    /// Whether Ctrl+C, Ctrl+X and Ctrl+V copy, cut and paste through the system clipboard: selected elements, and
+    /// pasted images. Off by default, because a signature field that accepts a pasted image or pasted ink no
+    /// longer proves anyone signed. <see cref="CopySelectionAsync"/>, <see cref="PasteAsync()"/> and the other
+    /// methods work regardless, so an application can offer clipboard buttons of its own.
+    /// </summary>
+    [Parameter]
+    public bool EnableClipboard { get; set; }
+
+    /// <summary>
+    /// Raised when plain text, rather than copied Bink content or an image, is pasted onto the canvas. Without a
+    /// handler the text becomes a text element in the middle of the view.
+    /// </summary>
+    [Parameter]
+    public EventCallback<string> TextPasted { get; set; }
 
     /// <summary>
     /// Whether a provisional trail is drawn in the browser while a sample batch travels to the server. Ignored in
@@ -313,15 +371,188 @@ public sealed partial class BinkCanvas : ComponentBase, IAsyncDisposable, IBinkI
         BinkRect bounds = _document.ContentBounds;
         if (bounds.IsEmpty) bounds = _document.Settings.PageRect;
         if (bounds.IsEmpty || _cssWidth <= 0) return;
-        SetViewport(BinkViewport.Fit(bounds, ViewSize, padding));
+        BinkViewport fit = BinkViewport.Fit(bounds, ViewSize, padding, ZoomCeiling);
+        // A drawing too large for the view at the smallest zoom is shown at that zoom, centred.
+        if (fit.Zoom < ZoomFloor) fit = fit.ZoomTo(ZoomFloor, ViewSize / 2f);
+        SetViewport(fit);
         Announce("Zoomed to fit.");
     }
 
     /// <summary>Resets pan and zoom.</summary>
     public void ResetViewport() => SetViewport(BinkViewport.Identity);
 
-    /// <summary>Zooms around the center of the view.</summary>
-    public void ZoomBy(float factor) => SetViewport(_viewport.ZoomBy(factor, ViewSize / 2f));
+    /// <summary>Zooms around the center of the view, within <see cref="MinZoom"/> and <see cref="MaxZoom"/>.</summary>
+    public void ZoomBy(float factor) => SetViewport(_viewport.ZoomBy(factor, ViewSize / 2f, ZoomFloor, ZoomCeiling));
+
+    // A parameter set to nonsense (zero, a minimum above the maximum) must not produce a zoom that inverts the view.
+    private float ZoomFloor => MinZoom > 0 && float.IsFinite(MinZoom) ? MathF.Min(MinZoom, ZoomCeiling) : 0.05f;
+
+    private float ZoomCeiling => MaxZoom > 0 && float.IsFinite(MaxZoom) ? MaxZoom : 64f;
+
+    // ---- Clipboard and arrangement ----------------------------------------------------------------------------
+
+    /// <summary>The largest clipboard payload read, in bytes. A paste is untrusted input of any size.</summary>
+    private const long MaxPasteBytes = 32L * 1024 * 1024;
+
+    // What this canvas copied last. Kept per canvas, never statically: on Blazor Server a static would hand one
+    // user's drawing to every other user's paste.
+    private string? _clipboard;
+    private int _pasteCount;
+
+    /// <summary>
+    /// Copies the selected elements to the system clipboard, and keeps a copy for this canvas in case the browser
+    /// refuses the write. Returns false when nothing is selected.
+    /// </summary>
+    public async Task<bool> CopySelectionAsync()
+    {
+        string? payload = CopySelectionCore();
+        if (payload is null) return false;
+        await ProvideClipboardAsync(payload).ConfigureAwait(true);
+        Announce($"Copied {_selection.Count} elements.");
+        return true;
+    }
+
+    /// <summary>Copies the selected elements to the clipboard and deletes them, as one undoable step.</summary>
+    public async Task<bool> CutSelectionAsync()
+    {
+        if (ReadOnly) return false;
+        string? payload = CopySelectionCore();
+        if (payload is null) return false;
+        await ProvideClipboardAsync(payload).ConfigureAwait(true);
+        int count = _selection.Count;
+        _document.RemoveElements(_selection.Ids);
+        Announce($"Cut {count} elements.");
+        InvalidateAll();
+        return true;
+    }
+
+    private string? CopySelectionCore()
+    {
+        if (_selection.IsEmpty) return null;
+        // Bottom-most first, so a paste stacks the copies the way the originals were.
+        var ordered = new List<BinkElement>(_selection.Count);
+        foreach (BinkElement element in _document.AllElements) if (_selection.Contains(element.Id)) ordered.Add(element);
+        _clipboard = BinkClipboard.Serialize(ordered);
+        _pasteCount = 0;
+        return _clipboard;
+    }
+
+    private async Task ProvideClipboardAsync(string? payload)
+    {
+        if (_interop is null || _disposed) return;
+        try
+        {
+            await _interop.ProvideClipboardAsync(payload).ConfigureAwait(true);
+        }
+        catch (JSDisconnectedException)
+        {
+        }
+        catch (JSException)
+        {
+        }
+    }
+
+    /// <summary>
+    /// Pastes from the system clipboard, falling back to what this canvas copied last when the browser refuses to
+    /// read it. Use it for a paste button; Ctrl+V reaches the canvas without it when <see cref="EnableClipboard"/>
+    /// is on.
+    /// </summary>
+    /// <returns>The number of elements added.</returns>
+    public async Task<int> PasteAsync()
+    {
+        if (ReadOnly) return 0;
+        string? text = _interop is null ? null : await _interop.ReadClipboardAsync(MaxPasteBytes).ConfigureAwait(true);
+        if (_disposed) return 0;
+        return Paste(BinkClipboard.IsPayload(text) ? text! : _clipboard ?? string.Empty);
+    }
+
+    /// <summary>
+    /// Pastes copied elements onto the active layer and selects them, as one undoable step. A repeated paste of the
+    /// same copy steps down and to the right, and a paste that would land outside the view lands in its middle.
+    /// </summary>
+    /// <param name="payload">A <see cref="BinkClipboard"/> payload, or a whole saved document.</param>
+    /// <param name="position">Where the centre of the pasted content goes, in document units, or null.</param>
+    /// <returns>The number of elements added; zero when the payload is not Bink content or was refused.</returns>
+    public int Paste(string payload, Vector2? position = null)
+    {
+        if (ReadOnly || string.IsNullOrEmpty(payload)) return 0;
+        var options = new BinkDeserializerOptions { Limits = _document.Limits };
+        if (!BinkClipboard.TryDeserialize(payload, out IReadOnlyList<BinkElement> elements, out string? error, options) || elements.Count == 0)
+        {
+            if (error is not null) Announce("Nothing could be pasted: " + error);
+            return 0;
+        }
+
+        BinkRect bounds = BinkClipboard.Bounds(elements);
+        BinkRect visible = _viewport.VisibleRect(ViewSize);
+        Vector2 offset = Vector2.Zero;
+        if (position is { } at) offset = at - bounds.Center;
+        else
+        {
+            // The same copy pasted again steps away from the last one, a screen distance whatever the zoom.
+            if (payload == _clipboard) offset = new Vector2(++_pasteCount * 16f / _viewport.Zoom);
+            if (!visible.IsEmpty && !bounds.Offset(offset).Intersects(visible)) offset = visible.Center - bounds.Center;
+        }
+        elements = BinkClipboard.Offset(elements, offset);
+
+        Guid layer = ActiveLayer;
+        var ops = new List<BinkDrawingOperation>(elements.Count);
+        foreach (BinkElement element in elements) ops.Add(new BinkAddElementOperation(layer, element));
+        try
+        {
+            _document.Apply(new BinkBatchOperation(ops, "Paste"));
+        }
+        catch (InvalidOperationException ex)
+        {
+            Announce("Nothing could be pasted: " + ex.Message);
+            return 0;
+        }
+        _selection.Set(elements.Select(static e => e.Id));
+        Announce($"Pasted {elements.Count} elements.");
+        InvalidateAll();
+        return elements.Count;
+    }
+
+    /// <summary>
+    /// Duplicates the selected elements a short distance away and selects the copies, as one undoable step.
+    /// </summary>
+    /// <param name="offset">How far the copies move, in document units; null steps them down and to the right.</param>
+    /// <returns>The number of copies made.</returns>
+    public int DuplicateSelection(Vector2? offset = null)
+    {
+        if (ReadOnly || _selection.IsEmpty) return 0;
+        IReadOnlyList<BinkElement> copies;
+        try
+        {
+            copies = _document.DuplicateElements(_selection.Ids, offset ?? new Vector2(16f / _viewport.Zoom));
+        }
+        catch (InvalidOperationException ex)
+        {
+            Announce("The selection could not be duplicated: " + ex.Message);
+            return 0;
+        }
+        _selection.Set(copies.Select(static e => e.Id));
+        Announce($"Duplicated {copies.Count} elements.");
+        InvalidateAll();
+        return copies.Count;
+    }
+
+    /// <summary>Changes the stacking order of the selected elements within their layers, as one undoable step.</summary>
+    /// <returns>True when anything moved.</returns>
+    public bool ArrangeSelection(BinkArrangement arrangement)
+    {
+        if (ReadOnly || _selection.IsEmpty) return false;
+        if (!_document.Arrange(_selection.Ids, arrangement)) return false;
+        Announce(arrangement switch
+        {
+            BinkArrangement.BringToFront => "Brought to front.",
+            BinkArrangement.BringForward => "Brought forward.",
+            BinkArrangement.SendBackward => "Sent backward.",
+            _ => "Sent to back.",
+        });
+        InvalidateAll();
+        return true;
+    }
 
     /// <summary>
     /// Exports the drawing as SVG. This is synchronous work: SVG generation happens entirely in .NET and needs
@@ -347,16 +578,34 @@ public sealed partial class BinkCanvas : ComponentBase, IAsyncDisposable, IBinkI
     /// </summary>
     /// <param name="options">Region, scale and background.</param>
     /// <param name="cancellationToken">Cancels the export.</param>
-    public async Task<byte[]> ExportPngAsync(BinkPngExportOptions? options = null, CancellationToken cancellationToken = default)
+    public Task<byte[]> ExportPngAsync(BinkPngExportOptions? options = null, CancellationToken cancellationToken = default)
+        => ExportImageAsync(BinkImageFormat.Png, options, cancellationToken: cancellationToken);
+
+    /// <summary>
+    /// Exports the drawing as a PNG, JPEG or WebP image, encoded by the browser. JPEG has no transparency, so a
+    /// transparent background is exported as white.
+    /// </summary>
+    /// <param name="format">The image format.</param>
+    /// <param name="options">Region, scale and background.</param>
+    /// <param name="quality">Quality from 0 to 1 for JPEG and WebP; ignored for PNG.</param>
+    /// <param name="cancellationToken">Cancels the export.</param>
+    /// <exception cref="InvalidOperationException">A JPEG or WebP export was asked for before the browser layer attached; only PNG can be produced without it.</exception>
+    /// <exception cref="NotSupportedException">The browser cannot encode the format (Safari has no WebP encoder).</exception>
+    public async Task<byte[]> ExportImageAsync(BinkImageFormat format, BinkPngExportOptions? options = null, double quality = 0.92, CancellationToken cancellationToken = default)
     {
         options ??= BinkPngExportOptions.Default;
         // Without an attached surface the browser has nothing to render into: a failed or blocked attach would
         // otherwise return an empty array, or throw from the module, instead of using the managed rasterizer.
         if (_interop is null || !_attached)
         {
+            if (format != BinkImageFormat.Png) throw new InvalidOperationException("JPEG and WebP are encoded by the browser, which is not attached. Wait for the Ready event, or export a PNG.");
             return BinkPngExporter.Export(_document, options.Region == BinkExportRegion.Selection && options.SelectedIds is null
                 ? options with { SelectedIds = _selection.Ids }
                 : options);
+        }
+        if (format == BinkImageFormat.Jpeg && (options.Background ?? _document.Settings.Background).IsTransparent)
+        {
+            options = options with { Background = BinkColor.White };
         }
 
         BinkRect region = ResolveExportRegion(options);
@@ -384,8 +633,34 @@ public sealed partial class BinkCanvas : ComponentBase, IAsyncDisposable, IBinkI
             ElementFilter = filter is { Count: > 0 } ? filter : null,
         });
 
-        await EnsureImagesLoadedAsync(cancellationToken).ConfigureAwait(false);
-        return await _interop.RenderToImageAsync(width, height, context, "image/png", 1d, cancellationToken).ConfigureAwait(false);
+        await EnsureImagesLoadedAsync(cancellationToken).ConfigureAwait(true);
+        string mimeType = format switch
+        {
+            BinkImageFormat.Jpeg => "image/jpeg",
+            BinkImageFormat.Webp => "image/webp",
+            _ => "image/png",
+        };
+        byte[] bytes = await _interop.RenderToImageAsync(width, height, context, mimeType, Math.Clamp(quality, 0d, 1d), cancellationToken).ConfigureAwait(true);
+        // A browser that cannot encode a format quietly produces a PNG instead, which would then be saved or sent
+        // under the wrong name.
+        if (format != BinkImageFormat.Png && bytes is [0x89, (byte)'P', (byte)'N', (byte)'G', ..])
+            throw new NotSupportedException($"This browser cannot encode {format} images.");
+        return bytes;
+    }
+
+    /// <summary>Exports the drawing as an image and offers it to the user as a file download.</summary>
+    /// <exception cref="InvalidOperationException">The browser layer is not available, so nothing can be downloaded.</exception>
+    public async Task SaveImageAsync(string fileName, BinkImageFormat format, BinkPngExportOptions? options = null, double quality = 0.92, CancellationToken cancellationToken = default)
+    {
+        RequireBrowser();
+        byte[] bytes = await ExportImageAsync(format, options, quality, cancellationToken).ConfigureAwait(true);
+        string mimeType = format switch
+        {
+            BinkImageFormat.Jpeg => "image/jpeg",
+            BinkImageFormat.Webp => "image/webp",
+            _ => "image/png",
+        };
+        if (bytes.Length > 0) await _interop!.SaveFileAsync(fileName, bytes, mimeType).ConfigureAwait(true);
     }
 
     private BinkRect ResolveExportRegion(BinkPngExportOptions options)
@@ -403,8 +678,8 @@ public sealed partial class BinkCanvas : ComponentBase, IAsyncDisposable, IBinkI
     public async Task SavePngAsync(string fileName = "drawing.png", BinkPngExportOptions? options = null, CancellationToken cancellationToken = default)
     {
         RequireBrowser();
-        byte[] bytes = await ExportPngAsync(options, cancellationToken).ConfigureAwait(false);
-        if (bytes.Length > 0) await _interop!.SaveFileAsync(fileName, bytes, "image/png").ConfigureAwait(false);
+        byte[] bytes = await ExportPngAsync(options, cancellationToken).ConfigureAwait(true);
+        if (bytes.Length > 0) await _interop!.SaveFileAsync(fileName, bytes, "image/png").ConfigureAwait(true);
     }
 
     /// <summary>Exports the drawing as SVG and offers it to the user as a file download.</summary>
@@ -413,7 +688,7 @@ public sealed partial class BinkCanvas : ComponentBase, IAsyncDisposable, IBinkI
     {
         RequireBrowser();
         string svg = ExportSvg((options ?? BinkSvgExportOptions.Default) with { IncludeXmlDeclaration = true });
-        await _interop!.SaveFileAsync(fileName, System.Text.Encoding.UTF8.GetBytes(svg), "image/svg+xml").ConfigureAwait(false);
+        await _interop!.SaveFileAsync(fileName, System.Text.Encoding.UTF8.GetBytes(svg), "image/svg+xml").ConfigureAwait(true);
     }
 
     /// <summary>
@@ -446,7 +721,7 @@ public sealed partial class BinkCanvas : ComponentBase, IAsyncDisposable, IBinkI
         if (_interop is null || source.IsOmitted) return source;
         // Loaded even when the size is already known: the canvas can only draw an image the browser has
         // decoded, and loading it first means it appears with the element rather than a frame later.
-        BinkImageMetrics? metrics = await _interop.LoadImageAsync(source.Uri).ConfigureAwait(false);
+        BinkImageMetrics? metrics = await _interop.LoadImageAsync(source.Uri).ConfigureAwait(true);
         return metrics is not null && (source.Width == 0 || source.Height == 0) ? source.WithSize(metrics.Width, metrics.Height) : source;
     }
 
@@ -459,7 +734,7 @@ public sealed partial class BinkCanvas : ComponentBase, IAsyncDisposable, IBinkI
         ArgumentNullException.ThrowIfNull(source);
         if (ReadOnly) return null;
 
-        BinkImageSource resolved = await LoadImageAsync(source).ConfigureAwait(false);
+        BinkImageSource resolved = await LoadImageAsync(source).ConfigureAwait(true);
 
         Vector2 topLeft = position ?? _viewport.ToDocument(ViewSize / 2f);
         BinkImageElement element = BinkImageElement.AtNaturalSize(resolved, topLeft, maxWidth);
@@ -546,6 +821,8 @@ public sealed partial class BinkCanvas : ComponentBase, IAsyncDisposable, IBinkI
             }
         }
         if (_history.Limit != HistoryLimit) _history.Limit = HistoryLimit;
+        _touchGesture.MinZoom = ZoomFloor;
+        _touchGesture.MaxZoom = ZoomCeiling;
 
         // The browser layer was configured from these parameters at attach and acts on them synchronously inside
         // its own event handlers, so a change has to reach it too.
@@ -562,6 +839,9 @@ public sealed partial class BinkCanvas : ComponentBase, IAsyncDisposable, IBinkI
         HandleKeyboard = EnableKeyboardShortcuts,
         TrackHover = false,
         WetInk = WetInk ?? !OperatingSystem.IsBrowser(),
+        WheelMode = (int)WheelMode,
+        Clipboard = EnableClipboard && EnableKeyboardShortcuts,
+        Predict = PredictInk ?? OperatingSystem.IsBrowser(),
     };
 
     private async Task UpdateOptionsAsync()
@@ -572,7 +852,7 @@ public sealed partial class BinkCanvas : ComponentBase, IAsyncDisposable, IBinkI
         _optionsSent = options;
         try
         {
-            await _interop.SetOptionsAsync(options).ConfigureAwait(false);
+            await _interop.SetOptionsAsync(options).ConfigureAwait(true);
         }
         catch (JSDisconnectedException)
         {
@@ -591,14 +871,14 @@ public sealed partial class BinkCanvas : ComponentBase, IAsyncDisposable, IBinkI
         if (firstRender)
         {
             _firstRenderDone = true;
-            await AttachAsync().ConfigureAwait(false);
+            await AttachAsync().ConfigureAwait(true);
         }
         if (_focusTextEditor && _textEditor is not null)
         {
             _focusTextEditor = false;
             try
             {
-                await _textEditorElement.FocusAsync().ConfigureAwait(false);
+                await _textEditorElement.FocusAsync().ConfigureAwait(true);
             }
             catch (JSDisconnectedException)
             {
@@ -617,7 +897,7 @@ public sealed partial class BinkCanvas : ComponentBase, IAsyncDisposable, IBinkI
         {
             BinkInteropOptions options = BuildInteropOptions();
             _optionsSent = options;
-            BinkAttachResult? result = await _interop.AttachAsync(_container, options).ConfigureAwait(false);
+            BinkAttachResult? result = await _interop.AttachAsync(_container, options).ConfigureAwait(true);
             if (_disposed) return;
 
             // A host that cannot run the module (a blocked script, a prerender pass, a test double) reports
@@ -634,17 +914,17 @@ public sealed partial class BinkCanvas : ComponentBase, IAsyncDisposable, IBinkI
             _devicePixelRatio = result.DevicePixelRatio <= 0 ? 1 : result.DevicePixelRatio;
             _attached = true;
 
-            await _interop.SetSizeAsync(_cssWidth, _cssHeight, _devicePixelRatio).ConfigureAwait(false);
+            await _interop.SetSizeAsync(_cssWidth, _cssHeight, _devicePixelRatio).ConfigureAwait(true);
             if (_disposed) return;
-            await _interop.SetCursorAsync(_cursor).ConfigureAwait(false);
+            await _interop.SetCursorAsync(_cursor).ConfigureAwait(true);
             // Parameters that changed while the attach was in flight were not sent, because it had not finished.
-            await UpdateOptionsAsync().ConfigureAwait(false);
-            await UpdateWetInkStyleAsync().ConfigureAwait(false);
+            await UpdateOptionsAsync().ConfigureAwait(true);
+            await UpdateWetInkStyleAsync().ConfigureAwait(true);
             if (_disposed) return;
             InvalidateAll();
-            await RenderDirtyAsync().ConfigureAwait(false);
+            await RenderDirtyAsync().ConfigureAwait(true);
 
-            if (Ready.HasDelegate) await Ready.InvokeAsync(_capabilities).ConfigureAwait(false);
+            if (Ready.HasDelegate) await Ready.InvokeAsync(_capabilities).ConfigureAwait(true);
         }
         catch (JSDisconnectedException)
         {
@@ -661,7 +941,7 @@ public sealed partial class BinkCanvas : ComponentBase, IAsyncDisposable, IBinkI
             // The module failed to load or threw. Drawing is unavailable, but the application keeps running.
             AttachFailed = ex.Message;
             _capabilities = BinkInputCapabilities.None;
-            await ReportUnavailableAsync(ex.Message).ConfigureAwait(false);
+            await ReportUnavailableAsync(ex.Message).ConfigureAwait(true);
         }
     }
 
@@ -679,7 +959,7 @@ public sealed partial class BinkCanvas : ComponentBase, IAsyncDisposable, IBinkI
             {
                 StateHasChanged();
                 if (Unavailable.HasDelegate) await Unavailable.InvokeAsync(reason).ConfigureAwait(true);
-            }).ConfigureAwait(false);
+            }).ConfigureAwait(true);
         }
         catch (ObjectDisposedException)
         {
@@ -766,7 +1046,7 @@ public sealed partial class BinkCanvas : ComponentBase, IAsyncDisposable, IBinkI
             {
                 try
                 {
-                    await raise().ConfigureAwait(false);
+                    await raise().ConfigureAwait(true);
                 }
                 catch (ObjectDisposedException)
                 {
@@ -801,7 +1081,7 @@ public sealed partial class BinkCanvas : ComponentBase, IAsyncDisposable, IBinkI
     {
         if (_cursor == cursor) return;
         _cursor = cursor;
-        if (_interop is not null) await _interop.SetCursorAsync(cursor).ConfigureAwait(false);
+        if (_interop is not null) await _interop.SetCursorAsync(cursor).ConfigureAwait(true);
     }
 
     private Guid ActiveLayer
@@ -836,6 +1116,13 @@ public sealed partial class BinkCanvas : ComponentBase, IAsyncDisposable, IBinkI
             if (offset + stride > data.Length) break;
             BinkInputSample sample = BinkInputSample.ReadFrom(data.Slice(offset, stride));
             _capabilities = _capabilities.Observe(sample);
+            if (sample.IsPredicted)
+            {
+                // Only a drawing tool knows a prediction from a measured point. Anything else, a gesture included,
+                // would act on where the pointer is not.
+                if (!toolBlocked && !_gestureRouting && _activeTool is BinkDrawTool) _activeTool.OnPointerMove(_toolContext, sample);
+                continue;
+            }
             // A tool that does not want intermediate samples still needs the last one before an up event,
             // so only interior coalesced move samples are dropped.
             if (!wantsAll && sample.IsCoalesced && sample.Phase == BinkPointerPhase.Move && i < count - 1) continue;
@@ -991,19 +1278,29 @@ public sealed partial class BinkCanvas : ComponentBase, IAsyncDisposable, IBinkI
         InvalidateAll();
     }
 
+    void IBinkInteropClient.OnResourcesLost()
+    {
+        if (_disposed) return;
+        // A frame referred to a path or string the browser does not hold. That should never happen, but a frame
+        // that silently drew nothing for it would be worse than a full redraw that defines everything again.
+        _resources.Clear();
+        InvalidateAll();
+    }
+
     private async Task ResizeAsync()
     {
         if (_interop is null || _disposed) return;
-        await _interop.SetSizeAsync(_cssWidth, _cssHeight, _devicePixelRatio).ConfigureAwait(false);
+        await _interop.SetSizeAsync(_cssWidth, _cssHeight, _devicePixelRatio).ConfigureAwait(true);
         InvalidateAll();
-        await RenderDirtyAsync().ConfigureAwait(false);
+        await RenderDirtyAsync().ConfigureAwait(true);
     }
 
     void IBinkInteropClient.OnKey(string key, bool ctrl, bool shift, bool alt)
     {
         if (_disposed || !EnableKeyboardShortcuts) return;
 
-        // A read-only canvas still pans and zooms, so the view shortcuts stay live; only editing is refused.
+        // A read-only canvas still pans and zooms, so the view shortcuts stay live; only editing is refused. Copying
+        // changes nothing, so it stays live too.
         if (ReadOnly)
         {
             switch (key)
@@ -1012,6 +1309,8 @@ public sealed partial class BinkCanvas : ComponentBase, IAsyncDisposable, IBinkI
                 case "9" when ctrl: ZoomToFit(); break;
                 case "+" or "=" when ctrl: ZoomBy(1.25f); break;
                 case "-" when ctrl: ZoomBy(0.8f); break;
+                case "c" or "C" when ctrl && !alt: _ = CopyFromKeyboardAsync(); break;
+                case "x" or "X" when ctrl && !alt: _ = ProvideClipboardAsync(null); break;
                 case "Escape": _selection.Clear(); break;
                 default: return;
             }
@@ -1056,11 +1355,142 @@ public sealed partial class BinkCanvas : ComponentBase, IAsyncDisposable, IBinkI
             case "-" when ctrl:
                 ZoomBy(0.8f);
                 break;
+            case "c" or "C" when ctrl && !alt:
+                _ = CopyFromKeyboardAsync();
+                break;
+            case "x" or "X" when ctrl && !alt:
+                _ = CutFromKeyboardAsync();
+                break;
+            case "d" or "D" when ctrl && !alt:
+                DuplicateSelection();
+                break;
+            // Shift turns ] and [ into } and { on most layouts, so both spellings are matched.
+            case "]" or "}" when ctrl:
+                ArrangeSelection(shift || key == "}" ? BinkArrangement.BringToFront : BinkArrangement.BringForward);
+                break;
+            case "[" or "{" when ctrl:
+                ArrangeSelection(shift || key == "{" ? BinkArrangement.SendToBack : BinkArrangement.SendBackward);
+                break;
             default:
                 return;
         }
 
         _ = RenderDirtyAsync();
+    }
+
+    // The browser layer opened a clipboard write for this key press and waits for the payload; it has to be settled
+    // either way, or the write would hang until it times out.
+    private Task CopyFromKeyboardAsync()
+    {
+        if (!EnableClipboard) return Task.CompletedTask;
+        string? payload = CopySelectionCore();
+        if (payload is not null) Announce($"Copied {_selection.Count} elements.");
+        return ProvideClipboardAsync(payload);
+    }
+
+    private async Task CutFromKeyboardAsync()
+    {
+        if (!EnableClipboard) return;
+        string? payload = CopySelectionCore();
+        await ProvideClipboardAsync(payload).ConfigureAwait(true);
+        if (payload is null || _disposed) return;
+        int count = _selection.Count;
+        _document.RemoveElements(_selection.Ids);
+        Announce($"Cut {count} elements.");
+        InvalidateAll();
+    }
+
+    void IBinkInteropClient.OnWheel(float panX, float panY, float zoom, float x, float y)
+    {
+        if (_disposed || WheelMode == BinkWheelMode.None) return;
+        BinkViewport viewport = _viewport;
+        if (panX != 0 || panY != 0) viewport = viewport.Pan(new Vector2(-panX, -panY));
+        if (zoom != 0) viewport = viewport.ZoomBy(MathF.Exp(zoom), new Vector2(x, y), ZoomFloor, ZoomCeiling);
+        SetViewport(viewport);
+        _ = RenderDirtyAsync();
+    }
+
+    async Task IBinkInteropClient.OnPasteAsync(string kind, string? text, IJSStreamReference? data, string? mediaType)
+    {
+        if (_disposed || ReadOnly || !EnableClipboard)
+        {
+            if (data is not null) await data.DisposeAsync().ConfigureAwait(true);
+            return;
+        }
+        try
+        {
+            switch (kind)
+            {
+                case "image" when data is not null:
+                {
+                    byte[] bytes = await BinkInterop.ReadBytesAsync(data, MaxPasteBytes).ConfigureAwait(true);
+                    if (_disposed) return;
+                    BinkImageSource source;
+                    try
+                    {
+                        // Raster types only: an SVG is a document that can reference other resources.
+                        source = BinkImageSource.FromBytes(bytes, (mediaType ?? string.Empty).ToLowerInvariant(), 0, 0);
+                    }
+                    catch (ArgumentException)
+                    {
+                        Announce("That image type cannot be pasted.");
+                        return;
+                    }
+                    await InvokeAsync(() => AddImageAsync(source)).ConfigureAwait(true);
+                    return;
+                }
+                case "bink" or "text":
+                {
+                    string content = data is not null ? await BinkInterop.ReadTextAsync(data, MaxPasteBytes).ConfigureAwait(true) : text ?? string.Empty;
+                    if (_disposed) return;
+                    await InvokeAsync(() => PasteText(content)).ConfigureAwait(true);
+                    return;
+                }
+                default:
+                    if (data is not null) await data.DisposeAsync().ConfigureAwait(true);
+                    await InvokeAsync(() => Paste(_clipboard ?? string.Empty)).ConfigureAwait(true);
+                    return;
+            }
+        }
+        catch (IOException)
+        {
+            Announce("That is too large to paste.");
+        }
+        catch (JSDisconnectedException)
+        {
+        }
+    }
+
+    private async Task PasteText(string content)
+    {
+        if (BinkClipboard.IsPayload(content))
+        {
+            Paste(content);
+            return;
+        }
+        if (string.IsNullOrWhiteSpace(content)) return;
+        if (TextPasted.HasDelegate)
+        {
+            await TextPasted.InvokeAsync(content).ConfigureAwait(true);
+            return;
+        }
+        // Plain text becomes a text element in the middle of the view, styled like the text tool's when it is active.
+        if (content.Length > BinkTextElement.MaxLength) content = content[..BinkTextElement.MaxLength];
+        BinkTextStyle style = _activeTool is BinkTextTool textTool ? textTool.Style : BinkTextStyle.Default with { Color = _brush.Color };
+        var element = new BinkTextElement(_viewport.ToDocument(ViewSize / 2f), content) { Style = style };
+        element = element with { Position = element.Position - element.LocalBounds.Size / 2f };
+        try
+        {
+            _document.AddElement(element, ActiveLayer);
+        }
+        catch (InvalidOperationException ex)
+        {
+            Announce("The text could not be pasted: " + ex.Message);
+            return;
+        }
+        _selection.Set(element.Id);
+        Announce("Text pasted.");
+        InvalidateAll();
     }
 
     // ---- Text editing --------------------------------------------------------------------------------------------
@@ -1140,7 +1570,7 @@ public sealed partial class BinkCanvas : ComponentBase, IAsyncDisposable, IBinkI
         _ = InvokeAsync(async () =>
         {
             StateHasChanged();
-            await RestoreFocusAsync().ConfigureAwait(false);
+            await RestoreFocusAsync().ConfigureAwait(true);
         });
     }
 
@@ -1153,7 +1583,7 @@ public sealed partial class BinkCanvas : ComponentBase, IAsyncDisposable, IBinkI
         if (_disposed || !Focusable || !_attached) return;
         try
         {
-            await _container.FocusAsync(preventScroll: true).ConfigureAwait(false);
+            await _container.FocusAsync(preventScroll: true).ConfigureAwait(true);
         }
         catch (JSDisconnectedException)
         {
@@ -1191,22 +1621,22 @@ public sealed partial class BinkCanvas : ComponentBase, IAsyncDisposable, IBinkI
 
     private async Task CommitTextAsync(BinkTextTool tool, string value)
     {
-        Vector2? measured = await MeasureTextAsync(value, tool).ConfigureAwait(false);
+        Vector2? measured = await MeasureTextAsync(value, tool).ConfigureAwait(true);
         // Measuring is a browser round trip. On Blazor Server the user can navigate away during it, and writing
         // to a disposed document and history manager afterwards would throw on a fire-and-forget task.
         if (_disposed) return;
         tool.CommitEdit(_toolContext, value, measured);
         _textEditor = null;
         _uiDirty = true;
-        await RenderDirtyAsync().ConfigureAwait(false);
-        await RestoreFocusAsync().ConfigureAwait(false);
+        await RenderDirtyAsync().ConfigureAwait(true);
+        await RestoreFocusAsync().ConfigureAwait(true);
     }
 
     private async Task<Vector2?> MeasureTextAsync(string text, BinkTextTool tool)
     {
         if (_interop is null || string.IsNullOrEmpty(text) || tool.Editing is null) return null;
         BinkTextStyle style = tool.Editing.Style;
-        BinkTextMetrics? metrics = await _interop.MeasureTextAsync(text, BinkCanvasRenderContext.ToCssFont(style)).ConfigureAwait(false);
+        BinkTextMetrics? metrics = await _interop.MeasureTextAsync(text, BinkCanvasRenderContext.ToCssFont(style)).ConfigureAwait(true);
         if (metrics is null) return null;
         return new Vector2((float)metrics.Width, Math.Max(metrics.Lines, 1) * style.FontSize * style.LineHeight);
     }
@@ -1231,7 +1661,7 @@ public sealed partial class BinkCanvas : ComponentBase, IAsyncDisposable, IBinkI
         _ = InvokeAsync(async () =>
         {
             _renderScheduled = false;
-            await RenderDirtyAsync().ConfigureAwait(false);
+            await RenderDirtyAsync().ConfigureAwait(true);
         });
     }
 
@@ -1249,7 +1679,7 @@ public sealed partial class BinkCanvas : ComponentBase, IAsyncDisposable, IBinkI
             _overlayDirty = false;
             if (!_uiDirty) return;
             _uiDirty = false;
-            await InvokeAsync(StateHasChanged).ConfigureAwait(false);
+            await InvokeAsync(StateHasChanged).ConfigureAwait(true);
             return;
         }
 
@@ -1259,20 +1689,20 @@ public sealed partial class BinkCanvas : ComponentBase, IAsyncDisposable, IBinkI
             {
                 _documentDirty = false;
                 RecordDocument();
-                await _interop.ExecuteAsync(BinkCanvasLayer.Document, _documentContext).ConfigureAwait(false);
+                await _interop.ExecuteAsync(BinkCanvasLayer.Document, _documentContext).ConfigureAwait(true);
             }
             if (_overlayDirty)
             {
                 _overlayDirty = false;
                 RecordOverlay();
-                await _interop.ExecuteAsync(BinkCanvasLayer.Overlay, _overlayContext).ConfigureAwait(false);
+                await _interop.ExecuteAsync(BinkCanvasLayer.Overlay, _overlayContext).ConfigureAwait(true);
             }
             if (_selectionActiveSent != !_selection.IsEmpty)
             {
                 // The browser layer decides synchronously, inside the key event, whether Delete and the arrow
                 // keys belong to the canvas or to the page. It can only do that if it knows about the selection.
                 _selectionActiveSent = !_selection.IsEmpty;
-                await _interop.SetSelectionActiveAsync(_selectionActiveSent).ConfigureAwait(false);
+                await _interop.SetSelectionActiveAsync(_selectionActiveSent).ConfigureAwait(true);
             }
             if (_uiDirty)
             {
@@ -1304,6 +1734,7 @@ public sealed partial class BinkCanvas : ComponentBase, IAsyncDisposable, IBinkI
 
         BinkRect visible = _viewport.VisibleRect(ViewSize);
         BinkDocumentRenderer.Render(_document, context, new BinkRenderOptions { ClipBounds = visible });
+        context.EndFrame();
     }
 
     private void RecordOverlay()
@@ -1331,7 +1762,7 @@ public sealed partial class BinkCanvas : ComponentBase, IAsyncDisposable, IBinkI
         _wetInkSent = (color, width, opacity);
         try
         {
-            await _interop.SetWetInkStyleAsync(color, width, opacity).ConfigureAwait(false);
+            await _interop.SetWetInkStyleAsync(color, width, opacity).ConfigureAwait(true);
         }
         catch (JSDisconnectedException)
         {
@@ -1349,7 +1780,7 @@ public sealed partial class BinkCanvas : ComponentBase, IAsyncDisposable, IBinkI
         if (_interop is null) return;
         foreach (BinkElement element in _document.AllElements)
         {
-            if (element is BinkImageElement { Source.IsOmitted: false } image) await _interop.LoadImageAsync(image.Source.Uri, cancellationToken).ConfigureAwait(false);
+            if (element is BinkImageElement { Source.IsOmitted: false } image) await _interop.LoadImageAsync(image.Source.Uri, cancellationToken).ConfigureAwait(true);
         }
     }
 
@@ -1410,7 +1841,7 @@ public sealed partial class BinkCanvas : ComponentBase, IAsyncDisposable, IBinkI
             _selection.Changed -= OnSelectionChanged;
             _selection.Dispose();
         }
-        if (_interop is not null) await _interop.DisposeAsync().ConfigureAwait(false);
+        if (_interop is not null) await _interop.DisposeAsync().ConfigureAwait(true);
         _interop = null;
     }
 
@@ -1436,6 +1867,8 @@ public sealed partial class BinkCanvas : ComponentBase, IAsyncDisposable, IBinkI
         public BinkShapeStyle ShapeStyle => canvas._shapeStyle;
 
         public Vector2 ViewSize => canvas.ViewSize;
+
+        public BinkSnapOptions Snapping => canvas.Snapping ?? BinkSnapOptions.None;
 
         public void InvalidateOverlay()
         {
@@ -1466,3 +1899,31 @@ public sealed partial class BinkCanvas : ComponentBase, IAsyncDisposable, IBinkI
 /// <param name="Stroke">The stroke, once it exists. Null when a stroke has only just started.</param>
 /// <param name="Device">The device that drew it.</param>
 public readonly record struct BinkStrokeEventArgs(BinkStroke? Stroke, BinkPointerKind Device);
+
+/// <summary>What the mouse wheel and a trackpad do over a <see cref="BinkCanvas"/>.</summary>
+public enum BinkWheelMode : byte
+{
+    /// <summary>Nothing: the page scrolls as usual. Right for a canvas embedded in a form.</summary>
+    None = 0,
+
+    /// <summary>
+    /// The wheel and two-finger trackpad scrolling pan the view; Ctrl (Command on macOS) with the wheel, and a
+    /// trackpad pinch, zoom around the pointer. Shift with the wheel pans sideways. This is the convention of design
+    /// tools and whiteboards.
+    /// </summary>
+    PanAndZoom = 1,
+
+    /// <summary>The wheel zooms around the pointer; Shift with the wheel pans. This is the convention of maps.</summary>
+    Zoom = 2,
+}
+
+/// <summary>An image format the browser encodes for <see cref="BinkCanvas.ExportImageAsync"/>.</summary>
+public enum BinkImageFormat : byte
+{
+    /// <summary>Lossless, with transparency. Also available without a browser, through <see cref="BinkPngExporter"/>.</summary>
+    Png = 0,
+    /// <summary>Lossy and small, without transparency.</summary>
+    Jpeg = 1,
+    /// <summary>Lossy or lossless with transparency. Not encoded by Safari.</summary>
+    Webp = 2,
+}

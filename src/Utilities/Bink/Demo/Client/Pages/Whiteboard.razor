@@ -110,9 +110,22 @@
     <div class="bb-toolbar bink-toolbar" role="toolbar" aria-label="Selection">
         <div class="bink-group" role="group" aria-label="Arrange">
             <button type="button" class="btn btn-secondary" disabled="@_document.IsEmpty" title="Select all (Ctrl+A)" @onclick="SelectAll">Select all</button>
-            <button type="button" class="btn btn-secondary" disabled="@(!HasSelection)" title="Duplicate (Ctrl+D)" @onclick="Duplicate">Duplicate</button>
-            <button type="button" class="btn btn-secondary" disabled="@(!HasSelection)" @onclick="() => Arrange(toFront: true)">Bring to front</button>
-            <button type="button" class="btn btn-secondary" disabled="@(!HasSelection)" @onclick="() => Arrange(toFront: false)">Send to back</button>
+            <button type="button" class="btn btn-secondary" disabled="@(!HasSelection)" title="Copy (Ctrl+C)" @onclick="CopyAsync">Copy</button>
+            <button type="button" class="btn btn-secondary" title="Paste (Ctrl+V)" @onclick="PasteAsync">Paste</button>
+            <button type="button" class="btn btn-secondary" disabled="@(!HasSelection)" title="Duplicate (Ctrl+D), or Alt-drag" @onclick="Duplicate">Duplicate</button>
+            <button type="button" class="btn btn-secondary" disabled="@(!HasSelection)" title="Bring to front (Ctrl+Shift+])" @onclick="() => Arrange(BinkArrangement.BringToFront)">Bring to front</button>
+            <button type="button" class="btn btn-secondary" disabled="@(!HasSelection)" title="Send to back (Ctrl+Shift+[)" @onclick="() => Arrange(BinkArrangement.SendToBack)">Send to back</button>
+        </div>
+        <span class="bink-sep" aria-hidden="true"></span>
+        <div class="bink-group" role="group" aria-label="Selection options">
+            <label class="bb-check" title="Drag a freehand loop instead of a rectangle. Alt switches while dragging.">
+                <input type="checkbox" checked="@_lasso" @onchange="OnLassoChanged" />
+                Lasso
+            </label>
+            <label class="bb-check" title="Line edges and centres up with other elements, and with a 20 unit grid">
+                <input type="checkbox" checked="@_snap" @onchange="e => _snap = e.Value is true" />
+                Snap
+            </label>
             <button type="button" class="btn btn-secondary bink-danger" disabled="@(!HasSelection)" title="Delete" @onclick="() => _canvas?.DeleteSelection()">Delete</button>
         </div>
         @if (_message is not null)
@@ -130,6 +143,9 @@
                    ShapeStyle="_shapeStyle"
                    ActiveLayerId="_activeLayer"
                    EnableTouchGestures="true"
+                   WheelMode="BinkWheelMode.PanAndZoom"
+                   EnableClipboard="true"
+                   Snapping="@(_snap ? SnapOptions : null)"
                    AriaLabel="Whiteboard"
                    DocumentChanged="() => StateHasChanged()"
                    HistoryChanged="() => StateHasChanged()"
@@ -178,18 +194,18 @@
     <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Transforms, not rewrites</h3>
     <p class="bb-card-desc">
         Moving, resizing and rotating only change each element's transform, so the vector data is never rewritten
-        and undo restores it exactly. Edits the page makes itself - duplicating, bringing to front - go through the
-        same document API, grouped into one undo step with <code>BeginBatch</code>.
+        and undo restores it exactly. Duplicating, copying and pasting, and changing the stacking order are canvas
+        commands with the usual shortcuts (Ctrl+D, Ctrl+C, Ctrl+V, Ctrl+] and Ctrl+[), each one undo step. The
+        wheel pans, Ctrl+wheel or a trackpad pinch zooms, and with Snap on a drag lines up with its neighbours.
     </p>
-    <pre class="bb-code"><span class="k">using</span> (_document.BeginBatch(<span class="s">"Duplicate"</span>))
-{
-    <span class="k">foreach</span> (BinkElement element <span class="k">in</span> _canvas.Selection.Elements.ToList())
-    {
-        Guid? layer = _document.GetLayerOf(element.Id)?.Id;
-        BinkElement copy = element.Translate(<span class="k">new</span> Vector2(16f, 16f)) <span class="k">with</span> { Id = Guid.NewGuid(), Version = 0 };
-        _document.AddElement(copy, layer);
-    }
-}</pre>
+    <pre class="bb-code">&lt;BinkCanvas WheelMode=<span class="s">"BinkWheelMode.PanAndZoom"</span>
+            EnableClipboard=<span class="s">"true"</span>
+            Snapping=<span class="s">"new BinkSnapOptions { GridSize = 20f }"</span> /&gt;
+
+_canvas.DuplicateSelection();
+_canvas.ArrangeSelection(BinkArrangement.BringToFront);
+<span class="k">await</span> _canvas.CopySelectionAsync();
+<span class="k">await</span> _canvas.PasteAsync();</pre>
 </div>
 
 @code {
@@ -205,6 +221,9 @@
     private BinkBrush _brush = new BinkPenBrush { Width = 4f, Color = BinkColor.Parse("#111827") };
     private BinkShapeStyle _shapeStyle = new() { StrokeColor = BinkColor.Parse("#111827"), StrokeWidth = 3f };
     private string? _message;
+    private bool _lasso;
+    private bool _snap = true;
+    private static readonly BinkSnapOptions SnapOptions = new() { GridSize = 20f };
 
     private static readonly (string Id, string Label, string Title)[] ToolButtons =
     [
@@ -257,7 +276,7 @@
         switch (id)
         {
             case "select":
-                _tool = new BinkSelectTool();
+                _tool = new BinkSelectTool { MarqueeShape = _lasso ? BinkMarqueeShape.Lasso : BinkMarqueeShape.Rectangle };
                 break;
             case "draw":
                 _brush = new BinkPenBrush { Width = _width, Color = color };
@@ -366,41 +385,31 @@
         _canvas?.SelectAll();
     }
 
+    private void OnLassoChanged(ChangeEventArgs e)
+    {
+        _lasso = e.Value is true;
+        if (_toolId == "select") SelectTool("select");
+    }
+
     /// <summary>Copies the selection, offset so the copy is visible, and selects the copy.</summary>
     private void Duplicate()
     {
-        if (_canvas is null || _canvas.Selection.IsEmpty) return;
-        var copies = new List<Guid>();
-        using (_document.BeginBatch("Duplicate"))
-        {
-            foreach (BinkElement element in _canvas.Selection.Elements.ToList())
-            {
-                Guid? layer = _document.GetLayerOf(element.Id)?.Id;
-                BinkElement copy = element.Translate(new Vector2(16f, 16f)) with { Id = Guid.NewGuid(), Version = 0 };
-                _document.AddElement(copy, layer);
-                copies.Add(copy.Id);
-            }
-        }
-        _canvas.Selection.Set(copies);
-        _message = copies.Count == 1 ? "Duplicated 1 element." : $"Duplicated {copies.Count} elements.";
+        int count = _canvas?.DuplicateSelection() ?? 0;
+        if (count > 0) _message = count == 1 ? "Duplicated 1 element." : $"Duplicated {count} elements.";
     }
 
-    /// <summary>Moves the selection to the top or bottom of its layer, keeping the selected elements' own order.</summary>
-    private void Arrange(bool toFront)
+    /// <summary>Moves the selection within its layer, keeping the selected elements' own order.</summary>
+    private void Arrange(BinkArrangement arrangement) => _canvas?.ArrangeSelection(arrangement);
+
+    private async Task CopyAsync()
     {
-        if (_canvas is null || _canvas.Selection.IsEmpty) return;
-        // Work in document order so the selected elements keep their relative stacking.
-        List<BinkElement> ordered = _document.AllElements.Where(e => _canvas.Selection.Contains(e.Id)).ToList();
-        if (!toFront) ordered.Reverse();
-        using (_document.BeginBatch(toFront ? "Bring to front" : "Send to back"))
-        {
-            foreach (BinkElement element in ordered)
-            {
-                if (_document.GetLayerOf(element.Id) is not { } layer) continue;
-                _document.Apply(new BinkReorderElementOperation(element.Id, layer.Id, toFront ? null : 0));
-            }
-        }
-        _canvas.Refresh();
+        if (_canvas is not null && await _canvas.CopySelectionAsync()) _message = $"Copied {_canvas.Selection.Count} elements. Paste them here, or into another board.";
+    }
+
+    private async Task PasteAsync()
+    {
+        int count = _canvas is null ? 0 : await _canvas.PasteAsync();
+        _message = count > 0 ? $"Pasted {count} elements." : "Nothing to paste: copy something first.";
     }
 
     private async Task SaveAsync()

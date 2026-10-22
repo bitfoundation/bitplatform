@@ -99,7 +99,9 @@ public sealed class BinkEraserTool : BinkDrawTool
     {
         ArgumentNullException.ThrowIfNull(context);
         if (_activeMode == BinkEraserMode.Pixel) { base.OnPointerMove(context, sample); return; }
-        if (!_erasing || sample.PointerId != _pointerId) return;
+        // A prediction may only ever be drawn. Erasing where the pointer is expected to be would delete ink the
+        // user never touched.
+        if (sample.IsPredicted || !_erasing || sample.PointerId != _pointerId) return;
         Vector2 p = context.Viewport.ToDocument(sample.Position);
         // Keep the swept path short: only the newest segment is needed for each erase pass.
         if (_path.Count > 0 && Vector2.DistanceSquared(_path[^1], p) < 0.01f) return;
@@ -216,6 +218,10 @@ public sealed class BinkEraserTool : BinkDrawTool
     private bool HitsElement(BinkElement element, ReadOnlySpan<Vector2> segment)
     {
         if (!element.IsSelectable) return false;
+        // A stroke is tested exactly: the segment eraser computes where the swept circle meets the ink, in document
+        // space and under any transform, so "would it cut anything" is the precise answer. Sampling the swipe
+        // instead let a fast drag step over a thin stroke between two samples.
+        if (element is BinkStroke stroke) return BinkStrokeEditor.EraseSegments(stroke, segment, Radius, _fragments);
         foreach (Vector2 p in segment)
         {
             if (element.HitTest(p, Radius)) return true;
