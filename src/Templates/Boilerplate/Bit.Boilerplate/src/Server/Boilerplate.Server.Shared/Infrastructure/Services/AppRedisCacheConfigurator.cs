@@ -44,7 +44,7 @@ public class AppRedisCacheConfigurator(
     public void PostConfigure(string? name, RedisOptions options)
     {
         // Redis backplane for SignalR, used for scaling out SignalR across multiple server instances.
-        options.ConnectionFactory = async _ => redisCacheConnectionMultiplexer;
+        options.ConnectionFactory = async writer => await ConnectionMultiplexer.ConnectAsync(redisCacheConnectionMultiplexer.Configuration, writer);
     }
     //#endif
 }
