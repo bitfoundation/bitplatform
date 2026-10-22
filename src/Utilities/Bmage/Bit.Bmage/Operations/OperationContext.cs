@@ -9,19 +9,26 @@ namespace Bit.Bmage.Operations;
 public sealed class OperationContext
 {
     /// <summary>
-    /// How many threads an operation uses when nothing else is configured: every processor where .NET has threads, and
-    /// one in the browser.
+    /// How many threads an operation uses when nothing else is configured: one, the thread that runs it.
     /// </summary>
     /// <remarks>
+    /// <para>
+    /// Spreading rows over more threads is opted into, by setting <see cref="BitBmageOptions.MaxDegreeOfParallelism"/>,
+    /// <see cref="Pipeline.ImageProcessor.MaxDegreeOfParallelism"/>,
+    /// <see cref="Pipeline.PipelineExecutionOptions.MaxDegreeOfParallelism"/> or the context's own. A server already
+    /// runs requests, batch items and editor circuits side by side, and every one of them fanning out over every core
+    /// would multiply the threads it competes for and hold a thread-pool thread waiting on each run; a desktop app, a
+    /// command-line tool or a background job processing one image at a time is where more threads pay.
+    /// </para>
+    /// <para>
     /// Blazor WebAssembly runs .NET on the page's own thread unless the application is built with
-    /// <c>WasmEnableThreads</c>, and waiting for work handed to another thread is not possible there, so the browser
-    /// default is one. An application built with threads opts in by setting
-    /// <see cref="BitBmageOptions.MaxDegreeOfParallelism"/> or <see cref="Pipeline.PipelineExecutionOptions.MaxDegreeOfParallelism"/>.
+    /// <c>WasmEnableThreads</c>, and waiting for work handed to another thread is not possible there; only an
+    /// application built with threads should set more than one.
+    /// </para>
     /// </remarks>
-    public static int DefaultMaxDegreeOfParallelism { get; } = OperatingSystem.IsBrowser() ? 1 : Math.Max(1, Environment.ProcessorCount);
+    public const int DefaultMaxDegreeOfParallelism = 1;
 
-    /// <summary>A default context using the shared pooled allocator, default limits, no cancellation and no progress.</summary>
-    /// <remarks>Declared after <see cref="DefaultMaxDegreeOfParallelism"/>, which its constructor reads.</remarks>
+    /// <summary>A default context using the shared pooled allocator, default limits, one thread, no cancellation and no progress.</summary>
     public static OperationContext Default { get; } = new();
 
     public OperationContext(

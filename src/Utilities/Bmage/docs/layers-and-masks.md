@@ -25,8 +25,9 @@ edit alone produces, and in between they mix by the coverage, in premultiplied a
 
 It is also cheap. A run of adjustments through a mask is fused into one pass, as it is without a mask, and that pass
 only visits the rows and columns the mask can reach: darkening the top third of a photo through a gradient costs a
-third of darkening all of it, and the rows below are never loaded. An edit that reads its neighbours, such as a blur,
-runs over the whole image and is blended back by the mask.
+third of darkening all of it, and the rows below are never loaded. The built-in masks are drawn only over that area too,
+plus what their feather reaches into it, with exactly the values the whole mask has there. An edit that reads its
+neighbours, such as a blur, runs over the whole image and is blended back by the mask.
 
 The edit must keep the image's size. A crop or a resize has no pixel-for-pixel relationship with the original to blend
 by, so `MaskedOperation` refuses it with an `ArgumentException` naming the operation.
@@ -141,8 +142,12 @@ without a mask its result is exactly its pipeline's, and through a mask exactly 
 blends the edited pixels onto the unedited ones: an adjustment layer with an empty pipeline in `Multiply` darkens the
 image by itself, which is how photo editors build contrast curves out of blend modes.
 
-An image layer runs its pipeline at the resolution it is drawn at whenever that is smaller than the image, the way a
-proxy preview runs an edit, so a 24 megapixel texture placed in a corner costs what the corner does.
+An image layer runs its pipeline at the resolution its result is drawn at whenever that is smaller, the way a proxy
+preview runs an edit, so a 24 megapixel texture placed in a corner costs what the corner does; a crop in the pipeline
+counts, so a crop of a large logo is shrunk only as far as what the crop leaves. A layer's mask is drawn only over the
+area the layer covers, so a small masked watermark on a large export costs its own pixels. In an `ImageEditSession` the
+image a layer draws is prepared once and kept while the layer is faded, moved or re-blended, as long as its image,
+pipeline and size stay the same.
 
 ### Without a document
 
@@ -234,7 +239,12 @@ Every built-in operation, mask, layer and annotation round-trips exactly, and a 
 a codec, so a new one cannot quietly be left out. The serialiser uses no reflection, which keeps it safe under trimming
 and native AOT. Optional properties take their defaults when absent, so documents written by this version stay
 readable by later ones, and malformed input is rejected with `ImageDocumentFormatException` naming where it went wrong,
-such as `$.pipeline[2].rectangle`.
+such as `$.pipeline[2].rectangle`. A number JSON has no literal for, such as a rotation that came out as NaN, is written
+as the string `"NaN"`, `"Infinity"` or `"-Infinity"` and read back as that number, so saving never fails on one.
+
+A replayed document can come from anyone, so masks combined inside one another are capped: drawing a combination holds
+its second side beside it, each the size of the image, and a document whose masks would hold more than eight at once is
+refused. A chain built a step at a time, `a.Union(b).Union(c)`, holds one however long it is.
 
 Pixels are never embedded: `ImageReferences` chooses what is written for an image an annotation, layer or mask refers
 to, and `ImageResolver` supplies it on reading, so images can be stored beside the document and uploaded once. A custom

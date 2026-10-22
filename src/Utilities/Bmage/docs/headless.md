@@ -273,15 +273,16 @@ thousand photos holds only the images in flight.
 
 ## Threads
 
-Operations spread their rows over every processor by default on a server: a 24 megapixel downscale or a rotation runs
-on all cores and produces exactly the pixels it would on one. A service that already processes many requests at once
-may prefer to spend its cores on requests instead:
+Operations run on one thread by default, which is what a service processing many requests at once wants: the requests
+use the cores. A command-line tool or a background job working through one image at a time can spread each operation's
+rows over every core, and a 24 megapixel downscale or a rotation then produces exactly the pixels it would on one:
 
 ```csharp
-builder.Services.AddBitBmageHeadlessServices(options => options.MaxDegreeOfParallelism = 1);
+builder.Services.AddBitBmageHeadlessServices(options => options.MaxDegreeOfParallelism = Environment.ProcessorCount);
 ```
 
-Per run, `PipelineExecutionOptions.MaxDegreeOfParallelism` overrides it.
+Per run, `PipelineExecutionOptions.MaxDegreeOfParallelism` overrides it. In a batch every image in flight uses that
+many threads, decoding included, so keep `MaxConcurrency` times `MaxDegreeOfParallelism` near the cores you have.
 
 ## Bounding memory per request
 

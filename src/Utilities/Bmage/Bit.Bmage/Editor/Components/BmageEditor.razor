@@ -308,6 +308,9 @@
             MaxProxyDimension = EffectiveProxyDimension,
             MaxHistoryDepth = MaxHistoryDepth,
             TextRasterizer = EffectiveTextRasterizer,
+            // The services' allocator and limits, so a memory budget set there holds for the editor's previews and export too.
+            Allocator = Options.Allocator,
+            Limits = Options.Limits,
             MaxDegreeOfParallelism = Options.MaxDegreeOfParallelism,
             // On WebAssembly the browser builds the working copy of a large photo in native code: about 30 times
             // faster than resampling it on the interpreter, and the export still replays on the original pixels.

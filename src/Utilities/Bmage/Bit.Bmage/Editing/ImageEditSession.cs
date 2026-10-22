@@ -26,10 +26,11 @@ namespace Bit.Bmage.Editing;
 /// queues work faster than it completes.
 /// </para>
 /// <para>
-/// Previews reuse pixels earlier renders computed for the same operation and annotation instances, which relies on
-/// those being immutable, as every built-in one is. A custom operation must not change in place: replace it with a new
-/// instance instead. When something outside the document changes what it renders to, such as a font registered after
-/// text was drawn, call <see cref="Invalidate"/>.
+/// Previews reuse pixels earlier renders computed for the same operation, layer and annotation instances, which relies
+/// on those being immutable, as every built-in one is. A custom operation must not change in place: replace it with a
+/// new instance instead. The same goes for the pixels an image layer draws, which are kept prepared for its pipeline.
+/// When something outside the document changes what it renders to, such as a font registered after text was drawn, or
+/// the pixels of a layer's image, call <see cref="Invalidate"/>.
 /// </para>
 /// </remarks>
 public sealed class ImageEditSession : IDisposable
@@ -400,7 +401,7 @@ public sealed class ImageEditSession : IDisposable
         {
             if (!ReferenceEquals(document, baseDocument))
             {
-                if (TryRenderOverBase(baseDocument, document, order, version, options.CancellationToken) is { } overlaid) return overlaid;
+                if (TryRenderOverBase(baseDocument, document, order, version, options) is { } overlaid) return overlaid;
             }
             else
             {
@@ -412,7 +413,7 @@ public sealed class ImageEditSession : IDisposable
         var rendered = shared ? pixels.Clone(_allocator) : pixels;
         try
         {
-            _renderer.RenderAnnotations(ForScale(order, scale), rendered, scale, options.CancellationToken);
+            _renderer.RenderAnnotations(ForScale(order, scale), rendered, scale, DocumentRenderer.ContextFor(options));
             return rendered;
         }
         catch
@@ -432,6 +433,7 @@ public sealed class ImageEditSession : IDisposable
         if (layers.Count == 0)
         {
             Replace(ref layer.Composite, null);
+            layer.LayerImages.Clear();
             return await RenderPipelineAsync(document.Pipeline, source, scale, layer, version, options, keepOutput).ConfigureAwait(false);
         }
         if (layer.Composite?.Matches(document.Pipeline, layers, version) == true) return (layer.Composite.Pixels, true);
@@ -441,7 +443,8 @@ public sealed class ImageEditSession : IDisposable
         var composite = shared ? pixels.Clone(_allocator) : pixels;
         try
         {
-            DocumentRenderer.CompositeLayers(scale == 1 ? layers : [.. layers.Select(l => l.ForScale(scale))], composite, options);
+            // The images image layers draw are kept prepared, so a layer dragged or faded is only blended again.
+            DocumentRenderer.CompositeLayers(scale == 1 ? layers : [.. layers.Select(l => l.ForScale(scale))], composite, options, cache: layer.LayerImages);
         }
         catch
         {
@@ -504,7 +507,7 @@ public sealed class ImageEditSession : IDisposable
     /// Draws the overlay's extra annotations over a kept preview of <paramref name="baseDocument"/>, or returns null
     /// when the overlay does more than add annotations on top.
     /// </summary>
-    private ImageBuffer? TryRenderOverBase(ImageDocument baseDocument, ImageDocument document, IReadOnlyList<Annotation> order, int version, CancellationToken cancellationToken)
+    private ImageBuffer? TryRenderOverBase(ImageDocument baseDocument, ImageDocument document, IReadOnlyList<Annotation> order, int version, PipelineExecutionOptions options)
     {
         if (!ReferenceEquals(document.Pipeline, baseDocument.Pipeline) || !ReferenceEquals(document.Layers, baseDocument.Layers)) return null;
         if (_overlayBase is not { } overlayBase || !ReferenceEquals(overlayBase.Document, baseDocument) || overlayBase.SourceVersion != version)
@@ -525,7 +528,7 @@ public sealed class ImageEditSession : IDisposable
         {
             var added = new Annotation[order.Count - below.Count];
             for (var i = 0; i < added.Length; i++) added[i] = order[below.Count + i];
-            _renderer.RenderAnnotations(ForScale(added, ProxyScale), rendered, ProxyScale, cancellationToken);
+            _renderer.RenderAnnotations(ForScale(added, ProxyScale), rendered, ProxyScale, DocumentRenderer.ContextFor(options));
             return rendered;
         }
         catch
@@ -598,6 +601,7 @@ public sealed class ImageEditSession : IDisposable
             Replace(ref layer.Stage, null);
             Replace(ref layer.Pipeline, null);
             Replace(ref layer.Composite, null);
+            layer.LayerImages.Clear();
         }
         DisposeOverlayBase();
     }
@@ -608,6 +612,8 @@ public sealed class ImageEditSession : IDisposable
         public RenderCache? Stage;
         public RenderCache? Pipeline;
         public CompositeCache? Composite;
+        // The images image layers drew in the last composite, shrunk and run through their pipelines.
+        public readonly LayerImageCache LayerImages = new();
     }
 
     /// <summary>The pipeline's output with the document's layers composited onto it.</summary>

@@ -99,9 +99,10 @@ available and a download where not, and returns false when the user cancels.
 `SupportsWasmThreads` reports multithreading, which is off by default in Blazor. Neither is required; they inform how
 much work is reasonable per frame.
 
-Operations spread their rows over `MaxDegreeOfParallelism` threads, which is one in the browser by default: Blazor
-WebAssembly runs .NET on the page's thread, and work handed to another thread could never be waited for there. An
-application built with `<WasmEnableThreads>true</WasmEnableThreads>` opts in:
+Operations spread their rows over `MaxDegreeOfParallelism` threads, which is one by default, and must stay one in the
+browser unless the app is built with threads: Blazor WebAssembly runs .NET on the page's thread, and work handed to
+another thread could never be waited for there. An application built with `<WasmEnableThreads>true</WasmEnableThreads>`
+opts in:
 
 ```csharp
 builder.Services.AddBitBmageServices(options => options.MaxDegreeOfParallelism = Environment.ProcessorCount);

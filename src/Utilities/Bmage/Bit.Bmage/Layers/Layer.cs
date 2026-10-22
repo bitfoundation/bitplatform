@@ -89,14 +89,13 @@ public abstract record Layer
     /// <remarks>A custom layer produces its pixels and calls this; it never needs to apply the mask itself.</remarks>
     protected void BlendRows(ImageBuffer target, Rectangle area, OperationContext context, LayerRow rows, bool mixForSourceOver = false)
     {
-        using var mask = Mask?.Render(target.Size, target, context.WithProgress(null));
-        // The layer's rows start at the area's left as it was given, before the mask narrows it.
+        // The layer's rows start at the area's left as it was given, before the image or the mask narrows it.
         var origin = area.Left;
-        if (mask is not null)
-        {
-            area.Intersect(Mask!.GetAffectedBounds(target.Size));
-            if (area.IsEmptyArea()) return;
-        }
+        area.Intersect(target.Bounds);
+        if (Mask is not null) area.Intersect(Mask.GetAffectedBounds(target.Size));
+        if (area.IsEmptyArea()) return;
+        // Only the part of the mask over the area is drawn, so a small watermark's mask costs its own pixels, not the image's.
+        using var mask = Mask?.RenderWindow(target.Size, area, target, context.WithProgress(null));
         var mode = BlendMode;
         var opacity = Opacity;
         // An edit at full strength through a normal layer replaces what is below, exactly; partly, it mixes towards it.
@@ -112,7 +111,7 @@ public abstract record Layer
                     if (((y - start) & 31) == 0) band.ThrowIfCancellationRequested();
                     var source = rows(y).Slice(area.Left - origin, area.Width);
                     var destination = target.GetRow(y).Slice(area.Left, area.Width);
-                    var coverage = mask is null ? default : (ReadOnlySpan<byte>)mask.GetRow(y).Slice(area.Left, area.Width);
+                    var coverage = mask is null ? default : (ReadOnlySpan<byte>)mask.GetRow(y - area.Top);
                     if (!mix)
                     {
                         Compositor.BlendRow(source, destination, mode, opacity, coverage);
@@ -191,8 +190,12 @@ public sealed record ImageLayer : Layer
         ]);
     }
 
-    protected internal override void CompositeCore(ImageBuffer target, OperationContext context)
+    protected internal override void CompositeCore(ImageBuffer target, OperationContext context) => Composite(target, context, cache: null);
+
+    /// <summary>Blends the layer onto the target, taking its prepared image from <paramref name="cache"/> when there is one.</summary>
+    internal void Composite(ImageBuffer target, OperationContext context, LayerImageCache? cache)
     {
+        if (IsNoOp) return;
         if (Image.IsDisposed) throw new ObjectDisposedException(nameof(Image), "The image this layer draws has been disposed.");
         var bounds = GetRotatedBounds();
         if (!float.IsFinite(bounds.Left) || !float.IsFinite(bounds.Top) || !float.IsFinite(bounds.Right) || !float.IsFinite(bounds.Bottom)) return;
@@ -209,13 +212,15 @@ public sealed record ImageLayer : Layer
         area.Intersect(target.Bounds);
         if (area.IsEmptyArea()) return;
 
-        var pixels = PrepareImage(context);
+        // The canvas draws with the layer's allocator, limits, threads and cancellation, and reports nothing itself.
+        var drawing = context.WithProgress(null);
+        var pixels = Pipeline.IsEmpty ? Image : cache is null ? PrepareImage(drawing) : cache.GetOrAdd(this, drawing);
         try
         {
             if (Mask is null && Rotation == 0)
             {
                 // Without a mask the canvas blends the image straight onto the target, with the same arithmetic.
-                using var direct = ImageCanvas.FromBuffer(target);
+                using var direct = ImageCanvas.FromBuffer(target, drawing);
                 direct.Opacity = Opacity;
                 direct.DrawImage(pixels, device, BlendMode, Filter);
                 return;
@@ -223,7 +228,7 @@ public sealed record ImageLayer : Layer
             // The layer drawn on its own, over transparency, across the part of the target it covers. Shifting by whole
             // pixels keeps every sample where drawing it on the target would put it.
             using var raster = ImageBuffer.Create(area.Width, area.Height, context.Allocator, clear: true, ImageLimits.Unrestricted);
-            using (var canvas = ImageCanvas.FromBuffer(raster))
+            using (var canvas = ImageCanvas.FromBuffer(raster, drawing))
             {
                 if (Rotation == 0)
                 {
@@ -245,7 +250,8 @@ public sealed record ImageLayer : Layer
         }
         finally
         {
-            if (!ReferenceEquals(pixels, Image)) pixels.Dispose();
+            // A cached image stays with the cache for the next composite.
+            if (!ReferenceEquals(pixels, Image) && cache is null) pixels.Dispose();
         }
     }
 
@@ -263,13 +269,23 @@ public sealed record ImageLayer : Layer
     }
 
     /// <summary>
-    /// The image with its pipeline applied: first shrunk to the size it is drawn at when that is smaller, so a
-    /// full-resolution layer previewed on a proxy costs what the proxy does.
+    /// How far the image is shrunk before its pipeline runs: to the size the pipeline's result is drawn at, when that is
+    /// smaller. A crop or a resize in the pipeline changes what lands in the bounds, so the scale compares the bounds with
+    /// the pipeline's result, not with the image.
     /// </summary>
-    private ImageBuffer PrepareImage(OperationContext context)
+    internal double PrepareScale()
     {
-        if (Pipeline.IsEmpty) return Image;
-        var scale = Math.Min(1.0, Math.Min(Bounds.Width / Image.Width, Bounds.Height / Image.Height));
+        var output = Pipeline.TryGetOutputSize(Image.Size, out var size) ? size : Image.Size;
+        return Math.Min(1.0, Math.Min(Bounds.Width / Math.Max(1, output.Width), Bounds.Height / Math.Max(1, output.Height)));
+    }
+
+    /// <summary>
+    /// The image with its pipeline applied: first shrunk to the size it is drawn at when that is smaller, so a
+    /// full-resolution layer previewed on a proxy costs what the proxy does. The caller owns the result.
+    /// </summary>
+    internal ImageBuffer PrepareImage(OperationContext context)
+    {
+        var scale = PrepareScale();
         var options = new PipelineExecutionOptions
         {
             Allocator = context.Allocator,
@@ -349,12 +365,14 @@ public sealed record AdjustmentLayer : Layer
             Allocator = context.Allocator,
             Limits = context.Limits,
             CancellationToken = context.CancellationToken,
+            // The edit is most of what the layer costs, so it reports the layer's progress; blending it back ends it.
+            Progress = context.Progress,
             MaxDegreeOfParallelism = context.MaxDegreeOfParallelism,
         });
         // A custom operation may produce another size than it said it would.
         if (adjusted.Size != target.Size)
             throw new InvalidOperationException($"An adjustment layer must keep the image's size, but its pipeline produced {adjusted.Width}x{adjusted.Height} from {target.Width}x{target.Height}.");
-        BlendRows(target, target.Bounds, context, y => adjusted.GetRow(y), mixForSourceOver: true);
+        BlendRows(target, target.Bounds, context.WithProgress(null), y => adjusted.GetRow(y), mixForSourceOver: true);
     }
 
     protected override Layer ScaleCore(double scale) => this with { Pipeline = Pipeline.ForScale(scale) };
@@ -365,19 +383,31 @@ public static class LayerCompositor
 {
     /// <summary>Blends <paramref name="layers"/>, bottom first, onto <paramref name="target"/> in place.</summary>
     public static void Composite(ImageBuffer target, IEnumerable<Layer> layers, OperationContext? context = null)
+        => Composite(target, layers, context, cache: null);
+
+    /// <summary>
+    /// Blends the layers onto the target, keeping the images image layers are drawn with in <paramref name="cache"/>
+    /// for the next composite of the same layers, and releasing those this one did not use.
+    /// </summary>
+    internal static void Composite(ImageBuffer target, IEnumerable<Layer> layers, OperationContext? context, LayerImageCache? cache)
     {
         ArgumentNullException.ThrowIfNull(target);
         ArgumentNullException.ThrowIfNull(layers);
         context ??= OperationContext.Default;
         var list = layers as IReadOnlyList<Layer> ?? [.. layers];
+        cache?.Begin();
         for (var i = 0; i < list.Count; i++)
         {
             context.ThrowIfCancellationRequested();
             // Each layer reports its progress within its own share of the whole.
             var progress = context.Progress is null ? null : new ScaledProgress(context.Progress, i / (double)list.Count, 1.0 / list.Count);
-            list[i].Composite(target, context.WithProgress(progress));
+            if (cache is not null && list[i] is ImageLayer image) image.Composite(target, context.WithProgress(progress), cache);
+            else list[i].Composite(target, context.WithProgress(progress));
+            // A layer blended on one thread reports nothing along the way, so its end is reported here.
+            context.ReportProgress((i + 1) / (double)list.Count);
         }
-        context.ReportProgress(1);
+        cache?.End();
+        if (list.Count == 0) context.ReportProgress(1);
     }
 
     /// <summary>
@@ -409,5 +439,58 @@ public static class LayerCompositor
             image.Dispose();
             throw;
         }
+    }
+}
+
+/// <summary>
+/// The images image layers are drawn with, shrunk and run through their pipeline once and kept from one composite to
+/// the next: dragging a layer's opacity or moving it blends it again without preparing its image again. Used by one
+/// composite at a time; it relies on a layer's image not changing in place, as an edit session does.
+/// </summary>
+internal sealed class LayerImageCache
+{
+    // The image, its pipeline and filter, and the scale it is shrunk by: the same instances and scale mean the same pixels.
+    private readonly record struct Key(ImageBuffer Image, ImagePipeline Pipeline, ResamplingFilter Filter, double Scale);
+
+    private sealed class Entry(ImageBuffer pixels)
+    {
+        public ImageBuffer Pixels { get; } = pixels;
+        public int Composite { get; set; }
+    }
+
+    private readonly Dictionary<Key, Entry> _entries = [];
+    private int _composite;
+
+    /// <summary>Starts a composite: what it does not use is released at its <see cref="End"/>.</summary>
+    public void Begin() => _composite++;
+
+    /// <summary>The prepared image of <paramref name="layer"/>, prepared now unless an earlier composite kept it. The cache owns it.</summary>
+    public ImageBuffer GetOrAdd(ImageLayer layer, OperationContext context)
+    {
+        var key = new Key(layer.Image, layer.Pipeline, layer.Filter, layer.PrepareScale());
+        if (!_entries.TryGetValue(key, out var entry))
+        {
+            entry = new Entry(layer.PrepareImage(context));
+            _entries[key] = entry;
+        }
+        entry.Composite = _composite;
+        return entry.Pixels;
+    }
+
+    /// <summary>Ends a composite, releasing the images it did not draw. A composite that failed leaves everything for the next one.</summary>
+    public void End()
+    {
+        foreach (var (key, entry) in _entries.Where(e => e.Value.Composite != _composite).ToArray())
+        {
+            entry.Pixels.Dispose();
+            _entries.Remove(key);
+        }
+    }
+
+    /// <summary>Releases every image.</summary>
+    public void Clear()
+    {
+        foreach (var entry in _entries.Values) entry.Pixels.Dispose();
+        _entries.Clear();
     }
 }

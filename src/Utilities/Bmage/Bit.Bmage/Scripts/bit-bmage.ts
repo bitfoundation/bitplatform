@@ -160,8 +160,13 @@ class CodecWorkers {
         // A format the browser cannot write fails the same way everywhere; say so rather than trying again.
         if (reply.error?.startsWith('unsupported-format:')) throw new Error(reply.error);
         const returned = reply.input ?? input;
-        // A worker that died holding the input took it along: a transferred buffer reads as empty afterwards.
-        if (returned.byteLength === 0 && length > 0) throw new Error('The codec worker stopped while it was working on this image.');
+        // A worker that died holding the input took it along: a transferred buffer reads as empty afterwards. When that
+        // buffer was a copy, the caller's bytes are still whole and the page can do the work; only when they were
+        // handed over as they were is the image gone.
+        if (returned.byteLength === 0 && length > 0) {
+            if (input !== bytes.buffer) return { done: false };
+            throw new Error('The codec worker stopped while it was working on this image.');
+        }
         return { done: false, input: returned };
     }
 

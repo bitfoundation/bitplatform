@@ -225,6 +225,20 @@ public sealed class MaskBuffer : IDisposable
         }
     }
 
+    /// <summary>
+    /// How far along each axis <see cref="Feather"/> with <paramref name="sigma"/> carries a value: its passes' radii
+    /// together. A value further than this from a pixel never reaches it, so a mask drawn this far around a window
+    /// feathers to exactly the values the whole mask has there.
+    /// </summary>
+    internal static int FeatherReach(float sigma)
+    {
+        var reach = 0;
+        foreach (var radius in BoxBlur.BoxesForGauss(sigma, 3))
+            if (radius > 0) reach += radius;
+        // Feather softens with one pass of radius 1 when three boxes cannot express the blur.
+        return reach > 0 ? reach : 1;
+    }
+
     /// <summary>A box average along every row, repeating the edge values beyond its ends.</summary>
     private void BoxHorizontal(int radius, OperationContext context)
     {

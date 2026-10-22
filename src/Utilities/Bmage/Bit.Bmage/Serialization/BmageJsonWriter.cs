@@ -49,16 +49,45 @@ public sealed class BmageJsonWriter
         return this;
     }
 
-    public BmageJsonWriter Write(string name, float value) { Json.WriteNumber(name, value); return this; }
-
-    public BmageJsonWriter Write(string name, float? value)
+    public BmageJsonWriter Write(string name, float value)
     {
-        if (value is { } v) Json.WriteNumber(name, v);
-        else Json.WriteNull(name);
+        Json.WritePropertyName(name);
+        WriteNumberValue(value);
         return this;
     }
 
-    public BmageJsonWriter Write(string name, double value) { Json.WriteNumber(name, value); return this; }
+    public BmageJsonWriter Write(string name, float? value)
+    {
+        if (value is { } v) return Write(name, v);
+        Json.WriteNull(name);
+        return this;
+    }
+
+    public BmageJsonWriter Write(string name, double value)
+    {
+        Json.WritePropertyName(name);
+        WriteNumberValue(value);
+        return this;
+    }
+
+    /// <summary>
+    /// Writes a number as an array element, or after a property name. A value JSON has no number for, NaN or an
+    /// infinity such as pointer arithmetic that divided by zero produces, is written as the string System.Text.Json's
+    /// named literals use (<c>"NaN"</c>, <c>"Infinity"</c> or <c>"-Infinity"</c>), which <see cref="BmageJsonReader"/>
+    /// reads back.
+    /// </summary>
+    public void WriteNumberValue(float value)
+    {
+        if (float.IsFinite(value)) Json.WriteNumberValue(value);
+        else Json.WriteStringValue(float.IsNaN(value) ? "NaN" : value > 0 ? "Infinity" : "-Infinity");
+    }
+
+    /// <inheritdoc cref="WriteNumberValue(float)"/>
+    public void WriteNumberValue(double value)
+    {
+        if (double.IsFinite(value)) Json.WriteNumberValue(value);
+        else Json.WriteStringValue(double.IsNaN(value) ? "NaN" : value > 0 ? "Infinity" : "-Infinity");
+    }
 
     public BmageJsonWriter Write(string name, Guid value) { Json.WriteString(name, value); return this; }
 
@@ -132,7 +161,7 @@ public sealed class BmageJsonWriter
             return this;
         }
         Json.WriteStartArray(name);
-        foreach (var v in values) Json.WriteNumberValue(v);
+        foreach (var v in values) WriteNumberValue(v);
         Json.WriteEndArray();
         return this;
     }
@@ -144,8 +173,8 @@ public sealed class BmageJsonWriter
         foreach (var p in points)
         {
             Json.WriteStartArray();
-            Json.WriteNumberValue(p.X);
-            Json.WriteNumberValue(p.Y);
+            WriteNumberValue(p.X);
+            WriteNumberValue(p.Y);
             Json.WriteEndArray();
         }
         Json.WriteEndArray();
@@ -250,7 +279,7 @@ public sealed class BmageJsonWriter
     private BmageJsonWriter Numbers(string name, params ReadOnlySpan<float> values)
     {
         Json.WriteStartArray(name);
-        foreach (var v in values) Json.WriteNumberValue(v);
+        foreach (var v in values) WriteNumberValue(v);
         Json.WriteEndArray();
         return this;
     }
@@ -296,15 +325,34 @@ public sealed class BmageJsonReader
 
     public int? GetNullableInt32(string name) => Optional(name) is { } v ? Convert(name, v.GetInt32) : null;
 
-    public float GetSingle(string name) => Optional(name) is { } v ? Convert(name, v.GetSingle) : throw Missing(name);
+    public float GetSingle(string name) => Optional(name) is { } v ? Convert(name, () => ReadSingle(v)) : throw Missing(name);
 
-    public float GetSingle(string name, float fallback) => Optional(name) is { } v ? Convert(name, v.GetSingle) : fallback;
+    public float GetSingle(string name, float fallback) => Optional(name) is { } v ? Convert(name, () => ReadSingle(v)) : fallback;
 
-    public float? GetNullableSingle(string name) => Optional(name) is { } v ? Convert(name, v.GetSingle) : null;
+    public float? GetNullableSingle(string name) => Optional(name) is { } v ? Convert(name, () => ReadSingle(v)) : null;
 
-    public double GetDouble(string name) => Optional(name) is { } v ? Convert(name, v.GetDouble) : throw Missing(name);
+    public double GetDouble(string name) => Optional(name) is { } v ? Convert(name, () => ReadDouble(v)) : throw Missing(name);
 
-    public double GetDouble(string name, double fallback) => Optional(name) is { } v ? Convert(name, v.GetDouble) : fallback;
+    public double GetDouble(string name, double fallback) => Optional(name) is { } v ? Convert(name, () => ReadDouble(v)) : fallback;
+
+    /// <summary>
+    /// Reads a number, or one of the strings <see cref="BmageJsonWriter.WriteNumberValue(float)"/> writes for a value
+    /// JSON has no number for.
+    /// </summary>
+    /// <exception cref="InvalidOperationException">The element is neither a number nor such a string.</exception>
+    /// <exception cref="FormatException">The number does not fit.</exception>
+    public static float ReadSingle(JsonElement element) => element.ValueKind == JsonValueKind.String ? (float)NamedNumber(element) : element.GetSingle();
+
+    /// <inheritdoc cref="ReadSingle"/>
+    public static double ReadDouble(JsonElement element) => element.ValueKind == JsonValueKind.String ? NamedNumber(element) : element.GetDouble();
+
+    private static double NamedNumber(JsonElement element) => element.GetString() switch
+    {
+        "NaN" => double.NaN,
+        "Infinity" => double.PositiveInfinity,
+        "-Infinity" => double.NegativeInfinity,
+        var text => throw new InvalidOperationException($"'{text}' is not a number"),
+    };
 
     public Guid GetGuid(string name, Guid fallback) => Optional(name) is { } v ? Convert(name, v.GetGuid) : fallback;
 
@@ -367,7 +415,7 @@ public sealed class BmageJsonReader
         if (v.ValueKind != JsonValueKind.Array) throw Invalid(name, "expected an array of numbers");
         var values = new float[v.GetArrayLength()];
         var i = 0;
-        foreach (var item in v.EnumerateArray()) values[i++] = Convert(name, item.GetSingle);
+        foreach (var item in v.EnumerateArray()) values[i++] = Convert(name, () => ReadSingle(item));
         return values;
     }
 
@@ -381,7 +429,7 @@ public sealed class BmageJsonReader
         foreach (var item in v.EnumerateArray())
         {
             if (item.ValueKind != JsonValueKind.Array || item.GetArrayLength() != 2) throw Invalid($"{name}[{i}]", "expected [x, y]");
-            points[i++] = new Vector2(Convert(name, item[0].GetSingle), Convert(name, item[1].GetSingle));
+            points[i++] = new Vector2(Convert(name, () => ReadSingle(item[0])), Convert(name, () => ReadSingle(item[1])));
         }
         return points;
     }
@@ -477,7 +525,7 @@ public sealed class BmageJsonReader
         if (Optional(name) is not { } v) return null;
         if (v.ValueKind != JsonValueKind.Array || v.GetArrayLength() != count) throw Invalid(name, $"expected {count} numbers");
         var values = new float[count];
-        for (var i = 0; i < count; i++) values[i] = Convert(name, v[i].GetSingle);
+        for (var i = 0; i < count; i++) values[i] = Convert(name, () => ReadSingle(v[i]));
         return values;
     }
 

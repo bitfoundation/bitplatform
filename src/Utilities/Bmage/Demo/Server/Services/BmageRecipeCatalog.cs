@@ -1064,8 +1064,9 @@ public static class BmageRecipeCatalog
             Notes = "MaxMemoryBytes estimates each image's peak from its header before decoding (pipeline.EstimateMemory gives " +
                     "the same numbers), so small photos run several at a time and a huge one runs alone rather than never. " +
                     "It schedules by estimate; for a hard ceiling give the processor a BudgetedPixelAllocator, which refuses " +
-                    "an allocation past its budget with ImageMemoryBudgetExceededException. Each image's operations also " +
-                    "use every core; set MaxDegreeOfParallelism = 1 on a server that would rather spend them on requests."
+                    "an allocation past its budget with ImageMemoryBudgetExceededException. Each image's operations run on " +
+                    "one thread unless the processor's MaxDegreeOfParallelism gives them more, and every image in flight " +
+                    "uses that many: keep MaxConcurrency times MaxDegreeOfParallelism near the cores you have."
         },
     ];
 

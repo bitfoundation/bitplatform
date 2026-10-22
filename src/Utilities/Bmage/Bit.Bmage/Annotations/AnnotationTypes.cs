@@ -434,13 +434,13 @@ public sealed record RedactionAnnotation : Annotation
         var axisAligned = transform.M12 == 0 && transform.M21 == 0;
         if (axisAligned)
         {
-            Redact(canvas.Buffer, device);
+            Redact(canvas.Buffer, device, context.Operation);
             return;
         }
 
         // Rotated: filter the bounding box on a copy, then blend it back only inside the rotated outline.
         using var filtered = canvas.Buffer.CopyRegion(device);
-        Redact(filtered, new System.Drawing.Rectangle(System.Drawing.Point.Empty, filtered.Size));
+        Redact(filtered, new System.Drawing.Rectangle(System.Drawing.Point.Empty, filtered.Size), context.Operation);
         var target = canvas.Buffer;
         Rasterizer.Rasterize(outline, device, FillRule.NonZero, (y, x0, coverage) =>
         {
@@ -463,12 +463,12 @@ public sealed record RedactionAnnotation : Annotation
         (byte)MathF.Round(from.A + (to.A - from.A) * t));
 
     /// <summary>Pixelates or blurs a region of a buffer in place.</summary>
-    private void Redact(ImageBuffer buffer, System.Drawing.Rectangle region)
+    private void Redact(ImageBuffer buffer, System.Drawing.Rectangle region, Operations.OperationContext context)
     {
         Operations.IImageOperation filter = Mode == RedactionMode.Pixelate
             ? new PixelateFilter(Math.Max(2, (int)Strength), region)
             : new BlurFilter(Math.Max(1f, Strength), region);
-        filter.Apply(buffer, new Operations.OperationContext(canMutateSource: true));
+        filter.Apply(buffer, context.WithProgress(null).WithMutation(true));
     }
 
     public override Annotation Translate(float dx, float dy) => this with { Rectangle = RectangleAnnotation.Offset(Rectangle, dx, dy) };

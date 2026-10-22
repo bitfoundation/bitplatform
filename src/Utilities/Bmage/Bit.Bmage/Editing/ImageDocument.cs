@@ -244,11 +244,13 @@ public sealed class DocumentRenderer
     {
         ArgumentNullException.ThrowIfNull(document);
         ArgumentNullException.ThrowIfNull(source);
-        var result = document.Pipeline.Execute(source, options);
+        options ??= PipelineExecutionOptions.Default;
+        var (pipelineOptions, layerProgress) = SplitProgress(document, options);
+        var result = document.Pipeline.Execute(source, pipelineOptions);
         try
         {
-            CompositeLayers(document.Layers, result, options);
-            RenderAnnotations(document, result, annotationScale, options?.CancellationToken ?? default);
+            CompositeLayers(document.Layers, result, options, layerProgress);
+            RenderAnnotations(document.GetRenderOrder(), result, annotationScale, ContextFor(options));
             return result;
         }
         catch
@@ -263,11 +265,13 @@ public sealed class DocumentRenderer
     {
         ArgumentNullException.ThrowIfNull(document);
         ArgumentNullException.ThrowIfNull(source);
-        var result = await document.Pipeline.ExecuteAsync(source, options).ConfigureAwait(false);
+        options ??= PipelineExecutionOptions.Default;
+        var (pipelineOptions, layerProgress) = SplitProgress(document, options);
+        var result = await document.Pipeline.ExecuteAsync(source, pipelineOptions).ConfigureAwait(false);
         try
         {
-            CompositeLayers(document.Layers, result, options);
-            RenderAnnotations(document, result, annotationScale, options?.CancellationToken ?? default);
+            CompositeLayers(document.Layers, result, options, layerProgress);
+            RenderAnnotations(document.GetRenderOrder(), result, annotationScale, ContextFor(options));
             return result;
         }
         catch
@@ -277,12 +281,30 @@ public sealed class DocumentRenderer
         }
     }
 
-    /// <summary>Composites layers, already at the target's scale, onto the pipeline's output in place.</summary>
-    internal static void CompositeLayers(IReadOnlyList<Layer> layers, ImageBuffer target, PipelineExecutionOptions? options)
+    /// <summary>
+    /// The options the pipeline runs with, reporting its share of the progress, and the progress the layers report the
+    /// rest through. A pipeline step and a layer, which blends over the whole image, each count as one share.
+    /// </summary>
+    private static (PipelineExecutionOptions Pipeline, IProgress<double>? Layers) SplitProgress(ImageDocument document, PipelineExecutionOptions options)
+    {
+        if (options.Progress is not { } progress || document.Layers.Count == 0) return (options, null);
+        var steps = document.Pipeline.Count;
+        var share = steps / (double)(steps + document.Layers.Count);
+        return (options with { Progress = share > 0 ? new ScaledProgress(progress, 0, share) : null }, new ScaledProgress(progress, share, 1 - share));
+    }
+
+    /// <summary>The context layers and annotations are drawn with: the run's allocator, limits, threads and cancellation.</summary>
+    internal static OperationContext ContextFor(PipelineExecutionOptions options, IProgress<double>? progress = null)
+        => new(options.Allocator, options.Limits, options.CancellationToken, progress, maxDegreeOfParallelism: options.MaxDegreeOfParallelism);
+
+    /// <summary>
+    /// Composites layers, already at the target's scale, onto the pipeline's output in place, reporting through
+    /// <paramref name="progress"/> and keeping prepared layer images in <paramref name="cache"/> when there is one.
+    /// </summary>
+    internal static void CompositeLayers(IReadOnlyList<Layer> layers, ImageBuffer target, PipelineExecutionOptions? options, IProgress<double>? progress = null, LayerImageCache? cache = null)
     {
         if (layers.Count == 0) return;
-        options ??= PipelineExecutionOptions.Default;
-        LayerCompositor.Composite(target, layers, new OperationContext(options.Allocator, options.Limits, options.CancellationToken, maxDegreeOfParallelism: options.MaxDegreeOfParallelism));
+        LayerCompositor.Composite(target, layers, ContextFor(options ?? PipelineExecutionOptions.Default, progress), cache);
     }
 
     /// <summary>Draws only the annotation overlay onto an existing buffer.</summary>
@@ -290,19 +312,22 @@ public sealed class DocumentRenderer
     {
         ArgumentNullException.ThrowIfNull(document);
         ArgumentNullException.ThrowIfNull(target);
-        RenderAnnotations(document.GetRenderOrder(), target, annotationScale, cancellationToken);
+        RenderAnnotations(document.GetRenderOrder(), target, annotationScale, OperationContext.Default.WithCancellation(cancellationToken));
     }
 
-    /// <summary>Draws annotations, already in render order and at the target's scale, onto an existing buffer.</summary>
-    internal void RenderAnnotations(IReadOnlyList<Annotation> order, ImageBuffer target, double annotationScale, CancellationToken cancellationToken)
+    /// <summary>
+    /// Draws annotations, already in render order and at the target's scale, onto an existing buffer, with the
+    /// allocator, limits, threads and cancellation of <paramref name="context"/>.
+    /// </summary>
+    internal void RenderAnnotations(IReadOnlyList<Annotation> order, ImageBuffer target, double annotationScale, OperationContext context)
     {
         if (order.Count == 0) return;
-        var context = new AnnotationRenderContext(_textRasterizer, annotationScale);
-        using var canvas = ImageCanvas.FromBuffer(target);
+        var renderContext = new AnnotationRenderContext(_textRasterizer, annotationScale) { Operation = context };
+        using var canvas = ImageCanvas.FromBuffer(target, context);
         foreach (var annotation in order)
         {
-            cancellationToken.ThrowIfCancellationRequested();
-            annotation.RenderWithTransform(canvas, context);
+            context.ThrowIfCancellationRequested();
+            annotation.RenderWithTransform(canvas, renderContext);
         }
     }
 }

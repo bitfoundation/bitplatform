@@ -34,9 +34,10 @@ public class ImageProcessor
     public ImageLimits Limits { get; }
 
     /// <summary>
-    /// The most threads one operation may spread its rows over, or null for
+    /// The most threads one operation may spread its rows over, decoding included, or null for
     /// <see cref="Operations.OperationContext.DefaultMaxDegreeOfParallelism"/>. See
-    /// <see cref="PipelineExecutionOptions.MaxDegreeOfParallelism"/>.
+    /// <see cref="PipelineExecutionOptions.MaxDegreeOfParallelism"/>. In a batch every image in flight may use this
+    /// many, so <see cref="BatchOptions.MaxConcurrency"/> times this is what the batch can occupy.
     /// </summary>
     public int? MaxDegreeOfParallelism
     {
@@ -51,6 +52,8 @@ public class ImageProcessor
     public async ValueTask<ImageBuffer> DecodeAsync(ReadOnlyMemory<byte> data, DecodeOptions? options = null, CancellationToken cancellationToken = default)
     {
         options ??= new DecodeOptions { Limits = Limits };
+        // Turning a photo upright as it is decoded is an operation like any other, on the processor's threads.
+        if (options.MaxDegreeOfParallelism is null && MaxDegreeOfParallelism is { } threads) options = options with { MaxDegreeOfParallelism = threads };
         var format = ImageFormats.Detect(data.Span);
         if (format == ImageFormat.Unknown)
             throw new ImageDecodeException("The data does not look like a supported image format.");
@@ -213,9 +216,12 @@ public class ImageProcessor
         await foreach (var (index, result) in RunBatchAsync(ToAsync(list), list.Count, pipeline, options, cancellationToken).ConfigureAwait(false))
             results[index] = result;
         for (var i = 0; i < results.Length; i++)
-            results[i] ??= BatchItemResult.Cancelled(list[i]);
+            results[i] ??= BatchItemResult.Cancelled(list[i] ?? MissingItem);
         return new BatchResult(results, stopwatch.Elapsed);
     }
+
+    /// <summary>What a result reports as its item when the caller passed null in its place.</summary>
+    private static readonly BatchItem MissingItem = new(ReadOnlyMemory<byte>.Empty);
 
     /// <summary>
     /// Processes many images and hands over each result as soon as it is ready, in the order they finish, keeping none
@@ -311,7 +317,7 @@ public class ImageProcessor
             while (!token.IsCancellationRequested)
             {
                 int index;
-                BatchItem item;
+                BatchItem? item;
                 await pull.WaitAsync(token).ConfigureAwait(false);
                 try
                 {
@@ -319,7 +325,8 @@ public class ImageProcessor
                     {
                         if (!await source.MoveNextAsync().ConfigureAwait(false)) return;
                         index = next++;
-                        item = source.Current ?? throw new InvalidOperationException($"Batch item {next - 1} is null.");
+                        // A null item fails on its own, like an unreadable file; the source itself is fine.
+                        item = source.Current;
                     }
                     catch (Exception ex) when (ex is not OperationCanceledException || !token.IsCancellationRequested)
                     {
@@ -334,7 +341,7 @@ public class ImageProcessor
                 {
                     pull.Release();
                 }
-                var result = await ProcessItemAsync(item, pipeline, options, gate, linked).ConfigureAwait(false);
+                var result = await ProcessItemAsync(item, index, pipeline, options, gate, linked).ConfigureAwait(false);
                 if (!result.WasCancelled) options.Progress?.Report(new BatchProgress(Interlocked.Increment(ref completed), total, result));
                 await results.Writer.WriteAsync((index, result), abandoned.Token).ConfigureAwait(false);
             }
@@ -374,14 +381,16 @@ public class ImageProcessor
         return total >= 0 ? Math.Min(count, Math.Max(1, total)) : count;
     }
 
-    private async Task<BatchItemResult> ProcessItemAsync(BatchItem item, ImagePipeline pipeline, BatchOptions options, MemoryGate? gate, CancellationTokenSource linked)
+    private async Task<BatchItemResult> ProcessItemAsync(BatchItem? item, int index, ImagePipeline pipeline, BatchOptions options, MemoryGate? gate, CancellationTokenSource linked)
     {
         var token = linked.Token;
         var watch = Stopwatch.StartNew();
-        var inputBytes = (long)item.Data.Length;
+        var reported = item ?? MissingItem;
+        var inputBytes = (long)reported.Data.Length;
         var reserved = 0L;
         try
         {
+            if (item is null) throw new ArgumentNullException(nameof(item), $"Batch item {index} is null.");
             var data = item.Loader is { } load ? await load(token).ConfigureAwait(false) : item.Data;
             inputBytes = data.Length;
             if (gate is not null) reserved = await gate.AcquireAsync(EstimateBatchMemory(data.Span, pipeline, options), token).ConfigureAwait(false);
@@ -390,12 +399,12 @@ public class ImageProcessor
         }
         catch (OperationCanceledException) when (token.IsCancellationRequested)
         {
-            return BatchItemResult.Cancelled(item, inputBytes);
+            return BatchItemResult.Cancelled(reported, inputBytes);
         }
         catch (Exception ex)
         {
             if (options.StopOnFirstError) await linked.CancelAsync().ConfigureAwait(false);
-            return BatchItemResult.Failure(item, ex, watch.Elapsed, inputBytes);
+            return BatchItemResult.Failure(reported, ex, watch.Elapsed, inputBytes);
         }
         finally
         {

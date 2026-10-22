@@ -51,7 +51,7 @@ public sealed class JpegDecoder : IImageDecoder
                 image.Metadata = md;
                 if (options.AutoOrient && md.Orientation is not (Orientation.Normal or Orientation.Unspecified))
                 {
-                    var oriented = new OrientationOperation(md.Orientation).Apply(image, new Operations.OperationContext(allocator, options.Limits, cancellationToken, canMutateSource: true));
+                    var oriented = new OrientationOperation(md.Orientation).Apply(image, new Operations.OperationContext(allocator, options.Limits, cancellationToken, canMutateSource: true, maxDegreeOfParallelism: options.MaxDegreeOfParallelism));
                     if (!ReferenceEquals(oriented, image)) image.Dispose();
                     image = oriented;
                     image.Metadata = md.WithOrientation(Orientation.Normal);

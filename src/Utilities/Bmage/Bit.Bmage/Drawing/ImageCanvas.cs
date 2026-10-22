@@ -3,6 +3,7 @@ using System.Numerics;
 using Bit.Bmage.Codecs;
 using Bit.Bmage.Geometry;
 using Bit.Bmage.Memory;
+using Bit.Bmage.Operations;
 using Bit.Bmage.Operations.Transforms;
 
 namespace Bit.Bmage.Drawing;
@@ -78,15 +79,18 @@ public sealed class ImageCanvas : IDisposable
 {
     private ImageBuffer _buffer;
     private readonly bool _ownsBuffer;
+    // What drawing allocates working buffers with, how many threads it spreads rows over, and what cancels it.
+    private readonly OperationContext _context;
     private readonly Stack<CanvasState> _states = new();
     private CanvasState _state;
 
     private readonly record struct CanvasState(Matrix3x2 Transform, Rectangle Clip, float Opacity);
 
-    private ImageCanvas(ImageBuffer buffer, bool ownsBuffer)
+    private ImageCanvas(ImageBuffer buffer, bool ownsBuffer, OperationContext context)
     {
         _buffer = buffer;
         _ownsBuffer = ownsBuffer;
+        _context = context.WithProgress(null);
         _state = new CanvasState(Matrix3x2.Identity, buffer.Bounds, 1f);
     }
 
@@ -95,21 +99,32 @@ public sealed class ImageCanvas : IDisposable
     {
         var buffer = ImageBuffer.Create(width, height, allocator, clear: true, limits);
         if (background.A != 0) buffer.Fill(background);
-        return new ImageCanvas(buffer, ownsBuffer: true);
+        return new ImageCanvas(buffer, ownsBuffer: true, new OperationContext(allocator, limits));
     }
 
     /// <summary>Creates a canvas that draws directly into an existing buffer. The buffer is not disposed by the canvas.</summary>
     public static ImageCanvas FromBuffer(ImageBuffer buffer)
     {
         ArgumentNullException.ThrowIfNull(buffer);
-        return new ImageCanvas(buffer, ownsBuffer: false);
+        return new ImageCanvas(buffer, ownsBuffer: false, OperationContext.Default);
+    }
+
+    /// <summary>
+    /// A canvas drawing directly into an existing buffer with the allocator, limits, threads and cancellation of
+    /// <paramref name="context"/>, as an operation or a layer draws.
+    /// </summary>
+    internal static ImageCanvas FromBuffer(ImageBuffer buffer, OperationContext context)
+    {
+        ArgumentNullException.ThrowIfNull(buffer);
+        ArgumentNullException.ThrowIfNull(context);
+        return new ImageCanvas(buffer, ownsBuffer: false, context);
     }
 
     /// <summary>Creates a canvas holding a copy of an existing image.</summary>
     public static ImageCanvas FromImage(ImageBuffer source, IPixelAllocator? allocator = null)
     {
         ArgumentNullException.ThrowIfNull(source);
-        return new ImageCanvas(source.Clone(allocator), ownsBuffer: true);
+        return new ImageCanvas(source.Clone(allocator), ownsBuffer: true, new OperationContext(allocator));
     }
 
     /// <summary>The pixels being drawn into. Valid until the canvas is disposed.</summary>
@@ -371,26 +386,34 @@ public sealed class ImageCanvas : IDisposable
         else
         {
             // Resample only the visible part, using the window trick so edges match a full-size resample.
-            scaled = ImageBuffer.Create(visible.Width, visible.Height, clear: false);
+            scaled = ImageBuffer.Create(visible.Width, visible.Height, _context.Allocator, clear: false, _context.Limits);
             var shifted = new Rectangle(device.X - visible.X, device.Y - visible.Y, device.Width, device.Height);
-            Resampler.Resample(image, source, scaled, shifted, filter);
+            Resampler.Resample(image, source, scaled, shifted, filter, _context);
             scaledSource = scaled.Bounds;
         }
         try
         {
             var opacity = _state.Opacity;
-            for (var y = 0; y < visible.Height; y++)
+            // Rows blend independently, unless the canvas is drawn onto itself and a row may read one another writes.
+            ParallelRows.For(RowContext(scaled), 0, visible.Height, visible.Width, (start, end, band) =>
             {
-                var src = scaled.GetRow(scaledSource.Y + y).Slice(scaledSource.X, visible.Width);
-                var dst = _buffer.GetRow(visible.Y + y).Slice(visible.X, visible.Width);
-                Blend(src, dst, blend, opacity);
-            }
+                for (var y = start; y < end; y++)
+                {
+                    if (((y - start) & 31) == 0) band.ThrowIfCancellationRequested();
+                    var src = scaled.GetRow(scaledSource.Y + y).Slice(scaledSource.X, visible.Width);
+                    var dst = _buffer.GetRow(visible.Y + y).Slice(visible.X, visible.Width);
+                    Blend(src, dst, blend, opacity);
+                }
+            });
         }
         finally
         {
             if (!sameSize) scaled.Dispose();
         }
     }
+
+    /// <summary>The context rows are drawn with: one thread when <paramref name="image"/> is the canvas's own pixels.</summary>
+    private OperationContext RowContext(ImageBuffer image) => ReferenceEquals(image, _buffer) ? _context.WithParallelism(1) : _context;
 
     private ImageCanvas DrawImageTransformed(ImageBuffer image, Rectangle source, RectangleF destination, BlendMode blend, ResamplingFilter filter)
     {
@@ -417,18 +440,23 @@ public sealed class ImageCanvas : IDisposable
         var opacity = _state.Opacity;
         var sw = source.Width;
         var sh = source.Height;
-        for (var y = area.Top; y < area.Bottom; y++)
+        // Every pixel is sampled from the image alone, so the rows split into bands; the work per pixel is a few samples.
+        ParallelRows.For(RowContext(image), area.Top, area.Bottom, area.Width * 4L, (start, end, band) =>
         {
-            var dst = _buffer.GetRow(y);
-            for (var x = area.Left; x < area.Right; x++)
+            for (var y = start; y < end; y++)
             {
-                var sp = Vector2.Transform(new Vector2(x + 0.5f, y + 0.5f), inverse);
-                if (sp.X < -0.5f || sp.Y < -0.5f || sp.X > sw + 0.5f || sp.Y > sh + 0.5f) continue;
-                var color = SampleBilinear(image, source, sp.X - 0.5f, sp.Y - 0.5f, filter);
-                if (color.A == 0 && blend == BlendMode.SourceOver) continue;
-                dst[x] = Compositor.Blend(dst[x], color, blend, opacity);
+                if (((y - start) & 15) == 0) band.ThrowIfCancellationRequested();
+                var dst = _buffer.GetRow(y);
+                for (var x = area.Left; x < area.Right; x++)
+                {
+                    var sp = Vector2.Transform(new Vector2(x + 0.5f, y + 0.5f), inverse);
+                    if (sp.X < -0.5f || sp.Y < -0.5f || sp.X > sw + 0.5f || sp.Y > sh + 0.5f) continue;
+                    var color = SampleBilinear(image, source, sp.X - 0.5f, sp.Y - 0.5f, filter);
+                    if (color.A == 0 && blend == BlendMode.SourceOver) continue;
+                    dst[x] = Compositor.Blend(dst[x], color, blend, opacity);
+                }
             }
-        }
+        });
         return this;
     }
 

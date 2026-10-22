@@ -18,13 +18,15 @@ public sealed record RectangleMask(RectangleF Rectangle) : Mask
 
     public override string Kind => "Rectangle";
 
+    private protected override bool DrawsWindows => true;
+
     protected internal override void RenderCoverage(MaskBuffer target, MaskRenderContext context)
     {
         // Mapped to pixels before the corners are flattened, so their tolerance is a fraction of a pixel.
         var rect = MaskRasterizer.Transform(Rectangle, context.ToPixels);
         var radius = Units == MaskUnits.Relative ? CornerRadius * Math.Min(context.Size.Width, context.Size.Height) : CornerRadius;
         var builder = new PathBuilder();
-        MaskRasterizer.Fill(target, (radius > 0 ? builder.AddRoundedRectangle(rect, radius) : builder.AddRectangle(rect)).Build(), FillRule.NonZero);
+        MaskRasterizer.Fill(target, context.Window, (radius > 0 ? builder.AddRoundedRectangle(rect, radius) : builder.AddRectangle(rect)).Build(), FillRule.NonZero);
     }
 
     public override RectangleF? GetCoverageBounds(Size size) => MaskRasterizer.Transform(Rectangle, MaskRasterizer.ToPixels(Units, size));
@@ -42,8 +44,10 @@ public sealed record EllipseMask(RectangleF Rectangle) : Mask
 {
     public override string Kind => "Ellipse";
 
+    private protected override bool DrawsWindows => true;
+
     protected internal override void RenderCoverage(MaskBuffer target, MaskRenderContext context)
-        => MaskRasterizer.Fill(target, new PathBuilder().AddEllipse(MaskRasterizer.Transform(Rectangle, context.ToPixels)).Build(), FillRule.NonZero);
+        => MaskRasterizer.Fill(target, context.Window, new PathBuilder().AddEllipse(MaskRasterizer.Transform(Rectangle, context.ToPixels)).Build(), FillRule.NonZero);
 
     public override RectangleF? GetCoverageBounds(Size size) => MaskRasterizer.Transform(Rectangle, MaskRasterizer.ToPixels(Units, size));
 
@@ -70,11 +74,13 @@ public sealed record PolygonMask : Mask
 
     public override string Kind => "Polygon";
 
+    private protected override bool DrawsWindows => true;
+
     protected internal override void RenderCoverage(MaskBuffer target, MaskRenderContext context)
     {
         if (_points.Length < 3) return;
         var m = context.ToPixels;
-        MaskRasterizer.Fill(target, new PathBuilder().AddPolygon([.. _points.Select(p => Vector2.Transform(p, m))]).Build(), Rule);
+        MaskRasterizer.Fill(target, context.Window, new PathBuilder().AddPolygon([.. _points.Select(p => Vector2.Transform(p, m))]).Build(), Rule);
     }
 
     public override RectangleF? GetCoverageBounds(Size size)
@@ -99,8 +105,10 @@ public sealed record PathMask(VectorPath Path) : Mask
 
     public override string Kind => "Path";
 
+    private protected override bool DrawsWindows => true;
+
     protected internal override void RenderCoverage(MaskBuffer target, MaskRenderContext context)
-        => MaskRasterizer.Fill(target, Units == MaskUnits.Relative ? Path.Transform(context.ToPixels) : Path, Rule);
+        => MaskRasterizer.Fill(target, context.Window, Units == MaskUnits.Relative ? Path.Transform(context.ToPixels) : Path, Rule);
 
     public override RectangleF? GetCoverageBounds(Size size)
         => Path.IsEmpty ? RectangleF.Empty : MaskRasterizer.Transform(Path.Bounds, MaskRasterizer.ToPixels(Units, size));
@@ -172,6 +180,8 @@ public sealed record BrushMask : Mask
 
     public override string Kind => "Brush";
 
+    private protected override bool DrawsWindows => true;
+
     protected internal override void RenderCoverage(MaskBuffer target, MaskRenderContext context)
     {
         foreach (var stroke in _strokes)
@@ -196,7 +206,7 @@ public sealed record BrushMask : Mask
                 FreehandAnnotation.AppendSmoothed(builder, points, closed: false);
                 outline = Stroker.CreateStrokeOutline(builder.Build(), new StrokeStyle { Width = width, Cap = LineCap.Round, Join = LineJoin.Round });
             }
-            MaskRasterizer.Fill(target, outline, FillRule.NonZero, stroke.Opacity, stroke.Erase);
+            MaskRasterizer.Fill(target, context.Window, outline, FillRule.NonZero, stroke.Opacity, stroke.Erase);
         }
     }
 
@@ -243,6 +253,8 @@ public sealed record LinearGradientMask(Vector2 Start, Vector2 End) : Mask
 {
     public override string Kind => "Linear gradient";
 
+    private protected override bool DrawsWindows => true;
+
     protected internal override void RenderCoverage(MaskBuffer target, MaskRenderContext context)
     {
         var m = context.ToPixels;
@@ -256,18 +268,18 @@ public sealed record LinearGradientMask(Vector2 Start, Vector2 End) : Mask
             return;
         }
         var step = axis / lengthSquared;
-        var width = target.Width;
-        ParallelRows.For(context.Operation, 0, target.Height, width, (first, last, band) =>
+        var window = context.Window;
+        ParallelRows.For(context.Operation, window.Top, window.Bottom, window.Width, (first, last, band) =>
         {
             for (var y = first; y < last; y++)
             {
                 if (((y - first) & 63) == 0) band.ThrowIfCancellationRequested();
-                var row = target.GetRow(y);
+                var row = target.GetRow(y - window.Top);
                 var t0 = Vector2.Dot(new Vector2(0.5f, y + 0.5f) - start, step);
-                for (var x = 0; x < width; x++)
+                for (var x = window.Left; x < window.Right; x++)
                 {
                     var t = t0 + x * step.X;
-                    row[x] = t <= 0 ? (byte)255 : t >= 1 ? (byte)0 : Rgba32.ClampToByte((1 - t) * 255f);
+                    row[x - window.Left] = t <= 0 ? (byte)255 : t >= 1 ? (byte)0 : Rgba32.ClampToByte((1 - t) * 255f);
                 }
             }
         });
@@ -297,6 +309,8 @@ public sealed record RadialGradientMask(Vector2 Center, float RadiusX, float Rad
 
     public override string Kind => "Radial gradient";
 
+    private protected override bool DrawsWindows => true;
+
     private (Vector2 Center, float Rx, float Ry) InPixels(Matrix3x2 m)
         => (Vector2.Transform(Center, m), MathF.Abs(RadiusX * m.M11), MathF.Abs(RadiusY * m.M22));
 
@@ -309,17 +323,19 @@ public sealed record RadialGradientMask(Vector2 Center, float RadiusX, float Rad
         var sin = MathF.Sin(angle);
         var hardness = Hardness;
         var fade = 1 - hardness;
-        var bounds = GetCoverageBounds(target.Size)!.Value;
+        var size = context.Size;
+        var bounds = GetCoverageBounds(size)!.Value;
         var area = Rectangle.FromLTRB((int)MathF.Floor(Math.Max(bounds.Left, 0)), (int)MathF.Floor(Math.Max(bounds.Top, 0)),
-            (int)MathF.Ceiling(Math.Min(bounds.Right, target.Width)), (int)MathF.Ceiling(Math.Min(bounds.Bottom, target.Height)));
-        area.Intersect(target.Bounds);
+            (int)MathF.Ceiling(Math.Min(bounds.Right, size.Width)), (int)MathF.Ceiling(Math.Min(bounds.Bottom, size.Height)));
+        var window = context.Window;
+        area.Intersect(window);
         if (area.Width <= 0 || area.Height <= 0) return;
         ParallelRows.For(context.Operation, area.Top, area.Bottom, area.Width, (first, last, band) =>
         {
             for (var y = first; y < last; y++)
             {
                 if (((y - first) & 63) == 0) band.ThrowIfCancellationRequested();
-                var row = target.GetRow(y);
+                var row = target.GetRow(y - window.Top);
                 var dy = y + 0.5f - center.Y;
                 for (var x = area.Left; x < area.Right; x++)
                 {
@@ -331,11 +347,11 @@ public sealed record RadialGradientMask(Vector2 Center, float RadiusX, float Rad
                     if (d >= 1f) continue;
                     if (d <= hardness || fade <= 0)
                     {
-                        row[x] = 255;
+                        row[x - window.Left] = 255;
                         continue;
                     }
                     var t = (1 - d) / fade;
-                    row[x] = Rgba32.ClampToByte(t * t * (3 - 2 * t) * 255f);
+                    row[x - window.Left] = Rgba32.ClampToByte(t * t * (3 - 2 * t) * 255f);
                 }
             }
         });
@@ -381,6 +397,8 @@ public sealed record LuminanceRangeMask(float Low, float High) : Mask
 
     public override string Kind => "Luminance range";
 
+    private protected override bool DrawsWindows => true;
+
     protected internal override void RenderCoverage(MaskBuffer target, MaskRenderContext context)
     {
         var source = context.RequireSource("luminance range");
@@ -392,15 +410,15 @@ public sealed record LuminanceRangeMask(float Low, float High) : Mask
             var distance = l < Low ? Low - l : l > High ? l - High : 0f;
             table[v] = distance <= 0 ? (byte)255 : Softness <= 0 ? (byte)0 : Rgba32.ClampToByte(Math.Max(0, 1 - distance / Softness) * 255f);
         }
-        var width = target.Width;
-        ParallelRows.For(context.Operation, 0, target.Height, width / 2, (first, last, band) =>
+        var window = context.Window;
+        ParallelRows.For(context.Operation, window.Top, window.Bottom, window.Width / 2, (first, last, band) =>
         {
             for (var y = first; y < last; y++)
             {
                 if (((y - first) & 63) == 0) band.ThrowIfCancellationRequested();
-                var pixels = source.GetRow(y);
-                var row = target.GetRow(y);
-                for (var x = 0; x < width; x++) row[x] = table[MaskBuffer.Luma(pixels[x])];
+                var pixels = source.GetRow(y).Slice(window.Left, window.Width);
+                var row = target.GetRow(y - window.Top);
+                for (var x = 0; x < row.Length; x++) row[x] = table[MaskBuffer.Luma(pixels[x])];
             }
         });
     }
@@ -430,21 +448,23 @@ public sealed record ColorRangeMask(Rgba32 Color) : Mask
 
     public override string Kind => "Colour range";
 
+    private protected override bool DrawsWindows => true;
+
     protected internal override void RenderCoverage(MaskBuffer target, MaskRenderContext context)
     {
         var source = context.RequireSource("colour range");
         var color = Color;
         var tolerance = Tolerance;
         var softness = Softness;
-        var width = target.Width;
-        ParallelRows.For(context.Operation, 0, target.Height, width * 2L, (first, last, band) =>
+        var window = context.Window;
+        ParallelRows.For(context.Operation, window.Top, window.Bottom, window.Width * 2L, (first, last, band) =>
         {
             for (var y = first; y < last; y++)
             {
                 if (((y - first) & 63) == 0) band.ThrowIfCancellationRequested();
-                var pixels = source.GetRow(y);
-                var row = target.GetRow(y);
-                for (var x = 0; x < width; x++)
+                var pixels = source.GetRow(y).Slice(window.Left, window.Width);
+                var row = target.GetRow(y - window.Top);
+                for (var x = 0; x < row.Length; x++)
                 {
                     var d = Distance(pixels[x], color);
                     row[x] = d <= tolerance ? (byte)255 : softness <= 0 ? (byte)0 : Rgba32.ClampToByte(Math.Max(0, 1 - (d - tolerance) / softness) * 255f);
@@ -488,19 +508,26 @@ public sealed record BitmapMask(ImageBuffer Image) : Mask
 
     public override string Kind => "Bitmap";
 
+    private protected override bool DrawsWindows => true;
+
     protected internal override void RenderCoverage(MaskBuffer target, MaskRenderContext context)
     {
         if (Image.IsDisposed) throw new ObjectDisposedException(nameof(Image), "The image this mask reads has been disposed.");
         using var values = Channel == MaskChannel.Luminance
             ? MaskBuffer.FromLuminance(Image, context.Operation.Allocator)
             : MaskBuffer.FromAlpha(Image, context.Operation.Allocator);
-        if (values.Size == target.Size)
+        if (values.Size == context.Size)
         {
-            values.Values.CopyTo(target.Values);
+            CopyWindow(values, target, context.Window);
             return;
         }
-        using var resized = values.Resize(target.Width, target.Height, context.Operation.Allocator);
-        resized.Values.CopyTo(target.Values);
+        using var resized = values.Resize(context.Size.Width, context.Size.Height, context.Operation.Allocator);
+        CopyWindow(resized, target, context.Window);
+    }
+
+    private static void CopyWindow(MaskBuffer whole, MaskBuffer target, Rectangle window)
+    {
+        for (var y = 0; y < window.Height; y++) whole.GetRow(window.Top + y).Slice(window.Left, window.Width).CopyTo(target.GetRow(y));
     }
 }
 
@@ -508,16 +535,18 @@ public sealed record BitmapMask(ImageBuffer Image) : Mask
 internal static class MaskRasterizer
 {
     /// <summary>
-    /// Adds a filled outline's coverage, scaled by <paramref name="opacity"/>, to the mask: each value becomes the larger
-    /// of itself and the coverage, or with <paramref name="erase"/> is reduced by it.
+    /// Adds a filled outline's coverage, scaled by <paramref name="opacity"/>, to the mask holding
+    /// <paramref name="window"/> of the image: each value becomes the larger of itself and the coverage, or with
+    /// <paramref name="erase"/> is reduced by it. The outline is in pixels of the image, and a pixel's coverage does not
+    /// depend on the window it is drawn in.
     /// </summary>
-    public static void Fill(MaskBuffer target, VectorPath path, FillRule rule, float opacity = 1f, bool erase = false)
+    public static void Fill(MaskBuffer target, Rectangle window, VectorPath path, FillRule rule, float opacity = 1f, bool erase = false)
     {
         var scale = Math.Clamp(opacity, 0f, 1f) * 255f;
         if (scale <= 0) return;
-        Rasterizer.Rasterize(path, target.Bounds, rule, (y, x0, coverage) =>
+        Rasterizer.Rasterize(path, window, rule, (y, x0, coverage) =>
         {
-            var row = target.GetRow(y).Slice(x0, coverage.Length);
+            var row = target.GetRow(y - window.Top).Slice(x0 - window.Left, coverage.Length);
             for (var i = 0; i < coverage.Length; i++)
             {
                 var c = coverage[i];

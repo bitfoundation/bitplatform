@@ -21,11 +21,11 @@ public sealed class BitBmageOptions
     public int? MaxInteractiveDimension { get; set; }
 
     /// <summary>
-    /// The most threads one operation may spread its rows over. Null uses
-    /// <see cref="Operations.OperationContext.DefaultMaxDegreeOfParallelism"/>: every processor on a server, and one in
-    /// the browser, where Blazor WebAssembly runs .NET on the page's thread. Set it in a WebAssembly app built with
-    /// <c>WasmEnableThreads</c> to use the other cores, or to 1 on a server that would rather spend its cores on
-    /// concurrent requests. Pixels are identical whatever the value.
+    /// The most threads one operation may spread its rows over, for the processors, loaders and editors these services
+    /// create. Null uses <see cref="Operations.OperationContext.DefaultMaxDegreeOfParallelism"/>, one: a server already
+    /// spends its cores on concurrent requests and circuits. Set it to <see cref="Environment.ProcessorCount"/> where one
+    /// image at a time should use every core, such as a desktop app, a background job or a WebAssembly app built with
+    /// <c>WasmEnableThreads</c>. Pixels are identical whatever the value.
     /// </summary>
     public int? MaxDegreeOfParallelism
     {

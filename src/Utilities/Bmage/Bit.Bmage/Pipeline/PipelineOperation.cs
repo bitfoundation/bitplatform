@@ -31,29 +31,9 @@ public sealed class PipelineOperation : ImageOperation
         ArgumentNullException.ThrowIfNull(source);
         var steps = Pipeline.Optimize(source.Size);
         if (steps.IsEmpty) return context.CanMutateSource ? source : source.Clone(context.Allocator);
-
-        var current = source;
-        try
-        {
-            for (var i = 0; i < steps.Count; i++)
-            {
-                context.ThrowIfCancellationRequested();
-                // The source may be changed in place only when the caller allowed it; every buffer made here may.
-                var mutable = ReferenceEquals(current, source) ? context.CanMutateSource : true;
-                var progress = context.Progress is null ? null : new ScaledProgress(context.Progress, i / (double)steps.Count, 1.0 / steps.Count);
-                var next = steps[i].Apply(current, new OperationContext(context.Allocator, context.Limits, context.CancellationToken, progress, mutable, context.MaxDegreeOfParallelism));
-                // The caller releases the source when the result is another buffer; the steps in between are ours.
-                if (!ReferenceEquals(next, current) && !ReferenceEquals(current, source)) current.Dispose();
-                current = next;
-            }
-            context.ReportProgress(1);
-            return ReferenceEquals(current, source) && !context.CanMutateSource ? source.Clone(context.Allocator) : current;
-        }
-        catch
-        {
-            if (!ReferenceEquals(current, source)) current.Dispose();
-            throw;
-        }
+        // The same loop as a pipeline run of its own: upright photos are not oriented again, and a failing step is named.
+        var result = ImagePipeline.Run(steps, source, context);
+        return ReferenceEquals(result, source) && !context.CanMutateSource ? source.Clone(context.Allocator) : result;
     }
 
     public override IImageOperation ForScale(double scale) => scale == 1 ? this : new PipelineOperation(Pipeline.ForScale(scale), _name);

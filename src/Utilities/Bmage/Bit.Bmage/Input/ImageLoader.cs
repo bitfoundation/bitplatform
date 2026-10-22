@@ -38,7 +38,7 @@ public sealed class ImageLoader
     {
         ArgumentNullException.ThrowIfNull(source);
         var processor = await _processors.GetAsync(cancellationToken).ConfigureAwait(false);
-        options ??= new DecodeOptions();
+        options ??= new DecodeOptions { Limits = processor.Limits };
         if (options.FileName is null && source.FileName is not null) options = options with { FileName = source.FileName };
 
         if (source.IsRemote)
@@ -108,7 +108,7 @@ public sealed class ImageLoader
         {
             using var result = await _interop.InvokeForBytesAsync<ClipboardInfo>("readClipboardImage", cancellationToken).ConfigureAwait(false);
             if (!result.HasValue || result.Bytes.Length == 0) return null;
-            return await processor.DecodeAsync(result.Bytes.Memory, options ?? new DecodeOptions(), cancellationToken).ConfigureAwait(false);
+            return await processor.DecodeAsync(result.Bytes.Memory, options ?? new DecodeOptions { Limits = processor.Limits }, cancellationToken).ConfigureAwait(false);
         }
         catch (JSException ex)
         {

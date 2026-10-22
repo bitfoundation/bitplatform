@@ -63,7 +63,8 @@ public sealed class MaskedOperation : ImageOperation
         var operation = IsIdentity || affected.IsEmptyArea() ? null : Simplify(Operation, source.Size);
         if (operation is null) return GetMutableCopy(source, context);
 
-        using var mask = Mask.Render(source.Size, source, context.WithProgress(null));
+        // Only the part of the mask that can affect anything is drawn: its rows are the affected area's.
+        using var mask = Mask.RenderWindow(source.Size, affected, source, context.WithProgress(null));
         if (operation is PointOperation point) return ApplyPerPixel(source, mask, point, affected, context);
 
         var processed = operation.Apply(source, context.WithMutation(false));
@@ -100,7 +101,8 @@ public sealed class MaskedOperation : ImageOperation
 
     /// <summary>
     /// One pass over the rows the mask reaches: each row is mapped exactly as the operation alone maps it, and mixed with
-    /// the original by the mask. Rows and columns outside its reach are copied, or left alone in place.
+    /// the original by the mask, which holds just the <paramref name="affected"/> area. Rows and columns outside its
+    /// reach are copied, or left alone in place.
     /// </summary>
     private static ImageBuffer ApplyPerPixel(ImageBuffer source, MaskBuffer mask, PointOperation operation, Rectangle affected, OperationContext context)
     {
@@ -131,7 +133,7 @@ public sealed class MaskedOperation : ImageOperation
                             src[..affected.Left].CopyTo(dst);
                             src[affected.Right..].CopyTo(dst[affected.Right..]);
                         }
-                        var coverage = mask.GetRow(y).Slice(affected.Left, affected.Width);
+                        var coverage = mask.GetRow(y - affected.Top);
                         var original = src.Slice(affected.Left, affected.Width);
                         var target = dst.Slice(affected.Left, affected.Width);
                         if (coverage.IndexOfAnyExcept((byte)0) < 0)
@@ -174,7 +176,7 @@ public sealed class MaskedOperation : ImageOperation
                 src[..affected.Left].CopyTo(dst);
                 src[affected.Right..].CopyTo(dst[affected.Right..]);
                 var target = dst.Slice(affected.Left, affected.Width);
-                Mix(src.Slice(affected.Left, affected.Width), target, mask.GetRow(y).Slice(affected.Left, affected.Width), target);
+                Mix(src.Slice(affected.Left, affected.Width), target, mask.GetRow(y - affected.Top), target);
             }
         });
     }

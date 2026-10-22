@@ -39,9 +39,9 @@ the synchronous form; use it off the UI thread or for small images.
 | `Allocator` | Where intermediate buffers come from. Defaults to the shared pool. |
 | `Limits` | Safety limits applied to every buffer allocated during the run. |
 | `CancellationToken` | Checked between operations and periodically inside them, typically every few rows. |
-| `Progress` | Receives 0 to 1 across the whole run, with each operation's own progress mapped into its slice. |
+| `Progress` | Receives 0 to 1 across the whole run, with each operation's own progress mapped into its slice, always on the thread that started the run. |
 | `Optimize` | Run the optimiser first. Default true. |
-| `MaxDegreeOfParallelism` | The most threads an operation may spread its rows over. Defaults to every processor, and one in the browser. Pixels are identical whatever the value. |
+| `MaxDegreeOfParallelism` | The most threads an operation may spread its rows over. Defaults to one; `Environment.ProcessorCount` uses every core. Pixels are identical whatever the value. |
 | `YieldBetweenOperations` | Yield to the scheduler between steps. Default true. |
 | `YieldCallback` | How to yield, if the default `Task.Yield` is not right for your host. |
 

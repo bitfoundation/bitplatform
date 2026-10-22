@@ -104,7 +104,8 @@ annotation edits never composite the layers again and layer edits never re-run t
 **In .NET**, operations whose rows are independent split them into bands (`ParallelRows`) over
 `MaxDegreeOfParallelism` threads, each band with its own scratch rows and shared read-only kernels and tables, so the
 pixels are identical on any number of threads. Blurs stay sequential: their running sums would change if split. The
-default is every processor, and one in the browser, where .NET has only the page's thread.
+default is one thread, which suits a server already running requests side by side and the browser, where .NET has only
+the page's thread; an application processing one image at a time sets more.
 
 **In the browser**, decoding, encoding and the editor's proxy resize run in a small Web Worker pool, with buffers
 transferred rather than copied, and fall back to the page's thread wherever workers cannot run. See

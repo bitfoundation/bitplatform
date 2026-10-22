@@ -1,17 +1,17 @@
 ﻿# Threads, workers and memory
 
-Bmage uses every core it is allowed to, keeps the browser's page thread free for the page, and lets a caller predict
-and bound the memory a piece of work takes. None of it needs configuring; every part of it can be.
+Bmage spreads an operation over as many cores as it is told to, keeps the browser's page thread free for the page, and
+lets a caller predict and bound the memory a piece of work takes. None of it needs configuring; every part of it can be.
 
-## Every core
+## Every core, when asked
 
-Operations whose rows are independent split them into bands and run them on `MaxDegreeOfParallelism` threads, which is
-every processor wherever .NET has threads: resampling and the box prepass behind large reductions, rotations, skews and
-perspective warps, per-pixel adjustments, convolution, median, vignette, lossless orientation, masks and layer
-compositing. Each band brings a few rows of scratch of its own and shares read-only state such as filter kernels and
-lookup tables, so the pixels are identical however many threads run; a test asserts that for every one of them. On
-one thread the code is the code it always was: an A/B run against the previous release put every operation below within
-2% of it.
+Operations whose rows are independent split them into bands and run them on `MaxDegreeOfParallelism` threads:
+resampling and the box prepass behind large reductions, rotations, skews and perspective warps, per-pixel adjustments,
+convolution, median, vignette, lossless orientation, masks, layer compositing and drawing images. Each band brings a few
+rows of scratch of its own and shares read-only state such as filter kernels and lookup tables, so the pixels are
+identical however many threads run; a test asserts that for every one of them. The default is one thread, the one that
+runs the operation, and on one thread the code is the code it always was: an A/B run against the previous release put
+every operation below within 2% of it.
 
 Measured with BenchmarkDotNet on an Intel Core i9-10900 (10 cores, 20 threads), .NET 10.0.13, Windows 10, two warm-ups
 and six iterations:
@@ -30,21 +30,24 @@ running sums, and splitting them would change the sums and so the pixels.
 
 ### Choosing the number of threads
 
-| Where | Default | Why |
+| Where | Set | Why |
 | --- | --- | --- |
-| Server, desktop, MAUI | Every processor | One request finishes sooner. |
-| Browser | One | Blazor WebAssembly runs .NET on the page's thread, and work handed to another thread could never be waited for there. |
+| Server | Nothing: one | Requests, batch items and editor circuits already run side by side. Each of them fanning out over every core would multiply the threads they compete for, and hold a thread-pool thread waiting on every run. |
+| Desktop, MAUI, a command-line tool or background job | `Environment.ProcessorCount` | One image at a time finishes sooner. |
+| Browser | Nothing: one | Blazor WebAssembly runs .NET on the page's thread, and work handed to another thread could never be waited for there. |
 
 ```csharp
-// For every operation the services run:
-builder.Services.AddBitBmageServices(options => options.MaxDegreeOfParallelism = 4);
+// For every operation the services run: processors, loaders and editors.
+builder.Services.AddBitBmageServices(options => options.MaxDegreeOfParallelism = Environment.ProcessorCount);
 
 // For one run:
-pipeline.Execute(image, new PipelineExecutionOptions { MaxDegreeOfParallelism = 1 });
+pipeline.Execute(image, new PipelineExecutionOptions { MaxDegreeOfParallelism = Environment.ProcessorCount });
 ```
 
-A server handling many requests at once may prefer one thread per request and let the requests use the cores. A
-WebAssembly app built with `<WasmEnableThreads>true</WasmEnableThreads>` can raise the browser's default.
+In a batch every image in flight uses that many threads, so `MaxConcurrency` times `MaxDegreeOfParallelism` is what a
+batch can occupy. A WebAssembly app built with `<WasmEnableThreads>true</WasmEnableThreads>` can raise the browser's
+default the same way. Whatever the number, progress is reported on the thread that called the operation, so a sink that
+updates a UI or a Blazor component needs no marshalling of its own.
 
 A custom `PointOperation` runs on one thread unless it overrides `CanProcessRowsConcurrently` to say its `ProcessRow`
 keeps no shared state; a fused run is only as concurrent as its least safe stage. A custom `ImageOperation` is its own

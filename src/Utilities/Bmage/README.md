@@ -73,8 +73,9 @@ Blazor-native image processing platform where the engine itself is C#.
   blend modes.
 - **Edits are data.** A document, pipeline, layers, masks and annotations included, writes to JSON and reads back as the
   same edit, so the browser can send the edit instead of the pixels and a server can replay it at full resolution.
-- **Every core, every thread it can use.** Operations spread their rows over all cores where .NET has threads, with
-  identical pixels, and in the browser decoding and encoding run in Web Workers, off the page's thread.
+- **Every core, when you want it.** Set `MaxDegreeOfParallelism` and operations spread their rows over that many cores
+  with identical pixels; one thread by default, which suits a busy server. In the browser decoding and encoding run in
+  Web Workers, off the page's thread.
 - **Memory you can predict.** A pipeline estimates its peak before it runs, a budgeted allocator enforces a ceiling,
   and a batch streams its files and results so it holds only the images in flight.
 
@@ -202,9 +203,9 @@ table in performance.md has both. See
 | JPEG encode, quality 85 | 3840 × 2160 | 122 ms | 6.7 MB |
 | PNG decode | 3840 × 2160 | 88 ms | 37 MB |
 
-Those are on one thread. Wherever .NET has threads, operations spread their rows over every core with identical pixels:
-on a 10 core machine a 24 megapixel downscale runs 4.7× faster, a 4K rotation 6.1×, a median filter 8.5×. In the
-browser, decoding and encoding run in Web Workers, off the page's thread.
+Those are on one thread, the default. Given more with `MaxDegreeOfParallelism`, operations spread their rows over every
+core with identical pixels: on a 10 core machine a 24 megapixel downscale runs 4.7× faster, a 4K rotation 6.1×, a
+median filter 8.5×. In the browser, decoding and encoding run in Web Workers, off the page's thread.
 
 ## Where it runs
 

@@ -179,8 +179,8 @@ internal static class BuiltInCodecs
     private static void WriteRatio(BmageJsonWriter w, AspectRatio ratio)
     {
         w.Json.WriteStartArray("ratio");
-        w.Json.WriteNumberValue(ratio.Width);
-        w.Json.WriteNumberValue(ratio.Height);
+        w.WriteNumberValue(ratio.Width);
+        w.WriteNumberValue(ratio.Height);
         w.Json.WriteEndArray();
     }
 
@@ -188,7 +188,7 @@ internal static class BuiltInCodecs
     {
         if (!r.Element.TryGetProperty("ratio", out var value) || value.ValueKind != System.Text.Json.JsonValueKind.Array || value.GetArrayLength() != 2)
             throw new ImageDocumentFormatException($"{r.Path}.ratio should be [width, height].");
-        return new AspectRatio(value[0].GetDouble(), value[1].GetDouble());
+        return new AspectRatio(BmageJsonReader.ReadDouble(value[0]), BmageJsonReader.ReadDouble(value[1]));
     }
 
     private static Mask RequireMask(BmageJsonReader r) => r.GetMask("mask") ?? throw new ImageDocumentFormatException($"{r.Path} has no \"mask\".");
@@ -211,8 +211,8 @@ internal static class BuiltInCodecs
                     w.Json.WriteStartArray();
                     foreach (var p in contour)
                     {
-                        w.Json.WriteNumberValue(p.X);
-                        w.Json.WriteNumberValue(p.Y);
+                        w.WriteNumberValue(p.X);
+                        w.WriteNumberValue(p.Y);
                     }
                     w.Json.WriteEndArray();
                 }
@@ -244,10 +244,24 @@ internal static class BuiltInCodecs
             r => new ColorRangeMask(r.GetColor("color")) { Tolerance = r.GetSingle("tolerance", 0.15f), Softness = r.GetSingle("softness", 0.1f) }),
         MaskOf<BitmapMask>("bitmap", (w, m) => w.WriteImage("image", m.Image).WriteEnum("channel", m.Channel),
             r => new BitmapMask(r.GetImage("image")) { Channel = r.GetEnum("channel", MaskChannel.Alpha) }),
-        MaskOf<CombinedMask>("combined", (w, m) => w.Write("first", m.First).Write("second", m.Second).WriteEnum("mode", m.Mode),
-            r => new CombinedMask(r.GetMask("first") ?? throw new ImageDocumentFormatException($"{r.Path} has no \"first\"."),
-                r.GetMask("second") ?? throw new ImageDocumentFormatException($"{r.Path} has no \"second\"."), r.GetEnum("mode", MaskCombineMode.Union))),
+        MaskOf<CombinedMask>("combined", (w, m) => w.Write("first", m.First).Write("second", m.Second).WriteEnum("mode", m.Mode), ReadCombined),
     ];
+
+    /// <summary>
+    /// A combination, refused when drawing it would hold more masks at once than <see cref="Mask.MaxMasksHeld"/>: each is
+    /// the size of the image, so a document nesting a hundred of them, as only a hostile one would, could otherwise take
+    /// gigabytes from a server that replays it.
+    /// </summary>
+    private static CombinedMask ReadCombined(BmageJsonReader r)
+    {
+        var mask = new CombinedMask(r.GetMask("first") ?? throw new ImageDocumentFormatException($"{r.Path} has no \"first\"."),
+            r.GetMask("second") ?? throw new ImageDocumentFormatException($"{r.Path} has no \"second\"."), r.GetEnum("mode", MaskCombineMode.Union));
+        // The combination's own feather is set once this returns, and holds a working copy of its own.
+        var feathered = r.GetSingle("feather", 0) >= 0.05f ? 1 : 0;
+        if (mask.MasksHeld() + feathered > Mask.MaxMasksHeld)
+            throw new ImageDocumentFormatException($"{r.Path} nests its masks too deeply: drawing it would hold more than {Mask.MaxMasksHeld} masks at once. Combine them a step at a time, a.Union(b).Union(c), rather than inside one another.");
+        return mask;
+    }
 
     private static Codec MaskOf<T>(string name, Action<BmageJsonWriter, T> write, Func<BmageJsonReader, T> read) where T : Mask
         => new(typeof(Mask), typeof(T), name,
@@ -278,7 +292,7 @@ internal static class BuiltInCodecs
                 if (contour.ValueKind != System.Text.Json.JsonValueKind.Array || contour.GetArrayLength() % 2 != 0)
                     throw new ImageDocumentFormatException($"{r.Path}.contours should hold arrays of x, y pairs.");
                 var points = new Vector2[contour.GetArrayLength() / 2];
-                for (var i = 0; i < points.Length; i++) points[i] = new Vector2(contour[2 * i].GetSingle(), contour[2 * i + 1].GetSingle());
+                for (var i = 0; i < points.Length; i++) points[i] = new Vector2(BmageJsonReader.ReadSingle(contour[2 * i]), BmageJsonReader.ReadSingle(contour[2 * i + 1]));
                 contours.Add(points);
             }
         }

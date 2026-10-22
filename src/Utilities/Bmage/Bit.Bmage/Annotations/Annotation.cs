@@ -133,6 +133,9 @@ public sealed class AnnotationRenderContext
     /// informational (useful for choosing detail levels).
     /// </summary>
     public double Scale { get; }
+
+    /// <summary>Allocation, limits, threads and cancellation for annotations that run an operation, such as a redaction's blur.</summary>
+    internal Operations.OperationContext Operation { get; init; } = Operations.OperationContext.Default;
 }
 
 /// <summary>Shared styling for shape annotations.</summary>

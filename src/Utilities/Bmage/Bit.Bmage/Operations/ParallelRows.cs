@@ -8,7 +8,7 @@ namespace Bit.Bmage.Operations;
 /// <param name="context">
 /// The context to check cancellation on and report progress through, as a fraction of the whole image. Inside a band
 /// that runs beside others it reports nothing, since the bands finish in no particular order; the bands' completion is
-/// reported instead.
+/// reported instead, always on the thread that called the operation.
 /// </param>
 internal delegate void RowBand(int start, int end, OperationContext context);
 
@@ -49,7 +49,7 @@ internal static class ParallelRows
 
         // A band beside others must not report progress itself, and must not fan out again.
         var bandContext = new OperationContext(context.Allocator, context.Limits, context.CancellationToken, progress: null, context.CanMutateSource, maxDegreeOfParallelism: 1);
-        var progress = context.Progress is null ? null : new BandProgress(context, rows);
+        var progress = context.Progress is null ? null : new BandProgress(context, rows, Environment.CurrentManagedThreadId);
         var options = new ParallelOptions
         {
             MaxDegreeOfParallelism = Math.Min(context.MaxDegreeOfParallelism, bands),
@@ -73,6 +73,8 @@ internal static class ParallelRows
             var inner = ex.Flatten().InnerExceptions;
             ExceptionDispatchInfo.Capture(inner.FirstOrDefault(e => e is not OperationCanceledException) ?? inner[0]).Throw();
         }
+        // Back on the caller's thread with every band done: whatever the other threads finished last is reported now.
+        progress?.ReportOnCaller();
     }
 
     /// <summary>
@@ -87,19 +89,28 @@ internal static class ParallelRows
         return (int)Math.Max(1, Math.Min(Math.Min(rows, 2L * maxDegreeOfParallelism), byWork));
     }
 
-    /// <summary>Reports the share of rows whose bands have finished, never going backwards.</summary>
-    private sealed class BandProgress(OperationContext context, int rows)
+    /// <summary>
+    /// Reports the share of rows whose bands have finished, never going backwards, and only on the thread that called
+    /// the operation: a progress sink may belong to a UI or a Blazor renderer, and the other bands' threads are neither.
+    /// That thread runs bands too, so the share moves on each time it finishes one.
+    /// </summary>
+    private sealed class BandProgress(OperationContext context, int rows, int callerThread)
     {
-        private readonly object _lock = new();
         private int _done;
+        private int _reported;
 
         public void Completed(int count)
         {
-            lock (_lock)
-            {
-                _done += count;
-                context.ReportProgress(_done / (double)rows);
-            }
+            Interlocked.Add(ref _done, count);
+            if (Environment.CurrentManagedThreadId == callerThread) ReportOnCaller();
+        }
+
+        public void ReportOnCaller()
+        {
+            var done = Volatile.Read(ref _done);
+            if (done <= _reported) return;
+            _reported = done;
+            context.ReportProgress(done / (double)rows);
         }
     }
 }

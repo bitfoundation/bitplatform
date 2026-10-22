@@ -325,14 +325,17 @@ public sealed class ImagePipeline : IReadOnlyList<IImageOperation>
     }
 
     /// <summary>
-    /// What rendering a mask holds at once: its own byte per pixel, both sides of a combination while they are
-    /// combined, and for a bitmap mask the matte at its own size and resized.
+    /// What rendering a mask holds at once: its own byte per pixel, the masks drawing it holds beside that (see
+    /// <see cref="Masks.Mask.MasksHeld"/>), each taken at the image's size, and the largest of its bitmaps' mattes at
+    /// their own size. A mask drawn only over the area an edit reaches holds less.
     /// </summary>
-    private static long MaskBytes(Masks.Mask mask, long pixels) => mask switch
+    private static long MaskBytes(Masks.Mask mask, long pixels) => pixels * (1 + mask.MasksHeld()) + MatteBytes(mask);
+
+    private static long MatteBytes(Masks.Mask mask) => mask switch
     {
-        Masks.CombinedMask combined => pixels + MaskBytes(combined.First, pixels) + MaskBytes(combined.Second, pixels),
-        Masks.BitmapMask bitmap => 2 * pixels + (long)bitmap.Image.Width * bitmap.Image.Height,
-        _ => pixels,
+        Masks.CombinedMask combined => Math.Max(MatteBytes(combined.First), MatteBytes(combined.Second)),
+        Masks.BitmapMask bitmap => (long)bitmap.Image.Width * bitmap.Image.Height,
+        _ => 0,
     };
 
     /// <summary>What an operation allocates beyond its output while it runs.</summary>
@@ -372,47 +375,57 @@ public sealed class ImagePipeline : IReadOnlyList<IImageOperation>
         options ??= PipelineExecutionOptions.Default;
         var pipeline = options.Optimize ? Optimize(source.Size) : this;
         if (pipeline.IsEmpty) return source.Clone(options.Allocator);
+        var result = Run(pipeline, source, new OperationContext(options.Allocator, options.Limits, options.CancellationToken, options.Progress, canMutateSource: false, options.MaxDegreeOfParallelism));
+        return ReferenceEquals(result, source) ? source.Clone(options.Allocator) : result;
+    }
 
+    /// <summary>
+    /// Runs <paramref name="steps"/>, already optimised, one after another: the loop of <see cref="Execute"/>, which a
+    /// nested pipeline runs too. The source is changed in place only when <paramref name="context"/> allows it, and
+    /// is returned itself when no step produced another buffer; every buffer in between is released.
+    /// </summary>
+    internal static ImageBuffer Run(ImagePipeline steps, ImageBuffer source, OperationContext context)
+    {
         var current = source;
-        var owned = false;
-        var count = pipeline.Count;
+        var count = steps.Count;
         try
         {
             for (var i = 0; i < count; i++)
             {
-                var op = pipeline[i];
-                options.CancellationToken.ThrowIfCancellationRequested();
-                if (IsUprightAlready(op, current))
+                var op = steps[i];
+                context.ThrowIfCancellationRequested();
+                if (!IsUprightAlready(op, current))
                 {
-                    options.Progress?.Report((i + 1) / (double)count);
-                    continue;
-                }
-                var stageProgress = options.Progress is null ? null : new StageProgress(options.Progress, i, count);
-                var context = new OperationContext(options.Allocator, options.Limits, options.CancellationToken, stageProgress, canMutateSource: owned, options.MaxDegreeOfParallelism);
-                ImageBuffer next;
-                try
-                {
-                    next = op.Apply(current, context);
-                }
-                catch (Exception ex) when (ex is not (OperationCanceledException or ImageException))
-                {
-                    throw new ImageException($"Operation '{op.Name}' (step {i + 1} of {count}) failed: {ex.Message}", ex);
-                }
-                if (!ReferenceEquals(next, current))
-                {
-                    if (owned) current.Dispose();
+                    var next = ApplyStep(op, current, i, count, ReferenceEquals(current, source) ? context.CanMutateSource : true, context);
+                    // The caller releases the source; the buffers in between are the run's own.
+                    if (!ReferenceEquals(next, current) && !ReferenceEquals(current, source)) current.Dispose();
                     current = next;
-                    owned = true;
                 }
-                options.Progress?.Report((i + 1) / (double)count);
+                context.ReportProgress((i + 1) / (double)count);
             }
-            if (!owned) current = source.Clone(options.Allocator);
             return current;
         }
         catch
         {
-            if (owned) current.Dispose();
+            if (!ReferenceEquals(current, source)) current.Dispose();
             throw;
+        }
+    }
+
+    /// <summary>
+    /// Applies step <paramref name="index"/> of <paramref name="count"/>, reporting its progress within the step's share
+    /// of <paramref name="context"/>'s, and naming the step in any failure that is not already an image error.
+    /// </summary>
+    private static ImageBuffer ApplyStep(IImageOperation op, ImageBuffer current, int index, int count, bool canMutate, OperationContext context)
+    {
+        var stageProgress = context.Progress is null ? null : new StageProgress(context.Progress, index, count);
+        try
+        {
+            return op.Apply(current, new OperationContext(context.Allocator, context.Limits, context.CancellationToken, stageProgress, canMutate, context.MaxDegreeOfParallelism));
+        }
+        catch (Exception ex) when (ex is not (OperationCanceledException or ImageException))
+        {
+            throw new ImageException($"Operation '{op.Name}' (step {index + 1} of {count}) failed: {ex.Message}", ex);
         }
     }
 
@@ -427,6 +440,7 @@ public sealed class ImagePipeline : IReadOnlyList<IImageOperation>
         var current = source;
         var owned = false;
         var count = pipeline.Count;
+        var run = new OperationContext(options.Allocator, options.Limits, options.CancellationToken, options.Progress, canMutateSource: false, options.MaxDegreeOfParallelism);
         try
         {
             for (var i = 0; i < count; i++)
@@ -438,17 +452,7 @@ public sealed class ImagePipeline : IReadOnlyList<IImageOperation>
                     options.Progress?.Report((i + 1) / (double)count);
                     continue;
                 }
-                var stageProgress = options.Progress is null ? null : new StageProgress(options.Progress, i, count);
-                var context = new OperationContext(options.Allocator, options.Limits, options.CancellationToken, stageProgress, canMutateSource: owned, options.MaxDegreeOfParallelism);
-                ImageBuffer next;
-                try
-                {
-                    next = op.Apply(current, context);
-                }
-                catch (Exception ex) when (ex is not (OperationCanceledException or ImageException))
-                {
-                    throw new ImageException($"Operation '{op.Name}' (step {i + 1} of {count}) failed: {ex.Message}", ex);
-                }
+                var next = ApplyStep(op, current, i, count, canMutate: owned, run);
                 if (!ReferenceEquals(next, current))
                 {
                     if (owned) current.Dispose();
@@ -513,9 +517,9 @@ public sealed record PipelineExecutionOptions
 
     /// <summary>
     /// The most threads an operation may spread its rows over. Null uses
-    /// <see cref="OperationContext.DefaultMaxDegreeOfParallelism"/>: every processor where .NET has threads, one in the
-    /// browser. The pixels are identical whatever the value; set 1 to keep a run on the calling thread, for example on
-    /// a server that is already busy with many requests at once.
+    /// <see cref="OperationContext.DefaultMaxDegreeOfParallelism"/>, one, which keeps a run on the calling thread. The
+    /// pixels are identical whatever the value; set <see cref="Environment.ProcessorCount"/> to finish one large image
+    /// sooner where nothing else needs the cores, but not on a server already busy with many requests at once.
     /// </summary>
     public int? MaxDegreeOfParallelism
     {

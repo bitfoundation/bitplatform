@@ -49,7 +49,8 @@ builder.Services.AddBitBmageServices(options =>
     // Longest edge used for interactive editing; larger images edit through a proxy.
     options.MaxInteractiveDimension = 2048;
 
-    // Threads an operation may use: every core on a server, one in the browser unless the app is built with threads.
+    // Threads an operation may use: one by default. Environment.ProcessorCount uses every core, in the browser only
+    // when the app is built with threads.
     options.MaxDegreeOfParallelism = null;
 
     // Web Workers the browser codecs may use; 0 keeps decoding and encoding on the page's thread.

@@ -67,7 +67,8 @@ The relative ordering in the tables below holds under both, so the guidance at t
 
 ## Every core
 
-On ten cores, operations run 4.7 to 8.5× faster, with the same pixels: see [threads-and-memory.md](threads-and-memory.md).
+Operations run on one thread unless `MaxDegreeOfParallelism` gives them more. Given ten cores they run 4.7 to 8.5×
+faster, with the same pixels: see [threads-and-memory.md](threads-and-memory.md).
 
 ## Resizing
 

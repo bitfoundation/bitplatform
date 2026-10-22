@@ -4,6 +4,7 @@ using System.Numerics;
 using Bit.Bmage.Codecs;
 using Bit.Bmage.Drawing;
 using Bit.Bmage.Geometry;
+using Bit.Bmage.Interop;
 using Bit.Bmage.Layers;
 using Bit.Bmage.Masks;
 using Bit.Bmage.Memory;
@@ -11,6 +12,7 @@ using Bit.Bmage.Operations;
 using Bit.Bmage.Operations.Adjustments;
 using Bit.Bmage.Operations.Transforms;
 using Bit.Bmage.Pipeline;
+using Microsoft.JSInterop;
 
 namespace Bit.Bmage.Tests;
 
@@ -192,13 +194,309 @@ public sealed class ReviewFindingsTests
     }
 
     [TestMethod]
-    public void TheEstimateCountsBothSidesOfACombinedMask()
+    public void TheEstimateCountsTheMaskACombinationHoldsBesideItsOwn()
     {
         var size = new Size(1000, 1000);
         var single = ImagePipeline.Create().Masked(Mask.Ellipse(), p => p.Brightness(0.1f)).EstimateMemory(size).PeakBytes;
         var combined = ImagePipeline.Create().Masked(Mask.Ellipse().Union(Mask.All()), p => p.Brightness(0.1f)).EstimateMemory(size).PeakBytes;
 
-        Assert.AreEqual(2L * 1000 * 1000, combined - single);
+        // The first side is drawn into the combination's own mask, the second beside it.
+        Assert.AreEqual(1L * 1000 * 1000, combined - single);
+    }
+
+    // ------------------------------------------------------------------ second review
+
+    [TestMethod]
+    public void AnImageLayerDrawsWithTheLimitsAllocatorAndCancellationOfItsContext()
+    {
+        using var logo = ParallelProcessingTests.Noise(100, 4, seed: 6);
+        // Wider than the default limits allow: only the context the layer is composited with lifts them.
+        using var target = ImageBuffer.Create(17_000, 4, allocator: null, clear: true, ImageLimits.Unrestricted);
+        var budget = new BudgetedPixelAllocator(long.MaxValue);
+        new ImageLayer { Image = logo, Bounds = new RectangleF(0, 0, 17_000, 4) }.Composite(target, new OperationContext(budget, ImageLimits.Unrestricted));
+
+        // The resampled copy is the size of the area drawn, and counted against the budget.
+        Assert.IsGreaterThanOrEqualTo(17_000L * 4 * 4, budget.PeakBytes);
+        Assert.AreEqual(0, budget.CurrentBytes);
+
+        using var cancelled = new CancellationTokenSource();
+        cancelled.Cancel();
+        using var small = ImageBuffer.Create(200, 200, Rgba32.White);
+        Assert.ThrowsExactly<OperationCanceledException>(() =>
+            new ImageLayer { Image = logo, Bounds = new RectangleF(20, 20, 150, 150), Rotation = 30 }.Composite(small, new OperationContext(cancellationToken: cancelled.Token)));
+    }
+
+    [TestMethod]
+    public void ALayerWhosePipelineCropsIsShrunkOnlyAsFarAsWhatTheCropLeaves()
+    {
+        using var photo = ParallelProcessingTests.Noise(800, 800, seed: 7);
+        var crop = new Rectangle(200, 200, 100, 100);
+        using var cropped = new CropOperation(crop).Apply(photo, OperationContext.Default);
+        using var throughPipeline = ImageBuffer.Create(100, 100, Rgba32.White);
+        using var direct = ImageBuffer.Create(100, 100, Rgba32.White);
+
+        new ImageLayer { Image = photo, Bounds = new RectangleF(0, 0, 100, 100), Pipeline = ImagePipeline.Create().Crop(crop) }.Composite(throughPipeline);
+        new ImageLayer { Image = cropped, Bounds = new RectangleF(0, 0, 100, 100) }.Composite(direct);
+
+        CollectionAssert.AreEqual(direct.Pixels.ToArray(), throughPipeline.Pixels.ToArray(), "The cropped layer was shrunk before its crop and drawn blurred.");
+    }
+
+    [TestMethod]
+    public async Task AModuleWithoutConfigureWorkersStillLoads_AndACancelledLoadReleasesIt()
+    {
+        var old = new FakeModule(identifier => { if (identifier == "configureWorkers") throw new JSException("configureWorkers is not a function"); });
+        await using (var interop = new BrowserImageInterop(new ImportingJSRuntime(old), new BitBmageOptions { MaxCodecWorkers = 2 }))
+        {
+            Assert.AreSame(old, await interop.GetModuleAsync());
+            Assert.IsTrue(interop.IsLoaded);
+            Assert.IsFalse(old.Disposed);
+        }
+
+        using var cancel = new CancellationTokenSource();
+        var module = new FakeModule(identifier =>
+        {
+            if (identifier != "configureWorkers") return;
+            cancel.Cancel();
+            throw new TaskCanceledException();
+        });
+        await using var cancelled = new BrowserImageInterop(new ImportingJSRuntime(module), new BitBmageOptions { MaxCodecWorkers = 2 });
+        await Assert.ThrowsAsync<OperationCanceledException>(async () => await cancelled.GetModuleAsync(cancel.Token));
+        Assert.IsTrue(module.Disposed, "The module imported for a cancelled load was never released.");
+        Assert.IsFalse(cancelled.IsLoaded);
+    }
+
+    [TestMethod]
+    public void ADocumentNestingMasksDeeplyIsRefused_AChainBuiltAStepAtATimeIsNot()
+    {
+        Mask nested = Mask.All();
+        for (var i = 0; i < 20; i++) nested = Mask.Ellipse().Union(nested);
+        var refused = Assert.ThrowsExactly<Serialization.ImageDocumentFormatException>(() => Serialization.BmageJson.DeserializeObject<Mask>(Serialization.BmageJson.SerializeObject(nested)));
+        Assert.Contains("too deeply", refused.Message);
+
+        Mask chain = Mask.All();
+        for (var i = 0; i < 100; i++) chain = chain.Union(new EllipseMask(new RectangleF(i * 9, i * 7, 60, 40)));
+        var back = Serialization.BmageJson.DeserializeObject<Mask>(Serialization.BmageJson.SerializeObject(chain));
+
+        // However long the chain, drawing it holds its own mask and the one being combined in.
+        var budget = new BudgetedPixelAllocator(long.MaxValue);
+        using var rendered = back.Render(new Size(1000, 800), null, new OperationContext(budget));
+        Assert.IsLessThanOrEqualTo(2L * 1000 * 800, budget.PeakBytes);
+        using var expected = chain.Render(new Size(1000, 800));
+        CollectionAssert.AreEqual(expected.Values.ToArray(), rendered.Values.ToArray());
+    }
+
+    [TestMethod]
+    public void OperationsUseOneThreadUnlessToldOtherwise()
+    {
+        Assert.AreEqual(1, OperationContext.Default.MaxDegreeOfParallelism);
+        Assert.AreEqual(1, new OperationContext().MaxDegreeOfParallelism);
+        Assert.AreEqual(4, new OperationContext(maxDegreeOfParallelism: 4).MaxDegreeOfParallelism);
+        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => new DecodeOptions { MaxDegreeOfParallelism = 0 });
+    }
+
+    [TestMethod]
+    public void ProgressIsReportedOnTheCallersThreadOnly()
+    {
+        using var source = ParallelProcessingTests.Noise(1600, 1200, seed: 8);
+        var caller = Environment.CurrentManagedThreadId;
+        var threads = new ConcurrentBag<int>();
+        var values = new ConcurrentQueue<double>();
+        var progress = new Inline(value =>
+        {
+            threads.Add(Environment.CurrentManagedThreadId);
+            values.Enqueue(value);
+        });
+        using (new ResizeOperation(900, 700, ResizeMode.Stretch, ResamplingFilter.Lanczos3).Apply(source, new OperationContext(progress: progress, maxDegreeOfParallelism: 8))) { }
+
+        Assert.IsTrue(threads.All(thread => thread == caller), "Progress was reported on a thread other than the caller's.");
+        Assert.AreEqual(1.0, values.Last(), 1e-9);
+    }
+
+    [TestMethod]
+    public void ANumberJsonHasNoLiteralForRoundTrips()
+    {
+        var mask = new RadialGradientMask(new Vector2(float.NaN, 0.5f), float.PositiveInfinity, 0.25f) { Rotation = float.NegativeInfinity, Units = MaskUnits.Relative };
+        var json = Serialization.BmageJson.SerializeObject(mask);
+        var back = (RadialGradientMask)Serialization.BmageJson.DeserializeObject<Mask>(json);
+
+        Assert.IsTrue(float.IsNaN(back.Center.X));
+        Assert.AreEqual(float.PositiveInfinity, back.RadiusX);
+        Assert.AreEqual(float.NegativeInfinity, back.Rotation);
+        Assert.AreEqual(json, Serialization.BmageJson.SerializeObject(back));
+    }
+
+    [TestMethod]
+    public async Task ANullBatchItemFailsOnItsOwn()
+    {
+        var processor = new ImageProcessor();
+        using var image = ParallelProcessingTests.Noise(16, 16, seed: 9);
+        var png = (await processor.EncodeAsync(image, ImageExportOptions.Png)).Data;
+
+        var result = await processor.ProcessBatchAsync([new BatchItem(png), null!, new BatchItem(png)], ImagePipeline.Create(), new BatchOptions { ExportOptions = ImageExportOptions.Png });
+
+        Assert.AreEqual(2, result.SuccessCount);
+        Assert.AreEqual(1, result.FailureCount);
+        Assert.IsInstanceOfType<ArgumentNullException>(result.Results[1].Error);
+    }
+
+    [TestMethod]
+    public void RenderingADocumentReportsTheLayersProgressToo()
+    {
+        using var source = ParallelProcessingTests.Noise(300, 200, seed: 10);
+        var document = Editing.ImageDocument.Create(source)
+            .AddOperation(new BrightnessAdjustment(0.1f))
+            .AddLayer(new FillLayer(new Rgba32(255, 0, 0)) { Mask = Mask.Ellipse(), BlendMode = BlendMode.Multiply })
+            .AddLayer(new AdjustmentLayer(ImagePipeline.Create().Saturation(0.3f)));
+        var values = new ConcurrentQueue<double>();
+
+        using (new Editing.DocumentRenderer().Render(document, source, new PipelineExecutionOptions { Progress = new Inline(values.Enqueue) })) { }
+
+        var reported = values.ToArray();
+        // One share for the pipeline's step, one for each layer.
+        Assert.IsTrue(reported.Any(value => value > 0.34 && value < 0.99), $"The layers reported nothing: {string.Join(", ", reported)}.");
+        Assert.AreEqual(1.0, reported[^1], 1e-9);
+        for (var i = 1; i < reported.Length; i++) Assert.IsGreaterThanOrEqualTo(reported[i - 1], reported[i], $"Progress went from {reported[i - 1]} to {reported[i]}.");
+    }
+
+    [TestMethod]
+    public void AStepOfANestedPipelineThatFailsIsNamed()
+    {
+        using var source = ImageBuffer.Create(8, 8, Rgba32.White);
+        var nested = new PipelineOperation(ImagePipeline.Create().Brightness(0.1f).Apply(new Fails()));
+
+        var failure = Assert.ThrowsExactly<ImageException>(() => nested.Apply(source, OperationContext.Default));
+
+        Assert.Contains("'Fails' (step 2 of 2)", failure.Message);
+    }
+
+    [TestMethod]
+    public void AWindowOfAMaskHoldsExactlyThoseValuesOfTheWholeMask()
+    {
+        var size = new Size(240, 180);
+        using var source = ParallelProcessingTests.Noise(240, 180, seed: 11);
+        using var matte = ParallelProcessingTests.Noise(60, 45, seed: 12);
+        Mask[] masks =
+        [
+            new RectangleMask(new RectangleF(30.3f, 20.7f, 120, 90)) { CornerRadius = 12, Feather = 3 },
+            Mask.Ellipse() with { Feather = 6.5f },
+            new PolygonMask([new(10, 10), new(200, 40), new(90, 170)]) { Inverted = true, Feather = 1.2f },
+            new PathMask(new PathBuilder().AddEllipse(new RectangleF(60, 40, 90, 70)).Build()) { Opacity = 0.7f },
+            new BrushMask([new BrushStroke([new(20, 30), new(120, 90), new(220, 40)], 14)]) { Opacity = 0.6f },
+            Mask.Gradient(new(0, 0), new(0.3f, 0.8f)) with { Feather = 2 },
+            new RadialGradientMask(new Vector2(120, 90), 70, 40) { Rotation = 30, Feather = 0.5f },
+            new LuminanceRangeMask(0.2f, 0.6f) { Feather = 4 },
+            new ColorRangeMask(new Rgba32(128, 64, 200)) { Tolerance = 0.4f },
+            new BitmapMask(matte) { Channel = MaskChannel.Luminance, Feather = 2 },
+            new CheckerMask { Feather = 2 },
+            Mask.Ellipse().Union(new RectangleMask(new RectangleF(0, 0, 60, 60))).Subtract(new EllipseMask(new RectangleF(100, 50, 50, 50)) { Feather = 5 }) with { Feather = 3 },
+        ];
+        Rectangle[] windows = [new(0, 0, 240, 180), new(37, 21, 50, 33), new(0, 100, 240, 80), new(200, 0, 40, 10), new(119, 89, 1, 1)];
+
+        foreach (var mask in masks)
+        {
+            using var whole = mask.Render(size, source);
+            foreach (var window in windows)
+            {
+                using var part = mask.RenderWindow(size, window, source, OperationContext.Default);
+                for (var y = 0; y < window.Height; y++)
+                    CollectionAssert.AreEqual(whole.GetRow(window.Y + y).Slice(window.X, window.Width).ToArray(), part.GetRow(y).ToArray(), $"{mask.Kind} in {window}, row {y}.");
+            }
+        }
+    }
+
+    [TestMethod]
+    public void ASmallMaskedLayerDrawsOnlyItsOwnPartOfTheMask()
+    {
+        using var logo = ImageBuffer.Create(50, 50, new Rgba32(0, 0, 255));
+        using var target = ImageBuffer.Create(2000, 1500, Rgba32.White);
+        var budget = new BudgetedPixelAllocator(long.MaxValue);
+
+        new ImageLayer { Image = logo, Bounds = new RectangleF(100, 100, 50, 50), Mask = new EllipseMask(new RectangleF(100, 100, 50, 50)) { Feather = 2 } }
+            .Composite(target, new OperationContext(budget));
+
+        // The whole image's mask alone would be 3 MB.
+        Assert.IsLessThan(100_000L, budget.PeakBytes, $"Compositing held {budget.PeakBytes} bytes.");
+        Assert.AreEqual(new Rgba32(0, 0, 255), target[125, 125]);
+        Assert.AreEqual(Rgba32.White, target[101, 101]);
+    }
+
+    [TestMethod]
+    public async Task FadingAnImageLayerInTheEditorPreparesItsImageOnce()
+    {
+        using var logo = ParallelProcessingTests.Noise(400, 400, seed: 13);
+        var counter = new Counts();
+        var budget = new BudgetedPixelAllocator(long.MaxValue);
+        var layer = new ImageLayer { Image = logo, Bounds = new RectangleF(50, 50, 200, 200), Pipeline = ImagePipeline.Create().Apply(counter) };
+        using (var session = new Editing.ImageEditSession(ParallelProcessingTests.Noise(600, 400, seed: 14), new Editing.ImageEditSessionOptions { MaxProxyDimension = 0, Allocator = budget }))
+        {
+            session.Apply(d => d.AddLayer(layer), "Add");
+            await session.RenderPreviewAsync();
+            foreach (var opacity in new[] { 0.8f, 0.6f, 0.4f })
+            {
+                session.ApplyTransient(d => d.UpdateLayer(d.FindLayer(layer.Id)! with { Opacity = opacity }));
+                await session.RenderPreviewAsync();
+            }
+            Assert.AreEqual(1, counter.Runs, "Every frame prepared the layer's image again.");
+        }
+        Assert.AreEqual(0, budget.CurrentBytes, "The session kept a prepared layer image after it was disposed.");
+    }
+
+    private sealed class Fails : ImageOperation
+    {
+        public override string Name => "Fails";
+        public override ImageBuffer Apply(ImageBuffer source, OperationContext context) => throw new InvalidOperationException("It always does.");
+    }
+
+    private sealed class Counts : ImageOperation
+    {
+        private int _runs;
+        public int Runs => Volatile.Read(ref _runs);
+        public override string Name => "Counts";
+        public override ImageBuffer Apply(ImageBuffer source, OperationContext context)
+        {
+            Interlocked.Increment(ref _runs);
+            return GetMutableCopy(source, context);
+        }
+    }
+
+    /// <summary>A mask from outside the library, which is always handed a target the size of the whole image.</summary>
+    private sealed record CheckerMask : Mask
+    {
+        public override string Kind => "Checker";
+
+        // Protected internal only because the tests see the library's internals; outside it this is protected.
+        protected internal override void RenderCoverage(MaskBuffer target, MaskRenderContext context)
+        {
+            Assert.AreEqual(context.Size, target.Size, "A custom mask was handed part of the image.");
+            for (var y = 0; y < target.Height; y++)
+            {
+                var row = target.GetRow(y);
+                for (var x = 0; x < row.Length; x++) row[x] = (byte)(((x / 7 + y / 5) & 1) * 255);
+            }
+        }
+    }
+
+    private sealed class FakeModule(Action<string> invoke) : IJSObjectReference
+    {
+        public bool Disposed { get; private set; }
+        public ValueTask<TValue> InvokeAsync<TValue>(string identifier, object?[]? args) => InvokeAsync<TValue>(identifier, CancellationToken.None, args);
+        public ValueTask<TValue> InvokeAsync<TValue>(string identifier, CancellationToken cancellationToken, object?[]? args)
+        {
+            invoke(identifier);
+            return ValueTask.FromResult(default(TValue)!);
+        }
+        public ValueTask DisposeAsync()
+        {
+            Disposed = true;
+            return ValueTask.CompletedTask;
+        }
+    }
+
+    private sealed class ImportingJSRuntime(IJSObjectReference module) : IJSRuntime
+    {
+        public ValueTask<TValue> InvokeAsync<TValue>(string identifier, object?[]? args) => InvokeAsync<TValue>(identifier, CancellationToken.None, args);
+        public ValueTask<TValue> InvokeAsync<TValue>(string identifier, CancellationToken cancellationToken, object?[]? args)
+            => identifier == "import" ? ValueTask.FromResult((TValue)(object)module) : throw new NotSupportedException();
     }
 
     private sealed class Inline(Action<double> report) : IProgress<double>

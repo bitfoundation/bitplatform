@@ -107,6 +107,12 @@ var budget = new BudgetedPixelAllocator(256L * 1024 * 1024);
 var processor = new ImageProcessor(ImageCodecRegistry.CreateDefault(), budget, ImageLimits.Default);
 ```
 
+The services take theirs from `BitBmageOptions`: the processors, the loader and every `BmageEditor` session allocate
+through `Allocator` and are bound by `Limits`. Those options are one instance for the application, which in a
+WebAssembly app means one browser tab, so `options.Allocator = new BudgetedPixelAllocator(...)` gives the tab's editor
+and loads one budget between them. On Blazor Server the same instance serves every circuit; give each its own session
+there instead, with an `ImageEditSession` built from `ImageEditSessionOptions { Allocator = ... }`.
+
 A batch can be admitted by memory too: with `BatchOptions.MaxMemoryBytes` an image only starts when its estimated need,
 read from its header before anything is decoded, fits beside the ones already running.
 

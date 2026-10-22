@@ -20,12 +20,13 @@ public enum MaskUnits
 /// <summary>Where a mask is being rendered, and for what.</summary>
 public sealed class MaskRenderContext
 {
-    internal MaskRenderContext(Size size, ImageBuffer? source, OperationContext operation, MaskUnits units)
+    internal MaskRenderContext(Size size, ImageBuffer? source, OperationContext operation, MaskUnits units, Rectangle window)
     {
         Size = size;
         Source = source;
         Operation = operation;
         ToPixels = units == MaskUnits.Relative ? Matrix3x2.CreateScale(size.Width, size.Height) : Matrix3x2.Identity;
+        Window = window;
     }
 
     /// <summary>The size of the mask, which is the size of the image it applies to.</summary>
@@ -42,6 +43,13 @@ public sealed class MaskRenderContext
 
     /// <summary>Maps the mask's own coordinates to pixels: identity for <see cref="MaskUnits.Pixels"/>.</summary>
     public Matrix3x2 ToPixels { get; }
+
+    /// <summary>
+    /// The part of the image the target holds, in pixels of the image: the whole image, except for a built-in mask
+    /// drawing only the part an edit or a layer uses. The target's row 0 is the window's top row, its column 0 the
+    /// window's left column.
+    /// </summary>
+    internal Rectangle Window { get; }
 
     /// <summary>The image the mask selects from, or an exception saying the mask needs one.</summary>
     internal ImageBuffer RequireSource(string kind) => Source
@@ -100,27 +108,110 @@ public abstract record Mask
     /// <paramref name="source"/>, the image they apply to. The caller owns the returned buffer.
     /// </summary>
     public MaskBuffer Render(Size size, ImageBuffer? source = null, OperationContext? context = null)
+        => RenderWindow(size, new Rectangle(Point.Empty, size), source, context);
+
+    /// <summary>
+    /// Renders the part <paramref name="window"/> of the mask for an image of <paramref name="size"/>: exactly those
+    /// values of <see cref="Render"/>'s result, in a buffer of the window's size. Built-in masks draw only the window,
+    /// and around it what their feather reaches; others are drawn whole and the window copied out.
+    /// </summary>
+    internal MaskBuffer RenderWindow(Size size, Rectangle window, ImageBuffer? source, OperationContext? context)
     {
         if (size.Width <= 0 || size.Height <= 0) throw new ArgumentOutOfRangeException(nameof(size), "A mask needs a positive size.");
         if (source is not null && source.Size != size)
             throw new ArgumentException($"The image is {source.Width}x{source.Height}, but the mask is rendered at {size.Width}x{size.Height}.", nameof(source));
+        window.Intersect(new Rectangle(Point.Empty, size));
+        if (window.IsEmptyArea()) throw new ArgumentOutOfRangeException(nameof(window), "The window does not overlap the image.");
         context ??= OperationContext.Default;
-        var mask = MaskBuffer.Create(size.Width, size.Height, 0, context.Allocator, context.Limits);
+        var mask = MaskBuffer.Create(window.Width, window.Height, 0, context.Allocator, context.Limits);
         try
         {
-            if (!IsEmpty)
-            {
-                RenderCoverage(mask, new MaskRenderContext(size, source, context, Units));
-                if (Feather >= 0.05f) mask.Feather(Feather, context);
-            }
-            if (Inverted) mask.Invert();
-            mask.Scale(Opacity);
+            RenderInto(mask, new MaskRenderContext(size, source, context, Units, window));
             return mask;
         }
         catch
         {
             mask.Dispose();
             throw;
+        }
+    }
+
+    /// <summary>
+    /// Renders the mask, its feather, inversion and opacity included, into <paramref name="target"/>: cleared to 0 and
+    /// holding <see cref="MaskRenderContext.Window"/> of the image. The context's units are ignored; the mask's own apply.
+    /// </summary>
+    internal void RenderInto(MaskBuffer target, MaskRenderContext context)
+    {
+        if (!IsEmpty) RenderShape(target, context.Size, context.Window, context.Source, context.Operation);
+        if (Inverted) target.Invert();
+        target.Scale(Opacity);
+    }
+
+    /// <summary>
+    /// The plain shape, feathered. A built-in mask draws the window and, around it, what the feather carries into it, so
+    /// the values match the whole image's exactly; any other mask is drawn on the whole image and the window copied out.
+    /// </summary>
+    private void RenderShape(MaskBuffer target, Size size, Rectangle window, ImageBuffer? source, OperationContext context)
+    {
+        var full = new Rectangle(Point.Empty, size);
+        // The feather a whole mask gets, which clamps a blur wider than the image.
+        var feather = Feather >= 0.05f ? Math.Min(Feather, Math.Max(size.Width, size.Height)) : 0f;
+        var drawn = full;
+        if (window != full && DrawsWindows)
+        {
+            drawn = window;
+            if (feather > 0)
+            {
+                var reach = MaskBuffer.FeatherReach(feather);
+                drawn.Inflate(reach, reach);
+                drawn.Intersect(full);
+                // A blur wider than the part drawn would be clamped there, and no longer match the whole image's.
+                if (feather > Math.Max(drawn.Width, drawn.Height)) drawn = full;
+            }
+        }
+        if (drawn == window)
+        {
+            RenderCoverage(target, new MaskRenderContext(size, source, context, Units, window));
+            if (feather > 0) target.Feather(feather, context);
+            return;
+        }
+        using var canvas = MaskBuffer.Create(drawn.Width, drawn.Height, 0, context.Allocator, context.Limits);
+        RenderCoverage(canvas, new MaskRenderContext(size, source, context, Units, drawn));
+        if (feather > 0) canvas.Feather(feather, context);
+        for (var y = 0; y < window.Height; y++)
+            canvas.GetRow(window.Y - drawn.Y + y).Slice(window.X - drawn.X, window.Width).CopyTo(target.GetRow(y));
+    }
+
+    /// <summary>
+    /// True for the built-in masks, which draw into a target holding any <see cref="MaskRenderContext.Window"/> of the
+    /// image. Every other mask is handed a target the size of the whole image, as its <see cref="RenderCoverage"/> expects.
+    /// </summary>
+    private protected virtual bool DrawsWindows => false;
+
+    /// <summary>
+    /// The most masks a document may nest so that drawing one holds this many beside its own (see
+    /// <see cref="MasksHeld"/>). A mask is one byte per pixel, so on a 24 megapixel photo this is about 200 MB.
+    /// </summary>
+    internal const int MaxMasksHeld = 8;
+
+    /// <summary>
+    /// How many masks, at most, drawing this one holds at once beside its own target: one for each side of a
+    /// combination drawn on its own, and the working copy of each feathered mask, bitmap or mask drawn whole, along the
+    /// deepest path. A chain built a step at a time, <c>a.Union(b).Union(c)</c>, holds one however long it grows.
+    /// </summary>
+    internal int MasksHeld()
+    {
+        var held = 0;
+        // What the masks above hold while the current one is drawn into the target they share.
+        var above = 0;
+        Mask mask = this;
+        // The first sides of a chain are walked rather than recursed into: each is drawn into the same target.
+        while (true)
+        {
+            above += (mask.Feather >= 0.05f ? 1 : 0) + (mask is BitmapMask ? 1 : 0) + (mask.DrawsWindows ? 0 : 1);
+            if (mask is not CombinedMask combined) return Math.Max(held, above);
+            held = Math.Max(held, above + 1 + combined.Second.MasksHeld());
+            mask = combined.First;
         }
     }
 
@@ -207,13 +298,32 @@ public sealed record CombinedMask(Mask First, Mask Second, MaskCombineMode Mode)
 
     public override string Kind => "Combined";
 
+    private protected override bool DrawsWindows => true;
+
+    /// <summary>True when the combination draws exactly what combining its sides gives: no feather, inversion or opacity.</summary>
+    private bool IsPlain => Feather < 0.05f && !Inverted && Opacity >= 1;
+
     protected internal override void RenderCoverage(MaskBuffer target, MaskRenderContext context)
     {
-        // Each side is rendered whole, its own feather, inversion and opacity included, then the two are combined.
-        using var first = First.Render(context.Size, context.Source, context.Operation);
-        using var second = Second.Render(context.Size, context.Source, context.Operation);
-        first.Values.CopyTo(target.Values);
-        target.Combine(second, Mode);
+        // Each side is rendered whole, its own feather, inversion and opacity included, then the two are combined. The
+        // first side is drawn straight into the target and the second on its own. A chain built a step at a time,
+        // a.Union(b).Union(c), nests to the left: its plain links are walked rather than recursed into, so however long
+        // it grows it holds one mask beside the target and none of the stack.
+        var links = new Stack<CombinedMask>();
+        links.Push(this);
+        var first = First;
+        while (first is CombinedMask { IsPlain: true } link)
+        {
+            links.Push(link);
+            first = link.First;
+        }
+        first.RenderInto(target, context);
+        while (links.TryPop(out var link))
+        {
+            context.Operation.ThrowIfCancellationRequested();
+            using var second = link.Second.RenderWindow(context.Size, context.Window, context.Source, context.Operation);
+            target.Combine(second, link.Mode);
+        }
     }
 
     public override RectangleF? GetCoverageBounds(Size size)
