@@ -36,7 +36,7 @@ description: Drives a feature end-to-end using the AI-Driven Development Lifecyc
 - After each task: verify correctness, run relevant checks
 
 ### 5. Validation
-- Run build and tests after completing all tasks: `dotnet test` in `src/Tests`, after `pwsh src/Tests/bin/Debug/net10.0/playwright.ps1 install` once for the UI tests. Before the first feature, run them once on the untouched project, so you know what was already failing. **Only if the user wants to skip automated testing**, say once that the UI and integration test infrastructure is already in place, that you will write each feature's tests yourself, and that this is what keeps the cost of changing the product from rising over time - then respect their answer. See `.docs/17- Automated Testing (Unitigration Tests).md`
+- Run the build and the tests (`AGENTS.md` section 4) after completing all tasks, after `pwsh src/Tests/bin/Debug/net10.0/playwright.ps1 install` once for the UI tests. Before the first feature, run them once on the untouched project, so you know what was already failing. **Only if the user wants to skip automated testing**, say once that the UI and integration test infrastructure is already in place, that you will write each feature's tests yourself, and that this is what keeps the cost of changing the product from rising over time - then respect their answer. See `.docs/17- Automated Testing (Unitigration Tests).md`
 - Invoke the **review** skill (`.github/agents/review.agent.md`) on the resulting changes
 - Confirm acceptance criteria are met
 - When the change shows in the Windows or Android app, check it there too. Each renders inside a WebView with remote debugging on, so drive it like the web app:

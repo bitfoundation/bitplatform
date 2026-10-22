@@ -5,7 +5,7 @@ description: Moves hardcoded user-facing strings out of Razor/C# files into AppS
 
 # Move user-facing text into the resource files
 
-While a feature is being built, `AGENTS.md` section 5 has new text written as English literals through the `IStringLocalizer` indexer, because a `.resx` change breaks hot reload. This skill is the separate pass that moves that text into `AppStrings.resx` and into every other language the project ships. Run it when the user asks, or when the changes are about to be pushed.
+This is the pass `AGENTS.md` section 5 leaves for later: it moves the English literals written through the `IStringLocalizer` indexer into `AppStrings.resx` and into every other language the project ships.
 
 ## What moves
 
