@@ -73,7 +73,7 @@ rather than "not observed yet" (renders inside events are then labeled *StateHas
 
 | Information | Status | How / why |
 |---|---|---|
-| .NET → JS from components (identifier, duration, args types, result, errors, component) | Instrumentation | `[Inject] IJSRuntime` is replaced with a tracking wrapper on the first render — the earliest point after the framework performs property injection. Calls made from `OnInitialized`/`OnInitializedAsync` therefore run before the wrapper exists and are not attributed. Module references obtained through a wrapped runtime are wrapped too (`TrackJsModuleReferences`, on by default); BevTools unwraps them again when they are passed back as arguments through a tracked runtime, but cannot do so for references nested inside other arguments — turn the option off if a module reference must round-trip through code BevTools does not see. On .NET 10, `InvokeConstructorAsync`, `GetValueAsync` and `SetValueAsync` (and their in-process forms) go through the wrapper too and are recorded as `new X`, `get X` and `set X`. |
+| .NET → JS from components (identifier, duration, args types, result, errors, component) | Instrumentation | `[Inject] IJSRuntime` is replaced with a tracking wrapper on the first render — the earliest point after the framework performs property injection. Calls made from `OnInitialized`/`OnInitializedAsync` therefore run before the wrapper exists and are not attributed. During prerendering, and on Blazor Server until the browser has connected, the runtime is left alone: it cannot make calls, and libraries recognize it by its type. Whether it can is read from host internals (`RemoteJSRuntime.IsInitialized`, `WebViewJSRuntime._ipcSender`); where a framework version lacks one, that runtime is wrapped regardless and the About panel says so. Module references obtained through a wrapped runtime are wrapped too (`TrackJsModuleReferences`, on by default); BevTools unwraps them again when they are passed back as arguments through a tracked runtime, but cannot do so for references nested inside other arguments — turn the option off if a module reference must round-trip through code BevTools does not see. On .NET 10, `InvokeConstructorAsync`, `GetValueAsync` and `SetValueAsync` (and their in-process forms) go through the wrapper too and are recorded as `new X`, `get X` and `set X`. |
 | .NET → JS from services | Integration | `jsRuntime.WithBevToolsTracking(session)`. Global decoration is unsafe (framework casts `IJSRuntime` to `RemoteJSRuntime`/`WebAssemblyJSRuntime`). |
 | JS → .NET | Instrumentation | `DotNet.invokeMethodAsync/invokeMethod` wrapped by the browser bridge; reported in 500 ms batches. |
 
@@ -124,3 +124,20 @@ rather than "not observed yet" (renders inside events are then labeled *StateHas
 | Profiler baseline ("since reset") | Available. Raw counters keep running; the profiler, inspector and export show the delta since the reset on request. |
 | Export | Available. `BevSessionExporter.ToJson` (`bit-bevtools/1`) and `ToMarkdownReport` contain exactly what the panels show, with the same redaction; browser storage previews are omitted. |
 | Session isolation | Available. One session per circuit/app. Ambient activity (HTTP, logs, metrics) is routed by the renderer's synchronization context, then by `Dispatcher.CheckAccess()`. In a server process (any ASP.NET Core host: Blazor Server circuits, static SSR, prerendering) there is deliberately **no** "only live session" fallback, whatever the session's platform reports: attributing background work to whichever circuit happens to be connected would be a guess, and a guess about another user's data. |
+
+## A session attached to a running app
+
+When BevTools is opened on demand (`Bit.BevTools.Loader`, `BitBevTools.Attach`) instead of registered at startup, the
+About panel says which of these applied. Everything from before the attach is missing either way.
+
+| Information | Through Bit.BevTools.Loader | Through a bare `BitBevTools.Attach` |
+|---|---|---|
+| Components that already existed | Instrumentation: read from the renderer's state map; one that already rendered is not reported as rendering for the first time | Same |
+| Components created after | Available: the activator hook the loader installed at startup | Instrumentation: the renderer's `IComponentActivator` is replaced through reflection |
+| UI-event render causes, lifecycle timings | Runtime: the loader registers the framework ActivitySource and meters at startup | Runtime, only if the app registered them at startup (`AddComponentsTracing`, `AddComponentsMetrics`) |
+| `IHttpClientFactory` requests | Available: the loader's pass-through handlers | N/A: those pipelines were built without BevTools, unless the app installed the loader's hooks |
+| The `HttpClient` registered in DI | Available when its pipeline holds `BevToolsHttpHookHandler`, or it comes from `IHttpClientFactory`; otherwise as with a bare attach | Instrumentation: its handler is wrapped through reflection, unless it is transient |
+| DI registrations | Available: the service collection the loader kept | N/A: the container was built before the attach, unless the app installed the loader's hooks |
+| Circuit diagnostics | N/A | N/A |
+| End of the session | With the scope (circuit) | Same |
+| Enabled in a process that serves many users | Development, or `AllowInMultiUserHost` | Development, or `BitBevToolsOptions.Enabled = true` |

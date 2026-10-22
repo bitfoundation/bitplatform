@@ -1,4 +1,5 @@
 ﻿using System.Collections;
+using System.Collections.Concurrent;
 using System.Linq.Expressions;
 using System.Reflection;
 using Microsoft.AspNetCore.Components;
@@ -96,6 +97,24 @@ internal static class BlazorReflection
                 var entry = Expression.Parameter(typeof(object), "e");
                 GetQueueEntryState = Expression.Lambda<Func<object, ComponentState>>(Expression.Field(Expression.Convert(entry, entryType!), entryStateField), entry).Compile();
             }
+
+            var componentFactoryField = typeof(Renderer).GetField("_componentFactory", Instance);
+            var componentActivatorField = componentFactoryField?.FieldType.GetField("_componentActivator", Instance);
+            if (componentFactoryField is not null && componentActivatorField?.FieldType == typeof(IComponentActivator))
+            {
+                ComponentFactoryField = componentFactoryField;
+                ComponentActivatorField = componentActivatorField;
+            }
+
+            var stateByIdField = typeof(Renderer).GetField("_componentStateById", Instance);
+            if (stateByIdField is not null && typeof(IEnumerable<KeyValuePair<int, ComponentState>>).IsAssignableFrom(stateByIdField.FieldType))
+            {
+                ComponentStateByIdField = stateByIdField;
+            }
+
+            RendererDisposedField = typeof(Renderer).GetField("_rendererIsDisposed", Instance) is { } disposedField && disposedField.FieldType == typeof(bool) ? disposedField : null;
+            HasNeverRenderedField = typeof(ComponentBase).GetField("_hasNeverRendered", Instance) is { } neverRendered && neverRendered.FieldType == typeof(bool) ? neverRendered : null;
+            HasPendingQueuedRenderField = typeof(ComponentBase).GetField("_hasPendingQueuedRender", Instance) is { } pending && pending.FieldType == typeof(bool) ? pending : null;
         }
         catch (Exception ex)
         {
@@ -134,6 +153,18 @@ internal static class BlazorReflection
     public static Func<Renderer, IEnumerable>? GetRenderQueue { get; }
 
     public static Func<object, ComponentState>? GetQueueEntryState { get; }
+
+    public static FieldInfo? ComponentFactoryField { get; }
+
+    public static FieldInfo? ComponentActivatorField { get; }
+
+    public static FieldInfo? ComponentStateByIdField { get; }
+
+    public static FieldInfo? RendererDisposedField { get; }
+
+    public static FieldInfo? HasNeverRenderedField { get; }
+
+    public static FieldInfo? HasPendingQueuedRenderField { get; }
 
     public static Exception? InitializationError { get; }
 
@@ -227,6 +258,126 @@ internal static class BlazorReflection
             return null;
         }
     }
+
+    public static bool TryWrapComponentActivator(Renderer renderer, Func<IComponentActivator, IComponentActivator?> wrap)
+    {
+        if (ComponentFactoryField is null || ComponentActivatorField is null)
+        {
+            return false;
+        }
+
+        try
+        {
+            var factory = ComponentFactoryField.GetValue(renderer);
+            if (factory is null || ComponentActivatorField.GetValue(factory) is not IComponentActivator current)
+            {
+                return false;
+            }
+
+            if (wrap(current) is { } wrapped)
+            {
+                ComponentActivatorField.SetValue(factory, wrapped);
+            }
+
+            return true;
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
+    public static ComponentState[]? ComponentStates(Renderer renderer)
+    {
+        if (ComponentStateByIdField is null)
+        {
+            return null;
+        }
+
+        try
+        {
+            return ComponentStateByIdField.GetValue(renderer) is IEnumerable<KeyValuePair<int, ComponentState>> states
+                ? states.OrderBy(s => s.Key).Select(s => s.Value).ToArray()
+                : null;
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
+    public static bool IsRendererDisposed(Renderer renderer)
+    {
+        try
+        {
+            return RendererDisposedField?.GetValue(renderer) is true;
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
+    public static bool HasRenderedOrQueued(ComponentBase component)
+    {
+        try
+        {
+            return HasNeverRenderedField is null || HasPendingQueuedRenderField is null
+                || HasNeverRenderedField.GetValue(component) is false
+                || HasPendingQueuedRenderField.GetValue(component) is true;
+        }
+        catch
+        {
+            return true;
+        }
+    }
+
+    private static readonly ConcurrentDictionary<Type, Func<object, bool>?> JSRuntimeNotReadyProbes = new();
+    private static readonly ConcurrentDictionary<string, byte> JSRuntimeReadinessGapNames = new(StringComparer.Ordinal);
+
+    /// <summary>
+    /// Reads whether a JS runtime cannot take calls yet: a prerender's never can, a circuit's until the browser has
+    /// connected (<c>RemoteJSRuntime.IsInitialized</c>), a WebView's until its IPC channel is attached
+    /// (<c>WebViewJSRuntime._ipcSender</c>). Resolved per runtime type, as this package references neither host; null when
+    /// the host's member is missing on this framework version. Every other runtime is always ready.
+    /// </summary>
+    public static Func<object, bool>? ResolveJSRuntimeNotReady(Type runtimeType) => runtimeType.Name switch
+    {
+        "UnsupportedJavaScriptRuntime" => static _ => true,
+        "RemoteJSRuntime" => runtimeType.GetProperty("IsInitialized", Instance) is { } isInitialized && isInitialized.PropertyType == typeof(bool)
+            ? js => isInitialized.GetValue(js) is false
+            : null,
+        "WebViewJSRuntime" => runtimeType.GetField("_ipcSender", Instance) is { } ipcSender
+            ? js => ipcSender.GetValue(js) is null
+            : null,
+        _ => static _ => false,
+    };
+
+    /// <summary>
+    /// True while the runtime cannot take calls. One whose readiness cannot be read counts as ready, which is what
+    /// BevTools assumed before it looked, and is reported through <see cref="JSRuntimeReadinessGaps"/>.
+    /// </summary>
+    public static bool IsJSRuntimeNotReady(object runtime)
+    {
+        var probe = JSRuntimeNotReadyProbes.GetOrAdd(runtime.GetType(), ResolveJSRuntimeNotReady);
+        if (probe is null)
+        {
+            JSRuntimeReadinessGapNames.TryAdd(runtime.GetType().Name, 0);
+            return false;
+        }
+
+        try
+        {
+            return probe(runtime);
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
+    /// <summary>The JS runtimes met so far whose readiness could not be read on this framework version.</summary>
+    public static IReadOnlyCollection<string> JSRuntimeReadinessGaps => [.. JSRuntimeReadinessGapNames.Keys];
 
     /// <summary>Reads renderer, component id and parent for a non-ComponentBase component via the renderer's component-state map.</summary>
     public static ComponentState? ResolveState(Renderer renderer, IComponent component)

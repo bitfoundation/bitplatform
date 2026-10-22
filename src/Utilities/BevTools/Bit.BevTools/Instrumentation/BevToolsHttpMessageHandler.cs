@@ -34,12 +34,32 @@ internal sealed class BevToolsHttpSessionHandler : DelegatingHandler
 
     protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
     {
+        Capture(request);
+        return base.SendAsync(request, cancellationToken);
+    }
+
+    internal static void Capture(HttpRequestMessage request)
+    {
         if (!request.Options.TryGetValue(SessionKey, out _) && SessionResolver.Resolve() is { } session)
         {
             request.Options.Set(SessionKey, session);
         }
+    }
+}
 
-        return base.SendAsync(request, cancellationToken);
+/// <summary>Records what reaches the HTTP hooks of Bit.BevTools.Loader, the same way <see cref="BevToolsHttpMessageHandler"/> does.</summary>
+internal sealed class BevToolsHttpRecorder : IBevToolsHttpRecorder
+{
+    public static readonly BevToolsHttpRecorder Instance = new();
+
+    public void CaptureSession(HttpRequestMessage request) => BevToolsHttpSessionHandler.Capture(request);
+
+    public Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, Func<HttpRequestMessage, CancellationToken, Task<HttpResponseMessage>> next, bool attachedSessionsOnly, CancellationToken cancellationToken)
+    {
+        var session = BevToolsHttpMessageHandler.ResolveSession(request);
+        return session is null || !session.IsEnabled || !session.Options.TrackHttp || (attachedSessionsOnly && !session.IsAttachedAtRuntime)
+            ? next(request, cancellationToken)
+            : BevToolsHttpMessageHandler.RecordAsync(session, session.Options, request, next, cancellationToken);
     }
 }
 
@@ -56,10 +76,12 @@ public sealed class BevToolsHttpMessageHandler : DelegatingHandler
 
     private readonly BitBevToolsOptions _options;
     private readonly BevToolsSession? _explicitSession;
+    private readonly Func<HttpRequestMessage, CancellationToken, Task<HttpResponseMessage>> _next;
 
     public BevToolsHttpMessageHandler(BitBevToolsOptions options)
     {
         _options = options;
+        _next = base.SendAsync;
     }
 
     /// <summary>Creates a handler bound to a specific session (use in WebAssembly for hand-built clients).</summary>
@@ -68,16 +90,21 @@ public sealed class BevToolsHttpMessageHandler : DelegatingHandler
         _explicitSession = session;
     }
 
-    protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+    protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
     {
-        var session = _explicitSession
-            ?? (request.Options.TryGetValue(BevToolsHttpSessionHandler.SessionKey, out var captured) && !captured.IsDisposed ? captured : null)
-            ?? SessionResolver.Resolve();
-        if (session is null || !session.IsEnabled)
-        {
-            return await base.SendAsync(request, cancellationToken).ConfigureAwait(false);
-        }
+        var session = _explicitSession ?? ResolveSession(request);
+        return session is null || !session.IsEnabled
+            ? base.SendAsync(request, cancellationToken)
+            : RecordAsync(session, _options, request, _next, cancellationToken);
+    }
 
+    /// <summary>The session an outer handler noted on the request, or the one the current context belongs to.</summary>
+    internal static BevToolsSession? ResolveSession(HttpRequestMessage request) =>
+        (request.Options.TryGetValue(BevToolsHttpSessionHandler.SessionKey, out var captured) && !captured.IsDisposed ? captured : null)
+        ?? SessionResolver.Resolve();
+
+    internal static async Task<HttpResponseMessage> RecordAsync(BevToolsSession session, BitBevToolsOptions options, HttpRequestMessage request, Func<HttpRequestMessage, CancellationToken, Task<HttpResponseMessage>> next, CancellationToken cancellationToken)
+    {
         var trigger = ActivityObserver.CurrentTriggerEvent(session);
         if (!session.IsCapturing)
         {
@@ -86,7 +113,7 @@ public sealed class BevToolsHttpMessageHandler : DelegatingHandler
             HttpResponseMessage pausedResponse;
             try
             {
-                pausedResponse = await base.SendAsync(request, cancellationToken).ConfigureAwait(false);
+                pausedResponse = await next(request, cancellationToken).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
@@ -111,7 +138,7 @@ public sealed class BevToolsHttpMessageHandler : DelegatingHandler
             Method = request.Method.Method,
             Url = url,
             RequestBytes = request.Content?.Headers.ContentLength,
-            RequestHeaders = _options.CaptureHttpHeaders ? CollectHeaders(session, request.Headers, request.Content?.Headers) : null,
+            RequestHeaders = options.CaptureHttpHeaders ? CollectHeaders(session, request.Headers, request.Content?.Headers) : null,
             TriggerEventId = trigger?.Id,
             TriggerDescription = trigger?.Title,
         };
@@ -129,20 +156,20 @@ public sealed class BevToolsHttpMessageHandler : DelegatingHandler
         var start = Stopwatch.GetTimestamp();
         try
         {
-            var response = await base.SendAsync(request, cancellationToken).ConfigureAwait(false);
+            var response = await next(request, cancellationToken).ConfigureAwait(false);
             record.DurationMs = Stopwatch.GetElapsedTime(start).TotalMilliseconds;
             record.StatusCode = (int)response.StatusCode;
             record.ReasonPhrase = response.ReasonPhrase;
             record.ResponseBytes = response.Content?.Headers.ContentLength;
             record.ContentType = response.Content?.Headers.ContentType?.ToString();
-            record.ResponseHeaders = _options.CaptureHttpHeaders ? CollectHeaders(session, response.Headers, response.Content?.Headers) : null;
+            record.ResponseHeaders = options.CaptureHttpHeaders ? CollectHeaders(session, response.Headers, response.Content?.Headers) : null;
             var failed = record.StatusCode >= 400;
             if (failed)
             {
                 session.Http.MarkFailed(record);
             }
 
-            var severity = failed ? BevToolsSeverity.Error : record.DurationMs >= _options.Diagnostics.SlowHttpMs ? BevToolsSeverity.Warning : BevToolsSeverity.Info;
+            var severity = failed ? BevToolsSeverity.Error : record.DurationMs >= options.Diagnostics.SlowHttpMs ? BevToolsSeverity.Warning : BevToolsSeverity.Info;
             session.Timeline.Complete(record.TimelineEventId, record.DurationMs.Value, $"{record.StatusCode} {record.ReasonPhrase}" + (record.ResponseBytes is { } b ? $", {FormatBytes(b)}" : ""), severity);
             if (failed)
             {
