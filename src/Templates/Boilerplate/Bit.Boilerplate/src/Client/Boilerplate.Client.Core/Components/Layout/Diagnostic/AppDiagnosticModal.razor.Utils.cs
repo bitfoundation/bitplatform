@@ -1,4 +1,5 @@
 using System.Text;
+using Bit.BevTools;
 
 namespace Boilerplate.Client.Core.Components.Layout.Diagnostic;
 
@@ -15,6 +16,7 @@ public partial class AppDiagnosticModal
     [AutoInject] private IStorageService storageService = default!;
     [AutoInject] private IAppUpdateService appUpdateService = default!;
     [AutoInject] private ILogger<AppDiagnosticModal> logger = default!;
+    [AutoInject] private BevToolsLoader bevToolsLoader = default!;
     //#if (offlineDb == true)
     [AutoInject] private SyncService syncService = default!;
     [AutoInject] private IDbContextFactory<AppOfflineDbContext> dbContextFactory = default!;
@@ -33,7 +35,14 @@ public partial class AppDiagnosticModal
 
     private async Task OpenDevTools()
     {
-        await JSRuntime.InvokeVoidAsync("App.openDevTools");
+        if (await bevToolsLoader.OpenAsync())
+        {
+            isOpen = false;
+        }
+        else
+        {
+            SnackBarService.Error("Open dev tools", bevToolsLoader.Problem ?? string.Empty);
+        }
     }
 
     private async Task CallGC()

@@ -3,6 +3,7 @@
 using BlazorApplicationInsights;
 using BlazorApplicationInsights.Interfaces;
 //#endif
+using Bit.BevTools;
 using Boilerplate.Client.Core;
 using Microsoft.Extensions.Options;
 using System.Diagnostics.CodeAnalysis;
@@ -28,6 +29,11 @@ public static partial class IClientCoreServiceCollectionExtensions
             services.AddScoped<CultureService>();
             services.AddScoped<TimeZoneService>();
             services.AddScoped<LazyAssemblyLoader>();
+            services.AddBitBevToolsLoaderServices(options =>
+            {
+                options.RegisterAtStartup = AppEnvironment.IsDevelopment() || AppPlatform.IsAot || AppPlatform.IsBlazorHybrid;
+                options.ShowBadge = false;
+            });
             services.AddScoped<SignInModalService>();
             services.AddScoped<ImageEditorService>();
             services.AddScoped<IAuthTokenProvider, ClientSideAuthTokenProvider>();
