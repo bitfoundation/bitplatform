@@ -303,8 +303,10 @@ public sealed class BevComponentRecord
     /// <summary>Renders that happened while capture was paused. They still count as "has rendered" for cause detection.</summary>
     public int SkippedRenders => Volatile.Read(ref _skippedRenders);
 
+    internal bool RenderedBeforeAttach { get; set; }
+
     /// <summary>True once the instance has rendered at least once, recorded or not.</summary>
-    internal bool HasRendered => RenderCount > 0 || SkippedRenders > 0;
+    internal bool HasRendered => RenderCount > 0 || SkippedRenders > 0 || RenderedBeforeAttach;
 
     internal void NoteSkippedRender() => Interlocked.Increment(ref _skippedRenders);
 

@@ -76,7 +76,7 @@ public class BdndInteropTests
         var interop = new BdndInterop(new FakeJSRuntime().NextImport(module));
         var element = new ElementReference("source");
         var callbacks = new object();
-        var options = new BdndDragSourceOptions("id", true, false, true, "copy", false);
+        var options = new BdndDragSourceOptions { Id = "id", CanDrag = true, UseEmptyPreview = true, EffectAllowed = "copy" };
 
         var result = await interop.RegisterDragSourceAsync(element, callbacks, options);
 
@@ -95,7 +95,7 @@ public class BdndInteropTests
         var interop = new BdndInterop(new FakeJSRuntime().NextImport(module));
         var element = new ElementReference("target");
         var callbacks = new object();
-        var options = new BdndDropTargetOptions(true, ["Files"]);
+        var options = new BdndDropTargetOptions { CanDrop = true, NativeTypes = ["Files"] };
 
         var result = await interop.RegisterDropTargetAsync(element, callbacks, options);
 
@@ -113,8 +113,8 @@ public class BdndInteropTests
         var js = new FakeJSRuntime().NextImport(module);
         var interop = new BdndInterop(js);
 
-        await interop.RegisterDragSourceAsync(default, new object(), new BdndDragSourceOptions("a", true, false, false, "move", false));
-        await interop.RegisterDropTargetAsync(default, new object(), new BdndDropTargetOptions(false, []));
+        await interop.RegisterDragSourceAsync(default, new object(), new BdndDragSourceOptions { Id = "a", CanDrag = true });
+        await interop.RegisterDropTargetAsync(default, new object(), new BdndDropTargetOptions());
         await interop.GetBoundingClientRectAsync(default);
 
         Assert.AreEqual(1, js.ImportCount);

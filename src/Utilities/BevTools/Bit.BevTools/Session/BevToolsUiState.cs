@@ -57,6 +57,27 @@ public sealed class BevToolsUiState
 
     public void Touch() => Version++;
 
+    /// <summary>
+    /// Set by <see cref="Open"/> until a panel has reconciled it with the saved preferences, so a saved preference to
+    /// keep the panel closed does not close it again right after the app opened it.
+    /// </summary>
+    internal bool OpenRequested { get; set; }
+
+    /// <summary>Raised by <see cref="Open"/>, so a panel that is already rendered shows it at once instead of on its next poll.</summary>
+    internal event Action? OpenedFromCode;
+
+    /// <summary>
+    /// Opens the panel from code, for example from the app's own "Open dev tools" button. A rendered panel opens at
+    /// once; one rendered later opens even when the saved preferences say it was closed last time.
+    /// </summary>
+    public void Open()
+    {
+        IsOpen = true;
+        OpenRequested = true;
+        Touch();
+        OpenedFromCode?.Invoke();
+    }
+
     public void Notify(string message)
     {
         Notification = message;

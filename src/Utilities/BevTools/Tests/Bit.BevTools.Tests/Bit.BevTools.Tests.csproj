@@ -17,11 +17,12 @@
 
     <ItemGroup>
         <PackageReference Include="MSTest" Version="4.5.1" />
-        <PackageReference Include="bunit" Version="2.11.3" />
+        <PackageReference Include="bunit" Version="2.12.5" />
     </ItemGroup>
 
     <ItemGroup>
         <ProjectReference Include="..\..\Bit.BevTools\Bit.BevTools.csproj" />
+        <ProjectReference Include="..\..\Bit.BevTools.Loader\Bit.BevTools.Loader.csproj" />
         <ProjectReference Include="..\..\Bit.BevTools.Server\Bit.BevTools.Server.csproj" />
     </ItemGroup>
 

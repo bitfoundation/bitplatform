@@ -62,7 +62,8 @@ public static class PlaywrightSession
         {
             await browser.CloseAsync();
             playwright.Dispose();
-            return Session.Fail($"the demo application could not be started in the {E2EEnvironment.Configuration} configuration: {ex.Message}");
+            var demo = E2EEnvironment.PublishedHost is { } published ? $"published in {published}" : $"in the {E2EEnvironment.Configuration} configuration";
+            return Session.Fail($"the demo application {demo} could not be started: {ex.Message}");
         }
     }
 

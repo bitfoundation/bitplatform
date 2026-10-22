@@ -80,6 +80,7 @@ public class DevMcpQueryTests
         {
             ["entity"] = "User",
             ["select"] = new[] { "Id", "Email" },
+            ["filter"] = "Email != null",
             ["take"] = 5
         }, TestContext.CancellationToken);
         var json = JsonNode.Parse(text)!;

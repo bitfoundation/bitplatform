@@ -62,6 +62,28 @@ public static class BitBevTools
         return services;
     }
 
+    /// <summary>
+    /// Turns BevTools on in an app that is already running, for an app that does not register it at startup (to lazy
+    /// load it, typically; Bit.BevTools.Loader does all of this for an app). Pass the <see cref="IServiceProvider"/>
+    /// injected into a component, then render <c>&lt;BevToolsPanel /&gt;</c> from a component of that scope: the
+    /// panel attaches to its renderer, reads the components that already exist and sees the ones created after.
+    /// Returns the session registered at startup when one is registered and enabled, and the same session on every
+    /// later call. The session ends with the scope. When the app called <c>AddBitBevToolsLoaderServices</c>, the
+    /// startup hooks it installed are used, and its options apply before <paramref name="configure"/>.
+    /// <para>
+    /// It is enabled unless <see cref="BitBevToolsOptions.Enabled"/> says otherwise, except in a process that serves
+    /// many users (Blazor Server, prerendering) outside Development: there the panel would show whoever opens it the
+    /// server side objects of their circuit, so it stays off unless <see cref="BitBevToolsOptions.Enabled"/> is true
+    /// (or the loader's <c>AllowInMultiUserHost</c> is set).
+    /// </para>
+    /// </summary>
+    public static BevToolsSession Attach(IServiceProvider services, Action<BitBevToolsOptions>? configure = null)
+    {
+        ArgumentNullException.ThrowIfNull(services);
+
+        return RuntimeAttachment.Attach(services, configure, services.GetService<BevToolsLoaderContext>(), openedByLoader: false);
+    }
+
     /// <summary>Registers an extension. Safe to combine with other <c>AddBitBevToolsServices</c> calls.</summary>
     public static IServiceCollection AddBitBevToolsServicesExtension<TExtension>(this IServiceCollection services, Action<BitBevToolsOptions>? configure = null) where TExtension : IBevToolsExtension, new()
         => services.AddBitBevToolsServices(o =>
@@ -128,12 +150,15 @@ public static class BitBevTools
 
         if (!services.Any(d => d.ServiceType == typeof(IComponentActivator) && d.ImplementationType == typeof(BevToolsComponentActivator)))
         {
-            WrapExistingActivator(services);
+            BevToolsInnerActivator.MoveExisting(services);
             services.AddScoped<IComponentActivator, BevToolsComponentActivator>();
         }
 
         services.TryAddEnumerable(ServiceDescriptor.Singleton<IHttpMessageHandlerBuilderFilter, BevToolsHttpFilter>());
         services.TryAddEnumerable(ServiceDescriptor.Singleton<ILoggerProvider, BevToolsLoggerProvider>());
+
+        // A hand-built pipeline that holds Bit.BevTools.Loader's BevToolsHttpHookHandler records from now on as well.
+        BevToolsHooks.Http = BevToolsHttpRecorder.Instance;
     }
 
     private static void ApplyServiceRegistrations(IServiceCollection services, bool enabled)
@@ -148,41 +173,11 @@ public static class BitBevTools
         }
     }
 
-    private static void WrapExistingActivator(IServiceCollection services)
-    {
-        var existing = services.LastOrDefault(d => d.ServiceType == typeof(IComponentActivator) && !d.IsKeyedService);
-        if (existing is null)
-        {
-            return;
-        }
-
-        services.Remove(existing);
-        ServiceDescriptor holder;
-        if (existing.ImplementationInstance is IComponentActivator instance)
-        {
-            holder = new ServiceDescriptor(typeof(InnerComponentActivator), new InnerComponentActivator(instance));
-        }
-        else if (existing.ImplementationFactory is { } factory)
-        {
-            holder = new ServiceDescriptor(typeof(InnerComponentActivator), sp => new InnerComponentActivator((IComponentActivator)factory(sp)), existing.Lifetime);
-        }
-        else if (existing.ImplementationType is { } type)
-        {
-            holder = new ServiceDescriptor(typeof(InnerComponentActivator), sp => new InnerComponentActivator((IComponentActivator)ActivatorUtilities.CreateInstance(sp, type)), existing.Lifetime);
-        }
-        else
-        {
-            return;
-        }
-
-        services.Add(holder);
-    }
-
     /// <summary>
     /// Decides whether BevTools runs, and records why. The reason is shown in the About panel so a developer who
     /// expected BevTools and does not see it can tell immediately what the host reported.
     /// </summary>
-    private static (bool Enabled, string Reason) ResolveEnabled(IServiceCollection services, BitBevToolsOptions options)
+    internal static (bool Enabled, string Reason) ResolveEnabled(IServiceCollection services, BitBevToolsOptions options)
     {
         if (options.Enabled is { } explicitValue)
         {

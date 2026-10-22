@@ -57,15 +57,18 @@ dotnet test --filter "FullyQualifiedName~Dragging_a_node"
 dotnet test --filter "FullyQualifiedName!~Every_demo_page"
 ```
 
-The workflow `.github/workflows/bit.ci.Blow.e2e.yml` does the same in Release. It is started by hand
-(`workflow_dispatch`) only, since the suite takes far longer than the build-and-unit pipeline in
-`bit.ci.Blow.yml`:
+The workflow `.github/workflows/bit.ci.Blow.e2e.yml` does the same in Release, against the demo published the way
+`blow.demo.cd.yml` publishes it rather than a build output. It is started by hand (`workflow_dispatch`) only,
+since the suite takes far longer than the build-and-unit pipeline in `bit.ci.Blow.yml`. The publish is the point:
+only a publish trims the WebAssembly client, so an interop payload the trimmer breaks (an anonymous type whose
+constructor lost its parameter names, a getter nothing but System.Text.Json reads) fails there and nowhere else:
 
 ```bash
-dotnet build src/Utilities/Blow/Demo/Server/Bit.Blow.Demo.Server.csproj -c Release
+dotnet publish src/Utilities/Blow/Demo/Server/Bit.Blow.Demo.Server.csproj -c Release -o demo -p:InvariantGlobalization=true
 dotnet build src/Utilities/Blow/Tests/Bit.Blow.Tests.E2E/Bit.Blow.Tests.E2E.csproj -c Release
 pwsh src/Utilities/Blow/Tests/Bit.Blow.Tests.E2E/bin/Release/net10.0/playwright.ps1 install --with-deps chromium
-cd src/Utilities/Blow/Tests/Bit.Blow.Tests.E2E && dotnet test -c Release --no-build --report-trx --report-trx-filename blow-e2e.trx
+(cd demo && dotnet Bit.Blow.Demo.Server.dll --urls http://127.0.0.1:5000 &)
+cd src/Utilities/Blow/Tests/Bit.Blow.Tests.E2E && BLOW_E2E_BASE_URL=http://127.0.0.1:5000 dotnet test -c Release --no-build --report-trx --report-trx-filename blow-e2e.trx
 ```
 
 Without PowerShell 7, the browser can be installed with Windows PowerShell

@@ -106,7 +106,7 @@ public sealed class BdndDropTarget<TItem> : ComponentBase, IHandleEvent, IAsyncD
     }
 
     protected override Task OnAfterRenderAsync(bool firstRender) =>
-        _registration!.SyncAsync(_element, new BdndDropTargetOptions(_canDropInApp, _nativeTokens));
+        _registration!.SyncAsync(_element, new BdndDropTargetOptions { CanDrop = _canDropInApp, NativeTypes = _nativeTokens });
 
     private ValueTask<IJSObjectReference?> RegisterAsync(ElementReference element, BdndDropTargetOptions options)
     {

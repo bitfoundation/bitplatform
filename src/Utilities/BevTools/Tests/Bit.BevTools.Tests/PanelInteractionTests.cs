@@ -82,6 +82,87 @@ public class PanelInteractionTests : BunitContext
     }
 
     [TestMethod]
+    public void The_panel_renders_while_the_bridge_attaches_and_its_lists_scroll_without_the_stylesheet()
+    {
+        // Never answered: the browser bridge, the saved preferences and the stylesheet are all still on their way.
+        var module = JSInterop.SetupModule("./_content/Bit.BevTools/bit-bevtools.js");
+        module.Setup<BevBrowserSnapshot>("attach", _ => true);
+
+        var cut = Render<BevToolsPanel>();
+
+        Assert.IsNotEmpty(cut.FindAll(".bev-panel"));
+        // Virtualize takes the closest scrollable ancestor as its scroll root when it first renders.
+        StringAssert.Contains(cut.Find(".bev-tree").GetAttribute("style"), "overflow:auto");
+    }
+
+    [TestMethod]
+    public void Opening_from_code_before_the_saved_preferences_are_read_keeps_them()
+    {
+        var module = JSInterop.SetupModule("./_content/Bit.BevTools/bit-bevtools.js");
+        module.Setup<BevBrowserSnapshot>("attach", _ => true).SetResult(new BevBrowserSnapshot { Online = true, Visibility = "visible" });
+        var prefs = module.Setup<string?>("loadPrefs", _ => true);
+        module.SetupVoid("savePrefs", _ => true).SetVoidResult();
+        var cut = Render<BevToolsPanel>();
+
+        cut.InvokeAsync(Session.Ui.Open);
+        Assert.IsEmpty(module.Invocations["savePrefs"], "the defaults would overwrite the preferences that are still being read");
+
+        prefs.SetResult("""{"open":false,"dock":"Right","theme":"Dark"}""");
+
+        cut.WaitForAssertion(() => Assert.HasCount(1, module.Invocations["savePrefs"]));
+        var saved = (string)module.Invocations["savePrefs"][0].Arguments[0]!;
+        StringAssert.Contains(saved, "\"open\":true");
+        StringAssert.Contains(saved, "\"dock\":\"Right\"");
+        StringAssert.Contains(saved, "\"theme\":\"Dark\"");
+    }
+
+    [TestMethod]
+    public void Opening_the_panel_from_code_wins_over_the_saved_preference_to_keep_it_closed()
+    {
+        Session.Ui.Open();
+
+        var cut = RenderPanel("""{"open":false}""");
+
+        Assert.IsTrue(Session.Ui.IsOpen);
+        Assert.IsNotEmpty(cut.FindAll(".bev-panel"));
+    }
+
+    [TestMethod]
+    public void The_saved_preference_to_keep_the_panel_closed_is_applied_otherwise()
+    {
+        RenderPanel("""{"open":false}""");
+
+        Assert.IsFalse(Session.Ui.IsOpen);
+    }
+
+    [TestMethod]
+    public void Opening_from_code_shows_a_rendered_closed_panel_at_once_instead_of_on_its_next_poll()
+    {
+        var cut = RenderPanel("""{"open":false}""");
+        Assert.IsEmpty(cut.FindAll(".bev-panel"));
+
+        cut.InvokeAsync(Session.Ui.Open);
+
+        Assert.IsNotEmpty(cut.FindAll(".bev-panel"));
+        Assert.IsFalse(Session.Ui.OpenRequested, "a rendered panel has already applied the saved preferences, so there is nothing left to reconcile");
+    }
+
+    [TestMethod]
+    public void An_open_request_is_settled_even_when_no_preferences_were_saved()
+    {
+        Session.Ui.Open();
+        var first = RenderPanel(prefs: null);
+        Assert.IsFalse(Session.Ui.OpenRequested);
+
+        // The user closes it, which is saved, and a panel rendered later (another layout) reads that.
+        first.InvokeAsync(first.Instance.Toggle);
+        first.Dispose();
+        RenderPanel("""{"open":false}""");
+
+        Assert.IsFalse(Session.Ui.IsOpen);
+    }
+
+    [TestMethod]
     public void An_unavailable_saved_panel_is_ignored()
     {
         var cut = RenderPanel("""{"panel":"circuit","open":true}""");

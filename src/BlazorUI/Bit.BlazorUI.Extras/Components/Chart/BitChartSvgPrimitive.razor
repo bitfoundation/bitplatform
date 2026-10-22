@@ -94,11 +94,25 @@
         builder.AddAttribute(10, "opacity", BitChartSvg.N(t.Opacity));
         if (TextTransform(t) is { } tr) builder.AddAttribute(11, "transform", tr);
         if (!string.IsNullOrEmpty(t.CssClass)) builder.AddAttribute(12, "class", t.CssClass);
-        builder.AddContent(13, t.Text);
+        if (t.PhysicalAnchor)
+        {
+            // SVG anchors a text by the direction of the element its first character is in, while the text element
+            // alone sets the direction it reads in (#14044). The left-to-right direction goes on a tspan around the
+            // text, which opens no embedding of its own, so the text still reads in the chart's direction. Written into
+            // the markup, it holds in an exported file and in whatever page that file ends up in.
+            builder.OpenElement(13, "tspan");
+            builder.AddAttribute(14, "direction", "ltr");
+            builder.AddContent(15, t.Text);
+            builder.CloseElement();
+        }
+        else
+        {
+            builder.AddContent(16, t.Text);
+        }
         if (!string.IsNullOrEmpty(t.Title))
         {
-            builder.OpenElement(14, "title");
-            builder.AddContent(15, t.Title);
+            builder.OpenElement(17, "title");
+            builder.AddContent(18, t.Title);
             builder.CloseElement();
         }
         builder.CloseElement();

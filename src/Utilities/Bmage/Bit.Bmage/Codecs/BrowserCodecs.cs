@@ -1,4 +1,5 @@
-﻿using System.Text.Json.Serialization;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Text.Json.Serialization;
 using Bit.Bmage.Capabilities;
 using Bit.Bmage.Geometry;
 using Bit.Bmage.Interop;
@@ -72,6 +73,9 @@ public sealed class BrowserImageDecoder : IImageDecoder
         }
     }
 
+    // The request's properties are only ever set in .NET and read by System.Text.Json, so without this the trimmer
+    // drops their getters and the browser decodes with none of the request's hints in trimmed (release) builds.
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(DecodeRequest))]
     public async ValueTask<ImageBuffer> DecodeAsync(ReadOnlyMemory<byte> data, DecodeOptions options, IPixelAllocator allocator, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(options);

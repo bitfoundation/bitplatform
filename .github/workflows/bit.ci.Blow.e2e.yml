@@ -39,15 +39,32 @@ jobs:
     - name: dotnet workload restore
       run: cd src/Utilities/Blow && dotnet workload restore
 
-    - name: Build the demo and the E2E suite
-      run: |
-        dotnet build src/Utilities/Blow/Demo/Server/Bit.Blow.Demo.Server.csproj -c Release
-        dotnet build src/Utilities/Blow/Tests/Bit.Blow.Tests.E2E/Bit.Blow.Tests.E2E.csproj -c Release
+    # The tests drive the demo published the way blow.demo.cd.yml publishes it, not a build output: only a publish
+    # trims the WebAssembly client, and an interop payload the trimmer breaks - an anonymous type whose constructor
+    # lost its parameter names, a getter nothing but System.Text.Json reads - works in every build and fails only there.
+    - name: Publish the demo
+      run: dotnet publish src/Utilities/Blow/Demo/Server/Bit.Blow.Demo.Server.csproj -c Release -o demo -p:InvariantGlobalization=true
+
+    - name: Build the E2E suite
+      run: dotnet build src/Utilities/Blow/Tests/Bit.Blow.Tests.E2E/Bit.Blow.Tests.E2E.csproj -c Release
 
     - name: Install Playwright Chromium
       run: pwsh src/Utilities/Blow/Tests/Bit.Blow.Tests.E2E/bin/Release/net10.0/playwright.ps1 install --with-deps chromium
 
+    - name: Start the published demo
+      run: |
+        cd demo
+        nohup dotnet Bit.Blow.Demo.Server.dll --urls http://127.0.0.1:5000 > ../demo.log 2>&1 &
+        for attempt in $(seq 1 60); do
+          curl --silent --fail --output /dev/null http://127.0.0.1:5000/ && exit 0
+          sleep 2
+        done
+        cat ../demo.log
+        exit 1
+
     - name: Run E2E tests
+      env:
+        BLOW_E2E_BASE_URL: http://127.0.0.1:5000
       # Run from inside src so src/global.json's Microsoft.Testing.Platform runner setting applies.
       run: >
         cd src/Utilities/Blow/Tests/Bit.Blow.Tests.E2E &&
@@ -59,5 +76,7 @@ jobs:
       uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
       with:
         name: blow-e2e
-        path: '**/blow-e2e.trx'
+        path: |
+          **/blow-e2e.trx
+          demo.log
         if-no-files-found: ignore

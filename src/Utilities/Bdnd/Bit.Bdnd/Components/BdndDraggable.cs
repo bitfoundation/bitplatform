@@ -157,10 +157,15 @@ public sealed class BdndDraggable<TItem> : ComponentBase, IHandleEvent, IAsyncDi
     // Pointer moves are reported only while something follows them (a drag layer): on Blazor
     // Server each one is a message over the circuit.
     private Task SyncRegistrationAsync() =>
-        _registration!.SyncAsync(_element, new BdndDragSourceOptions(
-            _handlerId, _canDrag, UseHandle, UseCustomDragLayer,
-            string.IsNullOrWhiteSpace(DropEffect) ? "move" : DropEffect,
-            Manager!.HasOffsetListeners));
+        _registration!.SyncAsync(_element, new BdndDragSourceOptions
+        {
+            Id = _handlerId,
+            CanDrag = _canDrag,
+            UseHandle = UseHandle,
+            UseEmptyPreview = UseCustomDragLayer,
+            EffectAllowed = string.IsNullOrWhiteSpace(DropEffect) ? "move" : DropEffect,
+            TrackPointer = Manager!.HasOffsetListeners,
+        });
 
     private ValueTask<IJSObjectReference?> RegisterAsync(ElementReference element, BdndDragSourceOptions options)
     {
