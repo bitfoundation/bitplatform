@@ -23,7 +23,7 @@ public partial class BitDialogDemo
             Name = "AutoFocusButton",
             Type = "BitDialogButton?",
             DefaultValue = "null",
-            Description = "Which of the Dialog's own buttons AutoFocus lands on, instead of the first focusable element the Dialog holds. Takes precedence over AutoFocusSelector, except when it comes from a BitParams ancestor: then the Dialog's own AutoFocusSelector and an element its content marks with data-autofocus or autofocus win over it.",
+            Description = "Which of the Dialog's own buttons AutoFocus lands on, instead of the first focusable element the Dialog holds. One set on the Dialog takes precedence over AutoFocusSelector and over an element its content marks with data-autofocus or autofocus. One that comes from a BitParams ancestor is a default that comes after both, but still before the first focusable element. A button that is hidden or disabled is passed over for the next in that order.",
             LinkType = LinkType.Link,
             Href = "#component-button-enum",
         },
@@ -32,7 +32,7 @@ public partial class BitDialogDemo
             Name = "AutoFocusSelector",
             Type = "string?",
             DefaultValue = "null",
-            Description = "The CSS selector of the element inside the Dialog that AutoFocus lands on, instead of the first focusable element it holds. A selector that matches nothing visible falls back to that first element."
+            Description = "The CSS selector of the element inside the Dialog that AutoFocus lands on, instead of the first focusable element it holds. An AutoFocusButton set on the Dialog takes precedence over it, while one that comes from a BitParams ancestor does not. A selector that matches nothing visible falls back to an element the content marks with data-autofocus or autofocus, then to the AutoFocusButton of a BitParams ancestor, then to the first focusable element."
         },
         new()
         {
