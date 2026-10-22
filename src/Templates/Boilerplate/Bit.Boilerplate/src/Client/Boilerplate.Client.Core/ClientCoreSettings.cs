@@ -1,4 +1,5 @@
 //+:cnd:noEmit
+using Microsoft.Extensions.Options;
 
 namespace Boilerplate.Client.Core;
 
@@ -43,4 +44,9 @@ public partial class ClientCoreSettings : SharedSettings
 
         return validationResults;
     }
+}
+
+[OptionsValidator]
+public partial class ClientCoreSettingsValidator : IValidateOptions<ClientCoreSettings>
+{
 }

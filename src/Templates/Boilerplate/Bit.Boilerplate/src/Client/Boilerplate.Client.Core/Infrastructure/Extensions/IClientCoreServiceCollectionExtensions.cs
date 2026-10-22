@@ -79,9 +79,9 @@ public static partial class IClientCoreServiceCollectionExtensions
 
             services.AddSingleton(sp => sp.GetRequiredService<IOptions<ClientCoreSettings>>().Value);
 
+            services.AddSingleton<IValidateOptions<ClientCoreSettings>, ClientCoreSettingsValidator>();
             services.AddOptions<ClientCoreSettings>()
                 .Bind(configuration)
-                .ValidateDataAnnotations()
                 .ValidateOnStart();
 
             services.AddBitButilServices();
