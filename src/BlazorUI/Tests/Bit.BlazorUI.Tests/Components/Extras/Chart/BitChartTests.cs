@@ -106,6 +106,28 @@ public class BitChartTests : BunitTestContext
     }
 
     [TestMethod]
+    public void TheValuesOfAnAxisShouldBeAnchoredToTheirSideOfTheScreen()
+    {
+        var component = RenderChart();
+
+        // The values of the y axis end at it on the screen in a right-to-left chart as well (#14044). SVG anchors a
+        // text by the direction of the element its first character is in, so each sits in a left-to-right tspan, which
+        // leaves the text itself reading in the chart's direction. The categories centered on their ticks need none.
+        var values = component.FindAll("svg.bit-cht-svg text[text-anchor=end]");
+        Assert.IsTrue(values.Count > 1);
+        foreach (var value in values)
+        {
+            Assert.IsNull(value.GetAttribute("direction"), value.OuterHtml);
+            Assert.AreEqual("ltr", value.QuerySelector("tspan")?.GetAttribute("direction"), value.OuterHtml);
+        }
+
+        var categories = component.FindAll("svg.bit-cht-svg text").Where(t => t.TextContent is "Jan" or "Feb" or "Mar").ToList();
+        Assert.AreEqual(3, categories.Count);
+        foreach (var category in categories)
+            Assert.IsNull(category.QuerySelector("tspan"), category.OuterHtml);
+    }
+
+    [TestMethod]
     public void BitChartShouldNotEmitAPerInstanceStyleBlock()
     {
         var component = RenderChart();

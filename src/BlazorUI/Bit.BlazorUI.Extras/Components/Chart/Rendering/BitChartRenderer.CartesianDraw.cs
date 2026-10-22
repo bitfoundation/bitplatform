@@ -96,7 +96,7 @@ public sealed partial class BitChartRenderer
                     {
                         X = lx, Y = y + TickLabelOffset(tk), Text = tick.Label, Fill = tk.Color,
                         FontFamily = tk.Font.Family, FontSize = tk.Font.Size, FontWeight = tk.Font.Weight,
-                        Anchor = anchorStart ? "start" : "end", Baseline = "central"
+                        Anchor = anchorStart ? "start" : "end", PhysicalAnchor = true, Baseline = "central"
                     });
                 }
             }
@@ -200,12 +200,14 @@ public sealed partial class BitChartRenderer
                 if (tk.Display)
                 {
                     double rot = axis.LabelRotation;
+                    bool rotated = Math.Abs(rot) > 1e-3;
                     scene.Background.Add(new BitChartSvgText
                     {
-                        X = px + TickLabelOffset(tk), Y = baseline + g.TickLength + tk.Padding + (Math.Abs(rot) > 1e-3 ? tk.Font.Size * 0.35 : tk.Font.Size * 0.7),
+                        X = px + TickLabelOffset(tk), Y = baseline + g.TickLength + tk.Padding + (rotated ? tk.Font.Size * 0.35 : tk.Font.Size * 0.7),
                         Text = tick.Label, Fill = tk.Color,
                         FontFamily = tk.Font.Family, FontSize = tk.Font.Size, FontWeight = tk.Font.Weight,
-                        Anchor = Math.Abs(rot) > 1e-3 ? "end" : TickAnchor(tk), Baseline = "auto", Rotation = rot
+                        // A turned label ends at its tick on the screen; one lying flat follows Align in the reading direction.
+                        Anchor = rotated ? "end" : TickAnchor(tk), PhysicalAnchor = rotated, Baseline = "auto", Rotation = rot
                     });
                 }
             }
@@ -229,7 +231,7 @@ public sealed partial class BitChartRenderer
                         X = tk.Mirror ? baseline + g.TickLength + tk.Padding : baseline - g.TickLength - tk.Padding,
                         Y = px + TickLabelOffset(tk), Text = tick.Label, Fill = tk.Color,
                         FontFamily = tk.Font.Family, FontSize = tk.Font.Size, FontWeight = tk.Font.Weight,
-                        Anchor = tk.Mirror ? "start" : "end", Baseline = "central"
+                        Anchor = tk.Mirror ? "start" : "end", PhysicalAnchor = true, Baseline = "central"
                     });
             }
         }
@@ -267,7 +269,10 @@ public sealed partial class BitChartRenderer
 
     private bool HasBars() => _data.Datasets.Where((d, i) => !IsHidden(i, d)).Any(d => EffectiveType(d) == BitChartType.Bar);
 
-    /// <summary>Text anchor for a tick label honoring <see cref="BitChartTickOptions.Align"/>.</summary>
+    /// <summary>
+    /// Text anchor for a tick label honoring <see cref="BitChartTickOptions.Align"/>, whose Start and End follow the
+    /// reading direction, as SVG's own start and end do.
+    /// </summary>
     private static string TickAnchor(BitChartTickOptions tk) => tk.Align switch
     {
         BitPlacement.Start => "start",

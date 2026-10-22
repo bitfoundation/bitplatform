@@ -107,6 +107,15 @@ public class BitChartStylesheetTests
         CollectionAssert.AreEqual(Array.Empty<string>(), sideCompound.Matches(stylesheet).Select(m => m.Value).ToArray());
     }
 
+    [TestMethod]
+    public void BitChartShouldLeaveItsLabelsReadingInTheChartsDirection()
+    {
+        // A label reads in the direction of its chart, as the legend, the tooltip and the titles do (#14044): the
+        // stylesheet turns none of them around, and the ones placed on a side of the screen keep their place through
+        // their own markup, which an exported file carries too (see BitChartSvgPrimitive).
+        StringAssert.DoesNotMatch(ReadStylesheet(), new Regex(@"^\s*(direction|unicode-bidi)\s*:", RegexOptions.Multiline));
+    }
+
     private static string Normalize(string name)
         => name.StartsWith("--bit-Chart-series-color-", StringComparison.Ordinal) ? "--bit-Chart-series-color-N" : name;
 

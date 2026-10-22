@@ -279,7 +279,7 @@ public sealed partial class BitChartRenderer
                 {
                     X = lx, Y = ly, Text = label, Fill = pl.Color,
                     FontSize = pl.Font.Size, FontFamily = pl.Font.Family, FontWeight = pl.Font.Weight,
-                    Anchor = anchor, Baseline = "central"
+                    Anchor = anchor, PhysicalAnchor = true, Baseline = "central"
                 });
             }
         }
@@ -324,7 +324,8 @@ public sealed partial class BitChartRenderer
         scene.Background.Add(new BitChartSvgText
         {
             X = cx + 4, Y = cy - rr, Text = label, Fill = rOpts.Ticks.Color,
-            FontSize = rOpts.Ticks.Font.Size, FontFamily = rOpts.Ticks.Font.Family, Anchor = "start", Baseline = "central"
+            FontSize = rOpts.Ticks.Font.Size, FontFamily = rOpts.Ticks.Font.Family, Anchor = "start", PhysicalAnchor = true,
+            Baseline = "central"
         });
     }
 
