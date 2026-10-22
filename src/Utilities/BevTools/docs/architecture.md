@@ -169,6 +169,34 @@ as the `IBevToolsCommandContext` to panels, hosts the refresh loop and the brows
 command palette are keyboard-navigable; theme follows `prefers-color-scheme` unless overridden. Extension panels are
 rendered with `DynamicComponent` and can be restricted to a platform (`RequiredPlatform = "Server"`).
 
+### Attaching to a running app (`Bit.BevTools.Loader`, `RuntimeAttachment`)
+
+Everything above assumes BevTools was registered while the app started. An app that lazy loads `Bit.BevTools.wasm`
+cannot do that: registering references the assembly. Four things are only reachable while the app starts, so a
+second, trimmable and AOT compatible assembly, `Bit.BevTools.Loader`, installs them then and hands them over later:
+
+| Startup-only | Why | Loader hook |
+|---|---|---|
+| The renderer's `IComponentActivator` | read once, when the renderer is created | `BevToolsActivatorHook`, a pass-through activator BevTools steps into on attach |
+| `IHttpClientFactory` pipelines | built from filters registered in DI | pass-through handlers, outermost (session capture) and innermost (recording) |
+| `ComponentsActivitySource` / `ComponentsMetrics` (.NET 10) | read once, when the renderer is created | registered at startup (`UseFrameworkInstrumentation`) |
+| The `IServiceCollection` | gone once the container is built | kept by the loader for the Services panel |
+
+The loader never references `Bit.BevTools`; `Bit.BevTools` references the loader. They meet once, through
+`[assembly: BevToolsEntryPoint]` on the loaded assembly, and talk through internal interfaces (`IBevToolsEntryPoint`,
+`IBevToolsAttachment`, `IBevToolsHttpRecorder`). `BevToolsLoader.OpenAsync` loads the assembly (from the startup
+assemblies, else through `LazyAssemblyLoader`), and `RuntimeAttachment` creates a session outside DI keyed by the scope's
+`IServiceProvider`. The first `BevToolsPanel` of that scope attaches it to its renderer: it steps into the activator hook,
+reads the existing components from the renderer's state map, and marks those that already rendered so their next render
+is not reported as their first. The loader's scoped service disposes the session with the scope.
+
+`BitBevTools.Attach` does the same without the loader and falls back to reflection where the loader has hooks: it
+replaces the renderer's activator (`ComponentFactory._componentActivator`) and wraps the handler of the `HttpClient`
+registered in DI (`HttpMessageInvoker._handler`), unless it is transient or its pipeline already records. Each accessor
+lives in `BlazorReflection`/`RuntimeAttachment`, degrades to a reported gap, and `CapabilityReport` says which path a
+session took. Attaching is enabled, being the app's decision, except in a process that serves many users outside
+Development, where the panel would show any visitor the server side objects of their circuit.
+
 ### Multi-circuit behaviour (Server)
 
 Everything per circuit is scoped. Process-wide pieces (activity/meter listeners, HTTP handler pool, logger provider,
@@ -184,7 +212,7 @@ Three tiers, because a developer tool that breaks its integrators is not infrast
 | Tier | What | Promise |
 |---|---|---|
 | **Contract** — `Bit.BevTools/Abstractions` | `IBevToolsExtension`, `IBevDiagnosticRule`, `IBevToolsCommand`, `IBevStateProvider`, `IBevToolsTimeline`, `BevToolsEvent`, `BevDiagnostic`, `BevComponentSnapshot`, the attributes. No Blazor types. | Treated as versioned public API. Additions are additive; removals are breaking changes. |
-| **Setup** | `AddBitBevToolsServices`, `AddBitBevToolsServerServices`, `BitBevToolsOptions`, `<BevToolsPanel />`. | Stable. Options gain properties; defaults change only with a reason stated in the release notes. |
+| **Setup** | `AddBitBevToolsServices`, `AddBitBevToolsServerServices`, `BitBevToolsOptions`, `<BevToolsPanel />`, `BitBevTools.Attach`; in `Bit.BevTools.Loader`: `AddBitBevToolsLoaderServices`, `BitBevToolsLoaderOptions`, `BevToolsLoader`, `<BevToolsLoaderPanel />`, `BevToolsHttpHookHandler`. | Stable. Options gain properties; defaults change only with a reason stated in the release notes. |
 | **Read models** — the `Model/` and `Session/` types, `BevObjectInspector`, `BevSessionExporter`, `BevFmt`, `BevValueTree` | What the built-in panels read and render. Public so an extension panel can present the same data the same way. | Usable, but shaped by the UI's needs; expect additive change and occasional refinement. The JSON export format is versioned (`format` field) so readers can tell versions apart. |
 
 Razor components other than `BevToolsPanel` are public because the Razor SDK makes them so, not because they are a

@@ -58,6 +58,7 @@ internal sealed class RenderTracker
     private static readonly ConcurrentDictionary<(string Label, string Ancestor), string> ParentCauseDetails = new();
     private static readonly ConditionalWeakTable<Delegate, object> FragmentIds = new();
     private static readonly ConcurrentDictionary<Type, bool> StatefulFragmentTargets = new();
+    private static readonly ConcurrentDictionary<Type, Func<object, bool>> JsRuntimeNotReadyProbes = new();
     private static long _nextFragmentId;
     private const string FragmentTokenPrefix = "RenderFragment #";
     private const string NewFragmentChange = "new RenderFragment instance (its output cannot be compared)";
@@ -730,7 +731,7 @@ internal sealed class RenderTracker
             try
             {
                 var current = property.GetValue(component);
-                if (current is null or BevTrackingJSRuntime)
+                if (current is null or BevTrackingJSRuntime || IsJsRuntimeNotReady(current))
                 {
                     continue;
                 }
@@ -750,6 +751,14 @@ internal sealed class RenderTracker
             }
         }
     }
+
+    private static bool IsJsRuntimeNotReady(object runtime) => JsRuntimeNotReadyProbes.GetOrAdd(runtime.GetType(), static type => type.Name switch
+    {
+        "UnsupportedJavaScriptRuntime" => static _ => true,
+        "RemoteJSRuntime" when type.GetProperty("IsInitialized", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic) is { } isInitialized => js => isInitialized.GetValue(js) is false,
+        "WebViewJSRuntime" when type.GetField("_ipcSender", BindingFlags.Instance | BindingFlags.NonPublic) is { } ipcSender => js => ipcSender.GetValue(js) is null,
+        _ => static _ => false
+    })(runtime);
 }
 
 /// <summary>Reads a component's own fields (state) excluding parameters, injected services and framework plumbing, and its parameters.</summary>

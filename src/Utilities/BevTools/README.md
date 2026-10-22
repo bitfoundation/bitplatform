@@ -29,6 +29,7 @@ application source.
 ```bash
 dotnet add package Bit.BevTools          # Blazor WebAssembly / any Blazor host
 dotnet add package Bit.BevTools.Server   # adds circuit instrumentation for Blazor Server
+dotnet add package Bit.BevTools.Loader   # opens BevTools on demand, and lets WebAssembly lazy load it
 ```
 
 Register the services in `Program.cs`:
@@ -67,6 +68,65 @@ That is the whole setup. BevTools is enabled only when the host environment is `
 (`_content/Bit.BevTools/bit-bevtools.js`) and its stylesheet ship as static web assets of the package and are loaded by
 the panel itself, so no `<script>` or `<link>` tag is needed.
 Press **Ctrl+Shift+D** or click the badge to open it; **Ctrl+K** opens search and the command palette.
+
+### Opening it on demand, and lazy loading
+
+An app that wants BevTools in production too, without anyone downloading it until they ask for it, references
+**`Bit.BevTools.Loader`** next to `Bit.BevTools` and lets Blazor WebAssembly lazy load the latter:
+
+```xml
+<PackageReference Include="Bit.BevTools" />
+<PackageReference Include="Bit.BevTools.Loader" />
+
+<!-- the Blazor WebAssembly project; leave it out where BevTools should register at startup -->
+<BlazorWebAssemblyLazyLoad Include="Bit.BevTools.wasm" />
+```
+
+```csharp
+builder.Services.AddBitBevToolsLoaderServices(o => o.RegisterAtStartup = builder.HostEnvironment.IsDevelopment());
+```
+
+```razor
+@* MainLayout.razor, instead of <BevToolsPanel /> *@
+<BevToolsLoaderPanel />
+
+@* the app's own "Open dev tools" button *@
+@inject BevToolsLoader BevToolsLoader
+@if (BevToolsLoader.CanOpen)
+{
+    <button @onclick="BevToolsLoader.OpenAsync">Open dev tools</button>
+}
+```
+
+The loader is small, trimmable and AOT compatible, and it is the only BevTools assembly the startup code touches: an
+app that lazy loads BevTools must not name a `Bit.BevTools` type in code that runs before the load, which is why the
+loader repeats the few options it forwards (`ShowBadge`, `ToggleShortcut`, `TrackHttp`, `UseFrameworkInstrumentation`).
+
+- **Registered at startup.** When `Bit.BevTools` is among the assemblies the app starts with and should run from the
+  first render (`RegisterAtStartup`; Development by default), the loader registers it exactly as
+  `AddBitBevToolsServices` does and `<BevToolsLoaderPanel />` renders the panel from the start.
+- **Attached on demand.** Otherwise it installs hooks that cost next to nothing until BevTools is attached: a
+  pass-through `IComponentActivator` (the renderer takes its activator when it is created, so this is the only way in
+  without reflection), pass-through handlers in every `IHttpClientFactory` pipeline, the framework's ActivitySource and
+  meters (.NET 10; a renderer reads them when it is created too), and the service collection for the Services panel.
+  `BevToolsLoader.OpenAsync()` then loads `Bit.BevTools` (through `LazyAssemblyLoader` in Blazor WebAssembly), attaches
+  it to the running app and opens the panel. It reads the components that already exist from the renderer and sees
+  everything that happens from then on; what happened before stays unrecorded. The session ends with the scope.
+- **Hand-built `HttpClient`s** record through `BevToolsHttpHookHandler`, which passes requests through until BevTools
+  runs. Put it closest to the transport handler so every retry attempt is recorded.
+- **Blazor Server.** In a process that serves many users, `CanOpen` is false outside Development unless
+  `AllowInMultiUserHost` is set: the panel would show whoever opens it the server side objects of their circuit,
+  injected services and `IConfiguration` included. WebAssembly and Blazor Hybrid only ever show users their own process.
+
+`Bit.BevTools` roots itself for the trimmer (`TrimmerRootAssembly`, from the package's build files), so a lazily loaded
+copy keeps everything it reflects over. AOT builds cannot lazy load and start with it instead. In Blazor WebAssembly,
+render-diff and lifecycle timings still need `<MetricsSupport>true</MetricsSupport>`; consider it for Development only.
+
+Without the loader, `BitBevTools.Attach(serviceProvider)` attaches BevTools from a component rendered after the load
+(then render `<BevToolsPanel />` from that scope). It falls back to reflection where the loader has hooks: it replaces
+the renderer's activator and wraps the handler of the `HttpClient` registered in DI, cannot see `IHttpClientFactory`
+clients or the DI graph, and ends with the renderer. In a server process outside Development it stays off unless
+`BitBevToolsOptions.Enabled` is true. The About panel lists exactly what an attached session can see.
 
 ---
 
@@ -132,7 +192,8 @@ and its measured cost in [docs/performance.md](docs/performance.md).
 
 ## Security
 
-Development-only by default. Member, dictionary-key, header, query, URL-fragment and storage names matching sensitive
+Development-only by default. Opened on demand outside Development (Bit.BevTools.Loader, `BitBevTools.Attach`), it
+stays off in a process that serves many users unless allowed explicitly. Member, dictionary-key, header, query, URL-fragment and storage names matching sensitive
 patterns (`password`, `token`, `authorization`, `cookie`, `connectionstring`, …) are redacted, in navigation URLs as in
 request URLs; `[BevToolsSensitive]` redacts explicitly (fields, properties and auto-properties);
 `[BevToolsIgnore]` hides members or whole components. Request/response bodies and DI instance values are never read.
@@ -185,6 +246,7 @@ Bit.BevTools                  instrumentation, session stores, diagnostics, insp
                               class library) and the browser bridge (Scripts/bit-bevtools.ts -> wwwroot/bit-bevtools.js)
   Abstractions/               public integration API (events, state providers, rules, commands, panels, capabilities)
 Bit.BevTools.Server           circuit handler, circuit registry, Circuit panel (reference extension)
+Bit.BevTools.Loader           trimmable startup half for opening BevTools on demand: hooks, BevToolsLoader, the panel host
 Demo                          Blazor Web App (Interactive Auto, Server + Client) with a "Problems to diagnose" index
 Tests/Bit.BevTools.Tests      MSTest + bUnit on net8.0/net9.0/net10.0: instrumentation, tree, rendering, timeline,
                               state, network, interop, diagnostics, DI graph, concurrency, overhead, memory bounds,

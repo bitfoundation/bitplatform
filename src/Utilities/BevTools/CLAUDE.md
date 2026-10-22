@@ -13,6 +13,7 @@ measured overhead - keep all of them accurate when behaviour changes.
 | `Bit.BevTools/Abstractions/` | The integration contract (`IBevToolsExtension`, `IBevStateProvider`, `IBevDiagnosticRule`, `IBevToolsCommand`, `IBevToolsTimeline`, `BevToolsEvent`, the attributes). Additions only, never removals or signature changes. It uses no Blazor types, so it can move back into a package of its own (with `[TypeForwardedTo]`) if a Blazor-free consumer appears; keep it that way |
 | `Bit.BevTools/Scripts/bit-bevtools.ts` | The browser bridge, compiled by MSBuild to `wwwroot/bit-bevtools.js` (generated, git-ignored; minified in Release) |
 | `Bit.BevTools.Server/` | Circuit instrumentation and the Circuit panel, itself written as a BevTools extension |
+| `Bit.BevTools.Loader/` | The half an app references at startup when it opens BevTools on demand or lazy loads it: startup hooks (activator, HTTP, framework diagnostics, service collection), `BevToolsLoader`, `BevToolsLoaderPanel`, `BevToolsHttpHookHandler`. It ships in every startup download, AOT builds included, so it is trimmable, AOT compatible and reflection free, and it never references `Bit.BevTools`: `Bit.BevTools` references it, and implements its internal contract (`Internal/BevToolsLoaderContract.cs`) through `[assembly: BevToolsEntryPoint]` |
 | `Demo/` | Blazor Web App (Interactive Auto, `Server` + `Client`) whose `/problems` page lists real, deliberately planted problems to diagnose |
 | `Tests/Bit.BevTools.Tests` | MSTest + bUnit on net8.0, net9.0 and net10.0 |
 | `Tests/bit-bevtools-js` | vitest suite for the built `wwwroot/bit-bevtools.js` |
@@ -36,14 +37,16 @@ measured overhead - keep all of them accurate when behaviour changes.
    it: `dotnet run -c Release --project Tests/Bit.BevTools.Benchmarks`.
 5. **Optional reflection.** Every accessor over Blazor internals lives in `BlazorReflection`, is null when the member
    is missing, and degrades to a reported capability gap rather than an exception. The assembly is deliberately not
-   trim- or AOT-safe (`IsTrimmable`/`IsAotCompatible` are off); it is a development tool.
+   trim- or AOT-safe (`IsTrimmable`/`IsAotCompatible` are off); it is a development tool, and its package roots it for
+   the trimmer (`buildTransitive/Bit.BevTools.targets`). `Bit.BevTools.Loader` is the opposite: no reflection over
+   Blazor, no trim or AOT warnings (build it with `-p:RunTrimAnalyzers=true`).
 
 ## Coding style
 
 Follow the `.editorconfig` at the root of `src` (every new `.cs`, `.razor`, `.ts`, `.md`, `.csproj` and `.slnx` file
 starts with a BOM). Comments explain *why* a thing is shaped the way it is, not what the next line does.
 
-- **One namespace**: everything in both packages is in `Bit.BevTools`, whatever folder it sits in; razor files
+- **One namespace**: everything in all three packages is in `Bit.BevTools`, whatever folder it sits in; razor files
   declare `@namespace Bit.BevTools`. Tests use `Bit.BevTools.Tests`, the demo `Bit.BevTools.Demo.Client` / `.Server`.
 - **Prefixed public types**: `BevTools*` for the types that are the tool itself (`BevToolsSession`, `BevToolsPanel`,
   `IBevToolsExtension`), `Bev*` for the rest (`BevComponentRecord`, `BevDiagnostic`, `BevFmt`), and razor components

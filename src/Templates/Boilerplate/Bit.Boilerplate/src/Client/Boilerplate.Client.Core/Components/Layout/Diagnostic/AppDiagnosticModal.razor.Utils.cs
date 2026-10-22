@@ -1,4 +1,5 @@
 using System.Text;
+using Bit.BevTools;
 
 namespace Boilerplate.Client.Core.Components.Layout.Diagnostic;
 
@@ -15,6 +16,7 @@ public partial class AppDiagnosticModal
     [AutoInject] private IStorageService storageService = default!;
     [AutoInject] private IAppUpdateService appUpdateService = default!;
     [AutoInject] private ILogger<AppDiagnosticModal> logger = default!;
+    [AutoInject] private BevToolsLoader bevToolsLoader = default!;
     //#if (offlineDb == true)
     [AutoInject] private SyncService syncService = default!;
     [AutoInject] private IDbContextFactory<AppOfflineDbContext> dbContextFactory = default!;
@@ -31,9 +33,21 @@ public partial class AppDiagnosticModal
             : new DomainLogicException("Something bad happened.").WithData("TestData", 2);
     }
 
+    /// <summary>
+    /// In Development BevTools is registered at startup and only has to open. Elsewhere the first press downloads
+    /// Bit.BevTools.wasm (AOT builds start with it instead) and attaches it to the running app, which it then sees
+    /// from that moment on.
+    /// </summary>
     private async Task OpenDevTools()
     {
-        await JSRuntime.InvokeVoidAsync("App.openDevTools");
+        if (await bevToolsLoader.OpenAsync())
+        {
+            isOpen = false;
+        }
+        else
+        {
+            SnackBarService.Error("Dev tools are not available", bevToolsLoader.Problem ?? "");
+        }
     }
 
     private async Task CallGC()

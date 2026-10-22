@@ -3,8 +3,15 @@
 @if (Session.IsEnabled && _interactive)
 {
     <div class="bev-root" data-theme="@ThemeAttribute" @onkeydown="OnRootKeyDown">
-        <link rel="stylesheet" href="_content/Bit.BevTools/bit-bevtools.css" />
-        @if (!Ui.IsOpen)
+        <link @ref="_styles" rel="stylesheet" href="_content/Bit.BevTools/bit-bevtools.css" />
+        @if (!_stylesReady)
+        {
+            @*
+                Nothing until the stylesheet applies. Virtualize picks its scroll root when it first renders, and before
+                .bev-tree has overflow: auto that is a zero-height ancestor, which leaves the component tree empty.
+            *@
+        }
+        else if (!Ui.IsOpen)
         {
             if (Options.Ui.ShowBadge)
             {

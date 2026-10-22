@@ -1,0 +1,11 @@
+﻿<Project>
+
+    <!-- BevTools reflects over Blazor internals and over itself, and an app that lazy loads it (Bit.BevTools.Loader)
+         reaches it only by name, so a trimmer would see nothing that keeps it. It is a development tool and is not
+         trim-safe (IsTrimmable is off), so it is kept whole, together with everything it uses, whatever the app's
+         TrimMode. -->
+    <ItemGroup>
+        <TrimmerRootAssembly Include="Bit.BevTools" />
+    </ItemGroup>
+
+</Project>

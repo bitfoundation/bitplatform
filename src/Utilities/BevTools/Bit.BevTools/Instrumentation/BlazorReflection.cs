@@ -96,6 +96,24 @@ internal static class BlazorReflection
                 var entry = Expression.Parameter(typeof(object), "e");
                 GetQueueEntryState = Expression.Lambda<Func<object, ComponentState>>(Expression.Field(Expression.Convert(entry, entryType!), entryStateField), entry).Compile();
             }
+
+            var componentFactoryField = typeof(Renderer).GetField("_componentFactory", Instance);
+            var componentActivatorField = componentFactoryField?.FieldType.GetField("_componentActivator", Instance);
+            if (componentFactoryField is not null && componentActivatorField?.FieldType == typeof(IComponentActivator))
+            {
+                ComponentFactoryField = componentFactoryField;
+                ComponentActivatorField = componentActivatorField;
+            }
+
+            var stateByIdField = typeof(Renderer).GetField("_componentStateById", Instance);
+            if (stateByIdField is not null && typeof(IEnumerable<KeyValuePair<int, ComponentState>>).IsAssignableFrom(stateByIdField.FieldType))
+            {
+                ComponentStateByIdField = stateByIdField;
+            }
+
+            RendererDisposedField = typeof(Renderer).GetField("_rendererIsDisposed", Instance) is { } disposedField && disposedField.FieldType == typeof(bool) ? disposedField : null;
+            HasNeverRenderedField = typeof(ComponentBase).GetField("_hasNeverRendered", Instance) is { } neverRendered && neverRendered.FieldType == typeof(bool) ? neverRendered : null;
+            HasPendingQueuedRenderField = typeof(ComponentBase).GetField("_hasPendingQueuedRender", Instance) is { } pending && pending.FieldType == typeof(bool) ? pending : null;
         }
         catch (Exception ex)
         {
@@ -134,6 +152,18 @@ internal static class BlazorReflection
     public static Func<Renderer, IEnumerable>? GetRenderQueue { get; }
 
     public static Func<object, ComponentState>? GetQueueEntryState { get; }
+
+    public static FieldInfo? ComponentFactoryField { get; }
+
+    public static FieldInfo? ComponentActivatorField { get; }
+
+    public static FieldInfo? ComponentStateByIdField { get; }
+
+    public static FieldInfo? RendererDisposedField { get; }
+
+    public static FieldInfo? HasNeverRenderedField { get; }
+
+    public static FieldInfo? HasPendingQueuedRenderField { get; }
 
     public static Exception? InitializationError { get; }
 
@@ -225,6 +255,79 @@ internal static class BlazorReflection
         catch
         {
             return null;
+        }
+    }
+
+    public static bool TryWrapComponentActivator(Renderer renderer, Func<IComponentActivator, IComponentActivator?> wrap)
+    {
+        if (ComponentFactoryField is null || ComponentActivatorField is null)
+        {
+            return false;
+        }
+
+        try
+        {
+            var factory = ComponentFactoryField.GetValue(renderer);
+            if (factory is null || ComponentActivatorField.GetValue(factory) is not IComponentActivator current)
+            {
+                return false;
+            }
+
+            if (wrap(current) is { } wrapped)
+            {
+                ComponentActivatorField.SetValue(factory, wrapped);
+            }
+
+            return true;
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
+    public static ComponentState[]? ComponentStates(Renderer renderer)
+    {
+        if (ComponentStateByIdField is null)
+        {
+            return null;
+        }
+
+        try
+        {
+            return ComponentStateByIdField.GetValue(renderer) is IEnumerable<KeyValuePair<int, ComponentState>> states
+                ? states.OrderBy(s => s.Key).Select(s => s.Value).ToArray()
+                : null;
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
+    public static bool IsRendererDisposed(Renderer renderer)
+    {
+        try
+        {
+            return RendererDisposedField?.GetValue(renderer) is true;
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
+    public static bool HasRenderedOrQueued(ComponentBase component)
+    {
+        try
+        {
+            return HasNeverRenderedField is null || HasPendingQueuedRenderField is null
+                || HasNeverRenderedField.GetValue(component) is false
+                || HasPendingQueuedRenderField.GetValue(component) is true;
+        }
+        catch
+        {
+            return true;
         }
     }
 

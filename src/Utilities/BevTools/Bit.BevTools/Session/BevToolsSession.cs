@@ -79,6 +79,10 @@ public sealed class BevToolsSession : IDisposable
 
     public bool IsDisposed { get; private set; }
 
+    public bool IsAttachedAtRuntime => Attachment is not null;
+
+    internal BevRuntimeAttachment? Attachment { get; init; }
+
     public BitBevToolsOptions Options { get; }
 
     public BevToolsRegistry Registry { get; }
@@ -175,7 +179,7 @@ public sealed class BevToolsSession : IDisposable
         }
     }
 
-    private static bool HostsAServer(IServiceProvider services)
+    internal static bool HostsAServer(IServiceProvider services)
     {
         try
         {

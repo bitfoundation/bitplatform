@@ -134,12 +134,6 @@ declare namespace BitBlazorUI {
     }
 }
 
-// eruda types (loaded on demand by App.openDevTools, https://github.com/liriliri/eruda):
-declare interface Eruda {
-    init(): void;
-    show(): void;
-}
-
 //#if (ads == true)
 // Google Publisher Tag types (the subset Ads.ts uses, https://developers.google.com/publisher-tag/reference):
 declare namespace GooglePublisherTag {
@@ -196,8 +190,6 @@ interface Window {
     BitBswup?: BitBswup.Api;
     /** Only defined when bit-bswup.progress.js is loaded (Blazor WebAssembly). */
     BitBswupProgress?: BitBswup.ProgressApi;
-    /** Only defined once App.openDevTools has loaded eruda. */
-    eruda?: Eruda;
     //#if (ads == true)
     /** A command queue stub until gpt.js loads. */
     googletag?: GooglePublisherTag.Googletag;

@@ -3,6 +3,7 @@
 using BlazorApplicationInsights;
 using BlazorApplicationInsights.Interfaces;
 //#endif
+using Bit.BevTools;
 using Boilerplate.Client.Core;
 using Microsoft.Extensions.Options;
 using System.Diagnostics.CodeAnalysis;
@@ -28,6 +29,14 @@ public static partial class IClientCoreServiceCollectionExtensions
             services.AddScoped<CultureService>();
             services.AddScoped<TimeZoneService>();
             services.AddScoped<LazyAssemblyLoader>();
+            // bit BevTools, the in-app dev tools the diagnostic modal opens. Development registers it here, so it sees
+            // everything from the first render (Ctrl+Shift+D). Elsewhere only the loader's hooks are, and the modal
+            // downloads Bit.BevTools.wasm and attaches it the first time someone asks for it.
+            services.AddBitBevToolsLoaderServices(options =>
+            {
+                options.RegisterAtStartup = AppEnvironment.IsDevelopment();
+                options.ShowBadge = false;
+            });
             services.AddScoped<SignInModalService>();
             services.AddScoped<ImageEditorService>();
             services.AddScoped<IAuthTokenProvider, ClientSideAuthTokenProvider>();
@@ -104,12 +113,14 @@ public static partial class IClientCoreServiceCollectionExtensions
                     }
                 };
 
+                // BevToolsHttpHookHandler, closest to the transport, records every attempt the retry handler makes in
+                // bit BevTools once BevTools runs, and passes requests through untouched until then.
                 var constructedHttpMessageHandler = ActivatorUtilities.CreateInstance<LoggingDelegatingHandler>(serviceProvider,
                             [ActivatorUtilities.CreateInstance<CacheDelegatingHandler>(serviceProvider,
                             [ActivatorUtilities.CreateInstance<RequestHeadersDelegatingHandler>(serviceProvider,
                             [ActivatorUtilities.CreateInstance<AuthDelegatingHandler>(serviceProvider,
                             [ActivatorUtilities.CreateInstance<RetryDelegatingHandler>(serviceProvider,
-                            [ActivatorUtilities.CreateInstance<ExceptionDelegatingHandler>(serviceProvider, [transportHandler!])])])])])]);
+                            [ActivatorUtilities.CreateInstance<ExceptionDelegatingHandler>(serviceProvider, [new BevToolsHttpHookHandler(transportHandler!)])])])])])]);
                 return constructedHttpMessageHandler;
             });
 

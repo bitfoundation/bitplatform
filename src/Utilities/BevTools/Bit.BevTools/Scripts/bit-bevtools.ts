@@ -273,6 +273,15 @@ export function attach(ref: any, options: { shortcut?: string, trackJsToDotNet?:
     return snapshot();
 }
 
+export function waitForStyles(link: HTMLLinkElement | null, timeoutMs: number) {
+    if (!link || link.sheet) return Promise.resolve();
+    return new Promise<void>(resolve => {
+        link.addEventListener("load", () => resolve(), { once: true });
+        link.addEventListener("error", () => resolve(), { once: true });
+        setTimeout(resolve, timeoutMs);
+    });
+}
+
 export function detach() {
     bridgeGeneration++;
     while (listeners.length) listeners.pop()!();

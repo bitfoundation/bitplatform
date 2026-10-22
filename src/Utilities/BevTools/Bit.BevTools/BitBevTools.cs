@@ -62,6 +62,25 @@ public static class BitBevTools
         return services;
     }
 
+    /// <summary>
+    /// Turns BevTools on in an app that is already running, for an app that does not register it at startup (to lazy
+    /// load it, typically; Bit.BevTools.Loader does all of this for an app). Pass the <see cref="IServiceProvider"/>
+    /// injected into a component, then render <c>&lt;BevToolsPanel /&gt;</c> from a component of that scope: the
+    /// panel attaches to its renderer, reads the components that already exist and sees the ones created after.
+    /// Returns the session registered at startup when there is one, and the same session on every later call.
+    /// <para>
+    /// It is enabled unless <see cref="BitBevToolsOptions.Enabled"/> says otherwise, except in a process that serves
+    /// many users (Blazor Server, prerendering) outside Development: there the panel would show whoever opens it the
+    /// server side objects of their circuit, so it stays off unless <see cref="BitBevToolsOptions.Enabled"/> is true.
+    /// </para>
+    /// </summary>
+    public static BevToolsSession Attach(IServiceProvider services, Action<BitBevToolsOptions>? configure = null)
+    {
+        ArgumentNullException.ThrowIfNull(services);
+
+        return RuntimeAttachment.Attach(services, configure, loader: null);
+    }
+
     /// <summary>Registers an extension. Safe to combine with other <c>AddBitBevToolsServices</c> calls.</summary>
     public static IServiceCollection AddBitBevToolsServicesExtension<TExtension>(this IServiceCollection services, Action<BitBevToolsOptions>? configure = null) where TExtension : IBevToolsExtension, new()
         => services.AddBitBevToolsServices(o =>
@@ -134,6 +153,9 @@ public static class BitBevTools
 
         services.TryAddEnumerable(ServiceDescriptor.Singleton<IHttpMessageHandlerBuilderFilter, BevToolsHttpFilter>());
         services.TryAddEnumerable(ServiceDescriptor.Singleton<ILoggerProvider, BevToolsLoggerProvider>());
+
+        // A hand-built pipeline that holds Bit.BevTools.Loader's BevToolsHttpHookHandler records from now on as well.
+        BevToolsHooks.Http = BevToolsHttpRecorder.Instance;
     }
 
     private static void ApplyServiceRegistrations(IServiceCollection services, bool enabled)
@@ -182,7 +204,7 @@ public static class BitBevTools
     /// Decides whether BevTools runs, and records why. The reason is shown in the About panel so a developer who
     /// expected BevTools and does not see it can tell immediately what the host reported.
     /// </summary>
-    private static (bool Enabled, string Reason) ResolveEnabled(IServiceCollection services, BitBevToolsOptions options)
+    internal static (bool Enabled, string Reason) ResolveEnabled(IServiceCollection services, BitBevToolsOptions options)
     {
         if (options.Enabled is { } explicitValue)
         {
