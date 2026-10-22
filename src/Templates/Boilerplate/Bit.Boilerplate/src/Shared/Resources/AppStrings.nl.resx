@@ -2084,4 +2084,13 @@ Na het bereiken van {0} zullen extra aanmeldingen verminderde functies hebben.</
     <data name="UploadImageAsIs" xml:space="preserve">
     <value>Ongewijzigd uploaden</value>
   </data>
+    <data name="KioskTitle" xml:space="preserve">
+    <value>Kioskmodus</value>
+  </data>
+    <data name="KioskMessage" xml:space="preserve">
+    <value>Deze app is vergrendeld op het scherm: de Windows-toets, Alt+Tab, Taakbeheer en het sluiten van het venster zijn allemaal geblokkeerd. Gebruik de knop om af te sluiten.</value>
+  </data>
+    <data name="KioskExitApp" xml:space="preserve">
+    <value>App afsluiten</value>
+  </data>
 </root>

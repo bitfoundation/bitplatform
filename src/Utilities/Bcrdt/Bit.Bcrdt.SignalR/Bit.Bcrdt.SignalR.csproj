@@ -3,7 +3,7 @@
     <Import Project="../../../Bit.Build.props" />
 
     <PropertyGroup>
-        <TargetFrameworks>net10.0;net9.0;net8.0</TargetFrameworks>
+        <TargetFrameworks>net11.0;net10.0;net9.0;net8.0</TargetFrameworks>
         <RootNamespace>Bit.Bcrdt.SignalR</RootNamespace>
         <ImplicitUsings>enable</ImplicitUsings>
         <IsTrimmable>true</IsTrimmable>
@@ -20,6 +20,7 @@
         <PackageReference Condition="'$(TargetFramework)' == 'net8.0'" Include="Microsoft.AspNetCore.SignalR.Client" Version="[8.0.32,9.0.0)" />
         <PackageReference Condition="'$(TargetFramework)' == 'net9.0'" Include="Microsoft.AspNetCore.SignalR.Client" Version="[9.0.21,10.0.0)" />
         <PackageReference Condition="'$(TargetFramework)' == 'net10.0'" Include="Microsoft.AspNetCore.SignalR.Client" Version="[10.0.13,11.0.0)" />
+        <PackageReference Condition="'$(TargetFramework)' == 'net11.0'" Include="Microsoft.AspNetCore.SignalR.Client" Version="[11.0.0-rc.1.26425.128,12.0.0)" />
     </ItemGroup>
 
     <ItemGroup>

@@ -41,6 +41,10 @@ on:
         description: Bit packages of the latest Prerelease nuget packages run instead of nuget.org
         type: boolean
         default: false
+      windows_stores:
+        description: For WinGet and the Microsoft Store, sign every file of the Windows app, keep its installer at a URL of its own version and submit that version to both
+        type: boolean
+        default: false
   workflow_call:
     inputs:
       server:
@@ -59,6 +63,9 @@ on:
         type: boolean
         default: true
       prerelease_packages:
+        type: boolean
+        default: false
+      windows_stores:
         type: boolean
         default: false
 
@@ -100,7 +107,7 @@ jobs:
       uses: ./.github/actions/setup-bit-cli
 
     - name: Create project with bit new
-      run: bit new AdminPanel --database PostgreSQL --module Admin --appInsights --apiServerUrl ${{ env.SERVER_API_ADDRESS }} --webAppUrl ${{ env.SERVER_WEB_ADDRESS }} --filesStorage S3 --notification --captcha reCaptcha --signalR --ads --api Standalone --template-package "${{ env.BIT_TEMPLATE_PACKAGE }}" --yes --no-build --no-format --no-migration --no-trust
+      run: bit new AdminPanel --framework net11.0 --database PostgreSQL --module Admin --appInsights --apiServerUrl ${{ env.SERVER_API_ADDRESS }} --webAppUrl ${{ env.SERVER_WEB_ADDRESS }} --filesStorage S3 --notification --captcha reCaptcha --signalR --ads --api Standalone --template-package "${{ env.BIT_TEMPLATE_PACKAGE }}" --yes --no-build --no-format --no-migration --no-trust
        
     - name: Translate .resx files
       run: |
@@ -233,7 +240,7 @@ jobs:
   deploy_blazor_wasm_standalone:
     name: build blazor wasm standalone
     if: inputs.wasm
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
 
     steps:
     
@@ -246,6 +253,7 @@ jobs:
       uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
       with:
         global-json-file: src/global.json
+        dotnet-version: 10.0.x
 
     - name: Use prerelease packages
       if: inputs.prerelease_packages
@@ -257,7 +265,7 @@ jobs:
       uses: ./.github/actions/setup-bit-cli
 
     - name: Create project with bit new
-      run: bit new AdminPanel --database PostgreSQL --module Admin --sentry --apiServerUrl ${{ env.SERVER_API_ADDRESS }} --webAppUrl ${{ env.SERVER_WEB_ADDRESS }} --filesStorage S3 --notification --captcha reCaptcha --signalR --ads --theme Material --template-package "${{ env.BIT_TEMPLATE_PACKAGE }}" --yes --no-build --no-format --no-migration --no-trust
+      run: bit new AdminPanel --framework net10.0 --database PostgreSQL --module Admin --sentry --apiServerUrl ${{ env.SERVER_API_ADDRESS }} --webAppUrl ${{ env.SERVER_WEB_ADDRESS }} --filesStorage S3 --notification --captcha reCaptcha --signalR --ads --theme Material --template-package "${{ env.BIT_TEMPLATE_PACKAGE }}" --yes --no-build --no-format --no-migration --no-trust
 
     - name: Update core appsettings.json
       uses: devops-actions/variable-substitution@ae7b1f3676ae374dc70282e6b9650bc50b611222 # v1.2
@@ -271,7 +279,8 @@ jobs:
 
       
     - name: Publish
-      run: dotnet publish AdminPanel/src/Client/AdminPanel.Client.Web/AdminPanel.Client.Web.csproj -c Release -o client -p:WasmEnableSIMD=true -p:Version="${{ vars.APP_VERSION}}" -p:BitMinifyAggressive=true -p:BitMinifyMapOutputPath="${{ github.workspace }}/bit-minifier.map"
+      working-directory: AdminPanel
+      run: dotnet publish src/Client/AdminPanel.Client.Web/AdminPanel.Client.Web.csproj -c Release -o ../client -p:WasmEnableSIMD=true -p:Version="${{ vars.APP_VERSION}}" -p:BitMinifyAggressive=true -p:BitMinifyMapOutputPath="${{ github.workspace }}/bit-minifier.map"
 
     # what the stack traces this client logs are read back through: see the note in the server web job
     - name: Upload minifier map artifact
@@ -318,7 +327,7 @@ jobs:
       uses: ./.github/actions/setup-bit-cli
 
     - name: Create project with bit new
-      run: bit new AdminPanel --database PostgreSQL --module Admin --sentry --apiServerUrl ${{ env.SERVER_API_ADDRESS }} --webAppUrl ${{ env.SERVER_WEB_ADDRESS }} --filesStorage S3 --captcha reCaptcha --signalR --ads --template-package "${{ env.BIT_TEMPLATE_PACKAGE }}" --yes --platforms windows --no-build --no-format --no-migration --no-trust
+      run: bit new AdminPanel --framework net11.0 --database PostgreSQL --module Admin --sentry --apiServerUrl ${{ env.SERVER_API_ADDRESS }} --webAppUrl ${{ env.SERVER_WEB_ADDRESS }} --filesStorage S3 --captcha reCaptcha --signalR --ads --template-package "${{ env.BIT_TEMPLATE_PACKAGE }}" --yes --platforms windows --no-build --no-format --no-migration --no-trust
   
     - name: Translate .resx files
       run: |
@@ -335,6 +344,8 @@ jobs:
         Logging.Sentry.Dsn: ${{ secrets.ADMINPANEL_SENTRY_DSN }}
         GoogleRecaptchaSiteKey: ${{ secrets.GOOGLE_RECAPTCHA_SITE_KEY }}
         WindowsUpdate.FilesUrl: https://windows-adminpanel.bitplatform.dev
+        Kiosk.Enabled: true
+        Kiosk.PreventSleep: true
 
     - name: Install vpk
       shell: pwsh
@@ -366,13 +377,13 @@ jobs:
       run: |
           @{ Endpoint = '${{ vars.CODE_SIGNING_ENDPOINT }}'; CodeSigningAccountName = '${{ vars.CODE_SIGNING_ACCOUNT }}'; CertificateProfileName = '${{ vars.CODE_SIGNING_CERTIFICATE_PROFILE }}'; ExcludeCredentials = @('ManagedIdentityCredential', 'WorkloadIdentityCredential', 'SharedTokenCacheCredential', 'VisualStudioCredential', 'VisualStudioCodeCredential') } | ConvertTo-Json | Set-Content "$env:RUNNER_TEMP\code-signing.json"
           "VPK_AZURE_TRUSTED_SIGN_FILE=$env:RUNNER_TEMP\code-signing.json" >> $env:GITHUB_ENV
-          'VPK_SIGN_EXCLUDE=\.dll$' >> $env:GITHUB_ENV
+          if ('${{ inputs.windows_stores }}' -ne 'true') { 'VPK_SIGN_EXCLUDE=\.dll$' >> $env:GITHUB_ENV }
 
     - name: Publish
       run: |
           cd AdminPanel\src\Client\AdminPanel.Client.Windows\
           dotnet publish AdminPanel.Client.Windows.csproj -c Release -o .\publish-result -r win-x64 -p:Version="${{ vars.APP_VERSION}}" -p:PublishReadyToRun=true -p:PublishReadyToRunComposite=true --self-contained
-          vpk pack -u AdminPanel.Client.Windows -v "${{ vars.APP_VERSION }}" -p .\publish-result -e AdminPanel.Client.Windows.exe -r win-x64 --framework webview2 --icon .\wwwroot\favicon.ico --packTitle 'AdminPanel'
+          vpk pack -u AdminPanel.Client.Windows -v "${{ vars.APP_VERSION }}" -p .\publish-result -e AdminPanel.Client.Windows.exe -r win-x64 --framework webview2 --icon .\wwwroot\favicon.ico --packTitle 'AdminPanel' --packAuthors BitPlatform
 
     - name: Attest the installer and packages
       uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4.2.2
@@ -388,10 +399,56 @@ jobs:
           cd AdminPanel\src\Client\AdminPanel.Client.Windows\
           vpk upload s3 --endpoint ${{ vars.R2_ENDPOINT }} --bucket ${{ env.R2_BUCKET }} --keyId ${{ secrets.R2_ACCESS_KEY_ID }} --secret ${{ secrets.R2_SECRET_ACCESS_KEY }} -o .\Releases --keepMaxReleases 10
 
+    - name: Upload this version's installer to R2
+      if: inputs.windows_stores
+      env:
+        AWS_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+        AWS_DEFAULT_REGION: auto
+        AWS_REQUEST_CHECKSUM_CALCULATION: WHEN_REQUIRED
+        AWS_RESPONSE_CHECKSUM_VALIDATION: WHEN_REQUIRED
+      run: |
+          $key = "${{ vars.APP_VERSION }}/AdminPanel.Client.Windows-win-Setup.exe"
+          aws s3api head-object --bucket ${{ env.R2_BUCKET }} --key $key --endpoint-url ${{ vars.R2_ENDPOINT }} *> $null
+          if ($LASTEXITCODE -eq 0) { throw "$key is already on R2, and WinGet and the Microsoft Store need it unchanged. Raise APP_VERSION." }
+          aws s3 cp AdminPanel\src\Client\AdminPanel.Client.Windows\Releases\AdminPanel.Client.Windows-win-Setup.exe "s3://${{ env.R2_BUCKET }}/$key" --endpoint-url ${{ vars.R2_ENDPOINT }}
+          "::notice title=Installer::https://windows-adminpanel.bitplatform.dev/$key"
+
+    - name: Submit this version to WinGet
+      if: inputs.windows_stores
+      uses: ./.github/actions/submit-to-winget
+      with:
+        id: BitPlatform.AdminPanel
+        version: ${{ vars.APP_VERSION }}
+        installer: AdminPanel\src\Client\AdminPanel.Client.Windows\Releases\AdminPanel.Client.Windows-win-Setup.exe
+        installer-url: https://windows-adminpanel.bitplatform.dev/${{ vars.APP_VERSION }}/AdminPanel.Client.Windows-win-Setup.exe
+        architecture: x64
+        product-code: AdminPanel.Client.Windows
+        name: AdminPanel
+        short-description: An admin panel for products, categories and users, built with bit Boilerplate.
+        package-url: https://adminpanel.bitplatform.dev
+        privacy-url: https://adminpanel.bitplatform.dev/en-US/privacy-policy
+        token: ${{ secrets.WINGET_TOKEN }}
+
+    - name: Set up the Microsoft Store CLI
+      if: inputs.windows_stores
+      uses: microsoft/microsoft-store-apppublisher@cc9910a8d59f2eb55cbb83df0a3800cf3b5300e0 # v1.4
+      with:
+        version: v0.4.3
+
+    - name: Submit this version to the Microsoft Store
+      if: inputs.windows_stores
+      run: |
+          $PSNativeCommandUseErrorActionPreference = $true
+          msstore reconfigure --tenantId ${{ secrets.MSSTORE_TENANT_ID }} --sellerId ${{ secrets.MSSTORE_SELLER_ID }} --clientId ${{ secrets.MSSTORE_CLIENT_ID }} --clientSecret ${{ secrets.MSSTORE_CLIENT_SECRET }}
+          $package = @{ packages = @(@{ packageUrl = "https://windows-adminpanel.bitplatform.dev/${{ vars.APP_VERSION }}/AdminPanel.Client.Windows-win-Setup.exe"; languages = @('en'); architectures = @('X64'); installerParameters = '--silent'; isSilentInstall = $true }) } | ConvertTo-Json -Depth 4 -Compress
+          msstore submission update ${{ vars.ADMINPANEL_MSSTORE_PRODUCT_ID }} $package
+          msstore submission publish ${{ vars.ADMINPANEL_MSSTORE_PRODUCT_ID }}
+
   build_blazor_hybrid_android:
     name: build blazor hybrid (android)
     if: inputs.android
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     permissions:
       contents: read
       actions: read
@@ -420,7 +477,7 @@ jobs:
       uses: ./.github/actions/setup-bit-cli
 
     - name: Create project with bit new
-      run: bit new AdminPanel --database PostgreSQL --module Admin --sentry --apiServerUrl ${{ env.SERVER_API_ADDRESS }} --webAppUrl ${{ env.SERVER_WEB_ADDRESS }} --filesStorage S3 --notification --captcha reCaptcha --signalR --ads --template-package "${{ env.BIT_TEMPLATE_PACKAGE }}" --yes --platforms android --no-build --no-format --no-migration --no-trust
+      run: bit new AdminPanel --framework net11.0 --database PostgreSQL --module Admin --sentry --apiServerUrl ${{ env.SERVER_API_ADDRESS }} --webAppUrl ${{ env.SERVER_WEB_ADDRESS }} --filesStorage S3 --notification --captcha reCaptcha --signalR --ads --template-package "${{ env.BIT_TEMPLATE_PACKAGE }}" --yes --platforms android --no-build --no-format --no-migration --no-trust
 
     - name: Extract Android signing key from env
       uses: timheuer/base64-to-file@dfa5a5dd38803cb4f5c3a081eeb28e8362d43e9c # v2.0.0
@@ -453,14 +510,15 @@ jobs:
 
   
     - name: Publish aab
-      run: dotnet publish AdminPanel/src/Client/AdminPanel.Client.Maui/AdminPanel.Client.Maui.csproj -c Release -p:EnableLLVM=true -p:AndroidEnableProfiledAot=false -p:AndroidPackageFormats=aab%3Bapk -p:AndroidKeyStore=true -p:AndroidSigningKeyStore="AdminPanel.keystore" -p:AndroidSigningKeyAlias=bitplatform -p:AndroidSigningKeyPass="${{ secrets.ANDROID_RELEASE_KEYSTORE_PASSWORD }}" -p:AndroidSigningStorePass="${{ secrets.ANDROID_RELEASE_SIGNING_PASSWORD }}" -p:Version="${{ vars.APP_VERSION }}" -p:ApplicationTitle="AdminPanel" -p:ApplicationId="${{ env.APP_BUNDLE_ID }}" -f net10.0-android
+      # NETSDK1242 refuses Mono on .NET 11 android; the private opt-out turns it off, which is what makes EnableLLVM and AndroidEnableProfiledAot mean something again.
+      run: dotnet publish AdminPanel/src/Client/AdminPanel.Client.Maui/AdminPanel.Client.Maui.csproj -c Release -p:UseMonoRuntime=true -p:_DisableCheckForUnsupportedMonoMobileRuntime=true -p:EnableLLVM=true -p:AndroidEnableProfiledAot=false -p:AndroidPackageFormats=aab%3Bapk -p:AndroidKeyStore=true -p:AndroidSigningKeyStore="AdminPanel.keystore" -p:AndroidSigningKeyAlias=bitplatform -p:AndroidSigningKeyPass="${{ secrets.ANDROID_RELEASE_KEYSTORE_PASSWORD }}" -p:AndroidSigningStorePass="${{ secrets.ANDROID_RELEASE_SIGNING_PASSWORD }}" -p:Version="${{ vars.APP_VERSION }}" -p:ApplicationTitle="AdminPanel" -p:ApplicationId="${{ env.APP_BUNDLE_ID }}" -f net11.0-android
 
     - name: Upload artifact
       id: artifact
       uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
       with:
         name: android-bundle
-        path: AdminPanel/src/Client/AdminPanel.Client.Maui/bin/Release/net10.0-android/*-Signed.apk
+        path: AdminPanel/src/Client/AdminPanel.Client.Maui/bin/Release/net11.0-android/*-Signed.apk
 
     - name: Attest artifact
       uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4.2.2
@@ -474,7 +532,7 @@ jobs:
       with:
         serviceAccountJsonPlainText: ${{ secrets.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON }}
         packageName: ${{ env.APP_BUNDLE_ID }}
-        releaseFiles: AdminPanel/src/Client/AdminPanel.Client.Maui/bin/Release/net10.0-android/*-Signed.aab
+        releaseFiles: AdminPanel/src/Client/AdminPanel.Client.Maui/bin/Release/net11.0-android/*-Signed.aab
         releaseName: ${{ vars.APP_VERSION }}
         track: internal
         status: completed
@@ -503,7 +561,7 @@ jobs:
 
     - uses: maxim-lobanov/setup-xcode@ed7a3b1fda3918c0306d1b724322adc0b8cc0a90 # v1.7.0
       with:
-        xcode-version: '27.1'
+        xcode-version: '27.0'
 
     - name: Use prerelease packages
       if: inputs.prerelease_packages
@@ -515,7 +573,7 @@ jobs:
       uses: ./.github/actions/setup-bit-cli
 
     - name: Create project with bit new
-      run: bit new AdminPanel --database PostgreSQL --module Admin --sentry --apiServerUrl ${{ env.SERVER_API_ADDRESS }} --webAppUrl ${{ env.SERVER_WEB_ADDRESS }} --filesStorage S3 --notification --captcha reCaptcha --signalR --ads --template-package "${{ env.BIT_TEMPLATE_PACKAGE }}" --yes --platforms ios --no-build --no-format --no-migration --no-trust
+      run: bit new AdminPanel --framework net11.0 --database PostgreSQL --module Admin --sentry --apiServerUrl ${{ env.SERVER_API_ADDRESS }} --webAppUrl ${{ env.SERVER_WEB_ADDRESS }} --filesStorage S3 --notification --captcha reCaptcha --signalR --ads --template-package "${{ env.BIT_TEMPLATE_PACKAGE }}" --yes --platforms ios --no-build --no-format --no-migration --no-trust
   
     - name: Translate .resx files
       run: |
@@ -548,11 +606,11 @@ jobs:
 
   
     - name: Build ipa
-      run: dotnet publish AdminPanel/src/Client/AdminPanel.Client.Maui/AdminPanel.Client.Maui.csproj -p:RuntimeIdentifier=ios-arm64 -c Release -p:ArchiveOnBuild=true -p:CodesignKey="iPhone Distribution" -p:CodesignProvision="AdminPanel" -p:Version="${{ vars.APP_VERSION }}" -p:ApplicationTitle="AdminPanel" -p:ApplicationId="${{ env.APP_BUNDLE_ID }}" -f net10.0-ios
+      run: dotnet publish AdminPanel/src/Client/AdminPanel.Client.Maui/AdminPanel.Client.Maui.csproj -p:RuntimeIdentifier=ios-arm64 -c Release -p:ArchiveOnBuild=true -p:CodesignKey="iPhone Distribution" -p:CodesignProvision="AdminPanel" -p:Version="${{ vars.APP_VERSION }}" -p:ApplicationTitle="AdminPanel" -p:ApplicationId="${{ env.APP_BUNDLE_ID }}" -f net11.0-ios
 
     - name: Locate ipa
       id: ipa
-      run: echo "path=$(ls AdminPanel/src/Client/AdminPanel.Client.Maui/bin/release/net10.0-ios/ios-arm64/publish/*.ipa | head -n 1)" >> $GITHUB_OUTPUT
+      run: echo "path=$(ls AdminPanel/src/Client/AdminPanel.Client.Maui/bin/release/net11.0-ios/ios-arm64/publish/*.ipa | head -n 1)" >> $GITHUB_OUTPUT
 
     - name: Attest ipa
       uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4.2.2

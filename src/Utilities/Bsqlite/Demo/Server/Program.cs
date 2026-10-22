@@ -95,11 +95,7 @@ await using (var scope = app.Services.CreateAsyncScope())
     await DemoData.SeedIfEmptyAsync(db);
 }
 
-if (app.Environment.IsDevelopment())
-{
-    app.UseWebAssemblyDebugging();
-}
-else
+if (app.Environment.IsDevelopment() is false)
 {
     app.UseExceptionHandler("/Error", createScopeForErrors: true);
     app.UseHsts();

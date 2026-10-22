@@ -23,6 +23,7 @@
               finds something missing.
     aspire    Runs a new project's Aspire app host three times: the second run reuses the first one's containers, they
               stop once it sits idle, and the third run brings them back on the same volumes. -Sha and -Keep as above.
+              Both create the project for the template's default .NET version unless -Framework names another.
 
     What is deployed where is read from those CD workflows and from the E2E suite's DeployedApps.cs and
     RunTests.bat rather than repeated here, so this script follows them.
@@ -83,7 +84,11 @@ param(
 
     [switch] $PrereleasePackages,
 
-    [switch] $Keep
+    [switch] $Keep,
+
+    # devcontainer, aspire: the project's --framework; the template's default when omitted.
+    [ValidateSet('net10.0', 'net11.0')]
+    [string] $Framework
 )
 
 $ErrorActionPreference = 'Stop'
@@ -1003,9 +1008,10 @@ function New-BitProject([string] $lab, $bit, [string] $name, [string[]] $options
     Push-Location $lab
 
     $templateArguments = $bit.TemplateArguments
+    $frameworkArguments = $Framework ? @('--framework', $Framework) : @()
 
     try {
-        & $bit.Path new $name --yes --no-open --no-trust --no-setup @options @templateArguments *> (Join-Path $lab 'new.log')
+        & $bit.Path new $name --yes --no-open --no-trust --no-setup @options @frameworkArguments @templateArguments *> (Join-Path $lab 'new.log')
         $newExitCode = $LASTEXITCODE
     }
     finally {

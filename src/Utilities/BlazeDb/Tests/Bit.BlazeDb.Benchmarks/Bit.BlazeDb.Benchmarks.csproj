@@ -2,9 +2,9 @@
 
     <PropertyGroup>
         <OutputType>Exe</OutputType>
-        <!-- Single-target: this is a measurement tool, not a shipped/multi-TFM library. net10.0 matches
+        <!-- Single-target: this is a measurement tool, not a shipped/multi-TFM library. net11.0 matches
              global.json's pinned SDK. -->
-        <TargetFramework>net10.0</TargetFramework>
+        <TargetFramework>net11.0</TargetFramework>
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
         <LangVersion>preview</LangVersion>
@@ -20,7 +20,7 @@
     <ItemGroup>
         <PackageReference Include="BenchmarkDotNet" Version="0.15.8" />
         <!-- The baseline every number is measured against: native SQLite, in memory, with prepared statements. -->
-        <PackageReference Include="Microsoft.Data.Sqlite" Version="10.0.13" />
+        <PackageReference Include="Microsoft.Data.Sqlite" Version="11.0.0-rc.2.26504.105" />
     </ItemGroup>
 
     <ItemGroup>

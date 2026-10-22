@@ -41,7 +41,7 @@ public static class DoctorCommand
 
             var projectName = ProjectContext.FindProjectName(cli.Environment.CurrentDirectory);
             var aspire = projectName is null || Directory.Exists(Path.Combine(cli.Environment.CurrentDirectory, "src", "Server", $"{projectName}.Server.AppHost"));
-            var requirements = projectName is null ? TemplateRequirements.Embedded : TemplateRequirements.FromProject(cli.Environment.CurrentDirectory, projectName);
+            var requirements = projectName is null ? TemplateRequirements.Embedded.For(new TemplateSelection(TemplateManifest.Embedded)) : TemplateRequirements.FromProject(cli.Environment.CurrentDirectory, projectName);
             var needs = new ToolNeeds
             {
                 Aspire = aspire,

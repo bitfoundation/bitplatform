@@ -4,7 +4,7 @@ using Bit.Cli.Tools;
 
 namespace Bit.Cli.Templates;
 
-public sealed partial record TemplateRequirements(int? NodeMajor, Version? Aspire, SdkRequirement? Sdk)
+public sealed partial record TemplateRequirements(int? NodeMajor, Version? Aspire, SdkRequirement? Sdk, string? GlobalJson = null)
 {
     private const string PackageJsonEntry = "Bit.Boilerplate/src/Client/Boilerplate.Client.Core/package.json";
 
@@ -12,14 +12,24 @@ public sealed partial record TemplateRequirements(int? NodeMajor, Version? Aspir
 
     private const string GlobalJsonEntry = "Bit.Boilerplate/global.json";
 
-    public static TemplateRequirements Embedded { get; } = new(ParseNodeMajor(ReadResource("Bit.Cli.package.json")), ParseAspire(ReadResource("Bit.Cli.AppHost.csproj")), SdkRequirement.FromGlobalJson(ReadResource("Bit.Cli.global.json")));
+    public static TemplateRequirements Embedded { get; } = FromTemplate(ReadResource("Bit.Cli.package.json"), ReadResource("Bit.Cli.AppHost.csproj"), ReadResource("Bit.Cli.global.json"));
 
     public static TemplateRequirements FromPackage(string packagePath)
     {
-        return new(
-            ParseNodeMajor(TemplateSource.ReadEntry(packagePath, PackageJsonEntry)),
-            ParseAspire(TemplateSource.ReadEntry(packagePath, AppHostEntry)),
-            SdkRequirement.FromGlobalJson(TemplateSource.ReadEntry(packagePath, GlobalJsonEntry)));
+        return FromTemplate(
+            TemplateSource.ReadEntry(packagePath, PackageJsonEntry),
+            TemplateSource.ReadEntry(packagePath, AppHostEntry),
+            TemplateSource.ReadEntry(packagePath, GlobalJsonEntry));
+    }
+
+    public TemplateRequirements For(TemplateSelection selection)
+    {
+        return GlobalJson is null ? this : this with { Sdk = SdkRequirement.FromGlobalJson(selection.Manifest.ApplySwitches(GlobalJson, selection)) ?? Sdk };
+    }
+
+    private static TemplateRequirements FromTemplate(string? packageJson, string? appHostProject, string? globalJson)
+    {
+        return new(ParseNodeMajor(packageJson), ParseAspire(appHostProject), SdkRequirement.FromGlobalJson(globalJson), globalJson);
     }
 
     public static TemplateRequirements FromProject(string directory, string name)

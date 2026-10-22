@@ -83,7 +83,7 @@ consumes a test project, so every band takes the newest patch of its own band. L
 
 **Version ranges stay.** `[8.0.0,9.0.0)` is a compatibility contract, not a pin.
 
-**`Bit.*` self-references track the in-development version**, currently `10.7.0-pre-02`. Never read
+**`Bit.*` self-references track the in-development version**, currently `11.0.0-pre-10`. Never read
 these off nuget.org — the published `latest` is behind the working tree by design, and unrelated
 higher-numbered lines exist there.
 
@@ -108,13 +108,24 @@ gh api "repos/<owner>/<repo>/git/trees/<sha>?recursive=1" --jq '[.tree[]|select(
 A non-zero count on a JavaScript action that vendors `node_modules` means it will not stage. This is
 worth checking for *any* action bump, not just this one — it is invisible in the release notes.
 
-**A MAUI bump needs one MAUI build.** MAUI's resizetizer bundles an `Svg.Skia`, and from 10.0.101 to
-10.0.110 that `Svg.Skia` called a SkiaSharp overload missing from the SkiaSharp next to it, so any SVG
-with a `<filter>` failed the build with `MAUIR0001` /
-`MissingMethodException: SKImageFilter.CreateMatrixConvolution`
-([dotnet/maui#38319](https://github.com/dotnet/maui/issues/38319)). The app icons of the Boilerplate
-and the BlazorUI demo have one, so before moving MAUI, build a MAUI app with the Boilerplate's
-`appicon.svg` as its icon, for any target.
+**MAUI's resizetizer breaks on SVG filters.** MAUI 10.0.101 to 10.0.110 and 11.0.0-rc.2 bundle an `Svg.Skia` that
+calls a SkiaSharp overload missing from the SkiaSharp next to it, so any SVG it resizes that has a `<filter>` fails
+the build with `MAUIR0001` / `MissingMethodException: SKImageFilter.CreateMatrixConvolution`
+([dotnet/maui#38319](https://github.com/dotnet/maui/issues/38319)). 10.0.120 fixed it for .NET 10, and a .NET 10
+Boilerplate project takes develop's MAUI. On this branch MAUI can't stay behind for .NET 11: a MAUI built for an
+older preview doesn't compile against the newer preview's Android workload (CS1705 on `Java.Interop`). So MAUI
+follows the SDK here, and the app icons of the Boilerplate and the BlazorUI demo carry no drop shadow (their
+`<filter>`) until a .NET 11 MAUI builds an app with the Boilerplate's `appicon.svg` as its icon.
+
+**bit Boilerplate builds for .NET 10 and .NET 11.** Its `framework` option picks one; the template's own tree is
+the .NET 11 project. In its `Directory.Packages.props`, a package whose 11.x build has no `net10.0` assets has a
+version in each of the two framework groups at the end of the file: the 11.x one, and a 10.x one that moves within
+10.x. So do the `Microsoft.Extensions.*` packages, although their 11.x builds have `net10.0` assets: they bring
+`Microsoft.Extensions.Logging.Abstractions` 11 into the .NET 10 server projects, whose targets file then overrides
+the one `Microsoft.Extensions.Telemetry.Abstractions` turns the framework's logging generator off with, depending
+on import order, and the build fails with CS0757. Every other package takes one version for both. The few literals that differ per framework are switch
+symbols in `template.json` (the SDK and its `rollForward`, the dev container image, the `dotnet-ef` version, the
+runner image), so they move together with the files they replace.
 
 **`Xamarin.Firebase.Messaging` is held at 125.1.1.** 125.1.2 pulls `Xamarin.AndroidX.Fragment` 1.9.0
 (through `GooglePlayServices.Base` 118.10.1), which absorbed the ktx classes, while the rest of the
@@ -124,10 +135,20 @@ the graph already brings `Fragment.Ktx` 1.9.0 (an empty stub), rather than pinni
 `Xamarin.GooglePlayServices.Auth.Api.Phone` is held at 118.3.1 for the same reason: 118.3.1.1 pulls
 `GooglePlayServices.Basement` 118.10.0.3, which brings Fragment 1.9.0.
 
-**Linux runners are held at `ubuntu-24.04`**, in the GitHub workflows and the Azure DevOps `vmImage`.
-`ubuntu-26.04` defaults to JDK 25 (`(default)` in the image readme's Java table), and .NET for Android
-10 accepts up to 21 (`LatestSupportedJavaVersion` 21.0.99), so every Android build there fails. .NET 11
-raises the limit to 25.0.99; move the runners together with the .NET 11 move.
+**EF Core in the Boilerplate follows its PostgreSQL provider.** A preview of
+`Npgsql.EntityFrameworkCore.PostgreSQL` asks for one exact EF Core version, and a provider built for another
+one fails at runtime ("Method not found"). So the Boilerplate's EF Core stays on the version the newest Npgsql
+names, together with every package that requires it (`Microsoft.EntityFrameworkCore.*`,
+`Microsoft.AspNetCore.Identity.EntityFrameworkCore`, `Microsoft.AspNetCore.DataProtection.EntityFrameworkCore`,
+`Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore`) and its `dnx dotnet-ef` calls, while the
+rest of ASP.NET Core moves on. A NU1608 on Npgsql in a restore means this was missed.
+
+**Linux runners are on `ubuntu-26.04`**, in the GitHub workflows and the Azure DevOps `vmImage`. It
+defaults to JDK 25 (`(default)` in the image readme's Java table), which .NET for Android accepts from .NET 11
+RC2 on (`LatestSupportedJavaVersion` 25.0.99 in `Xamarin.Android.Common.props.in`). develop stays on
+`ubuntu-24.04`, since .NET for Android 10 accepts up to 21, so a runner pin that comes over from develop moves
+to `ubuntu-26.04` here, except in the jobs that build a .NET 10 Boilerplate project (the Todo and Sales CDs), which
+keep develop's runners.
 
 When a held pin's rationale no longer holds — the oldest supported SDK moved, TS 7 was adopted
 repo-wide — say so in the report rather than acting on it.
@@ -245,14 +266,16 @@ There are no `.config/dotnet-tools.json` manifests any more: every tool is run w
 <package>@<version>`, so the pins live in the workflow and doc lines that call them (`grep -rn "dnx
 .*@"`). `vpk` must equal the `Velopack` PackageReference version in the same project — Velopack
 requires the CLI and the library to match, and this has drifted before. `dotnet-ef` should equal the
-EF Core package version. Likewise the `npx playwright@<version>` command in the Boilerplate's two
+EF Core package version of the project it runs on: the .NET 11 one in the template's files, the .NET 10 one in
+`template.json`'s `efToolVersion` and in the Todo CD. Likewise the `npx playwright@<version>` command in the Boilerplate's two
 `.runsettings` (`src/Tests` and `src/Internal/Boilerplate.Tests.E2E`) must equal
 `Microsoft.Playwright.MSTest.v4`: a remote Playwright server of any other version refuses the client, and
 every test that runs on it fails at connect.
 
-`src/global.json` is `rollForward: disable` and tracks the newest SDK. The two template
-`global.json` files are `10.0.100` + `latestFeature` deliberately — they must accept any 10.0.x on a
-consumer's machine. Do not "update" them.
+`src/global.json` is `rollForward: disable` and tracks the newest SDK. While .NET 11 is a release
+candidate, the two template `global.json` files pin the same RC SDK, also `rollForward: disable`, and
+move with it. Once .NET 11 ships they go back to `11.0.100` + `latestFeature`, so they accept any
+11.0.x on a consumer's machine. A .NET 10 project gets `10.0.100` + `latestFeature` from `template.json`.
 
 ### Container images
 

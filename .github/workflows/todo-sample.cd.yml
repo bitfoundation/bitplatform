@@ -40,6 +40,10 @@ on:
         description: Bit packages of the latest Prerelease nuget packages run instead of nuget.org
         type: boolean
         default: false
+      windows_stores:
+        description: For WinGet and the Microsoft Store, sign every file of the Windows app, keep its installer at a URL of its own version and submit that version to both
+        type: boolean
+        default: false
   workflow_call:
     inputs:
       server:
@@ -58,6 +62,9 @@ on:
         type: boolean
         default: true
       prerelease_packages:
+        type: boolean
+        default: false
+      windows_stores:
         type: boolean
         default: false
 
@@ -88,6 +95,7 @@ jobs:
       uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
       with:
         global-json-file: src/global.json
+        dotnet-version: 10.0.x
 
     - name: Use prerelease packages
       if: inputs.prerelease_packages
@@ -99,7 +107,7 @@ jobs:
       uses: ./.github/actions/setup-bit-cli
 
     - name: Create project with bit new
-      run: bit new TodoSample --database PostgreSQL --sample --appInsights --apiServerUrl ${{ env.SERVER_API_ADDRESS }} --webAppUrl ${{ env.SERVER_WEB_ADDRESS }} --filesStorage S3 --notification --captcha reCaptcha --offlineDb --signalR --ads --api Standalone --redis --multitenant false --template-package "${{ env.BIT_TEMPLATE_PACKAGE }}" --yes --no-restore --no-build --no-format --no-migration --no-trust
+      run: bit new TodoSample --framework net10.0 --database PostgreSQL --sample --appInsights --apiServerUrl ${{ env.SERVER_API_ADDRESS }} --webAppUrl ${{ env.SERVER_WEB_ADDRESS }} --filesStorage S3 --notification --captcha reCaptcha --offlineDb --signalR --ads --api Standalone --redis --multitenant false --template-package "${{ env.BIT_TEMPLATE_PACKAGE }}" --yes --no-restore --no-build --no-format --no-migration --no-trust
        
     - name: Translate .resx files
       run: |
@@ -117,7 +125,8 @@ jobs:
         ApplicationInsights.ConnectionString: ${{ secrets.APPLICATION_INSIGHTS_CONNECTION_STRING }}
 
     - name: Publish Server API
-      run: dotnet publish TodoSample/src/Server/TodoSample.Server.Api/TodoSample.Server.Api.csproj -c Release -o server-api -p:Version="${{ vars.APP_VERSION}}" -p:AspNetCoreHostingModel=OutOfProcess
+      working-directory: TodoSample
+      run: dotnet publish src/Server/TodoSample.Server.Api/TodoSample.Server.Api.csproj -c Release -o ../server-api -p:Version="${{ vars.APP_VERSION}}" -p:AspNetCoreHostingModel=OutOfProcess
 
     # Server-owned; C:\inetpub keeps its own copies. Also keeps them out of the artifact.
     - name: Strip server-owned files from bundle
@@ -161,6 +170,7 @@ jobs:
       uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
       with:
         global-json-file: src/global.json
+        dotnet-version: 10.0.x
 
     - name: Use prerelease packages
       if: inputs.prerelease_packages
@@ -172,7 +182,7 @@ jobs:
       uses: ./.github/actions/setup-bit-cli
 
     - name: Create project with bit new
-      run: bit new TodoSample --database PostgreSQL --sample --appInsights --apiServerUrl ${{ env.SERVER_API_ADDRESS }} --webAppUrl ${{ env.SERVER_WEB_ADDRESS }} --filesStorage S3 --notification --captcha reCaptcha --signalR --ads --api Standalone --multitenant false --template-package "${{ env.BIT_TEMPLATE_PACKAGE }}" --yes --no-build --no-format --no-migration --no-trust
+      run: bit new TodoSample --framework net10.0 --database PostgreSQL --sample --appInsights --apiServerUrl ${{ env.SERVER_API_ADDRESS }} --webAppUrl ${{ env.SERVER_WEB_ADDRESS }} --filesStorage S3 --notification --captcha reCaptcha --signalR --ads --api Standalone --multitenant false --template-package "${{ env.BIT_TEMPLATE_PACKAGE }}" --yes --no-build --no-format --no-migration --no-trust
        
     - name: Translate .resx files
       run: |
@@ -197,7 +207,8 @@ jobs:
       
       
     - name: Publish Server Web
-      run: dotnet publish TodoSample/src/Server/TodoSample.Server.Web/TodoSample.Server.Web.csproj -c Release -o server-web -p:Version="${{ vars.APP_VERSION}}" -p:AspNetCoreHostingModel=OutOfProcess -p:BitMinifyAggressive=true -p:BitMinifyMapOutputPath="${{ github.workspace }}/bit-minifier.map"
+      working-directory: TodoSample
+      run: dotnet publish src/Server/TodoSample.Server.Web/TodoSample.Server.Web.csproj -c Release -o ../server-web -p:Version="${{ vars.APP_VERSION}}" -p:AspNetCoreHostingModel=OutOfProcess -p:BitMinifyAggressive=true -p:BitMinifyMapOutputPath="${{ github.workspace }}/bit-minifier.map"
 
     # Every publish renames afresh, so this map reads the stack traces of this release and of no other. It lives in
     # obj, which this checkout throws away - kept here, and never next to the client, which would serve it.
@@ -300,6 +311,7 @@ jobs:
       uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
       with:
         global-json-file: src/global.json
+        dotnet-version: 10.0.x
 
     - name: Use prerelease packages
       if: inputs.prerelease_packages
@@ -311,7 +323,7 @@ jobs:
       uses: ./.github/actions/setup-bit-cli
 
     - name: Create project with bit new
-      run: bit new TodoSample --database PostgreSQL --sample --apiServerUrl ${{ env.SERVER_API_ADDRESS }} --webAppUrl ${{ env.SERVER_WEB_ADDRESS }} --filesStorage S3 --notification --captcha reCaptcha --ads --multitenant false --theme Cupertino --template-package "${{ env.BIT_TEMPLATE_PACKAGE }}" --yes --no-build --no-format --no-migration --no-trust
+      run: bit new TodoSample --framework net10.0 --database PostgreSQL --sample --apiServerUrl ${{ env.SERVER_API_ADDRESS }} --webAppUrl ${{ env.SERVER_WEB_ADDRESS }} --filesStorage S3 --notification --captcha reCaptcha --ads --multitenant false --theme Cupertino --template-package "${{ env.BIT_TEMPLATE_PACKAGE }}" --yes --no-build --no-format --no-migration --no-trust
 
     - name: Update core appsettings.json
       uses: devops-actions/variable-substitution@ae7b1f3676ae374dc70282e6b9650bc50b611222 # v1.2
@@ -324,7 +336,8 @@ jobs:
 
       
     - name: Publish
-      run: dotnet publish TodoSample/src/Client/TodoSample.Client.Web/TodoSample.Client.Web.csproj -c Release -o client -p:Version="${{ vars.APP_VERSION}}" -p:RunAOTCompilation=true -p:InvariantGlobalization=true -p:WasmEnableSIMD=true -p:BitMinifyAggressive=true -p:BitMinifyMapOutputPath="${{ github.workspace }}/bit-minifier.map"
+      working-directory: TodoSample
+      run: dotnet publish src/Client/TodoSample.Client.Web/TodoSample.Client.Web.csproj -c Release -o ../client -p:Version="${{ vars.APP_VERSION}}" -p:RunAOTCompilation=true -p:InvariantGlobalization=true -p:WasmEnableSIMD=true -p:BitMinifyAggressive=true -p:BitMinifyMapOutputPath="${{ github.workspace }}/bit-minifier.map"
 
     # what the stack traces this client logs are read back through: see the note in the server web job
     - name: Upload minifier map artifact
@@ -354,6 +367,7 @@ jobs:
       uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
       with:
         global-json-file: src/global.json
+        dotnet-version: 10.0.x
 
     - name: Use prerelease packages
       if: inputs.prerelease_packages
@@ -365,7 +379,7 @@ jobs:
       uses: ./.github/actions/setup-bit-cli
 
     - name: Create project with bit new
-      run: bit new TodoSample --database PostgreSQL --sample --appInsights --apiServerUrl ${{ env.SERVER_API_ADDRESS }} --webAppUrl ${{ env.SERVER_WEB_ADDRESS }} --filesStorage S3 --notification --captcha reCaptcha --offlineDb --signalR --ads --multitenant false --theme Fluent --template-package "${{ env.BIT_TEMPLATE_PACKAGE }}" --yes --no-restore --no-build --no-format --no-migration --no-trust
+      run: bit new TodoSample --framework net10.0 --database PostgreSQL --sample --appInsights --apiServerUrl ${{ env.SERVER_API_ADDRESS }} --webAppUrl ${{ env.SERVER_WEB_ADDRESS }} --filesStorage S3 --notification --captcha reCaptcha --offlineDb --signalR --ads --multitenant false --theme Fluent --template-package "${{ env.BIT_TEMPLATE_PACKAGE }}" --yes --no-restore --no-build --no-format --no-migration --no-trust
 
     - name: Update core appsettings.json
       uses: devops-actions/variable-substitution@ae7b1f3676ae374dc70282e6b9650bc50b611222 # v1.2
@@ -386,7 +400,8 @@ jobs:
           cd TodoSample/src/Server/TodoSample.Server.Web && dotnet build -c Release && dnx dotnet-ef@10.0.13 -- dbcontext optimize --context AppOfflineDbContext --output-dir Infrastructure/Data/CompiledModel --namespace TodoSample.Client.Core.Infrastructure.Data --project ../../Client/TodoSample.Client.Core/TodoSample.Client.Core.csproj --verbose
 
     - name: Publish
-      run: dotnet publish TodoSample/src/Client/TodoSample.Client.Web/TodoSample.Client.Web.csproj -c Release -o client -p:Version="${{ vars.APP_VERSION}}" -p:WasmEnableSIMD=true -p:InvariantGlobalization=true
+      working-directory: TodoSample
+      run: dotnet publish src/Client/TodoSample.Client.Web/TodoSample.Client.Web.csproj -c Release -o ../client -p:Version="${{ vars.APP_VERSION}}" -p:WasmEnableSIMD=true -p:InvariantGlobalization=true
 
     - name: Upload to asw
       run: |
@@ -409,6 +424,7 @@ jobs:
       uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
       with:
         global-json-file: src/global.json
+        dotnet-version: 10.0.x
 
     - name: Use prerelease packages
       if: inputs.prerelease_packages
@@ -420,7 +436,7 @@ jobs:
       uses: ./.github/actions/setup-bit-cli
 
     - name: Create project with bit new
-      run: bit new TodoSample --database PostgreSQL --sample --apiServerUrl ${{ env.SERVER_API_ADDRESS }} --webAppUrl ${{ env.SERVER_WEB_ADDRESS }} --filesStorage S3 --notification --captcha reCaptcha --ads --multitenant false --brouter false --template-package "${{ env.BIT_TEMPLATE_PACKAGE }}" --yes --no-build --no-format --no-migration --no-trust
+      run: bit new TodoSample --framework net10.0 --database PostgreSQL --sample --apiServerUrl ${{ env.SERVER_API_ADDRESS }} --webAppUrl ${{ env.SERVER_WEB_ADDRESS }} --filesStorage S3 --notification --captcha reCaptcha --ads --multitenant false --brouter false --template-package "${{ env.BIT_TEMPLATE_PACKAGE }}" --yes --no-build --no-format --no-migration --no-trust
 
     - name: Update core appsettings.json
       uses: devops-actions/variable-substitution@ae7b1f3676ae374dc70282e6b9650bc50b611222 # v1.2
@@ -432,7 +448,8 @@ jobs:
         GoogleRecaptchaSiteKey: ${{ secrets.GOOGLE_RECAPTCHA_SITE_KEY }}
 
     - name: Publish
-      run: dotnet publish TodoSample/src/Client/TodoSample.Client.Web/TodoSample.Client.Web.csproj -c Release -o client -p:Version="${{ vars.APP_VERSION}}" -p:WasmEnableSIMD=true -p:InvariantGlobalization=true -p:BitMinifyAggressive=true -p:BitMinifyMapOutputPath="${{ github.workspace }}/bit-minifier.map"
+      working-directory: TodoSample
+      run: dotnet publish src/Client/TodoSample.Client.Web/TodoSample.Client.Web.csproj -c Release -o ../client -p:Version="${{ vars.APP_VERSION}}" -p:WasmEnableSIMD=true -p:InvariantGlobalization=true -p:BitMinifyAggressive=true -p:BitMinifyMapOutputPath="${{ github.workspace }}/bit-minifier.map"
 
     # what the stack traces this client logs are read back through: see the note in the server web job
     - name: Upload minifier map artifact
@@ -468,6 +485,7 @@ jobs:
       uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
       with:
         global-json-file: src/global.json
+        dotnet-version: 10.0.x
 
     - name: Use prerelease packages
       if: inputs.prerelease_packages
@@ -479,7 +497,7 @@ jobs:
       uses: ./.github/actions/setup-bit-cli
 
     - name: Create project with bit new
-      run: bit new TodoSample --database PostgreSQL --sample --sentry --apiServerUrl ${{ env.SERVER_API_ADDRESS }} --webAppUrl ${{ env.SERVER_WEB_ADDRESS }} --filesStorage S3 --captcha reCaptcha --signalR --ads --multitenant false --template-package "${{ env.BIT_TEMPLATE_PACKAGE }}" --yes --platforms windows --no-build --no-format --no-migration --no-trust
+      run: bit new TodoSample --framework net10.0 --database PostgreSQL --sample --sentry --apiServerUrl ${{ env.SERVER_API_ADDRESS }} --webAppUrl ${{ env.SERVER_WEB_ADDRESS }} --filesStorage S3 --captcha reCaptcha --signalR --ads --multitenant false --template-package "${{ env.BIT_TEMPLATE_PACKAGE }}" --yes --platforms windows --no-build --no-format --no-migration --no-trust
   
     - name: Translate .resx files
       run: |
@@ -527,13 +545,13 @@ jobs:
       run: |
           @{ Endpoint = '${{ vars.CODE_SIGNING_ENDPOINT }}'; CodeSigningAccountName = '${{ vars.CODE_SIGNING_ACCOUNT }}'; CertificateProfileName = '${{ vars.CODE_SIGNING_CERTIFICATE_PROFILE }}'; ExcludeCredentials = @('ManagedIdentityCredential', 'WorkloadIdentityCredential', 'SharedTokenCacheCredential', 'VisualStudioCredential', 'VisualStudioCodeCredential') } | ConvertTo-Json | Set-Content "$env:RUNNER_TEMP\code-signing.json"
           "VPK_AZURE_TRUSTED_SIGN_FILE=$env:RUNNER_TEMP\code-signing.json" >> $env:GITHUB_ENV
-          'VPK_SIGN_EXCLUDE=\.dll$' >> $env:GITHUB_ENV
+          if ('${{ inputs.windows_stores }}' -ne 'true') { 'VPK_SIGN_EXCLUDE=\.dll$' >> $env:GITHUB_ENV }
 
     - name: Publish
       run: |
           cd TodoSample\src\Client\TodoSample.Client.Windows\
           dotnet publish TodoSample.Client.Windows.csproj -c Release -o .\publish-result -r win-x86 -p:Version="${{ vars.APP_VERSION}}"
-          vpk pack -u TodoSample.Client.Windows -v "${{ vars.APP_VERSION }}" -p .\publish-result -e TodoSample.Client.Windows.exe -r win-x86 --framework webview2 --icon .\wwwroot\favicon.ico --packTitle TodoSample
+          vpk pack -u TodoSample.Client.Windows -v "${{ vars.APP_VERSION }}" -p .\publish-result -e TodoSample.Client.Windows.exe -r win-x86 --framework webview2 --icon .\wwwroot\favicon.ico --packTitle TodoSample --packAuthors BitPlatform
 
     - name: Attest the installer and packages
       uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4.2.2
@@ -548,6 +566,52 @@ jobs:
       run: |
           cd TodoSample\src\Client\TodoSample.Client.Windows\
           vpk upload s3 --endpoint ${{ vars.R2_ENDPOINT }} --bucket ${{ env.R2_BUCKET }} --keyId ${{ secrets.R2_ACCESS_KEY_ID }} --secret ${{ secrets.R2_SECRET_ACCESS_KEY }} -o .\Releases --keepMaxReleases 10
+
+    - name: Upload this version's installer to R2
+      if: inputs.windows_stores
+      env:
+        AWS_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+        AWS_DEFAULT_REGION: auto
+        AWS_REQUEST_CHECKSUM_CALCULATION: WHEN_REQUIRED
+        AWS_RESPONSE_CHECKSUM_VALIDATION: WHEN_REQUIRED
+      run: |
+          $key = "${{ vars.APP_VERSION }}/TodoSample.Client.Windows-win-Setup.exe"
+          aws s3api head-object --bucket ${{ env.R2_BUCKET }} --key $key --endpoint-url ${{ vars.R2_ENDPOINT }} *> $null
+          if ($LASTEXITCODE -eq 0) { throw "$key is already on R2, and WinGet and the Microsoft Store need it unchanged. Raise APP_VERSION." }
+          aws s3 cp TodoSample\src\Client\TodoSample.Client.Windows\Releases\TodoSample.Client.Windows-win-Setup.exe "s3://${{ env.R2_BUCKET }}/$key" --endpoint-url ${{ vars.R2_ENDPOINT }}
+          "::notice title=Installer::https://windows-todo.bitplatform.dev/$key"
+
+    - name: Submit this version to WinGet
+      if: inputs.windows_stores
+      uses: ./.github/actions/submit-to-winget
+      with:
+        id: BitPlatform.Todo
+        version: ${{ vars.APP_VERSION }}
+        installer: TodoSample\src\Client\TodoSample.Client.Windows\Releases\TodoSample.Client.Windows-win-Setup.exe
+        installer-url: https://windows-todo.bitplatform.dev/${{ vars.APP_VERSION }}/TodoSample.Client.Windows-win-Setup.exe
+        architecture: x86
+        product-code: TodoSample.Client.Windows
+        name: Todo
+        short-description: A to-do list app built with bit Boilerplate.
+        package-url: https://todo.bitplatform.dev
+        privacy-url: https://todo.bitplatform.dev/en-US/privacy-policy
+        token: ${{ secrets.WINGET_TOKEN }}
+
+    - name: Set up the Microsoft Store CLI
+      if: inputs.windows_stores
+      uses: microsoft/microsoft-store-apppublisher@cc9910a8d59f2eb55cbb83df0a3800cf3b5300e0 # v1.4
+      with:
+        version: v0.4.3
+
+    - name: Submit this version to the Microsoft Store
+      if: inputs.windows_stores
+      run: |
+          $PSNativeCommandUseErrorActionPreference = $true
+          msstore reconfigure --tenantId ${{ secrets.MSSTORE_TENANT_ID }} --sellerId ${{ secrets.MSSTORE_SELLER_ID }} --clientId ${{ secrets.MSSTORE_CLIENT_ID }} --clientSecret ${{ secrets.MSSTORE_CLIENT_SECRET }}
+          $package = @{ packages = @(@{ packageUrl = "https://windows-todo.bitplatform.dev/${{ vars.APP_VERSION }}/TodoSample.Client.Windows-win-Setup.exe"; languages = @('en'); architectures = @('X86'); installerParameters = '--silent'; isSilentInstall = $true }) } | ConvertTo-Json -Depth 4 -Compress
+          msstore submission update ${{ vars.TODO_MSSTORE_PRODUCT_ID }} $package
+          msstore submission publish ${{ vars.TODO_MSSTORE_PRODUCT_ID }}
 
   build_blazor_hybrid_android:
     name: build blazor hybrid (android)
@@ -570,6 +634,7 @@ jobs:
       uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
       with:
         global-json-file: src/global.json
+        dotnet-version: 10.0.x
 
     - name: Use prerelease packages
       if: inputs.prerelease_packages
@@ -581,7 +646,7 @@ jobs:
       uses: ./.github/actions/setup-bit-cli
 
     - name: Create project with bit new
-      run: bit new TodoSample --database PostgreSQL --sample --sentry --apiServerUrl ${{ env.SERVER_API_ADDRESS }} --webAppUrl ${{ env.SERVER_WEB_ADDRESS }} --filesStorage S3 --notification --captcha reCaptcha --signalR --ads --multitenant false --template-package "${{ env.BIT_TEMPLATE_PACKAGE }}" --yes --platforms android --no-build --no-format --no-migration --no-trust
+      run: bit new TodoSample --framework net10.0 --database PostgreSQL --sample --sentry --apiServerUrl ${{ env.SERVER_API_ADDRESS }} --webAppUrl ${{ env.SERVER_WEB_ADDRESS }} --filesStorage S3 --notification --captcha reCaptcha --signalR --ads --multitenant false --template-package "${{ env.BIT_TEMPLATE_PACKAGE }}" --yes --platforms android --no-build --no-format --no-migration --no-trust
   
     - name: Extract Android signing key from env
       uses: timheuer/base64-to-file@dfa5a5dd38803cb4f5c3a081eeb28e8362d43e9c # v2.0.0
@@ -634,7 +699,8 @@ jobs:
 
   
     - name: Publish aab
-      run: dotnet publish TodoSample/src/Client/TodoSample.Client.Maui/TodoSample.Client.Maui.csproj -c Release -p:AndroidPackageFormats=aab%3Bapk -p:AndroidKeyStore=true -p:AndroidSigningKeyStore="TodoSample.keystore" -p:AndroidSigningKeyAlias=bitplatform -p:AndroidSigningKeyPass="${{ secrets.ANDROID_RELEASE_KEYSTORE_PASSWORD }}" -p:AndroidSigningStorePass="${{ secrets.ANDROID_RELEASE_SIGNING_PASSWORD }}" -p:Version="${{ vars.APP_VERSION }}" -p:ApplicationTitle="TodoSample" -p:ApplicationId="${{ env.APP_BUNDLE_ID }}" -f net10.0-android
+      working-directory: TodoSample
+      run: dotnet publish src/Client/TodoSample.Client.Maui/TodoSample.Client.Maui.csproj -c Release -p:AndroidPackageFormats=aab%3Bapk -p:AndroidKeyStore=true -p:AndroidSigningKeyStore="TodoSample.keystore" -p:AndroidSigningKeyAlias=bitplatform -p:AndroidSigningKeyPass="${{ secrets.ANDROID_RELEASE_KEYSTORE_PASSWORD }}" -p:AndroidSigningStorePass="${{ secrets.ANDROID_RELEASE_SIGNING_PASSWORD }}" -p:Version="${{ vars.APP_VERSION }}" -p:ApplicationTitle="TodoSample" -p:ApplicationId="${{ env.APP_BUNDLE_ID }}" -f net10.0-android
 
     - name: Upload artifact
       id: artifact
@@ -681,6 +747,7 @@ jobs:
       uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
       with:
         global-json-file: src/global.json
+        dotnet-version: 10.0.x
 
     - uses: maxim-lobanov/setup-xcode@ed7a3b1fda3918c0306d1b724322adc0b8cc0a90 # v1.7.0
       with:
@@ -696,7 +763,7 @@ jobs:
       uses: ./.github/actions/setup-bit-cli
 
     - name: Create project with bit new
-      run: bit new TodoSample --database PostgreSQL --sample --sentry --apiServerUrl ${{ env.SERVER_API_ADDRESS }} --webAppUrl ${{ env.SERVER_WEB_ADDRESS }} --filesStorage S3 --notification --captcha reCaptcha --signalR --ads --multitenant false --template-package "${{ env.BIT_TEMPLATE_PACKAGE }}" --yes --platforms ios --no-build --no-format --no-migration --no-trust
+      run: bit new TodoSample --framework net10.0 --database PostgreSQL --sample --sentry --apiServerUrl ${{ env.SERVER_API_ADDRESS }} --webAppUrl ${{ env.SERVER_WEB_ADDRESS }} --filesStorage S3 --notification --captcha reCaptcha --signalR --ads --multitenant false --template-package "${{ env.BIT_TEMPLATE_PACKAGE }}" --yes --platforms ios --no-build --no-format --no-migration --no-trust
       
     - name: Translate .resx files
       run: |
@@ -749,7 +816,8 @@ jobs:
 
   
     - name: Build ipa
-      run: dotnet publish TodoSample/src/Client/TodoSample.Client.Maui/TodoSample.Client.Maui.csproj -p:RuntimeIdentifier=ios-arm64 -c Release -p:ArchiveOnBuild=true -p:CodesignKey="iPhone Distribution" -p:CodesignProvision="TodoTemplate" -p:Version="${{ vars.APP_VERSION }}" -p:ApplicationTitle="Todo" -p:ApplicationId="${{ env.APP_BUNDLE_ID }}" -f net10.0-ios
+      working-directory: TodoSample
+      run: dotnet publish src/Client/TodoSample.Client.Maui/TodoSample.Client.Maui.csproj -p:RuntimeIdentifier=ios-arm64 -c Release -p:ArchiveOnBuild=true -p:CodesignKey="iPhone Distribution" -p:CodesignProvision="TodoTemplate" -p:Version="${{ vars.APP_VERSION }}" -p:ApplicationTitle="Todo" -p:ApplicationId="${{ env.APP_BUNDLE_ID }}" -f net10.0-ios
 
     - name: Locate ipa
       id: ipa

@@ -139,7 +139,7 @@ public static partial class IClientCoreServiceCollectionExtensions
             , dbContextInitializer: async (_, dbContext) =>
             {
                 if (AppEnvironment.IsDevelopment() is false && dbContext.Model.GetType() == typeof(EntityFrameworkCore.Metadata.RuntimeModel))
-                    throw new InvalidOperationException("AppOfflineDbContext has not been optimized. Run 'dnx dotnet-ef@10.0.13 -- dbcontext optimize --context AppOfflineDbContext' before publishing, and re-run it after every model or migration change. See Boilerplate.Client.Core/Infrastructure/Data/README.md.");
+                    throw new InvalidOperationException("AppOfflineDbContext has not been optimized. Run 'dnx dotnet-ef@11.0.0-rc.2.26504.105 -- dbcontext optimize --context AppOfflineDbContext' before publishing, and re-run it after every model or migration change. See Boilerplate.Client.Core/Infrastructure/Data/README.md.");
 
                 await Task.Run(async () => await dbContext.Database.MigrateAsync());
             }
@@ -178,6 +178,13 @@ public static partial class IClientCoreServiceCollectionExtensions
                         }
                     })
                     .WithAutomaticReconnect(sp.GetRequiredService<IRetryPolicy>())
+                    //#if (framework == 'net11.0')
+                    .WithAuthenticationRefresh(options =>
+                    {
+                        options.EnableAutoRefresh = true;
+                        options.RefreshBeforeExpiration = TimeSpan.FromMinutes(1);
+                    })
+                    //#endif
                     .WithUrl(new Uri(absoluteServerAddressProvider.GetAddress(), "app-hub?origin=" + Uri.EscapeDataString(xOrigin)), options =>
                     {
                         //#if (redis == true)

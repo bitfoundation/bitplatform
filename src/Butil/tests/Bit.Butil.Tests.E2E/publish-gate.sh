@@ -15,8 +15,8 @@ set -euo pipefail
 
 here="$(cd "$(dirname "$0")" && pwd)"
 
-# ButilHarnessFramework=net10.0 on top of -f: -f alone does not reach project references, so the WebAssembly
+# ButilHarnessFramework=net11.0 on top of -f: -f alone does not reach project references, so the WebAssembly
 # client would still evaluate every framework it targets - and with RunAOTCompilation each of those demands its
 # own wasm-tools workload. Not -p:TargetFrameworks, which would also reach the netstandard2.0 Bit.Butil.Build.
 exec bash "$here/../../../publish-gate.sh" Bit.Butil 'Samples|Tests' "$here/../Bit.Butil.Tests.Harness.Web/Bit.Butil.Tests.Harness.Web.csproj" \
-    "$1" -f net10.0 -p:ButilHarnessFramework=net10.0 "${@:2}"
+    "$1" -f net11.0 -p:ButilHarnessFramework=net11.0 "${@:2}"

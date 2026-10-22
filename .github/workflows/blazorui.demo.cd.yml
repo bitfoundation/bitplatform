@@ -25,6 +25,10 @@ on:
         description: iOS app
         type: boolean
         default: true
+      windows_stores:
+        description: For WinGet and the Microsoft Store, sign every file of the Windows app, keep its installer at a URL of its own version and submit that version to both
+        type: boolean
+        default: false
   workflow_call:
     inputs:
       server:
@@ -39,6 +43,9 @@ on:
       ios:
         type: boolean
         default: true
+      windows_stores:
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -201,13 +208,13 @@ jobs:
       run: |
           @{ Endpoint = '${{ vars.CODE_SIGNING_ENDPOINT }}'; CodeSigningAccountName = '${{ vars.CODE_SIGNING_ACCOUNT }}'; CertificateProfileName = '${{ vars.CODE_SIGNING_CERTIFICATE_PROFILE }}'; ExcludeCredentials = @('ManagedIdentityCredential', 'WorkloadIdentityCredential', 'SharedTokenCacheCredential', 'VisualStudioCredential', 'VisualStudioCodeCredential') } | ConvertTo-Json | Set-Content "$env:RUNNER_TEMP\code-signing.json"
           "VPK_AZURE_TRUSTED_SIGN_FILE=$env:RUNNER_TEMP\code-signing.json" >> $env:GITHUB_ENV
-          'VPK_SIGN_EXCLUDE=\.dll$' >> $env:GITHUB_ENV
+          if ('${{ inputs.windows_stores }}' -ne 'true') { 'VPK_SIGN_EXCLUDE=\.dll$' >> $env:GITHUB_ENV }
 
     - name: Publish
       run: |
           cd src\BlazorUI\Demo\Client\Bit.BlazorUI.Demo.Client.Windows\
           dotnet publish Bit.BlazorUI.Demo.Client.Windows.csproj -c Release -o .\publish-result -r win-x86 -p:Version="${{ vars.APP_VERSION}}" -p:CompressionEnabled=false -p:PublishReadyToRun=true -p:PublishReadyToRunComposite=true --self-contained
-          vpk pack -u Bit.BlazorUI.Demo.Client.Windows -v "${{ vars.APP_VERSION }}" -p .\publish-result -e Bit.BlazorUI.Demo.Client.Windows.exe -r win-x86 --framework webview2 --icon .\wwwroot\favicon.ico --packTitle 'Bit Blazor UI'
+          vpk pack -u Bit.BlazorUI.Demo.Client.Windows -v "${{ vars.APP_VERSION }}" -p .\publish-result -e Bit.BlazorUI.Demo.Client.Windows.exe -r win-x86 --framework webview2 --icon .\wwwroot\favicon.ico --packTitle 'Bit Blazor UI' --packAuthors BitPlatform
 
     - name: Attest the installer and packages
       uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4.2.2
@@ -223,10 +230,55 @@ jobs:
           cd src\BlazorUI\Demo\Client\Bit.BlazorUI.Demo.Client.Windows\
           vpk upload s3 --endpoint ${{ vars.R2_ENDPOINT }} --bucket ${{ env.R2_BUCKET }} --keyId ${{ secrets.R2_ACCESS_KEY_ID }} --secret ${{ secrets.R2_SECRET_ACCESS_KEY }} -o .\Releases --keepMaxReleases 10
 
+    - name: Upload this version's installer to R2
+      if: inputs.windows_stores
+      env:
+        AWS_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+        AWS_DEFAULT_REGION: auto
+        AWS_REQUEST_CHECKSUM_CALCULATION: WHEN_REQUIRED
+        AWS_RESPONSE_CHECKSUM_VALIDATION: WHEN_REQUIRED
+      run: |
+          $key = "${{ vars.APP_VERSION }}/Bit.BlazorUI.Demo.Client.Windows-win-Setup.exe"
+          aws s3api head-object --bucket ${{ env.R2_BUCKET }} --key $key --endpoint-url ${{ vars.R2_ENDPOINT }} *> $null
+          if ($LASTEXITCODE -eq 0) { throw "$key is already on R2, and WinGet and the Microsoft Store need it unchanged. Raise APP_VERSION." }
+          aws s3 cp src\BlazorUI\Demo\Client\Bit.BlazorUI.Demo.Client.Windows\Releases\Bit.BlazorUI.Demo.Client.Windows-win-Setup.exe "s3://${{ env.R2_BUCKET }}/$key" --endpoint-url ${{ vars.R2_ENDPOINT }}
+          "::notice title=Installer::https://windows-components.bitplatform.dev/$key"
+
+    - name: Submit this version to WinGet
+      if: inputs.windows_stores
+      uses: ./.github/actions/submit-to-winget
+      with:
+        id: BitPlatform.BlazorUI
+        version: ${{ vars.APP_VERSION }}
+        installer: src\BlazorUI\Demo\Client\Bit.BlazorUI.Demo.Client.Windows\Releases\Bit.BlazorUI.Demo.Client.Windows-win-Setup.exe
+        installer-url: https://windows-components.bitplatform.dev/${{ vars.APP_VERSION }}/Bit.BlazorUI.Demo.Client.Windows-win-Setup.exe
+        architecture: x86
+        product-code: Bit.BlazorUI.Demo.Client.Windows
+        name: BlazorUI
+        short-description: The demo app of bit BlazorUI, a library of native Blazor UI components.
+        package-url: https://blazorui.bitplatform.dev
+        token: ${{ secrets.WINGET_TOKEN }}
+
+    - name: Set up the Microsoft Store CLI
+      if: inputs.windows_stores
+      uses: microsoft/microsoft-store-apppublisher@cc9910a8d59f2eb55cbb83df0a3800cf3b5300e0 # v1.4
+      with:
+        version: v0.4.3
+
+    - name: Submit this version to the Microsoft Store
+      if: inputs.windows_stores
+      run: |
+          $PSNativeCommandUseErrorActionPreference = $true
+          msstore reconfigure --tenantId ${{ secrets.MSSTORE_TENANT_ID }} --sellerId ${{ secrets.MSSTORE_SELLER_ID }} --clientId ${{ secrets.MSSTORE_CLIENT_ID }} --clientSecret ${{ secrets.MSSTORE_CLIENT_SECRET }}
+          $package = @{ packages = @(@{ packageUrl = "https://windows-components.bitplatform.dev/${{ vars.APP_VERSION }}/Bit.BlazorUI.Demo.Client.Windows-win-Setup.exe"; languages = @('en'); architectures = @('X86'); installerParameters = '--silent'; isSilentInstall = $true }) } | ConvertTo-Json -Depth 4 -Compress
+          msstore submission update ${{ vars.BLAZORUI_MSSTORE_PRODUCT_ID }} $package
+          msstore submission publish ${{ vars.BLAZORUI_MSSTORE_PRODUCT_ID }}
+
   build_blazor_hybrid_android:
     name: build blazor hybrid (android)
     if: inputs.android
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     permissions:
       contents: read
       actions: read
@@ -270,14 +322,14 @@ jobs:
       run: ${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin/sdkmanager --sdk_root=$ANDROID_SDK_ROOT "platform-tools"
   
     - name: Publish aab
-      run: dotnet publish src/BlazorUI/Demo/Client/Bit.BlazorUI.Demo.Client.Maui/Bit.BlazorUI.Demo.Client.Maui.csproj -c Release -p:AndroidPackageFormats=aab%3Bapk -p:AndroidKeyStore=true -p:AndroidSigningKeyStore="BitBlazorUIDemo.keystore" -p:AndroidSigningKeyAlias=bitplatform -p:AndroidSigningKeyPass="${{ secrets.ANDROID_RELEASE_KEYSTORE_PASSWORD }}" -p:AndroidSigningStorePass="${{ secrets.ANDROID_RELEASE_SIGNING_PASSWORD }}" -p:Version="${{ vars.APP_VERSION }}" -p:CompressionEnabled=false -f net10.0-android
+      run: dotnet publish src/BlazorUI/Demo/Client/Bit.BlazorUI.Demo.Client.Maui/Bit.BlazorUI.Demo.Client.Maui.csproj -c Release -p:AndroidPackageFormats=aab%3Bapk -p:AndroidKeyStore=true -p:AndroidSigningKeyStore="BitBlazorUIDemo.keystore" -p:AndroidSigningKeyAlias=bitplatform -p:AndroidSigningKeyPass="${{ secrets.ANDROID_RELEASE_KEYSTORE_PASSWORD }}" -p:AndroidSigningStorePass="${{ secrets.ANDROID_RELEASE_SIGNING_PASSWORD }}" -p:Version="${{ vars.APP_VERSION }}" -p:CompressionEnabled=false -f net11.0-android
   
     - name: Upload artifact
       id: artifact
       uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
       with:
         name: android-bundle
-        path: src/BlazorUI/Demo/Client/Bit.BlazorUI.Demo.Client.Maui/bin/Release/net10.0-android/*-Signed.apk
+        path: src/BlazorUI/Demo/Client/Bit.BlazorUI.Demo.Client.Maui/bin/Release/net11.0-android/*-Signed.apk
 
     - name: Attest artifact
       uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4.2.2
@@ -291,7 +343,7 @@ jobs:
       with:
         serviceAccountJsonPlainText: ${{ secrets.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON }}
         packageName: ${{ env.APP_BUNDLE_ID }}
-        releaseFiles: src/BlazorUI/Demo/Client/Bit.BlazorUI.Demo.Client.Maui/bin/Release/net10.0-android/*-Signed.aab
+        releaseFiles: src/BlazorUI/Demo/Client/Bit.BlazorUI.Demo.Client.Maui/bin/Release/net11.0-android/*-Signed.aab
         releaseName: ${{ vars.APP_VERSION }}
         track: internal
         status: completed
@@ -320,7 +372,7 @@ jobs:
 
     - uses: maxim-lobanov/setup-xcode@ed7a3b1fda3918c0306d1b724322adc0b8cc0a90 # v1.7.0
       with:
-        xcode-version: '27.1'
+        xcode-version: '27.0'
 
     - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
       with:
@@ -351,11 +403,11 @@ jobs:
         api-private-key: ${{ secrets.APPSTORE_API_KEY_PRIVATE_KEY }}
 
     - name: Build ipa
-      run: dotnet publish src/BlazorUI/Demo/Client/Bit.BlazorUI.Demo.Client.Maui/Bit.BlazorUI.Demo.Client.Maui.csproj -p:RuntimeIdentifier=ios-arm64 -c Release -p:ArchiveOnBuild=true -p:CodesignKey="iPhone Distribution" -p:CodesignProvision="Bit Blazor UI Demo" -p:Version="${{ vars.APP_VERSION }}" -p:CompressionEnabled=false -f net10.0-ios
+      run: dotnet publish src/BlazorUI/Demo/Client/Bit.BlazorUI.Demo.Client.Maui/Bit.BlazorUI.Demo.Client.Maui.csproj -p:RuntimeIdentifier=ios-arm64 -c Release -p:ArchiveOnBuild=true -p:CodesignKey="iPhone Distribution" -p:CodesignProvision="Bit Blazor UI Demo" -p:Version="${{ vars.APP_VERSION }}" -p:CompressionEnabled=false -f net11.0-ios
 
     - name: Locate ipa
       id: ipa
-      run: echo "path=$(ls src/BlazorUI/Demo/Client/Bit.BlazorUI.Demo.Client.Maui/bin/release/net10.0-ios/ios-arm64/publish/*.ipa | head -n 1)" >> $GITHUB_OUTPUT
+      run: echo "path=$(ls src/BlazorUI/Demo/Client/Bit.BlazorUI.Demo.Client.Maui/bin/release/net11.0-ios/ios-arm64/publish/*.ipa | head -n 1)" >> $GITHUB_OUTPUT
 
     - name: Attest ipa
       uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4.2.2
