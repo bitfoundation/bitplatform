@@ -118,15 +118,19 @@ loader repeats the few options it forwards (`ShowBadge`, `ToggleShortcut`, `Trac
   `AllowInMultiUserHost` is set: the panel would show whoever opens it the server side objects of their circuit,
   injected services and `IConfiguration` included. WebAssembly and Blazor Hybrid only ever show users their own process.
 
-`Bit.BevTools` roots itself for the trimmer (`TrimmerRootAssembly`, from the package's build files), so a lazily loaded
-copy keeps everything it reflects over. AOT builds cannot lazy load and start with it instead. In Blazor WebAssembly,
-render-diff and lifecycle timings still need `<MetricsSupport>true</MetricsSupport>`; consider it for Development only.
+An app that trims keeps `Bit.BevTools` whole once it uses it, the loader's reference by name included (an
+`ILLink.Descriptors.xml` embedded in the assembly), so a lazily loaded copy keeps everything it reflects over; an app
+that references it but never uses it ships none of it. AOT builds cannot lazy load and start with it instead. In Blazor
+WebAssembly, render-diff and lifecycle timings still need `<MetricsSupport>true</MetricsSupport>`; consider it for
+Development only.
 
 Without the loader, `BitBevTools.Attach(serviceProvider)` attaches BevTools from a component rendered after the load
 (then render `<BevToolsPanel />` from that scope). It falls back to reflection where the loader has hooks: it replaces
-the renderer's activator and wraps the handler of the `HttpClient` registered in DI, cannot see `IHttpClientFactory`
-clients or the DI graph, and ends with the renderer. In a server process outside Development it stays off unless
-`BitBevToolsOptions.Enabled` is true. The About panel lists exactly what an attached session can see.
+the renderer's activator and wraps the handler of the `HttpClient` registered in DI, and cannot see `IHttpClientFactory`
+clients or the DI graph; in an app that called `AddBitBevToolsLoaderServices` it uses the loader's hooks instead. In a
+server process outside Development it stays off unless `BitBevToolsOptions.Enabled` is true. Either way the session ends
+with its scope, and a BevTools registered at startup but left off does not stand in the way of an attach. The About
+panel lists exactly what an attached session can see.
 
 ---
 

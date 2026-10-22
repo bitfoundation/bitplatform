@@ -303,6 +303,7 @@
     <File Path="Utilities/BevTools/README.md" />
     <Project Path="Utilities/BevTools/Bit.BevTools/Bit.BevTools.csproj" />
     <Project Path="Utilities/BevTools/Bit.BevTools.Server/Bit.BevTools.Server.csproj" />
+    <Project Path="Utilities/BevTools/Bit.BevTools.Loader/Bit.BevTools.Loader.csproj" />
   </Folder>
   <Folder Name="/Utilities/BevTools/Demo/">
     <Project Path="Utilities/BevTools/Demo/Client/Bit.BevTools.Demo.Client.csproj" />

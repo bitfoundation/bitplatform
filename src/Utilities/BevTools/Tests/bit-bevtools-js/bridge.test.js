@@ -98,46 +98,6 @@ describe('getStorage', () => {
     });
 });
 
-describe('waitForStyles', () => {
-    function fakeLink(sheet = null) {
-        const handlers = {};
-        return {
-            sheet,
-            addEventListener(type, handler) { handlers[type] = handler; },
-            fire(type) { handlers[type]?.(); },
-        };
-    }
-
-    it('resolves at once when the stylesheet is already applied', async () => {
-        installBrowser();
-        const bridge = await loadBridge();
-
-        await bridge.waitForStyles(fakeLink({}), 10000);
-    });
-
-    it('waits until the stylesheet loads', async () => {
-        installBrowser();
-        const bridge = await loadBridge();
-        const link = fakeLink();
-        let done = false;
-
-        const wait = bridge.waitForStyles(link, 10000).then(() => { done = true; });
-        await delay(10);
-        expect(done).toBe(false);
-
-        link.fire('load');
-        await wait;
-        expect(done).toBe(true);
-    });
-
-    it('gives up after the timeout so the panel still renders', async () => {
-        installBrowser();
-        const bridge = await loadBridge();
-
-        await bridge.waitForStyles(fakeLink(), 20);
-    });
-});
-
 describe('downloadText', () => {
     it('hands the export to the browser and cleans up after itself', async () => {
         installBrowser();

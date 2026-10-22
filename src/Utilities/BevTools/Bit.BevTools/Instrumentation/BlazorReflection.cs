@@ -1,4 +1,5 @@
 ﻿using System.Collections;
+using System.Collections.Concurrent;
 using System.Linq.Expressions;
 using System.Reflection;
 using Microsoft.AspNetCore.Components;
@@ -330,6 +331,53 @@ internal static class BlazorReflection
             return true;
         }
     }
+
+    private static readonly ConcurrentDictionary<Type, Func<object, bool>?> JSRuntimeNotReadyProbes = new();
+    private static readonly ConcurrentDictionary<string, byte> JSRuntimeReadinessGapNames = new(StringComparer.Ordinal);
+
+    /// <summary>
+    /// Reads whether a JS runtime cannot take calls yet: a prerender's never can, a circuit's until the browser has
+    /// connected (<c>RemoteJSRuntime.IsInitialized</c>), a WebView's until its IPC channel is attached
+    /// (<c>WebViewJSRuntime._ipcSender</c>). Resolved per runtime type, as this package references neither host; null when
+    /// the host's member is missing on this framework version. Every other runtime is always ready.
+    /// </summary>
+    public static Func<object, bool>? ResolveJSRuntimeNotReady(Type runtimeType) => runtimeType.Name switch
+    {
+        "UnsupportedJavaScriptRuntime" => static _ => true,
+        "RemoteJSRuntime" => runtimeType.GetProperty("IsInitialized", Instance) is { } isInitialized && isInitialized.PropertyType == typeof(bool)
+            ? js => isInitialized.GetValue(js) is false
+            : null,
+        "WebViewJSRuntime" => runtimeType.GetField("_ipcSender", Instance) is { } ipcSender
+            ? js => ipcSender.GetValue(js) is null
+            : null,
+        _ => static _ => false,
+    };
+
+    /// <summary>
+    /// True while the runtime cannot take calls. One whose readiness cannot be read counts as ready, which is what
+    /// BevTools assumed before it looked, and is reported through <see cref="JSRuntimeReadinessGaps"/>.
+    /// </summary>
+    public static bool IsJSRuntimeNotReady(object runtime)
+    {
+        var probe = JSRuntimeNotReadyProbes.GetOrAdd(runtime.GetType(), ResolveJSRuntimeNotReady);
+        if (probe is null)
+        {
+            JSRuntimeReadinessGapNames.TryAdd(runtime.GetType().Name, 0);
+            return false;
+        }
+
+        try
+        {
+            return probe(runtime);
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
+    /// <summary>The JS runtimes met so far whose readiness could not be read on this framework version.</summary>
+    public static IReadOnlyCollection<string> JSRuntimeReadinessGaps => [.. JSRuntimeReadinessGapNames.Keys];
 
     /// <summary>Reads renderer, component id and parent for a non-ComponentBase component via the renderer's component-state map.</summary>
     public static ComponentState? ResolveState(Renderer renderer, IComponent component)

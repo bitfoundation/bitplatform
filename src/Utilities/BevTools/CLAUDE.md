@@ -37,9 +37,10 @@ measured overhead - keep all of them accurate when behaviour changes.
    it: `dotnet run -c Release --project Tests/Bit.BevTools.Benchmarks`.
 5. **Optional reflection.** Every accessor over Blazor internals lives in `BlazorReflection`, is null when the member
    is missing, and degrades to a reported capability gap rather than an exception. The assembly is deliberately not
-   trim- or AOT-safe (`IsTrimmable`/`IsAotCompatible` are off); it is a development tool, and its package roots it for
-   the trimmer (`buildTransitive/Bit.BevTools.targets`). `Bit.BevTools.Loader` is the opposite: no reflection over
-   Blazor, no trim or AOT warnings (build it with `-p:RunTrimAnalyzers=true`).
+   trim- or AOT-safe (`IsTrimmable`/`IsAotCompatible` are off); it is a development tool, and keeps itself whole in an
+   app that trims and uses it (the embedded `ILLink.Descriptors.xml`; the loader's `DynamicDependency` reaches it when
+   only the loader names it), while an app that never uses it ships none of it. `Bit.BevTools.Loader` is the opposite:
+   no reflection over Blazor, no trim or AOT warnings (build it with `-p:RunTrimAnalyzers=true`).
 
 ## Coding style
 

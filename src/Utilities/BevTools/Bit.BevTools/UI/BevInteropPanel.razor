@@ -36,7 +36,8 @@
     </div>
     <div class="bev-right">
         <div class="bev-toolbar"><strong>Recent calls</strong> <span class="bev-muted">newest first</span></div>
-        <div class="bev-scroll">
+        @* overflow inline too: Virtualize picks its scroll root when it first renders, which can be before the stylesheet applies. *@
+        <div class="bev-scroll" style="overflow:auto">
             <table>
                 <thead><tr><th>Time</th><th>Call</th><th>Component</th><th class="bev-num">Duration</th><th>Result</th></tr></thead>
                 <tbody>

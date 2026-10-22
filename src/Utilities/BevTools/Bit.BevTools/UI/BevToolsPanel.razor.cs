@@ -20,9 +20,7 @@ public partial class BevToolsPanel : ComponentBase, IBevToolsCommandContext, IAs
     private long _lastUiVersion = -1;
     private long _viewRevision;
     private bool _interactive;
-    private bool _stylesReady;
     private bool _prefsApplied;
-    private ElementReference _styles;
     private string _searchText = "";
     private Task? _loop;
 
@@ -109,14 +107,16 @@ public partial class BevToolsPanel : ComponentBase, IBevToolsCommandContext, IAs
     /// </summary>
     private void OnOpenedFromCode() => _ = InvokeAsync(() =>
     {
+        // Saving before the saved preferences are read would overwrite them with the defaults; the first render saves
+        // the open state once it has read them.
         if (_prefsApplied)
         {
             Ui.OpenRequested = false;
+            _ = SavePrefsAsync();
         }
 
         RefreshCapturedData();
         _viewRevision++;
-        _ = SavePrefsAsync();
         StateHasChanged();
     });
 
@@ -160,7 +160,6 @@ public partial class BevToolsPanel : ComponentBase, IBevToolsCommandContext, IAs
 
             var prefs = await _module.InvokeAsync<string?>("loadPrefs");
             ApplyPrefs(prefs);
-            await _module.InvokeVoidAsync("waitForStyles", _styles, 5000);
         }
         catch (Exception ex)
         {
@@ -173,6 +172,7 @@ public partial class BevToolsPanel : ComponentBase, IBevToolsCommandContext, IAs
         // Settled whether or not preferences were saved or could be read: an open request left pending would
         // overrule the preference of a panel rendered later, after the user closed this one.
         _prefsApplied = true;
+        var openRequested = Ui.OpenRequested;
         Ui.OpenRequested = false;
 
         if (_cts.IsCancellationRequested)
@@ -181,7 +181,12 @@ public partial class BevToolsPanel : ComponentBase, IBevToolsCommandContext, IAs
             return;
         }
 
-        _stylesReady = true;
+        if (openRequested)
+        {
+            // Opened from code before the preferences were read: the open state is saved now, over what was read.
+            _ = SavePrefsAsync();
+        }
+
         _loop = RefreshLoopAsync(_cts.Token);
         StateHasChanged();
     }

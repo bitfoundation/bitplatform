@@ -166,6 +166,7 @@
     <File Path="Utilities/BevTools/README.md" />
     <Project Path="Utilities/BevTools/Bit.BevTools/Bit.BevTools.csproj" />
     <Project Path="Utilities/BevTools/Bit.BevTools.Server/Bit.BevTools.Server.csproj" />
+    <Project Path="Utilities/BevTools/Bit.BevTools.Loader/Bit.BevTools.Loader.csproj" />
     <Project Path="Utilities/BevTools/Demo/Client/Bit.BevTools.Demo.Client.csproj" />
     <Project Path="Utilities/BevTools/Demo/Server/Bit.BevTools.Demo.Server.csproj" />
     <Project Path="Utilities/BevTools/Tests/Bit.BevTools.Tests/Bit.BevTools.Tests.csproj" />

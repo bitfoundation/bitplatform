@@ -50,7 +50,7 @@ internal sealed class BevToolsLoaderEntryPoint : IBevToolsEntryPoint
     }
 
     public IBevToolsAttachment Attach(IServiceProvider services, BevToolsLoaderContext context) =>
-        new Attachment(RuntimeAttachment.Attach(services, configure: null, context));
+        new Attachment(RuntimeAttachment.Attach(services, configure: null, context, openedByLoader: true));
 
     /// <summary>The options the loader repeats, since the app cannot name <see cref="BitBevToolsOptions"/> at startup.</summary>
     internal static void Forward(BitBevToolsLoaderOptions from, BitBevToolsOptions to)

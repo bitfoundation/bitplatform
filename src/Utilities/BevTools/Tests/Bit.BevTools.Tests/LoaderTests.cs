@@ -129,6 +129,117 @@ public class LoaderTests : BunitContext
     }
 
     [TestMethod]
+    public async Task An_HttpClient_from_IHttpClientFactory_registered_in_DI_is_recorded_once()
+    {
+        var transport = new StubHandler(_ => new HttpResponseMessage(HttpStatusCode.OK));
+        Services.AddBitBevToolsLoaderServices(o => o.RegisterAtStartup = false);
+        Services.AddHttpClient("api", c => c.BaseAddress = new Uri("https://example.com/")).ConfigurePrimaryHttpMessageHandler(() => transport);
+        Services.AddScoped(sp => sp.GetRequiredService<IHttpClientFactory>().CreateClient("api"));
+        var cut = RenderHost();
+        var client = cut.Instance.Services.GetRequiredService<HttpClient>();
+
+        await Renderer.Dispatcher.InvokeAsync(() => cut.Instance.Loader.OpenAsync());
+        var session = cut.Instance.Session;
+        using (session.UseAmbient())
+        {
+            await client.GetAsync("items");
+        }
+
+        Assert.AreEqual(BevHttpClientAttachment.InPipeline, session.Attachment!.HttpClient, "the factory's pipeline records through the loader's hook already");
+        Assert.AreEqual(1, session.Http.Count);
+    }
+
+    [TestMethod]
+    public async Task A_BevTools_registered_at_startup_and_left_off_does_not_stop_an_attach()
+    {
+        var services = ScopeServices(environment: "Production");
+        services.AddBitBevToolsServices();
+        services.AddBitBevToolsLoaderServices(o => o.AllowInMultiUserHost = true);
+        using var provider = services.BuildServiceProvider();
+        using var scope = provider.CreateScope();
+        var loader = scope.ServiceProvider.GetRequiredService<BevToolsLoader>();
+        Assert.IsFalse(scope.ServiceProvider.GetRequiredService<BevToolsSession>().IsEnabled);
+
+        Assert.IsTrue(loader.CanOpen);
+        Assert.IsTrue(await loader.OpenAsync(), loader.Problem);
+
+        var session = RuntimeAttachment.Resolve(scope.ServiceProvider)!;
+        Assert.IsTrue(session.IsEnabled);
+        Assert.IsTrue(session.IsAttachedAtRuntime);
+    }
+
+    [TestMethod]
+    public async Task Every_scope_the_loader_opens_shares_one_registry_and_service_graph()
+    {
+        var services = ScopeServices();
+        services.AddBitBevToolsLoaderServices(o => o.RegisterAtStartup = false);
+        services.AddScoped<LoaderTestService>();
+        using var provider = services.BuildServiceProvider();
+        using var first = provider.CreateScope();
+        using var second = provider.CreateScope();
+
+        await first.ServiceProvider.GetRequiredService<BevToolsLoader>().OpenAsync();
+        await second.ServiceProvider.GetRequiredService<BevToolsLoader>().OpenAsync();
+        var one = RuntimeAttachment.Resolve(first.ServiceProvider)!;
+        var other = RuntimeAttachment.Resolve(second.ServiceProvider)!;
+
+        Assert.AreNotSame(one, other);
+        Assert.AreSame(one.Registry, other.Registry);
+        Assert.AreSame(one.Registry.ServiceGraph, other.Registry.ServiceGraph);
+    }
+
+    [TestMethod]
+    public void A_bare_attach_in_an_app_with_the_loader_uses_its_startup_hooks()
+    {
+        var services = ScopeServices();
+        services.AddBitBevToolsLoaderServices(o => o.RegisterAtStartup = false);
+        services.AddScoped<LoaderTestService>();
+        using var provider = services.BuildServiceProvider();
+        using var scope = provider.CreateScope();
+
+        var session = BitBevTools.Attach(scope.ServiceProvider);
+
+        Assert.IsTrue(session.Attachment!.FactoryClientsHooked);
+        Assert.IsTrue(session.Registry.ServiceGraph!.Services.Any(s => s.ServiceType == typeof(LoaderTestService)));
+        Assert.AreEqual(BevCapabilityStatus.Available, session.Capabilities.Single(c => c.Area == "DI" && c.Name.StartsWith("Registrations", StringComparison.Ordinal)).Status);
+        StringAssert.Contains(session.Capabilities.Single(c => c.Area == "Network" && c.Name == "HTTP requests").Explanation, "IHttpClientFactory clients go through the handlers Bit.BevTools.Loader added");
+        session.Dispose();
+    }
+
+    [TestMethod]
+    public async Task A_Bit_BevTools_of_another_version_is_reported_instead_of_thrown()
+    {
+        var services = ScopeServices();
+        services.AddBitBevToolsLoaderServices(o => o.RegisterAtStartup = false);
+        var context = Context(services);
+        var mismatched = new ThrowingEntryPoint(new MissingMethodException("Method not found: 'Bit.BevTools.BevToolsLoaderContext.Something'."));
+        context.Deferred(mismatched, "test");
+        using var provider = services.BuildServiceProvider();
+        using var scope = provider.CreateScope();
+        var loader = scope.ServiceProvider.GetRequiredService<BevToolsLoader>();
+
+        Assert.IsFalse(context.TryAddServices(mismatched, new ServiceCollection(), out var reason));
+        StringAssert.Contains(reason, "reference the same version of both packages");
+        Assert.IsFalse(await loader.OpenAsync());
+        StringAssert.Contains(loader.Problem, "reference the same version of both packages");
+    }
+
+    [TestMethod]
+    public async Task Whatever_attaching_fails_with_becomes_the_problem_OpenAsync_reports()
+    {
+        var services = ScopeServices();
+        services.AddBitBevToolsLoaderServices(o => o.RegisterAtStartup = false);
+        Context(services).Deferred(new ThrowingEntryPoint(new InvalidOperationException("boom")), "test");
+        using var provider = services.BuildServiceProvider();
+        using var scope = provider.CreateScope();
+        var loader = scope.ServiceProvider.GetRequiredService<BevToolsLoader>();
+
+        Assert.IsFalse(await loader.OpenAsync());
+        StringAssert.Contains(loader.Problem, "boom");
+        Assert.IsFalse(loader.IsActive);
+    }
+
+    [TestMethod]
     public void A_transient_HttpClient_is_not_wrapped_and_the_report_says_how_to_record_it()
     {
         var services = ScopeServices();
@@ -221,7 +332,8 @@ public class LoaderTests : BunitContext
     [TestMethod]
     public async Task In_a_server_process_outside_Development_BevTools_is_not_opened()
     {
-        var services = ScopeServices(new RemoteJSRuntime(), "Production");
+        // Whatever JS runtime the scope has, a decorated one included: the server is told by its IServer, as the attach tells it.
+        var services = ScopeServices(environment: "Production");
         services.AddBitBevToolsLoaderServices(o => o.RegisterAtStartup = false);
         using var provider = services.BuildServiceProvider();
         using var scope = provider.CreateScope();
@@ -238,7 +350,7 @@ public class LoaderTests : BunitContext
     [DataRow("Production", true)]
     public async Task In_a_server_process_BevTools_opens_in_Development_or_when_allowed(string environment, bool allow)
     {
-        var services = ScopeServices(new RemoteJSRuntime(), environment);
+        var services = ScopeServices(environment: environment);
         services.AddBitBevToolsLoaderServices(o =>
         {
             o.RegisterAtStartup = false;
@@ -256,7 +368,7 @@ public class LoaderTests : BunitContext
     [TestMethod]
     public void A_bare_attach_in_a_server_process_outside_Development_stays_off_unless_enabled_explicitly()
     {
-        using var provider = ScopeServices(new RemoteJSRuntime(), "Production").BuildServiceProvider();
+        using var provider = ScopeServices(environment: "Production").BuildServiceProvider();
         using var first = provider.CreateScope();
         using var second = provider.CreateScope();
 
@@ -281,6 +393,22 @@ public class LoaderTests : BunitContext
         Assert.IsInstanceOfType<ParentComponent>(hook.CreateInstance(typeof(ParentComponent)));
         Assert.ThrowsExactly<ArgumentException>(() => hook.CreateInstance(typeof(string)));
         Assert.AreSame(hook, scope.ServiceProvider.GetRequiredService<IComponentActivator>(), "a renderer and the BevTools attaching to it must meet the same hook");
+    }
+
+    [TestMethod]
+    public void BevTools_creates_components_as_the_framework_does_on_each_runtime()
+    {
+        using var provider = new ServiceCollection().AddBitBevToolsServices(o => o.Enabled = true).AddScoped<LoaderTestService>().BuildServiceProvider();
+        using var scope = provider.CreateScope();
+        var activator = scope.ServiceProvider.GetRequiredService<IComponentActivator>();
+        Assert.IsInstanceOfType<BevToolsComponentActivator>(activator);
+
+#if NET9_0_OR_GREATER
+        Assert.IsNotNull(((ConstructorInjected)activator.CreateInstance(typeof(ConstructorInjected))).Service);
+#else
+        // .NET 8's own activator has no constructor injection: such a component fails without BevTools too.
+        Assert.ThrowsExactly<MissingMethodException>(() => activator.CreateInstance(typeof(ConstructorInjected)));
+#endif
     }
 
     [TestMethod]
@@ -333,12 +461,14 @@ public class LoaderTests : BunitContext
         }
     }
 
-    /// <summary>Named after the Blazor Server runtime, which is what the loader recognizes a server scope by.</summary>
-    private sealed class RemoteJSRuntime : IJSRuntime
+    /// <summary>A Bit.BevTools that fails once the loader calls into it, as one built against another loader does.</summary>
+    private sealed class ThrowingEntryPoint(Exception exception) : IBevToolsEntryPoint
     {
-        public ValueTask<TValue> InvokeAsync<TValue>(string identifier, object?[]? args) => ValueTask.FromResult(default(TValue)!);
+        public Type PanelType => typeof(BevToolsPanel);
 
-        public ValueTask<TValue> InvokeAsync<TValue>(string identifier, CancellationToken cancellationToken, object?[]? args) => ValueTask.FromResult(default(TValue)!);
+        public bool TryAddServices(IServiceCollection services, BevToolsLoaderContext context, out string reason) => throw exception;
+
+        public IBevToolsAttachment Attach(IServiceProvider services, BevToolsLoaderContext context) => throw exception;
     }
 
     private sealed class CountingActivator : IComponentActivator
@@ -364,6 +494,11 @@ public class LoaderTests : BunitContext
     }
 
     private sealed class LoaderTestService;
+
+    private sealed class ConstructorInjected(LoaderTestService service) : ComponentBase
+    {
+        public LoaderTestService Service { get; } = service;
+    }
 }
 
 /// <summary>An app's layout as it uses the loader: its own components, a way to open BevTools, and the loader's panel.</summary>

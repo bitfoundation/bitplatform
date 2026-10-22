@@ -8,7 +8,8 @@
             <label title="Show framework/library components that are hidden by default"><input type="checkbox" checked="@Ui.ShowHiddenComponents" @onchange="ToggleHidden" /> internals</label>
             <span class="bev-muted bev-nowrap">@_visible.Count / @_liveCount</span>
         </div>
-        <div class="bev-scroll bev-tree" tabindex="0" role="tree" aria-label="Component tree" @onkeydown="OnKeyDown" @onkeydown:preventDefault="_preventDefault">
+        @* overflow inline too: Virtualize picks its scroll root when it first renders, which can be before the stylesheet applies. *@
+        <div class="bev-scroll bev-tree" style="overflow:auto" tabindex="0" role="tree" aria-label="Component tree" @onkeydown="OnKeyDown" @onkeydown:preventDefault="_preventDefault">
             @if (_visible.Count == 0)
             {
                 <div class="bev-empty">No components tracked yet. Components are registered as they are created; interact with the page.</div>

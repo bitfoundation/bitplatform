@@ -82,18 +82,38 @@ public class PanelInteractionTests : BunitContext
     }
 
     [TestMethod]
-    public void The_panel_waits_for_its_stylesheet_before_it_renders()
+    public void The_panel_renders_while_the_bridge_attaches_and_its_lists_scroll_without_the_stylesheet()
+    {
+        // Never answered: the browser bridge, the saved preferences and the stylesheet are all still on their way.
+        var module = JSInterop.SetupModule("./_content/Bit.BevTools/bit-bevtools.js");
+        module.Setup<BevBrowserSnapshot>("attach", _ => true);
+
+        var cut = Render<BevToolsPanel>();
+
+        Assert.IsNotEmpty(cut.FindAll(".bev-panel"));
+        // Virtualize takes the closest scrollable ancestor as its scroll root when it first renders.
+        StringAssert.Contains(cut.Find(".bev-tree").GetAttribute("style"), "overflow:auto");
+    }
+
+    [TestMethod]
+    public void Opening_from_code_before_the_saved_preferences_are_read_keeps_them()
     {
         var module = JSInterop.SetupModule("./_content/Bit.BevTools/bit-bevtools.js");
         module.Setup<BevBrowserSnapshot>("attach", _ => true).SetResult(new BevBrowserSnapshot { Online = true, Visibility = "visible" });
-        module.Setup<string?>("loadPrefs", _ => true).SetResult(null);
-        var styles = module.SetupVoid("waitForStyles", _ => true);
-
+        var prefs = module.Setup<string?>("loadPrefs", _ => true);
+        module.SetupVoid("savePrefs", _ => true).SetVoidResult();
         var cut = Render<BevToolsPanel>();
-        Assert.IsEmpty(cut.FindAll(".bev-panel"));
 
-        styles.SetVoidResult();
-        cut.WaitForAssertion(() => Assert.IsNotEmpty(cut.FindAll(".bev-panel")));
+        cut.InvokeAsync(Session.Ui.Open);
+        Assert.IsEmpty(module.Invocations["savePrefs"], "the defaults would overwrite the preferences that are still being read");
+
+        prefs.SetResult("""{"open":false,"dock":"Right","theme":"Dark"}""");
+
+        cut.WaitForAssertion(() => Assert.HasCount(1, module.Invocations["savePrefs"]));
+        var saved = (string)module.Invocations["savePrefs"][0].Arguments[0]!;
+        StringAssert.Contains(saved, "\"open\":true");
+        StringAssert.Contains(saved, "\"dock\":\"Right\"");
+        StringAssert.Contains(saved, "\"theme\":\"Dark\"");
     }
 
     [TestMethod]

@@ -1,6 +1,4 @@
 ﻿using System.Diagnostics.CodeAnalysis;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 using Microsoft.JSInterop;
 
 namespace Bit.BevTools;
@@ -27,9 +25,10 @@ public sealed class BevToolsLoader : IDisposable
 
     /// <summary>
     /// False where BevTools may not be opened, which is outside Development in a process that serves many users
-    /// (Blazor Server, prerendering, static rendering), unless it was registered there at startup or
-    /// <see cref="BitBevToolsLoaderOptions.AllowInMultiUserHost"/> is set. <see cref="Problem"/> then says why. Use it
-    /// to decide whether to offer the button that calls <see cref="OpenAsync"/>.
+    /// (an ASP.NET Core host: Blazor Server, prerendering, static rendering), unless it was registered there at startup
+    /// or <see cref="BitBevToolsLoaderOptions.AllowInMultiUserHost"/> is set. <see cref="Problem"/> then says why. The
+    /// attach applies the same rule, so <see cref="OpenAsync"/> is not refused where this is true. Use it to decide
+    /// whether to offer the button that calls <see cref="OpenAsync"/>.
     /// </summary>
     public bool CanOpen => _canOpen ??= ResolveCanOpen();
 
@@ -60,14 +59,26 @@ public sealed class BevToolsLoader : IDisposable
             return Fail(_context.LoadError ?? "Bit.BevTools could not be loaded.");
         }
 
-        _attachment ??= entryPoint.Attach(_services, _context);
-        if (!_attachment.IsEnabled)
+        // Typically called from an @onclick, where an exception would end a Blazor Server circuit: whatever attaching
+        // fails with becomes the Problem this method promises instead.
+        try
         {
-            return Fail(_attachment.Reason);
+            _attachment ??= entryPoint.Attach(_services, _context);
+            if (!_attachment.IsEnabled)
+            {
+                return Fail(_attachment.Reason);
+            }
+
+            _attachment.Open();
+        }
+        catch (Exception ex)
+        {
+            return Fail(BevToolsLoaderContext.IsVersionMismatch(ex)
+                ? BevToolsLoaderContext.VersionMismatch(entryPoint, ex)
+                : "Attaching BevTools failed: " + ex.GetType().Name + ": " + ex.Message);
         }
 
         Problem = null;
-        _attachment.Open();
         Changed?.Invoke();
         return true;
     }
@@ -85,22 +96,19 @@ public sealed class BevToolsLoader : IDisposable
 
     private bool ResolveCanOpen()
     {
-        if (_context.RegisteredAtStartup || _context.Options.AllowInMultiUserHost || !IsMultiUserHost()
-            || _services.GetService<IHostEnvironment>()?.IsDevelopment() == true)
+        if (_context.RegisteredAtStartup)
         {
             return true;
         }
 
-        Problem = "BevTools is not opened outside Development in a process that serves many users (Blazor Server, prerendering): its panel would show whoever opens it the server side objects of their circuit. Set BitBevToolsLoaderOptions.AllowInMultiUserHost to allow it.";
-        return false;
-    }
+        var (allowed, reason) = _context.ResolveAttach(_services);
+        if (!allowed)
+        {
+            Problem = "BevTools is not opened here: " + reason;
+        }
 
-    /// <summary>
-    /// Every host hands its components a JS runtime of its own: a server one that talks to a remote browser (or, while
-    /// prerendering, refuses every call), a WebView one in Blazor Hybrid, an in-process one in the browser.
-    /// </summary>
-    private bool IsMultiUserHost() =>
-        !OperatingSystem.IsBrowser() && _js.GetType().Name is "RemoteJSRuntime" or "UnsupportedJavaScriptRuntime";
+        return allowed;
+    }
 
     public void Dispose()
     {

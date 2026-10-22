@@ -50,7 +50,7 @@ public static class BitBevToolsLoader
         {
             context.Deferred(null, error + " It is attached on demand instead.");
         }
-        else if (entryPoint.TryAddServices(services, context, out reason))
+        else if (context.TryAddServices(entryPoint, services, out reason))
         {
             context.Registered(entryPoint, reason);
             return services;

@@ -13,9 +13,12 @@ namespace Bit.BevTools;
 internal sealed class BevToolsLoaderContext(BitBevToolsLoaderOptions options, IServiceCollection services)
 {
     internal const string AssemblyName = "Bit.BevTools";
+    private const string EntryPointTypeName = "Bit.BevTools.BevToolsLoaderEntryPoint";
 
     private readonly object _lock = new();
     private Task<IBevToolsEntryPoint?>? _loading;
+    // 0: not checked yet, 1: no, 2: yes.
+    private int _multiUserHost;
 
     public BitBevToolsLoaderOptions Options { get; } = options;
 
@@ -35,6 +38,30 @@ internal sealed class BevToolsLoaderContext(BitBevToolsLoaderOptions options, IS
     /// <summary>Why the last attempt to load Bit.BevTools failed.</summary>
     public string? LoadError { get; private set; }
 
+    /// <summary>
+    /// True in a process that serves many users: an ASP.NET Core host (Blazor Server circuits, prerendering, static
+    /// rendering), told by the <c>IServer</c> it registers - the signal BevTools itself goes by. Read by name from the
+    /// collection the container was built from, which needs neither reflection nor a reference to ASP.NET Core.
+    /// </summary>
+    public bool IsMultiUserHost
+    {
+        get
+        {
+            var known = Volatile.Read(ref _multiUserHost);
+            if (known == 0)
+            {
+                known = !OperatingSystem.IsBrowser() && Services.Any(d => d.ServiceType.FullName == BevToolsAttachPolicy.ServerTypeName) ? 2 : 1;
+                Volatile.Write(ref _multiUserHost, known);
+            }
+
+            return known == 2;
+        }
+    }
+
+    /// <summary>Whether BevTools may be attached in the scope of <paramref name="services"/>; <see cref="BevToolsAttachPolicy"/> says why.</summary>
+    internal (bool Allowed, string Reason) ResolveAttach(IServiceProvider services) =>
+        BevToolsAttachPolicy.Resolve(services, IsMultiUserHost, Options.AllowInMultiUserHost, "Set BitBevToolsLoaderOptions.AllowInMultiUserHost to allow it.");
+
     internal void Registered(IBevToolsEntryPoint entryPoint, string reason)
     {
         EntryPoint = entryPoint;
@@ -52,14 +79,39 @@ internal sealed class BevToolsLoaderContext(BitBevToolsLoaderOptions options, IS
     internal IBevToolsEntryPoint? TryLoadFromApp(out string? error)
     {
         error = null;
+        if (EntryPoint is { } loaded)
+        {
+            return loaded;
+        }
+
+        Assembly assembly;
         try
         {
-            return EntryPoint ??= Create(Assembly.Load(new AssemblyName(AssemblyName)), out error);
+            assembly = Assembly.Load(new AssemblyName(AssemblyName));
         }
         catch (Exception ex) when (ex is FileNotFoundException or FileLoadException or BadImageFormatException)
         {
             error = AssemblyName + " is not among the assemblies this app started with (" + ex.GetType().Name + ").";
             return null;
+        }
+
+        return EntryPoint = Create(assembly, out error);
+    }
+
+    /// <summary>
+    /// Registers BevTools at startup through the loaded assembly. A Bit.BevTools of another version than this loader
+    /// fails here rather than when it is loaded, so that is reported instead of failing the app's startup.
+    /// </summary>
+    internal bool TryAddServices(IBevToolsEntryPoint entryPoint, IServiceCollection services, out string reason)
+    {
+        try
+        {
+            return entryPoint.TryAddServices(services, this, out reason);
+        }
+        catch (Exception ex) when (IsVersionMismatch(ex))
+        {
+            reason = VersionMismatch(entryPoint, ex);
+            return false;
         }
     }
 
@@ -87,7 +139,7 @@ internal sealed class BevToolsLoaderContext(BitBevToolsLoaderOptions options, IS
     }
 
     [UnconditionalSuppressMessage("Trimming", "IL2026:RequiresUnreferencedCode",
-        Justification = "The one assembly loaded here is Bit.BevTools, whose package roots it whole (TrimmerRootAssembly), so the trimmer kept everything it depends on.")]
+        Justification = "The one assembly loaded here is Bit.BevTools, which the DynamicDependency on Create keeps, and whose embedded ILLink.Descriptors.xml then keeps whole, with everything it depends on.")]
     private async Task<IBevToolsEntryPoint?> LoadCoreAsync(IJSRuntime js)
     {
         try
@@ -122,16 +174,43 @@ internal sealed class BevToolsLoaderContext(BitBevToolsLoaderOptions options, IS
         static bool IsBevTools(Assembly assembly) => string.Equals(assembly.GetName().Name, AssemblyName, StringComparison.Ordinal);
     }
 
+    /// <summary>
+    /// The app reaches Bit.BevTools only by name, so the trimmer is told here what it would not see otherwise. It keeps
+    /// the entry point only where the loader itself is kept, and Bit.BevTools' embedded descriptor then keeps the whole
+    /// assembly; an app that never uses BevTools ships none of it. A build that leaves Bit.BevTools out has nothing to
+    /// keep, which is what IL2035 would warn about.
+    /// </summary>
+    [DynamicDependency(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor, EntryPointTypeName, AssemblyName)]
+    [UnconditionalSuppressMessage("Trimming", "IL2035:Unresolved assembly in DynamicDependencyAttribute",
+        Justification = "A build may leave Bit.BevTools out, in which case the loader passes everything through.")]
     private static IBevToolsEntryPoint? Create(Assembly assembly, out string? error)
     {
-        if (assembly.GetCustomAttribute<BevToolsEntryPointAttribute>() is not { } attribute
-            || Activator.CreateInstance(attribute.EntryPointType) is not IBevToolsEntryPoint entryPoint)
+        try
         {
-            error = $"{assembly.GetName().Name} {assembly.GetName().Version} does not work with this Bit.BevTools.Loader: reference the same version of both packages.";
-            return null;
+            if (assembly.GetCustomAttribute<BevToolsEntryPointAttribute>() is { } attribute
+                && Activator.CreateInstance(attribute.EntryPointType) is IBevToolsEntryPoint entryPoint)
+            {
+                error = null;
+                return entryPoint;
+            }
+        }
+        catch (Exception ex) when (IsVersionMismatch(ex))
+        {
         }
 
-        error = null;
-        return entryPoint;
+        error = VersionMismatch(assembly.GetName());
+        return null;
     }
+
+    /// <summary>
+    /// What the runtime throws when Bit.BevTools was built against another version of this loader: it meets the
+    /// internal contract that differs when it loads the entry point, or when it first runs a method that uses it.
+    /// </summary>
+    internal static bool IsVersionMismatch(Exception exception) => exception is TypeLoadException or MissingMemberException or InvalidCastException;
+
+    internal static string VersionMismatch(IBevToolsEntryPoint entryPoint, Exception exception) =>
+        VersionMismatch(entryPoint.GetType().Assembly.GetName()) + " (" + exception.GetType().Name + ": " + exception.Message + ")";
+
+    private static string VersionMismatch(AssemblyName assembly) =>
+        $"{assembly.Name} {assembly.Version} does not work with this Bit.BevTools.Loader {typeof(BevToolsLoaderContext).Assembly.GetName().Version}: reference the same version of both packages.";
 }

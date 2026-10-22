@@ -82,7 +82,7 @@ internal static class CapabilityReport
                 : new("Network", "HTTP requests", attachment.HttpClient is BevHttpClientAttachment.InPipeline or BevHttpClientAttachment.Wrapped || attachment.FactoryClientsHooked ? BevCapabilityStatus.Partial : BevCapabilityStatus.RequiresIntegration, AttachedHttp(attachment)),
             new("Network", "Request/response bodies", BevCapabilityStatus.NotAvailable, "Never captured: bodies routinely contain credentials and personal data."),
             new("Network", "Originating component", BevCapabilityStatus.Partial, "Requests are linked to the UI event that issued them when one is executing; requests from lifecycle methods show no trigger."),
-            new("JS interop", ".NET → JS calls from components", BevCapabilityStatus.RequiresInstrumentation, "IJSRuntime injected into tracked components is wrapped on the first render, the earliest point after the framework injects it: calls made from OnInitialized/OnInitializedAsync happen before that and are not attributed. Module references obtained through a wrapped runtime are wrapped too."),
+            new("JS interop", ".NET → JS calls from components", BevCapabilityStatus.RequiresInstrumentation, "IJSRuntime injected into tracked components is wrapped on the first render, the earliest point after the framework injects it: calls made from OnInitialized/OnInitializedAsync happen before that and are not attributed. Module references obtained through a wrapped runtime are wrapped too." + JSRuntimeReadinessGap()),
             new("JS interop", ".NET → JS calls from services", BevCapabilityStatus.RequiresIntegration, "Services must call jsRuntime.WithBevToolsTracking(session). Decorating IJSRuntime globally is unsafe because the framework casts it to its concrete type."),
             new("JS interop", "JS → .NET calls", bridge ? BevCapabilityStatus.Available : BevCapabilityStatus.RequiresInstrumentation, "DotNet.invokeMethodAsync/invokeMethod are wrapped by the browser bridge and reported in batches."),
             new("Errors", "Render and event exceptions", BevCapabilityStatus.Available, "Render exceptions are caught in the wrapper; event exceptions and circuit failures arrive through Blazor's own logger categories."),
@@ -101,6 +101,11 @@ internal static class CapabilityReport
             new("BevTools", "Overhead measurement", BevCapabilityStatus.Available, "Instrumentation time, BevTools UI render time, inspection and diagnostics time are tracked separately from application numbers."),
         ];
     }
+
+    /// <summary>A runtime that cannot take calls yet (prerendering, a circuit before the browser connected) is left unwrapped, so libraries still recognize it by its type.</summary>
+    private static string JSRuntimeReadinessGap() => BlazorReflection.JSRuntimeReadinessGaps is { Count: > 0 } gaps
+        ? " Whether " + string.Join(" or ", gaps) + " can take calls yet could not be read on this framework version, so it is wrapped even before it can (while prerendering, or before the circuit connected), and a library that tells those states apart by the runtime's type cannot then."
+        : "";
 
     private static string AttachedComponents(BevRuntimeAttachment attachment)
     {

@@ -133,6 +133,59 @@ public class RuntimeAttachTests : BunitContext
     }
 
     [TestMethod]
+    public void An_attached_session_outlives_its_panel_and_ends_with_its_scope()
+    {
+        BevToolsSession session;
+        using (var context = new BunitContext())
+        {
+            context.JSInterop.Mode = JSRuntimeMode.Loose;
+            context.UseRenderer("WebAssembly");
+            var cut = context.Render<LazyHost>();
+            cut.InvokeAsync(cut.Instance.Open);
+            session = cut.Instance.Session!;
+
+            // The user navigates away from the page that rendered the panel; the scope goes on.
+            cut.InvokeAsync(cut.Instance.HidePanel);
+            Assert.IsEmpty(cut.FindComponents<BevToolsPanel>());
+            RuntimeAttachment.SweepEndedScopes();
+            Assert.IsFalse(session.IsDisposed);
+        }
+
+        RuntimeAttachment.SweepEndedScopes();
+
+        Assert.IsTrue(session.IsDisposed);
+    }
+
+    [TestMethod]
+    public void A_session_attached_without_a_panel_ends_with_its_scope()
+    {
+        using var provider = new ServiceCollection().BuildServiceProvider();
+        var scope = provider.CreateScope();
+        var session = BitBevTools.Attach(scope.ServiceProvider);
+
+        scope.Dispose();
+        RuntimeAttachment.SweepEndedScopes();
+
+        Assert.IsTrue(session.IsDisposed);
+    }
+
+    [TestMethod]
+    public void Attach_runs_the_app_s_configure_callback_outside_its_lock()
+    {
+        using var provider = new ServiceCollection().BuildServiceProvider();
+        using var first = provider.CreateScope();
+        using var second = provider.CreateScope();
+        BevToolsSession? other = null;
+
+        // A callback that waits on an attach of another scope, made on another thread, deadlocked inside the lock.
+        Attached = BitBevTools.Attach(first.ServiceProvider, _ =>
+            Assert.IsTrue(Task.Run(() => other = BitBevTools.Attach(second.ServiceProvider)).Wait(TimeSpan.FromSeconds(10))));
+
+        Assert.IsNotNull(other);
+        other.Dispose();
+    }
+
+    [TestMethod]
     public void Attach_returns_the_registered_session_when_BevTools_was_registered()
     {
         var provider = new ServiceCollection().AddBitBevToolsServices(o => o.Enabled = true).BuildServiceProvider();
@@ -219,6 +272,12 @@ public class LazyHost : ComponentBase
     public void ShowLateChild()
     {
         _lateChild = true;
+        StateHasChanged();
+    }
+
+    public void HidePanel()
+    {
+        _panel = false;
         StateHasChanged();
     }
 

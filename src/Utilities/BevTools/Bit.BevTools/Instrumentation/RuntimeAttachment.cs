@@ -3,7 +3,6 @@ using System.Runtime.CompilerServices;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
 namespace Bit.BevTools;
@@ -14,7 +13,10 @@ internal enum BevHttpClientAttachment
     /// <summary>No <c>HttpClient</c> is registered in DI, or its handler could not be reached.</summary>
     None,
 
-    /// <summary>Its pipeline already holds a BevTools handler, Bit.BevTools.Loader's <c>BevToolsHttpHookHandler</c> typically.</summary>
+    /// <summary>
+    /// Its pipeline already holds a handler that records: Bit.BevTools.Loader's <c>BevToolsHttpHookHandler</c>, or the
+    /// hook the loader adds to every <c>IHttpClientFactory</c> pipeline when the client comes from the factory.
+    /// </summary>
     InPipeline,
 
     /// <summary>BevTools put a <see cref="BevToolsHttpMessageHandler"/> in front of its handler through reflection.</summary>
@@ -29,7 +31,10 @@ internal sealed class BevRuntimeAttachment
 {
     private WeakReference<Renderer>? _renderer;
 
-    /// <summary>Attached through Bit.BevTools.Loader, whose startup hooks stand in for most of the reflection a bare attach needs.</summary>
+    /// <summary>
+    /// The app installed Bit.BevTools.Loader's startup hooks, which stand in for most of the reflection an attach needs
+    /// otherwise: through <see cref="BevToolsLoader.OpenAsync"/>, or a <see cref="BitBevTools.Attach"/> in that app.
+    /// </summary>
     public bool ThroughLoader { get; init; }
 
     /// <summary>The loader's pass-through handlers sit in every <c>IHttpClientFactory</c> pipeline.</summary>
@@ -68,91 +73,129 @@ internal sealed class BevRuntimeAttachment
 /// </summary>
 internal static class RuntimeAttachment
 {
+    private static readonly TimeSpan SweepInterval = TimeSpan.FromSeconds(30);
     private static readonly ConditionalWeakTable<IServiceProvider, BevToolsSession> Sessions = new();
+    private static readonly ConditionalWeakTable<BevToolsLoaderContext, BevToolsRegistry> LoaderRegistries = new();
+    private static readonly ConditionalWeakTable<IServiceCollection, Lazy<BevServiceGraph?>> Graphs = new();
     private static readonly ConditionalWeakTable<ILoggerFactory, BevToolsLoggerProvider> LoggerProviders = new();
     private static readonly FieldInfo? HttpHandlerField = typeof(HttpMessageInvoker).GetField("_handler", BindingFlags.Instance | BindingFlags.NonPublic);
     private static readonly object Lock = new();
 
-    /// <summary>The scope's session: registered at startup, or attached since.</summary>
-    public static BevToolsSession? Resolve(IServiceProvider services) => services.GetService<BevToolsSession>() ?? Find(services);
+    /// <summary>The attached sessions that are not disposed yet; each ends with its scope, whatever else happens to it.</summary>
+    private static readonly List<WeakReference<BevToolsSession>> Live = [];
+    private static Timer? _sweep;
+
+    /// <summary>
+    /// The scope's session: registered at startup, or attached since. A registered one that was left off (outside
+    /// Development, typically) gives way to one attached since.
+    /// </summary>
+    public static BevToolsSession? Resolve(IServiceProvider services)
+    {
+        var registered = services.GetService<BevToolsSession>();
+        return registered is { IsEnabled: true } ? registered : Find(services) ?? registered;
+    }
 
     private static BevToolsSession? Find(IServiceProvider services) => Sessions.TryGetValue(services, out var session) && !session.IsDisposed ? session : null;
 
-    public static BevToolsSession Attach(IServiceProvider services, Action<BitBevToolsOptions>? configure, BevToolsLoaderContext? loader)
+    public static BevToolsSession Attach(IServiceProvider services, Action<BitBevToolsOptions>? configure, BevToolsLoaderContext? loader, bool openedByLoader)
     {
-        if (services.GetService<BevToolsSession>() is { } registered)
+        // A session registered at startup and left off does not stand in the way: attaching is a decision of its own,
+        // with its own rule (ResolveEnabled), and Bit.BevTools.Loader installed its hooks for exactly that.
+        if (services.GetService<BevToolsSession>() is { IsEnabled: true } registered)
         {
             return registered;
         }
 
+        SweepEndedScopes();
+        if (Find(services) is { } existing)
+        {
+            return existing;
+        }
+
+        // The app's own code - the configure callback, its HttpClient factory - runs outside the lock, which every scope
+        // of the process shares: a slow factory must not hold up every other circuit, nor one that waits on another
+        // attach deadlock it.
+        var session = Create(services, configure, loader, openedByLoader);
         lock (Lock)
         {
-            if (Find(services) is { } existing)
+            if (Find(services) is { } raced)
             {
-                return existing;
-            }
-
-            var options = new BitBevToolsOptions();
-            if (loader is not null)
-            {
-                BevToolsLoaderEntryPoint.Forward(loader.Options, options);
-            }
-
-            configure?.Invoke(options);
-            var (enabled, reason) = ResolveEnabled(services, options, loader);
-            options.ResolvedEnabled = enabled;
-
-            // The loader kept the service collection from startup, which is what the Services panel is built from.
-            var registry = new BevToolsRegistry(options, enabled, reason, loader?.Services);
-            var attachment = new BevRuntimeAttachment
-            {
-                ThroughLoader = loader is not null,
-                FactoryClientsHooked = loader is { RegisteredAtStartup: false },
-            };
-            var session = new BevToolsSession(services, options, registry) { Attachment = attachment };
-            if (enabled)
-            {
-                attachment.LoggerProviderAdded = AddLoggerProvider(services, registry);
-                if (options.TrackHttp)
-                {
-                    BevToolsHooks.Http = BevToolsHttpRecorder.Instance;
-                    attachment.HttpClient = AttachHttpClient(services, options, loader);
-                }
+                session.Dispose();
+                return raced;
             }
 
             Sessions.AddOrUpdate(services, session);
-            return session;
+            Live.Add(new WeakReference<BevToolsSession>(session));
+            _sweep ??= new Timer(static _ => SweepEndedScopes(), null, SweepInterval, SweepInterval);
         }
+
+        if (session.IsEnabled)
+        {
+            var attachment = session.Attachment!;
+            attachment.LoggerProviderAdded = AddLoggerProvider(services, session.Registry);
+            if (session.Options.TrackHttp)
+            {
+                BevToolsHooks.Http = BevToolsHttpRecorder.Instance;
+                attachment.HttpClient = AttachHttpClient(services, session.Options, loader);
+            }
+        }
+
+        return session;
+    }
+
+    private static BevToolsSession Create(IServiceProvider services, Action<BitBevToolsOptions>? configure, BevToolsLoaderContext? loader, bool openedByLoader)
+    {
+        // Every scope the loader opens attaches with the same options and the same decision, so they share one registry,
+        // as the sessions of a BevTools registered at startup do, instead of each analyzing the service collection again.
+        var registry = openedByLoader
+            ? LoaderRegistries.GetValue(loader!, context => CreateRegistry(services, configure: null, context, openedByLoader: true))
+            : CreateRegistry(services, configure, loader, openedByLoader: false);
+
+        return new BevToolsSession(services, registry.Options, registry)
+        {
+            Attachment = new BevRuntimeAttachment
+            {
+                ThroughLoader = loader is not null,
+                FactoryClientsHooked = loader is { RegisteredAtStartup: false },
+            },
+        };
+    }
+
+    private static BevToolsRegistry CreateRegistry(IServiceProvider services, Action<BitBevToolsOptions>? configure, BevToolsLoaderContext? loader, bool openedByLoader)
+    {
+        var options = new BitBevToolsOptions();
+        if (loader is not null)
+        {
+            BevToolsLoaderEntryPoint.Forward(loader.Options, options);
+        }
+
+        configure?.Invoke(options);
+        var (enabled, reason) = ResolveEnabled(services, options, loader, openedByLoader);
+        options.ResolvedEnabled = enabled;
+
+        // The loader kept the service collection from startup, which is what the Services panel is built from.
+        var graph = loader is null ? BevToolsRegistry.CreateGraph(null) : Graphs.GetValue(loader.Services, BevToolsRegistry.CreateGraph);
+        return new BevToolsRegistry(options, enabled, reason, graph);
     }
 
     /// <summary>
-    /// Attaching is the app's decision, so it is enabled, except where that would expose other people's data: in a
-    /// process that serves many users the panel shows whoever opens it the server side objects of their circuit,
-    /// injected services and <c>IConfiguration</c> included. There it takes Development, an explicit
-    /// <see cref="BitBevToolsOptions.Enabled"/>, or the loader's <c>AllowInMultiUserHost</c>.
+    /// An explicit <see cref="BitBevToolsOptions.Enabled"/> decides; otherwise <see cref="BevToolsAttachPolicy"/> does,
+    /// the rule <see cref="BevToolsLoader.CanOpen"/> applies too, so a loader never offers an attach it then refuses.
     /// </summary>
-    private static (bool Enabled, string Reason) ResolveEnabled(IServiceProvider services, BitBevToolsOptions options, BevToolsLoaderContext? loader)
+    private static (bool Enabled, string Reason) ResolveEnabled(IServiceProvider services, BitBevToolsOptions options, BevToolsLoaderContext? loader, bool openedByLoader)
     {
-        var how = loader is null ? "BitBevTools.Attach" : "BevToolsLoader.OpenAsync (at startup: " + loader.StartupDecision + ")";
+        var how = openedByLoader ? "BevToolsLoader.OpenAsync (at startup: " + loader!.StartupDecision + ")" : "BitBevTools.Attach";
         if (options.Enabled is { } explicitValue)
         {
             return (explicitValue, how + " was called with BitBevToolsOptions.Enabled set to " + explicitValue.ToString().ToLowerInvariant() + ".");
         }
 
-        if (!BevToolsSession.HostsAServer(services))
-        {
-            return (true, how + " attached it to the running app.");
-        }
+        var (allowed, why) = openedByLoader
+            ? loader!.ResolveAttach(services)
+            : BevToolsAttachPolicy.Resolve(services, loader?.IsMultiUserHost ?? BevToolsSession.HostsAServer(services), loader?.Options.AllowInMultiUserHost == true,
+                loader is null ? "Set BitBevToolsOptions.Enabled to attach anyway." : "Set BitBevToolsOptions.Enabled, or BitBevToolsLoaderOptions.AllowInMultiUserHost, to attach anyway.");
 
-        if (loader?.Options.AllowInMultiUserHost == true)
-        {
-            return (true, how + " attached it to this server process, which BitBevToolsLoaderOptions.AllowInMultiUserHost allows.");
-        }
-
-        var environment = services.GetService<IHostEnvironment>();
-        return environment?.IsDevelopment() == true
-            ? (true, how + $" attached it to this server process, whose IHostEnvironment reports '{environment.EnvironmentName}'.")
-            : (false, how + $" left it off: this process serves many users (IHostEnvironment reports '{environment?.EnvironmentName ?? "nothing"}'), and the panel would show whoever opens it the server side objects of their circuit. Set BitBevToolsOptions.Enabled to attach anyway.");
+        return (allowed, how + (allowed ? " attached it: " : " left it off: ") + why);
     }
 
     public static void AttachToRenderer(BevToolsSession session, ComponentBase host)
@@ -170,14 +213,14 @@ internal static class RuntimeAttachment
         BevToolsComponentActivator? activator = null;
         if (session.Services.GetService<IComponentActivator>() is BevToolsActivatorHook hook)
         {
-            hook.Interceptor = activator = new BevToolsComponentActivator(session.Services, session, session.Options, new InnerComponentActivator(hook.Untracked));
+            hook.Interceptor = activator = new BevToolsComponentActivator(session.Services, session, session.Options, new BevToolsInnerActivator(hook.Untracked));
             attachment.ActivatorAttached = true;
             attachment.ActivatorHooked = true;
         }
         else
         {
             attachment.ActivatorAttached = BlazorReflection.TryWrapComponentActivator(renderer, current =>
-                current is BevToolsComponentActivator ? null : activator = new BevToolsComponentActivator(session.Services, session, session.Options, new InnerComponentActivator(current)));
+                current is BevToolsComponentActivator ? null : activator = new BevToolsComponentActivator(session.Services, session, session.Options, new BevToolsInnerActivator(current)));
         }
 
         var states = BlazorReflection.ComponentStates(renderer);
@@ -195,15 +238,68 @@ internal static class RuntimeAttachment
     }
 
     /// <summary>
-    /// A session DI did not create is not disposed by DI. Bit.BevTools.Loader disposes it with the scope; after a bare
-    /// <see cref="BitBevTools.Attach"/> it ends with the renderer, which disposes its components, this panel included,
-    /// after it marked itself disposed.
+    /// A session DI did not create is not disposed by DI. When the renderer is being disposed - a circuit closing - it
+    /// ends now, rather than on the next sweep.
     /// </summary>
     public static void OnPanelDisposed(BevToolsSession session)
     {
         if (session.Attachment?.Renderer is { } renderer && BlazorReflection.IsRendererDisposed(renderer))
         {
             session.Dispose();
+        }
+    }
+
+    /// <summary>
+    /// Disposes every attached session whose scope has ended. Nothing else is told when that happens: a panel can be
+    /// gone long before its circuit closes, or never rendered, and Bit.BevTools.Loader disposes only what it attached.
+    /// Until then <see cref="SessionResolver"/> would keep the session, and with it the scope, alive for good. Run by
+    /// every attach and, while any attached session is left, by a timer.
+    /// </summary>
+    internal static void SweepEndedScopes()
+    {
+        List<BevToolsSession>? ended = null;
+        lock (Lock)
+        {
+            Live.RemoveAll(reference =>
+            {
+                if (!reference.TryGetTarget(out var session) || session.IsDisposed)
+                {
+                    return true;
+                }
+
+                if (!HasEnded(session.Services))
+                {
+                    return false;
+                }
+
+                (ended ??= []).Add(session);
+                return true;
+            });
+
+            if (Live.Count == 0)
+            {
+                _sweep?.Dispose();
+                _sweep = null;
+            }
+        }
+
+        foreach (var session in ended ?? [])
+        {
+            session.Dispose();
+        }
+    }
+
+    /// <summary>A disposed scope refuses every resolution; a live one resolves itself.</summary>
+    private static bool HasEnded(IServiceProvider services)
+    {
+        try
+        {
+            _ = services.GetService(typeof(IServiceProvider));
+            return false;
+        }
+        catch (ObjectDisposedException)
+        {
+            return true;
         }
     }
 
@@ -288,11 +384,15 @@ internal static class RuntimeAttachment
         return !ReferenceEquals(client, services.GetService<HttpClient>());
     }
 
+    /// <summary>
+    /// Whether the pipeline already records, so wrapping it would record every request twice. A client
+    /// <c>IHttpClientFactory</c> built carries the loader's hook from its startup filter, typically below other handlers.
+    /// </summary>
     private static bool Records(HttpMessageHandler? handler)
     {
         for (var depth = 0; handler is DelegatingHandler delegating && depth < 64; depth++)
         {
-            if (delegating is BevToolsHttpMessageHandler or BevToolsHttpHookHandler)
+            if (delegating is BevToolsHttpMessageHandler or BevToolsHttpHookHandler or BevToolsHttpHookFilter.RecordHook)
             {
                 return true;
             }

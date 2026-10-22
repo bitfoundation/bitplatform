@@ -52,7 +52,8 @@ internal sealed class BevToolsHttpHookFilter : IHttpMessageHandlerBuilderFilter
         }
     }
 
-    private sealed class RecordHook : DelegatingHandler
+    /// <summary>Internal so a session attached at runtime can tell a pipeline that already records.</summary>
+    internal sealed class RecordHook : DelegatingHandler
     {
         private readonly Func<HttpRequestMessage, CancellationToken, Task<HttpResponseMessage>> _next;
 

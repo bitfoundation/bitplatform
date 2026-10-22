@@ -188,14 +188,23 @@ The loader never references `Bit.BevTools`; `Bit.BevTools` references the loader
 assemblies, else through `LazyAssemblyLoader`), and `RuntimeAttachment` creates a session outside DI keyed by the scope's
 `IServiceProvider`. The first `BevToolsPanel` of that scope attaches it to its renderer: it steps into the activator hook,
 reads the existing components from the renderer's state map, and marks those that already rendered so their next render
-is not reported as their first. The loader's scoped service disposes the session with the scope.
+is not reported as their first. The loader's scoped service disposes the session with the scope. Every scope the loader
+opens shares one `BevToolsRegistry`, and with it one service graph, as the sessions of a BevTools registered at startup do.
 
 `BitBevTools.Attach` does the same without the loader and falls back to reflection where the loader has hooks: it
 replaces the renderer's activator (`ComponentFactory._componentActivator`) and wraps the handler of the `HttpClient`
-registered in DI (`HttpMessageInvoker._handler`), unless it is transient or its pipeline already records. Each accessor
-lives in `BlazorReflection`/`RuntimeAttachment`, degrades to a reported gap, and `CapabilityReport` says which path a
-session took. Attaching is enabled, being the app's decision, except in a process that serves many users outside
-Development, where the panel would show any visitor the server side objects of their circuit.
+registered in DI (`HttpMessageInvoker._handler`), unless it is transient or its pipeline already records (a factory
+client carries the loader's hook). In an app that installed the loader's hooks it uses them, and the collection the
+loader kept. Each accessor lives in `BlazorReflection`/`RuntimeAttachment`, degrades to a reported gap, and
+`CapabilityReport` says which path a session took.
+
+Attaching is enabled, being the app's decision, except in a process that serves many users outside Development, where
+the panel would show any visitor the server side objects of their circuit. `BevToolsAttachPolicy` in the loader holds
+that rule and both `BevToolsLoader.CanOpen` and the attach apply it, telling a server process by its `IServer`
+registration, so the button an app offers never leads to a refused attach. A session registered at startup and left off
+gives way to an attached one. Nothing tells BevTools when a scope ends - a panel can be gone long before its circuit
+closes, or never rendered - so every attach, and a timer while attached sessions are left, disposes those whose scope
+refuses to resolve services any more; otherwise `SessionResolver` would keep them, and their scopes, for good.
 
 ### Multi-circuit behaviour (Server)
 

@@ -9,7 +9,8 @@
             <label><input type="checkbox" checked="@_showFramework" @onchange='e => { _showFramework = e.Value is true; OnParametersSet(); }' /> framework</label>
             <span class="bev-muted bev-nowrap">@_rows.Count / @(Host.Graph?.Count ?? 0)</span>
         </div>
-        <div class="bev-scroll">
+        @* overflow inline too: Virtualize picks its scroll root when it first renders, which can be before the stylesheet applies. *@
+        <div class="bev-scroll" style="overflow:auto">
             @if (Host.Graph is null)
             {
                 <div class="bev-empty">@(Host.Session.IsAttachedAtRuntime ? "BevTools was attached at runtime (BitBevTools.Attach), after the container was built, so the service collection was not captured. Bit.BevTools.Loader keeps it from startup." : "The service collection was not captured (AddBitBevToolsServices was called with a collection that could not be enumerated).")</div>

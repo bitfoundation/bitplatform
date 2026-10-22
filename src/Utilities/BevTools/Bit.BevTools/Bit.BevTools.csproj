@@ -45,9 +45,8 @@
     </ItemGroup>
 
     <ItemGroup>
-        <!-- Roots this assembly in every app that trims, see the file. Include, not Update: pack runs in the outer
-             build, which has no default items to update. -->
-        <None Include="buildTransitive\Bit.BevTools.targets" Pack="true" PackagePath="buildTransitive\;build\" />
+        <!-- Keeps this assembly whole in an app that trims and uses it, see the file. -->
+        <EmbeddedResource Include="ILLink.Descriptors.xml" LogicalName="ILLink.Descriptors.xml" />
     </ItemGroup>
 
     <ItemGroup>
