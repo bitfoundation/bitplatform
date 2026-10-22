@@ -376,7 +376,8 @@ versions.
 ## 4. bitplatform.dev/mcp
 
 The platform website serves one set of tools per release tag `v-X.Y.Z` at or above `Mcp:MinimumVersion`, each from
-that tag's own worktree, source index and documentation servers. Prerelease tags are never served, and a `?v=` it
+that tag's own worktree, source index and BlazorUI and Butil documentation servers. Every other library's tools come
+from its deployed site, `https://<name>.bitplatform.dev/mcp`, whichever tag was asked for. Prerelease tags are never served, and a `?v=` it
 does not serve silently gets the newest one it does.
 
 1. **What it should serve.** The plain `v-X.Y.Z` tags of
@@ -385,8 +386,8 @@ does not serve silently gets the newest one it does.
    without a word.
 2. **What it does serve.** `mcp -McpVersion X.Y.Z -AllLibraries` for each, and once without `-AllLibraries`, whose
    library tools must be BlazorUI's and Butil's alone. The library tools (`Search*`, `Get*` and `Inspect*` of BlazorUI,
-   Brouter, Butil, Bswup, Bmotion and - from the first release that ships them - Bink, Balette, BbScanner, Bdnd, BlazeDb, Blow, Borm, Bcrdt, Bonboarding, Bortable, Blex, Bmage and Bsqlite) and the source tools (`FindBitPlatformSymbols`, `GetBitPlatformSymbolSource`,
-   `SearchBitPlatformCode`) must all be there. Only the five shared ones (`AskGitHubRepository`,
+   Butil, Brouter, Bswup, Bmotion, Bink, Balette, BbScanner, Bdnd, BlazeDb, Blow, Borm, Bcrdt, Bonboarding, Bortable, Blex, Bmage, Bsqlite and Belemetry) and the source tools (`FindBitPlatformSymbols`, `GetBitPlatformSymbolSource`,
+   `SearchBitPlatformCode`) must all be there. Without `-AllLibraries`, only the five shared ones (`AskGitHubRepository`,
    `SendBitPlatformFeedback`, `microsoft_docs_*`) means no release is served at all, and the README's
    *PlatformWebsite's MCP* section says why that happens. The server version it reports is the website's own build,
    which must be `APP_VERSION`.
@@ -398,14 +399,14 @@ does not serve silently gets the newest one it does.
 
    `BitAccordion.Busy` came in 10.6.1, so
    `mcp -McpVersion 10.6.1 -Tool GetBitBlazorUIComponent -Arguments '{"name":"BitAccordion"}'` lists `Busy` and the
-   same call on 10.6.0 does not. Pick a new difference for each new pair of releases; the other libraries work the
-   same way (`src/Butil/Bit.Butil/Publics`, ...). The `source:` link of the same answer points at that release's
+   same call on 10.6.0 does not. Pick a new difference for each new pair of releases; Butil works the same way
+   (`src/Butil/Bit.Butil/Publics`). The other libraries answer from their deployed site, the same for every tag. The `source:` link of the same answer points at that release's
    code too - its tag (`blob/v-10.6.1/...`), never `develop`.
 4. **The answers are good.** Put one real task to each library's `Search` tool, worded the way a developer would
    describe it - BlazorUI "a dropdown the user can also type into", Butil "copy text to the clipboard", Bmotion "fade
    a list item in", Brouter "a route parameter that must be a number", Bswup "show the download progress of the app's
    update", Bink "a signature pad that exports a PNG", Balette "a command that asks for a name before it runs", BbScanner "scan a QR code from an uploaded photo", Bdnd "reorder a list by dragging its items", BlazeDb "a todo list that survives a page reload", Blow "a flow chart that lays itself out left to right", Borm "a field that only shows when a checkbox is ticked", Bcrdt "a text field two people can edit at once without losing either's words", Bonboarding "a step that waits for a panel that loads later", Bortable "a kanban board whose cards move between columns", Blex "a counter whose value survives a page reload", Bmage "shrink an uploaded photo under 200 KB without its location", Bsqlite "keep the database when OPFS is not available" - follow up with the `Get` tool it points to, and ask `SearchBitPlatformCode` about the Boilerplate. An
-   answer must be on topic, specific and true to the version asked for; one that answers wrongly is a failure too.
+   answer must be on topic, specific and true to the version asked for (for BlazorUI and Butil) or to the newest build (for the rest); one that answers wrongly is a failure too.
 
 Like an E2E failure, an MCP problem is fixed in `src/Websites/Platform` or in the library's own MCP server, and goes
 away only after the next CD.

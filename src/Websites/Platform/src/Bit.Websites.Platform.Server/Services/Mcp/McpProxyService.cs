@@ -85,8 +85,6 @@ public partial class McpProxyService : IAsyncDisposable
     /// </summary>
     private static readonly TimeSpan failedToolsCacheLifetime = TimeSpan.FromMinutes(1);
 
-    private static readonly string[] defaultLibraryUpstreamNames = ["bitBlazorUI", "bitButil"];
-
     /// <summary>
     /// The upstreams every caller shares, whichever version they asked for: the third party servers, and the
     /// source code index, which serves every version out of one process.
@@ -99,6 +97,12 @@ public partial class McpProxyService : IAsyncDisposable
         // of a repository, which is a slower and far more token hungry way to reach the same answer.
         // Renamed, as a developer may have DeepWiki's own server installed next to this one.
         new("DeepWiki", new("https://mcp.deepwiki.com/mcp"), [new("ask_wiki_question", "AskGitHubRepository", askQuestionDescription)])
+    ];
+
+    private readonly Upstream[] deployedLibraryUpstreams =
+    [
+        .. new[] { "Bmotion", "Bswup", "Brouter", "Bmage", "Bink", "Balette", "BbScanner", "Bdnd", "BlazeDb", "Blow", "Borm", "Bcrdt", "Bonboarding", "Bortable", "Blex", "Bsqlite", "Belemetry" }
+            .Select(library => new Upstream($"bit{library}", new($"https://{library.ToLowerInvariant()}.bitplatform.dev/mcp")))
     ];
 
     /// <summary>
@@ -215,15 +219,15 @@ public partial class McpProxyService : IAsyncDisposable
 
             // A release whose sites restarted comes back as a new record on new ports, so the sessions held
             // against the old ones are dropped. The shared ones, and the one stdio process, stay.
-            foreach (var stale in entry.Upstreams.Where(upstream => upstream.Url is not null && sharedUpstreams.Contains(upstream) is false))
+            foreach (var stale in entry.Upstreams.Where(upstream => upstream.Url is not null && sharedUpstreams.Contains(upstream) is false && deployedLibraryUpstreams.Contains(upstream) is false))
             {
                 _ = Disconnect(stale);
             }
 
             entry.Version = version;
             entry.Upstreams = version is null
-                ? sharedUpstreams
-                : [.. sharedUpstreams, .. version.DocumentationEndpoints.Select(site => new Upstream(site.Key, site.Value)), CodebaseMemoryUpstream()];
+                ? [.. sharedUpstreams, .. deployedLibraryUpstreams]
+                : [.. sharedUpstreams, .. deployedLibraryUpstreams, .. version.DocumentationEndpoints.Select(site => new Upstream(site.Key, site.Value)), CodebaseMemoryUpstream()];
 
             return entry.Upstreams;
         }
@@ -354,7 +358,7 @@ public partial class McpProxyService : IAsyncDisposable
 
                     mergedTools.Add(tool);
 
-                    if (version?.DocumentationEndpoints.ContainsKey(upstream.Name) is not true || defaultLibraryUpstreamNames.Contains(upstream.Name))
+                    if (deployedLibraryUpstreams.Contains(upstream) is false)
                     {
                         defaultTools.Add(tool);
                     }
@@ -520,7 +524,7 @@ public partial class McpProxyService : IAsyncDisposable
 
     public async ValueTask DisposeAsync()
     {
-        foreach (var upstream in sharedUpstreams.Concat(upstreamsPerVersion.Values.SelectMany(entry => entry.Upstreams)).Distinct())
+        foreach (var upstream in sharedUpstreams.Concat(deployedLibraryUpstreams).Concat(upstreamsPerVersion.Values.SelectMany(entry => entry.Upstreams)).Distinct())
         {
             await Disconnect(upstream);
         }
