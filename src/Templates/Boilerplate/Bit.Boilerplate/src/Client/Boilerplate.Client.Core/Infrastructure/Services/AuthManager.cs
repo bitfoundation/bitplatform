@@ -37,7 +37,7 @@ public partial class AuthManager : AuthenticationStateProvider, IAsyncDisposable
 
             var user = (await GetAuthenticationStateAsync()).User;
 
-            if (user.IsAuthenticated() && (payload is null or JsonElement { ValueKind: JsonValueKind.Null } || user.GetSessionId() == revokedUserSessionId))
+            if (user.IsAuthenticated() && user.GetSessionId() == revokedUserSessionId)
             {
                 await SignOut(default);
             }

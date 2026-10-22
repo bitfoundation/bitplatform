@@ -163,7 +163,7 @@ public partial class PushNotificationService
 
     private static readonly string[] pushServiceHosts = ["fcm.googleapis.com", "push.services.mozilla.com", "notify.windows.com", "web.push.apple.com"];
 
-    public static bool IsPushServiceEndpoint(string? endpoint)
+    private static bool IsPushServiceEndpoint(string? endpoint)
     {
         return Uri.TryCreate(endpoint, UriKind.Absolute, out var uri)
             && uri.Scheme == Uri.UriSchemeHttps

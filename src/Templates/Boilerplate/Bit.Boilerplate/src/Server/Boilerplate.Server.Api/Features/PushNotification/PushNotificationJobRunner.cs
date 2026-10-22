@@ -24,11 +24,9 @@ public partial class PushNotificationJobRunner
         PerformContext context = null!,
         CancellationToken cancellationToken = default)
     {
-        var subscriptions = (await dbContext.PushNotificationSubscriptions
+        var subscriptions = await dbContext.PushNotificationSubscriptions
             .Where(pns => pushNotificationSubscriptionIds.Contains(pns.Id))
-            .ToArrayAsync(cancellationToken))
-            .Where(pns => pns.Platform is not "browser" || PushNotificationService.IsPushServiceEndpoint(pns.Endpoint))
-            .ToArray();
+            .ToArrayAsync(cancellationToken);
 
         var payload = new AdsPushBasicSendPayload()
         {

@@ -157,13 +157,6 @@ public partial class MauiStorageService : IStorageService
 
         foreach (var key in tokenKeys)
         {
-            if (Preferences.Get(key, null) is string legacyToken)
-            {
-                Preferences.Remove(key);
-                await SetToken(key, legacyToken);
-                continue;
-            }
-
             try
             {
                 if (await SecureStorage.GetAsync(key) is string token)

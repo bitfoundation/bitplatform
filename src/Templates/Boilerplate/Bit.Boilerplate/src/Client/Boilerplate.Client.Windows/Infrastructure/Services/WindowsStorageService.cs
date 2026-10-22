@@ -108,14 +108,7 @@ public partial class WindowsStorageService : IStorageService
                 return [];
             var content = new byte[stream.Length];
             await stream.ReadExactlyAsync(content);
-            var isPlainText = content[0] is (byte)'{';
-            var restored = JsonSerializer.Deserialize(isPlainText ? content : ProtectedData.Unprotect(content, null, DataProtectionScope.CurrentUser), AppJsonContext.Default.DictionaryStringString);
-            if (isPlainText && restored is not null)
-            {
-                var protectedContent = Protect(restored);
-                stream.SetLength(0);
-                await stream.WriteAsync(protectedContent);
-            }
+            var restored = JsonSerializer.Deserialize(ProtectedData.Unprotect(content, null, DataProtectionScope.CurrentUser), AppJsonContext.Default.DictionaryStringString);
             return restored is null ? [] : new(restored);
         }
         catch (Exception exp) when (exp is JsonException or IsolatedStorageException or IOException or CryptographicException)
@@ -180,16 +173,11 @@ public partial class WindowsStorageService : IStorageService
 
             using IsolatedStorageFile storage = IsolatedStorageFile.GetUserStoreForDomain();
             using IsolatedStorageFileStream stream = new IsolatedStorageFileStream(WindowsStorageFilename, FileMode.Create, storage);
-            await stream.WriteAsync(Protect(snapshot));
+            await stream.WriteAsync(ProtectedData.Protect(JsonSerializer.SerializeToUtf8Bytes(snapshot, AppJsonContext.Default.DictionaryStringString), null, DataProtectionScope.CurrentUser));
         }
         finally
         {
             ioLock.Release();
         }
-    }
-
-    private static byte[] Protect(Dictionary<string, string?> data)
-    {
-        return ProtectedData.Protect(JsonSerializer.SerializeToUtf8Bytes(data, AppJsonContext.Default.DictionaryStringString), null, DataProtectionScope.CurrentUser);
     }
 }
