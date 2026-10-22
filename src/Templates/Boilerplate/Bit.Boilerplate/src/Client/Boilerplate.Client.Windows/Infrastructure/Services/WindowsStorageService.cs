@@ -112,8 +112,9 @@ public partial class WindowsStorageService : IStorageService
             var restored = JsonSerializer.Deserialize(isPlainText ? content : ProtectedData.Unprotect(content, null, DataProtectionScope.CurrentUser), AppJsonContext.Default.DictionaryStringString);
             if (isPlainText && restored is not null)
             {
+                var protectedContent = Protect(restored);
                 stream.SetLength(0);
-                await stream.WriteAsync(Protect(restored));
+                await stream.WriteAsync(protectedContent);
             }
             return restored is null ? [] : new(restored);
         }

@@ -238,6 +238,7 @@ public partial class AppClientCoordinator : AppComponentBase
             catch (TooManyRequestsException exp)
             {
                 ExceptionHandler.Handle(exp, displayKind: ExceptionDisplayKind.None);
+                return;
             }
             //#endif
 

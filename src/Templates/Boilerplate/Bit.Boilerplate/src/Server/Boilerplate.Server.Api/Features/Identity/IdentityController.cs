@@ -518,7 +518,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
         request.PhoneNumber = phoneService.NormalizePhoneNumber(request.PhoneNumber);
 
         var user = await userManager.FindUser(request)
-                    ?? throw new BadRequestException().WithData("Identifier", request);
+                    ?? throw new BadRequestException().WithData("Identifier", request.ToString());
 
         await SendTwoFactorToken(request, user, cancellationToken);
     }

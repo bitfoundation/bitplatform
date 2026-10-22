@@ -88,7 +88,7 @@ public partial class IdentityController
         {
             var unknownAccountTokenIsPending = TimeProvider.GetUtcNow() - await GetUnknownAccountResetPasswordTokenRequestedOn(request, cancellationToken) <= AppSettings.Identity.ResetPasswordTokenLifetime;
 
-            throw new BadRequestException(unknownAccountTokenIsPending ? nameof(AppStrings.InvalidToken) : nameof(AppStrings.ExpiredToken)).WithData("Identifier", request);
+            throw new BadRequestException(unknownAccountTokenIsPending ? nameof(AppStrings.InvalidToken) : nameof(AppStrings.ExpiredToken)).WithData("Identifier", request.ToString());
         }
 
         var expired = user.ResetPasswordTokenRequestedOn is null ||
@@ -145,7 +145,7 @@ public partial class IdentityController
         var resendDelay = (TimeProvider.GetUtcNow() - await GetUnknownAccountResetPasswordTokenRequestedOn(request, cancellationToken)) - AppSettings.Identity.ResetPasswordTokenLifetime;
 
         if (resendDelay < TimeSpan.Zero)
-            throw new TooManyRequestsException(Localizer[nameof(AppStrings.WaitForResetPasswordTokenRequestResendDelay), resendDelay.Value.Humanize(culture: CultureInfo.CurrentUICulture)]).WithData("Identifier", request).WithExtensionData("TryAgainIn", resendDelay);
+            throw new TooManyRequestsException(Localizer[nameof(AppStrings.WaitForResetPasswordTokenRequestResendDelay), resendDelay.Value.Humanize(culture: CultureInfo.CurrentUICulture)]).WithData("Identifier", request.ToString()).WithExtensionData("TryAgainIn", resendDelay);
 
         await cache.SetAsync(GetUnknownAccountResetPasswordCacheKey(request), TimeProvider.GetUtcNow(), options => options.SetDuration(AppSettings.Identity.ResetPasswordTokenLifetime), token: cancellationToken);
     }

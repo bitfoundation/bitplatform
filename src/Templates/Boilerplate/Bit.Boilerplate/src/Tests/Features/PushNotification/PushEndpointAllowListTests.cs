@@ -1,5 +1,6 @@
 using System.Buffers.Text;
 using System.Security.Cryptography;
+using Boilerplate.Shared.Features.Diagnostic;
 using Boilerplate.Shared.Features.PushNotification;
 
 namespace Boilerplate.Tests.Features.PushNotification;
@@ -141,6 +142,36 @@ public partial class PushEndpointAllowListTests
         }
 
         Assert.Fail($"A burst of 40 anonymous push requests was never throttled ({served} served).");
+    }
+
+    [TestMethod]
+    public async Task ADiagnosticThatRequestsATestPush_Should_StopServingAfterTheBurstLimit()
+    {
+        await using var server = new AppTestServer();
+
+        await server.Build().Start(TestContext.CancellationToken);
+
+        await using var client = server.CreateAppClient();
+        var diagnosticController = client.GetController<IDiagnosticController>();
+
+        var served = 0;
+
+        for (var i = 0; i < 40; i++)
+        {
+            try
+            {
+                await diagnosticController.PerformDiagnostic(signalRConnectionId: null, pushNotificationSubscriptionDeviceId: $"push-burst-{Guid.NewGuid():N}", TestContext.CancellationToken)
+                    .ToArrayAsync(TestContext.CancellationToken);
+                served++;
+            }
+            catch (TooManyRequestsException)
+            {
+                Assert.IsGreaterThan(0, served, "The endpoint must serve some requests before throttling starts.");
+                return;
+            }
+        }
+
+        Assert.Fail($"A burst of 40 anonymous diagnostics that each request a test push was never throttled ({served} served).");
     }
 
     private static PushNotificationSubscriptionDto NewBrowserSubscription(string endpoint)

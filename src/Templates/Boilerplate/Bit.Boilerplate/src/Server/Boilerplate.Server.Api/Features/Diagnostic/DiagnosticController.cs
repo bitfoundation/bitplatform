@@ -44,6 +44,9 @@ public partial class DiagnosticController : AppControllerBase, IDiagnosticContro
     /// </para>
     /// </summary>
     [HttpGet, AllowAnonymous]
+    //#if (notification == true)
+    [EnableRateLimiting(RateLimitOptionsExtensions.PUSH_NOTIFICATION)]
+    //#endif
     public async Task<IAsyncEnumerable<string>> PerformDiagnostic([FromQuery] string? signalRConnectionId, [FromQuery] string? pushNotificationSubscriptionDeviceId, CancellationToken cancellationToken)
     {
         Response.Headers.CacheControl = "no-store";
