@@ -225,9 +225,9 @@
 
         <Callout Kind="Callout.CalloutKind.Tip" Title="Undo/redo and persistence cooperate">
             <p>
-                A restore raises <code>StateRestored</code>, and the persistor writes every persisted
-                slice back in response. So undoing and then reloading the page keeps the undone state -
-                the reload cannot resurrect what you just stepped away from.
+                A restore raises <code>StoreRestored</code> for each store it moves, and the persistor
+                writes each persisted one back in response. So undoing and then reloading the page keeps
+                the undone state - the reload cannot resurrect what you just stepped away from.
             </p>
         </Callout>
     </div>

@@ -24,7 +24,8 @@ namespace Bit.Blex.Blazor;
 /// Changing <see cref="Key"/> replaces the instance (and the descendants, which are keyed to it), so
 /// <c>Key="@DocumentId"</c> gives every document its own store. A store marked <c>Persist = true</c>
 /// is hydrated when the scope registers it -- give it a stable key so the next scope for the same
-/// entity finds its state. Scoped stores are not part of the prerender handoff.
+/// entity finds its state; without one it is not persisted at all. Scoped stores are not part of the
+/// prerender handoff.
 /// </para>
 /// </remarks>
 /// <example><code>
@@ -45,7 +46,8 @@ public sealed class BlexScope<[DynamicallyAccessedMembers(DynamicallyAccessedMem
 
     /// <summary>
     /// The instance key: an id of whatever the store is about. Changing it replaces the instance. When
-    /// omitted, a key unique within the manager is assigned and kept for the scope's lifetime.
+    /// omitted, a key unique within the manager is assigned and kept for the scope's lifetime -- and the
+    /// instance is not persisted, since no later scope could find state saved under that key.
     /// </summary>
     [Parameter] public string? Key { get; set; }
 

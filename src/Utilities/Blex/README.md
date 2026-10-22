@@ -225,8 +225,11 @@ await manager.DispatchAsync("orders/Set Units", new JsonObject { ["Units"] = 0 }
 await manager.DispatchAsync("orders/ResetState");
 ```
 
+An optional parameter the payload leaves out takes its declared default, as in a direct call.
 `store.ActionDescriptors` lists everything a store can dispatch this way. A store that already has a
-member called `Actions` keeps compiling and goes without the typed class (`BLEX020`).
+member called `Actions` keeps compiling and goes without the typed class (`BLEX020`). Since the name is
+what identifies an action here, two actions dispatched under one name - two display labels alike, or a
+label such as `"Set Count"` that a direct assignment already records - are a build error (`BLEX021`).
 
 ## Granular subscriptions (selectors)
 
@@ -601,7 +604,9 @@ var text = summary.Value;   // recomputed at most once per action, however many 
 
 Both stay correct when state moves without an action: undo/redo, DevTools time-travel, persistence
 hydration, a change arriving from another tab and the prerender handoff all raise
-`manager.StateRestored`, which re-evaluates manager subscriptions and invalidates selectors.
+`manager.StateRestored`, which re-evaluates manager subscriptions and invalidates selectors. Ahead of it,
+`manager.StoreRestored` names each store that moved, for observers that only need to revisit that one -
+persistence writes back just the restored store, and undo/redo compares just its slice.
 
 ## Scoped stores
 
@@ -628,8 +633,12 @@ editor.Store.Rename("Draft");   // recorded as "document:42/Rename"
 ```
 
 A scoped store marked `Persist = true` is hydrated as soon as it registers and saved under its keyed name,
-so give it a stable key (the document's id) for the next instance to find its state. Scoped stores are not
-registered with `AddBitBlexStore` and are not part of the prerender handoff.
+so give it a stable key (the document's id) for the next instance to find its state. Its saves wait for
+that read, so a quick edit never overwrites stored state nobody has seen yet; if nothing was stored, the
+edit is written once the read comes back empty. An instance whose key was assigned for it is never
+persisted: those keys count from `1` again in every session and every tab, so its state could only ever be
+found by an unrelated instance. Scoped stores are not registered with `AddBitBlexStore` and are not part
+of the prerender handoff.
 
 ## Middleware: observe and veto
 
@@ -911,7 +920,11 @@ Assert.AreEqual(original.Snapshot().ToJsonString(), replica.Snapshot().ToJsonStr
 ```
 
 Generated actions and effects, `Set X` assignments and `ResetState` replay; a `Batch` carries a closure
-rather than data, so it cannot, and the replay says which action stopped it.
+rather than data, so it cannot, and the replay says which action stopped it. An action that ran inside
+another one's body (`cart.Checkout()` calling `orders.Place()`, recorded with `IsNested`) is skipped,
+because replaying the outer action runs it again. Each action is awaited before the next, and effects
+skip their `DebounceMilliseconds` wait during a replay, so it never waits on the clock - a fake one
+nobody advances included.
 
 ## Trimming and AOT
 
@@ -948,7 +961,7 @@ parameters · `BLEX014` generic action/effect methods · `BLEX015` record stores
 attribute used outside a `[BlexStore]` class (warning) - the one mistake that otherwise
 compiles cleanly and silently generates nothing at all · `BLEX019` negative
 `DebounceMilliseconds` · `BLEX020` a store member already named `Actions`, so the typed action
-descriptors are not generated (warning).
+descriptors are not generated (warning) · `BLEX021` two actions dispatched under one name.
 
 ## Time-travel debugging
 
@@ -968,8 +981,11 @@ The monitor's **dispatcher** fires actions at the running app, because every gen
 { "type": "cart/Add", "payload": { "price": 9.99 } }
 ```
 
-The arguments may also sit inline beside `type`, and a one-parameter action takes a bare value
-(`{ "type": "cart/Add", "payload": 9.99 }`). It runs through the filters and middleware like any other
+The arguments may also sit inline beside `type`, and a one-parameter action takes its argument as the
+payload itself, Redux style - a value (`{ "type": "cart/Add", "payload": 9.99 }`) or an object
+(`{ "type": "orders/Place", "payload": { "Name": "mug", "Quantity": 2 } }`), which is read as the argument
+unless it names the parameter. Optional arguments left out take their defaults. It runs through the
+filters and middleware like any other
 action; a typo, an unknown action or an action that throws is reported through `OnError` rather than
 breaking the bridge.
 

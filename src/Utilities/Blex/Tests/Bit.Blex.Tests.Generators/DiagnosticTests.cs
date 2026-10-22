@@ -319,6 +319,52 @@ public class DiagnosticTests
     }
 
     [TestMethod]
+    public void TwoActionsUnderOneLabel_ReportsBLEX021()
+    {
+        // Different wrappers (SaveDraft, SaveFinal), so BLEX005 has nothing to say -- but both are
+        // dispatched, subscribed to and replayed as "Save it".
+        var result = GeneratorTestHelper.Run(Usings + """
+            [BlexStoreAttribute] public partial class S
+            {
+                [BlexStateAttribute] private int _x;
+                [BlexActionAttribute(Name = "Save it")] private void OnSaveDraft() { }
+                [BlexEffectAttribute(Name = "Save it")] private Task OnSaveFinal(int v) => Task.CompletedTask;
+            }
+            """);
+        Assert.IsTrue(result.HasDiagnostic("BLEX021"));
+    }
+
+    [TestMethod]
+    public void AnActionLabelledLikeADirectAssignment_ReportsBLEX021()
+    {
+        var result = GeneratorTestHelper.Run(Usings + """
+            [BlexStoreAttribute] public partial class S
+            {
+                [BlexStateAttribute] private int _count;
+                [BlexActionAttribute(Name = "Set Count")] private void OnChangeCount(int v) => Count = v;
+            }
+            """);
+        Assert.IsTrue(result.HasDiagnostic("BLEX021"));
+    }
+
+    [TestMethod]
+    public void DistinctLabels_AndAStoreThatRecordsNoAssignments_ReportNothing()
+    {
+        // EnforceActions: no direct assignment is ever recorded, so "Set Count" is free.
+        var result = GeneratorTestHelper.Run(Usings + """
+            [BlexStoreAttribute(EnforceActions = true)] public partial class S
+            {
+                [BlexStateAttribute] private int _count;
+                [BlexActionAttribute(Name = "Set Count")] private void OnChangeCount(int v) => Count = v;
+                [BlexActionAttribute(Name = "Save it")] private void OnSaveDraft() { }
+                [BlexActionAttribute(Name = "Save it for good")] private void OnSaveFinal() { }
+            }
+            """);
+        Assert.IsFalse(result.HasDiagnostic("BLEX021"));
+        Assert.IsEmpty(result.CompileErrors());
+    }
+
+    [TestMethod]
     public void ZeroDebounce_IsTheDefaultAndReportsNothing()
     {
         var result = GeneratorTestHelper.Run(Usings + """
@@ -331,7 +377,7 @@ public class DiagnosticTests
             """);
         Assert.IsFalse(result.HasDiagnostic("BLEX019"));
         Assert.IsEmpty(result.CompileErrors());
-        Assert.DoesNotContain("Task.Delay", result.SingleGenerated);
+        Assert.DoesNotContain("DebounceEffectAsync", result.SingleGenerated);
     }
 
     [TestMethod]
@@ -347,12 +393,13 @@ public class DiagnosticTests
 
         Assert.IsEmpty(result.CompileErrors());
         var generated = result.SingleGenerated;
-        // On the manager's clock, so a test can advance a fake TimeProvider through the quiet period.
-        Assert.Contains("Task.Delay(global::System.TimeSpan.FromMilliseconds(250), base.TimeProvider", generated);
+        // Through the base class, which waits on the manager's clock (so a test can advance a fake
+        // TimeProvider through the quiet period) and skips the wait while a log is replayed.
+        Assert.Contains("await base.DebounceEffectAsync(250, __blexDebounceCts.Token);", generated);
 
         // The gate must precede BeginAction: a superseded invocation is never offered to
         // middleware and records nothing.
-        Assert.IsTrue(generated.IndexOf("FromMilliseconds(250)") < generated.IndexOf("BeginAction(\"Search\""));
+        Assert.IsTrue(generated.IndexOf("DebounceEffectAsync(250") < generated.IndexOf("BeginAction(\"Search\""));
     }
 
     [TestMethod]

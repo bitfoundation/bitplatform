@@ -89,6 +89,14 @@
             naming the first action it could not dispatch. The list is copied first, so replaying into the
             manager that is recording it is safe.
         </p>
+        <p>
+            An action that ran inside another one's body - <code>cart.Checkout()</code> calling
+            <code>orders.Place()</code> - is recorded with <code>IsNested</code> and skipped, because
+            replaying the outer action runs it again. Each action is awaited before the next starts, and
+            effects skip their <code>DebounceMilliseconds</code> wait during a replay: it only decides which
+            of several rapid invocations runs, and the log holds only the ones that did. So a replay never
+            waits on the clock - not even on a fake <code>TimeProvider</code> that nobody advances.
+        </p>
     </div>
 
     <div class="bb-card">

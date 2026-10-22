@@ -127,6 +127,44 @@ public class TypedEmissionTests
     }
 
     [TestMethod]
+    public void A_nested_type_named_Actions_reports_BLEX020()
+    {
+        var result = GeneratorTestHelper.Run(Usings + """
+            [BlexStoreAttribute] public partial class S
+            {
+                [BlexStateAttribute] private int _x;
+                public static class Actions { }
+                [BlexActionAttribute] private void OnBump() => X++;
+            }
+            """);
+
+        Assert.IsTrue(result.HasDiagnostic("BLEX020"));
+        Assert.IsEmpty(result.CompileErrors());
+    }
+
+    [TestMethod]
+    public void An_optional_parameter_reads_its_default_when_a_payload_leaves_it_out()
+    {
+        var result = GeneratorTestHelper.Run(Usings + """
+            namespace App;
+            public enum Mode { A, B }
+            [BlexStoreAttribute] public partial class S
+            {
+                [BlexStateAttribute] private int _x;
+                [BlexActionAttribute] private void OnAdd(int amount = 1) => X += amount;
+                [BlexActionAttribute] private void OnTune(string label, string? note = null, Mode mode = Mode.B) => X++;
+            }
+            """);
+
+        Assert.IsEmpty(result.CompileErrors());
+        var generated = result.SingleGenerated;
+        Assert.Contains("GetArgOrDefault<int>(__a, 0, \"amount\", 1)", generated);
+        Assert.Contains("GetArg<string>(__a, 0, \"label\")", generated);
+        Assert.Contains("GetArgOrDefault<string?>(__a, 1, \"note\", null!)", generated);
+        Assert.Contains("GetArgOrDefault<global::App.Mode>(__a, 2, \"mode\", (global::App.Mode)(1))", generated);
+    }
+
+    [TestMethod]
     public void A_generated_member_named_Actions_reports_BLEX020_too()
     {
         var result = GeneratorTestHelper.Run(Usings + """

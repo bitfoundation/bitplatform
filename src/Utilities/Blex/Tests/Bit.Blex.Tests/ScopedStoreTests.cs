@@ -31,6 +31,9 @@ public class ScopedStoreTests
         /// <summary>When set, reads wait on it -- storage that is slow to answer.</summary>
         public TaskCompletionSource? ReadGate { get; set; }
 
+        /// <summary>When set, reads fail -- storage that is not ready yet.</summary>
+        public bool FailReads { get; set; }
+
         private int _readsStarted;
 
         public int ReadsStarted => Volatile.Read(ref _readsStarted);
@@ -40,6 +43,9 @@ public class ScopedStoreTests
             Interlocked.Increment(ref _readsStarted);
             if (ReadGate is { } gate)
                 await gate.Task;
+
+            if (FailReads)
+                throw new InvalidOperationException("Storage is not ready.");
 
             return Data.TryGetValue(key, out var value) ? value : null;
         }
@@ -336,5 +342,186 @@ public class ScopedStoreTests
         await persistor.FlushAsync();
 
         CollectionAssert.AreEqual(new[] { "settings:dialog" }, rehydrated);
+    }
+
+    [TestMethod]
+    public async Task A_late_store_whose_hydration_failed_saves_again_once_RehydrateAsync_reads_it()
+    {
+        var manager = new BlexManager();
+        var errors = new List<BlexError>();
+        manager.OnError = errors.Add;
+        var storage = new GatedStorage();
+        var persistor = new BlexStatePersistor(manager, storage);
+        await persistor.StartAsync();
+
+        storage.FailReads = true;
+        using var scope = manager.CreateScope(new SettingsStore(), "dialog");
+        await persistor.FlushAsync();
+        Assert.AreEqual("persistence", Assert.ContainsSingle(errors).Source);
+
+        scope.Store.SetTheme("held");
+        await persistor.FlushAsync();
+        Assert.IsEmpty(storage.Writes, "Nothing could be read, so nothing may be written over it.");
+
+        storage.FailReads = false;
+        await persistor.RehydrateAsync();
+        await persistor.FlushAsync();
+
+        // Storage had nothing for it after all, so the change held back is written now...
+        StringAssert.Contains(storage.Data["blex:settings:dialog"], "held");
+
+        // ...and so is every change after it.
+        scope.Store.SetTheme("after");
+        await persistor.FlushAsync();
+        StringAssert.Contains(storage.Data["blex:settings:dialog"], "after");
+    }
+
+    [TestMethod]
+    public async Task What_was_typed_while_a_late_store_found_nothing_stored_is_saved()
+    {
+        var manager = new BlexManager();
+        var storage = new GatedStorage();
+        var hydrated = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var persistor = new BlexStatePersistor(manager, storage, new BlexPersistenceOptions
+        {
+            DebounceInterval = TimeSpan.FromHours(1),
+            OnRehydrated = (_, _) => hydrated.TrySetResult(),
+        });
+        await persistor.StartAsync();
+
+        storage.ReadGate = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var scope = manager.CreateScope(new SettingsStore(), "doc-9");
+        scope.Store.SetTheme("typed early");
+        storage.ReadGate.SetResult();
+        await hydrated.Task.WaitAsync(TimeSpan.FromSeconds(5));
+
+        // Closed straight away: what was typed still reaches storage, which had nothing to overwrite.
+        scope.Dispose();
+        await persistor.FlushAsync();
+
+        StringAssert.Contains(storage.Data["blex:settings:doc-9"], "typed early");
+    }
+
+    [TestMethod]
+    public async Task A_store_that_leaves_while_its_state_is_read_is_left_alone()
+    {
+        var manager = new BlexManager();
+        var storage = new GatedStorage();
+        storage.Data["blex:settings:dialog"] = """{"Theme":"dark"}""";
+        var rehydrated = new List<string>();
+        var persistor = new BlexStatePersistor(manager, storage, new BlexPersistenceOptions { OnRehydrated = (name, _) => rehydrated.Add(name) });
+        await persistor.StartAsync();
+
+        storage.ReadGate = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var scope = manager.CreateScope(new SettingsStore(), "dialog");
+        scope.Dispose();
+        storage.ReadGate.SetResult();
+        await persistor.FlushAsync();
+
+        Assert.AreEqual("light", scope.Store.Theme, "The stored state was applied to a store that had already gone.");
+        Assert.IsEmpty(rehydrated);
+    }
+
+    [TestMethod]
+    public async Task A_late_store_is_hydrated_on_the_context_it_registered_on()
+    {
+        using var dispatcher = new DispatcherContext();
+        var manager = new BlexManager();
+        var storage = new GatedStorage();
+        storage.Data["blex:settings:dialog"] = """{"Theme":"dark"}""";
+        var persistor = new BlexStatePersistor(manager, storage);
+        await persistor.StartAsync();
+
+        storage.ReadGate = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var appliedOn = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var scope = await dispatcher.InvokeAsync(() =>
+        {
+            var created = manager.CreateScope(new SettingsStore(), "dialog");
+            created.Store.StateChanged += () => appliedOn.TrySetResult(Environment.CurrentManagedThreadId);
+            return created;
+        });
+
+        // The read completes on the thread pool; the state must still land on the dispatcher.
+        storage.ReadGate.SetResult();
+
+        Assert.AreEqual(dispatcher.ThreadId, await appliedOn.Task.WaitAsync(TimeSpan.FromSeconds(5)));
+        Assert.AreEqual("dark", scope.Store.Theme);
+        scope.Dispose();
+    }
+
+    [TestMethod]
+    public async Task An_instance_without_a_key_of_its_own_is_never_persisted()
+    {
+        var manager = new BlexManager();
+        var storage = new GatedStorage();
+        storage.Data["blex:settings:1"] = """{"Theme":"another session's"}""";
+        var persistor = new BlexStatePersistor(manager, storage);
+        await persistor.StartAsync();
+
+        using var scope = manager.CreateScope(new SettingsStore());
+        await persistor.FlushAsync();
+        Assert.AreEqual("settings:1", scope.Store.Name);
+        Assert.AreEqual("light", scope.Store.Theme);
+        Assert.AreEqual(0, storage.ReadsStarted);
+
+        scope.Store.SetTheme("mine");
+        await persistor.FlushAsync();
+        Assert.IsEmpty(storage.Writes);
+    }
+
+    [TestMethod]
+    public void A_throwing_StoreUnregistered_handler_is_reported_as_unregister()
+    {
+        var manager = new BlexManager();
+        var errors = new List<BlexError>();
+        manager.OnError = errors.Add;
+        manager.StoreUnregistered += _ => throw new InvalidOperationException("boom");
+
+        manager.CreateScope(new CounterStore(), "x").Dispose();
+
+        Assert.AreEqual("unregister", Assert.ContainsSingle(errors).Source);
+    }
+
+    /// <summary>A single-threaded context, like the Blazor Server circuit's dispatcher.</summary>
+    private sealed class DispatcherContext : SynchronizationContext, IDisposable
+    {
+        private readonly System.Collections.Concurrent.BlockingCollection<(SendOrPostCallback Callback, object? State)> _queue = new();
+        private readonly Thread _thread;
+
+        public DispatcherContext()
+        {
+            _thread = new Thread(Run) { IsBackground = true };
+            _thread.Start();
+        }
+
+        public int ThreadId => _thread.ManagedThreadId;
+
+        public override void Post(SendOrPostCallback d, object? state) => _queue.Add((d, state));
+
+        public Task<T> InvokeAsync<T>(Func<T> work)
+        {
+            var result = new TaskCompletionSource<T>(TaskCreationOptions.RunContinuationsAsynchronously);
+            Post(_ =>
+            {
+                try
+                {
+                    result.SetResult(work());
+                }
+                catch (Exception ex)
+                {
+                    result.SetException(ex);
+                }
+            }, null);
+            return result.Task;
+        }
+
+        private void Run()
+        {
+            SetSynchronizationContext(this);
+            foreach (var (callback, state) in _queue.GetConsumingEnumerable())
+                callback(state);
+        }
+
+        public void Dispose() => _queue.CompleteAdding();
     }
 }

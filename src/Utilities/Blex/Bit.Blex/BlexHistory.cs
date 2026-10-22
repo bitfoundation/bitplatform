@@ -42,6 +42,10 @@ public class BlexHistory : IDisposable
     private bool _started;
     private bool _restoring;
 
+    // Set when a restore moved a covered store away from what the present holds, and settled by the
+    // StateRestored that follows every restore.
+    private bool _restoredAway;
+
     /// <summary>Creates a history bound to a manager. Set <paramref name="maxEntries"/> to cap memory.</summary>
     /// <param name="manager">The manager whose actions are recorded.</param>
     /// <param name="maxEntries">Maximum number of undo entries retained; older entries are discarded.</param>
@@ -276,37 +280,52 @@ public class BlexHistory : IDisposable
         _present = _boundary = Capture();
         _presentLabel = null;
         _manager.ActionDispatched += OnAction;
+        _manager.StoreRestored += OnStoreRestored;
         _manager.StateRestored += OnExternalRestore;
     }
 
-    private void OnExternalRestore()
+    private void OnStoreRestored(IBlexStore store)
     {
-        if (_restoring)
+        if (_restoring || _restoredAway || !Covers(store))
             return;
 
         try
         {
-            // An external restore (DevTools time-travel, another history's undo, hydration, a
-            // cross-tab change) changed the state without an action. Refresh the present snapshot so
-            // the next Undo diffs from what the user actually sees rather than a stale pre-jump state.
-            var captured = Capture();
+            // A restore this history did not make (DevTools time-travel, another history's undo,
+            // hydration, a cross-tab change) moved a store without an action. Only that store's slice is
+            // compared -- one store hydrating must not cost a serialization of every store, twice -- and
+            // a store outside the scope is not compared at all: a scoped history watching the editor must
+            // not lose its "Undo Rename" label because the theme store just hydrated. Compared as text
+            // rather than with JsonNode.DeepEquals, which only exists from .NET 9; both come from the same
+            // SerializeState, so their property order matches.
+            if (_present?[store.Name] is not { } before || before.ToJsonString() != store.SerializeState().ToJsonString())
+                _restoredAway = true;
+        }
+        catch (Exception ex)
+        {
+            // This handler sits directly on the pipeline events; an escaping exception would
+            // break dispatch for observers registered after it.
+            _manager.ReportError("history", ex, store.Name);
+        }
+    }
 
-            // ...unless it changed nothing this history covers -- a scoped history watching the editor
-            // must not lose its "Undo Rename" label because the theme store just hydrated. Compared as
-            // text rather than with JsonNode.DeepEquals, which only exists from .NET 9; both trees come
-            // from the same Capture, so their property order matches.
-            if (_present is not null && captured.ToJsonString() == _present.ToJsonString())
-                return;
+    private void OnExternalRestore()
+    {
+        if (_restoring || !_restoredAway)
+            return;
 
-            _present = _boundary = captured;
+        _restoredAway = false;
+        try
+        {
+            // Refresh the present snapshot so the next Undo diffs from what the user actually sees
+            // rather than a stale pre-jump state.
+            _present = _boundary = Capture();
             _presentLabel = null;
             _lastGroupKey = null;
             RaiseChanged();
         }
         catch (Exception ex)
         {
-            // This handler sits directly on the pipeline events; an escaping exception would
-            // break dispatch for observers registered after it.
             _manager.ReportError("history", ex);
         }
     }
@@ -566,6 +585,7 @@ public class BlexHistory : IDisposable
         if (_started)
         {
             _manager.ActionDispatched -= OnAction;
+            _manager.StoreRestored -= OnStoreRestored;
             _manager.StateRestored -= OnExternalRestore;
             _started = false;
         }

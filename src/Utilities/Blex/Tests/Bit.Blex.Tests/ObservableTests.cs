@@ -66,6 +66,37 @@ public class ObservableTests
     }
 
     [TestMethod]
+    public void An_observer_whose_first_OnNext_throws_is_detached_before_Subscribe_throws()
+    {
+        var store = new CounterStore();
+        var calls = 0;
+        var observer = new ThrowingObserver(() => calls++);
+
+        Assert.ThrowsExactly<InvalidOperationException>(() => store.Observe(() => store.Count).Subscribe(observer));
+        store.Add(1);
+
+        // The caller never got a subscription to dispose, so nothing may keep calling it.
+        Assert.AreEqual(1, calls);
+    }
+
+    private sealed class ThrowingObserver(Action onNext) : IObserver<int>
+    {
+        public void OnNext(int value)
+        {
+            onNext();
+            throw new InvalidOperationException("observer boom");
+        }
+
+        public void OnError(Exception error)
+        {
+        }
+
+        public void OnCompleted()
+        {
+        }
+    }
+
+    [TestMethod]
     public void A_selector_that_throws_on_subscribe_reports_rather_than_throws()
     {
         var store = new CounterStore();

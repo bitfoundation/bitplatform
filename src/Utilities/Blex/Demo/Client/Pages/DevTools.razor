@@ -285,8 +285,13 @@
         // ...or inline, next to "type":
         { "type": "counter/Apply preset", "count": 7, "step": 2 }
 
-        // A one-parameter action takes a bare value:
+        // A one-parameter action takes its argument as the payload itself, Redux style -
+        // a value, or an object that does not name the parameter:
         { "type": "counter/SetStep", "payload": 5 }
+        { "type": "shipping/Ship", "payload": { "Name": "mug", "Quantity": 2 } }   // OnShip(Parcel parcel)
+
+        // Optional arguments left out take their defaults:
+        { "type": "shipping/Bump" }                                              // OnBump(int amount = 1)
 
         // Assignments and resets are actions too:
         { "type": "counter/Set Count", "payload": 42 }

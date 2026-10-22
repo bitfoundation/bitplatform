@@ -136,6 +136,63 @@ public class RestoreNotificationTests
     }
 
     [TestMethod]
+    public void StoreRestored_names_each_store_that_moved_ahead_of_StateRestored()
+    {
+        var manager = new BlexManager();
+        var counter = new CounterStore();
+        var profile = new ProfileStore();
+        manager.Register(counter);
+        manager.Register(profile);
+        var events = new List<string>();
+        manager.StoreRestored += store => events.Add(store.Name);
+        manager.StateRestored += () => events.Add("*");
+
+        counter.RestoreState(new JsonObject { ["Count"] = 3 });
+        manager.RestoreGlobalState(new JsonObject
+        {
+            ["counter"] = new JsonObject { ["Count"] = 1 },
+            ["profile"] = new JsonObject { ["Age"] = 9 },
+        });
+
+        CollectionAssert.AreEqual(new[] { "counter", "*", "counter", "profile", "*" }, events);
+    }
+
+    [TestMethod]
+    public async Task Restoring_one_store_writes_back_that_store_alone()
+    {
+        var manager = new BlexManager();
+        using var first = manager.CreateScope(new SettingsStore(), "a");
+        using var second = manager.CreateScope(new SettingsStore(), "b");
+        var storage = new MemoryStorage();
+        await using var persistor = new BlexStatePersistor(manager, storage);
+        await persistor.StartAsync();
+
+        first.Store.RestoreState(new JsonObject { ["Theme"] = "sepia" });
+        await persistor.FlushAsync();
+
+        CollectionAssert.AreEqual(new[] { "blex:settings:a" }, storage.Data.Keys.ToArray());
+    }
+
+    [TestMethod]
+    public void A_restore_that_moves_nothing_the_history_holds_keeps_its_undo_label()
+    {
+        var manager = new BlexManager();
+        var counter = new CounterStore();
+        var profile = new ProfileStore();
+        manager.Register(counter);
+        manager.Register(profile);
+        using var history = new BlexHistory(manager);
+        history.Start();
+
+        counter.Increment();
+        profile.RestoreState(profile.SerializeState());
+        Assert.AreEqual("counter/Increment", history.NextUndoLabel);
+
+        profile.RestoreState(new JsonObject { ["Age"] = 30 });
+        Assert.IsNull(history.NextUndoLabel, "The present still holds the state from before the restore.");
+    }
+
+    [TestMethod]
     public void A_store_restored_while_unregistered_notifies_nobody_but_itself()
     {
         var counter = new CounterStore();

@@ -117,7 +117,7 @@ public static class DocsCatalog
                 typeof(Pages.Computed)),
             new("/actions", "Actions",
                 "[BlexAction] methods, typed action descriptors, dispatch by name, batching, \"Set X\" assignments, EnforceActions, Batch, ResetState and async actions.",
-                "BlexAction action dispatch batch ResetState ResetAll reducer mutation Set arguments payload async typed actions descriptor BlexAction Actions TryGetPayload DispatchAsync EnforceActions strict private setter BLEX020",
+                "BlexAction action dispatch batch ResetState ResetAll reducer mutation Set arguments payload async typed actions descriptor BlexAction Actions TryGetPayload DispatchAsync EnforceActions strict private setter optional default BLEX020 BLEX021",
                 typeof(Pages.Actions)),
             new("/effects", "Effects",
                 "[BlexEffect]: async work with a generated loading flag, error slot, cancellation, concurrency policy and debounce.",

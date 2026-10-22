@@ -81,7 +81,8 @@ public abstract class BlexActionDescriptor
     /// <param name="args">
     /// The arguments, matched to <see cref="ParameterNames"/> by name (case-insensitively as a fallback).
     /// A value may be the parameter's own type or a <see cref="JsonNode"/>/<see cref="JsonElement"/>,
-    /// which is deserialized with <see cref="BlexJson.Options"/>.
+    /// which is deserialized with <see cref="BlexJson.Options"/>. An optional parameter left out takes
+    /// its declared default, as in a direct call.
     /// </param>
     /// <returns>The action's task; already completed for a synchronous action.</returns>
     public abstract Task InvokeAsync(IBlexStore store, IReadOnlyList<BlexActionArg>? args = null);
@@ -105,6 +106,24 @@ public abstract class BlexActionDescriptor
     /// <param name="name">The parameter's name, used when the payload is not in declaration order.</param>
     [EditorBrowsable(EditorBrowsableState.Never)]
     public static T GetArg<T>(IReadOnlyList<BlexActionArg> args, int index, string name)
+        => TryGetArg(args, index, name, out T value)
+            ? value
+            : throw new ArgumentException($"The payload has no argument named '{name}'.", nameof(args));
+
+    /// <summary>
+    /// Reads one optional argument out of an action's payload, falling back to the parameter's declared
+    /// default when the payload leaves it out -- as a direct call that omits it would. Used by generated
+    /// descriptors; not intended to be called directly.
+    /// </summary>
+    /// <param name="args">The payload.</param>
+    /// <param name="index">The parameter's position, where the generated wrappers record it.</param>
+    /// <param name="name">The parameter's name, used when the payload is not in declaration order.</param>
+    /// <param name="defaultValue">The parameter's default value.</param>
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    public static T GetArgOrDefault<T>(IReadOnlyList<BlexActionArg> args, int index, string name, T defaultValue)
+        => TryGetArg(args, index, name, out T value) ? value : defaultValue;
+
+    private static bool TryGetArg<T>(IReadOnlyList<BlexActionArg> args, int index, string name, out T value)
     {
         ArgumentNullException.ThrowIfNull(args);
         ArgumentNullException.ThrowIfNull(name);
@@ -113,15 +132,20 @@ public abstract class BlexActionDescriptor
         // the only lookup a replayed or observed action ever needs. A hand-built payload or a JSON
         // object from the DevTools dispatcher may list them in any order, or in another case.
         if (index >= 0 && index < args.Count && string.Equals(args[index].Name, name, StringComparison.Ordinal))
-            return Convert<T>(args[index].Value, name);
+        {
+            value = Convert<T>(args[index].Value, name);
+            return true;
+        }
 
-        if (TryFind(args, name, StringComparison.Ordinal, out var exact))
-            return Convert<T>(exact, name);
+        if (TryFind(args, name, StringComparison.Ordinal, out var exact)
+            || TryFind(args, name, StringComparison.OrdinalIgnoreCase, out exact))
+        {
+            value = Convert<T>(exact, name);
+            return true;
+        }
 
-        if (TryFind(args, name, StringComparison.OrdinalIgnoreCase, out var loose))
-            return Convert<T>(loose, name);
-
-        throw new ArgumentException($"The payload has no argument named '{name}'.", nameof(args));
+        value = default!;
+        return false;
     }
 
     private static bool TryFind(IReadOnlyList<BlexActionArg> args, string name, StringComparison comparison, out object? value)

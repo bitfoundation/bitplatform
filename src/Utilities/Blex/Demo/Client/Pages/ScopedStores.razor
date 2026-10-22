@@ -61,7 +61,8 @@
             debounced save it still owes first) and a new one is created for the new key. The descendants
             are keyed to the instance too, so per-instance state of their own does not leak from one
             document to the next. Without a <code>Key</code>, a key unique within the manager is assigned
-            and kept for the scope's lifetime.
+            and kept for the scope's lifetime - and the instance is not persisted, since no later scope
+            could find its state.
         </p>
 
         <DemoCard Title="One store per document"
@@ -101,8 +102,8 @@
             is when every other store is hydrated.
         </p>
         <ul class="bb-detail-list">
-            <li><strong>Give it a stable key.</strong> The next scope for the same entity finds the state the last one left; an assigned key is different every time, so its state is never found again.</li>
-            <li><strong>Its saves wait for hydration.</strong> Until its stored state has been read, nothing it does is written - writing its declared defaults first would overwrite the user's data. This mirrors startup, where the stored state wins over anything dispatched before it landed.</li>
+            <li><strong>Give it a stable key.</strong> The next scope for the same entity finds the state the last one left. An assigned key counts from 1 again in every session and every tab, so an instance keyed that way is not persisted at all - its state could only ever be found by an unrelated instance that drew the same number.</li>
+            <li><strong>Its saves wait for hydration.</strong> Until its stored state has been read, nothing it does is written - writing its declared defaults first would overwrite the user's data. This mirrors startup, where the stored state wins over anything dispatched before it landed. If the read finds nothing stored, what was changed meanwhile is written then; if it fails, the saves keep waiting until <code>RehydrateAsync</code> reads it.</li>
             <li><strong>Leaving writes what it owes.</strong> With a debounce interval, a scope disposed before the interval elapses still has its last changes written as it unregisters.</li>
             <li><code>OnRehydrated</code> fires for a late store too, with its keyed name. With <code>SkipHydration</code>, a late store waits for <code>RehydrateAsync</code> like every other.</li>
         </ul>
@@ -148,7 +149,7 @@
 
     private static readonly IReadOnlyList<ApiTable.Row> ManagerRows =
     [
-        new("BlexStoreScope&lt;TStore&gt; CreateScope&lt;TStore&gt;(TStore store, string? key = null)", "Registers a not-yet-registered store as <code>\"{name}:{key}\"</code>. Without a key, one unique within the manager is assigned. Throws for an empty key, a store that is already registered, and a hand-written store whose name ignores the key."),
+        new("BlexStoreScope&lt;TStore&gt; CreateScope&lt;TStore&gt;(TStore store, string? key = null)", "Registers a not-yet-registered store as <code>\"{name}:{key}\"</code>. Without a key, one unique within the manager is assigned, and the instance is not persisted. Throws for an empty key, a store that is already registered, and a hand-written store whose name ignores the key."),
         new("IBlexStore? GetStore(string name)", "The store registered under that name - <code>\"draft:left\"</code>."),
         new("event Action&lt;IBlexStore&gt;? StoreRegistered / StoreUnregistered", "Raised as stores join and leave the manager. Persistence uses them."),
     ];
@@ -163,7 +164,7 @@
 
     private static readonly IReadOnlyList<ApiTable.Row> ComponentRows =
     [
-        new("string? Key", "The instance key. Changing it replaces the instance and its subtree. Omitted: a unique key, kept for the scope's lifetime."),
+        new("string? Key", "The instance key. Changing it replaces the instance and its subtree. Omitted: a unique key, kept for the scope's lifetime, and no persistence."),
         new("Func&lt;IServiceProvider, TStore&gt;? Factory", "Creates the store when DI alone cannot. Defaults to constructing <code>TStore</code> with its dependencies from DI."),
         new("RenderFragment&lt;TStore&gt;? ChildContent", "The content, with the instance as its <code>context</code>. Descendants receive it as a <code>[CascadingParameter]</code> too."),
         new("TStore Store", "Not a parameter: the instance, for code holding a <code>@ref</code> to the scope."),

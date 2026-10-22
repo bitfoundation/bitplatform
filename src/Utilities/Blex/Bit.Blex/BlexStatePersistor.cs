@@ -14,7 +14,10 @@ namespace Bit.Blex;
 /// A persistent store registered after startup -- a lazily loaded feature, a
 /// <see cref="BlexManager.CreateScope{TStore}(TStore, string)">scoped</see> instance -- is hydrated as
 /// soon as it registers, and its saves wait until that has happened, exactly as every store's do at
-/// startup. A store that leaves the manager writes any debounced save it still owes first.
+/// startup; changes made meanwhile are written once the read finds nothing stored to restore instead.
+/// A hydration that fails keeps the store's saves waiting until <see cref="RehydrateAsync"/> reads it
+/// after all. A store that leaves the manager writes any debounced save it still owes first. A scoped
+/// instance whose key the manager assigned is never persisted: no later instance could find its state.
 /// </remarks>
 public sealed class BlexStatePersistor : IAsyncDisposable, IDisposable
 {
@@ -31,11 +34,22 @@ public sealed class BlexStatePersistor : IAsyncDisposable, IDisposable
     // under a name seen before is hydrated in its own right.
     private readonly HashSet<IBlexStore> _hydrated = new(ReferenceEqualityComparer.Instance);
 
-    // Stores whose late hydration is still in flight, by name (saves are scheduled by name). Their saves
-    // wait: writing a store's declared defaults before its stored state has been read would overwrite
-    // the user's data. The instance is kept so a store leaving mid-hydration cannot release the hold
-    // of the next instance to arrive under the same name.
-    private readonly Dictionary<string, IBlexStore> _hydrating = [];
+    // Stores registered after startup whose stored state has not been read yet, by name (saves are
+    // scheduled by name). Their saves wait: writing a store's declared defaults before its stored state
+    // has been read would overwrite the user's data. The hold names its instance so a store leaving
+    // mid-hydration cannot release the hold of the next instance to arrive under the same name.
+    private readonly Dictionary<string, HydrationHold> _hydrating = [];
+
+    private sealed class HydrationHold(IBlexStore store)
+    {
+        public IBlexStore Store { get; } = store;
+
+        // False once the late hydration failed: the store then waits for RehydrateAsync to read it.
+        public bool InFlight { get; set; } = true;
+
+        // A save was asked for while the hold was on.
+        public bool SaveRequested { get; set; }
+    }
 
     // Debounced saves can resume off the dispatch thread when no SynchronizationContext exists
     // (plain hosts); this gate keeps the pending set, the debounce source and the write chain
@@ -63,6 +77,15 @@ public sealed class BlexStatePersistor : IAsyncDisposable, IDisposable
     }
 
     private string KeyFor(IBlexStore store) => _options.KeyPrefix + store.Name;
+
+    /// <summary>
+    /// Whether <paramref name="store"/> is read from and written to storage: it is marked
+    /// <c>Persist = true</c>, and is not a scoped instance whose key the manager made up. Those keys
+    /// count from the start again in every session and every tab, so state saved under one would only
+    /// ever be found by an unrelated instance that drew the same number.
+    /// </summary>
+    private static bool Persists(IBlexStore store)
+        => store.Persist && store is not BlexStoreBase { HasGeneratedInstanceKey: true };
 
     /// <summary>
     /// Whether <see cref="RehydrateAsync"/> has completed at least once, so the stores hold
@@ -163,7 +186,7 @@ public sealed class BlexStatePersistor : IAsyncDisposable, IDisposable
         if (!_subscribed)
         {
             _manager.ActionDispatched += OnAction;
-            _manager.StateRestored += OnStateRestored;
+            _manager.StoreRestored += OnStoreRestored;
             _subscribed = true;
         }
 
@@ -227,7 +250,7 @@ public sealed class BlexStatePersistor : IAsyncDisposable, IDisposable
 
             foreach (var store in _manager.Stores)
             {
-                if (!store.Persist || store is not BlexStoreBase sb)
+                if (!Persists(store) || store is not BlexStoreBase sb)
                     continue;
                 if (target is not null && store.Name != target)
                     continue;
@@ -290,7 +313,7 @@ public sealed class BlexStatePersistor : IAsyncDisposable, IDisposable
         var name = key.Substring(prefix.Length);
         foreach (var store in _manager.Stores)
         {
-            if (store.Persist && store.Name == name)
+            if (Persists(store) && store.Name == name)
                 return name;
         }
 
@@ -333,8 +356,10 @@ public sealed class BlexStatePersistor : IAsyncDisposable, IDisposable
         {
             foreach (var store in _manager.Stores)
             {
-                if (store.Persist && store is BlexStoreBase sb)
-                    await HydrateStoreAsync(store, sb, cancellationToken).ConfigureAwait(false);
+                // A store whose late hydration is still in flight is left to it: reading it again here
+                // could have the older read land last, over changes made in between.
+                if (Persists(store) && store is BlexStoreBase sb && !IsLateHydrationInFlight(store))
+                    await HydrateStoreAsync(store, sb, cancellationToken).ConfigureAwait(true);
             }
         }
         finally
@@ -350,22 +375,63 @@ public sealed class BlexStatePersistor : IAsyncDisposable, IDisposable
     }
 
     /// <summary>
-    /// Reads, migrates, merges and applies one store's persisted state. Storage access errors
-    /// propagate (the storage may simply not be ready yet); payload errors are contained.
+    /// Reads, migrates, merges and applies one store's persisted state, then lifts the store's save
+    /// hold if it has one. Storage access errors propagate (the storage may simply not be ready yet);
+    /// payload errors are contained.
     /// </summary>
     private async Task HydrateStoreAsync(IBlexStore store, BlexStoreBase sb, CancellationToken cancellationToken)
     {
-        var raw = await _storage.GetAsync(KeyFor(store), cancellationToken).ConfigureAwait(false);
+        // Not ConfigureAwait(false): what follows applies state, which -- like every action -- has to happen
+        // on the dispatcher (a Blazor Server circuit's) rather than race the user's actions from the pool.
+        var raw = await _storage.GetAsync(KeyFor(store), cancellationToken).ConfigureAwait(true);
         lock (_saveGate)
         {
+            // It left the manager while storage was read: its state is no longer anyone's to restore, and
+            // OnStoreUnregistered has already forgotten it.
+            if (!_manager.Stores.Contains(store))
+                return;
+
             _hydrated.Add(store);
         }
 
-        if (string.IsNullOrEmpty(raw))
+        var slice = await ReadSliceAsync(store, sb, raw, cancellationToken).ConfigureAwait(true);
+        if (slice is not null)
         {
-            NotifyRehydrated(store.Name, null);
-            return;
+            // Suspended for the apply itself as well: it is a restore, and writing the value straight
+            // back to the storage it was just read from is pointless.
+            var wasSuspended = _suspended;
+            _suspended = true;
+            try
+            {
+                sb.ApplyRestoredState(slice);
+            }
+            catch (Exception ex)
+            {
+                // Applying can throw from a StateChanged subscriber even though the payload
+                // itself is fine -- report, but keep the stored data.
+                _manager.ReportError("persistence", ex, $"applying '{store.Name}'");
+            }
+            finally
+            {
+                _suspended = wasSuspended;
+            }
         }
+
+        // Before the callback, so an action it dispatches is saved like any other. With nothing stored,
+        // the changes made while the hold was on are the store's whole state and still have to reach
+        // storage; stored state that was applied replaced them, and is what storage already holds.
+        ReleaseHydrationHold(store, writeHeldSave: slice is null);
+        NotifyRehydrated(store.Name, slice);
+    }
+
+    /// <summary>
+    /// Unwraps, migrates, strips and merges a stored payload: the state to apply, or <c>null</c> when
+    /// there is none. An unreadable payload is reported and removed from storage.
+    /// </summary>
+    private async Task<JsonObject?> ReadSliceAsync(IBlexStore store, BlexStoreBase sb, string? raw, CancellationToken cancellationToken)
+    {
+        if (string.IsNullOrEmpty(raw))
+            return null;
 
         JsonObject? slice = null;
         try
@@ -376,36 +442,10 @@ public sealed class BlexStatePersistor : IAsyncDisposable, IDisposable
         {
             // Unreadable payload: report, discard, and drop the stored entry.
             _manager.ReportError("persistence", ex, $"rehydrating '{store.Name}'");
-            await TryRemoveAsync(store, cancellationToken).ConfigureAwait(false);
+            await TryRemoveAsync(store, cancellationToken).ConfigureAwait(true);
         }
 
-        slice = Merge(store, sb, StripTransient(sb, slice));
-        if (slice is null)
-        {
-            NotifyRehydrated(store.Name, null);
-            return;
-        }
-
-        // Suspended for the apply itself as well: it is a restore, and writing the value straight back
-        // to the storage it was just read from is pointless at startup and wrong for a late store.
-        var wasSuspended = _suspended;
-        _suspended = true;
-        try
-        {
-            sb.ApplyRestoredState(slice);
-        }
-        catch (Exception ex)
-        {
-            // Applying can throw from a StateChanged subscriber even though the payload
-            // itself is fine -- report, but keep the stored data.
-            _manager.ReportError("persistence", ex, $"applying '{store.Name}'");
-        }
-        finally
-        {
-            _suspended = wasSuspended;
-        }
-
-        NotifyRehydrated(store.Name, slice);
+        return Merge(store, sb, StripTransient(sb, slice));
     }
 
     /// <summary>
@@ -414,7 +454,7 @@ public sealed class BlexStatePersistor : IAsyncDisposable, IDisposable
     /// </summary>
     private void OnStoreRegistered(IBlexStore store)
     {
-        if (!HasHydrated || !store.Persist || store is not BlexStoreBase)
+        if (!HasHydrated || !Persists(store) || store is not BlexStoreBase)
             return;
 
         ScheduleLateHydration(store);
@@ -424,7 +464,7 @@ public sealed class BlexStatePersistor : IAsyncDisposable, IDisposable
     {
         foreach (var store in _manager.Stores)
         {
-            if (store.Persist && store is BlexStoreBase)
+            if (Persists(store) && store is BlexStoreBase)
                 ScheduleLateHydration(store);
         }
     }
@@ -434,12 +474,12 @@ public sealed class BlexStatePersistor : IAsyncDisposable, IDisposable
         lock (_saveGate)
         {
             if (_hydrated.Contains(store)
-                || (_hydrating.TryGetValue(store.Name, out var inFlight) && ReferenceEquals(inFlight, store)))
+                || (_hydrating.TryGetValue(store.Name, out var held) && ReferenceEquals(held.Store, store)))
             {
                 return;
             }
 
-            _hydrating[store.Name] = store;
+            _hydrating[store.Name] = new HydrationHold(store);
 
             // Chained, like external changes: one store at a time, in arrival order, and FlushAsync
             // has a single task to wait on.
@@ -447,41 +487,59 @@ public sealed class BlexStatePersistor : IAsyncDisposable, IDisposable
         }
     }
 
-    /// <summary>Releases the save hold of <paramref name="store"/> -- and only of that instance. Caller holds <see cref="_saveGate"/>.</summary>
-    private void ReleaseHydrationHoldLocked(IBlexStore store)
+    private bool IsLateHydrationInFlight(IBlexStore store)
     {
-        if (_hydrating.TryGetValue(store.Name, out var held) && ReferenceEquals(held, store))
-            _hydrating.Remove(store.Name);
+        lock (_saveGate)
+        {
+            return _hydrating.TryGetValue(store.Name, out var hold) && ReferenceEquals(hold.Store, store) && hold.InFlight;
+        }
+    }
+
+    /// <summary>Removes the save hold of <paramref name="store"/> -- and only of that instance. Caller holds <see cref="_saveGate"/>.</summary>
+    private HydrationHold? RemoveHydrationHoldLocked(IBlexStore store)
+    {
+        if (!_hydrating.TryGetValue(store.Name, out var hold) || !ReferenceEquals(hold.Store, store))
+            return null;
+
+        _hydrating.Remove(store.Name);
+        return hold;
+    }
+
+    /// <summary>
+    /// Lifts the save hold of <paramref name="store"/>, writing the save it held back when
+    /// <paramref name="writeHeldSave"/> is set.
+    /// </summary>
+    private void ReleaseHydrationHold(IBlexStore store, bool writeHeldSave)
+    {
+        lock (_saveGate)
+        {
+            if (RemoveHydrationHoldLocked(store) is { SaveRequested: true } && writeHeldSave)
+                Schedule(store.Name);
+        }
     }
 
     private async Task HydrateLateAsync(Task previous, IBlexStore store)
     {
         await previous.ConfigureAwait(true);
 
-        var hydrated = false;
         try
         {
-            // It may have left again while it waited its turn.
+            // It may have left again while it waited its turn. Hydrating lifts the store's hold.
             if (_manager.Stores.Contains(store) && store is BlexStoreBase sb)
                 await HydrateStoreAsync(store, sb, CancellationToken.None).ConfigureAwait(true);
-
-            hydrated = true;
         }
         catch (Exception ex)
         {
-            // Nothing awaits this task. Its saves stay held: writing its declared defaults over
-            // stored data that could not be read would turn a transient read failure into data loss.
-            _manager.ReportError("persistence", ex, $"hydrating '{store.Name}'; its changes are not saved until it hydrates");
-        }
-        finally
-        {
-            if (hydrated)
+            // Nothing awaits this task. Its saves stay held -- writing its declared defaults over stored
+            // data that could not be read would turn a transient read failure into data loss -- until
+            // a RehydrateAsync manages to read it.
+            lock (_saveGate)
             {
-                lock (_saveGate)
-                {
-                    ReleaseHydrationHoldLocked(store);
-                }
+                if (_hydrating.TryGetValue(store.Name, out var hold) && ReferenceEquals(hold.Store, store))
+                    hold.InFlight = false;
             }
+
+            _manager.ReportError("persistence", ex, $"hydrating '{store.Name}'; its changes are not saved until RehydrateAsync reads it");
         }
     }
 
@@ -498,9 +556,10 @@ public sealed class BlexStatePersistor : IAsyncDisposable, IDisposable
             {
                 _hydrated.Remove(store);
 
-                // A store whose hydration failed holds its name here; the next instance under that
-                // name gets a fresh attempt.
-                ReleaseHydrationHoldLocked(store);
+                // A store still waiting for its stored state holds its name here; the next instance under
+                // that name gets a fresh attempt. What it held back is dropped: whether storage had state
+                // for it is exactly what never got found out.
+                RemoveHydrationHoldLocked(store);
 
                 if (_pending.Remove(store.Name))
                     SaveLocked(store.Name, store);
@@ -626,7 +685,7 @@ public sealed class BlexStatePersistor : IAsyncDisposable, IDisposable
 
     private void OnAction(BlexActionContext context)
     {
-        if (_suspended || !context.Store.Persist)
+        if (_suspended || !Persists(context.Store))
             return;
 
         try
@@ -641,24 +700,20 @@ public sealed class BlexStatePersistor : IAsyncDisposable, IDisposable
         }
     }
 
-    private void OnStateRestored()
+    private void OnStoreRestored(IBlexStore store)
     {
-        if (_suspended)
+        if (_suspended || !Persists(store))
             return;
 
         try
         {
-            // A restore (undo/redo, time-travel) changed every store at once; write back all
-            // persistent slices so a reload matches what the user sees.
-            foreach (var store in _manager.Stores)
-            {
-                if (store.Persist)
-                    Schedule(store.Name);
-            }
+            // A restore (undo/redo, time-travel, RestoreState) moved this store without an action; write
+            // it back so a reload matches what the user sees. Only this one: the others did not move.
+            Schedule(store.Name);
         }
         catch (Exception ex)
         {
-            _manager.ReportError("persistence", ex, "scheduling restored state");
+            _manager.ReportError("persistence", ex, $"scheduling restored '{store.Name}'");
         }
     }
 
@@ -666,9 +721,13 @@ public sealed class BlexStatePersistor : IAsyncDisposable, IDisposable
     {
         lock (_saveGate)
         {
-            // Its stored state has not been read yet; saving now would overwrite it.
-            if (_hydrating.ContainsKey(storeName))
+            // Its stored state has not been read yet; saving now would overwrite it. Noted instead, and
+            // made once the read finds nothing stored (see HydrateStoreAsync).
+            if (_hydrating.TryGetValue(storeName, out var hold))
+            {
+                hold.SaveRequested = true;
                 return;
+            }
 
             _pending.Add(storeName);
 
@@ -797,29 +856,37 @@ public sealed class BlexStatePersistor : IAsyncDisposable, IDisposable
 
     /// <summary>
     /// Forces any debounced pending state to be written now and waits for all queued writes to
-    /// complete. Useful before navigating away or in tests.
+    /// complete -- and for the hydrations and incoming changes still in flight, with any save they
+    /// release. Useful before navigating away or in tests.
     /// </summary>
-    public Task FlushAsync()
+    public async Task FlushAsync()
     {
-        Task writes;
-        Task external;
-        Task late;
-        lock (_saveGate)
+        while (true)
         {
-            CancelDebounceLocked();
-            SavePendingLocked();
-            writes = _writeChain;
+            Task writes;
+            Task external;
+            Task late;
+            lock (_saveGate)
+            {
+                CancelDebounceLocked();
+                SavePendingLocked();
+                writes = _writeChain;
 
-            // Incoming cross-tab changes are part of "settle everything in flight" too: without
-            // this, a test (or a page about to navigate away) could observe a change that has been
-            // reported but not yet applied. So is the hydration of a store that registered late.
-            external = _externalChain;
-            late = _lateChain;
+                // Incoming cross-tab changes are part of "settle everything in flight" too: without
+                // this, a test (or a page about to navigate away) could observe a change that has been
+                // reported but not yet applied. So is the hydration of a store that registered late.
+                external = _externalChain;
+                late = _lateChain;
+            }
+
+            if (writes.IsCompletedSuccessfully && external.IsCompletedSuccessfully && late.IsCompletedSuccessfully)
+                return;
+
+            // Not ConfigureAwait(false): the next round serializes stores, which belongs on the dispatcher.
+            await Task.WhenAll(writes, external, late).ConfigureAwait(true);
+
+            // Round again: a late store that finished hydrating may have released a save it held back.
         }
-
-        return writes.IsCompletedSuccessfully && external.IsCompletedSuccessfully && late.IsCompletedSuccessfully
-            ? Task.CompletedTask
-            : Task.WhenAll(writes, external, late);
     }
 
     /// <summary>Removes every persistent store's saved slice from storage.</summary>
@@ -837,7 +904,7 @@ public sealed class BlexStatePersistor : IAsyncDisposable, IDisposable
         await chain.ConfigureAwait(false);
         foreach (var store in _manager.Stores)
         {
-            if (store.Persist)
+            if (Persists(store))
                 await _storage.RemoveAsync(KeyFor(store), cancellationToken).ConfigureAwait(false);
         }
     }
@@ -863,7 +930,7 @@ public sealed class BlexStatePersistor : IAsyncDisposable, IDisposable
             return;
 
         _manager.ActionDispatched -= OnAction;
-        _manager.StateRestored -= OnStateRestored;
+        _manager.StoreRestored -= OnStoreRestored;
         _subscribed = false;
     }
 

@@ -168,6 +168,61 @@ public class DispatchByNameTests
         StringAssert.Contains(errors[2].Exception.Message, "orders/Teleport");
     }
 
+    [TestMethod]
+    public void The_DevTools_dispatcher_hands_a_one_object_action_its_payload_as_the_argument()
+    {
+        using var harness = BlexTestHarness.For<ShipmentStore>();
+        var errors = new List<BlexError>();
+        harness.Manager.OnError = errors.Add;
+
+        // Redux style: the payload is the Parcel itself...
+        Dispatch(harness.Manager, """{"type":"shipments/Ship","payload":{"Name":"mug","Quantity":2}}""");
+        // ...and naming the parameter still works.
+        Dispatch(harness.Manager, """{"type":"shipments/Ship","payload":{"parcel":{"Name":"pen","Quantity":1}}}""");
+
+        Assert.IsEmpty(errors, string.Join("; ", errors.Select(e => e.Exception.Message)));
+        CollectionAssert.AreEqual(new[] { "2 x mug", "1 x pen" }, harness.Store.Shipped);
+    }
+
+    [TestMethod]
+    public async Task An_optional_argument_left_out_takes_its_declared_default()
+    {
+        using var harness = BlexTestHarness.For<ShipmentStore>();
+
+        await harness.Manager.DispatchAsync("shipments/Bump");
+        await harness.Manager.DispatchAsync("shipments/Bump", new JsonObject { ["amount"] = 5 });
+        Assert.AreEqual(6, harness.Store.Bumps);
+
+        await harness.Manager.DispatchAsync("shipments/Annotate", new JsonObject { ["note"] = "fragile" });
+        Assert.AreEqual("#fragile", harness.Store.Note);
+
+        await harness.Manager.DispatchAsync("shipments/Annotate");
+        Assert.IsNull(harness.Store.Note);
+    }
+
+    [TestMethod]
+    public void The_DevTools_dispatcher_fills_in_optional_arguments_too()
+    {
+        using var harness = BlexTestHarness.For<ShipmentStore>();
+
+        Dispatch(harness.Manager, """{"type":"shipments/Bump"}""");
+        Dispatch(harness.Manager, """{"type":"shipments/Bump","payload":{}}""");
+        Dispatch(harness.Manager, """{"type":"shipments/Bump","payload":3}""");
+
+        Assert.AreEqual(5, harness.Store.Bumps);
+    }
+
+    [TestMethod]
+    public void A_payload_read_by_hand_fills_in_the_default_too()
+    {
+        using var harness = BlexTestHarness.For<ShipmentStore>();
+        harness.Store.Bump(4);
+
+        Assert.AreEqual(4, harness.Log.PayloadsOf(ShipmentStore.Actions.Bump).Single());
+        Assert.AreEqual(1, ShipmentStore.Actions.Bump.ReadPayload([]));
+        Assert.AreEqual(((string?)null, "#"), ShipmentStore.Actions.Annotate.ReadPayload([]));
+    }
+
     private static void Dispatch(BlexManager manager, string typed)
         => manager.HandleDevToolsMessage(new JsonObject { ["type"] = "ACTION", ["payload"] = typed }.ToJsonString());
 }

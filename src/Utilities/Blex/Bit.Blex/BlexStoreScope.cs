@@ -13,7 +13,8 @@
 /// DevTools and in <see cref="BlexHistory"/> under <c>"{name}:{key}"</c>, its actions reach every
 /// middleware and subscriber, and when it is marked <c>Persist = true</c> it is hydrated as soon as
 /// it is registered and saved under its keyed name. Give it a stable <see cref="Key"/> (an order id,
-/// a document id) when it persists, so the next instance for the same entity finds its state.
+/// a document id) when it persists, so the next instance for the same entity finds its state; an
+/// instance whose key the manager assigned is not persisted.
 /// </para>
 /// <para>
 /// Disposing the scope unregisters the store -- writing any debounced state it still owes storage

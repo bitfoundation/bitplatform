@@ -130,13 +130,17 @@
             name - the label DevTools shows - converts a JSON payload keyed by parameter name, and calls the
             generated wrapper. The action passes the filters, reaches middleware and is recorded exactly as
             a direct call would be. Direct assignments (<code>"counter/Set Count"</code>) and
-            <code>"counter/ResetState"</code> are dispatchable too.
+            <code>"counter/ResetState"</code> are dispatchable too, and an optional parameter the payload
+            leaves out takes its declared default.
         </p>
         <CodeBlock Code="@ByName" />
         <p>
             It is what the <a href="devtools">DevTools dispatcher</a> and the testing package's
             <a href="testing">action replay</a> are built on: a log recorded in one session dispatches
-            again in another, which is the practical meaning of "a predictable state model".
+            again in another, which is the practical meaning of "a predictable state model". That makes the
+            name an action's identity, so two actions dispatched under one name - two display labels alike,
+            or a label such as <code>"Set Count"</code> that a direct assignment already records - fail the
+            build with <a href="diagnostics#blex021"><code>BLEX021</code></a>.
         </p>
 
         <DemoCard Title="Actions as data"

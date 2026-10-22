@@ -67,30 +67,7 @@ public abstract class BlexComponentBase : ComponentBase, IDisposable
         if (_disposed)
             return;
 
-        var task = InvokeAsync(StateHasChanged);
-        if (task.IsCompletedSuccessfully)
-            return;
-
-        // Discarding the task would turn a teardown race -- a store notifying just after the
-        // renderer went away -- into an unobserved task exception. Observe it, ignore the shutdown
-        // cases, and route anything else to the error boundary the way Blazor expects.
-        _ = ObserveAsync(task);
-
-        async Task ObserveAsync(Task pending)
-        {
-            try
-            {
-                await pending;
-            }
-            catch (Exception ex) when (ex is ObjectDisposedException or OperationCanceledException)
-            {
-                // Renderer or circuit gone; the render is moot.
-            }
-            catch (Exception ex)
-            {
-                await DispatchExceptionAsync(ex);
-            }
-        }
+        BlexRender.Observe(InvokeAsync(StateHasChanged), DispatchExceptionAsync);
     }
 
     /// <inheritdoc />

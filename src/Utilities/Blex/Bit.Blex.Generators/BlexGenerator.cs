@@ -37,7 +37,7 @@ public sealed class BlexGenerator : IIncrementalGenerator
     [
         "Name", "Persist", "StateChanged", "PropertyChanged", "SerializeState", "DeserializeState",
         "InvalidateComputed", "NotifyRestored", "SetState", "SetEffectState",
-        "BeginEffect", "EndEffect", "Dispatch", "DispatchAsync",
+        "BeginEffect", "EndEffect", "DebounceEffectAsync", "Dispatch", "DispatchAsync",
         "BeginAction", "DispatchApprovedAsync",
         "Batch", "ResetState", "RestoreState", "IsRestoring", "IsObserved",
         "Dispose", "IsDisposed", "CancelEffects",
@@ -201,6 +201,14 @@ public sealed class BlexGenerator : IIncrementalGenerator
         "Blex store '{0}' already has a member named 'Actions', so its typed action descriptors ({0}.Actions.Xxx) are not generated; rename that member to get them",
         "Bit.Blex.Generators",
         DiagnosticSeverity.Warning,
+        isEnabledByDefault: true);
+
+    private static readonly DiagnosticDescriptor DuplicateActionLabel = new(
+        "BLEX021",
+        "Action name is used more than once",
+        "Blex store '{0}' dispatches more than one action as '{1}'; the name identifies an action to subscribers, filters, DevTools and dispatch by name, so give each [BlexActionAttribute]/[BlexEffectAttribute] a Name of its own (a state property's direct assignment is dispatched as 'Set <Property>')",
+        "Bit.Blex.Generators",
+        DiagnosticSeverity.Error,
         isEnabledByDefault: true);
 
     private static readonly DiagnosticDescriptor ConflictingBaseType = new(
@@ -549,14 +557,17 @@ public sealed class BlexGenerator : IIncrementalGenerator
 
         // A name collision would emit uncompilable code; report BLEX005 and emit nothing.
         var beforeDuplicates = diagnostics.Count;
-        DetectDuplicates(storeName, states, computeds, actions, effects, symbol, Report);
+        var memberNames = DetectDuplicates(storeName, states, computeds, actions, effects, symbol, Report);
         if (diagnostics.Count > beforeDuplicates)
             return Fail();
 
-        // The typed descriptors live in a nested "Actions" class. A store that already uses the name
-        // keeps compiling exactly as before; it only goes without the typed surface, and is told so.
+        DetectDuplicateLabels(storeName, states, actions, effects, enforceActions, symbol, Report);
+
+        // The typed descriptors live in a nested "Actions" class. A store that already uses the name --
+        // for one of its own members or one generated for it -- keeps compiling exactly as before; it
+        // only goes without the typed surface, and is told so.
         var emitActions = actions.Count + effects.Count > 0;
-        if (emitActions && IsActionsNameTaken(symbol, states, computeds, actions, effects))
+        if (emitActions && memberNames.Contains(ActionsClassName))
         {
             Report(ActionsNameTaken, classDecl.Identifier.GetLocation(), symbol.Name);
             emitActions = false;
@@ -662,7 +673,11 @@ public sealed class BlexGenerator : IIncrementalGenerator
             : true;
     }
 
-    private static void DetectDuplicates(
+    /// <summary>
+    /// Reports BLEX005 for every generated member that would collide, and returns the names of every
+    /// member the store ends up with: its own, the base class's and the generated ones.
+    /// </summary>
+    private static HashSet<string> DetectDuplicates(
         string storeName,
         List<BlexStateModel> states,
         List<BlexComputedModel> computeds,
@@ -726,29 +741,37 @@ public sealed class BlexGenerator : IIncrementalGenerator
         Check("__blexActionDescriptors");
         if (states.Any(s => !s.Persist))
             Check("__blexTransientKeys");
+
+        return seen;
     }
 
     /// <summary>
-    /// Whether something in the store -- a member the user declared, or one the generator emits for a
-    /// state, computed, action or effect -- is already called <c>Actions</c>.
+    /// Reports BLEX021 when two actions are dispatched under one name. The name is what identifies an
+    /// action to subscribers, filters, DevTools and dispatch by name, and wrapper names alone cannot
+    /// catch it: a display label (<c>Name = "Save it"</c>) is free text, and a state property's direct
+    /// assignment is recorded as <c>"Set X"</c> -- except in a store that enforces actions, which records none.
     /// </summary>
-    private static bool IsActionsNameTaken(
-        INamedTypeSymbol symbol,
+    private static void DetectDuplicateLabels(
+        string storeName,
         List<BlexStateModel> states,
-        List<BlexComputedModel> computeds,
         List<BlexActionModel> actions,
-        List<BlexEffectModel> effects)
+        List<BlexEffectModel> effects,
+        bool enforceActions,
+        INamedTypeSymbol symbol,
+        System.Action<DiagnosticDescriptor, Location?, string[]> report)
     {
-        if (symbol.GetMembers(ActionsClassName).Any(m => !m.IsImplicitlyDeclared) || symbol.GetTypeMembers(ActionsClassName).Length > 0)
-            return true;
+        var seen = new HashSet<string>(System.StringComparer.Ordinal);
+        if (!enforceActions)
+        {
+            foreach (var s in states)
+                seen.Add("Set " + s.PropertyName);
+        }
 
-        return states.Any(s => s.PropertyName == ActionsClassName)
-            || computeds.Any(c => c.PropertyName == ActionsClassName)
-            || actions.Any(a => a.WrapperName == ActionsClassName)
-            || effects.Any(e => e.WrapperName == ActionsClassName
-                || e.WrapperName + "IsLoading" == ActionsClassName
-                || e.WrapperName + "Error" == ActionsClassName
-                || (e.HasCancellationToken && "Cancel" + e.WrapperName == ActionsClassName));
+        foreach (var label in actions.Select(a => a.ActionLabel).Concat(effects.Select(e => e.ActionLabel)))
+        {
+            if (!seen.Add(label))
+                report(DuplicateActionLabel, symbol.Locations.FirstOrDefault(), [storeName, label]);
+        }
     }
 
     private static bool HasAttribute(ISymbol symbol, string fullName)
@@ -987,8 +1010,15 @@ public sealed class BlexGenerator : IIncrementalGenerator
         if (parameters.Count == 0)
             return ($"global::Bit.Blex.BlexAction<{storeType}>", $"\"{Escape(label)}\", {Invoke("__s", "")}");
 
+        // An optional parameter a payload leaves out takes its declared default, as in a direct call.
+        // A null default is forgiven: the generated file is #nullable enable, and the parameter may not be.
         string Read(int i)
-            => $"global::Bit.Blex.BlexActionDescriptor.GetArg<{parameters[i].TypeFqn}>(__a, {i}, \"{Escape(parameters[i].Name)}\")";
+        {
+            var p = parameters[i];
+            return p.DefaultLiteral is null
+                ? $"global::Bit.Blex.BlexActionDescriptor.GetArg<{p.TypeFqn}>(__a, {i}, \"{Escape(p.Name)}\")"
+                : $"global::Bit.Blex.BlexActionDescriptor.GetArgOrDefault<{p.TypeFqn}>(__a, {i}, \"{Escape(p.Name)}\", {(p.DefaultLiteral == "null" ? "null!" : p.DefaultLiteral)})";
+        }
 
         string payloadType;
         string arguments;
@@ -1237,8 +1267,9 @@ public sealed class BlexGenerator : IIncrementalGenerator
                 sb.AppendLine($"{body}    {{");
                 // No ConfigureAwait(false): resume on the dispatch context (the Blazor renderer)
                 // so the body mutates state on the thread every other action runs on. The wait runs
-                // on the manager's clock, so a test advances a fake TimeProvider instead of sleeping.
-                sb.AppendLine($"{body}        await global::System.Threading.Tasks.Task.Delay(global::System.TimeSpan.FromMilliseconds({e.DebounceMilliseconds}), base.TimeProvider, __blexDebounceCts.Token);");
+                // on the manager's clock, so a test advances a fake TimeProvider instead of sleeping,
+                // and is skipped while a recorded log is replayed.
+                sb.AppendLine($"{body}        await base.DebounceEffectAsync({e.DebounceMilliseconds}, __blexDebounceCts.Token);");
                 sb.AppendLine($"{body}    }}");
                 sb.AppendLine($"{body}    catch (global::System.OperationCanceledException)");
                 sb.AppendLine($"{body}    {{");

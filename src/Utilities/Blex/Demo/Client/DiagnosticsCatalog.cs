@@ -370,6 +370,30 @@ public static class DiagnosticsCatalog
 
             // AuditStore.Actions.Log is now a BlexAction<AuditStore, string>.
             """),
+
+        new("BLEX021", "Action name is used more than once", true,
+            "An action's name - its <code>Name</code>, or the wrapper name derived from the method - is what identifies it everywhere outside C#: <code>SubscribeToAction</code>, a descriptor's <code>Matches</code>, DevTools, <code>DispatchAsync</code> and a replayed log. Two actions dispatched under one name cannot be told apart there: dispatching by that name always runs the first, and a subscription to either fires for both. Wrapper names are checked by <code>BLEX005</code>, but a display label is free text, and a direct assignment to a state property <code>X</code> is dispatched as <code>Set X</code> (except in a store that sets <code>EnforceActions</code>, which records none).",
+            """
+            [BlexAction(Name = "Save it")]
+            private void OnSaveDraft() { }
+
+            [BlexAction(Name = "Save it")]                // BLEX021
+            private void OnSaveFinal(int version) { }
+
+            // With [BlexState] private int _count, a direct assignment is "Set Count" already:
+            [BlexAction(Name = "Set Count")]              // BLEX021
+            private void OnChangeCount(int value) => Count = value;
+            """,
+            """
+            [BlexAction(Name = "Save draft")]
+            private void OnSaveDraft() { }
+
+            [BlexAction(Name = "Save final")]
+            private void OnSaveFinal(int version) { }
+
+            [BlexAction(Name = "Change count")]
+            private void OnChangeCount(int value) => Count = value;
+            """),
     ];
 
     /// <summary>The entry for one diagnostic id (case-insensitive), or <c>null</c>.</summary>

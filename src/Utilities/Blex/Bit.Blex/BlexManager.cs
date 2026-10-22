@@ -514,7 +514,9 @@ public sealed class BlexManager
     /// <param name="key">
     /// Distinguishes this instance from the others: an order id, a document id, a tab index. Give a
     /// stable one to a store marked <c>Persist = true</c>, so the next instance for the same entity
-    /// finds its saved state. When omitted, a key unique within this manager is assigned.
+    /// finds its saved state. When omitted, a key unique within this manager is assigned -- and since
+    /// nothing could ever find state saved under it again (the next session, or another tab, counts its
+    /// keys from the start too), an instance keyed that way is never persisted, whatever its store says.
     /// </param>
     /// <remarks>
     /// Stores are otherwise one per DI scope, keyed by their generated name, so a second instance --
@@ -534,15 +536,16 @@ public sealed class BlexManager
         if (key is not null && string.IsNullOrWhiteSpace(key))
             throw new ArgumentException("An instance key must not be empty.", nameof(key));
 
+        var generated = key is null;
         key ??= Interlocked.Increment(ref _scopeSequence).ToString(CultureInfo.InvariantCulture);
 
         var unkeyed = store.Name;
-        store.AssignInstanceKey(key);
+        store.AssignInstanceKey(key, generated);
         if (store.Name == unkeyed)
         {
             // A hand-written store whose Name ignores the key would silently share one slice, one
             // DevTools entry and one storage key with every other instance.
-            store.AssignInstanceKey(null);
+            store.AssignInstanceKey(null, generated: false);
             throw new NotSupportedException(
                 $"The store '{unkeyed}' cannot be scoped: its Name does not include the instance key. Generated stores support it; a hand-written one must return WithInstanceKey(\"...\") from Name.");
         }
@@ -574,7 +577,7 @@ public sealed class BlexManager
                 sb.Detach();
         }
 
-        InvokeIsolated(StoreUnregistered, store, "register", store.Name);
+        InvokeIsolated(StoreUnregistered, store, "unregister", store.Name);
     }
 
     /// <summary>
@@ -661,6 +664,89 @@ public sealed class BlexManager
             _ = _inFlight[i].GlobalState;
     }
 
+    // The action bodies running in the current asynchronous flow, innermost first. An action recorded
+    // while one of this manager's is running was dispatched from inside it -- a cross-store call such as
+    // cart.Checkout() calling orders.Place() -- so replaying the outer action runs it again. Flowing with
+    // the execution context rather than counted keeps an unrelated action, started elsewhere while an
+    // async action awaits, from passing for a nested one.
+    private static readonly AsyncLocal<ActionFrame?> RunningActions = new();
+
+    internal sealed class ActionFrame(BlexManager manager, ActionFrame? outer)
+    {
+        public BlexManager Manager { get; } = manager;
+
+        public ActionFrame? Outer { get; } = outer;
+    }
+
+    /// <summary>
+    /// Marks an action body of one of this manager's stores as running in the current flow until the
+    /// returned scope is exited. Free when nothing records actions: only a recorded action can be nested.
+    /// </summary>
+    internal ActionBodyScope EnterActionBody()
+    {
+        if (!HasObservers)
+            return default;
+
+        var outer = RunningActions.Value;
+        RunningActions.Value = new ActionFrame(this, outer);
+        return new ActionBodyScope(outer);
+    }
+
+    /// <summary>An action body entered by <see cref="EnterActionBody"/>; exit it before the action records itself.</summary>
+    internal readonly struct ActionBodyScope
+    {
+        private readonly ActionFrame? _outer;
+        private readonly bool _entered;
+
+        internal ActionBodyScope(ActionFrame? outer)
+        {
+            _outer = outer;
+            _entered = true;
+        }
+
+        public void Exit()
+        {
+            if (_entered)
+                RunningActions.Value = _outer;
+        }
+    }
+
+    private bool IsInsideAction()
+    {
+        for (var frame = RunningActions.Value; frame is not null; frame = frame.Outer)
+        {
+            if (ReferenceEquals(frame.Manager, this))
+                return true;
+        }
+
+        return false;
+    }
+
+    // The manager a replay (Bit.Blex.Testing's ReplayAsync) dispatches into, in the replay's own flow.
+    private static readonly AsyncLocal<BlexManager?> Replaying = new();
+
+    /// <summary>
+    /// Whether the current flow is replaying recorded actions into this manager. Effects skip their
+    /// debounce wait then: it only decides which of several rapid invocations runs, a log holds only the
+    /// ones that did, and a replay awaits each before starting the next -- so waiting would change nothing
+    /// but the time a replay takes, and on a fake clock it would never end.
+    /// </summary>
+    internal bool IsReplaying => ReferenceEquals(Replaying.Value, this);
+
+    /// <summary>Marks the current flow as replaying into this manager until the returned scope is disposed.</summary>
+    internal ReplayScope BeginReplay()
+    {
+        var previous = Replaying.Value;
+        Replaying.Value = this;
+        return new ReplayScope(previous);
+    }
+
+    /// <summary>A replay begun by <see cref="BeginReplay"/>.</summary>
+    internal readonly struct ReplayScope(BlexManager? previous) : IDisposable
+    {
+        public void Dispose() => Replaying.Value = previous;
+    }
+
     /// <summary>
     /// Runs the before-action pipeline. Returns <c>false</c> if any middleware vetoed the action,
     /// in which case the caller must skip the mutation. Cheap no-op when no middleware is registered.
@@ -709,7 +795,7 @@ public sealed class BlexManager
         if (!HasObservers)
             return;
 
-        var context = new BlexActionContext(source, actionName, CaptureGlobalState, ++_sequence, args, _timeProvider.GetUtcNow());
+        var context = new BlexActionContext(source, actionName, CaptureGlobalState, ++_sequence, args, _timeProvider.GetUtcNow(), IsInsideAction());
 
         _inFlight.Add(context);
         try
@@ -877,14 +963,14 @@ public sealed class BlexManager
     /// <c>"{store name}/{action name}"</c>: a generated action or effect, <c>"Set {Property}"</c> for a
     /// state property, or <c>"ResetState"</c>.
     /// </param>
-    /// <param name="payload">The arguments; omit for a parameterless action.</param>
+    /// <param name="payload">The arguments; omit for a parameterless action, and leave out an optional one to take its default.</param>
     /// <returns>The action's task; already completed for a synchronous action.</returns>
     /// <exception cref="InvalidOperationException">No registered store has an action with that name.</exception>
     /// <remarks>
     /// This is what makes actions data: a log recorded in one session can be replayed in another
     /// (<c>Bit.Blex.Testing</c>'s <c>ReplayAsync</c>), and the Redux DevTools dispatcher can fire an action
     /// against the running app. Arguments are matched by parameter name and converted with
-    /// <see cref="BlexJson.Options"/>.
+    /// <see cref="BlexJson.Options"/>; an optional parameter the payload leaves out takes its declared default.
     /// </remarks>
     public Task DispatchAsync(string qualifiedName, JsonObject? payload = null)
     {
@@ -1060,7 +1146,9 @@ public sealed class BlexManager
     /// <summary>
     /// Dispatches the action typed into the DevTools dispatcher. The extension hands the text over as
     /// typed, so it is parsed here as JSON: <c>{ "type": "counter/Add", "payload": { "amount": 5 } }</c>,
-    /// the arguments inline beside <c>type</c>, or a bare <c>payload</c> value for a one-parameter action.
+    /// the arguments inline beside <c>type</c>, or -- for a one-parameter action -- the argument itself as
+    /// the <c>payload</c>, Redux style: <c>{ "type": "orders/Place", "payload": { "Name": "mug" } }</c>. An
+    /// object payload is read as the argument itself unless it names the parameter.
     /// </summary>
     /// <remarks>
     /// Nothing typed into the monitor can be allowed to throw back into the interop callback, and the
@@ -1101,7 +1189,7 @@ public sealed class BlexManager
 
         var (store, descriptor) = resolved;
         BlexActionArg[] args;
-        if (action["payload"] is JsonObject arguments)
+        if (action["payload"] is JsonObject arguments && !IsWholeArgument(descriptor, arguments))
         {
             args = ToArgs(arguments);
         }
@@ -1127,6 +1215,23 @@ public sealed class BlexManager
 
         if (task.IsCompleted is false || task.IsFaulted)
             _ = ObserveDevToolsDispatch(task, name);
+
+        // A one-parameter action taking an object (an Order) is handed that object as its payload far
+        // more often than an object naming the parameter ({ "order": {...} }); only the latter has the
+        // parameter's name among its keys. An empty object names nothing and stands for no arguments.
+        static bool IsWholeArgument(BlexActionDescriptor descriptor, JsonObject payload)
+        {
+            if (descriptor.ParameterNames.Count != 1 || payload.Count == 0)
+                return false;
+
+            foreach (var (key, _) in payload)
+            {
+                if (string.Equals(key, descriptor.ParameterNames[0], StringComparison.OrdinalIgnoreCase))
+                    return false;
+            }
+
+            return true;
+        }
     }
 
     private async Task ObserveDevToolsDispatch(Task task, string name)
@@ -1180,11 +1285,22 @@ public sealed class BlexManager
     /// Raised after state moved without an action: <see cref="RestoreGlobalState"/> (time-travel,
     /// undo/redo) once per call, and a single store's restore -- persistence hydration, a change
     /// arriving from another tab, the prerender handoff, <see cref="BlexStoreBase.RestoreState"/> --
-    /// once per store. Persistence uses this to write the restored state back to storage so a reload
-    /// does not resurrect the pre-restore state; cross-store selectors and subscriptions use it to
-    /// re-evaluate. Handler exceptions are isolated and reported through <see cref="OnError"/>.
+    /// once per store. Cross-store selectors and subscriptions use it to re-evaluate; an observer that
+    /// only needs to revisit the stores that moved listens to <see cref="StoreRestored"/> instead.
+    /// Handler exceptions are isolated and reported through <see cref="OnError"/>.
     /// </summary>
     public event Action? StateRestored;
+
+    /// <summary>
+    /// Raised after one store's state was restored without an action, with that store: for each store a
+    /// <see cref="RestoreGlobalState"/> applies, and for a single store's restore (hydration, a change from
+    /// another tab, the prerender handoff, <see cref="BlexStoreBase.RestoreState"/>). Raised before the
+    /// <see cref="StateRestored"/> that follows. Persistence uses it to write back the restored store --
+    /// and only that one -- so a reload does not resurrect the pre-restore state; undo/redo uses it to
+    /// compare the one slice that moved. Handler exceptions are isolated and reported through
+    /// <see cref="OnError"/>.
+    /// </summary>
+    public event Action<IBlexStore>? StoreRestored;
 
     /// <summary>Pins in-flight snapshots before a single store's state is restored.</summary>
     internal void PrepareForRestore()
@@ -1194,13 +1310,15 @@ public sealed class BlexManager
     }
 
     /// <summary>
-    /// Announces that a single store's state was restored outside <see cref="RestoreGlobalState"/>.
-    /// Without it, every observer that keeps derived state -- a cross-store selector's memo, a
-    /// manager subscription's last value, the undo baseline -- would go on reporting the value from
-    /// before a hydration or a cross-tab change, because no action ever told it otherwise.
+    /// Announces that <paramref name="store"/>'s state was restored. Without it, every observer that
+    /// keeps derived state -- a cross-store selector's memo, a manager subscription's last value, the
+    /// undo baseline -- would go on reporting the value from before a hydration or a cross-tab change,
+    /// because no action ever told it otherwise.
     /// </summary>
-    internal void OnStoreRestored()
+    internal void OnStoreRestored(IBlexStore store)
     {
+        InvokeIsolated(StoreRestored, store, "restore", store.Name);
+
         // A whole-tree restore raises StateRestored once, after its last store.
         if (_restoreBatchDepth > 0)
             return;

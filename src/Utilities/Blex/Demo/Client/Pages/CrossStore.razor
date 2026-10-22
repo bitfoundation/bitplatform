@@ -335,7 +335,8 @@
     [
         new("JsonObject CaptureGlobalState()", "Builds the whole tree: <code>{ \"storeName\": { …state… }, … }</code>."),
         new("void RestoreGlobalState(JsonObject)", "Applies a tree to every store without recording actions. A slice that fails to deserialize is reported and skipped; the other stores still restore."),
-        new("event Action? StateRestored", "Raised after state moved without an action: once per <code>RestoreGlobalState</code> (undo/redo, time travel), and once per store for hydration, a cross-tab change, the prerender handoff or <code>RestoreState</code>. Persistence writes the restored state back on it; cross-store selectors and subscriptions re-evaluate on it."),
+        new("event Action? StateRestored", "Raised after state moved without an action: once per <code>RestoreGlobalState</code> (undo/redo, time travel), and once per store for hydration, a cross-tab change, the prerender handoff or <code>RestoreState</code>. Cross-store selectors and subscriptions re-evaluate on it."),
+        new("event Action&lt;IBlexStore&gt;? StoreRestored", "Raised ahead of <code>StateRestored</code> with each store a restore moved - every store of a <code>RestoreGlobalState</code>, or the one store of a single restore. Persistence writes back just that store on it, and undo/redo compares just its slice."),
         new("Func&lt;JsonObject, JsonObject&gt;? DevToolsStateSanitizer", "Applied to the tree before it reaches DevTools. See <a href=\"devtools\">DevTools</a>."),
         new("Func&lt;string, string&gt;? DevToolsActionSanitizer", "Applied to the action label before it reaches DevTools."),
         new("Action&lt;BlexError&gt;? OnError", "Sink for isolated pipeline failures. See <a href=\"errors\">Error isolation</a>."),

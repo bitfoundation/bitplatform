@@ -14,7 +14,7 @@ public sealed class BlexActionLog : IDisposable
     internal BlexActionLog(BlexManager manager)
     {
         _subscription = manager.Subscribe(ctx => _actions.Add(new BlexRecordedAction(
-            ctx.Store, ctx.ActionName, ctx.QualifiedName, ctx.Sequence, ctx.GlobalState, ctx.Args)));
+            ctx.Store, ctx.ActionName, ctx.QualifiedName, ctx.Sequence, ctx.GlobalState, ctx.Args, ctx.IsNested)));
     }
 
     /// <summary>All recorded actions, in dispatch order.</summary>

@@ -70,7 +70,7 @@ public abstract class BlexStoreBase : IBlexStore, INotifyPropertyChanged, IDispo
         return _keyedName ??= name + ":" + _instanceKey;
     }
 
-    internal void AssignInstanceKey(string? key)
+    internal void AssignInstanceKey(string? key, bool generated)
     {
         // The name keys the state tree, DevTools and storage; changing it under a registered store
         // would orphan its slice and its persisted state.
@@ -79,7 +79,15 @@ public abstract class BlexStoreBase : IBlexStore, INotifyPropertyChanged, IDispo
 
         _instanceKey = key;
         _keyedName = null;
+        HasGeneratedInstanceKey = generated;
     }
+
+    /// <summary>
+    /// Whether <see cref="InstanceKey"/> was assigned by the manager rather than given. Such an instance
+    /// is never persisted: the next session counts its keys from the start too, so state saved under
+    /// one would be found by whichever unrelated instance happens to draw the same number.
+    /// </summary>
+    internal bool HasGeneratedInstanceKey { get; private set; }
 
     /// <summary>
     /// The clock of the manager this store is registered with (<see cref="BlexManager.TimeProvider"/>),
@@ -365,6 +373,19 @@ public abstract class BlexStoreBase : IBlexStore, INotifyPropertyChanged, IDispo
     }
 
     /// <summary>
+    /// Waits out an effect's <c>DebounceMilliseconds</c> quiet period on <see cref="TimeProvider"/>. Used by
+    /// generated effect wrappers. Completes at once while recorded actions are being replayed into the
+    /// manager, which awaits every action before the next: there is nothing left for the wait to decide.
+    /// </summary>
+    protected Task DebounceEffectAsync(int milliseconds, CancellationToken cancellationToken)
+    {
+        if (_manager is { IsReplaying: true })
+            return cancellationToken.IsCancellationRequested ? Task.FromCanceled(cancellationToken) : Task.CompletedTask;
+
+        return Task.Delay(TimeSpan.FromMilliseconds(milliseconds), TimeProvider, cancellationToken);
+    }
+
+    /// <summary>
     /// Runs <paramref name="mutation"/> as a single named action: synchronous state changes inside
     /// it are batched into one notification and one time-travel entry.
     /// </summary>
@@ -387,6 +408,7 @@ public abstract class BlexStoreBase : IBlexStore, INotifyPropertyChanged, IDispo
 
         _recordDepth++;
         _notifyDepth++;
+        var body = _manager?.EnterActionBody() ?? default;
         try
         {
             mutation();
@@ -398,6 +420,8 @@ public abstract class BlexStoreBase : IBlexStore, INotifyPropertyChanged, IDispo
         }
         finally
         {
+            // Before this action records itself, so it is not taken for one nested in its own body.
+            body.Exit();
             _notifyDepth--;
             _recordDepth--;
 
@@ -520,6 +544,7 @@ public abstract class BlexStoreBase : IBlexStore, INotifyPropertyChanged, IDispo
         ArgumentNullException.ThrowIfNull(mutation);
 
         _recordDepth++;
+        var body = _manager?.EnterActionBody() ?? default;
         try
         {
             await mutation().ConfigureAwait(true);
@@ -531,6 +556,7 @@ public abstract class BlexStoreBase : IBlexStore, INotifyPropertyChanged, IDispo
         }
         finally
         {
+            body.Exit();
             _recordDepth--;
             if (_recordDepth == 0 && _dirty)
             {
@@ -555,8 +581,9 @@ public abstract class BlexStoreBase : IBlexStore, INotifyPropertyChanged, IDispo
     /// <summary>
     /// Applies a restored snapshot without recording a new action. Invoked by the manager during
     /// time-travel, and by persistence, the prerender handoff and <see cref="RestoreState"/>. Raises
-    /// <see cref="StateChanged"/> exactly once, then <see cref="BlexManager.StateRestored"/> -- once
-    /// for the whole tree when the manager is restoring every store.
+    /// <see cref="StateChanged"/> exactly once, then <see cref="BlexManager.StoreRestored"/> and
+    /// <see cref="BlexManager.StateRestored"/> -- the latter once for the whole tree when the manager
+    /// is restoring every store.
     /// </summary>
     internal void ApplyRestoredState(JsonObject state)
     {
@@ -580,7 +607,7 @@ public abstract class BlexStoreBase : IBlexStore, INotifyPropertyChanged, IDispo
         }
         finally
         {
-            manager?.OnStoreRestored();
+            manager?.OnStoreRestored(this);
         }
     }
 

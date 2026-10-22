@@ -1,4 +1,5 @@
 ﻿using Bit.Blex.Testing;
+using Microsoft.Extensions.Time.Testing;
 
 namespace Bit.Blex.Tests;
 
@@ -71,6 +72,79 @@ public class TestingReplayTests
 
         Assert.AreEqual(2, harness.Store.Units);
         Assert.AreEqual(2, harness.Log.Count);
+    }
+
+    [TestMethod]
+    public async Task An_action_called_from_inside_another_is_replayed_once()
+    {
+        using var original = BlexTestHarness.For<OrderBookStore>();
+        var shipments = original.Register(new ShipmentStore(original.Store));
+        shipments.ShipAndBill("mug");
+        await shipments.ShipLaterAsync("pen");
+
+        CollectionAssert.AreEqual(
+            new[] { "orders/Place", "shipments/ShipAndBill", "orders/Place", "shipments/ShipLaterAsync" },
+            original.Log.QualifiedNames.ToArray());
+        CollectionAssert.AreEqual(new[] { true, false, true, false }, original.Log.Actions.Select(a => a.IsNested).ToArray());
+
+        using var replica = BlexTestHarness.For<OrderBookStore>();
+        var replicaShipments = replica.Register(new ShipmentStore(replica.Store));
+        await replica.Manager.ReplayAsync(original.Log.Actions);
+
+        // Two orders, as in the original -- not four.
+        Assert.AreEqual(original.Snapshot().ToJsonString(), replica.Snapshot().ToJsonString());
+        Assert.AreEqual(shipments.Snapshot().ToJsonString(), replicaShipments.Snapshot().ToJsonString());
+    }
+
+    [TestMethod]
+    public async Task An_action_dispatched_while_another_awaits_is_not_nested_in_it()
+    {
+        using var harness = BlexTestHarness.For<GatedStore>();
+        var orders = harness.Register(new OrderBookStore());
+
+        var slow = harness.Store.Slow();
+        orders.AddUnits(1);             // from the test, not from inside Slow
+        harness.Store.Gate.SetResult();
+        await slow;
+
+        var addUnits = harness.Log.Actions.Single(a => a.QualifiedName == "orders/AddUnits");
+        Assert.IsFalse(addUnits.IsNested);
+    }
+
+    [TestMethod]
+    public async Task A_replay_does_not_wait_on_a_fake_clock_nobody_advances()
+    {
+        var time = new FakeTimeProvider();
+        using var original = BlexTestHarness.For<EffectConcurrencyStore>();
+        original.TimeProvider = time;
+        var search = original.Store.TypeAhead("blex");
+        time.Advance(TimeSpan.FromMilliseconds(250));
+        await search.WaitAsync(TimeSpan.FromSeconds(5));
+
+        using var replica = BlexTestHarness.For<EffectConcurrencyStore>();
+        replica.TimeProvider = new FakeTimeProvider();
+        await replica.Manager.ReplayAsync(original.Log.Actions).WaitAsync(TimeSpan.FromSeconds(5));
+
+        Assert.AreEqual("blex", replica.Store.Last);
+        Assert.AreEqual(original.Snapshot().ToJsonString(), replica.Snapshot().ToJsonString());
+    }
+
+    [TestMethod]
+    public async Task Effects_still_debounce_once_the_replay_is_over()
+    {
+        var time = new FakeTimeProvider();
+        using var harness = BlexTestHarness.For<EffectConcurrencyStore>();
+        harness.TimeProvider = time;
+        await harness.Store.Fetch();
+        await harness.Manager.ReplayAsync(harness.Log.Actions);
+
+        var search = harness.Store.TypeAhead("later");
+        await Task.Yield();
+        Assert.AreEqual(0, harness.Store.DebouncedBodyRuns);
+
+        time.Advance(TimeSpan.FromMilliseconds(250));
+        await search.WaitAsync(TimeSpan.FromSeconds(5));
+        Assert.AreEqual(1, harness.Store.DebouncedBodyRuns);
     }
 
     [TestMethod]

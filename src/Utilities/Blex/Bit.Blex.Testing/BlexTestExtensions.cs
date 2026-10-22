@@ -139,6 +139,18 @@ public static class BlexTestExtensions
     /// and an <see cref="InvalidOperationException"/> names the first action that cannot be replayed.
     /// The list is copied first, so replaying a log into the manager that is recording it is safe.
     /// </para>
+    /// <para>
+    /// An action that ran inside another one's body (<see cref="BlexRecordedAction.IsNested"/> --
+    /// <c>cart.Checkout()</c> calling <c>orders.Place()</c>) is skipped: replaying the outer action runs it
+    /// again. One that a subscriber dispatched in reaction to another is replayed as recorded, so replay
+    /// into a manager without that subscriber, or it reacts a second time.
+    /// </para>
+    /// <para>
+    /// Each action is awaited before the next starts, and effects skip their <c>DebounceMilliseconds</c>
+    /// wait while being replayed: the wait only decides which of several rapid invocations runs, and the
+    /// log holds only the ones that did. A replay therefore never waits on the clock -- not even on a
+    /// fake <see cref="BlexTestHarness{TStore}.TimeProvider"/> nobody is advancing.
+    /// </para>
     /// </remarks>
     /// <example><code>
     /// using var original = BlexTestHarness.For&lt;CartStore&gt;();
@@ -154,8 +166,15 @@ public static class BlexTestExtensions
         ArgumentNullException.ThrowIfNull(manager);
         ArgumentNullException.ThrowIfNull(actions);
 
-        foreach (var action in actions.ToList())
-            await manager.DispatchAsync(action.QualifiedName, action.Args).ConfigureAwait(false);
+        var log = actions.ToList();
+
+        // Scoped to this method's own flow: an action started anywhere else meanwhile still debounces.
+        using var replay = manager.BeginReplay();
+        foreach (var action in log)
+        {
+            if (!action.IsNested)
+                await manager.DispatchAsync(action.QualifiedName, action.Args).ConfigureAwait(false);
+        }
     }
 
     /// <summary>

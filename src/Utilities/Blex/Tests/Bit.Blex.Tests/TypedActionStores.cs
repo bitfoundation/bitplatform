@@ -82,3 +82,49 @@ public partial class AdminUsersStore
     [BlexActionAttribute]
     private void OnInvite(int count) => Invited += count;
 }
+
+public sealed record Parcel(string Name, int Quantity);
+
+/// <summary>
+/// An action taking one object, actions with optional parameters, and actions that call another
+/// store's action from inside their own body.
+/// </summary>
+[BlexStoreAttribute(Name = "shipments")]
+public partial class ShipmentStore
+{
+    private readonly OrderBookStore? _orders;
+
+    [BlexStateAttribute] private string[] _shipped = [];
+    [BlexStateAttribute] private int _bumps;
+    [BlexStateAttribute] private string? _note = "none";
+
+    public ShipmentStore()
+    {
+    }
+
+    public ShipmentStore(OrderBookStore orders) => _orders = orders;
+
+    [BlexActionAttribute]
+    private void OnShip(Parcel parcel) => Shipped = [.. Shipped, $"{parcel.Quantity} x {parcel.Name}"];
+
+    [BlexActionAttribute]
+    private void OnBump(int amount = 1) => Bumps += amount;
+
+    [BlexActionAttribute]
+    private void OnAnnotate(string? note = null, string prefix = "#") => Note = note is null ? null : prefix + note;
+
+    [BlexActionAttribute]
+    private void OnShipAndBill(string name)
+    {
+        Shipped = [.. Shipped, name];
+        _orders!.Place(name, 1);
+    }
+
+    [BlexActionAttribute]
+    private async Task OnShipLaterAsync(string name)
+    {
+        await Task.Yield();
+        _orders!.Place(name, 1);
+        Shipped = [.. Shipped, name];
+    }
+}

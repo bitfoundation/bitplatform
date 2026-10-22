@@ -27,7 +27,8 @@ public static class BlexStoreSubscriptionExtensions
         ArgumentNullException.ThrowIfNull(store);
         ArgumentNullException.ThrowIfNull(selector);
         ArgumentNullException.ThrowIfNull(onChanged);
-        return new BlexSelectorSubscription<T>(store, selector, (_, current) => onChanged(current), comparer ?? EqualityComparer<T>.Default, fireImmediately);
+        var subscription = new BlexSelectorSubscription<T>(store, selector, (_, current) => onChanged(current), comparer ?? EqualityComparer<T>.Default, selector());
+        return fireImmediately ? subscription.FireImmediately() : subscription;
     }
 
     /// <summary>
@@ -50,62 +51,103 @@ public static class BlexStoreSubscriptionExtensions
         ArgumentNullException.ThrowIfNull(store);
         ArgumentNullException.ThrowIfNull(selector);
         ArgumentNullException.ThrowIfNull(onChanged);
-        return new BlexSelectorSubscription<T>(store, selector, onChanged, comparer ?? EqualityComparer<T>.Default, fireImmediately);
+        var subscription = new BlexSelectorSubscription<T>(store, selector, onChanged, comparer ?? EqualityComparer<T>.Default, selector());
+        return fireImmediately ? subscription.FireImmediately() : subscription;
     }
 
-    private sealed class BlexSelectorSubscription<T> : IDisposable
+}
+
+/// <summary>
+/// Observes a projection of a store and calls back when the selected value changes -- the one
+/// implementation behind <see cref="BlexStoreSubscriptionExtensions"/> and
+/// <see cref="BlexObservableExtensions.Observe{T}(IBlexStore, Func{T}, IEqualityComparer{T})"/>.
+/// </summary>
+internal sealed class BlexSelectorSubscription<T> : IDisposable
+{
+    private readonly IBlexStore _store;
+    private readonly Func<T> _selector;
+    private readonly Action<T, T> _onChanged;
+    private readonly IEqualityComparer<T> _comparer;
+    private readonly Action<Exception>? _onSelectorError;
+    private T _last;
+    private bool _disposed;
+
+    /// <param name="store">The store to observe.</param>
+    /// <param name="selector">Projects the observed value from the store.</param>
+    /// <param name="onChanged">Invoked with <c>(previous, current)</c> whenever the value changes.</param>
+    /// <param name="comparer">Decides what counts as a change.</param>
+    /// <param name="initial">The selected value at subscription time, which the first change is measured against.</param>
+    /// <param name="onSelectorError">
+    /// Receives a selector failure once the subscription has ended over it. Without one, the failure
+    /// propagates to the store, which reports it and keeps the subscription for the next change.
+    /// </param>
+    public BlexSelectorSubscription(
+        IBlexStore store,
+        Func<T> selector,
+        Action<T, T> onChanged,
+        IEqualityComparer<T> comparer,
+        T initial,
+        Action<Exception>? onSelectorError = null)
     {
-        private readonly IBlexStore _store;
-        private readonly Func<T> _selector;
-        private readonly Action<T, T> _onChanged;
-        private readonly IEqualityComparer<T> _comparer;
-        private T _last;
-        private bool _disposed;
+        _store = store;
+        _selector = selector;
+        _onChanged = onChanged;
+        _comparer = comparer;
+        _onSelectorError = onSelectorError;
+        _last = initial;
+        store.StateChanged += OnStoreChanged;
+    }
 
-        public BlexSelectorSubscription(IBlexStore store, Func<T> selector, Action<T, T> onChanged, IEqualityComparer<T> comparer, bool fireImmediately)
+    /// <summary>Invokes the callback once with the value at subscription time; previous and current are both that value.</summary>
+    public BlexSelectorSubscription<T> FireImmediately()
+    {
+        try
         {
-            _store = store;
-            _selector = selector;
-            _onChanged = onChanged;
-            _comparer = comparer;
-            _last = selector();
-            store.StateChanged += OnStoreChanged;
-
-            if (!fireImmediately)
-                return;
-
-            try
-            {
-                onChanged(_last, _last);
-            }
-            catch
-            {
-                // The caller never receives the token when the constructor throws, so the handler
-                // would stay attached to the store for the rest of its life -- a leak that also
-                // keeps firing a callback its owner believes it never registered. Detach, then let
-                // the exception surface at the call site where it belongs.
-                Dispose();
-                throw;
-            }
+            _onChanged(_last, _last);
+        }
+        catch
+        {
+            // The caller never receives the token when this throws, so the handler would stay
+            // attached to the store for the rest of its life -- a leak that also keeps firing a
+            // callback its owner believes it never registered. Detach, then let the exception
+            // surface at the call site where it belongs.
+            Dispose();
+            throw;
         }
 
-        private void OnStoreChanged()
-        {
-            var current = _selector();
-            if (_comparer.Equals(current, _last))
-                return;
+        return this;
+    }
 
-            var previous = _last;
-            _last = current;
-            _onChanged(previous, current);
+    private void OnStoreChanged()
+    {
+        if (_disposed)
+            return;
+
+        T current;
+        try
+        {
+            current = _selector();
+        }
+        catch (Exception ex) when (_onSelectorError is not null)
+        {
+            Dispose();
+            _onSelectorError(ex);
+            return;
         }
 
-        public void Dispose()
-        {
-            if (_disposed)
-                return;
-            _disposed = true;
-            _store.StateChanged -= OnStoreChanged;
-        }
+        if (_comparer.Equals(current, _last))
+            return;
+
+        var previous = _last;
+        _last = current;
+        _onChanged(previous, current);
+    }
+
+    public void Dispose()
+    {
+        if (_disposed)
+            return;
+        _disposed = true;
+        _store.StateChanged -= OnStoreChanged;
     }
 }

@@ -65,62 +65,10 @@ public static class BlexObservableExtensions
                 return Subscription.Empty;
             }
 
-            var subscription = new StoreSubscription<T>(store, selector, comparer, observer, initial);
-            observer.OnNext(initial);
-            return subscription;
-        }
-    }
-
-    private sealed class StoreSubscription<T> : IDisposable
-    {
-        private readonly IBlexStore _store;
-        private readonly Func<T> _selector;
-        private readonly IEqualityComparer<T> _comparer;
-        private readonly IObserver<T> _observer;
-        private T _last;
-        private bool _disposed;
-
-        public StoreSubscription(IBlexStore store, Func<T> selector, IEqualityComparer<T> comparer, IObserver<T> observer, T initial)
-        {
-            _store = store;
-            _selector = selector;
-            _comparer = comparer;
-            _observer = observer;
-            _last = initial;
-            store.StateChanged += OnStateChanged;
-        }
-
-        private void OnStateChanged()
-        {
-            if (_disposed)
-                return;
-
-            T current;
-            try
-            {
-                current = _selector();
-            }
-            catch (Exception ex)
-            {
-                Dispose();
-                _observer.OnError(ex);
-                return;
-            }
-
-            if (_comparer.Equals(current, _last))
-                return;
-
-            _last = current;
-            _observer.OnNext(current);
-        }
-
-        public void Dispose()
-        {
-            if (_disposed)
-                return;
-
-            _disposed = true;
-            _store.StateChanged -= OnStateChanged;
+            // A failing selector ends the sequence (OnError) rather than being reported and retried, and
+            // an observer whose first OnNext throws is detached before the exception leaves Subscribe.
+            return new BlexSelectorSubscription<T>(store, selector, (_, current) => observer.OnNext(current), comparer, initial, observer.OnError)
+                .FireImmediately();
         }
     }
 
