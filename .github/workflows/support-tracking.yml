@@ -18,7 +18,7 @@ jobs:
     if: >-
       github.event.issue.user.type != 'Bot' &&
       !contains(fromJSON('["OWNER", "MEMBER", "COLLABORATOR"]'), github.event.issue.author_association)
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
 
     steps:
 
