@@ -347,6 +347,7 @@ public class ToolTests
 
         Assert.AreEqual(Elevation.Sudo, node.Elevation);
         StringAssert.Contains(node.Commands[0].CommandLine, "deb.nodesource.com");
+        CollectionAssert.AreEqual(new[] { "/usr/bin/node", "/usr/bin/npm", "/usr/bin/npx" }, node.InstalledExecutables.ToArray());
         Assert.AreEqual("apt-get install -y git", git.Commands[1].CommandLine);
     }
 
@@ -427,6 +428,44 @@ public class ToolTests
 
         Assert.IsFalse(steps.AnyFailed);
         CollectionAssert.Contains(host.Environment.GetVariable("PATH")!.Split(Path.PathSeparator), installed);
+    }
+
+    [TestMethod]
+    public async Task TheNodeAPackageManagerInstalls_Should_ComeBeforeAnOlderOneOnThePath()
+    {
+        if (OperatingSystem.IsWindows())
+            return;
+
+        using var host = new TestHost(HostOs.Linux, new Dictionary<string, string> { ["PATH"] = "/usr/local/bin:/usr/bin" });
+        AllInstalled(host.Runner);
+        host.Runner.On("node", "--version", 0, "v22.23.3");
+        host.Runner.Executables["node"] = "/usr/local/bin/node";
+        host.Runner.Executables["apt-get"] = "/usr/bin/apt-get";
+        host.Runner.Executables["sudo"] = "/usr/bin/sudo";
+        var bin = Directory.CreateDirectory(Path.Combine(host.Root, "usr", "bin")).FullName;
+        string[] installed = [.. new[] { "node", "npm", "npx" }.Select(name => Path.Combine(bin, name))];
+
+        foreach (var file in installed)
+        {
+            File.WriteAllText(file, "");
+        }
+
+        var needs = new ToolNeeds { NodeMajor = 24 };
+        var node = (await CheckAsync(host, needs)).Single(c => c.Tool.Id == "node");
+        node = node with { Action = node.Action! with { InstalledExecutables = installed } };
+        var steps = new StepRunner(host.Services);
+
+        await new ToolInstaller(host.Services, steps).InstallAsync([node], new ToolContext(host.Environment, host.Runner, needs, PackageManagers.Detect(host.Environment, host.Runner)), CancellationToken.None);
+
+        var result = steps.Reports.Single(r => r.Id == "node").Result;
+        var links = Path.Combine(host.Environment.BitDirectory, "bin", "node");
+        var path = host.Environment.GetVariable("PATH")!.Split(Path.PathSeparator).ToList();
+
+        Assert.AreEqual(StepStatus.Warning, result.Status);
+        Assert.AreEqual("/usr/local/bin/node comes first on PATH", result.Detail);
+        CollectionAssert.Contains(path, links);
+        Assert.IsLessThan(path.IndexOf("/usr/local/bin"), path.IndexOf(links));
+        Assert.AreEqual(installed[1], File.ResolveLinkTarget(Path.Combine(links, "npm"), returnFinalTarget: false)!.FullName);
     }
 
     [TestMethod]

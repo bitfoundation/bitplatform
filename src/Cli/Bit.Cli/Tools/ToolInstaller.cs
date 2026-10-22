@@ -64,7 +64,7 @@ public sealed class ToolInstaller(CliServices cli, StepRunner steps)
                     continue;
                 }
 
-                await RunActionAsync(action, useSudo: action.Elevation is Elevation.Sudo && cli.Environment.IsElevated is false, cancellationToken);
+                await RunActionAsync(action, useSudo: action.Elevation is Elevation.Sudo && cli.Environment.IsElevated is false, cancellationToken, ct => check.Tool.DetectAsync(context, ct));
 
                 if (action.ToolId is "homebrew")
                 {
@@ -76,7 +76,7 @@ public sealed class ToolInstaller(CliServices cli, StepRunner steps)
         RefreshPath();
     }
 
-    private async Task RunActionAsync(ToolAction action, bool useSudo, CancellationToken cancellationToken)
+    private async Task RunActionAsync(ToolAction action, bool useSudo, CancellationToken cancellationToken, Func<CancellationToken, Task<ToolStatus>>? detect = null)
     {
         var interactive = action.Interactive || action.Commands.Any(c => c.Interactive);
 
@@ -106,6 +106,25 @@ public sealed class ToolInstaller(CliServices cli, StepRunner steps)
                 && probed.OutputLines.LastOrDefault()?.Trim() is { Length: > 0 } directory && Directory.Exists(directory))
             {
                 cli.Environment.PrependToPath([directory]);
+            }
+
+            if (succeeded && detect is not null && action.InstalledExecutables is [var installed, ..] && File.Exists(installed)
+                && cli.Runner.FindExecutable(Path.GetFileName(installed)) is { } older && older != installed && (await detect(ct)).IsSatisfied is false)
+            {
+                var links = Path.Combine(cli.Environment.BitDirectory, "bin", action.ToolId);
+                Directory.CreateDirectory(links);
+
+                foreach (var executable in action.InstalledExecutables.Where(File.Exists))
+                {
+                    var link = Path.Combine(links, Path.GetFileName(executable));
+                    File.Delete(link);
+                    File.CreateSymbolicLink(link, executable);
+                }
+
+                cli.Environment.PrependToPath([links]);
+
+                return StepResult.Warning(done, $"{older} comes first on PATH",
+                    hint: $"This run uses {installed}. Remove {older}, or put {Path.GetDirectoryName(installed)} before {Path.GetDirectoryName(older)} in PATH, so your own builds use it too.");
             }
 
             if (succeeded)
