@@ -18,7 +18,7 @@ set -euo pipefail
 
 here="$(cd "$(dirname "$0")" && pwd)"
 
-# Unlike the other publish gates, no -p:TargetFrameworks=net10.0: the WebAssembly client would get it too and then
-# no longer resolve its runtime pack (WASM0005). Nor is it needed: the client, a net10.0 app, is the only project
+# Unlike the other publish gates, no -p:TargetFrameworks=net11.0: the WebAssembly client would get it too and then
+# no longer resolve its runtime pack (WASM0005). Nor is it needed: the client, a net11.0 app, is the only project
 # AOT compiles, and Bit.Bdnd's other frameworks demand no wasm-tools workload of their own.
 exec bash "$here/../../../../publish-gate.sh" Bit.Bdnd 'Demo|Tests' "$here/../../Demo/Server/Bit.Bdnd.Demo.Server.csproj" "$@"
