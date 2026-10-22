@@ -1261,6 +1261,18 @@ public class BitDialogE2ETests : E2ETestBase
         await Expect(Page.Locator("#casc-rename-input")).ToBeFocusedAsync();
     }
 
+    [TestMethod]
+    public async Task BitParams_OwnAutoFocusButton_LandsOnTheButtonEvenWhenTheContentMarksAnElement()
+    {
+        await OpenAsync(PagePath);
+
+        // A button the dialog names itself is its own choice rather than the app-wide default, so it wins over the
+        // cascaded one and over an element its content marks with data-autofocus.
+        await OpenDialogAsync("btn-casc-share-open", "casc-share-dialog");
+
+        await Expect(Part("casc-share-dialog", ".bit-dlg-okb")).ToBeFocusedAsync();
+    }
+
     // ---------- Color ----------
 
     [TestMethod]

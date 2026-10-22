@@ -136,9 +136,10 @@ public partial class BitDialog : BitComponentBase
     /// being shown is ignored, and the focus falls back to <see cref="AutoFocusSelector"/> or to the first
     /// focusable element.
     /// <br />
-    /// One a <see cref="BitParams"/> ancestor supplies is a default for every Dialog under it, so it gives way
-    /// to what a Dialog asks for itself: its own <see cref="AutoFocusSelector"/> and an element its content
-    /// marks with <c>data-autofocus</c> or <c>autofocus</c> both win over it.
+    /// An <see cref="AutoFocusButton"/> cascaded from a <see cref="BitParams"/> ancestor is only a default for
+    /// every Dialog under it, so it gives way to what a Dialog asks for itself: its own
+    /// <see cref="AutoFocusSelector"/>, or an element its content marks with <c>data-autofocus</c> or
+    /// <c>autofocus</c>.
     /// </remarks>
     [Parameter, Outranks(nameof(AutoFocusSelector))] public BitDialogButton? AutoFocusButton { get; set; }
 
@@ -151,14 +152,15 @@ public partial class BitDialog : BitComponentBase
     /// a link or a segmented control above the field the user came to fill in. The selector is matched
     /// inside the Dialog only, and a selector that matches nothing visible falls back to the first focusable
     /// element - so a Dialog whose content varies never opens with the focus nowhere.
-    /// <see cref="AutoFocusButton"/> takes precedence over this when both are set on the Dialog, while one a
-    /// <see cref="BitParams"/> ancestor supplies does not: a Dialog that names the field to start on keeps it
-    /// when an app makes the Cancel button every Dialog's default.
+    /// <see cref="AutoFocusButton"/> takes precedence over this when both are set on the Dialog, but an
+    /// <see cref="AutoFocusButton"/> cascaded from a <see cref="BitParams"/> ancestor does not override this
+    /// selector: a Dialog that names the field to start on keeps it when an app makes the Cancel button every
+    /// Dialog's default.
     /// <br />
     /// An element inside the Dialog carrying a <c>data-autofocus</c> attribute is picked up without a
     /// selector at all, which is the one to reach for when what should be focused is decided by the content
-    /// rather than by the Dialog around it - it wins over an <see cref="AutoFocusButton"/> a
-    /// <see cref="BitParams"/> ancestor supplies, but not over one set on the Dialog.
+    /// rather than by the Dialog around it - it wins over an <see cref="AutoFocusButton"/> cascaded from a
+    /// <see cref="BitParams"/> ancestor, but not over one set on the Dialog.
     /// </remarks>
     [Parameter] public string? AutoFocusSelector { get; set; }
 

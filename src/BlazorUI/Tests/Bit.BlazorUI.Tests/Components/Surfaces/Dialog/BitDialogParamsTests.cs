@@ -311,6 +311,27 @@ public class BitDialogParamsTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitDialogOwnAutoFocusButtonShouldBeFocusedDirectlyUnderACascadedOne()
+    {
+        // A button the dialog names itself is its own choice rather than an app-wide default, so it is focused from
+        // .NET instead of being handed to the JS side as a fallback: an element the content marks with data-autofocus
+        // or autofocus does not win over it.
+        var @params = new BitDialogParams { AutoFocusButton = BitDialogButton.Cancel };
+
+        var component = RenderWithParams(@params, RenderDialog(builder =>
+        {
+            builder.AddAttribute(10, nameof(BitDialog.AutoFocusButton), BitDialogButton.Ok);
+        }));
+
+        var dialog = component.FindComponent<BitDialog>();
+
+        Assert.AreEqual(BitDialogButton.Ok, dialog.Instance.AutoFocusButton);
+        Assert.IsEmpty(Context.JSInterop.Invocations["BitBlazorUI.Utils.focusFirstElement"]);
+        var focused = (ElementReference)Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"][0].Arguments[0]!;
+        Assert.AreEqual(component.Find(".bit-dlg-okb").GetAttribute("blazor:elementReference"), focused.Id);
+    }
+
+    [TestMethod]
     public void BitDialogCascadedDisabledShouldDisableTheButtons()
     {
         var @params = new BitDialogParams { Disabled = true };

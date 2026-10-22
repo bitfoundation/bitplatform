@@ -336,6 +336,7 @@
         <button id="btn-casc-file-open" @onclick="() => _cascFileOpen = true">Delete file</button>
         <button id="btn-casc-folder-open" @onclick="() => _cascFolderOpen = true">Delete folder</button>
         <button id="btn-casc-rename-open" @onclick="() => _cascRenameOpen = true">Rename</button>
+        <button id="btn-casc-share-open" @onclick="() => _cascShareOpen = true">Share</button>
 
         <BitDialog Id="casc-file-dialog" @bind-IsOpen="_cascFileOpen" Title="Delete this file?" Message="It moves to the trash." />
 
@@ -344,6 +345,11 @@
 
         <BitDialog Id="casc-rename-dialog" @bind-IsOpen="_cascRenameOpen" OkText="Rename" Title="Rename this file">
             <input id="casc-rename-input" value="report.pdf" data-autofocus />
+        </BitDialog>
+
+        <BitDialog Id="casc-share-dialog" @bind-IsOpen="_cascShareOpen" AutoFocusButton="BitDialogButton.Ok" OkText="Copy link"
+                   Title="Share this file">
+            <input id="casc-share-input" value="https://example.com/report.pdf" data-autofocus />
         </BitDialog>
     </BitParams>
 </E2ESection>
@@ -571,6 +577,7 @@
     private bool _cascFileOpen;
     private bool _cascFolderOpen;
     private bool _cascRenameOpen;
+    private bool _cascShareOpen;
     private readonly BitDialogParams[] _dialogParams =
     [
         new()
