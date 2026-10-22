@@ -292,10 +292,11 @@ public class BitDialogParamsTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitDialogOwnAutoFocusSelectorShouldNotBeReplacedByACascadedAutoFocusButton()
+    public void BitDialogOwnAutoFocusSelectorShouldComeBeforeACascadedAutoFocusButton()
     {
         // A button the dialog names itself wins over its selector, but a cascaded one is an app-wide default: the
-        // dialog that names the field to start on has made its own choice of where the focus lands.
+        // dialog that names the field to start on keeps it, and where that field is not there the cascaded button is
+        // still what it falls back on, rather than the first focusable element - which may be the destructive Ok.
         var @params = new BitDialogParams { AutoFocusButton = BitDialogButton.Cancel };
 
         var component = RenderWithParams(@params, RenderDialog(builder =>
@@ -303,11 +304,75 @@ public class BitDialogParamsTests : BunitTestContext
             builder.AddAttribute(10, nameof(BitDialog.AutoFocusSelector), ".my-field");
         }));
 
-        var dialog = component.FindComponent<BitDialog>();
-
-        Assert.IsNull(dialog.Instance.AutoFocusButton);
+        Assert.IsEmpty(Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"]);
         var invocation = Context.JSInterop.Invocations["BitBlazorUI.Utils.focusFirstElement"][0];
         Assert.AreEqual(".my-field", invocation.Arguments[1]);
+        var fallback = (ElementReference)invocation.Arguments[2]!;
+        Assert.AreEqual(component.Find(".bit-dlg-cnb").GetAttribute("blazor:elementReference"), fallback.Id);
+    }
+
+    [TestMethod]
+    public void BitDialogOwnAutoFocusButtonShouldBeFocusedDirectlyUnderACascadedOne()
+    {
+        // A button the dialog names itself is its own choice rather than an app-wide default, so it is focused from
+        // .NET without asking the JS side, which is where an element the content marks with data-autofocus or
+        // autofocus would be found: the one this content marks does not win over it.
+        var @params = new BitDialogParams { AutoFocusButton = BitDialogButton.Cancel };
+
+        var component = RenderWithParams(@params, RenderDialog(builder =>
+        {
+            builder.AddAttribute(10, nameof(BitDialog.AutoFocusButton), BitDialogButton.Ok);
+            builder.AddAttribute(11, nameof(BitDialog.ChildContent), (RenderFragment)(content => content.AddMarkupContent(0, "<input class=\"marked\" data-autofocus />")));
+        }));
+
+        Assert.HasCount(1, component.FindAll("input.marked[data-autofocus]"));
+        Assert.IsEmpty(Context.JSInterop.Invocations["BitBlazorUI.Utils.focusFirstElement"]);
+        var focused = (ElementReference)Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"][0].Arguments[0]!;
+        Assert.AreEqual(component.Find(".bit-dlg-okb").GetAttribute("blazor:elementReference"), focused.Id);
+    }
+
+    [TestMethod]
+    [DataRow(BitDialogButton.Close, nameof(BitDialog.ShowCloseButton))]
+    [DataRow(BitDialogButton.Ok, nameof(BitDialog.IsOkButtonEnabled))]
+    public void BitDialogOwnAutoFocusButtonThatCannotTakeTheFocusShouldFallBackOnACascadedOne(BitDialogButton own, string turnedOff)
+    {
+        // The dialog's own button is passed over where it is hidden or disabled, and the order goes on from there: the
+        // safe button the app names for every dialog still comes before the first focusable element.
+        var @params = new BitDialogParams { AutoFocusButton = BitDialogButton.Cancel };
+
+        var component = RenderWithParams(@params, RenderDialog(builder =>
+        {
+            builder.AddAttribute(10, nameof(BitDialog.AutoFocusButton), own);
+            builder.AddAttribute(11, turnedOff, false);
+        }));
+
+        Assert.IsEmpty(Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"]);
+        var invocation = Context.JSInterop.Invocations["BitBlazorUI.Utils.focusFirstElement"][0];
+        Assert.IsNull(invocation.Arguments[1]);
+        var fallback = (ElementReference)invocation.Arguments[2]!;
+        Assert.AreEqual(component.Find(".bit-dlg-cnb").GetAttribute("blazor:elementReference"), fallback.Id);
+    }
+
+    [TestMethod]
+    [DataRow(false)]
+    [DataRow(true)]
+    public void BitDialogAutoFocusButtonGivenByCodeShouldBeFocusedDirectly(bool underBitParams)
+    {
+        // Only a value the cascade wrote is the cascade's: one a derived class gives the dialog is its own choice, with
+        // no BitParams around it as much as under one that names another button, so it is focused directly rather than
+        // handed to the JS side as a fallback that an element the content marks with data-autofocus would win over.
+        var okButton = underBitParams
+            ? RenderWithParams(new BitDialogParams { AutoFocusButton = BitDialogButton.Cancel }, builder =>
+              {
+                  builder.OpenComponent<OkFirstDialog>(0);
+                  builder.AddAttribute(1, nameof(BitDialog.IsOpen), true);
+                  builder.CloseComponent();
+              }).Find(".bit-dlg-okb")
+            : RenderComponent<OkFirstDialog>(parameters => parameters.Add(p => p.IsOpen, true)).Find(".bit-dlg-okb");
+
+        Assert.IsEmpty(Context.JSInterop.Invocations["BitBlazorUI.Utils.focusFirstElement"]);
+        var focused = (ElementReference)Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"][0].Arguments[0]!;
+        Assert.AreEqual(okButton.GetAttribute("blazor:elementReference"), focused.Id);
     }
 
     [TestMethod]
@@ -580,5 +645,16 @@ public class BitDialogParamsTests : BunitTestContext
         Assert.AreEqual(1, component.Find(".bit-dlg").ClassList.Length);
         Assert.IsTrue(component.Find(".bit-dlg-doc").ClassList.Contains("bit-dlg-ctr"));
         Assert.AreEqual("dialog", component.Find(".bit-dlg-ctn").GetAttribute("role"));
+    }
+
+    // A dialog that always opens on its Ok button, which it says in code rather than in the markup of every use.
+    public sealed class OkFirstDialog : BitDialog
+    {
+        protected override void OnParametersSet()
+        {
+            base.OnParametersSet();
+
+            AutoFocusButton = BitDialogButton.Ok;
+        }
     }
 }
