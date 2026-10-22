@@ -90,13 +90,13 @@
              restores and compiles against EF 11 - its EF dependency is a floor, not a range - but creating
              the DbContext throws "Method not found: RelationalTypeMapping.Clone", the same break the EF 10
              Npgsql provider hit. MySQL is blocked on .NET 11 until Oracle ships an EF 11 build. -->
-        <PackageVersion Condition=" '$(database)' == 'MySql' OR '$(database)' == '' " Include="MySql.EntityFrameworkCore" Version="10.0.9" />
-        <PackageVersion Condition=" '$(filesStorage)' == 'AzureBlobStorage' OR '$(filesStorage)' == '' " Include="FluentStorage.Azure.Blobs" Version="8.0.22" />
-        <PackageVersion Condition=" '$(filesStorage)' == 'S3' OR '$(filesStorage)' == '' " Include="FluentStorage.AWS" Version="8.0.23" />
-        <PackageVersion Condition=" '$(filesStorage)' == 'S3' OR '$(filesStorage)' == '' " Include="AWSSDK.Core" Version="4.0.102.11" />
-        <PackageVersion Condition="'$(redis)' == 'true' OR '$(redis)' == ''" Include="Aspire.Hosting.Redis" Version="13.6.1" />
-        <PackageVersion Condition="'$(redis)' == 'true' OR '$(redis)' == ''" Include="Aspire.Hosting.Azure.Redis" Version="13.6.1" />
-        <PackageVersion Condition="'$(redis)' == 'true' OR '$(redis)' == ''" Include="Aspire.StackExchange.Redis" Version="13.6.1" />
+        <PackageVersion Condition=" '$(database)' == 'MySql' OR '$(database)' == '' " Include="MySql.EntityFrameworkCore" Version="10.0.12" />
+        <PackageVersion Condition=" '$(filesStorage)' == 'AzureBlobStorage' OR '$(filesStorage)' == '' " Include="FluentStorage.Azure.Blobs" Version="8.0.24" />
+        <PackageVersion Condition=" '$(filesStorage)' == 'S3' OR '$(filesStorage)' == '' " Include="FluentStorage.AWS" Version="8.0.24" />
+        <PackageVersion Condition=" '$(filesStorage)' == 'S3' OR '$(filesStorage)' == '' " Include="AWSSDK.Core" Version="4.0.102.13" />
+        <PackageVersion Condition="'$(redis)' == 'true' OR '$(redis)' == ''" Include="Aspire.Hosting.Redis" Version="13.6.3" />
+        <PackageVersion Condition="'$(redis)' == 'true' OR '$(redis)' == ''" Include="Aspire.Hosting.Azure.Redis" Version="13.6.3" />
+        <PackageVersion Condition="'$(redis)' == 'true' OR '$(redis)' == ''" Include="Aspire.StackExchange.Redis" Version="13.6.3" />
         <PackageVersion Condition="'$(redis)' == 'true' OR '$(redis)' == ''" Include="ZiggyCreatures.FusionCache.Backplane.StackExchangeRedis" Version="2.9.0" />
         <PackageVersion Condition="'$(redis)' == 'true' OR '$(redis)' == ''" Include="DistributedLock.Redis" Version="1.1.1" />
         <PackageVersion Condition="'$(redis)' == 'true' OR '$(redis)' == ''" Include="Hangfire.Redis.StackExchange" Version="1.12.0" />
@@ -107,7 +107,7 @@
         <PackageVersion Include="QRCoder" Version="1.8.1" />
         <PackageVersion Include="Magick.NET-Q16-AnyCPU" Version="15.0.0" />
         <PackageVersion Include="FluentEmail.Smtp" Version="3.0.2" />
-        <PackageVersion Include="FluentStorage" Version="8.0.22" />
+        <PackageVersion Include="FluentStorage" Version="8.0.24" />
         <PackageVersion Include="Yarp.ReverseProxy" Version="2.3.0" />
         <PackageVersion Include="Microsoft.AspNetCore.OData" Version="9.5.0" />
         <PackageVersion Include="Microsoft.Identity.Web" Version="4.16.1" />
@@ -186,7 +186,7 @@
         <PackageVersion Include="Microsoft.Maui.Controls" Version="10.0.100" />
         <PackageVersion Include="Microsoft.AspNetCore.Components.WebView" Version="10.0.13" />
         <PackageVersion Include="Microsoft.AspNetCore.Components.WebView.Maui" Version="10.0.100" />
-        <PackageVersion Include="Microsoft.AspNetCore.Components.WebView.WindowsForms" Version="10.0.110" />
+        <PackageVersion Include="Microsoft.AspNetCore.Components.WebView.WindowsForms" Version="10.0.120" />
         <PackageVersion Condition=" '$(signalR)' == 'true' OR '$(signalR)' == ''" Include="Microsoft.AspNetCore.SignalR.Client" Version="10.0.13" />
         <PackageVersion Condition=" '$(database)' == 'SqlServer' OR '$(database)' == '' " Include="Microsoft.EntityFrameworkCore.SqlServer" Version="10.0.13" />
         <PackageVersion Condition=" '$(database)' == 'PostgreSQL' OR '$(database)' == '' " Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="10.0.3" />
