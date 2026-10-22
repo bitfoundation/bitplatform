@@ -787,17 +787,14 @@ public partial class BitChart : BitComponentBase
         var tip = _config.Options.Plugins.Tooltip;
         var mode = tip.Mode ?? _config.Options.Interaction.Mode;
 
-        IEnumerable<BitChartDataElement> group =
-            forceIndexGroup && !_scene.IsRadialOrCircular && mode != BitChartInteractionMode.Dataset
-                ? _scene.Elements.Where(x => x.DataIndex == e.DataIndex)
-                : mode switch
-                {
-                    BitChartInteractionMode.Index or BitChartInteractionMode.X or BitChartInteractionMode.Y when !_scene.IsRadialOrCircular
-                        => _scene.Elements.Where(x => x.DataIndex == e.DataIndex),
-                    BitChartInteractionMode.Dataset
-                        => _scene.Elements.Where(x => x.DatasetIndex == e.DatasetIndex),
-                    _ => new[] { e }
-                };
+        // Whether the active elements are the ones of the hovered index.
+        bool byIndex = !_scene.IsRadialOrCircular && mode != BitChartInteractionMode.Dataset
+            && (forceIndexGroup || mode is BitChartInteractionMode.Index or BitChartInteractionMode.X or BitChartInteractionMode.Y);
+        IEnumerable<BitChartDataElement> group = byIndex
+            ? _scene.Elements.Where(x => x.DataIndex == e.DataIndex)
+            : mode == BitChartInteractionMode.Dataset
+                ? _scene.Elements.Where(x => x.DatasetIndex == e.DatasetIndex)
+                : new[] { e };
 
         foreach (var el in group) _active.Add(el);
 
@@ -855,19 +852,33 @@ public partial class BitChart : BitComponentBase
             for (int i = 0; i < combined.Items.Count && i < items.Count; i++)
                 if (cb.LabelColor(items[i]) is { } lc) combined.Items[i].Color = lc;
 
+        // Where the hovered element stands along the index axis (IndexPosition): the place of its index's tick, which
+        // every element of the index shares however it is drawn - a bar in its slot beside it - or, for a point placed
+        // by its own x, that x. It is kept inside the plot: a zoomed or panned axis can put the place of an index outside
+        // it while some of the index's bars still show.
+        bool horizontalIndex = _config.Options.IndexAxis == BitChartIndexAxis.Y && !_scene.IsRadialOrCircular;
+        double? indexAt = null;
+        if (!_scene.IsRadialOrCircular && _scene.PlotArea is { } plot)
+            indexAt = horizontalIndex
+                ? Math.Clamp(e.IndexPosition, plot.Top, plot.Bottom)
+                : Math.Clamp(e.IndexPosition, plot.Left, plot.Right);
+
         // Positioner. Averaging runs along the axis the active items share - the index axis - so on a
         // horizontal-bar chart that is the vertical one, and the tooltip is put beside the group rather
-        // than in the middle of it.
+        // than in the middle of it. The elements of one index share its place there, so the tooltip points
+        // at it - at the crosshair - rather than at the average of their slots, which uneven stacks or
+        // skipped nulls pull to one side.
         if (tip.Position == BitChartTooltipPositioner.Average && _active.Count > 0)
         {
-            if (_config.Options.IndexAxis == BitChartIndexAxis.Y && !_scene.IsRadialOrCircular)
+            double? along = byIndex ? indexAt : null;
+            if (horizontalIndex)
             {
                 combined.AnchorX = _active.Max(a => a.Tooltip.AnchorX);
-                combined.AnchorY = _active.Average(a => a.CenterY);
+                combined.AnchorY = along ?? _active.Average(a => a.CenterY);
             }
             else
             {
-                combined.AnchorX = _active.Average(a => a.CenterX);
+                combined.AnchorX = along ?? _active.Average(a => a.CenterX);
                 combined.AnchorY = _active.Min(a => a.Tooltip.AnchorY);
             }
         }
@@ -888,18 +899,15 @@ public partial class BitChart : BitComponentBase
             }).ToList()
         };
 
-        // Crosshair for index-style highlighting.
+        // Crosshair for index-style highlighting, which marks the hovered index rather than the hovered element: a bar
+        // of a group sits beside its index, so following the bar would move the line and its chip from bar to bar while
+        // the active index stays the same. Only the interaction along the index axis - X on a vertical chart, Y on a
+        // horizontal one - is index-style; the other runs across the values.
         var interaction = _config.Options.Interaction;
-        bool indexMode = (forceIndexGroup || mode is BitChartInteractionMode.Index or BitChartInteractionMode.X)
-            && !_scene.IsRadialOrCircular;
-        if (indexMode && interaction.Crosshair && _scene.PlotArea is { } pa)
+        var alongIndex = horizontalIndex ? BitChartInteractionMode.Y : BitChartInteractionMode.X;
+        bool indexMode = forceIndexGroup || mode == BitChartInteractionMode.Index || mode == alongIndex;
+        if (indexMode && indexAt is { } at && interaction.Crosshair && _scene.PlotArea is { } pa)
         {
-            bool horizontalIndex = _config.Options.IndexAxis == BitChartIndexAxis.Y;
-            // The crosshair marks the hovered index, not the hovered element: a bar of a group sits beside its
-            // index's middle, so following the bar would move the line and the chip from bar to bar while the
-            // active index stays the same, and put the chip beside its category's tick label. Any other element
-            // sits where its centroid says - on its index, or at its own x - and is followed as it is.
-            double at = e.GroupCenter ?? (horizontalIndex ? e.CenterY : e.CenterX);
             _hoverNodes.Add(horizontalIndex
                 ? new BitChartSvgLine
                 {
@@ -912,7 +920,9 @@ public partial class BitChart : BitComponentBase
                     Stroke = interaction.CrosshairColor, StrokeWidth = 1, Dash = "4,3"
                 });
 
-            if (interaction.CrosshairLabel && e.Tooltip.Title is { Length: > 0 } indexLabel)
+            // The chip reads the index axis where the line meets it - a category, or an x value - which is not always
+            // the tooltip's title: a scatter point is titled with its series.
+            if (interaction.CrosshairLabel && e.IndexLabel is { Length: > 0 } indexLabel)
                 AddCrosshairLabel(indexLabel, at, pa, horizontalIndex);
         }
 

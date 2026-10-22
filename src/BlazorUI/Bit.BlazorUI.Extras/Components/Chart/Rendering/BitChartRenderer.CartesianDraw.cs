@@ -3,7 +3,7 @@ namespace Bit.BlazorUI;
 
 public sealed partial class BitChartRenderer
 {
-    private void DrawGrid(BitChartScene scene, BitChartArea plot, BitChartAxisScale indexScale,
+    private void DrawGrid(BitChartScene scene, BitChartArea plot, BitChartAxisScale indexScale, bool centered,
         List<BitChartAxisScale> leftAxes, List<BitChartAxisScale> rightAxes, List<BitChartAxisScale> centerAxes)
     {
         bool firstValueGridDrawn = false;
@@ -26,20 +26,20 @@ public sealed partial class BitChartRenderer
 
         // Axes pinned to the other axis' zero line, drawn inside the plot.
         foreach (var axis in centerAxes)
-            DrawValueAxis(scene, plot, axis, ZeroLineAlong(indexScale, plot), isRight: false, drawArea: false);
+            DrawValueAxis(scene, plot, axis, ZeroLineAlong(indexScale, plot, centered), isRight: false, drawArea: false);
 
         // Index axis. It too can sit on the value axis' zero line rather than along the edge.
         double indexBaseline = PlacementOf(indexScale.Options, IsVertical ? BitPlacement.Bottom : BitPlacement.Left) == BitPlacement.Center
             ? ZeroLineAcross(leftAxes.Concat(rightAxes).Concat(centerAxes).FirstOrDefault(), plot)
             : IsVertical ? plot.Bottom : plot.Left;
-        DrawIndexAxis(scene, plot, indexScale, indexBaseline);
+        DrawIndexAxis(scene, plot, indexScale, indexBaseline, centered);
     }
 
     /// <summary>The pixel along the index axis where its value is zero, clamped into the plot.</summary>
-    private double ZeroLineAlong(BitChartAxisScale indexScale, BitChartArea plot)
+    private double ZeroLineAlong(BitChartAxisScale indexScale, BitChartArea plot, bool centered)
     {
         double p = indexScale.Type == BitChartScaleType.Category
-            ? indexScale.PixelForIndex(0, HasBars())
+            ? indexScale.PixelForIndex(0, centered)
             : indexScale.PixelFor(0);
         return IsVertical ? Math.Clamp(p, plot.Left, plot.Right) : Math.Clamp(p, plot.Top, plot.Bottom);
     }
@@ -170,13 +170,12 @@ public sealed partial class BitChartRenderer
         }
     }
 
-    private void DrawIndexAxis(BitChartScene scene, BitChartArea plot, BitChartAxisScale axis, double baseline)
+    private void DrawIndexAxis(BitChartScene scene, BitChartArea plot, BitChartAxisScale axis, double baseline, bool centered)
     {
         var o = axis.Options;
         if (!ScaleVisible(o)) return;
         var g = o.Grid;
         var tk = o.Ticks;
-        bool centered = HasBars();
 
         foreach (var tick in axis.Ticks)
         {

@@ -5,7 +5,7 @@ namespace Bit.BlazorUI;
 public sealed partial class BitChartRenderer
 {
     private void DrawBars(BitChartScene scene, BitChartArea plot, BitChartAxisScale indexScale,
-        Dictionary<string, BitChartAxisScale> valueScales, List<(BitChartDataset d, int i)> barItems, bool indexIsCategory)
+        Dictionary<string, BitChartAxisScale> valueScales, List<(BitChartDataset d, int i)> barItems, bool centered)
     {
         if (barItems.Count == 0) return;
 
@@ -114,9 +114,9 @@ public sealed partial class BitChartRenderer
                     }
                 }
 
-                // Slot geometry for this index.
+                // Slot geometry for this index, laid out around the index's own place - where its tick is.
                 double slotSize, slotCenter;
-                double centerAlong = indexIsCategory ? indexScale.PixelForIndex(di, true) : indexScale.PixelFor(di);
+                double centerAlong = indexScale.PixelForIndex(di, centered);
                 if (slot < 0)
                 {
                     slotSize = categorySize;
@@ -262,7 +262,8 @@ public sealed partial class BitChartRenderer
                     DataIndex = di,
                     CenterX = IsVertical ? cx : (rect.X + rect.Width / 2),
                     CenterY = IsVertical ? (rect.Y + rect.Height / 2) : cy,
-                    GroupCenter = centerAlong,
+                    IndexPosition = centerAlong,
+                    IndexLabel = IndexLabelAt(indexScale, di),
                     Value = tooltipVal,
                     SeriesLabel = ds.Label,
                     Tooltip = new BitChartTooltipInfo
@@ -447,7 +448,7 @@ public sealed partial class BitChartRenderer
     }
 
     private void DrawLine(BitChartScene scene, BitChartArea plot, BitChartAxisScale indexScale, BitChartAxisScale vScale,
-        BitChartDataset ds, int dsIndex, bool indexIsCategory, bool centered)
+        BitChartDataset ds, int dsIndex, bool indexIsCategory, bool centered, BitChartPluginContext ctx)
     {
         var pts = new List<(double x, double y, int di, double v)>();
 
@@ -457,7 +458,7 @@ public sealed partial class BitChartRenderer
             var ordered = points.Select((p, di) => (p, di)).OrderBy(t => t.p.X).ToList();
             foreach (var (p, di) in ordered)
                 pts.Add((indexScale.PixelFor(p.X), vScale.PixelFor(p.Y), di, p.Y));
-            FlushLine(scene, plot, vScale, ds, dsIndex, pts, indexScale, indexIsCategory, centered);
+            FlushLine(scene, plot, vScale, ds, dsIndex, pts, ctx, indexScale, indexIsCategory, centered);
             return;
         }
 
@@ -470,7 +471,7 @@ public sealed partial class BitChartRenderer
             {
                 if (!ds.SpanGaps)
                 {
-                    fillPaint = FlushLine(scene, plot, vScale, ds, dsIndex, pts, indexScale, indexIsCategory, centered, fillPaint);
+                    fillPaint = FlushLine(scene, plot, vScale, ds, dsIndex, pts, ctx, indexScale, indexIsCategory, centered, fillPaint);
                     pts.Clear();
                 }
                 continue;
@@ -479,12 +480,12 @@ public sealed partial class BitChartRenderer
             double y = vScale.PixelFor(v);
             pts.Add((x, y, di, v));
         }
-        FlushLine(scene, plot, vScale, ds, dsIndex, pts, indexScale, indexIsCategory, centered, fillPaint);
+        FlushLine(scene, plot, vScale, ds, dsIndex, pts, ctx, indexScale, indexIsCategory, centered, fillPaint);
     }
 
     private string? FlushLine(BitChartScene scene, BitChartArea plot, BitChartAxisScale vScale, BitChartDataset ds, int dsIndex,
-        List<(double x, double y, int di, double v)> pts,
-        BitChartAxisScale? indexScale = null, bool indexIsCategory = false, bool centered = false, string? fillPaint = null)
+        List<(double x, double y, int di, double v)> pts, BitChartPluginContext ctx,
+        BitChartAxisScale indexScale, bool indexIsCategory = false, bool centered = false, string? fillPaint = null)
     {
         if (pts.Count == 0) return fillPaint;
 
@@ -508,7 +509,7 @@ public sealed partial class BitChartRenderer
 
             // Fill to another dataset's line (range area).
             if (ds.Fill == BitChartFillMode.Dataset && ds.FillTargetIndex is { } ti
-                && ti >= 0 && ti < _data.Datasets.Count && indexScale is not null)
+                && ti >= 0 && ti < _data.Datasets.Count)
             {
                 var target = ComputeLinePoints(_data.Datasets[ti], indexScale, vScale, indexIsCategory, centered);
                 if (target.Count > 0)
@@ -574,10 +575,37 @@ public sealed partial class BitChartRenderer
 
         if (ds.PointStyle != BitChartPointStyle.None)
             foreach (var p in pts)
-                AddPoint(scene, ds, dsIndex, p.di, p.x, p.y, p.v, ResolvePointRadius(ds), border, valueScale: vScale);
+                AddPoint(scene, ds, dsIndex, p.di, p.x, p.y, p.v, ResolvePointRadius(ds), border, valueScale: vScale,
+                    index: IndexPlaceOf(ds, p.di, p.x, indexScale, ctx));
 
         return fillPaint;
     }
+
+    /// <summary>
+    /// Where a point of a line stands along the index axis and what the axis reads there (see
+    /// <see cref="BitChartDataElement.IndexPosition"/>). A point of a series of values stands at its index's place on the
+    /// primary index axis, whichever x axis its line is drawn against; a point placed by its own x stands where it is
+    /// drawn, read off the axis that placed it.
+    /// </summary>
+    private (double At, string? Label) IndexPlaceOf(BitChartDataset ds, int di, double x, BitChartAxisScale xScale,
+        BitChartPluginContext ctx)
+        => ds.Points is { } points
+            ? (x, IndexLabelAt(xScale, points[di].X))
+            : (ctx.XForIndex(di), IndexLabelAt(ctx.IndexScale!, di));
+
+    /// <summary>The category named at a value along the index axis, if the value is one of the categories' indexes.</summary>
+    private string? CategoryAt(double value)
+    {
+        double i = Math.Round(value);
+        return Math.Abs(value - i) < 1e-9 && i >= 0 && i < _data.Labels.Count ? _data.Labels[(int)i] : null;
+    }
+
+    /// <summary>
+    /// What an index axis reads at a value along it: the category named there, or - on an axis that is not a category
+    /// one - the value the way the axis spells it.
+    /// </summary>
+    private string? IndexLabelAt(BitChartAxisScale axis, double value)
+        => CategoryAt(value) ?? (axis.Type == BitChartScaleType.Category ? null : axis.FormatPoint(value));
 
     /// <summary>
     /// Resolves an area fill paint. A pattern or gradient wins; then the dataset's explicit
@@ -704,7 +732,7 @@ public sealed partial class BitChartRenderer
                         // every value, which would leave the interval - still in the original units -
                         // pointing at the wrong place, so it is left out there.
                         AddPoint(scene, ds, i, p.di, p.x, p.y, p.v, ResolvePointRadius(ds), border,
-                            valueScale: stacked100 ? null : vScale, errorValue: p.top);
+                            valueScale: stacked100 ? null : vScale, errorValue: p.top, index: (p.x, IndexLabelAt(indexScale, p.di)));
             }
         }
     }
@@ -720,13 +748,15 @@ public sealed partial class BitChartRenderer
             double x = indexScale.PixelFor(p.X);
             double y = vScale.PixelFor(p.Y);
             double r = bubble ? (p.R ?? 5) : Math.Max(4, ResolvePointRadius(ds));
-            AddPoint(scene, ds, dsIndex, di, x, y, p.Y, r, border, p.X, vScale);
+            AddPoint(scene, ds, dsIndex, di, x, y, p.Y, r, border, p.X, vScale, index: (x, IndexLabelAt(indexScale, p.X)));
         }
     }
 
+    // index is where the point stands along the index axis and what the axis reads there (see
+    // BitChartDataElement.IndexPosition); a radial chart, which has no index axis, leaves it out.
     private void AddPoint(BitChartScene scene, BitChartDataset ds, int dsIndex, int di,
         double x, double y, double value, double radius, string border, double? xValue = null,
-        BitChartAxisScale? valueScale = null, double? errorValue = null)
+        BitChartAxisScale? valueScale = null, double? errorValue = null, (double At, string? Label)? index = null)
     {
         var ctx = Ctx(ds, dsIndex, di, value);
         double r = ds.PointRadiusFn?.Invoke(ctx) ?? radius;
@@ -767,11 +797,15 @@ public sealed partial class BitChartRenderer
             DataIndex = di,
             CenterX = x,
             CenterY = y,
+            IndexPosition = index?.At ?? x,
+            IndexLabel = index?.Label,
             Value = value,
             SeriesLabel = ds.Label,
             Tooltip = new BitChartTooltipInfo
             {
-                Title = xValue is null && di < _data.Labels.Count ? _data.Labels[di] : ds.Label,
+                // A point of a line is titled with the category it stands at - its index's or, placed by its own x, the
+                // one at that x rather than the one at its place in the list - and a scatter point with its series.
+                Title = xValue is null ? CategoryAt(ds.Points is { } pts && di < pts.Count ? pts[di].X : di) ?? ds.Label : ds.Label,
                 AnchorX = x,
                 AnchorY = y,
                 Items = { new BitChartTooltipItem { Color = fill, Text = text, PointStyle = style } }
