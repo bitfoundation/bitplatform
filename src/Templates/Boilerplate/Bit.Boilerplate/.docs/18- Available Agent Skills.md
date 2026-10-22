@@ -138,6 +138,7 @@ It carries `context: fork` in its frontmatter, so tools that support forked skil
 **When to use it**: For every task that is not a small, obvious edit: building or changing a feature, fixing a bug that needs investigating, work spanning several files. AGENTS.md makes it the agent's default for such tasks, so it runs whether or not you ask for it; `/ai-dlc` starts it explicitly.
 
 **Key capabilities**:
+- Sizes the work first: a known bug or a change inside one feature takes a short track - reproduce, fix, a test that fails without the fix, validation - with no plan to approve, and moves to the full track when it turns out bigger
 - Phase 1 - Requirements elaboration, with clarifying questions until requirements are unambiguous
 - Phase 2 - Planning and task decomposition, presented for approval
 - Phase 3 - Design of affected files, components, APIs and data models

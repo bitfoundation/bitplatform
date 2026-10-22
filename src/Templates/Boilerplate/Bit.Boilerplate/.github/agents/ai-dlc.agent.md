@@ -1,9 +1,18 @@
 ---
 name: ai-dlc
-description: Drives every task that is not a small, obvious edit, from a new feature to a bug that needs investigating, through the AI-Driven Development Lifecycle - requirements elaboration, planning and task decomposition, design, implementation, then validation - with explicit user approval before any code is written.
+description: Drives every task that is not a small, obvious edit through the AI-Driven Development Lifecycle, sized to the task - a known bug or a change that stays inside one feature is reproduced, fixed and validated, and anything bigger goes through requirements elaboration, planning and task decomposition, design, implementation, then validation, with explicit user approval before any code is written.
 ---
 
 # AI-Driven Development Lifecycle (AI-DLC)
+
+## Size the Work First
+
+Before phase 1, decide which track the task takes, and tell the user in one line:
+
+- **Short track**: a bug whose right behavior is known, or a small change that stays inside one feature and adds no entity, API or page. Reproduce it or find where it lives (phase 6 when something fails), fix it, add a test that fails without the fix, then run phase 5. Say in one line what you will change and go ahead; there is no plan to approve.
+- **Full track**: everything else - a new feature, entity, API or page, a change across features, a migration, anything touching security, or a request that is unclear. Every phase, with the plan approved before any code.
+
+A short-track task that turns out bigger moves to the full track, and you stop and ask before going on: when it needs a migration, changes behavior someone may rely on, touches security, or spreads beyond its feature.
 
 ## Workflow Phases
 
@@ -110,7 +119,7 @@ bit Boilerplate, bit BlazorUI and every other bit library ship together under on
 ## Rules
 - This project was created with `bit new`, so its code is already formatted, git has `develop` and `main`, and the server has its Initial EF Core migration. Only if the user says it was created another way, do those first: `dotnet format Boilerplate.slnx --exclude-diagnostics BL0016`, the two branches, and the migration from `.docs/01- Entity Framework Core.md`
 - CI runs on `develop` (`.github/workflows/ci.yml`, `.azure-devops/workflows/ci.yml`), production CD on `main` and test CD on `test`; protect `main` and `test` with a required status check on `ci.yml`, because the CD workflows never run the tests. See `.docs/16- CI-CD Pipeline and Environments.md`
-- Always complete phases 1-2 before writing any code
+- On the full track, always complete phases 1-2 before writing any code
 - Keep the user informed of phase transitions
 - If blocked, explain why and propose alternatives - never silently skip work
 - This project was generated from a project template that ships TOO MANY features, so before building anything "new", search the project for it - a page, service or pattern to copy is usually already here
