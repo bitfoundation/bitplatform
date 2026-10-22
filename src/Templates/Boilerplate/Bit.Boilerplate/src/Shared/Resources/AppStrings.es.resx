@@ -128,6 +128,9 @@
   <data name="MaxLengthAttribute_InvalidMaxLength" xml:space="preserve">
     <value>MaxLengthAttribute debe tener un valor Length mayor que cero. Use MaxLength() sin parámetros para indicar que la cadena o el arreglo puede tener la longitud máxima permitida.</value>
   </data>
+  <data name="MaxLengthAttribute_ValidationError" xml:space="preserve">
+    <value>El campo {0} debe ser un tipo cadena o arreglo con una longitud máxima de '{1}'.</value>
+  </data>
   <data name="MinLengthAttribute_ValidationError" xml:space="preserve">
     <value>El campo {0} debe ser un tipo cadena o arreglo con una longitud mínima de '{1}'.</value>
   </data>

@@ -26,16 +26,16 @@ public partial class TenantDto
 
     [Required(ErrorMessage = nameof(AppStrings.RequiredAttribute_ValidationError))]
     [Display(Name = nameof(AppStrings.Name))]
-    [MaxLength(63, ErrorMessage = nameof(AppStrings.MaxLengthAttribute_InvalidMaxLength))]
+    [MaxLength(63, ErrorMessage = nameof(AppStrings.MaxLengthAttribute_ValidationError))]
     [RegularExpression(NAME_REGEX_PATTERN, ErrorMessage = nameof(AppStrings.TenantNameRegexPatternError))]
     public string? Name { get; set; }
 
     [Display(Name = nameof(AppStrings.Title))]
-    [MaxLength(64, ErrorMessage = nameof(AppStrings.MaxLengthAttribute_InvalidMaxLength))]
+    [MaxLength(64, ErrorMessage = nameof(AppStrings.MaxLengthAttribute_ValidationError))]
     public string? Title { get; set; }
 
     [Display(Name = nameof(AppStrings.Domain))]
-    [MaxLength(253, ErrorMessage = nameof(AppStrings.MaxLengthAttribute_InvalidMaxLength))]
+    [MaxLength(253, ErrorMessage = nameof(AppStrings.MaxLengthAttribute_ValidationError))]
     [RegularExpression(DOMAIN_REGEX_PATTERN, ErrorMessage = nameof(AppStrings.TenantDomainRegexPatternError))]
     public string? Domain { get; set; }
 

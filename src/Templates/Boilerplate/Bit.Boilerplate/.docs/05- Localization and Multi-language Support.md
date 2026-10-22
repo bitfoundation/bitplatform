@@ -189,8 +189,8 @@ Here are the corresponding entries from `AppStrings.resx`:
   <value>The {0} field is required.</value>
 </data>
 
-<data name="MaxLengthAttribute_InvalidMaxLength" xml:space="preserve">
-  <value>MaxLengthAttribute must have a Length value that is greater than zero...</value>
+<data name="MaxLengthAttribute_ValidationError" xml:space="preserve">
+  <value>The field {0} must be a string or array type with a maximum length of '{1}'.</value>
 </data>
 
 <!-- Field Names -->
