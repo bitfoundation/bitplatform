@@ -1040,6 +1040,12 @@
                     ]
                 },
                 {
+                    "condition": "(advancedTests != true || signalR != true || redis != true)",
+                    "exclude": [
+                        "src/Tests/Features/SignalR/SignalRRedisBackplaneTests.cs"
+                    ]
+                },
+                {
                     // The push notification feature, and therefore its dtos and entities, only exist under `notification`.
                     "condition": "(advancedTests != true || notification != true)",
                     "exclude": [
