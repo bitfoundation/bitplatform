@@ -222,16 +222,16 @@
 
     private const string Snippet = """
         // Square crop around the subject, high quality downscale, gentle sharpen,
-        // then compress until it fits the budget. Circular masks are a pixel
-        // operation, so they survive the resize rather than being a CSS trick.
+        // then compress until it fits the budget. The circle is a mask on the
+        // pixels' alpha, so the exported file is round rather than a CSS trick.
         var pipeline = ImagePipeline.Create()
             .AutoOrient()
             .SmartCrop(AspectRatio.Square)     // finds the subject instead of assuming the centre
             .Resize(size, size, ResizeMode.Stretch)
             .Sharpen(amount: 0.25f);
+        if (circular) pipeline = pipeline.ApplyMask(Mask.Ellipse());
 
         using var avatar = await pipeline.ExecuteAsync(source);
-        if (circular) ApplyCircularMask(avatar);
 
         var encoded = await exporter.EncodeWithFallbackAsync(
             avatar,
@@ -331,9 +331,10 @@
             var pipeline = _smart
                 ? ImagePipeline.Create().AutoOrient().SmartCrop(AspectRatio.Square).Resize(_size, _size, ResizeMode.Stretch).Sharpen(0.25f)
                 : ImagePipeline.Create().AutoOrient().Cover(_size, _size, _anchor).Sharpen(0.25f);
+            // The circle goes on the pixels' alpha, so the exported file is genuinely round.
+            if (_circular) pipeline = pipeline.ApplyMask(Mask.Ellipse());
 
             next = await pipeline.ExecuteAsync(source);
-            if (_circular) ApplyCircularMask(next);
 
             var preferred = new[] { ImageFormat.WebP, ImageFormat.Jpeg };
             // A circular avatar needs transparency, so a lossy opaque format would show the corners.
@@ -377,31 +378,6 @@
             {
                 _busy = false;
                 StateHasChanged();
-            }
-        }
-    }
-
-    /// <summary>
-    /// Clears the pixels outside an inscribed circle, with a one pixel feather so the edge is not jagged.
-    /// Done on the pixels rather than in CSS so the exported file is genuinely round.
-    /// </summary>
-    private static void ApplyCircularMask(ImageBuffer image)
-    {
-        var cx = image.Width / 2f;
-        var cy = image.Height / 2f;
-        var radius = MathF.Min(cx, cy);
-        for (var y = 0; y < image.Height; y++)
-        {
-            var row = image.GetRow(y);
-            var dy = y + 0.5f - cy;
-            for (var x = 0; x < image.Width; x++)
-            {
-                var dx = x + 0.5f - cx;
-                var distance = MathF.Sqrt(dx * dx + dy * dy);
-                if (distance <= radius - 1) continue;
-                var coverage = Math.Clamp(radius - distance, 0f, 1f);
-                var p = row[x];
-                row[x] = p.WithAlpha((byte)(p.A * coverage));
             }
         }
     }

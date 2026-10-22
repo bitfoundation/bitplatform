@@ -87,6 +87,9 @@ public sealed record BmageEditorStrings
     public string Duplicate { get; init; } = "Duplicate";
     public string BringToFront { get; init; } = "Bring to front";
     public string SendToBack { get; init; } = "Send to back";
+    public string Show { get; init; } = "Show";
+    public string Hide { get; init; } = "Hide";
+    public string Annotations { get; init; } = "Annotations";
     public string Download { get; init; } = "Download";
     public string CopyToClipboard { get; init; } = "Copy to clipboard";
     public string ZoomIn { get; init; } = "Zoom in";

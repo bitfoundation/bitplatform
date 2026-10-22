@@ -4,11 +4,24 @@ namespace Bit.Bmage.Operations;
 
 /// <summary>
 /// Ambient services and policies passed to an operation while it executes: memory allocation, limits,
-/// cancellation, progress reporting and whether the source buffer may be modified in place.
+/// cancellation, progress reporting, how many threads it may use and whether the source buffer may be modified in place.
 /// </summary>
 public sealed class OperationContext
 {
+    /// <summary>
+    /// How many threads an operation uses when nothing else is configured: every processor where .NET has threads, and
+    /// one in the browser.
+    /// </summary>
+    /// <remarks>
+    /// Blazor WebAssembly runs .NET on the page's own thread unless the application is built with
+    /// <c>WasmEnableThreads</c>, and waiting for work handed to another thread is not possible there, so the browser
+    /// default is one. An application built with threads opts in by setting
+    /// <see cref="BitBmageOptions.MaxDegreeOfParallelism"/> or <see cref="Pipeline.PipelineExecutionOptions.MaxDegreeOfParallelism"/>.
+    /// </remarks>
+    public static int DefaultMaxDegreeOfParallelism { get; } = OperatingSystem.IsBrowser() ? 1 : Math.Max(1, Environment.ProcessorCount);
+
     /// <summary>A default context using the shared pooled allocator, default limits, no cancellation and no progress.</summary>
+    /// <remarks>Declared after <see cref="DefaultMaxDegreeOfParallelism"/>, which its constructor reads.</remarks>
     public static OperationContext Default { get; } = new();
 
     public OperationContext(
@@ -16,13 +29,16 @@ public sealed class OperationContext
         ImageLimits? limits = null,
         CancellationToken cancellationToken = default,
         IProgress<double>? progress = null,
-        bool canMutateSource = false)
+        bool canMutateSource = false,
+        int? maxDegreeOfParallelism = null)
     {
+        if (maxDegreeOfParallelism is < 1) throw new ArgumentOutOfRangeException(nameof(maxDegreeOfParallelism), "At least one thread is needed.");
         Allocator = allocator ?? PooledPixelAllocator.Shared;
         Limits = limits ?? ImageLimits.Default;
         CancellationToken = cancellationToken;
         Progress = progress;
         CanMutateSource = canMutateSource;
+        MaxDegreeOfParallelism = maxDegreeOfParallelism ?? DefaultMaxDegreeOfParallelism;
     }
 
     /// <summary>Allocator used for intermediate and output buffers.</summary>
@@ -43,6 +59,13 @@ public sealed class OperationContext
     /// </summary>
     public bool CanMutateSource { get; }
 
+    /// <summary>
+    /// The most threads the operation may spread its rows over. Built-in operations whose rows are independent split
+    /// the image into bands and produce exactly the pixels they produce on one thread. Defaults to
+    /// <see cref="DefaultMaxDegreeOfParallelism"/>.
+    /// </summary>
+    public int MaxDegreeOfParallelism { get; }
+
     /// <summary>Allocates a buffer using this context's allocator and limits.</summary>
     public ImageBuffer Allocate(int width, int height, bool clear = false) => ImageBuffer.Create(width, height, Allocator, clear, Limits);
 
@@ -54,13 +77,17 @@ public sealed class OperationContext
 
     /// <summary>Returns a copy of the context with a different mutation policy.</summary>
     public OperationContext WithMutation(bool canMutateSource)
-        => canMutateSource == CanMutateSource ? this : new OperationContext(Allocator, Limits, CancellationToken, Progress, canMutateSource);
+        => canMutateSource == CanMutateSource ? this : new OperationContext(Allocator, Limits, CancellationToken, Progress, canMutateSource, MaxDegreeOfParallelism);
 
     /// <summary>Returns a copy of the context with a different progress sink.</summary>
     public OperationContext WithProgress(IProgress<double>? progress)
-        => new(Allocator, Limits, CancellationToken, progress, CanMutateSource);
+        => new(Allocator, Limits, CancellationToken, progress, CanMutateSource, MaxDegreeOfParallelism);
 
     /// <summary>Returns a copy of the context with a different cancellation token.</summary>
     public OperationContext WithCancellation(CancellationToken cancellationToken)
-        => new(Allocator, Limits, cancellationToken, Progress, CanMutateSource);
+        => new(Allocator, Limits, cancellationToken, Progress, CanMutateSource, MaxDegreeOfParallelism);
+
+    /// <summary>Returns a copy of the context that may use at most <paramref name="maxDegreeOfParallelism"/> threads.</summary>
+    public OperationContext WithParallelism(int maxDegreeOfParallelism)
+        => maxDegreeOfParallelism == MaxDegreeOfParallelism ? this : new(Allocator, Limits, CancellationToken, Progress, CanMutateSource, maxDegreeOfParallelism);
 }

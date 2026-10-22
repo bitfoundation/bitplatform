@@ -9,6 +9,7 @@ dotnet run --project src/Utilities/Bmage/Tests/Bit.Bmage.Benchmarks -c Release -
 
 **Environment for the desktop tables:** .NET 10.0.13, x64 RyuJIT with AVX2, Windows 11, workstation GC,
 BenchmarkDotNet 0.15.8 with two warm-ups and six iterations. Allocations are per call once the array pool is warm. The
+tables are for one thread, as the browser runs by default and the benchmarks pin. The
 browser is a different machine model altogether; see
 [WebAssembly: compile ahead of time](#webassembly-compile-ahead-of-time) for what to expect there.
 
@@ -63,6 +64,10 @@ It needs the `wasm-tools` workload (`dotnet workload install wasm-tools`) and th
 - **Publishing takes minutes rather than seconds**, because every assembly is compiled to WebAssembly.
 
 The relative ordering in the tables below holds under both, so the guidance at the end applies either way.
+
+## Every core
+
+On ten cores, operations run 4.7 to 8.5× faster, with the same pixels: see [threads-and-memory.md](threads-and-memory.md).
 
 ## Resizing
 

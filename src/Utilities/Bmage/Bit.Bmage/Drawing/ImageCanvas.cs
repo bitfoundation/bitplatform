@@ -7,7 +7,19 @@ using Bit.Bmage.Operations.Transforms;
 
 namespace Bit.Bmage.Drawing;
 
-/// <summary>How a drawing operation combines with what is already on the canvas.</summary>
+/// <summary>How a drawing operation, or a layer, combines with what is already on the canvas.</summary>
+/// <remarks>
+/// <para>
+/// Everything from <see cref="Multiply"/> on follows the W3C Compositing and Blending Level 1 specification, the same
+/// definitions as CSS <c>mix-blend-mode</c>, the canvas <c>globalCompositeOperation</c> and the blend modes of image
+/// editors: the blend function decides the colour where the two overlap, weighted by the destination's alpha, and the
+/// result is composited source-over. A transparent destination therefore shows the source unchanged, whatever the mode.
+/// </para>
+/// <para>
+/// The separable modes work on each channel alone; <see cref="Hue"/>, <see cref="Saturation"/>, <see cref="Color"/> and
+/// <see cref="Luminosity"/> work on the colour as a whole.
+/// </para>
+/// </remarks>
 public enum BlendMode
 {
     /// <summary>Standard alpha compositing.</summary>
@@ -16,6 +28,38 @@ public enum BlendMode
     Copy,
     /// <summary>Removes coverage from the destination, making it transparent (an eraser).</summary>
     Erase,
+    /// <summary>Multiplies the colours: never lighter than either, white leaves the destination unchanged.</summary>
+    Multiply,
+    /// <summary>Inverts, multiplies and inverts again: never darker than either, black leaves the destination unchanged.</summary>
+    Screen,
+    /// <summary>Multiplies the destination's darks and screens its lights, raising contrast.</summary>
+    Overlay,
+    /// <summary>Keeps the darker of the two, channel by channel.</summary>
+    Darken,
+    /// <summary>Keeps the lighter of the two, channel by channel.</summary>
+    Lighten,
+    /// <summary>Brightens the destination to reflect the source.</summary>
+    ColorDodge,
+    /// <summary>Darkens the destination to reflect the source.</summary>
+    ColorBurn,
+    /// <summary>Multiplies or screens depending on the source, like a harsh spotlight.</summary>
+    HardLight,
+    /// <summary>Darkens or lightens depending on the source, like a diffuse spotlight.</summary>
+    SoftLight,
+    /// <summary>The absolute difference of the colours.</summary>
+    Difference,
+    /// <summary>Like <see cref="Difference"/> with lower contrast.</summary>
+    Exclusion,
+    /// <summary>The source's hue with the destination's saturation and luminosity.</summary>
+    Hue,
+    /// <summary>The source's saturation with the destination's hue and luminosity.</summary>
+    Saturation,
+    /// <summary>The source's hue and saturation with the destination's luminosity: tints a photo, keeping its shading.</summary>
+    Color,
+    /// <summary>The source's luminosity with the destination's hue and saturation.</summary>
+    Luminosity,
+    /// <summary>Adds the colours, clipping at white (linear dodge): light leaks, glows and fireworks.</summary>
+    Add,
 }
 
 /// <summary>
@@ -382,12 +426,7 @@ public sealed class ImageCanvas : IDisposable
                 if (sp.X < -0.5f || sp.Y < -0.5f || sp.X > sw + 0.5f || sp.Y > sh + 0.5f) continue;
                 var color = SampleBilinear(image, source, sp.X - 0.5f, sp.Y - 0.5f, filter);
                 if (color.A == 0 && blend == BlendMode.SourceOver) continue;
-                dst[x] = blend switch
-                {
-                    BlendMode.Copy => opacity >= 1f ? color : Compositor.SourceOver(dst[x], color, opacity),
-                    BlendMode.Erase => Compositor.Erase(dst[x], color.A / 255f * opacity),
-                    _ => Compositor.SourceOver(dst[x], color, opacity),
-                };
+                dst[x] = Compositor.Blend(dst[x], color, blend, opacity);
             }
         }
         return this;
@@ -436,13 +475,16 @@ public sealed class ImageCanvas : IDisposable
             case BlendMode.Erase:
                 for (var i = 0; i < src.Length; i++) dst[i] = Compositor.Erase(dst[i], src[i].A / 255f * opacity);
                 break;
-            default:
+            case BlendMode.SourceOver:
                 for (var i = 0; i < src.Length; i++)
                 {
                     var s = src[i];
                     if (s.A == 0) continue;
                     dst[i] = Compositor.SourceOver(dst[i], s, opacity);
                 }
+                break;
+            default:
+                Compositor.BlendRow(src, dst, mode, opacity);
                 break;
         }
     }

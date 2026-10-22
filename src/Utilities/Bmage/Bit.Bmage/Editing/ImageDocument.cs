@@ -4,6 +4,7 @@ using System.Numerics;
 using Bit.Bmage.Annotations;
 using Bit.Bmage.Drawing;
 using Bit.Bmage.Geometry;
+using Bit.Bmage.Layers;
 using Bit.Bmage.Operations;
 using Bit.Bmage.Pipeline;
 
@@ -16,10 +17,11 @@ namespace Bit.Bmage.Editing;
 /// </summary>
 public sealed record ImageDocument
 {
-    private ImageDocument(Size sourceSize, ImagePipeline pipeline, ImmutableList<Annotation> annotations)
+    private ImageDocument(Size sourceSize, ImagePipeline pipeline, ImmutableList<Layer> layers, ImmutableList<Annotation> annotations)
     {
         SourceSize = sourceSize;
         Pipeline = pipeline;
+        LayerList = layers;
         AnnotationList = annotations;
     }
 
@@ -27,7 +29,7 @@ public sealed record ImageDocument
     public static ImageDocument Create(Size sourceSize)
     {
         if (sourceSize.Width <= 0 || sourceSize.Height <= 0) throw new ArgumentOutOfRangeException(nameof(sourceSize));
-        return new ImageDocument(sourceSize, ImagePipeline.Empty, []);
+        return new ImageDocument(sourceSize, ImagePipeline.Empty, [], []);
     }
 
     /// <summary>Creates an empty document sized to an image.</summary>
@@ -43,12 +45,20 @@ public sealed record ImageDocument
     /// <summary>Pixel operations applied to the source, in order.</summary>
     public ImagePipeline Pipeline { get; private init; }
 
+    private ImmutableList<Layer> LayerList { get; init; }
+
+    /// <summary>
+    /// Layers composited onto the pipeline's output, bottom first, before the annotations are drawn over them: placed
+    /// images, colour fills and adjustment layers, each with a blend mode, an opacity and an optional mask.
+    /// </summary>
+    public IReadOnlyList<Layer> Layers => LayerList;
+
     private ImmutableList<Annotation> AnnotationList { get; init; }
 
     /// <summary>The annotation overlay, in draw order.</summary>
     public IReadOnlyList<Annotation> Annotations => AnnotationList;
 
-    /// <summary>Size of the image after the pipeline runs, before annotations (which never change the size).</summary>
+    /// <summary>Size of the image after the pipeline runs, before layers and annotations (which never change the size).</summary>
     /// <exception cref="ArgumentException">The pipeline cannot be applied to an image of <see cref="SourceSize"/>.</exception>
     public Size OutputSize => Pipeline.GetOutputSize(SourceSize);
 
@@ -59,7 +69,7 @@ public sealed record ImageDocument
     public bool TryGetOutputSize(out Size outputSize) => Pipeline.TryGetOutputSize(SourceSize, out outputSize);
 
     /// <summary>True when nothing has been changed.</summary>
-    public bool IsEmpty => Pipeline.IsEmpty && AnnotationList.IsEmpty;
+    public bool IsEmpty => Pipeline.IsEmpty && LayerList.IsEmpty && AnnotationList.IsEmpty;
 
     // ---- Pipeline edits ----
 
@@ -81,6 +91,50 @@ public sealed record ImageDocument
 
     /// <summary>Returns a document with all pixel operations cleared, keeping annotations.</summary>
     public ImageDocument ClearOperations() => this with { Pipeline = ImagePipeline.Empty };
+
+    // ---- Layer edits ----
+
+    /// <summary>Returns a document with a layer added on top of the others.</summary>
+    public ImageDocument AddLayer(Layer layer)
+    {
+        ArgumentNullException.ThrowIfNull(layer);
+        return this with { LayerList = LayerList.Add(layer) };
+    }
+
+    /// <summary>Returns a document with the layer of the same id replaced, or unchanged when the id is unknown.</summary>
+    public ImageDocument UpdateLayer(Layer layer)
+    {
+        ArgumentNullException.ThrowIfNull(layer);
+        var index = LayerList.FindIndex(l => l.Id == layer.Id);
+        return index < 0 || ReferenceEquals(LayerList[index], layer) ? this : this with { LayerList = LayerList.SetItem(index, layer) };
+    }
+
+    /// <summary>Returns a document with a layer removed by id.</summary>
+    public ImageDocument RemoveLayer(Guid id)
+    {
+        var index = LayerList.FindIndex(l => l.Id == id);
+        return index < 0 ? this : this with { LayerList = LayerList.RemoveAt(index) };
+    }
+
+    /// <summary>
+    /// Returns a document with a layer moved to <paramref name="index"/> in the stack, 0 being the bottom. The index is
+    /// clamped to the stack.
+    /// </summary>
+    public ImageDocument MoveLayer(Guid id, int index)
+    {
+        var from = LayerList.FindIndex(l => l.Id == id);
+        if (from < 0) return this;
+        var to = Math.Clamp(index, 0, LayerList.Count - 1);
+        if (to == from) return this;
+        var layer = LayerList[from];
+        return this with { LayerList = LayerList.RemoveAt(from).Insert(to, layer) };
+    }
+
+    /// <summary>Returns a document with every layer removed.</summary>
+    public ImageDocument ClearLayers() => LayerList.IsEmpty ? this : this with { LayerList = [] };
+
+    /// <summary>Finds a layer by id.</summary>
+    public Layer? FindLayer(Guid id) => LayerList.FirstOrDefault(l => l.Id == id);
 
     // ---- Annotation edits ----
 
@@ -173,11 +227,12 @@ public sealed record ImageDocument
         return new ImageDocument(
             new Size(Math.Max(1, (int)Math.Round(SourceSize.Width * scale)), Math.Max(1, (int)Math.Round(SourceSize.Height * scale))),
             Pipeline.ForScale(scale),
+            [.. LayerList.Select(l => l.ForScale(scale))],
             [.. AnnotationList.Select(a => a.ForScale(scale))]);
     }
 }
 
-/// <summary>Renders an <see cref="ImageDocument"/>: pixel pipeline first, then the annotation overlay.</summary>
+/// <summary>Renders an <see cref="ImageDocument"/>: pixel pipeline first, then the layers, then the annotation overlay.</summary>
 public sealed class DocumentRenderer
 {
     private readonly ITextRasterizer? _textRasterizer;
@@ -192,6 +247,7 @@ public sealed class DocumentRenderer
         var result = document.Pipeline.Execute(source, options);
         try
         {
+            CompositeLayers(document.Layers, result, options);
             RenderAnnotations(document, result, annotationScale, options?.CancellationToken ?? default);
             return result;
         }
@@ -210,6 +266,7 @@ public sealed class DocumentRenderer
         var result = await document.Pipeline.ExecuteAsync(source, options).ConfigureAwait(false);
         try
         {
+            CompositeLayers(document.Layers, result, options);
             RenderAnnotations(document, result, annotationScale, options?.CancellationToken ?? default);
             return result;
         }
@@ -218,6 +275,14 @@ public sealed class DocumentRenderer
             result.Dispose();
             throw;
         }
+    }
+
+    /// <summary>Composites layers, already at the target's scale, onto the pipeline's output in place.</summary>
+    internal static void CompositeLayers(IReadOnlyList<Layer> layers, ImageBuffer target, PipelineExecutionOptions? options)
+    {
+        if (layers.Count == 0) return;
+        options ??= PipelineExecutionOptions.Default;
+        LayerCompositor.Composite(target, layers, new OperationContext(options.Allocator, options.Limits, options.CancellationToken, maxDegreeOfParallelism: options.MaxDegreeOfParallelism));
     }
 
     /// <summary>Draws only the annotation overlay onto an existing buffer.</summary>

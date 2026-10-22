@@ -99,11 +99,35 @@ available and a download where not, and returns false when the user cancels.
 `SupportsWasmThreads` reports multithreading, which is off by default in Blazor. Neither is required; they inform how
 much work is reasonable per frame.
 
-## What is not used yet
+Operations spread their rows over `MaxDegreeOfParallelism` threads, which is one in the browser by default: Blazor
+WebAssembly runs .NET on the page's thread, and work handed to another thread could never be waited for there. An
+application built with `<WasmEnableThreads>true</WasmEnableThreads>` opts in:
 
-**Web Workers and OffscreenCanvas.** Both are detected and reported, and the architecture does not preclude them, but
-the benchmark evidence says the wins for the common operations are smaller than the complexity of marshalling pixels to a
-worker. The brief for this library was to benchmark before adding worker complexity, and that is what the numbers said.
+```csharp
+builder.Services.AddBitBmageServices(options => options.MaxDegreeOfParallelism = Environment.ProcessorCount);
+```
+
+## Web Workers
+
+Decoding, encoding and resizing the editor's working copy run in Web Workers wherever the browser can do them there:
+workers with a 2D `OffscreenCanvas`, which Chrome, Edge, Firefox and Safari 16.4 and later all have. The pool starts on
+first use with one worker and grows to one per spare core, at most four, while every worker is busy; pixels and files are
+transferred to and from it, never copied. The page stays responsive while a photo decodes or encodes, and a batch decodes
+and encodes several images at once.
+
+Nothing has to be configured, and nothing breaks where workers cannot run: without `Worker` or `OffscreenCanvas`, when a
+Content Security Policy blocks the worker script, or when a worker fails at a piece of work, that work runs on the page's
+thread exactly as before. To keep everything on the page's thread, or to cap the pool:
+
+```csharp
+builder.Services.AddBitBmageServices(options => options.MaxCodecWorkers = 0);   // or 1, 2, ...
+```
+
+The worker is served next to the module as `_content/Bit.Bmage/bit-bmage-worker.js`. A Content Security Policy that
+lists sources explicitly must allow it with `worker-src 'self'` (or a `script-src 'self'` it falls back to); blob URLs
+are never used for workers.
+
+## What is not used yet
 
 **WebCodecs.** Detected and reported. It offers little over `createImageBitmap` for still images, and its value is in
 video.

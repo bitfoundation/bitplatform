@@ -134,13 +134,38 @@
                 break;
 
             case PanelTab.Layers:
-                @if (Context.Annotations.Count == 0)
+                @if (Context.Annotations.Count == 0 && Context.Layers.Count == 0)
                 {
                     <p class="bmg-empty">@Context.Strings.None</p>
                 }
-                else
+                @if (Context.Layers.Count > 0)
                 {
-                    <ul class="bmg-layer-list" role="listbox" aria-label="@Context.Strings.Layers">
+                    @* Image, fill and adjustment layers, top of the stack first, as photo editors list them. *@
+                    <ul class="bmg-layer-list" aria-label="@Context.Strings.Layers">
+                        @foreach (var layer in Context.Layers.Reverse())
+                        {
+                            <li class="bmg-layer @(layer.IsVisible ? null : "bmg-layer-hidden")">
+                                <span class="bmg-layer-name">@layer.DisplayName</span>
+                                <button type="button" class="bmg-icon-button"
+                                        title="@(layer.IsVisible ? Context.Strings.Hide : Context.Strings.Show)"
+                                        aria-label="@($"{(layer.IsVisible ? Context.Strings.Hide : Context.Strings.Show)}: {layer.DisplayName}")"
+                                        aria-pressed="@(layer.IsVisible ? "false" : "true")"
+                                        disabled="@layer.IsLocked"
+                                        @onclick="() => Context.UpdateLayerAsync(layer with { IsVisible = !layer.IsVisible })">
+                                    @((MarkupString)(layer.IsVisible ? Icons.Visible : Icons.Hidden))
+                                </button>
+                                <button type="button" class="bmg-icon-button" title="@Context.Strings.Delete" aria-label="@($"{Context.Strings.Delete}: {layer.DisplayName}")"
+                                        disabled="@layer.IsLocked"
+                                        @onclick="() => Context.RemoveLayerAsync(layer.Id)">
+                                    @((MarkupString)Icons.Delete)
+                                </button>
+                            </li>
+                        }
+                    </ul>
+                }
+                @if (Context.Annotations.Count > 0)
+                {
+                    <ul class="bmg-layer-list" role="listbox" aria-label="@(Context.Layers.Count > 0 ? Context.Strings.Annotations : Context.Strings.Layers)">
                         @foreach (var annotation in Context.Annotations.Reverse())
                         {
                             <li class="bmg-layer @(Context.SelectedAnnotationId == annotation.Id ? "bmg-layer-selected" : null)"

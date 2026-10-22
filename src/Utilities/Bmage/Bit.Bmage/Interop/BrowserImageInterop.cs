@@ -25,11 +25,20 @@ public sealed class BrowserImageInterop : IAsyncDisposable
         DynamicallyAccessedMemberTypes.PublicProperties;
 
     private readonly IJSRuntime _jsRuntime;
+    private readonly BitBmageOptions? _options;
     private readonly SemaphoreSlim _moduleLock = new(1, 1);
     private IJSObjectReference? _module;
     private bool _disposed;
 
-    public BrowserImageInterop(IJSRuntime jsRuntime) => _jsRuntime = jsRuntime ?? throw new ArgumentNullException(nameof(jsRuntime));
+    public BrowserImageInterop(IJSRuntime jsRuntime) : this(jsRuntime, null) { }
+
+    /// <param name="jsRuntime">The runtime the module is loaded through.</param>
+    /// <param name="options">Settings the module is configured with once loaded, such as <see cref="BitBmageOptions.MaxCodecWorkers"/>.</param>
+    public BrowserImageInterop(IJSRuntime jsRuntime, BitBmageOptions? options)
+    {
+        _jsRuntime = jsRuntime ?? throw new ArgumentNullException(nameof(jsRuntime));
+        _options = options;
+    }
 
     /// <summary>
     /// Maximum number of bytes accepted from a single JavaScript stream. Guards against a hostile or buggy page
@@ -62,6 +71,9 @@ public sealed class BrowserImageInterop : IAsyncDisposable
                     await module.DisposeAsync().ConfigureAwait(false);
                     throw new ObjectDisposedException(nameof(BrowserImageInterop));
                 }
+                // Configured before anyone else can use it, so no codec work starts under the defaults first.
+                if (_options?.MaxCodecWorkers is { } workers)
+                    await module.InvokeVoidAsync("configureWorkers", cancellationToken, workers).ConfigureAwait(false);
                 _module = module;
                 return module;
             }

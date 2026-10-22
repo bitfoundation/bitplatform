@@ -397,7 +397,7 @@ public sealed class ImageProcessorFactory
                 var encodable = capabilities.EncodableFormats.Where(f => f != ImageFormat.Bmp && !registry.CanEncode(f)).ToArray();
                 if (encodable.Length > 0) registry.AddEncoder(new BrowserImageEncoder(_interop, encodable));
             }
-            var processor = new ImageProcessor(registry, _options.Allocator ?? PooledPixelAllocator.Shared, _options.Limits);
+            var processor = new ImageProcessor(registry, _options.Allocator ?? PooledPixelAllocator.Shared, _options.Limits) { MaxDegreeOfParallelism = _options.MaxDegreeOfParallelism };
             // Only cache once a real browser answered; a prerender pass must not pin the managed-only registry.
             if (capabilities.Environment != ImageEnvironment.Prerendering) _processor = processor;
             return processor;

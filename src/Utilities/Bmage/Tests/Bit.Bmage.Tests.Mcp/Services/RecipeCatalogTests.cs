@@ -59,7 +59,11 @@ public class RecipeCatalogTests
 
         foreach (var recipe in BmageRecipeCatalog.All)
         {
-            var unknown = pattern.Matches(recipe.Code!)
+            var code = recipe.Code!;
+            var unknown = pattern.Matches(code)
+                // A member, not a type: after a dot (options.ImageResolver), or set in an initializer (ImageReferences = ...).
+                .Where(match => match.Index == 0 || code[match.Index - 1] != '.')
+                .Where(match => Regex.IsMatch(code[(match.Index + match.Length)..], @"^\s*=(?![=>])") is false)
                 .Select(match => match.Value)
                 .Where(name => known.Contains(name) is false)
                 // ImageDocument.AddAnnotation is a method, not a type.

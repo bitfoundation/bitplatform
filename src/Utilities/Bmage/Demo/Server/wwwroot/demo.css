@@ -638,6 +638,12 @@ div.preview-image[aria-busy="true"] {
     margin-top: 1rem;
 }
 
+/* Layers and masks: the document as JSON grows with every choice, so it scrolls rather than pushing the page. */
+.layers-json {
+    max-height: 18rem;
+    overflow-y: auto;
+}
+
 /* Getting started: the snippet's output beside its numbers. */
 .first-image {
     flex: 0 1 20rem;

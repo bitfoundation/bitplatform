@@ -7,6 +7,7 @@ using Bit.Bmage.Operations.Adjustments;
 using Bit.Bmage.Operations.Filters;
 using Bit.Bmage.Operations.Transforms;
 using Bit.Bmage.Analysis;
+using Bit.Bmage.Masks;
 
 namespace Bit.Bmage.Pipeline;
 
@@ -209,6 +210,37 @@ public sealed class ImagePipeline : IReadOnlyList<IImageOperation>
     /// <summary>Applies a custom per-pixel operation.</summary>
     public ImagePipeline Apply(IImageOperation operation) => Add(operation);
 
+    // ---- Masks ----
+
+    /// <summary>
+    /// Applies <paramref name="operation"/> only where <paramref name="mask"/> covers the image, fading with its
+    /// coverage. The operation must keep the image's size.
+    /// </summary>
+    public ImagePipeline Masked(Mask mask, IImageOperation operation) => Add(new MaskedOperation(operation, mask));
+
+    /// <summary>
+    /// Applies the operations <paramref name="edit"/> adds only where <paramref name="mask"/> covers the image: a
+    /// selective adjustment. Adjustments run in one pass, and only over the rows and columns the mask reaches.
+    /// </summary>
+    /// <example>
+    /// <code>
+    /// // Darken and enrich the sky, fading out towards the horizon.
+    /// pipeline.Masked(Mask.Gradient(new(0, 0), new(0, 0.55f)), sky => sky.Exposure(-0.6f).Saturation(0.25f));
+    /// </code>
+    /// </example>
+    public ImagePipeline Masked(Mask mask, Func<ImagePipeline, ImagePipeline> edit)
+    {
+        ArgumentNullException.ThrowIfNull(edit);
+        var inner = edit(Empty) ?? throw new InvalidOperationException("The edit returned no pipeline.");
+        return Add(new MaskedOperation(inner.Count == 1 ? inner[0] : new PipelineOperation(inner), mask));
+    }
+
+    /// <summary>
+    /// Multiplies the image's alpha by <paramref name="mask"/>, making everything outside it transparent: for example
+    /// <c>.Cover(256, 256).ApplyMask(Mask.Ellipse())</c> for a round avatar.
+    /// </summary>
+    public ImagePipeline ApplyMask(Mask mask) => Add(new AlphaMaskOperation(mask));
+
     // ---- Analysis ----
 
     /// <summary>Computes the output size for a given input size without touching pixels.</summary>
@@ -255,6 +287,71 @@ public sealed class ImagePipeline : IReadOnlyList<IImageOperation>
     }
 
     /// <summary>
+    /// Estimates the pixel memory a run on an image of <paramref name="inputSize"/> allocates at its peak, and the size
+    /// of its result, without touching a pixel. The source image itself is not counted: the caller already holds it.
+    /// </summary>
+    /// <remarks>
+    /// The estimate follows the buffers each step holds: the image it receives, the one it produces, and the working
+    /// copies the heavier operations take (a mask, a copy of a region for a median or convolution). It is what a
+    /// <see cref="Memory.BudgetedPixelAllocator"/> would see, to within the small rows of scratch operations rent from the
+    /// shared pool, and it is what <see cref="BatchOptions.MaxMemoryBytes"/> admits images by. An
+    /// <see cref="AutoOrient"/> step is taken to cost nothing, since decoders already turn the pixels upright.
+    /// </remarks>
+    /// <exception cref="ArgumentException">An operation cannot be applied to the size it would receive.</exception>
+    public PipelineMemoryEstimate EstimateMemory(Size inputSize, bool optimize = true)
+    {
+        var steps = optimize ? Optimize(inputSize) : this;
+        static long Bytes(Size size) => 4L * size.Width * size.Height;
+        if (steps.IsEmpty) return new PipelineMemoryEstimate(Bytes(inputSize), Bytes(inputSize), inputSize);
+
+        var current = inputSize;
+        long peak = 0;
+        // Until a step has produced a buffer of the run's own, steps read the caller's.
+        var owned = false;
+        foreach (var operation in steps)
+        {
+            // Decoders apply the EXIF orientation as they decode, and a run skips orienting pixels that are upright.
+            if (operation is AutoOrientOperation) continue;
+            var output = operation.GetOutputSize(current);
+            var held = owned ? Bytes(current) : 0;
+            // A per-pixel step on a buffer the run owns writes over it rather than allocating another.
+            var produced = owned && output == current && operation is PointOperation ? 0 : Bytes(output);
+            peak = Math.Max(peak, held + produced + WorkingBytes(operation, current));
+            current = output;
+            owned = true;
+        }
+        // Nothing ran, so the result is a copy of the source.
+        return new PipelineMemoryEstimate(owned ? peak : Bytes(current), Bytes(current), current);
+    }
+
+    /// <summary>
+    /// What rendering a mask holds at once: its own byte per pixel, both sides of a combination while they are
+    /// combined, and for a bitmap mask the matte at its own size and resized.
+    /// </summary>
+    private static long MaskBytes(Masks.Mask mask, long pixels) => mask switch
+    {
+        Masks.CombinedMask combined => pixels + MaskBytes(combined.First, pixels) + MaskBytes(combined.Second, pixels),
+        Masks.BitmapMask bitmap => 2 * pixels + (long)bitmap.Image.Width * bitmap.Image.Height,
+        _ => pixels,
+    };
+
+    /// <summary>What an operation allocates beyond its output while it runs.</summary>
+    private static long WorkingBytes(IImageOperation operation, Size input)
+    {
+        var pixels = (long)input.Width * input.Height;
+        return operation switch
+        {
+            // The rendered mask, and whatever the masked edit itself works with.
+            Masks.MaskedOperation masked => MaskBytes(masked.Mask, pixels) + WorkingBytes(masked.Operation, input),
+            Masks.AlphaMaskOperation alpha => MaskBytes(alpha.Mask, pixels),
+            // Both read a copy of the region they filter.
+            MedianFilter or ConvolutionFilter => 4 * pixels,
+            PipelineOperation nested => nested.Pipeline.EstimateMemory(input).PeakBytes,
+            _ => 0,
+        };
+    }
+
+    /// <summary>
     /// Returns an equivalent but cheaper pipeline: identity operations are dropped, consecutive crops, orientations and
     /// resizes are merged, and neighbouring per-pixel operations are fused into a single pass.
     /// </summary>
@@ -291,7 +388,7 @@ public sealed class ImagePipeline : IReadOnlyList<IImageOperation>
                     continue;
                 }
                 var stageProgress = options.Progress is null ? null : new StageProgress(options.Progress, i, count);
-                var context = new OperationContext(options.Allocator, options.Limits, options.CancellationToken, stageProgress, canMutateSource: owned);
+                var context = new OperationContext(options.Allocator, options.Limits, options.CancellationToken, stageProgress, canMutateSource: owned, options.MaxDegreeOfParallelism);
                 ImageBuffer next;
                 try
                 {
@@ -342,7 +439,7 @@ public sealed class ImagePipeline : IReadOnlyList<IImageOperation>
                     continue;
                 }
                 var stageProgress = options.Progress is null ? null : new StageProgress(options.Progress, i, count);
-                var context = new OperationContext(options.Allocator, options.Limits, options.CancellationToken, stageProgress, canMutateSource: owned);
+                var context = new OperationContext(options.Allocator, options.Limits, options.CancellationToken, stageProgress, canMutateSource: owned, options.MaxDegreeOfParallelism);
                 ImageBuffer next;
                 try
                 {
@@ -388,6 +485,12 @@ public sealed class ImagePipeline : IReadOnlyList<IImageOperation>
     }
 }
 
+/// <summary>What a pipeline run is expected to allocate, from <see cref="ImagePipeline.EstimateMemory"/>.</summary>
+/// <param name="PeakBytes">The most pixel memory the run holds at once, its result included, the source not.</param>
+/// <param name="OutputBytes">The size of the result.</param>
+/// <param name="OutputSize">The dimensions of the result.</param>
+public sealed record PipelineMemoryEstimate(long PeakBytes, long OutputBytes, Size OutputSize);
+
 /// <summary>Options controlling a pipeline run.</summary>
 public sealed record PipelineExecutionOptions
 {
@@ -407,6 +510,18 @@ public sealed record PipelineExecutionOptions
 
     /// <summary>Run the optimiser before executing. Default true.</summary>
     public bool Optimize { get; init; } = true;
+
+    /// <summary>
+    /// The most threads an operation may spread its rows over. Null uses
+    /// <see cref="OperationContext.DefaultMaxDegreeOfParallelism"/>: every processor where .NET has threads, one in the
+    /// browser. The pixels are identical whatever the value; set 1 to keep a run on the calling thread, for example on
+    /// a server that is already busy with many requests at once.
+    /// </summary>
+    public int? MaxDegreeOfParallelism
+    {
+        get;
+        init => field = value is < 1 ? throw new ArgumentOutOfRangeException(nameof(MaxDegreeOfParallelism), "At least one thread is needed.") : value;
+    }
 
     /// <summary>Yield to the scheduler between operations so a single-threaded UI can repaint. Default true.</summary>
     public bool YieldBetweenOperations { get; init; } = true;

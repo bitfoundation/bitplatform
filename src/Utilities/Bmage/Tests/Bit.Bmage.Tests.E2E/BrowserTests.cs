@@ -389,6 +389,49 @@ public class EditorTests : DemoTest
 }
 
 [TestClass]
+public class LayersAndMasksTests : DemoTest
+{
+    /// <summary>
+    /// Every selective edit and every layer of the playground renders in the browser, and the document readout shows
+    /// the edit the engine ran.
+    /// </summary>
+    [TestMethod]
+    public async Task EveryMaskAndLayerRendersInTheBrowser()
+    {
+        var page = await OpenAsync("layers-and-masks");
+        var errors = CollectErrors(page);
+
+        await page.GetByRole(AriaRole.Button, new() { Name = "Run on a sample image" }).ClickAsync();
+        await page.WaitForSelectorAsync("img.preview-image", new PageWaitForSelectorOptions { Timeout = 60_000 });
+
+        async Task ChooseAsync(string name)
+        {
+            await page.GetByRole(AriaRole.Button, new() { Name = name, Exact = true }).ClickAsync();
+            // The render is debounced, then shows a spinner until it is done.
+            await page.WaitForTimeoutAsync(250);
+            await page.WaitForSelectorAsync(".working", new PageWaitForSelectorOptions { State = WaitForSelectorState.Detached, Timeout = 60_000 });
+        }
+
+        foreach (var edit in new[] { "Spotlight", "Lift shadows", "Colour pop", "Graduated sky" })
+            await ChooseAsync(edit);
+        foreach (var layer in new[] { "Sunset glow", "Watermark", "Adjustment", "Colour wash" })
+            await ChooseAsync(layer);
+
+        await page.SelectOptionAsync("#blend", "Multiply");
+        await page.WaitForTimeoutAsync(250);
+        await page.WaitForSelectorAsync(".working", new PageWaitForSelectorOptions { State = WaitForSelectorState.Detached, Timeout = 60_000 });
+
+        var json = await page.Locator(".layers-json").InnerTextAsync();
+        StringAssert.Contains(json, "\"type\": \"masked\"");
+        StringAssert.Contains(json, "\"type\": \"linearGradient\"");
+        StringAssert.Contains(json, "\"type\": \"fill\"");
+        StringAssert.Contains(json, "\"blendMode\": \"Multiply\"");
+        Assert.IsEmpty(errors, string.Join(" | ", errors));
+        Assert.IsEmpty(await page.Locator(".demo-error").AllInnerTextsAsync());
+    }
+}
+
+[TestClass]
 public class DemoPageTests : DemoTest
 {
     /// <summary>Every page must render without a JavaScript error or an error banner.</summary>
@@ -397,6 +440,7 @@ public class DemoPageTests : DemoTest
     [DataRow("getting-started")]
     [DataRow("hosting")]
     [DataRow("pipelines")]
+    [DataRow("layers-and-masks")]
     [DataRow("formats")]
     [DataRow("capabilities")]
     [DataRow("metadata")]
@@ -431,6 +475,7 @@ public class DemoPageTests : DemoTest
     [DataRow("")]
     [DataRow("getting-started")]
     [DataRow("pipelines")]
+    [DataRow("layers-and-masks")]
     [DataRow("capabilities")]
     [DataRow("avatar")]
     [DataRow("optimize")]

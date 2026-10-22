@@ -74,9 +74,10 @@ yours can too.
 </BmageEditor>
 ```
 
-`BmageEditorContext` exposes the current tool and settings, the document, the annotations, the history and its position,
-the detected browser capabilities, the output size, and every action: tool selection, crop, rotate, flip, adjustments,
-annotations, undo, redo, reset, zoom, load, paste, export, download and clipboard copy.
+`BmageEditorContext` exposes the current tool and settings, the document, the annotations and layers, the history and
+its position, the detected browser capabilities, the output size, and every action: tool selection, crop, rotate, flip,
+adjustments, annotations, layers, undo, redo, reset, zoom, load, paste, restoring a saved edit, export, download and
+clipboard copy.
 
 For adjustments driven by a slider, pass `transient: true` while dragging and commit once when the interaction ends, so
 the history gets one entry rather than hundreds:
@@ -101,6 +102,54 @@ An edit that touches several steps at once, such as swapping one filter for anot
 ```csharp
 await context.ApplyAsync(d => d.WithPipeline(d.Pipeline.Add(new SepiaFilter())), "Sepia");
 ```
+
+## Layers and selective edits
+
+The editor previews and exports everything a document can hold, so layers and masked edits work in it with no extra
+setup. Add them from your own controls:
+
+```csharp
+// A colour wash over the whole photo, through the Color blend mode.
+await context.AddLayerAsync(new FillLayer(new Rgba32(40, 110, 220)) { BlendMode = BlendMode.Color, Opacity = 0.4f });
+
+// A watermark in the corner, blended in.
+await context.AddLayerAsync(new ImageLayer
+{
+    Image = logo,
+    Bounds = new RectangleF(context.OutputSize.Width - 220, context.OutputSize.Height - 220, 200, 200),
+    BlendMode = BlendMode.Overlay,
+});
+
+// A graduated filter over the sky, as one undoable step.
+await context.AddOperationAsync(new MaskedOperation(
+    new PipelineOperation(ImagePipeline.Create().Exposure(-0.7f).Saturation(0.3f)),
+    Mask.Gradient(new(0, 0), new(0, 0.55f))), "Graduated filter");
+
+// Fading a layer from a slider: one history entry for the whole drag.
+await context.UpdateLayerAsync(layer with { Opacity = value }, transient: true);
+```
+
+Layer coordinates are those of the edited image at full resolution, as annotations' are; the editor scales them for its
+proxy. The panel's Layers tab lists pixel layers above the annotations, top of the stack first, with show, hide and
+delete. `MoveLayerAsync` and `RemoveLayerAsync` reorder and remove them from code. While only annotations change, the
+preview keeps the composited layers, so moving an arrow over an expensive adjustment layer stays as quick as without it.
+See [layers-and-masks.md](layers-and-masks.md) for the masks, layers and blend modes themselves.
+
+## Saving and restoring an edit
+
+The document is the edit, so saving it saves the edit, not the pixels:
+
+```csharp
+// Save: store the JSON next to the original upload.
+var json = BmageJson.Serialize(context.Document!, new BmageJsonOptions { ImageReferences = images.IdOf });
+
+// Later: load the same original, then put the edit back as one undoable step.
+await editor.LoadImageAsync(original);
+await context.RestoreDocumentAsync(BmageJson.DeserializeDocument(json, new BmageJsonOptions { ImageResolver = images.Load }));
+```
+
+`RestoreDocumentAsync` refuses a document made for an image of another size, rather than applying crops and layers to
+the wrong place.
 
 ## Theming
 

@@ -27,14 +27,16 @@ An edit is a **description**, not a mutation.
 ImageBuffer (original pixels, never modified)
         │
 ImageDocument
-   ├── ImagePipeline  ── an ordered list of IImageOperation
+   ├── ImagePipeline  ── an ordered list of IImageOperation, some applied through masks
+   ├── Layers         ── image, fill and adjustment layers, each with a blend mode, opacity and mask
    └── Annotations    ── a list of immutable annotation records
         │
 DocumentRenderer  ──►  ImageBuffer (the result, owned by the caller)
 ```
 
-Because the document is a value, and every operation is an immutable record that knows its own output size and how to
-rescale itself, several things fall out for free rather than being features that had to be built:
+Because the document is a value, and every operation, mask, layer and annotation is an immutable record that knows its
+own output size and how to rescale itself, several things fall out for free rather than being features that had to be
+built:
 
 - **Undo costs nothing.** A history entry is the document, which is a list of small objects. A hundred undo steps on a
   24 megapixel photo take kilobytes, not gigabytes. There is a test asserting exactly that.
@@ -42,7 +44,8 @@ rescale itself, several things fall out for free rather than being features that
   editor previews on a proxy and replays the original document at full resolution on export. There is one code path, not
   two.
 - **Any step can be changed.** `pipeline.Replace(2, newCrop)` re-edits the third operation without touching the rest.
-- **Edits are portable.** A document can be stored, sent to a server, or applied to a different image.
+- **Edits are portable.** `BmageJson` writes a document as JSON and reads it back as the same edit, so it can be stored,
+  sent to a server and replayed there on the original file, or applied to a different image.
 
 ## Pixels
 
@@ -80,6 +83,32 @@ Two specialisations carry most of the weight:
   single pass over the image. Colour matrices concatenate algebraically; curves compose their lookup tables.
 - **`IGeometricOperation`** exposes the affine matrix it applies, which is how annotations stay attached to image content
   when a geometric edit is inserted before them.
+
+## Masks and layers
+
+A `Mask` is a description, like an operation: a shape, a gradient, a tone or colour range, brush strokes, another
+image's matte, or a combination, in pixels or in fractions of the image. It renders into a `MaskBuffer`, one byte of
+coverage per pixel, for the image it applies to, and rescales itself for a proxy like everything else.
+
+`MaskedOperation` applies any size-keeping operation through a mask. A per-pixel operation goes through
+`PointOperationExecutor.RowProcessor`, the very code an unmasked run uses for each row, so a full mask is bit-identical
+to no mask, and only over the bounds the mask can reach. Anything else runs whole and is blended back. It is an
+optimiser barrier, which is also where the editor's preview cache splits.
+
+A `Layer` composites onto the pipeline's output through a `BlendMode` (the W3C Compositing and Blending Level 1
+modes), an opacity and an optional mask. The edit session caches the composite separately from the pipeline output, so
+annotation edits never composite the layers again and layer edits never re-run the pipeline.
+
+## Threads and workers
+
+**In .NET**, operations whose rows are independent split them into bands (`ParallelRows`) over
+`MaxDegreeOfParallelism` threads, each band with its own scratch rows and shared read-only kernels and tables, so the
+pixels are identical on any number of threads. Blurs stay sequential: their running sums would change if split. The
+default is every processor, and one in the browser, where .NET has only the page's thread.
+
+**In the browser**, decoding, encoding and the editor's proxy resize run in a small Web Worker pool, with buffers
+transferred rather than copied, and fall back to the page's thread wherever workers cannot run. See
+[threads-and-memory.md](threads-and-memory.md).
 
 ## The pipeline optimiser
 
@@ -142,7 +171,7 @@ or transform arbitrarily. The font rasteriser can, but does not perform complex 
 One module, `bit-bmage.js`. It does what only the browser platform can do, and the few things the browser does far
 faster than .NET running on WebAssembly:
 
-- Decoding and encoding WebP, AVIF and the browser's own JPEG and PNG paths
+- Decoding and encoding WebP, AVIF and the browser's own JPEG and PNG paths, in Web Workers where the browser allows
 - Building the editor's working proxy of a large photo with the browser's high quality resampler (`createImageBitmap`).
   On WebAssembly's interpreter that takes about 50 ms for a 12 megapixel photo, where the managed resampler takes
   500 ms. The proxy only shapes the preview: export replays the edit on the original pixels in the managed engine, so
@@ -178,13 +207,20 @@ The concern is treated as a design constraint rather than a later optimisation.
   copies of the whole image.
 - History stores descriptions, not pixels.
 - `ImageLimits` rejects absurd dimensions before any allocation happens.
+- Masks are one byte a pixel, and a masked adjustment touches only the rows its mask reaches.
+- Parallel bands each rent a few rows of scratch, never a copy of the image.
+
+A caller can also predict and bound it: `ImagePipeline.EstimateMemory` gives a run's peak before it starts, a
+`BudgetedPixelAllocator` enforces a ceiling, and a streamed batch admits images by their estimated need. See
+[threads-and-memory.md](threads-and-memory.md).
 
 ## Extension points
 
 Every one of these is an interface or an abstract class you can implement without modifying the library: `IImageOperation`
-and `PointOperation` for processing, `IImageDecoder` and `IImageEncoder` registered in `ImageCodecRegistry`, `IPaint` for
-fills, `ITextRasterizer` for text, `Annotation` for new annotation kinds, `IEditorTool` for new editor tools,
-`IPixelAllocator` for memory strategy, and `IImageCapabilityProvider` for environment detection. See
+and `PointOperation` for processing, `Mask` for selections, `Layer` for compositing, `IImageDecoder` and `IImageEncoder`
+registered in `ImageCodecRegistry`, `IPaint` for fills, `ITextRasterizer` for text, `Annotation` for new annotation
+kinds, `IEditorTool` for new editor tools, `IPixelAllocator` for memory strategy, `IImageCapabilityProvider` for
+environment detection, and `BmageJsonOptions.Add` for writing any of your own types as JSON. See
 [extending.md](extending.md).
 
 ## What is deliberately not here
@@ -192,9 +228,10 @@ fills, `ITextRasterizer` for text, `Annotation` for new annotation kinds, `IEdit
 - **Background removal** ships as an architecture, not an implementation. A usable model is several megabytes and would
   dominate the bundle. The extension point exists so a provider can be plugged in; shipping a poor one would be worse
   than shipping none.
-- **Web Workers** are not used yet. The benchmark evidence says the wins are smaller than the complexity for the common
-  operations, and `ImageCapabilities` already reports whether workers and `OffscreenCanvas` are available so the
-  architecture does not preclude it.
+- **The .NET engine in a Web Worker.** Codec work runs in workers, but operations stay on .NET's thread. Moving them
+  would mean a second .NET runtime in a worker, tens of megabytes and a second startup, to free a thread that previews
+  on a proxy already keep responsive. A WebAssembly app built with threads gets the engine on several cores through
+  `MaxDegreeOfParallelism` instead.
 - **SVG rasterisation** is refused rather than attempted. Rendering untrusted SVG can execute scripts and fetch remote
   resources; the decoder returns a clear error explaining that instead.
 - **Animated GIF and APNG** decode their first frame only. Full animation support is a different problem than the one

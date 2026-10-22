@@ -98,6 +98,18 @@ defences are structural:
 - `ImageCapabilities.SuggestedMaxWorkingDimension` reports a device-appropriate cap based on reported memory.
 - `MaxCanvasDimension` is probed, because exceeding a browser's canvas limit silently produces a blank image.
 
+`ImageLimits` refuses absurd dimensions; a `BudgetedPixelAllocator` refuses absurd totals. Give each request on a server,
+or each editor session in a browser, its own budget, and an image that would need more than its share fails with
+`ImageMemoryBudgetExceededException` before anything is allocated, instead of taking memory from everyone else:
+
+```csharp
+var budget = new BudgetedPixelAllocator(256L * 1024 * 1024);
+var processor = new ImageProcessor(ImageCodecRegistry.CreateDefault(), budget, ImageLimits.Default);
+```
+
+A batch can be admitted by memory too: with `BatchOptions.MaxMemoryBytes` an image only starts when its estimated need,
+read from its header before anything is decoded, fits beside the ones already running.
+
 ## Redaction
 
 The redaction annotation replaces the pixels underneath it. The hidden content is genuinely absent from the exported
@@ -129,15 +141,17 @@ thinking about it is safe rather than a location disclosure. See [metadata-and-p
 
 ## The JavaScript boundary
 
-One module, loaded from the library's own static web assets. It executes no caller-supplied code, builds no HTML from
-input, and does not use `eval` or `innerHTML`. Bytes cross as streams with a size cap
+One module, loaded from the library's own static web assets, and one codec worker beside it. Neither executes
+caller-supplied code, builds HTML from input, or uses `eval` or `innerHTML`. Bytes cross as streams with a size cap
 (`BrowserImageInterop.MaxStreamBytes`, 512 MB by default) so a hostile or buggy page cannot stream unbounded data into
 the .NET heap.
 
-The library adds no `<script>` tag to your page, and its module is served from your origin. Your Content Security Policy
-needs `blob:` in two places. In `img-src`, because an image that `createImageBitmap` can't decode, such as an SVG, is
-decoded through an `<img>` element with a `blob:` URL. In `connect-src`, when you hand the editor a `blob:` URL, such as
-the preview URL of a file the user picked, since the library fetches it.
+The library adds no `<script>` tag to your page, and its module and worker are served from your origin. Your Content
+Security Policy needs `blob:` in two places. In `img-src`, because an image that `createImageBitmap` can't decode, such
+as an SVG, is decoded through an `<img>` element with a `blob:` URL. In `connect-src`, when you hand the editor a `blob:`
+URL, such as the preview URL of a file the user picked, since the library fetches it. The codec worker needs
+`worker-src 'self'`, or a `script-src 'self'` it falls back to; where the policy blocks it, codec work simply stays on the
+page's thread.
 
 ## Server-side use
 

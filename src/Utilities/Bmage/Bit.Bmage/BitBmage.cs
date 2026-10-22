@@ -85,7 +85,7 @@ public static class BitBmage
         services.TryAddSingleton(sp =>
         {
             var o = sp.GetRequiredService<BitBmageOptions>();
-            return new Pipeline.ImageProcessor(Codecs.ImageCodecRegistry.CreateDefault(), o.Allocator, o.Limits);
+            return new Pipeline.ImageProcessor(Codecs.ImageCodecRegistry.CreateDefault(), o.Allocator, o.Limits) { MaxDegreeOfParallelism = o.MaxDegreeOfParallelism };
         });
         services.TryAddSingleton<FontTextRasterizer>();
         return services;

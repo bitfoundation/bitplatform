@@ -183,6 +183,104 @@ public class JsModuleContractTests : DemoTest
         Assert.Contains("image/jpeg", encodable);
     }
 
+    /// <summary>
+    /// Decoding, encoding and resizing go to the codec workers wherever the browser can run them there, and give the
+    /// pixels the page's own thread gives. Turned off, everything runs on the page; turned on again, workers return.
+    /// </summary>
+    [TestMethod]
+    public async Task CodecWorkRunsInWorkers_AndMatchesThePageThread()
+    {
+        var page = await OpenAsync("capabilities");
+
+        var result = await EvaluateAgainstModuleAsync(page, $$"""
+            {{MakePng}}
+            const png = await makePng(320, 200);
+            const t = globalThis.BitBmagePixels;
+            const decode = async () => {
+                const handle = await m.decode(png.slice(), { mimeType: 'image/png', autoOrient: true });
+                const info = handle.info();
+                const data = handle.bytes().slice();
+                handle.dispose();
+                return { info, data };
+            };
+            const scale = async (pixels) => {
+                const id = t.stage({ slice: () => pixels.slice() }, 320, 200);
+                await t.scale(id, 107, 67);
+                let out = null;
+                t.read(id, { set: (data) => { out = data.slice(); } });
+                return out;
+            };
+            const encode = async (pixels) => {
+                const handle = await m.encode(pixels.slice(), 320, 200, 'image/jpeg', 0.8, '#ffffff');
+                const info = handle.info();
+                handle.dispose();
+                return info.mimeType;
+            };
+
+            m.configureWorkers(0);
+            const onPage = await decode();
+            const scaledOnPage = await scale(onPage.data);
+
+            let spawned = 0;
+            const Original = window.Worker;
+            window.Worker = class extends Original { constructor(...args) { super(...args); spawned++; } };
+            m.configureWorkers(2);
+            let inWorker, scaledInWorker, encoded;
+            try {
+                inWorker = await decode();
+                scaledInWorker = await scale(inWorker.data);
+                encoded = await encode(inWorker.data);
+            } finally {
+                window.Worker = Original;
+            }
+
+            let decodeDiff = inWorker.data.length === onPage.data.length ? 0 : 999;
+            for (let i = 0; i < onPage.data.length && decodeDiff < 999; i++) decodeDiff = Math.max(decodeDiff, Math.abs(onPage.data[i] - inWorker.data[i]));
+            let scaleDiff = scaledInWorker.length === scaledOnPage.length ? 0 : 999;
+            for (let i = 0; i < scaledOnPage.length && scaleDiff < 999; i++) scaleDiff = Math.max(scaleDiff, Math.abs(scaledOnPage[i] - scaledInWorker[i]));
+            return { spawned, width: inWorker.info.width, height: inWorker.info.height, decodeDiff, scaleDiff, encoded };
+            """);
+
+        Assert.IsGreaterThanOrEqualTo(1, result.GetProperty("spawned").GetInt32(), "No codec worker was started.");
+        Assert.AreEqual(320, result.GetProperty("width").GetInt32());
+        Assert.AreEqual(200, result.GetProperty("height").GetInt32());
+        Assert.AreEqual(0, result.GetProperty("decodeDiff").GetInt32(), "A worker decoded different pixels from the page.");
+        Assert.IsLessThanOrEqualTo(2, result.GetProperty("scaleDiff").GetInt32(), "A worker resized differently from the page.");
+        Assert.AreEqual("image/jpeg", result.GetProperty("encoded").GetString());
+    }
+
+    /// <summary>
+    /// Several decodes at once are spread over several workers, so a batch uses several cores even on WebAssembly,
+    /// where .NET itself has only the page's thread.
+    /// </summary>
+    [TestMethod]
+    public async Task ConcurrentDecodesUseSeveralWorkers()
+    {
+        var page = await OpenAsync("capabilities");
+
+        var result = await EvaluateAgainstModuleAsync(page, $$"""
+            {{MakePng}}
+            const png = await makePng(1600, 1200);
+            m.configureWorkers(0);
+            let spawned = 0;
+            const Original = window.Worker;
+            window.Worker = class extends Original { constructor(...args) { super(...args); spawned++; } };
+            m.configureWorkers(3);
+            try {
+                const handles = await Promise.all([0, 1, 2, 3, 4, 5].map(() => m.decode(png.slice(), { mimeType: 'image/png' })));
+                const sizes = handles.map(h => { const i = h.info(); h.dispose(); return i.width * i.height; });
+                return { spawned, cores: navigator.hardwareConcurrency || 1, allDecoded: sizes.every(s => s === 1600 * 1200) };
+            } finally {
+                window.Worker = Original;
+            }
+            """);
+
+        Assert.IsTrue(result.GetProperty("allDecoded").GetBoolean());
+        // The pool grows only while every worker is busy, to the configured limit.
+        Assert.IsGreaterThanOrEqualTo(2, result.GetProperty("spawned").GetInt32(), "Concurrent decodes all went to one worker.");
+        Assert.IsLessThanOrEqualTo(3, result.GetProperty("spawned").GetInt32(), "More workers started than allowed.");
+    }
+
     /// <summary>Capability probing must not leave canvases or other resources behind when called repeatedly.</summary>
     [TestMethod]
     public async Task RepeatedCapabilityProbesDoNotAccumulateResources()

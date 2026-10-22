@@ -6,6 +6,7 @@ using Bit.Bmage.Editing;
 using Bit.Bmage.Editor.Localization;
 using Bit.Bmage.Editor.Tools;
 using Bit.Bmage.Geometry;
+using Bit.Bmage.Layers;
 using Bit.Bmage.Operations;
 
 namespace Bit.Bmage.Editor.Components;
@@ -65,6 +66,9 @@ public sealed class BmageEditorContext
 
     /// <summary>Annotations in the document, in draw order.</summary>
     public IReadOnlyList<Annotation> Annotations => Document?.Annotations ?? [];
+
+    /// <summary>The document's layers, bottom first.</summary>
+    public IReadOnlyList<Layer> Layers => Document?.Layers ?? [];
 
     /// <summary>True when there is something to undo.</summary>
     public bool CanUndo => Session?.History.CanUndo ?? false;
@@ -147,6 +151,46 @@ public sealed class BmageEditorContext
 
     /// <summary>Selects an annotation, or clears the selection.</summary>
     public void SelectAnnotation(Guid? id) => _editor.SelectAnnotation(id);
+
+    /// <summary>
+    /// Adds a layer on top of the others: an image placed on the photo, a colour fill, or an adjustment layer, each with
+    /// a blend mode, an opacity and an optional mask. Coordinates are those of the edited image at full resolution.
+    /// </summary>
+    public Task AddLayerAsync(Layer layer, string? label = null)
+    {
+        ArgumentNullException.ThrowIfNull(layer);
+        return ApplyAsync(d => d.AddLayer(layer), label ?? $"Add {layer.Kind.ToLowerInvariant()} layer");
+    }
+
+    /// <summary>
+    /// Replaces a layer, matched by id. Pass <paramref name="transient"/> while a control is being dragged, as for
+    /// <see cref="SetAdjustmentAsync"/>.
+    /// </summary>
+    public Task UpdateLayerAsync(Layer layer, bool transient = false)
+    {
+        ArgumentNullException.ThrowIfNull(layer);
+        return ApplyAsync(d => d.UpdateLayer(layer), $"Edit {layer.DisplayName.ToLowerInvariant()}", transient);
+    }
+
+    /// <summary>Removes a layer.</summary>
+    public Task RemoveLayerAsync(Guid id) => ApplyAsync(d => d.RemoveLayer(id), "Remove layer");
+
+    /// <summary>Moves a layer to <paramref name="index"/> in the stack, 0 being the bottom.</summary>
+    public Task MoveLayerAsync(Guid id, int index) => ApplyAsync(d => d.MoveLayer(id, index), "Reorder layers");
+
+    /// <summary>
+    /// Replaces the edit with a saved one, such as a document read back with
+    /// <see cref="Serialization.BmageJson.DeserializeDocument"/>, as one undoable step. The document must have been made
+    /// for an image of the size loaded now.
+    /// </summary>
+    /// <exception cref="ArgumentException">The document was made for an image of another size.</exception>
+    public Task RestoreDocumentAsync(ImageDocument document)
+    {
+        ArgumentNullException.ThrowIfNull(document);
+        if (Session is { } session && document.SourceSize != session.SourceSize)
+            throw new ArgumentException($"The document was made for a {document.SourceSize.Width}x{document.SourceSize.Height} image, but a {session.SourceSize.Width}x{session.SourceSize.Height} one is loaded.", nameof(document));
+        return ApplyAsync(_ => document, "Restore edit");
+    }
 
     /// <summary>Undoes the last edit.</summary>
     public void Undo() => _editor.Undo();

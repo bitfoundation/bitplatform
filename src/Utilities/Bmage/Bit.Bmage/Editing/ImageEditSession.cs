@@ -2,6 +2,7 @@
 using Bit.Bmage.Annotations;
 using Bit.Bmage.Drawing;
 using Bit.Bmage.Geometry;
+using Bit.Bmage.Layers;
 using Bit.Bmage.Memory;
 using Bit.Bmage.Operations;
 using Bit.Bmage.Operations.Transforms;
@@ -35,6 +36,7 @@ public sealed class ImageEditSession : IDisposable
 {
     private readonly IPixelAllocator _allocator;
     private readonly ImageLimits _limits;
+    private readonly int? _maxDegreeOfParallelism;
     private readonly DocumentRenderer _renderer;
     private readonly Func<ImageBuffer, Size, CancellationToken, ValueTask<ImageBuffer?>>? _proxyScaler;
     private ImageBuffer _original;
@@ -66,6 +68,7 @@ public sealed class ImageEditSession : IDisposable
         var o = options ?? new ImageEditSessionOptions();
         _allocator = o.Allocator ?? PooledPixelAllocator.Shared;
         _limits = o.Limits ?? ImageLimits.Default;
+        _maxDegreeOfParallelism = o.MaxDegreeOfParallelism;
         _renderer = new DocumentRenderer(o.TextRasterizer);
         _proxyScaler = o.ProxyScaler;
         MaxProxyDimension = o.MaxProxyDimension;
@@ -337,6 +340,7 @@ public sealed class ImageEditSession : IDisposable
             {
                 Allocator = _allocator,
                 Limits = _limits,
+                MaxDegreeOfParallelism = _maxDegreeOfParallelism,
                 CancellationToken = cts.Token,
             }).ConfigureAwait(false);
             if (!draft) LastPreviewDuration = System.Diagnostics.Stopwatch.GetElapsedTime(started);
@@ -404,7 +408,7 @@ public sealed class ImageEditSession : IDisposable
             }
         }
 
-        var (pixels, shared) = await RenderPipelineAsync(document.Pipeline, source, scale, layer, version, options, keepOutput: order.Count > 0).ConfigureAwait(false);
+        var (pixels, shared) = await RenderLayersAsync(document, source, scale, layer, version, options, keepOutput: order.Count > 0).ConfigureAwait(false);
         var rendered = shared ? pixels.Clone(_allocator) : pixels;
         try
         {
@@ -416,6 +420,41 @@ public sealed class ImageEditSession : IDisposable
             rendered.Dispose();
             throw;
         }
+    }
+
+    /// <summary>
+    /// The pipeline's output with the document's layers composited onto it, and whether a cache still owns it. With
+    /// annotations to draw over it the composite is kept, so moving an annotation never re-composites the layers.
+    /// </summary>
+    private async ValueTask<(ImageBuffer Pixels, bool Shared)> RenderLayersAsync(ImageDocument document, ImageBuffer source, double scale, RenderLayer layer, int version, PipelineExecutionOptions options, bool keepOutput)
+    {
+        var layers = document.Layers;
+        if (layers.Count == 0)
+        {
+            Replace(ref layer.Composite, null);
+            return await RenderPipelineAsync(document.Pipeline, source, scale, layer, version, options, keepOutput).ConfigureAwait(false);
+        }
+        if (layer.Composite?.Matches(document.Pipeline, layers, version) == true) return (layer.Composite.Pixels, true);
+
+        // The pipeline's output is kept too: editing a layer re-composites the layers without re-running the pipeline.
+        var (pixels, shared) = await RenderPipelineAsync(document.Pipeline, source, scale, layer, version, options, keepOutput: true).ConfigureAwait(false);
+        var composite = shared ? pixels.Clone(_allocator) : pixels;
+        try
+        {
+            DocumentRenderer.CompositeLayers(scale == 1 ? layers : [.. layers.Select(l => l.ForScale(scale))], composite, options);
+        }
+        catch
+        {
+            composite.Dispose();
+            throw;
+        }
+        if (!keepOutput)
+        {
+            Replace(ref layer.Composite, null);
+            return (composite, false);
+        }
+        Replace(ref layer.Composite, new CompositeCache(document.Pipeline, layers, version, composite));
+        return (composite, true);
     }
 
     /// <summary>
@@ -467,7 +506,7 @@ public sealed class ImageEditSession : IDisposable
     /// </summary>
     private ImageBuffer? TryRenderOverBase(ImageDocument baseDocument, ImageDocument document, IReadOnlyList<Annotation> order, int version, CancellationToken cancellationToken)
     {
-        if (!ReferenceEquals(document.Pipeline, baseDocument.Pipeline)) return null;
+        if (!ReferenceEquals(document.Pipeline, baseDocument.Pipeline) || !ReferenceEquals(document.Layers, baseDocument.Layers)) return null;
         if (_overlayBase is not { } overlayBase || !ReferenceEquals(overlayBase.Document, baseDocument) || overlayBase.SourceVersion != version)
         {
             // The first overlay frame: the current preview shows exactly the document without the overlay, or nothing can be reused.
@@ -527,6 +566,13 @@ public sealed class ImageEditSession : IDisposable
         if (!ReferenceEquals(old, next)) old?.Pixels.Dispose();
     }
 
+    private static void Replace(ref CompositeCache? cache, CompositeCache? next)
+    {
+        var old = cache;
+        cache = next;
+        if (!ReferenceEquals(old, next)) old?.Pixels.Dispose();
+    }
+
     private void DisposeOverlayBase()
     {
         _overlayBase?.Pixels.Dispose();
@@ -540,6 +586,7 @@ public sealed class ImageEditSession : IDisposable
         {
             if (layer.Stage is { } stage && stage.SourceVersion != _sourceVersion) Replace(ref layer.Stage, null);
             if (layer.Pipeline is { } pipeline && pipeline.SourceVersion != _sourceVersion) Replace(ref layer.Pipeline, null);
+            if (layer.Composite is { } composite && composite.SourceVersion != _sourceVersion) Replace(ref layer.Composite, null);
         }
         if (_overlayBase is { } overlay && overlay.SourceVersion != _sourceVersion) DisposeOverlayBase();
     }
@@ -550,6 +597,7 @@ public sealed class ImageEditSession : IDisposable
         {
             Replace(ref layer.Stage, null);
             Replace(ref layer.Pipeline, null);
+            Replace(ref layer.Composite, null);
         }
         DisposeOverlayBase();
     }
@@ -559,6 +607,29 @@ public sealed class ImageEditSession : IDisposable
     {
         public RenderCache? Stage;
         public RenderCache? Pipeline;
+        public CompositeCache? Composite;
+    }
+
+    /// <summary>The pipeline's output with the document's layers composited onto it.</summary>
+    private sealed class CompositeCache(ImagePipeline pipeline, IReadOnlyList<Layer> layers, int sourceVersion, ImageBuffer pixels)
+    {
+        // Operations and layers are immutable, so the same instances in the same order mean the same pixels.
+        private readonly IImageOperation[] _operations = [.. pipeline];
+        private readonly Layer[] _layers = [.. layers];
+
+        public int SourceVersion { get; } = sourceVersion;
+
+        public ImageBuffer Pixels { get; } = pixels;
+
+        public bool Matches(ImagePipeline otherPipeline, IReadOnlyList<Layer> otherLayers, int sourceVersion)
+        {
+            if (sourceVersion != SourceVersion || otherPipeline.Count != _operations.Length || otherLayers.Count != _layers.Length) return false;
+            for (var i = 0; i < _operations.Length; i++)
+                if (!ReferenceEquals(otherPipeline[i], _operations[i])) return false;
+            for (var i = 0; i < _layers.Length; i++)
+                if (!ReferenceEquals(otherLayers[i], _layers[i])) return false;
+            return true;
+        }
     }
 
     /// <summary>Pixels a pipeline's first operations produced, valid for the same operations on the same source.</summary>
@@ -605,6 +676,7 @@ public sealed class ImageEditSession : IDisposable
         {
             Allocator = _allocator,
             Limits = _limits,
+            MaxDegreeOfParallelism = _maxDegreeOfParallelism,
             CancellationToken = cancellationToken,
             Progress = progress,
         });
@@ -706,7 +778,7 @@ public sealed class ImageEditSession : IDisposable
             scaled.Dispose();
         }
         return new ResizeOperation(size.Width, size.Height, ResizeMode.Stretch, ResamplingFilter.Auto)
-            .Apply(original, new OperationContext(_allocator, _limits, cancellationToken));
+            .Apply(original, new OperationContext(_allocator, _limits, cancellationToken, maxDegreeOfParallelism: _maxDegreeOfParallelism));
     }
 
     private void DisposePreview()
@@ -779,6 +851,16 @@ public sealed class ImageEditSessionOptions
 
     /// <summary>Rasteriser used for text annotations.</summary>
     public ITextRasterizer? TextRasterizer { get; set; }
+
+    /// <summary>
+    /// The most threads one operation may spread its rows over while rendering, or null for
+    /// <see cref="OperationContext.DefaultMaxDegreeOfParallelism"/>.
+    /// </summary>
+    public int? MaxDegreeOfParallelism
+    {
+        get;
+        set => field = value is < 1 ? throw new ArgumentOutOfRangeException(nameof(MaxDegreeOfParallelism), "At least one thread is needed.") : value;
+    }
 
     /// <summary>
     /// Builds the working proxy, or returns null to leave it to the managed resampler. The editor supplies the

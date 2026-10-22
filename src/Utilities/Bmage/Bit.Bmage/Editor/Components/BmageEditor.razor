@@ -308,6 +308,7 @@
             MaxProxyDimension = EffectiveProxyDimension,
             MaxHistoryDepth = MaxHistoryDepth,
             TextRasterizer = EffectiveTextRasterizer,
+            MaxDegreeOfParallelism = Options.MaxDegreeOfParallelism,
             // On WebAssembly the browser builds the working copy of a large photo in native code: about 30 times
             // faster than resampling it on the interpreter, and the export still replays on the original pixels.
             ProxyScaler = OperatingSystem.IsBrowser() ? ScaleProxyInBrowserAsync : null,

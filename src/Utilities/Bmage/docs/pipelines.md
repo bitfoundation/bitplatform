@@ -41,6 +41,7 @@ the synchronous form; use it off the UI thread or for small images.
 | `CancellationToken` | Checked between operations and periodically inside them, typically every few rows. |
 | `Progress` | Receives 0 to 1 across the whole run, with each operation's own progress mapped into its slice. |
 | `Optimize` | Run the optimiser first. Default true. |
+| `MaxDegreeOfParallelism` | The most threads an operation may spread its rows over. Defaults to every processor, and one in the browser. Pixels are identical whatever the value. |
 | `YieldBetweenOperations` | Yield to the scheduler between steps. Default true. |
 | `YieldCallback` | How to yield, if the default `Task.Yield` is not right for your host. |
 
@@ -154,6 +155,21 @@ Filters that take a region only touch that region, which is how redaction works:
 pipeline.Pixelate(14, new Rectangle(40, 120, 300, 40));
 ```
 
+### Masks
+
+Any operation that keeps the size, or a whole sub-pipeline, can be applied through a mask, fading with its coverage:
+a graduated sky, a spotlight, highlights only, everything but the red coat.
+
+```csharp
+pipeline.Masked(Mask.Gradient(new(0, 0), new(0, 0.55f)), sky => sky.Exposure(-0.8f).Saturation(0.35f))
+        .Masked(new LuminanceRangeMask(0f, 0.3f), shadows => shadows.Exposure(0.6f))
+        .ApplyMask(Mask.Ellipse());                      // and cut the result out as a circle
+```
+
+A run of adjustments through a mask is still one pass, and only over the rows and columns the mask can reach. The
+masks, from shapes and gradients to brush strokes and a segmentation model's matte, are in
+[layers-and-masks.md](layers-and-masks.md).
+
 ## The optimiser
 
 It runs by default and every rewrite is exact.
@@ -223,6 +239,58 @@ megapixel photos means roughly 400 MB of live pixels. Two is a safe default on p
 
 One bad file does not lose the rest. Every item comes back with its own outcome, and `StopOnFirstError` is opt-in.
 
+### Batches of any length
+
+`ProcessBatchAsync` keeps every result until the batch ends, and its items hold their files from the start. For a
+batch too large for that, read each file only when its turn comes, hand each result on as it completes, and let the
+memory each image needs decide how many run at once:
+
+```csharp
+var items = files.Select(file => BatchItem.Deferred(ct => ReadAsync(file, ct), file.Name));
+
+await foreach (var result in processor.ProcessBatchStreamAsync(items, pipeline, new BatchOptions
+{
+    MaxConcurrency = 4,
+    MaxMemoryBytes = 512L * 1024 * 1024,
+    ExportOptions = new ImageExportOptions { Format = ImageFormat.WebP, Quality = 0.82 },
+}))
+{
+    if (result.Output is { } output) await SaveAsync(result.FileName, output.Data);
+}
+```
+
+`MaxMemoryBytes` admits images by their expected peak, estimated from each file's header before it is decoded: the
+file, its pixels and the pipeline's working buffers. Small photos then run four at a time, a 48 megapixel one runs with
+room to spare, and one larger than the whole budget runs alone rather than never. The source may also be an
+`IAsyncEnumerable<BatchItem>`, such as files arriving from an upload, in which case `BatchProgress.Total` is -1.
+
+## Memory
+
+A pipeline can say what it will cost before it runs:
+
+```csharp
+var estimate = pipeline.EstimateMemory(new Size(6000, 4000));
+estimate.PeakBytes;     // the most pixel memory the run holds at once, its result included
+estimate.OutputSize;    // what it produces
+```
+
+The estimate follows the buffers each step holds, and the working copies the heavier ones take. To enforce a ceiling
+rather than predict one, run with a `BudgetedPixelAllocator`: every buffer and mask comes from the allocator in the
+context, so a run that would exceed the budget fails with `ImageMemoryBudgetExceededException` before allocating, and
+`PeakBytes` afterwards says what it really took.
+
+```csharp
+var budget = new BudgetedPixelAllocator(256L * 1024 * 1024);
+using var result = pipeline.Execute(source, new PipelineExecutionOptions { Allocator = budget });
+Console.WriteLine($"{budget.PeakBytes / 1048576.0:0.0} MB at the peak");
+```
+
+## Saving a pipeline
+
+`BmageJson.Serialize(pipeline)` writes a pipeline as JSON and `BmageJson.DeserializePipeline` reads it back, every
+built-in operation included, so a preset can live in a database or travel in a request. See
+[layers-and-masks.md](layers-and-masks.md#saving-and-replaying-an-edit).
+
 ## Custom operations
 
 Implement `IImageOperation`, or `PointOperation` if your operation maps each pixel independently and should fuse with
@@ -234,6 +302,9 @@ public sealed class DuotoneOperation : PointOperation
     public DuotoneOperation(Rgba32 shadow, Rgba32 highlight) { /* ... */ }
 
     public override string Name => "Duotone";
+
+    // ProcessRow only reads its own fields, so rows may run on several threads at once.
+    public override bool CanProcessRowsConcurrently => true;
 
     public override void ProcessRow(Span<Vector4> pixels)
     {

@@ -68,6 +68,15 @@ Blazor-native image processing platform where the engine itself is C#.
   substitutes PNG for the AVIF you requested, you get an exception, not a silent surprise.
 - **Headless first.** Every capability works without the editor component, so the same pipeline runs in an upload
   handler or a console tool.
+- **Selective edits and layers.** Any edit can be applied through a mask: a gradient, a radial spotlight, a tone or
+  colour range, brush strokes, a segmentation model's matte. Image, fill and adjustment layers composite with the W3C
+  blend modes.
+- **Edits are data.** A document, pipeline, layers, masks and annotations included, writes to JSON and reads back as the
+  same edit, so the browser can send the edit instead of the pixels and a server can replay it at full resolution.
+- **Every core, every thread it can use.** Operations spread their rows over all cores where .NET has threads, with
+  identical pixels, and in the browser decoding and encoding run in Web Workers, off the page's thread.
+- **Memory you can predict.** A pipeline estimates its peak before it runs, a budgeted allocator enforces a ceiling,
+  and a batch streams its files and results so it holds only the images in flight.
 
 ## Packages
 
@@ -167,11 +176,14 @@ Every part of its UI can be replaced while keeping the engine:
 | Adjustments | Brightness, contrast, saturation, hue, exposure, gamma, levels, temperature, tint, vibrance, shadows, highlights, opacity |
 | Filters | Grayscale, sepia, invert, posterize, threshold, blur, sharpen, pixelate, noise, median denoise, vignette, custom convolution and colour matrices |
 | Analysis | Histograms, luminance statistics, dominant colour palettes, auto-levels, auto-contrast, saliency-based smart cropping, low-quality placeholders |
+| Masks | Rectangles, ellipses, lassos, paths, brush strokes, linear and radial gradients, luminance and colour ranges, bitmap mattes, combinations; feathering, inversion, relative units; masked edits and alpha cut-outs |
+| Layers | Image, fill and adjustment layers with opacity, masks and the W3C blend modes, from `Multiply` and `Screen` to `Color` and `Luminosity` |
 | Drawing | Anti-aliased paths, strokes with caps, joins and dashes, gradients, ellipses, polygons, arrows, freehand, text |
 | Annotations | Rectangle, ellipse, line, arrow, freehand, polygon, text, highlight, callout, numbered step, image stamp, redaction |
 | Metadata | EXIF read and write, GPS, camera data, orientation, ICC profiles, XMP, three privacy policies |
-| Pipelines | Composition, optimisation, lazy execution, cancellation, progress, batch processing |
-| Editing | Non-destructive documents, undo and redo, memory-aware history, proxy previews |
+| Pipelines | Composition, optimisation, lazy execution, cancellation, progress, memory estimates, batch processing with streamed inputs and outputs and memory-based admission |
+| Editing | Non-destructive documents with layers, undo and redo, memory-aware history, proxy previews, JSON save and restore |
+| Concurrency | Row-parallel operations with identical pixels on any number of threads; browser codecs in a Web Worker pool |
 
 ## Performance
 
@@ -189,6 +201,10 @@ table in performance.md has both. See
 | Four adjustments fused into one pass | 3840 × 2160 | 67 ms | 4.6 KB |
 | JPEG encode, quality 85 | 3840 × 2160 | 122 ms | 6.7 MB |
 | PNG decode | 3840 × 2160 | 88 ms | 37 MB |
+
+Those are on one thread. Wherever .NET has threads, operations spread their rows over every core with identical pixels:
+on a 10 core machine a 24 megapixel downscale runs 4.7× faster, a 4K rotation 6.1×, a median filter 8.5×. In the
+browser, decoding and encoding run in Web Workers, off the page's thread.
 
 ## Where it runs
 
@@ -222,11 +238,13 @@ dotnet run --project src/Utilities/Bmage/Tests/Bit.Bmage.Benchmarks -c Release -
 - [Getting started](https://github.com/bitfoundation/bitplatform/blob/develop/src/Utilities/Bmage/docs/getting-started.md)
 - [Architecture](https://github.com/bitfoundation/bitplatform/blob/develop/src/Utilities/Bmage/docs/architecture.md)
 - [Pipelines](https://github.com/bitfoundation/bitplatform/blob/develop/src/Utilities/Bmage/docs/pipelines.md)
+- [Layers, masks and blend modes](https://github.com/bitfoundation/bitplatform/blob/develop/src/Utilities/Bmage/docs/layers-and-masks.md)
 - [The editor component](https://github.com/bitfoundation/bitplatform/blob/develop/src/Utilities/Bmage/docs/editor.md)
 - [Headless processing](https://github.com/bitfoundation/bitplatform/blob/develop/src/Utilities/Bmage/docs/headless.md)
 - [Formats and capabilities](https://github.com/bitfoundation/bitplatform/blob/develop/src/Utilities/Bmage/docs/formats.md)
 - [Metadata and privacy](https://github.com/bitfoundation/bitplatform/blob/develop/src/Utilities/Bmage/docs/metadata-and-privacy.md)
 - [Performance](https://github.com/bitfoundation/bitplatform/blob/develop/src/Utilities/Bmage/docs/performance.md)
+- [Threads, workers and memory](https://github.com/bitfoundation/bitplatform/blob/develop/src/Utilities/Bmage/docs/threads-and-memory.md)
 - [Security](https://github.com/bitfoundation/bitplatform/blob/develop/src/Utilities/Bmage/docs/security.md)
 - [Browser support](https://github.com/bitfoundation/bitplatform/blob/develop/src/Utilities/Bmage/docs/browser-support.md)
 - [Extending](https://github.com/bitfoundation/bitplatform/blob/develop/src/Utilities/Bmage/docs/extending.md)

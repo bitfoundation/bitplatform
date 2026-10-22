@@ -9,9 +9,9 @@
         <IsTrimmable>true</IsTrimmable>
         <!-- The [JSImport] source generator emits unsafe code. -->
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-        <Description>bit Bmage: browser-side image processing for Blazor. Load, transform, annotate and export images on the user's device from strongly typed C#, with browser-native WebP and AVIF codecs, capability detection, IBrowserFile/clipboard/camera input and dependency injection wiring. Works in WebAssembly, Server and Auto render modes, and headlessly on a server through its browser-independent engine: pixel buffers, transforms, adjustments, filters, drawing, annotations, EXIF metadata, managed PNG/JPEG/BMP/GIF codecs and composable non-destructive pipelines. Includes BmageEditor, a themeable, accessible, touch-friendly image editor component: crop, rotate, adjust, filter, draw, annotate, redact, undo/redo and export.</Description>
+        <Description>bit Bmage: browser-side image processing for Blazor. Load, transform, annotate and export images on the user's device from strongly typed C#, with browser-native WebP and AVIF codecs, capability detection, IBrowserFile/clipboard/camera input and dependency injection wiring. Works in WebAssembly, Server and Auto render modes, and headlessly on a server through its browser-independent engine: pixel buffers, transforms, adjustments, filters, drawing, annotations, masks and selective edits, image, fill and adjustment layers with W3C blend modes, EXIF metadata, managed PNG/JPEG/BMP/GIF codecs, composable non-destructive pipelines and edits that save to JSON and replay on a server, all spread over every core with identical pixels, with codec work in Web Workers in the browser and predictable, budgeted memory. Includes BmageEditor, a themeable, accessible, touch-friendly image editor component: crop, rotate, adjust, filter, draw, annotate, redact, undo/redo and export.</Description>
         <PackageDescription>$(Description)</PackageDescription>
-        <PackageTags>Bit;Bmage;Blazor;image;editor;canvas;crop;resize;webp;avif;exif;annotation;png;jpeg;wasm</PackageTags>
+        <PackageTags>Bit;Bmage;Blazor;image;editor;canvas;crop;resize;webp;avif;exif;annotation;mask;layers;blend;png;jpeg;wasm</PackageTags>
     </PropertyGroup>
 
     <ItemGroup>
@@ -56,8 +56,8 @@
             BeforeTargets="ResolveProjectStaticWebAssets"
             DependsOnTargets="BuildBmageJavaScriptOnce">
         <ItemGroup>
-            <Content Remove="wwwroot\bit-bmage.js" />
-            <Content Include="wwwroot\bit-bmage.js" />
+            <Content Remove="wwwroot\bit-bmage.js;wwwroot\bit-bmage-worker.js" />
+            <Content Include="wwwroot\bit-bmage.js;wwwroot\bit-bmage-worker.js" />
         </ItemGroup>
     </Target>
 
@@ -89,13 +89,16 @@
 
     <Target Name="BuildJavaScript"
             Inputs="@(TypeScriptFiles);tsconfig.json"
-            Outputs="wwwroot/bit-bmage.js;$(BaseIntermediateOutputPath)bit-bmage.$(Configuration).stamp">
+            Outputs="wwwroot/bit-bmage.js;wwwroot/bit-bmage-worker.js;$(BaseIntermediateOutputPath)bit-bmage.$(Configuration).stamp">
         <Exec Command="node_modules/.bin/tsc" StandardOutputImportance="high" StandardErrorImportance="high" />
         <!-- Minify to a temp file and move it into place, so an interrupted minify never leaves a half-written
              bundle that the Outputs check above would then treat as up-to-date. format=esm keeps the named
-             exports the interop's dynamic import() resolves. -->
+             exports the interop's dynamic import() resolves. The codec worker is a classic script, which
+             esbuild keeps as one when no format is given. -->
         <Exec Condition=" '$(Configuration)' == 'Release' " Command="node_modules/.bin/esbuild wwwroot/bit-bmage.js --minify --format=esm --outfile=wwwroot/bit-bmage.min.js" StandardOutputImportance="high" StandardErrorImportance="high" />
         <Move Condition=" '$(Configuration)' == 'Release' " SourceFiles="wwwroot/bit-bmage.min.js" DestinationFiles="wwwroot/bit-bmage.js" OverwriteReadOnlyFiles="true" />
+        <Exec Condition=" '$(Configuration)' == 'Release' " Command="node_modules/.bin/esbuild wwwroot/bit-bmage-worker.js --minify --outfile=wwwroot/bit-bmage-worker.min.js" StandardOutputImportance="high" StandardErrorImportance="high" />
+        <Move Condition=" '$(Configuration)' == 'Release' " SourceFiles="wwwroot/bit-bmage-worker.min.js" DestinationFiles="wwwroot/bit-bmage-worker.js" OverwriteReadOnlyFiles="true" />
 
         <!-- Configuration-aware incremental marker: only Release minifies, so switching between Debug and
              Release must invalidate this target instead of shipping the other configuration's bundle. -->

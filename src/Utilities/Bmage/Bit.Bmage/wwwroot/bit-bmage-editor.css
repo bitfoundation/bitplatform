@@ -559,6 +559,26 @@
     background: var(--bmg-bg-sunken);
 }
 
+/* A pixel layer's name is a label, not a button: layers are edited from code or a custom panel. */
+span.bmg-layer-name {
+    cursor: default;
+}
+
+span.bmg-layer-name:hover {
+    background: transparent;
+}
+
+.bmg-layer-hidden .bmg-layer-name {
+    opacity: 0.5;
+}
+
+/* Pixel layers above, annotations below. */
+.bmg-layer-list + .bmg-layer-list {
+    margin-block-start: 8px;
+    padding-block-start: 8px;
+    border-block-start: 1px solid var(--bmg-border);
+}
+
 .bmg-history-entry {
     border-radius: var(--bmg-radius-sm);
 }
