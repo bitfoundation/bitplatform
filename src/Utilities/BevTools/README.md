@@ -261,7 +261,7 @@ How the information is obtained, in short:
 * **Render modes**: what the renderer assigned to each component (`@rendermode`, `[RenderMode*]`), read once, on its
   first render.
 * **Routing**: the `RouteView`'s `RouteData` and the `Router`'s assemblies - public parameters of components BevTools
-  already tracks; the template that matched from .NET 10 (`RouteData.Template`), inferred before that only when a page
+  already tracks; the template that matched when `RouteData.Template` carries it (.NET 10), otherwise inferred only when a page
   has a single `@page`, and labeled so.
 * **Authentication**: the scope's `AuthenticationStateProvider` and its `AuthenticationStateChanged` event, found by
   name (BevTools does not depend on the Authorization package); asking it for the current state is BevTools' own work,

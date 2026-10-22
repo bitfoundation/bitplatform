@@ -230,6 +230,28 @@ describe('WebSocket traffic', () => {
         hub.detach();
     });
 
+    it("counts the circuit's calls into BevTools' own module, and their replies, as BevTools' own", async () => {
+        // Found in a real browser: an export handed to the browser for download is a JS.BeginInvokeJS of hundreds of KB.
+        installPage();
+        const hub = await loadHub();
+        const ref = runtime(5);
+        hub.attach(ref, { platform: 'Server', moduleObjectId: 3 });
+        const socket = new window.WebSocket('wss://app.example/_blazor?id=x');
+
+        // [asyncHandle, identifier, argsJson, resultType, targetInstanceId]
+        socket.receive(frame(invocation('JS.BeginInvokeJS', int(41), str('downloadText'), str('["trace.json","{}"]'), int(0), int(3))));
+        socket.send(frame(invocation('EndInvokeJSFromDotNet', int(41), [0xc3], str('[41,true,true]'))));
+        socket.receive(frame(invocation('JS.BeginInvokeJS', int(42), str('import'), str('["./_content/Bit.BevTools/bit-bevtools.js"]'), int(1), int(0))));
+        socket.receive(frame(invocation('JS.BeginInvokeJS', int(43), str('app.highlight'), str('[]'), int(0), int(9))));
+        socket.send(frame(invocation('EndInvokeJSFromDotNet', int(43), [0xc3], str('[43,true,null]'))));
+
+        const [stats] = hub.traffic();
+        expect(stats.own.count, 'the download call, its reply and the module import').toBe(3);
+        expect(stats.messages['← JS.BeginInvokeJS'].count, "the app's own call").toBe(1);
+        expect(stats.messages['→ EndInvokeJSFromDotNet'].count, "the reply to the app's call").toBe(1);
+        hub.detach();
+    });
+
     it('reads the JSON hub protocol envelope without keeping arguments', async () => {
         installPage();
         const hub = await loadHub();

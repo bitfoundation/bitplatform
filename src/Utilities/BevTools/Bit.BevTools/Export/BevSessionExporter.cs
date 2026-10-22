@@ -925,6 +925,7 @@ public static class BevSessionExporter
             w.WriteNumber("maxBytes", s.RenderBatches.MaxBytes);
             w.WriteNumber("applyMs", Round(s.RenderBatches.ApplyMs));
             w.WriteNumber("maxApplyMs", Round(s.RenderBatches.MaxApplyMs));
+            w.WriteNumber("bevToolsOnly", s.RenderBatches.BevTools);
             w.WriteEndObject();
             w.WriteStartObject("messages");
             foreach (var (kind, stat) in s.Messages.OrderByDescending(m => m.Value.Bytes))

@@ -83,7 +83,7 @@
 
 <ProblemCard Id="problem-14" Title="14. How much does the circuit carry? (Server only)" Symptom="Typing feels slow on a slow network; how big is each update?" Href="/products">
     <li>On a Server circuit, type in the product search. Network → WebSockets: every <code>JS.RenderBatch</code> the circuit sent, its size, and how long the browser took to apply it; BevTools' own reports are counted apart.</li>
-    <li>The panel renders over the same circuit while it is open: open the companion window (⧉ in the panel header) to measure the app without it. Diagnostics flags render batches of 128 KB or more.</li>
+    <li>The panel renders over the same circuit while it is open; batches that changed only the panel are counted as BevTools' own, and the companion window (⧉ in the panel header) avoids them altogether. Diagnostics flags render batches of 128 KB or more.</li>
 </ProblemCard>
 
 <ProblemCard Id="problem-15" Title="15. Share a profile, not a screenshot" Symptom="A colleague needs to see what the page did, in detail, without your machine.">

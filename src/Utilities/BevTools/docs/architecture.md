@@ -248,11 +248,22 @@ the bridge is a page-level hub with one *target* per attached runtime rather tha
   Each frame is classified by direction and SignalR message kind, decoding the envelope only: a minimal MessagePack
   reader skips every argument it does not need, and the JSON protocol is read with patterns over the envelope.
   `JS.RenderBatch` is sized by its binary argument and timed until the browser's `OnRenderCompleted` for the same id.
-  BevTools' own reports are identified exactly - a `BeginInvokeDotNetFromJS` whose object id is a target's reference,
-  and the `JS.EndInvokeDotNet` that answers its call id - counted apart, and never trigger a report of their own (they
-  would otherwise schedule the next report forever). Reports go to .NET at most every 2 s, and only when application
-  traffic changed. BevTools' render batches cannot be told apart from the app's inside one `JS.RenderBatch`; the
-  WebSockets view says so while the panel is open, and the companion window avoids them altogether.
+  BevTools' own traffic is identified exactly and counted apart: a `BeginInvokeDotNetFromJS` whose object id is a
+  target's reference and the `JS.EndInvokeDotNet` that answers its call id (its reports); a `JS.BeginInvokeJS` that
+  targets the runtime's BevTools module, whose JS object id the panel hands over on attach, and the
+  `EndInvokeJSFromDotNet` that answers its handle (an export handed to the browser for download is hundreds of KB);
+  and a render batch whose DOM changes all landed inside `.bev-root` (the panel rendering). Render batches are
+  attributed when the browser acknowledges them (`OnRenderCompleted`, sent right after the batch was applied), from
+  a `MutationObserver` over the document: a batch that changed the app's DOM, or any change between acknowledgements
+  that is not BevTools', counts as the app's, so the error is always towards reporting. Writes that leave a value as
+  it was are not changes: page scripts that react to every render (the demo's re-applies its heading anchors) would
+  otherwise make every panel render look like the app's. The browser acknowledges a batch while the frame that
+  carried it is still being dispatched - before this module's listener for that frame runs - so an acknowledgement
+  is classified when it is sent and the batch settled when its frame is decoded, its apply time measured from the
+  message event's timestamp. None of BevTools' own traffic
+  triggers a report (it would otherwise schedule the next one forever). Reports go to .NET at most every 2 s, and only
+  when application traffic changed. Found in a real browser: before this, exporting a session over a circuit
+  produced "large message" warnings about BevTools' own downloads.
 * **The hook** `window.__BIT_BEVTOOLS__` (frozen; `targets`, `request`, `traffic`, `subscribe`, `show`) exists while a
   target is attached, and is the only way in for external frontends. No message channel is opened on the page. The
   last detach removes every listener and restores `DotNet` and `WebSocket` as they were.

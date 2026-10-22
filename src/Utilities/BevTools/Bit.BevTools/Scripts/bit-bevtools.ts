@@ -38,6 +38,8 @@ interface BevAttachOptions {
     trackTraffic?: boolean;
     sensitivePatterns?: string[];
     sessionId?: number;
+    /** The id the runtime knows this module by: over a circuit, every call .NET makes into it names that id. */
+    moduleObjectId?: number | null;
     platform?: string | null;
     renderMode?: string | null;
     label?: string;
@@ -55,6 +57,7 @@ export interface BevTargetInfo {
 
 interface BevTarget extends BevTargetInfo {
     ref: any;
+    moduleObjectId: number | null;
     jsToDotNetBatch: BevJsCallEntry[];
     flushTimer: ReturnType<typeof setTimeout> | null;
 }
@@ -80,7 +83,8 @@ export interface BevSocketStats {
     received: BevMessageStat;
     own: BevMessageStat;
     messages: { [key: string]: BevMessageStat };
-    renderBatches: { count: number; bytes: number; maxBytes: number; applyMs: number; maxApplyMs: number; pending: number };
+    /** The application's render batches; batches that changed only BevTools' own UI are counted in `bevTools` and `own`. */
+    renderBatches: { count: number; bytes: number; maxBytes: number; applyMs: number; maxApplyMs: number; pending: number; bevTools: number };
     largest: { direction: string; kind: string; bytes: number; at: number }[];
 }
 
@@ -368,7 +372,109 @@ const sockets = new Map<any, BevSocketStats>();
 let nextSocketId = 0;
 // SignalR invocation ids of the reports BevTools makes over a circuit, so their completions count as its own too.
 const ownInvocations = new Set<string>();
-const pendingRenderBatches = new Map<string, number>();
+// The async handles of the calls a circuit made into this module (an attach, a download, a storage read), so the
+// browser's reply to each counts as BevTools' own too.
+const ownJsCalls = new Set<number>();
+const pendingRenderBatches = new Map<string, { at: number; bytes: number; size: number }>();
+// Acknowledgements decoded before their batch: SignalR applies a batch and the browser acknowledges it while the frame
+// is still being dispatched, before this module's listener for that frame runs. The DOM changes are classified then,
+// when they are the batch's, and the batch is settled once its frame is decoded.
+const acknowledgedEarly = new Map<string, { at: number; dom: "bevtools" | "app" | "none"; size: number }>();
+let frameArrivedAt: number | null = null;
+
+/** A render batch and its acknowledgement, once both are known: BevTools' own when it changed only the panel. */
+function settleRenderBatch(s: BevSocketStats, dom: "bevtools" | "app" | "none", batchBytes: number, batchSize: number, ackSize: number, applyMs: number) {
+    if (dom === "bevtools") {
+        s.renderBatches.bevTools++;
+        add(s.own, batchSize);
+        add(s.own, ackSize);
+        return;
+    }
+
+    noteRenderBatch(s, batchBytes, batchSize, applyMs >= 0 ? applyMs : null);
+    noteMessage(s, "→", "OnRenderCompleted", ackSize);
+}
+
+/** An application render batch: its size, the time the browser took to apply it, and its message. */
+function noteRenderBatch(s: BevSocketStats, batchBytes: number, messageSize: number, applyMs: number | null) {
+    const rb = s.renderBatches;
+    rb.count++;
+    rb.bytes += batchBytes;
+    if (batchBytes > rb.maxBytes) rb.maxBytes = batchBytes;
+    if (applyMs !== null) {
+        rb.applyMs += applyMs;
+        if (applyMs > rb.maxApplyMs) rb.maxApplyMs = applyMs;
+    }
+    noteMessage(s, "←", "JS.RenderBatch", messageSize);
+}
+
+// Which part of the page the DOM changed in since the last render batch was decoded: BevTools' panel, the app, or
+// both. A render batch is applied while its frame is being dispatched, before this module decodes that frame, so a
+// batch whose changes stayed inside .bev-root rendered nothing but BevTools' own UI. Anything that touched the app's
+// DOM - or any change between frames that is not BevTools' - counts as the app's, which errs towards reporting.
+let domObserver: MutationObserver | null = null;
+let bevToolsDomChanged = false;
+let appDomChanged = false;
+
+function inBevTools(node: Node | null): boolean {
+    const element = node && (node.nodeType === 1 ? node as Element : node.parentElement);
+    return !!(element && typeof element.closest === "function" && element.closest(".bev-root"));
+}
+
+/**
+ * A write that left the value as it was: page scripts that react to every render (a MutationObserver re-applying a
+ * heading's anchor, a theme script re-setting a class) do this to the app's DOM whenever BevTools' panel renders,
+ * and it changes nothing. Found in a real browser, where it made every panel render look like the app's.
+ */
+function isNoOp(record: MutationRecord) {
+    if (record.type === "attributes" && record.attributeName) {
+        return (record.target as Element).getAttribute(record.attributeName) === record.oldValue;
+    }
+    if (record.type === "characterData") {
+        return (record.target as CharacterData).data === record.oldValue;
+    }
+    return false;
+}
+
+function noteMutations(records: MutationRecord[]) {
+    for (const record of records) {
+        if (inBevTools(record.target)) {
+            bevToolsDomChanged = true;
+            continue;
+        }
+        if (isNoOp(record)) {
+            continue;
+        }
+        // The panel itself appearing or going away: its parent is the app's, the nodes are BevTools'.
+        const nodes = [...Array.from(record.addedNodes), ...Array.from(record.removedNodes)];
+        if (record.type === "childList" && nodes.length > 0 && nodes.every(n => n.nodeType === 1 && (n as Element).classList && (n as Element).classList.contains("bev-root"))) {
+            bevToolsDomChanged = true;
+        } else {
+            appDomChanged = true;
+        }
+    }
+}
+
+function takeDomChanges(): "bevtools" | "app" | "none" {
+    if (domObserver) noteMutations(domObserver.takeRecords());
+    const result = appDomChanged ? "app" : bevToolsDomChanged ? "bevtools" : "none";
+    appDomChanged = false;
+    bevToolsDomChanged = false;
+    return result;
+}
+
+function observeDom() {
+    if (domObserver || typeof MutationObserver === "undefined" || !document.documentElement) return;
+    domObserver = new MutationObserver(noteMutations);
+    domObserver.observe(document.documentElement, { subtree: true, childList: true, attributes: true, characterData: true, attributeOldValue: true, characterDataOldValue: true });
+}
+
+function stopObservingDom() {
+    domObserver?.disconnect();
+    domObserver = null;
+    appDomChanged = false;
+    bevToolsDomChanged = false;
+}
 
 function stat(): BevMessageStat {
     return { count: 0, bytes: 0, maxBytes: 0 };
@@ -406,12 +512,21 @@ function socketStats(socket: any, observedFromOpen: boolean): BevSocketStats {
             received: stat(),
             own: stat(),
             messages: {},
-            renderBatches: { count: 0, bytes: 0, maxBytes: 0, applyMs: 0, maxApplyMs: 0, pending: 0 },
+            renderBatches: { count: 0, bytes: 0, maxBytes: 0, applyMs: 0, maxApplyMs: 0, pending: 0, bevTools: 0 },
             largest: [],
         };
         sockets.set(socket, s);
         const stats = s;
-        socket.addEventListener("message", (e: MessageEvent) => onFrame(stats, "←", e.data));
+        socket.addEventListener("message", (e: MessageEvent) => {
+            // When the frame arrived: an existing socket's own handler (SignalR's) runs before this listener and has
+            // already applied a render batch by now, so the time the batch took is measured from the event's time.
+            frameArrivedAt = typeof e.timeStamp === "number" && e.timeStamp > 0 ? e.timeStamp : performance.now();
+            try {
+                onFrame(stats, "←", e.data);
+            } finally {
+                frameArrivedAt = null;
+            }
+        });
         socket.addEventListener("close", (e: CloseEvent) => {
             stats.closedAt = Date.now();
             stats.closeCode = e.code;
@@ -494,9 +609,41 @@ function decodeText(s: BevSocketStats, direction: string, text: string) {
                 add(s.own, record.length);
                 continue;
             }
+        } else if (kind === "JS.BeginInvokeJS" && direction === "←") {
+            // [asyncHandle, identifier, argsJson, resultType, targetInstanceId]
+            const args = /"arguments"\s*:\s*\[\s*(\d+)\s*,\s*"(?:[^"\\]|\\.)*"\s*,\s*"((?:[^"\\]|\\.)*)"\s*,\s*\d+\s*,\s*(\d+)/.exec(record);
+            if (args && isOwnModuleCall(+args[3], args[2].slice(0, 256))) {
+                rememberOwnJsCall(+args[1]);
+                add(s.own, record.length);
+                continue;
+            }
+        } else if (kind === "EndInvokeJSFromDotNet" && direction === "→") {
+            const args = /"arguments"\s*:\s*\[\s*(\d+)/.exec(record);
+            if (args && ownJsCalls.delete(+args[1])) {
+                add(s.own, record.length);
+                continue;
+            }
         }
         noteMessage(s, direction, kind, record.length);
     }
+}
+
+/**
+ * A .NET -> JS call over a circuit into BevTools' own module: it names the module's JS object id, which the runtime
+ * handed over on attach (or, for the import itself, this module's URL). Only Server runtimes count: a WebAssembly
+ * runtime's calls never travel over a socket, and its object ids are numbered apart from a circuit's.
+ */
+function isOwnModuleCall(targetInstanceId: number | null, argsJson: string | null) {
+    if (argsJson && argsJson.indexOf("_content/Bit.BevTools/bit-bevtools.js") >= 0) return true;
+    let own = false;
+    targets.forEach(t => { if (t.platform === "Server" && t.moduleObjectId !== null && t.moduleObjectId === targetInstanceId) own = true; });
+    return own;
+}
+
+function rememberOwnJsCall(asyncHandle: number | null) {
+    if (asyncHandle === null) return;
+    ownJsCalls.add(asyncHandle);
+    if (ownJsCalls.size > 256) ownJsCalls.delete(ownJsCalls.values().next().value!);
 }
 
 function isOwnObjectId(id: number) {
@@ -672,28 +819,57 @@ function decodePacked(s: BevSocketStats, direction: string, bytes: Uint8Array, s
                     add(s.own, size);
                     return;
                 }
+            } else if (target === "JS.BeginInvokeJS" && argCount >= 5 && direction === "←") {
+                const asyncHandle = r.int();
+                r.skip(); // identifier
+                const argsJson = r.str();
+                r.skip(); // result type
+                if (isOwnModuleCall(r.int(), argsJson)) {
+                    rememberOwnJsCall(asyncHandle);
+                    add(s.own, size);
+                    return;
+                }
+            } else if (target === "EndInvokeJSFromDotNet" && argCount >= 1 && direction === "→") {
+                const asyncHandle = r.int();
+                if (asyncHandle !== null && ownJsCalls.delete(asyncHandle)) {
+                    add(s.own, size);
+                    return;
+                }
             } else if (target === "JS.RenderBatch" && argCount >= 2 && direction === "←") {
+                // Counted once the browser acknowledges it: only then is it known whose DOM it changed.
                 const batchId = r.int();
                 const batchBytes = r.binLength() ?? size;
-                const rb = s.renderBatches;
-                rb.count++;
-                rb.bytes += batchBytes;
-                if (batchBytes > rb.maxBytes) rb.maxBytes = batchBytes;
-                if (batchId !== null) pendingRenderBatches.set(s.id + ":" + batchId, performance.now());
-                if (pendingRenderBatches.size > 256) pendingRenderBatches.delete(pendingRenderBatches.keys().next().value!);
-                rb.pending = pendingRenderBatches.size;
-            } else if (target === "OnRenderCompleted" && argCount >= 1 && direction === "→") {
-                const batchId = r.int();
-                const key = s.id + ":" + batchId;
-                const received = pendingRenderBatches.get(key);
-                if (received !== undefined) {
-                    // From the batch arriving to the browser saying it applied it: the DOM work, on the browser's side.
-                    pendingRenderBatches.delete(key);
-                    const ms = performance.now() - received;
-                    s.renderBatches.applyMs += ms;
-                    if (ms > s.renderBatches.maxApplyMs) s.renderBatches.maxApplyMs = ms;
-                    s.renderBatches.pending = pendingRenderBatches.size;
+                const arrived = frameArrivedAt ?? performance.now();
+                if (batchId === null) {
+                    noteRenderBatch(s, batchBytes, size, null);
+                    return;
                 }
+                const key = s.id + ":" + batchId;
+                const early = acknowledgedEarly.get(key);
+                if (early !== undefined) {
+                    acknowledgedEarly.delete(key);
+                    settleRenderBatch(s, early.dom, batchBytes, size, early.size, early.at - arrived);
+                    return;
+                }
+                pendingRenderBatches.set(key, { at: arrived, bytes: batchBytes, size });
+                if (pendingRenderBatches.size > 256) pendingRenderBatches.delete(pendingRenderBatches.keys().next().value!);
+                s.renderBatches.pending = pendingRenderBatches.size;
+                return;
+            } else if (target === "OnRenderCompleted" && argCount >= 1 && direction === "→") {
+                const key = s.id + ":" + r.int();
+                // The browser sends this right after applying the batch, so the DOM changes since the previous
+                // acknowledgement are that batch's. One that changed only BevTools' panel was the panel rendering.
+                const dom = takeDomChanges();
+                const batch = pendingRenderBatches.get(key);
+                if (batch === undefined) {
+                    acknowledgedEarly.set(key, { at: performance.now(), dom, size });
+                    if (acknowledgedEarly.size > 256) acknowledgedEarly.delete(acknowledgedEarly.keys().next().value!);
+                    return;
+                }
+                pendingRenderBatches.delete(key);
+                s.renderBatches.pending = pendingRenderBatches.size;
+                settleRenderBatch(s, dom, batch.bytes, batch.size, size, performance.now() - batch.at);
+                return;
             }
             void invocationId;
         } else {
@@ -885,6 +1061,7 @@ export function attach(ref: any, options: BevAttachOptions | null) {
         id,
         ref,
         sessionId: options && typeof options.sessionId === "number" ? options.sessionId : null,
+        moduleObjectId: options && typeof options.moduleObjectId === "number" ? options.moduleObjectId : null,
         platform: options && options.platform || null,
         renderMode: options && options.renderMode || null,
         label: options && options.label || (options && options.platform) || "Blazor",
@@ -896,6 +1073,7 @@ export function attach(ref: any, options: BevAttachOptions | null) {
 
     if (options && options.trackJsToDotNet) wrapDotNet();
     if ((!options || options.trackTraffic !== false) && wrapWebSockets()) {
+        observeDom();
         trafficTimer ??= setInterval(reportTraffic, 2000);
     }
 
@@ -921,10 +1099,13 @@ export function detach(targetId?: string) {
         removePageListeners();
         unwrapDotNet();
         unwrapWebSockets();
+        stopObservingDom();
         if (trafficTimer) { clearInterval(trafficTimer); trafficTimer = null; }
         sockets.clear();
         ownInvocations.clear();
+        ownJsCalls.clear();
         pendingRenderBatches.clear();
+        acknowledgedEarly.clear();
         shortcut = null;
     }
 

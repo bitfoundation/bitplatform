@@ -168,6 +168,8 @@ public partial class BevToolsPanel : ComponentBase, IBevToolsCommandContext, IAs
                     // The hub redacts URLs it shows itself (sockets, failed resources) with the same patterns.
                     sensitivePatterns = Options.SensitiveNamePatterns,
                     sessionId = Session.Id,
+                    // Calls into this module name it by this id over a circuit: the hub counts them as BevTools' own.
+                    moduleObjectId = BlazorReflection.JSObjectId(_module),
                     platform = Session.Platform,
                     renderMode = Session.RenderModeName,
                     label = RuntimeLabel(),

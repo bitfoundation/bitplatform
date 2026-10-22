@@ -68,7 +68,7 @@ rather than "not observed yet" (renders inside events are then labeled *StateHas
 | Information | Status | How / why |
 |---|---|---|
 | Current route: page, route values, query, layout | Available | From the `RouteView`'s public `RouteData` and `NavigationManager`; values through the inspector, the URI redacted. Without a `RouteView` in the session (the router runs during static rendering, per-page interactivity) only the URI is known, and the panel says so. |
-| Matched template | Partial | `RouteData.Template` on .NET 10; before that inferred only for a page with a single `@page`, and labeled inferred. |
+| Matched template | Partial | `RouteData.Template` when the router fills it in (.NET 10; not every router does, the demo's interactive one does not); otherwise inferred only for a page with a single `@page`, and labeled inferred. |
 | Route table with authorization, render mode, layout | Available | The `Router`'s `AppAssembly` and `AdditionalAssemblies`, read as the router reads them (exported types with `[Route]`); `[Authorize]` read by name. Without a router: the assemblies of the pages the session rendered, labeled so. |
 | Authentication state, roles, claims, changes | Available | The scope's `AuthenticationStateProvider` (by name) as a built-in state provider; `AuthenticationStateChanged` records changes with diffs. Asking for the current state is BevTools' own work, so a provider's API call meanwhile is not recorded as the app's. Claim values follow `ValueAccess`; sensitive claim types and token-shaped values are redacted. |
 
@@ -80,7 +80,7 @@ rather than "not observed yet" (renders inside events are then labeled *StateHas
 | Hand-built `HttpClient` | Integration | Add `BevToolsHttpMessageHandler` manually. |
 | Bodies | N/A | Never captured. |
 | Originating UI event | Partial | Linked when a HandleEvent activity is executing; lifecycle/timer requests show no trigger. |
-| WebSocket / SignalR traffic | Instrumentation | Counted in the browser by direction and SignalR message kind (JSON and MessagePack/blazorpack envelopes; arguments skipped, never kept); for a circuit, render batch sizes and the browser's time to apply them; BevTools' own reports counted apart. A socket that existed before BevTools attached is seen from its next send. BevTools' own render batches cannot be separated inside a `JS.RenderBatch` while the in-app panel is open on Server (use the companion window). |
+| WebSocket / SignalR traffic | Instrumentation | Counted in the browser by direction and SignalR message kind (JSON and MessagePack/blazorpack envelopes; arguments skipped, never kept); for a circuit, render batch sizes and the browser's time to apply them; BevTools' own reports counted apart. A socket that existed before BevTools attached is seen from its next send. BevTools' own messages are counted apart: its reports, its calls into its own module (exports handed to the browser), and render batches that changed only its panel (told by where their DOM changes landed); a batch that changed the app and the panel together counts as the app's. |
 | Browser-level waterfall, WebSocket payloads | N/A | Use the browser's DevTools. |
 
 ## JS interop

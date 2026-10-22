@@ -110,6 +110,12 @@ public sealed class BevRenderBatchTraffic
 
     /// <summary>Batches received and not acknowledged yet.</summary>
     public int Pending { get; set; }
+
+    /// <summary>
+    /// Batches that changed nothing but BevTools' own panel, told apart in the browser by where their DOM changes landed.
+    /// They are not in the counts above; their bytes are in <see cref="BevSocketStats.Own"/>.
+    /// </summary>
+    public int BevTools { get; set; }
 }
 
 public sealed class BevLargeMessage

@@ -92,8 +92,9 @@ internal static class CapabilityReport
                 "From the scope's AuthenticationStateProvider, with a change history; the app registers one when it uses authentication. Claim values follow ValueAccess."),
             new("Routing", "Current route, route values, query", session.Components.All.Any(r => r.Component is Microsoft.AspNetCore.Components.RouteView) ? BevCapabilityStatus.Available : BevCapabilityStatus.Partial,
                 "From the RouteView's RouteData and NavigationManager. Without a RouteView in this session (the router runs during static rendering) only the URI is known."),
-            new("Routing", "Matched route template", FrameworkInstrumentationExists ? BevCapabilityStatus.Available : BevCapabilityStatus.Partial,
-                FrameworkInstrumentationExists ? "RouteData.Template (.NET 10)." : "RouteData has no template before .NET 10; it is inferred for a page with a single @page, and labeled so."),
+            new("Routing", "Matched route template", BevCapabilityStatus.Partial,
+                (FrameworkInstrumentationExists ? "RouteData.Template when the router fills it in (.NET 10); otherwise" : "RouteData has no template before .NET 10, so it is")
+                + " inferred for a page with a single @page, and labeled so; a page with several stays unknown."),
             new("Rendering", "What prerendering did", session.Prerender is not null ? BevCapabilityStatus.Available : BevCapabilityStatus.RequiresInstrumentation,
                 session.Prerender is not null ? "Handed over from the prerendering session through persistent component state." : "Arrives when the page was prerendered with the BevTools panel in it, and ValueAccess is Full (the summary travels in the page)."),
             new("State", "Cascading values", BevCapabilityStatus.Available, "Read from [CascadingParameter] properties of the selected component."),

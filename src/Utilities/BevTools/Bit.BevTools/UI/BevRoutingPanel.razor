@@ -27,7 +27,7 @@
                         <span class="bev-muted bev-mono">@current.PageType</span>
                     </dd>
                     <dt>Template</dt>
-                    <dd class="bev-mono">@(current.Template ?? "unknown") @if (current.TemplateInferred) { <span class="bev-muted">(the page's only @@page; RouteData names the matched template from .NET 10)</span> }</dd>
+                    <dd class="bev-mono">@(current.Template ?? "unknown") @if (current.TemplateInferred) { <span class="bev-muted">(inferred: the page's only @@page, since this RouteData carries no template)</span> }</dd>
                     <dt>Layout</dt><dd class="bev-mono">@(current.Layout ?? "none")</dd>
                 }
                 <dt>Source</dt><dd class="bev-muted">@current.Source</dd>

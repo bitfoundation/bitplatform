@@ -54,9 +54,9 @@
                         </dd>
                     }
                 </dl>
-                @if (s.Kind == "blazor-circuit" && Ui.IsOpen && Session.Platform == "Server")
+                @if (rb.BevTools > 0)
                 {
-                    <div class="bev-muted" style="margin:4px 0">This panel renders on this circuit too, so its own render batches are in these numbers while it is open. The companion window (⧉) measures the app without them.</div>
+                    <div class="bev-muted" style="margin:4px 0">@rb.BevTools more render batch@(rb.BevTools == 1 ? "" : "es") changed only this panel: BevTools' own, counted under BevTools' own and left out of the figures above. A batch that changed the app and the panel together counts as the app's; the companion window (⧉) avoids those.</div>
                 }
                 @if (s.Messages.Count > 0)
                 {

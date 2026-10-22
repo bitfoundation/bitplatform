@@ -248,6 +248,24 @@ internal static class BlazorReflection
         }
     }
 
+    private static readonly PropertyInfo? JSObjectIdProperty = typeof(Microsoft.JSInterop.Implementation.JSObjectReference).GetProperty("Id", Instance) is { } id && id.PropertyType == typeof(long) ? id : null;
+
+    /// <summary>
+    /// The id the JS side knows a JS object reference by (protected internal on <c>JSObjectReference</c>). Every .NET → JS
+    /// call on that object names it, which is how the page hub tells BevTools' own calls over a circuit from the app's.
+    /// </summary>
+    public static long? JSObjectId(object reference)
+    {
+        try
+        {
+            return reference is Microsoft.JSInterop.Implementation.JSObjectReference && JSObjectIdProperty?.GetValue(reference) is long value ? value : null;
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
     /// <summary>Whether ComponentBase ran OnAfterRender at least once; null when the field is missing.</summary>
     public static bool? HasCalledOnAfterRender(ComponentBase component)
     {
