@@ -27,8 +27,6 @@
         <!--/-:msbuild-conditional:noEmit -->
         <PackageReference Include="Bit.BlazorUI.Extras" />
         <PackageReference Include="Bit.Bmage" />
-        <PackageReference Include="Bit.BevTools" />
-        <PackageReference Include="Bit.BevTools.Loader" />
         <PackageReference Include="Microsoft.AspNetCore.Components.Authorization" />
         <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" />
         <PackageReference Include="Microsoft.Extensions.Logging.Configuration" />

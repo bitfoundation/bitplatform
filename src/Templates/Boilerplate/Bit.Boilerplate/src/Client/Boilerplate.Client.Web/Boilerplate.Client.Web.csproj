@@ -16,9 +16,6 @@
 
         <WasmApplicationEnvironmentName>$(Environment)</WasmApplicationEnvironmentName>
         <WasmEnableWebcil Condition="'$(Environment)' == 'Development'">false</WasmEnableWebcil>
-        <!-- Lets bit BevTools (the diagnostic modal's dev tools, Ctrl+Shift+D) show render and lifecycle timings. Development only:
-             it costs every user about 25 KB more brotli download, for a tool nobody opens in most sessions. -->
-        <MetricsSupport Condition=" '$(Environment)' == 'Development' ">true</MetricsSupport>
     </PropertyGroup>
 
     <ItemGroup>
@@ -55,9 +52,6 @@
     <!-- Lazy loading can cause trouble in AOT builds, and next to the size of an AOT app it saves little. -->
     <ItemGroup Condition=" '$(RunAOTCompilation)' != 'true' AND '$(PublishAot)' != 'true' ">
         <BlazorWebAssemblyLazyLoad Include="Bit.Bmage.wasm" />
-        <!-- Downloaded the first time the diagnostic modal opens the dev tools. Development registers BevTools at
-             startup instead (see AddBitBevToolsLoaderServices), which needs it among the assemblies the app starts with. -->
-        <BlazorWebAssemblyLazyLoad Condition=" '$(Environment)' != 'Development' " Include="Bit.BevTools.wasm" />
     </ItemGroup>
 
     <Target Name="BeforeBuildTasks" BeforeTargets="ResolveScopedCssInputs" Condition=" '$(DesignTimeBuild)' != 'true' ">

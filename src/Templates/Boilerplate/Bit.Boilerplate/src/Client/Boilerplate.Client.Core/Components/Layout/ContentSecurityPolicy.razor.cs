@@ -79,7 +79,12 @@ public partial class ContentSecurityPolicy
         {
             connectSrc.Add("ws://localhost:* wss://localhost:*"); // Allow localhost WebSocket connections during development (hot reload / debugging)
             connectSrc.Add("https://raw.githubusercontent.com/"); // Source maps
+            connectSrc.Add("https://cdn.jsdelivr.net/"); // eruda dev tools
         }
+
+        // The exact pinned url the diagnostic modal loads, not the jsdelivr host: a host-wide entry would let any
+        // package on that CDN execute here. Keep it in sync with erudaUrl in Scripts/App.ts.
+        scriptSrc.Add("https://cdn.jsdelivr.net/npm/eruda@3.4.3/eruda.min.js"); // eruda dev tools
 
         // Construct the final CSP string
         CspContent = $"default-src {string.Join(" ", ownOrigins)}; " + // Fallback for all directives.

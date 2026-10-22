@@ -113,12 +113,10 @@ The two are meant to read almost identically, so the page shows one at a time: t
 > **Credentials are not in the output.** `Authorization` is reported as its scheme alone and `Cookie` as its cookie names, so a wrong or missing credential is still diagnosable while no token or session value reaches an issue tracker or an AI agent's transcript. Every other header is reported as it arrived.
 
 #### 🛠️ **Open Dev Tools**
-- Opens [bit BevTools](https://bevtools.bitplatform.dev), in-app developer tools for Blazor: component tree, render profiler, timeline, network, JS interop, errors and diagnostics
+- Opens an **in-app browser DevTools** interface
 - **Critical Feature**: Works on **mobile devices** (Android/iOS) where traditional DevTools are unavailable
-- **Development**: BevTools is registered at startup, so it sees everything from the first render. Press **Ctrl+Shift+D** to open it anytime
-- **Other environments**: nobody downloads BevTools until they press the button. `Bit.BevTools.Loader`, the only BevTools assembly the app starts with, then lazy loads `Bit.BevTools.wasm` (AOT builds, where lazy loading is off, start with it instead) and attaches it to the running app, which it sees from that moment on. The loader's startup hooks are what let it see the components created after that, the requests of the app's `HttpClient` (`BevToolsHttpHookHandler` in the handler chain) and the registered services
-- **Blazor Server**: outside Development the button is hidden (`BevToolsLoader.CanOpen` is false), because the panel would show any visitor the server side objects of their circuit, injected services and configuration included
-- Implementation: `AddBitBevToolsLoaderServices` in `IClientCoreServiceCollectionExtensions`, `<BevToolsLoaderPanel />` in `MainLayout.razor`, and `BevToolsLoader.OpenAsync()` behind the button
+- Provides console, network inspector, and other debugging tools
+- Implementation: Uses `App.openDevTools()` JavaScript interop
 
 #### ♻️ **Call GC** (Non-Browser Platforms Only)
 - Forces garbage collection on .NET MAUI and Windows platforms
