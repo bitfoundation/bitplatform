@@ -1,9 +1,20 @@
 ---
 name: ai-dlc
-description: Drives a feature end-to-end using the AI-Driven Development Lifecycle - requirements elaboration, planning and task decomposition, design, implementation, then validation - with explicit user approval before any code is written.
+description: Drives every task that is not a small, obvious edit through the AI-Driven Development Lifecycle, sized to the task - a known bug or a change that stays inside one feature is reproduced, fixed and validated, and anything bigger goes through requirements elaboration, planning and task decomposition, design, implementation, then validation, with explicit user approval before any code is written.
 ---
 
 # AI-Driven Development Lifecycle (AI-DLC)
+
+## Size the Work First
+
+If this branch already added a plan under `specs/changes/`, the work was started in an earlier session or another tool: pick it up from its unticked tasks instead of starting over.
+
+Before phase 1, decide which track the task takes, and tell the user in one line:
+
+- **Short track**: a bug whose right behavior is known, or a small change that stays inside one feature and adds no entity, API or page. Reproduce it or find where it lives (phase 6 when something fails), fix it, add a test that fails without the fix (an existing test counts once you have seen it fail), then run phase 5. Say in one line what you will change and go ahead; there is no plan to approve.
+- **Full track**: everything else - a new feature, entity, API or page, a change across features, a migration, anything touching security, or a request that is unclear. Every phase, with the plan approved before any code.
+
+A short-track task that turns out bigger moves to the full track, and you stop and ask before going on: when it needs a migration, changes behavior someone may rely on, touches security, or spreads beyond its feature.
 
 ## Workflow Phases
 
@@ -11,9 +22,11 @@ description: Drives a feature end-to-end using the AI-Driven Development Lifecyc
 - In the same step as your first reads, check whether the project is on the newest bit platform release - see **Staying on the Newest bit Platform** below. It runs alongside this phase and never holds it up
 - Ask clarifying questions to fully understand the feature/task
 - Identify acceptance criteria, edge cases, and constraints
+- Write the agreed requirements and acceptance criteria into the specs of the features the request touches (`specs/README.md`), and settle the open questions there that this work depends on
 <!--#if (multitenant != true || aspire != true || redis != true || notification != true || sentry != true || appInsights != true || signalR != true || offlineDb != true || module != "Admin")-->
 - Check the requested feature against **Optional Features This Project Has Not Enabled Yet** (below) before treating any of it as new work
 <!--#endif-->
+- Check the request against the bit platform libraries AGENTS.md lists as not used by this project yet, before planning to hand-write it or bring in a third-party package. When one fits, propose it, and let phase 2 plan bringing it in as its own task
 - Do NOT proceed until requirements are unambiguous
 
 ### 2. Planning & Task Decomposition
@@ -21,15 +34,16 @@ description: Drives a feature end-to-end using the AI-Driven Development Lifecyc
 - **If the design involves CRUD operations**, invoke the **scaffold-entity** skill (`.github/agents/scaffold-entity.agent.md`) for structure and conventions - it is a recipe, not a lifecycle: its steps are tasks inside this plan, and when they're done you continue with the next phase here
 - Break the work into small, verifiable, independently completable tasks
 - Order tasks by dependency
-- Present the plan to the user for approval before starting
+- Write the plan into a new file under `specs/changes/` and present it to the user for approval before starting. Approval is the user telling you to go ahead; answers to your questions are not approval, so fold them into the plan and present it again
 
 ### 3. Design
 - Identify affected files, components, APIs, and data models
-- Propose the approach and key design decisions
+- Propose the approach and key design decisions, and record them in the change plan
 - Flag any trade-offs or risks
 
 ### 4. Implementation
 - Work on a branch off `develop`; it reaches `main` through a PR, never a direct push
+- On the full track, commit the specs and the plan with the work. Tick each task in the plan when it is done, and write down any change to the plan with its reason, so another session, another tool or a reviewer can pick the work up from the files alone. When you hand back, the specs, the plan and the diff agree: every acceptance criterion has its change and its test, and nothing in the diff goes unexplained
 - Execute tasks one at a time in the planned order
 - Follow all project conventions (see AGENTS.md)
 - Use the **bitify-ui** skill (`.github/agents/bitify-ui.agent.md`) when building UI, so new markup starts from Bit.BlazorUI components rather than raw HTML
@@ -112,7 +126,7 @@ bit Boilerplate, bit BlazorUI and every other bit library ship together under on
 ## Rules
 - This project was created with `bit new`, so its code is already formatted, git has `develop` and `main`, and the server has its Initial EF Core migration. Only if the user says it was created another way, do those first: `dotnet format Boilerplate.slnx --exclude-diagnostics BL0016`, the two branches, and the migration from `.docs/01- Entity Framework Core.md`
 - CI runs on `develop` (`.github/workflows/ci.yml`, `.azure-devops/workflows/ci.yml`), production CD on `main` and test CD on `test`; protect `main` and `test` with a required status check on `ci.yml`, because the CD workflows never run the tests. See `.docs/16- CI-CD Pipeline and Environments.md`
-- Always complete phases 1-2 before writing any code
+- On the full track, always complete phases 1-2 before writing any code
 - Keep the user informed of phase transitions
 - If blocked, explain why and propose alternatives - never silently skip work
 - This project was generated from a project template that ships TOO MANY features, so before building anything "new", search the project for it - a page, service or pattern to copy is usually already here
