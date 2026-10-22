@@ -134,8 +134,9 @@ Your project was generated with `--pipeline Azure`, so it ships **`.azure-devops
   the workloads, Playwright's browsers and the HTTPS development certificate), builds `Boilerplate.slnx`, and runs
   the test suite; uploads `src/Tests/TestResults` as a pipeline artifact when the
   tests are what failed.
-- **`cd.yml`** — triggered on `main`. Four jobs: `build_api_blazor` → `deploy_api_blazor` (Azure App Service),
-  plus `build_blazor_hybrid_windows` and `build_blazor_hybrid_android`.
+- **`cd.yml`** — triggered on `main`. Five jobs: `test`, which runs the test suite as `ci.yml` does,
+  `build_api_blazor` → `deploy_api_blazor` (Azure App Service), which deploys only once `test` has passed, plus
+  `build_blazor_hybrid_windows` and `build_blazor_hybrid_android`.
 
 Configure it in Azure DevOps rather than GitHub:
 
@@ -148,6 +149,11 @@ Configure it in Azure DevOps rather than GitHub:
    be set at queue time, which would freeze the version at whatever the template shipped.
 4. **Pipelines → Library → Secure files** → upload `Boilerplate.keystore` for the Android job, and add
    `ANDROID_RELEASE_KEYSTORE_PASSWORD` / `ANDROID_RELEASE_SIGNING_PASSWORD` as secret pipeline variables.
+<!--#if (api == "Integrated" && database != "Sqlite" && database != "Other")-->
+5. **Pipelines → Edit → Variables** → add `DATABASE_CONNECTION_STRING` as a secret variable: a connection string to
+   the production database with the rights to change its schema. `deploy_api_blazor` applies the database migrations
+   with it before it deploys.
+<!--#endif-->
 
 Two differences from the GitHub pipeline are deliberate and worth knowing: the Azure pipeline has **no iOS/macOS
 job** (it would require a macOS agent pool), and it uses a single `main`-triggered CD rather than the
@@ -166,6 +172,7 @@ The project includes a complete CI/CD pipeline setup using GitHub Actions with *
 **Triggers**:
 - Pull requests to any branch
 - Manual workflow dispatch
+- `cd-production.yml`, which runs it before every production deployment
 
 **What It Does**:
 ```
@@ -181,7 +188,7 @@ The project includes a complete CI/CD pipeline setup using GitHub Actions with *
 **Key Configuration**:
 - **Runner**: Ubuntu 24.04
 - **SDK Version**: Automatically detected from `global.json`
-- **Machine setup**: the bit CLI, installed once per job with `dotnet tool install Bit.Cli --prerelease`, then `bit setup`,
+- **Machine setup**: the bit CLI, installed once per job with `dotnet tool install Bit.Cli`, then `bit setup`,
   which installs only what the runner is missing
 - **Test Artifacts**: Retained for 14 days on failure
 
@@ -199,13 +206,17 @@ The project includes a complete CI/CD pipeline setup using GitHub Actions with *
 
 **What It Does**:
 ```yaml
-calls: cd-template.yml
-with:
-  ENV_NAME: "Production"
-secrets: inherit
+ci:
+  calls: ci.yml
+build_and_deploy_prod:
+  needs: ci
+  calls: cd-template.yml
+  with:
+    ENV_NAME: "Production"
+  secrets: inherit
 ```
 
-This is a lightweight wrapper that triggers the reusable deployment template with the Production environment configuration.
+It runs `ci.yml` first, and only when its build and tests pass does it run the reusable deployment template with the Production environment configuration. A failing test never reaches production.
 
 ---
 
@@ -225,7 +236,8 @@ with:
 secrets: inherit
 ```
 
-This triggers the same reusable template but with Test environment configuration.
+This triggers the same reusable template but with Test environment configuration. Unlike `cd-production.yml` it
+does not wait for `ci.yml`; copy its `ci` job and `needs: ci` here if Test deployments should wait for the tests too.
 
 **Pattern**: You can create similar files for Staging or any other environment you need (e.g., `cd-staging.yml`).
 
@@ -294,6 +306,14 @@ This is the **core deployment workflow** that handles building and deploying all
    ```
 
 5. **Artifact Upload**
+<!--#if (api == "Integrated" && database != "Sqlite" && database != "Other")-->
+
+6. **Migrations Bundle**
+   ```bash
+   dnx dotnet-ef@10.0.13 -- migrations bundle --self-contained --target-runtime linux-x64 --output efbundle
+   ```
+   - Packs the EF Core migrations into one executable, uploaded as the `migrations-bundle` artifact for Job 2
+<!--#endif-->
 
 ---
 
@@ -311,7 +331,18 @@ This is the **core deployment workflow** that handles building and deploying all
    - Contains complete self-contained application
    ```
 
+<!--#if (api == "Integrated" && database != "Sqlite" && database != "Other")-->
+2. **Apply Database Migrations**
+   ```yaml
+   - Download the migrations bundle the build job made
+   - Run it against the database in the DATABASE_CONNECTION_STRING secret
+   - Stop here if a migration fails, so the new version never runs on an old database schema
+   ```
+
+3. **Azure Web App Deployment** (optional - you can use any hosting)
+<!--#else-->
 2. **Azure Web App Deployment** (optional - you can use any hosting)
+<!--#endif-->
    ```yaml
    - Deploy to Azure Web App
    - Uses publish profile from secrets
@@ -319,7 +350,11 @@ This is the **core deployment workflow** that handles building and deploying all
    - Returns webapp URL
    ```
 
+<!--#if (api == "Integrated" && database != "Sqlite" && database != "Other")-->
+4. **CDN Cache Purge**
+<!--#else-->
 3. **CDN Cache Purge**
+<!--#endif-->
    ```yaml
    - Purge Cloudflare cache (if configured)
    - Ensures users get the latest version immediately
@@ -330,6 +365,12 @@ This is the **core deployment workflow** that handles building and deploying all
 - ✅ **Azure is Optional**: You can deploy to AWS, Google Cloud, your own servers, Docker, Kubernetes, Windows/IIS etc.
 - ✅ **Cloudflare is Optional**: CDN cache purging is only needed if you're using a CDN
 - ⚠️ **Not Yet Aspire-Friendly**: The backend deployment workflow doesn't yet integrate with .NET Aspire orchestration
+<!--#if (api == "Standalone" && database != "Sqlite" && database != "Other")-->
+- ✅ **Database Migrations**: the api deploys in its own `deploy_api` job, which runs the migrations bundle `build_api` made against the database in the `DATABASE_CONNECTION_STRING` secret right before it deploys the api
+<!--#endif-->
+<!--#if (database == "Sqlite" || database == "Other")-->
+- ⚠️ **The Database Is Not Migrated Here**: see "Applying Migrations to a Deployed Database" in `.docs/01- Entity Framework Core.md`
+<!--#endif-->
 
 ---
 
@@ -416,7 +457,7 @@ Each signed file counts against the account's monthly quota. To sign only the ex
 ```bash
 # Install the bit CLI once, then let it install Node.js when missing, the MAUI Android workload
 # and what the Android SDK lacks; the publish below generates the CSS/JS files in its own build
-dotnet tool install --global Bit.Cli --prerelease
+dotnet tool install --global Bit.Cli
 bit setup --platforms android --no-build --yes
    
 # Publish signed AAB (Or APK if needed)
@@ -526,9 +567,9 @@ The workflow follows a **security-focused two-phase deployment** pattern that se
 - **No production access** - isolated from production systems
 
 > **The build phase does not run tests.** `cd-template.yml` goes straight from `bit setup` to
-> `dotnet publish`; `ci.yml` is the only workflow that runs the test suite, and it triggers on **pull requests**,
-> not on the push that starts a deploy. If you want deploys to be test-gated, protect `main` and `test` with a
-> required status check on `ci.yml`.
+> `dotnet publish`. The tests run in `ci.yml`, on every pull request and, through `cd-production.yml`, before every
+> production deployment. `cd-test.yml` does not wait for them, so to gate the Test environment as well, give it the
+> same `ci` job or protect the `test` branch with a required status check on `ci.yml`.
 
 ### Phase 2: Deploy
 **Purpose**: Take pre-built artifacts and deploy them  
@@ -570,7 +611,7 @@ build_api_blazor:
   steps:
     - uses: actions/checkout@v7
     - uses: actions/setup-dotnet@v6
-    - run: dotnet tool install --global Bit.Cli --prerelease
+    - run: dotnet tool install --global Bit.Cli
     - run: bit setup --no-build --yes
     - run: dotnet publish ...
     - uses: actions/upload-artifact@v7  # Save artifact
@@ -625,6 +666,18 @@ The mobile/desktop jobs additionally need `ANDROID_RELEASE_KEYSTORE_FILE_BASE64`
 <!--#if (api == "Standalone")-->
 Because this project uses `--api Standalone`, the api is deployed separately and also needs
 `API_APP_SERVICE_NAME` (variable) and `API_AZURE_PUBLISH_PROFILE` (secret).
+<!--#endif-->
+<!--#if (database != "Sqlite" && database != "Other")-->
+Every environment that deploys also needs the `DATABASE_CONNECTION_STRING` secret: a connection string to that
+environment's database with the rights to change its schema. The deploy job applies the database migrations with it
+before it deploys the new version, and stops the deployment when it is missing or wrong.
+
+The migrations bundle runs on the pipeline's runner, so the database has to accept connections from it; if it
+doesn't, use a self-hosted runner, or delete the two migration steps and migrate another way. The bundle starts the
+app's own startup code, so it runs inside the published folder, where it finds the app's settings and its
+`AppCertificate` files; if your certificate reaches the server some other way, put it next to the bundle as well.
+And since it runs while the previous version is still serving, every migration has to keep that version working:
+add a column in one release and drop the old one in a later release, rather than renaming it in one go.
 <!--#endif-->
 
 **Test Environment**:

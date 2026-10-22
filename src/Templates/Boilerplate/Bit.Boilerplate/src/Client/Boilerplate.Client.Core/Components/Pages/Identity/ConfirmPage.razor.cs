@@ -77,6 +77,8 @@ public partial class ConfirmPage
 
         await WrapRequest(async () =>
         {
+            await AuthManager.SignOutIfSignedIn(CurrentCancellationToken);
+
             var signInResponse = await identityController.ConfirmEmail(new()
             {
                 Email = emailModel.Email,
@@ -107,6 +109,8 @@ public partial class ConfirmPage
 
         await WrapRequest(async () =>
         {
+            await AuthManager.SignOutIfSignedIn(CurrentCancellationToken);
+
             var signInResponse = await identityController.ConfirmPhone(new()
             {
                 Token = phoneModel.Token,

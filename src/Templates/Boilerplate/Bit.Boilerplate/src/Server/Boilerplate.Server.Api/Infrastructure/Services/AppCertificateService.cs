@@ -1,4 +1,5 @@
 using Microsoft.IdentityModel.Tokens;
+using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 
 namespace Boilerplate.Server.Api.Infrastructure.Services;
@@ -13,6 +14,7 @@ public static class AppCertificateService
     private static X509Certificate2[]? allAppCerts;
     private static RsaSecurityKey? privateSecurityKey;
     private static RsaSecurityKey[]? publicSecurityKeys;
+    private static byte[]? securityTokenKey;
 
     /// <summary>
     /// The active certificate first, followed by any retired ones.
@@ -84,6 +86,11 @@ public static class AppCertificateService
     public static RsaSecurityKey[] GetPublicSecurityKeys(IConfiguration configuration)
     {
         return publicSecurityKeys ??= [.. GetAllAppCertificates(configuration).Select(cert => ToSecurityKey(cert, publicOnly: true))];
+    }
+
+    public static byte[] GetSecurityTokenKey(IConfiguration configuration)
+    {
+        return securityTokenKey ??= SHA256.HashData(GetPrivateSecurityKey(configuration).Rsa.SignData("Boilerplate.SecurityToken"u8.ToArray(), HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1));
     }
 
     /// <summary>

@@ -185,7 +185,7 @@ public class PersonalDataExportTests
 
     private async Task UploadProfilePicture(HttpClient httpClient)
     {
-        using var image = new MagickImage(MagickColors.Red, 512, 512);
+        using var image = TestImageFactory.Solid(MagickColors.Red, 512, 512);
 
         using var form = new MultipartFormDataContent();
         using var fileContent = new ByteArrayContent(image.ToByteArray(MagickFormat.Png));

@@ -122,6 +122,8 @@ public partial class SignInPanel
 
             if (webAuthnAssertion.HasValue)
             {
+                await AuthManager.SignOutIfSignedIn(CurrentCancellationToken);
+
                 var response = await identityController
                     .WithQueryIf(AppPlatform.IsBlazorHybrid, "origin", localHttpServer.Origin)
                     .VerifyWebAuthAndSignIn(
@@ -145,6 +147,8 @@ public partial class SignInPanel
                 CleanModel();
 
                 if (validatorRef?.EditContext.Validate() is false) return;
+
+                await AuthManager.SignOutIfSignedIn(CurrentCancellationToken);
 
                 if (isNewUser is false)
                 {

@@ -339,7 +339,7 @@ chmod +x Clean.sh  # Make it executable (first time only)
 
 ```bash
 # Run the translator anywhere in the project; dnx fetches the bit CLI, nothing is installed
-dnx Bit.Cli --prerelease -- translate
+dnx Bit.Cli -- translate
 ```
 
 **To add a new language**:

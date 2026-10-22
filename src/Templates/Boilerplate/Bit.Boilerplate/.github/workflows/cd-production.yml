@@ -13,8 +13,15 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  ci:
+    name: ci
+    permissions:
+      contents: read
+    uses: ./.github/workflows/ci.yml
+
   build_and_deploy_prod:
     name: build and deploy to production
+    needs: ci
     permissions:
       contents: read
       id-token: write

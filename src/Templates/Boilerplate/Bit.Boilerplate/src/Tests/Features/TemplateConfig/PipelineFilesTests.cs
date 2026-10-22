@@ -129,8 +129,10 @@ public class PipelineFilesTests
             "ANDROID_RELEASE_KEYSTORE_PASSWORD", "ANDROID_RELEASE_SIGNING_PASSWORD",
             "OPENAI_APIKEY", "OPENAI_ENDPOINT",
             "CLOUDFLARE_ZONE", "CLOUDFLARE_TOKEN",
+            "CODE_SIGNING_ENDPOINT", "CODE_SIGNING_ACCOUNT", "CODE_SIGNING_CERTIFICATE_PROFILE",
+            "DATABASE_CONNECTION_STRING",
             "AndroidKeyStore.secureFilePath",
-            "Build.SourcesDirectory", "System.DefaultWorkingDirectory", "Agent.JobStatus",
+            "Build.SourcesDirectory", "System.DefaultWorkingDirectory", "Agent.JobStatus", "Agent.ToolsDirectory", "Agent.TempDirectory",
         ];
 
         var macro = new Regex(@"\$\((?<name>[A-Za-z_][A-Za-z0-9_.]*)\)", RegexOptions.Compiled);

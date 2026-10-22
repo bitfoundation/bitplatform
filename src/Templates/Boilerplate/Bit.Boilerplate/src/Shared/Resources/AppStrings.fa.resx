@@ -398,12 +398,6 @@
     <data name="InvalidUserCredentials" xml:space="preserve">
     <value>اطلاعات کاربری نادرست است</value>
   </data>
-    <data name="EmailAlreadyConfirmed" xml:space="preserve">
-    <value>ایمیل شما قبلا تایید شده است.</value>
-  </data>
-    <data name="PhoneNumberAlreadyConfirmed" xml:space="preserve">
-    <value>شماره تلفن شما قبلا تایید شده است</value>
-  </data>
     <data name="Title" xml:space="preserve">
     <value>عنوان</value>
   </data>
@@ -1209,6 +1203,12 @@
   </data>
     <data name="AiChatPanelVoiceCallAssistantFailed" xml:space="preserve">
     <value>دستیار نتوانست پاسخ دهد. دوباره تلاش کنید.</value>
+  </data>
+    <data name="AiChatTooManyRequests" xml:space="preserve">
+    <value>خیلی سریع پیام می‌فرستید. لطفاً یک دقیقه صبر کنید و دوباره امتحان کنید.</value>
+  </data>
+    <data name="AiChatMessageTooLong" xml:space="preserve">
+    <value>پیام خیلی طولانی است. آن را کمتر از {0} نویسه نگه دارید.</value>
   </data>
     <data name="AiChatHumanFollowUpPrompt" xml:space="preserve">
     <value>اطلاعات تماس خود را وارد کنید تا یک اپراتور با شما تماس بگیرد.</value>
@@ -2086,5 +2086,11 @@
   </data>
     <data name="UploadImageAsIs" xml:space="preserve">
     <value>بارگذاری بدون تغییر</value>
+  </data>
+    <data name="ResetPasswordTwoFactorCodeRequired" xml:space="preserve">
+    <value>احراز هویت دو مرحله‌ای برای این حساب فعال است. کدی از برنامه احراز هویت خود یا یکی از کدهای بازیابی خود را وارد کنید.</value>
+  </data>
+    <data name="AccountAlreadyExistsShortText" xml:space="preserve">
+    <value>شما قبلاً با این شماره تلفن یک حساب Boilerplate دارید. اگر همین حالا قصد ثبت‌نام داشتید، به‌جای آن وارد شوید.</value>
   </data>
 </root>

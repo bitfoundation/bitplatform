@@ -23,6 +23,7 @@ public partial class ResetPasswordPage
     private bool showPhone;
     private bool isTokenEntered;
     private bool isPasswordChanged;
+    private bool requiresTwoFactor;
     private ResetPasswordRequestDto model = new();
 
     private const string EmailKey = nameof(EmailKey);
@@ -89,6 +90,11 @@ public partial class ResetPasswordPage
             await identityController.ResetPassword(model, CurrentCancellationToken);
 
             isPasswordChanged = true;
+        }
+        catch (BadRequestException e) when (e.Key == nameof(AppStrings.ResetPasswordTwoFactorCodeRequired))
+        {
+            requiresTwoFactor = true;
+            SnackBarService.Info(e.Message);
         }
         catch (KnownException e)
         {

@@ -6,6 +6,7 @@ using Boilerplate.Shared.Features.Diagnostic;
 using Boilerplate.Server.Api.Features.Attachments;
 using Boilerplate.Server.Shared.Infrastructure.Services;
 //#if (notification == true)
+using Microsoft.AspNetCore.RateLimiting;
 using Boilerplate.Server.Api.Features.PushNotification;
 //#endif
 
@@ -121,7 +122,7 @@ public partial class DiagnosticController : AppControllerBase, IDiagnosticContro
     }
 
     //#if (notification == true)
-    [HttpPost("{deviceId}"), AllowAnonymous]
+    [HttpPost("{deviceId}"), AllowAnonymous, EnableRateLimiting(RateLimitOptionsExtensions.PUSH_NOTIFICATION)]
     public async Task<bool> SendTestPushNotification(string deviceId, CancellationToken cancellationToken)
     {
         if (await PushSubscriptionExists(deviceId, cancellationToken) is false)

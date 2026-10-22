@@ -517,6 +517,8 @@ Each platform has its own implementation:
 
 **Location**: [`src/Server/Boilerplate.Server.Api/Features/PushNotification/PushNotificationService.cs`](/src/Server/Boilerplate.Server.Api/Features/PushNotification/PushNotificationService.cs)
 
+A browser subscription carries the address the server posts each push to, and that address comes from the caller. So `Subscribe` stores a browser subscription only when its endpoint is an `https` address of a browser push service (`fcm.googleapis.com`, `*.push.services.mozilla.com`, `*.notify.windows.com` or `web.push.apple.com`), and the push job skips any stored one that is not. Web pushes go out through the `Vapid` HttpClient, which follows no redirect and resolves no service discovery name. The push endpoints are rate limited per user, or per IP address for anonymous callers (`RateLimitOptionsExtensions.PUSH_NOTIFICATION`).
+
 ---
 
 ## 6. Bit.Butil.Notification - Browser Notification API

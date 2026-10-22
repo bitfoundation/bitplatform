@@ -32,6 +32,8 @@ public partial class AttachmentController : AppControllerBase, IAttachmentContro
     /// <summary>The largest upload every endpoint here accepts; the Dev MCP reports this value rather than a copy of it.</summary>
     public const int MaxUploadSizeBytes = 11 * 1024 * 1024;
 
+    public static readonly MagickFormat[] AllowedImageFormats = [MagickFormat.Jpeg, MagickFormat.Png, MagickFormat.WebP, MagickFormat.Gif, MagickFormat.Avif];
+
     // For open telemetry metrics
     private static readonly Histogram<double> updateResizeDurationHistogram = Meter.Current.CreateHistogram<double>("attachment.resize_duration", "ms", "Elapsed time to resize and persist an uploaded image");
 
@@ -230,6 +232,18 @@ public partial class AttachmentController : AppControllerBase, IAttachmentContro
     {
         if (file is null)
             throw new BadRequestException().WithData("Reason", "No file provided.");
+
+        try
+        {
+            using var formatStream = file.OpenReadStream();
+
+            if (AllowedImageFormats.Contains(new MagickImageInfo(formatStream).Format) is false)
+                return BadRequest(Localizer[nameof(AppStrings.UnsupportedImageFormat)].ToString());
+        }
+        catch (MagickException)
+        {
+            return BadRequest(Localizer[nameof(AppStrings.UnsupportedImageFormat)].ToString());
+        }
 
         string? altText = null; // AI-generated alt text, when the analysis agent is configured.
 

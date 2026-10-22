@@ -219,7 +219,8 @@ In [`src/Server/Boilerplate.Server.Api/appsettings.json`](/src/Server/Boilerplat
     },
     "AI": {
         "ChatOptions": {
-            "Temperature": 0
+            "Temperature": 0,
+            "MaxOutputTokens": 2000
         },
         "OpenAI": {
             "ChatModel": "gpt-4.1-mini",

@@ -84,7 +84,7 @@ public class AttachmentMetadataStrippingTests
     /// <summary>512px so it clears the 256px floor the small kind enforces, as a JPEG because that is what a camera produces.</summary>
     private static byte[] JpegWithExif()
     {
-        using var image = new MagickImage(MagickColors.Teal, 512, 512);
+        using var image = TestImageFactory.Solid(MagickColors.Teal, 512, 512);
 
         var exif = new ExifProfile();
         exif.SetValue(ExifTag.Software, "boilerplate-test");

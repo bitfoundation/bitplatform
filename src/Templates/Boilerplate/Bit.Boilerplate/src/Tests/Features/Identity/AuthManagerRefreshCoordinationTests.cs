@@ -165,6 +165,88 @@ public partial class AuthManagerRefreshCoordinationTests
         Assert.IsNull(await authManager.RefreshToken(requestedBy: "after").WaitAsync(TimeSpan.FromSeconds(30), TestContext.CancellationToken));
     }
 
+    [TestMethod]
+    public async Task ARefreshThatCompletesAfterASignOut_Should_NotBringTheTokensBack()
+    {
+        var refreshStarted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var releaseTheRefresh = new TaskCompletionSource();
+
+        var identityController = A.Fake<IIdentityController>();
+        A.CallTo(() => identityController.Refresh(A<RefreshTokenRequestDto>._, A<CancellationToken>._))
+            .ReturnsLazily(async (RefreshTokenRequestDto request, CancellationToken _) =>
+            {
+                refreshStarted.SetResult();
+                await releaseTheRefresh.Task;
+                return new TokenResponseDto { AccessToken = "the-refreshed-access-token", RefreshToken = "the-refreshed-refresh-token" };
+            });
+
+        await using var server = new AppTestServer();
+        await server.Build(configureTestServices: services =>
+        {
+            services.RemoveAll<IIdentityController>();
+            services.AddScoped(_ => identityController);
+        }).Start(TestContext.CancellationToken);
+
+        await using var client = server.CreateAppClient();
+
+        var storageService = client.Services.GetRequiredService<IStorageService>();
+        await storageService.SetItem("refresh_token", "a-refresh-token");
+
+        var refresh = client.AuthManager.RefreshToken(requestedBy: nameof(ARefreshThatCompletesAfterASignOut_Should_NotBringTheTokensBack));
+
+        await refreshStarted.Task.WaitAsync(TimeSpan.FromSeconds(30), TestContext.CancellationToken);
+
+        await storageService.RemoveItem("refresh_token");
+        await storageService.RemoveItem("access_token");
+
+        releaseTheRefresh.SetResult();
+
+        Assert.IsNull(await refresh.WaitAsync(TimeSpan.FromSeconds(30), TestContext.CancellationToken));
+        Assert.IsNull(await storageService.GetItem("refresh_token"), "A refresh answered after the sign out must not sign the user back in.");
+        Assert.IsNull(await storageService.GetItem("access_token"));
+    }
+
+    [TestMethod]
+    public async Task ARefreshThatAnotherTabAlreadyDid_Should_KeepThatTabsTokens_AndStillHandThemOut()
+    {
+        var refreshStarted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var releaseTheRefresh = new TaskCompletionSource();
+
+        var identityController = A.Fake<IIdentityController>();
+        A.CallTo(() => identityController.Refresh(A<RefreshTokenRequestDto>._, A<CancellationToken>._))
+            .ReturnsLazily(async (RefreshTokenRequestDto request, CancellationToken _) =>
+            {
+                refreshStarted.SetResult();
+                await releaseTheRefresh.Task;
+                return new TokenResponseDto { AccessToken = "this-tabs-access-token", RefreshToken = "this-tabs-refresh-token" };
+            });
+
+        await using var server = new AppTestServer();
+        await server.Build(configureTestServices: services =>
+        {
+            services.RemoveAll<IIdentityController>();
+            services.AddScoped(_ => identityController);
+        }).Start(TestContext.CancellationToken);
+
+        await using var client = server.CreateAppClient();
+
+        var storageService = client.Services.GetRequiredService<IStorageService>();
+        await storageService.SetItem("refresh_token", "a-refresh-token");
+
+        var refresh = client.AuthManager.RefreshToken(requestedBy: nameof(ARefreshThatAnotherTabAlreadyDid_Should_KeepThatTabsTokens_AndStillHandThemOut));
+
+        await refreshStarted.Task.WaitAsync(TimeSpan.FromSeconds(30), TestContext.CancellationToken);
+
+        await storageService.SetItem("refresh_token", "the-other-tabs-refresh-token");
+        await storageService.SetItem("access_token", "the-other-tabs-access-token");
+
+        releaseTheRefresh.SetResult();
+
+        Assert.AreEqual("the-other-tabs-access-token", await refresh.WaitAsync(TimeSpan.FromSeconds(30), TestContext.CancellationToken),
+            "The request that asked for this refresh has to go on with the tokens the other tab already stored, not fail.");
+        Assert.AreEqual("the-other-tabs-refresh-token", await storageService.GetItem("refresh_token"));
+    }
+
     /// <summary>
     /// Reproduces the one real thrower on that path: reading the refresh token is JS interop on the web client, which
     /// throws when the circuit is being torn down or the call times out. Everything else behaves normally, so the test

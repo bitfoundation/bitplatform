@@ -35,6 +35,9 @@ public partial class PushNotificationService
         if (pushChannelIsMissing)
             throw new BadRequestException().WithData("Reason", $"A '{dto.Platform}' push subscription is missing its push channel.");
 
+        if (dto.Platform is "browser" && IsPushServiceEndpoint(dto.Endpoint) is false)
+            throw new BadRequestException().WithData("Reason", "A browser push subscription's endpoint is not an https address of a known push service.");
+
         // DeviceId and UserSessionId are both unique, so at most two rows can match: the device's own row, and the
         // caller's session row from before its DeviceId changed (pushManager's subscription has been renewed).
         var matches = await dbContext.PushNotificationSubscriptions
@@ -156,6 +159,17 @@ public partial class PushNotificationService
         backgroundJobClient.Enqueue<PushNotificationJobRunner>(runner => runner.RequestPush(pushNotificationSubscriptionIds, request));
 
         return pushNotificationSubscriptionIds.Length;
+    }
+
+    private static readonly string[] pushServiceHosts = ["fcm.googleapis.com", "push.services.mozilla.com", "notify.windows.com", "web.push.apple.com"];
+
+    public static bool IsPushServiceEndpoint(string? endpoint)
+    {
+        return Uri.TryCreate(endpoint, UriKind.Absolute, out var uri)
+            && uri.Scheme == Uri.UriSchemeHttps
+            && uri.IsDefaultPort
+            && pushServiceHosts.Any(host => uri.IdnHost.Equals(host, StringComparison.OrdinalIgnoreCase)
+                                         || uri.IdnHost.EndsWith($".{host}", StringComparison.OrdinalIgnoreCase));
     }
 }
 

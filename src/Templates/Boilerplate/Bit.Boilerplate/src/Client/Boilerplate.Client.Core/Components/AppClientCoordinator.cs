@@ -231,7 +231,14 @@ public partial class AppClientCoordinator : AppComponentBase
             //#endif
 
             //#if (notification == true)
-            await pushNotificationService.Subscribe(CurrentCancellationToken);
+            try
+            {
+                await pushNotificationService.Subscribe(CurrentCancellationToken);
+            }
+            catch (TooManyRequestsException exp)
+            {
+                ExceptionHandler.Handle(exp, displayKind: ExceptionDisplayKind.None);
+            }
             //#endif
 
             if (isAuthenticated)

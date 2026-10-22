@@ -5,6 +5,7 @@ namespace Boilerplate.Client.Core.Infrastructure.Services;
 public partial class AuthManager : AuthenticationStateProvider, IAsyncDisposable
 {
     private Action? unsubscribe;
+    private Action? unsubscribeAuthTokensChanged;
 
     [AutoInject] private PubSubService pubSubService = default!;
     [AutoInject] private IStorageService storageService = default!;
@@ -22,9 +23,34 @@ public partial class AuthManager : AuthenticationStateProvider, IAsyncDisposable
     {
         // Example for method call after object instantiation with dependency injection.
 
+        unsubscribeAuthTokensChanged = pubSubService.Subscribe(ClientAppMessages.AUTH_TOKENS_CHANGED, async _ => NotifyAuthenticationStateChanged(Task.FromResult(await GetAuthenticationStateAsync())));
+
         //#if (signalR == true)
-        unsubscribe = pubSubService.Subscribe(SharedAppMessages.SESSION_REVOKED, _ => SignOut(default));
+        unsubscribe = pubSubService.Subscribe(SharedAppMessages.SESSION_REVOKED, async payload =>
+        {
+            var revokedUserSessionId = payload switch
+            {
+                Guid id => id,
+                JsonElement { ValueKind: JsonValueKind.String } json when json.TryGetGuid(out var id) => id,
+                _ => (Guid?)null
+            };
+
+            var user = (await GetAuthenticationStateAsync()).User;
+
+            if (user.IsAuthenticated() && (payload is null or JsonElement { ValueKind: JsonValueKind.Null } || user.GetSessionId() == revokedUserSessionId))
+            {
+                await SignOut(default);
+            }
+        });
         //#endif
+    }
+
+    public async Task SignOutIfSignedIn(CancellationToken cancellationToken)
+    {
+        if ((await GetAuthenticationStateAsync()).User.IsAuthenticated() is false)
+            return;
+
+        await SignOut(cancellationToken);
     }
 
     /// <summary>
@@ -166,6 +192,13 @@ public partial class AuthManager : AuthenticationStateProvider, IAsyncDisposable
                             RequestedTenantId = requestedTenantId,
                             //#endif
                         }, default);
+
+                    if (await storageService.GetItem("refresh_token") != refreshToken)
+                    {
+                        currentTsc.TrySetResult(await tokenProvider.GetAccessToken());
+                        return;
+                    }
+
                     await StoreTokens(refreshTokenResponse);
                     currentTsc.TrySetResult(refreshTokenResponse.AccessToken!);
                 }
@@ -180,7 +213,7 @@ public partial class AuthManager : AuthenticationStateProvider, IAsyncDisposable
                         }, displayKind: ExceptionDisplayKind.NonInterrupting);
                     }
 
-                    if (exp is UnauthorizedException) // refresh token is also invalid
+                    if (exp is UnauthorizedException && await storageService.GetItem("refresh_token") == refreshToken) // refresh token is also invalid
                     {
                         await ClearTokens();
                     }
@@ -280,5 +313,6 @@ public partial class AuthManager : AuthenticationStateProvider, IAsyncDisposable
     {
         semaphore.Dispose();
         unsubscribe?.Invoke();
+        unsubscribeAuthTokensChanged?.Invoke();
     }
 }

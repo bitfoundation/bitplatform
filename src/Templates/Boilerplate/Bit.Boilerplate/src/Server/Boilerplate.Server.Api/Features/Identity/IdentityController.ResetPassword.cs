@@ -10,8 +10,13 @@ public partial class IdentityController
     public async Task SendResetPasswordToken(SendResetPasswordTokenRequestDto request, CancellationToken cancellationToken)
     {
         request.PhoneNumber = phoneService.NormalizePhoneNumber(request.PhoneNumber);
-        var user = await userManager.FindUser(request)
-                    ?? throw new ResourceNotFoundException(Localizer[nameof(AppStrings.UserNotFound)]).WithData("Identifier", request);
+        var user = await userManager.FindUser(request);
+
+        if (user is null)
+        {
+            await RequestUnknownAccountResetPasswordToken(request, cancellationToken);
+            return;
+        }
 
         if (await userConfirmation.IsConfirmedAsync(userManager, user) is false)
         {
@@ -77,7 +82,14 @@ public partial class IdentityController
     public async Task ResetPassword(ResetPasswordRequestDto request, CancellationToken cancellationToken)
     {
         request.PhoneNumber = phoneService.NormalizePhoneNumber(request.PhoneNumber);
-        var user = await userManager.FindUser(request) ?? throw new ResourceNotFoundException(Localizer[nameof(AppStrings.UserNotFound)]).WithData("Identifier", request);
+        var user = await userManager.FindUser(request);
+
+        if (user is null)
+        {
+            var unknownAccountTokenIsPending = TimeProvider.GetUtcNow() - await GetUnknownAccountResetPasswordTokenRequestedOn(request, cancellationToken) <= AppSettings.Identity.ResetPasswordTokenLifetime;
+
+            throw new BadRequestException(unknownAccountTokenIsPending ? nameof(AppStrings.InvalidToken) : nameof(AppStrings.ExpiredToken)).WithData("Identifier", request);
+        }
 
         var expired = user.ResetPasswordTokenRequestedOn is null ||
                       (TimeProvider.GetUtcNow() - user.ResetPasswordTokenRequestedOn.Value) > AppSettings.Identity.ResetPasswordTokenLifetime;
@@ -99,6 +111,23 @@ public partial class IdentityController
             throw new BadRequestException(nameof(AppStrings.InvalidToken)).WithData("UserId", user.Id);
         }
 
+        if (user.TwoFactorEnabled)
+        {
+            if (string.IsNullOrWhiteSpace(request.TwoFactorCode))
+                throw new BadRequestException(Localizer[nameof(AppStrings.ResetPasswordTwoFactorCodeRequired)]).WithData("UserId", user.Id);
+
+            await ValidatePassword(user, request.Password!);
+
+            var twoFactorCodeIsValid = await userManager.VerifyTwoFactorTokenAsync(user, userManager.Options.Tokens.AuthenticatorTokenProvider, request.TwoFactorCode)
+                || (await userManager.RedeemTwoFactorRecoveryCodeAsync(user, request.TwoFactorCode)).Succeeded;
+
+            if (twoFactorCodeIsValid is false)
+            {
+                await userManager.AccessFailedAsync(user);
+                throw new BadRequestException(nameof(AppStrings.InvalidToken)).WithData("UserId", user.Id);
+            }
+        }
+
         var result = await userManager.ResetPasswordAsync(user!, await userManager.GeneratePasswordResetTokenAsync(user!), request.Password!);
 
         if (result.Succeeded is false)
@@ -109,5 +138,27 @@ public partial class IdentityController
         var updateResult = await userManager.UpdateAsync(user);
         if (updateResult.Succeeded is false)
             throw new ResourceValidationException(updateResult.Errors.Select(e => new LocalizedString(e.Code, e.Description)).ToArray()).WithData("UserId", user.Id);
+    }
+
+    private async Task RequestUnknownAccountResetPasswordToken(IdentityRequestDto request, CancellationToken cancellationToken)
+    {
+        var resendDelay = (TimeProvider.GetUtcNow() - await GetUnknownAccountResetPasswordTokenRequestedOn(request, cancellationToken)) - AppSettings.Identity.ResetPasswordTokenLifetime;
+
+        if (resendDelay < TimeSpan.Zero)
+            throw new TooManyRequestsException(Localizer[nameof(AppStrings.WaitForResetPasswordTokenRequestResendDelay), resendDelay.Value.Humanize(culture: CultureInfo.CurrentUICulture)]).WithData("Identifier", request).WithExtensionData("TryAgainIn", resendDelay);
+
+        await cache.SetAsync(GetUnknownAccountResetPasswordCacheKey(request), TimeProvider.GetUtcNow(), options => options.SetDuration(AppSettings.Identity.ResetPasswordTokenLifetime), token: cancellationToken);
+    }
+
+    private async Task<DateTimeOffset?> GetUnknownAccountResetPasswordTokenRequestedOn(IdentityRequestDto request, CancellationToken cancellationToken)
+    {
+        var requestedOn = await cache.TryGetAsync<DateTimeOffset>(GetUnknownAccountResetPasswordCacheKey(request), token: cancellationToken);
+
+        return requestedOn.HasValue ? requestedOn.Value : null;
+    }
+
+    private static string GetUnknownAccountResetPasswordCacheKey(IdentityRequestDto request)
+    {
+        return $"UnknownAccountResetPasswordTokenRequestedOn_{(request.Email ?? request.PhoneNumber ?? request.UserName)?.ToUpperInvariant()}";
     }
 }

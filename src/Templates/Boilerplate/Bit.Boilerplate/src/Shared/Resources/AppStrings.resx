@@ -398,12 +398,6 @@ After reaching {0}, extra sign-ins will have reduced functions.</value>
     <data name="InvalidUserCredentials" xml:space="preserve">
     <value>Invalid user credentials</value>
   </data>
-    <data name="EmailAlreadyConfirmed" xml:space="preserve">
-    <value>Your email is already confirmed.</value>
-  </data>
-    <data name="PhoneNumberAlreadyConfirmed" xml:space="preserve">
-    <value>Your phone number is already confirmed.</value>
-  </data>
     <data name="Title" xml:space="preserve">
     <value>Title</value>
   </data>
@@ -1209,6 +1203,12 @@ After reaching {0}, extra sign-ins will have reduced functions.</value>
   </data>
     <data name="AiChatPanelVoiceCallAssistantFailed" xml:space="preserve">
     <value>The assistant couldn't answer. Try again.</value>
+  </data>
+    <data name="AiChatTooManyRequests" xml:space="preserve">
+    <value>You are chatting too fast. Please wait a minute and try again.</value>
+  </data>
+    <data name="AiChatMessageTooLong" xml:space="preserve">
+    <value>The message is too long. Keep it under {0} characters.</value>
   </data>
     <data name="AiChatHumanFollowUpPrompt" xml:space="preserve">
     <value>Leave your contact details and a human operator will follow up with you.</value>
@@ -2086,5 +2086,11 @@ After reaching {0}, extra sign-ins will have reduced functions.</value>
   </data>
     <data name="UploadImageAsIs" xml:space="preserve">
     <value>Upload as is</value>
+  </data>
+    <data name="ResetPasswordTwoFactorCodeRequired" xml:space="preserve">
+    <value>Two-factor authentication is on for this account. Enter a code from your authenticator app or one of your recovery codes.</value>
+  </data>
+    <data name="AccountAlreadyExistsShortText" xml:space="preserve">
+    <value>You already have a Boilerplate account with this phone number. If you just tried to sign up, sign in instead.</value>
   </data>
 </root>

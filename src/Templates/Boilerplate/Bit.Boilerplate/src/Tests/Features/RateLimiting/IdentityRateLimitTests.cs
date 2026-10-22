@@ -26,7 +26,7 @@ public class IdentityRateLimitTests
     /// <summary>
     /// Driven through the app's own typed controller proxy, so the rejection arrives as the
     /// <see cref="TooManyRequestsException"/> a real client would handle rather than as a bare status code.
-    /// The e-mail is a fresh Guid that no account owns: the endpoint answers <c>UserNotFound</c> for it and
+    /// The e-mail is a fresh Guid that no account owns: the endpoint answers it like any other address and
     /// writes nothing, so this test cannot leave state behind in the shared development database.
     /// </summary>
     [TestMethod]
@@ -46,6 +46,7 @@ public class IdentityRateLimitTests
             try
             {
                 await identityController.SendConfirmEmailToken(new() { Email = $"{Guid.NewGuid()}@example.com" }, TestContext.CancellationToken);
+                served++;
             }
             catch (TooManyRequestsException)
             {
@@ -53,10 +54,6 @@ public class IdentityRateLimitTests
                 // rather than the request never getting there.
                 Assert.IsGreaterThan(0, served, "The endpoint must serve some requests before throttling starts.");
                 return;
-            }
-            catch (BadRequestException)
-            {
-                served++; // UserNotFound - the endpoint's own answer for an unknown e-mail.
             }
         }
 

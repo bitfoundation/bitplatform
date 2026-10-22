@@ -11,8 +11,17 @@ import { App } from './App';
         navigator.serviceWorker.addEventListener('message', handleMessage);
     }
 
+    window.addEventListener('storage', handleStorage);
+
     function handleLoad() {
         setCssWindowSizes();
+    }
+
+    function handleStorage(e: StorageEvent) {
+        if (e.storageArea !== window.localStorage) return;
+        if (e.key !== null && e.key !== 'access_token' && e.key !== 'refresh_token') return;
+
+        App.publishMessage('AUTH_TOKENS_CHANGED', null);
     }
 
     // Enable publishing messages from JavaScript to the C# `PubSubService`.
