@@ -23,7 +23,7 @@ jobs:
     steps:
 
       - name: Add the issue to the Support Tracking project as Investigating
-        uses: actions/github-script@v8
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         with:
           github-token: ${{ secrets.SUPPORT_TRACKING_PROJECT_TOKEN }}
           script: |
@@ -62,7 +62,7 @@ jobs:
 
       - name: Let the issue author know we are investigating
         if: ${{ !cancelled() }}
-        uses: actions/github-script@v8
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         with:
           script: |
             await github.rest.issues.createComment({

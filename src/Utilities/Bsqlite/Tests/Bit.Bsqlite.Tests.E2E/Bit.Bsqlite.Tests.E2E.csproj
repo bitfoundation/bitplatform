@@ -19,7 +19,7 @@
     <ItemGroup>
         <!-- Playwright itself, without a per-framework integration package: the suite manages the
              browser, the contexts, the asset host and the demo host from its own infrastructure. -->
-        <PackageReference Include="Microsoft.Playwright" Version="1.63.0" />
+        <PackageReference Include="Microsoft.Playwright" Version="1.64.0" />
         <PackageReference Include="MSTest" Version="4.5.1" />
     </ItemGroup>
 
