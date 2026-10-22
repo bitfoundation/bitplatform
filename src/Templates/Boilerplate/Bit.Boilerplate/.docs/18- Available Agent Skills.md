@@ -144,7 +144,7 @@ It carries `context: fork` in its frontmatter, so tools that support forked skil
 - Phase 4 - Implementation, one task at a time
 - Phase 5 - Validation via build, tests and the `review` skill
 - Checks every request against the optional template features this project did not enable, so they are ported from `bitfoundation/bitplatform` instead of reinvented
-- Proposes the bit libraries that have MCP servers of their own (Balette, BbScanner, Bcrdt, Bdnd, Belemetry, Bink, Blex, Blow, Bmage, Bonboarding, Borm and Bortable) when a request falls in their area, and connects to those servers itself
+- Proposes the bit libraries this project doesn't use yet, which `AGENTS.md` lists with their MCP servers, when a request falls in their area
 - Delegates to `scaffold-entity` and `bitify-ui` where they apply
 - Checks, alongside phase 1, whether the project is on the newest bit platform release, makes the case for upgrading from the release notes, and remembers a no instead of asking again every session
 
