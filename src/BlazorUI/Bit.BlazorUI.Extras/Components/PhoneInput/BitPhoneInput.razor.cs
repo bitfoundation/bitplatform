@@ -1061,7 +1061,6 @@ public partial class BitPhoneInput : BitTextInputBase<string?>
         StyleBuilder.Register(() => Styles?.Root);
     }
 
-    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitPhoneInputParams))]
     protected override void OnInitialized()
     {
         // The cascade is read before the default country is applied, since the market of an app is the one
@@ -1090,7 +1089,6 @@ public partial class BitPhoneInput : BitTextInputBase<string?>
         base.OnInitialized();
     }
 
-    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitPhoneInputParams))]
     protected override void OnParametersSet()
     {
         // The cascade is read first, so that the country list, the pattern and the classes below are computed from

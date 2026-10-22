@@ -3,7 +3,7 @@ namespace Bit.BlazorUI;
 
 public sealed partial class BitChartRenderer
 {
-    private void DrawGrid(BitChartScene scene, BitChartArea plot, BitChartAxisScale indexScale,
+    private void DrawGrid(BitChartScene scene, BitChartArea plot, BitChartAxisScale indexScale, bool centered,
         List<BitChartAxisScale> leftAxes, List<BitChartAxisScale> rightAxes, List<BitChartAxisScale> centerAxes)
     {
         bool firstValueGridDrawn = false;
@@ -26,20 +26,20 @@ public sealed partial class BitChartRenderer
 
         // Axes pinned to the other axis' zero line, drawn inside the plot.
         foreach (var axis in centerAxes)
-            DrawValueAxis(scene, plot, axis, ZeroLineAlong(indexScale, plot), isRight: false, drawArea: false);
+            DrawValueAxis(scene, plot, axis, ZeroLineAlong(indexScale, plot, centered), isRight: false, drawArea: false);
 
         // Index axis. It too can sit on the value axis' zero line rather than along the edge.
         double indexBaseline = PlacementOf(indexScale.Options, IsVertical ? BitPlacement.Bottom : BitPlacement.Left) == BitPlacement.Center
             ? ZeroLineAcross(leftAxes.Concat(rightAxes).Concat(centerAxes).FirstOrDefault(), plot)
             : IsVertical ? plot.Bottom : plot.Left;
-        DrawIndexAxis(scene, plot, indexScale, indexBaseline);
+        DrawIndexAxis(scene, plot, indexScale, indexBaseline, centered);
     }
 
     /// <summary>The pixel along the index axis where its value is zero, clamped into the plot.</summary>
-    private double ZeroLineAlong(BitChartAxisScale indexScale, BitChartArea plot)
+    private double ZeroLineAlong(BitChartAxisScale indexScale, BitChartArea plot, bool centered)
     {
         double p = indexScale.Type == BitChartScaleType.Category
-            ? indexScale.PixelForIndex(0, HasBars())
+            ? indexScale.PixelForIndex(0, centered)
             : indexScale.PixelFor(0);
         return IsVertical ? Math.Clamp(p, plot.Left, plot.Right) : Math.Clamp(p, plot.Top, plot.Bottom);
     }
@@ -96,7 +96,7 @@ public sealed partial class BitChartRenderer
                     {
                         X = lx, Y = y + TickLabelOffset(tk), Text = tick.Label, Fill = tk.Color,
                         FontFamily = tk.Font.Family, FontSize = tk.Font.Size, FontWeight = tk.Font.Weight,
-                        Anchor = anchorStart ? "start" : "end", Baseline = "central"
+                        Anchor = anchorStart ? "start" : "end", PhysicalAnchor = true, Baseline = "central"
                     });
                 }
             }
@@ -170,13 +170,12 @@ public sealed partial class BitChartRenderer
         }
     }
 
-    private void DrawIndexAxis(BitChartScene scene, BitChartArea plot, BitChartAxisScale axis, double baseline)
+    private void DrawIndexAxis(BitChartScene scene, BitChartArea plot, BitChartAxisScale axis, double baseline, bool centered)
     {
         var o = axis.Options;
         if (!ScaleVisible(o)) return;
         var g = o.Grid;
         var tk = o.Ticks;
-        bool centered = HasBars();
 
         foreach (var tick in axis.Ticks)
         {
@@ -201,12 +200,14 @@ public sealed partial class BitChartRenderer
                 if (tk.Display)
                 {
                     double rot = axis.LabelRotation;
+                    bool rotated = Math.Abs(rot) > 1e-3;
                     scene.Background.Add(new BitChartSvgText
                     {
-                        X = px + TickLabelOffset(tk), Y = baseline + g.TickLength + tk.Padding + (Math.Abs(rot) > 1e-3 ? tk.Font.Size * 0.35 : tk.Font.Size * 0.7),
+                        X = px + TickLabelOffset(tk), Y = baseline + g.TickLength + tk.Padding + (rotated ? tk.Font.Size * 0.35 : tk.Font.Size * 0.7),
                         Text = tick.Label, Fill = tk.Color,
                         FontFamily = tk.Font.Family, FontSize = tk.Font.Size, FontWeight = tk.Font.Weight,
-                        Anchor = Math.Abs(rot) > 1e-3 ? "end" : TickAnchor(tk), Baseline = "auto", Rotation = rot
+                        // A turned label ends at its tick on the screen; one lying flat follows Align in the reading direction.
+                        Anchor = rotated ? "end" : TickAnchor(tk), PhysicalAnchor = rotated, Baseline = "auto", Rotation = rot
                     });
                 }
             }
@@ -230,7 +231,7 @@ public sealed partial class BitChartRenderer
                         X = tk.Mirror ? baseline + g.TickLength + tk.Padding : baseline - g.TickLength - tk.Padding,
                         Y = px + TickLabelOffset(tk), Text = tick.Label, Fill = tk.Color,
                         FontFamily = tk.Font.Family, FontSize = tk.Font.Size, FontWeight = tk.Font.Weight,
-                        Anchor = tk.Mirror ? "start" : "end", Baseline = "central"
+                        Anchor = tk.Mirror ? "start" : "end", PhysicalAnchor = true, Baseline = "central"
                     });
             }
         }
@@ -268,7 +269,10 @@ public sealed partial class BitChartRenderer
 
     private bool HasBars() => _data.Datasets.Where((d, i) => !IsHidden(i, d)).Any(d => EffectiveType(d) == BitChartType.Bar);
 
-    /// <summary>Text anchor for a tick label honoring <see cref="BitChartTickOptions.Align"/>.</summary>
+    /// <summary>
+    /// Text anchor for a tick label honoring <see cref="BitChartTickOptions.Align"/>, whose Start and End follow the
+    /// reading direction, as SVG's own start and end do.
+    /// </summary>
     private static string TickAnchor(BitChartTickOptions tk) => tk.Align switch
     {
         BitPlacement.Start => "start",

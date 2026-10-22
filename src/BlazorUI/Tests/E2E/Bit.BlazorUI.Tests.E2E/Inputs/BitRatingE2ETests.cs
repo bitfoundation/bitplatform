@@ -1184,6 +1184,9 @@ public class BitRatingE2ETests : E2ETestBase
         await Items("rtg-score").Nth(2).ClickAsync();
         await Expect(root).ToHaveClassAsync(HasClass("bit-rtg-wrn"));
         await Page.HoverAsync("#hover-away");
+        // The fill eases from the hover shade to its rest color, so it is read once it has arrived there: a color
+        // caught on the way would make the comparisons below pass whatever the score colors were.
+        await Fill("rtg-score", 1).EvaluateAsync("el => Promise.all(el.getAnimations().map(a => a.finished.catch(() => null)))");
         var mid = await Fill("rtg-score", 1).EvaluateAsync<string>("el => getComputedStyle(el).color");
 
         await Items("rtg-score").Nth(4).ClickAsync();

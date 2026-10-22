@@ -289,9 +289,10 @@ public class BitInfiniteScrollingE2ETests : E2ETestBase
         await Expect(ItemsOf("isc-reversed", "msg").First).ToContainTextAsync("Message 20");
         await Expect(list.Locator(".msg[data-id='35'] .note")).ToHaveValueAsync("mine");
 
-        // The visible items did not jump down by the height of the prepended page.
-        var scrollTop = await list.EvaluateAsync<double>("e => e.scrollTop");
-        Assert.IsTrue(scrollTop > 100, $"The scroll was moved by the prepended page, was {scrollTop}.");
+        // The visible items did not jump down by the height of the prepended page. The list puts its offset back after
+        // the render that inserted the page (one more round trip on the server), so that is waited for rather than read
+        // the moment the page is in.
+        await Page.WaitForFunctionAsync("e => e.scrollTop > 100", await list.ElementHandleAsync());
 
         await list.EvaluateAsync("e => e.scrollTop = 0");
         await Expect(ItemsOf("isc-reversed", "msg")).ToHaveCountAsync(30);

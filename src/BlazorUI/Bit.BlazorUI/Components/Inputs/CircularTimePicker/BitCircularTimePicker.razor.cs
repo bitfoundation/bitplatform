@@ -806,7 +806,6 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
         base.OnInitialized();
     }
 
-    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitCircularTimePickerParams))]
     protected override void OnParametersSet()
     {
         CascadedCalloutHtmlAttributes = null;

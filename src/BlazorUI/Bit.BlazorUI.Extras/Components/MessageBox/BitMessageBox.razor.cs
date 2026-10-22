@@ -1,5 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
-
+﻿
 namespace Bit.BlazorUI;
 
 /// <summary>
@@ -489,7 +488,6 @@ public partial class BitMessageBox : BitComponentBase
         StyleBuilder.Register(() => Styles?.Root);
     }
 
-    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitMessageBoxParams))]
     protected override void OnParametersSet()
     {
         CascadingParameters?.UpdateParameters(this);

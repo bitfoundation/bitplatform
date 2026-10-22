@@ -42,7 +42,10 @@ app.MapRazorComponents<Bit.BlazorUI.Tests.E2E.TestHost.Components.App>()
     .AddAdditionalAssemblies(typeof(Bit.BlazorUI.Tests.E2E.TestHost.Components.Routes).Assembly);
 
 // What BitFileUpload sends its files to: one endpoint that takes every chunk, one that refuses every chunk (how an
-// upload fails), and one that answers slowly (how an upload is seen in progress and cancelled).
+// upload fails), and one that holds every chunk until the test lets it through (how an upload is seen in progress and
+// cancelled, see SlowUploadGate).
+var slowUploadGate = new SlowUploadGate();
+
 app.MapPost("/api/upload", async (HttpRequest request) =>
 {
     await request.Body.CopyToAsync(Stream.Null);
@@ -56,7 +59,22 @@ app.MapPost("/api/upload-fail", async (HttpRequest request) =>
 app.MapPost("/api/upload-slow", async (HttpRequest request, CancellationToken cancellationToken) =>
 {
     await request.Body.CopyToAsync(Stream.Null, cancellationToken);
-    await Task.Delay(TimeSpan.FromSeconds(2), cancellationToken);
+    await slowUploadGate.WaitAsync(cancellationToken);
+    return Results.Ok();
+});
+app.MapPost("/api/upload-slow/release", (int? count) =>
+{
+    slowUploadGate.Release(count ?? 1);
+    return Results.Ok();
+});
+app.MapPost("/api/upload-slow/open", () =>
+{
+    slowUploadGate.Open();
+    return Results.Ok();
+});
+app.MapPost("/api/upload-slow/close", () =>
+{
+    slowUploadGate.Close();
     return Results.Ok();
 });
 app.MapDelete("/api/upload", () => Results.Ok());

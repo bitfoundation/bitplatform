@@ -15,7 +15,7 @@ namespace Bit.BlazorUI.Tests.Mcp;
 [TestClass]
 public class SearchTests : McpTestBase
 {
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("let the user pick a date range", "BitDateRangePicker")]
     [DataRow("toast notification", "BitSnackBar")]
     [DataRow("searchable multi select with chips", "BitDropdown")]

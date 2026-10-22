@@ -1,5 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
-
+﻿
 namespace Bit.BlazorUI;
 
 /// <summary>
@@ -614,8 +613,8 @@ public partial class BitHeader : BitComponentBase
             var property = _extended ? "min-height" : "height";
 
             return IsPinned
-                    ? $"{property}:calc({Height}px + env(safe-area-inset-top, 0px))"
-                    : $"{property}:{Height}px";
+                    ? FormattableString.Invariant($"{property}:calc({Height}px + env(safe-area-inset-top, 0px))")
+                    : FormattableString.Invariant($"{property}:{Height}px");
         });
 
         StyleBuilder.Register(() => Gap.HasValue() ? $"--bit-hdr-gap:{Gap}" : string.Empty);
@@ -625,7 +624,6 @@ public partial class BitHeader : BitComponentBase
 
 
 
-    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitHeaderParams))]
     protected override void OnParametersSet()
     {
         CascadingParameters?.UpdateParameters(this);

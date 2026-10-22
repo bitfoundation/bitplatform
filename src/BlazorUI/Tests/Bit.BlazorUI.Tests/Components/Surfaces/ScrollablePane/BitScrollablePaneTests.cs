@@ -10,10 +10,10 @@ namespace Bit.BlazorUI.Tests.Components.Surfaces.ScrollablePane;
 [TestClass]
 public class BitScrollablePaneTests : BunitTestContext
 {
-    private const string Setup = "BitBlazorUI.ScrollablePane.setup";
+    private const string SetupFn = "BitBlazorUI.ScrollablePane.setup";
     private const string Update = "BitBlazorUI.ScrollablePane.update";
     private const string Refresh = "BitBlazorUI.ScrollablePane.refresh";
-    private const string Dispose = "BitBlazorUI.ScrollablePane.dispose";
+    private const string DisposeFn = "BitBlazorUI.ScrollablePane.dispose";
     private const string AutoScroll = "BitBlazorUI.ScrollablePane.autoScroll";
     private const string ScrollToEnd = "BitBlazorUI.ScrollablePane.scrollToEnd";
     private const string ScrollToStart = "BitBlazorUI.ScrollablePane.scrollToStart";
@@ -783,7 +783,7 @@ public class BitScrollablePaneTests : BunitTestContext
             parameters.Add(p => p.SnapStop, true);
         });
 
-        Assert.AreEqual(0, InvocationCount(Setup));
+        Assert.AreEqual(0, InvocationCount(SetupFn));
     }
 
     [TestMethod]
@@ -796,7 +796,7 @@ public class BitScrollablePaneTests : BunitTestContext
             parameters.Add(p => p.SnapAlign, BitScrollSnapAlign.Center);
         });
 
-        Assert.AreEqual(0, InvocationCount(Setup));
+        Assert.AreEqual(0, InvocationCount(SetupFn));
     }
 
     #endregion
@@ -810,7 +810,7 @@ public class BitScrollablePaneTests : BunitTestContext
     {
         RenderComponent<BitScrollablePane>();
 
-        Assert.AreEqual(0, InvocationCount(Setup));
+        Assert.AreEqual(0, InvocationCount(SetupFn));
     }
 
     [TestMethod,
@@ -847,7 +847,7 @@ public class BitScrollablePaneTests : BunitTestContext
             }
         });
 
-        Assert.AreEqual(1, InvocationCount(Setup));
+        Assert.AreEqual(1, InvocationCount(SetupFn));
     }
 
     [TestMethod]
@@ -884,7 +884,7 @@ public class BitScrollablePaneTests : BunitTestContext
             parameters.Add(p => p.DragMomentum, true);
         });
 
-        Assert.AreEqual(0, InvocationCount(Setup));
+        Assert.AreEqual(0, InvocationCount(SetupFn));
     }
 
     [TestMethod]
@@ -988,7 +988,7 @@ public class BitScrollablePaneTests : BunitTestContext
             parameters.Add(p => p.Disabled, true);
         });
 
-        Assert.AreEqual(0, InvocationCount(Setup));
+        Assert.AreEqual(0, InvocationCount(SetupFn));
     }
 
     [TestMethod]
@@ -1128,7 +1128,7 @@ public class BitScrollablePaneTests : BunitTestContext
         component.Render();
         component.Render();
 
-        Assert.AreEqual(1, InvocationCount(Setup));
+        Assert.AreEqual(1, InvocationCount(SetupFn));
         Assert.AreEqual(0, InvocationCount(Update));
         Assert.AreEqual(0, InvocationCount(Refresh));
     }
@@ -1157,11 +1157,11 @@ public class BitScrollablePaneTests : BunitTestContext
             parameters.Add(p => p.Fade, true);
         });
 
-        Assert.AreEqual(1, InvocationCount(Setup));
+        Assert.AreEqual(1, InvocationCount(SetupFn));
 
         component.Render(parameters => parameters.Add(p => p.Fade, false));
 
-        Assert.AreEqual(1, InvocationCount(Dispose));
+        Assert.AreEqual(1, InvocationCount(DisposeFn));
     }
 
     [TestMethod]
@@ -1174,7 +1174,7 @@ public class BitScrollablePaneTests : BunitTestContext
 
         await component.Instance.DisposeAsync();
 
-        Assert.AreEqual(1, InvocationCount(Dispose));
+        Assert.AreEqual(1, InvocationCount(DisposeFn));
     }
 
     #endregion
@@ -1804,14 +1804,14 @@ public class BitScrollablePaneTests : BunitTestContext
             parameters.Add(p => p.Fade, true);
         });
 
-        Assert.AreEqual("first-id", InvocationsOf(Setup).Single().Arguments[0]);
+        Assert.AreEqual("first-id", InvocationsOf(SetupFn).Single().Arguments[0]);
 
         // The Id parameter changes after the first render, while the instance the browser side holds does not.
         component.Render(parameters => parameters.Add(p => p.Id, "second-id"));
 
         await component.Instance.DisposeAsync();
 
-        Assert.AreEqual("first-id", InvocationsOf(Dispose).Single().Arguments[0]);
+        Assert.AreEqual("first-id", InvocationsOf(DisposeFn).Single().Arguments[0]);
     }
 
     [TestMethod]
@@ -1822,16 +1822,16 @@ public class BitScrollablePaneTests : BunitTestContext
             parameters.Add(p => p.Fade, true);
         });
 
-        Assert.AreEqual(1, InvocationCount(Setup));
+        Assert.AreEqual(1, InvocationCount(SetupFn));
 
         component.Render(parameters => parameters.Add(p => p.Disabled, true));
 
-        Assert.AreEqual(1, InvocationCount(Dispose));
+        Assert.AreEqual(1, InvocationCount(DisposeFn));
 
         // And sets it up again once the pane is usable again.
         component.Render(parameters => parameters.Add(p => p.Disabled, false));
 
-        Assert.AreEqual(2, InvocationCount(Setup));
+        Assert.AreEqual(2, InvocationCount(SetupFn));
     }
 
     [TestMethod]
@@ -1844,7 +1844,7 @@ public class BitScrollablePaneTests : BunitTestContext
         });
 
         Assert.IsTrue(component.Find(".bit-scp").ClassList.Contains("bit-scp-ahs"));
-        Assert.AreEqual(0, InvocationCount(Setup));
+        Assert.AreEqual(0, InvocationCount(SetupFn));
     }
 
     // A report from the browser side that was on its way as the pane went lands on nothing.
@@ -1882,7 +1882,7 @@ public class BitScrollablePaneTests : BunitTestContext
         await component.Instance.DisposeAsync();
         await component.Instance.DisposeAsync();
 
-        Assert.AreEqual(1, InvocationCount(Dispose));
+        Assert.AreEqual(1, InvocationCount(DisposeFn));
     }
 
     #endregion
@@ -1908,7 +1908,7 @@ public class BitScrollablePaneTests : BunitTestContext
     // than cast: what these tests are checking is the value each parameter turns into, not the type.
     private object SetupOptions()
     {
-        return InvocationsOf(Setup).Single().Arguments[3]!;
+        return InvocationsOf(SetupFn).Single().Arguments[3]!;
     }
 
     private static object? Option(object options, string name)

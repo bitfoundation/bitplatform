@@ -836,7 +836,7 @@ public class BitSearchBoxE2ETests : E2ETestBase
         await Expect(Text("suggest-open")).ToHaveTextAsync("True");
 
         // Measured once the list has finished sliding in, not partway through its entry transition.
-        await (await CalloutAsync("sb-suggest")).EvaluateAsync("el => Promise.all(el.getAnimations({ subtree: true }).map(a => a.finished))");
+        await (await CalloutAsync("sb-suggest")).EvaluateAsync("el => Promise.all(el.getAnimations({ subtree: true }).map(a => a.finished.catch(() => null)))");
         var field = await BoxOfAsync(Box("sb-suggest"));
         var callout = await BoxOfAsync(await CalloutAsync("sb-suggest"));
         Assert.AreEqual(field.Y + field.Height, callout.Y, 3, "The list opens right under the field.");

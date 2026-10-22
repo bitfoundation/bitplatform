@@ -150,7 +150,7 @@ public sealed class BitThemeSsrTests
             "A stored pair the page no longer offers must not stand in for the declared one.");
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("fluent2-dark", "material-dark")]
     [DataRow("fluent2-light", "material-light")]
     [DataRow("cupertino-dark", "material-dark")]
@@ -170,7 +170,7 @@ public sealed class BitThemeSsrTests
         Assert.AreEqual(expected, map[BitThemeAttributeNames.Theme]);
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("high-contrast")]
     [DataRow("fluent2-dark")]
     [DataRow("material-dark")]
@@ -187,7 +187,7 @@ public sealed class BitThemeSsrTests
         Assert.AreEqual(preference, map[BitThemeAttributeNames.Theme]);
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("cupertino-dark", "fluent2-dark")]
     [DataRow("cupertino-light", "fluent2-light")]
     [DataRow(null, "fluent2-light")]
@@ -249,7 +249,7 @@ public sealed class BitThemeSsrTests
         Assert.AreEqual("material-light material-dark", map[BitThemeAttributeNames.ThemeAvailable]);
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow(false)]
     [DataRow(true)]
     public void BuildRootThemeAttributeMapOmitsTheOfferedThemesWhenNoneIsNamed(bool empty)
@@ -262,7 +262,7 @@ public sealed class BitThemeSsrTests
         Assert.IsFalse(map.ContainsKey(BitThemeAttributeNames.ThemeAvailable));
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("fluent2-dark", "dark", "material-dark")]
     [DataRow("fluent2-light", "light", "material-light")]
     [DataRow("dark", "dark", "material-dark")]
@@ -282,7 +282,7 @@ public sealed class BitThemeSsrTests
         Assert.AreEqual(expected, map[BitThemeAttributeNames.Theme]);
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("material-dark")]
     [DataRow("fluent2-dark")]
     [DataRow("high-contrast")]
@@ -323,7 +323,7 @@ public sealed class BitThemeSsrTests
         Assert.AreEqual("material-dark", map[BitThemeAttributeNames.Theme]);
     }
 
-    [DataTestMethod]
+    [TestMethod]
     // The client keeps a pinned preference in step with the pair it switches to, so one outside the
     // stored pair is a theme the app pinned on purpose, and is painted as it is.
     [DataRow("fluent2-dark", "fluent2-dark")]
@@ -348,7 +348,7 @@ public sealed class BitThemeSsrTests
         Assert.AreEqual("fluent2-dark", map[BitThemeAttributeNames.ThemeDark]);
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("cupertino-light cupertino-dark")]
     [DataRow("cupertino-light%20cupertino-dark")]
     public void BuildRootThemeAttributeMapReadsTheStoredPairDecodedOrNot(string storedPair)
@@ -359,7 +359,7 @@ public sealed class BitThemeSsrTests
         Assert.AreEqual("cupertino-dark", map[BitThemeAttributeNames.Theme]);
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("cupertino-light")]
     [DataRow("a b c")]
     [DataRow("light\" onload=\"x dark")]
@@ -400,7 +400,7 @@ public sealed class BitThemeSsrTests
         Assert.AreEqual("bit-theme-system", BitThemeSsr.BuildRootThemeAttributes("   "));
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("\"><script>alert(1)</script>", DisplayName = "html injection")]
     [DataRow("dark; color:red", DisplayName = "css/space characters")]
     [DataRow("light\"onload=", DisplayName = "attribute breakout")]
@@ -440,7 +440,7 @@ public sealed class BitThemeSsrTests
         Assert.AreEqual("light", system[BitThemeAttributeNames.ThemeDefault]);
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow(null, null, DisplayName = "nothing stored")]
     [DataRow("   ", null, DisplayName = "blank preference")]
     [DataRow("dark", null, DisplayName = "concrete preference")]

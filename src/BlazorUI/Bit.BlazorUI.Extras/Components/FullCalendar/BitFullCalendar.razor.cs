@@ -1,5 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using System.Globalization;
+﻿using System.Globalization;
 
 namespace Bit.BlazorUI;
 
@@ -454,7 +453,6 @@ public partial class BitFullCalendar : BitComponentBase
         return Culture ?? CultureInfo.CurrentUICulture;
     }
 
-    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitFullCalendarParams))]
     protected override void OnInitialized()
     {
         // The cascaded defaults are applied before anything below reads the parameters they fill in: the

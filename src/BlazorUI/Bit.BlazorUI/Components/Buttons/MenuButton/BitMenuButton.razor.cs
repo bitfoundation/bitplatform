@@ -579,7 +579,6 @@ public partial class BitMenuButton<[DynamicallyAccessedMembers(DynamicallyAccess
         StyleBuilder.Register(() => Toggle && Split && IsToggled ? Styles?.Toggled : string.Empty);
     }
 
-    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitMenuButtonParams))]
     protected override async Task OnInitializedAsync()
     {
         _menuId = $"BitMenuButton-{UniqueId}-menu";
@@ -604,7 +603,6 @@ public partial class BitMenuButton<[DynamicallyAccessedMembers(DynamicallyAccess
         await base.OnInitializedAsync();
     }
 
-    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitMenuButtonParams))]
     protected override async Task OnParametersSetAsync()
     {
         CascadingParameters?.UpdateParameters(this);

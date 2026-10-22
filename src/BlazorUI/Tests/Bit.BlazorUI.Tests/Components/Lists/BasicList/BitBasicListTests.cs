@@ -37,49 +37,56 @@ public class BitBasicListTests : BunitTestContext
         // only a maximum of 100 items will be rendered by default.
         AppContext.SetData("Microsoft.AspNetCore.Components.Web.Virtualization.Virtualize.MaxItemCount", maxItemCount);
 
-        var component = RenderComponent<BitBasicListTest>(parameters =>
+        // The switch is process-wide, so it is put back however the test ends: left behind by a failing assertion it
+        // would cap every Virtualize rendered by the tests after this one.
+        try
         {
-            parameters.Add(p => p.Virtualize, virtualize);
-            parameters.Add(p => p.Items, GetTestData(500));
-            //ItemSize default value is 50.
-            parameters.Add(p => p.ItemSize, itemSize ?? 50);
-            //OverscanCount default value is 3.
-            parameters.Add(p => p.OverscanCount, overscanCount ?? 3);
-        });
+            var component = RenderComponent<BitBasicListTest>(parameters =>
+            {
+                parameters.Add(p => p.Virtualize, virtualize);
+                parameters.Add(p => p.Items, GetTestData(500));
+                //ItemSize default value is 50.
+                parameters.Add(p => p.ItemSize, itemSize ?? 50);
+                //OverscanCount default value is 3.
+                parameters.Add(p => p.OverscanCount, overscanCount ?? 3);
+            });
 
-        var bitList = component.Find(".bit-bsl");
+            var bitList = component.Find(".bit-bsl");
 
-        if (virtualize)
-        {
-            //When virtualize is true, number of rendered items is greater than number of items show in the list + 2 * overScanCount.
-            var overscanItemsCount = 2 * component.Instance.OverscanCount;
+            if (virtualize)
+            {
+                //When virtualize is true, number of rendered items is greater than number of items show in the list + 2 * overScanCount.
+                var overscanItemsCount = 2 * component.Instance.OverscanCount;
 
 #if NET10_0_OR_GREATER
-            maxItemCount += overscanItemsCount;
+                maxItemCount += overscanItemsCount;
 #endif
 
-            var expectedRenderedItemCount = Math.Ceiling((decimal)(viewportHeight / component.Instance.ItemSize)) + overscanItemsCount;
-            expectedRenderedItemCount = Math.Min(expectedRenderedItemCount, maxItemCount);
+                var expectedRenderedItemCount = Math.Ceiling((decimal)(viewportHeight / component.Instance.ItemSize)) + overscanItemsCount;
+                expectedRenderedItemCount = Math.Min(expectedRenderedItemCount, maxItemCount);
 
-            var actualRenderedItemCount = bitList.GetElementsByClassName("list-item").Length;
+                var actualRenderedItemCount = bitList.GetElementsByClassName("list-item").Length;
 
-            //When actualRenderedItemCount is smaller than expectedRenderedItemCount, so show all items in viewport then actualRenderedItemCount equals total items count
-            if (actualRenderedItemCount < expectedRenderedItemCount)
-            {
-                Assert.AreEqual(component?.Instance?.Items?.Count, actualRenderedItemCount);
+                //When actualRenderedItemCount is smaller than expectedRenderedItemCount, so show all items in viewport then actualRenderedItemCount equals total items count
+                if (actualRenderedItemCount < expectedRenderedItemCount)
+                {
+                    Assert.AreEqual(component?.Instance?.Items?.Count, actualRenderedItemCount);
+                }
+                else
+                {
+                    Assert.AreEqual(expectedRenderedItemCount, actualRenderedItemCount);
+                }
             }
             else
             {
-                Assert.AreEqual(expectedRenderedItemCount, actualRenderedItemCount);
+                var actualRenderedItemCount = bitList.GetElementsByClassName("list-item").Length;
+                Assert.AreEqual(component?.Instance?.Items?.Count, actualRenderedItemCount);
             }
         }
-        else
+        finally
         {
-            var actualRenderedItemCount = bitList.GetElementsByClassName("list-item").Length;
-            Assert.AreEqual(component?.Instance?.Items?.Count, actualRenderedItemCount);
+            AppContext.SetData("Microsoft.AspNetCore.Components.Web.Virtualization.Virtualize.MaxItemCount", null);
         }
-
-        AppContext.SetData("Microsoft.AspNetCore.Components.Web.Virtualization.Virtualize.MaxItemCount", null);
     }
 
     [TestMethod,

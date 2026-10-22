@@ -739,7 +739,8 @@ crosses the interop boundary - typing on the page never causes a round trip. A s
 content-editable element has focus (`SuppressShortcutsInEditableElements`); chords with `Ctrl`, `Alt` or `⌘` still
 fire. Whatever needs the palette opens it: a command with a page or a confirmation, and a handler that answers with
 a page, a prompt or a toast that stays open. A confirmation started this way gets a page of its own, so the second
-`Enter` confirms that command and no other.
+`Enter` confirms that command and no other. Only a command that can run claims its keys: the shortcut of a disabled
+command, or of one its `VisibleWhen` predicate hides, is left to the page.
 
 ### Shortcut syntax
 
@@ -933,7 +934,7 @@ are no inline scripts and no `eval`, so `script-src 'self'` is enough.
 | --- | --- | --- |
 | `ToggleShortcut` | `Mod+K` | Plus `AdditionalToggleShortcuts`. |
 | `SuppressShortcutsInEditableElements` | `true` | Plain keys do not fire from inputs. |
-| `SequenceTimeoutMs` | `1000` | How long a sequence waits for its next chord. |
+| `SequenceTimeoutMs` | `1000` | How long a sequence waits for its next chord; must be positive. |
 | `DebounceMs` | `150` | Async sources. |
 | `Loop`, `VimBindings` | `true`, `false` | Arrow navigation. |
 | `EnableHistory`, `MaxRecents`, `MaxHistoryEntries` | `true`, `5`, `200` | |

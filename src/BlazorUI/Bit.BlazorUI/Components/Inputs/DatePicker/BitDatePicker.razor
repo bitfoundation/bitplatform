@@ -405,7 +405,7 @@
                                                 aria-current="@(isToday ? "date" : null)"
                                                 style="@style"
                                                 class="bit-dtp-dbt@(klass) @Classes?.DayButton"
-                                                tabindex="@(isInMonth && date == focusableDay ? 0 : -1)"
+                                                tabindex="@(isInMonth && date == focusableDay ? "0" : "-1")"
                                                 aria-selected="@(isSelected ? "true" : "false")">
                                             @if (DayCellTemplate is not null)
                                             {
@@ -542,7 +542,7 @@
                                                 aria-label="@monthName"
                                                 disabled="@disabled"
                                                 aria-disabled="@(disabled ? "true" : null)"
-                                                tabindex="@(month == focusableMonth ? 0 : -1)"
+                                                tabindex="@(month == focusableMonth ? "0" : "-1")"
                                                 aria-selected="@(selected ? "true" : "false")"
                                                 style="@Styles?.MonthButton"
                                                 class="bit-dtp-pkb@(GetMonthCellCssClass(month, todayYear, todayMonth)) @Classes?.MonthButton">
@@ -656,7 +656,7 @@
                                                 role="gridcell"
                                                 id="@GetYearButtonId(year)"
                                                 disabled="@disabled"
-                                                tabindex="@(year == focusableYear ? 0 : -1)"
+                                                tabindex="@(year == focusableYear ? "0" : "-1")"
                                                 aria-readonly="@(ReadOnly ? "true" : null)"
                                                 aria-disabled="@(disabled ? "true" : null)"
                                                 aria-selected="@(selected ? "true" : "false")"

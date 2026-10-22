@@ -167,7 +167,12 @@ public class BitThemeSwitcherBehaviorTests : BunitTestContext
             parameters.Add(p => p.LightSchemeIconName, "Brightness");
         });
 
-        foreach (var button in component.FindAll(".bit-ths-csb"))
+        var buttons = component.FindAll(".bit-ths-csb");
+
+        // The pair the stylesheet picks one of, so the loop below cannot pass by finding none.
+        Assert.AreEqual(2, buttons.Count);
+
+        foreach (var button in buttons)
         {
             // A native button is what makes Enter and Space operate the toggle, and type=button keeps it from
             // submitting a form the switcher is placed in.
@@ -499,7 +504,11 @@ public class BitThemeSwitcherBehaviorTests : BunitTestContext
             parameters.Add(p => p.Disabled, disabled);
         });
 
-        foreach (var button in component.FindAll(".bit-ths-csb"))
+        var buttons = component.FindAll(".bit-ths-csb");
+
+        Assert.AreEqual(2, buttons.Count);
+
+        foreach (var button in buttons)
         {
             Assert.AreEqual(disabled, button.HasAttribute("disabled"));
             Assert.AreEqual(disabled ? "true" : null, button.GetAttribute("aria-disabled"));
@@ -645,7 +654,11 @@ public class BitThemeSwitcherBehaviorTests : BunitTestContext
         Assert.IsFalse(component.Find(".bit-ths-drk").GetAttribute("style")!.Contains("outline-style:dotted"));
         Assert.IsFalse(component.Find(".bit-ths-drk").ClassList.Contains("custom-lgt"));
 
-        foreach (var icon in component.FindAll(".bit-ths-csb i"))
+        var icons = component.FindAll(".bit-ths-csb i");
+
+        Assert.AreEqual(2, icons.Count);
+
+        foreach (var icon in icons)
         {
             Assert.AreEqual("font-size:20px", icon.GetAttribute("style"));
         }

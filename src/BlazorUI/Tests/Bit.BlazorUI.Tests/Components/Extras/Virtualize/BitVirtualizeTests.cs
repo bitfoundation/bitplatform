@@ -22,7 +22,9 @@ public class BitVirtualizeTests : BunitTestContext
     private const string SyncFn = "BitBlazorUI.Virtualize.sync";
     private const string DisposeFn = "BitBlazorUI.Virtualize.dispose";
 
-    private static readonly RenderFragment<int> itemTemplate = item => builder => builder.AddContent(0, $"Item {item}");
+    // Written invariantly, so a negative item reads "Item -10" whatever the culture: ar-SA or fa-IR would put a
+    // direction mark before the minus sign.
+    private static readonly RenderFragment<int> itemTemplate = item => builder => builder.AddContent(0, FormattableString.Invariant($"Item {item}"));
 
     // Makes the browser side report a viewport, which is what initializes the component (without it, as in
     // prerendering, the component renders a first screen of items and waits).

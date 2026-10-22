@@ -213,7 +213,7 @@ public class BitCssEventsBrowserTests : PerformanceTestBase
     {
         await Open();
 
-        var samples = await ShowImagesAndSample(3000);
+        var samples = await ShowImagesAndSample(DefaultTimeout);
         var fade = samples["img-fade"];
 
         Assert.IsNotNull(fade.LeavingAt, "The placeholder never started to leave.");
@@ -230,7 +230,7 @@ public class BitCssEventsBrowserTests : PerformanceTestBase
     {
         await Open();
 
-        var samples = await ShowImagesAndSample(3000);
+        var samples = await ShowImagesAndSample(DefaultTimeout);
         var restyled = samples["img-restyled"];
 
         Assert.AreEqual("css-events-crossfade", restyled.Animation, "The restyle did not replace the fade.");
@@ -246,7 +246,7 @@ public class BitCssEventsBrowserTests : PerformanceTestBase
         await Page.EmulateMediaAsync(new() { ReducedMotion = ReducedMotion.Reduce });
         await Open();
 
-        var samples = await ShowImagesAndSample(2000);
+        var samples = await ShowImagesAndSample(DefaultTimeout);
         var reduced = samples["img-default"];
 
         Assert.IsNotNull(reduced.GoneAt, "A placeholder whose fade reduced motion collapsed was left over the image.");
@@ -301,7 +301,9 @@ public class BitCssEventsBrowserTests : PerformanceTestBase
     }
 
     // Asks for the images and follows each one's placeholder on every frame: when it began to leave, the animation it
-    // left with, and when it was taken out of the DOM, in ms after the images were asked for.
+    // left with, and when it was taken out of the DOM, in ms after the images were asked for. It follows them until every
+    // placeholder is gone, or for at most the given time: the images, their load and the end of each fade are three
+    // round trips to the server, which a fixed window a loaded machine runs past would report as never gone.
     private async Task<Dictionary<string, ImageSample>> ShowImagesAndSample(double duration)
     {
         var json = await Page.EvaluateAsync<string>(@"async (duration) => {
@@ -330,7 +332,8 @@ public class BitCssEventsBrowserTests : PerformanceTestBase
             await new Promise(resolve => {
                 const tick = () => {
                     sample();
-                    if (performance.now() - t0 < duration) requestAnimationFrame(tick); else resolve();
+                    const allGone = ids.every(id => samples[id].goneAt !== null);
+                    if (!allGone && performance.now() - t0 < duration) requestAnimationFrame(tick); else resolve();
                 };
                 requestAnimationFrame(tick);
             });

@@ -55,6 +55,7 @@ When an app is published, `bit.blazorui.css` and `bit.blazorui.js` (and the bund
 - A standalone **Blazor WebAssembly** app gets it by default, off what the .NET trimmer kept - as does any project published with `PublishTrimmed`.
 - A **Blazor Web App** or **Blazor Server** app turns it on in the server project: `<BitBlazorUITrimAssets>true</BitBlazorUITrimAssets>`. The publish then reads the app's assemblies for what it uses (`BitBlazorUIScan`: `TypeReferences`, the default, or the coarser `TypeNames`).
 - `BitBlazorUITrimScripts`, `BitBlazorUITrimStyles` and `BitBlazorUITrimVendorAssets` (each defaulting to `BitBlazorUITrimAssets`) and `BitBlazorUITrimIcons` (off unless set) control each kind of file, and `<BitBlazorUIComponent Include="..." />`, `<BitBlazorUIAsset Include="..." />` and `<BitBlazorUIIcon Include="..." />` keep what the publish cannot see the app use.
+- `BitBlazorUITrimIcons` cuts the icon font down with the icon stylesheet - on Node.js, or on .NET where that fails (`BitBlazorUITrimIconFont`: `Auto`, `Node`, `DotNet` or `false`) - and set to `Explicit` keeps exactly the icons `<BitBlazorUIIcon>` lists, by name or by codepoint (`U+E8FB`).
 
 See https://blazorui.bitplatform.dev/trimming for the details.
 

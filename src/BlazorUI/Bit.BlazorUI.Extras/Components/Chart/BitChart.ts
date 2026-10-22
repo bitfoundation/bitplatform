@@ -282,6 +282,11 @@
                 const value = computed.getPropertyValue(name);
                 if (value) clone.style.setProperty(name, value.trim());
             }
+
+            // The direction the chart reads in comes from the page as well, so the file carries it too: its labels read
+            // the way they did on the page, whatever page the file ends up in. The labels the renderer anchored to a side
+            // of the screen keep their place in either direction by their own markup (see BitChartSvgPrimitive).
+            clone.style.direction = computed.direction;
             return new XMLSerializer().serializeToString(clone);
         }
 

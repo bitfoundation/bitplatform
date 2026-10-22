@@ -748,8 +748,10 @@ public class BitPanelE2ETests : E2ETestBase
         await Expect(Page.Locator("#swipe-trigger")).ToHaveTextAsync("0.25");
         await Page.WaitForTimeoutAsync(500);
 
-        var registrations = await Container("swipe-panel").EvaluateAsync<int>("el => BitBlazorUI.Swipes._swipes.filter(s => s.id === el.id).length");
-        Assert.AreEqual(1, registrations, "The gesture is registered once.");
+        // The gesture is registered once: waited for rather than read once, since a re-registration is a dispose and a
+        // setup, each a round trip to the browser, and on a loaded runner the dwell above can end between the two. A
+        // second registration left in place keeps the count at 2, and the wait times out.
+        await Page.WaitForFunctionAsync("() => { const el = document.querySelector('#swipe-panel > .bit-pnl-cnt'); return BitBlazorUI.Swipes._swipes.filter(s => s.id === el.id).length === 1; }");
 
         await OpenPanelAsync("btn-swipe-open", "swipe-panel");
         await MouseSwipeAsync(Page.Locator("#swipe-surface"), 200, 0);

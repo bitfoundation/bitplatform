@@ -20,12 +20,14 @@ public partial class BevToolsPanel : ComponentBase, IBevToolsCommandContext, IAs
     private long _lastUiVersion = -1;
     private long _viewRevision;
     private bool _interactive;
+    private bool _prefsApplied;
     private string _searchText = "";
     private Task? _loop;
 
-    [Inject] public BevToolsSession Session { get; set; } = default!;
+    /// <summary>The scope's session: the one registered with <c>AddBitBevToolsServices</c>, or the one attached since.</summary>
+    public BevToolsSession Session { get; private set; } = default!;
 
-    [Inject] public BitBevToolsOptions Options { get; set; } = default!;
+    public BitBevToolsOptions Options { get; private set; } = default!;
 
     /// <summary>Part of <see cref="IBevToolsCommandContext"/>: commands contributed by extensions resolve services through it.</summary>
     [Inject] public IServiceProvider Services { get; set; } = default!;
@@ -73,6 +75,9 @@ public partial class BevToolsPanel : ComponentBase, IBevToolsCommandContext, IAs
 
     protected override void OnInitialized()
     {
+        Session = RuntimeAttachment.Resolve(Services)
+            ?? throw new InvalidOperationException("BevTools is not available in this scope: register it with AddBitBevToolsServices, call BitBevTools.Attach before rendering BevToolsPanel, or render BevToolsLoaderPanel (Bit.BevTools.Loader) instead.");
+        Options = Session.Options;
         if (!Session.IsEnabled)
         {
             return;
@@ -90,9 +95,30 @@ public partial class BevToolsPanel : ComponentBase, IBevToolsCommandContext, IAs
             return;
         }
 
+        RuntimeAttachment.AttachToRenderer(Session, this);
         Session.EnsureActivated();
         Navigation.LocationChanged += OnLocationChanged;
+        Ui.OpenedFromCode += OnOpenedFromCode;
     }
+
+    /// <summary>
+    /// A closed panel polls once a second, so without this an app's own "Open dev tools" button would seem to do
+    /// nothing for up to that long.
+    /// </summary>
+    private void OnOpenedFromCode() => _ = InvokeAsync(() =>
+    {
+        // Saving before the saved preferences are read would overwrite them with the defaults; the first render saves
+        // the open state once it has read them.
+        if (_prefsApplied)
+        {
+            Ui.OpenRequested = false;
+            _ = SavePrefsAsync();
+        }
+
+        RefreshCapturedData();
+        _viewRevision++;
+        StateHasChanged();
+    });
 
     private (string? Platform, bool Interactive) ResolveRenderer()
     {
@@ -143,10 +169,22 @@ public partial class BevToolsPanel : ComponentBase, IBevToolsCommandContext, IAs
             Session.Browser.BridgeError = ex.Message;
         }
 
+        // Settled whether or not preferences were saved or could be read: an open request left pending would
+        // overrule the preference of a panel rendered later, after the user closed this one.
+        _prefsApplied = true;
+        var openRequested = Ui.OpenRequested;
+        Ui.OpenRequested = false;
+
         if (_cts.IsCancellationRequested)
         {
             // Disposed while attaching; the token source is gone.
             return;
+        }
+
+        if (openRequested)
+        {
+            // Opened from code before the preferences were read: the open state is saved now, over what was read.
+            _ = SavePrefsAsync();
         }
 
         _loop = RefreshLoopAsync(_cts.Token);
@@ -269,7 +307,7 @@ public partial class BevToolsPanel : ComponentBase, IBevToolsCommandContext, IAs
                 return;
             }
 
-            if (prefs.Open is { } open)
+            if (prefs.Open is { } open && !Ui.OpenRequested)
             {
                 Ui.IsOpen = open;
             }
@@ -617,6 +655,11 @@ public partial class BevToolsPanel : ComponentBase, IBevToolsCommandContext, IAs
     public async ValueTask DisposeAsync()
     {
         _cts.Cancel();
+        if (Session is not null)
+        {
+            RuntimeAttachment.OnPanelDisposed(Session);
+        }
+
         if (_loop is not null)
         {
             try
@@ -631,6 +674,7 @@ public partial class BevToolsPanel : ComponentBase, IBevToolsCommandContext, IAs
         if (_interactive)
         {
             Navigation.LocationChanged -= OnLocationChanged;
+            Ui.OpenedFromCode -= OnOpenedFromCode;
         }
 
         if (_module is not null)

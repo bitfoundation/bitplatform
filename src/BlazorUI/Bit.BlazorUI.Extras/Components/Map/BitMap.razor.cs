@@ -1,5 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using System.Text.Json;
+﻿using System.Text.Json;
 
 namespace Bit.BlazorUI;
 
@@ -1774,7 +1773,6 @@ public partial class BitMap<TMapProvider> : BitComponentBase
         }
     }
 
-    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitMapParams))]
     protected override async Task OnParametersSetAsync()
     {
         CascadingParameters?.UpdateParameters(this);

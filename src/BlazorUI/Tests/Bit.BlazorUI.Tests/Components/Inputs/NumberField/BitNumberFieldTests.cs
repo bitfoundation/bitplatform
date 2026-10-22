@@ -323,13 +323,17 @@ public class BitNumberFieldTests : BunitTestContext
         // A misconfigured Min greater than Max describes the same (swapped) range to the clamping, so
         // the announced bounds are the ordered ones - aria-valuemin above aria-valuemax would be a
         // contradiction for assistive technologies and would not match what the field enforces.
-        var lower = min is null ? null : (max is null ? int.Parse(min) : Math.Min(int.Parse(min), int.Parse(max))).ToString();
-        var upper = max is null ? null : (min is null ? int.Parse(max) : Math.Max(int.Parse(min), int.Parse(max))).ToString();
+        // The bounds are read and written invariantly, as the component does: under a culture whose negative sign is
+        // not a plain hyphen (fa-IR, ar-SA) a culture-sensitive Parse throws on "-10" and ToString writes another sign.
+        var lower = min is null ? null : (max is null ? ParseInvariant(min) : Math.Min(ParseInvariant(min), ParseInvariant(max))).ToString(CultureInfo.InvariantCulture);
+        var upper = max is null ? null : (min is null ? ParseInvariant(max) : Math.Max(ParseInvariant(min), ParseInvariant(max))).ToString(CultureInfo.InvariantCulture);
 
         // The aria-valuemin/max attributes only render when an explicit Min/Max is provided;
         // announcing the underlying type's extremes (e.g. -2147483648) would just be noise.
         Assert.AreEqual(lower, input.GetAttribute("aria-valuemin"));
         Assert.AreEqual(upper, input.GetAttribute("aria-valuemax"));
+
+        static int ParseInvariant(string value) => int.Parse(value, CultureInfo.InvariantCulture);
     }
 
     [TestMethod,
@@ -998,7 +1002,7 @@ public class BitNumberFieldTests : BunitTestContext
             ? defaultValue + int.Parse(step)
             : int.Parse(max);
 
-        Assert.AreEqual(inputValue, expectedResult.ToString());
+        Assert.AreEqual(expectedResult.ToString(), inputValue);
     }
 
     [TestMethod,
@@ -1055,7 +1059,7 @@ public class BitNumberFieldTests : BunitTestContext
             ? defaultValue - int.Parse(step)
             : int.Parse(min);
 
-        Assert.AreEqual(inputValue, expectedResult.ToString());
+        Assert.AreEqual(expectedResult.ToString(), inputValue);
     }
 
     [TestMethod,
@@ -1299,12 +1303,14 @@ public class BitNumberFieldTests : BunitTestContext
         input.KeyDown(keyboardArgs);
         var inputValue = component.Instance.Value;
         double? expectedResult = 0;
-        var isNumber = double.TryParse(userInput, out var numericValue);
+        // Read invariantly, as a field without a Culture reads it: a culture-sensitive parse takes "62.72" for 6272
+        // under de-DE and rejects "-5" under fa-IR.
+        var isNumber = double.TryParse(userInput, CultureInfo.InvariantCulture, out var numericValue);
         if (isNumber)
         {
             expectedResult = numericValue;
-            if (expectedResult > int.Parse(max)) expectedResult = int.Parse(max);
-            if (expectedResult < int.Parse(min)) expectedResult = int.Parse(min);
+            if (expectedResult > int.Parse(max, CultureInfo.InvariantCulture)) expectedResult = int.Parse(max, CultureInfo.InvariantCulture);
+            if (expectedResult < int.Parse(min, CultureInfo.InvariantCulture)) expectedResult = int.Parse(min, CultureInfo.InvariantCulture);
         }
         else
         {
@@ -1340,12 +1346,13 @@ public class BitNumberFieldTests : BunitTestContext
         input.Change(changeArgs);
         var inputValue = component.Instance.Value;
         double? expectedResult = 0;
-        var isNumber = double.TryParse(userInput, out var numericValue);
+        // Read invariantly, as a field without a Culture reads it (see BitNumberFieldEnterKeyDownTest).
+        var isNumber = double.TryParse(userInput, CultureInfo.InvariantCulture, out var numericValue);
         if (isNumber)
         {
             expectedResult = numericValue;
-            if (expectedResult > int.Parse(max)) expectedResult = int.Parse(max);
-            if (expectedResult < int.Parse(min)) expectedResult = int.Parse(min);
+            if (expectedResult > int.Parse(max, CultureInfo.InvariantCulture)) expectedResult = int.Parse(max, CultureInfo.InvariantCulture);
+            if (expectedResult < int.Parse(min, CultureInfo.InvariantCulture)) expectedResult = int.Parse(min, CultureInfo.InvariantCulture);
         }
         else
         {
@@ -1442,19 +1449,25 @@ public class BitNumberFieldTests : BunitTestContext
         var incrementButton = component.Find("button.bit-nfl-aup");
 
         // The press itself performs a single step, and the pointerdown handler must return right away
-        // instead of staying pending for the whole duration of the press.
-        incrementButton.PointerDown();
-        Assert.AreEqual(1, component.Instance.Value);
+        // instead of staying pending for the whole duration of the press. The value is read in the same
+        // turn of the renderer's dispatcher as the press, where the spin cannot start: read afterwards, a
+        // test thread held up for longer than the 20 ms delay would see the spin's first steps as well.
+        var valueAfterPress = 0;
+        await component.InvokeAsync(() =>
+        {
+            incrementButton.PointerDown();
+            valueAfterPress = component.Instance.Value;
+        });
+        Assert.AreEqual(1, valueAfterPress);
 
         // Holding the button down then keeps the value climbing on its own.
         component.WaitForAssertion(() => Assert.IsTrue(component.Instance.Value >= 5), TimeSpan.FromSeconds(10));
 
-        incrementButton.PointerUp();
+        // ... and releasing it stops the spin for good. The release is awaited, so it has been handled -
+        // after any tick that was already queued ahead of it - before the two reads that must agree are
+        // taken; a tick queued after it finds the spin cancelled.
+        await incrementButton.PointerUpAsync(new PointerEventArgs());
 
-        // ... and releasing it stops the spin for good. The value is read only after a first delay,
-        // so that a tick already in flight when the button came up has settled before the two reads
-        // that must agree are taken.
-        await Task.Delay(100);
         var valueAfterRelease = component.Instance.Value;
         await Task.Delay(100);
         Assert.AreEqual(valueAfterRelease, component.Instance.Value);
@@ -1475,14 +1488,20 @@ public class BitNumberFieldTests : BunitTestContext
 
         var decrementButton = component.Find("button.bit-nfl-adn");
 
-        decrementButton.PointerDown();
-        Assert.AreEqual(-1, component.Instance.Value);
+        // Pressed and read in one turn of the renderer's dispatcher, and released through an awaited
+        // event, as in the increment test above.
+        var valueAfterPress = 0;
+        await component.InvokeAsync(() =>
+        {
+            decrementButton.PointerDown();
+            valueAfterPress = component.Instance.Value;
+        });
+        Assert.AreEqual(-1, valueAfterPress);
 
         component.WaitForAssertion(() => Assert.IsTrue(component.Instance.Value <= -5), TimeSpan.FromSeconds(10));
 
-        decrementButton.PointerUp();
+        await decrementButton.PointerUpAsync(new PointerEventArgs());
 
-        await Task.Delay(100);
         var valueAfterRelease = component.Instance.Value;
         await Task.Delay(100);
         Assert.AreEqual(valueAfterRelease, component.Instance.Value);
@@ -3320,11 +3339,20 @@ public class BitNumberFieldTests : BunitTestContext
 
         // A pointer the browser takes over - a long-press context menu, a scroll gesture - is cancelled
         // rather than released, so without this handler the held button would go on spinning forever.
+        // The press and the cancellation are made in one turn of the renderer's dispatcher, which is where the
+        // delay of the press-and-hold spin resumes, so the pointer is always cancelled before the spin can start.
+        // Made one after the other from the test, a test thread held up for longer than the 10 ms delay would let
+        // the spin take its first step before the cancellation, and the test would fail.
         var incrementButton = component.Find(".bit-nfl-aup");
-        incrementButton.PointerDown();
-        Assert.AreEqual(2, component.Instance.Value);
+        var valueAfterPress = 0;
+        await component.InvokeAsync(() =>
+        {
+            incrementButton.PointerDown();
+            valueAfterPress = component.Instance.Value;
 
-        incrementButton.TriggerEvent("onpointercancel", new PointerEventArgs());
+            incrementButton.TriggerEvent("onpointercancel", new PointerEventArgs());
+        });
+        Assert.AreEqual(2, valueAfterPress);
 
         // Long past the delay the press-and-hold spin would have started after.
         await Task.Delay(80);
@@ -3516,13 +3544,22 @@ public class BitNumberFieldTests : BunitTestContext
 
         var input = component.Find("input");
         input.Focus();
-        input.Input(new ChangeEventArgs { Value = "12" });
-        input.KeyDown(new KeyboardEventArgs { Key = "ArrowUp" });
+
+        // The keystroke and the step are made in one turn of the renderer's dispatcher, which is where the debounce
+        // resumes, so the step always lands while the typed text is still waiting it out. Made one after the other
+        // from the test, a test thread held up for longer than the 30 ms debounce would let the text be committed
+        // first, and the step would only apply to a committed value.
+        Task typing = Task.CompletedTask;
+        await component.InvokeAsync(() =>
+        {
+            typing = input.InputAsync(new ChangeEventArgs { Value = "12" });
+            input.KeyDown(new KeyboardEventArgs { Key = "ArrowUp" });
+        });
 
         Assert.AreEqual(13, component.Instance.Value);
 
-        // Long past the debounce, which must not commit the "12" again over the step.
-        await Task.Delay(120);
+        // The input event is only done once its debounce is, which must not commit the "12" again over the step.
+        await typing;
 
         Assert.AreEqual(13, component.Instance.Value);
     }

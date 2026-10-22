@@ -213,7 +213,6 @@ public partial class BitSwipeTrap : BitComponentBase
         });
     }
 
-    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitSwipeTrapParams))]
     protected override void OnParametersSet()
     {
         CascadingParameters?.UpdateParameters(this);

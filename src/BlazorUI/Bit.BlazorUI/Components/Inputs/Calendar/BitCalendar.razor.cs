@@ -815,7 +815,6 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
         base.OnInitialized();
     }
 
-    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitCalendarParams))]
     protected override void OnParametersSet()
     {
         CascadingParameters?.UpdateParameters(this);

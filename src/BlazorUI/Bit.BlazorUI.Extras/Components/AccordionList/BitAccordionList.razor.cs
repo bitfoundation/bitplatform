@@ -763,7 +763,6 @@ public partial class BitAccordionList<[DynamicallyAccessedMembers(DynamicallyAcc
         StyleBuilder.Register(() => Gap.HasValue && Joined is false ? $"gap:{Gap}px" : string.Empty);
     }
 
-    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitAccordionListParams))]
     protected override async Task OnParametersSetAsync()
     {
         // The cascade is applied before anything reads the parameters it may fill in: the mode, the cap and the

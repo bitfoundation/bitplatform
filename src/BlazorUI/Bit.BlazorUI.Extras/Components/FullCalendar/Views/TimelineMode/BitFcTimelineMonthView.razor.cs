@@ -40,7 +40,7 @@ public partial class BitFcTimelineMonthView
     private bool _pendingCellFocus;
 
     private string SlotElementId(string rowKey, DateTime day)
-        => $"{_scrollContainerId}-cell-{Math.Max(0, _rowKeys.IndexOf(rowKey))}-{day:yyyyMMdd}";
+        => FormattableString.Invariant($"{_scrollContainerId}-cell-{Math.Max(0, _rowKeys.IndexOf(rowKey))}-{day:yyyyMMdd}");
 
     private (string RowKey, DateTime Day) RovingCell
     {

@@ -44,7 +44,7 @@
 
     private ElementReference _el;
 
-    private int? TabIndex => Grid.CellNavigationActive ? Grid.CellTabIndex(Item, ColIndex) : (int?)null;
+    private string? TabIndex => Grid.CellNavigationActive ? Grid.CellTabIndex(Item, ColIndex).ToString(System.Globalization.CultureInfo.InvariantCulture) : null;
     // In Cell mode only the open cell is editing; its neighbours in the same row keep navigating.
     private bool Editing => Grid.IsEditingCell(Item, Column);
     private bool ShowsEditor => Editing && Grid.ColumnEditable(Column);

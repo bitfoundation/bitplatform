@@ -1546,11 +1546,16 @@ public class BitMessageTests : BunitTestContext
 
         var component = RenderComponent<BitMessage>(parameters =>
         {
-            parameters.Add(p => p.AutoDismissTime, TimeSpan.FromMilliseconds(600));
+            parameters.Add(p => p.AutoDismissTime, TimeSpan.FromSeconds(30));
             parameters.Add(p => p.OnDismiss, () => dismissCount++);
         });
 
         component.Find(".bit-msg").PointerEnter(_mousePointer);
+
+        // The hold is taken on a long countdown, which a slow agent cannot see run out before the test thread gets
+        // there, and only then is the countdown wound down to one that runs out while the test watches: re-armed
+        // under the hold, it waits on it from its very first step.
+        component.Render(parameters => parameters.Add(p => p.AutoDismissTime, TimeSpan.FromMilliseconds(600)));
 
         // Well past the countdown, but the pointer is holding it.
         Thread.Sleep(1500);
@@ -1590,11 +1595,15 @@ public class BitMessageTests : BunitTestContext
 
         var component = RenderComponent<BitMessage>(parameters =>
         {
-            parameters.Add(p => p.AutoDismissTime, TimeSpan.FromMilliseconds(300));
+            parameters.Add(p => p.AutoDismissTime, TimeSpan.FromSeconds(30));
             parameters.Add(p => p.OnDismiss, () => dismissCount++);
         });
 
         component.Find(".bit-msg").PointerEnter(_mousePointer);
+
+        // Held first and only then wound down to a short countdown, which waits on the hold from its first step: a
+        // short countdown armed by the render could run out before the test thread gets to the hold on a slow agent.
+        component.Render(parameters => parameters.Add(p => p.AutoDismissTime, TimeSpan.FromMilliseconds(300)));
 
         // The touch was never allowed to take the hold, so it is not allowed to give it back either.
         component.Find(".bit-msg").PointerLeave(_touchPointer);
@@ -1617,7 +1626,8 @@ public class BitMessageTests : BunitTestContext
 
         RenderComponent<BitMessage>(parameters =>
         {
-            parameters.Add(p => p.AutoDismissTime, TimeSpan.FromMilliseconds(300));
+            // Long enough that the disposal below lands well inside the countdown on a slow agent.
+            parameters.Add(p => p.AutoDismissTime, TimeSpan.FromMilliseconds(1000));
             parameters.Add(p => p.OnDismiss, () => dismissCount++);
         });
 
@@ -1625,7 +1635,7 @@ public class BitMessageTests : BunitTestContext
         // the page has nothing left to dismiss.
         await Context.DisposeComponentsAsync();
 
-        Thread.Sleep(900);
+        Thread.Sleep(1600);
 
         Assert.AreEqual(0, dismissCount);
     }
@@ -1686,7 +1696,9 @@ public class BitMessageTests : BunitTestContext
 
         var component = RenderComponent<BitMessage>(parameters =>
         {
-            parameters.Add(p => p.AutoDismissTime, TimeSpan.FromMilliseconds(200));
+            // Long enough that the press below lands well inside the countdown on a slow agent: one that ran out
+            // first would be a dismissal of its own, and the press a second one.
+            parameters.Add(p => p.AutoDismissTime, TimeSpan.FromMilliseconds(1000));
             parameters.Add(p => p.OnDismiss, () => dismissCount++);
         });
 
@@ -1695,7 +1707,7 @@ public class BitMessageTests : BunitTestContext
         // A parameter set after the dismiss must not start the countdown over.
         component.Render(parameters => parameters.Add(p => p.Color, BitColor.Warning));
 
-        Thread.Sleep(700);
+        Thread.Sleep(1600);
 
         Assert.AreEqual(1, dismissCount);
     }
@@ -1708,7 +1720,7 @@ public class BitMessageTests : BunitTestContext
         var component = RenderComponent<BitMessage>(parameters =>
         {
             // Long enough that all three parameter sets below land inside the countdown on a slow agent.
-            parameters.Add(p => p.AutoDismissTime, TimeSpan.FromMilliseconds(1200));
+            parameters.Add(p => p.AutoDismissTime, TimeSpan.FromMilliseconds(2000));
             parameters.Add(p => p.OnDismiss, () => dismissCount++);
         });
 
@@ -1716,13 +1728,16 @@ public class BitMessageTests : BunitTestContext
         // pushing the callback out of reach of the wait below.
         for (var i = 0; i < 3; i++)
         {
-            Thread.Sleep(300);
+            Thread.Sleep(500);
             component.Render(parameters => parameters.Add(p => p.Class, $"round-{i}"));
         }
 
-        WaitUntil(() => dismissCount == 1, 1500);
+        // The wait has to give up before a countdown restarted by the last parameter set could run out - a whole
+        // countdown after it - or that one would be found as well and nothing would be told apart. It still leaves
+        // the countdown armed by the first render well over a second to be late in.
+        WaitUntil(() => dismissCount == 1, 1800);
 
-        Assert.AreEqual(1, dismissCount);
+        Assert.AreEqual(1, dismissCount, "the countdown was expected to run out on the time it was first armed with");
     }
 
     [TestMethod]
@@ -1802,7 +1817,9 @@ public class BitMessageTests : BunitTestContext
         var component = RenderComponent<BitMessage>(parameters =>
         {
             parameters.Add(p => p.Dismissible, true);
-            parameters.Add(p => p.AutoDismissTime, TimeSpan.FromMilliseconds(400));
+            // Long enough that the press below, and the check right after it, land well inside the countdown on a
+            // slow agent.
+            parameters.Add(p => p.AutoDismissTime, TimeSpan.FromMilliseconds(1000));
             parameters.Add(p => p.OnDismiss, () => dismissed = true);
             parameters.Add<BitMessageDismissArgs>(p => p.OnDismissing, args =>
             {
@@ -1892,11 +1909,15 @@ public class BitMessageTests : BunitTestContext
 
         var component = RenderComponent<BitMessage>(parameters =>
         {
-            parameters.Add(p => p.AutoDismissTime, TimeSpan.FromMilliseconds(150));
+            parameters.Add(p => p.AutoDismissTime, TimeSpan.FromSeconds(30));
             parameters.Add(p => p.OnDismiss, () => dismissCount++);
         });
 
         component.Instance.PauseAutoDismiss();
+
+        // Held first and only then wound down to a short countdown, which waits on the hold from its first step: a
+        // short countdown armed by the render could run out before the test thread gets to the hold on a slow agent.
+        component.Render(parameters => parameters.Add(p => p.AutoDismissTime, TimeSpan.FromMilliseconds(150)));
 
         Thread.Sleep(400);
 
@@ -1921,11 +1942,15 @@ public class BitMessageTests : BunitTestContext
         {
             parameters.Add(p => p.PauseOnPageHidden, true);
             parameters.Add(p => p.ShowAutoDismissProgress, true);
-            parameters.Add(p => p.AutoDismissTime, TimeSpan.FromMilliseconds(150));
+            parameters.Add(p => p.AutoDismissTime, TimeSpan.FromSeconds(30));
             parameters.Add(p => p.OnDismiss, () => dismissCount++);
         });
 
         await visibility._VisibilityChanged(true);
+
+        // Held first and only then wound down to a short countdown, which waits on the hold from its first step: a
+        // short countdown armed by the render could run out before the test thread gets to the hold on a slow agent.
+        component.Render(parameters => parameters.Add(p => p.AutoDismissTime, TimeSpan.FromMilliseconds(150)));
 
         Thread.Sleep(400);
 
@@ -1948,14 +1973,18 @@ public class BitMessageTests : BunitTestContext
 
         var dismissCount = 0;
 
-        RenderComponent<BitMessage>(parameters =>
+        var component = RenderComponent<BitMessage>(parameters =>
         {
             parameters.Add(p => p.PauseOnWindowBlur, true);
-            parameters.Add(p => p.AutoDismissTime, TimeSpan.FromMilliseconds(150));
+            parameters.Add(p => p.AutoDismissTime, TimeSpan.FromSeconds(30));
             parameters.Add(p => p.OnDismiss, () => dismissCount++);
         });
 
         await visibility._WindowFocusChanged(true);
+
+        // Held first and only then wound down to a short countdown, which waits on the hold from its first step: a
+        // short countdown armed by the render could run out before the test thread gets to the hold on a slow agent.
+        component.Render(parameters => parameters.Add(p => p.AutoDismissTime, TimeSpan.FromMilliseconds(150)));
 
         Thread.Sleep(400);
 
@@ -2000,11 +2029,15 @@ public class BitMessageTests : BunitTestContext
         var component = RenderComponent<BitMessage>(parameters =>
         {
             parameters.Add(p => p.PauseOnPageHidden, true);
-            parameters.Add(p => p.AutoDismissTime, TimeSpan.FromMilliseconds(150));
+            parameters.Add(p => p.AutoDismissTime, TimeSpan.FromSeconds(30));
             parameters.Add(p => p.OnDismiss, () => dismissCount++);
         });
 
         await visibility._VisibilityChanged(true);
+
+        // Held first and only then wound down to a short countdown, which waits on the hold from its first step: a
+        // short countdown armed by the render could run out before the test thread gets to the hold on a slow agent.
+        component.Render(parameters => parameters.Add(p => p.AutoDismissTime, TimeSpan.FromMilliseconds(150)));
 
         Thread.Sleep(400);
 
@@ -2973,13 +3006,17 @@ public class BitMessageTests : BunitTestContext
 
         var component = RenderComponent<BitMessage>(parameters =>
         {
-            parameters.Add(p => p.AutoDismissTime, TimeSpan.FromMilliseconds(150));
+            parameters.Add(p => p.AutoDismissTime, TimeSpan.FromSeconds(30));
             parameters.Add(p => p.OnDismiss, () => dismissCount++);
             parameters.AddChildContent("Hello");
         });
 
         component.Find(".bit-msg").PointerEnter(_mousePointer);
         component.Find(".bit-msg").FocusIn();
+
+        // Held first and only then wound down to a short countdown, which waits on the hold from its first step: a
+        // short countdown armed by the render could run out before the test thread gets to the hold on a slow agent.
+        component.Render(parameters => parameters.Add(p => p.AutoDismissTime, TimeSpan.FromMilliseconds(150)));
 
         // Letting go of one of the reasons to hold the countdown is not letting go of the others.
         component.Find(".bit-msg").PointerLeave(_mousePointer);
@@ -3078,7 +3115,9 @@ public class BitMessageTests : BunitTestContext
         var component = RenderComponent<BitMessage>(parameters =>
         {
             parameters.Add(p => p.Dismissible, true);
-            parameters.Add(p => p.AutoDismissTime, TimeSpan.FromMilliseconds(150));
+            // Long enough that the hold and the press below land inside it on a slow agent: a countdown that ran out
+            // first would take the message away before either.
+            parameters.Add(p => p.AutoDismissTime, TimeSpan.FromSeconds(30));
             parameters.Add(p => p.OnDismiss, () => dismissCount++);
             parameters.AddChildContent("Hello");
         });
@@ -3090,7 +3129,12 @@ public class BitMessageTests : BunitTestContext
 
         Assert.IsEmpty(component.FindAll(".bit-msg"));
 
-        component.Render(parameters => parameters.Add(p => p.Dismissed, false));
+        // Shown again with a countdown short enough to run out while the test watches.
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.Dismissed, false);
+            parameters.Add(p => p.AutoDismissTime, TimeSpan.FromMilliseconds(150));
+        });
 
         WaitUntil(() => dismissCount == 2);
 

@@ -609,7 +609,9 @@ public class BitTagsInputE2ETests : E2ETestBase
         await Expect(editor).ToHaveAttributeAsync("maxlength", "12");
         await Expect(editor).ToHaveAttributeAsync("data-bit-esc", "claim");
         await Expect(Tags("tgi-edit").Nth(1)).ToHaveClassAsync(HasClass("bit-tgi-tag-edt"));
-        Assert.AreEqual(6, await editor.EvaluateAsync<int>("el => el.selectionEnd - el.selectionStart"));
+        // The text is selected by a call of its own that follows the focus, so it is waited for rather than read once.
+        await Expect(editor).ToHaveJSPropertyAsync("selectionStart", 0);
+        await Expect(editor).ToHaveJSPropertyAsync("selectionEnd", 6);
 
         await editor.FillAsync("csharp");
         await editor.PressAsync("Enter");

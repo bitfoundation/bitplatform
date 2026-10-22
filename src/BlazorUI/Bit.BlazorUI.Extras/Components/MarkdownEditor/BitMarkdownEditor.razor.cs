@@ -807,7 +807,6 @@ public partial class BitMarkdownEditor : BitInputBase<string?>
         StyleBuilder.Register(() => MaxHeight is null ? string.Empty : $"--bit-MarkdownEditor-max-height:{MaxHeight}");
     }
 
-    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitMarkdownEditorParams))]
     protected override void OnInitialized()
     {
         // The initial value is seeded below, and the parameters a BitParams fills in are already in place for it.

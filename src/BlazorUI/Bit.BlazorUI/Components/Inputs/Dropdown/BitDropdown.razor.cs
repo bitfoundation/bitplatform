@@ -1805,7 +1805,6 @@ public partial class BitDropdown<[DynamicallyAccessedMembers(DynamicallyAccessed
         StyleBuilder.Register(() => FitWidth ? "width:fit-content" : string.Empty);
     }
 
-    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitDropdownParams<,>))]
     protected override async Task OnInitializedAsync()
     {
         // The cascade is applied here as well as in OnParametersSet, because this method already reads the

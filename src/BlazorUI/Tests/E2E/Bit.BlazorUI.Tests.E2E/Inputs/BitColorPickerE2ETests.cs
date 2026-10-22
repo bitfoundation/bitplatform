@@ -112,9 +112,11 @@ public class BitColorPickerE2ETests : E2ETestBase
         await Expect(Area("lifecycle")).ToHaveCountAsync(1);
 
         // The listeners are attached by a round trip after the area is back on the page, which nothing on the page
-        // reports, so the press is repeated until one lands - as a person reaching for it a moment later would.
+        // reports, so the press is repeated until one lands - as a person reaching for it a moment later would. For as
+        // long as a round trip may take, not a count of tries a busy machine can run through before it has come back.
         var (x, y) = await PointAsync(Area("lifecycle"), 0.95, 0.95);
-        for (var attempt = 0; attempt < 20; attempt++)
+        var deadline = DateTime.UtcNow.AddMilliseconds(DefaultTimeout);
+        while (DateTime.UtcNow < deadline)
         {
             await Page.Mouse.ClickAsync(x, y);
             if (await Out("lifecycle-value").TextContentAsync() != "#2E75B6") break;

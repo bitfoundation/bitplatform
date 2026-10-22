@@ -1,5 +1,4 @@
-﻿using System.Text.Json.Nodes;
-using Microsoft.AspNetCore.Components;
+﻿using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Bit.Balette.Tests;
@@ -8,7 +7,6 @@ namespace Bit.Balette.Tests;
 public class BaletteComponentTests : BunitContext
 {
     private readonly IBaletteService _service;
-    private readonly BunitJSModuleInterop _jsModule;
     private readonly BunitJSModuleInterop _jsHandle;
 
     public BaletteComponentTests()
@@ -17,7 +15,7 @@ public class BaletteComponentTests : BunitContext
         Services.AddBitBaletteHistoryStore<BaletteInMemoryHistoryStore>();
         JSInterop.Mode = JSRuntimeMode.Loose;
 
-        var module = _jsModule = JSInterop.SetupModule("./_content/Bit.Balette/bit-balette.js");
+        var module = JSInterop.SetupModule("./_content/Bit.Balette/bit-balette.js");
         var handle = _jsHandle = module.SetupModule("init", _ => true);
         handle.Setup<bool>("isMac").SetResult(false);
         handle.SetupVoid("open", _ => true).SetVoidResult();
@@ -712,23 +710,6 @@ public class BaletteComponentTests : BunitContext
             Assert.AreEqual(string.Empty, cut.Find("[data-balette=input]").GetAttribute("value"));
             Assert.DoesNotContain("Remote hit", cut.Find("[data-balette=list]").TextContent);
         });
-    }
-
-    [TestMethod]
-    public void Init_options_reach_the_browser_layer_as_a_json_object()
-    {
-        // A JsonObject, not an anonymous type: a trimmed app strips an anonymous type's constructor
-        // parameter names and System.Text.Json then refuses to serialize it.
-        _service.Register(BaletteCmd.New("Alpha").Shortcut("Ctrl+Alt+A"));
-        var cut = Render<Balette>(p => p.Add(x => x.VimBindings, true).Add(x => x.ToggleShortcut, "Ctrl+Shift+P"));
-        cut.WaitForAssertion(() => Assert.IsTrue(_jsHandle.Invocations.Any(i => i.Identifier == "isMac")));
-
-        var options = Assert.IsInstanceOfType<JsonObject>(_jsModule.Invocations.Single(i => i.Identifier == "init").Arguments[2]);
-        Assert.Contains("ctrl+shift+p", options["toggleShortcuts"]!.AsArray().Select(t => (string?)t));
-        Assert.Contains("ctrl+alt+a", options["commandShortcuts"]!.AsArray().Select(s => (string?)s));
-        Assert.IsTrue((bool?)options["suppressInEditable"]);
-        Assert.AreEqual(1000, (int?)options["sequenceTimeout"]);
-        Assert.IsTrue((bool?)options["vimBindings"]);
     }
 
     [TestMethod]

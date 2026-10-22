@@ -63,10 +63,11 @@ public class BitTimePickerE2ETests : E2ETestBase
         return await CalloutOfAsync(scope);
     }
 
-    // The callout fades and slides in; its box is read once that entry has run out.
+    // The callout fades and slides in; its box is read once that entry has run out. A transition a render replaces
+    // midway is cancelled, which rejects its finished promise.
     private static Task SettleAsync(ILocator element)
     {
-        return element.EvaluateAsync("el => Promise.all(el.getAnimations({ subtree: true }).map(a => a.finished))");
+        return element.EvaluateAsync("el => Promise.all(el.getAnimations({ subtree: true }).map(a => a.finished.catch(() => null)))");
     }
 
     private async Task<string> CalloutIdAsync(string scope)
@@ -2381,6 +2382,10 @@ public class BitTimePickerE2ETests : E2ETestBase
         await Expect(Out("continuous-value")).ToHaveTextAsync(new Regex(@"^0[0-7]:00:00$"), new() { Timeout = 10000 });
 
         await Page.Mouse.MoveAsync(5, 5);
+        // A tick already on its way when the pointer left may still land: a round trip of the page's own button,
+        // processed after the leave, says the circuit has caught up.
+        await Page.Locator("#continuous-sync").DispatchEventAsync("click");
+        await Expect(Out("continuous-syncs")).ToHaveTextAsync("1");
         var left = await Out("continuous-value").TextContentAsync();
         await Page.WaitForTimeoutAsync(500);
         await Expect(Out("continuous-value")).ToHaveTextAsync(left!);
@@ -2396,8 +2401,11 @@ public class BitTimePickerE2ETests : E2ETestBase
         await Spin(callout, "Increase minute").HoverAsync();
         await Page.Mouse.DownAsync();
 
+        // Sampled for a while, and for as long as the held button has not moved the minute yet: its first step is a
+        // round trip, which a busy machine can stretch past the frames a fixed count samples.
         var seen = new HashSet<string>();
-        for (var i = 0; i < 25; i++)
+        var deadline = DateTime.UtcNow.AddMilliseconds(DefaultTimeout);
+        for (var i = 0; i < 25 || (seen.Count < 2 && DateTime.UtcNow < deadline); i++)
         {
             seen.Add((await Out("continuous-bounded-value").TextContentAsync())!);
             await NextFramesAsync();

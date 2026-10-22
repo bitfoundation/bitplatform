@@ -28,6 +28,13 @@ public class BitButtonGroupParams : BitComponentBaseParams, IBitComponentParams
 
 
 
+    // What BitParams reads of a params object by reflection is kept by its constructor rather than by the component
+    // reading it, so the trimmer keeps it only for the params types an app creates.
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitButtonGroupParams))]
+    public BitButtonGroupParams() { }
+
+
+
     public string Name => ParamName;
 
 

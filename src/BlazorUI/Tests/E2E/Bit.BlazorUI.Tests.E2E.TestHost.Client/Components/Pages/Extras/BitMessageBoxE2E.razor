@@ -226,6 +226,10 @@
     <span id="prompt-result">@(_promptResult ?? "null")</span>
     <span id="prompt-count">@_promptCount</span>
     <span id="prompt-error">@_promptError</span>
+    @* A round trip the tests can wait for while a prompt is open: dispatched rather than clicked, so it neither moves
+       the focus out of the box nor has to get past the overlay. *@
+    <button id="msb-ping" type="button" tabindex="-1" @onclick="() => _pings++">Ping</button>
+    <span id="msb-pings">@_pings</span>
     <span id="prompt-validating">@_asyncValidations</span>
 </E2ESection>
 
@@ -333,6 +337,7 @@
     private string? _promptResult;
     private int _promptCount;
     private string _promptError = "-";
+    private int _pings;
     private int _asyncValidations;
     private string _rerenderTitle = "Before";
     private string _rerenderBody = "Body before";

@@ -1,5 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using System.Globalization;
+﻿using System.Globalization;
 
 namespace Bit.BlazorUI;
 
@@ -828,7 +827,6 @@ public partial class BitPagination : BitComponentBase
         _ => null
     };
 
-    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitPaginationParams))]
     protected override async Task OnInitializedAsync()
     {
         // The cascade is applied here as well as in OnParametersSetAsync, because the default selection is settled

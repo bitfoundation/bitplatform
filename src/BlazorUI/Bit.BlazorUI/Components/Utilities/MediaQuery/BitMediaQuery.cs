@@ -1,5 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using Microsoft.AspNetCore.Components.CompilerServices;
+﻿using Microsoft.AspNetCore.Components.CompilerServices;
 
 namespace Bit.BlazorUI;
 
@@ -261,7 +260,6 @@ public partial class BitMediaQuery : BitComponentBase
         builder.CloseElement();
     }
 
-    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitMediaQueryParams))]
     protected override void OnParametersSet()
     {
         // A value the cascade handed down is not one the component keeps once the cascade stops carrying it: it goes

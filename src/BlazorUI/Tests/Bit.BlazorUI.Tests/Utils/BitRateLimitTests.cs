@@ -20,7 +20,10 @@ public sealed class BitRateLimitTests
         var runs = 0;
         var last = 0;
 
-        var first = debouncer.Do(50, () => { runs++; last = 1; return Task.CompletedTask; });
+        // The first call waits far longer than the test thread could take to make the second one, so the second always
+        // lands inside the first one's window: with the same short wait for both, a runner that stalled the test
+        // thread between the two calls ran the first callback before the second call could cancel it.
+        var first = debouncer.Do(10_000, () => { runs++; last = 1; return Task.CompletedTask; });
         var second = debouncer.Do(50, () => { runs++; last = 2; return Task.CompletedTask; });
 
         await Task.WhenAll(first, second);
@@ -58,7 +61,8 @@ public sealed class BitRateLimitTests
         var debouncer = new BitDebouncer();
         var runs = 0;
 
-        var pending = debouncer.Do(50, () => { runs++; return Task.CompletedTask; });
+        // A wait the test thread cannot outlast before it cancels, which ends the pending call at once either way.
+        var pending = debouncer.Do(10_000, () => { runs++; return Task.CompletedTask; });
         debouncer.Cancel();
         await pending;
 
@@ -71,8 +75,15 @@ public sealed class BitRateLimitTests
         var throttler = new BitThrottler();
         var runs = 0;
 
-        var first = throttler.Do(50, () => { runs++; return Task.CompletedTask; });
-        var second = throttler.Do(50, () => { runs++; return Task.CompletedTask; });
+        var release = new TaskCompletionSource();
+
+        // The throttle stays shut until the callback of the call that shut it has finished, which is when the test lets
+        // it: the second call is made while it is shut however long the test thread takes to make it. With a plain 50 ms
+        // window, a runner that stalled the test thread between the two calls found the throttle open again.
+        var first = throttler.Do(1, async () => { runs++; await release.Task; });
+        var second = throttler.Do(1, () => { runs++; return Task.CompletedTask; });
+
+        release.SetResult();
 
         await Task.WhenAll(first, second);
 

@@ -79,6 +79,10 @@ public sealed class BevToolsSession : IDisposable
 
     public bool IsDisposed { get; private set; }
 
+    public bool IsAttachedAtRuntime => Attachment is not null;
+
+    internal BevRuntimeAttachment? Attachment { get; init; }
+
     public BitBevToolsOptions Options { get; }
 
     public BevToolsRegistry Registry { get; }
@@ -166,8 +170,9 @@ public sealed class BevToolsSession : IDisposable
         try
         {
             // ASP.NET Core registers its IServer (Kestrel, IIS, TestServer) in every host that accepts requests. Looked up
-            // by name: this package does not reference the ASP.NET Core framework, and WebAssembly does not ship it.
-            return Type.GetType("Microsoft.AspNetCore.Hosting.Server.IServer, Microsoft.AspNetCore.Hosting.Server.Abstractions", throwOnError: false);
+            // by name: this package does not reference the ASP.NET Core framework, and WebAssembly does not ship it. The
+            // loader goes by the same registration, so both agree on what a server process is.
+            return Type.GetType(BevToolsAttachPolicy.ServerTypeName + ", Microsoft.AspNetCore.Hosting.Server.Abstractions", throwOnError: false);
         }
         catch
         {
@@ -175,7 +180,8 @@ public sealed class BevToolsSession : IDisposable
         }
     }
 
-    private static bool HostsAServer(IServiceProvider services)
+    /// <summary>What an attach without Bit.BevTools.Loader goes by; with it, <see cref="BevToolsLoaderContext.IsMultiUserHost"/> reads the same registration from the service collection.</summary>
+    internal static bool HostsAServer(IServiceProvider services)
     {
         try
         {

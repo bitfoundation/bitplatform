@@ -14,7 +14,8 @@
             }
             <span class="bev-muted bev-nowrap">@_rows.Count @(_byType ? "types" : "components") · @Session.RenderTracker.BatchCount batches</span>
         </div>
-        <div class="bev-scroll">
+        @* overflow inline too: Virtualize picks its scroll root when it first renders, which can be before the stylesheet applies. *@
+        <div class="bev-scroll" style="overflow:auto">
             <table>
                 <thead>
                     <tr>

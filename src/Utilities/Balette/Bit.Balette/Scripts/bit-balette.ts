@@ -21,15 +21,6 @@ interface DotNetObjectReference {
     invokeMethodAsync(method: string, ...args: unknown[]): Promise<unknown>;
 }
 
-/** The options Balette.razor.cs sends to `init` (camelCase JSON of an anonymous object). */
-interface BaletteInitOptions {
-    toggleShortcuts?: string[] | null;
-    commandShortcuts?: string[] | null;
-    suppressInEditable?: boolean;
-    sequenceTimeout?: number;
-    vimBindings?: boolean;
-}
-
 /** The handle `init` returns; .NET holds it as an IJSObjectReference and calls its members. */
 interface BaletteHandle {
     isMac(): boolean;
@@ -155,13 +146,17 @@ function scrollToEstimate(list: HTMLElement, position: number, count: number): v
 // Entry point
 // ---------------------------------------------------------------------------
 
-export function init(dialog: HTMLDialogElement, dotnet: DotNetObjectReference, options: BaletteInitOptions): BaletteHandle {
+/**
+ * Called by Balette.razor.cs with plain values rather than one options object, whose shape the .NET serializer
+ * would only find through reflection - which a trimmed app no longer has the metadata for.
+ * `sequenceTimeout` is BaletteOptions.SequenceTimeoutMs, always positive.
+ */
+export function init(dialog: HTMLDialogElement, dotnet: DotNetObjectReference, toggles: string[] | null, commands: string[] | null,
+    suppressInEditable: boolean, sequenceTimeout: number, vim: boolean): BaletteHandle {
     const isMac = detectMac();
-    let toggleShortcuts = new Set(options.toggleShortcuts || []);
-    let commandShortcuts = new Set(options.commandShortcuts || []);
-    const suppressInEditable = options.suppressInEditable !== false;
-    const sequenceTimeout = options.sequenceTimeout || 1000;
-    let vimBindings = options.vimBindings === true;
+    let toggleShortcuts = new Set(toggles || []);
+    let commandShortcuts = new Set(commands || []);
+    let vimBindings = vim === true;
 
     // Each entry holds the alternative chord strings of one key press (see chordsFor).
     let buffer: string[][] = [];

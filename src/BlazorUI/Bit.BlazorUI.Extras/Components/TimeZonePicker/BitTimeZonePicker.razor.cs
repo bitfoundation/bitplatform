@@ -521,7 +521,6 @@ public partial class BitTimeZonePicker<TValue> : BitInputBase<TValue>
         StyleBuilder.Register(() => Styles?.Root);
     }
 
-    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitTimeZonePickerParams))]
     protected override void OnInitialized()
     {
         // A value is read and written as one of the types the time zone of the list converts to, and a picker of any
@@ -550,7 +549,6 @@ public partial class BitTimeZonePicker<TValue> : BitInputBase<TValue>
         base.OnInitialized();
     }
 
-    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitTimeZonePickerParams))]
     protected override void OnParametersSet()
     {
         // The cascade is read first, so that the time zone list and the classes below are computed from the parameters

@@ -485,9 +485,32 @@ public class BitDataGridColumn<[DynamicallyAccessedMembers(DynamicallyAccessedMe
     internal string FormatValue(object? value)
     {
         if (value is null) return string.Empty;
+
+        var culture = System.Globalization.CultureInfo.CurrentCulture;
+
+        try
+        {
+            return FormatValue(value, culture);
+        }
+        catch (ArgumentOutOfRangeException) when (value is DateTime or DateTimeOffset or DateOnly)
+        {
+            // A culture whose calendar covers a range of years only (ar-SA's Um Al Qura: 1900 to 2077) throws on a date
+            // outside it rather than write anything, which would fail the cell and every export of the grid. Such a
+            // date is written in the Gregorian calendar of the same culture instead, or the invariant one's.
+            var gregorian = culture.OptionalCalendars.OfType<System.Globalization.GregorianCalendar>().FirstOrDefault();
+            if (gregorian is null) return FormatValue(value, System.Globalization.CultureInfo.InvariantCulture);
+
+            var fallback = (System.Globalization.CultureInfo)culture.Clone();
+            fallback.DateTimeFormat.Calendar = gregorian;
+            return FormatValue(value, fallback);
+        }
+    }
+
+    private string FormatValue(object value, IFormatProvider culture)
+    {
         if (!string.IsNullOrEmpty(Format) && value is IFormattable f)
-            return f.ToString(Format, System.Globalization.CultureInfo.CurrentCulture);
-        return value.ToString() ?? string.Empty;
+            return f.ToString(Format, culture);
+        return Convert.ToString(value, culture) ?? string.Empty;
     }
 
     private static string? Humanize(string? field)

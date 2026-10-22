@@ -1096,7 +1096,7 @@ function Invoke-DevContainerTest {
         $env:NUGET_PACKAGES = $nugetPackages
 
         if ($Keep) {
-            Write-Host "Kept the dev container of $project. Run devcontainer exec --workspace-folder $project <command> in it, and run this again without -Keep to start over."
+            Write-Host "Kept the dev container of $project. Run npx @devcontainers/cli exec --workspace-folder $project <command> in it, and run this again without -Keep to start over."
         }
         else {
             Remove-DevContainer $project

@@ -1159,12 +1159,21 @@ public class BitSearchBoxTests : BunitTestContext
 
         // The focus coming back re-checks the list the field still holds results for a moment later. The user
         // types and then dismisses the list before that moment: the dismissal is the last word, so the re-check
-        // that runs after it must not bring the list back.
-        var focusIn = component.Find(".bit-srb-inp").FocusInAsync(new FocusEventArgs());
+        // that runs after it must not bring the list back. The three events are raised in one turn of the
+        // renderer's dispatcher, where the 100 ms waits of the re-check and of the opening resume, so both always
+        // resume after the dismissal: raised one after the other from the test, a test thread held up for longer
+        // than that would let them run first, and the test would pass without the re-check ever following it.
+        Task focusIn = Task.CompletedTask;
+        Task typing = Task.CompletedTask;
+        Task dismissing = Task.CompletedTask;
+        await component.InvokeAsync(() =>
+        {
+            focusIn = component.Find(".bit-srb-inp").FocusInAsync(new FocusEventArgs());
+            typing = component.Find(".bit-srb-inp").InputAsync(new ChangeEventArgs { Value = "appl" });
+            dismissing = component.Find(".bit-srb-inp").KeyDownAsync(new KeyboardEventArgs { Key = "ArrowUp", AltKey = true });
+        });
 
-        var typing = component.Find(".bit-srb-inp").InputAsync(new ChangeEventArgs { Value = "appl" });
-        await component.Find(".bit-srb-inp").KeyDownAsync(new KeyboardEventArgs { Key = "ArrowUp", AltKey = true });
-
+        await dismissing;
         await typing;
         await focusIn;
 
@@ -1188,10 +1197,19 @@ public class BitSearchBoxTests : BunitTestContext
         component.Find(".bit-srb-inp").FocusIn();
 
         // The opening waits for the items to be rendered before it shows the list; an Alt+ArrowUp in that moment
-        // closes it, and the opening that resumes afterwards neither shows it again nor reports it as open.
-        var typing = component.Find(".bit-srb-inp").InputAsync(new ChangeEventArgs { Value = "apple" });
-        await component.Find(".bit-srb-inp").KeyDownAsync(new KeyboardEventArgs { Key = "ArrowUp", AltKey = true });
+        // closes it, and the opening that resumes afterwards neither shows it again nor reports it as open. Both
+        // keys are pressed in one turn of the renderer's dispatcher, where the 100 ms wait of the opening resumes,
+        // so the Alt+ArrowUp always lands inside it: pressed one after the other from the test, a test thread held
+        // up for longer than that would let the opening report the list as open first, and the test would fail.
+        Task typing = Task.CompletedTask;
+        Task dismissing = Task.CompletedTask;
+        await component.InvokeAsync(() =>
+        {
+            typing = component.Find(".bit-srb-inp").InputAsync(new ChangeEventArgs { Value = "apple" });
+            dismissing = component.Find(".bit-srb-inp").KeyDownAsync(new KeyboardEventArgs { Key = "ArrowUp", AltKey = true });
+        });
 
+        await dismissing;
         await typing;
 
         Assert.IsFalse(component.Instance.IsSuggestItemsOpen);
@@ -1224,8 +1242,19 @@ public class BitSearchBoxTests : BunitTestContext
 
         // The search for the first term opens the list before it asks the provider, and the opening waits for a
         // render; the second term supersedes it in the meantime, so the first one is never asked about at all.
-        await component.Find(".bit-srb-inp").InputAsync(new ChangeEventArgs { Value = "a" });
-        await component.Find(".bit-srb-inp").InputAsync(new ChangeEventArgs { Value = "ap" });
+        // Both terms are typed in one turn of the renderer's dispatcher, where the 100 ms wait of the opening
+        // resumes, so the second one always lands inside it: typed one after the other from the test, a test thread
+        // held up for longer than that would let the provider be asked about the first term, and the test would fail.
+        Task first = Task.CompletedTask;
+        Task second = Task.CompletedTask;
+        await component.InvokeAsync(() =>
+        {
+            first = component.Find(".bit-srb-inp").InputAsync(new ChangeEventArgs { Value = "a" });
+            second = component.Find(".bit-srb-inp").InputAsync(new ChangeEventArgs { Value = "ap" });
+        });
+
+        await first;
+        await second;
 
         // The first search reports the list it opened once that opening is done, and goes on to the provider (or
         // not) in the same turn of the renderer, which the empty invocation below waits out.

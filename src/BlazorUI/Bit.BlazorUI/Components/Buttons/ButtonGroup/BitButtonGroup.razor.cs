@@ -615,7 +615,6 @@ public partial class BitButtonGroup<[DynamicallyAccessedMembers(DynamicallyAcces
         await base.OnInitializedAsync();
     }
 
-    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitButtonGroupParams))]
     protected override async Task OnParametersSetAsync()
     {
         CascadingParameters?.UpdateParameters(this);

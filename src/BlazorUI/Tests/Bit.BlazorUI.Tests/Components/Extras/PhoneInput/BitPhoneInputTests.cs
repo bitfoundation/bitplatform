@@ -1035,11 +1035,13 @@ public class BitPhoneInputTests : BunitTestContext
         Assert.AreEqual(button, ((ElementReference)focused.Arguments[0]!).Id);
         Assert.AreEqual(false, focused.Arguments[1]);
 
-        var identifiers = Context.JSInterop.Invocations.Select(i => i.Identifier).ToList();
-        var toggle = identifiers.FindLastIndex(i => i == "BitBlazorUI.Callouts.toggle");
+        // bUnit records the invocations grouped by identifier, each group where its identifier was first called, so the
+        // positions of the two groups give the order of the two calls only while each of them was made once.
+        Assert.HasCount(1, Context.JSInterop.Invocations["BitBlazorUI.Callouts.toggle"]);
 
-        Assert.IsTrue(toggle >= 0);
-        Assert.IsTrue(identifiers.LastIndexOf("Blazor._internal.domWrapper.focus") < toggle);
+        var identifiers = Context.JSInterop.Invocations.Select(i => i.Identifier).ToList();
+
+        Assert.IsTrue(identifiers.IndexOf("Blazor._internal.domWrapper.focus") < identifiers.IndexOf("BitBlazorUI.Callouts.toggle"));
     }
 
     [TestMethod]

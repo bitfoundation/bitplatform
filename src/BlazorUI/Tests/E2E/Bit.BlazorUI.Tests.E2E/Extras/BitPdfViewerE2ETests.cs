@@ -193,9 +193,13 @@ public class BitPdfViewerE2ETests : E2ETestBase
         await select.SelectOptionAsync("ActualSize");
         await Expect(label).ToHaveTextAsync("100%");
         await select.SelectOptionAsync("FitPage");
-        var surface = await Page.Locator("#pdv-main .bit-pdv-surface").EvaluateAsync<double>("s => s.clientHeight");
-        var page = (await PageOf("pdv-main", 1).BoundingBoxAsync())!;
-        Assert.IsTrue(page.Height <= surface, "Fit page left the page taller than the surface");
+        // The fit is worked out by the component after a round trip, so the page is waited for to come down to the
+        // height of the surface: read at once, it is still at the 100% it was, taller than the surface.
+        await Page.WaitForFunctionAsync(@"() => {
+            const surface = document.querySelector('#pdv-main .bit-pdv-surface');
+            const page = document.querySelector('#pdv-main .bit-pdv-pages [data-page=""1""]');
+            return page.getBoundingClientRect().height <= surface.clientHeight;
+        }");
 
         // The keyboard, from the surface.
         await Page.Locator("#pdv-main .bit-pdv-surface").FocusAsync();
@@ -332,9 +336,13 @@ public class BitPdfViewerE2ETests : E2ETestBase
 
         // Highlight all marks every match, not just the current one.
         var highlightAll = box.Locator("button[aria-label='Highlight all']");
+        var pressedBefore = await highlightAll.GetAttributeAsync("aria-pressed");
         var allBefore = await Page.EvaluateAsync<int>("() => CSS.highlights.get('bit-pdv-search')?.size ?? 0");
         await highlightAll.ClickAsync();
         await Page.WaitForFunctionAsync($"() => (CSS.highlights.get('bit-pdv-search')?.size ?? 0) !== {allBefore}");
+        // The highlights are repainted through a script call the render turning the button over comes after, so the
+        // button is waited for as well rather than read the moment the highlights changed.
+        await Expect(highlightAll).Not.ToHaveAttributeAsync("aria-pressed", pressedBefore!);
         var pressed = await highlightAll.GetAttributeAsync("aria-pressed");
         var allAfter = await Page.EvaluateAsync<int>("() => CSS.highlights.get('bit-pdv-search')?.size ?? 0");
         Assert.AreEqual(pressed == "true", allAfter >= 2, $"highlight all is {pressed} with {allAfter} highlighted");

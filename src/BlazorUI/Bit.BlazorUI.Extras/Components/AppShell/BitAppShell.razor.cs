@@ -783,7 +783,6 @@ public partial class BitAppShell : BitComponentBase
         }
     }
 
-    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitAppShellParams))]
     protected override void OnParametersSet()
     {
         // First, so that every decision below - the navigation subscription above all - is taken on the

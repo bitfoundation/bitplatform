@@ -227,9 +227,11 @@ public class BitShimmerE2ETests : E2ETestBase
     public async Task ShowDelay_ThePlaceholderAppearsOnceTheDelayIsUp()
     {
         await OpenAsync(Path);
+
+        // The clock starts before the click, as the delay does not wait for this process to hear the click is done.
+        var watch = Stopwatch.StartNew();
         await Page.Locator("#btn-start-timing").ClickAsync();
 
-        var watch = Stopwatch.StartNew();
         // The placeholder is not in the page at all until the delay is up.
         await Page.WaitForFunctionAsync("() => { const el = document.querySelector('#smr-show-delay .bit-smr-wrp'); return !!el && getComputedStyle(el).opacity === '1'; }");
         Assert.IsTrue(watch.ElapsedMilliseconds >= 1500, $"Shown after {watch.ElapsedMilliseconds}ms of its 2000.");
@@ -239,10 +241,12 @@ public class BitShimmerE2ETests : E2ETestBase
     public async Task MinShowTime_HoldsAPlaceholderThatAppeared_FromVanishingInABlink()
     {
         await OpenAsync(Path);
+
+        // MinShowTime counts from when the placeholder appeared, not from the finish: the clock starts before that.
+        var watch = Stopwatch.StartNew();
         await Page.Locator("#btn-start-timing").ClickAsync();
         await Expect(Page.Locator("#smr-min-show")).ToHaveAttributeAsync("aria-busy", "true");
 
-        var watch = Stopwatch.StartNew();
         await Page.Locator("#btn-finish-timing").ClickAsync();
 
         // The plain one is in at once; the held one keeps its placeholder, covered content included.
@@ -252,7 +256,7 @@ public class BitShimmerE2ETests : E2ETestBase
         await Expect(Page.Locator("#overlay-min-content")).ToBeHiddenAsync();
 
         await Expect(Page.Locator("#min-show-content")).ToBeVisibleAsync();
-        Assert.IsTrue(watch.ElapsedMilliseconds >= 2000, $"Held for {watch.ElapsedMilliseconds}ms of its 3000.");
+        Assert.IsTrue(watch.ElapsedMilliseconds >= 2500, $"Held for {watch.ElapsedMilliseconds}ms of its 3000.");
         await Expect(Page.Locator("#overlay-min-content")).ToBeVisibleAsync();
     }
 

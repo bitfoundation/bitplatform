@@ -1,4 +1,6 @@
-﻿namespace Bit.BlazorUI;
+﻿using System.Diagnostics.CodeAnalysis;
+
+namespace Bit.BlazorUI;
 
 /// <summary>
 /// The parameters for the <see cref="BitSlider"/> component.
@@ -19,6 +21,13 @@ public class BitSliderParams : BitInputBaseParams<double>, IBitComponentParams
     /// of typographical errors.
     /// </remarks>
     public const string ParamName = $"{nameof(BitParams)}.{nameof(BitSlider)}";
+
+
+
+    // What BitParams reads of a params object by reflection is kept by its constructor rather than by the component
+    // reading it, so the trimmer keeps it only for the params types an app creates.
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitSliderParams))]
+    public BitSliderParams() { }
 
 
 

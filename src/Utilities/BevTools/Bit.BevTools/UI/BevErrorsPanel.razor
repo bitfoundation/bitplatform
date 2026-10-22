@@ -8,7 +8,8 @@
             <button type="button" @onclick="() => Session.Errors.Clear()">Clear</button>
             <span class="bev-muted bev-nowrap">@_rows.Count errors · @Session.Errors.TotalOccurrences occurrences</span>
         </div>
-        <div class="bev-scroll">
+        @* overflow inline too: Virtualize picks its scroll root when it first renders, which can be before the stylesheet applies. *@
+        <div class="bev-scroll" style="overflow:auto">
             @if (_rows.Count == 0)
             {
                 <div class="bev-empty">No errors. Render exceptions, event handler exceptions, ErrorBoundary catches, JS errors, HTTP failures, JS interop failures and circuit errors all land here.</div>

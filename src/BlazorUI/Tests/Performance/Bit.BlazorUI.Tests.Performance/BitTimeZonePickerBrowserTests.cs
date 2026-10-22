@@ -127,12 +127,14 @@ public class BitTimeZonePickerBrowserTests : PerformanceTestBase
         var browserTimeZone = await Page.EvaluateAsync<string>("Intl.DateTimeFormat().resolvedOptions().timeZone");
 
         // The field starts on the time zone the browser runs in, under its canonical id - which is the browser's own,
-        // unless the browser still reports one IANA has since renamed (Asia/Calcutta).
+        // unless the browser still reports one IANA has since renamed (Asia/Calcutta), or names UTC the way ECMA-402
+        // does ("UTC", what a machine left on UTC - a Linux runner, a container - reports) rather than as the table does.
         await Expect(Page.Locator("#v-detected")).Not.ToBeEmptyAsync();
         var detected = await Page.Locator("#v-detected").TextContentAsync();
 
         var expected = browserTimeZone switch
         {
+            "UTC" or "GMT" or "Etc/GMT" => "Etc/UTC",
             "Asia/Calcutta" => "Asia/Kolkata",
             "Europe/Kiev" => "Europe/Kyiv",
             "Asia/Saigon" => "Asia/Ho_Chi_Minh",

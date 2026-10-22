@@ -123,7 +123,7 @@ public sealed class PackageAssets
                 foreach (var item in iconSets)
                 {
                     var obj = Json.AsObject(item, stylesPath);
-                    package.IconSets.Add(new IconSet(Json.GetString(obj, "bundle", stylesPath), Json.GetString(obj, "file", stylesPath), Json.GetString(obj, "classPrefix", stylesPath)));
+                    package.IconSets.Add(new IconSet(Json.GetString(obj, "bundle", stylesPath), Json.GetString(obj, "file", stylesPath), Json.GetString(obj, "classPrefix", stylesPath), Json.GetOptionalString(obj, "font")));
                 }
             }
         }

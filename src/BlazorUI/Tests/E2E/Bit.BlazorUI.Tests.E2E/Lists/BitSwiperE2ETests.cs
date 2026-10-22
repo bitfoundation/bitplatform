@@ -334,7 +334,7 @@ public class BitSwiperE2ETests : E2ETestBase
 
         // A move of its own is instant under reduced motion.
         await Page.Locator("#slow .bit-swp-rbt").ClickAsync();
-        await ExpectScrollAsync("slow", 100, 200);
+        await ExpectInstantMoveAsync("slow", 100);
     }
 
     [TestMethod]
@@ -392,7 +392,7 @@ public class BitSwiperE2ETests : E2ETestBase
         await ExpectScrollAsync("slow", 100);
 
         await Page.Locator("#instant .bit-swp-rbt").ClickAsync();
-        await ExpectScrollAsync("instant", 100, 300);
+        await ExpectInstantMoveAsync("instant", 100);
     }
 
     [TestMethod]
@@ -739,13 +739,27 @@ public class BitSwiperE2ETests : E2ETestBase
         await AssertNoServerErrorsAsync();
     }
 
-    private Task ExpectScrollAsync(string id, double expected, float? timeout = null)
+    private Task ExpectScrollAsync(string id, double expected)
     {
         return Page.WaitForFunctionAsync(@"([id, expected]) => {
             const c = document.querySelector(`#${id} .bit-swp-cnt`);
             const scroll = c.closest('.bit-swp-vrt') ? c.scrollTop : Math.abs(c.scrollLeft);
             return Math.abs(scroll - expected) <= 1.5;
-        }", new object[] { id, expected }, new() { Timeout = timeout });
+        }", new object[] { id, expected });
+    }
+
+    // An instant move is already where it goes in the first frame the row has moved in at all. How long the whole
+    // click takes is no measure of it: that is mostly the round trip through the component, which a loaded runner
+    // stretches past any budget.
+    private async Task ExpectInstantMoveAsync(string id, double expected)
+    {
+        var moved = await Page.WaitForFunctionAsync(@"id => {
+            const c = document.querySelector(`#${id} .bit-swp-cnt`);
+            const scroll = c.closest('.bit-swp-vrt') ? c.scrollTop : Math.abs(c.scrollLeft);
+            return scroll > 0.5 ? scroll : null;
+        }", id);
+
+        AssertClose(expected, await moved.JsonValueAsync<double>(), $"{id} moved in one step");
     }
 
     private Task WaitForItemWidthAsync(string id, double expected)

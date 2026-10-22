@@ -81,17 +81,17 @@ public class BitButtonGroupItem
     /// <summary>
     /// The icon of the item when it is not checked in toggle mode.
     /// </summary>
-    [Parameter] public string? OffIconName { get; set; }
+    public string? OffIconName { get; set; }
 
     /// <summary>
     /// The text of the item when it is not checked in toggle mode.
     /// </summary>
-    [Parameter] public string? OffText { get; set; }
+    public string? OffText { get; set; }
 
     /// <summary>
     /// The title of the item when it is not checked in toggle mode.
     /// </summary>
-    [Parameter] public string? OffTitle { get; set; }
+    public string? OffTitle { get; set; }
 
     /// <summary>
     /// Gets or sets the icon to display when the item is checked using custom CSS classes for external icon libraries.
@@ -111,17 +111,17 @@ public class BitButtonGroupItem
     /// <summary>
     /// The icon of the item when it is checked in toggle mode.
     /// </summary>
-    [Parameter] public string? OnIconName { get; set; }
+    public string? OnIconName { get; set; }
 
     /// <summary>
     /// The text of the item when it is checked in toggle mode.
     /// </summary>
-    [Parameter] public string? OnText { get; set; }
+    public string? OnText { get; set; }
 
     /// <summary>
     /// The title of the item when it is checked in toggle mode.
     /// </summary>
-    [Parameter] public string? OnTitle { get; set; }
+    public string? OnTitle { get; set; }
 
     /// <summary>
     /// Click event handler of the item.
@@ -131,7 +131,7 @@ public class BitButtonGroupItem
     /// <summary>
     /// Reverses the positions of the icon and the main content of the item.
     /// </summary>
-    [Parameter] public bool ReversedIcon { get; set; }
+    public bool ReversedIcon { get; set; }
 
     /// <summary>
     /// The rel attribute of the link when the item renders as an anchor (by providing the Href property).

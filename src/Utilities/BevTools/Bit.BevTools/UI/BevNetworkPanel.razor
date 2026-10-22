@@ -8,7 +8,8 @@
             <button type="button" @onclick="() => Session.Http.Clear()">Clear</button>
             <span class="bev-muted bev-nowrap">@_rows.Count / @_all.Length · @Session.Http.FailedCount failed</span>
         </div>
-        <div class="bev-scroll">
+        @* overflow inline too: Virtualize picks its scroll root when it first renders, which can be before the stylesheet applies. *@
+        <div class="bev-scroll" style="overflow:auto">
             @if (_rows.Count == 0)
             {
                 <div class="bev-empty">No HTTP requests captured. Requests made through IHttpClientFactory clients are tracked automatically; hand-built HttpClient instances need <code>BevToolsHttpMessageHandler</code>.</div>

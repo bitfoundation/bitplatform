@@ -1,5 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using System.Globalization;
+﻿using System.Globalization;
 using Microsoft.AspNetCore.Components.Forms;
 
 namespace Bit.BlazorUI;
@@ -503,7 +502,6 @@ public partial class BitButton : BitComponentBase
         return double.TryParse(offset, NumberStyles.Float, CultureInfo.InvariantCulture, out _) ? $"{offset}px" : offset;
     }
 
-    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitButtonParams))]
     protected override void OnParametersSet()
     {
         CascadingParameters?.UpdateParameters(this);

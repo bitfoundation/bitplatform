@@ -1,14 +1,7 @@
 ﻿using System.Collections.Concurrent;
 using Microsoft.AspNetCore.Components;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace Bit.BevTools;
-
-/// <summary>Holds the activator that was registered before BevTools so it keeps working (custom activators, bUnit factories).</summary>
-internal sealed class InnerComponentActivator(IComponentActivator activator)
-{
-    public IComponentActivator Activator { get; } = activator;
-}
 
 /// <summary>
 /// Public <see cref="IComponentActivator"/> hook: every component instance the renderer creates passes through here,
@@ -16,7 +9,6 @@ internal sealed class InnerComponentActivator(IComponentActivator activator)
 /// </summary>
 internal sealed class BevToolsComponentActivator : IComponentActivator
 {
-    private static readonly ConcurrentDictionary<Type, ObjectFactory> Factories = new();
     private static readonly System.Reflection.Assembly BevToolsAssembly = typeof(BevToolsComponentActivator).Assembly;
     private readonly ConcurrentDictionary<Type, (bool Ignore, bool Hidden, bool BevTools)> _typeFlags = new();
     private readonly IServiceProvider _services;
@@ -24,7 +16,8 @@ internal sealed class BevToolsComponentActivator : IComponentActivator
     private readonly IComponentActivator? _inner;
     private readonly BitBevToolsOptions _options;
 
-    public BevToolsComponentActivator(IServiceProvider services, BevToolsSession session, BitBevToolsOptions options, InnerComponentActivator? inner = null)
+    // The holder of the activator registered before BevTools is Bit.BevTools.Loader's, which its hook uses too.
+    public BevToolsComponentActivator(IServiceProvider services, BevToolsSession session, BitBevToolsOptions options, BevToolsInnerActivator? inner = null)
     {
         _services = services;
         _session = session;
@@ -34,7 +27,7 @@ internal sealed class BevToolsComponentActivator : IComponentActivator
 
     public IComponent CreateInstance(Type componentType)
     {
-        var instance = _inner is not null ? _inner.CreateInstance(componentType) : CreateDefault(componentType);
+        var instance = _inner is not null ? _inner.CreateInstance(componentType) : BevToolsActivatorHook.CreateDefault(_services, componentType);
         if (!_session.IsEnabled)
         {
             return instance;
@@ -52,18 +45,24 @@ internal sealed class BevToolsComponentActivator : IComponentActivator
         return instance;
     }
 
-    private IComponent CreateDefault(Type componentType)
+    internal void TrackExisting(IComponent instance)
     {
-        if (!typeof(IComponent).IsAssignableFrom(componentType))
+        if (!_session.IsEnabled || _session.Components.TryGet(instance, out _))
         {
-            throw new ArgumentException($"The type {componentType.FullName} does not implement {nameof(IComponent)}.", nameof(componentType));
+            return;
         }
 
-        var factory = Factories.GetOrAdd(componentType, static t => ActivatorUtilities.CreateFactory(t, Type.EmptyTypes));
-        return (IComponent)factory(_services, null);
+        try
+        {
+            Track(instance, instance.GetType(), existing: true);
+        }
+        catch (Exception ex)
+        {
+            _session.Errors.Record(ex, "bevtools", "Component instrumentation failed for " + instance.GetType().Name);
+        }
     }
 
-    private void Track(IComponent instance, Type componentType)
+    private void Track(IComponent instance, Type componentType, bool existing = false)
     {
         // Component activation is the earliest point that runs on the renderers synchronization context, and
         // parameter-update metrics fire before any component has rendered; map the context here so those
@@ -82,8 +81,13 @@ internal sealed class BevToolsComponentActivator : IComponentActivator
             return; // tracking budget exhausted; the application keeps working untouched.
         }
 
+        if (existing)
+        {
+            record.RenderedBeforeAttach = instance is not ComponentBase component || BlazorReflection.HasRenderedOrQueued(component);
+        }
+
         _session.RenderTracker.Instrument(record);
-        if (!flags.BevTools && !flags.Hidden)
+        if (!existing && !flags.BevTools && !flags.Hidden)
         {
             _session.Timeline.Record(new BevToolsEvent
             {

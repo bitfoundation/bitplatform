@@ -730,7 +730,7 @@ internal sealed class RenderTracker
             try
             {
                 var current = property.GetValue(component);
-                if (current is null or BevTrackingJSRuntime)
+                if (current is null or BevTrackingJSRuntime || BlazorReflection.IsJSRuntimeNotReady(current))
                 {
                     continue;
                 }

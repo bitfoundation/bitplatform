@@ -1704,7 +1704,9 @@ public class BitNavPanelTests : BunitTestContext
 
         var style = component.Find(".bit-npn").GetAttribute("style") ?? string.Empty;
 
-        Assert.AreEqual(follows, style.Contains($"transform: translateX({diffX}px)"), style);
+        // Expected the way the panel writes it, invariantly: a culture such as ar-SA or fa-IR puts a direction mark
+        // before the minus sign of a negative offset.
+        Assert.AreEqual(follows, style.Contains(FormattableString.Invariant($"transform: translateX({diffX}px)")), style);
 
         // Letting go without a trigger puts it back.
         await component.InvokeAsync(() => trap.Instance._OnEnd(0, 0, diffX, 0, 0, 0));

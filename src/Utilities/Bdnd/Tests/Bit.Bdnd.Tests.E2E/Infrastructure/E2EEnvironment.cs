@@ -19,8 +19,16 @@ public static class E2EEnvironment
 #endif
 
     /// <summary>
+    /// <c>BDND_E2E_PUBLISHED_HOST</c>: the full path of a folder holding a <c>dotnet publish</c> output of
+    /// Bit.Bdnd.Demo.Server (see publish-gate.sh), whose WebAssembly client the publish trimmed - or AOT-compiled - as it
+    /// is when the demo ships. When set the suite boots that instead of the build output, which is never trimmed. Cannot
+    /// be combined with <see cref="BaseUrl"/>.
+    /// </summary>
+    public static string? PublishedHost { get; } = Read("BDND_E2E_PUBLISHED_HOST");
+
+    /// <summary>
     /// <c>BDND_E2E_BASE_URL</c>: an already running demo (for example one started from the IDE). When set
-    /// the suite drives that instead of booting the demo server itself.
+    /// the suite drives that instead of booting the demo server itself. Cannot be combined with <see cref="PublishedHost"/>.
     /// </summary>
     public static string? BaseUrl { get; } = Read("BDND_E2E_BASE_URL")?.TrimEnd('/');
 

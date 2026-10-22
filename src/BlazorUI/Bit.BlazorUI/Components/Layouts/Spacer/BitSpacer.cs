@@ -1,5 +1,4 @@
 ﻿using System.Globalization;
-using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Components.CompilerServices;
 
 namespace Bit.BlazorUI;
@@ -191,7 +190,6 @@ public partial class BitSpacer : BitComponentBase
                                         : string.Empty);
     }
 
-    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitSpacerParams))]
     protected override void OnParametersSet()
     {
         CascadingParameters?.UpdateParameters(this);

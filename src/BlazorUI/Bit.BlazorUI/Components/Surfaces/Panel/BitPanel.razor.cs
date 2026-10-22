@@ -1,5 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
-
+﻿
 namespace Bit.BlazorUI;
 
 /// <summary>
@@ -683,7 +682,6 @@ public partial class BitPanel : BitComponentBase
 
     // Filled in before OnParametersSetAsync reads any of them: the swipe geometry, the focus trap and the scroll
     // hold are all decided from parameters a BitParams ancestor may be the one giving.
-    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitPanelParams))]
     protected override void OnParametersSet()
     {
         CascadingParameters?.UpdateParameters(this);

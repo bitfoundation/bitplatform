@@ -429,6 +429,9 @@ public class BitRichTextEditorE2ETests : E2ETestBase
         await SelectTextAsync("rte-ext", "beta");
         await Page.Keyboard.PressAsync("Control+b");
         await Expect(Surface("rte-ext").Locator("b")).ToHaveCountAsync(1);
+        // The bold comes back from the circuit as a render, which drops a selection made before it: once the toolbar
+        // shows it, that render is in.
+        await Expect(Btn("rte-ext", "Bold")).ToHaveAttributeAsync("aria-pressed", "true");
         await SelectTextAsync("rte-ext", "beta");
         await Page.Keyboard.PressAsync("Control+Backslash");
         await Expect(Surface("rte-ext").Locator("b")).ToHaveCountAsync(0);

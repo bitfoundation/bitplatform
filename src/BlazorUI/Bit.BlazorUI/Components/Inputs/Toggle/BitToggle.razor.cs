@@ -475,7 +475,6 @@ public partial class BitToggle : BitInputBase<bool>
         base.OnInitialized();
     }
 
-    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitToggleParams))]
     protected override void OnParametersSet()
     {
         CascadingParameters?.UpdateParameters(this);

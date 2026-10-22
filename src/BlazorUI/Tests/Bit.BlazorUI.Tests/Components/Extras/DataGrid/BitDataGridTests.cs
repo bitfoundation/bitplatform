@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
@@ -59,6 +60,31 @@ public class BitDataGridTests : BunitTestContext
         => component.FindAll(".bit-dtg-body > .bit-dtg-row:not(.bit-dtg-message-row):not(.bit-dtg-placeholder-row)")
             .Select(r => r.QuerySelector(".bit-dtg-cell")!.TextContent.Trim())
             .ToList();
+
+    // The CSV, the clipboard and a value's display text are written in the culture the app runs under
+    // (BitDataGridColumn.FormatValue), so a test reading a fractional or a negative number, or a formatted date, back
+    // pins one: under de-DE 2.5 is written "2,5", several cultures write -5 with a real minus sign, and fa-IR writes a
+    // date in its own calendar. Both cultures, because the renderer does its work on a dispatcher thread of its own:
+    // the current culture covers this thread, and the default thread culture is what the other one picks up.
+    private static IDisposable UseInvariantCulture() => new CultureScope(CultureInfo.InvariantCulture);
+
+    private sealed class CultureScope : IDisposable
+    {
+        private readonly CultureInfo _culture = CultureInfo.CurrentCulture;
+        private readonly CultureInfo? _defaultCulture = CultureInfo.DefaultThreadCurrentCulture;
+
+        public CultureScope(CultureInfo culture)
+        {
+            CultureInfo.CurrentCulture = culture;
+            CultureInfo.DefaultThreadCurrentCulture = culture;
+        }
+
+        public void Dispose()
+        {
+            CultureInfo.CurrentCulture = _culture;
+            CultureInfo.DefaultThreadCurrentCulture = _defaultCulture;
+        }
+    }
 
     [TestMethod]
     public void RendersOneRowPerItemWithHumanizedHeaders()
@@ -272,6 +298,8 @@ public class BitDataGridTests : BunitTestContext
     [TestMethod]
     public void ToCsvDoesNotCorruptNegativeNumbersButEscapesFormulas()
     {
+        using var invariant = UseInvariantCulture();
+
         var items = new List<TestRow>
         {
             new() { Id = 1, Name = "=cmd()", Price = -5 },
@@ -667,7 +695,7 @@ public class BitDataGridTests : BunitTestContext
     // A keystroke typed while the search of an earlier one is still being read holds the newer text: the earlier search
     // finishing must not write its own text back into the box, over what was typed since.
     [TestMethod]
-    public void TypedSearchKeepsTheNewerTextWhenAnEarlierSearchFinishesLate()
+    public async Task TypedSearchKeepsTheNewerTextWhenAnEarlierSearchFinishesLate()
     {
         var reads = new List<TaskCompletionSource<BitDataGridReadResult<TestRow>>>();
         var component = RenderComponent<BitDataGrid<TestRow>>(parameters =>
@@ -689,13 +717,24 @@ public class BitDataGridTests : BunitTestContext
             parameters.Add(p => p.SearchDebounce, 0);
         });
 
-        component.Find("input.bit-dtg-search-input").Input("Al");
-        component.Find("input.bit-dtg-search-input").Input("Alp");
+        // Both keystrokes are typed in one turn of the renderer's dispatcher, so each one's read has been asked for by
+        // the time the reads are answered below.
+        Task earlier = Task.CompletedTask;
+        Task newer = Task.CompletedTask;
+        await component.InvokeAsync(() =>
+        {
+            earlier = component.Find("input.bit-dtg-search-input").InputAsync(new ChangeEventArgs { Value = "Al" });
+            newer = component.Find("input.bit-dtg-search-input").InputAsync(new ChangeEventArgs { Value = "Alp" });
+        });
 
         // The newer read lands first, the earlier one late.
         foreach (var read in reads.Skip(1).Reverse().ToList()) read.TrySetResult(new BitDataGridReadResult<TestRow>(CreateRows().Take(1).ToList(), 1));
 
-        component.WaitForAssertion(() => Assert.AreEqual("Alp", component.Find("input.bit-dtg-search-input").GetAttribute("value")));
+        // The searches resume on the renderer's dispatcher after their reads land, so the box reads "Alp" before the late
+        // one has run at all: a wait for it would pass right away, before what it guards against could happen. Each
+        // keystroke's handler returns once its search has finished and rendered, so the box is read after both have.
+        await Task.WhenAll(earlier, newer);
+        Assert.AreEqual("Alp", component.Find("input.bit-dtg-search-input").GetAttribute("value"));
     }
 
     [TestMethod]
@@ -854,6 +893,8 @@ public class BitDataGridTests : BunitTestContext
     [TestMethod]
     public async Task ExcelExportRepresentsColumnSpansAsMergedCells()
     {
+        using var invariant = UseInvariantCulture();
+
         RenderFragment columns = builder =>
         {
             builder.OpenComponent<BitDataGridColumn<TestRow>>(0);
@@ -2147,6 +2188,7 @@ public class BitDataGridTests : BunitTestContext
     [TestMethod]
     public async Task ClipboardCopyWritesTheSelectedRowsAsTabSeparatedText()
     {
+        using var invariant = UseInvariantCulture();
         Context.JSInterop.Setup<bool>("BitBlazorUI.DataGrid.copyToClipboard", _ => true).SetResult(true);
 
         var items = CreateRows();
@@ -2168,6 +2210,7 @@ public class BitDataGridTests : BunitTestContext
     [TestMethod]
     public async Task ClipboardCopyFallsBackToTheFocusedRowAndReportsFailure()
     {
+        using var invariant = UseInvariantCulture();
         Context.JSInterop.Setup<bool>("BitBlazorUI.DataGrid.copyToClipboard", _ => true).SetResult(false);
 
         var items = CreateRows();
@@ -2822,6 +2865,8 @@ public class BitDataGridTests : BunitTestContext
     [TestMethod]
     public async Task ExportsCanCoverTheSelectedRowsOnly()
     {
+        using var invariant = UseInvariantCulture();
+
         var rows = CreateRows();
         var component = RenderGrid(rows, parameters =>
         {
@@ -2886,6 +2931,31 @@ public class BitDataGridTests : BunitTestContext
     {
         // Excel's serial calendar contains the 1900 leap-year bug, which OADate does not reproduce, so
         // anything before 1900-03-01 would land a day off; those fall back to the display text.
+        using var invariant = UseInvariantCulture();
+        var rows = new List<TestRow> { new() { Id = 1, Name = "Ancient", Released = new DateTime(1899, 5, 4) } };
+        RenderFragment columns = builder =>
+        {
+            builder.OpenComponent<BitDataGridColumn<TestRow>>(0);
+            builder.AddComponentParameter(1, "Field", "Released");
+            builder.AddComponentParameter(2, "Format", "yyyy-MM-dd");
+            builder.CloseComponent();
+        };
+        var component = RenderComponent<BitDataGrid<TestRow>>(parameters =>
+        {
+            parameters.Add(p => p.Items, rows);
+            parameters.Add(p => p.ChildContent, columns);
+        });
+
+        var sheet = await ExportSheetXmlAsync(component);
+        StringAssert.Contains(sheet, "<t xml:space=\"preserve\">1899-05-04</t>");
+    }
+
+    [TestMethod]
+    public async Task ExportWritesADateItsCultureCannotRepresentInTheGregorianCalendarOfThatCulture()
+    {
+        // Um Al Qura covers 1900 to 2077 only, and formatting a date outside it throws: such a date is written in the
+        // Gregorian calendar of the same culture instead of failing the cell and the whole export.
+        using var umAlQura = new CultureScope(TestCultures.ArSaUmAlQura);
         var rows = new List<TestRow> { new() { Id = 1, Name = "Ancient", Released = new DateTime(1899, 5, 4) } };
         RenderFragment columns = builder =>
         {
@@ -2907,7 +2977,7 @@ public class BitDataGridTests : BunitTestContext
     // --------------------------------------------------------- Search debounce
 
     [TestMethod]
-    public void SearchBoxDebouncesBurstsOfTypingIntoASingleSearch()
+    public async Task SearchBoxDebouncesBurstsOfTypingIntoASingleSearch()
     {
         var searches = 0;
         var component = RenderGrid(configure: parameters =>
@@ -2917,17 +2987,26 @@ public class BitDataGridTests : BunitTestContext
             parameters.Add(p => p.SearchTextChanged, (string? _) => searches++);
         });
 
-        var box = component.Find(".bit-dtg-search-input");
-        box.Input("c");
-        box.Input("ch");
-        box.Input("che");
+        // The burst is typed, and checked, in one turn of the renderer's dispatcher, which is where each keystroke's
+        // debounce resumes: none of them can run out before the next keystroke supersedes it, or before the check,
+        // however slow the machine. Typed one after the other from the test, the 60 ms could pass in between.
+        var keystrokes = new List<Task>();
+        await component.InvokeAsync(() =>
+        {
+            foreach (var text in new[] { "c", "ch", "che" })
+            {
+                keystrokes.Add(component.Find(".bit-dtg-search-input").InputAsync(new ChangeEventArgs { Value = text }));
+            }
 
-        // Nothing has been applied yet: the term only lands once the typing goes quiet.
-        Assert.AreEqual(0, searches);
-        Assert.IsNull(component.Instance.ActiveSearch);
+            // Nothing has been applied yet: the term only lands once the typing goes quiet.
+            Assert.AreEqual(0, searches);
+            Assert.IsNull(component.Instance.ActiveSearch);
+        });
 
-        // The render the applied term causes is what the wait picks up, rather than a fixed sleep past the debounce.
-        component.WaitForAssertion(() => Assert.AreEqual("che", component.Instance.ActiveSearch), TimeSpan.FromSeconds(2));
+        // Each keystroke's handler returns once its debounce has run out or been superseded, the last one's after its
+        // search is applied and rendered - awaited, rather than a sleep or a wait past the debounce.
+        await Task.WhenAll(keystrokes);
+        Assert.AreEqual("che", component.Instance.ActiveSearch);
         Assert.AreEqual(1, searches, "a burst of keystrokes must issue exactly one search");
         CollectionAssert.AreEqual(new[] { "Cherry" }, FirstCellTexts(component).ToArray());
     }
@@ -3170,12 +3249,19 @@ public class BitDataGridTests : BunitTestContext
             parameters.Add(p => p.SearchDebounce, 30);
         });
 
-        component.Find(".bit-dtg-search-input").Input("che");
-        await component.InvokeAsync(() => component.Instance.SearchAsync(null));
+        // The keystroke and the clear land in one turn of the renderer's dispatcher, where the keystroke's debounce
+        // resumes, so the clear always finds it still waiting: from the test one after the other, the 30 ms could run
+        // out in between and the term would be applied, then cleared, without the debounce ever being superseded.
+        Task typing = Task.CompletedTask;
+        await component.InvokeAsync(() =>
+        {
+            typing = component.Find(".bit-dtg-search-input").InputAsync(new ChangeEventArgs { Value = "che" });
+            return component.Instance.SearchAsync(null);
+        });
 
-        // Long enough for the pending debounce to have elapsed had it not been superseded: the term
-        // the user half-typed must not re-apply itself after they cleared the box.
-        await Task.Delay(150);
+        // The keystroke's handler returns once its debounce does - awaited, rather than a sleep past the debounce: the
+        // term the user half-typed must not re-apply itself after they cleared the box.
+        await typing;
         Assert.IsNull(component.Instance.ActiveSearch);
         Assert.IsTrue(string.IsNullOrEmpty(component.Find(".bit-dtg-search-input").GetAttribute("value")));
     }
@@ -3461,10 +3547,18 @@ public class BitDataGridTests : BunitTestContext
             parameters.Add(p => p.OnFilterChange, (IReadOnlyList<BitDataGridFilterDescriptor> _) => changes++);
         });
 
-        component.Find(".bit-dtg-filter-input:not([inputmode=decimal])").Input("err");
-        Assert.AreEqual(5, FirstCellTexts(component).Count, "nothing applies before the debounce elapses");
+        // Typed and checked in one turn of the renderer's dispatcher, where the keystroke's debounce resumes, so the
+        // 30 ms cannot run out before the check however slow the machine.
+        Task typing = Task.CompletedTask;
+        await component.InvokeAsync(() =>
+        {
+            typing = component.Find(".bit-dtg-filter-input:not([inputmode=decimal])").InputAsync(new ChangeEventArgs { Value = "err" });
+            Assert.AreEqual(5, FirstCellTexts(component).Count, "nothing applies before the debounce elapses");
+        });
 
-        component.WaitForAssertion(() => Assert.AreEqual(2, FirstCellTexts(component).Count), TimeSpan.FromSeconds(2));
+        // The keystroke's handler returns once its debounce has run out and the filter is applied and rendered.
+        await typing;
+        Assert.AreEqual(2, FirstCellTexts(component).Count);
         Assert.AreEqual(1, changes);
 
         // The blur that follows (a change event with the text already applied) does not apply it again.
@@ -3483,12 +3577,20 @@ public class BitDataGridTests : BunitTestContext
             parameters.Add(p => p.OnFilterChange, (IReadOnlyList<BitDataGridFilterDescriptor> _) => changes++);
         });
 
-        var box = component.Find(".bit-dtg-filter-input:not([inputmode=decimal])");
-        box.Input("err");
-        component.Find(".bit-dtg-filter-input:not([inputmode=decimal])").Change("err");
+        // The keystroke and the Enter land in one turn of the renderer's dispatcher, where the keystroke's debounce
+        // resumes, so the Enter always finds it still pending: from the test one after the other, the 60 ms could run
+        // out in between, and the Enter would find the filter already applied and have nothing to flush.
+        Task typing = Task.CompletedTask;
+        await component.InvokeAsync(() =>
+        {
+            typing = component.Find(".bit-dtg-filter-input:not([inputmode=decimal])").InputAsync(new ChangeEventArgs { Value = "err" });
+            return component.Find(".bit-dtg-filter-input:not([inputmode=decimal])").ChangeAsync(new ChangeEventArgs { Value = "err" });
+        });
         Assert.AreEqual(2, FirstCellTexts(component).Count);
+        Assert.AreEqual(1, changes);
 
-        await Task.Delay(200);
+        // The keystroke's handler returns once its superseded debounce does - awaited, rather than a sleep past it.
+        await typing;
         Assert.AreEqual(1, changes, "the flushed keystroke must not apply a second time when its debounce would have elapsed");
     }
 

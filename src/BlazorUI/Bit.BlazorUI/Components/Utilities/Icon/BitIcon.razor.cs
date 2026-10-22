@@ -1,5 +1,4 @@
 ﻿using System.Globalization;
-using System.Diagnostics.CodeAnalysis;
 
 namespace Bit.BlazorUI;
 
@@ -416,7 +415,6 @@ public partial class BitIcon : BitComponentBase
         StyleBuilder.Register(() => AnimationIterationCount.HasValue ? $"--bit-ico-anm-itr:{Math.Max(0, AnimationIterationCount.Value).ToString(CultureInfo.InvariantCulture)}" : string.Empty);
     }
 
-    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitIconParams))]
     protected override void OnParametersSet()
     {
         CascadingParameters?.UpdateParameters(this);

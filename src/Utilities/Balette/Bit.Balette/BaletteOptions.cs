@@ -12,8 +12,16 @@ public sealed class BaletteOptions
     /// <summary>Don't fire global command shortcuts while an input, textarea or contenteditable has focus.</summary>
     public bool SuppressShortcutsInEditableElements { get; set; } = true;
 
-    /// <summary>Milliseconds a multi-chord sequence (<c>G I</c>) waits for the next chord.</summary>
-    public int SequenceTimeoutMs { get; set; } = 1000;
+    /// <summary>Milliseconds a multi-chord sequence (<c>G I</c>) waits for the next chord. Must be positive.</summary>
+    public int SequenceTimeoutMs
+    {
+        get;
+        set
+        {
+            ArgumentOutOfRangeException.ThrowIfNegativeOrZero(value);
+            field = value;
+        }
+    } = 1000;
 
     /// <summary>Debounce for async sources, in milliseconds.</summary>
     public int DebounceMs { get; set; } = 150;

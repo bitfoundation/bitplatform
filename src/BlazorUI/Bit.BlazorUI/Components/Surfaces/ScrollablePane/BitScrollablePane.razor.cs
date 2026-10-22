@@ -1,5 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
-
+﻿
 namespace Bit.BlazorUI;
 
 /// <summary>
@@ -1194,7 +1193,6 @@ public partial class BitScrollablePane : BitComponentBase
         ClassBuilder.Register(() => ExpandOnPrint ? "bit-scp-eop" : string.Empty);
     }
 
-    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitScrollablePaneParams))]
     protected override void OnParametersSet()
     {
         CascadingParameters?.UpdateParameters(this);

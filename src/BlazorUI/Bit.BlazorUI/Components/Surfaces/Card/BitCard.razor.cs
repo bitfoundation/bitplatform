@@ -1,5 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
-
+﻿
 namespace Bit.BlazorUI;
 
 /// <summary>
@@ -755,7 +754,6 @@ public partial class BitCard : BitComponentBase
         StyleBuilder.Register(() => CoverRatio.HasNoValue() ? null : $"--bit-crd-cvr-ratio:{CoverRatio}");
     }
 
-    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitCardParams))]
     protected override void OnParametersSet()
     {
         CascadingParameters?.UpdateParameters(this);

@@ -12,7 +12,10 @@ pieces the packages' builds wrote (`obj/bit-assets`), which a trimmed bundle is 
   interactively, trimmed off the scan of its assemblies (a publish ILLink does not touch). `ServerAppTrimmingTests`, one
   of which also runs the trimmed app in Chromium, Firefox and WebKit.
 - `Bit.BlazorUI.Tests.Consumer` - a Blazor WebAssembly app, trimmed by default off what ILLink kept.
-  `WebAssemblyTrimmingTests`, one of which also runs the trimmed app in Chromium, Firefox and WebKit.
+  `WebAssemblyTrimmingTests`, one of which also runs the trimmed app in Chromium, Firefox and WebKit. Its publish copies
+  what ILLink left of the packages' assemblies beside it (`trimmed/`), since the published ones are WebAssembly modules no
+  metadata reader opens: what the tests read of the params types an app creates or not, and of the map of the lazy
+  scripts.
 - `Bit.BlazorUI.Tests.Trimming.Hosted` - a Blazor Web App's server hosting `Bit.BlazorUI.Tests.Trimming.Hosted.Client`, a
   WebAssembly client with a service worker, in the `Default` static web asset mode of a Blazor Web App's client. The client
   writes `service-worker-assets.js` from the full bundles and every vendored file before the server trims, and

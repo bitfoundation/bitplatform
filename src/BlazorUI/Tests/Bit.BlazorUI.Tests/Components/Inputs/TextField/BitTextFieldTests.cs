@@ -3643,7 +3643,7 @@ public class BitTextFieldTests : BunitTestContext
         Assert.IsTrue(iconIndex > inputWrapperIndex);
     }
 
-    [DataTestMethod,
+    [TestMethod,
      DataRow(BitPlacement.Start, true),
      DataRow(BitPlacement.End, false)]
     public void BitTextFieldIconPositionShouldDecideWhichEndTheIconSitsAt(BitPlacement position, bool beforeTheInput)
@@ -4247,13 +4247,21 @@ public class BitTextFieldTests : BunitTestContext
             parameters.Add(p => p.ValueChanged, (string? v) => value = v);
         });
 
-        var input = component.Find(".bit-tfl-inp");
-        var typing = input.InputAsync(new ChangeEventArgs { Value = "abc" });
-        input.KeyDown(new KeyboardEventArgs { Key = "Escape" });
+        // Both events are raised in one turn of the renderer's dispatcher, which is where the debounce resumes, so the
+        // Escape always lands while the input event is still waiting it out. Raised one after the other from the test,
+        // a test thread held up for longer than the 5 ms debounce would let the text land first, and the Escape would
+        // only clear it the ordinary way.
+        Task typing = Task.CompletedTask;
+        await component.InvokeAsync(() =>
+        {
+            var input = component.Find(".bit-tfl-inp");
+            typing = input.InputAsync(new ChangeEventArgs { Value = "abc" });
+            input.KeyDown(new KeyboardEventArgs { Key = "Escape" });
+        });
 
-        // The debounce the Escape cancelled would have landed by now if it were still on the clock.
+        // The input event is only done once its debounce is, so a debounce the Escape had not cancelled would have
+        // landed by now.
         await typing;
-        await Task.Delay(30);
 
         Assert.IsTrue(string.IsNullOrEmpty(component.Instance.Value));
         Assert.IsTrue(string.IsNullOrEmpty(value));
@@ -4271,12 +4279,19 @@ public class BitTextFieldTests : BunitTestContext
             parameters.Add(p => p.DebounceTime, 5);
         });
 
-        var input = component.Find(".bit-tfl-inp");
-        var typing = input.InputAsync(new ChangeEventArgs { Value = " abc " });
-        input.Change(" abc ");
+        // Both events are raised in one turn of the renderer's dispatcher, which is where the debounce resumes, so the
+        // change always lands while the input event is still waiting it out (see the test above).
+        Task typing = Task.CompletedTask;
+        await component.InvokeAsync(() =>
+        {
+            var input = component.Find(".bit-tfl-inp");
+            typing = input.InputAsync(new ChangeEventArgs { Value = " abc " });
+            input.Change(" abc ");
+        });
 
+        // The input event is only done once its debounce is, so a debounce the change had not cancelled would have
+        // landed by now.
         await typing;
-        await Task.Delay(30);
 
         Assert.AreEqual("abc", component.Instance.Value);
     }
@@ -4840,10 +4855,21 @@ public class BitTextFieldTests : BunitTestContext
             parameters.Add(p => p.ValueChanged, (string? _) => changes++);
         });
 
-        _ = component.Find(".bit-tfl-inp").InputAsync(new ChangeEventArgs { Value = "abc" });
+        // The input event and the disposal are made in one turn of the renderer's dispatcher, which is where the
+        // debounce resumes, so the field is always gone while the debounce is still waiting. Made one after the other
+        // from the test, a test thread held up for longer than the 5 ms debounce would let the value land before the
+        // disposal, and the test would fail.
+        Task typing = Task.CompletedTask;
+        await component.InvokeAsync(() =>
+        {
+            typing = component.Find(".bit-tfl-inp").InputAsync(new ChangeEventArgs { Value = "abc" });
 
-        await Context.DisposeComponentsAsync();
-        await Task.Delay(30);
+            return Context.DisposeComponentsAsync();
+        });
+
+        // The input event is only done once its debounce is, so a debounce the disposal had not cancelled would have
+        // landed by now.
+        await typing;
 
         // A debounce that ran against a field that is no longer there would hand the binding a value it never typed.
         Assert.AreEqual(0, changes);

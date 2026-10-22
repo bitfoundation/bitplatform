@@ -1019,7 +1019,6 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>
         base.OnInitialized();
     }
 
-    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitTimePickerParams))]
     protected override void OnParametersSet()
     {
         CascadedCalloutHtmlAttributes = null;

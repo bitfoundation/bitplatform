@@ -34,6 +34,15 @@ public static class Publisher
             var output = Path.Combine(Path.GetTempPath(), "bit-blazorui-trimming", Hash(key));
             if (Directory.Exists(output)) Directory.Delete(output, recursive: true);
 
+            // ILLink skips itself when none of its input files changed since it last ran, and a property given on the
+            // command line is none of them - a feature switch it trims by (Bit.BlazorUI.IncludeScriptModules) included.
+            // Two publishes of one project apart only in such a property would otherwise share the first one's answer.
+            var obj = Path.Combine(Path.GetDirectoryName(Path.Combine(Root, project))!, "obj");
+            if (Directory.Exists(obj))
+            {
+                foreach (var semaphore in Directory.EnumerateFiles(obj, "Link.semaphore", SearchOption.AllDirectories)) File.Delete(semaphore);
+            }
+
             // No node reuse: a node kept from an earlier build holds the task assembly it loaded then, and the source
             // tree's task is rebuilt along with the packages.
             var arguments = new List<string> { "publish", Path.Combine(Root, project), "-c", "Release", "-nologo", "-nodeReuse:false", "-o", output };
