@@ -1,0 +1,422 @@
+{
+  "project": "AgentsApp",
+  "options": [
+    "--aspire",
+    "false"
+  ],
+  "author": {
+    "name": "Sara Ahmadi",
+    "email": "sara@agentsapp.dev"
+  },
+  "baselineRemoves": [
+    "AGENTS.md",
+    "CLAUDE.md",
+    "GEMINI.md",
+    ".claude/skills",
+    ".agents",
+    ".gemini/commands",
+    ".github/agents",
+    ".github/copilot-instructions.md",
+    "specs"
+  ],
+  "scenarios": [
+    {
+      "id": "trivial-edit",
+      "memory": "none",
+      "prompt": "Change the sign in button text on the sign in page to 'Sign in to your account'.",
+      "checks": [
+        {
+          "noSkill": "ai-dlc"
+        },
+        {
+          "changed": "*SignInPanel.razor"
+        },
+        {
+          "unchanged": "*.resx"
+        },
+        {
+          "unchanged": "specs/*"
+        }
+      ]
+    },
+    {
+      "id": "known-bug",
+      "heavy": true,
+      "fixture": {
+        "edits": [
+          {
+            "path": "src/Shared/Features/Identity/Dtos/UserDto.cs",
+            "find": "public string? DisplayName => FullName ?? DisplayUserName;",
+            "replace": "public string? DisplayName => DisplayUserName ?? FullName;"
+          }
+        ],
+        "commit": "Tidy up UserDto display properties"
+      },
+      "prompt": "After I set my full name on the profile page, the menu at the top right still shows my email address instead of my name. It should show my full name whenever I have one.",
+      "checks": [
+        {
+          "skill": "ai-dlc"
+        },
+        {
+          "changed": "*UserDto.cs"
+        },
+        {
+          "changed": "src/Tests/*"
+        },
+        {
+          "unchanged": "specs/changes/*"
+        }
+      ]
+    },
+    {
+      "id": "crud-feature",
+      "prompt": "I need a Suppliers section: list, add, edit and delete suppliers. Only admins should be able to see it.",
+      "turns": [
+        "Fields: Name (required, max 100 characters), Email (optional, must be a valid email), Phone (optional), Address (optional), Notes (optional, max 1000 characters). Admins are whoever already manages users and roles in the app. Editing in a modal is fine. No import or export."
+      ],
+      "longTurns": [
+        "Looks good, go ahead."
+      ],
+      "checks": [
+        {
+          "skill": "ai-dlc"
+        },
+        {
+          "skill": "scaffold-entity"
+        },
+        {
+          "called": "GetBitPlatformReleases"
+        },
+        {
+          "onlyChanged": "specs/*",
+          "afterTurn": 1
+        },
+        {
+          "onlyChanged": "specs/*",
+          "afterTurn": 2
+        },
+        {
+          "changed": "specs/changes/*",
+          "afterTurn": 2
+        },
+        {
+          "changed": "*Migrations*",
+          "long": true
+        },
+        {
+          "changed": "src/Tests/*",
+          "long": true
+        },
+        {
+          "skill": "review",
+          "long": true
+        }
+      ]
+    },
+    {
+      "id": "disabled-feature",
+      "prompt": "I want an AI assistant inside the app that answers our users' questions.",
+      "checks": [
+        {
+          "skill": "ai-dlc"
+        },
+        {
+          "called": "SearchBitPlatformCode"
+        },
+        {
+          "finalMatches": "signalR"
+        },
+        {
+          "onlyChanged": "specs/*"
+        }
+      ]
+    },
+    {
+      "id": "bit-library",
+      "prompt": "Add a page where users can draw their signature with a finger or mouse and save it to their profile.",
+      "checks": [
+        {
+          "skill": "ai-dlc"
+        },
+        {
+          "mentions": "bink.bitplatform.dev"
+        },
+        {
+          "finalMatches": "Bink"
+        },
+        {
+          "onlyChanged": "specs/*"
+        }
+      ]
+    },
+    {
+      "id": "design-chat",
+      "prompt": "Let's think through how a loyalty points program should work for our customers. Don't write any code yet.",
+      "turns": [
+        "Customers earn 1 point per 1 USD spent. Points expire 12 months after they were earned. 100 points give 5 USD off the next order. Points can't be transferred between users. We haven't decided yet whether returning an order takes the points back."
+      ],
+      "handoff": {
+        "prompt": "Implement the loyalty points feature."
+      },
+      "checks": [
+        {
+          "unchanged": "specs/*",
+          "afterTurn": 1
+        },
+        {
+          "changed": "specs/*.md",
+          "afterTurn": 2
+        },
+        {
+          "onlyChanged": "specs/*",
+          "afterTurn": 2
+        },
+        {
+          "readChanged": "specs/*.md",
+          "handoff": true
+        },
+        {
+          "changed": "specs/changes/*",
+          "handoff": true
+        },
+        {
+          "onlyChanged": "specs/*",
+          "handoff": true
+        }
+      ]
+    },
+    {
+      "id": "resume",
+      "heavy": true,
+      "budget": 6,
+      "fixture": {
+        "branch": "feature/announcements",
+        "files": [
+          {
+            "path": "specs/announcements.md",
+            "content": "# Announcements\n\n## Purpose\n\nAdmins post short announcements, such as planned maintenance or a new feature, and every signed-in user of the tenant sees the newest one on the home page.\n\n## Requirements\n\n- **Post.** An admin posts an announcement with a title (required, up to 120 characters) and a body (required, up to 1000 characters), and optionally a date it expires on.\n  - When an admin posts \"Maintenance on Friday\", it is listed first on the Announcements page.\n- **Show.** The home page shows the newest announcement that hasn't expired to every signed-in user of the same tenant.\n  - When the newest announcement expired yesterday, the home page shows the one before it, or nothing.\n- **Delete.** An admin deletes an announcement, and it no longer shows anywhere.\n- **Access.** Only users with the announcements permission see the Announcements page or call its API.\n\n## Decisions\n\n- **Per tenant.** Each tenant has its own announcements, like the rest of its data.\n- **No editing.** An announcement is deleted and posted again instead of edited, to keep the first version small.\n"
+          },
+          {
+            "path": "specs/changes/2026-01-15-announcements.md",
+            "content": "# Announcements\n\nTrack: full. The user approved this plan.\n\n## Specs\n\n- Adds `specs/announcements.md`.\n\n## Design\n\n- `Announcement` entity in Server.Api (Id, Title, Body, PublishedOn, ExpiresOn, Version), tenant-aware like the rest of the data, with its EF Core configuration and a migration.\n- `AnnouncementDto` in Shared, and `IAnnouncementController` with a list (OData), create and delete.\n- An Announcements page under Management with a grid and an add modal, and a banner component on the home page.\n- A new `Announcements_Manage` permission in the Management group of `AppFeatures`.\n\n## Tasks\n\n- [x] 1. Spec and plan\n- [x] 2. `AnnouncementDto` and its `AppJsonContext` registration\n- [ ] 3. `Announcement` entity, its configuration, the `DbSet` and the migration\n- [ ] 4. Mapper, `IAnnouncementController` and `AnnouncementController`\n- [ ] 5. The Announcements page, the home banner, the permission, navigation and tests\n\n## Changes to the plan\n\n- None yet.\n"
+          },
+          {
+            "path": "src/Shared/Features/Announcements/Dtos/AnnouncementDto.cs",
+            "content": "namespace AgentsApp.Shared.Features.Announcements.Dtos;\n\n[DtoResourceType(typeof(AppStrings))]\npublic partial class AnnouncementDto\n{\n    public Guid Id { get; set; }\n\n    [Required(ErrorMessage = nameof(AppStrings.RequiredAttribute_ValidationError))]\n    [Display(Name = nameof(AppStrings.Title))]\n    [MaxLength(120, ErrorMessage = nameof(AppStrings.MaxLengthAttribute_InvalidMaxLength))]\n    public string? Title { get; set; }\n\n    [Required(ErrorMessage = nameof(AppStrings.RequiredAttribute_ValidationError))]\n    [Display(Name = nameof(AppStrings.Description))]\n    [MaxLength(1000, ErrorMessage = nameof(AppStrings.MaxLengthAttribute_InvalidMaxLength))]\n    public string? Body { get; set; }\n\n    public DateTimeOffset PublishedOn { get; set; }\n\n    public DateTimeOffset? ExpiresOn { get; set; }\n\n    public long Version { get; set; }\n}\n"
+          }
+        ],
+        "edits": [
+          {
+            "path": "src/Shared/Infrastructure/Dtos/AppJsonContext.cs",
+            "find": "using AgentsApp.Shared.Features.Tenants.Dtos;\n",
+            "replace": "using AgentsApp.Shared.Features.Tenants.Dtos;\nusing AgentsApp.Shared.Features.Announcements.Dtos;\n"
+          },
+          {
+            "path": "src/Shared/Infrastructure/Dtos/AppJsonContext.cs",
+            "find": "[JsonSerializable(typeof(InviteUserToTenantRequestDto))]\n",
+            "replace": "[JsonSerializable(typeof(InviteUserToTenantRequestDto))]\n\n[JsonSerializable(typeof(AnnouncementDto))]\n[JsonSerializable(typeof(List<AnnouncementDto>))]\n[JsonSerializable(typeof(PagedResponse<AnnouncementDto>))]\n"
+          }
+        ],
+        "commit": "Start announcements: spec, plan and the DTO"
+      },
+      "prompt": "Let's continue.",
+      "checks": [
+        {
+          "read": "specs/changes/*"
+        },
+        {
+          "changed": "src/Server/*Announcement*"
+        }
+      ]
+    },
+    {
+      "id": "review",
+      "fixture": {
+        "branch": "feature/quick-notes",
+        "edits": [
+          {
+            "path": "src/Client/AgentsApp.Client.Web/Infrastructure/Services/WebStorageService.cs",
+            "find": "    public async ValueTask SetItem(string key, string? value, bool persistent = true)\n    {\n",
+            "replace": "    public async ValueTask SetItem(string key, string? value, bool persistent = true)\n    {\n        value = value?.Trim();\n\n"
+          },
+          {
+            "path": "src/Server/AgentsApp.Server.Api/Features/Identity/UserController.cs",
+            "find": "    [HttpGet, EnableQuery]\n    public IQueryable<UserSessionDto> GetUserSessions()",
+            "replace": "    [HttpGet, AllowAnonymous]\n    public async Task<List<string>> GetMentionCandidates(CancellationToken cancellationToken)\n    {\n        return await userManager.Users\n            .Where(u => u.Email != null)\n            .Select(u => u.Email!)\n            .ToListAsync(cancellationToken);\n    }\n\n    [HttpGet, EnableQuery]\n    public IQueryable<UserSessionDto> GetUserSessions()"
+          },
+          {
+            "path": "src/Shared/Features/Identity/IUserController.cs",
+            "find": "    [HttpGet]\n    Task<List<UserSessionDto>> GetUserSessions(CancellationToken cancellationToken) => default!;\n",
+            "replace": "    [HttpGet]\n    Task<List<UserSessionDto>> GetUserSessions(CancellationToken cancellationToken) => default!;\n\n    [HttpGet]\n    Task<List<string>> GetMentionCandidates(CancellationToken cancellationToken);\n"
+          },
+          {
+            "path": "src/Client/AgentsApp.Client.Core/Components/Pages/Settings/SettingsPage.razor",
+            "find": "                <PrivacySection />\n            </BitAccordionListOption>\n",
+            "replace": "                <PrivacySection />\n            </BitAccordionListOption>\n\n            <BitAccordionListOption Key=\"quick-note\" Title=\"@Localizer[\"Quick note\"]\" Description=\"@Localizer[\"A private note with mentions\"]\">\n                <QuickNoteSection />\n            </BitAccordionListOption>\n"
+          }
+        ],
+        "files": [
+          {
+            "path": "src/Client/AgentsApp.Client.Core/Components/Pages/Settings/QuickNoteSection.razor",
+            "content": "@inherits AppComponentBase\n\n<section>\n    <BitStack Gap=\"0.5rem\">\n        <BitText Typography=\"BitTypography.H6\" Style=\"color:#1565c0\">@Localizer[\"Quick note\"]</BitText>\n        <BitTextField @bind-Value=\"note\" Placeholder=\"@Localizer[\"Write a note, mention someone with @\"]\" Multiline />\n        @if (mentionCandidates.Count > 0)\n        {\n            <BitText Style=\"color:#757575\">@string.Join(\", \", mentionCandidates)</BitText>\n        }\n        <BitButton OnClick=\"SaveNote\">@Localizer[\"Save note\"]</BitButton>\n    </BitStack>\n</section>\n"
+          },
+          {
+            "path": "src/Client/AgentsApp.Client.Core/Components/Pages/Settings/QuickNoteSection.razor.cs",
+            "content": "namespace AgentsApp.Client.Core.Components.Pages.Settings;\n\npublic partial class QuickNoteSection\n{\n    [AutoInject] private IUserController userController = default!;\n    [AutoInject] private IStorageService storageService = default!;\n\n    private string? note;\n    private List<string> mentionCandidates = [];\n\n    protected override async Task OnInitAsync()\n    {\n        note = await storageService.GetItem(\"quick-note\");\n        mentionCandidates = await userController.GetMentionCandidates(CurrentCancellationToken);\n\n        await base.OnInitAsync();\n    }\n\n    private async Task SaveNote()\n    {\n        await storageService.SetItem(\"quick-note\", note);\n    }\n}\n"
+          }
+        ],
+        "commit": "Add a quick note with mentions to the settings page"
+      },
+      "prompt": "Review the changes on this branch.",
+      "checks": [
+        {
+          "skill": "review"
+        },
+        {
+          "noChanges": true
+        },
+        {
+          "finalMatches": "(?i)anonymous"
+        },
+        {
+          "finalMatches": "(?i)mirror"
+        },
+        {
+          "finalMatches": "WrapHandled"
+        },
+        {
+          "finalMatches": "(?i)#1565c0|#757575|hard-?coded colou?r|BitColor"
+        },
+        {
+          "finalMatches": "(?i)\\btests?\\b"
+        }
+      ]
+    },
+    {
+      "id": "localize",
+      "heavy": true,
+      "fixture": {
+        "branch": "feature/welcome-banner",
+        "files": [
+          {
+            "path": "src/Client/AgentsApp.Client.Core/Components/Common/WelcomeBanner.razor",
+            "content": "@inherits AppComponentBase\n\n@if (isVisible)\n{\n    <BitCard FullWidth>\n        <BitStack Gap=\"0.5rem\">\n            <BitText Typography=\"BitTypography.H5\">@Localizer[\"Welcome back!\"]</BitText>\n            <BitText>@Localizer[\"You have {0} unread messages.\", unreadCount]</BitText>\n            <BitStack Horizontal Gap=\"0.5rem\" VerticalAlign=\"BitAlignment.Center\">\n                <BitButton Variant=\"BitVariant.Outline\" OnClick=\"WrapHandled(Dismiss)\">@Localizer[\"Dismiss\"]</BitButton>\n                <BitLink Href=\"@PageUrls.Settings\">@Localizer[\"Settings\"]</BitLink>\n                <BitLink Href=\"@PageUrls.Terms\">Learn more</BitLink>\n            </BitStack>\n        </BitStack>\n    </BitCard>\n}\n"
+          },
+          {
+            "path": "src/Client/AgentsApp.Client.Core/Components/Common/WelcomeBanner.razor.cs",
+            "content": "namespace AgentsApp.Client.Core.Components.Common;\n\npublic partial class WelcomeBanner\n{\n    private bool isVisible = true;\n    private int unreadCount = 3;\n\n    private void Dismiss()\n    {\n        isVisible = false;\n    }\n}\n"
+          }
+        ],
+        "edits": [
+          {
+            "path": "src/Client/AgentsApp.Client.Core/Components/Pages/Home/HomePage.razor",
+            "find": "<section>\n    <BitStack Alignment=\"BitAlignment.Center\" Gap=\"2rem\" Class=\"root-stack\">\n",
+            "replace": "<section>\n    <BitStack Alignment=\"BitAlignment.Center\" Gap=\"2rem\" Class=\"root-stack\">\n        <WelcomeBanner />\n\n"
+          }
+        ],
+        "commit": "Add a welcome banner to the home page"
+      },
+      "prompt": "Move the new strings on this branch into the resx files.",
+      "checks": [
+        {
+          "skill": "localize-strings"
+        },
+        {
+          "changed": "*AppStrings.resx"
+        },
+        {
+          "mentions": "bit translate"
+        },
+        {
+          "fileLacks": {
+            "path": "src/Client/AgentsApp.Client.Core/Components/Common/WelcomeBanner.razor",
+            "patterns": [
+              "Localizer[\"",
+              ">Learn more<"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "bitify",
+      "heavy": true,
+      "fixture": {
+        "branch": "feature/feedback-form",
+        "files": [
+          {
+            "path": "src/Client/AgentsApp.Client.Core/Components/Common/FeedbackForm.razor",
+            "content": "@inherits AppComponentBase\n\n<div class=\"feedback-card\">\n    <h3 class=\"feedback-title\">@Localizer[\"Send us feedback\"]</h3>\n    <p style=\"color:#666666\">@Localizer[\"Tell us what works and what doesn't.\"]</p>\n\n    <label for=\"feedback-topic\">@Localizer[\"Topic\"]</label>\n    <select id=\"feedback-topic\" @bind=\"topic\">\n        <option value=\"bug\">@Localizer[\"Bug\"]</option>\n        <option value=\"idea\">@Localizer[\"Idea\"]</option>\n        <option value=\"other\">@Localizer[\"Other\"]</option>\n    </select>\n\n    <label for=\"feedback-message\">@Localizer[\"Message\"]</label>\n    <textarea id=\"feedback-message\" rows=\"4\" @bind=\"message\"></textarea>\n\n    <label class=\"feedback-check\">\n        <input type=\"checkbox\" @bind=\"mayContact\" /> @Localizer[\"You may contact me about this\"]\n    </label>\n\n    <div class=\"feedback-actions\">\n        <button class=\"feedback-send\" @onclick=\"Send\">@Localizer[\"Send\"]</button>\n        @if (sent)\n        {\n            <span style=\"color:#2e7d32\">@Localizer[\"Thanks! We got your feedback.\"]</span>\n        }\n    </div>\n</div>\n"
+          },
+          {
+            "path": "src/Client/AgentsApp.Client.Core/Components/Common/FeedbackForm.razor.cs",
+            "content": "namespace AgentsApp.Client.Core.Components.Common;\n\npublic partial class FeedbackForm\n{\n    private string topic = \"idea\";\n    private string? message;\n    private bool mayContact;\n    private bool sent;\n\n    private void Send()\n    {\n        sent = string.IsNullOrWhiteSpace(message) is false;\n    }\n}\n"
+          },
+          {
+            "path": "src/Client/AgentsApp.Client.Core/Components/Common/FeedbackForm.razor.scss",
+            "content": ".feedback-card {\n    display: flex;\n    flex-direction: column;\n    gap: 8px;\n    width: 100%;\n    max-width: 480px;\n    padding: 24px;\n    border: 1px solid #dddddd;\n    border-radius: 8px;\n    background-color: #ffffff;\n    color: #222222;\n}\n\n.feedback-title {\n    margin: 0;\n    color: #0b3d91;\n}\n\nselect,\ntextarea {\n    padding: 8px;\n    border: 1px solid #cccccc;\n    border-radius: 4px;\n    background: #fafafa;\n}\n\n.feedback-actions {\n    display: flex;\n    align-items: center;\n    gap: 12px;\n}\n\n.feedback-send {\n    padding: 8px 20px;\n    border: none;\n    border-radius: 4px;\n    background-color: #0078d4;\n    color: #ffffff;\n    cursor: pointer;\n\n    &:hover {\n        background-color: #005a9e;\n    }\n}\n"
+          }
+        ],
+        "edits": [
+          {
+            "path": "src/Client/AgentsApp.Client.Core/Components/Pages/Home/HomePage.razor",
+            "find": "<section>\n    <BitStack Alignment=\"BitAlignment.Center\" Gap=\"2rem\" Class=\"root-stack\">\n",
+            "replace": "<section>\n    <BitStack Alignment=\"BitAlignment.Center\" Gap=\"2rem\" Class=\"root-stack\">\n        <FeedbackForm />\n\n"
+          }
+        ],
+        "commit": "Add a feedback form to the home page"
+      },
+      "prompt": "Rewrite src/Client/AgentsApp.Client.Core/Components/Common/FeedbackForm.razor with bit components and make it work in dark mode.",
+      "checks": [
+        {
+          "skill": "bitify-ui"
+        },
+        {
+          "called": "SearchBitBlazorUI"
+        },
+        {
+          "fileLacks": {
+            "path": "src/Client/AgentsApp.Client.Core/Components/Common/FeedbackForm.razor",
+            "patterns": [
+              "<button",
+              "<select",
+              "<textarea",
+              "<input",
+              "#666666",
+              "#2e7d32"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "production",
+      "prompt": "Confirmation emails aren't arriving for users in production.",
+      "checks": [
+        {
+          "skill": "ai-dlc"
+        },
+        {
+          "finalMatches": "dev-mcp"
+        },
+        {
+          "onlyChanged": "specs/*"
+        }
+      ]
+    },
+    {
+      "id": "crud-feature-baseline",
+      "baseline": true,
+      "budget": 3,
+      "prompt": "I need a Suppliers section: list, add, edit and delete suppliers. Only admins should be able to see it.",
+      "checks": []
+    },
+    {
+      "id": "bit-library-baseline",
+      "baseline": true,
+      "budget": 3,
+      "prompt": "Add a page where users can draw their signature with a finger or mouse and save it to their profile.",
+      "checks": []
+    }
+  ]
+}
