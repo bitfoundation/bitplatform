@@ -847,11 +847,6 @@ public partial class Initial : Migration
             });
 
         migrationBuilder.CreateIndex(
-            name: "IX_Attachments_Kind_CreatedOn",
-            table: "Attachments",
-            columns: new[] { "Kind", "CreatedOn" });
-
-        migrationBuilder.CreateIndex(
             name: "IX_Categories_TenantId_Name",
             table: "Categories",
             columns: new[] { "TenantId", "Name" },
@@ -942,6 +937,11 @@ public partial class Initial : Migration
             unique: true);
 
         migrationBuilder.CreateIndex(
+            name: "IX_OAuthAuthorizationCodes_ExpiresOn",
+            table: "OAuthAuthorizationCodes",
+            column: "ExpiresOn");
+
+        migrationBuilder.CreateIndex(
             name: "IX_OAuthAuthorizationCodes_TenantId",
             table: "OAuthAuthorizationCodes",
             column: "TenantId");
@@ -950,6 +950,11 @@ public partial class Initial : Migration
             name: "IX_OAuthAuthorizationCodes_UserId",
             table: "OAuthAuthorizationCodes",
             column: "UserId");
+
+        migrationBuilder.CreateIndex(
+            name: "IX_OAuthGrants_ClientId",
+            table: "OAuthGrants",
+            column: "ClientId");
 
         migrationBuilder.CreateIndex(
             name: "IX_Products_ShortId",
@@ -1045,6 +1050,12 @@ public partial class Initial : Migration
             table: "TenantUsers",
             columns: new[] { "TenantId", "UserId" },
             unique: true);
+
+        migrationBuilder.CreateIndex(
+            name: "IX_TenantUsers_TenantId_UserId_Accepted",
+            table: "TenantUsers",
+            columns: new[] { "TenantId", "UserId" },
+            filter: "[AcceptedOn] IS NOT NULL");
 
         migrationBuilder.CreateIndex(
             name: "IX_TenantUsers_UserId",

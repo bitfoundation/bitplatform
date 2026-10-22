@@ -151,14 +151,11 @@ public partial class IdentityController
             OriginalOptions = options,
             StoredPublicKey = credential.PublicKey!,
             StoredSignatureCounter = credential.SignCount,
-            IsUserHandleOwnerOfCredentialIdCallback = IsUserHandleOwnerOfCredentialId
+            IsUserHandleOwnerOfCredentialIdCallback = (args, _) => Task.FromResult(args.CredentialId.SequenceEqual(credential.Id)
+                                                                                   && credential.UserHandle is not null
+                                                                                   && args.UserHandle.SequenceEqual(credential.UserHandle))
         }, cancellationToken);
 
         return (verifyResult, credential, key);
-    }
-
-    private async Task<bool> IsUserHandleOwnerOfCredentialId(IsUserHandleOwnerOfCredentialIdParams args, CancellationToken cancellationToken)
-    {
-        return await DbContext.WebAuthnCredential.AnyAsync(c => c.Id == args.CredentialId && c.UserHandle == args.UserHandle, cancellationToken);
     }
 }

@@ -37,8 +37,6 @@ namespace Boilerplate.Server.Api.Infrastructure.Data.Migrations
 
                     b.HasKey("Id", "Kind");
 
-                    b.HasIndex("Kind", "CreatedOn");
-
                     b.ToTable("Attachments");
                 });
 
@@ -750,6 +748,8 @@ namespace Boilerplate.Server.Api.Infrastructure.Data.Migrations
                     b.HasIndex("CodeHash")
                         .IsUnique();
 
+                    b.HasIndex("ExpiresOn");
+
                     b.HasIndex("TenantId");
 
                     b.HasIndex("UserId");
@@ -785,6 +785,8 @@ namespace Boilerplate.Server.Api.Infrastructure.Data.Migrations
                         .HasColumnType("TEXT");
 
                     b.HasKey("UserSessionId");
+
+                    b.HasIndex("ClientId");
 
                     b.ToTable("OAuthGrants");
                 });
@@ -1794,6 +1796,9 @@ namespace Boilerplate.Server.Api.Infrastructure.Data.Migrations
 
                     b.HasIndex("TenantId", "UserId")
                         .IsUnique();
+
+                    b.HasIndex(new[] { "TenantId", "UserId" }, "IX_TenantUsers_TenantId_UserId_Accepted")
+                        .HasFilter("[AcceptedOn] IS NOT NULL");
 
                     b.ToTable("TenantUsers");
 

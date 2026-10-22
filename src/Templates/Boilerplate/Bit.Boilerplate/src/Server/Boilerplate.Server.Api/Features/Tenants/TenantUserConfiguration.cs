@@ -1,3 +1,4 @@
+//+:cnd:noEmit
 namespace Boilerplate.Server.Api.Features.Tenants;
 
 public partial class TenantUserConfiguration : IEntityTypeConfiguration<TenantUser>
@@ -5,6 +6,16 @@ public partial class TenantUserConfiguration : IEntityTypeConfiguration<TenantUs
     public void Configure(EntityTypeBuilder<TenantUser> builder)
     {
         builder.HasIndex(tu => new { tu.TenantId, tu.UserId }).IsUnique();
+
+        //#if (database != "MySql")
+        builder.HasIndex(tu => new { tu.TenantId, tu.UserId }, "IX_TenantUsers_TenantId_UserId_Accepted")
+            //#if (database == "PostgreSQL")
+            .HasFilter($"\"{nameof(TenantUser.AcceptedOn)}\" IS NOT NULL")
+            //#else
+            .HasFilter($"[{nameof(TenantUser.AcceptedOn)}] IS NOT NULL")
+            //#endif
+            ;
+        //#endif
 
         var storeAdminUserId = Guid.Parse("6ff71671-a1d6-4f97-abb9-d87d7b47d6e5");
         var defaultTestUserId = Guid.Parse("8ff71671-a1d6-4f97-abb9-d87d7b47d6e7");

@@ -14,5 +14,7 @@ public class OAuthGrantConfiguration : IEntityTypeConfiguration<OAuthGrant>
             .WithOne(session => session.OAuthGrant)
             .HasForeignKey<OAuthGrant>(grant => grant.UserSessionId)
             .OnDelete(DeleteBehavior.Cascade);
+
+        builder.HasIndex(grant => grant.ClientId);
     }
 }
