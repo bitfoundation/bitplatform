@@ -9,6 +9,8 @@ namespace Bit.Cli.Tools;
 
 public sealed class ToolInstaller(CliServices cli, StepRunner steps)
 {
+    private readonly List<string> firstOnPath = [];
+
     public async Task InstallAsync(IReadOnlyList<ToolCheck> selected, ToolContext context, CancellationToken cancellationToken)
     {
         var withActions = selected.Where(c => c.Action is not null).ToList();
@@ -121,7 +123,8 @@ public sealed class ToolInstaller(CliServices cli, StepRunner steps)
                     File.CreateSymbolicLink(link, executable);
                 }
 
-                cli.Environment.PrependToPath([links]);
+                firstOnPath.Add(links);
+                cli.Environment.PrependToPath([links], moveToFront: true);
 
                 return StepResult.Warning(done, $"{older} comes first on PATH",
                     hint: $"This run uses {installed}. Remove {older}, or put {Path.GetDirectoryName(installed)} before {Path.GetDirectoryName(older)} in PATH, so your own builds use it too.");
@@ -474,6 +477,7 @@ public sealed class ToolInstaller(CliServices cli, StepRunner steps)
 
         directories.Add(Path.Combine(cli.Environment.HomeDirectory, ".dotnet", "tools"));
         cli.Environment.PrependToPath(directories);
+        cli.Environment.PrependToPath(firstOnPath, moveToFront: true);
     }
 
     private static string DoneTitle(string title)

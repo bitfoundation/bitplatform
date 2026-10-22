@@ -436,7 +436,7 @@ public class ToolTests
         if (OperatingSystem.IsWindows())
             return;
 
-        using var host = new TestHost(HostOs.Linux, new Dictionary<string, string> { ["PATH"] = "/usr/local/bin:/usr/bin" });
+        using var host = new TestHost(HostOs.Linux, new Dictionary<string, string> { ["PATH"] = "/usr/bin" });
         AllInstalled(host.Runner);
         host.Runner.On("node", "--version", 0, "v22.23.3");
         host.Runner.Executables["node"] = "/usr/local/bin/node";
@@ -463,8 +463,8 @@ public class ToolTests
 
         Assert.AreEqual(StepStatus.Warning, result.Status);
         Assert.AreEqual("/usr/local/bin/node comes first on PATH", result.Detail);
-        CollectionAssert.Contains(path, links);
-        Assert.IsLessThan(path.IndexOf("/usr/local/bin"), path.IndexOf(links));
+        Assert.AreEqual(links, path[0]);
+        CollectionAssert.Contains(path, "/usr/local/bin");
         Assert.AreEqual(installed[1], File.ResolveLinkTarget(Path.Combine(links, "npm"), returnFinalTarget: false)!.FullName);
     }
 
