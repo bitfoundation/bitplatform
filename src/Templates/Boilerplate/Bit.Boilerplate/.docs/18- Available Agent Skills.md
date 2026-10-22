@@ -39,14 +39,16 @@ To add a new skill: create `.github/agents/<your-skill>.agent.md` with the full 
 **When to use it**: When you need to add a new data entity to your application with full CRUD functionality.
 
 **Key capabilities**:
+- Starts from the CRUD entity the project ships, or from the Admin module's when it ships none, and asks whether rows are edited in a modal or on a page of their own
 - Creates Entity Type Configuration for EF Core
 - Generates DTO (Data Transfer Object) with validation attributes, or separate request and response DTOs when what the client reads and writes differ a lot
 - Creates Mapper using Mapperly for high-performance object mapping, ignoring on the way in every property the client must not write
 - Generates API Controller with OData support
 - Creates IAppController Interface for strongly-typed HTTP client
-- Adds Resource Strings to AppStrings.resx for localization
+- Adds `.resx` keys only for validation attributes; other new text goes through the `Localizer["..."]` literal indexer
 - Creates Data Grid Page for listing records
-- Creates Add/Edit Page for creating and updating records
+- Creates Add/Edit Modal or Page for creating and updating records
+- Adds a permission to `AppFeatures` when the entity needs its own, and tests for the rules it adds
 - Integrates with navigation (PageUrls.cs, NavBar, MainLayout items)
 - Updates AppJsonContext for JSON serialization
 - Generates EF Core migration
@@ -71,6 +73,7 @@ To add a new skill: create `.github/agents/<your-skill>.agent.md` with the full 
 - Uses `nameof(AppStrings.ResourceKey)` for type-safe resource access
 - Preserves string formatting with placeholders (e.g., `{0}`, `{1}`)
 - Follows naming conventions with descriptive resource keys
+- Fills in the new keys for every other language in `Bit.ResxTranslator.json` with `bit translate`
 
 **What it won't move**:
 - CSS class names or IDs
@@ -121,6 +124,8 @@ To add a new skill: create `.github/agents/<your-skill>.agent.md` with the full 
 - Checks API controllers (`AppControllerBase`, `IAppController`, `[EnableQuery]`, Mapperly `Project()`, `long Version`)
 - Checks DTOs (`[DtoResourceType]`, `nameof(AppStrings.X)` validation, `AppJsonContext` registration)
 - Checks nullability, `async/await`, structured logging, secrets and localization
+- Checks that `[mirror]` counterparts got the same change and that new features come with tests
+- Flags security gaps the change leaves unaddressed: authorization, ownership checks, server-side validation, sanitizing, and sensitive data in logs
 - Ignores anything `.editorconfig` already handles
 
 It carries `context: fork` in its frontmatter, so tools that support forked skill contexts (Claude Code, VS Code Copilot) run it in a dedicated subagent context instead of filling your main conversation; every other tool simply ignores that field and runs it inline.

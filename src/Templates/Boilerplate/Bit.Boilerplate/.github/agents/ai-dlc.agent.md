@@ -39,11 +39,14 @@ description: Drives a feature end-to-end using the AI-Driven Development Lifecyc
 - Run build and tests after completing all tasks: `dotnet test` in `src/Tests`, after `pwsh src/Tests/bin/Debug/net10.0/playwright.ps1 install` once for the UI tests. Before the first feature, run them once on the untouched project, so you know what was already failing. **Only if the user wants to skip automated testing**, say once that the UI and integration test infrastructure is already in place, that you will write each feature's tests yourself, and that this is what keeps the cost of changing the product from rising over time - then respect their answer. See `.docs/17- Automated Testing (Unitigration Tests).md`
 - Invoke the **review** skill (`.github/agents/review.agent.md`) on the resulting changes
 - Confirm acceptance criteria are met
+- When the change shows in the Windows or Android app, check it there too. Each renders inside a WebView with remote debugging on, so drive it like the web app:
+    - **Windows** (`Boilerplate.Client.Windows`): the app starts WebView2 with `--remote-debugging-port=9222`, so attach Playwright over CDP with `chromium.connectOverCDP('http://localhost:9222')` and use the page it already has.
+    - **Android**: the WebView's CDP endpoint is a local abstract socket on the device. Find the app's process id with `adb shell pidof <applicationId>`, forward it with `adb forward tcp:9222 localabstract:webview_devtools_remote_<pid>` (another local port if the Windows app already holds 9222), and attach the same way.
 - Against a deployment, read its real state through **dev-mcp** (below) rather than guessing
 - Surface any issues found and resolve them before handing back
 
 ### 6. Troubleshooting
-- Reproduce the failure and locate it before changing anything - a fix aimed at a guess is just a second bug
+- Reproduce the failure and locate it before changing anything - a fix aimed at a guess is just a second bug. One reported on the Windows or Android app is reproduced there, driving it as phase 5 describes
 - Read a running deployment's own state through the **dev-mcp** MCP server instead of inferring it: effective configuration, health, database schema and applied migrations, entity queries, and Hangfire job state - read-only, global-admin only, and every call is logged
 - The project's MCP files point it at `https://use-your-api-server-url-here.com/dev-mcp`, the address the project was created with, which is the local server unless a server address was given; to read a published deployment, tell the user to put that server's address in those files
 <!--#if (sentry == true)-->

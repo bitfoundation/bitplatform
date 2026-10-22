@@ -40,6 +40,14 @@ Do **not** modify code. Report findings with a file path, a line reference, and 
 A deliberately global entity is the one exception the **scaffold-entity** skill (`.github/agents/scaffold-entity.agent.md`) allows; flag it anyway, so the intent gets stated rather than assumed
 <!--#endif-->
 
+### Security
+When a change touches sign-in, permissions, user input, uploaded files or data that belongs to someone else, and neither the change nor the request says how it stays safe, raise that as a finding even without a proven exploit:
+- [ ] A new or changed endpoint has the authorization it needs, and one that allows anonymous access does so on purpose
+- [ ] A user can read or change only the rows they may: the ownership or tenant check is in the server's query, not only in the UI
+- [ ] Input is validated on the server, and properties the server owns are ignored on the way in (`[MapperIgnoreTarget]`)
+- [ ] No SQL, file path or redirect URL is built from user input, and HTML that users write is sanitized on the server before it is stored, with the `HtmlSanitizer` the server API registers
+- [ ] Tokens, passwords and personal data stay out of logs, error messages and the client
+
 ### DTOs
 - [ ] Has `[DtoResourceType(typeof(AppStrings))]`
 - [ ] Validation uses `nameof(AppStrings.X)` for error messages
@@ -52,4 +60,6 @@ A deliberately global entity is the one exception the **scaffold-entity** skill 
 - [ ] Structured logging used (no plain `Console.Write` or string-concatenated log messages)
 - [ ] Modern C# features used (latest language features, implicit/global usings, no deprecated patterns)
 - [ ] No secrets or credentials in code
+- [ ] Every changed file that starts with a `[mirror]` comment has the same change in each counterpart it names, or the reason it does not apply there is stated
+- [ ] A new feature or a change in behavior comes with tests under `src/Tests`, and a bug fix with a test that fails without it
 - [ ] User-visible text goes through `IStringLocalizer` - `Localizer[nameof(AppStrings.X)]` for existing keys, or the literal indexer (`Localizer["Some new text"]`) for new text. Per `AGENTS.md` section 5, do **not** flag a literal indexer as a violation and do **not** ask for a new `.resx` key; `.resx` edits break hot reload and are a separate, explicitly-requested pass. A raw unlocalized string literal in the UI **is** a violation.

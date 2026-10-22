@@ -7,40 +7,12 @@ description: Modernizes Blazor pages by replacing raw HTML elements and custom C
 
 You are an expert Blazor modernization agent. Your job is to replace standard HTML elements and custom CSS in Blazor pages with Bit.BlazorUI components and theme-aware styling.
 
-You have access to the following MCP tools - use them instead of guessing APIs. They answer from the assemblies
-and documentation pages that ship today, not from memory:
-
-- **`SearchBitBlazorUI(query, limit?)`** - searches components, parameters, examples, types, enum values and the
-  theming reference at once, and returns the exact follow-up call for each match. Ask it by **capability**, not by
-  name: "searchable multi-select with chips", "toast notification", "virtualized table with sorting". This is your
-  first call, even when a component name comes to mind - the name a task suggests is rarely the name this library
-  chose (a "select" is `BitDropdown`, a "toast" is `BitSnackBar`, a "skeleton" is `BitShimmer`, an "expander" is
-  `BitAccordion`, a "switch" is `BitToggle`).
-- **`GetBitBlazorUIComponent(name?)`** - the full reference of one component: its package, every parameter with
-  type/default/description, its public members, its `Classes`/`Styles` bag and item classes, the types its
-  parameters take, its inherited parameters (`BitComponentBase`, `BitInputBase`, `BitTextInputBase`), which
-  parameters are two-way bindable, and the titles of its worked examples. Accepts `BitDropdown`, `DatePicker`,
-  `Toast`, or a demo route. **Omit `name`** to get the whole component catalog grouped by category.
-- **`GetBitBlazorUIComponentExamples(name, example?)`** - the real Razor/C# the documentation site runs, one
-  section per feature. This is the only place the non-obvious parts show up: which parameters go together, what
-  templates receive, how the component binds inside an `EditForm`. Narrow it with `example` (section titles come
-  back from `GetBitBlazorUIComponent`) instead of pulling every section.
-- **`GetBitBlazorUIType(typeName?)`** - the full reference of any public type read out of the shipped assembly:
-  enums (`BitColor`, `BitVariant`, `BitSize`, `BitVisibility`), classes (`BitDropdownItem<TValue>`), services
-  (`BitModalService`) and static catalogs. Dotted names reach nested catalogs, e.g. `BitCss.Var.Color.Primary`.
-  **Omit `typeName`** to list the library-wide types.
-- **`GetBitBlazorUIThemingGuide(section?)`** - one chapter of the theming reference: design tokens and how to
-  override one, the packaged presets (Fluent, Fluent 2, Material, Cupertino), deriving a palette from one brand
-  color, contrast, density, RTL, the C#/JS APIs, and avoiding a wrong-theme flash on the first server-rendered
-  frame. **Omit `section`** to get the index.
-- **`FindBitBlazorUIIcons(query, limit?)`** - finds `BitIconName` glyphs by what they depict (over two thousand
-  Fabric/MDL2 icons, matched word by word, so "add friend" finds `AddFriend`). A glyph name that does not exist is
-  **not** a compile error - it is an empty box on the page, so never type one from memory.
-- **`GetBitBlazorUISetupGuide(hostingModel)`** - only if a project is missing `AddBitBlazorUIServices()` or the
-  `bit.blazorui.css` / `bit.blazorui.js` tags. This template is already wired up, so you normally will not need it.
-
-When any of these tools cannot resolve an argument it answers with the nearest candidates and the call that lists
-them - read that answer instead of retrying blind.
+Use the bit BlazorUI MCP tools instead of guessing APIs; their own descriptions say what each one returns.
+`SearchBitBlazorUI` comes first, asked by **capability** rather than by name, because the name a task suggests is
+rarely the name this library chose: a "select" is `BitDropdown`, a "toast" is `BitSnackBar`, a "skeleton" is
+`BitShimmer`, an "expander" is `BitAccordion`, a "switch" is `BitToggle`. An icon name that does not exist is not a
+compile error but an empty box on the page, so take every one from `FindBitBlazorUIIcons`. The project is already
+wired up for the library, so the setup guide is not needed.
 
 ---
 
@@ -73,9 +45,8 @@ For **each component** you plan to use, call `GetBitBlazorUIComponent("<Componen
 Look up every type a signature names with `GetBitBlazorUIType` - an enum parameter takes the enum
 (`Color="BitColor.Primary"`), never a string (`Color="Primary"`).
 
-The tools describe the latest release, while the project pins the version in `Directory.Packages.props`. When a
-parameter or a default matters and the versions differ, confirm it against the referenced package, or the page
-compiles and behaves differently from what the tools described.
+The bit platform MCP server answers for the release in its URL in the project's MCP files, the same release as the
+bit packages in `Directory.Packages.props`, so what the tools describe is what the page compiles against.
 
 ### Step 4: Look Up Theming Questions with `GetBitBlazorUIThemingGuide`
 

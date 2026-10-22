@@ -1,169 +1,52 @@
 ---
 name: scaffold-entity
-description: Scaffolds a complete CRUD entity across every layer of the Boilerplate solution - entity model, EF Core configuration and migration, DTO, Mapperly mapper, API controller, IAppController interface, AppStrings resource entries, Blazor grid and add/edit pages, and navigation integration.
+description: Scaffolds a complete CRUD entity across every layer of the Boilerplate solution - entity model, EF Core configuration and migration, DTO, Mapperly mapper, API controller and its shared interface, Blazor grid and add/edit pages, navigation, permission and tests.
 ---
 
-# Scaffold Complete Entity with Full CRUD
+# Scaffold an entity with full CRUD
 
-You are an expert at scaffolding complete entity implementations for the project.
+The result is a new entity the user can list, add, edit and delete, wired through every layer the same way as the entities this project already ships, and covered by tests.
 
-## Before You Start: Is the Shape of the Work Known?
+## Is the shape of the work known?
 
 This skill scaffolds a shape you already know. If you were invoked directly and the request is anything more than an entity whose fields, rules and screens are already settled - unclear or negotiable fields, business rules beyond CRUD, anything touching other features - **stop and run the `ai-dlc` skill (`.github/agents/ai-dlc.agent.md`) first**, through its requirements and planning phases. Come back to this file once the entity is pinned down, and scaffold it as a task of that plan.
 
 Do not scaffold a guess: every file this skill writes is one more thing to unpick when the requirements turn out differently.
 
-## Pre-Implementation Research
+## Start from a working entity
 
-**MANDATORY for First-Time CRUD Setup**: Before generating any page files (`.razor`, `.razor.cs`, `.razor.scss`), check the project for existing implementations of `<BitDataGrid`.
+A copy of an entity that already works here, renamed and reshaped, beats code written from a description. Follow the one below through every layer, then build the new one the same way.
 
-* **If a `<BitDataGrid` is already present in the project:** Skip this research step and follow the existing project patterns.
-* **If NO `<BitDataGrid` can be found (First CRUD Implementation):** You **MUST** call the bit BlazorUI MCP tools -
-  starting with `SearchBitBlazorUI` (describe what each control must **do**) even when its name comes to mind, then
-  `GetBitBlazorUIComponent` and `GetBitBlazorUIComponentExamples` for `BitDataGrid`, `BitDialog` and the form
-  inputs you need - to retrieve the authoritative component APIs before writing any markup.
-
-  There are **two types of CRUD pages** - choose the appropriate one based on the DTO being scaffolded:
-  - **Modal Dialog CRUD** - suited for DTOs with a small number of simple properties.
-  - **Detailed Page CRUD** - suited for DTOs with many properties, rich text editors, file uploads, or complex forms.
-
-  **Before proceeding, ask the user which mode is appropriate** given the current DTO's structure and requirements.
-
-Use the component documentation returned by those tools as the authoritative reference for all generated Blazor
-page files in this initial scaffold.
-
-## Instructions
-
-Generate a complete CRUD implementation for an entity including:
-1. **Entity Model**
-2. **Entity Type Configuration** (Entity Framework Core)
-3. **DbContext Registration** (DbSet)
-4. **EF Core Migration**
-5. **DTO** (Data Transfer Object)
-6. **Mapper** (using Mapperly)
-7. **API Controller**
-8. **IAppController Interface** (Strongly-typed HTTP client)
-9. **Localized Strings** (see the note under *DTO*)
-10. **Data Grid Page**
-11. **Add/Edit Modal or Page**
-12. **PageUrls.cs**, **NavBar.razor** and **MainLayout.razor.items.cs** integration
-13. **AppFeatures.cs** registration
-
-### Entity (Model)
-- **Location**: `src/Server/Boilerplate.Server.Api/Features/{FeatureName}/`
-- **File**: `{EntityName}.cs`
-- **Requirements**:
-  - Include `Id`, `Version` properties
-  - Add appropriate navigation properties
-  - Use nullable reference types
-  - Add data annotations as needed
-<!--#if (multitenant == true)-->
-  - **Implement `ITenantAware`** unless the entity is deliberately global, or is scoped by something other than the
-    tenant. `ITenantAware` is what makes `AppDbContext.ConfigureTenantAwareEntities` attach the
-    `HasQueryFilter(x => x.TenantId == CurrentTenantId)` row-level filter and stamp `TenantId` on save; an entity
-    that skips it is readable and writable across every tenant. `Product.cs` is the shipped example.
-  - `TodoItem` is the counter-example: it is scoped per **user** through `UserId`, not per tenant, so it correctly
-    does not implement `ITenantAware`. If you take that route, say so explicitly and put the ownership term in
-    every query in the controller - nothing else will add it for you.
+<!--#if (module == "Admin")-->
+- `Category` is the small shape: a grid page and a modal that adds and edits a row. `Product` is the large one: a grid page and an add/edit page of its own, with a rich text field and an image upload. Each lives in `Features/Categories` or `Features/Products` of the server API and of Shared, in `Pages/Categories` or `Pages/Products` of Client.Core, and in the same folders under `src/Tests/Features`.
+<!--#elif (sample == true || offlineDb == true)-->
+- `TodoItem` (`Features/Todo` of the server API and of Shared) is the entity this project ships, but it has no grid. For the grid and the add/edit form, read the Admin module's `Category` (a modal) and `Product` (a page of its own) with the bit platform source code tools - `FindBitPlatformSymbols`, `SearchBitPlatformCode` and `GetBitPlatformSymbolSource`, scoped with `path_filter: src/Templates`. They read the template's own code, never this workspace.
+<!--#else-->
+- This project ships no CRUD entity. Read the Admin module's `Category` (a grid and an add/edit modal) and `Product` (a grid and an add/edit page of its own) with the bit platform source code tools - `FindBitPlatformSymbols`, `SearchBitPlatformCode` and `GetBitPlatformSymbolSource`, scoped with `path_filter: src/Templates`. They read the template's own code, never this workspace, and the Admin module's conditional directives mark what belongs to it.
 <!--#endif-->
+- Unless the request already settles it, ask the user whether rows are added and edited in a modal, which suits a few simple fields, or on a page of their own, which suits many fields, rich text, uploads or a complex form.
 
-### Entity Configuration, AppDbContext DbSet and Migration
-- **Location**: `src/Server/Boilerplate.Server.Api/Features/{FeatureName}/`
-- **Files**:
-  - `{EntityName}Configuration.cs` - Implement `IEntityTypeConfiguration<{EntityName}>`
-  - Configure unique indexes and relationships
-  - Automatically registered in `AppDbContext` via `modelBuilder.ApplyConfigurationsFromAssembly()`
-- **Migration**: 
-  - Run: `dnx dotnet-ef@10.0.13 -- migrations add {MigrationName} --output-dir Infrastructure/Data/Migrations --verbose` in `Boilerplate.Server.Api` project
+## What a finished entity has
 
-### DTO
-- **Location**: `src/Shared/Features/{FeatureName}/`
-- **File**: `{EntityName}Dto.cs`
-- **Requirements**:
-  - Use `[DtoResourceType(typeof(AppStrings))]` attribute
-  - Add validation attributes: `[Required]`, `[MaxLength]`, `[Display]`
-  - Use `nameof(AppStrings.PropertyName)` for error messages and display names. **Validation attributes are the
-    one place a new `.resx` key is required**, because `[Display(Name = ...)]` and `[Required(ErrorMessage = ...)]`
-    take compile-time constants - `TodoItemDto.cs` is the shipped shape. **Everywhere else** (page markup,
-    code-behind, controllers) follow `AGENTS.md` section 5 and write the English text through the
-    `IStringLocalizer` indexer, e.g. `Localizer["Category saved."]`; editing `.resx` outside the DTO forces a full
-    restart of a running hot-reload session. Moving those literals into `.resx` is a separate, explicitly-requested
-    pass - see the **localize-strings** skill (`.github/agents/localize-strings.agent.md`).
-  - Include `Id`, `Version` properties
-  - Add calculated properties if needed (e.g., `ProductsCount`)
-  - Add `[JsonSerializable(typeof({DtoName}))]` to `AppJsonContext.cs`
-  - Decide for every property who writes it. One the client may read but the server owns (the owner, timestamps,
-    totals, a status only a workflow moves) stays on the DTO and is ignored by the mapper on the way in - see
-    *Mapper*. When what the client reads and what it writes differ a lot, split the DTO instead of piling up ignores:
-    `{EntityName}RequestDto` for what the add/edit form sends and `{EntityName}ResponseDto` for what the grid and
-    the API return. The request DTO keeps `Id` and `Version` too, or updates lose their optimistic concurrency check
+- **Entity and configuration** in the server API: `Id` and a `long Version` concurrency token, an EF Core configuration for its indexes and relationships, and a `DbSet` on `AppDbContext`. Configurations are picked up from the assembly, so they need no registration.
+<!--#if (multitenant == true)-->
+- **Tenant scope**: the entity implements `ITenantAware`, which makes `AppDbContext` filter its rows to the current tenant and stamp the tenant on save. An entity without it is readable and writable across every tenant. The only exceptions are an entity that is deliberately global, or one scoped by another owner (as `TodoItem` is scoped per user); say which in the plan, and put the ownership term in every query, since nothing else adds it.
+<!--#endif-->
+- **Migration**, added with the command in `AGENTS.md` section 4. Never edit a migration the project already has.
+- **DTO** in Shared, with `[DtoResourceType(typeof(AppStrings))]`, registered in `AppJsonContext`. Validation and display attributes are the one place a new `AppStrings.resx` key is required, since attributes take compile-time constants; everywhere else, new text goes through the `IStringLocalizer` indexer as `AGENTS.md` section 5 says.
+- **Who writes each property.** One the client may read but the server owns - the owner, timestamps, totals, a status only a workflow moves - is ignored by the mapper on the way in, with `[MapperIgnoreTarget]`, so a crafted request cannot set it. When what the client reads and what it writes differ a lot, split the DTO into a request and a response DTO instead of piling up ignores; the request DTO keeps `Id` and `Version`, or updates lose their concurrency check.
+- **Mapper**: a Mapperly static partial class with `Project()` for queries and `Map()` and `Patch()` for writes.
+- **Controller and shared interface.** The controller derives from `AppControllerBase`, implements the interface, and carries `[ApiVersion(1)]` with the versioned route. The interface keeps the literal `api/v1/...` route the others use: the generated client has no API version to substitute, so the two are not unified. Queries use `[EnableQuery]` over `Project()`; a missing row is a `ResourceNotFoundException`; every method takes a `CancellationToken`. On the interface, an action that returns `IQueryable<T>` is declared as returning a list with a `default!` body, an `IActionResult` one names its type with `Produces<T>`, and `ODataQueryOptions` parameters are left out.
+- **Permission.** Decide who may manage the entity. A new permission goes into `AppFeatures` with a short, unique value, since it travels in every access token, and a description, which the roles page shows. The controller's policy, the shared interface's `[AuthorizedApi]`, the page and its menu item all use it.
+- **Pages** in Client.Core: a grid page and the add/edit modal or page, each as `.razor`, `.razor.cs` and `.razor.scss`. If the project has no `BitDataGrid` yet, look up `BitDataGrid`, `BitDialog` and the inputs with the bit BlazorUI MCP tools, starting with `SearchBitBlazorUI`, before writing any markup.
+- **Navigation**: the page's URL in `PageUrls`, and a menu item wherever the existing entities have one, shown only to users with the permission.
+- **Tests** under `src/Tests` for what this entity adds beyond the copy: the form's validation, and every rule the server enforces, such as who may change a row or what blocks a delete.
 
-### Mapper
-- **Location**: `src/Server/Boilerplate.Server.Api/Features/{FeatureName}/`
-- **File**: `{EntityName}Mapper.cs` (or `{FeatureName}Mapper.cs` if multiple entities)
-- **Requirements**:
-  - Use `[Mapper]` attribute from Mapperly
-  - Create `static partial class {MapperName}Mapper`
-  - Add projection method: `public static partial IQueryable<{DtoName}> Project(this IQueryable<{EntityName}> query);`
-  - Add mapping methods: `Map()`, `Patch()` for CRUD operations
-  - Put `[MapperIgnoreTarget]` on the DTO-to-entity `Map()` and `Patch()` for every entity property the client must
-    not write, so a crafted request can't set it - `ProductsMapper.cs` is the shipped example and
-    `.docs/02- DTOs, Mappers, and Mapperly.md` explains why. With split DTOs, `Project()` and the entity-to-DTO
-    `Map()` return the response DTO, and the DTO-to-entity `Map()` and `Patch()` take the request DTO
-  - Use `[MapProperty]` for complex mappings if needed
+## Done means
 
-### API Controller
-- **Location**: `src/Server/Boilerplate.Server.Api/Features/{FeatureName}/`
-- **File**: `{EntityName}Controller.cs`
-- **Requirements**:
-  - Inherit from `AppControllerBase`
-  - Implement the corresponding `IAppController` interface
-  - Add `[ApiVersion(1)]` and `[Route("api/v{v:apiVersion}/[controller]/[action]")]`
-  - Add appropriate authorization attributes
-  - Use `[EnableQuery]` for GET endpoints with OData support
-  - Implement validation in private methods
-  - Use `Project()` for querying and mapping
-  - With split DTOs, create and update take the request DTO and return the response DTO
-  - Handle resource not found scenarios using `ResourceNotFoundException`
-
-### IAppController Interface
-- **Location**: `src/Shared/Features/{FeatureName}/`
-- **File**: `I{EntityName}Controller.cs`
-- **Requirements**:
-  - Inherit from `IAppController`
-  - Add `[Route("api/v1/[controller]/[action]/")]` attribute, matching every interface the project already ships.
-    The interface uses the literal `v1`; the **server controller** uses `[ApiVersion(1)]` together with
-    `[Route("api/v{v:apiVersion}/[controller]/[action]")]`. Do not unify the two - the generated typed proxy has
-    no `apiVersion` route value to substitute. (An unversioned route also works, since `AddApiVersioning` sets
-    `AssumeDefaultVersionWhenUnspecified`, but it would be the only one in the project.)
-  - Add `[AuthorizedApi]` if authentication required
-  - Always use `CancellationToken` parameters
-  - The return type should be `Task<T>` or `Task<T>` where T is JSON Serializable type like DTO, int, or List<Dto>
-  - If Backend API's action returns `IQueryable<T>`, use `Task<List<T>>` as return type with `=> default!`
-  - If Backend API's action returns `IActionResult`, use `Produces<T>` attribute to specify the response type with `=> default!`
-  - If Backend API accepts `ODataQueryOptions`, simply ignore it
-
-### Pages
-
-Every Blazor page follows a three-file structure:
-- `PageName.razor` - UI markup with Razor syntax
-- `PageName.razor.cs` - Code-behind with C# logic
-- `PageName.razor.scss` - Scoped styles
-
-**Location**: `src/Client/Boilerplate.Client.Core/Components/Pages/{FeatureName}/`
-
-- **Grid/List Page**: `{FeatureName}Page.razor` + `.razor.cs` + `.razor.scss`
-- **Add/Edit Modal or Page**: `AddOrEdit{EntityName}Page.razor` or `AddOrEdit{EntityName}Modal.razor`
-
-Use SCSS variables from `_bit-css-variables.scss` for theming:
-```scss
-@import '../../Styles/abstracts/_bit-css-variables.scss';
-background: $bit-color-background-secondary;
-color: $bit-color-primary;
-```
-
-Always use `WrapHandled` for all event handlers. Exceptions are caught and handled by `ExceptionHandler`:
-```razor
-<BitButton OnClick="WrapHandled(SaveData)" />
-<BitTextField OnEnter="WrapHandled(async (args) => await Submit())" />
-```
+- The solution builds, and the migration applies to a fresh database.
+- In the running app, a seeded user with the permission can list, add, edit and delete rows; saving a row someone else changed in the meantime is refused; a user without the permission sees neither the menu item nor the data.
+<!--#if (multitenant == true)-->
+- A user of another tenant sees none of the rows.
+<!--#endif-->
+- The new tests pass, and so does every test that passed before.
