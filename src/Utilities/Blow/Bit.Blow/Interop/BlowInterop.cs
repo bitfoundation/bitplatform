@@ -1,4 +1,5 @@
-﻿using Microsoft.JSInterop;
+﻿using System.Diagnostics.CodeAnalysis;
+using Microsoft.JSInterop;
 
 namespace Bit.Blow;
 
@@ -18,6 +19,11 @@ internal sealed class BlowInterop : IAsyncDisposable
     public async ValueTask<BlowDomRect?> GetRectAsync(BlowElementReferenceLike el)
         => await (await _moduleTask.Value).InvokeAsync<BlowDomRect?>("getRect", el.Reference);
 
+    // InvokeAsync<T> preserves what System.Text.Json needs of T, but T is an array here and the element types are
+    // only ever built by System.Text.Json: without this the trimmer drops their constructors and every measurement
+    // fails to deserialize in trimmed (release) builds.
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BlowMeasuredNode))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BlowMeasuredHandle))]
     public async ValueTask<BlowMeasuredNode[]> MeasureNodesAsync(BlowElementReferenceLike viewport, double zoom)
         => await (await _moduleTask.Value).InvokeAsync<BlowMeasuredNode[]>("measureNodes", viewport.Reference, zoom)
            ?? [];
@@ -42,6 +48,7 @@ internal sealed class BlowInterop : IAsyncDisposable
     /// Installs the nodrag/nopan/nowheel guards and the input policy on the pane. The returned
     /// reference must be disposed to remove them.
     /// </summary>
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BlowInputPolicy))]
     public async ValueTask<IJSObjectReference?> InstallInteractionGuardsAsync(
         object pane, string? noDragClass, string? noPanClass, string? noWheelClass, BlowInputPolicy policy)
         => await (await _moduleTask.Value).InvokeAsync<IJSObjectReference?>(

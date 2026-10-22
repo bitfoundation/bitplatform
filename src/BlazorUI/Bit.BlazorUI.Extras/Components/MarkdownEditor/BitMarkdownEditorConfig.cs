@@ -5,6 +5,9 @@
 /// This is a named type (not an anonymous one) so that its properties are
 /// serialized by name and it stays trim/AOT-safe: anonymous types lose their
 /// constructor parameter names when trimmed, which breaks System.Text.Json.
+/// System.Text.Json reads its getters by reflection, which the trimmer cannot see,
+/// so the interop calls that send it preserve them with a
+/// <see cref="System.Diagnostics.CodeAnalysis.DynamicDependencyAttribute"/>.
 /// </summary>
 internal sealed class BitMarkdownEditorConfig
 {

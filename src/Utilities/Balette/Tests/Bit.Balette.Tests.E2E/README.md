@@ -60,13 +60,16 @@ dotnet test --filter "FullyQualifiedName~.FlowTests."
 dotnet test --filter "FullyQualifiedName~Backspace_on_an_empty_query"
 ```
 
-CI does the same in Release (`.github/workflows/bit.ci.Balette.e2e.yml`):
+CI does the same in Release (`.github/workflows/bit.ci.Balette.e2e.yml`), against the demo published the way
+`balette.demo.cd.yml` publishes it rather than a build output: only a publish trims the WebAssembly client, so an interop payload the trimmer breaks (an anonymous type whose
+constructor lost its parameter names, a getter nothing but System.Text.Json reads) fails there and nowhere else:
 
 ```bash
-dotnet build src/Utilities/Balette/Demo/Server/Bit.Balette.Demo.Server.csproj -c Release
+dotnet publish src/Utilities/Balette/Demo/Server/Bit.Balette.Demo.Server.csproj -c Release -o demo -p:InvariantGlobalization=true
 dotnet build src/Utilities/Balette/Tests/Bit.Balette.Tests.E2E/Bit.Balette.Tests.E2E.csproj -c Release
 pwsh src/Utilities/Balette/Tests/Bit.Balette.Tests.E2E/bin/Release/net10.0/playwright.ps1 install --with-deps chromium
-cd src/Utilities/Balette/Tests/Bit.Balette.Tests.E2E && dotnet test -c Release --no-build --report-trx --report-trx-filename balette-e2e.trx
+(cd demo && dotnet Bit.Balette.Demo.Server.dll --urls http://127.0.0.1:5000 &)
+cd src/Utilities/Balette/Tests/Bit.Balette.Tests.E2E && BALETTE_E2E_BASE_URL=http://127.0.0.1:5000 dotnet test -c Release --no-build --report-trx --report-trx-filename balette-e2e.trx
 ```
 
 That workflow only runs when started by hand (Actions > "bit platform CI - Balette E2E" > Run workflow). The pull-request pipeline, `bit.ci.Balette.yml`, runs the build, model, search, component and MCP tests only.

@@ -57,13 +57,17 @@ dotnet test --filter "FullyQualifiedName~Persistence_survives_a_worker_restart"
 ```
 
 CI does the same in Release (`.github/workflows/bit.ci.Bsqlite.e2e.yml`), only when started by hand (Actions >
-"bit platform CI - Bsqlite E2E" > Run workflow), and uploads the test results (TRX) as an artifact:
+"bit platform CI - Bsqlite E2E" > Run workflow), and uploads the test results (TRX) and the demo's output as an
+artifact. Its demo tests drive the demo published the way `bsqlite.demo.cd.yml` publishes it rather than a build
+output: only a publish trims the WebAssembly client, so an interop payload the trimmer breaks (an anonymous type whose
+constructor lost its parameter names, a getter nothing but System.Text.Json reads) fails there and nowhere else:
 
 ```bash
-dotnet build src/Utilities/Bsqlite/Demo/Server/Bit.Bsqlite.Demo.Server.csproj -c Release
+dotnet publish src/Utilities/Bsqlite/Demo/Server/Bit.Bsqlite.Demo.Server.csproj -c Release -o demo -p:InvariantGlobalization=true
 dotnet build src/Utilities/Bsqlite/Tests/Bit.Bsqlite.Tests.E2E/Bit.Bsqlite.Tests.E2E.csproj -c Release
 pwsh src/Utilities/Bsqlite/Tests/Bit.Bsqlite.Tests.E2E/bin/Release/net10.0/playwright.ps1 install --with-deps chromium
-cd src/Utilities/Bsqlite/Tests/Bit.Bsqlite.Tests.E2E && dotnet test -c Release --no-build --report-trx --report-trx-filename bsqlite-e2e.trx
+(cd demo && dotnet Bit.Bsqlite.Demo.Server.dll --urls http://127.0.0.1:5000 &)
+cd src/Utilities/Bsqlite/Tests/Bit.Bsqlite.Tests.E2E && BSQLITE_E2E_DEMO_URL=http://127.0.0.1:5000 dotnet test -c Release --no-build --report-trx --report-trx-filename bsqlite-e2e.trx
 ```
 
 The pull-request pipeline, `bit.ci.Bsqlite.yml`, runs the build, unit, MCP server and JavaScript tests only.
