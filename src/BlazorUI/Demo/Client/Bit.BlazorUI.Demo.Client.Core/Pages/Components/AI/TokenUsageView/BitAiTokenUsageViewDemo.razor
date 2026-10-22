@@ -1,0 +1,167 @@
+﻿@page "/components/ai/tokenusageview"
+@inherits AppComponentBase
+
+<PageOutlet Url="components/ai/tokenusageview"
+            Title="AiTokenUsageView"
+            Description="BitAiTokenUsageView is a compact readout of what an AI generation cost: its tokens, its money, its throughput and its latency, with the breakdown of the tokens as its tooltip." />
+
+<DemoPage Name="AiTokenUsageView"
+          Description="BitAiTokenUsageView is a compact readout of what a generation cost: its tokens, its money and its speed - the throughput in tokens per second and, on request, the time to the first token. Every figure is optional, because providers report different subsets of them and a row of blanks is worse than a short row: a figure the usage or the metadata does not carry is left out rather than shown empty. The breakdown of the tokens (input, output, cached and reasoning) is the native tooltip of the readout. A message shows one under itself and a run view in its header when BitAiUiOptions.ShowUsage is on."
+          Parameters="componentParameters"
+          SubClasses="componentSubClasses"
+          SubEnums="componentSubEnums"
+          CssVariables="componentCssVariables"
+          GitHubAIUrl="TokenUsageView/BitAiTokenUsageView.razor"
+          GitHubDemoUrl="AI/TokenUsageView/BitAiTokenUsageViewDemo.razor">
+    <NotesTemplate>
+        <BitText>
+            To use this component, you need to install the
+            <BitLink Href="https://www.nuget.org/packages/Bit.BlazorUI.AI" Target="_blank">
+                <BitTag Reversed
+                        Text="Bit.BlazorUI.AI"
+                        Color="BitColor.SecondaryBackground"
+                        IconName="@BitIconName.NavigateExternalInline" />
+            </BitLink>
+            nuget package, as described in the Optional steps of the
+            <BitLink Href="/getting-started">Getting started</BitLink> page.
+        </BitText>
+        <br />
+        <BitText>
+            The readout takes a <b>BitAiTokenUsage</b> - the <b>Usage</b> of a message's <b>BitAiGenerationMetadata</b>, the
+            <b>TotalUsage</b> of a conversation, or the <b>Usage</b> of an agent run - and, for the speed and the latency, the
+            <b>BitAiGenerationMetadata</b> itself. A transport reports them as <b>BitAiUsageUpdatedEvent</b>s and
+            <b>BitAiMetadataEvent</b>s; the session times the generation. Its words and number formats come from the string table
+            (<b>BitAiStrings.Tokens</b>, <b>FormatTokens</b>, <b>TokensPerSecond</b>, <b>FormatDuration</b>, <b>UsageLine</b>),
+            in the culture of the page. A cost of less than a cent shows four decimals. See it under every message of the
+            <BitLink Href="/ai/scenarios/usage">Models and usage</BitLink> scenario.
+        </BitText>
+    </NotesTemplate>
+    <Examples>
+        <DemoExample Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
+            <div>
+                Hand it a <b>Usage</b>: it shows the total of the input and output tokens, shortened (1.6k), and lists them one
+                by one in its tooltip - point at it.
+            </div>
+            <br />
+            <BitAiTokenUsageView Usage="basicUsage" />
+        </DemoExample>
+
+        <DemoExample Title="Cost" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
+            <div>
+                A usage with a <b>Cost</b> shows it in its <b>Currency</b> (USD when there is none): $, &euro; and &pound; by
+                their symbols, any other ISO 4217 code by its code. A fraction of a cent - what most single requests cost - keeps
+                four decimals rather than reading as nothing.
+            </div>
+            <br />
+            <div class="example-stack">
+                <BitAiTokenUsageView Usage="centsUsage" />
+                <BitAiTokenUsageView Usage="dollarsUsage" />
+                <BitAiTokenUsageView Usage="eurosUsage" />
+                <BitAiTokenUsageView Usage="yenUsage" />
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Speed & latency" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
+            <div>
+                Given the <b>Metadata</b> of the generation, the readout adds its throughput - the output tokens per second of
+                streaming, after the first token - and, with <b>ShowLatency</b>, the time to the first token. <b>ShowSpeed</b>
+                false leaves the throughput off.
+            </div>
+            <br />
+            <div class="example-stack">
+                <BitAiTokenUsageView Usage="metadata.Usage" Metadata="metadata" />
+                <BitAiTokenUsageView Usage="metadata.Usage" Metadata="metadata" ShowLatency />
+                <BitAiTokenUsageView Usage="metadata.Usage" Metadata="metadata" ShowSpeed="false" ShowLatency />
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Breakdown" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
+            <div>
+                The tooltip has a line for every kind of token the provider reported: input, output, cached input and hidden
+                reasoning. A <b>title</b> splatted onto the readout replaces it.
+            </div>
+            <br />
+            <div class="example-stack">
+                <BitAiTokenUsageView Usage="detailedUsage" />
+                <BitAiTokenUsageView Usage="detailedUsage" title="Billed at the batch rate" />
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="A live conversation" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
+            <div>
+                Real accounting from a scripted transport of this site: every turn reports its tokens and cost, priced with the
+                rates of the model, and the session times it. Each answer shows its own usage with its speed and latency, and the
+                conversation its <b>TotalUsage</b>, which adds the turns field by field.
+            </div>
+            <br />
+            <BitButton OnClick="SendMetered" Disabled="isSending">Send a message</BitButton>
+            <br /><br />
+            @if (meteredSession is not null)
+            {
+                @foreach (var message in meteredSession.Conversation.Messages.Where(m => m.Role.IsAssistant && m.Metadata is not null))
+                {
+                    <div class="example-turn">
+                        <span>@message.Metadata!.ModelId</span>
+                        <BitAiTokenUsageView Usage="message.Metadata.Usage" Metadata="message.Metadata" ShowLatency />
+                    </div>
+                }
+                <br />
+                <div class="example-turn">
+                    <b>Total</b>
+                    <BitAiTokenUsageView Usage="meteredSession.Conversation.TotalUsage" />
+                </div>
+            }
+        </DemoExample>
+
+        <DemoExample Title="Cascading parameters" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
+            <div>
+                <b>BitParams</b> with a <b>BitAiTokenUsageViewParams</b> sets which figures every readout inside it shows, and its
+                look - the readouts of the messages of a chat included - and a readout's own value still wins (the last shows
+                its speed).
+            </div>
+            <br />
+            <BitParams Parameters="usageViewParams">
+                <div class="example-stack">
+                    <BitAiTokenUsageView Usage="metadata.Usage" Metadata="metadata" />
+                    <BitAiTokenUsageView Usage="metadata.Usage" Metadata="metadata" ShowSpeed="true" />
+                </div>
+            </BitParams>
+        </DemoExample>
+
+        <DemoExample Title="Style & Class" RazorCode="@example7RazorCode" Id="example7">
+            <div>
+                <b>Style</b> and <b>Class</b> reach the root, <b>Styles</b> and <b>Classes</b> each figure - the tokens, the cost,
+                the speed and the latency. The public <b>--bit-AiTokenUsageView-*</b> variables re-skin the readouts from
+                <b>:root</b>, an ancestor or <b>Style</b>.
+            </div>
+            <br />
+            @* A plain element of this page for the scoped ::deep rules of the custom classes to anchor on. *@
+            <div class="example-stack">
+                <BitAiTokenUsageView Usage="metadata.Usage" Metadata="metadata" Style="padding: 0.25rem 0.5rem; border: 1px dashed #0ea5e9; border-radius: 1rem" />
+                <BitAiTokenUsageView Usage="metadata.Usage"
+                                     Metadata="metadata"
+                                     ShowLatency
+                                     Class="custom-class"
+                                     Classes="@(new() { Cost = "custom-cost" })"
+                                     Styles="@(new() { Speed = "color: #16a34a", Latency = "color: #d97706" })" />
+                <BitAiTokenUsageView Usage="metadata.Usage"
+                                     Metadata="metadata"
+                                     Style="--bit-AiTokenUsageView-color: #7c3aed; --bit-AiTokenUsageView-font-size: 0.875rem; --bit-AiTokenUsageView-gap: 0.25rem" />
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="RTL" RazorCode="@example8RazorCode" Id="example8">
+            <div>
+                In right-to-left text the figures are laid out from right to left, whether the direction comes from <b>Dir</b> or
+                from a <b>dir</b> attribute around the readout.
+            </div>
+            <br />
+            <div class="example-stack">
+                <BitAiTokenUsageView Dir="BitDir.Rtl" Usage="metadata.Usage" Metadata="metadata" ShowLatency />
+                <div dir="rtl">
+                    <BitAiTokenUsageView Usage="metadata.Usage" Metadata="metadata" ShowLatency />
+                </div>
+            </div>
+        </DemoExample>
+    </Examples>
+</DemoPage>

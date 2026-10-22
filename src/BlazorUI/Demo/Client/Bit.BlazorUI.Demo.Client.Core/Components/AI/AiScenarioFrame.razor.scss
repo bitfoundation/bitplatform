@@ -1,0 +1,76 @@
+﻿@import '../../Styles/abstracts/_docs.scss';
+
+.ai-scenario {
+    display: grid;
+    gap: $doc-space-sm;
+    grid-template-columns: minmax(0, 1fr);
+}
+
+// The panel goes beside the chat where there is room for both, and under it (above it, for a sidebar) in a narrow
+// preview - asked of the preview box the demo is shown in rather than of the viewport, since the article column is
+// narrower than the page.
+.ai-scenario-split {
+    grid-template-columns: minmax(0, 1fr) rem2(260px);
+
+    @container demo-preview (max-width: #{rem2(720px)}) {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}
+
+.ai-scenario-split-start {
+    grid-template-columns: rem2(240px) minmax(0, 1fr);
+
+    > .ai-scenario-aside {
+        order: -1;
+    }
+
+    @container demo-preview (max-width: #{rem2(720px)}) {
+        grid-template-columns: minmax(0, 1fr);
+
+        > .ai-scenario-aside {
+            max-height: rem2(240px);
+        }
+    }
+}
+
+// A chat scrolls its own transcript, so the box it fills has a height of its own and clips nothing but its corners.
+.ai-scenario-main {
+    min-height: 0;
+    display: flex;
+    overflow: hidden;
+    height: rem2(560px);
+    flex-direction: column;
+
+    @include doc-surface;
+}
+
+.ai-scenario-aside {
+    min-width: 0;
+    overflow: auto;
+    max-height: rem2(560px);
+    padding: $doc-space-sm;
+    font-size: $bit-typography-fs-sm;
+    color: $bit-color-foreground-secondary;
+
+    @include doc-surface($bit-color-background-secondary);
+}
+
+// What a scenario puts in the panel is its own markup, written in its page, so the panel styles it through ::deep from
+// the one element of this file it is drawn in.
+.ai-scenario-aside ::deep h4 {
+    margin: 0 0 $doc-space-2xs;
+    color: $bit-color-foreground-primary;
+}
+
+.ai-scenario-aside ::deep p {
+    margin: 0 0 $doc-space-2xs;
+}
+
+.ai-scenario-aside ::deep ul {
+    margin: 0 0 $doc-space-xs;
+    padding-inline-start: rem2(18px);
+}
+
+.ai-scenario-aside ::deep li + li {
+    margin-top: $doc-space-3xs;
+}

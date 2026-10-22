@@ -1,0 +1,112 @@
+﻿@page "/components/ai/thinkingindicator"
+@inherits AppComponentBase
+
+<PageOutlet Url="components/ai/thinkingindicator"
+            Title="AiThinkingIndicator"
+            Description="BitAiThinkingIndicator shows that an AI model is working on a reply that has not started yet: bouncing dots and a label, announced politely to screen readers." />
+
+<DemoPage Name="AiThinkingIndicator"
+          SecondaryNames="@(["TypingIndicator"])"
+          Description="BitAiThinkingIndicator is shown while the model is working but has produced nothing yet: three bouncing dots and a label, drawn at the size of the text around it. It is a polite live region, so a screen reader user learns that a response is coming without the announcement interrupting them. The label says Thinking by default, or whatever the app knows about the wait - a tool that is running, a status the transport reported."
+          Parameters="componentParameters"
+          SubClasses="componentSubClasses"
+          CssVariables="componentCssVariables"
+          GitHubAIUrl="ThinkingIndicator/BitAiThinkingIndicator.razor"
+          GitHubDemoUrl="AI/ThinkingIndicator/BitAiThinkingIndicatorDemo.razor">
+    <NotesTemplate>
+        <BitText>
+            To use this component, you need to install the
+            <BitLink Href="https://www.nuget.org/packages/Bit.BlazorUI.AI" Target="_blank">
+                <BitTag Reversed
+                        Text="Bit.BlazorUI.AI"
+                        Color="BitColor.SecondaryBackground"
+                        IconName="@BitIconName.NavigateExternalInline" />
+            </BitLink>
+            nuget package, as described in the Optional steps of the
+            <BitLink Href="/getting-started">Getting started</BitLink> page.
+        </BitText>
+        <br />
+        <BitText>
+            A chat message shows one by itself while its reply has not started. The indicator is a polite live region
+            (<b>role="status"</b>): render it only while there is a wait to announce, and change its <b>Label</b> rather than rendering a new
+            one, so a screen reader hears each status once. Under reduced motion the dots slow down rather than stop, since they are the only
+            sign that work is still going on; ForceAnimation at the top of this page restores their pace. See the <BitLink Href="/ai/scenarios/streaming">Streaming</BitLink> and
+            <BitLink Href="/ai/scenarios/tools">Tools</BitLink> scenarios.
+        </BitText>
+    </NotesTemplate>
+    <Examples>
+        <DemoExample Title="Basic" RazorCode="@example1RazorCode" Id="example1">
+            <div>
+                Three dots and the <b>Thinking</b> label of the <b>BitAiStrings</b> in force, drawn inline at the size of the text around it.
+            </div>
+            <br />
+            <BitAiThinkingIndicator />
+        </DemoExample>
+
+        <DemoExample Title="Label" RazorCode="@example2RazorCode" Id="example2">
+            <div>
+                <b>Label</b> replaces the default text with what the app knows about the wait. It is what the live region announces.
+            </div>
+            <br />
+            <div class="example-stack">
+                <BitAiThinkingIndicator Label="Searching the documentation" />
+                <BitAiThinkingIndicator Label="Reading 3 attachments" />
+                <BitAiThinkingIndicator Label="Waiting for the weather service" />
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="While a reply is on its way" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
+            <div>
+                Shown from the moment a turn starts until its first text arrives. The scripted model below first reports a status
+                (<b>BitAiStatusEvent</b>, kept as the <b>StatusText</b> of the message) and then calls a tool, and the label follows both; once
+                the answer starts streaming, the indicator gives way to it.
+            </div>
+            <br />
+            <BitButton OnClick="AskAsync" Disabled="session.IsGenerating">Ask about the weather</BitButton>
+            <br /><br />
+            <div class="example-reply">
+                @if (session.Conversation.Messages.LastOrDefault(m => m.Role.IsAssistant) is { } reply)
+                {
+                    @if (reply.PartsOf<BitAiTextPart>().Any(p => p.IsEmpty is false))
+                    {
+                        <div>@reply.GetText()</div>
+                    }
+                    else if (session.IsGenerating)
+                    {
+                        <BitAiThinkingIndicator Label="@WaitLabel(reply)" />
+                    }
+                }
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Style & Class" RazorCode="@example4RazorCode" Id="example4">
+            <div>
+                <b>Style</b> and <b>Class</b> land on the root, <b>Styles.Loading</b> and <b>Classes.Loading</b> on the parts of the
+                <b>BitBouncingDotsLoading</b> it draws (its dots and its label). The public <b>--bit-AiThinkingIndicator-*</b> variables set the
+                color and the size of the label - the dots are drawn at that size - and the <b>--bit-Loading-*</b> ones the dots themselves.
+            </div>
+            <br />
+            <div class="example-stack">
+                <BitAiThinkingIndicator Style="padding: 0.5rem 1rem; border-radius: 1rem; background-color: #ede9fe" />
+
+                <BitAiThinkingIndicator Class="custom-thinking" />
+
+                <BitAiThinkingIndicator Styles="@(new() { Loading = new() { Label = "font-style: italic", Child = "background-color: #db2777" } })" />
+
+                <BitAiThinkingIndicator Classes="@(new() { Root = "custom-thinking-root", Loading = new() { Label = "custom-thinking-label" } })" />
+
+                <div style="--bit-AiThinkingIndicator-color: #0b7a75; --bit-AiThinkingIndicator-font-size: 1.25rem; --bit-Loading-color: #0b7a75;">
+                    <BitAiThinkingIndicator />
+                </div>
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="RTL" RazorCode="@example5RazorCode" Id="example5">
+            <div>Use BitAiThinkingIndicator in right-to-left (RTL).</div>
+            <br />
+            <div dir="rtl">
+                <BitAiThinkingIndicator Dir="BitDir.Rtl" Label="در حال فکر کردن" />
+            </div>
+        </DemoExample>
+    </Examples>
+</DemoPage>

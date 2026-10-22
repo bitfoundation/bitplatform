@@ -1,0 +1,175 @@
+﻿@page "/e2e/aichatmessage"
+@implements IAsyncDisposable
+
+<PageTitle>BitAiChatMessage E2E</PageTitle>
+
+<h1>BitAiChatMessage</h1>
+
+@* The three roles on their own, with no session: a user question, an assistant answer and a system note. *@
+<E2ESection Id="roles" Title="Roles">
+    <div id="cms-roles" style="display:flex;flex-direction:column;gap:16px;max-width:640px">
+        <BitAiChatMessage Id="cms-user" Message="_user" />
+        <BitAiChatMessage Id="cms-assistant" Message="_assistant" />
+        <BitAiChatMessage Id="cms-system" Message="_system" />
+    </div>
+</E2ESection>
+
+<E2ESection Id="busy" Title="Busy">
+    <button id="cms-busy-pending" @onclick="() => SetBusy(BitAiMessageStatus.Pending)">Pending</button>
+    <button id="cms-busy-streaming" @onclick="() => SetBusy(BitAiMessageStatus.Streaming)">Streaming</button>
+    <button id="cms-busy-status" @onclick="SetBusyStatusText">Status text</button>
+    <button id="cms-busy-complete" @onclick="() => SetBusy(BitAiMessageStatus.Complete)">Complete</button>
+    <div style="max-width:640px">
+        <BitAiChatMessage Id="cms-busy" Message="_busy" />
+    </div>
+</E2ESection>
+
+@* A conversation the page renders message by message, over an echo session: what edit and regenerate drive. *@
+<E2ESection Id="session" Title="Session">
+    <div id="cms-session" style="display:flex;flex-direction:column;gap:16px;max-width:640px">
+        @foreach (var message in _session.Conversation.Messages)
+        {
+            <BitAiChatMessage @key="message.MessageId"
+                              Message="message"
+                              Conversation="_session.Conversation"
+                              Session="_session"
+                              IsLatest="@ReferenceEquals(message, _session.Conversation.LastMessage)"
+                              OnFeedback="HandleOnFeedback" />
+        }
+    </div>
+    <span id="cms-session-count">@_session.Conversation.Messages.Count</span>
+    <span id="cms-feedback-log">@string.Join(",", _feedbackLog)</span>
+</E2ESection>
+
+@* The first attempt fails with a retryable error; the retry the error view offers is answered. *@
+<E2ESection Id="retry" Title="Retry">
+    <button id="cms-retry-ask" @onclick="AskRetry">Ask</button>
+    <div id="cms-retry" style="display:flex;flex-direction:column;gap:16px;max-width:640px">
+        @foreach (var message in _retrySession.Conversation.Messages)
+        {
+            <BitAiChatMessage @key="message.MessageId" Message="message" Conversation="_retrySession.Conversation" Session="_retrySession" />
+        }
+    </div>
+</E2ESection>
+
+<E2ESection Id="entrance" Title="Entrance">
+    <button id="cms-replay" @onclick="() => _replay++">Replay</button>
+    <div style="max-width:640px">
+        <BitAiChatMessage @key="_replay" Id="cms-animated" Animate Message="_assistant" />
+        <BitAiChatMessage Id="cms-still" Message="_assistant" />
+    </div>
+</E2ESection>
+
+<E2ESection Id="child" Title="ChildContent">
+    <div style="max-width:640px">
+        <BitAiChatMessage Id="cms-child" Message="_assistant">
+            <div id="cms-child-content">Was this what you were looking for?</div>
+        </BitAiChatMessage>
+    </div>
+</E2ESection>
+
+<E2ESection Id="disabled" Title="Disabled">
+    <div style="display:flex;flex-direction:column;gap:16px;max-width:640px">
+        <BitAiChatMessage Id="cms-disabled-user" Disabled Message="_disabledUser" Session="_disabledSession" Conversation="_disabledSession.Conversation" />
+        <BitAiChatMessage Id="cms-disabled-assistant" Disabled Message="_disabledAssistant" Session="_disabledSession" Conversation="_disabledSession.Conversation" />
+    </div>
+</E2ESection>
+
+<E2ESection Id="style" Title="Style & Class">
+    <div id="cms-vars" style="display:flex;flex-direction:column;gap:16px;max-width:640px;--bit-AiChatMessage-gap:21px;--bit-AiChatMessage-user-background:rgb(10, 20, 30);--bit-AiChatMessage-user-color:rgb(240, 241, 242);--bit-AiChatMessage-user-max-width:200px;--bit-AiChatMessage-user-radius:20px;--bit-AiChatMessage-assistant-background:rgb(250, 251, 252);--bit-AiChatMessage-assistant-color:rgb(11, 12, 13);--bit-AiChatMessage-body-gap:17px;--bit-AiChatMessage-system-background:rgb(1, 2, 3);--bit-AiChatMessage-system-color:rgb(4, 5, 6);--bit-AiChatMessage-system-border-color:rgb(7, 8, 9)">
+        <BitAiChatMessage Id="cms-var-user" Message="_longUser" />
+        <BitAiChatMessage Id="cms-var-assistant" Message="_assistant">
+            <div id="cms-var-child">After the answer</div>
+        </BitAiChatMessage>
+        <BitAiChatMessage Id="cms-var-system" Message="_system" />
+    </div>
+    <div style="max-width:640px">
+        <BitAiChatMessage Id="cms-classes"
+                          Message="_assistant"
+                          Class="e2e-cms-root"
+                          Styles="@(new() { Body = "outline: 2px solid rgb(9, 8, 7)" })"
+                          Classes="@(new() { Body = "e2e-cms-body", MessageActions = new() { Root = "e2e-cms-actions" } })" />
+    </div>
+</E2ESection>
+
+<E2ESection Id="rtl" Title="RTL">
+    <div style="display:flex;flex-direction:column;gap:16px;max-width:640px">
+        <BitAiChatMessage Id="cms-rtl-user" Dir="BitDir.Rtl" Message="_user" />
+        <BitAiChatMessage Id="cms-rtl-assistant" Dir="BitDir.Rtl" Message="_assistant" />
+    </div>
+</E2ESection>
+
+<E2EStatus />
+
+@code {
+    private readonly BitAiMessage _user = Text(BitAiRole.User, "cms-u", "How do I install it?");
+    private readonly BitAiMessage _longUser = Text(BitAiRole.User, "cms-lu", "A question long enough to be wrapped onto more than one line by a bubble two hundred pixels wide.");
+    private readonly BitAiMessage _assistant = Text(BitAiRole.Assistant, "cms-a", "Run dotnet add package Bit.BlazorUI.AI.");
+    private readonly BitAiMessage _system = Text(BitAiRole.System, "cms-s", "The assistant joined the conversation.");
+    private readonly BitAiMessage _busy = new(BitAiRole.Assistant, "cms-b");
+
+    private readonly BitAiChatSession _session = new(E2EAiTransport.For(E2EAiScripts.Echo), Conversation("ses", "Original question", "Original answer"));
+    private readonly BitAiChatSession _retrySession = new(E2EAiTransport.For(E2EAiScripts.ErrorThenRecover));
+    private readonly BitAiChatSession _disabledSession = new(E2EAiTransport.For(E2EAiScripts.Echo), Conversation("dis", "A question", "An answer"));
+
+    private BitAiMessage _disabledUser => _disabledSession.Conversation.Messages[0];
+    private BitAiMessage _disabledAssistant => _disabledSession.Conversation.Messages[1];
+
+    private readonly List<string> _feedbackLog = [];
+    private int _replay;
+
+    private static BitAiMessage Text(BitAiRole role, string id, string text)
+    {
+        var message = new BitAiMessage(role, id);
+        message.AddPart(new BitAiTextPart(text));
+        return message;
+    }
+
+    private static BitAiConversation Conversation(string prefix, string question, string answer)
+    {
+        var conversation = new BitAiConversation($"{prefix}-conversation");
+        conversation.AddMessage(Text(BitAiRole.User, $"{prefix}-u1", question));
+        conversation.AddMessage(Text(BitAiRole.Assistant, $"{prefix}-a1", answer));
+        return conversation;
+    }
+
+    protected override void OnInitialized()
+    {
+        // The page renders the conversations itself, so it re-renders whenever a message is added or removed.
+        _session.Conversation.Changed += OnConversationChanged;
+        _retrySession.Conversation.Changed += OnConversationChanged;
+    }
+
+    private void OnConversationChanged(BitAiConversation conversation) => _ = InvokeAsync(StateHasChanged);
+
+    private void SetBusy(BitAiMessageStatus status)
+    {
+        _busy.SetStatusText(null);
+        _busy.SetStatus(status);
+
+        if (status is BitAiMessageStatus.Streaming && _busy.Parts.Count == 0) _busy.AddPart(new BitAiTextPart("Half an answer"));
+    }
+
+    private void SetBusyStatusText()
+    {
+        _busy.SetStatus(BitAiMessageStatus.Streaming);
+        _busy.SetStatusText("Searching the documentation");
+    }
+
+    private void AskRetry() => _ = _retrySession.SubmitAsync("error-then-recover please");
+
+    private void HandleOnFeedback(BitAiMessageFeedback feedback)
+    {
+        _feedbackLog.Add($"{feedback.Message.MessageId}:{feedback.Feedback}");
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        _session.Conversation.Changed -= OnConversationChanged;
+        _retrySession.Conversation.Changed -= OnConversationChanged;
+
+        await _session.DisposeAsync();
+        await _retrySession.DisposeAsync();
+        await _disabledSession.DisposeAsync();
+    }
+}

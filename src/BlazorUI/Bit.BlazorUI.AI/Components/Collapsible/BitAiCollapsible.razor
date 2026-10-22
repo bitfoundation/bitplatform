@@ -1,0 +1,25 @@
+﻿@namespace Bit.BlazorUI
+@inherits BitAiComponentBase
+
+<div @ref="RootElement" @attributes="HtmlAttributes"
+     id="@_Id"
+     style="@StyleBuilder.Value"
+     class="@ClassBuilder.Value"
+     dir="@Dir?.ToString().ToLower()">
+    @* The header of the accordion is a real button inside a heading - keyboard reachable, announced with its expanded
+       state and the panel it controls - and its chevron leads, the way a disclosure panel reads. The suffix
+       (a status chip) sits beside the heading rather than inside the button, so it is not read as part of the name of
+       the toggle. The body is rendered only while the panel is open. *@
+    <BitAccordion Title="@Title"
+                  TitleTemplate="@HeaderTemplate"
+                  Actions="@SuffixTemplate"
+                  IsExpanded="@Open"
+                  IsExpandedChanged="HandleOnIsExpandedChanged"
+                  ExpanderIconPlacement="BitPlacement.Start"
+                  UnmountOnCollapse="true"
+                  Disabled="Disabled"
+                  Classes="@Classes?.Accordion"
+                  Styles="@Styles?.Accordion">
+        @ChildContent
+    </BitAccordion>
+</div>

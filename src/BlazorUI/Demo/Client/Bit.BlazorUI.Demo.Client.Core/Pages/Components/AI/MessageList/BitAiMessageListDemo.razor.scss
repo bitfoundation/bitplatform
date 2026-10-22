@@ -1,0 +1,12 @@
+﻿// The classes handed to the list land on its own elements, reached from the plain height wrapper of the section.
+::deep {
+    .custom-list {
+        border-radius: 1rem;
+        background: linear-gradient(180deg, var(--bit-clr-pri-tint), transparent 60%);
+    }
+
+    .custom-list-content {
+        gap: 1.5rem;
+        padding: 1.5rem;
+    }
+}

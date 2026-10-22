@@ -1,0 +1,61 @@
+﻿@page "/ai/scenarios/basic"
+@inherits AppComponentBase
+
+<PageOutlet Url="ai/scenarios/basic"
+            Title="Basic AI chat"
+            Keywords="Blazor AI chat, Blazor chatbot, Blazor chat UI, BitAiChat, LLM chat component"
+            Description="A working AI chat in three lines of markup with bit BlazorUI: BitAiChat over a session of the registered transport, with the transcript, the composer, the empty state and starter prompts." />
+
+<DocsArticle Eyebrow="AI scenarios"
+             Title="Basic chat"
+             Lead="A working chat in three lines of markup. The session comes from the registered transport, and everything else is default behaviour."
+             GitHubUrl="AI/Scenarios/Basic/AiBasicScenarioPage.razor">
+
+    <Badges>
+        <BitTag Size="BitSize.Small" Variant="BitVariant.Outline" Color="BitColor.SecondaryForeground" Text="Bit.BlazorUI.AI" />
+        <BitTag Size="BitSize.Small" Variant="BitVariant.Outline" Color="BitColor.SecondaryForeground" Text="Scripted transport" />
+    </Badges>
+
+    <ChildContent>
+        <DocSection Id="demo" Title="Live demo"
+                    Description="Send anything, or pick a starter prompt: the transport registered for the whole site echoes it back a few characters at a time.">
+            <DemoExample Title="A chat over the registered transport" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" CodeFiles="@example1CodeFiles" Id="example1">
+                <AiScenarioFrame>
+                    <BitAiChat Session="_session"
+                               EmptyTitle="Ask me anything"
+                               EmptyBody="This demo echoes what you send, one character at a time."
+                               Suggestions="_suggestions" />
+                </AiScenarioFrame>
+            </DemoExample>
+        </DocSection>
+
+        <DocSection Id="how-it-works" Title="How it works">
+            <p>
+                <code>BitAiChatSessionFactory</code> creates a <code>BitAiChatSession</code> over the
+                <code>IBitAiTransport</code> registered with <code>AddBitBlazorUIAIServices</code>, and the session drives a
+                <code>BitAiConversation</code>. <code>BitAiChat</code> renders that conversation - the transcript, the
+                composer, the empty state with its starter prompts and the scroll-to-latest button - and sends what the
+                user writes through the session. The transport here is twenty lines of scripted C#; a real one wraps a
+                provider's SDK, and nothing on the UI side changes.
+            </p>
+            <p>
+                Press Enter to send, Shift and Enter for a newline. The composer grows as you type and stops at twelve
+                rows; while a reply streams, its send button becomes a stop button. The chat takes the height of its
+                container, so give that container one.
+            </p>
+        </DocSection>
+
+        <DocSection Id="components" Title="Components used">
+            <ul>
+                <li><BitLink Href="/components/ai/chat"><code>BitAiChat</code></BitLink> - the whole chat surface over one session.</li>
+                <li><BitLink Href="/components/ai/messagelist"><code>BitAiMessageList</code></BitLink> and <BitLink Href="/components/ai/chatmessage"><code>BitAiChatMessage</code></BitLink> - the transcript it renders.</li>
+                <li><BitLink Href="/components/ai/promptinput"><code>BitAiPromptInput</code></BitLink> - the composer under it.</li>
+                <li><BitLink Href="/components/ai/emptystate"><code>BitAiEmptyState</code></BitLink> - the title, the line under it and the starter prompts of an empty conversation.</li>
+            </ul>
+        </DocSection>
+    </ChildContent>
+
+    <FooterTemplate>
+        <DocPager Pages="AiScenarioNav.Items" AriaLabel="AI scenarios" />
+    </FooterTemplate>
+</DocsArticle>

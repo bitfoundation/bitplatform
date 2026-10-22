@@ -177,6 +177,7 @@
     <File Path="BlazorUI/Clean.bat" />
     <File Path="BlazorUI/README.md" />
     <Project Path="BlazorUI/Bit.BlazorUI/Bit.BlazorUI.csproj" />
+    <Project Path="BlazorUI/Bit.BlazorUI.AI/Bit.BlazorUI.AI.csproj" />
     <Project Path="BlazorUI/Bit.BlazorUI.Assets/Bit.BlazorUI.Assets.csproj" />
     <Project Path="BlazorUI/Bit.BlazorUI.Extras/Bit.BlazorUI.Extras.csproj" />
     <Project Path="BlazorUI/Bit.BlazorUI.Icons/Bit.BlazorUI.Icons.csproj" />

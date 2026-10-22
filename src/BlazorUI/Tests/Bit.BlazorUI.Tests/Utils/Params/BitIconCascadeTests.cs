@@ -23,7 +23,7 @@ namespace Bit.BlazorUI.Tests.Utils.Params;
 [TestClass]
 public class BitIconCascadeTests : BunitTestContext
 {
-    private static readonly Assembly[] Libraries = [typeof(BitButton).Assembly, typeof(BitMessageBox).Assembly];
+    private static readonly Assembly[] Libraries = [typeof(BitButton).Assembly, typeof(BitMessageBox).Assembly, typeof(BitAiChat).Assembly];
 
     // The ends of the names that take one icon, longest first.
     private static readonly string[] IconSuffixes = ["IconTemplate", "IconNames", "IconName", "IconUrl", "Icons", "Icon"];

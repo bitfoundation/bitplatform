@@ -1,0 +1,75 @@
+﻿@page "/e2e/aiagentstatusbadge"
+
+<PageTitle>BitAiAgentStatusBadge E2E</PageTitle>
+
+<h1>BitAiAgentStatusBadge</h1>
+
+<E2ESection Id="statuses" Title="Every status">
+    @foreach (var status in Enum.GetValues<BitAiAgentRunStatus>())
+    {
+        <div>
+            <BitAiAgentStatusBadge Id="@($"asb-{status.ToString().ToLowerInvariant()}")" Status="status" />
+        </div>
+    }
+</E2ESection>
+
+@* One badge moved through the statuses of a run: its root is the live region, so it stays while the tag inside it
+   changes. *@
+<E2ESection Id="live" Title="A status that changes">
+    <p>Status: <span id="asb-live-status">@_live</span></p>
+    <button id="btn-live-next" @onclick="NextStatus">Next status</button>
+    <BitAiAgentStatusBadge Id="asb-live" Status="_live" />
+</E2ESection>
+
+<E2ESection Id="splatted" Title="A role and a politeness of the page's">
+    <BitAiAgentStatusBadge Id="asb-splatted" Status="BitAiAgentRunStatus.Failed" role="alert" aria-live="assertive" />
+</E2ESection>
+
+@* The working, idle and cancelled runs keep the default look of a tag, which the app's --bit-Tag-* variables restyle;
+   the waiting, completed and failed ones mean something a color says, which the variables do not take away. *@
+<E2ESection Id="vars" Title="The variables of the tag">
+    <div style="--bit-Tag-background: rgb(1, 2, 3); --bit-Tag-color: rgb(250, 251, 252); --bit-Tag-border-color: rgb(4, 5, 6);">
+        <BitAiAgentStatusBadge Id="asb-vars-running" Status="BitAiAgentRunStatus.Running" />
+        <BitAiAgentStatusBadge Id="asb-vars-idle" Status="BitAiAgentRunStatus.Idle" />
+        <BitAiAgentStatusBadge Id="asb-vars-completed" Status="BitAiAgentRunStatus.Completed" />
+        <BitAiAgentStatusBadge Id="asb-vars-failed" Status="BitAiAgentRunStatus.Failed" />
+    </div>
+    <BitAiAgentStatusBadge Id="asb-styles"
+                           Status="BitAiAgentRunStatus.Running"
+                           Styles="@(new() { Root = "margin-inline-start: 7px", Tag = new() { Root = "letter-spacing: 3px" } })"
+                           Classes="@(new() { Root = "e2e-asb-root", Tag = new() { Root = "e2e-asb-tag" } })" />
+</E2ESection>
+
+<E2ESection Id="disabled" Title="Disabled">
+    <BitAiAgentStatusBadge Id="asb-disabled" Status="BitAiAgentRunStatus.Completed" Disabled="true" />
+</E2ESection>
+
+<E2ESection Id="rtl" Title="RTL">
+    <BitAiAgentStatusBadge Id="asb-rtl" Dir="BitDir.Rtl" Status="BitAiAgentRunStatus.Running" />
+    <div dir="rtl">
+        <BitAiAgentStatusBadge Id="asb-rtl-inherited" Status="BitAiAgentRunStatus.Running" />
+    </div>
+</E2ESection>
+
+<E2EStatus />
+
+@code {
+    private static readonly BitAiAgentRunStatus[] _cycle =
+    [
+        BitAiAgentRunStatus.Idle,
+        BitAiAgentRunStatus.Planning,
+        BitAiAgentRunStatus.Running,
+        BitAiAgentRunStatus.WaitingForInput,
+        BitAiAgentRunStatus.Running,
+        BitAiAgentRunStatus.Completed,
+    ];
+
+    private int _index;
+    private BitAiAgentRunStatus _live = _cycle[0];
+
+    private void NextStatus()
+    {
+        _index = (_index + 1) % _cycle.Length;
+        _live = _cycle[_index];
+    }
+}

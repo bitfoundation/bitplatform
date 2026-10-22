@@ -1,0 +1,64 @@
+﻿@using System.Globalization
+@using System.Text.Json
+
+@* A custom renderer for one tool, in the AI custom tool UI scenario. Registered against the tool name
+   (renderers.RegisterTool<SearchResultCard>("search_docs")), it replaces the default BitAiToolCallView card for that
+   tool only, everywhere it appears. *@
+<div class="search-card">
+    <div class="search-card-head">
+        <BitIcon IconName="@BitIconName.Search" Size="BitSize.Small" />
+        <span class="search-card-title">
+            @(Call.Status is BitAiToolCallStatus.Completed ? "Searched the documentation" : "Searching the documentation")
+        </span>
+        @if (Call.Duration is { } duration)
+        {
+            <BitTag Size="BitSize.Small" Variant="BitVariant.Outline" Color="BitColor.SecondaryForeground" Text="@($"{duration.TotalMilliseconds:F0}ms")" />
+        }
+    </div>
+
+    <div class="search-card-body">
+        @if (Query is { Length: > 0 } query)
+        {
+            <div class="search-card-query">@query</div>
+        }
+
+        @if (Hits is { } hits)
+        {
+            <ul class="search-card-hits">
+                @foreach (var hit in hits.EnumerateArray())
+                {
+                    <li>
+                        <span>@(hit.TryGetProperty("title", out var title) ? title.GetString() : null)</span>
+                        <BitTag Size="BitSize.Small" Variant="BitVariant.Text" Color="BitColor.Info"
+                                Text="@(hit.TryGetProperty("score", out var score) && score.TryGetDouble(out var value) ? value.ToString("P0", CultureInfo.InvariantCulture) : null)" />
+                    </li>
+                }
+            </ul>
+        }
+        else if (Call.Progress is { } progress)
+        {
+            <BitProgress Percent="@((progress.Fraction ?? 0) * 100)" Description="@progress.Message" AriaLabel="Search progress" />
+        }
+    </div>
+</div>
+
+@code {
+    /// <summary>The call being rendered.</summary>
+    [Parameter, EditorRequired]
+    public BitAiToolCallPart Call { get; set; } = default!;
+
+    // The result rows, when the payload has the shape this card expects. Checked rather than assumed: a custom
+    // renderer is handed data a model produced, so the shape it wants is a hope, not a guarantee.
+    private JsonElement? Hits => Call.Result?.Value is { } value
+        && value.ValueKind is JsonValueKind.Object
+        && value.TryGetProperty("hits", out var hits)
+        && hits.ValueKind is JsonValueKind.Array
+            ? hits
+            : null;
+
+    private string? Query => Call.DisplayArguments is { } args
+        && args.ValueKind is JsonValueKind.Object
+        && args.TryGetProperty("query", out var value)
+            ? value.GetString()
+            : null;
+}

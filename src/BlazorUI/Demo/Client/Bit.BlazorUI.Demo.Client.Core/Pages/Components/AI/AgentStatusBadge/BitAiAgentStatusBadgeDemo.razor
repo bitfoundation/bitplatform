@@ -1,0 +1,141 @@
+﻿@page "/components/ai/agentstatusbadge"
+
+<PageOutlet Url="components/ai/agentstatusbadge"
+            Title="AiAgentStatusBadge"
+            Description="BitAiAgentStatusBadge is a one-word summary of where an AI agent run stands - planning, running, waiting for the user, done, failed - drawn as a tag and announced politely." />
+
+<DemoPage Name="AiAgentStatusBadge"
+          Description="BitAiAgentStatusBadge is a one-word summary of where an agent run stands, drawn as a BitTag whose color says the same thing the word does: a working run keeps the default look of a tag, a run waiting for the user is a warning, a completed one a success and a failed one an error, while an idle or cancelled run is a neutral one. It is a polite live region, so a screen reader user hears every transition without being interrupted. The header of every BitAiAgentRunView carries one."
+          Parameters="componentParameters"
+          SubClasses="componentSubClasses"
+          SubEnums="componentSubEnums"
+          GitHubAIUrl="AgentStatusBadge/BitAiAgentStatusBadge.razor"
+          GitHubDemoUrl="AI/AgentStatusBadge/BitAiAgentStatusBadgeDemo.razor">
+    <NotesTemplate>
+        <BitText>
+            To use this component, you need to install the
+            <BitLink Href="https://www.nuget.org/packages/Bit.BlazorUI.AI" Target="_blank">
+                <BitTag Reversed
+                        Text="Bit.BlazorUI.AI"
+                        Color="BitColor.SecondaryBackground"
+                        IconName="@BitIconName.NavigateExternalInline" />
+            </BitLink>
+            nuget package, as described in the Optional steps of the
+            <BitLink Href="/getting-started">Getting started</BitLink> page.
+        </BitText>
+        <br />
+        <BitText>
+            The badge takes a <b>BitAiAgentRunStatus</b> - usually the <b>Status</b> of a <b>BitAiAgentRun</b> (see
+            <BitLink Href="/components/ai/agentrunview">AiAgentRunView</BitLink>). Its words come from the string table of the
+            options in force (<b>BitAiStrings.AgentIdle</b>, <b>AgentPlanning</b>, <b>AgentRunning</b>, <b>WaitingForYou</b>,
+            <b>AgentCompleted</b>, <b>AgentFailed</b>, <b>AgentCancelled</b>), so they are localized with the rest. Its root is
+            the live region (<b>role="status"</b>, <b>aria-live="polite"</b>) and stays on the page across every status; a
+            <b>role</b> or <b>aria-live</b> splatted onto it is honored instead. See it waiting on the user in the
+            <BitLink Href="/ai/scenarios/agent-input">Agent asks a question</BitLink> scenario.
+        </BitText>
+    </NotesTemplate>
+    <Examples>
+        <DemoExample Title="Basic" RazorCode="@example1RazorCode" Id="example1">
+            <div>Give it a <b>Status</b>.</div>
+            <br />
+            <BitAiAgentStatusBadge Status="BitAiAgentRunStatus.Running" />
+        </DemoExample>
+
+        <DemoExample Title="Statuses" RazorCode="@example2RazorCode" Id="example2">
+            <div>
+                Every <b>BitAiAgentRunStatus</b>, in its word and its color. Planning and Running keep the default look of a
+                tag; WaitingForInput is a warning, Completed a success, Failed an error; Idle and Cancelled are neutral.
+            </div>
+            <br />
+            <div class="example-content">
+                @foreach (var status in Enum.GetValues<BitAiAgentRunStatus>())
+                {
+                    <BitAiAgentStatusBadge Status="status" />
+                }
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Following a run" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
+            <div>
+                Bound to the status of a run, the badge says each transition as it happens. The root is a polite live region
+                that stays on the page, so a screen reader announces every new word without interrupting what it is reading.
+            </div>
+            <br />
+            <BitButton OnClick="FollowRun" Disabled="isFollowing">Run the agent</BitButton>
+            <br /><br />
+            <BitAiAgentStatusBadge Status="followedStatus" />
+        </DemoExample>
+
+        <DemoExample Title="Words" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
+            <div>
+                The words are the string table's. A subclass of <b>BitAiStrings</b> - for another language, or another tone -
+                handed down through a <b>BitAiOptionsProvider</b> (or registered with <b>ConfigureUi</b>) renames every status
+                at once; what it does not override keeps its English.
+            </div>
+            <br />
+            <BitAiOptionsProvider UiOptions="wordsOptions">
+                <div class="example-content">
+                    @foreach (var status in Enum.GetValues<BitAiAgentRunStatus>())
+                    {
+                        <BitAiAgentStatusBadge Status="status" />
+                    }
+                </div>
+            </BitAiOptionsProvider>
+        </DemoExample>
+
+        <DemoExample Title="Cascading parameters" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
+            <div>
+                <b>BitParams</b> with a <b>BitAiAgentStatusBadgeParams</b> sets the look of every badge inside it - the ones the
+                run views render included - and a badge's own value still wins (the last keeps its own <b>Styles</b>).
+            </div>
+            <br />
+            <BitParams Parameters="badgeParams">
+                <div class="example-content">
+                    <BitAiAgentStatusBadge Status="BitAiAgentRunStatus.Running" />
+                    <BitAiAgentStatusBadge Status="BitAiAgentRunStatus.WaitingForInput" />
+                    <BitAiAgentStatusBadge Status="BitAiAgentRunStatus.Completed"
+                                           Styles="@(new() { Tag = new() { Root = "border-radius: 0" } })" />
+                </div>
+            </BitParams>
+        </DemoExample>
+
+        <DemoExample Title="Style & Class" RazorCode="@example6RazorCode" Id="example6">
+            <div>
+                <b>Style</b> and <b>Class</b> reach the root (the live region), <b>Styles.Tag</b> and <b>Classes.Tag</b> the tag
+                inside it as a <b>BitTagClassStyles</b>. The badge has no variables of its own: the tag is restyled by the
+                <b>--bit-Tag-*</b> ones, which reach the statuses drawn in the default look of a tag - the color of a waiting,
+                completed or failed run is the badge's choice, and wins over them.
+            </div>
+            <br />
+            @* A plain element of this page for the scoped ::deep rules of the custom classes to anchor on. *@
+            <div class="example-content">
+                <BitAiAgentStatusBadge Status="BitAiAgentRunStatus.Running" Style="padding: 0.25rem; outline: 1px dashed #0ea5e9" />
+                <BitAiAgentStatusBadge Status="BitAiAgentRunStatus.Completed" Class="custom-class" />
+                <BitAiAgentStatusBadge Status="BitAiAgentRunStatus.Failed"
+                                       Styles="@(new() { Tag = new() { Root = "border-radius: 1rem", Text = "font-style: italic" } })" />
+                <BitAiAgentStatusBadge Status="BitAiAgentRunStatus.WaitingForInput" Classes="@(new() { Tag = new() { Root = "custom-tag" } })" />
+            </div>
+            <br />
+            <div class="example-content" style="--bit-Tag-background: #312e81; --bit-Tag-color: #e0e7ff; --bit-Tag-font-weight: 600">
+                <BitAiAgentStatusBadge Status="BitAiAgentRunStatus.Planning" />
+                <BitAiAgentStatusBadge Status="BitAiAgentRunStatus.Running" />
+                <BitAiAgentStatusBadge Status="BitAiAgentRunStatus.Completed" />
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="RTL" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
+            <div>
+                In right-to-left text the tag follows the direction - from <b>Dir</b> or from a <b>dir</b> around it - and the
+                words of a right-to-left language come from its string table.
+            </div>
+            <br />
+            <BitAiOptionsProvider UiOptions="rtlOptions">
+                <div class="example-content" dir="rtl">
+                    <BitAiAgentStatusBadge Status="BitAiAgentRunStatus.Running" />
+                    <BitAiAgentStatusBadge Status="BitAiAgentRunStatus.WaitingForInput" />
+                    <BitAiAgentStatusBadge Dir="BitDir.Rtl" Status="BitAiAgentRunStatus.Completed" />
+                </div>
+            </BitAiOptionsProvider>
+        </DemoExample>
+    </Examples>
+</DemoPage>

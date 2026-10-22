@@ -1,0 +1,60 @@
+﻿@page "/ai/scenarios/custom-tool"
+@inherits AppComponentBase
+
+<PageOutlet Url="ai/scenarios/custom-tool"
+            Title="Custom AI tool UI"
+            Keywords="custom tool renderer, Blazor AI tool UI, BitAiRendererRegistry, RegisterTool, tool result card"
+            Description="One AI tool rendered by an app's own Blazor component instead of the default card, everywhere that tool appears - bit BlazorUI's renderer registry." />
+
+<DocsArticle Eyebrow="AI scenarios"
+             Title="Custom tool UI"
+             Lead="One tool rendered by an application component instead of the default card, everywhere that tool appears."
+             GitHubUrl="AI/Scenarios/CustomTool/AiCustomToolScenarioPage.razor">
+
+    <Badges>
+        <BitTag Size="BitSize.Small" Variant="BitVariant.Outline" Color="BitColor.SecondaryForeground" Text="Bit.BlazorUI.AI" />
+        <BitTag Size="BitSize.Small" Variant="BitVariant.Outline" Color="BitColor.SecondaryForeground" Text="Scripted transport" />
+    </Badges>
+
+    <ChildContent>
+        <DocSection Id="demo" Title="Live demo"
+                    Description="Search the documentation: search_docs reports its progress, then its hits, in a card of this site's own.">
+            <DemoExample Title="A tool drawn by the app" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" CodeFiles="@example1CodeFiles" Id="example1">
+                <AiScenarioFrame>
+                    <BitAiChat Session="_session"
+                               EmptyTitle="Search the documentation"
+                               Suggestions="_suggestions" />
+                </AiScenarioFrame>
+            </DemoExample>
+        </DocSection>
+
+        <DocSection Id="how-it-works" Title="How it works">
+            <p>
+                <code>search_docs</code> is rendered by <code>SearchResultCard</code>, an ordinary component of this site.
+                <code>BitAiRendererRegistry</code> maps a tool name to a renderer
+                (<code>renderers.RegisterTool&lt;SearchResultCard&gt;("search_docs")</code>), so the substitution applies
+                wherever that tool is called without touching the message list. The component is handed the call as its
+                <code>Call</code> parameter and re-renders as the call changes: its progress reports while the tool runs, its
+                result once it has returned.
+            </p>
+            <p>
+                A custom renderer is handed data a model produced, so the shape it wants is a hope, not a guarantee: the card
+                checks the payload before it reads it, and a renderer that throws anyway is contained by the boundary around
+                it rather than taking the conversation down. The same registry takes renderers for message part kinds,
+                artifact kinds, structured output schemas, code languages and citations.
+            </p>
+        </DocSection>
+
+        <DocSection Id="components" Title="Components used">
+            <ul>
+                <li><BitLink Href="/components/ai/toolcallview"><code>BitAiToolCallView</code></BitLink> - the view that hands the call to the registered renderer.</li>
+                <li><BitLink Href="/components/ai/rendererboundary"><code>BitAiRendererBoundary</code></BitLink> - what keeps a failing renderer to itself.</li>
+                <li><BitLink Href="/components/ai/messagepartview"><code>BitAiMessagePartView</code></BitLink> - the dispatcher every part goes through.</li>
+            </ul>
+        </DocSection>
+    </ChildContent>
+
+    <FooterTemplate>
+        <DocPager Pages="AiScenarioNav.Items" AriaLabel="AI scenarios" />
+    </FooterTemplate>
+</DocsArticle>

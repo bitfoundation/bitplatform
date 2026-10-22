@@ -1,0 +1,192 @@
+﻿@import '../../../Bit.BlazorUI/Styles/functions.scss';
+
+// Public CSS variables. They are read with a fallback and never declared here, so a value set on :root, on an
+// ancestor, or on the Style of a code block inherits down to every code block under it:
+//   --bit-AiCodeBlockView-background            background of the block                   (default: 4% of $clr-fg-pri)
+//   --bit-AiCodeBlockView-color                 text color of the code                    (default: inherit)
+//   --bit-AiCodeBlockView-border-color          border of the block and of its header     (default: $clr-brd-sec)
+//   --bit-AiCodeBlockView-radius                corner radius of the block                (default: $shp-radius-surface)
+//   --bit-AiCodeBlockView-header-background     background of the header bar              (default: 4% of $clr-fg-pri)
+//   --bit-AiCodeBlockView-header-color          text color of the header bar              (default: $clr-fg-sec)
+//   --bit-AiCodeBlockView-padding               padding around the code                   (default: spacing(1.5))
+//   --bit-AiCodeBlockView-font-family           font of the code                          (default: $tg-font-family-mono)
+//   --bit-AiCodeBlockView-font-size             text size of the code                     (default: $tg-fs-sm)
+//   --bit-AiCodeBlockView-line-number-color     color of the line numbers                 (default: $clr-fg-ter)
+//
+// The syntax colors. Each token kind is painted with a role color of the theme - the "-fg" one, which is the role
+// shaded towards the text color so it is legible on the page in the light and in the dark scheme alike, and follows
+// every preset - or with one of the neutral text colors. Set any of them to restyle that kind of token alone:
+//   --bit-AiCodeBlockView-keyword-color         keywords                                  (default: $clr-pri-fg)
+//   --bit-AiCodeBlockView-type-color            type names                                (default: $clr-suc-fg)
+//   --bit-AiCodeBlockView-string-color          string and character literals             (default: $clr-swr-fg)
+//   --bit-AiCodeBlockView-number-color          numeric literals                          (default: $clr-sec-fg)
+//   --bit-AiCodeBlockView-comment-color         comments, set in italics                  (default: $clr-fg-ter)
+//   --bit-AiCodeBlockView-function-color        function and command names                (default: $clr-wrn-fg)
+//   --bit-AiCodeBlockView-operator-color        operators                                 (default: $clr-fg-sec)
+//   --bit-AiCodeBlockView-punctuation-color     punctuation                               (default: $clr-fg-sec)
+//   --bit-AiCodeBlockView-property-color        keys and properties (JSON, YAML, CSS)     (default: $clr-pri-fg)
+//   --bit-AiCodeBlockView-tag-color             markup tags                               (default: $clr-err-fg)
+//   --bit-AiCodeBlockView-attribute-color       markup attributes, annotations            (default: $clr-sec-fg)
+//   --bit-AiCodeBlockView-constant-color        true, false, null and other constants     (default: $clr-sec-fg)
+//   --bit-AiCodeBlockView-inserted-color        lines a diff adds                         (default: $clr-suc-fg)
+//   --bit-AiCodeBlockView-deleted-color         lines a diff removes                      (default: $clr-err-fg)
+//   --bit-AiCodeBlockView-meta-color            diff headers, preprocessor lines          (default: $clr-fg-ter)
+//   --bit-AiCodeBlockView-label-color           lifetimes and loop labels, in italics     (default: the type color)
+//   --bit-AiCodeBlockView-variable-color        variables written with a sigil ($name)    (default: the property color)
+
+.bit-aicbv {
+    min-width: 0;
+    overflow: hidden;
+    color: var(--bit-AiCodeBlockView-color, inherit);
+    border-radius: var(--bit-AiCodeBlockView-radius, #{$shp-radius-surface});
+    background-color: var(--bit-AiCodeBlockView-background, #{translucent($clr-fg-pri, 4%)});
+    border: $shp-border-width $shp-border-style var(--bit-AiCodeBlockView-border-color, #{$clr-brd-sec});
+}
+
+.bit-aicbv-hdr {
+    display: flex;
+    gap: spacing(1);
+    align-items: center;
+    justify-content: space-between;
+    padding-block: spacing(0.5);
+    padding-inline: spacing(1.5) spacing(1);
+    font-size: $tg-fs-xs;
+    color: var(--bit-AiCodeBlockView-header-color, #{$clr-fg-sec});
+    background-color: var(--bit-AiCodeBlockView-header-background, #{translucent($clr-fg-pri, 4%)});
+    border-block-end: $shp-border-width $shp-border-style var(--bit-AiCodeBlockView-border-color, #{$clr-brd-sec});
+}
+
+.bit-aicbv-lng {
+    min-width: 0;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    font-family: var(--bit-AiCodeBlockView-font-family, #{$tg-font-family-mono});
+}
+
+.bit-aicbv-bdy {
+    overflow-x: auto;
+}
+
+// Code is written left to right whatever the page around it reads, so the lines are laid out that way and isolated
+// from the surrounding direction - inherited right to left, the bidirectional algorithm would move the punctuation of
+// a line (the ; of a statement) to its other end. The header keeps the direction of the page.
+.bit-aicbv-pre {
+    margin: 0;
+    tab-size: 4;
+    direction: ltr;
+    unicode-bidi: isolate;
+    line-height: 1.55;
+    white-space: pre;
+    counter-reset: bit-aicbv-line;
+    padding: var(--bit-AiCodeBlockView-padding, #{spacing(1.5)});
+    font-size: var(--bit-AiCodeBlockView-font-size, #{$tg-fs-sm});
+    font-family: var(--bit-AiCodeBlockView-font-family, #{$tg-font-family-mono});
+}
+
+// The code element takes the type of the block rather than the browser's own monospace and size, and none of the
+// background a page gives its code spans.
+.bit-aicbv-cod {
+    padding: 0;
+    font: inherit;
+    color: inherit;
+    background: none;
+}
+
+// The number gutter, at the start of each line in the reading direction.
+.bit-aicbv-lin::before {
+    width: 2.5em;
+    display: inline-block;
+    text-align: end;
+    user-select: none;
+    -webkit-user-select: none;
+    margin-inline-end: spacing(1.5);
+    content: counter(bit-aicbv-line);
+    counter-increment: bit-aicbv-line;
+    color: var(--bit-AiCodeBlockView-line-number-color, #{$clr-fg-ter});
+}
+
+.bit-aicbv-kwd {
+    color: var(--bit-AiCodeBlockView-keyword-color, #{$clr-pri-fg});
+}
+
+.bit-aicbv-typ {
+    color: var(--bit-AiCodeBlockView-type-color, #{$clr-suc-fg});
+}
+
+.bit-aicbv-str {
+    color: var(--bit-AiCodeBlockView-string-color, #{$clr-swr-fg});
+}
+
+.bit-aicbv-num {
+    color: var(--bit-AiCodeBlockView-number-color, #{$clr-sec-fg});
+}
+
+.bit-aicbv-cmt {
+    font-style: italic;
+    color: var(--bit-AiCodeBlockView-comment-color, #{$clr-fg-ter});
+}
+
+.bit-aicbv-fnc {
+    color: var(--bit-AiCodeBlockView-function-color, #{$clr-wrn-fg});
+}
+
+.bit-aicbv-opr {
+    color: var(--bit-AiCodeBlockView-operator-color, #{$clr-fg-sec});
+}
+
+.bit-aicbv-pnc {
+    color: var(--bit-AiCodeBlockView-punctuation-color, #{$clr-fg-sec});
+}
+
+.bit-aicbv-prp {
+    color: var(--bit-AiCodeBlockView-property-color, #{$clr-pri-fg});
+}
+
+.bit-aicbv-tag {
+    color: var(--bit-AiCodeBlockView-tag-color, #{$clr-err-fg});
+}
+
+.bit-aicbv-atr {
+    color: var(--bit-AiCodeBlockView-attribute-color, #{$clr-sec-fg});
+}
+
+.bit-aicbv-cst {
+    color: var(--bit-AiCodeBlockView-constant-color, #{$clr-sec-fg});
+}
+
+.bit-aicbv-ins {
+    color: var(--bit-AiCodeBlockView-inserted-color, #{$clr-suc-fg});
+}
+
+.bit-aicbv-del {
+    color: var(--bit-AiCodeBlockView-deleted-color, #{$clr-err-fg});
+}
+
+.bit-aicbv-met {
+    color: var(--bit-AiCodeBlockView-meta-color, #{$clr-fg-ter});
+}
+
+.bit-aicbv-lab {
+    font-style: italic;
+    color: var(--bit-AiCodeBlockView-label-color, var(--bit-AiCodeBlockView-type-color, #{$clr-suc-fg}));
+}
+
+.bit-aicbv-vrb {
+    color: var(--bit-AiCodeBlockView-variable-color, var(--bit-AiCodeBlockView-property-color, #{$clr-pri-fg}));
+}
+
+// A printed block shows all of its code: the long lines wrap rather than being cut off at the edge of the page.
+@media print {
+    .bit-aicbv {
+        break-inside: avoid;
+    }
+
+    .bit-aicbv-bdy {
+        overflow: visible;
+    }
+
+    .bit-aicbv-pre {
+        white-space: pre-wrap;
+    }
+}

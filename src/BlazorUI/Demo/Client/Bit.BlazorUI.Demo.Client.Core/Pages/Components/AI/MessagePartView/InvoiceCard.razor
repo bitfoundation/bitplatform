@@ -1,0 +1,47 @@
+﻿@using System.Globalization
+@using System.Text.Json
+
+@* The custom part renderer of the AiMessagePartView demo, registered for the "demo:invoice" kind
+   (renderers.RegisterPart<InvoiceCard>("demo:invoice")): the registry renders it with the part as its Part parameter. *@
+<div class="invoice-card">
+    <div class="invoice-card-head">
+        <BitIcon IconName="@BitIconName.Money" Size="BitSize.Small" />
+        <span>Invoice @number</span>
+    </div>
+
+    <ul class="invoice-card-lines">
+        @foreach (var (item, amount) in lines)
+        {
+            <li>
+                <span>@item</span>
+                <span>@Format(amount)</span>
+            </li>
+        }
+    </ul>
+
+    <div class="invoice-card-total">
+        <span>Total</span>
+        <span>@Format(lines.Sum(line => line.Amount))</span>
+    </div>
+</div>
+
+@code {
+    [Parameter, EditorRequired] public BitAiCustomJsonPart Part { get; set; } = default!;
+
+    private string? number;
+    private string? currency;
+    private (string? Item, decimal Amount)[] lines = [];
+
+    // Written for the shape the prompt asks the model for. A payload without "lines" throws here - which is what the
+    // BitAiRendererBoundary the part view renders every registered renderer in contains.
+    protected override void OnParametersSet()
+    {
+        var data = Part.Data;
+
+        number = data.GetProperty("number").GetString();
+        currency = data.GetProperty("currency").GetString();
+        lines = [.. data.GetProperty("lines").EnumerateArray().Select(line => (line.GetProperty("item").GetString(), line.GetProperty("amount").GetDecimal()))];
+    }
+
+    private string Format(decimal amount) => $"{amount.ToString("N2", CultureInfo.InvariantCulture)} {currency}";
+}

@@ -1,7 +1,7 @@
 ﻿# bit BlazorUI breaking changes
 
 Breaking changes to the public API of the bit BlazorUI packages (`Bit.BlazorUI`, `Bit.BlazorUI.Extras`,
-`Bit.BlazorUI.Assets`), newest version first, each with what to change in your code.
+`Bit.BlazorUI.AI`, `Bit.BlazorUI.Assets`), newest version first, each with what to change in your code.
 
 ## 10.7.0 (first shipped in 10.7.0-pre-02)
 

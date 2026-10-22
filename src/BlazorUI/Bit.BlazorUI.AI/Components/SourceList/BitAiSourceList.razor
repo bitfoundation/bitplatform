@@ -1,0 +1,28 @@
+﻿@namespace Bit.BlazorUI
+@inherits BitAiComponentBase
+
+@if (_sources.Count > 0)
+{
+    <div @ref="RootElement" @attributes="DisabledAwareHtmlAttributes"
+         id="@_Id"
+         style="@StyleBuilder.Value"
+         class="@ClassBuilder.Value"
+         dir="@Dir?.ToString().ToLower()">
+        @if (ShowHeading)
+        {
+            <div style="@Styles?.Header" class="bit-aisrl-hdr @Classes?.Header">@Strings.Sources</div>
+        }
+        <div style="@Styles?.List" class="bit-aisrl-lst @Classes?.List">
+            @foreach (var (number, source) in _sources)
+            {
+                <BitAiSourceCard @key="source.SourceId"
+                                 Source="source"
+                                 Number="number"
+                                 OnActivate="OnSourceClick"
+                                 Disabled="Disabled"
+                                 Styles="@Styles?.SourceCard"
+                                 Classes="@Classes?.SourceCard" />
+            }
+        </div>
+    </div>
+}

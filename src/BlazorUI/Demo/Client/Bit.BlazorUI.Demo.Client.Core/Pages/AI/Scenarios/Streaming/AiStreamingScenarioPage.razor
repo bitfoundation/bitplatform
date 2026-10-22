@@ -1,0 +1,64 @@
+﻿@page "/ai/scenarios/streaming"
+@inherits AppComponentBase
+
+<PageOutlet Url="ai/scenarios/streaming"
+            Title="Streaming AI responses"
+            Keywords="Blazor streaming markdown, Blazor AI streaming, LLM token streaming UI, BitAiStreamingMarkdown, BitAiChat"
+            Description="A long Markdown answer streamed into a bit BlazorUI AI chat a few characters at a time - headings, a table, fenced code, a quote - without flicker and at one render per 50 ms." />
+
+<DocsArticle Eyebrow="AI scenarios"
+             Title="Streaming"
+             Lead="A long Markdown answer arriving a few characters at a time: headings, a table, a fenced code block, a quote - readable at every step, and never redrawn more often than the eye can follow."
+             GitHubUrl="AI/Scenarios/Streaming/AiStreamingScenarioPage.razor">
+
+    <Badges>
+        <BitTag Size="BitSize.Small" Variant="BitVariant.Outline" Color="BitColor.SecondaryForeground" Text="Bit.BlazorUI.AI" />
+        <BitTag Size="BitSize.Small" Variant="BitVariant.Outline" Color="BitColor.SecondaryForeground" Text="Scripted transport" />
+    </Badges>
+
+    <ChildContent>
+        <DocSection Id="demo" Title="Live demo"
+                    Description="Send anything: the reply is a full Markdown document, written progressively.">
+            <DemoExample Title="A Markdown answer, streamed" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" CodeFiles="@example1CodeFiles" Id="example1">
+                <AiScenarioFrame>
+                    <BitAiChat Session="_session"
+                               EmptyTitle="Watch it arrive"
+                               EmptyBody="Send anything. The reply is a full Markdown document written progressively."
+                               Suggestions="_suggestions" />
+                </AiScenarioFrame>
+            </DemoExample>
+        </DocSection>
+
+        <DocSection Id="how-it-works" Title="How it works">
+            <p>
+                The transport emits a <code>BitAiTextDeltaEvent</code> per chunk, and the session appends each one to the
+                message's text part. The Markdown is parsed again on every delta, but only its tail is: everything before the
+                last confirmed block boundary is kept as it was, so a long answer costs the same per token at its end as at
+                its start.
+            </p>
+            <p>
+                What is still open is drawn so it never flickers: a fenced code block is left unhighlighted until its closing
+                fence arrives, and an unmatched <code>**</code> is hidden rather than shown as a stray asterisk until its
+                partner comes.
+            </p>
+            <p>
+                Renders are coalesced to one per 50&nbsp;ms (<code>BitAiUiOptions.RenderInterval</code>). Streaming faster
+                than that changes nothing a reader can see, and on Blazor Server every render is a diff sent down the
+                circuit, so it costs real bandwidth.
+            </p>
+        </DocSection>
+
+        <DocSection Id="components" Title="Components used">
+            <ul>
+                <li><BitLink Href="/components/ai/chat"><code>BitAiChat</code></BitLink> - the chat the answer streams into.</li>
+                <li><BitLink Href="/components/ai/textpartview"><code>BitAiTextPartView</code></BitLink> and <BitLink Href="/components/ai/streamingmarkdown"><code>BitAiStreamingMarkdown</code></BitLink> - the text part, re-parsed only at its tail while it grows.</li>
+                <li><BitLink Href="/components/ai/markdownview"><code>BitAiMarkdownView</code></BitLink> - the parsed document: headings, tables, quotes.</li>
+                <li><BitLink Href="/components/ai/codeblockview"><code>BitAiCodeBlockView</code></BitLink> - the fenced code block, with its copy button.</li>
+            </ul>
+        </DocSection>
+    </ChildContent>
+
+    <FooterTemplate>
+        <DocPager Pages="AiScenarioNav.Items" AriaLabel="AI scenarios" />
+    </FooterTemplate>
+</DocsArticle>

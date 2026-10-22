@@ -1,0 +1,212 @@
+﻿@page "/components/ai/artifactview"
+@implements IAsyncDisposable
+
+<PageOutlet Url="components/ai/artifactview"
+            Title="AiArtifactView"
+            Description="BitAiArtifactView is the panel an AI artifact lives in - code, a document, a sandboxed HTML page, JSON, a table or an image - with its versions, copy, download and full screen." />
+
+<DemoPage Name="AiArtifactView"
+          SecondaryNames="@(["Canvas"])"
+          Description="BitAiArtifactView is the panel an artifact lives in: the substantial piece of content an assistant produces beside its answer - a program, a document, a page, a table, an image - and revises over the turns that follow. The header holds the title, a version selector once there is more than one version, copy, download and a full-screen toggle; the body is chosen by the kind of the artifact - a renderer the app registered, or a built-in one: highlighted code, a streaming Markdown document, an HTML page in a sandboxed frame, a JSON tree, a table, or an image. The panel follows the artifact as it streams, and copy and download act on the version on screen."
+          Parameters="componentParameters"
+          SubClasses="componentSubClasses"
+          SubEnums="componentSubEnums"
+          CssVariables="componentCssVariables"
+          GitHubAIUrl="ArtifactView/BitAiArtifactView.razor"
+          GitHubDemoUrl="AI/ArtifactView/BitAiArtifactViewDemo.razor">
+    <NotesTemplate>
+        <BitText>
+            To use this component, you need to install the
+            <BitLink Href="https://www.nuget.org/packages/Bit.BlazorUI.AI" Target="_blank">
+                <BitTag Reversed
+                        Text="Bit.BlazorUI.AI"
+                        Color="BitColor.SecondaryBackground"
+                        IconName="@BitIconName.NavigateExternalInline" />
+            </BitLink>
+            nuget package, as described in the Optional steps of the
+            <BitLink Href="/getting-started">Getting started</BitLink> page.
+        </BitText>
+        <br />
+        <BitText>
+            BitAiArtifactView reads the artifact renderers registered with <b>AddBitBlazorUIAIServices</b>
+            (<b>ConfigureRenderers</b>), so the app calls it at startup even where it registers none, and downloads through the
+            scripts of Bit.BlazorUI.AI. An artifact belongs to a conversation: a session creates it from the
+            <b>BitAiArtifactCreatedEvent</b>, <b>BitAiArtifactDeltaEvent</b> and <b>BitAiArtifactCompletedEvent</b> of its transport
+            and the message that introduced it shows it through
+            <BitLink Href="/components/ai/artifactpartview">BitAiArtifactPartView</BitLink> - see the
+            <BitLink Href="/ai/scenarios/artifacts">Artifacts</BitLink> scenario for the whole chat.
+        </BitText>
+        <br />
+        <BitText>
+            <b>Security</b>: an HTML artifact is generated markup, so it is previewed in an <b>iframe</b> with
+            <b>sandbox="allow-scripts allow-forms allow-popups"</b> - its scripts run, but it is denied same-origin access to the
+            page, its storage and its cookies - and only once it has finished streaming. An SVG is shown through an <b>img</b>,
+            which never runs a script inside it.
+        </BitText>
+        <br />
+        <BitText>
+            <b>Accessibility</b>: the panel is a <b>section</b> named after the artifact, its body says <b>aria-busy</b> while it
+            streams, the full-screen toggle says <b>aria-pressed</b>, and Escape collapses the full-screen panel - claimed, so
+            a dialog the panel sits in does not close on the same press.
+        </BitText>
+    </NotesTemplate>
+    <Examples>
+        <DemoExample Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
+            <div>
+                Give it an <b>Artifact</b>. A <b>BitAiArtifact</b> of the <b>Code</b> kind is shown as highlighted code in the
+                language its <b>Language</b> names, under a header with its title, copy, download and the full-screen toggle.
+            </div>
+            <br />
+            <BitAiArtifactView Artifact="programArtifact" />
+        </DemoExample>
+
+        <DemoExample Title="Documents" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
+            <div>
+                A <b>Document</b> is prose written in Markdown, rendered as it streams - headings, lists, tables and code - and
+                downloaded as a .md file.
+            </div>
+            <br />
+            <BitAiArtifactView Artifact="documentArtifact" />
+        </DemoExample>
+
+        <DemoExample Title="HTML pages" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
+            <div>
+                An <b>Html</b> artifact is a self-contained page, previewed in a sandboxed frame once it is complete (while it
+                streams it is shown as its code). The page below runs its own script - click its button - but cannot reach the
+                page it sits in. The frame keeps a white background in a dark theme, the page a generated document expects.
+            </div>
+            <br />
+            <BitAiArtifactView Artifact="pageArtifact" />
+        </DemoExample>
+
+        <DemoExample Title="JSON & tables" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
+            <div>
+                A <b>Json</b> artifact is shown as a collapsible tree. A <b>Table</b> written as CSV - or TSV, when its
+                <b>Language</b> is <b>tsv</b> - is shown as a table whose first row is the header, quoted fields and all; one
+                written as a JSON array of objects becomes a <BitLink Href="/components/ai/datatable">BitAiDataTable</BitLink>.
+                Each downloads in its own format.
+            </div>
+            <br />
+            <BitAiArtifactView Artifact="jsonArtifact" />
+            <br />
+            <BitAiArtifactView Artifact="csvArtifact" />
+            <br />
+            <BitAiArtifactView Artifact="tsvArtifact" />
+            <br />
+            <BitAiArtifactView Artifact="jsonTableArtifact" />
+        </DemoExample>
+
+        <DemoExample Title="Images" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
+            <div>
+                An <b>Image</b> is shown from its <b>Url</b> (or a data URL as its content), named by its title. An <b>Svg</b>
+                written as markup is shown as an image too, so a script inside it never runs, and downloads as an .svg file.
+            </div>
+            <br />
+            <BitAiArtifactView Artifact="imageArtifact" />
+            <br />
+            <BitAiArtifactView Artifact="svgArtifact" />
+        </DemoExample>
+
+        <DemoExample Title="Other kinds" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
+            <div>
+                <b>BitAiArtifactKind</b> is a string-backed value rather than an enum, so a transport may send kinds the package
+                does not know. A <b>Chart</b>, a <b>Diagram</b> or a kind of the app's own (<b>new BitAiArtifactKind("mermaid")</b>)
+                has no built-in rendering and is shown as its code, until the app registers a renderer for it with
+                <b>RegisterArtifact</b> - which then draws the body, inside an error boundary, with a <b>BitAiArtifactContext</b>
+                that also says whether the panel is full screen.
+            </div>
+            <br />
+            <BitAiArtifactView Artifact="chartArtifact" />
+            <br />
+            <BitAiArtifactView Artifact="mermaidArtifact" />
+        </DemoExample>
+
+        <DemoExample Title="Streaming" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" CodeFiles="@example7CodeFiles" Id="example7">
+            <div>
+                The panel follows the artifact as it streams - re-rendering at most once per render interval of the AI options,
+                with loading dots in its header and its body marked busy. The scripted transport here writes a README into an
+                artifact on the first turn and revises the same artifact on the next one, so the second press adds version 2
+                and the version selector appears.
+            </div>
+            <br />
+            <BitButton OnClick="WriteReadmeAsync" Disabled="readmeSession.IsGenerating">@(ReadmeArtifact is null ? "Write a README" : "Revise it")</BitButton>
+            <br /><br />
+            @if (ReadmeArtifact is { } readme)
+            {
+                <BitAiArtifactView Artifact="readme" />
+            }
+        </DemoExample>
+
+        <DemoExample Title="Versions" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
+            <div>
+                <b>BeginRevision</b> starts a new version and keeps the last one in <b>Versions</b>, a history of
+                <b>BitAiArtifactVersion</b>s with an optional summary of what changed; <b>Complete</b> commits it. The selector
+                lists every version, and the panel keeps showing the one picked while newer ones arrive. <b>InitialVersion</b>
+                opens a panel at an older version - the one a particular turn produced - and <b>Restore</b> brings an old version
+                back as a new one.
+            </div>
+            <br />
+            <BitButton OnClick="RestoreFirstVersion">Restore version 1</BitButton>
+            <br /><br />
+            <BitAiArtifactView Artifact="pricingArtifact" />
+            <br />
+            <BitAiArtifactView Artifact="pricingArtifact" InitialVersion="1" />
+            <br />
+            <ul>
+                @foreach (var version in pricingArtifact.Versions)
+                {
+                    <li>Version @version.Version: @version.Summary</li>
+                }
+            </ul>
+        </DemoExample>
+
+        <DemoExample Title="Copy, download & full screen" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
+            <div>
+                Copy and download act on the version on screen. The file is named after the title, with <b>-v1</b> and so on for
+                an older version, and takes the extension and type of its kind and language: .md, .html, .json, .csv, .tsv, .svg,
+                or one of some twenty languages (.cs, .ts, .py, ...) for code. The full-screen toggle lays the same panel over the
+                page - a running page in its frame is never restarted by it - and Escape or a click on the overlay brings it back.
+                A <b>Disabled</b> panel keeps copy and turns the version selector, the download and the full-screen toggle off.
+            </div>
+            <br />
+            <BitAiArtifactView Artifact="pageArtifact" />
+            <br />
+            <BitAiArtifactView Artifact="pricingArtifact" Disabled />
+        </DemoExample>
+
+        <DemoExample Title="Style & Class" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
+            <div>
+                <b>Style</b> and <b>Class</b> reach the root, <b>Styles</b> and <b>Classes</b> each part (the version selector,
+                the buttons and the loading dots take the class-styles of BitDropdown, BitButton and BitLoading). The public
+                <b>--bit-AiArtifactView-*</b> variables (see the CSS variables table) inherit, so set on <b>:root</b>, a container
+                or a panel's <b>Style</b> they re-skin every panel below - a panel a registered renderer nests inside it too.
+            </div>
+            <br />
+            @* A plain element of this page for the scoped ::deep rules of the custom classes to anchor on. *@
+            <div>
+                <BitAiArtifactView Artifact="programArtifact"
+                                   Style="max-width: 32rem"
+                                   Styles="@(new() { Header = "background-color: #1e1e2e; color: #cdd6f4", Icon = "color: #89b4fa", Title = "font-family: monospace" })" />
+                <br />
+                <BitAiArtifactView Artifact="documentArtifact" Classes="@(new() { Panel = "custom-panel", Header = "custom-header" })" />
+                <br />
+                <div style="--bit-AiArtifactView-radius: 1rem; --bit-AiArtifactView-border-color: #d2691e; --bit-AiArtifactView-header-background: #d2691e1a; --bit-AiArtifactView-title-font-size: 1rem; --bit-AiArtifactView-max-height: 10rem">
+                    <BitAiArtifactView Artifact="documentArtifact" />
+                </div>
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="RTL" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
+            <div>
+                In right-to-left text the header and the body read from the right, whether the direction comes from <b>Dir</b>
+                or from a <b>dir</b> attribute around the panel.
+            </div>
+            <br />
+            <BitAiArtifactView Dir="BitDir.Rtl" Artifact="persianArtifact" />
+            <br />
+            <div dir="rtl">
+                <BitAiArtifactView Artifact="persianArtifact" />
+            </div>
+        </DemoExample>
+    </Examples>
+</DemoPage>

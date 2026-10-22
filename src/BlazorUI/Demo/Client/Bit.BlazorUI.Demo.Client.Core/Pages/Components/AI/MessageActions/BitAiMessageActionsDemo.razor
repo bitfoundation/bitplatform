@@ -1,0 +1,200 @@
+﻿@page "/components/ai/messageactions"
+@inherits AppComponentBase
+
+<PageOutlet Url="components/ai/messageactions"
+            Title="AiMessageActions"
+            Description="BitAiMessageActions is the row under a finished AI reply: copy, regenerate and thumbs up or down, plus the model, the token usage and the time the options in force show." />
+
+<DemoPage Name="AiMessageActions"
+          Description="BitAiMessageActions is the row under a finished assistant message: copy, regenerate (with a session, for the newest reply) and thumbs up or down feedback, plus extra buttons of the app's own, and the metadata the BitAiUiOptions in force choose to show - the model, the token usage, the time. The actions are revealed while the message is hovered or holds the focus; the metadata is always shown. BitAiChatMessage renders one under every reply."
+          Parameters="componentParameters"
+          SubClasses="componentSubClasses"
+          SubEnums="componentSubEnums"
+          CssVariables="componentCssVariables"
+          GitHubAIUrl="MessageActions/BitAiMessageActions.razor"
+          GitHubDemoUrl="AI/MessageActions/BitAiMessageActionsDemo.razor">
+    <NotesTemplate>
+        <BitText>
+            To use this component, you need to install the
+            <BitLink Href="https://www.nuget.org/packages/Bit.BlazorUI.AI" Target="_blank">
+                <BitTag Reversed
+                        Text="Bit.BlazorUI.AI"
+                        Color="BitColor.SecondaryBackground"
+                        IconName="@BitIconName.NavigateExternalInline" />
+            </BitLink>
+            nuget package, as described in the Optional steps of the
+            <BitLink Href="/getting-started">Getting started</BitLink> page.
+        </BitText>
+        <br />
+        <BitText>
+            Copy and feedback work on the <b>Message</b> alone; regenerate needs the <b>Session</b> that drives it. What the row
+            shows follows the <BitLink Href="/components/ai/optionsprovider">BitAiUiOptions</BitLink> in force:
+            <b>ShowMessageActions</b> for the buttons, <b>ShowModelName</b>, <b>ShowUsage</b> and <b>ShowTimestamps</b> for the
+            metadata (this site turns the model and the usage on).
+        </BitText>
+        <br />
+        <BitText>
+            The buttons are named for a screen reader and a pressed feedback button says so through <b>aria-pressed</b>, its glyph
+            drawn solid and in the primary color, so the choice is never carried by the color alone. The hidden actions are
+            only faded out: they stay reachable with the keyboard, and they are always shown on a touch screen, under a
+            preference for more contrast, and when <b>Pinned</b>.
+        </BitText>
+    </NotesTemplate>
+    <Examples>
+        <DemoExample Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
+            <div>
+                Give it the <b>Message</b> it belongs to: hover the row to reveal copy and feedback. The model and the token
+                usage beside them are always shown.
+            </div>
+            <br />
+            <div>@message.GetText()</div>
+            <BitAiMessageActions Message="message" />
+        </DemoExample>
+
+        <DemoExample Title="Pinned" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
+            <div>
+                <b>Pinned</b> keeps the actions visible rather than revealing them on hover - for the newest reply, or a row
+                rendered on its own.
+            </div>
+            <br />
+            <div>@pinnedMessage.GetText()</div>
+            <BitAiMessageActions Pinned Message="pinnedMessage" />
+        </DemoExample>
+
+        <DemoExample Title="Feedback" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
+            <div>
+                <b>OnFeedback</b> reports the sentiment the user picked - and <b>None</b> when they press the chosen one again
+                to withdraw it. The message's <b>Feedback</b> is already updated, so a host only has to persist it.
+                <b>ShowFeedback</b> takes the thumbs away.
+            </div>
+            <br />
+            <div>@feedbackMessage.GetText()</div>
+            <BitAiMessageActions Pinned Message="feedbackMessage" OnFeedback="HandleFeedback" />
+            <br />
+            <div>Last feedback: <b>@lastFeedback</b></div>
+            <br />
+            <div>@noFeedbackMessage.GetText()</div>
+            <BitAiMessageActions Pinned ShowFeedback="false" Message="noFeedbackMessage" />
+        </DemoExample>
+
+        <DemoExample Title="Regenerate" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
+            <div>
+                With a <b>Session</b>, the row offers regenerate, which discards the reply and asks again. Only the newest reply
+                should offer it - regenerating an older one discards everything after it - so <b>CanRegenerate</b> turns it off
+                for the others.
+            </div>
+            <br />
+            <BitToggle @bind-Value="canRegenerate" Text="CanRegenerate" />
+            @if (regenerateSession.Conversation.LastMessage is { } reply)
+            {
+                @if (reply.IsBusy)
+                {
+                    <div>Regenerating...</div>
+                }
+                else
+                {
+                    <div>@reply.GetText()</div>
+                    <BitAiMessageActions Pinned
+                                         Message="reply"
+                                         Session="regenerateSession"
+                                         CanRegenerate="canRegenerate" />
+                }
+            }
+        </DemoExample>
+
+        <DemoExample Title="Extra actions" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
+            <div>
+                <b>ExtraActionsTemplate</b> appends buttons of the app's own to the row - a bookmark, here. Draw them like the
+                built-in ones: text buttons with a glyph, a title and an accessible name.
+            </div>
+            <br />
+            <div>@extraMessage.GetText()</div>
+            <BitAiMessageActions Pinned Message="extraMessage">
+                <ExtraActionsTemplate>
+                    <BitButton Variant="BitVariant.Text"
+                               IconName="@(isBookmarked ? BitIconName.SingleBookmarkSolid : BitIconName.SingleBookmark)"
+                               Title="@(isBookmarked ? "Remove the bookmark" : "Bookmark")"
+                               AriaLabel="@(isBookmarked ? "Remove the bookmark" : "Bookmark")"
+                               aria-pressed="@(isBookmarked ? "true" : "false")"
+                               OnClick="ToggleBookmark" />
+                </ExtraActionsTemplate>
+            </BitAiMessageActions>
+        </DemoExample>
+
+        <DemoExample Title="Options" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
+            <div>
+                What the row shows is the <b>BitAiUiOptions</b> in force, cascaded by a
+                <BitLink Href="/components/ai/optionsprovider">BitAiOptionsProvider</BitLink>: the first shows the time too, the
+                second only the metadata (<b>ShowMessageActions</b> off).
+            </div>
+            <br />
+            <BitAiOptionsProvider UiOptions="allMetadataOptions">
+                <div>@optionsMessage.GetText()</div>
+                <BitAiMessageActions Pinned Message="optionsMessage" />
+            </BitAiOptionsProvider>
+            <br />
+            <BitAiOptionsProvider UiOptions="metadataOnlyOptions">
+                <div>@metadataOnlyMessage.GetText()</div>
+                <BitAiMessageActions Message="metadataOnlyMessage" />
+            </BitAiOptionsProvider>
+        </DemoExample>
+
+        <DemoExample Title="Disabled" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
+            <div>
+                A disabled row keeps its metadata and disables its buttons (copy, regenerate, feedback).
+            </div>
+            <br />
+            <BitToggle @bind-Value="isDisabled" Text="Disabled" />
+            <div>@disabledMessage.GetText()</div>
+            <BitAiMessageActions Pinned Disabled="isDisabled" Message="disabledMessage" />
+        </DemoExample>
+
+        <DemoExample Title="Cascading parameters" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
+            <div>
+                <b>BitParams</b> with a <b>BitAiMessageActionsParams</b> sets what the rows of an app agree on - whether they
+                are pinned, whether they offer feedback, their classes and styles - for every row inside it, the rows the
+                BitAiChatMessage of a chat renders included; a row's own value wins (the second keeps its feedback).
+            </div>
+            <br />
+            <BitParams Parameters="actionsParams">
+                <div>@cascadeMessage.GetText()</div>
+                <BitAiMessageActions Message="cascadeMessage" />
+                <br />
+                <div>@cascadeOwnMessage.GetText()</div>
+                <BitAiMessageActions ShowFeedback Message="cascadeOwnMessage" />
+            </BitParams>
+        </DemoExample>
+
+        <DemoExample Title="Style & Class" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
+            <div>
+                <b>Style</b> / <b>Class</b> reach the root, <b>Styles</b> / <b>Classes</b> each part (the group of buttons,
+                the regenerate and feedback buttons with the class-styles of BitButton, the model and the time). The public
+                <b>--bit-AiMessageActions-*</b> variables (see the CSS variables table) re-skin it from <b>:root</b>, an
+                ancestor or <b>Style</b>.
+            </div>
+            <br />
+            <div>
+                <BitAiMessageActions Pinned
+                                     Message="styleMessage"
+                                     Style="padding:0.25rem 0.5rem;border-radius:1rem;background:var(--bit-clr-bg-sec)"
+                                     Styles="@(new() { Model = "font-weight:bold", FeedbackButton = new() { Icon = "color:tomato" } })" />
+                <br />
+                <BitAiMessageActions Pinned
+                                     Message="classMessage"
+                                     Class="custom-actions"
+                                     Classes="@(new() { Actions = "custom-actions-group", Model = "custom-actions-model" })" />
+                <br />
+                <BitAiMessageActions Pinned
+                                     Message="variablesMessage"
+                                     Style="--bit-AiMessageActions-gap:2rem;--bit-AiMessageActions-actions-gap:0.5rem;--bit-AiMessageActions-color:var(--bit-clr-pri);--bit-AiMessageActions-font-size:0.875rem" />
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="RTL" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
+            <div>Use BitAiMessageActions in right-to-left (RTL).</div>
+            <br />
+            <div dir="rtl">@rtlMessage.GetText()</div>
+            <BitAiMessageActions Pinned Dir="BitDir.Rtl" Message="rtlMessage" />
+        </DemoExample>
+    </Examples>
+</DemoPage>

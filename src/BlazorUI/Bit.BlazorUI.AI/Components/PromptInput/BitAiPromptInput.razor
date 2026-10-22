@@ -1,0 +1,219 @@
+﻿@namespace Bit.BlazorUI
+@using Microsoft.AspNetCore.Components.Forms
+@inherits BitAiComponentBase
+
+@{
+    var placeholder = Placeholder ?? Strings.PromptPlaceholder;
+    var menuOpen = MenuOpen;
+    var sendDisabled = IsGenerating is false && CanSubmit is false;
+}
+
+<div @ref="RootElement" @attributes="DisabledAwareHtmlAttributes"
+     id="@_Id"
+     style="@StyleBuilder.Value"
+     class="@ClassBuilder.Value"
+     dir="@Dir?.ToString().ToLower()">
+    @if (_dragging)
+    {
+        <div style="@Styles?.DropOverlay" class="bit-aipri-dro @Classes?.DropOverlay">@Strings.DropFiles</div>
+    }
+
+    @if (_attachments.Count > 0)
+    {
+        <div style="@Styles?.Attachments" class="bit-aipri-ats @Classes?.Attachments">
+            @foreach (var attachment in _attachments)
+            {
+                <BitAiAttachmentChip @key="attachment.AttachmentId"
+                                     Attachment="attachment"
+                                     OnRemove="RemoveAttachmentAsync"
+                                     Disabled="Disabled"
+                                     Styles="@Styles?.AttachmentChip"
+                                     Classes="@Classes?.AttachmentChip" />
+            }
+        </div>
+    }
+
+    @if (_rejections.Count > 0)
+    {
+        @* A file is never turned away silently: the notice says which one was and why, as an alert. *@
+        <BitMessage Color="BitColor.Error"
+                    Dismissible
+                    OnDismiss="DismissRejections"
+                    DismissAriaLabel="@Strings.Dismiss"
+                    Class="bit-aipri-ntc"
+                    Styles="@Styles?.Notice"
+                    Classes="@Classes?.Notice">
+            @foreach (var rejection in _rejections)
+            {
+                <div>@RejectionMessage(rejection)</div>
+            }
+        </BitMessage>
+    }
+
+    @if (menuOpen)
+    {
+        @* The options are reached with the arrow keys while the focus stays in the text (aria-activedescendant), so they
+           stay out of the tab order, and a press on one keeps the focus where it is rather than moving it to the option. *@
+        <div role="listbox"
+             id="@MenuId"
+             aria-label="@(_menuTrigger == '/' ? Strings.Commands : Strings.Mentions)"
+             style="@Styles?.Menu"
+             class="bit-aipri-mnu @Classes?.Menu">
+            @for (var i = 0; i < _menuItems.Count; i++)
+            {
+                var index = i;
+                var item = _menuItems[i];
+                var active = index == _menuIndex;
+
+                <button @onclick="() => AcceptMenuItemAsync(index)"
+                        @onmousedown:preventDefault="true"
+                        type="button"
+                        role="option"
+                        id="@OptionId(index)"
+                        tabindex="-1"
+                        aria-selected="@(active ? "true" : "false")"
+                        style="@Styles?.MenuItem"
+                        class="bit-aipri-mit@(active ? " bit-aipri-mia" : null) @Classes?.MenuItem">
+                    @if (item.Icon is { Length: > 0 } icon)
+                    {
+                        <BitIcon IconName="@icon" Style="@Styles?.MenuItemIcon" Class="@($"bit-aipri-mic {Classes?.MenuItemIcon}")" />
+                    }
+                    <span style="@Styles?.MenuItemLabel" class="bit-aipri-mlb @Classes?.MenuItemLabel">@item.Label</span>
+                    @if (item.Description is { Length: > 0 } description)
+                    {
+                        <span style="@Styles?.MenuItemHint" class="bit-aipri-mhn @Classes?.MenuItemHint">@description</span>
+                    }
+                </button>
+            }
+        </div>
+    }
+
+    <div style="@Styles?.Body" class="bit-aipri-bdy @Classes?.Body">
+        @if (PrefixTemplate is not null)
+        {
+            <div style="@Styles?.Prefix" class="bit-aipri-pre @Classes?.Prefix">@PrefixTemplate</div>
+        }
+
+        @* A combobox rather than a plain textbox: the slash and mention menu is a listbox popup the arrow keys drive, and
+           aria-activedescendant tells assistive technologies which option those keys have reached while the focus stays
+           in the text. data-bit-aipri-mnu tells the submit-key guard of the script that the menu has the keys, and
+           data-bit-esc claims the Escape the handler acts on - closing the menu, or else stopping the turn. The text is a
+           binding rather than a value and an oninput handler: a binding is what has Blazor take what the textarea held
+           when each keystroke was sent as what it last rendered, so a render that arrives while later keystrokes are on
+           their way (a Blazor Server circuit, a slow ValueChanged) never writes an older text back over them. *@
+        <textarea @ref="_textarea"
+                  @bind:get="Value"
+                  @bind:set="HandleOnInput"
+                  @bind:event="oninput"
+                  @onkeydown="HandleOnKeyDown"
+                  @onkeyup="HandleOnKeyUp"
+                  rows="1"
+                  tabindex="@TabIndex"
+                  maxlength="@MaxLength"
+                  placeholder="@placeholder"
+                  disabled="@Disabled"
+                  aria-disabled="@(Disabled ? "true" : null)"
+                  aria-label="@(AriaLabel ?? placeholder)"
+                  role="combobox"
+                  aria-haspopup="listbox"
+                  aria-autocomplete="list"
+                  aria-expanded="@(menuOpen ? "true" : "false")"
+                  aria-controls="@(menuOpen ? MenuId : null)"
+                  aria-activedescendant="@(menuOpen ? OptionId(_menuIndex) : null)"
+                  aria-describedby="@(MaxLength is not null ? CounterId : null)"
+                  data-bit-aipri-mnu="@(menuOpen ? "true" : null)"
+                  data-bit-esc="@EscapeClaim"
+                  style="@Styles?.Input"
+                  class="bit-aipri-inp @Classes?.Input"></textarea>
+
+        <div style="@Styles?.Tools" class="bit-aipri-tls @Classes?.Tools">
+            @if (ShowAttachments)
+            {
+                @* A real button carries the accessible name and the focus ring; the file input is kept, out of the tab
+                   order and out of sight, because only it can open the picker and deliver the files. *@
+                <BitButton IconName="Attach"
+                           Variant="BitVariant.Text"
+                           Title="@Strings.AttachFile"
+                           AriaLabel="@Strings.AttachFile"
+                           Disabled="Disabled"
+                           OnClick="OpenFilePickerAsync"
+                           Class="bit-aipri-atb bit-btn-dft-ter"
+                           Styles="@Styles?.AttachButton"
+                           Classes="_AttachButtonClasses" />
+
+                <InputFile @ref="_fileInput"
+                           OnChange="HandleOnFilesSelected"
+                           multiple
+                           accept="@EffectiveAccept"
+                           tabindex="-1"
+                           aria-hidden="true"
+                           class="bit-aipri-fil" />
+            }
+
+            @if (ShowDictation)
+            {
+                <BitAiVoiceInput Language="@DictationLanguage"
+                                 Disabled="Disabled"
+                                 OnTranscript="HandleOnTranscript"
+                                 OnInterim="HandleOnInterim"
+                                 OnListeningChanged="HandleOnListeningChanged"
+                                 Styles="@Styles?.VoiceInput"
+                                 Classes="@Classes?.VoiceInput" />
+            }
+
+            @SuffixTemplate
+
+            @* One element for send and stop, so the focus stays on it when a turn starts or ends. Stopping is the action a
+               user wants while a turn is in flight, so the button becomes a stop button then rather than sitting disabled
+               beside one. *@
+            <BitButton @key="SendButtonKey"
+                       IconName="@(IsGenerating ? "StopSolid" : "Send")"
+                       Variant="@(IsGenerating ? BitVariant.Outline : null)"
+                       Title="@(IsGenerating ? Strings.Stop : Strings.Send)"
+                       AriaLabel="@(IsGenerating ? Strings.Stop : Strings.Send)"
+                       Disabled="sendDisabled"
+                       OnClick="SendOrStopAsync"
+                       Class="bit-aipri-snd"
+                       Styles="@Styles?.SendButton"
+                       Classes="@(IsGenerating ? _StopButtonClasses : _SendButtonClasses)" />
+        </div>
+    </div>
+
+    @if (_interim is { Length: > 0 } interim)
+    {
+        @* Provisional dictation, shown but not announced: it changes with every syllable. *@
+        <div aria-hidden="true" style="@Styles?.Interim" class="bit-aipri-itr @Classes?.Interim">@interim</div>
+    }
+
+    @if (HintTemplate is not null || MaxLength is not null)
+    {
+        <div style="@Styles?.Footer" class="bit-aipri-ftr @Classes?.Footer">
+            @if (HintTemplate is not null)
+            {
+                <div style="@Styles?.Hint" class="bit-aipri-hnt @Classes?.Hint">@HintTemplate</div>
+            }
+
+            @if (MaxLength is { } max)
+            {
+                <div id="@CounterId"
+                     aria-hidden="true"
+                     style="@Styles?.Counter"
+                     class="@CounterClass @Classes?.Counter">@Strings.CharacterCount(Value.Length, max)</div>
+            }
+        </div>
+    }
+
+    @if (MaxLength is { } limit)
+    {
+        @* Quiet until the limit is close, then a polite count, so a screen reader user is not cut off without warning. *@
+        <div role="status"
+             aria-live="polite"
+             style="@Styles?.LiveRegion"
+             class="bit-aipri-sts @Classes?.LiveRegion">
+            @if (NearLimit)
+            {
+                @Strings.CharactersRemaining(Math.Max(0, limit - Value.Length))
+            }
+        </div>
+    }
+</div>

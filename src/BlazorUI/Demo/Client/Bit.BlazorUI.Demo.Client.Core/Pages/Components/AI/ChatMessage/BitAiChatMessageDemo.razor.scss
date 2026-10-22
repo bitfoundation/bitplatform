@@ -1,0 +1,13 @@
+﻿// The classes handed to the message land on its own elements, reached from the plain wrapper of the section.
+::deep {
+    .custom-message {
+        padding: 1rem;
+        border-radius: 1rem;
+        border: 1px dashed var(--bit-clr-pri);
+    }
+
+    .custom-message-body {
+        font-style: italic;
+        color: var(--bit-clr-pri);
+    }
+}

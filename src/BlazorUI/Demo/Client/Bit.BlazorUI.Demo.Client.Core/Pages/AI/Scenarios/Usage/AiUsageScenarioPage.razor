@@ -1,0 +1,85 @@
+﻿@page "/ai/scenarios/usage"
+@inherits AppComponentBase
+
+<PageOutlet Url="ai/scenarios/usage"
+            Title="AI models, tokens and cost"
+            Keywords="LLM model picker, token usage, AI cost tracking, context window meter, BitAiModelSelector, BitAiContextMeter, BitAiTokenUsageView"
+            Description="A model picker in the composer of a bit BlazorUI AI chat, and real accounting under each answer: tokens, cost, throughput, and how much of the context window is used." />
+
+<DocsArticle Eyebrow="AI scenarios"
+             Title="Models and usage"
+             Lead="A model picker in the composer, and real accounting under each answer: tokens, cost, throughput, and context used."
+             GitHubUrl="AI/Scenarios/Usage/AiUsageScenarioPage.razor">
+
+    <Badges>
+        <BitTag Size="BitSize.Small" Variant="BitVariant.Outline" Color="BitColor.SecondaryForeground" Text="Bit.BlazorUI.AI" />
+        <BitTag Size="BitSize.Small" Variant="BitVariant.Outline" Color="BitColor.SecondaryForeground" Text="Scripted transport" />
+    </Badges>
+
+    <ChildContent>
+        <DocSection Id="demo" Title="Live demo"
+                    Description="Pick a model and ask something: the readout under the answer is priced with that model's rates.">
+            <DemoExample Title="A model picker and a meter" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" CodeFiles="@example1CodeFiles" Id="example1">
+                <AiScenarioFrame AsideLabel="Selected model">
+                    <Aside>
+                        <BitText Element="h4" Typography="BitTypography.Subtitle2">Selected model</BitText>
+                        @if (_model is { } model)
+                        {
+                            <ul>
+                                <li><strong>@model.Name</strong></li>
+                                <li>Context: @(model.ContextWindow?.ToString("N0", CultureInfo.InvariantCulture)) tokens</li>
+                                <li>Input: @($"{model.InputPricePerMillion:0.##}") @model.Currency per million</li>
+                                <li>Output: @($"{model.OutputPricePerMillion:0.##}") @model.Currency per million</li>
+                                <li>Tools: @(model.Supports(BitAiModelCapabilities.Tools) ? "yes" : "no")</li>
+                                <li>Vision: @(model.Supports(BitAiModelCapabilities.Vision) ? "yes" : "no")</li>
+                            </ul>
+                        }
+                    </Aside>
+                    <ChildContent>
+                        <BitAiChat Session="_session"
+                                   UiOptions="_options"
+                                   EmptyTitle="Pick a model and ask something"
+                                   Suggestions="_suggestions">
+                            <ComposerPrefixTemplate>
+                                <BitAiModelSelector @bind-ModelId="_modelId"
+                                                    OnModelSelected="OnModelSelected"
+                                                    Disabled="@(_session?.IsGenerating ?? false)" />
+                            </ComposerPrefixTemplate>
+                            <ComposerHintTemplate>
+                                <BitAiContextMeter Conversation="_session?.Conversation" Model="_model" />
+                            </ComposerHintTemplate>
+                        </BitAiChat>
+                    </ChildContent>
+                </AiScenarioFrame>
+            </DemoExample>
+        </DocSection>
+
+        <DocSection Id="how-it-works" Title="How it works">
+            <p>
+                The models come from the catalog registered with <code>ai.AddModels(models, providers, defaultModelId)</code>,
+                which the selector reads (<code>IBitAiModelCatalog</code>), grouped by family or provider. Picking another one
+                moves the conversation onto a new session for that model; the old session only has to stop.
+            </p>
+            <p>
+                Every field of the accounting is optional, because providers report different subsets of it. The components do
+                the arithmetic they can: throughput from the output tokens over the streaming window, cost from the rates in
+                the model catalog (<code>BitAiModel.EstimateCost</code>), and the share of the context window the conversation
+                uses from the window the transport or the model reports. <code>ShowUsage</code>, <code>ShowModelName</code>
+                and <code>ShowTimestamps</code> of <code>BitAiUiOptions</code> decide what a message shows.
+            </p>
+        </DocSection>
+
+        <DocSection Id="components" Title="Components used">
+            <ul>
+                <li><BitLink Href="/components/ai/modelselector"><code>BitAiModelSelector</code></BitLink> - the picker, in the composer's prefix.</li>
+                <li><BitLink Href="/components/ai/contextmeter"><code>BitAiContextMeter</code></BitLink> - the context used, in the composer's hint.</li>
+                <li><BitLink Href="/components/ai/tokenusageview"><code>BitAiTokenUsageView</code></BitLink> - the tokens, cost and speed of each answer.</li>
+                <li><BitLink Href="/components/ai/messageactions"><code>BitAiMessageActions</code></BitLink> - the row under an answer that carries the model, the usage and the time.</li>
+            </ul>
+        </DocSection>
+    </ChildContent>
+
+    <FooterTemplate>
+        <DocPager Pages="AiScenarioNav.Items" AriaLabel="AI scenarios" />
+    </FooterTemplate>
+</DocsArticle>

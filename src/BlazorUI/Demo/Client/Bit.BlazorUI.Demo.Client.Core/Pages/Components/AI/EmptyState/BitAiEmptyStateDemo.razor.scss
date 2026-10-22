@@ -1,0 +1,16 @@
+﻿// The classes handed to the empty state land on its own elements, reached from the plain wrapper of the section.
+::deep {
+    .custom-empty {
+        border-radius: 1rem;
+        border: 1px dashed var(--bit-clr-pri);
+    }
+
+    .custom-empty-icon {
+        transform: rotate(-12deg);
+    }
+
+    .custom-empty-title {
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+    }
+}

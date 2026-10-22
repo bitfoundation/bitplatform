@@ -1,0 +1,29 @@
+﻿@* The renderer registered for the booking_form schema, in the AI forms scenario. It replaces the default
+   BitAiStructuredDataView, which would otherwise show the raw schema, with a BitAiForm built from that schema.
+
+   Submissions go to whatever page cascaded a BookingSubmitted callback, so the renderer stays reusable and the page
+   decides what a booking means. *@
+<BitAiForm Definition="_definition" Submitted="_submitted" OnSubmit="OnSubmitAsync" />
+
+@code {
+    private BitAiFormDefinition _definition = new();
+    private bool _submitted;
+
+    /// <summary>The structured part carrying the schema.</summary>
+    [Parameter, EditorRequired]
+    public BitAiStructuredDataPart Part { get; set; } = default!;
+
+    /// <summary>Where the corrected values go.</summary>
+    [CascadingParameter(Name = "BookingSubmitted")]
+    public EventCallback<IReadOnlyDictionary<string, string?>> Submitted { get; set; }
+
+    // Rebuilt as the schema streams in; the form keeps whatever the user already typed.
+    protected override void OnParametersSet() =>
+        _definition = Part.Value is { } schema ? BitAiFormDefinition.FromJsonSchema(schema) : new BitAiFormDefinition();
+
+    private async Task OnSubmitAsync(IReadOnlyDictionary<string, string?> values)
+    {
+        _submitted = true;
+        await Submitted.InvokeAsync(values);
+    }
+}

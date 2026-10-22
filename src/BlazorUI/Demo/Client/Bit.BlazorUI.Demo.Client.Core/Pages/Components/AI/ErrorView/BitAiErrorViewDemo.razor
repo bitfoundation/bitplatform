@@ -1,0 +1,186 @@
+﻿@page "/components/ai/errorview"
+@inherits AppComponentBase
+
+<PageOutlet Url="components/ai/errorview"
+            Title="AiErrorView"
+            Description="BitAiErrorView shows a failure of an AI request the user can act on: what went wrong, a retry when retrying could help, how long to wait, and the technical detail behind a disclosure." />
+
+<DemoPage Name="AiErrorView"
+          Description="BitAiErrorView shows an error the user can act on: what went wrong, a retry button when the error says retrying could help and a handler is there to do it, how long to wait before retrying when the provider says so, and the technical detail behind a disclosure rather than in the reader's face. It draws the error as an Error BitMessage, which is announced as an alert, and has a compact form for a failure shown inside another card."
+          Parameters="componentParameters"
+          SubClasses="componentSubClasses"
+          SubEnums="componentSubEnums"
+          CssVariables="componentCssVariables"
+          GitHubAIUrl="ErrorView/BitAiErrorView.razor"
+          GitHubDemoUrl="AI/ErrorView/BitAiErrorViewDemo.razor">
+    <NotesTemplate>
+        <BitText>
+            To use this component, you need to install the
+            <BitLink Href="https://www.nuget.org/packages/Bit.BlazorUI.AI" Target="_blank">
+                <BitTag Reversed
+                        Text="Bit.BlazorUI.AI"
+                        Color="BitColor.SecondaryBackground"
+                        IconName="@BitIconName.NavigateExternalInline" />
+            </BitLink>
+            nuget package, as described in the Optional steps of the
+            <BitLink Href="/getting-started">Getting started</BitLink> page.
+        </BitText>
+        <br />
+        <BitText>
+            A chat message that failed, a failed tool call and a failed tool result show their <b>BitAiError</b> through this view by
+            themselves. A transport reports a failure as a <b>BitAiErrorEvent</b> carrying one, so no component ever branches on an exception
+            type of a provider's SDK; the session keeps the last one as <b>LastError</b>. The <b>Message</b> of an error is shown to the user
+            and the <b>Detail</b> behind the disclosure, so keep secrets, keys and personal data out of both. See the
+            <BitLink Href="/ai/scenarios/errors">Errors</BitLink> and <BitLink Href="/ai/scenarios/agent-failure">Agent failure</BitLink> scenarios.
+        </BitText>
+    </NotesTemplate>
+    <Examples>
+        <DemoExample Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
+            <div>
+                Hand it the <b>Error</b> (a <b>BitAiError</b>). It is titled with a generic heading and shows the error's <b>Message</b>, written
+                for the user. Nothing more is offered for an error that retrying would not fix.
+            </div>
+            <br />
+            <div class="example-stack">
+                <BitAiErrorView Error="filterError" />
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Retry" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
+            <div>
+                The retry button is offered when the error says retrying could help (<b>IsRetryable</b>) and <b>OnRetry</b> is there to do it.
+                <b>RetryAfter</b> says how long to wait first. Here the scripted model is rate limited on the first try and answers on the
+                second: the session reports the failure as its <b>LastError</b>, and <b>RetryAsync</b> runs the turn again. <b>Start over</b>
+                brings back a model that fails once.
+            </div>
+            <br />
+            <div class="example-buttons">
+                <BitButton OnClick="AskAsync" Disabled="retrySession.IsGenerating">Ask</BitButton>
+                <BitButton Variant="BitVariant.Outline" OnClick="StartOverAsync" Disabled="retrySession.IsGenerating">Start over</BitButton>
+            </div>
+            <br />
+            <div class="example-stack">
+                @if (retrySession.LastError is { } lastError)
+                {
+                    <BitAiErrorView Error="lastError" OnRetry="RetryAsync" />
+                }
+                else if (retrySession.Conversation.Messages.LastOrDefault(m => m.Role.IsAssistant) is { } answer)
+                {
+                    <div>@answer.GetText()</div>
+                }
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Detail" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
+            <div>
+                The <b>Detail</b> of an error - a status line, a response body, a stack trace - is kept behind the <b>Show details</b> disclosure,
+                as it was written. A long one scrolls past a few lines; it then takes the focus itself, so it can be scrolled with a keyboard.
+            </div>
+            <br />
+            <div class="example-stack">
+                <BitAiErrorView Error="detailError" OnRetry="() => detailRetries++" />
+            </div>
+            <br />
+            <div>Retried <b>@detailRetries</b> times.</div>
+        </DemoExample>
+
+        <DemoExample Title="Compact" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
+            <div>
+                <b>Compact</b> is for a failure inside another card that already says what failed - a tool call, a tool result: the view is
+                titled by the error's own message rather than by the generic heading.
+            </div>
+            <br />
+            <div class="example-stack">
+                <BitCard>
+                    <BitText Typography="BitTypography.Subtitle2">Monthly report</BitText>
+                    <br />
+                    <BitAiErrorView Compact Error="detailError" />
+                </BitCard>
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="From an exception" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
+            <div>
+                <b>BitAiError.FromException</b> translates an exception for a transport or a tool of your own: a cancellation becomes a
+                <b>Cancelled</b> error that retrying would not fix, a timeout a retryable <b>Timeout</b>, and anything else a retryable
+                <b>Unknown</b> one carrying the exception's message and its full text as the detail.
+            </div>
+            <br />
+            <div class="example-stack">
+                <BitAiErrorView Error="cancelledError" OnRetry="() => exceptionRetries++" />
+                <BitAiErrorView Error="timeoutError" OnRetry="() => exceptionRetries++" />
+                <BitAiErrorView Error="unknownError" OnRetry="() => exceptionRetries++" />
+            </div>
+            <br />
+            <div>Retried <b>@exceptionRetries</b> times.</div>
+        </DemoExample>
+
+        <DemoExample Title="Disabled" RazorCode="@example6RazorCode" Id="example6">
+            <div>
+                <b>Disabled</b> turns the retry and the disclosure off, and drops the activation handlers the page put on the view.
+            </div>
+            <br />
+            <div class="example-stack">
+                <BitAiErrorView Disabled Error="detailError" OnRetry="() => detailRetries++" />
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Cascading parameters" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
+            <div>
+                <b>BitParams</b> with a <b>BitAiErrorViewParams</b> sets the defaults of every error view inside it - here the rounded
+                retry buttons of a region. An error view keeps what it sets itself: the last one is disabled on its own.
+            </div>
+            <br />
+            <div class="example-stack">
+                <BitParams Parameters="errorViewParams">
+                    <BitAiErrorView Error="detailError" OnRetry="() => detailRetries++" />
+                    <BitAiErrorView Error="timeoutError" OnRetry="() => detailRetries++" Disabled />
+                </BitParams>
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Style & Class" RazorCode="@example8RazorCode" Id="example8">
+            <div>
+                <b>Style</b> and <b>Class</b> land on the root, <b>Styles</b> and <b>Classes</b> on the parts: the <b>BitMessage</b> the error is
+                drawn with (restyled through its <b>BitMessageClassStyles</b> and <b>--bit-Message-*</b> variables), the text, the wait, the
+                detail, the row of actions and the two buttons. The public <b>--bit-AiErrorView-*</b> variables restyle the detail.
+            </div>
+            <br />
+            <div class="example-stack">
+                <BitAiErrorView Error="filterError" Style="box-shadow: 0 0.25rem 1rem #b91c1c40" />
+
+                <BitAiErrorView Error="detailError" Class="custom-error" OnRetry="() => detailRetries++" />
+
+                <BitAiErrorView Error="detailError"
+                                OnRetry="() => detailRetries++"
+                                Styles="@(new() { Text = "font-weight: bold",
+                                                  RetryAfter = "font-style: italic",
+                                                  RetryButton = new() { Root = "border-radius: 1rem" } })" />
+
+                <BitAiErrorView Error="detailError"
+                                OnRetry="() => detailRetries++"
+                                Classes="@(new() { Message = new() { Root = "custom-error-message" },
+                                                   Actions = "custom-error-actions" })" />
+
+                <div style="--bit-AiErrorView-detail-color: #7f1d1d; --bit-AiErrorView-detail-max-height: 4rem;">
+                    <BitAiErrorView Error="detailError" />
+                </div>
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="RTL" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
+            <div>
+                In right-to-left text the error is laid out from the right. The heading, the buttons and the wait are the <b>BitAiStrings</b> of
+                the options in force - here a subclass of them, cascaded by a <b>BitAiOptionsProvider</b>.
+            </div>
+            <br />
+            <div class="example-stack">
+                <BitAiOptionsProvider UiOptions="persianOptions">
+                    <BitAiErrorView Dir="BitDir.Rtl" Error="rtlError" OnRetry="() => rtlRetries++" />
+                </BitAiOptionsProvider>
+            </div>
+            <br />
+            <div>Retried <b>@rtlRetries</b> times.</div>
+        </DemoExample>
+    </Examples>
+</DemoPage>

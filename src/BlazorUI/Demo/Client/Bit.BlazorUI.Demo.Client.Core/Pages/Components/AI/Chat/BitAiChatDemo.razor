@@ -1,0 +1,364 @@
+﻿@page "/components/ai/chat"
+@inherits AppComponentBase
+
+<PageOutlet Url="components/ai/chat"
+            Title="AiChat"
+            Description="BitAiChat is a whole AI chat in one component: the transcript, the composer, the empty state with its starter prompts and the scroll-to-latest button, wired to a session over any model." />
+
+<DemoPage Name="AiChat"
+          SecondaryNames="@(["Chatbot", "Assistant", "Copilot"])"
+          Description="BitAiChat is the whole chat surface in one component: the streaming transcript, the composer with attachments, slash commands and mentions, the empty state with its starter prompts, and the scroll-to-latest button, wired to a BitAiChatSession. Give it a session, or let it create one from the transport registered with AddBitBlazorUIAIServices - a working AI chat in one line of markup. Every part it composes is a public component of its own, so anything it does can also be assembled by hand."
+          Parameters="componentParameters"
+          SubClasses="componentSubClasses"
+          PublicMembers="componentPublicMembers"
+          CssVariables="componentCssVariables"
+          GitHubAIUrl="Chat/BitAiChat.razor"
+          GitHubDemoUrl="AI/Chat/BitAiChatDemo.razor">
+    <NotesTemplate>
+        <BitText>
+            To use this component, you need to install the
+            <BitLink Href="https://www.nuget.org/packages/Bit.BlazorUI.AI" Target="_blank">
+                <BitTag Reversed
+                        Text="Bit.BlazorUI.AI"
+                        Color="BitColor.SecondaryBackground"
+                        IconName="@BitIconName.NavigateExternalInline" />
+            </BitLink>
+            nuget package, as described in the Optional steps of the
+            <BitLink Href="/getting-started">Getting started</BitLink> page.
+        </BitText>
+        <br />
+        <BitText>
+            BitAiChat talks to a model through a <b>BitAiChatSession</b>. Pass one in <b>Session</b>, or register a transport with
+            <b>builder.Services.AddBitBlazorUIAIServices(ai =&gt; ai.UseTransport&lt;MyTransport&gt;())</b> and the chat creates
+            its own (and disposes it with itself). The package never calls a provider on its own: an <b>IBitAiTransport</b> of
+            yours turns your provider's stream into its events. Every reply on this page comes from a scripted transport, so the
+            demos run with no model and no API key.
+        </BitText>
+        <br />
+        <BitText>
+            The chat takes the height of its container, so give that container one. The transcript is a polite live region
+            (<b>role="log"</b>) and a reply is <b>aria-busy</b> while it streams, so a screen reader reads it once it settles
+            rather than token by token. Links and images in the model's Markdown are sanitized - script-capable URL schemes are
+            neutralized whatever <b>BitAiUiOptions.Images</b> allows.
+        </BitText>
+        <br />
+        <BitText>
+            The AI scenarios put it to work: the <BitLink Href="/ai/scenarios/basic">basic chat</BitLink>,
+            <BitLink Href="/ai/scenarios/streaming">streaming</BitLink>, <BitLink Href="/ai/scenarios/attachments">attachments</BitLink>,
+            <BitLink Href="/ai/scenarios/commands">commands and mentions</BitLink>, <BitLink Href="/ai/scenarios/citations">citations</BitLink>,
+            <BitLink Href="/ai/scenarios/conversations">conversations</BitLink> and
+            <BitLink Href="/ai/scenarios/options-theming">options and theming</BitLink>.
+        </BitText>
+    </NotesTemplate>
+    <Examples>
+        <DemoExample Title="Basic" RazorCode="@example1RazorCode" Id="example1">
+            <div>
+                With no <b>Session</b>, the chat creates one from the registered transport - here a script that echoes what you
+                send, a few characters at a time. Enter sends, Shift+Enter starts a new line, and while a reply streams the send
+                button stops it.
+            </div>
+            <br />
+            <div style="height:400px">
+                <BitAiChat />
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Session" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
+            <div>
+                A <b>Session</b> of your own picks the transport and lets the page drive the conversation too: this one streams
+                a Markdown answer, and the buttons submit from code and put the caret in the composer
+                (<b>FocusComposerAsync</b>). A session you create is yours to dispose.
+            </div>
+            <br />
+            <div class="example-buttons">
+                <BitButton OnClick="AskFromCode">Ask from code</BitButton>
+                <BitButton Variant="BitVariant.Outline" OnClick="FocusComposer">Focus the composer</BitButton>
+            </div>
+            <br />
+            <div style="height:440px">
+                <BitAiChat @ref="sessionChat" Session="markdownSession" />
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Conversation" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
+            <div>
+                <b>Conversation</b> opens the chat on a thread that already has history (it is used only when no <b>Session</b>
+                is given), and <b>SessionOptions</b> sets up the session the chat creates for it. System messages are hidden by
+                default; turn <b>HideSystemMessages</b> off to show them as a note in the transcript.
+            </div>
+            <br />
+            <BitToggle @bind-Value="hideSystemMessages" Text="HideSystemMessages" />
+            <div style="height:400px">
+                <BitAiChat Conversation="history"
+                           SessionOptions="historyOptions"
+                           HideSystemMessages="hideSystemMessages" />
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Empty state" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
+            <div>
+                An empty conversation shows <b>EmptyTitle</b>, <b>EmptyBody</b> and the <b>Suggestions</b> - starter prompts a
+                tap sends to the session. Three concrete examples do more for an empty box than any heading.
+            </div>
+            <br />
+            <div style="height:400px">
+                <BitAiChat EmptyTitle="Hi, I am the docs assistant"
+                           EmptyBody="Ask about any component, or start from one of these."
+                           Suggestions="suggestions" />
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Templates" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
+            <div>
+                <b>HeaderTemplate</b> sits above the transcript and <b>FooterTemplate</b> under the composer, both outside the
+                scroll area; <b>ListHeaderTemplate</b> and <b>ListFooterTemplate</b> scroll with the messages.
+                <b>EmptyTemplate</b> replaces the empty state. The template's buttons drive the chat through its
+                <b>ActiveSession</b> and <b>ActiveConversation</b>.
+            </div>
+            <br />
+            <div style="height:460px">
+                <BitAiChat @ref="templatesChat">
+                    <HeaderTemplate>
+                        <div style="display:flex;align-items:center;gap:0.5rem;padding:0.5rem 1rem;border-bottom:1px solid var(--bit-clr-brd-sec)">
+                            <BitIcon IconName="@BitIconName.Robot" />
+                            <b>Support assistant</b>
+                            <BitSpacer />
+                            <BitButton Variant="BitVariant.Text" IconName="@BitIconName.Add" OnClick="NewTemplatesChat">New chat</BitButton>
+                        </div>
+                    </HeaderTemplate>
+                    <EmptyTemplate>
+                        <div style="display:flex;flex-direction:column;align-items:center;gap:1rem;padding:2rem 1rem;text-align:center">
+                            <b>What can we help you with?</b>
+                            <BitButton Variant="BitVariant.Outline" OnClick="AskAboutRefunds">How do refunds work?</BitButton>
+                        </div>
+                    </EmptyTemplate>
+                    <ListHeaderTemplate>
+                        <div style="text-align:center;color:var(--bit-clr-fg-sec)">Chats with the assistant are not saved.</div>
+                    </ListHeaderTemplate>
+                    <ListFooterTemplate>
+                        <div style="text-align:center;color:var(--bit-clr-fg-ter)">Replies are scripted on this page.</div>
+                    </ListFooterTemplate>
+                    <FooterTemplate>
+                        <div style="padding-top:0.5rem;text-align:center;color:var(--bit-clr-fg-ter)">
+                            The assistant can make mistakes. Check important information.
+                        </div>
+                    </FooterTemplate>
+                </BitAiChat>
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Composer" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
+            <div>
+                <b>Placeholder</b> words the composer. <b>ComposerPrefixTemplate</b> goes before its text (a model picker, here),
+                <b>ComposerSuffixTemplate</b> beside the send button and <b>ComposerHintTemplate</b> under it.
+            </div>
+            <br />
+            <div style="height:420px">
+                <BitAiChat @ref="composerChat" Placeholder="Ask the selected model...">
+                    <ComposerPrefixTemplate>
+                        <BitAiModelSelector @bind-ModelId="modelId" />
+                    </ComposerPrefixTemplate>
+                    <ComposerSuffixTemplate>
+                        <BitButton Variant="BitVariant.Text"
+                                   IconName="@BitIconName.Delete"
+                                   Title="Clear the conversation"
+                                   AriaLabel="Clear the conversation"
+                                   OnClick="ClearComposerChat" />
+                    </ComposerSuffixTemplate>
+                    <ComposerHintTemplate>
+                        Talking to <b>@modelId</b>. Enter sends, Shift+Enter starts a new line.
+                    </ComposerHintTemplate>
+                </BitAiChat>
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Custom composer" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
+            <div>
+                <b>ComposerTemplate</b> replaces the whole composer - a guided flow that answers with a set of replies rather
+                than free text, here. Whatever it holds submits through the session.
+            </div>
+            <br />
+            <div style="height:400px">
+                <BitAiChat Session="guidedSession" EmptyTitle="Pick a reply to start">
+                    <ComposerTemplate>
+                        <div style="display:flex;flex-wrap:wrap;justify-content:center;gap:0.5rem">
+                            @foreach (var reply in guidedReplies)
+                            {
+                                <BitButton Variant="BitVariant.Outline"
+                                           Disabled="guidedSession.IsGenerating"
+                                           OnClick="() => guidedSession.SubmitAsync(reply)">
+                                    @reply
+                                </BitButton>
+                            }
+                        </div>
+                    </ComposerTemplate>
+                </BitAiChat>
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Attachments & commands" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
+            <div>
+                <b>AllowAttachments</b> (on by default) offers files - picked, pasted or dropped - up to <b>MaxAttachmentSize</b>
+                (1 MB here; <b>OnAttachmentRejected</b> hears about the rest, and the user is told either way).
+                <b>AllowDictation</b> adds a microphone where the browser can transcribe speech. <b>Commands</b> open on a
+                forward slash and <b>Mentions</b> on an at sign: type <b>/</b> or <b>@@</b>.
+            </div>
+            <br />
+            <div class="example-buttons">
+                <BitToggle @bind-Value="allowAttachments" Text="AllowAttachments" />
+                <BitToggle @bind-Value="allowDictation" Text="AllowDictation" />
+                <BitToggle @bind-Value="offerCommands" Text="Commands & Mentions" />
+            </div>
+            <div style="height:440px">
+                <BitAiChat Session="commandsSession"
+                           AllowAttachments="allowAttachments"
+                           MaxAttachmentSize="1024 * 1024"
+                           OnAttachmentRejected="HandleAttachmentRejected"
+                           AllowDictation="allowDictation"
+                           Commands="@(offerCommands ? commands : null)"
+                           Mentions="@(offerCommands ? mentions : null)"
+                           Suggestions="commandSuggestions" />
+            </div>
+            <br />
+            <div>Last file turned away: <b>@(rejectedFile ?? "-")</b></div>
+        </DemoExample>
+
+        <DemoExample Title="Submitting yourself" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
+            <div>
+                Handle <b>OnSubmit</b> and the chat hands you what the user sent instead of submitting it - to upload the
+                attachments to your storage first, or to add context to the prompt, as this one does - and you submit to the
+                session yourself.
+            </div>
+            <br />
+            <div style="height:400px">
+                <BitAiChat Session="submitSession" OnSubmit="HandleSubmit" />
+            </div>
+            <br />
+            <div>Last submission: <b>@(lastSubmission ?? "-")</b></div>
+        </DemoExample>
+
+        <DemoExample Title="Message template" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
+            <div>
+                <b>MessageTemplate</b> replaces how a message is drawn. Wrapping the built-in <b>BitAiChatMessage</b> keeps the
+                streaming, the parts and the actions while adding something of your own - an avatar per role, here.
+            </div>
+            <br />
+            <div style="height:420px">
+                <BitAiChat Session="templateSession" Suggestions="suggestions">
+                    <MessageTemplate Context="message">
+                        <div style="display:flex;gap:0.75rem;align-items:flex-start;flex-direction:@(message.Role.IsUser ? "row-reverse" : "row")">
+                            <BitIcon IconName="@(message.Role.IsUser ? BitIconName.Contact : BitIconName.Robot)" />
+                            <BitAiChatMessage Message="message"
+                                              Session="templateSession"
+                                              Conversation="templateSession.Conversation"
+                                              IsLatest="@(message == templateSession.Conversation.LastMessage)"
+                                              Style="flex:1;min-width:0" />
+                        </div>
+                    </MessageTemplate>
+                </BitAiChat>
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Citations & feedback" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
+            <div>
+                <b>OnCitationClick</b> reports a numbered citation chip, <b>OnSourceClick</b> a source card under the reply and
+                <b>OnFeedback</b> a thumbs up or down - with the message, so a host can persist it. Ask the question, then click.
+            </div>
+            <br />
+            <div style="height:460px">
+                <BitAiChat Session="citedSession"
+                           Suggestions="citedSuggestions"
+                           OnCitationClick="HandleCitationClick"
+                           OnSourceClick="HandleSourceClick"
+                           OnFeedback="HandleFeedback" />
+            </div>
+            <br />
+            <div>Last event: <b>@(lastEvent ?? "-")</b></div>
+        </DemoExample>
+
+        <DemoExample Title="Options" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12">
+            <div>
+                <b>UiOptions</b> replaces the presentation settings in force for everything inside this chat - the cascaded or
+                registered ones: this one opens the reasoning while it streams and shows timestamps and token usage under every
+                reply.
+            </div>
+            <br />
+            <div style="height:460px">
+                <BitAiChat Session="reasoningSession" UiOptions="uiOptions" Suggestions="reasoningSuggestions" />
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Disabled" RazorCode="@example13RazorCode" CsharpCode="@example13CsharpCode" Id="example13">
+            <div>
+                A disabled chat keeps its transcript readable and takes nothing in: the composer, the suggestions and the
+                actions of every message are disabled with it.
+            </div>
+            <br />
+            <BitToggle @bind-Value="isDisabled" Text="Disabled" />
+            <div style="height:400px">
+                <BitAiChat Disabled="isDisabled" Conversation="disabledHistory" />
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Cascading parameters" RazorCode="@example14RazorCode" CsharpCode="@example14CsharpCode" Id="example14">
+            <div>
+                <b>BitParams</b> with a <b>BitAiChatParams</b> sets what the chats of an app agree on - the words of the empty
+                state and the composer, what the composer offers, the classes and styles - for every chat inside it; a chat's
+                own value wins (the second keeps its own placeholder). The session, the templates and the callbacks are not
+                cascaded.
+            </div>
+            <br />
+            <BitParams Parameters="chatParams">
+                <div style="display:grid;gap:1rem;grid-template-columns:repeat(auto-fit, minmax(16rem, 1fr))">
+                    <div style="height:320px">
+                        <BitAiChat />
+                    </div>
+                    <div style="height:320px">
+                        <BitAiChat Placeholder="Its own placeholder wins..." />
+                    </div>
+                </div>
+            </BitParams>
+        </DemoExample>
+
+        <DemoExample Title="Style & Class" RazorCode="@example15RazorCode" Id="example15">
+            <div>
+                <b>Style</b> / <b>Class</b> reach the root, <b>Styles</b> / <b>Classes</b> each part (the transcript, the
+                empty state and the scroll-to-latest button take the class-styles of their own components). The public
+                <b>--bit-AiChat-*</b> variables (see the CSS variables table) re-skin it from <b>:root</b>, an ancestor or
+                <b>Style</b>; the column of messages has its own width, <b>--bit-AiMessageList-max-width</b>, so set both to
+                keep the composer lined up with it.
+            </div>
+            <br />
+            <div style="height:320px">
+                <BitAiChat EmptyTitle="Styled"
+                           Style="border:1px solid var(--bit-clr-brd-pri);border-radius:1rem;overflow:hidden"
+                           Styles="@(new() { Footer = "padding:0.5rem",
+                                             EmptyState = new() { Icon = "color:tomato", Title = "font-style:italic" } })" />
+            </div>
+            <br />
+            <div style="height:320px">
+                <BitAiChat EmptyTitle="Classy"
+                           Class="custom-chat"
+                           Classes="@(new() { Footer = "custom-chat-footer",
+                                              EmptyState = new() { Title = "custom-chat-title" } })" />
+            </div>
+            <br />
+            <div style="height:320px">
+                <BitAiChat EmptyTitle="CSS variables"
+                           Style="--bit-AiChat-background:var(--bit-clr-bg-sec);--bit-AiChat-max-width:28rem;--bit-AiMessageList-max-width:28rem;--bit-AiChat-footer-padding:0 1rem 1.5rem" />
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="RTL" RazorCode="@example16RazorCode" CsharpCode="@example16CsharpCode" Id="example16">
+            <div>Use BitAiChat in right-to-left (RTL).</div>
+            <br />
+            <div style="height:400px">
+                <BitAiChat Dir="BitDir.Rtl"
+                           EmptyTitle="چطور می‌توانم کمک کنم؟"
+                           EmptyBody="پیامی بنویسید یا یکی از پیشنهادها را انتخاب کنید."
+                           Placeholder="پیام خود را بنویسید..."
+                           Suggestions="rtlSuggestions" />
+            </div>
+        </DemoExample>
+    </Examples>
+</DemoPage>

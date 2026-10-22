@@ -108,7 +108,7 @@ public sealed record BlazorUIComponent
     /// <summary>
     /// The library-wide types this component's parameters take - <c>BitColor</c>, <c>BitVariant</c>,
     /// <c>BitIconInfo</c>. Named with their members but without their prose: the same handful
-    /// appears on nearly every component, and repeating their descriptions 110 times is the
+    /// appears on nearly every component, and repeating their descriptions 150 times is the
     /// redundancy this server exists to avoid. Each is documented in full by
     /// <c>GetBitBlazorUIType</c>.
     /// </summary>

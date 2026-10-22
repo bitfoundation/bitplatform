@@ -1,0 +1,25 @@
+﻿@namespace Bit.BlazorUI
+@inherits BitAiComponentBase
+
+<figure @ref="RootElement"
+        @attributes="HtmlAttributes"
+        id="@_Id"
+        style="@StyleBuilder.Value"
+        class="@ClassBuilder.Value"
+        dir="@Dir?.ToString().ToLower()">
+    @* The intrinsic size is declared where it is known, so the message list does not jump as the image decodes.
+       Blazor sets the attributes in the order they are written, and an engine that sees the source before the loading
+       attribute starts the fetch then (WebKit), so how the image loads is written ahead of what it loads. *@
+    <img loading="lazy"
+         decoding="async"
+         width="@Part.Width"
+         height="@Part.Height"
+         src="@Part.Url"
+         alt="@(Part.Alt ?? string.Empty)"
+         style="@Styles?.Image"
+         class="bit-aiipv-img @Classes?.Image" />
+    @if (Part.Caption is { Length: > 0 } caption)
+    {
+        <figcaption style="@Styles?.Caption" class="bit-aiipv-cap @Classes?.Caption">@caption</figcaption>
+    }
+</figure>

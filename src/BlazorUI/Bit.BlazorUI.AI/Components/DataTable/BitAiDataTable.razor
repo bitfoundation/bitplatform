@@ -1,0 +1,31 @@
+﻿@namespace Bit.BlazorUI
+@inherits BitAiComponentBase
+
+@* The root is the box the table scrolls in sideways, so a wide table never widens the conversation around it. *@
+<div @ref="RootElement" @attributes="HtmlAttributes"
+     id="@_Id"
+     style="@StyleBuilder.Value"
+     class="@ClassBuilder.Value"
+     dir="@Dir?.ToString().ToLower()">
+    <table style="@Styles?.Table" class="bit-aidtb-tbl @Classes?.Table">
+        <thead>
+            <tr style="@Styles?.HeaderRow" class="bit-aidtb-hrw @Classes?.HeaderRow">
+                @foreach (var column in _columns)
+                {
+                    <th scope="col" style="@Styles?.HeaderCell" class="bit-aidtb-hcl @Classes?.HeaderCell">@BitAiStructuredDataView.Humanize(column)</th>
+                }
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var row in _rows)
+            {
+                <tr style="@Styles?.Row" class="bit-aidtb-row @Classes?.Row">
+                    @foreach (var column in _columns)
+                    {
+                        <td style="@Styles?.Cell" class="bit-aidtb-cel @Classes?.Cell">@Cell(row, column)</td>
+                    }
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

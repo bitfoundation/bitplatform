@@ -1,0 +1,88 @@
+﻿@namespace Bit.BlazorUI
+@inherits BitAiComponentBase
+
+@* The options in force - the cascaded ones, the UiOptions of this chat, or the registered ones - are handed down to
+   everything the chat composes, so its parts all read the same strings and settings. *@
+<CascadingValue Value="Options" IsFixed="false">
+    <div @ref="RootElement"
+         @attributes="HtmlAttributes"
+         id="@_Id"
+         style="@StyleBuilder.Value"
+         class="@ClassBuilder.Value"
+         dir="@Dir?.ToString().ToLower()">
+        @if (HeaderTemplate is not null)
+        {
+            @HeaderTemplate
+        }
+
+        <BitAiMessageList @ref="_list"
+                          Conversation="ActiveConversation"
+                          Session="ActiveSession"
+                          Disabled="Disabled"
+                          MessageTemplate="MessageTemplate"
+                          HideSystemMessages="HideSystemMessages"
+                          OnPinnedChange="HandleOnPinnedChange"
+                          OnCitationClick="OnCitationClick"
+                          OnSourceClick="OnSourceClick"
+                          OnFeedback="OnFeedback"
+                          HeaderTemplate="ListHeaderTemplate"
+                          FooterTemplate="ListFooterTemplate"
+                          Styles="@Styles?.MessageList"
+                          Classes="@Classes?.MessageList">
+            <EmptyTemplate>
+                @if (EmptyTemplate is not null)
+                {
+                    @EmptyTemplate
+                }
+                else
+                {
+                    <BitAiEmptyState Title="@EmptyTitle"
+                                     Body="@EmptyBody"
+                                     Suggestions="Suggestions"
+                                     Disabled="Disabled"
+                                     OnSuggestion="SubmitTextAsync"
+                                     Styles="@Styles?.EmptyState"
+                                     Classes="@Classes?.EmptyState" />
+                }
+            </EmptyTemplate>
+        </BitAiMessageList>
+
+        <div style="@Styles?.Footer" class="bit-aicht-ftr @Classes?.Footer">
+            @* Inside the footer, which it is positioned against, so it sits just above the composer whatever height the
+               composer has. *@
+            <BitAiScrollToLatest Visible="@(_pinned is false)"
+                                 OnClick="ScrollToLatestAsync"
+                                 Styles="@Styles?.ScrollToLatest"
+                                 Classes="@Classes?.ScrollToLatest" />
+
+            <div style="@Styles?.FooterColumn" class="bit-aicht-ftc @Classes?.FooterColumn">
+                @if (ComposerTemplate is not null)
+                {
+                    @ComposerTemplate
+                }
+                else
+                {
+                    <BitAiPromptInput @ref="_composer"
+                                      Session="ActiveSession"
+                                      Disabled="Disabled"
+                                      Placeholder="@Placeholder"
+                                      AllowAttachments="AllowAttachments"
+                                      MaxAttachmentSize="MaxAttachmentSize"
+                                      OnAttachmentRejected="OnAttachmentRejected"
+                                      AllowDictation="AllowDictation"
+                                      Commands="Commands"
+                                      Mentions="Mentions"
+                                      PrefixTemplate="ComposerPrefixTemplate"
+                                      SuffixTemplate="ComposerSuffixTemplate"
+                                      HintTemplate="ComposerHintTemplate"
+                                      OnSubmit="OnComposerSubmitAsync" />
+                }
+
+                @if (FooterTemplate is not null)
+                {
+                    @FooterTemplate
+                }
+            </div>
+        </div>
+    </div>
+</CascadingValue>

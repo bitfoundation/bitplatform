@@ -1,0 +1,78 @@
+﻿@namespace Bit.BlazorUI
+@inherits BitAiComponentBase
+
+<div @ref="RootElement"
+     @attributes="HtmlAttributes"
+     id="@_Id"
+     style="@StyleBuilder.Value"
+     class="@ClassBuilder.Value"
+     dir="@Dir?.ToString().ToLower()">
+    @if (Options.ShowMessageActions)
+    {
+        <div style="@Styles?.Actions" class="bit-aimac-act @Classes?.Actions">
+            <BitAiCopyButton Content="@Message.GetText()" Disabled="Disabled" />
+
+            @if (Session is not null && CanRegenerate)
+            {
+                <BitButton IconName="Refresh"
+                           OnClick="RegenerateAsync"
+                           Disabled="Disabled"
+                           Title="@Strings.Regenerate"
+                           AriaLabel="@Strings.Regenerate"
+                           Variant="BitVariant.Text"
+                           Class="bit-btn-dft-ter"
+                           Styles="@Styles?.RegenerateButton"
+                           Classes="_RegenerateButtonClasses" />
+            }
+
+            @if (ShowFeedback)
+            {
+                var positive = Message.Feedback is BitAiFeedbackKind.Positive;
+                var negative = Message.Feedback is BitAiFeedbackKind.Negative;
+
+                @* A pressed button says so through aria-pressed, and draws its glyph solid and in the primary color, so
+                   the choice is never carried by the color alone. *@
+                <BitButton IconName="@(positive ? "LikeSolid" : "Like")"
+                           OnClick="() => SetFeedbackAsync(BitAiFeedbackKind.Positive)"
+                           Disabled="Disabled"
+                           Title="@Strings.GoodResponse"
+                           AriaLabel="@Strings.GoodResponse"
+                           aria-pressed="@(positive ? "true" : "false")"
+                           Variant="BitVariant.Text"
+                           Class="@(positive ? "bit-btn-dft-pri" : "bit-btn-dft-ter")"
+                           Styles="@Styles?.FeedbackButton"
+                           Classes="_PositiveButtonClasses" />
+                <BitButton IconName="@(negative ? "DislikeSolid" : "Dislike")"
+                           OnClick="() => SetFeedbackAsync(BitAiFeedbackKind.Negative)"
+                           Disabled="Disabled"
+                           Title="@Strings.BadResponse"
+                           AriaLabel="@Strings.BadResponse"
+                           aria-pressed="@(negative ? "true" : "false")"
+                           Variant="BitVariant.Text"
+                           Class="@(negative ? "bit-btn-dft-pri" : "bit-btn-dft-ter")"
+                           Styles="@Styles?.FeedbackButton"
+                           Classes="_NegativeButtonClasses" />
+            }
+
+            @if (ExtraActionsTemplate is not null)
+            {
+                @ExtraActionsTemplate
+            }
+        </div>
+    }
+
+    @if (Options.ShowModelName && Message.Metadata?.ModelId is { Length: > 0 } model)
+    {
+        <span style="@Styles?.Model" class="bit-aimac-mdl @Classes?.Model">@model</span>
+    }
+
+    @if (Options.ShowUsage && Message.Metadata is { } metadata && metadata.Usage.IsEmpty is false)
+    {
+        <BitAiTokenUsageView Usage="metadata.Usage" Metadata="metadata" />
+    }
+
+    @if (Options.ShowTimestamps)
+    {
+        <time style="@Styles?.Time" class="bit-aimac-tim @Classes?.Time" datetime="@Message.CreatedAt.ToString("O")">@Message.CreatedAt.ToLocalTime().ToString("t")</time>
+    }
+</div>

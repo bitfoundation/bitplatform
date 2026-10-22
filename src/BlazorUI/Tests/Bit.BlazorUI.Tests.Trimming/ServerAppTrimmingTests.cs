@@ -12,6 +12,7 @@ public sealed class ServerAppTrimmingTests
 {
     private const string Core = "Bit.BlazorUI";
     private const string Extras = "Bit.BlazorUI.Extras";
+    private const string AI = "Bit.BlazorUI.AI";
     private const string Legacy = "Bit.BlazorUI.Legacy";
     private const string Icons = "Bit.BlazorUI.Icons";
 
@@ -24,7 +25,7 @@ public sealed class ServerAppTrimmingTests
         publish.AssertSucceeded();
 
         // The trimming only ever runs where its switch is on, which a server app turns on itself.
-        foreach (var (package, bundle) in new[] { (Core, "scripts/bit.blazorui.js"), (Core, "styles/bit.blazorui.css"), (Extras, "styles/bit.blazorui.extras.css"), (Icons, "styles/bit.blazorui.icons.css") })
+        foreach (var (package, bundle) in new[] { (Core, "scripts/bit.blazorui.js"), (Core, "styles/bit.blazorui.css"), (Extras, "styles/bit.blazorui.extras.css"), (AI, "styles/bit.blazorui.ai.css"), (Icons, "styles/bit.blazorui.icons.css") })
         {
             CollectionAssert.AreEqual(File.ReadAllBytes(Path.Combine(Publisher.Root, package, "wwwroot", bundle.Replace('/', Path.DirectorySeparatorChar))),
                                       File.ReadAllBytes(publish.GetAssetPath(package, bundle)),
@@ -41,6 +42,7 @@ public sealed class ServerAppTrimmingTests
 
         CollectionAssert.AreEqual(new[] { "BitButton", "BitDropdown", "BitTextField", "BitTooltip", "BitIcon", "BitText" }, Trimmed.KeptStyles(Core));
         CollectionAssert.AreEqual(new[] { "BitErrorBoundary" }, Trimmed.KeptStyles(Extras));
+        CollectionAssert.AreEqual(new[] { "BitAiCopyButton" }, Trimmed.KeptStyles(AI));
         CollectionAssert.AreEqual(Array.Empty<string>(), Trimmed.KeptStyles(Legacy));
 
         // Every variant of the core bundle keeps the same components: they differ in their theme, never in their parts.
@@ -71,6 +73,10 @@ public sealed class ServerAppTrimmingTests
         }
 
         CollectionAssert.AreEqual(Array.Empty<string>(), Trimmed.KeptScripts(Legacy));
+
+        // The copy button's script, named by its interop identifier, and none of the AI scripts of the components the app
+        // does not render.
+        CollectionAssert.AreEqual(new[] { "BitAiCopyButton" }, Trimmed.KeptScripts(AI));
     }
 
     [TestMethod]
@@ -78,7 +84,7 @@ public sealed class ServerAppTrimmingTests
     {
         Trimmed.AssertSucceeded();
 
-        foreach (var package in new[] { Core, Extras, Legacy })
+        foreach (var package in new[] { Core, Extras, AI, Legacy })
         {
             Trimmed.AssertScriptsAreThePiecesInOrder(package);
             Trimmed.AssertStylesAreThePiecesInOrder(package);
@@ -91,15 +97,16 @@ public sealed class ServerAppTrimmingTests
         Trimmed.AssertSucceeded();
         var css = Trimmed.ReadAsset(Icons, "styles/bit.blazorui.icons.css");
 
-        // BitIconName.Add is a const, so the name is a literal of the app's own code; nothing names Delete.
+        // BitIconName.Add is a const, so the name is a literal of the app's own code; nothing names Airplane. (Not Delete,
+        // which the string table of the AI package - BitAiStrings, reached from every AI component - names as a word.)
         StringAssert.Contains(css, ".bit-icon--Add::before");
-        Assert.IsFalse(css.Contains(".bit-icon--Delete::before"), "A glyph nothing names was kept.");
+        Assert.IsFalse(css.Contains(".bit-icon--Airplane::before"), "A glyph nothing names was kept.");
         StringAssert.Contains(css, "@font-face");
 
         // A name the code does not carry - read out of data - is kept by naming it in the csproj.
-        var named = Publisher.Publish(Publisher.Fixture, "BitBlazorUITrimAssets=true", "BitBlazorUITrimIcons=true", "FixtureIcons=Delete");
+        var named = Publisher.Publish(Publisher.Fixture, "BitBlazorUITrimAssets=true", "BitBlazorUITrimIcons=true", "FixtureIcons=Airplane");
         named.AssertSucceeded();
-        StringAssert.Contains(named.ReadAsset(Icons, "styles/bit.blazorui.icons.css"), ".bit-icon--Delete::before");
+        StringAssert.Contains(named.ReadAsset(Icons, "styles/bit.blazorui.icons.css"), ".bit-icon--Airplane::before");
     }
 
     [TestMethod]
@@ -116,6 +123,7 @@ public sealed class ServerAppTrimmingTests
 
         // The packages' own fonts are what their stylesheets load, and stay.
         Assert.IsTrue(Directory.Exists(Trimmed.GetAssetPath(Icons, "fonts")));
+        Assert.IsTrue(Directory.Exists(Trimmed.GetAssetPath(AI, "fonts")), "The glyph font the AI package's stylesheet loads was left out.");
     }
 
     [TestMethod]
@@ -202,11 +210,12 @@ public sealed class ServerAppTrimmingTests
         await page.GotoAsync(server.Url);
         await session.WaitForAsync("() => document.getElementById('fixture-ready')?.hidden === false", "The circuit never rendered the components");
 
-        await session.AssertEveryComponentIsStyledAsync(Trimmed, Core, Extras);
+        await session.AssertEveryComponentIsStyledAsync(Trimmed, Core, Extras, AI);
 
         // Kept for what the app renders, and the rest left out of the very bundle the page loaded.
         Assert.IsTrue(await page.EvaluateAsync<bool>("() => typeof BitBlazorUI.Callouts.toggle === 'function' && typeof BitBlazorUI.Utils.setupTooltip === 'function'"));
         Assert.IsTrue(await page.EvaluateAsync<bool>("() => typeof BitBlazorUI.Swiper === 'undefined' && typeof BitBlazorUI.SnackBars === 'undefined'"));
+        Assert.IsTrue(await page.EvaluateAsync<bool>("() => typeof BitBlazorUI.AiCopyButton?.copy === 'function' && typeof BitBlazorUI.AiPromptInput === 'undefined'"));
 
         // The dropdown's callout opens and closes on Escape.
         await session.OpenAndEscapeCalloutAsync(page.Locator(".bit-drp").First, "BitDropdown");
@@ -225,14 +234,14 @@ public sealed class ServerAppTrimmingTests
         await page.EvaluateAsync("() => window.fixtureDisposeVisibility('nothing-registered')");
 
         // The icon stylesheet the page loaded has the glyph the code names, and not the one it does not (read off its rules:
-        // the core stylesheet draws a few common glyphs of its own, Delete among them).
+        // the core stylesheet draws a few common glyphs of its own).
         var glyphs = await page.EvaluateAsync<bool[]>(@"() => {
             const sheet = [...document.styleSheets].find(s => (s.href || '').includes('bit.blazorui.icons'));
             const selectors = [...sheet.cssRules].map(r => r.selectorText || '');
-            return ['Add', 'Delete'].map(name => selectors.some(s => s.includes('.bit-icon--' + name + '::')));
+            return ['Add', 'Airplane'].map(name => selectors.some(s => s.includes('.bit-icon--' + name + '::')));
         }");
         Assert.IsTrue(glyphs[0], "The icon stylesheet the page loaded has no rule for the Add glyph the code names.");
-        Assert.IsFalse(glyphs[1], "The icon stylesheet the page loaded still has a rule for the Delete glyph nothing names.");
+        Assert.IsFalse(glyphs[1], "The icon stylesheet the page loaded still has a rule for the Airplane glyph nothing names.");
 
         // And the glyph is drawn with it.
         var add = await page.EvaluateAsync<string>(@"() => {
@@ -244,6 +253,9 @@ public sealed class ServerAppTrimmingTests
             return content;
         }");
         Assert.IsFalse(add is "none" or "normal" or "" or "\"\"", $"The Add glyph the code names is not drawn: {add}");
+
+        // The AI package's copy button: its glyph drawn from the package's own font, its script reached on a press.
+        await session.AssertAiCopyButtonWorksAsync();
 
         session.AssertNoErrors($"The trimmed server app in {engine}");
     }

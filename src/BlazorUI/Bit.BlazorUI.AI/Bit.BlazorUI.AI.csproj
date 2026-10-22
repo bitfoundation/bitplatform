@@ -1,0 +1,116 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
+
+    <Import Project="../../Bit.Build.props" />
+    <!-- Bit.BlazorUI.PackageValidation.props is not imported yet: package validation compares a pack against the last
+         published package, and this one has never been published. Import it once the first release is out. -->
+    <Import Project="../Bit.BlazorUI.TrimAnalysis.props" />
+
+    <PropertyGroup>
+        <TargetFrameworks>net10.0;net9.0;net8.0</TargetFrameworks>
+        <!-- See the note in Bit.BlazorUI.csproj: Debug builds only the TFM the demo and tests run on. -->
+        <TargetFrameworks Condition=" '$(Configuration)' == 'Debug' And '$(BuildAllTfms)' != 'true' ">net10.0</TargetFrameworks>
+        <IsTrimmable>true</IsTrimmable>
+        <ImplicitUsings>enable</ImplicitUsings>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <SupportedPlatform Include="browser" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Condition="'$(TargetFramework)' == 'net8.0'" Include="Microsoft.AspNetCore.Components.Web" Version="8.0.0" />
+        <PackageReference Condition="'$(TargetFramework)' == 'net9.0'" Include="Microsoft.AspNetCore.Components.Web" Version="9.0.0" />
+        <PackageReference Condition="'$(TargetFramework)' == 'net10.0'" Include="Microsoft.AspNetCore.Components.Web" Version="10.0.0" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <FrameworkReference Include="Microsoft.AspNetCore.App" PrivateAssets="all" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <Content Remove="compilerconfig.json" />
+        <None Include="compilerconfig.json" />
+        <!-- dotnet watch: watch the ts sources so edits trigger the tsc target on rebuilds (see Bit.BlazorUI.Extras.csproj). -->
+        <Watch Include="$(MSBuildProjectDirectory)\**\*.ts" Exclude="$(MSBuildProjectDirectory)\node_modules\**;$(MSBuildProjectDirectory)\bin\**;$(MSBuildProjectDirectory)\obj\**;$(MSBuildProjectDirectory)\**\*.d.ts" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\Bit.BlazorUI\Bit.BlazorUI.csproj" />
+        <ProjectReference Include="..\Bit.BlazorUI.SourceGenerators\Bit.BlazorUI.SourceGenerators.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <Content Remove="tsconfig.json" />
+        <None Include="tsconfig.json" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <Using Include="System.Text.Json" />
+        <Using Include="Microsoft.AspNetCore.Components" />
+        <Using Include="Microsoft.AspNetCore.Components.Web" />
+        <Using Include="Microsoft.AspNetCore.Components.Rendering" />
+        <Using Include="Microsoft.AspNetCore.Components.Web.Virtualization" />
+        <Using Include="Microsoft.JSInterop" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <TypeScriptFiles Include="**\*.ts" />
+        <ScssFiles Include="**\*.scss" />
+    </ItemGroup>
+
+    <!-- What the core package's publish-time trimming reads of this one (see Bit.BlazorUI's
+         buildTransitive\Bit.BlazorUI.targets): the targets naming this package's pieces, and the pieces themselves. -->
+    <ItemGroup>
+        <None Include="buildTransitive\Bit.BlazorUI.AI.targets" Pack="true" PackagePath="buildTransitive\;build\" />
+    </ItemGroup>
+
+    <!-- How this package's pieces are written and packed, shared by the packages that have any. -->
+    <Import Project="..\Bit.BlazorUI.Build\Bit.BlazorUI.Assets.targets" />
+
+    <Target Name="BeforeBuildTasks" DependsOnTargets="InstallNodejsDependencies;BuildJavaScript;BuildCss" />
+
+    <Target Name="IncludeGeneratedAssets" BeforeTargets="ResolveProjectStaticWebAssets" DependsOnTargets="BeforeBuildTasksOnce" Condition=" '$(DesignTimeBuild)' != 'true' ">
+        <ItemGroup>
+            <Content Include="wwwroot\scripts\*.js;wwwroot\scripts\modules\*.js;wwwroot\styles\*.css" Exclude="@(Content);@(None)" />
+        </ItemGroup>
+    </Target>
+
+    <Target Name="BeforeBuildTasksOnce">
+        <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="BeforeBuildTasks" RemoveProperties="TargetFramework;RuntimeIdentifier;SelfContained" />
+    </Target>
+
+    <Target Name="BeforeBuildTasksOnCrossTargeting" BeforeTargets="DispatchToInnerBuilds" DependsOnTargets="BeforeBuildTasks" Condition=" '$(IsCrossTargetingBuild)' == 'true' AND '$(DesignTimeBuild)' != 'true' " />
+
+    <!-- A CI build installs exactly what package-lock.json pins (npm ci), so the tools a package is built with are the
+         ones reviewed; a local build keeps npm install, which also takes in a package.json edited by hand. -->
+    <Target Name="InstallNodejsDependencies" Inputs="package.json;package-lock.json" Outputs="node_modules\.package-lock.json">
+        <Exec Condition=" '$(CI)' == 'true' " Command="npm ci" StandardOutputImportance="high" StandardErrorImportance="high" />
+        <Exec Condition=" '$(CI)' != 'true' " Command="npm install" StandardOutputImportance="high" StandardErrorImportance="high" />
+    </Target>
+
+    <!-- build-assets.mjs writes the bundle from one piece per .ts file and keeps the pieces in obj\bit-assets for the
+         package (see Bit.BlazorUI's csproj); the stamp per configuration rebuilds it when the configuration changes. -->
+    <Target Name="BuildJavaScript" Inputs="@(TypeScriptFiles);tsconfig.json;@(BitAssetsScript)" Outputs="wwwroot/scripts/bit.blazorui.ai.js;$(BaseIntermediateOutputPath)bit-assets\scripts.json;$(BaseIntermediateOutputPath)bit-assets\lazy-scripts.json;$(BaseIntermediateOutputPath)$(Configuration)\bit.blazorui.ai.js.stamp">
+        <Exec Command="node &quot;@(BitAssetsScript->'%(FullPath)')&quot; scripts --package $(PackageId) --tsconfig tsconfig.json --bundle scripts/bit.blazorui.ai.js --out $(BaseIntermediateOutputPath)bit-assets $(_BitAssetsMinify)" StandardOutputImportance="high" StandardErrorImportance="high" />
+        <ItemGroup>
+            <_OtherConfigurationScriptStamps Include="$(BaseIntermediateOutputPath)*\bit.blazorui.ai.js.stamp" Exclude="$(BaseIntermediateOutputPath)$(Configuration)\bit.blazorui.ai.js.stamp" />
+        </ItemGroup>
+        <Delete Files="@(_OtherConfigurationScriptStamps)" />
+        <MakeDir Directories="$(BaseIntermediateOutputPath)$(Configuration)" />
+        <Touch Files="$(BaseIntermediateOutputPath)$(Configuration)\bit.blazorui.ai.js.stamp" AlwaysCreate="true" />
+    </Target>
+
+    <!-- The stylesheet is its general part and its components, compiled one by one so the publish-time trimming can
+         keep a subset. -->
+    <Target Name="BuildCss" Inputs="@(ScssFiles);@(BitAssetsScript)" Outputs="wwwroot/styles/bit.blazorui.ai.css;$(BaseIntermediateOutputPath)bit-assets\styles.json">
+        <Exec Command="node &quot;@(BitAssetsScript->'%(FullPath)')&quot; styles --package $(PackageId) --components Styles/ai-components.scss --out $(BaseIntermediateOutputPath)bit-assets --bundle Styles/bit.blazorui.ai.scss=styles/bit.blazorui.ai.css" StandardOutputImportance="high" StandardErrorImportance="high" />
+    </Target>
+
+    <ItemGroup>
+        <Content Remove="package*.json" />
+        <Content Remove="tsconfig.json" />
+        <None Include="package*json" />
+        <None Include="tsconfig.json" />
+    </ItemGroup>
+
+</Project>

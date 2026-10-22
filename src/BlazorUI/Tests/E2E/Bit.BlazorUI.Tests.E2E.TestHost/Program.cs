@@ -1,5 +1,6 @@
 ﻿using Bit.BlazorUI;
 using Bit.BlazorUI.Tests.E2E.TestHost;
+using Bit.BlazorUI.Tests.E2E.TestHost.AI;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -13,6 +14,9 @@ builder.Services.AddScoped<Microsoft.AspNetCore.Components.Server.Circuits.Circu
 // on - and the HttpClient BitFileUpload uploads with, registered the way an app registers them.
 builder.Services.AddBitBlazorUIServices();
 builder.Services.AddBitBlazorUIExtrasServices();
+// The AI package over the scripted transport the AI pages answer with, set up as the browser side sets it up
+// (Bit.BlazorUI.Tests.E2E.TestHost.Client/AI/E2EAiSetup.cs), so an AI page runs alike in either render mode.
+builder.Services.AddBitBlazorUIAIServices(E2EAiSetup.Configure);
 builder.Services.AddScoped(_ => new HttpClient());
 
 // Every page can run on the server or in the browser: App.razor picks the mode per request from the e2e-render-mode

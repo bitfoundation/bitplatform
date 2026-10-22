@@ -1,0 +1,56 @@
+﻿@namespace Bit.BlazorUI
+@inherits BitAiComponentBase
+
+@{
+    var number = Number is { } n && n != int.MaxValue ? n : (int?)null;
+    var iconUrl = SafeIconUrl(Source.IconUrl);
+
+    @* A link when the source is addressable and nothing else is asked of the card, so the browser gives the user the
+       usual middle click and context menu; a button when OnActivate is set; and neither when there is nothing to do with
+       it. Only a web address becomes an href (see SafeUrl). The card stretches the link or the button over itself and,
+       with no title of its own to point at, names it after everything the card says: the number, the title and the
+       site. An AriaLabel names it instead. *@
+    var href = OnActivate.HasDelegate ? null : SafeUrl(Source.Url);
+    var onClick = OnActivate.HasDelegate ? _onCardClick : default;
+}
+
+<div @ref="RootElement" @attributes="DisabledAwareHtmlAttributes"
+     id="@_Id"
+     style="@StyleBuilder.Value"
+     class="@ClassBuilder.Value"
+     dir="@Dir?.ToString().ToLower()">
+    <BitCard Href="@href"
+             Target="@(href is null ? null : "_blank")"
+             Rel="@(href is null ? null : BitLinkRels.NoOpener | BitLinkRels.NoReferrer)"
+             OnClick="onClick"
+             AriaLabel="@AriaLabel"
+             Disabled="Disabled"
+             FullWidth="true"
+             FullHeight="true"
+             Styles="@Styles?.Card"
+             Classes="@Classes?.Card">
+        <HeaderTemplate>
+            <div style="@Styles?.Content" class="bit-aisrc-ctn @Classes?.Content">
+                @if (number is not null)
+                {
+                    <span style="@Styles?.Index" class="bit-aisrc-idx @Classes?.Index">@number</span>
+                }
+                <div style="@Styles?.Body" class="bit-aisrc-bdy @Classes?.Body">
+                    <div style="@Styles?.Title" class="bit-aisrc-ttl @Classes?.Title">@Source.Title</div>
+                    <div style="@Styles?.Site" class="bit-aisrc-sit @Classes?.Site">
+                        @if (iconUrl is not null)
+                        {
+                            <img src="@iconUrl"
+                                 alt=""
+                                 loading="lazy"
+                                 referrerpolicy="no-referrer"
+                                 style="@Styles?.Favicon"
+                                 class="bit-aisrc-fav @Classes?.Favicon" />
+                        }
+                        <span>@(Source.SiteName ?? HostOf(Source.Url) ?? Source.Kind.ToString())</span>
+                    </div>
+                </div>
+            </div>
+        </HeaderTemplate>
+    </BitCard>
+</div>

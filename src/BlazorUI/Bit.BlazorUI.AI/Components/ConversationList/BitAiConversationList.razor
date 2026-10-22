@@ -1,0 +1,71 @@
+﻿@namespace Bit.BlazorUI
+@inherits BitAiComponentBase
+
+<nav @ref="RootElement"
+     @attributes="DisabledAwareHtmlAttributes"
+     id="@_Id"
+     style="@StyleBuilder.Value"
+     class="@ClassBuilder.Value"
+     dir="@Dir?.ToString().ToLower()"
+     aria-label="@(ResolveAriaLabel() ?? Strings.Conversations)">
+    @if (ShowNewButton)
+    {
+        <BitActionButton IconName="Add"
+                         OnClick="HandleOnNew"
+                         Disabled="Disabled"
+                         Styles="@Styles?.NewButton"
+                         Classes="@Classes?.NewButton">
+            @Strings.NewConversation
+        </BitActionButton>
+    }
+
+    @{
+        var groupIndex = 0;
+    }
+
+    @foreach (var group in Grouped())
+    {
+        var headerId = $"{_Id}-grp{groupIndex++}";
+
+        @* Each group is a list named by its heading, so a screen reader announces how many conversations a day holds
+           and which day it is reading. *@
+        <div id="@headerId" style="@Styles?.GroupHeader" class="bit-aicvl-grp @Classes?.GroupHeader">@group.Key</div>
+
+        <ul aria-labelledby="@headerId" style="@Styles?.List" class="bit-aicvl-lst @Classes?.List">
+            @foreach (var summary in group)
+            {
+                var selected = summary.ConversationId == SelectedId;
+                var title = summary.Title ?? Strings.Untitled;
+                var itemButtonStyle = selected ? JoinStyles(Styles?.ItemButton, Styles?.SelectedItemButton) : Styles?.ItemButton;
+                var itemButtonClass = selected ? $"bit-aicvl-ibt bit-aicvl-sel {Classes?.ItemButton} {Classes?.SelectedItemButton}"
+                                               : $"bit-aicvl-ibt {Classes?.ItemButton}";
+
+                <li @key="summary.ConversationId" style="@Styles?.Item" class="bit-aicvl-itm @Classes?.Item">
+                    <button type="button"
+                            @onclick="() => HandleOnSelect(summary)"
+                            style="@itemButtonStyle"
+                            class="@itemButtonClass"
+                            title="@summary.Preview"
+                            disabled="@Disabled"
+                            aria-disabled="@(Disabled ? "true" : null)"
+                            aria-current="@(selected ? "true" : null)">
+                        <span style="@Styles?.ItemTitle" class="bit-aicvl-ttl @Classes?.ItemTitle">@title</span>
+                    </button>
+
+                    @if (OnDelete.HasDelegate)
+                    {
+                        <BitButton IconName="Delete"
+                                   OnClick="() => HandleOnDelete(summary)"
+                                   Disabled="Disabled"
+                                   Title="@Strings.Delete"
+                                   AriaLabel="@($"{Strings.Delete} {title}")"
+                                   Variant="BitVariant.Text"
+                                   Class="bit-btn-dft-ter"
+                                   Styles="@Styles?.DeleteButton"
+                                   Classes="@Classes?.DeleteButton" />
+                    }
+                </li>
+            }
+        </ul>
+    }
+</nav>

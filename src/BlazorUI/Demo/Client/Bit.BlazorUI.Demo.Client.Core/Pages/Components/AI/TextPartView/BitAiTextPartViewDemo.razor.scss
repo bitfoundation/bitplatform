@@ -1,0 +1,17 @@
+﻿::deep {
+    .custom-class {
+        padding: 0.5rem 1rem;
+        border-radius: 1rem;
+        background-color: #ecfeff;
+        color: #164e63;
+    }
+
+    .custom-root {
+        border-inline-start: 4px solid rebeccapurple;
+        padding-inline-start: 0.75rem;
+    }
+
+    .custom-paragraph {
+        font-style: italic;
+    }
+}

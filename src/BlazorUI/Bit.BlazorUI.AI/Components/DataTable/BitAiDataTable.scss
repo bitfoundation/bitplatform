@@ -1,0 +1,61 @@
+﻿@import '../../../Bit.BlazorUI/Styles/functions.scss';
+
+// Public CSS variables, read with a fallback and never declared here, so a value set on :root re-skins every data
+// table, one set on an ancestor the tables inside it, and one set on the Style of a table that table alone:
+//   --bit-AiDataTable-font-size             size of the text                       (default: $tg-fs-sm)
+//   --bit-AiDataTable-color                 color of the text of the cells         (default: $clr-fg-pri)
+//   --bit-AiDataTable-background            background of the table                (default: transparent)
+//   --bit-AiDataTable-border-color          color of the frame around the table    (default: $clr-brd-pri)
+//   --bit-AiDataTable-divider-color         color of the rules between the rows    (default: $clr-brd-sec)
+//   --bit-AiDataTable-radius                corner of the frame                    (default: $shp-radius-surface)
+//   --bit-AiDataTable-cell-padding          inset of every cell                    (default: spacing(1) spacing(1.5))
+//   --bit-AiDataTable-header-background     background of the header row           (default: $clr-bg-sec)
+//   --bit-AiDataTable-header-color          color of the text of the header row    (default: $clr-fg-pri)
+//   --bit-AiDataTable-header-font-weight    weight of the text of the header row   (default: $tg-fw-semibold)
+// The table takes no parameter that sets any of them, so each one restyles every table it reaches.
+
+.bit-aidtb {
+    overflow-x: auto;
+    box-sizing: border-box;
+    border: $shp-border-width $shp-border-style var(--bit-AiDataTable-border-color, #{$clr-brd-pri});
+    border-radius: var(--bit-AiDataTable-radius, #{$shp-radius-surface});
+    background-color: var(--bit-AiDataTable-background, transparent);
+}
+
+.bit-aidtb-tbl {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: var(--bit-AiDataTable-font-size, #{$tg-fs-sm});
+    color: var(--bit-AiDataTable-color, #{$clr-fg-pri});
+}
+
+.bit-aidtb-hcl,
+.bit-aidtb-cel {
+    text-align: start;
+    padding: var(--bit-AiDataTable-cell-padding, #{spacing(1) spacing(1.5)});
+    border-bottom: $siz-divider $shp-border-style var(--bit-AiDataTable-divider-color, #{$clr-brd-sec});
+}
+
+.bit-aidtb-hcl {
+    white-space: nowrap;
+    color: var(--bit-AiDataTable-header-color, #{$clr-fg-pri});
+    font-weight: var(--bit-AiDataTable-header-font-weight, #{$tg-fw-semibold});
+    background-color: var(--bit-AiDataTable-header-background, #{$clr-bg-sec});
+}
+
+// The frame closes the table, so the last row draws no rule of its own against it.
+.bit-aidtb-row:last-child > .bit-aidtb-cel {
+    border-bottom: none;
+}
+
+// A forced palette removes the header's background, so the frame and the rules are what keep the grid readable.
+@media (forced-colors: active) {
+    .bit-aidtb {
+        border-color: CanvasText;
+    }
+
+    .bit-aidtb-hcl,
+    .bit-aidtb-cel {
+        border-bottom-color: CanvasText;
+    }
+}

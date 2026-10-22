@@ -1,0 +1,16 @@
+﻿// The classes handed to the list land on its own elements, reached from the plain wrapper of the section.
+::deep {
+    .custom-threads {
+        border-radius: 1rem;
+        border: 1px dashed var(--bit-clr-pri);
+    }
+
+    .custom-threads-item {
+        border-radius: 0;
+        border-inline-start: 0.25rem solid transparent;
+    }
+
+    .custom-threads-selected {
+        border-inline-start-color: var(--bit-clr-pri);
+    }
+}

@@ -1,0 +1,30 @@
+﻿@import '../../../Bit.BlazorUI/Styles/functions.scss';
+
+// Public CSS variables, read with a fallback and never declared here, so a value set on :root re-skins every token
+// usage readout, one set on an ancestor the readouts inside it, and one set on the Style of an instance that one alone:
+//   --bit-AiTokenUsageView-color        text of the readout                  (default: $clr-fg-sec)
+//   --bit-AiTokenUsageView-font-size    size of the readout                  (default: $tg-fs-xs)
+//   --bit-AiTokenUsageView-gap          room between two figures             (default: spacing(1.5))
+
+.bit-aituv {
+    display: inline-flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--bit-AiTokenUsageView-gap, #{spacing(1.5)});
+    font-family: $tg-font-family;
+    font-size: var(--bit-AiTokenUsageView-font-size, #{$tg-fs-xs});
+    color: var(--bit-AiTokenUsageView-color, #{$clr-fg-sec});
+    // The figures change while a run streams in, and digits of one width keep the row from jittering as they do.
+    font-variant-numeric: tabular-nums;
+
+    &.bit-dis {
+        color: $clr-fg-dis;
+    }
+}
+
+.bit-aituv-tok,
+.bit-aituv-cst,
+.bit-aituv-spd,
+.bit-aituv-ltc {
+    white-space: nowrap;
+}

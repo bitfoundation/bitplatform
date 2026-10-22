@@ -49,6 +49,8 @@
             <DocFeedback DocsPagePath="@GitHubUrl" />
         }
 
+        @FooterTemplate
+
     </article>
 
     @if (HideSideRail is false)
@@ -84,4 +86,10 @@
     [Parameter] public bool HideSideRail { get; set; }
 
     [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    /// <summary>
+    /// What closes the article after the feedback block - the pager of a run of guide pages (the AI scenarios), where a
+    /// component page has its DocPager.
+    /// </summary>
+    [Parameter] public RenderFragment? FooterTemplate { get; set; }
 }

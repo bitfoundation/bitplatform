@@ -73,7 +73,7 @@ raises that minimum for no gain.
 ```
 
 Applies to `Bit.Besql` (JSInterop, Components.WebAssembly, EF Core Sqlite), `Bit.BlazorUI` /
-`.Assets` / `.Extras` / `.Legacy`, `Bit.Bswup` and `Bit.Butil` (Components.Web), and the
+`.Assets` / `.Extras` / `.Legacy` / `.AI`, `Bit.Bswup` and `Bit.Butil` (Components.Web), and the
 `BlazorEmpty` template.
 
 The rule keys on the `.0` in a *shipped library*. A TFM-conditioned pin at a concrete patch —

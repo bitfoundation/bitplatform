@@ -1,0 +1,55 @@
+﻿@import '../../../Bit.BlazorUI/Styles/functions.scss';
+
+// Public CSS variables, read with a fallback and never declared here, so a value set on :root re-skins every context
+// meter, one set on an ancestor the meters inside it, and one set on the Style of an instance that one alone:
+//   --bit-AiContextMeter-color             label and readout                        (default: $clr-fg-sec)
+//   --bit-AiContextMeter-warning-color     label and readout past the Warn mark     (default: $clr-wrn-fg)
+//   --bit-AiContextMeter-critical-color    label and readout past the Critical mark (default: $clr-err-fg)
+//   --bit-AiContextMeter-font-size         size of the label and the readout        (default: $tg-fs-xs)
+//   --bit-AiContextMeter-gap               room between the label, bar and readout  (default: spacing(1.5))
+//   --bit-AiContextMeter-meter-max-width   width the bar stops growing at           (default: spacing(24))
+//
+// The bar itself is a BitProgress, which the --bit-Progress-* variables restyle; past each mark it is drawn in the
+// warning or the error role, which a state of the reading says rather than a choice of the app's.
+
+.bit-aictm {
+    // The containing block of the visually hidden live region inside it.
+    position: relative;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--bit-AiContextMeter-gap, #{spacing(1.5)});
+    font-family: $tg-font-family;
+    font-size: var(--bit-AiContextMeter-font-size, #{$tg-fs-xs});
+    color: var(--bit-AiContextMeter-color, #{$clr-fg-sec});
+    font-variant-numeric: tabular-nums;
+
+    &.bit-dis {
+        color: $clr-fg-dis;
+    }
+}
+
+// The state of the reading colors the words with the bar, so the warning is not carried by the color of a thin bar alone.
+.bit-aictm-wrn {
+    color: var(--bit-AiContextMeter-warning-color, #{$clr-wrn-fg});
+}
+
+.bit-aictm-crt {
+    color: var(--bit-AiContextMeter-critical-color, #{$clr-err-fg});
+}
+
+// Two classes, so the width wins over the root rule of the BitProgress whichever of the two bundles is linked first.
+.bit-aictm > .bit-aictm-mtr {
+    flex: 1 1 auto;
+    min-width: spacing(6);
+    max-width: var(--bit-AiContextMeter-meter-max-width, #{spacing(24)});
+}
+
+.bit-aictm-ttl,
+.bit-aictm-pct {
+    white-space: nowrap;
+}
+
+.bit-aictm-sts {
+    @include visually-hidden;
+}

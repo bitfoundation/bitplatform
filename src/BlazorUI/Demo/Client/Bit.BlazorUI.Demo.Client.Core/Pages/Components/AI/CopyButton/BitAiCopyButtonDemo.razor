@@ -1,0 +1,148 @@
+﻿@page "/components/ai/copybutton"
+
+<PageOutlet Url="components/ai/copybutton"
+            Title="AiCopyButton"
+            Description="BitAiCopyButton copies a text to the clipboard and confirms it: the glyph turns into a check mark, the name of the button says so, and the copy is announced to screen readers." />
+
+<DemoPage Name="AiCopyButton"
+          SecondaryNames="@(["CopyToClipboard"])"
+          Description="BitAiCopyButton copies a text to the clipboard and confirms it, because a copy button that gives no feedback leaves the user guessing whether it worked: for a moment after the copy its glyph is a check mark, its name says Copied, and a polite live region announces it. It is an icon button by default, with its label beside the icon on request, and is disabled while it has no Content."
+          Parameters="componentParameters"
+          SubClasses="componentSubClasses"
+          GitHubAIUrl="CopyButton/BitAiCopyButton.razor"
+          GitHubDemoUrl="AI/CopyButton/BitAiCopyButtonDemo.razor">
+    <NotesTemplate>
+        <BitText>
+            To use this component, you need to install the
+            <BitLink Href="https://www.nuget.org/packages/Bit.BlazorUI.AI" Target="_blank">
+                <BitTag Reversed
+                        Text="Bit.BlazorUI.AI"
+                        Color="BitColor.SecondaryBackground"
+                        IconName="@BitIconName.NavigateExternalInline" />
+            </BitLink>
+            nuget package, as described in the Optional steps of the
+            <BitLink Href="/getting-started">Getting started</BitLink> page.
+        </BitText>
+        <br />
+        <BitText>
+            The button needs no service. It writes through the Clipboard API of the browser, which only works in a secure context
+            (https, or localhost); elsewhere, and where the browser refuses it, it falls back to the copy command of the page, and
+            it only confirms a copy that happened. Its texts (Copy, Copied) come from the strings in force, which a
+            <BitLink Href="/components/ai/optionsprovider">BitAiOptionsProvider</BitLink> localizes. The code blocks and the
+            message actions of a chat carry one; see the <BitLink Href="/ai/scenarios/basic">basic scenario</BitLink>.
+        </BitText>
+    </NotesTemplate>
+    <Examples>
+        <DemoExample Title="Basic" RazorCode="@example1RazorCode" Id="example1">
+            <div>
+                Give it the <b>Content</b> to copy. Press it: for two seconds the glyph is a check mark and the name of the button
+                says Copied, and a screen reader hears it.
+            </div>
+            <br />
+            <div style="display:flex;align-items:center;gap:0.5rem">
+                <code>dotnet add package Bit.BlazorUI.AI</code>
+                <BitAiCopyButton Content="dotnet add package Bit.BlazorUI.AI" />
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Label & ShowLabel" RazorCode="@example2RazorCode" Id="example2">
+            <div>
+                <b>Label</b> renames the button - its tooltip and its accessible name - and <b>ShowLabel</b> shows the name beside the
+                icon, Copied included while the confirmation lasts.
+            </div>
+            <br />
+            <div style="display:flex;flex-wrap:wrap;align-items:center;gap:1rem">
+                <BitAiCopyButton Content="https://blazorui.bitplatform.dev" Label="Copy link" />
+                <BitAiCopyButton Content="https://blazorui.bitplatform.dev" ShowLabel />
+                <BitAiCopyButton Content="https://blazorui.bitplatform.dev" Label="Copy link" ShowLabel />
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="ConfirmationDuration & OnCopied" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
+            <div>
+                <b>ConfirmationDuration</b> is how long the confirmation stays on the button (two seconds by default); a copy while it
+                is showing starts it over. <b>OnCopied</b> is raised once the text is on the clipboard - never for a copy the browser
+                refused.
+            </div>
+            <br />
+            <div style="display:flex;align-items:center;gap:0.5rem">
+                <BitAiCopyButton Content="An answer worth keeping."
+                                 ShowLabel
+                                 ConfirmationDuration="TimeSpan.FromSeconds(5)"
+                                 OnCopied="HandleCopied" />
+                <span>Copied @copyCount time(s)</span>
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Content" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
+            <div>
+                <b>Content</b> is read when the button is pressed, so it can follow what changes - here what is typed. While it is
+                null the button is disabled; an empty text is still copied.
+            </div>
+            <br />
+            <div style="display:flex;align-items:center;gap:0.5rem">
+                <BitTextField @bind-Value="draft" Immediate Placeholder="Type something to copy" Style="flex:1" />
+                <BitAiCopyButton Content="@draft" />
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Cascading parameters" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
+            <div>
+                <b>BitParams</b> with a <b>BitAiCopyButtonParams</b> sets <b>ShowLabel</b>, <b>ConfirmationDuration</b> and the look of
+                every copy button inside it; a parameter of the button itself still wins.
+            </div>
+            <br />
+            <BitParams Parameters="copyButtonParams">
+                <div style="display:flex;flex-wrap:wrap;align-items:center;gap:1rem">
+                    <BitAiCopyButton Content="First snippet" />
+                    <BitAiCopyButton Content="Second snippet" />
+                    <BitAiCopyButton Content="Third snippet" ShowLabel="false" />
+                </div>
+            </BitParams>
+        </DemoExample>
+
+        <DemoExample Title="Disabled" RazorCode="@example6RazorCode" Id="example6">
+            <div>
+                A disabled copy button copies nothing, whoever presses it.
+            </div>
+            <br />
+            <div style="display:flex;align-items:center;gap:1rem">
+                <BitAiCopyButton Disabled Content="Nothing to see here" />
+                <BitAiCopyButton Disabled Content="Nothing to see here" ShowLabel />
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Style & Class" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
+            <div>
+                <b>Style</b> and <b>Class</b> reach the root, <b>Styles</b> and <b>Classes</b> its button (BitButtonClassStyles) and its
+                visually hidden live region. The copy button has no CSS variables of its own: the button is a neutral BitButton of
+                the Text variant, restyled through the public <b>--bit-Button-*</b> variables, from <b>:root</b>, an ancestor or
+                <b>Style</b>.
+            </div>
+            <br />
+            @* A plain element of this page for the scoped ::deep rules of the custom classes to anchor on. *@
+            <div style="display:flex;flex-wrap:wrap;align-items:center;gap:1rem">
+                <BitAiCopyButton Content="Styled" Style="border:1px dashed var(--bit-clr-brd-pri);border-radius:0.5rem" />
+                <BitAiCopyButton Content="Classy" Class="custom-class" />
+                <BitAiCopyButton Content="Styles" ShowLabel Styles="@(new() { Button = new() { Root = "border-radius:2rem", Icon = "color:var(--bit-clr-pri)" } })" />
+                <BitAiCopyButton Content="Classes" ShowLabel Classes="@(new() { Button = new() { Root = "custom-button" } })" />
+                <span style="@cssVariablesStyle">
+                    <BitAiCopyButton Content="Variables" ShowLabel />
+                </span>
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="RTL" RazorCode="@example8RazorCode" Id="example8">
+            <div>
+                In right-to-left text the label of the button stands at the left of its icon, whether the direction comes from
+                <b>Dir</b> or from a <b>dir</b> attribute around it.
+            </div>
+            <br />
+            <BitAiCopyButton Dir="BitDir.Rtl" Content="سلام دنیا" Label="کپی" ShowLabel />
+            <br /><br />
+            <div dir="rtl">
+                <BitAiCopyButton Content="سلام دنیا" Label="کپی متن" ShowLabel />
+            </div>
+        </DemoExample>
+    </Examples>
+</DemoPage>

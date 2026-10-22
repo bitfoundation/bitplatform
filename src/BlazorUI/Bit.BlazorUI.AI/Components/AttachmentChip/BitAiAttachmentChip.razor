@@ -1,0 +1,46 @@
+﻿@namespace Bit.BlazorUI
+@inherits BitAiComponentBase
+
+<div @ref="RootElement" @attributes="DisabledAwareHtmlAttributes"
+     id="@_Id"
+     style="@StyleBuilder.Value"
+     class="@ClassBuilder.Value"
+     dir="@Dir?.ToString().ToLower()">
+    @* The chip is a tag that carries the file: its name, and under it the size - or how far the upload has got, or why
+       it failed. The dismiss button of the tag is the remove button, there only while something listens for it. The chip is
+       a neutral one (the host-default tertiary role, which an app's --bit-Tag-* variables still restyle); a failed upload
+       takes the error color, which is the state of the file rather than a look of the chip. *@
+    <BitTag Text="@Attachment.Name"
+            SecondaryText="@Details"
+            Title="@Attachment.Name"
+            NoWrap
+            Disabled="Disabled"
+            Variant="BitVariant.Outline"
+            Color="@(IsFailed ? BitColor.Error : null)"
+            OnDismiss="_onDismiss"
+            DismissLabel="@($"{Strings.Remove} {Attachment.Name}")"
+            Class="bit-aiach-tag bit-tag-dft-ter"
+            Styles="@Styles?.Tag"
+            Classes="@Classes?.Tag">
+        <PrefixTemplate>
+            @* A thumbnail for an image and the glyph of its kind for anything else, both in the same box, so a row of
+               chips lines up whatever they carry. Either is decoration beside the name, which says what the file is. *@
+            @if (Preview is { } preview)
+            {
+                <img src="@preview"
+                     alt=""
+                     loading="lazy"
+                     style="@Styles?.Thumbnail"
+                     class="bit-aiach-thm @Classes?.Thumbnail" />
+            }
+            else
+            {
+                <span aria-hidden="true"
+                      style="@Styles?.Thumbnail"
+                      class="bit-aiach-thm @Classes?.Thumbnail">
+                    <i aria-hidden="true" style="@Styles?.Icon" class="bit-aiach-ico @IconClass @Classes?.Icon" />
+                </span>
+            }
+        </PrefixTemplate>
+    </BitTag>
+</div>

@@ -9,7 +9,7 @@ namespace Bit.BlazorUI.Demo.Server.Services.Mcp;
 /// <para>
 /// The name a task suggests is rarely the name the library chose - a "select" is
 /// <c>BitDropdown</c>, a "toast" is <c>BitSnackBar</c>, a "skeleton" is <c>BitShimmer</c>, an
-/// "expander" is <c>BitAccordion</c> - and with 110 components across five packages, working out
+/// "expander" is <c>BitAccordion</c> - and with 150 components across six packages, working out
 /// which corpus holds the answer is the actual task. This does it in one call, and every hit names
 /// the exact follow-up call that returns its full text, so one search is enough to know what to ask
 /// for next.
@@ -90,7 +90,7 @@ public static class BlazorUISearchIndex
     };
 
     /// <summary>
-    /// Builds the index ahead of the first query. Walking 110 demo pages and five assemblies takes
+    /// Builds the index ahead of the first query. Walking 150 demo pages and six assemblies takes
     /// long enough to be noticed, and the caller who happens to be first is the one who would wait.
     /// </summary>
     public static void Warm()
@@ -370,8 +370,17 @@ public static class BlazorUISearchIndex
 
         foreach (var model in BlazorUISetupGuide.HostingModels)
         {
+            // The words only a setup question is asked in, as aliases: a guide is titled by its hosting
+            // model rather than by what it answers, and its keywords as prose are capped like any body.
+            // Without them, the components whose descriptions mention what the app registered with
+            // AddBitBlazorUIAIServices outrank the guide for "register services stylesheet script".
+            // The generic words - package, services, script, tag - stay prose, or "tag" would put four
+            // setup guides between BitTag and its own parameters.
             entries.Add(new Entry("Setup guide", model, "Hosting model", $"GetBitBlazorUISetupGuide(hostingModel: \"{model}\")",
-                "install package nuget register services AddBitBlazorUIServices stylesheet script tag imports namespace setup wiring", string.Empty));
+                "install package nuget register services AddBitBlazorUIServices stylesheet script tag imports namespace setup wiring", string.Empty)
+            {
+                AliasPhrases = ["install", "nuget", "register", "addbitblazoruiservices", "stylesheet", "setup", "wiring"]
+            });
         }
 
         entries.Add(new Entry("Icons", "BitIconName", $"{BlazorUIIconCatalog.Count:N0} glyphs", "FindBitBlazorUIIcons(query: \"...\")",

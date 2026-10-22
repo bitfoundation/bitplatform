@@ -126,6 +126,11 @@ jobs:
     - name: dotnet pack BlazorUI.Legacy
       run: dotnet pack src/BlazorUI/Bit.BlazorUI.Legacy/Bit.BlazorUI.Legacy.csproj --output . --configuration Release
 
+    - name: dotnet build BlazorUI.AI
+      run: dotnet build src/BlazorUI/Bit.BlazorUI.AI/Bit.BlazorUI.AI.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
+    - name: dotnet pack BlazorUI.AI
+      run: dotnet pack src/BlazorUI/Bit.BlazorUI.AI/Bit.BlazorUI.AI.csproj --output . --configuration Release
+
     - name: dotnet build BlazorUI.Assets
       run: dotnet build src/BlazorUI/Bit.BlazorUI.Assets/Bit.BlazorUI.Assets.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
     - name: dotnet pack BlazorUI.Assets

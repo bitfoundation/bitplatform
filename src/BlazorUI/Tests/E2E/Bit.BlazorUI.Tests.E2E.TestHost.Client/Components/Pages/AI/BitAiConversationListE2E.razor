@@ -1,0 +1,135 @@
+﻿@page "/e2e/aiconversationlist"
+
+<PageTitle>BitAiConversationList E2E</PageTitle>
+
+@* A row an app paints through Classes, to see that the pointer moves a variable rather than taking the paint back. *@
+<HeadContent>
+    <style>
+        .e2e-cvl-paint { background-color: rgb(1, 2, 3); }
+    </style>
+</HeadContent>
+
+<h1>BitAiConversationList</h1>
+
+<E2ESection Id="basic" Title="Basic">
+    <div style="width:320px">
+        <BitAiConversationList Id="cvl-basic"
+                               Conversations="_items"
+                               SelectedId="@_selected"
+                               OnSelect="HandleOnSelect"
+                               OnNew="HandleOnNew"
+                               OnDelete="HandleOnDelete" />
+    </div>
+    <span id="cvl-selected">@(_selected ?? "None")</span>
+    <span id="cvl-log">@string.Join(",", _log)</span>
+</E2ESection>
+
+<E2ESection Id="plain" Title="No new button, no delete">
+    <div style="width:320px">
+        <BitAiConversationList Id="cvl-plain" ShowNewButton="false" Conversations="_plainItems" SelectedId="p2" />
+    </div>
+</E2ESection>
+
+<E2ESection Id="titles" Title="Titles">
+    <div style="width:220px">
+        <BitAiConversationList Id="cvl-titles" ShowNewButton="false" Conversations="_titleItems" />
+    </div>
+</E2ESection>
+
+<E2ESection Id="disabled" Title="Disabled">
+    <div style="width:320px">
+        <BitAiConversationList Id="cvl-disabled"
+                               Disabled
+                               Conversations="_plainItems"
+                               OnSelect="HandleOnDisabled"
+                               OnNew="HandleOnDisabledNew"
+                               OnDelete="HandleOnDisabled" />
+    </div>
+    <span id="cvl-disabled-log">@_disabledCalls</span>
+</E2ESection>
+
+<E2ESection Id="style" Title="Style & Class">
+    <div id="cvl-vars" style="width:320px;--bit-AiConversationList-gap:7px;--bit-AiConversationList-padding:13px;--bit-AiConversationList-group-color:rgb(1, 100, 1);--bit-AiConversationList-item-radius:9px;--bit-AiConversationList-item-color:rgb(2, 3, 4);--bit-AiConversationList-item-background:rgb(240, 240, 200);--bit-AiConversationList-item-hover-background:rgb(200, 240, 240);--bit-AiConversationList-selected-color:rgb(250, 250, 250);--bit-AiConversationList-selected-background:rgb(20, 30, 40);--bit-AiConversationList-selected-hover-background:rgb(60, 70, 80)">
+        <BitAiConversationList Id="cvl-var" ShowNewButton="false" Conversations="_plainItems" SelectedId="p1" />
+    </div>
+    <div style="width:320px">
+        <BitAiConversationList Id="cvl-classes"
+                               ShowNewButton="false"
+                               Conversations="_plainItems"
+                               SelectedId="p1"
+                               Class="e2e-cvl-root"
+                               Styles="@(new() { GroupHeader = "letter-spacing: 5px", SelectedItemButton = "outline: 2px solid rgb(7, 7, 7)" })"
+                               Classes="@(new() { ItemButton = "e2e-cvl-paint", GroupHeader = "e2e-cvl-group", Item = "e2e-cvl-item", ItemTitle = "e2e-cvl-title" })" />
+    </div>
+</E2ESection>
+
+<E2ESection Id="rtl" Title="RTL">
+    <div style="width:320px">
+        <BitAiConversationList Id="cvl-rtl" Dir="BitDir.Rtl" Conversations="_plainItems" OnDelete="HandleOnDisabled" />
+    </div>
+</E2ESection>
+
+<E2EStatus />
+
+@code {
+    private readonly List<BitAiConversationSummary> _items = [];
+    private readonly List<BitAiConversationSummary> _plainItems = [];
+    private readonly List<BitAiConversationSummary> _titleItems = [];
+    private readonly List<string> _log = [];
+    private string? _selected = "c1";
+    private int _newCount;
+    private int _disabledCalls;
+
+    protected override void OnInitialized()
+    {
+        var now = DateTimeOffset.Now;
+
+        // One or two conversations in each group of recency, the newest first.
+        _items.AddRange(
+        [
+            new("c1", "Release notes", now, "Draft the notes of 10.4", 6),
+            new("c2", "Bug triage", now.AddSeconds(-1), "Three new issues", 4),
+            new("c3", "Trip ideas", now.AddDays(-1), "A week in Lisbon", 8),
+            new("c4", "Budget review", now.AddDays(-3), "Q3 numbers", 2),
+            new("c5", "Old project", now.AddDays(-15), "The migration plan", 12),
+            new("c6", "Archive", now.AddDays(-60), "Notes from spring", 3),
+        ]);
+
+        _plainItems.AddRange(
+        [
+            new("p1", "First conversation", now, "The first one"),
+            new("p2", "Second conversation", now.AddSeconds(-1), "The second one"),
+        ]);
+
+        _titleItems.AddRange(
+        [
+            new("t1", null, now, "A conversation nobody named"),
+            new("t2", "A title far too long to fit on one line of a narrow sidebar", now.AddSeconds(-1), "The preview of the long one"),
+        ]);
+    }
+
+    private void HandleOnSelect(BitAiConversationSummary summary)
+    {
+        _selected = summary.ConversationId;
+        _log.Add($"select:{summary.ConversationId}");
+    }
+
+    private void HandleOnNew()
+    {
+        _newCount++;
+        var id = $"n{_newCount}";
+        _items.Insert(0, new BitAiConversationSummary(id, null, DateTimeOffset.Now));
+        _selected = id;
+        _log.Add("new");
+    }
+
+    private void HandleOnDelete(BitAiConversationSummary summary)
+    {
+        _items.RemoveAll(c => c.ConversationId == summary.ConversationId);
+        _log.Add($"delete:{summary.ConversationId}");
+    }
+
+    private void HandleOnDisabled(BitAiConversationSummary summary) => _disabledCalls++;
+
+    private void HandleOnDisabledNew() => _disabledCalls++;
+}

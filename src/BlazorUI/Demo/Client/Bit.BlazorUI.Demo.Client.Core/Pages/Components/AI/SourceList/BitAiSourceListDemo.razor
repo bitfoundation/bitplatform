@@ -1,0 +1,137 @@
+﻿@page "/components/ai/sourcelist"
+@inherits AppComponentBase
+
+<PageOutlet Url="components/ai/sourcelist"
+            Title="AiSourceList"
+            Description="BitAiSourceList is the deduplicated, numbered list of the sources an AI answer cited, each a source card numbered to match the inline citation markers." />
+
+<DemoPage Name="AiSourceList"
+          Description="BitAiSourceList is the deduplicated list of the sources a message cited, each a BitAiSourceCard numbered to match the inline citation markers, laid out as a responsive grid under a small Sources heading. A source cited several times is listed once, under the lowest number any of its citations carries, and the list is ordered by those numbers - a source cited without a number goes last. Nothing is rendered while there is nothing to list. A message renders one under its text when it cites anything (BitAiUiOptions.ShowSourceList)."
+          Parameters="componentParameters"
+          SubClasses="componentSubClasses"
+          CssVariables="componentCssVariables"
+          GitHubAIUrl="SourceList/BitAiSourceList.razor"
+          GitHubDemoUrl="AI/SourceList/BitAiSourceListDemo.razor">
+    <NotesTemplate>
+        <BitText>
+            To use this component, you need to install the
+            <BitLink Href="https://www.nuget.org/packages/Bit.BlazorUI.AI" Target="_blank">
+                <BitTag Reversed
+                        Text="Bit.BlazorUI.AI"
+                        Color="BitColor.SecondaryBackground"
+                        IconName="@BitIconName.NavigateExternalInline" />
+            </BitLink>
+            nuget package, as described in the Optional steps of the
+            <BitLink Href="/getting-started">Getting started</BitLink> page.
+        </BitText>
+        <br />
+        <BitText>
+            The list takes the <b>BitAiCitation</b>s of a message (<b>BitAiMessage.Citations</b>, see
+            <BitLink Href="/components/ai/citationmarker">AiCitationMarker</BitLink>) and draws their sources with
+            <BitLink Href="/components/ai/sourcecard">AiSourceCard</BitLink> - links to web sources, opened in a new tab, or
+            buttons with an <b>OnSourceClick</b>; a source URL is untrusted input, which the cards only ever link to when it is
+            an http or https address. The heading is <b>BitAiStrings.Sources</b>. See it under an answer in the
+            <BitLink Href="/ai/scenarios/citations">Citations</BitLink> scenario.
+        </BitText>
+    </NotesTemplate>
+    <Examples>
+        <DemoExample Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
+            <div>Hand the list the <b>Citations</b> of a message: it lists their sources, numbered like their markers.</div>
+            <br />
+            <BitAiSourceList Citations="citations" />
+        </DemoExample>
+
+        <DemoExample Title="Deduplication & order" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
+            <div>
+                Four citations of three sources: the source cited twice (as [2] and [3]) is listed once, under 2; the list is
+                ordered by number; and the source cited without a number goes last, unnumbered.
+            </div>
+            <br />
+            <BitAiSourceList Citations="mixedCitations" />
+        </DemoExample>
+
+        <DemoExample Title="Heading" RazorCode="@example3RazorCode" Id="example3">
+            <div>
+                <b>ShowHeading</b> false leaves the "Sources" heading off - for a list under a heading of the page's own.
+            </div>
+            <br />
+            <BitAiSourceList Citations="citations" ShowHeading="false" />
+        </DemoExample>
+
+        <DemoExample Title="Source click" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
+            <div>
+                With <b>OnSourceClick</b> the cards are buttons rather than links, and hand over the source that was clicked -
+                to reveal it in place rather than leave the page.
+            </div>
+            <br />
+            <BitAiSourceList Citations="citations" OnSourceClick="s => clicked = s" />
+            <br />
+            <div>Clicked: <b>@(clicked?.Title ?? "-")</b> @clicked?.Description</div>
+        </DemoExample>
+
+        <DemoExample Title="From a message" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
+            <div>
+                The citations of a message, as a transport streamed them - here a scripted transport of this site, whose answer
+                cites two sources. The session numbers them in document order when the message is finalised.
+            </div>
+            <br />
+            <BitButton OnClick="AskCited" Disabled="isAsking">Ask</BitButton>
+            <br /><br />
+            @if (citedMessage is not null)
+            {
+                <div>@citedMessage.GetText()</div>
+                <br />
+                <BitAiSourceList Citations="citedMessage.Citations" />
+            }
+        </DemoExample>
+
+        <DemoExample Title="Cascading parameters" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
+            <div>
+                <b>BitParams</b> with a <b>BitAiSourceListParams</b> sets the heading and the look of every source list inside it
+                - the ones the messages of a chat render included - and a list's own value still wins (the second shows its
+                heading).
+            </div>
+            <br />
+            <BitParams Parameters="listParams">
+                <BitAiSourceList Citations="citations" />
+                <br />
+                <BitAiSourceList Citations="citations" ShowHeading="true" />
+            </BitParams>
+        </DemoExample>
+
+        <DemoExample Title="Style & Class" RazorCode="@example7RazorCode" Id="example7">
+            <div>
+                <b>Style</b> and <b>Class</b> reach the root, <b>Styles</b> and <b>Classes</b> the heading, the grid of the cards and
+                every card (<b>SourceCard</b>, a <b>BitAiSourceCardClassStyles</b>). The public <b>--bit-AiSourceList-*</b>
+                variables re-skin the heading and the grid - <b>column-min-width</b> decides how many columns fit - and the cards
+                keep the <b>--bit-AiSourceCard-*</b> and <b>--bit-Card-*</b> ones.
+            </div>
+            <br />
+            @* A plain element of this page for the scoped ::deep rules of the custom classes to anchor on. *@
+            <div>
+                <BitAiSourceList Citations="citations" Style="padding: 0.75rem; border: 1px dashed #0ea5e9; border-radius: 0.5rem" />
+                <br />
+                <BitAiSourceList Citations="citations"
+                                 Class="custom-class"
+                                 Classes="@(new() { Header = "custom-header", SourceCard = new() { Title = "custom-title" } })"
+                                 Styles="@(new() { List = "gap: 0.25rem" })" />
+                <br />
+                <BitAiSourceList Citations="citations"
+                                 Style="--bit-AiSourceList-column-min-width: 100%;
+                                        --bit-AiSourceList-gap: 0.25rem;
+                                        --bit-AiSourceList-header-color: #7c3aed;
+                                        --bit-AiSourceList-header-font-size: 0.875rem;
+                                        --bit-AiSourceCard-index-color: #7c3aed" />
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="RTL" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
+            <div>
+                In right-to-left text the heading and the grid of the cards are mirrored, whether the direction comes from
+                <b>Dir</b> or from a <b>dir</b> attribute around the list.
+            </div>
+            <br />
+            <BitAiSourceList Dir="BitDir.Rtl" Citations="rtlCitations" />
+        </DemoExample>
+    </Examples>
+</DemoPage>

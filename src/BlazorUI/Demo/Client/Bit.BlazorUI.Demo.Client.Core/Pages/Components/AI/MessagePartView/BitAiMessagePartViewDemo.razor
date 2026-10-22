@@ -1,0 +1,162 @@
+﻿@page "/components/ai/messagepartview"
+
+<PageOutlet Url="components/ai/messagepartview"
+            Title="AiMessagePartView"
+            Description="BitAiMessagePartView renders one part of an AI message with the view of its kind - text, reasoning, code, a tool call, an error - or with a renderer the app registered, and re-renders only when that part changes." />
+
+<DemoPage Name="AiMessagePartView"
+          Description="BitAiMessagePartView renders one part of a message with the view of its kind: Markdown text, a reasoning panel, a code block, a tool call card, a tool result, an image, a file chip, an artifact card, structured data, a generated component, a source list or an error. It listens to its part rather than to the message, so a token arriving in the last paragraph of a long answer re-renders that paragraph alone, at most once per render interval. A renderer the app registers for a part kind replaces the built-in view, inside a boundary that contains its failures; a kind no view knows is shown as the text it carries."
+          Parameters="componentParameters"
+          SubClasses="componentSubClasses"
+          GitHubAIUrl="MessagePartView/BitAiMessagePartView.razor"
+          GitHubDemoUrl="AI/MessagePartView/BitAiMessagePartViewDemo.razor">
+    <NotesTemplate>
+        <BitText>
+            To use this component, you need to install the
+            <BitLink Href="https://www.nuget.org/packages/Bit.BlazorUI.AI" Target="_blank">
+                <BitTag Reversed
+                        Text="Bit.BlazorUI.AI"
+                        Color="BitColor.SecondaryBackground"
+                        IconName="@BitIconName.NavigateExternalInline" />
+            </BitLink>
+            nuget package, as described in the Optional steps of the
+            <BitLink Href="/getting-started">Getting started</BitLink> page.
+        </BitText>
+        <br />
+        <BitText>
+            <BitLink Href="/components/ai/chatmessage">BitAiChatMessage</BitLink> renders every part of a message through this view; render it
+            yourself to lay the parts of a message out your own way. It is the extension point for content the library has no view for: give
+            the part a kind of its own (<b>BitAiCustomPart&lt;T&gt;</b>, <b>BitAiCustomJsonPart</b>) and register a renderer for that kind with
+            <b>BitAiRendererRegistry</b> at startup. A registered renderer is handed what the model produced, so it is rendered inside a
+            <BitLink Href="/components/ai/rendererboundary">BitAiRendererBoundary</BitLink>: a shape it did not expect replaces that one part with
+            a notice. See the <BitLink Href="/ai/scenarios/streaming">Streaming</BitLink>,
+            <BitLink Href="/ai/scenarios/custom-tool">Custom tool UI</BitLink> and
+            <BitLink Href="/ai/scenarios/performance">Performance</BitLink> scenarios.
+        </BitText>
+    </NotesTemplate>
+    <Examples>
+        <DemoExample Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
+            <div>
+                Hand it a <b>Part</b> and the <b>Message</b> it belongs to, and render one per part of the message: each part is drawn by the
+                view of its kind - here two text parts around a tool call.
+            </div>
+            <br />
+            <div class="example-message">
+                @foreach (var part in basicMessage.Parts)
+                {
+                    <BitAiMessagePartView @key="part.PartId" Part="part" Message="basicMessage" />
+                }
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Streaming" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
+            <div>
+                Each view listens to its own part. As the answer below streams in, its text part is the only thing that re-renders - at most once
+                per <b>RenderInterval</b> of the options, however fast the tokens come - while the page, and the tool card above, are left alone.
+            </div>
+            <br />
+            <BitButton OnClick="StreamAsync" Disabled="isStreaming">Stream an answer</BitButton>
+            <br /><br />
+            <div class="example-message">
+                @foreach (var part in streamingMessage.Parts)
+                {
+                    <BitAiMessagePartView @key="part.PartId" Part="part" Message="streamingMessage" />
+                }
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Part kinds" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
+            <div>
+                A reasoning part is a collapsed panel, a code part a code block, a tool result a card of its own and an error part a compact error
+                in the flow of the answer - see the BitAiMessagePartKinds table for every kind. A part of a kind no view knows and no renderer is
+                registered for is shown as the <b>Text</b> it carries, rather than dropped.
+            </div>
+            <br />
+            <div class="example-message">
+                @foreach (var part in kindsMessage.Parts)
+                {
+                    <BitAiMessagePartView @key="part.PartId" Part="part" Message="kindsMessage" />
+                }
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Citations" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
+            <div>
+                The bracketed numbers of a text part are chips for the citations of its message (<b>BitAiMessage.AddCitation</b> numbers them),
+                and <b>OnCitationClick</b> reports the one the user activates.
+            </div>
+            <br />
+            <div class="example-message">
+                @foreach (var part in citedMessage.Parts)
+                {
+                    <BitAiMessagePartView @key="part.PartId" Part="part" Message="citedMessage" OnCitationClick="c => clickedCitation = c.Source.Title" />
+                }
+            </div>
+            <br />
+            <div>Activated: <b>@(clickedCitation ?? "none yet")</b></div>
+        </DemoExample>
+
+        <DemoExample Title="Custom part renderer" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" CodeFiles="@example5CodeFiles" Id="example5">
+            <div>
+                A renderer registered for a kind (<b>BitAiRendererRegistry.RegisterPart</b>, see the tables below) replaces the built-in view of
+                every part of that kind. Here an invoice the model produced travels as a <b>BitAiCustomJsonPart</b> of the kind
+                <b>demo:invoice</b>, and an <b>InvoiceCard</b> component is registered for it: the registry renders it with the part as its
+                <b>Part</b> parameter. <b>RegisterPart(kind, context => builder => ...)</b> takes a <b>BitAiMessagePartRenderer</b> delegate
+                instead, handed the part, its message, the conversation and the session. An app registers its renderers once, at startup
+                (the Program.cs tab); this page registers its own kind as it loads instead.
+            </div>
+            <br />
+            <div class="example-message">
+                @foreach (var part in invoiceMessage.Parts)
+                {
+                    <BitAiMessagePartView @key="part.PartId" Part="part" Message="invoiceMessage" />
+                }
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Renderer failure" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
+            <div>
+                A registered renderer is handed what a model produced, so the view renders it inside a
+                <BitLink Href="/components/ai/rendererboundary">BitAiRendererBoundary</BitLink>. The second invoice below has no <b>lines</b>,
+                which the card was not written for: it throws, and that one part is replaced by a notice naming the kind whose renderer failed
+                (point at it for the exception). The rest of the message is unaffected.
+            </div>
+            <br />
+            <div class="example-message">
+                @foreach (var part in brokenMessage.Parts)
+                {
+                    <BitAiMessagePartView @key="part.PartId" Part="part" Message="brokenMessage" />
+                }
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Style & Class" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
+            <div>
+                <b>Style</b> and <b>Class</b> land on the root, the block each part is laid out in; <b>Styles.Fallback</b> and
+                <b>Classes.Fallback</b> on the text shown for a kind no view knows. What a part shows is drawn by the view of its kind, restyled
+                through that view's own parameters and variables.
+            </div>
+            <br />
+            <div class="example-message">
+                <BitAiMessagePartView Part="styleMessage.Parts[0]" Message="styleMessage" Style="padding: 0.75rem 1rem; border-radius: 0.5rem; background-color: #f5f3ff" />
+
+                <BitAiMessagePartView Part="styleMessage.Parts[0]" Message="styleMessage" Class="custom-part" />
+
+                <BitAiMessagePartView Part="styleMessage.Parts[1]" Message="styleMessage" Styles="@(new() { Fallback = "font-style: italic; color: #6d28d9" })" />
+
+                <BitAiMessagePartView Part="styleMessage.Parts[1]" Message="styleMessage" Classes="@(new() { Root = "custom-part-root", Fallback = "custom-part-fallback" })" />
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="RTL" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
+            <div>Use BitAiMessagePartView in right-to-left (RTL).</div>
+            <br />
+            <div class="example-message">
+                @foreach (var part in rtlMessage.Parts)
+                {
+                    <BitAiMessagePartView @key="part.PartId" Dir="BitDir.Rtl" Part="part" Message="rtlMessage" />
+                }
+            </div>
+        </DemoExample>
+    </Examples>
+</DemoPage>

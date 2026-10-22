@@ -1,0 +1,197 @@
+﻿@page "/components/ai/agentrunview"
+@inherits AppComponentBase
+
+<PageOutlet Url="components/ai/agentrunview"
+            Title="AiAgentRunView"
+            Description="BitAiAgentRunView makes a multi-step AI agent run legible: its goal, its plan, the step it is on, what each step produced, the time and tokens it took, and the question it is waiting on." />
+
+<DemoPage Name="AiAgentRunView"
+          Description="BitAiAgentRunView makes a multi-step agent run legible: what it is trying to do, which step it is on, what each step produced and how long it took, what the whole run cost, and what it needs from the user. Every step is visible with its own state and timing, the clock keeps moving while the run does - so a stalled run looks stalled - and a run blocked on the user shows its question with one-tap suggested answers and a field for an answer of the user's own."
+          Parameters="componentParameters"
+          SubClasses="componentSubClasses"
+          CssVariables="componentCssVariables"
+          GitHubAIUrl="AgentRunView/BitAiAgentRunView.razor"
+          GitHubDemoUrl="AI/AgentRunView/BitAiAgentRunViewDemo.razor">
+    <NotesTemplate>
+        <BitText>
+            To use this component, you need to install the
+            <BitLink Href="https://www.nuget.org/packages/Bit.BlazorUI.AI" Target="_blank">
+                <BitTag Reversed
+                        Text="Bit.BlazorUI.AI"
+                        Color="BitColor.SecondaryBackground"
+                        IconName="@BitIconName.NavigateExternalInline" />
+            </BitLink>
+            nuget package, as described in the Optional steps of the
+            <BitLink Href="/getting-started">Getting started</BitLink> page.
+        </BitText>
+        <br />
+        <BitText>
+            The view draws a <b>BitAiAgentRun</b>. A <b>BitAiChatSession</b> builds one from the agent events its transport
+            streams (<b>BitAiAgentRunStartedEvent</b>, <b>BitAiAgentPlanEvent</b>, the step events and
+            <b>BitAiAgentInputRequestedEvent</b>) and keeps it in <b>Conversation.Runs</b>; an application driving an agent
+            of its own builds and moves the run in code, as the first examples here do. The view follows the run's own
+            <b>Changed</b> event, coalesced into one render per frame interval, so nothing has to call StateHasChanged.
+        </BitText>
+        <br />
+        <BitText>
+            Accessibility: the status is a polite live region, the progress bar is named after the plan and read out as a
+            count of steps, the clock is a <b>timer</b> (read when asked, never every second), and the answer field is named
+            by the question it answers. See it in a chat in the
+            <BitLink Href="/ai/scenarios/agent">Multi-step agent</BitLink>,
+            <BitLink Href="/ai/scenarios/agent-input">Agent asks a question</BitLink> and
+            <BitLink Href="/ai/scenarios/agent-failure">Agent failure</BitLink> scenarios.
+        </BitText>
+    </NotesTemplate>
+    <Examples>
+        <DemoExample Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
+            <div>
+                Hand the view a <b>Run</b>. Here the page drives one itself: <b>SetPlan</b> lays out the steps, each step is
+                <b>Start</b>ed and then <b>Complete</b>d with a summary, and <b>SetStatus</b> ends the run. The view follows the
+                run as it changes - the step that is running pulses, the bar and the count follow the completed steps, and the
+                clock stops when the run ends.
+            </div>
+            <br />
+            <BitButton OnClick="StartBasicRun" Disabled="isBasicRunning">Start the run</BitButton>
+            <br /><br />
+            @if (basicRun is not null)
+            {
+                <BitAiAgentRunView Run="basicRun" />
+            }
+        </DemoExample>
+
+        <DemoExample Title="Failure" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
+            <div>
+                A step that fails is completed as <b>Failed</b> with the <b>BitAiError</b> it failed with, the steps the run
+                will no longer reach as <b>Skipped</b>, and <b>SetError</b> ends the run as failed and shows the error under the
+                steps, with its detail one click away.
+            </div>
+            <br />
+            <BitButton OnClick="StartFailingRun" Disabled="isFailingRunning">Deploy the release</BitButton>
+            <br /><br />
+            @if (failingRun is not null)
+            {
+                <BitAiAgentRunView Run="failingRun" />
+            }
+        </DemoExample>
+
+        <DemoExample Title="Asking the user" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
+            <div>
+                <b>RequestInput</b> blocks the run on a question, with optional suggested answers. The view shows them as
+                one-tap buttons beside a field for an answer of the user's own, and hands the answer to <b>OnRespond</b>; the
+                page then <b>ResolveInput</b>s the run and carries on from the step it stopped at.
+            </div>
+            <br />
+            <BitButton OnClick="StartAskingRun" Disabled="isAskingRunning">Start the migration</BitButton>
+            <br /><br />
+            @if (askingRun is not null)
+            {
+                <BitAiAgentRunView Run="askingRun" OnRespond="RespondToAskingRun" />
+            }
+        </DemoExample>
+
+        <DemoExample Title="With a session" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
+            <div>
+                A <b>BitAiChatSession</b> builds the run from the agent events of its transport - here the scripted agents of
+                this site. Without an <b>OnRespond</b>, an answer goes to the <b>Session</b> (<b>RespondToAgentAsync</b>), which
+                appends it as a user message and continues the turn, so the transport picks the run up where it stopped. The
+                <b>Session</b> also lets each step show the tool calls it made by name.
+            </div>
+            <br />
+            <div class="example-buttons">
+                <BitButton OnClick="() => StartSessionRun(AiDemoAgentTransports.Research())">Research</BitButton>
+                <BitButton OnClick="() => StartSessionRun(AiDemoAgentTransports.AsksForInput())">Ask the user</BitButton>
+                <BitButton OnClick="() => StartSessionRun(AiDemoAgentTransports.Fails())">Fail</BitButton>
+            </div>
+            <br />
+            @if (sessionRun is not null)
+            {
+                <BitAiAgentRunView Run="sessionRun" Session="session" />
+            }
+        </DemoExample>
+
+        <DemoExample Title="Usage & clock" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
+            <div>
+                With <b>ShowUsage</b> on in the <b>BitAiUiOptions</b> in force (cascaded here by a <b>BitAiOptionsProvider</b>,
+                or registered through <b>ConfigureUi</b>), the header shows the total usage of every model request the run made
+                (<b>AddUsage</b>), its cost included. <b>ClockInterval</b> sets how often the elapsed time moves while the run
+                is active (a second by default); nothing ticks once it ends.
+            </div>
+            <br />
+            <BitButton OnClick="StartUsageRun" Disabled="isUsageRunning">Start the run</BitButton>
+            <br /><br />
+            @if (usageRun is not null)
+            {
+                <BitAiOptionsProvider UiOptions="usageOptions">
+                    <BitAiAgentRunView Run="usageRun" ClockInterval="TimeSpan.FromMilliseconds(100)" />
+                </BitAiOptionsProvider>
+            }
+        </DemoExample>
+
+        <DemoExample Title="Cascading parameters" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
+            <div>
+                <b>BitParams</b> with a <b>BitAiAgentRunViewParams</b> sets the defaults of every run view inside it - the pace
+                of the clock and the look - and a view's own value still wins (the second keeps its own <b>Styles</b>). The run,
+                the session and the callback are never cascaded.
+            </div>
+            <br />
+            <BitButton OnClick="StartCascadingRun" Disabled="isCascadingRunning">Start the run</BitButton>
+            <br /><br />
+            @if (cascadingRun is not null)
+            {
+                <BitParams Parameters="runViewParams">
+                    <BitAiAgentRunView Run="cascadingRun" />
+                    <br />
+                    <BitAiAgentRunView Run="cascadingRun" Styles="@(new() { Goal = "font-weight: bold" })" />
+                </BitParams>
+            }
+        </DemoExample>
+
+        <DemoExample Title="Style & Class" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
+            <div>
+                <b>Style</b> and <b>Class</b> reach the root, <b>Styles</b> and <b>Classes</b> every part - the header, the goal,
+                the progress row, the steps (as a <b>BitAiAgentStepViewClassStyles</b>), the question and its buttons. The public
+                <b>--bit-AiAgentRunView-*</b> variables re-skin the panel from <b>:root</b>, an ancestor or <b>Style</b>; what it
+                renders of the library keeps its own (<b>--bit-Tag-*</b>, <b>--bit-Progress-*</b>, <b>--bit-AiAgentStepView-*</b>).
+                The three views below draw one run: answer it in any of them.
+            </div>
+            <br />
+            <BitButton Variant="BitVariant.Outline" OnClick="ResetStyledRun">Ask again</BitButton>
+            <br /><br />
+            @* A plain element of this page for the scoped ::deep rules of the custom classes to anchor on. *@
+            <div>
+                <BitAiAgentRunView Run="styledRun"
+                                   OnRespond="RespondToStyledRun"
+                                   Style="box-shadow: 0 0 1rem #0ea5e966" />
+                <br />
+                <BitAiAgentRunView Run="styledRun"
+                                   OnRespond="RespondToStyledRun"
+                                   Class="custom-class"
+                                   Classes="@(new() { Header = "custom-header", Goal = "custom-goal", Question = "custom-question" })"
+                                   Styles="@(new() { Title = "letter-spacing: 0.05em; text-transform: uppercase",
+                                                     Step = new() { Title = "font-style: italic" } })" />
+                <br />
+                <BitAiAgentRunView Run="styledRun"
+                                   OnRespond="RespondToStyledRun"
+                                   Style="--bit-AiAgentRunView-background: #1e293b;
+                                          --bit-AiAgentRunView-body-background: #0f172a;
+                                          --bit-AiAgentRunView-border-color: #334155;
+                                          --bit-AiAgentRunView-header-color: #e2e8f0;
+                                          --bit-AiAgentRunView-text-color: #94a3b8;
+                                          --bit-AiAgentRunView-prompt-background: #3b2f0b;
+                                          --bit-AiAgentRunView-radius: 1rem;
+                                          color: #f1f5f9" />
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="RTL" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
+            <div>
+                In right-to-left text the header, the timeline, the progress row and the question are mirrored - whether the
+                direction comes from <b>Dir</b> or from a <b>dir</b> attribute around the view.
+            </div>
+            <br />
+            <BitButton Variant="BitVariant.Outline" OnClick="ResetRtlRun">دوباره بپرس</BitButton>
+            <br /><br />
+            <BitAiAgentRunView Dir="BitDir.Rtl" Run="rtlRun" OnRespond="RespondToRtlRun" />
+        </DemoExample>
+    </Examples>
+</DemoPage>

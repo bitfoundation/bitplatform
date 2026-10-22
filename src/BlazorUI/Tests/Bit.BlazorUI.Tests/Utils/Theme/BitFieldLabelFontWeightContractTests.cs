@@ -253,6 +253,6 @@ public sealed class BitFieldLabelFontWeightContractTests
     }
 
     private static IEnumerable<string> EnumerateComponentStylesheets()
-        => new[] { "Bit.BlazorUI", "Bit.BlazorUI.Extras" }
+        => new[] { "Bit.BlazorUI", "Bit.BlazorUI.Extras", "Bit.BlazorUI.AI" }
             .SelectMany(project => Directory.EnumerateFiles(SourceFiles.GetDirectory(project, "Components"), "*.scss", SearchOption.AllDirectories));
 }

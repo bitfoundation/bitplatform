@@ -35,6 +35,7 @@
     <ItemGroup>
         <ProjectReference Include="..\..\Bit.BlazorUI\Bit.BlazorUI.csproj" />
         <ProjectReference Include="..\..\Bit.BlazorUI.Extras\Bit.BlazorUI.Extras.csproj" />
+        <ProjectReference Include="..\..\Bit.BlazorUI.AI\Bit.BlazorUI.AI.csproj" />
         <ProjectReference Include="..\..\Bit.BlazorUI.Legacy\Bit.BlazorUI.Legacy.csproj" />
         <ProjectReference Include="..\..\Bit.BlazorUI.Icons\Bit.BlazorUI.Icons.csproj" />
     </ItemGroup>
@@ -54,6 +55,7 @@
          hand; they read the source tree's pieces and task build on their own. -->
     <Import Project="..\..\Bit.BlazorUI\buildTransitive\Bit.BlazorUI.targets" />
     <Import Project="..\..\Bit.BlazorUI.Extras\buildTransitive\Bit.BlazorUI.Extras.targets" />
+    <Import Project="..\..\Bit.BlazorUI.AI\buildTransitive\Bit.BlazorUI.AI.targets" />
     <Import Project="..\..\Bit.BlazorUI.Legacy\buildTransitive\Bit.BlazorUI.Legacy.targets" />
     <Import Project="..\..\Bit.BlazorUI.Icons\buildTransitive\Bit.BlazorUI.Icons.targets" />
 

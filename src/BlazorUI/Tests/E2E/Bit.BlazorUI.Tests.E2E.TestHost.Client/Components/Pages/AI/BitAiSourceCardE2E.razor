@@ -1,0 +1,148 @@
+﻿@page "/e2e/aisourcecard"
+@inject NavigationManager Navigation
+
+<PageTitle>BitAiSourceCard E2E</PageTitle>
+
+<h1>BitAiSourceCard</h1>
+
+<E2ESection Id="link" Title="A link to the source">
+    <div style="width: 320px">
+        <BitAiSourceCard Id="src-link" Source="_full" Number="1" />
+        <BitAiSourceCard Id="src-host" Source="_hostOnly" Number="2" />
+        <BitAiSourceCard Id="src-kind" Source="_kindOnly" Number="3" />
+        <BitAiSourceCard Id="src-trimmed" Source="_trimmed" />
+        <BitAiSourceCard Id="src-aria" Source="_full" Number="1" AriaLabel="Open the render modes guide" />
+    </div>
+</E2ESection>
+
+@* Source URLs come from the model or from retrieved content: only a web address becomes an href. *@
+<E2ESection Id="unsafe" Title="Addresses that never become links">
+    <div style="width: 320px">
+        <BitAiSourceCard Id="src-js" Source="_javascript" Number="1" />
+        <BitAiSourceCard Id="src-js-upper" Source="_javascriptUpper" Number="2" />
+        <BitAiSourceCard Id="src-data-url" Source="_dataUrl" Number="3" />
+        <BitAiSourceCard Id="src-relative" Source="_relative" Number="4" />
+        <BitAiSourceCard Id="src-protocol-relative" Source="_protocolRelative" Number="5" />
+    </div>
+</E2ESection>
+
+@* Only a web address or an inline raster image is ever loaded as the favicon - never an SVG, which can carry script. *@
+<E2ESection Id="favicon" Title="Favicons">
+    <div style="width: 320px">
+        <BitAiSourceCard Id="src-fav-http" Source="@(_full with { IconUrl = HostIcon })" />
+        <BitAiSourceCard Id="src-fav-png" Source="@(_full with { IconUrl = PngIcon })" />
+        <BitAiSourceCard Id="src-fav-svg" Source="@(_full with { IconUrl = SvgIcon })" />
+        <BitAiSourceCard Id="src-fav-svg-base64" Source="@(_full with { IconUrl = SvgBase64Icon })" />
+        <BitAiSourceCard Id="src-fav-js" Source="@(_full with { IconUrl = ScriptIcon })" />
+        <BitAiSourceCard Id="src-fav-html" Source="@(_full with { IconUrl = HtmlIcon })" />
+    </div>
+</E2ESection>
+
+<E2ESection Id="button" Title="A button that hands the source over">
+    <p>Activated: <span id="src-activated">@_activated</span> (<span id="src-activations">@_activations</span>)</p>
+    <div style="width: 320px">
+        <BitAiSourceCard Id="src-button" Source="_full" Number="1" OnActivate="Activate" />
+        <BitAiSourceCard Id="src-button-disabled" Source="_hostOnly" Number="2" OnActivate="Activate" Disabled="true" />
+    </div>
+</E2ESection>
+
+<E2ESection Id="disabled" Title="Disabled">
+    <div style="width: 320px">
+        <BitAiSourceCard Id="src-disabled" Source="_full" Number="1" Disabled="true" />
+    </div>
+</E2ESection>
+
+<E2ESection Id="number" Title="Numbers">
+    <div style="width: 320px">
+        <BitAiSourceCard Id="src-no-number" Source="_full" />
+        <BitAiSourceCard Id="src-max-number" Source="_full" Number="int.MaxValue" />
+        <BitAiSourceCard Id="src-number-12" Source="_full" Number="12" />
+    </div>
+</E2ESection>
+
+<E2ESection Id="long" Title="A long title">
+    <div style="width: 200px">
+        <BitAiSourceCard Id="src-long" Source="_long" Number="1" />
+    </div>
+</E2ESection>
+
+<E2ESection Id="vars" Title="Public variables, Styles and Classes">
+    <div style="width: 320px;
+                --bit-AiSourceCard-gap: 17px;
+                --bit-AiSourceCard-index-color: rgb(1, 2, 3);
+                --bit-AiSourceCard-title-color: rgb(4, 5, 6);
+                --bit-AiSourceCard-title-font-size: 19px;
+                --bit-AiSourceCard-site-color: rgb(7, 8, 9);
+                --bit-AiSourceCard-site-font-size: 11px;
+                --bit-AiSourceCard-favicon-size: 22px;">
+        <BitAiSourceCard Id="src-vars" Source="@(_full with { IconUrl = PngIcon })" Number="1" />
+    </div>
+    <div style="width: 320px">
+        <BitAiSourceCard Id="src-styles"
+                         Source="_full"
+                         Number="1"
+                         Styles="@(new() { Title = "color: rgb(40, 41, 42)", Index = "font-weight: 300" })"
+                         Classes="@(new() { Site = "e2e-src-site", Card = new() { Root = "e2e-src-card" } })" />
+    </div>
+</E2ESection>
+
+<E2ESection Id="rtl" Title="RTL">
+    <div style="width: 320px">
+        <BitAiSourceCard Id="src-rtl" Dir="BitDir.Rtl" Source="@(_full with { IconUrl = PngIcon })" Number="1" />
+        <div dir="rtl">
+            <BitAiSourceCard Id="src-rtl-inherited" Source="@(_full with { IconUrl = PngIcon })" Number="1" />
+        </div>
+        <BitAiSourceCard Id="src-ltr" Source="@(_full with { IconUrl = PngIcon })" Number="1" />
+    </div>
+</E2ESection>
+
+<E2EStatus />
+
+@code {
+    private const string PngIcon = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=";
+    private const string SvgIcon = "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' onload='alert(1)'/>";
+    private const string ScriptIcon = "javascript:alert(1)";
+    private const string HtmlIcon = "data:text/html,<b>x</b>";
+    private const string SvgBase64Icon = "data:image/SVG+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnLz4=";
+
+    private static readonly BitAiCitationSource _full = new("src-1", "Blazor render modes")
+    {
+        Kind = BitAiSourceKind.Web,
+        Url = "https://learn.microsoft.com/aspnet/core/blazor/components/render-modes",
+        SiteName = "Microsoft Learn",
+    };
+
+    private static readonly BitAiCitationSource _hostOnly = new("src-2", "SignalR circuit lifetime")
+    {
+        Kind = BitAiSourceKind.Document,
+        Url = "https://learn.microsoft.com/aspnet/core/blazor/fundamentals/signalr",
+    };
+
+    private static readonly BitAiCitationSource _kindOnly = new("src-3", "The internal runbook") { Kind = BitAiSourceKind.Document };
+
+    private static readonly BitAiCitationSource _trimmed = new("src-4", "Padded") { Url = "  https://example.com/padded  " };
+
+    private static readonly BitAiCitationSource _javascript = new("src-5", "A script") { Url = "javascript:alert(document.domain)", SiteName = "Script" };
+    private static readonly BitAiCitationSource _javascriptUpper = new("src-6", "A shouted script") { Url = " JavaScript:alert(1)", SiteName = "Script" };
+    private static readonly BitAiCitationSource _dataUrl = new("src-7", "A document of data") { Url = "data:text/html,<script>alert(1)</script>", SiteName = "Data" };
+    private static readonly BitAiCitationSource _relative = new("src-8", "A relative page") { Url = "/docs/page", SiteName = "Relative" };
+    private static readonly BitAiCitationSource _protocolRelative = new("src-9", "A protocol-relative page") { Url = "//evil.example/page", SiteName = "Elsewhere" };
+
+    private static readonly BitAiCitationSource _long = new("src-10", "A source whose title is far too long to fit on the one line a card gives it")
+    {
+        Url = "https://example.com/a-very-long-path-that-goes-on/and-on",
+        SiteName = "A site whose name is also far too long for the card",
+    };
+
+    private string _activated = "-";
+    private int _activations;
+
+    // An icon of the host itself, which answers in either render mode and logs no failed request.
+    private string HostIcon => $"{Navigation.BaseUri}samples/persona-sample-72.png";
+
+    private void Activate(BitAiCitationSource source)
+    {
+        _activated = source.SourceId;
+        _activations++;
+    }
+}

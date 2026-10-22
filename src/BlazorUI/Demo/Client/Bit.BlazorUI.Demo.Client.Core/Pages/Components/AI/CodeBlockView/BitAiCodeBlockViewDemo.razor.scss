@@ -1,0 +1,21 @@
+﻿::deep {
+    .custom-class {
+        border-width: 2px;
+        border-style: dashed;
+        border-color: tomato;
+    }
+
+    .custom-root {
+        border-radius: 0;
+        border-inline-start: 4px solid rebeccapurple;
+    }
+
+    .custom-label {
+        color: rebeccapurple;
+        font-weight: bold;
+    }
+
+    .custom-pre {
+        line-height: 2;
+    }
+}

@@ -67,6 +67,42 @@ public sealed partial class BrowserSession : IAsyncDisposable
         await WaitForAsync("() => BitBlazorUI.Callouts.current.calloutId === ''", $"Escape did not close the callout of {what}");
     }
 
+    /// <summary>
+    /// The AI package's copy button (BitAiCopyButton), drawn and pressed: its glyph is drawn with the package's own font -
+    /// published, served and loaded - rather than an empty box, and a press reaches its script, which a lazy app imports
+    /// on that first call. Whether the browser lets the copy reach the clipboard is the engine's business.
+    /// </summary>
+    public async Task AssertAiCopyButtonWorksAsync()
+    {
+        var glyph = await Page.EvaluateAsync<string[]>(@"async () => {
+            const icon = document.querySelector('.bit-aicpb .bit-icon-ai--Copy');
+            if (!icon) return ['', '', '0'];
+            const faces = await document.fonts.load('16px ""Fabric MDL2 bit BlazorUI AI""', '');
+            return [getComputedStyle(icon).fontFamily, getComputedStyle(icon, '::before').content, String(faces.length)];
+        }");
+
+        StringAssert.Contains(glyph[0], "Fabric MDL2 bit BlazorUI AI", $"The copy button's glyph is not drawn with the AI package's font ({glyph[0]}).");
+        Assert.IsFalse(glyph[1] is "none" or "normal" or "" or "\"\"", $"The copy button's glyph is not drawn: {glyph[1]}");
+        Assert.AreNotEqual("0", glyph[2], "The AI package's glyph font did not load.");
+
+        await Page.Locator(".bit-aicpb button").First.ClickAsync();
+        await WaitForAsync("() => typeof BitBlazorUI.AiCopyButton?.copy === 'function'", "A press of the copy button did not reach its script");
+    }
+
+    /// <summary>
+    /// The AI package's chat (BitAiChat over the app's own transport): a prompt typed into its composer and sent with
+    /// Enter, which the composer's script takes, is answered in its transcript.
+    /// </summary>
+    public async Task AssertAiChatAnswersAsync()
+    {
+        // From the keyboard: the app's nav panel, fixed to the side of the page, lies over the controls further down it.
+        await Page.Locator(".bit-aicht textarea.bit-aipri-inp").First.FocusAsync();
+        await Page.Keyboard.TypeAsync("hello");
+        await Page.Keyboard.PressAsync("Enter");
+
+        await WaitForAsync("() => document.querySelector('.bit-aicht .bit-aimsl')?.textContent.includes('You said: hello') === true", "BitAiChat did not answer the prompt sent with Enter");
+    }
+
     public async Task WaitForAsync(string expression, string failure)
     {
         try

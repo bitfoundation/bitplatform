@@ -1,0 +1,58 @@
+﻿@import '../../../Bit.BlazorUI/Styles/functions.scss';
+
+// Public CSS variables, read with a fallback and never declared here, so a value set on :root re-skins every
+// structured data view, one set on an ancestor the views inside it, and one set on the Style of a view that view and
+// the views nested in it. They style the list of labelled values an object is shown as; a table and a tree are
+// restyled through the variables of BitAiDataTable and BitAiJsonView:
+//   --bit-AiStructuredDataView-gap                 room between two entries of the list      (default: spacing(1))
+//   --bit-AiStructuredDataView-padding             inset of the list                         (default: spacing(2))
+//   --bit-AiStructuredDataView-background          background of the list                    (default: $clr-bg-sec)
+//   --bit-AiStructuredDataView-border-color        color of the frame around the list        (default: $clr-brd-pri)
+//   --bit-AiStructuredDataView-radius              corner of the frame                       (default: $shp-radius-surface)
+//   --bit-AiStructuredDataView-label-color         color of the labels                       (default: $clr-fg-pri)
+//   --bit-AiStructuredDataView-label-font-size     size of the labels                        (default: $tg-fs-sm)
+//   --bit-AiStructuredDataView-label-font-weight   weight of the labels                      (default: $tg-fw-medium)
+//   --bit-AiStructuredDataView-value-color         color of the values                       (default: $clr-fg-pri)
+//   --bit-AiStructuredDataView-empty-color         color of the dash of a missing value      (default: $clr-fg-ter)
+// The view takes no parameter that sets any of them, so each one restyles every view it reaches.
+
+.bit-aisdv-lst {
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box;
+    gap: var(--bit-AiStructuredDataView-gap, #{spacing(1)});
+    padding: var(--bit-AiStructuredDataView-padding, #{spacing(2)});
+    border: $shp-border-width $shp-border-style var(--bit-AiStructuredDataView-border-color, #{$clr-brd-pri});
+    border-radius: var(--bit-AiStructuredDataView-radius, #{$shp-radius-surface});
+    background-color: var(--bit-AiStructuredDataView-background, #{$clr-bg-sec});
+}
+
+.bit-aisdv-ent {
+    display: flex;
+    flex-direction: column;
+}
+
+.bit-aisdv-trm {
+    color: var(--bit-AiStructuredDataView-label-color, #{$clr-fg-pri});
+    font-size: var(--bit-AiStructuredDataView-label-font-size, #{$tg-fs-sm});
+    font-weight: var(--bit-AiStructuredDataView-label-font-weight, #{$tg-fw-medium});
+}
+
+.bit-aisdv-val {
+    margin: 0;
+    min-width: 0;
+    overflow-wrap: anywhere;
+    color: var(--bit-AiStructuredDataView-value-color, #{$clr-fg-pri});
+}
+
+.bit-aisdv-emp {
+    color: var(--bit-AiStructuredDataView-empty-color, #{$clr-fg-ter});
+}
+
+// A forced palette removes the list's background, so its frame is what keeps it apart from the text around it.
+@media (forced-colors: active) {
+    .bit-aisdv-lst {
+        border-color: CanvasText;
+    }
+}

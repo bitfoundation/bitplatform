@@ -1,0 +1,26 @@
+﻿// The wrappers are written in this page, so they carry the scope attribute themselves and are styled without ::deep.
+// One column of parts, spaced the way a message spaces them.
+.example-message {
+    gap: 0.75rem;
+    display: flex;
+    max-width: 40rem;
+    flex-direction: column;
+}
+
+::deep {
+    .custom-part {
+        padding-inline-start: 1rem;
+        border-inline-start: 4px solid #0b7a75;
+    }
+
+    .custom-part-root {
+        padding: 0.5rem 1rem;
+        border: 1px dashed #6d28d9;
+        border-radius: 0.5rem;
+    }
+
+    .custom-part-fallback {
+        color: #6d28d9;
+        font-weight: bold;
+    }
+}

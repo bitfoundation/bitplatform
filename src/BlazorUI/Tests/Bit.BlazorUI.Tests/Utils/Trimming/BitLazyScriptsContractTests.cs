@@ -20,7 +20,7 @@ namespace Bit.BlazorUI.Tests.Utils.Trimming;
 [TestClass]
 public sealed partial class BitLazyScriptsContractTests
 {
-    private static readonly string[] Packages = ["Bit.BlazorUI", "Bit.BlazorUI.Extras", "Bit.BlazorUI.Legacy"];
+    private static readonly string[] Packages = ["Bit.BlazorUI", "Bit.BlazorUI.Extras", "Bit.BlazorUI.Legacy", "Bit.BlazorUI.AI"];
 
     private static readonly Lazy<List<PackageAssets>> Assets = new(() => Packages.Select(p => PackageAssets.Load(SourceFiles.GetPath(p, "obj", "bit-assets"))).ToList());
 

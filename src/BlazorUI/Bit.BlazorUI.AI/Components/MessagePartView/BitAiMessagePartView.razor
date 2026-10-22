@@ -1,0 +1,86 @@
+﻿@namespace Bit.BlazorUI
+@inherits BitAiComponentBase
+
+@{
+    var builtIn = _custom is null ? BuiltInView() : null;
+}
+
+@* A part nothing is drawn for - a citation, which the text it is attributed in and the source list already show, or a
+   kind this view does not know that carries no text - leaves no element behind either, rather than an empty one
+   among the parts of the message. *@
+@if (_custom is not null || builtIn is not null)
+{
+    <div @ref="RootElement" @attributes="HtmlAttributes"
+         id="@_Id"
+         style="@StyleBuilder.Value"
+         class="@ClassBuilder.Value"
+         dir="@Dir?.ToString().ToLower()">
+        @if (_custom is not null)
+        {
+            <BitAiRendererBoundary Label="@Strings.RendererFailed(Part.Kind)">
+                @_custom
+            </BitAiRendererBoundary>
+        }
+        else
+        {
+            @builtIn
+        }
+    </div>
+}
+
+@code {
+    // The built-in view of the part, or null when there is nothing to draw for it. The one list of the kinds this view
+    // knows, so what it draws and whether it draws anything at all cannot disagree.
+    private RenderFragment? BuiltInView()
+    {
+        switch (Part)
+        {
+            case BitAiReasoningPart reasoning:
+                return @<BitAiReasoningPartView Part="reasoning" />;
+
+            case BitAiCodePart source:
+                return @<BitAiCodeBlockView Code="@source.Text"
+                                            Language="@source.Language"
+                                            FileName="@source.FileName"
+                                            IsStreaming="@source.IsStreaming" />;
+
+            case BitAiTextPart prose:
+                return @<BitAiTextPartView Part="prose" Message="Message" OnCitationClick="OnCitationClick" />;
+
+            case BitAiToolCallPart call:
+                return @<BitAiToolCallView Call="call" Message="Message" Session="Session" />;
+
+            case BitAiToolResultPart result:
+                return @<BitAiToolResultView Part="result" />;
+
+            case BitAiImagePart image:
+                return @<BitAiImagePartView Part="image" />;
+
+            case BitAiFilePart file:
+                return @<BitAiAttachmentChip Attachment="file.Attachment" />;
+
+            case BitAiArtifactPart artifact:
+                return @<BitAiArtifactPartView Part="artifact" Conversation="Conversation" />;
+
+            case BitAiStructuredDataPart structured:
+                return @<BitAiStructuredDataView Part="structured" Message="Message" />;
+
+            case BitAiGenerativeUiPart generative:
+                return @<BitAiGenerativeUiView Part="generative" />;
+
+            case BitAiSourcesPart sources:
+                return @<BitAiSourceList Citations="GetCitations(sources)" />;
+
+            case BitAiErrorPart error:
+                return @<BitAiErrorView Error="error.Error" />;
+
+            // A kind this view does not know is still shown when it carries text, rather than dropped - from the render
+            // its text arrives in, since the view re-renders whenever the part changes.
+            case IBitAiTextualPart { Text: { Length: > 0 } fallback }:
+                return @<p style="@Styles?.Fallback" class="bit-aimpv-fbk @Classes?.Fallback">@fallback</p>;
+
+            default:
+                return null;
+        }
+    }
+}

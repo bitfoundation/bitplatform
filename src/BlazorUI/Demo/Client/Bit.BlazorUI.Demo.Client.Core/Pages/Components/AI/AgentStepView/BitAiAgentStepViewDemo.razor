@@ -1,0 +1,153 @@
+﻿@page "/components/ai/agentstepview"
+
+<PageOutlet Url="components/ai/agentstepview"
+            Title="AiAgentStepView"
+            Description="BitAiAgentStepView is one step of an AI agent run, drawn as an entry of a timeline: its state, its title and timing, its detail and summary, the tool calls it made and its error." />
+
+<DemoPage Name="AiAgentStepView"
+          Description="BitAiAgentStepView is one step of an agent run, drawn as an entry of a timeline so the sequence and the current position read at a glance: a marker that says the state (pending, running, blocked, completed, failed, skipped), the title with how long the step took or has been taking, its detail and summary, the tool calls it made - by name and status when the conversation is given - and the error of a failed step. A BitAiAgentRunView renders one per step; on its own it draws any step an application keeps."
+          Parameters="componentParameters"
+          SubClasses="componentSubClasses"
+          SubEnums="componentSubEnums"
+          CssVariables="componentCssVariables"
+          GitHubAIUrl="AgentStepView/BitAiAgentStepView.razor"
+          GitHubDemoUrl="AI/AgentStepView/BitAiAgentStepViewDemo.razor">
+    <NotesTemplate>
+        <BitText>
+            To use this component, you need to install the
+            <BitLink Href="https://www.nuget.org/packages/Bit.BlazorUI.AI" Target="_blank">
+                <BitTag Reversed
+                        Text="Bit.BlazorUI.AI"
+                        Color="BitColor.SecondaryBackground"
+                        IconName="@BitIconName.NavigateExternalInline" />
+            </BitLink>
+            nuget package, as described in the Optional steps of the
+            <BitLink Href="/getting-started">Getting started</BitLink> page.
+        </BitText>
+        <br />
+        <BitText>
+            The view draws a <b>BitAiAgentStep</b> - one of the <b>Steps</b> of a <b>BitAiAgentRun</b>, which a
+            <b>BitAiChatSession</b> builds from the agent events of its transport (see
+            <BitLink Href="/components/ai/agentrunview">AiAgentRunView</BitLink>). It follows the step's own <b>Changed</b>
+            event, coalesced into one render per frame interval. The marker only draws what the words beside it say, so it is
+            hidden from assistive technologies, and the list of tool calls is named "Tool calls" (<b>BitAiStrings.ToolCalls</b>).
+            See it in the <BitLink Href="/ai/scenarios/agent">Multi-step agent</BitLink> scenario.
+        </BitText>
+    </NotesTemplate>
+    <Examples>
+        <DemoExample Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
+            <div>
+                Hand the view a <b>Step</b>. <b>Start</b> marks it running - its marker pulses - and <b>Complete</b> finishes
+                it, with a summary of what it produced and the time it took beside the title.
+            </div>
+            <br />
+            <BitButton OnClick="RunBasicStep" Disabled="isBasicRunning">Run the step</BitButton>
+            <br /><br />
+            <BitAiAgentStepView Step="basicStep" />
+        </DemoExample>
+
+        <DemoExample Title="Statuses" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
+            <div>
+                One step of every <b>BitAiAgentStepStatus</b>. Steps rendered one after the other are joined by the line of the
+                timeline, which stops at the last one. A failed step shows the message of its <b>Error</b>; a pending or
+                skipped one is dimmed.
+            </div>
+            <br />
+            <div>
+                @foreach (var step in statusSteps)
+                {
+                    <BitAiAgentStepView Step="step" />
+                }
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Detail & summary" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
+            <div>
+                <b>Detail</b> elaborates on what the step is going to do (a plan step can carry it); the <b>summary</b> a step is
+                completed with says what it actually produced.
+            </div>
+            <br />
+            <BitAiAgentStepView Step="detailStep" />
+        </DemoExample>
+
+        <DemoExample Title="Tool calls" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
+            <div>
+                <b>AddToolCall</b> records the tool calls a step made, which the view lists as tags. Given the
+                <b>Conversation</b> the calls belong to, a tag shows the name of its tool, the dots of a loader while it runs
+                and the error color when it fails; without one, the calls are listed by their identifiers (the second view).
+            </div>
+            <br />
+            <BitButton OnClick="RunToolStep" Disabled="isToolRunning">Run the step</BitButton>
+            <br /><br />
+            <div>
+                <BitAiAgentStepView Step="toolStep" Conversation="toolConversation" />
+            </div>
+            <br />
+            <div>
+                <BitAiAgentStepView Step="toolStep" />
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Cascading parameters" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
+            <div>
+                <b>BitParams</b> with a <b>BitAiAgentStepViewParams</b> sets the look of every step view inside it - the ones a
+                <b>BitAiAgentRunView</b> renders included - and a step's own value still wins (the last keeps its own
+                <b>Styles</b>).
+            </div>
+            <br />
+            <BitParams Parameters="stepViewParams">
+                <BitAiAgentStepView Step="cascadingSteps[0]" />
+                <BitAiAgentStepView Step="cascadingSteps[1]" />
+                <BitAiAgentStepView Step="cascadingSteps[2]" Styles="@(new() { Summary = "font-weight: bold" })" />
+            </BitParams>
+        </DemoExample>
+
+        <DemoExample Title="Style & Class" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
+            <div>
+                <b>Style</b> and <b>Class</b> reach the root, <b>Styles</b> and <b>Classes</b> every part - the marker and its
+                check mark, the title, the duration, the detail, the summary, the tool calls (their tags as a
+                <b>BitTagClassStyles</b>) and the error. The public <b>--bit-AiAgentStepView-*</b> variables re-skin the timeline
+                from <b>:root</b>, an ancestor or <b>Style</b>; the tags keep the <b>--bit-Tag-*</b> ones.
+            </div>
+            <br />
+            @* A plain element of this page for the scoped ::deep rules of the custom classes to anchor on. *@
+            <div>
+                <BitAiAgentStepView Step="styleSteps[0]" Style="padding-inline-start: 1rem; background-color: #0ea5e911" />
+                <BitAiAgentStepView Step="styleSteps[1]"
+                                    Class="custom-class"
+                                    Classes="@(new() { Title = "custom-title", Summary = "custom-summary" })"
+                                    Styles="@(new() { Duration = "color: #0ea5e9" })" />
+            </div>
+            <br />
+            <div style="--bit-AiAgentStepView-marker-size: 1.25rem;
+                        --bit-AiAgentStepView-completed-color: #7c3aed;
+                        --bit-AiAgentStepView-running-color: #db2777;
+                        --bit-AiAgentStepView-line-color: #c4b5fd;
+                        --bit-AiAgentStepView-gap: 1rem;
+                        --bit-AiAgentStepView-title-font-size: 1rem">
+                @foreach (var step in styleSteps)
+                {
+                    <BitAiAgentStepView Step="step" />
+                }
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="RTL" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
+            <div>
+                In right-to-left text the marker and the line of the timeline move to the right - whether the direction comes from
+                <b>Dir</b> or from a <b>dir</b> attribute around the steps.
+            </div>
+            <br />
+            <div dir="rtl">
+                @foreach (var step in rtlSteps)
+                {
+                    <BitAiAgentStepView Step="step" />
+                }
+            </div>
+            <br />
+            <div>
+                <BitAiAgentStepView Dir="BitDir.Rtl" Step="rtlSteps[0]" />
+            </div>
+        </DemoExample>
+    </Examples>
+</DemoPage>

@@ -1,0 +1,62 @@
+﻿@page "/ai/scenarios/structured"
+@inherits AppComponentBase
+
+<PageOutlet Url="ai/scenarios/structured"
+            Title="Streaming structured output"
+            Keywords="Blazor structured output, partial JSON streaming, JSON mode UI, BitAiStructuredDataView, BitAiDataTable, BitAiPartialJson"
+            Description="A JSON array streamed a few characters at a time and rendered as a table that fills in row by row - partial JSON repaired on every delta by bit BlazorUI's AI components." />
+
+<DocsArticle Eyebrow="AI scenarios"
+             Title="Structured output"
+             Lead="A JSON array streamed a few characters at a time, rendered as a table that fills in row by row."
+             GitHubUrl="AI/Scenarios/Structured/AiStructuredScenarioPage.razor">
+
+    <Badges>
+        <BitTag Size="BitSize.Small" Variant="BitVariant.Outline" Color="BitColor.SecondaryForeground" Text="Bit.BlazorUI.AI" />
+        <BitTag Size="BitSize.Small" Variant="BitVariant.Outline" Color="BitColor.SecondaryForeground" Text="Scripted transport" />
+    </Badges>
+
+    <ChildContent>
+        <DocSection Id="demo" Title="Live demo"
+                    Description="Ask for a comparison: the rows appear while the JSON behind them is still incomplete.">
+            <DemoExample Title="A table from partial JSON" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" CodeFiles="@example1CodeFiles" Id="example1">
+                <AiScenarioFrame>
+                    <BitAiChat Session="_session"
+                               EmptyTitle="Ask for a comparison"
+                               Suggestions="_suggestions" />
+                </AiScenarioFrame>
+            </DemoExample>
+        </DocSection>
+
+        <DocSection Id="how-it-works" Title="How it works">
+            <p>
+                The transport streams the value as <code>BitAiStructuredDataDeltaEvent</code>s, and for most of a generation
+                the payload is syntactically invalid JSON. <code>BitAiPartialJson</code> repairs the truncated document on
+                every delta: open containers are closed, an incomplete trailing key is dropped, and a partially written string
+                value is kept.
+            </p>
+            <p>
+                Nothing is invented: every value in the repaired document was present in the input, which is why it is safe
+                to bind straight to a typed model - <code>part.As(typeInfo)</code>, with the <code>JsonTypeInfo</code> of the
+                app's own <code>JsonSerializerContext</code>, which keeps it safe to trim. With no renderer registered for its
+                schema, an array of objects is drawn as a table, an object as a list of labelled values, and anything else as a
+                tree.
+            </p>
+            <CodeBox Language="csharp">// {"items":[{"name":"Ac  ->  {"items":[{"name":"Ac"}]}
+var value = BitAiPartialJson.TryParse(part.RawJson);
+var options = part.As(MyJsonContext.Default.ListOption);</CodeBox>
+        </DocSection>
+
+        <DocSection Id="components" Title="Components used">
+            <ul>
+                <li><BitLink Href="/components/ai/structureddataview"><code>BitAiStructuredDataView</code></BitLink> - the structured part: a registered renderer, else a default that reads the shape.</li>
+                <li><BitLink Href="/components/ai/datatable"><code>BitAiDataTable</code></BitLink> - an array of objects as a table.</li>
+                <li><BitLink Href="/components/ai/jsonview"><code>BitAiJsonView</code></BitLink> - any other value, as a collapsible tree.</li>
+            </ul>
+        </DocSection>
+    </ChildContent>
+
+    <FooterTemplate>
+        <DocPager Pages="AiScenarioNav.Items" AriaLabel="AI scenarios" />
+    </FooterTemplate>
+</DocsArticle>

@@ -1,0 +1,208 @@
+﻿@page "/components/ai/form"
+@implements IAsyncDisposable
+
+<PageOutlet Url="components/ai/form"
+            Title="AiForm"
+            Description="BitAiForm renders a form a model proposed - from fields or a JSON Schema - out of the core inputs, validates it on the client and submits the corrected values back." />
+
+<DemoPage Name="AiForm"
+          SecondaryNames="@(["SchemaForm"])"
+          Description="BitAiForm renders a form the model proposed, for the user to check and submit. Rather than calling a tool with arguments it guessed, a model describes a form - as fields, or as the same JSON Schema it already uses for tool arguments - the user corrects it, and the corrected values are what execute. Every field is a core input (BitTextField, BitNumberField, BitCheckbox, BitDropdown, BitDatePicker, BitTimePicker), nested objects become groups and arrays lists the user adds to, and validation happens here rather than in the model. Fields appear as the schema streams in, and what the user typed is kept."
+          Parameters="componentParameters"
+          SubClasses="componentSubClasses"
+          SubEnums="componentSubEnums"
+          PublicMembers="componentPublicMembers"
+          CssVariables="componentCssVariables"
+          GitHubAIUrl="Form/BitAiForm.razor"
+          GitHubDemoUrl="AI/Form/BitAiFormDemo.razor">
+    <NotesTemplate>
+        <BitText>
+            To use this component, you need to install the
+            <BitLink Href="https://www.nuget.org/packages/Bit.BlazorUI.AI" Target="_blank">
+                <BitTag Reversed
+                        Text="Bit.BlazorUI.AI"
+                        Color="BitColor.SecondaryBackground"
+                        IconName="@BitIconName.NavigateExternalInline" />
+            </BitLink>
+            nuget package, as described in the Optional steps of the
+            <BitLink Href="/getting-started">Getting started</BitLink> page.
+        </BitText>
+        <br />
+        <BitText>
+            BitAiForm needs nothing but its <b>Definition</b>: no session and no transport. A form a model proposes usually
+            arrives as a structured output part whose JSON Schema an app turns into a definition with
+            <b>BitAiFormDefinition.FromJsonSchema</b>, in a renderer registered for that schema - see
+            <BitLink Href="/components/ai/structureddataview">BitAiStructuredDataView</BitLink> and the
+            <BitLink Href="/ai/scenarios/forms">Forms</BitLink> scenario. Its labels, the default button texts and the
+            validation messages come from the string table of the AI options (<b>BitAiOptionsProvider</b>, <b>ConfigureUi</b>).
+        </BitText>
+        <br />
+        <BitText>
+            <b>Security</b>: validation runs here because a model asked to check its own output will sometimes say yes when the
+            answer is no - and the values a user submits are still input: validate them again wherever they execute. A
+            <b>pattern</b> a model wrote is matched under a timeout, so a catastrophic one fails the field instead of freezing
+            the page.
+        </BitText>
+    </NotesTemplate>
+    <Examples>
+        <DemoExample Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
+            <div>
+                A <b>BitAiFormDefinition</b> is a title, a description and its <b>Fields</b>, each a <b>BitAiFormField</b> named
+                after the key its value is submitted under (and labelled after it, unless it has a <b>Label</b>). <b>OnSubmit</b>
+                is handed the values of a valid form, as text keyed by field name.
+            </div>
+            <br />
+            <BitAiForm Definition="contactForm" OnSubmit="values => contactValues = values" />
+            <br />
+            @if (contactValues is not null)
+            {
+                <ul>
+                    @foreach (var (key, value) in contactValues)
+                    {
+                        <li><b>@key</b>: @value</li>
+                    }
+                </ul>
+            }
+        </DemoExample>
+
+        <DemoExample Title="Field types" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
+            <div>
+                <b>Type</b> picks the control, a <b>BitAiFieldType</b>: a text box, a multi-line one, a number, a checkbox, a
+                dropdown over <b>Options</b> (labelled by <b>OptionLabels</b>), a date, a date and time, a time, an email, a URL
+                or a password. <b>Value</b> prefills it, <b>Placeholder</b> and <b>Description</b> help with it. Whatever the
+                control, the value is submitted as invariant text: <b>2</b>, <b>true</b>, <b>2026-10-23</b>, <b>14:30</b>.
+            </div>
+            <br />
+            <BitAiForm Definition="typesForm" OnSubmit="values => typesValues = values" />
+            <br />
+            @if (typesValues is not null)
+            {
+                <ul>
+                    @foreach (var (key, value) in typesValues)
+                    {
+                        <li><b>@key</b>: @value</li>
+                    }
+                </ul>
+            }
+        </DemoExample>
+
+        <DemoExample Title="JSON Schema" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
+            <div>
+                <b>BitAiFormDefinition.FromJsonSchema</b> builds a form from a JSON Schema object, the vocabulary a model already
+                uses for tool arguments: <b>type</b>, <b>format</b>, <b>enum</b> with <b>enumNames</b>, <b>default</b>,
+                <b>title</b>, <b>description</b>, <b>required</b> and the rest. A second argument prefills it, ahead of the
+                defaults. <b>OnSubmitJson</b> hands the values back as JSON of the shape of the schema, numbers and booleans
+                typed as such.
+            </div>
+            <br />
+            <BitAiForm Definition="bookingForm" OnSubmitJson="json => bookingJson = json" />
+            <br />
+            <BitAiJsonView Value="bookingJson" />
+        </DemoExample>
+
+        <DemoExample Title="Validation" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
+            <div>
+                Submit checks every field: <b>required</b>, <b>minLength</b> / <b>maxLength</b>, <b>pattern</b>,
+                <b>minimum</b> / <b>maximum</b> and their exclusive forms, whole numbers, <b>multipleOf</b>, and the format of an
+                email, a URL or a date. Each error is shown on its field - whose input points at it through
+                <b>aria-describedby</b> and says <b>aria-invalid</b> - and clears as the field is edited; <b>OnSubmit</b> is
+                raised only once the form is valid.
+                Press <b>Sign up</b> with the form empty, then fix it.
+            </div>
+            <br />
+            <BitAiForm Definition="signUpForm" OnSubmit="values => signUpValues = values" />
+            <br />
+            @if (signUpValues is not null)
+            {
+                <div>Valid: <b>@string.Join(", ", signUpValues.Select(v => $"{v.Key} = {v.Value}"))</b></div>
+            }
+        </DemoExample>
+
+        <DemoExample Title="Nested objects & lists" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
+            <div>
+                An <b>object</b> with <b>properties</b> becomes a group of fields (<b>BitAiFieldType.Object</b>) and an
+                <b>array</b> a list the user adds entries to and removes them from (<b>BitAiFieldType.Array</b>): a list of
+                inputs for scalar <b>items</b>, repeatable groups for object ones, held between <b>minItems</b> and
+                <b>maxItems</b>. The values are kept flat by path (<b>venue.city</b>, <b>tags[0]</b>, <b>speakers[1].name</b>),
+                and <b>OnSubmitJson</b> puts the shape back together.
+            </div>
+            <br />
+            <BitAiForm Definition="eventForm" OnSubmitJson="json => eventJson = json" />
+            <br />
+            <BitAiJsonView Value="eventJson" />
+        </DemoExample>
+
+        <DemoExample Title="Streaming schema" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" CodeFiles="@example6CodeFiles" Id="example6">
+            <div>
+                A model streams its schema as partial JSON. Rebuilt from the part on every delta, the definition grows field by
+                field, and the form seeds each field once: a field that streams in later never overwrites what the user already
+                typed. The scripted transport here proposes a booking form - start typing in it while it is still arriving.
+            </div>
+            <br />
+            <BitButton OnClick="ProposeBookingAsync" Disabled="proposalSession.IsGenerating">Book a table for Friday</BitButton>
+            <br /><br />
+            @if (ProposedForm is { } proposed)
+            {
+                <BitAiForm Definition="proposed" Submitted="proposalSubmitted" OnSubmit="values => proposalSubmitted = true" />
+            }
+        </DemoExample>
+
+        <DemoExample Title="Actions & state" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
+            <div>
+                <b>SubmitLabel</b> and <b>CancelLabel</b> of the definition name the buttons (an empty <b>CancelLabel</b> hides
+                Cancel), and <b>OnCancel</b> is raised by Cancel. <b>Busy</b> turns the actions off while the submission is in
+                flight; <b>Submitted</b> replaces them with a confirmation once it is done. <b>Values</b> reads what the user has
+                typed so far, without submitting. A <b>Disabled</b> form turns every input and action off.
+            </div>
+            <br />
+            <BitAiForm @ref="feedbackFormRef"
+                       Definition="feedbackForm"
+                       Busy="feedbackBusy"
+                       Submitted="feedbackSubmitted"
+                       OnSubmit="SendFeedbackAsync"
+                       OnCancel="CancelFeedback" />
+            <br />
+            <BitButton Variant="BitVariant.Outline" OnClick="ReadValues">Read the values</BitButton>
+            <BitButton Variant="BitVariant.Outline" OnClick="StartOver">Start over</BitButton>
+            <br /><br />
+            <div>@feedbackStatus</div>
+            <br />
+            <BitAiForm Definition="contactForm" Disabled />
+        </DemoExample>
+
+        <DemoExample Title="Style & Class" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
+            <div>
+                <b>Style</b> and <b>Class</b> reach the root, <b>Styles</b> and <b>Classes</b> each part (the buttons take the
+                class-styles of BitButton). The inputs are core components, restyled through their own variables. The public
+                <b>--bit-AiForm-*</b> variables (see the CSS variables table) inherit, so set on <b>:root</b>, a container or a
+                form's <b>Style</b> they re-skin every form below.
+            </div>
+            <br />
+            @* A plain element of this page for the scoped ::deep rules of the custom classes to anchor on. *@
+            <div>
+                <BitAiForm Definition="contactForm"
+                           Style="max-width: 28rem"
+                           Styles="@(new() { Root = "background-color: #1e1e2e1a", Title = "color: #8a2be2", SubmitButton = new() { Root = "border-radius: 1rem" } })" />
+                <br />
+                <BitAiForm Definition="eventForm" Classes="@(new() { Root = "custom-form", Group = "custom-group", Legend = "custom-legend" })" />
+                <br />
+                <div style="--bit-AiForm-background: transparent; --bit-AiForm-border-color: #d2691e; --bit-AiForm-radius: 0; --bit-AiForm-actions-justify: flex-start; --bit-AiForm-title-font-size: 1.25rem">
+                    <BitAiForm Definition="contactForm" />
+                </div>
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="RTL" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
+            <div>
+                In right-to-left text the fields, the groups and the actions read from the right, whether the direction comes
+                from <b>Dir</b> or from a <b>dir</b> attribute around the form.
+            </div>
+            <br />
+            <BitAiForm Dir="BitDir.Rtl" Definition="persianForm" />
+            <br />
+            <div dir="rtl">
+                <BitAiForm Definition="persianForm" />
+            </div>
+        </DemoExample>
+    </Examples>
+</DemoPage>

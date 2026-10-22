@@ -1,0 +1,17 @@
+﻿::deep {
+    .custom-list {
+        border-width: 0;
+        border-inline-start-width: 0.25rem;
+        border-radius: 0;
+        border-color: #8a2be2;
+    }
+
+    .custom-entry {
+        flex-direction: row;
+        gap: 0.5rem;
+    }
+
+    .custom-label::after {
+        content: ":";
+    }
+}

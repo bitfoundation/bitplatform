@@ -1,0 +1,10 @@
+﻿@import '../../../Bit.BlazorUI/Styles/functions.scss';
+
+// The panel is a BitAccordion: its look - the border, the background, the header and the chevron - is restyled
+// through its own --bit-Accordion-* variables, and the collapsible publishes none of its own.
+
+.bit-aiclp {
+    // A long line of reasoning or a wide code block inside the panel wraps or scrolls in the panel rather than
+    // stretching the flex or grid track the panel sits in.
+    min-width: 0;
+}

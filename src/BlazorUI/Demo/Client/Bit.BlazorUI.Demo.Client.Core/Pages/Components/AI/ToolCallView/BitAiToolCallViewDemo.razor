@@ -1,0 +1,211 @@
+﻿@page "/components/ai/toolcallview"
+@inherits AppComponentBase
+
+<PageOutlet Url="components/ai/toolcallview"
+            Title="AiToolCallView"
+            Description="BitAiToolCallView shows a tool call of an AI model as one card: the tool, its arguments as they stream in, its progress, its result or failure, and the approval it waits for." />
+
+<DemoPage Name="AiToolCallView"
+          SecondaryNames="@(["FunctionCall"])"
+          Description="BitAiToolCallView shows a tool call as one card: what is being called, what it was given, how it is going and what came back. The arguments are shown as the model writes them, the progress a running tool reports as a bar, the result as text or a JSON tree, a failure as a compact error, and a call waiting for a human decision closes with a BitAiToolApproval. The card starts collapsed and opens by itself when something needs attention. A renderer registered for a tool replaces the card wherever that tool is called."
+          Parameters="componentParameters"
+          SubClasses="componentSubClasses"
+          SubEnums="componentSubEnums"
+          CssVariables="componentCssVariables"
+          GitHubAIUrl="ToolCallView/BitAiToolCallView.razor"
+          GitHubDemoUrl="AI/ToolCallView/BitAiToolCallViewDemo.razor">
+    <NotesTemplate>
+        <BitText>
+            To use this component, you need to install the
+            <BitLink Href="https://www.nuget.org/packages/Bit.BlazorUI.AI" Target="_blank">
+                <BitTag Reversed
+                        Text="Bit.BlazorUI.AI"
+                        Color="BitColor.SecondaryBackground"
+                        IconName="@BitIconName.NavigateExternalInline" />
+            </BitLink>
+            nuget package, as described in the Optional steps of the
+            <BitLink Href="/getting-started">Getting started</BitLink> page.
+        </BitText>
+        <br />
+        <BitText>
+            BitAiChat and BitAiMessageList render a card for every tool call of a conversation; render one yourself to lay tool calls
+            out your own way. The card listens to its call, so a call that changes - streamed in by a <b>BitAiChatSession</b>, or driven
+            by your own code as on this page - redraws its own card and nothing else. An approval only takes effect through the
+            <b>Session</b> waiting for it. The arguments and the result come from the model and the tool, so they are shown as text and
+            as a JSON tree, never as markup. See the
+            <BitLink Href="/ai/scenarios/tools">Tools</BitLink>,
+            <BitLink Href="/ai/scenarios/approval">Tool approval</BitLink>,
+            <BitLink Href="/ai/scenarios/custom-tool">Custom tool UI</BitLink> and
+            <BitLink Href="/ai/scenarios/parallel-tools">Parallel tools</BitLink> scenarios.
+        </BitText>
+    </NotesTemplate>
+    <Examples>
+        <DemoExample Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
+            <div>
+                Hand it a <b>Call</b> (a <b>BitAiToolCallPart</b>). The header names the tool - the <b>Title</b> of its definition, else
+                its name - and says how long the call took; it starts collapsed, and the header opens it on the arguments and the result.
+                Under a <b>BitAiOptionsProvider</b> whose options turn <b>CollapseToolCalls</b> off, every card starts open.
+            </div>
+            <br />
+            <div class="example-stack">
+                <BitAiToolCallView Call="weatherCall" />
+
+                <BitAiOptionsProvider UiOptions="expandedOptions">
+                    <BitAiToolCallView Call="weatherCall" />
+                </BitAiOptionsProvider>
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Lifecycle" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
+            <div>
+                A call moves through <b>Streaming</b> (the model is still writing the arguments, shown as they arrive), <b>Pending</b>,
+                <b>Running</b> and <b>Completed</b> - see the BitAiToolCallStatus table. While it runs, the <b>BitAiToolProgress</b> a tool
+                reports is a bar under the header, which sweeps while it has no <b>Fraction</b>; its <b>Message</b> names the bar for
+                assistive technology and leads the body. Nothing on the page re-renders the card: it follows its call by itself, at most once
+                per render interval. Here the page drives the call; in a conversation the session does.
+            </div>
+            <br />
+            <BitButton OnClick="RunIndexAsync" Disabled="isIndexing">Run the tool</BitButton>
+            <br /><br />
+            <div class="example-stack">
+                <BitAiOptionsProvider UiOptions="expandedOptions">
+                    @if (indexCall is not null)
+                    {
+                        <BitAiToolCallView @key="indexCall" Call="indexCall" />
+                    }
+                </BitAiOptionsProvider>
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Failure" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
+            <div>
+                A call whose result failed (<b>BitAiToolOutcome.Failure</b>) is outlined in the error color and opens by itself, its result a
+                compact <b>BitAiErrorView</b> - only as it moves into that status, so a card the reader closes again stays closed. A call the
+                user declined is <b>Rejected</b>: outlined the same way, with the failure the session records for it as its result.
+            </div>
+            <br />
+            <div class="example-stack">
+                <BitAiToolCallView Call="failedCall" />
+                <BitAiToolCallView Call="declinedCall" />
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Approval" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
+            <div>
+                A call that waits for a human decision (<b>AwaitingApproval</b>) is outlined in the warning color, opens by itself and ends in a
+                <b>BitAiToolApproval</b>: decline, always allow, or allow. Hand the card the <b>Session</b> that is waiting, and the decision goes
+                to it: the turn stays paused until then. <b>delete_records</b> is declared <b>Destructive</b> (<b>BitAiToolDefinition.Risk</b>),
+                so the default approval policy asks before every call and the allow button is drawn in the error role. <b>Always allow</b> is
+                remembered by the policy: the next call runs without asking.
+            </div>
+            <br />
+            <BitButton OnClick="AskToDeleteAsync" Disabled="approvalSession.IsGenerating">Delete the archived records</BitButton>
+            <br /><br />
+            <div class="example-stack">
+                @if (approvalSession.Conversation.Messages.LastOrDefault(m => m.Role.IsAssistant) is { } approvalMessage)
+                {
+                    foreach (var call in approvalMessage.PartsOf<BitAiToolCallPart>())
+                    {
+                        <BitAiToolCallView @key="call.PartId" Call="call" Message="approvalMessage" Session="approvalSession" />
+                    }
+                }
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Custom renderer" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" CodeFiles="@example5CodeFiles" Id="example5">
+            <div>
+                A renderer registered for a tool (<b>BitAiRendererRegistry.RegisterTool</b>, see the tables below) replaces the card wherever
+                that tool is called. It is drawn in the card's place - with no frame, header or approval of the card's own - inside a
+                <BitLink Href="/components/ai/rendererboundary">BitAiRendererBoundary</BitLink>, so a renderer that throws on a shape it did not
+                expect is replaced by a notice rather than taking the page down. It is handed a <b>BitAiToolCallContext</b>: the call, its
+                <b>Message</b> and the <b>Session</b>. This site registers a <b>SearchResultCard</b> for <b>search_docs</b> at startup, so the call
+                below - run by a session, with the progress the tool reports - is drawn by it.
+            </div>
+            <br />
+            <BitButton OnClick="SearchDocsAsync" Disabled="searchSession.IsGenerating">Search the docs</BitButton>
+            <br /><br />
+            <div class="example-stack">
+                @if (searchSession.Conversation.Messages.LastOrDefault(m => m.Role.IsAssistant) is { } searchMessage)
+                {
+                    foreach (var call in searchMessage.PartsOf<BitAiToolCallPart>())
+                    {
+                        <BitAiToolCallView @key="call.PartId" Call="call" Message="searchMessage" Session="searchSession" />
+                    }
+                }
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Disabled" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
+            <div>
+                <b>Disabled</b> turns the header and the approval buttons off: the card stays as it is and no decision can be made. The
+                arguments and the result stay readable.
+            </div>
+            <br />
+            <div class="example-stack">
+                <BitAiToolCallView Disabled Call="awaitingCall" />
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Cascading parameters" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
+            <div>
+                <b>BitParams</b> with a <b>BitAiToolCallViewParams</b> sets the defaults of every card inside it - here a region whose cards are
+                disabled and drawn with a style of their own. It is a default, not an override: a card keeps what it sets itself (the last one
+                is enabled).
+            </div>
+            <br />
+            <div class="example-stack">
+                <BitParams Parameters="toolCallViewParams">
+                    <BitAiToolCallView Call="weatherCall" />
+                    <BitAiToolCallView Call="failedCall" />
+                    <BitAiToolCallView Call="weatherCall" Disabled="false" />
+                </BitParams>
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Style & Class" RazorCode="@example8RazorCode" Id="example8">
+            <div>
+                <b>Style</b> and <b>Class</b> land on the root, <b>Styles</b> and <b>Classes</b> on every part: the header, its icons, title and
+                status, the progress bar and busy dots, the body with its sections, labels and raw text, and the approval prompt. The public
+                <b>--bit-AiToolCallView-*</b> variables (see the CSS variables table) inherit, so setting them on <b>:root</b> or a container
+                restyles every card under it; the outline of a status wins over the one at rest.
+            </div>
+            <br />
+            <div class="example-stack">
+                <BitAiToolCallView Call="weatherCall" Style="box-shadow: 0 0.25rem 1rem #0003" />
+
+                <BitAiToolCallView Call="weatherCall" Class="custom-tool" />
+
+                <BitAiToolCallView Call="weatherCall"
+                                   Styles="@(new() { Header = "padding: 0.75rem 1rem",
+                                                     Icon = "color: #0b7a75",
+                                                     Title = "font-style: italic",
+                                                     Status = "color: #0b7a75; font-weight: bold" })" />
+
+                <BitAiToolCallView Call="weatherCall"
+                                   Classes="@(new() { Root = "custom-tool-root",
+                                                      Header = "custom-tool-header",
+                                                      Title = "custom-tool-title" })" />
+
+                <div style="--bit-AiToolCallView-background: #f5f3ff; --bit-AiToolCallView-border-color: #a78bfa; --bit-AiToolCallView-failed-border-color: #be185d; --bit-AiToolCallView-header-color: #5b21b6; --bit-AiToolCallView-radius: 1rem;">
+                    <BitAiToolCallView Call="weatherCall" />
+                    <br />
+                    <BitAiToolCallView Call="failedCall" />
+                </div>
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="RTL" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
+            <div>
+                In right-to-left text the chevron points the other way and the card is laid out from the right. Its own words come from the
+                <b>BitAiStrings</b> of the options in force - here a subclass of them, cascaded by a <b>BitAiOptionsProvider</b>.
+            </div>
+            <br />
+            <div class="example-stack">
+                <BitAiOptionsProvider UiOptions="persianOptions">
+                    <BitAiToolCallView Dir="BitDir.Rtl" Call="rtlCall" />
+                    <BitAiToolCallView Dir="BitDir.Rtl" Call="rtlFailedCall" />
+                </BitAiOptionsProvider>
+            </div>
+        </DemoExample>
+    </Examples>
+</DemoPage>

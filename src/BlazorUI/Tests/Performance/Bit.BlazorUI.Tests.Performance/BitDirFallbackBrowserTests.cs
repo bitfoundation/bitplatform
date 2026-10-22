@@ -27,7 +27,8 @@ public class BitDirFallbackBrowserTests : PerformanceTestBase
     private static readonly string[] Probes =
     [
         "modal", "overlay", "collapse", "timeline", "tooltip", "panel", "snackbar-bar", "snackbar-entry", "message",
-        "ellipsis", "rolling-square", "slider", "chart", "chart-sides", "card", "datagrid", "rte"
+        "ellipsis", "rolling-square", "slider", "chart", "chart-sides", "card", "datagrid", "rte",
+        "aijsonview", "aipromptinput", "aitoolcallview"
     ];
 
     // The probes that can be nested in a component of their own kind, which #nested-same does.
@@ -69,7 +70,10 @@ public class BitDirFallbackBrowserTests : PerformanceTestBase
             'chart-sides': () => chart('chart-sides'),
             'card': () => style('card', '.bit-crd-skb', '::after')?.animationDirection,
             'datagrid': () => style('datagrid', '.bit-dtg-dir-glyph')?.transform,
-            'rte': () => style('rte', 'svg.bit-rte-flip')?.transform
+            'rte': () => style('rte', 'svg.bit-rte-flip')?.transform,
+            'aijsonview': () => style('aijsonview', '.bit-aijsv-tcl')?.transform,
+            'aipromptinput': () => style('aipromptinput', '.bit-aipri-snd > .bit-btn-icn')?.transform,
+            'aitoolcallview': () => style('aitoolcallview', '.bit-aitcv-chv')?.transform
         };
         function chart(probe) {
             const [legend, sub, title] = ['lgd', 'sub', 'ttl'].map(part => style(probe, `.bit-cht-mid > .bit-cht-${part}`));
@@ -203,7 +207,7 @@ public class BitDirFallbackBrowserTests : PerformanceTestBase
 
         var (ltr, rtl) = await References();
 
-        Assert.IsTrue(await Page.EvaluateAsync<int>(DropDir) > 0, "No :dir() rule was found to drop.");
+        Assert.IsTrue(await DropDirAndSettle() > 0, "No :dir() rule was found to drop.");
 
         AssertSet(await Read("#ltr"), ltr, rtl, "ltr", "no direction");
         AssertSet(await Read("#own"), ltr, rtl, "rtl", "Dir=Rtl");
@@ -235,12 +239,26 @@ public class BitDirFallbackBrowserTests : PerformanceTestBase
         await Open();
 
         var (ltr, rtl) = await References();
-        await Page.EvaluateAsync<int>(DropDir);
+        await DropDirAndSettle();
 
         var nested = await Read("#nested-same");
         var expected = NestableProbes.ToDictionary(probe => probe, probe => probe is "card" ? "rtl" : "ltr");
 
         AssertSet(nested, ltr, rtl, expected, "Dir=Ltr inside a right-to-left component of its own kind, without :dir()");
+    }
+
+    // Drops the :dir() rules, then waits out the transitions that starts: a part that animates the property its
+    // right-to-left rule turns (the chevrons of BitAiJsonView and BitAiToolCallView turn on a transform transition) still
+    // reads its old value the moment the rule goes, which says nothing about the rules left.
+    private async Task<int> DropDirAndSettle()
+    {
+        var dropped = await Page.EvaluateAsync<int>(DropDir);
+
+        await Page.EvaluateAsync(@"() => Promise.all(document.getAnimations()
+            .filter(a => typeof CSSTransition !== 'undefined' && a instanceof CSSTransition)
+            .map(a => a.finished.catch(() => null)))");
+
+        return dropped;
     }
 
     private async Task Open()

@@ -1,0 +1,57 @@
+﻿@page "/ai/scenarios/agent"
+@inherits AppComponentBase
+
+<PageOutlet Url="ai/scenarios/agent"
+            Title="Multi-step AI agent"
+            Keywords="Blazor AI agent UI, agent plan steps, agentic workflow UI, BitAiAgentRunView, agent progress"
+            Description="An AI agent's plan published up front, then executed step by step with timings and per-step summaries, attached to the message it produced - bit BlazorUI's BitAiAgentRunView." />
+
+<DocsArticle Eyebrow="AI scenarios"
+             Title="Multi-step agent"
+             Lead="A plan published up front, then executed step by step with timings and per-step summaries."
+             GitHubUrl="AI/Scenarios/Agent/AiAgentScenarioPage.razor">
+
+    <Badges>
+        <BitTag Size="BitSize.Small" Variant="BitVariant.Outline" Color="BitColor.SecondaryForeground" Text="Bit.BlazorUI.AI" />
+        <BitTag Size="BitSize.Small" Variant="BitVariant.Outline" Color="BitColor.SecondaryForeground" Text="Scripted transport" />
+    </Badges>
+
+    <ChildContent>
+        <DocSection Id="demo" Title="Live demo"
+                    Description="Give it something to research: the agent plans four steps, works through them, then answers.">
+            <DemoExample Title="A run with a plan" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" CodeFiles="@example1CodeFiles" Id="example1">
+                <AiScenarioFrame>
+                    <BitAiChat Session="_session"
+                               EmptyTitle="Give it something to research"
+                               Suggestions="_suggestions" />
+                </AiScenarioFrame>
+            </DemoExample>
+        </DocSection>
+
+        <DocSection Id="how-it-works" Title="How it works">
+            <p>
+                A spinner is not an answer. A <code>BitAiAgentRun</code> holds the goal, the plan, the steps, their states
+                and the elapsed time, built from <code>BitAiAgentRunStartedEvent</code>, <code>BitAiAgentPlanEvent</code>,
+                <code>BitAiAgentStepStartedEvent</code> / <code>BitAiAgentStepCompletedEvent</code> and
+                <code>BitAiAgentRunCompletedEvent</code>. The run is attached to the message that produced it, so scrolling
+                back to an old answer still shows what the agent did to produce it.
+            </p>
+            <p>
+                Plans are replaced rather than patched, because agents rewrite the tail of a plan as they learn. Steps that
+                keep their identifier keep their state and timings.
+            </p>
+        </DocSection>
+
+        <DocSection Id="components" Title="Components used">
+            <ul>
+                <li><BitLink Href="/components/ai/agentrunview"><code>BitAiAgentRunView</code></BitLink> - the run: its goal, its plan and where it stands.</li>
+                <li><BitLink Href="/components/ai/agentstepview"><code>BitAiAgentStepView</code></BitLink> - each step, as an entry of a timeline.</li>
+                <li><BitLink Href="/components/ai/agentstatusbadge"><code>BitAiAgentStatusBadge</code></BitLink> - the one-word state, announced politely.</li>
+            </ul>
+        </DocSection>
+    </ChildContent>
+
+    <FooterTemplate>
+        <DocPager Pages="AiScenarioNav.Items" AriaLabel="AI scenarios" />
+    </FooterTemplate>
+</DocsArticle>

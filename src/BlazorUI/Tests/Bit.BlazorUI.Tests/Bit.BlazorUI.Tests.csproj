@@ -76,6 +76,7 @@
     <ItemGroup>
         <!-- The Link and Script asset components ship in their own package; referenced here so the
              duplicate-instance tests render the real components against the real BitAssetVersion. -->
+        <ProjectReference Include="..\..\Bit.BlazorUI.AI\Bit.BlazorUI.AI.csproj" />
         <ProjectReference Include="..\..\Bit.BlazorUI.Assets\Bit.BlazorUI.Assets.csproj" />
         <ProjectReference Include="..\..\Bit.BlazorUI\Bit.BlazorUI.csproj" />
         <ProjectReference Include="..\..\Bit.BlazorUI.Extras\Bit.BlazorUI.Extras.csproj" />

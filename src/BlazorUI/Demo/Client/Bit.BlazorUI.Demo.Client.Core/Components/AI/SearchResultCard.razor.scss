@@ -1,0 +1,47 @@
+﻿@import '../../Styles/abstracts/_docs.scss';
+
+// The card the custom tool UI scenario draws for search_docs instead of the default tool card: an accent edge so it
+// reads as the app's own, and the theme tokens for everything else.
+.search-card {
+    overflow: hidden;
+    margin-block: $doc-space-2xs;
+    color: $bit-color-foreground-primary;
+    border-inline-start: rem2(3px) solid $bit-color-primary;
+
+    @include doc-surface;
+}
+
+.search-card-head {
+    gap: $doc-space-2xs;
+    display: flex;
+    align-items: center;
+    padding: $doc-space-2xs $doc-space-xs;
+    border-bottom: rem2(1px) solid $bit-color-border-secondary;
+}
+
+.search-card-title {
+    flex: 1 1 auto;
+    font-size: $bit-typography-fs-sm;
+    font-weight: $bit-typography-fw-semibold;
+}
+
+.search-card-body {
+    padding: $doc-space-2xs $doc-space-xs;
+    font-size: $bit-typography-fs-sm;
+}
+
+.search-card-query {
+    margin-bottom: $doc-space-3xs;
+    font-weight: $bit-typography-fw-semibold;
+}
+
+.search-card-hits {
+    margin: 0;
+    padding-inline-start: rem2(18px);
+
+    > li {
+        gap: $doc-space-2xs;
+        display: flex;
+        align-items: center;
+    }
+}

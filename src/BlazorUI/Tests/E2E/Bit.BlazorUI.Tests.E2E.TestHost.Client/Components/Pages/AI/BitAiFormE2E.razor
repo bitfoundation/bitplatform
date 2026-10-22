@@ -1,0 +1,55 @@
+﻿@page "/e2e/aiform"
+@using System.Text.Json
+
+<PageTitle>BitAiForm E2E</PageTitle>
+
+<h1>BitAiForm</h1>
+
+<E2ESection Id="schema" Title="A form built from a JSON schema">
+    <div style="width:560px">
+        <BitAiForm Id="frm-main" Definition="_main" OnSubmit="HandleSubmit" OnSubmitJson="HandleSubmitJson" OnCancel="() => _cancelCount++" />
+    </div>
+    <p>Submissions: <span id="frm-count">@_submitCount</span> | Cancels: <span id="frm-cancels">@_cancelCount</span></p>
+    <p>Values: <span id="frm-values">@_values</span></p>
+    <p>JSON: <span id="frm-json">@_json</span></p>
+</E2ESection>
+
+<E2ESection Id="prefill" Title="Prefilled values">
+    <div style="width:560px">
+        <BitAiForm Id="frm-prefill" Definition="_prefilled" OnSubmitJson="json => _prefillJson = json.GetRawText()" />
+    </div>
+    <p>JSON: <span id="frm-prefill-json">@_prefillJson</span></p>
+</E2ESection>
+
+<E2ESection Id="states" Title="Submitted, Busy and no Cancel">
+    <BitAiForm Id="frm-submitted" Definition="_small" Submitted />
+    <BitAiForm Id="frm-busy" Definition="_small" Busy OnSubmit="v => _busyCount++" />
+    <BitAiForm Id="frm-nocancel" Definition="_noCancel" />
+    <p>Busy submissions: <span id="frm-busy-count">@_busyCount</span></p>
+</E2ESection>
+
+<E2ESection Id="disabled" Title="Disabled">
+    <BitAiForm Id="frm-dis" Definition="_small" Disabled OnSubmit="v => _disabledCount++" />
+    <p>Disabled submissions: <span id="frm-dis-count">@_disabledCount</span></p>
+</E2ESection>
+
+<E2ESection Id="style" Title="Public variables, Styles and Classes">
+    <BitAiForm Id="frm-style"
+               Definition="_small"
+               Style="--bit-AiForm-background: rgb(1, 2, 3); --bit-AiForm-border-color: rgb(4, 5, 6); --bit-AiForm-border-width: 3px; --bit-AiForm-radius: 9px; --bit-AiForm-padding: 21px; --bit-AiForm-gap: 17px; --bit-AiForm-title-color: rgb(7, 8, 9); --bit-AiForm-title-font-size: 23px; --bit-AiForm-actions-justify: flex-start" />
+    <div style="--bit-AiForm-background: rgb(10, 11, 12)">
+        <BitAiForm Id="frm-style-ancestor" Definition="_small" />
+    </div>
+    <BitAiForm Id="frm-style-parts"
+               Definition="_small"
+               Classes="@(new() { Root = "frm-custom-root", Title = "frm-custom-title" })"
+               Styles="@(new() { Title = "letter-spacing: 3px", Actions = "gap: 19px" })" />
+</E2ESection>
+
+<E2ESection Id="rtl" Title="RTL">
+    <div style="width:480px">
+        <BitAiForm Id="frm-rtl" Dir="BitDir.Rtl" Definition="_small" />
+    </div>
+</E2ESection>
+
+<E2EStatus />

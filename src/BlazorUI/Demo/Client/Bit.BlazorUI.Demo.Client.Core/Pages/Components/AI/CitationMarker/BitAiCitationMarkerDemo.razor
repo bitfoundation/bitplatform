@@ -1,0 +1,172 @@
+﻿@page "/components/ai/citationmarker"
+@inherits AppComponentBase
+
+<PageOutlet Url="components/ai/citationmarker"
+            Title="AiCitationMarker"
+            Description="BitAiCitationMarker is the small numbered chip that appears inline where an AI answer attributes a claim to a source, with the source and the quoted passage as its preview." />
+
+<DemoPage Name="AiCitationMarker"
+          Description="BitAiCitationMarker is the small numbered chip that appears inline where a claim is attributed to a source. It is a button rather than a link, because activating it reveals the source in place instead of navigating away; its native tooltip previews the title of the source and the passage the claim rests on, and its accessible name carries the number and the title. It is sized in em of the text around it, so it follows the claim it attributes - in a heading as in a footnote. BitAiMarkdownView, BitAiStreamingMarkdown and the text parts of a message draw one for every [n] that resolves to a citation."
+          Parameters="componentParameters"
+          SubClasses="componentSubClasses"
+          CssVariables="componentCssVariables"
+          GitHubAIUrl="CitationMarker/BitAiCitationMarker.razor"
+          GitHubDemoUrl="AI/CitationMarker/BitAiCitationMarkerDemo.razor">
+    <NotesTemplate>
+        <BitText>
+            To use this component, you need to install the
+            <BitLink Href="https://www.nuget.org/packages/Bit.BlazorUI.AI" Target="_blank">
+                <BitTag Reversed
+                        Text="Bit.BlazorUI.AI"
+                        Color="BitColor.SecondaryBackground"
+                        IconName="@BitIconName.NavigateExternalInline" />
+            </BitLink>
+            nuget package, as described in the Optional steps of the
+            <BitLink Href="/getting-started">Getting started</BitLink> page.
+        </BitText>
+        <br />
+        <BitText>
+            A marker draws a <b>BitAiCitation</b> - a claim attributed to a <b>BitAiCitationSource</b>. Its transport streams
+            them as <b>BitAiCitationEvent</b>s, which the session collects in <b>BitAiMessage.Citations</b> and numbers in
+            document order when the message is finalised; citations an application builds itself carry the <b>Number</b> it
+            gives them. The accessible name of a marker is <b>BitAiStrings.CitationLabel</b> ("Source 1: title"), so nothing
+            its preview says is lost to a screen reader. <b>BitAiUiOptions.InlineCitations</b> turns the markers of the
+            Markdown views off (the [n] stays text). See it in a chat in the
+            <BitLink Href="/ai/scenarios/citations">Citations</BitLink> scenario.
+        </BitText>
+    </NotesTemplate>
+    <Examples>
+        <DemoExample Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
+            <div>
+                Hand the marker a <b>Citation</b>: it shows the citation's <b>Number</b> right where the claim is made, and
+                takes the size of the text around it.
+            </div>
+            <br />
+            <div>
+                Interactive Server keeps component state on the server and streams UI diffs over a SignalR
+                circuit<BitAiCitationMarker Citation="renderModes" />. If that circuit drops, the state goes with it unless
+                you have persisted it yourself<BitAiCitationMarker Citation="circuits" />.
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Preview" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
+            <div>
+                Point at a marker: its tooltip is the title of the source and - when the citation carries one - the <b>Quote</b>
+                the claim rests on, cut short at 220 characters. A screen reader reads the accessible name instead,
+                "Source 3: Prerendering", which an <b>AriaLabel</b> replaces.
+            </div>
+            <br />
+            <div>
+                Prerendering runs the component twice<BitAiCitationMarker Citation="prerendering" />, once on the server and
+                once in the browser<BitAiCitationMarker Citation="prerenderingNoQuote" AriaLabel="Source 4, the prerendering guide" />.
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Activation" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
+            <div>
+                <b>OnActivate</b> hands over the citation of a marker that is clicked or activated with the keyboard - the place
+                to reveal the source in place, here as a <b>BitAiSourceCard</b> with the quoted passage. A <b>Disabled</b> marker
+                hands over nothing.
+            </div>
+            <br />
+            <div>
+                Interactive Server keeps component state on the server<BitAiCitationMarker Citation="renderModes" OnActivate="c => activated = c" />
+                and loses it with the circuit<BitAiCitationMarker Citation="circuits" OnActivate="c => activated = c" />,
+                and prerendering runs it twice<BitAiCitationMarker Citation="prerendering" OnActivate="c => activated = c" Disabled />.
+            </div>
+            <br />
+            @if (activated is not null)
+            {
+                <BitAiSourceCard Source="activated.Source" Number="activated.Number" />
+                <blockquote>@activated.Quote</blockquote>
+            }
+        </DemoExample>
+
+        <DemoExample Title="In Markdown" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
+            <div>
+                The Markdown views turn every bracketed number of the text - <b>[1]</b> - into a marker of the citation of that
+                number, as the text streams in; one that matches no citation stays the text it was. <b>OnCitationClick</b> is
+                their <b>OnActivate</b>, and a <b>BitAiSourceList</b> under the answer lists the sources under the same numbers.
+            </div>
+            <br />
+            <BitButton OnClick="StreamAnswer" Disabled="isStreaming">Stream the answer</BitButton>
+            <br /><br />
+            @if (streamedText.Length > 0)
+            {
+                <BitAiStreamingMarkdown Text="@streamedText"
+                                        IsStreaming="isStreaming"
+                                        Citations="markdownCitations"
+                                        OnCitationClick="c => markdownActivated = c" />
+                <br />
+                <BitAiSourceList Citations="markdownCitations" />
+                <br />
+                <div>Last activated: <b>@(markdownActivated?.Source.Title ?? "-")</b></div>
+            }
+        </DemoExample>
+
+        <DemoExample Title="Anchored in a message" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
+            <div>
+                A citation streamed with a <b>StartIndex</b> and an <b>EndIndex</b> is anchored to the span of text it supports,
+                and the text part of the message places its marker at the end of that span - no [n] in the text needed. Here a
+                scripted transport of this site streams an answer with two anchored citations, and the message draws the
+                markers and its source list.
+            </div>
+            <br />
+            <BitButton OnClick="AskCited">Ask</BitButton>
+            <br /><br />
+            @if (citedMessage is not null)
+            {
+                <BitAiChatMessage Message="citedMessage" Conversation="citedSession!.Conversation" />
+            }
+        </DemoExample>
+
+        <DemoExample Title="Cascading parameters" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
+            <div>
+                <b>BitParams</b> with a <b>BitAiCitationMarkerParams</b> sets the look of every marker inside it - the ones the
+                Markdown views draw included - and a marker's own value still wins (the last keeps its own <b>Styles</b>).
+            </div>
+            <br />
+            <BitParams Parameters="markerParams">
+                <div>
+                    State lives on the server<BitAiCitationMarker Citation="renderModes" />, goes with the
+                    circuit<BitAiCitationMarker Citation="circuits" />, and is rendered
+                    twice<BitAiCitationMarker Citation="prerendering" Styles="@(new() { Root = "border-radius: 0" })" />.
+                </div>
+            </BitParams>
+        </DemoExample>
+
+        <DemoExample Title="Style & Class" RazorCode="@example7RazorCode" Id="example7">
+            <div>
+                <b>Style</b> and <b>Class</b> (or <b>Styles.Root</b> and <b>Classes.Root</b>) reach the button. The public
+                <b>--bit-AiCitationMarker-*</b> variables re-skin the markers from <b>:root</b>, an ancestor or <b>Style</b> -
+                at rest and under the pointer.
+            </div>
+            <br />
+            @* A plain element of this page for the scoped ::deep rule of the custom class to anchor on. *@
+            <div>
+                A styled marker<BitAiCitationMarker Citation="renderModes" Style="font-weight: bold; text-decoration: underline" />,
+                a classy one<BitAiCitationMarker Citation="circuits" Class="custom-class" />.
+            </div>
+            <br />
+            <div style="--bit-AiCitationMarker-background: #fef3c7;
+                        --bit-AiCitationMarker-color: #92400e;
+                        --bit-AiCitationMarker-hover-background: #d97706;
+                        --bit-AiCitationMarker-hover-color: #fff;
+                        --bit-AiCitationMarker-radius: 1rem">
+                Restyled by the variables of their container<BitAiCitationMarker Citation="renderModes" /><BitAiCitationMarker Citation="circuits" />.
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="RTL" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
+            <div>
+                In right-to-left text the marker sits at the end of the claim in its reading direction, whether the direction comes
+                from <b>Dir</b> or from a <b>dir</b> attribute around it.
+            </div>
+            <br />
+            <div dir="rtl">
+                حالت تعاملی سرور، وضعیت کامپوننت را روی سرور نگه می‌دارد<BitAiCitationMarker Citation="rtlCitation" />
+                و با قطع شدن اتصال آن را از دست می‌دهد<BitAiCitationMarker Dir="BitDir.Rtl" Citation="rtlCitation" />.
+            </div>
+        </DemoExample>
+    </Examples>
+</DemoPage>

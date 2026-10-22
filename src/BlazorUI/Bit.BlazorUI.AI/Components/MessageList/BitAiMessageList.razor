@@ -1,0 +1,97 @@
+﻿@namespace Bit.BlazorUI
+@inherits BitAiComponentBase
+
+@* The root is the scroll container and the transcript's log region at once: new messages are announced politely, as
+   additions, so a listener is never interrupted mid-sentence by the next one. The name comes from the AriaLabel, an
+   aria-label written on the list, or the string table, in that order. *@
+<div @ref="RootElement"
+     @attributes="HtmlAttributes"
+     id="@_Id"
+     style="@StyleBuilder.Value"
+     class="@ClassBuilder.Value"
+     dir="@Dir?.ToString().ToLower()"
+     role="log"
+     aria-label="@(ResolveAriaLabel() ?? Strings.Transcript)"
+     aria-live="polite"
+     aria-relevant="additions">
+    <div style="@Styles?.Content" class="bit-aimsl-con @Classes?.Content">
+        @if (HeaderTemplate is not null)
+        {
+            @HeaderTemplate
+        }
+
+        @if (_messages.Count == 0 && EmptyTemplate is not null)
+        {
+            @EmptyTemplate
+        }
+        else if (_virtualize)
+        {
+            <Virtualize Items="_messages" Context="message" ItemSize="220" OverscanCount="4" TItem="BitAiMessage">
+                @RenderMessage(message)
+            </Virtualize>
+        }
+        else
+        {
+            @RenderTranscript()
+        }
+
+        @if (FooterTemplate is not null)
+        {
+            @FooterTemplate
+        }
+    </div>
+</div>
+
+@code {
+    /// <remarks>
+    /// Every message is emitted from this one fragment so that their keys are siblings. A key only competes with keys
+    /// in the same region, so keying inside a per-message fragment would let removing one message recreate every
+    /// message after it. An application template is keyed through <see cref="BitAiKeyedRegion"/>, which adds no
+    /// element, so the template's own markup still sits directly in the list's flex layout.
+    /// </remarks>
+    private RenderFragment RenderTranscript() => __builder =>
+    {
+        foreach (var message in Rendered())
+        {
+            if (MessageTemplate is not null)
+            {
+                __builder.OpenComponent<BitAiKeyedRegion>(0);
+                __builder.SetKey(message.MessageId);
+                __builder.AddComponentParameter(1, nameof(BitAiKeyedRegion.ChildContent), MessageTemplate(message));
+                __builder.CloseComponent();
+                continue;
+            }
+
+            <BitAiChatMessage Message="message"
+                              Conversation="Conversation"
+                              Session="Session"
+                              Disabled="Disabled"
+                              Animate="@_entering.Contains(message)"
+                              IsLatest="@IsLatestMessage(message)"
+                              OnCitationClick="OnCitationClick"
+                              OnSourceClick="OnSourceClick"
+                              OnFeedback="OnFeedback"
+                              @key="message.MessageId" />
+        }
+    };
+
+    // A virtualized message is one scrolled back into view, never a new one, so it is drawn without the entrance.
+    private RenderFragment RenderMessage(BitAiMessage message) => __builder =>
+    {
+        if (MessageTemplate is not null)
+        {
+            __builder.AddContent(0, MessageTemplate(message));
+            return;
+        }
+
+        <BitAiChatMessage Message="message"
+                          Conversation="Conversation"
+                          Session="Session"
+                          Disabled="Disabled"
+                          IsLatest="@IsLatestMessage(message)"
+                          OnCitationClick="OnCitationClick"
+                          OnSourceClick="OnSourceClick"
+                          OnFeedback="OnFeedback"
+                          @key="message.MessageId" />
+    };
+}

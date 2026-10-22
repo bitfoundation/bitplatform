@@ -9,7 +9,7 @@ namespace Bit.BlazorUI.Demo.Server.Services.Mcp;
 /// Renders what the catalogs hold as Markdown, which is what every tool on this server answers with.
 /// <para>
 /// A parameter table as JSON repeats the four field names on every one of a component's sixty rows;
-/// as a Markdown table it names them once. Over a library of 110 components that is most of what an
+/// as a Markdown table it names them once. Over a library of 150 components that is most of what an
 /// answer would have cost, spent on nothing a model needed - and the table is also the shape it
 /// reads best. The same reasoning goes for the listings: they exist to be chosen from, and a row
 /// per choice beats an object per choice.
@@ -347,7 +347,7 @@ public static class BlazorUIMarkdown
     /// Every other type this answer's tables name, with its members but without their prose.
     /// <para>
     /// Two kinds end up here. The shared ones - <c>BitColor</c>, <c>BitVariant</c>,
-    /// <c>BitIconInfo</c> - appear on nearly every component, so repeating their descriptions 110
+    /// <c>BitIconInfo</c> - appear on nearly every component, so repeating their descriptions 150
     /// times is the redundancy this server exists to avoid. The rest are the types a signature
     /// names that nothing above documents: a <c>BitDropdownItemsProviderRequest</c> read off an
     /// <c>ItemsProvider</c> parameter is a name an agent has no other way to resolve, since a type
@@ -413,7 +413,7 @@ public static class BlazorUIMarkdown
     /// The parameters this component inherits, named but not described.
     /// <para>
     /// The same three tables hold for every component that has them, so their prose is documented
-    /// once and pointed at rather than printed 110 times. The names themselves are printed, though:
+    /// once and pointed at rather than printed 150 times. The names themselves are printed, though:
     /// a reader who cannot see that <c>Value</c> is up there has no reason to suspect it exists,
     /// and the whole point of the inherited half is that it is not visible on the component.
     /// </para>

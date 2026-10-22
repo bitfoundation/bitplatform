@@ -1,0 +1,63 @@
+﻿@page "/ai/scenarios/generative"
+@inherits AppComponentBase
+
+<PageOutlet Url="ai/scenarios/generative"
+            Title="Generative UI"
+            Keywords="Blazor generative UI, model rendered components, AI generated UI, BitAiGenerativeUiView, component registry"
+            Description="The model chooses a Blazor component from a registry and supplies its properties; anything it names that is not registered renders nothing - generative UI with bit BlazorUI." />
+
+<DocsArticle Eyebrow="AI scenarios"
+             Title="Generative UI"
+             Lead="The model chooses a component from a registry and supplies its properties. Anything it names that is not registered renders nothing."
+             GitHubUrl="AI/Scenarios/Generative/AiGenerativeScenarioPage.razor">
+
+    <Badges>
+        <BitTag Size="BitSize.Small" Variant="BitVariant.Outline" Color="BitColor.SecondaryForeground" Text="Bit.BlazorUI.AI" />
+        <BitTag Size="BitSize.Small" Variant="BitVariant.Outline" Color="BitColor.SecondaryForeground" Text="Scripted transport" />
+    </Badges>
+
+    <ChildContent>
+        <DocSection Id="demo" Title="Live demo"
+                    Description="Ask about three cities: the answer is three weather cards the model asked for by name.">
+            <DemoExample Title="Components the model chose" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" CodeFiles="@example1CodeFiles" Id="example1">
+                <AiScenarioFrame>
+                    <BitAiChat Session="_session"
+                               EmptyTitle="Ask about three cities"
+                               Suggestions="_suggestions" />
+                </AiScenarioFrame>
+            </DemoExample>
+        </DocSection>
+
+        <DocSection Id="how-it-works" Title="How it works">
+            <p>
+                The registry is the boundary. A model can only instantiate a component the application registered, and can
+                only set the parameters that registration exposed. Event callbacks, render fragments, unmatched-attribute
+                catch-alls and anything marked <code>[BitAiGenerativeIgnore]</code> are excluded, so a generated payload
+                cannot wire up handlers or inject attributes. <code>ForecastCard</code> is an ordinary component of this site
+                with ordinary parameters; nothing about it knows it is generative.
+            </p>
+            <p>
+                <code>registry.DescribeAll()</code> produces the JSON Schema to put in the prompt, or to use as the schema of a
+                render tool. Give the model the schema and it stops guessing component names.
+            </p>
+            <p>
+                Registering reads the component's parameters by reflection, so <code>Register</code> is marked as unsafe to
+                trim. In a trimmed app, register the components from a method of your own that says why it is safe there -
+                the component type is kept whole by the annotation of <code>Register</code>, so what remains to check is
+                that its bindable parameters are plain data - as this site does for <code>ForecastCard</code>, whose
+                parameters are strings and integers.
+            </p>
+        </DocSection>
+
+        <DocSection Id="components" Title="Components used">
+            <ul>
+                <li><BitLink Href="/components/ai/generativeuiview"><code>BitAiGenerativeUiView</code></BitLink> - renders the component the model named, with the properties it supplied.</li>
+                <li><BitLink Href="/components/ai/rendererboundary"><code>BitAiRendererBoundary</code></BitLink> - keeps a component that throws on what the model gave it to itself.</li>
+            </ul>
+        </DocSection>
+    </ChildContent>
+
+    <FooterTemplate>
+        <DocPager Pages="AiScenarioNav.Items" AriaLabel="AI scenarios" />
+    </FooterTemplate>
+</DocsArticle>

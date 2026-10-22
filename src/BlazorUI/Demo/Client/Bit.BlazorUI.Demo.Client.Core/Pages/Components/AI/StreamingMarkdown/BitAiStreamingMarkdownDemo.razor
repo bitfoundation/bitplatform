@@ -1,0 +1,136 @@
+﻿@page "/components/ai/streamingmarkdown"
+@implements IAsyncDisposable
+
+<PageOutlet Url="components/ai/streamingmarkdown"
+            Title="AiStreamingMarkdown"
+            Description="BitAiStreamingMarkdown renders Markdown that is still being written by an AI model: parsed incrementally, settled at every step - no flashing asterisks, no half-highlighted code." />
+
+<DemoPage Name="AiStreamingMarkdown"
+          Description="BitAiStreamingMarkdown renders Markdown that is still being written, as a BitAiMarkdownView that follows the text while it grows. It holds one incremental parser for its lifetime, so the text already seen is parsed once however many deltas arrive - a long streamed answer costs linear work rather than quadratic. While the text streams, a caret trails it, its last block stays open, a code block is highlighted only once its fence closes and a dangling emphasis or code delimiter is hidden until its partner arrives."
+          Parameters="componentParameters"
+          SubClasses="componentSubClasses"
+          GitHubAIUrl="StreamingMarkdown/BitAiStreamingMarkdown.razor"
+          GitHubDemoUrl="AI/StreamingMarkdown/BitAiStreamingMarkdownDemo.razor">
+    <NotesTemplate>
+        <BitText>
+            To use this component, you need to install the
+            <BitLink Href="https://www.nuget.org/packages/Bit.BlazorUI.AI" Target="_blank">
+                <BitTag Reversed
+                        Text="Bit.BlazorUI.AI"
+                        Color="BitColor.SecondaryBackground"
+                        IconName="@BitIconName.NavigateExternalInline" />
+            </BitLink>
+            nuget package, as described in the Optional steps of the
+            <BitLink Href="/getting-started">Getting started</BitLink> page.
+        </BitText>
+        <br />
+        <BitText>
+            It needs no chat session: hand it the text received so far. Inside a chat, BitAiTextPartView renders every text part
+            with it. Re-render it at a steady pace rather than on every token - a <b>BitAiRenderScheduler</b> (or the render
+            interval of the AI components) collapses any number of deltas into one render per 50 ms, which on Blazor Server is
+            what keeps the circuit quiet. The parser is built from the Markdown options in force
+            (<b>BitAiUiOptions.Markdown</b>, see <BitLink Href="/components/ai/markdownview">AiMarkdownView</BitLink>) and the
+            output is untrusted: raw HTML is escaped and script URLs are neutralised. See it at work in the
+            <BitLink Href="/ai/scenarios/streaming">Streaming</BitLink> scenario.
+        </BitText>
+    </NotesTemplate>
+    <Examples>
+        <DemoExample Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
+            <div>
+                <b>Text</b> is the Markdown received so far. With <b>IsStreaming</b> left false the text is complete, and it renders
+                like any Markdown view.
+            </div>
+            <br />
+            <BitAiStreamingMarkdown Text="@basicMarkdown" />
+        </DemoExample>
+
+        <DemoExample Title="Streaming" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" CodeFiles="@example2CodeFiles" Id="example2">
+            <div>
+                While <b>IsStreaming</b> is true more text is expected: a caret trails it and its last block is left open. Stream
+                this answer and watch the raw text beside what is drawn: the dangling <b>**</b> of a bold run never shows, a table
+                fills in row by row, the code block stays plain until its closing fence arrives and is highlighted then. Turn on
+                <b>Slow motion</b> to follow every step. The page re-renders through a <b>BitAiRenderScheduler</b>, at most once per
+                50 ms.
+            </div>
+            <br />
+            <BitStack Horizontal Wrap AutoHeight Gap="0.5rem" VerticalAlign="BitAlignment.Center">
+                <BitButton OnClick="StreamAsync" Disabled="isStreaming" IconName="@BitIconName.Play">Stream the answer</BitButton>
+                <BitButton OnClick="StopStreaming" Disabled="isStreaming is false" IconName="@BitIconName.Stop" Variant="BitVariant.Outline">Stop</BitButton>
+                <BitToggle @bind-Value="slowMotion" Text="Slow motion" />
+            </BitStack>
+            <br />
+            <div class="stream-grid">
+                <div>
+                    <div class="stream-title">Received so far</div>
+                    <pre class="stream-raw">@streamedText</pre>
+                </div>
+                <div>
+                    <div class="stream-title">Rendered</div>
+                    <BitAiStreamingMarkdown Text="@streamedText" IsStreaming="isStreaming" />
+                </div>
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Citations" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
+            <div>
+                A bracketed number the model writes (<b>[1]</b>) becomes a citation chip when <b>Citations</b> holds a citation of
+                that <b>Number</b>; one that matches none stays the text it was. <b>OnCitationClick</b> is raised when the user
+                activates a chip.
+            </div>
+            <br />
+            <BitAiStreamingMarkdown Text="@citedMarkdown"
+                                    Citations="citations"
+                                    OnCitationClick="(BitAiCitation citation) => clickedSource = citation.Source.Title" />
+            <br />
+            <div>Activated: <b>@(clickedSource ?? "none yet")</b></div>
+        </DemoExample>
+
+        <DemoExample Title="Markdown options" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
+            <div>
+                The parser follows <b>BitAiUiOptions.Markdown</b>, and is built again when a different options instance is
+                cascaded, so the parser and the renderer always agree. Chat-tuned models often write one line per sentence and mean
+                the line breaks: <b>SoftBreaksAsHardBreaks</b> keeps them. Keep each options instance in a field - a new one on every
+                render would rebuild the parser every time.
+            </div>
+            <br />
+            <BitToggle @bind-Value="keepLineBreaks" Text="SoftBreaksAsHardBreaks" />
+            <BitAiOptionsProvider UiOptions="@(keepLineBreaks ? hardBreakOptions : softBreakOptions)">
+                <BitAiStreamingMarkdown Text="@lineBreakMarkdown" />
+            </BitAiOptionsProvider>
+        </DemoExample>
+
+        <DemoExample Title="Style & Class" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
+            <div>
+                <b>Style</b> and <b>Class</b> reach the root, <b>Styles</b> and <b>Classes</b> its parts: <b>Markdown</b> takes the
+                classes and styles of every part of the Markdown view the text is drawn with. The streaming Markdown publishes no CSS
+                variables of its own: the <b>--bit-AiMarkdownView-*</b> variables restyle it.
+            </div>
+            <br />
+            <div class="example-content">
+                @* A plain element of this page for the scoped ::deep rules of the custom classes to anchor on. *@
+                <BitAiStreamingMarkdown Text="@styleMarkdown" Style="padding: 0.5rem; border: 1px dashed dodgerblue;" />
+                <br />
+                <BitAiStreamingMarkdown Text="@styleMarkdown" Class="custom-class" />
+                <br />
+                <BitAiStreamingMarkdown Text="@styleMarkdown"
+                                        Styles="@(new() { Markdown = new() { Heading = "color: tomato;", ListItem = "font-style: italic;" } })" />
+                <br />
+                <BitAiStreamingMarkdown Text="@styleMarkdown"
+                                        Classes="@(new() { Root = "custom-root", Markdown = new() { Heading = "custom-heading" } })" />
+                <br />
+                <div style="--bit-AiMarkdownView-heading-color: mediumseagreen; --bit-AiMarkdownView-marker-color: mediumseagreen; --bit-AiMarkdownView-line-height: 2;">
+                    <BitAiStreamingMarkdown Text="@styleMarkdown" />
+                </div>
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="RTL" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
+            <div>
+                In right-to-left text the Markdown reads from the right and the caret trails the text at its left end, whether the
+                direction comes from <b>Dir</b> or from a <b>dir</b> attribute around it.
+            </div>
+            <br />
+            <BitAiStreamingMarkdown Dir="BitDir.Rtl" Text="@rtlMarkdown" IsStreaming />
+        </DemoExample>
+    </Examples>
+</DemoPage>

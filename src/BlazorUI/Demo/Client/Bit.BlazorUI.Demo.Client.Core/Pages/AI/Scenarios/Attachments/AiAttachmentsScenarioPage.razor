@@ -1,0 +1,90 @@
+﻿@page "/ai/scenarios/attachments"
+@inherits AppComponentBase
+
+<PageOutlet Url="ai/scenarios/attachments"
+            Title="AI chat attachments"
+            Keywords="Blazor chat file upload, paste screenshot chat, drag and drop attachments, BitAiPromptInput attachments, dictation"
+            Description="Pick, drag or paste files into the composer of a bit BlazorUI AI chat: one size limit and one type filter for all three, image previews, rejections the app can log, and dictation." />
+
+<DocsArticle Eyebrow="AI scenarios"
+             Title="Attachments"
+             Lead="Pick, drag, or paste files into the composer. Images preview; everything else gets a card; anything over the limit is turned away before a byte is read."
+             GitHubUrl="AI/Scenarios/Attachments/AiAttachmentsScenarioPage.razor">
+
+    <Badges>
+        <BitTag Size="BitSize.Small" Variant="BitVariant.Outline" Color="BitColor.SecondaryForeground" Text="Bit.BlazorUI.AI" />
+        <BitTag Size="BitSize.Small" Variant="BitVariant.Outline" Color="BitColor.SecondaryForeground" Text="Scripted transport" />
+    </Badges>
+
+    <ChildContent>
+        <DocSection Id="demo" Title="Live demo"
+                    Description="Drag a file onto the composer, paste a screenshot, or use the paperclip. Files over 2 MB are turned away, and listed beside the chat.">
+            <DemoExample Title="Three ways in, one limit" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
+                <AiScenarioFrame AsideLabel="Turned away">
+                    <Aside>
+                        <BitText Element="h4" Typography="BitTypography.Subtitle2">Turned away</BitText>
+                        @if (_rejections.Count == 0)
+                        {
+                            <BitText Element="p" Typography="BitTypography.Body2" Color="BitColor.SecondaryForeground">Nothing yet. Try a file over 2 MB.</BitText>
+                        }
+                        else
+                        {
+                            <ul>
+                                @foreach (var rejection in _rejections)
+                                {
+                                    <li><strong>@rejection.FileName</strong>: @Describe(rejection)</li>
+                                }
+                            </ul>
+                        }
+                    </Aside>
+                    <ChildContent>
+                        <BitAiChat Session="_session"
+                                   AllowAttachments
+                                   AllowDictation
+                                   MaxAttachmentSize="MaxSize"
+                                   OnAttachmentRejected="OnRejected"
+                                   EmptyTitle="Attach something"
+                                   EmptyBody="Drag a file onto the composer, paste a screenshot, or use the paperclip. Files over 2 MB are turned away." />
+                    </ChildContent>
+                </AiScenarioFrame>
+            </DemoExample>
+        </DocSection>
+
+        <DocSection Id="how-it-works" Title="How it works">
+            <ul>
+                <li>The paperclip opens the file picker.</li>
+                <li>Dragging files over the composer highlights it, and dropping attaches them.</li>
+                <li>Pasting attaches what the clipboard holds, which is how screenshots actually arrive.</li>
+            </ul>
+            <p>
+                All three share one size limit (<code>MaxAttachmentSize</code>) and one type filter. The size is checked in
+                the browser before a byte is read, and accepted files are streamed rather than sent as one message, so a large
+                paste cannot overrun the Blazor Server message limit. What is turned away is reported through
+                <code>OnAttachmentRejected</code> - the composer already tells the user; that callback is where an app logs
+                or counts it.
+            </p>
+            <p>
+                This demo keeps content inline as a data URL, which suits screenshots. An application that accepts large
+                uploads handles <code>OnSubmit</code>, uploads to its own storage, and attaches a URL instead, so nothing large
+                is ever held in circuit memory.
+            </p>
+            <p>
+                The microphone of <code>AllowDictation</code> appears only where the browser can transcribe, and no audio
+                leaves the device.
+            </p>
+        </DocSection>
+
+        <DocSection Id="components" Title="Components used">
+            <ul>
+                <li><BitLink Href="/components/ai/promptinput"><code>BitAiPromptInput</code></BitLink> - the composer: picker, drop target, paste and the limit.</li>
+                <li><BitLink Href="/components/ai/attachmentchip"><code>BitAiAttachmentChip</code></BitLink> - each attached file, in the composer and in the message.</li>
+                <li><BitLink Href="/components/ai/voiceinput"><code>BitAiVoiceInput</code></BitLink> - the dictation button.</li>
+                <li><BitLink Href="/components/ai/chat"><code>BitAiChat</code></BitLink> - the chat that hands its attachment settings to the composer.</li>
+            </ul>
+        </DocSection>
+    </ChildContent>
+
+    <FooterTemplate>
+        <DocPager Pages="AiScenarioNav.Items" AriaLabel="AI scenarios" />
+    </FooterTemplate>
+</DocsArticle>

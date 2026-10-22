@@ -1,0 +1,20 @@
+﻿::deep {
+    .custom-class {
+        max-width: 32rem;
+        border-radius: 1rem;
+        outline: 2px dashed tomato;
+    }
+
+    .custom-root {
+        max-width: 32rem;
+    }
+
+    .custom-title {
+        color: rebeccapurple;
+        text-transform: uppercase;
+    }
+
+    .custom-header {
+        background-color: #ede9fe;
+    }
+}

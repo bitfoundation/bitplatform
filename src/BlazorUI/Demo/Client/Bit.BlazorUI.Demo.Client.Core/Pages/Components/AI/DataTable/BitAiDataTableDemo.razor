@@ -1,0 +1,108 @@
+﻿@page "/components/ai/datatable"
+@implements IAsyncDisposable
+
+<PageOutlet Url="components/ai/datatable"
+            Title="AiDataTable"
+            Description="BitAiDataTable renders a JSON array of objects as a table - one row per object, one column per key - and keeps every column while a model is still streaming the rows." />
+
+<DemoPage Name="AiDataTable"
+          Description="BitAiDataTable renders a JSON array of objects as a table: one row per object and one column per key, headed by the key written as a label. The columns are the union of the keys of every row, in the order they first appear, so a column a later row brings is never dropped - which is what a table filling in from a model's partial JSON needs. A nested value is shown as its JSON text and a missing one as an empty cell, and a wide table scrolls sideways in its own box rather than widening the conversation around it."
+          Parameters="componentParameters"
+          SubClasses="componentSubClasses"
+          CssVariables="componentCssVariables"
+          GitHubAIUrl="DataTable/BitAiDataTable.razor"
+          GitHubDemoUrl="AI/DataTable/BitAiDataTableDemo.razor">
+    <NotesTemplate>
+        <BitText>
+            To use this component, you need to install the
+            <BitLink Href="https://www.nuget.org/packages/Bit.BlazorUI.AI" Target="_blank">
+                <BitTag Reversed
+                        Text="Bit.BlazorUI.AI"
+                        Color="BitColor.SecondaryBackground"
+                        IconName="@BitIconName.NavigateExternalInline" />
+            </BitLink>
+            nuget package, as described in the Optional steps of the
+            <BitLink Href="/getting-started">Getting started</BitLink> page.
+        </BitText>
+        <br />
+        <BitText>
+            BitAiDataTable needs nothing but its <b>Rows</b>, a <b>JsonElement</b>. It is the table
+            <BitLink Href="/components/ai/structureddataview">BitAiStructuredDataView</BitLink> and
+            <BitLink Href="/components/ai/artifactview">BitAiArtifactView</BitLink> draw an array of objects with, and the one
+            to render a tool result or any parsed JSON with yourself. It is a read-only view: the rows are not sorted, filtered or
+            paged - reach for BitDataGrid of Bit.BlazorUI.Extras for that. The live demo of streaming rows is the
+            <BitLink Href="/ai/scenarios/structured">Structured output</BitLink> scenario's too.
+        </BitText>
+    </NotesTemplate>
+    <Examples>
+        <DemoExample Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
+            <div>
+                Hand <b>Rows</b> a JSON array of objects: every object is a row and every key a column, headed by the key
+                written as a label (<b>contextWindow</b> becomes "Context Window").
+            </div>
+            <br />
+            <BitAiDataTable Rows="models" />
+        </DemoExample>
+
+        <DemoExample Title="Columns & cells" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
+            <div>
+                The columns are every key any row has, in the order they first appear - the second row brings <b>tags</b>, the
+                third <b>owner</b>, and both columns stay. A row without a key leaves its cell empty, as does a null; a nested
+                object or array is written as its JSON text; numbers and booleans as they were written (<b>true</b>, never
+                True). A header splits a key at its capitals and its underscores: <b>lastLogin</b> reads "Last Login" and
+                <b>time_zone</b> "Time zone".
+            </div>
+            <br />
+            <BitAiDataTable Rows="mixed" />
+        </DemoExample>
+
+        <DemoExample Title="Streaming rows" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" CodeFiles="@example3CodeFiles" Id="example3">
+            <div>
+                A model streams its rows as JSON text that is incomplete for most of the answer. The session gathers it in a
+                <b>BitAiStructuredDataPart</b>, whose <b>Value</b> is a lenient parse of what has arrived, so the table fills in
+                row by row and cell by cell while the JSON is still open. The transport here is a scripted one: no model, no key.
+            </div>
+            <br />
+            <BitButton OnClick="AskForOptionsAsync" Disabled="optionsSession.IsGenerating">Compare the options</BitButton>
+            <br /><br />
+            @if (OptionsPart?.Value is { } optionRows)
+            {
+                <BitAiDataTable Rows="optionRows" />
+            }
+        </DemoExample>
+
+        <DemoExample Title="Style & Class" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
+            <div>
+                <b>Style</b> and <b>Class</b> reach the root - the box the table scrolls in - and <b>Styles</b> and
+                <b>Classes</b> each part. The public <b>--bit-AiDataTable-*</b> variables (see the CSS variables table)
+                inherit, so set on <b>:root</b>, a container or a table's <b>Style</b> they re-skin every table below.
+            </div>
+            <br />
+            @* A plain element of this page for the scoped ::deep rules of the custom classes to anchor on. *@
+            <div>
+                <BitAiDataTable Rows="models"
+                                Style="border-radius: 1rem; border-color: #8a2be2"
+                                Styles="@(new() { HeaderCell = "background-color: #8a2be2; color: white", Cell = "font-style: italic" })" />
+                <br />
+                <BitAiDataTable Rows="models" Classes="@(new() { Root = "custom-table", Row = "custom-table-row" })" />
+                <br />
+                <div style="--bit-AiDataTable-header-background: #d2691e; --bit-AiDataTable-header-color: white; --bit-AiDataTable-cell-padding: 0.25rem 0.5rem; --bit-AiDataTable-divider-color: #d2691e">
+                    <BitAiDataTable Rows="models" />
+                </div>
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="RTL" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
+            <div>
+                In right-to-left text the columns run from the right and every cell starts on its right edge, whether the
+                direction comes from <b>Dir</b> or from a <b>dir</b> attribute around the table.
+            </div>
+            <br />
+            <BitAiDataTable Dir="BitDir.Rtl" Rows="persianModels" />
+            <br />
+            <div dir="rtl">
+                <BitAiDataTable Rows="persianModels" />
+            </div>
+        </DemoExample>
+    </Examples>
+</DemoPage>

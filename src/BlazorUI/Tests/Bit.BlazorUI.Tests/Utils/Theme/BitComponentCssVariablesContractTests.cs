@@ -112,7 +112,7 @@ public sealed class BitComponentCssVariablesContractTests
     /// </summary>
     private static string[] GetPublicComponentDirectories()
     {
-        return new[] { "Bit.BlazorUI", "Bit.BlazorUI.Extras", "Bit.BlazorUI.Legacy" }
+        return new[] { "Bit.BlazorUI", "Bit.BlazorUI.Extras", "Bit.BlazorUI.Legacy", "Bit.BlazorUI.AI" }
             .Select(project => SourceFiles.GetDirectory(project, "Components"))
             .ToArray();
     }

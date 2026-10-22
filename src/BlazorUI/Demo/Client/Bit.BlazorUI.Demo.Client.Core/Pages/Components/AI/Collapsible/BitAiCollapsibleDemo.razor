@@ -1,0 +1,168 @@
+﻿@page "/components/ai/collapsible"
+
+<PageOutlet Url="components/ai/collapsible"
+            Title="AiCollapsible"
+            Description="BitAiCollapsible is the disclosure panel of the bit BlazorUI AI components: a real button header that is keyboard reachable and announced with its state, for the reasoning of a model and any detail an answer folds away." />
+
+<DemoPage Name="AiCollapsible"
+          Description="BitAiCollapsible is a disclosure panel with a real button header, so it is keyboard reachable and announced with its expanded state. The reasoning panel of a message (BitAiReasoningPartView) is built on it, and it fits any detail an answer folds away - the arguments of a tool, the details of an error. It is drawn by a BitAccordion, so it follows the theme and is restyled like one, and its body is rendered only while it is open."
+          Parameters="componentParameters"
+          SubClasses="componentSubClasses"
+          GitHubAIUrl="Collapsible/BitAiCollapsible.razor"
+          GitHubDemoUrl="AI/Collapsible/BitAiCollapsibleDemo.razor">
+    <NotesTemplate>
+        <BitText>
+            To use this component, you need to install the
+            <BitLink Href="https://www.nuget.org/packages/Bit.BlazorUI.AI" Target="_blank">
+                <BitTag Reversed
+                        Text="Bit.BlazorUI.AI"
+                        Color="BitColor.SecondaryBackground"
+                        IconName="@BitIconName.NavigateExternalInline" />
+            </BitLink>
+            nuget package, as described in the Optional steps of the
+            <BitLink Href="/getting-started">Getting started</BitLink> page.
+        </BitText>
+        <br />
+        <BitText>
+            BitAiCollapsible needs no chat session: it is a plain panel the other AI components are built from. Its header is a
+            button inside a heading that carries <b>aria-expanded</b> and <b>aria-controls</b>, so a screen reader announces
+            whether it is open and Enter or Space toggles it. The <b>SuffixTemplate</b> sits beside the heading rather than in
+            the button, so a status chip is not read as part of the name of the toggle. See it at work around the
+            reasoning of a model in the <BitLink Href="/ai/scenarios/reasoning">Reasoning</BitLink> scenario.
+        </BitText>
+    </NotesTemplate>
+    <Examples>
+        <DemoExample Title="Basic" RazorCode="@example1RazorCode" Id="example1">
+            <div>
+                A <b>Title</b> and the content of the panel. It starts closed; <b>Open</b> starts it open. The body is rendered only
+                while the panel is open, so a closed panel costs nothing however much it holds.
+            </div>
+            <br />
+            <BitAiCollapsible Title="Searched the documentation">
+                Three pages matched: render modes, the SignalR circuit, and prerendering.
+            </BitAiCollapsible>
+            <br />
+            <BitAiCollapsible Title="Read the error log" Open>
+                The last failure was a timeout on the second attempt, after 30 seconds.
+            </BitAiCollapsible>
+        </DemoExample>
+
+        <DemoExample Title="Binding" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
+            <div>
+                The panel opens and closes itself as the user toggles it and reports the new state through <b>OpenChanged</b>, so
+                <b>@@bind-Open</b> keeps a field of the page in step - and a page that sets the field opens and closes the panel.
+            </div>
+            <br />
+            <BitButton OnClick="() => isOpen = !isOpen">@(isOpen ? "Close" : "Open") the panel</BitButton>
+            <br /><br />
+            <BitAiCollapsible Title="Planned the answer" @bind-Open="isOpen">
+                Compare the two render modes, then give a number for each.
+            </BitAiCollapsible>
+            <br />
+            <div>The panel is <b>@(isOpen ? "open" : "closed")</b>, toggled @toggleCount time(s) by the user.</div>
+            <br />
+            <BitAiCollapsible Title="Toggle me" OpenChanged="(bool open) => toggleCount++">
+                Each toggle of the header is counted by OpenChanged.
+            </BitAiCollapsible>
+        </DemoExample>
+
+        <DemoExample Title="Templates" RazorCode="@example3RazorCode" Id="example3">
+            <div>
+                <b>HeaderTemplate</b> replaces the title beside the chevron with any markup, which stays inside the toggle button.
+                <b>SuffixTemplate</b> puts content at the end of the header, beside the toggle rather than in it - the place for a
+                status chip.
+            </div>
+            <br />
+            <BitAiCollapsible>
+                <HeaderTemplate>
+                    <BitIcon IconName="@BitIconName.Search" />
+                    <span>search_docs</span>
+                </HeaderTemplate>
+                <SuffixTemplate>
+                    <BitTag Text="Completed" Color="BitColor.Success" Size="BitSize.Small" />
+                </SuffixTemplate>
+                <ChildContent>
+                    <BitAiCodeBlockView Language="yaml" Code="@("query: render modes\nresults: 3")" />
+                </ChildContent>
+            </BitAiCollapsible>
+            <br />
+            <BitAiCollapsible>
+                <HeaderTemplate>
+                    <BitIcon IconName="@BitIconName.Lightbulb" />
+                    <span>Thought for 4 seconds</span>
+                </HeaderTemplate>
+                <ChildContent>
+                    The question is about latency, so the fixed cost of the connection and the cost per token are worth separating.
+                </ChildContent>
+            </BitAiCollapsible>
+        </DemoExample>
+
+        <DemoExample Title="Disabled" RazorCode="@example4RazorCode" Id="example4">
+            <div>
+                A <b>Disabled</b> panel keeps the state it is in and does not toggle; its root carries <b>bit-dis</b> like every
+                disabled component.
+            </div>
+            <br />
+            <BitAiCollapsible Title="A disabled closed panel" Disabled>
+                Never shown.
+            </BitAiCollapsible>
+            <br />
+            <BitAiCollapsible Title="A disabled open panel" Disabled Open>
+                Shown, and kept open.
+            </BitAiCollapsible>
+        </DemoExample>
+
+        <DemoExample Title="Style & Class" RazorCode="@example5RazorCode" Id="example5">
+            <div>
+                <b>Style</b> and <b>Class</b> reach the root, <b>Styles</b> and <b>Classes</b> its parts: <b>Accordion</b> takes the
+                classes and styles of every part of the BitAccordion that draws the panel. The collapsible publishes no CSS variables
+                of its own: the <b>--bit-Accordion-*</b> variables restyle it, set on any ancestor or on its <b>Style</b>.
+            </div>
+            <br />
+            <div class="example-content">
+                @* A plain element of this page for the scoped ::deep rules of the custom classes to anchor on. *@
+                <BitAiCollapsible Title="Styled panel" Style="max-width: 24rem; box-shadow: 0 0 0.5rem dodgerblue;">
+                    A panel with a style of its own.
+                </BitAiCollapsible>
+                <br />
+                <BitAiCollapsible Title="Classy panel" Class="custom-class">
+                    A panel with a class of its own.
+                </BitAiCollapsible>
+                <br />
+                <BitAiCollapsible Title="Styles"
+                                  Styles="@(new() { Accordion = new() { Header = "background-color: tomato; color: white;",
+                                                                        Content = "font-style: italic;" } })">
+                    The header and the content are styled apart.
+                </BitAiCollapsible>
+                <br />
+                <BitAiCollapsible Title="Classes"
+                                  Classes="@(new() { Root = "custom-root", Accordion = new() { Header = "custom-header" } })">
+                    The root and the header carry classes of their own.
+                </BitAiCollapsible>
+                <br />
+                <div style="--bit-Accordion-radius: 1rem; --bit-Accordion-border-color: mediumseagreen; --bit-Accordion-title-color: mediumseagreen;">
+                    <BitAiCollapsible Title="Restyled by the --bit-Accordion-* variables of its container">
+                        The variables inherit, so one container restyles every panel inside it.
+                    </BitAiCollapsible>
+                </div>
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="RTL" RazorCode="@example6RazorCode" Id="example6">
+            <div>
+                In right-to-left text the chevron leads from the right, whether the direction comes from <b>Dir</b> or from a
+                <b>dir</b> attribute around the panel.
+            </div>
+            <br />
+            <BitAiCollapsible Dir="BitDir.Rtl" Title="جستجو در مستندات">
+                سه صفحه پیدا شد: حالت‌های رندر، اتصال SignalR و پیش‌رندر.
+            </BitAiCollapsible>
+            <br />
+            <div dir="rtl">
+                <BitAiCollapsible Title="برنامه‌ریزی پاسخ" Open>
+                    دو حالت رندر را مقایسه کن و برای هر کدام یک عدد بده.
+                </BitAiCollapsible>
+            </div>
+        </DemoExample>
+    </Examples>
+</DemoPage>

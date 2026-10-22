@@ -1,0 +1,120 @@
+﻿@page "/e2e/aioptionsprovider"
+@implements IAsyncDisposable
+
+<PageTitle>BitAiOptionsProvider E2E</PageTitle>
+
+<h1>BitAiOptionsProvider</h1>
+
+@* One provider around a chat, a list of conversations, an empty state and a scroll-to-latest button; the button swaps the
+   options it is handed between the default English strings and German ones. *@
+<E2ESection Id="strings" Title="Strings">
+    <button id="opt-toggle" @onclick="ToggleLanguage">Toggle the language</button>
+    <span id="opt-language">@(_german ? "German" : "English")</span>
+    <div id="opt-region">
+        <BitAiOptionsProvider UiOptions="_options">
+            <div style="height:360px">
+                <BitAiChat Id="opt-chat" Session="_session" />
+            </div>
+            <div style="width:320px">
+                <BitAiConversationList Id="opt-list" Conversations="_conversations" OnDelete="_ => { }" />
+            </div>
+            <BitAiEmptyState Id="opt-empty" />
+            <div style="position:relative;height:40px;margin-top:60px">
+                <BitAiScrollToLatest Id="opt-stl" Visible />
+            </div>
+        </BitAiOptionsProvider>
+    </div>
+</E2ESection>
+
+<E2ESection Id="nested" Title="Nested">
+    <BitAiOptionsProvider UiOptions="_germanOptions">
+        <BitAiEmptyState Id="opt-outer" />
+        <BitAiOptionsProvider UiOptions="_germanWithoutActions">
+            <BitAiChatMessage Id="opt-inner-message" Message="_answer" />
+            <BitAiEmptyState Id="opt-inner" />
+        </BitAiOptionsProvider>
+        <BitAiOptionsProvider>
+            <BitAiEmptyState Id="opt-handed-on" />
+        </BitAiOptionsProvider>
+        <BitAiChatMessage Id="opt-outer-message" Message="_answer" />
+    </BitAiOptionsProvider>
+</E2ESection>
+
+<E2ESection Id="ui-options" Title="UiOptions of the chat">
+    <BitAiOptionsProvider UiOptions="_germanOptions">
+        <div style="height:300px">
+            <BitAiChat Id="opt-own" UiOptions="BitAiUiOptions.Default" />
+        </div>
+    </BitAiOptionsProvider>
+</E2ESection>
+
+<E2ESection Id="registered" Title="Registered">
+    <div id="opt-plain">
+        <BitAiOptionsProvider>
+            <BitAiEmptyState Id="opt-registered" />
+        </BitAiOptionsProvider>
+    </div>
+</E2ESection>
+
+<E2EStatus />
+
+@code {
+    private readonly BitAiUiOptions _germanOptions = BitAiUiOptions.Default with { Strings = new GermanStrings() };
+    private BitAiUiOptions _germanWithoutActions => _germanOptions with { ShowMessageActions = false };
+
+    private readonly BitAiChatSession _session = new(E2EAiTransport.For(E2EAiScripts.Echo), Conversation());
+    private readonly BitAiMessage _answer = Answer("opt-a", "An answer");
+    private readonly List<BitAiConversationSummary> _conversations = [];
+
+    private BitAiUiOptions _options = BitAiUiOptions.Default;
+    private bool _german;
+
+    protected override void OnInitialized()
+    {
+        _conversations.Add(new BitAiConversationSummary("o1", null, DateTimeOffset.Now));
+    }
+
+    private static BitAiMessage Answer(string id, string text)
+    {
+        var message = new BitAiMessage(BitAiRole.Assistant, id);
+        message.AddPart(new BitAiTextPart(text));
+        return message;
+    }
+
+    private static BitAiConversation Conversation()
+    {
+        var conversation = new BitAiConversation("opt-conversation");
+        conversation.AddMessage(new BitAiMessage(BitAiRole.User, "opt-u1")).AddPart(new BitAiTextPart("A question"));
+        conversation.AddMessage(Answer("opt-a1", "An answer"));
+        return conversation;
+    }
+
+    private void ToggleLanguage()
+    {
+        _german = !_german;
+        _options = _german ? _germanOptions : BitAiUiOptions.Default;
+    }
+
+    public ValueTask DisposeAsync() => _session.DisposeAsync();
+
+    // What a localization of the string table looks like: a subclass overriding what it translates.
+    private sealed class GermanStrings : BitAiStrings
+    {
+        public override string EmptyTitle => "Wie kann ich helfen?";
+        public override string EmptyBody => "Stellen Sie eine Frage, um zu beginnen.";
+        public override string Transcript => "Unterhaltung";
+        public override string Conversations => "Unterhaltungen";
+        public override string NewConversation => "Neue Unterhaltung";
+        public override string Untitled => "Ohne Titel";
+        public override string Delete => "Löschen";
+        public override string Today => "Heute";
+        public override string ScrollToLatest => "Zur neuesten";
+        public override string Copy => "Kopieren";
+        public override string Regenerate => "Neu erzeugen";
+        public override string GoodResponse => "Gute Antwort";
+        public override string BadResponse => "Schlechte Antwort";
+        public override string Edit => "Bearbeiten";
+        public override string PromptPlaceholder => "Nachricht senden...";
+        public override string Send => "Senden";
+    }
+}

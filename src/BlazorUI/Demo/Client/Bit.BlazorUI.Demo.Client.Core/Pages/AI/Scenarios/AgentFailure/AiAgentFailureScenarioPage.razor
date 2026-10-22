@@ -1,0 +1,54 @@
+﻿@page "/ai/scenarios/agent-failure"
+@inherits AppComponentBase
+
+<PageOutlet Url="ai/scenarios/agent-failure"
+            Title="AI agent failure"
+            Keywords="agent error handling, failed agent step, agent run failure UI, BitAiAgentStepView, BitAiAgentRunView"
+            Description="An AI agent step that fails, with the failure attached to that step rather than replacing the whole run, so what succeeded is kept and the answer can explain what happened - bit BlazorUI." />
+
+<DocsArticle Eyebrow="AI scenarios"
+             Title="Agent failure"
+             Lead="A step that fails, with the failure attached to the step rather than replacing the whole run."
+             GitHubUrl="AI/Scenarios/AgentFailure/AiAgentFailureScenarioPage.razor">
+
+    <Badges>
+        <BitTag Size="BitSize.Small" Variant="BitVariant.Outline" Color="BitColor.SecondaryForeground" Text="Bit.BlazorUI.AI" />
+        <BitTag Size="BitSize.Small" Variant="BitVariant.Outline" Color="BitColor.SecondaryForeground" Text="Scripted transport" />
+    </Badges>
+
+    <ChildContent>
+        <DocSection Id="demo" Title="Live demo"
+                    Description="Ship the release: the build passes, the test suite does not, and the agent stops before deploying.">
+            <DemoExample Title="A run with a failed step" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" CodeFiles="@example1CodeFiles" Id="example1">
+                <AiScenarioFrame>
+                    <BitAiChat Session="_session"
+                               EmptyTitle="Ship the release"
+                               Suggestions="_suggestions" />
+                </AiScenarioFrame>
+            </DemoExample>
+        </DocSection>
+
+        <DocSection Id="how-it-works" Title="How it works">
+            <p>
+                The failing step keeps its own <code>BitAiError</code>, shown on the step itself; the completed
+                steps keep their summaries; and the run is marked <code>Failed</code>. Nothing that already succeeded is lost,
+                which is what lets the answer explain what happened rather than just report that something did.
+            </p>
+            <p>
+                A failure that does not end the turn can also be added as a <code>BitAiErrorPart</code> inside a message, for
+                the common case where one of several parallel calls failed and the rest are still worth showing.
+            </p>
+        </DocSection>
+
+        <DocSection Id="components" Title="Components used">
+            <ul>
+                <li><BitLink Href="/components/ai/agentstepview"><code>BitAiAgentStepView</code></BitLink> - the failed step, with its error.</li>
+                <li><BitLink Href="/components/ai/agentrunview"><code>BitAiAgentRunView</code></BitLink> - the run, marked failed, with everything that went right.</li>
+            </ul>
+        </DocSection>
+    </ChildContent>
+
+    <FooterTemplate>
+        <DocPager Pages="AiScenarioNav.Items" AriaLabel="AI scenarios" />
+    </FooterTemplate>
+</DocsArticle>

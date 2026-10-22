@@ -16,7 +16,7 @@ namespace Bit.BlazorUI.Tests.Utils.Params;
 [TestClass]
 public class BitParamsContractTests
 {
-    private static readonly Assembly[] Libraries = [typeof(BitButton).Assembly, typeof(BitMessageBox).Assembly];
+    private static readonly Assembly[] Libraries = [typeof(BitButton).Assembly, typeof(BitMessageBox).Assembly, typeof(BitAiChat).Assembly];
 
     // The name is what the params object is read by, and the attributes are merged into the ones the component
     // collects afresh on every render, so neither is a parameter left behind.

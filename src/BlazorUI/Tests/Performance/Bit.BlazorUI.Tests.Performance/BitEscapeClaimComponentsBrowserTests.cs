@@ -4,7 +4,8 @@ namespace Bit.BlazorUI.Tests.Performance;
 
 /// <summary>
 /// Browser regression tests for the Escape claim (Utils.claimEscape) of the components that act on the key in their
-/// .NET handlers - the Extras' dialogs, panels and popups, and the calendar and the snack bar of the core - driven with
+/// .NET handlers - the Extras' dialogs, panels and popups, the AI composer's menu and turn and the AI artifact's full
+/// screen, and the calendar and the snack bar of the core - driven with
 /// real keyboard input, in every engine (BROWSER=chromium, firefox, webkit) and inside every surface.
 ///
 /// One press does one thing: the component's own state closes on the first Escape and the surface around it on the
@@ -490,6 +491,69 @@ public class BitEscapeClaimComponentsBrowserTests : PerformanceTestBase
         await Expect(help).ToHaveCountAsync(1);
     }
 
+    // ---- BitAiArtifactView ----
+
+    [TestMethod, DataRow("dialog"), DataRow("modal"), DataRow("panel")]
+    public async Task AiArtifactView_LeavesFullScreenFirst(string surface)
+    {
+        await OpenSurface(surface, "aiatv");
+        await ExpandAiArtifact();
+
+        await PressEscapeAndExpectOpen();
+        await Expect(Page.Locator(".bit-aiatv")).Not.ToHaveClassAsync(new System.Text.RegularExpressions.Regex(@"\bbit-aiatv-exp\b"));
+
+        await PressEscapeAndExpectClosed();
+    }
+
+    [TestMethod]
+    public async Task AiArtifactView_AModifiedEscapeIsLeftAlone()
+    {
+        await OpenPage("none", "aiatv");
+        await ExpandAiArtifact();
+
+        await Page.Keyboard.PressAsync("Shift+Escape");
+        await Page.WaitForTimeoutAsync(300);
+        await Expect(Page.Locator(".bit-aiatv")).ToHaveClassAsync(new System.Text.RegularExpressions.Regex(@"\bbit-aiatv-exp\b"));
+    }
+
+    // ---- BitAiPromptInput ----
+
+    [TestMethod, DataRow("dialog"), DataRow("modal"), DataRow("panel")]
+    public async Task AiPromptInput_ClosesItsMenuFirst(string surface)
+    {
+        await OpenSurface(surface, "aipri");
+        await OpenAiPromptMenu();
+
+        await PressEscapeAndExpectOpen();
+        await Expect(Page.Locator("textarea.bit-aipri-inp")).ToHaveAttributeAsync("aria-expanded", "false");
+
+        await PressEscapeAndExpectClosed();
+    }
+
+    [TestMethod, DataRow("dialog"), DataRow("modal"), DataRow("panel")]
+    public async Task AiPromptInput_StopsTheTurnFirst(string surface)
+    {
+        await OpenSurface(surface, "aipri-busy");
+        await Expect(Page.Locator("#v-ai-turn")).ToHaveTextAsync("generating");
+
+        await Page.Locator("textarea.bit-aipri-inp").FocusAsync();
+        await PressEscapeAndExpectOpen();
+        await Expect(Page.Locator("#v-ai-turn")).ToHaveTextAsync("stopped");
+
+        await PressEscapeAndExpectClosed();
+    }
+
+    [TestMethod]
+    public async Task AiPromptInput_AModifiedEscapeIsLeftAlone()
+    {
+        await OpenPage("none", "aipri");
+        await OpenAiPromptMenu();
+
+        await Page.Keyboard.PressAsync("Shift+Escape");
+        await Page.WaitForTimeoutAsync(300);
+        await Expect(Page.Locator("textarea.bit-aipri-inp")).ToHaveAttributeAsync("aria-expanded", "true");
+    }
+
     // ---- BitRichTextEditor ----
 
     [TestMethod, DataRow("dialog"), DataRow("modal"), DataRow("panel")]
@@ -663,6 +727,26 @@ public class BitEscapeClaimComponentsBrowserTests : PerformanceTestBase
         var menu = Page.Locator(".bit-rte-slash");
         await Expect(menu).ToHaveCountAsync(1);
         await Expect(menu.Locator("input.bit-rte-inp")).ToBeFocusedAsync();
+        await Settle();
+    }
+
+    private async Task ExpandAiArtifact()
+    {
+        // From the keyboard, so the focus is inside the panel in every engine: WebKit does not focus a button a click
+        // presses, which leaves the Escape on the surface around it.
+        var expand = Page.Locator(".bit-aiatv button:has(.bit-icon-ai--FullScreen)");
+        await expand.FocusAsync();
+        await Page.Keyboard.PressAsync("Enter");
+        await Expect(Page.Locator(".bit-aiatv")).ToHaveClassAsync(new System.Text.RegularExpressions.Regex(@"\bbit-aiatv-exp\b"));
+        await Settle();
+    }
+
+    private async Task OpenAiPromptMenu()
+    {
+        var input = Page.Locator("textarea.bit-aipri-inp");
+        await input.FocusAsync();
+        await Page.Keyboard.TypeAsync("/");
+        await Expect(input).ToHaveAttributeAsync("aria-expanded", "true");
         await Settle();
     }
 

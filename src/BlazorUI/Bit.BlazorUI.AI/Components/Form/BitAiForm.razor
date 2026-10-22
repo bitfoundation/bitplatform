@@ -1,0 +1,294 @@
+﻿@namespace Bit.BlazorUI
+@inherits BitAiComponentBase
+
+@{
+    var actionsDisabled = Disabled || Busy;
+}
+
+<div @ref="RootElement" @attributes="DisabledAwareHtmlAttributes"
+     id="@_Id"
+     style="@StyleBuilder.Value"
+     class="@ClassBuilder.Value"
+     dir="@Dir?.ToString().ToLower()">
+    @if (Definition.Title is { Length: > 0 } title)
+    {
+        <div style="@Styles?.Title" class="bit-aifrm-ttl @Classes?.Title">@title</div>
+    }
+
+    @if (Definition.Description is { Length: > 0 } description)
+    {
+        <div style="@Styles?.Description" class="bit-aifrm-des @Classes?.Description">@description</div>
+    }
+
+    @RenderFields(Definition.Fields, null)
+
+    @if (Submitted is false)
+    {
+        <div style="@Styles?.Actions" class="bit-aifrm-act @Classes?.Actions">
+            @if ((Definition.CancelLabel ?? Strings.Cancel) is { Length: > 0 } cancel)
+            {
+                @* The neutral action of the pair: an outlined button in the host-default tertiary role, which an app's
+                   --bit-Button-* variables still restyle. *@
+                <BitButton Variant="BitVariant.Outline"
+                           Class="bit-btn-dft-ter bit-aifrm-cnl"
+                           Disabled="@actionsDisabled"
+                           OnClick="HandleOnCancelClick"
+                           Classes="@Classes?.CancelButton"
+                           Styles="@Styles?.CancelButton">
+                    @cancel
+                </BitButton>
+            }
+            <BitButton Class="bit-aifrm-sbt"
+                       Disabled="@actionsDisabled"
+                       OnClick="HandleOnSubmitClick"
+                       Classes="@Classes?.SubmitButton"
+                       Styles="@Styles?.SubmitButton">
+                @(Definition.SubmitLabel ?? Strings.Submit)
+            </BitButton>
+        </div>
+    }
+    else
+    {
+        @* A neutral tag (the host-default tertiary role, which an app's --bit-Tag-* variables still restyle), as the note
+           that the form is done rather than a call to act on it. *@
+        <div style="@Styles?.Submitted" class="bit-aifrm-sbm @Classes?.Submitted">
+            <BitTag Text="@Strings.Submitted" IconName="Accept" Class="bit-tag-dft-ter" />
+        </div>
+    }
+</div>
+
+@code {
+    private RenderFragment RenderFields(IReadOnlyList<BitAiFormField> fields, string? parent) => __builder =>
+    {
+        foreach (var field in fields)
+        {
+            @RenderField(field, BitAiFormDefinition.Path(parent, field.Name))
+        }
+    };
+
+    private RenderFragment RenderField(BitAiFormField field, string path) => __builder =>
+    {
+        var error = _errors.GetValueOrDefault(path);
+        var id = FieldId(path);
+
+        switch (field.Type)
+        {
+            case BitAiFieldType.Object:
+                <fieldset id="@id" @key="path" style="@Styles?.Group" class="bit-aifrm-grp @Classes?.Group">
+                    <legend style="@Styles?.Legend" class="bit-aifrm-lgd @Classes?.Legend">@field.DisplayLabel</legend>
+                    @if (field.Description is { Length: > 0 } groupHint)
+                    {
+                        <span style="@Styles?.Hint" class="bit-aifrm-hnt @Classes?.Hint">@groupHint</span>
+                    }
+                    @RenderFields(field.Fields ?? [], path)
+                </fieldset>
+                break;
+
+            case BitAiFieldType.Array:
+                @RenderArray(field, path, id, error)
+                break;
+
+            default:
+                <div @key="path" style="@Styles?.Field" class="bit-aifrm-fld @Classes?.Field">
+                    @RenderControl(field, path, id, error, null)
+                </div>
+                break;
+        }
+    };
+
+    private RenderFragment RenderArray(BitAiFormField field, string path, string id, string? error) => __builder =>
+    {
+        var template = field.Items ?? new BitAiFormField("item");
+        var count = BitAiFormDefinition.CountItems(_values, path);
+        var canAdd = field.ReadOnly is false && (field.MaxItems is not { } max || count < max);
+
+        <fieldset id="@id" @key="path"
+                  style="@Styles?.Group"
+                  class="bit-aifrm-grp @(error is not null ? "bit-aifrm-inv" : null) @Classes?.Group"
+                  aria-describedby="@DescribedBy(id, field.Description is { Length: > 0 }, error is not null)">
+            <legend style="@Styles?.Legend" class="bit-aifrm-lgd @Classes?.Legend">
+                @field.DisplayLabel
+                @if (field.Required)
+                {
+                    <span aria-hidden="true" class="bit-aifrm-req">*</span>
+                }
+            </legend>
+
+            @if (field.Description is { Length: > 0 } hint)
+            {
+                <span id="@(id)-hint" style="@Styles?.Hint" class="bit-aifrm-hnt @Classes?.Hint">@hint</span>
+            }
+
+            @for (var i = 0; i < count; i++)
+            {
+                var index = i;
+                var itemPath = BitAiFormDefinition.IndexPath(path, index);
+                var itemError = _errors.GetValueOrDefault(itemPath);
+                var itemLabel = $"{field.DisplayLabel} {index + 1}";
+                var removeLabel = Strings.RemoveItem(field.DisplayLabel, index + 1);
+
+                <div @key="itemPath" style="@Styles?.Item" class="bit-aifrm-itm @Classes?.Item">
+                    <div style="@Styles?.ItemBody" class="bit-aifrm-ibd @Classes?.ItemBody">
+                        @if (template.Type is BitAiFieldType.Object)
+                        {
+                            @RenderFields(template.Fields ?? [], itemPath)
+                        }
+                        else
+                        {
+                            @RenderControl(template, itemPath, FieldId(itemPath), itemError, itemLabel)
+                        }
+                    </div>
+                    @if (field.ReadOnly is false)
+                    {
+                        <BitButton IconName="Cancel"
+                                   Variant="BitVariant.Text"
+                                   Class="bit-btn-dft-ter bit-aifrm-rmv"
+                                   Title="@removeLabel"
+                                   AriaLabel="@removeLabel"
+                                   Disabled="Disabled"
+                                   OnClick="() => RemoveItem(path, index)"
+                                   Classes="@Classes?.RemoveButton"
+                                   Styles="@Styles?.RemoveButton" />
+                    }
+                </div>
+            }
+
+            @if (canAdd)
+            {
+                <BitButton IconName="Add"
+                           Variant="BitVariant.Outline"
+                           Class="bit-btn-dft-ter bit-aifrm-add"
+                           Disabled="Disabled"
+                           OnClick="() => AddItem(field, path)"
+                           Classes="@Classes?.AddButton"
+                           Styles="@Styles?.AddButton">
+                    @Strings.AddItem
+                </BitButton>
+            }
+
+            @if (error is not null)
+            {
+                <div id="@(id)-error" role="alert" style="@Styles?.Error" class="bit-aifrm-err @Classes?.Error">@error</div>
+            }
+        </fieldset>
+    };
+
+    // Each control is a core input: it renders its own label (bound to the control), its description and its error
+    // message, and points the control at both through aria-describedby, with aria-invalid while it has an error. An
+    // entry of a list of scalars has no visible label of its own, so it is named through aria-label instead.
+    private RenderFragment RenderControl(BitAiFormField field, string path, string id, string? error, string? ariaLabel) => __builder =>
+    {
+        var value = _values.GetValueOrDefault(path);
+        var label = ariaLabel is null ? field.DisplayLabel : null;
+        var description = ariaLabel is null ? field.Description : null;
+
+        switch (field.Type)
+        {
+            case BitAiFieldType.Boolean:
+                <BitCheckbox Id="@id"
+                             Label="@label"
+                             AriaLabel="@ariaLabel"
+                             Description="@description"
+                             ReadOnly="@field.ReadOnly"
+                             Disabled="Disabled"
+                             Value="@IsTrue(value)"
+                             ValueChanged="@((bool v) => Set(path, ToBoolText(v)))"
+                             AriaDescribedby="@(error is null ? null : $"{id}-error")"
+                             InputHtmlAttributes="@(error is null ? null : InvalidInputAttributes)" />
+                @if (error is not null)
+                {
+                    <div id="@(id)-error" role="alert" style="@Styles?.Error" class="bit-aifrm-err @Classes?.Error">@error</div>
+                }
+                break;
+
+            case BitAiFieldType.Select:
+                <BitDropdown TItem="BitDropdownItem<string>" TValue="string"
+                             Id="@id"
+                             Label="@label"
+                             AriaLabel="@ariaLabel"
+                             Description="@description"
+                             Placeholder="@field.Placeholder"
+                             Required="@field.Required"
+                             ReadOnly="@field.ReadOnly"
+                             Disabled="Disabled"
+                             ShowClearButton="@(field.Required is false)"
+                             Items="@GetDropdownItems(field)"
+                             Value="@value"
+                             ValueChanged="@((string? v) => Set(path, v))"
+                             ErrorMessage="@error" />
+                break;
+
+            case BitAiFieldType.Number:
+                <BitNumberField TValue="double?"
+                                Id="@id"
+                                Label="@label"
+                                AriaLabel="@ariaLabel"
+                                Description="@description"
+                                Placeholder="@field.Placeholder"
+                                Required="@field.Required"
+                                ReadOnly="@field.ReadOnly"
+                                Disabled="Disabled"
+                                Min="@Invariant(field.Minimum ?? field.ExclusiveMinimum)"
+                                Max="@Invariant(field.Maximum ?? field.ExclusiveMaximum)"
+                                Step="@NumberStep(field)"
+                                NoClamp="true"
+                                Value="@ParseNumber(value)"
+                                ValueChanged="@((double? v) => Set(path, Invariant(v)))"
+                                ErrorMessage="@error" />
+                break;
+
+            case BitAiFieldType.Date:
+            case BitAiFieldType.DateTime:
+                <BitDatePicker Id="@id"
+                               Label="@label"
+                               AriaLabel="@ariaLabel"
+                               Description="@description"
+                               Placeholder="@(field.Placeholder ?? string.Empty)"
+                               Required="@field.Required"
+                               ReadOnly="@field.ReadOnly"
+                               Disabled="Disabled"
+                               ShowTimePicker="@(field.Type is BitAiFieldType.DateTime)"
+                               TimeZone="TimeZoneInfo.Utc"
+                               Value="@ParseDate(value)"
+                               ValueChanged="@((DateTimeOffset? v) => Set(path, FormatDate(field.Type, v)))"
+                               ErrorMessage="@error" />
+                break;
+
+            case BitAiFieldType.Time:
+                <BitTimePicker Id="@id"
+                               Label="@label"
+                               AriaLabel="@ariaLabel"
+                               Description="@description"
+                               Placeholder="@field.Placeholder"
+                               Required="@field.Required"
+                               ReadOnly="@field.ReadOnly"
+                               Disabled="Disabled"
+                               Value="@ParseTime(value)"
+                               ValueChanged="@((TimeSpan? v) => Set(path, FormatTime(v)))"
+                               ErrorMessage="@error" />
+                break;
+
+            default:
+                var multiline = field.Type is BitAiFieldType.MultilineText;
+
+                <BitTextField Id="@id"
+                              Label="@label"
+                              AriaLabel="@ariaLabel"
+                              Description="@description"
+                              Placeholder="@field.Placeholder"
+                              Required="@field.Required"
+                              ReadOnly="@field.ReadOnly"
+                              Disabled="Disabled"
+                              Type="@InputType(field.Type)"
+                              Multiline="@multiline"
+                              Rows="@(multiline ? (int?)4 : null)"
+                              MinLength="@(field.MinLength ?? -1)"
+                              MaxLength="@(field.MaxLength ?? -1)"
+                              Immediate="true"
+                              Value="@value"
+                              ValueChanged="@((string? v) => Set(path, v))"
+                              ErrorMessage="@error" />
+                break;
+        }
+    };
+}

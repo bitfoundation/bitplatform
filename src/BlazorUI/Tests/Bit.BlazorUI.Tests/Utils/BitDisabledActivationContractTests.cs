@@ -1,6 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
+using System.Text.Json;
+using System.Threading;
+using System.Threading.Tasks;
 using Bunit;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
@@ -71,6 +75,21 @@ public class BitDisabledActivationContractTests : BunitTestContext
         [typeof(BitDataGrid<Row>)],
         [typeof(BitChart)],
         [typeof(BitPdfViewer)],
+        [typeof(BitAiJsonView)],
+        [typeof(BitAiCitationMarker)],
+        [typeof(BitAiSourceCard)],
+        [typeof(BitAiSourceList)],
+        [typeof(BitAiAgentRunView)],
+        [typeof(BitAiScrollToLatest)],
+        [typeof(BitAiConversationList)],
+        [typeof(BitAiToolApproval)],
+        [typeof(BitAiErrorView)],
+        [typeof(BitAiCopyButton)],
+        [typeof(BitAiForm)],
+        [typeof(BitAiPromptInput)],
+        [typeof(BitAiModelSelector)],
+        [typeof(BitAiVoiceInput)],
+        [typeof(BitAiAttachmentChip)],
     ];
 
     // The ones that render a plain ChildContent inside their root, which an enabled control of the page can sit in.
@@ -87,8 +106,9 @@ public class BitDisabledActivationContractTests : BunitTestContext
 
     // The ones whose Disabled only switches one behaviour of theirs off while the content they host stays live: the
     // panel of an accordion, the slides of a carousel, the panel of a pivot's open tab, the overlay of a map, the body
-    // of a message box, the header and footer of a nav panel. What bubbles up to their root from there is an enabled
-    // control's own event, so they keep the handlers the page splatted on them.
+    // of a message box, the header and footer of a nav panel - and the AI surfaces that frame content of the app or of
+    // the model (a transcript, a message, a tool card, an artifact, a generated component). What bubbles up to their
+    // root from there is an enabled control's own event, so they keep the handlers the page splatted on them.
     public static IEnumerable<object[]> ContentHosts =>
     [
         [typeof(BitBadge)],
@@ -100,11 +120,68 @@ public class BitDisabledActivationContractTests : BunitTestContext
         [typeof(BitMessageBox)],
         [typeof(BitMap<BitLeafletMapProvider>)],
         [typeof(BitNavPanel<BitNavItem>)],
+        [typeof(BitAiCollapsible)],
+        [typeof(BitAiToolCallView)],
+        [typeof(BitAiArtifactView)],
+        [typeof(BitAiGenerativeUiView)],
+        [typeof(BitAiChat)],
+        [typeof(BitAiMessageList)],
+        [typeof(BitAiChatMessage)],
+        [typeof(BitAiMessageActions)],
+        [typeof(BitAiEmptyState)],
     ];
 
-    // The carousels, the theme and the accent color switchers read services of the library's own.
+    // What a component needs to render its root at all - the AI ones draw a message, a conversation, a session, a part
+    // or a source - handed to it on top of the attributes every render of these tests (and of the markup contract's)
+    // gives it.
+    private static readonly Dictionary<Type, Func<Dictionary<string, object?>>> RequiredParameters = new()
+    {
+        [typeof(BitAiJsonView)] = () => new() { [nameof(BitAiJsonView.Value)] = JsonDocument.Parse("""{"a":{"b":1},"c":[1,2]}""").RootElement },
+        [typeof(BitAiCitationMarker)] = () => new() { [nameof(BitAiCitationMarker.Citation)] = new BitAiCitation("c1", AiSource()) { Number = 1 } },
+        [typeof(BitAiSourceCard)] = () => new() { [nameof(BitAiSourceCard.Source)] = AiSource() },
+        [typeof(BitAiSourceList)] = () => new() { [nameof(BitAiSourceList.Citations)] = new List<BitAiCitation> { new("c1", AiSource()) { Number = 1 } } },
+        [typeof(BitAiAgentRunView)] = () => new() { [nameof(BitAiAgentRunView.Run)] = AiRun() },
+        [typeof(BitAiScrollToLatest)] = () => new() { [nameof(BitAiScrollToLatest.Visible)] = true },
+        [typeof(BitAiConversationList)] = () => new()
+        {
+            [nameof(BitAiConversationList.Conversations)] = new List<BitAiConversationSummary> { new("c1", "Trip", DateTimeOffset.Now) },
+        },
+        [typeof(BitAiToolApproval)] = () => new() { [nameof(BitAiToolApproval.Call)] = AiToolCall(BitAiToolCallStatus.AwaitingApproval) },
+        [typeof(BitAiErrorView)] = () => new() { [nameof(BitAiErrorView.Error)] = new BitAiError("The model is overloaded.") { Detail = "503" } },
+        [typeof(BitAiCopyButton)] = () => new() { [nameof(BitAiCopyButton.Content)] = "Copied text" },
+        [typeof(BitAiForm)] = () => new()
+        {
+            [nameof(BitAiForm.Definition)] = new BitAiFormDefinition { Fields = [new BitAiFormField("city") { Required = true }] },
+        },
+        [typeof(BitAiModelSelector)] = () => new() { [nameof(BitAiModelSelector.Models)] = new List<BitAiModel> { new("alpha", "Alpha"), new("beta", "Beta") } },
+        [typeof(BitAiAttachmentChip)] = () => new() { [nameof(BitAiAttachmentChip.Attachment)] = new BitAiAttachment("a1", "report.pdf") { Size = 2048 } },
+        [typeof(BitAiToolCallView)] = () => new() { [nameof(BitAiToolCallView.Call)] = AiToolCall(BitAiToolCallStatus.Running) },
+        [typeof(BitAiArtifactView)] = () => new() { [nameof(BitAiArtifactView.Artifact)] = AiArtifact() },
+        [typeof(BitAiGenerativeUiView)] = () => new() { [nameof(BitAiGenerativeUiView.Part)] = new BitAiGenerativeUiPart("forecast_card") },
+        [typeof(BitAiChat)] = () => new() { [nameof(BitAiChat.Session)] = new BitAiChatSession(new SilentTransport()) },
+        [typeof(BitAiMessageList)] = () => new() { [nameof(BitAiMessageList.Conversation)] = AiConversation() },
+        [typeof(BitAiChatMessage)] = () => new() { [nameof(BitAiChatMessage.Message)] = AiAssistantMessage() },
+        [typeof(BitAiMessageActions)] = () => new() { [nameof(BitAiMessageActions.Message)] = AiAssistantMessage() },
+    };
+
+    internal static IEnumerable<KeyValuePair<string, object?>> GetRequiredParameters(Type type) =>
+        RequiredParameters.TryGetValue(type, out var parameters) ? parameters() : [];
+
+    // The carousels, the theme and the accent color switchers read services of the library's own, the AI components
+    // theirs; the dictation of BitAiVoiceInput is offered (and its root rendered) only where the browser supports it,
+    // and the transcript asks the renderer whether it is an interactive one.
+    internal static void AddServices(BunitContext context)
+    {
+        context.Services.AddBitBlazorUIExtrasServices();
+        context.Services.AddBitBlazorUIAIServices();
+        context.JSInterop.Setup<bool>("BitBlazorUI.AiVoiceInput.isDictationSupported", _ => true).SetResult(true);
+#if NET9_0_OR_GREATER
+        context.SetRendererInfo(new RendererInfo("Server", isInteractive: true));
+#endif
+    }
+
     [TestInitialize]
-    public void AddServices() => Context.Services.AddBitBlazorUIExtrasServices();
+    public void AddServices() => AddServices(Context);
 
     [TestMethod]
     [DynamicData(nameof(Components))]
@@ -339,6 +416,10 @@ public class BitDisabledActivationContractTests : BunitTestContext
                 {
                     builder.AddAttribute(8, "ChildContent", childContent);
                 }
+                foreach (var (name, value) in GetRequiredParameters(type))
+                {
+                    builder.AddAttribute(9, name, value);
+                }
                 builder.CloseComponent();
             });
         });
@@ -357,5 +438,59 @@ public class BitDisabledActivationContractTests : BunitTestContext
     public class Row
     {
         public string? Name { get; set; }
+    }
+
+    private static BitAiCitationSource AiSource() => new("s1", "Handbook") { Url = "https://example.com/handbook" };
+
+    // A run at work whose first step is running, so its plan, its steps and its stop action are all drawn.
+    private static BitAiAgentRun AiRun()
+    {
+        var run = new BitAiAgentRun("run_1", "Researcher");
+        run.SetPlan([new BitAiAgentPlanStep("search", "Search"), new BitAiAgentPlanStep("write", "Write")]);
+        run.GetOrAddStep("search").Start();
+        run.SetStatus(BitAiAgentRunStatus.Running);
+        return run;
+    }
+
+    private static BitAiToolCallPart AiToolCall(BitAiToolCallStatus status)
+    {
+        var call = new BitAiToolCallPart("c1", "search_docs");
+        call.CompleteArguments(JsonDocument.Parse("""{"query":"disabled"}""").RootElement);
+        call.SetStatus(status);
+        return call;
+    }
+
+    private static BitAiArtifact AiArtifact()
+    {
+        var artifact = new BitAiConversation().GetOrAddArtifact("a1", BitAiArtifactKind.Document, "README");
+        artifact.SetContent("# Hello");
+        artifact.Complete();
+        return artifact;
+    }
+
+    private static BitAiConversation AiConversation()
+    {
+        var conversation = new BitAiConversation();
+        conversation.AddMessage(BitAiRole.User, "Hello");
+        conversation.AddMessage(AiAssistantMessage());
+        return conversation;
+    }
+
+    private static BitAiMessage AiAssistantMessage()
+    {
+        var message = new BitAiMessage(BitAiRole.Assistant);
+        message.AddPart(new BitAiTextPart("Hi there."));
+        return message;
+    }
+
+    // A transport that answers every turn with an empty reply, for a chat that is only rendered.
+    private sealed class SilentTransport : IBitAiTransport
+    {
+        public async IAsyncEnumerable<BitAiEvent> StreamAsync(BitAiRequest request, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+        {
+            yield return new BitAiMessageStartedEvent();
+            yield return new BitAiMessageCompletedEvent();
+            await Task.CompletedTask;
+        }
     }
 }

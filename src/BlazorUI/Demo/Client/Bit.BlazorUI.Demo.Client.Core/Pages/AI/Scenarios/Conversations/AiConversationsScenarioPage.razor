@@ -1,0 +1,75 @@
+﻿@page "/ai/scenarios/conversations"
+@inherits AppComponentBase
+
+<PageOutlet Url="ai/scenarios/conversations"
+            Title="Multiple AI conversations"
+            Keywords="Blazor chat history, AI conversation list, chat threads sidebar, BitAiConversationList, conversation store"
+            Description="A sidebar of AI conversations over a conversation store with bit BlazorUI: grouped by recency, with new, switch and delete, and replies that keep streaming while another thread is open." />
+
+<DocsArticle Eyebrow="AI scenarios"
+             Title="Conversations"
+             Lead="A sidebar over a conversation store, grouped by recency, with new, switch, and delete - and a reply that keeps streaming in a thread you switched away from."
+             GitHubUrl="AI/Scenarios/Conversations/AiConversationsScenarioPage.razor">
+
+    <Badges>
+        <BitTag Size="BitSize.Small" Variant="BitVariant.Outline" Color="BitColor.SecondaryForeground" Text="Bit.BlazorUI.AI" />
+        <BitTag Size="BitSize.Small" Variant="BitVariant.Outline" Color="BitColor.SecondaryForeground" Text="Scripted transport" />
+    </Badges>
+
+    <ChildContent>
+        <DocSection Id="demo" Title="Live demo"
+                    Description="Send a message to start a thread, press New for another one, and switch between them - even while a reply is still arriving.">
+            <DemoExample Title="Threads over a conversation store" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" CodeFiles="@example1CodeFiles" Id="example1">
+                <AiScenarioFrame AsideFirst AsideLabel="Conversations">
+                    <Aside>
+                        <BitAiConversationList Conversations="_summaries"
+                                               SelectedId="@_session?.Conversation.ConversationId"
+                                               OnSelect="SelectAsync"
+                                               OnDelete="DeleteAsync"
+                                               OnNew="NewConversationAsync" />
+                    </Aside>
+                    <ChildContent>
+                        @if (_session is not null)
+                        {
+                            <BitAiChat @key="_session.Conversation.ConversationId"
+                                       Session="_session"
+                                       EmptyTitle="New conversation"
+                                       EmptyBody="Send a message and this thread will appear in the list."
+                                       Suggestions="_suggestions" />
+                        }
+                    </ChildContent>
+                </AiScenarioFrame>
+            </DemoExample>
+        </DocSection>
+
+        <DocSection Id="how-it-works" Title="How it works">
+            <p>
+                A <code>BitAiConversation</code> is a plain observable object, and a <code>BitAiChatSession</code> drives one
+                of them. Switching threads means pointing the chat at a different session, not tearing anything down: each
+                thread keeps its own live session here, so a reply started in one keeps streaming while another is open, and
+                is there when you come back.
+            </p>
+            <p>
+                Persistence is an interface. This page saves through <code>IBitAiConversationStore</code>, registered for
+                the site as the in-memory store with <code>ai.UseConversationStore&lt;BitAiInMemoryConversationStore&gt;()</code>;
+                a real application implements it over its own database. It is scoped, so on Blazor Server each visitor gets
+                their own threads rather than everyone's.
+            </p>
+            <p>
+                A new thread is saved when its first message arrives, and New reuses a thread nobody has written in yet, so
+                pressing it twice does not leave an empty conversation in the list.
+            </p>
+        </DocSection>
+
+        <DocSection Id="components" Title="Components used">
+            <ul>
+                <li><BitLink Href="/components/ai/conversationlist"><code>BitAiConversationList</code></BitLink> - the sidebar: today, yesterday, the previous seven and thirty days, then by month.</li>
+                <li><BitLink Href="/components/ai/chat"><code>BitAiChat</code></BitLink> - the open thread, keyed by its conversation so switching starts it afresh.</li>
+            </ul>
+        </DocSection>
+    </ChildContent>
+
+    <FooterTemplate>
+        <DocPager Pages="AiScenarioNav.Items" AriaLabel="AI scenarios" />
+    </FooterTemplate>
+</DocsArticle>

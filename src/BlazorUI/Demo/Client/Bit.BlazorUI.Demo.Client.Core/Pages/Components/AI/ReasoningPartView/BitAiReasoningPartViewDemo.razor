@@ -1,0 +1,118 @@
+﻿@page "/components/ai/reasoningpartview"
+@implements IAsyncDisposable
+
+<PageOutlet Url="components/ai/reasoningpartview"
+            Title="AiReasoningPartView"
+            Description="BitAiReasoningPartView is the collapsible panel that holds the reasoning of an AI model, rendered as Markdown: open while the model thinks, collapsed once it is done." />
+
+<DemoPage Name="AiReasoningPartView"
+          Description="BitAiReasoningPartView is the collapsible panel that holds the reasoning of a model, rendered as Markdown. It is open while the model is still thinking, so the user sees progress rather than a spinner, with loading dots in its header; once the reasoning is complete its title says how long the model thought for and it collapses, so it does not compete with the answer. A user who opened or closed it by hand wins over both. It follows its part on its own, re-rendering at most once per render interval while the reasoning streams in."
+          Parameters="componentParameters"
+          SubClasses="componentSubClasses"
+          CssVariables="componentCssVariables"
+          GitHubAIUrl="ReasoningPartView/BitAiReasoningPartView.razor"
+          GitHubDemoUrl="AI/ReasoningPartView/BitAiReasoningPartViewDemo.razor">
+    <NotesTemplate>
+        <BitText>
+            To use this component, you need to install the
+            <BitLink Href="https://www.nuget.org/packages/Bit.BlazorUI.AI" Target="_blank">
+                <BitTag Reversed
+                        Text="Bit.BlazorUI.AI"
+                        Color="BitColor.SecondaryBackground"
+                        IconName="@BitIconName.NavigateExternalInline" />
+            </BitLink>
+            nuget package, as described in the Optional steps of the
+            <BitLink Href="/getting-started">Getting started</BitLink> page.
+        </BitText>
+        <br />
+        <BitText>
+            A chat renders it for every <b>BitAiReasoningPart</b> of a message (through BitAiMessagePartView), filled by the
+            <b>BitAiReasoningDeltaEvent</b>s of its transport; render it yourself to show reasoning anywhere else. It needs no chat
+            session, only the part. Its panel is a <BitLink Href="/components/ai/collapsible">BitAiCollapsible</BitLink>, whose
+            header is a real button announced with its expanded state; the loading dots in it are decorative, so nothing is
+            announced while the model thinks. Whether a finished panel collapses is <b>BitAiUiOptions.CollapseReasoning</b>, and
+            its title text comes from <b>BitAiStrings</b> (see <BitLink Href="/components/ai/optionsprovider">AiOptionsProvider</BitLink>).
+            See it at work in the <BitLink Href="/ai/scenarios/reasoning">Reasoning</BitLink> scenario.
+        </BitText>
+    </NotesTemplate>
+    <Examples>
+        <DemoExample Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
+            <div>
+                <b>Part</b> is the <b>BitAiReasoningPart</b> to show. A part created with its text is finished, so the panel starts
+                collapsed: open it to read the reasoning, rendered as Markdown.
+            </div>
+            <br />
+            <BitAiReasoningPartView Part="finishedReasoning" />
+        </DemoExample>
+
+        <DemoExample Title="Streaming" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
+            <div>
+                A part created empty is streaming. The panel is open with loading dots while the reasoning arrives, and follows the
+                part by itself; when the part completes, its title turns into how long the model thought for and the panel
+                collapses - unless the user toggled it in the meantime. This one is fed by the scripted reasoning transport of this
+                site (<b>AiDemoTransports.Reasoning()</b>), whose answer streams into a text part below it.
+            </div>
+            <br />
+            <BitButton OnClick="ThinkAsync" Disabled="isThinking" IconName="@BitIconName.Play">Ask a question</BitButton>
+            <BitButton OnClick="StopThinking" Disabled="isThinking is false" IconName="@BitIconName.Stop" Variant="BitVariant.Outline">Stop</BitButton>
+            <br /><br />
+            @if (streamedReasoning is not null)
+            {
+                <BitAiReasoningPartView Part="streamedReasoning" />
+                <br />
+                <BitAiTextPartView Part="streamedAnswer" Message="streamedMessage" />
+            }
+        </DemoExample>
+
+        <DemoExample Title="Keep it open" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
+            <div>
+                <b>CollapseReasoning</b> of the AI options (on by default) is what collapses a finished panel. A
+                <b>BitAiOptionsProvider</b> that turns it off keeps the reasoning in view, finished or not.
+            </div>
+            <br />
+            <BitAiOptionsProvider UiOptions="openReasoningOptions">
+                <BitAiReasoningPartView Part="finishedReasoning" />
+            </BitAiOptionsProvider>
+        </DemoExample>
+
+        <DemoExample Title="Style & Class" RazorCode="@example4RazorCode" Id="example4">
+            <div>
+                <b>Style</b> and <b>Class</b> reach the root, <b>Styles</b> and <b>Classes</b> its parts: the <b>Collapsible</b> panel,
+                the <b>Header</b> content with its <b>Icon</b>, <b>Title</b> and <b>Loading</b> dots, the scrolling <b>Body</b> and
+                the <b>Markdown</b> the reasoning is rendered with. The public <b>--bit-AiReasoningPartView-*</b> variables (see the
+                CSS variables table) restyle the reasoning text; the frame is the collapsible's, restyled by the
+                <b>--bit-Accordion-*</b> variables, and the Markdown by the <b>--bit-AiMarkdownView-*</b> ones.
+            </div>
+            <br />
+            <div class="example-content">
+                @* A plain element of this page for the scoped ::deep rules of the custom classes to anchor on. *@
+                <BitAiReasoningPartView Part="finishedReasoning" Style="max-width: 32rem; box-shadow: 0 0 0.5rem dodgerblue;" />
+                <br />
+                <BitAiReasoningPartView Part="finishedReasoning" Class="custom-class" />
+                <br />
+                <BitAiReasoningPartView Part="finishedReasoning"
+                                        Styles="@(new() { Icon = "color: goldenrod;",
+                                                          Title = "color: goldenrod; font-style: italic;",
+                                                          Body = "padding: 0.5rem; border-radius: 0.5rem; background-color: #fef3c7; color: #78350f;" })" />
+                <br />
+                <BitAiReasoningPartView Part="finishedReasoning"
+                                        Classes="@(new() { Root = "custom-root", Title = "custom-title", Collapsible = new() { Accordion = new() { Header = "custom-header" } } })" />
+                <br />
+                <div style="--bit-AiReasoningPartView-color: rebeccapurple; --bit-AiReasoningPartView-font-size: 1rem; --bit-AiReasoningPartView-max-height: 4rem;">
+                    <BitAiReasoningPartView Part="finishedReasoning" />
+                </div>
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="RTL" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
+            <div>
+                In right-to-left text the chevron, the icon and the title lead from the right, whether the direction comes from
+                <b>Dir</b> or from a <b>dir</b> attribute around the panel; its title is the localizable text of the options.
+            </div>
+            <br />
+            <BitAiOptionsProvider UiOptions="persianOptions">
+                <BitAiReasoningPartView Dir="BitDir.Rtl" Part="rtlReasoning" />
+            </BitAiOptionsProvider>
+        </DemoExample>
+    </Examples>
+</DemoPage>

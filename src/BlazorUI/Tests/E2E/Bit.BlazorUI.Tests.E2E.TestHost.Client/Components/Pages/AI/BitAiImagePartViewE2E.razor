@@ -1,0 +1,106 @@
+﻿@page "/e2e/aiimagepartview"
+@implements IAsyncDisposable
+
+<PageTitle>BitAiImagePartView E2E</PageTitle>
+
+<h1>BitAiImagePartView</h1>
+
+@* The images are served by the tests (Page.RouteAsync on images.e2e.test), which is how a test holds one back or
+   tells whether it was fetched at all. *@
+<E2ESection Id="basic" Title="Basic">
+    <div id="ipv-basic-box" style="width:200px">
+        <BitAiImagePartView Id="ipv-basic" Part="_basic" />
+    </div>
+    <div style="width:200px">
+        <BitAiImagePartView Id="ipv-noalt" Part="_noAlt" />
+    </div>
+    <BitAiImagePartView Id="ipv-data" Part="_data" />
+</E2ESection>
+
+@* An image far below the fold: nothing is fetched until it is scrolled near. *@
+<E2ESection Id="lazy" Title="Lazy loading">
+    <div style="height:6000px"></div>
+    <div style="width:200px">
+        <BitAiImagePartView Id="ipv-lazy" Part="_lazy" />
+    </div></E2ESection>
+
+<E2ESection Id="rtl" Title="RTL">
+    <div style="width:300px">
+        <BitAiImagePartView Id="ipv-rtl" Dir="BitDir.Rtl" Part="_rtl" />
+    </div>
+    <div dir="rtl" style="width:300px">
+        <BitAiImagePartView Id="ipv-rtl-inherited" Part="_rtl" />
+    </div>
+    <div style="width:300px">
+        <BitAiImagePartView Id="ipv-ltr" Part="_rtl" />
+    </div>
+</E2ESection>
+
+<E2ESection Id="variables" Title="Public variables">
+    <div style="width:200px; --bit-AiImagePartView-radius: 16px; --bit-AiImagePartView-caption-color: rgb(1, 2, 3); --bit-AiImagePartView-caption-font-size: 20px">
+        <BitAiImagePartView Id="ipv-vars" Part="_styled" />
+    </div>
+    <div style="width:200px">
+        <BitAiImagePartView Id="ipv-parts"
+                            Part="_styled"
+                            Class="e2e-ipv-class"
+                            Style="outline: 2px solid rgb(4, 5, 6)"
+                            Classes="@(new() { Root = "e2e-ipv-root", Image = "e2e-ipv-image", Caption = "e2e-ipv-caption" })"
+                            Styles="@(new() { Image = "opacity: 0.5", Caption = "letter-spacing: 3px" })" />
+    </div>
+</E2ESection>
+
+@* The image script, played by the transport: a sentence, then an image part. *@
+<E2ESection Id="transport" Title="Streamed by the transport">
+    <button id="ipv-send" @onclick="SendAsync">Send</button>
+    <span id="ipv-live-state">@_liveState</span>
+    <div id="ipv-live">
+        @if (_session.Conversation.Messages.LastOrDefault(m => m.Role.IsAssistant)?.PartsOf<BitAiImagePart>().FirstOrDefault() is { } image)
+        {
+            <BitAiImagePartView Id="ipv-live-image" Part="image" />
+        }
+    </div>
+</E2ESection>
+
+<E2EStatus />
+
+@code {
+    // A blue square, inline, which no request fetches.
+    private const string DataImage = "data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20width='48'%20height='48'%3E%3Crect%20width='48'%20height='48'%20fill='%232563eb'/%3E%3C/svg%3E";
+
+    private readonly BitAiImagePart _basic = new("https://images.e2e.test/chart.svg") { Alt = "A chart of the visitors", Caption = "Visitors per day", Width = 640, Height = 320 };
+    private readonly BitAiImagePart _noAlt = new("https://images.e2e.test/decoration.svg") { Width = 640, Height = 320 };
+    private readonly BitAiImagePart _data = new(DataImage) { Alt = "A blue square", Width = 48, Height = 48 };
+    private readonly BitAiImagePart _lazy = new("https://images.e2e.test/lazy.svg") { Alt = "Far below", Width = 640, Height = 320 };
+    private readonly BitAiImagePart _rtl = new(DataImage) { Alt = "یک مربع آبی", Caption = "یک مربع آبی در گوشه", Width = 48, Height = 48 };
+    private readonly BitAiImagePart _styled = new(DataImage) { Alt = "A styled square", Caption = "A styled caption", Width = 48, Height = 48 };
+
+    private readonly BitAiChatSession _session = new(E2EAiTransport.For(E2EAiScripts.Image));
+    private BitAiRenderScheduler? _scheduler;
+    private string _liveState = "Idle";
+
+    protected override void OnInitialized()
+    {
+        _scheduler = new BitAiRenderScheduler(() => InvokeAsync(StateHasChanged));
+        _session.StateChanged += OnSessionChanged;
+    }
+
+    private void OnSessionChanged() => _scheduler?.Request();
+
+    private async Task SendAsync()
+    {
+        _liveState = "Streaming";
+
+        await _session.SubmitAsync("Show me the chart");
+
+        _liveState = "Complete";
+        if (_scheduler is not null) await _scheduler.FlushAsync();
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        _session.StateChanged -= OnSessionChanged;
+        await _session.DisposeAsync();
+        if (_scheduler is not null) await _scheduler.DisposeAsync();
+    }
+}

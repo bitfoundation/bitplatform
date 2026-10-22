@@ -1,0 +1,15 @@
+﻿@namespace Bit.BlazorUI
+@inherits BitAiComponentBase
+
+@* The toggles are the only thing a page can act on in the tree, so a disabled tree drops the page's activation
+   handlers along with them (DisabledAwareHtmlAttributes). *@
+<div @ref="RootElement" @attributes="DisabledAwareHtmlAttributes"
+     id="@_Id"
+     style="@StyleBuilder.Value"
+     class="@ClassBuilder.Value"
+     dir="@Dir?.ToString().ToLower()">
+    @if (Value is { } value)
+    {
+        @RenderNode(value, null, "$", 0)
+    }
+</div>

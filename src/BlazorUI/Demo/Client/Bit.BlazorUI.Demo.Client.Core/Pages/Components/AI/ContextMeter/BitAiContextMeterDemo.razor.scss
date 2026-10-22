@@ -1,0 +1,25 @@
+﻿.example-row {
+    gap: 1rem;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    margin-block-end: 0.5rem;
+}
+
+.example-label {
+    min-width: 7rem;
+}
+
+::deep {
+    .custom-class {
+        padding: 0.5rem 0.75rem;
+        border-radius: 1rem;
+        background-color: #e0f2fe;
+    }
+
+    .custom-label {
+        color: #0369a1;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+}

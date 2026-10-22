@@ -1,0 +1,177 @@
+﻿@import '../../../Bit.BlazorUI/Styles/functions.scss';
+
+// Public CSS variables, read with a fallback and never declared here, so a value set on :root re-skins every agent
+// step, one set on an ancestor the steps inside it, and one set on the Style of an instance that one alone:
+//   --bit-AiAgentStepView-gap                 room between the marker and the body              (default: spacing(1.5))
+//   --bit-AiAgentStepView-marker-size         diameter of the timeline marker                   (default: $siz-icon-md)
+//   --bit-AiAgentStepView-marker-color        ring of a pending or skipped step                 (default: $clr-brd-pri)
+//   --bit-AiAgentStepView-running-color       ring and pulse of the running step                (default: $clr-pri)
+//   --bit-AiAgentStepView-completed-color     marker of a completed step                        (default: $clr-suc)
+//   --bit-AiAgentStepView-completed-icon-color  check mark of a completed step                  (default: $clr-suc-text)
+//   --bit-AiAgentStepView-failed-color        marker of a failed step                           (default: $clr-err)
+//   --bit-AiAgentStepView-blocked-color       marker of a step waiting on the user              (default: $clr-wrn)
+//   --bit-AiAgentStepView-line-color          line joining a step to the next one               (default: $clr-brd-sec)
+//   --bit-AiAgentStepView-title-font-size     size of the title                                 (default: $tg-fs-sm)
+//   --bit-AiAgentStepView-text-color          detail, summary and duration                      (default: $clr-fg-sec)
+//   --bit-AiAgentStepView-error-color         error message                                     (default: $clr-err-fg)
+//
+// The tool calls are BitTags, which the --bit-Tag-* variables restyle.
+
+// Where the marker sits below the top of the step: level with the first line of the title next to it.
+$aiasv-mrk-top: 0.28em;
+
+.bit-aiasv {
+    // Resolved once here so the marker and the line that leaves it agree on where the marker is.
+    --bit-aiasv-mrk-size: var(--bit-AiAgentStepView-marker-size, #{$siz-icon-md});
+    position: relative;
+    display: flex;
+    gap: var(--bit-AiAgentStepView-gap, #{spacing(1.5)});
+    padding-block: spacing(1);
+    font-family: $tg-font-family;
+    font-size: var(--bit-AiAgentStepView-title-font-size, #{$tg-fs-sm});
+
+    // The line down to the next step, from under the marker to the top of the marker of the step after it.
+    &::before {
+        content: "";
+        position: absolute;
+        inset-block-start: calc(#{spacing(1)} + #{$aiasv-mrk-top} + var(--bit-aiasv-mrk-size));
+        inset-block-end: calc(-1 * (#{spacing(1)} + #{$aiasv-mrk-top}));
+        inset-inline-start: calc((var(--bit-aiasv-mrk-size) - #{$shp-border-width-thick}) / 2);
+        width: $shp-border-width-thick;
+        background-color: var(--bit-AiAgentStepView-line-color, #{$clr-brd-sec});
+    }
+
+    &.bit-dis {
+        color: $clr-fg-dis;
+    }
+}
+
+// The line runs down to the next step, so the last step has none. A step is the last one either as the last child of
+// what holds it, or - in a list that wraps every step in an item of its own, as BitAiAgentRunView does - as the child of
+// the last item.
+.bit-aiasv:last-child:not(li > .bit-aiasv)::before,
+li:last-child > .bit-aiasv::before {
+    display: none;
+}
+
+.bit-aiasv-mrk {
+    flex: none;
+    z-index: 1;
+    display: grid;
+    place-items: center;
+    box-sizing: border-box;
+    width: var(--bit-aiasv-mrk-size);
+    height: var(--bit-aiasv-mrk-size);
+    margin-block-start: #{$aiasv-mrk-top};
+    border-radius: $shp-radius-full;
+    border: $shp-border-width-thick $shp-border-style var(--bit-AiAgentStepView-marker-color, #{$clr-brd-pri});
+    background-color: $clr-bg-pri;
+}
+
+// The check is a BitIcon sized to the marker it sits in, with none of the room an icon keeps around itself elsewhere.
+// Two classes, so this wins over the root rule of the BitIcon whichever of the two bundles is linked first.
+.bit-aiasv-mrk > .bit-aiasv-mic {
+    padding: 0;
+    font-size: calc(var(--bit-aiasv-mrk-size) * 0.6);
+    color: var(--bit-AiAgentStepView-completed-icon-color, #{$clr-suc-text});
+}
+
+// The running step pulses, which loops, so its literal duration is multiplied by the loop factor.
+.bit-aiasv-run > .bit-aiasv-mrk {
+    border-color: var(--bit-AiAgentStepView-running-color, #{$clr-pri});
+    animation: bit-aiasv-pls calc(1.4s * #{$mot-loop-factor}) $mot-easing infinite;
+}
+
+.bit-aiasv-cmp > .bit-aiasv-mrk {
+    border-color: var(--bit-AiAgentStepView-completed-color, #{$clr-suc});
+    background-color: var(--bit-AiAgentStepView-completed-color, #{$clr-suc});
+}
+
+.bit-aiasv-fld > .bit-aiasv-mrk {
+    border-color: var(--bit-AiAgentStepView-failed-color, #{$clr-err});
+    background-color: var(--bit-AiAgentStepView-failed-color, #{$clr-err});
+}
+
+.bit-aiasv-blk > .bit-aiasv-mrk {
+    border-color: var(--bit-AiAgentStepView-blocked-color, #{$clr-wrn});
+    background-color: var(--bit-AiAgentStepView-blocked-color, #{$clr-wrn});
+}
+
+.bit-aiasv.bit-dis > .bit-aiasv-mrk {
+    opacity: $opa-dis;
+}
+
+// The pulse is never the only thing saying the step is under way - its clock is ticking beside the title - so it is an
+// attention cue that would otherwise run for as long as the step does, which is what WCAG 2.2.2 asks to be stoppable.
+// Reduced motion stops it and leaves the halo standing still, so the cue survives without the motion. ForceAnimation
+// renders .bit-fam on the root or on an ancestor, so the opt-out is matched on both.
+@media (prefers-reduced-motion: reduce) {
+    .bit-aiasv-run:not(.bit-fam):not(.bit-fam *) > .bit-aiasv-mrk {
+        animation: none;
+        box-shadow: 0 0 0 spacing(0.375) translucent(var(--bit-AiAgentStepView-running-color, #{$clr-pri}), 25%);
+    }
+}
+
+@keyframes bit-aiasv-pls {
+    0%, 100% {
+        box-shadow: 0 0 0 0 translucent(var(--bit-AiAgentStepView-running-color, #{$clr-pri}), 25%);
+    }
+
+    50% {
+        box-shadow: 0 0 0 spacing(0.625) translucent(var(--bit-AiAgentStepView-running-color, #{$clr-pri}), 25%);
+    }
+}
+
+.bit-aiasv-bdy {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+.bit-aiasv-ttl {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: spacing(1);
+    font-weight: $tg-fw-medium;
+}
+
+.bit-aiasv-pnd > .bit-aiasv-bdy > .bit-aiasv-ttl,
+.bit-aiasv-skp > .bit-aiasv-bdy > .bit-aiasv-ttl {
+    color: var(--bit-AiAgentStepView-text-color, #{$clr-fg-sec});
+}
+
+.bit-aiasv-dur {
+    font-size: $tg-fs-xs;
+    font-weight: $tg-fw-regular;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+    color: var(--bit-AiAgentStepView-text-color, #{$clr-fg-sec});
+}
+
+.bit-aiasv-dtl,
+.bit-aiasv-smr {
+    color: var(--bit-AiAgentStepView-text-color, #{$clr-fg-sec});
+}
+
+.bit-aiasv-tls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: spacing(0.5);
+    margin: spacing(0.5) 0 0;
+    padding: 0;
+    list-style: none;
+}
+
+.bit-aiasv-tli {
+    display: inline-flex;
+    max-width: 100%;
+}
+
+.bit-aiasv-err {
+    color: var(--bit-AiAgentStepView-error-color, #{$clr-err-fg});
+}
+
+.bit-aiasv.bit-dis :is(.bit-aiasv-dur, .bit-aiasv-dtl, .bit-aiasv-smr, .bit-aiasv-err),
+.bit-aiasv.bit-dis > .bit-aiasv-bdy > .bit-aiasv-ttl {
+    color: inherit;
+}

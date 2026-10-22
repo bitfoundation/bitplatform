@@ -1,0 +1,135 @@
+﻿@page "/components/ai/rendererboundary"
+
+<PageOutlet Url="components/ai/rendererboundary"
+            Title="AiRendererBoundary"
+            Description="BitAiRendererBoundary contains a failure inside one custom renderer of AI output, so the rest of the conversation survives it and the reader sees which piece failed." />
+
+<DemoPage Name="AiRendererBoundary"
+          Description="BitAiRendererBoundary contains a failure inside one custom renderer, so the rest of the conversation survives it. Custom renderers are handed data a model produced - shapes their author did not anticipate, and values that are still streaming - and without a boundary one such shape throws during rendering and takes the whole page with it. With one, the failed piece is replaced by a notice that says which piece failed, and the next render tries it again. It adds no element around content that renders."
+          Parameters="componentParameters"
+          SubClasses="componentSubClasses"
+          GitHubAIUrl="RendererBoundary/BitAiRendererBoundary.razor"
+          GitHubDemoUrl="AI/RendererBoundary/BitAiRendererBoundaryDemo.razor">
+    <NotesTemplate>
+        <BitText>
+            To use this component, you need to install the
+            <BitLink Href="https://www.nuget.org/packages/Bit.BlazorUI.AI" Target="_blank">
+                <BitTag Reversed
+                        Text="Bit.BlazorUI.AI"
+                        Color="BitColor.SecondaryBackground"
+                        IconName="@BitIconName.NavigateExternalInline" />
+            </BitLink>
+            nuget package, as described in the Optional steps of the
+            <BitLink Href="/getting-started">Getting started</BitLink> page.
+        </BitText>
+        <br />
+        <BitText>
+            Every renderer registered with <b>BitAiRendererRegistry</b> - for a part kind
+            (<BitLink Href="/components/ai/messagepartview">BitAiMessagePartView</BitLink>), a tool
+            (<BitLink Href="/components/ai/toolcallview">BitAiToolCallView</BitLink>), a structured schema, an artifact kind, a code language,
+            the math or the citations of the Markdown - is already rendered inside one. Wrap your own templates of model output in one the
+            same way. It is Blazor's <b>ErrorBoundary</b>: it catches what its
+            content throws while rendering, in its lifecycle methods and in its event handlers - never what a fire-and-forget task throws -
+            and Blazor logs each failure it catches. The message of the exception is the tooltip of the notice, so keep secrets out of the
+            exceptions a renderer throws. See the <BitLink Href="/ai/scenarios/custom-tool">Custom tool UI</BitLink> and
+            <BitLink Href="/ai/scenarios/structured">Structured output</BitLink> scenarios.
+        </BitText>
+    </NotesTemplate>
+    <Examples>
+        <DemoExample Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" CodeFiles="@example1CodeFiles" Id="example1">
+            <div>
+                Wrap the renderer in it. Content that renders is rendered as it is, with no element of the boundary's own around it. Content
+                that throws - here a card written for a <b>degrees</b> field, handed a forecast without one - is replaced by a notice; point at
+                it for the message of the exception. Whatever is outside the boundary goes on as before.
+            </div>
+            <br />
+            <div class="example-stack">
+                <BitAiRendererBoundary>
+                    <WeatherCard Json="@osloForecast" />
+                </BitAiRendererBoundary>
+
+                <BitAiRendererBoundary>
+                    <WeatherCard Json="@unexpectedForecast" />
+                </BitAiRendererBoundary>
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Label" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
+            <div>
+                <b>Label</b> is what the notice says once the content has failed - the <b>RenderFailed</b> text of the <b>BitAiStrings</b> in force
+                when it is not set. Name the piece that failed: the built-in views say <b>The renderer for '...' failed</b>, with the tool, part kind
+                or schema it was registered for.
+            </div>
+            <br />
+            <div class="example-stack">
+                <BitAiRendererBoundary Label="The weather card could not show this forecast">
+                    <WeatherCard Json="@unexpectedForecast" />
+                </BitAiRendererBoundary>
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Recovery" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
+            <div>
+                Every render of the boundary by its parent tries the content again, which is how a renderer that fails on a partial value recovers
+                once the value is complete. The forecast below streams in a few characters at a time: the card fails on every part of it that is
+                not yet whole JSON, and renders once it is.
+            </div>
+            <br />
+            <BitButton OnClick="StreamForecastAsync" Disabled="isStreaming">Stream the forecast</BitButton>
+            <br /><br />
+            <div class="example-stack">
+                <code>@(streamed.Length > 0 ? streamed : "nothing received yet")</code>
+
+                @if (streamed.Length > 0)
+                {
+                    <BitAiRendererBoundary Label="Waiting for the complete forecast">
+                        <WeatherCard Json="@streamed" />
+                    </BitAiRendererBoundary>
+                }
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Style & Class" RazorCode="@example4RazorCode" Id="example4">
+            <div>
+                The boundary has no element of its own while its content renders, so <b>Style</b>, <b>Class</b>, <b>Styles.Root</b> and
+                <b>Classes.Root</b> land on the notice that stands in for failed content - a block holding a <b>BitTag</b>, which
+                <b>Styles.Notice</b> and <b>Classes.Notice</b> (<b>BitTagClassStyles</b>) and the <b>--bit-Tag-*</b> variables restyle. The tag is
+                an outlined one in the error color, which its own color variables do not change.
+            </div>
+            <br />
+            <div class="example-stack">
+                <BitAiRendererBoundary Style="padding: 0.5rem; border-radius: 0.5rem; background-color: #fef2f2">
+                    <WeatherCard Json="@unexpectedForecast" />
+                </BitAiRendererBoundary>
+
+                <BitAiRendererBoundary Class="custom-boundary">
+                    <WeatherCard Json="@unexpectedForecast" />
+                </BitAiRendererBoundary>
+
+                <BitAiRendererBoundary Styles="@(new() { Notice = new() { Root = "border-style: dashed", Text = "font-style: italic" } })">
+                    <WeatherCard Json="@unexpectedForecast" />
+                </BitAiRendererBoundary>
+
+                <BitAiRendererBoundary Classes="@(new() { Root = "custom-boundary-root", Notice = new() { Icon = "custom-boundary-icon" } })">
+                    <WeatherCard Json="@unexpectedForecast" />
+                </BitAiRendererBoundary>
+
+                <div style="--bit-Tag-radius: 0; --bit-Tag-font-size: 1rem; --bit-Tag-min-height: 2.5rem;">
+                    <BitAiRendererBoundary>
+                        <WeatherCard Json="@unexpectedForecast" />
+                    </BitAiRendererBoundary>
+                </div>
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="RTL" RazorCode="@example5RazorCode" Id="example5">
+            <div>Use BitAiRendererBoundary in right-to-left (RTL).</div>
+            <br />
+            <div class="example-stack">
+                <BitAiRendererBoundary Dir="BitDir.Rtl" Label="کارت آب و هوا نتوانست این پیش‌بینی را نشان دهد">
+                    <WeatherCard Json="@unexpectedForecast" />
+                </BitAiRendererBoundary>
+            </div>
+        </DemoExample>
+    </Examples>
+</DemoPage>

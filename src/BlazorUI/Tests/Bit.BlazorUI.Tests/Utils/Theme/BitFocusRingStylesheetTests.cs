@@ -312,7 +312,7 @@ public sealed class BitFocusRingStylesheetTests
     }
 
     private static IEnumerable<(string File, string Stylesheet)> ReadComponentStylesheets()
-        => new[] { "Bit.BlazorUI", "Bit.BlazorUI.Extras" }
+        => new[] { "Bit.BlazorUI", "Bit.BlazorUI.Extras", "Bit.BlazorUI.AI" }
             .SelectMany(project => Directory.EnumerateFiles(SourceFiles.GetDirectory(project, "Components"), "*.scss", SearchOption.AllDirectories))
             .Select(file => (file, SourceFiles.StripScssComments(SourceFiles.ReadFullPath(file)).Replace("\r\n", "\n")));
 }

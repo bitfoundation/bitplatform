@@ -1,0 +1,60 @@
+﻿@import '../../../Bit.BlazorUI/Styles/functions.scss';
+@import '../../../Bit.BlazorUI/Styles/media-queries.scss';
+
+// Public CSS variables. They are read with a fallback and never declared here, so a value set on :root, on an
+// ancestor, or on the Style of a message list inherits down to every message list under it:
+//   --bit-AiMessageList-max-width         width the column of messages stops growing at  (default: spacing(92))
+//   --bit-AiMessageList-gap               room between two messages                      (default: spacing(4), spacing(3) on a phone)
+//   --bit-AiMessageList-padding           inset of the column of messages                (default: spacing(3) spacing(2) spacing(2),
+//                                                                                         spacing(2) spacing(1.5) spacing(1.5) on a phone)
+//   --bit-AiMessageList-scrollbar-color   thumb of the scrollbar                         (default: $clr-brd-sec)
+// A BitAiChat lines its composer up with this column through --bit-AiChat-max-width, so a chat that changes one changes
+// the other to the same value.
+
+// The root is the scroll container: it takes whatever height its parent leaves it (a BitAiChat's column) and scrolls
+// its content in that, without handing the end of a scroll on to the page around it.
+.bit-aimsl {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-x: hidden;
+    overflow-y: auto;
+    box-sizing: border-box;
+    overscroll-behavior: contain;
+    scrollbar-width: thin;
+    scrollbar-color: var(--bit-AiMessageList-scrollbar-color, #{$clr-brd-sec}) transparent;
+
+    &::-webkit-scrollbar {
+        width: spacing(1.25);
+    }
+
+    &::-webkit-scrollbar-thumb {
+        border: spacing(0.375) solid transparent;
+        border-radius: $shp-radius-full;
+        background-clip: content-box;
+        background-color: var(--bit-AiMessageList-scrollbar-color, #{$clr-brd-sec});
+    }
+}
+
+// The column the messages are laid out in: as wide as reading is comfortable, centered in whatever room the list has.
+.bit-aimsl-con {
+    width: 100%;
+    display: flex;
+    margin-inline: auto;
+    flex-direction: column;
+    box-sizing: border-box;
+    max-width: var(--bit-AiMessageList-max-width, #{spacing(92)});
+    gap: var(--bit-AiMessageList-gap, #{spacing(4)});
+    padding: var(--bit-AiMessageList-padding, #{spacing(3)} #{spacing(2)} #{spacing(2)});
+
+    @include xs {
+        gap: var(--bit-AiMessageList-gap, #{spacing(3)});
+        padding: var(--bit-AiMessageList-padding, #{spacing(2)} #{spacing(1.5)} #{spacing(1.5)});
+    }
+}
+
+// A printed transcript is the whole conversation, rather than the part of it the scroll box happened to show.
+@media print {
+    .bit-aimsl {
+        overflow: visible;
+    }
+}

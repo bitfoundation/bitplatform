@@ -1,0 +1,44 @@
+﻿// The Fabric MDL2 glyphs the components of this package draw that the core font subset (Bit.BlazorUI's
+// fabric.mdl2.bit.blazoui.scss) does not carry, so they render without the full set of Bit.BlazorUI.Icons - the
+// same as the Extras' subset. A component names one as IconName="X" plus the "bit-icon-ai bit-icon-ai--X" icon
+// class. The woff2 holds exactly these glyphs, cut from Bit.BlazorUI.Icons/wwwroot/fonts/FabMDL2.4.66.woff2: a new
+// glyph is added here and to the font together (BitAiGlyphFontTests pins the two to the classes the sources use).
+@font-face {
+    font-style: normal;
+    font-display: swap;
+    font-weight: normal;
+    font-family: 'Fabric MDL2 bit BlazorUI AI';
+    src: url('../fonts/FabMDL2.4.66.bit.BlazorUI.AI.woff2') format("woff2");
+}
+
+.bit-icon-ai {
+    font-style: normal;
+    font-weight: normal;
+    display: inline-block;
+    font-family: 'Fabric MDL2 bit BlazorUI AI' !important;
+}
+
+.bit-icon-ai--Attach::before { content: "\E723"; }
+.bit-icon-ai--AutoEnhanceOn::before { content: "\E78D"; }
+.bit-icon-ai--BackToWindow::before { content: "\E73F"; }
+.bit-icon-ai--Code::before { content: "\E943"; }
+.bit-icon-ai--Copy::before { content: "\E8C8"; }
+.bit-icon-ai--Dislike::before { content: "\E8E0"; }
+.bit-icon-ai--DislikeSolid::before { content: "\F3C0"; }
+.bit-icon-ai--Down::before { content: "\E74B"; }
+.bit-icon-ai--Download::before { content: "\E896"; }
+.bit-icon-ai--Edit::before { content: "\E70F"; }
+.bit-icon-ai--FullScreen::before { content: "\E740"; }
+.bit-icon-ai--Glimmer::before { content: "\ECF4"; }
+.bit-icon-ai--Lightbulb::before { content: "\EA80"; }
+.bit-icon-ai--Like::before { content: "\E8E1"; }
+.bit-icon-ai--LikeSolid::before { content: "\F3BF"; }
+.bit-icon-ai--MapLayers::before { content: "\E81E"; }
+.bit-icon-ai--Microphone::before { content: "\E720"; }
+.bit-icon-ai--Page::before { content: "\E7C3"; }
+.bit-icon-ai--Photo2::before { content: "\EB9F"; }
+.bit-icon-ai--Refresh::before { content: "\E72C"; }
+.bit-icon-ai--Repair::before { content: "\E90F"; }
+.bit-icon-ai--Send::before { content: "\E724"; }
+.bit-icon-ai--StopSolid::before { content: "\EE95"; }
+.bit-icon-ai--Video::before { content: "\E714"; }

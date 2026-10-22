@@ -1,0 +1,58 @@
+﻿@page "/ai/scenarios/errors"
+@inherits AppComponentBase
+
+<PageOutlet Url="ai/scenarios/errors"
+            Title="AI errors and retry"
+            Keywords="AI error handling, rate limit retry, LLM failure UI, BitAiErrorView, BitAiError, retryable errors"
+            Description="A rate-limited AI request in a bit BlazorUI chat: the failure is retryable, keeps the partial answer, and recovers on the second try - errors as data rather than exceptions." />
+
+<DocsArticle Eyebrow="AI scenarios"
+             Title="Errors and retry"
+             Lead="The first attempt is rate limited. The failure is retryable, keeps the partial answer, and recovers on the second try."
+             GitHubUrl="AI/Scenarios/Errors/AiErrorsScenarioPage.razor">
+
+    <Badges>
+        <BitTag Size="BitSize.Small" Variant="BitVariant.Outline" Color="BitColor.SecondaryForeground" Text="Bit.BlazorUI.AI" />
+        <BitTag Size="BitSize.Small" Variant="BitVariant.Outline" Color="BitColor.SecondaryForeground" Text="Scripted transport" />
+    </Badges>
+
+    <ChildContent>
+        <DocSection Id="demo" Title="Live demo"
+                    Description="Send anything: the first request fails on purpose. Press Try again.">
+            <DemoExample Title="A retryable failure" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" CodeFiles="@example1CodeFiles" Id="example1">
+                <AiScenarioFrame>
+                    <BitAiChat Session="_session"
+                               EmptyTitle="Send anything"
+                               EmptyBody="The first request fails on purpose. Press Try again."
+                               Suggestions="_suggestions" />
+                </AiScenarioFrame>
+            </DemoExample>
+        </DocSection>
+
+        <DocSection Id="how-it-works" Title="How it works">
+            <p>
+                Failures are data. A transport reports one as a <code>BitAiErrorEvent</code> carrying a
+                <code>BitAiError</code>: a message safe to show, a machine-readable <code>Code</code>, a <code>Kind</code>,
+                whether retrying could help (<code>IsRetryable</code>), how long to wait (<code>RetryAfter</code>) and the
+                technical <code>Detail</code>. Components branch on that rather than on any provider's exception type.
+            </p>
+            <p>
+                An exception that escapes the transport is translated into the same shape (unless
+                <code>BitAiChatSessionOptions.CatchTransportExceptions</code> is turned off), so an unhandled failure still
+                renders as a retryable error rather than tearing down the page. Whatever had already streamed is kept: losing
+                a half-written answer to a network blip is worse than showing it with a retry button underneath.
+            </p>
+        </DocSection>
+
+        <DocSection Id="components" Title="Components used">
+            <ul>
+                <li><BitLink Href="/components/ai/errorview"><code>BitAiErrorView</code></BitLink> - what went wrong, the retry when it can help, and the detail behind a disclosure.</li>
+                <li><BitLink Href="/components/ai/chatmessage"><code>BitAiChatMessage</code></BitLink> - the message that keeps its partial answer above the error.</li>
+            </ul>
+        </DocSection>
+    </ChildContent>
+
+    <FooterTemplate>
+        <DocPager Pages="AiScenarioNav.Items" AriaLabel="AI scenarios" />
+    </FooterTemplate>
+</DocsArticle>

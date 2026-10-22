@@ -1,0 +1,25 @@
+﻿.example-grid {
+    gap: 1rem;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(13rem, 1fr));
+    align-items: stretch;
+}
+
+::deep {
+    .custom-class {
+        max-width: 16rem;
+        box-shadow: 0 0 0.75rem #0ea5e955;
+    }
+
+    .custom-index {
+        color: white;
+        padding-inline: 0.375rem;
+        border-radius: 1rem;
+        background-color: #0ea5e9;
+    }
+
+    .custom-title {
+        color: #0369a1;
+        text-decoration: underline;
+    }
+}

@@ -343,7 +343,7 @@ public partial class DemoPageContractTests
     [TestMethod]
     public void NoRazorCommentShouldSitInsideATag()
     {
-        string[][] roots = [["Bit.BlazorUI"], ["Bit.BlazorUI.Extras"], ["Demo"]];
+        string[][] roots = [["Bit.BlazorUI"], ["Bit.BlazorUI.Extras"], ["Bit.BlazorUI.AI"], ["Demo"]];
 
         var files = roots.SelectMany(r => Directory.EnumerateFiles(SourceFiles.GetDirectory(r), "*.razor", SearchOption.AllDirectories))
                          .Where(f => IsExcluded(f) is false)

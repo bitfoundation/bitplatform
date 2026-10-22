@@ -1,0 +1,35 @@
+﻿@import '../../Styles/abstracts/_docs.scss';
+
+// A small weather tile the generative UI scenario lets the model render, styled from the theme tokens so it follows
+// the site's scheme, accent and preset like the AI components around it.
+.forecast-card {
+    gap: $doc-space-3xs;
+    display: inline-flex;
+    min-width: rem2(160px);
+    flex-direction: column;
+    margin-block: $doc-space-3xs;
+    margin-inline-end: $doc-space-2xs;
+    padding: $doc-space-xs $doc-space-sm;
+    color: $bit-color-foreground-primary;
+
+    @include doc-surface($bit-color-background-secondary);
+}
+
+.forecast-card-city {
+    font-size: $bit-typography-fs-sm;
+    font-weight: $bit-typography-fw-semibold;
+}
+
+.forecast-card-temp {
+    line-height: 1.1;
+    font-size: $bit-typography-fs-2xl;
+    font-weight: $bit-typography-fw-light;
+}
+
+.forecast-card-meta {
+    gap: $doc-space-2xs;
+    display: flex;
+    flex-wrap: wrap;
+    font-size: $bit-typography-fs-xs;
+    color: $bit-color-foreground-secondary;
+}

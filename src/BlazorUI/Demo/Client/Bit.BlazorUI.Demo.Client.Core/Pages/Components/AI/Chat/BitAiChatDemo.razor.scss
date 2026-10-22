@@ -1,0 +1,27 @@
+﻿// The wrappers are written in this page, so they carry the scope attribute themselves and are styled
+// without ::deep - which only reaches elements that have a scoped ancestor.
+.example-buttons {
+    gap: 0.5rem;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+// The classes handed to the chat land on its own elements, reached from the plain height wrapper of the section.
+::deep {
+    .custom-chat {
+        overflow: hidden;
+        border-radius: 1rem;
+        background: linear-gradient(180deg, var(--bit-clr-pri-tint), transparent 40%);
+    }
+
+    .custom-chat-footer {
+        padding-block: 1rem;
+        background: none;
+    }
+
+    .custom-chat-title {
+        color: var(--bit-clr-pri);
+        letter-spacing: 0.05em;
+    }
+}

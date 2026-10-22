@@ -10,6 +10,8 @@ builder.RootComponents.Add<HeadOutlet>("head::after");
 
 builder.Services.AddBitBlazorUIServices();
 builder.Services.AddBitBlazorUIExtrasServices();
+// The AI package's services, and the transport its chat streams the replies from: one of the app's own.
+builder.Services.AddBitBlazorUIAIServices(ai => ai.UseTransport<EchoTransport>());
 
 // The packaged presets register themselves once the Extras assembly loads; an app that never names one of its types
 // registers them by hand, through the plain type a C# 12 app can call.

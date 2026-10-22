@@ -1,0 +1,47 @@
+﻿@import '../../../Bit.BlazorUI/Styles/functions.scss';
+
+// Public CSS variables, read with a fallback and never declared here, so a value set on :root, on an ancestor or on
+// the Style of an error view reaches every error view under it:
+//   --bit-AiErrorView-detail-color       color of the technical detail                   (default: $clr-fg-sec)
+//   --bit-AiErrorView-detail-max-height  height past which the technical detail scrolls  (default: spacing(24))
+//
+// The surface, the title, the icon and the colors of the error itself are those of an Error BitMessage, restyled
+// through the --bit-Message-* variables (or Classes.Message / Styles.Message); the buttons are BitButtons, restyled
+// through the --bit-Button-* variables.
+
+.bit-aierv {
+    min-width: 0;
+    display: block;
+    box-sizing: border-box;
+}
+
+.bit-aierv-txt,
+.bit-aierv-rta {
+    overflow-wrap: anywhere;
+}
+
+// The technical detail is read as it was written - a stack trace keeps its lines - and scrolls past a few of them
+// rather than pushing the conversation down.
+.bit-aierv-dtl {
+    overflow: auto;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+    box-sizing: border-box;
+    font-size: $tg-fs-xs;
+    font-family: $tg-font-family-mono;
+    margin-block-start: spacing(1);
+    color: var(--bit-AiErrorView-detail-color, #{$clr-fg-sec});
+    max-height: var(--bit-AiErrorView-detail-max-height, #{spacing(24)});
+
+    &:focus-visible {
+        @include focus-ring;
+    }
+}
+
+// The message lays its actions out in a row but leaves the room between them to what it is given.
+.bit-aierv-act {
+    display: flex;
+    flex-wrap: wrap;
+    gap: spacing(1);
+    align-items: center;
+}

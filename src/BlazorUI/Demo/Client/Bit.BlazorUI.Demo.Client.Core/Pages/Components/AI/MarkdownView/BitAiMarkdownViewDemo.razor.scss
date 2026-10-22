@@ -1,0 +1,22 @@
+﻿::deep {
+    .custom-class {
+        padding: 0.5rem 1rem;
+        border-radius: 1rem;
+        background-color: #1e293b;
+        color: #e2e8f0;
+    }
+
+    .custom-root {
+        border-inline-start: 4px solid tomato;
+        padding-inline-start: 0.75rem;
+    }
+
+    .custom-link {
+        color: tomato;
+        text-decoration-style: wavy;
+    }
+
+    .custom-item::marker {
+        color: tomato;
+    }
+}

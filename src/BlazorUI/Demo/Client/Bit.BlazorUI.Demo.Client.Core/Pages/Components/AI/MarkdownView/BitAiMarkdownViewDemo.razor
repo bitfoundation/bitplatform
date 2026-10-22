@@ -1,0 +1,225 @@
+﻿@page "/components/ai/markdownview"
+@implements IDisposable
+
+<PageOutlet Url="components/ai/markdownview"
+            Title="AiMarkdownView"
+            Description="BitAiMarkdownView renders the Markdown an AI model writes - code blocks, tables, task lists, footnotes, mathematics and citation markers - safely: raw HTML escaped, script URLs neutralised, images under a policy." />
+
+<DemoPage Name="AiMarkdownView"
+          Description="BitAiMarkdownView renders a parsed Markdown document: the prose of an assistant message, with its code blocks, tables, task lists, footnotes, mathematics and inline citation markers. It takes an already-parsed document rather than a string, so the caller decides how parsing happens - BitAiStreamingMarkdown reuses an incremental parser across deltas, a static caller parses once with BitAiMarkdownParser. Model output is untrusted, so raw HTML is escaped unless it is opted into, link and image URLs of a scheme that can run script are neutralised, and images follow the image policy of the options. Fenced code in a language the app registered (a chart, a diagram) and mathematics defer to renderers of the app's own."
+          Parameters="componentParameters"
+          SubClasses="componentSubClasses"
+          SubEnums="componentSubEnums"
+          CssVariables="componentCssVariables"
+          GitHubAIUrl="MarkdownView/BitAiMarkdownView.razor"
+          GitHubDemoUrl="AI/MarkdownView/BitAiMarkdownViewDemo.razor">
+    <NotesTemplate>
+        <BitText>
+            To use this component, you need to install the
+            <BitLink Href="https://www.nuget.org/packages/Bit.BlazorUI.AI" Target="_blank">
+                <BitTag Reversed
+                        Text="Bit.BlazorUI.AI"
+                        Color="BitColor.SecondaryBackground"
+                        IconName="@BitIconName.NavigateExternalInline" />
+            </BitLink>
+            nuget package, as described in the Optional steps of the
+            <BitLink Href="/getting-started">Getting started</BitLink> page.
+        </BitText>
+        <br />
+        <BitText>
+            It needs no chat session: parse the Markdown with <b>BitAiMarkdownParser.Parse</b> and hand it the document. For text
+            that is still arriving, use <BitLink Href="/components/ai/streamingmarkdown">BitAiStreamingMarkdown</BitLink>, which
+            parses incrementally and renders through this view. The registered renderers (<b>BitAiRendererRegistry</b>) are a
+            singleton: register them once, at startup, with <b>ConfigureRenderers</b> of <b>AddBitBlazorUIAIServices</b>.
+        </BitText>
+        <br />
+        <BitText>
+            Security: raw HTML is shown as text unless both the parse options and the options in force allow it, which is only
+            for Markdown you trust as much as your own code; links open in a new tab with <b>rel="noopener noreferrer nofollow"</b>
+            and only the http, https, mailto, tel and ftp schemes; and a browser fetching an image URL a model was talked into
+            leaks the reader's address - restrict images with the <b>BitAiImagePolicy</b> below. Accessibility: the headings are
+            rendered one level below the Markdown's own (a <b>#</b> is an h2), so an answer never competes with the h1 of the page,
+            and a table keeps its row and column semantics while it scrolls. See it at work in the
+            <BitLink Href="/ai/scenarios/streaming">Streaming</BitLink> and <BitLink Href="/ai/scenarios/citations">Citations</BitLink> scenarios.
+        </BitText>
+    </NotesTemplate>
+    <Examples>
+        <DemoExample Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
+            <div>
+                <b>Document</b> is the parsed Markdown to render; nothing is rendered while it is null. Parse it once with
+                <b>BitAiMarkdownParser.Parse</b>: headings, emphasis, strikethrough, links, bare URLs, inline code and lists.
+            </div>
+            <br />
+            <BitAiMarkdownView Document="basicDocument" />
+        </DemoExample>
+
+        <DemoExample Title="Blocks" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
+            <div>
+                Tables with aligned columns (scrolling in their own frame), block quotes, task lists, thematic breaks and fenced code -
+                every fenced block is a <BitLink Href="/components/ai/codeblockview">BitAiCodeBlockView</BitLink> with its header,
+                copy button and highlighting.
+            </div>
+            <br />
+            <BitAiMarkdownView Document="blocksDocument" />
+        </DemoExample>
+
+        <DemoExample Title="Streaming caret" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
+            <div>
+                <b>ShowCaret</b> draws a caret after the last paragraph while it is still open - a document parsed with
+                <b>isComplete</b> false, the sign that more text is on its way. <b>BitAiUiOptions.ShowStreamingCaret</b> turns it off
+                for every view at once.
+            </div>
+            <br />
+            <BitAiMarkdownView Document="openDocument" ShowCaret />
+        </DemoExample>
+
+        <DemoExample Title="Footnotes & headings" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
+            <div>
+                Footnotes are listed after the text in the order they are first cited, each with a link back to every place that
+                cites it. The anchors of the footnotes and the ids of the headings are named after the id of the view
+                (<b>answer-bit-ai-h-setup</b> here), so two messages of one transcript never give the page two elements of one id.
+            </div>
+            <br />
+            <BitAiMarkdownView Id="answer" Document="footnotesDocument" />
+        </DemoExample>
+
+        <DemoExample Title="Mathematics" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
+            <div>
+                Dollar-delimited mathematics - <b>$inline$</b> and <b>$$display$$</b> - is left as its source, in monospace, with a
+                <b>data-math</b> attribute a script can typeset from. <b>BitAiRendererRegistry.MathRenderer</b> replaces that
+                fallback with a renderer of your own, handed a <b>BitAiMathContext</b>; the one here is a tiny typesetter of
+                superscripts, subscripts and symbols, where an app would use KaTeX or MathJax. The registry is app-wide, so an app
+                sets it once at startup; this page swaps it in and out with the toggle.
+            </div>
+            <br />
+            <BitToggle @bind-Value="typesetMath" @bind-Value:after="ToggleMathRenderer" Text="Use a math renderer of my own" />
+            <BitAiMarkdownView Document="mathDocument" />
+        </DemoExample>
+
+        <DemoExample Title="Code languages" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
+            <div>
+                <b>BitAiRendererRegistry.RegisterCodeLanguage</b> renders the fenced blocks of one language - a chart, a diagram -
+                with a renderer of your own in place of the code view, handed a <b>BitAiCodeBlockContext</b>. A half-written diagram
+                is a syntax error, so a renderer waits for <b>IsStreaming</b> to turn false: the second block below has not been
+                closed yet. This page registers a <b>bars</b> language as it initializes.
+            </div>
+            <br />
+            <BitAiMarkdownView Document="barsDocument" />
+            <br />
+            <BitAiMarkdownView Document="openBarsDocument" />
+        </DemoExample>
+
+        <DemoExample Title="Citations" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
+            <div>
+                A bracketed number in the text (<b>[1]</b>) is drawn as a citation chip when <b>Citations</b> holds a citation of
+                that <b>Number</b>; one that matches none stays the text it was. <b>OnCitationClick</b> is raised when the user
+                activates a chip. <b>BitAiUiOptions.InlineCitations</b> turns the chips off for every view at once.
+            </div>
+            <br />
+            <BitAiMarkdownView Document="citedDocument"
+                               Citations="citations"
+                               OnCitationClick="(BitAiCitation citation) => clickedSource = citation.Source.Title" />
+            <br />
+            <div>Activated: <b>@(clickedSource ?? "none yet")</b></div>
+        </DemoExample>
+
+        <DemoExample Title="Images" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
+            <div>
+                <b>BitAiUiOptions.Images</b> is the <b>BitAiImagePolicy</b> the images of the Markdown follow. <b>Allow</b> (the
+                default) shows them all; <b>AllowListedHosts</b> shows the images of the listed hosts and a placeholder for the
+                rest; <b>ClickToLoad</b> fetches nothing until the reader asks; <b>Block</b> shows the alternative text instead. A
+                placeholder is a button that loads the image, named after its alternative text. Inline <b>data:</b> images are
+                fetched from nowhere, so they are shown under every policy but <b>Block</b> - unless <b>AllowDataImages</b> is off.
+                Script-capable URL schemes are neutralised whatever the policy.
+            </div>
+            <br />
+            <BitChoiceGroup Label="Policy" Items="imageModeItems" @bind-Value="imageMode" @bind-Value:after="UpdateImageOptions" Horizontal />
+            <BitToggle @bind-Value="allowDataImages" @bind-Value:after="UpdateImageOptions" Text="AllowDataImages" />
+            <BitAiOptionsProvider UiOptions="imageOptions">
+                <BitAiMarkdownView Document="imagesDocument" />
+            </BitAiOptionsProvider>
+        </DemoExample>
+
+        <DemoExample Title="Untrusted content" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
+            <div>
+                Model output is untrusted. A <b>javascript:</b> link is neutralised to <b>#</b>, and raw HTML - inline or a block - is
+                shown as the text it is. Rendering it takes <b>AllowRawHtml</b> in both the options the document is parsed with and
+                the options in force (<b>BitAiUiOptions.Markdown</b>): turn it on only for Markdown you trust as much as your own code,
+                since a model can be talked into writing a script tag.
+            </div>
+            <br />
+            <BitToggle @bind-Value="allowRawHtml" @bind-Value:after="UpdateRawHtml" Text="AllowRawHtml (trusted Markdown only)" />
+            <BitAiOptionsProvider UiOptions="rawHtmlOptions">
+                <BitAiMarkdownView Document="untrustedDocument" />
+            </BitAiOptionsProvider>
+        </DemoExample>
+
+        <DemoExample Title="Markdown options" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
+            <div>
+                <b>BitAiMarkdownOptions</b> picks the extensions the parser reads: pipe tables, task lists, strikethrough, bare URLs
+                as links, mathematics, footnotes, citation markers and heading ids are on by default, and
+                <b>SoftBreaksAsHardBreaks</b> - for chat models that write one line per sentence and mean the breaks - is off. Hand
+                them to <b>BitAiMarkdownParser.Parse</b>; a BitAiStreamingMarkdown reads them from <b>BitAiUiOptions.Markdown</b>.
+            </div>
+            <br />
+            <BitStack Horizontal Wrap AutoHeight Gap="0.5rem 1.5rem">
+                <BitToggle @bind-Value="parseTables" @bind-Value:after="Reparse" Text="Tables" />
+                <BitToggle @bind-Value="parseTaskLists" @bind-Value:after="Reparse" Text="TaskLists" />
+                <BitToggle @bind-Value="parseStrikethrough" @bind-Value:after="Reparse" Text="Strikethrough" />
+                <BitToggle @bind-Value="parseAutoLinks" @bind-Value:after="Reparse" Text="AutoLinks" />
+                <BitToggle @bind-Value="parseMath" @bind-Value:after="Reparse" Text="Math" />
+                <BitToggle @bind-Value="parseSoftBreaks" @bind-Value:after="Reparse" Text="SoftBreaksAsHardBreaks" />
+            </BitStack>
+            <br />
+            <BitAiMarkdownView Document="optionsDocument" />
+        </DemoExample>
+
+        <DemoExample Title="Cascading parameters" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
+            <div>
+                <b>BitParams</b> with a <b>BitAiMarkdownViewParams</b> sets the defaults of every Markdown view inside it - here the
+                styles of its links and quotes - and a parameter of the view itself still wins.
+            </div>
+            <br />
+            <BitParams Parameters="markdownParams">
+                <BitAiMarkdownView Document="paramsDocument" />
+                <br />
+                <BitAiMarkdownView Document="paramsDocument" Styles="@(new() { Link = "color: mediumseagreen;" })" />
+            </BitParams>
+        </DemoExample>
+
+        <DemoExample Title="Style & Class" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12">
+            <div>
+                <b>Style</b> and <b>Class</b> reach the root, <b>Styles</b> and <b>Classes</b> every element the view renders - each
+                under a class of its own, so the prose styles never reach into what a registered renderer draws. The public
+                <b>--bit-AiMarkdownView-*</b> variables (see the CSS variables table) restyle every view under the element they are
+                set on, the ones a reasoning panel or an artifact renders inside a message included.
+            </div>
+            <br />
+            <div class="example-content">
+                @* A plain element of this page for the scoped ::deep rules of the custom classes to anchor on. *@
+                <BitAiMarkdownView Document="styleDocument" Style="padding: 0.5rem; border: 1px dashed dodgerblue;" />
+                <br />
+                <BitAiMarkdownView Document="styleDocument" Class="custom-class" />
+                <br />
+                <BitAiMarkdownView Document="styleDocument"
+                                   Styles="@(new() { Heading = "color: tomato;", InlineCode = "color: tomato;", Quote = "font-style: italic;" })" />
+                <br />
+                <BitAiMarkdownView Document="styleDocument"
+                                   Classes="@(new() { Root = "custom-root", Link = "custom-link", ListItem = "custom-item" })" />
+                <br />
+                <div style="--bit-AiMarkdownView-heading-color: rebeccapurple; --bit-AiMarkdownView-link-color: rebeccapurple; --bit-AiMarkdownView-quote-border-color: rebeccapurple; --bit-AiMarkdownView-code-background: #ede9fe; --bit-AiMarkdownView-block-spacing: 0.5rem;">
+                    <BitAiMarkdownView Document="styleDocument" />
+                </div>
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="RTL" RazorCode="@example13RazorCode" CsharpCode="@example13CsharpCode" Id="example13">
+            <div>
+                In right-to-left text the Markdown reads from the right - list markers, the bar of a quote, the columns of a table
+                and its end-aligned cells - whether the direction comes from <b>Dir</b> or from a <b>dir</b> attribute around it.
+            </div>
+            <br />
+            <BitAiMarkdownView Dir="BitDir.Rtl" Document="rtlDocument" />
+        </DemoExample>
+    </Examples>
+</DemoPage>

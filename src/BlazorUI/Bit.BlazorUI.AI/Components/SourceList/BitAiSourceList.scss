@@ -1,0 +1,42 @@
+﻿@import '../../../Bit.BlazorUI/Styles/functions.scss';
+@import '../../../Bit.BlazorUI/Styles/media-queries.scss';
+
+// Public CSS variables, read with a fallback and never declared here, so a value set on :root re-skins every source
+// list, one set on an ancestor the lists inside it, and one set on the Style of an instance that one alone:
+//   --bit-AiSourceList-gap                 room between the heading and the cards, and between two cards  (default: spacing(1))
+//   --bit-AiSourceList-column-min-width    width a column of cards does not shrink below                  (default: spacing(26))
+//   --bit-AiSourceList-header-color        heading                                                        (default: $clr-fg-sec)
+//   --bit-AiSourceList-header-font-size    size of the heading                                            (default: $tg-fs-xs)
+//
+// The heading is cased and tracked the way the overline style of the theme is ($tg-overline-*): a small label over
+// the section it names.
+
+.bit-aisrl {
+    display: flex;
+    flex-direction: column;
+    gap: var(--bit-AiSourceList-gap, #{spacing(1)});
+}
+
+.bit-aisrl-hdr {
+    font-family: $tg-font-family;
+    font-size: var(--bit-AiSourceList-header-font-size, #{$tg-fs-xs});
+    font-weight: $tg-overline-font-weight;
+    letter-spacing: $tg-overline-letter-spacing;
+    text-transform: $tg-overline-text-transform;
+    color: var(--bit-AiSourceList-header-color, #{$clr-fg-sec});
+}
+
+.bit-aisrl-lst {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(var(--bit-AiSourceList-column-min-width, #{spacing(26)}), 100%), 1fr));
+    gap: var(--bit-AiSourceList-gap, #{spacing(1)});
+
+    // A narrow screen has room for one card to a row, so it is given the whole width rather than a column of its size.
+    @include lt-sm {
+        grid-template-columns: 1fr;
+    }
+}
+
+.bit-aisrl.bit-dis > .bit-aisrl-hdr {
+    color: $clr-fg-dis;
+}

@@ -1,0 +1,65 @@
+﻿@page "/ai/scenarios/tools"
+@inherits AppComponentBase
+
+<PageOutlet Url="ai/scenarios/tools"
+            Title="AI tool calling"
+            Keywords="Blazor AI tool calling, function calling UI, LLM tools, BitAiTool, BitAiToolCallView, trimming safe tools"
+            Description="The model asks for a tool, the session runs it, feeds the result back, and the model answers - tool calling with bit BlazorUI's AI components, with trim-safe tool definitions." />
+
+<DocsArticle Eyebrow="AI scenarios"
+             Title="Tool calling"
+             Lead="The model asks for a tool, the session runs it, feeds the result back, and the model answers."
+             GitHubUrl="AI/Scenarios/Tools/AiToolsScenarioPage.razor">
+
+    <Badges>
+        <BitTag Size="BitSize.Small" Variant="BitVariant.Outline" Color="BitColor.SecondaryForeground" Text="Bit.BlazorUI.AI" />
+        <BitTag Size="BitSize.Small" Variant="BitVariant.Outline" Color="BitColor.SecondaryForeground" Text="Scripted transport" />
+    </Badges>
+
+    <ChildContent>
+        <DocSection Id="demo" Title="Live demo"
+                    Description="Ask about the weather: the model calls get_weather, waits for the result, and answers from it.">
+            <DemoExample Title="A tool call and its answer" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" CodeFiles="@example1CodeFiles" Id="example1">
+                <AiScenarioFrame>
+                    <BitAiChat Session="_session"
+                               EmptyTitle="Ask about the weather"
+                               EmptyBody="The model will call get_weather, wait for the result, and answer from it."
+                               Suggestions="_suggestions" />
+                </AiScenarioFrame>
+            </DemoExample>
+        </DocSection>
+
+        <DocSection Id="how-it-works" Title="How it works">
+            <p>
+                The transport does not run the tool. It emits <code>BitAiToolCallStartedEvent</code> and finishes with
+                <code>BitAiFinishReason.ToolCalls</code>; the session resolves the tool from the registry, checks the approval
+                policy, runs it, records the result on the call, and asks the model again. The transport reads the result off
+                the message it is handed on that second request, which is what lets an app decide where tools run without the
+                transport knowing.
+            </p>
+            <p>
+                Arguments stream in as raw JSON and are parsed leniently on every delta, which is why the card shows
+                <code>city: "Osl"</code> before the closing brace arrives.
+            </p>
+            <p>
+                The tools are declared with <code>BitAiTool.Create</code> where they are registered. The overloads that take
+                the <code>JsonTypeInfo</code> of the app's own <code>JsonSerializerContext</code> derive the argument schema
+                and read the arguments without reflection, so a trimmed WebAssembly app - like this site - keeps working; the
+                overloads without it are marked as unsafe to trim. Deriving a schema needs .NET 9 or later: on .NET 8, set
+                <code>BitAiToolDefinition.ParametersSchema</code> yourself.
+            </p>
+        </DocSection>
+
+        <DocSection Id="components" Title="Components used">
+            <ul>
+                <li><BitLink Href="/components/ai/toolcallview"><code>BitAiToolCallView</code></BitLink> - the card: what is called, its arguments as they stream, its progress and its result.</li>
+                <li><BitLink Href="/components/ai/jsonview"><code>BitAiJsonView</code></BitLink> - the arguments and the result inside it.</li>
+                <li><BitLink Href="/components/ai/chat"><code>BitAiChat</code></BitLink> - the chat over the session that runs the tool.</li>
+            </ul>
+        </DocSection>
+    </ChildContent>
+
+    <FooterTemplate>
+        <DocPager Pages="AiScenarioNav.Items" AriaLabel="AI scenarios" />
+    </FooterTemplate>
+</DocsArticle>

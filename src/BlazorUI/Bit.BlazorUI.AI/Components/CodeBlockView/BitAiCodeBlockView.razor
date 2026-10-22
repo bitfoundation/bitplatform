@@ -1,0 +1,23 @@
+﻿@namespace Bit.BlazorUI
+@inherits BitAiComponentBase
+
+<div @ref="RootElement"
+     @attributes="HtmlAttributes"
+     id="@_Id"
+     style="@StyleBuilder.Value"
+     class="@ClassBuilder.Value"
+     dir="@Dir?.ToString().ToLower()">
+    @if (ShowHeader)
+    {
+        <div style="@Styles?.Header" class="bit-aicbv-hdr @Classes?.Header">
+            <span style="@Styles?.Label" class="bit-aicbv-lng @Classes?.Label">@(FileName ?? Language ?? "text")</span>
+            @if (Options.ShowCodeCopy)
+            {
+                <BitAiCopyButton Content="@Code" Disabled="Disabled" Classes="@Classes?.CopyButton" Styles="@Styles?.CopyButton" />
+            }
+        </div>
+    }
+    <div style="@Styles?.Body" class="bit-aicbv-bdy @Classes?.Body">
+        <pre style="@Styles?.Pre" class="bit-aicbv-pre @Classes?.Pre"><code style="@Styles?.Code" class="bit-aicbv-cod language-@(Language ?? "text") @Classes?.Code">@_renderCode</code></pre>
+    </div>
+</div>

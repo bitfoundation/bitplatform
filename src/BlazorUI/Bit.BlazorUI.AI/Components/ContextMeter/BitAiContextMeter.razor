@@ -1,0 +1,37 @@
+﻿@namespace Bit.BlazorUI
+@inherits BitAiComponentBase
+
+@if (_window is { } window && window > 0)
+{
+    var usage = Strings.ContextUsage(_used, window);
+    var fraction = _Fraction;
+
+    @* The bar is a meter rather than a progress bar: how full the context is is a reading that moves either way, never
+       a task that finishes. It is named after the readout beside it and told the count of tokens as its value text, so
+       a screen reader hears "1,500 / 10,000 tokens" rather than a bare percentage. Its value is the percentage cut to a
+       whole number, and capped at the full bar while the readout beside it goes on past 100%. *@
+    <div @ref="RootElement" @attributes="HtmlAttributes"
+         id="@_Id"
+         style="@StyleBuilder.Value"
+         class="@ClassBuilder.Value"
+         dir="@Dir?.ToString().ToLower()"
+         title="@(GetSplattedAttribute("title") ?? usage)">
+        <span style="@Styles?.Label" class="bit-aictm-ttl @Classes?.Label">@Strings.Context</span>
+
+        <BitProgress Meter="true"
+                     Percent="@Math.Floor(Math.Min(1, fraction) * 100)"
+                     AriaLabel="@Strings.Context"
+                     AriaValueText="@usage"
+                     Color="@_MeterColor"
+                     Disabled="Disabled"
+                     Class="bit-aictm-mtr"
+                     Styles="@Styles?.Meter"
+                     Classes="@Classes?.Meter" />
+
+        <span style="@Styles?.Percent" class="bit-aictm-pct @Classes?.Percent">@($"{fraction * 100:0}%")</span>
+
+        @* A live region only announces what changes inside one the screen reader is already watching, so it is here from
+           the first render and empty until the window is filling up. *@
+        <span role="status" style="@Styles?.Status" class="bit-aictm-sts @Classes?.Status">@_Announcement</span>
+    </div>
+}

@@ -1,0 +1,31 @@
+﻿@namespace Bit.BlazorUI
+@inherits BitAiComponentBase
+
+@* The breakdown of the tokens rides on the native title of the root, which the page splatted one of its own onto only
+   when it wants that one instead. *@
+<span @ref="RootElement" @attributes="HtmlAttributes"
+      id="@_Id"
+      style="@StyleBuilder.Value"
+      class="@ClassBuilder.Value"
+      dir="@Dir?.ToString().ToLower()"
+      title="@(GetSplattedAttribute("title") ?? _Breakdown)">
+    @if (Usage.TotalTokens is { } total)
+    {
+        <span style="@Styles?.Tokens" class="bit-aituv-tok @Classes?.Tokens">@Strings.FormatTokens(total) @Strings.Tokens</span>
+    }
+
+    @if (Usage.Cost is { } cost)
+    {
+        <span style="@Styles?.Cost" class="bit-aituv-cst @Classes?.Cost">@FormatCost(cost)</span>
+    }
+
+    @if (ShowSpeed && Metadata?.TokensPerSecond is { } rate)
+    {
+        <span style="@Styles?.Speed" class="bit-aituv-spd @Classes?.Speed">@Strings.TokensPerSecond(rate)</span>
+    }
+
+    @if (ShowLatency && Metadata?.TimeToFirstToken is { } latency)
+    {
+        <span style="@Styles?.Latency" class="bit-aituv-ltc @Classes?.Latency">@Strings.FormatDuration(latency)</span>
+    }
+</span>

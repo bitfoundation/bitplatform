@@ -1,0 +1,186 @@
+﻿@page "/components/ai/generativeuiview"
+@implements IAsyncDisposable
+@inject BitAiGenerativeUiRegistry GenerativeRegistry
+
+<PageOutlet Url="components/ai/generativeuiview"
+            Title="AiGenerativeUiView"
+            Description="BitAiGenerativeUiView renders a component a model chose, bound to the properties it produced - only components the app registered, and only the parameters they declare." />
+
+<DemoPage Name="AiGenerativeUiView"
+          Description="BitAiGenerativeUiView renders a component the model chose, with the properties it produced. The model names a component and the view looks the name up in the generative UI registry - never a type name in the payload - so a model can only ever instantiate a component the app deliberately registered, and only set the parameters listed on it. Properties that are still streaming bind as far as they have arrived, so a card fills in as the model writes it; a name nothing is registered under renders a quiet placeholder, and the component runs inside an error boundary, so neither takes the answer around it down."
+          Parameters="componentParameters"
+          SubClasses="componentSubClasses"
+          CssVariables="componentCssVariables"
+          GitHubAIUrl="GenerativeUiView/BitAiGenerativeUiView.razor"
+          GitHubDemoUrl="AI/GenerativeUiView/BitAiGenerativeUiViewDemo.razor">
+    <NotesTemplate>
+        <BitText>
+            To use this component, you need to install the
+            <BitLink Href="https://www.nuget.org/packages/Bit.BlazorUI.AI" Target="_blank">
+                <BitTag Reversed
+                        Text="Bit.BlazorUI.AI"
+                        Color="BitColor.SecondaryBackground"
+                        IconName="@BitIconName.NavigateExternalInline" />
+            </BitLink>
+            nuget package, as described in the Optional steps of the
+            <BitLink Href="/getting-started">Getting started</BitLink> page.
+        </BitText>
+        <br />
+        <BitText>
+            BitAiGenerativeUiView resolves components through the <b>IBitAiGenerativeUiRegistry</b> that
+            <b>AddBitBlazorUIAIServices</b> registers; the app fills it at startup with <b>ConfigureGenerativeUi</b> (see
+            <BitLink Href="#example4">The registry</BitLink>). This site registers one component, <b>forecast_card</b>, which every
+            live demo below renders. Inside a <BitLink Href="/components/ai/chat">BitAiChat</BitLink> the view is rendered for
+            every generative UI part on its own - see the <BitLink Href="/ai/scenarios/generative">Generative UI</BitLink> scenario.
+        </BitText>
+        <br />
+        <BitText>
+            <b>Security</b>: the registration is the boundary. Register only components that are safe to show with any values of
+            their parameters, since a model - or whoever can steer its input - picks both. Callbacks, render fragments, the
+            attributes catch-all and any type reaching a delegate or a <b>Type</b> are never bindable, whatever is registered.
+        </BitText>
+        <br />
+        <BitText>
+            <b>Trimming</b>: registering reads the parameter types by reflection, so <b>Register</b> is marked
+            <b>[RequiresUnreferencedCode]</b> and <b>[RequiresDynamicCode]</b>. The component type itself is kept by the
+            annotation of <b>Register</b>; an app that trims keeps the types its parameters reach (a plain string or number needs
+            nothing), and says so with an <b>[UnconditionalSuppressMessage]</b> on the method that registers.
+        </BitText>
+    </NotesTemplate>
+    <Examples>
+        <DemoExample Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
+            <div>
+                Give it a <b>Part</b>, a <b>BitAiGenerativeUiPart</b> naming a registered component and carrying its
+                properties as JSON. The view finds <b>forecast_card</b> in the registry and renders the app's ForecastCard
+                component with the parameters bound from the JSON - here as a session would leave it, finished.
+            </div>
+            <br />
+            <BitAiGenerativeUiView Part="osloPart" />
+        </DemoExample>
+
+        <DemoExample Title="Streaming properties" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
+            <div>
+                The properties of a part can stream in as raw JSON (<b>AppendProps</b>, what a
+                <b>BitAiGenerativeUiDeltaEvent</b> does). The view re-binds them on every change, as far as they have arrived
+                - a string even while it is being written - so the card fills in field by field rather than appearing at the end.
+            </div>
+            <br />
+            <BitButton OnClick="StreamForecastAsync" Disabled="isStreamingForecast">Stream a forecast</BitButton>
+            <br /><br />
+            @if (streamedPart is not null)
+            {
+                <BitAiGenerativeUiView Part="streamedPart" />
+            }
+        </DemoExample>
+
+        <DemoExample Title="From a transport" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" CodeFiles="@example3CodeFiles" Id="example3">
+            <div>
+                A transport asks for a component with a <b>BitAiGenerativeUiEvent</b> - a name and the properties - and the
+                session adds a generative UI part to the answer for each one. The scripted transport here asks for three
+                forecast cards between two lines of text.
+            </div>
+            <br />
+            <BitButton OnClick="AskForForecastsAsync" Disabled="forecastSession.IsGenerating">The week ahead in three cities</BitButton>
+            <br /><br />
+            @if (ForecastAnswer is { } answer)
+            {
+                @foreach (var part in answer.PartsOf<BitAiGenerativeUiPart>())
+                {
+                    <BitAiGenerativeUiView Part="part" />
+                }
+            }
+        </DemoExample>
+
+        <DemoExample Title="The registry" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" CodeFiles="@example4CodeFiles" Id="example4">
+            <div>
+                <b>BitAiGenerativeUiRegistry.Register&lt;TComponent&gt;(name, description, required)</b>, through
+                <b>ConfigureGenerativeUi</b> of <b>AddBitBlazorUIAIServices</b>, lets model output render a component under a
+                name. Its bindable properties are its public <b>[Parameter]</b>s, less the ones no model should set: callbacks,
+                render fragments, the attributes catch-all, any type whose graph reaches a delegate or a <b>Type</b>, and any
+                parameter marked <b>[BitAiGenerativeIgnore]</b> (for one the app sets itself, such as a service key).
+                <b>[Description]</b> on a parameter is what the model is told it means; on the component it is the description
+                when <b>Register</b> is given none; a name in <b>required</b> - or a <b>[Required]</b> parameter - must be supplied.
+            </div>
+            <br />
+            <div>
+                <b>DescribeAll</b> writes all of it as one JSON Schema to hand the model (in a system prompt, or as the schema
+                of a render tool) - without it the model guesses names, and every guess renders a placeholder. This is the
+                schema this site's registry describes:
+            </div>
+            <br />
+            <BitAiJsonView Value="registrySchema" DefaultExpandDepth="8" />
+        </DemoExample>
+
+        <DemoExample Title="Unregistered components" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
+            <div>
+                A name nothing is registered under never reaches a component: the view renders a warning tag named after it,
+                once the part has finished - while it still streams, the name may be one the model is not done spelling - so
+                a component a model made up costs the answer nothing.
+            </div>
+            <br />
+            <BitAiGenerativeUiView Part="unregisteredPart" />
+        </DemoExample>
+
+        <DemoExample Title="Binding diagnostics" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
+            <div>
+                A value of the wrong shape is skipped rather than thrown, and a property the component does not declare is
+                ignored rather than passed - the card renders with what did bind. <b>ShowBindingErrors</b> lists both under the
+                component once the part is complete: the errors (a value that did not bind, a required property left out) and
+                the ignored names, kept apart since only the first means the card is missing something. Useful while writing
+                the prompt, noise in production.
+            </div>
+            <br />
+            <BitAiGenerativeUiView Part="faultyPart" ShowBindingErrors />
+        </DemoExample>
+
+        <DemoExample Title="Cascading parameters" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
+            <div>
+                <b>BitParams</b> with a <b>BitAiGenerativeUiViewParams</b> sets the defaults of every view inside it - one place
+                to turn <b>ShowBindingErrors</b> on for a whole conversation while a prompt is being developed. A view's own
+                value still wins.
+            </div>
+            <br />
+            <BitToggle @bind-Value="showDiagnostics" Text="Show binding errors" />
+            <BitParams Parameters="generativeParams">
+                <BitAiGenerativeUiView Part="faultyPart" />
+                <BitAiGenerativeUiView Part="faultyPart" ShowBindingErrors="false" />
+            </BitParams>
+        </DemoExample>
+
+        <DemoExample Title="Style & Class" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
+            <div>
+                <b>Style</b> and <b>Class</b> reach the root, <b>Styles</b> and <b>Classes</b> each part: the container of the
+                component, the placeholder tag, the diagnostics and their tags. The component itself is the app's, styled as the
+                app styles it. The public <b>--bit-AiGenerativeUiView-*</b> variables (see the CSS variables table) inherit, so
+                set on <b>:root</b>, a container or a view's <b>Style</b> they re-skin every view below.
+            </div>
+            <br />
+            @* A plain element of this page for the scoped ::deep rules of the custom classes to anchor on. *@
+            <div>
+                <BitAiGenerativeUiView Part="osloPart"
+                                       Style="padding: 0.5rem; border-radius: 0.5rem; background-color: #8a2be21a"
+                                       Styles="@(new() { Content = "display: inline-block; transform: rotate(-2deg)" })" />
+                <br />
+                <BitAiGenerativeUiView Part="faultyPart" ShowBindingErrors Classes="@(new() { Diagnostics = "custom-diagnostics" })" />
+                <br />
+                <div style="--bit-AiGenerativeUiView-diagnostics-gap: 0.25rem; --bit-AiGenerativeUiView-diagnostics-margin: 0">
+                    <BitAiGenerativeUiView Part="faultyPart" ShowBindingErrors />
+                </div>
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="RTL" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
+            <div>
+                In right-to-left text the container, the placeholder and the diagnostics start on the right, whether the
+                direction comes from <b>Dir</b> or from a <b>dir</b> attribute around the view; the component inherits the
+                direction like any markup inside it.
+            </div>
+            <br />
+            <BitAiGenerativeUiView Dir="BitDir.Rtl" Part="tehranPart" />
+            <br />
+            <div dir="rtl">
+                <BitAiGenerativeUiView Part="unregisteredPart" />
+            </div>
+        </DemoExample>
+    </Examples>
+</DemoPage>

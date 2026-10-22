@@ -1,0 +1,67 @@
+﻿@page "/e2e/aimessagepartview"
+@inject IBitAiToolRegistry ToolRegistry
+@inject BitAiRendererRegistry Renderers
+
+<PageTitle>BitAiMessagePartView E2E</PageTitle>
+
+<h1>BitAiMessagePartView</h1>
+
+@* The everything script streams reasoning, a status, cited text, an artifact, structured data, generative UI and the
+   usage into one reply; each of its parts gets a part view, numbered in order and tagged with the kind it holds. *@
+<E2ESection Id="everything" Title="Every part of a streamed reply">
+    <button id="ev-ask" @onclick="AskAsync">Ask for everything</button>
+    <p>Session: <span id="ev-state">@(_session.IsGenerating ? "Generating" : "Idle")</span></p>
+    <p>Kinds: <span id="ev-kinds">@string.Join(",", LastAssistant?.Parts.Select(p => p.Kind) ?? Enumerable.Empty<string>())</span></p>
+    <div style="width:640px">
+        @if (LastAssistant is { } streamed)
+        {
+            var index = 0;
+            foreach (var part in streamed.Parts)
+            {
+                <BitAiMessagePartView @key="part.PartId"
+                                      Id="@($"ev-{index++}")"
+                                      data-kind="@part.Kind"
+                                      Part="part"
+                                      Message="streamed"
+                                      Conversation="_session.Conversation"
+                                      Session="_session" />
+            }
+        }
+    </div>
+</E2ESection>
+
+@* One message the page builds with a part of every other kind, each given a view of its own. *@
+<E2ESection Id="kinds" Title="Every kind of part">
+    <div style="width:640px">
+        @foreach (var (id, part) in _kinds)
+        {
+            <BitAiMessagePartView @key="id" Id="@id" data-kind="@part.Kind" Part="part" Message="_message" />
+        }
+    </div>
+</E2ESection>
+
+@* Two parts of a kind a renderer is registered for, which counts its own renders on the part it draws: a change of one
+   of them, made off the renderer's thread, renders that one's view and nothing else. The change is asked for by a
+   button of its own (Trigger), whose click renders that button alone rather than the page. *@
+<E2ESection Id="custom" Title="A registered renderer">
+    @(Trigger("cst-change-first", "Change the first part", ChangeFirstInBackground))
+    <button id="cst-rerender" @onclick="() => _renders++">Re-render the page (@_renders)</button>
+    <div style="width:640px">
+        <BitAiMessagePartView Id="cst-first" Part="_firstNote" Message="_message" />
+        <BitAiMessagePartView Id="cst-second" Part="_secondNote" Message="_message" />
+    </div>
+</E2ESection>
+
+<E2ESection Id="style" Title="Style">
+    <div style="width:640px">
+        <BitAiMessagePartView Id="mpv-styles" Part="_fallback" Message="_message"
+                              Styles="@(new() { Root = "padding: 6px", Fallback = "color: rgb(200, 0, 0)" })"
+                              Classes="@(new() { Root = "e2e-mpv-root", Fallback = "e2e-mpv-fallback" })" />
+        <BitAiMessagePartView Id="mpv-rtl" Dir="BitDir.Rtl" Part="_fallback" Message="_message" />
+        <div id="mpv-narrow-box" style="width:160px">
+            <BitAiMessagePartView Id="mpv-narrow" Part="_wideCode" Message="_message" />
+        </div>
+    </div>
+</E2ESection>
+
+<E2EStatus />

@@ -1,0 +1,141 @@
+﻿@page "/components/ai/attachmentchip"
+
+<PageOutlet Url="components/ai/attachmentchip"
+            Title="AiAttachmentChip"
+            Description="BitAiAttachmentChip shows one attachment of an AI chat as a chip: a thumbnail or the glyph of its kind, its name, and its size, the progress of its upload or why it failed." />
+
+<DemoPage Name="AiAttachmentChip"
+          SecondaryNames="@(["FileChip"])"
+          Description="BitAiAttachmentChip shows one BitAiAttachment as a chip - a BitTag: a thumbnail for an image and the glyph of its kind for anything else, its name, and under it its size, the progress of an upload still arriving, or why the upload failed. Its dismiss button removes the attachment, there only while OnRemove is set. The composer stages files as these chips, and a message shows its files with them."
+          Parameters="componentParameters"
+          SubClasses="componentSubClasses"
+          SubEnums="componentSubEnums"
+          CssVariables="componentCssVariables"
+          GitHubAIUrl="AttachmentChip/BitAiAttachmentChip.razor"
+          GitHubDemoUrl="AI/AttachmentChip/BitAiAttachmentChipDemo.razor">
+    <NotesTemplate>
+        <BitText>
+            To use this component, you need to install the
+            <BitLink Href="https://www.nuget.org/packages/Bit.BlazorUI.AI" Target="_blank">
+                <BitTag Reversed
+                        Text="Bit.BlazorUI.AI"
+                        Color="BitColor.SecondaryBackground"
+                        IconName="@BitIconName.NavigateExternalInline" />
+            </BitLink>
+            nuget package, as described in the Optional steps of the
+            <BitLink Href="/getting-started">Getting started</BitLink> page.
+        </BitText>
+        <br />
+        <BitText>
+            The chip only shows a <b>BitAiAttachment</b> - it reads no file and needs no service. The
+            <BitLink Href="/components/ai/promptinput">BitAiPromptInput</BitLink> makes one per staged file, and a
+            <BitLink Href="/components/ai/chatmessage">BitAiChatMessage</BitLink> one per file of the message; see the
+            <BitLink Href="/ai/scenarios/attachments">attachments scenario</BitLink> for both. A thumbnail is decoration beside the
+            name (an empty alt), and the remove button is named after the file (Remove quarterly-report.pdf). Only an image is
+            drawn from its own content, so point <b>ThumbnailUrl</b> or <b>Url</b> only at an image you trust to be one.
+        </BitText>
+    </NotesTemplate>
+    <Examples>
+        <DemoExample Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
+            <div>
+                Give it an <b>Attachment</b>: the chip shows its name, its size under it, and the glyph of its kind. A name too long
+                for the chip is cut short and is its tooltip.
+            </div>
+            <br />
+            <BitAiAttachmentChip Attachment="report" />
+            <br /><br />
+            <BitAiAttachmentChip Attachment="longName" />
+        </DemoExample>
+
+        <DemoExample Title="Kinds" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
+            <div>
+                The <b>Kind</b> of an attachment picks what stands before its name: an image shows its <b>ThumbnailUrl</b> (or its
+                <b>Url</b>), audio, video and any other file the glyph of their kind. <b>BitAiAttachment.InferKind</b> works the kind
+                out of a MIME type and a file name, the way the composer does.
+            </div>
+            <br />
+            <div style="display:flex;flex-wrap:wrap;gap:0.5rem">
+                @foreach (var attachment in kinds)
+                {
+                    <BitAiAttachmentChip @key="attachment.AttachmentId" Attachment="attachment" />
+                }
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Status" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
+            <div>
+                The <b>Status</b> of an upload shows under the name: the <b>Progress</b> of one still <b>Uploading</b>, the
+                <b>Error</b> of one that <b>Failed</b> - in the error color, the state of the file rather than a look of the chip -
+                and the size once it is <b>Ready</b>.
+            </div>
+            <br />
+            <BitButton OnClick="UploadAsync" Disabled="isUploading">Upload a file</BitButton>
+            <br /><br />
+            <div style="display:flex;flex-wrap:wrap;gap:0.5rem">
+                <BitAiAttachmentChip Attachment="upload" />
+                <BitAiAttachmentChip Attachment="failed" />
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="OnRemove" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
+            <div>
+                <b>OnRemove</b> adds the dismiss button of the tag, named after the file, and hands over the attachment it removes;
+                without it the chip has no button at all.
+            </div>
+            <br />
+            <div style="display:flex;flex-wrap:wrap;gap:0.5rem">
+                @foreach (var attachment in staged)
+                {
+                    <BitAiAttachmentChip @key="attachment.AttachmentId" Attachment="attachment" OnRemove="Remove" />
+                }
+            </div>
+            <br />
+            <BitButton Variant="BitVariant.Outline" OnClick="ResetStaged">Bring them back</BitButton>
+        </DemoExample>
+
+        <DemoExample Title="Disabled" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
+            <div>
+                A disabled chip is dimmed and its remove button cannot be pressed.
+            </div>
+            <br />
+            <BitAiAttachmentChip Disabled Attachment="report" OnRemove="RemoveDisabled" />
+        </DemoExample>
+
+        <DemoExample Title="Style & Class" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
+            <div>
+                <b>Style</b> and <b>Class</b> reach the root, <b>Styles</b> and <b>Classes</b> the tag (BitTagClassStyles), the
+                thumbnail and the glyph. The public <b>--bit-AiAttachmentChip-*</b> variables (see the CSS variables table) size the
+                chip and its thumbnail, from <b>:root</b>, an ancestor or <b>Style</b>; the rest of the chip is a BitTag, restyled
+                through its own <b>--bit-Tag-*</b> variables.
+            </div>
+            <br />
+            @* A plain element of this page for the scoped ::deep rules of the custom classes to anchor on. *@
+            <div style="display:flex;flex-direction:column;align-items:flex-start;gap:0.75rem">
+                <BitAiAttachmentChip Attachment="report" Style="padding:0.25rem;border:1px dashed var(--bit-clr-brd-pri)" />
+                <BitAiAttachmentChip Attachment="photo" Class="custom-class" />
+                <BitAiAttachmentChip Attachment="report"
+                                     Styles="@(new() { Tag = new() { Root = "border-radius:1rem" }, Thumbnail = "border-radius:50%", Icon = "color:var(--bit-clr-pri)" })" />
+                <BitAiAttachmentChip Attachment="photo"
+                                     Classes="@(new() { Tag = new() { Text = "custom-text" }, Thumbnail = "custom-thumbnail" })" />
+                <div style="@cssVariablesStyle">
+                    <BitAiAttachmentChip Attachment="longName" />
+                </div>
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="RTL" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
+            <div>
+                In right-to-left text the thumbnail stands at the right of the name and the remove button at its left, whether the
+                direction comes from <b>Dir</b> or from a <b>dir</b> attribute around the chip.
+            </div>
+            <br />
+            <BitAiAttachmentChip Dir="BitDir.Rtl" Attachment="persianReport" OnRemove="RemoveRtl" />
+            <br /><br />
+            <div dir="rtl">
+                <BitAiAttachmentChip Attachment="persianPhoto" OnRemove="RemoveRtl" />
+            </div>
+            <br />
+            <div>Removed: <b>@rtlRemoved</b></div>
+        </DemoExample>
+    </Examples>
+</DemoPage>

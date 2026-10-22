@@ -1,0 +1,82 @@
+﻿@namespace Bit.BlazorUI
+@inherits BitAiComponentBase
+
+@{
+    @* The status class of the root follows the step, which changes through its own Changed event rather than through
+       a parameter - so the classes are built again whenever the status they were built for has moved on. *@
+    var status = Step.Status;
+    if (status != _classStatus)
+    {
+        _classStatus = status;
+        ClassBuilder.Reset();
+    }
+}
+
+<div @ref="RootElement" @attributes="HtmlAttributes"
+     id="@_Id"
+     style="@StyleBuilder.Value"
+     class="@ClassBuilder.Value"
+     dir="@Dir?.ToString().ToLower()">
+    @* The marker only draws the state the words next to it already say, so it is hidden from assistive technologies. *@
+    <span aria-hidden="true" style="@Styles?.Marker" class="bit-aiasv-mrk @Classes?.Marker">
+        @if (status is BitAiAgentStepStatus.Completed)
+        {
+            <BitIcon IconName="Accept" Style="@Styles?.MarkerIcon" Class="@($"bit-aiasv-mic {Classes?.MarkerIcon}")" />
+        }
+    </span>
+
+    <div style="@Styles?.Body" class="bit-aiasv-bdy @Classes?.Body">
+        <div style="@Styles?.Title" class="bit-aiasv-ttl @Classes?.Title">
+            <span>@Step.Title</span>
+            @if (status is BitAiAgentStepStatus.Running && Step.StartedAt is { } startedAt)
+            {
+                <span style="@Styles?.Duration" class="bit-aiasv-dur @Classes?.Duration">@Strings.FormatDuration(DateTimeOffset.UtcNow - startedAt)</span>
+            }
+            else if (Step.Duration is { } duration && status is not BitAiAgentStepStatus.Running)
+            {
+                <span style="@Styles?.Duration" class="bit-aiasv-dur @Classes?.Duration">@Strings.FormatDuration(duration)</span>
+            }
+        </div>
+
+        @if (Step.Detail is { Length: > 0 } detail)
+        {
+            <div style="@Styles?.Detail" class="bit-aiasv-dtl @Classes?.Detail">@detail</div>
+        }
+
+        @if (Step.Summary is { Length: > 0 } summary)
+        {
+            <div style="@Styles?.Summary" class="bit-aiasv-smr @Classes?.Summary">@summary</div>
+        }
+
+        @if (Step.ToolCallIds.Count > 0)
+        {
+            <ul aria-label="@Strings.ToolCalls" style="@Styles?.ToolCalls" class="bit-aiasv-tls @Classes?.ToolCalls">
+                @foreach (var toolCallId in Step.ToolCallIds)
+                {
+                    var call = FindToolCall(toolCallId);
+                    var running = call?.Status is BitAiToolCallStatus.Running or BitAiToolCallStatus.Streaming;
+
+                    @* A tag is a neutral one (the host-default tertiary role, which an app's --bit-Tag-* variables still
+                       restyle); a failed call says so in the error color, and a running one with the dots of a loader.
+                       Neither is announced on its own, since the step around them already says where the run stands. *@
+                    <li @key="toolCallId" style="@Styles?.ToolCall" class="bit-aiasv-tli @Classes?.ToolCall">
+                        <BitTag IconName="Repair"
+                                Text="@(call?.ToolName ?? toolCallId)"
+                                Title="@(call is null ? toolCallId : call.ToolName)"
+                                Color="@(call?.Status is BitAiToolCallStatus.Failed ? BitColor.Error : null)"
+                                Disabled="Disabled"
+                                SuffixTemplate="@(running ? _runningDots : null)"
+                                Class="bit-tag-dft-ter"
+                                Styles="@Styles?.ToolCallTag"
+                                Classes="@_ToolCallTagClasses" />
+                    </li>
+                }
+            </ul>
+        }
+
+        @if (Step.Error is { } error)
+        {
+            <div style="@Styles?.Error" class="bit-aiasv-err @Classes?.Error">@error.Message</div>
+        }
+    </div>
+</div>

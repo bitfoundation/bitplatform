@@ -1,0 +1,33 @@
+﻿@namespace Bit.BlazorUI
+@inherits BitAiComponentBase
+
+@if (_supported)
+{
+    <span @ref="RootElement" @attributes="DisabledAwareHtmlAttributes"
+          id="@_Id"
+          style="@StyleBuilder.Value"
+          class="@ClassBuilder.Value"
+          dir="@Dir?.ToString().ToLower()">
+        @* The name says what a press does next and the pressed state says whether the microphone is on - both of them,
+           the way the composer has always announced it. *@
+        <BitToggleButton IconName="Microphone"
+                         IsChecked="@_listening"
+                         OnClick="ToggleAsync"
+                         Disabled="Disabled"
+                         Variant="BitVariant.Text"
+                         AriaMode="BitToggleButtonAriaMode.Pressed"
+                         OnAriaLabel="@Strings.StopDictation"
+                         OffAriaLabel="@Strings.StartDictation"
+                         OnTitle="@Strings.StopDictation"
+                         OffTitle="@Strings.StartDictation"
+                         Class="bit-aivci-btn"
+                         Styles="@Styles?.Button"
+                         Classes="_ButtonClasses" />
+
+        @* The pressed state alone does not say that the microphone is live; this does, politely. *@
+        <span role="status"
+              aria-live="polite"
+              style="@Styles?.LiveRegion"
+              class="bit-aivci-sts @Classes?.LiveRegion">@_status</span>
+    </span>
+}

@@ -1,0 +1,76 @@
+﻿@page "/e2e/aicollapsible"
+
+<PageTitle>BitAiCollapsible E2E</PageTitle>
+
+<h1>BitAiCollapsible</h1>
+
+<E2ESection Id="basic" Title="Basic">
+    <button id="clp-before">Before</button>
+    <BitAiCollapsible Id="clp-basic" Title="Thinking" OpenChanged="o => _basicChanges.Add(o)">
+        <p id="clp-basic-body">The model weighed three options before answering.</p>
+    </BitAiCollapsible>
+    <p>OpenChanged: <span id="clp-basic-changes">@string.Join(",", _basicChanges)</span></p>
+</E2ESection>
+
+<E2ESection Id="bound" Title="A bound Open">
+    <BitAiCollapsible Id="clp-bound" Title="Reasoning" @bind-Open="_boundOpen">
+        <p id="clp-bound-body">Bound body.</p>
+    </BitAiCollapsible>
+    <p>Open: <span id="clp-bound-open">@_boundOpen</span></p>
+    <button id="clp-bound-toggle" @onclick="() => _boundOpen = !_boundOpen">Toggle from the page</button>
+</E2ESection>
+
+<E2ESection Id="unbound" Title="Open without a binding">
+    <BitAiCollapsible Id="clp-unbound" Title="Opened by the page" Open>
+        <p id="clp-unbound-body">Opened at first.</p>
+    </BitAiCollapsible>
+</E2ESection>
+
+<E2ESection Id="templates" Title="HeaderTemplate and SuffixTemplate">
+    <BitAiCollapsible Id="clp-templates">
+        <HeaderTemplate><b id="clp-custom-header">Custom header</b></HeaderTemplate>
+        <SuffixTemplate><span id="clp-suffix" class="clp-chip">3 steps</span></SuffixTemplate>
+        <ChildContent><p id="clp-templates-body">Templated body.</p></ChildContent>
+    </BitAiCollapsible>
+</E2ESection>
+
+<E2ESection Id="disabled" Title="Disabled">
+    <BitAiCollapsible Id="clp-dis" Title="Not now" Disabled OpenChanged="o => _disabledChanges.Add(o)">
+        <p id="clp-dis-body">Never shown.</p>
+    </BitAiCollapsible>
+    <p>OpenChanged: <span id="clp-dis-changes">@string.Join(",", _disabledChanges)</span></p>
+</E2ESection>
+
+<E2ESection Id="style" Title="Styles and Classes">
+    <BitAiCollapsible Id="clp-style"
+                      Title="Styled"
+                      Classes="@(new() { Root = "clp-custom-root", Accordion = new() { Header = "clp-custom-header" } })"
+                      Styles="@(new() { Accordion = new() { Header = "color: rgb(1, 2, 3)" } })">
+        <p>Styled body.</p>
+    </BitAiCollapsible>
+    <div style="--bit-Accordion-title-color: rgb(4, 5, 6)">
+        <BitAiCollapsible Id="clp-accordion-var" Title="Restyled through the accordion" />
+    </div>
+</E2ESection>
+
+<E2ESection Id="rtl" Title="RTL">
+    <div style="width:420px">
+        <BitAiCollapsible Id="clp-rtl" Dir="BitDir.Rtl" Title="فکر کردن">
+            <p>بدنه</p>
+        </BitAiCollapsible>
+    </div>
+    <div dir="rtl" style="width:420px">
+        <BitAiCollapsible Id="clp-rtl-inherited" Title="فکر کردن" />
+    </div>
+    <div style="width:420px">
+        <BitAiCollapsible Id="clp-ltr" Title="Thinking" />
+    </div>
+</E2ESection>
+
+<E2EStatus />
+
+@code {
+    private readonly List<bool> _basicChanges = [];
+    private bool _boundOpen = true;
+    private readonly List<bool> _disabledChanges = [];
+}

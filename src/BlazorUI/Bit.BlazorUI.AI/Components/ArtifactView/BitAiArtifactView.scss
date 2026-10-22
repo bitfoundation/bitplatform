@@ -1,0 +1,187 @@
+﻿@import '../../../Bit.BlazorUI/Styles/functions.scss';
+@import '../../../Bit.BlazorUI/Styles/media-queries.scss';
+
+// Public CSS variables, read with a fallback and never declared here, so a value set on :root re-skins every artifact
+// panel, one set on an ancestor the panels inside it, and one set on the Style of a panel that panel and the panels a
+// registered renderer nests in it. The version dropdown and the buttons are a BitDropdown and BitButtons, restyled
+// through their own variables:
+//   --bit-AiArtifactView-background            background of the panel                       (default: $clr-bg-pri)
+//   --bit-AiArtifactView-color                 color of the text of the panel                (default: $clr-fg-pri)
+//   --bit-AiArtifactView-border-color          color of the frame of the panel               (default: $clr-brd-pri)
+//   --bit-AiArtifactView-radius                corner of the panel                           (default: $shp-radius-surface)
+//   --bit-AiArtifactView-header-background     background of the header                      (default: $clr-bg-sec)
+//   --bit-AiArtifactView-header-padding        inset of the header                           (default: spacing(1) spacing(1.5))
+//   --bit-AiArtifactView-header-gap            room between the parts of the header          (default: spacing(1))
+//   --bit-AiArtifactView-divider-color         color of the rule under the header            (default: $clr-brd-sec)
+//   --bit-AiArtifactView-icon-color            color of the icon of the kind                 (default: $clr-fg-sec)
+//   --bit-AiArtifactView-title-font-size       size of the title                             (default: $tg-fs-sm)
+//   --bit-AiArtifactView-title-font-weight     weight of the title                           (default: $tg-fw-semibold)
+//   --bit-AiArtifactView-max-height            height past which the body scrolls inline     (default: spacing(64))
+//   --bit-AiArtifactView-content-padding       inset of a document or a JSON tree            (default: spacing(1.5) spacing(2))
+//   --bit-AiArtifactView-frame-height          height of the frame of an HTML page inline    (default: spacing(52))
+//   --bit-AiArtifactView-frame-background      background of the frame of an HTML page       (default: white, the page a
+//                                                                                              generated document expects)
+//   --bit-AiArtifactView-expanded-inset        room around the full-screen panel             (default: spacing(2); none on
+//                                                                                              a small screen)
+//   --bit-AiArtifactView-overlay-background    background of the overlay behind it           (default: $clr-bg-overlay)
+//   --bit-AiArtifactView-table-divider-color   color of the rules of a CSV or TSV table      (default: $clr-brd-sec)
+//   --bit-AiArtifactView-table-header-background  background of the header of that table    (default: $clr-bg-sec)
+// The panel takes no parameter that sets any of them, so each one restyles every panel it reaches.
+
+.bit-aiatv-pnl {
+    display: flex;
+    overflow: hidden;
+    flex-direction: column;
+    box-sizing: border-box;
+    color: var(--bit-AiArtifactView-color, #{$clr-fg-pri});
+    border: $shp-border-width $shp-border-style var(--bit-AiArtifactView-border-color, #{$clr-brd-pri});
+    border-radius: var(--bit-AiArtifactView-radius, #{$shp-radius-surface});
+    background-color: var(--bit-AiArtifactView-background, #{$clr-bg-pri});
+}
+
+.bit-aiatv-hdr {
+    display: flex;
+    flex: none;
+    align-items: center;
+    gap: var(--bit-AiArtifactView-header-gap, #{spacing(1)});
+    padding: var(--bit-AiArtifactView-header-padding, #{spacing(1) spacing(1.5)});
+    border-bottom: $siz-divider $shp-border-style var(--bit-AiArtifactView-divider-color, #{$clr-brd-sec});
+    background-color: var(--bit-AiArtifactView-header-background, #{$clr-bg-sec});
+}
+
+.bit-aiatv-ico {
+    flex: none;
+    font-size: $siz-icon-md;
+    color: var(--bit-AiArtifactView-icon-color, #{$clr-fg-sec});
+}
+
+.bit-aiatv-ttl {
+    flex: 1 1 auto;
+    min-width: 0;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    font-size: var(--bit-AiArtifactView-title-font-size, #{$tg-fs-sm});
+    font-weight: var(--bit-AiArtifactView-title-font-weight, #{$tg-fw-semibold});
+}
+
+.bit-aiatv-ldg,
+.bit-aiatv-ver,
+.bit-aiatv-dlb,
+.bit-aiatv-exb {
+    flex: none;
+}
+
+.bit-aiatv-bdy {
+    overflow: auto;
+    max-height: var(--bit-AiArtifactView-max-height, #{spacing(64)});
+}
+
+.bit-aiatv-doc,
+.bit-aiatv-jsn {
+    padding: var(--bit-AiArtifactView-content-padding, #{spacing(1.5) spacing(2)});
+}
+
+.bit-aiatv-img {
+    height: auto;
+    display: block;
+    max-width: 100%;
+    margin-inline: auto;
+}
+
+// A generated page is written for the white page a browser opens on, so the frame keeps one under a dark theme too,
+// where text the page never colored would otherwise be drawn dark on dark.
+.bit-aiatv-frm {
+    width: 100%;
+    border: none;
+    display: block;
+    height: var(--bit-AiArtifactView-frame-height, #{spacing(52)});
+    background-color: var(--bit-AiArtifactView-frame-background, white);
+}
+
+.bit-aiatv-tbw {
+    overflow-x: auto;
+}
+
+.bit-aiatv-tbl {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: $tg-fs-sm;
+}
+
+.bit-aiatv-thc,
+.bit-aiatv-tdc {
+    text-align: start;
+    padding: spacing(1) spacing(1.5);
+    border-bottom: $siz-divider $shp-border-style var(--bit-AiArtifactView-table-divider-color, #{$clr-brd-sec});
+}
+
+.bit-aiatv-thc {
+    white-space: nowrap;
+    font-weight: $tg-fw-semibold;
+    background-color: var(--bit-AiArtifactView-table-header-background, #{$clr-bg-sec});
+}
+
+.bit-aiatv-trw:last-child > .bit-aiatv-tdc {
+    border-bottom: none;
+}
+
+// The full-screen panel is the same element laid over the page, above an overlay, so nothing in its body - a running
+// page in its frame above all - is created again by the toggle.
+.bit-aiatv-ovl {
+    position: fixed;
+    inset: 0;
+    z-index: $zindex-modal;
+    background-color: var(--bit-AiArtifactView-overlay-background, #{$clr-bg-overlay});
+    animation: bit-aiatv-ovl-fade $mot-duration $mot-easing-decelerate;
+}
+
+@keyframes bit-aiatv-ovl-fade {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+.bit-aiatv-exp > .bit-aiatv-pnl {
+    position: fixed;
+    z-index: $zindex-modal;
+    box-shadow: $box-shadow-dialog;
+    inset: var(--bit-AiArtifactView-expanded-inset, #{spacing(2)});
+
+    @include xs {
+        inset: var(--bit-AiArtifactView-expanded-inset, 0);
+        border-radius: 0;
+    }
+}
+
+.bit-aiatv-exp > .bit-aiatv-pnl > .bit-aiatv-bdy {
+    flex: 1 1 auto;
+    max-height: none;
+}
+
+.bit-aiatv-exp > .bit-aiatv-pnl > .bit-aiatv-bdy > .bit-aiatv-frm {
+    height: 100%;
+}
+
+// A forced palette removes the backgrounds that tell the panel and its header from the page, so their rules are what
+// keep their structure.
+@media (forced-colors: active) {
+    .bit-aiatv-pnl {
+        border-color: CanvasText;
+    }
+
+    .bit-aiatv-hdr {
+        border-bottom-color: CanvasText;
+    }
+}
+
+// The overlay is a dimming of the screen, which a printout has no use for.
+@media print {
+    .bit-aiatv-ovl {
+        display: none;
+    }
+}

@@ -1,0 +1,13 @@
+﻿// The classes handed to the button land on its own elements, reached from the plain wrapper of the section.
+::deep {
+    .custom-scroll {
+        box-shadow: none;
+    }
+
+    .custom-scroll-button {
+        border-radius: 0.25rem;
+        border: 1px solid var(--bit-clr-pri);
+        background-color: var(--bit-clr-bg-pri);
+        color: var(--bit-clr-pri);
+    }
+}

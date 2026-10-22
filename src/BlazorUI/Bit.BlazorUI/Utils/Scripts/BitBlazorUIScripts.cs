@@ -2,8 +2,8 @@
 
 /// <summary>
 /// How the bit BlazorUI packages load their JavaScript: from the bundles an app references with a <c>&lt;script&gt;</c> tag
-/// each (<c>bit.blazorui.js</c>, <c>bit.blazorui.extras.js</c>, <c>bit.blazorui.legacy.js</c>) - the default - or as
-/// lazy scripts, one module per script imported the first time something calls into it.
+/// each (<c>bit.blazorui.js</c>, <c>bit.blazorui.extras.js</c>, <c>bit.blazorui.ai.js</c>, <c>bit.blazorui.legacy.js</c>) -
+/// the default - or as lazy scripts, one module per script imported the first time something calls into it.
 /// </summary>
 /// <remarks>
 /// The preferred way to turn the lazy scripts on is the <c>&lt;BitBlazorUILazyScripts&gt;true&lt;/BitBlazorUILazyScripts&gt;</c>

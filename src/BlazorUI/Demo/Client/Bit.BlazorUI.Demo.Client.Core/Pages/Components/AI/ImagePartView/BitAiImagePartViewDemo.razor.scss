@@ -1,0 +1,29 @@
+﻿// The wrapper is written in this page, so it carries the scope attribute itself and is styled without ::deep.
+.example-content {
+    gap: 1rem;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+}
+
+::deep {
+    .custom-class {
+        max-width: 18rem;
+        padding: 0.5rem;
+        border-radius: 1rem;
+        background-color: #1e293b;
+    }
+
+    .custom-root {
+        max-width: 18rem;
+    }
+
+    .custom-image {
+        border-radius: 50% / 20%;
+    }
+
+    .custom-caption {
+        color: tomato;
+        font-style: italic;
+    }
+}

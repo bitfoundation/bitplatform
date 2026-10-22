@@ -1,0 +1,54 @@
+﻿@page "/ai/scenarios/agent-input"
+@inherits AppComponentBase
+
+<PageOutlet Url="ai/scenarios/agent-input"
+            Title="AI agent asks a question"
+            Keywords="agent human input, agent waiting for user, interactive agent UI, BitAiAgentRunView, suggested answers"
+            Description="An AI agent run that stops mid-plan to ask the user something, offers one-tap answers, and resumes from the step it stopped at - in a bit BlazorUI chat." />
+
+<DocsArticle Eyebrow="AI scenarios"
+             Title="Agent asks a question"
+             Lead="A run that blocks mid-plan, offers suggested answers, and resumes from where it stopped."
+             GitHubUrl="AI/Scenarios/AgentInput/AiAgentInputScenarioPage.razor">
+
+    <Badges>
+        <BitTag Size="BitSize.Small" Variant="BitVariant.Outline" Color="BitColor.SecondaryForeground" Text="Bit.BlazorUI.AI" />
+        <BitTag Size="BitSize.Small" Variant="BitVariant.Outline" Color="BitColor.SecondaryForeground" Text="Scripted transport" />
+    </Badges>
+
+    <ChildContent>
+        <DocSection Id="demo" Title="Live demo"
+                    Description="Start the migration: the agent inspects the schema, then asks when it may take the downtime. Pick an answer.">
+            <DemoExample Title="A run waiting for an answer" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" CodeFiles="@example1CodeFiles" Id="example1">
+                <AiScenarioFrame>
+                    <BitAiChat Session="_session"
+                               EmptyTitle="Start the migration"
+                               Suggestions="_suggestions" />
+                </AiScenarioFrame>
+            </DemoExample>
+        </DocSection>
+
+        <DocSection Id="how-it-works" Title="How it works">
+            <p>
+                Blocked, not finished. On <code>BitAiAgentInputRequestedEvent</code> the run moves to
+                <code>WaitingForInput</code> and carries the question plus optional one-tap answers. Choosing one - or typing
+                one - submits it as a user message, and the agent continues from the step it stopped at.
+            </p>
+            <p>
+                This is the difference between an agent that asks and an agent that guesses. The state is explicit, so the UI
+                can make waiting look deliberate rather than stuck.
+            </p>
+        </DocSection>
+
+        <DocSection Id="components" Title="Components used">
+            <ul>
+                <li><BitLink Href="/components/ai/agentrunview"><code>BitAiAgentRunView</code></BitLink> - the run, with the question and its suggested answers.</li>
+                <li><BitLink Href="/components/ai/agentstatusbadge"><code>BitAiAgentStatusBadge</code></BitLink> - "waiting for your answer", rather than a spinner.</li>
+            </ul>
+        </DocSection>
+    </ChildContent>
+
+    <FooterTemplate>
+        <DocPager Pages="AiScenarioNav.Items" AriaLabel="AI scenarios" />
+    </FooterTemplate>
+</DocsArticle>
