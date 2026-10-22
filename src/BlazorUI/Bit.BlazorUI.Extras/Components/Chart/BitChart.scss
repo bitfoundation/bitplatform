@@ -150,16 +150,6 @@ $cht-side-steps: (lgd: 1, sub: 2, ttl: 3);
         border-radius: $shp-radius-sm;
         @include focus-ring-own(var(--bit-cht-clr-focus));
     }
-
-    // The renderer places every label as left-to-right text: the values of a left axis end at it, those of a right
-    // axis start at it. An inherited right-to-left direction swaps the sides start and end fall on, and the labels
-    // grew into the plot over the data (#14044). Laid out left to right, plaintext still gives each label the
-    // direction of its own first letter, so an Arabic or Persian one keeps reading right to left. The export carries
-    // both onto every label it writes, since a standalone file has none of this stylesheet.
-    text {
-        direction: ltr;
-        unicode-bidi: plaintext;
-    }
 }
 
 // Only the data elements and the hit bands are interactive. Without this, the line drawn over a

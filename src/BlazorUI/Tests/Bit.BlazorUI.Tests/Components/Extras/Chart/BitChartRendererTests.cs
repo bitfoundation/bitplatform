@@ -1409,6 +1409,59 @@ public class BitChartRendererTests
         Assert.IsTrue(scene.Background.OfType<BitChartSvgText>().All(t => Math.Abs(t.Rotation) < 1e-6));
     }
 
+    // ---- labels placed on a side of the screen ----
+
+    [TestMethod]
+    public void EveryLabelPlacedBesideSomethingShouldAnchorToASideOfTheScreen()
+    {
+        // The values of a vertical axis, mirrored or not, turned category labels, the categories of a horizontal bar
+        // chart and the names and values around a radar start or end where the renderer put them on the screen, so
+        // a right-to-left chart does not swap them over the plot (#14044).
+        var rotated = new BitChartOptions();
+        rotated.Scales["x"] = new BitChartScaleOptions { Id = "x", Type = BitChartScaleType.Category, Ticks = { MinRotation = 30 } };
+        var mirrored = new BitChartOptions();
+        mirrored.Scales["y"] = new BitChartScaleOptions { Id = "y", Ticks = { Mirror = true } };
+        var radar = new BitChartData
+        {
+            Labels = { "Speed", "Cost", "Reliability", "Reach", "Scale" },
+            Datasets = { new BitChartDataset { Data = { 10, 20, 30, 40, 50 } } }
+        };
+
+        foreach (var (name, scene) in new[]
+        {
+            ("bar", Render(new BitChartConfig(BitChartType.Bar, Bars(1, 2, 3)))),
+            ("turned labels", Render(new BitChartConfig(BitChartType.Bar, Bars(1, 2, 3), rotated))),
+            ("mirrored values", Render(new BitChartConfig(BitChartType.Bar, Bars(1, 2, 3), mirrored))),
+            ("horizontal bar", Render(new BitChartConfig(BitChartType.Bar, Bars(1, 2, 3), new BitChartOptions { IndexAxis = BitChartIndexAxis.Y }))),
+            ("radar", Render(new BitChartConfig(BitChartType.Radar, radar)))
+        })
+        {
+            var sided = scene.Background.OfType<BitChartSvgText>().Where(t => t.Anchor != "middle").ToList();
+
+            Assert.IsTrue(sided.Count > 1, $"{name}: labels start or end at their place");
+            foreach (var text in sided)
+                Assert.IsTrue(text.PhysicalAnchor, $"{name}: '{text.Text}' {text.Anchor} follows the reading direction");
+        }
+    }
+
+    [TestMethod]
+    public void TickAlignShouldFollowTheReadingDirection()
+    {
+        // Start and End of Align read, as every other Start and End of the chart does: SVG's own start and end.
+        var options = new BitChartOptions();
+        options.Scales["x"] = new BitChartScaleOptions { Id = "x", Type = BitChartScaleType.Category, Ticks = { Align = BitPlacement.Start } };
+
+        var scene = Render(new BitChartConfig(BitChartType.Bar, Bars(1, 2, 3), options));
+        var labels = scene.Background.OfType<BitChartSvgText>().Where(t => t.Text is "A" or "B" or "C").ToList();
+
+        Assert.AreEqual(3, labels.Count);
+        foreach (var label in labels)
+        {
+            Assert.AreEqual("start", label.Anchor, label.Text);
+            Assert.IsFalse(label.PhysicalAnchor, label.Text);
+        }
+    }
+
     // ---- polar area ----
 
     [TestMethod]

@@ -859,9 +859,84 @@ public class BitChartE2ETests : E2ETestBase
         await AssertValuesBesideTheirAxisAsync(Page.Locator("#cht-rtl-labels svg.bit-cht-svg"), "Dir=Rtl");
         await AssertValuesBesideTheirAxisAsync(Page.Locator("#cht-rtl-labels-inherited svg.bit-cht-svg"), "inherited rtl");
 
-        // The exported file keeps them there in a right-to-left page of its own, which has none of the chart's stylesheet.
+        // The exported file keeps them there, reading right to left, in a page of its own that reads left to right and
+        // has none of the chart's stylesheet.
         await Page.Locator("#btn-rtl-svg").ClickAsync();
+        await Expect(Page.Locator("#rtl-svg-status")).ToHaveTextAsync("ready");
         await AssertValuesBesideTheirAxisAsync(Page.FrameLocator("#rtl-svg-frame").Locator("svg.bit-cht-svg"), "exported");
+    }
+
+    [TestMethod]
+    public async Task Rtl_DrawsEveryLabelPlacedOnASideOfTheScreenWhereALeftToRightChartDoes()
+    {
+        await OpenAsync(Route);
+
+        // Turned categories end at their tick, mirrored values start at their axis inside the plot, the categories of a
+        // horizontal bar chart end before it, and the names around a radar and its values over their backdrops start or
+        // end where they are placed (#14044). Their Latin text reads the same either way, so each label of a
+        // right-to-left chart lies exactly where its left-to-right twin's does.
+        foreach (var kind in new[] { "turned", "mirrored", "horizontal", "radar" })
+        {
+            var ltr = await LabelBoxesAsync($"cht-ltr-{kind}");
+            var rtl = await LabelBoxesAsync($"cht-rtl-{kind}");
+
+            Assert.IsTrue(ltr.Count(b => b[3] != 0) > 3, $"{kind}: labels start or end at their place");
+            Assert.AreEqual(ltr.Length, rtl.Length, $"{kind}: both draw the same labels");
+            for (var i = 0; i < ltr.Length; i++)
+            {
+                Assert.AreEqual(ltr[i][1], rtl[i][1], 0.5, $"{kind}: label {i} starts at {rtl[i][1]:0.#} rather than {ltr[i][1]:0.#}");
+                Assert.AreEqual(ltr[i][2], rtl[i][2], 0.5, $"{kind}: label {i} ends at {rtl[i][2]:0.#} rather than {ltr[i][2]:0.#}");
+            }
+        }
+
+        // Align follows the reading direction instead: a category at the Start begins at its tick reading left to right,
+        // and ends at it reading right to left. An engine snaps the box of a glyph to the pixels by up to one, far less
+        // than the width of a label it would be off by on the wrong side.
+        var ltrAligned = (await LabelBoxesAsync("cht-ltr-align")).Where(b => b[3] > 0).ToArray();
+        var rtlAligned = (await LabelBoxesAsync("cht-rtl-align")).Where(b => b[3] > 0).ToArray();
+        Assert.IsTrue(ltrAligned.Length > 1 && ltrAligned.Length == rtlAligned.Length, "the categories are drawn at the Start");
+        foreach (var label in ltrAligned)
+            Assert.AreEqual(label[0], label[1], 1.5, $"a left-to-right category at the Start begins at {label[1]:0.#}, not at its tick {label[0]:0.#}");
+        foreach (var label in rtlAligned)
+            Assert.AreEqual(label[0], label[2], 1.5, $"a right-to-left category at the Start ends at {label[2]:0.#}, not at its tick {label[0]:0.#}");
+    }
+
+    [TestMethod]
+    public async Task Rtl_ThePictureOfAChartKeepsItsLabelsWhereALeftToRightOneHasThem()
+    {
+        await OpenAsync(Route);
+
+        // A raster export draws the file in an image of its own, with neither the page's direction nor its stylesheet:
+        // the categories of a right-to-left horizontal bar chart still end before its plot, pixel for pixel where those
+        // of its left-to-right twin do.
+        await Page.Locator("#btn-rtl-png").ClickAsync();
+        await Expect(Page.Locator("#rtl-png-status")).ToHaveTextAsync("ready");
+
+        var result = await Page.EvaluateAsync<int[]>(@"async () => {
+            const read = async id => {
+                const image = document.getElementById(id);
+                await image.decode();
+                const canvas = document.createElement('canvas');
+                canvas.width = image.naturalWidth;
+                canvas.height = image.naturalHeight;
+                const context = canvas.getContext('2d');
+                context.drawImage(image, 0, 0);
+                return context.getImageData(0, 0, canvas.width, canvas.height);
+            };
+            const ltr = await read('png-ltr-horizontal'), rtl = await read('png-rtl-horizontal');
+            if (ltr.width !== rtl.width || ltr.height !== rtl.height) return [-1, ltr.width, ltr.height, rtl.width, rtl.height];
+            let differing = 0;
+            for (let i = 0; i < ltr.data.length; i += 4) {
+                const delta = Math.max(Math.abs(ltr.data[i] - rtl.data[i]), Math.abs(ltr.data[i + 1] - rtl.data[i + 1]),
+                                       Math.abs(ltr.data[i + 2] - rtl.data[i + 2]), Math.abs(ltr.data[i + 3] - rtl.data[i + 3]));
+                if (delta > 64) differing++;
+            }
+            return [differing, ltr.width, ltr.height];
+        }");
+
+        Assert.AreNotEqual(-1, result[0], $"the pictures differ in size: {string.Join("x", result.Skip(1))}");
+        Assert.IsTrue(result[1] > 100 && result[2] > 100, $"the pictures are {result[1]}x{result[2]}");
+        Assert.AreEqual(0, result[0], $"{result[0]} pixels of the right-to-left picture differ from the left-to-right one");
     }
 
     [TestMethod]
@@ -973,7 +1048,7 @@ public class BitChartE2ETests : E2ETestBase
             for (const t of svg.querySelectorAll('text')) {
                 const axis = t.textContent.endsWith('میلیون') ? 0 : t.textContent.endsWith('درصد') ? 1 : -1;
                 if (axis < 0) continue;
-                const text = t.firstChild, box = t.getBBox(), middle = (start, end) => {
+                const text = t.ownerDocument.createTreeWalker(t, NodeFilter.SHOW_TEXT).nextNode(), box = t.getBBox(), middle = (start, end) => {
                     const range = t.ownerDocument.createRange();
                     range.setStart(text, start);
                     range.setEnd(text, end);
@@ -995,6 +1070,16 @@ public class BitChartE2ETests : E2ETestBase
             Assert.IsTrue(value[1] >= plotRight - 0.5, $"{name}: a value of the right axis starts at {value[1]:0.#}, inside the plot that ends at {plotRight:0.#}");
         foreach (var value in left.Concat(right))
             Assert.IsTrue(value[3] > value[4], $"{name}: a value reads left to right, its number on the left of its word");
+    }
+
+    // A row per label of a chart, in the order it draws them: [the x it is anchored at, its left edge, its right edge] in
+    // the user units of the SVG before any rotation, and [its anchor: 1 start, -1 end, 0 middle].
+    private Task<double[][]> LabelBoxesAsync(string id)
+    {
+        return Page.Locator($"#{id} svg.bit-cht-svg text").EvaluateAllAsync<double[][]>(@"ts => ts.map(t => {
+            const box = t.getBBox(), anchor = t.getAttribute('text-anchor');
+            return [t.x.baseVal[0].value, box.x, box.x + box.width, anchor === 'start' ? 1 : anchor === 'end' ? -1 : 0];
+        })");
     }
 
     private ILocator Elements(string id, string shape) => Page.Locator($"#{id} g.bit-cht-data > g.bit-cht-el > {shape}");

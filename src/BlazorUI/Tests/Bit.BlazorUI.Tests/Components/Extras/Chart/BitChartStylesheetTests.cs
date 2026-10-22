@@ -108,14 +108,12 @@ public class BitChartStylesheetTests
     }
 
     [TestMethod]
-    public void BitChartShouldLayItsLabelsOutLeftToRightInEitherDirection()
+    public void BitChartShouldLeaveItsLabelsReadingInTheChartsDirection()
     {
-        // The renderer places every label of the plot as left-to-right text; an inherited right-to-left direction swaps
-        // the sides start and end fall on and drew the axis values over the data (#14044). Plaintext keeps each label
-        // reading in the direction of its own first letter.
-        var svg = SourceFiles.GetScssBlock(ReadStylesheet(), ".bit-cht-svg {");
-
-        StringAssert.Contains(svg, "    text {\n        direction: ltr;\n        unicode-bidi: plaintext;\n    }");
+        // A label reads in the direction of its chart, as the legend, the tooltip and the titles do (#14044): the
+        // stylesheet turns none of them around, and the ones placed on a side of the screen keep their place through
+        // their own markup, which an exported file carries too (see BitChartSvgPrimitive).
+        StringAssert.DoesNotMatch(ReadStylesheet(), new Regex(@"^\s*(direction|unicode-bidi)\s*:", RegexOptions.Multiline));
     }
 
     private static string Normalize(string name)

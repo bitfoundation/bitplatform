@@ -240,18 +240,6 @@
             background = BitChart.resolveColor(element, background);
 
             const clone = svg.cloneNode(true) as SVGSVGElement;
-
-            // The stylesheet lays every label out left to right in the direction of its own first letter, which a
-            // standalone file does not have and a right-to-left page it is embedded in would turn around, putting the
-            // values of an axis over the data; so each label carries what it computed to. The two trees still pair up
-            // one to one here, before the interaction layers are taken out of the clone.
-            const texts = svg.querySelectorAll('text');
-            clone.querySelectorAll('text').forEach((text, i) => {
-                const style = getComputedStyle(texts[i]);
-                text.style.direction = style.direction;
-                text.style.unicodeBidi = style.unicodeBidi;
-            });
-
             const box = svg.getBoundingClientRect();
             const width = Math.max(1, Math.round(box.width));
             const height = Math.max(1, Math.round(box.height));
@@ -294,6 +282,11 @@
                 const value = computed.getPropertyValue(name);
                 if (value) clone.style.setProperty(name, value.trim());
             }
+
+            // The direction the chart reads in comes from the page as well, so the file carries it too: its labels read
+            // the way they did on the page, whatever page the file ends up in. The labels the renderer anchored to a side
+            // of the screen keep their place in either direction by their own markup (see BitChartSvgPrimitive).
+            clone.style.direction = computed.direction;
             return new XMLSerializer().serializeToString(clone);
         }
 
