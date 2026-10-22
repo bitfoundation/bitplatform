@@ -45,8 +45,9 @@ const configureProfiler = writeAt => {
         }
         const name = decodeURIComponent(new URL(request.url()).pathname);
         if (frameworkFolder && name.startsWith('/_framework/') && name.startsWith('/_framework/bit.blazor.web') === false) {
-            const file = path.join(frameworkFolder, name.slice('/_framework/'.length));
-            if (fs.existsSync(file)) return route.fulfill({ status: 200, body: fs.readFileSync(file), headers: { 'content-type': contentTypes[path.extname(file)] ?? 'application/octet-stream' } });
+            const root = path.resolve(frameworkFolder);
+            const file = path.resolve(root, name.slice('/_framework/'.length));
+            if (file.startsWith(root + path.sep) && fs.existsSync(file)) return route.fulfill({ status: 200, body: fs.readFileSync(file), headers: { 'content-type': contentTypes[path.extname(file)] ?? 'application/octet-stream' } });
         }
         return route.continue();
     });
