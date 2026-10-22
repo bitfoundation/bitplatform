@@ -16,6 +16,13 @@ public static class DemoServices
         services.AddScoped<FilterState>();
         services.AddScoped<UserSession>();
 
+        // A sign-in without an identity provider, for BevTools' Authentication state (State and Routing panels).
+        // Registered after AddRazorComponents, so it replaces the server's own provider in this demo.
+        services.AddAuthorizationCore();
+        services.AddCascadingAuthenticationState();
+        services.AddScoped<DemoAuthenticationStateProvider>();
+        services.AddScoped<Microsoft.AspNetCore.Components.Authorization.AuthenticationStateProvider>(sp => sp.GetRequiredService<DemoAuthenticationStateProvider>());
+
         // State containers that integrate with BevTools through IBevStateProvider.
         services.AddBevToolsStateProvider<CartState>();
         services.AddBevToolsStateProvider<AppState>();

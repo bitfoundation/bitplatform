@@ -131,6 +131,8 @@
 
 .bev-header { display: flex; align-items: center; gap: 4px; padding: 3px 6px; border-bottom: 1px solid var(--bev-border); background: var(--bev-bg2); flex-wrap: wrap; }
 .bev-title { font-weight: 700; margin-right: 6px; white-space: nowrap; }
+.bev-runtimes { display: flex; gap: 2px; align-items: center; margin-right: 6px; white-space: nowrap; }
+.bev-runtimes button.bev-chip { cursor: pointer; }
 .bev-tabs { display: flex; gap: 2px; flex-wrap: wrap; flex: 1 1 auto; min-width: 0; }
 .bev-tab { padding: 2px 8px; border-radius: 4px; white-space: nowrap; }
 .bev-tab.bev-active { background: var(--bev-bg); border-color: var(--bev-border); font-weight: 600; }

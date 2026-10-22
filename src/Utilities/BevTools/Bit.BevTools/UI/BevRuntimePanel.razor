@@ -1,0 +1,38 @@
+﻿@namespace Bit.BevTools
+@inherits BevToolsTab
+
+<div class="bev-scroll" style="flex:1">
+    @foreach (var section in _sections)
+    {
+        <div class="bev-section">
+            <div class="bev-section-title">@section.Title @if (section.Scope is not null) { <span class="bev-muted" style="font-weight:normal">@section.Scope</span> }</div>
+            <div class="bev-section-body">
+                <dl class="bev-kv">
+                    @foreach (var fact in section.Facts)
+                    {
+                        <dt>@fact.Name</dt>
+                        <dd class="@BevFmt.SevClass(fact.Severity)">
+                            <span class="@(fact.Severity == BevToolsSeverity.Info ? "" : "bev-chip " + (fact.Severity == BevToolsSeverity.Error ? "bev-err" : "bev-warn"))">@fact.Value</span>
+                            @if (fact.Hint is not null)
+                            {
+                                <div class="bev-muted">@fact.Hint</div>
+                            }
+                        </dd>
+                    }
+                </dl>
+            </div>
+        </div>
+    }
+    @if (Session.Platform == "Server" && ExtensionPanelAvailable("circuit"))
+    {
+        <div class="bev-muted" style="padding:6px">Circuit connection, inbound message timing and the other circuits of this process: <button type="button" class="bev-link" @onclick='() => Host.ShowPanel("circuit")'>Circuit ↗</button></div>
+    }
+</div>
+
+@code {
+    private IReadOnlyList<BevRuntimeSection> _sections = [];
+
+    protected override void OnParametersSet() => _sections = BevRuntimeInfo.Build(Session);
+
+    private bool ExtensionPanelAvailable(string id) => Host.ExtensionPanels.Any(p => p.Id == id);
+}

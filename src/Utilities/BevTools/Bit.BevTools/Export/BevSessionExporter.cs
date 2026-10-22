@@ -24,6 +24,17 @@ public sealed class BevSessionExportOptions
 
     /// <summary>Pretty-print the JSON. Default true: exports are read by people first.</summary>
     public bool Indented { get; set; } = true;
+
+    /// <summary>
+    /// Only the timeline events after this id, plus the most recent ones (whose duration or detail can still change
+    /// while their activity completes). For a frontend that already holds the rest; null writes the whole buffer.
+    /// </summary>
+    public long? TimelineAfterEventId { get; set; }
+
+    /// <summary>Only these top-level sections ("components", "timeline", "http", …); null writes every one.</summary>
+    public IReadOnlySet<string>? Sections { get; set; }
+
+    internal bool Includes(string section) => Sections is null || Sections.Contains(section);
 }
 
 /// <summary>
@@ -35,6 +46,8 @@ public static class BevSessionExporter
 {
     /// <summary>Format identifier written into every export so readers can tell versions apart.</summary>
     public const string Format = "bit-bevtools/1";
+
+    private const int RecentlyUpdatedEvents = 200;
 
     /// <summary>Full machine-readable export.</summary>
     public static string ToJson(BevToolsSession session, BevSessionExportOptions? options = null)
@@ -48,21 +61,80 @@ public static class BevSessionExporter
             writer.WriteString("format", Format);
             writer.WriteString("exportedAt", DateTimeOffset.UtcNow);
             WriteSession(writer, session);
-            WriteOptions(writer, session.Options);
-            WriteCapabilities(writer, session);
-            WriteOverhead(writer, session.Overhead);
-            WriteComponents(writer, session, options.IncludeDisposedComponents);
-            if (options.IncludeTimeline)
+            if (options.Includes("options"))
             {
-                WriteTimeline(writer, session.Timeline.Snapshot(), options.IncludeEventData ? session.Inspector : null);
+                WriteOptions(writer, session);
             }
 
-            WriteErrors(writer, session.Errors.Snapshot());
-            WriteHttp(writer, session.Http.Snapshot());
-            WriteInterop(writer, session, options.IncludeInteropCalls);
-            WriteState(writer, session, options.IncludeStateHistory);
-            WriteDiagnostics(writer, session.Diagnostics.Findings);
-            WriteBrowser(writer, session.Browser);
+            if (options.Includes("capabilities"))
+            {
+                WriteCapabilities(writer, session);
+            }
+
+            WriteOverhead(writer, session.Overhead);
+            if (options.Includes("components"))
+            {
+                WriteComponents(writer, session, options.IncludeDisposedComponents);
+            }
+
+            if (options.IncludeTimeline && options.Includes("timeline"))
+            {
+                var events = session.Timeline.Snapshot();
+                if (options.TimelineAfterEventId is { } after)
+                {
+                    // The newest events are sent again: an HTTP request or a UI event in progress completes later.
+                    var resent = Math.Max(0, events.Length - RecentlyUpdatedEvents);
+                    events = events.Where((e, i) => e.Id > after || i >= resent).ToArray();
+                }
+
+                WriteTimeline(writer, events, options.IncludeEventData ? session.Inspector : null);
+            }
+
+            if (options.Includes("errors"))
+            {
+                WriteErrors(writer, session.Errors.Snapshot());
+            }
+
+            if (options.Includes("http"))
+            {
+                WriteHttp(writer, session.Http.Snapshot());
+            }
+
+            if (options.Includes("interop"))
+            {
+                WriteInterop(writer, session, options.IncludeInteropCalls);
+            }
+
+            if (options.Includes("state"))
+            {
+                WriteState(writer, session, options.IncludeStateHistory);
+            }
+
+            if (options.Includes("diagnostics"))
+            {
+                WriteDiagnostics(writer, session.Diagnostics.Findings);
+            }
+
+            if (options.Includes("browser"))
+            {
+                WriteBrowser(writer, session.Browser);
+            }
+
+            if (options.Includes("routing"))
+            {
+                WriteRouting(writer, session);
+            }
+
+            if (options.Includes("runtime"))
+            {
+                WriteRuntime(writer, session);
+            }
+
+            if (options.Includes("prerender"))
+            {
+                WritePrerender(writer, session.Prerender);
+            }
+
             writer.WriteEndObject();
         }
 
@@ -251,8 +323,10 @@ public static class BevSessionExporter
     {
         w.WriteStartObject("session");
         w.WriteNumber("id", session.Id);
+        w.WriteNumber("version", session.Version);
         w.WriteString("startedAt", session.StartedAt);
         w.WriteString("platform", session.Platform);
+        w.WriteString("valueAccess", session.ValueAccess.ToString());
         w.WriteBoolean("interactive", session.IsInteractive);
         w.WriteString("renderMode", session.RenderModeName);
         w.WriteBoolean("capturing", session.IsCapturing);
@@ -278,8 +352,9 @@ public static class BevSessionExporter
         w.WriteEndObject();
     }
 
-    private static void WriteOptions(Utf8JsonWriter w, BitBevToolsOptions o)
+    private static void WriteOptions(Utf8JsonWriter w, BevToolsSession session)
     {
+        var o = session.Options;
         w.WriteStartObject("options");
         w.WriteNumber("maxEvents", o.MaxEvents);
         w.WriteNumber("maxRendersPerComponent", o.MaxRendersPerComponent);
@@ -293,6 +368,7 @@ public static class BevSessionExporter
         w.WriteBoolean("enableBrowserBridge", o.EnableBrowserBridge);
         w.WriteBoolean("useFrameworkInstrumentation", o.UseFrameworkInstrumentation);
         w.WriteBoolean("captureComponentStateOnRender", o.CaptureComponentStateOnRender);
+        w.WriteString("valueAccess", session.ValueAccess.ToString());
         w.WriteStartObject("diagnostics");
         var d = o.Diagnostics;
         w.WriteNumber("renderStormCount", d.RenderStormCount);
@@ -380,6 +456,10 @@ public static class BevSessionExporter
 
             w.WriteBoolean("hidden", c.IsHidden);
             w.WriteBoolean("instrumented", c.IsInstrumented);
+            if (c.RenderModeName is { } renderMode)
+            {
+                w.WriteString("renderMode", renderMode);
+            }
             if (c.InstrumentationNote is not null)
             {
                 w.WriteString("instrumentationNote", c.InstrumentationNote);
@@ -819,10 +899,184 @@ public static class BevSessionExporter
             w.WriteNumber("navigationLoadMs", Round(load));
         }
 
+        w.WriteNumber("enhancedNavigations", b.EnhancedNavigations);
+        w.WriteNumber("resourceLoadErrors", b.ResourceLoadErrors);
+        w.WriteNumber("cspViolations", b.CspViolations);
+        w.WriteStartArray("sockets");
+        foreach (var s in b.Sockets)
+        {
+            w.WriteStartObject();
+            w.WriteNumber("id", s.Id);
+            w.WriteString("url", s.Url);
+            w.WriteString("kind", s.Kind);
+            w.WriteString("protocol", s.Protocol);
+            w.WriteBoolean("closed", s.IsClosed);
+            if (s.CloseCode is { } code)
+            {
+                w.WriteNumber("closeCode", code);
+            }
+
+            WriteStat(w, "sent", s.Sent);
+            WriteStat(w, "received", s.Received);
+            WriteStat(w, "bevTools", s.Own);
+            w.WriteStartObject("renderBatches");
+            w.WriteNumber("count", s.RenderBatches.Count);
+            w.WriteNumber("bytes", s.RenderBatches.Bytes);
+            w.WriteNumber("maxBytes", s.RenderBatches.MaxBytes);
+            w.WriteNumber("applyMs", Round(s.RenderBatches.ApplyMs));
+            w.WriteNumber("maxApplyMs", Round(s.RenderBatches.MaxApplyMs));
+            w.WriteEndObject();
+            w.WriteStartObject("messages");
+            foreach (var (kind, stat) in s.Messages.OrderByDescending(m => m.Value.Bytes))
+            {
+                WriteStat(w, kind, stat);
+            }
+
+            w.WriteEndObject();
+            w.WriteEndObject();
+        }
+
+        w.WriteEndArray();
+
         // Storage entries are deliberately omitted: their previews are shown on request in the panel and have no
         // place in a file that gets attached to an issue.
         w.WriteEndObject();
     }
+
+    private static void WriteStat(Utf8JsonWriter w, string name, BevMessageStat stat)
+    {
+        w.WriteStartObject(name);
+        w.WriteNumber("count", stat.Count);
+        w.WriteNumber("bytes", stat.Bytes);
+        w.WriteNumber("maxBytes", stat.MaxBytes);
+        w.WriteEndObject();
+    }
+
+    private static void WriteRouting(Utf8JsonWriter w, BevToolsSession session)
+    {
+        BevRoutingSnapshot routing;
+        try
+        {
+            routing = BevRoutingReader.Read(session);
+        }
+        catch (Exception ex)
+        {
+            w.WriteString("routing", "«could not be read: " + ex.GetType().Name + "»");
+            return;
+        }
+
+        w.WriteStartObject("routing");
+        var current = routing.Current;
+        w.WriteStartObject("current");
+        w.WriteString("uri", current.Uri);
+        w.WriteString("page", current.PageType);
+        w.WriteString("template", current.Template);
+        w.WriteBoolean("templateInferred", current.TemplateInferred);
+        w.WriteString("layout", current.Layout);
+        w.WriteString("source", current.Source);
+        WritePairs(w, "routeValues", current.RouteValues);
+        WritePairs(w, "query", current.Query);
+        w.WriteEndObject();
+        w.WriteString("routesSource", routing.RoutesSource);
+        w.WriteStartArray("routes");
+        foreach (var route in routing.Routes)
+        {
+            w.WriteStartObject();
+            w.WriteStartArray("templates");
+            foreach (var template in route.Templates)
+            {
+                w.WriteStringValue(template);
+            }
+
+            w.WriteEndArray();
+            w.WriteString("page", route.PageType);
+            w.WriteString("assembly", route.Assembly);
+            if (route.Authorization.Count > 0)
+            {
+                w.WriteStartArray("authorization");
+                foreach (var a in route.Authorization)
+                {
+                    w.WriteStringValue(a);
+                }
+
+                w.WriteEndArray();
+            }
+
+            if (route.AllowAnonymous)
+            {
+                w.WriteBoolean("allowAnonymous", true);
+            }
+
+            if (route.RenderMode is not null)
+            {
+                w.WriteString("renderMode", route.RenderMode);
+            }
+
+            if (route.Layout is not null)
+            {
+                w.WriteString("layout", route.Layout);
+            }
+
+            w.WriteEndObject();
+        }
+
+        w.WriteEndArray();
+        w.WriteEndObject();
+    }
+
+    private static void WritePairs(Utf8JsonWriter w, string name, IReadOnlyList<KeyValuePair<string, string>> pairs)
+    {
+        w.WriteStartObject(name);
+        foreach (var (key, value) in pairs)
+        {
+            w.WriteString(key, value);
+        }
+
+        w.WriteEndObject();
+    }
+
+    private static void WriteRuntime(Utf8JsonWriter w, BevToolsSession session)
+    {
+        w.WriteStartArray("runtime");
+        foreach (var section in BevRuntimeInfo.Build(session))
+        {
+            w.WriteStartObject();
+            w.WriteString("title", section.Title);
+            w.WriteString("scope", section.Scope);
+            w.WriteStartArray("facts");
+            foreach (var fact in section.Facts)
+            {
+                w.WriteStartObject();
+                w.WriteString("name", fact.Name);
+                w.WriteString("value", fact.Value);
+                if (fact.Hint is not null)
+                {
+                    w.WriteString("hint", fact.Hint);
+                }
+
+                w.WriteString("severity", fact.Severity.ToString());
+                w.WriteEndObject();
+            }
+
+            w.WriteEndArray();
+            w.WriteEndObject();
+        }
+
+        w.WriteEndArray();
+    }
+
+    private static void WritePrerender(Utf8JsonWriter w, BevPrerenderSummary? prerender)
+    {
+        if (prerender is null)
+        {
+            return;
+        }
+
+        w.WritePropertyName("prerender");
+        JsonSerializer.Serialize(w, prerender, PrerenderJson);
+    }
+
+    private static readonly JsonSerializerOptions PrerenderJson = new(JsonSerializerDefaults.Web) { Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping };
 
     /// <summary>
     /// Writes an arbitrary <c>Data</c> value without ever throwing: primitives as themselves, everything else as the
@@ -834,7 +1088,7 @@ public static class BevSessionExporter
         BevInspectedNode node;
         try
         {
-            node = inspector.Describe(key, value);
+            node = inspector.DescribeMetadata(key, value);
         }
         catch (Exception ex)
         {
@@ -845,7 +1099,7 @@ public static class BevSessionExporter
 
         if (node.Kind == BevNodeKind.Redacted)
         {
-            w.WriteString(key, BevRedactor.RedactedValue);
+            w.WriteString(key, node.Display == BevRedactor.HiddenValue ? BevRedactor.HiddenValue : BevRedactor.RedactedValue);
             return;
         }
 
@@ -885,7 +1139,7 @@ public static class BevSessionExporter
                 w.WriteStartArray(key);
                 foreach (var item in strings.Take(100))
                 {
-                    w.WriteStringValue(item);
+                    w.WriteStringValue(item is null ? null : BevRedactor.RedactText(item));
                 }
 
                 w.WriteEndArray();

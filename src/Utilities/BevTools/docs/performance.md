@@ -44,6 +44,8 @@ Read these carefully:
 | `MaxEvents`, `MaxRendersPerComponent`, `MaxTrackedComponents`, `MaxFindings` | Bound memory. Every buffer is a ring buffer; nothing grows without a limit. |
 | `CaptureComponentStateOnRender = false` (default) | Field and parameter snapshots and diffs are taken only for the component selected in the inspector. |
 | `TrackJsInterop = false`, `TrackHttp = false` | Removes the JS runtime wrapper / HTTP handler entirely. |
+| `TrackWebSockets = false` | Leaves `WebSocket` and its `send` untouched in the browser. |
+| `ValueAccess = Shallow` or `None` | Reads less on inspection, and skips the parameter walk of forced-render detection altogether. |
 | `UseFrameworkInstrumentation = false` | Stops BevTools registering the framework's ActivitySource and meters. Render causes degrade to *StateHasChanged*. |
 | Pause capture (header button, `session.PauseCapture()`) | Stops all recording at runtime without uninstalling anything: the render wrapper degrades to one flag check and one counter increment, and every other path returns before allocating. |
 
@@ -62,6 +64,23 @@ Ordered by measured contribution:
 3. **Tree refresh**, at most once per second (and once per second of component churn even when the panel is closed,
    so that disposed components are released promptly).
 4. **State inspection**, only for the selected component, bounded by depth, item count and a 50 ms wall-clock budget.
+
+## Costs off the render path
+
+None of these run per render; each is bounded and runs only when asked or at a fixed cadence.
+
+* **Event handlers and callbacks**: one copy of the inspected component's current frames, when the inspector reads it.
+* **Render mode**: one renderer lookup per component, on its first render.
+* **Routing, runtime facts**: read when their panel (or a snapshot) asks.
+* **WebSocket traffic**: in the browser, per frame a size count and an envelope decode that skips every argument;
+  reports to .NET at most every 2 s and only when application traffic changed (BevTools' own reports never trigger
+  one), so a quiet circuit costs nothing.
+* **The companion and the extension** poll the runtime they show every 1.5 s while visible: one `snapshot` request,
+  answered `unchanged` when the session version did not move, otherwise with the timeline events since the last one
+  (plus the newest 200, which can still complete). On Blazor Server each poll is one circuit round trip; nothing is
+  rendered into the app, which is why the companion is the better way to measure a circuit's own traffic.
+
+The benchmark above is unchanged by these: the same workload measures the same allocations with and without them.
 
 ## Things that are deliberately *not* optimised away
 

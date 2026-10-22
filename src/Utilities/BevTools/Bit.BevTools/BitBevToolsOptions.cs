@@ -15,6 +15,27 @@ public enum BevToolsTheme
     Light,
 }
 
+/// <summary>
+/// How much of the application's own values BevTools reads: component parameters, cascading values and fields, state
+/// provider snapshots, authentication claims, HTTP header values and browser storage previews. Structure, counts,
+/// timings, causes, events, requests and errors are recorded at every level; secrets are redacted at every level.
+/// </summary>
+public enum BevValueAccess
+{
+    /// <summary>Values are read and shown, objects can be expanded member by member, with redaction.</summary>
+    Full,
+
+    /// <summary>
+    /// Only scalar values are shown (numbers, booleans, enums, dates, strings that do not look like credentials);
+    /// objects and collections show their type and size and are never walked or printed through <c>ToString</c>.
+    /// Forced re-render detection needs <see cref="Full"/>, since it compares parameters member by member.
+    /// </summary>
+    Shallow,
+
+    /// <summary>No application value is read: parameters, cascading values, fields and state show names and types only.</summary>
+    None,
+}
+
 /// <summary>Thresholds used by the built-in diagnostics rules. All are evidence-based; raise them for noisy apps.</summary>
 public sealed class BevDiagnosticsOptions
 {
@@ -151,6 +172,13 @@ public sealed class BitBevToolsOptions
     public bool EnableBrowserBridge { get; set; } = true;
 
     /// <summary>
+    /// Count the page's WebSocket traffic in the browser bridge: the Blazor Server circuit and the app's own SignalR hub
+    /// connections, by direction and SignalR message kind (render batches, JS interop, pings), with render batch sizes
+    /// and the time the browser takes to apply them. Only sizes and message kinds are read, never payloads.
+    /// </summary>
+    public bool TrackWebSockets { get; set; } = true;
+
+    /// <summary>
     /// Register the frameworks own components ActivitySource and meters when the host has not already done so.
     /// Server-side rendering registers them itself; WebAssembly and custom hosts do not, and without them BevTools
     /// cannot attribute a render to the UI event that caused it. Turn off to keep the app free of the meter factory.
@@ -169,6 +197,15 @@ public sealed class BitBevToolsOptions
     public int MaxCollectionItems { get; set; } = 100;
 
     public int MaxStringLength { get; set; } = 500;
+
+    /// <summary>
+    /// How much of the application's own values BevTools reads (see <see cref="BevValueAccess"/>). Null (default)
+    /// means <see cref="BevValueAccess.Full"/> in Development and in a process that serves one user (Blazor WebAssembly,
+    /// Blazor Hybrid), where the panel only ever shows people their own data, and <see cref="BevValueAccess.None"/> when
+    /// BevTools runs outside Development in a process that serves many users: there the objects a circuit reaches can
+    /// hold other users' data (a singleton cache, a shared service), so values stay unread unless the app says otherwise.
+    /// </summary>
+    public BevValueAccess? ValueAccess { get; set; }
 
     /// <summary>Member/header/query names matching any of these (case-insensitive substring) are redacted.</summary>
     public List<string> SensitiveNamePatterns { get; } =

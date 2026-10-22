@@ -23,6 +23,9 @@ internal sealed class DiagnosticContext(BevToolsSession session, IReadOnlyList<B
 {
     public DateTimeOffset Now { get; } = DateTimeOffset.UtcNow;
 
+    /// <summary>For the built-in rules that need more than the contract offers (the prerendering summary, the HTTP log).</summary>
+    internal BevToolsSession Session => session;
+
     public IReadOnlyList<BevComponentSnapshot> Components => components;
 
     public IReadOnlyList<BevToolsEvent> Events { get; } = events;

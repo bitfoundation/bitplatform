@@ -23,6 +23,7 @@ public partial class BevToolsPanel : ComponentBase, IBevToolsCommandContext, IAs
     private bool _prefsApplied;
     private string _searchText = "";
     private Task? _loop;
+    private IDisposable? _prerenderHandoff;
 
     /// <summary>The scope's session: the one registered with <c>AddBitBevToolsServices</c>, or the one attached since.</summary>
     public BevToolsSession Session { get; private set; } = default!;
@@ -64,11 +65,13 @@ public partial class BevToolsPanel : ComponentBase, IBevToolsCommandContext, IAs
         ("profiler", "Profiler"),
         ("timeline", "Timeline"),
         ("state", "State"),
+        ("routing", "Routing"),
         ("network", "Network"),
         ("interop", "JS Interop"),
         ("errors", "Errors"),
         ("services", "Services"),
         ("diagnostics", "Diagnostics"),
+        ("runtime", "Runtime"),
         ("browser", "Browser"),
         ("about", "About"),
     ];
@@ -92,9 +95,12 @@ public partial class BevToolsPanel : ComponentBase, IBevToolsCommandContext, IAs
 #endif
         if (!_interactive)
         {
+            // Prerendering: this session ends with the response, so what it saw is handed to the interactive one.
+            _prerenderHandoff = BevPrerenderHandoff.RegisterWhilePrerendering(Session, Services, this, Navigation);
             return;
         }
 
+        Session.Prerender ??= BevPrerenderHandoff.TakeWhenInteractive(Services);
         RuntimeAttachment.AttachToRenderer(Session, this);
         Session.EnsureActivated();
         Navigation.LocationChanged += OnLocationChanged;
@@ -152,9 +158,22 @@ public partial class BevToolsPanel : ComponentBase, IBevToolsCommandContext, IAs
                 _bridgeRef = DotNetObjectReference.Create(new BevJsBridge(
                     Session,
                     () => InvokeAsync(() => { Toggle(); StateHasChanged(); }),
-                    () => InvokeAsync(() => { OpenPalette(); StateHasChanged(); })));
-                var snapshot = await _module.InvokeAsync<BevBrowserSnapshot>("attach", _bridgeRef, new { shortcut = Options.Ui.ToggleShortcut, trackJsToDotNet = Options.TrackJsInterop });
+                    () => InvokeAsync(() => { OpenPalette(); StateHasChanged(); }),
+                    show => InvokeAsync(() => { SetOpen(show); StateHasChanged(); })));
+                var snapshot = await _module.InvokeAsync<BevBrowserSnapshot>("attach", _bridgeRef, new
+                {
+                    shortcut = Options.Ui.ToggleShortcut,
+                    trackJsToDotNet = Options.TrackJsInterop,
+                    trackTraffic = Options.TrackWebSockets,
+                    // The hub redacts URLs it shows itself (sockets, failed resources) with the same patterns.
+                    sensitivePatterns = Options.SensitiveNamePatterns,
+                    sessionId = Session.Id,
+                    platform = Session.Platform,
+                    renderMode = Session.RenderModeName,
+                    label = RuntimeLabel(),
+                });
                 ApplySnapshot(snapshot);
+                Session.Browser.TargetId = snapshot?.TargetId;
                 Session.Browser.BridgeAttached = true;
             }
 
@@ -245,6 +264,72 @@ public partial class BevToolsPanel : ComponentBase, IBevToolsCommandContext, IAs
         {
             StateHasChanged();
         }
+    }
+
+    /// <summary>"Server circuit", "WebAssembly": how the runtime switcher and the companion window name this runtime.</summary>
+    private string RuntimeLabel() => Session.Platform switch
+    {
+        "Server" => "Server circuit",
+        "WebAssembly" => "WebAssembly",
+        "WebView" => "Blazor Hybrid",
+        { } other => other,
+        null => "Blazor",
+    } + " · session #" + Session.Id;
+
+    /// <summary>The other runtimes on the page this panel's header can switch to.</summary>
+    internal IReadOnlyList<BevTargetInfo> OtherTargets => Session.Browser.Targets.Where(t => t.Id != Session.Browser.TargetId).ToArray();
+
+    /// <summary>Opens this runtime's panel and asks the hub to close the others', so one panel shows at a time.</summary>
+    private async Task SwitchToAsync(string targetId)
+    {
+        if (_module is null)
+        {
+            return;
+        }
+
+        try
+        {
+            await _module.InvokeVoidAsync("show", targetId);
+        }
+        catch (Exception ex) when (ex is JSException or JSDisconnectedException or OperationCanceledException)
+        {
+        }
+    }
+
+    /// <summary>Opens the companion window, which shows every BevTools runtime of the page outside the page itself.</summary>
+    public async Task OpenCompanionAsync()
+    {
+        var opened = false;
+        if (_module is not null)
+        {
+            try
+            {
+                opened = await _module.InvokeAsync<bool>("openCompanion", (string?)null);
+            }
+            catch (Exception ex) when (ex is JSException or JSDisconnectedException or OperationCanceledException)
+            {
+            }
+        }
+
+        Notify(opened ? "Companion window opened" : "The companion window could not be opened (blocked pop-up?)");
+    }
+
+    private void SetOpen(bool open)
+    {
+        if (Ui.IsOpen == open)
+        {
+            return;
+        }
+
+        Ui.IsOpen = open;
+        if (open)
+        {
+            RefreshCapturedData();
+            _viewRevision++;
+        }
+
+        Ui.Touch();
+        _ = SavePrefsAsync();
     }
 
     private void OnLocationChanged(object? sender, LocationChangedEventArgs e)
@@ -588,8 +673,10 @@ public partial class BevToolsPanel : ComponentBase, IBevToolsCommandContext, IAs
         try
         {
             var patterns = Options.SensitiveNamePatterns.ToArray();
-            Session.Browser.LocalStorage = await _module.InvokeAsync<BevStorageEntry[]>("getStorage", "local", patterns);
-            Session.Browser.SessionStorage = await _module.InvokeAsync<BevStorageEntry[]>("getStorage", "session", patterns);
+            // Under ValueAccess None no value leaves the browser: keys and sizes only.
+            var previews = Session.ValueAccess != BevValueAccess.None;
+            Session.Browser.LocalStorage = await _module.InvokeAsync<BevStorageEntry[]>("getStorage", "local", patterns, previews);
+            Session.Browser.SessionStorage = await _module.InvokeAsync<BevStorageEntry[]>("getStorage", "session", patterns, previews);
             Session.Browser.StorageReadAt = DateTimeOffset.UtcNow;
             Session.Browser.StorageError = null;
             ApplySnapshot(await _module.InvokeAsync<BevBrowserSnapshot>("refresh"));
@@ -655,6 +742,7 @@ public partial class BevToolsPanel : ComponentBase, IBevToolsCommandContext, IAs
     public async ValueTask DisposeAsync()
     {
         _cts.Cancel();
+        _prerenderHandoff?.Dispose();
         if (Session is not null)
         {
             RuntimeAttachment.OnPanelDisposed(Session);
@@ -681,7 +769,8 @@ public partial class BevToolsPanel : ComponentBase, IBevToolsCommandContext, IAs
         {
             try
             {
-                await _module.InvokeVoidAsync("detach");
+                // Only this runtime: the page can hold another one (a Web App's circuit next to its WebAssembly runtime).
+                await _module.InvokeVoidAsync("detach", Session?.Browser.TargetId);
                 await _module.DisposeAsync();
             }
             catch (Exception ex) when (ex is JSException or JSDisconnectedException or ObjectDisposedException or OperationCanceledException)

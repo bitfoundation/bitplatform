@@ -1,11 +1,17 @@
 ﻿@namespace Bit.BevTools
 @inherits BevToolsTab
 
+@if (Ui.GetQuery("network-view") == "ws")
+{
+    <div class="bev-split" style="flex-direction:column"><BevTrafficView /></div>
+    return;
+}
 <div class="bev-split">
     <div class="bev-left" style="flex-basis:58%">
         <div class="bev-toolbar">
             <input type="text" placeholder='Filter: url text, method:GET, status:failed|pending|2xx|4xx|5xx' value="@Query" @oninput="OnQuery" />
             <button type="button" @onclick="() => Session.Http.Clear()">Clear</button>
+            <button type="button" title="The page's WebSockets: the Blazor Server circuit and SignalR hub connections" @onclick="ShowTraffic">WebSockets (@Session.Browser.Sockets.Count)</button>
             <span class="bev-muted bev-nowrap">@_rows.Count / @_all.Length · @Session.Http.FailedCount failed</span>
         </div>
         @* overflow inline too: Virtualize picks its scroll root when it first renders, which can be before the stylesheet applies. *@
@@ -82,6 +88,13 @@
 
 @code {
     private string? Query => Ui.GetQuery("network");
+
+    private void ShowTraffic()
+    {
+        Ui.SetQuery("network-view", "ws");
+        Ui.Touch();
+        Host.RefreshView();
+    }
 
     private BevHttpRecord[] _all = [];
     private List<BevHttpRecord> _rows = [];

@@ -25,6 +25,9 @@ rather than "not observed yet" (renders inside events are then labeled *StateHas
 | Injected services with lifetime | Available | `[Inject]` properties + captured DI registrations. |
 | Source location | Partial | Inferred `TypeName.razor`; exact paths only inside exception stack traces (needs PDBs). |
 | Disposal | Partial | Detected when the renderer no longer knows the instance (checked on refresh), so timing is approximate. |
+| Event handlers and callbacks it bound | Instrumentation | Read on demand from the frames of its latest render (`ComponentState.CurrentRenderTree`): DOM handlers, `@bind` change handlers, `EventCallback`s passed to child components, each named by its method (a lambda by the method declaring it). A handler bound under a condition appears exactly while the condition holds. |
+| Lifecycle | Partial | Created (activator), initialized and `OnAfterRender` run (ComponentBase fields), first and last render, a queued render, disposal (noticed on refresh). `OnInitializedAsync` and the like are not timed per instance; per-type `SetParametersAsync` times come from the framework meters. |
+| Render mode | Instrumentation | What the renderer assigned (`@rendermode`, `[RenderMode*]`), read on the first render; the tree marks each boundary and the inspector names the mode a component inherits and from whom. |
 | Component ↔ DOM element highlighting | N/A | Blazor exposes no component-to-DOM map to .NET; not implemented rather than guessed. |
 
 ## Rendering
@@ -41,6 +44,7 @@ rather than "not observed yet" (renders inside events are then labeled *StateHas
 | Forced re-render (parent re-applied identical parameters) | Partial | For the component selected in the inspector (or all, with `CaptureComponentStateOnRender`), parameter and cascading values are flattened two levels deep (≤ 25 collection items, one time budget per render) before each render and diffed against the previous captured render. A parent-caused render with no observable change is marked *forced* and counted. Delegates compare by target method, so a recreated lambda with the same body counts as unchanged. Render fragments compare by instance, and one that reads component state as it runs never counts as unchanged, so new child content is never called forced. `[BevToolsSensitive]` parameters compare as redacted. Not decided for the first captured render (nothing to compare against), nor for the first one after renders that were not compared (the component was not inspected, or capture was paused). |
 | `SetParametersAsync` cost (OnInitialized/OnParametersSet) | Runtime | `aspnetcore.components.update_parameters.duration`, per component type. Same WebAssembly caveat as the diff meters. |
 | Event handler duration | Runtime | Activity duration; also `handle_event.duration` meter. |
+| What prerendering did | Instrumentation | The prerendering panel persists a bounded summary (components, render totals, slowest components, requests, errors) through `PersistentComponentState`; the interactive panel takes it back. Needs the panel in the prerendered output and `ValueAccess` Full (the summary travels in the page). The *data fetched twice* rule compares its requests with the interactive session's first 30 s. |
 
 ## Events and timeline
 
@@ -59,6 +63,15 @@ rather than "not observed yet" (renders inside events are then labeled *StateHas
 | Cascading values | Available | From `[CascadingParameter]` properties. |
 | Time travel (restoring state) | N/A | Deliberately not implemented: restoring arbitrary object graphs is unsafe. History browsing of snapshots is available. |
 
+## Routing and authentication
+
+| Information | Status | How / why |
+|---|---|---|
+| Current route: page, route values, query, layout | Available | From the `RouteView`'s public `RouteData` and `NavigationManager`; values through the inspector, the URI redacted. Without a `RouteView` in the session (the router runs during static rendering, per-page interactivity) only the URI is known, and the panel says so. |
+| Matched template | Partial | `RouteData.Template` on .NET 10; before that inferred only for a page with a single `@page`, and labeled inferred. |
+| Route table with authorization, render mode, layout | Available | The `Router`'s `AppAssembly` and `AdditionalAssemblies`, read as the router reads them (exported types with `[Route]`); `[Authorize]` read by name. Without a router: the assemblies of the pages the session rendered, labeled so. |
+| Authentication state, roles, claims, changes | Available | The scope's `AuthenticationStateProvider` (by name) as a built-in state provider; `AuthenticationStateChanged` records changes with diffs. Asking for the current state is BevTools' own work, so a provider's API call meanwhile is not recorded as the app's. Claim values follow `ValueAccess`; sensitive claim types and token-shaped values are redacted. |
+
 ## Network
 
 | Information | Status | How / why |
@@ -67,7 +80,8 @@ rather than "not observed yet" (renders inside events are then labeled *StateHas
 | Hand-built `HttpClient` | Integration | Add `BevToolsHttpMessageHandler` manually. |
 | Bodies | N/A | Never captured. |
 | Originating UI event | Partial | Linked when a HandleEvent activity is executing; lifecycle/timer requests show no trigger. |
-| Browser-level waterfall, WebSocket frames | N/A | Use the browser's DevTools. |
+| WebSocket / SignalR traffic | Instrumentation | Counted in the browser by direction and SignalR message kind (JSON and MessagePack/blazorpack envelopes; arguments skipped, never kept); for a circuit, render batch sizes and the browser's time to apply them; BevTools' own reports counted apart. A socket that existed before BevTools attached is seen from its next send. BevTools' own render batches cannot be separated inside a `JS.RenderBatch` while the in-app panel is open on Server (use the companion window). |
+| Browser-level waterfall, WebSocket payloads | N/A | Use the browser's DevTools. |
 
 ## JS interop
 
@@ -84,6 +98,7 @@ rather than "not observed yet" (renders inside events are then labeled *StateHas
 | Render exceptions with component | Available (render wrapper) |
 | Event handler / circuit / ErrorBoundary / JS interop failures | Available (Blazor's own logger categories at Warning+) |
 | JS errors, unhandled promise rejections | Instrumentation (browser bridge) |
+| Resources that failed to load, CSP violations | Instrumentation (browser bridge: capture-phase `error` on elements, `securitypolicyviolation`), URLs redacted in the browser |
 | HTTP failures | Available |
 | Preceding UI event and last activity | Available |
 | Source location | Partial (from stack trace when PDBs are present) |
@@ -105,13 +120,16 @@ rather than "not observed yet" (renders inside events are then labeled *StateHas
 | Inbound message count and processing time (slow messages flagged) | Instrumentation | `CircuitHandler.CreateInboundActivityHandler`. |
 | Active circuits in the process (aggregates only) | Available | Singleton registry; ids truncated to 8 characters; only lifecycle counters of other circuits are visible — their components, events and state stay private to their own sessions. On a shared development server this still means other developers' circuit activity is visible; the panel says so. |
 | Reconnect attempts | Instrumentation | `components:reconnect-state-changed` DOM event. |
-| Message sizes, latency, payloads | N/A | Not exposed by the framework. |
+| Message sizes, render batch sizes, the browser's time to apply a batch | Instrumentation | Counted in the browser bridge (Network → WebSockets), not on the server. |
+| Network latency, payloads | N/A | Not exposed by the framework; payloads are never read. |
 
 ## Browser
 
 | Information | Status |
 |---|---|
 | Online/offline, visibility, user agent, JS heap (Chromium), navigation timing, resource count | Instrumentation (bridge) |
+| Enhanced navigation (Blazor Web App) | Instrumentation (Blazor's `enhancedload` event) |
+| Several BevTools runtimes on one page | Available: the page hub keeps one target per runtime; page facts reach all, JS → .NET calls the runtime that received them |
 | localStorage / sessionStorage inventory (on request) | Instrumentation (bridge). Values are redacted **in the browser** when the key matches a sensitive pattern or the value looks like a token (JWT shape), so a secret never reaches the .NET side at all. |
 | IndexedDB, generic DOM events | N/A by design (no Blazor-specific value; use browser DevTools) |
 
@@ -120,6 +138,10 @@ rather than "not observed yet" (renders inside events are then labeled *StateHas
 | Information | Status |
 |---|---|
 | Overhead: bookkeeping per render, UI render time, inspection, diagnostics, tree refresh | Available (About panel) |
+| Value access level | Available. `Full`, `Shallow` or `None` (`BitBevToolsOptions.ValueAccess`); `None` by default outside Development in a process that serves many users. Shown in the Runtime panel and in every export. |
+| Performance trace | Available. `BevTraceExporter` writes Chrome Trace Event JSON for ui.perfetto.dev and the Chrome DevTools Performance panel. |
+| Companion window, browser extension | Available. The same frontend over `BevToolsProtocol`, through the page hub; the extension needs no permission and no content script. |
+| Runtime facts per platform | Available. Server process (thread pool, lock contention, working set, GC mode: shared by every circuit), WebAssembly runtime (JIT or not, threads, metrics support, globalization), .NET heap and collections. |
 | Pause / resume capture | Available. While paused no render, timeline, HTTP, JS interop or state-change record is written; errors are still collected, failed HTTP requests and JS interop calls included (their timeline link says the capture was paused). Renders that happen while paused are counted as *skipped* so the next recorded render keeps its correct cause. |
 | Profiler baseline ("since reset") | Available. Raw counters keep running; the profiler, inspector and export show the delta since the reset on request. |
 | Export | Available. `BevSessionExporter.ToJson` (`bit-bevtools/1`) and `ToMarkdownReport` contain exactly what the panels show, with the same redaction; browser storage previews are omitted. |

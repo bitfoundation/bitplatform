@@ -36,6 +36,10 @@
                             <span class="bev-caret"></span>
                         }
                         <span class="bev-name">@record.DisplayName</span>
+                        @if (record.RenderModeName is { } renderMode)
+                        {
+                            <span class="bev-chip bev-info" title="@renderMode: @@rendermode starts an interactive subtree here">⚡ @ShortRenderMode(renderMode)</span>
+                        }
                         @if (!record.IsInstrumented && !record.IsHidden)
                         {
                             <span class="bev-chip" title="@record.InstrumentationNote">not measured</span>
@@ -127,6 +131,8 @@
         Ui.SetQuery("components", e.Value?.ToString());
         Rebuild();
     }
+
+    private static string ShortRenderMode(string mode) => mode.Replace("InteractiveWebAssembly", "WASM").Replace("Interactive", "").Replace(", no prerendering", " · no prerender");
 
     private void ToggleHidden(ChangeEventArgs e)
     {

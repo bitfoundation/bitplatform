@@ -34,6 +34,7 @@
                 <button type="button" @onclick="() => Session.ClearAll()">Clear captured event histories</button>
                 <button type="button" title="Download everything this session captured as JSON (already redacted and bounded)" @onclick="() => BevSessionExporter.DownloadJsonAsync(Session, Host)">⬇ Export session (JSON)</button>
                 <button type="button" title="Copy a short Markdown summary: findings, errors, hottest components, failed requests, timeline tail" @onclick="() => BevSessionExporter.CopyMarkdownReportAsync(Session, Host)">⎘ Copy report (Markdown)</button>
+                <button type="button" title="Download the timeline as a Chrome trace: render batches with their component renders, events, requests and interop on tracks, with arrows from each event to what it caused. Open it in ui.perfetto.dev or the Chrome DevTools Performance panel." @onclick="() => BevTraceExporter.DownloadAsync(Session, Host)">⬇ Export performance trace</button>
             </div>
         </div>
     </div>

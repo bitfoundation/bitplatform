@@ -41,8 +41,14 @@ internal sealed partial class ErrorCenter
         }
 
         exceptionType ??= exception?.GetType().FullName ?? "Error";
-        message ??= exception?.Message ?? "Unknown error";
+        // Messages are redacted where they are captured, like everything else: "Login failed for Password=…" and
+        // "invalid token eyJ…" are common exception messages, and these are shown, searched and exported.
+        message = BevRedactor.RedactText(message ?? exception?.Message ?? "Unknown error");
         stackTrace ??= exception?.StackTrace;
+        if (stackTrace is not null)
+        {
+            stackTrace = BevRedactor.RedactText(stackTrace);
+        }
         var location = FindSourceLocation(stackTrace);
         var fingerprint = string.Concat(source, "|", exceptionType, "|", message, "|", location ?? FirstLine(stackTrace), "|", component?.InstanceId);
         var now = DateTimeOffset.UtcNow;
@@ -167,7 +173,7 @@ internal sealed partial class ErrorCenter
             innermost = inner;
         }
 
-        return innermost.GetType().Name + ": " + innermost.Message;
+        return innermost.GetType().Name + ": " + BevRedactor.RedactText(innermost.Message);
     }
 
     private static string? FirstLine(string? text)

@@ -1,0 +1,176 @@
+﻿@namespace Bit.BevTools
+@inherits BevToolsTab
+
+<div class="bev-toolbar">
+    <input type="text" placeholder="Filter routes (template, page, policy)…" value="@Query" @oninput="OnQuery" />
+    <span class="bev-muted bev-nowrap">@_visibleRoutes.Count / @_snapshot.Routes.Count routes</span>
+</div>
+<div class="bev-scroll" style="flex:1">
+    @{ var current = _snapshot.Current; }
+    <div class="bev-section">
+        <div class="bev-section-title">Current route</div>
+        <div class="bev-section-body">
+            <dl class="bev-kv">
+                <dt>URI</dt><dd class="bev-mono">@(current.Uri ?? "unknown")</dd>
+                @if (current.PageType is not null)
+                {
+                    <dt>Page</dt>
+                    <dd>
+                        @if (current.PageInstanceId is { } pageId)
+                        {
+                            <button type="button" class="bev-link bev-mono" @onclick="() => Host.SelectComponent(pageId)">@current.PageDisplayName</button>
+                        }
+                        else
+                        {
+                            <span class="bev-mono">@current.PageDisplayName</span>
+                        }
+                        <span class="bev-muted bev-mono">@current.PageType</span>
+                    </dd>
+                    <dt>Template</dt>
+                    <dd class="bev-mono">@(current.Template ?? "unknown") @if (current.TemplateInferred) { <span class="bev-muted">(the page's only @@page; RouteData names the matched template from .NET 10)</span> }</dd>
+                    <dt>Layout</dt><dd class="bev-mono">@(current.Layout ?? "none")</dd>
+                }
+                <dt>Source</dt><dd class="bev-muted">@current.Source</dd>
+            </dl>
+            @if (current.RouteValues.Count > 0)
+            {
+                <strong>Route values</strong>
+                @Pairs(current.RouteValues)
+            }
+            @if (current.Query.Count > 0)
+            {
+                <strong>Query string</strong>
+                @Pairs(current.Query)
+            }
+        </div>
+    </div>
+    @if (_authentication is { } auth)
+    {
+        <div class="bev-section">
+            <div class="bev-section-title">Authentication <button type="button" class="bev-link" style="margin-left:auto;font-weight:normal" @onclick='() => Host.ShowPanel("state", "Authentication")'>State ↗</button></div>
+            <div class="bev-section-body">
+                <dl class="bev-kv">
+                    <dt>User</dt><dd>@(auth.IsAuthenticated ? Session.Inspector.Describe("Name", auth.Name).Display + " (" + auth.AuthenticationType + ")" : "anonymous")</dd>
+                    @if (auth.IsAuthenticated)
+                    {
+                        <dt>Roles</dt><dd>@(auth.Roles.Count == 0 ? "none" : string.Join(", ", auth.Roles.Select(r => Session.Inspector.Describe("Role", r).Display)))</dd>
+                        <dt>Claims</dt><dd>@auth.Claims.Count <span class="bev-muted">(listed in the State panel, with the change history)</span></dd>
+                    }
+                    @if (auth.Error is not null)
+                    {
+                        <dt>Error</dt><dd class="bev-err">@auth.Error</dd>
+                    }
+                </dl>
+            </div>
+        </div>
+    }
+    <div class="bev-section">
+        <div class="bev-section-title">Navigation history <span class="bev-muted" style="font-weight:normal">newest first, from the timeline</span></div>
+        <div class="bev-section-body">
+            @if (_navigations.Length == 0)
+            {
+                <div class="bev-muted">No navigation recorded yet.</div>
+            }
+            else
+            {
+                <table>
+                    <thead><tr><th>Time</th><th>Navigation</th><th class="bev-num">Duration</th><th>How</th></tr></thead>
+                    <tbody>
+                        @foreach (var n in _navigations)
+                        {
+                            <tr class="bev-row" @onclick="() => Host.SelectEvent(n.Id)">
+                                <td class="bev-mono">@BevFmt.Time(n.Timestamp)</td>
+                                <td class="bev-mono bev-truncate" style="max-width:420px" title="@n.Title">@n.Title</td>
+                                <td class="bev-num">@BevFmt.Ms(n.DurationMs)</td>
+                                <td class="bev-muted">@n.Detail</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+        </div>
+    </div>
+    <div class="bev-section">
+        <div class="bev-section-title">Route table <span class="bev-muted" style="font-weight:normal">@_snapshot.RoutesSource</span></div>
+        <div class="bev-section-body">
+            @if (_visibleRoutes.Count == 0)
+            {
+                <div class="bev-muted">@(_snapshot.Routes.Count == 0 ? "No routable page found." : "No route matches the filter.")</div>
+            }
+            else
+            {
+                <table>
+                    <thead><tr><th>Template</th><th>Page</th><th>Authorization</th><th>Render mode</th><th>Layout</th></tr></thead>
+                    <tbody>
+                        @foreach (var route in _visibleRoutes)
+                        {
+                            <tr class="@(route.PageType == current.PageType ? "bev-selected" : "")" title="@route.PageType (@route.Assembly)">
+                                <td class="bev-mono">@string.Join(" · ", route.Templates)</td>
+                                <td class="bev-mono">@route.PageDisplayName</td>
+                                <td>
+                                    @foreach (var a in route.Authorization)
+                                    {
+                                        <span class="bev-chip bev-warn">@a</span>
+                                    }
+                                    @if (route.AllowAnonymous)
+                                    {
+                                        <span class="bev-chip">AllowAnonymous</span>
+                                    }
+                                </td>
+                                <td>@if (route.RenderMode is not null) { <span class="bev-chip">@route.RenderMode</span> }</td>
+                                <td class="bev-mono bev-muted">@route.Layout</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+            @if (_snapshot.RouteAssemblies.Count > 0)
+            {
+                <div class="bev-muted" style="margin-top:4px">Assemblies: <span class="bev-mono">@string.Join(", ", _snapshot.RouteAssemblies)</span></div>
+            }
+        </div>
+    </div>
+</div>
+
+@code {
+    private BevRoutingSnapshot _snapshot = new(new BevCurrentRoute(null, null, null, null, null, false, [], [], null, ""), [], [], "");
+    private List<BevRouteEntry> _visibleRoutes = [];
+    private BevToolsEvent[] _navigations = [];
+    private BevAuthenticationSnapshot? _authentication;
+
+    private string? Query => Ui.GetQuery("routing");
+
+    protected override void OnParametersSet()
+    {
+        _snapshot = BevRoutingReader.Read(Session);
+        _navigations = Session.Timeline.Snapshot().Where(e => e.Kind == BevToolsEventKind.Navigation).Reverse().Take(25).ToArray();
+        _authentication = Session.State.Entries.FirstOrDefault(e => e.Provider is BevAuthenticationStateProvider)?.Provider.GetSnapshot() as BevAuthenticationSnapshot;
+        Filter();
+    }
+
+    private void Filter()
+    {
+        var filter = BevQueryFilter.Parse(Query);
+        _visibleRoutes = _snapshot.Routes
+            .Where(r => filter.Terms.Count == 0 || filter.MatchesText(string.Join(" ", r.Templates), r.PageType, string.Join(" ", r.Authorization), r.RenderMode ?? "", r.Layout ?? ""))
+            .ToList();
+    }
+
+    private void OnQuery(ChangeEventArgs e)
+    {
+        Ui.SetQuery("routing", e.Value?.ToString());
+        Filter();
+    }
+
+    private static RenderFragment Pairs(IReadOnlyList<KeyValuePair<string, string>> pairs) => __builder =>
+    {
+        <table>
+            <tbody>
+                @foreach (var (key, value) in pairs)
+                {
+                    <tr><td class="bev-mono">@key</td><td class="bev-mono">@value</td></tr>
+                }
+            </tbody>
+        </table>
+    };
+}

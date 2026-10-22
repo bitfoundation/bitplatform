@@ -16,7 +16,100 @@ internal static class BuiltInRules
         new SlowJsInteropRule(),
         new ExcessiveJsInteropRule(),
         new RepeatedErrorRule(),
+        new PrerenderRefetchRule(),
+        new LargeRenderBatchRule(),
     ];
+
+    /// <summary>
+    /// On Blazor Server every render batch crosses the network, and its size is what the user waits for: a page that
+    /// re-renders a long list sends all of it. The browser bridge sizes each batch as it arrives (the bin argument of
+    /// <c>JS.RenderBatch</c>) and times how long the browser takes to apply it.
+    /// </summary>
+    private sealed class LargeRenderBatchRule : IBevDiagnosticRule
+    {
+        public string Id => "circuit.large-render-batch";
+
+        public string Title => "Large render batches over the circuit";
+
+        public string Description => "A render batch the circuit sent to the browser was large enough to be felt as latency.";
+
+        public IEnumerable<BevDiagnostic> Evaluate(IBevDiagnosticContext context)
+        {
+            if (context is not DiagnosticContext { Session: var session })
+            {
+                yield break;
+            }
+
+            foreach (var socket in session.Browser.Sockets)
+            {
+                var batches = socket.RenderBatches;
+                if (socket.Kind != "blazor-circuit" || batches.MaxBytes < BevTrafficView.LargeBatch)
+                {
+                    continue;
+                }
+
+                var applied = batches.Count - batches.Pending;
+                yield return new BevDiagnostic(
+                    Id,
+                    BevDiagnosticSeverity.Warning,
+                    $"A render batch of {BevFmt.Bytes(batches.MaxBytes)} was sent over the circuit",
+                    $"{batches.Count} render batches, {BevFmt.Bytes(batches.Bytes)} in all, {BevFmt.Bytes(batches.Count == 0 ? 0 : batches.Bytes / batches.Count)} on average"
+                        + (applied > 0 ? $"; the browser took up to {Ms(batches.MaxApplyMs)} to apply one." : ".")
+                        + " Every byte of a batch crosses the network before the user sees the update, and the circuit sends nothing else meanwhile.",
+                    "Render less at once: Virtualize long lists, page large tables, give list items a @key so a change re-renders one row instead of all of them, and keep components that re-render often small (see the Profiler for which ones).",
+                    Fingerprint: Id + ":" + socket.Id);
+            }
+        }
+    }
+
+    /// <summary>
+    /// The classic cost of prerendering: <c>OnInitializedAsync</c> runs on the server to produce the HTML and again when
+    /// the page becomes interactive, and each run loads the same data. Evidence comes from both sides - the prerendering
+    /// session's requests, handed over in the page (<see cref="BevPrerenderSummary"/>), and this session's - so the rule
+    /// says nothing when the page was not prerendered or the summary did not arrive.
+    /// </summary>
+    private sealed class PrerenderRefetchRule : IBevDiagnosticRule
+    {
+        private static readonly TimeSpan Window = TimeSpan.FromSeconds(30);
+
+        public string Id => "webapp.prerender-refetch";
+
+        public string Title => "Data fetched twice: while prerendering and when interactive";
+
+        public string Description => "A request made while the page was prerendered on the server was made again once the page became interactive.";
+
+        public IEnumerable<BevDiagnostic> Evaluate(IBevDiagnosticContext context)
+        {
+            if (context is not DiagnosticContext { Session: { Prerender: { Requests.Count: > 0 } prerender } session })
+            {
+                yield break;
+            }
+
+            var interactive = session.Http.Snapshot().Where(r => r.StartedAt - session.StartedAt < Window).ToArray();
+            foreach (var group in prerender.Requests.GroupBy(r => BevPrerenderSummary.Signature(r.Method, r.Url)))
+            {
+                var again = interactive.Where(r => BevPrerenderSummary.Signature(r.Method, r.Url) == group.Key).ToList();
+                if (again.Count == 0)
+                {
+                    continue;
+                }
+
+                var prerendered = group.ToList();
+                var after = (again[0].StartedAt - session.StartedAt).TotalSeconds;
+                yield return new BevDiagnostic(
+                    Id,
+                    BevDiagnosticSeverity.Warning,
+                    $"{group.Key} ran while prerendering and again when the page became interactive",
+                    $"Prerendering requested it {Times(prerendered.Count)} on the server ({Ms(prerendered.Sum(r => r.DurationMs ?? 0))}); this {session.Platform ?? "interactive"} session requested it {Times(again.Count)} more, the first {after:0.0} s after it started. "
+                        + "OnInitializedAsync runs once to prerender the HTML and once more when the component becomes interactive, and nothing carried the first result over.",
+                    "Hand the data over: [PersistentState] on the property (.NET 10), or PersistentComponentState.PersistAsJson and TryTakeFromJson (.NET 8 and 9). Or turn prerendering off for the component: new InteractiveServerRenderMode(prerender: false).",
+                    Fingerprint: Id + ":" + group.Key,
+                    RelatedEventIds: again.Select(r => r.TimelineEventId).Where(id => id > 0).Take(10).ToList());
+            }
+        }
+
+        private static string Times(int count) => count == 1 ? "once" : count + " times";
+    }
 
     private static BevDiagnosticsOptions Opt(IBevDiagnosticContext ctx) => ctx.GetOptions<BevDiagnosticsOptions>() ?? new BevDiagnosticsOptions();
 

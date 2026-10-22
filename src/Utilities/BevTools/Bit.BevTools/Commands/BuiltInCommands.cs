@@ -24,6 +24,14 @@ internal static class BuiltInCommands
             SessionOf(ctx).Diagnostics.Evaluate(force: true);
             ctx.ShowPanel("diagnostics");
         }),
+        new DelegateCommand("routing.show", "Show routing", "Routing", (ctx, arg) => ctx.ShowPanel("routing", arg), acceptsArgument: true, keywords: ["route", "page", "navigation", "url", "query", "authorize", "auth", "user", "claims"]),
+        new DelegateCommand("runtime.show", "Show runtime and render modes", "Runtime", (ctx, _) => ctx.ShowPanel("runtime"), keywords: ["server", "webassembly", "wasm", "prerender", "render mode", "thread pool", "memory", "gc"]),
+        new DelegateCommand("trace.export", "Export performance trace", "Profiler",
+            (ctx, _) => BevTraceExporter.DownloadAsync(SessionOf(ctx), ctx),
+            keywords: ["perfetto", "chrome", "flame", "chart", "profile", "download", "timeline"]),
+        new DelegateCommand("trace.export-baseline", "Export performance trace since the profiler baseline", "Profiler",
+            (ctx, _) => BevTraceExporter.DownloadAsync(SessionOf(ctx), ctx, SessionOf(ctx).Components.BaselineAt),
+            keywords: ["perfetto", "chrome", "flame", "since", "reset"]),
         new DelegateCommand("browser.show", "Show browser activity", "Browser", (ctx, _) => ctx.ShowPanel("browser"), keywords: ["storage", "online", "reconnect"]),
         new DelegateCommand("about.show", "Show capabilities and overhead", "BevTools", (ctx, _) => ctx.ShowPanel("about"), keywords: ["about", "capabilities", "overhead", "cost"]),
         new DelegateCommand("capture.toggle", "Pause or resume capture", "BevTools", (ctx, _) =>

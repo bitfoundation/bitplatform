@@ -2,7 +2,7 @@
 
 @if (Session.IsEnabled && _interactive)
 {
-    <div class="bev-root" data-theme="@ThemeAttribute" @onkeydown="OnRootKeyDown">
+    <div class="bev-root" data-theme="@ThemeAttribute" data-bev-target="@Session.Browser.TargetId" @onkeydown="OnRootKeyDown">
         <link rel="stylesheet" href="_content/Bit.BevTools/bit-bevtools.css" />
         @if (!Ui.IsOpen)
         {
@@ -31,6 +31,17 @@
                 <div class="@PanelClass">
                     <div class="bev-header">
                         <span class="bev-title">BevTools</span>
+                        @if (OtherTargets is { Count: > 0 } others)
+                        {
+                            @* A Web App page can run a circuit and WebAssembly at once; each runtime has its own panel. *@
+                            <span class="bev-runtimes" role="group" aria-label="BevTools runtimes on this page">
+                                <span class="bev-chip bev-info" title="This panel shows this runtime">@(Session.Platform ?? "this runtime")</span>
+                                @foreach (var other in others)
+                                {
+                                    <button type="button" class="bev-chip" title="Show the panel of @other.Label" @onclick="() => SwitchToAsync(other.Id)">⇄ @(other.Platform ?? other.Label)</button>
+                                }
+                            </span>
+                        }
                         <div class="bev-tabs" role="tablist">
                             @foreach (var (id, title) in BuiltInPanels)
                             {
@@ -62,6 +73,7 @@
                             </label>
                             <button type="button" title="Re-read captured data now" aria-label="Refresh captured data" @onclick="Refresh">↻ Refresh</button>
                             <button type="button" title="Search or run a command (Ctrl+K)" @onclick="() => OpenPalette()">🔍 Search / &gt; command</button>
+                            <button type="button" title="Open the companion window: every BevTools runtime of this page, outside the page, without BevTools' own UI rendering into the app" @onclick="OpenCompanionAsync">⧉</button>
                             <button type="button" title="Theme: @Ui.Theme" @onclick="SetTheme">◐</button>
                             <button type="button" title="Dock: @Ui.Dock" @onclick="SetDock">@(Ui.Dock == BevToolsDock.Bottom ? "▭" : "▯")</button>
                             <button type="button" title="Size: @Ui.Size" @onclick="SetSize">⤢</button>
@@ -84,11 +96,13 @@
                             case "profiler": <BevProfilerPanel /> break;
                             case "timeline": <BevTimelinePanel /> break;
                             case "state": <BevStatePanel /> break;
+                            case "routing": <BevRoutingPanel /> break;
                             case "network": <BevNetworkPanel /> break;
                             case "interop": <BevInteropPanel /> break;
                             case "errors": <BevErrorsPanel /> break;
                             case "services": <BevServicesPanel /> break;
                             case "diagnostics": <BevDiagnosticsPanel /> break;
+                            case "runtime": <BevRuntimePanel /> break;
                             case "browser": <BevBrowserPanel /> break;
                             case "about": <BevAboutPanel /> break;
                             default:

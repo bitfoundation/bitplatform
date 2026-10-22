@@ -307,6 +307,7 @@ internal sealed class RenderTracker
 
         record.Renderer = renderer;
         record.ComponentId = componentId;
+        record.RenderModeName = BevRenderModes.Describe(BlazorReflection.AssignedRenderMode(renderer, component));
         _session.Components.NoteRenderer(renderer);
 
         // Rendering always happens on the renderer's synchronization context; remembering it makes later ambient
@@ -619,6 +620,15 @@ internal sealed class RenderTracker
     /// </summary>
     private void CaptureStateDiff(BevComponentRecord record, ComponentBase component, BevRenderSample sample)
     {
+        // Under ValueAccess None every value displays as hidden, so nothing could be told apart; under Shallow an object
+        // shows only its type, so a changed list item would look unchanged and the render would be called forced.
+        // Neither compares parameters, which leaves the render "not compared" rather than wrongly "forced".
+        var access = _session.ValueAccess;
+        if (access == BevValueAccess.None)
+        {
+            return;
+        }
+
         var start = Stopwatch.GetTimestamp();
         try
         {
@@ -639,6 +649,10 @@ internal sealed class RenderTracker
             }
 
             record.LastStateSnapshot = snapshot;
+            if (access != BevValueAccess.Full)
+            {
+                return;
+            }
 
             var parameters = new Dictionary<string, string>(StringComparer.Ordinal);
             Dictionary<string, string>? fragmentChanges = null;

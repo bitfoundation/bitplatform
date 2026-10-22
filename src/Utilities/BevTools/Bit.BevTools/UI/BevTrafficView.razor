@@ -1,0 +1,109 @@
+﻿@namespace Bit.BevTools
+@inherits BevToolsTab
+
+<div class="bev-toolbar">
+    <button type="button" @onclick="ShowHttp">← HTTP</button>
+    <strong>WebSockets</strong>
+    <span class="bev-muted bev-nowrap">@_sockets.Count socket@(_sockets.Count == 1 ? "" : "s") · reported @BevFmt.Ago(Session.Browser.SocketsReportedAt)</span>
+</div>
+<div class="bev-scroll" style="flex:1">
+    @if (!Session.Options.TrackWebSockets)
+    {
+        <div class="bev-empty">WebSocket tracking is off (<code>BitBevToolsOptions.TrackWebSockets</code>).</div>
+    }
+    else if (_sockets.Count == 0)
+    {
+        <div class="bev-empty">No WebSocket observed yet. The browser bridge counts the circuit of Blazor Server and every SignalR hub connection of the page; one that already existed when BevTools attached shows up with its next message (SignalR pings every 15 s).</div>
+    }
+    @foreach (var s in _sockets)
+    {
+        var rb = s.RenderBatches;
+        <div class="bev-section">
+            <div class="bev-section-title">
+                <span class="bev-chip @(s.Kind == "blazor-circuit" ? "bev-info" : "")">@KindLabel(s.Kind)</span>
+                <span class="bev-mono bev-truncate" style="max-width:520px" title="@s.Url">@s.Url</span>
+                @if (s.IsClosed)
+                {
+                    <span class="bev-chip @(s.CloseCode is 1000 or 1001 ? "" : "bev-warn")">closed @s.CloseCode @s.CloseReason</span>
+                }
+                else
+                {
+                    <span class="bev-chip bev-ok">open</span>
+                }
+            </div>
+            <div class="bev-section-body">
+                <dl class="bev-kv">
+                    <dt>Protocol</dt><dd>@(s.Protocol ?? "not told yet")</dd>
+                    <dt>Observed</dt><dd>@(s.OpenedAt is null ? "since BevTools attached " + Ago(s.ObservedFrom) + "; what it carried before is not counted" : "since it opened " + Ago(s.OpenedAt.Value))</dd>
+                    <dt>Sent</dt><dd>@s.Sent.Count messages · @BevFmt.Bytes(s.Sent.Bytes) <span class="bev-muted">largest @BevFmt.Bytes(s.Sent.MaxBytes)</span></dd>
+                    <dt>Received</dt><dd>@s.Received.Count messages · @BevFmt.Bytes(s.Received.Bytes) <span class="bev-muted">largest @BevFmt.Bytes(s.Received.MaxBytes)</span></dd>
+                    @if (s.Own.Count > 0)
+                    {
+                        <dt>BevTools' own</dt><dd>@s.Own.Count messages · @BevFmt.Bytes(s.Own.Bytes) <span class="bev-muted">its reports to .NET and their replies, included in the totals above and left out of the kinds below</span></dd>
+                    }
+                    @if (rb.Count > 0)
+                    {
+                        <dt>Render batches</dt>
+                        <dd>
+                            @rb.Count batches · @BevFmt.Bytes(rb.Bytes) · largest <span class="@(rb.MaxBytes >= LargeBatch ? "bev-chip bev-warn" : "")">@BevFmt.Bytes(rb.MaxBytes)</span>
+                            · applied by the browser in @BevFmt.Ms(rb.Count == 0 ? 0 : rb.ApplyMs / rb.Count) on average, @BevFmt.Ms(rb.MaxApplyMs) at most
+                            @if (rb.Pending > 0)
+                            {
+                                <span class="bev-chip bev-warn">@rb.Pending not acknowledged yet</span>
+                            }
+                        </dd>
+                    }
+                </dl>
+                @if (s.Kind == "blazor-circuit" && Ui.IsOpen && Session.Platform == "Server")
+                {
+                    <div class="bev-muted" style="margin:4px 0">This panel renders on this circuit too, so its own render batches are in these numbers while it is open. The companion window (⧉) measures the app without them.</div>
+                }
+                @if (s.Messages.Count > 0)
+                {
+                    <table>
+                        <thead><tr><th>Direction · kind</th><th class="bev-num">Messages</th><th class="bev-num">Bytes</th><th class="bev-num">Largest</th></tr></thead>
+                        <tbody>
+                            @foreach (var (kind, stat) in s.Messages.OrderByDescending(m => m.Value.Bytes))
+                            {
+                                <tr><td class="bev-mono">@kind</td><td class="bev-num">@stat.Count</td><td class="bev-num">@BevFmt.Bytes(stat.Bytes)</td><td class="bev-num">@BevFmt.Bytes(stat.MaxBytes)</td></tr>
+                            }
+                        </tbody>
+                    </table>
+                }
+                @if (s.Largest.Count > 0)
+                {
+                    <div style="margin-top:4px"><strong>Largest messages</strong></div>
+                    @foreach (var large in s.Largest)
+                    {
+                        <div class="bev-mono">@large.Direction @large.Kind · @BevFmt.Bytes(large.Bytes) <span class="bev-muted">@Ago(large.At)</span></div>
+                    }
+                }
+            </div>
+        </div>
+    }
+    <div class="bev-muted" style="padding:6px">Only sizes, counts and SignalR message kinds are read in the browser; payloads never are. Socket URLs are redacted there, the SignalR connection id included.</div>
+</div>
+
+@code {
+    internal const long LargeBatch = 128 * 1024;
+
+    private IReadOnlyList<BevSocketStats> _sockets = [];
+
+    protected override void OnParametersSet() => _sockets = Session.Browser.Sockets.OrderBy(s => s.IsClosed).ThenByDescending(s => s.Received.Bytes + s.Sent.Bytes).ToArray();
+
+    private void ShowHttp()
+    {
+        Ui.SetQuery("network-view", null);
+        Ui.Touch();
+        Host.RefreshView();
+    }
+
+    private static string KindLabel(string kind) => kind switch
+    {
+        "blazor-circuit" => "Blazor circuit",
+        "signalr" => "SignalR hub",
+        _ => "WebSocket",
+    };
+
+    private static string Ago(double unixMs) => BevFmt.Ago(DateTimeOffset.FromUnixTimeMilliseconds((long)unixMs));
+}

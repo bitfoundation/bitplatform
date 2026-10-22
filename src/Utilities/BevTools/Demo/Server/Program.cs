@@ -18,7 +18,13 @@ builder.Services.AddDemoServices();
 
 // One line. An application leaves Enabled alone and BevTools turns itself on in Development only; this demo exists to
 // show BevTools, wherever it is deployed (bevtools.bitplatform.dev included), so it is on in every environment.
-builder.Services.AddBitBevToolsServerServices(o => o.Enabled = true);
+// Outside Development a process that serves many users reads no application values unless told to; this demo's data
+// is made up and shown on purpose, so it says so. An application in production would keep that default.
+builder.Services.AddBitBevToolsServerServices(o =>
+{
+    o.Enabled = true;
+    o.ValueAccess = BevValueAccess.Full;
+});
 
 builder.Services.Configure<ForwardedHeadersOptions>(options =>
 {

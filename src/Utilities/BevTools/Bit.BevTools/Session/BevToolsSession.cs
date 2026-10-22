@@ -44,7 +44,8 @@ public sealed class BevToolsSession : IDisposable
         Registry = registry;
         IsEnabled = registry.IsEnabled;
         Redactor = new BevRedactor(options.SensitiveNamePatterns);
-        Inspector = new BevObjectInspector(options, Redactor, registry.Formatters);
+        ValueAccess = options.ValueAccess ?? (IsEnabled && IsInMultiUserHost && !IsDevelopmentHost(services) ? BevValueAccess.None : BevValueAccess.Full);
+        Inspector = new BevObjectInspector(options, Redactor, registry.Formatters, ValueAccess);
         Overhead = new BevOverheadMeter();
         Timeline = new Timeline(this, options.MaxEvents);
         Components = new ComponentRegistry(this, options);
@@ -64,6 +65,7 @@ public sealed class BevToolsSession : IDisposable
         };
         Browser = new BevBrowserState();
         StartedAt = DateTimeOffset.UtcNow;
+        StartedTicks = System.Diagnostics.Stopwatch.GetTimestamp();
 
         if (IsEnabled)
         {
@@ -74,6 +76,9 @@ public sealed class BevToolsSession : IDisposable
     public long Id { get; }
 
     public DateTimeOffset StartedAt { get; }
+
+    /// <summary>The high-resolution timestamp taken with <see cref="StartedAt"/>: the zero of a performance trace.</summary>
+    internal long StartedTicks { get; }
 
     public bool IsEnabled { get; }
 
@@ -90,6 +95,12 @@ public sealed class BevToolsSession : IDisposable
     internal IServiceProvider Services { get; }
 
     public BevRedactor Redactor { get; }
+
+    /// <summary>
+    /// How much of the application's values this session reads: <see cref="BitBevToolsOptions.ValueAccess"/> when set,
+    /// otherwise Full, except outside Development in a process that serves many users, where it is None.
+    /// </summary>
+    public BevValueAccess ValueAccess { get; }
 
     public BevObjectInspector Inspector { get; }
 
@@ -180,6 +191,20 @@ public sealed class BevToolsSession : IDisposable
         }
     }
 
+    /// <summary>Whether the host reports Development. Only asked of a server process, which always registers <c>IHostEnvironment</c>.</summary>
+    private static bool IsDevelopmentHost(IServiceProvider services)
+    {
+        try
+        {
+            return services.GetService<Microsoft.Extensions.Hosting.IHostEnvironment>() is { } environment
+                && Microsoft.Extensions.Hosting.HostEnvironmentEnvExtensions.IsDevelopment(environment);
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
     /// <summary>What an attach without Bit.BevTools.Loader goes by; with it, <see cref="BevToolsLoaderContext.IsMultiUserHost"/> reads the same registration from the service collection.</summary>
     internal static bool HostsAServer(IServiceProvider services)
     {
@@ -195,6 +220,9 @@ public sealed class BevToolsSession : IDisposable
     }
 
     public bool IsInteractive { get; internal set; }
+
+    /// <summary>What prerendering did for this page, handed over through persistent component state; null when the page was not prerendered, or the summary did not arrive.</summary>
+    public BevPrerenderSummary? Prerender { get; internal set; }
 
     public string? RenderModeName { get; internal set; }
 
@@ -288,6 +316,25 @@ public sealed class BevToolsSession : IDisposable
 
     internal ConcurrentDictionary<string, BevLifecycleTypeMetrics> TypeMetrics { get; } = new(StringComparer.Ordinal);
 
+    private long? _externallyInspected;
+
+    /// <summary>
+    /// What selecting a component in the in-app inspector does, for a frontend outside the app (the companion window):
+    /// the component's state is captured on its renders from now on, so its next render says what changed, and the one
+    /// inspected before stops being captured unless the in-app panel has it selected.
+    /// </summary>
+    internal void InspectExternally(BevComponentRecord record)
+    {
+        if (!Options.CaptureComponentStateOnRender && _externallyInspected is { } previousId && previousId != record.InstanceId
+            && previousId != Ui.SelectedComponentId && Components.Get(previousId) is { } previous)
+        {
+            previous.CaptureState = false;
+        }
+
+        _externallyInspected = record.InstanceId;
+        record.CaptureState = true;
+    }
+
     internal void Touch() => Interlocked.Increment(ref _version);
 
     /// <summary>Called by the render tracker for each application render that happened while capture was paused.</summary>
@@ -311,6 +358,12 @@ public sealed class BevToolsSession : IDisposable
             foreach (var provider in Services.GetServices<IBevStateProvider>())
             {
                 State.Attach(provider, "DI");
+            }
+
+            if (BevAuthenticationStateProvider.TryCreate(Services) is { } authentication)
+            {
+                _authentication = authentication;
+                State.Attach(authentication, "built-in");
             }
 
             foreach (var factory in Registry.StateProviderFactories)
@@ -372,5 +425,8 @@ public sealed class BevToolsSession : IDisposable
         IsDisposed = true;
         SessionResolver.Unregister(this);
         State.Dispose();
+        _authentication?.Dispose();
     }
+
+    private BevAuthenticationStateProvider? _authentication;
 }

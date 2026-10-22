@@ -22,7 +22,7 @@ public interface IBevToolsCommand
 /// <summary>What a command can do to the BevTools UI.</summary>
 public interface IBevToolsCommandContext
 {
-    /// <summary>Activates a panel by id ("components", "profiler", "timeline", "state", "network", "interop", "errors", "services", "diagnostics", "browser", or an extension panel id).</summary>
+    /// <summary>Activates a panel by id ("components", "profiler", "timeline", "state", "routing", "network", "interop", "errors", "services", "diagnostics", "runtime", "browser", "about", or an extension panel id).</summary>
     void ShowPanel(string panelId, string? query = null);
 
     void SelectComponent(long instanceId);

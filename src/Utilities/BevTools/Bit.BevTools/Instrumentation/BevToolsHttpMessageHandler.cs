@@ -218,9 +218,13 @@ public sealed class BevToolsHttpMessageHandler : DelegatingHandler
         {
             foreach (var header in source)
             {
+                // Under ValueAccess None the names alone say what was sent (an Authorization header, a custom tenant
+                // header), and no value is kept; otherwise a value is kept unless its name or its shape is a secret.
                 var value = AlwaysRedactedHeaders.Contains(header.Key) || session.Redactor.IsSensitiveName(header.Key)
                     ? BevRedactor.RedactedValue
-                    : string.Join(", ", header.Value);
+                    : session.ValueAccess == BevValueAccess.None
+                        ? BevRedactor.HiddenValue
+                        : BevRedactor.RedactText(string.Join(", ", header.Value));
                 list.Add(new KeyValuePair<string, string>(header.Key, value));
             }
         }

@@ -62,3 +62,31 @@
 <ProblemCard Id="problem-10" Title="10. What changed in the cart, and which click did it?" Symptom="State mutated somewhere; find the action and the before/after values." Href="/checkout">
     <li>Add and remove items. State → CartState: change history with named actions, diffs and a link to the triggering UI event.</li>
 </ProblemCard>
+
+<ProblemCard Id="problem-11" Title="11. The product list is loaded twice" Symptom="GET /api/products runs on every visit to Products, and once more right after the page appears." Href="/products">
+    <li>Open Products with a full page load (reload the tab). The page is prerendered on the server, then becomes interactive; <code>CategorySummary</code> loads the products in <code>OnInitializedAsync</code>, which runs for both.</li>
+    <li>Diagnostics: <em>GET /api/products ran while prerendering and again when the page became interactive</em>. The prerendering session ended with the response; BevTools handed its summary over through persistent component state.</li>
+    <li>Runtime → Prerendering: what the server rendered, how long it took and which requests it made. Fix: <code>[PersistentState]</code> on the loaded list (.NET 10), or <code>PersistentComponentState</code>.</li>
+</ProblemCard>
+
+<ProblemCard Id="problem-12" Title="12. Which route is this, and what does this input run?" Symptom="A page shows up under a URL; which component, which template, which handler?" Href="/products">
+    <li>Routing: the current page, its <code>@@page</code> template, the route values and the query string (sensitive values redacted), the navigation history and the route table with each page's authorization and render mode.</li>
+    <li>Components → select <code>FilterBar</code> → <em>Event handlers &amp; callbacks</em>: the <code>&lt;input&gt;</code>'s <code>oninput</code> and the method it runs, read from its latest render tree. Select <code>ProductList</code> to see the callbacks it passes to each row.</li>
+    <li>The tree marks where a render mode starts a subtree (⚡ Auto on <code>Routes</code>).</li>
+</ProblemCard>
+
+<ProblemCard Id="problem-13" Title="13. Who is signed in, and what does the app know about them?" Symptom="Authorization behaves unexpectedly; which user, which roles, which claims, since when?">
+    <li><DemoSignIn /></li>
+    <li>State → Authentication: the user, roles and claims, with a change history (anonymous → authenticated) and its timeline entry. The <code>access_token</code> claim is redacted; the others are shown.</li>
+    <li>Routing → Authentication: the same at a glance next to the routes and their <code>[Authorize]</code> requirements.</li>
+</ProblemCard>
+
+<ProblemCard Id="problem-14" Title="14. How much does the circuit carry? (Server only)" Symptom="Typing feels slow on a slow network; how big is each update?" Href="/products">
+    <li>On a Server circuit, type in the product search. Network → WebSockets: every <code>JS.RenderBatch</code> the circuit sent, its size, and how long the browser took to apply it; BevTools' own reports are counted apart.</li>
+    <li>The panel renders over the same circuit while it is open: open the companion window (⧉ in the panel header) to measure the app without it. Diagnostics flags render batches of 128 KB or more.</li>
+</ProblemCard>
+
+<ProblemCard Id="problem-15" Title="15. Share a profile, not a screenshot" Symptom="A colleague needs to see what the page did, in detail, without your machine.">
+    <li>About → <em>Export performance trace</em>, then open the file in <a href="https://ui.perfetto.dev" target="_blank" rel="noopener">ui.perfetto.dev</a> or the Chrome DevTools Performance panel: render batches with every component render nested inside, UI events, requests and interop on their own tracks, arrows from each click to what it caused.</li>
+    <li>About → <em>Export session (JSON)</em>; the companion window (⧉) opens such a file offline with <em>Open file</em>.</li>
+</ProblemCard>
