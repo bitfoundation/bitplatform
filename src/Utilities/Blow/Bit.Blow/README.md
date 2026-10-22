@@ -75,8 +75,8 @@ Give nodes your own markup with `NodeTemplate` and `BlowHandle`, and edges with 
 
 ## For AI agents
 
-The demo site hosts an MCP server at `https://blow.bitplatform.dev/mcp` (also served through
-`https://bitplatform.dev/mcp`) that answers from the shipped library: its API, its guide, its theme properties and
+The demo site hosts an MCP server at `https://blow.bitplatform.dev/mcp`
+that answers from the shipped library: its API, its guide, its theme properties and
 the demo's working pages, and it can inspect a flow you hand it.
 
 ## Documentation

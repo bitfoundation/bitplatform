@@ -204,8 +204,7 @@ table in performance.md has both. See
 ## MCP server (for AI agents)
 
 The demo website hosts a [Model Context Protocol](https://modelcontextprotocol.io) server at
-`https://bmage.bitplatform.dev/mcp`, and it is also served from the bit platform's combined endpoint at
-`https://bitplatform.dev/mcp`. Point your coding agent at either to let it search the Bmage API, read worked examples
+`https://bmage.bitplatform.dev/mcp`. Point your coding agent at it to let it search the Bmage API, read worked examples
 and setup guides, and review Bmage code. See the MCP server page of the demo website for the full tool list.
 
 ## Tests

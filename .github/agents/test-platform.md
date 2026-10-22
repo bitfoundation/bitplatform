@@ -107,7 +107,7 @@ websites - is checked. Every command prints what it checked and exits non-zero o
 | `android -CdRun <id or url>` | Downloads the run's APKs, boots the emulator when no device is up, installs them and checks their versions. |
 | `windows [-Force]` | Opens each Windows app that is behind and taps its version, which updates it and restarts it. |
 | `e2e [-Stage <stages>] [-Filter <filter>] [-PrereleasePackages]` | Signs the global admin in once, then runs the E2E suite stage by stage like `RunTests.bat` - skipping the mac's stages when its Playwright server is down or on another version - keeping each stage's log and TRX. With `-PrereleasePackages`, it builds the suite with the Bit packages of the newest Prerelease nuget packages run. |
-| `mcp [-McpVersion <x.y.z>] [-Tool <name> -Arguments <json>]` | One `tools/list` or `tools/call` on `https://bitplatform.dev/mcp`. |
+| `mcp [-McpVersion <x.y.z>] [-Tool <name> -Arguments <json>] [-AllLibraries]` | One `tools/list` or `tools/call` on `https://bitplatform.dev/mcp`. `-AllLibraries` lists every bit library's tools, as the website's chat does; without it BlazorUI's and Butil's are the only library tools listed. |
 | `devcontainer [-Sha <sha> [-PrereleasePackages]] [-Keep]` | Creates a project with `bit new`, brings its dev container up with the devcontainers CLI and runs `bit doctor` in it, with bit and the template from that commit or from nuget.org. Then removes the container, its volumes and its image, and keeps the logs. |
 | `aspire [-Sha <sha> [-PrereleasePackages]] [-Keep]` | Creates a project with `bit new` the same way and runs its Aspire app host three times with `dotnet run`: the second run must reuse the first one's containers, they must stop once the app host has sat idle for its idle time, and the third run must bring them back on the same volumes. Then removes the project, its containers and their volumes, and keeps the logs. |
 | `agents [-Sha <sha> [-PrereleasePackages]] [-Scenario <ids>] [-Model <models>] [-Long] [-Keep]` | Creates a project with `bit new` as users get it and hands each scenario of `agent-scenarios.json` to a headless Claude Code that sees nothing but a copy of that project, then checks which skills it read, which tools it called and which files it changed after each turn. Keeps the transcripts and final messages. |
@@ -379,16 +379,18 @@ versions.
 ## 4. bitplatform.dev/mcp
 
 The platform website serves one set of tools per release tag `v-X.Y.Z` at or above `Mcp:MinimumVersion`, each from
-that tag's own worktree, source index and documentation servers. Prerelease tags are never served, and a `?v=` it
+that tag's own worktree, source index and BlazorUI and Butil documentation servers. Every other library's tools come
+from its deployed site, `https://<name>.bitplatform.dev/mcp`, whichever tag was asked for. Prerelease tags are never served, and a `?v=` it
 does not serve silently gets the newest one it does.
 
 1. **What it should serve.** The plain `v-X.Y.Z` tags of
    `git ls-remote --tags https://github.com/bitfoundation/bitplatform.git 'v-*'`. Check that the newest
    `feat(release): v-X.Y.Z` commit on `develop` has its tag: an untagged release is answered by the previous one,
    without a word.
-2. **What it does serve.** `mcp -McpVersion X.Y.Z` for each. The library tools (`Search*`, `Get*` and `Inspect*` of BlazorUI,
-   Brouter, Butil, Bswup, Bmotion and - from the first release that ships them - Bink, Balette, BbScanner, Bdnd, BlazeDb, Blow, Borm, Bcrdt, Bonboarding, Bortable, Blex, Bmage and Bsqlite) and the source tools (`FindBitPlatformSymbols`, `GetBitPlatformSymbolSource`,
-   `SearchBitPlatformCode`) must all be there. Only the five shared ones (`AskGitHubRepository`,
+2. **What it does serve.** `mcp -McpVersion X.Y.Z -AllLibraries` for each, and once without `-AllLibraries`, whose
+   library tools must be BlazorUI's and Butil's alone. The library tools (`Search*`, `Get*` and `Inspect*` of BlazorUI,
+   Butil, Brouter, Bswup, Bmotion, Bink, Balette, BbScanner, Bdnd, BlazeDb, Blow, Borm, Bcrdt, Bonboarding, Bortable, Blex, Bmage, Bsqlite and Belemetry) and the source tools (`FindBitPlatformSymbols`, `GetBitPlatformSymbolSource`,
+   `SearchBitPlatformCode`) must all be there. Without `-AllLibraries`, only the five shared ones (`AskGitHubRepository`,
    `SendBitPlatformFeedback`, `microsoft_docs_*`) means no release is served at all, and the README's
    *PlatformWebsite's MCP* section says why that happens. The server version it reports is the website's own build,
    which must be `APP_VERSION`.
@@ -400,14 +402,14 @@ does not serve silently gets the newest one it does.
 
    `BitAccordion.Busy` came in 10.6.1, so
    `mcp -McpVersion 10.6.1 -Tool GetBitBlazorUIComponent -Arguments '{"name":"BitAccordion"}'` lists `Busy` and the
-   same call on 10.6.0 does not. Pick a new difference for each new pair of releases; the other libraries work the
-   same way (`src/Butil/Bit.Butil/Publics`, ...). The `source:` link of the same answer points at that release's
+   same call on 10.6.0 does not. Pick a new difference for each new pair of releases; Butil works the same way
+   (`src/Butil/Bit.Butil/Publics`). The other libraries answer from their deployed site, the same for every tag. The `source:` link of the same answer points at that release's
    code too - its tag (`blob/v-10.6.1/...`), never `develop`.
 4. **The answers are good.** Put one real task to each library's `Search` tool, worded the way a developer would
    describe it - BlazorUI "a dropdown the user can also type into", Butil "copy text to the clipboard", Bmotion "fade
    a list item in", Brouter "a route parameter that must be a number", Bswup "show the download progress of the app's
    update", Bink "a signature pad that exports a PNG", Balette "a command that asks for a name before it runs", BbScanner "scan a QR code from an uploaded photo", Bdnd "reorder a list by dragging its items", BlazeDb "a todo list that survives a page reload", Blow "a flow chart that lays itself out left to right", Borm "a field that only shows when a checkbox is ticked", Bcrdt "a text field two people can edit at once without losing either's words", Bonboarding "a step that waits for a panel that loads later", Bortable "a kanban board whose cards move between columns", Blex "a counter whose value survives a page reload", Bmage "shrink an uploaded photo under 200 KB without its location", Bsqlite "keep the database when OPFS is not available" - follow up with the `Get` tool it points to, and ask `SearchBitPlatformCode` about the Boilerplate. An
-   answer must be on topic, specific and true to the version asked for; one that answers wrongly is a failure too.
+   answer must be on topic, specific and true to the version asked for (for BlazorUI and Butil) or to the newest build (for the rest); one that answers wrongly is a failure too.
 
 Like an E2E failure, an MCP problem is fixed in `src/Websites/Platform` or in the library's own MCP server, and goes
 away only after the next CD.

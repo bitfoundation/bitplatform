@@ -1059,8 +1059,7 @@ allocation-budget test, because it is the kind of regression that reappears sile
 
 The demo hosts a [Model Context Protocol](https://modelcontextprotocol.io) server at `https://bcrdt.bitplatform.dev/mcp`
 (`http://localhost:5560/mcp` locally), so an AI agent writing collaborative features reads the library itself - its
-API, this guide and the demo's working pages - instead of guessing at an API it half remembers. It is also served,
-next to the other bit libraries, through the aggregated `https://bitplatform.dev/mcp` endpoint.
+API, this guide and the demo's working pages - instead of guessing at an API it half remembers.
 
 ```json
 {

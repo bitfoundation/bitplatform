@@ -146,8 +146,9 @@ public static class Services
 
     /// <summary>
     /// Serves every tool of every MCP server the team develops against from this site's own /mcp endpoint
-    /// (mapped in <see cref="Middlewares"/>), so that an agent pointed at bitplatform.dev/mcp gets all of
-    /// them from a single connection. <see cref="McpProxyService"/> does the forwarding, and the v query of
+    /// (mapped in <see cref="Middlewares"/>), so that an agent pointed at bitplatform.dev/mcp gets them from a
+    /// single connection, though of the bit libraries only BlazorUI and Butil unless its libraries query is all.
+    /// <see cref="McpProxyService"/> does the forwarding, and the v query of
     /// the connection picks which release answers.
     /// </summary>
     private static void AddMcpServer(IServiceCollection services)
@@ -170,7 +171,7 @@ public static class Services
                 Title = "bit platform",
                 Version = typeof(Services).Assembly.GetName().Version!.ToString()
             };
-            options.ServerInstructions = "Provides the tools of every MCP server the bit platform team develops against, including the bit BlazorUI, Bmotion, Bink, Balette, BbScanner, Bdnd, BlazeDb, Blow, Borm, Bcrdt, Bonboarding, Bortable, Blex, Bmage, Bsqlite, Brouter, Butil and Bswup documentation servers, plus a source code index of the bitfoundation/bitplatform repository.";
+            options.ServerInstructions = "Provides the bit BlazorUI and Butil documentation tools, a source code index of the bitfoundation/bitplatform repository and the tools of the other MCP servers the bit platform team develops against. Every other bit library - Bmotion, Bswup, Brouter, Bmage, Bink, Balette, BbScanner, Bdnd, BlazeDb, Blow, Borm, Bcrdt, Bonboarding, Bortable, Blex, Bsqlite and Belemetry - has an MCP server of its own at https://<name in lowercase>.bitplatform.dev/mcp, such as https://bmotion.bitplatform.dev/mcp: plain HTTP with no sign-in, so when one is not in your MCP configuration, send its JSON-RPC requests (tools/list, then tools/call) to that address directly.";
         })
             // Stateless: no session state is kept between requests, so the endpoint keeps working when the
             // site runs behind a load balancer without session affinity. Nothing is lost by it here, since
@@ -191,7 +192,7 @@ public static class Services
             })
             .WithListToolsHandler(async (request, cancellationToken) => new ListToolsResult
             {
-                Tools = [.. await request.Services!.GetRequiredService<McpProxyService>().ListTools(RequestedVersion(request.Services!), cancellationToken)]
+                Tools = [.. await request.Services!.GetRequiredService<McpProxyService>().ListTools(RequestedVersion(request.Services!), RequestsEveryLibrary(request.Services!), cancellationToken)]
             })
             .WithCallToolHandler((request, cancellationToken) =>
                 request.Services!.GetRequiredService<McpProxyService>().CallTool(RequestedVersion(request.Services!), request.Services!, request.Params!, cancellationToken));
@@ -203,4 +204,7 @@ public static class Services
     /// </summary>
     private static string? RequestedVersion(IServiceProvider requestServices)
         => requestServices.GetRequiredService<IHttpContextAccessor>().HttpContext?.Request.Query["v"].FirstOrDefault();
+
+    private static bool RequestsEveryLibrary(IServiceProvider requestServices)
+        => requestServices.GetRequiredService<IHttpContextAccessor>().HttpContext?.Request.Query["libraries"].FirstOrDefault() is "all";
 }

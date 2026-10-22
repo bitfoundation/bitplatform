@@ -70,7 +70,7 @@ public class Middlewares
 
         app.MapControllers();
 
-        // Exposes the tools of every MCP server the team develops against at bitplatform.dev/mcp, per release.
+        // Exposes the tools of the MCP servers the team develops against at bitplatform.dev/mcp, per release.
         app.MapMcp("/mcp");
 
         // The releases ?v= accepts, newest first. Anything else, and no v at all, is answered by the newest.
