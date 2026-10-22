@@ -132,11 +132,11 @@ This project ships reusable [Agent Skills](https://agentskills.io), canonical in
 
 | Skill | Read it when | Canonical file |
 | --- | --- | --- |
+| `ai-dlc` | **Every task that is not a small, obvious edit**: building or changing a feature, fixing a bug that needs investigating, work spanning several files. Only a skill below that covers the whole task replaces it | `.github/agents/ai-dlc.agent.md` |
 | `scaffold-entity` | Adding a new entity or a new feature that needs full CRUD | `.github/agents/scaffold-entity.agent.md` |
 | `localize-strings` | Explicitly asked to move user-facing text into `AppStrings.resx` | `.github/agents/localize-strings.agent.md` |
 | `bitify-ui` | Replacing raw HTML/CSS in a Blazor page with Bit.BlazorUI components | `.github/agents/bitify-ui.agent.md` |
 | `review` | Reviewing a diff or PR against this project's conventions | `.github/agents/review.agent.md` |
-| `ai-dlc` | Driving a feature end-to-end through requirements, plan, design, implement, validate | `.github/agents/ai-dlc.agent.md` |
 | `rebrand` | Re-skinning the whole app to match a design reference (a live site, Figma, images, brand guidelines, tokens or a described mood) | `.github/agents/rebrand.agent.md` |
 | `upgrade` | Upgrading the project to a newer bit Boilerplate version | `.github/agents/upgrade.agent.md` |
 

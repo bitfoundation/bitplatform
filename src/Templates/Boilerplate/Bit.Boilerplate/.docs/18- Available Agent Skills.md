@@ -133,9 +133,9 @@ It carries `context: fork` in its frontmatter, so tools that support forked skil
 
 **Canonical file**: `.github/agents/ai-dlc.agent.md`
 
-**What it does**: Drives a feature end-to-end through the AI-Driven Development Lifecycle, with approval gates before any code is written.
+**What it does**: Drives a task end-to-end through the AI-Driven Development Lifecycle, with approval gates before any code is written.
 
-**When to use it**: For non-trivial features where you want requirements pinned down and a plan approved before implementation starts.
+**When to use it**: For every task that is not a small, obvious edit: building or changing a feature, fixing a bug that needs investigating, work spanning several files. AGENTS.md makes it the agent's default for such tasks, so it runs whether or not you ask for it; `/ai-dlc` starts it explicitly.
 
 **Key capabilities**:
 - Phase 1 - Requirements elaboration, with clarifying questions until requirements are unambiguous
@@ -144,6 +144,7 @@ It carries `context: fork` in its frontmatter, so tools that support forked skil
 - Phase 4 - Implementation, one task at a time
 - Phase 5 - Validation via build, tests and the `review` skill
 - Checks every request against the optional template features this project did not enable, so they are ported from `bitfoundation/bitplatform` instead of reinvented
+- Proposes the bit libraries that have MCP servers of their own (Balette, BbScanner, Bcrdt, Bdnd, Belemetry, Bink, Blex, Blow, Bmage, Bonboarding, Borm and Bortable) when a request falls in their area, and connects to those servers itself
 - Delegates to `scaffold-entity` and `bitify-ui` where they apply
 - Checks, alongside phase 1, whether the project is on the newest bit platform release, makes the case for upgrading from the release notes, and remembers a no instead of asking again every session
 
