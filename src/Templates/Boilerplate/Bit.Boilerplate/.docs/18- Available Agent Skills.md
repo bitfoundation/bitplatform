@@ -143,6 +143,7 @@ It carries `context: fork` in its frontmatter, so tools that support forked skil
 - Phase 2 - Planning and task decomposition, presented for approval
 - Phase 3 - Design of affected files, components, APIs and data models
 - Phase 4 - Implementation, one task at a time
+- On the full track, keeps the approved plan in the branch's draft pull request - requirements, acceptance criteria, design decisions and a task checklist, kept current - so the work can be resumed in another session or tool and reviewed from the PR, and picks it up from there when the branch already has one
 - Phase 5 - Validation via build, tests and the `review` skill
 - Checks every request against the optional template features this project did not enable, so they are ported from `bitfoundation/bitplatform` instead of reinvented
 - Proposes the bit libraries this project doesn't use yet, which `AGENTS.md` lists with their MCP servers, when a request falls in their area

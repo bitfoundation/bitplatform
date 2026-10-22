@@ -7,6 +7,8 @@ description: Drives every task that is not a small, obvious edit through the AI-
 
 ## Size the Work First
 
+If the current branch already has a pull request whose description holds a plan, the work was started in an earlier session or another tool: pick it up from that plan instead of starting over.
+
 Before phase 1, decide which track the task takes, and tell the user in one line:
 
 - **Short track**: a bug whose right behavior is known, or a small change that stays inside one feature and adds no entity, API or page. Reproduce it or find where it lives (phase 6 when something fails), fix it, add a test that fails without the fix, then run phase 5. Say in one line what you will change and go ahead; there is no plan to approve.
@@ -40,6 +42,7 @@ A short-track task that turns out bigger moves to the full track, and you stop a
 
 ### 4. Implementation
 - Work on a branch off `develop`; it reaches `main` through a PR, never a direct push
+- On the full track, the approved plan lives in that branch's pull request, not only in this conversation. Open it as a draft with the branch's first commit, its description holding the requirements with their acceptance criteria, the design decisions from phase 3 and the tasks as a checklist. Keep it current: tick each task when it is done, and write down any change to the plan with its reason, so another session, another tool or a reviewer can pick the work up from the PR alone. When you hand back, the description matches the diff - every acceptance criterion has its change and its test, and nothing in the diff goes unexplained. Where you cannot open a PR, give the user the description to paste
 - Execute tasks one at a time in the planned order
 - Follow all project conventions (see AGENTS.md)
 - Use the **bitify-ui** skill (`.github/agents/bitify-ui.agent.md`) when building UI, so new markup starts from Bit.BlazorUI components rather than raw HTML
