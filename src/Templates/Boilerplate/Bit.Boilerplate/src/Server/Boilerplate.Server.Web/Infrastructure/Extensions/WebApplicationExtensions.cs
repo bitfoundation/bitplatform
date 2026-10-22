@@ -104,6 +104,7 @@ public static partial class WebApplicationExtensions
                     {
                         context.Request.Path = $"{context.Request.Path}.br";
                         context.Response.Headers.ContentEncoding = "br";
+                        context.Response.GetTypedHeaders().CacheControl = new() { NoTransform = true };
                     }
 
                     await next.Invoke();
