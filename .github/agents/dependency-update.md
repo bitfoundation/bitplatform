@@ -108,13 +108,13 @@ gh api "repos/<owner>/<repo>/git/trees/<sha>?recursive=1" --jq '[.tree[]|select(
 A non-zero count on a JavaScript action that vendors `node_modules` means it will not stage. This is
 worth checking for *any* action bump, not just this one — it is invisible in the release notes.
 
-**MAUI is held at 10.0.100** (`Microsoft.Maui.Controls` and `Components.WebView.Maui`, in the
-Boilerplate, the BlazorUI demo and the Butil sample). 10.0.101 bundles an `Svg.Skia` that calls a
-SkiaSharp overload missing from the SkiaSharp next to it, so the resizetizer fails with `MAUIR0001` /
-`MissingMethodException: SKImageFilter.CreateMatrixConvolution` on any SVG icon with a `<filter>`
-([dotnet/maui#38319](https://github.com/dotnet/maui/issues/38319)). Move only once that issue is
-closed and `dotnet build -f net10.0-ios` passes on the Boilerplate. `WebView.WindowsForms` has no
-resizetizer and is not held.
+**A MAUI bump needs one MAUI build.** MAUI's resizetizer bundles an `Svg.Skia`, and from 10.0.101 to
+10.0.110 that `Svg.Skia` called a SkiaSharp overload missing from the SkiaSharp next to it, so any SVG
+with a `<filter>` failed the build with `MAUIR0001` /
+`MissingMethodException: SKImageFilter.CreateMatrixConvolution`
+([dotnet/maui#38319](https://github.com/dotnet/maui/issues/38319)). The app icons of the Boilerplate
+and the BlazorUI demo have one, so before moving MAUI, build a MAUI app with the Boilerplate's
+`appicon.svg` as its icon, for any target.
 
 **`Xamarin.Firebase.Messaging` is held at 125.1.1.** 125.1.2 pulls `Xamarin.AndroidX.Fragment` 1.9.0
 (through `GooglePlayServices.Base` 118.10.1), which absorbed the ktx classes, while the rest of the
@@ -170,6 +170,16 @@ Only four distinct dev dependencies exist: `typescript`, `sass`, `esbuild`, `vit
 with `npm view <pkg> version` and `npm view <pkg> dist-tags --json`. After editing a `package.json`,
 run `npm install` in that directory so `package-lock.json` matches — a lock file left behind is the
 most common miss.
+
+The lock files also carry transitive packages that no direct bump moves, and that is where the
+repository's Dependabot alerts sit. Run `npm audit fix` (never `--force`) in every directory with a
+lock file, and report what only a held major would fix.
+
+A lock file has to come out of `npm install` on Linux unchanged. npm on Windows can write a `"name"`
+into the lock's root package from the folder name when `package.json` has none, and Linux npm drops
+it again. In the Boilerplate every generated project then ends its build with a modified
+`package-lock.json`, and the CI test that wants a clean git tree after `bit new` fails. Run
+`npm install` once in a Linux container to check, or keep the root package as it was.
 
 ### GitHub Actions
 

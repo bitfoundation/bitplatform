@@ -40,7 +40,7 @@
         </PackageReference>
 
         <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="10.0.13" />
-        <PackageReference Include="Microsoft.AspNetCore.Components.WebView.WindowsForms" Version="10.0.110" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebView.WindowsForms" Version="10.0.120" />
         <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.4258.31" />
         <PackageReference Include="Velopack" Version="1.2.161" />
         <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
