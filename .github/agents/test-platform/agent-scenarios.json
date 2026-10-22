@@ -156,7 +156,6 @@
         "Customers earn 1 point per 1 USD spent. Points expire 12 months after they were earned. 100 points give 5 USD off the next order. Points can't be transferred between users. We haven't decided yet whether returning an order takes the points back."
       ],
       "handoff": {
-        "tool": "copilot",
         "prompt": "Implement the loyalty points feature."
       },
       "checks": [

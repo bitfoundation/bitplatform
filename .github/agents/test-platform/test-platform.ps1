@@ -1510,7 +1510,7 @@ function ConvertTo-CallInput($value) {
     ($value | ConvertTo-Json -Depth 32 -Compress) -replace '\\\\', '/'
 }
 
-function Read-AgentTranscript([string] $log, [string] $tool) {
+function Read-AgentTranscript([string] $log) {
     $calls = [Collections.Generic.List[object]]::new()
     $session = $final = $cost = $null
 
@@ -1526,63 +1526,47 @@ function Read-AgentTranscript([string] $log, [string] $tool) {
             continue
         }
 
-        if ($tool -eq 'claude') {
-            if ($event.session_id) {
-                $session = $event.session_id
-            }
+        if ($event.session_id) {
+            $session = $event.session_id
+        }
 
-            if ($event.type -eq 'assistant') {
-                foreach ($use in $event.message.content | Where-Object type -eq 'tool_use') {
-                    $calls.Add([pscustomobject]@{ Name = $use.name; Input = ConvertTo-CallInput $use.input })
-                }
+        if ($event.type -eq 'assistant') {
+            foreach ($use in $event.message.content | Where-Object type -eq 'tool_use') {
+                $calls.Add([pscustomobject]@{ Name = $use.name; Input = ConvertTo-CallInput $use.input })
             }
-            elseif ($event.type -eq 'result') {
-                $final = $event.result
-                $cost = $event.total_cost_usd
-            }
-        }
-        elseif ($event.type -eq 'tool.execution_start') {
-            $calls.Add([pscustomobject]@{ Name = $event.data.toolName; Input = ConvertTo-CallInput $event.data.arguments })
-        }
-        elseif ($event.type -eq 'assistant.message' -and $event.data.content) {
-            $final = $event.data.content
         }
         elseif ($event.type -eq 'result') {
-            $session = $event.sessionId
+            $final = $event.result
+            $cost = $event.total_cost_usd
         }
     }
 
     [pscustomobject]@{ Session = $session; Cost = $cost; Final = $final; Calls = $calls }
 }
 
-function Invoke-AgentTurn([string] $folder, [string] $tool, [string] $model, [string] $prompt, [string] $session, [double] $budget, [string] $log) {
+function Invoke-AgentTurn([string] $folder, [string] $model, [string] $prompt, [string] $session, [double] $budget, [string] $log) {
+    $arguments = @('-p', $prompt, '--model', $model, '--output-format', 'stream-json', '--verbose',
+        '--setting-sources', 'project,local', '--strict-mcp-config', '--mcp-config', (Join-Path $folder '.mcp.json'),
+        '--permission-mode', 'auto', '--permission-prompts', 'none', '--max-budget-usd', "$budget",
+        '--disallowedTools', 'mcp__aspire', 'Bash(aspire *)', 'PowerShell(aspire *)', 'Bash(git push *)', 'PowerShell(git push *)',
+        '--allowedTools', 'Read', 'Glob', 'Grep', 'Edit', 'Write', 'TodoWrite', 'Skill', 'Agent', 'WebFetch', 'WebSearch', 'ToolSearch',
+        'mcp__bitplatform', 'mcp__playwright', 'mcp__dev-mcp')
+
+    if ($session) {
+        $arguments += '--resume', $session
+    }
+
     Push-Location $folder
 
     try {
-        if ($tool -eq 'copilot') {
-            copilot -p $prompt --allow-all-tools --deny-tool 'shell(aspire)' --deny-tool 'shell(git push)' --output-format json *> $log
-        }
-        else {
-            $arguments = @('-p', $prompt, '--model', $model, '--output-format', 'stream-json', '--verbose',
-                '--setting-sources', 'project,local', '--strict-mcp-config', '--mcp-config', (Join-Path $folder '.mcp.json'),
-                '--permission-mode', 'auto', '--permission-prompts', 'none', '--max-budget-usd', "$budget",
-                '--disallowedTools', 'mcp__aspire', 'Bash(aspire *)', 'PowerShell(aspire *)', 'Bash(git push *)', 'PowerShell(git push *)',
-                '--allowedTools', 'Read', 'Glob', 'Grep', 'Edit', 'Write', 'TodoWrite', 'Skill', 'Agent', 'WebFetch', 'WebSearch', 'ToolSearch',
-                'mcp__bitplatform', 'mcp__playwright', 'mcp__dev-mcp')
-
-            if ($session) {
-                $arguments += '--resume', $session
-            }
-
-            & (Get-ClaudeCli) @arguments *> $log
-        }
+        & (Get-ClaudeCli) @arguments *> $log
     }
     finally {
         Pop-Location
         Stop-FolderProcesses $folder
     }
 
-    Read-AgentTranscript $log $tool
+    Read-AgentTranscript $log
 }
 
 function Test-AgentCheck($check, $folder, $turns, $handoff, $states) {
@@ -1649,7 +1633,7 @@ function Invoke-AgentScenario([string] $lab, [string] $id, [string] $model) {
     $started = Get-Date
 
     for ($i = 0; $i -lt $prompts.Count; $i++) {
-        $turn = Invoke-AgentTurn $folder 'claude' $model $prompts[$i] $session $budget (Join-Path $results "turn$($i + 1).jsonl")
+        $turn = Invoke-AgentTurn $folder $model $prompts[$i] $session $budget (Join-Path $results "turn$($i + 1).jsonl")
         $session = $turn.Session ?? $session
         $turns.Add($turn)
         $states[$i + 1] = @(Get-ChangedPaths $folder $since)
@@ -1658,9 +1642,7 @@ function Invoke-AgentScenario([string] $lab, [string] $id, [string] $model) {
     $handoff = $null
 
     if ($scenario.handoff) {
-        $tool = ($scenario.handoff.tool -eq 'copilot' -and (Get-Command copilot -ErrorAction SilentlyContinue)) ? 'copilot' : 'claude'
-        $handoff = Invoke-AgentTurn $folder $tool $model $scenario.handoff.prompt $null $budget (Join-Path $results "handoff-$tool.jsonl")
-        $handoff | Add-Member Tool $tool
+        $handoff = Invoke-AgentTurn $folder $model $scenario.handoff.prompt $null $budget (Join-Path $results 'handoff.jsonl')
         $states['handoff'] = @(Get-ChangedPaths $folder $since)
     }
 
@@ -1678,7 +1660,6 @@ function Invoke-AgentScenario([string] $lab, [string] $id, [string] $model) {
         Model = $model
         Minutes = [Math]::Round(((Get-Date) - $started).TotalMinutes, 1)
         Cost = [Math]::Round((@($turns) + @($handoff) | Where-Object { $_ -and $_.Cost } | Measure-Object Cost -Sum).Sum, 2)
-        Handoff = $handoff.Tool
         Checks = @($checks)
         Changed = $states[$turns.Count]
         Finals = @($turns | ForEach-Object Final) + @($(if ($handoff) { $handoff.Final }))

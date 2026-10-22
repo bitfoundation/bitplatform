@@ -531,9 +531,8 @@ a request. `agents` checks that the way a user meets them, with an agent that kn
   this machine's own Claude setup reaches it, in auto permission mode with Aspire and `git push` denied, and a budget
   per turn. Nothing tells it that it is being tested. Its memory already holds the user's role, as a returning user's
   does, except in `trivial-edit`, which watches the role question of AGENTS.md section 6.
-- `design-chat` then hands its folder to GitHub Copilot CLI (to a new Claude Code session when Copilot isn't
-  installed), which has to pick the product decisions up from `specs/`. Copilot CLI loads MCP servers only from
-  `~/.copilot/mcp-config.json`, never from the project, so it runs without the bit platform server.
+- `design-chat` then hands its folder to a new session with no memory of the first, which has to pick the product
+  decisions up from `specs/`, as the team's other tools and the next session would.
 - The checks are mechanical: the skills it read, the tools it called (a `ToolSearch` that only loads a tool doesn't
   count), the files changed after each turn, words in its final message. They say whether it followed the
   instructions, not how good its work is: for that, read each scenario's final messages and changed files in
