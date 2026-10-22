@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using System.Text.Json.Nodes;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Routing;
 using Microsoft.AspNetCore.Components.Web;
@@ -1677,13 +1678,16 @@ public partial class Balette : ComponentBase, IAsyncDisposable
 
     // ---- JS plumbing ---------------------------------------------------------------------------------------
 
-    private object BuildJsOptions(List<string> toggles) => new
+    // A JsonObject rather than an anonymous type: trimming strips the parameter names of an anonymous type's
+    // constructor, and System.Text.Json refuses to serialize one without them, so init would throw in a
+    // published app. A JsonObject is written by System.Text.Json's own converter, with nothing to trim.
+    private JsonObject BuildJsOptions(List<string> toggles) => new()
     {
-        toggleShortcuts = toggles,
-        commandShortcuts = GlobalShortcutStrings(),
-        suppressInEditable = Options.SuppressShortcutsInEditableElements,
-        sequenceTimeout = Options.SequenceTimeoutMs,
-        vimBindings = _syncedVim,
+        ["toggleShortcuts"] = new JsonArray([.. toggles.Select(t => JsonValue.Create(t))]),
+        ["commandShortcuts"] = new JsonArray([.. GlobalShortcutStrings().Select(s => JsonValue.Create(s))]),
+        ["suppressInEditable"] = Options.SuppressShortcutsInEditableElements,
+        ["sequenceTimeout"] = Options.SequenceTimeoutMs,
+        ["vimBindings"] = _syncedVim,
     };
 
     private List<string> ToggleShortcutStrings()

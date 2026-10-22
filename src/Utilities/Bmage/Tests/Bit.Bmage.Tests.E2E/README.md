@@ -74,8 +74,20 @@ checkout without browsers still runs the rest of the repository's suites.
 ## CI
 
 `.github/workflows/bit.ci.Bmage.e2e.yml` runs the whole suite in Release, and only when started by hand (Actions >
-"bit platform CI - Bmage E2E" > Run workflow); the test results (TRX) are uploaded as an artifact. The pull-request
-pipeline, `bit.ci.Bmage.yml`, runs the build, engine and MCP server tests only.
+"bit platform CI - Bmage E2E" > Run workflow); the test results (TRX) and the demo's output are uploaded as an
+artifact. The pull-request pipeline, `bit.ci.Bmage.yml`, runs the build, engine and MCP server tests only.
+
+The workflow drives the demo published the way `bmage.demo.cd.yml` publishes it (ahead of time, and trimmed) rather
+than a build output: only a publish trims the WebAssembly client, so an interop payload the trimmer breaks (an anonymous type whose
+constructor lost its parameter names, a getter nothing but System.Text.Json reads) fails there and nowhere else:
+
+```bash
+dotnet publish src/Utilities/Bmage/Demo/Server/Bit.Bmage.Demo.Server.csproj -c Release -o demo -p:InvariantGlobalization=true
+dotnet build src/Utilities/Bmage/Tests/Bit.Bmage.Tests.E2E/Bit.Bmage.Tests.E2E.csproj -c Release
+pwsh src/Utilities/Bmage/Tests/Bit.Bmage.Tests.E2E/bin/Release/net10.0/playwright.ps1 install --with-deps chromium
+(cd demo && dotnet Bit.Bmage.Demo.Server.dll --urls http://127.0.0.1:5000 &)
+cd src/Utilities/Bmage/Tests/Bit.Bmage.Tests.E2E && BMAGE_E2E_HOST_URL=http://127.0.0.1:5000 dotnet test -c Release --no-build --report-trx --report-trx-filename bmage-e2e.trx
+```
 
 ## Layout
 

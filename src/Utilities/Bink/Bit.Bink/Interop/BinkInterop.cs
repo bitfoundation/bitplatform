@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Components;
+﻿using System.Diagnostics.CodeAnalysis;
+using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
 
 namespace Bit.Bink;
@@ -123,6 +124,9 @@ internal sealed class BinkInterop : IAsyncDisposable
     public bool IsModuleLoaded => _module is not null && !_disposed;
 
     /// <summary>Loads the module, attaches to the element and returns the browser's capabilities.</summary>
+    // Some of the options' getters are read only by System.Text.Json, so without this the trimmer drops them and those
+    // options never reach the browser in trimmed (release) builds - which then falls back to its own defaults.
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BinkInteropOptions))]
     public async Task<BinkAttachResult?> AttachAsync(ElementReference element, BinkInteropOptions options, CancellationToken cancellationToken = default)
     {
         // The module reference is held in a local across every await. Disposal can run at any of these points and
@@ -203,6 +207,7 @@ internal sealed class BinkInterop : IAsyncDisposable
     }
 
     /// <summary>Updates the options given at attach, when the parameters behind them change.</summary>
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BinkInteropOptions))]
     public ValueTask SetOptionsAsync(BinkInteropOptions options) => InvokeVoidAsync("setOptions", _id, options);
 
     /// <summary>Sets the cursor shown over the canvas.</summary>

@@ -1,7 +1,12 @@
-﻿namespace Bit.BlazorUI.Legacy;
+﻿using System.Diagnostics.CodeAnalysis;
+
+namespace Bit.BlazorUI.Legacy;
 
 internal static class BitRichTextEditorLegacyJsRuntimeExtensions
 {
+    // A QuillModule's properties are only ever set in .NET and read by System.Text.Json, so without this the trimmer
+    // drops their getters and every module reaches Quill as an empty object in trimmed (release) builds.
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(QuillModule))]
     public static ValueTask BitRichTextEditorSetup(this IJSRuntime jsRuntime,
                                                         string id,
                                                         DotNetObjectReference<BitRichTextEditorLegacy>? dotnetObj,

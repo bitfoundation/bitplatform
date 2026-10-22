@@ -575,6 +575,7 @@ public partial class BitMarkdownEditor : BitInputBase<string?>
     /// back to the textarea so the binding stays in sync.
     /// </summary>
     [JSInvokable("ApplyCommand")]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitMarkdownEditorEditResult))]
     public BitMarkdownEditorEditResult _ApplyCommand(string command, int start, int end, string value)
     {
         if (ReadOnly || Disabled || Enum.TryParse<BitMarkdownEditorCommand>(command, out var cmd) is false)
