@@ -135,7 +135,7 @@ It carries `context: fork` in its frontmatter, so tools that support forked skil
 
 **What it does**: Drives a task end-to-end through the AI-Driven Development Lifecycle, with approval gates before any code is written.
 
-**When to use it**: For every task that is not a small, obvious edit: building or changing a feature, fixing a bug that needs investigating, work spanning several files. AGENTS.md makes it the agent's default for such tasks, so it runs whether or not you ask for it; `/ai-dlc` starts it explicitly.
+**When to use it**: For every task that is not a small, obvious edit: building or changing a feature, fixing a reported bug even when its cause turns out obvious, work spanning several files. AGENTS.md makes it the agent's default for such tasks, so it runs whether or not you ask for it; `/ai-dlc` starts it explicitly.
 
 **Key capabilities**:
 - Sizes the work first: a known bug or a change inside one feature takes a short track - reproduce, fix, a test that fails without the fix, validation - with no plan to approve, and moves to the full track when it turns out bigger

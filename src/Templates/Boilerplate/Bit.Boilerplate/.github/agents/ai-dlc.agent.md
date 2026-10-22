@@ -11,7 +11,7 @@ If this branch already added a plan under `specs/changes/`, the work was started
 
 Before phase 1, decide which track the task takes, and tell the user in one line:
 
-- **Short track**: a bug whose right behavior is known, or a small change that stays inside one feature and adds no entity, API or page. Reproduce it or find where it lives (phase 6 when something fails), fix it, add a test that fails without the fix, then run phase 5. Say in one line what you will change and go ahead; there is no plan to approve.
+- **Short track**: a bug whose right behavior is known, or a small change that stays inside one feature and adds no entity, API or page. Reproduce it or find where it lives (phase 6 when something fails), fix it, add a test that fails without the fix (an existing test counts once you have seen it fail), then run phase 5. Say in one line what you will change and go ahead; there is no plan to approve.
 - **Full track**: everything else - a new feature, entity, API or page, a change across features, a migration, anything touching security, or a request that is unclear. Every phase, with the plan approved before any code.
 
 A short-track task that turns out bigger moves to the full track, and you stop and ask before going on: when it needs a migration, changes behavior someone may rely on, touches security, or spreads beyond its feature.
@@ -34,7 +34,7 @@ A short-track task that turns out bigger moves to the full track, and you stop a
 - **If the design involves CRUD operations**, invoke the **scaffold-entity** skill (`.github/agents/scaffold-entity.agent.md`) for structure and conventions - it is a recipe, not a lifecycle: its steps are tasks inside this plan, and when they're done you continue with the next phase here
 - Break the work into small, verifiable, independently completable tasks
 - Order tasks by dependency
-- Write the plan into a new file under `specs/changes/` and present it to the user for approval before starting
+- Write the plan into a new file under `specs/changes/` and present it to the user for approval before starting. Approval is the user telling you to go ahead; answers to your questions are not approval, so fold them into the plan and present it again
 
 ### 3. Design
 - Identify affected files, components, APIs, and data models
