@@ -45,7 +45,7 @@ jobs:
     # trims the WebAssembly client, and an interop payload the trimmer breaks - an anonymous type whose constructor
     # lost its parameter names, a getter nothing but System.Text.Json reads - works in every build and fails only there.
     - name: Publish the demo
-      run: dotnet publish src/Utilities/Bmage/Demo/Server/Bit.Bmage.Demo.Server.csproj -c Release -o demo -p:InvariantGlobalization=true
+      run: dotnet publish src/Utilities/Bmage/Demo/Server/Bit.Bmage.Demo.Server.csproj -c Release -o demo -p:InvariantGlobalization=true -p:WasmAotProfilePath="${{ github.workspace }}/.github/aot-profiles/bmage.aotprofile"
 
     - name: Build the E2E suite
       run: dotnet build src/Utilities/Bmage/Tests/Bit.Bmage.Tests.E2E/Bit.Bmage.Tests.E2E.csproj -c Release
