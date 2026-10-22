@@ -60,7 +60,7 @@ answer, and repeat the plan back before starting:
 2. **The tests**: any of the CI run (step 1), the CD rollout and its versions check (step 2), the E2E suite (step 3,
    every stage or some), bitplatform.dev/mcp (step 4), the dev container (step 5), the Aspire containers (step 6),
    `bit diff` (step 7) and the agent instructions (step 8: every scenario or some, with which models, and whether
-   `-Long`).
+   `-Long`; about 12 USD of API usage per model, and as much again with `-Long`).
 3. **The Bit packages**: nuget.org's, or the build of a Prerelease nuget packages run (`prerelease_packages`). The
    latter needs a successful prerelease run on the branch under test first. It publishes the branch's version to
    nuget.org only when nuget.org doesn't have it yet, so at a version that is already there it builds packages and

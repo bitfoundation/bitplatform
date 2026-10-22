@@ -1677,7 +1677,13 @@ function Invoke-AgentsTest {
     $lab = Join-Path ([IO.Path]::GetTempPath()) ('bit-agents-{0:MMdd-HHmm}' -f (Get-Date))
     New-Item -ItemType Directory -Force $lab | Out-Null
     $nugetPackages = $env:NUGET_PACKAGES
-    $runs = foreach ($id in $ids) { foreach ($name in $Model) { [pscustomobject]@{ Id = $id; Model = $name; Heavy = [bool]($scenarios.scenarios | Where-Object id -eq $id).heavy } } }
+    $runs = foreach ($id in $ids) {
+        $definition = $scenarios.scenarios | Where-Object id -eq $id
+
+        foreach ($name in $Model) {
+            [pscustomobject]@{ Id = $id; Model = $name; Heavy = [bool]($definition.heavy -or ($Long -and $definition.longTurns)) }
+        }
+    }
 
     try {
         $bit = Install-BitUnderTest $lab
@@ -1706,7 +1712,7 @@ function Invoke-AgentsTest {
 
             while ($running.Count -lt 3 -and ($run = $pending | Where-Object { -not $_.Heavy -or -not ($running | Where-Object Heavy) } | Select-Object -First 1)) {
                 $pending.Remove($run) | Out-Null
-                $arguments = @('-NoProfile', '-File', $PSCommandPath, 'agents', '-Worker', '-Lab', $lab, '-Scenario', $run.Id, '-Model', $run.Model) + @($(if ($Long) { '-Long' }))
+                $arguments = @('-NoProfile', '-File', "`"$PSCommandPath`"", 'agents', '-Worker', '-Lab', "`"$lab`"", '-Scenario', $run.Id, '-Model', $run.Model) + @($(if ($Long) { '-Long' }))
                 $log = Join-Path $lab "worker-$($run.Id)-$($run.Model).log"
                 $process = Start-Process $pwsh -ArgumentList $arguments -PassThru -NoNewWindow -RedirectStandardOutput $log -RedirectStandardError "$log.err"
                 $running.Add(($run | Add-Member -PassThru Process $process | Add-Member -PassThru Started (Get-Date)))
@@ -1716,7 +1722,7 @@ function Invoke-AgentsTest {
             Start-Sleep -Seconds 10
         }
 
-        $results = Get-ChildItem (Join-Path $lab 'results') -Filter result.json -Recurse | ForEach-Object { Get-Content $_ -Raw | ConvertFrom-Json -Depth 8 }
+        $results = Get-ChildItem (Join-Path $lab 'results') -Filter result.json -Recurse -ErrorAction SilentlyContinue | ForEach-Object { Get-Content $_ -Raw | ConvertFrom-Json -Depth 8 }
         $missing = $runs | Where-Object { -not ($results | Where-Object Scenario -eq $_.Id | Where-Object Model -eq $_.Model) }
 
         $results | Sort-Object Scenario, Model | ForEach-Object {
