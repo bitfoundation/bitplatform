@@ -61,7 +61,7 @@
     </ItemGroup>
 
     <!-- BcrdtServerInstructions.BcrdtVersion is a hand-written copy of ReleaseVersion: the version the packages
-         ship as, which no assembly carries (a Debug build stamps 1.0.0, a Release build 10.7.0.02 for 10.7.0-pre-02).
+         ship as, which no assembly carries (a Debug build stamps 1.0.0, a Release build 10.7.0.03 for 10.7.0-pre-03).
          This project ships no package and does not import Bit.Build.props, so ReleaseVersion is read out of it
          here, and the build fails as Bit.Build.props's VerifyReleaseVersionLiterals does when the copy goes stale. -->
     <ItemGroup>

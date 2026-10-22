@@ -179,6 +179,7 @@
     <File Path="BlazorUI/README.md" />
     <Project Path="BlazorUI/Bit.BlazorUI/Bit.BlazorUI.csproj" />
     <Project Path="BlazorUI/Bit.BlazorUI.Assets/Bit.BlazorUI.Assets.csproj" />
+    <Project Path="BlazorUI/Bit.BlazorUI.Build/Bit.BlazorUI.Build.csproj" />
     <Project Path="BlazorUI/Bit.BlazorUI.Extras/Bit.BlazorUI.Extras.csproj" />
     <Project Path="BlazorUI/Bit.BlazorUI.Icons/Bit.BlazorUI.Icons.csproj" />
     <Project Path="BlazorUI/Bit.BlazorUI.Legacy/Bit.BlazorUI.Legacy.csproj" />
