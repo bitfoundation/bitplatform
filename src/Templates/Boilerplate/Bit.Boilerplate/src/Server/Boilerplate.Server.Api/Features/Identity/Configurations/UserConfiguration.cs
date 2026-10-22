@@ -121,5 +121,15 @@ public partial class UserConfiguration : IEntityTypeConfiguration<User>
         builder.HasUniqueIndexOnNullable(b => b.NormalizedEmail);
 
         builder.HasUniqueIndexOnNullable(b => b.PhoneNumber);
+
+        builder.HasIndex(user => user.CreatedOn)
+            //#if (database == "PostgreSQL")
+            .HasFilter($"NOT \"{nameof(User.EmailConfirmed)}\" AND NOT \"{nameof(User.PhoneNumberConfirmed)}\"")
+            //#elif (database == "SqlServer")
+            .HasFilter($"[{nameof(User.EmailConfirmed)}] = 0 AND [{nameof(User.PhoneNumberConfirmed)}] = 0")
+            //#elif (database == "Sqlite")
+            .HasFilter($"NOT [{nameof(User.EmailConfirmed)}] AND NOT [{nameof(User.PhoneNumberConfirmed)}]")
+            //#endif
+            ;
     }
 }
