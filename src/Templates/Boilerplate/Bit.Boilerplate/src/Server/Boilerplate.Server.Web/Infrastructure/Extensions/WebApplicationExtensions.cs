@@ -93,25 +93,29 @@ public static partial class WebApplicationExtensions
 
             app.UseWhen(context => (HttpMethods.IsGet(context.Request.Method) || HttpMethods.IsHead(context.Request.Method))
                 && context.Request.Path.StartsWithSegments("/_framework") is false
-                && context.Request.GetTypedHeaders().AcceptEncoding.Any(encoding => encoding.Value.Equals("br", StringComparison.OrdinalIgnoreCase) && encoding.Quality is not 0)
                 && contentTypes.TryGetContentType(context.Request.Path.Value!, out _)
-                && app.Environment.WebRootFileProvider.GetFileInfo($"{context.Request.Path}.br").Exists, brotliApp =>
+                && app.Environment.WebRootFileProvider.GetFileInfo($"{context.Request.Path}.br").Exists, precompressedApp =>
             {
-                brotliApp.Use(async (context, next) =>
+                precompressedApp.Use(async (context, next) =>
                 {
-                    context.Request.Path = $"{context.Request.Path}.br";
-                    context.Response.Headers.ContentEncoding = "br";
                     context.Response.Headers.Append(HeaderNames.Vary, HeaderNames.AcceptEncoding);
+
+                    if (context.Request.GetTypedHeaders().AcceptEncoding.Any(encoding => encoding.Value.Equals("br", StringComparison.OrdinalIgnoreCase) && encoding.Quality is not 0))
+                    {
+                        context.Request.Path = $"{context.Request.Path}.br";
+                        context.Response.Headers.ContentEncoding = "br";
+                    }
 
                     await next.Invoke();
                 });
 
-                brotliApp.UseStaticFiles(new StaticFileOptions
+                precompressedApp.UseStaticFiles(new StaticFileOptions
                 {
                     ContentTypeProvider = contentTypes,
                     OnPrepareResponse = file =>
                     {
-                        if (contentTypes.TryGetContentType(Path.GetFileNameWithoutExtension(file.File.Name), out var contentType))
+                        if (file.Context.Response.Headers.ContentEncoding == "br"
+                            && contentTypes.TryGetContentType(Path.GetFileNameWithoutExtension(file.File.Name), out var contentType))
                         {
                             file.Context.Response.ContentType = contentType;
                         }
