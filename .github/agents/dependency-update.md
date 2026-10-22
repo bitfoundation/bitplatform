@@ -108,14 +108,14 @@ gh api "repos/<owner>/<repo>/git/trees/<sha>?recursive=1" --jq '[.tree[]|select(
 A non-zero count on a JavaScript action that vendors `node_modules` means it will not stage. This is
 worth checking for *any* action bump, not just this one — it is invisible in the release notes.
 
-**MAUI's resizetizer breaks on SVG filters.** From 10.0.101 and 11.0.0-rc.2 on, MAUI bundles an `Svg.Skia` that
+**MAUI's resizetizer breaks on SVG filters.** MAUI 10.0.101 to 10.0.110 and 11.0.0-rc.2 bundle an `Svg.Skia` that
 calls a SkiaSharp overload missing from the SkiaSharp next to it, so any SVG it resizes that has a `<filter>` fails
 the build with `MAUIR0001` / `MissingMethodException: SKImageFilter.CreateMatrixConvolution`
-([dotnet/maui#38319](https://github.com/dotnet/maui/issues/38319)). develop holds MAUI at 10.0.100 for it. On
-this branch MAUI can't stay behind: a MAUI built for an older preview doesn't compile against the newer
-preview's Android workload (CS1705 on `Java.Interop`). So MAUI follows the SDK here for .NET 11, while a .NET 10
-Boilerplate project keeps develop's 10.0.100, and the app icons of the Boilerplate and the BlazorUI demo carry no
-drop shadow (their `<filter>`) until that issue is fixed.
+([dotnet/maui#38319](https://github.com/dotnet/maui/issues/38319)). 10.0.120 fixed it for .NET 10, and a .NET 10
+Boilerplate project takes develop's MAUI. On this branch MAUI can't stay behind for .NET 11: a MAUI built for an
+older preview doesn't compile against the newer preview's Android workload (CS1705 on `Java.Interop`). So MAUI
+follows the SDK here, and the app icons of the Boilerplate and the BlazorUI demo carry no drop shadow (their
+`<filter>`) until a .NET 11 MAUI builds an app with the Boilerplate's `appicon.svg` as its icon.
 
 **bit Boilerplate builds for .NET 10 and .NET 11.** Its `framework` option picks one; the template's own tree is
 the .NET 11 project. In its `Directory.Packages.props`, a package whose 11.x build has no `net10.0` assets has a

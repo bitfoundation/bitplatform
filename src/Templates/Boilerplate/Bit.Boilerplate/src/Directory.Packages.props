@@ -186,9 +186,9 @@
         <PackageVersion Include="Microsoft.AspNetCore.DataProtection.EntityFrameworkCore" Version="10.0.13" />
         <PackageVersion Include="Microsoft.AspNetCore.OpenApi" Version="10.0.13" />
         <PackageVersion Include="Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore" Version="10.0.13" />
-        <PackageVersion Include="Microsoft.Maui.Controls" Version="10.0.100" />
+        <PackageVersion Include="Microsoft.Maui.Controls" Version="10.0.120" />
         <PackageVersion Include="Microsoft.AspNetCore.Components.WebView" Version="10.0.13" />
-        <PackageVersion Include="Microsoft.AspNetCore.Components.WebView.Maui" Version="10.0.100" />
+        <PackageVersion Include="Microsoft.AspNetCore.Components.WebView.Maui" Version="10.0.120" />
         <PackageVersion Include="Microsoft.AspNetCore.Components.WebView.WindowsForms" Version="10.0.120" />
         <PackageVersion Condition=" '$(signalR)' == 'true' OR '$(signalR)' == ''" Include="Microsoft.AspNetCore.SignalR.Client" Version="10.0.13" />
         <PackageVersion Condition=" '$(database)' == 'SqlServer' OR '$(database)' == '' " Include="Microsoft.EntityFrameworkCore.SqlServer" Version="10.0.13" />
