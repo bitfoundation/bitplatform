@@ -23,7 +23,7 @@ public partial class BitDialogDemo
             Name = "AutoFocusButton",
             Type = "BitDialogButton?",
             DefaultValue = "null",
-            Description = "Which of the Dialog's own buttons AutoFocus lands on, instead of the first focusable element the Dialog holds. Takes precedence over AutoFocusSelector.",
+            Description = "Which of the Dialog's own buttons AutoFocus lands on, instead of the first focusable element the Dialog holds. Takes precedence over AutoFocusSelector, except when it comes from a BitParams ancestor: then the Dialog's own AutoFocusSelector and an element its content marks with data-autofocus or autofocus win over it.",
             LinkType = LinkType.Link,
             Href = "#component-button-enum",
         },

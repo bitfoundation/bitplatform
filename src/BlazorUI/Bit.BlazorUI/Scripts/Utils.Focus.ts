@@ -155,7 +155,10 @@
         // Moves the focus to the first focusable element inside the given container, falling back to the
         // container itself (which the caller makes programmatically focusable with tabindex="-1") when it
         // holds nothing focusable, so the focus never stays behind on the element that opened the popup.
-        export function focusFirstElement(elementId: string, selector?: string | null) {
+        // The fallback is where the caller would rather start than the first focusable element, but only by
+        // default - a Dialog button an app names for every Dialog at once, which the content of this one has
+        // not seen - so the selector and an element the content marks for the focus both win over it.
+        export function focusFirstElement(elementId: string, selector?: string | null, fallback?: HTMLElement | null) {
             const container = document.getElementById(elementId);
             if (!container) return;
 
@@ -186,7 +189,11 @@
                 const requested = Utils.firstFocusable(container, el =>
                     el.hasAttribute('data-autofocus') === false && el.hasAttribute('autofocus') === false);
 
-                (requested ?? Utils.firstFocusable(container) ?? container).focus();
+                // A fallback that has left the container or cannot take the focus right now is passed over like
+                // a selector that matches nothing, so the focus still lands inside the container.
+                const preferred = fallback && container.contains(fallback) && Utils.canHoldFocus(fallback) ? fallback : null;
+
+                (requested ?? preferred ?? Utils.firstFocusable(container) ?? container).focus();
             } catch (e) { console.error("BitBlazorUI.Utils.focusFirstElement:", e); }
         }
 

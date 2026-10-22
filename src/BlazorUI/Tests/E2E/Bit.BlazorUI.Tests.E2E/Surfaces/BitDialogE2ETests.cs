@@ -1244,6 +1244,23 @@ public class BitDialogE2ETests : E2ETestBase
         await Expect(Part("casc-folder-dialog", ".bit-dlg-cnb")).ToHaveTextAsync("Keep");
     }
 
+    [TestMethod]
+    public async Task BitParams_AutoFocusButton_LandsOnTheButtonUnlessTheContentMarksAnElement()
+    {
+        await OpenAsync(PagePath);
+        await OpenDialogAsync("btn-casc-file-open", "casc-file-dialog");
+
+        await Expect(Part("casc-file-dialog", ".bit-dlg-cnb")).ToBeFocusedAsync();
+
+        await Page.Keyboard.PressAsync("Escape");
+        await Expect(Root("casc-file-dialog")).ToHaveCountAsync(0);
+
+        // The cascaded button is a default for every dialog; the one whose content asks for its field keeps it.
+        await OpenDialogAsync("btn-casc-rename-open", "casc-rename-dialog");
+
+        await Expect(Page.Locator("#casc-rename-input")).ToBeFocusedAsync();
+    }
+
     // ---------- Color ----------
 
     [TestMethod]
