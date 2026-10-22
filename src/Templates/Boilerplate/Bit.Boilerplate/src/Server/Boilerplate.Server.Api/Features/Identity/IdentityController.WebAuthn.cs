@@ -159,7 +159,6 @@ public partial class IdentityController
 
     private async Task<bool> IsUserHandleOwnerOfCredentialId(IsUserHandleOwnerOfCredentialIdParams args, CancellationToken cancellationToken)
     {
-        var storedCreds = await DbContext.WebAuthnCredential.Where(c => c.UserHandle == args.UserHandle).ToListAsync(cancellationToken);
-        return storedCreds.Exists(c => new PublicKeyCredentialDescriptor(PublicKeyCredentialType.PublicKey, c.Id, c.Transports).Id.SequenceEqual(args.CredentialId));
+        return await DbContext.WebAuthnCredential.AnyAsync(c => c.Id == args.CredentialId && c.UserHandle == args.UserHandle, cancellationToken);
     }
 }

@@ -11,7 +11,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Boilerplate.Server.Api.Infrastructure.Data.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20261018233101_Initial")]
+    [Migration("20261022160248_Initial")]
     partial class Initial
     {
         /// <inheritdoc />
@@ -39,6 +39,8 @@ namespace Boilerplate.Server.Api.Infrastructure.Data.Migrations
                         .HasColumnType("TEXT");
 
                     b.HasKey("Id", "Kind");
+
+                    b.HasIndex("Kind", "CreatedOn");
 
                     b.ToTable("Attachments");
                 });
@@ -373,6 +375,9 @@ namespace Boilerplate.Server.Api.Infrastructure.Data.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("CreatedOn")
+                        .HasFilter("NOT [EmailConfirmed] AND NOT [PhoneNumberConfirmed]");
+
                     b.HasIndex("NormalizedEmail")
                         .IsUnique()
                         .HasDatabaseName("EmailIndex")
@@ -479,6 +484,8 @@ namespace Boilerplate.Server.Api.Infrastructure.Data.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("TenantId");
+
+                    b.HasIndex("UserId", "TenantId");
 
                     b.HasIndex("UserId", "ClaimType", "ClaimValue")
                         .IsUnique()
@@ -604,6 +611,9 @@ namespace Boilerplate.Server.Api.Infrastructure.Data.Migrations
                         .HasColumnType("TEXT");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("SignalRConnectionId")
+                        .HasFilter("[SignalRConnectionId] IS NOT NULL");
 
                     b.HasIndex("TenantId");
 
@@ -1707,6 +1717,8 @@ namespace Boilerplate.Server.Api.Infrastructure.Data.Migrations
                     b.HasIndex("DeviceId")
                         .IsUnique();
 
+                    b.HasIndex("ExpirationTime");
+
                     b.HasIndex("TenantId");
 
                     b.HasIndex("UserSessionId")
@@ -1839,7 +1851,7 @@ namespace Boilerplate.Server.Api.Infrastructure.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("UserId");
+                    b.HasIndex("UserId", "UpdatedAt");
 
                     b.ToTable("TodoItems");
                 });
