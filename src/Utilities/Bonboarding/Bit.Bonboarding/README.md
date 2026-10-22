@@ -62,8 +62,8 @@ await BonboardingService.StartOnceAsync(tour); // skipped if the user already fi
 
 ## For AI agents
 
-The demo site hosts an MCP server at `https://bonboarding.bitplatform.dev/mcp` (also served through
-`https://bitplatform.dev/mcp`) that answers from the shipped library: its API, its guide, its theme
+The demo site hosts an MCP server at `https://bonboarding.bitplatform.dev/mcp`
+that answers from the shipped library: its API, its guide, its theme
 variables and its placement engine.
 
 ## Documentation

@@ -427,7 +427,7 @@ public partial class McpOracleTests
 
         foreach (var tool in McpSurfaceTests.ExpectedTools) Assert.Contains($"<code>{tool}</code>", markup, tool);
         foreach (var prompt in new[] { "add-bcrdt-to-app", "implement-bcrdt-feature", "debug-bcrdt-sync" }) Assert.Contains(prompt, markup, prompt);
-        foreach (var endpoint in new[] { "https://bcrdt.bitplatform.dev/mcp", "https://bitplatform.dev/mcp", "http://localhost:5560/mcp" }) Assert.Contains(endpoint, markup, endpoint);
+        foreach (var endpoint in new[] { "https://bcrdt.bitplatform.dev/mcp", "http://localhost:5560/mcp" }) Assert.Contains(endpoint, markup, endpoint);
 
         using var http = McpTestHost.CreateHttpClient();
 

@@ -14,7 +14,8 @@
     windows   Opens each Windows app that is behind and taps its version in the nav panel, which makes it update itself
               from its feed and restart.
     e2e       Runs Boilerplate.Tests.E2E stage by stage, as RunTests.bat does, keeping each stage's log and TRX.
-    mcp       One call to https://bitplatform.dev/mcp: tools/list, or tools/call when -Tool is given.
+    mcp       One call to https://bitplatform.dev/mcp: tools/list, or tools/call when -Tool is given. -AllLibraries
+              lists every bit library's tools, as the website's chat does, not only BlazorUI's and Butil's.
     devcontainer
               Creates a project with bit new, brings bit Boilerplate's dev container up on a Linux Docker engine
               with the devcontainers CLI, and runs bit doctor in it. With -Sha, bit and the template come from that
@@ -80,6 +81,8 @@ param(
 
     # mcp: the tool's arguments, as json.
     [string] $Arguments = '{}',
+
+    [switch] $AllLibraries,
 
     [switch] $PrereleasePackages,
 
@@ -808,7 +811,8 @@ function Invoke-E2EStages {
 #region MCP
 
 function Invoke-BitMcp([string] $version, [string] $method, [string] $parameters = '{}') {
-    $endpoint = 'https://bitplatform.dev/mcp' + $(if ($version) { "?v=$version" })
+    $query = @($(if ($version) { "v=$version" }), $(if ($AllLibraries) { 'libraries=all' })) | Where-Object { $_ }
+    $endpoint = 'https://bitplatform.dev/mcp' + $(if ($query) { '?' + ($query -join '&') })
     $headers = @{ Accept = 'application/json, text/event-stream' }
 
     $initialize = Invoke-WebRequest $endpoint -Method Post -ContentType 'application/json' -Headers $headers -TimeoutSec 120 `

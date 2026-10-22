@@ -58,8 +58,8 @@ No stylesheet to link: the script module, `_content/Bit.Bdnd/bit-bdnd.js`, is im
 
 ## For AI agents
 
-The demo site hosts an MCP server at `https://bdnd.bitplatform.dev/mcp` (also served through
-`https://bitplatform.dev/mcp`) that answers from the shipped library: its API, its guide and the demo's working
+The demo site hosts an MCP server at `https://bdnd.bitplatform.dev/mcp`
+that answers from the shipped library: its API, its guide and the demo's working
 pages, and it can run a drag through the real components to show which targets accept it.
 
 ## Documentation

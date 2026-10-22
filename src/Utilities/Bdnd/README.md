@@ -145,8 +145,7 @@ Everything ships in one package, `Bit.Bdnd`, under one namespace, `Bit.Bdnd`:
 
 The demo hosts a [Model Context Protocol](https://modelcontextprotocol.io) server at
 `https://bdnd.bitplatform.dev/mcp`, so an AI agent writing drag-and-drop code reads the library itself - its API,
-this guide and the demo's working pages - instead of guessing at an API it half remembers. It is also served, next
-to the other bit libraries, through the aggregated `https://bitplatform.dev/mcp` endpoint.
+this guide and the demo's working pages - instead of guessing at an API it half remembers.
 
 ```json
 {

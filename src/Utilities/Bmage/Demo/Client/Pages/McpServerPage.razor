@@ -48,9 +48,8 @@
 <div class="bb-card">
     <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Connect your agent</h3>
     <p>
-        The server speaks MCP over HTTP. Point any MCP client at this site's endpoint, at the deployed
-        <code>https://bmage.bitplatform.dev/mcp</code>, or at <code>https://bitplatform.dev/mcp</code>,
-        which serves the tools of every bit platform product - Bmage among them - from one address.
+        The server speaks MCP over HTTP. Point any MCP client at this site's endpoint or at the deployed
+        <code>https://bmage.bitplatform.dev/mcp</code>.
         The same methods are also plain <code>GET</code> endpoints under <code>/api/mcp/...</code>,
         which is what the panels further down this page call.
     </p>
@@ -645,7 +644,6 @@
     [
         new(ThisSite, "bmage", Nav.ToAbsoluteUri("mcp").ToString(), "The server you are reading this page on."),
         new("bmage.bitplatform.dev", "bmage", "https://bmage.bitplatform.dev/mcp", "The deployed Bmage documentation site, always the latest release."),
-        new("bitplatform.dev", "bitplatform", "https://bitplatform.dev/mcp", "One endpoint for every bit platform product - Bmage, BlazorUI, Bmotion, Bink, Balette, BbScanner, Bdnd, BlazeDb, Blow, Borm, Bcrdt, Bonboarding, Bortable, Blex, Bsqlite, Brouter, Butil, Bswup - with the bit platform's own source search alongside."),
     ];
 
     private McpEndpoint CurrentEndpoint => Array.Find(Endpoints, endpoint => endpoint.Name == _endpoint) ?? Endpoints[0];

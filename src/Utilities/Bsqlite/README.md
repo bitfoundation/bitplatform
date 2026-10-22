@@ -180,9 +180,8 @@ time it is opened, so an application that switches keeps its users' data.
 ## MCP server (for AI agents)
 
 The demo website hosts a [Model Context Protocol](https://modelcontextprotocol.io) server at
-`https://bsqlite.bitplatform.dev/mcp`, and it is also served from the bit platform's combined endpoint at
-`https://bitplatform.dev/mcp`. Point your coding agent at either to let it search the Bsqlite API, read the guides and
-the demo's source, and plan a storage setup. See the MCP server page of the demo website for the full tool list.
+`https://bsqlite.bitplatform.dev/mcp`. Point your coding agent at it to let it search the Bsqlite API, read the guides
+and the demo's source, and plan a storage setup. See the MCP server page of the demo website for the full tool list.
 
 ## Tests
 
