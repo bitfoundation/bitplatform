@@ -10,14 +10,19 @@ public partial class SignalRRedisBackplaneTests
     public TestContext TestContext { get; set; } = default!;
 
     [TestMethod]
-    public async Task TheServer_Should_ShutDown_AfterTheCacheConnectionCloses()
+    public async Task DisposingSignalRsBackplane_Should_KeepTheCacheConnectionOpen()
     {
         await using var server = new AppTestServer();
 
         await server.Build().Start(TestContext.CancellationToken);
 
-        await server.ApiApp.Services.GetRequiredService<IHubContext<AppHub>>().Clients.All.SendAsync("PING", TestContext.CancellationToken);
+        var services = server.ApiApp.Services;
 
-        await server.ApiApp.Services.GetRequiredKeyedService<IConnectionMultiplexer>("redis-cache").DisposeAsync();
+        await services.GetRequiredService<IHubContext<AppHub>>().Clients.All.SendAsync("PING", TestContext.CancellationToken);
+
+        ((IDisposable)services.GetRequiredService<HubLifetimeManager<AppHub>>()).Dispose();
+
+        Assert.IsTrue(services.GetRequiredKeyedService<IConnectionMultiplexer>("redis-cache").IsConnected,
+            "SignalR's Redis backplane closed the redis-cache connection that FusionCache still uses.");
     }
 }
