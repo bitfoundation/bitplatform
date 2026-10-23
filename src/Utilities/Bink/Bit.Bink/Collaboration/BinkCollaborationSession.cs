@@ -130,6 +130,17 @@ public sealed class BinkCollaborationSession : IAsyncDisposable
     /// <summary>This participant's identifier.</summary>
     public string ParticipantId { get; }
 
+    /// <summary>
+    /// How incoming operations and snapshots are read: the session's limits, and the same brush and element registries
+    /// that write outgoing ones, so a custom element or brush that can be sent can also be received.
+    /// </summary>
+    private BinkDeserializerOptions ReadOptions => new()
+    {
+        Limits = _options.Limits,
+        BrushRegistry = _options.SerializerOptions.BrushRegistry,
+        ElementRegistry = _options.SerializerOptions.ElementRegistry,
+    };
+
     /// <summary>The clock presence expiry and waiting operations are measured against. Replaced by tests.</summary>
     internal TimeProvider Clock { get; set; } = TimeProvider.System;
 
@@ -536,7 +547,7 @@ public sealed class BinkCollaborationSession : IAsyncDisposable
         BinkDrawingOperation operation;
         try
         {
-            operation = BinkOperationCodec.Deserialize(payload, new BinkDeserializerOptions { Limits = _options.Limits });
+            operation = BinkOperationCodec.Deserialize(payload, ReadOptions);
         }
         catch (BinkFormatException ex)
         {
@@ -861,7 +872,7 @@ public sealed class BinkCollaborationSession : IAsyncDisposable
         BinkDocument incoming;
         try
         {
-            incoming = BinkSerializer.Deserialize(payload, new BinkDeserializerOptions { Limits = _options.Limits });
+            incoming = BinkSerializer.Deserialize(payload, ReadOptions);
         }
         catch (BinkFormatException ex)
         {

@@ -1,4 +1,7 @@
 ﻿
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
+
 namespace Bit.Bink;
 
 /// <summary>One undoable step.</summary>
@@ -32,6 +35,12 @@ public sealed class BinkHistoryManager : IDisposable
     private bool _applying;
     private bool _disposed;
     private int _limit;
+    private long _budget;
+    private long _memory;
+    // Kept only while a budget is set, so recording costs nothing extra without one: how many references the steps
+    // hold to each payload (point data, text, an image) and its size. A payload several steps share, such as the
+    // points of a stroke dragged for a hundred frames, is counted once.
+    private readonly Dictionary<object, Payload> _payloads = new(ReferenceEqualityComparer.Instance);
     private List<BinkHistoryEntry>? _consequences;
     private BinkHistoryEntry? _cause;
 
@@ -57,8 +66,63 @@ public sealed class BinkHistoryManager : IDisposable
         {
             _limit = value;
             if (_undo.Count <= _limit) return;
-            _undo.RemoveRange(0, _undo.Count - Math.Max(_limit, 0));
+            int remove = _undo.Count - Math.Max(_limit, 0);
+            for (int i = 0; i < remove; i++) Untrack(_undo[i]);
+            _undo.RemoveRange(0, remove);
             Changed?.Invoke(this, EventArgs.Empty);
+        }
+    }
+
+    /// <summary>
+    /// The most memory, in estimated bytes, the undo and redo steps may hold; 0, the default, for no limit besides
+    /// <see cref="Limit"/>. The oldest steps are dropped past it, the furthest redo steps after them, but never the
+    /// most recent step. Lowering it trims at once.
+    /// </summary>
+    /// <remarks>
+    /// A step holds the elements it would put back: deleting a photo keeps the photo alive for undo, and a few hundred
+    /// such steps of large embedded images can hold gigabytes. The estimate counts every element a step refers to, and
+    /// the point data, text and image data they carry by size, once however many steps share it, as the steps of a
+    /// drag share a stroke's points. Data the document itself still holds is counted too, so it errs high.
+    /// </remarks>
+    public long MemoryBudget
+    {
+        get => _budget;
+        set
+        {
+            long budget = Math.Max(value, 0);
+            if (budget > 0 && _budget == 0)
+            {
+                // Accounting starts now, from the steps already recorded.
+                _payloads.Clear();
+                _memory = 0;
+                foreach (BinkHistoryEntry entry in _undo) _memory += Account(entry, _payloads, 1);
+                foreach (BinkHistoryEntry entry in _redo) _memory += Account(entry, _payloads, 1);
+            }
+            else if (budget == 0)
+            {
+                _payloads.Clear();
+                _payloads.TrimExcess();
+                _memory = 0;
+            }
+            _budget = budget;
+            if (TrimToBudget()) Changed?.Invoke(this, EventArgs.Empty);
+        }
+    }
+
+    /// <summary>
+    /// The memory the undo and redo steps are estimated to hold, in bytes; see <see cref="MemoryBudget"/>. With a
+    /// budget it is kept as steps come and go; without one it is worked out when read, by going through every step.
+    /// </summary>
+    public long EstimatedMemory
+    {
+        get
+        {
+            if (_budget > 0) return _memory;
+            var payloads = new Dictionary<object, Payload>(ReferenceEqualityComparer.Instance);
+            long total = 0;
+            foreach (BinkHistoryEntry entry in _undo) total += Account(entry, payloads, 1);
+            foreach (BinkHistoryEntry entry in _redo) total += Account(entry, payloads, 1);
+            return total;
         }
     }
 
@@ -141,6 +205,8 @@ public sealed class BinkHistoryManager : IDisposable
     {
         _undo.Clear();
         _redo.Clear();
+        _payloads.Clear();
+        _memory = 0;
         Changed?.Invoke(this, EventArgs.Empty);
     }
 
@@ -334,7 +400,10 @@ public sealed class BinkHistoryManager : IDisposable
         // consequences are folded into it.
         if (_groupDepth == 0 && cause is not null && _undo.Count > 0 && ReferenceEquals(_undo[^1], cause))
         {
+            Untrack(cause);
             _undo[^1] = Merge([cause, .. pending], cause.Label);
+            Track(_undo[^1]);
+            TrimToBudget();
             Changed?.Invoke(this, EventArgs.Empty);
             return;
         }
@@ -344,10 +413,124 @@ public sealed class BinkHistoryManager : IDisposable
 
     private void Push(BinkHistoryEntry entry)
     {
+        foreach (BinkHistoryEntry redo in _redo) Untrack(redo);
         _redo.Clear();
         _undo.Add(entry);
-        if (_undo.Count > Limit) _undo.RemoveRange(0, _undo.Count - Limit);
+        Track(entry);
+        if (_undo.Count > Limit)
+        {
+            int remove = _undo.Count - Limit;
+            for (int i = 0; i < remove; i++) Untrack(_undo[i]);
+            _undo.RemoveRange(0, remove);
+        }
+        TrimToBudget();
         Changed?.Invoke(this, EventArgs.Empty);
+    }
+
+    /// <summary>Drops the oldest steps, then the furthest redo steps, while over the budget; never the newest step.</summary>
+    /// <returns>True when anything was dropped.</returns>
+    private bool TrimToBudget()
+    {
+        bool trimmed = false;
+        while (_budget > 0 && _memory > _budget && _undo.Count > 1)
+        {
+            Untrack(_undo[0]);
+            _undo.RemoveAt(0);
+            trimmed = true;
+        }
+        while (_budget > 0 && _memory > _budget && _redo.Count > 0 && _undo.Count + _redo.Count > 1)
+        {
+            Untrack(_redo[0]);
+            _redo.RemoveAt(0);
+            trimmed = true;
+        }
+        return trimmed;
+    }
+
+    private void Track(BinkHistoryEntry entry)
+    {
+        if (_budget > 0) _memory += Account(entry, _payloads, 1);
+    }
+
+    private void Untrack(BinkHistoryEntry entry)
+    {
+        if (_budget > 0) _memory += Account(entry, _payloads, -1);
+    }
+
+    /// <summary>
+    /// Adds a step to the accounting (<paramref name="delta"/> 1) or takes it out (-1), returning how the estimate
+    /// changes: the step's own records, and each payload it refers to when it is the first reference or the last.
+    /// </summary>
+    private static long Account(BinkHistoryEntry entry, Dictionary<object, Payload> payloads, int delta)
+        => 64L * delta + Account(entry.Forward, payloads, delta) + Account(entry.Inverse, payloads, delta);
+
+    private static long Account(BinkDrawingOperation operation, Dictionary<object, Payload> payloads, int delta)
+    {
+        switch (operation)
+        {
+            case BinkAddElementOperation add: return 48L * delta + Account(add.Element, payloads, delta);
+            case BinkReplaceElementOperation replace: return 48L * delta + Account(replace.Element, payloads, delta);
+            case BinkAddLayerOperation { Elements: { } elements }:
+            {
+                long total = 96L * delta;
+                foreach (BinkElement element in elements) total += Account(element, payloads, delta);
+                return total;
+            }
+            case BinkBatchOperation batch:
+            {
+                long total = 48L * delta;
+                IReadOnlyList<BinkDrawingOperation> inner = batch.Operations;
+                for (int i = 0; i < inner.Count; i++) total += Account(inner[i], payloads, delta);
+                return total;
+            }
+            default:
+                return 48L * delta;
+        }
+    }
+
+    private static long Account(BinkElement element, Dictionary<object, Payload> payloads, int delta)
+    {
+        // The element record itself, which every version has of its own.
+        long change = 160L * delta;
+        (object? payload, long size) = element switch
+        {
+            // Positions, pressure and time as floats, and tilt and twist where the device produced them.
+            BinkStroke stroke => (stroke.Points, stroke.Points.Count * 28L),
+            BinkImageElement image => (image.Source, image.Source.Uri.Length * 2L),
+            BinkTextElement text => (text.Text, text.Text.Length * 2L),
+            BinkCalloutElement callout => (callout.Text, callout.Text.Length * 2L),
+            BinkPolygonShape polygon => (polygon.Points, polygon.Points.Count * 8L),
+            BinkPathElement path => (path.Path, path.Path.VerbCount + path.Path.Coordinates.Length * 4L),
+            BinkHighlightElement highlight => (highlight.Rects, highlight.Rects.Count * 16L),
+            BinkUnknownElement unknown => (unknown.RawJson, unknown.RawJson.Length * 2L),
+            _ => ((object?)null, 0L),
+        };
+        if (payload is null || size == 0) return change;
+        if (delta > 0)
+        {
+            ref Payload counted = ref CollectionsMarshal.GetValueRefOrAddDefault(payloads, payload, out bool exists);
+            if (!exists) change += size;
+            counted.References++;
+            counted.Size = size;
+        }
+        else
+        {
+            ref Payload counted = ref CollectionsMarshal.GetValueRefOrNullRef(payloads, payload);
+            if (Unsafe.IsNullRef(ref counted)) return change;
+            if (--counted.References == 0)
+            {
+                change -= counted.Size;
+                payloads.Remove(payload);
+            }
+        }
+        return change;
+    }
+
+    /// <summary>How many references the counted steps hold to a payload, and its estimated size.</summary>
+    private struct Payload
+    {
+        public int References;
+        public long Size;
     }
 
     private sealed class GroupScope(BinkHistoryManager owner) : IDisposable

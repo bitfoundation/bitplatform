@@ -274,7 +274,13 @@ public static class BinkSvgExporter
         // Isolated exactly when BinkDocumentRenderer isolates the layer on canvas and in the rasterizer. An
         // isolated group is what keeps a multiply highlight from reaching the layers below, so isolating every
         // layer made a highlight over a page image composite normally in SVG while it multiplied everywhere else.
-        if (layer.Opacity < 1f || HasEraser(layer)) writer.Write(" style=\"isolation:isolate\"");
+        if (layer.BlendMode != BinkBlendMode.Normal)
+        {
+            writer.Write(" style=\"mix-blend-mode:");
+            writer.Write(layer.BlendMode == BinkBlendMode.Multiply ? "multiply" : "screen");
+            writer.Write(";isolation:isolate\"");
+        }
+        else if (layer.Opacity < 1f || HasEraser(layer)) writer.Write(" style=\"isolation:isolate\"");
         writer.Write('>');
 
         WriteRun(writer, context, elements, elements.Count, state);

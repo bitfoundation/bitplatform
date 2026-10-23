@@ -73,6 +73,10 @@ public sealed class BinkSelectTool : BinkToolBase
     private bool _movedPastThreshold;
     private bool _constrain;
     private bool _lassoActive;
+    // The previous press, to recognise a double click, which enters the group under the pointer.
+    private double _lastDownTime = double.NegativeInfinity;
+    private Vector2 _lastDownPosition;
+    private Guid? _lastDownHit;
 
     /// <inheritdoc />
     public override string Id => "select";
@@ -113,6 +117,16 @@ public sealed class BinkSelectTool : BinkToolBase
 
     /// <summary>Whether dragging an element with Alt held moves a copy of the selection, leaving the original in place.</summary>
     public bool DuplicateOnAltDrag { get; set; } = true;
+
+    /// <summary>The longest time between two presses on the same element that still counts as a double click, in milliseconds.</summary>
+    public double DoubleClickTime { get; set; } = 500;
+
+    /// <summary>
+    /// The group being worked inside, or null at the top level. Picking an element selects its whole outermost
+    /// group; double-clicking a member of the selected group enters it, so the next level down (a nested group, or
+    /// a single element) can be picked, moved and edited on its own. Escape, or clicking outside the group, leaves it.
+    /// </summary>
+    public Guid? FocusedGroup { get; set; }
 
     /// <summary>The marquee rectangle in document coordinates while dragging one, otherwise empty.</summary>
     public BinkRect Marquee => _drag == DragKind.Marquee && !_lassoActive ? BinkRect.FromPoints(_startDocument, _currentDocument) : BinkRect.Empty;
@@ -160,9 +174,20 @@ public sealed class BinkSelectTool : BinkToolBase
         }
 
         BinkElement? hit = BinkDocumentQuery.HitTest(context.Document, doc, tolerance);
+        bool doubleClick = hit is not null && !_addToSelection && _lastDownHit == hit.Id
+            && sample.Timestamp - _lastDownTime <= DoubleClickTime
+            && Vector2.Distance(sample.Position, _lastDownPosition) <= 6f * targetScale;
+        _lastDownTime = sample.Timestamp;
+        _lastDownPosition = sample.Position;
+        _lastDownHit = hit?.Id;
+
         if (hit is null)
         {
-            if (!_addToSelection) selection.Clear();
+            if (!_addToSelection)
+            {
+                selection.Clear();
+                FocusedGroup = null;
+            }
             _drag = DragKind.Marquee;
             _lassoActive = (MarqueeShape == BinkMarqueeShape.Lasso) ^ sample.Alt;
             _lasso.Clear();
@@ -172,9 +197,22 @@ public sealed class BinkSelectTool : BinkToolBase
             return true;
         }
 
-        bool wasSelected = selection.Contains(hit.Id);
-        if (_addToSelection) selection.Toggle(hit.Id);
-        else if (!wasSelected) selection.Set(hit.Id);
+        // Picking a member of a group picks the group. Clicking outside the group being worked inside leaves it, and
+        // double-clicking a member of a selected group enters that group and picks the next level down.
+        BinkDocument document = context.Document;
+        if (FocusedGroup is { } focus && !hit.IsInGroup(focus)) FocusedGroup = null;
+        IReadOnlyList<Guid> unit = BinkDocumentQuery.ExpandToGroups(document, [hit.Id], FocusedGroup);
+        bool entered = false;
+        if (doubleClick && unit.Count > 1 && unit.All(selection.Contains) && BinkDocumentQuery.GetSelectionGroup(hit, FocusedGroup) is { } group)
+        {
+            FocusedGroup = group;
+            unit = BinkDocumentQuery.ExpandToGroups(document, [hit.Id], group);
+            entered = true;
+        }
+
+        bool wasSelected = !entered && unit.All(selection.Contains);
+        if (_addToSelection) selection.Set(wasSelected ? selection.Ids.Except(unit) : selection.Ids.Concat(unit));
+        else if (!wasSelected) selection.Set(unit);
 
         if (selection.IsEmpty)
         {
@@ -185,8 +223,10 @@ public sealed class BinkSelectTool : BinkToolBase
         // reader user who taps an element is told nothing about what they now have.
         if (!wasSelected || _addToSelection)
         {
-            context.Announce(selection.Count == 1
-                ? "Selected: " + hit.GetAccessibleDescription()
+            string picked = unit.Count == 1 ? hit.GetAccessibleDescription() : $"group of {unit.Count} elements";
+            context.Announce(entered ? "Entered group. Selected: " + picked
+                : _addToSelection && wasSelected ? $"Deselected {picked}. {selection.Count} elements selected."
+                : selection.Count == unit.Count ? "Selected: " + picked
                 : $"{selection.Count} elements selected.");
         }
         // Alt-dragging moves a copy. The copies are made in the same history group as the drag, so the copy and
@@ -318,7 +358,8 @@ public sealed class BinkSelectTool : BinkToolBase
             List<BinkElement> found = _lassoActive
                 ? BinkDocumentQuery.FindInPolygon(context.Document, System.Runtime.InteropServices.CollectionsMarshal.AsSpan(_lasso), LassoCoverage)
                 : BinkDocumentQuery.FindInRect(context.Document, BinkRect.FromPoints(_startDocument, _currentDocument));
-            var ids = found.Select(static e => e.Id).ToList();
+            // Catching part of a group catches the group, exactly as clicking one of its members does.
+            IReadOnlyList<Guid> ids = BinkDocumentQuery.ExpandToGroups(context.Document, found.Select(static e => e.Id), FocusedGroup);
             if (_addToSelection) foreach (Guid id in ids) context.Selection.Add(id);
             else context.Selection.Set(ids);
             context.Announce(ids.Count == 0 ? "Nothing selected." : $"{ids.Count} elements selected.");
@@ -342,6 +383,8 @@ public sealed class BinkSelectTool : BinkToolBase
     {
         // Being swapped out mid-drag must not leave the history group open: that would disable undo entirely.
         if (_drag != DragKind.None) Cancel(context);
+        FocusedGroup = null;
+        _lastDownHit = null;
     }
 
     /// <summary>Restores the original transforms and ends the gesture, leaving no history step behind.</summary>
@@ -541,6 +584,18 @@ public sealed class BinkSelectTool : BinkToolBase
 
         if (_guides.Count > 0 && _drag is DragKind.Move or DragKind.Resize) BinkSnapper.DrawGuides(render, _guides, zoom);
 
+        // While working inside a group, a dashed frame around the whole group shows what is being worked inside.
+        if (FocusedGroup is { } focused)
+        {
+            BinkRect frame = BinkRect.Empty;
+            foreach (BinkElement member in BinkDocumentQuery.GetGroupMembers(context.Document, focused)) frame = frame.Union(member.Bounds);
+            if (!frame.IsUnset)
+            {
+                render.StrokePath(new BinkPathBuilder(6).AddRect(frame.Inflate(6f / zoom)).ToGeometry(),
+                    new BinkStrokePaint(accent.WithAlpha(0.7f), 1f / zoom, 1f, BinkBlendMode.Normal, BinkLineCap.Butt, BinkLineJoin.Miter, [5f / zoom, 4f / zoom]));
+            }
+        }
+
         BinkRect bounds = context.Selection.Bounds;
         if (bounds.IsEmpty) return;
 
@@ -583,6 +638,7 @@ public sealed class BinkSelectTool : BinkToolBase
         {
             case "Escape":
                 if (_drag != DragKind.None) { Cancel(context); return true; }
+                if (FocusedGroup is { } focus) { LeaveGroup(context, focus); return true; }
                 if (!selection.IsEmpty) { selection.Clear(); return true; }
                 return false;
             case "Delete":
@@ -628,6 +684,26 @@ public sealed class BinkSelectTool : BinkToolBase
             case "R":
                 if (selection.IsEmpty) return false;
                 return RotateSelection(context, key.Shift ? -KeyboardRotationStep : KeyboardRotationStep);
+            case "H" or "h" when key.Shift && !key.Ctrl && !key.Alt:
+            case "V" or "v" when key.Shift && !key.Ctrl && !key.Alt:
+            {
+                if (selection.IsEmpty) return false;
+                bool horizontal = key.Key is "H" or "h";
+                using IDisposable group = context.History.BeginGroup(horizontal ? "Flip horizontally" : "Flip vertically");
+                try
+                {
+                    if (!context.Document.FlipElements(selection.Ids, horizontal ? BinkFlipDirection.Horizontal : BinkFlipDirection.Vertical)) return true;
+                }
+                catch (InvalidOperationException ex)
+                {
+                    context.Announce("That flip was refused: " + ex.Message);
+                    return true;
+                }
+                context.Announce(horizontal ? "Flipped horizontally." : "Flipped vertically.");
+                context.InvalidateDocument();
+                context.InvalidateOverlay();
+                return true;
+            }
             case "a" when key.Ctrl:
                 selection.SelectAll();
                 context.Announce($"{selection.Count} elements selected.");
@@ -644,13 +720,44 @@ public sealed class BinkSelectTool : BinkToolBase
     private const int MaxOutlinedElements = 400;
 
     /// <summary>
-    /// Moves the selection to another element in document order. Offset 0 selects the first element, which is how
-    /// a keyboard user gets into the canvas without a pointer.
+    /// Leaves the group being worked inside for the group around it, and selects the group that was left as a whole,
+    /// the way entering it narrowed the selection to one of its parts.
     /// </summary>
-    private static bool SelectByOffset(IBinkToolContext context, int offset)
+    private void LeaveGroup(IBinkToolContext context, Guid group)
     {
-        List<BinkElement> candidates = Selectable(context.Document);
-        if (candidates.Count == 0)
+        List<BinkElement> members = BinkDocumentQuery.GetGroupMembers(context.Document, group);
+        Guid? parent = null;
+        if (members.Count > 0)
+        {
+            IReadOnlyList<Guid> chain = members[0].GroupIds;
+            for (int i = 0; i < chain.Count - 1; i++) if (chain[i] == group) parent = chain[i + 1];
+        }
+        FocusedGroup = parent;
+        context.Selection.Set(BinkDocumentQuery.ExpandToGroups(context.Document, members.Select(static e => e.Id), parent));
+        context.Announce(context.Selection.IsEmpty ? "Left the group." : $"Left the group. Selected: group of {context.Selection.Count} elements.");
+        context.InvalidateOverlay();
+    }
+
+    /// <summary>
+    /// Moves the selection to another element, or group of elements, in document order. Offset 0 selects the first,
+    /// which is how a keyboard user gets into the canvas without a pointer. A group is one stop, as it is one click.
+    /// </summary>
+    private bool SelectByOffset(IBinkToolContext context, int offset)
+    {
+        // Each stop is keyed by the group picking any of its members selects, or by the element itself.
+        var stops = new List<(BinkElement First, List<Guid> Members)>();
+        var stopOf = new Dictionary<Guid, int>();
+        foreach (BinkElement element in Selectable(context.Document))
+        {
+            Guid key = BinkDocumentQuery.GetSelectionGroup(element, FocusedGroup) ?? element.Id;
+            if (stopOf.TryGetValue(key, out int stop)) stops[stop].Members.Add(element.Id);
+            else
+            {
+                stopOf[key] = stops.Count;
+                stops.Add((element, [element.Id]));
+            }
+        }
+        if (stops.Count == 0)
         {
             context.Announce("Nothing here to select.");
             return true;
@@ -660,14 +767,15 @@ public sealed class BinkSelectTool : BinkToolBase
         if (offset != 0 && context.Selection.Count > 0)
         {
             Guid current = context.Selection.Ids[^1];
-            int found = candidates.FindIndex(e => e.Id == current);
+            int found = stops.FindIndex(s => s.Members.Contains(current));
             // Modulo of a negative index is negative in C#, so the count is added back before wrapping.
-            index = found < 0 ? 0 : ((found + offset) % candidates.Count + candidates.Count) % candidates.Count;
+            index = found < 0 ? 0 : ((found + offset) % stops.Count + stops.Count) % stops.Count;
         }
 
-        BinkElement target = candidates[index];
-        context.Selection.Set(target.Id);
-        context.Announce($"{index + 1} of {candidates.Count}: {target.GetAccessibleDescription()}");
+        (BinkElement first, List<Guid> members) = stops[index];
+        context.Selection.Set(members);
+        string description = members.Count == 1 ? first.GetAccessibleDescription() : $"group of {members.Count} elements";
+        context.Announce($"{index + 1} of {stops.Count}: {description}");
         context.InvalidateOverlay();
         return true;
     }
@@ -680,7 +788,7 @@ public sealed class BinkSelectTool : BinkToolBase
             if (!layer.IsVisible || layer.IsLocked) continue;
             foreach (BinkElement element in layer.Elements)
             {
-                if (element.IsSelectable) result.Add(element);
+                if (element.CanBeEdited) result.Add(element);
             }
         }
         return result;

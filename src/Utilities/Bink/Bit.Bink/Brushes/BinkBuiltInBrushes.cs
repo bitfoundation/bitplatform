@@ -164,8 +164,18 @@ internal sealed record BinkFallbackBrush : BinkBrush
     /// <summary>The kind the stroke was stored with.</summary>
     public string StoredKind { get; }
 
+    /// <summary>The kind's own settings as they were stored, written back unchanged.</summary>
+    public IReadOnlyDictionary<string, float>? StoredParameters { get; init; }
+
     /// <inheritdoc />
     public override string Kind => StoredKind;
+
+    /// <inheritdoc />
+    public override IReadOnlyDictionary<string, float>? GetParameters() => StoredParameters;
+
+    /// <inheritdoc />
+    public override BinkBrush WithParameters(IReadOnlyDictionary<string, float> parameters)
+        => this with { StoredParameters = new Dictionary<string, float>(parameters, StringComparer.Ordinal) };
 
     /// <inheritdoc />
     public override BinkStrokeGeometry BuildGeometry(BinkStrokePointsView points, BinkPathBuilder builder)

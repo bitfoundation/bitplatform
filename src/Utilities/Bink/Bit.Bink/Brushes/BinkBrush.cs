@@ -84,6 +84,19 @@ public abstract record BinkBrush
         return pointBounds.Inflate(Width / 2f * MathF.Max(maxFactor, 1f) * miterAllowance + 1f);
     }
 
+    /// <summary>
+    /// The settings particular to this kind of brush, beyond the ones every brush has (a nib angle, a dash length),
+    /// as named numbers, so they are saved with the stroke and sent to collaborators. Null, the default, when there
+    /// are none. Override it together with <see cref="WithParameters"/>.
+    /// </summary>
+    public virtual IReadOnlyDictionary<string, float>? GetParameters() => null;
+
+    /// <summary>
+    /// Returns a copy with the settings <see cref="GetParameters"/> produced applied, as read back from a document or
+    /// a collaborator. The values are untrusted: clamp each to what the brush can draw, and ignore names it does not know.
+    /// </summary>
+    public virtual BinkBrush WithParameters(IReadOnlyDictionary<string, float> parameters) => this;
+
     /// <summary>Validates the brush values are usable; throws otherwise.</summary>
     public virtual void Validate()
     {

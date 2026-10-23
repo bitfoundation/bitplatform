@@ -116,15 +116,42 @@ public sealed class BinkTextTool : BinkToolBase
     public void CommitEdit(IBinkToolContext context, string text, Vector2? measuredSize = null)
     {
         ArgumentNullException.ThrowIfNull(context);
-        BinkTextElement? editing = Editing;
-        Editing = null;
-        EditFinished?.Invoke();
+        if (Editing is { } editing) CommitEdit(context, editing.Id, text, measuredSize);
+        else
+        {
+            EditFinished?.Invoke();
+            EndCreationGroup();
+        }
+    }
+
+    /// <summary>
+    /// Applies edited text to the element the editor was opened for. Use this overload when the text arrives after
+    /// a delay: committing is asynchronous for a host that measures the text first, and by the time the measurement
+    /// returns the user may already have started editing another element, which must not receive this text.
+    /// </summary>
+    /// <param name="context">Tool context.</param>
+    /// <param name="elementId">The element the text was typed for.</param>
+    /// <param name="text">The new text.</param>
+    /// <param name="measuredSize">Size measured by the host in document units; see <see cref="CommitEdit(IBinkToolContext, string, Vector2?)"/>.</param>
+    public void CommitEdit(IBinkToolContext context, Guid elementId, string text, Vector2? measuredSize = null)
+    {
+        ArgumentNullException.ThrowIfNull(context);
+        ArgumentNullException.ThrowIfNull(text);
+        // Only the edit in progress closes the editor. A late commit for an element edited before it still saves
+        // its text, but leaves the editor that is open now alone.
+        bool current = Editing?.Id == elementId;
+        if (current)
+        {
+            Editing = null;
+            EditFinished?.Invoke();
+        }
+        bool created = _createdElementId == elementId;
         // The editor stays open for as long as the user types, and the element can change meanwhile: a
         // collaborator moves it, the application restyles it. The edit is applied to the element as it is now, not
         // to the snapshot taken when editing began, which would silently undo those changes.
-        if (editing is null || !context.Document.TryGetElement(editing.Id, out BinkElement? found) || found is not BinkTextElement element)
+        if (!context.Document.TryGetElement(elementId, out BinkElement? found) || found is not BinkTextElement element)
         {
-            EndCreationGroup();
+            if (current || created) EndCreationGroup();
             return;
         }
 
@@ -135,11 +162,11 @@ public sealed class BinkTextTool : BinkToolBase
                 context.Document.RemoveElement(element.Id);
                 // A box placed and then left blank never happened as far as undo cares, exactly as when the edit
                 // is cancelled; recording it would leave an undo step that does nothing.
-                if (_createdElementId == element.Id) context.History.CancelGroup();
+                if (created) context.History.CancelGroup();
                 context.InvalidateDocument(element.Bounds);
                 return;
             }
-            Vector2? size = measuredSize ?? (_createdElementId == element.Id ? null : element.Size);
+            Vector2? size = measuredSize ?? (created ? null : element.Size);
             var updated = element with { Text = text, Size = size };
             context.Document.ReplaceElement(updated);
             context.InvalidateDocument(updated.Bounds.Union(element.Bounds));
@@ -150,7 +177,7 @@ public sealed class BinkTextTool : BinkToolBase
             // The element rejects text over its maximum length with an ArgumentException. A box placed for this
             // edit that never got its text is removed, as on cancel: keeping it would leave an invisible element
             // and an undo step that does nothing visible.
-            if (_createdElementId == element.Id && element.Text.Length == 0 && context.Document.ContainsElement(element.Id))
+            if (created && element.Text.Length == 0 && context.Document.ContainsElement(element.Id))
             {
                 context.Document.RemoveElement(element.Id);
                 context.History.CancelGroup();
@@ -160,7 +187,7 @@ public sealed class BinkTextTool : BinkToolBase
         }
         finally
         {
-            EndCreationGroup();
+            if (current || created) EndCreationGroup();
         }
     }
 

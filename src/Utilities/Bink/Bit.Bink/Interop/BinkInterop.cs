@@ -26,6 +26,8 @@ internal sealed record BinkInteropOptions
     public int WheelMode { get; init; }
     public bool Clipboard { get; init; }
     public bool Predict { get; init; }
+    public bool DropFiles { get; init; }
+    public string[]? DisabledShortcuts { get; init; }
 }
 
 /// <summary>Size and capability information reported by the browser.</summary>
@@ -77,11 +79,15 @@ internal interface IBinkInteropClient
     void OnSamples(ReadOnlySpan<double> data, int count);
     void OnResized(double width, double height, double devicePixelRatio);
     void OnKey(string key, bool ctrl, bool shift, bool alt);
-    void OnTextEditorKey(string key, string value);
+    /// <summary>The element the inline text editor is open for, or null while it is closed.</summary>
+    Guid? TextEditorElementId { get; }
+    /// <summary>A commit or cancel from the editor that was open for <paramref name="elementId"/> when it was sent.</summary>
+    void OnTextEditorKey(string key, string value, Guid elementId);
     void OnRedrawRequested();
     void OnResourcesLost();
     void OnWheel(float panX, float panY, float zoom, float x, float y);
     Task OnPasteAsync(string kind, string? text, IJSStreamReference? data, string? mediaType);
+    Task OnDropAsync(string kind, IJSStreamReference data, string? mediaType, float x, float y);
 }
 
 /// <summary>
@@ -261,6 +267,17 @@ internal sealed class BinkInterop : IAsyncDisposable
     public ValueTask ProvideClipboardAsync(string? text) => InvokeVoidAsync("provideClipboard", _id, text);
 
     /// <summary>
+    /// Completes a copy with the selection's picture too: the commands that draw it at the given size, which the browser
+    /// renders and puts on the clipboard as a PNG beside the text, for other applications to paste.
+    /// </summary>
+    public ValueTask ProvideClipboardAsync(string text, int width, int height, BinkCanvasRenderContext picture)
+    {
+        ArgumentNullException.ThrowIfNull(picture);
+        string[] strings = picture.Strings.Count == 0 ? [] : [.. picture.Strings];
+        return InvokeVoidAsync("provideClipboard", _id, text, width, height, picture.ToSingleBytes(), picture.Count, strings);
+    }
+
+    /// <summary>
     /// Reads text from the system clipboard, which the browser may ask the user to allow. Null when it is empty,
     /// refused or unavailable.
     /// </summary>
@@ -288,12 +305,16 @@ internal sealed class BinkInterop : IAsyncDisposable
     }
 
     /// <summary>Reads a browser stream to the end, refusing more than <paramref name="maxLength"/> bytes.</summary>
+    /// <exception cref="IOException">The stream is longer than <paramref name="maxLength"/>, or it broke off.</exception>
     public static async Task<byte[]> ReadBytesAsync(IJSStreamReference stream, long maxLength, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(stream);
         await using (stream.ConfigureAwait(false))
         {
-            // OpenReadStreamAsync enforces the limit itself and throws rather than reading on.
+            // The length is known before reading. Checked here, because OpenReadStreamAsync reports a stream over its
+            // limit with an ArgumentOutOfRangeException, which reads as a mistake by the caller rather than as data
+            // that was too large.
+            if (stream.Length > maxLength) throw new IOException($"The stream of {stream.Length} bytes exceeds the limit of {maxLength}.");
             await using Stream source = await stream.OpenReadStreamAsync(maxLength, cancellationToken).ConfigureAwait(false);
             using var buffer = new MemoryStream();
             await source.CopyToAsync(buffer, cancellationToken).ConfigureAwait(false);
@@ -327,13 +348,38 @@ internal sealed class BinkInterop : IAsyncDisposable
         }
     }
 
-    /// <summary>Renders a command buffer into an offscreen canvas and returns encoded image bytes.</summary>
-    public async Task<byte[]> RenderToImageAsync(int pixelWidth, int pixelHeight, BinkCanvasRenderContext context, string mimeType, double quality, CancellationToken cancellationToken = default)
+    /// <summary>
+    /// Renders a command buffer into an offscreen canvas and returns encoded image bytes. The image comes back as a
+    /// stream: returned as a byte array it would be a single message, which Blazor Server refuses above 32 KB.
+    /// </summary>
+    /// <param name="pixelWidth">Output width in pixels.</param>
+    /// <param name="pixelHeight">Output height in pixels.</param>
+    /// <param name="context">The recorded commands.</param>
+    /// <param name="mimeType">The image type to encode.</param>
+    /// <param name="quality">Quality for lossy types.</param>
+    /// <param name="maxBytes">The largest encoded image accepted.</param>
+    /// <param name="cancellationToken">Cancels the export.</param>
+    public async Task<byte[]> RenderToImageAsync(int pixelWidth, int pixelHeight, BinkCanvasRenderContext context, string mimeType, double quality, long maxBytes, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(context);
         if (_module is null || _disposed) return [];
         string[] strings = context.Strings.Count == 0 ? [] : [.. context.Strings];
-        return await _module.InvokeAsync<byte[]>("renderToImage", cancellationToken, _id, pixelWidth, pixelHeight, context.ToSingleBytes(), context.Count, strings, mimeType, quality).ConfigureAwait(false);
+        IJSStreamReference image = await _module.InvokeAsync<IJSStreamReference>("renderToImage", cancellationToken, _id, pixelWidth, pixelHeight, context.ToSingleBytes(), context.Count, strings, mimeType, quality).ConfigureAwait(false);
+        return await ReadBytesAsync(image, maxBytes, cancellationToken).ConfigureAwait(false);
+    }
+
+    /// <summary>Opens the browser's eyedropper. Null when there is none or the user cancelled it.</summary>
+    public async Task<string?> PickColorAsync(CancellationToken cancellationToken = default)
+    {
+        if (_module is null || _disposed) return null;
+        return await _module.InvokeAsync<string?>("pickColor", cancellationToken).ConfigureAwait(false);
+    }
+
+    /// <summary>Whether the browser has an eyedropper.</summary>
+    public async Task<bool> SupportsEyeDropperAsync(CancellationToken cancellationToken = default)
+    {
+        if (_module is null || _disposed) return false;
+        return await _module.InvokeAsync<bool>("supportsEyeDropper", cancellationToken).ConfigureAwait(false);
     }
 
     /// <summary>Offers bytes to the user as a file download.</summary>
@@ -421,7 +467,42 @@ internal sealed class BinkInterop : IAsyncDisposable
         [JSInvokable]
         public void OnTextEditorKey(string key, string value)
         {
-            if (!string.IsNullOrEmpty(key)) client.OnTextEditorKey(key, value ?? string.Empty);
+            if (!string.IsNullOrEmpty(key) && client.TextEditorElementId is { } elementId) client.OnTextEditorKey(key, value ?? string.Empty, elementId);
+        }
+
+        /// <summary>
+        /// Reports a commit or cancel from the inline text editor whose value is too long for one message, which a
+        /// Blazor Server circuit refuses above 32 KB, so it arrives as a stream.
+        /// </summary>
+        [JSInvokable]
+        public async Task OnTextEditorKeyStream(string key, IJSStreamReference value)
+        {
+            if (value is null) return;
+            // Which editor the text came from is fixed now. While it is read, the click that ended the edit is
+            // processed, and it can already have opened the editor on another text element.
+            Guid? editor = string.IsNullOrEmpty(key) ? null : client.TextEditorElementId;
+            if (editor is not { } elementId || key == "Escape")
+            {
+                // A cancel does not need the text, so it is applied at once, before anything else can happen.
+                if (editor is { } cancelled) client.OnTextEditorKey(key, string.Empty, cancelled);
+                await value.DisposeAsync().ConfigureAwait(true);
+                return;
+            }
+            string text;
+            try
+            {
+                // UTF-8 needs at most three bytes for each UTF-16 character.
+                text = await ReadTextAsync(value, BinkTextElement.MaxLength * 3L).ConfigureAwait(true);
+            }
+            catch (IOException)
+            {
+                return;
+            }
+            catch (JSDisconnectedException)
+            {
+                return;
+            }
+            client.OnTextEditorKey(key, text, elementId);
         }
 
         /// <summary>
@@ -453,5 +534,16 @@ internal sealed class BinkInterop : IAsyncDisposable
         [JSInvokable]
         public Task OnPaste(string kind, string? text, IJSStreamReference? data, string? mediaType)
             => string.IsNullOrEmpty(kind) ? Task.CompletedTask : client.OnPasteAsync(kind, text, data, mediaType);
+
+        /// <summary>
+        /// Reports a file dropped on the canvas: <c>image</c> or <c>bink</c> (a saved drawing), as a stream, with where
+        /// it was dropped in CSS pixels of the canvas.
+        /// </summary>
+        [JSInvokable]
+        public Task OnDrop(string kind, IJSStreamReference data, string? mediaType, double x, double y)
+        {
+            if (string.IsNullOrEmpty(kind) || data is null) return Task.CompletedTask;
+            return client.OnDropAsync(kind, data, mediaType, double.IsFinite(x) ? (float)x : 0f, double.IsFinite(y) ? (float)y : 0f);
+        }
     }
 }

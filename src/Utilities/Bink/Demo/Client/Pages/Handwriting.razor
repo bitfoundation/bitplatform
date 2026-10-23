@@ -117,6 +117,7 @@
     [
         ("pen", "Pen"),
         ("pencil", "Pencil"),
+        ("calligraphy", "Calligraphy"),
         ("marker", "Marker"),
         ("highlighter", "Highlighter"),
         ("eraser", "Eraser"),
@@ -140,6 +141,8 @@
         _brush = id switch
         {
             "pencil" => new BinkPencilBrush { Width = _width, Color = BinkColor.Parse(_color) },
+            // A broad nib at 45 degrees: thick downstrokes one way, hairlines the other, as an italic hand.
+            "calligraphy" => new BinkCalligraphyBrush { Width = MathF.Max(_width * 2.5f, 6f), Color = BinkColor.Parse(_color) },
             "marker" => new BinkMarkerBrush { Width = MathF.Max(_width * 2f, 6f), Color = BinkColor.Parse(_color) },
             "highlighter" => new BinkHighlighterBrush { Width = MathF.Max(_width * 5f, 16f) },
             "eraser" => new BinkPixelEraserBrush { Width = MathF.Max(_width * 5f, 16f) },

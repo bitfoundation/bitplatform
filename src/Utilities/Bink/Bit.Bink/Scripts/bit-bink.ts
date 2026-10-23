@@ -33,10 +33,17 @@ interface BinkSurfaceOptions {
     clipboard?: boolean;
     // Whether the browser's predicted pointer positions are delivered, flagged as predictions.
     predict?: boolean;
+    // Whether image files and saved drawings dropped on the canvas are reported.
+    dropFiles?: boolean;
+    // Chords the application took for itself, in canonical form ("Ctrl+Shift+Z"): neither handled nor prevented.
+    disabledShortcuts?: string[] | null;
 }
 
 // What a paste carried, reported to .NET.
 type PasteKind = 'bink' | 'text' | 'image' | 'internal';
+
+// What a dropped file is, reported to .NET with where it was dropped.
+type DropKind = 'image' | 'bink' | 'svg';
 
 // What the surface reports back. Either wired to a DotNetObjectReference by setDotNetCallbacks or supplied
 // directly through setCallbacks.
@@ -49,6 +56,7 @@ interface BinkSurfaceCallbacks {
     resourcesLost?(): unknown;
     wheel?(panX: number, panY: number, zoom: number, x: number, y: number): unknown;
     paste?(kind: PasteKind, text: string | null, data: Blob | null): unknown;
+    drop?(kind: DropKind, data: Blob, x: number, y: number): unknown;
 }
 
 // The shape of Blazor's DotNet global, for passing a Blob to .NET as a stream rather than inside a message: a
@@ -62,7 +70,12 @@ interface DotNetGlobal {
 interface PendingClipboardWrite {
     resolve(blob: Blob): void;
     reject(reason: Error): void;
+    // The picture of the selection, offered alongside the text so a copy pastes into other applications too.
+    resolveImage(blob: Blob): void;
+    rejectImage(reason: Error): void;
     timer: number;
+    // Set when this layer settled the write with nothing, which is not a failure of the clipboard.
+    withdrawn: boolean;
 }
 
 // A payload copied from a canvas starts with this, which is how a paste tells it from ordinary text.
@@ -169,6 +182,8 @@ const surfaces = (bitBinkGlobal.__bitBinkSurfaces ??= new Map<string, Surface>()
 
 // Packed pointer sample layout, matching BinkInputSample.ReadFrom in C#.
 const SAMPLE_SIZE = 12;
+// The most samples sent to .NET in one interop message when it goes through IJSRuntime: about 12 KB as JSON.
+const SAMPLES_PER_MESSAGE = 128;
 const FLAG_COALESCED = 1;
 const FLAG_PREDICTED = 2;
 const FLAG_PRIMARY = 4;
@@ -196,9 +211,13 @@ const OWNED_KEYS = new Set(['Escape', 'Delete', 'Backspace', 'ArrowLeft', 'Arrow
 // Of those, the ones that only do something when the selection is not empty.
 const SELECTION_KEYS = new Set(['Delete', 'Backspace', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown']);
 const OWNED_SHORTCUTS = new Set(['z', 'y', 'a', '0', '9', '+', '=', '-']);
-// Shortcuts that act on the selection: duplicate and the four arrange commands (Shift turns ] and [ into } and {).
-// Ctrl+D would otherwise bookmark the page.
-const SELECTION_SHORTCUTS = new Set(['d', ']', '[', '}', '{']);
+// Shortcuts that act on the selection: duplicate, the four arrange commands (Shift turns ] and [ into } and {) and
+// group/ungroup. Ctrl+D would otherwise bookmark the page and Ctrl+G find the next match.
+const SELECTION_SHORTCUTS = new Set(['d', ']', '[', '}', '{', 'g']);
+// What Shift makes of a key on a common layout, matching BinkShortcut.Unshifted in .NET.
+const UNSHIFTED_KEYS: Record<string, string> = {
+    '}': ']', '{': '[', '+': '=', '_': '-', '!': '1', '@': '2', '#': '3', '$': '4', '%': '5', '^': '6', '&': '7', '*': '8', '(': '9', ')': '0',
+};
 
 // Command opcodes, matching BinkCanvasCommand in C#.
 const OP = {
@@ -288,6 +307,7 @@ class Surface {
     penActive: boolean;
     disposed: boolean;
     wetInk: Map<number, WetInkPoint>;
+    wetInkStopped: Set<number>;
     images: Map<string, HTMLImageElement>;
     imagesUsedThisFrame: Set<string>;
     pendingImages: Set<string>;
@@ -332,6 +352,8 @@ class Surface {
     onFocusOut: (event: FocusEvent) => void;
     onWheel: (event: WheelEvent) => void;
     onPaste: (event: ClipboardEvent) => void;
+    onDragOver: (event: DragEvent) => void;
+    onDrop: (event: DragEvent) => void;
     onFrame: () => void;
     onLostPointerCapture: (event: PointerEvent) => void;
     onContextRestored: () => void;
@@ -355,6 +377,7 @@ class Surface {
         this.penActive = false;
         this.disposed = false;
         this.wetInk = new Map();
+        this.wetInkStopped = new Set();
         this.images = new Map();
         this.imagesUsedThisFrame = new Set();
         this.pendingImages = new Set();
@@ -393,6 +416,8 @@ class Surface {
         this.onFocusOut = this.handleFocusOut.bind(this);
         this.onWheel = this.handleWheel.bind(this);
         this.onPaste = this.handlePaste.bind(this);
+        this.onDragOver = this.handleDragOver.bind(this);
+        this.onDrop = this.handleDrop.bind(this);
         this.onFrame = this.flush.bind(this);
         this.onLostPointerCapture = this.handleLostPointerCapture.bind(this);
         this.onContextRestored = () => this.requestRedraw();
@@ -411,6 +436,8 @@ class Surface {
         root.addEventListener('keydown', this.onKeyDown);
         root.addEventListener('focusout', this.onFocusOut);
         root.addEventListener('paste', this.onPaste);
+        root.addEventListener('dragover', this.onDragOver);
+        root.addEventListener('drop', this.onDrop);
         // A browser may discard a canvas's backing store (GPU reset, a long-backgrounded tab on a phone) and later
         // restore it blank. Nothing in the document changed, so without this nothing would ever repaint it.
         for (const canvas of [this.documentCanvas, this.overlayCanvas]) canvas?.addEventListener('contextrestored', this.onContextRestored);
@@ -548,6 +575,16 @@ class Surface {
         // Capturing on the element keeps the gesture alive when the pointer leaves the canvas.
         try { this.hitTarget.setPointerCapture(event.pointerId); } catch { /* capture is best effort */ }
         this.activePointers.set(event.pointerId, event.pointerType);
+        // A second finger turns the touch into a pan or pinch. The provisional trail stops for every finger in it,
+        // and stays stopped until each lifts: resumed when only one finger is left, it would draw a line from where
+        // that finger was before the gesture to where it is now.
+        if (event.pointerType === 'touch' && this.touchContacts() >= 2) {
+            for (const [pointerId, kind] of this.activePointers) {
+                if (kind !== 'touch') continue;
+                this.wetInk.delete(pointerId);
+                this.wetInkStopped.add(pointerId);
+            }
+        }
         this.push(event, PHASE_DOWN, 0);
         if (this.options.preventDefaultOnDown !== false) {
             // Preventing the default stops text selection and scrolling, but it also stops the browser from moving
@@ -599,7 +636,11 @@ class Surface {
             // fast handwriting smooth on a 240 Hz pen.
             const coalesced = event.getCoalescedEvents();
             if (coalesced && coalesced.length > 1) {
-                for (const sample of coalesced) this.push(sample, PHASE_MOVE, FLAG_COALESCED);
+                // The last coalesced sample is the dispatched event itself, so it is not flagged: a tool that skips
+                // intermediate samples must still see where each pointer got to, including when predictions follow
+                // or another pointer's samples come after it in the same batch.
+                const last = coalesced.length - 1;
+                for (let i = 0; i < coalesced.length; i++) this.push(coalesced[i], PHASE_MOVE, i < last ? FLAG_COALESCED : 0);
             } else {
                 this.push(event, PHASE_MOVE, 0);
             }
@@ -614,10 +655,18 @@ class Surface {
         }
 
         if (isDown) {
-            if (this.options.wetInk) this.appendWetInk(event);
+            // No provisional ink for the pen's eraser end, which erases rather than draws, or for a finger that is
+            // part of a pan or pinch.
+            if (this.options.wetInk && (event.buttons & 32) === 0 && !this.wetInkStopped.has(event.pointerId)) this.appendWetInk(event);
             event.preventDefault();
         }
         this.requestFlush();
+    }
+
+    touchContacts(): number {
+        let count = 0;
+        for (const kind of this.activePointers.values()) if (kind === 'touch') count++;
+        return count;
     }
 
     handlePointerUp(event: PointerEvent): void {
@@ -647,11 +696,15 @@ class Surface {
     // Keyboard shortcuts travel the same path as pointer input, so the component never depends on a framework
     // event and never re-renders per keystroke.
     handleKeyDown(event: KeyboardEvent): void {
-        if (this.disposed || !this.callback || this.options.handleKeyboard === false) return;
-        if (event.isComposing) return;
+        if (this.disposed || !this.callback) return;
+        // An input method owns the keys while it composes. Safari ends the composition before the keydown of the
+        // Enter that confirms it, so that keydown reports isComposing false and only its keyCode, 229, says it was
+        // the input method's key; committing the text editor on it would cut a Japanese or Chinese word in half.
+        if (event.isComposing || event.keyCode === 229) return;
 
         // While the inline text editor is open it owns the keyboard. Forwarding these to the canvas would mean
-        // typing "Delete" in a comment deleted the selection.
+        // typing "Delete" in a comment deleted the selection. Enter and Escape commit and cancel it whether or not
+        // the canvas's own shortcuts are on: they are how the editor works, not shortcuts.
         const editor = this.textEditor();
         if (editor && event.target === editor) {
             if (event.key === 'Escape' || (event.key === 'Enter' && !event.shiftKey)) {
@@ -660,10 +713,13 @@ class Surface {
             }
             return;
         }
+        if (this.options.handleKeyboard === false) return;
 
         // ChildContent renders inside the same element, so a caption field or a button in it would otherwise have
         // Ctrl+A, Delete and the arrow keys taken away by the canvas.
         if (event.target !== this.root && this.isInteractiveTarget(event.target as HTMLElement | null)) return;
+        // A shortcut the application took for itself is left entirely to the page.
+        if (this.isDisabledShortcut(event)) return;
 
         if (this.ownsKey(event)) event.preventDefault();
         const ctrl = event.ctrlKey || event.metaKey;
@@ -674,6 +730,18 @@ class Surface {
         // open is refused, and Delete would act on the selection as it was before the click that changed it.
         if (this.sampleCount > 0) this.flush();
         this.callback.key(event.key, ctrl, event.shiftKey, event.altKey);
+    }
+
+    // The chord in the canonical form BinkShortcut gives in .NET: Ctrl (or Command), Alt, Shift, then the key with a
+    // single character upper-cased. Shift turns ] into } on most layouts, so the unshifted spelling is tried as well.
+    isDisabledShortcut(event: KeyboardEvent): boolean {
+        const disabled = this.options.disabledShortcuts;
+        if (!disabled || disabled.length === 0) return false;
+        const modifiers = ((event.ctrlKey || event.metaKey) ? 'Ctrl+' : '') + (event.altKey ? 'Alt+' : '') + (event.shiftKey ? 'Shift+' : '');
+        const key = event.key.length === 1 ? event.key.toUpperCase() : event.key;
+        if (disabled.includes(modifiers + key)) return true;
+        const unshifted = event.shiftKey && event.key.length === 1 ? UNSHIFTED_KEYS[event.key] : undefined;
+        return unshifted !== undefined && disabled.includes(modifiers + unshifted);
     }
 
     isInteractiveTarget(target: HTMLElement | null): boolean {
@@ -695,6 +763,8 @@ class Surface {
         // without a permission prompt.
         if (ctrl && (lower === 'c' || lower === 'x')) return !!this.options.clipboard && this.ownsSelectionKeys;
         if (ctrl && SELECTION_SHORTCUTS.has(lower)) return this.ownsSelectionKeys;
+        // Ctrl+Shift+L locks the selection. Only with Shift: Ctrl+L is the browser's address bar.
+        if (ctrl && event.shiftKey && lower === 'l') return this.ownsSelectionKeys;
         if (key === 'Escape') return true;
         // Tab only belongs to the canvas while the user is stepping through elements. With nothing selected it moves
         // browser focus out as usual, so the canvas is never a keyboard trap: Escape clears the selection and leaves.
@@ -761,46 +831,79 @@ class Surface {
         if (!clipboard || typeof clipboard.write !== 'function' || !Item) return;
         let resolve!: (blob: Blob) => void;
         let reject!: (reason: Error) => void;
+        let resolveImage!: (blob: Blob) => void;
+        let rejectImage!: (reason: Error) => void;
         const content = new Promise<Blob>((res, rej) => { resolve = res; reject = rej; });
+        const image = new Promise<Blob>((res, rej) => { resolveImage = res; rejectImage = rej; });
+        // An image whose write is never attempted must not be reported as an unhandled rejection.
+        image.catch(() => undefined);
         // A payload that never comes (the circuit dropped) must not hold the clipboard write open for ever.
         const timer = setTimeout(() => this.settleClipboard(null), 10000) as unknown as number;
-        this.pendingClipboard = { resolve, reject, timer };
+        const pending: PendingClipboardWrite = { resolve, reject, resolveImage, rejectImage, timer, withdrawn: false };
+        this.pendingClipboard = pending;
+        // The text is Bink's own format; the picture is what chat applications and documents take.
+        const items: Record<string, Promise<Blob>> = { 'text/plain': content };
+        const supports = (Item as unknown as { supports?: (type: string) => boolean }).supports;
+        if (typeof supports !== 'function' || supports.call(Item, 'image/png')) items['image/png'] = image;
         try {
-            clipboard.write([new Item({ 'text/plain': content })]).then(
+            // A write this layer withdrew itself, because .NET had nothing to copy or never answered, did not fail:
+            // the system clipboard simply keeps what it held. Only a write the browser refused means the next paste
+            // has to use the copy .NET kept instead.
+            clipboard.write([new Item(items)]).then(
                 () => { this.clipboardWriteFailed = false; },
-                () => { this.clipboardWriteFailed = true; });
+                () => { if (!pending.withdrawn) this.clipboardWriteFailed = true; });
         } catch {
             this.clipboardWriteFailed = true;
             this.settleClipboard(null);
         }
     }
 
-    // Called by .NET with the serialized selection, or null when there was nothing to copy.
-    provideClipboard(text: string | null): void {
+    // Called by .NET with the serialized selection, or null when there was nothing to copy, and the picture of it.
+    provideClipboard(text: string | null, image: Promise<Blob | null> | null = null): void {
         if (this.pendingClipboard) {
-            this.settleClipboard(text);
+            this.settleClipboard(text, image);
             return;
         }
-        // A copy started from the application rather than the keyboard has no clipboard item waiting. Writing text
+        // A copy started from the application rather than the keyboard has no clipboard item waiting. Writing it
         // directly works wherever the page still has the user activation of the click that started it.
         if (!text) return;
         const clipboard = typeof navigator !== 'undefined' ? navigator.clipboard : undefined;
-        if (!clipboard || typeof clipboard.writeText !== 'function') {
-            this.clipboardWriteFailed = true;
+        const Item = (globalThis as { ClipboardItem?: typeof ClipboardItem }).ClipboardItem;
+        const writeText = () => {
+            if (!clipboard || typeof clipboard.writeText !== 'function') {
+                this.clipboardWriteFailed = true;
+                return;
+            }
+            clipboard.writeText(text).then(
+                () => { this.clipboardWriteFailed = false; },
+                () => { this.clipboardWriteFailed = true; });
+        };
+        if (!image || !clipboard || typeof clipboard.write !== 'function' || !Item) {
+            writeText();
             return;
         }
-        clipboard.writeText(text).then(
+        const picture = image.then((blob) => blob ?? Promise.reject(new Error('No picture of the selection.')));
+        clipboard.write([new Item({ 'text/plain': new Blob([text], { type: 'text/plain' }), 'image/png': picture })]).then(
             () => { this.clipboardWriteFailed = false; },
-            () => { this.clipboardWriteFailed = true; });
+            // Text alone is still worth having when the picture could not be made or written.
+            writeText);
     }
 
-    settleClipboard(text: string | null): void {
+    settleClipboard(text: string | null, image: Promise<Blob | null> | null = null): void {
         const pending = this.pendingClipboard;
         if (!pending) return;
         this.pendingClipboard = null;
         clearTimeout(pending.timer);
-        if (text) pending.resolve(new Blob([text], { type: 'text/plain' }));
-        else pending.reject(new Error('Nothing to copy.'));
+        if (text) {
+            pending.resolve(new Blob([text], { type: 'text/plain' }));
+            (image ?? Promise.resolve(null)).then(
+                (blob) => (blob ? pending.resolveImage(blob) : pending.rejectImage(new Error('No picture of the selection.'))),
+                (error) => pending.rejectImage(error instanceof Error ? error : new Error(String(error))));
+        } else {
+            pending.withdrawn = true;
+            pending.reject(new Error('Nothing to copy.'));
+            pending.rejectImage(new Error('Nothing to copy.'));
+        }
     }
 
     // The paste event is the one way to read the clipboard without a permission prompt. A drawing copied from a
@@ -812,6 +915,13 @@ class Surface {
         event.preventDefault();
         // As for keys: what the pointer did before the paste has to reach .NET before the paste does.
         if (this.sampleCount > 0) this.flush();
+        // A copy from a canvas carries a picture as well as the drawing itself; pasted back into a canvas, it is the
+        // drawing that is wanted, as editable elements rather than a picture of them.
+        const copied = data ? data.getData('text/plain') : '';
+        if (copied.startsWith(CLIPBOARD_MARKER) && !this.clipboardWriteFailed) {
+            this.callback.paste('bink', copied, null);
+            return;
+        }
         if (data) {
             for (const item of Array.from(data.items)) {
                 if (item.kind !== 'file' || !item.type.startsWith('image/')) continue;
@@ -830,6 +940,40 @@ class Surface {
             return;
         }
         this.callback.paste(text.startsWith(CLIPBOARD_MARKER) ? 'bink' : 'text', text, null);
+    }
+
+    // ---- Drag and drop -------------------------------------------------------------------------------------------
+
+    // A file dragged over the canvas is accepted only when dropping is on and the drag carries files; anything else
+    // (text dragged out of the page, a link) keeps the browser's own behaviour.
+    handleDragOver(event: DragEvent): void {
+        if (!this.options.dropFiles || this.disposed || !this.callback?.drop) return;
+        if (!event.dataTransfer || !Array.from(event.dataTransfer.types).includes('Files')) return;
+        event.preventDefault();
+        event.dataTransfer.dropEffect = 'copy';
+    }
+
+    // Each dropped image, and each saved drawing (a .bink or .json file), is reported with where it landed, in CSS
+    // pixels of the canvas, a little apart from the one before so several files do not pile up exactly.
+    handleDrop(event: DragEvent): void {
+        if (!this.options.dropFiles || this.disposed || !this.callback?.drop) return;
+        const files = event.dataTransfer ? Array.from(event.dataTransfer.files) : [];
+        if (files.length === 0) return;
+        event.preventDefault();
+        if (this.sampleCount > 0) this.flush();
+        const rect = this.hitTarget.getBoundingClientRect();
+        let index = 0;
+        for (const file of files.slice(0, 16)) {
+            const name = file.name.toLowerCase();
+            // An SVG is vector art to import, not a picture: .NET reads it into editable elements.
+            const kind: DropKind | null = file.type === 'image/svg+xml' || name.endsWith('.svg') ? 'svg'
+                : file.type.startsWith('image/') ? 'image'
+                : name.endsWith('.bink') || name.endsWith('.json') || file.type === 'application/json' ? 'bink'
+                : null;
+            if (!kind) continue;
+            this.callback.drop(kind, file, event.clientX - rect.left + index * 24, event.clientY - rect.top + index * 24);
+            index++;
+        }
     }
 
     textEditor(): HTMLTextAreaElement | null {
@@ -928,8 +1072,13 @@ class Surface {
     }
 
     endWetInk(pointerId?: number): void {
-        if (pointerId === undefined) this.wetInk.clear();
-        else this.wetInk.delete(pointerId);
+        if (pointerId === undefined) {
+            this.wetInk.clear();
+            this.wetInkStopped.clear();
+        } else {
+            this.wetInk.delete(pointerId);
+            this.wetInkStopped.delete(pointerId);
+        }
     }
 
     setWetInkStyle(style: WetInkStyle | null): void {
@@ -1362,6 +1511,8 @@ class Surface {
         this.root.removeEventListener('keydown', this.onKeyDown);
         this.root.removeEventListener('focusout', this.onFocusOut);
         this.root.removeEventListener('paste', this.onPaste);
+        this.root.removeEventListener('dragover', this.onDragOver);
+        this.root.removeEventListener('drop', this.onDrop);
         this.settleClipboard(null);
         for (const canvas of [this.documentCanvas, this.overlayCanvas]) canvas?.removeEventListener('contextrestored', this.onContextRestored);
         if (this.frameHandle) cancelAnimationFrame(this.frameHandle);
@@ -1433,24 +1584,44 @@ export function setDotNetCallbacks(id: string, reference: DotNetObjectReference)
     if (!surface) return;
     // A rejected interop promise would otherwise vanish silently and the canvas would just stop responding.
     const report = (what: string) => (error: unknown) => console.error(`[Bit.Bink] ${what} failed`, error);
+    // A Blazor Server circuit refuses any single message from the browser above 32 KB by default, and closes the
+    // connection when it gets one. Everything that can grow is therefore bounded or streamed.
+    const dotNet = (globalThis as { DotNet?: DotNetGlobal }).DotNet;
     surface.callback = {
         samples: (buffer: Float64Array, count: number) => {
-            const view = buffer.subarray(0, count * SAMPLE_SIZE);
-            reference.invokeMethodAsync('OnPointerSamples', Array.from(view), count).catch(report('pointer input'));
+            // A sample costs about 95 bytes as JSON. A frame normally holds a handful, but a long main-thread stall
+            // with a fast pen or a 1000 Hz mouse queues hundreds, so the batch goes in chunks, which arrive in order.
+            for (let start = 0; start < count; start += SAMPLES_PER_MESSAGE) {
+                const n = Math.min(SAMPLES_PER_MESSAGE, count - start);
+                const view = buffer.subarray(start * SAMPLE_SIZE, (start + n) * SAMPLE_SIZE);
+                reference.invokeMethodAsync('OnPointerSamples', Array.from(view), n).catch(report('pointer input'));
+            }
         },
         resized: (width: number, height: number, dpr: number) => reference.invokeMethodAsync('OnResized', width, height, dpr).catch(report('resize')),
         key: (key: string, ctrl: boolean, shift: boolean, alt: boolean) => reference.invokeMethodAsync('OnKeyDown', key, ctrl, shift, alt).catch(report('keyboard input')),
-        textKey: (key: string, value: string | null | undefined) => reference.invokeMethodAsync('OnTextEditorKey', key, value ?? '').catch(report('text editing')),
+        textKey: (key: string, value: string | null | undefined) => {
+            // The editor holds up to 100,000 characters; a long text travels as a stream, as a long paste does.
+            const text = value ?? '';
+            if (text.length > 8192 && dotNet) {
+                const stream = dotNet.createJSStreamReference(new Blob([text], { type: 'text/plain' }));
+                return reference.invokeMethodAsync('OnTextEditorKeyStream', key, stream).catch(report('text editing'));
+            }
+            return reference.invokeMethodAsync('OnTextEditorKey', key, text).catch(report('text editing'));
+        },
         redraw: () => reference.invokeMethodAsync('OnRedrawRequested').catch(report('redraw')),
         resourcesLost: () => reference.invokeMethodAsync('OnResourcesLost').catch(report('redraw')),
         wheel: (panX: number, panY: number, zoom: number, x: number, y: number) => reference.invokeMethodAsync('OnWheel', panX, panY, zoom, x, y).catch(report('wheel input')),
         paste: (kind: PasteKind, text: string | null, data: Blob | null) => {
             // Anything sizeable travels as a stream: an image, or a long payload copied from a large selection.
-            const dotNet = (globalThis as { DotNet?: DotNetGlobal }).DotNet;
             if (text && text.length > 8192) data = new Blob([text], { type: 'text/plain' });
             if (data && !dotNet) return;
             const stream = data && dotNet ? dotNet.createJSStreamReference(data) : null;
             reference.invokeMethodAsync('OnPaste', kind, stream ? null : text, stream, data ? data.type : null).catch(report('paste'));
+        },
+        drop: (kind: DropKind, data: Blob, x: number, y: number) => {
+            // A file of any size travels as a stream, never inside a message.
+            if (!dotNet) return;
+            reference.invokeMethodAsync('OnDrop', kind, dotNet.createJSStreamReference(data), data.type, x, y).catch(report('drop'));
         },
     };
 }
@@ -1478,8 +1649,16 @@ export function setSelectionActive(id: string, active: boolean): void {
     surfaces.get(id)?.setSelectionActive(active);
 }
 
-export function provideClipboard(id: string, text: string | null | undefined): void {
-    surfaces.get(id)?.provideClipboard(text || null);
+// The serialized selection, and the commands that draw its picture at the given size, rendered here so the picture can
+// go on the clipboard beside it.
+export function provideClipboard(id: string, text: string | null | undefined, imageWidth?: number | null, imageHeight?: number | null,
+    commands?: CommandSource | null, count?: number | null, strings?: string[] | null): void {
+    const surface = surfaces.get(id);
+    if (!surface) return;
+    const image = text && commands && count && imageWidth && imageHeight
+        ? renderBlob(surface, imageWidth, imageHeight, commands, count, strings, 'image/png', null).catch(() => null)
+        : null;
+    surface.provideClipboard(text || null, image);
 }
 
 // Reads the system clipboard for a paste the application started (a toolbar button rather than Ctrl+V). The browser
@@ -1490,12 +1669,118 @@ export async function readClipboard(): Promise<unknown> {
         const clipboard = typeof navigator !== 'undefined' ? navigator.clipboard : undefined;
         if (!clipboard || typeof clipboard.readText !== 'function') return null;
         const text = await clipboard.readText();
-        const dotNet = (globalThis as { DotNet?: DotNetGlobal }).DotNet;
-        if (!text || !dotNet) return null;
-        return dotNet.createJSStreamReference(new Blob([text], { type: 'text/plain' }));
+        if (!text) return null;
+        // Returned as a Blob: Blazor turns it into the IJSStreamReference .NET asked for, and refuses a value that is
+        // already a stream reference, which left every clipboard read failing and pasting only the canvas's own copy.
+        return new Blob([text], { type: 'text/plain' });
     } catch {
         return null;
     }
+}
+
+// The browser's eyedropper (Chromium on desktop): picks the colour of any pixel on screen. It needs the user's
+// activation, which a click that ends up here a moment later still carries. Null when there is no eyedropper or the
+// user pressed Escape.
+export async function pickColor(): Promise<string | null> {
+    const EyeDropperType = (globalThis as { EyeDropper?: new () => { open(): Promise<{ sRGBHex: string }> } }).EyeDropper;
+    if (!EyeDropperType) return null;
+    try {
+        const result = await new EyeDropperType().open();
+        return result && typeof result.sRGBHex === 'string' ? result.sRGBHex : null;
+    } catch {
+        return null;
+    }
+}
+
+export function supportsEyeDropper(): boolean {
+    return typeof (globalThis as { EyeDropper?: unknown }).EyeDropper === 'function';
+}
+
+// ---- Document store (IndexedDB) -------------------------------------------------------------------------------------
+
+// Saved drawings for BinkBrowserDocumentStore: one object store keyed by the application's key. IndexedDB rather
+// than localStorage, which holds a few megabytes of strings at most and blocks the page while it writes.
+const STORE_DATABASE = 'bit-bink';
+const STORE_OBJECTS = 'documents';
+let storeDatabase: Promise<IDBDatabase> | null = null;
+
+function openStore(): Promise<IDBDatabase> {
+    if (storeDatabase) return storeDatabase;
+    const opening = new Promise<IDBDatabase>((resolve, reject) => {
+        if (typeof indexedDB === 'undefined') {
+            reject(new Error('IndexedDB is not available.'));
+            return;
+        }
+        const request = indexedDB.open(STORE_DATABASE, 1);
+        request.onupgradeneeded = () => {
+            if (!request.result.objectStoreNames.contains(STORE_OBJECTS)) request.result.createObjectStore(STORE_OBJECTS);
+        };
+        request.onsuccess = () => {
+            const database = request.result;
+            // Another tab upgrading the database closes this connection; the next call opens a new one.
+            database.onversionchange = () => {
+                database.close();
+                storeDatabase = null;
+            };
+            // The browser closes a connection itself when the user clears the site's data or the disk fails. Kept,
+            // it would fail every later save until a reload.
+            database.onclose = () => {
+                storeDatabase = null;
+            };
+            resolve(database);
+        };
+        request.onerror = () => reject(request.error ?? new Error('The drawing store could not be opened.'));
+        request.onblocked = () => reject(new Error('The drawing store is blocked by another tab.'));
+    });
+    // A failed open is not cached, so a later call can succeed once whatever blocked it is gone.
+    storeDatabase = opening.catch((error) => {
+        storeDatabase = null;
+        throw error;
+    });
+    return storeDatabase;
+}
+
+function storeRequest<T>(mode: IDBTransactionMode, run: (objects: IDBObjectStore) => IDBRequest<T>): Promise<T> {
+    return openStore().then((database) => new Promise<T>((resolve, reject) => {
+        const transaction = database.transaction(STORE_OBJECTS, mode);
+        const request = run(transaction.objectStore(STORE_OBJECTS));
+        // Resolved when the transaction commits, not when the request succeeds: only then is a write durable.
+        transaction.oncomplete = () => resolve(request.result);
+        transaction.onerror = () => reject(transaction.error ?? request.error ?? new Error('The drawing store failed.'));
+        transaction.onabort = () => reject(transaction.error ?? new Error('The drawing store write was aborted.'));
+    }));
+}
+
+export function storeSave(key: string, data: Uint8Array): Promise<void> {
+    // Kept as a Blob: IndexedDB stores it without copying it into the JavaScript heap again.
+    const record = { data: new Blob([data as BlobPart]), saved: Date.now() };
+    return storeRequest('readwrite', (objects) => objects.put(record, key)).then(() => undefined);
+}
+
+// Returned as a Blob, which .NET reads as a stream, led by one byte that says whether anything was stored: 1 and the
+// document, or 0 alone. Blazor can make a stream of neither null nor an empty Blob.
+export function storeLoad(key: string): Promise<Blob> {
+    return storeRequest<{ data?: Blob } | undefined>('readonly', (objects) => objects.get(key))
+        .then((record) => (record && record.data instanceof Blob
+            ? new Blob([new Uint8Array([1]), record.data])
+            : new Blob([new Uint8Array([0])])));
+}
+
+export function storeDelete(key: string): Promise<boolean> {
+    // IndexedDB does not say whether delete removed anything, so the key is counted first, in the same transaction.
+    return openStore().then((database) => new Promise<boolean>((resolve, reject) => {
+        const transaction = database.transaction(STORE_OBJECTS, 'readwrite');
+        const objects = transaction.objectStore(STORE_OBJECTS);
+        let existed = false;
+        const count = objects.count(key);
+        count.onsuccess = () => {
+            existed = count.result > 0;
+            if (existed) objects.delete(key);
+        };
+        transaction.oncomplete = () => resolve(existed);
+        transaction.onerror = () => reject(transaction.error ?? new Error('The drawing store failed.'));
+        transaction.onabort = () => reject(transaction.error ?? new Error('The drawing store delete was aborted.'));
+    }));
 }
 
 export function setCursor(id: string, cursor: string): void {
@@ -1529,12 +1814,21 @@ export function getSize(id: string): BinkSizeResult | null {
     return { width: rect.width, height: rect.height, devicePixelRatio: window.devicePixelRatio || 1 };
 }
 
-// Renders a command buffer into a detached canvas and returns encoded image bytes. Used by PNG export so the
-// output uses the browser's real fonts and image decoders.
+// Renders a command buffer into a detached canvas and returns the encoded image, which .NET reads as a stream. Used
+// by image export so the output uses the browser's real fonts and image decoders. A stream, not a byte array: on
+// Blazor Server a returned byte array is one message to the server, and a circuit refuses any above 32 KB by default,
+// which almost every exported image is. Blazor wraps a returned Blob in the stream reference itself when .NET asks for
+// an IJSStreamReference, and refuses one that is already wrapped.
 export async function renderToImage(id: string, pixelWidth: number, pixelHeight: number, commands: CommandSource, count: number,
-    strings: string[] | null | undefined, mimeType: string | null | undefined, quality: number | null | undefined): Promise<Uint8Array> {
+    strings: string[] | null | undefined, mimeType: string | null | undefined, quality: number | null | undefined): Promise<Blob> {
     const surface = surfaces.get(id);
     if (!surface) throw new Error('Unknown surface.');
+    return renderBlob(surface, pixelWidth, pixelHeight, commands, count, strings, mimeType, quality);
+}
+
+// Replays a command buffer into a detached canvas and encodes it: an export, or the picture a copy puts on the clipboard.
+async function renderBlob(surface: Surface, pixelWidth: number, pixelHeight: number, commands: CommandSource, count: number,
+    strings: string[] | null | undefined, mimeType: string | null | undefined, quality: number | null | undefined): Promise<Blob> {
     const canvas = document.createElement('canvas');
     canvas.width = Math.max(1, pixelWidth);
     canvas.height = Math.max(1, pixelHeight);
@@ -1555,8 +1849,7 @@ export async function renderToImage(id: string, pixelWidth: number, pixelHeight:
     // A null quality (the C# default) is passed through as-is: toBlob treats any non-number as "use the default".
     const blob = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, mimeType || 'image/png', quality as number | undefined));
     if (!blob) throw new Error('The canvas could not be encoded.');
-    const buffer = await blob.arrayBuffer();
-    return new Uint8Array(buffer);
+    return blob;
 }
 
 export function saveFile(fileName: string, bytes: Uint8Array<ArrayBuffer>, mimeType?: string | null): void {

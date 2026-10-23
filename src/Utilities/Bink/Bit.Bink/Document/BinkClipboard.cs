@@ -74,8 +74,43 @@ public static class BinkClipboard
                 result.Add(element with { Id = Guid.NewGuid(), Version = 0 });
             }
         }
+        RenameGroups(result);
         elements = result;
         return true;
+    }
+
+    /// <summary>
+    /// Gives the pasted groups new ids, so pasting twice makes two independent groups rather than one group spread
+    /// over both copies, and drops the groups that mean nothing among the pasted elements: one with a single member,
+    /// and one with exactly the members of the group nested inside it, which is what copying part of a group leaves.
+    /// </summary>
+    private static void RenameGroups(List<BinkElement> elements)
+    {
+        var members = new Dictionary<Guid, int>();
+        foreach (BinkElement element in elements)
+        {
+            foreach (Guid group in element.GroupIds) members[group] = members.GetValueOrDefault(group) + 1;
+        }
+        if (members.Count == 0) return;
+
+        var renamed = new Dictionary<Guid, Guid>();
+        var chain = new List<Guid>();
+        for (int i = 0; i < elements.Count; i++)
+        {
+            IReadOnlyList<Guid> groups = elements[i].GroupIds;
+            if (groups.Count == 0) continue;
+            chain.Clear();
+            for (int g = 0; g < groups.Count; g++)
+            {
+                int count = members[groups[g]];
+                // Nesting means an outer group holds at least its inner group's members, so the same count is the
+                // same set.
+                if (count < 2 || (g > 0 && count == members[groups[g - 1]])) continue;
+                if (!renamed.TryGetValue(groups[g], out Guid name)) renamed[groups[g]] = name = Guid.NewGuid();
+                chain.Add(name);
+            }
+            elements[i] = elements[i] with { GroupIds = chain };
+        }
     }
 
     /// <summary>True when the text looks like Bink content, without parsing it.</summary>

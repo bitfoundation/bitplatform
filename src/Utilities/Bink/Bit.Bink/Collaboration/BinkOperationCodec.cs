@@ -115,6 +115,8 @@ public static class BinkOperationCodec
         writer.WriteBoolean("visible", properties.IsVisible);
         writer.WriteBoolean("locked", properties.IsLocked);
         writer.WriteNumber("opacity", properties.Opacity);
+        if (properties.BlendMode == BinkBlendMode.Multiply) writer.WriteString("blend", "multiply");
+        else if (properties.BlendMode == BinkBlendMode.Screen) writer.WriteString("blend", "screen");
         // A layer update replaces the whole property set, so metadata left off the wire would be erased on every
         // other replica by something as small as renaming the layer.
         if (properties.Metadata is { Count: > 0 } metadata)
@@ -233,6 +235,7 @@ public static class BinkOperationCodec
             IsVisible = !properties.TryGetProperty("visible", out JsonElement v) || v.ValueKind != JsonValueKind.False,
             IsLocked = properties.TryGetProperty("locked", out JsonElement l) && l.ValueKind == JsonValueKind.True,
             Opacity = properties.TryGetProperty("opacity", out JsonElement o) && o.TryGetSingle(out float opacity) ? Math.Clamp(opacity, 0f, 1f) : 1f,
+            BlendMode = properties.TryGetProperty("blend", out JsonElement b) && b.ValueKind == JsonValueKind.String ? b.GetString() switch { "multiply" => BinkBlendMode.Multiply, "screen" => BinkBlendMode.Screen, _ => BinkBlendMode.Normal } : BinkBlendMode.Normal,
             Metadata = ReadMetadata(properties),
         };
     }

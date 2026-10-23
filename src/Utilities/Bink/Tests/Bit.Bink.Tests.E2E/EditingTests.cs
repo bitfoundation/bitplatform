@@ -109,6 +109,119 @@ public sealed class EditingTests : BinkTest
     }
 
     [TestMethod]
+    public async Task A_copy_puts_a_picture_on_the_clipboard_beside_the_drawing()
+    {
+        // So a selection pastes into a chat or a document too; pasted back into a canvas, the drawing wins.
+        var context = await NewContextAsync();
+        await context.GrantPermissionsAsync(["clipboard-read", "clipboard-write"], new BrowserContextGrantPermissionsOptions { Origin = BaseUrl });
+        var page = await context.NewPageAsync();
+        await GotoAsync(page, "/whiteboard");
+        await WaitForCanvasAsync(page);
+        await DrawStrokeAsync(page, (200, 200), (320, 260));
+        await WaitForCountAsync(page, 1);
+
+        await page.Keyboard.PressAsync("Control+a");
+        await page.Keyboard.PressAsync("Control+c");
+        string types = "";
+        for (int i = 0; i < 40 && !types.Contains("image/png", StringComparison.Ordinal); i++)
+        {
+            await page.WaitForTimeoutAsync(100);
+            types = await page.EvaluateAsync<string>("async () => { const items = await navigator.clipboard.read(); return items.flatMap(i => i.types).join(','); }");
+        }
+        StringAssert.Contains(types, "text/plain");
+        StringAssert.Contains(types, "image/png");
+        int pngBytes = await page.EvaluateAsync<int>("async () => { const items = await navigator.clipboard.read(); return (await items[0].getType('image/png')).size; }");
+        Assert.IsGreaterThan(100, pngBytes);
+    }
+
+    [TestMethod]
+    public async Task The_paste_button_reads_the_system_clipboard()
+    {
+        // The browser layer handed .NET a ready-made stream reference where Blazor expects the raw blob, so every
+        // read failed and the button only ever pasted what the canvas itself had copied.
+        var context = await NewContextAsync();
+        await context.GrantPermissionsAsync(["clipboard-read", "clipboard-write"], new BrowserContextGrantPermissionsOptions { Origin = BaseUrl });
+        var page = await context.NewPageAsync();
+        await GotoAsync(page, "/whiteboard");
+        await WaitForCanvasAsync(page);
+
+        await page.EvaluateAsync("""() => navigator.clipboard.writeText('{"format":"bink","version":1,"layers":[{"elements":[{"type":"rect","rect":[10,10,60,40]}]}]}')""");
+        await page.Locator("button", new PageLocatorOptions { HasTextString = "Paste" }).First.ClickAsync();
+
+        await WaitForCountAsync(page, 1);
+    }
+
+    [TestMethod]
+    public async Task Export_downloads_a_real_png()
+    {
+        // The image comes back from the browser as a stream; a byte array would be one message, which Blazor Server
+        // refuses above 32 KB.
+        var page = await OpenAsync("/whiteboard");
+        await DrawStrokeAsync(page, (200, 200), (520, 380));
+        await WaitForCountAsync(page, 1);
+
+        var download = await page.RunAndWaitForDownloadAsync(() => page.Locator("button", new PageLocatorOptions { HasTextString = "Export PNG" }).First.ClickAsync());
+        string path = (await download.PathAsync())!;
+        byte[] bytes = await File.ReadAllBytesAsync(path);
+
+        CollectionAssert.AreEqual(new byte[] { 0x89, (byte)'P', (byte)'N', (byte)'G' }, bytes.Take(4).ToArray());
+        // The IHDR chunk holds the size: the ink plus padding, at scale 2, so well over the drawn stroke's own size.
+        int width = System.Buffers.Binary.BinaryPrimitives.ReadInt32BigEndian(bytes.AsSpan(16, 4));
+        int height = System.Buffers.Binary.BinaryPrimitives.ReadInt32BigEndian(bytes.AsSpan(20, 4));
+        Assert.IsGreaterThan(300, width);
+        Assert.IsGreaterThan(180, height);
+    }
+
+    [TestMethod]
+    public async Task The_whiteboard_is_kept_on_the_device_and_offered_back_after_a_reload()
+    {
+        // BinkAutosave writing to the browser's IndexedDB through BinkBrowserDocumentStore, then reading it back.
+        var page = await OpenAsync("/whiteboard");
+        await DrawStrokeAsync(page, (200, 200), (320, 260));
+        await DrawStrokeAsync(page, (220, 300), (360, 320));
+        await WaitForCountAsync(page, 2);
+        // Saved two seconds after the drawing stops.
+        await page.WaitForTimeoutAsync(3500);
+
+        await page.ReloadAsync(new PageReloadOptions { WaitUntil = WaitUntilState.NetworkIdle });
+        await WaitForCanvasAsync(page);
+        var restore = page.Locator("button", new PageLocatorOptions { HasTextString = "Restore it" });
+        await restore.WaitForAsync(new LocatorWaitForOptions { Timeout = 15_000 });
+        Assert.AreEqual(0, await ElementCountAsync(page), "Nothing is restored without asking.");
+
+        await restore.ClickAsync();
+        await WaitForCountAsync(page, 2);
+    }
+
+    [TestMethod]
+    public async Task A_dropped_image_is_added_where_it_lands()
+    {
+        var page = await OpenAsync("/whiteboard");
+        await page.EvaluateAsync(
+            """
+            async () => {
+              const canvas = document.createElement('canvas');
+              canvas.width = 60; canvas.height = 40;
+              const ctx = canvas.getContext('2d');
+              ctx.fillStyle = '#16a34a'; ctx.fillRect(0, 0, 60, 40);
+              const blob = await new Promise(r => canvas.toBlob(r, 'image/png'));
+              const data = new DataTransfer();
+              data.items.add(new File([blob], 'dropped.png', { type: 'image/png' }));
+              const target = document.querySelector('.bit-bink-canvas');
+              const box = target.getBoundingClientRect();
+              const at = { clientX: box.left + 200, clientY: box.top + 150, dataTransfer: data, bubbles: true, cancelable: true };
+              const over = new DragEvent('dragover', at);
+              target.dispatchEvent(over);
+              if (!over.defaultPrevented) throw new Error('The canvas did not accept the drag.');
+              target.dispatchEvent(new DragEvent('drop', at));
+            }
+            """);
+        await WaitForCountAsync(page, 1);
+        for (int i = 0; i < 20 && await CountInkAsync(page) < 500; i++) await page.WaitForTimeoutAsync(100);
+        Assert.IsGreaterThan(500, await CountInkAsync(page), "The dropped image should be drawn.");
+    }
+
+    [TestMethod]
     public async Task A_pasted_image_is_added_to_the_drawing()
     {
         var page = await OpenAsync("/whiteboard");

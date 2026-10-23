@@ -96,6 +96,13 @@ public interface IBinkTool
     /// </summary>
     bool ModifiesDocument { get; }
 
+    /// <summary>
+    /// Whether the tool wants the pointer's movement while no button is pressed, delivered to
+    /// <see cref="OnPointerMove"/> with <see cref="BinkPointerPhase.Hover"/>, for a preview that follows the pointer
+    /// such as the next segment of a polyline. Off by default: on Blazor Server every hovering frame is a message.
+    /// </summary>
+    bool WantsHover => false;
+
     /// <summary>Called when the tool becomes active.</summary>
     void Activate(IBinkToolContext context);
 
@@ -151,6 +158,9 @@ public abstract class BinkToolBase : IBinkTool
 
     /// <inheritdoc />
     public virtual bool ModifiesDocument => true;
+
+    /// <inheritdoc />
+    public virtual bool WantsHover => false;
 
     /// <inheritdoc />
     public virtual void Activate(IBinkToolContext context) { }

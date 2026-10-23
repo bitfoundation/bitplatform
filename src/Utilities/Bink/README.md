@@ -29,12 +29,14 @@ re-rendered at any size and edited later, rather than being a picture of a drawi
 
 - **Pressure-aware ink** with spacing filters, streamline smoothing, simulated pressure for devices without it,
   and variable-width outlines that stay solid through tight loops and sharp corners.
-- **Five built-in brushes** (pen, pencil, marker, highlighter, pixel eraser) and a brush model you can extend.
+- **Six built-in brushes** (pen, pencil, marker, highlighter, broad-nib calligraphy, pixel eraser) and a brush model
+  you can extend.
 - **Three erasers** that are genuinely different: whole stroke, segment and pixel.
 - **Selection, transforms and layers** that are part of the document, so they survive saving, take part in undo
   and export exactly as drawn, with lasso selection and snapping to a grid and to other elements.
 - **Editing commands** a whiteboard needs: copy, cut and paste through the system clipboard (images and text
-  included), duplicate, Alt-drag copies and bring-to-front, each with its usual shortcut and one undo step.
+  included), duplicate, Alt-drag copies, bring-to-front, nested groups, locking, align, distribute and flip, each
+  with its usual shortcut and one undo step.
 - **Annotations**: shapes, arrows, highlights, callouts, text with a real HTML editor, and images.
 - **Undo and redo** that store inverse operations, never snapshots.
 - **A versioned, compact JSON format** with binary stroke points, validated against hostile input.
@@ -74,6 +76,25 @@ automatically by the package's Blazor initializer. The full walkthrough is in [g
 
 - .NET 8, .NET 9 or .NET 10
 - Blazor WebAssembly, Blazor Server, Blazor Web App or Blazor Hybrid
+
+### Browser support
+
+Drawing, editing, saving and export work in every current browser. A few capabilities depend on what the browser
+offers; where one is missing the canvas does without it rather than failing.
+
+| Capability | Chromium (Chrome, Edge) | Firefox | Safari | Without it |
+| --- | --- | --- | --- | --- |
+| Coalesced pen samples | Yes | Yes (none on Android) | Yes | Fewer samples on very fast strokes |
+| Predicted samples (`PredictInk`) | Yes | 89+ | 18.2+ | About a frame more latency |
+| Low-latency canvas | Windows, ChromeOS | No | 15+ | Normal latency |
+| WebP export | Yes | Yes | No | `NotSupportedException`; use PNG or JPEG |
+| A picture on the clipboard with a copy | Yes | 127+ | Yes | The copy pastes into canvases only |
+| Eyedropper (`PickColorAsync`) | Desktop | No | No | Returns null |
+| IndexedDB (`BinkBrowserDocumentStore`) | Yes | Yes | Yes | Not in some private windows |
+| Notice of a canvas the browser discarded | Yes | 125+ | No | Repainted at the next change or resize |
+
+Pen pressure, tilt and the eraser end depend on the device and its driver as much as on the browser; read
+`Capabilities.ObservedPressure` and the other observed flags rather than assuming them.
 
 ## The demo
 
@@ -233,8 +254,17 @@ Brushes are immutable records, so derive variants with `with`:
 _brush = _brush with { Color = BinkColor.Parse("#dc2626") };
 ```
 
-The built-in brushes are `BinkPenBrush`, `BinkPencilBrush`, `BinkMarkerBrush`, `BinkHighlighterBrush` and
+The built-in brushes are `BinkPenBrush`, `BinkPencilBrush`, `BinkMarkerBrush`, `BinkHighlighterBrush`,
+`BinkCalligraphyBrush` and
 `BinkPixelEraserBrush`.
+
+For a colour picker's "pick from screen" button, `PickColorAsync` opens the browser's eyedropper. Only Chromium
+browsers on the desktop have one, so ask `SupportsEyeDropperAsync` before offering it, and call it straight from the
+click, which is what lets the browser open it:
+
+```csharp
+if (await _canvas.PickColorAsync() is { } picked) _brush = _brush with { Color = picked };
+```
 
 ### Choosing a tool
 
@@ -292,6 +322,9 @@ _canvas.LoadDocument(document);
 ```
 
 For untrusted input use `TryDeserialize`, which reports a message instead of throwing.
+
+`CurrentDocument.IsDirty` says whether anything changed since you last called `MarkSaved()`, for an "unsaved
+changes" prompt. To keep a drawing safe across a reload or a crash, see [autosave and recovery](#autosave-and-recovery).
 
 ### Exporting
 
@@ -412,6 +445,13 @@ because that is what they are.
 `BeginGroup` merges a gesture's many operations, such as every frame of a drag, into a single undo step. Every
 tool uses it for pointer gestures and for keyboard edits alike.
 
+History keeps 200 steps by default (`Limit`, or `HistoryLimit` on the canvas). A step holds what it would put back,
+so deleting a large embedded photo keeps the photo alive for undo; `MemoryBudget` (`HistoryMemoryBudget`) bounds the
+estimated bytes all steps hold, dropping the oldest first and never the most recent. `EstimatedMemory` reports the
+current estimate. It counts every element a step refers to, and the points, text or image each carries once however
+many steps share it, as the steps of a drag share a stroke's points; data the document still holds is counted too,
+so it errs high. The estimate is kept only while a budget is set, so history costs nothing extra without one.
+
 #### Changes caused by other changes
 
 An application often keeps derived geometry in sync: a diagram re-routes a connector when the node it is attached
@@ -500,6 +540,7 @@ change of view.
 - `IBinkRenderContext` lets you render a document to any surface.
 - `IBinkTextRasterizer` supplies a font engine for server-side PNG export.
 - `IBinkCollaborationTransport` moves operations between participants over any transport.
+- `BinkElement` is an abstract record; `BinkElementRegistry` saves, pastes and synchronizes a custom element type.
 
 See [Extending Bink](#extending-bink).
 
@@ -552,6 +593,7 @@ every export.
 | `BinkPencilBrush` | Thin, slightly translucent, strong pressure response, tighter point spacing. |
 | `BinkMarkerBrush` | Constant width, round caps, opaque. Rendered as a centerline. |
 | `BinkHighlighterBrush` | Wide, translucent, flat caps, multiply blending so text underneath stays legible. |
+| `BinkCalligraphyBrush` | A broad nib at a fixed angle (`NibAngle`, `NibThickness`): thick across the nib, thin along it, like an italic pen or a chisel marker. |
 | `BinkPixelEraserBrush` | Erases what is beneath it within its layer, as a real element that can be undone. |
 
 ### Configuring a brush
@@ -757,7 +799,10 @@ Keyboard, when the canvas has focus:
 | Ctrl+D | Duplicate the selection |
 | Ctrl+] / Ctrl+[ | Bring forward / send backward |
 | Ctrl+Shift+] / Ctrl+Shift+[ | Bring to front / send to back |
-| Escape | Cancel the drag, then clear the selection |
+| Ctrl+G / Ctrl+Shift+G | Group / ungroup the selection |
+| Ctrl+Shift+L | Lock the selection |
+| Shift+H / Shift+V | Flip horizontally / vertically |
+| Escape | Cancel the drag, then leave the group being worked inside, then clear the selection |
 
 ### Lasso selection
 
@@ -786,6 +831,17 @@ elements and with the page, showing a guide while they are lined up, and fall ba
 within `Threshold` screen pixels. `ToObjects`, `ToPage` and `GridSize` turn each source on or off; `null`, the
 default, snaps to nothing. Lining up with an element wins over the grid when both are in reach.
 
+To show the grid it snaps to:
+
+```razor
+<BinkCanvas Grid="BinkGrid.DottedDefault" Snapping="new BinkSnapOptions { GridSize = 20f }" />
+<BinkCanvas Grid="new BinkGrid { Style = BinkGridStyle.Lines, Spacing = 10f, MajorEvery = 10 }" />
+```
+
+The grid is part of the view, not of the document: it is never exported, saved or sent to collaborators. Zoomed
+out until its cells would be a few pixels across, it draws coarser multiples instead, and a dotted grid costs one
+dashed line a row rather than a shape a dot, so it stays cheap at any size.
+
 The snap targets are collected once when a gesture starts, from what is visible, and sorted, so a frame of
 dragging is a couple of binary searches however large the document is. `BinkSnapper` is public for a custom tool
 that wants the same behaviour, and a custom tool reads the canvas's options from `IBinkToolContext.Snapping`.
@@ -805,7 +861,9 @@ canvas.ArrangeSelection(BinkArrangement.BringToFront);   // BringForward, SendBa
 ```
 
 Copied elements go to the system clipboard as a small Bink document, so they paste into another canvas, another
-tab or another application built on Bink, and a saved drawing pasted as text pastes its elements. Pasted elements
+tab or another application built on Bink, and a saved drawing pasted as text pastes its elements. A PNG picture of
+the selection goes beside it, on the document's background at twice its size, so the same copy pastes into a chat,
+an email or a document; pasted back into a canvas, the drawing wins over its picture. Pasted elements
 get new ids, land on the active layer, step away from the original when the same copy is pasted twice, land in
 the middle of the view when they would otherwise be off screen, and are selected. A pasted image becomes an image
 element. Plain text becomes a text element, unless you handle `TextPasted` yourself.
@@ -821,6 +879,17 @@ Pasting reads the browser's paste event, which needs no permission prompt; large
 stream, because a Blazor Server circuit refuses any single message above 32 KB. If the browser refuses the write,
 the canvas keeps its own copy and the next paste uses it.
 
+A copied group pastes as a group of its own, so pasting twice gives two independent groups.
+
+Files dragged onto the canvas, from the desktop or another page, are added where they land once you turn it on:
+images (raster types only, as for a paste), and saved drawings (`.bink` or `.json`), whose elements are pasted
+centred on the drop point. Like the clipboard it is off by default, so a signature field cannot be signed by
+dropping a picture on it. Every file travels to .NET as a stream, so its size is no problem on Blazor Server.
+
+```razor
+<BinkCanvas EnableClipboard="true" EnableDrop="true" />
+```
+
 Duplicating and arranging are document operations too, for a headless editor:
 
 ```csharp
@@ -835,6 +904,61 @@ to the front of a thousand is one operation, not a thousand.
 
 The complete keyboard map, including resizing, rotating and stepping through elements, is in
 [accessibility](#keyboard).
+
+### Grouping
+
+```csharp
+Guid? group = canvas.GroupSelection();      // Ctrl+G
+canvas.UngroupSelection();                  // Ctrl+Shift+G
+
+Guid? id = document.GroupElements(ids);     // the same, headless
+document.UngroupElements(ids);
+```
+
+Clicking any member of a group selects the whole group, and so does a marquee or lasso that catches part of it;
+moving, resizing, rotating, copying and deleting then act on all of it. Double-click a member to work inside the
+group: the next level down, a nested group or a single element, can then be picked on its own. Escape, or a click
+outside the group, leaves it again. Tab steps through a group as one stop.
+
+A group is not an element. Each element lists the groups it belongs to, innermost first, in `GroupIds`, so grouping
+and ungrouping are ordinary edits that undo, save, paste and synchronize like any other. Members keep their layers;
+within each layer they are brought together in the stacking order, just below the top-most of them.
+
+Groups nest. Grouping elements that already make up whole groups puts those groups inside the new one, and
+grouping part of a group while working inside it nests the new group there. Ungrouping takes a group apart one
+level, leaving the groups inside it intact. `BinkDocumentQuery.ExpandToGroups` and `GetSelectionGroup` apply the
+same rules for a custom tool.
+
+### Locking
+
+```csharp
+canvas.LockSelection();                       // Ctrl+Shift+L
+canvas.UnlockAll();
+document.SetLocked(ids, locked: false);       // for particular elements
+```
+
+A locked element is drawn and exported as usual, but no tool can select, move or erase it, so a background image
+or a template stays put while everything else on its layer is edited. Locks protect against tools, not against
+code: the document API still edits locked elements, which is how an application unlocks them.
+`BinkDocumentQuery.HitTest(document, point, includeLocked: true)` finds one under the pointer, for a context menu
+that offers to unlock it. The pixel eraser masks what is below it, locked or not, exactly as it does on its layer.
+
+### Aligning, distributing and flipping
+
+```csharp
+canvas.AlignSelection(BinkAlignment.Left);                                     // to the selection's own bounds
+canvas.AlignSelection(BinkAlignment.HorizontalCenter, document.Settings.PageRect);  // to the page
+canvas.DistributeSelection(BinkDistribution.Horizontal);
+canvas.FlipSelection(BinkFlipDirection.Horizontal);                            // Shift+H; Shift+V for vertical
+```
+
+Groups take part as a whole. Aligning without a reference lines the selection up on its own bounds and needs at
+least two separate things; with one, such as the page, a single element is aligned to it. Distributing keeps the
+two outermost in place and spaces the rest between them with equal gaps, in the order of their centres; it needs
+three. Flipping mirrors the selection about its centre through each element's transform, so ink is never
+rewritten and flipping twice restores it exactly. Text moves to its mirrored place without its letters being
+reversed, and a callout's box and pointer swap sides. Each command is one undo step, and the same commands are on
+`BinkDocument` for a headless editor.
 
 ### Why manipulation is cheap
 
@@ -877,7 +1001,10 @@ BinkInkMetrics ink = BinkDocumentQuery.MeasureInk(document);
 ```
 
 Hit testing is geometric for strokes and shapes: a diagonal stroke is not selected by a marquee that only
-overlaps its bounding box, and clicking inside the empty middle of an unfilled rectangle does not select it.
+overlaps its bounding box, and clicking inside the empty middle of an unfilled rectangle does not select it. It is
+measured in document units even when an element was stretched by an edge handle: a stroke stretched sideways is
+fatter across than along, and the hit tolerance is added to the ink as it is drawn rather than converted by an
+average scale.
 Text, images and highlights are rectangular by nature and are tested against their bounds.
 `BinkRectSelectionMode.Contain` compares bounding boxes, because "entirely inside" is a question about extent.
 
@@ -894,9 +1021,17 @@ document.UpdateLayer(annotations.Id, p => p with { IsLocked = true });
 document.UpdateLayer(annotations.Id, p => p with { Opacity = 0.5f });
 document.UpdateLayer(annotations.Id, p => p with { Name = "Review notes" });
 
+document.UpdateLayer(annotations.Id, p => p with { BlendMode = BinkBlendMode.Multiply });
+
 document.ReorderLayer(annotations.Id, index: 0);   // 0 is the bottom
+BinkLayer copy = document.DuplicateLayer(annotations.Id);   // directly above, with copies of its elements
 document.RemoveLayer(annotations.Id);              // a document always keeps at least one layer
 ```
+
+A layer's blend mode decides how the finished layer combines with everything below it. `Multiply` darkens like
+ink on paper, which is what a layer of markup over a scanned page wants: the page shows through the strokes rather
+than behind them. `Screen` lightens. The layer is composited as one unit, so its own strokes overlap normally
+among themselves, and the result is the same on screen, in PNG export and in SVG, where it is `mix-blend-mode`.
 
 Tell the canvas where new elements go:
 
@@ -905,7 +1040,8 @@ Tell the canvas where new elements go:
 ```
 
 A locked or hidden layer rejects drawing, erasing and selection. That is how the image annotation demo keeps a
-picture from being moved by accident: the image sits on its own locked layer.
+picture from being moved by accident: the image sits on its own locked layer. Locking or hiding a layer also drops
+its elements from the selection, so the next Delete or arrow key cannot reach them.
 
 ### A typical structure
 
@@ -937,16 +1073,48 @@ document.AddElement(new BinkLineShape(new Vector2(20, 20), new Vector2(200, 90))
 });
 ```
 
-`BinkShapeStyle` carries stroke colour and width, an optional fill, opacity, a dash pattern and a blend mode.
+`BinkShapeStyle` carries stroke colour and width, an optional fill, opacity, a dash pattern, a blend mode, and the
+line caps and joins (round by default; `LineJoin = BinkLineJoin.Miter` keeps corners sharp).
 
 Interactively, `BinkShapeTool` draws them:
 
 ```csharp
-var tool = new BinkShapeTool(BinkShapeKind.Arrow);   // Rectangle, Ellipse, Line, Arrow, Highlight
+var tool = new BinkShapeTool(BinkShapeKind.Arrow);
+// Rectangle, Ellipse, Line, Arrow, Highlight, Diamond, Triangle, Polygon (PolygonSides) and Star (StarPoints)
 ```
 
 Holding Shift while dragging constrains to a square, a circle or a 15-degree angle. The modifier travels with the
 pointer samples, so it works with a pen and a touch keyboard as well as a mouse.
+
+### Polygons, polylines and paths
+
+`BinkPolygonShape` is any outline through a list of points: closed and fillable, or an open polyline, straight or
+smoothed into a curve through its points, with arrow heads at the ends of an open one. That last is an elbow
+connector, the thing a flowchart joins its boxes with.
+
+```csharp
+document.AddElement(BinkPolygonShape.Diamond(new BinkRect(100, 100, 120, 80)));   // also Triangle, Regular, Star
+document.AddElement(new BinkPolygonShape([new(0, 0), new(80, 0), new(80, 60)], isClosed: false) { EndArrow = true });
+```
+
+`BinkPolylineTool` draws one point by point. Each click adds a point while the next segment follows the pointer (a
+finger or pen is dragged to the spot and lifted instead); a double click or Enter finishes, clicking the first
+point again closes the outline, Backspace takes the last point back, Escape abandons it, and Shift keeps segments
+to 15-degree steps. It is the one built-in tool that asks for hover movement, through `IBinkTool.WantsHover`.
+
+`BinkPathElement` holds any vector path: lines, quadratic and cubic curves in any number of sub-paths, with a
+shape style and a fill rule. It is what an icon, a sticker or a logo becomes. It reads SVG path data:
+
+```csharp
+var heart = BinkPathElement.FromSvgPathData("M50 30 C50 0 0 0 0 30 C0 60 50 80 50 100 C50 80 100 60 100 30 C100 0 50 0 50 30 Z")
+{
+    Style = new BinkShapeStyle { FillColor = BinkColor.Parse("#e11d48"), StrokeWidth = 0f },
+};
+```
+
+`BinkSvgPathData` is the parser on its own. It understands every command, absolute and relative, turns arcs into
+cubic curves, and bounds what it reads, since path data is often untrusted. Both elements save, paste, export and
+synchronize like every other; a path is stored as SVG path data.
 
 ### Highlights
 
@@ -1135,7 +1303,10 @@ Versioned JSON with compact binary stroke points:
 ```
 
 It is a stable contract, not a projection of the library's classes. Every element carries a `type` discriminator
-and only documented fields.
+and only documented fields. Besides its own fields, any element may carry `transform` (six numbers), `description`,
+`metadata`, `locked: true` and `groups`, its group ids innermost first. Each of these is left out when it has its
+default value, and a reader that predates one ignores it, so an older build opens a grouped drawing ungrouped
+rather than refusing it.
 
 ### How points are stored
 
@@ -1180,7 +1351,7 @@ Loading is a parser attack surface. Everything is validated:
 | --- | --- |
 | Input size | `MaxInputBytes`, 256 MB by default, checked before parsing |
 | Layers, elements | `BinkDocumentLimits.MaxLayers`, `MaxElements` |
-| Points per stroke, total points | `MaxPointsPerStroke`, `MaxTotalPoints` |
+| Points per stroke, total points | `MaxPointsPerStroke` (which also bounds a path's segments), `MaxTotalPoints` |
 | Coordinates | `MaxCoordinate`, checked against every element's bounds and rejected rather than clamped |
 | Point time, tilt, twist | clamped to 10^9 ms, 90 degrees and 0 to 360 degrees |
 | Brush width | `MaxStrokeWidth` |
@@ -1230,6 +1401,58 @@ document.ReplaceElement(stroke with
 
 `Description` is what the canvas reports to assistive technology, and what SVG export writes as a `title` element
 when `IncludeElementDescriptions` is set. Elements without one fall back to a structural summary.
+
+### Unsaved changes
+
+```csharp
+if (document.IsDirty) { /* ask before leaving */ }
+
+long revision = document.Revision;
+await SaveToServerAsync(BinkSerializer.SerializeToUtf8Bytes(document));
+document.MarkSaved(revision);   // what changed while the bytes were on their way is still unsaved
+```
+
+Any change counts, an undo included, so undoing back to the saved state still reads as changed.
+
+### Autosave and recovery
+
+`BinkAutosave` saves a document shortly after it changes, to any `IBinkDocumentStore`, so a reload, a closed tab or
+a crash costs at most a few seconds of work:
+
+```csharp
+@inject IJSRuntime JS
+
+@code {
+    private BinkBrowserDocumentStore? _store;
+    private BinkAutosave? _autosave;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender) return;
+        _store = new BinkBrowserDocumentStore(JS);
+        if (await BinkAutosave.RestoreAsync(_store, "board") is { } saved) { /* offer it back */ }
+        _autosave = new BinkAutosave(_document, _store, "board");
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (_autosave is not null) await _autosave.DisposeAsync();   // saves what is still waiting
+    }
+}
+```
+
+It saves two seconds after editing pauses, and at least every thirty seconds while it never does (`Delay`,
+`MaxDelay`), one write at a time. It serializes on the thread that created it, because a document is not
+thread-safe, so create it in the component. A store that fails is reported through `SaveFailed` and `LastError` and
+tried again. It is a recovery copy, separate from the application's own saving: it leaves `IsDirty` alone, and
+`DiscardAsync` removes the copy once the application has saved for real.
+
+`BinkBrowserDocumentStore` keeps documents in the browser's IndexedDB, which survives reloads and crashes, holds far
+more than `localStorage`, and never leaves the device. Reading one back streams it, so a large drawing is no problem
+on Blazor Server. The browser may still clear it under storage pressure or in a private window, so treat it as a
+safety net. `BinkMemoryDocumentStore` is the in-memory one; implement `IBinkDocumentStore`, three methods over bytes,
+to keep drawings in a database or behind an API. The whiteboard demo autosaves this way and offers the drawing back
+when the page is opened again.
 
 ## SVG and PNG export
 
@@ -1287,8 +1510,34 @@ Images are the one external reference the output can contain: a `BinkImageElemen
 is written as an `image` element pointing at it. Embed images as data URIs, or refuse remote sources on load with
 `AllowRemoteImages = false`, if the exported file must be self-contained.
 
-If you import SVG from elsewhere, sanitize it yourself. Bink does not import SVG, and injecting arbitrary SVG into
-a page is a scripting risk regardless of this library.
+Injecting arbitrary SVG into a page is a scripting risk regardless of this library. To bring SVG from elsewhere
+into a drawing, import it instead, which turns it into Bink elements and never puts its markup in the page.
+
+#### Importing SVG
+
+```csharp
+BinkSvgImportResult result = BinkSvgImporter.Import(svgText);   // or TryImport, for untrusted input
+foreach (BinkElement element in result.Elements) document.AddElement(element);
+// result.Warnings lists what had no Bink equivalent
+
+canvas.ImportSvg(svgText);   // onto the canvas: centred, grouped, selected, one undo step
+```
+
+Paths, rectangles (with rounded corners), circles, ellipses, lines, polylines and polygons become editable vector
+elements with their fill, stroke, width, dashes, caps, joins, fill rule, opacity and transforms, including the root's
+`viewBox`. Text keeps its content, size, colour, weight and anchor; images are imported only when the picture is
+embedded as a raster `data:` URI. Groups pass their paint and transform down, and the `style` attribute overrides
+presentation attributes as CSS does. With `EnableDrop`, an `.svg` file dropped on the canvas is imported this way.
+
+SVG is treated as untrusted: a DOCTYPE is skipped without being read, so entities cannot expand; nothing is fetched,
+neither external entities, stylesheets, fonts nor images by URL; scripts, foreign objects and event handlers are
+ignored; and the length, element count and path segments are bounded (`BinkSvgImportOptions`). What has no
+equivalent is left out and named in `Warnings` rather than approximated quietly: gradients and patterns (the shape is
+filled grey, or with the fallback colour SVG allows after the reference), filters, masks, clip paths, `use`
+references, CSS stylesheets and a nested viewport's view box. A path longer than a path element holds (100,000
+segments) is left out with a warning, and an element whose transform collapses it (`scale(0)`) is not imported, as
+SVG does not draw it. A group's opacity is applied to each element in it, which differs only where they overlap, and
+the browser lays imported text out with the fonts it has.
 
 #### Large drawings
 
@@ -1419,7 +1668,8 @@ which is enough to feel disconnected from the pen. Two things address it:
 **Wet ink.** While a batch is in flight, the browser draws a provisional trail: a plain constant-width polyline in
 the brush colour. It carries no stroke model and makes no decisions; it exists so the pen feels attached to the
 hand. As soon as the engine responds, the real geometry replaces it. This is on by default under interactive
-server rendering.
+server rendering. It is only drawn for a tool that draws ink, so a selection drag or the eraser leaves no trail, and
+never on a read-only canvas, under a pen's eraser end or during a two-finger gesture.
 
 ```razor
 <BinkCanvas WetInk="true" />    <!-- default outside WebAssembly -->
@@ -1433,6 +1683,11 @@ numbers rather than an object graph. A 240 Hz pen still costs 60 messages per se
 stroke on a page of five thousand sends that stroke and a few numbers for each of the others, about 160 KB as
 packed floats, rather than every coordinate of every stroke again, which was about 50 MB of JSON. An embedded image
 crosses the circuit once, not with every redraw of the page it is on.
+
+**Nothing from the browser outgrows a message.** A circuit refuses any single message from the browser above 32 KB
+by default, and closes the connection when it gets one. Exported images, long pastes and long text from the inline
+editor therefore travel as streams, and a burst of pointer samples queued behind a busy main thread is sent in
+chunks, so none of them depends on raising `MaximumReceiveMessageSize`.
 
 Be honest with yourself about the use case. A signature field or a form annotation over Blazor Server is fine.
 Sustained handwriting over a high-latency connection is not, whatever the library does; that is what WebAssembly
@@ -1674,23 +1929,28 @@ The canvas takes focus when it is drawn on, so shortcuts are reachable for someo
 | Ctrl+Shift+Z, Ctrl+Y | Redo |
 | Ctrl+A | Select all |
 | Enter | Select the first element, which is how you start navigating without a pointer |
-| Tab, Shift+Tab | Step to the next or previous element, announcing each one |
+| Tab, Shift+Tab | Step to the next or previous element, or group, announcing each one |
 | Delete, Backspace | Delete the selection |
 | Escape | Cancel the gesture, then clear the selection |
 | Arrow keys | Nudge the selection; Shift for larger steps |
 | Ctrl+arrow keys | Resize the selection; Shift for larger steps |
 | R, Shift+R | Rotate the selection by 15 degrees |
+| Shift+H, Shift+V | Flip the selection horizontally or vertically |
 | Ctrl+D | Duplicate the selection |
 | Ctrl+], Ctrl+[ | Bring the selection forward, send it backward; with Shift, to the front or the back |
+| Ctrl+G, Ctrl+Shift+G | Group the selection, ungroup it |
+| Ctrl+Shift+L | Lock the selection |
 | Ctrl+C, Ctrl+X, Ctrl+V | Copy, cut and paste, when `EnableClipboard` is on |
 | Enter, with the text tool active | Open a text box in the middle of the view |
+| Enter, with a shape tool active | Add the shape in the middle of the view, to move and resize with the select tool |
 | Ctrl+0 | Reset zoom |
 | Ctrl+9 | Zoom to fit |
 | Ctrl+plus, Ctrl+minus | Zoom |
 
-Every element can therefore be reached, moved, resized, rotated and deleted without a pointer, and each step
-announces what is now selected. Text is reachable too: the text tool opens its real HTML editor from the keyboard,
-so dictation, an input method and a screen reader all work on it.
+Every element can therefore be reached, moved, resized, rotated, flipped, grouped and deleted without a pointer,
+and each step announces what is now selected. Groups are one stop for Tab, as they are one click. Text is reachable
+too: the text tool opens its real HTML editor from the keyboard, so dictation, an input method and a screen reader
+all work on it. And shapes can be made without a drag: Enter with a shape tool adds one in the middle of the view.
 
 The canvas is not a keyboard trap. Tab belongs to it only while an element is selected: pressing Escape clears
 the selection, and the next Tab moves focus out of the canvas as usual. Delete, Backspace and the arrow keys are
@@ -1700,6 +1960,21 @@ Keys pressed inside `ChildContent`, or in any input, button or link within the c
 
 Turn them off with `EnableKeyboardShortcuts="false"` if the surrounding application owns those keys. That
 genuinely releases the keys: the browser layer stops preventing their default behaviour as well.
+
+To take back only some keys, list them in `DisabledShortcuts`, as chords of modifiers and a key joined with `+`:
+
+```razor
+<BinkCanvas DisabledShortcuts="@(new[] { "Ctrl+D", "Ctrl+G", "R" })" />
+```
+
+A disabled chord reaches neither the tool nor the canvas, and the browser layer leaves its default alone, so the
+application's own handler gets it (or the browser's: Ctrl+D bookmarks the page). Every other shortcut keeps
+working. Ctrl means Command on macOS, as it does for every shortcut here; `Cmd`, `Meta` and `Control` are read as
+Ctrl and `Option` as Alt; letters can be written in either case; and a chord written with the unshifted key, such
+as `Ctrl+Shift+]`, also matches the `}` the browser reports for that press. `BinkShortcut.Normalize` shows how a
+chord is read. Enter and Escape in the inline text editor are how the editor works, not shortcuts, so they cannot
+be disabled. To move a command to another key, disable its chord, handle the new key in the page and call the
+canvas method behind it, such as `DuplicateSelection`, `GroupSelection` or `Undo`.
 
 Keyboard input travels the same path as pointer input, so it does not depend on a framework event and does not
 re-render the component per keystroke.
@@ -2118,8 +2393,22 @@ The registry supplies a default instance, and the serialized colour, width, opac
 spacing, taper and pressure curve are applied on top of it. A client without the registration still renders the
 stroke, as a pen with the stored appearance, rather than losing it.
 
+Settings of your own, such as `DashLength`, are saved with the stroke once the brush names them:
+
+```csharp
+public override IReadOnlyDictionary<string, float> GetParameters()
+    => new Dictionary<string, float> { ["dashLength"] = DashLength };
+
+public override BinkBrush WithParameters(IReadOnlyDictionary<string, float> parameters)
+    => this with { DashLength = parameters.TryGetValue("dashLength", out float d) ? Math.Clamp(d, 1f, 100f) : DashLength };
+```
+
+They are written as `params` in the brush, read back through `WithParameters`, which has to clamp them because a
+file or a collaborator can say anything, and kept unchanged by a client that does not know the brush, so passing a
+document through it loses nothing. `BinkCalligraphyBrush` is built exactly this way.
+
 `BinkStrokePointsView` gives you positions, pressure and timing. Tilt and twist are on the stroke's `Points` if you
-need them for a chisel nib or a calligraphic brush.
+need them for a brush that follows the pen's angle.
 
 ### A custom tool
 
@@ -2205,10 +2494,41 @@ Implement `IBinkCollaborationTransport` over SignalR, WebSockets or anything els
 
 ### A custom element type
 
-`BinkElement` is an abstract record you can derive from, and a custom element renders, hit tests and transforms
-like any other. The serializer will refuse to write it, deliberately: an unknown type in a saved file cannot be
-read back by anyone else. Convert custom elements to built-in ones before saving, or serialize them yourself
-alongside the document and re-attach them on load.
+`BinkElement` is an abstract record you can derive from, and a custom element renders, hit tests, transforms,
+groups and locks like any other. To save it, paste it and send it to collaborators, register a converter for it:
+
+```csharp
+public sealed class StickyNoteConverter : BinkElementConverter<StickyNote>
+{
+    public override string TypeName => "acme-sticky";
+
+    public override void Write(Utf8JsonWriter writer, StickyNote note, BinkSerializerOptions options)
+    {
+        writer.WriteString("text", note.Text);
+        writer.WriteNumber("votes", note.Votes);
+        // ... the rectangle
+    }
+
+    public override StickyNote Read(JsonElement json, BinkDeserializerOptions options)
+    {
+        // Untrusted input: validate every value and bound every size, and throw FormatException when it is wrong.
+    }
+}
+
+BinkElementRegistry.Default.Register(new StickyNoteConverter());
+```
+
+The serializer writes the `type` and every field all elements share (id, version, transform, description,
+metadata, lock, groups) itself, plus the element's `bounds`; the converter writes only the type's own fields. The
+bounds are for readers without the registration: another application, or an older build, loads the element as a
+`BinkUnknownElement` that is not drawn but keeps its place, culls and selects by its bounds, and is written back
+unchanged, so nothing is lost on the way through. Whatever a converter throws while reading is reported as a
+malformed document, and the element is held to the document's coordinate limits like every other.
+
+The default registry is shared. An application that wants its own passes it through
+`BinkSerializerOptions.ElementRegistry` and `BinkDeserializerOptions.ElementRegistry`; a collaboration session
+reads with the registries of its `SerializerOptions`, so whatever it can send it can also receive. A custom element
+without a registration still cannot be written, deliberately: nothing could read it back.
 
 ### What is deliberately closed
 

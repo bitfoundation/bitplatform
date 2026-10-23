@@ -15,6 +15,13 @@ public sealed record BinkLayerProperties
     /// <summary>Opacity 0..1 applied to the composited layer.</summary>
     public float Opacity { get; init; } = 1f;
 
+    /// <summary>
+    /// How the finished layer combines with the layers below it: <see cref="BinkBlendMode.Multiply"/> darkens like ink
+    /// on paper, which is what a layer of markup over a scanned page wants, <see cref="BinkBlendMode.Screen"/> lightens.
+    /// <see cref="BinkBlendMode.DestinationOut"/> is an element's eraser, not a layer's, and reads as Normal.
+    /// </summary>
+    public BinkBlendMode BlendMode { get; init; } = BinkBlendMode.Normal;
+
     /// <summary>Optional application metadata.</summary>
     public IReadOnlyDictionary<string, string>? Metadata { get; init; }
 }
@@ -59,6 +66,9 @@ public sealed class BinkLayer
 
     /// <summary>Opacity 0..1.</summary>
     public float Opacity => Properties.Opacity;
+
+    /// <summary>How the layer combines with the layers below it.</summary>
+    public BinkBlendMode BlendMode => Properties.BlendMode;
 
     /// <summary>Elements in z-order (first is bottom-most).</summary>
     public IReadOnlyList<BinkElement> Elements => _elements;

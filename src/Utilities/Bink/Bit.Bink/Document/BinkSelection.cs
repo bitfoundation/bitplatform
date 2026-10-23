@@ -63,13 +63,24 @@ public sealed class BinkSelection : IDisposable
     /// <summary>True when the element is selected.</summary>
     public bool Contains(Guid id) => _set.Contains(id);
 
-    /// <summary>Replaces the selection.</summary>
+    /// <summary>
+    /// Whether an element can be in the selection: it exists, tools may edit it, and its layer is visible and not
+    /// locked. Selecting anything else would hand it to the next Delete, arrow key or handle drag, which a locked
+    /// element or layer is documented to refuse and which nobody would expect for something they cannot see.
+    /// </summary>
+    private bool CanSelect(Guid id)
+        => _document.TryGetElement(id, out BinkElement? element, out BinkLayer? layer) && element.CanBeEdited && !layer.IsLocked && layer.IsVisible;
+
+    /// <summary>
+    /// Replaces the selection. Ids of elements that are missing, not selectable, locked, or on a locked or hidden
+    /// layer are skipped.
+    /// </summary>
     public void Set(IEnumerable<Guid> ids)
     {
         ArgumentNullException.ThrowIfNull(ids);
         var next = new List<Guid>();
         var nextSet = new HashSet<Guid>();
-        foreach (Guid id in ids) if (_document.TryGetElement(id, out BinkElement? e) && e.IsSelectable && nextSet.Add(id)) next.Add(id);
+        foreach (Guid id in ids) if (CanSelect(id) && nextSet.Add(id)) next.Add(id);
         if (next.SequenceEqual(_ids)) return;
         _ids.Clear();
         _set.Clear();
@@ -81,10 +92,10 @@ public sealed class BinkSelection : IDisposable
     /// <summary>Selects exactly one element.</summary>
     public void Set(Guid id) => Set([id]);
 
-    /// <summary>Adds an element.</summary>
+    /// <summary>Adds an element, unless it cannot be selected (see <see cref="Set(IEnumerable{Guid})"/>).</summary>
     public void Add(Guid id)
     {
-        if (_set.Contains(id) || !_document.TryGetElement(id, out BinkElement? e) || !e.IsSelectable) return;
+        if (_set.Contains(id) || !CanSelect(id)) return;
         _set.Add(id);
         _ids.Add(id);
         Changed?.Invoke(this, EventArgs.Empty);
@@ -114,14 +125,14 @@ public sealed class BinkSelection : IDisposable
         Changed?.Invoke(this, EventArgs.Empty);
     }
 
-    /// <summary>Selects every selectable element on unlocked, visible layers.</summary>
+    /// <summary>Selects every selectable, unlocked element on unlocked, visible layers.</summary>
     public void SelectAll()
     {
         var ids = new List<Guid>();
         foreach (BinkLayer layer in _document.Layers)
         {
             if (layer.IsLocked || !layer.IsVisible) continue;
-            foreach (BinkElement e in layer.Elements) if (e.IsSelectable) ids.Add(e.Id);
+            foreach (BinkElement e in layer.Elements) if (e.CanBeEdited) ids.Add(e.Id);
         }
         Set(ids);
     }
@@ -132,7 +143,10 @@ public sealed class BinkSelection : IDisposable
         bool changed = false;
         for (int i = _ids.Count - 1; i >= 0; i--)
         {
-            if (!_document.ContainsElement(_ids[i]))
+            // What was removed goes, and so does what became locked or hidden, itself or through its layer: a
+            // collaborator, or the application through the document, locking a selected element must not leave it
+            // selected for the next arrow key to move.
+            if (!CanSelect(_ids[i]))
             {
                 _set.Remove(_ids[i]);
                 _ids.RemoveAt(i);
@@ -169,7 +183,7 @@ public static class BinkDocumentQuery
     /// <param name="document">Document.</param>
     /// <param name="point">Point in document coordinates.</param>
     /// <param name="tolerance">Extra hit distance in document units (use a few units at low zoom so thin strokes are easy to grab).</param>
-    /// <param name="includeLocked">Whether elements on locked layers are candidates.</param>
+    /// <param name="includeLocked">Whether locked elements, and elements on locked layers, are candidates.</param>
     public static BinkElement? HitTest(BinkDocument document, Vector2 point, float tolerance = 4f, bool includeLocked = false)
     {
         ArgumentNullException.ThrowIfNull(document);
@@ -181,7 +195,7 @@ public static class BinkDocumentQuery
             for (int i = elements.Count - 1; i >= 0; i--)
             {
                 BinkElement e = elements[i];
-                if (e.IsSelectable && e.HitTest(point, tolerance)) return e;
+                if (e.IsSelectable && (includeLocked || !e.IsLocked) && e.HitTest(point, tolerance)) return e;
             }
         }
         return null;
@@ -200,7 +214,7 @@ public static class BinkDocumentQuery
             for (int i = elements.Count - 1; i >= 0; i--)
             {
                 BinkElement e = elements[i];
-                if (e.IsSelectable && e.HitTest(point, tolerance)) result.Add(e);
+                if (e.IsSelectable && (includeLocked || !e.IsLocked) && e.HitTest(point, tolerance)) result.Add(e);
             }
         }
         return result;
@@ -216,7 +230,7 @@ public static class BinkDocumentQuery
             if (!layer.IsVisible || (layer.IsLocked && !includeLocked)) continue;
             foreach (BinkElement e in layer.Elements)
             {
-                if (!e.IsSelectable) continue;
+                if (!e.IsSelectable || (e.IsLocked && !includeLocked)) continue;
                 bool match = mode == BinkRectSelectionMode.Contain ? rect.Contains(e.Bounds) : e.IntersectsRect(rect);
                 if (match) result.Add(e);
             }
@@ -233,7 +247,7 @@ public static class BinkDocumentQuery
     /// <param name="document">Document.</param>
     /// <param name="lasso">The lasso, in document coordinates; it is closed implicitly.</param>
     /// <param name="coverage">The fraction of an element that must be inside, from just touching (0) to all of it (1).</param>
-    /// <param name="includeLocked">Whether elements on locked layers are candidates.</param>
+    /// <param name="includeLocked">Whether locked elements, and elements on locked layers, are candidates.</param>
     public static List<BinkElement> FindInPolygon(BinkDocument document, ReadOnlySpan<Vector2> lasso, float coverage = 0.5f, bool includeLocked = false)
     {
         ArgumentNullException.ThrowIfNull(document);
@@ -246,7 +260,7 @@ public static class BinkDocumentQuery
             if (!layer.IsVisible || (layer.IsLocked && !includeLocked)) continue;
             foreach (BinkElement e in layer.Elements)
             {
-                if (!e.IsSelectable || !e.Bounds.Intersects(area)) continue;
+                if (!e.IsSelectable || (e.IsLocked && !includeLocked) || !e.Bounds.Intersects(area)) continue;
                 if (Covered(e, lasso, area, coverage)) result.Add(e);
             }
         }
@@ -283,6 +297,90 @@ public static class BinkDocumentQuery
             }
         }
         return coverage <= 0f ? inside > 0 : inside >= MathF.Ceiling(total * coverage - 1e-4f);
+    }
+
+    /// <summary>
+    /// The group that picking <paramref name="element"/> selects as a whole: its outermost group at the top level,
+    /// or, while working inside a group, the group nested directly inside that one.
+    /// </summary>
+    /// <param name="element">The element picked.</param>
+    /// <param name="within">The group being worked inside, or null for the top level.</param>
+    /// <returns>The group id, or null when the element is picked on its own.</returns>
+    public static Guid? GetSelectionGroup(BinkElement element, Guid? within = null)
+    {
+        ArgumentNullException.ThrowIfNull(element);
+        IReadOnlyList<Guid> chain = element.GroupIds;
+        if (chain.Count == 0) return null;
+        if (within is { } group)
+        {
+            for (int i = 0; i < chain.Count; i++)
+            {
+                if (chain[i] != group) continue;
+                // Inside the innermost group an element is picked on its own; deeper in, by the next group inward.
+                return i == 0 ? null : chain[i - 1];
+            }
+        }
+        return chain[^1];
+    }
+
+    /// <summary>The members of a group, including those of groups nested inside it, bottom-most first.</summary>
+    /// <param name="document">Document.</param>
+    /// <param name="groupId">The group.</param>
+    public static List<BinkElement> GetGroupMembers(BinkDocument document, Guid groupId)
+    {
+        ArgumentNullException.ThrowIfNull(document);
+        var result = new List<BinkElement>();
+        foreach (BinkLayer layer in document.Layers)
+        {
+            foreach (BinkElement e in layer.Elements) if (e.IsInGroup(groupId)) result.Add(e);
+        }
+        return result;
+    }
+
+    /// <summary>
+    /// Expands picked elements to the groups they belong to, the way clicking an element or drawing a marquee over
+    /// part of a group selects the whole group.
+    /// </summary>
+    /// <param name="document">Document.</param>
+    /// <param name="elementIds">The elements picked, for example by a click or a marquee.</param>
+    /// <param name="within">
+    /// The group being worked inside, or null for the top level. See <see cref="GetSelectionGroup"/>.
+    /// </param>
+    /// <returns>
+    /// The picked elements followed by the other members of their groups, without duplicates. Members a tool may not
+    /// touch (locked, or on a locked or hidden layer) are left out.
+    /// </returns>
+    public static IReadOnlyList<Guid> ExpandToGroups(BinkDocument document, IEnumerable<Guid> elementIds, Guid? within = null)
+    {
+        ArgumentNullException.ThrowIfNull(document);
+        ArgumentNullException.ThrowIfNull(elementIds);
+        var result = new List<Guid>();
+        var seen = new HashSet<Guid>();
+        HashSet<Guid>? groups = null;
+        foreach (Guid id in elementIds)
+        {
+            if (!document.TryGetElement(id, out BinkElement? element)) continue;
+            if (seen.Add(id)) result.Add(id);
+            if (GetSelectionGroup(element, within) is { } group) (groups ??= []).Add(group);
+        }
+        if (groups is null) return result;
+
+        foreach (BinkLayer layer in document.Layers)
+        {
+            if (layer.IsLocked || !layer.IsVisible) continue;
+            foreach (BinkElement e in layer.Elements)
+            {
+                if (e.GroupIds.Count == 0 || !e.CanBeEdited || seen.Contains(e.Id)) continue;
+                foreach (Guid g in e.GroupIds)
+                {
+                    if (!groups.Contains(g)) continue;
+                    seen.Add(e.Id);
+                    result.Add(e.Id);
+                    break;
+                }
+            }
+        }
+        return result;
     }
 
     /// <summary>

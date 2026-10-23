@@ -48,7 +48,7 @@ public sealed class BinkDocumentChangedEventArgs : EventArgs
 /// The document is not thread-safe; use it from one thread (the UI thread in Blazor).
 /// </para>
 /// </remarks>
-public sealed class BinkDocument
+public sealed partial class BinkDocument
 {
     private readonly List<BinkLayer> _layers = new();
     private readonly Dictionary<Guid, BinkLayer> _elementLayers = new();
@@ -105,6 +105,26 @@ public sealed class BinkDocument
 
     /// <summary>Incremented on every applied operation (batches count once).</summary>
     public long Revision { get; private set; }
+
+    /// <summary>The <see cref="Revision"/> the application last saved, as recorded by <see cref="MarkSaved()"/>.</summary>
+    public long SavedRevision { get; private set; }
+
+    /// <summary>
+    /// True when the document changed since the application last called <see cref="MarkSaved()"/>: the state an
+    /// "unsaved changes" prompt asks about. Any change counts, an undo included, so undoing back to what was saved
+    /// still reads as changed.
+    /// </summary>
+    public bool IsDirty => Revision != SavedRevision;
+
+    /// <summary>Records that the document as it is now has been saved, so <see cref="IsDirty"/> is false.</summary>
+    public void MarkSaved() => SavedRevision = Revision;
+
+    /// <summary>
+    /// Records that the document as it was at <paramref name="revision"/> has been saved. Use it when saving is
+    /// asynchronous: the document was serialized at that revision and may have changed while the bytes were written,
+    /// and those later changes are still unsaved.
+    /// </summary>
+    public void MarkSaved(long revision) => SavedRevision = revision;
 
     /// <summary>Total number of elements across layers.</summary>
     public int ElementCount => _elementLayers.Count;
@@ -379,6 +399,35 @@ public sealed class BinkDocument
     /// <summary>Removes a layer and its elements. A document always keeps at least one layer.</summary>
     public void RemoveLayer(Guid layerId) => Apply(new BinkRemoveLayerOperation(layerId));
 
+    /// <summary>
+    /// Adds a copy of a layer directly above it, with its properties and copies of its elements, as one undoable
+    /// step. The copies get new ids, and the groups among them become new groups, so editing the copy never reaches
+    /// the original. Elements of types this build does not know are not copied: their stored form names their ids.
+    /// </summary>
+    /// <param name="layerId">The layer to copy.</param>
+    /// <param name="name">The copy's name, or null for the original's name followed by "copy".</param>
+    /// <returns>The new layer.</returns>
+    /// <exception cref="KeyNotFoundException">The layer is not in the document.</exception>
+    /// <exception cref="InvalidOperationException">The copy would exceed the document's limits.</exception>
+    public BinkLayer DuplicateLayer(Guid layerId, string? name = null)
+    {
+        BinkLayer source = GetLayer(layerId);
+        var groups = new HashSet<Guid>();
+        foreach (BinkElement e in source.Elements) groups.UnionWith(e.GroupIds);
+        var renamed = new Dictionary<Guid, Guid>();
+        var copies = new List<BinkElement>(source.Count);
+        foreach (BinkElement e in source.Elements)
+        {
+            if (e is BinkUnknownElement) continue;
+            BinkElement copy = e with { Id = Guid.NewGuid(), Version = 0 };
+            if (e.GroupIds.Count > 0) copy = copy with { GroupIds = RenameGroups(e.GroupIds, groups, renamed) };
+            copies.Add(copy);
+        }
+        var id = Guid.NewGuid();
+        Apply(new BinkAddLayerOperation(id, source.Properties with { Name = name ?? source.Name + " copy" }, _layers.IndexOf(source) + 1, copies));
+        return GetLayer(id);
+    }
+
     /// <summary>Updates a layer's properties.</summary>
     public void UpdateLayer(Guid layerId, Func<BinkLayerProperties, BinkLayerProperties> update)
     {
@@ -500,13 +549,20 @@ public sealed class BinkDocument
     {
         ArgumentNullException.ThrowIfNull(elementIds);
         var wanted = new HashSet<Guid>(elementIds);
+        // A group copied whole becomes a new group of the copies, so moving the copy does not drag the original
+        // along. A group copied in part (a member duplicated while working inside its group) is kept: the copy joins
+        // the original's group, next to the element it was copied from.
+        HashSet<Guid> whole = ContainedGroups(wanted, selectableOnly: true);
+        var renamed = new Dictionary<Guid, Guid>();
         var copies = new List<(Guid Layer, BinkElement Copy)>();
         foreach (BinkLayer layer in _layers)
         {
             foreach (BinkElement e in layer.Elements)
             {
                 if (!wanted.Contains(e.Id) || e is BinkStroke { IsEraser: true } or BinkUnknownElement) continue;
-                copies.Add((layer.Id, e.Translate(offset) with { Id = Guid.NewGuid(), Version = 0 }));
+                BinkElement copy = e.Translate(offset) with { Id = Guid.NewGuid(), Version = 0 };
+                if (e.GroupIds.Count > 0) copy = copy with { GroupIds = RenameGroups(e.GroupIds, whole, renamed) };
+                copies.Add((layer.Id, copy));
             }
         }
         if (copies.Count == 0) return [];
@@ -514,6 +570,205 @@ public sealed class BinkDocument
         foreach ((Guid layer, BinkElement copy) in copies) ops.Add(new BinkAddElementOperation(layer, copy));
         Apply(new BinkBatchOperation(ops, "Duplicate"));
         return copies.ConvertAll(static c => c.Copy);
+    }
+
+    private static Guid[] RenameGroups(IReadOnlyList<Guid> chain, HashSet<Guid> whole, Dictionary<Guid, Guid> renamed)
+    {
+        var result = new Guid[chain.Count];
+        for (int i = 0; i < chain.Count; i++)
+        {
+            Guid group = chain[i];
+            if (!whole.Contains(group)) result[i] = group;
+            else if (renamed.TryGetValue(group, out Guid name)) result[i] = name;
+            else result[i] = renamed[group] = Guid.NewGuid();
+        }
+        return result;
+    }
+
+    /// <summary>
+    /// The groups whose every member is among <paramref name="elementIds"/>. Those are the groups an edit of exactly
+    /// these elements acts on as a whole; a group with members outside the set is only partly involved.
+    /// </summary>
+    /// <param name="elementIds">The elements.</param>
+    /// <param name="selectableOnly">
+    /// Whether only the members that can be selected count: not locked, and on a layer that is neither locked nor
+    /// hidden. A selection never holds the others, so a group the user selected in full is whole to the edits made
+    /// on the selection. Grouping counts every member, because a new group has to contain a group entirely or not at all.
+    /// </param>
+    private HashSet<Guid> ContainedGroups(HashSet<Guid> elementIds, bool selectableOnly)
+    {
+        var groups = new HashSet<Guid>();
+        foreach (Guid id in elementIds)
+        {
+            if (TryGetElement(id, out BinkElement? e)) groups.UnionWith(e.GroupIds);
+        }
+        if (groups.Count == 0) return groups;
+        foreach (BinkLayer layer in _layers)
+        {
+            bool layerEditable = layer.IsVisible && !layer.IsLocked;
+            foreach (BinkElement e in layer.Elements)
+            {
+                if (e.GroupIds.Count == 0 || elementIds.Contains(e.Id)) continue;
+                if (selectableOnly && !(layerEditable && e.CanBeEdited)) continue;
+                foreach (Guid g in e.GroupIds) groups.Remove(g);
+            }
+        }
+        return groups;
+    }
+
+    /// <summary>
+    /// Groups elements, as one undoable step, so that picking any of them selects them all and they move, resize and
+    /// copy together. The members keep their layers; within each layer they are brought together in the stacking
+    /// order, just below the top-most of them, so nothing else is sandwiched between them.
+    /// </summary>
+    /// <remarks>
+    /// Groups nest. Groups the elements make up entirely end up inside the new group, and the new group sits inside
+    /// any group the elements all belong to only in part, which is what grouping while working inside a group means.
+    /// An element that is the only one picked from a group the others are not in leaves that group, because a group
+    /// cannot overlap another without containing it.
+    /// </remarks>
+    /// <param name="elementIds">The elements to group; ids not in the document, and eraser strokes, are ignored.</param>
+    /// <returns>The new group's id, or null when fewer than two elements could be grouped.</returns>
+    /// <exception cref="InvalidOperationException">The grouping would nest an element more than <see cref="BinkElement.MaxGroupDepth"/> groups deep.</exception>
+    public Guid? GroupElements(IEnumerable<Guid> elementIds)
+    {
+        ArgumentNullException.ThrowIfNull(elementIds);
+        var ids = new HashSet<Guid>();
+        var members = new List<BinkElement>();
+        foreach (Guid id in elementIds)
+        {
+            if (!TryGetElement(id, out BinkElement? e) || e is BinkStroke { IsEraser: true } or BinkUnknownElement || !ids.Add(id)) continue;
+            members.Add(e);
+        }
+        if (members.Count < 2) return null;
+
+        // Each chain splits into the groups the members make up whole, which go inside the new group, and the
+        // groups they share with elements outside, which stay outside it. The outer part has to be the same for
+        // every member, so only what all of them share is kept.
+        HashSet<Guid> whole = ContainedGroups(ids, selectableOnly: false);
+        List<Guid>? shared = null;
+        foreach (BinkElement e in members)
+        {
+            var outer = new List<Guid>();
+            foreach (Guid g in e.GroupIds) if (!whole.Contains(g)) outer.Add(g);
+            if (shared is null) shared = outer;
+            else
+            {
+                // The longest common suffix: groups are listed innermost first, so the outermost ones line up at the end.
+                int common = 0;
+                while (common < shared.Count && common < outer.Count && shared[^(common + 1)] == outer[^(common + 1)]) common++;
+                shared.RemoveRange(0, shared.Count - common);
+            }
+        }
+
+        var group = Guid.NewGuid();
+        var ops = new List<BinkDrawingOperation>(members.Count * 2);
+        foreach (BinkElement e in members)
+        {
+            var chain = new List<Guid>(e.GroupIds.Count + 1);
+            foreach (Guid g in e.GroupIds) if (whole.Contains(g)) chain.Add(g);
+            chain.Add(group);
+            chain.AddRange(shared!);
+            if (chain.Count > BinkElement.MaxGroupDepth) throw new InvalidOperationException($"Groups can be nested at most {BinkElement.MaxGroupDepth} deep.");
+            ops.Add(new BinkReplaceElementOperation(e with { GroupIds = chain }));
+        }
+        GatherInStackingOrder(ids, ops);
+        Apply(new BinkBatchOperation(ops, "Group"));
+        return group;
+    }
+
+    /// <summary>
+    /// Moves the given elements of each layer next to each other, just below the top-most of them, without changing
+    /// their order relative to each other. Only the elements that are not already in place move.
+    /// </summary>
+    private void GatherInStackingOrder(HashSet<Guid> ids, List<BinkDrawingOperation> ops)
+    {
+        foreach (BinkLayer layer in _layers)
+        {
+            int anchor = -1;
+            for (int i = layer.Elements.Count - 1; i >= 0; i--)
+            {
+                if (!ids.Contains(layer.Elements[i].Id)) continue;
+                // Working down from the top-most member, each one goes directly below the previous. A member below
+                // the anchor is unaffected by the moves made above it, so its index is still the one read here.
+                if (anchor >= 0 && i != anchor - 1)
+                {
+                    ops.Add(new BinkReorderElementOperation(layer.Elements[i].Id, layer.Id, anchor - 1));
+                    anchor--;
+                }
+                else anchor = i;
+            }
+        }
+    }
+
+    /// <summary>
+    /// Ungroups, as one undoable step: dissolves the outermost group each element belongs to that the given elements
+    /// make up entirely. Selecting a group and ungrouping it therefore takes it apart one level, leaving any groups
+    /// nested inside it intact, and a group that is only partly given is left alone.
+    /// </summary>
+    /// <remarks>
+    /// Members that cannot be selected (locked, or on a locked or hidden layer) do not need to be given, since a
+    /// selection never holds them; they leave the dissolved group too, so no group of one is left behind.
+    /// </remarks>
+    /// <param name="elementIds">The elements, typically the selection.</param>
+    /// <returns>True when any group was dissolved.</returns>
+    public bool UngroupElements(IEnumerable<Guid> elementIds)
+    {
+        ArgumentNullException.ThrowIfNull(elementIds);
+        var ids = new HashSet<Guid>(elementIds);
+        HashSet<Guid> whole = ContainedGroups(ids, selectableOnly: true);
+        if (whole.Count == 0) return false;
+        var dissolved = new HashSet<Guid>();
+        foreach (Guid id in ids)
+        {
+            if (!TryGetElement(id, out BinkElement? e) || e is BinkUnknownElement) continue;
+            for (int i = e.GroupIds.Count - 1; i >= 0; i--)
+            {
+                if (!whole.Contains(e.GroupIds[i])) continue;
+                dissolved.Add(e.GroupIds[i]);
+                break;
+            }
+        }
+        if (dissolved.Count == 0) return false;
+        // Members of one group share the chain from that group outwards, so the outermost group given whole is the
+        // same for all of them, and removing every dissolved group from every chain removes exactly that one.
+        var ops = new List<BinkDrawingOperation>();
+        foreach (BinkLayer layer in _layers)
+        {
+            foreach (BinkElement e in layer.Elements)
+            {
+                // An element of a type this version does not know is saved exactly as it was read, so it is not changed.
+                if (e.GroupIds.Count == 0 || e is BinkUnknownElement) continue;
+                var chain = new List<Guid>(e.GroupIds.Count);
+                foreach (Guid g in e.GroupIds) if (!dissolved.Contains(g)) chain.Add(g);
+                if (chain.Count != e.GroupIds.Count) ops.Add(new BinkReplaceElementOperation(e with { GroupIds = chain }));
+            }
+        }
+        Apply(new BinkBatchOperation(ops, "Ungroup"));
+        return true;
+    }
+
+    /// <summary>
+    /// Locks or unlocks elements, as one undoable step. A locked element is drawn as usual, but tools cannot select,
+    /// move or erase it.
+    /// </summary>
+    /// <param name="elementIds">The elements; ids not in the document are ignored.</param>
+    /// <param name="locked">Whether they end up locked.</param>
+    /// <returns>True when anything changed.</returns>
+    public bool SetLocked(IEnumerable<Guid> elementIds, bool locked)
+    {
+        ArgumentNullException.ThrowIfNull(elementIds);
+        var ops = new List<BinkDrawingOperation>();
+        var seen = new HashSet<Guid>();
+        foreach (Guid id in elementIds)
+        {
+            // An element of a type this version does not know is saved exactly as it was read, so it is not changed.
+            if (!seen.Add(id) || !TryGetElement(id, out BinkElement? e) || e.IsLocked == locked || e is BinkUnknownElement) continue;
+            ops.Add(new BinkReplaceElementOperation(e with { IsLocked = locked }));
+        }
+        if (ops.Count == 0) return false;
+        Apply(new BinkBatchOperation(ops, locked ? "Lock" : "Unlock"));
+        return true;
     }
 
     /// <summary>
@@ -669,7 +924,7 @@ public sealed class BinkDocument
             if (_elementLayers.Count + elements.Count > Limits.MaxElements) throw new InvalidOperationException($"The document limit of {Limits.MaxElements} elements was reached.");
             if (_totalPoints + points > Limits.MaxTotalPoints) throw new InvalidOperationException($"The document limit of {Limits.MaxTotalPoints} stroke points was reached.");
         }
-        var layer = new BinkLayer(layerId, properties, elements);
+        var layer = new BinkLayer(layerId, Sanitize(properties), elements);
         int at = index is null ? _layers.Count : Math.Clamp(index.Value, 0, _layers.Count);
         _layers.Insert(at, layer);
         _layersById[layerId] = layer;
@@ -700,8 +955,20 @@ public sealed class BinkDocument
         ArgumentNullException.ThrowIfNull(properties);
         BinkLayer layer = RequireLayer(layerId);
         BinkLayerProperties previous = layer.Properties;
-        layer.Properties = properties with { Opacity = Math.Clamp(properties.Opacity, 0f, 1f), Name = properties.Name ?? string.Empty };
+        layer.Properties = Sanitize(properties);
         return previous;
+    }
+
+    /// <summary>
+    /// Keeps layer properties to values every renderer draws the same way. Erasing is what an element does to its own
+    /// layer; a whole layer composited with it would cut its shape out of everything below, which nothing promises.
+    /// </summary>
+    private static BinkLayerProperties Sanitize(BinkLayerProperties properties)
+    {
+        float opacity = float.IsFinite(properties.Opacity) ? Math.Clamp(properties.Opacity, 0f, 1f) : 1f;
+        BinkBlendMode blend = properties.BlendMode is BinkBlendMode.Multiply or BinkBlendMode.Screen ? properties.BlendMode : BinkBlendMode.Normal;
+        if (opacity == properties.Opacity && blend == properties.BlendMode && properties.Name is not null) return properties;
+        return properties with { Opacity = opacity, BlendMode = blend, Name = properties.Name ?? string.Empty };
     }
 
     internal int ReorderLayerCore(Guid layerId, int index)
@@ -744,6 +1011,11 @@ public sealed class BinkDocument
             if (stroke.Brush.Width > Limits.MaxStrokeWidth) throw new InvalidOperationException($"Brush width {stroke.Brush.Width} exceeds the limit of {Limits.MaxStrokeWidth}.");
             stroke.Brush.Validate();
         }
+        // The same bound loading applies, so a document that holds a path can always be read back.
+        else if (element is BinkPathElement path && path.Path.VerbCount > Limits.MaxPathSegments)
+        {
+            throw new InvalidOperationException($"Path has {path.Path.VerbCount} segments; the limit is {Limits.MaxPathSegments}.");
+        }
     }
 
     private void ValidateBounds(BinkElement element, BinkRect b, string space)
@@ -764,6 +1036,7 @@ public sealed class BinkDocument
         foreach (BinkLayer layer in _layers) copy.InsertLayerCore(layer.Id, layer.Properties, null, layer.Elements.ToArray());
         foreach ((string k, string v) in _metadata) copy._metadata[k] = v;
         copy.Revision = Revision;
+        copy.SavedRevision = SavedRevision;
         return copy;
     }
 

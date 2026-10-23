@@ -41,6 +41,9 @@ public sealed record BinkSerializerOptions
 
     /// <summary>Brush kinds used to reconstruct custom brushes on load.</summary>
     public BinkBrushRegistry BrushRegistry { get; init; } = BinkBrushRegistry.Default;
+
+    /// <summary>Converters for custom element types. A custom element without one cannot be written.</summary>
+    public BinkElementRegistry ElementRegistry { get; init; } = BinkElementRegistry.Default;
 }
 
 /// <summary>Options controlling document deserialization, including the limits enforced on untrusted input.</summary>
@@ -54,6 +57,12 @@ public sealed record BinkDeserializerOptions
 
     /// <summary>Brush kinds available for reconstruction. Unknown kinds fall back to a pen with the stored properties.</summary>
     public BinkBrushRegistry BrushRegistry { get; init; } = BinkBrushRegistry.Default;
+
+    /// <summary>
+    /// Converters for custom element types. An element whose type has none is kept as a
+    /// <see cref="BinkUnknownElement"/>, or dropped when <see cref="PreserveUnknownElements"/> is off.
+    /// </summary>
+    public BinkElementRegistry ElementRegistry { get; init; } = BinkElementRegistry.Default;
 
     /// <summary>
     /// Whether elements of unknown types are preserved as <see cref="BinkUnknownElement"/> so a round trip through an

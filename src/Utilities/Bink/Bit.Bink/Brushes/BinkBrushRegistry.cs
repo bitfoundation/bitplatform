@@ -26,6 +26,7 @@ public sealed class BinkBrushRegistry
         registry.Register(BinkMarkerBrush.KindName, static () => new BinkMarkerBrush());
         registry.Register(BinkHighlighterBrush.KindName, static () => new BinkHighlighterBrush());
         registry.Register(BinkPixelEraserBrush.KindName, static () => new BinkPixelEraserBrush());
+        registry.Register(BinkCalligraphyBrush.KindName, static () => new BinkCalligraphyBrush());
         return registry;
     }
 
