@@ -25,12 +25,14 @@ internal sealed class BevToolsHttpFilter(BitBevToolsOptions options, BevToolsReg
 }
 
 /// <summary>
-/// Resolves the session that issued a request at the outer end of the pipeline and passes it, in the request's
-/// options, to the <see cref="BevToolsHttpMessageHandler"/> at the inner end.
+/// Resolves the session that issued a request, and the component that sent it, at the outer end of the pipeline and
+/// passes both, in the request's options, to the <see cref="BevToolsHttpMessageHandler"/> at the inner end.
 /// </summary>
 internal sealed class BevToolsHttpSessionHandler : DelegatingHandler
 {
     internal static readonly HttpRequestOptionsKey<BevToolsSession> SessionKey = new("Bit.BevTools.Session");
+
+    internal static readonly HttpRequestOptionsKey<BevCallSites.CallSite> CallerKey = new("Bit.BevTools.Caller");
 
     protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
     {
@@ -43,6 +45,14 @@ internal sealed class BevToolsHttpSessionHandler : DelegatingHandler
         if (!request.Options.TryGetValue(SessionKey, out _) && SessionResolver.Resolve() is { } session)
         {
             request.Options.Set(SessionKey, session);
+
+            // Here, not where the request is recorded: a retry or resilience handler in between awaits before it
+            // sends, and from then on the component is no longer on the stack - retries included. Once per request,
+            // and only for one that will be recorded.
+            if (session.IsEnabled && session.IsCapturing && session.Options.TrackHttp && session.Options.CaptureHttpCallers)
+            {
+                request.Options.Set(CallerKey, BevCallSites.Find(skipFrames: 0));
+            }
         }
     }
 }
@@ -131,6 +141,11 @@ public sealed class BevToolsHttpMessageHandler : DelegatingHandler
         }
 
         var url = session.Redactor.RedactUrl(request.RequestUri?.ToString() ?? "");
+        // Noted by the outer handler of a factory pipeline; else (a hand-built client) read now, while the code that sent
+        // the request is still on the stack - the awaits below would lose it.
+        var caller = !options.CaptureHttpCallers ? default
+            : request.Options.TryGetValue(BevToolsHttpSessionHandler.CallerKey, out var noted) ? noted
+            : BevCallSites.Find(skipFrames: 0);
         var record = new BevHttpRecord
         {
             Id = session.Http.NextId(),
@@ -141,6 +156,9 @@ public sealed class BevToolsHttpMessageHandler : DelegatingHandler
             RequestHeaders = options.CaptureHttpHeaders ? CollectHeaders(session, request.Headers, request.Content?.Headers) : null,
             TriggerEventId = trigger?.Id,
             TriggerDescription = trigger?.Title,
+            CallerComponent = caller.Component,
+            CallerVia = caller.Via,
+            CallerMissing = caller.Missing,
         };
         record.TimelineEventId = session.Timeline.Record(new BevToolsEvent
         {
@@ -149,7 +167,9 @@ public sealed class BevToolsHttpMessageHandler : DelegatingHandler
             Title = record.Method + " " + StripOrigin(url),
             Detail = "pending",
             ParentEventId = trigger?.Id,
-            Data = new Dictionary<string, object?> { ["requestId"] = record.Id, ["url"] = url },
+            Data = record.Caller is { } sender
+                ? new Dictionary<string, object?> { ["requestId"] = record.Id, ["url"] = url, ["caller"] = sender }
+                : new Dictionary<string, object?> { ["requestId"] = record.Id, ["url"] = url },
         });
         session.Http.Add(record);
 

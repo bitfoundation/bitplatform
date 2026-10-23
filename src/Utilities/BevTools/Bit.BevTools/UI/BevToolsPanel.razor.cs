@@ -281,10 +281,32 @@ public partial class BevToolsPanel : ComponentBase, IBevToolsCommandContext, IAs
             Ui.Touch();
         }
 
+        // Closed, the rules otherwise wait for the panel to open; a run checked in CI asks for them as data arrives.
+        if (!Ui.IsOpen && Options.Diagnostics.EvaluateWhileClosed && Session.Diagnostics.IsStale)
+        {
+            Session.RenderTracker.CloseBatch();
+            Session.Components.Refresh();
+            Session.Diagnostics.Evaluate();
+        }
+
         var dataChanged = Session.Version != _lastVersion;
         var uiChanged = Ui.Version != _lastUiVersion;
         if (!dataChanged && !uiChanged)
         {
+            // A trailing evaluation: the last change may have come within the second the previous one is throttled
+            // to (a redirect loop ends in milliseconds), and with nothing changing after it the findings would stay
+            // behind. Nothing else re-renders the panel then either, so it does once the rules have run - unless live
+            // updates are off, which freezes the open tab until Refresh.
+            if (Ui.IsOpen && Ui.LiveUpdates && Session.Diagnostics.IsStale)
+            {
+                Session.Diagnostics.Evaluate();
+                if (!Session.Diagnostics.IsStale)
+                {
+                    _viewRevision++;
+                    StateHasChanged();
+                }
+            }
+
             return;
         }
 
@@ -601,6 +623,18 @@ public partial class BevToolsPanel : ComponentBase, IBevToolsCommandContext, IAs
             return;
         }
 
+        // The router handles LocationChanged before this panel and renders the new page right there, so on this path (no
+        // Navigate activity: .NET 8 and 9, or framework instrumentation off) the page's first renders have happened, in
+        // the batch still open now. Dated from that batch the navigation comes before them, as it did; dated now, each
+        // page's first render would be put on the page it left (Profiler → Renders per page).
+        var startTicks = System.Diagnostics.Stopwatch.GetTimestamp();
+        if (Session.RenderTracker.CurrentBatch is { Closed: false, IsTracked: true } batch
+            && (last is null || batch.StartTicks > last.StartTicks)
+            && System.Diagnostics.Stopwatch.GetElapsedTime(batch.StartTicks).TotalSeconds < 1)
+        {
+            startTicks = batch.StartTicks;
+        }
+
         var recordedId = Session.Timeline.Record(new BevToolsEvent
         {
             Kind = BevToolsEventKind.Navigation,
@@ -608,6 +642,8 @@ public partial class BevToolsPanel : ComponentBase, IBevToolsCommandContext, IAs
             Title = "Navigate to /" + path,
             Detail = cause,
             ParentEventId = Session.CurrentTriggerEventId,
+            StartTicks = startTicks,
+            Timestamp = DateTimeOffset.UtcNow - System.Diagnostics.Stopwatch.GetElapsedTime(startTicks),
         });
         if (recordedId > 0)
         {

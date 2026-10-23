@@ -56,10 +56,20 @@ public static class BevSessionExporter
     private const int RecentlyUpdatedEvents = 200;
 
     /// <summary>Full machine-readable export.</summary>
+    /// <remarks>
+    /// Call it on the session's dispatcher, as the panel and the protocol do: it reads the live stores, and when the
+    /// diagnostics section is included and anything was captured since the rules last ran, it runs them first.
+    /// </remarks>
     public static string ToJson(BevToolsSession session, BevSessionExportOptions? options = null)
     {
         ArgumentNullException.ThrowIfNull(session);
         options ??= new BevSessionExportOptions();
+        // Before anything is written, so the session's version, the timeline and the findings in the file agree.
+        if (options.Includes("diagnostics"))
+        {
+            EvaluateIfStale(session);
+        }
+
         var buffer = new MemoryStream();
         using (var writer = new Utf8JsonWriter(buffer, new JsonWriterOptions { Indented = options.Indented, Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping }))
         {
@@ -189,9 +199,11 @@ public static class BevSessionExporter
         : component.ParentRendersWithUnchangedParameters.ToString(CultureInfo.InvariantCulture) + " of "
             + component.RendersWithComparedParameters.ToString(CultureInfo.InvariantCulture) + " compared";
 
+    /// <summary>The report <i>About → Copy report</i> gives. Call it on the session's dispatcher (see <see cref="ToJson"/>).</summary>
     public static string ToMarkdownReport(BevToolsSession session, int timelineTail = 40)
     {
         ArgumentNullException.ThrowIfNull(session);
+        EvaluateIfStale(session);
         var sb = new StringBuilder();
         var framework = typeof(Microsoft.AspNetCore.Components.ComponentBase).Assembly.GetName().Version;
         sb.AppendLine("# BevTools report");
@@ -321,6 +333,7 @@ public static class BevSessionExporter
                 .Append(" → ").Append(r.Error ?? (r.StatusCode?.ToString(CultureInfo.InvariantCulture) ?? "pending"))
                 .Append(r.DurationMs is { } d ? " in " + Ms(d) : "")
                 .Append(r.TriggerDescription is null ? "" : " (trigger: " + r.TriggerDescription + ")")
+                .Append(r.Caller is null ? "" : " (from " + r.Caller + ")")
                 .AppendLine();
         }
 
@@ -374,6 +387,18 @@ public static class BevSessionExporter
         return sb.ToString();
     }
 
+    // The rules run at most once a second, and only while something shows their results (or EvaluateWhileClosed), so the
+    // last run can be older than what the export holds. Running them here brings the findings up to the export; it
+    // cannot recover what a rule's window (10 to 60 seconds back) no longer reaches - that is EvaluateWhileClosed's job.
+    // A snapshot that nothing changed since is not re-evaluated.
+    private static void EvaluateIfStale(BevToolsSession session)
+    {
+        if (session.Diagnostics.IsStale)
+        {
+            session.Diagnostics.Evaluate(force: true);
+        }
+    }
+
     private static void WriteSession(Utf8JsonWriter w, BevToolsSession session)
     {
         w.WriteStartObject("session");
@@ -418,6 +443,7 @@ public static class BevSessionExporter
         w.WriteBoolean("recordRenderEvents", o.RecordRenderEvents);
         w.WriteBoolean("trackHttp", o.TrackHttp);
         w.WriteBoolean("captureHttpHeaders", o.CaptureHttpHeaders);
+        w.WriteBoolean("captureHttpCallers", o.CaptureHttpCallers);
         w.WriteBoolean("trackJsInterop", o.TrackJsInterop);
         w.WriteBoolean("trackJsModuleReferences", o.TrackJsModuleReferences);
         w.WriteBoolean("enableBrowserBridge", o.EnableBrowserBridge);
@@ -438,6 +464,7 @@ public static class BevSessionExporter
         w.WriteNumber("slowJsInteropMs", d.SlowJsInteropMs);
         w.WriteNumber("excessiveJsInteropCount", d.ExcessiveJsInteropCount);
         w.WriteNumber("repeatedErrorCount", d.RepeatedErrorCount);
+        w.WriteBoolean("evaluateWhileClosed", d.EvaluateWhileClosed);
         w.WriteStartArray("disabledRules");
         foreach (var rule in d.DisabledRules)
         {
@@ -731,6 +758,21 @@ public static class BevSessionExporter
             }
 
             w.WriteString("lastAt", e.LastAt);
+            if (e.Callers.Count > 0)
+            {
+                w.WriteNumber("callerCount", e.CallerCount);
+                w.WriteStartArray("callers");
+                foreach (var (component, sent) in e.Callers)
+                {
+                    w.WriteStartObject();
+                    w.WriteString("component", component);
+                    w.WriteNumber("requests", sent);
+                    w.WriteEndObject();
+                }
+
+                w.WriteEndArray();
+            }
+
             w.WriteEndObject();
         }
 
@@ -785,6 +827,15 @@ public static class BevSessionExporter
             {
                 w.WriteNumber("triggerEventId", trigger);
                 w.WriteString("trigger", r.TriggerDescription);
+            }
+
+            if (r.Caller is { } caller)
+            {
+                w.WriteString("caller", caller);
+            }
+            else if (r.CallerMissing is { } missing)
+            {
+                w.WriteString("callerMissing", missing);
             }
 
             if (r.TimelineEventId > 0)

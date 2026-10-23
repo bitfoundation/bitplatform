@@ -83,6 +83,18 @@ public sealed class BevHttpRecord
 
     public string? TriggerDescription { get; init; }
 
+    /// <summary>The component method that sent the request ("OrderRow.OnInitializedAsync"), when the stack shows one.</summary>
+    public string? CallerComponent { get; init; }
+
+    /// <summary>The application method the component sent it through ("ProductApi.GetOrderDetailsAsync"), when there is one.</summary>
+    public string? CallerVia { get; init; }
+
+    /// <summary>"OrderRow.OnInitializedAsync via ProductApi.GetOrderDetailsAsync", or null when no component is on the stack.</summary>
+    public string? Caller => CallerComponent is null ? null : CallerVia is null ? CallerComponent : CallerComponent + " via " + CallerVia;
+
+    /// <summary>Why no sender was found, when the stack was looked at and none was; null when it was not looked at.</summary>
+    public string? CallerMissing { get; init; }
+
     public long TimelineEventId { get; set; }
 
     /// <summary>
@@ -207,7 +219,12 @@ public static class BevHttpEndpoints
                     : null,
                 last.StartedAt,
                 last.IsCancelled ? null : last.StatusCode,
-                g.Select(r => r.Url).Distinct(StringComparer.Ordinal).Count());
+                g.Select(r => r.Url).Distinct(StringComparer.Ordinal).Count())
+            {
+                Callers = g.Where(r => r.CallerComponent is not null).GroupBy(r => r.CallerComponent!, StringComparer.Ordinal)
+                    .OrderByDescending(c => c.Count()).Take(5).Select(c => (c.Key, c.Count())).ToList(),
+                CallerCount = g.Where(r => r.CallerComponent is not null).Select(r => r.CallerComponent).Distinct(StringComparer.Ordinal).Count(),
+            };
         }).ToList();
 }
 
@@ -227,7 +244,14 @@ internal sealed record BevHttpEndpointSummary(
     long? ResponseBytes,
     DateTimeOffset LastAt,
     int? LastStatus,
-    int DistinctUrls);
+    int DistinctUrls)
+{
+    /// <summary>The component methods that sent its requests, most first, with how many each: the first five.</summary>
+    public IReadOnlyList<(string Component, int Requests)> Callers { get; init; } = [];
+
+    /// <summary>How many different component methods sent its requests, all of them.</summary>
+    public int CallerCount { get; init; }
+}
 
 public enum BevJsInteropDirection
 {

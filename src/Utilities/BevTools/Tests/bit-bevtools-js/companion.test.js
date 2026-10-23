@@ -154,6 +154,54 @@ describe('companion', () => {
         expect([...document.querySelectorAll('button')].some(b => b.textContent.includes('Pause')), 'no commands on a file').toBe(false);
         companion.stop();
     });
+
+    it('shows requests per endpoint with the component that sent them, and error groups', async () => {
+        const { Companion, FileSource } = await loadCompanion();
+        const doc = session(9, 'Server', [counter]);
+        doc.options = { captureHttpCallers: true };
+        doc.http = [
+            { id: 1, method: 'GET', url: 'https://shop.test/api/orders/1', statusCode: 200, durationMs: 4, startedAt: new Date().toISOString(), caller: 'OrderRow.OnInitializedAsync via ProductApi.GetOrderDetailsAsync' },
+            { id: 2, method: 'GET', url: 'https://shop.test/api/health', statusCode: 200, durationMs: 1, startedAt: new Date().toISOString(), callerMissing: 'no component on the stack (a service, a timer, or code that went asynchronous before sending)' },
+        ];
+        doc.httpEndpoints = [
+            { endpoint: 'GET https://shop.test/api/orders/{id}', requests: 26, distinctUrls: 26, failed: 0, cancelled: 0, pending: 0, p50Ms: 4, p95Ms: 9, callers: [{ component: 'OrderRow.OnInitializedAsync', requests: 25 }, { component: 'Checkout.OnInitializedAsync', requests: 1 }] },
+        ];
+        doc.errors = [{ id: 5, message: 'Order 7 not found', exceptionType: 'System.InvalidOperationException', source: 'component', count: 1 }];
+        doc.errorGroups = [
+            { group: 'g1', source: 'component', exceptionType: 'System.InvalidOperationException', messageTemplate: 'Order {n} not found', occurrences: 3, records: 3, distinctMessages: 3, sourceLocation: 'OrderRow.razor:12' },
+            { group: 'g2', source: 'component', exceptionType: 'System.Exception', messageTemplate: 'Once', occurrences: 4, records: 1, distinctMessages: 1 },
+        ];
+        const companion = new Companion(new FileSource(doc, 'export.json'), document.body);
+        await companion.start();
+        await flush();
+
+        [...document.querySelectorAll('.bc-tab')].find(t => t.textContent.startsWith('Network')).click();
+        const endpointRow = [...document.querySelectorAll('tr')].find(r => r.textContent.includes('GET /api/orders/{id}'));
+        expect(endpointRow.textContent, 'the origin left out, as in the panel').not.toContain('shop.test');
+        expect(endpointRow.textContent).toContain('OrderRow.OnInitializedAsync ×25 +1');
+        [...document.querySelectorAll('tr')].find(r => r.textContent.includes('/api/orders/1')).click();
+        expect(document.querySelector('.bc-right').textContent).toContain('OrderRow.OnInitializedAsync via ProductApi.GetOrderDetailsAsync');
+        [...document.querySelectorAll('tr')].find(r => r.textContent.includes('/api/health')).click();
+        expect(document.querySelector('.bc-right').textContent).toContain('no component on the stack');
+
+        [...document.querySelectorAll('.bc-tab')].find(t => t.textContent.startsWith('Errors')).click();
+        expect(document.body.textContent).toContain('InvalidOperationException: Order {n} not found');
+        expect(document.body.textContent).toContain('OrderRow.razor:12');
+        expect(document.body.textContent, 'a group of one message merged nothing').not.toContain('Exception: Once');
+        companion.stop();
+
+        // Captured nothing because it was asked not to: that is not "no component on the stack".
+        document.body.replaceChildren();
+        doc.options = { captureHttpCallers: false };
+        delete doc.http[1].callerMissing;
+        const off = new Companion(new FileSource(doc, 'export.json'), document.body);
+        await off.start();
+        await flush();
+        [...document.querySelectorAll('.bc-tab')].find(t => t.textContent.startsWith('Network')).click();
+        [...document.querySelectorAll('tr')].find(r => r.textContent.includes('/api/health')).click();
+        expect(document.querySelector('.bc-right').textContent).toContain('not captured (CaptureHttpCallers is off)');
+        off.stop();
+    });
 });
 
 describe('components in the page', () => {

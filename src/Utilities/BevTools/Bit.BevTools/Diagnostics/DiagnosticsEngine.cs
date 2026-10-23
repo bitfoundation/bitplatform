@@ -71,8 +71,15 @@ internal sealed class DiagnosticsEngine
     private readonly List<IBevDiagnosticRule> _rules = [];
     private readonly Dictionary<string, BevDiagnosticRecord> _findings = new(StringComparer.Ordinal);
     private readonly object _lock = new();
+
+    // The panel, a frontend's snapshot and an export can ask from different threads: one run at a time keeps the run
+    // bookkeeping consistent and never runs the rules (an extension's included) concurrently with themselves.
+    private readonly object _runLock = new();
     private long _lastRunTicks;
     private long _lastRunVersion = -1;
+
+    /// <summary>Something was captured since the last evaluation: the findings may be behind the data.</summary>
+    public bool IsStale => _session.IsEnabled && _lastRunVersion != _session.Version;
     // The service graph is analysed once (it does not change) and its findings are re-reported on every evaluation, so
     // they stay as recently seen as the rules' and are never the first evicted when per-occurrence findings pile up.
     private List<BevDiagnostic>? _serviceGraphFindings;
@@ -114,6 +121,14 @@ internal sealed class DiagnosticsEngine
     }
 
     public void Evaluate(bool force = false)
+    {
+        lock (_runLock)
+        {
+            EvaluateCore(force);
+        }
+    }
+
+    private void EvaluateCore(bool force)
     {
         if (!_session.IsEnabled)
         {

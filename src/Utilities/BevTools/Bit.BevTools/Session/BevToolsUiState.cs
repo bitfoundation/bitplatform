@@ -176,6 +176,12 @@ internal sealed class BevProfilerView
 
     public long? BatchEventId { get; set; }
 
+    /// <summary>The selected batch as a tree (self and subtree time) or on a time axis.</summary>
+    public bool BatchOnTimeAxis { get; set; }
+
+    /// <summary>Whether the renders-per-page section is open; it reads every retained render, so only while it is.</summary>
+    public bool ShowRoutes { get; set; }
+
     /// <summary>The uploaded export's profile, so the comparison can be run again after another interaction.</summary>
     public BevRenderProfile? ComparedProfile { get; set; }
 

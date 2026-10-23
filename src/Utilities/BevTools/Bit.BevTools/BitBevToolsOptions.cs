@@ -91,6 +91,15 @@ public sealed class BevDiagnosticsOptions
 
     /// <summary>Rule ids that are disabled.</summary>
     public HashSet<string> DisabledRules { get; } = new(StringComparer.OrdinalIgnoreCase);
+
+    /// <summary>
+    /// Runs the rules as data arrives (at most once a second) while the panel is closed too. Off by default: they then
+    /// run while the panel is open, when a frontend reads the session and when it is exported - and most of them look
+    /// back over a window of 10 to 60 seconds, so an export made after a longer quiet spell misses what they would have
+    /// found in the activity before it. Turn it on for a run whose export a CI gate checks (<see cref="BevSessionCheck"/>);
+    /// it needs the panel component on the page, open or not.
+    /// </summary>
+    public bool EvaluateWhileClosed { get; set; }
 }
 
 public sealed class BevToolsUiOptions
@@ -178,6 +187,13 @@ public sealed class BitBevToolsOptions
 
     /// <summary>Capture request/response header names and values (sensitive headers are always redacted). Bodies are never captured.</summary>
     public bool CaptureHttpHeaders { get; set; } = true;
+
+    /// <summary>
+    /// Name the component (and the application method it called through) that sent each HTTP request, read from the
+    /// stack when the request starts: a stack walk per request, not per render. Off, a request is attributed only to the
+    /// UI event it ran in.
+    /// </summary>
+    public bool CaptureHttpCallers { get; set; } = true;
 
     /// <summary>Wrap <c>IJSRuntime</c> instances injected into components to attribute JS interop calls to components.</summary>
     public bool TrackJsInterop { get; set; } = true;

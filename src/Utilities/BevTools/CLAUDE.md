@@ -20,6 +20,7 @@ measured overhead - keep all of them accurate when behaviour changes.
 | `Bit.BevTools/Routing/`, `Auth/`, `WebApp/`, `Runtime/` | Route data and route table, the authentication state provider, the prerendering handoff, per-platform runtime facts |
 | `Bit.BevTools.Server/` | Circuit instrumentation and the Circuit panel, itself written as a BevTools extension |
 | `Bit.BevTools.Loader/` | The half an app references at startup when it opens BevTools on demand or lazy loads it: startup hooks (activator, HTTP, framework diagnostics, service collection), `BevToolsLoader`, `BevToolsLoaderPanel`, `BevToolsHttpHookHandler`. It ships in every startup download, AOT builds included, so it is trimmable, AOT compatible and reflection free, and it never references `Bit.BevTools`: `Bit.BevTools` references it, and implements its internal contract (`Internal/BevToolsLoaderContract.cs`) through `[assembly: BevToolsEntryPoint]` |
+| `Bit.BevTools.Cli/` | The `bevtools` .NET tool for CI: `check` (`BevSessionCheck`) and `compare` (`BevProfileComparison`) over export files; a thin shell, the logic lives in `Bit.BevTools`. Reads files only, never a running app |
 | `Bit.BevTools.Extension/` | Manifest V3 browser extension (Chromium, Firefox): the companion in a DevTools panel over `inspectedWindow.eval`; no permissions, no content script. `node build.mjs` assembles `dist/` |
 | `Demo/` | Blazor Web App (Interactive Auto, `Server` + `Client`) whose `/problems` page lists real, deliberately planted problems to diagnose |
 | `Tests/Bit.BevTools.Tests` | MSTest + bUnit on net8.0, net9.0 and net10.0 |
@@ -59,7 +60,7 @@ measured overhead - keep all of them accurate when behaviour changes.
 Follow the `.editorconfig` at the root of `src` (every new `.cs`, `.razor`, `.ts`, `.md`, `.csproj` and `.slnx` file
 starts with a BOM). Comments explain *why* a thing is shaped the way it is, not what the next line does.
 
-- **One namespace**: everything in all three packages is in `Bit.BevTools`, whatever folder it sits in; razor files
+- **One namespace**: everything in all four packages (the CLI included) is in `Bit.BevTools`, whatever folder it sits in; razor files
   declare `@namespace Bit.BevTools`. Tests use `Bit.BevTools.Tests`, the demo `Bit.BevTools.Demo.Client` / `.Server`.
 - **Prefixed public types**: `BevTools*` for the types that are the tool itself (`BevToolsSession`, `BevToolsPanel`,
   `IBevToolsExtension`), `Bev*` for the rest (`BevComponentRecord`, `BevDiagnostic`, `BevFmt`), and razor components

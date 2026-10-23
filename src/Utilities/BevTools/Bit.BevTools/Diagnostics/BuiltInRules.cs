@@ -683,9 +683,12 @@ internal static class BuiltInRules
                 var key = run[0].EndpointTemplate;
                 var items = run.Select(r => r.Endpoint).Distinct(StringComparer.Ordinal).Count();
                 var triggers = run.Select(r => r.TriggerDescription).Where(t => t is not null).Distinct().ToList();
+                // Who sent them, from the stack: "OrderRow.OnInitializedAsync ×25" says which list's rows load their own.
+                var callers = run.Where(r => r.Caller is not null).GroupBy(r => r.Caller!).OrderByDescending(g => g.Count()).Select(g => g.Key + " ×" + g.Count()).Take(3).ToList();
                 var failed = run.Count(r => r.IsFailed);
                 var evidence = $"{run.Count} requests for {items} different ids within {(run[^1].StartedAt - run[0].StartedAt).TotalMilliseconds:0} ms"
-                    + (triggers.Count > 0 ? "; during " + string.Join(", ", triggers.Take(3)) : "; not inside a UI event (lifecycle methods, such as each row's OnInitializedAsync)")
+                    + (callers.Count > 0 ? "; sent from " + string.Join(", ", callers) : "")
+                    + (triggers.Count > 0 ? "; during " + string.Join(", ", triggers.Take(3)) : callers.Count > 0 ? "" : "; not inside a UI event (lifecycle methods, such as each row's OnInitializedAsync)")
                     + (failed > 0 ? $"; {failed} failed" : "") + ".";
                 yield return new BevDiagnostic(
                     Id,

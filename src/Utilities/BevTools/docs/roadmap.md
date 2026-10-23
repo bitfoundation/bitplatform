@@ -64,27 +64,41 @@ Own UI keyboard model, names, focus, contrast, forced colours; page checks that 
 p95 per component and type; what one batch rendered as a cost tree (self and subtree time, list rows grouped); two
 recordings compared per type in the Profiler and in tests (`BevProfileComparison`), with exact counts and
 noise-tolerant times; sort, grouping and comparison kept across tabs; keyboard-operable sorting with `aria-sort`.
-Not done: a time-axis flame chart (the Perfetto export has one), per-route breakdown.
+Round 13: a batch on a time axis (*Tree* | *Time*) and renders per page.
 
 ### 9. Network
 
 Endpoints with ids as `{id}`, counts, failures, p50/p95/max and bytes; sorting everywhere by keyboard-operable headers;
 `http.per-item` for one request per list row; endpoints in exports and the report. Inline lambda handlers named by the
-method they call, in event titles and the inspector.
+method they call, in event titles and the inspector. Round 12: the component that sent each request, per request, per
+endpoint and in `http.per-item`'s evidence.
 
 ### 10. Errors
 
 Message templates and groups (source, type, template, location); Errors → *Groups* with sorting and a group filter;
 `error.repeated` by group; groups in exports and the report.
 
+### 11-15. Verification, senders, time axis, companion parity, CI
+
+net8.0 and net9.0 suites and Firefox/WebKit browser runs (round 11, with two fixes they found); the component that sent
+each request (12); a batch on a time axis and renders per page (13); the companion's endpoints, senders and error
+groups (14); `BevSessionCheck` and the `bevtools` tool for CI (15). See progress.md.
+
 ## Next
 
-- A time-axis flame chart in the Profiler (the Perfetto export has one) and a per-route breakdown.
-- Per-component attribution of HTTP requests (which component issued a request, not only which UI event).
+- Senders across an await in a service: a request a service sends after awaiting something of its own has no component
+  on its stack. Naming it needs the component carried with the execution context from where BevTools sees it start
+  (a lifecycle method, an event), which the framework exposes for events but not for lifecycle methods.
+- Renders per page by route template on .NET 8 and 9, where a navigation is named by its concrete path
+  (`/products/1`, `/products/2` are two rows).
+- The profiler's batch views in the companion and the extension: they need the retained samples in a protocol answer
+  of their own, asked for by batch.
+- Publishing `Bit.BevTools.Cli`: it packs as a .NET tool (verified locally) but is in no release workflow yet.
 
 ## Later / investigated
 
-- MCP or CLI access for coding agents over the existing protocol (needs an authenticated transport; the page hub is
+- MCP or live CLI access for coding agents over the existing protocol (the `bevtools` tool reads exported files only;
+  live access needs an authenticated transport; the page hub is
   deliberately reachable only from the page itself).
 - Request/response bodies: kept out — see audit, area F/M; revisit only as an explicit, bounded, Development-only
   opt-in.

@@ -3,9 +3,11 @@
 One entry per improvement round: what was found, what changed, how it was verified, what is left. The plan is in
 [roadmap.md](roadmap.md), the evidence in [audit.md](audit.md).
 
-Test environment for every round: Windows 10, .NET SDK 10.0.402 with only the .NET 10 runtime installed, so the
-net8.0 and net9.0 test runs cannot start on this machine (they need their runtimes; CI runs them); Chromium through
-Playwright for browser checks against the demo.
+Test environment for rounds 1-10: Windows 10, .NET SDK 10.0.402 with only the .NET 10 runtime installed, so the
+net8.0 and net9.0 test runs could not start on this machine (CI runs them); Chromium through Playwright for browser
+checks against the demo. From round 11: the .NET 8.0.32 and 9.0.21 runtimes installed into a private folder
+(`dotnet-install -Runtime aspnetcore`, nothing system-wide) run the net8.0 and net9.0 test assemblies, and the browser
+checks run in Firefox and WebKit as well as Chromium.
 
 ## Baseline (before round 1)
 
@@ -405,3 +407,122 @@ listed under its round's limits; rounds 2-7 were reviewed together afterwards (b
   [performance.md](performance.md)); times not comparable on this machine.
 - Audit: areas A, B, C, E, F, G, H, K, L, O strong after the rounds (were partial or gaps); D (state), I (browser) and
   Q (advanced: MCP) stay partial, with the reasons in [audit.md](audit.md) and the next items in [roadmap.md](roadmap.md).
+
+## Round 11 — what had not been run
+
+**Gap.** Two verifications every round had skipped: the net8.0 and net9.0 suites (no runtimes on the machine) and any
+browser but Chromium.
+
+**Result.** net8.0 444/444 and net9.0 445/445 on the private runtimes (the difference with net10.0 is the .NET 10-only
+tests). Firefox and WebKit ran every browser check; both found the same defect: Diagnostics did not show a redirect
+loop that was over within milliseconds. The rules run at most once a second, a loop that ends within the second after a
+run changes nothing afterwards, and nothing evaluated again - so the panel showed the loop only if something else
+happened later. Fixed with a trailing evaluation: when nothing changed but the findings are behind the data
+(`DiagnosticsEngine.IsStale`), the open panel runs the rules on its next tick. The first version ran them and did not
+re-render, so the panel still showed nothing - its test asserted on the engine, not on what the panel showed; the
+re-run of the browser checks caught it, and the test now reads the panel's markup (it fails without the re-render).
+Exports had the same lag: an export (and the Markdown report) now runs the rules first when anything was captured since
+their last run. With both fixes the browser check still failed now and then: it opened the panel as soon as the page
+said "Arrived after N redirects", which shows while the last hops still run, and read Diagnostics once, 1.2 s later -
+the loop showed about 1.25 s after the panel opened, on the trailing run. That is the documented latency (within about
+a second of the last change), so the check now waits up to 4 s for the finding; a finding that never shows still fails
+it. Afterwards: 3 of 3 runs passing in each of the three browsers. Firefox also reports "Cannot send data if the connection is not in the 'Connected' State" now and then
+during reloads: the stack is Blazor's own SignalR send loop, not BevTools.
+
+## Round 12 — the component that sent a request
+
+**Gap.** A request per list row (`http.per-item`) said which UI event started the list, not which component sent the
+requests - and a row loads its data in `OnInitializedAsync`, inside no event, so often nothing at all.
+
+**Changes.** `BevCallSites`: the nearest component method on the stack and the application method between them
+(*OrderRow.OnInitializedAsync via ProductApi.GetOrderDetailsAsync*), naming async methods through their state machines,
+local functions by themselves, lambdas by their method; framework and BevTools assemblies by exact name, so
+`Bit.BevTools.Demo.*` stays application code. Read at the outer end of an `IHttpClientFactory` pipeline, once per
+request, so a retry handler that awaits first does not lose it and every attempt carries it; a hand-built client's
+handler reads it itself. `CaptureHttpCallers` (on). Network: *Sent from* in the detail, the Trigger column's fallback,
+the filter, the endpoints' *Sent from* column; `http.per-item`'s evidence; exports; the companion.
+
+**Verification.** `HttpCallerTests` (async method after an await with the service between, local function, option
+off, a factory pipeline whose retry handler awaits - fails when the outer capture is removed - a continuation run by
+another component's completion, endpoint counts). Playwright on `/orders` with problem 19, Server and WebAssembly, in
+all three browsers: the request detail, the endpoint row (*OrderRow.OnInitializedAsync ×25*), the finding.
+
+**Cost.** The first version walked 54 µs and 25 KB per request at a stack depth of 26 (every frame's
+`Assembly.GetName()` allocates); with the per-type facts cached, 10 µs and 8 KB, nearly all of it the runtime's stack
+capture (see performance.md).
+
+## Round 13 — a batch on a time axis, renders per page
+
+**Gap.** The two profiler items the roadmap had left: no time-axis view (only the Perfetto export) and no breakdown by
+page.
+
+**Changes.** `BevBatchTimeline`: a batch's renders, each at its start, one row per depth among the components that
+rendered in it (depth memoized, no recursion; 300 bars at most); *Tree* | *Time* in the batch section, an image to a
+screen reader with the tree as its alternative, names hidden on bars too narrow for them, equal widths in start order
+when the clock could not separate the renders. `BevRouteProfile`: each retained render on the page shown when it
+happened, with visits, renders, time and the three costliest components; *Renders per page*, computed only while open.
+
+**Verification.** `ProfilerTimeAndRouteTests` (order, depth, start and span; a 20 000-deep chain; route assignment;
+navigations at the same instant; enhanced navigations; a real `Router`, below); Playwright, three browsers, Server and
+WebAssembly: 93 bars for a keystroke on `/products`, a bar opens its component, the view is remembered, per-page rows for
+`/products` and `/orders` with *OrderRow* costliest on the latter, no accessibility findings.
+
+## Round 14 — the companion and the extension
+
+**Changes.** The companion's Network view lists the endpoints with their senders (the origin left out, as in the panel)
+and each request's *Sent from* (or why there is none); its Errors view lists the groups that merged more than one
+message. The extension is the same frontend. vitest for both views; Playwright on the live demo in three browsers.
+
+## Round 15 — a CI gate
+
+**Gap.** `BevProfileComparison` could fail a test on render regressions, but nothing read an export's findings, and
+both needed code.
+
+**Changes.** `BevSessionCheck` (public): an export's findings against a severity, ignored rules, dismissed findings,
+optionally recorded errors; refuses an export without the section it needs; caveats for what limits a pass.
+`Bit.BevTools.Cli`: the `bevtools` .NET tool, `check` and `compare` over files, Markdown out, exit codes 0/1/2. It packs
+and installs as a tool (verified locally into a scratch folder) and is in no release workflow: publishing it is the
+maintainers' decision. Live access for agents (MCP) stays out until there is an authenticated transport.
+
+**Verification.** `SessionCheckTests` (findings from a real session; thresholds; errors; refusals; the tool's exit codes,
+report file and argument edge cases; comparisons with thresholds); the installed tool run on the demo's exports.
+
+## Review of rounds 11-15
+
+An independent review reproduced fifteen defects; all are fixed with tests unless listed under limits.
+
+- **Renders per page put each page's first render on the page it left** (.NET 8 and 9, or framework instrumentation
+  off): the router renders the new page inside its own `LocationChanged` handler, before the panel records the
+  navigation. The navigation is now dated from the render batch the router just ran. A test with a real `Router` fails
+  without it.
+- **A rule's window passed the CI gate on evidence the export carried**: with no frontend open, the rules ran only at
+  export, and requests 45 s old were outside their 30 s window. `Diagnostics.EvaluateWhileClosed` runs them as data
+  arrives; the check's caveats say when it was off. The claims that an export's findings are "those of the data it
+  carries" were corrected.
+- Live updates off no longer re-renders the open tab through the trailing evaluation.
+- `--fail-on warning,error` (and an export's severity `-1`) parsed as flag combinations and passed everything: severities
+  are read by name only.
+- On WebAssembly a continuation run by another component's completion named that component as the sender: the walk now
+  stops at the completion and says so.
+- The tool crashed on `--report ""` (an unset `$GITHUB_STEP_SUMMARY`) and on error counts past `int`; an option's value
+  could be the next option; `--help` after a command failed.
+- A zero-span batch stacked its bars; renders older than the oldest navigation held were labelled "before the first
+  navigation"; navigations at the same instant took the earlier one; the endpoints' "+N senders" counted at most four; a
+  missing errors or http section read as zero; the stack was walked for requests that would not be recorded; "no
+  component" did not say why (too deep, unreadable stack); timeline HTTP events carried a null caller.
+- Plausible ones fixed as well: evaluations from different threads are serialized; an export evaluates before writing
+  anything, so its version, timeline and findings agree; renders per page is recomputed at most once a second;
+  enhanced navigations are the same page; the check reports paused capture and disabled rules; the tool rejects
+  non-finite and out-of-range numbers; `BevCheckedFinding` is not a positional record, so it can grow.
+
+**Limits.** A bar's start includes BevTools' state capture for an inspected component (documented, not changed: it
+would move a public property's setter or the hot path); a generic component is named by its definition; a sender
+across an await inside a service is not named (roadmap).
+
+## After round 15
+
+- .NET tests: net10.0 482/482, net8.0 469/469, net9.0 470/470. vitest: 60/60.
+- Overhead: render-path allocations unchanged (23.9, 23.9, 142.0 and 209.1 MB in the four benchmark configurations,
+  as after round 10).
+- Browser: every check in Chromium, Firefox and WebKit, Server and WebAssembly (see the rounds above); WebKit's
+  accessibility run: 0 findings in the app, 0 in BevTools' own UI.

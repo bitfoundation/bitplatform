@@ -68,6 +68,68 @@ public class NavigationDiagnosticsTests : BunitContext
     }
 
     [TestMethod]
+    public void A_loop_that_ends_within_a_second_of_the_last_evaluation_is_still_found()
+    {
+        // Seen in Firefox: diagnostics run at most once a second; a loop over in milliseconds right after a run left
+        // nothing changing afterwards, so nothing evaluated again and the open panel never showed the loop. Then the
+        // rules ran but nothing re-rendered the panel: what counts is what it shows, not what the engine holds.
+        Session.Ui.IsOpen = true;
+        var panel = Render<BevToolsPanel>();
+        panel.FindAll(".bev-tab").First(t => t.TextContent.Contains("Diagnostics", StringComparison.Ordinal)).Click();
+        Session.Diagnostics.Evaluate(force: true);
+        foreach (var i in Enumerable.Range(0, 6))
+        {
+            Navigation(i % 2 == 0 ? "Navigate to /login" : "Navigate to /account", 0);
+        }
+
+        Session.Diagnostics.Evaluate();
+        Assert.DoesNotContain(f => f.Diagnostic.RuleId == "navigation.loop", Session.Diagnostics.Findings, "precondition: throttled");
+        Assert.DoesNotContain("Navigation loop: Navigate to", panel.Markup, StringComparison.Ordinal);
+
+        panel.WaitForAssertion(() => Assert.Contains("Navigation loop: Navigate to", panel.Markup, StringComparison.Ordinal), TimeSpan.FromSeconds(5));
+    }
+
+    [TestMethod]
+    public void With_live_updates_off_the_trailing_evaluation_leaves_the_open_tab_as_it_was()
+    {
+        Session.Ui.IsOpen = true;
+        var panel = Render<BevToolsPanel>();
+        panel.FindAll(".bev-tab").First(t => t.TextContent.Contains("Diagnostics", StringComparison.Ordinal)).Click();
+        Session.Ui.LiveUpdates = false;
+        Session.Diagnostics.Evaluate(force: true);
+        foreach (var i in Enumerable.Range(0, 6))
+        {
+            Navigation(i % 2 == 0 ? "Navigate to /login" : "Navigate to /account", 0);
+        }
+
+        Thread.Sleep(1600);
+
+        Assert.DoesNotContain("Navigation loop: Navigate to", panel.Markup, StringComparison.Ordinal);
+    }
+
+    [TestMethod]
+    public void Rules_run_with_the_panel_closed_only_when_asked_to()
+    {
+        // The panel is on the page, closed: by default the rules wait for it to open (or an export, or a frontend).
+        Services.GetRequiredService<BitBevToolsOptions>().Diagnostics.EvaluateWhileClosed = true;
+        Session.Ui.IsOpen = false;
+        Render<BevToolsPanel>();
+        Session.Diagnostics.Evaluate(force: true);
+        foreach (var i in Enumerable.Range(0, 6))
+        {
+            Navigation(i % 2 == 0 ? "Navigate to /login" : "Navigate to /account", 0);
+        }
+
+        var deadline = DateTime.UtcNow.AddSeconds(5);
+        while (!Session.Diagnostics.Findings.Any(f => f.Diagnostic.RuleId == "navigation.loop") && DateTime.UtcNow < deadline)
+        {
+            Thread.Sleep(50);
+        }
+
+        Assert.Contains(f => f.Diagnostic.RuleId == "navigation.loop", Session.Diagnostics.Findings);
+    }
+
+    [TestMethod]
     public void A_redirect_made_while_the_previous_navigation_ran_is_still_code()
     {
         // .NET 10: each page redirects in OnInitialized, inside the router's activity for the navigation before it.

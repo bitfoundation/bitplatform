@@ -30,6 +30,9 @@ render path (the per-component change is one type check when a component is inst
 above the table (129 MB and 195 MB): the table predates later changes before this work. Times could not be compared on
 that machine: *without BevTools* alone measured between 9.0 and 13.7 µs per batch across runs, two to three times the
 table, and the two builds overlapped within that spread. The table keeps the earlier, steadier measurement.
+Re-measured after round 15 on the same machine: allocations again 23.9, 23.9, 142.0 and 209.1 MB - the HTTP senders,
+the profiler's time axis and renders per page, and the CI check are off the render path - and times as noisy as
+before (9.08 µs per batch without BevTools).
 
 Read these carefully:
 
@@ -67,8 +70,11 @@ component unless `CaptureComponentStateOnRender` is on, which applies both diffs
 Ordered by measured contribution:
 
 1. **Per-render bookkeeping** (sample + timeline event). Bounded and explained above.
-2. **Diagnostics evaluation**, at most once per second and only while the panel is open. It scans the timeline
-   snapshot; on a busy session this is the largest single slice of BevTools CPU time in the About panel.
+2. **Diagnostics evaluation**, at most once per second and only while the panel is open - plus once after the last
+   change, so a burst that ended within the second is still evaluated, and once when a session is exported with
+   something captured since. `Diagnostics.EvaluateWhileClosed` (off by default) runs it at the same rate with the
+   panel closed, for a run whose export is checked in CI. It scans the timeline snapshot; on a busy session this is the largest single slice of
+   BevTools CPU time in the About panel.
 3. **Tree refresh**, at most once per second (and once per second of component churn even when the panel is closed,
    so that disposed components are released promptly).
 4. **State inspection**, only for the selected component, bounded by depth, item count and a 50 ms wall-clock budget.
@@ -90,6 +96,16 @@ None of these run per render; each is bounded and runs only when asked or at a f
   components per refresh tick through one `BevDomMapBatch`, which walks each parent's frames once, so a list's rows cost
   one scan of the list, not one per row. In the browser the cost is the outline itself (a layout read per component).
   All of it is reported as *page mapping* in About.
+* **HTTP senders** (`CaptureHttpCallers`, on by default): one stack walk per recorded request (none while capture is
+  paused), not per render or per retry.
+  Measured on .NET 10 (JIT, x64, Release) with no component on the stack, so every frame is examined - the worst case: 10 µs and 8 KB at a depth of 26 frames, 23 µs and 17 KB at 66, 41 µs and 32 KB at 126. Nearly all of it
+  is the runtime capturing the stack (`new StackTrace` alone: 8 µs and 7 KB at 26 frames); what BevTools does per
+  frame is read once per type and cached. WebAssembly, interpreted, was not measured and is slower. Turning the option
+  off removes it.
+* **Profiler time axis and renders per page**: built only when shown. The time axis reads the retained samples once
+  and the depth of each component that rendered in the batch once (a 20 000-deep chain is placed without recursion,
+  tested); renders per page reads every retained sample with a binary search into the navigations, only while its
+  section is open, only after something was captured since, and at most once a second.
 * **Leak tracking**: one weak reference per disposed application component (at most 2000), checked at most once per
   diagnostics evaluation; analysis runs once per retained instance, and the renderer's frame buffers are read only
   when a retained instance has no cause of its own. *Collect garbage and check* runs full blocking collections on

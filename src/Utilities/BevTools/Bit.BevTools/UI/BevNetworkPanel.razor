@@ -44,6 +44,7 @@
                             <BevSortHeader Key="max" Label="Max" Active="@(View.Endpoints.Key == "max")" Ascending="View.Endpoints.Ascending" OnSort="SortEndpoints" />
                             <BevSortHeader Key="bytes" Label="Received" Title="Response bodies, as the transport reported them" Active="@(View.Endpoints.Key == "bytes")" Ascending="View.Endpoints.Ascending" OnSort="SortEndpoints" />
                             <BevSortHeader Key="last" Label="Last" Active="@(View.Endpoints.Key == "last")" Ascending="View.Endpoints.Ascending" OnSort="SortEndpoints" />
+                            <th>Sent from</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -58,6 +59,7 @@
                                 <td class="bev-num">@BevFmt.Ms(e.MaxMs)</td>
                                 <td class="bev-num">@BevFmt.Bytes(e.ResponseBytes)</td>
                                 <td class="bev-num" title="@BevFmt.Time(e.LastAt)">@BevFmt.Ago(e.LastAt)@(e.LastStatus is { } status ? " · " + status : "")</td>
+                                <td class="bev-mono bev-truncate" style="max-width:220px" title="@string.Join(", ", e.Callers.Select(c => c.Component + " ×" + c.Requests))">@(e.Callers.Count == 0 ? "–" : e.Callers[0].Component + (e.Callers[0].Requests > 1 ? " ×" + e.Callers[0].Requests : "") + (e.CallerCount > 1 ? " +" + (e.CallerCount - 1) : ""))</td>
                             </tr>
                         }
                     </tbody>
@@ -90,7 +92,7 @@
                                 <td class="bev-num @(r.IsFailed ? "bev-err" : r.IsCancelled ? "bev-warn" : "")" title="@(r.IsCancelled ? r.Error : null)">@(r.IsCancelled ? "cancelled" : r.Error is not null ? "ERR" : r.StatusCode?.ToString() ?? "…")</td>
                                 <td class="bev-num">@(r.IsPending ? "pending" : BevFmt.Ms(r.DurationMs))</td>
                                 <td class="bev-num">@BevFmt.Bytes(r.ResponseBytes)</td>
-                                <td class="bev-truncate bev-muted" style="max-width:180px" title="@r.TriggerDescription">@(r.TriggerDescription ?? "–")</td>
+                                <td class="bev-truncate bev-muted" style="max-width:180px" title="@(string.Join(" · ", new[] { r.TriggerDescription, r.Caller is null ? null : "from " + r.Caller }.Where(t => t is not null)))">@(r.TriggerDescription ?? (r.Caller is null ? "–" : "from " + r.CallerComponent))</td>
                             </tr>
                         </Virtualize>
                     </tbody>
@@ -112,6 +114,7 @@
                         <dt>Request size</dt><dd>@BevFmt.Bytes(s.RequestBytes)</dd>
                         <dt>Response size</dt><dd>@BevFmt.Bytes(s.ResponseBytes) @(s.ContentType is null ? "" : "· " + s.ContentType)</dd>
                         <dt>Trigger</dt><dd>@if (s.TriggerEventId is { } t) { <button type="button" class="bev-link" @onclick="() => Host.SelectEvent(t)">@s.TriggerDescription ↗</button> } else { <span class="bev-muted">not inside a UI event (lifecycle method, timer or background work)</span> }</dd>
+                        <dt>Sent from</dt><dd class="bev-mono">@if (s.CallerComponent is { } component) { @component @if (s.CallerVia is { } via) { <span class="bev-muted"> via @via</span> } } else if (s.CallerMissing is { } missing) { <span class="bev-muted" style="font-family:inherit">@missing</span> } else { <span class="bev-muted" style="font-family:inherit">not captured (CaptureHttpCallers is off)</span> }</dd>
                         <dt>Timeline</dt><dd><button type="button" class="bev-link" @onclick="() => Host.SelectEvent(s.TimelineEventId)">open event ↗</button></dd>
                     </dl>
                     <div class="bev-muted" style="margin-top:4px">Bodies are never captured. Sensitive headers and query values are redacted.</div>
@@ -169,7 +172,7 @@
         var status = filter.Token("status");
         var method = filter.Token("method");
         var matching = _all.Where(r =>
-            filter.MatchesText(r.Url, r.Method, r.TriggerDescription, r.Error)
+            filter.MatchesText(r.Url, r.Method, r.TriggerDescription, r.Error, r.Caller)
             && (method is null || r.Method.Equals(method, StringComparison.OrdinalIgnoreCase))
             && (status is null || status.ToLowerInvariant() switch
             {

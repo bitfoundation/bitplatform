@@ -26,6 +26,7 @@
         <ProjectReference Include="..\..\Bit.BevTools\Bit.BevTools.csproj" />
         <ProjectReference Include="..\..\Bit.BevTools.Loader\Bit.BevTools.Loader.csproj" />
         <ProjectReference Include="..\..\Bit.BevTools.Server\Bit.BevTools.Server.csproj" />
+        <ProjectReference Include="..\..\Bit.BevTools.Cli\Bit.BevTools.Cli.csproj" />
     </ItemGroup>
 
 </Project>

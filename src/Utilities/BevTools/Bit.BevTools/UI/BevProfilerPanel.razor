@@ -138,11 +138,45 @@
         @if (View.BatchId is { } selectedBatch)
         {
             <div class="bev-section">
-                <div class="bev-section-title">Render batch #@selectedBatch: what it rendered <span class="bev-muted" style="font-weight:normal">BuildRenderTree time, self and with descendants; renders BevTools still holds</span> <button type="button" style="margin-left:auto" aria-label="Close the batch" @onclick="() => SelectBatch(null, null)">✕</button></div>
+                <div class="bev-section-title">
+                    Render batch #@selectedBatch: what it rendered <span class="bev-muted" style="font-weight:normal">BuildRenderTree time; renders BevTools still holds</span>
+                    <span class="bev-segmented" role="group" aria-label="Show the batch" style="margin-left:auto;font-weight:normal">
+                        <button type="button" aria-pressed="@(View.BatchOnTimeAxis ? "false" : "true")" title="Self and with descendants, as a tree" @onclick="() => ShowBatchOnTimeAxis(false)">Tree</button>
+                        <button type="button" aria-pressed="@(View.BatchOnTimeAxis ? "true" : "false")" title="Each render where it started, in the order the renderer took them" @onclick="() => ShowBatchOnTimeAxis(true)">Time</button>
+                    </span>
+                    <button type="button" aria-label="Close the batch" @onclick="() => SelectBatch(null, null)">✕</button>
+                </div>
                 <div class="bev-section-body">
                     @if (_batchTree.Rows.Count == 0)
                     {
                         <div class="bev-muted">None of its renders is held any more (each component keeps its last @Session.Options.MaxRendersPerComponent).</div>
+                    }
+                    else if (View.BatchOnTimeAxis)
+                    {
+                        var timeline = _batchTimeline;
+                        <div class="bev-time-axis" role="img" aria-label="@("Render batch #" + selectedBatch + " on a time axis: " + timeline.Bars.Count + " renders over " + BevFmt.Ms(timeline.SpanMs) + ". The tree view lists the same renders.")">
+                            <div class="bev-time-scale"><span>0</span><span>@BevFmt.Ms(timeline.SpanMs / 2)</span><span>@BevFmt.Ms(timeline.SpanMs)</span></div>
+                            <div class="bev-time-rows" style="height:@(timeline.Depth * 18 + 2)px">
+                                @for (var i = 0; i < timeline.Bars.Count; i++)
+                                {
+                                    var bar = timeline.Bars[i];
+                                    // A span of zero: the clock did not tell the renders apart, so they go side by side in the order they started.
+                                    var left = timeline.SpanMs <= 0 ? 100.0 * i / timeline.Bars.Count : 100 * bar.StartMs / timeline.SpanMs;
+                                    var width = timeline.SpanMs <= 0 ? 100.0 / timeline.Bars.Count : Math.Max(0.25, 100 * bar.DurationMs / timeline.SpanMs);
+                                    @* Too narrow for its name: a hundred rows side by side would be a strip of clipped first letters. *@
+                                    <div class="@(width < 4 ? "bev-time-bar bev-time-narrow" : "bev-time-bar")" style="left:@(left.ToString("0.###", System.Globalization.CultureInfo.InvariantCulture))%;width:@(width.ToString("0.###", System.Globalization.CultureInfo.InvariantCulture))%;top:@(bar.Depth * 18)px"
+                                         title="@(bar.Name + ": " + BevFmt.Ms(bar.DurationMs) + " at +" + BevFmt.Ms(bar.StartMs))" @onclick="() => Host.SelectComponent(bar.InstanceId)">@bar.Name</div>
+                                }
+                            </div>
+                        </div>
+                        @if (timeline.SpanMs <= 0)
+                        {
+                            <div class="bev-muted">The clock did not tell these renders apart (each took less than it can measure): they are drawn in the order they started, at equal widths, not to scale.</div>
+                        }
+                        @if (timeline.Omitted > 0)
+                        {
+                            <div class="bev-muted">… @timeline.Omitted later renders not drawn (the first @MaxBatchTreeRows are).</div>
+                        }
                     }
                     else
                     {
@@ -170,6 +204,39 @@
                 </div>
             </div>
         }
+        <div class="bev-section">
+            <div class="bev-section-title">
+                Renders per page <span class="bev-muted" style="font-weight:normal">each render on the page shown when it happened; the renders BevTools still holds</span>
+                <button type="button" style="margin-left:auto;font-weight:normal" aria-expanded="@(View.ShowRoutes ? "true" : "false")" @onclick="ToggleRoutes">@(View.ShowRoutes ? "Hide" : "Show")</button>
+            </div>
+            @if (View.ShowRoutes)
+            {
+                <div class="bev-section-body">
+                    @if (_routes.Count == 0)
+                    {
+                        <div class="bev-muted">No renders held yet.</div>
+                    }
+                    else
+                    {
+                        <table>
+                            <thead><tr><th>Page</th><th class="bev-num">Visits</th><th class="bev-num">Renders</th><th class="bev-num">Render time</th><th>Costliest there</th></tr></thead>
+                            <tbody>
+                                @foreach (var route in _routes)
+                                {
+                                    <tr>
+                                        <td class="bev-mono bev-truncate" style="max-width:200px" title="@route.Route">@route.Route</td>
+                                        <td class="bev-num">@(route.Visits == 0 ? "–" : route.Visits)</td>
+                                        <td class="bev-num">@route.Renders</td>
+                                        <td class="bev-num">@BevFmt.Ms(route.RenderMs)</td>
+                                        <td class="bev-truncate" style="max-width:260px" title="@string.Join(", ", route.Top.Select(t => t.Component + " ×" + t.Renders + " " + BevFmt.Ms(t.Ms)))">@string.Join(", ", route.Top.Select(t => t.Component + " " + BevFmt.Ms(t.Ms)))</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    }
+                </div>
+            }
+        </div>
         <div class="bev-section">
             <div class="bev-section-title">Recent render batches <span class="bev-muted" style="font-weight:normal">(one batch = one DOM diff; click to open)</span></div>
             <div class="bev-section-body">
@@ -295,6 +362,67 @@
     };
 
     private BevBatchCostTree _batchTree = BevBatchCostTree.Empty;
+    private BevBatchTimeline _batchTimeline = BevBatchTimeline.Empty;
+    private List<BevRouteCost> _routes = [];
+    private long _routesVersion = -1;
+    private long _routesBuiltAt;
+    private bool _routesRebuildPending;
+
+    // Renders per page reads every retained render; as often as the panel refreshes would be up to four times a second.
+    private static readonly TimeSpan RoutesInterval = TimeSpan.FromSeconds(1);
+
+    private void ShowBatchOnTimeAxis(bool onTimeAxis)
+    {
+        View.BatchOnTimeAxis = onTimeAxis;
+        BuildBatchTree();
+    }
+
+    private void ToggleRoutes()
+    {
+        View.ShowRoutes = !View.ShowRoutes;
+        _routesVersion = -1;
+        OnParametersSet();
+    }
+
+    private void RefreshRoutes()
+    {
+        if (!View.ShowRoutes || _routesVersion == Session.Version)
+        {
+            return;
+        }
+
+        var since = System.Diagnostics.Stopwatch.GetElapsedTime(_routesBuiltAt);
+        if (_routesVersion == -1 || since >= RoutesInterval)
+        {
+            _routes = BevRouteProfile.Build(Session);
+            _routesVersion = Session.Version;
+            _routesBuiltAt = System.Diagnostics.Stopwatch.GetTimestamp();
+        }
+        else if (!_routesRebuildPending)
+        {
+            // A trailing rebuild: what was captured within the second shows when it is over, even if nothing follows.
+            _routesRebuildPending = true;
+            _ = RebuildRoutesLaterAsync(RoutesInterval - since);
+        }
+    }
+
+    private async Task RebuildRoutesLaterAsync(TimeSpan delay)
+    {
+        try
+        {
+            await Task.Delay(delay);
+            await InvokeAsync(() =>
+            {
+                _routesRebuildPending = false;
+                RefreshRoutes();
+                StateHasChanged();
+            });
+        }
+        catch (Exception ex) when (ex is ObjectDisposedException or InvalidOperationException)
+        {
+            // The panel went away meanwhile.
+        }
+    }
 
     // The batch the tree was built for: a batch is history, so the tree is built when it is selected (or the tab
     // opens with one selected), not on every refresh.
@@ -347,6 +475,7 @@
     {
         _batchTreeFor = View.BatchId;
         _batchTree = View.BatchId is { } batch ? BevBatchCostTree.Build(Session.Components.All, batch, MaxBatchTreeRows) : BevBatchCostTree.Empty;
+        _batchTimeline = View.BatchId is { } timed && View.BatchOnTimeAxis ? BevBatchTimeline.Build(Session.Components.All, timed, MaxBatchTreeRows) : BevBatchTimeline.Empty;
     }
 
     private string? Query => Ui.GetQuery("profiler");
@@ -467,6 +596,9 @@
         {
             BuildBatchTree();
         }
+
+        // Only while open, and again only when something was captured since, at most once a second.
+        RefreshRoutes();
     }
 
     // p95 of a type, kept until one of its instances renders again or the set of instances or the window changes.

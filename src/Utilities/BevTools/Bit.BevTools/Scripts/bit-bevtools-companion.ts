@@ -95,6 +95,11 @@ const fmt = {
         const slash = url.indexOf("/", i + 3);
         return slash < 0 ? "/" : url.slice(slash);
     },
+    // "GET https://shop.test/api/orders/{id}" → "GET /api/orders/{id}", as the in-app panel shows it.
+    endpoint(endpoint: string) {
+        const space = endpoint.indexOf(" ");
+        return space > 0 ? endpoint.slice(0, space + 1) + fmt.path(endpoint.slice(space + 1)) : endpoint;
+    },
 };
 
 function matches(filter: string, ...fields: (string | null | undefined)[]) {
@@ -937,11 +942,23 @@ export class Companion {
 
     private network(t: TargetModel) {
         const v = this.view();
-        const requests: any[] = (t.doc.http || []).filter((r: any) => matches(v.filter, r.url, r.method, r.error, r.trigger)).slice().reverse();
+        const requests: any[] = (t.doc.http || []).filter((r: any) => matches(v.filter, r.url, r.method, r.error, r.trigger, r.caller)).slice().reverse();
         const selected = requests.find(r => r.id === v.selected);
         const sockets = this.sockets;
+        // Per endpoint, ids in the path as {id}: the runtime groups them (BevHttpEndpoints), the busiest first.
+        const endpoints: any[] = (t.doc.httpEndpoints || []).filter((e: any) => matches(v.filter, e.endpoint));
         return h("div", { class: "bc-split" },
             h("div", { class: "bc-scroll bc-left" },
+                endpoints.length ? section("Endpoints · " + endpoints.length, h("table", null,
+                    h("thead", null, h("tr", null, h("th", null, "Endpoint"), h("th", { class: "bc-num" }, "Requests"), h("th", { class: "bc-num" }, "Failed"), h("th", { class: "bc-num" }, "p50"), h("th", { class: "bc-num" }, "p95"), h("th", null, "Sent from"))),
+                    h("tbody", null, endpoints.slice(0, 50).map(e => h("tr", { class: e.failed ? "bc-sev-error" : "" },
+                        h("td", { class: "bc-mono bc-truncate", title: e.endpoint }, fmt.endpoint(e.endpoint)),
+                        h("td", { class: "bc-num" }, e.requests),
+                        h("td", { class: "bc-num" }, e.failed + (e.cancelled ? " · " + e.cancelled + " cancelled" : "")),
+                        h("td", { class: "bc-num" }, e.p50Ms === undefined ? "–" : fmt.ms(e.p50Ms)),
+                        h("td", { class: "bc-num" }, e.p95Ms === undefined ? "–" : fmt.ms(e.p95Ms)),
+                        h("td", { class: "bc-mono bc-truncate", title: (e.callers || []).map((c: any) => c.component + " ×" + c.requests).join(", ") },
+                            (e.callers || []).length ? e.callers[0].component + (e.callers[0].requests > 1 ? " ×" + e.callers[0].requests : "") + ((e.callerCount ?? e.callers.length) > 1 ? " +" + ((e.callerCount ?? e.callers.length) - 1) : "") : "–")))))) : null,
                 requests.length ? h("table", null,
                     h("thead", null, h("tr", null, h("th", null, "Time"), h("th", null, "Method"), h("th", null, "URL"), h("th", { class: "bc-num" }, "Status"), h("th", { class: "bc-num" }, "Duration"), h("th", { class: "bc-num" }, "Size"))),
                     h("tbody", null, requests.slice(0, MAX_ROWS).map(r => h("tr", { class: (r.failed ? "bc-sev-error" : "") + (v.selected === r.id ? " bc-selected" : ""), onclick: () => { v.selected = r.id; this.renderContent(); } },
@@ -951,10 +968,15 @@ export class Companion {
                 section("WebSockets · " + sockets.length, sockets.length ? sockets.map(s => this.socket(s)) : h("div", { class: "bc-muted" }, "No WebSocket observed yet."))),
             h("div", { class: "bc-scroll bc-right" }, selected ? h("div", null,
                 h("h3", { class: "bc-mono" }, selected.method + " " + fmt.path(selected.url)),
-                kv([["URL", selected.url], ["Status", selected.error || (selected.statusCode + " " + (selected.reasonPhrase || ""))], ["Duration", fmt.ms(selected.durationMs)], ["Trigger", selected.trigger || "–"], ["Content type", selected.contentType || "–"]]),
+                kv([["URL", selected.url], ["Status", selected.error || (selected.statusCode + " " + (selected.reasonPhrase || ""))], ["Duration", fmt.ms(selected.durationMs)], ["Trigger", selected.trigger || "–"], ["Sent from", selected.caller || selected.callerMissing || this.noCaller(t)], ["Content type", selected.contentType || "–"]]),
                 (selected.requestHeaders || []).length ? section("Request headers", kv(selected.requestHeaders.map((x: any) => [x.name, x.value]))) : null,
                 (selected.responseHeaders || []).length ? section("Response headers", kv(selected.responseHeaders.map((x: any) => [x.name, x.value]))) : null)
                 : this.empty("Select a request.", "Bodies are never captured; sensitive headers and query values are redacted.")));
+    }
+
+    // A request with neither a caller nor the reason there is none: capture off, or an export from before either was recorded.
+    private noCaller(t: TargetModel) {
+        return t.doc.options?.captureHttpCallers === false ? "not captured (CaptureHttpCallers is off)" : "–";
     }
 
     private socket(s: any) {
@@ -989,8 +1011,18 @@ export class Companion {
         const v = this.view();
         const errors: any[] = (t.doc.errors || []).filter((e: any) => matches(v.filter, e.message, e.exceptionType, e.source, e.componentName)).slice().reverse();
         const selected = errors.find(e => e.id === v.selected);
+        // One problem with different values in its messages: only the groups that merged something are worth a row.
+        const groups: any[] = (t.doc.errorGroups || []).filter((g: any) => g.distinctMessages > 1 && matches(v.filter, g.messageTemplate, g.exceptionType, g.source));
         return h("div", { class: "bc-split" },
-            h("div", { class: "bc-scroll bc-left" }, errors.length ? h("table", null, h("tbody", null, errors.map(e => h("tr", { class: v.selected === e.id ? "bc-selected" : "", onclick: () => { v.selected = e.id; this.renderContent(); } },
+            h("div", { class: "bc-scroll bc-left" },
+                groups.length ? section("Groups · one problem, different values", h("table", null,
+                    h("thead", null, h("tr", null, h("th", null, "Error"), h("th", { class: "bc-num" }, "Messages"), h("th", { class: "bc-num" }, "×"), h("th", null, "Where"))),
+                    h("tbody", null, groups.slice(0, 50).map(g => h("tr", { class: "bc-sev-error" },
+                        h("td", { class: "bc-truncate", title: g.messageTemplate }, String(g.exceptionType).split(".").pop() + ": " + g.messageTemplate),
+                        h("td", { class: "bc-num" }, g.distinctMessages),
+                        h("td", { class: "bc-num" }, g.occurrences),
+                        h("td", { class: "bc-mono bc-muted" }, g.sourceLocation || "–")))))) : null,
+                errors.length ? h("table", null, h("tbody", null, errors.map(e => h("tr", { class: v.selected === e.id ? "bc-selected" : "", onclick: () => { v.selected = e.id; this.renderContent(); } },
                 h("td", { class: "bc-mono" }, fmt.time(e.lastSeen)), h("td", null, h("span", { class: "bc-chip" }, e.source)), h("td", { class: "bc-truncate" }, String(e.exceptionType).split(".").pop() + ": " + e.message), h("td", { class: "bc-num" }, e.count > 1 ? "×" + e.count : ""))))) : this.empty("No errors recorded.", null)),
             h("div", { class: "bc-scroll bc-right" }, selected ? h("div", null,
                 h("h3", null, String(selected.exceptionType).split(".").pop() + ": " + selected.message),

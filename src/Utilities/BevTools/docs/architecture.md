@@ -188,6 +188,13 @@ minute ago still counts. `BevProfileComparison` compares two profiles; the Profi
 and keeps the uploaded profile to compare again after another try. Protocol snapshots leave the section out unless they
 name it, as building it reads every retained sample.
 
+`BevSessionCheck` is the other CI half: it reads an export's `diagnostics` (and counts its errors and failed
+requests) and decides what fails. Both read only what an export carries, which is why the exporter runs the rules first
+when anything was captured since their last run - and why that is not enough on its own: most rules look back a fixed
+window from when they run, so a run that is checked sets `Diagnostics.EvaluateWhileClosed` to have them run as data
+arrives; the check's caveats say when it was not set. `Bit.BevTools.Cli` is a thin `bevtools check` / `bevtools compare`
+over files: exit codes, Markdown out, no connection to a running app.
+
 ### Diagnostics (`Bit.BevTools/Diagnostics`)
 
 Rules implement `IBevDiagnosticRule.Evaluate(IBevDiagnosticContext)` over component snapshots and recent events; findings are

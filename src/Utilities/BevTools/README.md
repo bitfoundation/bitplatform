@@ -201,11 +201,13 @@ since the profiler baseline* exports only what happened after the last baseline 
 | Did it *need* to render, or did the parent re-apply identical parameters? | Components → Rendering (*forced re-renders*), Diagnostics |
 | What did this one click cost, across every component? | Profiler → *Reset*, click, read *since reset* |
 | What do all 500 rows of my list cost together? | Profiler → *by type* |
-| What did one render batch render, and where did its time go? | Profiler → a batch in *Recent render batches* → cost tree (self and with descendants) |
-| Did my change make anything render more often or for longer? | Profiler → *Compare…* with the export from before the change; in CI, `BevProfileComparison.Compare` and `ToMarkdown()` |
+| What did one render batch render, and where did its time go? | Profiler → a batch in *Recent render batches* → cost tree (self and with descendants), or *Time*: each render on a time axis |
+| Which page costs the most rendering, and in which components? | Profiler → *Renders per page* |
+| Did my change make anything render more often or for longer? | Profiler → *Compare…* with the export from before the change; in CI, `bevtools compare before.json after.json` (`Bit.BevTools.Cli`), or `BevProfileComparison.Compare` and `ToMarkdown()` in a test |
+| Can CI fail a build on what BevTools found? | `bevtools check session.json` (`Bit.BevTools.Cli`), or `BevSessionCheck.Check` in a test |
 | What happened when I clicked, and what did it cause (renders, HTTP, JS, state)? | Timeline (select an event: *caused by* / *caused*) |
 | What changed in my state container and which click did it? | State (history with before/after diffs) |
-| Which HTTP requests ran, how long, which failed, what triggered them? | Network |
+| Which HTTP requests ran, how long, which failed, what triggered them, which component sent them? | Network (*Sent from* in a request's detail and per endpoint) |
 | Is this the same error again, with another id in its message? | Errors → *Groups*, Diagnostics (*error.repeated* counts by group) |
 | Which endpoints are slow at the 95th percentile, or called once per list row? | Network → *Endpoints* (ids in the path as `{id}`), Diagnostics (*http.per-item*) |
 | Which JS interop calls are slow or excessive, and from which component? | JS Interop |
@@ -402,6 +404,7 @@ Bit.BevTools                  instrumentation, session stores, diagnostics, insp
 Bit.BevTools.Server           circuit handler, circuit registry, Circuit panel (reference extension)
 Bit.BevTools.Loader           trimmable startup half for opening BevTools on demand: hooks, BevToolsLoader, the panel host
 Bit.BevTools.Extension        the browser extension (Manifest V3, Chromium and Firefox): the companion in a DevTools panel
+Bit.BevTools.Cli              the bevtools .NET tool for CI: an export's findings (check), two recordings (compare)
 Demo                          Blazor Web App (Interactive Auto, Server + Client) with a "Problems to diagnose" index
 Tests/Bit.BevTools.Tests      MSTest + bUnit on net8.0/net9.0/net10.0: instrumentation, tree, rendering, timeline,
                               state, network, interop, diagnostics, DI graph, concurrency, overhead, memory bounds,

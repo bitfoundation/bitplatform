@@ -150,6 +150,17 @@
 .bev-changes li { list-style: disc; }
 .bev-search { width: 260px; }
 
+/* A render batch on a time axis: one row per depth, each render where it started. */
+.bev-root .bev-time-axis { position: relative; padding-top: 16px; max-height: 40vh; overflow: auto; }
+.bev-root .bev-time-scale { position: absolute; top: 0; left: 0; right: 0; display: flex; justify-content: space-between; font-size: 10px; color: var(--bev-fg2); }
+.bev-root .bev-time-rows { position: relative; min-width: 100%; }
+.bev-root .bev-time-bar { position: absolute; height: 16px; line-height: 16px; padding: 0 3px; box-sizing: border-box; overflow: hidden; white-space: nowrap; text-overflow: clip; font-family: var(--bev-mono); font-size: 10.5px; color: var(--bev-fg); background: var(--bev-accent-bg); border: 1px solid var(--bev-accent); border-radius: 2px; cursor: pointer; }
+.bev-root .bev-time-bar:hover { background: var(--bev-bg3); }
+.bev-root .bev-time-bar.bev-time-narrow { padding: 0; font-size: 0; }
+@media (forced-colors: active) {
+    .bev-root .bev-time-bar { border-color: CanvasText; }
+}
+
 /* Keeps Tab inside a modal: focusing it sends focus back to the dialog's input. */
 .bev-root .bev-focus-sentinel { position: absolute; width: 1px; height: 1px; overflow: hidden; opacity: 0; }
 
