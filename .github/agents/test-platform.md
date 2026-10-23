@@ -81,7 +81,8 @@ until the report. Then go in this order:
    `gh workflow run prerelease.nuget.org.yml -R bitfoundation/bitplatform --ref <branch>`. Wait for it to succeed
    (`gh run watch <run-id> -R bitfoundation/bitplatform --exit-status`) before anything that takes its packages.
 2. `APP_VERSION`, then All CI and All CD together, both with the chosen `prerelease_packages`. All CI's inputs name
-   its jobs and all default to on; `-f <job>=false` leaves one out.
+   its jobs and default to on, except `e2e` (the E2E suites), which is off; `-f <job>=false` leaves one out and
+   `-f e2e=true` adds the E2E suites.
 3. While they run: step 1 as CI jobs fail.
 4. Once CD is done: step 2, then steps 3 and 4, with step 6 in the background next to the web stages of step 3.
    Step 7 needs no CD and is light: do it while CI and CD run. Step 8 needs no CD either: start it in the background

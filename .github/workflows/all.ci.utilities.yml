@@ -7,6 +7,10 @@ on:
         description: NuGet packages
         type: boolean
         default: true
+      e2e:
+        description: E2E suites
+        type: boolean
+        default: false
 
 env:
   DOTNET_SYSTEM_CONSOLE_ALLOW_ANSI_COLOR_REDIRECTION: true
@@ -189,41 +193,91 @@ jobs:
     name: bmotion
     uses: ./.github/workflows/bit.ci.Bmotion.yml
 
+  bmotion_e2e:
+    name: bmotion e2e
+    if: ${{ inputs.e2e }}
+    uses: ./.github/workflows/bit.ci.Bmotion.e2e.yml
+
   bmage:
     name: bmage
     uses: ./.github/workflows/bit.ci.Bmage.yml
+
+  bmage_e2e:
+    name: bmage e2e
+    if: ${{ inputs.e2e }}
+    uses: ./.github/workflows/bit.ci.Bmage.e2e.yml
 
   bsqlite:
     name: bsqlite
     uses: ./.github/workflows/bit.ci.Bsqlite.yml
 
+  bsqlite_e2e:
+    name: bsqlite e2e
+    if: ${{ inputs.e2e }}
+    uses: ./.github/workflows/bit.ci.Bsqlite.e2e.yml
+
   bink:
     name: bink
     uses: ./.github/workflows/bit.ci.Bink.yml
+
+  bink_e2e:
+    name: bink e2e
+    if: ${{ inputs.e2e }}
+    uses: ./.github/workflows/bit.ci.Bink.e2e.yml
 
   balette:
     name: balette
     uses: ./.github/workflows/bit.ci.Balette.yml
 
+  balette_e2e:
+    name: balette e2e
+    if: ${{ inputs.e2e }}
+    uses: ./.github/workflows/bit.ci.Balette.e2e.yml
+
   bbscanner:
     name: bbscanner
     uses: ./.github/workflows/bit.ci.BbScanner.yml
+
+  bbscanner_e2e:
+    name: bbscanner e2e
+    if: ${{ inputs.e2e }}
+    uses: ./.github/workflows/bit.ci.BbScanner.e2e.yml
 
   blazedb:
     name: blazedb
     uses: ./.github/workflows/bit.ci.BlazeDb.yml
 
+  blazedb_e2e:
+    name: blazedb e2e
+    if: ${{ inputs.e2e }}
+    uses: ./.github/workflows/bit.ci.BlazeDb.e2e.yml
+
   blow:
     name: blow
     uses: ./.github/workflows/bit.ci.Blow.yml
+
+  blow_e2e:
+    name: blow e2e
+    if: ${{ inputs.e2e }}
+    uses: ./.github/workflows/bit.ci.Blow.e2e.yml
 
   bcrdt:
     name: bcrdt
     uses: ./.github/workflows/bit.ci.Bcrdt.yml
 
+  bcrdt_e2e:
+    name: bcrdt e2e
+    if: ${{ inputs.e2e }}
+    uses: ./.github/workflows/bit.ci.Bcrdt.e2e.yml
+
   blex:
     name: blex
     uses: ./.github/workflows/bit.ci.Blex.yml
+
+  blex_e2e:
+    name: blex e2e
+    if: ${{ inputs.e2e }}
+    uses: ./.github/workflows/bit.ci.Blex.e2e.yml
 
   bonboarding:
     name: bonboarding
@@ -233,17 +287,37 @@ jobs:
     name: bdnd
     uses: ./.github/workflows/bit.ci.Bdnd.yml
 
+  bdnd_e2e:
+    name: bdnd e2e
+    if: ${{ inputs.e2e }}
+    uses: ./.github/workflows/bit.ci.Bdnd.e2e.yml
+
   borm:
     name: borm
     uses: ./.github/workflows/bit.ci.Borm.yml
+
+  borm_e2e:
+    name: borm e2e
+    if: ${{ inputs.e2e }}
+    uses: ./.github/workflows/bit.ci.Borm.e2e.yml
 
   bortable:
     name: bortable
     uses: ./.github/workflows/bit.ci.Bortable.yml
 
+  bortable_e2e:
+    name: bortable e2e
+    if: ${{ inputs.e2e }}
+    uses: ./.github/workflows/bit.ci.Bortable.e2e.yml
+
   belemetry:
     name: belemetry
     uses: ./.github/workflows/bit.ci.Belemetry.yml
+
+  belemetry_e2e:
+    name: belemetry e2e
+    if: ${{ inputs.e2e }}
+    uses: ./.github/workflows/bit.ci.Belemetry.e2e.yml
 
   bevtools:
     name: bevtools
