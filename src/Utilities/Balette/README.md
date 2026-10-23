@@ -132,8 +132,7 @@ and virtualization all work on a single model.
 
 The demo hosts a [Model Context Protocol](https://modelcontextprotocol.io) server at
 `https://balette.bitplatform.dev/mcp`, so an AI agent writing command-palette code reads the library itself - its
-API, this guide and the demo's working pages - instead of guessing at an API it half remembers. It is also served,
-next to the other bit libraries, through the aggregated `https://bitplatform.dev/mcp` endpoint.
+API, this guide and the demo's working pages - instead of guessing at an API it half remembers.
 
 ```json
 {

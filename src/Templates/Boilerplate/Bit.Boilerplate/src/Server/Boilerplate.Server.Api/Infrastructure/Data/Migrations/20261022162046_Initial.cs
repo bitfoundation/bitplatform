@@ -937,6 +937,11 @@ public partial class Initial : Migration
             unique: true);
 
         migrationBuilder.CreateIndex(
+            name: "IX_OAuthAuthorizationCodes_ExpiresOn",
+            table: "OAuthAuthorizationCodes",
+            column: "ExpiresOn");
+
+        migrationBuilder.CreateIndex(
             name: "IX_OAuthAuthorizationCodes_TenantId",
             table: "OAuthAuthorizationCodes",
             column: "TenantId");
@@ -945,6 +950,11 @@ public partial class Initial : Migration
             name: "IX_OAuthAuthorizationCodes_UserId",
             table: "OAuthAuthorizationCodes",
             column: "UserId");
+
+        migrationBuilder.CreateIndex(
+            name: "IX_OAuthGrants_ClientId",
+            table: "OAuthGrants",
+            column: "ClientId");
 
         migrationBuilder.CreateIndex(
             name: "IX_Products_ShortId",
@@ -968,6 +978,11 @@ public partial class Initial : Migration
             table: "PushNotificationSubscriptions",
             column: "DeviceId",
             unique: true);
+
+        migrationBuilder.CreateIndex(
+            name: "IX_PushNotificationSubscriptions_ExpirationTime",
+            table: "PushNotificationSubscriptions",
+            column: "ExpirationTime");
 
         migrationBuilder.CreateIndex(
             name: "IX_PushNotificationSubscriptions_TenantId",
@@ -1037,14 +1052,20 @@ public partial class Initial : Migration
             unique: true);
 
         migrationBuilder.CreateIndex(
+            name: "IX_TenantUsers_TenantId_UserId_Accepted",
+            table: "TenantUsers",
+            columns: new[] { "TenantId", "UserId" },
+            filter: "[AcceptedOn] IS NOT NULL");
+
+        migrationBuilder.CreateIndex(
             name: "IX_TenantUsers_UserId",
             table: "TenantUsers",
             column: "UserId");
 
         migrationBuilder.CreateIndex(
-            name: "IX_TodoItems_UserId",
+            name: "IX_TodoItems_UserId_UpdatedAt",
             table: "TodoItems",
-            column: "UserId");
+            columns: new[] { "UserId", "UpdatedAt" });
 
         migrationBuilder.CreateIndex(
             name: "IX_UserClaims_TenantId",
@@ -1064,6 +1085,11 @@ public partial class Initial : Migration
             columns: new[] { "UserId", "ClaimType", "ClaimValue", "TenantId" },
             unique: true,
             filter: "[TenantId] IS NOT NULL");
+
+        migrationBuilder.CreateIndex(
+            name: "IX_UserClaims_UserId_TenantId",
+            table: "UserClaims",
+            columns: new[] { "UserId", "TenantId" });
 
         migrationBuilder.CreateIndex(
             name: "IX_UserLogins_UserId",
@@ -1089,6 +1115,12 @@ public partial class Initial : Migration
             filter: "[NormalizedEmail] IS NOT NULL");
 
         migrationBuilder.CreateIndex(
+            name: "IX_Users_CreatedOn",
+            table: "Users",
+            column: "CreatedOn",
+            filter: "NOT [EmailConfirmed] AND NOT [PhoneNumberConfirmed]");
+
+        migrationBuilder.CreateIndex(
             name: "IX_Users_PhoneNumber",
             table: "Users",
             column: "PhoneNumber",
@@ -1100,6 +1132,12 @@ public partial class Initial : Migration
             table: "Users",
             column: "NormalizedUserName",
             unique: true);
+
+        migrationBuilder.CreateIndex(
+            name: "IX_UserSessions_SignalRConnectionId",
+            table: "UserSessions",
+            column: "SignalRConnectionId",
+            filter: "[SignalRConnectionId] IS NOT NULL");
 
         migrationBuilder.CreateIndex(
             name: "IX_UserSessions_TenantId",

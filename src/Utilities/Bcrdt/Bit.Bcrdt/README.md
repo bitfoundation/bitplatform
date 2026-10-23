@@ -79,8 +79,8 @@ Works in Blazor WebAssembly, Server, Web App (including prerendering) and Hybrid
 
 ## For AI agents
 
-The demo site hosts an MCP server at `https://bcrdt.bitplatform.dev/mcp` (also served through
-`https://bitplatform.dev/mcp`) that answers from the shipped library: its API, its guide, the demo's working pages,
+The demo site hosts an MCP server at `https://bcrdt.bitplatform.dev/mcp`
+that answers from the shipped library: its API, its guide, the demo's working pages,
 and a merge inspector that runs the real engine.
 
 ## Documentation

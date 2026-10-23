@@ -2,6 +2,7 @@
 
 using System.Collections.Concurrent;
 using System.Runtime.CompilerServices;
+using System.Text.Json.Serialization.Metadata;
 using Microsoft.AspNetCore.Components;
 using Boilerplate.Client.Web.Infrastructure.Services;
 
@@ -15,15 +16,17 @@ public partial class WebServerPrerenderStateService : IPrerenderStateService, IA
 {
     private PersistingComponentStateSubscription? subscription;
     private readonly ServerWebSettings serverWebSettings = default!;
+    private readonly JsonSerializerOptions jsonSerializerOptions;
     private readonly PersistentComponentState? persistentComponentState;
-    private readonly ConcurrentDictionary<string, object?> values = new();
+    private readonly ConcurrentDictionary<string, (object? Value, JsonTypeInfo TypeInfo)> values = new();
 
     private bool NoPersistent => serverWebSettings.WebAppRender.RenderMode is null /*Ssr*/ ||
                                        serverWebSettings.WebAppRender.PrerenderEnabled is false;
 
-    public WebServerPrerenderStateService(ServerWebSettings clientWebSettings, PersistentComponentState? persistentComponentState = null)
+    public WebServerPrerenderStateService(ServerWebSettings clientWebSettings, JsonSerializerOptions jsonSerializerOptions, PersistentComponentState? persistentComponentState = null)
     {
         this.serverWebSettings = clientWebSettings;
+        this.jsonSerializerOptions = jsonSerializerOptions;
         this.persistentComponentState = persistentComponentState;
         if (NoPersistent) return;
         subscription = persistentComponentState?.RegisterOnPersisting(PersistAsJson, clientWebSettings.WebAppRender.RenderMode);
@@ -45,7 +48,7 @@ public partial class WebServerPrerenderStateService : IPrerenderStateService, IA
     {
         if (NoPersistent) return await factory();
 
-        if (persistentComponentState!.TryTakeFromJson(key, out T? value)) return value;
+        if (persistentComponentState!.TryTakeFromJson(key, out JsonElement value)) return value.Deserialize(jsonSerializerOptions.GetTypeInfo<T>());
 
         var result = await factory();
         Persist(key, result);
@@ -56,14 +59,14 @@ public partial class WebServerPrerenderStateService : IPrerenderStateService, IA
     {
         if (NoPersistent || AppPlatform.IsBrowser) return;
 
-        values.AddOrUpdate(key, value, (_, _) => value);
+        values[key] = (value, jsonSerializerOptions.GetTypeInfo<T>());
     }
 
     async Task PersistAsJson()
     {
         foreach (var item in values)
         {
-            persistentComponentState!.PersistAsJson(item.Key, item.Value);
+            persistentComponentState!.PersistAsJson(item.Key, JsonSerializer.SerializeToElement(item.Value.Value, item.Value.TypeInfo));
         }
 
         values.Clear();

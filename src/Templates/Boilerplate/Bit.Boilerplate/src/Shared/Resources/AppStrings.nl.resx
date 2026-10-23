@@ -128,6 +128,9 @@
   <data name="MaxLengthAttribute_InvalidMaxLength" xml:space="preserve">
     <value>MaxLengthAttribute moet een Lengte-waarde hebben die groter is dan nul. Gebruik MaxLength() zonder parameters om aan te geven dat de tekenreeks of het array de maximale toegestane lengte kan hebben.</value>
   </data>
+  <data name="MaxLengthAttribute_ValidationError" xml:space="preserve">
+    <value>Het veld {0} moet een tekenreeks- of arraytype zijn met een maximale lengte van '{1}'.</value>
+  </data>
   <data name="MinLengthAttribute_ValidationError" xml:space="preserve">
     <value>Het veld {0} moet een tekenreeks- of arraytype zijn met een minimale lengte van '{1}'.</value>
   </data>

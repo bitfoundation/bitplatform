@@ -58,8 +58,8 @@ Pick what pointer input does with `Tool` (`BinkDrawTool`, `BinkEraserTool`, `Bin
 
 ## For AI agents
 
-The demo site hosts an MCP server at `https://bink.bitplatform.dev/mcp` (also served through
-`https://bitplatform.dev/mcp`) that answers from the shipped library: its API, its guide and the demo's working
+The demo site hosts an MCP server at `https://bink.bitplatform.dev/mcp`
+that answers from the shipped library: its API, its guide and the demo's working
 pages.
 
 ## Documentation

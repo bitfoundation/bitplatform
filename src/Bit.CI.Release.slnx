@@ -233,12 +233,12 @@
     <File Path="Cli/README.md" />
     <Project Path="Cli/Bit.Cli/Bit.Cli.csproj" />
   </Folder>
+  <Folder Name="/Cli/Minifier/">
+    <Project Path="Cli/Minifier/Bit.Minifier/Bit.Minifier.csproj" />
+  </Folder>
   <Folder Name="/CodeAnalyzers/">
     <File Path="CodeAnalyzers/README.md" />
     <Project Path="CodeAnalyzers/Bit.CodeAnalyzers/Bit.CodeAnalyzers.csproj" />
-  </Folder>
-  <Folder Name="/Minifier/">
-    <Project Path="Minifier/Bit.Minifier/Bit.Minifier.csproj" />
   </Folder>
   <Folder Name="/SourceGenerators/">
     <File Path="SourceGenerators/README.md" />

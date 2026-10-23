@@ -127,6 +127,8 @@ public sealed record ToolAction
     public PartialSuccess? Partial { get; init; }
 
     public ProcessSpec? PathProbe { get; init; }
+
+    public IReadOnlyList<string> InstalledExecutables { get; init; } = [];
 }
 
 public sealed record PartialSuccess(int ExitCode, string Detail, string Hint);

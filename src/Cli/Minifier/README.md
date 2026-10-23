@@ -103,11 +103,12 @@ aggressive. The libraries give up the most - `Bit.BlazorUI` 594 KB of its 3.6 MB
 
 ## Reading a stack trace
 
-Every publish writes `obj/<configuration>/<tfm>/bit-minifier.map`, one tab-separated line per name that
-changed - the assembly, the kind (`T` type, `M` method, `F` field, `G` generic parameter), the name the
-source has and the name it was given:
+Every publish writes `obj/<configuration>/<tfm>/bit-minifier.map`. Its first line names the Bit.Minifier
+that wrote it, and every other line is a name that changed, tab-separated - the assembly, the kind (`T` type,
+`M` method, `F` field, `G` generic parameter), the name the source has and the name it was given:
 
 ```
+# Bit.Minifier 10.7.0
 Bit.BlazorUI.Demo.Client.Core	T	...Services.HttpMessageHandlers.ExceptionDelegatingHandler	_aN
 Bit.BlazorUI.Demo.Client.Core	M	Microsoft.Extensions.DependencyInjection.IServiceCollectionExtensions::AddSessioned	ah
 ```
@@ -144,8 +145,9 @@ dnx Bit.Cli --prerelease -- decode bit-minifier.map trace.txt
 ```
 
 Leaving the trace out reads it from standard input there too, and run inside the project, `bit decode` finds the
-newest map under `obj` on its own. `Bit.Minifier` is what an app installs to be minified; `bit decode` is the
-decoder for whoever holds a map - compiled from the same source files, so the two read a map the same way.
+newest map under `obj` on its own. `bit decode` reads nothing itself: it runs the Bit.Minifier the map names on
+its first line, from the NuGet cache, and restores that version first when the cache doesn't have it. A map is
+always read by the version that wrote it.
 
 - **Keep the map with the release it belongs to.** It is written to `obj`, so a clean takes it away, and a
   CI job that publishes from a fresh checkout leaves nothing behind unless it collects the map as an

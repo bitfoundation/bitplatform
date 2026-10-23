@@ -60,8 +60,8 @@ module, `_content/Bit.Bortable/bit-bortable.js`, is imported by the component on
 
 ## For AI agents
 
-The demo site hosts an MCP server at `https://bortable.bitplatform.dev/mcp` (also served through
-`https://bitplatform.dev/mcp`) that answers from the shipped library: its API, its guide, its stylesheet and the
+The demo site hosts an MCP server at `https://bortable.bitplatform.dev/mcp`
+that answers from the shipped library: its API, its guide, its stylesheet and the
 demo's working pages, and it can run a drag over lists you describe and report what it did.
 
 ## Documentation

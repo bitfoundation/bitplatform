@@ -10,6 +10,8 @@ public class OAuthAuthorizationCodeConfiguration : IEntityTypeConfiguration<OAut
         // The token endpoint looks a code up by hash alone; unique so a reused hash cannot silently match either row.
         builder.HasIndex(code => code.CodeHash).IsUnique();
 
+        builder.HasIndex(code => code.ExpiresOn);
+
         // Deleting a user takes their outstanding codes with it, or a code outlives the account it was issued for.
         builder.HasOne(code => code.User)
             .WithMany()

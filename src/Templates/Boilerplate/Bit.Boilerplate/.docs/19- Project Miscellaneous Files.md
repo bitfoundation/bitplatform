@@ -446,7 +446,7 @@ dnx Bit.Cli --prerelease -- translate
 - **Model Context Protocol**: A standardized way to connect AI assistants (like GitHub Copilot) to external data sources and tools
 
 **Configured Servers**:
-- **bitplatform**: The bit platform documentation server. It exposes the bit BlazorUI tools (`SearchBitBlazorUI`, `GetBitBlazorUIComponent`, `GetBitBlazorUIComponentExamples`, ...), the Butil/Bswup/Bmotion/Bink/Balette/BbScanner/Bdnd/BlazeDb/Blow/Borm/Bcrdt/Bonboarding/Bortable/Blex/Bmage/Bsqlite/Brouter tools, the `AskGitHubRepository` tool for the third-party libraries this project builds on, the `GetBitPlatformReleases` tool that says whether a version is the newest bit platform release and returns the release notes of every newer one, the tools that read the source code of the bitfoundation/bitplatform repository itself rather than this project (`FindBitPlatformSymbols`, `GetBitPlatformSymbolSource`, ...), and the Microsoft Docs tools - all answering from the shipped assemblies, documentation and source rather than from the model's memory
+- **bitplatform**: The bit platform documentation server. It exposes the bit BlazorUI tools (`SearchBitBlazorUI`, `GetBitBlazorUIComponent`, `GetBitBlazorUIComponentExamples`, ...), the Butil tools, the `AskGitHubRepository` tool for the third-party libraries this project builds on, the `GetBitPlatformReleases` tool that says whether a version is the newest bit platform release and returns the release notes of every newer one, the tools that read the source code of the bitfoundation/bitplatform repository itself rather than this project (`FindBitPlatformSymbols`, `GetBitPlatformSymbolSource`, ...), and the Microsoft Docs tools - all answering from the shipped assemblies, documentation and source rather than from the model's memory. Every other bit library has an MCP server of its own, which `AGENTS.md` lists and the agent connects to by itself when it needs one
 - **aspire**: The .NET Aspire CLI's own MCP server, for inspecting the running application's resources, logs and traces
 - **playwright**: Browser automation, so the agent can drive and verify the running app
 
@@ -596,6 +596,14 @@ When you open the project in VS Code, you'll be prompted to install these extens
 **Who uses it**: `bit diff` and the `upgrade` skill read the version and the options to create the project again with the old and the new template version. An upgrade updates the version in it, and new options arrive through the diff like any other change.
 
 **Keep it**: the bit CLI may keep more of what it needs to know about the project here. Edit an option's value when you change the project in a way that matches another option, such as removing Aspire, so the next upgrade compares the right templates.
+
+### 8.3 `specs/`
+
+**Location**: [`/specs/`](/specs/README.md)
+
+**Purpose**: What the product does and why, kept next to the code: one spec per feature area with its requirements, acceptance criteria, decisions and open questions, plus one plan per larger change. [`specs/README.md`](/specs/README.md) describes both.
+
+**Who uses it**: the whole team, product people included, and every AI tool. `AGENTS.md` has the agents read a feature's spec before changing it and write the product decisions a conversation settles into it, and the `ai-dlc` skill keeps its plans there, so work can be resumed in another session or tool and reviewed with the code.
 
 ---
 

@@ -111,8 +111,7 @@ opinion about the DOM, and the browser layer has no opinion about tours.
 
 The demo hosts a [Model Context Protocol](https://modelcontextprotocol.io) server at `/mcp`, so an AI
 agent building tours reads the library itself - its compiled API documentation, this guide, its
-stylesheet and the demo's working tours - instead of guessing at an API it half remembers. It is also
-served, version by version, through `https://bitplatform.dev/mcp` next to the other bit libraries.
+stylesheet and the demo's working tours - instead of guessing at an API it half remembers.
 
 ```json
 {

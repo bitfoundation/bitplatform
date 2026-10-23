@@ -128,6 +128,9 @@
   <data name="MaxLengthAttribute_InvalidMaxLength" xml:space="preserve">
     <value>MaxLengthAttribute 必须具有大于零的 Length 值。使用无参数的 MaxLength() 来表示字符串或数组可以具有最大允许长度。</value>
   </data>
+  <data name="MaxLengthAttribute_ValidationError" xml:space="preserve">
+    <value>字段 {0} 必须是具有最大长度 '{1}' 的字符串或数组类型。</value>
+  </data>
   <data name="MinLengthAttribute_ValidationError" xml:space="preserve">
     <value>字段 {0} 必须是具有最小长度 '{1}' 的字符串或数组类型。</value>
   </data>

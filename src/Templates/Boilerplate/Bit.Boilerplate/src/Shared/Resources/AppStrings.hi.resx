@@ -128,6 +128,9 @@
   <data name="MaxLengthAttribute_InvalidMaxLength" xml:space="preserve">
     <value>MaxLengthAttribute में लंबाई मान शून्य से अधिक होना चाहिए। अधिकतम अनुमत लंबाई दर्शाने के लिए बिना पैरामीटर के MaxLength() का उपयोग करें।</value>
   </data>
+  <data name="MaxLengthAttribute_ValidationError" xml:space="preserve">
+    <value>फ़ील्ड {0} को '{1}' की अधिकतम लंबाई वाला स्ट्रिंग या ऐरे प्रकार का होना चाहिए।</value>
+  </data>
   <data name="MinLengthAttribute_ValidationError" xml:space="preserve">
     <value>फ़ील्ड {0} को '{1}' की न्यूनतम लंबाई वाला स्ट्रिंग या ऐरे प्रकार का होना चाहिए।</value>
   </data>

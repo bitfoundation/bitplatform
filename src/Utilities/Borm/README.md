@@ -135,8 +135,7 @@ brings everything into scope.
 
 The demo hosts a [Model Context Protocol](https://modelcontextprotocol.io) server at
 `https://borm.bitplatform.dev/mcp`, so an AI agent writing form code reads the library itself - its API, this guide
-and the demo's working forms - instead of guessing at an API it half remembers. It is also served, next to the other
-bit libraries, through the aggregated `https://bitplatform.dev/mcp` endpoint.
+and the demo's working forms - instead of guessing at an API it half remembers.
 
 ```json
 {

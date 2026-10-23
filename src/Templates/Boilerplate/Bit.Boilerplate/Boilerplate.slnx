@@ -14,6 +14,7 @@
     <File Path="vs-spell.dic" />
     <File Path=".vscode/mcp.json" />
     <File Path="README.md" />
+    <File Path="specs/README.md" />
     <File Path="settings.VisualStudio.json" />
     <File Path="Bit.ResxTranslator.json" />
     <File Path="src/Directory.Build.props" />
