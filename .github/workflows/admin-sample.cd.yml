@@ -231,7 +231,7 @@ jobs:
         cloudflare-token: ${{ secrets.CLOUDFLARE_TOKEN }}
 
   deploy_blazor_wasm_standalone:
-    name: build blazor wasm standalone
+    name: build blazor wasm standalone (AOT)
     if: inputs.wasm
     runs-on: ubuntu-24.04
 
@@ -270,8 +270,11 @@ jobs:
         AdsPushVapid.PublicKey: ${{ secrets.ADMINPANEL_PUBLIC_VAPIDKEY }}
 
       
+    - name: Collect the AOT profile
+      run: bit aot-profile AdminPanel/src/Client/AdminPanel.Client.Web/AdminPanel.Client.Web.csproj -o admin.aotprofile --origin https://adminpanel.bitplatform.cc --step "click:.menu-chevron" --step "click:button[role=switch][aria-label*=theme i]" --include AdminPanel.Client.Core --include AdminPanel.Client.Web -p:WasmEnableSIMD=true -p:Version="${{ vars.APP_VERSION}}" -p:BitMinifyAggressive=true
+
     - name: Publish
-      run: dotnet publish AdminPanel/src/Client/AdminPanel.Client.Web/AdminPanel.Client.Web.csproj -c Release -o client -p:WasmEnableSIMD=true -p:Version="${{ vars.APP_VERSION}}" -p:BitMinifyAggressive=true -p:BitMinifyMapOutputPath="${{ github.workspace }}/bit-minifier.map"
+      run: dotnet publish AdminPanel/src/Client/AdminPanel.Client.Web/AdminPanel.Client.Web.csproj -c Release -o client -p:WasmEnableSIMD=true -p:Version="${{ vars.APP_VERSION}}" -p:RunAOTCompilation=true -p:BitMinifyAggressive=true -p:BitMinifyMapOutputPath="${{ github.workspace }}/bit-minifier.map" -p:WasmAotProfilePath="${{ github.workspace }}/admin.aotprofile"
 
     # what the stack traces this client logs are read back through: see the note in the server web job
     - name: Upload minifier map artifact

@@ -324,7 +324,7 @@ jobs:
 
       
     - name: Collect the AOT profile
-      run: bit aot-profile TodoSample/src/Client/TodoSample.Client.Web/TodoSample.Client.Web.csproj -o todo.aotprofile --origin https://todo-aot.bitplatform.cc --step "click:.menu-chevron" --step "click:button[role=switch][aria-label*=theme i]" -p:Version="${{ vars.APP_VERSION}}" -p:InvariantGlobalization=true -p:WasmEnableSIMD=true -p:BitMinifyAggressive=true
+      run: bit aot-profile TodoSample/src/Client/TodoSample.Client.Web/TodoSample.Client.Web.csproj -o todo.aotprofile --origin https://todo-aot.bitplatform.cc --step "click:.menu-chevron" --step "click:button[role=switch][aria-label*=theme i]" --include TodoSample.Client.Core --include TodoSample.Client.Web -p:Version="${{ vars.APP_VERSION}}" -p:InvariantGlobalization=true -p:WasmEnableSIMD=true -p:BitMinifyAggressive=true
 
     - name: Publish
       run: dotnet publish TodoSample/src/Client/TodoSample.Client.Web/TodoSample.Client.Web.csproj -c Release -o client -p:Version="${{ vars.APP_VERSION}}" -p:RunAOTCompilation=true -p:InvariantGlobalization=true -p:WasmEnableSIMD=true -p:BitMinifyAggressive=true -p:BitMinifyMapOutputPath="${{ github.workspace }}/bit-minifier.map" -p:WasmAotProfilePath="${{ github.workspace }}/todo.aotprofile"
