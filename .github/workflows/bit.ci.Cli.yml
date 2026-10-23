@@ -7,8 +7,6 @@ on:
     paths:
     - 'src/Cli/**'
     - '!src/Cli/Minifier/**'
-    - 'src/Cli/Minifier/Bit.Minifier/MapDecoder.cs'
-    - 'src/Cli/Minifier/Bit.Minifier/Decode.cs'
     - 'src/Templates/Boilerplate/Bit.Boilerplate/.template.config/template.json'
     - 'src/Templates/Boilerplate/Bit.Boilerplate/src/Client/Boilerplate.Client.Core/package.json'
     - 'src/Templates/Boilerplate/Bit.Boilerplate/src/Server/Boilerplate.Server.AppHost/Boilerplate.Server.AppHost.csproj'

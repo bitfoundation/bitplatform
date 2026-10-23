@@ -17,6 +17,8 @@ internal sealed class AssemblyMinifier(MinifierOptions options)
     /// </summary>
     private const int MaxAttempts = 3;
 
+    public static string Version { get; } = typeof(AssemblyMinifier).Assembly.GetCustomAttributes(typeof(System.Reflection.AssemblyMetadataAttribute), false).Cast<System.Reflection.AssemblyMetadataAttribute>().First(a => a.Key == "BitMinifierVersion").Value!;
+
     private const string CompilerGenerated = "System.Runtime.CompilerServices.CompilerGeneratedAttribute";
 
     private const string DynamicallyAccessedMembers = "System.Diagnostics.CodeAnalysis.DynamicallyAccessedMembersAttribute";
@@ -575,7 +577,7 @@ internal sealed class AssemblyMinifier(MinifierOptions options)
             if (options.MapFile is not null)
             {
                 Directory.CreateDirectory(Path.GetDirectoryName(Path.GetFullPath(options.MapFile))!);
-                File.WriteAllLines(options.MapFile, map);
+                File.WriteAllLines(options.MapFile, [$"# Bit.Minifier {Version}", .. map]);
             }
 
             Swap(assemblies, withPdbFile, staging, stats, results);

@@ -211,6 +211,17 @@ public class AssemblyMinifierTests
     }
 
     [TestMethod]
+    public void TheMapNamesTheBitMinifierThatWroteIt()
+    {
+        var mapFile = Path.Combine(root, "bit-minifier.map");
+
+        Minify(Level.Default, mapFile: mapFile);
+
+        Assert.AreEqual($"# Bit.Minifier {AssemblyMinifier.Version}", File.ReadLines(mapFile).First());
+        StringAssert.Matches(AssemblyMinifier.Version, new System.Text.RegularExpressions.Regex(@"^\d+\.\d+\.\d+(-[0-9A-Za-z.-]+)?$"));
+    }
+
+    [TestMethod]
     [DataRow(Level.Default)]
     [DataRow(Level.Aggressive)]
     public void PdbStillDescribesTheMinifiedAssembly(Level level)
@@ -367,7 +378,7 @@ public class AssemblyMinifierTests
         Assert.IsGreaterThan(0, library.RenamedMembers);
         Assert.AreEqual(library.MinifiedSize, new FileInfo(Path.Combine(minified, Library + ".dll")).Length);
 
-        var lines = File.ReadAllLines(map);
+        var lines = File.ReadAllLines(map)[1..];
         Assert.IsTrue(lines.Any(l => l.StartsWith($"{Library}\tT\t", StringComparison.Ordinal) && l.Contains("<AddAsync>d__", StringComparison.Ordinal)));
         Assert.IsTrue(lines.All(l => l.Split('\t').Length == 4));
     }
@@ -555,7 +566,7 @@ public class AssemblyMinifierTests
         CollectionAssert.AreEqual(new[] { "rows", "columns" }, count.Parameters.Select(p => p.Name).ToArray());
         Assert.IsTrue(module.GetTypes().SelectMany(t => t.Methods).SelectMany(m => m.Parameters).Any(p => HasAttribute(p, "EnumeratorCancellationAttribute")));
 
-        var lines = File.ReadAllLines(map).Select(l => l.Split('\t')).ToList();
+        var lines = File.ReadAllLines(map)[1..].Select(l => l.Split('\t')).ToList();
         Assert.IsFalse(lines.Any(l => l[1] == "G"));
         // a renamed top-level type stays in its namespace
         foreach (var line in lines.Where(l => l[1] == "T" && l[2].Contains('/') is false))
@@ -776,7 +787,7 @@ public class AssemblyMinifierTests
         // and the attributes only the compiler reads
         Assert.IsFalse(module.GetTypes().SelectMany(t => t.Methods).Any(m => HasAttribute(m, "EnumeratorCancellationAttribute") || m.Parameters.Any(p => HasAttribute(p, "EnumeratorCancellationAttribute"))));
 
-        var lines = File.ReadAllLines(map);
+        var lines = File.ReadAllLines(map)[1..];
         // a renamed type leaves its namespace behind, unless a string names it (Type.GetType("Bit.Minifier.Tests.Library.Plugin"))
         var crate = lines.Single(l => l.StartsWith($"{Library}\tT\tBit.Minifier.Tests.Shelf.Crate\t", StringComparison.Ordinal)).Split('\t')[3];
         Assert.IsFalse(crate.Contains('.'));

@@ -3,9 +3,8 @@
 namespace Bit.Minifier;
 
 /// <summary>
-/// The one thing both programs of this package do: Bit.Minifier, which an app installs to be minified on
-/// publish, and the bit CLI's decode command, which whoever holds a map runs. One implementation, compiled into both, so
-/// what they read a stack trace back into can never drift apart.
+/// What Bit.Minifier --decode does, for the BitMinifierDecode target and for the bit CLI's decode command, which
+/// runs the Bit.Minifier a map names on its first line, so a map is always read by the version that wrote it.
 /// </summary>
 internal static class Decode
 {
