@@ -116,7 +116,7 @@ The two are meant to read almost identically, so the page shows one at a time: t
 - Opens [bit BevTools](https://bevtools.bitplatform.dev), in-app developer tools for Blazor: component tree, render profiler, timeline, network, JS interop, errors and diagnostics
 - **Critical Feature**: Works on **mobile devices** (Android/iOS) where traditional DevTools are unavailable
 - **Development**: BevTools is registered at startup, so it sees everything from the first render. Press **Ctrl+Shift+D** to open it anytime
-- **Production**: `Bit.BevTools.Loader` lazy loads `Bit.BevTools.wasm` the first time the button is pressed, then attaches it to the running app. It only sees what happens after that. AOT builds and the Blazor Hybrid apps don't lazy load it, so they register it at startup as Development does. In Blazor Server the button shows only in Development, so a visitor can't inspect the server side objects of their circuit
+- **Production**: `Bit.BevTools.Loader` lazy loads `Bit.BevTools.wasm` the first time the button is pressed, then attaches it to the running app. It only sees what happens after that. AOT builds don't lazy load it, but attach it on demand all the same, since instrumenting every component from the first render slows their startup. The Blazor Hybrid apps register it at startup as Development does. In Blazor Server the button shows only in Development, so a visitor can't inspect the server side objects of their circuit
 
 #### ♻️ **Call GC** (Non-Browser Platforms Only)
 - Forces garbage collection on .NET MAUI and Windows platforms
