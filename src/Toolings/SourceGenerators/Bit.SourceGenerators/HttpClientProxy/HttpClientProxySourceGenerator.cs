@@ -127,7 +127,7 @@ public class HttpClientProxySourceGenerator : IIncrementalGenerator
                 ?.Replace("[controller]", controllerName)
                 ?.Replace("~/", string.Empty);
 
-            var resolvedRoute = actionSpecificRoute ?? route;
+            var resolvedRoute = actionSpecificRoute is null ? route : TrimAppRoot(actionSpecificRoute);
 
             var actionTemplate = GetTemplate(httpVerbAttribute);
 
@@ -601,7 +601,7 @@ public class HttpClientProxySourceGenerator : IIncrementalGenerator
                         : $"return await __response.Content.{(doesReturnString ? "ReadAsStringAsync" : "ReadFromJsonAsync")}({jsonReadParameters});";
 
                 // The prerender state stores one resolved value per url, which an iterator is not.
-                var usesPrerenderState = doesReturnSomething && returnsAsyncStream is false;
+                var usesPrerenderState = doesReturnSomething && doesReturnIAsyncEnum is false;
 
                 generatedMethods.AppendLine($@"
         public async {returnTypeDisplay} {BitSourceGeneratorUtil.EscapeIdentifier(methodName)}({parameterList})

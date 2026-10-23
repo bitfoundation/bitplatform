@@ -179,6 +179,68 @@ public class AutoInjectSourceGeneratorTests
     }
 
     [TestMethod]
+    public void Nullable_member_named_before_a_required_one_comes_after_it()
+    {
+        var run = Run("""
+            namespace TestApp
+            {
+                public partial class Probe
+                {
+                    [AutoInject] private IMissing? alpha;
+                    [AutoInject] private IClock clock = default!;
+
+                    public bool HasAlpha => alpha is not null;
+                    public string ClockName => clock.Name;
+                }
+            }
+            """).AssertSucceeded();
+
+        var instance = Resolve(run.Load(), "TestApp.Probe");
+
+        Assert.AreEqual("autoInjectedClock, autoInjectedAlpha", string.Join(", ", ConstructorParameters(instance.GetType())));
+        Assert.IsFalse((bool)instance.GetType().GetProperty("HasAlpha")!.GetValue(instance)!);
+        Assert.AreEqual("clock", instance.GetType().GetProperty("ClockName")!.GetValue(instance));
+    }
+
+    [TestMethod]
+    public void Nullable_base_member_named_before_a_required_one_is_passed_in_the_base_constructor_order()
+    {
+        var run = Run("""
+            namespace TestApp
+            {
+                public partial class ProbeBase
+                {
+                    [AutoInject] protected IMissing? Alpha;
+                    [AutoInject] protected IClock Clock = default!;
+                }
+
+                public partial class PassThroughProbe : ProbeBase
+                {
+                    public string Names => Clock.Name + "," + (Alpha is null);
+                }
+
+                public partial class LeafProbe : ProbeBase
+                {
+                    [AutoInject] private ILog log = default!;
+                    [AutoInject] private IMissing? beta;
+
+                    public string Names => Clock.Name + "," + log.Name + "," + (Alpha is null) + "," + (beta is null);
+                }
+            }
+            """).AssertSucceeded();
+
+        var assembly = run.Load();
+        var passThrough = Resolve(assembly, "TestApp.PassThroughProbe");
+        var leaf = Resolve(assembly, "TestApp.LeafProbe");
+
+        Assert.AreEqual("autoInjectedClock, autoInjectedAlpha", string.Join(", ", ConstructorParameters(assembly.GetType("TestApp.ProbeBase")!)));
+        Assert.AreEqual("autoInjectedClock, autoInjectedAlpha", string.Join(", ", ConstructorParameters(passThrough.GetType())));
+        Assert.AreEqual("autoInjectedClock, autoInjectedLog, autoInjectedAlpha, autoInjectedBeta", string.Join(", ", ConstructorParameters(leaf.GetType())));
+        Assert.AreEqual("clock,True", passThrough.GetType().GetProperty("Names")!.GetValue(passThrough));
+        Assert.AreEqual("clock,log,True,True", leaf.GetType().GetProperty("Names")!.GetValue(leaf));
+    }
+
+    [TestMethod]
     public void Generic_class_gets_a_constructor()
     {
         var run = Run("""

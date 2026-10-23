@@ -22,16 +22,20 @@ internal static class AutoInjectNormalClassHandler
     {
         var parameters = directMembers.Select((member, index) => (Member: member, IsBase: false, Index: index))
             .Concat(baseMembers.Select((member, index) => (Member: member, IsBase: true, Index: index)))
-            .OrderBy(parameter => parameter.Member.Name, AutoInjectHelper.MemberNameComparer)
+            .OrderBy(parameter => parameter.Member.IsNullable)
+            .ThenBy(parameter => parameter.Member.Name, AutoInjectHelper.MemberNameComparer)
             .ToList();
 
         var parameterNames = AutoInjectHelper.GetUniqueNames(parameters.Select(parameter => $"autoInjected{AutoInjectHelper.FormatMemberName(parameter.Member.Name)}"));
         var directParameterNames = new string[directMembers.Count];
-        var baseParameterNames = new string[baseMembers.Count];
+        var baseParameterNames = parameterNames.Where((_, i) => parameters[i].IsBase).ToList();
 
         for (var i = 0; i < parameters.Count; i++)
         {
-            (parameters[i].IsBase ? baseParameterNames : directParameterNames)[parameters[i].Index] = parameterNames[i];
+            if (parameters[i].IsBase is false)
+            {
+                directParameterNames[parameters[i].Index] = parameterNames[i];
+            }
         }
 
         var constructor = new StringBuilder();

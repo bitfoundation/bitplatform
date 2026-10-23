@@ -420,6 +420,31 @@ public class HttpClientProxySourceGeneratorTests
     }
 
     [TestMethod]
+    public async Task Task_of_async_enumerable_skips_the_prerender_state()
+    {
+        var proxy = await RunAsync("""
+            namespace TestApp;
+
+            [Route("api/[controller]/[action]")]
+            public interface ILazyStreamController : IAppController
+            {
+                [HttpGet]
+                Task<IAsyncEnumerable<string>> Numbers(CancellationToken cancellationToken);
+            }
+            """, """
+                    var numbers = new List<string>();
+                    await foreach (var number in await sp.GetRequiredService<ILazyStreamController>().Numbers(default))
+                    {
+                        numbers.Add(number);
+                    }
+                    return string.Join(",", numbers) + "|" + prerenderKeys.Count;
+            """, (_, _) => Json("""["1","2"]"""));
+
+        Assert.AreEqual("1,2|0", proxy.Result);
+        Assert.AreEqual(Url("api/LazyStream/Numbers"), proxy.Request.Uri!.AbsoluteUri);
+    }
+
+    [TestMethod]
     public async Task Cancellation_token_reaches_the_request()
     {
         var proxy = await RunAsync(BoilerplateControllers, """
@@ -865,6 +890,41 @@ public class HttpClientProxySourceGeneratorTests
 
         Assert.AreEqual(
             string.Join(" | ", Url("api/Slash/Get"), Url("api/Root/Get"), Url("api/Orders/Get")),
+            string.Join(" | ", proxy.Requests.Select(r => r.Uri!.AbsoluteUri)));
+    }
+
+    [TestMethod]
+    public async Task Action_route_is_relative_to_the_base_address()
+    {
+        var proxy = await RunAsync("""
+            namespace TestApp;
+
+            [Route("api/[controller]/[action]/")]
+            public interface IRoutedController : IAppController
+            {
+                [HttpGet, Route("/api/v1/[controller]/rooted")]
+                Task Rooted(CancellationToken cancellationToken);
+
+                [HttpGet, Route("~/api/v1/[controller]/app-root")]
+                Task AppRoot(CancellationToken cancellationToken);
+
+                [HttpGet, Route("https://api.example.test/absolute")]
+                Task Absolute(CancellationToken cancellationToken);
+
+                [HttpGet]
+                Task Conventional(CancellationToken cancellationToken);
+            }
+            """, """
+                    var controller = sp.GetRequiredService<IRoutedController>();
+                    await controller.Rooted(default);
+                    await controller.AppRoot(default);
+                    await controller.Absolute(default);
+                    await controller.Conventional(default);
+                    return null;
+            """);
+
+        Assert.AreEqual(
+            string.Join(" | ", Url("api/v1/Routed/rooted"), Url("api/v1/Routed/app-root"), "https://api.example.test/absolute", Url("api/Routed/Conventional")),
             string.Join(" | ", proxy.Requests.Select(r => r.Uri!.AbsoluteUri)));
     }
 
