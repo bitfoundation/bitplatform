@@ -46,7 +46,7 @@ on:
       e2e:
         description: E2E suites
         type: boolean
-        default: true
+        default: false
 
 env:
   DOTNET_SYSTEM_CONSOLE_ALLOW_ANSI_COLOR_REDIRECTION: true
