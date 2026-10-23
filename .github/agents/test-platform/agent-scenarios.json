@@ -45,20 +45,20 @@
       "fixture": {
         "edits": [
           {
-            "path": "src/Shared/Features/Identity/Dtos/UserDto.cs",
-            "find": "public string? DisplayName => FullName ?? DisplayUserName;",
-            "replace": "public string? DisplayName => DisplayUserName ?? FullName;"
+            "path": "src/Client/AgentsApp.Client.Core/Infrastructure/Extensions/UserSessionDtoExtensions.cs",
+            "find": "utcNow - session.RenewedOnDateTimeOffset",
+            "replace": "session.RenewedOnDateTimeOffset - utcNow"
           }
         ],
-        "commit": "Tidy up UserDto display properties"
+        "commit": "Tidy up session presence checks"
       },
-      "prompt": "After I set my full name on the profile page, the menu at the top right still shows my email address instead of my name. It should show my full name whenever I have one.",
+      "prompt": "The Sessions list in settings shows every one of my devices as Online, even an old laptop I haven't opened in weeks. Only the devices I'm actually using should show as online.",
       "checks": [
         {
           "skill": "ai-dlc"
         },
         {
-          "changed": "*UserDto.cs"
+          "changed": "*UserSessionDtoExtensions.cs"
         },
         {
           "changed": "src/Tests/*"
