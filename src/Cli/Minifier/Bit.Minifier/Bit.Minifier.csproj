@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-    <Import Project="../../Bit.Build.props" />
+    <Import Project="../../../Bit.Build.props" />
 
     <!-- Publish-time IL minifier, shipped as the Bit.Minifier package: installing it is all an app does.
          The package carries this tool under tools/ and buildTransitive/Bit.Minifier.targets, which runs it

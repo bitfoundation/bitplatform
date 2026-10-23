@@ -279,9 +279,9 @@ jobs:
       run: dotnet pack src/CodeAnalyzers/Bit.CodeAnalyzers/Bit.CodeAnalyzers.csproj --output . --configuration Release
 
     - name: dotnet build Minifier
-      run: dotnet build src/Minifier/Bit.Minifier/Bit.Minifier.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
+      run: dotnet build src/Cli/Minifier/Bit.Minifier/Bit.Minifier.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
     - name: dotnet pack Minifier
-      run: dotnet pack src/Minifier/Bit.Minifier/Bit.Minifier.csproj --output . --configuration Release
+      run: dotnet pack src/Cli/Minifier/Bit.Minifier/Bit.Minifier.csproj --output . --configuration Release
 
     - name: dotnet build bit CLI
       env:

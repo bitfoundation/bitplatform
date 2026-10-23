@@ -20,7 +20,7 @@ public partial class CodebaseMemoryCli
         "src/Besql",
         "src/BlazorES2019",
         "src/CodeAnalyzers",
-        "src/Minifier",
+        "src/Cli/Minifier",
         "src/ResxTranslator",
         "src/SourceGenerators",
         "src/Templates/Boilerplate/Bit.Boilerplate",
