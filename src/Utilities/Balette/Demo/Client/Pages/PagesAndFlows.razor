@@ -43,6 +43,18 @@
                     <td class="bb-table-action"><button type="button" class="btn btn-secondary" @onclick='() => Palette.OpenAsync(pageCommandId: "quick-create.new")'>Open</button></td>
                 </tr>
                 <tr>
+                    <td class="bb-table-key">Searching page</td>
+                    <td><code>.Source("Directory", async (query, ct) =&gt; ...)</code></td>
+                    <td><em>Find a person…</em> - asks the "server" for every query typed on the page</td>
+                    <td class="bb-table-action"><button type="button" class="btn btn-secondary" @onclick='() => Palette.OpenAsync(pageCommandId: "actions.find-a-person")'>Open</button></td>
+                </tr>
+                <tr>
+                    <td class="bb-table-key">Found from the root</td>
+                    <td><code>SearchNestedCommands</code> (on by default)</td>
+                    <td><em>Language › Français</em> - type <code>francais</code> without opening Language</td>
+                    <td class="bb-table-action"><button type="button" class="btn btn-secondary" @onclick='() => Palette.OpenAsync("francais")'>Try</button></td>
+                </tr>
+                <tr>
                     <td class="bb-table-key">Ad-hoc page</td>
                     <td><code>BaletteCommandResult.Page(...)</code></td>
                     <td><em>Export…</em> - the handler decides the list, one row disabled</td>
@@ -51,7 +63,7 @@
                 <tr>
                     <td class="bb-table-key">Prompt</td>
                     <td><code>BaletteCommandResult.Prompt(...)</code></td>
-                    <td><em>Rename project…</em> - pre-filled with the current name</td>
+                    <td><em>Rename project…</em> - pre-filled, validated as you type, and "admin" refused by the handler with <code>Error</code></td>
                     <td class="bb-table-action"><button type="button" class="btn btn-secondary" @onclick='() => Palette.ExecuteAsync("actions.rename-project")'>Run</button></td>
                 </tr>
                 <tr>
@@ -143,9 +155,18 @@
                 "New project name",
                 ctx =>
                 {
-                    state.Rename(ctx.PromptValue!.Trim());
-                    return Task.FromResult(BaletteCommandResult.Toast($"Renamed to {ctx.PromptValue}"));
+                    var name = ctx.PromptValue!.Trim();
+                    if (name == "admin")
+                    {
+                        // Expected, so not an exception: shown, and the prompt stays for a correction.
+                        return Task.FromResult(BaletteCommandResult.Error("“admin” is reserved."));
+                    }
+
+                    state.Rename(name);
+                    return Task.FromResult(BaletteCommandResult.Toast($"Renamed to {name}"));
                 },
+                // Null for a value Enter may submit, the message to show otherwise.
+                validate: value => value.Trim().Length == 0 ? "A project needs a name." : null,
                 placeholder: "Project name…",
                 initialValue: state.ProjectName)))
         """;

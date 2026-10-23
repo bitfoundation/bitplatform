@@ -24,20 +24,35 @@
     --bit-balette-font-size: 14px;
     --bit-balette-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
     --bit-balette-z: 1000;
+    --bit-balette-top: 12vh;
+    --bit-balette-input-height: 56px;
+    --bit-balette-input-font-size: 16px;
+    --bit-balette-item-radius: 8px;
+    --bit-balette-item-padding: 6px 10px;
+    --bit-balette-item-gap: 12px;
+    --bit-balette-heading-font-size: 11px;
+    --bit-balette-footer-height: 40px;
+    --bit-balette-detail-width: 40%;
+    --bit-balette-backdrop-blur: 2px;
+    --bit-balette-duration: 140ms;
+    /* Optional, unset by default: --bit-balette-heading-fg (falls back to --bit-balette-fg-muted),
+       --bit-balette-focus-ring (to --bit-balette-accent) and --bit-balette-toggle-knob (to #fff). They are not set here
+       because a token defined as var(--other) on :root is resolved on :root, and a dialog forced to the other theme
+       would inherit the wrong colour. */
 
     /* Light palette */
     --bit-balette-bg: #ffffff;
     --bit-balette-bg-elevated: #f6f7f9;
     --bit-balette-fg: #111318;
-    --bit-balette-fg-muted: #6b7280;
-    --bit-balette-fg-subtle: #9ca3af;
+    --bit-balette-fg-muted: #5f6673;
+    --bit-balette-fg-subtle: #6b7280;
     --bit-balette-border: rgba(17, 19, 24, 0.08);
     --bit-balette-accent: #4f46e5;
     --bit-balette-accent-fg: #ffffff;
     --bit-balette-accent-soft: rgba(79, 70, 229, 0.10);
     --bit-balette-active-bg: rgba(17, 19, 24, 0.06);
-    --bit-balette-danger: #dc2626;
-    --bit-balette-danger-soft: rgba(220, 38, 38, 0.10);
+    --bit-balette-danger: #c81e1e;
+    --bit-balette-danger-soft: rgba(200, 30, 30, 0.10);
     --bit-balette-mark-bg: rgba(79, 70, 229, 0.18);
     --bit-balette-kbd-bg: #f3f4f6;
     --bit-balette-kbd-fg: #374151;
@@ -53,7 +68,7 @@
         --bit-balette-bg-elevated: #1f2126;
         --bit-balette-fg: #f3f4f6;
         --bit-balette-fg-muted: #a1a1aa;
-        --bit-balette-fg-subtle: #71717a;
+        --bit-balette-fg-subtle: #8b8b94;
         --bit-balette-border: rgba(255, 255, 255, 0.08);
         --bit-balette-accent: #818cf8;
         --bit-balette-accent-fg: #0b0c10;
@@ -72,12 +87,13 @@
 }
 
 :root[data-theme="dark"],
-dialog[data-balette="dialog"][data-theme="dark"] {
+dialog[data-balette="dialog"][data-theme="dark"],
+[data-balette="inline"][data-theme="dark"] {
     --bit-balette-bg: #17181c;
     --bit-balette-bg-elevated: #1f2126;
     --bit-balette-fg: #f3f4f6;
     --bit-balette-fg-muted: #a1a1aa;
-    --bit-balette-fg-subtle: #71717a;
+    --bit-balette-fg-subtle: #8b8b94;
     --bit-balette-border: rgba(255, 255, 255, 0.08);
     --bit-balette-accent: #818cf8;
     --bit-balette-accent-fg: #0b0c10;
@@ -94,19 +110,20 @@ dialog[data-balette="dialog"][data-theme="dark"] {
     --bit-balette-scrollbar: rgba(255, 255, 255, 0.2);
 }
 
+[data-balette="inline"][data-theme="light"],
 dialog[data-balette="dialog"][data-theme="light"] {
     --bit-balette-bg: #ffffff;
     --bit-balette-bg-elevated: #f6f7f9;
     --bit-balette-fg: #111318;
-    --bit-balette-fg-muted: #6b7280;
-    --bit-balette-fg-subtle: #9ca3af;
+    --bit-balette-fg-muted: #5f6673;
+    --bit-balette-fg-subtle: #6b7280;
     --bit-balette-border: rgba(17, 19, 24, 0.08);
     --bit-balette-accent: #4f46e5;
     --bit-balette-accent-fg: #ffffff;
     --bit-balette-accent-soft: rgba(79, 70, 229, 0.10);
     --bit-balette-active-bg: rgba(17, 19, 24, 0.06);
-    --bit-balette-danger: #dc2626;
-    --bit-balette-danger-soft: rgba(220, 38, 38, 0.10);
+    --bit-balette-danger: #c81e1e;
+    --bit-balette-danger-soft: rgba(200, 30, 30, 0.10);
     --bit-balette-mark-bg: rgba(79, 70, 229, 0.18);
     --bit-balette-kbd-bg: #f3f4f6;
     --bit-balette-kbd-fg: #374151;
@@ -122,7 +139,7 @@ dialog[data-balette="dialog"][data-theme="light"] {
     position: fixed;
     inset: 0;
     margin: 0 auto;
-    top: 12vh;
+    top: var(--bit-balette-top);
     width: min(var(--bit-balette-width), calc(100vw - 32px));
     max-width: calc(100vw - 32px);
     padding: 0;
@@ -137,25 +154,52 @@ dialog[data-balette="dialog"][data-theme="light"] {
     overflow: hidden;
     z-index: var(--bit-balette-z);
     height: fit-content;
-    max-height: calc(100vh - 24vh);
+    max-height: calc(100vh - 2 * var(--bit-balette-top));
 }
 
 .bit-balette-dialog[data-has-detail="true"] {
     --bit-balette-width: 920px;
 }
 
+/* ---------- Inline: in the page's flow, as wide as its container ---------- */
+
+.bit-balette-dialog.bit-balette-inline {
+    position: relative;
+    inset: auto;
+    top: auto;
+    z-index: auto;
+    width: 100%;
+    max-width: 100%;
+    max-height: none;
+    margin: 0;
+    border: 1px solid var(--bit-balette-border);
+    box-shadow: none;
+}
+
+/* ---------- Density ---------- */
+
+.bit-balette-dialog[data-density="compact"] {
+    --bit-balette-row-height: 34px;
+    --bit-balette-input-height: 44px;
+    --bit-balette-input-font-size: 14px;
+    --bit-balette-item-padding: 3px 8px;
+    --bit-balette-item-gap: 10px;
+    --bit-balette-footer-height: 32px;
+    --bit-balette-font-size: 13px;
+}
+
 .bit-balette-dialog::backdrop {
     background: var(--bit-balette-backdrop, rgba(17, 19, 24, 0.45)); /* ::backdrop does not inherit custom properties in older browsers */
-    -webkit-backdrop-filter: blur(2px);
-    backdrop-filter: blur(2px);
+    -webkit-backdrop-filter: blur(var(--bit-balette-backdrop-blur, 2px));
+    backdrop-filter: blur(var(--bit-balette-backdrop-blur, 2px));
 }
 
 .bit-balette-dialog[open] {
-    animation: bit-balette-pop 140ms cubic-bezier(0.16, 1, 0.3, 1);
+    animation: bit-balette-pop var(--bit-balette-duration) cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .bit-balette-dialog[open]::backdrop {
-    animation: bit-balette-fade 140ms ease-out;
+    animation: bit-balette-fade var(--bit-balette-duration, 140ms) ease-out;
 }
 
 @keyframes bit-balette-pop {
@@ -171,6 +215,7 @@ dialog[data-balette="dialog"][data-theme="light"] {
 @media (prefers-reduced-motion: reduce) {
     .bit-balette-dialog[open], .bit-balette-dialog[open]::backdrop { animation: none; }
     .bit-balette-dialog .bit-balette-spinner { animation-duration: 1.5s; }
+    .bit-balette-dialog .bit-balette-toggle, .bit-balette-dialog .bit-balette-toggle::after { transition: none; }
 }
 
 html.bit-balette-scroll-lock { overflow: hidden; }
@@ -205,11 +250,13 @@ html.bit-balette-scroll-lock { overflow: hidden; }
     font-family: inherit;
 }
 
-.bit-balette-dialog .bit-balette-crumb-home { cursor: pointer; padding: 0 6px; }
+.bit-balette-dialog .bit-balette-crumb-link { cursor: pointer; min-height: 24px; }
+.bit-balette-dialog .bit-balette-crumb-link:hover { color: var(--bit-balette-fg); }
+.bit-balette-dialog .bit-balette-crumb-home { cursor: pointer; padding: 0 6px; min-width: 24px; height: 24px; justify-content: center; }
 .bit-balette-dialog .bit-balette-crumb-home:hover { color: var(--bit-balette-fg); }
 .bit-balette-dialog .bit-balette-mode-chip { background: var(--bit-balette-accent-soft); color: var(--bit-balette-accent); }
 
-.bit-balette-dialog .bit-balette-input-row { display: flex; align-items: center; gap: 10px; padding: 0 14px; height: 56px; }
+.bit-balette-dialog .bit-balette-input-row { display: flex; align-items: center; gap: 10px; padding: 0 14px; height: var(--bit-balette-input-height); }
 .bit-balette-dialog .bit-balette-input-icon { display: inline-flex; color: var(--bit-balette-fg-muted); flex: none; width: 18px; justify-content: center; }
 
 .bit-balette-dialog .bit-balette-input {
@@ -221,7 +268,7 @@ html.bit-balette-scroll-lock { overflow: hidden; }
     background: transparent;
     color: var(--bit-balette-fg);
     font: inherit;
-    font-size: 16px;
+    font-size: var(--bit-balette-input-font-size);
 }
 
 .bit-balette-dialog .bit-balette-input::placeholder { color: var(--bit-balette-fg-subtle); }
@@ -231,6 +278,9 @@ html.bit-balette-scroll-lock { overflow: hidden; }
 .bit-balette-dialog .bit-balette-close {
     display: inline-flex;
     align-items: center;
+    justify-content: center;
+    min-width: 24px;
+    min-height: 24px;
     border: 0;
     background: transparent;
     padding: 0;
@@ -257,21 +307,21 @@ html.bit-balette-scroll-lock { overflow: hidden; }
     top: calc(-1 * var(--bit-balette-gap));
     z-index: 1;
     padding: 10px 10px 6px;
-    font-size: 11px;
+    font-size: var(--bit-balette-heading-font-size);
     font-weight: 600;
     letter-spacing: 0.04em;
     text-transform: uppercase;
-    color: var(--bit-balette-fg-subtle);
+    color: var(--bit-balette-heading-fg, var(--bit-balette-fg-muted));
     background: var(--bit-balette-bg);
 }
 
 .bit-balette-dialog .bit-balette-item {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: var(--bit-balette-item-gap);
     min-height: var(--bit-balette-row-height);
-    padding: 6px 10px;
-    border-radius: 8px;
+    padding: var(--bit-balette-item-padding);
+    border-radius: var(--bit-balette-item-radius);
     cursor: pointer;
     user-select: none;
     -webkit-user-select: none;
@@ -287,6 +337,9 @@ html.bit-balette-scroll-lock { overflow: hidden; }
 .bit-balette-dialog .bit-balette-item[data-destructive="true"][data-active="true"] { background: var(--bit-balette-danger-soft); }
 .bit-balette-dialog .bit-balette-item[data-confirming="true"] { outline: 2px solid var(--bit-balette-danger); outline-offset: -2px; }
 .bit-balette-dialog .bit-balette-item[data-checked="true"] .bit-balette-check { color: var(--bit-balette-accent); }
+.bit-balette-dialog .bit-balette-item[data-error="true"] .bit-balette-item-icon,
+.bit-balette-dialog .bit-balette-item[data-error="true"] .bit-balette-item-title { color: var(--bit-balette-danger); }
+.bit-balette-dialog .bit-balette-item[data-running="true"] { opacity: 0.7; }
 
 .bit-balette-dialog .bit-balette-check { display: inline-flex; width: 16px; height: 16px; flex: none; border: 1.5px solid var(--bit-balette-fg-subtle); border-radius: 4px; align-items: center; justify-content: center; }
 .bit-balette-dialog .bit-balette-item[data-checked="true"] .bit-balette-check { border-color: var(--bit-balette-accent); background: var(--bit-balette-accent-soft); }
@@ -297,11 +350,27 @@ html.bit-balette-scroll-lock { overflow: hidden; }
 .bit-balette-dialog .bit-balette-item-body { display: flex; flex-direction: column; min-width: 0; flex: 1 1 auto; }
 .bit-balette-dialog .bit-balette-item-title { display: flex; align-items: center; gap: 8px; min-width: 0; white-space: nowrap; overflow: hidden; font-weight: 500; }
 .bit-balette-dialog .bit-balette-item-label { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+
+/* A nested command found from the root: its ancestors before its title, "Theme › Dark". The separator has empty
+   alternative text, so screen readers hear the titles only. */
+.bit-balette-dialog .bit-balette-item-path { display: inline-flex; align-items: center; flex: none; min-width: 0; max-width: 50%; overflow: hidden; color: var(--bit-balette-fg-muted); font-weight: 400; }
+.bit-balette-dialog .bit-balette-path-segment { overflow: hidden; text-overflow: ellipsis; }
+.bit-balette-dialog .bit-balette-path-segment::after { content: "\203A"; content: "\203A" / ""; margin-inline: 6px; opacity: 0.7; }
+.bit-balette-dialog .bit-balette-path-segment:dir(rtl)::after { content: "\2039"; content: "\2039" / ""; }
+
+.bit-balette-dialog .bit-balette-notice {
+    flex: none;
+    padding: 8px 18px 0;
+    font-size: 12px;
+    color: var(--bit-balette-fg-muted);
+}
 .bit-balette-dialog .bit-balette-item-subtitle { font-size: 12px; color: var(--bit-balette-fg-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .bit-balette-dialog .bit-balette-keyword-hit::before { content: "↳ "; opacity: 0.6; }
+.bit-balette-dialog .bit-balette-keyword-hit:dir(rtl)::before { content: "↲ "; }
 .bit-balette-dialog .bit-balette-confirm-label { color: var(--bit-balette-danger); font-weight: 600; }
 
-.bit-balette-dialog .bit-balette-mark { background: var(--bit-balette-mark-bg); color: inherit; border-radius: 2px; padding: 0 1px; margin: 0 -1px; }
+/* The full text colour, not the muted one a subtitle has: muted text on the highlight would fall below 4.5:1. */
+.bit-balette-dialog .bit-balette-mark { background: var(--bit-balette-mark-bg); color: var(--bit-balette-mark-fg, var(--bit-balette-fg)); border-radius: 2px; padding: 0 1px; margin: 0 -1px; }
 
 .bit-balette-dialog .bit-balette-badge {
     display: inline-flex;
@@ -324,14 +393,15 @@ html.bit-balette-scroll-lock { overflow: hidden; }
 .bit-balette-dialog .bit-balette-chevron { display: inline-flex; color: var(--bit-balette-fg-subtle); }
 
 .bit-balette-dialog .bit-balette-toggle { position: relative; width: 28px; height: 16px; border-radius: 999px; background: var(--bit-balette-kbd-border); transition: background 120ms; }
-.bit-balette-dialog .bit-balette-toggle::after { content: ""; position: absolute; top: 2px; left: 2px; width: 12px; height: 12px; border-radius: 50%; background: #fff; transition: transform 120ms; }
+.bit-balette-dialog .bit-balette-toggle::after { content: ""; position: absolute; top: 2px; inset-inline-start: 2px; width: 12px; height: 12px; border-radius: 50%; background: var(--bit-balette-toggle-knob, #fff); transition: inset-inline-start 120ms; }
 .bit-balette-dialog .bit-balette-toggle[data-on="true"] { background: var(--bit-balette-accent); }
-.bit-balette-dialog .bit-balette-toggle[data-on="true"]::after { transform: translateX(12px); }
+.bit-balette-dialog .bit-balette-toggle[data-on="true"]::after { inset-inline-start: 14px; }
 
 /* ---------- Shortcut / kbd ---------- */
 
-.bit-balette-shortcut { display: inline-flex; align-items: center; gap: 3px; }
-.bit-balette-shortcut-then { font-size: 10px; color: var(--bit-balette-fg-subtle); margin: 0 2px; }
+.bit-balette-shortcut { display: inline-flex; align-items: center; }
+.bit-balette-shortcut-keys { display: inline-flex; align-items: center; gap: 3px; }
+.bit-balette-shortcut-then { font-size: 10px; color: var(--bit-balette-fg-muted); margin: 0 2px; }
 
 .bit-balette-kbd {
     display: inline-flex;
@@ -358,9 +428,26 @@ html.bit-balette-scroll-lock { overflow: hidden; }
 .bit-balette-dialog .bit-balette-empty p { margin: 0; }
 .bit-balette-dialog .bit-balette-empty-title { color: var(--bit-balette-fg); font-weight: 500; }
 .bit-balette-dialog .bit-balette-empty-hint { font-size: 12px; }
+.bit-balette-dialog .bit-balette-error .bit-balette-svg { color: var(--bit-balette-danger); opacity: 1; }
+
+.bit-balette-dialog .bit-balette-retry {
+    margin-top: 6px;
+    min-height: 28px;
+    padding: 0 12px;
+    border: 1px solid var(--bit-balette-kbd-border);
+    border-radius: 6px;
+    background: var(--bit-balette-bg-elevated);
+    color: var(--bit-balette-fg);
+    font: inherit;
+    font-size: 12px;
+    cursor: pointer;
+}
+
+.bit-balette-dialog .bit-balette-retry:hover { background: var(--bit-balette-active-bg); }
 
 .bit-balette-dialog .bit-balette-prompt { padding: 28px 16px; text-align: center; color: var(--bit-balette-fg-muted); }
 .bit-balette-dialog .bit-balette-prompt-title { margin: 0 0 8px; color: var(--bit-balette-fg); font-weight: 500; }
+.bit-balette-dialog .bit-balette-prompt-error { margin: 0 0 8px; color: var(--bit-balette-danger); font-size: 13px; }
 .bit-balette-dialog .bit-balette-prompt-hint { margin: 0; font-size: 12px; display: flex; align-items: center; justify-content: center; gap: 6px; }
 .bit-balette-dialog .bit-balette-sep { opacity: 0.5; }
 
@@ -383,7 +470,7 @@ html.bit-balette-scroll-lock { overflow: hidden; }
     flex: none;
     align-items: center;
     gap: 14px;
-    height: 40px;
+    height: var(--bit-balette-footer-height);
     padding: 0 14px;
     border-top: 1px solid var(--bit-balette-border);
     background: var(--bit-balette-bg-elevated);
@@ -394,17 +481,18 @@ html.bit-balette-scroll-lock { overflow: hidden; }
 }
 
 .bit-balette-dialog .bit-balette-hint { display: inline-flex; align-items: center; gap: 5px; min-width: 0; overflow: hidden; }
-.bit-balette-dialog .bit-balette-hint-right { margin-left: auto; flex: none; padding-left: 8px; }
+.bit-balette-dialog .bit-balette-hint-right { margin-inline-start: auto; flex: none; padding-inline-start: 8px; }
 .bit-balette-dialog .bit-balette-toast { color: var(--bit-balette-fg); font-weight: 500; overflow: hidden; text-overflow: ellipsis; }
-.bit-balette-dialog .bit-balette-toast-confirm { color: var(--bit-balette-danger); }
+.bit-balette-dialog .bit-balette-toast-confirm,
+.bit-balette-dialog .bit-balette-toast-error { color: var(--bit-balette-danger); }
 
 /* ---------- Detail pane ---------- */
 
 .bit-balette-dialog .bit-balette-detail {
-    flex: 0 0 40%;
+    flex: 0 0 var(--bit-balette-detail-width);
     max-height: var(--bit-balette-max-height);
     overflow: auto;
-    border-left: 1px solid var(--bit-balette-border);
+    border-inline-start: 1px solid var(--bit-balette-border);
     padding: 16px;
     background: var(--bit-balette-bg-elevated);
     color: var(--bit-balette-fg-muted);
@@ -429,18 +517,58 @@ html.bit-balette-scroll-lock { overflow: hidden; }
 }
 
 .bit-balette-trigger:hover { color: var(--bit-balette-fg, #111); }
-.bit-balette-trigger-label { flex: 1 1 auto; text-align: left; }
-.bit-balette-trigger-shortcut { margin-left: 8px; }
+.bit-balette-trigger-label { flex: 1 1 auto; text-align: start; }
+.bit-balette-trigger-shortcut { margin-inline-start: 8px; }
+.bit-balette-trigger:focus-visible { outline: 2px solid var(--bit-balette-focus-ring, var(--bit-balette-accent, #4f46e5)); outline-offset: 2px; }
 
 /* ---------- Utilities ---------- */
 
 .bit-balette-sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
 .bit-balette-svg { flex: none; }
 
+/* Arrows and chevrons point the way the text reads. */
+.bit-balette-svg[data-mirror]:dir(rtl) { transform: scaleX(-1); }
+
+.bit-balette-dialog :is(.bit-balette-crumb-home, .bit-balette-crumb-link, .bit-balette-close, .bit-balette-retry):focus-visible {
+    outline: 2px solid var(--bit-balette-focus-ring, var(--bit-balette-accent));
+    outline-offset: 1px;
+}
+
+/* ---------- More contrast, when the reader asks for it ---------- */
+
+@media (prefers-contrast: more) {
+    .bit-balette-dialog { --bit-balette-border: color-mix(in srgb, var(--bit-balette-fg) 45%, transparent); }
+    .bit-balette-dialog .bit-balette-item[data-active="true"] { outline: 2px solid var(--bit-balette-fg); outline-offset: -2px; }
+    .bit-balette-dialog .bit-balette-mark { text-decoration: underline; text-underline-offset: 2px; }
+}
+
+/* ---------- Forced colours (Windows High Contrast) ---------- */
+
+/* Forced-colours mode replaces every colour and drops shadows, which would hide the current row, the dialog's edge,
+   the checkboxes and the switches: they are drawn with outlines and system colours instead. */
+@media (forced-colors: active) {
+    .bit-balette-dialog { border: 1px solid CanvasText; }
+    .bit-balette-dialog .bit-balette-header,
+    .bit-balette-dialog .bit-balette-footer { border-color: CanvasText; }
+    .bit-balette-dialog .bit-balette-item[data-active="true"] { outline: 2px solid Highlight; outline-offset: -2px; }
+    .bit-balette-dialog .bit-balette-item[data-disabled="true"] { color: GrayText; opacity: 1; }
+    .bit-balette-dialog .bit-balette-mark { forced-color-adjust: none; background: Mark; color: MarkText; }
+    .bit-balette-dialog .bit-balette-check { border-color: CanvasText; }
+    .bit-balette-dialog .bit-balette-item[data-checked="true"] .bit-balette-check { forced-color-adjust: none; background: Highlight; color: HighlightText; border-color: Highlight; }
+    .bit-balette-dialog .bit-balette-toggle { forced-color-adjust: none; border: 1px solid CanvasText; background: Canvas; }
+    .bit-balette-dialog .bit-balette-toggle::after { top: 1px; background: CanvasText; }
+    .bit-balette-dialog .bit-balette-toggle[data-on="true"] { background: Highlight; border-color: Highlight; }
+    .bit-balette-dialog .bit-balette-toggle[data-on="true"]::after { background: HighlightText; }
+    .bit-balette-dialog .bit-balette-spinner { forced-color-adjust: none; border-color: GrayText; border-top-color: Highlight; }
+    .bit-balette-kbd { border-color: CanvasText; }
+    .bit-balette-dialog .bit-balette-badge,
+    .bit-balette-dialog .bit-balette-crumb { border: 1px solid CanvasText; }
+}
+
 /* ---------- Mobile ---------- */
 
 @media (max-width: 640px) {
-    .bit-balette-dialog {
+    .bit-balette-dialog:not(.bit-balette-inline) {
         top: 0;
         width: 100vw;
         max-width: 100vw;
@@ -448,7 +576,7 @@ html.bit-balette-scroll-lock { overflow: hidden; }
         max-height: 100dvh;
         border-radius: 0;
     }
-    .bit-balette-dialog .bit-balette-main { max-height: 100dvh; height: 100dvh; }
+    .bit-balette-dialog:not(.bit-balette-inline) .bit-balette-main { max-height: 100dvh; height: 100dvh; }
     .bit-balette-dialog .bit-balette-root { flex-direction: column; }
     .bit-balette-dialog .bit-balette-detail { display: none; }
     .bit-balette-dialog .bit-balette-footer .bit-balette-hint:not(.bit-balette-hint-right) { display: none; }

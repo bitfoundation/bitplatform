@@ -15,6 +15,25 @@ namespace Bit.Balette.Demo.Server.Services;
 /// </summary>
 public static class BaletteSearchIndex
 {
+    /// <summary>
+    /// The words a custom property's name abbreviates, so a question asked in words finds it: "active row background"
+    /// finds <c>--bit-balette-active-bg</c>, "muted text colour" <c>--bit-balette-fg-muted</c>.
+    /// </summary>
+    private static string SpelledOut(string variable) => string.Join(' ', variable.Split('-', StringSplitOptions.RemoveEmptyEntries)
+        .Select(part => part switch
+        {
+            "bg" => "background",
+            "fg" => "foreground text colour color",
+            "kbd" => "keyboard key cap",
+            "z" => "z-index stacking layer",
+            "mono" => "monospace font",
+            "gap" => "spacing padding",
+            "radius" => "corner rounded",
+            "soft" => "tint",
+            _ => null,
+        })
+        .Where(word => word is not null));
+
     private sealed record Entry(string Kind, string Title, string? Context, string Tool, string Body, string Boosted, int Weight = ReferenceWeight)
     {
         /// <summary>
@@ -451,7 +470,7 @@ public static class BaletteSearchIndex
             var dark = variable.DarkValue is null ? null : $" (dark: {variable.DarkValue})";
 
             entries.Add(new Entry("Theme variable", variable.Name, variable.Group,
-                "GetBaletteThemeVariables()", $"{variable.Name}: {variable.LightValue}{dark}", $"css {variable.Group}"));
+                "GetBaletteThemeVariables()", $"{variable.Name}: {variable.LightValue}{dark}", $"css {variable.Group} {SpelledOut(variable.Name)}"));
         }
 
         foreach (var hook in BaletteThemeCatalog.Hooks)

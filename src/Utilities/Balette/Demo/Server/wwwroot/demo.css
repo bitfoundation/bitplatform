@@ -328,6 +328,12 @@ html:root[bit-theme="dark"],
     font-weight: var(--fl-weight-semibold);
 }
 
+/* The settings page's inline palette: as wide as the list of settings above it. */
+.demo-inline-palette {
+    max-width: 560px;
+    margin: 0 0 1.25rem;
+}
+
 /* A list of settings: the label at the start, its control at the end. */
 .demo-settings {
     max-width: 560px;

@@ -1,4 +1,7 @@
-﻿namespace Bit.Balette;
+﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
+
+namespace Bit.Balette;
 
 /// <summary>Default <see cref="IBaletteService"/>. One instance per scope (circuit / browser tab).</summary>
 public sealed class BaletteService : IBaletteService
@@ -9,10 +12,19 @@ public sealed class BaletteService : IBaletteService
     private readonly List<BaletteCommandMode> _modes = [];
     private readonly List<IBaletteSource> _sources = [];
     private readonly BaletteOptions _options;
+    private readonly ILogger _logger;
 
+    /// <summary>Creates the service with the commands, modes and sources of <paramref name="options"/>.</summary>
     public BaletteService(BaletteOptions options)
+        : this(options, null)
+    {
+    }
+
+    /// <summary>Creates the service, reporting registration problems such as duplicate ids to <paramref name="logger"/>.</summary>
+    public BaletteService(BaletteOptions options, ILogger<BaletteService>? logger)
     {
         _options = options;
+        _logger = logger ?? (ILogger)NullLogger.Instance;
         if (options.Commands.Count > 0)
         {
             Register(options.Commands);
@@ -23,6 +35,11 @@ public sealed class BaletteService : IBaletteService
     }
 
     public bool IsOpen { get; private set; }
+
+    /// <summary>Changes with every change of the registry, so the palette re-reads it only when it changed, not on every keystroke.</summary>
+    internal int Version => Volatile.Read(ref _version);
+
+    private int _version;
 
     public bool IsMac { get; private set; }
 
@@ -85,11 +102,17 @@ public sealed class BaletteService : IBaletteService
     /// <summary>The palette resolves the id itself: it also knows the commands declared in its markup and passed to it directly.</summary>
     internal event Func<string, Task>? ExecuteRequested;
 
+    /// <summary>Application state that <see cref="BaletteCommand.IsVisible"/> predicates read changed (see <see cref="Refresh"/>).</summary>
+    internal event Action? RefreshRequested;
+
     public IDisposable Register(params BaletteCommand[] commands) => Register((IEnumerable<BaletteCommand>)commands);
 
     public IDisposable Register(IEnumerable<BaletteCommand> commands)
     {
+        ArgumentNullException.ThrowIfNull(commands);
+
         var list = Flatten(commands).ToList();
+        WarnAboutDuplicateIds(list);
         var reg = new Registration(this, list);
         lock (_gate)
         {
@@ -205,6 +228,8 @@ public sealed class BaletteService : IBaletteService
         });
     }
 
+    public void Refresh() => RefreshRequested?.Invoke();
+
     public Task OpenAsync(string? query = null, string? pageCommandId = null)
         => OpenRequested?.Invoke(query, pageCommandId) ?? Task.CompletedTask;
 
@@ -244,14 +269,38 @@ public sealed class BaletteService : IBaletteService
     internal void RaiseExecuted(BaletteCommand command, BaletteCommandResult result, TimeSpan duration)
         => CommandExecuted?.Invoke(this, new BaletteCommandExecutedEventArgs(command, result, duration));
 
-    internal bool RaiseFailed(BaletteCommand command, Exception ex)
+    /// <summary>Raises <see cref="CommandFailed"/>, with <paramref name="message"/> as the message the palette shows unless a subscriber changes it.</summary>
+    internal BaletteCommandErrorEventArgs RaiseFailed(BaletteCommand command, Exception ex, string? message)
     {
-        var args = new BaletteCommandErrorEventArgs(command, ex);
+        var args = new BaletteCommandErrorEventArgs(command, ex) { Message = message };
         CommandFailed?.Invoke(this, args);
-        return args.Handled;
+        return args;
     }
 
     internal BaletteOptions Options => _options;
+
+    /// <summary>
+    /// Two commands with one id in the same registration are almost always two titles that derive the same slug (<c>C#</c>
+    /// and <c>C++</c> both derive <c>c</c>): the second replaces the first and one of them silently disappears.
+    /// </summary>
+    private void WarnAboutDuplicateIds(List<BaletteCommand> commands)
+    {
+        if (!_logger.IsEnabled(LogLevel.Warning) || commands.Count < 2)
+        {
+            return;
+        }
+
+        var seen = new Dictionary<string, BaletteCommand>(commands.Count, StringComparer.Ordinal);
+        foreach (var c in commands)
+        {
+            if (seen.TryGetValue(c.Id, out var first) && !ReferenceEquals(first, c))
+            {
+                BaletteLog.DuplicateId(_logger, c.Id, first.Title, c.Title);
+            }
+
+            seen[c.Id] = c;
+        }
+    }
 
     /// <summary>Flattens static children into the registry with <see cref="BaletteCommand.Parent"/> set so nested pages work uniformly.</summary>
     private static IEnumerable<BaletteCommand> Flatten(IEnumerable<BaletteCommand> commands, string? parent = null)
@@ -292,6 +341,7 @@ public sealed class BaletteService : IBaletteService
 
     private void Rebuild()
     {
+        Interlocked.Increment(ref _version);
         _byId.Clear();
         foreach (var c in _registrations.SelectMany(r => r.Commands))
         {

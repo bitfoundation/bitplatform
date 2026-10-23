@@ -131,29 +131,33 @@ public abstract class BaletteTest
 
     // ---- The palette's stable hooks -------------------------------------------------------------------------------
 
+    // Every hook below is the layout's modal palette's: a page can hold an inline palette too (the settings section of
+    // /commands does), with the same hooks inside a section[data-balette='inline'].
+    private const string InDialog = "dialog[data-balette='dialog'] ";
+
     protected static ILocator Dialog(IPage page) => page.Locator("dialog[data-balette='dialog']");
 
-    protected static ILocator Input(IPage page) => page.Locator("[data-balette='input']");
+    protected static ILocator Input(IPage page) => page.Locator(InDialog + "[data-balette='input']");
 
-    protected static ILocator List(IPage page) => page.Locator("[data-balette='list']");
+    protected static ILocator List(IPage page) => page.Locator(InDialog + "[data-balette='list']");
 
-    protected static ILocator Items(IPage page) => page.Locator("[data-balette='item']");
+    protected static ILocator Items(IPage page) => page.Locator(InDialog + "[data-balette='item']");
 
-    protected static ILocator Item(IPage page, string id) => page.Locator($"[data-balette='item'][data-value='{id}']");
+    protected static ILocator Item(IPage page, string id) => page.Locator(InDialog + $"[data-balette='item'][data-value='{id}']");
 
-    protected static ILocator ActiveItem(IPage page) => page.Locator("[data-balette='item'][data-active='true']");
+    protected static ILocator ActiveItem(IPage page) => page.Locator(InDialog + "[data-balette='item'][data-active='true']");
 
-    protected static ILocator GroupHeadings(IPage page) => page.Locator("[data-balette='group-heading']");
+    protected static ILocator GroupHeadings(IPage page) => page.Locator(InDialog + "[data-balette='group-heading']");
 
-    protected static ILocator Crumbs(IPage page) => page.Locator("[data-balette='breadcrumbs'] [data-balette='crumb']");
+    protected static ILocator Crumbs(IPage page) => page.Locator(InDialog + "[data-balette='breadcrumbs'] [data-balette='crumb']");
 
-    protected static ILocator ModeChip(IPage page) => page.Locator("[data-balette='mode']");
+    protected static ILocator ModeChip(IPage page) => page.Locator(InDialog + "[data-balette='mode']");
 
-    protected static ILocator Toast(IPage page) => page.Locator("[data-balette='toast']");
+    protected static ILocator Toast(IPage page) => page.Locator(InDialog + "[data-balette='toast']");
 
-    protected static ILocator Prompt(IPage page) => page.Locator("[data-balette='prompt']");
+    protected static ILocator Prompt(IPage page) => page.Locator(InDialog + "[data-balette='prompt']");
 
-    protected static ILocator Detail(IPage page) => page.Locator("[data-balette='detail']");
+    protected static ILocator Detail(IPage page) => page.Locator(InDialog + "[data-balette='detail']");
 
     /// <summary>The bar every demo page opens with: the trigger and a button per mode (Components/PaletteBar.razor).</summary>
     protected static ILocator ModeButton(IPage page, string title) => page.Locator($".demo-palette-modes button[title='{title}']");
@@ -198,8 +202,9 @@ public abstract class BaletteTest
         var state = await page.EvaluateAsync<string[]>(
             """
             () => {
-              const input = document.querySelector('[data-balette="input"]');
-              const active = document.querySelector('[data-balette="item"][data-active="true"]');
+              const dialog = document.querySelector('dialog[data-balette="dialog"]');
+              const input = dialog.querySelector('[data-balette="input"]');
+              const active = dialog.querySelector('[data-balette="item"][data-active="true"]');
               return [input.getAttribute('aria-activedescendant') ?? '', active?.id ?? '', active?.getAttribute('aria-selected') ?? '',
                       document.activeElement === input ? 'focused' : 'not focused'];
             }
@@ -211,7 +216,7 @@ public abstract class BaletteTest
 
     /// <summary>The ids of the rows listed right now, in order.</summary>
     protected static Task<string[]> ItemIdsAsync(IPage page) =>
-        page.EvaluateAsync<string[]>("() => [...document.querySelectorAll('[data-balette=\"item\"]')].map(e => e.dataset.value)");
+        page.EvaluateAsync<string[]>("() => [...document.querySelectorAll('dialog[data-balette=\"dialog\"] [data-balette=\"item\"]')].map(e => e.dataset.value)");
 
     /// <summary>What has the focus, described by its data-balette hook, else its tag, aria-label and id.</summary>
     protected static Task<string> FocusedAsync(IPage page) => page.EvaluateAsync<string>(

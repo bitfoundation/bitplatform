@@ -51,6 +51,53 @@ function detectMac(): boolean {
     return /mac|iphone|ipad|ipod/i.test(navigator.platform || navigator.userAgent || '');
 }
 
+/**
+ * True while an input method editor is composing: the key belongs to the composition (a Japanese, Chinese or Korean
+ * candidate being picked), not to a shortcut. Safari reports the Enter that commits a composition with isComposing
+ * false but keyCode 229, so both are checked.
+ */
+function isComposing(e: KeyboardEvent): boolean {
+    return e.isComposing || e.keyCode === 229;
+}
+
+/**
+ * The key a chord is matched on. A single character outside ASCII comes from a non-Latin layout - Ctrl+K types 'л' on
+ * a Russian one, 'ن' on a Persian one - or from Option/AltGr composing one ('Ω' for Option+Z): the physical letter or
+ * digit key it was typed on stands for it as well, the way VS Code dispatches shortcuts by KeyboardEvent.code.
+ */
+function keysFor(e: KeyboardEvent): string[] {
+    // Space is written out, as on the C# side: a literal ' ' is what separates the chords of a sequence.
+    const key = e.key === ' ' ? 'space' : e.key.toLowerCase();
+    const keys = [key];
+    const composed = key.length === 1 && key.charCodeAt(0) > 127;
+    // AltGr (reported on Windows as Ctrl+Alt) types a character - '@' on a German layout, 'ś' on a Polish one - and is
+    // never a shortcut's modifier: its physical key must not stand in for what it typed.
+    if (!isAltGraph(e) && (composed || (e.altKey && !/^[a-z0-9]$/.test(key)))) {
+        const physical = physicalKey(e.code);
+        if (physical && physical !== key) keys.push(physical);
+    }
+    return keys;
+}
+
+function isAltGraph(e: KeyboardEvent): boolean {
+    return typeof e.getModifierState === 'function' && e.getModifierState('AltGraph');
+}
+
+/**
+ * A character typed with AltGr, or with Option/Alt alone ('Ω' for Option+Z on a Mac, '@' for Option+L on a German one):
+ * typing, when it lands in a text field, rather than a chord.
+ */
+function typesWithAlt(e: KeyboardEvent): boolean {
+    if (isAltGraph(e)) return true;
+    return e.altKey && !e.ctrlKey && !e.metaKey && e.key.length === 1 && !/^[a-z0-9]$/i.test(e.key);
+}
+
+/** The letter of a key pressed with Ctrl or ⌘ inside the dialog, read through the layout like keysFor. */
+function chordLetter(e: KeyboardEvent): string {
+    const keys = keysFor(e);
+    return keys[keys.length - 1];
+}
+
 function isEditable(el: EventTarget | null): boolean {
     if (!(el instanceof Element)) return false;
     const tag = el.tagName;
@@ -67,16 +114,8 @@ function chordsFor(e: KeyboardEvent, isMac: boolean): string[] {
     const raw = e.key;
     if (!raw) return [];
     if (MOD_KEYS.has(raw)) return [];
-    // Space is written out, as on the C# side: a literal ' ' is what separates the chords of a sequence.
     const key = raw === ' ' ? 'space' : raw.toLowerCase();
-
-    // Option on macOS, and AltGr on many layouts, compose a character instead ('Ω' for Option+Z), which no
-    // shortcut is written with: with Alt held, the physical letter or digit key stands for the key as well.
-    const keys = [key];
-    if (e.altKey && !/^[a-z0-9]$/.test(key)) {
-        const physical = physicalKey(e.code);
-        if (physical) keys.push(physical);
-    }
+    const keys = keysFor(e);
 
     const parts: string[] = [];
     if (e.ctrlKey) parts.push('ctrl');
@@ -113,15 +152,25 @@ function physicalKey(code: string): string | null {
     return m ? (m[1] || m[2]).toLowerCase() : null;
 }
 
-/** Scrolls the list just enough to show the element, with the group heading above a group's first item. */
+/**
+ * Scrolls the list just enough to show the element, with the group heading above a group's first item. Headings are
+ * sticky, and a sticky element's box is where it is stuck rather than where it belongs, so a group's first item is
+ * revealed by the top of its group (role="group", which holds the heading) - or, in a virtualized list whose headings
+ * are plain siblings of the items, by the heading itself.
+ */
 function reveal(list: HTMLElement | null, el: Element): void {
     const prev = el.previousElementSibling;
-    const anchor = prev && prev.getAttribute('role') === 'presentation' ? prev : el;
-    if (anchor !== el && list) {
-        const r = list.getBoundingClientRect();
-        const a = anchor.getBoundingClientRect();
-        if (a.top < r.top) {
-            anchor.scrollIntoView({ block: 'nearest' });
+    if (list && prev && prev.getAttribute('role') === 'presentation') {
+        const parent = el.parentElement;
+        const top = parent && parent.getAttribute('role') === 'group' ? parent : prev;
+        const listTop = list.getBoundingClientRect().top;
+        const groupTop = top.getBoundingClientRect().top;
+        if (groupTop < listTop) {
+            if (top === parent) {
+                list.scrollTop -= listTop - groupTop;
+            } else {
+                top.scrollIntoView({ block: 'nearest' });
+            }
             return;
         }
     }
@@ -151,9 +200,13 @@ function scrollToEstimate(list: HTMLElement, position: number, count: number): v
  * would only find through reflection - which a trimmed app no longer has the metadata for.
  * `sequenceTimeout` is BaletteOptions.SequenceTimeoutMs, always positive.
  */
-export function init(dialog: HTMLDialogElement, dotnet: DotNetObjectReference, toggles: string[] | null, commands: string[] | null,
-    suppressInEditable: boolean, sequenceTimeout: number, vim: boolean): BaletteHandle {
+export function init(dialog: HTMLElement, dotnet: DotNetObjectReference, toggles: string[] | null, commands: string[] | null,
+    suppressInEditable: boolean, sequenceTimeout: number, vim: boolean, inline?: boolean): BaletteHandle {
     const isMac = detectMac();
+    // An inline palette is a section of the page, always shown: no modal to open or close, no backdrop, and no global
+    // keys - the page's modal palette owns those.
+    const isInline = inline === true;
+    const modal = dialog as HTMLDialogElement;
     let toggleShortcuts = new Set(toggles || []);
     let commandShortcuts = new Set(commands || []);
     let vimBindings = vim === true;
@@ -171,7 +224,7 @@ export function init(dialog: HTMLDialogElement, dotnet: DotNetObjectReference, t
 
     /** In-palette chords (Ctrl+N/P, Vim Ctrl+J/K, Mod+Shift+P to pin) win over a toggle bound to the same keys. */
     function isReservedInside(e: KeyboardEvent): boolean {
-        const lower = e.key.length === 1 ? e.key.toLowerCase() : e.key;
+        const lower = e.key.length === 1 ? chordLetter(e) : e.key;
         const plainCtrl = e.ctrlKey && !e.shiftKey && !e.altKey && !e.metaKey;
         if (plainCtrl && (lower === 'n' || lower === 'p')) return true;
         if (vimBindings && plainCtrl && (lower === 'j' || lower === 'k')) return true;
@@ -213,14 +266,35 @@ export function init(dialog: HTMLDialogElement, dotnet: DotNetObjectReference, t
         return { matched: null, prefixPossible };
     }
 
+    /** A single-chord shortcut among the alternatives of one key press. */
+    function singleChordMatch(alts: string[], shortcuts: Iterable<string>): string | null {
+        for (const s of shortcuts) {
+            if (!s.includes(' ') && alts.includes(s)) return s;
+        }
+        return null;
+    }
+
     function onDocumentKeyDown(e: KeyboardEvent): void {
-        if (disposed || e.defaultPrevented || e.isComposing) return;
+        if (disposed || e.defaultPrevented || isComposing(e)) return;
         const alts = chordsFor(e, isMac);
         if (alts.length === 0) return;
 
+        // A held key repeats its keydown: a held Ctrl+K would open and close the palette many times a second, and a held
+        // shortcut would run its command as often. The repeats are still claimed, so the browser does not act on them
+        // either, but nothing runs and no sequence advances.
+        if (e.repeat) {
+            const claimed = modal.open
+                ? singleChordMatch(alts, toggleShortcuts)
+                : singleChordMatch(alts, allShortcuts());
+            if (claimed && !(modal.open && isReservedInside(e))) {
+                e.preventDefault();
+            }
+            return;
+        }
+
         // While the palette is open only the single-chord toggles are global; the dialog's own
         // handler owns every other key.
-        if (dialog.open) {
+        if (modal.open) {
             if (isReservedInside(e)) return;
             for (const t of toggleShortcuts) {
                 if (!t.includes(' ') && alts.includes(t)) {
@@ -232,10 +306,10 @@ export function init(dialog: HTMLDialogElement, dotnet: DotNetObjectReference, t
             return;
         }
 
-        // Plain keys never fire from an editable element - typing "g" in a text box is typing - but
-        // chords with a modifier still do.
+        // Plain keys never fire from an editable element - typing "g" in a text box is typing - and neither does a
+        // character composed with AltGr or Option; chords with a modifier still do.
         const hasModifier = e.ctrlKey || e.metaKey || e.altKey;
-        if (isEditable(e.target) && suppressInEditable && !hasModifier) {
+        if (isEditable(e.target) && suppressInEditable && (!hasModifier || typesWithAlt(e))) {
             resetBuffer();
             return;
         }
@@ -262,14 +336,28 @@ export function init(dialog: HTMLDialogElement, dotnet: DotNetObjectReference, t
     }
 
     function onDialogKeyDown(e: KeyboardEvent): void {
-        if (disposed || e.isComposing) return;
-        const key = e.key;
+        if (disposed || isComposing(e)) return;
+        // In a page, a key the modal palette already claimed (its toggle, say) is not also a key of this one.
+        if (isInline && e.defaultPrevented) return;
+        // In a page, Tab and Shift+Tab move the focus on, as everywhere else on it: an inline palette is no focus trap.
+        if (isInline && e.key === 'Tab') return;
+        // The input the key was typed in, which an inline palette - never opened - learns this way.
+        const target = e.target;
+        if (target instanceof HTMLInputElement && target.dataset.balette === 'input') inputEl = target;
         const ctrl = e.ctrlKey, shift = e.shiftKey, alt = e.altKey, meta = e.metaKey;
-        const lower = key.length === 1 ? key.toLowerCase() : key;
+        // With Ctrl or ⌘ held a letter is a chord, so a non-Latin layout's letter is read as the key it sits on;
+        // .NET is sent that letter, which is what its bindings are written with.
+        const lower = e.key.length === 1 ? ((ctrl || meta) ? chordLetter(e) : e.key.toLowerCase()) : e.key;
+        const key = e.key.length === 1 && (ctrl || meta) ? lower : e.key;
         const emptyQuery = inputEl !== null && inputEl.value.length === 0;
 
         let handled = false;
-        if (NAV_KEYS.has(key)) {
+        if (isInline && key === 'Escape') {
+            // Claimed only when it has something to do - disarm a confirmation, go back a page, clear the query - so a
+            // drawer or dialog around the palette still closes on it.
+            const depth = Number(dialog.querySelector('[data-page-depth]')?.getAttribute('data-page-depth') ?? '0');
+            handled = !emptyQuery || depth > 0 || dialog.querySelector('[data-confirming="true"]') !== null;
+        } else if (NAV_KEYS.has(key)) {
             handled = true;
         } else if (ctrl && !shift && !alt && !meta && (lower === 'n' || lower === 'p')) {
             handled = true;
@@ -290,7 +378,17 @@ export function init(dialog: HTMLDialogElement, dotnet: DotNetObjectReference, t
         if (!handled) return;
         e.preventDefault();
         e.stopPropagation();
-        dotnet.invokeMethodAsync('OnKeyDown', key, ctrl, shift, alt, meta);
+        dotnet.invokeMethodAsync('OnKeyDown', logicalArrow(key), ctrl, shift, alt, meta);
+    }
+
+    /**
+     * .NET reads ArrowLeft as "back" and ArrowRight as "into the action panel": towards the start and the end of the line.
+     * In right-to-left text the start is on the right, so the two arrows trade places.
+     */
+    function logicalArrow(key: string): string {
+        if (key !== 'ArrowLeft' && key !== 'ArrowRight') return key;
+        const rtl = getComputedStyle(inputEl ?? dialog).direction === 'rtl';
+        return rtl ? (key === 'ArrowLeft' ? 'ArrowRight' : 'ArrowLeft') : key;
     }
 
     // Escape is handled by .NET (cancel a confirmation, then go back a page, then close), so the
@@ -316,10 +414,29 @@ export function init(dialog: HTMLDialogElement, dotnet: DotNetObjectReference, t
         dotnet.invokeMethodAsync('OnPointerMoved');
     }
 
-    document.addEventListener('keydown', onDocumentKeyDown, true);
+    // An inline palette tells .NET when the focus enters or leaves it, which announces result counts only while it has it.
+    let inlineFocused = false;
+    function onFocusIn(): void {
+        if (inlineFocused) return;
+        inlineFocused = true;
+        dotnet.invokeMethodAsync('OnInlineFocusChanged', true);
+    }
+    function onFocusOut(e: FocusEvent): void {
+        const next = e.relatedTarget;
+        if (!inlineFocused || (next instanceof Node && dialog.contains(next))) return;
+        inlineFocused = false;
+        dotnet.invokeMethodAsync('OnInlineFocusChanged', false);
+    }
+
+    if (!isInline) {
+        document.addEventListener('keydown', onDocumentKeyDown, true);
+        dialog.addEventListener('cancel', onCancel);
+        dialog.addEventListener('click', onDialogClick);
+    } else {
+        dialog.addEventListener('focusin', onFocusIn);
+        dialog.addEventListener('focusout', onFocusOut);
+    }
     dialog.addEventListener('keydown', onDialogKeyDown);
-    dialog.addEventListener('cancel', onCancel);
-    dialog.addEventListener('click', onDialogClick);
     dialog.addEventListener('pointermove', onPointerMove, { passive: true });
 
     return {
@@ -329,10 +446,14 @@ export function init(dialog: HTMLDialogElement, dotnet: DotNetObjectReference, t
 
         open(input, selectAll) {
             inputEl = input instanceof HTMLInputElement ? input : null;
+            if (isInline) {
+                if (inputEl) inputEl.focus({ preventScroll: true });
+                return;
+            }
             previouslyFocused = document.activeElement;
-            if (!dialog.open) {
+            if (!modal.open) {
                 try {
-                    dialog.showModal();
+                    modal.showModal();
                 } catch {
                     dialog.setAttribute('open', '');
                 }
@@ -352,8 +473,9 @@ export function init(dialog: HTMLDialogElement, dotnet: DotNetObjectReference, t
         },
 
         close() {
-            if (dialog.open) {
-                dialog.close();
+            if (isInline) return;
+            if (modal.open) {
+                modal.close();
             }
             document.documentElement.classList.remove('bit-balette-scroll-lock');
             if (previouslyFocused instanceof HTMLElement || previouslyFocused instanceof SVGElement) {
@@ -373,6 +495,9 @@ export function init(dialog: HTMLDialogElement, dotnet: DotNetObjectReference, t
         },
 
         scrollIntoView(list, id, position, count) {
+            // Revealing a row scrolls every scrollable ancestor - for a section of the page, the page itself. An inline
+            // palette nobody is using (its sources answering after the page loaded) must not pull the page to it.
+            if (isInline && !dialog.contains(document.activeElement)) return;
             const request = ++scrollRequest;
             const el = document.getElementById(id);
             if (el) {
@@ -431,6 +556,8 @@ export function init(dialog: HTMLDialogElement, dotnet: DotNetObjectReference, t
             dialog.removeEventListener('cancel', onCancel);
             dialog.removeEventListener('click', onDialogClick);
             dialog.removeEventListener('pointermove', onPointerMove);
+            dialog.removeEventListener('focusin', onFocusIn);
+            dialog.removeEventListener('focusout', onFocusOut);
             document.documentElement.classList.remove('bit-balette-scroll-lock');
             resetBuffer();
         },

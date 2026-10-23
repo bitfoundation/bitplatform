@@ -16,6 +16,9 @@ public sealed record Doc(string Title, string Path, string Excerpt);
 /// </summary>
 public sealed class FakeDirectory
 {
+    /// <summary>For code that has no service provider at hand, such as a source declared inline with a command.</summary>
+    public static FakeDirectory Shared { get; } = new();
+
     public IReadOnlyList<Person> People { get; } =
     [
         new("Ada Lovelace", "Engineering", "ada@example.com"),

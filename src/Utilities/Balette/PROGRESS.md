@@ -1,0 +1,299 @@
+﻿# Bit.Balette improvement log
+
+A record of the audit-and-improve iterations run over Bit.Balette: what was found, what changed, how it was verified,
+and what is still open. Newest iteration last.
+
+## Baseline (2026-10-23)
+
+- `dotnet build Bit.Balette.slnx`: succeeds; one pre-existing nullable warning in `Bit.Balette.Tests.Mcp`.
+- `Bit.Balette.Tests` (bUnit + model tests, net8.0/net9.0/net10.0): 378 passed (126 per target framework), 0 failed.
+- E2E (Playwright) and MCP suites exist; E2E is run on demand (`bit.ci.Balette.e2e.yml`).
+
+### Audit findings
+
+Priorities: **P0** critical, **P1** essential, **P2** important, **P3** optional.
+
+| # | Pri | Area | Finding (evidence) | Plan |
+|---|---|---|---|---|
+| 1 | P1 | Robustness | `BaletteHistory` dereferences stored values unchecked: `{"id": null}` in `localStorage` throws on every rebuild, breaking the palette until storage is cleared. A custom store that throws on load leaves history faulted for the session; one that throws on save surfaces as an unobserved task exception. Load and record can mutate the dictionary off the renderer's thread while it is read. | Sanitize loaded data, catch and log store failures, copy-on-write snapshots. |
+| 2 | P1 | Security | `Href` is passed to `NavigationManager.NavigateTo` / `window.open` unchecked; a `javascript:` URL from an async source's data would run script. | Allow-list URL schemes (`BaletteOptions.AllowedUrlSchemes`); refuse others. |
+| 3 | P1 | Correctness | Lazily loaded children use `CancellationToken.None`: leaving or closing the page never cancels the request, and one shared `_loading` flag lets an abandoned load clear the spinner of a newer one. A failed load shows "Nothing to show yet." with no error or retry. | Per-page load state and cancellation; an error state with retry. |
+| 4 | P1 | Errors | A handler exception is rethrown unless `Handled`: from `Enter` it becomes an unhandled promise rejection in the browser with no feedback in the palette; from a click it is fatal to a Blazor Server circuit. When handled, the raw `Exception.Message` is shown to the user. | UI-initiated runs log the error and show a localized message (overridable through the event args); programmatic `ExecuteAsync` still propagates. |
+| 5 | P1 | Keyboard / i18n | Shortcuts match `KeyboardEvent.key` only, so `Ctrl+K`, `Ctrl+N`/`P` and `G I` do nothing on Russian, Persian, Arabic, Greek or Hebrew layouts. Holding a toggle shortcut auto-repeats it (the palette flickers open/closed). Safari's IME commit `keydown` (`keyCode` 229) is not ignored. | Fall back to the physical key for non-ASCII letters; ignore repeats; ignore `keyCode` 229. |
+| 6 | P1 | Registration | Derived ids collapse: an emoji-only title derives an empty slug, `C#` and `C++` both derive `c`, and the second silently replaces the first. Duplicate ids and shortcut conflicts are never reported. When two commands claim one shortcut, the first in snapshot order wins, which is the opposite of the "later registration wins" rule for ids. | Fallback id for symbol-only titles, warnings for duplicate ids in one registration and for shortcut conflicts, later-registered shortcut wins. |
+| 7 | P1 | Reactivity | `VisibleWhen` is re-evaluated only when the list rebuilds, so a global shortcut keeps the visibility it had at the last rebuild: a newly visible command's shortcut does nothing, a newly hidden one swallows its key. | `IBaletteService.Refresh()`. |
+| 8 | P2 | Hosting | Several awaited JS calls (`open`, `focusInput`, `scrollIntoView`, `close`) let `JSDisconnectedException`/`TaskCanceledException` escape into rendering. | One guarded interop helper. |
+| 9 | P2 | DX | `DebounceMs < 0` silently disables every source (the exception dies in a fire-and-forget task); `RowHeight <= 0` breaks virtualization. | Validate in the setters. |
+| 10 | P1 | A11y | Group headings are `role="presentation"` siblings of the options, so screen readers never hear group names; toggle state and "pinned" are conveyed only visually (`aria-label` on a generic `span` is ignored); in multi-select pages `aria-selected` marks the *active* row while `aria-checked` marks the chosen ones. | Iteration 2. |
+| 11 | P1 | A11y | No `forced-colors` styles: the active row is a background colour only and disappears in Windows High Contrast. `--bit-balette-fg-subtle` (#9ca3af on white, 2.5:1) is used for 11px group headings. | Iteration 2. |
+| 12 | P1 | RTL / i18n | Physical CSS (`margin-left`, `border-left`, `left`/`translateX` toggle knob), unmirrored arrows and chevrons, `←`/`→` not direction-aware, no `dir="auto"` on user text, shortcut key caps reversed in RTL. Hard-coded English: `aria-label="Breadcrumb"`, "then" in shortcut hints. | Iteration 2. |
+| 13 | P2 | Search | No diacritic folding (`cafe` misses "Café"), no Persian/Arabic letter-variant or digit folding (`ي`/`ی`, `ك`/`ک`, `۱۲`/`12`), no quoted phrases, no typo tolerance (`settigns` finds nothing). | Iteration 3. |
+| 14 | P2 | Navigation | Nested commands are unreachable from the root query (kbar finds them with their ancestors); recents and pins of nested commands are recorded but never shown. | Iteration 3. |
+| 15 | P2 | Execution | No busy indicator while a handler awaits; no prompt validation. | Iteration 4. |
+| 16 | P2 | Sources | A throwing source is silently treated as empty (no log, no error, no retry). Sources run only on the root page, so `BaletteSourceContext.ParentCommandId` is always null and a nested page cannot search a server as the user types. | Iteration 4. |
+| 17 | P2 | Performance | Every keystroke copies the registry, rebuilds the id/parent sets and re-syncs global shortcuts (evaluating every `VisibleWhen`), although none of that changes while typing. | Iteration 5, measured with the benchmarks. |
+| 18 | P2 | Embedding | Only a modal dialog; no inline/embedded palette for search pages or settings panels. | Later iteration. |
+| 19 | P3 | API | `BaletteRowKind.Separator` and the strings `MoreResults`, `Suggestions`, `Other`, `ClearRecents` are public but unused. | Later iteration. |
+
+## Iteration 1 (2026-10-23) - correctness, robustness, security
+
+Findings 1-9 above.
+
+**Changed**
+
+- `BaletteHistory`: loaded data is sanitized (null values, blank ids and negative counts dropped or clamped); a store
+  that throws on load or save is logged (`ILogger<BaletteHistory>`) and the history keeps working in memory; every
+  change publishes a new snapshot under a lock, so readers on the renderer's thread never enumerate a dictionary being
+  written; never-used entries are no longer listed as recents.
+- `BaletteOptions.AllowedUrlSchemes` (`http`, `https`, `mailto`, `tel`): any other scheme in `Href` is refused and
+  logged. The scheme is parsed the way browsers parse it (control characters, tabs and newlines stripped).
+- Lazily loaded pages: per-page loading state and a `CancellationToken` cancelled when the page is left, reset, loaded
+  again or the palette disposed; an abandoned load changes nothing. A failed load shows an error state
+  (`data-balette="error"`, `role="alert"`) with a Retry button, and `Enter` retries too.
+- Command failures: logged through `ILogger<Balette>` and shown as a localized `BaletteStrings.CommandFailed` toast
+  (`data-kind="error"`, assertive) instead of `Exception.Message`; `BaletteCommandErrorEventArgs.Message` lets a
+  subscriber pick the text. UI-initiated failures are never rethrown (a click used to end a Blazor Server circuit);
+  `IBaletteService.ExecuteAsync` still rethrows unhandled ones to its caller.
+- Browser layer: shortcuts fall back to `KeyboardEvent.code` for non-ASCII keys (Russian, Persian, Arabic, Greek,
+  Hebrew layouts), in-dialog chords too; auto-repeat is claimed but runs nothing; `keyCode` 229 is treated as IME
+  composition, as MDN recommends.
+- Ids and shortcuts: a symbol-only title derives `u<code points>`; duplicate ids within one `Register` call, shortcut
+  conflicts, shortcuts the toggle takes and sequences that can never complete are logged once each; on a conflict the
+  command registered last wins (it used to be the first).
+- `IBaletteService.Refresh()` (a default interface member, so existing implementations still compile) re-evaluates
+  `VisibleWhen` for the open list and the global shortcuts.
+- One guarded helper for awaited JS calls; `DebounceMs`, `MaxResults`, `MaxRecents`, `MaxHistoryEntries`, `RowHeight`
+  validate their values.
+
+**Verified**
+
+- Library build: 0 warnings, 0 errors on net8.0/net9.0/net10.0.
+- `Bit.Balette.Tests`: 513 passed, 0 failed (171 per framework; 45 new: `BaletteReliabilityTests`,
+  `BaletteCorruptHistoryTests`, `HistoryRobustnessTests`, `UrlSafetyTests`, `OptionValidationTests`, `DerivedIdTests`).
+- E2E (Chromium, Playwright): 64 passed, 0 failed, 0 skipped, including the new `KeyboardLayoutTests` (Russian `Ctrl+K`,
+  Persian `G S`, Russian `Ctrl+N`/`Ctrl+P`, a held `Ctrl+K`, IME keys globally and inside the palette).
+
+**Compatibility notes**
+
+- Behaviour change: a handler exception from the palette's UI is no longer rethrown, and the toast shows
+  `BaletteStrings.CommandFailed` instead of `Exception.Message` (set `e.Message = e.Exception.Message` in
+  `CommandFailed` to get the old text).
+- Behaviour change: when two commands share a global shortcut, the later registration now wins.
+- New public surface: `IBaletteService.Refresh`, `BaletteCommandErrorEventArgs.Message`, `BaletteOptions.AllowedUrlSchemes`,
+  constructor overloads of `BaletteService` and `BaletteHistory` taking a logger, three strings.
+
+## Iteration 2 (2026-10-23) - accessibility, right-to-left text, localization
+
+Findings 10-12, plus what the competitor research and the new axe-core audit turned up.
+
+**Research that shaped it** (cmdk, kbar, WAI-ARIA APG, fzf, VS Code, Raycast, GitHub): kbar#269 and cmdk#179 (group
+headings read as options, invalid listbox children), the APG grouped-listbox and multi-select guidance (one selection
+state per list), cmdk#370 (a click takes focus from the input), cmdk#196 (hard-coded English), Sarah Higley's notes on
+`aria-activedescendant`, VS Code's `KeyboardEvent.code` dispatch, hotkeys-js#539 (pure `code` matching breaks Dvorak).
+
+**Changed**
+
+- Groups are `role="group"` named by their heading; ungrouped commands under Pinned/Recent get a "Suggestions"
+  heading; virtualized rows carry `aria-describedby` (their heading), `aria-posinset` and `aria-setsize`.
+- Multi-select pages use `aria-checked` only; single-select lists `aria-selected` only.
+- Toggle state, "Pinned" and shortcut hints are spoken (visually hidden text) instead of `aria-label` on a `span`.
+- Always-present live regions for toasts (`status`) and errors (`alert`), whatever the footer shows; page moves are
+  announced ("Theme. 3 results available"); the list is `aria-busy` while loading.
+- `BaletteStrings`: every property documented; `Breadcrumb`, `On`, `Off`, `ShortcutThen`, `PageAnnouncement`, and an
+  overridable `ResultsAnnouncementFor(int)` for plural rules.
+- RTL: logical CSS properties, mirrored arrows and chevrons (`data-mirror`), `dir="auto"` on user text, LTR key caps,
+  `←`/`→` swapped in RTL text by the browser layer.
+- Forced colours: outlines and system colours for the active row, dialog edge, checkboxes, switches, highlights.
+- Contrast: `fg-muted`, `fg-subtle`, `danger` adjusted; headings and "then" use muted text; highlighted characters use
+  the full text colour. New tokens for previously hard-coded sizes, the top offset, blur and animation duration.
+- Rows no longer take focus on `mousedown`; the close button's name includes its visible "Esc" (WCAG 2.5.3); buttons
+  are at least 24 px; highlights never split a grapheme (`BaletteHighlightedText.HitMask`).
+- Bug found by the new tests: `Balette.SetQueryAsync` did not re-render; it now does, on the renderer's dispatcher.
+- Bug found by the E2E suite: revealing a group's first row scrolled its sticky heading, which stops partway once the
+  heading is inside its group; it now scrolls to the group's top.
+
+**Verified**
+
+- `Bit.Balette.Tests`: 558 passed (186 per framework; new `BaletteAccessibilityTests`, `HighlightedTextTests`).
+- E2E: new `AccessibilityTests` (axe-core 4.14 through `Deque.AxeCore.Playwright`, WCAG 2.0-2.2 A/AA tags, five palette
+  states x light/dark x demo theme/library defaults; forced colours; RTL arrows and chevrons; focus kept on click).
+  axe found four real defects, all fixed: the close button's label-in-name, the "then" text's contrast, highlighted
+  subtitle text's contrast, and (by the scroll test) the sticky-heading scroll.
+
+## Iteration 3 (2026-10-23) - search quality and cross-page search
+
+Findings 13-14.
+
+**Changed**
+
+- `BaletteTextFold`: one-to-one folding (positions stay exact). Latin diacritics (table generated from Unicode NFD,
+  plus stroked letters, as fzf's) are folded only when the term has none of its own; Arabic/Persian letter variants,
+  Arabic-Indic/Persian digits and fullwidth ASCII are always folded. `BaletteFuzzyMatcher.Normalize` and
+  `BaletteSubstringMatcher.Normalize` (default true); operators and `!negate` follow the matcher.
+- Query syntax: `"quoted phrases"` (straight or curly quotes, open quotes while typing, with `!`, `^`, `$`).
+- Typo tolerance (`BaletteOptions.TypoTolerance`): a query that matched nothing is retried with optimal string
+  alignment (1 edit for 4-7 letters, 2 from 8), scored below exact matches, announced and marked as close matches.
+- Nested search from the root (`BaletteOptions.SearchNestedCommands`): nested registered/declared commands match with
+  their ancestors' titles (`Weights.Path`), render "Theme › Dark", group under their root ancestor, rank after an equal
+  root match; hidden/disabled/multi-select ancestors exclude them; modes never include them. Opening a nested page (also
+  through `OpenAsync(pageCommandId)`) pushes its ancestors, so `Esc` climbs one level at a time. Recents and pins of
+  nested commands are listed.
+- Bug: pinned and recent commands were looked up only among the first `MaxResults` ranked rows; now among all matches.
+
+**Verified**
+
+- `Bit.Balette.Tests`: 684 passed (228 per framework; new `NormalizationTests`, `QuotedPhraseTests`,
+  `TypoToleranceTests`, `BaletteSearchFeatureTests`).
+- E2E: 71 passed, 0 failed - every axe audit clean in all four configurations after the iteration 2 fixes.
+- Benchmarks (BenchmarkDotNet short job, same machine, the unmodified code extracted from `HEAD` as the baseline):
+  the fuzzy matcher per field is unchanged (0.83-1.08x); a whole command with fuzzy terms 1.02-1.15x; a keystroke
+  0.93-1.20x (median about 1.06x). The literal operators (`'x`, `^x`, `x$`) were 2-2.9x slower, because folding
+  replaced a vectorized `IndexOf` - fixed in iteration 6. The Release build ran the trim and AOT analyzers on the new
+  code with no warnings.
+
+## Iteration 4 (2026-10-23) - execution and async workflows
+
+Findings 15-16.
+
+**Changed**
+
+- Busy state: after 150 ms a running handler shows the spinner, `aria-busy`, `data-busy` on the dialog,
+  `data-running` on its row, and announces "Working…" (`BaletteStrings.Running`).
+- Sources: a source that throws or outlives `BaletteOptions.SourceTimeoutMs` (10 s) is logged and leaves a retry row
+  (`data-error`) instead of silently vanishing; the other sources' results stay.
+- Page sources: `BaletteCommand.ChildSources` / `.Source(...)` search as the user types on a command's page
+  (`ParentCommandId` now meaningful); multi-select pages keep checked source results across searches.
+- Prompts: `Prompt(title, onSubmit, validate, ...)` with `aria-invalid`, a described error and an assertive
+  announcement; `BaletteCommandResult.Error(message)` for failures a handler expects (keeps the prompt open).
+- `Ctrl+Enter` opens a plain link in a new tab (scheme-checked); a right click opens a row's action panel.
+- Bug found while testing nested search: an option that answers `Back` (Theme › Dark) chosen from the root did
+  nothing - not even a rebuild. `Back` with nowhere to go now behaves like `KeepOpen`.
+- Demo: the rename prompt validates and refuses "admin" with an `Error`; "Find a person…" searches the directory as
+  you type; a Language page (Français, Türkçe, فارسی, العربية, ...) shows normalization, nested search and RTL.
+
+**Verified**: `Bit.Balette.Tests` 717 passed (239 per framework; new `BaletteExecutionTests`).
+
+## Iteration 5 (2026-10-23) - per-keystroke cost
+
+Finding 17.
+
+**Changed**
+
+- The palette keeps its snapshot of the registry (`_all`, the parent ids, a lookup by id) and takes a new one only when
+  the registry's version, the markup commands or the `Commands` parameter changed. Global shortcuts are re-synced on a
+  new snapshot, on open and close, after a command ran and on `Refresh()` - no longer on every keystroke.
+- Benchmarks: `KeystrokeBenchmarks` mirrors the new `Rebuild` (no snapshot, nested pass); new
+  `NestedKeystrokeBenchmarks` (a quarter of the registry nested, two levels) and `SnapshotBenchmarks`.
+
+**Verified**
+
+- `Bit.Balette.Tests`: 726 passed; a test proves typing no longer re-evaluates `VisibleWhen` for shortcuts (it would
+  have failed before), and others that running a command and registering one still update them.
+- Keystroke against the original code: 0.82-1.08x the time, and far less garbage - at 20,000 commands `qjz` allocates
+  0.6 KB instead of 670 KB, `sett` 622 KB instead of 1.26 MB, `open sett` 285 KB instead of 944 KB. The snapshot,
+  1.2 ms at 20,000 commands, is now paid once per registry change. A registry with a quarter of it nested costs about
+  what a flat one does (`sett` at 2,000 commands: 933 vs 920 µs).
+- MCP suite: 92 passed after two fixes it prompted - an oracle test located the light rule by its exact first line
+  (the inline selector now comes first), and the search index learned the words theme tokens abbreviate (`bg`,
+  `fg`, `kbd`, `z`...), so "active row background" finds `--bit-balette-active-bg` again.
+
+## Iteration 6 (2026-10-23) - inline palettes, density, operator speed
+
+Finding 18.
+
+**Changed**
+
+- `Inline="true"`: a `<section data-balette="inline">` in the page, always open; `Esc` goes back or clears; a closing
+  command resets it. It answers no service open/close/execute request and claims no toggle or global shortcut, so a
+  layout's modal palette and a page's inline one never both run a command; a key the modal one claimed is ignored.
+  History and empty-query sources start on its first interactive render.
+- `IncludeRegisteredCommands="false"`: only the palette's own commands; no registry commands, sources or modes.
+- `Density` (`comfortable`, `compact`) as `data-density` and token overrides.
+- Literal operators: an ASCII term in an ASCII text goes straight to the runtime's vectorized ordinal search.
+- Demo: the settings section of /commands has a compact inline palette over the page's own settings.
+
+**Verified**: `Bit.Balette.Tests` 750 passed (250 per framework; new `BaletteInlineTests`).
+
+**Verified (iteration 6)**: E2E 79 passed after the suite's own locators were scoped to the modal dialog (with an inline
+palette on /commands, `[data-balette='input']` matched two inputs); new `InlinePaletteTests` (driven in place, `Ctrl+K`
+from its box opens only the modal, a global shortcut runs once, axe clean) and `SearchFeatureTests` (Français found as
+`francais` from the root, `settigns`, Persian turning the page RTL, the validated rename prompt and its `Error`, the
+directory page searching as you type). Literal operators: 1.3-1.7x baseline (from 2.3-2.9x), 0.24 µs per command.
+
+## Iteration 7 (2026-10-23) - whole-library reassessment and polish
+
+Reassessed every requirement area (A-R) against the code and the research. Small, worthwhile gaps fixed:
+
+- Shortcuts browsers never hand to a page (`Mod+W`, `Mod+T`, `Mod+N`, `Ctrl+Tab`, ...) are reported once.
+- Ancestor breadcrumbs are buttons back to their page; the current one keeps `aria-current="page"`.
+- `prefers-contrast: more`: stronger borders, an outlined active row, underlined highlights.
+- An inline palette honours `ResetOnClose = false`, and only scrolls its active row into view while it has the focus
+  (revealing a row scrolls the page too, and an unused inline palette must not pull the page to it).
+- Demo: the flows page lists the searching page and the root search, and its prompt sample shows validation and
+  `Error`.
+
+**Verified**: `Bit.Balette.Tests` 759 passed (253 per framework; new `BalettePolishTests`); E2E 79 passed; MCP 92 passed;
+`dotnet build -c Release` (trim and AOT analyzers on) 0 warnings for net8.0/net9.0/net10.0; `dotnet pack` produces
+`lib/` for all three frameworks with XML docs, both static web assets and the README, and the minified stylesheet keeps
+the `content` fallbacks for browsers without alternative-text syntax.
+
+## Iteration 8 (2026-10-23) - independent review and fixes
+
+A separate reviewer, given only the code (not these notes' conclusions), reported ten defects. All ten were checked
+against the code and confirmed (two, 2 and 5, partly predate these changes); all ten are fixed. Its regression tests
+then exposed an eleventh, pre-existing one, and fixing them unmasked two more (12, 13).
+
+| # | Defect | Fix |
+|---|---|---|
+| 1 | An inline palette trapped `Tab` (WCAG 2.1.2) and swallowed `Esc` even with nothing to undo. | Inline: `Tab` is never claimed; `Esc` only with a query, a page or an armed confirmation. |
+| 2 | A character typed with AltGr (Windows: Ctrl+Alt) or Option fired the shortcut of its physical key. | No physical-key fallback under `AltGraph`; an Alt-composed character in a text field is typing. |
+| 3 | The DI sources belonged to whichever palette started first; disposing it removed them for the rest. | DI sources are registered once per scope and never removed with a palette. |
+| 4 | `SourceTimeoutMs` only stopped sources that honoured their token. | The search is awaited with `WaitAsync(timeout)`; a late failure is observed. |
+| 5 | Every `OperationCanceledException` from a handler was swallowed, an `HttpClient` timeout included. | Quiet only when the palette cancelled it or it does not wrap a `TimeoutException`. |
+| 6 | A handler's answer was applied to whatever page was current after `Esc` left its own. | `Back`/`Page`/`Prompt`/`Reset` are dropped when the page changed while it ran. |
+| 7 | A page without sources kept the previous page's search, its spinner and `aria-busy`. | `PushPage` always restarts (or stops) the source search. |
+| 8 | A fresh inline palette never sent `→`/`Backspace` on an empty query (it had not learnt its input). | The input is taken from the key event's target. |
+| 9 | A history load started with a cancelled token stayed cancelled for good, and cancelled other callers. | The shared load never takes a caller's token; callers `WaitAsync` theirs. |
+| 10 | An unused inline palette announced result counts (history loading, sources answering). | It announces only while it has the focus (`focusin`/`focusout` reported once each). |
+| 11 | `services.AddBitBaletteSource<T>()` crashed every palette on its first render: registering the source rebuilt the list before the root page existed (present before these changes, untested until now). | The root page is created first in `OnInitialized`. |
+| 12 | (Unmasked by fix 7.) The prompt, empty, loading and error states rendered their text inside `role="listbox"`, which may own only options and groups (axe `aria-required-children`, critical). It had passed the audit only because a stale search left the list `aria-busy`, which axe skips. | The list is a listbox only while it has rows; `aria-expanded` follows; a prompt's input is a text field named by its question. |
+| 13 | (Found by the new E2E test.) Chrome makes a scrollable box with no focusable children a tab stop, so `Tab` in an inline palette landed on its list. | `tabindex="-1"` on the list. |
+
+**Verified**: `Bit.Balette.Tests` 786 passed (262 per framework; new `BaletteReviewFixTests`,
+`HistoryLoadCancellationTests` and a prompt-semantics test); five consecutive full runs before these fixes without a
+flaky failure. E2E 81 passed (new `InlinePaletteTests` for `Tab`/`Esc` and Option typing; every axe audit clean, the
+prompt state now audited without the `aria-busy` that had hidden it). MCP 92 passed. `dotnet build -c Release`: 0
+warnings on net8.0/net9.0/net10.0 with the trim and AOT analyzers; `dotnet pack` succeeds.
+
+## Where it stands
+
+The loop stops after iteration 8: the review's findings are fixed and verified, and what remains is optional (P3) or
+needs an environment this run did not have.
+
+**Definition of done**
+
+- Audit of the implementation and of cmdk, kbar, GitHub, VS Code, Raycast and Blazor alternatives: done (iteration 2).
+- Critical and essential requirements: implemented, or listed below with the reason.
+- Search and ranking: normalization, phrases, typo fallback, nested search; unit-tested and benchmarked.
+- Registration, nested workflows, shortcuts, execution: conflicts and duplicates reported, lifecycle-safe, tested.
+- Async sources and large collections: timeouts, retries, page sources, snapshot caching; benchmarked to 20,000 commands.
+- Accessibility, keyboard, focus, localization, RTL: reviewed and fixed; axe-core clean in every audited state; manual
+  screen reader testing not done (see below).
+- Theming: tokens documented; forced colours, more contrast, density, inline.
+- Hosting: WebAssembly with prerendering verified in a browser; Server, Hybrid and .NET 8/9 verified by the unit
+  suite only (see below).
+- Security, privacy, lifecycle, errors: URL schemes, generic error text, sanitized history, guarded interop.
+- Tests: 786 unit and component, 81 browser, 92 MCP.
+- Documentation and demo: README, package README, benchmark and E2E READMEs, demo pages updated.
+
+**Remaining gaps**
+
+| Pri | Gap | Why it remains |
+|---|---|---|
+| P2 | No manual screen reader pass (NVDA, JAWS, VoiceOver, TalkBack). The ARIA follows the APG patterns and axe finds nothing, but announcements and `aria-activedescendant` behaviour differ between readers. | Needs the readers and people who use them; automated audits cannot replace it. |
+| P2 | The browser suite runs the WebAssembly demo only; Blazor Server (where every key is a round trip) and Hybrid are covered by bUnit, not by a browser. | The demo is a WebAssembly app; a Server-hosted copy of it would be a new project. |
+| P3 | Sources have no "load more" or cursor paging; a source returns at most `MaxResults` per query. | Needs a source result type beyond a list - an API addition better designed with users. |
+| P3 | Pins are ordered by id, not by when they were pinned. | Needs a new field in the stored history (format change). |
+| P3 | No `OR` operator (fzf's `\|`), no sequence-pending hint ("G was pressed..."). | Niche; neither is in the competitors' common feature set. |
+| P3 | `BaletteRowKind.Separator` and the strings `MoreResults`, `Other`, `ClearRecents`, `ModeHintTitle`, `ConfirmHint` are public and unused by the palette (now documented as such). | Removing public members is a breaking change. |
+| P3 | Literal operators (`'x`, `^x`, `x$`) cost about 0.1 µs more per command than before normalization. | The price of matching `cafe` to "Café" in them too; fuzzy terms are unchanged. |

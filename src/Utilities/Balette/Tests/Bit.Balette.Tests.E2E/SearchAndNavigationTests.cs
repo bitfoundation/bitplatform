@@ -203,14 +203,34 @@ public sealed class SearchAndNavigationTests : BaletteTest
     }
 
     /// <summary>Waits until the active row lies inside the list's visible box (the group heading may stick over its top).</summary>
-    private static Task WaitForActiveRowInViewAsync(IPage page) => page.WaitForFunctionAsync(
-        """
-        () => {
-          const list = document.querySelector('[data-balette="list"]');
-          const row = list?.querySelector('[data-balette="item"][data-active="true"]');
-          if (!row) return false;
-          const l = list.getBoundingClientRect(), r = row.getBoundingClientRect();
-          return r.top >= l.top - 1 && r.bottom <= l.bottom + 1;
+    private static async Task WaitForActiveRowInViewAsync(IPage page)
+    {
+        try
+        {
+            await page.WaitForFunctionAsync(
+                """
+                () => {
+                  const list = document.querySelector('[data-balette="list"]');
+                  const row = list?.querySelector('[data-balette="item"][data-active="true"]');
+                  if (!row) return false;
+                  const l = list.getBoundingClientRect(), r = row.getBoundingClientRect();
+                  return r.top >= l.top - 1 && r.bottom <= l.bottom + 1;
+                }
+                """, null, new PageWaitForFunctionOptions { Timeout = 5_000 });
         }
-        """, null, new PageWaitForFunctionOptions { Timeout = 5_000 });
+        catch (TimeoutException)
+        {
+            var where = await page.EvaluateAsync<string>(
+                """
+                () => {
+                  const list = document.querySelector('[data-balette="list"]');
+                  const row = list?.querySelector('[data-balette="item"][data-active="true"]');
+                  if (!row) return 'no active row';
+                  const l = list.getBoundingClientRect(), r = row.getBoundingClientRect();
+                  return `list ${l.top}..${l.bottom} scrollTop ${list.scrollTop}/${list.scrollHeight - list.clientHeight}, row ${row.dataset.value} ${r.top}..${r.bottom}`;
+                }
+                """);
+            throw new TimeoutException("The active row did not come into view: " + where);
+        }
+    }
 }

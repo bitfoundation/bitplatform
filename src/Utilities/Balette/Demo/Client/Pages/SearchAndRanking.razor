@@ -81,7 +81,7 @@
     </div>
 
     <div class="demo-statusbar" role="status">
-        <span><strong>@_candidates</strong> root commands</span>
+        <span><strong>@_candidates</strong> commands searched</span>
         <span><strong>@_results.Count</strong> matched</span>
         <span>matched and ranked in <strong>@_elapsed.TotalMilliseconds.ToString("0.00", CultureInfo.InvariantCulture) ms</strong></span>
         @if (!History.IsLoaded)
@@ -137,6 +137,7 @@
                 <tr><td>Keywords</td><td class="demo-num">@Format(Options.Weights.Keyword)</td></tr>
                 <tr><td>Subtitle</td><td class="demo-num">@Format(Options.Weights.Subtitle)</td></tr>
                 <tr><td>Group</td><td class="demo-num">@Format(Options.Weights.Group)</td></tr>
+                <tr><td>A nested command's ancestors</td><td class="demo-num">@Format(Options.Weights.Path)</td></tr>
                 <tr><td>Description</td><td class="demo-num">@Format(Options.Weights.Description)</td></tr>
                 <tr><td>Tags</td><td class="demo-num">@Format(Options.Weights.Tag)</td></tr>
             </tbody>
@@ -187,6 +188,9 @@
         ("^set", "Prefix: the field starts with it."),
         ("project$", "Suffix: the field ends with it."),
         ("show !minimap", "Negation: drops every command that contains the term."),
+        ("\"word wrap\"", "A quoted phrase: matched exactly, the space included."),
+        ("francais", "Diacritics folded: finds Français on the Language page, from the root, with its path."),
+        ("settigns", "Nothing matches as typed, so the palette retries allowing one typo - try it in the palette itself."),
         ("mcp", "Smart case, all lower case: case is ignored, so it matches MCP server."),
         ("Mcp", "Smart case, with a capital: case now counts, so MCP server drops out."),
     ];
@@ -220,8 +224,13 @@
     {
         var started = Stopwatch.GetTimestamp();
 
-        // What the palette lists on its root page: commands without a parent that are currently visible.
-        var candidates = Palette.Commands.Where(c => c.Parent is null && c.IsVisible?.Invoke() != false).ToList();
+        // What the palette lists on its root page: commands without a parent that are currently visible - and, while
+        // typing, the nested ones it finds from the root too (SearchNestedCommands), except a multi-select page's rows.
+        var typing = _query.Trim().Length > 0;
+        var candidates = Palette.Commands
+            .Where(c => c.IsVisible?.Invoke() != false)
+            .Where(c => c.Parent is null || (typing && Options.SearchNestedCommands && Palette.Find(c.Parent) is { MultiSelectChildren: false }))
+            .ToList();
         var matches = new List<BaletteMatch>(candidates.Count);
         foreach (var command in candidates)
         {

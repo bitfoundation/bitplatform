@@ -38,6 +38,9 @@ public sealed class BaletteRow
     /// <summary>Zero-based index among all rows, headings included.</summary>
     internal int Position { get; init; }
 
+    /// <summary>The element id of the heading an item is listed under, or null for an item before any heading.</summary>
+    internal string? GroupHeaderId { get; init; }
+
     /// <summary>The command of an item row. Throws for a heading.</summary>
     public BaletteCommand Command => Match?.Command ?? throw new InvalidOperationException("Row has no command.");
 }
@@ -85,6 +88,21 @@ internal sealed class BalettePageFrame
     public string QueryBefore { get; init; } = string.Empty;
 
     public HashSet<string> Selected { get; } = new(StringComparer.Ordinal);
+
+    /// <summary>The command's <see cref="BaletteCommand.ChildSources"/>, searched as the user types on this page.</summary>
+    public IReadOnlyList<IBaletteSource>? Sources { get; init; }
+
+    /// <summary>Every command the page's sources returned, by id: a multi-select page applies the checked ones across searches.</summary>
+    public Dictionary<string, BaletteCommand> SourceCommands { get; } = new(StringComparer.Ordinal);
+
+    /// <summary>The command's <see cref="BaletteCommand.ChildrenProvider"/> has not answered yet.</summary>
+    public bool Loading { get; set; }
+
+    /// <summary>The command's <see cref="BaletteCommand.ChildrenProvider"/> threw; the page offers a retry.</summary>
+    public bool LoadFailed { get; set; }
+
+    /// <summary>Cancels the load in progress when the page is left, reset or loaded again.</summary>
+    public CancellationTokenSource? LoadCts { get; set; }
 
     public bool IsRoot => Command is null && Items is null && Prompt is null;
 }
