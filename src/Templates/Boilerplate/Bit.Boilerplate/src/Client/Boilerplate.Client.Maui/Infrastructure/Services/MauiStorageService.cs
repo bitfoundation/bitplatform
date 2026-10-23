@@ -12,25 +12,17 @@ public partial class MauiStorageService : IStorageService
 {
     private const string TokenStorageInitializedKey = "TokenStorageInitialized";
 
-    private static readonly string[] tokenKeys = ["access_token", "refresh_token"];
-
     private readonly ConcurrentDictionary<string, string?> tempStorage = [];
 
-    private readonly ConcurrentDictionary<string, string> tokenStorage = [];
+    private readonly ConcurrentDictionary<string, string?> tokenStorage = [];
 
-    private readonly Lazy<Task> tokenStorageRestoration;
-
-    public MauiStorageService()
-    {
-        tokenStorageRestoration = new(RestoreTokenStorage);
-    }
+    private readonly Lazy<bool> tokenStorageInitialization = new(InitializeTokenStorage);
 
     public async ValueTask<string?> GetItem(string key)
     {
-        if (tokenKeys.Contains(key))
+        if (IAuthTokenProvider.IsTokenStorageKey(key))
         {
-            await tokenStorageRestoration.Value;
-            return tokenStorage.GetValueOrDefault(key) ?? tempStorage.GetValueOrDefault(key);
+            return await GetToken(key) ?? tempStorage.GetValueOrDefault(key);
         }
 
         tempStorage.TryGetValue(key, out string? value);
@@ -39,10 +31,9 @@ public partial class MauiStorageService : IStorageService
 
     public async ValueTask<bool> IsPersistent(string key)
     {
-        if (tokenKeys.Contains(key))
+        if (IAuthTokenProvider.IsTokenStorageKey(key))
         {
-            await tokenStorageRestoration.Value;
-            return tokenStorage.ContainsKey(key);
+            return await GetToken(key) is not null;
         }
 
         return Preferences.ContainsKey(key);
@@ -50,9 +41,9 @@ public partial class MauiStorageService : IStorageService
 
     public async ValueTask RemoveItem(string key)
     {
-        if (tokenKeys.Contains(key))
+        if (IAuthTokenProvider.IsTokenStorageKey(key))
         {
-            await tokenStorageRestoration.Value;
+            _ = tokenStorageInitialization.Value;
             RemoveToken(key);
         }
 
@@ -62,11 +53,11 @@ public partial class MauiStorageService : IStorageService
 
     public async ValueTask SetItem(string key, string? value, bool persistent = true)
     {
-        var isToken = tokenKeys.Contains(key);
+        var isToken = IAuthTokenProvider.IsTokenStorageKey(key);
 
         if (isToken)
         {
-            await tokenStorageRestoration.Value;
+            _ = tokenStorageInitialization.Value;
         }
 
         // A key lives in exactly one of the two stores. Writing to one without removing it from the other would leave
@@ -102,17 +93,35 @@ public partial class MauiStorageService : IStorageService
 
     public async ValueTask Clear()
     {
-        await tokenStorageRestoration.Value;
+        _ = tokenStorageInitialization.Value;
 
         tempStorage.Clear();
         tokenStorage.Clear();
         Preferences.Clear();
         Preferences.Set(TokenStorageInitializedKey, true);
+        TryRemoveAllSecureItems();
+    }
 
-        foreach (var key in tokenKeys)
+    private async Task<string?> GetToken(string key)
+    {
+        _ = tokenStorageInitialization.Value;
+
+        if (tokenStorage.TryGetValue(key, out var token))
+            return token;
+
+        try
         {
-            TryRemoveSecureItem(key);
+            token = await SecureStorage.GetAsync(key);
         }
+        catch (Exception exp)
+        {
+            token = null;
+            TryRemoveSecureItem(key);
+            IPlatformApplication.Current?.Services.GetService<ILogger<MauiStorageService>>()?
+                .LogWarning(exp, "{Key} could not be read from secure storage and was removed.", key);
+        }
+
+        return tokenStorage.GetOrAdd(key, token);
     }
 
     private async Task SetToken(string key, string? value)
@@ -139,38 +148,19 @@ public partial class MauiStorageService : IStorageService
 
     private void RemoveToken(string key)
     {
-        tokenStorage.TryRemove(key, out _);
+        tokenStorage[key] = null;
         TryRemoveSecureItem(key);
     }
 
-    private async Task RestoreTokenStorage()
+    private static bool InitializeTokenStorage()
     {
         if (Preferences.ContainsKey(TokenStorageInitializedKey) is false)
         {
-            foreach (var key in tokenKeys)
-            {
-                TryRemoveSecureItem(key);
-            }
-
+            TryRemoveAllSecureItems();
             Preferences.Set(TokenStorageInitializedKey, true);
         }
 
-        foreach (var key in tokenKeys)
-        {
-            try
-            {
-                if (await SecureStorage.GetAsync(key) is string token)
-                {
-                    tokenStorage[key] = token;
-                }
-            }
-            catch (Exception exp)
-            {
-                TryRemoveSecureItem(key);
-                IPlatformApplication.Current?.Services.GetService<ILogger<MauiStorageService>>()?
-                    .LogWarning(exp, "{Key} could not be read from secure storage and was removed.", key);
-            }
-        }
+        return true;
     }
 
     private static void TryRemoveSecureItem(string key)
@@ -178,6 +168,15 @@ public partial class MauiStorageService : IStorageService
         try
         {
             SecureStorage.Remove(key);
+        }
+        catch { }
+    }
+
+    private static void TryRemoveAllSecureItems()
+    {
+        try
+        {
+            SecureStorage.RemoveAll();
         }
         catch { }
     }

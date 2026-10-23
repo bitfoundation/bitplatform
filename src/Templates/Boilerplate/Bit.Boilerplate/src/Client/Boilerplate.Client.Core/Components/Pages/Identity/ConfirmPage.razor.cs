@@ -77,15 +77,13 @@ public partial class ConfirmPage
 
         await WrapRequest(async () =>
         {
-            await AuthManager.SignOutIfSignedIn(CurrentCancellationToken);
-
             var signInResponse = await identityController.ConfirmEmail(new()
             {
                 Email = emailModel.Email,
                 Token = emailModel.Token
             }, CurrentCancellationToken);
 
-            await AuthManager.StoreTokens(signInResponse, true);
+            await AuthManager.CompleteSignIn(signInResponse, true);
 
             NavigationManager.NavigateTo(GetSafeReturnUrl(), replace: true);
 
@@ -109,15 +107,13 @@ public partial class ConfirmPage
 
         await WrapRequest(async () =>
         {
-            await AuthManager.SignOutIfSignedIn(CurrentCancellationToken);
-
             var signInResponse = await identityController.ConfirmPhone(new()
             {
                 Token = phoneModel.Token,
                 PhoneNumber = phoneModel.PhoneNumber
             }, CurrentCancellationToken);
 
-            await AuthManager.StoreTokens(signInResponse, true);
+            await AuthManager.CompleteSignIn(signInResponse, true);
 
             NavigationManager.NavigateTo(GetSafeReturnUrl(), replace: true);
 

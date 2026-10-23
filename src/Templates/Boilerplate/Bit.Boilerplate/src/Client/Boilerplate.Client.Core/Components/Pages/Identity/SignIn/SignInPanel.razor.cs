@@ -122,8 +122,6 @@ public partial class SignInPanel
 
             if (webAuthnAssertion.HasValue)
             {
-                await AuthManager.SignOutIfSignedIn(CurrentCancellationToken);
-
                 var response = await identityController
                     .WithQueryIf(AppPlatform.IsBlazorHybrid, "origin", localHttpServer.Origin)
                     .VerifyWebAuthAndSignIn(
@@ -139,7 +137,7 @@ public partial class SignInPanel
                 if (requiresTwoFactor is false)
                 {
                     successfulSignIn = true;
-                    await AuthManager.StoreTokens(response!, model.RememberMe);
+                    await AuthManager.CompleteSignIn(response!, model.RememberMe);
                 }
             }
             else
@@ -147,8 +145,6 @@ public partial class SignInPanel
                 CleanModel();
 
                 if (validatorRef?.EditContext.Validate() is false) return;
-
-                await AuthManager.SignOutIfSignedIn(CurrentCancellationToken);
 
                 if (isNewUser is false)
                 {
@@ -164,7 +160,7 @@ public partial class SignInPanel
                         ? await identityController.ConfirmEmail(new() { Token = model.Otp, Email = model.Email }, CurrentCancellationToken)
                         : await identityController.ConfirmPhone(new() { Token = model.Otp, PhoneNumber = model.PhoneNumber }, CurrentCancellationToken);
 
-                    await AuthManager.StoreTokens(signInResponse, model.RememberMe);
+                    await AuthManager.CompleteSignIn(signInResponse, model.RememberMe);
                 }
 
                 if (requiresTwoFactor is false)

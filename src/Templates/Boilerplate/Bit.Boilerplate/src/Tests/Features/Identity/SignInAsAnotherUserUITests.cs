@@ -53,6 +53,31 @@ public partial class SignInAsAnotherUserUITests : AppPageTest
             "Confirming another account signs it in, so it must end the session it replaces instead of leaving it behind.");
     }
 
+    [TestMethod]
+    public async Task AFailedSignIn_Should_KeepTheSessionTheUserAlreadyHas()
+    {
+        await using var server = new AppTestServer(Context);
+        await server.Build().Start(TestContext.CancellationToken);
+
+        var email = MagicLinkSignInUtils.NewTestEmail();
+
+        await MagicLinkSignInUtils.SignInViaMagicLinkOtp(Page, server, email, TestContext.CancellationToken);
+        await Expect(Page.Locator(".bit-prs.persona").First).ToContainTextAsync(email);
+
+        await Page.GotoAsync(new Uri(server.WebAppAddress, PageUrls.SignIn).ToString(), new() { WaitUntil = WaitUntilState.NetworkIdle });
+
+        await SignInPanelUtils.FillCredentials(Page, email, "not-the-password");
+        await Page.GetByRole(AriaRole.Button, new() { Name = AppStrings.Continue, Exact = true }).ClickAsync();
+
+        await Expect(Page.GetByText(AppStrings.InvalidUserCredentials).First).ToBeVisibleAsync();
+
+        await Page.GotoAsync(server.WebAppAddress.ToString(), new() { WaitUntil = WaitUntilState.NetworkIdle });
+        await Expect(Page.Locator(".bit-prs.persona").First).ToContainTextAsync(email);
+
+        Assert.AreEqual(1, await CountUserSessions(server, email),
+            "A sign-in the server refused must not end the session the user already had.");
+    }
+
     private async Task<int> CountUserSessions(AppTestServer server, string email)
     {
         await using var scope = server.ApiApp.Services.CreateAsyncScope();

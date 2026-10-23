@@ -5,7 +5,7 @@ namespace Boilerplate.Client.Core.Infrastructure.Services;
 public partial class AuthManager : AuthenticationStateProvider, IAsyncDisposable
 {
     private Action? unsubscribe;
-    private Action? unsubscribeAuthTokensChanged;
+    private Action? unsubscribeLocalStorageChanged;
 
     [AutoInject] private PubSubService pubSubService = default!;
     [AutoInject] private IStorageService storageService = default!;
@@ -23,7 +23,13 @@ public partial class AuthManager : AuthenticationStateProvider, IAsyncDisposable
     {
         // Example for method call after object instantiation with dependency injection.
 
-        unsubscribeAuthTokensChanged = pubSubService.Subscribe(ClientAppMessages.AUTH_TOKENS_CHANGED, async _ => NotifyAuthenticationStateChanged(Task.FromResult(await GetAuthenticationStateAsync())));
+        unsubscribeLocalStorageChanged = pubSubService.Subscribe(ClientAppMessages.LOCAL_STORAGE_CHANGED, async payload =>
+        {
+            if (payload is string key && IAuthTokenProvider.IsTokenStorageKey(key) is false)
+                return;
+
+            NotifyAuthenticationStateChanged(Task.FromResult(await GetAuthenticationStateAsync()));
+        });
 
         //#if (signalR == true)
         unsubscribe = pubSubService.Subscribe(SharedAppMessages.SESSION_REVOKED, async payload =>
@@ -45,14 +51,6 @@ public partial class AuthManager : AuthenticationStateProvider, IAsyncDisposable
         //#endif
     }
 
-    public async Task SignOutIfSignedIn(CancellationToken cancellationToken)
-    {
-        if ((await GetAuthenticationStateAsync()).User.IsAuthenticated() is false)
-            return;
-
-        await SignOut(cancellationToken);
-    }
-
     /// <summary>
     /// Sign in and return whether the user requires two-factor authentication.
     /// </summary>
@@ -63,9 +61,22 @@ public partial class AuthManager : AuthenticationStateProvider, IAsyncDisposable
 
         if (response.RequiresTwoFactor) return true;
 
-        await StoreTokens(response!, request.RememberMe);
+        await CompleteSignIn(response!, request.RememberMe);
 
         return false;
+    }
+
+    public async Task CompleteSignIn(TokenResponseDto response, bool rememberMe)
+    {
+        if (string.IsNullOrWhiteSpace(response.AccessToken))
+            return;
+
+        if ((await GetAuthenticationStateAsync()).User.IsAuthenticated())
+        {
+            await SignOut(default);
+        }
+
+        await StoreTokens(response, rememberMe);
     }
 
     public async Task StoreTokens(TokenResponseDto response, bool? rememberMe = null)
@@ -193,9 +204,10 @@ public partial class AuthManager : AuthenticationStateProvider, IAsyncDisposable
                             //#endif
                         }, default);
 
-                    if (await storageService.GetItem("refresh_token") != refreshToken)
+                    if (await storageService.GetItem("refresh_token") != refreshToken &&
+                        await IsCurrentSession(refreshTokenResponse.AccessToken) is false)
                     {
-                        currentTsc.TrySetResult(await tokenProvider.GetAccessToken());
+                        currentTsc.TrySetResult(null);
                         return;
                     }
 
@@ -309,10 +321,22 @@ public partial class AuthManager : AuthenticationStateProvider, IAsyncDisposable
         NotifyAuthenticationStateChanged(Task.FromResult(await GetAuthenticationStateAsync()));
     }
 
+    private async Task<bool> IsCurrentSession(string? accessToken)
+    {
+        var currentSessionId = GetSessionId(await tokenProvider.GetAccessToken());
+
+        return currentSessionId is not null && currentSessionId == GetSessionId(accessToken);
+    }
+
+    private static Guid? GetSessionId(string? accessToken)
+    {
+        return Guid.TryParse(IAuthTokenProvider.ParseAccessToken(accessToken, validateExpiry: false).FindFirst(AppClaimTypes.SESSION_ID)?.Value, out var sessionId) ? sessionId : null;
+    }
+
     public async ValueTask DisposeAsync()
     {
         semaphore.Dispose();
         unsubscribe?.Invoke();
-        unsubscribeAuthTokensChanged?.Invoke();
+        unsubscribeLocalStorageChanged?.Invoke();
     }
 }

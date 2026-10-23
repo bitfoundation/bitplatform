@@ -19,9 +19,8 @@ import { App } from './App';
 
     function handleStorage(e: StorageEvent) {
         if (e.storageArea !== window.localStorage) return;
-        if (e.key !== null && e.key !== 'access_token' && e.key !== 'refresh_token') return;
 
-        App.publishMessage('AUTH_TOKENS_CHANGED', null);
+        App.publishMessage('LOCAL_STORAGE_CHANGED', e.key);
     }
 
     // Enable publishing messages from JavaScript to the C# `PubSubService`.
