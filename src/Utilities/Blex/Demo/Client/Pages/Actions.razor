@@ -315,6 +315,18 @@
                 <code>await</code>.
             </p>
         </Callout>
+
+        <h4 id="transactions">Across stores</h4>
+        <p>
+            <code>manager.Transaction(...)</code> is the same promise for a unit of work that spans stores: if the
+            body throws, every store it changed is put back the way it was when the transaction began, and the
+            exception reaches the caller. The actions inside run and record as usual; the putting back is one
+            restore, like an undo - subscriptions re-evaluate once, persistence writes the restored state back, and
+            the undo steps those actions recorded no longer hold what was taken back. Stores the body left alone are
+            not touched. Every store is serialized when it begins, so keep it for multi-store operations; like
+            <code>RollbackOnError</code>, it is synchronous only.
+        </p>
+        <CodeBlock Code="@TransactionSample" />
     </div>
 
     <div class="bb-card">
@@ -473,6 +485,17 @@
                     throw new InvalidOperationException("Insufficient funds.");   // Balance and Entries are put back
             }
         }
+        """;
+
+    private const string TransactionSample = """
+        manager.Transaction(() =>
+        {
+            inventory.Reserve(sku, quantity);
+            cart.Add(sku, quantity);
+            wallet.Charge(price * quantity);   // throws: the reservation and the cart line are taken back too
+        });
+
+        var order = manager.Transaction(() => checkout.PlaceOrder());   // a result, when the body has one
         """;
 
     private const string Basic = """

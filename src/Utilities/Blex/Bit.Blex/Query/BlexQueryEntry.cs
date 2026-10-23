@@ -131,6 +131,7 @@ internal sealed class BlexQueryEntry<T>(BlexQueryClient client, BlexQueryKey key
     private Func<CancellationToken, Task<T>>? _fetch;
     private int _retryCount;
     private TimeSpan _retryDelay;
+    private BlexNetworkMode? _networkMode;
     private Task<FetchResult>? _inFlight;
     private TaskCompletionSource<FetchResult>? _done;
     private CancellationTokenSource? _cts;
@@ -200,18 +201,30 @@ internal sealed class BlexQueryEntry<T>(BlexQueryClient client, BlexQueryKey key
     /// Cancel a running fetch and start over rather than join it: an explicit refetch or an invalidation,
     /// which asks for data as of now, not for the answer to a request made before the change.
     /// </param>
-    public Task<FetchResult> FetchAsync(Func<CancellationToken, Task<T>>? fetch, int retryCount, TimeSpan retryDelay, bool cancelRunning)
+    /// <param name="once">
+    /// Run <paramref name="fetch"/> this time only, keeping the fetch later refetches use: an infinite query's next
+    /// page, which a refetch must not repeat.
+    /// </param>
+    /// <param name="networkMode">Whether the fetch waits for the network while offline; <c>null</c> uses the client's.</param>
+    public Task<FetchResult> FetchAsync(
+        Func<CancellationToken, Task<T>>? fetch,
+        int retryCount,
+        TimeSpan retryDelay,
+        bool cancelRunning,
+        bool once = false,
+        BlexNetworkMode? networkMode = null)
     {
         TaskCompletionSource<FetchResult> done;
         CancellationTokenSource cts;
         CancellationTokenSource? superseded = null;
         int id;
+        bool pausesOffline;
         lock (Client.Gate)
         {
-            if (fetch is not null)
+            if (fetch is not null && !once)
                 _fetch = fetch;
 
-            if (_fetch is null || Client.IsDisposed)
+            if ((fetch ?? _fetch) is null || Client.IsDisposed)
                 return Task.FromResult(default(FetchResult));
 
             if (_inFlight is not null && _done is not null)
@@ -237,9 +250,11 @@ internal sealed class BlexQueryEntry<T>(BlexQueryClient client, BlexQueryKey key
             cts = _cts = new CancellationTokenSource();
             _retryCount = retryCount;
             _retryDelay = retryDelay;
-            fetch = _fetch;
+            _networkMode = networkMode;
+            fetch = once ? fetch! : _fetch!;
+            pausesOffline = Client.PausesOffline(networkMode);
 
-            FetchStatus = BlexFetchStatus.Fetching;
+            FetchStatus = pausesOffline && !Client.IsOnline ? BlexFetchStatus.Paused : BlexFetchStatus.Fetching;
             FailureCount = 0;
             FailureReason = null;
             if (!_hasData)
@@ -265,7 +280,7 @@ internal sealed class BlexQueryEntry<T>(BlexQueryClient client, BlexQueryKey key
         Notify();
 
         // Outside the gate: the fetch is user code, and runs up to its first await right here.
-        _ = RunAsync(id, cts, fetch, retryCount, retryDelay, done);
+        _ = RunAsync(id, cts, fetch, retryCount, retryDelay, pausesOffline, done);
         return done.Task;
     }
 
@@ -273,6 +288,8 @@ internal sealed class BlexQueryEntry<T>(BlexQueryClient client, BlexQueryKey key
     {
         int retryCount;
         TimeSpan retryDelay;
+        BlexNetworkMode? networkMode;
+        Func<CancellationToken, Task<T>>? fetch = null;
         lock (Client.Gate)
         {
             if (observerFilter is not null && !_observers.Exists(o => o.Options.Enabled && observerFilter(o)))
@@ -282,9 +299,15 @@ internal sealed class BlexQueryEntry<T>(BlexQueryClient client, BlexQueryKey key
             var options = _observers.Count > 0 ? _observers[0].Options : null;
             retryCount = options is null ? _retryCount : Client.RetryCountFor(options);
             retryDelay = options is null ? _retryDelay : Client.RetryDelayFor(options);
+            networkMode = options is null ? _networkMode : options.NetworkMode;
+
+            // Never fetched here -- handed over by the prerender, or set with SetQueryData, and observed while fresh:
+            // an observer knows how -- an enabled one, whose fetch has what it needs.
+            if (_fetch is null && _observers.Count > 0)
+                fetch = (_observers.Find(o => o.Options.Enabled) ?? _observers[0]).Fetch;
         }
 
-        return FetchAsync(null, retryCount, retryDelay, cancelRunning);
+        return FetchAsync(fetch, retryCount, retryDelay, cancelRunning, networkMode: networkMode);
     }
 
     private async Task RunAsync(
@@ -293,6 +316,7 @@ internal sealed class BlexQueryEntry<T>(BlexQueryClient client, BlexQueryKey key
         Func<CancellationToken, Task<T>> fetch,
         int retryCount,
         TimeSpan retryDelay,
+        bool pausesOffline,
         TaskCompletionSource<FetchResult> done)
     {
         var telemetry = BlexDiagnostics.StartQuery(Key);
@@ -302,6 +326,24 @@ internal sealed class BlexQueryEntry<T>(BlexQueryClient client, BlexQueryKey key
         {
             for (var failures = 0; ; failures++)
             {
+                // Offline: wait for the network -- paused, not failed -- rather than spend the retries on requests that
+                // cannot succeed. A retry waits the same way. Cancelling, superseding or evicting the fetch ends the wait.
+                if (pausesOffline && !Client.IsOnline)
+                {
+                    SetFetchStatus(id, BlexFetchStatus.Paused);
+                    try
+                    {
+                        await Client.WhenOnlineAsync(cts.Token).ConfigureAwait(true);
+                    }
+                    catch (OperationCanceledException)
+                    {
+                        SettleCancelled(id);
+                        return;
+                    }
+
+                    SetFetchStatus(id, BlexFetchStatus.Fetching);
+                }
+
                 T result;
                 try
                 {
@@ -461,6 +503,20 @@ internal sealed class BlexQueryEntry<T>(BlexQueryClient client, BlexQueryKey key
 
         Notify();
         return true;
+    }
+
+    /// <summary>Moves the latest fetch between running and waiting for the network; ignored for a superseded one.</summary>
+    private void SetFetchStatus(int id, BlexFetchStatus status)
+    {
+        lock (Client.Gate)
+        {
+            if (id != _fetchId || FetchStatus == status)
+                return;
+
+            FetchStatus = status;
+        }
+
+        Notify();
     }
 
     private void SettleCancelled(int id)

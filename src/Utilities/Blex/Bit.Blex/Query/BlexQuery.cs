@@ -75,6 +75,9 @@ public abstract class BlexQuery : INotifyPropertyChanged, IDisposable
     /// <summary>Data is shown and a newer copy is being fetched.</summary>
     public bool IsRefetching => IsFetching && !IsPending;
 
+    /// <summary>A fetch is waiting for the network to come back (<see cref="BlexFetchStatus.Paused"/>).</summary>
+    public bool IsPaused => FetchStatus == BlexFetchStatus.Paused;
+
     /// <summary>Raised after the observed query changed. Handler exceptions are isolated and reported.</summary>
     public event Action? Changed;
 
@@ -165,6 +168,9 @@ public sealed class BlexQuery<T> : BlexQuery
         _hasPlaceholder = hasPlaceholder;
         _placeholder = placeholder;
     }
+
+    /// <summary>The fetch this observer was given; a cache-level refetch of an entry that never fetched uses it.</summary>
+    internal Func<CancellationToken, Task<T>> Fetch => _fetch;
 
     /// <summary>The cached entry observed; assigned by <see cref="BlexQueryClient.Attach{T}"/> under the gate.</summary>
     internal BlexQueryEntry<T> Entry
@@ -271,7 +277,11 @@ public sealed class BlexQuery<T> : BlexQuery
     }
 
     internal Task FetchAsync(bool cancelRunning)
-        => _entry.FetchAsync(_fetch, Client.RetryCountFor(Options), Client.RetryDelayFor(Options), cancelRunning);
+        => _entry.FetchAsync(_fetch, Client.RetryCountFor(Options), Client.RetryDelayFor(Options), cancelRunning, networkMode: Options.NetworkMode);
+
+    /// <summary>Runs <paramref name="fetch"/> once, keeping the fetch refetches use; joins a fetch already running.</summary>
+    internal Task FetchOnceAsync(Func<CancellationToken, Task<T>> fetch)
+        => _entry.FetchAsync(fetch, Client.RetryCountFor(Options), Client.RetryDelayFor(Options), cancelRunning: false, once: true, networkMode: Options.NetworkMode);
 
     /// <inheritdoc />
     public override Task RefetchAsync() => _disposed ? Task.CompletedTask : FetchAsync(cancelRunning: true);

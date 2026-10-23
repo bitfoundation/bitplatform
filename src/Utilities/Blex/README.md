@@ -111,7 +111,9 @@ base type.
 
 - **State**: `[BlexState] private T _foo;` → public reactive property `Foo`.
 - **Computed**: `[BlexComputed]` on a parameterless `ComputeXxx()` / `GetXxx()` method → memoized property `Xxx`,
-  automatically invalidated whenever state changes.
+  invalidated by a write to state it reads - the generator follows each body, through other computeds too. One
+  that reads through something it cannot follow (a helper method, a service field, `this` passed along) is
+  invalidated by every write.
 - **Actions**: `[BlexAction]` on a method named `OnXxx` → public `Xxx(...)` wrapper that batches all the
   mutations inside it into a single, named, time-travel-recorded action. `async Task` methods are
   supported (they update the UI as they go but record as one action). Override the name with
@@ -177,6 +179,22 @@ public partial class LedgerStore
         if (Balance < 0) throw new InvalidOperationException("Insufficient funds.");   // Balance is put back
     }
 }
+```
+
+Across stores, `manager.Transaction(...)` makes the same promise for a unit of work: if the body throws,
+every store it changed is put back the way it was when the transaction began. The actions inside run and
+record as usual; the putting back is one restore, like an undo - subscriptions re-evaluate once,
+persistence writes the restored state back, and the undo steps those actions recorded no longer hold what
+was taken back. Every store is serialized when it begins, so keep it for multi-store operations;
+synchronous only, like `RollbackOnError`:
+
+```csharp
+manager.Transaction(() =>
+{
+    inventory.Reserve(sku, quantity);
+    cart.Add(sku, quantity);
+    wallet.Charge(price * quantity);   // throws: the reservation and the cart line are taken back too
+});
 ```
 
 A `[BlexComputed]` value read inside an action already reflects the action's earlier writes: the
@@ -365,6 +383,30 @@ re-renders. `Comparer` takes a `BlexComparers` comparer for collection projectio
 follows a whole store, `<BlexView Store="Cart">` (or `Stores="[Cart, Profile]"`) re-renders its content
 on every change of those stores.
 
+### Throttling renders
+
+State that changes many times a second - a live feed, a progress counter, a drag - would re-render the
+components following it that often; on Blazor Server each render is a diff sent over the wire. A
+`RenderInterval` caps it (Fluxor's `MaximumStateChangedNotificationsPerSecond`): the first change after a
+quiet interval still renders at once, and the changes within the interval collapse into one trailing
+render of the latest state, so the last change is never missed. It is a parameter of `<BlexSelect>` and
+`<BlexView>` and a property of `BlexComponentBase`; renders for any other reason (parameters, events) are
+not affected. Waits run on the manager's `TimeProvider`.
+
+```razor
+<BlexView Store="Ticker" RenderInterval="TimeSpan.FromMilliseconds(100)">   @* at most ten renders a second *@
+    @Ticker.Price
+</BlexView>
+```
+
+```csharp
+protected override void OnInitialized()
+{
+    RenderInterval = TimeSpan.FromMilliseconds(100);
+    Subscribe(Ticker);
+}
+```
+
 ### Observables
 
 For code that composes change streams with Reactive Extensions, `Observe` and `ObserveActions` return the
@@ -527,6 +569,23 @@ to show yet) and `IsRefetching` (data shown, newer on its way) differ - plus `Is
   sign-out move). `FetchAsync` is the read-through for effects and services - it throws
   `OperationCanceledException` when its fetch is cancelled rather than hand back the data from before;
   `PrefetchAsync` warms the cache.
+- **Paged and infinite queries**: `UseInfiniteQuery` / `client.InfiniteQuery(key, fetchPage, initialPageParam,
+  getNextPageParam)` keeps the pages loaded so far as one cached query - `Pages`, `HasNextPage`,
+  `FetchNextPageAsync()`, `IsFetchingNextPage` (TanStack's `useInfiniteQuery`, forward only).
+  `getNextPageParam` returns `null` when there is no next page, so use a nullable param type (`int?`). A
+  refetch loads every page again, in order; the next page waits for a running fetch and follows the pages it
+  brings, and asking twice while it loads costs one request. A failed page keeps the ones before it.
+- **Offline**: while `client.IsOnline` is `false`, fetches and mutations wait - `FetchStatus.Paused` /
+  `IsPaused`, not failed - and go on once the network returns, rather than spending their retries on
+  requests that cannot succeed; a paused mutation's optimistic update shows meanwhile (TanStack's network
+  mode). `<BlexProvider>` follows the browser's `offline`/`online` events where requests leave from the
+  device (WebAssembly, Hybrid) - not on Blazor Server, whose requests leave from the server. Native MAUI calls
+  `NotifyOffline()`/`NotifyReconnected()` from `Connectivity.ConnectivityChanged`. `NetworkMode = Always` (per
+  query, per mutation or as the client default) is for data that does not come from the network.
+- **Across tabs**: `options.SyncAcrossTabs = true` passes key invalidations on to the app's other tabs over a
+  `BroadcastChannel` (through `<BlexProvider>`, Blazor Server included), so a change saved in one tab refetches
+  the lists every other tab shows. Keys travel as their text (`["todos",42]`) and match part by part, prefixes
+  included; invalidations by predicate stay local.
 - **Focus and reconnect**: `<BlexProvider>` listens for the tab becoming visible again and the browser coming
   back online, and refetches the stale queries an observer with `RefetchOnFocus` watches. Outside a browser
   (native MAUI), call `NotifyFocused()`/`NotifyReconnected()` where your app learns of it.
@@ -698,6 +757,45 @@ builder.Services.AddBitBlexLocalStoragePersistence(options =>
   tabs) and is migrated exactly as at startup. `options.OnExternalChange` reports it. Backed by the
   browser's `storage` event for `localStorage`; any storage can opt in by implementing
   `IBlexExternalStorageChange`.
+- **Protection** - an `IBlexStateProtector` (`options.Protector`, or one registered in DI when it needs
+  other services) encrypts and tamper-proofs every payload on its way to storage and checks it on the way
+  back. A value it returns `null` for - one that will never read: saved in the clear, written by something
+  else, protected with a key that is gone, tampered with - is reported and discarded. When it throws (a key
+  service out of reach or timed out), nothing is lost: the failure is reported, the value is kept, the other
+  stores hydrate, and that store holds its saves until `RehydrateAsync` gets through. A payload that fails to
+  protect is never written in the clear. On Blazor Server, ASP.NET Core Data Protection keeps the key on the
+  server, so the browser holds only ciphertext:
+
+```csharp
+sealed class DataProtectionProtector(IDataProtectionProvider provider) : IBlexStateProtector
+{
+    private readonly IDataProtector _protector = provider.CreateProtector("Bit.Blex.State");
+
+    public ValueTask<string> ProtectAsync(string store, string payload, CancellationToken ct = default)
+        => new(_protector.Protect(payload));
+
+    public ValueTask<string?> UnprotectAsync(string store, string payload, CancellationToken ct = default)
+    {
+        // Data Protection payloads start with "CfDJ8"; anything else was saved in the clear.
+        if (!payload.StartsWith("CfDJ8", StringComparison.Ordinal))
+            return new((string?)null);
+
+        try
+        {
+            return new(_protector.Unprotect(payload));
+        }
+        catch (CryptographicException ex) when (ex.InnerException is null)
+        {
+            // The key is gone or the payload was tampered with: it will never read. A failure that may pass (the key
+            // store out of reach) comes wrapped instead; it propagates, and the value is kept.
+            return new((string?)null);
+        }
+    }
+}
+
+builder.Services.AddSingleton<IBlexStateProtector, DataProtectionProtector>();
+builder.Services.AddBitBlexLocalStoragePersistence();
+```
 
 ```csharp
 [BlexStore(Name = "search", Persist = true)]
@@ -789,6 +887,16 @@ the value from before it:
 ```csharp
 using var summary = manager.CreateSelector(() => $"{orders.Units} units, {cart.Total:C}");
 var text = summary.Value;   // recomputed at most once per change, however many readers
+```
+
+When the derived value takes an argument - the line with this id, the total of that category -
+`CreateSelectorFamily` memoizes one per argument and keeps at most `maxSize` of them (128 by default),
+dropping the least recently read: a selector per id created by hand would keep every id the list ever
+showed alive. `Remove(id)` drops one at once, when its entity is gone:
+
+```csharp
+using var lineTotal = manager.CreateSelectorFamily((int id) => cart.Line(id).Total * tax.Rate, maxSize: 500);
+var total = lineTotal[42];   // computed once per change for 42, shared by every row reading it
 ```
 
 Both stay correct when state moves without an action: undo/redo, DevTools time-travel, persistence

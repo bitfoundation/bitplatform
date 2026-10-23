@@ -148,6 +148,61 @@
             and <code>Cancel</code>/<code>Remove</code> stop or drop queries.
         </p>
         <CodeBlock Code="@CacheSample" />
+        <p>
+            With <code>options.SyncAcrossTabs = true</code> (in <code>AddBitBlexQueries</code>), an invalidation by key
+            reaches the app's other tabs too - over a <code>BroadcastChannel</code>, through
+            <code>&lt;BlexProvider&gt;</code>, on Blazor Server as well - so a change saved in one tab refetches the
+            list every other tab shows. Keys travel as their text and match part by part, prefixes included; an
+            invalidation by predicate stays in its tab.
+        </p>
+    </div>
+
+    <div class="bb-card">
+        <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Paged and infinite queries</h3>
+        <p>
+            A feed, "load more", infinite scroll: <code>UseInfiniteQuery</code> (or
+            <code>QueryClient.InfiniteQuery</code>) keeps the pages loaded so far as one cached query.
+            <code>getNextPageParam</code> reads the next page's param - a page number, a cursor - off the last page,
+            or returns <code>null</code> when there is none, so use a nullable type for a number.
+            <code>FetchNextPageAsync</code> appends the next page; asked again while it loads, it joins that request,
+            and with a fetch already running it waits for it and follows the pages it brings.
+        </p>
+        <p>
+            Everything a query does applies to the pages as a whole - freshness, retries, invalidation, refetch on
+            focus, the prerender handoff. A refetch loads every page again, in order, each param following from the
+            page before as the server returns it now: an item inserted since moves every cursor after it. A failed
+            next page keeps the pages loaded before it, and can simply be asked for again.
+        </p>
+        <CodeBlock Code="@InfiniteSample" />
+
+        <DemoCard Title="Load more"
+                  Description="Each page is one request; &quot;Invalidate&quot; refetches every page loaded so far, in order."
+                  Source="@InfiniteSample">
+            <div class="bb-toolbar">
+                <button class="btn btn-primary" @onclick="() => _activity.FetchNextPageAsync()" disabled="@(!_activity.HasNextPage || _activity.IsFetchingNextPage)">
+                    @(_activity.IsFetchingNextPage ? "Loading…" : _activity.HasNextPage ? "Load more" : "All loaded")
+                </button>
+                <button class="btn btn-secondary" @onclick="@(() => QueryClient.InvalidateAsync(["activity"]))">Invalidate ["activity"]</button>
+            </div>
+            <div class="bb-stats">
+                <div class="bb-stat"><span class="bb-stat-label">Pages loaded</span><span class="bb-stat-value demo-accent">@_activity.Pages.Count</span></div>
+                <div class="bb-stat"><span class="bb-stat-label">HasNextPage</span><span class="bb-stat-value">@(_activity.HasNextPage ? "true" : "false")</span></div>
+                <div class="bb-stat"><span class="bb-stat-label">FetchStatus</span><span class="bb-stat-value">@_activity.FetchStatus</span></div>
+            </div>
+            @if (_activity.IsLoading)
+            {
+                <p class="bb-card-desc">Loading…</p>
+            }
+            else
+            {
+                <ul class="demo-list">
+                    @foreach (var entry in _activity.Pages.SelectMany(p => p.Entries))
+                    {
+                        <li>@entry</li>
+                    }
+                </ul>
+            }
+        </DemoCard>
     </div>
 
     <div class="bb-card">
@@ -181,6 +236,22 @@
         </p>
     </div>
 
+    <div class="bb-card">
+        <h3 class="bb-card-title"><span class="bb-dot bb-dot-danger"></span> Offline</h3>
+        <p>
+            A request that cannot reach the server should not fail - it should wait. While
+            <code>QueryClient.IsOnline</code> is <code>false</code>, fetches and mutations pause
+            (<code>FetchStatus.Paused</code>, <code>IsPaused</code>) instead of spending their retries, and go on
+            from where they were once the network returns; a paused mutation's optimistic update is on screen
+            meanwhile. <code>&lt;BlexProvider&gt;</code> follows the browser's <code>offline</code> and
+            <code>online</code> events where requests leave from the device - WebAssembly and Hybrid. On Blazor
+            Server they leave from the server, so the browser's network does not pause them. A native MAUI app calls
+            <code>NotifyOffline()</code> and <code>NotifyReconnected()</code> from
+            <code>Connectivity.ConnectivityChanged</code>.
+        </p>
+        <CodeBlock Code="@OfflineSample" />
+    </div>
+
 </DocPage>
 
 @code {
@@ -189,6 +260,7 @@
     private BlexQuery<IReadOnlyList<Product>> _left = default!;
     private BlexQuery<IReadOnlyList<Product>> _right = default!;
     private BlexMutation<string, Product> _add = default!;
+    private BlexInfiniteQuery<ActivityPage, int?> _activity = default!;
     private string _name = "";
 
     protected override void OnInitialized()
@@ -205,6 +277,7 @@
     {
         _left = UseQuery(["products"], Api.GetProductsAsync, ProductsOptions);
         _right = UseQuery(["products"], Api.GetProductsAsync, ProductsOptions);
+        _activity = UseInfiniteQuery<ActivityPage, int?>(["activity"], Api.GetActivityPageAsync, 1, (last, _) => last.Next, ProductsOptions);
 
         // The prerender waits for the products, so the HTML carries them and <BlexProvider> hands them to the
         // browser: it starts with the list and no request of its own (see "Requests sent").
@@ -246,6 +319,7 @@
         new("RefetchInterval", "Polls while observed."),
         new("RefetchOnMount / RefetchOnFocus", "Whether a new observer, or the tab becoming visible / the network returning, refetches stale data. Default on."),
         new("KeepPreviousData", "When the key changes (the next page), keep showing the previous key's data, flagged <code>IsPlaceholderData</code>, until the new one arrives."),
+        new("NetworkMode", "<code>Online</code> (the default): while offline the fetch waits, <code>Paused</code>, and goes on once the network returns. <code>Always</code>: fetches whatever the network - for data that does not come from it."),
     ];
 
     private const string Setup = """
@@ -319,6 +393,28 @@
         var cached = queries.GetQueryData<Todo>(["todos", 42]);
         """;
 
+    private const string InfiniteSample = """
+        @inherits BlexComponentBase
+
+        @foreach (var entry in _activity.Pages.SelectMany(p => p.Entries))
+        {
+            <li>@entry</li>
+        }
+        <button @onclick="() => _activity.FetchNextPageAsync()"
+                disabled="@(!_activity.HasNextPage || _activity.IsFetchingNextPage)">Load more</button>
+
+        @code {
+            private BlexInfiniteQuery<ActivityPage, int?> _activity = default!;
+
+            protected override void OnParametersSet()
+                => _activity = UseInfiniteQuery<ActivityPage, int?>(
+                    ["activity"],
+                    (page, ct) => Api.GetActivityPageAsync(page, ct),
+                    initialPageParam: 1,
+                    getNextPageParam: (last, _) => last.Next);   // null on the last page
+        }
+        """;
+
     private const string PrerenderSample = """
         protected override async Task OnParametersSetAsync()
         {
@@ -343,5 +439,26 @@
                 Shipping = rates.Standard;
             }
         }
+        """;
+
+    private const string OfflineSample = """
+        @if (_todos.IsPaused)
+        {
+            <p>Offline - the list will load once you are back.</p>
+        }
+        @if (_save.IsPaused)
+        {
+            <p>Saved here; it is sent as soon as the network returns.</p>
+        }
+
+        // Data that does not come from the network runs offline too:
+        UseQuery(["drafts"], ct => Drafts.LoadFromIndexedDbAsync(ct), new BlexQueryOptions { NetworkMode = BlexNetworkMode.Always });
+
+        // Native MAUI: tell the cache yourself.
+        Connectivity.ConnectivityChanged += (_, e) =>
+        {
+            if (e.NetworkAccess == NetworkAccess.Internet) queries.NotifyReconnected();
+            else queries.NotifyOffline();
+        };
         """;
 }

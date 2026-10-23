@@ -46,6 +46,15 @@ public sealed class BlexSelect<TValue> : ComponentBase, IDisposable
     /// <summary>The content, rendered with the selected value as its <c>context</c>.</summary>
     [Parameter] public RenderFragment<TValue>? ChildContent { get; set; }
 
+    /// <summary>
+    /// The shortest time between two renders the projection's changes cause; defaults to zero (every change renders).
+    /// The first change after a quiet interval renders at once, the rest within it collapse into one render of the
+    /// latest value -- for a value that changes many times a second.
+    /// </summary>
+    [Parameter] public TimeSpan RenderInterval { get; set; }
+
+    private BlexRenderThrottle? _throttle;
+
     /// <summary>The value the content was last rendered with.</summary>
     public TValue Value => _value;
 
@@ -82,8 +91,17 @@ public sealed class BlexSelect<TValue> : ComponentBase, IDisposable
             return;
 
         _value = value;
-        BlexRender.Observe(InvokeAsync(StateHasChanged), DispatchExceptionAsync);
+        if (RenderInterval <= TimeSpan.Zero)
+        {
+            RequestRender();
+            return;
+        }
+
+        LazyInitializer.EnsureInitialized(ref _throttle, () => new BlexRenderThrottle(RequestRender))
+            .Request(RenderInterval, Store is BlexStoreBase store ? store.Clock : TimeProvider.System);
     }
+
+    private void RequestRender() => BlexRender.Observe(InvokeAsync(StateHasChanged), DispatchExceptionAsync);
 
     /// <inheritdoc />
     protected override void BuildRenderTree(RenderTreeBuilder builder)
@@ -99,6 +117,7 @@ public sealed class BlexSelect<TValue> : ComponentBase, IDisposable
             return;
 
         _disposed = true;
+        _throttle?.Dispose();
         if (_subscribed is not null)
             _subscribed.StateChanged -= OnStoreChanged;
         _subscribed = null;

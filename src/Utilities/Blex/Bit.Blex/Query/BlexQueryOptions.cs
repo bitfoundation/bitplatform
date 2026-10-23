@@ -21,6 +21,25 @@ public enum BlexFetchStatus
 
     /// <summary>A fetch (or a retry of one) is running.</summary>
     Fetching,
+
+    /// <summary>
+    /// A fetch is waiting for the network to come back (<see cref="BlexNetworkMode.Online"/>): it goes on, from where
+    /// it was, once <see cref="BlexQueryClient.NotifyReconnected"/> reports the app online again.
+    /// </summary>
+    Paused,
+}
+
+/// <summary>Whether fetches and mutations wait for the network while the app is offline.</summary>
+public enum BlexNetworkMode
+{
+    /// <summary>
+    /// Requests wait while <see cref="BlexQueryClient.IsOnline"/> is <c>false</c> -- paused, not failed -- and go on
+    /// once the network returns, rather than spending their retries on requests that cannot succeed.
+    /// </summary>
+    Online,
+
+    /// <summary>Requests run whatever the network: for data that does not come from it (IndexedDB, a local service).</summary>
+    Always,
 }
 
 /// <summary>How a mutation's latest call went.</summary>
@@ -85,6 +104,9 @@ public sealed record BlexQueryOptions
     /// instead of falling back to a loading state.
     /// </summary>
     public bool KeepPreviousData { get; init; }
+
+    /// <summary>Whether the fetch waits for the network while the app is offline. <c>null</c> uses the client's.</summary>
+    public BlexNetworkMode? NetworkMode { get; init; }
 }
 
 /// <summary>The defaults every query of a <see cref="BlexQueryClient"/> starts from.</summary>
@@ -104,4 +126,18 @@ public sealed class BlexQueryClientOptions
 
     /// <summary>The wait before the first retry; it doubles before each further one, up to 30 seconds. Defaults to one second.</summary>
     public TimeSpan RetryDelay { get; set; } = TimeSpan.FromSeconds(1);
+
+    /// <summary>
+    /// Whether fetches and mutations wait for the network while the app is offline. Defaults to
+    /// <see cref="BlexNetworkMode.Online"/>: they pause, and go on once it returns.
+    /// </summary>
+    public BlexNetworkMode NetworkMode { get; set; } = BlexNetworkMode.Online;
+
+    /// <summary>
+    /// Passes key invalidations on to the app's other tabs (a <c>BroadcastChannel</c>, through <c>&lt;BlexProvider&gt;</c>),
+    /// which invalidate the same keys: a change saved in one tab refetches the lists every other tab shows. Defaults
+    /// to <c>false</c>. Only invalidations by key travel (<see cref="BlexQueryClient.InvalidateAsync(BlexQueryKey, bool)"/>,
+    /// a mutation's <c>Invalidates</c>), matched by the key's text (<see cref="BlexQueryKey.ToString"/>).
+    /// </summary>
+    public bool SyncAcrossTabs { get; set; }
 }

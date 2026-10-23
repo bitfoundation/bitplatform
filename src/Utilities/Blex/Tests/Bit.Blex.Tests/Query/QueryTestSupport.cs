@@ -29,6 +29,41 @@ public sealed class FakeServer<T>
     public void Fail(int index, Exception error) => _requests[index].Response.SetException(error);
 }
 
+/// <summary>One page of a feed: its number, what it holds, and the next page's number, or <c>null</c> on the last.</summary>
+public sealed record FeedPage(int Number, string Content, int? Next);
+
+/// <summary>A paged server: answers at once unless told to hold, and remembers which pages were asked for.</summary>
+public sealed class PagedServer
+{
+    private readonly List<(int Page, TaskCompletionSource<FeedPage> Response)> _requests = [];
+
+    public bool Hold { get; set; }
+
+    public int Pages { get; set; } = 3;
+
+    public string Version { get; set; } = "v1";
+
+    public IReadOnlyList<int> Requested => [.. _requests.Select(r => r.Page)];
+
+    public Task<FeedPage> Fetch(int? page, CancellationToken cancellationToken)
+    {
+        var response = new TaskCompletionSource<FeedPage>(TaskCreationOptions.RunContinuationsAsynchronously);
+        _requests.Add((page!.Value, response));
+        if (!Hold)
+            Respond(_requests.Count - 1);
+
+        return response.Task.WaitAsync(cancellationToken);
+    }
+
+    public void Respond(int index)
+    {
+        var page = _requests[index].Page;
+        _requests[index].Response.TrySetResult(new FeedPage(page, $"{Version}-{page}", page < Pages ? page + 1 : null));
+    }
+
+    public void Fail(int index, Exception error) => _requests[index].Response.TrySetException(error);
+}
+
 /// <summary>A fake clock that counts the timers created on it, so a test advances only once a wait has begun.</summary>
 public sealed class CountingClock : TimeProvider
 {

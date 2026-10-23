@@ -258,6 +258,34 @@ public abstract class InteractiveHarnessTests : HarnessTest
     }
 
     [TestMethod]
+    public async Task An_invalidation_in_one_tab_refetches_the_query_in_another()
+    {
+        if (SupportsSecondPage is false) Assert.Inconclusive("This host has a single window, so there is no second tab to sync with.");
+
+        await GotoAsync("/query");
+        await WaitForInteractiveAsync();
+
+        var other = await OpenSecondPageAsync();
+        await other.GotoAsync(BaseUrl + "/query", new() { WaitUntil = WaitUntilState.DOMContentLoaded, Timeout = 90_000 });
+        await WaitForInteractiveAsync(other);
+
+        var theirs = other.Locator("#quote");
+        await Expect(theirs).ToHaveAttributeAsync("data-quote", new System.Text.RegularExpressions.Regex("-[0-9a-f]{32}$"));
+        var before = await theirs.GetAttributeAsync("data-quote");
+
+        // A BroadcastChannel between the tabs: each <BlexProvider> opens it after its first render, so keep
+        // invalidating here until the other tab hears it and refetches.
+        var after = await PollAsync(async () =>
+        {
+            await Page.Locator("#invalidate").ClickAsync();
+            await other.WaitForTimeoutAsync(300);
+            return await theirs.GetAttributeAsync("data-quote");
+        }, value => value != before);
+
+        Assert.AreNotEqual(before, after, "The other tab's query was not refetched after an invalidation here.");
+    }
+
+    [TestMethod]
     public async Task A_stale_query_refetches_when_the_page_becomes_visible_again()
     {
         await GotoAsync("/query");

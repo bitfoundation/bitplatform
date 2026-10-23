@@ -587,6 +587,26 @@ public sealed class BlexManager
     }
 
     /// <summary>
+    /// Creates a <see cref="CreateSelector{T}">selector</see> per argument -- the line with id 42, the total of one
+    /// category -- each memoized like a selector, created on first read and evicted least recently used beyond
+    /// <paramref name="maxSize"/> arguments, so a list that has shown ten thousand ids does not keep ten thousand alive.
+    /// </summary>
+    /// <param name="selector">Projects the derived value for one argument. Runs on the reading thread.</param>
+    /// <param name="maxSize">How many arguments to hold a value for at most. Defaults to 128.</param>
+    /// <param name="comparer">Compares arguments; defaults to <see cref="EqualityComparer{T}.Default"/>.</param>
+    /// <example><code>
+    /// using var lineTotal = manager.CreateSelectorFamily((int id) => cart.Lines.First(l => l.Id == id).Total * tax.Rate);
+    /// var total = lineTotal[42];
+    /// </code></example>
+    public BlexSelectorFamily<TArg, T> CreateSelectorFamily<TArg, T>(Func<TArg, T> selector, int maxSize = 128, IEqualityComparer<TArg>? comparer = null)
+        where TArg : notnull
+    {
+        ArgumentNullException.ThrowIfNull(selector);
+        ArgumentOutOfRangeException.ThrowIfLessThan(maxSize, 1);
+        return new BlexSelectorFamily<TArg, T>(this, selector, maxSize, comparer);
+    }
+
+    /// <summary>
     /// Completes once <paramref name="condition"/> holds -- at once when it already does, otherwise after
     /// the first change of any registered store that makes it true. The workflow step an effect awaits:
     /// "once the user has signed in", "once the upload finished", "once both stores are loaded".
@@ -628,6 +648,87 @@ public sealed class BlexManager
         var waiter = new ConditionWaiter(this, condition);
         waiter.Start(cancellationToken);
         return waiter.Task;
+    }
+
+    /// <summary>
+    /// Runs <paramref name="body"/> -- actions of several stores -- as one unit: if it throws, every store it changed is
+    /// put back the way it was when the transaction began, and the exception reaches the caller. What
+    /// <c>[BlexStore(RollbackOnError = true)]</c> does for one store's action, across stores.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// The actions inside run, notify and record as usual -- middleware and DevTools see each of them. On a throw, the
+    /// stores whose state moved are restored as one restore, like an undo: subscriptions re-evaluate once, persistence
+    /// writes the restored state back (so a reload does not resurrect the half-done change), and undo steps the actions
+    /// recorded no longer hold the state that was taken back. Stores the body did not change are left alone.
+    /// </para>
+    /// <para>
+    /// Every registered store is serialized when the transaction begins, so it costs about what one DevTools snapshot
+    /// does: meant for a multi-store operation, not for a hot loop. Synchronous only -- an async body would have shown
+    /// the UI its intermediate state, and putting stores back after an await could overwrite changes made meanwhile.
+    /// Call it around actions, not from inside one; hand-written <see cref="IBlexStore"/>s are not restored.
+    /// </para>
+    /// </remarks>
+    /// <example><code>
+    /// manager.Transaction(() =>
+    /// {
+    ///     inventory.Reserve(sku, quantity);
+    ///     cart.Add(sku, quantity);
+    ///     wallet.Charge(price * quantity);   // throws: the reservation and the cart line are taken back too
+    /// });
+    /// </code></example>
+    public void Transaction(Action body)
+    {
+        ArgumentNullException.ThrowIfNull(body);
+        Transaction<object?>(() =>
+        {
+            body();
+            return null;
+        });
+    }
+
+    /// <summary>Runs <paramref name="body"/> as one unit and returns its result; see <see cref="Transaction(Action)"/>.</summary>
+    public T Transaction<T>(Func<T> body)
+    {
+        ArgumentNullException.ThrowIfNull(body);
+
+        var stores = _stores;
+        var before = new List<(BlexStoreBase Store, long Version, JsonObject State)>(stores.Length);
+        foreach (var store in stores)
+        {
+            if (store is BlexStoreBase sb)
+                before.Add((sb, sb.ChangeVersion, sb.SerializeState()));
+        }
+
+        var startedAt = StateVersion;
+        try
+        {
+            return body();
+        }
+        catch
+        {
+            var changed = new Dictionary<string, JsonObject>(StringComparer.Ordinal);
+            var rolledBack = new List<BlexStoreBase>();
+            foreach (var (store, version, state) in before)
+            {
+                if (store.ChangeVersion == version || !_stores.Contains(store))
+                    continue;
+
+                changed[store.Name] = state;
+                rolledBack.Add(store);
+            }
+
+            if (changed.Count > 0)
+            {
+                RestoreSlices(changed);
+
+                // The undo steps recorded since it began hold what was just taken back.
+                foreach (var store in rolledBack)
+                    OnRolledBack(store, startedAt);
+            }
+
+            throw;
+        }
     }
 
     /// <summary>One <see cref="WhenAsync"/>: re-checks its condition on every change until it holds, then lets go.</summary>

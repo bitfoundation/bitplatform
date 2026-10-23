@@ -55,6 +55,22 @@ public sealed class TodoList : BlexComponentBase
         => builder.AddContent(0, string.Join(",", Items.Select(i => i.Data ?? "?")));
 }
 
+/// <summary>A feed paged through <c>UseInfiniteQuery</c>, keyed by a filter parameter.</summary>
+public sealed class FeedList : BlexComponentBase
+{
+    [Parameter] public PagedServer Server { get; set; } = default!;
+
+    [Parameter] public string Filter { get; set; } = "all";
+
+    public BlexInfiniteQuery<FeedPage, int?> Feed { get; private set; } = default!;
+
+    protected override void OnParametersSet()
+        => Feed = UseInfiniteQuery<FeedPage, int?>(["feed", Filter], Server.Fetch, 1, (last, _) => last.Next);
+
+    protected override void BuildRenderTree(RenderTreeBuilder builder)
+        => builder.AddContent(0, string.Join(",", Feed.Pages.Select(p => p.Content)) + (Feed.HasNextPage ? " +" : ""));
+}
+
 /// <summary>A component that re-renders as a mutation it watches changes.</summary>
 public sealed class SaveButton : BlexComponentBase
 {
@@ -132,6 +148,24 @@ public class QueryComponentTests : BunitContext
         server.Respond(1, "eggs");
         cut.WaitForAssertion(() => cut.MarkupMatches("<b>eggs</b>"));
         Assert.AreEqual(1, Queries.GetQueries().Count(q => q.ObserverCount == 1), "the view let go of the previous key");
+    }
+
+    [TestMethod]
+    public void UseInfiniteQuery_renders_the_pages_loads_more_and_follows_a_new_key()
+    {
+        var server = new PagedServer();
+        var cut = Render<FeedList>(p => p.Add(x => x.Server, server));
+        cut.WaitForAssertion(() => cut.MarkupMatches("v1-1 +"));
+        var first = cut.Instance.Feed;
+
+        cut.InvokeAsync(() => cut.Instance.Feed.FetchNextPageAsync());
+        cut.WaitForAssertion(() => cut.MarkupMatches("v1-1,v1-2 +"));
+        Assert.AreSame(first, cut.Instance.Feed, "the same observer while the key holds");
+
+        cut.Render(p => p.Add(x => x.Filter, "mine"));
+        cut.WaitForAssertion(() => cut.MarkupMatches("v1-1 +"));
+        Assert.AreNotSame(first, cut.Instance.Feed);
+        Assert.AreEqual(1, Queries.GetQueries().Count(q => q.ObserverCount == 1), "the previous filter's feed was let go");
     }
 
     [TestMethod]

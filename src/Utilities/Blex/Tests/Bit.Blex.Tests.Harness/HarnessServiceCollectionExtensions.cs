@@ -37,7 +37,11 @@ public static class HarnessServiceCollectionExtensions
         services.AddBitBlexHistory();
 
         // The query page: a cached "server" answer, handed from the prerender to the interactive render.
-        services.AddBitBlexQueries(options => options.RetryCount = 0);
+        services.AddBitBlexQueries(options =>
+        {
+            options.RetryCount = 0;
+            options.SyncAcrossTabs = true;   // an invalidation in one tab refetches the other tabs' queries
+        });
         services.AddScoped<QuoteSource>();
 
         return services;

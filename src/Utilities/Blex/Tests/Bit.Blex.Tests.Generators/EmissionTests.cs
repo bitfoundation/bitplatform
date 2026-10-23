@@ -72,6 +72,68 @@ public class EmissionTests
     }
 
     [TestMethod]
+    public void A_write_invalidates_only_the_computeds_that_read_it()
+    {
+        var result = GeneratorTestHelper.Run(Usings + """
+            using System.Linq;
+
+            namespace App;
+
+            public interface IRates { decimal Tax { get; } }
+
+            public static class TrackedExtensions
+            {
+                public static int Weighted(this TrackedStore store) => store.A * 3;
+            }
+
+            [BlexStoreAttribute(Name = "tracked")]
+            public partial class TrackedStore(IRates rates)
+            {
+                [BlexStateAttribute] private int _a;
+                [BlexStateAttribute] private int _b;
+                [BlexStateAttribute] private string _label = "";
+                [BlexStateAttribute] private System.Collections.Generic.List<int> _items = new();
+                private readonly int _offset = 1;
+
+                [BlexComputedAttribute] private int ComputeSum() => A + _b;                                   // property and backing field
+                [BlexComputedAttribute] private int ComputeDoubleA() => this.A * 2;
+                [BlexComputedAttribute] private int ComputeChain() => DoubleA + 1;                           // through another computed
+                [BlexComputedAttribute] private int ComputeTotal() => Items.Where(i => i > 0).Sum(i => i * 2); // members off a property
+                [BlexComputedAttribute] private int ComputeHelped() => Helper();                             // a helper: reads everything
+                [BlexComputedAttribute] private int ComputeOffset() => A + _offset;                          // a plain field: everything
+                [BlexComputedAttribute] private decimal ComputeTaxed() => B * rates.Tax;                     // a primary-constructor parameter
+                [BlexComputedAttribute] private string ComputeShout() => System.String.Concat(Label, "!");   // a static call
+                [BlexComputedAttribute] private int ComputeExtended() => this.Weighted();                   // an extension on the store
+                [BlexComputedAttribute] private int ComputeBuilt() => new Box { Value = B }.Value;          // another object's member
+
+                private int Helper() => _b;
+            }
+
+            public sealed class Box { public int Value { get; set; } }
+            """);
+
+        Assert.IsEmpty(result.CompileErrors());
+        var source = result.GeneratedSources.Single(s => s.Key.Contains("TrackedStore")).Value;
+
+        string[] everything = ["Helped", "Offset", "Taxed", "Extended", "Built"];
+        Assert.AreSequenceEqual([.. everything.Prepend("Sum").Prepend("DoubleA").Prepend("Chain").Order()], [.. Invalidated(source, "A").Order()]);
+        Assert.AreSequenceEqual([.. everything.Append("Sum").Order()], [.. Invalidated(source, "B").Order()]);
+        Assert.AreSequenceEqual([.. everything.Append("Shout").Order()], [.. Invalidated(source, "Label").Order()]);
+        Assert.AreSequenceEqual([.. everything.Append("Total").Order()], [.. Invalidated(source, "Items").Order()]);
+        Assert.Contains("default:", source);
+
+        // The computeds a "case" of the generated InvalidateComputed(string?) switch invalidates.
+        static IEnumerable<string> Invalidated(string source, string property)
+        {
+            var start = source.IndexOf($"case \"{property}\":", StringComparison.Ordinal);
+            Assert.IsGreaterThanOrEqualTo(0, start, $"no case for {property}");
+            var end = source.IndexOf("break;", start, StringComparison.Ordinal);
+            foreach (System.Text.RegularExpressions.Match match in System.Text.RegularExpressions.Regex.Matches(source[start..end], @"__(\w+)Valid = false;"))
+                yield return match.Groups[1].Value;
+        }
+    }
+
+    [TestMethod]
     public void NullableAnnotations_ArePreserved()
     {
         var result = GeneratorTestHelper.Run(Usings + """

@@ -125,8 +125,73 @@ public abstract class BlexComponentBase : ComponentBase, IDisposable
         [CallerFilePath] string callerFilePath = "",
         [CallerLineNumber] int callerLineNumber = 0)
     {
-        ArgumentNullException.ThrowIfNull(key);
         ArgumentNullException.ThrowIfNull(fetch);
+        return Use<BlexQuery<T>>(
+            key,
+            callerFilePath,
+            callerLineNumber,
+            existing => existing.Update(fetch, options),
+            (client, previousAtSite) =>
+            {
+                // A new key at this call site -- the next page, another id. Keep showing the previous key's data
+                // meanwhile when asked to, if this site follows one key at a time.
+                var previous = previousAtSite as BlexQuery<T>;
+                var keep = previous is { HasData: true } && (options ?? previous.Options).KeepPreviousData;
+                return client.Query(key, fetch, options, keep, keep ? previous!.Data : default);
+            });
+    }
+
+    /// <summary>
+    /// Observes a paged query (<see cref="BlexQueryClient.InfiniteQuery{TPage, TParam}"/>) for as long as the
+    /// component asks for it, re-rendering it as pages arrive -- the call-site rules of <see cref="UseQuery{T}"/>.
+    /// </summary>
+    /// <param name="key">Which query: <c>["feed", Filter]</c>.</param>
+    /// <param name="fetchPage">Fetches one page by its param; the latest closure is the one used.</param>
+    /// <param name="initialPageParam">The first page's param.</param>
+    /// <param name="getNextPageParam">The next page's param from the last page, or <c>null</c> when there is none.</param>
+    /// <param name="options">How to fetch the pages.</param>
+    /// <param name="callerFilePath">Identifies the call site. Supplied by the compiler.</param>
+    /// <param name="callerLineNumber">Identifies the call site. Supplied by the compiler.</param>
+    /// <exception cref="InvalidOperationException">No <see cref="BlexQueryClient"/> is registered (<c>AddBitBlexQueries()</c>).</exception>
+    /// <example><code>
+    /// private BlexInfiniteQuery&lt;FeedPage, string?&gt; _feed = default!;
+    ///
+    /// protected override void OnParametersSet()
+    ///     => _feed = UseInfiniteQuery&lt;FeedPage, string?&gt;(["feed", Filter], (cursor, ct) => Api.GetFeedAsync(Filter, cursor, ct),
+    ///         initialPageParam: null, getNextPageParam: (last, _) => last.NextCursor);
+    /// </code></example>
+    protected BlexInfiniteQuery<TPage, TParam> UseInfiniteQuery<TPage, TParam>(
+        BlexQueryKey key,
+        Func<TParam, CancellationToken, Task<TPage>> fetchPage,
+        TParam initialPageParam,
+        Func<TPage, IReadOnlyList<TPage>, TParam?> getNextPageParam,
+        BlexQueryOptions? options = null,
+        [CallerFilePath] string callerFilePath = "",
+        [CallerLineNumber] int callerLineNumber = 0)
+    {
+        ArgumentNullException.ThrowIfNull(fetchPage);
+        ArgumentNullException.ThrowIfNull(getNextPageParam);
+        return Use<BlexInfiniteQuery<TPage, TParam>>(
+            key,
+            callerFilePath,
+            callerLineNumber,
+            existing => existing.Update(fetchPage, getNextPageParam, options),
+            (client, _) => client.InfiniteQuery(key, fetchPage, initialPageParam, getNextPageParam, options));
+    }
+
+    /// <summary>
+    /// The call-site bookkeeping of <see cref="UseQuery{T}"/>: reuses the observer this call site keeps for
+    /// <paramref name="key"/> (updating it), or creates one -- told what the site observed in its previous pass.
+    /// </summary>
+    private TQuery Use<TQuery>(
+        BlexQueryKey key,
+        string callerFilePath,
+        int callerLineNumber,
+        Action<TQuery> update,
+        Func<BlexQueryClient, BlexQuery?, TQuery> create)
+        where TQuery : BlexQuery
+    {
+        ArgumentNullException.ThrowIfNull(key);
         ObjectDisposedException.ThrowIf(_disposed, this);
 
         var client = BlexServices.GetService<BlexQueryClient>()
@@ -150,10 +215,10 @@ public abstract class BlexComponentBase : ComponentBase, IDisposable
         var slotKey = (callerFilePath, callerLineNumber, key);
         if (_queries.TryGetValue(slotKey, out var slot))
         {
-            if (slot.Query is BlexQuery<T> existing)
+            if (slot.Query is TQuery existing)
             {
                 slot.Pass = _parameterPass;
-                existing.Update(fetch, options);
+                update(existing);
                 site.Latest = existing;
                 return existing;
             }
@@ -163,11 +228,9 @@ public abstract class BlexComponentBase : ComponentBase, IDisposable
             _queries.Remove(slotKey);
         }
 
-        // A new key at this call site -- the next page, another id. Keep showing the previous key's data
-        // meanwhile when asked to, if this site follows one key at a time.
-        var previous = site.PreviousCalls == 1 && site.Calls == 1 ? site.PreviousLatest as BlexQuery<T> : null;
-        var keep = previous is { HasData: true } && (options ?? previous.Options).KeepPreviousData;
-        var query = client.Query(key, fetch, options, keep, keep ? previous!.Data : default);
+        // What the site observed in its previous pass counts only when it follows one key at a time.
+        var previous = site.PreviousCalls == 1 && site.Calls == 1 ? site.PreviousLatest : null;
+        var query = create(client, previous);
         query.Changed += OnStoreChanged;
         _queries[slotKey] = new QuerySlot(query, _parameterPass);
         site.Latest = query;
@@ -252,6 +315,24 @@ public abstract class BlexComponentBase : ComponentBase, IDisposable
         _selectorSubscriptions.Add(subscription);
     }
 
+    /// <summary>
+    /// The shortest time between two renders that the changes this component follows cause -- its stores, selectors,
+    /// queries and watched sources. Defaults to zero: every change renders. Set it for a component bound to state
+    /// that changes many times a second (a live feed, a progress counter): the first change after a quiet interval
+    /// still renders at once, and the rest within the interval collapse into one render of the latest state.
+    /// Renders for any other reason (parameters, events) are not affected.
+    /// </summary>
+    /// <example><code>
+    /// protected override void OnInitialized()
+    /// {
+    ///     RenderInterval = TimeSpan.FromMilliseconds(100);   // at most ten renders a second
+    ///     Subscribe(Ticker);
+    /// }
+    /// </code></example>
+    protected TimeSpan RenderInterval { get; set; }
+
+    private BlexRenderThrottle? _throttle;
+
     private void OnWatchedChanged(object? sender, PropertyChangedEventArgs e) => OnStoreChanged();
 
     private void OnStoreChanged()
@@ -259,8 +340,18 @@ public abstract class BlexComponentBase : ComponentBase, IDisposable
         if (_disposed)
             return;
 
-        BlexRender.Observe(InvokeAsync(StateHasChanged), DispatchExceptionAsync);
+        if (RenderInterval <= TimeSpan.Zero)
+        {
+            RequestRender();
+            return;
+        }
+
+        // Changes arrive on any thread; one throttle per component, whichever change creates it.
+        LazyInitializer.EnsureInitialized(ref _throttle, () => new BlexRenderThrottle(RequestRender))
+            .Request(RenderInterval, BlexServices.GetService<BlexManager>()?.TimeProvider ?? TimeProvider.System);
     }
+
+    private void RequestRender() => BlexRender.Observe(InvokeAsync(StateHasChanged), DispatchExceptionAsync);
 
     /// <inheritdoc />
     public void Dispose()
@@ -268,6 +359,7 @@ public abstract class BlexComponentBase : ComponentBase, IDisposable
         if (_disposed)
             return;
         _disposed = true;
+        _throttle?.Dispose();
         foreach (var store in _subscriptions)
             store.StateChanged -= OnStoreChanged;
         _subscriptions.Clear();

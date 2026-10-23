@@ -27,6 +27,7 @@ public sealed class BlexStatePersistor : IAsyncDisposable, IDisposable
     private readonly BlexManager _manager;
     private readonly IBlexStorage _storage;
     private readonly BlexPersistenceOptions _options;
+    private readonly IBlexStateProtector? _protector;
     private readonly HashSet<string> _pending = [];
 
     // Stores whose persisted state has been read (applied, or found absent). A store missing from it
@@ -68,12 +69,23 @@ public sealed class BlexStatePersistor : IAsyncDisposable, IDisposable
 
     /// <summary>Creates a persistor over a manager and storage sink.</summary>
     public BlexStatePersistor(BlexManager manager, IBlexStorage storage, BlexPersistenceOptions? options = null)
+        : this(manager, storage, options, protector: null)
+    {
+    }
+
+    /// <summary>
+    /// Creates a persistor that protects what it stores with <paramref name="protector"/> unless
+    /// <see cref="BlexPersistenceOptions.Protector"/> names one -- how <c>AddBitBlexPersistence</c> hands over an
+    /// <see cref="IBlexStateProtector"/> registered in DI, which may depend on other services (Data Protection).
+    /// </summary>
+    public BlexStatePersistor(BlexManager manager, IBlexStorage storage, BlexPersistenceOptions? options, IBlexStateProtector? protector)
     {
         ArgumentNullException.ThrowIfNull(manager);
         ArgumentNullException.ThrowIfNull(storage);
         _manager = manager;
         _storage = storage;
         _options = options ?? new BlexPersistenceOptions();
+        _protector = _options.Protector ?? protector;
     }
 
     private string KeyFor(IBlexStore store) => _options.KeyPrefix + store.Name;
@@ -262,7 +274,9 @@ public sealed class BlexStatePersistor : IAsyncDisposable, IDisposable
                 {
                     try
                     {
-                        slice = Unwrap(store.Name, raw);
+                        // Not removed when rejected: it is the other tab's write, and that tab is the one to judge it.
+                        raw = await UnprotectAsync(store, raw, removeRejected: false, CancellationToken.None).ConfigureAwait(true);
+                        slice = raw is null ? null : Unwrap(store.Name, raw);
                     }
                     catch (Exception ex)
                     {
@@ -384,6 +398,33 @@ public sealed class BlexStatePersistor : IAsyncDisposable, IDisposable
         // Not ConfigureAwait(false): what follows applies state, which -- like every action -- has to happen
         // on the dispatcher (a Blazor Server circuit's) rather than race the user's actions from the pool.
         var raw = await _storage.GetAsync(KeyFor(store), cancellationToken).ConfigureAwait(true);
+
+        try
+        {
+            raw = await UnprotectAsync(store, raw, removeRejected: true, cancellationToken).ConfigureAwait(true);
+        }
+        catch (Exception ex) when (!cancellationToken.IsCancellationRequested)
+        {
+            // A protector that cannot work right now (its key service is unreachable, or timed out): the stored value
+            // stays where it is, and so does a hold on this store's saves -- its defaults must not overwrite the state
+            // that could not be read -- until a RehydrateAsync gets through. The other stores hydrate; the app starts.
+            lock (_saveGate)
+            {
+                // It left the manager while storage was read: nothing of its to hold, and a newer instance under the same
+                // name may hold the name already.
+                if (!_manager.Stores.Contains(store))
+                    return;
+
+                if (_hydrating.TryGetValue(store.Name, out var hold) && ReferenceEquals(hold.Store, store))
+                    hold.InFlight = false;
+                else
+                    _hydrating[store.Name] = new HydrationHold(store) { InFlight = false };
+            }
+
+            _manager.ReportError("persistence", ex, $"unprotecting '{store.Name}'; its changes are not saved until RehydrateAsync reads it");
+            return;
+        }
+
         lock (_saveGate)
         {
             // It left the manager while storage was read: its state is no longer anyone's to restore, and
@@ -838,12 +879,25 @@ public sealed class BlexStatePersistor : IAsyncDisposable, IDisposable
         }
 
         var key = KeyFor(store);
-        _writeChain = WriteAsync(_writeChain, key, json);
+        _writeChain = WriteAsync(_writeChain, key, name, json);
     }
 
-    private async Task WriteAsync(Task previous, string key, string json)
+    private async Task WriteAsync(Task previous, string key, string storeName, string json)
     {
         await previous.ConfigureAwait(false);
+        try
+        {
+            // Inside the chain, so writes keep dispatch order even when protecting is asynchronous (Web Crypto).
+            if (_protector is { } protector)
+                json = await protector.ProtectAsync(storeName, json).ConfigureAwait(false);
+        }
+        catch (Exception ex)
+        {
+            // Never in the clear: storage keeps what it had.
+            _manager.ReportError("persistence", ex, $"protecting '{key}'; it was not written");
+            return;
+        }
+
         try
         {
             await _storage.SetAsync(key, json).ConfigureAwait(false);
@@ -852,6 +906,31 @@ public sealed class BlexStatePersistor : IAsyncDisposable, IDisposable
         {
             _manager.ReportError("persistence", ex, $"writing '{key}'");
         }
+    }
+
+    /// <summary>
+    /// Turns a stored value back into the payload that was protected, when a <see cref="BlexPersistenceOptions.Protector"/>
+    /// is set; <c>null</c> when the protector cannot vouch for it, which is reported (and, when
+    /// <paramref name="removeRejected"/>, removed from storage). What the protector throws propagates, like a failed read.
+    /// </summary>
+    private async Task<string?> UnprotectAsync(IBlexStore store, string? raw, bool removeRejected, CancellationToken cancellationToken)
+    {
+        if (string.IsNullOrEmpty(raw) || _protector is not { } protector)
+            return raw;
+
+        var payload = await protector.UnprotectAsync(store.Name, raw, cancellationToken).ConfigureAwait(true);
+        if (payload is not null)
+            return payload;
+
+        _manager.ReportError(
+            "persistence",
+            new InvalidOperationException($"The stored state of '{store.Name}' was rejected by the protector: tampered with, protected with another key, or saved before protection was on."),
+            $"unprotecting '{store.Name}'; the stored value is discarded");
+
+        if (removeRejected)
+            await TryRemoveAsync(store, cancellationToken).ConfigureAwait(true);
+
+        return null;
     }
 
     /// <summary>

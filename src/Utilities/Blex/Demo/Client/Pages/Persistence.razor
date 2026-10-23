@@ -281,6 +281,26 @@
     </div>
 
     <div class="bb-card">
+        <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Protecting what is stored</h3>
+        <p>
+            Browser storage is readable by anyone with the device and by every script on the page. An
+            <code>IBlexStateProtector</code> encrypts and tamper-proofs each payload on its way to storage and
+            checks it on the way back - set <code>options.Protector</code>, or register one in DI when it needs
+            other services. On Blazor Server, ASP.NET Core Data Protection keeps the key on the server, so the
+            browser only ever holds ciphertext.
+        </p>
+        <CodeBlock Code="@Protection" />
+        <p>
+            A value the protector returns <code>null</code> for - one that will never read: saved before protection
+            was on, written by something else, protected with a key that is gone, tampered with - is reported and
+            discarded, and the store starts from its defaults. When it <em>throws</em> - a key service out of reach
+            or timed out - nothing is lost: the failure is reported, the value is kept, the other stores hydrate,
+            and that store holds its saves until <code>RehydrateAsync</code> gets through. A payload that fails to
+            protect is never written in the clear.
+        </p>
+    </div>
+
+    <div class="bb-card">
         <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Prerendering</h3>
         <p>
             <code>&lt;BlexProvider&gt;</code> also bridges to Blazor's
@@ -614,5 +634,36 @@
 
             // ...Get/Set/Remove as above.
         }
+        """;
+
+    private const string Protection = """
+        public sealed class DataProtectionProtector(IDataProtectionProvider provider) : IBlexStateProtector
+        {
+            private readonly IDataProtector _protector = provider.CreateProtector("Bit.Blex.State");
+
+            public ValueTask<string> ProtectAsync(string store, string payload, CancellationToken ct = default)
+                => new(_protector.Protect(payload));
+
+            public ValueTask<string?> UnprotectAsync(string store, string payload, CancellationToken ct = default)
+            {
+                // Data Protection payloads start with "CfDJ8"; anything else was saved in the clear.
+                if (!payload.StartsWith("CfDJ8", StringComparison.Ordinal))
+                    return new((string?)null);
+
+                try
+                {
+                    return new(_protector.Unprotect(payload));
+                }
+                catch (CryptographicException ex) when (ex.InnerException is null)
+                {
+                    // The key is gone or the payload was tampered with: it will never read. A failure that may pass
+                    // (the key store out of reach) comes wrapped instead; it propagates, and the value is kept.
+                    return new((string?)null);
+                }
+            }
+        }
+
+        builder.Services.AddSingleton<IBlexStateProtector, DataProtectionProtector>();
+        builder.Services.AddBitBlexLocalStoragePersistence();
         """;
 }

@@ -124,9 +124,10 @@ public static class BitBlexMaui
 
     /// <summary>
     /// Registers the server-state cache (<see cref="Query.BlexQueryClient"/>) as a singleton. Pairs with
-    /// <see cref="UseBitBlex"/>. A native app has no browser to report focus: call
+    /// <see cref="UseBitBlex"/>. A native app has no browser to report focus or the network: call
     /// <see cref="Query.BlexQueryClient.NotifyFocused"/> when a window activates, and
-    /// <see cref="Query.BlexQueryClient.NotifyReconnected"/> when <c>Connectivity</c> reports the network back.
+    /// <see cref="Query.BlexQueryClient.NotifyOffline"/> / <see cref="Query.BlexQueryClient.NotifyReconnected"/> when
+    /// <c>Connectivity.ConnectivityChanged</c> reports the network gone or back, so requests wait for it.
     /// </summary>
     public static MauiAppBuilder AddBitBlexQueries(
         this MauiAppBuilder builder,

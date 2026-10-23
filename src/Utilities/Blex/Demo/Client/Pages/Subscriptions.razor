@@ -77,6 +77,7 @@
             <li><code>&lt;BlexSelect&gt;</code> renders its content from a projection and re-renders it only when the projection changes - a cart total in a page header, re-rendering when the total differs and not when a line is added that leaves it unchanged. <code>Comparer</code> takes the same <code>BlexComparers</code> as every other selector.</li>
             <li>The selector is re-read whenever the host re-renders, so it may capture the host's parameters (an id, a filter) freely: changes are always compared against what is on screen.</li>
             <li><code>&lt;BlexView&gt;</code> re-renders its content on any change to <code>Store</code> or any of <code>Stores</code> - <code>Subscribe(store)</code> as markup.</li>
+            <li><code>RenderInterval</code> - on both, and on <code>BlexComponentBase</code> - caps how often changes re-render: the first change after a quiet interval renders at once, the rest within it collapse into one render of the latest state. For state that changes many times a second (a live feed, a progress counter), where every render is a diff over the wire on Blazor Server.</li>
         </ul>
 
         <DemoCard Title="A host that never re-renders"
@@ -292,6 +293,7 @@
         new("Func&lt;TValue&gt; Selector", "Required. Projects the rendered value; <code>TValue</code> is inferred from it."),
         new("IEqualityComparer&lt;TValue&gt;? Comparer", "What counts as a change. Defaults to <code>EqualityComparer&lt;TValue&gt;.Default</code>; use <code>BlexComparers.Sequence&lt;T&gt;()</code> for a projected collection."),
         new("RenderFragment&lt;TValue&gt;? ChildContent", "The content, rendered with the selected value as its <code>context</code> (rename it with <code>Context=\"...\"</code>)."),
+        new("TimeSpan RenderInterval", "The shortest time between two renders the projection's changes cause. Zero (the default) renders every change."),
         new("TValue Value", "Not a parameter: the value the content was last rendered with."),
     ];
 
@@ -300,6 +302,7 @@
         new("IBlexStore? Store", "A store whose changes re-render the content."),
         new("IEnumerable&lt;IBlexStore&gt;? Stores", "Several, combined with <code>Store</code>. A host re-render passing the same stores re-subscribes nothing."),
         new("RenderFragment? ChildContent", "The content to keep current."),
+        new("TimeSpan RenderInterval", "The shortest time between two renders the stores' changes cause. Zero (the default) renders every change."),
     ];
 
     private const string Markup = """

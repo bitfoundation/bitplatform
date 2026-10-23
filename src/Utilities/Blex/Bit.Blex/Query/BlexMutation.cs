@@ -127,7 +127,8 @@ public sealed record BlexMutationOptions<TArg, TResult>
     /// <summary>
     /// Keys to invalidate once the change settles, success or failure -- the server's view has moved either
     /// way. The mutation stays pending until the observed ones have refetched, so the UI never shows
-    /// "saved" next to the list from before the save.
+    /// "saved" next to the list from before the save -- unless the app is offline, where those refetches wait for
+    /// the network and the mutation settles without them.
     /// </summary>
     public IReadOnlyList<BlexQueryKey>? Invalidates { get; init; }
 
@@ -136,6 +137,12 @@ public sealed record BlexMutationOptions<TArg, TResult>
 
     /// <summary>The wait before the first retry; it doubles before each further one, up to 30 seconds.</summary>
     public TimeSpan RetryDelay { get; init; } = TimeSpan.FromSeconds(1);
+
+    /// <summary>
+    /// Whether a call waits for the network while the app is offline -- pending and <see cref="BlexMutation{TArg, TResult}.IsPaused"/>,
+    /// its optimistic update already shown -- and is sent once it returns. <c>null</c> uses the client's.
+    /// </summary>
+    public BlexNetworkMode? NetworkMode { get; init; }
 }
 
 /// <summary>
@@ -189,6 +196,9 @@ public sealed class BlexMutation<TArg, TResult> : INotifyPropertyChanged
     /// <summary>The latest call failed.</summary>
     public bool IsError => Status == BlexMutationStatus.Error;
 
+    /// <summary>The latest call is pending, waiting for the network to come back before it is sent.</summary>
+    public bool IsPaused { get; private set; }
+
     /// <summary>Raised after the state changed. Handler exceptions are isolated and reported.</summary>
     public event Action? Changed;
 
@@ -218,7 +228,7 @@ public sealed class BlexMutation<TArg, TResult> : INotifyPropertyChanged
         try
         {
             rollback = _options.OnMutate?.Invoke(arg);
-            result = await SendAsync(arg, cancellationToken).ConfigureAwait(true);
+            result = await SendAsync(call, arg, cancellationToken).ConfigureAwait(true);
             succeeded = true;
         }
         catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
@@ -242,7 +252,9 @@ public sealed class BlexMutation<TArg, TResult> : INotifyPropertyChanged
         {
             try
             {
-                await Task.WhenAll(keys.Select(key => _client.InvalidateAsync(key))).ConfigureAwait(true);
+                // Offline, the refetches wait for the network; the change itself has settled, and so does the mutation.
+                var refetches = Task.WhenAll(keys.Select(key => _client.InvalidateAsync(key)));
+                await Task.WhenAny(refetches, _client.WhenOfflineAsync()).ConfigureAwait(true);
             }
             catch (Exception ex)
             {
@@ -263,10 +275,24 @@ public sealed class BlexMutation<TArg, TResult> : INotifyPropertyChanged
     /// <summary>Returns to <see cref="BlexMutationStatus.Idle"/>, forgetting the latest call's outcome; a call still running no longer reports to it.</summary>
     public void Reset() => Commit(++_call, BlexMutationStatus.Idle, default, default, null);
 
-    private async Task<TResult> SendAsync(TArg arg, CancellationToken cancellationToken)
+    private async Task<TResult> SendAsync(int call, TArg arg, CancellationToken cancellationToken)
     {
         for (var failures = 0; ; failures++)
         {
+            // Offline: held until the network returns, then sent -- a retry waits the same way.
+            if (_client.PausesOffline(_options.NetworkMode) && !_client.IsOnline)
+            {
+                SetPaused(call, true);
+                try
+                {
+                    await _client.WhenOnlineAsync(cancellationToken).ConfigureAwait(true);
+                }
+                finally
+                {
+                    SetPaused(call, false);
+                }
+            }
+
             try
             {
                 return await _mutate(arg, cancellationToken).ConfigureAwait(true);
@@ -279,6 +305,15 @@ public sealed class BlexMutation<TArg, TResult> : INotifyPropertyChanged
         }
     }
 
+    private void SetPaused(int call, bool paused)
+    {
+        if (call != _call || IsPaused == paused)
+            return;
+
+        IsPaused = paused;
+        RaiseChanged();
+    }
+
     private void Commit(int call, BlexMutationStatus status, TArg? arg, TResult? data, Exception? error)
     {
         // A call superseded by a later one (or by Reset) no longer speaks for the mutation.
@@ -289,7 +324,12 @@ public sealed class BlexMutation<TArg, TResult> : INotifyPropertyChanged
         Arg = arg;
         Data = data;
         Error = error;
+        IsPaused = false;
+        RaiseChanged();
+    }
 
+    private void RaiseChanged()
+    {
         if (Changed is { } changed)
         {
             foreach (var handler in changed.GetInvocationList())

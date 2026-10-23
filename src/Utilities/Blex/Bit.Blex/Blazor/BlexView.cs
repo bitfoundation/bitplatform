@@ -34,6 +34,15 @@ public sealed class BlexView : ComponentBase, IDisposable
     /// <summary>The content to keep current.</summary>
     [Parameter] public RenderFragment? ChildContent { get; set; }
 
+    /// <summary>
+    /// The shortest time between two renders the stores' changes cause; defaults to zero (every change renders).
+    /// The first change after a quiet interval renders at once, the rest within it collapse into one render of the
+    /// latest state -- for stores that change many times a second.
+    /// </summary>
+    [Parameter] public TimeSpan RenderInterval { get; set; }
+
+    private BlexRenderThrottle? _throttle;
+
     /// <inheritdoc />
     protected override void OnParametersSet()
     {
@@ -76,8 +85,17 @@ public sealed class BlexView : ComponentBase, IDisposable
         if (_disposed)
             return;
 
-        BlexRender.Observe(InvokeAsync(StateHasChanged), DispatchExceptionAsync);
+        if (RenderInterval <= TimeSpan.Zero)
+        {
+            RequestRender();
+            return;
+        }
+
+        var clock = _subscribed.Count > 0 && _subscribed[0] is BlexStoreBase store ? store.Clock : TimeProvider.System;
+        LazyInitializer.EnsureInitialized(ref _throttle, () => new BlexRenderThrottle(RequestRender)).Request(RenderInterval, clock);
     }
+
+    private void RequestRender() => BlexRender.Observe(InvokeAsync(StateHasChanged), DispatchExceptionAsync);
 
     /// <inheritdoc />
     protected override void BuildRenderTree(RenderTreeBuilder builder)
@@ -90,6 +108,7 @@ public sealed class BlexView : ComponentBase, IDisposable
             return;
 
         _disposed = true;
+        _throttle?.Dispose();
         foreach (var store in _subscribed)
             store.StateChanged -= OnStoreChanged;
         _subscribed.Clear();

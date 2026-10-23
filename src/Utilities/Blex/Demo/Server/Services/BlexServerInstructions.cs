@@ -52,8 +52,10 @@ public static class BlexServerInstructions
           BlexEntityAdapter over a hand-maintained dictionary, middleware over wrapping every action, the generated
           `Store.Actions.Xxx` descriptors over matching action names as strings, <BlexScope> over registering a second
           instance by hand, `RetryCount`/`TimeoutMilliseconds` on an effect over a hand-written retry loop, a query
-          (`UseQuery`, mutations with `Optimistic`) over caching server responses in [BlexState] fields, and
-          `manager.InvokeAsync` over changing a store from a timer or SignalR handler directly.
+          (`UseQuery`, `UseInfiniteQuery` for paged lists, mutations with `Optimistic`) over caching server responses in
+          [BlexState] fields, `manager.Transaction` over undoing a multi-store change by hand, `CreateSelectorFamily` over a
+          dictionary of selectors per id, `RenderInterval` over a hand-rolled render timer, and `manager.InvokeAsync` over
+          changing a store from a timer or SignalR handler directly.
 
         Every tool on this server is read-only and cheap: none of them changes anything, anywhere, so there is no reason to
         ration them or to ask before calling one.

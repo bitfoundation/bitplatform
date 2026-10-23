@@ -194,6 +194,15 @@
                 Dispose the selector (or hand it to <code>OwnsSubscription</code>) to detach it.
             </p>
         </Callout>
+
+        <p>
+            A derived value that takes an argument - the line with this id, the total of that category - is a
+            <em>family</em>: <code>CreateSelectorFamily</code> memoizes one value per argument, each recomputed at
+            most once per change, and keeps at most <code>maxSize</code> of them (128 by default), dropping the
+            least recently read. A selector per id created by hand would keep every id the list ever showed
+            alive; <code>Remove(id)</code> drops one as soon as its entity is gone.
+        </p>
+        <CodeBlock Code="@FamilySample" />
     </div>
 
     <div class="bb-card">
@@ -346,6 +355,7 @@
         new("IDisposable SubscribeAsync(Func&lt;…, Task&gt;, Func&lt;…, bool&gt;? filter)", "An async reactor. The task is observed; failures are reported rather than left unobserved."),
         new("IDisposable Subscribe&lt;T&gt;(Func&lt;T&gt; selector, Action&lt;T&gt;, IEqualityComparer&lt;T&gt;?, bool fireImmediately)", "Fires only when a projection <em>spanning stores</em> changes. An <code>Action&lt;T, T&gt;</code> overload delivers <code>(previous, current)</code>. Re-evaluated after restores too. See <a href=\"subscriptions\">Subscriptions</a>."),
         new("BlexSelector&lt;T&gt; CreateSelector&lt;T&gt;(Func&lt;T&gt;)", "A lazy, memoized derived value over the whole tree - <code>[BlexComputed]</code> lifted to the manager. Read <code>.Value</code>; it recomputes at most once per action, and only when something reads it. Dispose to detach."),
+        new("BlexSelectorFamily&lt;TArg, T&gt; CreateSelectorFamily&lt;TArg, T&gt;(Func&lt;TArg, T&gt;, int maxSize = 128, IEqualityComparer&lt;TArg&gt;?)", "A selector per argument, read with <code>family[arg]</code>: each memoized like a selector, evicted least recently used beyond <code>maxSize</code>. <code>Remove</code>, <code>Invalidate</code>, <code>Clear</code>, <code>IsValid(arg)</code>, <code>Count</code>."),
         new("event Action&lt;BlexActionErrorContext&gt;? ActionFailed", "Raised when an action body throws. The exception still propagates. See <a href=\"middleware\">Middleware</a>."),
     ];
 
@@ -389,6 +399,20 @@
             _summary = Manager.CreateSelector(() => Orders.Units + Cart.Lines.Count);
             OwnsSubscription(_summary);
         }
+        """;
+
+    private const string FamilySample = """
+        // One memoized value per order id; at most 500 ids held, least recently read dropped first.
+        var lineTotal = manager.CreateSelectorFamily(
+            (int orderId) => orders.Find(orderId).Units * catalog.PriceOf(orderId),
+            maxSize: 500);
+
+        lineTotal[42];   // computes for 42
+        lineTotal[42];   // cached
+        lineTotal[7];    // computes for 7, independently
+
+        orders.Cancel(42);
+        lineTotal.Remove(42);   // its entity is gone: drop it now rather than wait for eviction
         """;
 
     private const string SelectorDemoSource = """

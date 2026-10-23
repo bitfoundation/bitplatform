@@ -154,6 +154,11 @@ public static class BitBlex
     /// Defaults to <see cref="ServiceLifetime.Scoped"/>; must match the lifetime passed to
     /// <see cref="AddBitBlexServices"/>.
     /// </param>
+    /// <remarks>
+    /// An <see cref="IBlexStateProtector"/> registered in DI protects what is stored unless
+    /// <see cref="BlexPersistenceOptions.Protector"/> names one: register it there when it needs other services
+    /// (ASP.NET Core Data Protection's <c>IDataProtectionProvider</c>).
+    /// </remarks>
     public static IServiceCollection AddBitBlexPersistence(
         this IServiceCollection services,
         Action<BlexPersistenceOptions>? configure = null,
@@ -166,7 +171,8 @@ public static class BitBlex
         services.Add(new ServiceDescriptor(typeof(BlexStatePersistor), sp => new BlexStatePersistor(
             sp.GetRequiredService<BlexManager>(),
             sp.GetRequiredService<IBlexStorage>(),
-            sp.GetRequiredService<BlexPersistenceOptions>()), lifetime));
+            sp.GetRequiredService<BlexPersistenceOptions>(),
+            sp.GetService<IBlexStateProtector>()), lifetime));
         return services;
     }
 

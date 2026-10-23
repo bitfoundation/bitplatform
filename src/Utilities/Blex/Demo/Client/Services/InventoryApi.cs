@@ -60,4 +60,23 @@ public sealed class InventoryApi
         for (var i = 0; i < _products.Count; i++)
             _products[i] = _products[i] with { Stock = _products[i].Stock + 5 };
     }
+
+    private const int ActivityPages = 4;
+
+    /// <summary>One page of the stock-movement log, newest first, and the next page's number (<c>null</c> on the last).</summary>
+    public async Task<ActivityPage> GetActivityPageAsync(int? page, CancellationToken cancellationToken)
+    {
+        Requests++;
+        await Task.Delay(Latency, cancellationToken);
+
+        var number = page ?? 1;
+        string[] movements = ["received", "shipped", "counted"];
+        var entries = Enumerable.Range(0, 3)
+            .Select(i => $"#{(number - 1) * 3 + i + 1}: {_products[i % _products.Count].Name} {movements[(number + i) % movements.Length]}")
+            .ToArray();
+        return new ActivityPage(number, entries, number < ActivityPages ? number + 1 : null);
+    }
 }
+
+/// <summary>One page of the stock-movement log.</summary>
+public sealed record ActivityPage(int Number, IReadOnlyList<string> Entries, int? Next);

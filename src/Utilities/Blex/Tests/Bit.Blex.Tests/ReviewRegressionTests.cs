@@ -216,6 +216,24 @@ public class ReviewRegressionTests
     }
 
     [TestMethod]
+    public async Task An_invalidation_refetches_a_handed_over_query_that_never_fetched_here()
+    {
+        var (prerender, _, _) = Client();
+        prerender.SetQueryData<string>(["quote"], "prerendered");
+        var (interactive, _, _) = Client();
+        interactive.Hydrate(prerender.Dehydrate());
+        var server = new FakeServer<string>();
+        using var quote = interactive.Query(["quote"], server.Fetch(), new BlexQueryOptions { StaleTime = TimeSpan.FromMinutes(1) });
+        Assert.AreEqual(0, server.Calls, "fresh on arrival: not fetched");
+
+        var invalidation = interactive.InvalidateAsync(["quote"]);
+        Assert.AreEqual(1, server.Calls, "the entry never had a fetch of its own; its observer's is used");
+        server.Respond(0, "fresh");
+        await invalidation.WaitAsync(TimeSpan.FromSeconds(5));
+        Assert.AreEqual("fresh", quote.Data);
+    }
+
+    [TestMethod]
     public async Task Disposing_the_client_stops_the_polling_of_a_query_nobody_disposed()
     {
         var (client, clock, _) = Client();

@@ -109,6 +109,10 @@ public class ServerModeTests : PrerenderedWebModeTests
         // <BlexProvider> hands its stores over through that same PersistentComponentState, so the token -
         // held by a store nothing else persists - is still the one issued before the pause.
         Assert.IsTrue(await Page.EvaluateAsync<bool>("() => Blazor.pauseCircuit()"), "The circuit did not pause.");
+
+        // The paused circuit's last render left the page marked interactive; only the resumed circuit's first render
+        // marks it again, so the wait below waits for the circuit that will handle the click, not the one that left.
+        await Page.EvaluateAsync("() => document.getElementById('status').setAttribute('data-interactive', 'false')");
         Assert.IsTrue(await Page.EvaluateAsync<bool>("() => Blazor.resumeCircuit()"), "The circuit did not resume.");
         await WaitForInteractiveAsync();
 

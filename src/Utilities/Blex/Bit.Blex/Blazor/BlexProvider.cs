@@ -105,8 +105,23 @@ public sealed class BlexProvider : ComponentBase, IAsyncDisposable
         if (!_disposed && Services.GetService<BlexQueryClient>() is { } queries)
         {
             _queryFocus = new BlexQueryFocusWatcher(Js, queries, Manager);
-            await _queryFocus.StartAsync();
+            await _queryFocus.StartAsync(reportOffline: RequestsLeaveFromTheDevice());
         }
+    }
+
+    /// <summary>
+    /// Whether the queries' requests leave from the device the browser runs on -- WebAssembly, or a BlazorWebView --
+    /// so the browser going offline pauses them. On Blazor Server they leave from the server, which the browser's
+    /// network says nothing about (and an "offline" event delivered late over a reconnecting circuit could only
+    /// leave the cache thinking it is offline). .NET 8 cannot tell a WebView from a circuit: only WebAssembly reports there.
+    /// </summary>
+    private bool RequestsLeaveFromTheDevice()
+    {
+#if NET9_0_OR_GREATER
+        return RendererInfo.Name is "WebAssembly" or "WebView";
+#else
+        return OperatingSystem.IsBrowser();
+#endif
     }
 
     private async Task StartDurableStateAsync(bool rethrowInteropUnavailable)

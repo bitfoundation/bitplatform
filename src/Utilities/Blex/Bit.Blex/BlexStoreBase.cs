@@ -112,6 +112,9 @@ public abstract class BlexStoreBase : IBlexStore, INotifyPropertyChanged, IDispo
     /// </summary>
     protected TimeProvider TimeProvider => _manager?.TimeProvider ?? global::System.TimeProvider.System;
 
+    /// <summary><see cref="TimeProvider"/>, for the library's own components (render throttling).</summary>
+    internal TimeProvider Clock => TimeProvider;
+
     /// <summary>
     /// Every action of this store as a <see cref="BlexActionDescriptor"/>: the generated actions and
     /// effects (the same instances as the store's nested <c>Actions</c> class), a <c>"Set X"</c>
@@ -192,6 +195,13 @@ public abstract class BlexStoreBase : IBlexStore, INotifyPropertyChanged, IDispo
     protected virtual void InvalidateComputed()
     {
     }
+
+    /// <summary>
+    /// Invalidates the memoized computed values that read <paramref name="propertyName"/> -- every one by default. The
+    /// generator overrides it with the dependencies it found in each computed's body, so writing one field does not
+    /// throw away a value derived from others.
+    /// </summary>
+    protected virtual void InvalidateComputed(string? propertyName) => InvalidateComputed();
 
     /// <summary>
     /// Raises <see cref="StateChanged"/> followed by <see cref="PropertyChanged"/> (with an empty
@@ -379,7 +389,7 @@ public abstract class BlexStoreBase : IBlexStore, INotifyPropertyChanged, IDispo
 
             var telemetry = BlexDiagnostics.StartAction(this, label);
             field = value;
-            InvalidateComputed();
+            InvalidateComputed(propertyName);
             try
             {
                 NotifyStateChanged(announced: true);
@@ -409,7 +419,7 @@ public abstract class BlexStoreBase : IBlexStore, INotifyPropertyChanged, IDispo
             // that action is recorded: a reactor dispatching a follow-up must not get it recorded before
             // the action that caused it (DevTools order, undo steps). Outside one, nothing records actions
             // at all, and the manager is told here. Components see the change now either way.
-            InvalidateComputed();
+            InvalidateComputed(propertyName);
             NotifyStateChanged(announced: _recordDepth > 0);
 
             if (_recordDepth == 0)
@@ -422,7 +432,7 @@ public abstract class BlexStoreBase : IBlexStore, INotifyPropertyChanged, IDispo
             // write, say -- must see it, not the value memoized before. Invalidating is flag writes;
             // recomputing stays lazy. Only stamped here; the batch's notification checks the
             // dispatcher, once for the whole action.
-            InvalidateComputed();
+            InvalidateComputed(propertyName);
             ChangeVersion++;
             _manager?.MarkStateChanged();
         }
@@ -649,7 +659,7 @@ public abstract class BlexStoreBase : IBlexStore, INotifyPropertyChanged, IDispo
             // every dirty case here.
             if (_dirty && _notifyDepth == 0)
             {
-                InvalidateComputed();
+                // No InvalidateComputed here: every write already invalidated what reads it, as it happened.
                 var record = _recordDepth == 0;
                 if (record)
                     _dirty = false; // reset before notifying so a throwing subscriber can't leak it

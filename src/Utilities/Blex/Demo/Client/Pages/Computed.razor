@@ -3,7 +3,7 @@
 @inject CartStore Cart
 
 <DocPage Href="computed" Title="Computed state"
-         Lead="Derived values that recompute only when they have to, and invalidate themselves whenever state changes.">
+         Lead="Derived values that recompute only when they have to - when the state they read changes.">
 
     <div class="bb-card">
         <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> The convention</h3>
@@ -90,13 +90,17 @@
             in dependency order, with no wiring on your part.
         </p>
 
-        <Callout Kind="Callout.CalloutKind.Gotcha" Title="Invalidation is store-wide, not per-dependency">
+        <Callout Kind="Callout.CalloutKind.Note" Title="A write invalidates only what reads it">
             <p>
-                Blex does not track which fields a computed method touched. <em>Any</em> state change
-                on the store invalidates <em>every</em> computed value on it. That keeps invalidation
-                correct and free of bookkeeping, but it means an expensive computation on a busy store
-                recomputes more often than strictly necessary. If that matters, split the store, or cache
-                inside the method against the specific inputs.
+                The source generator reads each computed method's body: a write to <code>Discount</code>
+                invalidates the computed values that read <code>Discount</code> (or its backing field), directly
+                or through another computed - not one derived from <code>Lines</code> alone. A computed that reads
+                state the generator cannot follow - through a helper method of the store, a service field, a
+                primary-constructor parameter, <code>this</code> passed along, an effect's flags - is invalidated
+                by every write, as all were before. Keep an expensive computed's reads in its own body (or in other
+                computeds) and it recomputes only when its inputs move. What it reads has to change through its
+                property, the way all state does: a backing field written directly or a list changed in place is a
+                write nothing sees - not even by accident, through another field's write, as before.
             </p>
         </Callout>
 

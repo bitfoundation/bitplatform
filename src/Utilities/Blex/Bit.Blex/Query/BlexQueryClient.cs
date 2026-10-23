@@ -69,6 +69,8 @@ public sealed class BlexQueryClient : IDisposable
             GcTime = options.GcTime,
             RetryCount = options.RetryCount,
             RetryDelay = options.RetryDelay,
+            NetworkMode = options.NetworkMode,
+            SyncAcrossTabs = options.SyncAcrossTabs,
         };
     }
 
@@ -93,6 +95,71 @@ public sealed class BlexQueryClient : IDisposable
 
     internal TimeSpan RetryDelayFor(BlexQueryOptions options) => options.RetryDelay ?? Options.RetryDelay;
 
+    internal bool PausesOffline(BlexNetworkMode? mode) => (mode ?? Options.NetworkMode) == BlexNetworkMode.Online;
+
+    // Completed by NotifyReconnected; null while online.
+    private TaskCompletionSource? _backOnline;
+
+    /// <summary>
+    /// Whether the app has the network, as far as the cache was told: <c>true</c> until <see cref="NotifyOffline"/>,
+    /// and again after <see cref="NotifyReconnected"/>. While it is <c>false</c>, fetches and mutations in
+    /// <see cref="BlexNetworkMode.Online"/> mode wait -- <see cref="BlexFetchStatus.Paused"/> -- instead of failing.
+    /// <c>&lt;BlexProvider&gt;</c> follows the browser's <c>offline</c>/<c>online</c> events where requests leave from
+    /// the device (WebAssembly, Hybrid); on Blazor Server they leave from the server, which the browser's network
+    /// says nothing about.
+    /// </summary>
+    public bool IsOnline { get; private set; } = true;
+
+    /// <summary>
+    /// Tells the cache the network is gone: fetches and mutations in <see cref="BlexNetworkMode.Online"/> mode wait
+    /// until <see cref="NotifyReconnected"/>. Native MAUI calls it from <c>Connectivity.ConnectivityChanged</c>.
+    /// </summary>
+    public void NotifyOffline()
+    {
+        TaskCompletionSource? wentOffline;
+        lock (Gate)
+        {
+            if (!IsOnline)
+                return;
+
+            IsOnline = false;
+            wentOffline = _wentOffline;
+            _wentOffline = null;
+        }
+
+        wentOffline?.TrySetResult();
+        OnEntryChanged();
+    }
+
+    // Completed by NotifyOffline; null while offline.
+    private TaskCompletionSource? _wentOffline;
+
+    /// <summary>Completes once the app is offline -- at once when it is. What waits for refetches stops waiting there.</summary>
+    internal Task WhenOfflineAsync()
+    {
+        lock (Gate)
+        {
+            if (!IsOnline)
+                return Task.CompletedTask;
+
+            _wentOffline ??= new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            return _wentOffline.Task;
+        }
+    }
+
+    /// <summary>Completes once the app is online -- at once when it is; cancelled with <paramref name="cancellationToken"/>.</summary>
+    internal Task WhenOnlineAsync(CancellationToken cancellationToken)
+    {
+        lock (Gate)
+        {
+            if (IsOnline)
+                return Task.CompletedTask;
+
+            _backOnline ??= new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            return _backOnline.Task.WaitAsync(cancellationToken);
+        }
+    }
+
     /// <summary>Raised after any cached query changes, or joins or leaves the cache -- for inspectors. Handler exceptions are isolated.</summary>
     public event Action? CacheChanged;
 
@@ -107,6 +174,53 @@ public sealed class BlexQueryClient : IDisposable
     /// <exception cref="InvalidOperationException">The key is already cached with data of another type.</exception>
     public BlexQuery<T> Query<T>(BlexQueryKey key, Func<CancellationToken, Task<T>> fetch, BlexQueryOptions? options = null)
         => Query(key, fetch, options, hasPlaceholder: false, placeholder: default);
+
+    /// <summary>
+    /// Observes a paged query -- a feed, "load more", infinite scroll: the pages loaded so far, and
+    /// <see cref="BlexInfiniteQuery{TPage, TParam}.FetchNextPageAsync"/> to load the next (TanStack Query's
+    /// <c>useInfiniteQuery</c>, forward only). The pages are one cached query under <paramref name="key"/>. Dispose
+    /// the observer when done; in a component, <c>UseInfiniteQuery</c> does both for you.
+    /// </summary>
+    /// <param name="key">Which query: <c>["feed", filter]</c>.</param>
+    /// <param name="fetchPage">Fetches one page by its param; honour the token.</param>
+    /// <param name="initialPageParam">The first page's param: <c>1</c>, an empty cursor.</param>
+    /// <param name="getNextPageParam">
+    /// The next page's param from the last page (and all of them), or <c>null</c> when there is none. Called on every
+    /// read of <see cref="BlexInfiniteQuery{TPage, TParam}.HasNextPage"/>; keep it cheap.
+    /// </param>
+    /// <param name="options">How to fetch the pages; unset values come from <see cref="Options"/>.</param>
+    /// <exception cref="InvalidOperationException">The key is already cached with data of another type.</exception>
+    /// <example><code>
+    /// var feed = client.InfiniteQuery&lt;FeedPage, string?&gt;(
+    ///     ["feed"],
+    ///     (cursor, ct) => api.GetFeedAsync(cursor, ct),
+    ///     initialPageParam: null,
+    ///     getNextPageParam: (last, _) => last.NextCursor);
+    /// await feed.FetchNextPageAsync();
+    /// </code></example>
+    public BlexInfiniteQuery<TPage, TParam> InfiniteQuery<TPage, TParam>(
+        BlexQueryKey key,
+        Func<TParam, CancellationToken, Task<TPage>> fetchPage,
+        TParam initialPageParam,
+        Func<TPage, IReadOnlyList<TPage>, TParam?> getNextPageParam,
+        BlexQueryOptions? options = null)
+    {
+        ArgumentNullException.ThrowIfNull(key);
+        ArgumentNullException.ThrowIfNull(fetchPage);
+        ArgumentNullException.ThrowIfNull(getNextPageParam);
+        ObjectDisposedException.ThrowIf(IsDisposed, this);
+        options ??= new BlexQueryOptions();
+
+        var infinite = new BlexInfiniteQuery<TPage, TParam>(this, options, fetchPage, initialPageParam, getNextPageParam);
+        var pages = new BlexQuery<BlexInfiniteData<TPage, TParam>>(this, infinite.FetchPagesAsync, options, hasPlaceholder: false, placeholder: null);
+        Attach(key, pages);
+
+        // Before mounting: the first fetch reads the pages loaded so far through it.
+        infinite.Observe(pages);
+        pages.Mount();
+        OnEntryChanged();
+        return infinite;
+    }
 
     internal BlexQuery<T> Query<T>(BlexQueryKey key, Func<CancellationToken, Task<T>> fetch, BlexQueryOptions? options, bool hasPlaceholder, T? placeholder)
     {
@@ -194,7 +308,7 @@ public sealed class BlexQueryClient : IDisposable
         BlexQueryEntry.FetchResult result;
         try
         {
-            result = await entry.FetchAsync(fetch, RetryCountFor(options), RetryDelayFor(options), cancelRunning: false)
+            result = await entry.FetchAsync(fetch, RetryCountFor(options), RetryDelayFor(options), cancelRunning: false, networkMode: options.NetworkMode)
                 .WaitAsync(cancellationToken)
                 .ConfigureAwait(true);
         }
@@ -236,7 +350,7 @@ public sealed class BlexQueryClient : IDisposable
             return Task.CompletedTask;
         }
 
-        return entry.FetchAsync(fetch, RetryCountFor(options), RetryDelayFor(options), cancelRunning: false)
+        return entry.FetchAsync(fetch, RetryCountFor(options), RetryDelayFor(options), cancelRunning: false, networkMode: options.NetworkMode)
             .ContinueWith(_ => ScheduleGc(entry), CancellationToken.None, TaskContinuationOptions.ExecuteSynchronously, TaskScheduler.Default);
     }
 
@@ -368,7 +482,48 @@ public sealed class BlexQueryClient : IDisposable
     public Task InvalidateAsync(BlexQueryKey key, bool exact = false)
     {
         ArgumentNullException.ThrowIfNull(key);
-        return InvalidateAsync(Matcher(key, exact));
+        var refetches = InvalidateAsync(Matcher(key, exact));
+
+        // For the other tabs (SyncAcrossTabs); what they pass on arrives through InvalidateFromElsewhereAsync, which
+        // does not travel again.
+        if (InvalidatedHere is { } invalidated)
+        {
+            try
+            {
+                invalidated(key.ToString(), exact);
+            }
+            catch (Exception ex)
+            {
+                ReportError(ex, key);
+            }
+        }
+
+        return refetches;
+    }
+
+    /// <summary>Raised after an invalidation by key made here, with the key's text: what the cross-tab bridge passes on.</summary>
+    internal event Action<string, bool>? InvalidatedHere;
+
+    /// <summary>
+    /// Invalidates what another tab invalidated, by the key's text: a key here is covered when its text is that one, or
+    /// -- unless <paramref name="exact"/> -- starts with it at a part boundary. Each part's text delimits itself
+    /// (strings are quoted and escaped), so that is exactly a prefix match.
+    /// </summary>
+    internal Task InvalidateFromElsewhereAsync(string keyText, bool exact)
+    {
+        ArgumentNullException.ThrowIfNull(keyText);
+        if (keyText.Length < 2 || keyText[0] != '[' || keyText[^1] != ']')
+            return Task.CompletedTask;
+
+        var prefix = keyText[..^1];
+        return InvalidateAsync(key =>
+        {
+            var text = key.ToString();
+            if (text == keyText)
+                return true;
+
+            return !exact && text.Length > prefix.Length && text.StartsWith(prefix, StringComparison.Ordinal) && text[prefix.Length] == ',';
+        });
     }
 
     /// <summary>Invalidates every query whose key <paramref name="predicate"/> accepts; see <see cref="InvalidateAsync(BlexQueryKey, bool)"/>.</summary>
@@ -483,8 +638,29 @@ public sealed class BlexQueryClient : IDisposable
     /// </summary>
     public void NotifyFocused() => RefetchStaleObserved();
 
-    /// <summary>Refetches stale observed queries the way <see cref="NotifyFocused"/> does -- call it when the network comes back.</summary>
-    public void NotifyReconnected() => RefetchStaleObserved();
+    /// <summary>
+    /// Tells the cache the network is back: fetches and mutations paused by <see cref="NotifyOffline"/> go on, and stale
+    /// observed queries refetch the way <see cref="NotifyFocused"/> does.
+    /// </summary>
+    public void NotifyReconnected()
+    {
+        TaskCompletionSource? backOnline;
+        bool wasOffline;
+        lock (Gate)
+        {
+            wasOffline = !IsOnline;
+            IsOnline = true;
+            backOnline = _backOnline;
+            _backOnline = null;
+        }
+
+        // Outside the gate: the paused requests' continuations run asynchronously, but their observers are notified.
+        backOnline?.TrySetResult();
+        if (wasOffline)
+            OnEntryChanged();
+
+        RefetchStaleObserved();
+    }
 
     private void RefetchStaleObserved()
     {
