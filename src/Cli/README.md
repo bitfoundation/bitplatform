@@ -252,7 +252,7 @@ In a pipeline:
 
 ## bit decode
 
-Reads a stack trace of an app minified by [Bit.Minifier](https://github.com/bitfoundation/bitplatform/tree/develop/src/Minifier) back into the names its source has:
+Reads a stack trace of an app minified by [Bit.Minifier](https://github.com/bitfoundation/bitplatform/tree/develop/src/Cli/Minifier) back into the names its source has:
 
 ```bash
 bit decode bit-minifier.map trace.txt
