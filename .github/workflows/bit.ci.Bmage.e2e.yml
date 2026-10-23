@@ -41,11 +41,17 @@ jobs:
     - name: Install wasm-tools
       run: cd src && dotnet workload install wasm-tools
 
+    - name: Setup bit CLI
+      uses: ./.github/actions/setup-bit-cli
+
+    - name: Collect the AOT profile
+      run: bit aot-profile src/Utilities/Bmage/Demo/Server/Bit.Bmage.Demo.Server.csproj -o bmage.aotprofile --include Bit.Bmage -p:InvariantGlobalization=true
+
     # The tests drive the demo published the way bmage.demo.cd.yml publishes it, not a build output: only a publish
     # trims the WebAssembly client, and an interop payload the trimmer breaks - an anonymous type whose constructor
     # lost its parameter names, a getter nothing but System.Text.Json reads - works in every build and fails only there.
     - name: Publish the demo
-      run: dotnet publish src/Utilities/Bmage/Demo/Server/Bit.Bmage.Demo.Server.csproj -c Release -o demo -p:InvariantGlobalization=true -p:WasmAotProfilePath="${{ github.workspace }}/.github/aot-profiles/bmage.aotprofile"
+      run: dotnet publish src/Utilities/Bmage/Demo/Server/Bit.Bmage.Demo.Server.csproj -c Release -o demo -p:InvariantGlobalization=true -p:WasmAotProfilePath="${{ github.workspace }}/bmage.aotprofile"
 
     - name: Build the E2E suite
       run: dotnet build src/Utilities/Bmage/Tests/Bit.Bmage.Tests.E2E/Bit.Bmage.Tests.E2E.csproj -c Release

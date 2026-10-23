@@ -20,8 +20,8 @@
         <PackageId>Bit.Cli</PackageId>
         <ToolCommandName>bit</ToolCommandName>
         <Title>bit CLI</Title>
-        <PackageDescription>Creates bit platform projects that are ready to run on Windows, macOS and Linux, translates .resx files with an LLM and decodes stack traces minified by Bit.Minifier.</PackageDescription>
-        <PackageTags>$(PackageTags);bit;cli;Blazor;MAUI;Aspire;template;resx;translation</PackageTags>
+        <PackageDescription>Creates bit platform projects that are ready to run on Windows, macOS and Linux, translates .resx files with an LLM, decodes stack traces minified by Bit.Minifier and writes AOT profiles for Blazor WebAssembly apps.</PackageDescription>
+        <PackageTags>$(PackageTags);bit;cli;Blazor;MAUI;Aspire;template;resx;translation;WebAssembly;AOT</PackageTags>
         <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
     </PropertyGroup>
 
