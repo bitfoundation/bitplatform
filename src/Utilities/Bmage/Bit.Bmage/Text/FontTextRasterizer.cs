@@ -17,6 +17,9 @@ public sealed class FontTextRasterizer : ITextRasterizer
 {
     private readonly Dictionary<string, FontVariants> _families = new(StringComparer.OrdinalIgnoreCase);
     private FontFile? _fallback;
+    // The family registered first, which answers a style that names no registered family with its own bold or italic
+    // face - "sans-serif", the default, included. Null once SetFallback has chosen a single font.
+    private FontVariants? _fallbackFamily;
 
     private sealed class FontVariants
     {
@@ -39,7 +42,10 @@ public sealed class FontTextRasterizer : ITextRasterizer
         }
     }
 
-    /// <summary>Registers a font under a family name. The first font registered also becomes the fallback.</summary>
+    /// <summary>
+    /// Registers a font under a family name. The first family registered also becomes the fallback, with each of its
+    /// faces: bold text in a family that is not registered is drawn with the fallback family's bold face.
+    /// </summary>
     public FontTextRasterizer Register(string familyName, FontFile font, bool bold = false, bool italic = false)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(familyName);
@@ -47,7 +53,11 @@ public sealed class FontTextRasterizer : ITextRasterizer
         if (!_families.TryGetValue(familyName, out var variants))
             _families[familyName] = variants = new FontVariants();
         variants.Set(font, bold, italic);
-        _fallback ??= font;
+        if (_fallback is null)
+        {
+            _fallback = font;
+            _fallbackFamily = variants;
+        }
         return this;
     }
 
@@ -58,10 +68,11 @@ public sealed class FontTextRasterizer : ITextRasterizer
         return Register(font.FamilyName ?? font.FullName ?? "default", font, bold, italic);
     }
 
-    /// <summary>Sets the font used when a requested family is not registered.</summary>
+    /// <summary>Sets the font used, whatever the weight or style, when a requested family is not registered.</summary>
     public FontTextRasterizer SetFallback(FontFile font)
     {
         _fallback = font ?? throw new ArgumentNullException(nameof(font));
+        _fallbackFamily = null;
         return this;
     }
 
@@ -83,7 +94,7 @@ public sealed class FontTextRasterizer : ITextRasterizer
             var family = name.Trim('\'', '"');
             if (_families.TryGetValue(family, out var variants) && variants.Get(style.Bold, style.Italic) is { } font) return font;
         }
-        return _fallback;
+        return _fallbackFamily?.Get(style.Bold, style.Italic) ?? _fallback;
     }
 
     /// <inheritdoc />

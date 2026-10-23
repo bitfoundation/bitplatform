@@ -1,10 +1,11 @@
 ﻿@page "/editor"
+@inject DemoFonts Fonts
 
 @* The editor component, whole: the built-in toolbar and panel, a theme forced or left to follow the
    site, a direction, and two example translations. Under it, the document the editor is editing,
-   printed live from OnDocumentChanged - the clearest way to show that an edit here is a value (a
-   pipeline and a list of annotations) rather than a mutated bitmap. The rest of the page is the
-   component's reference. *@
+   printed live from OnDocumentChanged and OnImageLoaded - the clearest way to show that an edit here
+   is a value (a pipeline, layers and annotations) rather than a mutated bitmap. The rest of the page
+   is the component's reference. *@
 
 <PageTitle>The editor · Bmage</PageTitle>
 
@@ -57,16 +58,17 @@
                      Strings="_strings"
                      ExportOptions="ExportOptions"
                      OnDocumentChanged="OnDocumentChanged"
-                     OnImageLoaded="_ => StateHasChanged()" />
+                     OnImageLoaded="OnImageLoaded" />
     </div>
 </div>
 
 <div class="bb-card">
     <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> The document behind the editor</h3>
     <p>
-        This is the whole edit: a list of pixel operations and a list of annotation objects. It is a
-        value, so it can be stored, sent to a server, replayed on the original file, or applied to a
-        different image entirely. It updates as you work.
+        This is the whole edit: a list of pixel operations, the layers composited over them - paint,
+        images, fills and adjustments - and a list of annotation objects. It is a value, so it can be
+        stored, sent to a server, replayed on the original file, or applied to a different image
+        entirely. It updates as you work.
     </p>
     @if (_document is null)
     {
@@ -112,7 +114,7 @@
                 <tr><th scope="row"><code>EmptyState</code></th><td>Replace the "drop an image here" view.</td></tr>
                 <tr><th scope="row"><code>MaxProxyDimension</code></th><td>Longest edge used for interactive editing. Falls back to <code>BitBmageOptions.MaxInteractiveDimension</code>, then 2048. <code>0</code> always edits at full resolution.</td></tr>
                 <tr><th scope="row"><code>MaxHistoryDepth</code></th><td>Undo steps kept. Default 100.</td></tr>
-                <tr><th scope="row"><code>ExportOptions</code></th><td>Settings used by the built-in save action.</td></tr>
+                <tr><th scope="row"><code>ExportOptions</code></th><td>Settings used by the built-in save action: the Export tab starts from its format, quality and metadata policy, and keeps the rest.</td></tr>
                 <tr><th scope="row"><code>OnDocumentChanged</code>, <code>OnExported</code>, <code>OnImageLoaded</code>, <code>OnError</code></th><td>Callbacks. <code>OnImageLoaded</code> matters more than it looks: the editor can load an image through its own drop zone while your <code>Image</code> is still null, so a page whose buttons depend on an image should re-render from it.</td></tr>
             </tbody>
         </table>
@@ -167,9 +169,16 @@
     <p>
         <code>BmageEditorStrings</code> is a record with a property for every label, so a translation
         is an object rather than a resource file - and you can override only the words you care
-        about. Number and size formatting are functions on the same record. For a right-to-left
-        language set <code>Direction="rtl"</code>: the panel, the crop handles and the toolbar all
-        mirror. The Persian button above switches both at once.
+        about. Number and size formatting are functions on the same record, and so are the names of
+        annotation and layer kinds, blend modes and anchors. For a right-to-left language set
+        <code>Direction="rtl"</code>: the panel, the crop handles and the toolbar all mirror. The
+        Persian button above switches both at once; both translations set every label.
+    </p>
+    <p>
+        Text and step numbers are drawn into the image from a font file - this site registers Noto
+        Sans, which covers Latin, Greek and Cyrillic. That rasteriser neither joins Arabic-script
+        letters nor reorders right-to-left text, so a Persian label typed into the image has nothing
+        to draw it with; the editor's own interface is ordinary HTML, and is unaffected.
     </p>
     <CodeSnippet Code="@LocalisationSnippet" Language="C#" Expanded="true" />
 </div>
@@ -246,6 +255,22 @@
     private string _language = "English";
     private BmageEditorStrings _strings = BmageEditorStrings.Default;
 
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender || RendererInfo.IsInteractive is false) return;
+        try
+        {
+            await Fonts.EnsureAsync();
+        }
+        catch (Exception)
+        {
+            // Without the font the editor says why its text cannot be drawn, which is the honest outcome.
+            return;
+        }
+        // Text placed before the font arrived is drawn now.
+        if (_editor?.Session is not null) await _editor.RefreshAsync();
+    }
+
     private static readonly ImageExportOptions ExportOptions = new()
     {
         Format = ImageFormat.Png,
@@ -262,30 +287,14 @@
     };
 
     /// <summary>
-    /// Two example translations. Every label is a property on a record, so a translation is an object, not a resource
-    /// file, and a host can override just the few words it cares about.
+    /// Two example translations, every label set (see Shared/EditorTranslations.cs). Every label is a property on a
+    /// record, so a translation is an object, not a resource file, and a host can override just the few words it cares about.
     /// </summary>
     private static readonly Dictionary<string, (string Tag, BmageEditorStrings Strings)> Languages = new()
     {
         ["English"] = ("en", BmageEditorStrings.Default),
-        ["Deutsch"] = ("de", BmageEditorStrings.Default with
-        {
-            Select = "Auswählen", Crop = "Zuschneiden", Draw = "Zeichnen", Arrow = "Pfeil", Line = "Linie",
-            Rectangle = "Rechteck", Ellipse = "Ellipse", Text = "Text", Highlight = "Markieren", Redact = "Schwärzen",
-            Adjust = "Anpassen", Filters = "Filter", Layers = "Ebenen", History = "Verlauf", Export = "Exportieren",
-            Undo = "Rückgängig", Redo = "Wiederholen", Reset = "Zurücksetzen", Download = "Herunterladen",
-            Brightness = "Helligkeit", Contrast = "Kontrast", Saturation = "Sättigung", Tools = "Werkzeuge",
-            DropImageHere = "Bild hier ablegen oder klicken zum Auswählen",
-        }),
-        ["فارسی"] = ("fa", BmageEditorStrings.Default with
-        {
-            Select = "انتخاب", Crop = "برش", Draw = "رسم", Arrow = "پیکان", Line = "خط",
-            Rectangle = "مستطیل", Ellipse = "بیضی", Text = "متن", Highlight = "هایلایت", Redact = "پنهان‌سازی",
-            Adjust = "تنظیم", Filters = "فیلترها", Layers = "لایه‌ها", History = "تاریخچه", Export = "خروجی",
-            Undo = "واگرد", Redo = "ازنو", Reset = "بازنشانی", Download = "دانلود",
-            Brightness = "روشنایی", Contrast = "کنتراست", Saturation = "اشباع", Tools = "ابزارها",
-            DropImageHere = "تصویر را اینجا رها کنید یا برای انتخاب کلیک کنید",
-        }),
+        ["Deutsch"] = ("de", EditorTranslations.German),
+        ["فارسی"] = ("fa", EditorTranslations.Persian),
     };
 
     private const string Snippet = """
@@ -404,6 +413,10 @@
             if (_document.Pipeline.Count == 0) lines.Add("  (none)");
             foreach (var operation in _document.Pipeline) lines.Add($"  {operation}");
             lines.Add("");
+            lines.Add($"Layers ({_document.Layers.Count}, bottom first)");
+            if (_document.Layers.Count == 0) lines.Add("  (none)");
+            AddLayers(lines, _document.Layers, "  ");
+            lines.Add("");
             lines.Add($"Annotations ({_document.Annotations.Count})");
             if (_document.Annotations.Count == 0) lines.Add("  (none)");
             foreach (var annotation in _document.Annotations)
@@ -412,6 +425,21 @@
                 lines.Add($"  {annotation.Kind,-10} at ({b.X:0},{b.Y:0}) {b.Width:0}×{b.Height:0}");
             }
             return string.Join('\n', lines);
+        }
+    }
+
+    /// <summary>One line a layer, a group's own layers indented under it.</summary>
+    private static void AddLayers(List<string> lines, IReadOnlyList<Layer> layers, string indent)
+    {
+        foreach (var layer in layers)
+        {
+            var details = new List<string>();
+            if (layer.Name is { } name) details.Add(name);
+            if (layer.BlendMode != BlendMode.SourceOver) details.Add(layer.BlendMode.ToString());
+            if (layer.Opacity < 1) details.Add($"{layer.Opacity * 100:0}%");
+            if (!layer.IsVisible) details.Add("hidden");
+            lines.Add($"{indent}{layer.Kind,-10} {string.Join(" · ", details)}".TrimEnd());
+            if (layer is GroupLayer group) AddLayers(lines, group.Layers, indent + "  ");
         }
     }
 
@@ -426,6 +454,14 @@
     private void OnDocumentChanged(ImageDocument document)
     {
         _document = document;
+        StateHasChanged();
+    }
+
+    // A new image is a new, empty document, but not an edit, so OnDocumentChanged waits for the first change: without
+    // this the readout would go on showing the previous image's edit.
+    private void OnImageLoaded(ImageBuffer image)
+    {
+        _document = _editor?.Document;
         StateHasChanged();
     }
 }

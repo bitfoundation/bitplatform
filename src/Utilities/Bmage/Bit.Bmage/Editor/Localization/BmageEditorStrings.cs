@@ -159,6 +159,9 @@ public sealed record BmageEditorStrings
     public string Lock { get; init; } = "Lock";
     public string Unlock { get; init; } = "Unlock";
     public string NoPaintLayer { get; init; } = "There is no paint to erase yet. The eraser removes paint from a paint layer.";
+    public string RemoveLayer { get; init; } = "Remove layer";
+    public string ReorderLayers { get; init; } = "Reorder layers";
+    public string RestoreEdit { get; init; } = "Restore edit";
     public string Download { get; init; } = "Download";
     public string CopyToClipboard { get; init; } = "Copy to clipboard";
     public string ZoomIn { get; init; } = "Zoom in";
@@ -243,6 +246,18 @@ public sealed record BmageEditorStrings
     /// white, e.g. "0.4% black, 2.1% white".
     /// </summary>
     public Func<double, double, string> FormatClipping { get; init; } = static (black, white) => $"{black * 100:0.#}% black, {white * 100:0.#}% white";
+
+    /// <summary>
+    /// The name of an annotation's or a layer's kind - <see cref="Annotations.Annotation.Kind"/> or
+    /// <see cref="Layers.Layer.Kind"/>, such as "Rectangle" or "Paint" - wherever the panel or the history shows one.
+    /// </summary>
+    public Func<string, string> FormatKind { get; init; } = static kind => kind;
+
+    /// <summary>The history entry for a layer added from code, given its kind as <see cref="FormatKind"/> names it, e.g. "Add fill layer".</summary>
+    public Func<string, string> FormatAddLayer { get; init; } = static kind => $"Add {kind.ToLowerInvariant()} layer";
+
+    /// <summary>The history entry for a change to a layer, given the name the layer list shows for it, e.g. "Edit paint".</summary>
+    public Func<string, string> FormatEditLayer { get; init; } = static name => $"Edit {name.ToLowerInvariant()}";
 
     /// <summary>The name of a blend mode in the layer panel.</summary>
     public Func<Drawing.BlendMode, string> FormatBlendMode { get; init; } = static mode => mode switch

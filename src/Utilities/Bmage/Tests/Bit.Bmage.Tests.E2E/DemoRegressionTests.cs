@@ -197,6 +197,98 @@ public class DemoRegressionTests : DemoTest
     }
 
     [TestMethod]
+    public async Task TheEditorPagesReadoutShowsAnImageOpenedThroughTheEditorItself()
+    {
+        // Opening an image is not an edit, so OnDocumentChanged waits for the first change; the page has to take the
+        // new document from OnImageLoaded, or it goes on showing the previous image's edit.
+        var page = await OpenEditorWithImageAsync();
+        await page.WaitForFunctionAsync($"() => /Source\\s+{SampleImage.Width} × {SampleImage.Height}/.test(document.querySelector('pre.demo-readout')?.textContent ?? '')",
+            null, new PageWaitForFunctionOptions { Timeout = 10_000 });
+        StringAssert.Contains(await ReadDocumentAsync(page), "Layers (0, bottom first)");
+    }
+
+    [TestMethod]
+    public async Task TheExportTabStartsFromTheEditorsExportOptions()
+    {
+        // The editor page exports with MetadataPolicy.StripSensitive; the built-in save button used to start from Remove.
+        var page = await OpenEditorWithImageAsync();
+        await page.GetByRole(AriaRole.Tab, new PageGetByRoleOptions { Name = "Export" }).ClickAsync();
+        Assert.AreEqual("StripSensitive", await page.Locator(".bmg-panel-body select").Nth(1).InputValueAsync());
+    }
+
+    [TestMethod]
+    public async Task StepNumbersAreDrawnWithTheSitesFont()
+    {
+        // Text is drawn from a font file; without the one the site registers, a step marker is a plain red disc.
+        var page = await OpenAsync("annotate");
+        await page.GetByRole(AriaRole.Button, new PageGetByRoleOptions { Name = "Use a sample image" }).ClickAsync();
+        await page.WaitForFunctionAsync("() => document.querySelector('.bmg-canvas')?.width > 1", null, new PageWaitForFunctionOptions { Timeout = 60_000 });
+        await page.GetByRole(AriaRole.Button, new PageGetByRoleOptions { Name = "Add a worked example" }).ClickAsync();
+        // The worked example puts step 1 at 26% across and 82% down: white digits on red.
+        await page.WaitForFunctionAsync("""
+            () => {
+                const c = document.querySelector('.bmg-canvas');
+                const px = c.getContext('2d').getImageData(Math.floor(c.width * 0.245), Math.floor(c.height * 0.8), Math.ceil(c.width * 0.03), Math.ceil(c.height * 0.04)).data;
+                for (let i = 0; i < px.length; i += 4) if (px[i] > 220 && px[i + 1] > 220 && px[i + 2] > 220) return true;
+                return false;
+            }
+            """, null, new PageWaitForFunctionOptions { Timeout = 30_000 });
+    }
+
+    [TestMethod]
+    public async Task OpeningAFileThatIsNotAProjectSaysSo()
+    {
+        // Re-rendering the edit on screen used to clear the error before it was ever shown.
+        var page = await OpenAsync("retouch");
+        await page.GetByRole(AriaRole.Button, new PageGetByRoleOptions { Name = "Run on a sample image" }).ClickAsync();
+        await page.WaitForSelectorAsync("img.pipeline-preview", new PageWaitForSelectorOptions { Timeout = 60_000 });
+        var path = Path.Combine(Path.GetTempPath(), $"bmage-{Guid.NewGuid():N}.bmage");
+        await File.WriteAllTextAsync(path, "not a project");
+        try
+        {
+            await page.SetInputFilesAsync("input[type=file][accept='.bmage']", path);
+            await page.WaitForSelectorAsync(".demo-error", new PageWaitForSelectorOptions { Timeout = 30_000 });
+            Assert.AreEqual(1, await page.Locator("img.pipeline-preview").CountAsync());
+        }
+        finally
+        {
+            File.Delete(path);
+        }
+    }
+
+    [TestMethod]
+    public async Task EnterInTheMcpSearchBoxSearches()
+    {
+        var page = await OpenAsync("mcp-server");
+        var box = page.GetByRole(AriaRole.Searchbox, new PageGetByRoleOptions { Name = "Search Bmage" });
+        await box.FillAsync("webp fallback");
+        await box.PressAsync("Enter");
+        await page.WaitForSelectorAsync(".mcp-hits li", new PageWaitForSelectorOptions { Timeout = 30_000 });
+        StringAssert.EndsWith(page.Url, "/mcp-server");
+    }
+
+    [TestMethod]
+    public async Task TheUploadResultsScrollInsideTheirBoxOnANarrowPhone()
+    {
+        // The results table's visually hidden "Actions" header used to be positioned against the page, past the edge
+        // of the box that scrolls the table, and made the whole page scroll sideways.
+        var page = await OpenAsync("optimize", new ViewportSize { Width = 320, Height = 700 });
+        var file = SampleImage.WriteToTempFile();
+        try
+        {
+            await page.SetInputFilesAsync("input[type=file]", file);
+            await page.WaitForSelectorAsync("table.optimize-results", new PageWaitForSelectorOptions { Timeout = 60_000 });
+            await page.WaitForFunctionAsync("() => !document.querySelector('.optimize-progress')", null, new PageWaitForFunctionOptions { Timeout = 60_000 });
+            var overflow = await page.EvaluateAsync<int>("() => document.scrollingElement.scrollWidth - document.scrollingElement.clientWidth");
+            Assert.IsLessThanOrEqualTo(0, overflow, $"the page scrolls sideways by {overflow}px");
+        }
+        finally
+        {
+            File.Delete(file);
+        }
+    }
+
+    [TestMethod]
     public async Task TheSampleImageRunsEveryHeadlessExample()
     {
         var page = await OpenAsync("headless");

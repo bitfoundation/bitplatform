@@ -218,7 +218,7 @@
                 {
                     @* The selected annotation's own properties: what the canvas shows selected, editable without the pointer. *@
                     <fieldset class="bmg-fieldset" disabled="@Context.IsBusy">
-                        <legend class="bmg-legend">@Context.Strings.SelectedAnnotation: @chosen.Kind</legend>
+                        <legend class="bmg-legend">@Context.Strings.SelectedAnnotation: @KindOf(chosen)</legend>
                         @if (chosen is TextAnnotation text)
                         {
                             <label class="bmg-field">
@@ -226,13 +226,13 @@
                                 <textarea class="bmg-textarea" rows="3" value="@text.Text" disabled="@text.IsLocked"
                                           @oninput="e => SetText(text, e, true)" @onchange="e => SetText(text, e, false)"></textarea>
                             </label>
-                            @RenderSlider($"{chosen.Kind} {Context.Strings.FontSize}", text.Style.FontSize, 8, 400, 1,
+                            @RenderSlider($"{KindOf(chosen)} {Context.Strings.FontSize}", text.Style.FontSize, 8, 400, 1,
                                 v => UpdateSelected(a => ((TextAnnotation)a) with { Style = ((TextAnnotation)a).Style with { FontSize = (float)v }, MeasuredSize = null }, true),
                                 () => UpdateSelected(a => a, false))
                         }
-                        @RenderSlider($"{chosen.Kind} {Context.Strings.Rotation}", chosen.Rotation, -180, 180, 1,
+                        @RenderSlider($"{KindOf(chosen)} {Context.Strings.Rotation}", chosen.Rotation, -180, 180, 1,
                             v => UpdateSelected(a => a with { Rotation = (float)v }, true), () => UpdateSelected(a => a, false))
-                        @RenderSlider($"{chosen.Kind} {Context.Strings.Opacity}", chosen.Opacity, 0, 1, 0.01,
+                        @RenderSlider($"{KindOf(chosen)} {Context.Strings.Opacity}", chosen.Opacity, 0, 1, 0.01,
                             v => UpdateSelected(a => a with { Opacity = (float)v }, true), () => UpdateSelected(a => a, false))
                         <div class="bmg-field-actions">
                             <button type="button" class="bmg-button" disabled="@chosen.IsLocked" @onclick="() => Context.ApplyAsync(d => d.BringToFront(chosen.Id), Context.Strings.BringToFront)">@Context.Strings.BringToFront</button>
@@ -326,7 +326,7 @@
                     {
                         var below = position > 0 ? (parent?.Layers ?? document.Layers)[position - 1] : null;
                         <fieldset class="bmg-fieldset" disabled="@(selected.IsLocked || Context.IsBusy)">
-                            <legend class="bmg-legend">@selected.DisplayName</legend>
+                            <legend class="bmg-legend">@NameOf(selected)</legend>
                             @RenderSlider(Context.Strings.Opacity, selected.Opacity, 0, 1, 0.01,
                                 v => UpdateActiveLayer(l => l with { Opacity = (float)v }, true), () => UpdateActiveLayer(l => l, false))
                             <label class="bmg-field">
@@ -378,9 +378,9 @@
                                 role="option"
                                 aria-selected="@(Context.SelectedAnnotationId == annotation.Id ? "true" : "false")">
                                 <button type="button" class="bmg-layer-name" @onclick="() => Context.SelectAnnotation(annotation.Id)">
-                                    @annotation.Kind
+                                    @KindOf(annotation)
                                 </button>
-                                <button type="button" class="bmg-icon-button" title="@Context.Strings.Delete" aria-label="@($"{Context.Strings.Delete}: {annotation.Kind}")"
+                                <button type="button" class="bmg-icon-button" title="@Context.Strings.Delete" aria-label="@($"{Context.Strings.Delete}: {KindOf(annotation)}")"
                                         @onclick="() => Context.DeleteAnnotationAsync(annotation.Id)">
                                     @((MarkupString)Icons.Delete)
                                 </button>
@@ -398,7 +398,7 @@
                         var entry = Context.History[i];
                         <li class="bmg-history-entry @(index == Context.HistoryPosition ? "bmg-history-current" : null) @(index > Context.HistoryPosition ? "bmg-history-future" : null)">
                             <button type="button" class="bmg-history-button" @onclick="() => GoToHistory(index)">
-                                @entry.Label
+                                @(index == 0 ? Context.Strings.Original : entry.Label)
                             </button>
                         </li>
                     }
@@ -420,11 +420,11 @@
                         <select class="bmg-select" @onchange="OnFormatChanged">
                             @foreach (var format in AvailableFormats)
                             {
-                                <option value="@format" selected="@(_exportFormat == format)">@format.ToString().ToUpperInvariant()</option>
+                                <option value="@format" selected="@(ExportFormat == format)">@format.ToString().ToUpperInvariant()</option>
                             }
                         </select>
                     </label>
-                    @if (_exportFormat.IsLossy())
+                    @if (ExportFormat.IsLossy())
                     {
                         @RenderSlider(Context.Strings.Quality, _exportQuality, 0.1, 1, 0.01,
                             v => { _exportQuality = v; return Task.CompletedTask; }, null)
@@ -470,6 +470,9 @@
 @code {
     private readonly string _id = $"bmg-panel-{Guid.NewGuid():N}";
     private PanelTab _activeTab = PanelTab.Adjust;
+    // The Export tab starts from the editor's ExportOptions, and the reader's choices there win until the host hands
+    // in other options.
+    private ImageExportOptions? _exportDefaults;
     private ImageFormat _exportFormat = ImageFormat.Png;
     private double _exportQuality = 0.85;
     private MetadataPolicy _metadataPolicy = MetadataPolicy.Remove;
@@ -481,6 +484,11 @@
     [Parameter] public string DownloadFileName { get; set; } = "image";
 
     private enum PanelTab { Adjust, Filters, Transform, Style, Layers, History, Export }
+
+    // Kinds and the default layer names are English words from the model; the strings record names them for the UI.
+    private string KindOf(Annotation annotation) => Context.Strings.FormatKind(annotation.Kind);
+
+    private string NameOf(Layer layer) => layer.Name ?? Context.Strings.FormatKind(layer.Kind);
 
     private (PanelTab Key, string Label)[] Tabs =>
     [
@@ -521,6 +529,9 @@
             return capabilities is null ? candidates.Take(2) : candidates.Where(capabilities.CanEncode);
         }
     }
+
+    /// <summary>The chosen format, or the first one offered when this browser cannot write it: what the list shows.</summary>
+    private ImageFormat ExportFormat => AvailableFormats.Contains(_exportFormat) ? _exportFormat : AvailableFormats.First();
 
     private void OnTabKeyDown(KeyboardEventArgs e, PanelTab current)
     {
@@ -756,6 +767,15 @@
         var selected = Context.SelectedAnnotationId;
         if (selected != _shownSelection && selected is not null && _activeTab != PanelTab.Layers) _activeTab = PanelTab.Style;
         _shownSelection = selected;
+
+        // By value: a host that writes its options inline hands in an equal copy on every render.
+        if (_exportDefaults != Context.ExportOptions)
+        {
+            _exportDefaults = Context.ExportOptions;
+            _exportFormat = _exportDefaults.Format;
+            _exportQuality = _exportDefaults.Quality;
+            _metadataPolicy = _exportDefaults.Metadata;
+        }
     }
 
     private Task UpdateSelected(Func<Annotation, Annotation> change, bool transient)
@@ -783,11 +803,11 @@
                 <div class="bmg-layer @(layer.IsVisible ? null : "bmg-layer-hidden") @(active ? "bmg-layer-selected" : null) @(layer.ClipToLayerBelow && index > 0 ? "bmg-layer-clipped" : null)">
                     <button type="button" class="bmg-layer-name" aria-pressed="@(active ? "true" : "false")"
                             @onclick="() => Context.SelectLayer(layer.Id)">
-                        @layer.DisplayName
+                        @NameOf(layer)
                     </button>
                     <button type="button" class="bmg-icon-button"
                             title="@(layer.IsVisible ? Context.Strings.Hide : Context.Strings.Show)"
-                            aria-label="@($"{(layer.IsVisible ? Context.Strings.Hide : Context.Strings.Show)}: {layer.DisplayName}")"
+                            aria-label="@($"{(layer.IsVisible ? Context.Strings.Hide : Context.Strings.Show)}: {NameOf(layer)}")"
                             aria-pressed="@(layer.IsVisible ? "false" : "true")"
                             disabled="@layer.IsLocked"
                             @onclick="() => Context.UpdateLayerAsync(layer with { IsVisible = !layer.IsVisible })">
@@ -795,26 +815,26 @@
                     </button>
                     <button type="button" class="bmg-icon-button"
                             title="@(layer.IsLocked ? Context.Strings.Unlock : Context.Strings.Lock)"
-                            aria-label="@($"{(layer.IsLocked ? Context.Strings.Unlock : Context.Strings.Lock)}: {layer.DisplayName}")"
+                            aria-label="@($"{(layer.IsLocked ? Context.Strings.Unlock : Context.Strings.Lock)}: {NameOf(layer)}")"
                             aria-pressed="@(layer.IsLocked ? "true" : "false")"
                             @onclick="() => Context.UpdateLayerAsync(layer with { IsLocked = !layer.IsLocked })">
                         @((MarkupString)(layer.IsLocked ? Icons.Locked : Icons.Unlocked))
                     </button>
-                    <button type="button" class="bmg-icon-button" title="@Context.Strings.MoveUp" aria-label="@($"{Context.Strings.MoveUp}: {layer.DisplayName}")"
+                    <button type="button" class="bmg-icon-button" title="@Context.Strings.MoveUp" aria-label="@($"{Context.Strings.MoveUp}: {NameOf(layer)}")"
                             disabled="@(layer.IsLocked || index == list.Count - 1)"
                             @onclick="() => Context.MoveLayerAsync(layer.Id, index + 1)">
                         @((MarkupString)Icons.MoveUp)
                     </button>
-                    <button type="button" class="bmg-icon-button" title="@Context.Strings.MoveDown" aria-label="@($"{Context.Strings.MoveDown}: {layer.DisplayName}")"
+                    <button type="button" class="bmg-icon-button" title="@Context.Strings.MoveDown" aria-label="@($"{Context.Strings.MoveDown}: {NameOf(layer)}")"
                             disabled="@(layer.IsLocked || index == 0)"
                             @onclick="() => Context.MoveLayerAsync(layer.Id, index - 1)">
                         @((MarkupString)Icons.MoveDown)
                     </button>
-                    <button type="button" class="bmg-icon-button" title="@Context.Strings.Duplicate" aria-label="@($"{Context.Strings.Duplicate}: {layer.DisplayName}")"
+                    <button type="button" class="bmg-icon-button" title="@Context.Strings.Duplicate" aria-label="@($"{Context.Strings.Duplicate}: {NameOf(layer)}")"
                             @onclick="() => Context.DuplicateLayerAsync(layer.Id)">
                         @((MarkupString)Icons.Duplicate)
                     </button>
-                    <button type="button" class="bmg-icon-button" title="@Context.Strings.Delete" aria-label="@($"{Context.Strings.Delete}: {layer.DisplayName}")"
+                    <button type="button" class="bmg-icon-button" title="@Context.Strings.Delete" aria-label="@($"{Context.Strings.Delete}: {NameOf(layer)}")"
                             disabled="@layer.IsLocked"
                             @onclick="() => Context.RemoveLayerAsync(layer.Id)">
                         @((MarkupString)Icons.Delete)
@@ -822,7 +842,7 @@
                 </div>
                 @if (layer is GroupLayer { Layers.Count: > 0 } group)
                 {
-                    <ul class="bmg-layer-children" aria-label="@group.DisplayName">
+                    <ul class="bmg-layer-children" aria-label="@NameOf(group)">
                         @LayerRows(group.Layers)
                     </ul>
                 }
@@ -836,9 +856,10 @@
     private Task OnBlendModeChanged(ChangeEventArgs e)
         => e.Value is string value && Enum.TryParse<BlendMode>(value, out var mode) ? UpdateActiveLayer(l => l with { BlendMode = mode }, false) : Task.CompletedTask;
 
-    private Task DownloadAsync() => Context.DownloadAsync(DownloadFileName, new ImageExportOptions
+    // The rest of the host's options - the background, a size budget - still apply.
+    private Task DownloadAsync() => Context.DownloadAsync(DownloadFileName, (_exportDefaults ?? Context.ExportOptions) with
     {
-        Format = _exportFormat,
+        Format = ExportFormat,
         Quality = _exportQuality,
         Metadata = _metadataPolicy,
     });

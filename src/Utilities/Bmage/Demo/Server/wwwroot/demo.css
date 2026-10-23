@@ -424,6 +424,14 @@ svg.icon {
     white-space: nowrap;
 }
 
+/* A table's scrolling box has to be the containing block of the visually hidden text in it - the
+   upload table's "Actions" column header. Positioned against the page instead, that text sits past
+   the box's edge where its overflow cannot clip it, and a phone's page scrolls sideways by as much
+   as the table overflows. */
+.bb-scroll {
+    position: relative;
+}
+
 /* Shown next to a result while it is being recomputed, so a slow run never looks like a frozen
    page. It is a status, so the element carrying it is role="status". It can sit inside an
    overline label, so it resets the label's lettering. */

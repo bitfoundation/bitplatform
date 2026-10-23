@@ -416,7 +416,10 @@
         }
         catch (Exception ex)
         {
+            // Nothing changed but the file failed: keep showing the edit, and the reason. Rendering it again would
+            // clear the message as every new render does.
             _error = ex.Message;
+            return;
         }
         finally
         {

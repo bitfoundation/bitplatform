@@ -57,6 +57,9 @@ public class ImageProcessor
         var format = ImageFormats.Detect(data.Span);
         if (format == ImageFormat.Unknown)
             throw new ImageDecodeException("The data does not look like a supported image format.");
+        // No registry has an SVG decoder, so without this the refusal would read as a missing registration.
+        if (format == ImageFormat.Svg)
+            throw new ImageDecodeException(ImageFormats.SvgRefused);
         var decoder = Codecs.GetDecoder(format)
             ?? throw new ImageCapabilityException($"No decoder is registered for {format}. On WebAssembly, register the browser codecs; otherwise convert the image first.");
         return await decoder.DecodeAsync(data, options, Allocator, cancellationToken).ConfigureAwait(false);

@@ -2,6 +2,7 @@
 @implements IAsyncDisposable
 @inject ImageLoader Loader
 @inject IImageCapabilityProvider Capabilities
+@inject DemoFonts Fonts
 
 @* A bug report's screenshot: paste it in, point at the problem, black out what must not be shared.
    The page is the editor component plus three things a host adds around it - a page-wide paste
@@ -159,6 +160,18 @@
             return Task.CompletedTask;
         });
         StateHasChanged();
+
+        // The font the step numbers and text labels are drawn with (see Shared/DemoFonts.cs).
+        try
+        {
+            await Fonts.EnsureAsync();
+        }
+        catch (Exception)
+        {
+            // Without it the editor says why its text cannot be drawn.
+            return;
+        }
+        if (_editor?.Session is not null) await _editor.RefreshAsync();
     }
 
     private Task OnPastedAsync(ImageBuffer image)

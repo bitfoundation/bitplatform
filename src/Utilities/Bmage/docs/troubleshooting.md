@@ -158,8 +158,19 @@ The rule is simple: you own what you are returned from `LoadAsync`, `ExecuteAsyn
 ## Text renders as blank boxes, or not at all
 
 Using `FontTextRasterizer` with no font registered throws a clear exception. Using it with a CFF (PostScript) OpenType
-font also throws, because only `glyf` outlines are supported. Either register a TrueType font, or use
-`BrowserTextRasterizer` in a browser, which uses the platform's own text engine and needs no font file.
+font also throws, because only `glyf` outlines are supported. Either register a TrueType font, or, for text you draw
+yourself, use `BrowserTextRasterizer` in a browser, which uses the platform's own text engine and needs no font file.
+
+`BmageEditor` draws text and step numbers as outlines, so its text tools need a TrueType font registered with the
+`FontTextRasterizer` the services provide (or one passed as its `TextRasterizer`); until then it says so when the Text
+tool is used, and step markers have no number. Fetching the font in the background is fine: text appears from the
+next render once it is registered. The demo site does exactly that:
+
+```csharp
+var font = FontFile.Load(await http.GetByteArrayAsync("fonts/NotoSans-Regular.ttf"));
+fonts.Register("Noto Sans", font);   // fonts: the FontTextRasterizer from dependency injection
+await editor.RefreshAsync();         // redraws text added before the font arrived
+```
 
 ## Annotations move when I crop
 

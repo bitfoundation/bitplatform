@@ -21,7 +21,7 @@ The editor fills its container, so give it a height. Everything else has a worki
 | `EmptyState` | Replace the "drop an image here" view. |
 | `MaxProxyDimension` | Longest edge used for interactive editing. Falls back to `BitBmageOptions.MaxInteractiveDimension`, then 2048. Set 0 to always edit at full resolution. |
 | `MaxHistoryDepth` | Undo steps kept. Default 100. |
-| `ExportOptions` | Settings used by the built-in save action. |
+| `ExportOptions` | Settings used by the built-in save action: the Export tab starts from its format, quality and metadata policy, and keeps the rest (background, size budget). |
 | `OnDocumentChanged`, `OnExported`, `OnImageLoaded`, `OnError` | Callbacks. |
 
 `OnImageLoaded` matters more than it looks: the editor can load an image through its own drop zone, and your `Image`
@@ -217,6 +217,11 @@ var strings = BmageEditorStrings.Default with
     FormatDimensions = (w, h) => $"{w}×{h} px",
 };
 ```
+
+So are the names the editor shows for things in the document: `FormatKind` names an annotation's or a layer's kind
+(`"Rectangle"`, `"Paint"`, ...) in the panel and the history, `FormatAddLayer` and `FormatEditLayer` word the history
+entries for layers, and `FormatBlendMode` and `FormatAnchor` name blend modes and anchor positions. The demo's
+`Shared/EditorTranslations.cs` sets every property, for German and Persian.
 
 For right-to-left languages set `Direction="rtl"`. The layout uses logical properties throughout, so the panel, the crop
 handles and the toolbar all mirror.

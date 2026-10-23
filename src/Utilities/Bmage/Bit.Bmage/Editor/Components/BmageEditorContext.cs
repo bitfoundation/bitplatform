@@ -34,6 +34,9 @@ public sealed class BmageEditorContext
     /// <summary>Localised strings.</summary>
     public BmageEditorStrings Strings => _editor.Strings;
 
+    /// <summary>The editor's <see cref="BmageEditor.ExportOptions"/>: what a save button starts from.</summary>
+    public ImageExportOptions ExportOptions => _editor.ExportOptions;
+
     /// <summary>The live editing session, or null when no image is loaded.</summary>
     public ImageEditSession? Session => _editor.Session;
 
@@ -159,7 +162,7 @@ public sealed class BmageEditorContext
     public Task AddLayerAsync(Layer layer, string? label = null)
     {
         ArgumentNullException.ThrowIfNull(layer);
-        return ApplyAsync(d => d.AddLayer(layer), label ?? $"Add {layer.Kind.ToLowerInvariant()} layer");
+        return ApplyAsync(d => d.AddLayer(layer), label ?? Strings.FormatAddLayer(Strings.FormatKind(layer.Kind)));
     }
 
     /// <summary>
@@ -169,14 +172,14 @@ public sealed class BmageEditorContext
     public Task UpdateLayerAsync(Layer layer, bool transient = false)
     {
         ArgumentNullException.ThrowIfNull(layer);
-        return ApplyAsync(d => d.UpdateLayer(layer), $"Edit {layer.DisplayName.ToLowerInvariant()}", transient);
+        return ApplyAsync(d => d.UpdateLayer(layer), Strings.FormatEditLayer(layer.Name ?? Strings.FormatKind(layer.Kind)), transient);
     }
 
     /// <summary>Removes a layer.</summary>
-    public Task RemoveLayerAsync(Guid id) => ApplyAsync(d => d.RemoveLayer(id), "Remove layer");
+    public Task RemoveLayerAsync(Guid id) => ApplyAsync(d => d.RemoveLayer(id), Strings.RemoveLayer);
 
     /// <summary>Moves a layer to <paramref name="index"/> in the stack, 0 being the bottom.</summary>
-    public Task MoveLayerAsync(Guid id, int index) => ApplyAsync(d => d.MoveLayer(id, index), "Reorder layers");
+    public Task MoveLayerAsync(Guid id, int index) => ApplyAsync(d => d.MoveLayer(id, index), Strings.ReorderLayers);
 
     /// <summary>The id of the layer selected in the layer panel, if any. Painting goes to it when it is a paint layer.</summary>
     public Guid? ActiveLayerId => _editor.ActiveLayerId;
@@ -276,7 +279,7 @@ public sealed class BmageEditorContext
         ArgumentNullException.ThrowIfNull(document);
         if (Session is { } session && document.SourceSize != session.SourceSize)
             throw new ArgumentException($"The document was made for a {document.SourceSize.Width}x{document.SourceSize.Height} image, but a {session.SourceSize.Width}x{session.SourceSize.Height} one is loaded.", nameof(document));
-        return ApplyAsync(_ => document, "Restore edit");
+        return ApplyAsync(_ => document, Strings.RestoreEdit);
     }
 
     /// <summary>Undoes the last edit.</summary>

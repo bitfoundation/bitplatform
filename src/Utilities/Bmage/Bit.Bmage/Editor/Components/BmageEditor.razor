@@ -337,7 +337,7 @@
         {
             MaxProxyDimension = EffectiveProxyDimension,
             MaxHistoryDepth = MaxHistoryDepth,
-            TextRasterizer = EffectiveTextRasterizer,
+            TextRasterizer = new SessionTextRasterizer(this),
             // The services' allocator and limits, so a memory budget set there holds for the editor's previews and export too.
             Allocator = Options.Allocator,
             Limits = Options.Limits,
@@ -1177,6 +1177,19 @@
     /// </summary>
     private ITextRasterizer? EffectiveTextRasterizer => TextRasterizer ?? (FontRasterizer.HasFonts ? FontRasterizer : null);
 
+    /// <summary>
+    /// What a session draws text with: <see cref="EffectiveTextRasterizer"/>, looked up on every call rather than once
+    /// when the image was opened. A font registered later - an app that fetches one in the background - or a
+    /// <see cref="TextRasterizer"/> set later then draws from the next render, and <see cref="RefreshAsync"/> redraws
+    /// the text already there. Until there is one, text is skipped as it is with no rasteriser at all.
+    /// </summary>
+    private sealed class SessionTextRasterizer(BmageEditor editor) : ITextRasterizer
+    {
+        public TextMetrics Measure(string text, TextStyle style) => editor.EffectiveTextRasterizer?.Measure(text, style) ?? default;
+
+        public VectorPath? GetTextPath(string text, Vector2 origin, TextStyle style) => editor.EffectiveTextRasterizer?.GetTextPath(text, origin, style);
+    }
+
     private void UpdateCropRectangle(Vector2 point)
     {
         if (_session is null) return;
@@ -1678,11 +1691,11 @@
 
     /// <summary>Adds an annotation.</summary>
     public Task AddAnnotationAsync(Annotation annotation, string? label = null)
-        => ApplyAndRenderAsync(d => d.AddAnnotation(annotation), label ?? annotation.Kind);
+        => ApplyAndRenderAsync(d => d.AddAnnotation(annotation), label ?? Strings.FormatKind(annotation.Kind));
 
     /// <summary>Replaces an annotation, matched by id.</summary>
     public Task UpdateAnnotationAsync(Annotation annotation, bool transient = false)
-        => ApplyAndRenderAsync(d => d.UpdateAnnotation(annotation), annotation.Kind, transient);
+        => ApplyAndRenderAsync(d => d.UpdateAnnotation(annotation), Strings.FormatKind(annotation.Kind), transient);
 
     /// <summary>Removes an annotation.</summary>
     public async Task DeleteAnnotationAsync(Guid id)
