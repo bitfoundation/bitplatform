@@ -27,10 +27,15 @@
 
         <div class="bb-toolbar">
             <label class="bb-check"><input type="checkbox" @bind="_searchOnType" /> search the API on every keystroke (duplicate/overlapping requests)</label>
+            <label class="bb-check"><input type="checkbox" @bind="_priceAlert" /> price alert (hiding it leaks it: problem 16)</label>
             <span class="bb-spacer"></span>
             <span class="bb-muted">Cart: @Cart.ItemCount items, @Cart.Total.ToString("C") — see BevTools → State → CartState</span>
         </div>
 
+        @if (_priceAlert)
+        {
+            <PriceAlert />
+        }
         <CategorySummary />
         <FilterBar />
         <ProductList SearchOnType="_searchOnType" />
@@ -81,6 +86,7 @@
 
 @code {
     private bool _searchOnType;
+    private bool _priceAlert;
 
     // The Add buttons belong to ProductList, so only it re-renders after a click; the cart summary above lives here.
     protected override void OnInitialized() => Cart.Changed += OnCartChanged;

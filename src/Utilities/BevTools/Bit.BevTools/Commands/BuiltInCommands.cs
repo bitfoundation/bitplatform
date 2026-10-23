@@ -8,6 +8,16 @@ internal static class BuiltInCommands
     public static IEnumerable<IBevToolsCommand> Create() =>
     [
         new DelegateCommand("components.find", "Find component", "Components", (ctx, arg) => ctx.ShowPanel("components", arg), acceptsArgument: true, keywords: ["search", "tree", "locate"]),
+        new DelegateCommand("components.pick", "Pick a component in the page", "Components",
+            (ctx, _) => ctx is BevToolsPanel panel ? panel.TogglePickAsync() : Task.CompletedTask,
+            keywords: ["select", "element", "inspect", "dom", "click", "highlight", "which component"]),
+        new DelegateCommand("components.flash", "Flash components in the page as they render", "Components", (ctx, _) =>
+        {
+            if (ctx is BevToolsPanel panel)
+            {
+                panel.ToggleFlashRenders();
+            }
+        }, keywords: ["highlight updates", "renders", "outline", "paint", "rerender"]),
         new DelegateCommand("profiler.slow", "Show slow renders", "Profiler", (ctx, _) => ctx.ShowPanel("profiler", "sort:max"), keywords: ["expensive", "performance"]),
         new DelegateCommand("profiler.renders-over", "Show components rendering more than", "Profiler", (ctx, arg) => ctx.ShowPanel("profiler", "renders>" + (int.TryParse(arg?.Trim(), out var n) ? n : 20)), acceptsArgument: true, keywords: ["render count", "storm", "times"]),
         new DelegateCommand("profiler.show", "Show profiler", "Profiler", (ctx, _) => ctx.ShowPanel("profiler")),
@@ -16,6 +26,7 @@ internal static class BuiltInCommands
         new DelegateCommand("network.failures", "Show recent network failures", "Network", (ctx, _) => ctx.ShowPanel("network", "status:failed"), keywords: ["http", "requests", "500", "404"]),
         new DelegateCommand("network.show", "Show network", "Network", (ctx, arg) => ctx.ShowPanel("network", arg), acceptsArgument: true, keywords: ["http", "requests"]),
         new DelegateCommand("state.show", "Show state", "State", (ctx, _) => ctx.ShowPanel("state"), keywords: ["store", "providers"]),
+        new DelegateCommand("forms.show", "Show forms and validation", "Forms", (ctx, _) => ctx.ShowPanel("forms"), keywords: ["editform", "editcontext", "validation", "input", "field"]),
         new DelegateCommand("interop.show", "Show JS interop", "Interop", (ctx, _) => ctx.ShowPanel("interop"), keywords: ["javascript", "invoke"]),
         new DelegateCommand("services.show", "Show services", "Services", (ctx, arg) => ctx.ShowPanel("services", arg), acceptsArgument: true, keywords: ["di", "dependency injection", "container", "lifetime"]),
         new DelegateCommand("diagnostics.show", "Show diagnostics", "Diagnostics", (ctx, _) => ctx.ShowPanel("diagnostics"), keywords: ["warnings", "rules", "problems"]),
@@ -53,6 +64,7 @@ internal static class BuiltInCommands
         new DelegateCommand("profiler.reset", "Reset profiler baseline", "Profiler", (ctx, _) =>
         {
             SessionOf(ctx).Components.MarkBaseline();
+            SessionOf(ctx).Ui.Profiler.SinceBaseline = true;
             ctx.ShowPanel("profiler");
             ctx.Notify("Profiler baseline reset: counts now show renders since this moment");
         }, keywords: ["counters", "zero", "restart", "mark", "since"]),

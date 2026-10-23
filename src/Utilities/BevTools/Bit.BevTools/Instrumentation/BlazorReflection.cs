@@ -205,6 +205,92 @@ internal static class BlazorReflection
         }
     }
 
+    /// <summary>
+    /// The frames the component produced on its latest render, without copying them: valid only until that component
+    /// renders again, so only for a caller on the renderer's dispatcher that reads them before yielding. Null when they
+    /// cannot be read.
+    /// </summary>
+    public static ArrayRange<RenderTreeFrame>? CurrentFramesInPlace(ComponentState state)
+    {
+        try
+        {
+            return GetCurrentRenderTree.Value?.Invoke(state) is { } builder ? builder.GetFrames() : null;
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
+    // Compiled on first use: mapping a component to the page reads every ancestor's tree, for many components at once
+    // while renders are being highlighted.
+    private static readonly Lazy<Func<ComponentState, RenderTreeBuilder>?> GetCurrentRenderTree = new(() =>
+    {
+        if (CurrentRenderTreeProperty is null)
+        {
+            return null;
+        }
+
+        var state = Expression.Parameter(typeof(ComponentState), "s");
+        return Expression.Lambda<Func<ComponentState, RenderTreeBuilder>>(Expression.Property(state, CurrentRenderTreeProperty), state).Compile();
+    });
+
+    private static readonly Lazy<FieldInfo?> NextRenderTreeField = new(() =>
+        typeof(ComponentState).GetField("_nextRenderTree", Instance) is { } field && field.FieldType == typeof(RenderTreeBuilder) ? field : null);
+
+    private static readonly Lazy<Func<Renderer, RenderTreeFrame[]?>?> ReferenceFramesBuffer = new(() =>
+    {
+        var batchBuilder = typeof(Renderer).GetField("_batchBuilder", Instance);
+        var referenceFrames = batchBuilder?.FieldType.GetProperty("ReferenceFramesBuffer", Instance);
+        var buffer = referenceFrames?.PropertyType.GetProperty("Buffer", Instance);
+        if (batchBuilder is null || referenceFrames is null || buffer?.PropertyType != typeof(RenderTreeFrame[]))
+        {
+            return null;
+        }
+
+        return renderer => batchBuilder.GetValue(renderer) is { } builder && referenceFrames.GetValue(builder) is { } frames ? buffer.GetValue(frames) as RenderTreeFrame[] : null;
+    });
+
+    /// <summary>
+    /// Every frame buffer the renderer keeps for a component: both of its render trees whole, not just their used part
+    /// (a tree is double-buffered for diffing, and a buffer is reused without being cleared). A component the parent
+    /// stopped rendering stays referenced from these until the parent renders again.
+    /// </summary>
+    public static IEnumerable<RenderTreeFrame[]> FrameBuffers(ComponentState state)
+    {
+        if (GetCurrentRenderTree.Value?.Invoke(state) is { } current && current.GetFrames().Array is { } currentFrames)
+        {
+            yield return currentFrames;
+        }
+
+        RenderTreeFrame[]? next = null;
+        try
+        {
+            next = NextRenderTreeField.Value?.GetValue(state) is RenderTreeBuilder builder ? builder.GetFrames().Array : null;
+        }
+        catch
+        {
+        }
+
+        if (next is not null)
+        {
+            yield return next;
+        }
+    }
+
+    /// <summary>The renderer's buffer of frames sent with render batches, whole; null when it cannot be read.</summary>
+    public static RenderTreeFrame[]? BatchReferenceFrames(Renderer renderer)
+    {
+        try
+        {
+            return ReferenceFramesBuffer.Value?.Invoke(renderer);
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
     private static readonly ConcurrentDictionary<Type, FieldInfo?> TypedCallbackDelegateFields = new();
 
     /// <summary>

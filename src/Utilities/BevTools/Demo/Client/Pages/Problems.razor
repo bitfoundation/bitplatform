@@ -86,6 +86,36 @@
     <li>The panel renders over the same circuit while it is open; batches that changed only the panel are counted as BevTools' own, and the companion window (⧉ in the panel header) avoids them altogether. Diagnostics flags render batches of 128 KB or more.</li>
 </ProblemCard>
 
+<ProblemCard Id="problem-16" Title="16. Hiding the price alert does not free it" Symptom="Memory grows every time the alert is shown and hidden; nothing errors, nothing looks wrong." Href="/products">
+    <li>On the products page, tick and untick <em>price alert</em> a few times: each <code>PriceAlert</code> is disposed by the renderer.</li>
+    <li>BevTools → Runtime → <em>Disposed components still alive</em> → <em>Collect garbage and check</em>: <code>PriceAlert</code> survives, held by <em>FilterState (injected) → Changed: lambda in PriceAlert.OnInitialized, which captures the component</em>. Diagnostics reports it too after the runtime's own full collections, without forcing one.</li>
+    <li>Fix: keep the handler in a field, implement <code>IDisposable</code> and unsubscribe in <code>Dispose</code>. A component that only its parent's previous render tree still holds is not reported: Blazor keeps that tree for diffing until the parent renders again.</li>
+</ProblemCard>
+
+<ProblemCard Id="problem-17" Title="17. The newsletter form accepts an empty address" Symptom="Subscribe succeeds with an empty field, although the model says the address is required." Href="/checkout">
+    <li>On the checkout page, press <em>Subscribe</em> with the newsletter field empty: it subscribes "".</li>
+    <li>BevTools → Forms: the newsletter form's <em>Validated by</em> is <em>nothing</em>, next to the model's rules (<em>Email: Required, EmailAddress</em>); the shipping form above is validated by <em>DataAnnotationsValidator</em> and shows its messages through <em>ValidationSummary</em>. The Timeline records each validation: <em>Form validated: NewsletterModel is valid</em>, "nothing validates it".</li>
+    <li>Diagnostics: <em>NewsletterSignup: NewsletterModel's validation attributes are never checked</em>. Fix: add <code>&lt;DataAnnotationsValidator /&gt;</code> inside the EditForm.</li>
+</ProblemCard>
+
+<ProblemCard Id="problem-18" Title="18. The account page flickers before it shows" Symptom="Opening the account page shows the login page and back, several times." Href="/loop/account">
+    <li>Open the account page: it redirects to the login page, which redirects back, a few times.</li>
+    <li>BevTools → Diagnostics: <em>Navigation loop: Navigate to /loop/account ↔ Navigate to /loop/login</em>, every navigation programmatic (made from code, not by a click); Routing → <em>Navigation history</em> lists each hop and what it rendered.</li>
+    <li>Fix: make the two redirect conditions agree (the login page must not send someone back whom the account page sends to it).</li>
+</ProblemCard>
+
+<ProblemCard Id="problem-19" Title="19. The orders table makes 25 requests" Symptom="Loading the orders is quick, then the details column fills in row by row while the server is busy." Href="/orders">
+    <li>On the orders page, tick <em>each row loads its own details</em> and press <em>Load orders</em>.</li>
+    <li>BevTools → Network → <em>Endpoints</em>: <code>GET /api/orders/{id}</code>, 25 requests, 25 different URLs, with their p50 and p95; select it for the requests themselves.</li>
+    <li>Diagnostics: <em>GET http://…/api/orders/{id}: one request per item (25 ids)</em>, during <em>onclick → Orders.Load (lambda)</em>. Fix: return the details with the list (or from one endpoint that takes the ids), or load a row's details when it is opened.</li>
+</ProblemCard>
+
+<ProblemCard Id="problem-20" Title="20. The same error, a new message every time" Symptom="The error list grows by one line per click, each about another order." Href="/errors">
+    <li>On the errors page, press <em>Open a missing order</em> a few times (on Server, <em>Recover</em> in between).</li>
+    <li>BevTools → Errors lists each as its own error: <em>Unhandled exception rendering component: Order 4711 was not found.</em>, <em>… Order 1302 was not found.</em>… → <em>Groups</em> shows them as one: <em>KeyNotFoundException: Unhandled exception rendering component: Order {n} was not found.</em> (the message the framework logs), with how many messages and occurrences, the components and the source location; select it for the errors themselves.</li>
+    <li>Diagnostics: <em>KeyNotFoundException: … Order {n} was not found. occurred 3 times with 3 different messages</em>. Fix: handle the missing order where it is looked up (a not-found state instead of an exception).</li>
+</ProblemCard>
+
 <ProblemCard Id="problem-15" Title="15. Share a profile, not a screenshot" Symptom="A colleague needs to see what the page did, in detail, without your machine.">
     <li>About → <em>Export performance trace</em>, then open the file in <a href="https://ui.perfetto.dev" target="_blank" rel="noopener">ui.perfetto.dev</a> or the Chrome DevTools Performance panel: render batches with every component render nested inside, UI events, requests and interop on their own tracks, arrows from each click to what it caused.</li>
     <li>About → <em>Export session (JSON)</em>; the companion window (⧉) opens such a file offline with <em>Open file</em>.</li>

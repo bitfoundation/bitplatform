@@ -142,7 +142,10 @@ public class CaptureControlTests : BunitContext
         Session.PauseCapture();
         var response = await failing.SendAsync(new HttpRequestMessage(HttpMethod.Get, "https://example.test/api/items?token=s3cr3t"), CancellationToken.None);
         await Assert.ThrowsExactlyAsync<HttpRequestException>(() => throwing.SendAsync(new HttpRequestMessage(HttpMethod.Get, "https://example.test/down"), CancellationToken.None));
-        await Assert.ThrowsExactlyAsync<TaskCanceledException>(() => cancelled.SendAsync(new HttpRequestMessage(HttpMethod.Get, "https://example.test/slow"), CancellationToken.None));
+        // Cancelled by the caller (its token), so not an error; a cancellation nobody asked for would be one.
+        using var caller = new CancellationTokenSource();
+        caller.Cancel();
+        await Assert.ThrowsExactlyAsync<TaskCanceledException>(() => cancelled.SendAsync(new HttpRequestMessage(HttpMethod.Get, "https://example.test/slow"), caller.Token));
 
         Assert.AreEqual(HttpStatusCode.InternalServerError, response.StatusCode);
         // The network log and the timeline stay frozen; the error list does not.

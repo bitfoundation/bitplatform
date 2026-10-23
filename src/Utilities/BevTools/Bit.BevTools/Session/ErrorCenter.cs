@@ -50,6 +50,10 @@ internal sealed partial class ErrorCenter
             stackTrace = BevRedactor.RedactText(stackTrace);
         }
         var location = FindSourceLocation(stackTrace);
+        var (anchor, inApplication) = location is null ? BevErrorGroups.StackAnchor(stackTrace) : (location, true);
+        // With no application frame to tell throw sites apart, a quoted name ("service of type 'IOrderApi'") is what
+        // tells one failure from another, so it stays in the template.
+        var template = BevErrorGroups.Template(message, keepQuoted: !inApplication);
         var fingerprint = string.Concat(source, "|", exceptionType, "|", message, "|", location ?? FirstLine(stackTrace), "|", component?.InstanceId);
         var now = DateTimeOffset.UtcNow;
         component?.AddError();
@@ -76,6 +80,8 @@ internal sealed partial class ErrorCenter
                 Source = source,
                 ExceptionType = exceptionType,
                 Message = message,
+                MessageTemplate = template,
+                Group = BevErrorGroups.KeyOf(source, exceptionType, template, anchor),
                 StackTrace = stackTrace,
                 SourceLocation = location,
                 ComponentInstanceId = component?.InstanceId,
@@ -116,7 +122,8 @@ internal sealed partial class ErrorCenter
             ComponentInstanceId = record.ComponentInstanceId,
             ComponentName = record.ComponentName,
             ParentEventId = record.PrecedingEventId,
-            Data = new Dictionary<string, object?> { ["errorId"] = record.Id },
+            // The group travels with each occurrence, so error.repeated still counts it once the record left the buffer.
+            Data = new Dictionary<string, object?> { ["errorId"] = record.Id, ["errorGroup"] = record.Group, ["errorTemplate"] = ShortTypeName(record.ExceptionType) + ": " + record.MessageTemplate },
         });
         if (!repeat)
         {

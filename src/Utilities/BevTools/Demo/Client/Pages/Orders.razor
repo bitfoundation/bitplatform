@@ -32,6 +32,9 @@
             <button type="button" class="btn btn-secondary" @onclick="Missing">Request a missing URL (404)</button>
             <button type="button" class="btn btn-outline" @onclick="() => _log.Clear()">Clear log</button>
         </div>
+        <div class="bb-toolbar">
+            <label class="bb-check"><input type="checkbox" @bind="_detailsPerRow" /> each row loads its own details (a request per order: problem 19)</label>
+        </div>
 
         @if (_loading)
         {
@@ -42,11 +45,18 @@
         {
             <div class="bb-scroll demo-table-scroll">
                 <table class="bb-table">
-                    <thead><tr><th>#</th><th>Customer</th><th>Total</th><th>Status</th><th>Placed</th></tr></thead>
+                    <thead><tr><th>#</th><th>Customer</th><th>Total</th><th>Status</th><th>Placed</th>@if (_detailsPerRow) { <th>Details</th> }</tr></thead>
                     <tbody>
                         @foreach (var o in _orders)
                         {
-                            <tr><td>@o.Id</td><td>@o.Customer</td><td>@o.Total.ToString("C")</td><td>@o.Status</td><td>@o.PlacedAt.ToLocalTime().ToString("g")</td></tr>
+                            if (_detailsPerRow)
+                            {
+                                <OrderRow @key="o.Id" Order="o" />
+                            }
+                            else
+                            {
+                                <tr><td>@o.Id</td><td>@o.Customer</td><td>@o.Total.ToString("C")</td><td>@o.Status</td><td>@o.PlacedAt.ToLocalTime().ToString("g")</td></tr>
+                            }
                         }
                     </tbody>
                 </table>
@@ -78,7 +88,8 @@
     <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Errors and Diagnostics: what went wrong</h3>
     <ul class="bb-detail-list">
         <li><strong>Errors</strong>: the failed flaky calls and the 404, each with the UI event that preceded it.</li>
-        <li><strong>Diagnostics</strong>: slow HTTP (the 4 s load), repeated failures (call the flaky endpoint a few times) and duplicate requests (the burst of 8).</li>
+        <li><strong>Diagnostics</strong>: slow HTTP (the 4 s load), repeated failures (call the flaky endpoint a few times), duplicate requests (the burst of 8) and one request per item (load the orders with <em>each row loads its own details</em> ticked).</li>
+        <li><strong>Network → Endpoints</strong>: the same requests per endpoint, ids in the path as <code>{id}</code>: 25 calls to <code>GET /api/orders/{id}</code> are one row, with their p50 and p95.</li>
     </ul>
     <div class="bb-try">
         <a href="problems#problem-4" class="btn btn-outline">Problem 4 →</a>
@@ -88,6 +99,7 @@
 @code {
     private List<Order>? _orders;
     private bool _loading;
+    private bool _detailsPerRow;
     private readonly List<string> _log = [];
 
     private async Task Load(int delay = 0)

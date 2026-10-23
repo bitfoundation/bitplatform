@@ -113,6 +113,25 @@ internal sealed class RenderTracker
             return;
         }
 
+        if (component is Microsoft.AspNetCore.Components.Forms.EditForm form && !record.IsBevTools)
+        {
+            // A form is watched from its first render, when its EditContext exists, so its first submit is seen even if
+            // the panel was never opened - and again when the EditForm gets a new EditContext (a form reset after a
+            // submit). Only an EditForm's fragment carries this; every other render is unchanged.
+            var unwatched = original;
+            var watched = new WeakReference<object?>(null);
+            original = builder =>
+            {
+                unwatched(builder);
+                var current = (object?)BevFormTracker.ContextOfForm(form);
+                if (current is not null && (!watched.TryGetTarget(out var last) || !ReferenceEquals(last, current)))
+                {
+                    watched.SetTarget(current);
+                    _session.Forms.Watch(form, record);
+                }
+            };
+        }
+
         RenderFragment wrapped = builder =>
         {
             var t0 = Stopwatch.GetTimestamp();

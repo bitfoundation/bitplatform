@@ -14,8 +14,10 @@ namespace Bit.BevTools;
 /// <item><term>snapshot</term><description><c>{ since?, timelineAfter?, sections? }</c>: the session as <c>bit-bevtools/1</c>, or <c>{ unchanged: true }</c> when nothing changed since <c>since</c>.</description></item>
 /// <item><term>inspect</term><description><c>{ instanceId }</c>: one component's parameters, cascading values, state, services, bindings, lifecycle and renders.</description></item>
 /// <item><term>expand</term><description><c>{ instanceId, section, name, path }</c>: the children of one inspected value.</description></item>
-/// <item><term>command</term><description><c>{ name, argument? }</c>: pause, resume, clear, baseline, evaluate, dismiss.</description></item>
+/// <item><term>command</term><description><c>{ name, argument? }</c>: pause, resume, clear, baseline, evaluate, dismiss, collect (a full garbage collection, then the leak check).</description></item>
 /// <item><term>export</term><description><c>{ format: json | markdown | trace, since? }</c>: a file, as the About panel offers it.</description></item>
+/// <item><term>locate</term><description><c>{ instanceId }</c>: where a component's output is in the page, as a path through Blazor's logical DOM (see <see cref="BevDomMap"/>).</description></item>
+/// <item><term>resolve</term><description><c>{ path, anchored, signature, ordinal, sameCount, includeHidden? }</c>: the component that rendered the node at the end of a path.</description></item>
 /// </list>
 /// </summary>
 public static class BevToolsProtocol
@@ -27,7 +29,10 @@ public static class BevToolsProtocol
 
     private static readonly JsonWriterOptions Compact = new() { Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping };
 
-    /// <summary>Answers one request. Never throws: a failure is an answer with an <c>error</c>.</summary>
+    /// <summary>
+    /// Answers one request. Never throws: a failure is an answer with an <c>error</c>. Call it on the renderer's
+    /// dispatcher, as the bridge's [JSInvokable] entry point is: <c>locate</c> and <c>resolve</c> read the render trees in place.
+    /// </summary>
     public static string Handle(BevToolsSession session, string method, string? arguments)
     {
         ArgumentNullException.ThrowIfNull(session);
@@ -52,6 +57,8 @@ public static class BevToolsProtocol
                 "expand" => Expand(session, args),
                 "command" => Command(session, args),
                 "export" => Export(session, args),
+                "locate" => Locate(session, args),
+                "resolve" => Resolve(session, args),
                 _ => Error("Unknown method '" + method + "'."),
             };
         }
@@ -105,6 +112,8 @@ public static class BevToolsProtocol
             Indented = false,
             TimelineAfterEventId = Long(args, "timelineAfter"),
             Sections = sections,
+            // Polled while the app runs and not shown by the frontends; asked for by name when wanted.
+            IncludeProfile = sections?.Contains("profile") == true,
         });
         var version = session.Version;
         return Write(w =>
@@ -135,6 +144,15 @@ public static class BevToolsProtocol
             w.WriteString("displayName", record.DisplayName);
             w.WriteString("assembly", record.Type.Assembly.GetName().Name);
             w.WriteString("source", BevFmt.ComponentFile(record.Type));
+            var template = session.Options.Ui.EditorUrlTemplate;
+            WriteSources(w, "sources", BevSourceLocator.Of(record.Type, template));
+            if (BevSourceLocator.NeedsDownload(record.Type.Assembly))
+            {
+                // Downloaded by the page (WebAssembly): asked for now, there on a later inspect.
+                session.WantSymbols(record.Type.Assembly);
+                w.WriteBoolean("sourcesPending", true);
+            }
+
             if (record.ParentInstanceId is { } parent)
             {
                 w.WriteNumber("parentInstanceId", parent);
@@ -222,6 +240,11 @@ public static class BevToolsProtocol
                 w.WriteString("target", b.Target);
                 w.WriteString("event", b.Event);
                 w.WriteString("handler", b.Handler);
+                if (b.HandlerMethod is { } method && BevSourceLocator.Of(method, template) is { } handlerSource)
+                {
+                    WriteSources(w, "handlerSource", [handlerSource]);
+                }
+
                 w.WriteString("kind", b.Kind.ToString());
                 if (b.ChildInstanceId is { } child)
                 {
@@ -302,6 +325,7 @@ public static class BevToolsProtocol
                 break;
             case "baseline":
                 session.Components.MarkBaseline();
+                session.Ui.Profiler.SinceBaseline = true;
                 done = "Profiler baseline reset";
                 break;
             case "evaluate":
@@ -311,6 +335,13 @@ public static class BevToolsProtocol
             case "dismiss" when argument is not null:
                 session.Diagnostics.Dismiss(argument);
                 done = "Finding dismissed";
+                break;
+            case "collect" when !session.AllowsForcedCollection:
+                return Error("A full garbage collection is not allowed outside Development in a process that serves many users.");
+            case "collect":
+                var retained = session.Leaks.CollectAndCheck();
+                session.Diagnostics.Evaluate(force: true);
+                done = retained.Length == 0 ? "No disposed component survived the collection" : retained.Sum(r => r.Count) + " disposed component(s) survived the collection";
                 break;
             default:
                 return Error("Unknown command '" + name + "'.");
@@ -345,6 +376,108 @@ public static class BevToolsProtocol
             w.WriteString("content", content);
         });
     }
+
+    private static string Locate(BevToolsSession session, JsonElement args)
+    {
+        if (Long(args, "instanceId") is not { } id || session.Components.Get(id) is not { IsBevTools: false } record)
+        {
+            return Error("No such component.");
+        }
+
+        return BevDomMap.Locate(session, record, out var error) is { } location ? Write(w => WriteLocation(w, location)) : Error(error!);
+    }
+
+    /// <summary>The same shape the in-app panel hands the page hub, which serializes <see cref="BevDomLocation"/> itself.</summary>
+    internal static void WriteLocation(Utf8JsonWriter w, BevDomLocation location)
+    {
+        w.WriteNumber("instanceId", location.InstanceId);
+        w.WriteString("name", location.Name);
+        w.WriteBoolean("anchored", location.Anchored);
+        w.WriteString("rootSignature", location.RootSignature);
+        w.WriteNumber("rootOrdinal", location.RootOrdinal);
+        w.WriteNumber("rootCount", location.RootCount);
+        w.WriteBoolean("rootAmbiguous", location.RootAmbiguous);
+        w.WriteStartArray("path");
+        foreach (var step in location.Path)
+        {
+            w.WriteStartObject();
+            w.WriteNumber("index", step.Index);
+            w.WriteString("kind", step.Kind);
+            w.WriteEndObject();
+        }
+
+        w.WriteEndArray();
+    }
+
+    private static string Resolve(BevToolsSession session, JsonElement args)
+    {
+        if (args.ValueKind != JsonValueKind.Object || !args.TryGetProperty("path", out var list) || list.ValueKind != JsonValueKind.Array)
+        {
+            return Error("A path is required.");
+        }
+
+        // A logical DOM path is as long as the page is deep; nothing real comes near this.
+        if (list.GetArrayLength() > 4096)
+        {
+            return Error("The path is too long.");
+        }
+
+        var path = new List<BevDomStep>();
+        foreach (var step in list.EnumerateArray())
+        {
+            if (step.ValueKind != JsonValueKind.Object || Long(step, "index") is not { } index || index is < 0 or > int.MaxValue || String(step, "kind") is not { } kind)
+            {
+                return Error("Malformed path.");
+            }
+
+            path.Add(new BevDomStep((int)index, kind));
+        }
+
+        var anchored = Bool(args, "anchored") ?? false;
+        var includeHidden = Bool(args, "includeHidden") ?? false;
+        var ordinal = (int)Math.Clamp(Long(args, "ordinal") ?? 0, 0, 10_000);
+        var sameCount = (int)Math.Clamp(Long(args, "sameCount") ?? 1, 0, 10_000);
+        if (BevDomMap.Resolve(session, path, anchored, String(args, "signature"), ordinal, sameCount, includeHidden, out var error) is not { } owner)
+        {
+            return Error(error!);
+        }
+
+        return Write(w =>
+        {
+            w.WriteNumber("instanceId", owner.Record.InstanceId);
+            w.WriteString("name", owner.Record.DisplayName);
+            w.WriteNumber("depth", owner.Depth);
+            w.WriteString("renderedBy", owner.RenderedBy);
+            w.WriteString("element", owner.Element);
+            w.WriteBoolean("inMarkup", owner.InMarkup);
+            w.WriteBoolean("ambiguous", owner.Ambiguous);
+        });
+    }
+
+    private static void WriteSources(Utf8JsonWriter w, string name, IReadOnlyList<BevSourceLocation> sources)
+    {
+        w.WriteStartArray(name);
+        foreach (var source in sources)
+        {
+            w.WriteStartObject();
+            w.WriteString("path", source.Path);
+            w.WriteString("file", source.FileName);
+            w.WriteNumber("line", source.Line);
+            w.WriteNumber("column", source.Column);
+            w.WriteString("url", source.Url);
+            if (source.MayHaveMoved)
+            {
+                w.WriteBoolean("mayHaveMoved", true);
+            }
+
+            w.WriteEndObject();
+        }
+
+        w.WriteEndArray();
+    }
+
+    private static bool? Bool(JsonElement args, string name) =>
+        args.ValueKind == JsonValueKind.Object && args.TryGetProperty(name, out var value) && value.ValueKind is JsonValueKind.True or JsonValueKind.False ? value.GetBoolean() : null;
 
     private static void WriteNodes(Utf8JsonWriter w, string name, IEnumerable<BevInspectedNode> nodes)
     {

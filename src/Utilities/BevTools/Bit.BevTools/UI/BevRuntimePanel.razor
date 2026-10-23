@@ -23,6 +23,45 @@
             </div>
         </div>
     }
+    <div class="bev-section">
+        <div class="bev-section-title">Disposed components still alive <span class="bev-muted" style="font-weight:normal">this session</span></div>
+        <div class="bev-section-body">
+            <div class="bev-toolbar" style="padding:0 0 4px">
+                <button type="button" disabled="@(!Session.AllowsForcedCollection)" title="@CollectTitle" @onclick="CollectAndCheck">🧹 Collect garbage and check</button>
+                <span class="bev-muted">@Session.Leaks.Watched disposed components watched@(Session.Leaks.LastForcedCheckAt is { } checkedAt ? " · last check " + BevFmt.Ago(checkedAt) : "")</span>
+            </div>
+            @if (_retained.Length == 0)
+            {
+                <div class="bev-muted">None found. A disposed component counts as still alive once two full garbage collections ran after its disposal and it survived them (or one you started here).</div>
+            }
+            else
+            {
+                <table>
+                    <thead><tr><th>Component</th><th class="bev-num">Alive</th><th>Disposed</th><th>Held by</th></tr></thead>
+                    <tbody>
+                        @foreach (var group in _retained)
+                        {
+                            <tr>
+                                <td class="bev-mono" title="@group.TypeName">@group.DisplayName</td>
+                                <td class="bev-num"><span class="bev-chip bev-warn">@group.Count</span></td>
+                                <td>@BevFmt.Ago(group.OldestDisposal) <span class="bev-muted">· @group.FullCollections+ full GCs since</span></td>
+                                <td>
+                                    @if (group.Causes.Count == 0)
+                                    {
+                                        <span class="bev-muted">nothing BevTools can see (a static, a cache, an object it handed itself to): take a heap snapshot</span>
+                                    }
+                                    @foreach (var cause in group.Causes)
+                                    {
+                                        <div><span class="bev-mono">@cause.Holder</span>: @cause.Detail <div class="bev-muted">@cause.Suggestion</div></div>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+        </div>
+    </div>
     @if (Session.Platform == "Server" && ExtensionPanelAvailable("circuit"))
     {
         <div class="bev-muted" style="padding:6px">Circuit connection, inbound message timing and the other circuits of this process: <button type="button" class="bev-link" @onclick='() => Host.ShowPanel("circuit")'>Circuit ↗</button></div>
@@ -32,7 +71,31 @@
 @code {
     private IReadOnlyList<BevRuntimeSection> _sections = [];
 
-    protected override void OnParametersSet() => _sections = BevRuntimeInfo.Build(Session);
+    private BevRetainedComponents[] _retained = [];
+
+    protected override void OnParametersSet()
+    {
+        _sections = BevRuntimeInfo.Build(Session);
+        _retained = Session.Leaks.Retained();
+    }
+
+    private string CollectTitle => !Session.AllowsForcedCollection
+        ? "Not outside Development in a process that serves many users: a full collection pauses every circuit."
+        : Session.IsInMultiUserHost
+            ? "Runs full blocking garbage collections now. On Blazor Server this pauses the whole process, every circuit included, for a moment."
+            : "Runs full blocking garbage collections now, then lists the disposed components that survived them.";
+
+    private async Task CollectAndCheck()
+    {
+        if (!Session.AllowsForcedCollection)
+        {
+            return;
+        }
+
+        _retained = await Session.Leaks.CollectAndCheckAsync();
+        Session.Diagnostics.Evaluate(force: true);
+        Host.Notify(_retained.Length == 0 ? "No disposed component survived the collection" : _retained.Sum(r => r.Count) + " disposed component(s) survived the collection");
+    }
 
     private bool ExtensionPanelAvailable(string id) => Host.ExtensionPanels.Any(p => p.Id == id);
 }

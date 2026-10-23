@@ -18,6 +18,11 @@ node build.mjs                        # assembles the unpacked extension in dist
 Open DevTools on a page of a BevTools-enabled app and pick the **Blazor** panel. A runtime appears there once its
 `<BevToolsPanel />` has rendered (with `Ui.ShowBadge = false` the panel itself stays invisible on the page).
 
+**Components in the page.** *⌖ Pick* in the Components view picks a component in the page (hover outlines it, a click
+selects it here, Escape cancels); hovering a component in the tree outlines it in the page, *Show in page* scrolls to
+it. In Chromium, selecting a node in the **Elements** panel selects the component that rendered it (Firefox has no
+selection event for extensions). The in-app panel is never opened for this.
+
 ## How it reaches the page, and what it may do
 
 The extension asks for **no permission** and has **no content script**: nothing is injected into any page. The panel
@@ -35,4 +40,5 @@ A page whose BevTools is off exposes no hub, and the panel says so.
 | `devtools-source.js` | The companion's source over `inspectedWindow.eval`, with a page-side mailbox for asynchronous answers |
 | `build.mjs` | Copies these files and the companion bundle into `dist/` |
 
-Tests: `Tests/bit-bevtools-js/extension.test.js` (requests, answers, and that request data can never become code).
+Tests: `Tests/bit-bevtools-js/extension.test.js` (requests, answers, picking, the Elements selection, and that request
+data can never become code).

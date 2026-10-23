@@ -370,6 +370,19 @@ const RECORD_SEPARATOR = "\x1e";
 const LARGE_MESSAGE = 64 * 1024;
 const sockets = new Map<any, BevSocketStats>();
 let nextSocketId = 0;
+// A Blazor event raised in BevTools' own UI (a click on a tab, typing in a filter) reaches a circuit as an ordinary
+// DispatchEventAsync message. It is marked while the browser dispatches the event; Blazor sends it before any timer
+// runs, so the message sent meanwhile is the one that carries it.
+let ownEventPending = false;
+let ownEventTimer: ReturnType<typeof setTimeout> | null = null;
+const OWN_EVENT_TYPES = ["click", "dblclick", "input", "change", "keydown", "keyup", "keypress", "mousedown", "mouseup", "pointerdown", "pointerup", "focusin", "focusout", "submit", "wheel"];
+
+function markOwnEvent(e: Event) {
+    if (!inBevTools(e.target as Node) || inOverlay(e.target as Node)) return;
+    ownEventPending = true;
+    ownEventTimer ??= setTimeout(() => { ownEventPending = false; ownEventTimer = null; }, 0);
+}
+
 // SignalR invocation ids of the reports BevTools makes over a circuit, so their completions count as its own too.
 const ownInvocations = new Set<string>();
 // The async handles of the calls a circuit made into this module (an attach, a download, a storage read), so the
@@ -436,8 +449,21 @@ function isNoOp(record: MutationRecord) {
     return false;
 }
 
+/** The page overlay: outlines and render flashes, drawn over the app and changed by neither the app nor a batch. */
+function inOverlay(node: Node | null): boolean {
+    const element = node && (node.nodeType === 1 ? node as Element : node.parentElement);
+    return !!(element && typeof element.closest === "function" && element.closest(".bev-overlay"));
+}
+
 function noteMutations(records: MutationRecord[]) {
     for (const record of records) {
+        // Outlines appear and fade while batches arrive. Counting them as BevTools' DOM would make an app batch that
+        // changed nothing - the wasted render flashing exists to show - look like the panel's.
+        if (inOverlay(record.target)) continue;
+        if (record.type === "childList") {
+            const changed = [...Array.from(record.addedNodes), ...Array.from(record.removedNodes)];
+            if (changed.length > 0 && changed.every(n => n.nodeType === 1 && (n as Element).classList && (n as Element).classList.contains("bev-overlay"))) continue;
+        }
         if (inBevTools(record.target)) {
             bevToolsDomChanged = true;
             continue;
@@ -598,7 +624,7 @@ function decodeText(s: BevSocketStats, direction: string, text: string) {
         const kind = describe(type ? +type[1] : -1, target ? target[1] : null);
         if (kind === "BeginInvokeDotNetFromJS" && direction === "→") {
             const args = /"arguments"\s*:\s*\[\s*"([^"]*)"\s*,\s*(null|"[^"]*")\s*,\s*"([^"]*)"\s*,\s*(\d+)/.exec(record);
-            if (args && isOwnObjectId(+args[4])) {
+            if (args && (isOwnObjectId(+args[4]) || (ownEventPending && args[3] === "DispatchEventAsync"))) {
                 ownInvocations.add(args[1]);
                 add(s.own, record.length);
                 continue;
@@ -806,9 +832,9 @@ function decodePacked(s: BevSocketStats, direction: string, bytes: Uint8Array, s
             if (target === "BeginInvokeDotNetFromJS" && argCount >= 4 && direction === "→") {
                 const callId = r.str();
                 r.skip(); // assembly name
-                r.skip(); // method
+                const method = r.str();
                 const objectId = r.int();
-                if (objectId !== null && isOwnObjectId(objectId)) {
+                if ((objectId !== null && isOwnObjectId(objectId)) || (ownEventPending && method === "DispatchEventAsync")) {
                     if (callId) ownInvocations.add(callId);
                     add(s.own, size);
                     return;
@@ -991,6 +1017,9 @@ function installPageListeners() {
             type: "CspViolation",
         });
     });
+    on(document, "mouseover", onTreeHover, true);
+    on(document, "mouseout", onTreeLeave, true);
+    for (const type of OWN_EVENT_TYPES) on(document, type, markOwnEvent, true);
     on(window, "online", () => broadcast("OnBrowserEvent", "online", null));
     on(window, "offline", () => broadcast("OnBrowserEvent", "offline", null));
     on(document, "visibilitychange", () => broadcast("OnBrowserEvent", "visibility", document.visibilityState));
@@ -999,6 +1028,11 @@ function installPageListeners() {
         broadcast("OnReconnectState", d.state || "unknown", d.currentAttempt || 0, d.secondsToNextAttempt || 0);
     });
     on(document, "keydown", (e: KeyboardEvent) => {
+        // The panel's tab list moves with the arrow keys (handled by the panel); the page must not scroll as well.
+        const element = e.target as Element | null;
+        if (element && typeof element.closest === "function" && element.closest(".bev-root [role=tablist]") && /^(Arrow(Left|Right|Up|Down)|Home|End)$/.test(e.key)) {
+            e.preventDefault();
+        }
         const target = focusedTarget();
         if (!target) return;
         if (matchesShortcut(e)) {
@@ -1027,6 +1061,654 @@ function removePageListeners() {
         try { blazor.removeEventListener("enhancedload", enhancedLoadHandler); } catch { /* ignore */ }
     }
     enhancedLoadHandler = null;
+}
+
+// ----- components in the page -----
+//
+// Blazor's browser renderer keeps a logical element tree on the DOM nodes it creates: under Symbol() keys, the array of
+// a node's logical children and a pointer to its logical parent, and a `true` marker on the container of every
+// interactive root component while it is attached. The keys carry no description, so they are learned from a node
+// known to be Blazor's - a BevTools panel's element - by the one relation that defines them: the parent's children
+// array holds the node. Paths through the tree come from .NET (BevDomMap), computed from the components' render
+// trees, and every step is checked against the node found here: a mismatch is reported, never guessed around.
+
+export interface BevDomStep {
+    index: number;
+    kind: string;
+}
+
+export interface BevDomLocation {
+    instanceId: number;
+    name: string;
+    anchored: boolean;
+    rootSignature: string;
+    rootOrdinal: number;
+    /** How many roots of this runtime share the signature: the ones `rootOrdinal` counts. */
+    rootCount?: number;
+    rootAmbiguous?: boolean;
+    path: BevDomStep[];
+}
+
+export interface BevHighlightOptions {
+    /** Scroll the component's first element into view first. */
+    scroll?: boolean;
+    /** Remove the outline after this long; it otherwise stays until the next highlight, a scroll, or clearHighlight. */
+    durationMs?: number;
+}
+
+interface BevResolved {
+    targetId: string;
+    instanceId: number;
+    name: string;
+    renderedBy: string | null;
+    element: string | null;
+    ambiguous: boolean;
+    container: Node;
+}
+
+interface BevPickResult {
+    targetId?: string;
+    instanceId?: number;
+    name?: string;
+    renderedBy?: string | null;
+    element?: string | null;
+    error?: string;
+    at: number;
+}
+
+const NO_TREE = "This page's Blazor renderer does not expose the logical element tree BevTools maps components with (an unsupported Blazor version, or no BevTools panel rendered yet).";
+const STALE = "The page does not match the component's latest render: a render is still on its way to the browser, or script changed the DOM. Try again.";
+
+let childrenKey: symbol | null = null;
+let parentKey: symbol | null = null;
+// Boolean keys ordinary Blazor nodes carry too, so they cannot be what marks a root container. Empty in browsers; a page
+// whose other libraries (or DOM implementation) keep flags on nodes under symbols would otherwise make every node a root.
+let commonKeys = new Set<symbol>();
+
+function learnKeys(): boolean {
+    if (childrenKey && parentKey) return true;
+    if (typeof document === "undefined" || !document.querySelectorAll) return false;
+    // The panel's element is the first node of the panel component, so its logical parent is that component's
+    // container: a comment. No physical parent is a comment, which keeps any other symbol-keyed tree on the nodes (a
+    // DOM implementation's own, another library's) from being mistaken for Blazor's. Only when no panel has one is
+    // the panel a root of its own (RootComponents.Add<BevToolsPanel>), whose container is an element carrying a marker
+    // the panel's element does not.
+    const panels = Array.from(document.querySelectorAll(".bev-root[data-bev-target]"));
+    for (const commentParent of [true, false]) {
+        for (const el of panels) {
+            if (learnKeysFrom(el, commentParent)) return true;
+        }
+    }
+    return false;
+}
+
+function learnKeysFrom(el: Element, commentParent: boolean): boolean {
+    for (const key of Object.getOwnPropertySymbols(el)) {
+        const parent = (el as any)[key];
+        if (!parent || typeof parent !== "object" || typeof parent.nodeType !== "number") continue;
+        if (commentParent ? parent.nodeType !== 8 : parent.nodeType !== 1 || !booleanKeys(parent, true).some(k => (el as any)[k] !== true)) continue;
+        for (const listKey of Object.getOwnPropertySymbols(parent)) {
+            const list = parent[listKey];
+            if (Array.isArray(list) && list.indexOf(el) >= 0 && Array.isArray((el as any)[listKey])) {
+                parentKey = key;
+                childrenKey = listKey;
+                // Learned from what the panel itself rendered - its element and its child components' containers -
+                // which are never root containers, whatever the panel's own parent is.
+                commonKeys = new Set();
+                for (const ordinary of panelNodes(el)) booleanKeys(ordinary).forEach(k => commonKeys.add(k));
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
+function booleanKeys(node: any, value?: boolean): symbol[] {
+    return Object.getOwnPropertySymbols(node).filter(key => typeof node[key] === "boolean" && (value === undefined || node[key] === value));
+}
+
+function panelNodes(panel: Node): Node[] {
+    const nodes: Node[] = [panel];
+    for (let i = 0; i < nodes.length && nodes.length < 64; i++) {
+        for (const child of logicalChildren(nodes[i]) || []) if (child.nodeType !== 3) nodes.push(child);
+    }
+    return nodes;
+}
+
+function logicalChildren(node: any): Node[] | null {
+    const list = childrenKey && node ? node[childrenKey] : null;
+    return Array.isArray(list) ? list : null;
+}
+
+function logicalParent(node: any): Node | null {
+    const parent = parentKey && node ? node[parentKey] : null;
+    return parent && typeof parent.nodeType === "number" ? parent : null;
+}
+
+/**
+ * An attached interactive root's container: Blazor marks it `true` when the root attaches and sets that mark `false`
+ * when it is disposed - while a Web App root's second mark (preserve content) stays `true`. So a container is a live
+ * root while it carries a `true` mark and no `false` one.
+ */
+function isRootContainer(node: any): boolean {
+    if (!logicalChildren(node)) return false;
+    let marked = false;
+    for (const key of Object.getOwnPropertySymbols(node)) {
+        if (key === childrenKey || key === parentKey || commonKeys.has(key)) continue;
+        const value = node[key];
+        if (value === false) return false;
+        if (value === true) marked = true;
+    }
+    return marked;
+}
+
+function kindOf(node: Node): string {
+    switch (node.nodeType) {
+        case 1: return (node as Element).tagName.toLowerCase();
+        case 3: return "#text";
+        case 8: return "#c";
+        default: return "#" + node.nodeType;
+    }
+}
+
+function rootOf(node: Node | null): Node | null {
+    for (let n = node, hops = 0; n && hops < 10000; n = logicalParent(n), hops++) {
+        if (isRootContainer(n)) return n;
+    }
+    return null;
+}
+
+/** The root container a runtime's BevTools panel renders in: the anchor of every path that runtime calls anchored. */
+function anchorRoot(targetId: string): Node | null {
+    const panel = document.querySelector(".bev-root[data-bev-target=\"" + String(targetId).replace(/["\\]/g, "") + "\"]");
+    return panel ? rootOf(logicalParent(panel)) : null;
+}
+
+let rootsCache: { at: number; roots: Node[] } | null = null;
+
+/**
+ * The interactive roots no BevTools panel renders in, in document order: the ones matched by signature and position.
+ * Every runtime's anchor root is left out here and in .NET alike, so positions count the same roots on both sides. A
+ * walk over the whole document, so it is reused for a second: picking and render flashes ask often.
+ */
+function unanchoredRoots(fresh = false): Node[] {
+    const now = Date.now();
+    if (fresh || !rootsCache || now - rootsCache.at > 1000) {
+        const anchors = new Set<Node>();
+        targets.forEach(t => { const anchor = anchorRoot(t.id); if (anchor) anchors.add(anchor); });
+        const roots: Node[] = [];
+        const walker = document.createTreeWalker(document.documentElement, 0x1 | 0x80 /* SHOW_ELEMENT | SHOW_COMMENT */);
+        for (let n: Node | null = walker.currentNode; n; n = walker.nextNode()) {
+            if (!anchors.has(n) && isRootContainer(n)) roots.push(n);
+        }
+        rootsCache = { at: now, roots };
+    }
+    return rootsCache.roots;
+}
+
+/** "3|div,#text,#c", as BevDomMap.Signature computes it from the root's frames. */
+function signatureOf(container: Node): string {
+    const list = logicalChildren(container) || [];
+    return list.length + "|" + list.slice(0, 12).map(kindOf).join(",");
+}
+
+function walkPath(from: Node, steps: BevDomStep[]): Node | null {
+    let node: Node | null = from;
+    for (const step of steps) {
+        const list = logicalChildren(node);
+        const next: Node | undefined = list ? list[step.index] : undefined;
+        if (!next || kindOf(next) !== step.kind) return null;
+        node = next;
+    }
+    return node;
+}
+
+const AMBIGUOUS = "Several identical interactive roots on the page render this, and BevTools cannot tell which one it is.";
+
+function findContainer(targetId: string, location: BevDomLocation): { node: Node; positional?: boolean } | { error: string } {
+    if (!learnKeys()) return { error: NO_TREE };
+    if (location.anchored) {
+        const root = anchorRoot(targetId);
+        if (!root) return { error: "The BevTools panel of this runtime is not in the page." };
+        const node = walkPath(root, location.path || []);
+        return node ? { node } : { error: STALE };
+    }
+    for (const fresh of [false, true]) {
+        // A position means something only against the current count of identical roots: never from the cache.
+        if (!fresh && (location.rootCount || 1) > 1) continue;
+        const same = unanchoredRoots(fresh).filter(r => r.isConnected && signatureOf(r) === location.rootSignature);
+        if (same.length === 0) continue;
+        // Exactly the roots the runtime counted: the position it gives is one of them. Otherwise another runtime's
+        // identical roots are among them, and only a path that fits a single one of them identifies it.
+        if (same.length === (location.rootCount || 1)) {
+            const node = walkPath(same[Math.min(location.rootOrdinal, same.length - 1)], location.path || []);
+            if (node) return { node, positional: same.length > 1 };
+            continue;
+        }
+        const fitting = same.map(r => walkPath(r, location.path || [])).filter(n => n !== null) as Node[];
+        if (fitting.length === 1) return { node: fitting[0] };
+        if (fitting.length > 1) return { error: AMBIGUOUS };
+    }
+    return { error: "The root component of " + location.name + " is not in the page, or no longer matches its latest render." };
+}
+
+/** The boxes a component's output occupies: its elements and text, through nested component and markup containers. */
+function rectsOf(container: Node, out: DOMRect[], budget: { n: number }) {
+    for (const child of logicalChildren(container) || []) {
+        if (budget.n-- <= 0) return;
+        if (child.nodeType === 1) {
+            const rect = (child as Element).getBoundingClientRect();
+            if (rect.width > 0 || rect.height > 0) out.push(rect);
+            else rectsOf(child, out, budget); // display: contents, or an empty element whose children still show
+        } else if (child.nodeType === 3) {
+            if (!(child.textContent || "").trim()) continue;
+            const range = document.createRange();
+            range.selectNodeContents(child);
+            const rect = range.getBoundingClientRect();
+            if (rect.width > 0 || rect.height > 0) out.push(rect);
+        } else if (child.nodeType === 8) {
+            rectsOf(child, out, budget);
+        }
+    }
+}
+
+function boundsOf(container: Node): { left: number; top: number; width: number; height: number } | null {
+    const rects: DOMRect[] = [];
+    if (container.nodeType === 1 && !isRootContainer(container)) {
+        rects.push((container as Element).getBoundingClientRect());
+    } else {
+        rectsOf(container, rects, { n: 5000 });
+    }
+    if (rects.length === 0) return null;
+    let left = Infinity, top = Infinity, right = -Infinity, bottom = -Infinity;
+    for (const r of rects) {
+        left = Math.min(left, r.left);
+        top = Math.min(top, r.top);
+        right = Math.max(right, r.right);
+        bottom = Math.max(bottom, r.bottom);
+    }
+    return { left, top, width: right - left, height: bottom - top };
+}
+
+function firstElement(container: Node): Element | null {
+    for (const child of logicalChildren(container) || []) {
+        if (child.nodeType === 1) return child as Element;
+        if (child.nodeType === 8) {
+            const nested = firstElement(child);
+            if (nested) return nested;
+        }
+    }
+    return null;
+}
+
+// The overlay lives outside every element Blazor manages and carries .bev-root, so its DOM changes count as BevTools'
+// own wherever the hub classifies mutations, and picking ignores it.
+let overlay: HTMLElement | null = null;
+let highlightBox: HTMLElement | null = null;
+let highlightTimer: ReturnType<typeof setTimeout> | null = null;
+let followListener: (() => void) | null = null;
+let outlined: { node: Node; label: string; note: string | null } | null = null;
+
+function overlayRoot(): HTMLElement {
+    if (overlay && overlay.isConnected) return overlay;
+    overlay = document.createElement("div");
+    overlay.className = "bev-root bev-overlay";
+    overlay.setAttribute("aria-hidden", "true");
+    document.body.appendChild(overlay);
+    return overlay;
+}
+
+function place(el: HTMLElement, bounds: { left: number; top: number; width: number; height: number }) {
+    el.style.left = bounds.left + "px";
+    el.style.top = bounds.top + "px";
+    el.style.width = Math.max(1, bounds.width) + "px";
+    el.style.height = Math.max(1, bounds.height) + "px";
+}
+
+function drawBox(bounds: { left: number; top: number; width: number; height: number } | null, label: string, note?: string | null) {
+    const root = overlayRoot();
+    if (!highlightBox || !highlightBox.isConnected) {
+        highlightBox = document.createElement("div");
+        highlightBox.className = "bev-hl";
+        const tag = document.createElement("div");
+        tag.className = "bev-hl-label";
+        highlightBox.appendChild(tag);
+        root.appendChild(highlightBox);
+    }
+    const tag = highlightBox.firstChild as HTMLElement;
+    if (bounds) {
+        place(highlightBox, bounds);
+        highlightBox.classList.remove("bev-hl-empty");
+        tag.textContent = label + " · " + Math.round(bounds.width) + "×" + Math.round(bounds.height) + (note ? " · " + note : "");
+        // Inside the viewport even for a component at its top edge.
+        tag.classList.toggle("bev-hl-label-inside", bounds.top < 22);
+    } else {
+        highlightBox.classList.add("bev-hl-empty");
+        tag.textContent = label + (note ? " · " + note : "");
+    }
+}
+
+/**
+ * Outlines a component's container and keeps the outline on it while the page scrolls or resizes - scrolling to show a
+ * component is the first thing Show in page does - until it is cleared or the component's nodes leave the page.
+ */
+function outline(node: Node | null, label: string, note?: string | null) {
+    outlined = node ? { node, label, note: note || null } : null;
+    const bounds = node ? boundsOf(node) : null;
+    drawBox(bounds, label, bounds || !node ? note : (note ? note + " · " : "") + "renders nothing visible");
+    if (!followListener) {
+        let scheduled = false;
+        followListener = () => {
+            if (scheduled) return;
+            scheduled = true;
+            requestAnimationFrame(() => {
+                scheduled = false;
+                const current = outlined;
+                if (!current) return;
+                if (!current.node.isConnected) { clearHighlight(); return; }
+                drawBox(boundsOf(current.node), current.label, current.note);
+            });
+        };
+        window.addEventListener("scroll", followListener, { capture: true, passive: true });
+        window.addEventListener("resize", followListener, { passive: true });
+    }
+    return !!bounds;
+}
+
+/** Outlines the component at a location the runtime computed; the panel calls this, the protocol path goes through highlightComponent. */
+export function highlight(targetId: string, location: BevDomLocation, options?: BevHighlightOptions | null) {
+    clearHighlight();
+    const found = findContainer(targetId, location);
+    if ("error" in found) return { ok: false, error: found.error };
+    if (options && options.scroll) {
+        const first = firstElement(found.node);
+        if (first && typeof first.scrollIntoView === "function") first.scrollIntoView({ block: "nearest", inline: "nearest" });
+    }
+    const visible = outline(found.node, location.name, found.positional ? "one of several identical roots, matched by position" : null);
+    if (options && options.durationMs) highlightTimer = setTimeout(clearHighlight, options.durationMs);
+    return { ok: true, visible };
+}
+
+/** Outlines a component of a runtime by its instance id: the companion window and the extension use this. */
+export async function highlightComponent(targetId: string, instanceId: number, options?: BevHighlightOptions | null) {
+    try {
+        const location = await request(targetId, "locate", { instanceId });
+        if (!location || location.error) return { ok: false, error: location ? location.error : "No answer." };
+        return highlight(targetId, location, options);
+    } catch (err: any) {
+        return { ok: false, error: String(err && err.message || err) };
+    }
+}
+
+export function clearHighlight() {
+    if (highlightTimer) { clearTimeout(highlightTimer); highlightTimer = null; }
+    if (followListener) {
+        window.removeEventListener("scroll", followListener, { capture: true } as any);
+        window.removeEventListener("resize", followListener);
+        followListener = null;
+    }
+    outlined = null;
+    if (highlightBox) { highlightBox.remove(); highlightBox = null; }
+}
+
+const reducedMotion = () => typeof matchMedia === "function" && matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+/** Outlines components that just rendered, coloured by how many times since the last flash (React DevTools' "highlight updates"). */
+export function flash(targetId: string, items: { location: BevDomLocation; count: number }[]) {
+    if (!items || items.length === 0 || !learnKeys()) return 0;
+    const root = overlayRoot();
+    let drawn = 0;
+    for (const item of items.slice(0, 150)) {
+        const found = findContainer(targetId, item.location);
+        if ("error" in found) continue;
+        const bounds = boundsOf(found.node);
+        if (!bounds) continue;
+        const box = document.createElement("div");
+        const count = item.count || 1;
+        box.className = "bev-flash-box " + (count >= 10 ? "bev-flash-4" : count >= 4 ? "bev-flash-3" : count >= 2 ? "bev-flash-2" : "bev-flash-1");
+        box.title = item.location.name;
+        place(box, bounds);
+        root.appendChild(box);
+        drawn++;
+        if (!reducedMotion()) requestAnimationFrame(() => box.classList.add("bev-flash-out"));
+        setTimeout(() => box.remove(), 800);
+    }
+    return drawn;
+}
+
+// Hovering a row of a BevTools component tree outlines its component in the page. Handled here rather than by a
+// Blazor event on each row: over a circuit every Blazor event is a message to the server, and hovering a tree is many.
+let hoveredRow: Element | null = null;
+
+function onTreeHover(e: MouseEvent) {
+    const element = e.target as Element | null;
+    const row = element && typeof element.closest === "function" ? element.closest(".bev-root[data-bev-target] .bev-tree [data-bev-id]") : null;
+    if (!row || row === hoveredRow) return;
+    hoveredRow = row;
+    const panel = row.closest(".bev-root[data-bev-target]")!;
+    const id = Number(row.getAttribute("data-bev-id"));
+    if (Number.isFinite(id)) highlightComponent(panel.getAttribute("data-bev-target")!, id);
+}
+
+function onTreeLeave(e: MouseEvent) {
+    if (!hoveredRow) return;
+    const tree = hoveredRow.closest(".bev-tree");
+    const to = e.relatedTarget as Node | null;
+    if (tree && to && tree.contains(to)) return;
+    hoveredRow = null;
+    clearHighlight();
+}
+
+/** The component that rendered a node: resolved by the runtime the node belongs to, which verifies the path. */
+async function resolveNode(node: Node | null, includeHidden: boolean): Promise<BevResolved | { error: string }> {
+    if (!learnKeys()) return { error: NO_TREE };
+    let n: Node | null = node;
+    while (n && !logicalParent(n) && !isRootContainer(n)) n = n.parentNode;
+    if (!n) return { error: "Blazor did not render this part of the page (static markup, or added by script)." };
+    const steps: BevDomStep[] = [];
+    let root: Node | null = null;
+    for (let hops = 0; n && hops < 10000; hops++) {
+        if (isRootContainer(n)) { root = n; break; }
+        const parent = logicalParent(n);
+        if (!parent) break;
+        const list = logicalChildren(parent);
+        const index = list ? list.indexOf(n) : -1;
+        if (index < 0) return { error: STALE };
+        steps.unshift({ index, kind: kindOf(n) });
+        n = parent;
+    }
+    if (!root) return { error: "This part of the page is not inside an interactive component: it was rendered statically on the server (or is still prerendered)." };
+
+    let anchoredTo: BevTarget | null = null;
+    for (const t of Array.from(targets.values())) {
+        if (anchorRoot(t.id) === root) { anchoredTo = t; break; }
+    }
+    const signature = signatureOf(root);
+    const same = anchoredTo ? [root] : unanchoredRoots(true).filter(r => signatureOf(r) === signature);
+    const ordinal = Math.max(0, same.indexOf(root));
+    // A root no panel renders in could be any runtime's: every one is asked, and an answer counts only if it is the
+    // only one - two runtimes both finding the path is two identical roots, and picking either would be a guess.
+    const order: BevTarget[] = anchoredTo ? [anchoredTo] : Array.from(targets.values());
+    let error = "No BevTools runtime on this page rendered it.";
+    const found: BevResolved[] = [];
+    for (const t of order) {
+        try {
+            const answer = await request(t.id, "resolve", { path: steps, anchored: t === anchoredTo, signature, ordinal, sameCount: same.length, includeHidden });
+            if (!answer || answer.error) { error = answer ? answer.error : error; continue; }
+            const container = answer.depth < 0 ? root : walkPath(root, steps.slice(0, answer.depth));
+            if (!container) return { error: STALE };
+            found.push({ targetId: t.id, instanceId: answer.instanceId, name: answer.name, renderedBy: answer.renderedBy || null, element: answer.element || null, ambiguous: !!answer.ambiguous, container });
+        } catch (err: any) {
+            error = String(err && err.message || err);
+        }
+    }
+    if (found.length > 1) return { error: AMBIGUOUS };
+    return found[0] || { error };
+}
+
+/** What owns a node, without the node itself: what the extension's Elements panel selection resolves to. */
+export async function componentAt(node: Node | null, includeHidden?: boolean): Promise<BevPickResult> {
+    const resolved = await resolveNode(node, !!includeHidden);
+    if ("error" in resolved) return { error: resolved.error, at: Date.now() };
+    return { targetId: resolved.targetId, instanceId: resolved.instanceId, name: resolved.name, renderedBy: resolved.renderedBy, element: resolved.element, at: Date.now() };
+}
+
+interface PickState {
+    targetId: string | null;
+    includeHidden: boolean;
+    tellPanel: boolean;
+    hovered: Node | null;
+    seq: number;
+}
+
+let picking: PickState | null = null;
+// Between the picking click and its answer: picking has ended in the page, the outcome is not known yet.
+let resolvingPick = false;
+let lastPicked: BevPickResult | null = null;
+const pickListeners: (() => void)[] = [];
+
+// Not passive: a touch must be able to cancel the click it would become (Chromium makes window touch listeners passive by default).
+const PICK_LISTENER: AddEventListenerOptions = { capture: true, passive: false };
+
+function onPick(type: string, handler: (e: any) => void) {
+    window.addEventListener(type, handler, PICK_LISTENER);
+    pickListeners.push(() => window.removeEventListener(type, handler, PICK_LISTENER));
+}
+
+/** The panel's own Pick button: a click on it stops picking through the panel, so the hub lets it through untouched. */
+function isPickToggle(node: Node | null) {
+    const element = node && (node.nodeType === 1 ? node as Element : node.parentElement);
+    return !!(element && typeof element.closest === "function" && element.closest("[data-bev-pick-toggle]"));
+}
+
+function showNote(text: string, x: number, y: number) {
+    const note = document.createElement("div");
+    note.className = "bev-hl-note";
+    note.textContent = text;
+    note.style.left = Math.max(4, Math.min(x + 12, window.innerWidth - 320)) + "px";
+    note.style.top = Math.max(4, Math.min(y + 12, window.innerHeight - 60)) + "px";
+    overlayRoot().appendChild(note);
+    setTimeout(() => note.remove(), 3500);
+}
+
+/**
+ * Starts picking a component in the page: hovering outlines the component that rendered the element under the
+ * pointer, a click selects it, Escape cancels. The click never reaches the application. A click in BevTools' own UI
+ * ends picking and goes through.
+ */
+export function startPick(targetId?: string | null, options?: { includeHidden?: boolean; tellPanel?: boolean } | null): boolean {
+    stopPick();
+    if (!learnKeys()) {
+        lastPicked = { error: NO_TREE, at: Date.now() };
+        notify({ type: "pick", state: "unavailable", error: NO_TREE });
+        return false;
+    }
+    picking = { targetId: targetId || null, includeHidden: !!(options && options.includeHidden), tellPanel: !options || options.tellPanel !== false, hovered: null, seq: 0 };
+    overlayRoot().setAttribute("data-picking", "");
+    const swallow = (e: Event) => {
+        if (inBevTools(e.target as Node)) return;
+        if (e.cancelable) e.preventDefault();
+        e.stopPropagation();
+        e.stopImmediatePropagation();
+    };
+    for (const type of ["pointerdown", "pointerup", "mousedown", "mouseup", "dblclick", "auxclick", "contextmenu", "touchstart", "submit"]) onPick(type, swallow);
+    onPick("mousemove", (e: MouseEvent) => {
+        const state = picking;
+        const node = e.target as Node;
+        if (!state || node === state.hovered) return;
+        state.hovered = node;
+        if (inBevTools(node)) { clearHighlight(); return; }
+        const seq = ++state.seq;
+        resolveNode(node, state.includeHidden).then(result => {
+            if (picking !== state || seq !== state.seq) return;
+            if ("error" in result) outline(null, "No component", result.error);
+            else outline(result.container, result.name, result.renderedBy ? "through " + result.renderedBy : null);
+        });
+    });
+    const pickAt = (node: Node | null, x: number, y: number) => {
+        const state = picking;
+        if (!state) return;
+        stopPick("picking");
+        resolvingPick = true;
+        resolveNode(node, state.includeHidden).then(result => {
+            resolvingPick = false;
+            if ("error" in result) {
+                lastPicked = { error: result.error, at: Date.now() };
+                showNote(result.error, x, y);
+                tellPickEnded(state, result.error);
+                notify({ type: "pick", state: "failed", error: result.error });
+                return;
+            }
+            lastPicked = { targetId: result.targetId, instanceId: result.instanceId, name: result.name, renderedBy: result.renderedBy, element: result.element, at: Date.now() };
+            outline(result.container, result.name, result.ambiguous ? "one of several identical roots, matched by position" : result.element);
+            highlightTimer = setTimeout(clearHighlight, 1500);
+            if (state.tellPanel) {
+                // Picked in another runtime than the panel that started: that panel stops picking, and the runtime that
+                // rendered it shows its own panel, selected there - one panel at a time, as the runtime switcher does.
+                if (state.targetId && state.targetId !== result.targetId) {
+                    tellPickEnded(state, null);
+                    show(result.targetId);
+                }
+                const t = targets.get(result.targetId);
+                if (t) invoke(t, "OnComponentPicked", result.instanceId);
+            }
+            notify({ type: "picked", ...lastPicked });
+        });
+    };
+    onPick("click", (e: MouseEvent) => {
+        if (!picking) return;
+        if (isPickToggle(e.target as Node)) return;
+        if (inBevTools(e.target as Node)) { stopPick("cancelled"); return; }
+        swallow(e);
+        pickAt(e.target as Node, e.clientX, e.clientY);
+    });
+    onPick("touchend", (e: TouchEvent) => {
+        const touch = e.changedTouches && e.changedTouches[0];
+        if (!picking || !touch) return;
+        const node = document.elementFromPoint(touch.clientX, touch.clientY);
+        if (isPickToggle(node)) return;
+        if (inBevTools(node)) { stopPick("cancelled"); return; }
+        // Cancelling the touch's end cancels the click it would have become: the tap is the pick.
+        swallow(e);
+        pickAt(node, touch.clientX, touch.clientY);
+    });
+    onPick("keydown", (e: KeyboardEvent) => {
+        if (e.key !== "Escape") return;
+        e.preventDefault();
+        e.stopPropagation();
+        stopPick("cancelled");
+    });
+    notify({ type: "pick", state: "started" });
+    return true;
+}
+
+export function stopPick(reason?: string) {
+    const state = picking;
+    if (!state) return;
+    picking = null;
+    while (pickListeners.length) pickListeners.pop()!();
+    if (overlay) overlay.removeAttribute("data-picking");
+    clearHighlight();
+    if (reason === "cancelled") {
+        notify({ type: "pick", state: "cancelled" });
+        tellPickEnded(state, null);
+    }
+}
+
+/** A panel that started picking shows that it is picking; it hears when that ends without a component. */
+function tellPickEnded(state: PickState, error: string | null) {
+    const t = state.targetId ? targets.get(state.targetId) : null;
+    if (t && state.tellPanel) invoke(t, "OnPickEnded", error);
+}
+
+/** True while picking, and while the picked node is being resolved: the outcome is not known until lastPick says. */
+export function isPicking() {
+    return !!picking || resolvingPick;
+}
+
+/** The outcome of the last pick, for a frontend that polls (the extension cannot subscribe across inspectedWindow.eval). */
+export function lastPick() {
+    return lastPicked;
 }
 
 // ----- targets -----
@@ -1107,6 +1789,20 @@ export function detach(targetId?: string) {
         pendingRenderBatches.clear();
         acknowledgedEarly.clear();
         shortcut = null;
+        stopPick();
+        clearHighlight();
+        overlay?.remove();
+        overlay = null;
+        lastPicked = null;
+        auditedElements = [];
+        childrenKey = null;
+        parentKey = null;
+        commonKeys = new Set();
+        rootsCache = null;
+        hoveredRow = null;
+        resolvingPick = false;
+        ownEventPending = false;
+        if (ownEventTimer) { clearTimeout(ownEventTimer); ownEventTimer = null; }
     }
 
     targetsChanged();
@@ -1119,6 +1815,22 @@ export function show(targetId: string) {
 
 export function refresh() {
     return snapshot();
+}
+
+/**
+ * Focuses an element of one runtime's panel. Moving to the badge on close happens only when focus was in the panel:
+ * closing with the shortcut from the app must leave focus in the app.
+ */
+export function focusIn(targetId: string, selector: string, onlyFromPanel?: boolean) {
+    const root = document.querySelector(".bev-root[data-bev-target=\"" + String(targetId).replace(/["\\]/g, "") + "\"]");
+    if (!root) return false;
+    // Focus is moved within the panel, or back to it when it was lost (the focused element was re-rendered away); never
+    // taken from the app.
+    if ((selector === ".bev-badge" || onlyFromPanel) && document.activeElement && document.activeElement !== document.body && !root.contains(document.activeElement)) return false;
+    const element = root.querySelector(selector) as HTMLElement | null;
+    if (!element || typeof element.focus !== "function") return false;
+    element.focus();
+    return true;
 }
 
 // ----- the protocol for external frontends -----
@@ -1157,8 +1869,242 @@ function exposeHook() {
     if (w.__BIT_BEVTOOLS__ && w.__BIT_BEVTOOLS__.protocol === 1) return;
     Object.defineProperty(w, "__BIT_BEVTOOLS__", {
         configurable: true,
-        value: Object.freeze({ protocol: 1, targets: targets_, request, subscribe, traffic, show }),
+        value: Object.freeze({
+            protocol: 1, targets: targets_, request, subscribe, traffic, show,
+            // Components in the page (added within protocol 1: a frontend checks for them before offering picking).
+            startPick, stopPick, isPicking, lastPick, highlightComponent, clearHighlight, componentAt,
+        }),
     });
+}
+
+// ----- accessibility of the page -----
+//
+// A small set of checks that an automated tool can make without false alarms, each tied to a WCAG success criterion:
+// what they find is a fact about the markup. What they cannot judge - contrast against images, focus order, whether a
+// name makes sense, how a screen reader announces it - is left to a person, and the panel says so. Each finding names
+// the component that rendered the element, through the same path mapping as picking. BevTools' own UI is checked only
+// when asked (the self-check its tests run).
+
+export interface BevA11yFinding {
+    rule: string;
+    wcag: string;
+    message: string;
+    element: string;
+    targetId?: string;
+    instanceId?: number;
+    component?: string;
+    /** Why the component could not be found, when it is not that Blazor did not render the element. */
+    ownerUnknown?: string;
+}
+
+let auditedElements: Element[] = [];
+
+/** The lookups that do say the element is not a component's: markup Blazor did not render, or rendered statically. */
+const STATIC_MARKUP = /^(Blazor did not render this part|This part of the page is not inside an interactive component)/;
+
+function describeElement(element: Element): string {
+    const id = element.id ? "#" + element.id : "";
+    const cls = !id && typeof element.className === "string" && element.className.trim() ? "." + element.className.trim().split(/\s+/)[0] : "";
+    return "<" + element.tagName.toLowerCase() + id + cls + ">";
+}
+
+function isHidden(element: Element): boolean {
+    for (let e: Element | null = element; e; e = e.parentElement) {
+        if (e.getAttribute("aria-hidden") === "true" || isStyleHidden(e)) return true;
+    }
+    return false;
+}
+
+/** Not rendered, or not shown: hidden, display:none, visibility:hidden. */
+function isStyleHidden(element: Element): boolean {
+    if ((element as HTMLElement).hidden) return true;
+    if (typeof getComputedStyle !== "function") return false;
+    const style = getComputedStyle(element);
+    return style.display === "none" || style.visibility === "hidden";
+}
+
+/** Whether a keyboard can reach the element: not tabindex=-1, shown, and not inside an inert part of the page. */
+function isKeyboardReachable(element: Element): boolean {
+    if (element.getAttribute("tabindex") === "-1" || element.closest("[inert]")) return false;
+    for (let e: Element | null = element; e; e = e.parentElement) {
+        if (isStyleHidden(e)) return false;
+    }
+    return true;
+}
+
+/**
+ * The text a screen reader reads for an element's content: without aria-hidden or hidden parts, and through shadow
+ * roots (a custom element's button text), with an image's alternative in its place.
+ */
+function readableText(node: Node, depth = 0): string {
+    if (depth > 50) return "";
+    if (node.nodeType === 3) return node.textContent || "";
+    if (node.nodeType !== 1) return "";
+    const element = node as Element;
+    if (element.getAttribute("aria-hidden") === "true" || isStyleHidden(element)) return "";
+    if (depth > 0) {
+        const label = (element.getAttribute("aria-label") || "").trim();
+        if (label) return " " + label + " ";
+        if (element.tagName === "IMG") return " " + (element.getAttribute("alt") || "") + " ";
+    }
+    const children = element.shadowRoot ? element.shadowRoot.childNodes : element.childNodes;
+    let text = "";
+    for (const child of Array.from(children)) text += readableText(child, depth + 1);
+    return text;
+}
+
+function textOf(ids: string | null): string {
+    if (!ids) return "";
+    // A referenced element's own name: its aria-label when it has one, else what it reads.
+    return ids.split(/\s+/).map(id => {
+        const target = document.getElementById(id);
+        return target ? ((target.getAttribute("aria-label") || "").trim() || readableText(target)) : "";
+    }).join(" ").trim();
+}
+
+/** The accessible name of a control, as far as markup decides it: enough to tell "none" from "some". */
+function accessibleName(element: Element): string {
+    const labelledBy = textOf(element.getAttribute("aria-labelledby"));
+    if (labelledBy) return labelledBy;
+    const label = (element.getAttribute("aria-label") || "").trim();
+    if (label) return label;
+    const tag = element.tagName.toLowerCase();
+    if (tag === "input") {
+        const type = (element.getAttribute("type") || "text").toLowerCase();
+        if (type === "image") return (element.getAttribute("alt") || "").trim();
+        if (type === "submit" || type === "reset" || type === "button") return ((element as HTMLInputElement).value || (type === "button" ? "" : type)).trim();
+    }
+    if (tag === "img") return (element.getAttribute("alt") || "").trim();
+    if (tag === "input" || tag === "select" || tag === "textarea") {
+        const id = element.id;
+        const forLabel = id ? Array.from(document.querySelectorAll("label")).find(l => l.htmlFor === id) : null;
+        const wrapping = element.closest("label");
+        const text = ((forLabel && readableText(forLabel)) || (wrapping && readableText(wrapping)) || "").trim();
+        if (text) return text;
+    } else {
+        // What is read, not what is in the markup: an aria-hidden glyph is no name.
+        const text = readableText(element).trim();
+        if (text) return text;
+    }
+    return (element.getAttribute("title") || "").trim();
+}
+
+const FOCUSABLE = "a[href], button:not([disabled]), input:not([disabled]):not([type=hidden]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex='-1']), [contenteditable=true]";
+
+function check(includeBevTools: boolean): { element: Element | null; rule: string; wcag: string; message: string }[] {
+    const found: { element: Element | null; rule: string; wcag: string; message: string }[] = [];
+    const add = (element: Element | null, rule: string, wcag: string, message: string) => {
+        if (element && !includeBevTools && inBevTools(element)) return;
+        if (found.length < 200) found.push({ element, rule, wcag, message });
+    };
+    if (!document.documentElement.getAttribute("lang")) {
+        add(null, "page-lang", "3.1.1", "The page does not declare its language (<html lang>): screen readers guess how to pronounce it.");
+    }
+    for (const img of Array.from(document.querySelectorAll("img:not([alt])"))) {
+        const role = img.getAttribute("role");
+        // Named another way (aria-label, aria-labelledby): a text alternative all the same.
+        if (role === "presentation" || role === "none" || isHidden(img) || textOf(img.getAttribute("aria-labelledby")) || (img.getAttribute("aria-label") || "").trim()) continue;
+        add(img, "image-alt", "1.1.1", "An image without an alt attribute: add a text alternative, or alt=\"\" when it is decorative.");
+    }
+    for (const control of Array.from(document.querySelectorAll("button, a[href], [role=button], [role=link], input[type=button], input[type=submit], input[type=reset], input[type=image]"))) {
+        if (isHidden(control) || accessibleName(control)) continue;
+        add(control, "control-name", "4.1.2", "A button or link with no accessible name: a screen reader announces it as \"button\" or reads its URL.");
+    }
+    for (const field of Array.from(document.querySelectorAll("input, select, textarea"))) {
+        const type = (field.getAttribute("type") || "text").toLowerCase();
+        if (field.tagName === "INPUT" && ["hidden", "button", "submit", "reset", "image"].includes(type)) continue;
+        if (isHidden(field) || accessibleName(field)) continue;
+        add(field, "field-label", "1.3.1, 4.1.2", "A form field with no label" + (field.getAttribute("placeholder") ? " (a placeholder is not one: it disappears as soon as something is typed)" : "") + ".");
+    }
+    for (const hidden of Array.from(document.querySelectorAll("[aria-hidden=true]"))) {
+        // Only what a keyboard reaches: tabindex=-1 is the usual remedy, and a hidden or inert part is reached by nobody.
+        const candidates = hidden.matches(FOCUSABLE) ? [hidden] : Array.from(hidden.querySelectorAll(FOCUSABLE));
+        const focusable = candidates.find(isKeyboardReachable);
+        if (focusable) add(focusable, "hidden-focusable", "4.1.2", "Focusable inside aria-hidden=\"true\": keyboard users reach something screen readers are told is not there.");
+    }
+    for (const positive of Array.from(document.querySelectorAll("[tabindex]"))) {
+        if (Number(positive.getAttribute("tabindex")) > 0) add(positive, "tabindex-positive", "2.4.3", "tabindex greater than 0 moves this ahead of the page's natural order for every keyboard user.");
+    }
+    const ids = new Map<string, number>();
+    for (const element of Array.from(document.querySelectorAll("[id]"))) ids.set(element.id, (ids.get(element.id) || 0) + 1);
+    for (const referrer of Array.from(document.querySelectorAll("label[for], [aria-labelledby], [aria-describedby], [aria-controls]"))) {
+        const refs = [referrer.getAttribute("for"), referrer.getAttribute("aria-labelledby"), referrer.getAttribute("aria-describedby"), referrer.getAttribute("aria-controls")]
+            .filter(Boolean).join(" ").split(/\s+/).filter(Boolean);
+        const duplicated = refs.find(id => (ids.get(id) || 0) > 1);
+        if (duplicated) add(referrer, "duplicate-id", "4.1.2", "It refers to id \"" + duplicated + "\", which " + ids.get(duplicated) + " elements carry: the reference reaches the first one only.");
+    }
+    for (const heading of Array.from(document.querySelectorAll("h1, h2, h3, h4, h5, h6"))) {
+        if (!isHidden(heading) && !accessibleName(heading)) add(heading, "heading-empty", "2.4.6", "An empty heading: screen-reader users navigating by headings land on nothing.");
+    }
+    return found;
+}
+
+/**
+ * Checks the page and names, for each finding, the component that rendered the element (when Blazor did). Elements are
+ * kept for highlightFinding until the next check.
+ */
+export async function auditPage(options?: { includeBevTools?: boolean } | null): Promise<BevA11yFinding[]> {
+    const found = check(!!(options && options.includeBevTools));
+    auditedElements = found.map(f => f.element as Element);
+    const owners = learnKeys()
+        ? await Promise.all(found.map(f => f.element ? resolveNode(f.element, false).catch(() => ({ error: "" })) : Promise.resolve({ error: "" })))
+        : found.map(() => ({ error: "" }));
+    return found.map((f, i) => {
+        const owner = owners[i] as any;
+        const result: BevA11yFinding = { rule: f.rule, wcag: f.wcag, message: f.message, element: f.element ? describeElement(f.element) : "<html>" };
+        if (owner && !owner.error) {
+            result.targetId = owner.targetId;
+            result.instanceId = owner.instanceId;
+            result.component = owner.name;
+        } else if (f.element && owner && owner.error && !STATIC_MARKUP.test(owner.error)) {
+            // Not "static markup": the lookup itself did not succeed (no tree yet, a stale page, a runtime that did not answer).
+            result.ownerUnknown = owner.error;
+        }
+        return result;
+    });
+}
+
+/** Outlines the element of a finding from the last check, scrolled into view. */
+export function highlightFinding(index: number, label: string) {
+    const element = auditedElements[index];
+    clearHighlight();
+    if (!element || !element.isConnected) return false;
+    if (typeof element.scrollIntoView === "function") element.scrollIntoView({ block: "nearest", inline: "nearest" });
+    outline(element, label);
+    highlightTimer = setTimeout(clearHighlight, 2500);
+    return true;
+}
+
+// ----- symbols -----
+
+/**
+ * The PDB of one assembly, for a runtime that has no files to read it from (WebAssembly): the one the runtime's own
+ * resource list names for this build (fingerprinted names on .NET 9+, plain ones on .NET 8), so it matches the code
+ * that runs. Null when the app serves none (a Release build, or one published without symbols).
+ */
+/**
+ * The PDB the runtime's resource list names for this build, fetched with the integrity hash the list gives (so a PDB
+ * of an earlier build, which a cache or an unfingerprinted name can serve, is refused) and past the HTTP cache. Null
+ * when the app lists no PDB for the assembly; a failed download throws, so it is not taken for "no symbols".
+ */
+export async function fetchPdb(assemblyName: string): Promise<Uint8Array | null> {
+    const runtime = (window as any).Blazor && (window as any).Blazor.runtime;
+    const pdb = runtime && typeof runtime.getConfig === "function" ? runtime.getConfig()?.resources?.pdb : null;
+    const file = assemblyName + ".pdb";
+    let url: string | null = null;
+    let integrity: string | undefined;
+    if (Array.isArray(pdb)) {
+        const entry = pdb.find((e: any) => e && (e.virtualPath === file || e.name === file));
+        url = entry ? entry.resolvedUrl || "_framework/" + entry.name : null;
+        integrity = entry && typeof entry.integrity === "string" ? entry.integrity : undefined;
+    } else if (pdb && typeof pdb === "object" && Object.prototype.hasOwnProperty.call(pdb, file)) {
+        url = "_framework/" + file;
+        integrity = typeof pdb[file] === "string" && pdb[file].startsWith("sha") ? pdb[file] : undefined;
+    }
+    if (!url) return null;
+    const response = await fetch(new URL(url, document.baseURI).href, { integrity, cache: "no-cache" });
+    if (!response.ok) throw new Error("The PDB for " + assemblyName + " could not be downloaded: HTTP " + response.status);
+    return new Uint8Array(await response.arrayBuffer());
 }
 
 // ----- storage, preferences, downloads -----

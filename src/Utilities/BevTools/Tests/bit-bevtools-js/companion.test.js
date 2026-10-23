@@ -155,3 +155,126 @@ describe('companion', () => {
         companion.stop();
     });
 });
+
+describe('components in the page', () => {
+    function withPage(source) {
+        const calls = [];
+        let picked = null;
+        let picking = false;
+        source.page = {
+            calls,
+            async startPick(includeHidden) { calls.push(['startPick', includeHidden]); picking = true; return true; },
+            async stopPick() { calls.push(['stopPick']); picking = false; },
+            async isPicking() { return picking; },
+            async lastPick() { return picked; },
+            async highlight(targetId, instanceId, scroll) { calls.push(['highlight', targetId, instanceId, scroll]); return { ok: true, visible: true }; },
+            async clearHighlight() { calls.push(['clearHighlight']); },
+            async inspectedElement() { return { targetId: 't2', instanceId: 7, name: 'Counter', at: Date.now() }; },
+            pick(result) { picked = { ...result, at: Date.now() + 1 }; picking = false; },
+        };
+        return source.page;
+    }
+
+    it('picks in the page and inspects what was picked, on the runtime that rendered it', async () => {
+        vi.useFakeTimers({ shouldAdvanceTime: true });
+        try {
+            const { Companion } = await loadCompanion();
+            const source = liveSource({ t1: session(3, 'Server', [counter]), t2: session(1, 'WebAssembly', [counter]) });
+            const page = withPage(source);
+            const companion = new Companion(source, document.body);
+            await companion.start();
+            await flush();
+            [...document.querySelectorAll('.bc-tab')].find(b => b.textContent.startsWith('Components')).click();
+            await flush();
+
+            const pick = [...document.querySelectorAll('.bc-toolbar button')].find(b => b.textContent.includes('Pick'));
+            expect(pick, 'a live page offers picking').toBeTruthy();
+            pick.click();
+            await flush();
+            expect(page.calls[0]).toEqual(['startPick', false]);
+
+            page.pick({ targetId: 't2', instanceId: 7, name: 'Counter' });
+            await vi.advanceTimersByTimeAsync(300);
+            await flush();
+            await flush();
+            expect(source.requests).toContainEqual(['t2', 'inspect', { instanceId: 7 }]);
+            expect(document.querySelector('.bc-runtime.bc-active').textContent).toContain('WebAssembly');
+            companion.stop();
+        } finally {
+            vi.useRealTimers();
+        }
+    });
+
+    it('outlines a hovered component, offers Show in page, and follows the Elements panel', async () => {
+        const { Companion } = await loadCompanion();
+        const source = liveSource({ t1: session(3, 'Server', [counter]), t2: session(1, 'WebAssembly', [counter]) });
+        const page = withPage(source);
+        const companion = new Companion(source, document.body);
+        await companion.start();
+        await flush();
+        [...document.querySelectorAll('.bc-tab')].find(b => b.textContent.startsWith('Components')).click();
+        await flush();
+
+        const row = document.querySelector('.bc-tree-row');
+        row.dispatchEvent(new MouseEvent('mouseenter'));
+        await flush();
+        expect(page.calls).toContainEqual(['highlight', 't1', 7, false]);
+        document.querySelector('.bc-left').dispatchEvent(new MouseEvent('mouseleave'));
+        await flush();
+        expect(page.calls).toContainEqual(['clearHighlight']);
+
+        row.click();
+        await flush();
+        await flush();
+        [...document.querySelectorAll('.bc-inspector-head button')].find(b => b.textContent.includes('Show in page')).click();
+        await flush();
+        expect(page.calls).toContainEqual(['highlight', 't1', 7, true]);
+
+        await companion.revealInspectedElement();
+        await flush();
+        expect(source.requests).toContainEqual(['t2', 'inspect', { instanceId: 7 }]);
+        companion.stop();
+    });
+
+    it('offers no picking for an exported file', async () => {
+        const { Companion, FileSource } = await loadCompanion();
+        const companion = new Companion(new FileSource(session(3, 'Server', [counter]), 'x.json'), document.body);
+        await companion.start();
+        await flush();
+        [...document.querySelectorAll('.bc-tab')].find(b => b.textContent.startsWith('Components')).click();
+        await flush();
+        expect([...document.querySelectorAll('.bc-toolbar button')].some(b => b.textContent.includes('Pick'))).toBe(false);
+        companion.stop();
+    });
+});
+
+describe('source locations', () => {
+    it('links a component and its handlers to the editor, and never makes a script URL a link', async () => {
+        const { Companion } = await loadCompanion();
+        const source = liveSource({ t1: session(3, 'Server', [counter]) });
+        const inspect = source.request.bind(source);
+        source.request = async (targetId, method, params) => {
+            const answer = await inspect(targetId, method, params);
+            if (method !== 'inspect') return answer;
+            return {
+                ...answer,
+                sources: [{ path: 'D:/app/Counter.razor', file: 'Counter.razor', line: 3, column: 1, url: 'vscode://file/D:/app/Counter.razor:3:1' }],
+                wiring: { total: 1, bindings: [{ target: '<button>', event: 'onclick', handler: 'Counter.Increment', kind: 'DomEvent', handlerSource: [{ path: 'D:/app/Counter.razor', file: 'Counter.razor', line: 20, column: 5, url: 'javascript:alert(1)' }] }] },
+            };
+        };
+        const companion = new Companion(source, document.body);
+        await companion.start();
+        await flush();
+        [...document.querySelectorAll('.bc-tab')].find(b => b.textContent.startsWith('Components')).click();
+        await flush();
+        document.querySelector('.bc-tree-row').click();
+        await flush();
+        await flush();
+
+        const link = [...document.querySelectorAll('a.bc-mono')].find(a => a.textContent === 'Counter.razor:3');
+        expect(link.getAttribute('href')).toBe('vscode://file/D:/app/Counter.razor:3:1');
+        const handler = [...document.querySelectorAll('.bc-mono')].find(e => e.textContent === 'Counter.razor:20');
+        expect(handler.tagName, 'a javascript: URL is shown as text').toBe('SPAN');
+        companion.stop();
+    });
+});

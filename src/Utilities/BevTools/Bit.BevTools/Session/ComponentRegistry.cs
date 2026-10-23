@@ -122,9 +122,9 @@ internal sealed class ComponentRegistry
         {
             if (record.IsDisposed)
             {
-                if (now - record.DisposedAt > retention)
+                if (now - record.DisposedAt > retention && _byId.TryRemove(record.InstanceId, out _))
                 {
-                    _byId.TryRemove(record.InstanceId, out _);
+                    FoldIntoGone(record);
                 }
 
                 continue;
@@ -216,6 +216,11 @@ internal sealed class ComponentRegistry
         if (record.Component is { } component)
         {
             _byComponent.Remove(component);
+            if (!record.IsHidden)
+            {
+                // Held weakly from here on: whether garbage collection reclaims it is the leak check's question.
+                _session.Leaks.Track(record, component);
+            }
         }
 
         record.ReleaseReferences();
@@ -315,6 +320,48 @@ internal sealed class ComponentRegistry
         }
     }
 
+    private readonly Dictionary<string, BevGoneRenderTotals> _gone = [];
+
+    /// <summary>
+    /// Render totals per type of the components the registry let go after their retention, so a profile of a long
+    /// interaction (pages navigated away from a minute ago) still adds up. Read under the lock.
+    /// </summary>
+    internal BevGoneRenderTotals[] GoneTotals()
+    {
+        lock (_gone)
+        {
+            return [.. _gone.Values.Select(g => g with { })];
+        }
+    }
+
+    private void FoldIntoGone(BevComponentRecord record)
+    {
+        if (record.IsBevTools || record.IsHidden || record.RenderCount == 0)
+        {
+            return;
+        }
+
+        lock (_gone)
+        {
+            if (!_gone.TryGetValue(record.TypeName, out var totals))
+            {
+                _gone[record.TypeName] = totals = new BevGoneRenderTotals { TypeName = record.TypeName, DisplayName = record.DisplayName };
+            }
+
+            totals.Instances++;
+            totals.Renders += record.RenderCount;
+            totals.RenderMs += record.TotalRenderMs;
+            totals.MaxRenderMs = Math.Max(totals.MaxRenderMs, record.MaxRenderMs);
+            if (record.RendersSinceBaseline > 0)
+            {
+                totals.InstancesSinceBaseline++;
+                totals.RendersSinceBaseline += record.RendersSinceBaseline;
+                totals.RenderMsSinceBaseline += record.RenderMsSinceBaseline;
+                totals.MaxRenderMsSinceBaseline = Math.Max(totals.MaxRenderMsSinceBaseline, record.MaxRenderMsSinceBaseline);
+            }
+        }
+    }
+
     /// <summary>When the profiler baseline was last reset for this session, or null when it never was.</summary>
     public DateTimeOffset? BaselineAt { get; private set; }
 
@@ -332,6 +379,17 @@ internal sealed class ComponentRegistry
             record.MarkBaseline(now);
         }
 
+        lock (_gone)
+        {
+            foreach (var totals in _gone.Values)
+            {
+                totals.InstancesSinceBaseline = 0;
+                totals.RendersSinceBaseline = 0;
+                totals.RenderMsSinceBaseline = 0;
+                totals.MaxRenderMsSinceBaseline = 0;
+            }
+        }
+
         _session.Touch();
     }
 
@@ -344,6 +402,12 @@ internal sealed class ComponentRegistry
             {
                 _byId.TryRemove(record.InstanceId, out _);
             }
+        }
+
+        // Asked to forget the components that are gone: their totals too.
+        lock (_gone)
+        {
+            _gone.Clear();
         }
 
         // Once an instance was omitted at the cap we cannot know when that untracked instance is disposed.

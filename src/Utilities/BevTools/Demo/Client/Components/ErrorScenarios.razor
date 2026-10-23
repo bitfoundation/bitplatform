@@ -10,6 +10,7 @@
     <button type="button" class="btn btn-secondary" @onclick="() => _renderBomb = true">Throw during render (inside ErrorBoundary)</button>
     <button type="button" class="btn btn-secondary" @onclick="() => _initBomb = true">Child throws in OnInitialized (inside ErrorBoundary)</button>
     <button type="button" class="btn btn-secondary" @onclick="Http404">HTTP 404</button>
+    <button type="button" class="btn btn-secondary" @onclick="OpenMissingOrder">Open a missing order (another id each time)</button>
     <button type="button" class="btn btn-outline" @onclick="() => { _renderBomb = false; _initBomb = false; _boundary?.Recover(); }">Reset</button>
 </div>
 
@@ -47,6 +48,9 @@
         await Task.Delay(150);
         throw new TimeoutException("Async failure: the continuation after an await threw.");
     }
+
+    // Problem 20: one failure whose message carries another id every time.
+    private void OpenMissingOrder() => throw new KeyNotFoundException("Order " + Random.Shared.Next(1000, 10000) + " was not found.");
 
     private async Task Http404()
     {

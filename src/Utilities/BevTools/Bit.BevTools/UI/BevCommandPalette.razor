@@ -2,14 +2,18 @@
 @implements IDisposable
 
 <div class="bev-palette-backdrop" @onclick="Close">
-    <div class="bev-palette" @onclick:stopPropagation="true" @onkeydown="OnKeyDown">
-        <input type="text" @ref="_input" placeholder="Search components, errors, requests… or type > for commands" value="@_text" @oninput="OnInput" autocomplete="off" spellcheck="false" />
-        <div class="bev-palette-list">
+    @* Its keys are its own (Escape closes the palette, not the panel); Tab stays inside, as in a modal dialog. *@
+    <div class="bev-palette" role="dialog" aria-modal="true" aria-label="Search and commands" @onclick:stopPropagation="true" @onkeydown="OnKeyDown" @onkeydown:stopPropagation="true">
+        <span tabindex="0" class="bev-focus-sentinel" @onfocus="FocusInputAsync"></span>
+        <input type="text" @ref="_input" placeholder="Search components, errors, requests… or type > for commands" aria-label="Search, or type > for commands"
+               role="combobox" aria-expanded="true" aria-controls="bev-palette-list" aria-autocomplete="list" aria-activedescendant="@(_items.Count > 0 ? "bev-palette-item-" + _active : null)"
+               value="@_text" @oninput="OnInput" autocomplete="off" spellcheck="false" />
+        <div class="bev-palette-list" id="bev-palette-list" role="listbox" aria-label="Results">
             @{ var index = 0; }
             @foreach (var item in _items)
             {
                 var i = index++;
-                <div class="bev-palette-item @(i == _active ? "bev-active" : "")" @onclick="() => Execute(item)" @onmouseenter="() => _active = i">
+                <div class="bev-palette-item @(i == _active ? "bev-active" : "")" id="bev-palette-item-@i" role="option" aria-selected="@(i == _active ? "true" : "false")" @onclick="() => Execute(item)" @onmouseenter="() => _active = i">
                     <span class="bev-cat">@item.Category</span>
                     <span>@item.Title</span>
                     @if (item.Hint is not null)
@@ -23,6 +27,7 @@
                 <div class="bev-palette-item bev-muted">No matches.</div>
             }
         </div>
+        <span tabindex="0" class="bev-focus-sentinel" @onfocus="FocusInputAsync"></span>
         <div class="bev-palette-footer">↑↓ navigate · Enter run · Esc close · "&gt;" commands · "kind:render", "component:12", "status:failed" filters</div>
     </div>
 </div>
@@ -169,14 +174,29 @@
             Host.Notify("Command failed: " + ex.Message);
         }
 
-        Close();
+        Close(afterCommand: true);
     }
 
-    private void Close()
+    /// <summary>Closes the palette; focus goes back where it came from, or to the tab a command showed.</summary>
+    private void Close() => Close(afterCommand: false);
+
+    private void Close(bool afterCommand)
     {
         Host.Ui.CommandPaletteOpen = false;
         Host.Ui.Touch();
+        Host.FocusAfterRender(afterCommand && Host.Ui.IsOpen ? ".bev-tab.bev-active" : "[data-bev-palette-opener]");
         Host.Refresh();
+    }
+
+    private async Task FocusInputAsync()
+    {
+        try
+        {
+            await _input.FocusAsync();
+        }
+        catch (Exception ex) when (ex is JSException or JSDisconnectedException or OperationCanceledException or InvalidOperationException)
+        {
+        }
     }
 
     public void Dispose()

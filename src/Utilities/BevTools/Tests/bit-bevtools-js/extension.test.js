@@ -70,3 +70,39 @@ describe('the extension source', () => {
         await expect(source.request('t1', 'hello')).rejects.toThrow('No BevTools runtime on this page');
     });
 });
+
+describe('the extension source in the page', () => {
+    it('picks without telling the in-app panel, outlines through the mailbox, and resolves the Elements selection', async () => {
+        installHub({});
+        const calls = [];
+        Object.assign(globalThis.__BIT_BEVTOOLS__, {
+            startPick: (target, options) => { calls.push(['startPick', target, options]); return true; },
+            stopPick: () => calls.push(['stopPick']),
+            isPicking: () => false,
+            lastPick: () => ({ targetId: 't1', instanceId: 7, at: 1 }),
+            clearHighlight: () => calls.push(['clearHighlight']),
+            highlightComponent: (target, id, options) => Promise.resolve({ ok: true, visible: true, target, id, options }),
+            componentAt: (node, includeHidden) => Promise.resolve({ targetId: 't1', instanceId: 9, node: node.id, includeHidden }),
+        });
+        globalThis.$0 = { id: 'selected' };
+        const { createDevToolsSource } = await import(SOURCE);
+        const { page } = createDevToolsSource(evalInPage, () => Promise.resolve());
+
+        expect(await page.startPick(true)).toBe(true);
+        expect(calls[0]).toEqual(['startPick', null, { includeHidden: true, tellPanel: false }]);
+        expect(await page.lastPick()).toEqual({ targetId: 't1', instanceId: 7, at: 1 });
+        expect(await page.highlight("t1'); globalThis.injected = true; ('", 7, true)).toMatchObject({ ok: true, target: "t1'); globalThis.injected = true; ('", id: 7, options: { scroll: true, durationMs: 2500 } });
+        expect(await page.inspectedElement(false)).toEqual({ targetId: 't1', instanceId: 9, node: 'selected', includeHidden: false });
+        await page.clearHighlight();
+        expect(calls).toContainEqual(['clearHighlight']);
+        expect(globalThis.injected).not.toBe(true);
+    });
+
+    it('reports picking as unavailable on a hub that predates it', async () => {
+        installHub({});
+        const { createDevToolsSource } = await import(SOURCE);
+        const { page } = createDevToolsSource(evalInPage, () => Promise.resolve());
+        expect(await page.startPick(false)).toBe(false);
+        expect(await page.lastPick()).toBeNull();
+    });
+});

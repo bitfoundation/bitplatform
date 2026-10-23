@@ -19,6 +19,12 @@ public sealed class BevSessionExportOptions
     /// <summary>Include the change history of state providers (diffs only, never full snapshots). Default true.</summary>
     public bool IncludeStateHistory { get; set; } = true;
 
+    /// <summary>
+    /// Include the render profile per component type (<c>profile</c>), what <see cref="BevProfileComparison"/> compares.
+    /// Default true; a frontend that polls and never shows it leaves it out, as it reads every retained render sample.
+    /// </summary>
+    public bool IncludeProfile { get; set; } = true;
+
     /// <summary>Include recently disposed components in the component list. Default true.</summary>
     public bool IncludeDisposedComponents { get; set; } = true;
 
@@ -77,6 +83,11 @@ public static class BevSessionExporter
                 WriteComponents(writer, session, options.IncludeDisposedComponents);
             }
 
+            if (options.IncludeProfile && options.Includes("profile"))
+            {
+                BevRenderProfile.Of(session).Write(writer);
+            }
+
             if (options.IncludeTimeline && options.Includes("timeline"))
             {
                 var events = session.Timeline.Snapshot();
@@ -92,12 +103,16 @@ public static class BevSessionExporter
 
             if (options.Includes("errors"))
             {
-                WriteErrors(writer, session.Errors.Snapshot());
+                var errorRecords = session.Errors.Snapshot();
+                WriteErrors(writer, errorRecords);
+                WriteErrorGroups(writer, errorRecords);
             }
 
             if (options.Includes("http"))
             {
-                WriteHttp(writer, session.Http.Snapshot());
+                var requests = session.Http.Snapshot();
+                WriteHttp(writer, requests);
+                WriteHttpEndpoints(writer, requests);
             }
 
             if (options.Includes("interop"))
@@ -123,6 +138,11 @@ public static class BevSessionExporter
             if (options.Includes("routing"))
             {
                 WriteRouting(writer, session);
+            }
+
+            if (options.Includes("forms"))
+            {
+                WriteForms(writer, session);
             }
 
             if (options.Includes("runtime"))
@@ -219,6 +239,25 @@ public static class BevSessionExporter
             sb.AppendLine("No errors recorded.");
         }
 
+        var groups = BevErrorGroups.Summarize(errors).Where(g => g.DistinctMessages > 1).OrderByDescending(g => g.Occurrences).Take(10).ToArray();
+        if (groups.Length > 0)
+        {
+            sb.AppendLine("One problem with different values in its messages:");
+            foreach (var g in groups)
+            {
+                sb.Append("- `").Append(g.Source).Append("` ").Append(ErrorCenter.ShortTypeName(g.ExceptionType)).Append(": ").Append(g.MessageTemplate.ReplaceLineEndings(" "))
+                    .Append(" (×").Append(g.Occurrences).Append(", ").Append(g.DistinctMessages).Append(" messages)");
+                if (g.SourceLocation is not null)
+                {
+                    sb.Append(" @ ").Append(g.SourceLocation);
+                }
+
+                sb.AppendLine();
+            }
+
+            sb.AppendLine();
+        }
+
         foreach (var error in errors.Reverse().Take(25))
         {
             sb.Append("- ").Append(Time(error.LastSeen)).Append(" `").Append(error.Source).Append("` ")
@@ -286,6 +325,22 @@ public static class BevSessionExporter
         }
 
         sb.AppendLine();
+        var endpoints = BevHttpEndpoints.Summarize(http).OrderByDescending(e => e.Requests).Take(10).ToArray();
+        if (endpoints.Length > 0)
+        {
+            sb.AppendLine("## Busiest endpoints");
+            sb.AppendLine();
+            sb.AppendLine("| Endpoint | Requests | Failed | p50 | p95 |");
+            sb.AppendLine("|---|---:|---:|---:|---:|");
+            foreach (var e in endpoints)
+            {
+                sb.Append("| `").Append(e.Endpoint.Replace("|", "\\|", StringComparison.Ordinal).Replace("`", "'", StringComparison.Ordinal)).Append("` | ").Append(e.Requests).Append(" | ").Append(e.Failed)
+                    .Append(" | ").Append(e.P50Ms is { } p50 ? Ms(p50) : "–").Append(" | ").Append(e.P95Ms is { } p95 ? Ms(p95) : "–").AppendLine(" |");
+            }
+
+            sb.AppendLine();
+        }
+
         var events = session.Timeline.Snapshot();
         var tail = events.Skip(Math.Max(0, events.Length - timelineTail)).ToArray();
         sb.Append("## Timeline (last ").Append(tail.Length).Append(" of ").Append(events.Length).AppendLine(" events)");
@@ -422,6 +477,7 @@ public static class BevSessionExporter
         w.WriteNumber("inspectionMs", Round(o.InspectionMs));
         w.WriteNumber("diagnosticsMs", Round(o.DiagnosticsMs));
         w.WriteNumber("treeRefreshMs", Round(o.TreeRefreshMs));
+        w.WriteNumber("pageMappingMs", Round(o.PageMappingMs));
         w.WriteNumber("appRenderCount", o.AppRenderCount);
         w.WriteNumber("bevToolsRenderCount", o.BevToolsRenderCount);
         w.WriteEndObject();
@@ -563,6 +619,40 @@ public static class BevSessionExporter
         w.WriteEndArray();
     }
 
+    /// <summary>Errors that are one problem (<see cref="BevErrorGroups"/>), most occurrences first.</summary>
+    private static void WriteErrorGroups(Utf8JsonWriter w, BevErrorRecord[] errors)
+    {
+        w.WriteStartArray("errorGroups");
+        foreach (var g in BevErrorGroups.Summarize(errors).OrderByDescending(g => g.Occurrences).ThenByDescending(g => g.LastSeen))
+        {
+            w.WriteStartObject();
+            w.WriteString("group", g.Group);
+            w.WriteString("source", g.Source);
+            w.WriteString("exceptionType", g.ExceptionType);
+            w.WriteString("messageTemplate", g.MessageTemplate);
+            w.WriteNumber("occurrences", g.Occurrences);
+            w.WriteNumber("records", g.Records);
+            w.WriteNumber("distinctMessages", g.DistinctMessages);
+            if (g.SourceLocation is not null)
+            {
+                w.WriteString("sourceLocation", g.SourceLocation);
+            }
+
+            w.WriteStartArray("components");
+            foreach (var component in g.Components.Take(20))
+            {
+                w.WriteStringValue(component);
+            }
+
+            w.WriteEndArray();
+            w.WriteString("firstSeen", g.FirstAt);
+            w.WriteString("lastSeen", g.LastSeen);
+            w.WriteEndObject();
+        }
+
+        w.WriteEndArray();
+    }
+
     private static void WriteErrors(Utf8JsonWriter w, BevErrorRecord[] errors)
     {
         w.WriteStartArray("errors");
@@ -576,6 +666,8 @@ public static class BevSessionExporter
             w.WriteString("source", e.Source);
             w.WriteString("exceptionType", e.ExceptionType);
             w.WriteString("message", e.Message);
+            w.WriteString("messageTemplate", e.MessageTemplate);
+            w.WriteString("group", e.Group);
             if (e.InnerError is not null)
             {
                 w.WriteString("innerError", e.InnerError);
@@ -607,6 +699,38 @@ public static class BevSessionExporter
                 w.WriteString("stackTrace", e.StackTrace);
             }
 
+            w.WriteEndObject();
+        }
+
+        w.WriteEndArray();
+    }
+
+    /// <summary>The requests in the buffer per endpoint template (ids in the path as {id}), busiest first.</summary>
+    private static void WriteHttpEndpoints(Utf8JsonWriter w, BevHttpRecord[] requests)
+    {
+        w.WriteStartArray("httpEndpoints");
+        foreach (var e in BevHttpEndpoints.Summarize(requests).OrderByDescending(e => e.Requests).ThenBy(e => e.Endpoint, StringComparer.Ordinal))
+        {
+            w.WriteStartObject();
+            w.WriteString("endpoint", e.Endpoint);
+            w.WriteNumber("requests", e.Requests);
+            w.WriteNumber("distinctUrls", e.DistinctUrls);
+            w.WriteNumber("failed", e.Failed);
+            w.WriteNumber("cancelled", e.Cancelled);
+            w.WriteNumber("pending", e.Pending);
+            if (e.P50Ms is { } p50)
+            {
+                w.WriteNumber("p50Ms", Round(p50));
+                w.WriteNumber("p95Ms", Round(e.P95Ms!.Value));
+                w.WriteNumber("maxMs", Round(e.MaxMs!.Value));
+            }
+
+            if (e.ResponseBytes is { } bytes)
+            {
+                w.WriteNumber("responseBytes", bytes);
+            }
+
+            w.WriteString("lastAt", e.LastAt);
             w.WriteEndObject();
         }
 
@@ -655,6 +779,7 @@ public static class BevSessionExporter
             }
 
             w.WriteBoolean("failed", r.IsFailed);
+            w.WriteBoolean("cancelled", r.IsCancelled);
             w.WriteBoolean("pending", r.IsPending);
             if (r.TriggerEventId is { } trigger)
             {
@@ -878,6 +1003,23 @@ public static class BevSessionExporter
             w.WriteString("bridgeError", b.BridgeError);
         }
 
+        if (b.Accessibility is { } accessibility)
+        {
+            w.WriteStartArray("accessibility");
+            foreach (var finding in accessibility)
+            {
+                w.WriteStartObject();
+                w.WriteString("rule", finding.Rule);
+                w.WriteString("wcag", finding.Wcag);
+                w.WriteString("element", finding.Element);
+                w.WriteString("component", finding.Component);
+                w.WriteString("message", finding.Message);
+                w.WriteEndObject();
+            }
+
+            w.WriteEndArray();
+        }
+
         if (b.Online is { } online)
         {
             w.WriteBoolean("online", online);
@@ -951,6 +1093,61 @@ public static class BevSessionExporter
         w.WriteNumber("bytes", stat.Bytes);
         w.WriteNumber("maxBytes", stat.MaxBytes);
         w.WriteEndObject();
+    }
+
+    /// <summary>The forms panel: fields with their changes and (redacted) messages, validations, validators; never a value.</summary>
+    private static void WriteForms(Utf8JsonWriter w, BevToolsSession session)
+    {
+        session.Forms.Discover();
+        w.WriteStartArray("forms");
+        foreach (var form in session.Forms.Forms())
+        {
+            w.WriteStartObject();
+            w.WriteString("model", form.ModelType);
+            w.WriteString("owner", form.OwnerName);
+            if (form.OwnerInstanceId is { } owner)
+            {
+                w.WriteNumber("ownerInstanceId", owner);
+            }
+
+            WriteStrings(w, "validators", form.Validators);
+            WriteStrings(w, "messageDisplays", form.MessageDisplays);
+            WriteStrings(w, "validationAttributes", form.ValidationAttributes);
+            w.WriteBoolean("modified", form.Modified);
+            w.WriteNumber("messages", form.MessageCount);
+            w.WriteNumber("validations", form.Validations);
+            if (form.LastValidationPassed is { } passed)
+            {
+                w.WriteBoolean("lastValidationPassed", passed);
+            }
+
+            w.WriteStartArray("fields");
+            foreach (var field in form.Fields)
+            {
+                w.WriteStartObject();
+                w.WriteString("name", field.Name);
+                w.WriteBoolean("modified", field.Modified);
+                w.WriteNumber("changes", field.Changes);
+                WriteStrings(w, "messages", field.Messages);
+                w.WriteEndObject();
+            }
+
+            w.WriteEndArray();
+            w.WriteEndObject();
+        }
+
+        w.WriteEndArray();
+    }
+
+    private static void WriteStrings(Utf8JsonWriter w, string name, IReadOnlyList<string> values)
+    {
+        w.WriteStartArray(name);
+        foreach (var value in values)
+        {
+            w.WriteStringValue(value);
+        }
+
+        w.WriteEndArray();
     }
 
     private static void WriteRouting(Utf8JsonWriter w, BevToolsSession session)

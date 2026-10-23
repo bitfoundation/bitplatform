@@ -65,6 +65,7 @@ public partial class BevToolsPanel : ComponentBase, IBevToolsCommandContext, IAs
         ("profiler", "Profiler"),
         ("timeline", "Timeline"),
         ("state", "State"),
+        ("forms", "Forms"),
         ("routing", "Routing"),
         ("network", "Network"),
         ("interop", "JS Interop"),
@@ -101,11 +102,15 @@ public partial class BevToolsPanel : ComponentBase, IBevToolsCommandContext, IAs
         }
 
         Session.Prerender ??= BevPrerenderHandoff.TakeWhenInteractive(Services);
+        Session.PanelComponent = this;
         RuntimeAttachment.AttachToRenderer(Session, this);
         Session.EnsureActivated();
         Navigation.LocationChanged += OnLocationChanged;
         Ui.OpenedFromCode += OnOpenedFromCode;
+        Session.SymbolsWanted += OnSymbolsWanted;
     }
+
+    private void OnSymbolsWanted(System.Reflection.Assembly assembly) => _ = InvokeAsync(() => LoadSymbolsAsync(assembly));
 
     /// <summary>
     /// A closed panel polls once a second, so without this an app's own "Open dev tools" button would seem to do
@@ -145,7 +150,13 @@ public partial class BevToolsPanel : ComponentBase, IBevToolsCommandContext, IAs
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (!firstRender || !_interactive || !Session.IsEnabled)
+        if (!firstRender)
+        {
+            await FocusAfterRenderAsync();
+            return;
+        }
+
+        if (!_interactive || !Session.IsEnabled)
         {
             return;
         }
@@ -159,7 +170,27 @@ public partial class BevToolsPanel : ComponentBase, IBevToolsCommandContext, IAs
                     Session,
                     () => InvokeAsync(() => { Toggle(); StateHasChanged(); }),
                     () => InvokeAsync(() => { OpenPalette(); StateHasChanged(); }),
-                    show => InvokeAsync(() => { SetOpen(show); StateHasChanged(); })));
+                    show => InvokeAsync(() => { SetOpen(show); StateHasChanged(); }))
+                {
+                    Picked = instanceId => InvokeAsync(() =>
+                    {
+                        Ui.Picking = false;
+                        SelectComponent(instanceId);
+                    }),
+                    PickEnded = error => InvokeAsync(() =>
+                    {
+                        Ui.Picking = false;
+                        Ui.Touch();
+                        if (error is not null)
+                        {
+                            Notify(error);
+                        }
+                        else
+                        {
+                            StateHasChanged();
+                        }
+                    }),
+                });
                 var snapshot = await _module.InvokeAsync<BevBrowserSnapshot>("attach", _bridgeRef, new
                 {
                     shortcut = Options.Ui.ToggleShortcut,
@@ -218,7 +249,7 @@ public partial class BevToolsPanel : ComponentBase, IBevToolsCommandContext, IAs
         {
             while (!token.IsCancellationRequested)
             {
-                await Task.Delay(Ui.IsOpen ? Math.Max(50, Options.Ui.RefreshIntervalMs) : 1000, token);
+                await Task.Delay(Ui.IsOpen || Ui.FlashRenders ? Math.Max(50, Options.Ui.RefreshIntervalMs) : 1000, token);
                 try
                 {
                     await InvokeAsync(ApplyPendingChanges);
@@ -243,6 +274,13 @@ public partial class BevToolsPanel : ComponentBase, IBevToolsCommandContext, IAs
 
     private void ApplyPendingChanges()
     {
+        // A notification leaves when its time is up, not when something else happens to re-render the panel.
+        if (Ui.Notification is not null && DateTimeOffset.UtcNow - Ui.NotificationAt >= BevToolsUiState.NotificationLifetime)
+        {
+            Ui.Notification = null;
+            Ui.Touch();
+        }
+
         var dataChanged = Session.Version != _lastVersion;
         var uiChanged = Ui.Version != _lastUiVersion;
         if (!dataChanged && !uiChanged)
@@ -253,6 +291,10 @@ public partial class BevToolsPanel : ComponentBase, IBevToolsCommandContext, IAs
         Session.RenderTracker.CloseBatch();
         _lastVersion = Session.Version;
         _lastUiVersion = Ui.Version;
+        if (dataChanged)
+        {
+            FlashRenders();
+        }
 
         var updateOpenPanel = Ui.IsOpen && (uiChanged || Ui.LiveUpdates);
         if (updateOpenPanel)
@@ -316,6 +358,205 @@ public partial class BevToolsPanel : ComponentBase, IBevToolsCommandContext, IAs
         Notify(opened ? "Companion window opened" : "The companion window could not be opened (blocked pop-up?)");
     }
 
+    /// <summary>Starts picking a component in the page, or stops it when it is running.</summary>
+    public async Task TogglePickAsync()
+    {
+        if (_module is null || Session.Browser.TargetId is not { } target)
+        {
+            Notify("Picking needs the browser bridge, which is not attached in this panel.");
+            return;
+        }
+
+        try
+        {
+            if (Ui.Picking)
+            {
+                Ui.Picking = false;
+                await _module.InvokeVoidAsync("stopPick");
+            }
+            else
+            {
+                Ui.Picking = await _module.InvokeAsync<bool>("startPick", target, new { includeHidden = Ui.ShowHiddenComponents, tellPanel = true });
+                Ui.Notify(Ui.Picking ? "Click a component in the page · Esc cancels" : "Components cannot be mapped to this page: its Blazor renderer exposes no logical element tree.");
+            }
+        }
+        catch (Exception ex) when (ex is JSException or JSDisconnectedException or OperationCanceledException)
+        {
+            Ui.Picking = false;
+        }
+
+        Ui.Touch();
+        StateHasChanged();
+    }
+
+    /// <summary>
+    /// Outlines a component in the page. Moving through the tree by keyboard calls it with
+    /// <paramref name="explicitRequest"/> false and stays quiet when the component cannot be shown; *Show in page* scrolls
+    /// to it and says why when it cannot. (Hovering a row is handled by the page hub, without a round trip through here.)
+    /// </summary>
+    internal async Task HighlightAsync(long instanceId, bool explicitRequest = false)
+    {
+        if (_module is null || Session.Browser.TargetId is not { } target || Session.Components.Get(instanceId) is not { IsBevTools: false } record)
+        {
+            return;
+        }
+
+        string? error = null;
+        try
+        {
+            var location = BevDomMap.Locate(Session, record, out error);
+            if (location is null)
+            {
+                await _module.InvokeVoidAsync("clearHighlight");
+            }
+            else
+            {
+                var result = await _module.InvokeAsync<BevHighlightResult>("highlight", target, location, new { scroll = explicitRequest, durationMs = explicitRequest ? 2500 : 0 });
+                error = result is { Ok: false } ? result.Error : result is { Visible: false } ? record.DisplayName + " renders nothing visible right now." : null;
+            }
+        }
+        catch (Exception ex) when (ex is JSException or JSDisconnectedException or OperationCanceledException or ObjectDisposedException)
+        {
+            error = ex.Message;
+        }
+        catch (Exception ex)
+        {
+            // A diagnostics tool must never end a circuit over an outline.
+            Session.Errors.Record(ex, "bevtools", "Showing a component in the page failed.");
+            error = "Showing it in the page failed: " + ex.GetType().Name;
+        }
+
+        if (explicitRequest && error is not null)
+        {
+            Notify(error);
+        }
+    }
+
+    private readonly HashSet<string> _symbolsRequested = new(StringComparer.Ordinal);
+
+    /// <summary>
+    /// Downloads the symbols (PDB) of an assembly that has none on disk - every assembly on WebAssembly - once: the
+    /// page hub fetches the file the runtime's own resource list names for this build. The open tab re-reads when they arrive.
+    /// </summary>
+    internal async Task LoadSymbolsAsync(System.Reflection.Assembly assembly)
+    {
+        if (_module is null || !BevSourceLocator.NeedsDownload(assembly) || !_symbolsRequested.Add(assembly.FullName ?? ""))
+        {
+            return;
+        }
+
+        byte[]? pdb;
+        try
+        {
+            // Null: the app lists no PDB for it. A failed download throws, and is not remembered as "no symbols".
+            pdb = await _module.InvokeAsync<byte[]?>("fetchPdb", assembly.GetName().Name);
+        }
+        catch (Exception ex) when (ex is JSException or JSDisconnectedException or OperationCanceledException)
+        {
+            _symbolsRequested.Remove(assembly.FullName ?? "");
+            return;
+        }
+
+        BevSourceLocator.Provide(assembly, pdb);
+        Refresh();
+    }
+
+    internal async Task ClearHighlightAsync()
+    {
+        if (_module is null)
+        {
+            return;
+        }
+
+        try
+        {
+            await _module.InvokeVoidAsync("clearHighlight");
+        }
+        catch (Exception ex) when (ex is JSException or JSDisconnectedException or OperationCanceledException)
+        {
+        }
+    }
+
+    public void ToggleFlashRenders()
+    {
+        Ui.FlashRenders = !Ui.FlashRenders;
+        _flashCounts.Clear();
+        _lastFlashTicks = System.Diagnostics.Stopwatch.GetTimestamp();
+        Ui.Touch();
+        _ = SavePrefsAsync();
+        Notify(Ui.FlashRenders ? "Components are outlined in the page as they render" : "Render highlighting off");
+    }
+
+    private const int MaxFlashesPerTick = 60;
+    private readonly Dictionary<long, int> _flashCounts = [];
+    private long _lastFlashTicks;
+
+    /// <summary>
+    /// Outlines what rendered since the last tick. Runs on the refresh loop, after the renders, so the browser has the
+    /// batch before the outline request: over a circuit both travel on one ordered connection.
+    /// </summary>
+    private void FlashRenders()
+    {
+        if (!Ui.FlashRenders || _module is null || Session.Browser.TargetId is not { } target)
+        {
+            return;
+        }
+
+        var since = _lastFlashTicks;
+        _lastFlashTicks = System.Diagnostics.Stopwatch.GetTimestamp();
+        var rendered = Session.Components.All
+            .Where(r => !r.IsBevTools && !r.IsDisposed && (Ui.ShowHiddenComponents || !r.IsHidden) && r.LastRenderTicks > since)
+            .Select(r =>
+            {
+                var count = r.RenderCount - _flashCounts.GetValueOrDefault(r.InstanceId, r.RenderCount - 1);
+                _flashCounts[r.InstanceId] = r.RenderCount;
+                return (Record: r, Count: Math.Max(1, count));
+            })
+            .OrderByDescending(r => r.Count)
+            .Take(MaxFlashesPerTick)
+            .ToList();
+        if (rendered.Count == 0)
+        {
+            return;
+        }
+
+        // One pass, one batch: the rows of a list share their parent's frames, walked once.
+        var batch = new BevDomMapBatch();
+        var items = new List<object>(rendered.Count);
+        foreach (var (record, count) in rendered)
+        {
+            if (BevDomMap.Locate(Session, record, out _, batch) is { } location)
+            {
+                items.Add(new { location, count });
+            }
+        }
+
+        if (items.Count > 0)
+        {
+            _ = FlashAsync(target, items);
+        }
+
+        // Counts of components that are gone; bounded by the registry, which forgets them too.
+        if (_flashCounts.Count > 2 * Session.Components.TrackedCount + 256)
+        {
+            foreach (var id in _flashCounts.Keys.Where(id => Session.Components.Get(id) is null or { IsDisposed: true }).ToList())
+            {
+                _flashCounts.Remove(id);
+            }
+        }
+    }
+
+    private async Task FlashAsync(string target, List<object> items)
+    {
+        try
+        {
+            await _module!.InvokeVoidAsync("flash", target, items);
+        }
+        catch (Exception ex) when (ex is JSException or JSDisconnectedException or OperationCanceledException or ObjectDisposedException)
+        {
+        }
+    }
+
     private void SetOpen(bool open)
     {
         if (Ui.IsOpen == open)
@@ -339,9 +580,24 @@ public partial class BevToolsPanel : ComponentBase, IBevToolsCommandContext, IAs
         // Redacted at capture time like HTTP URLs: reset links and sign-in callbacks carry tokens in the query or the
         // fragment, and the title is shown, searched and exported.
         var path = Session.Redactor.RedactUrl(Navigation.ToBaseRelativePath(e.Location));
-        var last = Session.LastNavigationEventId is { } id ? Session.Timeline.Find(id) : null;
-        if (last is not null && System.Diagnostics.Stopwatch.GetElapsedTime(last.StartTicks).TotalMilliseconds < 500 && last.Title.Contains(path, StringComparison.OrdinalIgnoreCase))
+        // On .NET 10 the router's Navigate activity records the navigation first (the router handles LocationChanged
+        // before this panel does), so the event is already there: once, for this one LocationChanged. Matching by title
+        // would drop real navigations - /products right after /products/1 - and the activity names a route template, not
+        // the path, anyway.
+        var cause = e.IsNavigationIntercepted ? "intercepted link" : "programmatic";
+
+        // The last accessibility check was of the page that was: its findings would be reported against this one.
+        if (Session.Browser.Accessibility is not null)
         {
+            Session.Browser.Accessibility = null;
+            Session.Browser.AccessibilityCheckedAt = null;
+        }
+        var last = Session.LastNavigationEventId is { } id ? Session.Timeline.Find(id) : null;
+        if (last is not null && last.Id != Session.LastLocationChangedEventId && last.Id != Session.MatchedNavigationEventId
+            && System.Diagnostics.Stopwatch.GetElapsedTime(last.StartTicks).TotalMilliseconds < 500)
+        {
+            Session.MatchedNavigationEventId = last.Id;
+            Session.NoteNavigationCause(last.Id, cause);
             return;
         }
 
@@ -350,14 +606,19 @@ public partial class BevToolsPanel : ComponentBase, IBevToolsCommandContext, IAs
             Kind = BevToolsEventKind.Navigation,
             Category = "navigation",
             Title = "Navigate to /" + path,
-            Detail = e.IsNavigationIntercepted ? "intercepted link" : "programmatic",
+            Detail = cause,
             ParentEventId = Session.CurrentTriggerEventId,
         });
+        if (recordedId > 0)
+        {
+            Session.NoteNavigationCause(recordedId, cause);
+        }
 
         // Not recorded while capture is paused: there is no event to point at.
         if (recordedId > 0)
         {
             Session.LastNavigationEventId = recordedId;
+            Session.LastLocationChangedEventId = recordedId;
         }
     }
 
@@ -423,6 +684,12 @@ public partial class BevToolsPanel : ComponentBase, IBevToolsCommandContext, IAs
             {
                 Ui.LiveUpdates = live;
             }
+
+            if (prefs.Flash is { } flash)
+            {
+                Ui.FlashRenders = flash;
+                _lastFlashTicks = System.Diagnostics.Stopwatch.GetTimestamp();
+            }
         }
         catch (JsonException)
         {
@@ -442,7 +709,7 @@ public partial class BevToolsPanel : ComponentBase, IBevToolsCommandContext, IAs
 
         try
         {
-            var prefs = new Prefs { Open = Ui.IsOpen, Dock = Ui.Dock.ToString(), Theme = Ui.Theme.ToString(), Size = Ui.Size.ToString(), Panel = Ui.ActivePanelId, Live = Ui.LiveUpdates };
+            var prefs = new Prefs { Open = Ui.IsOpen, Dock = Ui.Dock.ToString(), Theme = Ui.Theme.ToString(), Size = Ui.Size.ToString(), Panel = Ui.ActivePanelId, Live = Ui.LiveUpdates, Flash = Ui.FlashRenders };
             await _module.InvokeVoidAsync("savePrefs", JsonSerializer.Serialize(prefs, PrefsJson));
         }
         catch (Exception ex) when (ex is JSException or JSDisconnectedException or OperationCanceledException)
@@ -463,6 +730,8 @@ public partial class BevToolsPanel : ComponentBase, IBevToolsCommandContext, IAs
         public string? Panel { get; set; }
 
         public bool? Live { get; set; }
+
+        public bool? Flash { get; set; }
     }
 
     // ----- IBevToolsCommandContext -----
@@ -470,6 +739,13 @@ public partial class BevToolsPanel : ComponentBase, IBevToolsCommandContext, IAs
     public void ShowPanel(string panelId, string? query = null)
     {
         var wasClosed = !Ui.IsOpen;
+        if (!wasClosed && Ui.ActivePanelId != panelId)
+        {
+            // A link in one tab that shows another (a form's owner, an event, a request) removes the element that had
+            // focus: focus goes to the new tab, as in any tab list - but only from inside the panel, never out of the app.
+            _focusAfterRender ??= (".bev-tab.bev-active", true);
+        }
+
         Ui.ActivePanelId = panelId;
         Ui.IsOpen = true;
         if (wasClosed)
@@ -576,6 +852,9 @@ public partial class BevToolsPanel : ComponentBase, IBevToolsCommandContext, IAs
     public void Toggle()
     {
         Ui.IsOpen = !Ui.IsOpen;
+        // Opened: focus goes to the panel's active tab. Closed: to the badge, but only if focus was in the panel - a
+        // shortcut pressed in the app must not take focus away from it.
+        _focusAfterRender = (Ui.IsOpen ? ".bev-tab.bev-active" : ".bev-badge", false);
         if (Ui.IsOpen)
         {
             RefreshCapturedData();
@@ -696,6 +975,48 @@ public partial class BevToolsPanel : ComponentBase, IBevToolsCommandContext, IAs
         Ui.Touch();
     }
 
+    /// <summary>Runs the page hub's accessibility checks and keeps the findings for the Browser panel, the rule and exports.</summary>
+    public async Task CheckAccessibilityAsync(bool includeBevTools = false)
+    {
+        if (_module is null)
+        {
+            Session.Browser.AccessibilityError = "The browser bridge module is not loaded in this BevTools panel.";
+            Ui.Touch();
+            return;
+        }
+
+        try
+        {
+            Session.Browser.Accessibility = await _module.InvokeAsync<BevA11yFinding[]>("auditPage", new { includeBevTools });
+            Session.Browser.AccessibilityCheckedAt = DateTimeOffset.UtcNow;
+            Session.Browser.AccessibilityError = null;
+        }
+        catch (Exception ex) when (ex is JSException or JSDisconnectedException or OperationCanceledException)
+        {
+            Session.Browser.AccessibilityError = ex.GetType().Name + ": " + ex.Message;
+        }
+
+        Session.Diagnostics.Evaluate(force: true);
+        Session.Touch();
+        Refresh();
+    }
+
+    internal async Task HighlightFindingAsync(int index, string label)
+    {
+        if (_module is null)
+        {
+            return;
+        }
+
+        try
+        {
+            await _module.InvokeAsync<bool>("highlightFinding", index, label);
+        }
+        catch (Exception ex) when (ex is JSException or JSDisconnectedException or OperationCanceledException)
+        {
+        }
+    }
+
     private void SetTheme()
     {
         Ui.Theme = Ui.Theme switch { BevToolsTheme.Auto => BevToolsTheme.Dark, BevToolsTheme.Dark => BevToolsTheme.Light, _ => BevToolsTheme.Auto };
@@ -726,10 +1047,16 @@ public partial class BevToolsPanel : ComponentBase, IBevToolsCommandContext, IAs
 
     private void OnRootKeyDown(KeyboardEventArgs e)
     {
+        // The palette handles its own keys and stops them; this is Escape with focus elsewhere while it is open.
         if (e.Key == "Escape" && Ui.CommandPaletteOpen)
         {
             Ui.CommandPaletteOpen = false;
             Ui.Touch();
+        }
+        else if (e.Key == "Escape" && Ui.IsOpen && !Ui.Picking)
+        {
+            // Escape anywhere in the panel closes it, and focus goes back to the badge that reopens it.
+            Toggle();
         }
         else if ((e.CtrlKey || e.MetaKey) && (e.Key == "k" || e.Key == "K"))
         {
@@ -737,13 +1064,70 @@ public partial class BevToolsPanel : ComponentBase, IBevToolsCommandContext, IAs
         }
     }
 
+    /// <summary>Where focus goes after the next render, and whether only when it was in the panel (or lost) before.</summary>
+    private (string Selector, bool OnlyFromPanel)? _focusAfterRender;
+
+    /// <summary>Moves focus after the next render (the palette asks for it when it closes).</summary>
+    internal void FocusAfterRender(string selector, bool onlyFromPanel = true)
+    {
+        _focusAfterRender = (selector, onlyFromPanel);
+        StateHasChanged();
+    }
+
+    /// <summary>The tab list's keyboard model: arrows move to the previous or next tab and show it, Home and End to the ends.</summary>
+    private void OnTabKeyDown(KeyboardEventArgs e)
+    {
+        var ids = BuiltInPanels.Select(p => p.Id).Concat(ExtensionPanels.Select(p => p.Id)).ToList();
+        var index = ids.IndexOf(Ui.ActivePanelId);
+        var next = e.Key switch
+        {
+            "ArrowRight" or "ArrowDown" => (index + 1) % ids.Count,
+            "ArrowLeft" or "ArrowUp" => (index - 1 + ids.Count) % ids.Count,
+            "Home" => 0,
+            "End" => ids.Count - 1,
+            _ => -1,
+        };
+        if (next < 0)
+        {
+            return;
+        }
+
+        ShowPanel(ids[next]);
+        _focusAfterRender = (".bev-tab.bev-active", false);
+    }
+
+    /// <summary>Moves focus within this panel once the render that shows the element has happened.</summary>
+    private async Task FocusAfterRenderAsync()
+    {
+        if (_focusAfterRender is not { } focus || _module is null || Session.Browser.TargetId is not { } target)
+        {
+            return;
+        }
+
+        _focusAfterRender = null;
+        try
+        {
+            await _module.InvokeVoidAsync("focusIn", target, focus.Selector, focus.OnlyFromPanel);
+        }
+        catch (Exception ex) when (ex is JSException or JSDisconnectedException or OperationCanceledException)
+        {
+        }
+    }
+
     private string ThemeAttribute => Ui.Theme.ToString().ToLowerInvariant();
 
-    private string PanelClass => $"bev-panel bev-dock-{Ui.Dock.ToString().ToLowerInvariant()} bev-size-{Ui.Size.ToString().ToLowerInvariant()}";
+    // While picking, the panel shrinks to its header: what it covers of the page has to be reachable.
+    private string PanelClass => $"bev-panel bev-dock-{Ui.Dock.ToString().ToLowerInvariant()} bev-size-{Ui.Size.ToString().ToLowerInvariant()}" + (Ui.Picking ? " bev-picking" : "");
 
     public async ValueTask DisposeAsync()
     {
         _cts.Cancel();
+        if (Session is not null)
+        {
+            // Picking is the page's: a panel rendered later starts expanded, not waiting for a pick nobody will finish.
+            Session.Ui.Picking = false;
+        }
+
         _prerenderHandoff?.Dispose();
         if (Session is not null)
         {
@@ -761,10 +1145,11 @@ public partial class BevToolsPanel : ComponentBase, IBevToolsCommandContext, IAs
             }
         }
 
-        if (_interactive)
+        if (_interactive && Session is not null)
         {
             Navigation.LocationChanged -= OnLocationChanged;
             Ui.OpenedFromCode -= OnOpenedFromCode;
+            Session.SymbolsWanted -= OnSymbolsWanted;
         }
 
         if (_module is not null)

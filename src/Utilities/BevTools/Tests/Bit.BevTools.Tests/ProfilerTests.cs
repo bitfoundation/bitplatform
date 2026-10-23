@@ -19,6 +19,9 @@ public class ProfilerTests : BunitContext
         {
             o.Enabled = true;
             o.Ui.OpenByDefault = true;
+            // The tests refresh explicitly. The panel's own refresh loop could re-render between a FindAll and the
+            // Click that follows it, and a click on a replaced element's handler does nothing.
+            o.Ui.RefreshIntervalMs = 600_000;
         });
         JSInterop.Mode = JSRuntimeMode.Loose;
         this.UseRenderer("Server");
@@ -74,7 +77,7 @@ public class ProfilerTests : BunitContext
         var cells = grouped.QuerySelectorAll("td").Select(c => c.TextContent.Trim()).ToList();
         Assert.AreEqual("2", cells[1]); // instances
         Assert.AreEqual("2", cells[2]); // renders
-        Assert.Contains("2 initial", cells[6], StringComparison.Ordinal);
+        Assert.Contains("2 initial", cells[7], StringComparison.Ordinal); // after Total, Avg, p95, Max
 
         grouped.Click();
         Assert.AreEqual("ChildComponent", Session.Ui.GetQuery("profiler"));
@@ -98,6 +101,198 @@ public class ProfilerTests : BunitContext
         panel.Find("button[aria-label='Refresh captured data']").Click();
         var row = Assert.ContainsSingle(r => r.TextContent.Contains("ParentComponent", StringComparison.Ordinal), panel.FindAll("tbody tr.bev-row"));
         Assert.AreEqual("1", row.QuerySelectorAll("td")[1].TextContent.Trim());
+    }
+
+    [TestMethod]
+    public void P95_is_the_nearest_rank_of_the_retained_durations()
+    {
+        Assert.AreEqual(0, BevStats.Percentile([], 95));
+        Assert.AreEqual(5, BevStats.Percentile([5], 95));
+        Assert.AreEqual(19, BevStats.Percentile(Enumerable.Range(1, 20).Select(i => (double)i).ToArray(), 95));
+        Assert.AreEqual(100, BevStats.Percentile(Enumerable.Range(1, 100).Select(i => (double)i).ToArray(), 100));
+    }
+
+    [TestMethod]
+    public void Profiler_rows_show_p95_and_headers_sort_by_keyboard_operable_buttons()
+    {
+        var panel = RenderPanel();
+        var cut = Render<ParentComponent>();
+        for (var i = 0; i < 4; i++)
+        {
+            cut.InvokeAsync(() => cut.Instance.Refresh());
+        }
+
+        panel.FindAll(".bev-tab").First(t => t.TextContent.Contains("Profiler", StringComparison.Ordinal)).Click();
+        panel.Find("button[aria-label='Refresh captured data']").Click();
+
+        var headers = panel.FindAll("thead th[aria-sort]");
+        Assert.IsTrue(headers.All(h => h.QuerySelector("button[type=button]") is not null), "every sortable header is a button");
+        Assert.AreEqual("descending", headers.Single(h => h.TextContent.Contains("Total", StringComparison.Ordinal)).GetAttribute("aria-sort"));
+
+        var parent = Session.Components.All.Single(r => r.Type == typeof(ParentComponent));
+        var row = Assert.ContainsSingle(r => r.TextContent.Contains("ParentComponent", StringComparison.Ordinal), panel.FindAll("tbody tr.bev-row"));
+        var p95Cell = row.QuerySelectorAll("td")[4];
+        Assert.AreEqual("of 5 retained renders", p95Cell.GetAttribute("title"));
+        var sorted = parent.Renders.Select(r => r.DurationMs).Order().ToArray();
+        Assert.AreEqual(BevFmt.Ms(sorted[^1]), p95Cell.TextContent.Trim(), "nearest rank of 5 samples at 95% is the largest");
+
+        panel.FindAll("thead th[aria-sort] button").Single(b => b.TextContent.StartsWith("p95", StringComparison.Ordinal)).Click();
+        headers = panel.FindAll("thead th[aria-sort]");
+        Assert.AreEqual("descending", headers.Single(h => h.TextContent.Contains("p95", StringComparison.Ordinal)).GetAttribute("aria-sort"));
+        Assert.AreEqual("none", headers.Single(h => h.TextContent.Contains("Total", StringComparison.Ordinal)).GetAttribute("aria-sort"));
+    }
+
+    [TestMethod]
+    public void A_selected_render_batch_shows_what_it_rendered_as_a_cost_tree()
+    {
+        var panel = RenderPanel();
+        var cut = Render<ParentComponent>();
+        Session.RenderTracker.CloseBatch();
+        cut.InvokeAsync(() => cut.Instance.Increment()); // a new parameter value, so the child renders too
+        var batchId = Session.RenderTracker.CurrentBatch!.Id;
+        var parent = Session.Components.All.Single(r => r.Type == typeof(ParentComponent));
+        var child = Session.Components.All.Single(r => r.Type == typeof(ChildComponent));
+        Assert.Contains(s => s.BatchId == batchId, parent.Renders);
+        Assert.Contains(s => s.BatchId == batchId, child.Renders);
+
+        panel.FindAll(".bev-tab").First(t => t.TextContent.Contains("Profiler", StringComparison.Ordinal)).Click();
+        panel.Find("button[aria-label='Refresh captured data']").Click();
+        panel.FindAll("button").Single(b => b.TextContent == "Render batch #" + batchId).Click();
+
+        var section = panel.FindAll(".bev-section").Single(s => s.TextContent.Contains("Render batch #" + batchId + ": what it rendered", StringComparison.Ordinal));
+        var rows = section.QuerySelectorAll("tbody tr");
+        Assert.AreEqual(2, rows.Length);
+        Assert.StartsWith("ParentComponent", rows[0].QuerySelector("td")!.TextContent.Trim());
+        Assert.StartsWith("ChildComponent", rows[1].QuerySelector("td")!.TextContent.Trim());
+        Assert.Contains("padding-left:6px", rows[0].QuerySelector("td")!.GetAttribute("style")!, StringComparison.Ordinal);
+        Assert.Contains("padding-left:20px", rows[1].QuerySelector("td")!.GetAttribute("style")!, StringComparison.Ordinal);
+
+        var parentSelf = parent.Renders.Where(s => s.BatchId == batchId).Sum(s => s.DurationMs);
+        var childSelf = child.Renders.Where(s => s.BatchId == batchId).Sum(s => s.DurationMs);
+        var cells = rows[0].QuerySelectorAll("td");
+        Assert.AreEqual(BevFmt.Ms(parentSelf), cells[1].TextContent.Trim());
+        Assert.AreEqual(BevFmt.Ms(parentSelf + childSelf), cells[2].TextContent.Trim(), "with descendants adds the child's own time");
+
+        rows[1].Click();
+        Assert.AreEqual(child.InstanceId, Session.Ui.SelectedComponentId);
+    }
+
+    [TestMethod]
+    public void P95_differs_from_max_sorts_rows_by_itself_and_follows_the_reset_window()
+    {
+        var panel = RenderPanel();
+        Render<ParentComponent>();
+        Render<TwoChildren>();
+        var spiky = Session.Components.All.Single(r => r.Type == typeof(ParentComponent));
+        var steady = Session.Components.All.Single(r => r.Type == typeof(TwoChildren));
+        // 21 samples each with the real first render: spiky is 19 × 1 ms and one 100 ms, steady is 20 × 10 ms.
+        AddSamples(spiky, [.. Enumerable.Repeat(1d, 19), 100]);
+        AddSamples(steady, [.. Enumerable.Repeat(10d, 20)]);
+        panel.FindAll(".bev-tab").First(t => t.TextContent.Contains("Profiler", StringComparison.Ordinal)).Click();
+        panel.Find("button[aria-label='Refresh captured data']").Click();
+
+        string[] Cells(string name) => panel.FindAll("tbody tr.bev-row").First(r => r.QuerySelector("td")!.TextContent.Trim().StartsWith(name, StringComparison.Ordinal))
+            .QuerySelectorAll("td").Select(c => c.TextContent.Trim()).ToArray();
+        string[] Order() => [.. panel.FindAll("tbody tr.bev-row").Select(r => r.QuerySelector("td")!.TextContent.Trim()).Where(n => n is "ParentComponent" or "TwoChildren")];
+
+        Assert.AreEqual(BevFmt.Ms(1), Cells("ParentComponent")[4], "nearest rank 20 of 21 is the last 1 ms sample, not the 100 ms spike");
+        Assert.AreEqual(BevFmt.Ms(100), Cells("ParentComponent")[5]);
+        Assert.AreEqual(BevFmt.Ms(10), Cells("TwoChildren")[4]);
+        Assert.AreEqual("of 21 retained renders", panel.FindAll("tbody tr.bev-row").First(r => r.TextContent.Contains("ParentComponent", StringComparison.Ordinal)).QuerySelectorAll("td")[4].GetAttribute("title"));
+
+        panel.FindAll("thead th[aria-sort] button").Single(b => b.TextContent.StartsWith("p95", StringComparison.Ordinal)).Click();
+        CollectionAssert.AreEqual(new[] { "TwoChildren", "ParentComponent" }, Order());
+        panel.FindAll("thead th[aria-sort] button").Single(b => b.TextContent.StartsWith("Max", StringComparison.Ordinal)).Click();
+        CollectionAssert.AreEqual(new[] { "ParentComponent", "TwoChildren" }, Order());
+
+        // After a reset, only the renders since: three of 50 ms.
+        panel.Find("button[aria-label='Reset profiler baseline']").Click();
+        AddSamples(spiky, [50, 50, 50]);
+        panel.Find("button[aria-label='Refresh captured data']").Click();
+        Assert.AreEqual(BevFmt.Ms(50), Cells("ParentComponent")[4]);
+        Assert.AreEqual("of 3 retained renders", panel.FindAll("tbody tr.bev-row").First(r => r.TextContent.Contains("ParentComponent", StringComparison.Ordinal)).QuerySelectorAll("td")[4].GetAttribute("title"));
+    }
+
+    [TestMethod]
+    public void A_selected_batch_closes_by_its_button_by_selecting_it_again_and_when_the_timeline_is_cleared()
+    {
+        var panel = RenderPanel();
+        var cut = Render<ParentComponent>();
+        Session.RenderTracker.CloseBatch();
+        cut.InvokeAsync(() => cut.Instance.Increment());
+        var batchId = Session.RenderTracker.CurrentBatch!.Id;
+        panel.FindAll(".bev-tab").First(t => t.TextContent.Contains("Profiler", StringComparison.Ordinal)).Click();
+        panel.Find("button[aria-label='Refresh captured data']").Click();
+        var title = "Render batch #" + batchId + ": what it rendered";
+        AngleSharp.Dom.IElement BatchButton() => panel.FindAll("button").Single(b => b.TextContent == "Render batch #" + batchId);
+
+        BatchButton().Click();
+        Assert.Contains(title, panel.Markup, StringComparison.Ordinal);
+        Assert.AreEqual("true", BatchButton().GetAttribute("aria-pressed"));
+        BatchButton().Click();
+        Assert.DoesNotContain(title, panel.Markup, StringComparison.Ordinal);
+
+        BatchButton().Click();
+        panel.Find("button[aria-label='Close the batch']").Click();
+        Assert.DoesNotContain(title, panel.Markup, StringComparison.Ordinal);
+
+        BatchButton().Click();
+        Session.ClearAll();
+        panel.Find("button[aria-label='Refresh captured data']").Click();
+        Assert.DoesNotContain(title, panel.Markup, StringComparison.Ordinal);
+        Assert.IsNull(Session.Ui.Profiler.BatchId);
+    }
+
+    private static void AddSamples(BevComponentRecord record, double[] durations)
+    {
+        foreach (var ms in durations)
+        {
+            record.AddRender(new BevRenderSample { Sequence = record.RenderCount, At = DateTimeOffset.UtcNow, StartTicks = System.Diagnostics.Stopwatch.GetTimestamp(), DurationMs = ms });
+        }
+    }
+
+    [TestMethod]
+    public void A_sort_by_a_column_the_grouping_hides_falls_back_to_one_that_is_shown()
+    {
+        var panel = RenderPanel();
+        Render<TwoChildren>();
+        panel.FindAll(".bev-tab").First(t => t.TextContent.Contains("Profiler", StringComparison.Ordinal)).Click();
+        panel.Find("button[aria-label='Refresh captured data']").Click();
+
+        panel.FindAll("thead th[aria-sort] button").Single(b => b.TextContent.StartsWith("Last", StringComparison.Ordinal)).Click();
+        panel.Find("input[aria-label='Group by type']").Change(true);
+
+        Assert.AreEqual("descending", panel.FindAll("thead th[aria-sort]").Single(h => h.TextContent.StartsWith("Total", StringComparison.Ordinal)).GetAttribute("aria-sort"), "Last is not a column by type");
+
+        Session.Ui.SetQuery("profiler", "sort:MAX");
+        panel.Find("button[aria-label='Refresh captured data']").Click();
+        Assert.AreEqual("descending", panel.FindAll("thead th[aria-sort]").Single(h => h.TextContent.StartsWith("Max", StringComparison.Ordinal)).GetAttribute("aria-sort"), "the token's value is read whatever its case");
+    }
+
+    [TestMethod]
+    public void Same_type_siblings_that_render_nothing_below_are_one_row_of_a_batch_tree()
+    {
+        var panel = RenderPanel();
+        Session.RenderTracker.CloseBatch();
+        Render<TwoChildren>();
+        var batchId = Session.RenderTracker.CurrentBatch!.Id;
+        var children = Session.Components.All.Where(r => r.Type == typeof(ChildComponent)).ToList();
+        Assert.HasCount(2, children);
+
+        panel.FindAll(".bev-tab").First(t => t.TextContent.Contains("Profiler", StringComparison.Ordinal)).Click();
+        panel.Find("button[aria-label='Refresh captured data']").Click();
+        panel.FindAll("button").Single(b => b.TextContent == "Render batch #" + batchId).Click();
+
+        var section = panel.FindAll(".bev-section").Single(s => s.TextContent.Contains("Render batch #" + batchId + ": what it rendered", StringComparison.Ordinal));
+        var rows = section.QuerySelectorAll("tbody tr");
+        Assert.AreEqual(2, rows.Length);
+        Assert.StartsWith("TwoChildren", rows[0].QuerySelector("td")!.TextContent.Trim());
+        Assert.AreEqual("ChildComponent ×2 instances", rows[1].QuerySelector("td")!.TextContent.Trim());
+        Assert.AreEqual(BevFmt.Ms(children.Sum(c => c.Renders.Where(s => s.BatchId == batchId).Sum(s => s.DurationMs))), rows[1].QuerySelectorAll("td")[1].TextContent.Trim());
+
+        rows[1].Click();
+        Assert.AreEqual("ChildComponent", Session.Ui.GetQuery("profiler"));
+        Assert.IsTrue(panel.Find("input[aria-label='Group by type']").HasAttribute("checked"));
     }
 
     [TestMethod]
@@ -192,7 +387,7 @@ public class ProfilerTests : BunitContext
         var grouped = Assert.ContainsSingle(r => r.TextContent.Contains("ListChild", StringComparison.Ordinal), panel.FindAll("tbody tr.bev-row"));
         var cells = grouped.QuerySelectorAll("td").Select(c => c.TextContent.Trim()).ToList();
         Assert.AreEqual("122", cells[2]);
-        Assert.AreEqual("121 parent · 1 initial", cells[6]);
+        Assert.AreEqual("121 parent · 1 initial", cells[7]);
     }
 
     /// <summary>A navigation while paused is not in the timeline, so it must not be remembered as one.</summary>

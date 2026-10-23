@@ -153,9 +153,13 @@ internal static class ActivityObserver
         }
 
         var shortType = componentType is null ? null : Shorten(componentType);
+        // An inline lambda is reported by its compiled name ("<BuildRenderTree>b__0_1"): name what it calls instead.
+        var handler = componentType is not null && method is not null ? BevLambdaTargets.DescribeEventHandler(componentType, method) : null;
         var title = isEvent
-            ? (attribute ?? "event") + " → " + (shortType ?? "?") + "." + (method ?? "?")
-            : string.IsNullOrEmpty(route) ? DefaultNavigationTitle(activity) : "Navigate to " + route;
+            ? (attribute ?? "event") + " → " + (handler ?? (shortType ?? "?") + "." + (method ?? "?"))
+            // The route tag arrives when the activity stops; its display name ("Route /counter -> App.Pages.Counter") already
+            // has it, and the title reads like the navigations LocationChanged records.
+            : (string.IsNullOrEmpty(route) ? attribute : route) is { Length: > 0 } path ? "Navigate to " + path : DefaultNavigationTitle(activity);
 
         var evt = new BevToolsEvent
         {

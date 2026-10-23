@@ -61,6 +61,21 @@ public sealed class BevDiagnosticsOptions
 
     public int DuplicateHttpWindowMs { get; set; } = 1000;
 
+    /// <summary>
+    /// Requests to one endpoint that differ only in their query values (a search box, a filter) within
+    /// <see cref="HttpBurstWindowMs"/> that count as a burst: the pattern of a request per keystroke.
+    /// </summary>
+    public int HttpBurstCount { get; set; } = 4;
+
+    public int HttpBurstWindowMs { get; set; } = 2000;
+
+    /// <summary>
+    /// Requests to one endpoint, each for a different id in its path (a number, GUID or hash segment), within
+    /// <see cref="HttpBurstWindowMs"/> that count as one request per item: the N+1 pattern of a list whose rows each
+    /// load their own data.
+    /// </summary>
+    public int HttpPerItemCount { get; set; } = 5;
+
     public double SlowHttpMs { get; set; } = 2000;
 
     public double SlowJsInteropMs { get; set; } = 250;
@@ -100,6 +115,13 @@ public sealed class BevToolsUiOptions
 
     /// <summary>Show a small floating badge when the panel is closed.</summary>
     public bool ShowBadge { get; set; } = true;
+
+    /// <summary>
+    /// The link that opens a source location in an editor, with <c>{path}</c>, <c>{line}</c> and <c>{column}</c> filled in:
+    /// VS Code by default; <c>vscode-insiders://file/{path}:{line}:{column}</c>, or null for no links (paths are still
+    /// shown). Locations come from the app's symbols (PDB), so there are none in a build without them.
+    /// </summary>
+    public string? EditorUrlTemplate { get; set; } = "vscode://file/{path}:{line}:{column}";
 }
 
 /// <summary>Configuration for <c>AddBitBevToolsServices</c>.</summary>

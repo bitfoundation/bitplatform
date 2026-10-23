@@ -49,6 +49,8 @@ public sealed class BevToolsSession : IDisposable
         Overhead = new BevOverheadMeter();
         Timeline = new Timeline(this, options.MaxEvents);
         Components = new ComponentRegistry(this, options);
+        Leaks = new BevLeakTracker(this);
+        Forms = new BevFormTracker(this);
         Errors = new ErrorCenter(this, options);
         Http = new HttpStore(this, options);
         Interop = new JsInteropStore(this, options);
@@ -109,6 +111,18 @@ public sealed class BevToolsSession : IDisposable
     internal Timeline Timeline { get; }
 
     internal ComponentRegistry Components { get; }
+
+    /// <summary>Disposed components, held weakly, and which of them garbage collection did not reclaim.</summary>
+    internal BevLeakTracker Leaks { get; }
+
+    /// <summary>The session's forms (EditContexts): fields, validation outcomes, validators and message displays.</summary>
+    internal BevFormTracker Forms { get; }
+
+    /// <summary>
+    /// Whether a developer may force a full garbage collection from BevTools: everywhere but a process that serves many
+    /// users outside Development, where it would pause every circuit for one person's check.
+    /// </summary>
+    internal bool AllowsForcedCollection => !IsInMultiUserHost || IsDevelopmentHost(Services);
 
     internal ErrorCenter Errors { get; }
 
@@ -288,6 +302,15 @@ public sealed class BevToolsSession : IDisposable
 
     internal long? LastNavigationEventId { get; set; }
 
+    /// <summary>
+    /// The navigation event the framework's Navigate activity recorded that a LocationChanged has already been matched
+    /// to: each activity stands for one navigation, so it can absorb only one LocationChanged.
+    /// </summary>
+    internal long? MatchedNavigationEventId { get; set; }
+
+    /// <summary>The last navigation event recorded from LocationChanged itself rather than from the activity.</summary>
+    internal long? LastLocationChangedEventId { get; set; }
+
     /// <summary>The UI event (or navigation) currently executing on this session, resolved from Activity context.</summary>
     internal long? CurrentTriggerEventId => ActivityObserver.CurrentTriggerEvent(this)?.Id;
 
@@ -315,6 +338,24 @@ public sealed class BevToolsSession : IDisposable
     private sealed record FailedTrigger(long EventId, string ErrorType, DateTimeOffset At);
 
     internal ConcurrentDictionary<string, BevLifecycleTypeMetrics> TypeMetrics { get; } = new(StringComparer.Ordinal);
+
+    /// <summary>Raised when something needs the symbols of an assembly that has none on disk (WebAssembly); the panel downloads them.</summary>
+    internal event Action<System.Reflection.Assembly>? SymbolsWanted;
+
+    internal void WantSymbols(System.Reflection.Assembly assembly) => SymbolsWanted?.Invoke(assembly);
+
+    private WeakReference<IComponent>? _panel;
+
+    /// <summary>
+    /// The interactive BevTools panel of this session. Its element is the one place in the page known to be rendered by
+    /// this runtime, so the page hub finds this runtime's root component from it (see <see cref="BevDomMap"/>). Held
+    /// weakly, like every component BevTools knows.
+    /// </summary>
+    internal IComponent? PanelComponent
+    {
+        get => _panel is not null && _panel.TryGetTarget(out var panel) ? panel : null;
+        set => _panel = value is null ? null : new WeakReference<IComponent>(value);
+    }
 
     private long? _externallyInspected;
 
@@ -402,6 +443,39 @@ public sealed class BevToolsSession : IDisposable
     /// </summary>
     public IDisposable UseAmbient() => SessionResolver.PushAmbient(this);
 
+    private readonly object _navigationCausesLock = new();
+    private readonly Queue<long> _navigationCauseOrder = new();
+    private readonly Dictionary<long, string> _navigationCauses = [];
+
+    /// <summary>
+    /// Records how a navigation event came about - "intercepted link" (a person clicked) or "programmatic" (code called
+    /// NavigateTo) - whichever recorded the event: on .NET 10 the router's activity records it before LocationChanged
+    /// says how it happened. Bounded to the latest 200.
+    /// </summary>
+    internal void NoteNavigationCause(long eventId, string cause)
+    {
+        lock (_navigationCausesLock)
+        {
+            if (_navigationCauses.TryAdd(eventId, cause))
+            {
+                _navigationCauseOrder.Enqueue(eventId);
+                while (_navigationCauseOrder.Count > 200)
+                {
+                    _navigationCauses.Remove(_navigationCauseOrder.Dequeue());
+                }
+            }
+        }
+    }
+
+    /// <summary>How a navigation event came about, when LocationChanged said so.</summary>
+    internal string? NavigationCause(long eventId)
+    {
+        lock (_navigationCausesLock)
+        {
+            return _navigationCauses.GetValueOrDefault(eventId);
+        }
+    }
+
     public void ClearAll()
     {
         Timeline.Clear();
@@ -410,6 +484,11 @@ public sealed class BevToolsSession : IDisposable
         Interop.Clear();
         State.ClearHistory();
         Components.ClearDisposed();
+        Leaks.Clear();
+        Forms.Clear();
+        Browser.Accessibility = null;
+        Browser.AccessibilityCheckedAt = null;
+        Browser.AccessibilityError = null;
         Diagnostics.Clear();
         TypeMetrics.Clear();
         Touch();

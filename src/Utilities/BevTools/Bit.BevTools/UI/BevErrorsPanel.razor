@@ -4,20 +4,70 @@
 <div class="bev-split">
     <div class="bev-left" style="flex-basis:50%">
         <div class="bev-toolbar">
-            <input type="text" placeholder="Filter: text, source:render|http|javascript|circuit|js-interop" value="@Query" @oninput="OnQuery" />
-            <button type="button" @onclick="() => Session.Errors.Clear()">Clear</button>
-            <span class="bev-muted bev-nowrap">@_rows.Count errors · @Session.Errors.TotalOccurrences occurrences</span>
+            <input type="text" aria-label="Filter errors" placeholder="Filter: text, source:render|blazor|error-boundary|http|javascript|resource|csp|circuit|signalr|js-interop" value="@Query" @oninput="OnQuery" />
+            <span class="bev-segmented" role="group" aria-label="Show">
+                <button type="button" aria-pressed="@(View.ByGroup ? "false" : "true")" @onclick="() => ShowGroups(false)">Errors</button>
+                <button type="button" aria-pressed="@(View.ByGroup ? "true" : "false")" title="Errors that are one problem although their messages differ in ids, numbers or quoted values, thrown from the same place" @onclick="() => ShowGroups(true)">Groups</button>
+            </span>
+            <button type="button" @onclick="Clear">Clear</button>
+            <span class="bev-muted bev-nowrap">@(View.ByGroup ? _groups.Count + " groups · " : "")@_rows.Count errors · @Session.Errors.TotalOccurrences occurrences</span>
         </div>
+        @if (!View.ByGroup && View.Group is not null)
+        {
+            <div class="bev-toolbar">
+                <span class="bev-muted">Group</span> <span class="bev-chip bev-on bev-mono bev-truncate" style="max-width:420px" title="@View.GroupTitle">@View.GroupTitle</span>
+                <button type="button" aria-label="Show every error" @onclick="ClearGroup">✕</button>
+            </div>
+        }
         @* overflow inline too: Virtualize picks its scroll root when it first renders, which can be before the stylesheet applies. *@
         <div class="bev-scroll" style="overflow:auto">
-            @if (_rows.Count == 0)
+            @if (View.ByGroup ? _groups.Count == 0 : _rows.Count == 0)
             {
                 <div class="bev-empty">No errors. Render exceptions, event handler exceptions, ErrorBoundary catches, JS errors, HTTP failures, JS interop failures and circuit errors all land here.</div>
+            }
+            else if (View.ByGroup)
+            {
+                <table>
+                    <thead>
+                        <tr>
+                            <BevSortHeader Key="last" Label="Last" Numeric="false" Active="@(View.Groups.Key == "last")" Ascending="View.Groups.Ascending" OnSort="SortGroups" />
+                            <BevSortHeader Key="source" Label="Source" Numeric="false" Active="@(View.Groups.Key == "source")" Ascending="View.Groups.Ascending" OnSort="SortGroups" />
+                            <BevSortHeader Key="error" Label="Error" Numeric="false" Active="@(View.Groups.Key == "error")" Ascending="View.Groups.Ascending" OnSort="SortGroups" />
+                            <th>Components</th>
+                            <BevSortHeader Key="messages" Label="Messages" Title="Different messages in the group: the values that differ (ids, numbers, quoted text) are replaced in its title" Active="@(View.Groups.Key == "messages")" Ascending="View.Groups.Ascending" OnSort="SortGroups" />
+                            <BevSortHeader Key="occurrences" Label="×" Title="Occurrences" Active="@(View.Groups.Key == "occurrences")" Ascending="View.Groups.Ascending" OnSort="SortGroups" />
+                            <BevSortHeader Key="first" Label="First" Numeric="false" Active="@(View.Groups.Key == "first")" Ascending="View.Groups.Ascending" OnSort="SortGroups" />
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var g in _groups)
+                        {
+                            var title = ErrorCenter.ShortTypeName(g.ExceptionType) + ": " + g.MessageTemplate;
+                            <tr class="bev-row bev-sev-error" @onclick="() => OpenGroup(g, title)">
+                                <td class="bev-mono">@BevFmt.Time(g.LastSeen)</td>
+                                <td><span class="bev-chip">@g.Source</span></td>
+                                <td class="bev-truncate" style="max-width:320px"><button type="button" class="bev-link" title="@(title + (g.SourceLocation is null ? "" : " at " + g.SourceLocation) + ": show its errors")" @onclick:stopPropagation="true" @onclick="() => OpenGroup(g, title)"><span class="bev-mono">@ErrorCenter.ShortTypeName(g.ExceptionType)</span>: @g.MessageTemplate</button>@if (g.SourceLocation is { } at) { <span class="bev-muted bev-mono" style="margin-left:4px">@("@ " + at)</span> }</td>
+                                <td class="bev-truncate" style="max-width:180px" title="@string.Join(", ", g.Components)">@(g.Components.Count == 0 ? "–" : string.Join(", ", g.Components.Take(3)) + (g.Components.Count > 3 ? " +" + (g.Components.Count - 3) : ""))</td>
+                                <td class="bev-num">@g.DistinctMessages</td>
+                                <td class="bev-num">@g.Occurrences</td>
+                                <td class="bev-mono">@BevFmt.Time(g.FirstAt)</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
             }
             else
             {
                 <table>
-                    <thead><tr><th>Time</th><th>Source</th><th>Error</th><th>Component</th><th class="bev-num">×</th></tr></thead>
+                    <thead>
+                        <tr>
+                            <BevSortHeader Key="last" Label="Time" Numeric="false" Active="@(View.Errors.Key == "last")" Ascending="View.Errors.Ascending" OnSort="SortErrors" />
+                            <BevSortHeader Key="source" Label="Source" Numeric="false" Active="@(View.Errors.Key == "source")" Ascending="View.Errors.Ascending" OnSort="SortErrors" />
+                            <BevSortHeader Key="error" Label="Error" Numeric="false" Active="@(View.Errors.Key == "error")" Ascending="View.Errors.Ascending" OnSort="SortErrors" />
+                            <BevSortHeader Key="component" Label="Component" Numeric="false" Active="@(View.Errors.Key == "component")" Ascending="View.Errors.Ascending" OnSort="SortErrors" />
+                            <BevSortHeader Key="count" Label="×" Title="Occurrences" Active="@(View.Errors.Key == "count")" Ascending="View.Errors.Ascending" OnSort="SortErrors" />
+                        </tr>
+                    </thead>
                     <tbody>
                         <Virtualize Items="_rows" ItemSize="23" Context="e" SpacerElement="tr">
                             <tr class="bev-row bev-sev-error @(Ui.SelectedErrorId == e.Id ? "bev-selected" : "")" @onclick="() => { Ui.SelectedErrorId = e.Id; Ui.Touch(); }">
@@ -90,7 +140,10 @@
 @code {
     private string? Query => Ui.GetQuery("errors");
 
+    private BevErrorsView View => Ui.Errors;
+
     private List<BevErrorRecord> _rows = [];
+    private List<BevErrorGroupSummary> _groups = [];
     private BevErrorRecord? _selected;
     private BevToolsEvent? _preceding;
     private List<BevToolsEvent> _before = [];
@@ -99,7 +152,44 @@
     {
         var filter = BevQueryFilter.Parse(Query);
         var source = filter.Token("source");
-        _rows = Session.Errors.Snapshot().Reverse().Where(e => filter.MatchesText(e.Message, e.ExceptionType, e.ComponentName, e.Source) && (source is null || e.Source.StartsWith(source, StringComparison.OrdinalIgnoreCase))).ToList();
+        var errors = Session.Errors.Snapshot();
+        if (View.Group is { } group && !errors.Any(e => e.Group == group))
+        {
+            // Cleared, or every error of it left the buffer: nothing is left to filter by.
+            View.Group = null;
+            View.GroupTitle = null;
+        }
+
+        var matching = errors.Where(e => filter.MatchesText(e.Message, e.ExceptionType, e.ComponentName, e.Source) && (source is null || e.Source.StartsWith(source, StringComparison.OrdinalIgnoreCase)));
+        if (View.ByGroup)
+        {
+            var ascending = View.Groups.Ascending;
+            var groups = BevErrorGroups.Summarize(matching);
+            _groups = (View.Groups.Key switch
+            {
+                "source" => Ordered(groups, g => g.Source, ascending),
+                "error" => Ordered(groups, g => g.MessageTemplate, ascending),
+                "messages" => Ordered(groups, g => g.DistinctMessages, ascending),
+                "first" => Ordered(groups, g => g.FirstAt, ascending),
+                "last" => Ordered(groups, g => g.LastSeen, ascending),
+                _ => Ordered(groups, g => g.Occurrences, ascending),
+            }).ToList();
+        }
+        else
+        {
+            _groups = [];
+        }
+
+        var rows = View.Group is { } only ? matching.Where(e => e.Group == only) : matching;
+        var errorsAscending = View.Errors.Ascending;
+        _rows = (View.Errors.Key switch
+        {
+            "source" => Ordered(rows, e => e.Source, errorsAscending),
+            "error" => Ordered(rows, e => e.Message, errorsAscending),
+            "component" => Ordered(rows, e => e.ComponentName ?? "", errorsAscending),
+            "count" => Ordered(rows, e => e.Count, errorsAscending),
+            _ => Ordered(rows, e => e.LastSeen, errorsAscending),
+        }).ToList();
         _selected = Ui.SelectedErrorId is { } id ? Session.Errors.Find(id) : null;
         if (_selected is not null)
         {
@@ -113,6 +203,57 @@
     private void OnQuery(ChangeEventArgs e)
     {
         Ui.SetQuery("errors", e.Value?.ToString());
+        OnParametersSet();
+    }
+
+    private static IEnumerable<T> Ordered<T, TKey>(IEnumerable<T> rows, Func<T, TKey> key, bool ascending) =>
+        ascending ? rows.OrderBy(key) : rows.OrderByDescending(key);
+
+    private void ShowGroups(bool byGroup)
+    {
+        View.ByGroup = byGroup;
+        if (byGroup)
+        {
+            // Every group again: a group opened earlier is not a filter of the groups.
+            View.Group = null;
+            View.GroupTitle = null;
+        }
+
+        OnParametersSet();
+    }
+
+    private void OpenGroup(BevErrorGroupSummary group, string title)
+    {
+        View.Group = group.Group;
+        View.GroupTitle = title;
+        View.ByGroup = false;
+        Ui.SelectedErrorId = group.LatestId;
+        Ui.Touch();
+        OnParametersSet();
+    }
+
+    private void ClearGroup()
+    {
+        View.Group = null;
+        View.GroupTitle = null;
+        OnParametersSet();
+    }
+
+    private void Clear()
+    {
+        Session.Errors.Clear();
+        ClearGroup();
+    }
+
+    private void SortErrors(string key)
+    {
+        View.Errors.Select(key, ascendingFirst: key is "source" or "error" or "component");
+        OnParametersSet();
+    }
+
+    private void SortGroups(string key)
+    {
+        View.Groups.Select(key, ascendingFirst: key is "source" or "error");
         OnParametersSet();
     }
 

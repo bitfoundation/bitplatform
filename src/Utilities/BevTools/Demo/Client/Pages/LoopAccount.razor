@@ -1,0 +1,25 @@
+﻿@page "/loop/account"
+@inject NavigationManager Navigation
+@inject RedirectCounter Counter
+
+@* Planted problem 18: an account page that sends a visitor without a session to the login page, and a login page that
+   sends them back. Real code loops until the user leaves; this one stops after a few rounds so the demo stays usable. *@
+<PageTitle>Account · BevTools</PageTitle>
+
+<div class="bb-intro">
+    <p class="bb-overline">Scenario · Navigation</p>
+    <h1>Account</h1>
+    <p class="bb-subtitle">Arrived after @Counter.Hops redirects between this page and the login page. Open BevTools → Diagnostics: <em>Navigation loop</em>.</p>
+</div>
+
+@code {
+    protected override void OnInitialized()
+    {
+        // Interactive only: while prerendering, NavigateTo is an HTTP redirect and the counter is per request.
+        if (RendererInfo.IsInteractive && Counter.Hops < 6)
+        {
+            Counter.Hops++;
+            Navigation.NavigateTo("loop/login");
+        }
+    }
+}

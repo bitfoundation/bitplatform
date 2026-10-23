@@ -2,7 +2,7 @@
 @inherits BevToolsTab
 
 <div class="bev-toolbar">
-    <input type="text" placeholder="Filter routes (template, page, policy)…" value="@Query" @oninput="OnQuery" />
+    <input type="text" aria-label="Filter routes" placeholder="Filter routes (template, page, policy)…" value="@Query" @oninput="OnQuery" />
     <span class="bev-muted bev-nowrap">@_visibleRoutes.Count / @_snapshot.Routes.Count routes</span>
 </div>
 <div class="bev-scroll" style="flex:1">
@@ -65,7 +65,45 @@
         </div>
     }
     <div class="bev-section">
-        <div class="bev-section-title">Navigation history <span class="bev-muted" style="font-weight:normal">newest first, from the timeline</span></div>
+        <div class="bev-section-title">Navigation guards <span class="bev-muted" style="font-weight:normal">what can stop or confirm a navigation before it happens</span></div>
+        <div class="bev-section-body">
+            @if (!BevNavigationGuards.IsAvailable)
+            {
+                <div class="bev-muted">This framework version does not expose its LocationChanging handlers.</div>
+            }
+            else if (_guards.Count == 0)
+            {
+                <div class="bev-muted">None: no NavigationLock and no LocationChanging handler, so every navigation proceeds.</div>
+            }
+            else
+            {
+                <table>
+                    <thead><tr><th>Guard</th><th>On</th><th>What it does</th></tr></thead>
+                    <tbody>
+                        @foreach (var guard in _guards)
+                        {
+                            <tr>
+                                <td>@guard.Kind</td>
+                                <td class="bev-mono">
+                                    @if (guard.OwnerInstanceId is { } owner)
+                                    {
+                                        <button type="button" class="bev-link bev-mono" @onclick="() => Host.SelectComponent(owner)">@guard.OwnerName</button>
+                                    }
+                                    else
+                                    {
+                                        <span class="bev-muted">?</span>
+                                    }
+                                </td>
+                                <td>@guard.Description</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+        </div>
+    </div>
+    <div class="bev-section">
+        <div class="bev-section-title">Navigation history <span class="bev-muted" style="font-weight:normal">newest first, from the timeline; renders counted until the next navigation</span></div>
         <div class="bev-section-body">
             @if (_navigations.Length == 0)
             {
@@ -74,7 +112,7 @@
             else
             {
                 <table>
-                    <thead><tr><th>Time</th><th>Navigation</th><th class="bev-num">Duration</th><th>How</th></tr></thead>
+                    <thead><tr><th>Time</th><th>Navigation</th><th class="bev-num">Duration</th><th class="bev-num" title="@_costMeaning">Renders</th><th class="bev-num" title="@_costMeaning">Render time</th><th>How</th></tr></thead>
                     <tbody>
                         @foreach (var n in _navigations)
                         {
@@ -82,6 +120,16 @@
                                 <td class="bev-mono">@BevFmt.Time(n.Timestamp)</td>
                                 <td class="bev-mono bev-truncate" style="max-width:420px" title="@n.Title">@n.Title</td>
                                 <td class="bev-num">@BevFmt.Ms(n.DurationMs)</td>
+                                @if (_cost.TryGetValue(n.Id, out var cost))
+                                {
+                                    <td class="bev-num">@cost.Renders</td>
+                                    <td class="bev-num">@BevFmt.Ms(cost.Ms)</td>
+                                }
+                                else
+                                {
+                                    <td class="bev-num bev-muted" title="Render events are not recorded (RecordRenderEvents is off), or fell out of the timeline">–</td>
+                                    <td class="bev-num bev-muted">–</td>
+                                }
                                 <td class="bev-muted">@n.Detail</td>
                             </tr>
                         }
@@ -136,6 +184,73 @@
     private BevRoutingSnapshot _snapshot = new(new BevCurrentRoute(null, null, null, null, null, false, [], [], null, ""), [], [], "");
     private List<BevRouteEntry> _visibleRoutes = [];
     private BevToolsEvent[] _navigations = [];
+    private IReadOnlyList<BevNavigationGuard> _guards = [];
+    private Dictionary<long, (int Renders, double Ms)> _cost = [];
+
+    private string _costMeaning = "";
+
+    /// <summary>
+    /// What each navigation cost: the component renders it caused - each render event names the navigation that
+    /// triggered it, where the runtime reports navigations as triggers (.NET 10) - so a click or a timer on the page
+    /// afterwards is not counted. Where none does, the renders from the navigation until the next one, and the column
+    /// says so. Only when render events are recorded.
+    /// </summary>
+    private Dictionary<long, (int Renders, double Ms)> NavigationCost(BevToolsEvent[] timeline)
+    {
+        var cost = new Dictionary<long, (int Renders, double Ms)>();
+        if (!Session.Options.RecordRenderEvents || timeline.Length == 0)
+        {
+            return cost;
+        }
+
+        var navigationIds = timeline.Where(e => e.Kind == BevToolsEventKind.Navigation).Select(e => e.Id).ToHashSet();
+        foreach (var render in timeline)
+        {
+            if (render.Kind == BevToolsEventKind.Render && render.ParentEventId is { } parent && navigationIds.Contains(parent))
+            {
+                var (count, total) = cost.GetValueOrDefault(parent);
+                cost[parent] = (count + 1, total + (render.DurationMs ?? 0));
+            }
+        }
+
+        if (cost.Count > 0)
+        {
+            _costMeaning = "The renders each navigation caused (later clicks and timers on the page are not counted)";
+            return cost;
+        }
+
+        _costMeaning = "The renders from each navigation until the next one: this runtime does not say which renders a navigation caused";
+
+        long? current = null;
+        var renders = 0;
+        var ms = 0.0;
+        foreach (var e in timeline)
+        {
+            if (e.Kind == BevToolsEventKind.Navigation)
+            {
+                if (current is { } previous)
+                {
+                    cost[previous] = (renders, ms);
+                }
+
+                current = e.Id;
+                renders = 0;
+                ms = 0;
+            }
+            else if (e.Kind == BevToolsEventKind.Render && current is not null)
+            {
+                renders++;
+                ms += e.DurationMs ?? 0;
+            }
+        }
+
+        if (current is { } last)
+        {
+            cost[last] = (renders, ms);
+        }
+
+        return cost;
+    }
     private BevAuthenticationSnapshot? _authentication;
 
     private string? Query => Ui.GetQuery("routing");
@@ -143,7 +258,10 @@
     protected override void OnParametersSet()
     {
         _snapshot = BevRoutingReader.Read(Session);
-        _navigations = Session.Timeline.Snapshot().Where(e => e.Kind == BevToolsEventKind.Navigation).Reverse().Take(25).ToArray();
+        var timeline = Session.Timeline.Snapshot();
+        _navigations = timeline.Where(e => e.Kind == BevToolsEventKind.Navigation).Reverse().Take(25).ToArray();
+        _guards = BevNavigationGuards.Read(Session);
+        _cost = NavigationCost(timeline);
         _authentication = Session.State.Entries.FirstOrDefault(e => e.Provider is BevAuthenticationStateProvider)?.Provider.GetSnapshot() as BevAuthenticationSnapshot;
         Filter();
     }

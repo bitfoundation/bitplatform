@@ -73,7 +73,9 @@ internal sealed class DiagnosticsEngine
     private readonly object _lock = new();
     private long _lastRunTicks;
     private long _lastRunVersion = -1;
-    private bool _serviceGraphAnalyzed;
+    // The service graph is analysed once (it does not change) and its findings are re-reported on every evaluation, so
+    // they stay as recently seen as the rules' and are never the first evicted when per-occurrence findings pile up.
+    private List<BevDiagnostic>? _serviceGraphFindings;
 
     public DiagnosticsEngine(BevToolsSession session, BitBevToolsOptions options, BevToolsRegistry registry)
     {
@@ -155,10 +157,14 @@ internal sealed class DiagnosticsEngine
             }
         }
 
-        if (!_serviceGraphAnalyzed && _session.Registry.ServiceGraph is { } graph)
+        if (_serviceGraphFindings is null && _session.Registry.ServiceGraph is { } graph)
         {
-            _serviceGraphAnalyzed = true;
-            produced.AddRange(graph.Analyze());
+            _serviceGraphFindings = graph.Analyze().ToList();
+        }
+
+        if (_serviceGraphFindings is not null)
+        {
+            produced.AddRange(_serviceGraphFindings);
         }
 
         Merge(produced);
@@ -281,7 +287,7 @@ internal sealed class DiagnosticsEngine
         lock (_lock)
         {
             _findings.Clear();
-            _serviceGraphAnalyzed = false;
+            _serviceGraphFindings = null;
         }
 
         _session.Touch();

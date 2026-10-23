@@ -36,8 +36,17 @@ public sealed class BevToolsUiState
 
     public bool ShowHiddenComponents { get; set; }
 
+    /// <summary>Outline components in the page as they render, coloured by how often (persisted with the other preferences).</summary>
+    public bool FlashRenders { get; set; }
+
+    /// <summary>True while the page is in pick mode, started from this panel.</summary>
+    public bool Picking { get; set; }
+
     /// <summary>When true, the open tab re-reads captured data on the refresh cadence. Off means Refresh is required.</summary>
     public bool LiveUpdates { get; set; } = true;
+
+    /// <summary>How long a notification shows before it goes away by itself.</summary>
+    public static readonly TimeSpan NotificationLifetime = TimeSpan.FromSeconds(4);
 
     public string? Notification { get; set; }
 
@@ -47,6 +56,15 @@ public sealed class BevToolsUiState
     public HashSet<BevToolsEventKind> HiddenTimelineKinds { get; } = [];
 
     public HashSet<long> CollapsedTreeNodes { get; } = [];
+
+    /// <summary>The Profiler's sort, grouping, selected batch and comparison, kept while other tabs are open.</summary>
+    internal BevProfilerView Profiler { get; } = new();
+
+    /// <summary>The Network panel's view (requests or endpoints), endpoint filter and sorts.</summary>
+    internal BevNetworkView Network { get; } = new();
+
+    /// <summary>The Errors panel's view (errors or groups), group filter and sorts.</summary>
+    internal BevErrorsView Errors { get; } = new();
 
     public string? GetQuery(string panelId) => _queries.TryGetValue(panelId, out var q) ? q : null;
 
@@ -84,4 +102,86 @@ public sealed class BevToolsUiState
         NotificationAt = DateTimeOffset.UtcNow;
         Touch();
     }
+}
+
+/// <summary>A table's sort: the column and its direction. Selecting the sorted column again reverses it.</summary>
+internal sealed class BevSortState(string key, bool ascending)
+{
+    public string Key { get; private set; } = key;
+
+    public bool Ascending { get; private set; } = ascending;
+
+    public void Set(string key, bool ascending)
+    {
+        Key = key;
+        Ascending = ascending;
+    }
+
+    /// <param name="key">The column selected.</param>
+    /// <param name="ascendingFirst">The direction a column starts in: text A to Z, figures largest first.</param>
+    public void Select(string key, bool ascendingFirst)
+    {
+        if (Key == key)
+        {
+            Ascending = !Ascending;
+        }
+        else
+        {
+            Key = key;
+            Ascending = ascendingFirst;
+        }
+    }
+}
+
+internal sealed class BevNetworkView
+{
+    /// <summary>One row per endpoint instead of one per request.</summary>
+    public bool ByEndpoint { get; set; }
+
+    /// <summary>Only the requests to this <see cref="BevHttpRecord.EndpointTemplate"/>.</summary>
+    public string? Endpoint { get; set; }
+
+    public BevSortState Requests { get; } = new("time", ascending: false);
+
+    public BevSortState Endpoints { get; } = new("requests", ascending: false);
+}
+
+internal sealed class BevErrorsView
+{
+    /// <summary>One row per group of errors that are one problem (<see cref="BevErrorGroups"/>).</summary>
+    public bool ByGroup { get; set; }
+
+    /// <summary>Only the errors of this <see cref="BevErrorRecord.Group"/>, shown by its <see cref="GroupTitle"/>.</summary>
+    public string? Group { get; set; }
+
+    public string? GroupTitle { get; set; }
+
+    public BevSortState Errors { get; } = new("last", ascending: false);
+
+    public BevSortState Groups { get; } = new("occurrences", ascending: false);
+}
+
+internal sealed class BevProfilerView
+{
+    public BevSortState Sorting { get; } = new("total", ascending: false);
+
+    public bool ByType { get; set; }
+
+    public bool SinceBaseline { get; set; }
+
+    public bool IncludeDisposed { get; set; }
+
+    /// <summary>The render batch whose cost tree is shown, and its timeline event (gone once the timeline is cleared).</summary>
+    public long? BatchId { get; set; }
+
+    public long? BatchEventId { get; set; }
+
+    /// <summary>The uploaded export's profile, so the comparison can be run again after another interaction.</summary>
+    public BevRenderProfile? ComparedProfile { get; set; }
+
+    public string? ComparedFile { get; set; }
+
+    public BevProfileComparisonResult? Comparison { get; set; }
+
+    public string? ComparisonError { get; set; }
 }

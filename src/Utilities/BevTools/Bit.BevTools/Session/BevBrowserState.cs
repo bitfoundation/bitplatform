@@ -44,6 +44,14 @@ public sealed class BevBrowserState
 
     public DateTimeOffset? StorageReadAt { get; internal set; }
 
+    /// <summary>What the last accessibility check of the page found; null before the first check.</summary>
+    public IReadOnlyList<BevA11yFinding>? Accessibility { get; internal set; }
+
+    public DateTimeOffset? AccessibilityCheckedAt { get; internal set; }
+
+    /// <summary>Why the last accessibility check failed, if it did.</summary>
+    public string? AccessibilityError { get; internal set; }
+
     /// <summary>Why the last storage read failed, if it did. Shown in the Browser panel instead of failing silently.</summary>
     public string? StorageError { get; internal set; }
 
@@ -67,6 +75,30 @@ public sealed class BevBrowserState
     public int ResourceLoadErrors { get; internal set; }
 
     public int CspViolations { get; internal set; }
+}
+
+/// <summary>One finding of the page's accessibility check (page hub), with the component that rendered the element.</summary>
+public sealed class BevA11yFinding
+{
+    /// <summary>"control-name", "field-label", "image-alt", "hidden-focusable", "tabindex-positive", "duplicate-id", "heading-empty", "page-lang".</summary>
+    public string Rule { get; set; } = "";
+
+    /// <summary>The WCAG success criteria it is about ("4.1.2").</summary>
+    public string Wcag { get; set; } = "";
+
+    public string Message { get; set; } = "";
+
+    /// <summary>The element, by tag, id or first class: never its content.</summary>
+    public string Element { get; set; } = "";
+
+    public string? TargetId { get; set; }
+
+    public long? InstanceId { get; set; }
+
+    public string? Component { get; set; }
+
+    /// <summary>Why the component could not be found, when the element may be a component's (the lookup failed); null for static markup.</summary>
+    public string? OwnerUnknown { get; set; }
 }
 
 /// <summary>One BevTools runtime on the page, as the page hub knows it.</summary>

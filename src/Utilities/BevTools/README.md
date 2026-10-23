@@ -201,13 +201,24 @@ since the profiler baseline* exports only what happened after the last baseline 
 | Did it *need* to render, or did the parent re-apply identical parameters? | Components → Rendering (*forced re-renders*), Diagnostics |
 | What did this one click cost, across every component? | Profiler → *Reset*, click, read *since reset* |
 | What do all 500 rows of my list cost together? | Profiler → *by type* |
+| What did one render batch render, and where did its time go? | Profiler → a batch in *Recent render batches* → cost tree (self and with descendants) |
+| Did my change make anything render more often or for longer? | Profiler → *Compare…* with the export from before the change; in CI, `BevProfileComparison.Compare` and `ToMarkdown()` |
 | What happened when I clicked, and what did it cause (renders, HTTP, JS, state)? | Timeline (select an event: *caused by* / *caused*) |
 | What changed in my state container and which click did it? | State (history with before/after diffs) |
 | Which HTTP requests ran, how long, which failed, what triggered them? | Network |
+| Is this the same error again, with another id in its message? | Errors → *Groups*, Diagnostics (*error.repeated* counts by group) |
+| Which endpoints are slow at the 95th percentile, or called once per list row? | Network → *Endpoints* (ids in the path as `{id}`), Diagnostics (*http.per-item*) |
 | Which JS interop calls are slow or excessive, and from which component? | JS Interop |
 | Where did this exception come from and what preceded it? | Errors |
 | What is registered in DI, with which lifetimes, dependencies and mistakes? | Services |
 | Is my circuit blocked, reconnecting, dying? | Circuit (Server), Browser |
+| Which component rendered *this* part of the page? | ⌖ *Pick* (header, palette `>pick`, companion, extension), then click it; the browser extension also follows the Elements panel's selection |
+| Where is this component in the page, and what re-renders as I use it? | Hover a tree row, *Show in page* in the inspector; *flash renders* in the Components toolbar outlines components as they render (blue once … red 10+ times) |
+| Why does my form accept invalid input, or fail without saying why? | Forms (fields, each validation and its outcome, what validates and what displays), Diagnostics (*forms.validation*) |
+| What can stop navigation away from this page, and is my app bouncing between two pages? | Routing → *Navigation guards*, *Navigation history* (with what each navigation rendered), Diagnostics (*navigation.loop*) |
+| Which parts of my page can a keyboard or screen-reader user not use, and in which component? | Browser → *Accessibility* → *Check the page* (markup facts, each with its component and *Show*), Diagnostics (*a11y.page*) |
+| Is something keeping disposed components alive, and what? | Runtime → *Disposed components still alive* (*Collect garbage and check*), Diagnostics (*memory.retained-components*): the service event, lambda, `DotNetObjectReference` or timer that holds them |
+| Where is this component, or this handler, written? | Components → *Type & source* and *Event handlers & callbacks*: `Counter.razor:53`, a link that opens your editor (`Ui.EditorUrlTemplate`), from the app's symbols |
 | Which handlers does this component bind, and which callbacks does it pass to its children? | Components → *Event handlers & callbacks* (read from its latest render tree) |
 | When was it created, initialized, first rendered; is a render queued? | Components → *Lifecycle* |
 | Where does each render mode start, and what renders on which runtime? | Components (⚡ on each boundary), Runtime |
@@ -222,7 +233,9 @@ since the profiler baseline* exports only what happened after the last baseline 
 | How do I share what I found? | About → *Export session (JSON)* / *Copy report (Markdown)* / *Export performance trace*, or `>export`, `>trace` in the palette |
 
 Diagnostics rules turn symptoms into causes with evidence, e.g. *"ProductList rendered 87 times in 2 s: 81 × parent
-re-render (Products), 6 × UI event (oninput → FilterBar.OnQuery). Consider ShouldRender…"*.
+re-render (Products), 6 × UI event (oninput → FilterBar.OnQuery). Consider ShouldRender…"*, or *"GET /api/products?q:
+6 requests in 2 s; triggered by oninput → FilterBar.OnQuery; 5 started while the previous one was still running"*
+(debounce the input, cancel the superseded request).
 
 **Pause** (header button or `>pause`) freezes every buffer so what you are reading is not evicted by a busy
 application; errors are still collected, and the resume marker says how many renders were skipped meanwhile.
@@ -276,7 +289,9 @@ How the information is obtained, in short:
 
 The design behind it - how render causes are decided, how late diff measurements are matched to their batch, how
 BevTools keeps from observing itself, session isolation per circuit - is in [docs/architecture.md](docs/architecture.md),
-and its measured cost in [docs/performance.md](docs/performance.md).
+and its measured cost in [docs/performance.md](docs/performance.md). How BevTools got here - the audit against other
+developer tools, the plan and what each improvement round changed and verified - is in [docs/audit.md](docs/audit.md),
+[docs/roadmap.md](docs/roadmap.md) and [docs/progress.md](docs/progress.md).
 
 ---
 
@@ -397,7 +412,7 @@ Tests/bit-bevtools-js         vitest suite: the bridge (isolation, pre-.NET reda
                               (several runtimes, traffic decoding, browser failures), the companion (DOM, happy-dom)
                               and the extension source
 Tests/Bit.BevTools.Benchmarks reproducible overhead measurement (dotnet run -c Release)
-docs/                         capability matrix, architecture, performance
+docs/                         capability matrix, architecture, performance; audit, roadmap, progress
 ```
 
 Run the demo with `dotnet run --project src/Utilities/BevTools/Demo/Server`, then open `/problems`. The tests:

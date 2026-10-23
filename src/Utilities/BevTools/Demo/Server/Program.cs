@@ -67,6 +67,13 @@ api.MapGet("/orders", async (int? delay) =>
     await Task.Delay(delay is > 0 ? Math.Min(delay.Value, 10_000) : Random.Shared.Next(1200, 2600));
     return DemoCatalog.Orders;
 });
+api.MapGet("/orders/{id:int}", async (int id) =>
+{
+    await Task.Delay(Random.Shared.Next(40, 160));
+    return DemoCatalog.Orders.Any(o => o.Id == id)
+        ? Results.Ok(new OrderDetails(id, 1 + id % 5, id % 3 == 0 ? "express" : "standard"))
+        : Results.NotFound();
+});
 api.MapGet("/flaky", () => Random.Shared.Next(3) == 0 ? Results.Ok("ok") : Results.Problem("The flaky endpoint failed (simulated).", statusCode: 500));
 api.MapGet("/profile", () => new Profile("ada.lovelace", "ada@example.com", "secret-access-token-from-api", "Pro"));
 

@@ -117,7 +117,7 @@ public sealed class BevToolsHttpMessageHandler : DelegatingHandler
             }
             catch (Exception ex)
             {
-                RecordException(session, ex, trigger?.Id);
+                RecordException(session, ex, trigger?.Id, cancellationToken.IsCancellationRequested);
                 throw;
             }
 
@@ -179,13 +179,25 @@ public sealed class BevToolsHttpMessageHandler : DelegatingHandler
             session.Http.Touch();
             return response;
         }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            record.DurationMs = Stopwatch.GetElapsedTime(start).TotalMilliseconds;
+            record.IsCancelled = true;
+            // BevTools is the innermost handler, so this is one attempt: a resilience pipeline's attempt timeout or a
+            // hedged attempt cancels it the same way the caller does.
+            record.Error = "Cancelled: the request's token was cancelled (by the caller, HttpClient.Timeout, or a handler in the pipeline: a resilience attempt timeout, hedging)";
+            session.Timeline.Complete(record.TimelineEventId, record.DurationMs.Value, $"cancelled after {record.DurationMs.Value:0} ms (by the caller, HttpClient.Timeout or a handler in the pipeline)", BevToolsSeverity.Warning);
+            session.Http.Touch();
+            throw;
+        }
         catch (Exception ex)
         {
             record.DurationMs = Stopwatch.GetElapsedTime(start).TotalMilliseconds;
-            record.Error = ex.GetType().Name + ": " + ex.Message;
+            // A connect timeout is a TaskCanceledException whose inner TimeoutException says what happened.
+            record.Error = BevRedactor.RedactText(ex.GetType().Name + ": " + ex.Message + (ex.InnerException is { } inner && inner.Message != ex.Message ? " (" + inner.GetType().Name + ": " + inner.Message + ")" : ""));
             session.Http.MarkFailed(record);
             session.Timeline.Complete(record.TimelineEventId, record.DurationMs.Value, record.Error, BevToolsSeverity.Error);
-            RecordException(session, ex, trigger?.Id);
+            RecordException(session, ex, trigger?.Id, tokenCancelled: false);
             session.Http.Touch();
             throw;
         }
@@ -194,10 +206,13 @@ public sealed class BevToolsHttpMessageHandler : DelegatingHandler
     private static void RecordStatusError(BevToolsSession session, string method, string redactedUrl, int status, string? reasonPhrase, long? triggerId) =>
         session.Errors.Record(null, "http", $"{method} {StripOrigin(redactedUrl)} returned {status} {reasonPhrase}", precedingEventId: triggerId, exceptionType: "HttpStatus" + status);
 
-    /// <summary>A cancelled request is the caller's decision, not an error.</summary>
-    private static void RecordException(BevToolsSession session, Exception exception, long? triggerId)
+    /// <summary>
+    /// A request cancelled through its own token is the caller's decision, not an error. Any other cancellation - a
+    /// connect timeout, a handler giving up - is a failure like any exception.
+    /// </summary>
+    private static void RecordException(BevToolsSession session, Exception exception, long? triggerId, bool tokenCancelled)
     {
-        if (exception is not OperationCanceledException)
+        if (exception is not OperationCanceledException || !tokenCancelled)
         {
             session.Errors.Record(exception, "http", precedingEventId: triggerId);
         }
@@ -240,7 +255,14 @@ public sealed class BevToolsHttpMessageHandler : DelegatingHandler
         }
 
         var pathStart = url.IndexOf('/', schemeEnd + 3);
-        return pathStart < 0 ? "/" : url[pathStart..];
+        if (pathStart >= 0)
+        {
+            return url[pathStart..];
+        }
+
+        // No path: "https://host?q=1" is "/?q=1", not "/".
+        var rest = url.IndexOfAny(['?', '#'], schemeEnd + 3);
+        return rest < 0 ? "/" : "/" + url[rest..];
     }
 
     internal static string FormatBytes(long bytes) => bytes switch

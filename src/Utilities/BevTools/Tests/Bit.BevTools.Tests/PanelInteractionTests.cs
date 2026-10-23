@@ -419,6 +419,51 @@ public class PanelInteractionTests : BunitContext
     }
 
     [TestMethod]
+    public void Notifications_are_announced_and_leave_by_themselves()
+    {
+        var cut = RenderPanel();
+        var region = cut.Find(".bev-notification");
+        Assert.AreEqual("status", region.GetAttribute("role"), "the live region exists before anything is said in it");
+        Assert.AreEqual("", region.TextContent);
+
+        cut.InvokeAsync(() => cut.Instance.Notify("Session exported"));
+        Assert.AreEqual("Session exported", cut.Find(".bev-notification").TextContent);
+
+        Session.Ui.NotificationAt = DateTimeOffset.UtcNow - BevToolsUiState.NotificationLifetime - TimeSpan.FromSeconds(1);
+        cut.WaitForAssertion(() => Assert.AreEqual("", cut.Find(".bev-notification").TextContent), TimeSpan.FromSeconds(3));
+    }
+
+    [TestMethod]
+    public void A_navigation_to_a_path_contained_in_the_previous_one_is_recorded()
+    {
+        RenderPanel();
+        var navigation = Services.GetRequiredService<NavigationManager>();
+
+        navigation.NavigateTo("/products/1");
+        navigation.NavigateTo("/products");
+        navigation.NavigateTo("/");
+
+        var titles = Session.Timeline.Snapshot().Where(e => e.Kind == BevToolsEventKind.Navigation).Select(e => e.Title).ToList();
+        CollectionAssert.AreEqual(new[] { "Navigate to /products/1", "Navigate to /products", "Navigate to /" }, titles);
+    }
+
+    [TestMethod]
+    public void A_navigation_the_framework_activity_recorded_absorbs_exactly_one_location_change()
+    {
+        RenderPanel();
+        var navigation = Services.GetRequiredService<NavigationManager>();
+
+        // What ActivityObserver records when the router's Navigate activity starts (.NET 10), before LocationChanged
+        // reaches the panel.
+        Session.LastNavigationEventId = Session.Timeline.Record(new BevToolsEvent { Kind = BevToolsEventKind.Navigation, Category = "navigation", Title = "Navigate to /products/{id}" });
+        navigation.NavigateTo("/products/1");
+        navigation.NavigateTo("/products/1#reviews");
+
+        var titles = Session.Timeline.Snapshot().Where(e => e.Kind == BevToolsEventKind.Navigation).Select(e => e.Title).ToList();
+        CollectionAssert.AreEqual(new[] { "Navigate to /products/{id}", "Navigate to /products/1#reviews" }, titles);
+    }
+
+    [TestMethod]
     public void Navigation_urls_are_redacted_at_capture_time()
     {
         RenderPanel();

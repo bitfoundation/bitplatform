@@ -10,6 +10,7 @@
         <div class="bev-stat"><div class="bev-stat-value">@BevFmt.Ms(o.InspectionMs)</div><div class="bev-stat-label">object inspection & state diffs</div></div>
         <div class="bev-stat"><div class="bev-stat-value">@BevFmt.Ms(o.DiagnosticsMs)</div><div class="bev-stat-label">diagnostics rules</div></div>
         <div class="bev-stat"><div class="bev-stat-value">@BevFmt.Ms(o.TreeRefreshMs)</div><div class="bev-stat-label">tree refresh</div></div>
+        <div class="bev-stat"><div class="bev-stat-value">@BevFmt.Ms(o.PageMappingMs)</div><div class="bev-stat-label">page mapping</div></div>
         <div class="bev-stat"><div class="bev-stat-value">@Session.Timeline.Count / @Session.Options.MaxEvents</div><div class="bev-stat-label">events buffered</div></div>
         <div class="bev-stat"><div class="bev-stat-value">@Session.Components.LiveCount</div><div class="bev-stat-label">live application component instances (@Session.Components.TrackedCount records tracked in total, incl. BevTools' own UI and recently disposed)</div></div>
     </div>

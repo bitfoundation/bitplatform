@@ -24,7 +24,11 @@ public enum BevEventBindingKind
 /// <param name="Handler">What runs: <c>Counter.IncrementCount</c>, or a lambda and the method that declares it.</param>
 /// <param name="Kind">A DOM event handler, the handler of a <c>@bind</c>, or a callback passed to a child component.</param>
 /// <param name="ChildInstanceId">BevTools' instance id of the child component, for <see cref="BevEventBindingKind.ChildCallback"/>.</param>
-public sealed record BevEventBinding(string Target, string Event, string Handler, BevEventBindingKind Kind, long? ChildInstanceId = null);
+public sealed record BevEventBinding(string Target, string Event, string Handler, BevEventBindingKind Kind, long? ChildInstanceId = null)
+{
+    /// <summary>The method that runs, for finding where it is written; null for a <c>@bind</c> or an unreadable callback.</summary>
+    public System.Reflection.MethodInfo? HandlerMethod { get; init; }
+}
 
 /// <summary>What one component wired up in its latest render, and whether it could be read at all.</summary>
 public sealed record BevComponentWiring(IReadOnlyList<BevEventBinding> Bindings, int TotalBindings, string? Unavailable)
@@ -114,7 +118,7 @@ internal static class BevComponentWiringReader
             return new BevEventBinding(target, attribute.AttributeName, "@bind-" + updates + ": writes the element's " + updates + " back into the component", BevEventBindingKind.Bind);
         }
 
-        return new BevEventBinding(target, attribute.AttributeName, DescribeHandler(attribute.AttributeValue), BevEventBindingKind.DomEvent);
+        return new BevEventBinding(target, attribute.AttributeName, DescribeHandler(attribute.AttributeValue), BevEventBindingKind.DomEvent) { HandlerMethod = HandlerMethodOf(attribute.AttributeValue) };
     }
 
     private static BevEventBinding? ChildBinding(in RenderTreeFrame component, in RenderTreeFrame attribute, Func<int, BevComponentRecord?> childByComponentId)
@@ -127,15 +131,17 @@ internal static class BevComponentWiringReader
 
         var child = component.ComponentId > 0 ? childByComponentId(component.ComponentId) : null;
         var target = child?.DisplayName ?? TypeNames.Short(component.ComponentType);
-        return new BevEventBinding(target, attribute.AttributeName, DescribeHandler(value), BevEventBindingKind.ChildCallback, child?.InstanceId);
+        return new BevEventBinding(target, attribute.AttributeName, DescribeHandler(value), BevEventBindingKind.ChildCallback, child?.InstanceId) { HandlerMethod = HandlerMethodOf(value) };
     }
 
     /// <summary>"&lt;button#save&gt;", "&lt;input.form-control&gt;", "&lt;li&gt;": enough to tell the elements of one component apart.</summary>
-    private static string DescribeElement(RenderTreeFrame[] frames, int elementIndex)
+    internal static string DescribeElement(RenderTreeFrame[] frames, int elementIndex)
     {
         var name = frames[elementIndex].ElementName;
         string? id = null, firstClass = null;
-        for (var i = elementIndex + 1; i < frames.Length && frames[i].FrameType == RenderTreeFrameType.Attribute; i++)
+        // Within the element's own subtree: a buffer read in place holds stale frames past the end of the tree.
+        var end = Math.Min(frames.Length, elementIndex + frames[elementIndex].ElementSubtreeLength);
+        for (var i = elementIndex + 1; i < end && frames[i].FrameType == RenderTreeFrameType.Attribute; i++)
         {
             var attribute = frames[i];
             if (attribute.AttributeValue is not string text || text.Length == 0)
@@ -162,6 +168,13 @@ internal static class BevComponentWiringReader
 
     private static bool IsRenderFragment(Type type) =>
         type == typeof(RenderFragment) || (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(RenderFragment<>));
+
+    private static System.Reflection.MethodInfo? HandlerMethodOf(object? value) => value switch
+    {
+        Delegate d => d.Method,
+        _ when IsCallable(value) => BlazorReflection.EventCallbackDelegate(value!)?.Method,
+        _ => null,
+    };
 
     /// <summary>What a handler value runs, as the developer wrote it: a method group by name, a lambda by the method declaring it.</summary>
     public static string DescribeHandler(object? value) => value switch
@@ -204,8 +217,9 @@ public static class BevEventCallbacks
     }
 
     /// <summary>
-    /// "Counter.IncrementCount" for a method group; "lambda in Counter.BuildRenderTree" for a lambda, whose compiled
-    /// name ("&lt;BuildRenderTree&gt;b__3_0") and closure class ("&lt;&gt;c__DisplayClass3_0") mean nothing to a reader.
+    /// "Counter.IncrementCount" for a method group; for a lambda, whose compiled name ("&lt;BuildRenderTree&gt;b__3_0")
+    /// and closure class ("&lt;&gt;c__DisplayClass3_0") mean nothing to a reader, "Counter.Load (lambda)" when it calls
+    /// one method of the component, else "lambda in Counter.BuildRenderTree".
     /// </summary>
     public static string Method(Delegate handler)
     {
@@ -222,7 +236,7 @@ public static class BevEventCallbacks
         {
             var close = name.IndexOf('>');
             var outer = close > 1 ? name[1..close] : null;
-            return "lambda in " + owner + (outer ?? "?");
+            return BevLambdaTargets.CalledMethod(method) is { } target ? owner + target.Name + " (lambda)" : "lambda in " + owner + (outer ?? "?");
         }
 
         return owner + name;

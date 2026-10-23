@@ -13,6 +13,10 @@
         <span class="bev-muted">in</span> <button type="button" class="bev-link" @onclick="() => Host.SelectComponent(parent.InstanceId)">@parent.DisplayName</button>
     }
     <span style="margin-left:auto"></span>
+    @if (!Record.IsDisposed)
+    {
+        <button type="button" title="Scroll the page to this component and outline it" @onclick="() => Host.HighlightAsync(Record.InstanceId, explicitRequest: true)">⌖ Show in page</button>
+    }
     <button type="button" @onclick='() => Host.ShowPanel("timeline", "component:" + Record.InstanceId)'>Events ↗</button>
     <button type="button" @onclick='() => Host.ShowPanel("profiler", Record.DisplayName)'>Profiler ↗</button>
 </div>
@@ -21,7 +25,20 @@
         <dl class="bev-kv">
             <dt>Type</dt><dd class="bev-mono">@Record.TypeName</dd>
             <dt>Assembly</dt><dd class="bev-mono">@Record.Type.Assembly.GetName().Name</dd>
-            <dt>Source</dt><dd class="bev-mono">@BevFmt.ComponentFile(Record.Type) <span class="bev-muted">(inferred from type name)</span></dd>
+            <dt>Source</dt>
+            <dd>
+                @if (_sources.Count > 0)
+                {
+                    @foreach (var source in _sources)
+                    {
+                        <div><BevSourceLink Location="source" /> <span class="bev-muted bev-mono">@source.Path</span></div>
+                    }
+                }
+                else
+                {
+                    <span class="bev-mono">@BevFmt.ComponentFile(Record.Type)</span> <span class="bev-muted">(inferred from the type name: @(_sourceNote ?? "no symbols"))</span>
+                }
+            </dd>
             <dt>Base</dt><dd class="bev-mono">@_baseName</dd>
             <dt>Renderer id</dt><dd>@(Record.ComponentId?.ToString() ?? "unresolved")</dd>
             <dt>Render mode</dt>
@@ -97,7 +114,7 @@
                                 }
                             </td>
                             <td class="bev-mono">@binding.Event @if (binding.Kind == BevEventBindingKind.ChildCallback) { <span class="bev-chip">parameter</span> }</td>
-                            <td class="bev-mono">@binding.Handler</td>
+                            <td class="bev-mono">@binding.Handler @if (binding.HandlerMethod is { } method && BevSourceLocator.Of(method, Session.Options.Ui.EditorUrlTemplate) is { } handlerSource) { <BevSourceLink Location="handlerSource" /> }</td>
                         </tr>
                     }
                 </tbody>
@@ -319,6 +336,8 @@
     private bool? _afterRender;
     private bool? _pendingRender;
     private BevLifecycleTypeMetrics? _lifecycleMetrics;
+    private IReadOnlyList<BevSourceLocation> _sources = [];
+    private string? _sourceNote;
 
     private static readonly BevRenderCause[] Causes = Enum.GetValues<BevRenderCause>();
 
@@ -332,6 +351,20 @@
     {
         var component = Record.Component;
         _baseName = Record.Type.BaseType is { } b ? TypeNames.Short(b) : "–";
+        _sources = BevSourceLocator.Of(Record.Type, Session.Options.Ui.EditorUrlTemplate);
+        _sourceNote = null;
+        if (_sources.Count == 0)
+        {
+            if (BevSourceLocator.NeedsDownload(Record.Type.Assembly))
+            {
+                _sourceNote = "loading the app's symbols…";
+                _ = Host.LoadSymbolsAsync(Record.Type.Assembly);
+            }
+            else
+            {
+                _sourceNote = BevSourceLocator.WhyUnavailable(Record.Type.Assembly);
+            }
+        }
         var (parameters, cascading, injected) = BevComponentMembers.Of(Record.Type);
         _parameters = parameters.Select(p => new MemberValue(p.Name, BevComponentMembers.SafeGet(p, component), p)).ToList();
         _cascading = cascading.Select(p => new MemberValue(p.Name, BevComponentMembers.SafeGet(p, component), p)).ToList();

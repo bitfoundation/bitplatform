@@ -163,6 +163,12 @@ redaction (`BevRedactor`: name patterns + `[BevToolsSensitive]`, applied to memb
 - an auto-property's backing field is judged by its property, which is where the attribute is written). `Flatten`/`Diff`
 produce bounded path→display maps for state and component-field change detection.
 
+`BevLambdaTargets` names inline handlers. The framework reports a lambda by its compiled name; BevTools finds the
+lambda (on the component, or in a nested closure class), decodes its IL with the `OpCodes` table - or its async state
+machine's `MoveNext` - and keeps the call targets that are methods of the component's own types, not properties and not
+the framework's. Exactly one is a name; anything else is "lambda in X.BuildRenderTree". Results are cached per method
+(at most 2000), so an event pays for the IL once.
+
 ### Export (`Bit.BevTools/Export`)
 
 `BevSessionExporter` turns a session into a `bit-bevtools/1` JSON document (`ToJson`) or a short Markdown report
@@ -173,6 +179,14 @@ goes through the inspector first, so a sensitive key, or a type with sensitive m
 fill with every member), is no more visible in the file than in the panel. The export reads only what the panels read — the same stores,
 already redacted at capture time — and omits browser storage previews. `IBevToolsCommandContext.DownloadTextAsync` /
 `CopyTextAsync` hand the result to the browser bridge (`downloadText`, `copyText` in `bit-bevtools.js`).
+
+The `profile` section (`BevRenderProfile`) is what two recordings are compared on: renders, render time, max and p95
+per component *type*, since instance ids mean nothing across recordings. It is counted from the session-long per-instance
+counters, plus per-type totals the registry keeps for components it let go after `DisposedComponentRetentionSeconds`
+(`ComponentRegistry.GoneTotals`, reset with the baseline and cleared with *Clear*), so a page navigated away from a
+minute ago still counts. `BevProfileComparison` compares two profiles; the Profiler runs it against the live session
+and keeps the uploaded profile to compare again after another try. Protocol snapshots leave the section out unless they
+name it, as building it reads every retained sample.
 
 ### Diagnostics (`Bit.BevTools/Diagnostics`)
 
@@ -277,7 +291,8 @@ sends on attach, plus SignalR's connection id (`id`) and SAS signatures (`sig`).
 limited to sections and to the timeline after an event id, the newest 200 events always resent because their activity
 can still complete; `{ unchanged: true }` when the session version did not move), `inspect` and `expand` (a
 component's members as inspected nodes, children on demand by path), `command` (pause, resume, clear, baseline,
-evaluate, dismiss) and `export` (JSON, Markdown, trace). It runs on the renderer's dispatcher like the panel, through
+evaluate, dismiss), `export` (JSON, Markdown, trace), and `locate` / `resolve` (a component's path in the page and back,
+see *Components in the page*). It runs on the renderer's dispatcher like the panel, through
 the same inspector, so it reads exactly what the panel reads. Inspecting from outside captures the component's state
 on its renders, as selecting it in the panel does.
 
@@ -286,6 +301,83 @@ The companion is one frontend with three sources: the opener's hub (companion wi
 eval returns only synchronous values), and a file (an export, read only). It polls the shown runtime every 1.5 s while
 visible, merges timeline increments by id, and renders application strings as text nodes only. The extension has no
 permissions and no content script; everything it evaluates passes request data as JSON string literals.
+
+### Components in the page (`Inspection/BevDomMap.cs`, the hub's *components in the page* section)
+
+Blazor exposes no component-to-DOM map, but its browser renderer builds one implicitly: every node it inserts carries,
+under `Symbol()` keys, the array of its logical children and a pointer to its logical parent, and every interactive
+root container carries a `true` marker while its component is attached. Each frame of a component's current render
+tree becomes exactly one logical child - an element, a text node, or a comment that contains a child component or a
+markup block - regions are flattened, attributes and reference captures produce nothing (`BrowserRenderer.insertFrame`).
+
+So `BevDomMap.Locate` walks a component's `ParentComponentState` chain to its root and, for each parent, finds the
+child's component frame in the parent's latest frames, recording each step as *(logical index, kind)*. The hub starts
+at the root container and follows the steps, comparing every node's tag (or `#text`, `#c`) with the step; the first
+mismatch ends the walk with an error. `Resolve` is the inverse: the hub climbs from a node to its root container
+recording the same steps, and .NET follows them down the frames, entering each child component's own frames,
+stopping in markup or text, and verifying every kind. Both run on the renderer's dispatcher and read the frames in
+place; their cost is reported as *page mapping* overhead.
+
+The keys have no description. The hub learns them from the panel's own element, whose logical parent is the panel
+component's container comment: no physical parent is ever a comment, so a DOM implementation's or another library's
+symbol-keyed tree on the same nodes cannot be mistaken for Blazor's. Only when no panel has a comment parent is an
+element parent carrying a marker accepted: the panel rendered as a WebAssembly root of its own. Boolean keys found on
+what the panel itself rendered are excluded from root detection, and a container is a live root while it carries an
+attached mark and no detached one: Blazor sets the attached mark `false` on disposal and leaves a Web App root's
+preserve-content mark `true`. The root the panel renders in is the *anchor*; every runtime's anchor is left out of the
+other roots on both sides, which are matched by signature (the count and kinds of their first logical children): a path
+that fits only one identifies it; identical roots are matched by position only when the page holds exactly the
+runtime's own (and the answer says so); when two runtimes both claim a node, the answer is "ambiguous", not a pick.
+
+Hovering a row of the component tree is handled by the hub (a delegated listener and a `locate` request), not by a
+Blazor event per row, so hovering sends nothing on a circuit beyond BevTools' own protocol traffic. Blazor events the
+panel does raise (clicks, typing) are marked while the browser dispatches them, so the `DispatchEventAsync` message
+that carries each one counts as BevTools' own traffic, and changes to the overlay are ignored when the hub decides
+whose a render batch was.
+
+Picking runs in the hub: capture-phase listeners on `window` swallow pointer, click and touch events outside BevTools'
+own UI until a click or Escape, so the application never sees the picking click. The overlay is a `.bev-root` element
+appended to `body`, outside every element Blazor manages, so its DOM changes count as BevTools' own for render-batch
+classification; the crosshair cursor comes from a stylesheet rule keyed on the overlay, not from writing the app's DOM.
+An outline follows its component on scroll and resize. *Flash renders* is driven from the panel's refresh loop: the
+components that rendered since the previous tick (at most 60) are located and outlined, coloured by how many times
+they rendered; the request travels after the render batch on the same connection, so the browser has the DOM first.
+
+### Forms (`Session/BevFormTracker.cs`)
+
+An EditForm's render fragment gets one extra step at activation: after its first render, when its EditContext exists,
+the form is watched. Other EditContexts (an input under a hand-made cascading EditContext) are found when the tree is
+next read. Watching adds two handlers to the EditContext: `OnFieldChanged` counts changes per field name, and
+`OnValidationRequested` reads the outcome - BevTools subscribes before the validator components inside the form
+initialize, so at the first validation it reads after a `Task.Yield` and moves its handler to the end of the list, and
+from then on reads right after every validator ran, before `OnValidSubmit`. EditContexts are held weakly: the
+field-change handler reads the context from its sender, and nothing BevTools keeps refers to one. A form whose EditForm
+or input is disposed is forgotten and its handlers removed, and an EditForm that gets a new EditContext is watched again. Everything reported about the form's events leaves BevTools' own handlers out, and the framework's
+form-mapping subscription is not counted as a validator (found on a Server circuit: an EditForm with a `FormName` has it).
+
+### Source locations (`Inspection/BevSourceLocator.cs`)
+
+Read on demand from portable PDBs with `System.Reflection.Metadata` (part of the shared framework): a method's first
+sequence point (an async method's in its state machine's `MoveNext`), and for a type the documents its members are
+written in, the `.razor` file first. Symbols are trusted only when they belong to this build: an embedded PDB; a PDB
+beside the assembly or at the path its CodeView entry records, whose `DebugMetadataHeader` id matches that entry's;
+on WebAssembly, where assemblies have no files, the PDB the runtime's `getConfig().resources.pdb` lists, fetched by
+the hub and handed over (`Provide`) when the inspector first needs it (the protocol asks the panel to do the same and
+answers `sourcesPending` meanwhile). Readers are cached per assembly for the life of the process.
+
+### Leaks (`Session/BevLeakTracker.cs`, `Inspection/BevRetentionAnalyzer.cs`)
+
+When the registry notices a disposal it hands the component to the leak tracker, which keeps a weak reference, the
+time, and the number of full collections so far. *Retained* means alive after two full collections since then and a
+grace period (work the component started may hold it briefly), or after the full collections a developer asked for. A
+retained instance is analysed once: delegates and framework collections on what it was handed (injected services,
+cascading values, NavigationManager, AuthenticationStateProvider), the JS runtime's `_trackedRefsById`, and its own
+timers, all by reference identity. Instances with no cause found are checked against every frame buffer the renderer
+keeps (both render trees of every live component, whole, and the batch's reference frames): a component its parent
+stopped rendering stays in the parent's previous tree until the parent renders again, which is not a leak. That
+behaviour was measured on a plain renderer with and without BevTools; the tests run on such a renderer too, since a
+bUnit context keeps every component it rendered until it is disposed. The finding is the
+`memory.retained-components` rule; the Runtime panel lists them and runs the forced check.
 
 ### Value access and redaction (`Inspection/`)
 
@@ -349,7 +441,6 @@ internal.
 
 ## Deliberate non-goals
 
-* Component ↔ DOM highlighting (no reliable mapping from .NET).
 * Request/response bodies, DI instance values, full circuit ids (security).
 * Time-travel state restoration (unsafe for arbitrary graphs); snapshot history is provided instead.
 * Recreating browser DevTools panels (network waterfall, DOM, WebSocket frame payloads): the WebSockets view counts

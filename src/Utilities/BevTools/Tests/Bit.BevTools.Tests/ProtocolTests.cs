@@ -48,6 +48,28 @@ public class ProtocolTests : BunitContext
         Assert.AreEqual(BevSessionExporter.Format, first.GetProperty("session").GetProperty("format").GetString());
         Assert.IsTrue(first.GetProperty("session").GetProperty("components").GetProperty("items").GetArrayLength() >= 2);
         Assert.IsTrue(again.GetProperty("unchanged").GetBoolean());
+        Assert.IsFalse(first.GetProperty("session").TryGetProperty("profile", out _), "polls leave the render profile out");
+    }
+
+    [TestMethod]
+    public void A_baseline_reset_from_a_frontend_switches_the_profiler_to_since_the_reset()
+    {
+        Ask("command", new { name = "baseline" });
+
+        Assert.IsNotNull(Session.Components.BaselineAt);
+        Assert.IsTrue(Session.Ui.Profiler.SinceBaseline);
+    }
+
+    [TestMethod]
+    public void The_render_profile_is_sent_when_asked_for_by_name()
+    {
+        Render<ParentComponent>(ps => ps.Add(p => p.Value, 1));
+
+        var snapshot = Ask("snapshot", new { sections = new[] { "profile" } }).GetProperty("session");
+
+        var types = snapshot.GetProperty("profile").GetProperty("types").EnumerateArray().Select(t => t.GetProperty("displayName").GetString()).ToList();
+        Assert.Contains("ParentComponent", types);
+        Assert.Contains("ChildComponent", types);
     }
 
     [TestMethod]

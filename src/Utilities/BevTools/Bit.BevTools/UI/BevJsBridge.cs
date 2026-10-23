@@ -248,9 +248,33 @@ public sealed class BevJsBridge(BevToolsSession session, Action toggle, Action? 
         }
     }
 
+    /// <summary>What a component picked in the page does in the in-app panel: select it.</summary>
+    internal Action<long>? Picked { get; init; }
+
+    /// <summary>The page hub's pick mode ended on an element this runtime rendered; the hub resolved its component through <see cref="Protocol"/>.</summary>
+    [JSInvokable]
+    public void OnComponentPicked(long instanceId) => Picked?.Invoke(instanceId);
+
+    /// <summary>What the in-app panel does when picking ends without a component: cancelled (null), or why it failed.</summary>
+    internal Action<string?>? PickEnded { get; init; }
+
+    [JSInvokable]
+    public void OnPickEnded(string? error) => PickEnded?.Invoke(error);
+
     [JSInvokable]
     public void OnToggleShortcut() => toggle();
 
     [JSInvokable]
     public void OnPaletteShortcut() => openPalette?.Invoke();
+}
+
+/// <summary>What the page hub says after outlining a component.</summary>
+internal sealed class BevHighlightResult
+{
+    public bool Ok { get; set; }
+
+    /// <summary>False when the component renders nothing with a size: no element, or only empty ones.</summary>
+    public bool Visible { get; set; }
+
+    public string? Error { get; set; }
 }

@@ -17,9 +17,23 @@ export interface CompanionTarget {
 export interface CompanionSource {
     readonly label: string;
     readonly live: boolean;
+    /** Components in the inspected page: picking and outlining. Absent for a file, or a page whose hub predates it. */
+    readonly page?: CompanionPage | null;
     targets(): Promise<CompanionTarget[]>;
     request(targetId: string, method: string, params?: any): Promise<any>;
     traffic(): Promise<any[]>;
+}
+
+/** The page hub's picking and outlining, as a frontend outside the page reaches it. */
+export interface CompanionPage {
+    startPick(includeHidden: boolean): Promise<boolean>;
+    stopPick(): Promise<void>;
+    isPicking(): Promise<boolean>;
+    lastPick(): Promise<{ targetId?: string; instanceId?: number; name?: string; error?: string; at: number } | null>;
+    highlight(targetId: string, instanceId: number, scroll: boolean): Promise<{ ok: boolean; visible?: boolean; error?: string }>;
+    clearHighlight(): Promise<void>;
+    /** The component that rendered the node selected in the browser's Elements panel (the extension only). */
+    inspectedElement?(includeHidden: boolean): Promise<{ targetId?: string; instanceId?: number; error?: string } | null>;
 }
 
 type Doc = any;
@@ -116,6 +130,21 @@ export class OpenerSource implements CompanionSource {
     request(targetId: string, method: string, params?: any) { return this.hook().request(targetId, method, params); }
 
     async traffic() { return this.hook().traffic(); }
+
+    get page(): CompanionPage | null {
+        let hook: any;
+        try { hook = this.hook(); } catch { return null; }
+        if (typeof hook.startPick !== "function") return null;
+        return {
+            // The companion selects what was picked itself; the in-app panel must not open over the page for it.
+            startPick: async includeHidden => this.hook().startPick(null, { includeHidden, tellPanel: false }),
+            stopPick: async () => this.hook().stopPick(),
+            isPicking: async () => this.hook().isPicking(),
+            lastPick: async () => this.hook().lastPick(),
+            highlight: (targetId, instanceId, scroll) => this.hook().highlightComponent(targetId, instanceId, { scroll, durationMs: scroll ? 2500 : 0 }),
+            clearHighlight: async () => this.hook().clearHighlight(),
+        };
+    }
 }
 
 /** Nothing to show yet: the companion was opened on its own. */
@@ -208,6 +237,7 @@ const TABS: Tab[] = [
     { id: "profiler", title: "Profiler" },
     { id: "timeline", title: "Timeline" },
     { id: "state", title: "State" },
+    { id: "forms", title: "Forms" },
     { id: "routing", title: "Routing" },
     { id: "network", title: "Network", badge: m => count(m.doc?.http?.filter((r: any) => r.failed)) },
     { id: "interop", title: "JS Interop" },
@@ -230,6 +260,7 @@ export class Companion {
     private busy = false;
     private polls = 0;
     private notice: string | null = null;
+    private pickTimer: ReturnType<typeof setInterval> | null = null;
     private readonly root: HTMLElement;
     private header!: HTMLElement;
     private toolbar!: HTMLElement;
@@ -250,6 +281,7 @@ export class Companion {
     stop() {
         if (this.timer) clearInterval(this.timer);
         this.timer = null;
+        this.endPick(true);
     }
 
     use(source: CompanionSource) {
@@ -431,6 +463,14 @@ export class Companion {
         }
         if (this.tab === "components") {
             extra.push(h("label", { title: "Framework and library components hidden by default" }, h("input", { type: "checkbox", checked: v.flag, onchange: (e: Event) => { v.flag = (e.target as HTMLInputElement).checked; this.renderContent(); } }), " internals"));
+            if (this.source.live && this.source.page) {
+                extra.push(h("button", {
+                    class: this.pickTimer ? "bc-active" : "",
+                    "aria-pressed": this.pickTimer ? "true" : "false",
+                    title: "Pick a component in the page: hover to outline it, click to inspect it (Esc in the page cancels)",
+                    onclick: () => this.togglePick(),
+                }, "⌖ Pick"));
+            }
         }
         this.toolbar.replaceChildren(input, ...extra.map(x => x as Node));
     }
@@ -462,6 +502,7 @@ export class Companion {
             case "profiler": return this.profiler(t);
             case "timeline": return this.timeline(t);
             case "state": return this.state(t);
+            case "forms": return this.forms(t);
             case "routing": return this.routing(t);
             case "network": return this.network(t);
             case "interop": return this.interop(t);
@@ -484,6 +525,97 @@ export class Companion {
         const answer = await this.source.request(t.info.id, "command", { name, argument });
         this.notice = answer && (answer.error || answer.done) || null;
         await this.poll(true);
+    }
+
+    /** Starts picking in the page and waits for its outcome; the hub keeps it, since the extension cannot be called back. */
+    private async togglePick() {
+        const page = this.source.page;
+        if (!page) return;
+        if (this.pickTimer) {
+            this.endPick();
+            await page.stopPick();
+            return;
+        }
+        const since = Date.now();
+        if (!(await page.startPick(this.view("components").flag))) {
+            const last = await page.lastPick();
+            this.notice = last && last.error || "Picking is not available on this page.";
+            this.renderStatus();
+            return;
+        }
+        this.notice = "Click a component in the page · Esc cancels";
+        this.renderStatus();
+        let polls = 0;
+        this.pickTimer = setInterval(async () => {
+            try {
+                const last = await page.lastPick();
+                if (last && last.at >= since) {
+                    this.endPick();
+                    await this.picked(last);
+                } else if (++polls > 4 && !(await page.isPicking())) {
+                    // Cancelled in the page.
+                    this.endPick();
+                    this.notice = null;
+                    this.renderStatus();
+                }
+            } catch (err: any) {
+                this.endPick();
+                this.notice = String(err && err.message || err);
+                this.renderStatus();
+            }
+        }, 250);
+        this.renderToolbar();
+    }
+
+    private endPick(stopInPage = false) {
+        if (!this.pickTimer) return;
+        clearInterval(this.pickTimer);
+        this.pickTimer = null;
+        // Left running, the page would swallow its next click for a frontend that is gone.
+        if (stopInPage) this.source.page?.stopPick().catch(() => { });
+        this.renderToolbar();
+    }
+
+    /**
+     * Follows the browser's Elements panel: selecting a node there selects the component that rendered it here. Quiet
+     * when the node is not a Blazor component's (most of a page is static markup).
+     */
+    async revealInspectedElement() {
+        const page = this.source.live ? this.source.page : null;
+        if (!page || !page.inspectedElement) return;
+        try {
+            const result = await page.inspectedElement(this.view("components").flag);
+            if (result && !result.error && result.instanceId !== undefined) await this.picked(result);
+        } catch { /* the page is gone, or navigating */ }
+    }
+
+    /** Selects what was picked in the page, switching to the runtime that rendered it. */
+    private async picked(last: { targetId?: string; instanceId?: number; error?: string }) {
+        if (last.error || last.instanceId === undefined) {
+            this.notice = last.error || "Nothing was picked.";
+            this.renderStatus();
+            return;
+        }
+        this.notice = null;
+        const target = this.targets.find(t => t.info.id === last.targetId) || this.active;
+        if (!target) return;
+        if (target !== this.active) await this.select(target);
+        this.tab = "components";
+        this.renderHeader();
+        this.renderToolbar();
+        await this.inspect(target, last.instanceId);
+    }
+
+    private async showInPage(t: TargetModel, instanceId: number, scroll: boolean) {
+        const page = this.source.page;
+        if (!page) return;
+        try {
+            const result = await page.highlight(t.info.id, instanceId, scroll);
+            if (scroll) {
+                this.notice = !result.ok ? result.error || "The component cannot be shown." : result.visible === false ? "It renders nothing visible right now." : null;
+                this.renderStatus();
+            }
+        } catch { /* the page is gone; the targets refresh says so */ }
     }
 
     private async export(format: string) {
@@ -530,6 +662,10 @@ export class Companion {
         const answer = await this.source.request(t.info.id, "inspect", { instanceId });
         t.inspected = answer && !answer.error ? answer : null;
         this.renderContent();
+        // The runtime asked its page for the symbols (WebAssembly): read again once they can have arrived.
+        if (t.inspected && t.inspected.sourcesPending) {
+            setTimeout(() => { if (t.inspectedId === instanceId) this.inspect(t, instanceId); }, 1500);
+        }
     }
 
     private async expand(t: TargetModel, section: string, name: string, path: string) {
@@ -611,6 +747,7 @@ export class Companion {
                     style: "padding-left:" + (depth * 14 + 6) + "px",
                     title: c.type,
                     onclick: () => this.inspect(t, c.instanceId),
+                    onmouseenter: () => this.showInPage(t, c.instanceId, false),
                 }, h("span", { class: "bc-name" }, c.displayName),
                     c.renderMode ? h("span", { class: "bc-chip bc-info", title: c.renderMode }, "⚡ " + c.renderMode.replace("InteractiveWebAssembly", "WASM").replace("Interactive", "")) : null,
                     c.errors ? h("span", { class: "bc-err" }, " " + c.errors + " ✕") : null,
@@ -623,18 +760,24 @@ export class Companion {
             return any;
         };
         walk(null, 0);
+        const page = this.source.live ? this.source.page : null;
         return h("div", { class: "bc-split" },
-            h("div", { class: "bc-scroll bc-left" }, rows.length ? rows : this.empty("No components match.", null)),
+            h("div", { class: "bc-scroll bc-left", onmouseleave: page ? () => page.clearHighlight().catch(() => { }) : null }, rows.length ? rows : this.empty("No components match.", null)),
             h("div", { class: "bc-scroll bc-right" }, this.inspector(t, byId.get(v.selected) || (t.doc.components?.items || []).find((c: any) => c.instanceId === v.selected))));
     }
 
     private inspector(t: TargetModel, c: any) {
         if (!c) return this.empty("Select a component.", "Parameters, cascading values, state, bindings and renders appear here.");
         const d = this.source.live && t.inspected && t.inspected.instanceId === c.instanceId ? t.inspected : null;
+        const sources = d && d.sources && d.sources.length
+            ? d.sources.map((s: any) => [sourceLink(s), " "])
+            : (d && d.sourcesPending ? "loading symbols…" : null);
         const head = h("div", { class: "bc-inspector-head" }, h("strong", { class: "bc-mono" }, c.displayName), h("span", { class: "bc-chip" }, "#" + c.instanceId), c.renderMode ? h("span", { class: "bc-chip bc-info" }, c.renderMode) : null,
-            this.source.live ? h("button", { onclick: () => this.inspect(t, c.instanceId) }, "↻") : null);
+            this.source.live ? h("button", { onclick: () => this.inspect(t, c.instanceId) }, "↻") : null,
+            this.source.live && this.source.page && !c.disposed ? h("button", { title: "Scroll the page to this component and outline it", onclick: () => this.showInPage(t, c.instanceId, true) }, "⌖ Show in page") : null);
         const stats = kv([
             ["Type", c.type],
+            ["Source", sources],
             ["Renders", c.renders + " · total " + fmt.ms(c.totalRenderMs) + " · max " + fmt.ms(c.maxRenderMs)],
             ["Forced re-renders", c.rendersWithComparedParameters ? c.parentRendersWithUnchangedParameters + " of " + c.rendersWithComparedParameters + " compared" : "not compared"],
             ["Last cause", c.lastCauseDetail || "–"],
@@ -656,7 +799,7 @@ export class Companion {
                 : h("table", null, h("tbody", null, d.wiring.bindings.map((b: any) => h("tr", null,
                     h("td", { class: "bc-mono" }, b.childInstanceId ? h("a", { href: "#", onclick: (e: Event) => { e.preventDefault(); this.inspect(t, b.childInstanceId); } }, b.target) : b.target),
                     h("td", { class: "bc-mono" }, b.event, b.kind === "ChildCallback" ? h("span", { class: "bc-chip" }, "parameter") : null),
-                    h("td", { class: "bc-mono" }, b.handler)))))),
+                    h("td", { class: "bc-mono" }, b.handler, b.handlerSource && b.handlerSource[0] ? [" ", sourceLink(b.handlerSource[0])] : null)))))),
             section("Why did it render?", kv(Object.keys(d.causes).map(k => [k, String(d.causes[k])] as [string, string]))),
             section("Recent renders", h("table", null, h("tbody", null, d.recentRenders.map((r: any) => h("tr", { class: r.failed ? "bc-err" : "" },
                 h("td", { class: "bc-mono" }, fmt.time(r.at)),
@@ -741,6 +884,24 @@ export class Companion {
                 caused.length ? section("Caused (" + caused.length + ")", caused.map(link)) : null);
         }
         return h("div", { class: "bc-split" }, list, h("div", { class: "bc-scroll bc-right" }, detail));
+    }
+
+    private forms(t: TargetModel) {
+        const forms: any[] = t.doc.forms || [];
+        if (!forms.length) return this.empty("No form on the page.", "Forms appear as their EditForm renders: fields, validations, what validates them and what shows their messages. Values are never read.");
+        return h("div", { class: "bc-scroll" }, forms.map(f => section(
+            (f.owner || "?") + " · " + f.model + (f.lastValidationPassed === undefined ? " · not validated yet" : f.lastValidationPassed ? " · valid" : " · " + f.messages + " messages"),
+            h("div", null,
+                kv([
+                    ["Validated by", f.validators.length ? f.validators.join(", ") : (f.validationAttributes.length ? "nothing - its validation attributes are never checked" : "nothing")],
+                    ["Messages shown by", f.messageDisplays.length ? f.messageDisplays.join(", ") : "no ValidationSummary or ValidationMessage"],
+                    ["Rules on the model", f.validationAttributes.join("; ")],
+                    ["Validations", String(f.validations)],
+                ]),
+                f.fields.length ? h("table", null,
+                    h("thead", null, h("tr", null, h("th", null, "Field"), h("th", null, "Modified"), h("th", { class: "bc-num" }, "Changes"), h("th", null, "Messages"))),
+                    h("tbody", null, f.fields.map((x: any) => h("tr", null,
+                        h("td", { class: "bc-mono" }, x.name), h("td", null, x.modified ? "yes" : ""), h("td", { class: "bc-num" }, x.changes || ""), h("td", null, (x.messages || []).join(" · ")))))) : null))));
     }
 
     private state(t: TargetModel) {
@@ -861,6 +1022,15 @@ export class Companion {
     }
 }
 
+/** "Counter.razor:12": a link into the editor the app configured, never one that runs script. */
+function sourceLink(source: any): Node {
+    const text = source.file + ":" + source.line;
+    const url = typeof source.url === "string" && /^[a-z][a-z0-9+.-]*:/i.test(source.url) && !/^(javascript|data|vbscript):/i.test(source.url.trim()) ? source.url : null;
+    const moved = source.mayHaveMoved ? " (as built: edited with hot reload since, so the line may have moved)" : "";
+    const link = url ? h("a", { class: "bc-mono", href: url, title: "Open " + source.path + " in your editor" + moved }, text) : h("span", { class: "bc-mono", title: source.path + moved }, text);
+    return moved ? h("span", null, link, h("span", { class: "bc-muted" }, " (before hot reload)")) : link;
+}
+
 function stat(value: string, label: string) {
     return h("div", { class: "bc-stat" }, h("div", { class: "bc-stat-value" }, value), h("div", { class: "bc-stat-label" }, label));
 }
@@ -870,8 +1040,8 @@ function section(title: string, body: Child, collapsed = false) {
     return details;
 }
 
-function kv(pairs: ([string, string | null | undefined] | null)[]) {
-    return h("dl", { class: "bc-kv" }, pairs.filter(Boolean).map(p => [h("dt", null, p![0]), h("dd", null, p![1] ?? "–")]));
+function kv(pairs: ([string, Child] | null)[]) {
+    return h("dl", { class: "bc-kv" }, pairs.filter(Boolean).map(p => [h("dt", null, p![0]), h("dd", null, p![1] === null || p![1] === undefined || p![1] === "" ? "–" : p![1])]));
 }
 
 // companion.html marks itself, so the module starts there without an inline script; the browser extension's panel
@@ -891,5 +1061,6 @@ export function boot(root?: HTMLElement) {
     }
     const companion = new Companion(source, root);
     companion.start();
+    window.addEventListener("pagehide", () => companion.stop());
     return companion;
 }
