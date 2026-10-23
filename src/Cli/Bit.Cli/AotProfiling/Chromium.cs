@@ -183,7 +183,7 @@ public sealed class Chromium : IAsyncDisposable
             if (process.HasExited is false)
                 process.Kill(entireProcessTree: true);
         }
-        catch (Exception exp) when (exp is InvalidOperationException or System.ComponentModel.Win32Exception)
+        catch (Exception exp) when (exp is InvalidOperationException or System.ComponentModel.Win32Exception or AggregateException)
         {
         }
     }
