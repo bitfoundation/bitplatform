@@ -1,5 +1,6 @@
 ﻿using System.Buffers;
 using System.Numerics;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.Json;
 
@@ -25,8 +26,11 @@ public static class BinkSerializer
     /// <summary>The format identifier written into every document.</summary>
     public const string FormatName = "bink";
 
-    /// <summary>The current schema version.</summary>
-    public const int CurrentVersion = 1;
+    /// <summary>
+    /// The current schema version. Version 2 added the asset table (see <see cref="BinkSerializerOptions.ShareImageData"/>);
+    /// a document that does not use it is still written as version 1, so earlier versions of Bink keep opening it.
+    /// </summary>
+    public const int CurrentVersion = 2;
 
     /// <summary>The oldest schema version this library can read.</summary>
     public const int MinimumSupportedVersion = 1;
@@ -100,9 +104,14 @@ public static class BinkSerializer
 
     private static void Write(Utf8JsonWriter writer, BinkDocument document, BinkSerializerOptions options)
     {
+        // The table names only what more than one element shows: a picture shown once gains nothing from it, and a
+        // document without one stays readable by versions from before the table.
+        SortedDictionary<string, string>? table = options.ShareImageData && options.IncludeEmbeddedImages ? SharedImages(document) : null;
+        BinkImageAssets? assets = table is null ? null : new BinkImageAssets { CanRefer = table.ContainsKey };
+
         writer.WriteStartObject();
         writer.WriteString("format", FormatName);
-        writer.WriteNumber("version", CurrentVersion);
+        writer.WriteNumber("version", table is null ? 1 : CurrentVersion);
         writer.WriteString("id", document.Id);
 
         writer.WritePropertyName("settings");
@@ -120,16 +129,45 @@ public static class BinkSerializer
             writer.WriteEndObject();
         }
 
+        if (table is not null)
+        {
+            writer.WritePropertyName("assets");
+            writer.WriteStartObject();
+            foreach ((string id, string uri) in table) writer.WriteString(id, uri);
+            writer.WriteEndObject();
+        }
+
         writer.WritePropertyName("layers");
         writer.WriteStartArray();
-        foreach (BinkLayer layer in document.Layers) WriteLayer(writer, layer, options);
+        foreach (BinkLayer layer in document.Layers) WriteLayer(writer, layer, options, assets);
         writer.WriteEndArray();
 
         writer.WriteEndObject();
         writer.Flush();
     }
 
-    private static void WriteLayer(Utf8JsonWriter writer, BinkLayer layer, BinkSerializerOptions options)
+    /// <summary>The embedded images more than one element shows, by content id; null when there are none.</summary>
+    private static SortedDictionary<string, string>? SharedImages(BinkDocument document)
+    {
+        Dictionary<string, int>? uses = null;
+        foreach (BinkElement element in document.AllElements)
+        {
+            if (element is not BinkImageElement { Source: { IsEmbedded: true } source }) continue;
+            uses ??= new Dictionary<string, int>(StringComparer.Ordinal);
+            CollectionsMarshal.GetValueRefOrAddDefault(uses, source.Uri, out _)++;
+        }
+        if (uses is null) return null;
+        SortedDictionary<string, string>? table = null;
+        foreach ((string uri, int count) in uses)
+        {
+            if (count < 2) continue;
+            // Sorted by id, so the same document is always written the same way.
+            (table ??= new SortedDictionary<string, string>(StringComparer.Ordinal))[BinkImageAssets.IdOf(uri)] = uri;
+        }
+        return table;
+    }
+
+    private static void WriteLayer(Utf8JsonWriter writer, BinkLayer layer, BinkSerializerOptions options, BinkImageAssets? assets)
     {
         writer.WriteStartObject();
         writer.WriteString("id", layer.Id);
@@ -142,7 +180,7 @@ public static class BinkSerializer
 
         writer.WritePropertyName("elements");
         writer.WriteStartArray();
-        foreach (BinkElement element in layer.Elements) WriteElement(writer, element, options);
+        foreach (BinkElement element in layer.Elements) WriteElement(writer, element, options, assets);
         writer.WriteEndArray();
         writer.WriteEndObject();
     }
@@ -158,12 +196,17 @@ public static class BinkSerializer
     {
         ArgumentNullException.ThrowIfNull(writer);
         ArgumentNullException.ThrowIfNull(element);
-        WriteElement(writer, element, options ?? BinkSerializerOptions.Default);
+        WriteElement(writer, element, options ?? BinkSerializerOptions.Default, null);
     }
 
+    /// <summary>Writes a single element, sharing embedded images as <paramref name="assets"/> allows.</summary>
+    internal static void WriteElementTo(Utf8JsonWriter writer, BinkElement element, BinkSerializerOptions options, BinkImageAssets? assets)
+        => WriteElement(writer, element, options, assets);
+
     /// <summary>
-    /// Reads a single element written by <see cref="WriteElementTo"/>. Returns null when the element type is
-    /// unknown and <see cref="BinkDeserializerOptions.PreserveUnknownElements"/> is disabled.
+    /// Reads a single element written by <see cref="WriteElementTo(Utf8JsonWriter, BinkElement, BinkSerializerOptions?)"/>.
+    /// Returns null when the element type is unknown and <see cref="BinkDeserializerOptions.PreserveUnknownElements"/>
+    /// is disabled.
     /// </summary>
     /// <param name="element">The JSON object.</param>
     /// <param name="options">Deserialization options, including the limits applied to untrusted input.</param>
@@ -172,7 +215,7 @@ public static class BinkSerializer
     {
         try
         {
-            return ReadElement(element, options ?? BinkDeserializerOptions.Default);
+            return ReadElement(element, options ?? BinkDeserializerOptions.Default, null);
         }
         catch (BinkFormatException)
         {
@@ -184,7 +227,26 @@ public static class BinkSerializer
         }
     }
 
-    private static void WriteElement(Utf8JsonWriter writer, BinkElement element, BinkSerializerOptions options)
+    /// <summary>Reads a single element whose embedded images may be references, resolved through <paramref name="assets"/>.</summary>
+    /// <exception cref="BinkFormatException">The JSON is not a valid element.</exception>
+    /// <exception cref="BinkMissingAssetException">A reference cannot be resolved and the context asks for that to fail the read.</exception>
+    internal static BinkElement? ReadElementFrom(JsonElement element, BinkDeserializerOptions options, BinkImageAssets? assets)
+    {
+        try
+        {
+            return ReadElement(element, options, assets);
+        }
+        catch (BinkFormatException)
+        {
+            throw;
+        }
+        catch (Exception ex) when (ex is InvalidOperationException or ArgumentException or FormatException or OverflowException)
+        {
+            throw new BinkFormatException("The element is malformed: " + ex.Message, ex);
+        }
+    }
+
+    private static void WriteElement(Utf8JsonWriter writer, BinkElement element, BinkSerializerOptions options, BinkImageAssets? assets)
     {
         if (element is BinkUnknownElement unknown)
         {
@@ -204,7 +266,7 @@ public static class BinkSerializer
             case BinkPolygonShape polygon: WritePolygon(writer, polygon, options); break;
             case BinkPathElement path: WritePath(writer, path, options); break;
             case BinkTextElement text: WriteText(writer, text, options); break;
-            case BinkImageElement image: WriteImage(writer, image, options); break;
+            case BinkImageElement image: WriteImage(writer, image, options, assets); break;
             case BinkHighlightElement highlight: WriteHighlight(writer, highlight, options); break;
             case BinkCalloutElement callout: WriteCallout(writer, callout, options); break;
             default: WriteCustom(writer, element, options); break;
@@ -482,12 +544,25 @@ public static class BinkSerializer
         WriteTextStyle(writer, text.Style, options);
     }
 
-    private static void WriteImage(Utf8JsonWriter writer, BinkImageElement image, BinkSerializerOptions options)
+    private static void WriteImage(Utf8JsonWriter writer, BinkImageElement image, BinkSerializerOptions options, BinkImageAssets? assets)
     {
         WriteCommon(writer, "image", image, options);
         WriteRect(writer, "rect", image.Rect, options.Decimals);
         bool omit = image.Source.IsOmitted || (image.Source.IsEmbedded && !options.IncludeEmbeddedImages);
-        writer.WriteString("src", omit ? string.Empty : image.Source.Uri);
+        if (!omit && assets is not null && image.Source.IsEmbedded)
+        {
+            string id = BinkImageAssets.IdOf(image.Source.Uri);
+            if (assets.CanRefer?.Invoke(id) == true) writer.WriteString("asset", id);
+            else
+            {
+                writer.WriteString("src", image.Source.Uri);
+                assets.Written?.Invoke(id, image.Source);
+            }
+        }
+        else
+        {
+            writer.WriteString("src", omit ? string.Empty : image.Source.Uri);
+        }
         if (omit) writer.WriteBoolean("srcOmitted", true);
         if (image.Source.Width > 0) writer.WriteNumber("naturalWidth", image.Source.Width);
         if (image.Source.Height > 0) writer.WriteNumber("naturalHeight", image.Source.Height);
@@ -688,18 +763,40 @@ public static class BinkSerializer
         if (!root.TryGetProperty("layers", out JsonElement layers) || layers.ValueKind != JsonValueKind.Array)
             throw new BinkFormatException("The document must contain a \"layers\" array.");
 
+        BinkImageAssets? assets = ReadAssets(root, options);
         int layerCount = 0;
         var seenIds = new HashSet<Guid>();
         foreach (JsonElement layerElement in layers.EnumerateArray())
         {
             if (++layerCount > options.Limits.MaxLayers) throw new BinkFormatException($"The document declares more than {options.Limits.MaxLayers} layers.");
-            ReadLayer(document, layerElement, options, seenIds);
+            ReadLayer(document, layerElement, options, seenIds, assets);
         }
         if (document.Layers.Count == 0) document.InsertLayerCore(Guid.NewGuid(), new BinkLayerProperties { Name = "Drawing" }, null, null);
         return document;
     }
 
-    private static void ReadLayer(BinkDocument document, JsonElement element, BinkDeserializerOptions options, HashSet<Guid> seenIds)
+    /// <summary>
+    /// Reads the asset table, each image once, so every element that refers to it shares one image again. An entry
+    /// that is not an acceptable image is left out, and the elements that refer to it are dropped, as an element whose
+    /// own <c>src</c> is not acceptable is.
+    /// </summary>
+    private static BinkImageAssets? ReadAssets(JsonElement root, BinkDeserializerOptions options)
+    {
+        if (!root.TryGetProperty("assets", out JsonElement table) || table.ValueKind != JsonValueKind.Object) return null;
+        var images = new Dictionary<string, BinkImageSource>(StringComparer.Ordinal);
+        int count = 0;
+        foreach (JsonProperty entry in table.EnumerateObject())
+        {
+            if (++count > options.Limits.MaxElements) throw new BinkFormatException($"The document declares more than {options.Limits.MaxElements} assets.");
+            if (entry.Name.Length is 0 or > BinkImageAssets.MaxIdLength || entry.Value.ValueKind != JsonValueKind.String) continue;
+            // Only embedded pictures are shared this way; a link costs nothing to repeat.
+            if (!BinkImageSource.TryCreate(entry.Value.GetString(), 0, 0, options.AllowSvgImages, out BinkImageSource? source) || source is null || !source.IsEmbedded) continue;
+            images[entry.Name] = source;
+        }
+        return new BinkImageAssets { Resolve = id => images.GetValueOrDefault(id) };
+    }
+
+    private static void ReadLayer(BinkDocument document, JsonElement element, BinkDeserializerOptions options, HashSet<Guid> seenIds, BinkImageAssets? assets)
     {
         if (element.ValueKind != JsonValueKind.Object) throw new BinkFormatException("Each layer must be a JSON object.");
         var properties = new BinkLayerProperties
@@ -720,7 +817,7 @@ public static class BinkSerializer
         {
             foreach (JsonElement e in elementArray.EnumerateArray())
             {
-                BinkElement? parsed = ReadElement(e, options);
+                BinkElement? parsed = ReadElement(e, options, assets);
                 if (parsed is null) continue;
                 // A duplicate id would make the element unaddressable. Give it a fresh one rather than
                 // rejecting the whole document: the drawing is still perfectly good.
@@ -741,7 +838,7 @@ public static class BinkSerializer
         }
     }
 
-    private static BinkElement? ReadElement(JsonElement element, BinkDeserializerOptions options)
+    private static BinkElement? ReadElement(JsonElement element, BinkDeserializerOptions options, BinkImageAssets? assets)
     {
         if (element.ValueKind != JsonValueKind.Object) throw new BinkFormatException("Each element must be a JSON object.");
         string type = ReadString(element, "type") ?? throw new BinkFormatException("Each element must have a \"type\".");
@@ -755,7 +852,7 @@ public static class BinkSerializer
             "polygon" => ReadPolygon(element),
             "path" => ReadPathElement(element, options.Limits),
             "text" => ReadText(element),
-            "image" => ReadImage(element, options),
+            "image" => ReadImage(element, options, assets),
             "highlight" => ReadHighlight(element, options.Limits),
             "callout" => ReadCallout(element),
             _ => ReadCustom(type, element, options),
@@ -1090,14 +1187,25 @@ public static class BinkSerializer
         };
     }
 
-    private static BinkImageElement? ReadImage(JsonElement element, BinkDeserializerOptions options)
+    private static BinkImageElement? ReadImage(JsonElement element, BinkDeserializerOptions options, BinkImageAssets? assets)
     {
         string uri = ReadString(element, "src") ?? string.Empty;
         BinkRect rect = ReadRect(element, "rect") ?? BinkRect.Empty;
         int naturalWidth = element.TryGetProperty("naturalWidth", out JsonElement nw) && nw.TryGetInt32(out int w) ? w : 0;
         int naturalHeight = element.TryGetProperty("naturalHeight", out JsonElement nh) && nh.TryGetInt32(out int h) ? h : 0;
         BinkImageSource? source;
-        if (uri.Length == 0 && ReadBool(element, "srcOmitted", false))
+        if (uri.Length == 0 && ReadString(element, "asset") is { Length: > 0 } assetId)
+        {
+            // An image written once elsewhere: the document's asset table, or an earlier change from a collaborator.
+            BinkImageSource? shared = assetId.Length <= BinkImageAssets.MaxIdLength ? assets?.Resolve?.Invoke(assetId) : null;
+            if (shared is null)
+            {
+                if (assets?.ThrowWhenMissing == true) throw new BinkMissingAssetException(assetId);
+                return null;
+            }
+            source = assets!.Sized(assetId, shared, naturalWidth, naturalHeight);
+        }
+        else if (uri.Length == 0 && ReadBool(element, "srcOmitted", false))
         {
             // The payload was stripped on save. The element is kept without pixels so the application can
             // re-attach what it stored elsewhere; dropping it would lose the rect, crop and metadata with it.
@@ -1107,6 +1215,7 @@ public static class BinkSerializer
         {
             if (!BinkImageSource.TryCreate(uri, naturalWidth, naturalHeight, options.AllowSvgImages, out source) || source is null) return null;
             if (!options.AllowRemoteImages && !source.IsEmbedded) return null;
+            if (source.IsEmbedded) assets?.Read?.Invoke(source);
         }
         return new BinkImageElement(source, rect)
         {

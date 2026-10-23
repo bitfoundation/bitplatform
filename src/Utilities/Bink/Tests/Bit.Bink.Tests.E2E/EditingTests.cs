@@ -77,9 +77,7 @@ public sealed class EditingTests : BinkTest
     [TestMethod]
     public async Task Copy_reaches_the_system_clipboard_and_a_paste_brings_it_back()
     {
-        var context = await NewContextAsync();
-        await context.GrantPermissionsAsync(["clipboard-read", "clipboard-write"], new BrowserContextGrantPermissionsOptions { Origin = BaseUrl });
-        var page = await context.NewPageAsync();
+        var page = await NewClipboardPageAsync();
         await GotoAsync(page, "/whiteboard");
         await WaitForCanvasAsync(page);
         await DrawStrokeAsync(page, (200, 200), (320, 260));
@@ -112,9 +110,7 @@ public sealed class EditingTests : BinkTest
     public async Task A_copy_puts_a_picture_on_the_clipboard_beside_the_drawing()
     {
         // So a selection pastes into a chat or a document too; pasted back into a canvas, the drawing wins.
-        var context = await NewContextAsync();
-        await context.GrantPermissionsAsync(["clipboard-read", "clipboard-write"], new BrowserContextGrantPermissionsOptions { Origin = BaseUrl });
-        var page = await context.NewPageAsync();
+        var page = await NewClipboardPageAsync();
         await GotoAsync(page, "/whiteboard");
         await WaitForCanvasAsync(page);
         await DrawStrokeAsync(page, (200, 200), (320, 260));
@@ -139,9 +135,7 @@ public sealed class EditingTests : BinkTest
     {
         // The browser layer handed .NET a ready-made stream reference where Blazor expects the raw blob, so every
         // read failed and the button only ever pasted what the canvas itself had copied.
-        var context = await NewContextAsync();
-        await context.GrantPermissionsAsync(["clipboard-read", "clipboard-write"], new BrowserContextGrantPermissionsOptions { Origin = BaseUrl });
-        var page = await context.NewPageAsync();
+        var page = await NewClipboardPageAsync();
         await GotoAsync(page, "/whiteboard");
         await WaitForCanvasAsync(page);
 
@@ -226,7 +220,7 @@ public sealed class EditingTests : BinkTest
     {
         var page = await OpenAsync("/whiteboard");
         await page.Locator(".bit-bink-canvas").First.FocusAsync();
-        await page.EvaluateAsync(
+        bool simulated = await page.EvaluateAsync<bool>(
             """
             async () => {
               const canvas = document.createElement('canvas');
@@ -236,9 +230,15 @@ public sealed class EditingTests : BinkTest
               const blob = await new Promise(r => canvas.toBlob(r, 'image/png'));
               const data = new DataTransfer();
               data.items.add(new File([blob], 'shot.png', { type: 'image/png' }));
-              document.querySelector('.bit-bink-canvas').dispatchEvent(new ClipboardEvent('paste', { clipboardData: data, bubbles: true, cancelable: true }));
+              const paste = new ClipboardEvent('paste', { clipboardData: data, bubbles: true, cancelable: true });
+              // Firefox gives a constructed paste event an empty copy of the data, so the file never arrives; a real
+              // paste carries it, but this way of simulating one cannot.
+              if (!paste.clipboardData || paste.clipboardData.files.length === 0) return false;
+              document.querySelector('.bit-bink-canvas').dispatchEvent(paste);
+              return true;
             }
             """);
+        if (!simulated) Assert.Inconclusive($"{E2EEnvironment.Browser} does not carry files in a constructed paste event, so a pasted image cannot be simulated.");
         await WaitForCountAsync(page, 1);
         for (int i = 0; i < 20 && await CountInkAsync(page) < 500; i++) await page.WaitForTimeoutAsync(100);
         Assert.IsGreaterThan(500, await CountInkAsync(page), "The pasted image should be drawn.");

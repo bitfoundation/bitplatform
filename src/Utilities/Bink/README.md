@@ -1308,6 +1308,31 @@ and only documented fields. Besides its own fields, any element may carry `trans
 default value, and a reader that predates one ignores it, so an older build opens a grouped drawing ungrouped
 rather than refusing it.
 
+### Images shown more than once
+
+An embedded picture shown by several elements (duplicated, pasted twice, a stamp used across a page) is written
+once, in an `assets` table keyed by a hash of its content, and each of those elements refers to it:
+
+```json
+{
+  "format": "bink",
+  "version": 2,
+  "assets": { "3f9a0c...": "data:image/png;base64,iVBORw0..." },
+  "layers": [ { "elements": [
+    { "type": "image", "rect": [0, 0, 640, 480], "asset": "3f9a0c..." },
+    { "type": "image", "rect": [700, 0, 640, 480], "asset": "3f9a0c..." }
+  ] } ]
+}
+```
+
+On load the elements share one image object again, so a picture shown ten times is held in memory once. A file
+with an asset table is version 2, which earlier versions of Bink refuse to open with a "newer version" message
+rather than opening it without its pictures; a file whose pictures are each shown once has no table and is still
+version 1, readable by every version. `BinkSerializerOptions.ShareImageData = false` always writes version 1, for
+documents that must open in an older build. The table is read as untrusted input like the rest: an entry that is
+not an embedded raster picture is left out, and the elements that refer to it are dropped, as an element with an
+unacceptable `src` is.
+
 ### How points are stored
 
 `BinkPointCodec` quantizes coordinates to a fixed grid (64 steps per document unit by default) and delta-encodes
@@ -1449,8 +1474,9 @@ tried again. It is a recovery copy, separate from the application's own saving: 
 
 `BinkBrowserDocumentStore` keeps documents in the browser's IndexedDB, which survives reloads and crashes, holds far
 more than `localStorage`, and never leaves the device. Reading one back streams it, so a large drawing is no problem
-on Blazor Server. The browser may still clear it under storage pressure or in a private window, so treat it as a
-safety net. `BinkMemoryDocumentStore` is the in-memory one; implement `IBinkDocumentStore`, three methods over bytes,
+on Blazor Server. It works in a Safari private window too, which refuses to store a `Blob` in IndexedDB, because
+the document is stored as plain bytes. The browser may still clear it under storage pressure or when a private
+window closes, so treat it as a safety net. `BinkMemoryDocumentStore` is the in-memory one; implement `IBinkDocumentStore`, three methods over bytes,
 to keep drawings in a database or behind an API. The whiteboard demo autosaves this way and offers the drawing back
 when the page is opened again.
 
@@ -2240,6 +2266,20 @@ BinkDrawingOperation received = BinkOperationCodec.Deserialize(json);
 
 Incoming operations are validated exactly like a loaded file, against `BinkCollaborationOptions.Limits`. A
 participant cannot make another client allocate unboundedly by sending a hostile operation.
+
+An embedded picture crosses the wire once. Every change to an element carries the whole element, so moving a
+photo used to send the photo again with every frame of the drag: a megabyte at sixty frames a second. Now the first
+change that shows a picture carries it, and later ones (each frame of the drag, an undo that brings it back, three
+copies pasted at once) refer to it by a hash of its content. A receiver resolves the reference from the same change,
+from its own document, or from the last 32 million characters of pictures it has received; if it still lacks the
+picture, because it joined after the picture was sent and the picture has since left the document, it holds the
+change, asks for a snapshot, and applies the change on top of it. It asks at most once every ten seconds, so a peer
+that refers to pictures that do not exist cannot make everyone send the document over and over; such changes are
+reported through `RemoteOperationRejected` and dropped.
+
+References are only used once every participant the session has heard from understands them. Each message carries
+`Protocol`, which reads as 0 from a version that predates it; while anyone at 0 is in the session, every change
+carries its pictures in full and snapshots are written without an asset table, so mixed versions keep working.
 
 ### Live ink and cursors
 

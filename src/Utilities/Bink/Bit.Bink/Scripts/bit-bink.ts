@@ -1752,18 +1752,22 @@ function storeRequest<T>(mode: IDBTransactionMode, run: (objects: IDBObjectStore
 }
 
 export function storeSave(key: string, data: Uint8Array): Promise<void> {
-    // Kept as a Blob: IndexedDB stores it without copying it into the JavaScript heap again.
-    const record = { data: new Blob([data as BlobPart]), saved: Date.now() };
+    // Kept as the bytes themselves, not a Blob: WebKit cannot store a Blob in IndexedDB outside a persistent session,
+    // which is every Safari private window, and failed each save with "Error preparing Blob/File data".
+    const record = { data, saved: Date.now() };
     return storeRequest('readwrite', (objects) => objects.put(record, key)).then(() => undefined);
 }
 
 // Returned as a Blob, which .NET reads as a stream, led by one byte that says whether anything was stored: 1 and the
-// document, or 0 alone. Blazor can make a stream of neither null nor an empty Blob.
+// document, or 0 alone. Blazor can make a stream of neither null nor an empty Blob. A record saved by an earlier
+// version holds a Blob rather than bytes, and is read the same way.
 export function storeLoad(key: string): Promise<Blob> {
-    return storeRequest<{ data?: Blob } | undefined>('readonly', (objects) => objects.get(key))
-        .then((record) => (record && record.data instanceof Blob
-            ? new Blob([new Uint8Array([1]), record.data])
-            : new Blob([new Uint8Array([0])])));
+    return storeRequest<{ data?: unknown } | undefined>('readonly', (objects) => objects.get(key))
+        .then((record) => {
+            const data = record?.data;
+            const stored = data instanceof Blob || data instanceof ArrayBuffer || ArrayBuffer.isView(data);
+            return stored ? new Blob([new Uint8Array([1]), data as BlobPart]) : new Blob([new Uint8Array([0])]);
+        });
 }
 
 export function storeDelete(key: string): Promise<boolean> {

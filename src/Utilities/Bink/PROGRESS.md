@@ -247,8 +247,38 @@ Run after the last change, against the same tree:
 | `Bit.Bink.Tests.E2E` (Playwright, Chromium, the demo server) | 51 / 51 (baseline 46) |
 | Benchmarks | Drag frame equal to the baseline in time, +3% allocation; grouping and SVG import measured (benchmarks README) |
 
+## Round 2 (next steps after the first report)
+
+| # | Focus | Outcome |
+| --- | --- | --- |
+| 13 | Cross-browser E2E | `BINK_E2E_BROWSER` (chromium, firefox, webkit); the CI E2E workflow runs a job per engine. The unit pipeline already ran .NET 8, 9 and 10. First runs: Firefox 47 passed, 3 inconclusive, 1 failed; WebKit 47 passed, 4 failed. Every failure was investigated with an in-browser probe before deciding: Firefox gives a constructed paste event an empty copy of its data (a limit of simulating a paste, so the test now detects it and is inconclusive), both engines refuse the clipboard permissions (inconclusive, with the reason), and **WebKit refused to store a `Blob` in IndexedDB, so autosave never worked in Safari private windows or any non-persistent WebKit session** - a real defect, fixed by storing bytes; old Blob records still load. |
+| 14 | Accessibility automation | `AccessibilityTests` (axe-core 4.14 via `Deque.AxeCore.Playwright`, test-only): every demo page and the canvas with its text editor open against WCAG 2.1 A and AA. The canvas had no violations; the demo shell had three, fixed: the primary colour (#1276C6) failed text contrast (4.34 and 3.97 against 4.5) and is now #0B6AB4 (5.2 and 4.7); the search button's name did not contain its visible text (WCAG 2.5.3), and its two key hints had no space between them, so the visible text read "CtrlK"; the footer link was told apart from its sentence by colour alone. |
+| 15 | Asset table | Format version 2: an embedded picture shown by more than one element is written once in `assets`, keyed by a SHA-256 content id, and shared again on load; a document without one is still version 1; `ShareImageData` turns it off. On the wire: a picture crosses once per session, then changes refer to it, so dragging a photo no longer re-sends it every frame. Messages carry `Protocol`; references are used only when everyone heard from is at 1, and snapshots drop the table otherwise. A receiver missing a picture holds the change, asks for a snapshot, and applies it after. 9 tests, one of them for the recovery rate limit; suite 738/738. |
+
+### Decisions of round 2
+
+| Decision | Rationale |
+| --- | --- |
+| Asset ids are content hashes, verified by the receiver. | The same picture has the same id in every file and on every participant, so files and the wire share one mechanism, and a peer cannot make an id stand for a different picture: receivers hash what they receive themselves. |
+| The table holds only pictures shown more than once, and only those files are version 2. | Keeps every other file readable by earlier versions; an earlier version refuses a version 2 file with a message rather than silently dropping its pictures. |
+| Wire references are gated on every heard-from participant's protocol, not on a session option. | Mixed versions (a stale tab after a deploy) keep working with no configuration; the saving is automatic once everyone is current. |
+| An unresolvable reference triggers the existing snapshot recovery rather than a new "send me this picture" message. | Reuses a tested path; the case is rare (joined after the picture was sent, and the picture has since left the document). |
+| That recovery asks at most once every 10 seconds. | Every participant answers a snapshot request with the whole document, so without a limit one peer sending references to pictures that do not exist could make everyone send the document over and over (found in review before release; tested). |
+
+### Verification of round 2
+
+| Check | Result |
+| --- | --- |
+| `dotnet build Bit.Bink.slnx` | Succeeds; the one warning is the baseline's |
+| `Bit.Bink.Tests` | 738 / 738 on net10.0; the net8.0 and net9.0 builds also 738 / 738, run on the .NET 10 runtime (`DOTNET_ROLL_FORWARD=Major`), since only that runtime is installed here. CI runs them on .NET 8 and 9 themselves. |
+| `Bit.Bink.Tests.Mcp` | 73 / 73 (one test assumed the sample's declared version was always the current one; with version 2 that holds only for files with an asset table, so it now asserts the version the sample declares) |
+| `Bit.Bink.Tests.E2E`, Chromium | 63 / 63 (51 plus 12 accessibility) |
+| `Bit.Bink.Tests.E2E`, Firefox | 59 passed, 4 inconclusive with the reasons in its README, 0 failed |
+| `Bit.Bink.Tests.E2E`, WebKit | 60 passed, 3 inconclusive, 0 failed; autosave and restore pass after the IndexedDB fix |
+| Not measured | The cost of the asset-table scan on save (one pass over the elements before writing); no save benchmark was rerun in this round. |
+
 ## Next priorities
 
-1. Asset table for embedded images (dedupe across copies and collaboration).
-2. Fractional z-order keys, which would let concurrent reorders reconcile (a format change).
-3. Rebinding shortcuts to other keys inside the canvas, beyond disabling them.
+1. Fractional z-order keys, which would let concurrent reorders reconcile (a format change).
+2. Rebinding shortcuts to other keys inside the canvas, beyond disabling them.
+3. A per-picture request message, should snapshot recovery for a missing picture prove too heavy in large sessions.

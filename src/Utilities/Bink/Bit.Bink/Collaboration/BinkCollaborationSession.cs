@@ -72,6 +72,31 @@ public sealed class BinkCollaborationSession : IAsyncDisposable
     /// <summary>The most points of another participant's in-progress stroke that are kept.</summary>
     private const int MaxLiveStrokePoints = 10_000;
 
+    /// <summary>
+    /// What this session understands, sent with every message: 1, images referred to by content id. See
+    /// <see cref="BinkCollaborationMessage.Protocol"/>.
+    /// </summary>
+    private const int CurrentProtocol = 1;
+
+    /// <summary>How many image ids are remembered as already shared before the memory starts over.</summary>
+    private const int MaxSharedImageIds = 10_000;
+
+    /// <summary>
+    /// How much image data, in characters of data URI, is kept for references to images no longer in the document,
+    /// such as one deleted and then brought back by undo.
+    /// </summary>
+    private const long MaxCachedImageChars = 32L * 1024 * 1024;
+
+    /// <summary>How many changes may wait for an image that is being fetched with a snapshot.</summary>
+    private const int MaxHeldForImages = 100;
+
+    /// <summary>
+    /// The least time between snapshots asked for to fetch a missing image. Every participant that serves snapshots
+    /// answers with the whole document, so a peer sending references to pictures that do not exist must not be able
+    /// to make this replica ask, and everyone answer, over and over.
+    /// </summary>
+    private static readonly TimeSpan ImageFetchInterval = TimeSpan.FromSeconds(10);
+
     private readonly BinkDocument _document;
     private readonly IBinkCollaborationTransport _transport;
     private readonly BinkCollaborationOptions _options;
@@ -91,6 +116,18 @@ public sealed class BinkCollaborationSession : IAsyncDisposable
     private readonly List<PendingOperation> _deferred = new();
     // While a requested snapshot is awaited: every operation sent and received, replayed on top of the answer.
     private readonly Queue<PendingOperation> _replay = new();
+    // What each participant heard from understands (BinkCollaborationMessage.Protocol).
+    private readonly ConcurrentDictionary<string, int> _protocols = new(StringComparer.Ordinal);
+    // Content ids of images whose data has crossed the wire in an operation, sent or received. Operations reach every
+    // participant, so each of them holds these, and a later change can refer to them instead of sending them again.
+    private readonly HashSet<string> _sharedImages = new(StringComparer.Ordinal);
+    // Images seen in operations, by content id, oldest first, for references to one no longer in the document.
+    private readonly Dictionary<string, BinkImageSource> _imageCache = new(StringComparer.Ordinal);
+    private readonly Queue<string> _imageCacheOrder = new();
+    private long _imageCacheChars;
+    // Changes that referred to an image this replica does not hold, waiting for the snapshot that brings it.
+    private readonly List<(BinkCollaborationMessage Message, DateTimeOffset Received)> _heldForImages = new();
+    private DateTimeOffset _lastImageFetch = DateTimeOffset.MinValue;
     // Message numbers, seeded from the clock rather than starting at zero. A participant that reloads the page or
     // crashes rejoins under the same id without having sent Leave, and the others still hold its old high-water
     // mark, so a counter that started over had everything the new session sent discarded as retransmissions. The
@@ -197,6 +234,7 @@ public sealed class BinkCollaborationSession : IAsyncDisposable
         {
             Kind = BinkCollaborationMessageKind.SnapshotRequest,
             SenderId = ParticipantId,
+            Protocol = CurrentProtocol,
             DocumentId = _document.Id,
             Sequence = NextSequence(),
         }, cancellationToken);
@@ -214,7 +252,10 @@ public sealed class BinkCollaborationSession : IAsyncDisposable
         string snapshot;
         try
         {
-            snapshot = BinkSerializer.Serialize(_document, _options.SerializerOptions);
+            // A snapshot with an asset table is format version 2, which a participant from before the table refuses;
+            // it would then be unable to join at all.
+            BinkSerializerOptions options = EveryoneResolvesImages() ? _options.SerializerOptions : _options.SerializerOptions with { ShareImageData = false };
+            snapshot = BinkSerializer.Serialize(_document, options);
         }
         catch (Exception ex) when (IsSerializationFailure(ex))
         {
@@ -227,6 +268,7 @@ public sealed class BinkCollaborationSession : IAsyncDisposable
         {
             Kind = BinkCollaborationMessageKind.Snapshot,
             SenderId = ParticipantId,
+            Protocol = CurrentProtocol,
             RecipientId = recipientId,
             DocumentId = _document.Id,
             Sequence = NextSequence(),
@@ -262,6 +304,7 @@ public sealed class BinkCollaborationSession : IAsyncDisposable
         {
             Kind = BinkCollaborationMessageKind.Presence,
             SenderId = ParticipantId,
+            Protocol = CurrentProtocol,
             DocumentId = _document.Id,
             Sequence = NextSequence(),
             Presence = state,
@@ -281,6 +324,7 @@ public sealed class BinkCollaborationSession : IAsyncDisposable
         {
             Kind = BinkCollaborationMessageKind.Presence,
             SenderId = ParticipantId,
+            Protocol = CurrentProtocol,
             DocumentId = _document.Id,
             Sequence = NextSequence(),
             Presence = state,
@@ -377,9 +421,19 @@ public sealed class BinkCollaborationSession : IAsyncDisposable
         RecordWriter(e.Operation, ParticipantId);
 
         string payload;
+        // An image goes in full the first time; after that, and again within this one change (pasting three copies of
+        // a photo), it is referred to by its content id, once everyone can resolve one. Dragging an embedded photo
+        // otherwise sent the whole picture again with every frame of the drag.
+        var written = new Dictionary<string, BinkImageSource>(StringComparer.Ordinal);
+        bool refer = EveryoneResolvesImages();
+        var assets = new BinkImageAssets
+        {
+            CanRefer = refer ? id => written.ContainsKey(id) || _sharedImages.Contains(id) : null,
+            Written = (id, image) => written[id] = image,
+        };
         try
         {
-            payload = BinkOperationCodec.Serialize(e.Operation, _options.SerializerOptions);
+            payload = BinkOperationCodec.Serialize(e.Operation, _options.SerializerOptions, assets);
         }
         catch (Exception ex) when (IsSerializationFailure(ex))
         {
@@ -388,6 +442,7 @@ public sealed class BinkCollaborationSession : IAsyncDisposable
             RemoteOperationRejected?.Invoke("A local change could not be shared: " + ex.Message);
             return;
         }
+        foreach ((string id, BinkImageSource image) in written) RememberImage(id, image);
 
         // The answer to a pending snapshot request may have been serialized before this change reached whoever
         // answered; it is applied again on top of the answer rather than wiped by it.
@@ -397,6 +452,7 @@ public sealed class BinkCollaborationSession : IAsyncDisposable
         {
             Kind = BinkCollaborationMessageKind.Operation,
             SenderId = ParticipantId,
+            Protocol = CurrentProtocol,
             DocumentId = _document.Id,
             Sequence = NextSequence(),
             Operation = payload,
@@ -490,6 +546,7 @@ public sealed class BinkCollaborationSession : IAsyncDisposable
             _lastExpiryCheck = now;
             ExpireParticipants();
             ExpireDeferred();
+            ExpireHeldForImages();
         }
 
         // Duplicate delivery is harmless to ignore, and a lower sequence means a retransmission we already saw.
@@ -504,6 +561,7 @@ public sealed class BinkCollaborationSession : IAsyncDisposable
             if (message.Kind != BinkCollaborationMessageKind.SnapshotRequest) return;
         }
         _lastSequence[message.SenderId] = message.Sequence;
+        _protocols[message.SenderId] = message.Protocol;
 
         switch (message.Kind)
         {
@@ -524,12 +582,13 @@ public sealed class BinkCollaborationSession : IAsyncDisposable
                 // drawn since the first one. A snapshot sent to everyone is a deliberate reset and always applies.
                 if (message.RecipientId is null)
                 {
-                    ApplySnapshot(message);
+                    if (ApplySnapshot(message)) RetryHeldForImages();
                 }
                 else if (_awaitingSnapshot && ApplySnapshot(message))
                 {
                     _awaitingSnapshot = false;
                     ReplayOnSnapshot();
+                    RetryHeldForImages();
                 }
                 break;
             case BinkCollaborationMessageKind.SnapshotRequest:
@@ -543,19 +602,61 @@ public sealed class BinkCollaborationSession : IAsyncDisposable
 
     private void ApplyRemoteOperation(BinkCollaborationMessage message)
     {
-        if (message.Operation is not { Length: > 0 } payload) return;
+        if (message.Operation is not { Length: > 0 }) return;
         BinkDrawingOperation operation;
         try
         {
-            operation = BinkOperationCodec.Deserialize(payload, ReadOptions);
+            operation = ReadOperation(message, fetchMissing: true);
+        }
+        catch (BinkMissingAssetException)
+        {
+            // Not malformed: the picture crossed the wire before this replica could keep it. A snapshot brings it,
+            // and the change is applied on top of that.
+            HoldForImages(message);
+            return;
         }
         catch (BinkFormatException ex)
         {
             RemoteOperationRejected?.Invoke($"A change from {message.SenderId} was rejected: {ex.Message}");
             return;
         }
+        ApplyReceived(operation, message.SenderId);
+    }
 
-        var received = new PendingOperation(operation, message.SenderId, UtcNow);
+    /// <summary>
+    /// Reads a remote operation. An image in it is either carried in full, and remembered for later references, or
+    /// referred to by content id: one written earlier in the same operation, one this replica's document shows, or
+    /// one kept from an earlier operation.
+    /// </summary>
+    /// <param name="message">The operation message.</param>
+    /// <param name="fetchMissing">Whether an image that cannot be resolved throws <see cref="BinkMissingAssetException"/>, rather than failing the read as malformed.</param>
+    private BinkDrawingOperation ReadOperation(BinkCollaborationMessage message, bool fetchMissing)
+    {
+        var inOperation = new Dictionary<string, BinkImageSource>(StringComparer.Ordinal);
+        var assets = new BinkImageAssets
+        {
+            Resolve = id => inOperation.GetValueOrDefault(id) ?? ResolveImage(id),
+            Read = image =>
+            {
+                string id = BinkImageAssets.IdOf(image.Uri);
+                inOperation[id] = image;
+                RememberImage(id, image);
+            },
+            ThrowWhenMissing = true,
+        };
+        try
+        {
+            return BinkOperationCodec.Deserialize(message.Operation!, ReadOptions, assets);
+        }
+        catch (BinkMissingAssetException ex) when (!fetchMissing)
+        {
+            throw new BinkFormatException(ex.Message, ex);
+        }
+    }
+
+    private void ApplyReceived(BinkDrawingOperation operation, string senderId)
+    {
+        var received = new PendingOperation(operation, senderId, UtcNow);
         // The answer to a pending snapshot request may have been serialized before this change reached whoever
         // answered, so the change is applied again on top of the answer rather than wiped by it.
         if (_awaitingSnapshot) Log(received);
@@ -690,6 +791,113 @@ public sealed class BinkCollaborationSession : IAsyncDisposable
         if (_deferred.Count == 0) return;
         DateTimeOffset cutoff = UtcNow - DeferredLifetime;
         _deferred.RemoveAll(entry => entry.Received < cutoff);
+    }
+
+    /// <summary>
+    /// Whether an image may be referred to by content id: only when everyone this session has heard from resolves
+    /// such references. A participant from before them would otherwise read the change as malformed, and with nobody
+    /// heard from yet there is nobody to be sure of.
+    /// </summary>
+    private bool EveryoneResolvesImages()
+    {
+        if (_protocols.IsEmpty) return false;
+        foreach (int protocol in _protocols.Values)
+        {
+            if (protocol < 1) return false;
+        }
+        return true;
+    }
+
+    /// <summary>Remembers an image whose data crossed the wire, so later changes can refer to it and be resolved here.</summary>
+    private void RememberImage(string id, BinkImageSource image)
+    {
+        // Past the limit the memory starts over, which only means a few images go in full once more.
+        if (_sharedImages.Count >= MaxSharedImageIds) _sharedImages.Clear();
+        _sharedImages.Add(id);
+
+        if (_imageCache.ContainsKey(id) || image.Uri.Length > MaxCachedImageChars) return;
+        _imageCache[id] = image;
+        _imageCacheOrder.Enqueue(id);
+        _imageCacheChars += image.Uri.Length;
+        while (_imageCacheChars > MaxCachedImageChars && _imageCacheOrder.TryDequeue(out string? oldest))
+        {
+            if (_imageCache.Remove(oldest, out BinkImageSource? dropped)) _imageCacheChars -= dropped.Uri.Length;
+        }
+    }
+
+    /// <summary>The image with a content id: one kept from an earlier operation, or one the document shows.</summary>
+    private BinkImageSource? ResolveImage(string id)
+    {
+        // The cache first: each frame of a collaborator's drag refers to the same picture, and looking it up there
+        // costs nothing, while the document is searched element by element.
+        if (_imageCache.TryGetValue(id, out BinkImageSource? cached)) return cached;
+        foreach (BinkElement element in _document.AllElements)
+        {
+            if (element is not BinkImageElement { Source: { IsEmbedded: true } source } || BinkImageAssets.IdOf(source.Uri) != id) continue;
+            // Kept, so the next frame of the same drag finds it at once; a picture that came with a snapshot is not
+            // in the cache until then.
+            RememberImage(id, source);
+            return source;
+        }
+        return null;
+    }
+
+    /// <summary>Holds a change that refers to an image this replica does not have, and asks for a snapshot, which brings it.</summary>
+    private void HoldForImages(BinkCollaborationMessage message)
+    {
+        DateTimeOffset now = UtcNow;
+        if (_heldForImages.Count >= MaxHeldForImages) _heldForImages.RemoveAt(0);
+        _heldForImages.Add((message, now));
+        // A change that arrives while one fetch is under way, or soon after, waits for that snapshot or the next.
+        if (_awaitingSnapshot || now - _lastImageFetch < ImageFetchInterval) return;
+        _lastImageFetch = now;
+        _ = RequestSnapshotAsync();
+    }
+
+    /// <summary>
+    /// Applies, on top of a snapshot that has just landed, the changes that were waiting for an image. The snapshot
+    /// shows the images its sender's document did; a change whose image is still missing was about something already
+    /// gone, and is reported and dropped.
+    /// </summary>
+    private void RetryHeldForImages()
+    {
+        if (_heldForImages.Count == 0) return;
+        (BinkCollaborationMessage Message, DateTimeOffset Received)[] held = [.. _heldForImages];
+        _heldForImages.Clear();
+        foreach ((BinkCollaborationMessage message, _) in held)
+        {
+            BinkDrawingOperation operation;
+            try
+            {
+                operation = ReadOperation(message, fetchMissing: false);
+            }
+            catch (BinkFormatException ex)
+            {
+                RemoteOperationRejected?.Invoke($"A change from {message.SenderId} was rejected: {ex.Message}");
+                continue;
+            }
+            ApplyReceived(operation, message.SenderId);
+        }
+    }
+
+    /// <summary>
+    /// Drops changes that have waited too long for an image, reporting each: no snapshot is coming. Those still
+    /// waiting get a snapshot asked for once the interval allows, if the one they arrived after was held back.
+    /// </summary>
+    private void ExpireHeldForImages()
+    {
+        if (_heldForImages.Count == 0) return;
+        DateTimeOffset now = UtcNow;
+        DateTimeOffset cutoff = now - DeferredLifetime;
+        for (int i = 0; i < _heldForImages.Count; i++)
+        {
+            if (_heldForImages[i].Received >= cutoff) continue;
+            RemoteOperationRejected?.Invoke($"A change from {_heldForImages[i].Message.SenderId} was dropped: the image it shows never arrived.");
+            _heldForImages.RemoveAt(i--);
+        }
+        if (_heldForImages.Count == 0 || _awaitingSnapshot || now - _lastImageFetch < ImageFetchInterval) return;
+        _lastImageFetch = now;
+        _ = RequestSnapshotAsync();
     }
 
     /// <summary>Remembers an operation to replay on top of the snapshot that answers a pending request.</summary>
@@ -972,6 +1180,7 @@ public sealed class BinkCollaborationSession : IAsyncDisposable
     private void Forget(string participantId)
     {
         _lastSequence.TryRemove(participantId, out _);
+        _protocols.TryRemove(participantId, out _);
         if (_participants.TryRemove(participantId, out _)) ParticipantLeft?.Invoke(participantId);
     }
 
@@ -992,6 +1201,7 @@ public sealed class BinkCollaborationSession : IAsyncDisposable
                 {
                     Kind = BinkCollaborationMessageKind.Leave,
                     SenderId = ParticipantId,
+                    Protocol = CurrentProtocol,
                     DocumentId = _document.Id,
                     Sequence = NextSequence(),
                 }).ConfigureAwait(false);
@@ -1004,8 +1214,13 @@ public sealed class BinkCollaborationSession : IAsyncDisposable
         }
         _participants.Clear();
         _lastSequence.Clear();
+        _protocols.Clear();
         _deferred.Clear();
         _replay.Clear();
+        _heldForImages.Clear();
+        _imageCache.Clear();
+        _imageCacheOrder.Clear();
+        _sharedImages.Clear();
         _flushGate.Dispose();
     }
 }

@@ -39,6 +39,15 @@ public sealed record BinkSerializerOptions
     /// </summary>
     public bool IncludeEmbeddedImages { get; init; } = true;
 
+    /// <summary>
+    /// Whether an embedded image shown by more than one element is written once, in the document's asset table, and
+    /// referred to from each element; on load those elements share one image again. On by default. A document that
+    /// uses the table is written as format version 2, which earlier versions of Bink refuse to open rather than
+    /// silently losing its pictures; a document without shared images is still written as version 1. Turn it off
+    /// while documents must open in a Bink version from before the table.
+    /// </summary>
+    public bool ShareImageData { get; init; } = true;
+
     /// <summary>Brush kinds used to reconstruct custom brushes on load.</summary>
     public BinkBrushRegistry BrushRegistry { get; init; } = BinkBrushRegistry.Default;
 

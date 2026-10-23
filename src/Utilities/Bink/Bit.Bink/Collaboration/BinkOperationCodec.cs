@@ -18,16 +18,25 @@ public static class BinkOperationCodec
     public static string Serialize(BinkDrawingOperation operation, BinkSerializerOptions? options = null)
     {
         ArgumentNullException.ThrowIfNull(operation);
+        return Serialize(operation, options ?? BinkSerializerOptions.Default, null);
+    }
+
+    /// <summary>
+    /// Serializes an operation, writing each embedded image as a reference to its content id wherever
+    /// <paramref name="assets"/> allows, and in full everywhere else.
+    /// </summary>
+    internal static string Serialize(BinkDrawingOperation operation, BinkSerializerOptions options, BinkImageAssets? assets)
+    {
         var buffer = new ArrayBufferWriter<byte>(512);
         using (var writer = new Utf8JsonWriter(buffer, new JsonWriterOptions { SkipValidation = true }))
         {
-            Write(writer, operation, options ?? BinkSerializerOptions.Default);
+            Write(writer, operation, options, assets);
             writer.Flush();
         }
         return Encoding.UTF8.GetString(buffer.WrittenSpan);
     }
 
-    private static void Write(Utf8JsonWriter writer, BinkDrawingOperation operation, BinkSerializerOptions options)
+    private static void Write(Utf8JsonWriter writer, BinkDrawingOperation operation, BinkSerializerOptions options, BinkImageAssets? assets)
     {
         writer.WriteStartObject();
         switch (operation)
@@ -37,7 +46,7 @@ public static class BinkOperationCodec
                 writer.WriteString("layer", add.LayerId);
                 if (add.Index is { } index) writer.WriteNumber("index", index);
                 writer.WritePropertyName("element");
-                BinkSerializer.WriteElementTo(writer, add.Element, options);
+                BinkSerializer.WriteElementTo(writer, add.Element, options, assets);
                 break;
             case BinkRemoveElementOperation remove:
                 writer.WriteString("op", "remove");
@@ -46,7 +55,7 @@ public static class BinkOperationCodec
             case BinkReplaceElementOperation replace:
                 writer.WriteString("op", "replace");
                 writer.WritePropertyName("element");
-                BinkSerializer.WriteElementTo(writer, replace.Element, options);
+                BinkSerializer.WriteElementTo(writer, replace.Element, options, assets);
                 break;
             case BinkReorderElementOperation reorder:
                 writer.WriteString("op", "reorder");
@@ -63,7 +72,7 @@ public static class BinkOperationCodec
                 {
                     writer.WritePropertyName("elements");
                     writer.WriteStartArray();
-                    foreach (BinkElement element in addLayer.Elements) BinkSerializer.WriteElementTo(writer, element, options);
+                    foreach (BinkElement element in addLayer.Elements) BinkSerializer.WriteElementTo(writer, element, options, assets);
                     writer.WriteEndArray();
                 }
                 break;
@@ -98,7 +107,7 @@ public static class BinkOperationCodec
                 if (batch.Label is { Length: > 0 }) writer.WriteString("label", batch.Label);
                 writer.WritePropertyName("operations");
                 writer.WriteStartArray();
-                foreach (BinkDrawingOperation inner in batch.Operations) Write(writer, inner, options);
+                foreach (BinkDrawingOperation inner in batch.Operations) Write(writer, inner, options, assets);
                 writer.WriteEndArray();
                 break;
             default:
@@ -129,16 +138,22 @@ public static class BinkOperationCodec
         writer.WriteEndObject();
     }
 
-    /// <summary>Parses an operation previously produced by <see cref="Serialize"/>.</summary>
+    /// <summary>Parses an operation previously produced by <see cref="Serialize(BinkDrawingOperation, BinkSerializerOptions?)"/>.</summary>
     /// <exception cref="BinkFormatException">The JSON is not a valid operation.</exception>
     public static BinkDrawingOperation Deserialize(string json, BinkDeserializerOptions? options = null)
+        => Deserialize(json, options, null);
+
+    /// <summary>Parses an operation whose embedded images may be references, resolved through <paramref name="assets"/>.</summary>
+    /// <exception cref="BinkFormatException">The JSON is not a valid operation.</exception>
+    /// <exception cref="BinkMissingAssetException">An image it refers to is not available, and <paramref name="assets"/> asks for that to fail the read.</exception>
+    internal static BinkDrawingOperation Deserialize(string json, BinkDeserializerOptions? options, BinkImageAssets? assets)
     {
         ArgumentNullException.ThrowIfNull(json);
         options ??= BinkDeserializerOptions.Default;
         try
         {
             using JsonDocument document = JsonDocument.Parse(json, new JsonDocumentOptions { MaxDepth = 32 });
-            return Read(document.RootElement, options);
+            return Read(document.RootElement, options, assets);
         }
         catch (JsonException ex)
         {
@@ -153,7 +168,7 @@ public static class BinkOperationCodec
         }
     }
 
-    private static BinkDrawingOperation Read(JsonElement element, BinkDeserializerOptions options)
+    private static BinkDrawingOperation Read(JsonElement element, BinkDeserializerOptions options, BinkImageAssets? assets)
     {
         if (element.ValueKind != JsonValueKind.Object) throw new BinkFormatException("An operation must be a JSON object.");
         string kind = element.TryGetProperty("op", out JsonElement op) ? op.GetString() ?? string.Empty : string.Empty;
@@ -162,13 +177,13 @@ public static class BinkOperationCodec
         {
             case "add":
             {
-                BinkElement item = ReadElement(element, "element", options);
+                BinkElement item = ReadElement(element, "element", options, assets);
                 return new BinkAddElementOperation(ReadGuid(element, "layer"), item, ReadInt(element, "index"));
             }
             case "remove":
                 return new BinkRemoveElementOperation(ReadGuid(element, "element"));
             case "replace":
-                return new BinkReplaceElementOperation(ReadElement(element, "element", options));
+                return new BinkReplaceElementOperation(ReadElement(element, "element", options, assets));
             case "reorder":
                 return new BinkReorderElementOperation(ReadGuid(element, "element"), ReadGuid(element, "layer"), ReadInt(element, "index"));
             case "addLayer":
@@ -179,7 +194,7 @@ public static class BinkOperationCodec
                     elements = new List<BinkElement>();
                     foreach (JsonElement e in array.EnumerateArray())
                     {
-                        BinkElement? parsed = BinkSerializer.ReadElementFrom(e, options);
+                        BinkElement? parsed = BinkSerializer.ReadElementFrom(e, options, assets);
                         if (parsed is not null) elements.Add(parsed);
                     }
                 }
@@ -210,7 +225,7 @@ public static class BinkOperationCodec
                 var operations = new List<BinkDrawingOperation>();
                 if (element.TryGetProperty("operations", out JsonElement array) && array.ValueKind == JsonValueKind.Array)
                 {
-                    foreach (JsonElement e in array.EnumerateArray()) operations.Add(Read(e, options));
+                    foreach (JsonElement e in array.EnumerateArray()) operations.Add(Read(e, options, assets));
                 }
                 string? label = element.TryGetProperty("label", out JsonElement l) ? l.GetString() : null;
                 return new BinkBatchOperation(operations, label);
@@ -220,10 +235,10 @@ public static class BinkOperationCodec
         }
     }
 
-    private static BinkElement ReadElement(JsonElement element, string name, BinkDeserializerOptions options)
+    private static BinkElement ReadElement(JsonElement element, string name, BinkDeserializerOptions options, BinkImageAssets? assets)
     {
         if (!element.TryGetProperty(name, out JsonElement value)) throw new BinkFormatException($"The operation is missing its \"{name}\".");
-        return BinkSerializer.ReadElementFrom(value, options) ?? throw new BinkFormatException("The operation carries an element this version cannot read.");
+        return BinkSerializer.ReadElementFrom(value, options, assets) ?? throw new BinkFormatException("The operation carries an element this version cannot read.");
     }
 
     private static BinkLayerProperties ReadLayerProperties(JsonElement element)

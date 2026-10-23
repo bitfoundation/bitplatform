@@ -31,6 +31,9 @@ internal sealed class TestTransport(TestHub hub) : IBinkCollaborationTransport
 
     public int SentCount { get; private set; }
 
+    /// <summary>Every message sent, in order, so a test can look at what went over the wire.</summary>
+    public List<BinkCollaborationMessage> Sent { get; } = new();
+
     public event Func<BinkCollaborationMessage, Task>? MessageReceived;
 
     public event Action<bool>? ConnectionChanged;
@@ -46,6 +49,7 @@ internal sealed class TestTransport(TestHub hub) : IBinkCollaborationTransport
     {
         if (!_connected) throw new InvalidOperationException("Offline.");
         SentCount++;
+        Sent.Add(message);
         await hub.BroadcastAsync(this, message).ConfigureAwait(false);
     }
 
