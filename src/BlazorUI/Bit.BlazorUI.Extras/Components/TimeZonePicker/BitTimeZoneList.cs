@@ -383,6 +383,7 @@ internal sealed class BitTimeZoneList
 
         _built = true;
         Build(_lastTimeZones ?? [], _lastPreferredTimeZones, _lastReferenceDate ?? DateTimeOffset.UtcNow);
+        Version++;
     }
 
     private void Move(int offset, bool clamp)

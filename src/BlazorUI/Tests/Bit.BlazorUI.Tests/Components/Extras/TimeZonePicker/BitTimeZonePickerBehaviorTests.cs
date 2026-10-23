@@ -1340,6 +1340,28 @@ public class BitTimeZonePickerBehaviorTests : BunitTestContext
         Assert.IsGreaterThanOrEqualTo(8, timeZones.Read);
     }
 
+    [TestMethod]
+    public void BitTimeZonePickerShouldNotKeepASelectedTimeZoneItsListNoLongerOffers()
+    {
+        var timeZones = new List<BitTimeZone>(SevenTimeZones);
+
+        var component = RenderComponent<BitTimeZonePicker<string>>(parameters =>
+        {
+            parameters.Add(p => p.TimeZones, timeZones);
+            parameters.Add(p => p.ReferenceDate, January);
+            parameters.Add(p => p.Value, "Asia/Tokyo");
+        });
+
+        Assert.AreEqual("Asia/Tokyo", component.Instance.SelectedTimeZone?.Id);
+
+        timeZones.RemoveAll(z => z.Id == "Asia/Tokyo");
+
+        component.Find("button.bit-tzp-fld").Click();
+
+        Assert.HasCount(6, component.FindAll("button.bit-tzp-itm"));
+        Assert.IsNull(component.Instance.SelectedTimeZone);
+    }
+
     #endregion
 
 
