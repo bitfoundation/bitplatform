@@ -133,6 +133,16 @@
                 <a href="entities">entity adapter</a>, which is immutable by construction.
             </p>
         </Callout>
+
+        <Callout Kind="Callout.CalloutKind.Note" Title="Let Blex catch it while you develop">
+            <p>
+                <code>options.DetectInPlaceMutations = true</code> reports, through <code>OnError</code>
+                (source <code>"mutation"</code>), every action that changed its store's state without
+                assigning a property - the red button above. It serializes the store around each action,
+                so turn it on in development only:
+                <code>options.DetectInPlaceMutations = builder.HostEnvironment.IsDevelopment();</code>
+            </p>
+        </Callout>
     </div>
 
     <div class="bb-card">
@@ -201,6 +211,32 @@
         </p>
     </div>
 
+    <div class="bb-card" id="dispatcher">
+        <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Threads and the dispatcher</h3>
+        <p>
+            Stores are not synchronized, and neither is the dispatch pipeline: a Blazor Server circuit
+            and a BlazorWebView keep them consistent by running every event handler, lifecycle method
+            and render on one <em>dispatcher</em>. Code that is not already there - a
+            <code>System.Threading.Timer</code> callback, a SignalR <code>HubConnection.On</code> handler,
+            a <code>Task.Run</code> body, a continuation after <code>ConfigureAwait(false)</code> - races
+            all of them when it changes a store.
+        </p>
+        <p>
+            <code>&lt;BlexProvider&gt;</code> binds the renderer's dispatcher to
+            <code>BlexManager.Dispatcher</code>, and <code>manager.InvokeAsync(...)</code> gets there from
+            a service that has no component to call <code>InvokeAsync</code> on. A store changed outside
+            the dispatcher anyway is reported through <code>OnError</code> (source
+            <code>"dispatcher"</code>, the store's name as the detail) - the change still applies, but the
+            report points at a race that would otherwise surface only as rare corruption in production.
+            Turn it off with <code>options.ReportOffDispatcherChanges = false</code>.
+        </p>
+        <CodeBlock Code="@DispatcherSample" />
+        <p>
+            Blazor WebAssembly is single-threaded, so its dispatcher never reports anything. Outside
+            Blazor no dispatcher is bound unless you assign an <code>IBlexDispatcher</code> yourself.
+        </p>
+    </div>
+
 </DocPage>
 
 @code {
@@ -250,6 +286,15 @@
         new("void InvalidateComputed()", "Generated override that marks every memoized computed value stale."),
         new("void NotifyRestored()", "Invalidates computed values and raises <code>StateChanged</code> - for hand-written stores that restore state out of band."),
     ];
+
+    private const string DispatcherSample = """
+        public sealed class OrderFeed(HubConnection hub, BlexManager manager, OrdersStore orders)
+        {
+            public void Start()
+                => hub.On<Order>("orderPlaced", order =>
+                       manager.InvokeAsync(() => orders.Add(order)));   // not orders.Add(order) directly
+        }
+        """;
 
     private const string StoreDecl = """
         [BlexStore(Name = "counter", Persist = true)]

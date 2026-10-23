@@ -213,10 +213,11 @@ public abstract class InteractiveHarnessTests : HarnessTest
         await GotoAsync("/");
         await WaitForInteractiveAsync();
 
-        // Connected under the configured name, advertising only the features Blex implements.
+        // Connected under the configured name, advertising only the features Blex implements - the dispatcher
+        // among them, since every generated action can be dispatched by name.
         await Page.WaitForFunctionAsync("() => window.__blexDevTools && window.__blexDevTools.inits.length > 0 && window.__blexDevTools.listener", null, new() { Timeout = 30_000 });
         Assert.AreEqual("Blex harness", await Page.EvaluateAsync<string>("() => window.__blexDevTools.name"));
-        Assert.IsTrue(await Page.EvaluateAsync<bool>("() => window.__blexDevTools.features.jump === true && window.__blexDevTools.features.dispatch === false"));
+        Assert.IsTrue(await Page.EvaluateAsync<bool>("() => window.__blexDevTools.features.jump === true && window.__blexDevTools.features.dispatch === true"));
 
         await IncrementAsync(2);
 
@@ -235,6 +236,47 @@ public abstract class InteractiveHarnessTests : HarnessTest
             """);
 
         await ExpectCountAsync(0);
+    }
+
+    [TestMethod]
+    public async Task A_query_loads_and_a_refetch_replaces_its_answer()
+    {
+        await GotoAsync("/query");
+        await WaitForInteractiveAsync();
+
+        var quote = Page.Locator("#quote");
+        await Expect(quote).ToHaveAttributeAsync("data-quote", new System.Text.RegularExpressions.Regex("^(dotnet|browser)-[0-9a-f]{32}$"));
+        var first = await quote.GetAttributeAsync("data-quote");
+
+        // Fetched by the interactive runtime, through the dispatcher its circuit or WebView runs on.
+        await Page.Locator("#refetch").ClickAsync();
+        await Expect(quote).Not.ToHaveAttributeAsync("data-quote", first!);
+        await Expect(quote).ToHaveAttributeAsync("data-fetching", "false");
+
+        var refetched = await quote.GetAttributeAsync("data-quote");
+        CollectionAssert.Contains(ExpectedPlatforms.ToList(), refetched!.Split('-')[0], "The refetch ran somewhere other than the interactive runtime.");
+    }
+
+    [TestMethod]
+    public async Task A_stale_query_refetches_when_the_page_becomes_visible_again()
+    {
+        await GotoAsync("/query");
+        await WaitForInteractiveAsync();
+
+        var tick = Page.Locator("#tick");
+        await Expect(tick).ToHaveAttributeAsync("data-tick", new System.Text.RegularExpressions.Regex("-tick-\\d+$"));
+        var before = await tick.GetAttributeAsync("data-tick");
+
+        // <BlexProvider> starts listening after its first render; keep telling the page it is visible until the
+        // cache hears it.
+        var after = await PollAsync(async () =>
+        {
+            await Page.EvaluateAsync("() => document.dispatchEvent(new Event('visibilitychange'))");
+            await Page.WaitForTimeoutAsync(200);
+            return await tick.GetAttributeAsync("data-tick");
+        }, value => value != before);
+
+        Assert.AreNotEqual(before, after, "The stale query was not refetched when the page became visible.");
     }
 
     /// <summary>Re-reads a value until it satisfies <paramref name="done"/>, or hands back the last one read.</summary>

@@ -394,6 +394,28 @@ public static class DiagnosticsCatalog
             [BlexAction(Name = "Change count")]
             private void OnChangeCount(int value) => Count = value;
             """),
+
+        new("BLEX022", "Effect retry and timeout values cannot be negative", true,
+            "<code>RetryCount</code>, <code>RetryDelayMilliseconds</code> and <code>TimeoutMilliseconds</code> are counts and durations. A negative one would only fail at runtime, deep inside the generated wrapper; <code>0</code> is how to turn retries, the backoff or the timeout off.",
+            """
+            [BlexEffect(RetryCount = -1)]                 // BLEX022
+            private async Task OnLoad(CancellationToken ct) => Orders = await _api.GetOrdersAsync(ct);
+            """,
+            """
+            [BlexEffect(RetryCount = 3, RetryDelayMilliseconds = 500)]
+            private async Task OnLoad(CancellationToken ct) => Orders = await _api.GetOrdersAsync(ct);
+            """),
+
+        new("BLEX023", "Effect timeout needs a CancellationToken", true,
+            "A timeout stops an attempt by cancelling the token the attempt was handed. An effect without a trailing <code>CancellationToken</code> parameter has nothing to cancel: the timed-out attempt would carry on and change state after its run had already failed. Add the parameter and pass it to the work the effect awaits.",
+            """
+            [BlexEffect(TimeoutMilliseconds = 5000)]      // BLEX023
+            private async Task OnLoad() => Orders = await _api.GetOrdersAsync();
+            """,
+            """
+            [BlexEffect(TimeoutMilliseconds = 5000)]
+            private async Task OnLoad(CancellationToken ct) => Orders = await _api.GetOrdersAsync(ct);
+            """),
     ];
 
     /// <summary>The entry for one diagnostic id (case-insensitive), or <c>null</c>.</summary>

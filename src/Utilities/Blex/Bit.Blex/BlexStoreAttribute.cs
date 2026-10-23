@@ -37,4 +37,26 @@ public sealed class BlexStoreAttribute : Attribute
     /// </para>
     /// </remarks>
     public bool EnforceActions { get; set; }
+
+    /// <summary>
+    /// When <c>true</c>, a synchronous action that throws leaves no trace: the store's state fields are
+    /// put back to what they held when the action started, nothing is notified, recorded, persisted or
+    /// added to the undo history, and the exception continues to the caller (and the action-error hooks)
+    /// as usual. Defaults to <c>false</c>: like any C# method, a throwing action keeps what it changed
+    /// before the throw -- and, since it did change state, is recorded.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// Every action level is its own transaction: an action whose caller catches its exception and carries
+    /// on is still undone, while the caller's own changes stay. The snapshot is a shallow copy of the
+    /// <c>[BlexStateAttribute]</c> fields, so it undoes assignments -- which is how state changes in a Blex
+    /// store -- not mutations made inside an object a field refers to.
+    /// </para>
+    /// <para>
+    /// Only this store is rolled back: an action of another store that ran inside the failed one keeps its
+    /// effect. Asynchronous actions and effects are not rolled back -- the UI has already shown what they
+    /// changed before their first <c>await</c>, and other changes may have landed since.
+    /// </para>
+    /// </remarks>
+    public bool RollbackOnError { get; set; }
 }

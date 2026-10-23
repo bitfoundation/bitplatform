@@ -114,9 +114,18 @@
                 <p class="bb-card-desc">
                     <code>[BlexEffect]</code> generates <code>XxxIsLoading</code>, <code>XxxError</code> and
                     <code>CancelXxx()</code>, with <code>Latest</code>, <code>Drop</code> and <code>Queue</code>
-                    concurrency and a built-in debounce.
+                    concurrency, a built-in debounce, retries with backoff and timeouts.
                 </p>
                 <a href="effects" class="btn btn-outline">Effects →</a>
+            </section>
+            <section class="bb-card">
+                <h3 class="bb-card-title"><span class="bb-dot bb-dot-danger"></span> Server state</h3>
+                <p class="bb-card-desc">
+                    <code>UseQuery</code> caches what the server says: one request per key, background refetch
+                    when stale, invalidation after a change, mutations with optimistic rollback, and prerendered
+                    data handed to the browser instead of fetched twice.
+                </p>
+                <a href="queries" class="btn btn-outline">Server state &amp; queries →</a>
             </section>
             <section class="bb-card">
                 <h3 class="bb-card-title"><span class="bb-dot bb-dot-danger"></span> Selectors</h3>

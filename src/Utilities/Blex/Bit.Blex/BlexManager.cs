@@ -34,7 +34,12 @@ public sealed class BlexManager
     private bool _connected;
     private bool _devToolsPaused;
     private bool _changesLocked;
+    private long _stateVersion;
     private TimeProvider _timeProvider = TimeProvider.System;
+
+    // Stores that implement IBlexStore without deriving from BlexStoreBase only announce a change through
+    // their own StateChanged event; the handler the manager hooks there, kept so it can be unhooked.
+    private readonly Dictionary<IBlexStore, Action> _foreignHandlers = new(ReferenceEqualityComparer.Instance);
 
     /// <summary>Creates a manager with the supplied middleware (order preserved).</summary>
     public BlexManager(IEnumerable<IBlexMiddleware>? middleware = null)
@@ -115,6 +120,163 @@ public sealed class BlexManager
     /// returning <c>false</c> would -- time-travel restores still apply, which is the point.
     /// </summary>
     public bool AreChangesLocked => _changesLocked;
+
+    /// <summary>
+    /// Advances whenever the state of any registered store changes -- by an action, a restore, an
+    /// effect's lifecycle flags or an assignment still waiting for its batch to notify -- and before
+    /// that store's subscribers run. Memoized selectors compare it rather than subscribing to anything.
+    /// </summary>
+    internal long StateVersion => _stateVersion;
+
+    /// <summary>Stamps a state change of a registered store (see <see cref="StateVersion"/>).</summary>
+    internal void MarkStateChanged() => _stateVersion++;
+
+    /// <summary>
+    /// Stamps a change to <paramref name="store"/>'s state and, when a <see cref="Dispatcher"/> is bound,
+    /// reports a change made outside it.
+    /// </summary>
+    internal void OnStoreChanged(IBlexStore store)
+    {
+        _stateVersion++;
+
+        if (ReportOffDispatcherChanges && Dispatcher is { } dispatcher && !dispatcher.CheckAccess())
+        {
+            ReportError(
+                "dispatcher",
+                new InvalidOperationException(
+                    $"The store '{store.Name}' changed outside the dispatcher its state belongs to. Stores are not synchronized: a change from a timer, a background task, a SignalR handler or a continuation after ConfigureAwait(false) races the renderer and every other change. Make it through BlexManager.InvokeAsync(...) (or a component's InvokeAsync)."),
+                store.Name);
+        }
+
+        // A whole-tree restore is one change, announced by StateRestored after its last store: a waiter must not
+        // see the tree half restored.
+        if (_restoreBatchDepth == 0)
+            StoreChanged?.Invoke(store);
+    }
+
+    /// <summary>
+    /// Raised for every change a registered store applies, as its subscribers are about to hear of it -- inside an
+    /// async action still running too, which records (and so raises <see cref="ActionDispatched"/>) only once it
+    /// ends. <see cref="WhenAsync"/> waits on it: an effect awaiting a condition its own store's actions make true
+    /// would otherwise wait for its own end. Handlers must not throw.
+    /// </summary>
+    internal event Action<IBlexStore>? StoreChanged;
+
+    /// <summary>
+    /// Raised as soon as an action of a <c>RollbackOnError</c> store threw and its state was put back, with the
+    /// <see cref="StateVersion"/> the action began at: a snapshot taken since (another store's action recording
+    /// mid-body) may hold the state the rollback undid. Undo/redo repairs its snapshots on it. Handlers must not throw.
+    /// </summary>
+    internal event Action<BlexStoreBase, long>? StoreRolledBack;
+
+    internal void OnRolledBack(BlexStoreBase store, long startedAt) => StoreRolledBack?.Invoke(store, startedAt);
+
+    /// <summary>
+    /// The execution context the state belongs to (in Blazor, the renderer's <c>Dispatcher</c>), or
+    /// <c>null</c> when there is none to keep to. <c>&lt;BlexProvider&gt;</c> binds it on its first render.
+    /// </summary>
+    /// <remarks>
+    /// Stores are not synchronized, and neither is the dispatch pipeline: a Blazor Server circuit and a
+    /// BlazorWebView keep them consistent by running everything on one dispatcher. Code that is not
+    /// already there -- a <c>System.Threading.Timer</c> callback, a SignalR <c>HubConnection.On</c> handler,
+    /// a <c>Task.Run</c> body -- goes through <see cref="InvokeAsync(Action)"/>.
+    /// </remarks>
+    public IBlexDispatcher? Dispatcher { get; set; }
+
+    /// <summary>
+    /// Whether a store changing outside the bound <see cref="Dispatcher"/> is reported through
+    /// <see cref="OnError"/> (source <c>"dispatcher"</c>). Defaults to <c>true</c>; without a bound
+    /// dispatcher there is nothing to check against.
+    /// </summary>
+    /// <remarks>
+    /// The change itself still applies -- it already has by the time it can be noticed -- but it raced
+    /// the renderer and every other change, which is the kind of failure that only shows up as rare,
+    /// unreproducible corruption in production. The report names the store so the caller can be found.
+    /// </remarks>
+    public bool ReportOffDispatcherChanges { get; set; } = true;
+
+    /// <summary>
+    /// Development aid: reports, through <see cref="OnError"/> (source <c>"mutation"</c>), an action that
+    /// changed its store's state without assigning any state property -- <c>Items.Add(item)</c> instead of
+    /// <c>Items = [.. Items, item]</c>. Such a change reaches no subscriber, no DevTools entry, no undo step
+    /// and no storage. Defaults to <c>false</c>.
+    /// </summary>
+    /// <remarks>
+    /// The check serializes the store before and after every outermost action, so leave it off in
+    /// production. It catches an action that assigned nothing at all; one that assigned one property and
+    /// mutated another in place is announced anyway, through the property it did assign.
+    /// </remarks>
+    public bool DetectInPlaceMutations { get; set; }
+
+    /// <summary>
+    /// Runs <paramref name="work"/> on the bound <see cref="Dispatcher"/> -- immediately when the caller is
+    /// already there or none is bound. Use it to change state from outside a component: a timer, a
+    /// background service, a SignalR handler.
+    /// </summary>
+    /// <returns>A task that completes once <paramref name="work"/> has run, faulted with its exception if it threw.</returns>
+    /// <example><code>
+    /// hub.On&lt;Order&gt;("orderPlaced", order => manager.InvokeAsync(() => orders.Add(order)));
+    /// </code></example>
+    public Task InvokeAsync(Action work)
+    {
+        ArgumentNullException.ThrowIfNull(work);
+        if (Dispatcher is { } dispatcher && !dispatcher.CheckAccess())
+        {
+            return dispatcher.InvokeAsync(() =>
+            {
+                work();
+                return Task.CompletedTask;
+            });
+        }
+
+        try
+        {
+            work();
+            return Task.CompletedTask;
+        }
+        catch (Exception ex)
+        {
+            // Faulted either way, so a caller's handling does not depend on where it was called from.
+            return Task.FromException(ex);
+        }
+    }
+
+    /// <summary>
+    /// Runs asynchronous <paramref name="work"/> on the bound <see cref="Dispatcher"/> -- immediately when
+    /// the caller is already there or none is bound -- so it starts, and resumes after each <c>await</c>,
+    /// where the state belongs.
+    /// </summary>
+    /// <returns>A task that completes with <paramref name="work"/>.</returns>
+    public Task InvokeAsync(Func<Task> work)
+    {
+        ArgumentNullException.ThrowIfNull(work);
+        if (Dispatcher is { } dispatcher && !dispatcher.CheckAccess())
+            return dispatcher.InvokeAsync(work);
+
+        try
+        {
+            return work();
+        }
+        catch (Exception ex)
+        {
+            return Task.FromException(ex);
+        }
+    }
+
+    /// <summary>
+    /// Raised after a registered store notified a change that no action record and no restore event
+    /// announces: an effect's lifecycle flags, a rollback, a hand-written store's own notification. (What
+    /// an async action changes is announced by its record, once it completes.) Projections that
+    /// re-evaluate on actions and restores listen to it too, or they would keep reporting the value
+    /// from before such a change.
+    /// </summary>
+    internal event Action<IBlexStore>? UnannouncedChange;
+
+    internal void OnUnannouncedChange(IBlexStore store)
+    {
+        if (UnannouncedChange is { } handler)
+            InvokeIsolated(handler, store, "subscriber", store.Name);
+    }
 
     /// <summary>Routes an isolated error to <see cref="OnError"/>, or <see cref="Console.Error"/> when unset.</summary>
     internal void ReportError(string source, Exception exception, string? detail = null)
@@ -305,7 +467,17 @@ public sealed class BlexManager
     /// The projection is re-evaluated after state <em>restores</em> too (undo/redo, DevTools
     /// time-travel, an incoming cross-tab change), not only after actions. Those paths change state
     /// without dispatching anything, so a subscription that watched actions alone would keep
-    /// reporting a value the application no longer holds.
+    /// reporting a value the application no longer holds. The same goes for the changes no action
+    /// records: an effect's <c>IsLoading</c>/<c>Error</c>, and a store rolled back by
+    /// <c>RollbackOnError</c>.
+    /// </para>
+    /// <para>
+    /// The callback runs once middleware and DevTools have seen the action that caused the change, so
+    /// a follow-up action it dispatches is recorded after the one it reacted to. What an async action
+    /// changes is therefore announced when that action completes and is recorded, not at each
+    /// <c>await</c> -- components bound to the store, and <see cref="CreateSelector{T}"/>, see it at once.
+    /// (The projection reads live state, so a re-evaluation another store's action triggers meanwhile can
+    /// already see such a change.)
     /// </para>
     /// </remarks>
     public IDisposable Subscribe<T>(
@@ -344,10 +516,15 @@ public sealed class BlexManager
             }
         }
 
+        // Changes no action record or restore announces; already isolated by OnUnannouncedChange.
+        void OnUnannounced(IBlexStore _) => Evaluate();
+
         StateRestored += OnRestored;
+        UnannouncedChange += OnUnannounced;
         var subscription = new BlexSubscription(() =>
         {
             StateRestored -= OnRestored;
+            UnannouncedChange -= OnUnannounced;
             actions.Dispose();
         });
 
@@ -396,7 +573,8 @@ public sealed class BlexManager
     /// which pushes changes to one observer and evaluates eagerly after every action. Use this when
     /// the value is <em>pulled</em> by several readers -- three components binding to the same
     /// cross-store total then pay for one computation per action instead of three, and an action
-    /// none of them care about costs nothing.
+    /// none of them care about costs nothing. It subscribes to nothing: it compares a version the
+    /// manager advances on every change of a registered store, so creating one adds no work to dispatch.
     /// </remarks>
     /// <example><code>
     /// using var overLimit = manager.CreateSelector(() => cart.Total > profile.CreditLimit);
@@ -406,6 +584,107 @@ public sealed class BlexManager
     {
         ArgumentNullException.ThrowIfNull(selector);
         return new BlexSelector<T>(this, selector);
+    }
+
+    /// <summary>
+    /// Completes once <paramref name="condition"/> holds -- at once when it already does, otherwise after
+    /// the first change of any registered store that makes it true. The workflow step an effect awaits:
+    /// "once the user has signed in", "once the upload finished", "once both stores are loaded".
+    /// </summary>
+    /// <param name="condition">
+    /// Re-checked after every change of a registered store and every restore; keep it cheap. A change made while an
+    /// async action is still running counts as soon as it is notified, not once that action is recorded -- so an
+    /// effect can wait for something its own store's actions do.
+    /// </param>
+    /// <param name="cancellationToken">Stops waiting; the task is then cancelled.</param>
+    /// <returns>
+    /// A task that completes when the condition holds, is cancelled with <paramref name="cancellationToken"/>,
+    /// or faults with the condition's own exception.
+    /// </returns>
+    /// <example><code>
+    /// [BlexEffect]
+    /// private async Task OnCheckout(CancellationToken ct)
+    /// {
+    ///     await _manager.WhenAsync(() => _session.IsSignedIn, ct);   // MobX's when, RTK's condition
+    ///     await _api.CheckoutAsync(Lines, ct);
+    /// }
+    /// </code></example>
+    public Task WhenAsync(Func<bool> condition, CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(condition);
+        if (cancellationToken.IsCancellationRequested)
+            return Task.FromCanceled(cancellationToken);
+
+        try
+        {
+            if (condition())
+                return Task.CompletedTask;
+        }
+        catch (Exception ex)
+        {
+            return Task.FromException(ex);
+        }
+
+        var waiter = new ConditionWaiter(this, condition);
+        waiter.Start(cancellationToken);
+        return waiter.Task;
+    }
+
+    /// <summary>One <see cref="WhenAsync"/>: re-checks its condition on every change until it holds, then lets go.</summary>
+    private sealed class ConditionWaiter(BlexManager manager, Func<bool> condition)
+    {
+        private readonly TaskCompletionSource _done = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        private CancellationTokenRegistration _cancellation;
+
+        public Task Task => _done.Task;
+
+        public void Start(CancellationToken cancellationToken)
+        {
+            // Every applied change (not ActionDispatched, which a change inside a running async action reaches only
+            // once that action ends), restores, and a hand-written store's own notifications.
+            manager.StoreChanged += OnChange;
+            manager.StateRestored += Check;
+            manager.UnannouncedChange += OnChange;
+            if (cancellationToken.CanBeCanceled)
+            {
+                _cancellation = cancellationToken.Register(() =>
+                {
+                    if (_done.TrySetCanceled(cancellationToken))
+                        Stop();
+                });
+            }
+        }
+
+        private void OnChange(IBlexStore _) => Check();
+
+        private void Check()
+        {
+            if (_done.Task.IsCompleted)
+                return;
+
+            try
+            {
+                if (!condition())
+                    return;
+
+                _done.TrySetResult();
+            }
+            catch (Exception ex)
+            {
+                // The caller asked for this condition; a failing one is theirs to see, not to have retried.
+                _done.TrySetException(ex);
+            }
+
+            Stop();
+        }
+
+        private void Stop()
+        {
+            manager.StoreChanged -= OnChange;
+            manager.StateRestored -= Check;
+            manager.UnannouncedChange -= OnChange;
+            _cancellation.Dispose();
+        }
     }
 
     /// <summary>
@@ -477,7 +756,25 @@ public sealed class BlexManager
             _stores = next;
 
             if (store is BlexStoreBase sb)
+            {
                 sb.Attach(this);
+            }
+            else
+            {
+                // A hand-written store tells nobody but its own subscribers; listen there so selectors
+                // and subscriptions over it stay current.
+                void OnForeignChange()
+                {
+                    MarkStateChanged();
+                    OnUnannouncedChange(store);
+                }
+
+                _foreignHandlers[store] = OnForeignChange;
+                store.StateChanged += OnForeignChange;
+            }
+
+            // Whatever a selector memoized may have read the store's state before it joined.
+            MarkStateChanged();
         }
 
         if (duplicate)
@@ -575,6 +872,11 @@ public sealed class BlexManager
 
             if (store is BlexStoreBase sb)
                 sb.Detach();
+            else if (_foreignHandlers.Remove(store, out var handler))
+                store.StateChanged -= handler;
+
+            // A selector over the store would otherwise keep a memo nothing invalidates any more.
+            MarkStateChanged();
         }
 
         InvokeIsolated(StoreUnregistered, store, "unregister", store.Name);
@@ -1334,7 +1636,18 @@ public sealed class BlexManager
     public void RestoreGlobalState(JsonObject global)
     {
         ArgumentNullException.ThrowIfNull(global);
+        RestoreSlicesCore(name => global[name] as JsonObject);
+    }
 
+    /// <summary>
+    /// Restores <see cref="RestoreGlobalState"/>-style from slices keyed by store name that are not parented
+    /// to a tree, so one slice can be shared by several snapshots (undo/redo). Each is applied as a copy.
+    /// </summary>
+    internal void RestoreSlices(IReadOnlyDictionary<string, JsonObject> slices)
+        => RestoreSlicesCore(name => slices.TryGetValue(name, out var slice) ? slice : null);
+
+    private void RestoreSlicesCore(Func<string, JsonObject?> sliceOf)
+    {
         // A restore triggered from inside an observer (e.g. a reactor calling history.Undo())
         // mutates state just like a new action would; pin in-flight snapshots first so they
         // keep the state that belonged to their own actions.
@@ -1348,7 +1661,7 @@ public sealed class BlexManager
         {
             foreach (var store in _stores)
             {
-                if (global[store.Name] is JsonObject slice && store is BlexStoreBase sb)
+                if (sliceOf(store.Name) is { } slice && store is BlexStoreBase sb)
                 {
                     try
                     {

@@ -195,13 +195,16 @@
         <ol class="bb-detail-list">
             <li><code>Start()</code> captures the current global state as the baseline and subscribes to the manager.</li>
             <li>After each action, the previous snapshot is pushed onto the undo stack and the new one becomes the present. The redo stack is cleared, because you have branched away from it.</li>
-            <li><code>Undo()</code> pushes the present onto the redo stack, pops the undo stack and restores that snapshot through <code>RestoreGlobalState</code>.</li>
+            <li><code>Undo()</code> pushes the present onto the redo stack, pops the undo stack and restores that snapshot the way <code>RestoreGlobalState</code> does.</li>
             <li>Restoring does <strong>not</strong> record an action, so stepping backwards never pollutes the history you are stepping through.</li>
         </ol>
 
         <p>
-            Snapshots are whole state trees. <code>MaxEntries</code> caps how many are retained - older
-            ones are discarded from the bottom of the stack. The default is 100.
+            A snapshot covers every store the history does, but it is taken per store and shared: an action
+            re-serializes only the stores it changed, and each step refers to the other stores' slices
+            instead of copying them. Undo and redo work the same way: they restore, notify and persist only the
+            stores whose state differs from the step they land on. <code>MaxEntries</code> caps how many steps are retained - older ones
+            are discarded from the bottom of the stack. The default is 100.
         </p>
     </div>
 
@@ -348,9 +351,10 @@
 
         <Callout Kind="Callout.CalloutKind.Warning" Title="Snapshots cost memory">
             <p>
-                Every entry is a serialized copy of every store the history covers. With large collections
-                in state, lower <code>maxEntries</code> - or scope the history to the stores that need it,
-                which also makes each snapshot cheaper.
+                Every step holds a serialized copy of each store that changed in it (unchanged stores are
+                shared between steps). A store holding a large collection that changes on every action still
+                costs a copy per step: lower <code>maxEntries</code>, or scope the history to the stores
+                that need it.
             </p>
         </Callout>
     </div>

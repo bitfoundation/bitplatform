@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel;
+using System.Runtime.ExceptionServices;
 using System.Text.Json.Nodes;
 
 namespace Bit.Blex;
@@ -68,6 +69,21 @@ public abstract class BlexStoreBase : IBlexStore, INotifyPropertyChanged, IDispo
 
         // Name is read on every dispatch (qualified names, the state tree, storage keys); compose once.
         return _keyedName ??= name + ":" + _instanceKey;
+    }
+
+    /// <summary>
+    /// The store's declared name, without a scoped instance's key: what metrics are tagged with, so a store
+    /// with a thousand scoped instances is still one series.
+    /// </summary>
+    internal string DeclaredName
+    {
+        get
+        {
+            var name = Name;
+            return _instanceKey is { } key && name.EndsWith(":" + key, StringComparison.Ordinal)
+                ? name[..^(key.Length + 1)]
+                : name;
+        }
     }
 
     internal void AssignInstanceKey(string? key, bool generated)
@@ -182,14 +198,23 @@ public abstract class BlexStoreBase : IBlexStore, INotifyPropertyChanged, IDispo
     /// property name, meaning "all properties changed"). Every notification funnels through here
     /// so both eventing models always stay in sync.
     /// </summary>
+    /// <param name="announced">
+    /// Whether an action record or a restore event announces this change to the manager's subscriptions
+    /// -- right after this notification, or, inside an async action still running, when that action is
+    /// recorded. When nothing will (an effect's lifecycle flags), the manager is told here, or a
+    /// cross-store subscription would go on reporting the value from before it.
+    /// </param>
     /// <remarks>
     /// Subscribers are invoked one at a time and their exceptions are isolated and reported through
     /// <see cref="BlexManager.OnError"/>, matching how the manager treats middleware and action
     /// subscribers: one component throwing while it re-renders must not starve the others -- nor
     /// the persistence/history/DevTools observers that run after the notification -- of the change.
     /// </remarks>
-    private void NotifyStateChanged()
+    private void NotifyStateChanged(bool announced)
     {
+        // Before any subscriber runs: one that re-renders synchronously may read a cross-store
+        // selector, which must not hand it the value memoized before this change.
+        MarkChanged();
         try
         {
             if (StateChanged is { } stateChanged)
@@ -202,7 +227,57 @@ public abstract class BlexStoreBase : IBlexStore, INotifyPropertyChanged, IDispo
             if (PropertyChanged is { } propertyChanged)
                 InvokeIsolated(propertyChanged);
         }
+
+        if (!announced)
+            AnnounceUnrecorded();
     }
+
+    // An unannounced change made while an action of this store was still running: announced with that action's
+    // record, or on its own once the action ends without one.
+    private bool _announcementDeferred;
+
+    /// <summary>
+    /// Tells the manager's subscriptions about a change no action record announces -- now, or, while an action of
+    /// this store is still running, when it ends: a reactor's follow-up must not be recorded before the action whose
+    /// in-flight writes the re-evaluation would otherwise expose.
+    /// </summary>
+    private void AnnounceUnrecorded()
+    {
+        if (_recordDepth > 0)
+            _announcementDeferred = true;
+        else
+            _manager?.OnUnannouncedChange(this);
+    }
+
+    /// <summary>Called as the outermost action of this store ends, after it recorded itself (or not).</summary>
+    private void SettleDeferredAnnouncement(bool recorded)
+    {
+        if (!_announcementDeferred || _recordDepth != 0)
+            return;
+
+        _announcementDeferred = false;
+
+        // The record announced it; without one, nothing else will.
+        if (!recorded)
+            _manager?.OnUnannouncedChange(this);
+    }
+
+    /// <summary>
+    /// Stamps an applied state change on this store and on the manager, whose memoized selectors compare
+    /// stamps instead of listening for events, and which reports a change made outside its
+    /// <see cref="BlexManager.Dispatcher"/>.
+    /// </summary>
+    private void MarkChanged()
+    {
+        ChangeVersion++;
+        _manager?.OnStoreChanged(this);
+    }
+
+    /// <summary>
+    /// Advances on every change to this store's state (including its effects' lifecycle flags); equal
+    /// stamps mean nothing has changed in between. Never decreases; not synchronized, like dispatch.
+    /// </summary>
+    internal long ChangeVersion { get; private set; }
 
     private void InvokeIsolated(Delegate handler)
     {
@@ -255,7 +330,7 @@ public abstract class BlexStoreBase : IBlexStore, INotifyPropertyChanged, IDispo
     protected void NotifyRestored()
     {
         InvalidateComputed();
-        NotifyStateChanged();
+        NotifyStateChanged(announced: false);
     }
 
     internal void Attach(BlexManager manager)
@@ -302,17 +377,19 @@ public abstract class BlexStoreBase : IBlexStore, INotifyPropertyChanged, IDispo
             if (!manager.BeforeAction(this, label, args))
                 return;
 
+            var telemetry = BlexDiagnostics.StartAction(this, label);
             field = value;
             InvalidateComputed();
             try
             {
-                NotifyStateChanged();
+                NotifyStateChanged(announced: true);
             }
             finally
             {
                 // Record even when a subscriber throws: the mutation *was* applied, and skipping
                 // the record would leave persistence/history/DevTools out of sync.
                 manager.RecordAction(this, label, args);
+                telemetry.Stop();
             }
 
             return;
@@ -328,8 +405,26 @@ public abstract class BlexStoreBase : IBlexStore, INotifyPropertyChanged, IDispo
 
         if (_notifyDepth == 0)
         {
+            // Inside an async action of this store that is still running, the change is announced when
+            // that action is recorded: a reactor dispatching a follow-up must not get it recorded before
+            // the action that caused it (DevTools order, undo steps). Outside one, nothing records actions
+            // at all, and the manager is told here. Components see the change now either way.
             InvalidateComputed();
-            NotifyStateChanged();
+            NotifyStateChanged(announced: _recordDepth > 0);
+
+            if (_recordDepth == 0)
+                BlexDiagnostics.CountUnrecordedSet(this, propertyName);
+        }
+        else
+        {
+            // The notification waits for the batch, but the field has already changed: code later in
+            // the same action body reading a computed or a cross-store selector -- validation after a
+            // write, say -- must see it, not the value memoized before. Invalidating is flag writes;
+            // recomputing stays lazy. Only stamped here; the batch's notification checks the
+            // dispatcher, once for the whole action.
+            InvalidateComputed();
+            ChangeVersion++;
+            _manager?.MarkStateChanged();
         }
     }
 
@@ -344,7 +439,7 @@ public abstract class BlexStoreBase : IBlexStore, INotifyPropertyChanged, IDispo
 
         field = value;
         InvalidateComputed();
-        NotifyStateChanged();
+        NotifyStateChanged(announced: false);
     }
 
     /// <summary>
@@ -357,7 +452,7 @@ public abstract class BlexStoreBase : IBlexStore, INotifyPropertyChanged, IDispo
         if (pending == 1)
         {
             InvalidateComputed();
-            NotifyStateChanged();
+            NotifyStateChanged(announced: false);
         }
     }
 
@@ -368,7 +463,7 @@ public abstract class BlexStoreBase : IBlexStore, INotifyPropertyChanged, IDispo
         if (pending == 0)
         {
             InvalidateComputed();
-            NotifyStateChanged();
+            NotifyStateChanged(announced: false);
         }
     }
 
@@ -383,6 +478,93 @@ public abstract class BlexStoreBase : IBlexStore, INotifyPropertyChanged, IDispo
             return cancellationToken.IsCancellationRequested ? Task.FromCanceled(cancellationToken) : Task.CompletedTask;
 
         return Task.Delay(TimeSpan.FromMilliseconds(milliseconds), TimeProvider, cancellationToken);
+    }
+
+    // The longest wait exponential backoff grows to (unless the first one is already longer).
+    private const int MaxRetryDelayMilliseconds = 30_000;
+
+    /// <summary>
+    /// Runs an effect body up to <c>1 + <paramref name="retryCount"/></c> times, backing off between
+    /// attempts, and bounds each attempt by <paramref name="timeoutMilliseconds"/>. Used by generated
+    /// wrappers of effects with <c>RetryCount</c> or <c>TimeoutMilliseconds</c>; the attempts run inside
+    /// one recorded action, and only the last failure leaves it.
+    /// </summary>
+    /// <param name="attempt">Runs the body once, observing the token it is handed.</param>
+    /// <param name="cancellationToken">
+    /// The effect's own token. Its cancellation (<c>CancelXxx()</c>, a superseding run, disposal) is never
+    /// retried: it ends the run, during an attempt or during the wait before the next one.
+    /// </param>
+    /// <param name="retryCount">How many failed attempts are retried.</param>
+    /// <param name="retryDelayMilliseconds">The wait before the first retry; it doubles each time, up to 30 seconds.</param>
+    /// <param name="timeoutMilliseconds">
+    /// How long one attempt may take; <c>0</c> sets no limit. An attempt that overruns has its token
+    /// cancelled and fails with a <see cref="TimeoutException"/>.
+    /// </param>
+    /// <remarks>
+    /// Waits run on <see cref="TimeProvider"/>, so a test advances a fake clock instead of waiting; a
+    /// replay of recorded actions skips the backoff, as it skips debouncing. A store that is disposed
+    /// stops retrying.
+    /// </remarks>
+    protected async Task RunEffectAttemptsAsync(
+        Func<CancellationToken, Task> attempt,
+        CancellationToken cancellationToken,
+        int retryCount,
+        int retryDelayMilliseconds,
+        int timeoutMilliseconds)
+    {
+        ArgumentNullException.ThrowIfNull(attempt);
+
+        for (var failures = 0; ; failures++)
+        {
+            ExceptionDispatchInfo failure;
+            try
+            {
+                // No ConfigureAwait(false): the body changes state, which belongs on the dispatch context.
+                await RunAttemptAsync(attempt, cancellationToken, timeoutMilliseconds).ConfigureAwait(true);
+                return;
+            }
+            catch (Exception ex) when (failures < retryCount && !cancellationToken.IsCancellationRequested && !_disposed)
+            {
+                failure = ExceptionDispatchInfo.Capture(ex);
+            }
+
+            var wait = TimeSpan.Zero;
+            if (retryDelayMilliseconds > 0 && _manager is not { IsReplaying: true })
+            {
+                var cap = Math.Max(MaxRetryDelayMilliseconds, retryDelayMilliseconds);
+                wait = TimeSpan.FromMilliseconds(Math.Min((long)retryDelayMilliseconds << Math.Min(failures, 20), cap));
+            }
+
+            BlexDiagnostics.EffectRetry(failures + 1, failure.SourceException, wait);
+            if (wait > TimeSpan.Zero)
+                await Task.Delay(wait, TimeProvider, cancellationToken).ConfigureAwait(true);
+
+            // Disposed while waiting (an effect without a token has nothing else to stop it): the run
+            // ends with the failure it was about to retry.
+            if (_disposed)
+                failure.Throw();
+        }
+    }
+
+    private async Task RunAttemptAsync(Func<CancellationToken, Task> attempt, CancellationToken cancellationToken, int timeoutMilliseconds)
+    {
+        if (timeoutMilliseconds <= 0)
+        {
+            await attempt(cancellationToken).ConfigureAwait(true);
+            return;
+        }
+
+        using var timeout = new CancellationTokenSource(TimeSpan.FromMilliseconds(timeoutMilliseconds), TimeProvider);
+        using var linked = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, timeout.Token);
+        try
+        {
+            await attempt(linked.Token).ConfigureAwait(true);
+        }
+        catch (OperationCanceledException ex) when (timeout.IsCancellationRequested && !cancellationToken.IsCancellationRequested)
+        {
+            // Our deadline, not the effect's own cancellation: a failure, which the effect records (and may retry).
+            throw new TimeoutException($"The attempt did not complete within {timeoutMilliseconds} ms.", ex);
+        }
     }
 
     /// <summary>
@@ -406,15 +588,42 @@ public abstract class BlexStoreBase : IBlexStore, INotifyPropertyChanged, IDispo
         if (!BeginAction(actionName, args))
             return;
 
+        // RollbackOnError: what to put back if the body throws, and whether a change was already waiting to
+        // be notified (by an async action of this store still running) before this one began.
+        var rollback = CaptureRollbackState();
+        var dirtyBefore = _dirty;
+        var rolledBack = false;
+
+        // When it began, on the manager's clock: a snapshot taken since may hold the state a rollback undoes.
+        var startedAt = rollback is null ? 0 : _manager?.StateVersion ?? 0;
+        var inPlace = _notifyDepth == 0 && _manager is { DetectInPlaceMutations: true } ? BeginInPlaceCheck() : default;
+        var telemetry = BlexDiagnostics.StartAction(this, actionName);
+
         _recordDepth++;
         _notifyDepth++;
         var body = _manager?.EnterActionBody() ?? default;
         try
         {
             mutation();
+            if (inPlace.Snapshot is not null)
+                EndInPlaceCheck(inPlace, actionName);
         }
         catch (Exception ex)
         {
+            telemetry.Fail(ex);
+            if (rollback is not null)
+            {
+                ApplyRollbackState(rollback);
+                _dirty = dirtyBefore;
+                rolledBack = true;
+
+                // Before the error hooks run: one reading a computed or a cross-store selector must see the
+                // state as rolled back, not a value derived from what was just undone; a WhenAsync waiter re-checks it.
+                InvalidateComputed();
+                MarkChanged();
+                _manager?.OnRolledBack(this, startedAt);
+            }
+
             _manager?.RecordActionError(this, actionName, args, ex);
             throw;
         }
@@ -424,6 +633,14 @@ public abstract class BlexStoreBase : IBlexStore, INotifyPropertyChanged, IDispo
             body.Exit();
             _notifyDepth--;
             _recordDepth--;
+
+            // A subscription that saw the undone state mid-body -- through a nested action of another store,
+            // which recorded -- re-evaluates and lands back on what is really there. Inside an async action of
+            // this store, that action's end announces it.
+            if (rolledBack)
+                AnnounceUnrecorded();
+
+            var recorded = false;
 
             // Flush the deferred notification when this was the outermost *sync* batch, even if
             // an async action is still in flight above us (it keeps _recordDepth > 0 but does not
@@ -439,14 +656,24 @@ public abstract class BlexStoreBase : IBlexStore, INotifyPropertyChanged, IDispo
 
                 try
                 {
-                    NotifyStateChanged();
+                    // Announced by this action's record -- or, when an async action of this store is still
+                    // running above it, by that action's record once it completes.
+                    NotifyStateChanged(announced: true);
                 }
                 finally
                 {
                     if (record)
+                    {
                         _manager?.RecordAction(this, actionName, args);
+                        recorded = true;
+                    }
                 }
             }
+
+            SettleDeferredAnnouncement(recorded);
+
+            // Last: the span covers what the action set off -- its subscribers, and any action they dispatched.
+            telemetry.Stop();
         }
     }
 
@@ -484,8 +711,20 @@ public abstract class BlexStoreBase : IBlexStore, INotifyPropertyChanged, IDispo
 
         Dispatch("ResetState", () =>
         {
-            DeserializeState((JsonObject)_initialState.DeepClone());
-            _dirty = true;
+            try
+            {
+                DeserializeState((JsonObject)_initialState.DeepClone());
+            }
+            finally
+            {
+                // Raw field writes, not assignments through the generated setters: stamp the change the way a
+                // setter would -- even when deserializing failed partway -- or the snapshot caches and the
+                // in-place check would not know the state moved.
+                InvalidateComputed();
+                ChangeVersion++;
+                _manager?.MarkStateChanged();
+                _dirty = true;
+            }
         }, null);
     }
 
@@ -543,14 +782,18 @@ public abstract class BlexStoreBase : IBlexStore, INotifyPropertyChanged, IDispo
     {
         ArgumentNullException.ThrowIfNull(mutation);
 
+        var inPlace = _recordDepth == 0 && _manager is { DetectInPlaceMutations: true } ? BeginInPlaceCheck() : default;
+        var telemetry = BlexDiagnostics.StartAction(this, actionName);
         _recordDepth++;
         var body = _manager?.EnterActionBody() ?? default;
         try
         {
             await mutation().ConfigureAwait(true);
+            EndInPlaceCheck(inPlace, actionName);
         }
         catch (Exception ex)
         {
+            telemetry.Fail(ex);
             _manager?.RecordActionError(this, actionName, args, ex);
             throw;
         }
@@ -558,11 +801,16 @@ public abstract class BlexStoreBase : IBlexStore, INotifyPropertyChanged, IDispo
         {
             body.Exit();
             _recordDepth--;
+            var recorded = false;
             if (_recordDepth == 0 && _dirty)
             {
                 _dirty = false;
                 _manager?.RecordAction(this, actionName, args);
+                recorded = true;
             }
+
+            SettleDeferredAnnouncement(recorded);
+            telemetry.Stop();
         }
     }
 
@@ -598,12 +846,16 @@ public abstract class BlexStoreBase : IBlexStore, INotifyPropertyChanged, IDispo
         finally
         {
             IsRestoring = false;
+
+            // Stamped even when deserializing failed partway: some fields may already have moved.
+            ChangeVersion++;
+            manager?.MarkStateChanged();
         }
 
         InvalidateComputed();
         try
         {
-            NotifyStateChanged();
+            NotifyStateChanged(announced: true);
         }
         finally
         {
@@ -613,6 +865,67 @@ public abstract class BlexStoreBase : IBlexStore, INotifyPropertyChanged, IDispo
 
     /// <summary>Whether <see cref="Dispose()"/> has run on this store.</summary>
     protected bool IsDisposed => _disposed;
+
+    /// <summary>The state an action started from, for <see cref="BlexManager.DetectInPlaceMutations"/>.</summary>
+    private readonly record struct InPlaceCheck(string? Snapshot, long Version);
+
+    private InPlaceCheck BeginInPlaceCheck()
+    {
+        if (_manager is not { DetectInPlaceMutations: true } manager)
+            return default;
+
+        try
+        {
+            return new InPlaceCheck(SerializeState().ToJsonString(), ChangeVersion);
+        }
+        catch (Exception ex)
+        {
+            // A development aid must never stop an action the pipeline already approved.
+            manager.ReportError("mutation", ex, $"{Name}: snapshot for the in-place mutation check");
+            return default;
+        }
+    }
+
+    /// <summary>
+    /// Reports an action that changed the store's state without assigning any of its properties -- an item
+    /// added to a list in place, a property set on a mutable object. Nothing notified, recorded or persisted
+    /// that change, so the UI, DevTools, undo and storage all went on showing the state from before it.
+    /// </summary>
+    private void EndInPlaceCheck(InPlaceCheck check, string actionName)
+    {
+        // Nothing to compare, or the action assigned something and was announced like any other.
+        if (check.Snapshot is null || ChangeVersion != check.Version || _manager is not { } manager)
+            return;
+
+        try
+        {
+            if (SerializeState().ToJsonString() == check.Snapshot)
+                return;
+        }
+        catch (Exception ex)
+        {
+            manager.ReportError("mutation", ex, $"{Name}/{actionName}");
+            return;
+        }
+
+        manager.ReportError(
+            "mutation",
+            new InvalidOperationException(
+                $"The action '{Name}/{actionName}' changed the store's state without assigning any [BlexState] property - an item added to a collection in place, or a property set on a mutable object. Nothing was notified, recorded or persisted. Assign a new value instead: Items = [.. Items, item]."),
+            $"{Name}/{actionName}");
+    }
+
+    /// <summary>
+    /// A shallow copy of the state fields, taken as a synchronous action starts so a throw can put them
+    /// back (<c>[BlexStoreAttribute(RollbackOnError = true)]</c>), or <c>null</c> when the store does not
+    /// roll back. Overridden by the generator.
+    /// </summary>
+    protected virtual object?[]? CaptureRollbackState() => null;
+
+    /// <summary>Puts back the fields <see cref="CaptureRollbackState"/> copied. Overridden by the generator.</summary>
+    protected virtual void ApplyRollbackState(object?[] state)
+    {
+    }
 
     /// <summary>
     /// Cancels every in-flight <c>[BlexEffectAttribute]</c> run (and any effect still waiting out

@@ -25,3 +25,5 @@ BLEX018 | Bit.Blex.Generators | Warning | Blex member attribute outside a store
 BLEX019 | Bit.Blex.Generators | Error | Effect debounce cannot be negative
 BLEX020 | Bit.Blex.Generators | Warning | Typed action descriptors are not generated
 BLEX021 | Bit.Blex.Generators | Error | Action name is used more than once
+BLEX022 | Bit.Blex.Generators | Error | Effect retry and timeout values cannot be negative
+BLEX023 | Bit.Blex.Generators | Error | Effect timeout needs a CancellationToken

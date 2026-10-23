@@ -269,6 +269,64 @@
     </div>
 
     <div class="bb-card">
+        <h3 class="bb-card-title"><span class="bb-dot bb-dot-danger"></span> Retries and timeouts</h3>
+        <p>
+            Networks fail transiently. <code>RetryCount</code> runs a failed body again, waiting
+            <code>RetryDelayMilliseconds</code> before the first retry and doubling the wait before each
+            one after it, up to 30 seconds. <code>TimeoutMilliseconds</code> bounds every attempt: one
+            that overruns has its token cancelled and fails with a <code>TimeoutException</code> - which
+            is retried like any other failure.
+        </p>
+        <CodeBlock Code="@Retry" />
+
+        <p>
+            The attempts are one run. <code>XxxIsLoading</code> stays on across them, the action is
+            recorded once, and only the <em>final</em> failure lands in <code>XxxError</code> and reaches
+            <code>OnActionError</code>. Cancellation through the effect's own token -
+            <code>CancelXxx()</code>, a superseding <code>Latest</code> run, the store being disposed -
+            is never retried: it ends the run, during an attempt or during the wait before the next one.
+        </p>
+
+        <DemoCard Title="A flaky endpoint"
+                  Description="Pick how many attempts the server fails. Three retries cover up to three failures; the fourth reaches XxxError."
+                  Source="@RetrySource">
+            <div class="bb-toolbar">
+                <button class="btn btn-secondary" @onclick="() => RunFlaky(0)" disabled="@Lab.FetchFlakyIsLoading">Succeed at once</button>
+                <button class="btn btn-secondary" @onclick="() => RunFlaky(2)" disabled="@Lab.FetchFlakyIsLoading">Fail twice</button>
+                <button class="btn btn-secondary" @onclick="() => RunFlaky(4)" disabled="@Lab.FetchFlakyIsLoading">Fail four times</button>
+                <button class="btn btn-outline" @onclick="Lab.CancelFetchFlaky" disabled="@(!Lab.FetchFlakyIsLoading)">Cancel</button>
+            </div>
+
+            <div class="bb-stats">
+                <div class="bb-stat">
+                    <span class="bb-stat-label">FetchFlakyIsLoading</span>
+                    <span class="bb-stat-value">@(Lab.FetchFlakyIsLoading ? "true" : "false")</span>
+                </div>
+                <div class="bb-stat">
+                    <span class="bb-stat-label">FetchFlakyError</span>
+                    <span class="bb-stat-value demo-accent">@(Lab.FetchFlakyError?.Message ?? "null")</span>
+                </div>
+            </div>
+
+            <ul class="demo-list">
+                @foreach (var line in Lab.Attempts)
+                {
+                    <li><code>@line</code></li>
+                }
+            </ul>
+        </DemoCard>
+
+        <Callout Kind="Callout.CalloutKind.Note" Title="Keep what runs before the last await repeatable">
+            <p>
+                A retry runs the body again from the top, so state it changed on a failed attempt is
+                still there when the next one starts. Assign results once they have arrived, as above,
+                rather than accumulating them. A timeout needs a <code>CancellationToken</code>
+                parameter (<code>BLEX023</code>): the token is how an overrunning attempt is told to stop.
+            </p>
+        </Callout>
+    </div>
+
+    <div class="bb-card">
         <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Rules</h3>
         <ul class="bb-detail-list">
             <li>
@@ -357,6 +415,41 @@
         _debouncedBox = "";
         Search.Clear();
     }
+
+    private async Task RunFlaky(int failures)
+    {
+        Lab.PrepareFlaky(failures);
+        await Lab.FetchFlaky();
+    }
+
+    private const string Retry = """
+        [BlexEffect(RetryCount = 3, RetryDelayMilliseconds = 500, TimeoutMilliseconds = 10_000)]
+        private async Task OnLoadOrders(CancellationToken ct)
+        {
+            Orders = await _api.GetOrdersAsync(ct);   // assigned once it has arrived: safe to repeat
+        }
+
+        // attempt 1 fails -> wait 500 ms -> attempt 2 fails -> wait 1 s -> attempt 3 fails
+        //                 -> wait 2 s    -> attempt 4: its failure is LoadOrdersError
+        """;
+
+    private const string RetrySource = """
+        [BlexEffect(RetryCount = 3, RetryDelayMilliseconds = 400, TimeoutMilliseconds = 2000)]
+        private async Task OnFetchFlaky(CancellationToken ct)
+        {
+            var attempt = ++_flakyAttempts;
+            Attempts = [.. Attempts, $"attempt {attempt} started"];
+            await Task.Delay(300, ct);   // the "network"
+
+            if (attempt <= FailuresToSimulate)
+            {
+                Attempts = [.. Attempts, $"attempt {attempt} failed"];
+                throw new InvalidOperationException($"The server failed attempt {attempt}.");
+            }
+
+            Attempts = [.. Attempts, $"attempt {attempt} succeeded"];
+        }
+        """;
 
     private static readonly IReadOnlyList<ApiTable.Row> GeneratedRows =
     [

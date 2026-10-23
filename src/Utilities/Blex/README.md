@@ -44,6 +44,11 @@ instead of guessing at it - or at Fluxor's. Point an MCP client at `https://blex
 | Derived state *across* stores | manual | `manager.CreateSelector(...)` (lazy, shared, memoized) |
 | Async side-effects | Effect classes | `[BlexEffect]` (auto loading/error) |
 | Effect cancellation / concurrency | manual | `CancellationToken` + `Latest`/`Drop`/`Queue` + `DebounceMilliseconds` |
+| Effect retries / timeouts | manual | `RetryCount` (exponential backoff) + `TimeoutMilliseconds` |
+| Server-state cache (queries, mutations, optimistic rollback) | ✗ | `BlexQueryClient` / `UseQuery` / `<BlexQueryView>` (TanStack Query model, prerender handoff) |
+| Failed action leaves no partial state | ✗ | opt-in `[BlexStore(RollbackOnError = true)]` |
+| Safe changes from timers / SignalR on Blazor Server | manual `InvokeAsync` | `manager.InvokeAsync` + off-dispatcher changes reported |
+| Logging / OpenTelemetry | ✗ | `options.UseLogging()`, `ActivitySource`/`Meter` `"Bit.Blex"` |
 | Ad-hoc batched mutations | ✗ | `store.Batch(name, ...)` (Pinia `$patch`-style) |
 | Reset to initial state | manual | `store.ResetState()` |
 | Middleware | yes | yes (with veto/filter hooks + payload access) |
@@ -146,6 +151,45 @@ registered (a constructor setting up initial state is fine). Restores, `ResetSta
 unaffected. Two-way binding needs a setter, so bind through an action instead:
 `<input @bind:get="Store.Query" @bind:set="Store.SetQuery" />`.
 
+### When an action throws
+
+By default an action behaves like the C# method it is: what it changed before the throw stays changed and,
+since it changed state, is notified, recorded and persisted. `[BlexStore(RollbackOnError = true)]` makes
+every synchronous action a transaction instead - a throw puts the store's fields back, and nothing is
+notified, recorded, persisted or added to the undo history; the exception still reaches the caller and
+`OnActionError`. Each action level is its own transaction, so a nested action whose failure the caller
+catches is undone while the caller's own changes stay. An action of another store dispatched from the body
+stands - only this store is put back - and the undo steps it recorded hold this store's rolled-back state,
+never the undone one. The snapshot is a shallow copy of the `[BlexState]`
+fields (one small array per action, no serialization): it undoes assignments, covers this store only, and
+leaves async actions alone - they have already shown the UI what they changed before their first `await`.
+
+```csharp
+[BlexStore(Name = "ledger", RollbackOnError = true)]
+public partial class LedgerStore
+{
+    [BlexState] private decimal _balance;
+
+    [BlexAction]
+    private void OnWithdraw(decimal amount)
+    {
+        Balance -= amount;
+        if (Balance < 0) throw new InvalidOperationException("Insufficient funds.");   // Balance is put back
+    }
+}
+```
+
+A `[BlexComputed]` value read inside an action already reflects the action's earlier writes: the
+notification waits for the action to finish, but invalidation happens at the write, so validation after a
+write never reads a value memoized before it.
+
+### Catching in-place mutations
+
+`Items.Add(item)` assigns nothing, so no subscriber, DevTools entry, undo step or storage write ever sees
+it. `options.DetectInPlaceMutations = true` reports every action that changed its store's state without
+assigning a property, through `OnError` (source `"mutation"`) with the fix in the message. It serializes
+the store around each action - turn it on in development only.
+
 ## Setup
 
 ```csharp
@@ -181,6 +225,28 @@ builder.Services.AddBitBlexStore<TodoStore>();
 
 `BlexComponentBase.Subscribe(...)` re-renders the component whenever a subscribed store changes
 and unsubscribes automatically on dispose.
+
+### Threads and the dispatcher
+
+Stores are not synchronized, and neither is the dispatch pipeline: a Blazor Server circuit and a
+BlazorWebView keep them consistent by running every event handler, lifecycle method and render on one
+dispatcher. A `System.Threading.Timer` callback, a SignalR `HubConnection.On` handler, a `Task.Run` body or
+a continuation after `ConfigureAwait(false)` races all of them when it changes a store.
+`<BlexProvider>` binds the renderer's dispatcher to `BlexManager.Dispatcher`, and `manager.InvokeAsync`
+gets there from a service that has no component to call `InvokeAsync` on:
+
+```csharp
+hub.On<Order>("orderPlaced", order => manager.InvokeAsync(() => orders.Add(order)));
+```
+
+A store changed outside the dispatcher anyway is reported through `OnError` (source `"dispatcher"`, the
+store's name as the detail). The change still applies; the report points at a race that would otherwise
+surface only as rare corruption in production. `options.ReportOffDispatcherChanges = false` turns it off.
+In bUnit tests that render `<BlexProvider>`, the test thread is outside the renderer's dispatcher just as a
+timer would be: change stores through `cut.InvokeAsync(...)` (as bUnit recommends for any state change), or
+turn the report off for the suite.
+Blazor WebAssembly is single-threaded and never reports; outside Blazor nothing is checked unless you assign
+an `IBlexDispatcher`.
 
 ## Typed actions
 
@@ -263,7 +329,11 @@ Keep a manager-level projection cheap - it runs after every action in the applic
 already-memoized `[BlexComputed]` properties rather than recomputing over collections. It
 is also re-evaluated after state *restores* (undo/redo, DevTools time-travel, an incoming cross-tab
 change), which move state without dispatching anything - watching actions alone would leave the
-subscription reporting a value the application no longer holds.
+subscription reporting a value the application no longer holds - and after the changes no action
+records: an effect's `IsLoading`/`Error`, a rollback. The callback runs after middleware and DevTools
+have seen the action behind the change, so a follow-up it dispatches is recorded after its cause; what an
+async action changes is therefore delivered when that action completes (components and `CreateSelector`
+see it at once).
 
 A projection that returns a *collection* defeats the point on its own: `() => store.Items.Where(...)`
 builds a new object every time it runs, so the default reference comparison always reports a change.
@@ -376,12 +446,118 @@ offered to middleware and records no action. A spinner bound to `IsLoading` ther
 once per keystroke, and DevTools does not fill up with searches that never happened. The gate is per
 effect, not per argument.
 
+### Retries and timeouts
+
+Networks fail transiently. `RetryCount` runs a failed body again, waiting `RetryDelayMilliseconds`
+(default 1000) before the first retry and doubling the wait before each one after it, up to 30 seconds.
+`TimeoutMilliseconds` bounds every attempt: one that overruns has its token cancelled and fails with a
+`TimeoutException`, which is retried like any other failure.
+
+```csharp
+[BlexEffect(RetryCount = 3, RetryDelayMilliseconds = 500, TimeoutMilliseconds = 10_000)]
+private async Task OnLoadOrders(CancellationToken ct)
+    => Orders = await _api.GetOrdersAsync(ct);
+```
+
+The attempts are one run: `XxxIsLoading` stays on across them, the action is recorded once, and only the
+final failure lands in `XxxError` and reaches `OnActionError`. Cancellation through the effect's own
+token (`CancelXxx()`, a superseding `Latest` run, disposal) is never retried. Waits run on the manager's
+`TimeProvider`, and a replay skips them. A retry runs the body from the top, so assign results once they
+have arrived rather than accumulating them. A timeout needs a `CancellationToken` parameter (`BLEX023`):
+the token is how an overrunning attempt is told to stop.
+
 Every invocation is offered to the middleware/veto pipeline independently, including one started
 while another async action of the same store is still awaiting. A vetoed invocation leaves no
 trace: it never flips `IsLoading`, never clears `Error`, never supersedes a `Latest` run in flight
 and never takes a `Queue` slot. Time-travel *recording*, however, is coalesced: overlapping runs on
 one store are folded into the outermost in-flight action, so DevTools shows a single entry for
 them. Use `Queue`, `Drop` or `Latest` - or separate stores - when each run needs its own entry.
+
+## Server state (queries)
+
+Stores hold state the app *owns*. A server's answer is different - a copy of someone else's state with a
+shelf life - and wants a cache rather than a store: fetched once and shared by every component that shows
+it, refreshed in the background once stale, refetched after a change, dropped when nobody has looked at it
+for a while. `BlexQueryClient` (namespace `Bit.Blex.Query`, same package) is that cache - the model TanStack
+Query made standard, in idiomatic C#. It is kept out of the state tree, persistence, history and DevTools on
+purpose: undoing or persisting a server copy only brings back a stale one.
+
+```csharp
+builder.Services.AddBitBlexQueries(options => options.StaleTime = TimeSpan.FromSeconds(30));
+```
+
+```razor
+@inherits BlexComponentBase
+@inject TodoApi Api
+
+@if (_todo.IsLoading) { <Spinner /> }
+else if (_todo.Data is { } todo) { <h2>@todo.Title</h2> }
+else if (_todo.Error is { } error) { <p>@error.Message</p> }
+
+@code {
+    [Parameter] public int Id { get; set; }
+    private BlexQuery<Todo> _todo = default!;
+
+    protected override void OnParametersSet()
+        => _todo = UseQuery(["todos", Id], ct => Api.GetTodoAsync(Id, ct));
+}
+```
+
+A key is an ordered list of parts, general to specific. Call `UseQuery` from `OnParametersSet`, before any
+`await`: a call site keeps an observer per key it asks for, and once a parameter pass is over it releases the
+keys it stopped asking for - so a key that follows a parameter is swapped, and one call in a loop over items
+keeps one observer per item. `<BlexQueryView TData Key Fetch>` does the same from markup
+(`LoadingContent`, `ErrorContent`, `ChildContent` with the data). An observer reports `Data`, `Status`
+(`Pending`/`Error`/`Success`) and, independently, `FetchStatus` (`Idle`/`Fetching`) - so `IsLoading` (nothing
+to show yet) and `IsRefetching` (data shown, newer on its way) differ - plus `IsStale`, `DataUpdatedAt`,
+`FailureCount`/`FailureReason`, `RefetchAsync()` and `WhenSettledAsync()`.
+
+- **One request per key**: observers that mount while a fetch runs join it. An explicit refetch or an
+  invalidation cancels a running fetch and starts over, and only the latest fetch commits - a slow response
+  never overwrites a newer one. A failed refetch keeps the data it had alongside the error.
+- **Freshness and lifetime** (`BlexQueryOptions`, defaults from `AddBitBlexQueries`): `StaleTime` (0),
+  `GcTime` (5 min), `RetryCount`/`RetryDelay` (3, 1 s, exponential to 30 s), `Enabled` (dependent queries),
+  `RefetchInterval` (polling), `RefetchOnMount`/`RefetchOnFocus`, `KeepPreviousData` (paging without a
+  loading flash, flagged `IsPlaceholderData`). Every wait runs on the manager's `TimeProvider`; timers run on
+  its `Dispatcher`.
+- **Invalidation and direct access**: `InvalidateAsync(["todos"])` covers every key starting with those
+  parts (`exact: true` for one), refetching the observed ones; an unobserved one keeps a fetch it already had
+  running, but its answer stays stale, so the next observer fetches again. `SetQueryData`, `GetQueryData`,
+  `Cancel`, `Remove`/`Clear` (an observer still watching a removed query starts over on a fresh one - the
+  sign-out move). `FetchAsync` is the read-through for effects and services - it throws
+  `OperationCanceledException` when its fetch is cancelled rather than hand back the data from before;
+  `PrefetchAsync` warms the cache.
+- **Focus and reconnect**: `<BlexProvider>` listens for the tab becoming visible again and the browser coming
+  back online, and refetches the stale queries an observer with `RefetchOnFocus` watches. Outside a browser
+  (native MAUI), call `NotifyFocused()`/`NotifyReconnected()` where your app learns of it.
+
+Mutations send changes, with automatic optimistic rollback:
+
+```csharp
+_add = Watch(queries.Mutation<string, Product>(
+    (name, ct) => api.AddProductAsync(name, ct),
+    new()
+    {
+        OnMutate = name => queries.Optimistic<IReadOnlyList<Product>>(
+            ["products"], products => [.. products ?? [], new Product(-1, name, 0)]),
+        Invalidates = ["products"],
+    }));
+
+await _add.MutateAsync("Desk");   // never throws; IsPending / IsSuccess / Error
+```
+
+A failure rolls the optimistic value back - but only while the cache still holds it; when something newer
+has landed meanwhile (another mutation's optimistic value, a refetch) the key is invalidated instead, which
+keeps overlapping optimistic updates from corrupting each other. The mutation stays pending until the
+invalidated queries have refetched, so "saved" never shows next to the list from before the save.
+`Watch(...)` re-renders a `BlexComponentBase` on any `INotifyPropertyChanged` source.
+
+**Prerendering**: `<BlexProvider>` hands the queries a prerender fetched to the interactive render through
+`PersistentComponentState`. Await `query.WhenSettledAsync()` while prerendering so the response carries the
+data, and give the query a `StaleTime` so the handed-over data is not refetched on arrival.
+
+Not built in (yet): infinite/paged-cursor queries (page with `KeepPreviousData` and a page number in the key
+meanwhile) and pausing mutations while offline.
 
 ## Normalized collections (entity adapter)
 
@@ -591,20 +767,33 @@ manager.SubscribeToAction("Increment", ctx => { ... });                         
 manager.SubscribeAsync(async ctx => await otherStore.Reload());
 ```
 
+For "once, when this holds" rather than "every time this happens", `manager.WhenAsync(condition, ct)`
+completes at once when the condition holds, and otherwise after the first change (an action, a restore, an
+effect starting or finishing) that makes it true - MobX's `when`, Redux Toolkit's listener `condition`. A
+change counts as soon as it is notified, even inside an async action that will be recorded only when it
+ends, so an effect can wait for something its own store's actions do. A throwing condition faults the task;
+cancelling stops the wait:
+
+```csharp
+await manager.WhenAsync(() => session.IsSignedIn, ct);   // in an effect: wait for sign-in, then check out
+```
+
 A subscription answers "tell me when this changed". For "give me this value, cheaply, from several
 places at once" - what `[BlexComputed]` does inside one store - `CreateSelector` lifts the
 same memoization to the manager. It is lazy and shared: three components binding to one cross-store
-total pay for one computation per action rather than three, and an action none of them read costs a
-flag write:
+total pay for one computation per change rather than three, and it subscribes to nothing - it compares a
+version the manager advances whenever any registered store changes, before that store's subscribers
+run, so creating one adds no work to dispatch and a component re-rendering for a change never reads
+the value from before it:
 
 ```csharp
 using var summary = manager.CreateSelector(() => $"{orders.Units} units, {cart.Total:C}");
-var text = summary.Value;   // recomputed at most once per action, however many readers
+var text = summary.Value;   // recomputed at most once per change, however many readers
 ```
 
 Both stay correct when state moves without an action: undo/redo, DevTools time-travel, persistence
 hydration, a change arriving from another tab and the prerender handoff all raise
-`manager.StateRestored`, which re-evaluates manager subscriptions and invalidates selectors. Ahead of it,
+`manager.StateRestored`, which re-evaluates manager subscriptions (selectors are already stale by then). Ahead of it,
 `manager.StoreRestored` names each store that moved, for observers that only need to revisit that one -
 persistence writes back just the restored store, and undo/redo compares just its slice.
 
@@ -694,6 +883,30 @@ interactive handoff. One component throwing while it re-renders can never starve
 behind it, nor the persistence and undo/redo observers that run after them - and a store whose
 prerendered slice fails to apply costs a second render, not a failed startup.
 
+### Logging and tracing
+
+`options.UseLogging()` writes to the host's `ILogger` (category `Bit.Blex`): every action at `Debug` (or the
+level you pass; `LogLevel.None` logs failures only), every action failure as an error, and every failure Blex
+isolates as a warning - instead of `Console.Error` - before your `OnError` sees it too. Names only: action
+arguments and state never reach the log.
+
+Tracing and metrics use the standard `ActivitySource`/`Meter` APIs, named `BlexDiagnostics.SourceName`
+(`"Bit.Blex"`), and cost two flag reads per action when nothing listens:
+
+```csharp
+builder.Services.AddOpenTelemetry()
+    .WithTracing(t => t.AddSource(BlexDiagnostics.SourceName))
+    .WithMetrics(m => m.AddMeter(BlexDiagnostics.SourceName));
+```
+
+Every action, effect and query fetch is a span (`"cart/Checkout"`, `"query todos"`); an action that runs inside
+another is its child, a failed one is marked `Error` with its exception type, a cancelled one is tagged
+`blex.cancelled`, and an effect's retries are span events. Metrics: `blex.actions`, `blex.action.errors` and
+`blex.action.duration` (seconds) by `blex.store` and `blex.action`; `blex.query.fetches` and
+`blex.query.duration` by `blex.query.resource` and `blex.query.outcome`. A store is tagged with its declared
+name - a scoped instance's key goes on the span only - and a query with its key's first part, so series stay
+few and ids stay out of exported telemetry.
+
 Store names key the global state tree, the DevTools slices *and* the persistence storage keys, so
 they must be unique. Registering two stores under one name is reported through `OnError` rather
 than silently letting them shadow each other - give one an explicit `[BlexStore(Name = "...")]`.
@@ -716,6 +929,12 @@ builder.Services.AddBitBlexHistory();   // <BlexProvider> starts recording autom
 `NextUndoLabel`/`NextRedoLabel` name the action about to be undone/redone (e.g. "Undo
 counter/Increment"); `UndoCount`/`RedoCount` expose stack depths. When persistence is enabled,
 undo/redo writes the restored state back to storage.
+
+Snapshots are taken per store and shared: recording an action serializes only the stores it changed, every
+undo step holds a reference to the unchanged stores' slices rather than a copy, and an undo or redo restores
+(and notifies, and writes back to storage) only the stores whose state actually differs - so a step costs what
+changed, however many stores the app has. (A store changed in place, without assigning a property, is not
+re-captured; see [Catching in-place mutations](#catching-in-place-mutations).)
 
 By default every action earns its own undo step, which is rarely what a user means once a text box
 is involved - typing "hello" into a bound property would record five steps. Pass a filter
@@ -961,7 +1180,9 @@ parameters · `BLEX014` generic action/effect methods · `BLEX015` record stores
 attribute used outside a `[BlexStore]` class (warning) - the one mistake that otherwise
 compiles cleanly and silently generates nothing at all · `BLEX019` negative
 `DebounceMilliseconds` · `BLEX020` a store member already named `Actions`, so the typed action
-descriptors are not generated (warning) · `BLEX021` two actions dispatched under one name.
+descriptors are not generated (warning) · `BLEX021` two actions dispatched under one name ·
+`BLEX022` negative `RetryCount`/`RetryDelayMilliseconds`/`TimeoutMilliseconds` · `BLEX023`
+`TimeoutMilliseconds` on an effect without a `CancellationToken` parameter.
 
 ## Time-travel debugging
 
@@ -1041,6 +1262,7 @@ generated state, computed and effect-lifecycle properties:
 builder.UseBitBlex();                          // manager + startup initializer
 builder.AddBitBlexStore<CounterStore>();
 builder.AddBitBlexPreferencesPersistence();    // OS-native Preferences storage
+builder.AddBitBlexQueries();                   // optional: the server-state cache, as a singleton
 ```
 
 Register through the `MauiAppBuilder` extensions rather than `builder.Services`: a native MAUI app

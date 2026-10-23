@@ -37,12 +37,13 @@ public sealed class BlexGenerator : IIncrementalGenerator
     [
         "Name", "Persist", "StateChanged", "PropertyChanged", "SerializeState", "DeserializeState",
         "InvalidateComputed", "NotifyRestored", "SetState", "SetEffectState",
-        "BeginEffect", "EndEffect", "DebounceEffectAsync", "Dispatch", "DispatchAsync",
+        "BeginEffect", "EndEffect", "DebounceEffectAsync", "RunEffectAttemptsAsync", "Dispatch", "DispatchAsync",
         "BeginAction", "DispatchApprovedAsync",
         "Batch", "ResetState", "RestoreState", "IsRestoring", "IsObserved",
         "Dispose", "IsDisposed", "CancelEffects",
         "InstanceKey", "WithInstanceKey", "TimeProvider",
         "ActionDescriptors", "FindAction", "DescribeActions", "EnforcesActions", "TransientStateKeys",
+        "CaptureRollbackState", "ApplyRollbackState",
     ];
 
     /// <summary>The nested class the typed action descriptors are generated into.</summary>
@@ -211,6 +212,22 @@ public sealed class BlexGenerator : IIncrementalGenerator
         DiagnosticSeverity.Error,
         isEnabledByDefault: true);
 
+    private static readonly DiagnosticDescriptor NegativeRetryOrTimeout = new(
+        "BLEX022",
+        "Effect retry and timeout values cannot be negative",
+        "Effect '{0}' sets a negative RetryCount, RetryDelayMilliseconds or TimeoutMilliseconds; use 0 to turn retries or the timeout off",
+        "Bit.Blex.Generators",
+        DiagnosticSeverity.Error,
+        isEnabledByDefault: true);
+
+    private static readonly DiagnosticDescriptor TimeoutWithoutToken = new(
+        "BLEX023",
+        "Effect timeout needs a CancellationToken",
+        "Effect '{0}' sets TimeoutMilliseconds but has no CancellationToken parameter, so a timed-out attempt could not be stopped and would go on changing state; add a trailing CancellationToken parameter and pass it to the work it awaits",
+        "Bit.Blex.Generators",
+        DiagnosticSeverity.Error,
+        isEnabledByDefault: true);
+
     private static readonly DiagnosticDescriptor ConflictingBaseType = new(
         "BLEX016",
         "Store cannot have another base class",
@@ -330,6 +347,7 @@ public sealed class BlexGenerator : IIncrementalGenerator
         var storeName = symbol.Name;
         var persist = false;
         var enforceActions = false;
+        var rollbackOnError = false;
         var storeAttr = ctx.Attributes.FirstOrDefault();
         if (storeAttr is not null)
         {
@@ -344,6 +362,10 @@ public sealed class BlexGenerator : IIncrementalGenerator
             var enforceArg = storeAttr.NamedArguments.FirstOrDefault(a => a.Key == "EnforceActions").Value;
             if (enforceArg.Value is bool e)
                 enforceActions = e;
+
+            var rollbackArg = storeAttr.NamedArguments.FirstOrDefault(a => a.Key == "RollbackOnError").Value;
+            if (rollbackArg.Value is bool rb)
+                rollbackOnError = rb;
         }
 
         var states = new List<BlexStateModel>();
@@ -524,6 +546,15 @@ public sealed class BlexGenerator : IIncrementalGenerator
                         break;
                     }
 
+                    var retryCount = attr.NamedArguments.FirstOrDefault(a => a.Key == "RetryCount").Value.Value is int r ? r : 0;
+                    var retryDelay = attr.NamedArguments.FirstOrDefault(a => a.Key == "RetryDelayMilliseconds").Value.Value is int rd ? rd : 1000;
+                    var timeout = attr.NamedArguments.FirstOrDefault(a => a.Key == "TimeoutMilliseconds").Value.Value is int t ? t : 0;
+                    if (retryCount < 0 || retryDelay < 0 || timeout < 0)
+                    {
+                        Report(NegativeRetryOrTimeout, em.Locations.FirstOrDefault(), em.Name);
+                        break;
+                    }
+
                     // A trailing CancellationToken parameter is supplied by the wrapper (it does
                     // not appear on the public method) and enables CancelXxx() / Latest semantics.
                     var parameters = em.Parameters;
@@ -534,6 +565,14 @@ public sealed class BlexGenerator : IIncrementalGenerator
 
                     if (concurrency == 1 && !hasToken)
                         Report(LatestWithoutToken, em.Locations.FirstOrDefault(), em.Name);
+
+                    // Without a token, a timeout could only stop waiting for the body, which would carry on
+                    // and change state after its run had already failed.
+                    if (timeout > 0 && !hasToken)
+                    {
+                        Report(TimeoutWithoutToken, em.Locations.FirstOrDefault(), em.Name);
+                        break;
+                    }
 
                     var label = string.IsNullOrWhiteSpace(explicitName) ? wrapper : explicitName!;
                     var isValueTaskEffect = returnName == "System.Threading.Tasks.ValueTask";
@@ -549,6 +588,9 @@ public sealed class BlexGenerator : IIncrementalGenerator
                         concurrency,
                         hasToken,
                         debounce,
+                        retryCount,
+                        retryDelay,
+                        timeout,
                         new BlexEquatableArray<BlexParamModel>(prms)));
                     break;
                 }
@@ -579,6 +621,7 @@ public sealed class BlexGenerator : IIncrementalGenerator
             storeName,
             persist,
             enforceActions,
+            rollbackOnError,
             emitActions,
             new BlexEquatableArray<BlexStateModel>(states.ToArray()),
             new BlexEquatableArray<BlexComputedModel>(computeds.ToArray()),
@@ -1208,6 +1251,17 @@ public sealed class BlexGenerator : IIncrementalGenerator
                 ? (argList.Length == 0 ? "__blexCt" : $"{argList}, __blexCt")
                 : argList;
             var call = e.IsValueTask ? $"{e.ImplName}({implArgs}).AsTask()" : $"{e.ImplName}({implArgs})";
+            if (e.RetryCount > 0 || e.TimeoutMilliseconds > 0)
+            {
+                // The body runs once per attempt, inside the one recorded action; with a timeout, each
+                // attempt gets a token of its own, linked to the effect's.
+                var attemptArgs = e.HasCancellationToken
+                    ? (argList.Length == 0 ? "__blexAttemptCt" : $"{argList}, __blexAttemptCt")
+                    : argList;
+                var attempt = e.IsValueTask ? $"{e.ImplName}({attemptArgs}).AsTask()" : $"{e.ImplName}({attemptArgs})";
+                var token = e.HasCancellationToken ? "__blexCt" : "default";
+                call = $"base.RunEffectAttemptsAsync(__blexAttemptCt => {attempt}, {token}, {e.RetryCount}, {e.RetryDelayMilliseconds}, {e.TimeoutMilliseconds})";
+            }
             var label = Escape(e.ActionLabel);
             var argsExpr = ArgsExpression(e.Parameters);
             var isLatest = e.Concurrency == 1;
@@ -1405,6 +1459,24 @@ public sealed class BlexGenerator : IIncrementalGenerator
             sb.AppendLine($"{body}{{");
             foreach (var c in m.Computeds)
                 sb.AppendLine($"{body}    __{c.PropertyName}Valid = false;");
+            sb.AppendLine($"{body}}}");
+            sb.AppendLine();
+        }
+
+        // RollbackOnError: a shallow copy of the state fields, taken as each synchronous action starts and put
+        // back when it throws. Field reads and writes only -- no notification, no serialization.
+        if (m.RollbackOnError && m.States.Count > 0)
+        {
+            var fields = string.Join(", ", m.States.Select(s => "this." + Id(s.FieldName)));
+            sb.AppendLine($"{body}/// <inheritdoc />");
+            sb.AppendLine($"{body}protected override object?[]? CaptureRollbackState() => new object?[] {{ {fields} }};");
+            sb.AppendLine();
+            sb.AppendLine($"{body}/// <inheritdoc />");
+            sb.AppendLine($"{body}protected override void ApplyRollbackState(object?[] state)");
+            sb.AppendLine($"{body}{{");
+            var slot = 0;
+            foreach (var s in m.States)
+                sb.AppendLine($"{body}    this.{Id(s.FieldName)} = ({s.TypeFqn})state[{slot++}]!;");
             sb.AppendLine($"{body}}}");
             sb.AppendLine();
         }

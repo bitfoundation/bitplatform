@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 namespace Bit.Blex;
 
@@ -51,11 +52,28 @@ public static class BitBlex
             // Registration order, exactly as written: order decides which veto is consulted first
             // and what a logger sees.
             var resolved = new List<IBlexMiddleware>(opts.MiddlewareEntries.Count);
+            BlexLoggingMiddleware? logging = null;
             foreach (var entry in opts.MiddlewareEntries)
             {
-                resolved.Add(entry is Type type
-                    ? (IBlexMiddleware)sp.GetRequiredService(type)
-                    : (IBlexMiddleware)entry);
+                switch (entry)
+                {
+                    case Type type:
+                        resolved.Add((IBlexMiddleware)sp.GetRequiredService(type));
+                        break;
+
+                    case BlexLoggingRegistration registration:
+                        if (logging is null && sp.GetService<ILoggerFactory>() is { } loggers)
+                        {
+                            logging = new BlexLoggingMiddleware(loggers.CreateLogger(BlexDiagnostics.SourceName), registration.ActionLevel);
+                            resolved.Add(logging);
+                        }
+
+                        break;
+
+                    default:
+                        resolved.Add((IBlexMiddleware)entry);
+                        break;
+                }
             }
 
             // Middleware registered straight into the service collection (not through the options)
@@ -73,10 +91,23 @@ public static class BitBlex
                 DevToolsActionSanitizer = opts.DevToolsActionSanitizer,
                 OnError = opts.OnError,
                 TimeProvider = opts.TimeProvider ?? sp.GetService<TimeProvider>() ?? TimeProvider.System,
+                ReportOffDispatcherChanges = opts.ReportOffDispatcherChanges,
+                DetectInPlaceMutations = opts.DetectInPlaceMutations,
             };
 
             if (opts.OnActionError is { } onActionError)
                 manager.ActionFailed += onActionError;
+
+            // Isolated failures reach the log rather than stderr, and still reach the app's own sink.
+            if (logging is not null)
+            {
+                var onError = opts.OnError;
+                manager.OnError = error =>
+                {
+                    logging.LogIsolatedFailure(error);
+                    onError?.Invoke(error);
+                };
+            }
 
             return manager;
         }, lifetime));
@@ -136,6 +167,31 @@ public static class BitBlex
             sp.GetRequiredService<BlexManager>(),
             sp.GetRequiredService<IBlexStorage>(),
             sp.GetRequiredService<BlexPersistenceOptions>()), lifetime));
+        return services;
+    }
+
+    /// <summary>
+    /// Registers the server-state cache (<see cref="Query.BlexQueryClient"/>): queries, mutations,
+    /// invalidation and the prerender handoff of fetched data.
+    /// </summary>
+    /// <param name="services">The service collection.</param>
+    /// <param name="configure">Sets the defaults every query starts from.</param>
+    /// <param name="lifetime">
+    /// Defaults to <see cref="ServiceLifetime.Scoped"/> -- one cache per Blazor Server circuit, so one user's
+    /// data never reaches another; must match the lifetime passed to <see cref="AddBitBlexServices"/>.
+    /// </param>
+    public static IServiceCollection AddBitBlexQueries(
+        this IServiceCollection services,
+        Action<Query.BlexQueryClientOptions>? configure = null,
+        ServiceLifetime lifetime = ServiceLifetime.Scoped)
+    {
+        ArgumentNullException.ThrowIfNull(services);
+        var options = new Query.BlexQueryClientOptions();
+        configure?.Invoke(options);
+        services.Add(new ServiceDescriptor(
+            typeof(Query.BlexQueryClient),
+            sp => new Query.BlexQueryClient(sp.GetService<BlexManager>(), options),
+            lifetime));
         return services;
     }
 

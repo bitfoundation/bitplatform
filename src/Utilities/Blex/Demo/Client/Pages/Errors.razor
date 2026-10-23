@@ -48,7 +48,10 @@
                     <tr><td class="bb-table-key"><code>reset</code></td><td>A store failed to reset during <code>BlexManager.ResetAll()</code>. That store is skipped; the rest still reset.</td></tr>
                     <tr><td class="bb-table-key"><code>register</code></td><td>Two stores were registered under the same name, so their state slices, DevTools entries and storage keys collide - or a <code>StoreRegistered</code> handler threw.</td></tr>
                     <tr><td class="bb-table-key"><code>unregister</code></td><td>A <code>StoreUnregistered</code> handler threw as a store left the manager. <code>Detail</code> names the store.</td></tr>
-                    <tr><td class="bb-table-key"><code>prerender</code></td><td>Handing a store's state across the prerender-to-interactive boundary failed. The store simply renders from its own state instead - the worst case is rendering twice.</td></tr>
+                    <tr><td class="bb-table-key"><code>prerender</code></td><td>Handing a store's state - or the query cache - across the prerender-to-interactive boundary failed. The store simply renders from its own state instead, and a query fetches again - the worst case is rendering twice.</td></tr>
+                    <tr><td class="bb-table-key"><code>dispatcher</code></td><td>A store changed outside the dispatcher its state belongs to (a timer, a background task, a SignalR handler). The change applied, but raced the renderer. <code>Detail</code> names the store. See <a href="stores#dispatcher">Threads and the dispatcher</a>.</td></tr>
+                    <tr><td class="bb-table-key"><code>mutation</code></td><td>With <code>DetectInPlaceMutations</code> on: an action changed state without assigning a property. <code>Detail</code> is the qualified action name.</td></tr>
+                    <tr><td class="bb-table-key"><code>query</code></td><td>A query observer's or mutation's handler threw, a mutation callback threw, or a handed-over query could not be read. <code>Detail</code> is the query key, when there is one.</td></tr>
                 </tbody>
             </table>
         </div>
@@ -132,6 +135,33 @@
                 and share it with all of them. Close over something process-wide (an
                 <code>ILoggerFactory</code>, a metrics client), or assign
                 <code>manager.OnError</code> per scope instead.
+            </p>
+        </Callout>
+    </div>
+
+    <div class="bb-card" id="observability">
+        <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Logging and tracing</h3>
+        <p>
+            <code>options.UseLogging()</code> does the handler above for you, through the host's
+            <code>ILogger</code> (category <code>Bit.Blex</code>): every action at <code>Debug</code> - or
+            the level you pass, <code>LogLevel.None</code> for failures only - every action failure as an
+            error, and every isolated failure as a warning, before your own <code>OnError</code> sees it too.
+            Names only: arguments and state never reach the log.
+        </p>
+        <p>
+            Tracing and metrics go through the standard <code>ActivitySource</code> and <code>Meter</code>
+            named <code>BlexDiagnostics.SourceName</code>, so OpenTelemetry, dotnet-counters and Application
+            Insights pick them up with no Blex-specific code - and with nothing listening, an action pays two
+            flag reads.
+        </p>
+        <CodeBlock Code="@Telemetry" FileName="Program.cs" />
+        <ApiTable Title="What is recorded" Rows="@TelemetryRows" />
+        <Callout Kind="Callout.CalloutKind.Note" Title="Safe to export by design">
+            <p>
+                Only names are recorded - never action arguments or state. A store's metric tag is its
+                declared name, without a scoped instance's key (which goes on the span only), so a thousand
+                open documents are one series. A query is named by its key's first part: <code>["todos", 42]</code>
+                is <code>"todos"</code>, so keep that part a fixed word rather than an id.
             </p>
         </Callout>
     </div>
@@ -236,6 +266,23 @@
             };
         });
         """;
+
+    private const string Telemetry = """
+        builder.Services.AddBitBlexServices(options => options.UseLogging());
+
+        builder.Services.AddOpenTelemetry()
+            .WithTracing(tracing => tracing.AddSource(BlexDiagnostics.SourceName))
+            .WithMetrics(metrics => metrics.AddMeter(BlexDiagnostics.SourceName));
+        """;
+
+    private static readonly IReadOnlyList<ApiTable.Row> TelemetryRows =
+    [
+        new("Span \"{store}/{action}\"", "Every action and effect; one that runs inside another is its child. Tags <code>blex.store</code>, <code>blex.action</code>, <code>blex.store.instance</code>. Failed: status <code>Error</code> and <code>error.type</code>. Cancelled: <code>blex.cancelled</code>. An effect's retries are <code>blex.effect.retry</code> events."),
+        new("Span \"query {resource}\"", "Every query fetch, its retries included, with <code>blex.query.outcome</code>: <code>success</code>, <code>error</code> or <code>cancelled</code>."),
+        new("blex.actions / blex.action.errors", "Counters by <code>blex.store</code> and <code>blex.action</code>."),
+        new("blex.action.duration", "Histogram, in seconds - an async action's includes its awaits."),
+        new("blex.query.fetches / blex.query.duration", "By <code>blex.query.resource</code> and <code>blex.query.outcome</code>."),
+    ];
 
     private const string PerScope = """
         [Inject] private BlexManager Manager { get; set; } = default!;

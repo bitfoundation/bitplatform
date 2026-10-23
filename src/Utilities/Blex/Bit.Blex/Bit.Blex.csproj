@@ -5,8 +5,8 @@
     <PropertyGroup>
         <TargetFrameworks>net10.0;net9.0;net8.0</TargetFrameworks>
         <IsTrimmable>true</IsTrimmable>
-        <PackageTags>$(PackageTags);Blazor;MAUI;State management;Redux;Flux;DevTools;Source generator</PackageTags>
-        <Description>Lightweight, source-generator-powered reactive state management for Blazor and .NET MAUI, with computed state, effects, middleware, persistence, undo/redo and Redux DevTools time-travel. Ships the Roslyn source generator that turns [BlexStore] classes into reactive stores, and the Blazor integration: the BlexComponentBase base class, &lt;BlexProvider&gt;, browser-storage persistence and the Redux DevTools bridge.</Description>
+        <PackageTags>$(PackageTags);Blazor;MAUI;State management;Redux;Flux;DevTools;Source generator;Query;Cache;OpenTelemetry</PackageTags>
+        <Description>Lightweight, source-generator-powered reactive state management for Blazor and .NET MAUI, with computed state, effects (cancellation, concurrency, debounce, retries, timeouts), middleware, persistence, undo/redo, a server-state query cache, OpenTelemetry tracing and Redux DevTools time-travel. Ships the Roslyn source generator that turns [BlexStore] classes into reactive stores, and the Blazor integration: the BlexComponentBase base class, &lt;BlexProvider&gt;, browser-storage persistence and the Redux DevTools bridge.</Description>
         <PackageDescription>$(Description)</PackageDescription>
     </PropertyGroup>
 
@@ -75,8 +75,8 @@
             BeforeTargets="ResolveProjectStaticWebAssets"
             DependsOnTargets="BuildBlexJavaScriptOnce">
         <ItemGroup>
-            <Content Remove="wwwroot\bit-blex-storage.js;wwwroot\bit-blex-devtools.js" />
-            <Content Include="wwwroot\bit-blex-storage.js;wwwroot\bit-blex-devtools.js" />
+            <Content Remove="wwwroot\bit-blex-storage.js;wwwroot\bit-blex-devtools.js;wwwroot\bit-blex-query.js" />
+            <Content Include="wwwroot\bit-blex-storage.js;wwwroot\bit-blex-devtools.js;wwwroot\bit-blex-query.js" />
         </ItemGroup>
     </Target>
 
@@ -106,10 +106,10 @@
          obj/ makes switching configurations invalidate the up-to-date check; the other configuration's
          stamp is deleted so switching back rebuilds too. Each file is minified to a temp file and moved
          into place, so an interrupted run cannot leave a half-written output that looks up to date. -->
-    <Target Name="BuildJavaScript" Inputs="@(TypeScriptFiles);tsconfig.json" Outputs="wwwroot/bit-blex-storage.js;wwwroot/bit-blex-devtools.js;obj/bit-blex-$(Configuration).stamp">
+    <Target Name="BuildJavaScript" Inputs="@(TypeScriptFiles);tsconfig.json" Outputs="wwwroot/bit-blex-storage.js;wwwroot/bit-blex-devtools.js;wwwroot/bit-blex-query.js;obj/bit-blex-$(Configuration).stamp">
         <ItemGroup>
             <_BlexStaleJsStamps Include="obj\bit-blex-*.stamp" Exclude="obj\bit-blex-$(Configuration).stamp" />
-            <_BlexJsOutputs Include="wwwroot\bit-blex-storage.js;wwwroot\bit-blex-devtools.js" />
+            <_BlexJsOutputs Include="wwwroot\bit-blex-storage.js;wwwroot\bit-blex-devtools.js;wwwroot\bit-blex-query.js" />
         </ItemGroup>
         <Delete Files="@(_BlexStaleJsStamps)" />
         <Exec Command="node_modules/.bin/tsc" StandardOutputImportance="high" StandardErrorImportance="high" />

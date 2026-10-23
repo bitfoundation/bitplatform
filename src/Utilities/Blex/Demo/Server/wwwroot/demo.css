@@ -144,6 +144,13 @@
     color: var(--bb-text);
 }
 
+/* Two panels side by side - the queries page's two readers of one key - stacked on narrow screens. */
+.demo-grid-2 {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(240px, 100%), 1fr));
+    gap: 1rem;
+}
+
 /* A tile nested in a sample ends flush with its frame. */
 .bb-demo .bb-card > :last-child {
     margin-bottom: 0;

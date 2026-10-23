@@ -23,7 +23,7 @@ public class McpCompletionTests
     [TestMethod]
     public async Task Completion_narrows_as_a_person_types_and_prefixes_rank_first()
     {
-        var completion = await CompleteResourceAsync("blex://api/{typeName}", "typeName", "blexopt");
+        var completion = await CompleteResourceAsync("blex://api/{typeName}", "typeName", "blexoptio");
 
         CollectionAssert.AreEqual(new[] { "BlexOptions" }, completion.Values.ToArray());
 

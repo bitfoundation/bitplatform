@@ -85,6 +85,42 @@ public partial class EffectLabStore
         Log("Queue", run, "finished");
     }
 
+    private int _flakyAttempts;
+
+    /// <summary>How many attempts of <c>FetchFlaky</c> fail before one succeeds.</summary>
+    [BlexStateAttribute] private int _failuresToSimulate = 2;
+
+    [BlexStateAttribute] private IReadOnlyList<string> _attempts = [];
+
+    /// <summary>
+    /// A request that fails <see cref="FailuresToSimulate"/> times before it succeeds: three retries,
+    /// 400 ms backoff doubling each time, and two seconds per attempt.
+    /// </summary>
+    [BlexEffectAttribute(RetryCount = 3, RetryDelayMilliseconds = 400, TimeoutMilliseconds = 2000)]
+    private async Task OnFetchFlaky(CancellationToken ct)
+    {
+        var attempt = ++_flakyAttempts;
+        Attempts = [.. Attempts, $"{_clock.ElapsedMilliseconds,5} ms  attempt {attempt} started"];
+        await Task.Delay(300, ct);   // the "network"
+
+        if (attempt <= FailuresToSimulate)
+        {
+            Attempts = [.. Attempts, $"{_clock.ElapsedMilliseconds,5} ms  attempt {attempt} failed"];
+            throw new InvalidOperationException($"The server failed attempt {attempt}.");
+        }
+
+        Attempts = [.. Attempts, $"{_clock.ElapsedMilliseconds,5} ms  attempt {attempt} succeeded"];
+    }
+
+    [BlexActionAttribute]
+    private void OnPrepareFlaky(int failures)
+    {
+        FailuresToSimulate = failures;
+        Attempts = [];
+        _flakyAttempts = 0;
+        _clock.Restart();
+    }
+
     /// <summary>Records a click that <c>Drop</c> mode swallowed (the wrapper returns without running).</summary>
     [BlexActionAttribute]
     private void OnNoteDropped() => Log("Drop", _dropRuns, "dropped");

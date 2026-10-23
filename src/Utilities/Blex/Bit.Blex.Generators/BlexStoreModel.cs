@@ -5,6 +5,7 @@
 /// <param name="StoreName">The store name (slice key), before any instance key.</param>
 /// <param name="Persist">[BlexStore(Persist = true)].</param>
 /// <param name="EnforceActions">[BlexStore(EnforceActions = true)]: state setters are private.</param>
+/// <param name="RollbackOnError">[BlexStore(RollbackOnError = true)]: a throwing synchronous action restores the fields it changed.</param>
 /// <param name="EmitActions">Whether the nested Actions class of typed descriptors is emitted (false when the name is taken; BLEX020).</param>
 /// <param name="States">The [BlexState] fields.</param>
 /// <param name="Computeds">The [BlexComputed] methods.</param>
@@ -16,6 +17,7 @@ internal sealed record BlexStoreModel(
     string StoreName,
     bool Persist,
     bool EnforceActions,
+    bool RollbackOnError,
     bool EmitActions,
     BlexEquatableArray<BlexStateModel> States,
     BlexEquatableArray<BlexComputedModel> Computeds,

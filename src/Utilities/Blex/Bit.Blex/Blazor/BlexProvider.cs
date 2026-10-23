@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Components;
+﻿using Bit.Blex.Query;
+using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.JSInterop;
@@ -15,6 +16,9 @@ public sealed class BlexProvider : ComponentBase, IAsyncDisposable
 {
     private BlexReduxDevToolsConnector? _connector;
     private BlexComponentStatePersistence? _componentState;
+    private BlexQueryStatePersistence? _queryState;
+    private BlexQueryFocusWatcher? _queryFocus;
+    private bool _disposed;
     private Task? _durableStartTask;
     private bool _durableStateReady;
 
@@ -59,6 +63,13 @@ public sealed class BlexProvider : ComponentBase, IAsyncDisposable
             {
                 _componentState = new BlexComponentStatePersistence(pcs, Stores, Manager, HandoffRenderMode());
                 _componentState.TryRestore();
+
+                // Before any descendant initializes and asks for a query the prerender already fetched.
+                if (Services.GetService<BlexQueryClient>() is { } queries)
+                {
+                    _queryState = new BlexQueryStatePersistence(pcs, queries, Manager, HandoffRenderMode());
+                    _queryState.TryRestore();
+                }
             }
         }
 
@@ -87,6 +98,14 @@ public sealed class BlexProvider : ComponentBase, IAsyncDisposable
         {
             _connector = new BlexReduxDevToolsConnector(Js);
             await _connector.ConnectAsync(Manager, Options.DevToolsName);
+        }
+
+        // Stale queries someone watches refetch when the tab is visible again or the network returns. Not once the
+        // provider is gone: it was disposed while the awaits above ran, and nothing would dispose a watcher now.
+        if (!_disposed && Services.GetService<BlexQueryClient>() is { } queries)
+        {
+            _queryFocus = new BlexQueryFocusWatcher(Js, queries, Manager);
+            await _queryFocus.StartAsync();
         }
     }
 
@@ -150,12 +169,24 @@ public sealed class BlexProvider : ComponentBase, IAsyncDisposable
 
     /// <inheritdoc />
     protected override void BuildRenderTree(RenderTreeBuilder builder)
-        => builder.AddContent(0, ChildContent);
+    {
+        // Ahead of the content, so the renderer's dispatcher is bound before any descendant initializes:
+        // from then on the manager reports a store changing outside it, and InvokeAsync marshals to it.
+        builder.OpenComponent<BlexDispatcherBinding>(0);
+        builder.AddComponentParameter(1, BlexDispatcherBinding.ManagerParameter, Manager);
+        builder.CloseComponent();
+        builder.AddContent(2, ChildContent);
+    }
 
     /// <inheritdoc />
     public async ValueTask DisposeAsync()
     {
+        _disposed = true;
         _componentState?.Dispose();
+        _queryState?.Dispose();
+
+        if (_queryFocus is not null)
+            await _queryFocus.DisposeAsync();
 
         if (_connector is not null)
         {

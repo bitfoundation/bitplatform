@@ -37,6 +37,41 @@ public class EmissionTests
     }
 
     [TestMethod]
+    public void RollbackOnError_SnapshotsEveryStateField()
+    {
+        var result = GeneratorTestHelper.Run(Usings + """
+            namespace App;
+
+            public enum Mode { Off, On }
+
+            [BlexStoreAttribute(Name = "tx", RollbackOnError = true)]
+            public partial class TxStore
+            {
+                [BlexStateAttribute] private int _count;
+                [BlexStateAttribute] private int? _maybe;
+                [BlexStateAttribute] private string? _label;
+                [BlexStateAttribute] private Mode _mode;
+                [BlexStateAttribute] private System.Collections.Generic.List<string> @lock = new();
+
+                [BlexActionAttribute] private void OnIncrement() => Count++;
+            }
+
+            [BlexStoreAttribute(Name = "plain")]
+            public partial class PlainStore
+            {
+                [BlexStateAttribute] private int _count;
+            }
+            """);
+
+        Assert.IsEmpty(result.CompileErrors());
+        var tx = result.GeneratedSources.Single(s => s.Key.Contains("TxStore")).Value;
+        Assert.Contains("protected override object?[]? CaptureRollbackState() => new object?[] { this._count, this._maybe, this._label, this._mode, this.@lock };", tx);
+        Assert.Contains("this._maybe = (int?)state[1]!;", tx);
+        Assert.Contains("this.@lock = (global::System.Collections.Generic.List<string>)state[4]!;", tx);
+        Assert.DoesNotContain("CaptureRollbackState", result.GeneratedSources.Single(s => s.Key.Contains("PlainStore")).Value);
+    }
+
+    [TestMethod]
     public void NullableAnnotations_ArePreserved()
     {
         var result = GeneratorTestHelper.Run(Usings + """

@@ -291,6 +291,32 @@
         <CodeBlock Code="@ResetAll" Title="Application-wide reset" />
     </div>
 
+    <div class="bb-card" id="rollback">
+        <h3 class="bb-card-title"><span class="bb-dot bb-dot-danger"></span> When an action throws</h3>
+        <p>
+            An action is a C# method, and by default it behaves like one: what it changed before the throw
+            stays changed - and, since it did change state, it is notified, recorded and persisted like any
+            other action. The exception still reaches the caller and the action-error hooks.
+        </p>
+        <p>
+            <code>[BlexStore(RollbackOnError = true)]</code> makes every synchronous action a transaction
+            instead: a throw puts the store's fields back to what they held when the action started, and
+            nothing is notified, recorded, persisted or added to the undo history. Each action level is its
+            own transaction, so a nested action whose failure the caller catches is undone while the
+            caller's own changes stay.
+        </p>
+        <CodeBlock Code="@Rollback" />
+        <Callout Kind="Callout.CalloutKind.Note" Title="What a rollback covers">
+            <p>
+                The snapshot is a shallow copy of the <code>[BlexState]</code> fields - one small array per
+                action, no serialization - so it undoes assignments, which is how a Blex store changes, not
+                mutations inside an object a field points to. It covers this store only, and synchronous
+                actions only: an async action has already shown the UI what it changed before its first
+                <code>await</code>.
+            </p>
+        </Callout>
+    </div>
+
     <div class="bb-card">
         <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Async actions</h3>
         <p>
@@ -429,6 +455,25 @@
     // BlexComponentBase owns IDisposable; this is its hook for extra cleanup.
     protected override void Dispose(bool disposing)
         => Counter.StateChanged -= CountNotification;
+
+    private const string Rollback = """
+        [BlexStore(Name = "ledger", RollbackOnError = true)]
+        public partial class LedgerStore
+        {
+            [BlexState] private decimal _balance;
+            [BlexState] private IReadOnlyList<Entry> _entries = [];
+
+            [BlexAction]
+            private void OnWithdraw(decimal amount)
+            {
+                Balance -= amount;
+                Entries = [.. Entries, new Entry(-amount)];
+
+                if (Balance < 0)
+                    throw new InvalidOperationException("Insufficient funds.");   // Balance and Entries are put back
+            }
+        }
+        """;
 
     private const string Basic = """
         [BlexAction]

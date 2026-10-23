@@ -18,6 +18,7 @@ public static class IServiceCollectionExtensions
         // --- Site services (not part of Blex; they power the live panels) ----------------------
         services.AddScoped<ActionFeed>();
         services.AddScoped<DemoGuard>();
+        services.AddScoped<InventoryApi>();
 
         // OnError is captured on the singleton options object, so the sink it writes to must outlive
         // any single scope. In a Blazor Server app you would forward to ILogger instead.
@@ -84,6 +85,9 @@ public static class IServiceCollectionExtensions
             // last would silently win and the other would only catch up on its next reload.
             options.SyncAcrossTabs = true;
         });
+
+        // The server-state cache behind the queries page. One retry keeps the simulated failures quick to see.
+        services.AddBitBlexQueries(options => options.RetryCount = 1);
 
         // In-app undo/redo across every store. <BlexProvider> calls Start() once rehydration finishes.
         // No filter here: the docs demo is more useful when every action is its own step.

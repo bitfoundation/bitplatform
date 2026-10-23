@@ -123,6 +123,24 @@
         </Callout>
     </div>
 
+    <div class="bb-card" id="when">
+        <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Waiting for a condition</h3>
+        <p>
+            A reactor answers "every time this happens". A workflow often needs "once, when this holds":
+            the checkout that waits for sign-in, the import that waits for both lookups to load.
+            <code>manager.WhenAsync(condition, ct)</code> completes at once when the condition already holds,
+            and otherwise after the first change - an action, a restore, an effect starting or finishing -
+            that makes it true (MobX's <code>when</code>, Redux Toolkit's listener <code>condition</code>).
+            A change counts as soon as it is notified, even inside an async action that is recorded only
+            when it ends - so an effect can wait for something its own store's actions do.
+        </p>
+        <CodeBlock Code="@WhenSample" />
+        <p>
+            It lets go of the pipeline as soon as it completes or is cancelled, and a condition that throws
+            faults the task rather than being retried - the caller asked for it.
+        </p>
+    </div>
+
     <div class="bb-card">
         <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Derived values that span stores</h3>
         <p>
@@ -424,6 +442,15 @@
 
             OwnsSubscription(Manager.SubscribeToAction(OrdersStore.Actions.CancelLast,
                 _ => Notifications.Push("An order was cancelled.")));
+        }
+        """;
+
+    private const string WhenSample = """
+        [BlexEffect]
+        private async Task OnCheckout(CancellationToken ct)
+        {
+            await _manager.WhenAsync(() => _session.IsSignedIn, ct);   // shows the sign-in dialog meanwhile
+            await _api.CheckoutAsync(Lines, ct);
         }
         """;
 

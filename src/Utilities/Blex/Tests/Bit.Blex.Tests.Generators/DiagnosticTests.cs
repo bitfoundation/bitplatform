@@ -365,6 +365,68 @@ public class DiagnosticTests
     }
 
     [TestMethod]
+    [DataRow("RetryCount = -1")]
+    [DataRow("RetryCount = 1, RetryDelayMilliseconds = -5")]
+    [DataRow("TimeoutMilliseconds = -1")]
+    public void NegativeRetryOrTimeout_ReportsBLEX022(string arguments)
+    {
+        var result = GeneratorTestHelper.Run(Usings + $$"""
+            [BlexStoreAttribute] public partial class S
+            {
+                [BlexStateAttribute] private int _x;
+                [BlexEffectAttribute({{arguments}})] private Task OnLoad(CancellationToken ct) => Task.CompletedTask;
+            }
+            """);
+        Assert.IsTrue(result.HasDiagnostic("BLEX022"));
+    }
+
+    [TestMethod]
+    public void TimeoutWithoutAToken_ReportsBLEX023()
+    {
+        // The attempt could not be stopped: it would carry on, and change state, after its run had failed.
+        var result = GeneratorTestHelper.Run(Usings + """
+            [BlexStoreAttribute] public partial class S
+            {
+                [BlexStateAttribute] private int _x;
+                [BlexEffectAttribute(TimeoutMilliseconds = 500)] private Task OnLoad() => Task.CompletedTask;
+            }
+            """);
+        Assert.IsTrue(result.HasDiagnostic("BLEX023"));
+    }
+
+    [TestMethod]
+    public void RetryWithoutAToken_IsFine()
+    {
+        var result = GeneratorTestHelper.Run(Usings + """
+            [BlexStoreAttribute] public partial class S
+            {
+                [BlexStateAttribute] private int _x;
+                [BlexEffectAttribute(RetryCount = 3)] private Task OnLoad(int id) => Task.CompletedTask;
+                [BlexEffectAttribute(RetryCount = 2, TimeoutMilliseconds = 100)] private ValueTask OnSave(string text, CancellationToken ct) => default;
+            }
+            """);
+        Assert.IsFalse(result.HasDiagnostic("BLEX022"));
+        Assert.IsFalse(result.HasDiagnostic("BLEX023"));
+        Assert.IsEmpty(result.CompileErrors());
+        Assert.Contains("base.RunEffectAttemptsAsync(__blexAttemptCt => OnLoad(id), default, 3, 1000, 0)", result.SingleGenerated);
+        Assert.Contains("base.RunEffectAttemptsAsync(__blexAttemptCt => OnSave(text, __blexAttemptCt).AsTask(), __blexCt, 2, 1000, 100)", result.SingleGenerated);
+    }
+
+    [TestMethod]
+    public void NoRetryOrTimeout_EmitsTheDirectCall()
+    {
+        var result = GeneratorTestHelper.Run(Usings + """
+            [BlexStoreAttribute] public partial class S
+            {
+                [BlexStateAttribute] private int _x;
+                [BlexEffectAttribute] private Task OnLoad(CancellationToken ct) => Task.CompletedTask;
+            }
+            """);
+        Assert.IsEmpty(result.CompileErrors());
+        Assert.DoesNotContain("RunEffectAttemptsAsync", result.SingleGenerated);
+    }
+
+    [TestMethod]
     public void ZeroDebounce_IsTheDefaultAndReportsNothing()
     {
         var result = GeneratorTestHelper.Run(Usings + """

@@ -59,6 +59,21 @@ public sealed class BlexOptions
     public TimeProvider? TimeProvider { get; set; }
 
     /// <summary>
+    /// Whether a store changing outside the manager's bound <see cref="BlexManager.Dispatcher"/> (in
+    /// Blazor, the renderer's) is reported through <see cref="OnError"/>. Defaults to <c>true</c>. Wired
+    /// onto <see cref="BlexManager.ReportOffDispatcherChanges"/>.
+    /// </summary>
+    public bool ReportOffDispatcherChanges { get; set; } = true;
+
+    /// <summary>
+    /// Development aid: reports an action that changed state in place without assigning a state property
+    /// (<c>Items.Add(item)</c>), which nothing would otherwise notice. Serializes stores around every action,
+    /// so bind it to the development environment. Defaults to <c>false</c>. Wired onto
+    /// <see cref="BlexManager.DetectInPlaceMutations"/>.
+    /// </summary>
+    public bool DetectInPlaceMutations { get; set; }
+
+    /// <summary>
     /// Convenience: redacts the named keys (recursively, anywhere in the tree -- including inside
     /// arrays and action payloads) from the state sent to DevTools, replacing their values with
     /// <c>"&lt;redacted&gt;"</c>.
@@ -151,6 +166,23 @@ public sealed class BlexOptions
     {
         ArgumentNullException.ThrowIfNull(middleware);
         MiddlewareEntries.Add(middleware);
+        return this;
+    }
+
+    /// <summary>
+    /// Logs through the host's <c>ILogger</c> (category <c>Bit.Blex</c>): every action at
+    /// <paramref name="actionLevel"/>, every action failure as an error, and every failure Blex isolates from
+    /// the pipeline as a warning -- instead of <see cref="Console.Error"/> -- before <see cref="OnError"/>, if
+    /// set, sees it too. Runs in registration order, like any middleware.
+    /// </summary>
+    /// <param name="actionLevel">The level actions are logged at. <c>LogLevel.None</c> logs failures only.</param>
+    /// <remarks>
+    /// Names only: action arguments and state never reach the log. Without an <c>ILoggerFactory</c> in the
+    /// container (a bare <c>ServiceCollection</c>), nothing is logged and <see cref="OnError"/> behaves as before.
+    /// </remarks>
+    public BlexOptions UseLogging(Microsoft.Extensions.Logging.LogLevel actionLevel = Microsoft.Extensions.Logging.LogLevel.Debug)
+    {
+        MiddlewareEntries.Add(new BlexLoggingRegistration(actionLevel));
         return this;
     }
 

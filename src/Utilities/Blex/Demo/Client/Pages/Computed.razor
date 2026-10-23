@@ -99,6 +99,15 @@
                 inside the method against the specific inputs.
             </p>
         </Callout>
+
+        <Callout Kind="Callout.CalloutKind.Note" Title="Read inside an action, it already sees the action's writes">
+            <p>
+                An action batches its notification until it finishes, but not its invalidation: every write
+                marks the computed values stale on the spot. Validation after a write -
+                <code>Balance -= amount; if (Doubled &lt; 0) throw ...</code> - reads the new value, never the
+                one memoized before the action began.
+            </p>
+        </Callout>
     </div>
 
     <div class="bb-card">

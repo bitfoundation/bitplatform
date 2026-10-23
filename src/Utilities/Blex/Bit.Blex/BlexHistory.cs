@@ -22,7 +22,55 @@ namespace Bit.Blex;
 /// </remarks>
 public class BlexHistory : IDisposable
 {
-    private readonly record struct BlexEntry(JsonObject State, string? Label);
+    private readonly record struct BlexEntry(Snapshot State, string? Label);
+
+    /// <summary>
+    /// The covered stores' state, one slice per store name. Slices are never mutated -- a restore applies
+    /// a copy -- so snapshots taken while a store did not change share that store's slice: an undo stack
+    /// costs what changed, step by step, not a copy of the whole tree per step.
+    /// </summary>
+    private sealed class Snapshot(Dictionary<string, JsonObject> slices, long stamp)
+    {
+        public IReadOnlyDictionary<string, JsonObject> Slices { get; } = slices;
+
+        /// <summary>The manager's <see cref="BlexManager.StateVersion"/> when it was taken.</summary>
+        public long Stamp { get; } = stamp;
+
+        /// <summary>A copy with <paramref name="name"/>'s slice replaced; every other slice stays shared.</summary>
+        public Snapshot With(string name, JsonObject slice)
+            => new(new Dictionary<string, JsonObject>(Slices, StringComparer.Ordinal) { [name] = slice }, Stamp);
+
+        /// <summary>Whether both hold the same state, comparing shared slices by reference and the rest as text.</summary>
+        public bool SameAs(Snapshot other)
+        {
+            if (ReferenceEquals(this, other))
+                return true;
+
+            if (other.Slices.Count != Slices.Count)
+                return false;
+
+            foreach (var (name, slice) in Slices)
+            {
+                // Compared as text rather than with JsonNode.DeepEquals, which only exists from .NET 9; both
+                // come from the same SerializeState, so their property order matches.
+                if (!other.Slices.TryGetValue(name, out var theirs)
+                    || (!ReferenceEquals(slice, theirs) && slice.ToJsonString() != theirs.ToJsonString()))
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+    }
+
+    /// <summary>A store's slice as last serialized, and the <see cref="BlexStoreBase.ChangeVersion"/> it was serialized at.</summary>
+    private sealed class CachedSlice(long version, JsonObject state)
+    {
+        public long Version { get; } = version;
+
+        public JsonObject State { get; } = state;
+    }
 
     private readonly BlexManager _manager;
     private readonly List<BlexEntry> _undo = [];
@@ -30,14 +78,18 @@ public class BlexHistory : IDisposable
     private readonly Func<BlexActionContext, bool>? _filter;
     private readonly Func<BlexActionContext, string?>? _groupBy;
     private readonly Func<IBlexStore, bool>? _scope;
+
+    // Weak, so a scoped store that came and went is not kept alive by the cache (its slices in snapshots
+    // still are, until those entries roll off).
+    private readonly System.Runtime.CompilerServices.ConditionalWeakTable<BlexStoreBase, CachedSlice> _slices = [];
     private string? _lastGroupKey;
-    private JsonObject? _present;
+    private Snapshot? _present;
 
     // The state as of the last undo boundary (a recorded action, a checkpoint, a restore). It
     // trails _present across filtered actions, which advance the present without creating a step;
     // Checkpoint needs it to know whether anything has actually happened since the last boundary,
     // and which state that boundary should push.
-    private JsonObject? _boundary;
+    private Snapshot? _boundary;
     private string? _presentLabel;
     private bool _started;
     private bool _restoring;
@@ -156,22 +208,35 @@ public class BlexHistory : IDisposable
     }
 
     /// <summary>
-    /// Snapshots what this history covers: the whole tree, or only the slices of the stores in scope
-    /// -- which <see cref="BlexManager.RestoreGlobalState"/> applies without touching any other store.
+    /// Snapshots what this history covers: every store, or only the stores in scope -- which a restore
+    /// applies without touching any other store. Only a store that changed since its last snapshot is
+    /// serialized again; the others hand over the slice they already have.
     /// </summary>
-    private JsonObject Capture()
+    private Snapshot Capture()
     {
-        if (_scope is null)
-            return _manager.CaptureGlobalState();
-
-        var root = new JsonObject();
+        var slices = new Dictionary<string, JsonObject>(StringComparer.Ordinal);
         foreach (var store in _manager.Stores)
         {
             if (Covers(store))
-                root[store.Name] = store.SerializeState();
+                slices[store.Name] = SliceOf(store);
         }
 
-        return root;
+        return new Snapshot(slices, _manager.StateVersion);
+    }
+
+    private JsonObject SliceOf(IBlexStore store)
+    {
+        // A hand-written IBlexStore has no change stamp to trust; serialize it every time.
+        if (store is not BlexStoreBase sb)
+            return store.SerializeState();
+
+        if (_slices.TryGetValue(sb, out var cached) && cached.Version == sb.ChangeVersion)
+            return cached.State;
+
+        var version = sb.ChangeVersion;
+        var state = sb.SerializeState();
+        _slices.AddOrUpdate(sb, new CachedSlice(version, state));
+        return state;
     }
 
     /// <summary>Maximum number of undo entries retained; older entries are discarded.</summary>
@@ -282,6 +347,48 @@ public class BlexHistory : IDisposable
         _manager.ActionDispatched += OnAction;
         _manager.StoreRestored += OnStoreRestored;
         _manager.StateRestored += OnExternalRestore;
+        _manager.StoreRolledBack += OnRolledBack;
+    }
+
+    /// <summary>
+    /// Takes back what a rolled-back action left in the snapshots: each one taken since it began -- another store's
+    /// action recording partway through its body -- holds the state the rollback undid, which an undo or redo would
+    /// otherwise put back. Its slice in those becomes the rolled-back one; nothing else moves, no step is added.
+    /// </summary>
+    private void OnRolledBack(BlexStoreBase store, long startedAt)
+    {
+        if (_restoring || _present is null || !Covers(store))
+            return;
+
+        try
+        {
+            var restored = SliceOf(store);
+            var name = store.Name;
+
+            Snapshot Repair(Snapshot snapshot)
+                => snapshot.Stamp > startedAt && snapshot.Slices.TryGetValue(name, out var slice) && !ReferenceEquals(slice, restored)
+                    ? snapshot.With(name, restored)
+                    : snapshot;
+
+            // Every entry: the redo stack is not in the order its snapshots were taken. A rollback is rare and the
+            // stacks are bounded by MaxEntries.
+            void RepairAll(List<BlexEntry> entries)
+            {
+                for (var i = 0; i < entries.Count; i++)
+                    entries[i] = entries[i] with { State = Repair(entries[i].State) };
+            }
+
+            var present = Repair(_present);
+            _boundary = ReferenceEquals(_boundary, _present) ? present : _boundary is null ? null : Repair(_boundary);
+            _present = present;
+            RepairAll(_undo);
+            RepairAll(_redo);
+        }
+        catch (Exception ex)
+        {
+            // Raised from inside the dispatch pipeline, like the handlers above.
+            _manager.ReportError("history", ex, store.Name);
+        }
     }
 
     private void OnStoreRestored(IBlexStore store)
@@ -298,8 +405,12 @@ public class BlexHistory : IDisposable
             // not lose its "Undo Rename" label because the theme store just hydrated. Compared as text
             // rather than with JsonNode.DeepEquals, which only exists from .NET 9; both come from the same
             // SerializeState, so their property order matches.
-            if (_present?[store.Name] is not { } before || before.ToJsonString() != store.SerializeState().ToJsonString())
+            if (_present is null
+                || !_present.Slices.TryGetValue(store.Name, out var before)
+                || before.ToJsonString() != SliceOf(store).ToJsonString())
+            {
                 _restoredAway = true;
+            }
         }
         catch (Exception ex)
         {
@@ -359,9 +470,9 @@ public class BlexHistory : IDisposable
             // The present always advances -- a filtered action changed the state just as much as a
             // recorded one, and leaving a stale present behind would make the next Undo restore a
             // snapshot the user never saw. Only the undo *step* is skipped. The label is left alone
-            // for the same reason: it names the boundary the next Undo actually returns to. A scoped
-            // history snapshots its own stores instead of paying for (and later restoring) the tree.
-            _present = _scope is null ? context.GlobalState : Capture();
+            // for the same reason: it names the boundary the next Undo actually returns to. Only the
+            // stores that changed are serialized again; a scoped history covers its own stores only.
+            _present = Capture();
             if (record)
             {
                 _presentLabel = context.QualifiedName;
@@ -450,10 +561,8 @@ public class BlexHistory : IDisposable
         _lastGroupKey = null;
 
         // Nothing moved since the last boundary -- a checkpoint here would be an undo step that
-        // reverts to the state it was taken from. Compared as text rather than with
-        // JsonNode.DeepEquals, which only exists from .NET 9; both trees come from the same
-        // CaptureGlobalState, so their property order matches.
-        if (_boundary is not null && _boundary.ToJsonString() == _present.ToJsonString())
+        // reverts to the state it was taken from.
+        if (_boundary is not null && _boundary.SameAs(_present))
             return;
 
         if (_boundary is not null)
@@ -566,12 +675,32 @@ public class BlexHistory : IDisposable
         RaiseChanged();
     }
 
-    private void Restore(JsonObject state)
+    private void Restore(Snapshot state)
     {
+        // Only the stores that are not already there: a slice that is the very one cached for the store's current
+        // version is its state now. Restoring it again would cost a deserialization, a notification and a storage
+        // write-back per store -- the whole tree for an undo that changed one store.
+        var changed = new Dictionary<string, JsonObject>(StringComparer.Ordinal);
+        foreach (var store in _manager.Stores)
+        {
+            if (!state.Slices.TryGetValue(store.Name, out var slice))
+                continue;
+
+            if (store is BlexStoreBase sb
+                && _slices.TryGetValue(sb, out var cached)
+                && cached.Version == sb.ChangeVersion
+                && ReferenceEquals(cached.State, slice))
+            {
+                continue;
+            }
+
+            changed[store.Name] = slice;
+        }
+
         _restoring = true;
         try
         {
-            _manager.RestoreGlobalState(state);
+            _manager.RestoreSlices(changed);
         }
         finally
         {
@@ -587,6 +716,7 @@ public class BlexHistory : IDisposable
             _manager.ActionDispatched -= OnAction;
             _manager.StoreRestored -= OnStoreRestored;
             _manager.StateRestored -= OnExternalRestore;
+            _manager.StoreRolledBack -= OnRolledBack;
             _started = false;
         }
 
