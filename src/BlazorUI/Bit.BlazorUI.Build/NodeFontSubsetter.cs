@@ -101,13 +101,15 @@ public static class NodeFontSubsetter
         if (tool is null) return false;
 
         var unicodes = output + ".unicodes";
+        var source = output + ".source";
         try
         {
             File.WriteAllText(unicodes, string.Join("\n", codepoints.Select(c => "U+" + c.ToString("X4", System.Globalization.CultureInfo.InvariantCulture))));
+            File.Copy(font, source, overwrite: true);
             if (File.Exists(output)) File.Delete(output);
 
             var script = Path.Combine(tool, "node_modules", "@web-alchemy", "fonttools", "bin", "pyftsubset");
-            var (exitCode, log, failure) = Run(nodePath ?? "node", [script, font, $"--unicodes-file={unicodes}", "--flavor=woff2", $"--output-file={output}"],
+            var (exitCode, log, failure) = Run(nodePath ?? "node", [script, Path.GetFileName(source), $"--unicodes-file={Path.GetFileName(unicodes)}", "--flavor=woff2", $"--output-file={Path.GetFileName(output)}"],
                                                Path.GetDirectoryName(output)!, SubsetTimeout, environment: null);
             if (failure is not null || exitCode != 0 || File.Exists(output) is false)
             {
@@ -124,6 +126,7 @@ public static class NodeFontSubsetter
         finally
         {
             try { File.Delete(unicodes); } catch (Exception e) when (e is IOException or UnauthorizedAccessException) { }
+            try { File.Delete(source); } catch (Exception e) when (e is IOException or UnauthorizedAccessException) { }
         }
     }
 
