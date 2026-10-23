@@ -124,7 +124,10 @@ public sealed partial class BinkCanvas : ComponentBase, IAsyncDisposable, IBinkI
     [Parameter]
     public BinkShapeStyle? ShapeStyle { get; set; }
 
-    /// <summary>The layer new elements are added to. Defaults to the top-most editable layer.</summary>
+    /// <summary>
+    /// The layer new elements are added to. Defaults to the top-most editable layer. While the layer named here is
+    /// locked or hidden, drawing, shapes, text, pasting, dropping and importing are refused, with the reason announced.
+    /// </summary>
     [Parameter]
     public Guid? ActiveLayerId { get; set; }
 
@@ -550,6 +553,7 @@ public sealed partial class BinkCanvas : ComponentBase, IAsyncDisposable, IBinkI
             if (error is not null) Announce("Nothing could be pasted: " + error);
             return 0;
         }
+        if (!ActiveLayerAdmits()) return 0;
 
         BinkRect bounds = BinkClipboard.Bounds(elements);
         BinkRect visible = _viewport.VisibleRect(ViewSize);
@@ -911,12 +915,15 @@ public sealed partial class BinkCanvas : ComponentBase, IAsyncDisposable, IBinkI
     /// <param name="source">The image.</param>
     /// <param name="position">Top-left position in document units, or null to center it in the view.</param>
     /// <param name="maxWidth">Maximum width in document units; larger images are scaled down.</param>
+    /// <returns>The image added, or null when the canvas is read-only or the active layer is locked or hidden.</returns>
     public async Task<BinkImageElement?> AddImageAsync(BinkImageSource source, Vector2? position = null, float maxWidth = 600f)
     {
         ArgumentNullException.ThrowIfNull(source);
-        if (ReadOnly) return null;
+        if (ReadOnly || !ActiveLayerAdmits()) return null;
 
         BinkImageSource resolved = await LoadImageAsync(source).ConfigureAwait(true);
+        // The decode is a browser round trip, in which the layer may have been locked or hidden.
+        if (_disposed || ReadOnly || !ActiveLayerAdmits()) return null;
 
         Vector2 topLeft = position ?? _viewport.ToDocument(ViewSize / 2f);
         BinkImageElement element = BinkImageElement.AtNaturalSize(resolved, topLeft, maxWidth);
@@ -1217,8 +1224,17 @@ public sealed partial class BinkCanvas : ComponentBase, IAsyncDisposable, IBinkI
         _documentDirty = true;
         _uiDirty = true;
         ScheduleRender();
+        // Locking or hiding the active layer turns the provisional trail off, and the reverse back on.
+        if (_attached && ChangesLayers(e.Operation)) _ = UpdateWetInkStyleAsync();
         RaiseAsync(() => DocumentChanged.InvokeAsync(e), DocumentChanged.HasDelegate);
     }
+
+    private static bool ChangesLayers(BinkDrawingOperation operation) => operation switch
+    {
+        BinkUpdateLayerOperation or BinkAddLayerOperation or BinkRemoveLayerOperation or BinkReorderLayerOperation => true,
+        BinkBatchOperation batch => batch.Operations.Any(ChangesLayers),
+        _ => false,
+    };
 
     private void OnHistoryChanged(object? sender, EventArgs e)
     {
@@ -1288,13 +1304,28 @@ public sealed partial class BinkCanvas : ComponentBase, IAsyncDisposable, IBinkI
         if (_interop is not null) await _interop.SetCursorAsync(cursor).ConfigureAwait(true);
     }
 
+    // The layer the host named, whatever its state: while it is locked or hidden the tools and commands refuse to add
+    // to it, rather than putting new elements on a layer the host did not choose. Without one, the top-most editable
+    // layer.
     private Guid ActiveLayer
     {
         get
         {
+            if (ActiveLayerId is { } chosen && _document.TryGetLayer(chosen, out _)) return chosen;
             if (_document.TryGetLayer(_activeLayerId, out BinkLayer? layer) && !layer.IsLocked && layer.IsVisible) return _activeLayerId;
             return _document.ActiveLayerCandidate.Id;
         }
+    }
+
+    /// <summary>
+    /// Whether the canvas's own commands may add to the active layer: the same rule the tools follow, with the reason
+    /// announced when they may not.
+    /// </summary>
+    private bool ActiveLayerAdmits()
+    {
+        if (BinkLayerGate.Refusal(_document, ActiveLayer) is not { } reason) return true;
+        Announce(reason);
+        return false;
     }
 
     // ---- Input ------------------------------------------------------------------------------------------------
@@ -1783,11 +1814,14 @@ public sealed partial class BinkCanvas : ComponentBase, IAsyncDisposable, IBinkI
     /// <param name="svg">The SVG markup. It is treated as untrusted.</param>
     /// <param name="center">Where the middle of the imported drawing goes, in document units; null for the middle of the view.</param>
     /// <param name="options">Limits and what to import.</param>
-    /// <returns>What was imported, or null when the SVG could not be read or the canvas is read-only.</returns>
+    /// <returns>
+    /// What was imported, or null when the SVG could not be read, the canvas is read-only or the active layer is locked
+    /// or hidden.
+    /// </returns>
     public BinkSvgImportResult? ImportSvg(string svg, Vector2? center = null, BinkSvgImportOptions? options = null)
     {
         ArgumentNullException.ThrowIfNull(svg);
-        if (ReadOnly) return null;
+        if (ReadOnly || !ActiveLayerAdmits()) return null;
         if (!BinkSvgImporter.TryImport(svg, out BinkSvgImportResult? result, out string? error, options))
         {
             Announce("The SVG could not be imported: " + error);
@@ -1831,7 +1865,7 @@ public sealed partial class BinkCanvas : ComponentBase, IAsyncDisposable, IBinkI
     private async Task AddImageCenteredAsync(BinkImageSource source, Vector2 centre)
     {
         BinkImageSource resolved = await LoadImageAsync(source).ConfigureAwait(true);
-        if (_disposed || ReadOnly) return;
+        if (_disposed || ReadOnly || !ActiveLayerAdmits()) return;
         BinkImageElement element = BinkImageElement.AtNaturalSize(resolved, centre, 600f);
         element = element with { Rect = element.Rect.Offset(-element.Rect.Size / 2f) };
         try
@@ -1903,6 +1937,7 @@ public sealed partial class BinkCanvas : ComponentBase, IAsyncDisposable, IBinkI
             await TextPasted.InvokeAsync(content).ConfigureAwait(true);
             return;
         }
+        if (!ActiveLayerAdmits()) return;
         // Plain text becomes a text element in the middle of the view, styled like the text tool's when it is active.
         if (content.Length > BinkTextElement.MaxLength) content = content[..BinkTextElement.MaxLength];
         BinkTextStyle style = _activeTool is BinkTextTool textTool ? textTool.Style : BinkTextStyle.Default with { Color = _brush.Color };
@@ -2197,8 +2232,10 @@ public sealed partial class BinkCanvas : ComponentBase, IAsyncDisposable, IBinkI
     {
         if (_interop is null || _disposed) return;
         // The trail stands in for ink, so only a tool that draws ink shows one, and only on a canvas that accepts it:
-        // a brush-coloured line behind a selection drag, or across a read-only canvas, would be ink that is not there.
-        bool enabled = (WetInk ?? !OperatingSystem.IsBrowser()) && !ReadOnly && _activeTool is BinkDrawTool and not BinkEraserTool;
+        // a brush-coloured line behind a selection drag, or across a read-only canvas or a layer that refuses the
+        // stroke, would be ink that is not there.
+        bool enabled = (WetInk ?? !OperatingSystem.IsBrowser()) && !ReadOnly && _activeTool is BinkDrawTool and not BinkEraserTool
+            && BinkLayerGate.Refusal(_document, ActiveLayer) is null;
         BinkColor? color = enabled ? _brush.Color : null;
         float width = enabled ? MathF.Max(_brush.Width * _viewport.Zoom * 0.8f, 1f) : 0f;
         float opacity = enabled ? _brush.Opacity : 0f;

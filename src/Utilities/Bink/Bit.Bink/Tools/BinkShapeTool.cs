@@ -73,7 +73,7 @@ public sealed class BinkShapeTool : BinkToolBase
     {
         ArgumentNullException.ThrowIfNull(context);
         if (_dragging) return false;
-        if (context.Document.TryGetLayer(context.ActiveLayerId, out BinkLayer? layer) && (layer.IsLocked || !layer.IsVisible)) return false;
+        if (!BinkLayerGate.Admits(context)) return false;
         _dragging = true;
         _pointerId = sample.PointerId;
         // The shape belongs to the layer the gesture started on, even if the active layer changes meanwhile.
@@ -121,7 +121,8 @@ public sealed class BinkShapeTool : BinkToolBase
         _pointerId = -1;
 
         BinkElement? element = Build(context);
-        if (element is not null)
+        // The layer the drag started on may have been locked or hidden while it went on.
+        if (element is not null && BinkLayerGate.Admits(context, _targetLayerId))
         {
             try
             {
@@ -241,7 +242,7 @@ public sealed class BinkShapeTool : BinkToolBase
         // text tool offers.
         if (key.Key == "Enter" && !_dragging && !key.Ctrl && !key.Alt)
         {
-            if (context.Document.TryGetLayer(context.ActiveLayerId, out BinkLayer? layer) && (layer.IsLocked || !layer.IsVisible)) return false;
+            if (!BinkLayerGate.Admits(context)) return false;
             float zoom = MathF.Max(context.Viewport.Zoom, 0.001f);
             Vector2 center = context.Viewport.ToDocument(context.ViewSize / 2f);
             Vector2 half = Kind is BinkShapeKind.Line or BinkShapeKind.Arrow ? new Vector2(60f, 0f) / zoom : new Vector2(60f, 40f) / zoom;

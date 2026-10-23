@@ -96,6 +96,7 @@
 
     <div class="bink-surface">
         <BinkCanvas @ref="_canvas"
+                   ViewportChanged="_status?.ViewportChanged ?? default"
                    Document="_document"
                    Height="520px"
                    Tool="_tool"
@@ -152,6 +153,11 @@
             <button type="button" class="btn btn-secondary bink-danger" disabled="@(_document.Layers.Count < 2)" @onclick="DeleteLayer">Delete layer</button>
         </div>
 
+        @if (DrawingLayerNote is { } note)
+        {
+            <span class="bink-hint" role="status">@note</span>
+        }
+
         <span class="bb-spacer"></span>
 
         <div class="bink-group" role="group" aria-label="File">
@@ -207,7 +213,7 @@
         <div class="bink-group" role="group" aria-label="Align and distribute">
             <label class="bink-field">
                 Align
-                <select aria-label="Align the selection" disabled="@(SelectionCount < 2)" value="" @onchange="OnAlign">
+                <select aria-label="Align the selection" disabled="@(SelectionCount < 2)" value="@_alignChoice" @onchange="OnAlignAsync">
                     <option value="">Choose…</option>
                     <option value="@BinkAlignment.Left">Left edges</option>
                     <option value="@BinkAlignment.HorizontalCenter">Centres, horizontally</option>
@@ -225,7 +231,7 @@
     </div>
 
 
-    <CanvasStatus Canvas="_canvas">
+    <CanvasStatus @ref="_status" Canvas="_canvas">
         <span><strong>@(_canvas?.Selection.Count ?? 0)</strong> selected</span>
         <span><strong>@_document.Layers.Count</strong> layers</span>
         @if (_autosaveStatus is not null)
@@ -289,6 +295,7 @@ _canvas.ArrangeSelection(BinkArrangement.BringToFront);
     private const string AutosaveKey = "bink-demo-whiteboard";
 
     private BinkCanvas? _canvas;
+    private CanvasStatus? _status;
     private BinkDocument _document = CreateDocument();
     private BinkBrowserDocumentStore? _store;
     private BinkAutosave? _autosave;
@@ -339,7 +346,7 @@ _canvas.ArrangeSelection(BinkArrangement.BringToFront);
         if (_recovered is null) return;
         _document = _recovered;
         _recovered = null;
-        _activeLayer = _document.Layers[^1].Id;
+        _activeLayer = DrawableLayer;
         await StartAutosaveAsync();
         _message = $"Restored {_document.ElementCount} elements.";
     }
@@ -400,6 +407,17 @@ _canvas.ArrangeSelection(BinkArrangement.BringToFront);
     }
 
     private BinkLayer? ActiveLayer => _document.TryGetLayer(_activeLayer, out BinkLayer? layer) ? layer : null;
+
+    // The top-most layer that takes new drawing, so a board whose top layer is locked or hidden opens ready to draw.
+    private Guid DrawableLayer => _document.ActiveLayerCandidate.Id;
+
+    // A locked or hidden layer refuses new elements, so the page says why drawing does nothing and how to go on.
+    private string? DrawingLayerNote => ActiveLayer switch
+    {
+        { IsLocked: true } layer => $"\"{layer.Name}\" is locked: unlock it, or choose another layer, to draw.",
+        { IsVisible: false } layer => $"\"{layer.Name}\" is hidden: show it, or choose another layer, to draw.",
+        _ => null,
+    };
 
     private bool HasSelection => _canvas is not null && !_canvas.Selection.IsEmpty;
 
@@ -562,9 +580,20 @@ _canvas.ArrangeSelection(BinkArrangement.BringToFront);
         if (count > 0) _message = $"Unlocked {count} elements.";
     }
 
-    private void OnAlign(ChangeEventArgs e)
+    // The align list is a menu of actions, not a setting: it goes back to "Choose…" after each use, so the same
+    // alignment can be picked again for the next selection.
+    private string _alignChoice = "";
+
+    private async Task OnAlignAsync(ChangeEventArgs e)
     {
-        if (Enum.TryParse(e.Value?.ToString(), out BinkAlignment alignment)) _canvas?.AlignSelection(alignment);
+        _alignChoice = e.Value?.ToString() ?? "";
+        if (Enum.TryParse(_alignChoice, out BinkAlignment alignment)) _canvas?.AlignSelection(alignment);
+
+        // Render the choice the browser already shows before resetting it: rendering "" over the "" rendered
+        // last time is no change, so the list would keep showing the alignment.
+        StateHasChanged();
+        await Task.Yield();
+        _alignChoice = "";
     }
 
     private void Distribute(BinkDistribution axis)
@@ -578,7 +607,7 @@ _canvas.ArrangeSelection(BinkArrangement.BringToFront);
     {
         if (ActiveLayer is not { } layer || _document.Layers.Count < 2) return;
         _document.RemoveLayer(layer.Id);
-        _activeLayer = _document.Layers[^1].Id;
+        _activeLayer = DrawableLayer;
         _canvas?.Refresh();
     }
 
@@ -612,7 +641,9 @@ _canvas.ArrangeSelection(BinkArrangement.BringToFront);
     private async Task PasteAsync()
     {
         int count = _canvas is null ? 0 : await _canvas.PasteAsync();
-        _message = count > 0 ? $"Pasted {count} elements." : "Nothing to paste: copy something first.";
+        // A locked or hidden layer refuses the paste, and the note beside the layer controls already says so: a copy of
+        // it here would outlast the note once another layer is chosen.
+        _message = count > 0 ? $"Pasted {count} elements." : DrawingLayerNote is null ? "Nothing to paste: copy something first." : null;
     }
 
     private async Task SaveAsync()
@@ -640,7 +671,7 @@ _canvas.ArrangeSelection(BinkArrangement.BringToFront);
             }
             // Swapping the Document parameter is all it takes: the canvas resets its history and selection.
             _document = document;
-            _activeLayer = _document.Layers[^1].Id;
+            _activeLayer = DrawableLayer;
             await StartAutosaveAsync();
             _message = $"Opened {args.File.Name}: {_document.ElementCount} elements on {_document.Layers.Count} layers.";
         }

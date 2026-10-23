@@ -65,6 +65,7 @@
 
     <div class="bink-surface">
         <BinkCanvas @ref="_canvas" HistoryChanged="() => StateHasChanged()"
+                   ViewportChanged="_status?.ViewportChanged ?? default"
                    Document="_document"
                    Height="560px"
                    Tool="_tool"
@@ -72,12 +73,12 @@
                    ActiveLayerId="_diagramLayer"
                    EnableTouchGestures="true"
                    AriaLabel="Diagram canvas"
-                   Ready="() => StateHasChanged()"
+                   Ready="ShowWholeDiagram"
                    SelectionChanged="() => StateHasChanged()"
                    DocumentChanged="() => StateHasChanged()" />
     </div>
 
-    <CanvasStatus Canvas="_canvas">
+    <CanvasStatus @ref="_status" Canvas="_canvas">
         <span>@NodeCount nodes, @ConnectorCount connectors</span>
         <span>@_graph?.RerouteCount connector reroutes</span>
     </CanvasStatus>
@@ -129,6 +130,7 @@
 
 @code {
     private BinkCanvas? _canvas;
+    private CanvasStatus? _status;
     private readonly BinkDocument _document = new(new BinkDocumentSettings { Width = 0, Height = 0, Background = BinkColor.White });
     private DiagramGraph? _graph;
     private Guid _diagramLayer;
@@ -222,7 +224,7 @@
             _document.Clear();
             AddSampleDiagram();
         }
-        _canvas?.ResetViewport();
+        ShowWholeDiagram();
     }
 
     private void AddSampleDiagram()
@@ -247,6 +249,19 @@
     private Task ExportSvgAsync()
         => _canvas?.SaveSvgAsync("diagram.svg", new BinkSvgExportOptions { Region = BinkExportRegion.Content, Padding = 24f, IncludeElementDescriptions = true })
            ?? Task.CompletedTask;
+
+    /// <summary>
+    /// Shows the diagram at 100%, or, on a phone, where the sample is wider than the view, all of it. A pinch, or
+    /// Ctrl+0, still gives 100%.
+    /// </summary>
+    private void ShowWholeDiagram()
+    {
+        if (_canvas is null) return;
+        BinkRect content = _document.ContentBounds;
+        _canvas.SetViewport(content.Right > _canvas.ViewSize.X || content.Bottom > _canvas.ViewSize.Y
+            ? BinkViewport.Fit(content, _canvas.ViewSize, 8f, maxZoom: 1f)
+            : BinkViewport.Identity);
+    }
 
     public void Dispose() => _graph?.Dispose();
 }

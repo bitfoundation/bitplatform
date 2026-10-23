@@ -44,6 +44,7 @@
 
     <div class="bink-surface">
         <BinkCanvas @ref="_canvas"
+                   ViewportChanged="_status?.ViewportChanged ?? default"
                    Document="_document"
                    Height="420px"
                    Brush="_brush"
@@ -54,7 +55,7 @@
                    Ready="() => StateHasChanged()" />
     </div>
 
-    <CanvasStatus Canvas="_canvas" />
+    <CanvasStatus @ref="_status" Canvas="_canvas" />
 </div>
 
 @if (_results.Count > 0)
@@ -104,6 +105,7 @@ BinkDocumentRenderer.Render(_document, culled, <span class="k">new</span> BinkRe
     private sealed record Measurement(string Name, string Value, string Detail);
 
     private BinkCanvas? _canvas;
+    private CanvasStatus? _status;
     private readonly BinkDocument _document = new(new BinkDocumentSettings { Width = 1600, Height = 1000, Background = BinkColor.White });
     private readonly BinkBrush _brush = new BinkPenBrush { Width = 3f, Color = BinkColor.Parse("#dc2626") };
     private readonly IBinkTool _tool = new BinkDrawTool();

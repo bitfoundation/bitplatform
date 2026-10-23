@@ -39,7 +39,8 @@
 
     <div class="bink-review">
         <div class="bink-surface">
-            <BinkCanvas @ref="_canvas" Ready="() => StateHasChanged()" HistoryChanged="() => StateHasChanged()"
+            <BinkCanvas @ref="_canvas" Ready="OnReady" HistoryChanged="() => StateHasChanged()"
+                       ViewportChanged="_status?.ViewportChanged ?? default"
                        EnableTouchGestures="true"
                        Document="_document"
                        Height="620px"
@@ -80,7 +81,7 @@
                             {
                                 <textarea rows="2" maxlength="500" aria-label="Comment text"
                                           value="@entry.Text"
-                                          @onchange="e => EditComment(entry.Id, e.Value?.ToString())"></textarea>
+                                          @onchange="e => EditCommentAsync(entry.Id, e.Value?.ToString())"></textarea>
                             }
                             else
                             {
@@ -93,7 +94,7 @@
         </aside>
     </div>
 
-    <CanvasStatus Canvas="_canvas" />
+    <CanvasStatus @ref="_status" Canvas="_canvas" />
 </div>
 
 <div class="bb-note">
@@ -127,6 +128,7 @@
     private sealed record AnnotationEntry(Guid Id, string Kind, string Text, bool Editable);
 
     private BinkCanvas? _canvas;
+    private CanvasStatus? _status;
     private readonly BinkDocument _document = new(new BinkDocumentSettings { Width = 620, Height = 620, Background = BinkColor.White });
     private Guid _pageLayer;
     private Guid _annotationLayer;
@@ -189,6 +191,18 @@
     }
 
     public void Dispose() => _document.Changed -= OnDocumentEdited;
+
+    private void OnReady()
+    {
+        // On a phone the lines are wider than the view: show them whole rather than their beginnings. A pinch, or
+        // Ctrl+0, still gives 100%.
+        if (_canvas is null) return;
+        BinkRect content = _document.ContentBounds;
+        if (content.Right > _canvas.ViewSize.X || content.Bottom > _canvas.ViewSize.Y)
+        {
+            _canvas.SetViewport(BinkViewport.Fit(content, _canvas.ViewSize, 8f, maxZoom: 1f));
+        }
+    }
 
     /// <summary>Lays out the document text as real text elements, so it can be selected, exported and read.</summary>
     private void BuildPage()
@@ -324,10 +338,23 @@
         }
     }
 
-    private void EditComment(Guid id, string? text)
+    private async Task EditCommentAsync(Guid id, string? text)
     {
-        if (string.IsNullOrWhiteSpace(text) || !_document.TryGetElement(id, out BinkElement? element)) return;
-        if (element is not BinkCalloutElement callout || callout.Text == text) return;
+        if (!_document.TryGetElement(id, out BinkElement? element) || element is not BinkCalloutElement callout) return;
+        if (string.IsNullOrWhiteSpace(text))
+        {
+            // A comment keeps its text; the × beside it is what deletes it. The box still shows the cleared text, and
+            // rendering the comment's text over the same text rendered last time is no change, so render what the
+            // box shows first, then the comment's own text.
+            int index = _annotations.FindIndex(entry => entry.Id == id);
+            if (index < 0) return;
+            _annotations[index] = _annotations[index] with { Text = text ?? string.Empty };
+            StateHasChanged();
+            await Task.Yield();
+            Reindex();
+            return;
+        }
+        if (callout.Text == text) return;
         _document.ReplaceElement(callout with { Text = text, Description = text });
         _canvas?.Refresh();
     }

@@ -55,6 +55,7 @@
 
     <div class="bink-surface">
         <BinkCanvas @ref="_canvas" HistoryChanged="() => StateHasChanged()"
+                   ViewportChanged="_status?.ViewportChanged ?? default"
                    Document="_document"
                    Height="560px"
                    Tool="_tool"
@@ -68,10 +69,10 @@
                    Ready="OnReadyAsync" />
     </div>
 
-    <CanvasStatus Canvas="_canvas">
-        @if (_imageInfo is not null)
+    <CanvasStatus @ref="_status" Canvas="_canvas">
+        @if (ImageInfo is { } info)
         {
-            <span>@_imageInfo</span>
+            <span>@info</span>
         }
     </CanvasStatus>
 </div>
@@ -107,6 +108,7 @@ BinkImageElement placed = BinkImageElement.AtNaturalSize(ready, Vector2.Zero, ma
 
 @code {
     private BinkCanvas? _canvas;
+    private CanvasStatus? _status;
     private readonly BinkDocument _document = new(new BinkDocumentSettings { Width = 900, Height = 560, Background = BinkColor.Parse("#f8f9fb") });
     private Guid _imageLayer;
     private Guid _annotationLayer;
@@ -115,8 +117,10 @@ BinkImageElement placed = BinkImageElement.AtNaturalSize(ready, Vector2.Zero, ma
     private IBinkTool _tool = new BinkShapeTool(BinkShapeKind.Arrow);
     private BinkBrush _brush = new BinkPenBrush { Width = 4f, Color = BinkColor.Parse("#dc2626") };
     private BinkShapeStyle _shapeStyle = new() { StrokeColor = BinkColor.Parse("#dc2626"), StrokeWidth = 3f };
-    private string? _imageInfo;
     private string? _error;
+
+    /// <summary>Metadata key on the picture holding the name of the file it came from.</summary>
+    private const string FileNameKey = "file-name";
 
     private static readonly (string Id, string Label)[] Tools =
     [
@@ -139,6 +143,13 @@ BinkImageElement placed = BinkImageElement.AtNaturalSize(ready, Vector2.Zero, ma
     }
 
     private int AnnotationCount => _document.TryGetLayer(_annotationLayer, out BinkLayer? layer) ? layer.Elements.Count : 0;
+
+    // Read from the picture in the document rather than remembered when it was placed, so it stays true when undo
+    // or redo swaps the picture back.
+    private string? ImageInfo
+        => _document.TryGetLayer(_imageLayer, out BinkLayer? layer) && layer.Elements.OfType<BinkImageElement>().FirstOrDefault() is { } image
+            ? $"{image.Metadata?.GetValueOrDefault(FileNameKey) ?? "Picture"}: {image.Source.Width} by {image.Source.Height} pixels"
+            : null;
 
     private async Task OnReadyAsync()
     {
@@ -225,6 +236,15 @@ BinkImageElement placed = BinkImageElement.AtNaturalSize(ready, Vector2.Zero, ma
         // the "Open image" step.
         BinkImageSource ready = await _canvas.LoadImageAsync(source);
 
+        // A file the browser cannot decode - not a picture at all, or a format it does not read - comes back without
+        // a size. Placing it would swap the picture for an invisible one.
+        if (ready.Width <= 0 || ready.Height <= 0)
+        {
+            _error = $"{name} could not be opened as a picture in this browser.";
+            return;
+        }
+        _error = null;
+
         // Swapping the picture is several edits - remove the old one, add, centre, lock - but to the person using
         // it it is one action, so it is one undo step.
         BinkImageElement placed = BinkImageElement.AtNaturalSize(ready, Vector2.Zero, maxWidth: _document.Settings.Width - 40);
@@ -233,6 +253,7 @@ BinkImageElement placed = BinkImageElement.AtNaturalSize(ready, Vector2.Zero, ma
         {
             Rect = placed.Rect.Offset(page.Center - placed.Rect.Center),
             Description = "Annotated image: " + name,
+            Metadata = new Dictionary<string, string>(StringComparer.Ordinal) { [FileNameKey] = name },
         };
         using (_canvas.History.BeginGroup("Open image"))
         {
@@ -245,9 +266,16 @@ BinkImageElement placed = BinkImageElement.AtNaturalSize(ready, Vector2.Zero, ma
             _document.UpdateLayer(_imageLayer, p => p with { IsLocked = true });
         }
 
-        _imageInfo = $"{name}: {placed.Source.Width} by {placed.Source.Height} pixels";
         _canvas.Announce("Image added.");
         _canvas.Refresh();
+
+        // On a phone the picture is wider than the view: show all of it rather than its left edge. A pinch, or Ctrl+0,
+        // still gives 100%.
+        BinkRect content = _document.ContentBounds;
+        if (content.Right > _canvas.ViewSize.X || content.Bottom > _canvas.ViewSize.Y)
+        {
+            _canvas.SetViewport(BinkViewport.Fit(content, _canvas.ViewSize, 8f, maxZoom: 1f));
+        }
     }
 
     private static byte[] CreateSampleImage(int width, int height)

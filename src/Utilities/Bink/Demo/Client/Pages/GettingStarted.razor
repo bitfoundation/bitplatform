@@ -67,10 +67,12 @@
         </div>
         <div class="bink-surface">
             <BinkCanvas @ref="_canvas" Height="260px" EnableTouchGestures="true" AriaLabel="First canvas"
+                        ViewportChanged="_status?.ViewportChanged ?? default"
+                        Ready="() => StateHasChanged()"
                         DocumentChanged="() => StateHasChanged()"
                         HistoryChanged="() => StateHasChanged()" />
         </div>
-        <CanvasStatus Canvas="_canvas" />
+        <CanvasStatus @ref="_status" Canvas="_canvas" />
     </div>
 </div>
 
@@ -79,10 +81,10 @@
     <p class="bb-card-desc">
         <code>Brush</code> decides how ink looks and <code>Tool</code> what pointer input does. The built-in brushes
         are <code>BinkPenBrush</code>, <code>BinkPencilBrush</code>, <code>BinkMarkerBrush</code>,
-        <code>BinkHighlighterBrush</code> and <code>BinkPixelEraserBrush</code>; the tools are
-        <code>BinkDrawTool</code>, <code>BinkEraserTool</code>, <code>BinkSelectTool</code>,
-        <code>BinkShapeTool</code>, <code>BinkTextTool</code> and <code>BinkPanTool</code>. Brushes are immutable
-        records, so a variant is derived with <code>with</code>.
+        <code>BinkHighlighterBrush</code>, <code>BinkCalligraphyBrush</code> and <code>BinkPixelEraserBrush</code>; the
+        tools are <code>BinkDrawTool</code>, <code>BinkEraserTool</code>, <code>BinkSelectTool</code>,
+        <code>BinkShapeTool</code>, <code>BinkPolylineTool</code>, <code>BinkTextTool</code> and
+        <code>BinkPanTool</code>. Brushes are immutable records, so a variant is derived with <code>with</code>.
     </p>
     <pre class="bb-code">&lt;<span class="k">BinkCanvas</span> Tool=<span class="s">"_tool"</span> Brush=<span class="s">"_brush"</span> Height=<span class="s">"400px"</span> /&gt;
 
@@ -110,7 +112,7 @@
             <tbody>
                 <tr>
                     <td class="bb-table-key">WebAssembly</td>
-                    <td>In the browser - the model the library is designed for. The command buffer reaches JavaScript as a view over managed memory, so a redraw is one call with no serialization; <code>UsesFastRenderPath</code> reports it.</td>
+                    <td>In the browser - the model the library is designed for. The command buffer reaches JavaScript as a view over managed memory, so a redraw is one call with no serialization; <code>UsesFastRenderPath</code> reports it. Bink can be lazy loaded: nothing of it is registered, so mark <code>Bit.Bink.wasm</code> with <code>BlazorWebAssemblyLazyLoad</code> outside AOT builds and load it before the first canvas renders.</td>
                 </tr>
                 <tr>
                     <td class="bb-table-key">Server</td>
@@ -157,6 +159,7 @@
 
 @code {
     private BinkCanvas? _canvas;
+    private CanvasStatus? _status;
 
     private bool IsEmpty => _canvas?.CurrentDocument.IsEmpty ?? true;
 }

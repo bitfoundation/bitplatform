@@ -46,6 +46,7 @@
        still reads as being on top of them (demo.css, .bink-ruled). *@
     <div class="bink-surface @(_ruled ? "bink-ruled" : null)">
         <BinkCanvas @ref="_canvas" HistoryChanged="() => StateHasChanged()"
+                   ViewportChanged="_status?.ViewportChanged ?? default"
                    EnableTouchGestures="true"
                    Height="420px"
                    Brush="_brush"
@@ -57,7 +58,7 @@
                    Ready="() => StateHasChanged()" />
     </div>
 
-    <CanvasStatus Canvas="_canvas">
+    <CanvasStatus @ref="_status" Canvas="_canvas">
         @if (_lastStrokeInfo is not null)
         {
             <span>@_lastStrokeInfo</span>
@@ -106,6 +107,7 @@
 
 @code {
     private BinkCanvas? _canvas;
+    private CanvasStatus? _status;
     private IBinkTool _tool = new BinkDrawTool { SimplifyTolerance = 0.08f };
     private string _instrument = "pen";
     private string _color = "#111827";
@@ -138,6 +140,15 @@
     private void SetInstrument(string id)
     {
         _instrument = id;
+
+        // The eraser is a tool rather than a brush: it cuts away the parts of strokes it passes over and never
+        // reads the canvas brush, so the brush is left as it was.
+        if (id == "eraser")
+        {
+            _tool = new BinkEraserTool { Mode = BinkEraserMode.Segment, Radius = MathF.Max(_width * 2.5f, 8f) };
+            return;
+        }
+
         _brush = id switch
         {
             "pencil" => new BinkPencilBrush { Width = _width, Color = BinkColor.Parse(_color) },
@@ -145,14 +156,9 @@
             "calligraphy" => new BinkCalligraphyBrush { Width = MathF.Max(_width * 2.5f, 6f), Color = BinkColor.Parse(_color) },
             "marker" => new BinkMarkerBrush { Width = MathF.Max(_width * 2f, 6f), Color = BinkColor.Parse(_color) },
             "highlighter" => new BinkHighlighterBrush { Width = MathF.Max(_width * 5f, 16f) },
-            "eraser" => new BinkPixelEraserBrush { Width = MathF.Max(_width * 5f, 16f) },
             _ => new BinkPenBrush { Width = _width, Color = BinkColor.Parse(_color), Smoothing = 0.35f, Spacing = 0.12f, TaperEnd = 5f },
         };
-
-        // The stroke eraser is a separate tool; the pixel eraser is just a brush.
-        _tool = id == "eraser"
-            ? new BinkEraserTool { Mode = BinkEraserMode.Segment, Radius = MathF.Max(_width * 2.5f, 8f) }
-            : new BinkDrawTool { SimplifyTolerance = 0.08f };
+        _tool = new BinkDrawTool { SimplifyTolerance = 0.08f };
     }
 
     private void SetColor(string color)

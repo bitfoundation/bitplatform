@@ -53,7 +53,7 @@ public sealed class BinkPolylineTool : BinkToolBase
         float zoom = MathF.Max(context.Viewport.Zoom, 0.001f);
         if (_points.Count == 0)
         {
-            if (context.Document.TryGetLayer(context.ActiveLayerId, out BinkLayer? layer) && (layer.IsLocked || !layer.IsVisible)) return false;
+            if (!BinkLayerGate.Admits(context)) return false;
             // The shape belongs to the layer it was started on, even if the active layer changes meanwhile.
             _targetLayerId = context.ActiveLayerId;
             _snapper = context.Snapping is { IsEnabled: true } snapping
@@ -172,6 +172,8 @@ public sealed class BinkPolylineTool : BinkToolBase
             context.Announce("A polyline needs at least two points.");
             return null;
         }
+        // The layer the first point went on may have been locked or hidden while the rest were placed.
+        if (!BinkLayerGate.Admits(context, layer)) return null;
         var shape = new BinkPolygonShape(points, closed)
         {
             Style = context.ShapeStyle,

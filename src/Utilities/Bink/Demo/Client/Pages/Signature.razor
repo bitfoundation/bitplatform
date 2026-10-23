@@ -32,6 +32,7 @@
        printed on the paper, so they take the paper's colours (demo.css) rather than the theme's. *@
     <div class="bink-surface">
         <BinkCanvas @ref="_canvas" Ready="() => StateHasChanged()"
+                   ViewportChanged="_status?.ViewportChanged ?? default"
                    EnableTouchGestures="true"
                    Height="200px"
                    Brush="_brush"
@@ -44,7 +45,7 @@
         <div class="bink-signature-caption" aria-hidden="true">Sign above the line</div>
     </div>
 
-    <CanvasStatus Canvas="_canvas">
+    <CanvasStatus @ref="_status" Canvas="_canvas">
         <span>Ink length <strong>@_ink.Length.ToString("0")</strong> units</span>
         <span><strong>@_ink.StrokeCount</strong> strokes in <strong>@_ink.Duration.TotalSeconds.ToString("0.0")</strong> s</span>
     </CanvasStatus>
@@ -111,6 +112,7 @@
 
 @code {
     private BinkCanvas? _canvas;
+    private CanvasStatus? _status;
     private BinkBrush _brush = new BinkPenBrush { Width = 3.5f, Color = BinkColor.Parse("#0f172a"), TaperEnd = 8f };
     private string _color = "#0f172a";
     private float _width = 3.5f;

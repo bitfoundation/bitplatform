@@ -55,7 +55,7 @@ public class BinkDrawTool : BinkToolBase
     {
         ArgumentNullException.ThrowIfNull(context);
         if (_builder.IsActive) return false;
-        if (context.Document.TryGetLayer(context.ActiveLayerId, out BinkLayer? layer) && (layer.IsLocked || !layer.IsVisible)) return false;
+        if (!BinkLayerGate.Admits(context)) return false;
 
         BinkBrush brush = SelectBrush(context, sample);
         ActiveBrush = brush;
@@ -134,11 +134,11 @@ public class BinkDrawTool : BinkToolBase
         BinkStrokePoints final = SimplifyTolerance > 0 ? points.Simplify(SimplifyTolerance, SimplifyPressureTolerance) : points;
         var stroke = new BinkStroke(final, brush) { Input = _builder.InputInfo };
 
-        // The stroke belongs to the layer it started on. Re-reading the active layer here would silently move it
-        // if the layer changed, or was locked, while the pen was down.
-        Guid layerId = context.Document.TryGetLayer(_targetLayerId, out BinkLayer? layer) && !layer.IsLocked && layer.IsVisible
-            ? _targetLayerId
-            : context.ActiveLayerId;
+        // The stroke belongs to the layer it started on: re-reading the active layer here would silently move it if the
+        // active layer changed while the pen was down. Only a layer deleted meanwhile hands it to the active one. A
+        // layer locked or hidden meanwhile refuses it, as it would have refused the stroke had it been so from the start.
+        Guid layerId = context.Document.TryGetLayer(_targetLayerId, out _) ? _targetLayerId : context.ActiveLayerId;
+        if (!BinkLayerGate.Admits(context, layerId)) return;
 
         if (!TryApply(context, () => context.Document.AddElement(stroke, layerId))) return;
         context.InvalidateDocument(stroke.Bounds);

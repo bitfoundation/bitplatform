@@ -264,6 +264,7 @@ Run after the last change, against the same tree:
 | Wire references are gated on every heard-from participant's protocol, not on a session option. | Mixed versions (a stale tab after a deploy) keep working with no configuration; the saving is automatic once everyone is current. |
 | An unresolvable reference triggers the existing snapshot recovery rather than a new "send me this picture" message. | Reuses a tested path; the case is rare (joined after the picture was sent, and the picture has since left the document). |
 | That recovery asks at most once every 10 seconds. | Every participant answers a snapshot request with the whole document, so without a limit one peer sending references to pictures that do not exist could make everyone send the document over and over (found in review before release; tested). |
+| Lazy loading on WebAssembly needed no code change, unlike Bmage's. | Bmage's editor had to build its own services when the app could not register them. Bink registers nothing, and the canvas injects only `IJSRuntime` and `NavigationManager`, which every host provides. `ComponentServicesTests` keeps it that way. |
 
 ### Verification of round 2
 
@@ -276,6 +277,52 @@ Run after the last change, against the same tree:
 | `Bit.Bink.Tests.E2E`, Firefox | 59 passed, 4 inconclusive with the reasons in its README, 0 failed |
 | `Bit.Bink.Tests.E2E`, WebKit | 60 passed, 3 inconclusive, 0 failed; autosave and restore pass after the IndexedDB fix |
 | Not measured | The cost of the asset-table scan on save (one pass over the elements before writing); no save benchmark was rerun in this round. |
+
+## Round 3: the demo pages in every engine
+
+Every demo page was driven with Playwright in Chromium, Firefox and WebKit, at desktop and phone widths and in both
+themes: every control on every page, synthetic pen (pressure, tilt) and touch input, keyboard-only use, opening,
+saving and exporting files, autosave across reloads, collaboration with latency and offline, and a 1.5 million point
+document. Defects found and fixed:
+
+| Page | Defect | Fix |
+| --- | --- | --- |
+| Getting started | The live canvas had no status line until the first stroke: nothing re-rendered the page once the canvas was ready. The brush and tool lists left out `BinkCalligraphyBrush` and `BinkPolylineTool`. | `Ready` re-renders, as on every other page; the lists are complete. |
+| Every page with a status line | The zoom it showed stayed at the old figure after a zoom from the keyboard, the wheel or a pinch: only the page's own buttons re-rendered it. | `CanvasStatus.ViewportChanged`, bound to the canvas, re-renders the line alone and only when the zoom changed, so panning renders nothing. |
+| Whiteboard | The Align list kept showing the last alignment, so picking the same one for the next selection was no change to the browser and aligned nothing. | The list returns to "Choose…" after each use. |
+| Whiteboard, and the canvas | With the active layer locked or hidden, new ink went to another layer while the layer list still named the locked one. The canvas swapped a locked or hidden `ActiveLayerId` for the top-most editable layer before any tool saw it, so the tools' own refusal could never happen. | A layer the host names is used as named: while it is locked or hidden the tools, paste, drop, SVG import and `AddImageAsync` refuse, announcing why, and Blazor Server's provisional trail stays off. A layer locked or hidden mid-gesture refuses the stroke, shape or polyline when it ends, where the draw tool used to move it to the active layer. Without `ActiveLayerId` the top-most editable layer is still used. The whiteboard says why drawing does nothing, and opens a board on its top-most editable layer. 11 tests (`LockedLayerTests`, `BinkCanvasLayerTests`). |
+| Image annotation | Undoing "Open image" left the status line naming the picture it had just removed. | The line reads the picture in the document; its file name is kept in the element's metadata. |
+| Image annotation | A file the browser cannot decode replaced the picture with an invisible 0 by 0 one, with no message. | Refused with a message; the picture stays. |
+| Document review | Emptying a comment's box left it empty while the comment kept its text. | The box shows the comment's text again. |
+| Image annotation, document review, diagram | On a phone the 900 and 620 unit pages opened at 100%: a third of the picture, the first words of each line, two of the three nodes. | Fitted to the view when the content does not fit it at 100%, never zooming in. |
+| Handwriting | The eraser set a pixel-eraser brush that the eraser tool never reads, under a comment describing the opposite of the code. | Removed; the comment says what happens. |
+| README | The keyboard table did not say that Enter, Tab, the arrow keys, R and Shift+H/V act through the select tool. | It does now. |
+
+Investigated and found not to be defects:
+
+| Observation | Finding |
+| --- | --- |
+| In Firefox a stroke released outside the window was lost. | Playwright's Firefox sends no `pointerup` for a release outside the viewport, only one `pointermove` at x 0 with no buttons. Chromium and WebKit deliver the `pointerup` to the capturing element; so does a real Firefox. |
+| Chrome failed WebAssembly downloads with `ERR_INSUFFICIENT_RESOURCES`. | The machine was near its commit limit from other processes. Thirty sequential loads in one browser are identical: 229 requests, 37 MB, nothing requested after load. |
+| Generating 10,000 strokes of 150 points froze the page for 26 s in Chromium and 43 s in Firefox, against 3 s in WebKit. | The Development host turns on the Mono debugger in Chromium and Firefox only. |
+| The footer lists five of the seven use cases and no Tooling column. | `Take(3)` and `Take(5)` are the shared site kit's, the same in all sixteen Utilities demos. |
+
+### Decision of round 3
+
+| Decision | Rationale |
+| --- | --- |
+| A locked or hidden layer named in `ActiveLayerId` refuses new elements; it is not swapped for another layer. | The README, the parameter's documentation, the tools' checks and their tests already said so; only the canvas's substitution did not. Elements on a layer nobody chose are harder to notice and undo than a refusal that says why, a hidden layer would make them invisible, and a pixel-eraser mask would erase the wrong layer. It is what drawing applications do with a locked layer. With no layer named, the top-most editable one is the right default and is kept. |
+
+### Verification of round 3
+
+| Check | Result |
+| --- | --- |
+| `dotnet build Bit.Bink.slnx` | Succeeds; the one warning is the baseline's (`McpSurfaceTests.cs:58`) |
+| `Bit.Bink.Tests` | 750 / 750 on net10.0, and on the net8.0 and net9.0 builds run on the .NET 10 runtime (`DOTNET_ROLL_FORWARD=Major`) |
+| `Bit.Bink.Tests.Mcp` | 73 / 73 |
+| `Bit.Bink.Tests.E2E`, Chromium (installed Chrome 156) | 71 / 71; eight of them new in `DemoRegressionTests`, one for each defect above that a browser can show |
+| `Bit.Bink.Tests.E2E`, Firefox | 67 passed, 4 inconclusive with the reasons in its README, 0 failed |
+| `Bit.Bink.Tests.E2E`, WebKit | 68 passed, 3 inconclusive, 0 failed |
 
 ## Next priorities
 

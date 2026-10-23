@@ -67,7 +67,7 @@ public sealed class BinkTextTool : BinkToolBase
     {
         ArgumentNullException.ThrowIfNull(context);
         if (Editing is not null) return false;
-        if (context.Document.TryGetLayer(context.ActiveLayerId, out BinkLayer? layer) && (layer.IsLocked || !layer.IsVisible)) return false;
+        if (!BinkLayerGate.Admits(context)) return false;
 
         var element = new BinkTextElement(documentPoint, string.Empty)
         {

@@ -193,6 +193,9 @@ control it, add the link yourself and the automatic injection stands down:
 <link rel="stylesheet" href="_content/Bit.Bink/bit-bink.css" />
 ```
 
+Having nothing to register is also what lets a WebAssembly app download Bink only when a page first needs it; see
+[lazy loading on WebAssembly](#lazy-loading-on-webassembly).
+
 ### A drawing surface
 
 ```razor
@@ -1043,6 +1046,13 @@ A locked or hidden layer rejects drawing, erasing and selection. That is how the
 picture from being moved by accident: the image sits on its own locked layer. Locking or hiding a layer also drops
 its elements from the selection, so the next Delete or arrow key cannot reach them.
 
+While the layer named in `ActiveLayerId` is locked or hidden, nothing new goes on it: strokes, shapes, text, pasted,
+dropped and imported content and `AddImageAsync` are all refused, and the canvas announces why. They are never put
+on another layer instead, which would leave them somewhere nobody chose, and on a hidden layer they would be
+invisible. A layer locked or hidden while a stroke or a shape is being drawn refuses it when it ends. If your UI lets
+people lock or hide the layer they draw on, say so beside it, as the whiteboard demo does. Without `ActiveLayerId`,
+new elements go on the top-most layer that is neither locked nor hidden.
+
 ### A typical structure
 
 ```text
@@ -1683,6 +1693,49 @@ active.
 
 No configuration is needed.
 
+### Lazy loading on WebAssembly
+
+A WebAssembly app can download Bink only when someone first opens a page that draws. Nothing has to be taken out of
+`Program.cs`, because nothing of Bink's is registered there: the canvas takes only the framework's `IJSRuntime` and
+`NavigationManager` from the app's container, and imports its browser module itself when it attaches. Mark the
+assembly as lazy loaded:
+
+```xml
+<ItemGroup Condition=" '$(RunAOTCompilation)' != 'true' ">
+  <BlazorWebAssemblyLazyLoad Include="Bit.Bink.wasm" />
+</ItemGroup>
+```
+
+Then load it before the first component that uses Bink renders, typically from the router's `OnNavigateAsync`:
+
+```razor
+@using Microsoft.AspNetCore.Components.WebAssembly.Services
+@inject LazyAssemblyLoader LazyAssemblyLoader
+
+<Router AppAssembly="typeof(App).Assembly" OnNavigateAsync="LoadBinkAsync">
+    ...
+</Router>
+
+@code {
+    private async Task LoadBinkAsync(NavigationContext context)
+    {
+        if (context.Path == "whiteboard") await LazyAssemblyLoader.LoadAssembliesAsync(["Bit.Bink.wasm"]);
+    }
+}
+```
+
+Nothing else changes. The stylesheet and the initializer that injects it are static web assets rather than part of
+the assembly, so they still load when the app starts, both small, and a canvas is laid out correctly from its first
+render. The zero-copy render path works from the lazily loaded assembly as well.
+
+Your own code that names a Bink type has to run after the load too: register custom brushes and element types
+(`BinkBrushRegistry.Default.Register`, `BinkElementRegistry.Default.Register`) right after `LoadAssembliesAsync`,
+not in `Program.cs`. Both replace an earlier registration of the same kind, so registering again on a later
+navigation does no harm.
+
+The condition leaves AOT builds out: AOT compiles every assembly into `dotnet.native.wasm`, so there is nothing left
+to download later, and lazy loading an AOT-compiled assembly can fail at startup.
+
 ### Blazor Server
 
 The engine runs on the server. Pointer samples travel over the SignalR circuit in batches of one animation frame,
@@ -1948,6 +2001,9 @@ Elements without a description fall back to something structural, such as "Strok
 ### Keyboard
 
 The canvas takes focus when it is drawn on, so shortcuts are reachable for someone who just used a mouse or pen.
+Stepping through elements and changing the selected ones - Enter to start, Tab, the arrow keys, R, Shift+H and
+Shift+V - is the select tool's work, so those keys act while `BinkSelectTool` is the active tool; the others work
+whatever the tool.
 
 | Key | Action |
 | --- | --- |

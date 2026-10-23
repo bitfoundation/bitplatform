@@ -26,10 +26,11 @@
             </div>
             <div class="bink-surface">
                 <BinkCanvas @ref="_canvas" HistoryChanged="() => StateHasChanged()" Height="340px" Brush="_brush" AriaLabel="Source drawing"
+                           ViewportChanged="_status?.ViewportChanged ?? default"
                            DocumentChanged="() => StateHasChanged()"
                            Ready="() => StateHasChanged()" />
             </div>
-            <CanvasStatus Canvas="_canvas" />
+            <CanvasStatus @ref="_status" Canvas="_canvas" />
         </div>
 
         <div class="bink-peer">
@@ -117,6 +118,7 @@
     private sealed record Stats(int Elements, long Points, int CompactBytes, int ReadableBytes, int SvgBytes, int PngBytes, bool RoundTripStable);
 
     private BinkCanvas? _canvas;
+    private CanvasStatus? _status;
     private readonly BinkBrush _brush = new BinkPenBrush { Width = 4f, Color = BinkColor.Parse("#111827") };
     private BinkDocument? _snapshot;
     private string? _saved;
