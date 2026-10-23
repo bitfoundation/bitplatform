@@ -493,7 +493,7 @@ public class AssemblyMinifierTests
             foreach (var name in new[] { "Calculator", "AddAsync", "Fail", "Label", "Total", "Point", "Length", "Box`1", "Shade" }) CollectionAssert.Contains(names, name);
             // everything else is short
             foreach (var name in new[] { "Record", "ShiftAmount", "ThrowFromHelper", "_history", "_limit", "Select" }) CollectionAssert.DoesNotContain(names, name);
-            Assert.IsFalse(module.GetTypes().SelectMany(t => t.Methods).Where(m => m.IsPrivate && m.HasCustomAttributes is false).SelectMany(m => m.Parameters).Any(p => p.Name.Length > 0));
+            CollectionAssert.AreEqual(new[] { "offsetByName" }, module.GetTypes().SelectMany(t => t.Methods).Where(m => m.IsPrivate && m.HasCustomAttributes is false).SelectMany(m => m.Parameters).Where(p => p.Name.Length > 0).Select(p => p.Name).ToList());
             // what the app itself may read of its own metadata stays: Assembly.GetCustomAttribute is an About page
             Assert.IsTrue(module.Assembly.CustomAttributes.Any(a => a.AttributeType.Name == "AssemblyCompanyAttribute"));
             Assert.IsTrue(module.Assembly.CustomAttributes.Any(a => a.AttributeType.Name == "AssemblyFileVersionAttribute"));
@@ -1036,6 +1036,7 @@ public class AssemblyMinifierTests
         calculator.GetType().GetProperty("Label")!.SetValue(calculator, "L");
         results.Add($"label {Get(calculator, "Label")}");
         results.Add($"reflection {Invoke(calculator, "CallByReflection")}");
+        results.Add($"parameter reflection {Invoke(calculator, "CallByParameterName")}");
         calculator.GetType().GetProperty("Note")!.SetValue(calculator, "noted");
         var noteAccess = library.GetType("Bit.Minifier.Tests.Library.NoteAccess")!;
         results.Add($"note {noteAccess.GetMethod("ReadThroughAccessor")!.Invoke(null, [calculator])} {noteAccess.GetMethod("ReadThroughReflection")!.Invoke(null, [calculator])}");
