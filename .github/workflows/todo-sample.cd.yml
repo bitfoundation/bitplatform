@@ -323,8 +323,18 @@ jobs:
         GoogleRecaptchaSiteKey: ${{ secrets.GOOGLE_RECAPTCHA_SITE_KEY }}
 
       
+    - name: Collect the AOT profile
+      run: bit aot-profile TodoSample/src/Client/TodoSample.Client.Web/TodoSample.Client.Web.csproj -o todo.aotprofile --origin https://todo-aot.bitplatform.cc --step "click:.menu-chevron" --step "click:button[role=switch][aria-label*=theme i]" -p:Version="${{ vars.APP_VERSION}}" -p:InvariantGlobalization=true -p:WasmEnableSIMD=true -p:BitMinifyAggressive=true
+
     - name: Publish
-      run: dotnet publish TodoSample/src/Client/TodoSample.Client.Web/TodoSample.Client.Web.csproj -c Release -o client -p:Version="${{ vars.APP_VERSION}}" -p:RunAOTCompilation=true -p:InvariantGlobalization=true -p:WasmEnableSIMD=true -p:BitMinify=false -p:WasmAotProfilePath="${{ github.workspace }}/.github/aot-profiles/todo.aotprofile"
+      run: dotnet publish TodoSample/src/Client/TodoSample.Client.Web/TodoSample.Client.Web.csproj -c Release -o client -p:Version="${{ vars.APP_VERSION}}" -p:RunAOTCompilation=true -p:InvariantGlobalization=true -p:WasmEnableSIMD=true -p:BitMinifyAggressive=true -p:BitMinifyMapOutputPath="${{ github.workspace }}/bit-minifier.map" -p:WasmAotProfilePath="${{ github.workspace }}/todo.aotprofile"
+
+    # what the stack traces this client logs are read back through: see the note in the server web job
+    - name: Upload minifier map artifact
+      uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+      with:
+        name: TodoAot-minifier-map
+        path: bit-minifier.map
 
     - name: Upload to asw
       run: |
