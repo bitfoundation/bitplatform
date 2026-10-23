@@ -33,6 +33,7 @@ internal sealed partial class NameMinifier(Action<ModuleDefinition, string, stri
     private const string Component = "Microsoft.AspNetCore.Components.IComponent";
 
     private readonly HashSet<string> literalWords = [];
+    private readonly Dictionary<ModuleDefinition, HashSet<string>> literals = [];
     // every dotted prefix of every dotted word ("A.B.C" -> "A", "A.B", "A.B.C"): namespaces a string names
     private readonly HashSet<string> literalNamespaces = [];
     // methods an expression tree holds by token: Expression.Property wants their property metadata
@@ -74,7 +75,12 @@ internal sealed partial class NameMinifier(Action<ModuleDefinition, string, stri
                     if (method.HasBody is false) continue;
                     foreach (var instruction in method.Body.Instructions)
                     {
-                        if (instruction.Operand is string literal) AddWords(literal);
+                        if (instruction.Operand is string literal)
+                        {
+                            AddWords(literal);
+                            if (literals.TryGetValue(module, out var own) is false) literals[module] = own = [];
+                            own.Add(literal);
+                        }
                         else if (instruction.OpCode.Code == Code.Ldtoken && instruction.Operand is MethodReference token && ReferenceIndex.Resolve(token) is MethodDefinition loaded) tokens.Add(loaded);
                     }
                 }
@@ -354,12 +360,13 @@ internal sealed partial class NameMinifier(Action<ModuleDefinition, string, stri
                 if (method.IsConstructor || IsBound(method)) continue;
                 if (IsRenamable(type, method, scope) is false && type.Name.StartsWith('<') is false) continue;
                 // public parameters (aggressive) keep the names a string mentions: a generated client may build requests
-                // from them, and a reflection-based one (Refit) from any interface method's
+                // from them, and a reflection-based one (Refit) from any interface method's. The others keep a name a string
+                // literal of their own assembly is: reflection may pick a method by it (EF Core's NotQuiteInclude)
                 var exposed = IsRenamable(type, method, RenameScope.Internal) is false;
                 if (exposed && type.IsInterface) continue;
                 foreach (var parameter in method.Parameters)
                 {
-                    if (parameter.Name.Length == 0 || IsBound(parameter) || (exposed && literalWords.Contains(parameter.Name))) continue;
+                    if (parameter.Name.Length == 0 || IsBound(parameter) || (exposed ? literalWords.Contains(parameter.Name) : literals.GetValueOrDefault(module)?.Contains(parameter.Name) is true)) continue;
                     parameter.Name = "";
                     cleared++;
                 }

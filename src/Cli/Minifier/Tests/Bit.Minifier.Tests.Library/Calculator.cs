@@ -79,6 +79,13 @@ public class Calculator
 
     private int ReflectedByName() => 40;
 
+    public int CallByParameterName()
+        => (int)typeof(Calculator).GetMethods(BindingFlags.NonPublic | BindingFlags.Instance)
+               .Single(m => m.GetParameters().Any(p => p.Name == "offsetByName"))
+               .Invoke(this, [2])!;
+
+    private int ShiftedByParameter(int offsetByName) => 40 + offsetByName;
+
     internal int InternalSquare(int value)
     {
         InternalCounter++;
