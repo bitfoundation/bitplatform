@@ -87,36 +87,7 @@ public class UploadFormatAllowListTests
     {
         yield return ("SVG", """<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512"><rect width="512" height="512" fill="red"/></svg>"""u8.ToArray());
         yield return ("PostScript", "%!PS-Adobe-3.0\n%%BoundingBox: 0 0 512 512\nnewpath 0 0 moveto 512 512 lineto stroke showpage\n"u8.ToArray());
-        yield return ("BMP", Bitmap(512, 512));
-    }
-
-    private static byte[] Bitmap(int width, int height)
-    {
-        var rowSize = (width * 3 + 3) / 4 * 4;
-        var pixelDataSize = rowSize * height;
-
-        using var stream = new MemoryStream();
-        using var writer = new BinaryWriter(stream);
-
-        writer.Write("BM"u8);
-        writer.Write(54 + pixelDataSize);
-        writer.Write(0);
-        writer.Write(54);
-        writer.Write(40);
-        writer.Write(width);
-        writer.Write(height);
-        writer.Write((short)1);
-        writer.Write((short)24);
-        writer.Write(0);
-        writer.Write(pixelDataSize);
-        writer.Write(2835);
-        writer.Write(2835);
-        writer.Write(0);
-        writer.Write(0);
-        writer.Write(new byte[pixelDataSize]);
-        writer.Flush();
-
-        return stream.ToArray();
+        yield return ("PPM", [.. "P6\n512 512\n255\n"u8, .. new byte[512 * 512 * 3]]);
     }
 
     private async Task<AppTestServer> StartServer()

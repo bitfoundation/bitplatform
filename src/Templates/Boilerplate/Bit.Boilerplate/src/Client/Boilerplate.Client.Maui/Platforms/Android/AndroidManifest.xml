@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- The backup rules keep the saved sign-in out of Android backups and device transfers (See Resources/xml). -->
     <application android:icon="@mipmap/appicon" android:roundIcon="@mipmap/appicon_round" android:fullBackupContent="@xml/backup_rules" android:dataExtractionRules="@xml/data_extraction_rules"></application>
     <uses-feature android:name="android.hardware.microphone" android:required="false" />
 </manifest>

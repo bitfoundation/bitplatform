@@ -32,7 +32,7 @@ public partial class AttachmentController : AppControllerBase, IAttachmentContro
     /// <summary>The largest upload every endpoint here accepts; the Dev MCP reports this value rather than a copy of it.</summary>
     public const int MaxUploadSizeBytes = 11 * 1024 * 1024;
 
-    public static readonly MagickFormat[] AllowedImageFormats = [MagickFormat.Jpeg, MagickFormat.Png, MagickFormat.WebP, MagickFormat.Gif, MagickFormat.Avif];
+    public static readonly MagickFormat[] AllowedImageFormats = [MagickFormat.Jpeg, MagickFormat.Png, MagickFormat.WebP, MagickFormat.Gif, MagickFormat.Avif, MagickFormat.Bmp];
 
     // For open telemetry metrics
     private static readonly Histogram<double> updateResizeDurationHistogram = Meter.Current.CreateHistogram<double>("attachment.resize_duration", "ms", "Elapsed time to resize and persist an uploaded image");

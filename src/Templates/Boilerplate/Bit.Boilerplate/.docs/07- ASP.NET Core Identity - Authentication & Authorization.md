@@ -85,10 +85,8 @@ Its id travels in both tokens as the `s-id` claim, which is what makes **session
 row and that device can no longer refresh. Users manage their own sessions from the Settings page.
 <!--#if (signalR == true)-->
 
-The SignalR hub checks the same row when a connection opens and on every hub call (cached for 30 seconds per
-connection), and closes the connection of a revoked session, or of one whose password or 2FA settings changed, at
-its next hub call. A connection that signs in as another user leaves the previous session's row, so that user's
-messages stop reaching it.
+The SignalR hub checks the same row too, and closes the connection of a revoked session, or of one whose password or
+2FA settings changed.
 <!--#endif-->
 
 **Privileged sessions** cap how many devices get full access at once (3 by default,
@@ -335,11 +333,8 @@ A few rules sit on top of the mechanism:
   recovery codes. A code sent by email or SMS alone would hand the account to whoever controls that inbox or phone
   number.
 - **Asking for a code doesn't tell whether an account exists.** The endpoints that send one answer an unknown email
-  or phone number the way they answer a known one, and a password reset keeps doing so for the resend delay and a
-  wrong code. Signing up with an identifier that already has an account looks like any other sign-up, and the owner
-  gets an email (or SMS) saying someone tried, at most once an hour. Some answers still differ by design: an OTP
-  sign-in creates the account it doesn't find, an account that isn't confirmed yet is sent to its confirmation, and
-  repeated wrong codes lock a real account out.
+  or phone number the way they answer a known one. Signing up with an identifier that already has an account looks
+  like any other sign-up, and the owner gets an email (or SMS) saying someone tried.
 
 ---
 

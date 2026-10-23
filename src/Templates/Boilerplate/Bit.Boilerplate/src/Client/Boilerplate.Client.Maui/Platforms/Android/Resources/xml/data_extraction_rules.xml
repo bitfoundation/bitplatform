@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- Android 12+: SecureStorage's tokens live in shared preferences, encrypted with a key that never leaves the device, so they're left out: a restored copy couldn't be decrypted. -->
 <data-extraction-rules>
     <cloud-backup>
         <exclude domain="sharedpref" path="." />

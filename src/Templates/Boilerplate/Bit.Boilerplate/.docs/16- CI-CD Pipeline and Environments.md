@@ -368,7 +368,10 @@ This is the **core deployment workflow** that handles building and deploying all
 <!--#if (api == "Standalone" && database != "Sqlite" && database != "Other")-->
 - ✅ **Database Migrations**: the api deploys in its own `deploy_api` job, which runs the migrations bundle `build_api` made against the database in the `DATABASE_CONNECTION_STRING` secret right before it deploys the api
 <!--#endif-->
-<!--#if (database == "Sqlite" || database == "Other")-->
+<!--#if (database == "Sqlite")-->
+- ✅ **Database Migrations**: the app applies them itself when it starts
+<!--#endif-->
+<!--#if (database == "Other")-->
 - ⚠️ **The Database Is Not Migrated Here**: see "Applying Migrations to a Deployed Database" in `.docs/01- Entity Framework Core.md`
 <!--#endif-->
 

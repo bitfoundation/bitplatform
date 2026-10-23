@@ -284,16 +284,17 @@ This single line:
 
 ## 4. Migrations
 
+<!--#if (database == "Sqlite")-->
+The project uses EF Core migrations from day one. The app applies them when it starts, in every environment:
+<!--#else-->
 The project uses EF Core migrations from day one. In the Development environment, the app applies them when it starts:
+<!--#endif-->
 
 **File:** [`/src/Server/Boilerplate.Server.Api/Program.cs`](/src/Server/Boilerplate.Server.Api/Program.cs)
 ```csharp
-if (builder.Environment.IsDevelopment())
-{
-    await using var scope = app.Services.CreateAsyncScope();
-    var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-    await dbContext.Database.MigrateAsync();
-}
+await using var scope = app.Services.CreateAsyncScope();
+var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+await dbContext.Database.MigrateAsync();
 ```
 
 <!--#if (api == "Integrated")-->
@@ -303,7 +304,11 @@ if (builder.Environment.IsDevelopment())
 [`/src/Tests/Infrastructure/TestsAssemblyInitializer.cs`](/src/Tests/Infrastructure/TestsAssemblyInitializer.cs) does the same for the tests.
 <!--#endif-->
 
+<!--#if (database == "Sqlite")-->
+You do **NOT** need to run `dotnet ef database update` or `Update-Database` manually. The `MigrateAsync()` call in the application startup code handles this automatically.
+<!--#else-->
 While you develop, you do **NOT** need to run `dotnet ef database update` or `Update-Database` manually: the `MigrateAsync()` call above handles it. It only runs in the Development environment, though, so a deployed app never changes its own database. See [Applying Migrations to a Deployed Database](#applying-migrations-to-a-deployed-database) below.
+<!--#endif-->
 
 ### The Initial Migration
 
@@ -315,13 +320,14 @@ dnx dotnet-ef@10.0.13 -- migrations add Initial --output-dir Infrastructure/Data
 
 ### Adding Future Migrations
 
-When you modify entities or configurations, create a new migration; the app applies it on its next start in Development:
+When you modify entities or configurations, create a new migration; the app applies it on its next start:
 
 ```bash
 dnx dotnet-ef@10.0.13 -- migrations add <MigrationName> --output-dir Infrastructure/Data/Migrations --verbose
 ```
 
 If the model changes without a migration, `MigrateAsync()` stops the app with a "pending model changes" error until the migration is added.
+<!--#if (database != "Sqlite")-->
 
 ### Applying Migrations to a Deployed Database
 
@@ -329,8 +335,6 @@ If the model changes without a migration, `MigrateAsync()` stops the app with a 
 The CD pipeline applies them. Its build job packs the migrations into a migrations bundle, and its deploy job runs that bundle against the database in the `DATABASE_CONNECTION_STRING` secret right before it deploys the new version. A failed migration stops the deployment, so the new version never runs on an old database schema. [Stage 16](/.docs/16-%20CI-CD%20Pipeline%20and%20Environments.md) describes the secret. To apply them by hand, use the same bundle as described below.
 <!--#elif (pipeline == "Azure" && api == "Integrated" && database != "Sqlite" && database != "Other")-->
 The CD pipeline applies them. Its build job packs the migrations into a migrations bundle, and its deploy job runs that bundle against the database in the `DATABASE_CONNECTION_STRING` secret variable right before it deploys the new version. A failed migration stops the deployment, so the new version never runs on an old database schema. [Stage 16](/.docs/16-%20CI-CD%20Pipeline%20and%20Environments.md) describes the secret variable. To apply them by hand, use the same bundle as described below.
-<!--#elif (database == "Sqlite")-->
-With SQLite the database is a file next to the deployed app, out of a CD pipeline's reach, so apply the migrations on the server with a migrations bundle, as described below. Since a SQLite app runs as a single instance, you can instead let the app apply them when it starts, by calling `MigrateAsync()` outside the Development environment too.
 <!--#else-->
 Nothing in this project applies them to a deployed database, so apply them before each deployment of the api, for example with a migrations bundle as described below.
 <!--#endif-->
@@ -342,6 +346,7 @@ dnx dotnet-ef@10.0.13 -- migrations bundle --self-contained -r linux-x64
 ```
 
 Copy the `efbundle` file it creates into the deployed app's folder, where it finds the app's settings and certificate, and run it there before the new version starts. When the app's settings don't hold the production connection string, give it to the bundle in the `ConnectionStrings__<name>` environment variable the app reads it from.
+<!--#endif-->
 
 ---
 <!--#if (offlineDb == true)-->

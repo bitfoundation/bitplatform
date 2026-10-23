@@ -17,6 +17,7 @@ import { App } from './App';
         setCssWindowSizes();
     }
 
+    // Fires only in the other tabs, so they follow a sign-in or sign-out made in this one (See AuthManager).
     function handleStorage(e: StorageEvent) {
         if (e.storageArea !== window.localStorage) return;
 
