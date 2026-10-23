@@ -108,11 +108,7 @@ public partial class MainLayout : IAsyncDisposable
                 await InvokeAsync(StateHasChanged);
             }));
 
-            await SetCurrentUser(AuthenticationStateTask);
-
-            currentTheme = await themeService.GetCurrentTheme();
-
-            await bitExtraServices.AddRootCssClasses();
+            await Task.WhenAll(SetCurrentUser(AuthenticationStateTask), SetCurrentThemeAndRootCssClasses());
         }
         catch (Exception exp)
         {
@@ -165,6 +161,13 @@ public partial class MainLayout : IAsyncDisposable
         }
     }
 
+    private async Task SetCurrentThemeAndRootCssClasses()
+    {
+        currentTheme = await themeService.GetCurrentTheme();
+
+        await bitExtraServices.AddRootCssClasses();
+    }
+
     private ClaimsPrincipal? lastAuthUser;
     private async Task SetCurrentUser(Task<AuthenticationState> task)
     {
@@ -185,17 +188,26 @@ public partial class MainLayout : IAsyncDisposable
         }
         else
         {
-            if (currentUser is null || authUser.IsTheSame(lastAuthUser) is false)
-            {
-                currentUser = await userController.GetCurrentUser(getCurrentUserCts.Token);
-            }
+            Task[] loads =
+            [
+                LoadCurrentUser(authUser, getCurrentUserCts.Token),
+                //#if (multitenant == true)
+                SetCurrentTenantIfNeeded(authUser.GetTenantId(), getCurrentUserCts.Token),
+                //#endif
+            ];
 
-            //#if (multitenant == true)
-            await SetCurrentTenantIfNeeded(authUser.GetTenantId(), getCurrentUserCts.Token);
-            //#endif
+            await Task.WhenAll(loads);
         }
 
         lastAuthUser = authUser;
+    }
+
+    private async Task LoadCurrentUser(ClaimsPrincipal authUser, CancellationToken cancellationToken)
+    {
+        if (currentUser is null || authUser.IsTheSame(lastAuthUser) is false)
+        {
+            currentUser = await userController.GetCurrentUser(cancellationToken);
+        }
     }
 
     //#if (multitenant == true)
