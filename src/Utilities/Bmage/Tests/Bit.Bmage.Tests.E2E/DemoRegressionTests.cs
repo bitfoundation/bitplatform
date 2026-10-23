@@ -236,6 +236,91 @@ public class DemoRegressionTests : DemoTest
     }
 
     [TestMethod]
+    public async Task APersianLabelIsDrawnIntoTheImage()
+    {
+        // The site registers Vazirmatn beside Noto Sans: a Persian label is shaped and drawn, with no word about fonts.
+        var page = await OpenEditorWithImageAsync();
+        var vazirmatn = page.WaitForResponseAsync(r => r.Url.EndsWith("/fonts/Vazirmatn-Regular.ttf", StringComparison.Ordinal) && r.Ok,
+            new PageWaitForResponseOptions { Timeout = 30_000 });
+        await page.GetByRole(AriaRole.Button, new PageGetByRoleOptions { Name = "فارسی" }).ClickAsync();
+        // The font is fetched once the page is interactive; it may have arrived before this test asked.
+        try { await vazirmatn; } catch (TimeoutException) { }
+
+        const string Region = "[Math.floor(c.width * 0.45), Math.floor(c.height * 0.35), Math.ceil(c.width * 0.3), Math.ceil(c.height * 0.2)]";
+        var before = await page.EvaluateAsync<int[]>($"() => {{ const c = document.querySelector('.bmg-canvas'); return Array.from(c.getContext('2d').getImageData(...{Region}).data); }}");
+        await page.Locator(".bmg-tool[title='متن']").ClickAsync();
+        var canvas = (await page.Locator(".bmg-canvas").BoundingBoxAsync())!;
+        await page.Mouse.ClickAsync(canvas.X + canvas.Width * 0.5f, canvas.Y + canvas.Height * 0.45f);
+        await page.WaitForTimeoutAsync(1200);
+
+        var messages = await page.Locator(".bmg-editor [role=status], .bmg-editor [role=alert]").AllInnerTextsAsync();
+        Assert.IsFalse(messages.Any(m => m.Contains("قلم", StringComparison.Ordinal) || m.Contains("font", StringComparison.OrdinalIgnoreCase)), string.Join(" | ", messages));
+        var after = await page.EvaluateAsync<int[]>($"() => {{ const c = document.querySelector('.bmg-canvas'); return Array.from(c.getContext('2d').getImageData(...{Region}).data); }}");
+        var changed = 0;
+        for (var i = 0; i < before.Length; i += 4)
+            if (Math.Abs(before[i] - after[i]) + Math.Abs(before[i + 1] - after[i + 1]) + Math.Abs(before[i + 2] - after[i + 2]) > 60) changed++;
+        Assert.IsGreaterThan(30, changed, "the label 'متن' was drawn");
+    }
+
+    [TestMethod]
+    public async Task StoppingABatchKeepsWhatItFinished()
+    {
+        var page = await OpenAsync("batch");
+        await page.Locator("#conc").FillAsync("1");
+        var files = Enumerable.Range(0, 8).Select(i => SampleImage.WriteToTempFile(3000, 2000, $"large-{i}.png")).ToArray();
+        try
+        {
+            await page.SetInputFilesAsync("input[type=file]", files);
+            await page.WaitForFunctionAsync("() => /^[1-7] of 8$/.test(document.querySelector('.optimize-progress [role=status]')?.textContent?.trim() ?? '')", null,
+                new PageWaitForFunctionOptions { Timeout = 120_000, PollingInterval = 50 });
+            // Without waiting for the button to hold still: where the browser decodes on the page's own thread (no
+            // OffscreenCanvas), frames are few while an image is processed, and the click is handled between images anyway.
+            await page.GetByRole(AriaRole.Button, new PageGetByRoleOptions { Name = "Stop" }).ClickAsync(new LocatorClickOptions { Force = true });
+            await page.WaitForSelectorAsync(".batch-stopped", new PageWaitForSelectorOptions { Timeout = 60_000 });
+
+            var rows = await page.Locator(".results-table tbody tr").AllInnerTextsAsync();
+            Assert.HasCount(8, rows);
+            Assert.IsTrue(rows.Any(r => r.Contains("WEBP", StringComparison.Ordinal) || r.Contains("JPEG", StringComparison.Ordinal)), "a finished image is kept");
+            Assert.IsTrue(rows.Any(r => r.Contains("stopped", StringComparison.Ordinal)), "the rest are marked");
+            Assert.AreEqual(0, await page.Locator(".demo-error").CountAsync());
+            Assert.IsFalse(await page.GetByRole(AriaRole.Button, new PageGetByRoleOptions { Name = "Download results" }).IsDisabledAsync());
+        }
+        finally
+        {
+            foreach (var file in files) File.Delete(file);
+        }
+    }
+
+    [TestMethod]
+    public async Task EscapeClosesTheSiteMenuAndReturnsFocusToItsButton()
+    {
+        // The header is the same file in every Utilities demo; its drawer closes the way the docs drawer and the search do.
+        var page = await OpenAsync("pipelines", new ViewportSize { Width = 375, Height = 760 });
+        var button = page.Locator(".bb-menu-btn");
+        await button.ClickAsync();
+        await page.WaitForSelectorAsync("#bb-header-drawer");
+        await page.Keyboard.PressAsync("Escape");
+        await page.WaitForSelectorAsync("#bb-header-drawer", new PageWaitForSelectorOptions { State = WaitForSelectorState.Detached, Timeout = 5_000 });
+        Assert.AreEqual("false", await button.GetAttributeAsync("aria-expanded"));
+
+        // From a link inside the drawer, too, and the focus goes back to the button rather than to the page's start.
+        await button.ClickAsync();
+        await page.Locator("#bb-header-drawer a").First.FocusAsync();
+        await page.Keyboard.PressAsync("Escape");
+        await page.WaitForSelectorAsync("#bb-header-drawer", new PageWaitForSelectorOptions { State = WaitForSelectorState.Detached, Timeout = 5_000 });
+        await page.WaitForFunctionAsync("() => document.activeElement?.classList.contains('bb-menu-btn')", null, new PageWaitForFunctionOptions { Timeout = 5_000 });
+
+        // The docs drawer, the same way. Opening either takes the focus into it, which is what lets Escape reach it in
+        // Safari: a clicked button there does not take the focus.
+        var toggle = page.Locator(".bb-docs-menu-toggle");
+        await toggle.ClickAsync();
+        await page.WaitForFunctionAsync("() => document.activeElement?.id === 'bb-docs-nav'", null, new PageWaitForFunctionOptions { Timeout = 5_000 });
+        await page.Keyboard.PressAsync("Escape");
+        await page.WaitForFunctionAsync("() => document.querySelector('.bb-docs-menu-toggle')?.getAttribute('aria-expanded') === 'false'", null, new PageWaitForFunctionOptions { Timeout = 5_000 });
+        await page.WaitForFunctionAsync("() => document.activeElement?.classList.contains('bb-docs-menu-toggle')", null, new PageWaitForFunctionOptions { Timeout = 5_000 });
+    }
+
+    [TestMethod]
     public async Task OpeningAFileThatIsNotAProjectSaysSo()
     {
         // Re-rendering the edit on screen used to clear the error before it was ever shown.

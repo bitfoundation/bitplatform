@@ -137,8 +137,22 @@ TrueType and OpenType fonts with `glyf` outlines are supported, including compos
 12, horizontal metrics and kerning pairs. CFF (PostScript) outlines are not, and the error says so explicitly rather
 than producing blank text.
 
-Layout is left-to-right with kerning and optional word wrapping. Complex script shaping and bidirectional reordering are
-not performed; use `BrowserTextRasterizer` in a browser for those.
+Text is shaped with the font's OpenType tables - joining forms and ligatures for Arabic and Persian, contextual
+alternates, kerning, marks placed on their letters - and each line is ordered by the Unicode Bidirectional Algorithm,
+so right-to-left text, and Latin words and numbers inside it, come out as a browser would draw them. A character the
+style's font lacks is drawn with the next registered font that has it, so a Latin font and an Arabic one together
+cover text mixing the two:
+
+```csharp
+var rasterizer = new FontTextRasterizer()
+    .Register("Noto Sans", FontFile.Load(await File.ReadAllBytesAsync("NotoSans-Regular.ttf")))
+    .Register("Vazirmatn", FontFile.Load(await File.ReadAllBytesAsync("Vazirmatn-Regular.ttf")));
+
+canvas.DrawText("Hello سلام ۱۴۰۵", position, style, rasterizer);
+```
+
+Scripts that reorder glyphs within a word (Indic, Southeast Asian) and cursive attachment (Nastaliq) are not shaped;
+use `BrowserTextRasterizer` in a browser for those.
 
 ## Analysing an image
 

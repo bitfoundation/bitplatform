@@ -198,10 +198,18 @@ public class ImageProcessor
     /// aborting the batch, unless <see cref="BatchOptions.StopOnFirstError"/> is set.
     /// </summary>
     /// <remarks>
+    /// <para>
+    /// Cancelling <paramref name="cancellationToken"/> stops the batch without losing what it finished: the result
+    /// keeps every image that completed, reports the ones in flight and the ones never started as
+    /// <see cref="BatchItemResult.WasCancelled"/>, and says so with <see cref="BatchResult.WasCancelled"/>. Nothing is
+    /// thrown for it, as nothing is for a file that fails - a Stop button needs no <c>catch</c>.
+    /// </para>
+    /// <para>
     /// Every output is kept until the batch ends. For a batch too large for that, use
     /// <see cref="ProcessBatchStreamAsync(IEnumerable{BatchItem}, ImagePipeline, BatchOptions?, CancellationToken)"/>,
     /// which hands each result over as it completes, with <see cref="BatchItem.Deferred"/> items that are only read when
     /// their turn comes.
+    /// </para>
     /// </remarks>
     public async Task<BatchResult> ProcessBatchAsync(
         IEnumerable<BatchItem> items,
@@ -216,11 +224,24 @@ public class ImageProcessor
         var results = new BatchItemResult[list.Count];
         var stopwatch = Stopwatch.StartNew();
 
-        await foreach (var (index, result) in RunBatchAsync(ToAsync(list), list.Count, pipeline, options, cancellationToken).ConfigureAwait(false))
-            results[index] = result;
+        var stopped = false;
+        try
+        {
+            await foreach (var (index, result) in RunBatchAsync(ToAsync(list), list.Count, pipeline, options, cancellationToken).ConfigureAwait(false))
+                results[index] = result;
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            // The caller stopped the batch; every result that came in before is still in the array.
+            stopped = true;
+        }
         for (var i = 0; i < results.Length; i++)
             results[i] ??= BatchItemResult.Cancelled(list[i] ?? MissingItem);
-        return new BatchResult(results, stopwatch.Elapsed);
+        return new BatchResult(results, stopwatch.Elapsed)
+        {
+            // A token cancelled as the last image finished stopped nothing.
+            WasCancelled = stopped && results.Any(r => r.WasCancelled),
+        };
     }
 
     /// <summary>What a result reports as its item when the caller passed null in its place.</summary>
@@ -596,7 +617,7 @@ public sealed record BatchOptions
     /// <summary>Decode settings applied to every image.</summary>
     public DecodeOptions? DecodeOptions { get; init; }
 
-    /// <summary>Receives an update as each image finishes.</summary>
+    /// <summary>Receives an update as each image finishes. An image a cancellation stops is not reported.</summary>
     public IProgress<BatchProgress>? Progress { get; init; }
 
     /// <summary>Cancel the whole batch when any image fails. Default false.</summary>
@@ -650,8 +671,17 @@ public sealed class BatchResult
     public TimeSpan Duration { get; }
     public IEnumerable<BatchItemResult> Succeeded => Results.Where(r => r.IsSuccess);
     public IEnumerable<BatchItemResult> Failed => Results.Where(r => r.Error is not null);
+    /// <summary>The items that never finished: the batch was cancelled, or stopped by <see cref="BatchOptions.StopOnFirstError"/>.</summary>
+    public IEnumerable<BatchItemResult> Cancelled => Results.Where(r => r.WasCancelled);
     public int SuccessCount => Results.Count(r => r.IsSuccess);
     public int FailureCount => Results.Count(r => r.Error is not null);
+    public int CancelledCount => Results.Count(r => r.WasCancelled);
+
+    /// <summary>
+    /// True when the batch's cancellation token stopped it before every item finished. The items it finished keep
+    /// their outcome; the rest are in <see cref="Cancelled"/>.
+    /// </summary>
+    public bool WasCancelled { get; init; }
     public bool AllSucceeded => Results.All(r => r.IsSuccess);
     /// <summary>Total bytes of all successful outputs.</summary>
     public long TotalOutputBytes => Results.Where(r => r.Output is not null).Sum(r => r.Output!.Length);

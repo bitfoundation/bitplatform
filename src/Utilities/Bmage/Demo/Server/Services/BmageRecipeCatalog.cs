@@ -431,6 +431,9 @@ public static class BmageRecipeCatalog
                             }, _cts.Token);
 
                         foreach (var item in result.Failed) Console.WriteLine($"{item.FileName}: {item.Error!.Message}");
+
+                        // Stop returns what finished rather than throwing: the rest are result.Cancelled.
+                        if (result.WasCancelled) Console.WriteLine($"Stopped with {result.CancelledCount} not processed.");
                     }
 
                     public void Dispose()
@@ -443,8 +446,10 @@ public static class BmageRecipeCatalog
             Notes = "MaxConcurrency is a memory dial as much as a speed dial: four workers on 24 MP photos is about 400 MB " +
                     "of live pixels, which kills a phone's tab. Two is the safe default in a browser; on a server size it " +
                     "against memory, not cores alone. Every item comes back with its own outcome (result.Succeeded, " +
-                    "result.Failed); StopOnFirstError is opt-in. JPEG is used here because it encodes everywhere - for WebP " +
-                    "check the capabilities first, as the batch options take one fixed format."
+                    "result.Failed); StopOnFirstError is opt-in. Cancelling the token stops the batch without throwing and " +
+                    "keeps what finished: result.WasCancelled is true and the items it never reached are result.Cancelled. " +
+                    "JPEG is used here because it encodes everywhere - for WebP check the capabilities first, as the batch " +
+                    "options take one fixed format."
         },
         new()
         {
@@ -740,8 +745,8 @@ public static class BmageRecipeCatalog
                 """,
             Notes = "ImageCanvas.FromBuffer draws into the buffer itself, so the encode afterwards sees the caption. " +
                     "BrowserTextRasterizer needs a browser (call it from a handler, never during prerendering); on a server " +
-                    "use FontTextRasterizer with a registered TrueType font and canvas.DrawText - it does no complex-script " +
-                    "shaping or bidi. Open Graph scrapers want JPEG or PNG; do not serve them WebP."
+                    "use FontTextRasterizer with registered TrueType fonts and canvas.DrawText - it shapes Arabic and Persian " +
+                    "and orders right-to-left text, but not Indic scripts. Open Graph scrapers want JPEG or PNG; do not serve them WebP."
         },
         new()
         {

@@ -167,10 +167,15 @@ tool is used, and step markers have no number. Fetching the font in the backgrou
 next render once it is registered. The demo site does exactly that:
 
 ```csharp
-var font = FontFile.Load(await http.GetByteArrayAsync("fonts/NotoSans-Regular.ttf"));
-fonts.Register("Noto Sans", font);   // fonts: the FontTextRasterizer from dependency injection
-await editor.RefreshAsync();         // redraws text added before the font arrived
+// fonts: the FontTextRasterizer from dependency injection. The first family is what "sans-serif" means; a character it
+// lacks, such as every Persian letter, comes from the next family that has it.
+fonts.Register("Noto Sans", FontFile.Load(await http.GetByteArrayAsync("fonts/NotoSans-Regular.ttf")))
+     .Register("Vazirmatn", FontFile.Load(await http.GetByteArrayAsync("fonts/Vazirmatn-Regular.ttf")));
+await editor.RefreshAsync();   // redraws text added before the fonts arrived
 ```
+
+Boxes in place of letters mean no registered font has those characters: Persian or Arabic text needs a font with
+Arabic letters (Vazirmatn, Noto Sans Arabic), registered beside the Latin one.
 
 ## Annotations move when I crop
 

@@ -27,6 +27,13 @@
     {
         <div class="bb-note bb-note-danger demo-error" role="alert">@_error</div>
     }
+    @if (_result is { WasCancelled: true } stopped)
+    {
+        <div class="bb-note batch-stopped" role="status">
+            Stopped with @(stopped.SuccessCount + stopped.FailureCount) of @stopped.Results.Count finished: their
+            results are below and kept, and the @stopped.CancelledCount that never finished are marked <em>stopped</em>.
+        </div>
+    }
 
     <div class="bb-demo bb-page-wide">
         <div class="bb-demo-bar"><span class="bb-demo-label">Live</span></div>
@@ -170,7 +177,9 @@
         <code>ImageProcessorFactory.GetAsync()</code> once the codec probe has run; on a server,
         <code>AddBitBmageHeadlessServices</code> registers it directly. Every item comes back with its
         own outcome - <code>Output</code>, <code>Error</code> or <code>WasCancelled</code> - and
-        <code>StopOnFirstError</code> is opt-in.
+        <code>StopOnFirstError</code> is opt-in. Cancelling the token is not an error either: the batch stops
+        and returns what it finished, with <code>WasCancelled</code> on the result and on every item it did
+        not get to, so a Stop button needs no <code>catch</code>.
     </p>
     <CodeSnippet Code="@Snippet" Language="C#" Expanded="true" />
     <div class="bb-note">
@@ -217,6 +226,9 @@
 
         foreach (var item in result.Succeeded) Save(item.Output!);
         foreach (var item in result.Failed)    Report(item.FileName, item.Error!);
+
+        // Stopped by the token: what finished is above; these never ran.
+        if (result.WasCancelled) Retry(result.Cancelled.Select(item => item.Item));
         """;
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -285,7 +297,8 @@
         }
         catch (OperationCanceledException)
         {
-            _error = "The batch was stopped.";
+            // Stopped while the files were still being read, before the batch had anything to keep.
+            _error = "The batch was stopped before it started.";
         }
         catch (Exception ex)
         {

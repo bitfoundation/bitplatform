@@ -568,7 +568,7 @@ public sealed class AdversarialPipelineTests
     }
 
     [TestMethod]
-    public async Task BatchCancellationPropagates()
+    public async Task ABatchCancelledBeforeItStartsReportsEveryItemAsCancelled()
     {
         var processor = new ImageProcessor();
         using var good = Noise(256, 256, 79);
@@ -577,8 +577,14 @@ public sealed class AdversarialPipelineTests
 
         using var cts = new CancellationTokenSource();
         await cts.CancelAsync();
-        await Assert.ThrowsAsync<OperationCanceledException>(async () =>
-            await processor.ProcessBatchAsync(items, ImagePipeline.Create().MaxSize(64, 64), null, cts.Token));
+        var result = await processor.ProcessBatchAsync(items, ImagePipeline.Create().MaxSize(64, 64), null, cts.Token);
+
+        Assert.IsTrue(result.WasCancelled);
+        Assert.AreEqual(50, result.Results.Count);
+        Assert.AreEqual(50, result.CancelledCount);
+        Assert.AreEqual(0, result.SuccessCount);
+        Assert.AreEqual(0, result.FailureCount);
+        CollectionAssert.AreEqual(items.Select(i => i.FileName).ToList(), result.Results.Select(r => r.FileName).ToList());
     }
 
     [TestMethod]
@@ -595,6 +601,10 @@ public sealed class AdversarialPipelineTests
 
         Assert.AreEqual(31, result.Results.Count);
         Assert.IsTrue(result.FailureCount >= 1);
+        // Stopped by its own rule, not by the caller: the items it skipped are cancelled, the batch was not.
+        Assert.IsFalse(result.WasCancelled);
+        Assert.AreEqual(30, result.CancelledCount);
+        Assert.AreEqual(30, result.Cancelled.Count());
         foreach (var r in result.Results)
         {
             Assert.IsNotNull(r);

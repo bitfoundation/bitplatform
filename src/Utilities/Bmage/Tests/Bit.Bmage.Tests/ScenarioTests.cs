@@ -247,10 +247,17 @@ public sealed class ScenarioTests
             if (Interlocked.Increment(ref completed) >= 5) cts.Cancel();
         });
 
-        var task = processor.ProcessBatchAsync(items, ImagePipeline.Create().MaxSize(200, 200),
+        var result = await processor.ProcessBatchAsync(items, ImagePipeline.Create().MaxSize(200, 200),
             new BatchOptions { MaxConcurrency = 2, ExportOptions = ImageExportOptions.Jpeg, Progress = progress }, cts.Token);
 
-        await Assert.ThrowsAsync<OperationCanceledException>(async () => await task);
+        Assert.IsTrue(result.WasCancelled);
+        Assert.AreEqual(60, result.Results.Count);
+        // Every image that finished before the stop is still there, with its output; the rest are marked, not dropped.
+        Assert.IsGreaterThanOrEqualTo(5, result.SuccessCount);
+        Assert.IsGreaterThan(0, result.CancelledCount);
+        Assert.AreEqual(60, result.SuccessCount + result.CancelledCount);
+        foreach (var finished in result.Succeeded) Assert.AreEqual(200, Math.Max(finished.Output!.Width, finished.Output.Height));
+        CollectionAssert.AreEqual(items.Select(i => i.FileName).ToList(), result.Results.Select(r => r.FileName).ToList());
     }
 
     /// <summary>

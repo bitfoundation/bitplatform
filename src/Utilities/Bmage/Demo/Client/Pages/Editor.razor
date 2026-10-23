@@ -175,10 +175,12 @@
         Persian button above switches both at once; both translations set every label.
     </p>
     <p>
-        Text and step numbers are drawn into the image from a font file - this site registers Noto
-        Sans, which covers Latin, Greek and Cyrillic. That rasteriser neither joins Arabic-script
-        letters nor reorders right-to-left text, so a Persian label typed into the image has nothing
-        to draw it with; the editor's own interface is ordinary HTML, and is unaffected.
+        Text and step numbers are drawn into the image from font files, the same way on a server as
+        here: this site registers Noto Sans and Vazirmatn, and a letter one lacks comes from the
+        other. A Persian or Arabic label is shaped with the font's own OpenType rules - joined
+        letters, lam-alef, harakat in place - and laid out right to left by the Unicode
+        Bidirectional Algorithm, Latin words and numbers inside it included. Try the Text tool with
+        the Persian button on.
     </p>
     <CodeSnippet Code="@LocalisationSnippet" Language="C#" Expanded="true" />
 </div>

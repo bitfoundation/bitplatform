@@ -280,6 +280,20 @@ megapixel photos means roughly 400 MB of live pixels. Two is a safe default on p
 
 One bad file does not lose the rest. Every item comes back with its own outcome, and `StopOnFirstError` is opt-in.
 
+Stopping a batch does not lose what it finished either. Cancelling the token makes `ProcessBatchAsync` return rather
+than throw: every image that completed keeps its output or its error, the ones in flight and the ones never started
+come back with `WasCancelled`, and `result.WasCancelled` says the token stopped it - so a Stop button needs no `catch`,
+and what was done is still there to save:
+
+```csharp
+var result = await processor.ProcessBatchAsync(items, pipeline, options, stop.Token);
+
+foreach (var item in result.Succeeded) Save(item.Output!);
+if (result.WasCancelled) Requeue(result.Cancelled.Select(item => item.Item));   // never ran
+```
+
+`StopOnFirstError` marks the items it skipped the same way, with `result.WasCancelled` left false.
+
 ### Batches of any length
 
 `ProcessBatchAsync` keeps every result until the batch ends, and its items hold their files from the start. For a
@@ -304,6 +318,9 @@ await foreach (var result in processor.ProcessBatchStreamAsync(items, pipeline, 
 file, its pixels and the pipeline's working buffers. Small photos then run four at a time, a 48 megapixel one runs with
 room to spare, and one larger than the whole budget runs alone rather than never. The source may also be an
 `IAsyncEnumerable<BatchItem>`, such as files arriving from an upload, in which case `BatchProgress.Total` is -1.
+
+A stream has already handed over every result it finished, so cancelling its token simply ends it, with an
+`OperationCanceledException` from the `await foreach`, as cancelling any other async stream does.
 
 ## Memory
 

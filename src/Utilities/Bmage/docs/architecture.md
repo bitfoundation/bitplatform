@@ -174,13 +174,17 @@ polyline before stroking.
 Two rasterisers, because the right answer depends on where you are:
 
 - **`FontTextRasterizer`** parses TrueType and OpenType fonts with `glyf` outlines: `cmap` formats 0, 4, 6 and 12,
-  composite glyphs, `hmtx` metrics and `kern` pairs. It produces real vector outlines, works headlessly, and is tested
-  against a purpose-built font committed to the repository.
+  composite glyphs, `hmtx` metrics, `kern` pairs and the OpenType layout tables (GDEF, GSUB, GPOS). It shapes text -
+  Arabic and Persian joining, ligatures, contextual alternates, kerning, mark positioning - orders mixed-direction text
+  with the Unicode Bidirectional Algorithm (checked against Unicode's own conformance files), and falls back across the
+  registered fonts character by character. It produces real vector outlines, works headlessly, and is tested against a
+  purpose-built font and a Persian one committed to the repository.
 - **`BrowserTextRasterizer`** hands text to the platform's own text engine and gets pixels back. System fonts, emoji,
   right-to-left scripts and complex shaping all work without shipping a font file.
 
 The trade is stated rather than hidden: the browser rasteriser returns pixels, so it cannot give you outlines to stroke
-or transform arbitrarily. The font rasteriser can, but does not perform complex script shaping.
+or transform arbitrarily. The font rasteriser can, and draws the same on a server as in a browser, but it does not
+shape scripts that reorder glyphs within a word (Indic, Southeast Asian) or attach them cursively (Nastaliq).
 
 ## The JavaScript boundary
 

@@ -384,8 +384,10 @@ public sealed class ImageProcessorTests
         var items = Enumerable.Range(0, 8).Select(i => new BatchItem(data, $"{i}.png")).ToList();
         using var cts = new CancellationTokenSource();
         cts.Cancel();
-        await Assert.ThrowsAsync<OperationCanceledException>(async () =>
-            await Processor.ProcessBatchAsync(items, ImagePipeline.Create().Resize(32, 32, ResizeMode.Stretch), BatchOptions.Default, cts.Token));
+        var result = await Processor.ProcessBatchAsync(items, ImagePipeline.Create().Resize(32, 32, ResizeMode.Stretch), BatchOptions.Default, cts.Token);
+        Assert.IsTrue(result.WasCancelled);
+        Assert.AreEqual(8, result.CancelledCount);
+        Assert.IsTrue(result.Results.All(r => r.Output is null && r.Error is null));
     }
 
     [TestMethod]

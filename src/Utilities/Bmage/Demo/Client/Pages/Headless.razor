@@ -138,8 +138,9 @@
     <p>
         Text needs a rasterizer. In a browser, <code>BrowserTextRasterizer</code> uses the platform's
         text engine (shaping, emoji, right-to-left). Anywhere else, <code>FontTextRasterizer</code>
-        draws from a TrueType or OpenType font with <code>glyf</code> outlines - kerning and word
-        wrapping included, complex shaping not.
+        draws from TrueType or OpenType fonts with <code>glyf</code> outlines - shaped with their
+        OpenType rules, Persian and Arabic joining included, ordered right to left where the text
+        is, and wrapped.
     </p>
     <CodeSnippet Code="@FontSnippet" Language="C#" />
 </div>

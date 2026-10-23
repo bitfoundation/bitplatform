@@ -182,9 +182,10 @@ Every part of its UI can be replaced while keeping the engine:
 | Masks | Rectangles, ellipses, lassos, paths, brush strokes, linear and radial gradients, luminance and colour ranges, magic wand, bitmap mattes, combinations; expand, contract, border, feathering, inversion, relative units; masked edits, alpha cut-outs and plain background removal |
 | Layers | Image, fill, adjustment and paint layers (brush with hardness and pen pressure, eraser) with opacity, masks and the W3C blend modes, from `Multiply` and `Screen` to `Color` and `Luminosity`; pass-through and isolated groups, and clipping to the layer below |
 | Drawing | Anti-aliased paths, strokes with caps, joins and dashes, gradients, ellipses, polygons, arrows, freehand, text |
+| Text | TrueType fonts shaped with their OpenType tables (ligatures, kerning, marks, contextual alternates), Arabic and Persian joining, right-to-left and mixed text ordered by the Unicode Bidirectional Algorithm, per-character font fallback, wrapping |
 | Annotations | Rectangle, ellipse, line, arrow, freehand, polygon, text, highlight, callout, numbered step, image stamp, redaction |
 | Metadata | EXIF read and write, GPS, camera data, orientation, ICC profiles, XMP, three privacy policies |
-| Pipelines | Composition, optimisation, lazy execution, cancellation, progress, memory estimates, batch processing with streamed inputs and outputs and memory-based admission |
+| Pipelines | Composition, optimisation, lazy execution, cancellation, progress, memory estimates, batch processing with streamed inputs and outputs and memory-based admission, and a stopped batch keeping what it finished |
 | Editing | Non-destructive documents with layers, undo and redo, memory-aware history, proxy previews, JSON save and restore, self-contained project files that reopen editable |
 | Concurrency | Row-parallel operations with identical pixels on any number of threads; browser codecs in a Web Worker pool |
 
