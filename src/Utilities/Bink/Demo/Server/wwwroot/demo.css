@@ -88,6 +88,15 @@
     max-width: 50vw;
 }
 
+/* A short name (a layer's) and a small count (a star's points) need no more room than they hold. */
+.bink-field input.bink-layer-name {
+    width: 8rem;
+}
+
+.bink-field input[type="number"] {
+    width: 4.5rem;
+}
+
 .bink-field-value {
     min-width: 3ch;
     color: var(--bb-text);
@@ -110,6 +119,14 @@
 
 .bink-hint strong {
     color: var(--bb-text);
+}
+
+/* A link inside a sentence of a page's explanation is underlined: colour alone does not tell it from the words
+   around it (WCAG 1.4.1). */
+.bb-card-desc a:not(.btn),
+.bb-note a:not(.btn) {
+    text-decoration: underline;
+    text-underline-offset: .18em;
 }
 
 /* A destructive action - Clear, Delete - is an ordinary button whose label says so in the danger

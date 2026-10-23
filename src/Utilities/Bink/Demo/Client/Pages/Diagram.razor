@@ -30,6 +30,10 @@
         <span class="bink-sep" aria-hidden="true"></span>
 
         <button type="button" class="btn btn-secondary" @onclick="ResetToSample">Sample diagram</button>
+        <label class="bb-check" title="Show graph paper and snap new nodes, and nodes being moved, to it and to each other">
+            <input type="checkbox" checked="@_snap" @onchange="e => _snap = e.Value is true" />
+            Snap to grid
+        </label>
 
         <span class="bb-spacer"></span>
         <div class="bink-group" role="group" aria-label="History">
@@ -72,6 +76,9 @@
                    ShapeStyle="_shapeStyle"
                    ActiveLayerId="_diagramLayer"
                    EnableTouchGestures="true"
+                   WheelMode="BinkWheelMode.PanAndZoom"
+                   Grid="@(_snap ? DiagramGrid : null)"
+                   Snapping="@(_snap ? DiagramSnapping : null)"
                    AriaLabel="Diagram canvas"
                    Ready="ShowWholeDiagram"
                    SelectionChanged="() => StateHasChanged()"
@@ -85,10 +92,11 @@
 </div>
 
 <div class="bb-note">
-    Drag with <strong>Node</strong> to draw a box, then drag with <strong>Connector</strong> from one box to
-    another. Switch to <strong>Select</strong> and move a node: the connectors re-route while the move is still
-    being reported, so the document never shows a connector detached from its node, and one undo puts everything
-    back. Delete a node and its connectors go with it.
+    Drag with <strong>Node</strong> to draw a box (a click makes a default-sized one), then drag with
+    <strong>Connector</strong> from one box to another. Switch to <strong>Select</strong> and move a node: the
+    connectors re-route while the move is still being reported, so the document never shows a connector detached from
+    its node, and one undo puts everything back. Delete a node, and its connectors and label go with it. Select a single
+    node to rename it, or pick a colour to recolour the selection in one undo step. The wheel pans and Ctrl+wheel zooms.
 </div>
 
 <div class="bb-card">
@@ -126,6 +134,39 @@
 
     <span class="k">public override bool</span> OnPointerDown(IBinkToolContext context, <span class="k">in</span> BinkInputSample sample) { … }
 }</pre>
+    <p class="bb-card-desc">
+        The connector tool shows its own dashed preview while it is dragged, and announces "Start a connector on a
+        node" when a drag starts on empty space, so a screen reader hears why nothing happened.
+    </p>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Snapping, in a tool of your own</h3>
+    <p class="bb-card-desc">
+        With <strong>Snap to grid</strong> on, the canvas shows graph paper (<code>BinkGridStyle.Lines</code>, every
+        fifth line stronger) and snaps to it. Moving a node with the select tool snaps by itself; the node tool is the
+        demo's own, and snaps the way the built-in shape tool does: it builds a <code>BinkSnapper</code> from the canvas's
+        options when the drag starts, which collects every edge and centre to snap to once, so each frame is a lookup.
+        It lines a corner up with other nodes before the grid, and draws a guide while it does.
+    </p>
+    <pre class="bb-code">&lt;BinkCanvas Grid=<span class="s">"new BinkGrid { Style = BinkGridStyle.Lines, Spacing = 20f, MajorEvery = 5 }"</span>
+            Snapping=<span class="s">"new BinkSnapOptions { GridSize = 20f }"</span> /&gt;
+
+<span class="c">// In the tool, when the drag starts:</span>
+_snapper = BinkSnapper.Create(context.Document, context.Snapping, <span class="k">null</span>, context.Viewport.VisibleRect(context.ViewSize));
+<span class="c">// and on every move:</span>
+point = _snapper.SnapPoint(point, context.Snapping.Threshold / context.Viewport.Zoom, guides: _guides);</pre>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-danger"></span> Labels that never get in the way</h3>
+    <p class="bb-card-desc">
+        A node's label is stored in the node's metadata; what is drawn is an ordinary text element derived from it and
+        kept centred on the node. The labels live on a locked layer above the diagram, so they are drawn over the boxes,
+        while a click on the text still reaches the node underneath, because locked layers are not hit tested. Every
+        element carries a description ("Diagram node: Process", "Connector"), so the canvas's accessible summary and the
+        exported SVG both say what the diagram contains.
+    </p>
 </div>
 
 @code {
@@ -138,6 +179,12 @@
     private string _toolId = "node";
     private string _color = "#2563eb";
     private int _nodeNumber;
+    private bool _snap = true;
+
+    // Graph paper rather than the whiteboard's dots, and snapping at the same spacing so a box lands on the lines.
+    private static readonly BinkGrid DiagramGrid = new() { Style = BinkGridStyle.Lines, Spacing = 20f, MajorEvery = 5 };
+    private static readonly BinkSnapOptions DiagramSnapping = new() { GridSize = 20f };
+
     private BinkShapeStyle _shapeStyle = new() { StrokeColor = BinkColor.Parse("#2563eb"), StrokeWidth = 2f, FillColor = BinkColor.Parse("#eff6ff") };
 
     private static readonly (string Id, string Label)[] Tools =

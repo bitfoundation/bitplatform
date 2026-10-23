@@ -324,6 +324,60 @@ Investigated and found not to be defects:
 | `Bit.Bink.Tests.E2E`, Firefox | 67 passed, 4 inconclusive with the reasons in its README, 0 failed |
 | `Bit.Bink.Tests.E2E`, WebKit | 68 passed, 3 inconclusive, 0 failed |
 
+## Round 4: every feature shown and explained
+
+Each demo page was read against the README and the public API of `BinkCanvas`, the tools, the brushes, the document,
+the serializer, the exporters and the collaboration session, asking two questions of every feature: does some page let
+a visitor try it, and does that page say what it is and how to use it? A search of the demo's sources for each public
+member found dozens that no page used - among them the eyedropper, SVG import, JPEG and WebP export, cropping, pressure
+curves, prediction, disabling shortcuts, the wheel's zoom mode, zoom limits, every extension point but tools, joining
+by snapshot, dirty tracking, the asset table and the reader's limits - and several that a page used without a word.
+
+Two pages were added, because what they cover had no natural home: **Input and accessibility** (touch against
+scrolling, the wheel modes, zoom limits, the complete keyboard map, `EnableKeyboardShortcuts` and `DisabledShortcuts`
+live, what a screen reader is told, `Announce`, the device's capabilities, WCAG) and **Extending Bink** (a custom
+brush with a saved parameter, a custom element type with a converter, both read by an application without them and
+handed back intact, and a custom `IBinkRenderContext`). Both are in the catalog, the search palette, the home page,
+the README and the E2E page lists.
+
+| Page | Added |
+| --- | --- |
+| Getting started | `Unavailable` handled on the live canvas; cards for undo, redo and the keyboard (`UndoLabel`, `HistoryLimit`, `HistoryMemoryBudget`), saving, loading and export (`IsDirty`, JPEG), a drawing built and exported with no canvas (live), lazy loading, a blocked browser layer and CSP; the eyedropper |
+| Signature | Why the field sets `EnableTouchGestures` and what leaving it off does; `StrokeCompleted` and `HasRealPressure`; what read-only refuses; the stored metadata |
+| Handwriting | A second toolbar: smoothing, pressure curve, simulated pressure, `PredictInk`, palm rejection, calligraphy nib angle; cards for each, the pen's eraser end, tilt and twist, and observed capabilities |
+| Whiteboard | Line, triangle, polygon (sides), star (points), rounded rectangle, smooth curve and elbow arrow; dashed and filled shapes; bold text; the eyedropper; Insert image (`AddImageAsync`) and Import SVG (`ImportSvg`); layer rename, raise, lower and opacity; Cut, Forward and Backward; exporting the selection only; the next undo step and unsaved changes in the status line; a card for every part (tools, shapes, erasers, transforms and the view, the selection and queries in code, grouping, layers, clipboard and import, saving and autosave) |
+| Diagram | Graph-paper grid and snapping, with the demo's own node tool snapping through `BinkSnapper` and drawing its guides; wheel pan and zoom; cards for both and for the locked label layer |
+| Image annotation | A pixel-mask eraser, Hide picture, a non-destructive crop, JPEG and WebP export (`SaveImageAsync`, `NotSupportedException` on Safari); cards for each, for picture sources and their safety (`TryCreate`), and for export regions and options |
+| Document review | A styled callout; a card building highlights and callouts directly; the panel's actions explained |
+| Collaboration | Reload a participant, which leaves and joins again by `RequestSnapshotAsync`; cards for joining and `SendSnapshotAsync`, the stacking-order limit, presence options and threading for a real transport |
+| Serialization | Unsaved changes (`IsDirty`, `MarkSaved`); Add a picture twice, which makes a version 2 file with an asset table; Strict limits, loading through `BinkDeserializerOptions`; format version and the pure .NET PNG's completeness (`ExportWithDetails`) in the figures; cards for the format, untrusted input and unsaved changes |
+| Performance | Moving every stroke and undoing it, and SVG export to a stream beside the string, with what each allocates; a card on why it stays fast |
+| Home | The two new pages; the whiteboard and image annotation cards brought up to date |
+
+Defects found and fixed on the way:
+
+| Page | Defect | Fix |
+| --- | --- | --- |
+| Whiteboard | The eraser set a pixel-eraser brush that the eraser tool never reads, the same defect round 3 removed from the handwriting page. | Removed; the comment says the eraser makes its own brush. |
+| Image annotation | Placing the picture unlocked its layer, added the picture and locked the layer again, and the card showed that as the way to do it, but a lock keeps tools away, not code: the document API adds to a locked layer as it is. | The picture is added to the locked layer directly, and the card says why that works. |
+| Image annotation, home | "Drop in a screenshot", on a canvas that does not accept dropped files. | "Open a screenshot". |
+| Handwriting | "The badges above it", for badges on the line below the canvas. | Reworded. |
+
+The axe audit caught two problems in the new material before it shipped, both fixed: links placed inside the pages'
+explanations were told apart from their sentence by colour alone (WCAG 1.4.1), so a link in a card's or a note's text
+is now underlined (`demo.css`), and the new page's "What a screen reader is told" panel scrolled without being
+focusable.
+
+### Verification of round 4
+
+| Check | Result |
+| --- | --- |
+| `dotnet build Bit.Bink.slnx` | Succeeds, no warnings |
+| `Bit.Bink.Tests.E2E`, Chromium | 82 / 82: the 71 of round 3, both new pages in the console-error and WCAG 2.1 AA page lists (4), and 7 new `DemoFeatureTests`, one for each new demonstration a browser can check |
+| `Bit.Bink.Tests.Mcp` | 73 / 73; the new pages and `Demo/Client/Extending/` are in the source index |
+| `Bit.Bink.Tests` | Not rerun: nothing in the library changed in this round |
+| Firefox, WebKit | Not run in this round |
+
 ## Next priorities
 
 1. Fractional z-order keys, which would let concurrent reorders reconcile (a format change).

@@ -100,8 +100,9 @@ Pen pressure, tilt and the eraser end depend on the device and its driver as muc
 
 The demo site, [bink.bitplatform.dev](https://bink.bitplatform.dev), covers a signature field, a handwriting
 surface, a full whiteboard, a diagram surface with connectors that follow the nodes they join, image annotation,
-document review, two-way collaboration, the serialization format and a performance page that measures the engine
-in your browser.
+document review, two-way collaboration, touch, keyboard and screen reader use, the serialization format, a
+performance page that measures the engine in your browser, and a custom brush, element type and render target.
+Every page explains what it shows, and its source is one click away.
 
 ## How it fits together
 

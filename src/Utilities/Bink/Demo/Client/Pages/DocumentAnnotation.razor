@@ -100,7 +100,35 @@
 <div class="bb-note">
     Each annotation carries a description, so the exported SVG and the accessible summary of the canvas both
     report what is on the page. That is how a canvas-based review tool stays usable with a screen reader: the
-    strokes themselves cannot be described, but the objects around them can.
+    strokes themselves cannot be described, but the objects around them can. The panel beside the page is ordinary
+    HTML built from the same elements: ↗ selects an annotation on the page; × deletes it, and a comment's text is
+    edited in its box, each as one undo step.
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Highlights and callouts</h3>
+    <p class="bb-card-desc">
+        A highlight is one or more rectangles drawn with multiply blending, so the text under it stays legible - the
+        right element for marking text, because a line of text is a rectangle. A callout is a text box with a pointer to
+        an anchor, the shape a review comment takes; the pointer leaves whichever edge of the box faces the anchor, so it
+        stays sensible when the callout is moved. Both can be made directly, without a tool:
+    </p>
+    <pre class="bb-code">_document.AddElement(<span class="k">new</span> BinkHighlightElement(lineRects)
+{
+    Color = BinkColor.Parse(<span class="s">"#fde047"</span>),
+    Opacity = 0.5f,
+    Description = <span class="s">"Highlighted: payment terms"</span>,
+}, _annotationLayer);
+
+_document.AddElement(<span class="k">new</span> BinkCalloutElement(box: <span class="k">new</span> BinkRect(320, 100, 200, 70), anchor: <span class="k">new</span> Vector2(280, 130), text: <span class="s">"Please confirm this clause."</span>)
+{
+    Style = <span class="k">new</span> BinkShapeStyle { FillColor = BinkColor.Parse(<span class="s">"#fff9c4"</span>), StrokeColor = BinkColor.Parse(<span class="s">"#785a00"</span>) },
+}, _annotationLayer);</pre>
+    <p class="bb-card-desc">
+        The contract is real text: each line is a <code>BinkTextElement</code> on a locked "Page" layer, so it is
+        exported as text and read by a screen reader, while the review tools can only add to the "Annotations" layer
+        above it. Export SVG writes both, with <code>Title</code> and the per-element descriptions.
+    </p>
 </div>
 
 <div class="bb-card">
@@ -141,6 +169,14 @@
     private int _commentNumber;
 
     private static readonly string[] HighlightColors = ["#fde047", "#86efac", "#93c5fd", "#fca5a5"];
+
+    // A sticky-note yellow with a dark amber edge: a comment reads as a note on the page, not as part of it.
+    private static readonly BinkShapeStyle CalloutStyle = new()
+    {
+        FillColor = BinkColor.Parse("#fff9c4"),
+        StrokeColor = BinkColor.Parse("#785a00"),
+        StrokeWidth = 1.5f,
+    };
 
     private static readonly (string Id, string Label)[] Tools =
     [
@@ -301,6 +337,7 @@
                 {
                     Id = box.Id,
                     Version = box.Version,
+                    Style = CalloutStyle,
                     Description = text,
                 });
                 break;

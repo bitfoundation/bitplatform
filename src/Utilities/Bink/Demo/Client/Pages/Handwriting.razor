@@ -7,7 +7,8 @@
     <p class="bb-subtitle">
         A note-taking surface tuned for writing rather than sketching: tight point spacing, light smoothing so fast
         corners stay sharp, and a pressure curve with a wide dynamic range. Draw with a stylus to see real pressure
-        and tilt; with a mouse or finger, width is derived from writing speed instead.
+        and tilt; with a mouse or finger, width is derived from writing speed instead. The second row changes how the
+        ink responds, so you can feel each setting rather than read about it.
     </p>
 </div>
 
@@ -41,6 +42,46 @@
         </div>
     </div>
 
+    @* How the ink responds. Each control rebuilds the brush or sets a canvas parameter; strokes already written keep
+       the brush they were written with, so drawing again after a change shows the difference side by side. *@
+    <div class="bb-toolbar bink-toolbar" role="toolbar" aria-label="Ink response">
+        <label class="bink-field" title="How strongly each point is pulled toward the one before: 0 keeps every wobble, 0.9 is very smooth">
+            Smoothing
+            <input type="range" min="0" max="0.9" step="0.05" value="@_smoothing" aria-label="Smoothing" @onchange="OnSmoothingChanged" />
+            <span class="bink-field-value">@_smoothing.ToString("0.00")</span>
+        </label>
+        <label class="bink-field" title="How pressure becomes width. The pen and the pencil follow pressure; the other instruments do not.">
+            Pressure
+            <select value="@_curve" @onchange="OnCurveChanged" aria-label="Pressure response" disabled="@(!FollowsPressure)">
+                @foreach ((string id, string label) in Curves)
+                {
+                    <option value="@id">@label</option>
+                }
+            </select>
+        </label>
+        <label class="bb-check" title="Derive pressure from speed when the device has none, as a mouse and most touch screens do">
+            <input type="checkbox" checked="@_simulatePressure" disabled="@(!FollowsPressure)" @onchange="OnSimulateChanged" />
+            Pressure from speed
+        </label>
+        @if (_instrument == "calligraphy")
+        {
+            <label class="bink-field" title="The angle the broad nib is held at, clockwise from horizontal">
+                Nib angle
+                <input type="range" min="0" max="180" step="5" value="@_nibAngle" aria-label="Nib angle" @onchange="OnNibAngleChanged" />
+                <span class="bink-field-value bink-field-value--wide">@_nibAngle.ToString("0")°</span>
+            </label>
+        }
+        <span class="bink-sep" aria-hidden="true"></span>
+        <label class="bb-check" title="Draw the live stroke reaching where the browser predicts the pen is going">
+            <input type="checkbox" checked="@_predict" @onchange="e => _predict = e.Value is true" />
+            Predict ink
+        </label>
+        <label class="bb-check" title="Ignore touch contacts while a pen is on the screen">
+            <input type="checkbox" checked="@_palmRejection" @onchange="e => _palmRejection = e.Value is true" />
+            Palm rejection
+        </label>
+    </div>
+
     @* The rules are printed over the paper rather than drawn into the document: they are a writing aid, so
        they stay out of the saved drawing and its export, and they are multiplied onto the page so the ink
        still reads as being on top of them (demo.css, .bink-ruled). *@
@@ -52,7 +93,8 @@
                    Brush="_brush"
                    Tool="_tool"
                    AriaLabel="Handwriting area"
-                   RejectTouchWhilePen="true"
+                   RejectTouchWhilePen="_palmRejection"
+                   PredictInk="_predict"
                    StrokeCompleted="OnStrokeCompleted"
                    DocumentChanged="() => StateHasChanged()"
                    Ready="() => StateHasChanged()" />
@@ -67,16 +109,22 @@
 </div>
 
 <div class="bb-note">
-    Palm rejection is on: while a pen is in contact, touch contacts are ignored, so a hand resting on a tablet
-    does not draw. Turn it off with <code>RejectTouchWhilePen="false"</code> when the surface is finger-first.
+    @(_palmRejection
+        ? "Palm rejection is on: while a pen is in contact, touch contacts are ignored, and a touch already under way when the pen lands is cancelled rather than left to make a mark, so a hand resting on a tablet does not draw."
+        : "Palm rejection is off: a finger draws even while a pen is on the screen, which is right for a finger-first surface where someone may use both at once.")
+    It is <code>RejectTouchWhilePen</code>, on by default.
 </div>
 
 <div class="bb-card">
     <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> A brush tuned for writing</h3>
     <p class="bb-card-desc">
         Writing benefits from keeping detail: less smoothing and closer point spacing than a sketching brush, and
-        a short taper at the end of each stroke. The draw tool simplifies each finished stroke only lightly, so the
-        shape of the letters survives.
+        a short taper at the end of each stroke (<code>TaperEnd</code>; <code>TaperStart</code> thins the beginning the
+        same way). A sample closer to the previous point than <code>Spacing</code> times
+        the width is merged into it, which removes sensor jitter and keeps the document small. The draw tool then
+        simplifies each finished stroke only lightly, on position and, separately, on pressure
+        (<code>SimplifyPressureTolerance</code>), so a straight line written with changing pressure keeps its changing
+        width and the shape of the letters survives.
     </p>
     <pre class="bb-code"><span class="k">private</span> IBinkTool _tool = <span class="k">new</span> BinkDrawTool { SimplifyTolerance = 0.08f };
 
@@ -88,19 +136,78 @@
     Spacing = 0.12f,
     TaperEnd = 5f,
 };</pre>
+    <p class="bb-card-desc">
+        The instruments are the built-in brushes: <code>BinkPenBrush</code> (variable width, the default),
+        <code>BinkPencilBrush</code> (thin, translucent, strong pressure response), <code>BinkCalligraphyBrush</code>
+        (a broad nib), <code>BinkMarkerBrush</code> (constant width) and <code>BinkHighlighterBrush</code> (wide,
+        translucent, multiplied so the writing under it stays legible). The eraser here is a
+        <code>BinkEraserTool</code> in <code>Segment</code> mode, which cuts away only the part of a stroke it passes
+        over; note-taking applications often prefer <code>Stroke</code>, which removes a whole word at a swipe. The
+        whiteboard offers all three modes.
+    </p>
 </div>
 
 <div class="bb-card">
-    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> What the device reported</h3>
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Tuning the response</h3>
     <p class="bb-card-desc">
-        <code>StrokeCompleted</code> hands over the finished stroke and the kind of pointer that drew it. The line
-        under the canvas reads its point count, length, duration and pressure range - and the badges above it say
-        whether this device delivered real pressure, tilt and coalesced samples at all.
+        Every control in the second row is a brush property or a canvas parameter:
+    </p>
+    <ul class="bb-detail-list">
+        <li><strong>Smoothing</strong> (<code>Brush.Smoothing</code>) pulls each point toward the previous one, an exponential filter that removes hand tremor without adding lag on straight sections. 0 keeps every wobble; 0.9 is very smooth and starts to round fast corners.</li>
+        <li><strong>Pressure</strong> (<code>Brush.PressureCurve</code>) maps pressure from 0 to 1 onto a width factor. <code>BinkPressureCurve.Pen</code> is an S-curve that puts a normal touch at about 60% of the width; <code>Linear</code>, <code>EaseIn</code> (light touches stay thin), <code>EaseOut</code> and <code>Constant</code> (ignores pressure) are the others, and <code>FromSamples</code> builds any response from a table.</li>
+        <li><strong>Pressure from speed</strong> (<code>SimulatePressure</code>): a mouse reports a constant 0.5 while a button is down, as most touch screens do. With this on, slower movement draws heavier and quick flicks thin out, which reads as natural even without a stylus. Turn it off and a mouse draws at one width.</li>
+        <li><strong>Predict ink</strong> (<code>PredictInk</code>): in browsers that offer predicted pointer events, the live stroke reaches where the pen is about to be, hiding about a frame of latency. Predictions are drawn on the overlay only, held to a few stroke widths, and replaced by the next measured sample; the committed stroke holds measured points alone. On by default in WebAssembly and off elsewhere; <code>BinkDrawTool.UsePrediction</code> turns it off for one tool.</li>
+        <li><strong>Palm rejection</strong> (<code>RejectTouchWhilePen</code>), described above.</li>
+    </ul>
+    <pre class="bb-code"><span class="k">var</span> pen = <span class="k">new</span> BinkPenBrush
+{
+    Smoothing = 0.35f,
+    PressureCurve = <span class="k">new</span> BinkPressureCurve(BinkPressureCurveKind.EaseIn, minFactor: 0.1f, maxFactor: 1f),
+    SimulatePressure = <span class="k">true</span>,
+};
+
+&lt;<span class="k">BinkCanvas</span> Brush=<span class="s">"pen"</span> PredictInk=<span class="s">"true"</span> RejectTouchWhilePen=<span class="s">"true"</span> EnableTouchGestures=<span class="s">"true"</span> /&gt;</pre>
+    <p class="bb-card-desc">
+        Strokes keep the brush they were drawn with, so change a setting and write the same word again to compare
+        them. The marker and the highlighter are constant width by design, so the pressure controls apply to the pen
+        and the pencil.
+    </p>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> The pen's eraser end, tilt and the broad nib</h3>
+    <p class="bb-card-desc">
+        Turn a stylus over and its eraser end erases, without touching the toolbar: <code>BinkDrawTool</code> honours
+        the pen's eraser button by default, switching to a pixel eraser for that stroke
+        (<code>HonorPenEraserButton = false</code> opts out). Tilt and barrel rotation are captured into the stroke when
+        the device reports them and are kept by saving, so a custom brush can shape ink from them; the status line says
+        whether this device produced tilt at all.
+    </p>
+    <p class="bb-card-desc">
+        <strong>Calligraphy</strong> is a flat nib held at a fixed angle: thick where the stroke moves across the nib,
+        thin where it moves along it, as an italic pen or a chisel marker draws. Its <code>NibAngle</code> and
+        <code>NibThickness</code> are saved with each stroke, so a document reopens with the same hand.
+    </p>
+    <pre class="bb-code"><span class="k">var</span> tool = <span class="k">new</span> BinkDrawTool { HonorPenEraserButton = <span class="k">true</span> };          <span class="c">// the default</span>
+<span class="k">var</span> italic = <span class="k">new</span> BinkCalligraphyBrush { Width = 10f, NibAngle = 45f, NibThickness = 0.15f };</pre>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-danger"></span> What the device reported</h3>
+    <p class="bb-card-desc">
+        <code>StrokeStarted</code> is raised when the pen goes down, and <code>StrokeCompleted</code> hands over the finished
+        stroke and the kind of pointer that drew it; both come only from the drawing tools. The status line
+        under the canvas reads its point count, length, duration and pressure range, and its badges say whether this
+        device delivered real pressure, tilt and coalesced samples at all. Feature detection only says what the
+        browser supports; <code>Capabilities.ObservedPressure</code>, <code>ObservedPen</code> and
+        <code>ObservedTilt</code> become true when the device actually produces them, which is the reliable way to know
+        a stylus is in use.
     </p>
     <pre class="bb-code"><span class="k">private void</span> OnStrokeCompleted(BinkStrokeEventArgs args)
 {
     <span class="k">if</span> (args.Stroke <span class="k">is not</span> { } stroke) <span class="k">return</span>;
     <span class="k">bool</span> realPressure = args.Device == BinkPointerKind.Pen &amp;&amp; stroke.Input.HasRealPressure;
+    <span class="k">bool</span> tilted = !stroke.Points.TiltX.IsEmpty;
     <span class="c">// stroke.Points.Count, .Length, .Duration and .Pressure describe what was captured</span>
 }</pre>
 </div>
@@ -115,6 +222,14 @@
     private bool _ruled = true;
     private string? _lastStrokeInfo;
 
+    // How the ink responds: brush properties and canvas parameters the second row changes.
+    private float _smoothing = 0.35f;
+    private string _curve = "default";
+    private bool _simulatePressure = true;
+    private float _nibAngle = 45f;
+    private bool _predict = true;
+    private bool _palmRejection = true;
+
     private static readonly (string Id, string Label)[] Instruments =
     [
         ("pen", "Pen"),
@@ -123,6 +238,16 @@
         ("marker", "Marker"),
         ("highlighter", "Highlighter"),
         ("eraser", "Eraser"),
+    ];
+
+    private static readonly (string Id, string Label)[] Curves =
+    [
+        ("default", "The instrument's own"),
+        ("pen", "S-curve (Pen)"),
+        ("linear", "Linear"),
+        ("easein", "Ease in"),
+        ("easeout", "Ease out"),
+        ("constant", "Constant"),
     ];
 
     private static readonly string[] Palette = ["#111827", "#1d4ed8", "#b91c1c", "#15803d"];
@@ -137,6 +262,9 @@
         TaperEnd = 5f,
     };
 
+    /// <summary>The pen and the pencil follow pressure; the other instruments are constant width or a fixed nib.</summary>
+    private bool FollowsPressure => _instrument is "pen" or "pencil";
+
     private void SetInstrument(string id)
     {
         _instrument = id;
@@ -149,17 +277,36 @@
             return;
         }
 
-        _brush = id switch
+        BinkColor color = BinkColor.Parse(_color);
+        BinkBrush brush = id switch
         {
-            "pencil" => new BinkPencilBrush { Width = _width, Color = BinkColor.Parse(_color) },
-            // A broad nib at 45 degrees: thick downstrokes one way, hairlines the other, as an italic hand.
-            "calligraphy" => new BinkCalligraphyBrush { Width = MathF.Max(_width * 2.5f, 6f), Color = BinkColor.Parse(_color) },
-            "marker" => new BinkMarkerBrush { Width = MathF.Max(_width * 2f, 6f), Color = BinkColor.Parse(_color) },
+            "pencil" => new BinkPencilBrush { Width = _width, Color = color },
+            // A broad nib: thick downstrokes one way, hairlines the other, as an italic hand.
+            "calligraphy" => new BinkCalligraphyBrush { Width = MathF.Max(_width * 2.5f, 6f), Color = color, NibAngle = _nibAngle },
+            "marker" => new BinkMarkerBrush { Width = MathF.Max(_width * 2f, 6f), Color = color },
             "highlighter" => new BinkHighlighterBrush { Width = MathF.Max(_width * 5f, 16f) },
-            _ => new BinkPenBrush { Width = _width, Color = BinkColor.Parse(_color), Smoothing = 0.35f, Spacing = 0.12f, TaperEnd = 5f },
+            _ => new BinkPenBrush { Width = _width, Color = color, Spacing = 0.12f, TaperEnd = 5f },
         };
+        brush = brush with { Smoothing = _smoothing };
+        if (FollowsPressure)
+        {
+            brush = brush with { SimulatePressure = _simulatePressure };
+            if (CurveFor(_curve) is { } curve) brush = brush with { PressureCurve = curve };
+        }
+        _brush = brush;
         _tool = new BinkDrawTool { SimplifyTolerance = 0.08f };
     }
+
+    /// <summary>The pressure response a choice names, or null to keep the brush's own.</summary>
+    private static BinkPressureCurve? CurveFor(string id) => id switch
+    {
+        "pen" => BinkPressureCurve.Pen,
+        "linear" => BinkPressureCurve.Linear,
+        "easein" => new BinkPressureCurve(BinkPressureCurveKind.EaseIn, minFactor: 0.1f, maxFactor: 1f),
+        "easeout" => new BinkPressureCurve(BinkPressureCurveKind.EaseOut, minFactor: 0.2f, maxFactor: 1f),
+        "constant" => BinkPressureCurve.Constant,
+        _ => null,
+    };
 
     private void SetColor(string color)
     {
@@ -169,12 +316,45 @@
 
     private void OnWidthChanged(ChangeEventArgs e)
     {
-        if (float.TryParse(e.Value?.ToString(), System.Globalization.CultureInfo.InvariantCulture, out float value))
+        if (TryParse(e, out float value))
         {
             _width = value;
             SetInstrument(_instrument);
         }
     }
+
+    private void OnSmoothingChanged(ChangeEventArgs e)
+    {
+        if (TryParse(e, out float value))
+        {
+            _smoothing = value;
+            SetInstrument(_instrument);
+        }
+    }
+
+    private void OnNibAngleChanged(ChangeEventArgs e)
+    {
+        if (TryParse(e, out float value))
+        {
+            _nibAngle = value;
+            SetInstrument(_instrument);
+        }
+    }
+
+    private void OnCurveChanged(ChangeEventArgs e)
+    {
+        _curve = e.Value?.ToString() ?? "default";
+        SetInstrument(_instrument);
+    }
+
+    private void OnSimulateChanged(ChangeEventArgs e)
+    {
+        _simulatePressure = e.Value is true;
+        SetInstrument(_instrument);
+    }
+
+    private static bool TryParse(ChangeEventArgs e, out float value)
+        => float.TryParse(e.Value?.ToString(), System.Globalization.CultureInfo.InvariantCulture, out value);
 
     private void OnRuledChanged(ChangeEventArgs e) => _ruled = e.Value is true;
 
@@ -197,6 +377,7 @@
             min = MathF.Min(min, p);
             max = MathF.Max(max, p);
         }
-        _lastStrokeInfo = $"Last stroke: {stroke.Points.Count} points, {stroke.Points.Length:0} units, {stroke.Points.Duration:0} ms, pressure {min:0.00}-{max:0.00}, {device}";
+        string tilt = stroke.Points.TiltX.IsEmpty ? "" : ", with tilt";
+        _lastStrokeInfo = $"Last stroke: {stroke.Points.Count} points, {stroke.Points.Length:0} units, {stroke.Points.Duration:0} ms, pressure {min:0.00}-{max:0.00}, {device}{tilt}";
     }
 }

@@ -1,0 +1,445 @@
+﻿@page "/input-and-accessibility"
+@using System.Numerics
+
+<PageTitle>Input and accessibility · Bink</PageTitle>
+
+<div class="bb-intro">
+    <h1>Input and accessibility</h1>
+    <p class="bb-subtitle">
+        One canvas and every way into it: mouse, pen, touch, wheel, trackpad and the keyboard alone, and what a screen
+        reader is told about the drawing. Change how the canvas takes input in the toolbars, then try it - or put the
+        pointer away, Tab into the canvas, press Enter and work the board with the keyboard. The panel beside it shows
+        what assistive technology reads.
+    </p>
+</div>
+
+<div class="bb-demo bink-editor bb-page-wide">
+    <div class="bb-toolbar bink-toolbar" role="toolbar" aria-label="Pointer and touch">
+        <div class="bb-segmented" role="group" aria-label="Tool">
+            @foreach ((string id, string label, string title) in Tools)
+            {
+                <button type="button" title="@title" aria-pressed="@(_toolId == id ? "true" : "false")"
+                        @onclick="() => SelectTool(id)">@label</button>
+            }
+        </div>
+        <span class="bink-sep" aria-hidden="true"></span>
+        <label class="bink-field">
+            Wheel
+            <select value="@_wheel" @onchange="OnWheelChanged" aria-label="What the wheel does">
+                <option value="@BinkWheelMode.None">Scrolls the page</option>
+                <option value="@BinkWheelMode.PanAndZoom">Pans; Ctrl or a pinch zooms</option>
+                <option value="@BinkWheelMode.Zoom">Zooms</option>
+            </select>
+        </label>
+        <label class="bink-field">
+            Zoom
+            <select value="@_zoomLimits" @onchange="OnZoomLimitsChanged" aria-label="Zoom limits">
+                <option value="default">5% to 6400%</option>
+                <option value="narrow">50% to 400%</option>
+            </select>
+        </label>
+        <label class="bb-check" title="On: a finger draws and two fingers pan and pinch. Off: a finger scrolls the page, and a pen still draws.">
+            <input type="checkbox" checked="@_touchDraws" @onchange="e => _touchDraws = e.Value is true" />
+            A finger draws
+        </label>
+        <span class="bb-spacer"></span>
+        <div class="bink-group" role="group" aria-label="History">
+            <button type="button" class="btn btn-secondary" disabled="@(_canvas is not { History.CanUndo: true })" @onclick="() => _canvas?.Undo()">Undo</button>
+            <button type="button" class="btn btn-secondary" disabled="@(_canvas is not { History.CanRedo: true })" @onclick="() => _canvas?.Redo()">Redo</button>
+            <button type="button" class="btn btn-secondary" title="Put the board back as it was" @onclick="ResetBoard">Reset board</button>
+        </div>
+    </div>
+
+    <div class="bb-toolbar bink-toolbar" role="toolbar" aria-label="Keyboard">
+        <label class="bb-check" title="Off: the canvas handles no shortcut and lets the browser keep every key">
+            <input type="checkbox" checked="@_shortcuts" @onchange="e => _shortcuts = e.Value is true" />
+            Keyboard shortcuts
+        </label>
+        <label class="bb-check" title="Delete and R reach the page instead of the canvas; every other shortcut keeps working">
+            <input type="checkbox" checked="@_disableSome" disabled="@(!_shortcuts)" @onchange="e => _disableSome = e.Value is true" />
+            Leave Delete and R to the page
+        </label>
+        <span class="bink-sep" aria-hidden="true"></span>
+        <button type="button" class="btn btn-secondary" title="Say what is selected through the canvas's live region" @onclick="AnnounceSelection">Announce the selection</button>
+    </div>
+
+    <div class="bink-review">
+        <div class="bink-surface">
+            <BinkCanvas @ref="_canvas"
+                       ViewportChanged="_status?.ViewportChanged ?? default"
+                       Document="_document"
+                       Height="460px"
+                       Tool="_tool"
+                       Brush="_brush"
+                       ShapeStyle="_shapeStyle"
+                       AriaLabel="Sprint board"
+                       WheelMode="_wheel"
+                       MinZoom="_minZoom"
+                       MaxZoom="_maxZoom"
+                       EnableTouchGestures="_touchDraws"
+                       EnableKeyboardShortcuts="_shortcuts"
+                       DisabledShortcuts="@(_disableSome ? LeftToThePage : null)"
+                       Ready="OnReady"
+                       DocumentChanged="() => StateHasChanged()"
+                       SelectionChanged="() => StateHasChanged()"
+                       HistoryChanged="() => StateHasChanged()"
+                       StrokeCompleted="() => StateHasChanged()" />
+        </div>
+
+        @* Focusable because it scrolls once the board grows, and a keyboard user has to be able to scroll it too. *@
+        <aside class="bink-review-panel" tabindex="0" aria-labelledby="bink-heard-title">
+            <h3 class="bink-panel-title" id="bink-heard-title">What a screen reader is told</h3>
+            <p class="bink-hint">
+                An application named "@(_canvas?.AriaLabel ?? "Sprint board")", described as a drawing canvas with
+                @_document.ElementCount elements on @_document.Layers.Count @(_document.Layers.Count == 1 ? "layer" : "layers"):
+            </p>
+            <ul class="bink-annotations">
+                @foreach (BinkElement element in _document.AllElements.Take(25))
+                {
+                    bool selected = _canvas?.Selection.Contains(element.Id) == true;
+                    <li class="bink-annotation @(selected ? "is-selected" : null)">
+                        <div class="bink-annotation-head">
+                            <strong class="bink-annotation-kind">@element.TypeName</strong>
+                            @if (selected)
+                            {
+                                <span class="bb-badge bb-badge-success">selected</span>
+                            }
+                        </div>
+                        <div class="bink-annotation-text">@element.GetAccessibleDescription()</div>
+                    </li>
+                }
+            </ul>
+            @if (_lastAnnouncement is not null)
+            {
+                <p class="bink-hint">The page last announced: "@_lastAnnouncement"</p>
+            }
+        </aside>
+    </div>
+
+    <CanvasStatus @ref="_status" Canvas="_canvas" />
+</div>
+
+<div class="bb-note">
+    <strong>Without a pointer:</strong> Tab to the canvas and press Enter to select the first element. Tab and
+    Shift+Tab step through the elements, a group being one stop, and each step is announced. The arrow keys move the
+    selection, Ctrl with them resizes it, R and Shift+R rotate it, Shift+H and Shift+V flip it, and Delete removes it.
+    Escape clears the selection, and the next Tab leaves the canvas: it is never a keyboard trap. With Rectangle
+    chosen, Enter adds a rectangle in the middle of the view.
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> The keyboard</h3>
+    <p class="bb-card-desc">
+        The canvas takes focus when it is drawn on, so the shortcuts are reachable for someone who just used a mouse
+        or a pen. Stepping through elements and changing them (Enter to start, Tab, the arrow keys, R, Shift+H and
+        Shift+V) is the select tool's work, so those keys act while it is the active tool; the others work whatever the
+        tool. Ctrl means Command on macOS.
+    </p>
+    <div class="bb-scroll" tabindex="0" role="region" aria-label="Keyboard shortcuts">
+        <table class="bb-table">
+            <thead>
+                <tr><th>Key</th><th>Action</th></tr>
+            </thead>
+            <tbody>
+                @foreach ((string keys, string action) in Shortcuts)
+                {
+                    <tr><td class="bb-table-key"><code>@keys</code></td><td>@action</td></tr>
+                }
+            </tbody>
+        </table>
+    </div>
+    <p class="bb-card-desc">
+        Delete, Backspace and the arrow keys are left to the page while nothing is selected, so a keyboard user can
+        still scroll past a focused canvas, and so are Ctrl+C, Ctrl+X, Ctrl+D and the bracket shortcuts, so copying text
+        beside the canvas keeps working. Keys typed into an input, a button or a link inside the canvas's
+        <code>ChildContent</code> are never intercepted. Keyboard input travels the same path as pointer input, so a
+        keystroke does not re-render the component. <code>Focusable</code>, on by default, is what puts the canvas in
+        the tab order at all; without focus there are no shortcuts.
+    </p>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Taking keys back</h3>
+    <p class="bb-card-desc">
+        <code>EnableKeyboardShortcuts="false"</code> releases every key: the canvas acts on none of them, and the browser
+        layer stops preventing their default behaviour as well. To take back only some, list them in
+        <code>DisabledShortcuts</code> - as "Leave Delete and R to the page" does above: Delete no longer deletes and R
+        no longer rotates, while everything else keeps working, Backspace included, because each chord is its own. A
+        disabled chord reaches neither the tool nor the canvas, and its default comes back (Ctrl+D, say, bookmarks the
+        page again).
+    </p>
+    <pre class="bb-code">&lt;<span class="k">BinkCanvas</span> DisabledShortcuts=<span class="s">"@@(new[] { "Delete", "R", "Ctrl+Shift+]" })"</span> /&gt;
+
+BinkShortcut.Normalize(<span class="s">"Cmd + Shift + Z"</span>);   <span class="c">// "Ctrl+Shift+Z": how a chord is read</span></pre>
+    <p class="bb-card-desc">
+        Chords are modifiers and a key joined with <code>+</code>. <code>Cmd</code>, <code>Meta</code> and
+        <code>Control</code> read as Ctrl, <code>Option</code> as Alt, letters can be written in either case, and a chord
+        written with the unshifted key also matches the character the browser reports for it. To move a command to
+        another key, disable its chord, handle the new key in the page and call the canvas method behind it, such as
+        <code>DuplicateSelection</code> or <code>Undo</code>. Enter and Escape in the inline text editor are how the editor
+        works, so they cannot be disabled.
+    </p>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Scrolling, drawing and zooming</h3>
+    <p class="bb-card-desc">
+        Whether a finger drags the drawing or scrolls the page is the one decision a touch screen forces, and no setting
+        gets both, so the canvas asks. With <code>EnableTouchGestures</code> off, the default, the canvas sets
+        <code>touch-action: pan-x pan-y</code>: a finger scrolls the page, a pen still draws, and a field embedded in a long
+        form never traps it. On, the canvas owns every touch: one finger draws, and a second takes the gesture over -
+        cancelling the stroke under way - to pan and pinch-zoom until the last finger lifts, whatever the tool.
+        <code>RejectTouchWhilePen</code> ignores touches while a pen is down, and a touch makes handles and elements
+        easier to hit (<code>BinkSelectTool.TouchTargetScale</code>), close to the 24 pixel target WCAG 2.5.8 asks for.
+    </p>
+    <div class="bb-scroll">
+        <table class="bb-table">
+            <thead>
+                <tr><th>WheelMode</th><th>Wheel</th><th>Ctrl+wheel, trackpad pinch</th><th>Shift+wheel</th></tr>
+            </thead>
+            <tbody>
+                <tr><td class="bb-table-key"><code>None</code> (default)</td><td>Scrolls the page</td><td>Browser zoom</td><td>Scrolls the page</td></tr>
+                <tr><td class="bb-table-key"><code>PanAndZoom</code></td><td>Pans</td><td>Zooms around the pointer</td><td>Pans sideways</td></tr>
+                <tr><td class="bb-table-key"><code>Zoom</code></td><td>Zooms around the pointer</td><td>Zooms around the pointer</td><td>Pans</td></tr>
+            </tbody>
+        </table>
+    </div>
+    <pre class="bb-code">&lt;<span class="k">BinkCanvas</span> EnableTouchGestures=<span class="s">"true"</span> RejectTouchWhilePen=<span class="s">"true"</span>
+            WheelMode=<span class="s">"BinkWheelMode.PanAndZoom"</span> MinZoom=<span class="s">"0.5f"</span> MaxZoom=<span class="s">"4f"</span> /&gt;</pre>
+    <p class="bb-card-desc">
+        <code>PanAndZoom</code> is the convention of design tools, <code>Zoom</code> that of maps, and the default leaves the
+        wheel to the page. <code>MinZoom</code> and <code>MaxZoom</code> bound every way of zooming - the wheel, a pinch,
+        the keyboard, <code>ZoomBy</code> and <code>ZoomToFit</code>. Panning and zooming change only the view, so they
+        are never an undo step and never touch the document.
+    </p>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-danger"></span> What a screen reader is told</h3>
+    <p class="bb-card-desc">
+        A canvas is pixels, and no amount of ARIA lets a screen reader describe handwriting. What the canvas does
+        provide is real: it is a focusable element with <code>role="application"</code>, a "drawing canvas" role
+        description and the name given in <code>AriaLabel</code>; it is described by a live summary of what the drawing
+        contains, built from each element's <code>Description</code> or, without one, a structural summary such as
+        "Stroke, 142 points, pen brush"; and it announces what happened - how many elements a marquee selected, how many
+        strokes an erase removed - through a polite live region, at most once per frame. The panel above shows those
+        descriptions.
+    </p>
+    <pre class="bb-code">&lt;<span class="k">BinkCanvas</span> AriaLabel=<span class="s">"Signature for the tenancy agreement"</span> /&gt;
+
+_document.AddElement(<span class="k">new</span> BinkLineShape(a, b) { EndArrow = <span class="k">true</span>, Description = <span class="s">"Arrow from Inbox to In progress"</span> });
+_canvas.Announce(<span class="s">"Signature captured."</span>);</pre>
+    <p class="bb-card-desc">
+        What the application must still do is give elements meaningful descriptions, and offer a route to any
+        information that exists only as a drawing. Exported SVG carries the same descriptions as <code>title</code>
+        elements when <code>IncludeElementDescriptions</code> is set. Under forced colours the canvas keeps its own
+        colours, because a drawing repainted in the system palette is no longer the user's drawing; there are no
+        animations to reduce.
+    </p>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> What WCAG asks of a drawing surface</h3>
+    <p class="bb-card-desc">
+        Freehand drawing is a path-based gesture, which 2.5.1 Pointer Gestures exempts where the path itself is
+        essential: nobody can draw a signature with arrow keys. Everything around the drawing is not exempt, which is
+        why tools, colours, undo, layers and export have to be ordinary controls. The toolbars on these pages are real
+        buttons and inputs with <code>aria-pressed</code>, labels and <code>role="toolbar"</code>, operable without the
+        canvas being involved at all - so build yours the same way, beside the canvas rather than inside it. Under 1.1.1
+        Non-text Content, a drawing needs a text alternative, and <code>Description</code> is how one is given.
+    </p>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> What this device offers</h3>
+    <p class="bb-card-desc">
+        <code>Ready</code> hands over what the browser supports. Feature detection only says what the browser could do,
+        so the canvas's <code>Capabilities</code> also gains <code>ObservedPen</code>, <code>ObservedTouch</code>,
+        <code>ObservedPressure</code> and <code>ObservedTilt</code> as input actually arrives - the reliable way to know a
+        stylus is in use. Draw on the canvas and watch them change.
+    </p>
+    @if (_canvas?.Capabilities is { } capabilities && _ready)
+    {
+        <dl class="bb-params">
+            <dt>Pointer events</dt><dd>@YesNo(capabilities.PointerEvents)</dd>
+            <dt>Coalesced samples</dt><dd>@YesNo(capabilities.CoalescedEvents)</dd>
+            <dt>Predicted samples</dt><dd>@YesNo(capabilities.PredictedEvents)</dd>
+            <dt>Tilt, twist</dt><dd>@YesNo(capabilities.Tilt), @YesNo(capabilities.Twist)</dd>
+            <dt>Touch points</dt><dd>@capabilities.MaxTouchPoints</dd>
+            <dt>Device pixel ratio</dt><dd>@capabilities.DevicePixelRatio.ToString("0.##")</dd>
+            <dt>Low-latency canvas</dt><dd>@YesNo(capabilities.LowLatencyCanvas)</dd>
+            <dt>Offscreen canvas</dt><dd>@YesNo(capabilities.OffscreenCanvas)</dd>
+            <dt>Seen so far</dt><dd>@Observed(capabilities)</dd>
+        </dl>
+    }
+    else
+    {
+        <div class="bb-empty">The canvas reports this once it is attached.</div>
+    }
+</div>
+
+@code {
+    private BinkCanvas? _canvas;
+    private CanvasStatus? _status;
+    private BinkDocument _document = CreateBoard();
+    private bool _ready;
+    private string _toolId = "select";
+    private IBinkTool _tool = new BinkSelectTool();
+    private readonly BinkBrush _brush = new BinkPenBrush { Width = 3f, Color = BinkColor.Parse("#111827") };
+    private readonly BinkShapeStyle _shapeStyle = new() { StrokeColor = BinkColor.Parse("#7c3aed"), StrokeWidth = 2f, FillColor = BinkColor.Parse("#f5f3ff") };
+    private BinkWheelMode _wheel = BinkWheelMode.None;
+    private string _zoomLimits = "default";
+    private float _minZoom = 0.05f;
+    private float _maxZoom = 64f;
+    private bool _touchDraws;
+    private bool _shortcuts = true;
+    private bool _disableSome;
+    private string? _lastAnnouncement;
+
+    private static readonly string[] LeftToThePage = ["Delete", "R"];
+
+    private static readonly (string Id, string Label, string Title)[] Tools =
+    [
+        ("select", "Select", "Select and move; the keyboard steps through elements with this tool"),
+        ("draw", "Pen", "Freehand pen"),
+        ("shape", "Rectangle", "Drag a rectangle, or press Enter to add one in the middle of the view"),
+    ];
+
+    private static readonly (string Keys, string Action)[] Shortcuts =
+    [
+        ("Ctrl+Z", "Undo"),
+        ("Ctrl+Shift+Z, Ctrl+Y", "Redo"),
+        ("Ctrl+A", "Select everything on unlocked, visible layers"),
+        ("Enter", "Select the first element, which is how navigating without a pointer starts"),
+        ("Tab, Shift+Tab", "Step to the next or previous element or group, announcing each one"),
+        ("Delete, Backspace", "Delete the selection"),
+        ("Escape", "Cancel the gesture, then leave the group being worked inside, then clear the selection"),
+        ("Arrow keys", "Nudge the selection by one unit; with Shift, by ten"),
+        ("Ctrl+arrow keys", "Resize the selection; with Shift, in larger steps"),
+        ("R, Shift+R", "Rotate the selection by 15 degrees either way"),
+        ("Shift+H, Shift+V", "Flip the selection horizontally or vertically"),
+        ("Ctrl+D", "Duplicate the selection"),
+        ("Ctrl+], Ctrl+[", "Bring the selection forward, send it backward; with Shift, to the front or the back"),
+        ("Ctrl+G, Ctrl+Shift+G", "Group the selection, ungroup it"),
+        ("Ctrl+Shift+L", "Lock the selection"),
+        ("Ctrl+C, Ctrl+X, Ctrl+V", "Copy, cut and paste, when EnableClipboard is on"),
+        ("Enter, with the text tool", "Open a text box in the middle of the view"),
+        ("Enter, with a shape tool", "Add the shape in the middle of the view, to move and resize with the select tool"),
+        ("Ctrl+0", "Reset the zoom"),
+        ("Ctrl+9", "Zoom to fit"),
+        ("Ctrl+plus, Ctrl+minus", "Zoom in, zoom out"),
+    ];
+
+    /// <summary>
+    /// A small board whose every element says what it is, so the panel beside the canvas has something worth reading:
+    /// three columns, each a box grouped with its label, arrows between them and a handwritten note.
+    /// </summary>
+    private static BinkDocument CreateBoard()
+    {
+        var document = new BinkDocument(new BinkDocumentSettings { Width = 900, Height = 440, Background = BinkColor.White });
+        var box = new BinkShapeStyle { StrokeColor = BinkColor.Parse("#2563eb"), StrokeWidth = 2f, FillColor = BinkColor.Parse("#eff6ff") };
+        var arrow = new BinkShapeStyle { StrokeColor = BinkColor.Parse("#475569"), StrokeWidth = 2.5f };
+        BinkTextStyle label = BinkTextStyle.Default with { FontSize = 18f, Bold = true, Color = BinkColor.Parse("#1e3a8a") };
+
+        document.AddElement(new BinkTextElement(new Vector2(40, 24), "Sprint board")
+        {
+            Style = BinkTextStyle.Default with { FontSize = 22f, Bold = true, Color = BinkColor.Parse("#111827") },
+        });
+
+        string[] columns = ["Inbox", "In progress", "Done"];
+        for (int i = 0; i < columns.Length; i++)
+        {
+            var rect = new BinkRect(40 + i * 290, 90, 240, 140);
+            var column = new BinkRectangleShape(rect) { Style = box, CornerRadius = 10f, Description = $"Column: {columns[i]}" };
+            var text = new BinkTextElement(new Vector2(rect.X + 18, rect.Y + 16), columns[i]) { Style = label };
+            document.AddElement(column);
+            document.AddElement(text);
+            // A box and its label are one stop for Tab and one target for a click, as a group.
+            document.GroupElements([column.Id, text.Id]);
+
+            if (i > 0)
+            {
+                document.AddElement(new BinkLineShape(new Vector2(rect.X - 44, 160), new Vector2(rect.X - 6, 160))
+                {
+                    Style = arrow,
+                    EndArrow = true,
+                    Description = $"Arrow from {columns[i - 1]} to {columns[i]}",
+                });
+            }
+        }
+
+        // A handwritten line under the last column, standing in for a note someone scribbled.
+        var points = new List<Vector2>();
+        for (int i = 0; i <= 24; i++) points.Add(new Vector2(640 + i * 8, 300 + MathF.Sin(i / 2.2f) * 10));
+        document.AddElement(new BinkStroke(BinkStrokePoints.FromPositions(points.ToArray()), new BinkPenBrush { Width = 3.5f, Color = BinkColor.Parse("#dc2626") })
+        {
+            Description = "Handwritten note under Done: ship on Friday",
+        });
+        return document;
+    }
+
+    private void OnReady(BinkInputCapabilities capabilities)
+    {
+        _ready = true;
+        // On a phone the board is wider than the view: show all of it. A pinch, or Ctrl+0, still gives 100%.
+        if (_canvas is null) return;
+        BinkRect content = _document.ContentBounds;
+        if (content.Right > _canvas.ViewSize.X || content.Bottom > _canvas.ViewSize.Y)
+        {
+            _canvas.SetViewport(BinkViewport.Fit(content, _canvas.ViewSize, 8f, maxZoom: 1f));
+        }
+    }
+
+    private void SelectTool(string id)
+    {
+        _toolId = id;
+        _tool = id switch
+        {
+            "draw" => new BinkDrawTool(),
+            "shape" => new BinkShapeTool(BinkShapeKind.Rectangle) { CornerRadius = 10f },
+            _ => new BinkSelectTool(),
+        };
+    }
+
+    private void OnWheelChanged(ChangeEventArgs e)
+    {
+        if (Enum.TryParse(e.Value?.ToString(), out BinkWheelMode mode)) _wheel = mode;
+    }
+
+    private void OnZoomLimitsChanged(ChangeEventArgs e)
+    {
+        _zoomLimits = e.Value?.ToString() ?? "default";
+        (_minZoom, _maxZoom) = _zoomLimits == "narrow" ? (0.5f, 4f) : (0.05f, 64f);
+        // A view already outside the new limits is brought back inside them.
+        if (_canvas is { } canvas && (canvas.CurrentViewport.Zoom < _minZoom || canvas.CurrentViewport.Zoom > _maxZoom)) canvas.ResetViewport();
+    }
+
+    private void AnnounceSelection()
+    {
+        if (_canvas is null) return;
+        string message = _canvas.Selection.IsEmpty
+            ? "Nothing is selected. Press Enter on the canvas to select the first element."
+            : "Selected: " + string.Join(", ", _canvas.Selection.Elements.Select(e => e.GetAccessibleDescription())) + ".";
+        _canvas.Announce(message);
+        _lastAnnouncement = message;
+    }
+
+    private void ResetBoard()
+    {
+        // A new document: the canvas resets its history and selection when the parameter changes.
+        _document = CreateBoard();
+        _lastAnnouncement = null;
+    }
+
+    private static string YesNo(bool value) => value ? "yes" : "no";
+
+    private static string Observed(BinkInputCapabilities c)
+    {
+        var seen = new List<string>();
+        if (c.ObservedPen) seen.Add("a pen");
+        if (c.ObservedTouch) seen.Add("touch");
+        if (c.ObservedPressure) seen.Add("real pressure");
+        if (c.ObservedTilt) seen.Add("tilt");
+        return seen.Count == 0 ? "only a mouse, or nothing yet" : string.Join(", ", seen);
+    }
+}

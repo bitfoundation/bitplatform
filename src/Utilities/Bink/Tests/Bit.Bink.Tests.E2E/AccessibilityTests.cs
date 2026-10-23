@@ -46,8 +46,10 @@ public sealed class AccessibilityTests : BinkTest
     [DataRow("/image-annotation")]
     [DataRow("/document-annotation")]
     [DataRow("/collaboration")]
+    [DataRow("/input-and-accessibility")]
     [DataRow("/serialization")]
     [DataRow("/performance")]
+    [DataRow("/extending")]
     public async Task Every_demo_page_meets_WCAG_2_1_AA(string path)
     {
         var page = await OpenAsync(path);
