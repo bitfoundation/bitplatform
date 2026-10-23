@@ -61,9 +61,6 @@
         <AndroidUseAapt2>True</AndroidUseAapt2>
 
         <UseMonoRuntime>false</UseMonoRuntime>
-
-        <!-- Google Play already compresses downloads; compressing the assemblies too only slows app startup and makes Play's update patches bigger. -->
-        <AndroidEnableAssemblyCompression>false</AndroidEnableAssemblyCompression>
     </PropertyGroup>
 
     <PropertyGroup Condition="$(TargetFramework.Contains('-ios')) and '$(Environment)' == 'Development'">
