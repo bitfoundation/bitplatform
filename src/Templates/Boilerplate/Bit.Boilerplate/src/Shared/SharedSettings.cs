@@ -6,7 +6,6 @@ namespace Boilerplate.Shared;
 public partial class SharedSettings : IValidatableObject
 {
     //#if (appInsights == true)
-    [ValidateObjectMembers]
     public ApplicationInsightsOptions? ApplicationInsights { get; set; }
     //#endif
 
