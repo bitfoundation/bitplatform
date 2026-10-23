@@ -53,8 +53,6 @@
         <AndroidStripILAfterAOT>true</AndroidStripILAfterAOT>
         <AndroidEnableProfiledAot>true</AndroidEnableProfiledAot>
         <RuntimeIdentifiers Condition="'$(AndroidPackageFormat)' == 'apk'">android-arm64</RuntimeIdentifiers>
-        <!-- Google Play already compresses downloads; compressing the assemblies too only slows app startup and makes Play's update patches bigger. -->
-        <AndroidEnableAssemblyCompression>false</AndroidEnableAssemblyCompression>
     </PropertyGroup>
 
     <PropertyGroup Condition="$(TargetFramework.Contains('-ios')) and '$(Configuration)' == 'Release'">
