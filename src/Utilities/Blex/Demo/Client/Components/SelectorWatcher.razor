@@ -3,8 +3,10 @@
 
 @*
     Subscribe(store, selector): re-renders only when the projected value changes. Mutating an
-    unrelated field on the same store leaves this component alone.
+    unrelated field on the same store leaves this component alone. Renders are counted while
+    rendering, so the figure includes the render that drew it.
 *@
+@{ _renders++; }
 <div class="bb-card">
     <p class="bb-card-title"><code>Subscribe(Store, () =&gt; Store.Count)</code></p>
     <p class="bb-card-desc">Renders only when <code>Count</code> changes.</p>
@@ -24,6 +26,4 @@
     private int _renders;
 
     protected override void OnInitialized() => Subscribe(Counter, () => Counter.Count);
-
-    protected override void OnAfterRender(bool firstRender) => _renders++;
 }

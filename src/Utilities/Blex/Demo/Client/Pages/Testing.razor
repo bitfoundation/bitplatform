@@ -90,7 +90,7 @@
             manager that is recording it is safe.
         </p>
         <p>
-            An action that ran inside another one's body - <code>cart.Checkout()</code> calling
+            An action that ran inside another one's body - <code>basket.Checkout()</code> calling
             <code>orders.Place()</code> - is recorded with <code>IsNested</code> and skipped, because
             replaying the outer action runs it again. Each action is awaited before the next starts, and
             effects skip their <code>DebounceMilliseconds</code> wait during a replay: it only decides which
@@ -251,6 +251,7 @@
         new("int Sequence", "The monotonic dispatch number."),
         new("JsonObject State", "The global state tree right after this action."),
         new("IReadOnlyList&lt;BlexActionArg&gt; Args", "The captured arguments."),
+        new("bool IsNested", "Whether it ran inside another action's body. <code>ReplayAsync</code> skips it, because replaying the outer action runs it again."),
     ];
 
     private static readonly IReadOnlyList<ApiTable.Row> ExtensionRows =
@@ -350,7 +351,7 @@
         public async Task Search_runs_once_the_typing_settles()
         {
             var time = new FakeTimeProvider();
-            using var harness = BlexTestHarness.For(new SearchStore(new FakeApi()));
+            using var harness = BlexTestHarness.For(new LookupStore(new FakeApi()));
             harness.TimeProvider = time;                       // [BlexEffect(DebounceMilliseconds = 300)]
 
             var first = harness.Store.TypeAhead("bl");
@@ -362,7 +363,7 @@
             time.Advance(TimeSpan.FromMilliseconds(1));
             await Task.WhenAll(first, second);
 
-            Assert.Equal(["blex"], harness.Log.PayloadsOf(SearchStore.Actions.TypeAhead));
+            Assert.Equal(["blex"], harness.Log.PayloadsOf(LookupStore.Actions.TypeAhead));
         }
 
         // Without the harness - and for a debounced persistor, which reads the manager's clock too:
@@ -373,12 +374,12 @@
         [Fact]
         public async Task The_same_actions_arrive_at_the_same_state()
         {
-            using var original = BlexTestHarness.For<CartStore>();
+            using var original = BlexTestHarness.For<BasketStore>();
             original.Store.Add("apple");
             original.Store.SetQuantity("apple", 3);
             await original.Store.ApplyCoupon("SPRING");          // effects replay too
 
-            using var replica = BlexTestHarness.For<CartStore>();
+            using var replica = BlexTestHarness.For<BasketStore>();
             await replica.Manager.ReplayAsync(original.Log.Actions);
 
             Assert.Equal(original.Snapshot().ToJsonString(), replica.Snapshot().ToJsonString());
@@ -506,7 +507,7 @@
         [Fact]
         public async Task CheckoutSettlesAcrossStores()
         {
-            using var harness = BlexTestHarness.For<CartStore>();
+            using var harness = BlexTestHarness.For<BasketStore>();
             var orders = harness.Register(new OrdersStore());
 
             var checkout = harness.Store.Checkout();

@@ -27,11 +27,19 @@ public partial class EffectLabStore
 
     [BlexComputedAttribute] private int ComputeEventCount() => Events.Count;
 
+    // The token of the most recently started Parallel run while it is still going: the only run the generated
+    // CancelRunParallel() can reach. Once that one ends, older overlapping runs carry on beyond its reach.
+    private CancellationToken _cancellableParallelRun;
+
+    /// <summary>Whether <c>CancelRunParallel()</c> has a run to cancel: the most recently started one is still going.</summary>
+    public bool CanCancelRunParallel => _cancellableParallelRun.CanBeCanceled && !_cancellableParallelRun.IsCancellationRequested;
+
     /// <summary>mergeMap: every invocation runs to completion, overlapping freely.</summary>
     [BlexEffectAttribute]
     private async Task OnRunParallel(CancellationToken ct)
     {
         var run = ++_parallelRuns;
+        _cancellableParallelRun = ct;
         Log("Parallel", run, "started");
         try
         {
@@ -41,6 +49,11 @@ public partial class EffectLabStore
         {
             Log("Parallel", run, "cancelled");
             throw;
+        }
+        finally
+        {
+            if (_cancellableParallelRun == ct)
+                _cancellableParallelRun = default;
         }
 
         Log("Parallel", run, "finished");

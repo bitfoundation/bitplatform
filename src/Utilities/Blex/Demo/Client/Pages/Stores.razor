@@ -251,6 +251,7 @@
         new("Name", "Display name and slice key. Defaults to the class name. Used in the state tree, DevTools, qualified action names and persistence keys."),
         new("Persist", "When <code>true</code>, the store is rehydrated on startup and saved after every action - provided a persistence provider is registered. Single fields opt out with <code>[BlexState(Persist = false)]</code>. See <a href=\"persistence\">Persistence</a>."),
         new("EnforceActions", "When <code>true</code>, state changes only through the store's own actions: the generated setters are <code>private</code> (an outside assignment does not compile), and an assignment the store's own code makes outside an action throws once it is registered. See <a href=\"actions\">Actions</a>."),
+        new("RollbackOnError", "When <code>true</code>, every synchronous action is a transaction: if it throws, the store's fields go back to what they held when it started, and nothing is notified, recorded, persisted or added to the undo history. See <a href=\"actions#rollback\">When an action throws</a>."),
     ];
 
     private static readonly IReadOnlyList<ApiTable.Row> PublicRows =
@@ -283,7 +284,9 @@
         new("void BeginEffect(ref int) / EndEffect(ref int)", "Reference-count an effect's in-flight runs so <code>IsLoading</code> stays true until the last one finishes."),
         new("void Dispatch(string, Action, BlexActionArg[]?)", "Runs a mutation as one named, batched, recorded action."),
         new("Task DispatchAsync(string, Func&lt;Task&gt;, BlexActionArg[]?)", "The async variant: state changes render as they happen, but the whole operation records as one action."),
-        new("void InvalidateComputed()", "Generated override that marks every memoized computed value stale."),
+        new("void InvalidateComputed()", "Generated override that marks every memoized computed value stale - after a restore, a reset, a rollback or an effect's loading flags."),
+        new("void InvalidateComputed(string?)", "Generated override that marks stale only the computed values that read the named property, as found in their bodies. What a setter calls; an unknown name falls back to <code>InvalidateComputed()</code>."),
+        new("object?[]? CaptureRollbackState() / ApplyRollbackState(object?[])", "Generated for <code>RollbackOnError</code> stores: the shallow copy of the state fields a synchronous action starts from, and putting it back when the action throws."),
         new("void NotifyRestored()", "Invalidates computed values and raises <code>StateChanged</code> - for hand-written stores that restore state out of band."),
     ];
 
@@ -337,10 +340,10 @@
             [BlexComputed] private int ComputeCount() => Items.Count;
 
             // The trap: contents change, the reference does not -- nothing notifies.
-            [BlexAction] private void OnMutateInPlace() => Items.Add($"item {_next++}");
+            [BlexAction] private void OnMutateInPlace() => Items.Add($"item {Items.Count}");
 
             // The fix: a new instance, so the reference differs and change detection fires.
-            [BlexAction] private void OnAssignNew() => Items = [.. Items, $"item {_next++}"];
+            [BlexAction] private void OnAssignNew() => Items = [.. Items, $"item {Items.Count}"];
         }
         """;
 

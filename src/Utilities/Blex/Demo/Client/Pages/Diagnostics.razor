@@ -6,9 +6,9 @@
     <div class="bb-card">
         <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Overview</h3>
         <p>
-            All twenty diagnostics live in the <code>Bit.Blex.Generators</code> category. Sixteen are errors - they
-            describe shapes the generator genuinely cannot emit - and four are warnings about code that
-            compiles but almost certainly does not do what you meant.
+            All @DiagnosticsCatalog.All.Count diagnostics live in the <code>Bit.Blex.Generators</code> category. Of
+            those, @ErrorCount are errors - they describe shapes the generator genuinely cannot emit - and @WarningCount
+            are warnings about code that compiles but almost certainly does not do what you meant.
         </p>
 
         <div class="bb-scroll">
@@ -51,7 +51,7 @@
     <div class="bb-card">
         <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Suppressing a warning</h3>
         <p>
-            The three warnings are suppressible like any other. Blex's own test project suppresses
+            The @WarningCount warnings are suppressible like any other. Blex's own test project suppresses
             <code>BLEX011</code> project-wide, because it has a fixture that deliberately declares a
             value-returning action.
         </p>
@@ -78,6 +78,10 @@
 </DocPage>
 
 @code {
+    // Counted rather than written out, so the prose cannot fall behind the generator again.
+    private static readonly int ErrorCount = DiagnosticsCatalog.All.Count(d => d.IsError);
+    private static readonly int WarningCount = DiagnosticsCatalog.All.Count - ErrorCount;
+
     private const string Suppress = """
         <PropertyGroup>
           <NoWarn>$(NoWarn);BLEX011</NoWarn>

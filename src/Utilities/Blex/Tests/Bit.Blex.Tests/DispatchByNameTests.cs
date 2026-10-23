@@ -116,6 +116,19 @@ public class DispatchByNameTests
     }
 
     [TestMethod]
+    public void A_null_for_a_value_type_argument_is_the_same_kind_of_error_as_a_missing_one()
+    {
+        // Typed into the DevTools dispatcher or a by-name call site, it must be catchable as "the payload does not
+        // fit", not surface as an InvalidCastException nobody catches.
+        using var harness = BlexTestHarness.For<OrderBookStore>();
+
+        var invalid = Assert.ThrowsExactly<ArgumentException>(() => harness.Manager.DispatchAsync("orders/Place", new JsonObject { ["name"] = "x", ["quantity"] = null }));
+        StringAssert.Contains(invalid.Message, "quantity");
+        Assert.IsNull(invalid.ParamName, "the message names the argument; \"args\" would name the helper's own parameter");
+        Assert.AreEqual(0, harness.Store.Units);
+    }
+
+    [TestMethod]
     public void Every_store_describes_its_actions_its_assignments_and_ResetState()
     {
         var names = new OrderBookStore().ActionDescriptors.Select(a => a.Name).ToArray();

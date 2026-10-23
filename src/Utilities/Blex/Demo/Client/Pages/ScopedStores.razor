@@ -68,11 +68,12 @@
         <DemoCard Title="One store per document"
                   Description="Switch documents and type: each document has its own draft. The store persists and the keys are stable, so reload the page and every draft comes back - hydrated the moment its scope registers it."
                   Source="@PerDocumentSource" SourceLanguage="razor">
-            <div class="bb-toolbar">
+            <div class="bb-toolbar" role="group" aria-label="Document">
                 @for (var i = 1; i <= 3; i++)
                 {
                     var doc = i;
-                    <button class="btn @(doc == _document ? "btn-primary" : "btn-secondary")" @onclick="() => _document = doc">Document @doc</button>
+                    <button type="button" class="btn @(doc == _document ? "btn-primary" : "btn-secondary")"
+                            aria-pressed="@(doc == _document ? "true" : "false")" @onclick="() => _document = doc">Document @doc</button>
                 }
             </div>
             <BlexScope TStore="DraftStore" Key="@($"doc-{_document}")">
@@ -97,9 +98,11 @@
     <div class="bb-card">
         <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Persistence</h3>
         <p>
-            A scoped store marked <code>Persist = true</code> is saved under its keyed name
-            (<code>blex:draft:doc-2</code>) and hydrated as soon as it registers - not only at startup, which
-            is when every other store is hydrated.
+            A scoped store marked <code>Persist = true</code> is saved under its keyed name and hydrated as
+            soon as it registers - not only at startup, which is when every other store is hydrated. The
+            storage key is that name after the <code>KeyPrefix</code> (<code>blex:</code> by default); this
+            site sets <code>blex-docs:</code>, so the second document above is saved as
+            <code>blex-docs:draft:doc-2</code>.
         </p>
         <ul class="bb-detail-list">
             <li><strong>Give it a stable key.</strong> The next scope for the same entity finds the state the last one left. An assigned key counts from 1 again in every session and every tab, so an instance keyed that way is not persisted at all - its state could only ever be found by an unrelated instance that drew the same number.</li>

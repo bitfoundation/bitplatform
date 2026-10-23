@@ -8,8 +8,8 @@
     <div class="bb-card">
         <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> The whole store</h3>
         <p>
-            This is not an excerpt - it is a complete, working store. There are no action classes, no
-            reducers, no feature registrations and no selector boilerplate.
+            This is a complete store, not a sketch of one - it compiles and runs as it stands. There are
+            no action classes, no reducers, no feature registrations and no selector boilerplate.
         </p>
 
         <CodeBlock Code="@StoreSample" FileName="CounterStore.cs" />
@@ -25,7 +25,7 @@
         </ul>
 
         <DemoCard Title="That store, running right now"
-                  Description="This is the very store shown above, resolved from DI. Open the Inspector at the bottom of the page to watch the actions stream in."
+                  Description="This site's own CounterStore, resolved from DI: the store above plus one more action, Apply preset, used by other pages of these docs. Open the Inspector at the bottom of the page to watch the actions stream in."
                   Source="@CounterUsage" SourceLanguage="razor">
             <div class="bb-stats">
                 <div class="bb-stat">
@@ -69,7 +69,7 @@
             incremental generator.
         </p>
 
-        <div class="bb-scroll">
+        <div class="bb-scroll" tabindex="0" role="region" aria-label="Fluxor compared with Blex">
             <table class="bb-table bb-compare">
                 <thead>
                     <tr><th>Task</th><th>Fluxor</th><th>Blex</th></tr>

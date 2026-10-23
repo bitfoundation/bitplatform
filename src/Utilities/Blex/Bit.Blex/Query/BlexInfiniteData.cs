@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
 
 namespace Bit.Blex.Query;
@@ -14,7 +15,14 @@ public sealed class BlexInfiniteData<TPage, TParam>
     public static BlexInfiniteData<TPage, TParam> Empty { get; } = new([], []);
 
     /// <summary>Creates the data from pages and the params they were fetched with; the two must line up.</summary>
+    /// <remarks>
+    /// The dependency marks this constructor as reached by reflection, which is how System.Text.Json reaches it
+    /// when the data is handed from the prerender to the interactive render or across tabs. Without it a trimmed
+    /// publish keeps the constructor (code calls it) but drops its parameter names, and System.Text.Json refuses
+    /// a constructor whose parameters it cannot match by name ("ConstructorContainsNullParameterNames").
+    /// </remarks>
     [JsonConstructor]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.PublicProperties, typeof(BlexInfiniteData<,>))]
     public BlexInfiniteData(IReadOnlyList<TPage> pages, IReadOnlyList<TParam> pageParams)
     {
         ArgumentNullException.ThrowIfNull(pages);

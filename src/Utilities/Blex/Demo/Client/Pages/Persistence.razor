@@ -100,7 +100,9 @@
             Debouncing is trailing-edge, so a continuous stream of actions would postpone the write
             forever. <code>DebounceMaxDelay</code> caps that: once the oldest pending change reaches that
             age, a save is forced. Pending writes are also flushed on dispose, and on demand via
-            <code>FlushAsync()</code>.
+            <code>FlushAsync()</code>. With the browser storage providers they are written as the page is
+            hidden or unloaded too, so a change made a moment before the tab closes or reloads is not lost
+            to the quiet period.
         </p>
 
         <h4>Versioning and migrations</h4>
@@ -208,7 +210,7 @@
         <CodeBlock Code="@Hydration" Language="razor" />
 
         <DemoCard Title="This page's own hydration state"
-                  Description="Already true by the time you can read this - <BlexProvider> awaits StartAsync before the first interactive render. The interesting case is SkipHydration, or a slow storage provider."
+                  Description="Pick an accent above, then reload and watch this flip. Neither the prerender nor the first interactive render has read localStorage yet, so it starts out False, beside the declared default; when the stored state lands, Persistor.Hydrated re-renders it as True, beside the stored accent."
                   Source="@HydrationSource" SourceLanguage="razor">
             <div class="bb-stats">
                 <div class="bb-stat">
@@ -275,7 +277,10 @@
             A storage that can tell when something <em>else</em> wrote to it - a file watcher, a server
             push, another tab - can also implement <code>IBlexExternalStorageChange</code> to opt into
             <code>SyncAcrossTabs</code>. Raise the event only for changes you did not make yourself;
-            echoing your own writes back would spin the two sides against each other.
+            echoing your own writes back would spin the two sides against each other. One that lives on a
+            page which can go away without the app being disposed can implement
+            <code>IBlexStorageSuspension</code> as well, so a debounced save is written as the page goes -
+            the browser storage does both.
         </p>
         <CodeBlock Code="@WatchableStorage" Title="Reporting external changes" />
     </div>
@@ -320,7 +325,7 @@
     <div class="bb-card">
         <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> What you can rely on</h3>
         <ul class="bb-detail-list">
-            <li><strong>Corrupt data never breaks startup.</strong> An unreadable payload is reported through <code>OnError</code>, discarded and removed from storage.</li>
+            <li><strong>Corrupt data never breaks startup.</strong> An unreadable payload - malformed JSON, something other than an object, or a value the store's fields cannot take - is reported through <code>OnError</code>, discarded and removed from storage.</li>
             <li><strong>Restores are written back.</strong> Undo/redo, DevTools time-travel and a manual <code>RestoreState</code> save the restored state, so a reload cannot resurrect the pre-restore state.</li>
             <li><strong>Hydration reaches derived state.</strong> Hydration and an incoming cross-tab change raise <code>StateRestored</code>, so cross-store selectors, manager subscriptions and the undo baseline move to the loaded state rather than keep the defaults they saw first.</li>
             <li><strong>Writes are ordered.</strong> Saves are chained in dispatch order, so a stale payload can never overwrite a newer one.</li>
@@ -346,7 +351,17 @@
 
     private string? _raw;
 
-    protected override void OnInitialized() => Subscribe(Settings);
+    protected override void OnInitialized()
+    {
+        Subscribe(Settings);
+
+        // HasHydrated is not store state, so nothing else re-renders this page when it flips.
+        Persistor.Hydrated += OnHydrated;
+    }
+
+    private void OnHydrated() => _ = InvokeAsync(StateHasChanged);
+
+    protected override void Dispose(bool disposing) => Persistor.Hydrated -= OnHydrated;
 
     private async Task ReadRaw()
     {
@@ -393,7 +408,7 @@
         new("Task StartAsync(CancellationToken)", "Rehydrates every persistent store, then starts listening. Safe to call again - storage errors (such as interop being unavailable during prerender) propagate so the host can retry."),
         new("Task FlushAsync()", "Forces any debounced write now and awaits every queued write. Useful before navigating away, and in tests."),
         new("Task RehydrateAsync(CancellationToken)", "Applies stored state to every persistent store now. Pairs with <code>SkipHydration</code>; the restore itself is not an action, so it does not trigger a write back."),
-        new("Task ClearAsync(CancellationToken)", "Removes every persistent store's saved slice from storage."),
+        new("Task ClearAsync(CancellationToken)", "Removes the saved slice of every persistent store registered with the manager right now. A scoped instance whose scope is closed is not registered, so its saved state stays."),
         new("ValueTask DisposeAsync()", "Stops listening and flushes what is pending."),
         new("bool HasHydrated", "Whether rehydration has completed at least once - i.e. whether the stores hold stored state or declared defaults."),
         new("event Action? Hydrated", "Raised when hydration completes. Re-render from it to swap a skeleton for real data."),
@@ -549,17 +564,28 @@
         """;
 
     private const string HydrationSource = """
+        @inherits BlexComponentBase
         @inject BlexStatePersistor Persistor
+        @inject SettingsStore Settings
 
         <p>HasHydrated: @Persistor.HasHydrated</p>
+        <p>settings/Accent: @Settings.Accent</p>
 
         @code {
-            // Or await it, when the decision is not a render:
-            protected override async Task OnInitializedAsync()
+            protected override void OnInitialized()
             {
-                await Persistor.WhenHydratedAsync();
-                _accent = Settings.Accent;   // guaranteed to be the stored value
+                Subscribe(Settings);
+
+                // HasHydrated is not store state, so nothing else re-renders this page when it flips.
+                Persistor.Hydrated += OnHydrated;
             }
+
+            private void OnHydrated() => _ = InvokeAsync(StateHasChanged);
+
+            protected override void Dispose(bool disposing) => Persistor.Hydrated -= OnHydrated;
+
+            // Or await it, when the decision is not a render:
+            //     await Persistor.WhenHydratedAsync();   // Settings.Accent is the stored value from here on
         }
         """;
 

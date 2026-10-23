@@ -15,8 +15,6 @@ public partial class ContactsStore
     private static readonly BlexEntityAdapter<Contact, int> Adapter =
         new(c => c.Id, Comparer<Contact>.Create((a, b) => string.CompareOrdinal(a.Name, b.Name)));
 
-    private int _nextId = 5;
-
     [BlexStateAttribute] private BlexEntityState<Contact, int> _contacts = Adapter.GetInitialState(
     [
         new(1, "Ada Lovelace", "Research", true),
@@ -26,6 +24,13 @@ public partial class ContactsStore
     ]);
 
     [BlexStateAttribute] private string _teamFilter = "All";
+
+    /// <summary>
+    /// The id the next contact gets, derived from the state rather than counted in a field beside it. A
+    /// field is not part of the state tree: an undo, a time-travel jump or a reset would leave it pointing
+    /// at an id the restored collection already holds, and <c>AddOne</c> ignores an id that exists.
+    /// </summary>
+    private int NextId => Contacts.Count == 0 ? 1 : Contacts.Ids.Max() + 1;
 
     [BlexComputedAttribute] private int ComputeTotal() => Contacts.Count;
 
@@ -37,15 +42,19 @@ public partial class ContactsStore
             ? [.. Contacts.All]
             : [.. Contacts.All.Where(c => c.Team == TeamFilter)];
 
+    /// <summary>
+    /// The teams to filter by. The selected one stays listed after its last contact is gone, so the filter
+    /// that is on is always a button that can be switched off -- not an empty list with nothing selected.
+    /// </summary>
     [BlexComputedAttribute]
     private IReadOnlyList<string> ComputeTeams()
-        => ["All", .. Contacts.All.Select(c => c.Team).Distinct().Order()];
+        => ["All", .. Contacts.All.Select(c => c.Team).Append(TeamFilter).Where(t => t != "All").Distinct().Order()];
 
     [BlexActionAttribute] private void OnSetTeamFilter(string team) => TeamFilter = team;
 
     [BlexActionAttribute]
     private void OnAdd(string name, string team)
-        => Contacts = Adapter.AddOne(Contacts, new Contact(_nextId++, name, team, false));
+        => Contacts = Adapter.AddOne(Contacts, new Contact(NextId, name, team, false));
 
     [BlexActionAttribute]
     private void OnToggleStar(int id)
@@ -82,14 +91,11 @@ public partial class ContactsStore
 
     [BlexActionAttribute]
     private void OnReseed()
-    {
-        _nextId = 5;
-        Contacts = Adapter.SetAll(Contacts,
+        => Contacts = Adapter.SetAll(Contacts,
         [
             new(1, "Ada Lovelace", "Research", true),
             new(2, "Grace Hopper", "Compilers", false),
             new(3, "Alan Turing", "Research", false),
             new(4, "Barbara Liskov", "Languages", true),
         ]);
-    }
 }

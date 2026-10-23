@@ -39,7 +39,10 @@ public record BlexApiMemberDto
 {
     public required string Name { get; init; }
 
-    /// <summary>Parameter, Property, Field, Method, Event or EnumValue. "Parameter" means a Blazor [Parameter].</summary>
+    /// <summary>
+    /// Parameter, Property, Field, Method, Event or EnumValue -- or, for a member only a derived type can reach,
+    /// Protected property, Protected field, Protected method or Protected event. "Parameter" means a Blazor [Parameter].
+    /// </summary>
     public required string Kind { get; init; }
 
     /// <summary>The C# type of the member, or the signature's return type for a method.</summary>

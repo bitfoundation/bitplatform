@@ -7,7 +7,8 @@
         <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Connect a client</h3>
         <p>
             Point an MCP client at <code>https://blex.bitplatform.dev/mcp</code> - or at
-            <code>http://localhost:5280/mcp</code> when you run the documentation site locally. It speaks the
+            <code>http://localhost:5280/mcp</code> when you run the documentation site locally - plain HTTP, so the
+            development certificate does not come into it. It speaks the
             streamable HTTP transport, needs no authentication, and every tool on it is read-only.
         </p>
 
@@ -59,7 +60,7 @@
         new("GetBlexSetupGuide", "The wiring for one hosting model - <code>server</code>, <code>wasm</code>, <code>auto</code>, <code>standalone-wasm</code>, <code>maui-hybrid</code> or <code>maui</code> - as the real files of a working project."),
         new("GetBlexGuideSection", "One section of the reference guide (the README) as Markdown."),
         new("GetBlexDocsPage", "One page of this site as Markdown, rendered by the same component you are reading."),
-        new("GetBlexApi", "One public type in full - every member with its type, its real default value and its documentation - read out of the shipped assemblies."),
+        new("GetBlexApi", "One public type in full - every member with its type, its real default value and its documentation, and the protected members of a type you derive from - read out of the shipped assemblies."),
         new("GetBlexDiagnostics", "One <code>BLEX</code> diagnostic with its cause, a rejected store and the fix."),
         new("InspectBlexStore", "Runs the real generator over store source and returns its diagnostics and the members it generates."),
         new("GetBlexSourceFile", "One source file of this site or of the standalone sample, verbatim."),

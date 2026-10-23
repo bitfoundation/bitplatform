@@ -154,6 +154,7 @@ public sealed class BlexQuery<T> : BlexQuery
     private T? _placeholder;
     private bool _hasPlaceholder;
     private ITimer? _interval;
+    private ITimer? _staleTimer;
     private bool _disposed;
 
     internal BlexQuery(
@@ -247,6 +248,9 @@ public sealed class BlexQuery<T> : BlexQuery
         if (previous.RefetchInterval != options.RefetchInterval || previous.Enabled != options.Enabled)
             RestartInterval();
 
+        if (previous.StaleTime != options.StaleTime)
+            ScheduleStaleNotice();
+
         if (options.Enabled && !previous.Enabled)
             Mount();
     }
@@ -272,6 +276,7 @@ public sealed class BlexQuery<T> : BlexQuery
     internal void Mount()
     {
         RestartInterval();
+        ScheduleStaleNotice();
         if (Options.Enabled && Options.RefetchOnMount && IsStale)
             _ = FetchAsync(cancelRunning: false);
     }
@@ -306,13 +311,64 @@ public sealed class BlexQuery<T> : BlexQuery
         }
 
         RaiseChanged();
+        ScheduleStaleNotice();
     }
 
     internal override void StopPolling()
     {
         _interval?.Dispose();
         _interval = null;
+        _staleTimer?.Dispose();
+        _staleTimer = null;
     }
+
+    /// <summary>
+    /// Raises <see cref="BlexQuery.Changed"/> at the moment the data turns stale. <see cref="IsStale"/> is
+    /// worked out on read, and nothing else happens when the stale time runs out -- no fetch, no new data --
+    /// so a component showing it (or deciding what to render by it) would keep showing "fresh" until
+    /// something unrelated re-rendered it. Rescheduled whenever the entry changes.
+    /// </summary>
+    private void ScheduleStaleNotice()
+    {
+        _staleTimer?.Dispose();
+        _staleTimer = null;
+
+        if (_disposed || Client.IsDisposed)
+            return;
+
+        var staleTime = Client.StaleTimeFor(Options);
+        if (staleTime == TimeSpan.MaxValue || _entry.IsInvalidated || !_entry.HasData || _entry.DataUpdatedAt is not { } updatedAt)
+            return;
+
+        var due = staleTime - (Client.TimeProvider.GetUtcNow() - updatedAt);
+        if (due <= TimeSpan.Zero)
+            return; // stale already, and the notification that delivered the data said so
+
+        // A timer cannot wait longer than this; a stale time beyond it is waited out in more than one go.
+        if (due > MaxTimerDue)
+            due = MaxTimerDue;
+
+        _staleTimer = Client.TimeProvider.CreateTimer(
+            static state => ((BlexQuery<T>)state!).OnStale(),
+            this,
+            due,
+            Timeout.InfiniteTimeSpan);
+    }
+
+    private static readonly TimeSpan MaxTimerDue = TimeSpan.FromMilliseconds(uint.MaxValue - 1);
+
+    private void OnStale()
+        => Client.Post(() =>
+        {
+            if (_disposed)
+                return;
+
+            // Checked rather than assumed: the wait may have been capped, or the data replaced since.
+            if (IsStale)
+                RaiseChanged();
+            else
+                ScheduleStaleNotice();
+        });
 
     private void RestartInterval()
     {
@@ -345,6 +401,8 @@ public sealed class BlexQuery<T> : BlexQuery
         _disposed = true;
         _interval?.Dispose();
         _interval = null;
+        _staleTimer?.Dispose();
+        _staleTimer = null;
         Client.Detach(this);
     }
 }

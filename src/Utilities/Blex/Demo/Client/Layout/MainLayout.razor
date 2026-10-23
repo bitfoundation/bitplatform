@@ -1,4 +1,5 @@
 ﻿@inherits LayoutComponentBase
+@inject NavigationManager Nav
 
 @* The app shell - part of the site kit every Utilities demo shares (see wwwroot/app.css): a skip
    link, the sticky header, the content band, and the footer. The landing page renders straight
@@ -13,8 +14,11 @@
 
 <div class="page" data-interactive="@(RendererInfo.IsInteractive ? "true" : "false")">
     @* First in the tab order on purpose: a keyboard reader lands here before the navigation and
-       can jump straight past the chrome to the page. *@
-    <a class="bb-skip-link" href="#bb-main">Skip to content</a>
+       can jump straight past the chrome to the page. The click itself is site.js's - it moves focus
+       to <main>, which the router would not - so the href only has to be right for a link opened
+       some other way. It names the page it is on: a bare "#bb-main" would resolve against
+       <base href="/"> to the home page. *@
+    <a class="bb-skip-link" href="@($"{DocsCatalog.PathOf(Nav)}#bb-main")">Skip to content</a>
 
     <Header />
 

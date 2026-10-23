@@ -159,8 +159,8 @@ public sealed class BlexGenerator : IIncrementalGenerator
 
     private static readonly DiagnosticDescriptor GenericMethodNotSupported = new(
         "BLEX014",
-        "Generic action/effect methods are not supported",
-        "Method '{0}' is generic; the generated wrapper cannot carry type parameters, so make the method non-generic",
+        "Generic action/effect/computed methods are not supported",
+        "Method '{0}' is generic; the generated member cannot carry type parameters, so make the method non-generic",
         "Bit.Blex.Generators",
         DiagnosticSeverity.Error,
         isEnabledByDefault: true);
@@ -416,6 +416,14 @@ public sealed class BlexGenerator : IIncrementalGenerator
                     if (cm.Parameters.Length > 0)
                     {
                         Report(ComputedHasParameters, cm.Locations.FirstOrDefault(), cm.Name);
+                        break;
+                    }
+
+                    // The memoized property cannot carry a type parameter: emitted anyway, it fails to compile in
+                    // generated code the user never wrote (CS0246 / CS0411).
+                    if (cm.IsGenericMethod)
+                    {
+                        Report(GenericMethodNotSupported, cm.Locations.FirstOrDefault(), cm.Name);
                         break;
                     }
 
@@ -806,6 +814,12 @@ public sealed class BlexGenerator : IIncrementalGenerator
                     case { IsStatic: true }:
                         break;
 
+                    // A member the computed only writes -- an evaluation counter it bumps, a value it stashes -- as a
+                    // statement of its own: whatever the member holds, the value the computed returns cannot depend on
+                    // it. Reading it back anywhere else in the body is classified like any other read.
+                    case IFieldSymbol or IPropertySymbol when IsDiscardedWrite(name):
+                        break;
+
                     // Anything else -- an instance member of the store or a base class it declares, an extension member,
                     // a member of another object named without one -- could read the store's state in ways not seen here.
                     default:
@@ -825,6 +839,26 @@ public sealed class BlexGenerator : IIncrementalGenerator
             QualifiedNameSyntax qualified when qualified.Right == name => false,
             _ => true,
         };
+
+        // X++, --X, X = ..., X += ... (or this.X ...) as an expression statement: the old value only feeds the
+        // new one, and the result of the expression is thrown away.
+        static bool IsDiscardedWrite(SimpleNameSyntax name)
+        {
+            ExpressionSyntax target = name.Parent is MemberAccessExpressionSyntax { Expression: ThisExpressionSyntax } access && access.Name == name
+                ? access
+                : name;
+
+            return target.Parent switch
+            {
+                PostfixUnaryExpressionSyntax { Parent: ExpressionStatementSyntax } postfix
+                    => postfix.IsKind(SyntaxKind.PostIncrementExpression) || postfix.IsKind(SyntaxKind.PostDecrementExpression),
+                PrefixUnaryExpressionSyntax { Parent: ExpressionStatementSyntax } prefix
+                    => prefix.IsKind(SyntaxKind.PreIncrementExpression) || prefix.IsKind(SyntaxKind.PreDecrementExpression),
+                AssignmentExpressionSyntax { Parent: ExpressionStatementSyntax } assignment
+                    => assignment.Left == target,
+                _ => false,
+            };
+        }
     }
 
     /// <summary>
@@ -962,11 +996,10 @@ public sealed class BlexGenerator : IIncrementalGenerator
             Check(e.WrapperName + "Error");
             Check($"__{e.WrapperName}Pending");
             Check($"__{e.WrapperName}Error");
-            if (e.HasCancellationToken)
-            {
+            if (e.HasCancellationToken || e.DebounceMilliseconds > 0)
                 Check("Cancel" + e.WrapperName);
+            if (e.HasCancellationToken)
                 Check($"__{e.WrapperName}Cts");
-            }
 
             if (e.Concurrency == 1)
                 Check($"__{e.WrapperName}Version");
@@ -1477,10 +1510,28 @@ public sealed class BlexGenerator : IIncrementalGenerator
             sb.AppendLine($"{body}public global::System.Exception? {e.WrapperName}Error => {errorField};");
 
             if (e.HasCancellationToken)
-            {
                 sb.AppendLine($"{body}private global::System.Threading.CancellationTokenSource? {ctsField};");
+
+            // A debounced invocation still waiting out its quiet period is as much "in flight" as a running one:
+            // a Clear button that cancels only the run would let the pending one start a request a moment later.
+            if (e.HasCancellationToken && isDebounced)
+            {
+                sb.AppendLine($"{body}/// <summary>Cancels the in-flight <c>{DocEscape(e.ActionLabel)}</c> run (the most recently started one, when runs overlap) and the invocation still waiting out its debounce, if any.</summary>");
+                sb.AppendLine($"{body}public void Cancel{e.WrapperName}()");
+                sb.AppendLine($"{body}{{");
+                sb.AppendLine($"{body}    {debounceField}?.Cancel();");
+                sb.AppendLine($"{body}    {ctsField}?.Cancel();");
+                sb.AppendLine($"{body}}}");
+            }
+            else if (e.HasCancellationToken)
+            {
                 sb.AppendLine($"{body}/// <summary>Cancels the in-flight <c>{DocEscape(e.ActionLabel)}</c> run (the most recently started one, when runs overlap).</summary>");
                 sb.AppendLine($"{body}public void Cancel{e.WrapperName}() => {ctsField}?.Cancel();");
+            }
+            else if (isDebounced)
+            {
+                sb.AppendLine($"{body}/// <summary>Cancels the <c>{DocEscape(e.ActionLabel)}</c> invocation still waiting out its debounce, if any. A run that already started is not cancellable: the effect takes no <c>CancellationToken</c>.</summary>");
+                sb.AppendLine($"{body}public void Cancel{e.WrapperName}() => {debounceField}?.Cancel();");
             }
 
             if (isLatest)
@@ -1720,15 +1771,24 @@ public sealed class BlexGenerator : IIncrementalGenerator
         sb.AppendLine($"{body}/// <inheritdoc />");
         sb.AppendLine($"{body}public override void DeserializeState({JsonObject} state)");
         sb.AppendLine($"{body}{{");
+        // Every field is read before any is assigned: a payload that fails partway -- a value of the wrong
+        // type, an enum member that no longer exists -- leaves the store exactly as it was, rather than
+        // half-restored with nothing notified about the half that moved.
         var idx = 0;
         foreach (var s in m.States)
         {
             // A property that is present but JSON-null must restore the field to default/null;
             // only a *missing* property leaves the current value untouched.
-            var node = $"__n{idx++}";
+            var node = $"__n{idx}";
+            var value = $"__v{idx++}";
+            sb.AppendLine($"{body}    {s.TypeFqn} {value} = this.{Id(s.FieldName)};");
             sb.AppendLine($"{body}    if (state.TryGetPropertyValue(\"{Escape(s.PropertyName)}\", out var {node}))");
-            sb.AppendLine($"{body}        this.{Id(s.FieldName)} = {node} is null ? default! : {JsonSerializer}.Deserialize<{s.TypeFqn}>({node}, global::Bit.Blex.BlexJson.Options)!;");
+            sb.AppendLine($"{body}        {value} = {node} is null ? default! : {JsonSerializer}.Deserialize<{s.TypeFqn}>({node}, global::Bit.Blex.BlexJson.Options)!;");
         }
+
+        idx = 0;
+        foreach (var s in m.States)
+            sb.AppendLine($"{body}    this.{Id(s.FieldName)} = __v{idx++};");
 
         sb.AppendLine($"{body}}}");
 

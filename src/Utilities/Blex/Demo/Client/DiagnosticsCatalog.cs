@@ -236,11 +236,14 @@ public static class DiagnosticsCatalog
                 => Value = int.TryParse(text, out var value) ? value : 0;
             """),
 
-        new("BLEX014", "Generic action/effect methods are not supported", true,
-            "The generated wrapper cannot carry type parameters.",
+        new("BLEX014", "Generic action/effect/computed methods are not supported", true,
+            "The generated member cannot carry type parameters: an action or effect becomes a wrapper method with a typed descriptor, and a computed becomes a property - which cannot be generic at all.",
             """
             [BlexAction]
             private void OnSet<T>(T value) { }        // BLEX014
+
+            [BlexComputed]
+            private T ComputeFirst<T>() => default!;  // BLEX014
             """,
             """
             [BlexAction]
@@ -248,6 +251,9 @@ public static class DiagnosticsCatalog
 
             [BlexAction]
             private void OnSetCount(int value) => Count = value;
+
+            [BlexComputed]
+            private string ComputeInitial() => Name[..1];
             """),
 
         new("BLEX015", "Store must be a plain class", true,

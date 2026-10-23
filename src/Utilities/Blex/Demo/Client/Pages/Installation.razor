@@ -168,7 +168,10 @@
         """;
 
     private const string AppSample = """
-        <BlexProvider EnableDevTools="@builder.HostEnvironment.IsDevelopment()">
+        @using Microsoft.AspNetCore.Components.WebAssembly.Hosting
+        @inject IWebAssemblyHostEnvironment HostEnvironment
+
+        <BlexProvider EnableDevTools="@HostEnvironment.IsDevelopment()">
             <Router AppAssembly="@typeof(App).Assembly">
                 <Found Context="routeData">
                     <RouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)" />

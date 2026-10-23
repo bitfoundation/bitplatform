@@ -10,6 +10,10 @@
         <!-- Publishes this project's static web assets at the app root (not under _content/), the
              way a Blazor Web App's client project is expected to contribute them. -->
         <StaticWebAssetProjectMode>Default</StaticWebAssetProjectMode>
+        <!-- The runtime's own exception messages are part of what this site teaches: the dispatcher, the OnError
+             sink and the persistence page all show them. WebAssembly trims them to resource keys by default
+             ("Arg_ParamName_Name", "DeserializeUnableToConvertValue"), which reads as a bug rather than an error. -->
+        <UseSystemResourceKeys>false</UseSystemResourceKeys>
     </PropertyGroup>
 
     <ItemGroup>

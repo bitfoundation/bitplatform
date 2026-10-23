@@ -55,7 +55,10 @@ public sealed class BlexSelect<TValue> : ComponentBase, IDisposable
 
     private BlexRenderThrottle? _throttle;
 
-    /// <summary>The value the content was last rendered with.</summary>
+    /// <summary>
+    /// The projection's latest value -- the one the content renders with. With a <see cref="RenderInterval"/>,
+    /// it can be ahead of what is on screen while a throttled render is still pending.
+    /// </summary>
     public TValue Value => _value;
 
     /// <inheritdoc />

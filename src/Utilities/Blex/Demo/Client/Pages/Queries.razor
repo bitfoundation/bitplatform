@@ -51,8 +51,9 @@
                 <button class="btn btn-outline" @onclick="FailNext">Fail the next request</button>
             </div>
 
+            @* The prerender's count is the server's own requests, not the browser's: shown once the page runs here. *@
             <div class="bb-stats">
-                <div class="bb-stat"><span class="bb-stat-label">Requests sent</span><span class="bb-stat-value demo-accent">@Api.Requests</span></div>
+                <div class="bb-stat"><span class="bb-stat-label">Requests sent</span><span class="bb-stat-value demo-accent">@(RendererInfo.IsInteractive ? Api.Requests.ToString() : "–")</span></div>
                 <div class="bb-stat"><span class="bb-stat-label">Status</span><span class="bb-stat-value">@_left.Status</span></div>
                 <div class="bb-stat"><span class="bb-stat-label">FetchStatus</span><span class="bb-stat-value">@_left.FetchStatus</span></div>
                 <div class="bb-stat"><span class="bb-stat-label">IsStale</span><span class="bb-stat-value">@(_left.IsStale ? "true" : "false")</span></div>
@@ -80,6 +81,10 @@
                                     <li><span class="demo-list-name">@product.Name</span> <code>@product.Stock in stock</code></li>
                                 }
                             </ul>
+                        }
+                        else if (panel.Item2.IsPaused)
+                        {
+                            <p class="bb-card-desc">Offline - the list loads once the network is back.</p>
                         }
                         else if (panel.Item2.Error is { } error)
                         {
@@ -118,9 +123,9 @@
                   Description="The new product appears at once. Tick &quot;server rejects writes&quot; and it disappears again when the server says no."
                   Source="@MutationSample">
             <div class="bb-toolbar">
-                <input placeholder="Product name" @bind="_name" class="demo-input-grow" />
-                <button class="btn btn-primary" @onclick="Add" disabled="@(_add.IsPending || string.IsNullOrWhiteSpace(_name))">Add</button>
-                <label><input type="checkbox" @bind="Api.RejectWrites" /> Server rejects writes</label>
+                <input placeholder="Product name" aria-label="Product name" @bind="_name" @bind:event="oninput" @onkeydown="OnNameKeyDown" class="demo-input-grow" />
+                <button class="btn btn-primary" @onclick="Add" disabled="@(!CanAdd)">Add</button>
+                <label class="bb-check"><input type="checkbox" @bind="Api.RejectWrites" /> Server rejects writes</label>
             </div>
             <div class="bb-stats">
                 <div class="bb-stat"><span class="bb-stat-label">Mutation status</span><span class="bb-stat-value">@_add.Status</span></div>
@@ -153,7 +158,9 @@
             reaches the app's other tabs too - over a <code>BroadcastChannel</code>, through
             <code>&lt;BlexProvider&gt;</code>, on Blazor Server as well - so a change saved in one tab refetches the
             list every other tab shows. Keys travel as their text and match part by part, prefixes included; an
-            invalidation by predicate stays in its tab.
+            invalidation by predicate stays in its tab. This site turns it on: open this page in a second tab, press
+            <strong>Invalidate ["products"]</strong> above in this one, and <strong>Requests sent</strong> climbs
+            over there.
         </p>
     </div>
 
@@ -179,8 +186,9 @@
                   Description="Each page is one request; &quot;Invalidate&quot; refetches every page loaded so far, in order."
                   Source="@InfiniteSample">
             <div class="bb-toolbar">
-                <button class="btn btn-primary" @onclick="() => _activity.FetchNextPageAsync()" disabled="@(!_activity.HasNextPage || _activity.IsFetchingNextPage)">
-                    @(_activity.IsFetchingNextPage ? "Loading…" : _activity.HasNextPage ? "Load more" : "All loaded")
+                @* No next page before the first one arrives either: IsPending tells "not loaded yet" from "all loaded". *@
+                <button class="btn btn-primary" @onclick="() => _activity.FetchNextPageAsync()" disabled="@(_activity.IsPending || !_activity.HasNextPage || _activity.IsFetchingNextPage)">
+                    @(_activity.IsPending || _activity.IsFetchingNextPage ? "Loading…" : _activity.HasNextPage ? "Load more" : "All loaded")
                 </button>
                 <button class="btn btn-secondary" @onclick="@(() => QueryClient.InvalidateAsync(["activity"]))">Invalidate ["activity"]</button>
             </div>
@@ -192,6 +200,10 @@
             @if (_activity.IsLoading)
             {
                 <p class="bb-card-desc">Loading…</p>
+            }
+            else if (_activity.IsPending && _activity.IsPaused)
+            {
+                <p class="bb-card-desc">Offline - the first page loads once the network is back.</p>
             }
             else
             {
@@ -279,9 +291,17 @@
         _right = UseQuery(["products"], Api.GetProductsAsync, ProductsOptions);
         _activity = UseInfiniteQuery<ActivityPage, int?>(["activity"], Api.GetActivityPageAsync, 1, (last, _) => last.Next, ProductsOptions);
 
-        // The prerender waits for the products, so the HTML carries them and <BlexProvider> hands them to the
-        // browser: it starts with the list and no request of its own (see "Requests sent").
-        await _left.WhenSettledAsync();
+        // The prerender waits for both queries, so the HTML carries them and <BlexProvider> hands them to the
+        // browser: it starts with the list and the first page, and no request of its own (see "Requests sent").
+        await Task.WhenAll(_left.WhenSettledAsync(), _activity.WhenSettledAsync());
+    }
+
+    private bool CanAdd => !_add.IsPending && !string.IsNullOrWhiteSpace(_name);
+
+    private async Task OnNameKeyDown(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter" && CanAdd)
+            await Add();
     }
 
     private Task Invalidate() => QueryClient.InvalidateAsync(["products"]);
@@ -358,10 +378,12 @@
     private const string DemoSource = """
         private static readonly BlexQueryOptions Options = new() { StaleTime = TimeSpan.FromSeconds(15) };
 
-        protected override void OnParametersSet()
+        protected override async Task OnParametersSetAsync()
         {
             _left  = UseQuery(["products"], Api.GetProductsAsync, Options);
             _right = UseQuery(["products"], Api.GetProductsAsync, Options);   // joins the same request
+
+            await _left.WhenSettledAsync();   // the prerender waits, so the HTML carries the list and hands it over
         }
 
         private Task Invalidate() => QueryClient.InvalidateAsync(["products"]);
@@ -400,8 +422,9 @@
         {
             <li>@entry</li>
         }
+        @* IsPending: before the first page arrives there is no next page either, but nothing is "all loaded". *@
         <button @onclick="() => _activity.FetchNextPageAsync()"
-                disabled="@(!_activity.HasNextPage || _activity.IsFetchingNextPage)">Load more</button>
+                disabled="@(_activity.IsPending || !_activity.HasNextPage || _activity.IsFetchingNextPage)">Load more</button>
 
         @code {
             private BlexInfiniteQuery<ActivityPage, int?> _activity = default!;

@@ -121,16 +121,97 @@ public class EmissionTests
         Assert.AreSequenceEqual([.. everything.Append("Shout").Order()], [.. Invalidated(source, "Label").Order()]);
         Assert.AreSequenceEqual([.. everything.Append("Total").Order()], [.. Invalidated(source, "Items").Order()]);
         Assert.Contains("default:", source);
+    }
 
-        // The computeds a "case" of the generated InvalidateComputed(string?) switch invalidates.
-        static IEnumerable<string> Invalidated(string source, string property)
-        {
-            var start = source.IndexOf($"case \"{property}\":", StringComparison.Ordinal);
-            Assert.IsGreaterThanOrEqualTo(0, start, $"no case for {property}");
-            var end = source.IndexOf("break;", start, StringComparison.Ordinal);
-            foreach (System.Text.RegularExpressions.Match match in System.Text.RegularExpressions.Regex.Matches(source[start..end], @"__(\w+)Valid = false;"))
-                yield return match.Groups[1].Value;
-        }
+    [TestMethod]
+    public void A_member_a_computed_only_writes_is_not_a_dependency()
+    {
+        var result = GeneratorTestHelper.Run(Usings + """
+            namespace App;
+
+            [BlexStoreAttribute(Name = "cart")]
+            public partial class CartStore
+            {
+                [BlexStateAttribute] private int _lines;
+                [BlexStateAttribute] private int _discount;
+
+                public int SubtotalRuns { get; private set; }
+                private int _totalRuns;
+                private int _last;
+
+                [BlexComputedAttribute] private int ComputeSubtotal() { SubtotalRuns++; return Lines * 10; }
+                [BlexComputedAttribute] private int ComputeTotal() { ++this._totalRuns; _last = Subtotal; _totalRuns += 0; return _last - Discount; }
+                [BlexComputedAttribute] private int ComputeEcho() { _last = Lines; return _last; }   // read back: that read counts
+            }
+            """);
+
+        Assert.IsEmpty(result.CompileErrors());
+        var source = result.SingleGenerated;
+
+        // A write to the discount re-runs only the total; the evaluation counters are not reads.
+        Assert.AreSequenceEqual(["Echo", "Total"], [.. Invalidated(source, "Discount").Order()]);
+        Assert.AreSequenceEqual(["Echo", "Subtotal", "Total"], [.. Invalidated(source, "Lines").Order()]);
+    }
+
+    // The computeds a "case" of the generated InvalidateComputed(string?) switch invalidates.
+    private static IEnumerable<string> Invalidated(string source, string property)
+    {
+        var start = source.IndexOf($"case \"{property}\":", StringComparison.Ordinal);
+        Assert.IsGreaterThanOrEqualTo(0, start, $"no case for {property}");
+        var end = source.IndexOf("break;", start, StringComparison.Ordinal);
+        foreach (System.Text.RegularExpressions.Match match in System.Text.RegularExpressions.Regex.Matches(source[start..end], @"__(\w+)Valid = false;"))
+            yield return match.Groups[1].Value;
+    }
+
+    [TestMethod]
+    public void DeserializeState_reads_every_field_before_it_assigns_any()
+    {
+        var result = GeneratorTestHelper.Run(Usings + """
+            namespace App;
+            [BlexStoreAttribute] public partial class S
+            {
+                [BlexStateAttribute] private string _accent = "violet";
+                [BlexStateAttribute] private int _density;
+            }
+            """);
+
+        Assert.IsEmpty(result.CompileErrors());
+        var generated = result.SingleGenerated;
+        var start = generated.IndexOf("public override void DeserializeState(", StringComparison.Ordinal);
+        var body = generated[start..generated.IndexOf("\n    }", start, StringComparison.Ordinal)];
+
+        // A payload whose second field fails must not leave the first one applied on its own.
+        var lastRead = body.LastIndexOf("Deserialize<", StringComparison.Ordinal);
+        var firstAssign = body.IndexOf("this._accent = ", StringComparison.Ordinal);
+        Assert.IsGreaterThan(lastRead, firstAssign, "fields are assigned only after every one was read");
+        Assert.Contains("this._density = __v1;", body);
+    }
+
+    [TestMethod]
+    public void Cancelling_a_debounced_effect_also_cancels_the_invocation_still_waiting()
+    {
+        var result = GeneratorTestHelper.Run(Usings + """
+            namespace App;
+            [BlexStoreAttribute] public partial class S
+            {
+                [BlexEffectAttribute(DebounceMilliseconds = 300)]
+                private async Task OnTypeAhead(string q, CancellationToken ct) => await Task.Delay(1, ct);
+
+                [BlexEffectAttribute(DebounceMilliseconds = 300)]
+                private async Task OnPing() => await Task.Yield();
+            }
+            """);
+
+        Assert.IsEmpty(result.CompileErrors());
+        var generated = result.SingleGenerated;
+
+        var cancel = generated[generated.IndexOf("public void CancelTypeAhead()", StringComparison.Ordinal)..];
+        cancel = cancel[..cancel.IndexOf('}')];
+        Assert.Contains("__TypeAheadDebounce?.Cancel();", cancel);
+        Assert.Contains("__TypeAheadCts?.Cancel();", cancel);
+
+        // No token to cancel a run with, but a quiet period still worth cancelling.
+        Assert.Contains("public void CancelPing() => __PingDebounce?.Cancel();", generated);
     }
 
     [TestMethod]

@@ -135,7 +135,9 @@
                   Description="Both watch the starred contacts. Star and unstar to change the projection; add or remove an unstarred contact to leave it alone but still run it."
                   Source="@ComparerSource">
             <div class="bb-toolbar">
-                <button class="btn btn-secondary" @onclick="() => Contacts.ToggleStar(1)">Toggle Ada's star</button>
+                <button class="btn btn-secondary" disabled="@(StarTarget is null)" @onclick="ToggleStarTarget">
+                    Toggle @(StarTarget?.Name ?? "a contact")'s star
+                </button>
                 <button class="btn btn-secondary" @onclick="AddUnstarred">Add an unstarred contact</button>
                 <button class="btn btn-secondary" @onclick="ResetCounters">Reset counters</button>
             </div>
@@ -273,6 +275,18 @@
             BlexComparers.Sequence<Contact>()));
     }
 
+    /// <summary>
+    /// The contact the star button toggles: the first one listed rather than a fixed id, because the store
+    /// is shared with the Entities page, which can remove any contact - Ada included.
+    /// </summary>
+    private Contact? StarTarget => Contacts.Contacts.All.FirstOrDefault();
+
+    private void ToggleStarTarget()
+    {
+        if (StarTarget is { } contact)
+            Contacts.ToggleStar(contact.Id);
+    }
+
     private void AddUnstarred() => Contacts.Add($"Zoe Newcomer {++_added}", "Runtime");
 
     private void ResetCounters()
@@ -294,7 +308,7 @@
         new("IEqualityComparer&lt;TValue&gt;? Comparer", "What counts as a change. Defaults to <code>EqualityComparer&lt;TValue&gt;.Default</code>; use <code>BlexComparers.Sequence&lt;T&gt;()</code> for a projected collection."),
         new("RenderFragment&lt;TValue&gt;? ChildContent", "The content, rendered with the selected value as its <code>context</code> (rename it with <code>Context=\"...\"</code>)."),
         new("TimeSpan RenderInterval", "The shortest time between two renders the projection's changes cause. Zero (the default) renders every change."),
-        new("TValue Value", "Not a parameter: the value the content was last rendered with."),
+        new("TValue Value", "Not a parameter: the projection's latest value, the one the content renders with. With a RenderInterval it can be ahead of the screen while a throttled render is pending."),
     ];
 
     private static readonly IReadOnlyList<ApiTable.Row> ViewRows =
@@ -351,6 +365,8 @@
         new("void Subscribe(params ReadOnlySpan&lt;IBlexStore&gt;)", "Re-render on any change to the given stores. Duplicate subscriptions are ignored."),
         new("void Subscribe&lt;T&gt;(IBlexStore, Func&lt;T&gt;, IEqualityComparer&lt;T&gt;?)", "Re-render only when the projected value changes."),
         new("void OwnsSubscription(IDisposable)", "Dispose the given token when the component is disposed."),
+        new("TSource Watch&lt;TSource&gt;(TSource) where TSource : INotifyPropertyChanged", "Re-render whenever the source raises <code>PropertyChanged</code> - a mutation, a query created by hand, any view model - until the component is disposed. Returns the source, so the call can initialize a field."),
+        new("TimeSpan RenderInterval", "<code>protected</code>. The shortest time between two renders the changes it follows cause - stores, selectors, queries, watched sources. Zero (the default) renders every change; renders for parameters and events are never held back."),
         new("void Dispose(bool disposing)", "<code>protected virtual</code> hook for your own cleanup. Store subscriptions are already detached when it runs - override this instead of implementing <code>IDisposable</code> yourself."),
     ];
 

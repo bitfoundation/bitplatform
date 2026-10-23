@@ -398,6 +398,18 @@ public class BlexHistory : IDisposable
 
         try
         {
+            // A store the present has never seen -- one registered after it was taken, a scoped instance
+            // hydrating as its dialog opens -- has not been moved away from anything: it joins the present
+            // (and the boundary, when that is the same state) instead of costing the next Undo its label.
+            if (_present is not null && !_present.Slices.ContainsKey(store.Name))
+            {
+                var boundaryIsPresent = ReferenceEquals(_boundary, _present);
+                _present = _present.With(store.Name, SliceOf(store));
+                if (boundaryIsPresent)
+                    _boundary = _present;
+                return;
+            }
+
             // A restore this history did not make (DevTools time-travel, another history's undo,
             // hydration, a cross-tab change) moved a store without an action. Only that store's slice is
             // compared -- one store hydrating must not cost a serialization of every store, twice -- and
@@ -433,6 +445,18 @@ public class BlexHistory : IDisposable
             _present = _boundary = Capture();
             _presentLabel = null;
             _lastGroupKey = null;
+
+            // The restore may have landed exactly on a state this history already holds: another history
+            // over the same stores undid the step this one would undo next, or DevTools jumped one back.
+            // That entry is the present now, so it comes off the stack -- left there, the next Undo would
+            // restore what is already showing, change nothing and use up a step -- and its label, the action
+            // that produced it, is what the next Undo reverts.
+            while (_undo.Count > 0 && _undo[^1].State.SameAs(_present))
+            {
+                _presentLabel = _undo[^1].Label;
+                _undo.RemoveAt(_undo.Count - 1);
+            }
+
             RaiseChanged();
         }
         catch (Exception ex)
@@ -598,12 +622,17 @@ public class BlexHistory : IDisposable
         if (steps == 0)
             return;
 
+        // What to put back if the walk turns out to belong wholly to stores that are gone (see below).
+        var before = (Undo: _undo.ToArray(), Redo: _redo.ToArray(), Present: _present, Boundary: _boundary, Label: _presentLabel);
+        var touchedAbsent = _present is not null && HoldsAbsentStores(_present);
+
         var moved = 0;
         if (steps < 0)
         {
             for (var i = 0; i < -steps && _undo.Count > 0; i++)
             {
                 StepBack();
+                touchedAbsent |= HoldsAbsentStores(_present!);
                 moved++;
             }
         }
@@ -612,12 +641,44 @@ public class BlexHistory : IDisposable
             for (var i = 0; i < steps && _redo.Count > 0; i++)
             {
                 StepForward();
+                touchedAbsent |= HoldsAbsentStores(_present!);
                 moved++;
             }
         }
 
         if (moved == 0 || _present is null)
             return;
+
+        // Landed on a state that changes nothing on screen: the steps walked belong to stores that have since
+        // left the manager (a closed dialog's scoped store, another document's), which a restore skips, or they
+        // recorded no visible change at all. Spending the click on that would look like a broken button, so
+        // keep going in the same direction until a step does change something live, or the stack runs out.
+        while (!ChangesLiveState(_present))
+        {
+            if (steps < 0 && _undo.Count > 0)
+                StepBack();
+            else if (steps > 0 && _redo.Count > 0)
+                StepForward();
+            else
+                break;
+
+            touchedAbsent |= HoldsAbsentStores(_present);
+        }
+
+        // Nothing live anywhere in that direction, only steps of stores that are gone: walking through them
+        // would change nothing now and strand them on the other stack, where the store -- reopened -- would no
+        // longer find them. Leave the history as it was; they are undoable again once their store is back.
+        if (touchedAbsent && !ChangesLiveState(_present))
+        {
+            _undo.Clear();
+            _undo.AddRange(before.Undo);
+            _redo.Clear();
+            _redo.AddRange(before.Redo);
+            _present = before.Present;
+            _boundary = before.Boundary;
+            _presentLabel = before.Label;
+            return;
+        }
 
         // Landing somewhere by hand ends whatever group was open; the next action must not be
         // folded into a step the user has already stepped away from.
@@ -662,6 +723,37 @@ public class BlexHistory : IDisposable
         _redo.RemoveAt(_redo.Count - 1);
         _present = _boundary = entry.State;
         _presentLabel = entry.Label;
+    }
+
+    /// <summary>
+    /// Whether restoring <paramref name="state"/> would change a store that is registered now -- what
+    /// <see cref="Restore"/> would actually apply, since it skips the stores that are gone.
+    /// </summary>
+    private bool ChangesLiveState(Snapshot state)
+    {
+        foreach (var store in _manager.Stores)
+        {
+            if (!state.Slices.TryGetValue(store.Name, out var slice))
+                continue;
+
+            var current = SliceOf(store);
+            if (!ReferenceEquals(current, slice) && current.ToJsonString() != slice.ToJsonString())
+                return true;
+        }
+
+        return false;
+    }
+
+    /// <summary>Whether <paramref name="state"/> holds a slice of a store that is not registered now.</summary>
+    private bool HoldsAbsentStores(Snapshot state)
+    {
+        foreach (var name in state.Slices.Keys)
+        {
+            if (_manager.GetStore(name) is null)
+                return true;
+        }
+
+        return false;
     }
 
     /// <summary>Clears all undo/redo history, keeping the current state as the new baseline.</summary>

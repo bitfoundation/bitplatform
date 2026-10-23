@@ -175,6 +175,16 @@ public class DiagnosticTests
     }
 
     [TestMethod]
+    public void GenericComputedMethod_ReportsBLEX014_InsteadOfBrokenGeneratedCode()
+    {
+        var result = GeneratorTestHelper.Run(Usings + """
+            [BlexStoreAttribute] public partial class S { [BlexComputedAttribute] private T ComputeFirst<T>() => default!; }
+            """);
+        Assert.IsTrue(result.HasDiagnostic("BLEX014"));
+        Assert.IsEmpty(result.CompileErrors());
+    }
+
+    [TestMethod]
     public void RecordStore_ReportsBLEX015()
     {
         var result = GeneratorTestHelper.Run(Usings + """

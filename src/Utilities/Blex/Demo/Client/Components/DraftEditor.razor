@@ -7,9 +7,11 @@
 <div class="bb-card">
     <p class="bb-card-title"><code>@Draft.Name</code></p>
     <div class="bb-toolbar">
-        <input type="text" placeholder="Write something…" value="@Draft.Text" class="demo-input-grow"
-               @oninput="e => Draft.Write(e.Value?.ToString() ?? string.Empty)" />
-        <button class="btn btn-secondary" @onclick="Draft.Clear" disabled="@(Draft.Length == 0)">Clear</button>
+        @* Named after the instance: two editors side by side would otherwise read as two identical fields. *@
+        <input type="text" placeholder="Write something…" aria-label="@($"Text of {Draft.Name}")" value="@Draft.Text"
+               class="demo-input-grow" @oninput="e => Draft.Write(e.Value?.ToString() ?? string.Empty)" />
+        <button type="button" class="btn btn-secondary" aria-label="@($"Clear {Draft.Name}")" @onclick="Draft.Clear"
+                disabled="@(Draft.Length == 0)">Clear</button>
     </div>
     <div class="bb-stats">
         <div class="bb-stat">

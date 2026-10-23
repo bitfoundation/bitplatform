@@ -14,7 +14,8 @@ interface DotNetObjectReference {
 
 interface ReduxDevToolsConnection {
     init(state: unknown): void;
-    send(action: { type: string; payload?: unknown }, state: unknown): void;
+    // A null action carries a whole lifted state (an imported session) rather than one more action.
+    send(action: { type: string; payload?: unknown } | null, state: unknown): void;
     subscribe(listener: (message: unknown) => void): (() => void) | undefined;
 }
 
@@ -81,6 +82,12 @@ export function send(handle: number, actionType: string, stateJson: string | nul
         action.payload = safeParse(payloadJson);
     }
     entry.connection.send(action, safeParse(stateJson));
+}
+
+// The extension's documented way to show an imported session: send(null, liftedState).
+export function sendLifted(handle: number, liftedStateJson: string | null): void {
+    const entry = connections.get(handle);
+    if (entry) entry.connection.send(null, safeParse(liftedStateJson));
 }
 
 export function disconnect(handle: number): void {

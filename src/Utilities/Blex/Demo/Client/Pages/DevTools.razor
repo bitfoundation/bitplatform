@@ -80,10 +80,10 @@
                 <thead><tr><th>Message</th><th>Effect</th></tr></thead>
                 <tbody>
                     <tr><td class="bb-table-key"><code>JUMP_TO_STATE</code> / <code>JUMP_TO_ACTION</code></td><td>Applies the state the extension supplies - the slider and the jump buttons.</td></tr>
-                    <tr><td class="bb-table-key"><code>ROLLBACK</code></td><td>Reverts to the last committed snapshot, or to the state supplied with the message when nothing has been committed.</td></tr>
+                    <tr><td class="bb-table-key"><code>ROLLBACK</code></td><td>Reverts to the baseline - the state at connect, until a <code>COMMIT</code>, <code>RESET</code> or import moves it - and re-initializes the monitor, so the actions it discarded leave the timeline too.</td></tr>
                     <tr><td class="bb-table-key"><code>COMMIT</code></td><td>Takes the current state as the new baseline and re-initializes the monitor.</td></tr>
-                    <tr><td class="bb-table-key"><code>RESET</code></td><td>Restores the state captured when DevTools first connected, then re-initializes the monitor.</td></tr>
-                    <tr><td class="bb-table-key"><code>IMPORT_STATE</code></td><td>Applies the last computed state from an imported session.</td></tr>
+                    <tr><td class="bb-table-key"><code>RESET</code></td><td>Restores the state captured when DevTools first connected, makes it the baseline and re-initializes the monitor.</td></tr>
+                    <tr><td class="bb-table-key"><code>IMPORT_STATE</code></td><td>Applies the last computed state of an imported session, takes the session's commit as the baseline, and hands the session back to the monitor, which shows it only once the app does.</td></tr>
                     <tr><td class="bb-table-key"><code>PAUSE_RECORDING</code></td><td>Stops streaming actions to the monitor. The app keeps running: actions still apply, and still reach middleware and subscribers.</td></tr>
                     <tr><td class="bb-table-key"><code>LOCK_CHANGES</code></td><td>Freezes the app - every action is vetoed until it is unlocked. Time-travel restores keep working, which is the point.</td></tr>
                     <tr><td class="bb-table-key"><code>ACTION</code></td><td>The dispatcher: dispatches the action typed into it by its qualified name, through the generated wrapper. See below.</td></tr>
@@ -109,6 +109,11 @@
             Both are readable from the manager, so the UI can tell the user why its buttons appear dead:
         </p>
         <CodeBlock Code="@PauseLock" />
+        <p>
+            Neither flag is an action or a state change, so no store subscription hears it move - and while
+            changes are locked, nothing else moves at all. A component showing them re-renders on
+            <code>BlexManager.DevToolsStatusChanged</code>, as the card below does.
+        </p>
 
         <DemoCard Title="What the monitor's buttons do here"
                   Description="Open the Redux DevTools panel and press Pause recording or Lock changes, then use the counter. This card reads the manager's own flags."
@@ -123,11 +128,11 @@
                     <span class="bb-stat-value demo-accent">@Counter.Count</span>
                 </div>
                 <div class="bb-stat">
-                    <span class="bb-stat-label">IsDevToolsPaused</span>
+                    <span class="bb-stat-label">IsDevTools<wbr />Paused</span>
                     <span class="bb-stat-value">@Manager.IsDevToolsPaused</span>
                 </div>
                 <div class="bb-stat">
-                    <span class="bb-stat-label">AreChangesLocked</span>
+                    <span class="bb-stat-label">AreChanges<wbr />Locked</span>
                     <span class="bb-stat-value">@Manager.AreChangesLocked</span>
                 </div>
             </div>
@@ -156,6 +161,12 @@
             in the timeline like any other.
         </p>
         <CodeBlock Code="@Dispatcher" Language="json" Title="What to type" />
+        <p>
+            Every line above names an action of this site, so it runs as-is in the monitor while this page
+            is open. Two more shapes need actions this site does not have - one taking a single object, and
+            one with an optional parameter:
+        </p>
+        <CodeBlock Code="@DispatcherShapes" Language="json" Title="In your own app" />
         <p>
             The extension hands the text over exactly as typed, and Blex does not evaluate JavaScript, so
             write strict JSON - quoted keys, double quotes. Anything that goes wrong - text that is not
@@ -238,10 +249,10 @@
         <CodeBlock Code="@Interface" />
 
         <ul class="bb-detail-list">
-            <li>If the extension is not installed, <code>connect</code> returns <code>false</code> and everything becomes a no-op - no errors, no cost.</li>
+            <li>If the extension is not installed, <code>connect</code> returns <code>0</code> (no connection handle) and everything becomes a no-op - no errors, no cost.</li>
             <li>Interop calls are dispatched without blocking the dispatch pipeline, but their tasks are still observed so a transient failure cannot surface as an unobserved exception.</li>
             <li>Disconnecting detaches only Blex's own subscription, rather than killing every DevTools instance on the page.</li>
-            <li>The bridge advertises exactly what it implements: <code>jump</code>, <code>export</code> and <code>dispatch</code> yes; <code>skip</code> and <code>reorder</code> no - they need the extension's lifted action log, and Blex streams state rather than replaying reducers.</li>
+            <li>The bridge advertises exactly what it implements: <code>jump</code>, <code>export</code>, <code>import</code>, <code>pause</code>, <code>lock</code> and <code>dispatch</code> yes; <code>skip</code> and <code>reorder</code> no - they need the extension's lifted action log, and Blex streams state rather than replaying reducers.</li>
         </ul>
     </div>
 
@@ -268,7 +279,17 @@
 </DocPage>
 
 @code {
-    protected override void OnInitialized() => Subscribe(Counter, Settings);
+    protected override void OnInitialized()
+    {
+        Subscribe(Counter, Settings);
+
+        // Pause and lock are neither actions nor state changes, so the stores never report them.
+        Manager.DevToolsStatusChanged += OnDevToolsStatusChanged;
+    }
+
+    private void OnDevToolsStatusChanged() => _ = InvokeAsync(StateHasChanged);
+
+    protected override void Dispose(bool disposing) => Manager.DevToolsStatusChanged -= OnDevToolsStatusChanged;
 
     private static readonly IReadOnlyList<ApiTable.Row> SanitizerRows =
     [
@@ -285,17 +306,21 @@
         // ...or inline, next to "type":
         { "type": "counter/Apply preset", "count": 7, "step": 2 }
 
-        // A one-parameter action takes its argument as the payload itself, Redux style -
-        // a value, or an object that does not name the parameter:
+        // A one-parameter action takes its argument as the payload itself, Redux style:
         { "type": "counter/SetStep", "payload": 5 }
-        { "type": "shipping/Ship", "payload": { "Name": "mug", "Quantity": 2 } }   // OnShip(Parcel parcel)
-
-        // Optional arguments left out take their defaults:
-        { "type": "shipping/Bump" }                                              // OnBump(int amount = 1)
+        { "type": "notifications/Push", "payload": "Dispatched from the monitor" }
 
         // Assignments and resets are actions too:
         { "type": "counter/Set Count", "payload": 42 }
         { "type": "counter/ResetState" }
+        """;
+
+    private const string DispatcherShapes = """
+        // A one-parameter action taking an object is handed that object, unless it names the parameter:
+        { "type": "shipping/Ship", "payload": { "Name": "mug", "Quantity": 2 } }   // OnShip(Parcel parcel)
+
+        // Optional arguments left out take their defaults:
+        { "type": "shipping/Bump" }                                              // OnBump(int amount = 1)
         """;
 
     private const string PauseLock = """
@@ -310,11 +335,21 @@
         """;
 
     private const string PauseLockSource = """
+        @inherits BlexComponentBase
         @inject BlexManager Manager
 
         <p>Paused: @Manager.IsDevToolsPaused &middot; Locked: @Manager.AreChangesLocked</p>
 
-        @* Nothing to wire up: both flags are set from the extension's own messages. *@
+        @code {
+            // Both flags are set from the extension's own messages. Neither is an action or a state
+            // change, so no store subscription hears them - and while changes are locked, nothing does.
+            protected override void OnInitialized() => Manager.DevToolsStatusChanged += OnDevToolsStatusChanged;
+
+            private void OnDevToolsStatusChanged() => _ = InvokeAsync(StateHasChanged);
+
+            protected override void Dispose(bool disposing)
+                => Manager.DevToolsStatusChanged -= OnDevToolsStatusChanged;
+        }
         """;
 
     private const string Naming = """
@@ -376,6 +411,7 @@
             void Send(string actionName, JsonObject globalState);
             void Send(string actionName, JsonObject globalState, JsonObject? payload)
                 => Send(actionName, globalState);
+            void SendLiftedState(JsonObject liftedState) { }   // an imported session, handed back
         }
         """;
 

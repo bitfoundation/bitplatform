@@ -41,15 +41,18 @@
         <DemoCard Title="Normalized contacts"
                   Description="Every button below is one adapter call inside one action. The list is kept sorted by name automatically."
                   Source="@StoreSource">
+            @* Enter in the name field adds the contact. A key handler rather than a <form>: a form renders its
+               action from the NavigationManager, which the MCP server's renderer of this page does not have, and
+               before the page is interactive it would submit a real GET. *@
             <div class="bb-toolbar">
-                <input type="text" placeholder="Name" value="@_name" @oninput="OnNameInput" class="demo-input-name" />
-                <select value="@_team" @onchange="OnTeamChange">
+                <input type="text" placeholder="Name" aria-label="Name" value="@_name" @oninput="OnNameInput" @onkeydown="OnNameKeyDown" class="demo-input-name" />
+                <select aria-label="Team" value="@_team" @onchange="OnTeamChange">
                     <option value="Research">Research</option>
                     <option value="Compilers">Compilers</option>
                     <option value="Languages">Languages</option>
                     <option value="Runtime">Runtime</option>
                 </select>
-                <button class="btn btn-primary" @onclick="Add" disabled="@string.IsNullOrWhiteSpace(_name)">AddOne</button>
+                <button type="button" class="btn btn-primary" @onclick="Add" disabled="@string.IsNullOrWhiteSpace(_name)">AddOne</button>
             </div>
 
             <div class="bb-toolbar">
@@ -85,12 +88,14 @@
                     var id = contact.Id;
                     <li>
                         <button type="button" class="demo-star @(contact.Starred ? "demo-star--on" : null)"
-                                title="UpdateOne" @onclick="() => Contacts.ToggleStar(id)">
+                                title="UpdateOne" aria-label="@($"Star {contact.Name}")"
+                                aria-pressed="@(contact.Starred ? "true" : "false")" @onclick="() => Contacts.ToggleStar(id)">
                             @(contact.Starred ? "★" : "☆")
                         </button>
                         <span class="demo-list-name">@contact.Name</span>
                         <span class="demo-list-meta">@contact.Team · id @contact.Id</span>
-                        <button class="btn demo-btn-danger" title="RemoveOne" @onclick="() => Contacts.Remove(id)">Remove</button>
+                        <button type="button" class="btn demo-btn-danger" title="RemoveOne" aria-label="@($"Remove {contact.Name}")"
+                                @onclick="() => Contacts.Remove(id)">Remove</button>
                     </li>
                 }
             </ul>
@@ -210,14 +215,31 @@
     private string _name = "";
     private string _team = "Research";
 
-    protected override void OnInitialized() => Subscribe(Contacts);
+    protected override void OnInitialized()
+    {
+        Subscribe(Contacts);
+
+        // The note explains the last SetOne/SetAll press; once the collection changes for any other
+        // reason, it would describe a state that is no longer on screen.
+        OwnsSubscription(Contacts.Subscribe(() => Contacts.Contacts, _ => _setNote = ""));
+    }
 
     private void OnNameInput(ChangeEventArgs e) => _name = e.Value?.ToString() ?? "";
 
     private void OnTeamChange(ChangeEventArgs e) => _team = e.Value?.ToString() ?? "Research";
 
+    private void OnNameKeyDown(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter")
+            Add();
+    }
+
     private void Add()
     {
+        // Reached from Enter as well as from the button, so the button's disabled state is not the only guard.
+        if (string.IsNullOrWhiteSpace(_name))
+            return;
+
         Contacts.Add(_name, _team);
         _name = "";
     }
@@ -226,12 +248,17 @@
 
     private void LateSave(int id)
     {
+        // The same instance back means "nothing to do" for two reasons - an absent id, or a present one
+        // that already holds exactly this value - so ask which before the call.
+        var present = Contacts.Contacts.Contains(id);
         var before = Contacts.Contacts;
         Contacts.LateSaveResponse(id);
 
-        _setNote = ReferenceEquals(before, Contacts.Contacts)
+        _setNote = !present
             ? $"id {id} is not in the collection - SetOne returned the same state instance, so nothing was notified or recorded."
-            : $"id {id} was present, so it was replaced in place.";
+            : ReferenceEquals(before, Contacts.Contacts)
+                ? $"id {id} already holds exactly this value - SetOne returned the same state instance, so nothing was notified or recorded."
+                : $"id {id} was present, so it was replaced in place.";
     }
 
     private void ReseedIdentical()
@@ -315,6 +342,10 @@
             [BlexState] private BlexEntityState<Contact, int> _contacts = Adapter.GetInitialState([...]);
             [BlexState] private string _teamFilter = "All";
 
+            // Derived from the state, not counted in a field: an undo or a reset restores the collection but
+            // not such a field, which would then hand out an id that exists - and AddOne ignores those.
+            private int NextId => Contacts.Count == 0 ? 1 : Contacts.Ids.Max() + 1;
+
             [BlexComputed] private int ComputeTotal()   => Contacts.Count;
             [BlexComputed] private int ComputeStarred() => Contacts.All.Count(c => c.Starred);
 
@@ -324,8 +355,13 @@
                     ? [.. Contacts.All]
                     : [.. Contacts.All.Where(c => c.Team == TeamFilter)];
 
+            // The selected team stays listed after its last contact is removed, so it can be switched off.
+            [BlexComputed]
+            private IReadOnlyList<string> ComputeTeams()
+                => ["All", .. Contacts.All.Select(c => c.Team).Append(TeamFilter).Where(t => t != "All").Distinct().Order()];
+
             [BlexAction] private void OnAdd(string name, string team)
-                => Contacts = Adapter.AddOne(Contacts, new Contact(_nextId++, name, team, false));
+                => Contacts = Adapter.AddOne(Contacts, new Contact(NextId, name, team, false));
 
             [BlexAction] private void OnToggleStar(int id)
                 => Contacts = Adapter.UpdateOne(Contacts, id, c => c with { Starred = !c.Starred });

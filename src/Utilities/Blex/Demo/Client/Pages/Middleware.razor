@@ -375,11 +375,16 @@
         [BlexEffect(Concurrency = BlexEffectConcurrency.Latest)]
         private async Task OnSearch(string query, CancellationToken ct)
         {
-            await Task.Delay(700, ct);
-            if (SimulateFailure)
-                throw new InvalidOperationException($"unavailable for '{query}'");
+            Query = query;
 
-            Results = Catalog.Where(c => c.Contains(query)).ToList();
+            await Task.Delay(700, ct);
+
+            if (SimulateFailure)
+                throw new InvalidOperationException($"The search service is unavailable (simulated) for '{query}'.");
+
+            Results = string.IsNullOrWhiteSpace(query)
+                ? []
+                : [.. Catalog.Where(c => c.Contains(query, StringComparison.OrdinalIgnoreCase))];
         }
 
         // Program.cs -- one line, and every failing action is reported.

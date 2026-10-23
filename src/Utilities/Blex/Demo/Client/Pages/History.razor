@@ -2,6 +2,7 @@
 @inherits BlexComponentBase
 @inject BlexHistory HistoryStack
 @inject BlexHistory<CounterStore> CounterHistory
+@inject BlexManager Manager
 @inject CounterStore Counter
 @inject ContactsStore Contacts
 
@@ -23,19 +24,14 @@
                   Description="History snapshots the whole state tree, so a single Undo steps back through whichever store changed last - counter or contacts."
                   Source="@DemoSource" SourceLanguage="razor">
             <div class="bb-toolbar">
-                <button class="btn btn-primary" @onclick="HistoryStack.Undo" disabled="@(!HistoryStack.CanUndo)">
+                <button class="btn btn-primary" @ref="_undo" @onclick="() => Undo(HistoryStack, () => _redo)" disabled="@(!HistoryStack.CanUndo)">
                     ↶ Undo @HistoryStack.NextUndoLabel
                 </button>
-                <button class="btn btn-primary" @onclick="HistoryStack.Redo" disabled="@(!HistoryStack.CanRedo)">
+                <button class="btn btn-primary" @ref="_redo" @onclick="Redo" disabled="@(!HistoryStack.CanRedo)">
                     ↷ Redo @HistoryStack.NextRedoLabel
                 </button>
-                <button class="btn btn-secondary" title="BlexHistory.Checkpoint(...)" @onclick="Checkpoint">Checkpoint</button>
                 <button class="btn btn-secondary" @onclick="HistoryStack.Clear">Clear history</button>
             </div>
-            @if (_checkpointNote.Length > 0)
-            {
-                <p class="bb-card-desc">@_checkpointNote</p>
-            }
 
             <div class="bb-stats">
                 <div class="bb-stat">
@@ -114,7 +110,7 @@
                             {
                                 var steps = i + 1;
                                 var label = HistoryStack.UndoLabels[i];
-                                <button class="btn btn-secondary" @onclick="() => HistoryStack.Jump(-steps)">
+                                <button class="btn btn-secondary" @ref="_undoSteps[steps]" @onclick="() => JumpBack(steps)">
                                     ↶ @label <span class="bb-muted">(@steps)</span>
                                 </button>
                             }
@@ -134,7 +130,7 @@
                             {
                                 var index = i;
                                 var label = HistoryStack.RedoLabels[i];
-                                <button class="btn btn-secondary" @onclick="() => HistoryStack.JumpToFuture(index)">
+                                <button class="btn btn-secondary" @ref="_redoSteps[index + 1]" @onclick="() => JumpForward(index)">
                                     ↷ @label <span class="bb-muted">(@(index + 1))</span>
                                 </button>
                             }
@@ -224,6 +220,11 @@
                 what the user can actually see, rather than from a stale pre-jump state. A restore that
                 changed nothing the history covers is ignored, so it keeps its labels.
             </p>
+            <p>
+                Undo and redo never spend a click on a step that would change nothing in view: one that
+                another history has already undone, or one recorded for a store that has since left the
+                manager, is passed over, and the button names the step it will actually revert.
+            </p>
         </Callout>
 
         <Callout Kind="Callout.CalloutKind.Tip" Title="Undo/redo and persistence cooperate">
@@ -276,6 +277,34 @@
             Consecutive checkpoints with nothing in between collapse into one, so a "user stopped
             typing" timer can call it freely without growing the stack while the state sits still.
         </p>
+
+        <DemoCard Title="Checkpoints over a filtered history"
+                  Description="This page keeps a history of its own over the counter, with direct assignments (Set Count) filtered out. Assign a few times: no step appears. Checkpoint commits them as one step, and a second Checkpoint adds nothing. Increment is a named action, so it is a step of its own."
+                  Source="@CheckpointDemoSource" SourceLanguage="razor">
+            <div class="bb-toolbar">
+                <button class="btn btn-secondary" @ref="_assign" @onclick="AssignCount">Count += 1</button>
+                <button class="btn btn-secondary" @onclick="Counter.Increment">Increment</button>
+                <button class="btn btn-secondary" @onclick="Checkpoint">Checkpoint</button>
+                <button class="btn btn-primary" @onclick="() => Undo(_edits, () => _assign)" disabled="@(!_edits.CanUndo)">
+                    ↶ Undo @_edits.NextUndoLabel
+                </button>
+            </div>
+            @if (_checkpointNote.Length > 0)
+            {
+                <p class="bb-card-desc">@_checkpointNote</p>
+            }
+
+            <div class="bb-stats">
+                <div class="bb-stat">
+                    <span class="bb-stat-label">Undo depth</span>
+                    <span class="bb-stat-value demo-accent">@_edits.UndoCount</span>
+                </div>
+                <div class="bb-stat">
+                    <span class="bb-stat-label">counter/Count</span>
+                    <span class="bb-stat-value">@Counter.Count</span>
+                </div>
+            </div>
+        </DemoCard>
     </div>
 
     <div class="bb-card" id="scope">
@@ -300,19 +329,19 @@
                   Description="This site registers an app-wide history and a BlexHistory<CounterStore>. Increment, add a contact, increment again - then compare what each Undo reverts."
                   Source="@ScopedDemoSource" SourceLanguage="razor">
             <div class="bb-toolbar">
-                <button class="btn btn-secondary" @onclick="Counter.Increment">Increment counter</button>
+                <button class="btn btn-secondary" @ref="_scopedIncrement" @onclick="Counter.Increment">Increment counter</button>
                 <button class="btn btn-secondary" @onclick="AddContact">Add a contact</button>
             </div>
             <div class="bb-grid">
                 <div class="bb-card">
                     <p class="bb-card-title">BlexHistory <span class="bb-badge">@HistoryStack.UndoCount steps</span></p>
-                    <button class="btn btn-primary" @onclick="HistoryStack.Undo" disabled="@(!HistoryStack.CanUndo)">
+                    <button class="btn btn-primary" @onclick="() => Undo(HistoryStack, () => _scopedIncrement)" disabled="@(!HistoryStack.CanUndo)">
                         ↶ Undo @HistoryStack.NextUndoLabel
                     </button>
                 </div>
                 <div class="bb-card">
                     <p class="bb-card-title">BlexHistory&lt;CounterStore&gt; <span class="bb-badge">@CounterHistory.UndoCount steps</span></p>
-                    <button class="btn btn-primary" @onclick="CounterHistory.Undo" disabled="@(!CounterHistory.CanUndo)">
+                    <button class="btn btn-primary" @onclick="() => Undo(CounterHistory, () => _scopedIncrement)" disabled="@(!CounterHistory.CanUndo)">
                         ↶ Undo @CounterHistory.NextUndoLabel
                     </button>
                 </div>
@@ -364,25 +393,98 @@
 @code {
     private int _added;
 
+    // The checkpoint demo's own history. The site's app-wide one has no filter, so every action is
+    // already a boundary there and a checkpoint could never add a step; this one keeps direct
+    // assignments out of the stack, which is what leaves a checkpoint something to commit.
+    private BlexHistory _edits = default!;
+
+    // A button that turns disabled under the keyboard (Undo with nothing left) or is removed (a history
+    // panel step that was jumped past) drops focus to <body>. The handler names where focus goes
+    // instead; it is resolved after the render, once that target is enabled or exists.
+    private Func<ElementReference>? _refocus;
+    private ElementReference _undo;
+    private ElementReference _redo;
+    private ElementReference _scopedIncrement;
+    private ElementReference _assign;
+    private readonly Dictionary<int, ElementReference> _undoSteps = [];
+    private readonly Dictionary<int, ElementReference> _redoSteps = [];
+
     protected override void OnInitialized()
     {
         Subscribe(Counter, Contacts);
         HistoryStack.Changed += OnHistoryChanged;
         CounterHistory.Changed += OnHistoryChanged;
+
+        _edits = new BlexHistory(Manager, scope: s => s is CounterStore,
+            filter: ctx => !ctx.ActionName.StartsWith("Set ", StringComparison.Ordinal));
+        _edits.Start();
+        _edits.Changed += OnHistoryChanged;
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        var refocus = _refocus;
+        _refocus = null;
+
+        if (refocus?.Invoke() is { } target && !string.IsNullOrEmpty(target.Id))
+            await target.FocusAsync();
     }
 
     private void OnHistoryChanged() => _ = InvokeAsync(StateHasChanged);
 
     private void AddContact() => Contacts.Add($"New Person {++_added}", "Runtime");
 
+    private void Undo(BlexHistory history, Func<ElementReference> whenEmpty)
+    {
+        history.Undo();
+        if (!history.CanUndo)
+            _refocus = whenEmpty;
+    }
+
+    private void Redo()
+    {
+        HistoryStack.Redo();
+        if (!HistoryStack.CanRedo)
+            _refocus = () => _undo;
+    }
+
+    private void JumpBack(int steps)
+    {
+        HistoryStack.Jump(-steps);
+
+        // The clicked step left the list when fewer steps remain than it named: land on the nearest one
+        // still there, or on the first redo step once the undo stack is empty.
+        if (HistoryStack.UndoCount < steps)
+        {
+            _refocus = () => HistoryStack.UndoCount > 0
+                ? _undoSteps.GetValueOrDefault(HistoryStack.UndoCount)
+                : _redoSteps.GetValueOrDefault(1);
+        }
+    }
+
+    private void JumpForward(int index)
+    {
+        HistoryStack.JumpToFuture(index);
+
+        if (HistoryStack.RedoCount <= index)
+        {
+            _refocus = () => HistoryStack.RedoCount > 0
+                ? _redoSteps.GetValueOrDefault(HistoryStack.RedoCount)
+                : _undoSteps.GetValueOrDefault(1);
+        }
+    }
+
+    // A direct assignment records as "Set Count" - the action the demo's history filters out.
+    private void AssignCount() => Counter.Count += 1;
+
     private string _checkpointNote = "";
 
     private void Checkpoint()
     {
-        var before = HistoryStack.UndoCount;
-        HistoryStack.Checkpoint("Checkpoint");
+        var before = _edits.UndoCount;
+        _edits.Checkpoint("Edit count");
 
-        _checkpointNote = HistoryStack.UndoCount == before
+        _checkpointNote = _edits.UndoCount == before
             ? "Nothing has changed since the last boundary, so the checkpoint added no step."
             : "Committed the current state as an undo step.";
     }
@@ -391,6 +493,8 @@
     {
         HistoryStack.Changed -= OnHistoryChanged;
         CounterHistory.Changed -= OnHistoryChanged;
+        _edits.Changed -= OnHistoryChanged;
+        _edits.Dispose();
     }
 
     private static readonly IReadOnlyList<ApiTable.Row> HistoryRows =
@@ -453,6 +557,9 @@
                 ↷ @History.RedoLabels[i]
             </button>
         }
+
+        @* The page also moves keyboard focus to the nearest step still listed when the clicked one
+           leaves its list, rather than letting it drop to <body>. *@
         """;
 
     private const string GroupBy = """
@@ -496,6 +603,9 @@
         <button @onclick="History.Redo" disabled="@(!History.CanRedo)">
             Redo @History.NextRedoLabel
         </button>
+
+        @* The page also hands keyboard focus to Redo when Undo runs out, and back: a button that turns
+           disabled under the keyboard would otherwise drop it to <body>. *@
 
         @code {
             // Changed fires whenever undo/redo availability moves, so button
@@ -551,6 +661,42 @@
         {
             await Task.CompletedTask;
             _history.Checkpoint("Edit");
+        }
+        """;
+
+    private const string CheckpointDemoSource = """
+        @inject BlexManager Manager
+        @inject CounterStore Counter
+
+        <button @onclick="AssignCount">Count += 1</button>
+        <button @onclick="Counter.Increment">Increment</button>
+        <button @onclick='() => _edits.Checkpoint("Edit count")'>Checkpoint</button>
+        <button @onclick="_edits.Undo" disabled="@(!_edits.CanUndo)">Undo @_edits.NextUndoLabel</button>
+
+        @* The page also hands keyboard focus to Count += 1 when Undo runs out, rather than drop it to <body>. *@
+
+        @code {
+            private BlexHistory _edits = default!;
+
+            protected override void OnInitialized()
+            {
+                // The counter only, with direct assignments kept out of the stack.
+                _edits = new BlexHistory(Manager, scope: s => s is CounterStore,
+                    filter: ctx => !ctx.ActionName.StartsWith("Set ", StringComparison.Ordinal));
+                _edits.Start();
+                _edits.Changed += OnHistoryChanged;
+            }
+
+            // A direct assignment records as "Set Count" - the action this history filters out.
+            private void AssignCount() => Counter.Count += 1;
+
+            private void OnHistoryChanged() => _ = InvokeAsync(StateHasChanged);
+
+            protected override void Dispose(bool disposing)
+            {
+                _edits.Changed -= OnHistoryChanged;
+                _edits.Dispose();
+            }
         }
         """;
 

@@ -86,8 +86,13 @@ public static class IServiceCollectionExtensions
             options.SyncAcrossTabs = true;
         });
 
-        // The server-state cache behind the queries page. One retry keeps the simulated failures quick to see.
-        services.AddBitBlexQueries(options => options.RetryCount = 1);
+        // The server-state cache behind the queries page. One retry keeps the simulated failures quick to see, and an
+        // invalidation in one tab refetches the same keys in the site's other tabs.
+        services.AddBitBlexQueries(options =>
+        {
+            options.RetryCount = 1;
+            options.SyncAcrossTabs = true;
+        });
 
         // In-app undo/redo across every store. <BlexProvider> calls Start() once rehydration finishes.
         // No filter here: the docs demo is more useful when every action is its own step.

@@ -1,12 +1,14 @@
 ﻿@*
     A member/description table in the site kit's bb-table, scrolling inside its own box on a narrow
     screen. The member column wraps between the words of a signature, never inside one (demo.css).
+    The box is a named, focusable region, as the landing page's comparison table is: a box that
+    scrolls sideways has to be reachable from the keyboard to be scrolled from it.
 *@
 @if (!string.IsNullOrEmpty(Title))
 {
     <h4 class="demo-api-title">@Title</h4>
 }
-<div class="bb-scroll">
+<div class="bb-scroll" tabindex="0" role="region" aria-label="@(Title ?? $"{MemberHeader} reference")">
     <table class="bb-table demo-api-table">
         <thead>
             <tr>

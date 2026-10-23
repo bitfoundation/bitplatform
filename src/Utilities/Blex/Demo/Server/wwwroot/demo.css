@@ -12,17 +12,20 @@
 
    The highlighter tells more kinds apart than the kit's four (keyword, string, comment, parameter),
    so the extra ones get colors of their own here, light and dark, picked to hold their contrast on
-   --bb-code-bg in both themes. */
+   --bb-code-bg in both themes. The primary hue is among them: the kit's --bb-primary falls just short
+   of 4.5:1 on the light code surface. */
 :root {
     --demo-code-type: #8250DF;
     --demo-code-fn: #A21CAF;
     --demo-code-number: #CF222E;
+    --demo-code-primary: #0B6AB4;
 }
 
 :root[bit-theme="dark"] {
     --demo-code-type: #D2A8FF;
     --demo-code-fn: #F0ABFC;
     --demo-code-number: #FF7B72;
+    --demo-code-primary: #4FA3F4;
 }
 
 .c-kw,
@@ -224,9 +227,15 @@
 
 .timeline li {
     display: flex;
-    gap: .75rem;
+    flex-wrap: wrap;
+    gap: 0 .75rem;
     padding: .125rem 0;
     border-bottom: 1px dashed var(--bb-border);
+}
+
+/* A cell never breaks inside ("run 1", "cancelled"): on a narrow screen the line wraps between cells. */
+.timeline li > span {
+    white-space: nowrap;
 }
 
 .timeline li:last-child {
@@ -235,7 +244,7 @@
 
 .timeline__at { min-width: 4.5rem; color: var(--bb-code-comment); }
 .timeline__mode { min-width: 5rem; font-weight: var(--fl-weight-semibold); }
-.timeline__mode--Parallel { color: var(--bb-primary); }
+.timeline__mode--Parallel { color: var(--demo-code-primary); }
 .timeline__mode--Latest { color: var(--demo-code-type); }
 .timeline__mode--Drop { color: var(--bb-warning-text); }
 .timeline__mode--Queue { color: var(--bb-success-text); }

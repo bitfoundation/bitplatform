@@ -108,7 +108,9 @@ public abstract class BlexActionDescriptor
     public static T GetArg<T>(IReadOnlyList<BlexActionArg> args, int index, string name)
         => TryGetArg(args, index, name, out T value)
             ? value
-            : throw new ArgumentException($"The payload has no argument named '{name}'.", nameof(args));
+            // No paramName: the message already names the argument, and "args" -- this helper's own parameter --
+            // would only send a reader looking for something they never passed.
+            : throw new ArgumentException($"The payload has no argument named '{name}'.");
 
     /// <summary>
     /// Reads one optional argument out of an action's payload, falling back to the parameter's declared
@@ -182,7 +184,9 @@ public abstract class BlexActionDescriptor
             case null:
                 if (default(T) is null)
                     return default!;
-                throw new InvalidCastException($"The argument '{name}' is null, but the action takes a non-nullable {typeof(T).Name}.");
+                // An ArgumentException like a missing argument: both are a payload that does not fit the action,
+                // which is what a caller dispatching by name (DevTools, a replay, a message) catches.
+                throw new ArgumentException($"The argument '{name}' is null, but the action takes a non-nullable {typeof(T).Name}.");
 
             case JsonNode node:
                 return node.Deserialize<T>(BlexJson.Options)!;

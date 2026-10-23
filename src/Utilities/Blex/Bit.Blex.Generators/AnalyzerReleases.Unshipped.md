@@ -17,7 +17,7 @@ BLEX010 | Bit.Blex.Generators | Error | Action must not be 'async void'
 BLEX011 | Bit.Blex.Generators | Warning | Action return value is discarded
 BLEX012 | Bit.Blex.Generators | Error | State field name equals generated property name
 BLEX013 | Bit.Blex.Generators | Error | Unsupported parameter modifier
-BLEX014 | Bit.Blex.Generators | Error | Generic action/effect methods are not supported
+BLEX014 | Bit.Blex.Generators | Error | Generic action/effect/computed methods are not supported
 BLEX015 | Bit.Blex.Generators | Error | Store must be a plain class
 BLEX016 | Bit.Blex.Generators | Error | Store cannot have another base class
 BLEX017 | Bit.Blex.Generators | Error | Computed method must return a value

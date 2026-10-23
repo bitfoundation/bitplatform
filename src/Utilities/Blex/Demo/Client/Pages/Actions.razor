@@ -1,5 +1,4 @@
 ﻿@page "/actions"
-@using System.Text.Json
 @using System.Text.Json.Nodes
 @inherits BlexComponentBase
 @inject CounterStore Counter
@@ -153,8 +152,8 @@
                 }
             </div>
             <div class="bb-toolbar">
-                <input type="text" value="@_dispatchName" @oninput="e => _dispatchName = e.Value?.ToString() ?? string.Empty" class="demo-input-name" />
-                <input type="text" value="@_dispatchPayload" @oninput="e => _dispatchPayload = e.Value?.ToString() ?? string.Empty" class="demo-input-grow" />
+                <input type="text" aria-label="Qualified action name" value="@_dispatchName" @oninput="e => _dispatchName = e.Value?.ToString() ?? string.Empty" class="demo-input-name" />
+                <input type="text" aria-label="JSON payload" value="@_dispatchPayload" @oninput="e => _dispatchPayload = e.Value?.ToString() ?? string.Empty" class="demo-input-grow" />
                 <button class="btn btn-primary" @onclick="DispatchByName">DispatchAsync</button>
             </div>
 
@@ -219,11 +218,12 @@
                 <button class="btn demo-btn-danger" @onclick="DirectAssignment">Two direct assignments</button>
                 <button class="btn btn-primary" @onclick="ViaAction">One [BlexAction] method</button>
                 <button class="btn btn-primary" @onclick="ViaBatch">One Batch(…) call</button>
-                <button class="btn btn-secondary" @onclick="Counter.ResetState">ResetState()</button>
+                <button class="btn btn-secondary" @onclick="() => Measure(Counter.ResetState)">ResetState()</button>
             </div>
             <p class="bb-card-desc">
                 The first button dispatches <code>Set Count</code> and <code>Set Step</code> separately.
-                The other two dispatch exactly one action and render once.
+                The other two dispatch exactly one action and render once. Each click moves both fields on from
+                where they are: assigning a field the value it already holds is no change, and notifies nobody.
             </p>
         </DemoCard>
     </div>
@@ -433,8 +433,11 @@
             var payload = string.IsNullOrWhiteSpace(_dispatchPayload) ? null : JsonNode.Parse(_dispatchPayload) as JsonObject;
             await Manager.DispatchAsync(_dispatchName.Trim(), payload);
         }
-        catch (Exception ex) when (ex is InvalidOperationException or ArgumentException or JsonException)
+        catch (Exception ex)
         {
+            // Whatever was typed: an unknown name (InvalidOperationException), a missing or null argument
+            // (ArgumentException), malformed JSON or a value that does not convert (JsonException) - or the action's
+            // own throw, since any store's action can be named here. A typo must not take the app down.
             _dispatchError = ex.Message;
         }
     }
@@ -450,18 +453,21 @@
         _lastBatchActions = _actions;
     }
 
+    // Every button moves both fields on from where they are, so a second click has as much to report as the first.
     private void DirectAssignment() => Measure(() =>
     {
-        Counter.Count = 10;
-        Counter.Step = 5;
+        Counter.Count += 10;
+        Counter.Step += 1;
     });
 
-    private void ViaAction() => Measure(() => Counter.ApplyPreset(20, 2));
+    private void ViaAction() => Measure(() => Counter.ApplyPreset(Counter.Count + 20, Counter.Step + 1));
 
+    // Not "Apply preset": that is the action's own name, so the typed ApplyPreset subscription above would take
+    // this argument-less batch for it and fail to read its payload.
     private void ViaBatch() => Measure(() => Counter.Batch("Apply preset (batched)", () =>
     {
-        Counter.Count = 30;
-        Counter.Step = 3;
+        Counter.Count += 30;
+        Counter.Step += 1;
     }));
 
     // BlexComponentBase owns IDisposable; this is its hook for extra cleanup.
@@ -600,8 +606,15 @@
 
         private async Task DispatchByName()
         {
-            var payload = JsonNode.Parse(_payload) as JsonObject;   // { "count": 7, "step": 2 }
-            await Manager.DispatchAsync(_name, payload);             // "counter/Apply preset"
+            try
+            {
+                var payload = JsonNode.Parse(_payload) as JsonObject;   // { "count": 7, "step": 2 }
+                await Manager.DispatchAsync(_name, payload);             // "counter/Apply preset"
+            }
+            catch (Exception ex)   // an unknown name, a missing or null argument, bad JSON - or the action's own throw
+            {
+                _error = ex.Message;
+            }
         }
 
         protected override void OnInitialized()
@@ -634,22 +647,25 @@
 
     private const string BatchSource = """
         // 1. Two direct assignments -> two "Set X" actions, two renders.
-        Counter.Count = 10;
-        Counter.Step = 5;
+        Counter.Count += 10;
+        Counter.Step += 1;
 
         // 2. One [BlexAction] method -> one action, one render.
-        [BlexAction]
+        Counter.ApplyPreset(Counter.Count + 20, Counter.Step + 1);
+
+        [BlexAction(Name = "Apply preset")]
         private void OnApplyPreset(int count, int step)
         {
             Count = count;
             Step = step;
         }
 
-        // 3. Batch from the caller -> one action, one render.
-        Counter.Batch("Apply preset", () =>
+        // 3. Batch from the caller -> one action, one render. A name of its own: "Apply preset"
+        //    would pass for the action above, and a typed subscriber would find no payload.
+        Counter.Batch("Apply preset (batched)", () =>
         {
-            Counter.Count = 30;
-            Counter.Step = 3;
+            Counter.Count += 30;
+            Counter.Step += 1;
         });
         """;
 
@@ -662,8 +678,9 @@
         """;
 
     private const string BatchApi = """
-        // One notification, one history entry, one middleware pass.
-        store.Batch("Apply preset", () =>
+        // One notification, one history entry, one middleware pass. Give it a name no action
+        // of the store has: anything matching that action by name would take the batch for it.
+        store.Batch("Apply defaults", () =>
         {
             store.Count = 10;
             store.Step = 5;

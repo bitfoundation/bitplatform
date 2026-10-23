@@ -1,4 +1,5 @@
-﻿using System.Text.Json.Nodes;
+﻿using System.Text.Json;
+using System.Text.Json.Nodes;
 
 namespace Bit.Blex;
 
@@ -65,6 +66,7 @@ public sealed class BlexStatePersistor : IAsyncDisposable, IDisposable
     private bool _watchingRegistry;
     private bool _suspended;
     private bool _watching;
+    private bool _watchingSuspension;
     private TaskCompletionSource? _hydration;
 
     /// <summary>Creates a persistor over a manager and storage sink.</summary>
@@ -202,7 +204,54 @@ public sealed class BlexStatePersistor : IAsyncDisposable, IDisposable
             _subscribed = true;
         }
 
+        await StartWatchingSuspensionAsync(cancellationToken).ConfigureAwait(false);
         await StartWatchingAsync(cancellationToken).ConfigureAwait(false);
+    }
+
+    /// <summary>
+    /// Begins writing debounced saves when the page they live on is hidden or unloaded, when the storage
+    /// can report it (see <see cref="IBlexStorageSuspension"/>).
+    /// </summary>
+    private async Task StartWatchingSuspensionAsync(CancellationToken cancellationToken)
+    {
+        if (_watchingSuspension || _storage is not IBlexStorageSuspension suspendable)
+            return;
+
+        _watchingSuspension = true;
+        suspendable.Suspending += OnSuspending;
+        try
+        {
+            await suspendable.StartWatchingSuspensionAsync(cancellationToken).ConfigureAwait(false);
+        }
+        catch
+        {
+            // Same as the cross-tab watch: roll back, so a later StartAsync can try again.
+            suspendable.Suspending -= OnSuspending;
+            _watchingSuspension = false;
+            throw;
+        }
+    }
+
+    /// <summary>
+    /// The page is going away: whatever the debounce is still holding is written now. Synchronous, because
+    /// nothing scheduled after the handler returns is guaranteed to run -- on WebAssembly the write itself
+    /// reaches the browser's storage before this returns.
+    /// </summary>
+    private void OnSuspending()
+    {
+        try
+        {
+            lock (_saveGate)
+            {
+                CancelDebounceLocked();
+                SavePendingLocked();
+            }
+        }
+        catch (Exception ex)
+        {
+            // Raised from the storage's own (interop) callback.
+            _manager.ReportError("persistence", ex, "saving as the page was hidden");
+        }
     }
 
     /// <summary>
@@ -448,9 +497,13 @@ public sealed class BlexStatePersistor : IAsyncDisposable, IDisposable
             }
             catch (Exception ex)
             {
-                // Applying can throw from a StateChanged subscriber even though the payload
-                // itself is fine -- report, but keep the stored data.
+                // Subscribers and restore observers are isolated by the store and the manager, so what
+                // reaches here is the payload itself failing to deserialize: a value of the wrong type,
+                // an enum member that no longer exists. It would fail again on every load, so it is
+                // treated like an unreadable payload -- reported, discarded and removed.
                 _manager.ReportError("persistence", ex, $"applying '{store.Name}'");
+                await TryRemoveAsync(store, cancellationToken).ConfigureAwait(true);
+                slice = null;
             }
             finally
             {
@@ -675,8 +728,11 @@ public sealed class BlexStatePersistor : IAsyncDisposable, IDisposable
     /// </summary>
     private JsonObject? Unwrap(string storeName, string raw)
     {
+        // Valid JSON that is not an object ([1,2,3], "text", null) is no store's state either: thrown, so it is
+        // reported -- and, read at startup, removed -- like any other unreadable payload rather than ignored
+        // on every load.
         if (JsonNode.Parse(raw) is not JsonObject parsed)
-            return null;
+            throw new JsonException($"The stored state of '{storeName}' is not a JSON object.");
 
         var storedVersion = 0;
         var state = parsed;
@@ -996,6 +1052,12 @@ public sealed class BlexStatePersistor : IAsyncDisposable, IDisposable
         {
             watchable.ExternalChange -= OnExternalChange;
             _watching = false;
+        }
+
+        if (_watchingSuspension && _storage is IBlexStorageSuspension suspendable)
+        {
+            suspendable.Suspending -= OnSuspending;
+            _watchingSuspension = false;
         }
 
         if (_watchingRegistry)

@@ -122,6 +122,25 @@ public sealed class BlexManager
     public bool AreChangesLocked => _changesLocked;
 
     /// <summary>
+    /// Raised when <see cref="IsDevToolsPaused"/> or <see cref="AreChangesLocked"/> changes -- the monitor's
+    /// "Pause recording" and "Lock changes" buttons, or the connection opening or closing. Neither is an action
+    /// or a state change, so a component showing them has nothing else to re-render on: while changes are
+    /// locked, nothing moves at all. Handler exceptions are isolated and reported through <see cref="OnError"/>.
+    /// </summary>
+    public event Action? DevToolsStatusChanged;
+
+    /// <summary>Sets the monitor's two flags, raising <see cref="DevToolsStatusChanged"/> when either moved.</summary>
+    private void SetDevToolsStatus(bool paused, bool locked)
+    {
+        if (paused == _devToolsPaused && locked == _changesLocked)
+            return;
+
+        _devToolsPaused = paused;
+        _changesLocked = locked;
+        InvokeIsolated<object?>(DevToolsStatusChanged, null, "devtools", "status changed handler");
+    }
+
+    /// <summary>
     /// Advances whenever the state of any registered store changes -- by an action, a restore, an
     /// effect's lifecycle flags or an assignment still waiting for its batch to notify -- and before
     /// that store's subscribers run. Memoized selectors compare it rather than subscribing to anything.
@@ -1024,8 +1043,7 @@ public sealed class BlexManager
         _initialState ??= state;
         _committedState = state;
         _connected = true;
-        _devToolsPaused = false;
-        _changesLocked = false;
+        SetDevToolsStatus(paused: false, locked: false);
         devTools.Init(SanitizeState(state));
     }
 
@@ -1039,8 +1057,7 @@ public sealed class BlexManager
     {
         _devTools = null;
         _connected = false;
-        _devToolsPaused = false;
-        _changesLocked = false;
+        SetDevToolsStatus(paused: false, locked: false);
     }
 
     /// <summary>Builds the global state tree: <c>{ "&lt;StoreName&gt;": &lt;state&gt;, ... }</c>.</summary>
@@ -1513,12 +1530,20 @@ public sealed class BlexManager
                     RestoreGlobalState(_committedState);
                 else
                     ApplyStateString(AsString(message["state"]));
+
+                // The monitor discards the actions after the commit only when it is re-initialized: without
+                // this its timeline keeps them, and jumping to one resurrects the state just rolled back.
+                _devTools?.Init(SanitizeState(CaptureGlobalState()));
                 break;
 
             case "RESET":
                 if (_initialState is not null)
                     RestoreGlobalState(_initialState);
-                _devTools?.Init(SanitizeState(CaptureGlobalState()));
+
+                // The monitor now starts from here, so this is also what a later ROLLBACK returns to -- not a
+                // commit made before the reset, which the monitor no longer shows.
+                _committedState = CaptureGlobalState();
+                _devTools?.Init(SanitizeState(_committedState));
                 break;
 
             case "COMMIT":
@@ -1529,19 +1554,29 @@ public sealed class BlexManager
             // "Pause recording" stops the monitor's timeline without freezing the app: actions keep
             // applying and keep reaching middleware and subscribers, they are just not streamed.
             case "PAUSE_RECORDING":
-                _devToolsPaused = AsBoolean(message["payload"]?["status"]) ?? !_devToolsPaused;
+                SetDevToolsStatus(AsBoolean(message["payload"]?["status"]) ?? !_devToolsPaused, _changesLocked);
                 break;
 
             // "Lock changes" freezes the application: every action is vetoed until it is unlocked.
             case "LOCK_CHANGES":
-                _changesLocked = AsBoolean(message["payload"]?["status"]) ?? !_changesLocked;
+                SetDevToolsStatus(_devToolsPaused, AsBoolean(message["payload"]?["status"]) ?? !_changesLocked);
                 break;
 
             case "IMPORT_STATE":
-                var computed = message["payload"]?["nextLiftedState"]?["computedStates"]?.AsArray();
+                var lifted = message["payload"]?["nextLiftedState"] as JsonObject;
+                var computed = lifted?["computedStates"]?.AsArray();
                 var last = computed?.LastOrDefault();
-                if (last?["state"] is JsonObject importState)
-                    RestoreGlobalState(importState);
+                if (last?["state"] is not JsonObject importState)
+                    break;
+
+                RestoreGlobalState(importState);
+
+                // The imported session's base is what a ROLLBACK returns to from here on.
+                if (lifted!["committedState"] is JsonObject committed)
+                    _committedState = (JsonObject)committed.DeepClone();
+
+                // The monitor shows an imported session only once the app hands the lifted state back to it.
+                _devTools?.SendLiftedState((JsonObject)lifted.DeepClone());
                 break;
         }
     }

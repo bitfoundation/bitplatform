@@ -441,7 +441,9 @@ runs are reference-counted) and captures any thrown exception into `Error` inste
 ### Cancellation and concurrency
 
 Give the effect a trailing `CancellationToken` parameter and the generator supplies the token and
-emits a `CancelXxx()` method. `Concurrency` selects how overlapping invocations behave, mirroring
+emits a `CancelXxx()` method (on a debounced effect it also cancels the invocation still waiting out its
+quiet period, and a debounced effect without a token gets one for that alone). `Concurrency` selects how
+overlapping invocations behave, mirroring
 the RxJS flattening operators used by NgRx effects:
 
 ```csharp
@@ -706,7 +708,9 @@ Persistence is production-hardened:
   disabled reaches `OnError` with source `"persistence"`, so the app can tell the user their
   changes are not being saved instead of pretending they were.
 - **Debounce** - `options.DebounceInterval = TimeSpan.FromMilliseconds(300)` coalesces bursts of
-  actions into one write (flushed on dispose, or on demand via `persistor.FlushAsync()`).
+  actions into one write (flushed on dispose, on demand via `persistor.FlushAsync()`, and - with the
+  browser storage, or any storage implementing `IBlexStorageSuspension` - as the page is hidden or
+  unloaded, so a change made just before a reload or tab close is not lost).
 - **Versioning & migrations** - bump `options.Version` when a persisted store's shape changes and
   supply `options.Migrate` to upgrade (or discard) old payloads, zustand-persist style:
 
@@ -1323,7 +1327,8 @@ recording** is about the timeline: actions still apply and still reach middlewar
 they are simply not streamed, so you can set up the state you want to inspect without filling the
 monitor with noise. **Lock changes** is about the app: every action is vetoed until it is unlocked,
 while time-travel restores keep working - which is the point. Both are readable as
-`manager.IsDevToolsPaused` / `manager.AreChangesLocked`, and disconnecting the bridge clears them, so
+`manager.IsDevToolsPaused` / `manager.AreChangesLocked` - `manager.DevToolsStatusChanged` says when either
+moves, since neither is an action a component would re-render on - and disconnecting the bridge clears them, so
 a monitor closed while locked cannot leave the application permanently frozen.
 
 For production, set `<BlexProvider EnableDevTools="false">` to disable the connection entirely, or

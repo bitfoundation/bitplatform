@@ -47,8 +47,10 @@
                 </svg>
             </button>
 
-            <button type="button" class="bb-menu-btn" aria-label="Site menu" aria-expanded="@(_menuOpen ? "true" : "false")"
-                    aria-controls="bb-header-drawer" @onclick="() => _menuOpen = !_menuOpen">
+            @* aria-controls only while the drawer exists: it is rendered only when open, and a
+               reference to a missing id is a dangling one. *@
+            <button type="button" class="bb-menu-btn" @ref="_menuButton" aria-label="Site menu" aria-expanded="@(_menuOpen ? "true" : "false")"
+                    aria-controls="@(_menuOpen ? "bb-header-drawer" : null)" @onclick="ToggleMenu" @onkeydown="OnMenuKeyDown">
                 @if (_menuOpen)
                 {
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
@@ -66,11 +68,14 @@
     </div>
 
     @* The narrow-width menu. Rendered only while open, so its links are out of the tab order the
-       rest of the time - a drawer that is merely translated off-screen still holds focus. *@
+       rest of the time - a drawer that is merely translated off-screen still holds focus. Opening it
+       moves focus onto it (tabindex="-1", so it takes focus without becoming a Tab stop), which is
+       also what lets Escape reach it: a browser that does not focus a clicked button would
+       otherwise leave the key with <body>. *@
     @if (_menuOpen)
     {
-        <div class="bb-header-scrim" @onclick="() => _menuOpen = false"></div>
-        <nav id="bb-header-drawer" class="bb-header-drawer" aria-label="Site">
+        <div class="bb-header-scrim" @onclick="() => CloseMenu(restoreFocus: true)"></div>
+        <nav id="bb-header-drawer" class="bb-header-drawer" aria-label="Site" tabindex="-1" @ref="_drawer" @onkeydown="OnMenuKeyDown">
             @foreach (var item in SiteInfo.Primary)
             {
                 <a @key="item.Href" href="@item.Href" class="@(IsActive(item) ? "active" : null)">@item.Label</a>
@@ -83,7 +88,11 @@
 
 @code {
     private bool _menuOpen;
+    private bool _focusDrawerPending;
+    private bool _restorePending;
     private string _path = "";
+    private ElementReference _menuButton;
+    private ElementReference _drawer;
 
     protected override void OnInitialized()
     {
@@ -91,16 +100,63 @@
         Nav.LocationChanged += OnLocationChanged;
     }
 
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (_focusDrawerPending)
+        {
+            _focusDrawerPending = false;
+            await _drawer.FocusAsync();
+        }
+
+        if (_restorePending)
+        {
+            _restorePending = false;
+            await _menuButton.FocusAsync();
+        }
+    }
+
     /// <summary>
     /// The current section. A plain link is active on its own address; the "Docs" entry is active on
-    /// every page of the site that no other entry claims, because the docs ARE the rest of the site.
+    /// every documentation page that no other entry claims, because the docs ARE the rest of the site.
+    /// A page outside the catalog - the not-found and error pages - is no section at all.
     /// </summary>
     private bool IsActive(SiteNavItem item)
     {
         if (item.MatchesDocs)
-            return _path.Length > 0 && SiteInfo.Primary.Any(other => other.MatchesDocs is false && DocsCatalog.IsSamePath(other.Href, _path)) is false;
+            return DocsCatalog.FindByPath(_path) is not null
+                   && SiteInfo.Primary.Any(other => other.MatchesDocs is false && DocsCatalog.IsSamePath(other.Href, _path)) is false;
 
         return DocsCatalog.IsSamePath(item.Href, _path);
+    }
+
+    private void ToggleMenu()
+    {
+        _menuOpen = !_menuOpen;
+        _focusDrawerPending = _menuOpen;
+    }
+
+    /// <summary>
+    /// Closes the drawer from inside it - Escape or the scrim - and, with <paramref name="restoreFocus"/>,
+    /// hands focus back to the button that opened it: the drawer is unmounted, and focus left inside
+    /// it would fall to &lt;body&gt;. A navigation closes it in <see cref="OnLocationChanged"/> instead,
+    /// and leaves focus to the new page.
+    /// </summary>
+    private void CloseMenu(bool restoreFocus)
+    {
+        _menuOpen = false;
+        _focusDrawerPending = false;
+        _restorePending = restoreFocus;
+    }
+
+    /// <summary>
+    /// Escape closes the drawer, the way every other overlay on the site closes. Heard on the button
+    /// and on the drawer only - not on the whole header, which also holds the search palette and
+    /// would hear every key typed into it.
+    /// </summary>
+    private void OnMenuKeyDown(KeyboardEventArgs args)
+    {
+        if (_menuOpen && args.Key == "Escape")
+            CloseMenu(restoreFocus: true);
     }
 
     // A drawer that survives the navigation it started covers the page the reader just asked for.
