@@ -688,6 +688,25 @@
     background: var(--bmg-accent-subtle);
 }
 
+/* A group's layers, under its row and set in from it. */
+.bmg-layer-children {
+    list-style: none;
+    margin: 2px 0 0;
+    margin-inline-start: 10px;
+    padding: 0;
+    padding-inline-start: 12px;
+    border-inline-start: 2px solid var(--bmg-border);
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+/* A layer clipped to the one below it, marked as photo editors mark it; its button's pressed state says so in words. */
+.bmg-layer-clipped .bmg-layer-name::before {
+    content: "\21B3\00A0";
+    color: var(--bmg-text-muted);
+}
+
 .bmg-layer-name,
 .bmg-history-button {
     flex: 1 1 auto;

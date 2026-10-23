@@ -136,24 +136,80 @@ render against a downscaled proxy; the full-resolution pass happens once, on exp
 ### Editing tools
 
 `EditingToolBenchmarks`, one thread, on another machine than the tables above (an i9-10900 on Windows 10, .NET 10), so
-compare rows within this table: the vibrance row is an existing per-pixel adjustment measured in the same run.
+compare rows within this table: the vibrance row is an existing per-pixel adjustment measured in the same run. Rows
+marked * were measured again after the optimisations below, in a run where vibrance took 35.1 ms and 169 ms.
 
 | Operation | 1920×1080 | 3840×2160 | Allocated |
 | --- | ---: | ---: | ---: |
+| Trim bounds * | 1.3 ms | 5.2 ms | 0 B |
 | Canvas: 40px border | 1.6 ms | 8.4 ms | 152 B |
 | Whites/blacks (tables) | 3.6 ms | 13.4 ms | 3.6 KB |
-| Trim bounds | 5.1 ms | 23.9 ms | 27 KB |
 | Auto white balance | 15.4 ms | 64.0 ms | 528 B |
 | Mask expand by 10px | 27.9 ms | 94.6 ms | 12 KB |
-| Duotone | 35.9 ms | 144 ms | 3.9 KB |
+| Duotone * | 28.4 ms | 141 ms | 8.0 KB |
 | Vibrance (reference) | 36.8 ms | 156 ms | 352 B |
-| Colorize | 55.1 ms | 212 ms | 12 KB |
+| Colorize * | 50.6 ms | 187 ms | 16 KB |
 | High pass, radius 3 | 64.3 ms | 250 ms | 1.3 KB |
 | Remove a plain background (corner flood) | 66.8 ms | 272 ms | 0.9 KB |
 | HSL, two bands | 93.7 ms | 445 ms | 0.7 KB |
 | Straighten 5° | 122 ms | 410 ms | 688 B |
-| Paint layer, 20 long strokes | 141 ms | 384 ms | 2.3 MB |
+| Paint layer, 20 long strokes * | 134 ms | 284 ms | 2.3 MB |
 | Motion blur 20px, horizontal or 30° | 142 ms | 677-738 ms | 480 B |
+| A fill clipped to the paint layer * | 200 ms | 579 ms | 2.3 MB |
+| Isolated group: the paint layer and a multiplied fill * | 225 ms | 675 ms | 2.3 MB |
+
+A clipped layer and an isolated group each composite into a buffer the size of the image and blend it back, so they
+cost about a full-image blend more than their layers do on their own; a clipping stack blends back, and switches its
+transparency, only over the rows and columns its base reaches, which for a logo is a small part of the image. Trimming tests four pixels at a time with
+`Vector128`, and the gradient map and colorize mix whole `Vector4`s rather than building `Vector3`s and scaling them by
+single floats, which took them on the WebAssembly interpreter from 128, 459 and 351 ms in an earlier run to 44, 152 and
+105 ms (below), all now cheaper there than vibrance.
+
+### WebAssembly: editing tools
+
+The rows above in the browser, from the performance page's "Run the editing tools", best of two runs of its best of
+three: headless Chrome 156, a Release publish of the demo on .NET 10 with and without ahead-of-time compilation, on the
+i9-10900. The page's first benchmark, whose interpreter and AOT numbers are published above, took about twice as long
+on this machine (189, 21, 289, 240 and 427 ms on the interpreter against 108, 11, 118, 125 and 203; 52, 7, 47, 52 and
+75 ms with AOT against 24, 3, 23, 24 and 36), so compare these rows with each other and with the desktop column, not
+with the table at the top.
+
+| Operation | Interpreter | AOT | Desktop .NET |
+| --- | ---: | ---: | ---: |
+| Canvas: 40px border | 3 ms | 1 ms | 1.6 ms |
+| Trim bounds | 44 ms | 1 ms | 1.3 ms |
+| Whites and blacks | 21 ms | 7 ms | 3.6 ms |
+| Auto white balance | 43 ms | 15 ms | 15.4 ms |
+| Duotone | 152 ms | 28 ms | 28.4 ms |
+| Vibrance, for reference | 161 ms | 26 ms | 35.1 ms |
+| Colorize | 105 ms | 46 ms | 50.6 ms |
+| Expand a selection by 10px | 349 ms | 91 ms | 27.9 ms |
+| High pass, radius 3 | 366 ms | 66 ms | 64.3 ms |
+| Remove a plain background | 714 ms | 102 ms | 66.8 ms |
+| HSL, two bands | 758 ms | 87 ms | 93.7 ms |
+| Motion blur 20px | 618 ms | 267 ms | 142 ms |
+| Paint layer, 20 long strokes | 1383 ms | 179 ms | 134 ms |
+| Straighten 5° | 1684 ms | 88 ms | 122 ms |
+| A fill clipped to the paint layer | 2313 ms | 327 ms | 200 ms |
+| Isolated group: the paint layer and a multiplied fill | 3281 ms | 372 ms | 225 ms |
+
+Compiled ahead of time, nine of the sixteen rows run as fast as desktop .NET on one thread or faster; the rest take 1.3
+to 1.9 times as long, painting, background removal, the clipped and grouped layers, motion blur and whites and blacks,
+except the selection expand at 3.3 times. On the interpreter, straightening (which shares rotation's sampler), painting
+and the layer stacks are the slow rows: in the editor they run on the proxy, and as a draft while a control is
+dragged, as every edit does.
+
+To measure again, publish the demo twice and point the opt-in browser test at each:
+
+```bash
+dotnet publish src/Utilities/Bmage/Demo/Server -c Release -p:RunAOTCompilation=false -o pub-interpreter
+dotnet publish src/Utilities/Bmage/Demo/Server -c Release -o pub-aot       # AOT is on for a Release publish
+dotnet pub-aot/Bit.Bmage.Demo.Server.dll --urls http://127.0.0.1:5311 &
+BMAGE_E2E_MEASURE=1 BMAGE_E2E_HOST_URL=http://127.0.0.1:5311 BMAGE_E2E_MEASURE_OUT=aot.tsv \
+    dotnet test --project src/Utilities/Bmage/Tests/Bit.Bmage.Tests.E2E --filter "FullyQualifiedName~MeasureTheEditingTools"
+```
+
+The file holds the page's first benchmark too, as calibration against the published rows.
 
 Whites and blacks are a curve, so they run through 256-entry tables like brightness. Colorize became a table of
 lightness, a 1025-entry piecewise linear lookup that is exact at the one kink of the conversion; HSL skips every pixel

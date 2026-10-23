@@ -29,7 +29,7 @@
             <Icon Path="@Icons.Gauge" />
             Run the benchmark
         </button>
-        @if (_busy)
+        @if (_busy && !_measuringEditing)
         {
             <span class="working" role="status"><span class="bb-spinner" aria-hidden="true"></span>Measuring @_current&hellip;</span>
         }
@@ -55,6 +55,56 @@
                             <td class="demo-num"><strong>@result.Elapsed.TotalMilliseconds.ToString("0") ms</strong></td>
                             <td class="demo-num">@result.Interpreter ms</td>
                             <td class="demo-num">@result.Aot ms</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Editing tools in this browser</h3>
+    <p>
+        The editor's straightening, colour, selection, painting and layer tools, on the same 1920 &times; 1080 image and
+        a product shot of that size, best of three after a warm-up, beside what they cost in Chrome on the interpreter
+        and compiled ahead of time, and on desktop .NET on one thread. Those were measured on a slower machine than the
+        table below: the benchmark above took about twice as long there, so compare the rows of this table with each
+        other, the vibrance row being an older adjustment for reference.
+    </p>
+    <div class="bb-toolbar">
+        <button type="button" class="btn btn-primary" disabled="@(_busy || IsHydrating)" @onclick="RunEditingAsync">
+            <Icon Path="@Icons.Gauge" />
+            Run the editing tools
+        </button>
+        @if (_busy && _measuringEditing)
+        {
+            <span class="working" role="status"><span class="bb-spinner" aria-hidden="true"></span>Measuring @_current&hellip;</span>
+        }
+    </div>
+
+    @if (_editing.Count > 0)
+    {
+        <div class="bb-scroll perf-results" tabindex="0" role="region" aria-label="Editing tool results for this browser">
+            <table class="bb-table">
+                <thead>
+                    <tr>
+                        <th scope="col">Operation</th>
+                        <th scope="col" class="demo-num">This browser</th>
+                        <th scope="col" class="demo-num">Interpreter</th>
+                        <th scope="col" class="demo-num">AOT</th>
+                        <th scope="col" class="demo-num">Desktop .NET</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var result in _editing)
+                    {
+                        <tr>
+                            <th scope="row">@result.Name</th>
+                            <td class="demo-num"><strong>@result.Elapsed.TotalMilliseconds.ToString("0") ms</strong></td>
+                            <td class="demo-num">@(result.Reference.Interpreter is { } interpreter ? $"{interpreter} ms" : "-")</td>
+                            <td class="demo-num">@(result.Reference.Aot is { } aot ? $"{aot} ms" : "-")</td>
+                            <td class="demo-num">@result.Reference.Desktop.ToString("0.#") ms</td>
                         </tr>
                     }
                 </tbody>
@@ -218,6 +268,74 @@
     ];
 
     private readonly List<Result> _results = [];
+
+    private sealed record EditingReference(string Name, int? Interpreter, int? Aot, double Desktop);
+
+    private sealed record EditingResult(string Name, TimeSpan Elapsed, EditingReference Reference);
+
+    /// <summary>The images the editing tools are measured on, made once per run.</summary>
+    private sealed class EditingImages : IDisposable
+    {
+        public EditingImages(int width, int height)
+        {
+            Photo = SampleImages.Landscape(width, height);
+            // A product shot: a subject on a near-white backdrop, for the background removal and trimming.
+            Product = ImageBuffer.Create(width, height, new Rgba32(248, 248, 246));
+            Product.Fill(new System.Drawing.Rectangle(width / 4, height / 5, width / 2, height * 3 / 5), new Rgba32(40, 90, 160));
+            var rng = new Random(7);
+            Paint = new PaintLayer([.. Enumerable.Range(0, 20).Select(i => new PaintStroke(
+                [.. Enumerable.Range(0, 40).Select(j => new Vector2(rng.Next(width), rng.Next(height)) * 0.1f + new Vector2(j * width / 50f, i * height / 25f))],
+                24, new Rgba32(200, 40, 40)) { Hardness = 0.6f })]);
+        }
+
+        public ImageBuffer Photo { get; }
+
+        public ImageBuffer Product { get; }
+
+        public PaintLayer Paint { get; }
+
+        public void Dispose()
+        {
+            Photo.Dispose();
+            Product.Dispose();
+        }
+    }
+
+    // The operations of Tests/Bit.Bmage.Benchmarks' EditingToolBenchmarks, so a row lines up with its desktop number.
+    // The interpreter and AOT columns were measured with the opt-in PerformanceMeasurements browser test, best of two
+    // runs of this page (docs/performance.md, WebAssembly: editing tools).
+    private static readonly (EditingReference Reference, Func<EditingImages, IDisposable?> Run)[] EditingBenchmarks =
+    [
+        (new("Canvas: 40px border", 3, 1, 1.6), i => Apply(CanvasSizeOperation.Margins(40, Rgba32.White), i.Photo)),
+        (new("Whites and blacks", 21, 7, 3.6), i => Apply(new WhitesBlacksAdjustment(0.3f, -0.2f), i.Photo)),
+        (new("Trim bounds", 44, 1, 1.3), i => { ContentBounds.Find(i.Product); return null; }),
+        (new("Auto white balance", 43, 15, 15.4), i => Apply(new AutoWhiteBalanceOperation(), i.Photo)),
+        (new("Expand a selection by 10px", 349, 91, 27.9), i => new EllipseMask(new System.Drawing.RectangleF(100, 100, 800, 600)).Expand(10).Render(i.Photo.Size)),
+        (new("Duotone", 152, 28, 28.4), i => Apply(GradientMapOperation.Duotone(new Rgba32(20, 30, 90), new Rgba32(250, 210, 120)), i.Photo)),
+        (new("Vibrance, for reference", 161, 26, 35.1), i => Apply(new VibranceAdjustment(0.4f), i.Photo)),
+        (new("Colorize", 105, 46, 50.6), i => Apply(new ColorizeAdjustment(30, 0.4f), i.Photo)),
+        (new("High pass, radius 3", 366, 66, 64.3), i => Apply(new HighPassFilter(3), i.Photo)),
+        (new("Remove a plain background", 714, 102, 66.8), i => Apply(new AlphaMaskOperation(new FloodMask([new(0, 0), new(1, 0), new(0, 1), new(1, 1)]) { Units = MaskUnits.Relative, Inverted = true }), i.Product)),
+        (new("HSL, two bands", 758, 87, 93.7), i => Apply(new HslAdjustment().With(HueBand.Blues, new HslShift(-10, 0.3f, -0.2f)).With(HueBand.Greens, new HslShift(15, -0.2f, 0)), i.Photo)),
+        (new("Straighten 5°", 1684, 88, 122), i => Apply(new StraightenOperation(5), i.Photo)),
+        (new("Paint layer, 20 long strokes", 1383, 179, 134), i => Composite(i.Photo, i.Paint)),
+        (new("Motion blur 20px", 618, 267, 142), i => Apply(new MotionBlurFilter(20, 0), i.Photo)),
+        (new("Isolated group: paint and a multiplied fill", 3281, 372, 225), i => Composite(i.Photo,
+            new GroupLayer([i.Paint, new FillLayer(new Rgba32(250, 220, 160)) { BlendMode = BlendMode.Multiply }]) { Isolated = true })),
+        (new("A fill clipped to the paint layer", 2313, 327, 200), i => Composite(i.Photo, i.Paint, new FillLayer(new Rgba32(40, 90, 200)) { ClipToLayerBelow = true })),
+    ];
+
+    private static ImageBuffer Apply(IImageOperation operation, ImageBuffer source) => operation.Apply(source, OperationContext.Default.WithMutation(false));
+
+    private static ImageBuffer Composite(ImageBuffer source, params Layer[] layers)
+    {
+        var target = source.Clone();
+        LayerCompositor.Composite(target, layers);
+        return target;
+    }
+
+    private readonly List<EditingResult> _editing = [];
+    private bool _measuringEditing;
     private string _current = "";
     private bool _busy;
     private bool _disposed;
@@ -266,6 +384,40 @@
         }
 
         _busy = false;
+    }
+
+    private async Task RunEditingAsync()
+    {
+        _busy = true;
+        _measuringEditing = true;
+        _editing.Clear();
+        _current = "the images";
+        StateHasChanged();
+        await Task.Yield();
+
+        using var images = new EditingImages(1920, 1080);
+        foreach (var (reference, run) in EditingBenchmarks)
+        {
+            if (_disposed) break;
+            _current = reference.Name.ToLowerInvariant();
+            StateHasChanged();
+            await Task.Yield();
+
+            // One warm-up, then the best of three, as above.
+            var best = TimeSpan.MaxValue;
+            for (var attempt = 0; attempt < 4 && !_disposed; attempt++)
+            {
+                var started = System.Diagnostics.Stopwatch.StartNew();
+                run(images)?.Dispose();
+                started.Stop();
+                if (attempt > 0 && started.Elapsed < best) best = started.Elapsed;
+                await Task.Yield();
+            }
+            _editing.Add(new EditingResult(reference.Name, best, reference));
+        }
+
+        _busy = false;
+        _measuringEditing = false;
     }
 
     public void Dispose() => _disposed = true;

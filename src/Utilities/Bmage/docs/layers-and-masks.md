@@ -122,7 +122,7 @@ ImageBuffer (original pixels, never modified)
         │
 ImageDocument
    ├── ImagePipeline ── operations, some of them through masks
-   ├── Layers        ── image, fill and adjustment layers, each with a blend mode, an opacity and a mask
+   ├── Layers        ── image, fill, adjustment, paint and group layers, each with a blend mode, an opacity and a mask
    └── Annotations   ── arrows, text, redactions, drawn last
 ```
 
@@ -132,6 +132,7 @@ ImageDocument
 | `FillLayer` | A colour over the whole image, usually shaped by a mask: a colour wash, a gradient fade, a duotone. |
 | `AdjustmentLayer` | An edit of everything beneath it. Unlike a pipeline step it also applies to the layers below, and it can be reordered, hidden or faded without touching anything else. |
 | `PaintLayer` | Brush strokes painted onto transparency: freehand colour, hand retouching, and an eraser that removes the layer's own paint. Strokes, not pixels, so history stays small. |
+| `GroupLayer` | Other layers kept together, shown, hidden, faded, masked and moved as one. See [Groups and clipping](#groups-and-clipping). |
 
 ```csharp
 var document = ImageDocument.Create(photo)
@@ -151,11 +152,50 @@ var document = ImageDocument.Create(photo)
 using var rendered = new DocumentRenderer().Render(document, photo);
 ```
 
-Every layer has `Id`, `Name`, `BlendMode`, `Opacity`, `Mask`, `IsVisible` and `IsLocked`. Its coordinates, the mask's
-included, are those of the pipeline's output. `ImageDocument` edits them like annotations: `AddLayer`, `UpdateLayer`
-(by id), `RemoveLayer`, `MoveLayer`, `DuplicateLayer` (a copy under a new id, directly above) and `ClearLayers`.
-`Layer.Transform(matrix)` moves one with the image; `ImageDocument.AddOperation(op, keepOverlaysAttached: true)` does
-it for every layer and annotation at once.
+Every layer has `Id`, `Name`, `BlendMode`, `Opacity`, `Mask`, `IsVisible`, `IsLocked` and `ClipToLayerBelow`. Its
+coordinates, the mask's included, are those of the pipeline's output. `ImageDocument` edits them like annotations:
+`AddLayer`, `UpdateLayer` (by id), `RemoveLayer`, `MoveLayer`, `DuplicateLayer` (a copy under a new id, directly above),
+`FindLayer` and `ClearLayers`, which reach layers inside groups too. `Layer.Transform(matrix)` moves one with the image;
+`ImageDocument.AddOperation(op, keepOverlaysAttached: true)` does it for every layer and annotation at once.
+
+### Groups and clipping
+
+A `GroupLayer` holds other layers, bottom first, and is itself a layer: hide it, fade it, mask it or move it and its
+layers go with it. Groups nest, at most `GroupLayer.MaxDepth` (10) deep.
+
+```csharp
+// Group two layers already in the document, then fade them together.
+document = document.GroupLayers([plate.Id, caption.Id], out var groupId, name: "Caption");
+document = document.UpdateLayer(document.FindLayer(groupId!.Value)! with { Opacity = 0.8f });
+
+document = document.MoveLayerIntoGroup(logo.Id, groupId.Value);   // on top of the group's layers
+document = document.MoveLayerOutOfGroup(logo.Id);                 // directly above the group again
+document = document.Ungroup(groupId.Value);                       // its layers, where it was
+```
+
+How a group composites:
+
+| Group | Its layers | An adjustment layer inside it |
+| --- | --- | --- |
+| Pass-through (the default) | blend onto what is beneath the group exactly as they would without it; the group's opacity and mask then fade the result back towards what was there | edits everything beneath it, outside the group too |
+| `Isolated = true`, or a `BlendMode` other than `SourceOver` | composite on their own over transparency, and that image is blended onto what is beneath with the group's mode, opacity and mask | edits only the group's other layers |
+
+An isolated group costs a buffer the size of the image while it is drawn. A mask that reads colours (`FloodMask`, a
+colour range) reads what it is drawn onto, which inside an isolated group is the group's own pixels.
+
+`ClipToLayerBelow` clips a layer to the nearest layer below it that is not clipped, the base: the layer shows only where
+the base does, a texture inside lettering or an adjustment of one layer alone. The base and the layers clipped to it
+are drawn together, as if the base were opaque beneath them, then limited to the base's transparency and blended with
+the base's own mode and opacity, so fading the base fades them too and hiding it hides them. An adjustment layer
+clipped to a base sees its real transparency, so a blur in it does not pull in the colour of what is transparent. The
+lowest layer of a list has nothing to clip to and is drawn as usual.
+
+```csharp
+document = document
+    .AddLayer(new ImageLayer { Image = lettering, Bounds = titleArea })
+    .AddLayer(new ImageLayer { Image = woodTexture, Bounds = titleArea, ClipToLayerBelow = true })
+    .AddLayer(new AdjustmentLayer(ImagePipeline.Create().Contrast(0.2f)) { ClipToLayerBelow = true });
+```
 
 ### Painting
 
@@ -203,8 +243,10 @@ using var card = LayerCompositor.Flatten(new Size(1200, 630), Rgba32.White,
 
 `BmageEditor` previews and exports layers like every other edit: on the proxy while editing, at full resolution on
 export. The preview keeps the composite while only annotations change, so moving an arrow over an expensive adjustment
-layer does not composite the layers again. The panel's Layers tab lists them with show, hide and delete; custom chrome
-drives them through the context:
+layer does not composite the layers again. The panel's Layers tab lists them, a group's layers under it, with show,
+hide, lock, reorder, duplicate and delete on each row; the selected layer's opacity, blend mode and clipping; and
+grouping it with the layer below (or moving it into the group below), moving it out of its group, and ungrouping.
+Custom chrome drives them through the context:
 
 ```csharp
 await editor.AddLayerAsync(new FillLayer(new Rgba32(40, 110, 220)) { BlendMode = BlendMode.Color, Opacity = 0.4f });

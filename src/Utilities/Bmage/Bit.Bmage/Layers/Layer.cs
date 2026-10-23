@@ -1,6 +1,7 @@
 ﻿using System.Buffers;
 using System.Drawing;
 using System.Numerics;
+using System.Runtime.InteropServices;
 using Bit.Bmage.Drawing;
 using Bit.Bmage.Geometry;
 using Bit.Bmage.Masks;
@@ -12,9 +13,10 @@ namespace Bit.Bmage.Layers;
 
 /// <summary>
 /// One layer of a composition, blended onto everything beneath it: placed pixels (<see cref="ImageLayer"/>), a colour
-/// (<see cref="FillLayer"/>), or an edit of what is below (<see cref="AdjustmentLayer"/>). Every layer has a blend
-/// mode, an opacity and an optional mask, and like operations and annotations it is an immutable value, so layer
-/// edits get undo, redo and proxy previews for free.
+/// (<see cref="FillLayer"/>), an edit of what is below (<see cref="AdjustmentLayer"/>), painted strokes
+/// (<see cref="PaintLayer"/>) or other layers kept together (<see cref="GroupLayer"/>). Every layer has a blend mode,
+/// an opacity and an optional mask, may be clipped to the layer below it, and like operations and annotations it is an
+/// immutable value, so layer edits get undo, redo and proxy previews for free.
 /// </summary>
 /// <remarks>
 /// Coordinates, including the mask's, are those of the image the layer is composited onto: in an
@@ -46,6 +48,15 @@ public abstract record Layer
 
     /// <summary>Whether an editor should prevent the user from changing this layer.</summary>
     public bool IsLocked { get; init; }
+
+    /// <summary>
+    /// Whether the layer shows only where the nearest layer below it that is not clipped shows: the clipping mask of
+    /// photo editors, for a texture inside lettering or an adjustment of one layer alone. That base layer and the layers
+    /// clipped to it are drawn together, as if the base were opaque beneath them, then limited to its transparency and
+    /// blended with its blend mode and opacity; hiding the base hides them too. The lowest layer of a list has nothing to
+    /// clip to and is drawn as usual.
+    /// </summary>
+    public bool ClipToLayerBelow { get; init; }
 
     /// <summary>A short type name for UI and serialisation, e.g. "Image".</summary>
     public abstract string Kind { get; }
@@ -85,6 +96,9 @@ public abstract record Layer
 
     /// <summary>The layer with its own geometry transformed; the mask is transformed by <see cref="Transform"/>.</summary>
     protected virtual Layer TransformCore(Matrix3x2 matrix) => this;
+
+    /// <summary>A copy under a new id, and new ids for every layer it holds, as a duplicate needs.</summary>
+    internal virtual Layer WithNewIds() => this with { Id = Guid.NewGuid() };
 
     /// <summary>The layer's pixels for row <paramref name="y"/> of the target, starting at the composited area's left.</summary>
     protected delegate ReadOnlySpan<Rgba32> LayerRow(int y);
@@ -424,20 +438,135 @@ public static class LayerCompositor
         ArgumentNullException.ThrowIfNull(target);
         ArgumentNullException.ThrowIfNull(layers);
         context ??= OperationContext.Default;
-        var list = layers as IReadOnlyList<Layer> ?? [.. layers];
         cache?.Begin();
-        for (var i = 0; i < list.Count; i++)
+        CompositeList(target, layers as IReadOnlyList<Layer> ?? [.. layers], context, cache);
+        cache?.End();
+    }
+
+    /// <summary>
+    /// Blends a list of layers, bottom first, the layers clipped to one drawn with it; groups composite their own lists
+    /// the same way. Reports progress by the share of the list done.
+    /// </summary>
+    internal static void CompositeList(ImageBuffer target, IReadOnlyList<Layer> list, OperationContext context, LayerImageCache? cache)
+    {
+        for (var i = 0; i < list.Count;)
         {
             context.ThrowIfCancellationRequested();
+            var end = i + 1;
+            while (end < list.Count && list[end].ClipToLayerBelow) end++;
             // Each layer reports its progress within its own share of the whole.
-            var progress = context.Progress is null ? null : new ScaledProgress(context.Progress, i / (double)list.Count, 1.0 / list.Count);
-            if (cache is not null && list[i] is ImageLayer image) image.Composite(target, context.WithProgress(progress), cache);
-            else list[i].Composite(target, context.WithProgress(progress));
+            var progress = context.Progress is null ? null : new ScaledProgress(context.Progress, i / (double)list.Count, (end - i) / (double)list.Count);
+            var part = context.WithProgress(progress);
+            if (end == i + 1) CompositeOne(list[i], target, part, cache);
+            else CompositeClipped(list[i], list, i + 1, end, target, part, cache);
             // A layer blended on one thread reports nothing along the way, so its end is reported here.
-            context.ReportProgress((i + 1) / (double)list.Count);
+            context.ReportProgress(end / (double)list.Count);
+            i = end;
         }
-        cache?.End();
         if (list.Count == 0) context.ReportProgress(1);
+    }
+
+    private static void CompositeOne(Layer layer, ImageBuffer target, OperationContext context, LayerImageCache? cache)
+    {
+        switch (layer)
+        {
+            case ImageLayer image when cache is not null:
+                image.Composite(target, context, cache);
+                break;
+            case GroupLayer group:
+                group.Composite(target, context, cache);
+                break;
+            default:
+                layer.Composite(target, context);
+                break;
+        }
+    }
+
+    /// <summary>
+    /// A base layer and the layers clipped to it, <paramref name="list"/>[<paramref name="from"/>..<paramref name="to"/>):
+    /// drawn together over transparency, the base at full strength, then blended with the base's mode and opacity.
+    /// </summary>
+    private static void CompositeClipped(Layer bottom, IReadOnlyList<Layer> list, int from, int to, ImageBuffer target, OperationContext context, LayerImageCache? cache)
+    {
+        // A hidden base hides what is clipped to it.
+        if (bottom.IsNoOp) return;
+        var inner = context.WithProgress(null);
+        using var stack = ImageBuffer.Create(target.Width, target.Height, context.Allocator, clear: true, ImageLimits.Unrestricted);
+        CompositeOne(bottom with { BlendMode = BlendMode.SourceOver, Opacity = 1 }, stack, inner, cache);
+
+        // The base's transparency, which the layers clipped to it are limited to, and the area it covers: outside it
+        // the base is transparent, so nothing clipped to it can show there and nothing outside it is blended.
+        int width = stack.Width, pixels = width * stack.Height;
+        var bytes = MemoryMarshal.AsBytes(stack.Pixels);
+        var alpha = ArrayPool<byte>.Shared.Rent(pixels);
+        try
+        {
+            int minX = width, maxX = -1, minY = -1, maxY = -1;
+            for (var y = 0; y < stack.Height; y++)
+            {
+                int start = y * width, first = -1, last = -1;
+                for (var x = 0; x < width; x++)
+                {
+                    var a = alpha[start + x] = bytes[(start + x) * 4 + 3];
+                    if (a == 0) continue;
+                    if (first < 0) first = x;
+                    last = x;
+                }
+                if (first < 0) continue;
+                if (minY < 0) minY = y;
+                maxY = y;
+                minX = Math.Min(minX, first);
+                maxX = Math.Max(maxX, last);
+            }
+            if (minY < 0) return;
+            var area = Rectangle.FromLTRB(minX, minY, maxX + 1, maxY + 1);
+
+            var opaque = false;
+            var drawnOutside = false;
+            for (var i = from; i < to; i++)
+            {
+                var layer = list[i];
+                if (layer.IsNoOp) continue;
+                // A layer of pixels blends onto the base as if it were opaque, which is what limiting the result to the
+                // base's transparency afterwards needs; an edit sees the base's real transparency, so a blur in it does
+                // not pull in the colour of what is transparent, nor what a layer drew outside the base.
+                var wantOpaque = layer is not AdjustmentLayer;
+                if (wantOpaque && !opaque) SetAlpha(bytes, alpha, width, area, opaque: true);
+                else if (opaque || drawnOutside) SetAlpha(bytes, alpha, width, drawnOutside ? stack.Bounds : area, opaque: false);
+                opaque = wantOpaque;
+                drawnOutside = wantOpaque;
+                CompositeOne(layer, stack, inner, cache);
+            }
+            SetAlpha(bytes, alpha, width, area, opaque: false);
+            new StackLayer(stack, area) { BlendMode = bottom.BlendMode, Opacity = bottom.Opacity }.Composite(target, context);
+        }
+        finally
+        {
+            ArrayPool<byte>.Shared.Return(alpha);
+        }
+    }
+
+    /// <summary>Sets the alpha of every pixel in <paramref name="area"/> to opaque, or back to the base's.</summary>
+    private static void SetAlpha(Span<byte> bytes, byte[] alpha, int width, Rectangle area, bool opaque)
+    {
+        for (var y = area.Top; y < area.Bottom; y++)
+        {
+            var start = y * width + area.Left;
+            var end = start + area.Width;
+            if (opaque) for (var p = start; p < end; p++) bytes[p * 4 + 3] = 255;
+            else for (var p = start; p < end; p++) bytes[p * 4 + 3] = alpha[p];
+        }
+    }
+
+    /// <summary>Layers already composited together, blended onto the target as one over <paramref name="Area"/>.</summary>
+    private sealed record StackLayer(ImageBuffer Pixels, Rectangle Area) : Layer
+    {
+        public override string Kind => "Stack";
+
+        protected internal override void CompositeCore(ImageBuffer target, OperationContext context)
+            => BlendRows(target, Area, context, y => Pixels.GetRow(y)[Area.Left..]);
+
+        protected override Layer ScaleCore(double scale) => this;
     }
 
     /// <summary>

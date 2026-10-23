@@ -433,6 +433,8 @@ public class EditingToolBenchmarks
     private ImageBuffer _source = null!;
     private ImageBuffer _product = null!;
     private Layers.PaintLayer _paint = null!;
+    private Layers.GroupLayer _group = null!;
+    private Layers.Layer[] _clipped = null!;
 
     [Params("1920x1080", "3840x2160")]
     public string Size { get; set; } = "1920x1080";
@@ -454,6 +456,8 @@ public class EditingToolBenchmarks
             strokes.Add(new Layers.PaintStroke(points, 24, new Rgba32(200, 40, 40)) { Hardness = 0.6f });
         }
         _paint = new Layers.PaintLayer(strokes);
+        _group = new Layers.GroupLayer([_paint, new Layers.FillLayer(new Rgba32(250, 220, 160)) { BlendMode = Drawing.BlendMode.Multiply }]) { Isolated = true };
+        _clipped = [_paint, new Layers.FillLayer(new Rgba32(40, 90, 200)) { ClipToLayerBelow = true }];
     }
 
     [GlobalCleanup]
@@ -522,6 +526,22 @@ public class EditingToolBenchmarks
 
     [Benchmark(Description = "Trim bounds")]
     public int Trim() => Analysis.ContentBounds.Find(_product)!.Value.Width;
+
+    [Benchmark(Description = "Isolated group: paint and a multiplied fill")]
+    public int Group()
+    {
+        using var target = _source.Clone();
+        _group.Composite(target, Images.OneThread);
+        return target.Width;
+    }
+
+    [Benchmark(Description = "A fill clipped to the paint layer")]
+    public int Clipped()
+    {
+        using var target = _source.Clone();
+        Layers.LayerCompositor.Composite(target, _clipped, Images.OneThread);
+        return target.Width;
+    }
 }
 
 public static class Program

@@ -148,6 +148,14 @@ public sealed record BmageEditorStrings
     public string BlendMode { get; init; } = "Blend mode";
     public string MoveUp { get; init; } = "Move up";
     public string MoveDown { get; init; } = "Move down";
+    public string Group { get; init; } = "Group";
+    public string GroupWithLayerBelow { get; init; } = "Group with layer below";
+    public string MoveIntoGroupBelow { get; init; } = "Move into group below";
+    public string MoveOutOfGroup { get; init; } = "Move out of group";
+    public string Ungroup { get; init; } = "Ungroup";
+    public string ClipToLayerBelow { get; init; } = "Clip to layer below";
+    public string BlendGroupAsOne { get; init; } = "Blend the group as one";
+    public string GroupTooDeep { get; init; } = "Groups cannot be nested any deeper.";
     public string Lock { get; init; } = "Lock";
     public string Unlock { get; init; } = "Unlock";
     public string NoPaintLayer { get; init; } = "There is no paint to erase yet. The eraser removes paint from a paint layer.";

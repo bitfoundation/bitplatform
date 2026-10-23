@@ -17,7 +17,8 @@ uses them. Uses the **Microsoft.Testing.Platform** runner (mandated by the repo 
 | `JsModuleContractTests` | The JS module's own contracts: aspect-preserving decode limits, natural-size decode, no silent PNG substitution, no resource or heap growth. |
 | `EditorLifecycleTests` | Repeated navigation, named and reachable controls, roving tab focus, keyboard focus, and rapid input. |
 | `DemoRegressionTests` | Defects found by driving the demo: overlay alignment, crop handles, pan, selection, undo of a move, history, paste, failing batches, toggle state, the headless examples. |
-| `EditingToolTests` | The brush, eraser, fill, eyedropper and compare tools, straighten and canvas size from the Transform tab, an arrow staying on its target through a quarter turn, a layer's opacity and blend mode, accessible names of the new controls, and a project saved, reopened and still editable. |
+| `EditingToolTests` | The brush, eraser, fill, eyedropper and compare tools, straighten and canvas size from the Transform tab, an arrow staying on its target through a quarter turn, a layer's opacity and blend mode, clipping and grouping layers, the selection tools and actions, the histogram, the busy state of a long action, accessible names of the new controls, and a project saved, reopened and still editable. |
+| `PerformanceMeasurements` | Opt-in (`BMAGE_E2E_MEASURE=1`): runs the editing tools' benchmark on the performance page and writes the timings to a file, for the WebAssembly columns of `docs/performance.md`. Inconclusive otherwise. |
 
 ## First-time setup
 
@@ -69,6 +70,8 @@ ahead of time) is several times faster.
 | `BMAGE_E2E_EXECUTABLE` | Full path to a chromium-family executable. |
 | `BMAGE_E2E_HEADED` | `1`: watch the run in a visible window. |
 | `BMAGE_E2E_BROWSER` | `chromium` (the default), `firefox` or `webkit`: run the suite in Playwright's build of that engine. Install it first with `playwright.ps1 install firefox` or `install webkit`. A channel or an executable applies to Chromium only. |
+| `BMAGE_E2E_MEASURE` | `1`: run `PerformanceMeasurements`. Point `BMAGE_E2E_HOST_URL` at a Release publish of the demo: AOT by default, the interpreter with `-p:RunAOTCompilation=false`. |
+| `BMAGE_E2E_MEASURE_OUT` | Where the measurements are written, tab separated; `bmage-measurements.tsv` in the temporary folder by default. |
 
 When no browser can be launched at all, every test reports **Inconclusive** with the reason rather than failing, so a
 checkout without browsers still runs the rest of the repository's suites.

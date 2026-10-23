@@ -400,6 +400,9 @@ internal static class BuiltInCodecs
                     .Write("pressureAffectsSize", stroke.PressureAffectsSize).Write("pressureAffectsOpacity", stroke.PressureAffectsOpacity);
             }),
             r => new PaintLayer([.. r.GetObjects("strokes").Select(ReadPaintStroke)])),
+        LayerOf<GroupLayer>("group",
+            (w, l) => { w.Write("layers", l.Layers); if (l.Isolated) w.Write("isolated", true); },
+            r => new GroupLayer(r.GetArray<Layer>("layers")) { Isolated = r.GetBoolean("isolated") }),
     ];
 
     private static PaintStroke ReadPaintStroke(BmageJsonReader s)
@@ -431,6 +434,7 @@ internal static class BuiltInCodecs
                 if (layer.Mask is not null) w.Write("mask", layer.Mask);
                 if (!layer.IsVisible) w.Write("isVisible", false);
                 if (layer.IsLocked) w.Write("isLocked", true);
+                if (layer.ClipToLayerBelow) w.Write("clipToLayerBelow", true);
                 write(w, (T)value);
             },
             r =>
@@ -445,6 +449,7 @@ internal static class BuiltInCodecs
                     Mask = r.GetMask("mask"),
                     IsVisible = r.GetBoolean("isVisible", true),
                     IsLocked = r.GetBoolean("isLocked"),
+                    ClipToLayerBelow = r.GetBoolean("clipToLayerBelow"),
                 };
             });
 

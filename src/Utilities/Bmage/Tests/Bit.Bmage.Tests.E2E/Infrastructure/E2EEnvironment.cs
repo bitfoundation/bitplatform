@@ -47,6 +47,15 @@ public static class E2EEnvironment
     /// </summary>
     public static string Browser { get; } = Read("BMAGE_E2E_BROWSER")?.ToLowerInvariant() ?? "chromium";
 
+    /// <summary>
+    /// <c>BMAGE_E2E_MEASURE=1</c>: run <see cref="PerformanceMeasurements"/>, which measures rather than checks and is
+    /// only worth running against a Release publish of the demo (<see cref="HostUrl"/>).
+    /// </summary>
+    public static bool Measure { get; } = Read("BMAGE_E2E_MEASURE") == "1";
+
+    /// <summary><c>BMAGE_E2E_MEASURE_OUT</c>: the file the measurements are written to, tab separated; a temporary file by default.</summary>
+    public static string MeasureOutput { get; } = Read("BMAGE_E2E_MEASURE_OUT") ?? Path.Combine(Path.GetTempPath(), "bmage-measurements.tsv");
+
     private static string? Read(string name)
     {
         var value = Environment.GetEnvironmentVariable(name);

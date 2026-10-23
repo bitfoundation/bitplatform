@@ -1,4 +1,6 @@
 ﻿using System.Drawing;
+using System.Runtime.InteropServices;
+using System.Runtime.Intrinsics;
 
 namespace Bit.Bmage.Analysis;
 
@@ -81,24 +83,22 @@ public static class ContentBounds
             TrimMode.Color => false,
             _ => HasTransparentCorner(image, tolerance),
         };
-        var background = options.Color ?? image.GetRow(0)[0];
-        bool IsBackground(Rgba32 p) => transparent
-            ? p.A <= tolerance
-            : Math.Abs(p.R - background.R) <= tolerance && Math.Abs(p.G - background.G) <= tolerance
-                && Math.Abs(p.B - background.B) <= tolerance && Math.Abs(p.A - background.A) <= tolerance;
+        // Transparency is background whatever its colour: every colour channel may differ entirely.
+        var background = new Background(transparent ? default : options.Color ?? image.GetRow(0)[0],
+            transparent ? new Rgba32(255, 255, 255, (byte)tolerance) : new Rgba32((byte)tolerance, (byte)tolerance, (byte)tolerance, (byte)tolerance));
 
         // Rows from the top and the bottom until one holds content, then only the columns outside the content found so
         // far: the cost is the border's pixels, not the image's.
         int width = image.Width, height = image.Height;
         var top = 0;
-        while (top < height && RowIsBackground(image.GetRow(top), IsBackground))
+        while (top < height && background.FirstContent(image.GetRow(top)) < 0)
         {
             if ((top & 63) == 0) cancellationToken.ThrowIfCancellationRequested();
             top++;
         }
         if (top == height) return null;
         var bottom = height - 1;
-        while (bottom > top && RowIsBackground(image.GetRow(bottom), IsBackground))
+        while (bottom > top && background.FirstContent(image.GetRow(bottom)) < 0)
         {
             if ((bottom & 63) == 0) cancellationToken.ThrowIfCancellationRequested();
             bottom--;
@@ -108,18 +108,8 @@ public static class ContentBounds
         {
             if (((y - top) & 63) == 0) cancellationToken.ThrowIfCancellationRequested();
             var row = image.GetRow(y);
-            for (var x = 0; x < left; x++)
-            {
-                if (IsBackground(row[x])) continue;
-                left = x;
-                break;
-            }
-            for (var x = width - 1; x > right; x--)
-            {
-                if (IsBackground(row[x])) continue;
-                right = x;
-                break;
-            }
+            if (background.FirstContent(row[..left]) is var first and >= 0) left = first;
+            if (background.LastContent(row[(right + 1)..]) is var last and >= 0) right += 1 + last;
         }
 
         var bounds = Rectangle.FromLTRB(left, top, right + 1, bottom + 1);
@@ -128,11 +118,52 @@ public static class ContentBounds
         return bounds;
     }
 
-    private static bool RowIsBackground(ReadOnlySpan<Rgba32> row, Func<Rgba32, bool> isBackground)
+    /// <summary>
+    /// A background colour and how far each channel may stray from it, tested four pixels at a time where vectors are
+    /// accelerated, as they are with WebAssembly's SIMD: the trim then costs about what reading the border does.
+    /// </summary>
+    private readonly struct Background(Rgba32 color, Rgba32 tolerance)
     {
-        foreach (var p in row)
-            if (!isBackground(p)) return false;
-        return true;
+        private readonly Vector128<byte> _color = Vector128.Create(color.R, color.G, color.B, color.A, color.R, color.G, color.B, color.A, color.R, color.G, color.B, color.A, color.R, color.G, color.B, color.A);
+        private readonly Vector128<byte> _tolerance = Vector128.Create(tolerance.R, tolerance.G, tolerance.B, tolerance.A, tolerance.R, tolerance.G, tolerance.B, tolerance.A, tolerance.R, tolerance.G, tolerance.B, tolerance.A, tolerance.R, tolerance.G, tolerance.B, tolerance.A);
+
+        public bool Matches(Rgba32 p)
+            => Math.Abs(p.R - color.R) <= tolerance.R && Math.Abs(p.G - color.G) <= tolerance.G
+               && Math.Abs(p.B - color.B) <= tolerance.B && Math.Abs(p.A - color.A) <= tolerance.A;
+
+        /// <summary>The index of the first pixel that is not background, or -1.</summary>
+        public int FirstContent(ReadOnlySpan<Rgba32> row)
+        {
+            var x = 0;
+            if (Vector128.IsHardwareAccelerated)
+            {
+                var bytes = MemoryMarshal.AsBytes(row);
+                for (; x + 4 <= row.Length; x += 4)
+                    if (Strays(Vector128.Create(bytes.Slice(x * 4, 16)))) break;
+            }
+            for (; x < row.Length; x++)
+                if (!Matches(row[x])) return x;
+            return -1;
+        }
+
+        /// <summary>The index of the last pixel that is not background, or -1.</summary>
+        public int LastContent(ReadOnlySpan<Rgba32> row)
+        {
+            var x = row.Length;
+            if (Vector128.IsHardwareAccelerated)
+            {
+                var bytes = MemoryMarshal.AsBytes(row);
+                for (; x >= 4; x -= 4)
+                    if (Strays(Vector128.Create(bytes.Slice((x - 4) * 4, 16)))) break;
+            }
+            for (x--; x >= 0; x--)
+                if (!Matches(row[x])) return x;
+            return -1;
+        }
+
+        /// <summary>Whether any channel of the four pixels strays further from the background than allowed.</summary>
+        private bool Strays(Vector128<byte> pixels)
+            => Vector128.GreaterThanAny(Vector128.Max(pixels, _color) - Vector128.Min(pixels, _color), _tolerance);
     }
 
     private static bool HasTransparentCorner(ImageBuffer image, int tolerance)

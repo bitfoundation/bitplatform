@@ -1605,6 +1605,40 @@
         if (copy is not null) _activeLayerId = copy;
     }
 
+    /// <summary>
+    /// Groups a layer with the one directly below it in the same list, and selects the group; when that one is a group
+    /// already, moves the layer into it, on top of its layers. Does nothing for the lowest layer of a list.
+    /// </summary>
+    public async Task GroupWithLayerBelowAsync(Guid id)
+    {
+        if (_session?.Document is not { } document || !document.TryLocateLayer(id, out var parent, out var index) || index == 0) return;
+        var below = (parent?.Layers ?? document.Layers)[index - 1];
+        Guid? group = null;
+        try
+        {
+            if (below is GroupLayer existing) await ApplyAndRenderAsync(d => d.MoveLayerIntoGroup(id, existing.Id), Strings.MoveIntoGroupBelow);
+            else await ApplyAndRenderAsync(d => d.GroupLayers([below.Id, id], out group, Strings.Group), Strings.Group);
+        }
+        catch (ArgumentException)
+        {
+            // Nothing was applied: the change is refused before it reaches the history.
+            ShowMessage(Strings.GroupTooDeep, isError: true);
+            return;
+        }
+        if (group is not null) _activeLayerId = group;
+    }
+
+    /// <summary>Replaces a group by its layers, where it was. The group's own opacity, blend mode and mask go with it.</summary>
+    public async Task UngroupAsync(Guid id)
+    {
+        if (_session?.Document.FindLayer(id) is not GroupLayer) return;
+        await ApplyAndRenderAsync(d => d.Ungroup(id), Strings.Ungroup);
+        if (_activeLayerId == id) _activeLayerId = null;
+    }
+
+    /// <summary>Moves a layer out of the group that holds it, directly above the group.</summary>
+    public Task MoveLayerOutOfGroupAsync(Guid id) => ApplyAndRenderAsync(d => d.MoveLayerOutOfGroup(id), Strings.MoveOutOfGroup);
+
     /// <summary>Adds or updates an adjustment, replacing any existing one of the same type so sliders stay live.</summary>
     public Task SetAdjustmentAsync<TOperation>(TOperation? operation, string label, bool transient = false) where TOperation : class, IImageOperation
         => ApplyAndRenderAsync(d =>
@@ -1834,6 +1868,9 @@
         StateHasChanged();
         try
         {
+            // On WebAssembly .NET runs on the page's thread, and a render of one step never yields: without this the
+            // busy state, the disabled controls and aria-busy would only reach the page once the work was over.
+            await Task.Yield();
             await action();
         }
         catch (Exception ex)

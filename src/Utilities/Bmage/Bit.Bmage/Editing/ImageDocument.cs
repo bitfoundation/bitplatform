@@ -49,7 +49,8 @@ public sealed record ImageDocument
 
     /// <summary>
     /// Layers composited onto the pipeline's output, bottom first, before the annotations are drawn over them: placed
-    /// images, colour fills and adjustment layers, each with a blend mode, an opacity and an optional mask.
+    /// images, colour fills, adjustment, paint and group layers, each with a blend mode, an opacity and an optional mask.
+    /// The layers inside groups are in each <see cref="GroupLayer.Layers"/>; the layer edits below find them at any depth.
     /// </summary>
     public IReadOnlyList<Layer> Layers => LayerList;
 
@@ -142,60 +143,165 @@ public sealed record ImageDocument
         return this with { LayerList = LayerList.Add(layer) };
     }
 
-    /// <summary>Returns a document with the layer of the same id replaced, or unchanged when the id is unknown.</summary>
+    /// <summary>Returns a document with the layer of the same id, at any depth, replaced, or unchanged when the id is unknown.</summary>
     public ImageDocument UpdateLayer(Layer layer)
     {
         ArgumentNullException.ThrowIfNull(layer);
-        var index = LayerList.FindIndex(l => l.Id == layer.Id);
-        return index < 0 || ReferenceEquals(LayerList[index], layer) ? this : this with { LayerList = LayerList.SetItem(index, layer) };
+        return EditLayers(layer.Id, (list, index) => ReferenceEquals(list[index], layer) ? list : list.SetItem(index, layer));
     }
 
-    /// <summary>Returns a document with a layer removed by id.</summary>
-    public ImageDocument RemoveLayer(Guid id)
-    {
-        var index = LayerList.FindIndex(l => l.Id == id);
-        return index < 0 ? this : this with { LayerList = LayerList.RemoveAt(index) };
-    }
+    /// <summary>Returns a document with a layer, at any depth, removed by id.</summary>
+    public ImageDocument RemoveLayer(Guid id) => EditLayers(id, (list, index) => list.RemoveAt(index));
 
     /// <summary>
-    /// Returns a document with a layer moved to <paramref name="index"/> in the stack, 0 being the bottom. The index is
-    /// clamped to the stack.
+    /// Returns a document with a layer moved to <paramref name="index"/> in the list that holds it, the document's or a
+    /// group's, 0 being the bottom. The index is clamped to that list.
     /// </summary>
-    public ImageDocument MoveLayer(Guid id, int index)
+    public ImageDocument MoveLayer(Guid id, int index) => EditLayers(id, (list, from) =>
     {
-        var from = LayerList.FindIndex(l => l.Id == id);
-        if (from < 0) return this;
-        var to = Math.Clamp(index, 0, LayerList.Count - 1);
-        if (to == from) return this;
-        var layer = LayerList[from];
-        return this with { LayerList = LayerList.RemoveAt(from).Insert(to, layer) };
-    }
+        var to = Math.Clamp(index, 0, list.Count - 1);
+        return to == from ? list : list.RemoveAt(from).Insert(to, list[from]);
+    });
 
     /// <summary>
     /// Returns a document with a copy of a layer, under a new id, placed directly above it; unchanged when the id is
-    /// unknown. The copy shares the original's pixels, which no layer owns.
+    /// unknown. The copy shares the original's pixels, which no layer owns; a group's copy holds copies of its layers,
+    /// under new ids too.
     /// </summary>
     public ImageDocument DuplicateLayer(Guid id) => DuplicateLayer(id, out _);
 
     /// <summary>Duplicates a layer as <see cref="DuplicateLayer(Guid)"/> does, returning the copy's id, or null when the id is unknown.</summary>
     public ImageDocument DuplicateLayer(Guid id, out Guid? copyId)
     {
-        var index = LayerList.FindIndex(l => l.Id == id);
-        if (index < 0)
+        Guid? made = null;
+        var next = EditLayers(id, (list, index) =>
         {
-            copyId = null;
-            return this;
-        }
-        var copy = LayerList[index] with { Id = Guid.NewGuid() };
-        copyId = copy.Id;
-        return this with { LayerList = LayerList.Insert(index + 1, copy) };
+            var copy = list[index].WithNewIds();
+            made = copy.Id;
+            return list.Insert(index + 1, copy);
+        });
+        copyId = made;
+        return next;
     }
 
     /// <summary>Returns a document with every layer removed.</summary>
     public ImageDocument ClearLayers() => LayerList.IsEmpty ? this : this with { LayerList = [] };
 
-    /// <summary>Finds a layer by id.</summary>
-    public Layer? FindLayer(Guid id) => LayerList.FirstOrDefault(l => l.Id == id);
+    /// <summary>Finds a layer by id, at any depth.</summary>
+    public Layer? FindLayer(Guid id) => TryLocateLayer(id, out var parent, out var index) ? (parent?.Layers ?? LayerList)[index] : null;
+
+    /// <summary>
+    /// Finds where a layer is: the group that holds it, or null for the document's own list, and its index in that list.
+    /// </summary>
+    public bool TryLocateLayer(Guid id, out GroupLayer? parent, out int index)
+    {
+        static bool Search(IReadOnlyList<Layer> list, GroupLayer? owner, Guid id, out GroupLayer? parent, out int index)
+        {
+            for (var i = 0; i < list.Count; i++)
+            {
+                if (list[i].Id != id) continue;
+                parent = owner;
+                index = i;
+                return true;
+            }
+            foreach (var layer in list)
+                if (layer is GroupLayer group && Search(group.Layers, group, id, out parent, out index)) return true;
+            parent = null;
+            index = -1;
+            return false;
+        }
+
+        return Search(LayerList, null, id, out parent, out index);
+    }
+
+    /// <summary>
+    /// Returns a document with the given layers, which must share one list, gathered into a new group where the topmost
+    /// of them was, in the order they were; unchanged, with a null id, when none of the ids is known.
+    /// </summary>
+    /// <exception cref="ArgumentException">The layers are in different lists, or the group would nest too deep.</exception>
+    public ImageDocument GroupLayers(IEnumerable<Guid> ids, out Guid? groupId, string? name = null)
+    {
+        ArgumentNullException.ThrowIfNull(ids);
+        var wanted = ids.ToHashSet();
+        groupId = null;
+        if (wanted.Count == 0) return this;
+        GroupLayer? owner = null;
+        var found = 0;
+        foreach (var id in wanted)
+        {
+            if (!TryLocateLayer(id, out var parent, out _)) continue;
+            if (found++ > 0 && !ReferenceEquals(parent, owner))
+                throw new ArgumentException("Only layers in the same list, the document's or one group's, can be grouped together.", nameof(ids));
+            owner = parent;
+        }
+        if (found == 0) return this;
+
+        var list = owner?.LayerList ?? LayerList;
+        var members = list.Where(l => wanted.Contains(l.Id)).ToArray();
+        var group = new GroupLayer(members) { Name = name };
+        // The group takes the topmost member's place, once the others, all below it, are out of the list.
+        var top = list.FindLastIndex(l => wanted.Contains(l.Id));
+        var regrouped = list.RemoveAll(l => wanted.Contains(l.Id)).Insert(top - (members.Length - 1), group);
+        groupId = group.Id;
+        return owner is null ? this with { LayerList = regrouped } : UpdateLayer(owner with { Layers = regrouped });
+    }
+
+    /// <summary>
+    /// Returns a document with a group replaced by its layers, in their order, where it was. The group's own opacity,
+    /// blend mode and mask go with it, as in photo editors. Unchanged when the id is not a group's.
+    /// </summary>
+    public ImageDocument Ungroup(Guid groupId) => EditLayers(groupId, (list, index) =>
+        list[index] is GroupLayer group ? list.RemoveAt(index).InsertRange(index, group.LayerList) : list);
+
+    /// <summary>
+    /// Returns a document with a layer moved, from wherever it is, to the top of a group's layers; unchanged when either
+    /// id is unknown, the target is not a group, or it is the layer or inside it.
+    /// </summary>
+    /// <exception cref="ArgumentException">The group would nest too deep.</exception>
+    public ImageDocument MoveLayerIntoGroup(Guid id, Guid groupId)
+    {
+        if (id == groupId || FindLayer(id) is not { } layer || FindLayer(groupId) is not GroupLayer) return this;
+        if (layer is GroupLayer moving && Contains(moving, groupId)) return this;
+        var removed = RemoveLayer(id);
+        return removed.FindLayer(groupId) is GroupLayer target ? removed.UpdateLayer(target with { Layers = target.LayerList.Add(layer) }) : this;
+    }
+
+    /// <summary>
+    /// Returns a document with a layer that is in a group moved out of it, directly above the group in the list that
+    /// holds the group; unchanged when the layer is unknown or not in a group.
+    /// </summary>
+    public ImageDocument MoveLayerOutOfGroup(Guid id)
+    {
+        if (!TryLocateLayer(id, out var parent, out var index) || parent is null) return this;
+        var layer = parent.LayerList[index];
+        var emptied = UpdateLayer(parent with { Layers = parent.LayerList.RemoveAt(index) });
+        return emptied.EditLayers(parent.Id, (list, at) => list.Insert(at + 1, layer));
+    }
+
+    private static bool Contains(GroupLayer group, Guid id)
+        => group.LayerList.Any(l => l.Id == id || (l is GroupLayer inner && Contains(inner, id)));
+
+    /// <summary>
+    /// The document with the list holding the layer of <paramref name="id"/>, at any depth, replaced by what
+    /// <paramref name="change"/> makes of it and the layer's index; unchanged when no layer has the id.
+    /// </summary>
+    private ImageDocument EditLayers(Guid id, Func<ImmutableList<Layer>, int, ImmutableList<Layer>> change)
+    {
+        static ImmutableList<Layer>? Edit(ImmutableList<Layer> list, Guid id, Func<ImmutableList<Layer>, int, ImmutableList<Layer>> change)
+        {
+            var index = list.FindIndex(l => l.Id == id);
+            if (index >= 0) return change(list, index);
+            for (var i = 0; i < list.Count; i++)
+            {
+                if (list[i] is not GroupLayer group || Edit(group.LayerList, id, change) is not { } edited) continue;
+                return ReferenceEquals(edited, group.LayerList) ? list : list.SetItem(i, group with { Layers = edited });
+            }
+            return null;
+        }
+
+        var next = Edit(LayerList, id, change);
+        return next is null || ReferenceEquals(next, LayerList) ? this : this with { LayerList = next };
+    }
 
     // ---- Annotation edits ----
 

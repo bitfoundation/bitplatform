@@ -190,6 +190,15 @@ public sealed class BmageEditorContext
     /// <summary>Duplicates a layer above itself and selects the copy.</summary>
     public Task DuplicateLayerAsync(Guid id) => _editor.DuplicateLayerAsync(id);
 
+    /// <summary>Groups a layer with the one below it, or moves it into the group below it. See <see cref="BmageEditor.GroupWithLayerBelowAsync"/>.</summary>
+    public Task GroupWithLayerBelowAsync(Guid id) => _editor.GroupWithLayerBelowAsync(id);
+
+    /// <summary>Replaces a group by its layers.</summary>
+    public Task UngroupAsync(Guid id) => _editor.UngroupAsync(id);
+
+    /// <summary>Moves a layer out of its group, directly above it.</summary>
+    public Task MoveLayerOutOfGroupAsync(Guid id) => _editor.MoveLayerOutOfGroupAsync(id);
+
     /// <summary>Adds an empty paint layer on top, selects it and picks the brush.</summary>
     public Task AddPaintLayerAsync() => _editor.AddPaintLayerAsync();
 

@@ -265,8 +265,9 @@ The panel's tabs: **Adjust** (a luminance histogram with its clipping, auto leve
 balance picker, every tonal slider, and a colour mixer of eight hue bands), **Filters** (exclusive looks, including
 black and white and duotone, and motion blur), **Transform** (straighten, resize with proportions kept, canvas size with
 an anchor and a background, trim), **Tools** (the style of the active tool), **Layers** (add a paint or image layer;
-select, show, lock, reorder, duplicate and delete layers; the selected layer's opacity and blend mode), **History** and
-**Export**.
+select, show, lock, reorder, duplicate and delete layers, a group's layers listed under it; the selected layer's
+opacity, blend mode and clipping to the layer below; group it with the layer below or move it into the group below,
+move it out of its group, ungroup, and blend a group as one), **History** and **Export**.
 
 The Compare button in the toolbar, or the backslash key, shows the original image until it is pressed again; any edit
 ends the comparison.

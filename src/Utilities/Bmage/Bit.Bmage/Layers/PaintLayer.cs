@@ -219,22 +219,43 @@ public sealed record PaintStroke
         if (x0 >= x1 || y0 >= y1 || strength <= 0) return;
         var hard = Hardness >= 0.999f;
         var inner = radius * Hardness;
+        // Beyond this distance the dab lays down nothing; within the core it lays down its whole strength, since the rim's
+        // anti-aliasing and a soft brush's fade both begin further out. Only the ring between needs a square root.
+        var reach = radius + 0.5f;
+        var reach2 = reach * reach;
+        var core = hard ? radius - 0.5f : Math.Min(radius - 0.5f, inner);
+        var core2 = core > 0 ? core * core : -1f;
         for (var y = y0; y < y1; y++)
         {
-            var row = coverage.Slice((y - area.Top) * area.Width, area.Width);
             var dy = y + 0.5f - centre.Y;
-            for (var x = x0; x < x1; x++)
+            var dy2 = dy * dy;
+            if (dy2 >= reach2) continue;
+            // The row's part of the dab, from the circle's equation, with half a pixel to spare on each side.
+            var half = MathF.Sqrt(reach2 - dy2);
+            var xs = Math.Max(x0, (int)MathF.Floor(centre.X - half - 0.5f));
+            var xe = Math.Min(x1, (int)MathF.Ceiling(centre.X + half + 0.5f));
+            var row = coverage.Slice((y - area.Top) * area.Width, area.Width);
+            for (var x = xs; x < xe; x++)
             {
                 var dx = x + 0.5f - centre.X;
-                var d = MathF.Sqrt(dx * dx + dy * dy);
-                // The rim is anti-aliased over a pixel either way; a soft brush also fades from its inner radius out.
-                var value = Math.Clamp(radius + 0.5f - d, 0f, 1f);
-                if (!hard && d > inner)
+                var d2 = dx * dx + dy2;
+                float value;
+                if (d2 <= core2)
                 {
-                    var t = Math.Clamp((d - inner) / (radius - inner), 0f, 1f);
-                    value *= 1 - t * t * (3 - 2 * t);
+                    value = strength;
                 }
-                value *= strength;
+                else
+                {
+                    var d = MathF.Sqrt(d2);
+                    // The rim is anti-aliased over a pixel either way; a soft brush also fades from its inner radius out.
+                    value = Math.Clamp(radius + 0.5f - d, 0f, 1f);
+                    if (!hard && d > inner)
+                    {
+                        var t = Math.Clamp((d - inner) / (radius - inner), 0f, 1f);
+                        value *= 1 - t * t * (3 - 2 * t);
+                    }
+                    value *= strength;
+                }
                 ref var c = ref row[x - area.Left];
                 if (value > c) c = value;
             }

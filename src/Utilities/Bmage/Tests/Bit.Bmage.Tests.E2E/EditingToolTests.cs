@@ -263,6 +263,46 @@ public class EditingToolTests : DemoTest
         Assert.IsLessThan(half[1], multiplied[1], "multiply darkens");
     }
 
+    /// <summary>A canvas condition: the pixel at a fraction of the canvas is exactly <paramref name="rgb"/>.</summary>
+    private static string PixelIs(double fx, double fy, IReadOnlyList<int> rgb) => FormattableString.Invariant(
+        $"(() => {{ const d = c.getContext('2d').getImageData(Math.floor(c.width * {fx}), Math.floor(c.height * {fy}), 1, 1).data; return d[0] === {rgb[0]} && d[1] === {rgb[1]} && d[2] === {rgb[2]}; }})()");
+
+    [TestMethod]
+    public async Task LayersAreClippedAndGroupedFromThePanel()
+    {
+        var page = await OpenEditorWithImageAsync();
+        var above = await ReadPixelAsync(page, 0.5, 0.25);
+        var beside = await ReadPixelAsync(page, 0.3, 0.5);
+        var crossing = await ReadPixelAsync(page, 0.5, 0.5);
+        int[] paint = [230, 40, 40];
+
+        // A stroke across on one paint layer, and one down on another above it.
+        await page.Locator(".bmg-tool[title=Brush]").ClickAsync();
+        await DragAsync(page, (0.2, 0.5), (0.8, 0.5));
+        await WaitForCanvasAsync(page, PixelIs(0.3, 0.5, paint));
+        await OpenTabAsync(page, "Layers");
+        await page.GetByRole(AriaRole.Button, new PageGetByRoleOptions { Name = "Add paint layer" }).ClickAsync();
+        await DragAsync(page, (0.5, 0.15), (0.5, 0.85));
+        await WaitForCanvasAsync(page, PixelIs(0.5, 0.25, paint));
+
+        // Clipped to the stroke below it, the upper one shows only where that one is.
+        var clip = page.GetByRole(AriaRole.Button, new PageGetByRoleOptions { Name = "Clip to layer below" });
+        await clip.ClickAsync();
+        await WaitForCanvasAsync(page, PixelIs(0.5, 0.25, above));
+        Assert.AreEqual("true", await clip.GetAttributeAsync("aria-pressed"));
+        CollectionAssert.AreEqual(paint, (await ReadPixelAsync(page, 0.5, 0.5))[..3], "where the strokes cross it still shows");
+
+        // Grouped, the two are listed under the group, and hidden with it.
+        await page.GetByRole(AriaRole.Button, new PageGetByRoleOptions { Name = "Group with layer below" }).ClickAsync();
+        var members = page.Locator(".bmg-layer-children .bmg-layer");
+        await members.First.WaitForAsync();
+        Assert.AreEqual(2, await members.CountAsync());
+        Assert.AreEqual("Group", await page.Locator(".bmg-layer-list > .bmg-layer-item > .bmg-layer .bmg-layer-name").InnerTextAsync());
+        await page.GetByRole(AriaRole.Button, new PageGetByRoleOptions { Name = "Hide: Group" }).ClickAsync();
+        await WaitForCanvasAsync(page, PixelIs(0.3, 0.5, beside));
+        CollectionAssert.AreEqual(crossing[..3], (await ReadPixelAsync(page, 0.5, 0.5))[..3], "nothing of either stroke where they crossed");
+    }
+
     [TestMethod]
     public async Task TheNewControlsAreNamedForAssistiveTechnology()
     {
@@ -317,6 +357,50 @@ public class EditingToolTests : DemoTest
         await WaitForCanvasAsync(page, "c.getContext('2d').getImageData(Math.floor(c.width * 0.2), Math.floor(c.height * 0.25), 1, 1).data[3] === 0");
         // Where the turned selection lay: x from 0.45 to 0.675, y from 0.13 to 0.4 of the image as it is again.
         Assert.AreEqual(255, (await ReadPixelAsync(page, 0.56, 0.25))[3], "the selection followed the image back");
+    }
+
+    [TestMethod]
+    public async Task ALongActionShowsTheEditorBusyAndHoldsUndoUntilItIsDone()
+    {
+        var page = await OpenAsync("annotate");
+        // Large enough that measuring it at full resolution takes a while.
+        var file = SampleImage.WriteToTempFile(6000, 4000, "large.png");
+        try
+        {
+            await page.SetInputFilesAsync(".bmg-editor input[type=file]", file);
+            await page.WaitForFunctionAsync("() => document.querySelector('.bmg-canvas')?.width > 1", null, new PageWaitForFunctionOptions { Timeout = 120_000 });
+        }
+        finally
+        {
+            File.Delete(file);
+        }
+        await ScrollEditorIntoViewAsync(page);
+
+        // A white band on the right for the trim to take away: 7000 × 4000 is 1.75 to 1, the photo 1.5 to 1.
+        await OpenTabAsync(page, "Transform");
+        var canvasSize = page.GetByRole(AriaRole.Group, new PageGetByRoleOptions { Name = "Canvas size" });
+        await canvasSize.GetByLabel("Width").FillAsync("7000");
+        await canvasSize.GetByLabel("Width").DispatchEventAsync("change");
+        await canvasSize.GetByRole(AriaRole.Button, new LocatorGetByRoleOptions { Name = "Apply" }).ClickAsync();
+        await WaitForCanvasAsync(page, "Math.abs(c.width / c.height - 1.75) < 0.01");
+
+        // Every state the editor's busy flag passes through, and whether undo was open then, however briefly it lasted.
+        await page.EvaluateAsync("""
+            () => {
+                const editor = document.querySelector('.bmg-editor');
+                const undo = editor.querySelector(".bmg-tool[aria-label='Undo']");
+                window.__busyStates = [];
+                new MutationObserver(() => window.__busyStates.push(editor.getAttribute('aria-busy') + (undo.disabled ? ' undo-disabled' : ' undo-enabled')))
+                    .observe(editor, { attributes: true, attributeFilter: ['aria-busy'] });
+            }
+            """);
+        await page.GetByRole(AriaRole.Button, new PageGetByRoleOptions { Name = "Trim edges", Exact = true }).ClickAsync();
+        await WaitForCanvasAsync(page, "Math.abs(c.width / c.height - 1.5) < 0.01");
+        await page.WaitForSelectorAsync(".bmg-editor[aria-busy='false']", new PageWaitForSelectorOptions { Timeout = 60_000 });
+
+        // The editor said it was busy before the work began, with undo closed, and opened it again after.
+        var states = await page.EvaluateAsync<string[]>("() => window.__busyStates");
+        CollectionAssert.AreEqual(new[] { "true undo-disabled", "false undo-enabled" }, states, string.Join(" | ", states));
     }
 
     [TestMethod]

@@ -13,14 +13,21 @@ public sealed record HistoryEntry(ImageDocument Document, string Label, DateTime
     {
         get
         {
-            long size = 128 + Document.Pipeline.Count * 64 + Document.Annotations.Count * 256;
-            foreach (var layer in Document.Layers)
-            {
-                size += 256;
-                if (layer is PaintLayer paint) size += paint.Strokes.Sum(s => 96L + s.Points.Count * 12L);
-            }
+            var size = 128 + Document.Pipeline.Count * 64L + Document.Annotations.Count * 256L + SizeOf(Document.Layers);
             return (int)Math.Min(int.MaxValue, size);
         }
+    }
+
+    private static long SizeOf(IReadOnlyList<Layer> layers)
+    {
+        long size = 0;
+        foreach (var layer in layers)
+        {
+            size += 256;
+            if (layer is PaintLayer paint) size += paint.Strokes.Sum(s => 96L + s.Points.Count * 12L);
+            else if (layer is GroupLayer group) size += SizeOf(group.Layers);
+        }
+        return size;
     }
 }
 

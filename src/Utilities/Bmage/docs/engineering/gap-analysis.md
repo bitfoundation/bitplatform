@@ -117,8 +117,7 @@ Deferred with rationale (see the matrix for each):
 
 - **Clone / healing brush** (P3): a clone stamp is feasible, but healing that produces useful results needs
   Poisson/patch-match reconstruction; shipping a poor one is worse than none.
-- **Layer groups and clipping masks** (P3): need a group compositing model (isolated groups, pass-through) and a
-  serialisation format change; masks plus adjustment layers cover most needs today.
+- **Layer groups and clipping masks** (P3): deferred in the first round, then built in the next (section 11).
 - **Layer effects (shadow, glow, outline)** (P3): achievable with masks and blur; worth a design of its own.
 - **Halftone** (P3): niche; expressible as a custom `PointOperation` today.
 - **AI background removal / segmentation** (P3): the `BitmapMask` extension point exists; no model is bundled (size,
@@ -228,3 +227,24 @@ helper that used `OffscreenCanvas` itself now uses a canvas element.
 Measured: the new operations' costs are in `docs/performance.md`, Editing tools; colorize and HSL were optimised after
 the first measurement showed them several times a reference adjustment's cost, which brought colorize to 1.5 and HSL to
 2.5 times it.
+
+## 11. The next round: groups, WebAssembly, and what section 10 left open
+
+- **Layer groups and clipping** (deferred in section 5) are built: `GroupLayer`, pass-through by default and isolated on
+  request or by a blend mode, nested at most ten deep; `Layer.ClipToLayerBelow`, which draws a base and the layers clipped
+  to it together and limits them to its transparency; the document's layer edits reach into groups, with
+  `GroupLayers`, `Ungroup`, `MoveLayerIntoGroup` and `MoveLayerOutOfGroup`; the JSON format and projects carry both; the
+  editor's Layers tab lists a group's layers under it and groups, ungroups, moves and clips from the selected layer.
+- **The busy state never reached the page on WebAssembly.** `RunAsync` set it and started the work without yielding,
+  and a render of one step never yields, so a long trim or export showed no spinner, no disabled controls and no
+  `aria-busy` until it was over. It yields once now; the E2E test that records every `aria-busy` change fails without it.
+  This also showed that on WebAssembly no input can arrive during such a render at all, so the guard that stops a trim
+  when the image changed meanwhile can only be reached on Interactive Server, which the demo does not host.
+- **The CORS message** has a test: a fetch failing as a browser reports a CORS refusal is explained as one.
+- **WebAssembly measurements** of every new operation, interpreter and AOT, through an opt-in browser test, with the
+  page's own published rows as calibration. They found the trim scan, the gradient map and colorize 25, 13 and 6 times
+  slower than desktop .NET on the interpreter, against 4.5 for an older reference adjustment; a vectorised scan and
+  whole-vector loops brought all three below that adjustment's cost there, and the paint brush skips the square root
+  inside each dab's core.
+- **Not done:** real Safari and iOS, for want of a Mac or a device; the interpreter cost of the warp sampler, which
+  straightening shares with rotation and which predates this work.

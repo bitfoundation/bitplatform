@@ -19,7 +19,7 @@ Engineering tracking document; see [gap-analysis.md](gap-analysis.md) for the re
 | Metadata extraction (EXIF, GPS, ICC, XMP) | verified | P1 | `Metadata/*` | `MetadataTests`, `AdversarialMetadataTests` | - |
 | Size limits before allocation | verified | P0 | `ImageLimits.cs`, `BitBmageOptions.MaxSourceBytes` | `AdversarialPipelineTests`, `MemoryBudgetTests` | - |
 | Corrupt / truncated input errors | verified | P0 | decoders | `CodecTests`, `AdversarialPipelineTests` | - |
-| CORS failure explained | implemented | P1 | `ImageLoader.LoadFromUrlAsync` | - | Message only |
+| CORS failure explained | verified | P1 | `ImageLoader.LoadFromUrlAsync` | `ReviewFindingsTests.AUrlTheBrowserMayNotReadIsExplainedAsTheCorsProblemItUsuallyIs` | The message says what usually causes it; the browser does not say which cause it was |
 | Multi-image import | verified | P1 | `ImageLoader.LoadManyAsync`, batch | `PipelineTests` | - |
 | Import a file as a layer (editor) | verified | P2 | `BmageEditor.AddImageLayerAsync`, Layers tab | E2E `EditingToolTests.TheNewControlsAreNamedForAssistiveTechnology` (control present) | Pixel placement covered by `OverlayAttachmentTests`; no E2E upload of a layer image yet |
 | Animated image editing | deferred | P3 | - | - | First frame decoded; animation editing is a separate problem |
@@ -79,7 +79,7 @@ Engineering tracking document; see [gap-analysis.md](gap-analysis.md) for the re
 | Layer masks | verified | P2 | `Layer.Mask` | `LayerTests`, `MaskTests` | - |
 | Reorder, remove, duplicate | verified | P2 | `ImageDocument.MoveLayer/RemoveLayer/DuplicateLayer` | `LayerTests` | Duplicate covered through the editor E2E only by presence |
 | Editor layer controls (select, opacity, blend, order, lock, duplicate, add) | verified | P2 | Layers tab | E2E `ALayersOpacityAndBlendModeAreSetFromThePanel` | - |
-| Groups, clipping masks | deferred | P3 | - | - | Needs a group compositing model and a format change |
+| Groups (pass-through and isolated) and clipping to the layer below | verified | P3 | `Layers/GroupLayer.cs`, `LayerCompositor`, `ImageDocument.GroupLayers/Ungroup/MoveLayerIntoGroup/MoveLayerOutOfGroup`, Layers tab | `LayerGroupTests` (17), `SerializationTests` (groups round trip), E2E `LayersAreClippedAndGroupedFromThePanel` | Nested at most 10 deep; each isolated level or clipping stack holds a buffer the size of the image while drawn |
 
 ## F. Selection and background
 
@@ -125,7 +125,8 @@ Engineering tracking document; see [gap-analysis.md](gap-analysis.md) for the re
 | Transient drags as one step | verified | P1 | `PushTransient/CommitTransient` | `EditSessionDraftTests` | - |
 | Atomic multi-step edits | verified | P1 | `ImageEditSession.Apply(Func)` | `EditorServicesTests` | - |
 | History memory estimate counts layers and strokes | verified | P2 | `HistoryEntry.EstimatedSize` | `PaintLayerTests.PaintingIsAnUndoableDocumentEdit...` | Shared images not counted (not duplicated); images added or copied to layers are kept until another image is opened |
-| History waits while the editor is busy; measured actions stop if the image changed meanwhile | implemented | P1 | `BmageEditor.Undo/Redo/Reset/GoToHistoryAsync`, `IsStill` | - | No test interleaves an undo with a running trim |
+| A long action shows the editor busy, with undo, redo and reset held, from its first moment | verified | P1 | `BmageEditor.RunAsync` (yields once so the busy state renders), `Undo/Redo/Reset/GoToHistoryAsync` | E2E `ALongActionShowsTheEditorBusyAndHoldsUndoUntilItIsDone` (fails without the yield) | - |
+| Measured actions stop if the image or selection changed meanwhile | implemented | P1 | `IsStill` in trim, crop to selection, copy to layer | - | Not reachable in the WebAssembly demo: a one-step render never yields, so no input arrives during it. Reachable on Interactive Server, which the demo does not host |
 | Before / after compare | verified | P1 | `ImageEditSession.GetSourcePreviewAsync`, Compare button, `\` key | E2E `CompareShowsTheOriginalUntilItIsTurnedOff` | - |
 | History timeline serialisation | deferred | P3 | - | - | Documents and projects serialise; the timeline does not |
 
@@ -150,7 +151,8 @@ Engineering tracking document; see [gap-analysis.md](gap-analysis.md) for the re
 | Worker codecs in the browser | verified | P1 | `Scripts/bit-bmage-worker.ts` | E2E `JsModuleContractTests` (Chromium, Firefox) | Playwright's Windows WebKit has no `OffscreenCanvas`: the page-thread fallback is verified there instead |
 | Releases wait for full renders already running | verified | P0 | `ImageEditSession.RenderFullAsync`, `WhenIdle` | `ReviewRegressionTests.DisposingDuringAnExportKeepsTheOriginalUntilTheExportIsDone` (fails without it) | Interactive Server: a replaced preview can be disposed while the circuit thread reads it (one wrong frame) |
 | Memory estimates and budgets | verified | P1 | `ImagePipeline.EstimateMemory`, `Memory/BudgetedPixelAllocator.cs` | `MemoryBudgetTests` | New operations use the generic estimate |
-| Benchmarks of the new tools | verified | P1 | `Tests/Bit.Bmage.Benchmarks` (`EditingToolBenchmarks`) | `docs/performance.md#editing-tools` | Desktop numbers; WebAssembly not re-measured |
+| Benchmarks of the new tools | verified | P1 | `Tests/Bit.Bmage.Benchmarks` (`EditingToolBenchmarks`) | `docs/performance.md#editing-tools` | - |
+| The new tools measured in WebAssembly, interpreter and AOT | verified | P1 | `/performance` "Run the editing tools", E2E `PerformanceMeasurements` (opt-in) | `docs/performance.md#webassembly-editing-tools` | Headless Chrome 156 on one desktop machine, calibrated against the page's published rows; no phone measured |
 
 ## L. Browser compatibility
 
@@ -159,6 +161,7 @@ Engineering tracking document; see [gap-analysis.md](gap-analysis.md) for the re
 | Capability detection by probing | verified | P0 | `Capabilities/*` | E2E `CapabilityTests` | - |
 | Chromium E2E | verified | P0 | `Tests/Bit.Bmage.Tests.E2E` | see log | - |
 | Firefox, WebKit E2E | verified | P0 | `BMAGE_E2E_BROWSER` | see log | Playwright's engine builds on Windows, not Safari or iOS |
+| Real Safari and iOS | missing | P1 | - | - | Needs a Mac or an iOS device, neither available to this work |
 
 ## M-Q. API, editor, accessibility, security, extensibility
 
@@ -195,3 +198,13 @@ Engineering tracking document; see [gap-analysis.md](gap-analysis.md) for the re
 | 2026-10-23 | review fixes | E2E full, WebKit | 88 passed, 2 inconclusive (worker path without `OffscreenCanvas`), 0 failed |
 | 2026-10-23 | review fixes | E2E full, Firefox | 89 passed, 1 inconclusive (synthetic paste), 0 failed |
 | 2026-10-23 | final | E2E `EditingToolTests`, Chromium, after the last editor change | 17 / 17 passed |
+| 2026-10-23 | 11 | E2E `ALongActionShowsTheEditorBusyAndHoldsUndoUntilItIsDone`, Chromium | failed before the `RunAsync` yield (no busy state recorded), passed after |
+| 2026-10-23 | 11 | `LayerGroupTests`, clipping mutation (alpha restored over the base's area only) | `AnEditClippedToALayerDoesNotPullInWhatOtherClippedLayersDrewBesideIt` fails, as it should |
+| 2026-10-23 | 11 | desktop `EditingToolBenchmarks`, changed rows and the new group rows | see `docs/performance.md`, Editing tools |
+| 2026-10-23 | 11 | `PerformanceMeasurements` against Release publishes, interpreter and AOT, headless Chrome 156, two runs each | see `docs/performance.md`, WebAssembly: editing tools |
+| 2026-10-23 | 11 | `Bit.Bmage` net8.0, net9.0, net10.0 build | 0 warnings, 0 errors |
+| 2026-10-23 | 11 | `Bit.Bmage.Tests` net10.0 | 1161 / 1161 passed |
+| 2026-10-23 | 11 | `Bit.Bmage.Tests.Mcp` | 219 / 219 passed |
+| 2026-10-23 | 11 | E2E full, Chromium | 92 passed, 1 inconclusive (the opt-in measurement), 0 failed (8 min 21 s) |
+| 2026-10-23 | 11 | E2E full, WebKit | 90 passed, 3 inconclusive (the measurement, the worker path without `OffscreenCanvas`), 0 failed |
+| 2026-10-23 | 11 | E2E full, Firefox | 91 passed, 2 inconclusive (the measurement, the synthetic paste), 0 failed |

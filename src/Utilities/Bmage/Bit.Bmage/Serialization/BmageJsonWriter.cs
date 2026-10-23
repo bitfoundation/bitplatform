@@ -228,6 +228,16 @@ public sealed class BmageJsonWriter
         return this;
     }
 
+    /// <summary>Writes layers as an array, bottom first.</summary>
+    public BmageJsonWriter Write(string name, IEnumerable<Layer> layers)
+    {
+        ArgumentNullException.ThrowIfNull(layers);
+        Json.WriteStartArray(name);
+        foreach (var layer in layers) WriteValue(layer);
+        Json.WriteEndArray();
+        return this;
+    }
+
     /// <summary>Writes an annotation.</summary>
     public BmageJsonWriter Write(string name, Annotation annotation)
     {

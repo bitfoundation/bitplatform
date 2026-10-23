@@ -105,6 +105,15 @@ A `Layer` composites onto the pipeline's output through a `BlendMode` (the W3C C
 modes), an opacity and an optional mask. The edit session caches the composite separately from the pipeline output, so
 annotation edits never composite the layers again and layer edits never re-run the pipeline.
 
+A `GroupLayer` is a layer holding a list of layers, so the document stays one tree of immutable values and every edit,
+a group's included, is still one new document. `LayerCompositor` walks each list the same way: a run of layers with
+`ClipToLayerBelow` after a base is drawn with it into a buffer of its own, the base at full strength, the clipped
+layers as if it were opaque, then limited to its alpha and blended with its mode and opacity; a pass-through group
+composites its list in place and, when faded or masked, mixes the result with a copy of what was beneath; an isolated
+group composites its list into a transparent buffer and blends that. Groups nest at most ten deep, which bounds the
+buffers held at once. The layer image cache reaches into groups, so a group's image layers are prepared once like the
+document's own.
+
 ## Threads and workers
 
 **In .NET**, operations whose rows are independent split them into bands (`ParallelRows`) over
@@ -253,8 +262,7 @@ preview rather than compositing the layers on every pointer move, and paints it 
   model is not needed for: `ImagePipeline.RemoveBackground` floods a plain backdrop in from the corners.
 - **Healing and content-aware fill.** Results worth using need patch-based reconstruction; a clone stamp that only
   copies would be easy to ship and disappointing to use.
-- **Layer groups and clipping masks.** They need a group compositing model (isolated and pass-through groups) and a
-  document format change; adjustment layers with masks cover most of what they are used for.
+
 - **The .NET engine in a Web Worker.** Codec work runs in workers, but operations stay on .NET's thread. Moving them
   would mean a second .NET runtime in a worker, tens of megabytes and a second startup, to free a thread that previews
   on a proxy already keep responsive. A WebAssembly app built with threads gets the engine on several cores through

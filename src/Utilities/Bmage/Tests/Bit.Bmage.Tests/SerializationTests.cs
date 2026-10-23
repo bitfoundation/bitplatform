@@ -101,6 +101,13 @@ public sealed class SerializationTests
         new AdjustmentLayer(ImagePipeline.Create().Contrast(0.3f).Vibrance(0.2f)) { Mask = new LuminanceRangeMask(0, 0.4f), IsVisible = false, IsLocked = true },
         new PaintLayer([new PaintStroke([new(10, 10), new(60, 40)], 9, new Rgba32(200, 30, 30)) { Pressures = [0.5f, 1f] }]) { Opacity = 0.6f },
         new FillLayer(new Rgba32(40, 160, 90)) { Mask = new FloodMask([new(30, 30)]) { Tolerance = 0.2f }, Name = "Bucket" },
+        new GroupLayer(
+        [
+            new FillLayer(new Rgba32(200, 120, 20)) { Mask = new EllipseMask(new RectangleF(10, 10, 50, 40)) },
+            new FillLayer(new Rgba32(20, 40, 220)) { ClipToLayerBelow = true, BlendMode = BlendMode.Multiply },
+            new GroupLayer([new AdjustmentLayer(ImagePipeline.Create().Invert())]) { Isolated = true, Opacity = 0.7f },
+        ]) { Name = "Badge", Opacity = 0.8f, Mask = new RectangleMask(new RectangleF(0.1f, 0.1f, 0.8f, 0.8f)) { Units = MaskUnits.Relative } },
+        new GroupLayer([new FillLayer(new Rgba32(90, 90, 90))]) { BlendMode = BlendMode.Screen },
     }.Select(layer => new object[] { layer });
 
     private static IEnumerable<object[]> AllAnnotations() => new Annotation[]

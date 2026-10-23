@@ -233,19 +233,20 @@ public sealed class ColorizeAdjustment : PointOperation
         // With the hue and saturation fixed, the colour is a function of lightness alone, and a piecewise linear one: the
         // lightness shift is linear, and the HSL to RGB conversion is linear either side of half. Linear interpolation
         // in this table is therefore exact at the kink, which falls on an entry, and within a hair of it elsewhere.
-        _table = new Vector3[TableSize + 1];
+        // Alpha zero, so blending towards an entry leaves a pixel's alpha alone.
+        _table = new Vector4[TableSize + 1];
         var h = Hue / 60f;
         for (var i = 0; i <= TableSize; i++)
         {
             var l = i / (float)TableSize;
             l += Lightness * (Lightness > 0 ? 1 - l : l);
-            _table[i] = ColorMath.HslToRgb(h, Saturation, l);
+            _table[i] = new Vector4(ColorMath.HslToRgb(h, Saturation, l), 0);
         }
     }
 
     private const int TableSize = 1024;
 
-    private readonly Vector3[] _table;
+    private readonly Vector4[] _table;
 
     /// <summary>The hue in degrees, normalised to [0,360).</summary>
     public float Hue { get; }
@@ -262,16 +263,17 @@ public sealed class ColorizeAdjustment : PointOperation
 
     public override void ProcessRow(Span<Vector4> pixels)
     {
+        // Whole vectors, multiplied by vectors, as the gradient map does, for the interpreter's sake.
         var table = _table;
-        var amount = Amount;
+        var amount = new Vector4(Amount, Amount, Amount, 0);
         for (var i = 0; i < pixels.Length; i++)
         {
             var p = Vector4.Clamp(pixels[i], Vector4.Zero, Vector4.One);
             var position = (MathF.Max(p.X, MathF.Max(p.Y, p.Z)) + MathF.Min(p.X, MathF.Min(p.Y, p.Z))) / 2 * TableSize;
             var index = Math.Min(TableSize - 1, (int)position);
-            var c = Vector3.Lerp(table[index], table[index + 1], position - index);
-            var original = new Vector3(p.X, p.Y, p.Z);
-            pixels[i] = new Vector4(original + (c - original) * amount, p.W);
+            var low = table[index];
+            var c = low + (table[index + 1] - low) * new Vector4(position - index);
+            pixels[i] = p + (c - p) * amount;
         }
     }
 }
@@ -457,7 +459,8 @@ public sealed class HslAdjustment : PointOperation
 public sealed class GradientMapOperation : PointOperation
 {
     private readonly (float Offset, Rgba32 Color)[] _stops;
-    private readonly Vector3[] _table;
+    // The gradient at 256 positions, alpha zero so blending towards it leaves a pixel's alpha alone.
+    private readonly Vector4[] _colors;
 
     /// <param name="stops">At least two stops; offsets are clamped to [0,1].</param>
     /// <param name="amount">How much of the mapped colour replaces the original, in [0,1].</param>
@@ -468,7 +471,7 @@ public sealed class GradientMapOperation : PointOperation
         if (stops.Any(s => !float.IsFinite(s.Offset))) throw new ArgumentException("Stop offsets must be finite numbers.", nameof(stops));
         _stops = [.. stops.Select(s => (Math.Clamp(s.Offset, 0f, 1f), s.Color)).OrderBy(s => s.Item1)];
         Amount = Math.Clamp(float.IsNaN(amount) ? 0 : amount, 0f, 1f);
-        _table = BuildTable(_stops);
+        _colors = [.. BuildTable(_stops).Select(color => new Vector4(color, 0))];
     }
 
     /// <summary>A two-colour gradient map: <paramref name="shadows"/> in the darks, <paramref name="highlights"/> in the lights.</summary>
@@ -511,16 +514,19 @@ public sealed class GradientMapOperation : PointOperation
 
     public override void ProcessRow(Span<Vector4> pixels)
     {
-        var table = _table;
-        var amount = Amount;
+        // Whole vectors, multiplied by vectors: on the WebAssembly interpreter building a Vector3 from a pixel, or scaling
+        // a vector by one float, costs far more than the arithmetic. Alpha's weight and amount are zero, so it is kept.
+        var table = _colors;
+        var amount = new Vector4(Amount, Amount, Amount, 0);
+        var weights = new Vector4(ColorMath.Rec709, 0);
         for (var i = 0; i < pixels.Length; i++)
         {
             var p = pixels[i];
-            var position = Math.Clamp(Vector3.Dot(new Vector3(p.X, p.Y, p.Z), ColorMath.Rec709), 0f, 1f) * 255f;
+            var position = Math.Clamp(Vector4.Dot(p, weights), 0f, 1f) * 255f;
             var index = Math.Min(254, (int)position);
-            var mapped = Vector3.Lerp(table[index], table[index + 1], position - index);
-            var original = new Vector3(p.X, p.Y, p.Z);
-            pixels[i] = new Vector4(original + (mapped - original) * amount, p.W);
+            var low = table[index];
+            var mapped = low + (table[index + 1] - low) * new Vector4(position - index);
+            pixels[i] = p + (mapped - p) * amount;
         }
     }
 }

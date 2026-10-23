@@ -317,55 +317,14 @@
                 }
                 @if (Context.Layers.Count > 0)
                 {
-                    @* Image, fill, adjustment and paint layers, top of the stack first, as photo editors list them. *@
+                    @* Image, fill, adjustment, paint and group layers, top of the stack first, as photo editors list them, a
+                       group's own layers in a list under it. *@
                     <ul class="bmg-layer-list" aria-label="@Context.Strings.Layers">
-                        @foreach (var (layer, index) in Context.Layers.Select((l, i) => (l, i)).Reverse())
-                        {
-                            var active = Context.ActiveLayerId == layer.Id;
-                            <li class="bmg-layer @(layer.IsVisible ? null : "bmg-layer-hidden") @(active ? "bmg-layer-selected" : null)">
-                                <button type="button" class="bmg-layer-name" aria-pressed="@(active ? "true" : "false")"
-                                        @onclick="() => Context.SelectLayer(layer.Id)">
-                                    @layer.DisplayName
-                                </button>
-                                <button type="button" class="bmg-icon-button"
-                                        title="@(layer.IsVisible ? Context.Strings.Hide : Context.Strings.Show)"
-                                        aria-label="@($"{(layer.IsVisible ? Context.Strings.Hide : Context.Strings.Show)}: {layer.DisplayName}")"
-                                        aria-pressed="@(layer.IsVisible ? "false" : "true")"
-                                        disabled="@layer.IsLocked"
-                                        @onclick="() => Context.UpdateLayerAsync(layer with { IsVisible = !layer.IsVisible })">
-                                    @((MarkupString)(layer.IsVisible ? Icons.Visible : Icons.Hidden))
-                                </button>
-                                <button type="button" class="bmg-icon-button"
-                                        title="@(layer.IsLocked ? Context.Strings.Unlock : Context.Strings.Lock)"
-                                        aria-label="@($"{(layer.IsLocked ? Context.Strings.Unlock : Context.Strings.Lock)}: {layer.DisplayName}")"
-                                        aria-pressed="@(layer.IsLocked ? "true" : "false")"
-                                        @onclick="() => Context.UpdateLayerAsync(layer with { IsLocked = !layer.IsLocked })">
-                                    @((MarkupString)(layer.IsLocked ? Icons.Locked : Icons.Unlocked))
-                                </button>
-                                <button type="button" class="bmg-icon-button" title="@Context.Strings.MoveUp" aria-label="@($"{Context.Strings.MoveUp}: {layer.DisplayName}")"
-                                        disabled="@(layer.IsLocked || index == Context.Layers.Count - 1)"
-                                        @onclick="() => Context.MoveLayerAsync(layer.Id, index + 1)">
-                                    @((MarkupString)Icons.MoveUp)
-                                </button>
-                                <button type="button" class="bmg-icon-button" title="@Context.Strings.MoveDown" aria-label="@($"{Context.Strings.MoveDown}: {layer.DisplayName}")"
-                                        disabled="@(layer.IsLocked || index == 0)"
-                                        @onclick="() => Context.MoveLayerAsync(layer.Id, index - 1)">
-                                    @((MarkupString)Icons.MoveDown)
-                                </button>
-                                <button type="button" class="bmg-icon-button" title="@Context.Strings.Duplicate" aria-label="@($"{Context.Strings.Duplicate}: {layer.DisplayName}")"
-                                        @onclick="() => Context.DuplicateLayerAsync(layer.Id)">
-                                    @((MarkupString)Icons.Duplicate)
-                                </button>
-                                <button type="button" class="bmg-icon-button" title="@Context.Strings.Delete" aria-label="@($"{Context.Strings.Delete}: {layer.DisplayName}")"
-                                        disabled="@layer.IsLocked"
-                                        @onclick="() => Context.RemoveLayerAsync(layer.Id)">
-                                    @((MarkupString)Icons.Delete)
-                                </button>
-                            </li>
-                        }
+                        @LayerRows(Context.Layers)
                     </ul>
-                    @if (Context.ActiveLayer is { } selected)
+                    @if (Context.ActiveLayer is { } selected && Context.Document is { } document && document.TryLocateLayer(selected.Id, out var parent, out var position))
                     {
+                        var below = position > 0 ? (parent?.Layers ?? document.Layers)[position - 1] : null;
                         <fieldset class="bmg-fieldset" disabled="@(selected.IsLocked || Context.IsBusy)">
                             <legend class="bmg-legend">@selected.DisplayName</legend>
                             @RenderSlider(Context.Strings.Opacity, selected.Opacity, 0, 1, 0.01,
@@ -379,6 +338,34 @@
                                     }
                                 </select>
                             </label>
+                            @if (selected is GroupLayer group)
+                            {
+                                <label class="bmg-field bmg-field-inline">
+                                    <input type="checkbox" checked="@group.Isolated"
+                                           @onchange="e => UpdateActiveLayer(l => l is GroupLayer g ? g with { Isolated = (bool)(e.Value ?? false) } : l, false)" />
+                                    <span class="bmg-field-label">@Context.Strings.BlendGroupAsOne</span>
+                                </label>
+                            }
+                            <div class="bmg-field-actions">
+                                <button type="button" class="bmg-button" aria-pressed="@(selected.ClipToLayerBelow ? "true" : "false")" disabled="@(below is null)"
+                                        @onclick="() => UpdateActiveLayer(l => l with { ClipToLayerBelow = !l.ClipToLayerBelow }, false)">
+                                    @Context.Strings.ClipToLayerBelow
+                                </button>
+                                @if (below is not null)
+                                {
+                                    <button type="button" class="bmg-button" @onclick="() => Context.GroupWithLayerBelowAsync(selected.Id)">
+                                        @(below is GroupLayer ? Context.Strings.MoveIntoGroupBelow : Context.Strings.GroupWithLayerBelow)
+                                    </button>
+                                }
+                                @if (parent is not null)
+                                {
+                                    <button type="button" class="bmg-button" @onclick="() => Context.MoveLayerOutOfGroupAsync(selected.Id)">@Context.Strings.MoveOutOfGroup</button>
+                                }
+                                @if (selected is GroupLayer)
+                                {
+                                    <button type="button" class="bmg-button" @onclick="() => Context.UngroupAsync(selected.Id)">@Context.Strings.Ungroup</button>
+                                }
+                            </div>
                         </fieldset>
                     }
                 }
@@ -783,6 +770,65 @@
         => Context.AddImageLayerAsync(Input.ImageSource.FromBrowserFile(e.File));
 
     private Task OnOpenProject(InputFileChangeEventArgs e) => Context.OpenProjectAsync(e.File);
+
+    /// <summary>The rows of a list of layers, top first, each group's own layers in a list nested under its row.</summary>
+    private RenderFragment LayerRows(IReadOnlyList<Layer> list) => __builder =>
+    {
+        for (var i = list.Count - 1; i >= 0; i--)
+        {
+            var layer = list[i];
+            var index = i;
+            var active = Context.ActiveLayerId == layer.Id;
+            <li class="bmg-layer-item">
+                <div class="bmg-layer @(layer.IsVisible ? null : "bmg-layer-hidden") @(active ? "bmg-layer-selected" : null) @(layer.ClipToLayerBelow && index > 0 ? "bmg-layer-clipped" : null)">
+                    <button type="button" class="bmg-layer-name" aria-pressed="@(active ? "true" : "false")"
+                            @onclick="() => Context.SelectLayer(layer.Id)">
+                        @layer.DisplayName
+                    </button>
+                    <button type="button" class="bmg-icon-button"
+                            title="@(layer.IsVisible ? Context.Strings.Hide : Context.Strings.Show)"
+                            aria-label="@($"{(layer.IsVisible ? Context.Strings.Hide : Context.Strings.Show)}: {layer.DisplayName}")"
+                            aria-pressed="@(layer.IsVisible ? "false" : "true")"
+                            disabled="@layer.IsLocked"
+                            @onclick="() => Context.UpdateLayerAsync(layer with { IsVisible = !layer.IsVisible })">
+                        @((MarkupString)(layer.IsVisible ? Icons.Visible : Icons.Hidden))
+                    </button>
+                    <button type="button" class="bmg-icon-button"
+                            title="@(layer.IsLocked ? Context.Strings.Unlock : Context.Strings.Lock)"
+                            aria-label="@($"{(layer.IsLocked ? Context.Strings.Unlock : Context.Strings.Lock)}: {layer.DisplayName}")"
+                            aria-pressed="@(layer.IsLocked ? "true" : "false")"
+                            @onclick="() => Context.UpdateLayerAsync(layer with { IsLocked = !layer.IsLocked })">
+                        @((MarkupString)(layer.IsLocked ? Icons.Locked : Icons.Unlocked))
+                    </button>
+                    <button type="button" class="bmg-icon-button" title="@Context.Strings.MoveUp" aria-label="@($"{Context.Strings.MoveUp}: {layer.DisplayName}")"
+                            disabled="@(layer.IsLocked || index == list.Count - 1)"
+                            @onclick="() => Context.MoveLayerAsync(layer.Id, index + 1)">
+                        @((MarkupString)Icons.MoveUp)
+                    </button>
+                    <button type="button" class="bmg-icon-button" title="@Context.Strings.MoveDown" aria-label="@($"{Context.Strings.MoveDown}: {layer.DisplayName}")"
+                            disabled="@(layer.IsLocked || index == 0)"
+                            @onclick="() => Context.MoveLayerAsync(layer.Id, index - 1)">
+                        @((MarkupString)Icons.MoveDown)
+                    </button>
+                    <button type="button" class="bmg-icon-button" title="@Context.Strings.Duplicate" aria-label="@($"{Context.Strings.Duplicate}: {layer.DisplayName}")"
+                            @onclick="() => Context.DuplicateLayerAsync(layer.Id)">
+                        @((MarkupString)Icons.Duplicate)
+                    </button>
+                    <button type="button" class="bmg-icon-button" title="@Context.Strings.Delete" aria-label="@($"{Context.Strings.Delete}: {layer.DisplayName}")"
+                            disabled="@layer.IsLocked"
+                            @onclick="() => Context.RemoveLayerAsync(layer.Id)">
+                        @((MarkupString)Icons.Delete)
+                    </button>
+                </div>
+                @if (layer is GroupLayer { Layers.Count: > 0 } group)
+                {
+                    <ul class="bmg-layer-children" aria-label="@group.DisplayName">
+                        @LayerRows(group.Layers)
+                    </ul>
+                }
+            </li>
+        }
+    };
 
     private Task UpdateActiveLayer(Func<Layer, Layer> change, bool transient)
         => Context.ActiveLayer is { IsLocked: false } layer ? Context.UpdateLayerAsync(change(layer), transient) : Task.CompletedTask;

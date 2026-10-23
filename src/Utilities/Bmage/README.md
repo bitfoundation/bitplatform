@@ -180,7 +180,7 @@ Every part of its UI can be replaced while keeping the engine:
 | Filters | Grayscale, black and white mixer, sepia, invert, posterize, threshold, gradient map and duotone, blur, motion blur, sharpen, high pass, pixelate, noise, median denoise, vignette, custom convolution and colour matrices |
 | Analysis | Histograms, luminance statistics, dominant colour palettes, auto-levels, auto-contrast, saliency-based smart cropping, content bounds for trimming, colour sampling, low-quality placeholders |
 | Masks | Rectangles, ellipses, lassos, paths, brush strokes, linear and radial gradients, luminance and colour ranges, magic wand, bitmap mattes, combinations; expand, contract, border, feathering, inversion, relative units; masked edits, alpha cut-outs and plain background removal |
-| Layers | Image, fill, adjustment and paint layers (brush with hardness and pen pressure, eraser) with opacity, masks and the W3C blend modes, from `Multiply` and `Screen` to `Color` and `Luminosity` |
+| Layers | Image, fill, adjustment and paint layers (brush with hardness and pen pressure, eraser) with opacity, masks and the W3C blend modes, from `Multiply` and `Screen` to `Color` and `Luminosity`; pass-through and isolated groups, and clipping to the layer below |
 | Drawing | Anti-aliased paths, strokes with caps, joins and dashes, gradients, ellipses, polygons, arrows, freehand, text |
 | Annotations | Rectangle, ellipse, line, arrow, freehand, polygon, text, highlight, callout, numbered step, image stamp, redaction |
 | Metadata | EXIF read and write, GPS, camera data, orientation, ICC profiles, XMP, three privacy policies |

@@ -266,6 +266,22 @@ public sealed class ReviewFindingsTests
     }
 
     [TestMethod]
+    public async Task AUrlTheBrowserMayNotReadIsExplainedAsTheCorsProblemItUsuallyIs()
+    {
+        // What fetch reports when a server sends no CORS header: a bare TypeError that names neither cause nor cure.
+        var module = new FakeModule(identifier => { if (identifier == "fetchImage") throw new JSException("TypeError: Failed to fetch"); });
+        await using var interop = new BrowserImageInterop(new ImportingJSRuntime(module), new BitBmageOptions());
+        var loader = new Input.ImageLoader(new Input.ImageProcessorFactory(interop, Capabilities.ManagedCapabilityProvider.Instance), interop, Capabilities.ManagedCapabilityProvider.Instance);
+
+        var error = await Assert.ThrowsExactlyAsync<ImageDecodeException>(async () => await loader.LoadAsync(Input.ImageSource.FromUrl("https://photos.example/beach.jpg")));
+
+        StringAssert.Contains(error.Message, "https://photos.example/beach.jpg");
+        StringAssert.Contains(error.Message, "CORS header");
+        StringAssert.Contains(error.Message, "Failed to fetch", "and what the browser said, for whoever debugs it");
+        Assert.IsInstanceOfType<JSException>(error.InnerException);
+    }
+
+    [TestMethod]
     public void ADocumentNestingMasksDeeplyIsRefused_AChainBuiltAStepAtATimeIsNot()
     {
         Mask nested = Mask.All();
