@@ -60,7 +60,8 @@ answer, and repeat the plan back before starting:
 2. **The tests**: any of the CI run (step 1), the CD rollout and its versions check (step 2), the E2E suite (step 3,
    every stage or some), bitplatform.dev/mcp (step 4), the dev container (step 5), the Aspire containers (step 6),
    `bit diff` (step 7) and the agent instructions (step 8: every scenario or some, with which models, and whether
-   `-Long`; about 12 USD of API usage per model, and as much again with `-Long`).
+   `-Long`; it draws on the usage limits of this machine's Claude Code login, about 40 minutes per model and as much
+   again with `-Long`).
 3. **The Bit packages**: nuget.org's, or the build of a Prerelease nuget packages run (`prerelease_packages`). The
    latter needs a successful prerelease run on the branch under test first. It publishes the branch's version to
    nuget.org only when nuget.org doesn't have it yet, so at a version that is already there it builds packages and
@@ -548,8 +549,10 @@ a request. `agents` checks that the way a user meets them, with an agent that kn
 - The Bit packages are as for `devcontainer`. A library packed on this machine is not a stand-in for a prerelease:
   `Bit.BlazorES2019` gets its scripts from building aspnetcore in the prerelease workflow, and a local pack has none,
   so every page renders blank.
-- Every scenario once with one model costs around 12 USD of API usage, half of it `resume` reaching its budget, and
-  takes about 40 minutes, three at a time but only one that builds, tests or runs the app. `-Long` adds about as much again. A turn that runs out of budget
+- The agents run on this machine's Claude Code login, not on an API key, so they draw on that account's usage limits.
+  The budget per turn is Claude Code's estimate at API prices and only caps the turn: report the runs by count and
+  time, not in dollars. Every scenario once with one model takes about 40 minutes, three at a time but only one that
+  builds, tests or runs the app, and half of its usage is `resume` reaching its budget. `-Long` adds about as much again. A turn that runs out of budget
   leaves its builds, test runs or app behind; the helper stops every process started from the scenario's folder
   after each turn, and afterwards removes the folders and the agents' memory unless `-Keep` is given.
 
@@ -574,7 +577,7 @@ Lead with the verdict, then:
 7. **bit diff**: the versions compared, the size of the change, whether `bit.json`'s values were read, any
    difference that is neither an upgrade nor random per run, and per failure its cause and fix.
 8. **Agent instructions**: the commit or the nuget.org version tested, per scenario and model the checks passed and
-   failed, its cost and time, what its final messages and changes show beyond the checks, and per failure whether it
+   failed, its time, what its final messages and changes show beyond the checks, and per failure whether it
    is the instructions' fault (quote the line) or the agent's.
 9. **Waiting for a CD**: every fix that only the next CD can prove, and for a library fix whether it can be tried
    through `prerelease_packages` before its release.
