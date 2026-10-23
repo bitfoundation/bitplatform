@@ -33,6 +33,7 @@ shows after a command ran.
 | `KeyboardLayoutTests` | Key presses as other keyboards produce them, dispatched with their `key` and `code`: `Ctrl+K` on a Russian layout opens the palette, `G S` typed on a Persian one runs, `Ctrl+N`/`Ctrl+P` move on a Russian one; a held `Ctrl+K` opens the palette once; keys that belong to an input method's composition (`isComposing`, `keyCode` 229) run nothing, globally and inside the palette. |
 | `AccessibilityTests` | axe-core (WCAG 2.0-2.2 A and AA rules) over the root list, search results, a nested page, a multi-select page and a prompt, in light and dark, with the demo's theme and with the library's defaults; forced colours outline the active row; in right-to-left text the chevrons are mirrored and `→` goes back; clicking a row leaves the focus in the input. An automated audit is not a claim of conformance. |
 | `SearchFeatureTests` | `francais` finds Français on the Language page from the root, with its path and highlights; `settigns` finds Settings and says the match is close; choosing Persian lays the page and the palette out right to left; the rename prompt validates and keeps a refused name for a correction; the directory page searches as you type. |
+| `AccessibilityTreeTests` | What a screen reader is told, read from Chromium's own accessibility tree through the DevTools protocol: the search box is a named, expanded combobox whose active option is named by its title, subtitle and shortcut in words and sits in a group named by its heading; a toggle's state is in its name; a multi-select page reports checked, not selected; a prompt is a textbox named by its question with no listbox behind it; the dialog is a named modal with polite and assertive live regions. Closer to a screen reader than a rule engine, and still not one. |
 | `InlinePaletteTests` | The inline palette in the settings section of /commands: searched and driven in place, its switches following the page; `Ctrl+K` from its box opens only the modal palette and a global shortcut runs once; axe-core finds nothing. |
 | `DemoPagesTests` | Every demo page loads, turns interactive and logs no error, and every button on it - the site header's included - runs without one; an unknown address gets the not-found page (404), where the palette still works. |
 
@@ -44,6 +45,17 @@ palette host (`Components/AppPalette.razor`).
 Every test also fails on any uncaught page error and on any console error in which Blazor reports an unhandled
 exception, whatever the test was looking at: an exception that escapes a handler can leave every later keystroke
 unanswered, and the test would otherwise time out pointing at the wrong thing.
+
+## WebAssembly and Blazor Server
+
+The demo runs on WebAssembly, as it is published. `BALETTE_E2E_RENDER_MODE=Server` starts it with `Demo:RenderMode=Server`
+instead, which runs the same pages on a Blazor Server circuit - every key the palette handles then crosses the
+connection - and the whole suite runs against that. An external demo (`BALETTE_E2E_BASE_URL`) has to have been started
+in the mode asked for. The workflow runs both.
+
+```bash
+BALETTE_E2E_RENDER_MODE=Server dotnet test
+```
 
 ## Running locally
 

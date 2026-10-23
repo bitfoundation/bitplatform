@@ -708,6 +708,7 @@ A query is split on spaces and every term must match some field of the command:
 | `^go` | Prefix of a field. |
 | `ings$` | Suffix of a field. |
 | `!delete` | Excludes commands containing "delete" in the title, subtitle, group or keywords. |
+| `^go \| ^open` | Alternatives: a `\|` standing on its own between two terms means either will do, as in fzf. `!docker \| git` holds for anything about git, or not about docker. |
 | `"go to"` | A phrase, spaces included, matched exactly. `!"..."`, `^"..."` and `"..."$` exclude or anchor it; curly quotes work, and a quote left open takes the rest of the query while it is typed. |
 
 ### Typos
@@ -739,7 +740,8 @@ hours, 70 within a day, 50 within three days, 30 within a week, 10 within a mont
 ### A custom matcher
 
 Implement `IBaletteMatcher` - one method, `Match(query, text)`, returning a `BaletteFieldMatch` with a score and
-the positions to highlight - and set `options.Matcher`. `BaletteSubstringMatcher` is a ready-made case-insensitive
+the positions to highlight - and set `options.Matcher`. `BaletteQuery.Parse(text)` is the palette's own parser, public
+for tools that explain a search: its `Terms` say each term's text, operator and alternative group. `BaletteSubstringMatcher` is a ready-made case-insensitive
 substring matcher for data where fuzziness hurts more than it helps. Multi-term queries, operators and field weights
 work with any matcher. Matching can also be called directly, for example in a test:
 
@@ -803,6 +805,22 @@ Sources are asked after `options.DebounceMs` (150 ms) without typing, and every 
 `cancellationToken` of the previous search, so a slow API never shows stale results. A spinner replaces the search
 icon while any source is pending.
 
+### Paging
+
+A source that has more than one page of results answers through `SearchPageAsync(query, cursor, context, token)`: the
+first page with a null `cursor`, each next one with the `NextCursor` of the page before. A page with a cursor gets a row
+after the source's results - "Show 37 more…" when the page says `TotalCount`, "Show more…" when it does not - which
+loads the next page, appends it without repeating what is listed, and selects its first row. A source that implements
+only `SearchAsync` answers a single page, as before.
+
+```csharp
+new BaletteDelegateSource("Issues", async (query, cursor, context, ct) =>
+{
+    var page = await Api.SearchIssuesAsync(query, after: cursor, take: 20, ct);
+    return new BaletteSourcePage([.. page.Items.Select(ToCommand)], page.NextCursor, page.Total);
+});
+```
+
 A source that throws, or that has not answered after `options.SourceTimeoutMs` (10 s) - whether or not it honours its
 token - is logged and leaves a row in
 place of its results - "Couldn’t search People", in the danger colour - that asks it again when chosen. The other
@@ -847,6 +865,9 @@ feed [frecency](#priority-and-frecency).
 then "Pin to top" or "Unpin", and "Remove from recents" when it has been used. `Ctrl+Enter` runs the first secondary
 action directly - on a link without actions it opens the link in a new tab, as GitHub's palette does - `Mod+Shift+P`
 pins or unpins and `Shift+Delete` forgets.
+
+Pinned commands are listed in the order they were pinned. Every action panel also offers "Clear recent commands",
+which forgets every use and keeps the pins - a privacy control within reach of the list it clears.
 
 History is kept in `localStorage` under `options.HistoryStorageKey` (`bit-balette.history`), capped at
 `options.MaxHistoryEntries` (200). To keep it elsewhere - per user on the server, or nowhere at all:
@@ -908,6 +929,13 @@ claimed - the browser does not act on them - but run nothing, so a held `Ctrl+K`
 shut. A character typed with AltGr, or with Option or Alt alone (`Ω` for Option+Z on a Mac), is typing when it lands in a
 text field, not the shortcut its physical key would make. Keys that belong to an input method's composition (`isComposing`, or `keyCode` 229) are never shortcuts, so
 confirming a Japanese or Chinese candidate with `Enter` does not run the active row.
+
+### Sequences in progress
+
+After the first chords of a sequence - `G` of `G S` - a small status near the bottom of the page shows them and says the
+next key is awaited, as VS Code does in its status bar, and screen readers announce it; it goes when the sequence
+completes, breaks off or times out. `options.ShowSequenceHint = false` turns it off; `IBaletteService.SequencePending`
+reports it to code either way, with the chords pressed so far and then null.
 
 ### Conflicts
 
@@ -1146,6 +1174,9 @@ palette needs an interactive render mode:
 
 While prerendering, the palette renders a closed dialog; it attaches its keyboard handling once it is interactive.
 
+The browser suite runs against Blazor Server as well as WebAssembly (`BALETTE_E2E_RENDER_MODE=Server`, see the E2E
+README): every key the palette handles then crosses the circuit.
+
 ### Blazor Hybrid
 
 Works unchanged in a MAUI, WPF or Windows Forms `BlazorWebView`; history goes to the web view's `localStorage`.
@@ -1267,6 +1298,7 @@ Changes in behaviour since the first release:
 - On a multi-select page options carry `aria-checked` only; `aria-selected` is no longer set on the active one.
 - Toasts are announced by live regions inside the dialog; the footer's toast element no longer has a `role`. A
   `FooterTemplate` should render `Toast` without a live role of its own, or it is announced twice.
+- `BaletteRowKind.Separator` is obsolete: the palette never rendered it, and a listbox may not contain separators.
 - The palette re-reads its `Commands` parameter only when it is given a new collection (it used to re-enumerate it on
   every keystroke).
 - The default theme's `--bit-balette-fg-muted`, `--bit-balette-fg-subtle` and `--bit-balette-danger` are darker in light

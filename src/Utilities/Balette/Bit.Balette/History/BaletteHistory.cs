@@ -168,7 +168,7 @@ public sealed class BaletteHistory
             .ToList();
     }
 
-    /// <summary>The pinned command ids, in a stable order.</summary>
+    /// <summary>The pinned command ids, in the order they were pinned.</summary>
     public IReadOnlyList<string> Pinned()
     {
         if (_usage is not { } usage)
@@ -176,7 +176,12 @@ public sealed class BaletteHistory
             return [];
         }
 
-        return usage.Where(kv => kv.Value.Pinned).OrderBy(kv => kv.Key, StringComparer.Ordinal).Select(kv => kv.Key).ToList();
+        return usage
+            .Where(kv => kv.Value.Pinned)
+            .OrderBy(kv => kv.Value.PinnedAt ?? DateTimeOffset.MinValue)
+            .ThenBy(kv => kv.Key, StringComparer.Ordinal)
+            .Select(kv => kv.Key)
+            .ToList();
     }
 
     /// <summary>Counts one more use of the command, now.</summary>
@@ -195,9 +200,10 @@ public sealed class BaletteHistory
     public Task TogglePinAsync(string commandId, CancellationToken cancellationToken = default)
         => MutateAsync(usage =>
         {
+            var now = _time.GetUtcNow();
             usage[commandId] = usage.TryGetValue(commandId, out var u)
-                ? u with { Pinned = !u.Pinned }
-                : new BaletteCommandUsage(0, _time.GetUtcNow(), true);
+                ? u with { Pinned = !u.Pinned, PinnedAt = u.Pinned ? null : now }
+                : new BaletteCommandUsage(0, now, true) { PinnedAt = now };
             return true;
         }, cancellationToken);
 

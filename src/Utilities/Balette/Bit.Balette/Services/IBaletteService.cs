@@ -94,6 +94,17 @@ public interface IBaletteService
     /// <see cref="IsMac"/> can re-render with ⌘ instead of Ctrl.
     /// </summary>
     event Action? PlatformDetected;
+
+    /// <summary>
+    /// Raised when the first chords of a global shortcut sequence were pressed (<c>G</c> of <c>G S</c>), with them, and
+    /// again with null when the sequence completed, broke off or timed out - for an app that shows the pending keys
+    /// itself (see <see cref="BaletteOptions.ShowSequenceHint"/>).
+    /// </summary>
+    event Action<BaletteKeyboardShortcut?>? SequencePending
+    {
+        add { }
+        remove { }
+    }
 }
 
 /// <summary>Describes a command that ran: <see cref="IBaletteService.CommandExecuted"/> and <see cref="Balette.OnCommandExecuted"/>.</summary>

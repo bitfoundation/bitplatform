@@ -39,16 +39,21 @@ public static class BaletteMatcherExtensions
     /// <summary>
     /// Matches every whitespace-separated term of <paramref name="query"/> against the command's fields.
     /// All terms must match (AND). Each term's score is the best weighted field score.
-    /// Supports fzf-style operators: <c>'exact</c>, <c>^prefix</c>, <c>suffix$</c>, <c>!negate</c>, and
-    /// <c>"quoted phrases"</c> matched as one exact term, spaces included.
+    /// Supports fzf-style operators: <c>'exact</c>, <c>^prefix</c>, <c>suffix$</c>, <c>!negate</c>,
+    /// <c>"quoted phrases"</c> matched as one exact term, spaces included, and <c>a | b</c> alternatives, of which one
+    /// has to match. See <see cref="BaletteQuery.Parse"/>.
     /// </summary>
     public static BaletteMatch? Match(this IBaletteMatcher matcher, BaletteCommand command, string query, BaletteMatchWeights? weights = null)
-        => matcher.Match(command, BaletteQuery.Parse(query), weights ?? DefaultWeights);
+        => matcher.Match(command, BaletteQuery.Parse(query), weights ?? DefaultWeights, path: null);
 
-    /// <summary>Same as the string overload, for a query parsed once and matched against many commands.</summary>
-    internal static BaletteMatch? Match(this IBaletteMatcher matcher, BaletteCommand command, BaletteQuery query, BaletteMatchWeights weights, string? path = null)
+    /// <summary>Same as the string overload, for a query parsed once with <see cref="BaletteQuery.Parse"/> and matched against many commands.</summary>
+    public static BaletteMatch? Match(this IBaletteMatcher matcher, BaletteCommand command, BaletteQuery query, BaletteMatchWeights? weights = null)
+        => matcher.Match(command, query, weights ?? DefaultWeights, path: null);
+
+    /// <summary>The match itself, with the titles of a nested command's ancestors as one more field (<paramref name="path"/>).</summary>
+    internal static BaletteMatch? Match(this IBaletteMatcher matcher, BaletteCommand command, BaletteQuery query, BaletteMatchWeights weights, string? path)
     {
-        var terms = query.Terms;
+        var terms = query.TermArray;
         if (terms.Length == 0)
         {
             return new BaletteMatch(command, 0, [], [], null);
@@ -60,87 +65,132 @@ public static class BaletteMatcherExtensions
         int[]? subtitlePos = null;
         string? matchedKeyword = null;
 
-        foreach (var (term, op) in terms)
+        for (var start = 0; start < terms.Length;)
         {
-            if (op == TermOperator.Negate)
+            // One term, or alternatives joined by " | ": the best one that holds counts, and none holding fails the
+            // command. A negated term holds when the text is absent, adding nothing.
+            var end = start + 1;
+            while (end < terms.Length && terms[end].Group == terms[start].Group)
             {
-                if (AnyFieldContains(command, term, path, normalize))
+                end++;
+            }
+
+            var holds = false;
+            var groupBest = double.NegativeInfinity;
+            int[]? groupTitle = null;
+            int[]? groupSubtitle = null;
+            string? groupKeyword = null;
+            for (var t = start; t < end; t++)
+            {
+                var (text, op, _) = terms[t];
+                double score;
+                int[]? termTitle = null;
+                int[]? termSubtitle = null;
+                string? termKeyword = null;
+                if (op == BaletteQueryOperator.Negate)
                 {
-                    return null;
+                    if (AnyFieldContains(command, text, path, normalize))
+                    {
+                        continue;
+                    }
+
+                    score = 0;
+                }
+                else
+                {
+                    score = BestField(matcher, command, text, op, weights, path, normalize, out termTitle, out termSubtitle, out termKeyword);
+                    if (double.IsNegativeInfinity(score))
+                    {
+                        continue;
+                    }
                 }
 
-                continue;
-            }
-
-            var best = double.NegativeInfinity;
-            int[]? bestTitle = null;
-            int[]? bestSubtitle = null;
-            string? bestKeyword = null;
-
-            // The best weighted field wins; only title/subtitle positions are kept for highlighting.
-            if (Improves(matcher, term, op, command.Title, weights.Title, normalize, ref best, out var positions))
-            {
-                (bestTitle, bestSubtitle, bestKeyword) = (positions, null, null);
-            }
-
-            var keywords = command.Keywords;
-            for (var i = 0; i < keywords.Count; i++)
-            {
-                if (Improves(matcher, term, op, keywords[i], weights.Keyword, normalize, ref best, out _))
+                if (!holds || score > groupBest)
                 {
-                    (bestTitle, bestSubtitle, bestKeyword) = (null, null, keywords[i]);
-                }
-            }
-
-            if (Improves(matcher, term, op, command.Subtitle, weights.Subtitle, normalize, ref best, out positions))
-            {
-                (bestTitle, bestSubtitle, bestKeyword) = (null, positions, null);
-            }
-
-            if (Improves(matcher, term, op, command.Group, weights.Group, normalize, ref best, out _))
-            {
-                (bestTitle, bestSubtitle, bestKeyword) = (null, null, null);
-            }
-
-            if (Improves(matcher, term, op, path, weights.Path, normalize, ref best, out _))
-            {
-                (bestTitle, bestSubtitle, bestKeyword) = (null, null, null);
-            }
-
-            if (Improves(matcher, term, op, command.Description, weights.Description, normalize, ref best, out _))
-            {
-                (bestTitle, bestSubtitle, bestKeyword) = (null, null, null);
-            }
-
-            var tags = command.Tags;
-            for (var i = 0; i < tags.Count; i++)
-            {
-                if (Improves(matcher, term, op, tags[i], weights.Tag, normalize, ref best, out _))
-                {
-                    (bestTitle, bestSubtitle, bestKeyword) = (null, null, null);
+                    (holds, groupBest, groupTitle, groupSubtitle, groupKeyword) = (true, score, termTitle, termSubtitle, termKeyword);
                 }
             }
 
-            if (double.IsNegativeInfinity(best))
+            if (!holds)
             {
                 return null;
             }
 
-            total += best;
-            if (bestTitle is { Length: > 0 })
+            total += groupBest;
+            if (groupTitle is { Length: > 0 })
             {
-                titlePos = titlePos is null ? bestTitle : [.. titlePos, .. bestTitle];
+                titlePos = titlePos is null ? groupTitle : [.. titlePos, .. groupTitle];
             }
 
-            if (bestSubtitle is { Length: > 0 })
+            if (groupSubtitle is { Length: > 0 })
             {
-                subtitlePos = subtitlePos is null ? bestSubtitle : [.. subtitlePos, .. bestSubtitle];
+                subtitlePos = subtitlePos is null ? groupSubtitle : [.. subtitlePos, .. groupSubtitle];
             }
 
-            matchedKeyword ??= bestKeyword;
+            matchedKeyword ??= groupKeyword;
+            start = end;
         }
 
         return new BaletteMatch(command, total, SortedDistinct(titlePos), SortedDistinct(subtitlePos), matchedKeyword);
+    }
+
+    /// <summary>
+    /// The best weighted score of one term over the command's fields, or negative infinity when none matches; only
+    /// title and subtitle positions are kept, for highlighting, and the keyword that won, for the row to show.
+    /// </summary>
+    private static double BestField(IBaletteMatcher matcher, BaletteCommand command, string term, BaletteQueryOperator op, BaletteMatchWeights weights, string? path, bool normalize,
+        out int[]? bestTitle, out int[]? bestSubtitle, out string? bestKeyword)
+    {
+        var best = double.NegativeInfinity;
+        (bestTitle, bestSubtitle, bestKeyword) = (null, null, null);
+
+        // A literal term is searched in every field; whether it is ASCII is worked out once for all of them.
+        var asciiTerm = op != BaletteQueryOperator.Fuzzy && System.Text.Ascii.IsValid(term);
+
+        if (Improves(matcher, term, op, asciiTerm, command.Title, weights.Title, normalize, ref best, out var positions))
+        {
+            (bestTitle, bestSubtitle, bestKeyword) = (positions, null, null);
+        }
+
+        var keywords = command.Keywords;
+        for (var i = 0; i < keywords.Count; i++)
+        {
+            if (Improves(matcher, term, op, asciiTerm, keywords[i], weights.Keyword, normalize, ref best, out _))
+            {
+                (bestTitle, bestSubtitle, bestKeyword) = (null, null, keywords[i]);
+            }
+        }
+
+        if (Improves(matcher, term, op, asciiTerm, command.Subtitle, weights.Subtitle, normalize, ref best, out positions))
+        {
+            (bestTitle, bestSubtitle, bestKeyword) = (null, positions, null);
+        }
+
+        if (Improves(matcher, term, op, asciiTerm, command.Group, weights.Group, normalize, ref best, out _))
+        {
+            (bestTitle, bestSubtitle, bestKeyword) = (null, null, null);
+        }
+
+        if (Improves(matcher, term, op, asciiTerm, path, weights.Path, normalize, ref best, out _))
+        {
+            (bestTitle, bestSubtitle, bestKeyword) = (null, null, null);
+        }
+
+        if (Improves(matcher, term, op, asciiTerm, command.Description, weights.Description, normalize, ref best, out _))
+        {
+            (bestTitle, bestSubtitle, bestKeyword) = (null, null, null);
+        }
+
+        var tags = command.Tags;
+        for (var i = 0; i < tags.Count; i++)
+        {
+            if (Improves(matcher, term, op, asciiTerm, tags[i], weights.Tag, normalize, ref best, out _))
+            {
+                (bestTitle, bestSubtitle, bestKeyword) = (null, null, null);
+            }
+        }
+
+        return best;
     }
 
     /// <summary>Whether the operators fold diacritics and keyboard variants: as the matcher does, and by default.</summary>
@@ -153,7 +203,7 @@ public static class BaletteMatcherExtensions
     };
 
     /// <summary>Scores one field; when it beats <paramref name="best"/>, updates it and returns the field's positions.</summary>
-    private static bool Improves(IBaletteMatcher matcher, string term, TermOperator op, string? text, double weight, bool normalize, ref double best, out int[] positions)
+    private static bool Improves(IBaletteMatcher matcher, string term, BaletteQueryOperator op, bool asciiTerm, string? text, double weight, bool normalize, ref double best, out int[] positions)
     {
         positions = [];
         if (string.IsNullOrEmpty(text))
@@ -161,7 +211,7 @@ public static class BaletteMatcherExtensions
             return false;
         }
 
-        var m = op == TermOperator.Fuzzy ? matcher.Match(term, text) : ExactMatch(term, text, op, normalize);
+        var m = op == BaletteQueryOperator.Fuzzy ? matcher.Match(term, text) : ExactMatch(term, text, op, normalize, asciiTerm);
         if (!m.Matched)
         {
             return false;
@@ -200,31 +250,29 @@ public static class BaletteMatcherExtensions
 
     private static readonly BaletteMatchWeights DefaultWeights = new();
 
-    internal enum TermOperator { Fuzzy, Exact, Prefix, Suffix, Negate }
-
-    internal static (string Term, TermOperator Op) ParseOperator(string raw)
+    internal static (string Term, BaletteQueryOperator Op) ParseOperator(string raw)
     {
         if (raw.Length > 1 && raw[0] == '!')
         {
-            return (raw[1..], TermOperator.Negate);
+            return (raw[1..], BaletteQueryOperator.Negate);
         }
 
         if (raw.Length > 1 && raw[0] == '\'')
         {
-            return (raw[1..], TermOperator.Exact);
+            return (raw[1..], BaletteQueryOperator.Exact);
         }
 
         if (raw.Length > 1 && raw[0] == '^')
         {
-            return (raw[1..], TermOperator.Prefix);
+            return (raw[1..], BaletteQueryOperator.Prefix);
         }
 
         if (raw.Length > 1 && raw[^1] == '$')
         {
-            return (raw[..^1], TermOperator.Suffix);
+            return (raw[..^1], BaletteQueryOperator.Suffix);
         }
 
-        return (raw, TermOperator.Fuzzy);
+        return (raw, BaletteQueryOperator.Fuzzy);
     }
 
     private static bool AnyFieldContains(BaletteCommand c, string term, string? path, bool normalize)
@@ -247,15 +295,15 @@ public static class BaletteMatcherExtensions
         return false;
     }
 
-    private static BaletteFieldMatch ExactMatch(string term, string text, TermOperator op, bool normalize)
+    private static BaletteFieldMatch ExactMatch(string term, string text, BaletteQueryOperator op, bool normalize, bool asciiTerm)
     {
         var kind = op switch
         {
-            TermOperator.Prefix => BaletteTextMatchKind.Prefix,
-            TermOperator.Suffix => BaletteTextMatchKind.Suffix,
+            BaletteQueryOperator.Prefix => BaletteTextMatchKind.Prefix,
+            BaletteQueryOperator.Suffix => BaletteTextMatchKind.Suffix,
             _ => BaletteTextMatchKind.Anywhere,
         };
-        var idx = BaletteTextFold.Find(text, term, kind, normalize);
+        var idx = BaletteTextFold.Find(text, term, kind, normalize, asciiTerm);
         if (idx < 0)
         {
             return BaletteFieldMatch.None;
@@ -267,21 +315,54 @@ public static class BaletteMatcherExtensions
     }
 }
 
-/// <summary>A query split into terms with their operators: parsed once per keystroke, matched against every command.</summary>
-internal sealed class BaletteQuery
+/// <summary>How a term of a query is matched.</summary>
+public enum BaletteQueryOperator
 {
+    /// <summary>By the palette's matcher - fuzzy by default.</summary>
+    Fuzzy,
+
+    /// <summary><c>'term</c> or <c>"a phrase"</c>: the text itself, anywhere in a field.</summary>
+    Exact,
+
+    /// <summary><c>^term</c>: a field starts with it.</summary>
+    Prefix,
+
+    /// <summary><c>term$</c>: a field ends with it.</summary>
+    Suffix,
+
+    /// <summary><c>!term</c>: no field contains it.</summary>
+    Negate,
+}
+
+/// <summary>
+/// One term of a parsed query: its <paramref name="Text"/> without the operator characters, how it is matched, and its
+/// <paramref name="Group"/> - terms sharing a group are alternatives (<c>a | b</c>), of which one has to hold.
+/// </summary>
+public readonly record struct BaletteQueryTerm(string Text, BaletteQueryOperator Operator, int Group);
+
+/// <summary>
+/// A query split into terms with their operators - what the palette parses once per keystroke and matches against every
+/// command. Public for tools that explain a search and for matchers of your own.
+/// </summary>
+public sealed class BaletteQuery
+{
+    /// <summary>The query with no terms, which every command matches.</summary>
     public static BaletteQuery Empty { get; } = new([]);
 
-    private BaletteQuery((string Term, BaletteMatcherExtensions.TermOperator Op)[] terms) => Terms = terms;
+    private BaletteQuery(BaletteQueryTerm[] terms) => TermArray = terms;
 
-    public (string Term, BaletteMatcherExtensions.TermOperator Op)[] Terms { get; }
+    /// <summary>The terms, in the order they were typed.</summary>
+    public IReadOnlyList<BaletteQueryTerm> Terms => TermArray;
+
+    /// <summary>The terms as an array, for the matching loop.</summary>
+    internal BaletteQueryTerm[] TermArray { get; }
 
     /// <summary>True when at least one term is matched by the matcher (not by an operator).</summary>
-    public bool HasFuzzyTerm(int minLength = 1)
+    internal bool HasFuzzyTerm(int minLength = 1)
     {
-        foreach (var (term, op) in Terms)
+        foreach (var (text, op, _) in TermArray)
         {
-            if (op == BaletteMatcherExtensions.TermOperator.Fuzzy && term.Length >= minLength)
+            if (op == BaletteQueryOperator.Fuzzy && text.Length >= minLength)
             {
                 return true;
             }
@@ -291,9 +372,11 @@ internal sealed class BaletteQuery
     }
 
     /// <summary>
-    /// Splits on whitespace into terms with fzf's operators. A double-quoted phrase - straight or curly quotes, which
-    /// some keyboards type - is one exact term with its spaces; <c>!"..."</c> excludes it, <c>^"..."</c> and <c>"..."$</c>
-    /// anchor it. A quote left open takes the rest of the query, so typing one never shows "no results" midway.
+    /// Splits on whitespace into terms with fzf's operators: <c>'exact</c>, <c>^prefix</c>, <c>suffix$</c> and
+    /// <c>!negate</c>. A double-quoted phrase - straight or curly quotes, which some keyboards type - is one exact term with
+    /// its spaces; <c>!"..."</c> excludes it, <c>^"..."</c> and <c>"..."$</c> anchor it. A quote left open takes the rest of
+    /// the query, so typing one never shows "no results" midway. A <c>|</c> standing on its own between two terms makes
+    /// them alternatives, as in fzf: <c>^go | ^open settings</c> is (starts with go, or with open) and settings.
     /// </summary>
     public static BaletteQuery Parse(string? query)
     {
@@ -302,7 +385,22 @@ internal sealed class BaletteQuery
             return Empty;
         }
 
-        var terms = new List<(string, BaletteMatcherExtensions.TermOperator)>();
+        var terms = new List<BaletteQueryTerm>();
+        var group = -1;
+        var orNext = false;
+
+        void Add(string text, BaletteQueryOperator op)
+        {
+            // An alternative joins the group of the term before it; anything else starts a group of its own.
+            if (!(orNext && terms.Count > 0))
+            {
+                group++;
+            }
+
+            orNext = false;
+            terms.Add(new BaletteQueryTerm(text, op, group));
+        }
+
         var i = 0;
         while (i < query.Length)
         {
@@ -337,13 +435,13 @@ internal sealed class BaletteQuery
 
                 if (phrase.Length > 0)
                 {
-                    terms.Add((phrase, prefix switch
+                    Add(phrase, prefix switch
                     {
-                        '!' => BaletteMatcherExtensions.TermOperator.Negate,
-                        '^' => BaletteMatcherExtensions.TermOperator.Prefix,
-                        _ when suffix => BaletteMatcherExtensions.TermOperator.Suffix,
-                        _ => BaletteMatcherExtensions.TermOperator.Exact,
-                    }));
+                        '!' => BaletteQueryOperator.Negate,
+                        '^' => BaletteQueryOperator.Prefix,
+                        _ when suffix => BaletteQueryOperator.Suffix,
+                        _ => BaletteQueryOperator.Exact,
+                    });
                 }
 
                 continue;
@@ -355,17 +453,24 @@ internal sealed class BaletteQuery
                 i++;
             }
 
+            if (i - start == 1 && query[start] == '|')
+            {
+                // Between two terms: the next one is an alternative to the last. Leading or trailing, it is ignored.
+                orNext = terms.Count > 0;
+                continue;
+            }
+
             var (term, op) = BaletteMatcherExtensions.ParseOperator(query[start..i]);
             if (term.Length > 0)
             {
-                terms.Add((term, op));
+                Add(term, op);
             }
         }
 
         return new([.. terms]);
     }
 
-    private static bool IsQuote(char c) => c is '"' or '“' or '”' or '„';
+    private static bool IsQuote(char c) => c is '"' or '\u201C' or '\u201D' or '\u201E';
 }
 
 /// <summary>

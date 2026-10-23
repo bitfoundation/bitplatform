@@ -18,8 +18,15 @@ permissions:
 jobs:
 
   e2e:
-    name: Balette E2E (Chromium)
+    name: Balette E2E (Chromium, ${{ matrix.render-mode }})
     runs-on: ubuntu-24.04
+
+    # The same suite twice: on WebAssembly, as the site is published, and on Blazor Server, where every key the palette
+    # handles crosses the circuit (the demo's Demo:RenderMode switch; see Infrastructure/E2EEnvironment.cs).
+    strategy:
+      fail-fast: false
+      matrix:
+        render-mode: [WebAssembly, Server]
 
     steps:
 
@@ -53,6 +60,8 @@ jobs:
       run: pwsh src/Utilities/Balette/Tests/Bit.Balette.Tests.E2E/bin/Release/net10.0/playwright.ps1 install --with-deps chromium
 
     - name: Start the published demo
+      env:
+        Demo__RenderMode: ${{ matrix.render-mode }}
       run: |
         cd demo
         nohup dotnet Bit.Balette.Demo.Server.dll --urls http://127.0.0.1:5000 > ../demo.log 2>&1 &
@@ -66,18 +75,19 @@ jobs:
     - name: Run E2E tests
       env:
         BALETTE_E2E_BASE_URL: http://127.0.0.1:5000
+        BALETTE_E2E_RENDER_MODE: ${{ matrix.render-mode }}
       # Run from inside src so src/global.json's Microsoft.Testing.Platform runner setting applies.
       run: >
         cd src/Utilities/Balette/Tests/Bit.Balette.Tests.E2E &&
         dotnet test -c Release --no-build
-        --report-trx --report-trx-filename balette-e2e.trx
+        --report-trx --report-trx-filename balette-e2e-${{ matrix.render-mode }}.trx
 
     - name: Upload test results
       if: always()
       uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
       with:
-        name: balette-e2e
+        name: balette-e2e-${{ matrix.render-mode }}
         path: |
-          **/balette-e2e.trx
+          **/balette-e2e-${{ matrix.render-mode }}.trx
           demo.log
         if-no-files-found: ignore

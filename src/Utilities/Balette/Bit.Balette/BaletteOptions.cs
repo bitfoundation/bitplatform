@@ -122,6 +122,13 @@ public sealed class BaletteOptions
     /// </summary>
     public bool TypoTolerance { get; set; } = true;
 
+    /// <summary>
+    /// After the first chords of a shortcut sequence (<c>G</c> of <c>G S</c>), show and announce that the next key is
+    /// awaited, as VS Code does in its status bar (default true). <see cref="IBaletteService.SequencePending"/> reports it
+    /// to code either way.
+    /// </summary>
+    public bool ShowSequenceHint { get; set; } = true;
+
     /// <summary>Show a "Modes" hint group on the empty query listing registered prefixes.</summary>
     public bool ShowModeHints { get; set; } = true;
 

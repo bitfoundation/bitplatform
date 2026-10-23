@@ -126,6 +126,12 @@ public sealed class BaletteCommandBuilder
     /// </summary>
     public BaletteCommandBuilder Source(string name, Func<string, CancellationToken, Task<IReadOnlyList<BaletteCommand>>> search, int minQueryLength = 0, int maxResults = 20, bool applyMatcher = false)
         => Source(new BaletteDelegateSource(name, search, minQueryLength, maxResults, applyMatcher));
+    /// <summary>
+    /// Searches in pages on this command's page: <paramref name="searchPage"/> takes the query and the cursor of the page
+    /// to load (null for the first), and a page with a <see cref="BaletteSourcePage.NextCursor"/> gets a "Show more…" row.
+    /// </summary>
+    public BaletteCommandBuilder Source(string name, Func<string, string?, CancellationToken, Task<BaletteSourcePage>> searchPage, int minQueryLength = 0, int maxResults = 20)
+        => Source(new BaletteDelegateSource(name, (q, cursor, _, ct) => searchPage(q, cursor, ct), minQueryLength, maxResults));
     /// <summary>Sets the search box placeholder on this command's page.</summary>
     public BaletteCommandBuilder ChildrenPlaceholder(string? placeholder) { _childrenPlaceholder = placeholder; return this; }
     /// <summary>Makes the rows of this command's page checkboxes; <c>Ctrl+Enter</c> runs the handler with the checked ones.</summary>

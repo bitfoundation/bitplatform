@@ -232,12 +232,23 @@ export function init(dialog: HTMLElement, dotnet: DotNetObjectReference, toggles
         return false;
     }
 
+    // The chords of a sequence pressed so far, as .NET was last told of them; null when no sequence is pending.
+    let reportedPending: string | null = null;
+
+    /** Tells .NET which chords of a sequence are pending, or that none are - only when that changes. */
+    function reportPending(chords: string | null): void {
+        if (chords === reportedPending) return;
+        reportedPending = chords;
+        dotnet.invokeMethodAsync('OnSequencePending', chords);
+    }
+
     function resetBuffer(): void {
         buffer = [];
         if (bufferTimer) {
             clearTimeout(bufferTimer);
             bufferTimer = null;
         }
+        reportPending(null);
     }
 
     /** Matches the tail of the buffer against every registered sequence, and says whether a longer one could still match. */
@@ -332,6 +343,9 @@ export function init(dialog: HTMLElement, dotnet: DotNetObjectReference, toggles
         }
         if (!prefixPossible) {
             resetBuffer();
+        } else {
+            // The first chords of a sequence: the literal chord of each key press, which .NET renders for the platform.
+            reportPending(buffer.map(alts => alts[0]).join(' '));
         }
     }
 

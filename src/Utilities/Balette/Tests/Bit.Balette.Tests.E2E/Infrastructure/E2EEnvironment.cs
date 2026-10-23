@@ -33,6 +33,13 @@ public static class E2EEnvironment
     /// <summary><c>BALETTE_E2E_EXECUTABLE</c>: full path to a chromium-family executable.</summary>
     public static string? Executable { get; } = Read("BALETTE_E2E_EXECUTABLE");
 
+    /// <summary>
+    /// <c>BALETTE_E2E_RENDER_MODE</c>: <c>WebAssembly</c> (default), as the site is published, or <c>Server</c>, which runs
+    /// the same pages on a Blazor Server circuit - every key the palette handles then crosses the connection. A demo the
+    /// suite starts itself is started in that mode; an external one (<see cref="BaseUrl"/>) has to have been.
+    /// </summary>
+    public static string RenderMode { get; } = string.Equals(Read("BALETTE_E2E_RENDER_MODE"), "Server", StringComparison.OrdinalIgnoreCase) ? "Server" : "WebAssembly";
+
     /// <summary><c>BALETTE_E2E_HEADED=1</c>: show the browser.</summary>
     public static bool Headed { get; } = Read("BALETTE_E2E_HEADED") == "1";
 

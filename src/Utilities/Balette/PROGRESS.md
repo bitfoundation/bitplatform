@@ -265,35 +265,76 @@ flaky failure. E2E 81 passed (new `InlinePaletteTests` for `Tab`/`Esc` and Optio
 prompt state now audited without the `aria-busy` that had hidden it). MCP 92 passed. `dotnet build -c Release`: 0
 warnings on net8.0/net9.0/net10.0 with the trim and AOT analyzers; `dotnet pack` succeeds.
 
+## Iteration 9 (2026-10-23) - the verification gaps
+
+**Changed**
+
+- Blazor Server in the browser: the demo takes `Demo:RenderMode=Server` (off in the published site) and the E2E host
+  starts it so when `BALETTE_E2E_RENDER_MODE=Server`; the fatal-error check also recognises a circuit ended by an
+  exception; `bit.ci.Balette.e2e.yml` runs the suite in both modes.
+- The first Server run: 79 of 81 passed. Both failures were tests assuming WebAssembly's speed, not palette defects - one
+  proved a page had opened by a row that nested search also lists on the root, one read a highlight before the server's
+  render arrived. Both now wait for what they need.
+- `AccessibilityTreeTests`: Chromium's own accessibility tree, read through the DevTools protocol - the roles, names and
+  states it hands to screen readers - for the combobox and its active option (title, subtitle and shortcut in words, in
+  a named group), a toggle's state, a multi-select page (checked, not selected), a prompt (a textbox named by its
+  question, no listbox) and the dialog (named, modal, polite and assertive live regions).
+
+## Iteration 10 (2026-10-23) - the optional gaps
+
+**Changed**
+
+- Source paging: `IBaletteSource.SearchPageAsync(query, cursor, ...)` (a default interface method: existing sources answer
+  one page), `BaletteSourcePage(Commands, NextCursor, TotalCount)`, a paging `BaletteDelegateSource` constructor and
+  `.Source(name, (query, cursor, ct) => ...)`. A page with a cursor gets a "Show 20 more…" (or "Show more…") row that
+  appends the next page, skipping what is listed, and selects its first row; a failed next page keeps what is listed.
+- Pins are listed in the order they were pinned (`BaletteCommandUsage.PinnedAt`, an optional field, so stored history
+  from before still loads).
+- `a | b` alternatives, as in fzf; the query parser is public (`BaletteQuery`, `BaletteQueryTerm`,
+  `BaletteQueryOperator`) and the MCP search lab uses it instead of its own copy of the syntax, which had already
+  drifted (it split quoted phrases into words).
+- A pending sequence (`G` of `G S`) is shown and announced near the bottom of the page until it completes or times out
+  (`ShowSequenceHint`), and reported through `IBaletteService.SequencePending`.
+- The unused public members: "Clear recent commands" (`ClearRecents`) is in every action panel; the confirmation's
+  `ConfirmHint` is announced with it; `MoreResults` labels the paging row; `BaletteRowKind.Separator` is `[Obsolete]`.
+- Literal operators: a term's ASCII check is made once per command instead of once per field. Measured, it changed
+  nothing - the remaining 0.1 µs per command is the term-group loop and the per-field text check - and it is kept as
+  an accepted cost.
+
+**Verified (iterations 9 and 10)**: `Bit.Balette.Tests` 825 passed (275 per framework; new `QueryParserTests`,
+`PinOrderTests`, `BaletteRemainingGapsTests`). E2E 87 passed on WebAssembly and 87 passed on Blazor Server (new
+`AccessibilityTreeTests` and a pending-sequence test; one lookup in the new tests fixed after the first run, as the
+page's root also reports the focus). MCP 92 passed (its API-index test now expects `BaletteQuery` to be public, and
+checks that the internals - `BaletteTextFold`, `BaletteUrl`, `BaletteTypoTolerantMatcher`, `BaletteLog` - stay out).
+`dotnet build -c Release`: 0 warnings with the trim and AOT analyzers; `dotnet pack` succeeds.
+
 ## Where it stands
 
-The loop stops after iteration 8: the review's findings are fixed and verified, and what remains is optional (P3) or
-needs an environment this run did not have.
+Ten iterations, the mission's limit. Every P0 and P1 finding is fixed and verified, and so are the P2 and P3 ones except
+those below.
 
 **Definition of done**
 
 - Audit of the implementation and of cmdk, kbar, GitHub, VS Code, Raycast and Blazor alternatives: done (iteration 2).
-- Critical and essential requirements: implemented, or listed below with the reason.
-- Search and ranking: normalization, phrases, typo fallback, nested search; unit-tested and benchmarked.
+- Search and ranking: normalization, phrases, alternatives, typo fallback, nested search; unit-tested and benchmarked.
 - Registration, nested workflows, shortcuts, execution: conflicts and duplicates reported, lifecycle-safe, tested.
-- Async sources and large collections: timeouts, retries, page sources, snapshot caching; benchmarked to 20,000 commands.
-- Accessibility, keyboard, focus, localization, RTL: reviewed and fixed; axe-core clean in every audited state; manual
-  screen reader testing not done (see below).
+- Async sources and large collections: timeouts, retries, paging, page sources, snapshot caching; benchmarked to
+  20,000 commands.
+- Accessibility, keyboard, focus, localization, RTL: axe-core clean in every audited state, and the accessibility tree
+  Chromium hands screen readers asserted directly; no manual screen reader pass (below).
 - Theming: tokens documented; forced colours, more contrast, density, inline.
-- Hosting: WebAssembly with prerendering verified in a browser; Server, Hybrid and .NET 8/9 verified by the unit
-  suite only (see below).
-- Security, privacy, lifecycle, errors: URL schemes, generic error text, sanitized history, guarded interop.
-- Tests: 786 unit and component, 81 browser, 92 MCP.
-- Documentation and demo: README, package README, benchmark and E2E READMEs, demo pages updated.
+- Hosting: WebAssembly and Blazor Server both driven in a browser; Hybrid and .NET 8/9 by the unit suite.
+- Security, privacy, lifecycle, errors: URL schemes, generic error text, sanitized history, clearing recents from the
+  palette, guarded interop.
+- Tests: 825 unit and component, 87 browser tests in each of two render modes, 92 MCP.
+- Documentation and demo: README, package README, benchmark and E2E READMEs, demo pages, the E2E workflow.
 
 **Remaining gaps**
 
 | Pri | Gap | Why it remains |
 |---|---|---|
-| P2 | No manual screen reader pass (NVDA, JAWS, VoiceOver, TalkBack). The ARIA follows the APG patterns and axe finds nothing, but announcements and `aria-activedescendant` behaviour differ between readers. | Needs the readers and people who use them; automated audits cannot replace it. |
-| P2 | The browser suite runs the WebAssembly demo only; Blazor Server (where every key is a round trip) and Hybrid are covered by bUnit, not by a browser. | The demo is a WebAssembly app; a Server-hosted copy of it would be a new project. |
-| P3 | Sources have no "load more" or cursor paging; a source returns at most `MaxResults` per query. | Needs a source result type beyond a list - an API addition better designed with users. |
-| P3 | Pins are ordered by id, not by when they were pinned. | Needs a new field in the stored history (format change). |
-| P3 | No `OR` operator (fzf's `\|`), no sequence-pending hint ("G was pressed..."). | Niche; neither is in the competitors' common feature set. |
-| P3 | `BaletteRowKind.Separator` and the strings `MoreResults`, `Other`, `ClearRecents`, `ModeHintTitle`, `ConfirmHint` are public and unused by the palette (now documented as such). | Removing public members is a breaking change. |
-| P3 | Literal operators (`'x`, `^x`, `x$`) cost about 0.1 µs more per command than before normalization. | The price of matching `cafe` to "Café" in them too; fuzzy terms are unchanged. |
+| P2 | No manual screen reader pass (NVDA, JAWS, VoiceOver, TalkBack). The accessibility tree is asserted, but how each reader phrases and times it - and VoiceOver's known looseness with `aria-activedescendant` - only testing with them settles. | Needs the readers and people who use them. |
+| P3 | Blazor Hybrid is not driven in a browser suite. | Needs a MAUI, WPF or WinForms host; the palette's code paths are the WebAssembly ones there. |
+| P3 | On Blazor Server, keys typed faster than the circuit's round trip right after `Enter` opens a page can be read as typed on that page (seen as a race in a test, not reproduced by hand). | A property of Blazor Server's input model; the browser layer cannot know whether `Enter` will open a page. |
+| P3 | Literal operators (`'x`, `^x`, `x$`) cost about 0.1 µs more per command than before normalization (measured twice). | The term-group loop and a per-field ASCII check; removing it would mean caching text properties on every command. |
+| P3 | `BaletteStrings.Other` and `ModeHintTitle` are public and unused by the palette (documented as kept for templates). | Removing public members is a breaking change. |

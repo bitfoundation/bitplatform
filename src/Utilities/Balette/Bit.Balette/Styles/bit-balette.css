@@ -499,6 +499,34 @@ html.bit-balette-scroll-lock { overflow: hidden; }
     font-size: 13px;
 }
 
+/* ---------- A pending shortcut sequence ---------- */
+
+/* Outside the dialog, like the trigger: shown while the palette is closed and a sequence waits for its next key. */
+.bit-balette-sequence[data-pending="true"] {
+    position: fixed;
+    inset-block-end: 24px;
+    inset-inline-start: 50%;
+    transform: translateX(-50%);
+    z-index: var(--bit-balette-z, 1000);
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 12px;
+    border-radius: 999px;
+    background: var(--bit-balette-bg, #fff);
+    color: var(--bit-balette-fg-muted, #5f6673);
+    border: 1px solid var(--bit-balette-border, rgba(17, 19, 24, 0.08));
+    box-shadow: var(--bit-balette-shadow, 0 8px 24px rgba(0, 0, 0, 0.2));
+    font-family: var(--bit-balette-font, system-ui, sans-serif);
+    font-size: 12px;
+}
+
+.bit-balette-sequence[data-pending="true"]:dir(rtl) { transform: translateX(50%); }
+
+@media (forced-colors: active) {
+    .bit-balette-sequence[data-pending="true"] { border-color: CanvasText; }
+}
+
 /* ---------- Trigger button ---------- */
 
 .bit-balette-trigger {

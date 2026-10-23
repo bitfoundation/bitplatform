@@ -126,7 +126,12 @@ internal static class BaletteTextFold
     /// Where <paramref name="term"/> occurs in <paramref name="text"/> - anywhere, at the start or at the end - comparing
     /// folded characters case-insensitively; -1 when it does not.
     /// </summary>
-    public static int Find(string text, string term, BaletteTextMatchKind kind, bool normalize)
+    /// <param name="text">The text searched.</param>
+    /// <param name="term">The term searched for.</param>
+    /// <param name="kind">Where the term has to occur.</param>
+    /// <param name="normalize">Whether keyboard variants and diacritics fold.</param>
+    /// <param name="asciiTerm">Whether <paramref name="term"/> is ASCII, when the caller knows: it searches many fields for one term.</param>
+    public static int Find(string text, string term, BaletteTextMatchKind kind, bool normalize, bool? asciiTerm = null)
     {
         if (term.Length == 0 || term.Length > text.Length)
         {
@@ -136,7 +141,7 @@ internal static class BaletteTextFold
         // Most terms and texts are plain ASCII, where folding is only case and the runtime's vectorized ordinal search
         // is the whole job. A term that folds to something else than ASCII cannot occur in an ASCII text at all.
         var asciiText = System.Text.Ascii.IsValid(text);
-        if (asciiText && System.Text.Ascii.IsValid(term))
+        if (asciiText && (asciiTerm ?? System.Text.Ascii.IsValid(term)))
         {
             return FindOrdinal(text, term, kind);
         }

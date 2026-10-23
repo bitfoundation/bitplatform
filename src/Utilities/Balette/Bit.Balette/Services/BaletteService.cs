@@ -45,6 +45,10 @@ public sealed class BaletteService : IBaletteService
 
     public event Action? PlatformDetected;
 
+    public event Action<BaletteKeyboardShortcut?>? SequencePending;
+
+    internal void RaiseSequencePending(BaletteKeyboardShortcut? chords) => SequencePending?.Invoke(chords);
+
     internal void SetPlatform(bool isMac)
     {
         IsMac = isMac;

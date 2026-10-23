@@ -17,6 +17,7 @@ public partial class Balette : ComponentBase, IAsyncDisposable
 {
     private const string ModeHintTag = "__balette_mode_hint";
     private const string SourceErrorTag = "__balette_source_error";
+    private const string SourceMoreTag = "__balette_source_more";
 
     /// <summary>How long a handler runs before the palette shows it is busy: long enough that a quick one never flickers.</summary>
     private static readonly TimeSpan BusyDelay = TimeSpan.FromMilliseconds(150);
@@ -27,6 +28,7 @@ public partial class Balette : ComponentBase, IAsyncDisposable
     private readonly Dictionary<string, IReadOnlyList<BaletteCommand>> _sourceResults = new(StringComparer.Ordinal);
     private readonly HashSet<string> _pendingSources = new(StringComparer.Ordinal);
     private readonly HashSet<string> _sourceErrors = new(StringComparer.Ordinal);
+    private readonly Dictionary<string, (string Cursor, int? Total)> _sourceCursors = new(StringComparer.Ordinal);
 
     private ElementReference _dialogEl;
     private ElementReference _inputEl;
@@ -49,6 +51,8 @@ public partial class Balette : ComponentBase, IAsyncDisposable
     private bool _toastIsError;
     private bool _announcePage;
     private bool _inlineFocused;
+    private string? _activateId;
+    private BaletteKeyboardShortcut? _pendingSequence;
     private ILogger? _logger;
     private readonly HashSet<string> _reportedShortcutProblems = new(StringComparer.Ordinal);
     private string _announcement = string.Empty;
@@ -691,6 +695,7 @@ public partial class Balette : ComponentBase, IAsyncDisposable
         _pages.Clear();
         _pages.Add(new BalettePageFrame { Title = S.Home });
         _sourceResults.Clear();
+        _sourceCursors.Clear();
         _pendingSources.Clear();
         _sourceErrors.Clear();
         _sourcesLoading = false;
@@ -929,6 +934,18 @@ public partial class Balette : ComponentBase, IAsyncDisposable
         StateHasChanged();
     });
 
+    /// <summary>
+    /// Called by the browser layer when the first chords of a shortcut sequence were pressed, with them, and with null when
+    /// the sequence ended. Not meant to be called from application code.
+    /// </summary>
+    [JSInvokable]
+    public Task OnSequencePending(string? chords) => InvokeAsync(() =>
+    {
+        _pendingSequence = chords is not null && BaletteKeyboardShortcut.TryParse(chords, out var pending) ? pending : null;
+        Service.RaiseSequencePending(_pendingSequence);
+        StateHasChanged();
+    });
+
     /// <summary>Called by the browser layer when the backdrop was clicked. Not meant to be called from application code.</summary>
     [JSInvokable]
     public Task OnBackdropClick() => Options.CloseOnBackdropClick ? InvokeAsync(CloseCoreAsync) : Task.CompletedTask;
@@ -1053,6 +1070,7 @@ public partial class Balette : ComponentBase, IAsyncDisposable
         ResetSelection();
         Disarm();
         _sourceResults.Clear();
+        _sourceCursors.Clear();
         _sourceErrors.Clear();
         _pendingFocus = true;
         _pendingScroll = true;
@@ -1081,6 +1099,7 @@ public partial class Balette : ComponentBase, IAsyncDisposable
         ResetSelection();
         Disarm();
         _sourceResults.Clear();
+        _sourceCursors.Clear();
         _sourceErrors.Clear();
         _pendingFocus = true;
         _pendingScroll = true;
@@ -1194,6 +1213,23 @@ public partial class Balette : ComponentBase, IAsyncDisposable
                     },
                 });
             }
+
+            // Forgetting everything is as close as forgetting one: a privacy control, not a setting to go looking for.
+            if (History.Recents(1).Count > 0)
+            {
+                actions.Add(new BaletteCommand
+                {
+                    Id = "__clear-recents",
+                    Title = S.ClearRecents,
+                    Icon = IconSvg("trash"),
+                    ExcludeFromHistory = true,
+                    Handler = async _ =>
+                    {
+                        await History.ClearAsync();
+                        return BaletteCommandResult.Back;
+                    },
+                });
+            }
         }
 
         if (actions.Count == 0)
@@ -1284,7 +1320,7 @@ public partial class Balette : ComponentBase, IAsyncDisposable
         }
 
         var page = CurrentPage;
-        if (page.MultiSelect && !HasPage(cmd) && !cmd.Tags.Contains(SourceErrorTag))
+        if (page.MultiSelect && !HasPage(cmd) && !IsPaletteRow(cmd))
         {
             ToggleSelection(cmd);
             return;
@@ -1650,6 +1686,7 @@ public partial class Balette : ComponentBase, IAsyncDisposable
             // Every caller has just rebuilt; only stale source rows or the loading state need another pass.
             var stale = _sourceResults.Count > 0 || _sourcesLoading;
             _sourceResults.Clear();
+            _sourceCursors.Clear();
             _pendingSources.Clear();
             _sourcesLoading = false;
             if (stale)
@@ -1704,9 +1741,9 @@ public partial class Balette : ComponentBase, IAsyncDisposable
     /// is logged and leaves a row that retries it, while the other sources' results stay: one failing API does not take
     /// the rest of the list with it. An answer to a query, page or mode that is no longer current is dropped.
     /// </summary>
-    private async Task SearchSourceAsync(IBaletteSource source, string query, BaletteSourceContext ctx, BalettePageFrame frame, CancellationToken token)
+    private async Task SearchSourceAsync(IBaletteSource source, string query, BaletteSourceContext ctx, BalettePageFrame frame, CancellationToken token, string? cursor = null)
     {
-        IReadOnlyList<BaletteCommand>? results = null;
+        BaletteSourcePage? results = null;
         var timeoutMs = Options.SourceTimeoutMs;
         using var timeout = CancellationTokenSource.CreateLinkedTokenSource(token);
         if (timeoutMs > 0)
@@ -1716,12 +1753,12 @@ public partial class Balette : ComponentBase, IAsyncDisposable
 
         try
         {
-            var search = source.SearchAsync(query, ctx, timeout.Token);
+            var search = source.SearchPageAsync(query, cursor, ctx, timeout.Token);
             // A search left behind - overtaken or timed out - may still fail later; that failure is nobody's to report.
             _ = search.ContinueWith(static t => _ = t.Exception, CancellationToken.None, TaskContinuationOptions.OnlyOnFaulted, TaskScheduler.Default);
 
             // Waited for with the timeout as well as handed it, so a source that ignores its token still times out.
-            results = await (timeoutMs > 0 ? search.WaitAsync(TimeSpan.FromMilliseconds(timeoutMs), token) : search.WaitAsync(token)) ?? [];
+            results = await (timeoutMs > 0 ? search.WaitAsync(TimeSpan.FromMilliseconds(timeoutMs), token) : search.WaitAsync(token)) ?? new BaletteSourcePage([]);
         }
         catch (OperationCanceledException) when (token.IsCancellationRequested)
         {
@@ -1748,16 +1785,45 @@ public partial class Balette : ComponentBase, IAsyncDisposable
                 return;
             }
 
-            if (results is null)
+            if (results is null && cursor is not null)
+            {
+                // A next page that failed keeps the ones already listed, and its row to try again.
+                ShowError(S.Format(S.SourceFailed, source.Name));
+            }
+            else if (results is null)
             {
                 _sourceErrors.Add(source.Name);
                 _sourceResults.Remove(source.Name);
+                _sourceCursors.Remove(source.Name);
             }
             else
             {
-                var kept = results.Take(source.MaxResults).ToList();
-                _sourceResults[source.Name] = kept;
-                foreach (var c in kept)
+                var page = (results.Commands ?? []).Take(source.MaxResults).ToList();
+                List<BaletteCommand> listed;
+                if (cursor is not null && _sourceResults.TryGetValue(source.Name, out var earlier))
+                {
+                    // A next page: appended, without what an earlier page listed already, and the first new row selected.
+                    var known = new HashSet<string>(earlier.Select(c => c.Id), StringComparer.Ordinal);
+                    var added = page.Where(c => known.Add(c.Id)).ToList();
+                    listed = [.. earlier, .. added];
+                    _activateId = added.FirstOrDefault()?.Id;
+                }
+                else
+                {
+                    listed = page;
+                }
+
+                _sourceResults[source.Name] = listed;
+                if (results.NextCursor is { } next && (results.TotalCount is not { } total || total > listed.Count))
+                {
+                    _sourceCursors[source.Name] = (next, results.TotalCount);
+                }
+                else
+                {
+                    _sourceCursors.Remove(source.Name);
+                }
+
+                foreach (var c in page)
                 {
                     frame.SourceCommands[c.Id] = c;
                 }
@@ -1787,6 +1853,43 @@ public partial class Balette : ComponentBase, IAsyncDisposable
         var query = _effectiveQuery;
         _ = Task.Run(() => SearchSourceAsync(source, query, ctx, frame, cts.Token), cts.Token);
     }
+
+    /// <summary>Asks a source for the page after the ones listed, for the same query, without waiting for the debounce.</summary>
+    private void LoadMore(string name)
+    {
+        if (_debounceCts is not { IsCancellationRequested: false } cts || !_sourceCursors.TryGetValue(name, out var next)
+            || ActiveSources().FirstOrDefault(s => s.Name == name) is not { } source || _pendingSources.Contains(name))
+        {
+            return;
+        }
+
+        _pendingSources.Add(name);
+        _sourcesLoading = true;
+        var frame = CurrentPage;
+        var ctx = new BaletteSourceContext(_mode?.Prefix, frame.Command?.Id, Services);
+        var query = _effectiveQuery;
+        _ = Task.Run(() => SearchSourceAsync(source, query, ctx, frame, cts.Token, next.Cursor), cts.Token);
+    }
+
+    /// <summary>The row after a source's results when it has more: choosing it loads the next page.</summary>
+    private BaletteCommand SourceMoreRow(string name, int listed, int? total) => new()
+    {
+        Id = $"__source-more:{name}",
+        Title = total is { } all ? S.Format(S.MoreResults, all - listed) : S.LoadMore,
+        Group = name,
+        Kind = BaletteCommandKind.Search,
+        Icon = IconSvg("more"),
+        ExcludeFromHistory = true,
+        Tags = [SourceMoreTag],
+        Handler = _ =>
+        {
+            LoadMore(name);
+            return Task.FromResult(BaletteCommandResult.KeepOpen);
+        },
+    };
+
+    /// <summary>A row the palette adds - a source's retry or next page - which is run, never checked, on a multi-select page.</summary>
+    private static bool IsPaletteRow(BaletteCommand cmd) => cmd.Tags.Contains(SourceErrorTag) || cmd.Tags.Contains(SourceMoreTag);
 
     /// <summary>The row a failed source leaves in place of its results: choosing it asks the source again.</summary>
     private BaletteCommand SourceErrorRow(string name) => new()
@@ -1936,6 +2039,7 @@ public partial class Balette : ComponentBase, IAsyncDisposable
                 continue;
             }
 
+            var more = _sourceCursors.TryGetValue(source.Name, out var cursor) ? SourceMoreRow(source.Name, results.Count, cursor.Total) : null;
             if (source.ApplyMatcher)
             {
                 foreach (var c in results)
@@ -1947,6 +2051,12 @@ public partial class Balette : ComponentBase, IAsyncDisposable
                         matches.Add(m with { FromSource = true, SourceName = source.Name, IsApproximate = _approximate });
                     }
                 }
+
+                // Ranked below everything, so it ends the source's group.
+                if (more is not null)
+                {
+                    matches.Add(new BaletteMatch(more, double.NegativeInfinity, [], [], null) { FromSource = true, SourceName = source.Name });
+                }
             }
             else
             {
@@ -1955,6 +2065,10 @@ public partial class Balette : ComponentBase, IAsyncDisposable
                     var m = hasQuery ? matcher.Match(c, query, Options.Weights) : null;
                     return new BaletteMatch(c, 0, m?.TitlePositions ?? [], m?.SubtitlePositions ?? [], null) { Rank = -i, FromSource = true, SourceName = source.Name };
                 }).ToList();
+                if (more is not null)
+                {
+                    block.Add(new BaletteMatch(more, 0, [], [], null) { Rank = -block.Count, FromSource = true, SourceName = source.Name });
+                }
                 blockSources.Add((source.Name, block));
             }
         }
@@ -2113,6 +2227,18 @@ public partial class Balette : ComponentBase, IAsyncDisposable
             }
         }
 
+        if (_activateId is not null)
+        {
+            var activate = items.FindIndex(r => r.Command.Id == _activateId);
+            if (activate >= 0)
+            {
+                _activeIndex = activate;
+                _pendingScroll = true;
+            }
+
+            _activateId = null;
+        }
+
         var count = items.Count == 0 && IsLoading ? S.Loading : S.ResultsAnnouncementFor(items.Count);
         if (_approximate && items.Count > 0)
         {
@@ -2145,7 +2271,7 @@ public partial class Balette : ComponentBase, IAsyncDisposable
         // Nested commands, found from the root page as kbar finds them: matched with their ancestors' titles as one more
         // field, listed with them before the title and under the outermost ancestor's group. Only while typing - the
         // empty root query lists the root - and not in a mode, which scopes the root on purpose.
-        if (page.IsRoot && _mode is null && query.Terms.Length > 0 && EffectiveSearchNested)
+        if (page.IsRoot && _mode is null && query.Terms.Count > 0 && EffectiveSearchNested)
         {
             var chains = new Dictionary<string, AncestorChain?>(StringComparer.Ordinal);
             foreach (var c in _all)
@@ -2522,6 +2648,8 @@ public partial class Balette : ComponentBase, IAsyncDisposable
     private bool EffectiveSearchNested => SearchNestedCommands ?? Options.SearchNestedCommands;
 
     private bool EffectiveTypoTolerance => TypoTolerance ?? Options.TypoTolerance;
+
+    private bool EffectiveShowSequenceHint => !Inline && Options.ShowSequenceHint;
 
     private string EffectivePlaceholder => CurrentPage.Placeholder ?? (_mode?.Placeholder) ?? Placeholder ?? S.Placeholder;
 

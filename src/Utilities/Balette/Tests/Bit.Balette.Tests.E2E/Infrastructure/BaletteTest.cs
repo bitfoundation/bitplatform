@@ -21,6 +21,9 @@ public abstract class BaletteTest
     [
         "Unhandled exception",
         "crit: ",
+        // Blazor Server's: the circuit an exception ended.
+        "unhandled exception on the current circuit",
+        "Circuit has closed due to an error",
     ];
 
     private readonly List<IBrowserContext> _contexts = [];

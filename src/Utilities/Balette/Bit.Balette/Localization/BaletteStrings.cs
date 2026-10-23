@@ -79,13 +79,13 @@ public class BaletteStrings
     /// <summary>The action panel entry that forgets a command's uses.</summary>
     public virtual string RemoveFromRecents { get; set; } = "Remove from recents";
 
-    /// <summary>Not used by the palette itself; kept for a command of your own that calls <see cref="BaletteHistory.ClearAsync"/>.</summary>
+    /// <summary>The action panel entry that forgets every recent command (pins stay).</summary>
     public virtual string ClearRecents { get; set; } = "Clear recent commands";
 
     /// <summary>Put before the title of a command waiting for its confirming Enter.</summary>
     public virtual string ConfirmPrefix { get; set; } = "Confirm: ";
 
-    /// <summary>Not used by the palette itself; kept for templates.</summary>
+    /// <summary>Announced with the confirmation message of a command waiting for its second Enter.</summary>
     public virtual string ConfirmHint { get; set; } = "Press Enter again to confirm, Esc to cancel";
 
     /// <summary>How many rows are checked on a multi-select page; <c>{0}</c> is the count.</summary>
@@ -133,8 +133,14 @@ public class BaletteStrings
     /// <summary>The title of the root page.</summary>
     public virtual string Home { get; set; } = "Home";
 
-    /// <summary>Not used by the palette itself; kept for templates.</summary>
+    /// <summary>The row that loads a source's next page when it said how many results there are; <c>{0}</c> is how many are left.</summary>
     public virtual string MoreResults { get; set; } = "Show {0} more…";
+
+    /// <summary>The row that loads a source's next page when it did not say how many results there are.</summary>
+    public virtual string LoadMore { get; set; } = "Show more…";
+
+    /// <summary>Shown, and announced, after the first chords of a shortcut sequence (<c>G</c> of <c>G S</c>), until it completes or times out.</summary>
+    public virtual string SequencePending { get; set; } = "waiting for the next key…";
 
     /// <summary>Shown when a command failed; <c>{0}</c> is its title. See <see cref="BaletteCommandErrorEventArgs.Message"/>.</summary>
     public virtual string CommandFailed { get; set; } = "Couldn’t run “{0}”.";
