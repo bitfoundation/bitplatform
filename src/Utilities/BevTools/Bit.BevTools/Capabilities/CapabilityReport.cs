@@ -65,6 +65,18 @@ internal static class CapabilityReport
             new("Components", "Component state (fields)", BevCapabilityStatus.Partial, "Fields are read on demand and diffed per render for the selected component only. Changes made without a render are not observed."),
             new("Components", "Injected services", BevCapabilityStatus.Available, "[Inject] properties are listed with their registered lifetime."),
             new("Components", "Source location", BevCapabilityStatus.Partial, "Inferred from the type name (Foo.razor); exact file paths need PDBs and are only shown in exception stack traces."),
+            new("Components", "Event handlers and callbacks it bound", BlazorReflection.CanReadRenderTree ? BevCapabilityStatus.RequiresInstrumentation : BevCapabilityStatus.NotAvailable, BlazorReflection.CanReadRenderTree
+                ? "Read on demand from the frames of the component's latest render: DOM handlers, @bind change handlers and the callbacks it passes to child components, each named by the method it runs."
+                : "The renderer's render tree could not be accessed on this framework version."),
+            new("Components", "Render mode", BlazorReflection.GetComponentRenderModeMethod is not null ? BevCapabilityStatus.RequiresInstrumentation : BevCapabilityStatus.NotAvailable, BlazorReflection.GetComponentRenderModeMethod is not null
+                ? "What the renderer assigned (@rendermode, [RenderMode*]), read on each component's first render; the tree marks where each subtree starts."
+                : "The renderer's render mode lookup could not be accessed on this framework version."),
+            new("Components", "Values (parameters, fields, state, claims)", session.ValueAccess == BevValueAccess.Full ? BevCapabilityStatus.Available : BevCapabilityStatus.Partial, session.ValueAccess switch
+            {
+                BevValueAccess.Full => "Read with redaction (names, [BevToolsSensitive], credential shapes); configuration and key material are never read.",
+                BevValueAccess.Shallow => "ValueAccess is Shallow: scalars only, objects show their type; forced re-render detection is off.",
+                _ => "ValueAccess is None: names and types only, because this process serves many users outside Development. Set BitBevToolsOptions.ValueAccess to read more.",
+            }),
             new("Components", "Disposal", BevCapabilityStatus.Partial, "Detected when the renderer forgets the instance (checked on each refresh), so timing is approximate."),
             new("Rendering", "Render count and BuildRenderTree duration", reflectionOk ? BevCapabilityStatus.RequiresInstrumentation : BevCapabilityStatus.NotAvailable, reflectionOk ? "The private render fragment of each ComponentBase is wrapped at creation; components that implement IComponent directly are not measured." : "ComponentBase internals changed; render measurement is unavailable."),
             new("Rendering", "Render batches", batchesOk ? BevCapabilityStatus.RequiresInstrumentation : BevCapabilityStatus.NotReliable, batchesOk ? "Batch boundaries come from the renderer's batch builder; a batch is one diff sent to the browser." : "Falling back to idle-time heuristics for batch boundaries."),
@@ -76,6 +88,15 @@ internal static class CapabilityReport
             new("Events", "UI events with handler duration", eventsObserved ? BevCapabilityStatus.Available : BevCapabilityStatus.RequiresRuntimeSupport, FrameworkInstrumentationExists ? "From the framework ActivitySource; includes component type, method and attribute name." : EarlierRuntimeHint),
             new("Events", "Navigation", navObserved || session.LastNavigationEventId is not null ? BevCapabilityStatus.Available : BevCapabilityStatus.Partial, "From NavigationManager.LocationChanged and the Navigate activity when available."),
             new("State", "Registered state providers", BevCapabilityStatus.RequiresIntegration, "Implement IBevStateProvider (or register an adapter) to get snapshots, change history and before/after diffs."),
+            new("State", "Authentication state", session.State.Entries.Any(e => e.Provider is BevAuthenticationStateProvider) ? BevCapabilityStatus.Available : BevCapabilityStatus.RequiresIntegration,
+                "From the scope's AuthenticationStateProvider, with a change history; the app registers one when it uses authentication. Claim values follow ValueAccess."),
+            new("Routing", "Current route, route values, query", session.Components.All.Any(r => r.Component is Microsoft.AspNetCore.Components.RouteView) ? BevCapabilityStatus.Available : BevCapabilityStatus.Partial,
+                "From the RouteView's RouteData and NavigationManager. Without a RouteView in this session (the router runs during static rendering) only the URI is known."),
+            new("Routing", "Matched route template", BevCapabilityStatus.Partial,
+                (FrameworkInstrumentationExists ? "RouteData.Template when the router fills it in (.NET 10); otherwise" : "RouteData has no template before .NET 10, so it is")
+                + " inferred for a page with a single @page, and labeled so; a page with several stays unknown."),
+            new("Rendering", "What prerendering did", session.Prerender is not null ? BevCapabilityStatus.Available : BevCapabilityStatus.RequiresInstrumentation,
+                session.Prerender is not null ? "Handed over from the prerendering session through persistent component state." : "Arrives when the page was prerendered with the BevTools panel in it, and ValueAccess is Full (the summary travels in the page)."),
             new("State", "Cascading values", BevCapabilityStatus.Available, "Read from [CascadingParameter] properties of the selected component."),
             attachment is null
                 ? new("Network", "HTTP requests via IHttpClientFactory", BevCapabilityStatus.Available, "A DelegatingHandler is added to every factory pipeline through IHttpMessageHandlerBuilderFilter. Hand-built HttpClient instances need BevToolsHttpMessageHandler added manually.")
@@ -87,9 +108,14 @@ internal static class CapabilityReport
             new("JS interop", "JS → .NET calls", bridge ? BevCapabilityStatus.Available : BevCapabilityStatus.RequiresInstrumentation, "DotNet.invokeMethodAsync/invokeMethod are wrapped by the browser bridge and reported in batches."),
             new("Errors", "Render and event exceptions", BevCapabilityStatus.Available, "Render exceptions are caught in the wrapper; event exceptions and circuit failures arrive through Blazor's own logger categories."),
             new("Errors", "JS errors and unhandled promise rejections", bridge ? BevCapabilityStatus.Available : BevCapabilityStatus.RequiresInstrumentation, "window.onerror / unhandledrejection via the browser bridge."),
+            new("Errors", "Resources that failed to load, CSP violations", bridge ? BevCapabilityStatus.Available : BevCapabilityStatus.RequiresInstrumentation, "Capture-phase error events on elements and securitypolicyviolation, via the browser bridge; URLs are redacted in the browser."),
             new("Circuit", "Circuit lifecycle, connection state, inbound message count", isServer && attachment is null ? BevCapabilityStatus.RequiresInstrumentation : BevCapabilityStatus.NotAvailable, "Blazor Server only, through a CircuitHandler registered by AddBitBevToolsServerServices().") { Platforms = "Server" },
             new("Circuit", "Reconnect attempts", bridge && isServer ? BevCapabilityStatus.Available : BevCapabilityStatus.RequiresInstrumentation, "From the components:reconnect-state-changed browser event.") { Platforms = "Server" },
-            new("Circuit", "SignalR message sizes and latency", BevCapabilityStatus.NotAvailable, "Not exposed by the framework; use SignalR logging or browser DevTools WS frames.") { Platforms = "Server" },
+            new("Network", "WebSocket and SignalR traffic", !session.Options.TrackWebSockets ? BevCapabilityStatus.NotAvailable : bridge && session.Browser.Sockets.Count > 0 ? BevCapabilityStatus.Available : BevCapabilityStatus.RequiresInstrumentation,
+                session.Options.TrackWebSockets
+                    ? "Counted in the browser bridge by direction and SignalR message kind, with render batch sizes and the browser's time to apply them; payloads are never read. A socket that existed before BevTools attached is seen from its next send."
+                    : "BitBevToolsOptions.TrackWebSockets is off."),
+            new("Circuit", "Network latency and message payloads", BevCapabilityStatus.NotAvailable, "Not exposed by the framework; payloads are never read. Message sizes are counted in the browser (Network → WebSockets).") { Platforms = "Server" },
             attachment is null
                 ? new("DI", "Registrations, lifetimes, constructor dependencies", BevCapabilityStatus.Available, "From the IServiceCollection captured at AddBitBevToolsServices time. Factory and instance registrations show no dependencies.")
                 : attachment.ThroughLoader

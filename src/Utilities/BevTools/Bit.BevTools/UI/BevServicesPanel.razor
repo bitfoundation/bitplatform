@@ -5,7 +5,7 @@
 <div class="bev-split">
     <div class="bev-left" style="flex-basis:50%">
         <div class="bev-toolbar">
-            <input type="text" placeholder="Filter: type name, lifetime:scoped|singleton|transient" value="@Query" @oninput="OnQuery" />
+            <input type="text" aria-label="Filter services" placeholder="Filter: type name, lifetime:scoped|singleton|transient" value="@Query" @oninput="OnQuery" />
             <label><input type="checkbox" checked="@_showFramework" @onchange='e => { _showFramework = e.Value is true; OnParametersSet(); }' /> framework</label>
             <span class="bev-muted bev-nowrap">@_rows.Count / @(Host.Graph?.Count ?? 0)</span>
         </div>

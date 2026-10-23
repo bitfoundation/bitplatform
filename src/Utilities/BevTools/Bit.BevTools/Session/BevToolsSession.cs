@@ -44,10 +44,13 @@ public sealed class BevToolsSession : IDisposable
         Registry = registry;
         IsEnabled = registry.IsEnabled;
         Redactor = new BevRedactor(options.SensitiveNamePatterns);
-        Inspector = new BevObjectInspector(options, Redactor, registry.Formatters);
+        ValueAccess = options.ValueAccess ?? (IsEnabled && IsInMultiUserHost && !IsDevelopmentHost(services) ? BevValueAccess.None : BevValueAccess.Full);
+        Inspector = new BevObjectInspector(options, Redactor, registry.Formatters, ValueAccess);
         Overhead = new BevOverheadMeter();
         Timeline = new Timeline(this, options.MaxEvents);
         Components = new ComponentRegistry(this, options);
+        Leaks = new BevLeakTracker(this);
+        Forms = new BevFormTracker(this);
         Errors = new ErrorCenter(this, options);
         Http = new HttpStore(this, options);
         Interop = new JsInteropStore(this, options);
@@ -64,6 +67,7 @@ public sealed class BevToolsSession : IDisposable
         };
         Browser = new BevBrowserState();
         StartedAt = DateTimeOffset.UtcNow;
+        StartedTicks = System.Diagnostics.Stopwatch.GetTimestamp();
 
         if (IsEnabled)
         {
@@ -74,6 +78,9 @@ public sealed class BevToolsSession : IDisposable
     public long Id { get; }
 
     public DateTimeOffset StartedAt { get; }
+
+    /// <summary>The high-resolution timestamp taken with <see cref="StartedAt"/>: the zero of a performance trace.</summary>
+    internal long StartedTicks { get; }
 
     public bool IsEnabled { get; }
 
@@ -91,6 +98,12 @@ public sealed class BevToolsSession : IDisposable
 
     public BevRedactor Redactor { get; }
 
+    /// <summary>
+    /// How much of the application's values this session reads: <see cref="BitBevToolsOptions.ValueAccess"/> when set,
+    /// otherwise Full, except outside Development in a process that serves many users, where it is None.
+    /// </summary>
+    public BevValueAccess ValueAccess { get; }
+
     public BevObjectInspector Inspector { get; }
 
     public BevOverheadMeter Overhead { get; }
@@ -98,6 +111,18 @@ public sealed class BevToolsSession : IDisposable
     internal Timeline Timeline { get; }
 
     internal ComponentRegistry Components { get; }
+
+    /// <summary>Disposed components, held weakly, and which of them garbage collection did not reclaim.</summary>
+    internal BevLeakTracker Leaks { get; }
+
+    /// <summary>The session's forms (EditContexts): fields, validation outcomes, validators and message displays.</summary>
+    internal BevFormTracker Forms { get; }
+
+    /// <summary>
+    /// Whether a developer may force a full garbage collection from BevTools: everywhere but a process that serves many
+    /// users outside Development, where it would pause every circuit for one person's check.
+    /// </summary>
+    internal bool AllowsForcedCollection => !IsInMultiUserHost || IsDevelopmentHost(Services);
 
     internal ErrorCenter Errors { get; }
 
@@ -180,6 +205,20 @@ public sealed class BevToolsSession : IDisposable
         }
     }
 
+    /// <summary>Whether the host reports Development. Only asked of a server process, which always registers <c>IHostEnvironment</c>.</summary>
+    private static bool IsDevelopmentHost(IServiceProvider services)
+    {
+        try
+        {
+            return services.GetService<Microsoft.Extensions.Hosting.IHostEnvironment>() is { } environment
+                && Microsoft.Extensions.Hosting.HostEnvironmentEnvExtensions.IsDevelopment(environment);
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
     /// <summary>What an attach without Bit.BevTools.Loader goes by; with it, <see cref="BevToolsLoaderContext.IsMultiUserHost"/> reads the same registration from the service collection.</summary>
     internal static bool HostsAServer(IServiceProvider services)
     {
@@ -195,6 +234,9 @@ public sealed class BevToolsSession : IDisposable
     }
 
     public bool IsInteractive { get; internal set; }
+
+    /// <summary>What prerendering did for this page, handed over through persistent component state; null when the page was not prerendered, or the summary did not arrive.</summary>
+    public BevPrerenderSummary? Prerender { get; internal set; }
 
     public string? RenderModeName { get; internal set; }
 
@@ -260,6 +302,15 @@ public sealed class BevToolsSession : IDisposable
 
     internal long? LastNavigationEventId { get; set; }
 
+    /// <summary>
+    /// The navigation event the framework's Navigate activity recorded that a LocationChanged has already been matched
+    /// to: each activity stands for one navigation, so it can absorb only one LocationChanged.
+    /// </summary>
+    internal long? MatchedNavigationEventId { get; set; }
+
+    /// <summary>The last navigation event recorded from LocationChanged itself rather than from the activity.</summary>
+    internal long? LastLocationChangedEventId { get; set; }
+
     /// <summary>The UI event (or navigation) currently executing on this session, resolved from Activity context.</summary>
     internal long? CurrentTriggerEventId => ActivityObserver.CurrentTriggerEvent(this)?.Id;
 
@@ -288,6 +339,43 @@ public sealed class BevToolsSession : IDisposable
 
     internal ConcurrentDictionary<string, BevLifecycleTypeMetrics> TypeMetrics { get; } = new(StringComparer.Ordinal);
 
+    /// <summary>Raised when something needs the symbols of an assembly that has none on disk (WebAssembly); the panel downloads them.</summary>
+    internal event Action<System.Reflection.Assembly>? SymbolsWanted;
+
+    internal void WantSymbols(System.Reflection.Assembly assembly) => SymbolsWanted?.Invoke(assembly);
+
+    private WeakReference<IComponent>? _panel;
+
+    /// <summary>
+    /// The interactive BevTools panel of this session. Its element is the one place in the page known to be rendered by
+    /// this runtime, so the page hub finds this runtime's root component from it (see <see cref="BevDomMap"/>). Held
+    /// weakly, like every component BevTools knows.
+    /// </summary>
+    internal IComponent? PanelComponent
+    {
+        get => _panel is not null && _panel.TryGetTarget(out var panel) ? panel : null;
+        set => _panel = value is null ? null : new WeakReference<IComponent>(value);
+    }
+
+    private long? _externallyInspected;
+
+    /// <summary>
+    /// What selecting a component in the in-app inspector does, for a frontend outside the app (the companion window):
+    /// the component's state is captured on its renders from now on, so its next render says what changed, and the one
+    /// inspected before stops being captured unless the in-app panel has it selected.
+    /// </summary>
+    internal void InspectExternally(BevComponentRecord record)
+    {
+        if (!Options.CaptureComponentStateOnRender && _externallyInspected is { } previousId && previousId != record.InstanceId
+            && previousId != Ui.SelectedComponentId && Components.Get(previousId) is { } previous)
+        {
+            previous.CaptureState = false;
+        }
+
+        _externallyInspected = record.InstanceId;
+        record.CaptureState = true;
+    }
+
     internal void Touch() => Interlocked.Increment(ref _version);
 
     /// <summary>Called by the render tracker for each application render that happened while capture was paused.</summary>
@@ -311,6 +399,12 @@ public sealed class BevToolsSession : IDisposable
             foreach (var provider in Services.GetServices<IBevStateProvider>())
             {
                 State.Attach(provider, "DI");
+            }
+
+            if (BevAuthenticationStateProvider.TryCreate(Services) is { } authentication)
+            {
+                _authentication = authentication;
+                State.Attach(authentication, "built-in");
             }
 
             foreach (var factory in Registry.StateProviderFactories)
@@ -349,6 +443,39 @@ public sealed class BevToolsSession : IDisposable
     /// </summary>
     public IDisposable UseAmbient() => SessionResolver.PushAmbient(this);
 
+    private readonly object _navigationCausesLock = new();
+    private readonly Queue<long> _navigationCauseOrder = new();
+    private readonly Dictionary<long, string> _navigationCauses = [];
+
+    /// <summary>
+    /// Records how a navigation event came about - "intercepted link" (a person clicked) or "programmatic" (code called
+    /// NavigateTo) - whichever recorded the event: on .NET 10 the router's activity records it before LocationChanged
+    /// says how it happened. Bounded to the latest 200.
+    /// </summary>
+    internal void NoteNavigationCause(long eventId, string cause)
+    {
+        lock (_navigationCausesLock)
+        {
+            if (_navigationCauses.TryAdd(eventId, cause))
+            {
+                _navigationCauseOrder.Enqueue(eventId);
+                while (_navigationCauseOrder.Count > 200)
+                {
+                    _navigationCauses.Remove(_navigationCauseOrder.Dequeue());
+                }
+            }
+        }
+    }
+
+    /// <summary>How a navigation event came about, when LocationChanged said so.</summary>
+    internal string? NavigationCause(long eventId)
+    {
+        lock (_navigationCausesLock)
+        {
+            return _navigationCauses.GetValueOrDefault(eventId);
+        }
+    }
+
     public void ClearAll()
     {
         Timeline.Clear();
@@ -357,6 +484,11 @@ public sealed class BevToolsSession : IDisposable
         Interop.Clear();
         State.ClearHistory();
         Components.ClearDisposed();
+        Leaks.Clear();
+        Forms.Clear();
+        Browser.Accessibility = null;
+        Browser.AccessibilityCheckedAt = null;
+        Browser.AccessibilityError = null;
         Diagnostics.Clear();
         TypeMetrics.Clear();
         Touch();
@@ -372,5 +504,8 @@ public sealed class BevToolsSession : IDisposable
         IsDisposed = true;
         SessionResolver.Unregister(this);
         State.Dispose();
+        _authentication?.Dispose();
     }
+
+    private BevAuthenticationStateProvider? _authentication;
 }

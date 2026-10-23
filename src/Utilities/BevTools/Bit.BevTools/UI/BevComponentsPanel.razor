@@ -4,8 +4,9 @@
 <div class="bev-split">
     <div class="bev-left">
         <div class="bev-toolbar">
-            <input type="text" placeholder="Filter components (name)…" value="@Query" @oninput="OnQuery" />
+            <input type="text" placeholder="Filter components (name)…" aria-label="Filter components" value="@Query" @oninput="OnQuery" />
             <label title="Show framework/library components that are hidden by default"><input type="checkbox" checked="@Ui.ShowHiddenComponents" @onchange="ToggleHidden" /> internals</label>
+            <label title="Outline components in the page as they render: blue once, green 2–3, amber 4–9, red 10 or more times since the previous outline"><input type="checkbox" checked="@Ui.FlashRenders" @onchange="Host.ToggleFlashRenders" /> flash renders</label>
             <span class="bev-muted bev-nowrap">@_visible.Count / @_liveCount</span>
         </div>
         @* overflow inline too: Virtualize picks its scroll root when it first renders, which can be before the stylesheet applies. *@
@@ -26,7 +27,7 @@
                     }
                     <div class="bev-tree-row @(selected ? "bev-selected" : "") @(flash ? "bev-flash" : "") @(record.IsHidden ? "bev-hidden-comp" : "")"
                          role="treeitem" aria-level="@(row.Node.Depth + 1)" aria-selected="@(selected ? "true" : "false")" aria-expanded="@(hasChildren ? (collapsed ? "false" : "true") : null)"
-                         style="padding-left:@(row.Node.Depth * 14 + 4)px" @onclick="() => Select(record.InstanceId)" title="@record.TypeName">
+                         style="padding-left:@(row.Node.Depth * 14 + 4)px" @onclick="() => Select(record.InstanceId)" data-bev-id="@record.InstanceId" title="@record.TypeName">
                         @if (hasChildren)
                         {
                             <span class="bev-caret" role="presentation" @onclick:stopPropagation="true" @onclick="() => ToggleCollapse(record.InstanceId)">@(collapsed ? "▸" : "▾")</span>
@@ -36,6 +37,10 @@
                             <span class="bev-caret"></span>
                         }
                         <span class="bev-name">@record.DisplayName</span>
+                        @if (record.RenderModeName is { } renderMode)
+                        {
+                            <span class="bev-chip bev-info" title="@renderMode: @@rendermode starts an interactive subtree here">⚡ @ShortRenderMode(renderMode)</span>
+                        }
                         @if (!record.IsInstrumented && !record.IsHidden)
                         {
                             <span class="bev-chip" title="@record.InstrumentationNote">not measured</span>
@@ -79,7 +84,6 @@
     private List<Row> _visible = [];
     private int _liveCount;
     private bool _preventDefault;
-
     protected override void OnParametersSet() => Rebuild();
 
     private void Rebuild()
@@ -127,6 +131,8 @@
         Ui.SetQuery("components", e.Value?.ToString());
         Rebuild();
     }
+
+    private static string ShortRenderMode(string mode) => mode.Replace("InteractiveWebAssembly", "WASM").Replace("Interactive", "").Replace(", no prerendering", " · no prerender");
 
     private void ToggleHidden(ChangeEventArgs e)
     {
@@ -209,6 +215,12 @@
                 Select(_visible[^1].Node.Record.InstanceId);
                 _preventDefault = true;
                 break;
+        }
+
+        // What hovering shows a mouse user, the keyboard user gets for the row they moved to.
+        if (_preventDefault && Ui.SelectedComponentId is { } selected)
+        {
+            _ = Host.HighlightAsync(selected);
         }
     }
 }

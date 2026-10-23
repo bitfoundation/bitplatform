@@ -23,6 +23,14 @@ tiering on behalf of the others.
 | Recording, `RecordRenderEvents = false` | 11.73 µs | +177 % | 129 MB |
 | Recording everything | 12.48 µs | +194 % | 195 MB |
 
+**Re-measured on 2026-10-23, after the ten improvement rounds** (`docs/progress.md`), on the same machine under other
+load: the code before round 1 (commit `0ee277bf0e`) and after round 10, back to back, twice each. Allocations are
+identical - 23.9 MB, 23.9 MB, 142.0 MB and 209.1 MB for the four configurations - so the rounds added nothing to the
+render path (the per-component change is one type check when a component is instrumented, for `EditForm`). Both are
+above the table (129 MB and 195 MB): the table predates later changes before this work. Times could not be compared on
+that machine: *without BevTools* alone measured between 9.0 and 13.7 µs per batch across runs, two to three times the
+table, and the two builds overlapped within that spread. The table keeps the earlier, steadier measurement.
+
 Read these carefully:
 
 * **A disabled BevTools costs nothing.** No activator, no handler, no logger provider is registered, so a production
@@ -44,6 +52,8 @@ Read these carefully:
 | `MaxEvents`, `MaxRendersPerComponent`, `MaxTrackedComponents`, `MaxFindings` | Bound memory. Every buffer is a ring buffer; nothing grows without a limit. |
 | `CaptureComponentStateOnRender = false` (default) | Field and parameter snapshots and diffs are taken only for the component selected in the inspector. |
 | `TrackJsInterop = false`, `TrackHttp = false` | Removes the JS runtime wrapper / HTTP handler entirely. |
+| `TrackWebSockets = false` | Leaves `WebSocket` and its `send` untouched in the browser. |
+| `ValueAccess = Shallow` or `None` | Reads less on inspection, and skips the parameter walk of forced-render detection altogether. |
 | `UseFrameworkInstrumentation = false` | Stops BevTools registering the framework's ActivitySource and meters. Render causes degrade to *StateHasChanged*. |
 | Pause capture (header button, `session.PauseCapture()`) | Stops all recording at runtime without uninstalling anything: the render wrapper degrades to one flag check and one counter increment, and every other path returns before allocating. |
 
@@ -62,6 +72,46 @@ Ordered by measured contribution:
 3. **Tree refresh**, at most once per second (and once per second of component churn even when the panel is closed,
    so that disposed components are released promptly).
 4. **State inspection**, only for the selected component, bounded by depth, item count and a 50 ms wall-clock budget.
+
+## Costs off the render path
+
+None of these run per render; each is bounded and runs only when asked or at a fixed cadence.
+
+* **Event handlers and callbacks**: one copy of the inspected component's current frames, when the inspector reads it.
+* **Render mode**: one renderer lookup per component, on its first render.
+* **Routing, runtime facts**: read when their panel (or a snapshot) asks.
+* **WebSocket traffic**: in the browser, per frame a size count and an envelope decode that skips every argument;
+  reports to .NET at most every 2 s and only when application traffic changed (BevTools' own reports never trigger
+  one), so a quiet circuit costs nothing.
+* **Components in the page** (picking, outlining, *flash renders*): nothing runs until asked. One lookup walks the
+  component's ancestors and scans each parent's frames up to the child; measured on the demo's `/products` (132
+  components, a 120-row list): 0.03 ms per lookup on a Server circuit, 0.38 ms on WebAssembly (interpreted), every one
+  of the 132 located and 400 of 400 sampled elements resolved back. *Flash renders* is opt-in and locates at most 60
+  components per refresh tick through one `BevDomMapBatch`, which walks each parent's frames once, so a list's rows cost
+  one scan of the list, not one per row. In the browser the cost is the outline itself (a layout read per component).
+  All of it is reported as *page mapping* in About.
+* **Leak tracking**: one weak reference per disposed application component (at most 2000), checked at most once per
+  diagnostics evaluation; analysis runs once per retained instance, and the renderer's frame buffers are read only
+  when a retained instance has no cause of its own. *Collect garbage and check* runs full blocking collections on
+  request: on a server process that pauses every circuit for a moment, which is why it is refused outside Development
+  there.
+* **Profiler p95 and batch trees**: the p95 column sorts each instance's retained durations once and keeps them until
+  that instance renders again; by type, a type's p95 is kept until one of its instances renders again or the set of
+  instances changes. A refresh therefore sorts only what rendered since the last one. A batch's cost tree reads the
+  retained samples of every component once, when the batch is selected (or the tab opens with one selected), never on
+  a refresh; its totals are computed without recursion, so a 20,000-deep chain costs a loop, not a stack overflow
+  (`ScaleTests`).
+* **Render profile** (exports, *Compare…*): reads every retained sample once. 5,000 components with full rings
+  (500,000 samples): 144 ms (Debug, x64 desktop; `ScaleTests`). Protocol snapshots do not build it.
+* **Endpoints** (Network → *Endpoints*, exports): one grouping of the request buffer (at most `MaxHttpRequests`, 500)
+  per refresh of that view; `http.per-item` the same over the last 30 s, once per diagnostics evaluation.
+* **Lambda names**: the IL of an inline handler is decoded the first time its event fires, then cached.
+* **The companion and the extension** poll the runtime they show every 1.5 s while visible: one `snapshot` request,
+  answered `unchanged` when the session version did not move, otherwise with the timeline events since the last one
+  (plus the newest 200, which can still complete). On Blazor Server each poll is one circuit round trip; nothing is
+  rendered into the app, which is why the companion is the better way to measure a circuit's own traffic.
+
+The benchmark above is unchanged by these: the same workload measures the same allocations with and without them.
 
 ## Things that are deliberately *not* optimised away
 

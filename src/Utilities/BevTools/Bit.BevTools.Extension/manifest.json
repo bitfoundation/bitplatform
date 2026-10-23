@@ -1,0 +1,14 @@
+{
+    "manifest_version": 3,
+    "name": "bit BevTools",
+    "version": "1.0.0",
+    "description": "Blazor developer tools: every BevTools runtime of the inspected page (Server circuit, WebAssembly) in a DevTools panel.",
+    "devtools_page": "devtools.html",
+    "minimum_chrome_version": "110",
+    "browser_specific_settings": {
+        "gecko": {
+            "id": "bevtools@bitplatform.dev",
+            "strict_min_version": "115.0"
+        }
+    }
+}

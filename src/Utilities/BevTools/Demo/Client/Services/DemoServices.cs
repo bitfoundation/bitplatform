@@ -14,7 +14,15 @@ public static class DemoServices
         services.AddHttpClient("api");
         services.AddScoped<ProductApi>();
         services.AddScoped<FilterState>();
+        services.AddScoped<RedirectCounter>();
         services.AddScoped<UserSession>();
+
+        // A sign-in without an identity provider, for BevTools' Authentication state (State and Routing panels).
+        // Registered after AddRazorComponents, so it replaces the server's own provider in this demo.
+        services.AddAuthorizationCore();
+        services.AddCascadingAuthenticationState();
+        services.AddScoped<DemoAuthenticationStateProvider>();
+        services.AddScoped<Microsoft.AspNetCore.Components.Authorization.AuthenticationStateProvider>(sp => sp.GetRequiredService<DemoAuthenticationStateProvider>());
 
         // State containers that integrate with BevTools through IBevStateProvider.
         services.AddBevToolsStateProvider<CartState>();
@@ -58,6 +66,12 @@ public sealed class ReportService(ExportService export)
 public sealed class ExportService(ReportService report)
 {
     public ReportService Report => report;
+}
+
+/// <summary>How many times the planted redirect loop (problem 18) bounced; it stops after a few rounds.</summary>
+public sealed class RedirectCounter
+{
+    public int Hops { get; set; }
 }
 
 /// <summary>Filter state shared by the products page. Notifies on every change without coalescing (intentional).</summary>
@@ -241,6 +255,9 @@ public sealed class ProductApi(IHttpClientFactory factory, NavigationManager nav
 
     public Task<List<Order>> GetOrdersAsync(int delayMs = 0, CancellationToken ct = default) =>
         Client.GetFromJsonAsync<List<Order>>("api/orders?delay=" + delayMs, ct)!;
+
+    public Task<OrderDetails> GetOrderDetailsAsync(int id, CancellationToken ct = default) =>
+        Client.GetFromJsonAsync<OrderDetails>("api/orders/" + id, ct)!;
 
     public async Task<string> GetFlakyAsync(CancellationToken ct = default)
     {

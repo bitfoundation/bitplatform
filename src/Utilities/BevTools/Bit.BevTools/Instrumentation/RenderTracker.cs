@@ -113,6 +113,25 @@ internal sealed class RenderTracker
             return;
         }
 
+        if (component is Microsoft.AspNetCore.Components.Forms.EditForm form && !record.IsBevTools)
+        {
+            // A form is watched from its first render, when its EditContext exists, so its first submit is seen even if
+            // the panel was never opened - and again when the EditForm gets a new EditContext (a form reset after a
+            // submit). Only an EditForm's fragment carries this; every other render is unchanged.
+            var unwatched = original;
+            var watched = new WeakReference<object?>(null);
+            original = builder =>
+            {
+                unwatched(builder);
+                var current = (object?)BevFormTracker.ContextOfForm(form);
+                if (current is not null && (!watched.TryGetTarget(out var last) || !ReferenceEquals(last, current)))
+                {
+                    watched.SetTarget(current);
+                    _session.Forms.Watch(form, record);
+                }
+            };
+        }
+
         RenderFragment wrapped = builder =>
         {
             var t0 = Stopwatch.GetTimestamp();
@@ -307,6 +326,7 @@ internal sealed class RenderTracker
 
         record.Renderer = renderer;
         record.ComponentId = componentId;
+        record.RenderModeName = BevRenderModes.Describe(BlazorReflection.AssignedRenderMode(renderer, component));
         _session.Components.NoteRenderer(renderer);
 
         // Rendering always happens on the renderer's synchronization context; remembering it makes later ambient
@@ -619,6 +639,15 @@ internal sealed class RenderTracker
     /// </summary>
     private void CaptureStateDiff(BevComponentRecord record, ComponentBase component, BevRenderSample sample)
     {
+        // Under ValueAccess None every value displays as hidden, so nothing could be told apart; under Shallow an object
+        // shows only its type, so a changed list item would look unchanged and the render would be called forced.
+        // Neither compares parameters, which leaves the render "not compared" rather than wrongly "forced".
+        var access = _session.ValueAccess;
+        if (access == BevValueAccess.None)
+        {
+            return;
+        }
+
         var start = Stopwatch.GetTimestamp();
         try
         {
@@ -639,6 +668,10 @@ internal sealed class RenderTracker
             }
 
             record.LastStateSnapshot = snapshot;
+            if (access != BevValueAccess.Full)
+            {
+                return;
+            }
 
             var parameters = new Dictionary<string, string>(StringComparer.Ordinal);
             Dictionary<string, string>? fragmentChanges = null;
