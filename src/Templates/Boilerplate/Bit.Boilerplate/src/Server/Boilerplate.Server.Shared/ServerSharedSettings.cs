@@ -16,18 +16,6 @@ public partial class ServerSharedSettings : SharedSettings
 
     public ResponseCachingOptions? ResponseCaching { get; set; } = default!;
 
-    public override IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
-    {
-        var validationResults = base.Validate(validationContext).ToList();
-
-        if (ResponseCaching is not null)
-        {
-            Validator.TryValidateObject(ResponseCaching, new ValidationContext(ResponseCaching), validationResults, true);
-        }
-
-        return validationResults;
-    }
-
     public bool IsTrustedOrigin(Uri origin)
     {
         // scheme://host[:port] with no path or trailing slash, which is what an origin actually is.

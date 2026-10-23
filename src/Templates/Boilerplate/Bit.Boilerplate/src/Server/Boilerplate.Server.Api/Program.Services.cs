@@ -425,12 +425,11 @@ public static partial class Program
 
         services.AddOptions<IdentityOptions>()
             .Bind(configuration.GetRequiredSection(nameof(ServerApiSettings.Identity)))
-            .ValidateDataAnnotations()
             .ValidateOnStart();
 
+        services.AddSingleton<IValidateOptions<ServerApiSettings>, ServerApiSettingsValidator>();
         services.AddOptions<ServerApiSettings>()
             .Bind(configuration)
-            .ValidateDataAnnotations()
             .ValidateOnStart();
 
         services.AddSingleton(sp =>
