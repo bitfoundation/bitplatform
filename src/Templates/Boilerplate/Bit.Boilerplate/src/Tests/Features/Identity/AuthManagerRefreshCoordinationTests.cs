@@ -207,7 +207,52 @@ public partial class AuthManagerRefreshCoordinationTests
     }
 
     [TestMethod]
-    public async Task ARefreshThatAnotherTabAlsoDid_Should_StillStoreItsOwnAnswer()
+    public async Task APlainRefreshThatAnotherTabAlsoDid_Should_KeepWhatTheOtherTabStored()
+    {
+        var refreshStarted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var releaseTheRefresh = new TaskCompletionSource();
+
+        var sessionId = Guid.NewGuid();
+        var theOtherTabsAccessToken = FakeAccessToken(sessionId, "other-tab");
+
+        var identityController = A.Fake<IIdentityController>();
+        A.CallTo(() => identityController.Refresh(A<RefreshTokenRequestDto>._, A<CancellationToken>._))
+            .ReturnsLazily(async (RefreshTokenRequestDto request, CancellationToken _) =>
+            {
+                refreshStarted.SetResult();
+                await releaseTheRefresh.Task;
+                return new TokenResponseDto { AccessToken = FakeAccessToken(sessionId, "this-tab"), RefreshToken = "this-tabs-refresh-token" };
+            });
+
+        await using var server = new AppTestServer();
+        await server.Build(configureTestServices: services =>
+        {
+            services.RemoveAll<IIdentityController>();
+            services.AddScoped(_ => identityController);
+        }).Start(TestContext.CancellationToken);
+
+        await using var client = server.CreateAppClient();
+
+        var storageService = client.Services.GetRequiredService<IStorageService>();
+        await storageService.SetItem("refresh_token", "a-refresh-token");
+        await storageService.SetItem("access_token", FakeAccessToken(sessionId, "before"));
+
+        var refresh = client.AuthManager.RefreshToken(requestedBy: nameof(APlainRefreshThatAnotherTabAlsoDid_Should_KeepWhatTheOtherTabStored));
+
+        await refreshStarted.Task.WaitAsync(TimeSpan.FromSeconds(30), TestContext.CancellationToken);
+
+        await storageService.SetItem("refresh_token", "the-other-tabs-refresh-token");
+        await storageService.SetItem("access_token", theOtherTabsAccessToken);
+
+        releaseTheRefresh.SetResult();
+
+        Assert.AreEqual(theOtherTabsAccessToken, await refresh.WaitAsync(TimeSpan.FromSeconds(30), TestContext.CancellationToken),
+            "The other tab's answer may carry a tenant switch or an elevation, and this plain refresh asked for nothing, so the stored token has to be kept.");
+        Assert.AreEqual("the-other-tabs-refresh-token", await storageService.GetItem("refresh_token"));
+    }
+
+    [TestMethod]
+    public async Task AnElevationThatAnotherTabAlsoRefreshed_Should_StillStoreItsOwnAnswer()
     {
         var refreshStarted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         var releaseTheRefresh = new TaskCompletionSource();
@@ -237,7 +282,7 @@ public partial class AuthManagerRefreshCoordinationTests
         await storageService.SetItem("refresh_token", "a-refresh-token");
         await storageService.SetItem("access_token", FakeAccessToken(sessionId, "before"));
 
-        var refresh = client.AuthManager.RefreshToken(requestedBy: nameof(ARefreshThatAnotherTabAlsoDid_Should_StillStoreItsOwnAnswer));
+        var refresh = client.AuthManager.RefreshToken(requestedBy: nameof(AnElevationThatAnotherTabAlsoRefreshed_Should_StillStoreItsOwnAnswer), elevatedAccessToken: "an-elevation-code");
 
         await refreshStarted.Task.WaitAsync(TimeSpan.FromSeconds(30), TestContext.CancellationToken);
 
@@ -247,7 +292,7 @@ public partial class AuthManagerRefreshCoordinationTests
         releaseTheRefresh.SetResult();
 
         Assert.AreEqual(thisTabsAccessToken, await refresh.WaitAsync(TimeSpan.FromSeconds(30), TestContext.CancellationToken),
-            "Both answers are for the same session, and only this one carries what this refresh asked for (a tenant switch or an elevation), so it has to be kept.");
+            "Both answers are for the same session, and only this one carries the elevation this refresh asked for, so it has to be kept.");
         Assert.AreEqual("this-tabs-refresh-token", await storageService.GetItem("refresh_token"));
     }
 

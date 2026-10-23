@@ -73,7 +73,14 @@ public partial class AuthManager : AuthenticationStateProvider, IAsyncDisposable
 
         if ((await GetAuthenticationStateAsync()).User.IsAuthenticated())
         {
-            await SignOut(default);
+            try
+            {
+                await SignOut(default);
+            }
+            catch (Exception exp)
+            {
+                authLogger.LogWarning(exp, "Failed to sign out the previous session before signing in.");
+            }
         }
 
         await StoreTokens(response, rememberMe);
@@ -204,11 +211,15 @@ public partial class AuthManager : AuthenticationStateProvider, IAsyncDisposable
                             //#endif
                         }, default);
 
-                    if (await storageService.GetItem("refresh_token") != refreshToken &&
-                        await IsCurrentSession(refreshTokenResponse.AccessToken) is false)
+                    if (await storageService.GetItem("refresh_token") != refreshToken)
                     {
-                        currentTsc.TrySetResult(null);
-                        return;
+                        var isCurrentSession = await IsCurrentSession(refreshTokenResponse.AccessToken);
+
+                        if (isCurrentSession is false || hasRequestOfItsOwn is false)
+                        {
+                            currentTsc.TrySetResult(isCurrentSession ? await tokenProvider.GetAccessToken() : null);
+                            return;
+                        }
                     }
 
                     await StoreTokens(refreshTokenResponse);

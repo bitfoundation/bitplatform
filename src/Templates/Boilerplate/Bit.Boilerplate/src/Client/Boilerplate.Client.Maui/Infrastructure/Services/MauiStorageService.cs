@@ -115,10 +115,9 @@ public partial class MauiStorageService : IStorageService
         }
         catch (Exception exp)
         {
-            token = null;
-            TryRemoveSecureItem(key);
             IPlatformApplication.Current?.Services.GetService<ILogger<MauiStorageService>>()?
-                .LogWarning(exp, "{Key} could not be read from secure storage and was removed.", key);
+                .LogWarning(exp, "{Key} could not be read from secure storage.", key);
+            return null;
         }
 
         return tokenStorage.GetOrAdd(key, token);
