@@ -191,6 +191,19 @@ public sealed class BmageJsonOptions
 
     public BmageJsonOptions() => Codecs = new CodecRegistry(BuiltInCodecs.All);
 
+    private BmageJsonOptions(CodecRegistry codecs) => Codecs = codecs;
+
+    /// <summary>
+    /// A copy with the same codecs, the custom ones included, and the given image handling, for a reader or writer that
+    /// stores the images itself, such as <see cref="BmageProject"/>. The caller's options are left as they are.
+    /// </summary>
+    internal BmageJsonOptions WithImages(Func<ImageBuffer, string>? references, Func<string, ImageBuffer?>? resolver) => new(Codecs)
+    {
+        ImageReferences = references,
+        ImageResolver = resolver,
+        Indented = Indented,
+    };
+
     /// <summary>
     /// Chooses the reference written for an image an annotation, layer or mask uses: a file name, an upload id, a
     /// content hash. Called once per occurrence; return the same reference for the same image to store it once.

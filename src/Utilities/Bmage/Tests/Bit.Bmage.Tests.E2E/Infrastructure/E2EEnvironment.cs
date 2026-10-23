@@ -40,6 +40,13 @@ public static class E2EEnvironment
     /// <summary><c>BMAGE_E2E_HEADED=1</c>: show the browser.</summary>
     public static bool Headed { get; } = Read("BMAGE_E2E_HEADED") == "1";
 
+    /// <summary>
+    /// <c>BMAGE_E2E_BROWSER</c>: <c>chromium</c> (the default), <c>firefox</c> or <c>webkit</c>, Playwright's builds of
+    /// the three engines, so the suite checks Firefox and Safari's engine as well as Chrome's. A channel or an
+    /// executable applies to Chromium only.
+    /// </summary>
+    public static string Browser { get; } = Read("BMAGE_E2E_BROWSER")?.ToLowerInvariant() ?? "chromium";
+
     private static string? Read(string name)
     {
         var value = Environment.GetEnvironmentVariable(name);

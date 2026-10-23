@@ -144,6 +144,9 @@ public class DemoRegressionTests : DemoTest
     [TestMethod]
     public async Task PastingAnImageLoadsItIntoTheAnnotationEditor()
     {
+        // Firefox empties the clipboardData a synthetic paste event is given, so no file reaches the page; a real paste
+        // from the system clipboard is not affected.
+        if (E2EEnvironment.Browser == "firefox") Assert.Inconclusive("Firefox drops the data of a synthetic paste event, so a paste cannot be simulated.");
         var page = await OpenAsync("annotate");
         await page.WaitForTimeoutAsync(1000);
         await page.EvaluateAsync("""

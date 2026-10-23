@@ -150,6 +150,9 @@ public class CodeReviewTests
         Single(Review("using var preview = _editor.Session.Preview;"), "borrowed-buffer-disposed");
 
         None(Review("using var copy = _editor.Session.Preview.Clone();"), "borrowed-buffer-disposed");
+        // Rendered from the original, not the original: the result is the caller's to dispose.
+        None(Review("using var rendered = new DocumentRenderer().Render(project.Document, project.Original);"), "borrowed-buffer-disposed");
+        Single(Review("using (session.Original) { }"), "borrowed-buffer-disposed");
     }
 
     [TestMethod]

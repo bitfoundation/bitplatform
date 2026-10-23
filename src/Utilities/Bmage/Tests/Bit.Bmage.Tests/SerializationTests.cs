@@ -43,6 +43,9 @@ public sealed class SerializationTests
         (IImageOperation)ImagePipeline.Create().Resize(100, 80, ResizeMode.Stretch).Crop(10, 10, 50, 40).Optimize(new Size(160, 120))[0],
         new RotateOperation(33.25, new Rgba32(9, 8, 7, 6), expandCanvas: false, WarpSampling.NearestNeighbor),
         new OrientationOperation(Orientation.Transverse),
+        new StraightenOperation(-7.25, WarpSampling.Bilinear),
+        new CanvasSizeOperation(200, 90, Anchor.BottomLeft, new Rgba32(1, 2, 3, 200)),
+        CanvasSizeOperation.Margins(12, -3, 0, 7, Rgba32.White),
         new SkewOperation(12, -4, Rgba32.White),
         new AffineTransformOperation(Matrix3x2.CreateRotation(0.3f) * Matrix3x2.CreateScale(0.8f), new Size(120, 100), Rgba32.Black, WarpSampling.Bicubic, "Tilt"),
         new PerspectiveTransformOperation([new PointF(5, 2), new PointF(140, 10), new PointF(150, 110), new PointF(0, 115)]),
@@ -52,6 +55,12 @@ public sealed class SerializationTests
         new GrayscaleFilter(0.5f), new SepiaFilter(0.8f), new InvertFilter(), new VibranceAdjustment(0.6f), new GammaAdjustment(1.6f),
         new LevelsAdjustment(0.1f, 0.9f, 1.2f, 0.05f, 0.95f, ColorChannels.Red | ColorChannels.Blue),
         new PosterizeFilter(5), new ThresholdFilter(0.4f), new ShadowsHighlightsAdjustment(0.3f, -0.2f),
+        new WhitesBlacksAdjustment(0.3f, -0.4f),
+        new HslAdjustment().With(HueBand.Blues, new HslShift(-12, 0.3f, -0.2f)).With(HueBand.Oranges, new HslShift(Lightness: 0.25f)),
+        WhiteBalanceAdjustment.FromNeutral(new Rgba32(210, 190, 160), 0.9f), new AutoWhiteBalanceOperation(0.6f),
+        new ChannelMixerAdjustment(new Vector3(0.9f, 0.1f, 0), new Vector3(0.05f, 0.9f, 0.05f), new Vector3(0, 0.2f, 0.8f), new Vector3(0.02f, 0, -0.01f)),
+        ChannelMixerAdjustment.Monochrome(0.5f, 0.3f, 0.2f), new ColorizeAdjustment(200, 0.4f, -0.1f, 0.8f),
+        new GradientMapOperation([(0f, new Rgba32(10, 0, 40)), (0.4f, new Rgba32(200, 40, 80)), (1f, new Rgba32(255, 240, 200))], 0.7f),
         new ColorMatrixOperation(ColorMatrix.Concat(ColorMatrix.Saturate(1.2f), ColorMatrix.Scale(1.05f, 1f, 0.9f)), "Warm"),
         CurveOperation.FromFunction(v => v * v, ColorChannels.Green, "Square green"),
         new FusedPointOperation([new BrightnessAdjustment(0.1f), new SaturationAdjustment(0.2f)]),
@@ -59,6 +68,7 @@ public sealed class SerializationTests
         new BlurFilter(2.5f, new Rectangle(10, 10, 60, 40)), new SharpenFilter(0.7f, 1.5f, 0.02f), new PixelateFilter(6, new Rectangle(0, 0, 50, 50)),
         new NoiseFilter(0.1f, monochrome: true, seed: 42), new MedianFilter(2), ConvolutionFilter.Emboss(new Rectangle(5, 5, 40, 40)),
         new VignetteFilter(0.6f, 0.7f, 0.4f, new Rgba32(20, 10, 0)),
+        new MotionBlurFilter(12.5f, 30, new Rectangle(10, 5, 100, 60)), new MotionBlurFilter(7, -80), new HighPassFilter(2.5f, new Rectangle(0, 0, 80, 80)),
         new MaskedOperation(new BrightnessAdjustment(0.3f), Mask.Ellipse() with { Feather = 3 }),
         new AlphaMaskOperation(new RectangleMask(new RectangleF(5, 5, 100, 80)) { CornerRadius = 12 }),
         new PipelineOperation(ImagePipeline.Create().Contrast(0.2f).Blur(1), "Pop"),
@@ -77,6 +87,11 @@ public sealed class SerializationTests
         new ColorRangeMask(new Rgba32(200, 40, 40)) { Tolerance = 0.2f, Softness = 0.05f },
         new BitmapMask(Stamp) { Channel = MaskChannel.Luminance },
         new EllipseMask(new RectangleF(0, 0, 60, 60)).Subtract(new RectangleMask(new RectangleF(20, 20, 20, 20))),
+        new FloodMask([new(10, 10), new(120, 80)]) { Tolerance = 0.3f, Softness = 0.1f, Feather = 1.5f },
+        new FloodMask([new(0.5f, 0.5f)]) { Units = MaskUnits.Relative, Contiguous = false, Inverted = true },
+        new EllipseMask(new RectangleF(20, 20, 60, 40)).Expand(4.5f),
+        new RectangleMask(new RectangleF(10, 10, 50, 50)).Contract(3) with { Feather = 2 },
+        new RectangleMask(new RectangleF(10, 10, 50, 50)).Border(5),
     }.Select(mask => new object[] { mask });
 
     private static IEnumerable<object[]> AllLayers() => new Layer[]
@@ -84,6 +99,8 @@ public sealed class SerializationTests
         new ImageLayer { Image = Stamp, Bounds = new RectangleF(20, 10, 64, 48), Rotation = 15, Pipeline = ImagePipeline.Create().Grayscale(), Filter = ResamplingFilter.Bilinear, Name = "Logo" },
         new FillLayer(new Rgba32(30, 60, 200, 128)) { BlendMode = BlendMode.Color, Opacity = 0.8f, Mask = Mask.Gradient(new(0, 1), new(0, 0.4f)) },
         new AdjustmentLayer(ImagePipeline.Create().Contrast(0.3f).Vibrance(0.2f)) { Mask = new LuminanceRangeMask(0, 0.4f), IsVisible = false, IsLocked = true },
+        new PaintLayer([new PaintStroke([new(10, 10), new(60, 40)], 9, new Rgba32(200, 30, 30)) { Pressures = [0.5f, 1f] }]) { Opacity = 0.6f },
+        new FillLayer(new Rgba32(40, 160, 90)) { Mask = new FloodMask([new(30, 30)]) { Tolerance = 0.2f }, Name = "Bucket" },
     }.Select(layer => new object[] { layer });
 
     private static IEnumerable<object[]> AllAnnotations() => new Annotation[]

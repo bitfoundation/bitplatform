@@ -238,15 +238,20 @@ public class JsModuleContractTests : DemoTest
             for (let i = 0; i < onPage.data.length && decodeDiff < 999; i++) decodeDiff = Math.max(decodeDiff, Math.abs(onPage.data[i] - inWorker.data[i]));
             let scaleDiff = scaledInWorker.length === scaledOnPage.length ? 0 : 999;
             for (let i = 0; i < scaledOnPage.length && scaleDiff < 999; i++) scaleDiff = Math.max(scaleDiff, Math.abs(scaledOnPage[i] - scaledInWorker[i]));
-            return { spawned, width: inWorker.info.width, height: inWorker.info.height, decodeDiff, scaleDiff, encoded };
+            return { spawned, offscreen: typeof OffscreenCanvas !== 'undefined', width: inWorker.info.width, height: inWorker.info.height, decodeDiff, scaleDiff, encoded };
             """);
 
-        Assert.IsGreaterThanOrEqualTo(1, result.GetProperty("spawned").GetInt32(), "No codec worker was started.");
         Assert.AreEqual(320, result.GetProperty("width").GetInt32());
         Assert.AreEqual(200, result.GetProperty("height").GetInt32());
         Assert.AreEqual(0, result.GetProperty("decodeDiff").GetInt32(), "A worker decoded different pixels from the page.");
         Assert.IsLessThanOrEqualTo(2, result.GetProperty("scaleDiff").GetInt32(), "A worker resized differently from the page.");
         Assert.AreEqual("image/jpeg", result.GetProperty("encoded").GetString());
+        if (!result.GetProperty("offscreen").GetBoolean())
+        {
+            Assert.AreEqual(0, result.GetProperty("spawned").GetInt32(), "A worker was started where it has no canvas to work with.");
+            Assert.Inconclusive("This browser has no OffscreenCanvas, so codec work stays on the page's thread; that fallback ran and matched.");
+        }
+        Assert.IsGreaterThanOrEqualTo(1, result.GetProperty("spawned").GetInt32(), "No codec worker was started.");
     }
 
     /// <summary>
@@ -269,13 +274,18 @@ public class JsModuleContractTests : DemoTest
             try {
                 const handles = await Promise.all([0, 1, 2, 3, 4, 5].map(() => m.decode(png.slice(), { mimeType: 'image/png' })));
                 const sizes = handles.map(h => { const i = h.info(); h.dispose(); return i.width * i.height; });
-                return { spawned, cores: navigator.hardwareConcurrency || 1, allDecoded: sizes.every(s => s === 1600 * 1200) };
+                return { spawned, offscreen: typeof OffscreenCanvas !== 'undefined', cores: navigator.hardwareConcurrency || 1, allDecoded: sizes.every(s => s === 1600 * 1200) };
             } finally {
                 window.Worker = Original;
             }
             """);
 
         Assert.IsTrue(result.GetProperty("allDecoded").GetBoolean());
+        if (!result.GetProperty("offscreen").GetBoolean())
+        {
+            Assert.AreEqual(0, result.GetProperty("spawned").GetInt32(), "A worker was started where it has no canvas to work with.");
+            Assert.Inconclusive("This browser has no OffscreenCanvas, so the decodes ran on the page's thread.");
+        }
         // The pool grows only while every worker is busy, to the configured limit.
         Assert.IsGreaterThanOrEqualTo(2, result.GetProperty("spawned").GetInt32(), "Concurrent decodes all went to one worker.");
         Assert.IsLessThanOrEqualTo(3, result.GetProperty("spawned").GetInt32(), "More workers started than allowed.");

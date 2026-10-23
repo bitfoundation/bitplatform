@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Immutable;
 using System.Drawing;
+using System.Numerics;
 using Bit.Bmage.Geometry;
 using Bit.Bmage.Operations;
 using Bit.Bmage.Operations.Adjustments;
@@ -127,6 +128,26 @@ public sealed class ImagePipeline : IReadOnlyList<IImageOperation>
     /// <summary>Shears the image by the given angles in degrees.</summary>
     public ImagePipeline Skew(double degreesX, double degreesY, Rgba32 background = default) => Add(new SkewOperation(degreesX, degreesY, background));
 
+    /// <summary>
+    /// Levels a tilt of up to 45 degrees either way, cropping to the largest rectangle of the image's aspect ratio the
+    /// rotated image covers, so no corner is left empty.
+    /// </summary>
+    public ImagePipeline Straighten(double degrees) => Add(new StraightenOperation(degrees));
+
+    /// <summary>
+    /// Sets the canvas to an absolute size without scaling the image, placing it by <paramref name="anchor"/>: the new
+    /// area is filled with <paramref name="background"/>, and an image larger than the canvas is cut at its edges.
+    /// </summary>
+    public ImagePipeline CanvasSize(int width, int height, Anchor anchor = Anchor.Center, Rgba32 background = default)
+        => Add(new CanvasSizeOperation(width, height, anchor, background));
+
+    /// <summary>Adds a border of <paramref name="all"/> pixels on every side, filled with <paramref name="background"/>.</summary>
+    public ImagePipeline Pad(int all, Rgba32 background = default) => Add(CanvasSizeOperation.Margins(all, background));
+
+    /// <summary>Adds margins to each side, filled with <paramref name="background"/>. A negative margin cuts into the image.</summary>
+    public ImagePipeline Pad(int left, int top, int right, int bottom, Rgba32 background = default)
+        => Add(CanvasSizeOperation.Margins(left, top, right, bottom, background));
+
     /// <summary>Adds a constant to the RGB channels. Amount in [-1,1].</summary>
     public ImagePipeline Brightness(float amount) => Add(new BrightnessAdjustment(amount));
 
@@ -157,6 +178,32 @@ public sealed class ImagePipeline : IReadOnlyList<IImageOperation>
     /// <summary>Boosts muted colours without over-saturating already vivid ones.</summary>
     public ImagePipeline Vibrance(float amount) => Add(new VibranceAdjustment(amount));
 
+    /// <summary>Moves the brightest and darkest tones, each amount in [-1,1]: where highlights clip to white and shadows to black.</summary>
+    public ImagePipeline WhitesBlacks(float whites, float blacks) => Add(new WhitesBlacksAdjustment(whites, blacks));
+
+    /// <summary>Changes the hue (degrees), saturation and lightness ([-1,1]) of one band of colours, leaving the others.</summary>
+    public ImagePipeline Hsl(HueBand band, float hue = 0f, float saturation = 0f, float lightness = 0f)
+        => Add(new HslAdjustment().With(band, new HslShift(hue, saturation, lightness)));
+
+    /// <summary>Makes <paramref name="neutral"/>, a colour that should be grey, grey: a white balance from a picked colour.</summary>
+    public ImagePipeline WhiteBalance(Rgba32 neutral, float strength = 1f) => Add(WhiteBalanceAdjustment.FromNeutral(neutral, strength));
+
+    /// <summary>Removes a colour cast by making the average of the mid-tones grey, by <paramref name="strength"/> in [0,1].</summary>
+    public ImagePipeline AutoWhiteBalance(float strength = 0.8f) => Add(new AutoWhiteBalanceOperation(strength));
+
+    /// <summary>Mixes each output channel from the input channels with the given weights.</summary>
+    public ImagePipeline ChannelMixer(Vector3 red, Vector3 green, Vector3 blue) => Add(new ChannelMixerAdjustment(red, green, blue));
+
+    /// <summary>A black and white conversion mixing the channels in the given proportions.</summary>
+    public ImagePipeline BlackAndWhite(float red = 0.3f, float green = 0.59f, float blue = 0.11f) => Add(ChannelMixerAdjustment.Monochrome(red, green, blue));
+
+    /// <summary>Gives the image one hue (degrees) and saturation, keeping its lightness: a tint of any colour.</summary>
+    public ImagePipeline Colorize(float hue, float saturation = 0.25f, float lightness = 0f, float amount = 1f)
+        => Add(new ColorizeAdjustment(hue, saturation, lightness, amount));
+
+    /// <summary>Maps the shadows to <paramref name="shadows"/> and the highlights to <paramref name="highlights"/>.</summary>
+    public ImagePipeline Duotone(Rgba32 shadows, Rgba32 highlights, float amount = 1f) => Add(GradientMapOperation.Duotone(shadows, highlights, amount));
+
     /// <summary>Lifts shadows and recovers highlights. Both amounts in [-1,1].</summary>
     public ImagePipeline ShadowsHighlights(float shadows, float highlights) => Add(new ShadowsHighlightsAdjustment(shadows, highlights));
 
@@ -186,6 +233,15 @@ public sealed class ImagePipeline : IReadOnlyList<IImageOperation>
 
     /// <summary>Adds deterministic noise.</summary>
     public ImagePipeline Noise(float amount, bool monochrome = false, int seed = 0, Rectangle? region = null) => Add(new NoiseFilter(amount, monochrome, seed, region));
+
+    /// <summary>
+    /// Blurs along a line <paramref name="distance"/> pixels long at <paramref name="angle"/> degrees (0 horizontal, 90
+    /// vertical), as motion during an exposure does.
+    /// </summary>
+    public ImagePipeline MotionBlur(float distance, float angle = 0, Rectangle? region = null) => Add(new MotionBlurFilter(distance, angle, region));
+
+    /// <summary>Keeps only detail finer than <paramref name="radius"/>, around mid grey: edges and texture.</summary>
+    public ImagePipeline HighPass(float radius = 3f, Rectangle? region = null) => Add(new HighPassFilter(radius, region));
 
     /// <summary>Applies a median filter for noise reduction.</summary>
     public ImagePipeline DenoiseMedian(int radius = 1, Rectangle? region = null) => Add(new MedianFilter(radius, region));
@@ -241,6 +297,20 @@ public sealed class ImagePipeline : IReadOnlyList<IImageOperation>
     /// </summary>
     public ImagePipeline ApplyMask(Mask mask) => Add(new AlphaMaskOperation(mask));
 
+    /// <summary>
+    /// Makes a plain background transparent: the region of the corners' colour, within <paramref name="tolerance"/>,
+    /// flooded in from the four corners. For product photos, logos and scans on a uniform backdrop; a subject that touches
+    /// a corner in the backdrop's colour is taken with it.
+    /// </summary>
+    public ImagePipeline RemoveBackground(float tolerance = 0.1f, float feather = 0.6f)
+        => Add(new AlphaMaskOperation(new FloodMask([new(0, 0), new(1, 0), new(0, 1), new(1, 1)])
+        {
+            Units = MaskUnits.Relative,
+            Tolerance = tolerance,
+            Feather = feather,
+            Inverted = true,
+        }));
+
     // ---- Analysis ----
 
     /// <summary>Computes the output size for a given input size without touching pixels.</summary>
@@ -272,6 +342,51 @@ public sealed class ImagePipeline : IReadOnlyList<IImageOperation>
             outputSize = Size.Empty;
             return false;
         }
+    }
+
+    /// <summary>
+    /// The affine map from coordinates of an input of <paramref name="inputSize"/> to coordinates of the output: where
+    /// the pipeline's crops, turns, flips, resizes and warps move each point of the image. Steps that keep the size
+    /// without being geometric, such as adjustments, filters and masked edits, leave every point where it is. False
+    /// when a step's effect on coordinates is not affine or not known: a perspective warp, a content-aware crop, an
+    /// orientation read from metadata, or an operation that changes the size without saying how.
+    /// </summary>
+    public bool TryGetTransform(Size inputSize, out Matrix3x2 transform)
+    {
+        transform = Matrix3x2.Identity;
+        var size = inputSize;
+        foreach (var operation in _operations)
+        {
+            Size next;
+            Matrix3x2 step;
+            try
+            {
+                next = operation.GetOutputSize(size);
+                switch (operation)
+                {
+                    case PipelineOperation nested:
+                        if (!nested.Pipeline.TryGetTransform(size, out step)) return false;
+                        break;
+                    case IGeometricOperation geometric:
+                        if (geometric.GetTransform(size) is not { } matrix) return false;
+                        step = matrix;
+                        break;
+                    case AutoOrientOperation:
+                        return false;
+                    default:
+                        if (next != size) return false;
+                        step = Matrix3x2.Identity;
+                        break;
+                }
+            }
+            catch (ArgumentException)
+            {
+                return false;
+            }
+            transform *= step;
+            size = next;
+        }
+        return true;
     }
 
     /// <summary>

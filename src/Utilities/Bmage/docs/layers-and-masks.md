@@ -45,8 +45,10 @@ by, so `MaskedOperation` refuses it with an `ArgumentException` naming the opera
 | `RadialGradientMask` | A radial filter, rotatable, solid within its `Hardness` and fading smoothly to its edge. |
 | `LuminanceRangeMask` | Pixels by brightness (Rec. 709), with a soft fall-off beyond the range. |
 | `ColorRangeMask` | Pixels close to a colour, by "redmean" distance, which tracks perception far better than RGB distance. |
+| `FloodMask` | The magic wand: the region of similar colour connected to one or more seed points, or with `Contiguous = false` every pixel of a seed's colour. Its edge is anti-aliased over `Softness`. |
 | `BitmapMask` | Another image's alpha or luminance, stretched over the photo: a segmentation model's matte. |
 | `CombinedMask` | Two masks combined: `a.Union(b)`, `a.Intersect(b)`, `a.Subtract(b)`, `a.Exclude(b)`. |
+| `MorphedMask` | Another mask grown, shrunk or turned into a band along its edge: `a.Expand(4)`, `a.Contract(3)`, `a.Border(6)`. Exact Euclidean distances, so corners round evenly; at most 250 pixels. |
 
 Every mask has three modifiers:
 
@@ -63,8 +65,13 @@ Geometric masks measure their coordinates in pixels of the image they apply to, 
 bottom right. Relative masks fit every image, which is what a pipeline reused for uploads of any size needs. Pixel
 masks rescale with the edit when it is previewed on a proxy; relative ones need not. `Feather` is always in pixels.
 
-Content masks, `LuminanceRangeMask` and `ColorRangeMask`, select from the pixels the edit receives, so they need the
-image: rendering one on its own with `Mask.Render(size)` and no source throws and says why.
+Content masks, `LuminanceRangeMask`, `ColorRangeMask` and `FloodMask`, select from the pixels the edit receives, so they
+need the image: rendering one on its own with `Mask.Render(size)` and no source throws and says why. A `FloodMask`'s
+seeds are positions, in its units; their colours are read from that image, so on a proxy preview from the proxy.
+
+When the image is transformed through `ImageDocument.AddOperation(op, keepOverlaysAttached: true)`, a mask in pixels
+moves, scales and turns with it (`Mask.Transform`), while a relative mask, a content mask and a bitmap mask stay as
+they are: a relative mask is a fraction of whatever image it is applied to.
 
 ### Rendering a mask yourself
 
@@ -77,6 +84,10 @@ using var full = matte.Resize(photo.Width, photo.Height);         // bilinear up
 full.Feather(2);
 full.ApplyToAlpha(photo);                                          // cut the subject out
 ```
+
+`MaskContours.Trace(maskBuffer)` turns a rendered mask back into closed outlines where its coverage crosses half,
+placed to a fraction of a pixel on an anti-aliased edge: the editor draws a selection's marching ants from it, and a
+selection can become a `PathMask` or an SVG path the same way.
 
 ## Cut-outs
 
@@ -91,6 +102,12 @@ pipeline.ApplyMask(new RectangleMask(new RectangleF(0, 0, 1, 1)) { Units = MaskU
 
 // Background removal: plug a model's matte in as a bitmap mask.
 pipeline.ApplyMask(new BitmapMask(matte) { Channel = MaskChannel.Luminance, Feather = 1.5f });
+
+// A plain backdrop needs no model: flood it in from the four corners and keep everything else.
+pipeline.RemoveBackground(tolerance: 0.1f);
+
+// The same by hand, trimming the subject's halo a pixel too.
+pipeline.ApplyMask(new FloodMask([new(0, 0), new(1, 0), new(0, 1), new(1, 1)]) { Units = MaskUnits.Relative }.Expand(1).Invert());
 ```
 
 Exporting to a format without alpha, such as JPEG, fills the cleared area with `ImageExportOptions.Background`.
@@ -114,6 +131,7 @@ ImageDocument
 | `ImageLayer` | Pixels drawn into `Bounds`, rotated about their centre, after a `Pipeline` of their own: a logo, a texture, a sticker. |
 | `FillLayer` | A colour over the whole image, usually shaped by a mask: a colour wash, a gradient fade, a duotone. |
 | `AdjustmentLayer` | An edit of everything beneath it. Unlike a pipeline step it also applies to the layers below, and it can be reordered, hidden or faded without touching anything else. |
+| `PaintLayer` | Brush strokes painted onto transparency: freehand colour, hand retouching, and an eraser that removes the layer's own paint. Strokes, not pixels, so history stays small. |
 
 ```csharp
 var document = ImageDocument.Create(photo)
@@ -135,7 +153,26 @@ using var rendered = new DocumentRenderer().Render(document, photo);
 
 Every layer has `Id`, `Name`, `BlendMode`, `Opacity`, `Mask`, `IsVisible` and `IsLocked`. Its coordinates, the mask's
 included, are those of the pipeline's output. `ImageDocument` edits them like annotations: `AddLayer`, `UpdateLayer`
-(by id), `RemoveLayer`, `MoveLayer` and `ClearLayers`.
+(by id), `RemoveLayer`, `MoveLayer`, `DuplicateLayer` (a copy under a new id, directly above) and `ClearLayers`.
+`Layer.Transform(matrix)` moves one with the image; `ImageDocument.AddOperation(op, keepOverlaysAttached: true)` does
+it for every layer and annotation at once.
+
+### Painting
+
+```csharp
+var paint = new PaintLayer()
+    .Add(new PaintStroke(points, size: 24, color: new Rgba32(230, 40, 40)) { Hardness = 0.6f, Pressures = penPressures })
+    .Add(new PaintStroke(eraserPoints, size: 12, color: default) { Erase = true });
+document = document.AddLayer(paint with { BlendMode = BlendMode.Multiply });
+```
+
+A stroke is stamped as round dabs along its smoothed path. `Hardness` 1 gives a crisp, anti-aliased edge; lower values
+fade from that fraction of the radius out to the rim. Within one stroke the paint does not build up where the brush
+passes twice, so the stroke has one even `Opacity`; strokes over one another build up. Pen pressure narrows the brush
+by default (`PressureAffectsSize`), or lightens it (`PressureAffectsOpacity`).
+
+A bucket fill is a fill layer through a magic wand mask: `new FillLayer(color) { Mask = new FloodMask([point]) }`. Its
+mask reads the image as composited below the layer, so it fills what the user sees there.
 
 An adjustment layer in the default `SourceOver` mode replaces what is below by its coverage, so at full opacity and
 without a mask its result is exactly its pipeline's, and through a mask exactly `MaskedOperation`'s. In another mode it

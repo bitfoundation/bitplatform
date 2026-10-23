@@ -209,6 +209,9 @@ public abstract record Mask
         while (true)
         {
             above += (mask.Feather >= 0.05f ? 1 : 0) + (mask is BitmapMask ? 1 : 0) + (mask.DrawsWindows ? 0 : 1);
+            // A morphed mask holds its source, drawn whole, the vertical distances, and for a border the inner edge too.
+            if (mask is MorphedMask morphed)
+                return Math.Max(held, above + (morphed.Morphology == MaskMorphology.Border ? 3 : 2) + morphed.Source.MasksHeld());
             if (mask is not CombinedMask combined) return Math.Max(held, above);
             held = Math.Max(held, above + 1 + combined.Second.MasksHeld());
             mask = combined.First;
@@ -262,6 +265,31 @@ public abstract record Mask
     /// <summary>The mask with its pixel coordinates and sizes multiplied by <paramref name="scale"/>.</summary>
     protected virtual Mask ScaleGeometry(double scale) => this;
 
+    /// <summary>
+    /// Returns the mask as it belongs after the image it applies to is transformed by <paramref name="matrix"/>, which
+    /// maps the image's coordinates before the edit to those after it. A mask in pixels moves, scales and turns with the
+    /// image, its feather and widths included, so it keeps covering the same content. A mask in relative units is a
+    /// fraction of whatever image it applies to and stays as it is, as do masks that select by colour or tone, and bitmap
+    /// masks, which are stretched over the whole image.
+    /// </summary>
+    public virtual Mask Transform(Matrix3x2 matrix)
+    {
+        if (matrix.IsIdentity || Units == MaskUnits.Relative) return this;
+        return TransformGeometry(matrix) with { Feather = Feather * AffineParts.Of(matrix).Scale };
+    }
+
+    /// <summary>
+    /// The mask with its pixel geometry transformed by <paramref name="matrix"/>; <see cref="Transform"/> scales the
+    /// feather. Masks without geometry return themselves.
+    /// </summary>
+    protected virtual Mask TransformGeometry(Matrix3x2 matrix) => this;
+
+    /// <summary>
+    /// <paramref name="other"/>, a mask of another kind standing in for this one after a transform, with this one's
+    /// inversion, opacity, units and feather.
+    /// </summary>
+    private protected Mask Inherit(Mask other) => other with { Inverted = Inverted, Opacity = Opacity, Units = Units, Feather = Feather };
+
     /// <summary>The same mask, inverted.</summary>
     public Mask Invert() => this with { Inverted = !Inverted };
 
@@ -276,6 +304,15 @@ public abstract record Mask
 
     /// <summary>Covered where exactly one of this mask and <paramref name="other"/> is.</summary>
     public Mask Exclude(Mask other) => new CombinedMask(this, other, MaskCombineMode.Exclude);
+
+    /// <summary>This mask grown by <paramref name="pixels"/> in every direction.</summary>
+    public Mask Expand(float pixels) => new MorphedMask(this, MaskMorphology.Expand, pixels);
+
+    /// <summary>This mask shrunk by <paramref name="pixels"/> from every edge.</summary>
+    public Mask Contract(float pixels) => new MorphedMask(this, MaskMorphology.Contract, pixels);
+
+    /// <summary>A band <paramref name="width"/> pixels wide along this mask's edge.</summary>
+    public Mask Border(float width) => new MorphedMask(this, MaskMorphology.Border, width);
 
     /// <summary>The ellipse inscribed in the whole image, whatever its size: a round avatar or a spotlight.</summary>
     public static EllipseMask Ellipse() => new(new RectangleF(0, 0, 1, 1)) { Units = MaskUnits.Relative };
@@ -350,5 +387,13 @@ public sealed record CombinedMask(Mask First, Mask Second, MaskCombineMode Mode)
         First = First.ForScale(scale),
         Second = Second.ForScale(scale),
         Feather = (float)(Feather * scale),
+    };
+
+    /// <summary>Transforms both sides, each according to its own units, then the combination's own feather.</summary>
+    public override Mask Transform(Matrix3x2 matrix) => matrix.IsIdentity ? this : this with
+    {
+        First = First.Transform(matrix),
+        Second = Second.Transform(matrix),
+        Feather = Feather * AffineParts.Of(matrix).Scale,
     };
 }

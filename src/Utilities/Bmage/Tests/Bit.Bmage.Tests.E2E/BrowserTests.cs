@@ -144,7 +144,10 @@ public class ProcessingTests : DemoTest
                 if (!img) return null;
                 const blob = await (await fetch(img.src)).blob();
                 const bmp = await createImageBitmap(blob);
-                const canvas = new OffscreenCanvas(bmp.width, bmp.height);
+                // A canvas element, not an OffscreenCanvas: Playwright's WebKit on Windows has none.
+                const canvas = document.createElement('canvas');
+                canvas.width = bmp.width;
+                canvas.height = bmp.height;
                 const ctx = canvas.getContext('2d');
                 ctx.clearRect(0, 0, bmp.width, bmp.height);
                 ctx.drawImage(bmp, 0, 0);
@@ -401,7 +404,8 @@ public class LayersAndMasksTests : DemoTest
         var page = await OpenAsync("layers-and-masks");
         var errors = CollectErrors(page);
 
-        await page.GetByRole(AriaRole.Button, new() { Name = "Run on a sample image" }).ClickAsync();
+        // The button waits for the page to be interactive, which on a slow engine running a Debug build takes a while.
+        await page.GetByRole(AriaRole.Button, new() { Name = "Run on a sample image" }).ClickAsync(new LocatorClickOptions { Timeout = 60_000 });
         await page.WaitForSelectorAsync("img.preview-image", new PageWaitForSelectorOptions { Timeout = 60_000 });
 
         async Task ChooseAsync(string name)
@@ -449,6 +453,7 @@ public class DemoPageTests : DemoTest
     [DataRow("optimize")]
     [DataRow("product")]
     [DataRow("social")]
+    [DataRow("retouch")]
     [DataRow("batch")]
     [DataRow("editor")]
     [DataRow("headless")]
@@ -479,6 +484,7 @@ public class DemoPageTests : DemoTest
     [DataRow("capabilities")]
     [DataRow("avatar")]
     [DataRow("optimize")]
+    [DataRow("retouch")]
     [DataRow("editor")]
     [DataRow("headless")]
     [DataRow("mcp-server")]

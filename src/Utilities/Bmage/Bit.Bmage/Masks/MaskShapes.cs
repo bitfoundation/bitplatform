@@ -2,6 +2,7 @@
 using System.Numerics;
 using Bit.Bmage.Annotations;
 using Bit.Bmage.Drawing;
+using Bit.Bmage.Geometry;
 using Bit.Bmage.Operations;
 
 namespace Bit.Bmage.Masks;
@@ -36,6 +37,15 @@ public sealed record RectangleMask(RectangleF Rectangle) : Mask
         Rectangle = RectangleAnnotation.Scale(Rectangle, scale),
         CornerRadius = (float)(CornerRadius * scale),
     };
+
+    /// <summary>An upright transform maps the rectangle exactly; any other turns it into the transformed outline.</summary>
+    protected override Mask TransformGeometry(Matrix3x2 matrix)
+    {
+        if (AffineParts.PreservesAxes(matrix))
+            return this with { Rectangle = AffineParts.MapRectangle(Rectangle, matrix), CornerRadius = CornerRadius * AffineParts.Of(matrix).Scale };
+        var outline = CornerRadius > 0 ? new PathBuilder().AddRoundedRectangle(Rectangle, CornerRadius) : new PathBuilder().AddRectangle(Rectangle);
+        return Inherit(new PathMask(outline.Build().Transform(matrix)));
+    }
 }
 
 /// <summary>The ellipse inscribed in a rectangle. <see cref="Mask.Ellipse"/> gives the one inscribed in the whole image.</summary>
@@ -52,6 +62,11 @@ public sealed record EllipseMask(RectangleF Rectangle) : Mask
     public override RectangleF? GetCoverageBounds(Size size) => MaskRasterizer.Transform(Rectangle, MaskRasterizer.ToPixels(Units, size));
 
     protected override Mask ScaleGeometry(double scale) => this with { Rectangle = RectangleAnnotation.Scale(Rectangle, scale) };
+
+    /// <summary>An upright transform maps the ellipse's rectangle exactly; any other turns it into the transformed outline.</summary>
+    protected override Mask TransformGeometry(Matrix3x2 matrix) => AffineParts.PreservesAxes(matrix)
+        ? this with { Rectangle = AffineParts.MapRectangle(Rectangle, matrix) }
+        : Inherit(new PathMask(new PathBuilder().AddEllipse(Rectangle).Build().Transform(matrix)));
 }
 
 /// <summary>A polygon through arbitrary points: a lasso selection.</summary>
@@ -90,6 +105,8 @@ public sealed record PolygonMask : Mask
     }
 
     protected override Mask ScaleGeometry(double scale) => this with { Points = [.. _points.Select(p => p * (float)scale)] };
+
+    protected override Mask TransformGeometry(Matrix3x2 matrix) => this with { Points = [.. _points.Select(p => Vector2.Transform(p, matrix))] };
 }
 
 /// <summary>
@@ -114,6 +131,8 @@ public sealed record PathMask(VectorPath Path) : Mask
         => Path.IsEmpty ? RectangleF.Empty : MaskRasterizer.Transform(Path.Bounds, MaskRasterizer.ToPixels(Units, size));
 
     protected override Mask ScaleGeometry(double scale) => this with { Path = Path.Transform(Matrix3x2.CreateScale((float)scale)) };
+
+    protected override Mask TransformGeometry(Matrix3x2 matrix) => this with { Path = Path.Transform(matrix) };
 }
 
 /// <summary>One stroke of a mask brush.</summary>
@@ -241,6 +260,12 @@ public sealed record BrushMask : Mask
     }
 
     protected override Mask ScaleGeometry(double scale) => this with { Strokes = [.. _strokes.Select(s => s.Scale(scale))] };
+
+    protected override Mask TransformGeometry(Matrix3x2 matrix)
+    {
+        var scale = AffineParts.Of(matrix).Scale;
+        return this with { Strokes = [.. _strokes.Select(s => s with { Points = [.. s.Points.Select(p => Vector2.Transform(p, matrix))], Width = Math.Max(0.01f, s.Width * scale) })] };
+    }
 }
 
 /// <summary>
@@ -286,6 +311,8 @@ public sealed record LinearGradientMask(Vector2 Start, Vector2 End) : Mask
     }
 
     protected override Mask ScaleGeometry(double scale) => this with { Start = Start * (float)scale, End = End * (float)scale };
+
+    protected override Mask TransformGeometry(Matrix3x2 matrix) => this with { Start = Vector2.Transform(Start, matrix), End = Vector2.Transform(End, matrix) };
 }
 
 /// <summary>
@@ -374,6 +401,19 @@ public sealed record RadialGradientMask(Vector2 Center, float RadiusX, float Rad
         RadiusX = (float)(RadiusX * scale),
         RadiusY = (float)(RadiusY * scale),
     };
+
+    /// <summary>The centre follows the image, the radii scale with it and the ellipse turns with it; it is symmetric, so a mirror only reverses its turn.</summary>
+    protected override Mask TransformGeometry(Matrix3x2 matrix)
+    {
+        var parts = AffineParts.Of(matrix);
+        return this with
+        {
+            Center = Vector2.Transform(Center, matrix),
+            RadiusX = RadiusX * parts.Scale,
+            RadiusY = RadiusY * parts.Scale,
+            Rotation = AffineParts.Normalize(parts.Mirrored ? parts.Angle - Rotation : Rotation + parts.Angle),
+        };
+    }
 }
 
 /// <summary>

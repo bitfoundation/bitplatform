@@ -57,6 +57,18 @@ different lengths and corrupt its offsets, asserting only that nothing escapes.
 The GIF LZW decoder bounds its code table and dictionary explicitly, because the classic GIF attack is a stream that
 drives the decoder past the end of its tables.
 
+Project files (`BmageProject`) are ZIP archives, which brings the archive attacks with it. A project is read from
+memory, never extracted to disk, so path traversal cannot write anything; even so only the files the manifest names
+are read, and only names under `images/` made of letters, digits, `-` and `_`. The files in the archive's directory are
+counted before .NET opens it, which builds an object for each, and ZIP64 archives, which no project needs, are
+refused. Each file's unpacked size and the total are bounded by `BmageProjectOptions` and counted as the bytes unpack,
+because the sizes an archive declares are the attacker's to choose: a zip bomb stops at the budget, not at the end of
+the bomb. Only the images the document uses are decoded. Each is checked against `ImageLimits`, and all of them
+together against `MaxTotalPixels` (four times `ImageLimits.MaxPixels` unless set), before it is decoded: a PNG of one
+colour compresses to almost nothing, so a small file could otherwise ask for many large images. The document is
+validated as any JSON document is, anything malformed, a damaged archive included, is an
+`ImageDocumentFormatException`, and a project that fails to load returns every buffer it had decoded.
+
 ## SVG is refused
 
 ```csharp

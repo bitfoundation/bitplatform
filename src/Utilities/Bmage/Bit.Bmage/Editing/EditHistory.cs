@@ -1,10 +1,27 @@
-﻿namespace Bit.Bmage.Editing;
+﻿using Bit.Bmage.Layers;
+
+namespace Bit.Bmage.Editing;
 
 /// <summary>One entry in the edit history.</summary>
 public sealed record HistoryEntry(ImageDocument Document, string Label, DateTimeOffset Timestamp)
 {
-    /// <summary>Rough memory cost of this entry: documents are descriptions, not pixels, so this is small.</summary>
-    public int EstimatedSize => 128 + Document.Pipeline.Count * 64 + Document.Annotations.Count * 256;
+    /// <summary>
+    /// Rough memory cost of this entry: documents are descriptions, not pixels, so this is small. The pixels an image
+    /// layer or a bitmap mask refers to are shared between entries and are not counted; painted strokes are.
+    /// </summary>
+    public int EstimatedSize
+    {
+        get
+        {
+            long size = 128 + Document.Pipeline.Count * 64 + Document.Annotations.Count * 256;
+            foreach (var layer in Document.Layers)
+            {
+                size += 256;
+                if (layer is PaintLayer paint) size += paint.Strokes.Sum(s => 96L + s.Points.Count * 12L);
+            }
+            return (int)Math.Min(int.MaxValue, size);
+        }
+    }
 }
 
 /// <summary>

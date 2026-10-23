@@ -81,8 +81,14 @@ Two specialisations carry most of the weight:
 
 - **`PointOperation`** maps each pixel independently, working on rows of `Vector4` in [0,1]. Runs of them execute in a
   single pass over the image. Colour matrices concatenate algebraically; curves compose their lookup tables.
-- **`IGeometricOperation`** exposes the affine matrix it applies, which is how annotations stay attached to image content
-  when a geometric edit is inserted before them.
+- **`IGeometricOperation`** exposes the affine matrix it applies. `ImagePipeline.TryGetTransform` composes them into the
+  pipeline's map from source to output coordinates, and `ImageDocument.WithPipeline(pipeline, keepOverlaysAttached: true)`
+  moves every annotation, layer and pixel mask by the difference between the old map and the new one, so they stay on
+  the content they mark through a crop, a quarter turn, a flip, a resize, a canvas change or a straighten, and through
+  re-editing any of them. The editor's geometric tools all go through it. Points map exactly; an upright rectangle maps
+  exactly under any transform that keeps rectangles upright; otherwise a shape's centre follows, its size scales and
+  its rotation turns, and text is never mirrored. Plain `AddOperation` keeps its documented meaning: overlays stay in
+  output coordinates.
 
 ## Masks and layers
 
@@ -224,11 +230,31 @@ kinds, `IEditorTool` for new editor tools, `IPixelAllocator` for memory strategy
 environment detection, and `BmageJsonOptions.Add` for writing any of your own types as JSON. See
 [extending.md](extending.md).
 
+## Content-dependent sizes
+
+`IImageOperation.GetOutputSize` must be answerable from the input size alone: documents report their size, overlays
+are placed and memory is estimated before any pixel is read. Trimming plain borders depends on the pixels, so it is an
+analysis, `ContentBounds.Find`, whose result is recorded as an ordinary `CropOperation` that replays exactly. Automatic
+corrections that keep the size (auto levels, auto white balance) are operations: they measure the image they are
+applied to, which on a proxy preview is the proxy.
+
+## Painting
+
+A `PaintLayer` holds brush strokes, not pixels: each stroke is its points, pen pressures, size, colour, opacity and
+hardness. Strokes are stamped as round dabs into a coverage buffer, kept at the larger value where dabs overlap so a
+stroke has one even opacity, then laid over the layer (or, for the eraser, taken out of it). Undo stays kilobytes, and a
+proxy preview paints the same strokes scaled. While a stroke is drawn the editor shows it as a line over the kept
+preview rather than compositing the layers on every pointer move, and paints it properly when the pointer lifts.
+
 ## What is deliberately not here
 
-- **Background removal** ships as an architecture, not an implementation. A usable model is several megabytes and would
-  dominate the bundle. The extension point exists so a provider can be plugged in; shipping a poor one would be worse
-  than shipping none.
+- **Semantic background removal** ships as an architecture, not an implementation. A usable segmentation model is
+  several megabytes and would dominate the bundle; `BitmapMask` takes any model's matte. What ships is the case a
+  model is not needed for: `ImagePipeline.RemoveBackground` floods a plain backdrop in from the corners.
+- **Healing and content-aware fill.** Results worth using need patch-based reconstruction; a clone stamp that only
+  copies would be easy to ship and disappointing to use.
+- **Layer groups and clipping masks.** They need a group compositing model (isolated and pass-through groups) and a
+  document format change; adjustment layers with masks cover most of what they are used for.
 - **The .NET engine in a Web Worker.** Codec work runs in workers, but operations stay on .NET's thread. Moving them
   would mean a second .NET runtime in a worker, tens of megabytes and a second startup, to free a thread that previews
   on a proxy already keep responsive. A WebAssembly app built with threads gets the engine on several cores through

@@ -959,7 +959,15 @@ const zoomPerPixel = Math.log(1.1) / 100;
 export function suppressTouchScrolling(element: any, dotNetRef?: DotNetObject) {
     if (!element || element.__bitBmageHandlers) return;
     const cancel = (e: Event) => { if (e.cancelable) e.preventDefault(); };
-    const keys = (e: KeyboardEvent) => { if (e.target === element && scrollKeys.has(e.key)) e.preventDefault(); };
+    // Keys the editor answers itself while the canvas has focus: the scrolling keys, and select all, deselect and invert
+    // selection, which would otherwise select the page's text, add a bookmark or open the developer tools. A browser
+    // that keeps Ctrl+Shift+I for itself still opens them; the selection is inverted either way.
+    const keys = (e: KeyboardEvent) => {
+        if (e.target !== element) return;
+        const command = (e.ctrlKey || e.metaKey) && !e.altKey;
+        const selectionKey = command && (e.key === 'a' || e.key === 'A' || e.key === 'd' || e.key === 'D' || (e.shiftKey && (e.key === 'i' || e.key === 'I')));
+        if (scrollKeys.has(e.key) || selectionKey) e.preventDefault();
+    };
     const pointers = new Set<number>();
     const down = (e: PointerEvent) => {
         if (e.button > 0) return;

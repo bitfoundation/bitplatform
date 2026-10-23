@@ -1068,6 +1068,108 @@ public static class BmageRecipeCatalog
                     "one thread unless the processor's MaxDegreeOfParallelism gives them more, and every image in flight " +
                     "uses that many: keep MaxConcurrency times MaxDegreeOfParallelism near the cores you have."
         },
+        new()
+        {
+            Id = "remove-plain-background",
+            Title = "Make a plain backdrop transparent",
+            Intent = "Cut a product, logo or scan out of a uniform background without a segmentation model.",
+            Keywords = "remove background transparent backdrop cut out cutout product logo scan white background magic wand flood floodmask png trim",
+            RunsIn = "Anywhere",
+            SeeAlso = "/retouch",
+            Code = """
+                using Bit.Bmage;
+                using Bit.Bmage.Analysis;
+                using Bit.Bmage.Codecs;
+                using Bit.Bmage.Pipeline;
+
+                var processor = new ImageProcessor();
+                using var photo = await processor.DecodeAsync(uploadBytes);
+
+                // Flood the backdrop in from the four corners, within 10% of their colour, and make it transparent.
+                using var cutout = ImagePipeline.Create()
+                    .RemoveBackground(tolerance: 0.1f, feather: 0.6f)
+                    .Execute(photo);
+
+                // Then trim the transparent border and keep a little room around the subject.
+                var pipeline = ImagePipeline.Create();
+                if (ContentBounds.Find(cutout, new TrimOptions { Mode = TrimMode.Transparent, Padding = 12 }) is { } content)
+                    pipeline = pipeline.Crop(content);
+                using var trimmed = pipeline.Execute(cutout);
+
+                // PNG or WebP keep the transparency; JPEG would fill it with ImageExportOptions.Background.
+                var file = await processor.EncodeAsync(trimmed, ImageExportOptions.Png);
+                """,
+            Notes = "RemoveBackground is a FloodMask seeded at the corners, inverted, through ApplyMask: it removes the region " +
+                    "connected to the corners whose colour is within the tolerance of theirs, so a subject touching a corner in " +
+                    "the backdrop's colour is taken with it. Raise the tolerance for a shaded backdrop, lower it for a pale " +
+                    "subject. For photos of real scenes plug a segmentation model's matte in as a BitmapMask instead. Trimming " +
+                    "reads the pixels, so it is ContentBounds.Find followed by an ordinary crop rather than a pipeline step."
+        },
+        new()
+        {
+            Id = "level-and-colour-correct",
+            Title = "Level a tilted photo and correct its colour",
+            Intent = "Straighten a crooked horizon without empty corners and neutralise a colour cast, automatically or from a picked grey.",
+            Keywords = "straighten level tilt crooked horizon rotate crop white balance colour cast color cast tungsten auto white balance grey card pick neutral hsl whites blacks",
+            RunsIn = "Anywhere",
+            SeeAlso = "/retouch",
+            Code = """
+                using System.Drawing;
+                using Bit.Bmage;
+                using Bit.Bmage.Analysis;
+                using Bit.Bmage.Operations.Adjustments;
+                using Bit.Bmage.Pipeline;
+
+                using var photo = await processor.DecodeAsync(uploadBytes);
+
+                // A grey card, a white wall, a shadow on snow: what should have no colour, sampled 5x5 to average out noise.
+                var neutral = ColorSampler.Sample(photo, new Point(612, 840), radius: 2);
+
+                using var corrected = ImagePipeline.Create()
+                    .AutoOrient()
+                    .WhiteBalance(neutral)                    // or .AutoWhiteBalance() with nothing to pick
+                    .Straighten(-2.5)                         // clockwise degrees; crops to the largest rectangle with no empty corner
+                    .WhitesBlacks(0.15f, -0.1f)
+                    .Hsl(HueBand.Blues, saturation: 0.2f, lightness: -0.15f)
+                    .Execute(photo);
+                """,
+            Notes = "Straighten accepts up to 45 degrees either way and crops by a fraction of the image, so a proxy preview frames " +
+                    "what the export will. White balance gains apply to the encoded sRGB values: a picked colour comes out " +
+                    "exactly neutral and the rest closely follows; AutoWhiteBalance assumes the mid-tones average to grey and " +
+                    "stops at 80% by default, because sunsets and forests are not grey. In an ImageDocument add geometric steps " +
+                    "with AddOperation(op, keepOverlaysAttached: true) so annotations and layers stay on what they mark."
+        },
+        new()
+        {
+            Id = "project-file",
+            Title = "Save and reopen a whole edit as a project file",
+            Intent = "Store the original, the edit and every image it uses in one file that reopens with every layer and stroke still editable.",
+            Keywords = "project save open reopen file bmage zip persist layers editable document original images package archive",
+            RunsIn = "Anywhere",
+            SeeAlso = "/retouch",
+            Code = """
+                using Bit.Bmage;
+                using Bit.Bmage.Editing;
+                using Bit.Bmage.Serialization;
+
+                // Save: the original, the document and the images its layers, masks and annotations use, in one ZIP.
+                await using (var file = File.Create("holiday" + BmageProject.FileExtension))
+                    await BmageProject.SaveAsync(file, original, document);
+
+                // Open: safe on untrusted files - names, file counts, unpacked sizes and image dimensions are all checked.
+                await using var stream = File.OpenRead("holiday.bmage");
+                using var project = await BmageProject.LoadAsync(stream, new BmageProjectOptions { MaxUnpackedBytes = 512L * 1024 * 1024 });
+                using var rendered = new DocumentRenderer().Render(project.Document, project.Original);
+
+                // In the editor the Export tab does both; from code: await editor.SaveProjectAsync("holiday"), editor.OpenProjectAsync(stream).
+                """,
+            Notes = "Images are stored as lossless PNG, which keeps the pixels exactly and makes a project of a large photo tens of " +
+                    "megabytes. The project owns the original and the document's images until disposed; DetachOriginal and " +
+                    "DetachImages hand them on, for instance to an ImageEditSession through Own. The original's metadata is " +
+                    "removed by default (BmageProjectOptions.OriginalMetadata), like an export, so a shared project does not " +
+                    "carry the photo's location. Malformed or hostile archives throw ImageDocumentFormatException and leave " +
+                    "nothing allocated."
+        },
     ];
 
     /// <summary>The listing: every recipe without its code and notes, for picking one.</summary>

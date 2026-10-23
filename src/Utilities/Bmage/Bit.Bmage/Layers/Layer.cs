@@ -76,6 +76,16 @@ public abstract record Layer
     /// <summary>The layer with its own geometry scaled; the mask is scaled by <see cref="ForScale"/>.</summary>
     protected abstract Layer ScaleCore(double scale);
 
+    /// <summary>
+    /// Returns the layer as it belongs after the image beneath it is transformed by <paramref name="matrix"/>, which maps
+    /// the image's coordinates before the edit to those after it, its mask included: the layer stays on the content it
+    /// covers. A layer over the whole image, a fill or an adjustment, keeps covering it, and only its mask moves.
+    /// </summary>
+    public Layer Transform(Matrix3x2 matrix) => matrix.IsIdentity ? this : TransformCore(matrix) with { Mask = Mask?.Transform(matrix) };
+
+    /// <summary>The layer with its own geometry transformed; the mask is transformed by <see cref="Transform"/>.</summary>
+    protected virtual Layer TransformCore(Matrix3x2 matrix) => this;
+
     /// <summary>The layer's pixels for row <paramref name="y"/> of the target, starting at the composited area's left.</summary>
     protected delegate ReadOnlySpan<Rgba32> LayerRow(int y);
 
@@ -305,6 +315,26 @@ public sealed record ImageLayer : Layer
     {
         Bounds = new RectangleF((float)(Bounds.X * scale), (float)(Bounds.Y * scale), (float)(Bounds.Width * scale), (float)(Bounds.Height * scale)),
     };
+
+    /// <remarks>
+    /// A move or a scale maps the bounds exactly, the two axes scaling apart if the image's do. Otherwise the layer's
+    /// centre follows the image, its size scales with it and it turns with it; a mirror mirrors its pixels too, by a flip
+    /// added to its pipeline, so a photo placed on the image stays a faithful part of it.
+    /// </remarks>
+    protected override Layer TransformCore(Matrix3x2 matrix)
+    {
+        if (Rotation == 0 && AffineParts.IsScaleAndTranslation(matrix)) return this with { Bounds = AffineParts.MapRectangle(Bounds, matrix) };
+        var parts = AffineParts.Of(matrix);
+        var centre = Vector2.Transform(new Vector2(Bounds.X + Bounds.Width / 2, Bounds.Y + Bounds.Height / 2), matrix);
+        var size = new SizeF(Bounds.Width * parts.Scale, Bounds.Height * parts.Scale);
+        return this with
+        {
+            Bounds = new RectangleF(centre.X - size.Width / 2, centre.Y - size.Height / 2, size.Width, size.Height),
+            // A layer turned by r and then mirrored is the mirrored layer turned by -r.
+            Rotation = AffineParts.Normalize(parts.Mirrored ? parts.Angle - Rotation : Rotation + parts.Angle),
+            Pipeline = parts.Mirrored ? Pipeline.FlipHorizontal() : Pipeline,
+        };
+    }
 }
 
 /// <summary>

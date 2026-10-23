@@ -1,0 +1,436 @@
+﻿@page "/retouch"
+@using System.Drawing
+@implements IDisposable
+@inject ImageExporter Exporter
+
+@* A product shot made ready for a catalogue: levelled, colour corrected, its backdrop removed, its label
+   recoloured with the magic wand and a stroke painted by hand - every step an editable value in one
+   ImageDocument, saved and reopened as a project file with everything still editable. *@
+
+<PageTitle>Retouching and selections · Bmage</PageTitle>
+
+<div class="bb-intro">
+    <h1>Retouching and selections</h1>
+    <p class="bb-subtitle">
+        Level a tilted shot, neutralise a colour cast, lift a product off a plain backdrop, recolour one region
+        with the <strong>magic wand</strong> and paint by hand - then save the whole edit as a
+        <strong>project file</strong> that reopens with every step still editable.
+    </p>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Try it</h3>
+    <p>
+        A generated product shot, a little crooked, warm from tungsten light and on an off-white backdrop. Each
+        control changes one value in the document, and the document is rendered again.
+    </p>
+
+    @if (_error is not null)
+    {
+        <div class="bb-note bb-note-danger demo-error" role="alert">@_error</div>
+    }
+
+    <div class="bb-demo bb-page-wide">
+        <div class="bb-demo-bar"><span class="bb-demo-label">Live</span></div>
+        <div class="demo-split">
+            <div>
+                @if (_preview is null)
+                {
+                    <div class="bb-toolbar">
+                        <button type="button" class="btn btn-primary" disabled="@(_busy || IsHydrating)" @onclick="StartAsync">
+                            <Icon Path="@Icons.Play" />
+                            Run on a sample image
+                        </button>
+                        <span class="demo-small bb-muted">A generated 900 &times; 640 product shot.</span>
+                    </div>
+                }
+                else
+                {
+                    <ImagePreview Image="_preview" Version="_previewVersion" Alt="The product shot with the selected retouching applied" Class="pipeline-preview" />
+                }
+
+                <div class="bb-stats demo-stats-compact playground-stats">
+                    <div class="bb-stat">
+                        <span class="bb-stat-label">Took</span>
+                        <span class="bb-stat-value">@(_elapsed is { } e ? $"{e.TotalMilliseconds:0} ms" : "—")</span>
+                    </div>
+                    <div class="bb-stat">
+                        <span class="bb-stat-label">Output</span>
+                        <span class="bb-stat-value">@(Document.TryGetOutputSize(out var size) ? $"{size.Width} × {size.Height}" : "—")</span>
+                    </div>
+                    <div class="bb-stat">
+                        <span class="bb-stat-label">Last project</span>
+                        <span class="bb-stat-value">@(_projectBytes is { } b ? $"{b / 1024.0:N0} KB" : "—")</span>
+                    </div>
+                </div>
+
+                <div class="bb-toolbar">
+                    <button type="button" class="btn" disabled="@(_source is null || _busy)" @onclick="SaveProjectAsync">Save as a project</button>
+                    <label class="btn demo-file-button">
+                        Open a project
+                        <InputFile OnChange="OpenProjectAsync" accept=".bmage" class="demo-file-input" disabled="@_busy" />
+                    </label>
+                    @if (_reopened)
+                    {
+                        <span class="demo-small bb-muted" role="status">Reopened from the project file.</span>
+                    }
+                </div>
+            </div>
+
+            <div class="demo-panel">
+                <p class="bb-overline demo-label">Geometry and colour</p>
+                <div class="demo-field">
+                    <label class="demo-field-label" for="straighten">Straighten <span class="demo-field-value">@_straighten.ToString("0.0")°</span></label>
+                    <input id="straighten" type="range" min="-10" max="10" step="0.5"
+                           value="@_straighten.ToString(System.Globalization.CultureInfo.InvariantCulture)" @oninput="e => SetNumber(v => _straighten = v, e)" />
+                </div>
+                <div class="demo-field demo-field-inline">
+                    <input id="balance" type="checkbox" checked="@_whiteBalance" @onchange="e => Set(() => _whiteBalance = (bool)(e.Value ?? false))" />
+                    <label class="demo-field-label" for="balance">Automatic white balance</label>
+                </div>
+
+                <hr class="demo-divider" />
+                <p class="bb-overline demo-label">Selections</p>
+                <div class="demo-field demo-field-inline">
+                    <input id="backdrop" type="checkbox" checked="@_removeBackground" @onchange="e => Set(() => _removeBackground = (bool)(e.Value ?? false))" />
+                    <label class="demo-field-label" for="backdrop">Remove the backdrop</label>
+                </div>
+                <div class="demo-field">
+                    <label class="demo-field-label" for="tolerance">Tolerance <span class="demo-field-value">@_tolerance.ToString("0.00")</span></label>
+                    <input id="tolerance" type="range" min="0" max="0.4" step="0.01"
+                           value="@_tolerance.ToString(System.Globalization.CultureInfo.InvariantCulture)" @oninput="e => SetNumber(v => _tolerance = (float)v, e)" />
+                </div>
+                <div class="demo-field" role="group" aria-label="Label colour">
+                    <span class="demo-field-label">Label colour, by magic wand</span>
+                    <div class="bb-segmented">
+                        @foreach (var option in LabelColors)
+                        {
+                            <button type="button" aria-pressed="@(_label == option ? "true" : "false")" @onclick="() => Set(() => _label = option)">@option</button>
+                        }
+                    </div>
+                </div>
+
+                <hr class="demo-divider" />
+                <p class="bb-overline demo-label">Painting</p>
+                <div class="demo-field demo-field-inline">
+                    <input id="paint" type="checkbox" checked="@_paint" @onchange="e => Set(() => _paint = (bool)(e.Value ?? false))" />
+                    <label class="demo-field-label" for="paint">A hand-painted flourish</label>
+                </div>
+                <div class="demo-field">
+                    <label class="demo-field-label" for="hardness">Brush hardness <span class="demo-field-value">@_hardness.ToString("0.00")</span></label>
+                    <input id="hardness" type="range" min="0" max="1" step="0.05" disabled="@(!_paint)"
+                           value="@_hardness.ToString(System.Globalization.CultureInfo.InvariantCulture)" @oninput="e => SetNumber(v => _hardness = (float)v, e)" />
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Selections that read the image</h3>
+    <p>
+        A <code>FloodMask</code> is the magic wand: from each seed it spreads to the neighbouring pixels within a
+        tolerance of the seed's colour, with an anti-aliased edge. A <code>MorphedMask</code> grows, shrinks or
+        outlines any mask by an exact distance. Both are values like every other mask, so they rescale for the
+        editor's proxy and replay at full resolution.
+    </p>
+    <CodeSnippet Code="@SelectionSnippet" Language="C#" Expanded="true" />
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Painting is strokes, not pixels</h3>
+    <p>
+        A <code>PaintLayer</code> keeps every stroke - its points, pen pressures, size, hardness and colour - and
+        stamps them when it is composited. An erasing stroke takes the layer's own paint away and never the image
+        below, and twenty strokes of history cost kilobytes.
+    </p>
+    <CodeSnippet Code="@PaintSnippet" Language="C#" Expanded="true" />
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Projects</h3>
+    <p>
+        <code>BmageProject</code> writes the original, the document and every image it refers to into one ZIP
+        file, and reads it back with each layer, mask, adjustment and stroke still editable. Reading one is safe on
+        untrusted files: only the files it names are read, sizes are bounded while unpacking, and images are
+        checked against the limits before they are decoded.
+    </p>
+    <CodeSnippet Code="@ProjectSnippet" Language="C#" Expanded="true" />
+</div>
+
+@code {
+    private static readonly string[] LabelColors = ["Original", "Teal", "Purple"];
+    private static readonly System.Drawing.Size SourceSize = new(900, 640);
+    // A point inside the label, which the wand seeds from.
+    private static readonly Vector2 LabelSeed = new(450, 360);
+
+    private ImageBuffer? _source;
+    private ImageBuffer? _preview;
+    private long _previewVersion;
+    private double _straighten = 4;
+    private bool _whiteBalance = true;
+    private bool _removeBackground = true;
+    private float _tolerance = 0.12f;
+    private string _label = "Teal";
+    private bool _paint = true;
+    private float _hardness = 0.6f;
+    private bool _busy;
+    private bool _reopened;
+    private string? _error;
+    private TimeSpan? _elapsed;
+    private long? _projectBytes;
+    private int _run;
+    // A document read back from a project file, shown instead of the controls' until a control changes, and the
+    // images it refers to, kept for as long as it is shown.
+    private ImageDocument? _opened;
+    private IReadOnlyList<ImageBuffer> _openedImages = [];
+    // The render in flight, which may still be reading images a change lets go of: those are released once it is done.
+    private Task _rendering = Task.CompletedTask;
+    private readonly Debouncer _debounce = new(120);
+
+    private bool IsHydrating => RendererInfo.IsInteractive is false;
+
+    private ImageDocument Document => _opened ?? Build();
+
+    private ImageDocument Build()
+    {
+        var pipeline = ImagePipeline.Create();
+        if (_whiteBalance) pipeline = pipeline.AutoWhiteBalance(0.9f);
+        if (_removeBackground) pipeline = pipeline.RemoveBackground(_tolerance, feather: 0.8f);
+        var document = ImageDocument.Create(SourceSize).WithPipeline(pipeline);
+        if (_label != "Original")
+        {
+            var color = _label == "Teal" ? new Rgba32(20, 170, 160) : new Rgba32(130, 70, 200);
+            document = document.AddLayer(new FillLayer(color)
+            {
+                Name = "Label colour",
+                BlendMode = BlendMode.Color,
+                Mask = new FloodMask([LabelSeed]) { Tolerance = 0.2f }.Expand(1),
+            });
+        }
+        if (_paint)
+        {
+            var points = Enumerable.Range(0, 40).Select(i => new Vector2(300 + i * 7.5f, 520 + 18 * MathF.Sin(i / 4f))).ToArray();
+            var pressures = points.Select((_, i) => 0.3f + 0.7f * MathF.Sin(MathF.PI * i / (points.Length - 1))).ToArray();
+            document = document.AddLayer(new PaintLayer([new PaintStroke(points, 14, new Rgba32(230, 120, 40)) { Hardness = _hardness, Pressures = pressures }]) { Name = "Flourish" });
+        }
+        // Straightened last, with the overlays carried along: the flourish and the label colour stay where they were painted.
+        return _straighten == 0 ? document : document.AddOperation(new StraightenOperation(_straighten), keepOverlaysAttached: true);
+    }
+
+    private const string SelectionSnippet = """
+        // Make a plain backdrop transparent, flooding in from the four corners.
+        pipeline.RemoveBackground(tolerance: 0.12f);
+
+        // Recolour one region: the wand from a point inside it, grown a pixel to take its anti-aliased edge.
+        document = document.AddLayer(new FillLayer(new Rgba32(20, 170, 160))
+        {
+            BlendMode = BlendMode.Color,
+            Mask = new FloodMask([new(450, 360)]) { Tolerance = 0.2f }.Expand(1),
+        });
+
+        // Select by colour anywhere, contract the selection, outline it.
+        var reds = new FloodMask([seed]) { Contiguous = false }.Contract(2);
+        var outline = reds.Border(6);
+        """;
+
+    private const string PaintSnippet = """
+        var layer = new PaintLayer()
+            .Add(new PaintStroke(points, size: 14, color: new Rgba32(230, 120, 40)) { Hardness = 0.6f, Pressures = penPressures })
+            .Add(new PaintStroke(eraserPoints, size: 8, color: default) { Erase = true });
+        document = document.AddLayer(layer);
+
+        // Straighten the photo afterwards and the paint stays where it was painted.
+        document = document.AddOperation(new StraightenOperation(4), keepOverlaysAttached: true);
+        """;
+
+    private const string ProjectSnippet = """
+        await using var file = File.Create("product.bmage");
+        await BmageProject.SaveAsync(file, original, document);
+
+        using var project = await BmageProject.LoadAsync(File.OpenRead("product.bmage"));
+        using var rendered = new DocumentRenderer().Render(project.Document, project.Original);
+
+        // In the editor: Export > Save project, and Open project - or from code:
+        await editor.SaveProjectAsync("product");
+        await editor.OpenProjectAsync(stream);
+        """;
+
+    private async Task StartAsync()
+    {
+        _busy = true;
+        StateHasChanged();
+        await Task.Yield();
+        _source ??= DrawProductShot();
+        await RunAsync();
+    }
+
+    /// <summary>
+    /// A mug on an off-white backdrop with a coloured label, turned a few degrees and lit warm: something to
+    /// straighten, colour correct, cut out and recolour.
+    /// </summary>
+    private static ImageBuffer DrawProductShot()
+    {
+        using var canvas = ImageCanvas.Create(SourceSize.Width, SourceSize.Height);
+        canvas.FillRectangle(new RectangleF(0, 0, SourceSize.Width, SourceSize.Height), new Rgba32(246, 245, 241));
+        canvas.Save();
+        canvas.Rotate(-4, new Vector2(450, 330));
+        // The handle, then the body over it, then the label on the body.
+        canvas.DrawEllipse(new RectangleF(560, 230, 150, 190), new Rgba32(48, 88, 150), new StrokeStyle { Width = 30 });
+        canvas.FillRoundedRectangle(new RectangleF(300, 160, 300, 360), 28, new Rgba32(52, 96, 160));
+        canvas.FillRoundedRectangle(new RectangleF(340, 300, 220, 120), 12, new Rgba32(200, 60, 60));
+        canvas.Restore();
+        using var shot = canvas.Snapshot();
+        // A warm cast, as from tungsten light.
+        return new ChannelMixerAdjustment(new(1.04f, 0, 0), new(0, 0.97f, 0), new(0, 0, 0.84f)).Apply(shot, OperationContext.Default.WithMutation(false));
+    }
+
+    private void Set(Action change)
+    {
+        change();
+        CloseOpened();
+        // A project of another image was opened: the controls edit the sample again.
+        if (_source is { } source && source.Size != SourceSize)
+        {
+            Release(source);
+            _source = DrawProductShot();
+        }
+        Schedule();
+    }
+
+    private void CloseOpened()
+    {
+        _opened = null;
+        _reopened = false;
+        Release([.. _openedImages]);
+        _openedImages = [];
+    }
+
+    /// <summary>Disposes images once the render in flight, which may still be reading them, has finished.</summary>
+    private void Release(params ImageBuffer[] images)
+    {
+        if (images.Length > 0) _ = DisposeAfterAsync(_rendering, images);
+
+        static async Task DisposeAfterAsync(Task rendering, ImageBuffer[] images)
+        {
+            try
+            {
+                await rendering;
+            }
+            catch (Exception)
+            {
+                // The run that started the render reports how it ended.
+            }
+            foreach (var image in images) image.Dispose();
+        }
+    }
+
+    private void SetNumber(Action<double> set, ChangeEventArgs e)
+    {
+        if (double.TryParse(e.Value?.ToString(), System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var v))
+            Set(() => set(v));
+    }
+
+    private void Schedule()
+    {
+        if (_source is null) return;
+        _debounce.Schedule(async _ => await RunAsync());
+    }
+
+    private async Task RunAsync()
+    {
+        if (_source is not { } source) return;
+        var run = ++_run;
+        _busy = true;
+        _error = null;
+        StateHasChanged();
+        try
+        {
+            var started = System.Diagnostics.Stopwatch.StartNew();
+            var rendering = new DocumentRenderer().RenderAsync(Document, source).AsTask();
+            _rendering = rendering;
+            var result = await rendering;
+            started.Stop();
+            if (run != _run)
+            {
+                result.Dispose();
+                return;
+            }
+            _preview?.Dispose();
+            _preview = result;
+            _previewVersion++;
+            _elapsed = started.Elapsed;
+        }
+        catch (Exception ex) when (run == _run)
+        {
+            _error = ex.Message;
+        }
+        catch (Exception)
+        {
+            // Superseded: the newer run reports its own outcome.
+        }
+        finally
+        {
+            if (run == _run)
+            {
+                _busy = false;
+                StateHasChanged();
+            }
+        }
+    }
+
+    private async Task SaveProjectAsync()
+    {
+        if (_source is null) return;
+        try
+        {
+            using var stream = new MemoryStream();
+            await BmageProject.SaveAsync(stream, _source, Document);
+            _projectBytes = stream.Length;
+            await Exporter.DownloadFileAsync(stream.ToArray(), "product" + BmageProject.FileExtension, "application/zip");
+        }
+        catch (Exception ex)
+        {
+            _error = ex.Message;
+        }
+    }
+
+    private async Task OpenProjectAsync(InputFileChangeEventArgs e)
+    {
+        _busy = true;
+        _error = null;
+        StateHasChanged();
+        try
+        {
+            await using var stream = e.File.OpenReadStream(256L * 1024 * 1024);
+            using var project = await BmageProject.LoadAsync(stream);
+            // The page keeps the original and the images the document refers to; the project lets go of them.
+            _run++;
+            CloseOpened();
+            if (_source is not null) Release(_source);
+            _source = project.DetachOriginal();
+            _openedImages = project.DetachImages();
+            _opened = project.Document;
+            _reopened = true;
+            _projectBytes = e.File.Size;
+        }
+        catch (Exception ex)
+        {
+            _error = ex.Message;
+        }
+        finally
+        {
+            _busy = false;
+        }
+        await RunAsync();
+    }
+
+    public void Dispose()
+    {
+        _run++;
+        _debounce.Dispose();
+        _preview?.Dispose();
+        if (_source is not null) Release(_source);
+        CloseOpened();
+    }
+}

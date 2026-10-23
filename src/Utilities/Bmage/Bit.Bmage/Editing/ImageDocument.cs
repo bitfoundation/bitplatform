@@ -83,6 +83,47 @@ public sealed record ImageDocument
         return ReferenceEquals(pipeline, Pipeline) ? this : this with { Pipeline = pipeline };
     }
 
+    /// <summary>
+    /// Returns a document with a different pipeline, its annotations and layers moved the way the change moves the
+    /// image, so each stays on the content it marks: crop the image and an arrow keeps pointing at the same thing, turn
+    /// it and a label turns with it, straighten it a little more and they follow. With
+    /// <paramref name="keepOverlaysAttached"/> false, or when either pipeline's effect on coordinates is not affine (see
+    /// <see cref="ImagePipeline.TryGetTransform"/>), the overlays stay where they are in output coordinates, as
+    /// <see cref="WithPipeline(ImagePipeline)"/> leaves them.
+    /// </summary>
+    public ImageDocument WithPipeline(ImagePipeline pipeline, bool keepOverlaysAttached)
+    {
+        var next = WithPipeline(pipeline);
+        if (!keepOverlaysAttached || ReferenceEquals(next, this) || (LayerList.IsEmpty && AnnotationList.IsEmpty)) return next;
+        if (!Pipeline.TryGetTransform(SourceSize, out var before) || !next.Pipeline.TryGetTransform(SourceSize, out var after)) return next;
+        if (!Matrix3x2.Invert(before, out var inverse)) return next;
+        // From the old output back to the source, then forward to the new output.
+        var change = inverse * after;
+        return IsNearlyIdentity(change) ? next : next.TransformOverlays(change);
+    }
+
+    /// <summary>
+    /// Returns a document with an operation appended and, with <paramref name="keepOverlaysAttached"/>, its annotations
+    /// and layers moved with the image as <see cref="WithPipeline(ImagePipeline, bool)"/> moves them. What the editor's
+    /// crop, rotate, flip, straighten and resize use.
+    /// </summary>
+    public ImageDocument AddOperation(IImageOperation operation, bool keepOverlaysAttached) => WithPipeline(Pipeline.Add(operation), keepOverlaysAttached);
+
+    /// <summary>
+    /// Returns a document with every annotation and layer transformed by <paramref name="matrix"/>, which maps output
+    /// coordinates to new output coordinates. See <see cref="Annotation.Transform"/> and <see cref="Layer.Transform"/>.
+    /// </summary>
+    public ImageDocument TransformOverlays(Matrix3x2 matrix) => matrix.IsIdentity ? this : this with
+    {
+        LayerList = [.. LayerList.Select(l => l.Transform(matrix))],
+        AnnotationList = [.. AnnotationList.Select(a => a.Transform(matrix))],
+    };
+
+    /// <summary>Float noise from inverting a transform and composing it again is not a move.</summary>
+    private static bool IsNearlyIdentity(Matrix3x2 m)
+        => MathF.Abs(m.M11 - 1) < 1e-6f && MathF.Abs(m.M22 - 1) < 1e-6f && MathF.Abs(m.M12) < 1e-6f && MathF.Abs(m.M21) < 1e-6f
+           && MathF.Abs(m.M31) < 1e-3f && MathF.Abs(m.M32) < 1e-3f;
+
     /// <summary>Returns a document with the operation at <paramref name="index"/> replaced, for re-editing a past step.</summary>
     public ImageDocument ReplaceOperation(int index, IImageOperation operation) => this with { Pipeline = Pipeline.Replace(index, operation) };
 
@@ -128,6 +169,26 @@ public sealed record ImageDocument
         if (to == from) return this;
         var layer = LayerList[from];
         return this with { LayerList = LayerList.RemoveAt(from).Insert(to, layer) };
+    }
+
+    /// <summary>
+    /// Returns a document with a copy of a layer, under a new id, placed directly above it; unchanged when the id is
+    /// unknown. The copy shares the original's pixels, which no layer owns.
+    /// </summary>
+    public ImageDocument DuplicateLayer(Guid id) => DuplicateLayer(id, out _);
+
+    /// <summary>Duplicates a layer as <see cref="DuplicateLayer(Guid)"/> does, returning the copy's id, or null when the id is unknown.</summary>
+    public ImageDocument DuplicateLayer(Guid id, out Guid? copyId)
+    {
+        var index = LayerList.FindIndex(l => l.Id == id);
+        if (index < 0)
+        {
+            copyId = null;
+            return this;
+        }
+        var copy = LayerList[index] with { Id = Guid.NewGuid() };
+        copyId = copy.Id;
+        return this with { LayerList = LayerList.Insert(index + 1, copy) };
     }
 
     /// <summary>Returns a document with every layer removed.</summary>

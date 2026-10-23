@@ -3,7 +3,7 @@
 namespace Bit.Bmage.Tests.E2E.Infrastructure;
 
 /// <summary>
-/// One Playwright driver and one launched Chromium for the whole run. Tests isolate from each other
+/// One Playwright driver and one launched browser for the whole run. Tests isolate from each other
 /// with a browser context apiece (separate storage, cache and WebAssembly instance), which is far
 /// cheaper than a browser apiece and isolates just as well.
 /// </summary>
@@ -11,6 +11,7 @@ namespace Bit.Bmage.Tests.E2E.Infrastructure;
 /// Playwright's bundled Chromium is used when installed. When it is not, a Chrome or Edge installed on
 /// the machine is used instead, and when neither launches the tests report Inconclusive with the
 /// reason - so a checkout without browsers still builds and runs every other suite.
+/// <c>BMAGE_E2E_BROWSER</c> picks Playwright's Firefox or WebKit instead (see <see cref="E2EEnvironment.Browser"/>).
 /// </remarks>
 public static class PlaywrightSession
 {
@@ -51,6 +52,21 @@ public static class PlaywrightSession
         }
 
         var headless = E2EEnvironment.Headed is false;
+        if (E2EEnvironment.Browser is "firefox" or "webkit")
+        {
+            var type = E2EEnvironment.Browser == "firefox" ? playwright.Firefox : playwright.Webkit;
+            try
+            {
+                return (await type.LaunchAsync(new() { Headless = headless }), null);
+            }
+            catch (PlaywrightException ex)
+            {
+                return (null, $"Playwright's {E2EEnvironment.Browser} could not be launched. Run 'pwsh bin/Debug/net10.0/playwright.ps1 install {E2EEnvironment.Browser}'. {ex.Message.Split('\n')[0]}");
+            }
+        }
+        if (E2EEnvironment.Browser != "chromium")
+            return (null, $"BMAGE_E2E_BROWSER is '{E2EEnvironment.Browser}'; it must be chromium, firefox or webkit.");
+
         BrowserTypeLaunchOptions[] candidates = E2EEnvironment.Executable is { } executable
             ? [new() { Headless = headless, ExecutablePath = executable }]
             : E2EEnvironment.Channel is { } channel

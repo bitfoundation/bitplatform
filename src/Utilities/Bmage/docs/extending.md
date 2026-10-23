@@ -194,6 +194,19 @@ public sealed record MeasurementAnnotation : Annotation
 Note `ForScale` on `UnitsPerPixel`: the geometry shrinks with the proxy, so the scale factor has to grow to keep the
 reported measurement the same. This is the kind of detail that only shows up when previews and exports disagree.
 
+When the image is cropped, turned, flipped or resized with its overlays attached, each annotation's `Transform` is
+called with the affine map from the old output to the new one. The default moves the annotation's centre, scales it by
+`ForScale` and turns its `Rotation`, which is right for most shapes; one made of points should map them exactly:
+
+```csharp
+    public override Annotation Transform(Matrix3x2 matrix)
+    {
+        var m = Through(matrix);   // its own rotation, then the image's transform
+        return this with { Start = Vector2.Transform(Start, m), End = Vector2.Transform(End, m), Rotation = 0,
+                           Style = Style.ForScale(ScaleOf(matrix)), UnitsPerPixel = UnitsPerPixel / ScaleOf(matrix) };
+    }
+```
+
 ## A custom editor tool
 
 ```csharp
@@ -317,6 +330,10 @@ public sealed record GrainLayer(float Amount) : Layer
 }
 ```
 
+A layer with geometry of its own overrides `TransformCore` too, so it follows the image through a crop or a turn; a
+mask with geometry overrides `TransformGeometry`. Both default to staying put, which is right for something that covers
+the whole image.
+
 ## Writing your own types as JSON
 
 `BmageJson` writes every built-in operation, mask, layer and annotation. A custom one is written once it has a codec,
@@ -366,3 +383,6 @@ using var portrait = ImagePipeline.Create()
 
 Shipping a poor implementation would be worse than shipping none: it would look like a feature and behave like a
 disappointment. If you have a model that meets your bundle and latency budget, this is where it plugs in.
+
+A subject on a plain backdrop - a product shot, a logo, a scan - needs no model: `ImagePipeline.RemoveBackground`
+floods the backdrop in from the four corners with a `FloodMask` and cuts it out.

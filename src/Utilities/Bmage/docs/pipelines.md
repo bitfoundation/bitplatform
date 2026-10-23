@@ -66,7 +66,22 @@ pipeline.AutoOrient()                       // apply the EXIF rotation so the im
         .Rotate(12.5, background)           // arbitrary angle, canvas expands
         .Orient(Orientation.Rotate90)       // lossless, no resampling
         .FlipHorizontal()
+        .Straighten(-3.5)                   // level a tilt, cropping to the largest rectangle with no empty corners
+        .CanvasSize(1200, 1200, Anchor.Top, Rgba32.White)  // a square canvas, the image at the top, unscaled
+        .Pad(40, Rgba32.White)              // a 40 pixel border; Pad(left, top, right, bottom) for each side
         .Skew(10, 0);
+```
+
+`Straighten` crops by a fraction of the image, the same at every resolution, so a proxy preview frames exactly what the
+export will. `CanvasSize` and `Pad` copy pixels and never resample; a canvas smaller than the image, or a negative
+margin, cuts the edges the anchor leaves out.
+
+Trimming depends on the pixels, so it is an analysis whose result you crop to, rather than an operation (an operation's
+size must be known from its input's size alone):
+
+```csharp
+if (ContentBounds.Find(image, new TrimOptions { Padding = 8 }) is { } content)
+    pipeline = pipeline.Crop(content);       // transparent borders, or a plain one within 4% of the corner's colour
 ```
 
 `AutoOrient` is almost always the first thing you want. Phones record rotation in EXIF rather than rotating the pixels,
@@ -134,6 +149,15 @@ pipeline.AutoContrast(targetMean: 0.5f);  // gentler: move the mean luminance to
 `AutoLevels` ignores the darkest and brightest 0.5% by default, so one hot pixel cannot define the white point, and it
 leaves a flat histogram alone rather than amplifying it into noise.
 
+```csharp
+pipeline.AutoWhiteBalance();                         // make the average of the mid-tones grey, 80% of the way
+pipeline.WhiteBalance(ColorSampler.Sample(image, new Point(420, 310), radius: 2));  // a picked grey becomes grey
+```
+
+`AutoWhiteBalance` leaves clipped highlights, deep shadows and strongly saturated colours out of its average, since they
+say more about the scene than the light; the "grey world" it assumes fails for sunsets and forests, which is why it stops
+short of a full correction by default.
+
 ### Adjustments and filters
 
 ```csharp
@@ -144,7 +168,20 @@ pipeline.Brightness(0.1f).Contrast(0.15f).Saturation(-0.2f).Hue(15)
         .Blur(4f).Sharpen(0.5f).Pixelate(12).Noise(0.05f)
         .DenoiseMedian(1).Vignette(0.4f)
         .ColorMatrix(myMatrix);
+
+pipeline.WhitesBlacks(0.3f, -0.2f)                    // brighten the top of the range, deepen the bottom
+        .Hsl(HueBand.Blues, saturation: 0.3f, lightness: -0.25f)   // a deeper sky, nothing else touched
+        .ChannelMixer(new(0.9f, 0.1f, 0), new(0, 1, 0), new(0, 0.1f, 0.9f))
+        .BlackAndWhite(red: 0.6f, green: 0.3f, blue: 0.1f)          // a red filter: dark skies, light skin
+        .Colorize(30, saturation: 0.35f)                 // one warm tint over everything
+        .Duotone(new Rgba32(20, 30, 90), new Rgba32(250, 210, 120))
+        .MotionBlur(24, angle: 15)                       // a 24 pixel streak, rising slightly to the right
+        .HighPass(3);                                    // only detail finer than 3 pixels, around mid grey
 ```
+
+`HslAdjustment` adjusts eight hue bands; a pixel between two bands takes from both in proportion, and greys are left
+alone. The HSL model is fast and predictable rather than perceptually uniform, the trade simple editors make.
+`GradientMapOperation` takes any number of stops; `Duotone` is the two-stop case.
 
 Adjustment amounts are consistently in [-1, 1] with 0 meaning no change, except where a different unit is natural:
 `Exposure` is in stops, `Hue` is in degrees, `Gamma` is a positive multiplier, and `Blur` is a radius in pixels.
@@ -167,8 +204,12 @@ pipeline.Masked(Mask.Gradient(new(0, 0), new(0, 0.55f)), sky => sky.Exposure(-0.
 ```
 
 A run of adjustments through a mask is still one pass, and only over the rows and columns the mask can reach. The
-masks, from shapes and gradients to brush strokes and a segmentation model's matte, are in
+masks, from shapes and gradients to brush strokes, the magic wand and a segmentation model's matte, are in
 [layers-and-masks.md](layers-and-masks.md).
+
+```csharp
+pipeline.RemoveBackground(tolerance: 0.1f);   // a product shot on a plain backdrop, the backdrop made transparent
+```
 
 ## The optimiser
 

@@ -151,6 +151,18 @@ await context.RestoreDocumentAsync(BmageJson.DeserializeDocument(json, new Bmage
 `RestoreDocumentAsync` refuses a document made for an image of another size, rather than applying crops and layers to
 the wrong place.
 
+To keep everything in one file instead, the original and every image the edit uses included, save a project. The
+Export tab has **Save project** and **Open project**; from code:
+
+```csharp
+await editor.SaveProjectAsync("holiday");      // downloads holiday.bmage
+await editor.OpenProjectAsync(file);           // an IBrowserFile or a Stream: the image, its edit and its images
+```
+
+The reopened edit is one undoable step over the original, with every layer, mask, adjustment, painted stroke and
+annotation still editable. A project file may be four times `BitBmageOptions.MaxSourceBytes`, since it carries the
+original losslessly as PNG. See `BmageProject` for saving and loading one without the editor.
+
 ## Theming
 
 Every colour and metric is a CSS custom property on `.bmg-editor`. Override the ones you care about:
@@ -223,6 +235,45 @@ handles and the toolbar all mirror.
 | `Redact` | Solid, pixelate or blur; replaces the pixels underneath |
 | `Text` | Places a label you then edit |
 | `Step` | Auto-numbered markers for tutorials and bug reports |
+| `Brush` | Paints onto the selected paint layer, or a new one on top: brush size and hardness in the Tools tab, pen pressure narrowing the stroke |
+| `Eraser` | Removes paint from the paint layer where it passes, never the image below |
+| `Fill` | Fills the region of similar colour under the pointer, as it is composited so far, with the fill colour, as a new layer |
+| `MagicEraser` | Makes the region of similar colour under the pointer transparent; the Tools tab sets the tolerance |
+| `Eyedropper` | Picks the colour under the pointer, averaged over 3 x 3 pixels, for the drawing tools |
+| `SelectRectangle`, `SelectEllipse`, `Lasso` | Drag to select pixels; Shift adds to the selection, Alt takes away from it; a click deselects |
+| `MagicWand` | Selects the region of similar colour under the pointer, within the Tools tab's tolerance; Shift and Alt as above |
+
+A pixel selection is drawn as marching ants and offers, in the toolbar: **Make transparent**, **Fill selection** (a fill
+layer through the selection), **Copy to layer** (the selected pixels, as composited, as a new image layer in place),
+**Crop to selection**, **Invert selection** and **Deselect**. The selection is any `Mask`, in output coordinates:
+`context.Selection` reads it and `context.SetSelection(mask)` sets it from code, so a host can build its own selection
+tools. It is editor state, not part of the document, so it is not undone; what is done with it is. Crops, quarter turns,
+flips, resizes and canvas changes carry it along; re-straightening drops it. Undo, redo and the history panel carry it
+back and forth with the image in the same way, so a selection made before a turn still covers the same pixels once the
+turn is undone; it is dropped when a step's effect on coordinates cannot be said, such as a perspective warp. A
+selection by colour re-reads the colours of the image it is applied to: making a wand selection transparent and then
+filling it would fill the region's new, transparent colour.
+
+While the editor is busy with something that renders the whole image first (a trim, a crop to the selection, a copy to
+a layer, an export or a project), undo, redo and reset wait for it, and a slider moved meanwhile makes the action stop
+rather than apply what it measured to an image that has changed since.
+
+Images added as layers and the pixels copied to a layer stay in memory until another image is opened or the editor is
+disposed, because the history can still return to a step that uses them.
+
+The panel's tabs: **Adjust** (a luminance histogram with its clipping, auto levels, auto white balance and a white
+balance picker, every tonal slider, and a colour mixer of eight hue bands), **Filters** (exclusive looks, including
+black and white and duotone, and motion blur), **Transform** (straighten, resize with proportions kept, canvas size with
+an anchor and a background, trim), **Tools** (the style of the active tool), **Layers** (add a paint or image layer;
+select, show, lock, reorder, duplicate and delete layers; the selected layer's opacity and blend mode), **History** and
+**Export**.
+
+The Compare button in the toolbar, or the backslash key, shows the original image until it is pressed again; any edit
+ends the comparison.
+
+Crops, quarter turns, flips, straightening, resizing, canvas changes and trimming carry the annotations and layers with
+the image, so an arrow keeps pointing at what it pointed at. From code, `ImageDocument.AddOperation(op,
+keepOverlaysAttached: true)` does the same.
 
 ## Keyboard and accessibility
 
@@ -235,10 +286,19 @@ handles and the toolbar all mirror.
 | Escape | Clear the selection, or cancel a pending crop |
 | Plus, Minus | Zoom |
 | Ctrl/Cmd + 0 | Fit to window |
+| Backslash | Compare with the original, and back |
+| [ and ] | Shrink or grow the brush, with the brush or the eraser |
+| Ctrl/Cmd + A, Ctrl/Cmd + D | Select all, deselect |
+| Ctrl/Cmd + Shift + I | Invert the selection |
+| Delete, Backspace | Make the selection transparent, when no annotation is selected |
+| Escape | Also lets go of the selection |
 
 The canvas is a focusable `application` region with a described keyboard hint. The toolbar is a `toolbar` with labelled
-buttons carrying `aria-pressed`. The panel is a `tablist` with arrow-key navigation. Crop handles are focusable buttons
-with 24px hit targets. Status messages use live regions. Focus is visible throughout.
+buttons carrying `aria-pressed`. The panel is a `tablist` with arrow-key navigation. Crop handles are pointer and touch
+targets of 24px, kept out of the tab order; from the keyboard, the Transform tab crops numerically (a canvas smaller than
+the image, placed by its anchor, cuts the rest away), trims, straightens, resizes and sets the canvas, and the Tools
+tab edits the selected annotation's text, size, rotation, opacity and order. Status messages use live regions. Focus
+is visible throughout.
 
 ## Touch
 

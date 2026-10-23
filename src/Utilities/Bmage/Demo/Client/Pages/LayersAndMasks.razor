@@ -143,8 +143,10 @@
                 <tr><th scope="row"><code>RadialGradientMask</code></th><td>A radial filter, rotatable, solid within its hardness and fading to its edge.</td></tr>
                 <tr><th scope="row"><code>LuminanceRangeMask</code></th><td>Pixels by brightness: recover the highlights, lift the shadows.</td></tr>
                 <tr><th scope="row"><code>ColorRangeMask</code></th><td>Pixels close to a colour, by perceptual distance.</td></tr>
+                <tr><th scope="row"><code>FloodMask</code></th><td>The magic wand: the region of similar colour connected to a point, or every pixel of its colour. See <a href="retouch">retouching and selections</a>.</td></tr>
                 <tr><th scope="row"><code>BitmapMask</code></th><td>Another image's alpha or luminance, stretched over the photo: the output of a segmentation or background removal model.</td></tr>
                 <tr><th scope="row"><code>CombinedMask</code></th><td>Two masks united, intersected, subtracted or excluded - <code>a.Union(b)</code>.</td></tr>
+                <tr><th scope="row"><code>MorphedMask</code></th><td>Another mask grown, shrunk or outlined by an exact distance - <code>a.Expand(4)</code>, <code>a.Contract(3)</code>, <code>a.Border(6)</code>.</td></tr>
             </tbody>
         </table>
     </div>
@@ -173,6 +175,7 @@
                 <tr><th scope="row"><code>ImageLayer</code></th><td>Pixels placed in a rectangle, rotated, after a pipeline of their own: a logo, a texture, a sticker.</td></tr>
                 <tr><th scope="row"><code>FillLayer</code></th><td>A colour over the whole image, usually shaped by a mask: a colour wash, a gradient fade, a duotone.</td></tr>
                 <tr><th scope="row"><code>AdjustmentLayer</code></th><td>An edit of everything beneath it, which can be reordered, hidden or faded without touching anything else.</td></tr>
+                <tr><th scope="row"><code>PaintLayer</code></th><td>Brush strokes with hardness and pen pressure, and an eraser that removes the layer's own paint - kept as strokes, not pixels.</td></tr>
             </tbody>
         </table>
     </div>

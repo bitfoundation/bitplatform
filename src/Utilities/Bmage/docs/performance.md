@@ -133,6 +133,35 @@ A rotation by a multiple of 90 degrees never samples at all and runs at roughly 
 `OrientationOperation` whenever the angle allows it. The editor stays responsive at any setting because previews
 render against a downscaled proxy; the full-resolution pass happens once, on export.
 
+### Editing tools
+
+`EditingToolBenchmarks`, one thread, on another machine than the tables above (an i9-10900 on Windows 10, .NET 10), so
+compare rows within this table: the vibrance row is an existing per-pixel adjustment measured in the same run.
+
+| Operation | 1920×1080 | 3840×2160 | Allocated |
+| --- | ---: | ---: | ---: |
+| Canvas: 40px border | 1.6 ms | 8.4 ms | 152 B |
+| Whites/blacks (tables) | 3.6 ms | 13.4 ms | 3.6 KB |
+| Trim bounds | 5.1 ms | 23.9 ms | 27 KB |
+| Auto white balance | 15.4 ms | 64.0 ms | 528 B |
+| Mask expand by 10px | 27.9 ms | 94.6 ms | 12 KB |
+| Duotone | 35.9 ms | 144 ms | 3.9 KB |
+| Vibrance (reference) | 36.8 ms | 156 ms | 352 B |
+| Colorize | 55.1 ms | 212 ms | 12 KB |
+| High pass, radius 3 | 64.3 ms | 250 ms | 1.3 KB |
+| Remove a plain background (corner flood) | 66.8 ms | 272 ms | 0.9 KB |
+| HSL, two bands | 93.7 ms | 445 ms | 0.7 KB |
+| Straighten 5° | 122 ms | 410 ms | 688 B |
+| Paint layer, 20 long strokes | 141 ms | 384 ms | 2.3 MB |
+| Motion blur 20px, horizontal or 30° | 142 ms | 677-738 ms | 480 B |
+
+Whites and blacks are a curve, so they run through 256-entry tables like brightness. Colorize became a table of
+lightness, a 1025-entry piecewise linear lookup that is exact at the one kink of the conversion; HSL skips every pixel
+whose two neighbouring bands are not adjusted before converting it. Both still pay for the floating point row the
+non-separable adjustments share, which is most of what vibrance costs too. Motion blur costs about one sample per pixel
+of the streak, whatever its angle; the editor previews it on the proxy, or a draft of it while the slider moves, and
+caps it at 120 pixels there.
+
 Two things to read from this:
 
 - **Fusing adjustments is worth about 1.1×.** Adjustments that map each channel from itself (brightness, contrast,

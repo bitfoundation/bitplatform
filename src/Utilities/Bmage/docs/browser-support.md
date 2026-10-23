@@ -135,7 +135,7 @@ video.
 
 ## Testing your own integration
 
-The browser test project starts the demo application and drives a real Chrome against it:
+The browser test project starts the demo application and drives a real browser against it, Chromium by default:
 
 ```bash
 cd src && dotnet test --project Utilities/Bmage/Tests/Bit.Bmage.Tests.E2E/Bit.Bmage.Tests.E2E.csproj
@@ -143,3 +143,11 @@ cd src && dotnet test --project Utilities/Bmage/Tests/Bit.Bmage.Tests.E2E/Bit.Bm
 
 It uses Playwright's bundled browser when installed, falls back to a system Chrome or Edge, and skips with a clear
 message when neither is available, so a checkout without browsers still builds and runs the rest of the suite.
+
+Set `BMAGE_E2E_BROWSER` to `firefox` or `webkit` to run the same tests in Playwright's Gecko or WebKit build, after
+installing it once with Playwright's `install firefox webkit`. WebKit on Windows and Linux is Playwright's build of the
+engine, not Safari: it catches engine differences, but not iOS memory limits or Safari's own policies.
+
+The suite passes in all three. Two tests are inconclusive by design: Firefox empties the data of a synthetic paste
+event, so a paste cannot be simulated there, and Playwright's WebKit for Windows has no `OffscreenCanvas`, so codec work
+stays on the page's thread, which the worker tests then check instead.

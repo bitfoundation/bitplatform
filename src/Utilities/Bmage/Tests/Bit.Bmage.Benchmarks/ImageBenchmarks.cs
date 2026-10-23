@@ -422,6 +422,108 @@ public class ParallelBenchmarks
     }
 }
 
+/// <summary>
+/// The editing tools: colour and tone, the directional filters, canvas geometry, selection and painting, on one thread at
+/// the sizes the editor's proxy (1080p) and an export (4K) run them at.
+/// </summary>
+[MemoryDiagnoser]
+[Orderer(SummaryOrderPolicy.FastestToSlowest)]
+public class EditingToolBenchmarks
+{
+    private ImageBuffer _source = null!;
+    private ImageBuffer _product = null!;
+    private Layers.PaintLayer _paint = null!;
+
+    [Params("1920x1080", "3840x2160")]
+    public string Size { get; set; } = "1920x1080";
+
+    [GlobalSetup]
+    public void Setup()
+    {
+        var parts = Size.Split('x');
+        int width = int.Parse(parts[0]), height = int.Parse(parts[1]);
+        _source = Images.Create(width, height);
+        // A product shot: a subject on a near-white backdrop, for the wand, the background removal and trimming.
+        _product = ImageBuffer.Create(width, height, new Rgba32(248, 248, 246));
+        _product.Fill(new System.Drawing.Rectangle(width / 4, height / 5, width / 2, height * 3 / 5), new Rgba32(40, 90, 160));
+        var strokes = new List<Layers.PaintStroke>();
+        var rng = new Random(7);
+        for (var i = 0; i < 20; i++)
+        {
+            var points = Enumerable.Range(0, 40).Select(j => new Vector2(rng.Next(width), rng.Next(height)) * 0.1f + new Vector2(j * width / 50f, i * height / 25f)).ToArray();
+            strokes.Add(new Layers.PaintStroke(points, 24, new Rgba32(200, 40, 40)) { Hardness = 0.6f });
+        }
+        _paint = new Layers.PaintLayer(strokes);
+    }
+
+    [GlobalCleanup]
+    public void Cleanup()
+    {
+        _source.Dispose();
+        _product.Dispose();
+    }
+
+    private int Run(IImageOperation operation, ImageBuffer? source = null)
+    {
+        using var result = operation.Apply(source ?? _source, Images.OneThread.WithMutation(false));
+        return result.Width;
+    }
+
+    [Benchmark(Baseline = true, Description = "Whites/blacks (tables)")]
+    public int WhitesBlacks() => Run(new WhitesBlacksAdjustment(0.3f, -0.2f));
+
+    [Benchmark(Description = "Vibrance (an existing per-pixel adjustment, for reference)")]
+    public int Vibrance() => Run(new VibranceAdjustment(0.4f));
+
+    [Benchmark(Description = "HSL, two bands")]
+    public int Hsl() => Run(new HslAdjustment().With(HueBand.Blues, new HslShift(-10, 0.3f, -0.2f)).With(HueBand.Greens, new HslShift(15, -0.2f, 0)));
+
+    [Benchmark(Description = "Duotone")]
+    public int Duotone() => Run(GradientMapOperation.Duotone(new Rgba32(20, 30, 90), new Rgba32(250, 210, 120)));
+
+    [Benchmark(Description = "Colorize")]
+    public int Colorize() => Run(new ColorizeAdjustment(30, 0.4f));
+
+    [Benchmark(Description = "Auto white balance")]
+    public int AutoWhiteBalance() => Run(new AutoWhiteBalanceOperation());
+
+    [Benchmark(Description = "Straighten 5 degrees")]
+    public int Straighten() => Run(new StraightenOperation(5));
+
+    [Benchmark(Description = "Canvas: 40px border")]
+    public int Border() => Run(CanvasSizeOperation.Margins(40, Rgba32.White));
+
+    [Benchmark(Description = "Motion blur 20px, horizontal")]
+    public int MotionBlurHorizontal() => Run(new MotionBlurFilter(20, 0));
+
+    [Benchmark(Description = "Motion blur 20px, 30 degrees")]
+    public int MotionBlurAngled() => Run(new MotionBlurFilter(20, 30));
+
+    [Benchmark(Description = "High pass, radius 3")]
+    public int HighPass() => Run(new HighPassFilter(3));
+
+    [Benchmark(Description = "Remove plain background (corner flood)")]
+    public int RemoveBackground() => Run(new Masks.AlphaMaskOperation(new Masks.FloodMask([new(0, 0), new(1, 0), new(0, 1), new(1, 1)]) { Units = Masks.MaskUnits.Relative, Inverted = true }), _product);
+
+    [Benchmark(Description = "Mask expand by 10px")]
+    public int Expand()
+    {
+        using var mask = new Masks.EllipseMask(new System.Drawing.RectangleF(100, 100, 800, 600)).Expand(10).Render(_source.Size, null, Images.OneThread);
+        return mask.Width;
+    }
+
+    [Benchmark(Description = "Paint layer, 20 strokes")]
+    public int Paint()
+    {
+        using var target = _source.Clone();
+        _paint.Composite(target, Images.OneThread);
+        return target.Width;
+    }
+
+    [Benchmark(Description = "Trim bounds")]
+    public int Trim() => Analysis.ContentBounds.Find(_product)!.Value.Width;
+}
+
 public static class Program
 {
     public static void Main(string[] args)

@@ -1,6 +1,7 @@
 ﻿using System.Drawing;
 using System.Numerics;
 using Bit.Bmage.Drawing;
+using Bit.Bmage.Geometry;
 
 namespace Bit.Bmage.Annotations;
 
@@ -81,6 +82,45 @@ public abstract record Annotation
 
     /// <summary>Returns a copy scaled for a proxy image of a different resolution.</summary>
     public abstract Annotation ForScale(double scale);
+
+    /// <summary>
+    /// Returns the annotation as it belongs after the image beneath it is transformed by <paramref name="matrix"/>, which
+    /// maps the image's coordinates before the edit to those after it: a crop, a quarter turn, a flip, a resize, a
+    /// straighten. The annotation stays on the content it marks.
+    /// </summary>
+    /// <remarks>
+    /// By default the annotation's centre follows the image, its size scales by the transform's average scale and its
+    /// <see cref="Rotation"/> turns with the image. A mirror moves the annotation to the mirrored place without mirroring
+    /// how it is drawn, so text stays readable. The built-in annotations made of points map every point exactly, mirrors
+    /// included, and those made of a rectangle map it exactly whenever the transform keeps rectangles upright. A custom
+    /// annotation gets the default from its <see cref="ForScale"/> and <see cref="Translate"/>.
+    /// </remarks>
+    public virtual Annotation Transform(Matrix3x2 matrix)
+    {
+        if (matrix.IsIdentity) return this;
+        var parts = AffineParts.Of(matrix);
+        var target = Vector2.Transform(Centre(GetBounds()), matrix);
+        var scaled = MathF.Abs(parts.Scale - 1) < 1e-6f ? this : ForScale(parts.Scale);
+        var centre = Centre(scaled.GetBounds());
+        return scaled.Translate(target.X - centre.X, target.Y - centre.Y) with { Rotation = parts.RotationOf(Rotation) };
+    }
+
+    /// <summary>The annotation's own rotation followed by <paramref name="matrix"/>: where its unrotated geometry ends up.</summary>
+    protected Matrix3x2 Through(Matrix3x2 matrix) => GetTransform() * matrix;
+
+    /// <summary>The average scale of a transform, by which widths and sizes scale.</summary>
+    protected static float ScaleOf(Matrix3x2 matrix) => AffineParts.Of(matrix).Scale;
+
+    /// <summary>
+    /// True when the annotation is upright and the transform keeps rectangles upright, so its rectangle can be mapped
+    /// exactly, quarter turns and mirrors included.
+    /// </summary>
+    protected bool MapsUpright(Matrix3x2 matrix) => Rotation == 0 && AffineParts.PreservesAxes(matrix);
+
+    /// <summary>The rectangle an upright transform maps <paramref name="rectangle"/> to.</summary>
+    protected static RectangleF MapUpright(RectangleF rectangle, Matrix3x2 matrix) => AffineParts.MapRectangle(rectangle, matrix);
+
+    private static Vector2 Centre(RectangleF r) => new(r.X + r.Width / 2, r.Y + r.Height / 2);
 
     /// <summary>True when the point (in image coordinates) is on the annotation.</summary>
     public virtual bool HitTest(Vector2 point, float tolerance = 4f)

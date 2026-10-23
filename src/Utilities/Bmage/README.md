@@ -153,7 +153,9 @@ faster compiled ahead of time:
 <button @onclick="() => editor.DownloadAsync(&quot;edited&quot;)">Save</button>
 ```
 
-Crop, rotate, adjustments, filters, drawing, annotations, redaction, layers, history and export, in one component. It is
+Crop, rotate, straighten, resize, canvas size, trim, adjustments with a histogram, a colour mixer, filters, painting with
+a brush and an eraser, fill, magic eraser, eyedropper, rectangle, ellipse, lasso and magic wand selections,
+annotations, redaction, layers, before and after comparison, history, project files and export, in one component. It is
 themeable through CSS custom properties, fully localisable, keyboard accessible, touch friendly and right-to-left aware.
 Every part of its UI can be replaced while keeping the engine:
 
@@ -173,17 +175,17 @@ Every part of its UI can be replaced while keeping the engine:
 | Loading | `IBrowserFile`, byte arrays, streams, data URLs, object URLs, remote URLs, clipboard, drag and drop, camera |
 | Decoding | PNG, JPEG, BMP and GIF in managed code; PNG, JPEG, WebP, AVIF and GIF through the browser |
 | Encoding | PNG, JPEG and BMP in managed code; PNG, JPEG, WebP and AVIF through the browser |
-| Transforms | Crop, aspect crop, resize in six modes, rotate, flip, skew, affine and perspective warps |
-| Adjustments | Brightness, contrast, saturation, hue, exposure, gamma, levels, temperature, tint, vibrance, shadows, highlights, opacity |
-| Filters | Grayscale, sepia, invert, posterize, threshold, blur, sharpen, pixelate, noise, median denoise, vignette, custom convolution and colour matrices |
-| Analysis | Histograms, luminance statistics, dominant colour palettes, auto-levels, auto-contrast, saliency-based smart cropping, low-quality placeholders |
-| Masks | Rectangles, ellipses, lassos, paths, brush strokes, linear and radial gradients, luminance and colour ranges, bitmap mattes, combinations; feathering, inversion, relative units; masked edits and alpha cut-outs |
-| Layers | Image, fill and adjustment layers with opacity, masks and the W3C blend modes, from `Multiply` and `Screen` to `Color` and `Luminosity` |
+| Transforms | Crop, aspect crop, resize in six modes, rotate, flip, straighten, canvas size and margins, trim to content, skew, affine and perspective warps; annotations and layers stay on the content they mark |
+| Adjustments | Brightness, contrast, saturation, hue, exposure, gamma, levels, temperature, tint, vibrance, shadows, highlights, whites, blacks, white balance (picked or automatic), per-colour HSL, channel mixer, colorize, opacity |
+| Filters | Grayscale, black and white mixer, sepia, invert, posterize, threshold, gradient map and duotone, blur, motion blur, sharpen, high pass, pixelate, noise, median denoise, vignette, custom convolution and colour matrices |
+| Analysis | Histograms, luminance statistics, dominant colour palettes, auto-levels, auto-contrast, saliency-based smart cropping, content bounds for trimming, colour sampling, low-quality placeholders |
+| Masks | Rectangles, ellipses, lassos, paths, brush strokes, linear and radial gradients, luminance and colour ranges, magic wand, bitmap mattes, combinations; expand, contract, border, feathering, inversion, relative units; masked edits, alpha cut-outs and plain background removal |
+| Layers | Image, fill, adjustment and paint layers (brush with hardness and pen pressure, eraser) with opacity, masks and the W3C blend modes, from `Multiply` and `Screen` to `Color` and `Luminosity` |
 | Drawing | Anti-aliased paths, strokes with caps, joins and dashes, gradients, ellipses, polygons, arrows, freehand, text |
 | Annotations | Rectangle, ellipse, line, arrow, freehand, polygon, text, highlight, callout, numbered step, image stamp, redaction |
 | Metadata | EXIF read and write, GPS, camera data, orientation, ICC profiles, XMP, three privacy policies |
 | Pipelines | Composition, optimisation, lazy execution, cancellation, progress, memory estimates, batch processing with streamed inputs and outputs and memory-based admission |
-| Editing | Non-destructive documents with layers, undo and redo, memory-aware history, proxy previews, JSON save and restore |
+| Editing | Non-destructive documents with layers, undo and redo, memory-aware history, proxy previews, JSON save and restore, self-contained project files that reopen editable |
 | Concurrency | Row-parallel operations with identical pixels on any number of threads; browser codecs in a Web Worker pool |
 
 ## Performance

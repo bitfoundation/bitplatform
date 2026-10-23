@@ -17,6 +17,7 @@ uses them. Uses the **Microsoft.Testing.Platform** runner (mandated by the repo 
 | `JsModuleContractTests` | The JS module's own contracts: aspect-preserving decode limits, natural-size decode, no silent PNG substitution, no resource or heap growth. |
 | `EditorLifecycleTests` | Repeated navigation, named and reachable controls, roving tab focus, keyboard focus, and rapid input. |
 | `DemoRegressionTests` | Defects found by driving the demo: overlay alignment, crop handles, pan, selection, undo of a move, history, paste, failing batches, toggle state, the headless examples. |
+| `EditingToolTests` | The brush, eraser, fill, eyedropper and compare tools, straighten and canvas size from the Transform tab, an arrow staying on its target through a quarter turn, a layer's opacity and blend mode, accessible names of the new controls, and a project saved, reopened and still editable. |
 
 ## First-time setup
 
@@ -67,6 +68,7 @@ ahead of time) is several times faster.
 | `BMAGE_E2E_CHANNEL` | Launch an installed browser channel instead - e.g. `chrome`, `msedge`. When unset the suite tries Playwright's bundled Chromium, then Chrome, then Edge. |
 | `BMAGE_E2E_EXECUTABLE` | Full path to a chromium-family executable. |
 | `BMAGE_E2E_HEADED` | `1`: watch the run in a visible window. |
+| `BMAGE_E2E_BROWSER` | `chromium` (the default), `firefox` or `webkit`: run the suite in Playwright's build of that engine. Install it first with `playwright.ps1 install firefox` or `install webkit`. A channel or an executable applies to Chromium only. |
 
 When no browser can be launched at all, every test reports **Inconclusive** with the reason rather than failing, so a
 checkout without browsers still runs the rest of the repository's suites.

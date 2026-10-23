@@ -1,5 +1,7 @@
 ﻿@using System.Drawing
+@using Bit.Bmage.Analysis
 @using Bit.Bmage.Editor.Tools
+@using Bit.Bmage.Masks
 @using Bit.Bmage.Operations
 @using Bit.Bmage.Operations.Adjustments
 @using Bit.Bmage.Operations.Transforms
@@ -46,22 +48,27 @@
             else
             {
                 <BmageEditorCanvas @ref="_canvas"
-                                   Image="_session.Preview"
-                                   DisplaySize="PreviewDisplaySize"
+                                   Image="ShownImage"
+                                   DisplaySize="ShownDisplaySize"
                                    Version="_previewVersion"
                                    Zoom="_zoom"
                                    Pan="_pan"
                                    Strings="Strings"
                                    Busy="_busy"
-                                   ShowCropOverlay="_tool == EditorToolKind.Crop"
-                                   CropRectangle="_cropRectangle"
-                                   SelectionBounds="SelectionBounds"
+                                   ShowCropOverlay="_tool == EditorToolKind.Crop && !_comparing"
+                                   CropRectangle="_comparing ? null : _cropRectangle"
+                                   SelectionBounds="_comparing ? null : SelectionBounds"
+                                   SelectionOutline="@(_comparing ? null : _selectionOutline)"
                                    OnDragStart="OnDragStart"
                                    OnDragMove="OnDragMove"
                                    OnDragEnd="OnDragEnd"
                                    OnCropHandleDown="OnCropHandleDown"
                                    OnZoom="OnZoomGesture"
                                    OnKeyPressed="OnKeyPressed" />
+                @if (_comparing)
+                {
+                    <div class="bmg-compare-badge" role="status">@Strings.ShowingOriginal</div>
+                }
             }
 
             @if (_message is not null)
@@ -135,6 +142,21 @@
     private bool _fitPending;
     private SizeF? _viewport;
     private Vector2 _panLast;
+    // While comparing, the canvas shows the source at preview resolution, owned by the session.
+    private bool _comparing;
+    private ImageBuffer? _sourcePreview;
+    // The layer the layer panel has selected, which painting goes to when it is a paint layer.
+    private Guid? _activeLayerId;
+    // The next eyedropper pick sets the white balance instead of the drawing colour.
+    private bool _pickingWhiteBalance;
+    // The pixel selection, in output coordinates, and its outline as SVG path data in the canvas's coordinates.
+    private Mask? _selection;
+    private string? _selectionOutline;
+    private int _outlineVersion;
+    private SelectionMode _selectionMode;
+
+    /// <summary>How a new selection shape combines with the selection there is.</summary>
+    private enum SelectionMode { Replace, Add, Subtract }
 
     /// <summary>The image to edit. Setting this replaces the current session and discards its history.</summary>
     [Parameter] public ImageBuffer? Image { get; set; }
@@ -231,6 +253,14 @@
     /// <summary>Preview pixels per document pixel.</summary>
     private float PreviewScale => _session is { UsesProxy: true } s ? (float)s.ProxyScale : 1f;
 
+    /// <summary>What the canvas shows: the edit, or the original while comparing.</summary>
+    private ImageBuffer? ShownImage => _comparing && _sourcePreview is { IsDisposed: false } original ? original : _session?.Preview;
+
+    /// <summary>The size the canvas shows its image at, in proxy pixels.</summary>
+    private SizeF ShownDisplaySize => _comparing && _sourcePreview is { IsDisposed: false } original
+        ? new SizeF(original.Width, original.Height)
+        : PreviewDisplaySize;
+
     /// <summary>
     /// The size the preview is shown at, in proxy pixels: a draft has fewer pixels but covers the same area, so the
     /// canvas, its overlays and the pointer mapping all stay in the proxy's coordinates.
@@ -321,6 +351,12 @@
         _stepCounter = 0;
         _zoom = 1;
         _pan = default;
+        _comparing = false;
+        _sourcePreview = null;
+        _activeLayerId = null;
+        _pickingWhiteBalance = false;
+        _selection = null;
+        _selectionOutline = null;
         await RenderPreviewAsync();
         FitToWindow();
         await OnImageLoaded.InvokeAsync(owned);
@@ -501,10 +537,15 @@
     private async Task ApplyAndRenderAsync(Func<ImageDocument, ImageDocument> change, string label, bool transient = false)
     {
         if (_session is null) return;
+        // An edit made while comparing is an edit the user wants to see.
+        if (_comparing) _comparing = false;
         if (transient) _session.ApplyTransient(change, label);
         else _session.Apply(change, label);
         // While a control is dragged, a slow preview gives way to a draft; the release renders it in full.
         await RenderPreviewAsync(draft: transient && DraftsHelp);
+        // The selection's outline is traced on the preview, so it follows the image once the edit is shown: a crop or a
+        // turn has moved it, and a selection by colour may cover something else now.
+        if (!transient && _selection is not null) _ = UpdateSelectionOutlineAsync();
         await NotifyDocumentChangedAsync();
         StateHasChanged();
     }
@@ -522,6 +563,8 @@
     private async Task OnDragStart(CanvasPointerArgs e)
     {
         if (_session is null) return;
+        // The original is only to look at: everything but panning waits until the comparison ends.
+        if (_comparing && _tool != EditorToolKind.Pan) return;
         // Crop works on the preview (ApplyCropAsync maps it to full resolution); everything else edits the document.
         var point = _tool == EditorToolKind.Crop ? e.Point : ToDocument(e.Point);
         switch (_tool)
@@ -580,6 +623,37 @@
                 }), Strings.Step);
                 break;
 
+            case EditorToolKind.Brush or EditorToolKind.Eraser:
+                _drag = new ToolDrag { Start = point, Current = point };
+                _drag.Points.Add(point);
+                if (e.IsPen) _drag.Pressures.Add(e.Pressure);
+                await RenderStrokePreviewAsync();
+                break;
+
+            case EditorToolKind.Eyedropper:
+                await PickColorAsync(e.Point);
+                break;
+
+            case EditorToolKind.Fill:
+                await FillAsync(point);
+                break;
+
+            case EditorToolKind.MagicEraser:
+                await MagicEraseAsync(point);
+                break;
+
+            case EditorToolKind.SelectRectangle or EditorToolKind.SelectEllipse or EditorToolKind.Lasso:
+                // Shift adds to the selection and Alt takes away from it, decided when the drag starts.
+                _selectionMode = e.ShiftKey ? SelectionMode.Add : e.AltKey ? SelectionMode.Subtract : SelectionMode.Replace;
+                _drag = new ToolDrag { Start = point, Current = point };
+                _drag.Points.Add(point);
+                break;
+
+            case EditorToolKind.MagicWand:
+                _selectionMode = e.ShiftKey ? SelectionMode.Add : e.AltKey ? SelectionMode.Subtract : SelectionMode.Replace;
+                CombineSelection(new FloodMask([point]) { Tolerance = _settings.Tolerance });
+                break;
+
             default:
                 if (EditorTools.BuiltIn.ContainsKey(_tool))
                 {
@@ -610,6 +684,18 @@
 
             case EditorToolKind.Crop:
                 UpdateCropRectangle(point);
+                StateHasChanged();
+                return;
+
+            case EditorToolKind.Brush or EditorToolKind.Eraser:
+                AddSmoothedPoint(point, e.IsPen ? e.Pressure : null);
+                await RenderStrokePreviewAsync();
+                return;
+
+            case EditorToolKind.SelectRectangle or EditorToolKind.SelectEllipse or EditorToolKind.Lasso:
+                if (_tool == EditorToolKind.Lasso) AddSmoothedPoint(point);
+                // The shape being drawn, outlined straight from the drag: tracing a mask waits for the release.
+                _selectionOutline = ShapePath(_drag);
                 StateHasChanged();
                 return;
 
@@ -654,6 +740,18 @@
                 StateHasChanged();
                 return;
 
+            case EditorToolKind.Brush or EditorToolKind.Eraser:
+                // A pen lifts with no pressure, so the stroke ends at the last point it was pressed down on.
+                await PaintStrokeAsync(drag);
+                return;
+
+            case EditorToolKind.SelectRectangle or EditorToolKind.SelectEllipse or EditorToolKind.Lasso:
+                if (SelectionShape(drag) is { } shape) CombineSelection(shape);
+                // A click that drew nothing deselects, as in other editors; with Shift or Alt it changes nothing.
+                else if (_selectionMode == SelectionMode.Replace) SetSelection(null);
+                else _ = UpdateSelectionOutlineAsync();
+                return;
+
             default:
                 if (EditorTools.BuiltIn.TryGetValue(_tool, out var tool))
                 {
@@ -687,13 +785,366 @@
         StateHasChanged();
     }
 
-    /// <summary>Adds a freehand point, skipping ones too close to the last to keep the stroke small and smooth.</summary>
-    private void AddSmoothedPoint(Vector2 point)
+    /// <summary>
+    /// Adds a freehand point, skipping ones too close to the last to keep the stroke small and smooth, with the pen
+    /// pressure at it when a pen drew the stroke from its start.
+    /// </summary>
+    private void AddSmoothedPoint(Vector2 point, float? pressure = null)
     {
         if (_drag is null) return;
         var minimumSpacing = 1.5f / (float)Math.Max(_zoom, 0.05) / PreviewScale;
         if (_drag.Points.Count > 0 && Vector2.Distance(_drag.Points[^1], point) < minimumSpacing) return;
+        var pressed = _drag.Pressures.Count == _drag.Points.Count && _drag.Points.Count > 0;
         _drag.Points.Add(point);
+        if (pressed) _drag.Pressures.Add(pressure ?? _drag.Pressures[^1]);
+    }
+
+    // ---- Painting and picking ----
+
+    /// <summary>
+    /// Shows the stroke being painted as a line over the kept preview, which costs a line rather than a composite of the
+    /// layers per pointer move; the stroke itself, with its hardness and pressure, is painted when the pointer lifts.
+    /// </summary>
+    private async Task RenderStrokePreviewAsync()
+    {
+        if (_drag is null) return;
+        var erase = _tool == EditorToolKind.Eraser;
+        var color = erase ? new Rgba32(255, 255, 255, 150) : _settings.StrokeColor.WithAlpha((byte)Math.Round(255 * Math.Clamp(_settings.Opacity, 0f, 1f)));
+        _dragPreview = new FreehandAnnotation
+        {
+            Points = [.. _drag.Points],
+            Style = new ShapeStyle
+            {
+                StrokeColor = color,
+                FillColor = null,
+                Stroke = new StrokeStyle { Width = _settings.BrushSize, Cap = LineCap.Round, Join = LineJoin.Round },
+            },
+        };
+        await RenderWithPreviewAsync();
+    }
+
+    /// <summary>Paints a finished stroke onto the paint layer, adding one on top when there is none to paint on.</summary>
+    private async Task PaintStrokeAsync(ToolDrag drag)
+    {
+        if (_session is null) return;
+        var erase = _tool == EditorToolKind.Eraser;
+        var target = FindPaintLayer(_session.Document);
+        if (drag.Points.Count == 0 || (target is null && erase))
+        {
+            if (erase) ShowMessage(Strings.NoPaintLayer, isError: false);
+            await RenderPreviewAsync();
+            StateHasChanged();
+            return;
+        }
+        var stroke = new PaintStroke(drag.Points, _settings.BrushSize, _settings.StrokeColor.WithAlpha(255))
+        {
+            Pressures = drag.Pressures.Count == drag.Points.Count ? drag.Pressures : null,
+            Opacity = _settings.Opacity,
+            Hardness = _settings.BrushHardness,
+            Erase = erase,
+        };
+        var layer = (target ?? new PaintLayer { Name = Strings.Paint }).Add(stroke);
+        await ApplyAndRenderAsync(d => target is null ? d.AddLayer(layer) : d.UpdateLayer(layer), erase ? Strings.Eraser : Strings.Brush);
+        _activeLayerId = layer.Id;
+    }
+
+    /// <summary>The paint layer strokes go to: the selected layer when it is an unlocked paint layer, else the topmost one.</summary>
+    private PaintLayer? FindPaintLayer(ImageDocument document)
+    {
+        if (_activeLayerId is { } id && document.FindLayer(id) is PaintLayer { IsLocked: false } active) return active;
+        for (var i = document.Layers.Count - 1; i >= 0; i--)
+            if (document.Layers[i] is PaintLayer { IsLocked: false } paint) return paint;
+        return null;
+    }
+
+    /// <summary>
+    /// Picks the colour shown under the pointer, averaged over three pixels square, for the drawing tools, or as the
+    /// neutral of a white balance when one was asked for.
+    /// </summary>
+    private async Task PickColorAsync(Vector2 previewPoint)
+    {
+        if (_session?.Preview is not { IsDisposed: false } preview) return;
+        // A draft has fewer pixels than the proxy whose coordinates the pointer reports.
+        var factor = (float)(_session.PreviewScale / _session.ProxyScale);
+        var color = ColorSampler.Sample(preview, new Point((int)MathF.Floor(previewPoint.X * factor), (int)MathF.Floor(previewPoint.Y * factor)), radius: 1);
+        if (_pickingWhiteBalance)
+        {
+            _pickingWhiteBalance = false;
+            _tool = EditorToolKind.Select;
+            // The preview shows any earlier white balance already, so the new correction is made on top of it.
+            var correction = WhiteBalanceAdjustment.FromNeutral(color);
+            var existing = _session.Document.Pipeline.OfType<WhiteBalanceAdjustment>().FirstOrDefault();
+            var combined = existing is null ? correction
+                : new WhiteBalanceAdjustment(existing.RedGain * correction.RedGain, existing.GreenGain * correction.GreenGain, existing.BlueGain * correction.BlueGain);
+            await SetAdjustmentAsync(combined, Strings.WhiteBalance);
+            return;
+        }
+        _settings = _settings with { StrokeColor = color.WithAlpha(255), FillColor = color.WithAlpha(_settings.FillColor.A) };
+        ShowMessage(Strings.FormatPickedColor(color.WithAlpha(255).ToHex(false)), isError: false);
+    }
+
+    /// <summary>Fills the region of similar colour under the pointer, in the image as it is composited so far, as a layer.</summary>
+    private Task FillAsync(Vector2 point) => ApplyAndRenderAsync(d => d.AddLayer(new FillLayer(_settings.FillColor.WithAlpha(255))
+    {
+        Name = Strings.Fill,
+        Opacity = _settings.Opacity,
+        Mask = new FloodMask([point]) { Tolerance = _settings.Tolerance },
+    }), Strings.Fill);
+
+    /// <summary>Makes the region of similar colour under the pointer transparent.</summary>
+    private Task MagicEraseAsync(Vector2 point) => ApplyAndRenderAsync(
+        d => d.AddOperation(new AlphaMaskOperation(new FloodMask([point]) { Tolerance = _settings.Tolerance, Inverted = true })),
+        Strings.MagicEraser);
+
+    // ---- The pixel selection ----
+
+    /// <summary>The shape a selection drag drew, in output coordinates, or null when it drew nothing.</summary>
+    private Mask? SelectionShape(ToolDrag drag)
+    {
+        if (_tool == EditorToolKind.Lasso)
+            return drag.Points.Count >= 3 ? new PolygonMask([.. drag.Points]) : null;
+        var rect = RectangleF.FromLTRB(MathF.Min(drag.Start.X, drag.Current.X), MathF.Min(drag.Start.Y, drag.Current.Y),
+            MathF.Max(drag.Start.X, drag.Current.X), MathF.Max(drag.Start.Y, drag.Current.Y));
+        if (rect.Width < 2 || rect.Height < 2) return null;
+        return _tool == EditorToolKind.SelectEllipse ? new EllipseMask(rect) : new RectangleMask(rect);
+    }
+
+    /// <summary>The outline of the shape a selection drag is drawing, as SVG path data in the canvas's coordinates.</summary>
+    private string? ShapePath(ToolDrag? drag)
+    {
+        if (drag is null || _session is null) return null;
+        var scale = PreviewScale;
+        static string N(float v) => v.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture);
+        if (_tool == EditorToolKind.Lasso)
+        {
+            if (drag.Points.Count < 2) return null;
+            var path = new System.Text.StringBuilder();
+            for (var i = 0; i < drag.Points.Count; i++)
+                path.Append(i == 0 ? 'M' : 'L').Append(N(drag.Points[i].X * scale)).Append(' ').Append(N(drag.Points[i].Y * scale));
+            return path.Append('Z').ToString();
+        }
+        float x0 = MathF.Min(drag.Start.X, drag.Current.X) * scale, y0 = MathF.Min(drag.Start.Y, drag.Current.Y) * scale;
+        float x1 = MathF.Max(drag.Start.X, drag.Current.X) * scale, y1 = MathF.Max(drag.Start.Y, drag.Current.Y) * scale;
+        if (_tool == EditorToolKind.SelectRectangle) return $"M{N(x0)} {N(y0)}H{N(x1)}V{N(y1)}H{N(x0)}Z";
+        var rx = (x1 - x0) / 2;
+        var ry = (y1 - y0) / 2;
+        return $"M{N(x0)} {N(y0 + ry)}a{N(rx)} {N(ry)} 0 1 0 {N(2 * rx)} 0a{N(rx)} {N(ry)} 0 1 0 {N(-2 * rx)} 0Z";
+    }
+
+    /// <summary>Adds a shape to the selection, takes it away, or makes it the selection, as the drag started.</summary>
+    private void CombineSelection(Mask shape)
+    {
+        var combined = _selectionMode switch
+        {
+            SelectionMode.Add when _selection is { } current => current.Union(shape),
+            SelectionMode.Subtract when _selection is { } current => current.Subtract(shape),
+            SelectionMode.Subtract => null,
+            _ => shape,
+        };
+        SetSelection(combined);
+    }
+
+    /// <summary>The pixel selection, in output coordinates, or null when nothing is selected.</summary>
+    public Mask? Selection => _selection;
+
+    /// <summary>Sets the pixel selection the selection actions work on, or clears it with null.</summary>
+    public void SetSelection(Mask? selection)
+    {
+        _selection = selection;
+        _ = UpdateSelectionOutlineAsync();
+        StateHasChanged();
+    }
+
+    /// <summary>Selects the whole image.</summary>
+    public void SelectAll() => SetSelection(Mask.All());
+
+    /// <summary>Selects everything that is not selected.</summary>
+    public void InvertSelection()
+    {
+        if (_selection is { } selection) SetSelection(selection.Invert());
+    }
+
+    /// <summary>Makes the selected pixels transparent, keeping the selection.</summary>
+    public Task ClearSelectionAsync()
+        => _selection is { } selection
+            ? ApplyAndRenderAsync(d => d.AddOperation(new AlphaMaskOperation(selection.Invert())), Strings.ClearSelection)
+            : Task.CompletedTask;
+
+    /// <summary>Fills the selection with the fill colour, as a layer at the drawing opacity.</summary>
+    public Task FillSelectionAsync()
+        => _selection is { } selection
+            ? ApplyAndRenderAsync(d => d.AddLayer(new FillLayer(_settings.FillColor.WithAlpha(255)) { Name = Strings.FillSelection, Opacity = _settings.Opacity, Mask = selection }), Strings.FillSelection)
+            : Task.CompletedTask;
+
+    /// <summary>Crops the image to the bounds of the selected pixels, carrying the overlays and the selection along.</summary>
+    public Task CropToSelectionAsync() => RunAsync(async () =>
+    {
+        if (_session is not { } session || _selection is not { } selection) return;
+        var document = session.Document;
+        var bounds = await SelectedBoundsAsync(selection);
+        // Measured on the image and selection as they were: if either changed meanwhile, the bounds would crop something else.
+        if (!IsStill(session, document) || !ReferenceEquals(_selection, selection)) return;
+        if (bounds is not { } area)
+        {
+            ShowMessage(Strings.NothingSelected, isError: false);
+            return;
+        }
+        var crop = new CropOperation(area);
+        MoveSelectionWith(crop);
+        await ApplyAndRenderAsync(d => d.AddOperation(crop, keepOverlaysAttached: true), Strings.CropToSelection);
+        FitToWindow();
+    });
+
+    /// <summary>
+    /// Copies the selected pixels, as the image is composited with its layers and annotations, into a new image layer
+    /// in the same place, and selects the layer: the "layer via copy" of photo editors.
+    /// </summary>
+    public Task CopySelectionToLayerAsync() => RunAsync(async () =>
+    {
+        if (_session is not { } session || _selection is not { } selection) return;
+        var document = session.Document;
+        ImageBuffer? piece = null;
+        Rectangle area;
+        using (var rendered = await session.RenderFullAsync())
+        {
+            if (!IsStill(session, document) || !ReferenceEquals(_selection, selection)) return;
+            using var coverage = selection.Render(rendered.Size, rendered);
+            area = coverage.GetBounds();
+            if (area.IsEmptyArea())
+            {
+                ShowMessage(Strings.NothingSelected, isError: false);
+                return;
+            }
+            piece = rendered.CopyRegion(area);
+            try
+            {
+                // The copy keeps what the selection covers, its soft edge included.
+                for (var y = 0; y < area.Height; y++)
+                {
+                    var row = piece.GetRow(y);
+                    var cover = coverage.GetRow(area.Y + y).Slice(area.X, area.Width);
+                    for (var x = 0; x < row.Length; x++) row[x] = row[x].WithAlpha((byte)((row[x].A * cover[x] + 127) / 255));
+                }
+                session.Own(piece);
+            }
+            catch
+            {
+                piece.Dispose();
+                throw;
+            }
+        }
+        var layer = new ImageLayer { Image = piece, Bounds = new RectangleF(area.X, area.Y, area.Width, area.Height), Name = Strings.CopyToLayer };
+        await ApplyAndRenderAsync(d => d.AddLayer(layer), Strings.CopyToLayer);
+        _activeLayerId = layer.Id;
+    });
+
+    /// <summary>
+    /// The bounds of the pixels a selection covers, in output coordinates, or null when it covers none. A selection by
+    /// colour is measured on the image at full resolution, as it looks with its layers and annotations.
+    /// </summary>
+    private async Task<Rectangle?> SelectedBoundsAsync(Mask selection)
+    {
+        if (_session is null || !_session.Document.TryGetOutputSize(out var size)) return null;
+        using var rendered = await _session.RenderFullAsync();
+        using var coverage = selection.Render(size, rendered);
+        var bounds = coverage.GetBounds();
+        return bounds.IsEmptyArea() ? null : bounds;
+    }
+
+    /// <summary>
+    /// True when <paramref name="session"/> is still the editor's and still shows <paramref name="document"/>: what was
+    /// worked out from the image before an await only applies to the image it was worked out from, and an undo, a slider
+    /// or another image may have come in between.
+    /// </summary>
+    private bool IsStill(ImageEditSession session, ImageDocument document) => ReferenceEquals(_session, session) && ReferenceEquals(session.Document, document);
+
+    /// <summary>
+    /// Carries the selection from what one document shows to what another shows, after an undo, a redo or a jump through
+    /// the history: the steps the two pipelines do not share are undone and redone on it, and it is dropped when what
+    /// they do to coordinates cannot be said.
+    /// </summary>
+    private void FollowSelection(ImageDocument from, ImageDocument to)
+    {
+        if (_selection is not { } selection || ReferenceEquals(from.Pipeline, to.Pipeline)) return;
+        var shared = 0;
+        while (shared < from.Pipeline.Count && shared < to.Pipeline.Count && ReferenceEquals(from.Pipeline[shared], to.Pipeline[shared])) shared++;
+        if (from.SourceSize == to.SourceSize
+            && ImagePipeline.From(from.Pipeline.Take(shared)).TryGetOutputSize(from.SourceSize, out var size)
+            && ImagePipeline.From(from.Pipeline.Skip(shared)).TryGetTransform(size, out var before)
+            && ImagePipeline.From(to.Pipeline.Skip(shared)).TryGetTransform(size, out var after)
+            && Matrix3x2.Invert(before, out var undo))
+        {
+            var change = undo * after;
+            if (!change.IsIdentity) SetSelection(selection.Transform(change));
+        }
+        else
+        {
+            SetSelection(null);
+        }
+    }
+
+    /// <summary>Moves the selection the way appending <paramref name="operation"/> moves the image, or drops it when that cannot be said.</summary>
+    private void MoveSelectionWith(IImageOperation operation)
+    {
+        if (_selection is not { } selection || _session is null) return;
+        if (operation is IGeometricOperation geometric && _session.Document.TryGetOutputSize(out var size) && geometric.GetTransform(size) is { } matrix)
+            SetSelection(selection.Transform(matrix));
+        else
+            SetSelection(null);
+    }
+
+    /// <summary>
+    /// Traces the selection's outline for the canvas: rendered at the preview's resolution, from the preview for a
+    /// selection by colour, and traced at most 640 pixels across, which is detailed enough for marching ants and cheap
+    /// enough on the interpreter. Only the latest request publishes its outline.
+    /// </summary>
+    private async Task UpdateSelectionOutlineAsync()
+    {
+        var version = ++_outlineVersion;
+        if (_selection is not { } selection || _session?.Preview is not { IsDisposed: false } preview)
+        {
+            _selectionOutline = null;
+            return;
+        }
+        string? path = null;
+        try
+        {
+            await Task.Yield();
+            if (version != _outlineVersion || preview.IsDisposed) return;
+            // Drawn on a copy of the preview at most 640 pixels across, not traced from a full one shrunk afterwards: a
+            // selection by colour floods a tenth of the pixels that way, which is what keeps it quick on the interpreter.
+            var factor = Math.Min(1.0, 640.0 / Math.Max(preview.Width, preview.Height));
+            using var small = factor < 1
+                ? new ResizeOperation(Math.Max(1, (int)Math.Round(preview.Width * factor)), Math.Max(1, (int)Math.Round(preview.Height * factor)), ResizeMode.Stretch, ResamplingFilter.Box)
+                    .Apply(preview, new OperationContext(Options.Allocator, Options.Limits).WithMutation(false))
+                : null;
+            var source = small ?? preview;
+            var scale = _session.PreviewScale * source.Width / preview.Width;
+            using var traced = selection.ForScale(scale).Render(source.Size, source);
+            var curves = MaskContours.Trace(traced, maxPoints: 40_000);
+            // From the traced mask's pixels to the preview's, then to the proxy's, which the canvas is laid out in.
+            var toCanvas = (float)(preview.Width / (double)traced.Width * _session.ProxyScale / _session.PreviewScale);
+            var builder = new System.Text.StringBuilder();
+            foreach (var curve in curves)
+            {
+                for (var i = 0; i < curve.Length; i++)
+                {
+                    builder.Append(i == 0 ? 'M' : 'L');
+                    builder.Append((curve[i].X * toCanvas).ToString("0.#", System.Globalization.CultureInfo.InvariantCulture)).Append(' ');
+                    builder.Append((curve[i].Y * toCanvas).ToString("0.#", System.Globalization.CultureInfo.InvariantCulture));
+                }
+                builder.Append('Z');
+            }
+            path = builder.ToString();
+        }
+        catch (Exception ex) when (ex is not OutOfMemoryException)
+        {
+            // A selection that cannot be drawn is still a selection; the actions on it report their own errors.
+            path = null;
+        }
+        if (version != _outlineVersion) return;
+        _selectionOutline = path;
+        StateHasChanged();
     }
 
     private async Task AddTextAnnotationAsync(Vector2 point)
@@ -808,9 +1259,22 @@
             case "Delete" or "Backspace" when _selectedId is { } id:
                 await DeleteAnnotationAsync(id);
                 break;
+            case "Delete" or "Backspace" when _selection is not null:
+                await ClearSelectionAsync();
+                break;
+            case "a" or "A" when ctrl:
+                SelectAll();
+                break;
+            case "d" or "D" when ctrl:
+                SetSelection(null);
+                break;
+            case "i" or "I" when ctrl && e.ShiftKey:
+                InvertSelection();
+                break;
             case "Escape":
                 _selectedId = null;
                 if (_tool == EditorToolKind.Crop) _cropRectangle = null;
+                if (_selection is not null) SetSelection(null);
                 break;
             case "ArrowLeft" or "ArrowRight" or "ArrowUp" or "ArrowDown" when _selectedId is { } moveId:
             {
@@ -836,6 +1300,15 @@
             case "0" when ctrl:
                 FitToWindow();
                 break;
+            case "\\":
+                await SetCompareAsync(!_comparing);
+                break;
+            case "[" when _tool is EditorToolKind.Brush or EditorToolKind.Eraser:
+                _settings = _settings with { BrushSize = Math.Max(1, _settings.BrushSize / 1.2f) };
+                break;
+            case "]" when _tool is EditorToolKind.Brush or EditorToolKind.Eraser:
+                _settings = _settings with { BrushSize = Math.Min(1000, _settings.BrushSize * 1.2f) };
+                break;
         }
         StateHasChanged();
     }
@@ -860,6 +1333,15 @@
         EditorToolKind.Redact => Strings.Redact,
         EditorToolKind.Text => Strings.Text,
         EditorToolKind.Step => Strings.Step,
+        EditorToolKind.Brush => Strings.Brush,
+        EditorToolKind.Eraser => Strings.Eraser,
+        EditorToolKind.Eyedropper => Strings.Eyedropper,
+        EditorToolKind.Fill => Strings.Fill,
+        EditorToolKind.MagicEraser => Strings.MagicEraser,
+        EditorToolKind.SelectRectangle => Strings.SelectRectangle,
+        EditorToolKind.SelectEllipse => Strings.SelectEllipse,
+        EditorToolKind.Lasso => Strings.Lasso,
+        EditorToolKind.MagicWand => Strings.MagicWand,
         _ => kind.ToString(),
     };
 
@@ -887,6 +1369,7 @@
     public void SetTool(EditorToolKind tool)
     {
         _tool = tool;
+        if (tool != EditorToolKind.Eyedropper) _pickingWhiteBalance = false;
         if (tool != EditorToolKind.Crop) _cropRectangle = null;
         if (tool != EditorToolKind.Select) _selectedId = null;
         StateHasChanged();
@@ -920,7 +1403,10 @@
             Math.Max(1, (int)Math.Round(rect.Height * scale)));
         _cropRectangle = null;
         _tool = EditorToolKind.Select;
-        await ApplyAndRenderAsync(d => d.AddOperation(new CropOperation(full)), Strings.Crop);
+        // Geometric edits carry the annotations, the layers and the selection with the content they mark.
+        var crop = new CropOperation(full);
+        MoveSelectionWith(crop);
+        await ApplyAndRenderAsync(d => d.AddOperation(crop, keepOverlaysAttached: true), Strings.Crop);
         FitToWindow();
     }
 
@@ -932,14 +1418,192 @@
     }
 
     /// <summary>Rotates the image by a multiple of 90 degrees.</summary>
-    public Task RotateAsync(int degrees) => ApplyAndRenderAsync(
-        d => d.AddOperation(OrientationOperation.FromRotation(degrees)),
-        degrees > 0 ? Strings.RotateRight : Strings.RotateLeft);
+    public Task RotateAsync(int degrees)
+    {
+        var turn = OrientationOperation.FromRotation(degrees);
+        MoveSelectionWith(turn);
+        return ApplyAndRenderAsync(d => d.AddOperation(turn, keepOverlaysAttached: true), degrees > 0 ? Strings.RotateRight : Strings.RotateLeft);
+    }
 
     /// <summary>Mirrors the image.</summary>
-    public Task FlipAsync(bool horizontal) => ApplyAndRenderAsync(
-        d => d.AddOperation(horizontal ? OrientationOperation.FlipHorizontal : OrientationOperation.FlipVertical),
-        horizontal ? Strings.FlipHorizontal : Strings.FlipVertical);
+    public Task FlipAsync(bool horizontal)
+    {
+        var flip = horizontal ? OrientationOperation.FlipHorizontal : OrientationOperation.FlipVertical;
+        MoveSelectionWith(flip);
+        return ApplyAndRenderAsync(d => d.AddOperation(flip, keepOverlaysAttached: true), horizontal ? Strings.FlipHorizontal : Strings.FlipVertical);
+    }
+
+    /// <summary>
+    /// Levels the image by up to 45 degrees either way, cropping to the largest rectangle the turned image covers. A
+    /// second call replaces the first, so a slider can drive it; 0 removes it.
+    /// </summary>
+    public Task SetStraightenAsync(double degrees, bool transient = false)
+    {
+        // Re-editing a step mid-pipeline moves the image in a way the selection cannot follow exactly; it is dropped.
+        if (_selection is not null) SetSelection(null);
+        return SetAdjustmentAsync(degrees == 0 || !double.IsFinite(degrees) ? null : new StraightenOperation(Math.Clamp(degrees, -StraightenOperation.MaxDegrees, StraightenOperation.MaxDegrees)),
+            Strings.Straighten, transient);
+    }
+
+    /// <summary>Resizes the image to exactly <paramref name="width"/> by <paramref name="height"/> pixels.</summary>
+    public async Task ResizeAsync(int width, int height)
+    {
+        if (_session is null || width <= 0 || height <= 0) return;
+        var resize = new ResizeOperation(width, height, ResizeMode.Stretch);
+        MoveSelectionWith(resize);
+        await ApplyAndRenderAsync(d => d.AddOperation(resize, keepOverlaysAttached: true), Strings.Resize);
+        FitToWindow();
+    }
+
+    /// <summary>
+    /// Sets the canvas to <paramref name="width"/> by <paramref name="height"/> without scaling the image, placing it by
+    /// <paramref name="anchor"/> and filling new area with <paramref name="background"/>.
+    /// </summary>
+    public async Task SetCanvasSizeAsync(int width, int height, Anchor anchor, Rgba32 background)
+    {
+        if (_session is null || width <= 0 || height <= 0) return;
+        var canvas = new CanvasSizeOperation(width, height, anchor, background);
+        MoveSelectionWith(canvas);
+        await ApplyAndRenderAsync(d => d.AddOperation(canvas, keepOverlaysAttached: true), Strings.CanvasSize);
+        FitToWindow();
+    }
+
+    /// <summary>
+    /// Crops away plain or transparent edges, as found on the image at full resolution with its layers and annotations,
+    /// or says there are none.
+    /// </summary>
+    public Task TrimAsync() => RunAsync(async () =>
+    {
+        if (_session is not { } session) return;
+        var document = session.Document;
+        System.Drawing.Rectangle? bounds;
+        System.Drawing.Size size;
+        using (var rendered = await session.RenderFullAsync())
+        {
+            bounds = ContentBounds.Find(rendered);
+            size = rendered.Size;
+        }
+        if (!IsStill(session, document)) return;
+        if (bounds is not { } content || content.Size == size)
+        {
+            ShowMessage(Strings.NothingToTrim, isError: false);
+            return;
+        }
+        var trim = new CropOperation(content);
+        MoveSelectionWith(trim);
+        await ApplyAndRenderAsync(d => d.AddOperation(trim, keepOverlaysAttached: true), Strings.Trim);
+        FitToWindow();
+    });
+
+    /// <summary>Turns automatic white balance on, or off when it is on.</summary>
+    public Task ToggleAutoWhiteBalanceAsync()
+        => SetAdjustmentAsync(FindAdjustment<AutoWhiteBalanceOperation>() is null ? new AutoWhiteBalanceOperation() : null, Strings.AutoWhiteBalance);
+
+    /// <summary>Turns automatic levels on, or off when they are on.</summary>
+    public Task ToggleAutoLevelsAsync()
+        => SetAdjustmentAsync(FindAdjustment<AutoLevelsOperation>() is null ? new AutoLevelsOperation() : null, Strings.AutoLevels);
+
+    /// <summary>Makes the next eyedropper pick set the white balance: click something that should be grey or white.</summary>
+    public void PickWhiteBalance()
+    {
+        if (_session is null) return;
+        SetTool(EditorToolKind.Eyedropper);
+        _pickingWhiteBalance = true;
+        ShowMessage(Strings.PickNeutralHint, isError: false);
+    }
+
+    /// <summary>True while the next eyedropper pick sets the white balance.</summary>
+    public bool IsPickingWhiteBalance => _pickingWhiteBalance;
+
+    private TOperation? FindAdjustment<TOperation>() where TOperation : class, IImageOperation
+        => _session?.Document.Pipeline.OfType<TOperation>().FirstOrDefault();
+
+    // ---- Comparing ----
+
+    /// <summary>True while the canvas shows the original image instead of the edit.</summary>
+    public bool IsComparing => _comparing;
+
+    /// <summary>Shows the original image instead of the edit, or the edit again. Any edit ends the comparison.</summary>
+    public async Task SetCompareAsync(bool compare)
+    {
+        if (_session is not { } session || compare == _comparing) return;
+        if (compare)
+        {
+            try
+            {
+                var original = await session.GetSourcePreviewAsync();
+                // Another image loaded meanwhile: this one's preview is on its way out with its session.
+                if (!ReferenceEquals(_session, session)) return;
+                _sourcePreview = original;
+            }
+            catch (OperationCanceledException)
+            {
+                return;
+            }
+        }
+        _comparing = compare;
+        _previewVersion++;
+        StateHasChanged();
+    }
+
+    // ---- Layers ----
+
+    /// <summary>The id of the layer selected in the layer panel, if any.</summary>
+    public Guid? ActiveLayerId => _activeLayerId;
+
+    /// <summary>Selects a layer, or clears the selection when null. Painting goes to the selected paint layer.</summary>
+    public void SelectLayer(Guid? id)
+    {
+        _activeLayerId = id;
+        StateHasChanged();
+    }
+
+    /// <summary>Adds an empty paint layer on top, selects it and picks the brush.</summary>
+    public async Task AddPaintLayerAsync()
+    {
+        if (_session is null) return;
+        var layer = new PaintLayer { Name = Strings.Paint };
+        await ApplyAndRenderAsync(d => d.AddLayer(layer), Strings.AddPaintLayer);
+        _activeLayerId = layer.Id;
+        SetTool(EditorToolKind.Brush);
+    }
+
+    /// <summary>
+    /// Loads an image and places it as a layer in the middle of the image, at most six tenths of its size, and selects
+    /// it. The session keeps the pixels for as long as its history can refer to them.
+    /// </summary>
+    public Task AddImageLayerAsync(ImageSource source) => RunAsync(async () =>
+    {
+        if (_session is null) return;
+        var image = await Loader.LoadAsync(source);
+        // The editor may have been closed while the file loaded; another image loaded meanwhile simply gets the layer.
+        if (_session is not { } session)
+        {
+            image.Dispose();
+            return;
+        }
+        session.Own(image);
+        var output = session.Document.TryGetOutputSize(out var size) ? size : session.SourceSize;
+        var scale = Math.Min(1.0, Math.Min(output.Width * 0.6 / image.Width, output.Height * 0.6 / image.Height));
+        var width = (float)(image.Width * scale);
+        var height = (float)(image.Height * scale);
+        var layer = new ImageLayer
+        {
+            Image = image,
+            Bounds = new RectangleF((output.Width - width) / 2, (output.Height - height) / 2, width, height),
+            Name = string.IsNullOrWhiteSpace(source.FileName) ? Strings.AddImageLayer : System.IO.Path.GetFileNameWithoutExtension(source.FileName),
+        };
+        await ApplyAndRenderAsync(d => d.AddLayer(layer), Strings.AddImageLayer);
+        _activeLayerId = layer.Id;
+    });
+
+    /// <summary>Duplicates a layer, placing the copy above it, and selects the copy.</summary>
+    public async Task DuplicateLayerAsync(Guid id)
+    {
+        Guid? copy = null;
+        await ApplyAndRenderAsync(d => d.DuplicateLayer(id, out copy), Strings.Duplicate);
+        if (copy is not null) _activeLayerId = copy;
+    }
 
     /// <summary>Adds or updates an adjustment, replacing any existing one of the same type so sliders stay live.</summary>
     public Task SetAdjustmentAsync<TOperation>(TOperation? operation, string label, bool transient = false) where TOperation : class, IImageOperation
@@ -951,9 +1615,10 @@
             {
                 if (pipeline[i] is TOperation) { index = i; break; }
             }
+            // A geometric step, such as a straighten, carries the overlays with the image; any other leaves them where they are.
             if (operation is null || operation.IsIdentity)
-                return index >= 0 ? d.WithPipeline(pipeline.RemoveAt(index)) : d;
-            return d.WithPipeline(index >= 0 ? pipeline.Replace(index, operation) : pipeline.Add(operation));
+                return index >= 0 ? d.WithPipeline(pipeline.RemoveAt(index), keepOverlaysAttached: true) : d;
+            return d.WithPipeline(index >= 0 ? pipeline.Replace(index, operation) : pipeline.Add(operation), keepOverlaysAttached: true);
         }, label, transient);
 
     /// <summary>Applies any change to the document as one history entry and one render.</summary>
@@ -999,35 +1664,49 @@
         StateHasChanged();
     }
 
-    /// <summary>Undoes the last edit.</summary>
+    // Moving through the history waits while the editor is busy: a trim, a crop to the selection or an export works
+    // out what to do from the document it started with, and applies it to that document.
+
+    /// <summary>Undoes the last edit. Does nothing while the editor is busy.</summary>
     public void Undo()
     {
-        _session?.Undo();
+        if (_session is not { } session || _busy) return;
+        var before = session.Document;
+        session.Undo();
+        FollowSelection(before, session.Document);
         _selectedId = null;
         _ = RenderAndNotifyAsync();
     }
 
-    /// <summary>Redoes the last undone edit.</summary>
+    /// <summary>Redoes the last undone edit. Does nothing while the editor is busy.</summary>
     public void Redo()
     {
-        _session?.Redo();
+        if (_session is not { } session || _busy) return;
+        var before = session.Document;
+        session.Redo();
+        FollowSelection(before, session.Document);
         _selectedId = null;
         _ = RenderAndNotifyAsync();
     }
 
-    /// <summary>Jumps to an entry in the history, as the history panel does.</summary>
+    /// <summary>Jumps to an entry in the history, as the history panel does. Does nothing while the editor is busy.</summary>
     public Task GoToHistoryAsync(int index)
     {
-        if (_session is null || index < 0 || index >= _session.History.Entries.Count) return Task.CompletedTask;
-        _session.History.GoTo(index);
+        if (_session is not { } session || _busy || index < 0 || index >= session.History.Entries.Count) return Task.CompletedTask;
+        var before = session.Document;
+        session.History.GoTo(index);
+        FollowSelection(before, session.Document);
         _selectedId = null;
         return RenderAndNotifyAsync();
     }
 
-    /// <summary>Discards every edit.</summary>
+    /// <summary>Discards every edit. Does nothing while the editor is busy.</summary>
     public void Reset()
     {
-        _session?.Reset();
+        if (_session is not { } session || _busy) return;
+        var before = session.Document;
+        session.Reset();
+        FollowSelection(before, session.Document);
         _selectedId = null;
         _cropRectangle = null;
         _stepCounter = 0;
@@ -1037,6 +1716,7 @@
     private async Task RenderAndNotifyAsync()
     {
         await RenderPreviewAsync();
+        if (_selection is not null) _ = UpdateSelectionOutlineAsync();
         await NotifyDocumentChangedAsync();
         StateHasChanged();
     }
@@ -1075,6 +1755,67 @@
     {
         var encoded = await ExportAsync(options);
         if (encoded is not null) await RunAsync(() => Exporter.DownloadAsync(encoded, fileName).AsTask());
+    }
+
+    /// <summary>
+    /// Downloads the original, the edit and every image it uses as one project file, which
+    /// <see cref="OpenProjectAsync(System.IO.Stream)"/> reopens with every layer, mask, adjustment and annotation still editable.
+    /// </summary>
+    public Task SaveProjectAsync(string fileName = "edit") => RunAsync(async () =>
+    {
+        if (_session is null) return;
+        using var stream = new System.IO.MemoryStream();
+        await Serialization.BmageProject.SaveAsync(stream, _session.Original, _session.Document, new Serialization.BmageProjectOptions { Limits = Options.Limits });
+        var name = fileName.EndsWith(Serialization.BmageProject.FileExtension, StringComparison.OrdinalIgnoreCase) ? fileName : fileName + Serialization.BmageProject.FileExtension;
+        await Exporter.DownloadFileAsync(stream.ToArray(), name, "application/zip");
+    });
+
+    /// <summary>
+    /// Opens a project saved by <see cref="SaveProjectAsync"/>, replacing the image and its history; the edit comes back
+    /// as one undoable step over the original.
+    /// </summary>
+    public Task OpenProjectAsync(System.IO.Stream stream) => RunAsync(async () =>
+    {
+        ArgumentNullException.ThrowIfNull(stream);
+        using var project = await Serialization.BmageProject.LoadAsync(stream, new Serialization.BmageProjectOptions { Limits = Options.Limits, Allocator = Options.Allocator });
+        var document = project.Document;
+        var original = project.DetachOriginal();
+        var images = project.DetachImages();
+        var handedOn = false;
+        try
+        {
+            await LoadImageAsync(original, takeOwnership: true);
+            // Unless a handler of OnImageLoaded loaded another image meanwhile, the session now open is the project's.
+            if (_session is not { } session || !ReferenceEquals(session.Original, original)) return;
+            foreach (var image in images) session.Own(image);
+            handedOn = true;
+        }
+        finally
+        {
+            if (!handedOn) foreach (var image in images) image.Dispose();
+        }
+        await ApplyAndRenderAsync(_ => document, Strings.OpenProject);
+        FitToWindow();
+    });
+
+    /// <summary>
+    /// Opens a project file the user picked. Projects carry their original losslessly, so they may be four times the
+    /// size <see cref="BitBmageOptions.MaxSourceBytes"/> allows an image upload.
+    /// </summary>
+    public async Task OpenProjectAsync(IBrowserFile file)
+    {
+        ArgumentNullException.ThrowIfNull(file);
+        System.IO.Stream stream;
+        try
+        {
+            stream = file.OpenReadStream(Options.MaxSourceBytes * 4);
+        }
+        catch (Exception ex) when (ex is IOException or ArgumentException)
+        {
+            ShowMessage(Strings.ProjectFailed, isError: true);
+            return;
+        }
+        await using (stream) await OpenProjectAsync(stream);
     }
 
     /// <summary>Copies the exported image to the clipboard as PNG, which is the only format browsers reliably accept.</summary>
@@ -1119,6 +1860,7 @@
             ImageDecodeException => Strings.UnsupportedFormat,
             ImageCapabilityException c => c.Message,
             ImageEncodeException => Strings.ExportFailed,
+            Serialization.ImageDocumentFormatException => Strings.ProjectFailed,
             _ => Strings.LoadFailed,
         }, isError: true);
     }

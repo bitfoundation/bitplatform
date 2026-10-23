@@ -47,6 +47,9 @@ public sealed class ImageEditSession : IDisposable
     // Never disposed: a render that is still running releases it on the way out, and SemaphoreSlim only needs
     // disposing when its wait handle has been used.
     private readonly SemaphoreSlim _renderLock = new(1, 1);
+    // Full renders in flight. They do not take the render lock, so an export never holds up the preview, but they read
+    // the original and the owned images all the same, so a release waits for those already running.
+    private readonly HashSet<Task> _fullRenders = [];
     private bool _disposed;
     // Incremented whenever the source changes, so a render that started on the old source cannot publish its result.
     private int _sourceVersion;
@@ -61,6 +64,8 @@ public sealed class ImageEditSession : IDisposable
     // Counted by Invalidate; a render that finds more than it last saw starts without anything earlier renders kept.
     private int _invalidations;
     private int _invalidationsSeen;
+    // Buffers the documents refer to that the session releases with its source, such as the pixels of image layers.
+    private List<ImageBuffer> _owned = [];
 
     /// <summary>Creates a session that takes ownership of <paramref name="original"/>.</summary>
     public ImageEditSession(ImageBuffer original, ImageEditSessionOptions? options = null)
@@ -237,15 +242,30 @@ public sealed class ImageEditSession : IDisposable
         History.Clear(ImageDocument.Create(image));
         var releaseProxy = oldProxy is not null && !ReferenceEquals(oldProxy, old) ? oldProxy : null;
         var releaseOriginal = disposeExisting && !ReferenceEquals(old, image) ? old : null;
+        var owned = _owned;
+        _owned = [];
         WhenIdle(() =>
         {
             releaseProxy?.Dispose();
             releaseOriginal?.Dispose();
             oldDraft?.Dispose();
+            foreach (var buffer in owned) buffer.Dispose();
             DisposeStaleCaches();
         });
         MarkPreviewStale();
         DocumentChanged?.Invoke(Document);
+    }
+
+    /// <summary>
+    /// Hands the session a buffer its documents refer to, such as the pixels of an image layer, which no layer owns. The
+    /// session releases it once no render reads it: when the session is disposed, or given a new source, which discards
+    /// the history that refers to it.
+    /// </summary>
+    public void Own(ImageBuffer image)
+    {
+        ArgumentNullException.ThrowIfNull(image);
+        ObjectDisposedException.ThrowIf(_disposed, this);
+        _owned.Add(image);
     }
 
     private void MarkPreviewStale() => IsPreviewStale = true;
@@ -675,17 +695,50 @@ public sealed class ImageEditSession : IDisposable
     /// Renders the final image at full resolution. Slower than the preview and allocates a full-size buffer, so call it
     /// on export rather than on every change. The caller owns the returned buffer.
     /// </summary>
-    public ValueTask<ImageBuffer> RenderFullAsync(IProgress<double>? progress = null, CancellationToken cancellationToken = default)
+    public async ValueTask<ImageBuffer> RenderFullAsync(IProgress<double>? progress = null, CancellationToken cancellationToken = default)
     {
         ObjectDisposedException.ThrowIf(_disposed, this);
-        return _renderer.RenderAsync(Document, _original, new PipelineExecutionOptions
+        var done = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        lock (_fullRenders) _fullRenders.Add(done.Task);
+        try
         {
-            Allocator = _allocator,
-            Limits = _limits,
-            MaxDegreeOfParallelism = _maxDegreeOfParallelism,
-            CancellationToken = cancellationToken,
-            Progress = progress,
-        });
+            // Registered before anything is read: a release that started earlier has already seen the session disposed.
+            ObjectDisposedException.ThrowIf(_disposed, this);
+            return await _renderer.RenderAsync(Document, _original, new PipelineExecutionOptions
+            {
+                Allocator = _allocator,
+                Limits = _limits,
+                MaxDegreeOfParallelism = _maxDegreeOfParallelism,
+                CancellationToken = cancellationToken,
+                Progress = progress,
+            }).ConfigureAwait(false);
+        }
+        finally
+        {
+            lock (_fullRenders) _fullRenders.Remove(done.Task);
+            done.SetResult();
+        }
+    }
+
+    /// <summary>
+    /// The source image at the resolution previews render at, without any edit: what a before and after comparison
+    /// shows as before. The session owns it; it stays valid until the source is replaced or the session disposed. No
+    /// cache of rendered edits is touched, so switching back to the edit costs nothing.
+    /// </summary>
+    /// <exception cref="OperationCanceledException">The caller cancelled, or the session was disposed meanwhile.</exception>
+    public async ValueTask<ImageBuffer> GetSourcePreviewAsync(CancellationToken cancellationToken = default)
+    {
+        ObjectDisposedException.ThrowIf(_disposed, this);
+        await _renderLock.WaitAsync(cancellationToken).ConfigureAwait(false);
+        try
+        {
+            if (_disposed) throw new OperationCanceledException(cancellationToken);
+            return await EnsureProxyAsync(cancellationToken).ConfigureAwait(false);
+        }
+        finally
+        {
+            _renderLock.Release();
+        }
     }
 
     /// <summary>Maps a point in preview coordinates to the full-resolution output coordinates.</summary>
@@ -809,18 +862,22 @@ public sealed class ImageEditSession : IDisposable
         var original = _original;
         var draft = _draftSource;
         _draftSource = null;
+        var owned = _owned;
+        _owned = [];
         WhenIdle(() =>
         {
             releaseProxy?.Dispose();
             original.Dispose();
             draft?.Dispose();
             DisposeCaches();
+            foreach (var buffer in owned) buffer.Dispose();
         });
     }
 
     /// <summary>
-    /// Releases buffers once no render is reading them. A cancelled render only notices at its next check, and
-    /// returning its input to the pool before then would let another image overwrite the pixels mid-read.
+    /// Releases buffers once no render is reading them: the preview render, if one runs, and every full render already
+    /// running. A cancelled render only notices at its next check, and returning its input to the pool before then would
+    /// let another image overwrite the pixels mid-read.
     /// </summary>
     /// <remarks>
     /// Never waits synchronously: <see cref="SemaphoreSlim.Wait(int)"/> is unsupported on the browser, and .NET 11's
@@ -831,6 +888,9 @@ public sealed class ImageEditSession : IDisposable
 
     private async Task ReleaseAfterRenderAsync(Action release)
     {
+        Task[] reading;
+        lock (_fullRenders) reading = [.. _fullRenders];
+        if (reading.Length > 0) await Task.WhenAll(reading).ConfigureAwait(false);
         await _renderLock.WaitAsync().ConfigureAwait(false);
         try { release(); }
         finally { _renderLock.Release(); }

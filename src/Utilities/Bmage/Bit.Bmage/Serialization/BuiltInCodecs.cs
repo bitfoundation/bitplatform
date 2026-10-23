@@ -64,6 +64,22 @@ internal static class BuiltInCodecs
             (w, o) => w.Write("degrees", o.Degrees).Write("background", o.Background).Write("expandCanvas", o.ExpandCanvas).WriteEnum("sampling", o.Sampling),
             r => new RotateOperation(r.GetDouble("degrees"), r.GetColor("background", default), r.GetBoolean("expandCanvas", true), r.GetEnum("sampling", WarpSampling.Bicubic))),
         Op<OrientationOperation>("orient", (w, o) => w.WriteEnum("orientation", o.Orientation), r => new OrientationOperation(r.GetEnum("orientation", Orientation.Normal))),
+        Op<StraightenOperation>("straighten",
+            (w, o) => w.Write("degrees", o.Degrees).WriteEnum("sampling", o.Sampling),
+            r => new StraightenOperation(r.GetDouble("degrees"), r.GetEnum("sampling", WarpSampling.Bicubic))),
+        Op<CanvasSizeOperation>("canvasSize",
+            (w, o) =>
+            {
+                if (o.Size is { } size) w.Write("size", size).WriteEnum("anchor", o.Anchor);
+                else w.Write("left", o.Left).Write("top", o.Top).Write("right", o.Right).Write("bottom", o.Bottom);
+                w.Write("background", o.Background);
+            },
+            r =>
+            {
+                var background = r.GetColor("background", default);
+                if (r.GetNullableSize("size") is { } size) return new CanvasSizeOperation(size.Width, size.Height, r.GetEnum("anchor", Anchor.Center), background);
+                return CanvasSizeOperation.Margins(r.GetInt32("left", 0), r.GetInt32("top", 0), r.GetInt32("right", 0), r.GetInt32("bottom", 0), background);
+            }),
         Op<SkewOperation>("skew",
             (w, o) => w.Write("degreesX", o.DegreesX).Write("degreesY", o.DegreesY).Write("background", o.Background).WriteEnum("sampling", o.Sampling),
             r => new SkewOperation(r.GetDouble("degreesX", 0), r.GetDouble("degreesY", 0), r.GetColor("background", default), r.GetEnum("sampling", WarpSampling.Bilinear))),
@@ -119,6 +135,28 @@ internal static class BuiltInCodecs
         Op<ShadowsHighlightsAdjustment>("shadowsHighlights",
             (w, o) => w.Write("shadows", o.Shadows).Write("highlights", o.Highlights),
             r => new ShadowsHighlightsAdjustment(r.GetSingle("shadows", 0), r.GetSingle("highlights", 0))),
+        Op<WhitesBlacksAdjustment>("whitesBlacks",
+            (w, o) => w.Write("whites", o.Whites).Write("blacks", o.Blacks),
+            r => new WhitesBlacksAdjustment(r.GetSingle("whites", 0), r.GetSingle("blacks", 0))),
+        Op<HslAdjustment>("hsl",
+            (w, o) => w.WriteObjects("bands", o.Shifts, (b, s) => b.WriteEnum("band", s.Key)
+                .Write("hue", s.Value.Hue).Write("saturation", s.Value.Saturation).Write("lightness", s.Value.Lightness)),
+            r => new HslAdjustment(r.GetObjects("bands").Select(b => new KeyValuePair<HueBand, HslShift>(
+                b.GetEnum("band", HueBand.Reds), new HslShift(b.GetSingle("hue", 0), b.GetSingle("saturation", 0), b.GetSingle("lightness", 0)))))),
+        Op<WhiteBalanceAdjustment>("whiteBalance",
+            (w, o) => w.Write("redGain", o.RedGain).Write("greenGain", o.GreenGain).Write("blueGain", o.BlueGain),
+            r => new WhiteBalanceAdjustment(r.GetSingle("redGain", 1), r.GetSingle("greenGain", 1), r.GetSingle("blueGain", 1))),
+        Op<AutoWhiteBalanceOperation>("autoWhiteBalance", (w, o) => w.Write("strength", o.Strength), r => new AutoWhiteBalanceOperation(r.GetSingle("strength", 0.8f))),
+        Op<ChannelMixerAdjustment>("channelMixer",
+            (w, o) => w.Write("red", [o.Red.X, o.Red.Y, o.Red.Z]).Write("green", [o.Green.X, o.Green.Y, o.Green.Z])
+                .Write("blue", [o.Blue.X, o.Blue.Y, o.Blue.Z]).Write("constant", [o.Constant.X, o.Constant.Y, o.Constant.Z]),
+            r => new ChannelMixerAdjustment(ReadVector3(r, "red", Vector3.UnitX), ReadVector3(r, "green", Vector3.UnitY), ReadVector3(r, "blue", Vector3.UnitZ), ReadVector3(r, "constant", Vector3.Zero))),
+        Op<ColorizeAdjustment>("colorize",
+            (w, o) => w.Write("hue", o.Hue).Write("saturation", o.Saturation).Write("lightness", o.Lightness).Write("amount", o.Amount),
+            r => new ColorizeAdjustment(r.GetSingle("hue"), r.GetSingle("saturation", 0.25f), r.GetSingle("lightness", 0), r.GetSingle("amount", 1))),
+        Op<GradientMapOperation>("gradientMap",
+            (w, o) => w.WriteObjects("stops", o.Stops, (s, stop) => s.Write("offset", stop.Offset).Write("color", stop.Color)).Write("amount", o.Amount),
+            r => new GradientMapOperation([.. r.GetObjects("stops").Select(s => (s.GetSingle("offset"), s.GetColor("color")))], r.GetSingle("amount", 1))),
         Op<ColorMatrixOperation>("colorMatrix",
             (w, o) => w.Write("matrix", o.Matrix.ToArray()).Write("name", o.Name),
             r => new ColorMatrixOperation(new ColorMatrix(r.GetSingles("matrix") is { Length: 20 } m ? m : throw new ImageDocumentFormatException($"{r.Path}.matrix should hold twenty numbers.")), r.GetString("name", null))),
@@ -143,6 +181,10 @@ internal static class BuiltInCodecs
         Op<NoiseFilter>("noise",
             (w, o) => w.Write("amount", o.Amount).Write("monochrome", o.Monochrome).Write("seed", o.Seed).Write("region", o.Region),
             r => new NoiseFilter(r.GetSingle("amount"), r.GetBoolean("monochrome"), r.GetInt32("seed", 0), r.GetNullableRectangle("region"))),
+        Op<MotionBlurFilter>("motionBlur",
+            (w, o) => w.Write("distance", o.Distance).Write("angle", o.Angle).Write("region", o.Region),
+            r => new MotionBlurFilter(r.GetSingle("distance"), r.GetSingle("angle", 0), r.GetNullableRectangle("region"))),
+        Op<HighPassFilter>("highPass", (w, o) => w.Write("radius", o.Radius).Write("region", o.Region), r => new HighPassFilter(r.GetSingle("radius", 3), r.GetNullableRectangle("region"))),
         Op<MedianFilter>("median", (w, o) => w.Write("radius", o.Radius).Write("region", o.Region), r => new MedianFilter(r.GetInt32("radius", 1), r.GetNullableRectangle("region"))),
         Op<ConvolutionFilter>("convolution",
             (w, o) => w.Write("kernel", o.Kernel).Write("kernelWidth", o.KernelWidth).Write("kernelHeight", o.KernelHeight)
@@ -164,6 +206,13 @@ internal static class BuiltInCodecs
 
     private static Codec Op<T>(string name, Action<BmageJsonWriter, T> write, Func<BmageJsonReader, T> read) where T : IImageOperation
         => new(typeof(IImageOperation), typeof(T), name, (w, value) => write(w, (T)value), r => read(r));
+
+    private static Vector3 ReadVector3(BmageJsonReader r, string name, Vector3 fallback) => r.GetSingles(name) switch
+    {
+        null => fallback,
+        { Length: 3 } v => new Vector3(v[0], v[1], v[2]),
+        _ => throw new ImageDocumentFormatException($"{r.Path}.{name} should hold three numbers."),
+    };
 
     private static Codec Amount<T>(string name, Func<T, float> amount, Func<float, T> create) where T : IImageOperation
         => Op<T>(name, (w, o) => w.Write("amount", amount(o)), r => create(r.GetSingle("amount")));
@@ -245,7 +294,27 @@ internal static class BuiltInCodecs
         MaskOf<BitmapMask>("bitmap", (w, m) => w.WriteImage("image", m.Image).WriteEnum("channel", m.Channel),
             r => new BitmapMask(r.GetImage("image")) { Channel = r.GetEnum("channel", MaskChannel.Alpha) }),
         MaskOf<CombinedMask>("combined", (w, m) => w.Write("first", m.First).Write("second", m.Second).WriteEnum("mode", m.Mode), ReadCombined),
+        MaskOf<FloodMask>("flood",
+            (w, m) => w.Write("seeds", m.Seeds).Write("tolerance", m.Tolerance).Write("softness", m.Softness).Write("contiguous", m.Contiguous),
+            r => new FloodMask(r.GetPoints("seeds"))
+            {
+                Tolerance = r.GetSingle("tolerance", 0.12f),
+                Softness = r.GetSingle("softness", 0.04f),
+                Contiguous = r.GetBoolean("contiguous", true),
+            }),
+        MaskOf<MorphedMask>("morphed", (w, m) => w.Write("source", m.Source).WriteEnum("morphology", m.Morphology).Write("distance", m.Distance), ReadMorphed),
     ];
+
+    /// <summary>A morphed mask, refused when drawing it would hold more masks at once than <see cref="Mask.MaxMasksHeld"/>.</summary>
+    private static MorphedMask ReadMorphed(BmageJsonReader r)
+    {
+        var mask = new MorphedMask(r.GetMask("source") ?? throw new ImageDocumentFormatException($"{r.Path} has no \"source\"."),
+            r.GetEnum("morphology", MaskMorphology.Expand), r.GetSingle("distance"));
+        var feathered = r.GetSingle("feather", 0) >= 0.05f ? 1 : 0;
+        if (mask.MasksHeld() + feathered > Mask.MaxMasksHeld)
+            throw new ImageDocumentFormatException($"{r.Path} nests its masks too deeply: drawing it would hold more than {Mask.MaxMasksHeld} masks at once.");
+        return mask;
+    }
 
     /// <summary>
     /// A combination, refused when drawing it would hold more masks at once than <see cref="Mask.MaxMasksHeld"/>: each is
@@ -322,7 +391,33 @@ internal static class BuiltInCodecs
             }),
         LayerOf<FillLayer>("fill", (w, l) => w.Write("color", l.Color), r => new FillLayer(r.GetColor("color"))),
         LayerOf<AdjustmentLayer>("adjustment", (w, l) => w.Write("pipeline", l.Pipeline), r => new AdjustmentLayer(r.GetPipeline("pipeline"))),
+        LayerOf<PaintLayer>("paint",
+            (w, l) => w.WriteObjects("strokes", l.Strokes, (s, stroke) =>
+            {
+                s.Write("points", stroke.Points).Write("size", stroke.Size).Write("color", stroke.Color);
+                if (stroke.Pressures is { } pressures) s.Write("pressures", pressures);
+                s.Write("opacity", stroke.Opacity).Write("hardness", stroke.Hardness).Write("erase", stroke.Erase)
+                    .Write("pressureAffectsSize", stroke.PressureAffectsSize).Write("pressureAffectsOpacity", stroke.PressureAffectsOpacity);
+            }),
+            r => new PaintLayer([.. r.GetObjects("strokes").Select(ReadPaintStroke)])),
     ];
+
+    private static PaintStroke ReadPaintStroke(BmageJsonReader s)
+    {
+        var points = s.GetPoints("points");
+        var pressures = s.GetSingles("pressures");
+        if (pressures is not null && pressures.Length != points.Length)
+            throw new ImageDocumentFormatException($"{s.Path}.pressures has {pressures.Length} values for {points.Length} points.");
+        return new PaintStroke(points, s.GetSingle("size"), s.GetColor("color", Rgba32.Black))
+        {
+            Pressures = pressures,
+            Opacity = s.GetSingle("opacity", 1),
+            Hardness = s.GetSingle("hardness", 0.8f),
+            Erase = s.GetBoolean("erase"),
+            PressureAffectsSize = s.GetBoolean("pressureAffectsSize", true),
+            PressureAffectsOpacity = s.GetBoolean("pressureAffectsOpacity"),
+        };
+    }
 
     private static Codec LayerOf<T>(string name, Action<BmageJsonWriter, T> write, Func<BmageJsonReader, T> read) where T : Layer
         => new(typeof(Layer), typeof(T), name,
