@@ -261,6 +261,8 @@ bit decode < trace.txt
 
 Without a map, the newest `obj/**/bit-minifier.map` under the current folder is used. Without a trace file, the trace is read from standard input.
 
+The map's first line names the Bit.Minifier that wrote it, and `bit decode` runs that version from the NuGet cache, restoring it first when it isn't there, so a map is always read the way it was written.
+
 ## Staying up to date
 
 `bit new` creates every project from the newest stable bit Boilerplate. As it starts, it looks up the newest `Bit.Cli` on this machine's NuGet sources. When a newer one is out, it installs it next to itself in `~/.bitplatform/cli`, and the same command carries on with it in the same terminal, so nothing is asked twice. When the run ends, the installed global tool updates to that version in the background, with its log in `~/.bitplatform/logs`.
