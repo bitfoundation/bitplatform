@@ -119,7 +119,7 @@ public sealed class PublishedApp : IAsyncDisposable
             using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(10));
             await server.WaitForExitAsync(timeout.Token);
         }
-        catch (Exception exp) when (exp is InvalidOperationException or OperationCanceledException or System.ComponentModel.Win32Exception)
+        catch (Exception exp) when (exp is InvalidOperationException or OperationCanceledException or System.ComponentModel.Win32Exception or AggregateException)
         {
         }
 
