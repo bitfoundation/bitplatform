@@ -4,7 +4,7 @@ namespace Boilerplate.Client.Core.Components.Common;
 /// Republishes the page data when a bit Brouter keep-alive route is revealed again.
 ///
 /// <para>
-/// A <c>KeepAlive</c> route (see <c>Routes.razor</c>) is not disposed when you navigate away - it is hidden and then
+/// A <c>KeepAlive</c> route (see <c>AppRoutes.razor</c>) is not disposed when you navigate away - it is hidden and then
 /// revealed with all its state intact. This component's dedupe state is part of that state, so on the way back
 /// <c>OnParametersSet</c> either does not run at all or hits the "same message as last time" early return, and
 /// nothing is published. The Header is not re-created either - it lives in MainLayout, which sits outside the router

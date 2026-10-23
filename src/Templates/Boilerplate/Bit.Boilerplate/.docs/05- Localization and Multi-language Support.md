@@ -657,7 +657,7 @@ The job installs the bit CLI once in an earlier step, with `dotnet tool install 
 
 On multilingual builds (`InvariantGlobalization=false`), the culture a page is served in is part of its **URL**, as a
 leading path segment: `https://example.com/fa-IR/about`. Every page route also registers a `{culture?}` prefix variant
-for this (see `Routes.razor` / the `@attribute [Route("{culture?}" + ...)]` pattern).
+for this (see `AppRoutes.razor` / the `@attribute [Route("{culture?}" + ...)]` pattern).
 
 ### How a request's culture is resolved
 
