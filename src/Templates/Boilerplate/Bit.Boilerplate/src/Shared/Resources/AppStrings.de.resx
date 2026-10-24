@@ -1207,9 +1207,6 @@ Nach Erreichen von {0} haben zusätzliche Anmeldungen reduzierte Funktionen.</va
   <data name="AiChatTooManyRequests" xml:space="preserve">
     <value>Sie chatten zu schnell. Bitte warten Sie eine Minute und versuchen Sie es erneut.</value>
   </data>
-  <data name="AiChatMessageTooLong" xml:space="preserve">
-    <value>Die Nachricht ist zu lang. Halten Sie sie unter {0} Zeichen.</value>
-  </data>
   <data name="AiChatHumanFollowUpPrompt" xml:space="preserve">
     <value>Hinterlassen Sie Ihre Kontaktdaten, und ein Mitarbeiter meldet sich bei Ihnen.</value>
   </data>

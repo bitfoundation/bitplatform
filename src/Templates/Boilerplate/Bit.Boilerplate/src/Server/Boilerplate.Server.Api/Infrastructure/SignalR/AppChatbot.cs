@@ -283,7 +283,7 @@ public partial class AppChatbot
     private KnownException? Refusal(AiChatMessage incomingMessage)
     {
         if (incomingMessage.Content?.Length > AiChatMessage.MaxContentLength)
-            return new BadRequestException(localizer[nameof(AppStrings.AiChatMessageTooLong), AiChatMessage.MaxContentLength]);
+            return new BadRequestException();
 
         if (rateLimiter.TryProcessMessage(httpContextAccessor.HttpContext!) is false)
             return new TooManyRequestsException(localizer[nameof(AppStrings.AiChatTooManyRequests)]);

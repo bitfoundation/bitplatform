@@ -1207,9 +1207,6 @@ Después de alcanzar {0}, los inicios de sesión adicionales tendrán funciones 
   <data name="AiChatTooManyRequests" xml:space="preserve">
     <value>Estás chateando demasiado rápido. Espera un minuto e inténtalo de nuevo.</value>
   </data>
-  <data name="AiChatMessageTooLong" xml:space="preserve">
-    <value>El mensaje es demasiado largo. Mantenlo por debajo de {0} caracteres.</value>
-  </data>
   <data name="AiChatHumanFollowUpPrompt" xml:space="preserve">
     <value>Deja tus datos de contacto y un operador se pondrá en contacto contigo.</value>
   </data>

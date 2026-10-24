@@ -1207,9 +1207,6 @@ Efter att ha nått {0} kommer extra inloggningar att ha reducerade funktioner.</
   <data name="AiChatTooManyRequests" xml:space="preserve">
     <value>Du chattar för snabbt. Vänta en minut och försök igen.</value>
   </data>
-  <data name="AiChatMessageTooLong" xml:space="preserve">
-    <value>Meddelandet är för långt. Håll det under {0} tecken.</value>
-  </data>
   <data name="AiChatHumanFollowUpPrompt" xml:space="preserve">
     <value>Lämna dina kontaktuppgifter så hör en handläggare av sig till dig.</value>
   </data>

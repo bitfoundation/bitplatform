@@ -1207,9 +1207,6 @@
   <data name="AiChatTooManyRequests" xml:space="preserve">
     <value>أنت ترسل الرسائل بسرعة كبيرة. يرجى الانتظار دقيقة ثم المحاولة مرة أخرى.</value>
   </data>
-  <data name="AiChatMessageTooLong" xml:space="preserve">
-    <value>الرسالة طويلة جدًا. اجعلها أقل من {0} حرف.</value>
-  </data>
   <data name="AiChatHumanFollowUpPrompt" xml:space="preserve">
     <value>اترك بيانات التواصل الخاصة بك وسيتواصل معك أحد موظفي الدعم.</value>
   </data>

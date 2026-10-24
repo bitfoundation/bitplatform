@@ -1207,9 +1207,6 @@ Après avoir atteint {0}, les connexions supplémentaires auront des fonctions r
   <data name="AiChatTooManyRequests" xml:space="preserve">
     <value>Vous discutez trop vite. Veuillez patienter une minute et réessayer.</value>
   </data>
-  <data name="AiChatMessageTooLong" xml:space="preserve">
-    <value>Le message est trop long. Limitez-le à moins de {0} caractères.</value>
-  </data>
   <data name="AiChatHumanFollowUpPrompt" xml:space="preserve">
     <value>Laissez vos coordonnées et un conseiller vous recontactera.</value>
   </data>

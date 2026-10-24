@@ -1207,9 +1207,6 @@ After reaching {0}, extra sign-ins will have reduced functions.</value>
     <data name="AiChatTooManyRequests" xml:space="preserve">
     <value>You are chatting too fast. Please wait a minute and try again.</value>
   </data>
-    <data name="AiChatMessageTooLong" xml:space="preserve">
-    <value>The message is too long. Keep it under {0} characters.</value>
-  </data>
     <data name="AiChatHumanFollowUpPrompt" xml:space="preserve">
     <value>Leave your contact details and a human operator will follow up with you.</value>
   </data>

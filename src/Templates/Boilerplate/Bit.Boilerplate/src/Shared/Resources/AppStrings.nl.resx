@@ -1207,9 +1207,6 @@ Na het bereiken van {0} zullen extra aanmeldingen verminderde functies hebben.</
   <data name="AiChatTooManyRequests" xml:space="preserve">
     <value>Je chat te snel. Wacht een minuut en probeer het opnieuw.</value>
   </data>
-  <data name="AiChatMessageTooLong" xml:space="preserve">
-    <value>Het bericht is te lang. Houd het onder de {0} tekens.</value>
-  </data>
   <data name="AiChatHumanFollowUpPrompt" xml:space="preserve">
     <value>Laat uw contactgegevens achter, dan neemt een medewerker contact met u op.</value>
   </data>

@@ -1207,9 +1207,6 @@
   <data name="AiChatTooManyRequests" xml:space="preserve">
     <value>您的聊天速度过快。请等待一分钟后再试。</value>
   </data>
-  <data name="AiChatMessageTooLong" xml:space="preserve">
-    <value>消息过长。请将其控制在 {0} 个字符以内。</value>
-  </data>
   <data name="AiChatHumanFollowUpPrompt" xml:space="preserve">
     <value>留下你的联系方式，人工客服会与你联系。</value>
   </data>

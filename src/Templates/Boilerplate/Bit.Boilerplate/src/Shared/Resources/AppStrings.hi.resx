@@ -1207,9 +1207,6 @@
   <data name="AiChatTooManyRequests" xml:space="preserve">
     <value>आप बहुत तेज़ी से चैट कर रहे हैं। कृपया एक मिनट रुककर फिर से कोशिश करें।</value>
   </data>
-  <data name="AiChatMessageTooLong" xml:space="preserve">
-    <value>संदेश बहुत लंबा है। इसे {0} वर्णों से कम रखें।</value>
-  </data>
   <data name="AiChatHumanFollowUpPrompt" xml:space="preserve">
     <value>अपनी संपर्क जानकारी छोड़ें, एक सहायता प्रतिनिधि आपसे संपर्क करेगा।</value>
   </data>

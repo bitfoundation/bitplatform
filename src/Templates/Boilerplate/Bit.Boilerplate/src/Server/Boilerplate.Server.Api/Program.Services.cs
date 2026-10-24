@@ -283,13 +283,7 @@ public static partial class Program
         services.AddSingleton<HtmlSanitizer>();
 
         services
-            .AddControllers(options =>
-            {
-                options.Filters.Add<AutoCsrfProtectionFilter>();
-                //#if (signalR == true)
-                options.ModelMetadataDetailsProviders.Add(new Microsoft.AspNetCore.Mvc.ModelBinding.SuppressChildValidationMetadataProvider(typeof(AiChatMessage)));
-                //#endif
-            })
+            .AddControllers(options => options.Filters.Add<AutoCsrfProtectionFilter>())
             .AddJsonOptions(options =>
             {
                 options.JsonSerializerOptions.ApplyDefaultOptions();

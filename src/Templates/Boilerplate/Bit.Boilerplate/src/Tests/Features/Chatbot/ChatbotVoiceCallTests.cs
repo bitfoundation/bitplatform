@@ -381,26 +381,6 @@ public class ChatbotVoiceCallTests
     }
 
     [TestMethod]
-    public async Task AnOverLongMessageInTheConversation_Should_BeLeftOutOfTheCall_RatherThanFailIt()
-    {
-        var realtime = new TestRealtimeCallClient();
-
-        await using var server = await StartServer(realtime);
-        await using var client = server.CreateAppClient();
-        var httpClient = await SignIn(client);
-
-        await StartVoiceCall(client, httpClient,
-        [
-            new() { Role = AiChatMessageRole.User, Content = new string('a', AiChatMessage.MaxContentLength + 1) },
-            new() { Role = AiChatMessageRole.User, Content = "What is bit platform?" }
-        ]);
-
-        Assert.AreSequenceEqual(["What is bit platform?"], realtime.Sideband.Sent().Select(sent => (string?)sent["item"]!["content"]![0]!["text"]));
-
-        realtime.Sideband.End();
-    }
-
-    [TestMethod]
     public async Task StartVoiceCall_Should_RefuseAnAnonymousCaller()
     {
         var realtime = new TestRealtimeCallClient();
