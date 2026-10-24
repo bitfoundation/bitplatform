@@ -253,10 +253,10 @@ public sealed class BinkEraserTool : BinkDrawTool
     private bool HitsElement(BinkElement element, ReadOnlySpan<Vector2> segment)
     {
         if (!element.IsSelectable) return false;
-        // A stroke is tested exactly: the segment eraser computes where the swept circle meets the ink, in document
-        // space and under any transform, so "would it cut anything" is the precise answer. Sampling the swipe
-        // instead let a fast drag step over a thin stroke between two samples.
-        if (element is BinkStroke stroke) return BinkStrokeEditor.EraseSegments(stroke, segment, Radius, _fragments);
+        // A stroke is tested exactly, with the segment eraser's own geometry: whether the swept circle meets the
+        // ink, in document space and under any transform, without computing the cut it would make. Sampling the
+        // swipe instead let a fast drag step over a thin stroke between two samples.
+        if (element is BinkStroke stroke) return BinkStrokeEditor.Reaches(stroke, segment, Radius);
         foreach (Vector2 p in segment)
         {
             if (element.HitTest(p, Radius)) return true;

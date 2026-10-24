@@ -461,6 +461,7 @@ public sealed partial class BinkCanvas : ComponentBase, IAsyncDisposable, IBinkI
         string? payload = CopySelectionCore();
         if (payload is null) return false;
         await ProvideClipboardAsync(payload).ConfigureAwait(true);
+        if (_disposed) return false;
         int count = _selection.Count;
         _document.RemoveElements(_selection.Ids);
         Announce($"Cut {count} elements.");
@@ -818,12 +819,7 @@ public sealed partial class BinkCanvas : ComponentBase, IAsyncDisposable, IBinkI
         });
 
         await EnsureImagesLoadedAsync(cancellationToken).ConfigureAwait(true);
-        string mimeType = format switch
-        {
-            BinkImageFormat.Jpeg => "image/jpeg",
-            BinkImageFormat.Webp => "image/webp",
-            _ => "image/png",
-        };
+        string mimeType = MimeTypeOf(format);
         // Even an incompressible encoding stays within four bytes a pixel plus its headers.
         long maxBytes = (long)width * height * 4 + (1 << 20);
         byte[] bytes = await _interop.RenderToImageAsync(width, height, context, mimeType, Math.Clamp(quality, 0d, 1d), maxBytes, cancellationToken).ConfigureAwait(true);
@@ -840,14 +836,16 @@ public sealed partial class BinkCanvas : ComponentBase, IAsyncDisposable, IBinkI
     {
         RequireBrowser();
         byte[] bytes = await ExportImageAsync(format, options, quality, cancellationToken).ConfigureAwait(true);
-        string mimeType = format switch
-        {
-            BinkImageFormat.Jpeg => "image/jpeg",
-            BinkImageFormat.Webp => "image/webp",
-            _ => "image/png",
-        };
+        string mimeType = MimeTypeOf(format);
         if (bytes.Length > 0) await _interop!.SaveFileAsync(fileName, bytes, mimeType).ConfigureAwait(true);
     }
+
+    private static string MimeTypeOf(BinkImageFormat format) => format switch
+    {
+        BinkImageFormat.Jpeg => "image/jpeg",
+        BinkImageFormat.Webp => "image/webp",
+        _ => "image/png",
+    };
 
     private BinkRect ResolveExportRegion(BinkPngExportOptions options)
     {
@@ -1710,19 +1708,8 @@ public sealed partial class BinkCanvas : ComponentBase, IAsyncDisposable, IBinkI
             {
                 case "image" when data is not null:
                 {
-                    byte[] bytes = await BinkInterop.ReadBytesAsync(data, MaxPasteBytes).ConfigureAwait(true);
-                    if (_disposed) return;
-                    BinkImageSource source;
-                    try
-                    {
-                        // Raster types only: an SVG is a document that can reference other resources.
-                        source = BinkImageSource.FromBytes(bytes, (mediaType ?? string.Empty).ToLowerInvariant(), 0, 0);
-                    }
-                    catch (ArgumentException)
-                    {
-                        Announce("That image type cannot be pasted.");
-                        return;
-                    }
+                    BinkImageSource? source = await ReadRasterImageAsync(data, mediaType, "That image type cannot be pasted.").ConfigureAwait(true);
+                    if (source is null) return;
                     await InvokeAsync(() => AddImageAsync(source)).ConfigureAwait(true);
                     return;
                 }
@@ -1748,6 +1735,26 @@ public sealed partial class BinkCanvas : ComponentBase, IAsyncDisposable, IBinkI
         }
     }
 
+    /// <summary>
+    /// Reads a pasted or dropped picture into an image source. Raster types only: an SVG is a document that can
+    /// reference other resources. Returns null, after announcing <paramref name="refusal"/>, for a type the canvas
+    /// does not take, and silently when the canvas was disposed while the bytes were read.
+    /// </summary>
+    private async Task<BinkImageSource?> ReadRasterImageAsync(IJSStreamReference data, string? mediaType, string refusal)
+    {
+        byte[] bytes = await BinkInterop.ReadBytesAsync(data, MaxPasteBytes).ConfigureAwait(true);
+        if (_disposed) return null;
+        try
+        {
+            return BinkImageSource.FromBytes(bytes, (mediaType ?? string.Empty).ToLowerInvariant(), 0, 0);
+        }
+        catch (ArgumentException)
+        {
+            Announce(refusal);
+            return null;
+        }
+    }
+
     async Task IBinkInteropClient.OnDropAsync(string kind, IJSStreamReference data, string? mediaType, float x, float y)
     {
         if (_disposed || ReadOnly || !EnableDrop)
@@ -1762,19 +1769,8 @@ public sealed partial class BinkCanvas : ComponentBase, IAsyncDisposable, IBinkI
             {
                 case "image":
                 {
-                    byte[] bytes = await BinkInterop.ReadBytesAsync(data, MaxPasteBytes).ConfigureAwait(true);
-                    if (_disposed) return;
-                    BinkImageSource source;
-                    try
-                    {
-                        // Raster types only, as for a paste: an SVG is a document that can reference other resources.
-                        source = BinkImageSource.FromBytes(bytes, (mediaType ?? string.Empty).ToLowerInvariant(), 0, 0);
-                    }
-                    catch (ArgumentException)
-                    {
-                        Announce("That image type cannot be dropped here.");
-                        return;
-                    }
+                    BinkImageSource? source = await ReadRasterImageAsync(data, mediaType, "That image type cannot be dropped here.").ConfigureAwait(true);
+                    if (source is null) return;
                     await InvokeAsync(() => AddImageCenteredAsync(source, at)).ConfigureAwait(true);
                     return;
                 }

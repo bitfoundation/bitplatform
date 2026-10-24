@@ -233,4 +233,29 @@ public sealed class SvgImportTests
         Assert.AreEqual(result.Elements[0].Bounds, loaded.AllElements.First().Bounds);
         Assert.Contains("#336699", BinkSvgExporter.Export(document));
     }
+
+    /// <summary>
+    /// A hidden group used to be skipped whole. In SVG, visibility is inherited but a descendant may set it back to
+    /// visible, a common way of showing one part of an otherwise hidden group; display:none, on the other hand,
+    /// takes the whole subtree out.
+    /// </summary>
+    [TestMethod]
+    public void A_visible_descendant_of_a_hidden_group_is_imported()
+    {
+        BinkSvgImportResult result = Import("""
+            <g visibility="hidden">
+              <rect width="10" height="10"/>
+              <rect x="20" width="10" height="10" visibility="visible"/>
+              <g style="visibility: visible"><circle cx="50" cy="5" r="5"/></g>
+              <text x="70" y="10" visibility="visible">shown</text>
+              <text x="90" y="10">hidden</text>
+            </g>
+            <g display="none"><rect x="100" width="10" height="10" visibility="visible"/></g>
+            """);
+
+        Assert.HasCount(3, result.Elements, "Only what is visible again is imported; nothing under display:none is.");
+        Assert.AreEqual(new BinkRect(20, 0, 10, 10), ((BinkRectangleShape)result.Elements[0]).Rect);
+        Assert.IsInstanceOfType<BinkEllipseShape>(result.Elements[1]);
+        Assert.AreEqual("shown", ((BinkTextElement)result.Elements[2]).Text);
+    }
 }

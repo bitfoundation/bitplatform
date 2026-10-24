@@ -334,8 +334,11 @@ class Surface {
     wheelY: number;
     pendingClipboard: PendingClipboardWrite | null;
     // Set when writing the system clipboard failed, so the next paste uses the copy .NET kept instead of whatever
-    // older content the system clipboard still holds.
+    // older content the system clipboard still holds. That paste consumes it and remembers the text the clipboard
+    // held instead: while the clipboard still holds that text, .NET's copy keeps being pasted, and once the user has
+    // copied something else anywhere, that is what a paste brings.
     clipboardWriteFailed: boolean;
+    staleClipboardText: string | null;
     contexts: SurfaceContexts;
     resizeObserver: ResizeObserver;
     // Assigned after construction (or lazily) rather than in the constructor.
@@ -401,6 +404,7 @@ class Surface {
         this.wheelY = 0;
         this.pendingClipboard = null;
         this.clipboardWriteFailed = false;
+        this.staleClipboardText = null;
 
         this.contexts = {
             document: this.createContext(this.documentCanvas),
@@ -850,10 +854,10 @@ class Surface {
             // the system clipboard simply keeps what it held. Only a write the browser refused means the next paste
             // has to use the copy .NET kept instead.
             clipboard.write([new Item(items)]).then(
-                () => { this.clipboardWriteFailed = false; },
-                () => { if (!pending.withdrawn) this.clipboardWriteFailed = true; });
+                () => this.noteClipboardWrite(false),
+                () => { if (!pending.withdrawn) this.noteClipboardWrite(true); });
         } catch {
-            this.clipboardWriteFailed = true;
+            this.noteClipboardWrite(true);
             this.settleClipboard(null);
         }
     }
@@ -871,12 +875,12 @@ class Surface {
         const Item = (globalThis as { ClipboardItem?: typeof ClipboardItem }).ClipboardItem;
         const writeText = () => {
             if (!clipboard || typeof clipboard.writeText !== 'function') {
-                this.clipboardWriteFailed = true;
+                this.noteClipboardWrite(true);
                 return;
             }
             clipboard.writeText(text).then(
-                () => { this.clipboardWriteFailed = false; },
-                () => { this.clipboardWriteFailed = true; });
+                () => this.noteClipboardWrite(false),
+                () => this.noteClipboardWrite(true));
         };
         if (!image || !clipboard || typeof clipboard.write !== 'function' || !Item) {
             writeText();
@@ -884,9 +888,14 @@ class Surface {
         }
         const picture = image.then((blob) => blob ?? Promise.reject(new Error('No picture of the selection.')));
         clipboard.write([new Item({ 'text/plain': new Blob([text], { type: 'text/plain' }), 'image/png': picture })]).then(
-            () => { this.clipboardWriteFailed = false; },
+            () => this.noteClipboardWrite(false),
             // Text alone is still worth having when the picture could not be made or written.
             writeText);
+    }
+
+    noteClipboardWrite(failed: boolean): void {
+        this.clipboardWriteFailed = failed;
+        if (!failed) this.staleClipboardText = null;
     }
 
     settleClipboard(text: string | null, image: Promise<Blob | null> | null = null): void {
@@ -915,11 +924,27 @@ class Surface {
         event.preventDefault();
         // As for keys: what the pointer did before the paste has to reach .NET before the paste does.
         if (this.sampleCount > 0) this.flush();
+        const text = data ? data.getData('text/plain') : '';
+        // Copying from this canvas failed to reach the system clipboard, so what it holds is older than what the user
+        // just copied here; .NET kept its own copy for exactly this case. What the clipboard holds now is remembered
+        // as the stale content: as long as it is still there .NET's copy is pasted, and anything the user copies
+        // later, anywhere, is pasted as it should be. An empty clipboard, or one holding only a picture, is not
+        // remembered, because it could not be told from a picture copied afterwards.
+        if (this.clipboardWriteFailed) {
+            this.clipboardWriteFailed = false;
+            this.staleClipboardText = text || null;
+            this.callback.paste('internal', null, null);
+            return;
+        }
+        if (this.staleClipboardText !== null && text === this.staleClipboardText) {
+            this.callback.paste('internal', null, null);
+            return;
+        }
+        this.staleClipboardText = null;
         // A copy from a canvas carries a picture as well as the drawing itself; pasted back into a canvas, it is the
         // drawing that is wanted, as editable elements rather than a picture of them.
-        const copied = data ? data.getData('text/plain') : '';
-        if (copied.startsWith(CLIPBOARD_MARKER) && !this.clipboardWriteFailed) {
-            this.callback.paste('bink', copied, null);
+        if (text.startsWith(CLIPBOARD_MARKER)) {
+            this.callback.paste('bink', text, null);
             return;
         }
         if (data) {
@@ -932,14 +957,11 @@ class Surface {
                 }
             }
         }
-        const text = data ? data.getData('text/plain') : '';
-        // Copying from this canvas failed to reach the system clipboard, so what it holds is older than what the user
-        // just copied here; .NET kept its own copy for exactly this case.
-        if (this.clipboardWriteFailed || !text) {
+        if (!text) {
             this.callback.paste('internal', null, null);
             return;
         }
-        this.callback.paste(text.startsWith(CLIPBOARD_MARKER) ? 'bink' : 'text', text, null);
+        this.callback.paste('text', text, null);
     }
 
     // ---- Drag and drop -------------------------------------------------------------------------------------------
@@ -1138,6 +1160,10 @@ class Surface {
     }
 
     reportResourcesLost(): void {
+        // .NET starts its cache over, numbering slots from zero again, so what this side holds goes with it: a slot
+        // .NET never defines again would otherwise keep its path or string until the surface is disposed.
+        this.paths.clear();
+        this.retainedStrings.clear();
         if (!this.disposed && this.callback && this.callback.resourcesLost) this.callback.resourcesLost();
     }
 

@@ -158,8 +158,7 @@ public class ExportFidelityTests
     [TestMethod]
     public void A_crop_applies_when_the_natural_size_is_unknown()
     {
-        byte[] png = TestData.CreatePng(8, 8, (x, _) => x < 4 ? BinkColor.Black : BinkColor.White);
-        var source = BinkImageSource.FromUri("data:image/png;base64," + Convert.ToBase64String(png));
+        var source = BinkImageSource.FromUri("https://example.test/picture.jpg");
         Assert.AreEqual(0, source.Width);
         var document = new BinkDocument(new BinkDocumentSettings { Width = 100, Height = 100 });
         document.AddElement(new BinkImageElement(source, new BinkRect(10, 20, 40, 30)) { Crop = new BinkRect(2, 1, 4, 3) });
@@ -177,6 +176,32 @@ public class ExportFidelityTests
         // The image takes its own size in the viewport's coordinates, which are image pixels.
         Assert.IsNull(image.Attribute("width"));
         Assert.IsNull(image.Attribute("height"));
+    }
+
+    /// <summary>
+    /// An image whose own size is not declared is placed by the nested viewport above, which only SVG 2 renderers
+    /// size; an SVG 1.1 renderer draws nothing for it. An embedded PNG carries its size in its header, so the crop
+    /// is written the way a sized image's is, as the full image behind a clip, which every renderer draws.
+    /// </summary>
+    [TestMethod]
+    public void A_crop_of_an_embedded_png_with_no_declared_size_reads_the_size_from_the_file()
+    {
+        byte[] png = TestData.CreatePng(8, 8, (x, _) => x < 4 ? BinkColor.Black : BinkColor.White);
+        var source = BinkImageSource.FromUri("data:image/png;base64," + Convert.ToBase64String(png));
+        Assert.AreEqual(0, source.Width);
+        var document = new BinkDocument(new BinkDocumentSettings { Width = 100, Height = 100 });
+        document.AddElement(new BinkImageElement(source, new BinkRect(10, 20, 40, 30)) { Crop = new BinkRect(2, 1, 4, 3) });
+
+        XDocument svg = XDocument.Parse(BinkSvgExporter.Export(document));
+        XElement image = Assert.ContainsSingle(svg.Descendants(Svg + "image"));
+        Assert.AreNotEqual(Svg + "svg", image.Parent!.Name, "the size is known, so no viewport is needed");
+        // The crop is 4 by 3 image pixels onto 40 by 30 units: ten units a pixel, so the full 8 by 8 image is 80
+        // by 80, placed so that pixel (2, 1) lands on the destination's corner.
+        Assert.AreEqual(-10f, ParseNumber(image.Attribute("x")));
+        Assert.AreEqual(10f, ParseNumber(image.Attribute("y")));
+        Assert.AreEqual(80f, ParseNumber(image.Attribute("width")));
+        Assert.AreEqual(80f, ParseNumber(image.Attribute("height")));
+        Assert.IsTrue(image.Ancestors(Svg + "g").Any(g => g.Attribute("clip-path") is not null), "the rest of the image is clipped away");
     }
 
     /// <summary>The canvas draws nothing for a crop with no area; SVG drew the whole image.</summary>

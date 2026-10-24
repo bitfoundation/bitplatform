@@ -146,7 +146,10 @@ public static class BinkSvgImporter
         public bool Italic { get; init; }
         public string Anchor { get; init; } = "start";
         public string Color { get; init; } = "black";
+        // display:none takes the element and everything in it out of the drawing. visibility:hidden only stops the
+        // element itself being painted: it is inherited, but a descendant may set visibility:visible and show.
         public bool Hidden { get; init; }
+        public bool Invisible { get; init; }
         // Not inherited in SVG, but a group's opacity applies to everything in it, so it is carried down multiplied.
         public float Opacity { get; init; } = 1f;
     }
@@ -268,6 +271,7 @@ public static class BinkSvgImporter
                 case "text":
                 {
                     string text = reader.IsEmptyElement ? string.Empty : TextContent(reader);
+                    if (paint.Invisible) return;
                     if (options.ImportText) AddText(attributes, paint, transform, text);
                     else Warn("Text was left out.");
                     return;
@@ -276,7 +280,7 @@ public static class BinkSvgImporter
                     Warn("use elements, which repeat other parts of the drawing, are not imported.");
                     break;
                 default:
-                    AddShape(name, attributes, paint, transform);
+                    if (!paint.Invisible) AddShape(name, attributes, paint, transform);
                     break;
             }
             if (!reader.IsEmptyElement) SkipElement(reader);
@@ -530,7 +534,7 @@ public static class BinkSvgImporter
                     "font-style" => paint with { Italic = v is "italic" or "oblique" },
                     "text-anchor" => paint with { Anchor = v },
                     "display" when v == "none" => paint with { Hidden = true },
-                    "visibility" => paint with { Hidden = v is "hidden" or "collapse" },
+                    "visibility" => paint with { Invisible = v is "hidden" or "collapse" },
                     _ => paint,
                 };
             }

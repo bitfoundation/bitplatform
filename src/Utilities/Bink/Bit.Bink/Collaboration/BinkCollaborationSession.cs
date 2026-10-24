@@ -69,6 +69,13 @@ public sealed class BinkCollaborationSession : IAsyncDisposable
     /// <summary>How many operations are kept, while a requested snapshot is awaited, to replay on top of it.</summary>
     private const int MaxReplayedOperations = 5_000;
 
+    /// <summary>
+    /// How long an answer to a snapshot request is waited for. A request nobody answers, because no participant
+    /// serves snapshots or the only one that did has left, would otherwise keep the session waiting for ever:
+    /// logging every change for a replay that never comes, and never asking again for an image that is missing.
+    /// </summary>
+    private static readonly TimeSpan SnapshotRequestLifetime = TimeSpan.FromSeconds(30);
+
     /// <summary>The most points of another participant's in-progress stroke that are kept.</summary>
     private const int MaxLiveStrokePoints = 10_000;
 
@@ -141,6 +148,7 @@ public sealed class BinkCollaborationSession : IAsyncDisposable
     private BinkPresenceState? _pendingPresence;
     private bool _applyingRemote;
     private bool _awaitingSnapshot;
+    private DateTimeOffset _snapshotRequested;
     private bool _disposed;
 
     /// <summary>Creates a session for a document.</summary>
@@ -221,15 +229,18 @@ public sealed class BinkCollaborationSession : IAsyncDisposable
     /// that serves snapshots answers, addressed to this one alone; the first answer is applied and the rest are
     /// ignored, so edits made after it are not overwritten by a slower, older copy. Changes made here or received
     /// while the answer is on its way are applied again on top of it, because it may have been written before they
-    /// reached whoever answered.
+    /// reached whoever answered. An answer that has not come within thirty seconds is no longer expected; the
+    /// document keeps whatever it holds, and the request can be made again.
     /// </summary>
     public Task RequestSnapshotAsync(CancellationToken cancellationToken = default)
     {
         // Set before sending: over an in-process transport the answer can arrive before the send returns. The
         // replay log starts with the first request; a repeated one keeps what the first has collected, because the
         // answer it gets may be just as old.
-        if (!_awaitingSnapshot) _replay.Clear();
+        DateTimeOffset now = UtcNow;
+        if (!AwaitingSnapshot(now)) _replay.Clear();
         _awaitingSnapshot = true;
+        _snapshotRequested = now;
         return SendAsync(new BinkCollaborationMessage
         {
             Kind = BinkCollaborationMessageKind.SnapshotRequest,
@@ -446,7 +457,7 @@ public sealed class BinkCollaborationSession : IAsyncDisposable
 
         // The answer to a pending snapshot request may have been serialized before this change reached whoever
         // answered; it is applied again on top of the answer rather than wiped by it.
-        if (_awaitingSnapshot) Log(e.Operation, ParticipantId);
+        if (AwaitingSnapshot(UtcNow)) Log(e.Operation, ParticipantId);
 
         _ = SendAsync(new BinkCollaborationMessage
         {
@@ -584,7 +595,7 @@ public sealed class BinkCollaborationSession : IAsyncDisposable
                 {
                     if (ApplySnapshot(message)) RetryHeldForImages();
                 }
-                else if (_awaitingSnapshot && ApplySnapshot(message))
+                else if (AwaitingSnapshot(now) && ApplySnapshot(message))
                 {
                     _awaitingSnapshot = false;
                     ReplayOnSnapshot();
@@ -659,7 +670,7 @@ public sealed class BinkCollaborationSession : IAsyncDisposable
         var received = new PendingOperation(operation, senderId, UtcNow);
         // The answer to a pending snapshot request may have been serialized before this change reached whoever
         // answered, so the change is applied again on top of the answer rather than wiped by it.
-        if (_awaitingSnapshot) Log(received);
+        if (AwaitingSnapshot(UtcNow)) Log(received);
 
         _applyingRemote = true;
         try
@@ -849,7 +860,7 @@ public sealed class BinkCollaborationSession : IAsyncDisposable
         if (_heldForImages.Count >= MaxHeldForImages) _heldForImages.RemoveAt(0);
         _heldForImages.Add((message, now));
         // A change that arrives while one fetch is under way, or soon after, waits for that snapshot or the next.
-        if (_awaitingSnapshot || now - _lastImageFetch < ImageFetchInterval) return;
+        if (AwaitingSnapshot(now) || now - _lastImageFetch < ImageFetchInterval) return;
         _lastImageFetch = now;
         _ = RequestSnapshotAsync();
     }
@@ -895,9 +906,25 @@ public sealed class BinkCollaborationSession : IAsyncDisposable
             RemoteOperationRejected?.Invoke($"A change from {_heldForImages[i].Message.SenderId} was dropped: the image it shows never arrived.");
             _heldForImages.RemoveAt(i--);
         }
-        if (_heldForImages.Count == 0 || _awaitingSnapshot || now - _lastImageFetch < ImageFetchInterval) return;
+        if (_heldForImages.Count == 0 || AwaitingSnapshot(now) || now - _lastImageFetch < ImageFetchInterval) return;
         _lastImageFetch = now;
         _ = RequestSnapshotAsync();
+    }
+
+    /// <summary>
+    /// True while an answer to a snapshot request is still expected. One that has not come within
+    /// <see cref="SnapshotRequestLifetime"/> is given up on: the replay log is dropped, since everything in it was
+    /// applied here as it happened and only needed applying again on top of an answer, and a later request, for a
+    /// missing image or from the host, starts afresh.
+    /// </summary>
+    private bool AwaitingSnapshot(DateTimeOffset now)
+    {
+        if (_awaitingSnapshot && now - _snapshotRequested >= SnapshotRequestLifetime)
+        {
+            _awaitingSnapshot = false;
+            _replay.Clear();
+        }
+        return _awaitingSnapshot;
     }
 
     /// <summary>Remembers an operation to replay on top of the snapshot that answers a pending request.</summary>

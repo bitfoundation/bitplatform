@@ -197,12 +197,16 @@ public sealed class BinkSvgRenderContext : IBinkRenderContext, IBinkRenderContex
         // The canvas draws nothing from a source rectangle with no area, and neither does the rasterizer.
         if (!(crop.Width > 0 && crop.Height > 0)) return;
 
-        if (image.Width > 0 && image.Height > 0)
+        // A natural size the source does not carry is read from the file itself when that is an embedded PNG,
+        // which is what a pasted picture or a screenshot is.
+        int width = image.Width, height = image.Height;
+        if (!(width > 0 && height > 0) && image.TryGetBytes(out byte[] bytes)) BinkPngCodec.TryReadSize(bytes, out width, out height);
+        if (width > 0 && height > 0)
         {
             // A crop is expressed as an oversized image behind a clip rectangle, which keeps the pixels untouched.
             float scaleX = destination.Width / crop.Width;
             float scaleY = destination.Height / crop.Height;
-            var full = new BinkRect(destination.X - crop.X * scaleX, destination.Y - crop.Y * scaleY, image.Width * scaleX, image.Height * scaleY);
+            var full = new BinkRect(destination.X - crop.X * scaleX, destination.Y - crop.Y * scaleY, width * scaleX, height * scaleY);
 
             // The clip needs a scope of its own. Without the Save, the matching Restore would close whatever
             // scope the caller had open, and every later element would fall outside its layer group.
@@ -216,7 +220,8 @@ public sealed class BinkSvgRenderContext : IBinkRenderContext, IBinkRenderContex
         // Without the natural size the oversized image cannot be placed. A nested viewport whose view box is the
         // crop, in image pixels, does the same job: the image takes its own size inside it, the viewport maps the
         // crop onto the destination and clips the rest. Squeezing the whole image into the destination instead
-        // would show something the canvas does not.
+        // would show something the canvas does not. An image that takes its own size is SVG 2; a renderer that
+        // only knows SVG 1.1 treats the missing size as zero and draws nothing here, which is the lesser wrong.
         _writer.Write("<svg x=\"");
         WriteNumber(destination.X, _decimals);
         _writer.Write("\" y=\"");

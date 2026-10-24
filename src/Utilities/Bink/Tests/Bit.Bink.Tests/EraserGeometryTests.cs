@@ -177,4 +177,45 @@ public class EraserGeometryTests(TestContext output)
         Assert.IsFalse(BinkStrokeEditor.EraseSegments(stroke, [new Vector2(100, 14.2f)], 10f, fragments));
         Assert.IsTrue(BinkStrokeEditor.EraseSegments(stroke, [new Vector2(100, 13.8f)], 10f, fragments));
     }
+
+    /// <summary>
+    /// The stroke eraser only needs to know whether a swipe touches a stroke, and asks with Reaches rather than
+    /// computing the cut and its fragments on every move. The two must agree exactly, on and off the edge of the
+    /// reach, for dots, repeated points and stretched strokes alike.
+    /// </summary>
+    [TestMethod]
+    public void Reaches_answers_exactly_what_EraseSegments_would_change()
+    {
+        var fragments = new List<BinkStroke>();
+        var pen = new BinkPenBrush { Width = 4f };
+        BinkStroke line = new(BinkStrokePoints.FromPositions([new Vector2(0, 0), new Vector2(200, 0)]), pen);
+        BinkStroke dot = new(BinkStrokePoints.FromPositions([new Vector2(50, 50)]), pen);
+        BinkStroke repeated = new(BinkStrokePoints.FromPositions([new Vector2(50, 50), new Vector2(50, 50)]), pen);
+        BinkStroke stretched = new(BinkStrokePoints.FromPositions([new Vector2(0, 0), new Vector2(100, 0)]), pen) { Transform = Matrix3x2.CreateScale(3f, 1f) * Matrix3x2.CreateRotation(MathF.PI / 2f) };
+        BinkStroke flat = new(BinkStrokePoints.FromPositions([new Vector2(0, 0), new Vector2(100, 0)]), pen) { Transform = Matrix3x2.CreateScale(1f, 0f) };
+
+        (BinkStroke Stroke, Vector2[] Path)[] cases =
+        [
+            (line, [new Vector2(100, -30), new Vector2(100, 30)]),
+            (line, [new Vector2(100, 12.1f)]),
+            (line, [new Vector2(100, 11.9f)]),
+            (line, [new Vector2(-12.1f, 0)]),
+            (line, [new Vector2(-11.9f, 0)]),
+            (line, [new Vector2(0, 50), new Vector2(200, 50)]),
+            (dot, [new Vector2(50, 62.5f)]),
+            (dot, [new Vector2(50, 61.5f)]),
+            (repeated, [new Vector2(50, 62.5f)]),
+            (repeated, [new Vector2(50, 61.5f)]),
+            (stretched, [new Vector2(-30, 150), new Vector2(30, 150)]),
+            (stretched, [new Vector2(-12.2f, 150)]),
+            (stretched, [new Vector2(-11.8f, 150)]),
+            (flat, [new Vector2(50, 0)]),
+            (line, []),
+        ];
+        foreach ((BinkStroke stroke, Vector2[] path) in cases)
+        {
+            bool erased = BinkStrokeEditor.EraseSegments(stroke, path, 10f, fragments);
+            Assert.AreEqual(erased, BinkStrokeEditor.Reaches(stroke, path, 10f), $"{stroke.Points.Count} points, eraser at {string.Join(" ", path)}");
+        }
+    }
 }

@@ -102,22 +102,7 @@ public static class BinkStrokeEditor
         ArgumentNullException.ThrowIfNull(stroke);
         ArgumentNullException.ThrowIfNull(fragments);
         fragments.Clear();
-        BinkStrokePoints points = stroke.Points;
-        int n = points.Count;
-        if (n == 0 || eraserPathDocument.IsEmpty) return false;
-
-        // Measured in document space, which is where the eraser is. Working in the stroke's local space instead
-        // means turning the eraser's circle into an ellipse whenever the stroke is stretched unevenly (which the
-        // selection's side handles do); dividing the radius by one average scale treated it as a circle, missing
-        // ink along the stretch and erasing short of it across.
-        Matrix3x2 transform = stroke.Transform;
-        bool identity = transform.IsIdentity;
-        Matrix3x2 inverse = Matrix3x2.Identity;
-        if (!identity && !Matrix3x2.Invert(transform, out inverse)) return false;
-        float determinant = identity ? 1f : MathF.Abs(transform.GetDeterminant());
-        if (!float.IsFinite(determinant) || determinant < BinkGeometryMath.Epsilon) return false;
-
-        var geometry = new EraseGeometry(points, transform, identity, inverse, determinant, stroke.Brush.HitTestWidth / 2f, MathF.Max(eraserRadiusDocument, 0f), eraserPathDocument);
+        if (!TryPrepare(stroke, eraserPathDocument, eraserRadiusDocument, out EraseGeometry geometry, out int n)) return false;
 
         // A single point is ink only as a dot, erased whole or not at all.
         if (n == 1) return geometry.ReachesDot(geometry.Document(0));
@@ -229,6 +214,73 @@ public static class BinkStrokeEditor
             }
             return distance <= Radius + reach;
         }
+    }
+
+    /// <summary>
+    /// Whether the eraser's path, swept with its radius, touches the stroke's ink: true exactly when
+    /// <see cref="EraseSegments"/> would change the stroke, decided without computing the cut or the fragments it
+    /// leaves, so a stroke eraser can test every stroke under a swipe on each move without allocating for it.
+    /// </summary>
+    /// <param name="stroke">The stroke.</param>
+    /// <param name="eraserPathDocument">Eraser path in document coordinates.</param>
+    /// <param name="eraserRadiusDocument">Eraser radius in document units.</param>
+    public static bool Reaches(BinkStroke stroke, ReadOnlySpan<Vector2> eraserPathDocument, float eraserRadiusDocument)
+    {
+        ArgumentNullException.ThrowIfNull(stroke);
+        if (!TryPrepare(stroke, eraserPathDocument, eraserRadiusDocument, out EraseGeometry geometry, out int n)) return false;
+        if (n == 1) return geometry.ReachesDot(geometry.Document(0));
+
+        // The same walk as FindCuts, stopping at the first touch.
+        ReadOnlySpan<Vector2> eraser = geometry.Eraser;
+        Vector2 b = geometry.Document(0);
+        for (int i = 0; i < n - 1; i++)
+        {
+            Vector2 a = b;
+            b = geometry.Document(i + 1);
+            BinkRect box = BinkRect.FromPoints(a, b);
+            if (!box.Intersects(geometry.Reach)) continue;
+
+            float length = Vector2.Distance(a, b);
+            if (length < BinkGeometryMath.Epsilon)
+            {
+                if (geometry.ReachesDot(a)) return true;
+                continue;
+            }
+            float reach = geometry.Radius + geometry.SegmentHalfWidth(i, length);
+            for (int e = Math.Min(1, eraser.Length - 1); e < eraser.Length; e++)
+            {
+                Vector2 c = eraser[Math.Max(e - 1, 0)], d = eraser[e];
+                if (!BinkRect.FromPoints(c, d).Inflate(reach).Intersects(box)) continue;
+                if (IntersectCapsule(a, b, c, d, reach, out _, out _)) return true;
+            }
+        }
+        return false;
+    }
+
+    /// <summary>
+    /// Sets up the geometry both the cut and the touch test work in. False when there is nothing to test: an empty
+    /// stroke or eraser path, or a stroke transform that cannot be inverted.
+    /// </summary>
+    private static bool TryPrepare(BinkStroke stroke, ReadOnlySpan<Vector2> eraserPathDocument, float eraserRadiusDocument, out EraseGeometry geometry, out int n)
+    {
+        geometry = default;
+        BinkStrokePoints points = stroke.Points;
+        n = points.Count;
+        if (n == 0 || eraserPathDocument.IsEmpty) return false;
+
+        // Measured in document space, which is where the eraser is. Working in the stroke's local space instead
+        // means turning the eraser's circle into an ellipse whenever the stroke is stretched unevenly (which the
+        // selection's side handles do); dividing the radius by one average scale treated it as a circle, missing
+        // ink along the stretch and erasing short of it across.
+        Matrix3x2 transform = stroke.Transform;
+        bool identity = transform.IsIdentity;
+        Matrix3x2 inverse = Matrix3x2.Identity;
+        if (!identity && !Matrix3x2.Invert(transform, out inverse)) return false;
+        float determinant = identity ? 1f : MathF.Abs(transform.GetDeterminant());
+        if (!float.IsFinite(determinant) || determinant < BinkGeometryMath.Epsilon) return false;
+
+        geometry = new EraseGeometry(points, transform, identity, inverse, determinant, stroke.Brush.HitTestWidth / 2f, MathF.Max(eraserRadiusDocument, 0f), eraserPathDocument);
+        return true;
     }
 
     /// <summary>
