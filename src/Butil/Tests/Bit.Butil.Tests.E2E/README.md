@@ -35,19 +35,19 @@ Run from inside `src` (so `src/global.json` selects the test runner):
 
 ```powershell
 # The standalone WebAssembly sample (builds and starts it with dotnet run).
-dotnet test --project tests\Bit.Butil.Tests.E2E\Bit.Butil.Tests.E2E.csproj
+dotnet test --project Tests\Bit.Butil.Tests.E2E\Bit.Butil.Tests.E2E.csproj
 
 # One render mode of the Web App host (builds the host first).
 $env:BUTIL_E2E_HOST = "server"
-dotnet test --project tests\Bit.Butil.Tests.E2E\Bit.Butil.Tests.E2E.csproj
+dotnet test --project Tests\Bit.Butil.Tests.E2E\Bit.Butil.Tests.E2E.csproj
 
 # BlazorWebView (Windows, needs the WebView2 Runtime; opens app windows while it runs).
 $env:BUTIL_E2E_HOST = "hybrid"
-dotnet test --project tests\Bit.Butil.Tests.E2E\Bit.Butil.Tests.E2E.csproj
+dotnet test --project Tests\Bit.Butil.Tests.E2E\Bit.Butil.Tests.E2E.csproj
 ```
 
 Run a Web App host by hand with one of its launch profiles (`ssr`, `server`, `wasm`, `auto`, `server-lazy`), or
-`dotnet run --project tests/Bit.Butil.Tests.Harness.Web -- --ButilHarness:Mode=wasm-noprerender --ButilHarness:Scripts=lazy`.
+`dotnet run --project Tests/Bit.Butil.Tests.Harness.Web -- --ButilHarness:Mode=wasm-noprerender --ButilHarness:Scripts=lazy`.
 
 ### Environment variables
 
@@ -95,12 +95,12 @@ runsettings under the MTP runner):
 ```bash
 # Publishes the Web App host with its WebAssembly client trimmed (and the bundle trimmed by the reference scan),
 # failing on any trim/AOT analysis warning raised inside Bit.Butil.
-bash tests/Bit.Butil.Tests.E2E/publish-gate.sh ../../artifacts/butil-harness-trimmed
+bash Tests/Bit.Butil.Tests.E2E/publish-gate.sh ../../artifacts/butil-harness-trimmed
 # AOT leg (needs the wasm-tools workload):
-bash tests/Bit.Butil.Tests.E2E/publish-gate.sh ../../artifacts/butil-harness-aot -p:RunAOTCompilation=true
+bash Tests/Bit.Butil.Tests.E2E/publish-gate.sh ../../artifacts/butil-harness-aot -p:RunAOTCompilation=true
 
 BUTIL_E2E_HOST=wasm BUTIL_E2E_PUBLISHED_HOST=$PWD/../../artifacts/butil-harness-trimmed \
-  dotnet test --project tests/Bit.Butil.Tests.E2E/Bit.Butil.Tests.E2E.csproj
+  dotnet test --project Tests/Bit.Butil.Tests.E2E/Bit.Butil.Tests.E2E.csproj
 ```
 
 The standalone sample can be run trimmed as well: `Bit.Butil.Samples.Web` imports Bit.Butil's consumer-side build

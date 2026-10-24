@@ -1,4 +1,4 @@
-using Bit.Butil.Samples.Core;
+﻿using Bit.Butil.Samples.Core;
 using Bit.Butil.Samples.Server.Components;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -13,7 +13,6 @@ var app = builder.Build();
 
 if (app.Environment.IsDevelopment() is false)
 {
-    app.UseExceptionHandler("/Error", createScopeForErrors: true);
     app.UseHsts();
 }
 

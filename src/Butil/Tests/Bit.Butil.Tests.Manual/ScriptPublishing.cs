@@ -70,7 +70,7 @@ internal static class ScriptPublishing
     /// <param name="BundleIsMinimum">The bundle must hold at least <paramref name="Bundle"/>; more is allowed.</param>
     /// <param name="Modules">The per-module files that must be published, or null for "none of them".</param>
     /// <param name="Error">A fragment of the build error the publish must fail with, when it must fail.</param>
-    /// <param name="Project">The fixture published: a folder under tests/ holding the csproj of the same name.</param>
+    /// <param name="Project">The fixture published: a folder under Tests/ holding the csproj of the same name.</param>
     /// <param name="ServiceWorker">For a fixture with a service worker, what the publish had to do to the manifest its client wrote; null for one without.</param>
     private sealed record Scenario(
         string Name,
@@ -274,7 +274,7 @@ internal static class ScriptPublishing
         if (trimmed) return (0, 0);
 
         var butilRoot = ScriptTrimming.LocateButilProject();
-        var fixtureProject = butilRoot is null ? null : Path.Combine(butilRoot, "..", "tests", Fixture, FixtureProject);
+        var fixtureProject = butilRoot is null ? null : Path.Combine(butilRoot, "..", "Tests", Fixture, FixtureProject);
         var manifestPath = butilRoot is null ? null : Path.Combine(butilRoot, "obj", "butil-js", "chunks", "manifest.txt");
 
         if (fixtureProject is null || File.Exists(fixtureProject) is false || manifestPath is null || File.Exists(manifestPath) is false)
@@ -291,7 +291,7 @@ internal static class ScriptPublishing
         foreach (var candidate in Scenarios)
         {
             var output = Path.Combine(workspace, $"publish-{++scenario}");
-            var project = Path.Combine(butilRoot!, "..", "tests", candidate.Project, candidate.Project + ".csproj");
+            var project = Path.Combine(butilRoot!, "..", "Tests", candidate.Project, candidate.Project + ".csproj");
             if (Publish(checks, project, output, candidate, out var log) is false) continue;
 
             if (candidate.Error is not null)

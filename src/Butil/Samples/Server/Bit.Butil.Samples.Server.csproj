@@ -1,13 +1,26 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
-  <PropertyGroup>
-    <TargetFramework>net10.0</TargetFramework>
-    <Nullable>enable</Nullable>
-    <ImplicitUsings>enable</ImplicitUsings>
-  </PropertyGroup>
+    <PropertyGroup>
+        <TargetFramework>net10.0</TargetFramework>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+    </PropertyGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\Core\Bit.Butil.Samples.Core.csproj" />
-  </ItemGroup>
+    <ItemGroup>
+        <ProjectReference Include="..\Core\Bit.Butil.Samples.Core.csproj" />
+    </ItemGroup>
+
+    <!-- The service worker, worker scripts, frames and stream sample the Core pages load by URL, taken from the
+         standalone sample's wwwroot rather than copied into this project, so every sample host serves the very same
+         files at the very same paths. ContentRoot is what makes that work under dotnet run: without it, a file from
+         outside the project is recorded against this project's own wwwroot, where it does not exist. An app of your
+         own keeps such files in its own wwwroot and needs none of this. -->
+    <PropertyGroup>
+        <_SamplesWebRoot>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\Web\wwwroot\'))</_SamplesWebRoot>
+    </PropertyGroup>
+    <ItemGroup>
+        <Content Include="$(_SamplesWebRoot)**" Exclude="$(_SamplesWebRoot)index.html"
+                 ContentRoot="$(_SamplesWebRoot)" RelativePath="%(RecursiveDir)%(Filename)%(Extension)" />
+    </ItemGroup>
 
 </Project>

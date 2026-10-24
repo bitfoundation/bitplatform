@@ -56,7 +56,7 @@ public static partial class ButilSetupGuide
                 from a script so that one build can be driven in both script-loading modes by the end-to-end
                 suite. Yours is the plain `<script>` tag of step 2, or no tag at all under lazy scripts.
                 """,
-                ["Sample/Web/", "Sample/Core/Extensions/"]),
+                ["Sample/Web/", .. SharedFiles]),
 
             "web-app" => Compose(
                 "Blazor Web App (InteractiveWebAssembly / InteractiveAuto, with prerendering)",
@@ -92,11 +92,16 @@ public static partial class ButilSetupGuide
 
                 The files below are the InteractiveAuto sample, the shape that has both: its host registers the
                 Server and the WebAssembly runtimes alike, and both `Program.cs` files call the one shared
-                `AddCoreServices()`. An InteractiveWebAssembly-only app is the same pair of projects without the
-                Server half - `Sample/Wasm/` in `GetButilSourceFile` - and this documentation site is that shape too,
-                at `Demo/Server/` and `Demo/Client/`.
+                `AddCoreServices()`. An InteractiveWebAssembly-only app is the same two projects with the Server
+                runtime left out of the host - no `AddInteractiveServerComponents()` or `AddInteractiveServerRenderMode()`
+                in its `Program.cs`, and `InteractiveWebAssembly` in place of `InteractiveAuto` in its `App.razor` - while
+                the host project itself, and its own `AddCoreServices()` call, stay. That sample's host is
+                `GetButilSourceFile(path: "Sample/Wasm/Bit.Butil.Samples.Wasm/Program.cs")` and its client is
+                `GetButilSourceFile(path: "Sample/Wasm/Bit.Butil.Samples.Wasm.Client/Program.cs")`; this documentation
+                site is that shape too, at `Demo/Server/` and `Demo/Client/`.
                 """,
-                ["Sample/Auto/", "Sample/Core/Extensions/"]),
+                ["Sample/Auto/", .. SharedFiles],
+                WebAppHostNotes),
 
             "server" => Compose(
                 "Blazor Server (InteractiveServer)",
@@ -126,7 +131,8 @@ public static partial class ButilSetupGuide
                 (`@inject Bit.Butil.Clipboard clipboard`). Adding `@using Bit.Butil` lets you write
                 `@inject Clipboard clipboard` instead, and brings the enums and option types into scope.
                 """,
-                ["Sample/Server/", "Sample/Core/Extensions/"]),
+                ["Sample/Server/", .. SharedFiles],
+                WebAppHostNotes),
 
             "hybrid" => Compose(
                 "Blazor Hybrid (MAUI, WPF, WinForms)",
@@ -151,13 +157,19 @@ public static partial class ButilSetupGuide
                 head's own JavaScript rather than from C# - `window.BitButil.webAuthn` called from a `.ts` file of
                 yours - is present regardless. There is nothing to keep alive with `<BitButilScriptModule>`.
                 """,
-                ["Sample/Maui/", "Sample/Core/Extensions/"]),
+                ["Sample/Maui/", .. SharedFiles]),
 
             _ => null
         };
     }
 
-    private static string Compose(string title, string summary, string[] pathPrefixes)
+    /// <summary>
+    /// What every guide quotes besides its own sample: the class library the samples share their
+    /// pages through - its registration, and the router every host page renders.
+    /// </summary>
+    private static readonly string[] SharedFiles = ["Sample/Core/Extensions/", "Sample/Core/Routes.razor"];
+
+    private static string Compose(string title, string summary, string[] pathPrefixes, string? fileNotes = null)
     {
         var builder = new StringBuilder();
 
@@ -165,7 +177,8 @@ public static partial class ButilSetupGuide
         builder.AppendLine(summary).AppendLine();
         builder.AppendLine(Checklist).AppendLine();
         builder.AppendLine("## The files, from a working project").AppendLine();
-        builder.AppendLine("Everything below compiles as-is; rename the projects and namespaces to your own.").AppendLine();
+        builder.AppendLine(SampleNotes).AppendLine();
+        if (fileNotes is not null) builder.AppendLine(fileNotes).AppendLine();
 
         // The .csproj goes last: it is the least interesting of the files and the longest of them.
         var files = ButilSourceCatalog.SourceFiles
@@ -211,9 +224,44 @@ public static partial class ButilSetupGuide
             || name.Equals("MauiProgram.cs", StringComparison.OrdinalIgnoreCase)
             || name.Equals("index.html", StringComparison.OrdinalIgnoreCase)
             || name.Equals("App.razor", StringComparison.OrdinalIgnoreCase)
+            || name.Equals("Routes.razor", StringComparison.OrdinalIgnoreCase)
             || name.Equals("IServiceCollectionExtensions.cs", StringComparison.OrdinalIgnoreCase)
             || name.EndsWith(".csproj", StringComparison.OrdinalIgnoreCase);
     }
+
+    /// <summary>
+    /// What in every sample is this repository's arrangement rather than the reader's. Each guide
+    /// promises files that compile, and they do - here; an agent copying them into an app of its
+    /// own has to know which lines to leave behind.
+    /// </summary>
+    private const string SampleNotes = """
+        Everything below compiles as-is in this repository; rename the projects and namespaces to your own. The samples
+        share one set of pages through a Razor class library, `Samples/Core` - `Routes.razor` below is its router - and
+        that accounts for the rest of what in them is this repository's rather than yours:
+
+        - Each project reaches Bit.Butil through a `ProjectReference` to that library. Yours references the `Bit.Butil`
+          package of step 1 instead.
+        - Every host but `Samples/Web` serves the files those pages load by URL - the service worker, the worker scripts,
+          the frames - out of `Samples/Web/wwwroot`, through the `Content` items at the end of its `.csproj`. Yours sit in
+          your own `wwwroot`, which needs nothing declared.
+        - The samples target `net10.0`. Use the package versions that match your own target framework.
+        """;
+
+    /// <summary>
+    /// The same, for the two guides that quote a Blazor Web App host: the lines of its
+    /// <c>Program.cs</c> and <c>.csproj</c> that exist only because the pages are not in the host.
+    /// </summary>
+    private const string WebAppHostNotes = """
+        Three more things in the host are particular to it. Its `Program.cs` calls
+        `.AddAdditionalAssemblies(typeof(Routes).Assembly)` - with the `using Bit.Butil.Samples.Core;` that needs - because
+        the pages live in that class library rather than in the host, and that call is what maps their `@page`
+        endpoints. An app whose `Routes.razor` sits next to its `App.razor` leaves both out: passing the host's own
+        assembly in a second time fails at startup with "Assembly already defined". `app.MapStaticAssets()` arrived in
+        .NET 9; on .NET 8 that line is `app.UseStaticFiles()`, ahead of `app.UseAntiforgery()`. And the host `.csproj`
+        has no `<BitButilTrimScripts>`: the build logic that acts on it comes with the NuGet package, which a
+        `ProjectReference` does not bring, so here it would do nothing. In your host `.csproj` it goes where the block
+        above puts it.
+        """;
 
     private const string Checklist = """
         ## Checklist

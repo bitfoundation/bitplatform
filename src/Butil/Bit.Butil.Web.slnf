@@ -13,10 +13,10 @@
       "Samples\\Wasm\\Bit.Butil.Samples.Wasm\\Bit.Butil.Samples.Wasm.csproj",
       "Samples\\Wasm\\Bit.Butil.Samples.Wasm.Client\\Bit.Butil.Samples.Wasm.Client.csproj",
       "Samples\\Web\\Bit.Butil.Samples.Web.csproj",
-      "tests\\Bit.Butil.Tests.Benchmarks\\Bit.Butil.Tests.Benchmarks.csproj",
-      "tests\\Bit.Butil.Tests.E2E\\Bit.Butil.Tests.E2E.csproj",
-      "tests\\Bit.Butil.Tests.Manual\\Bit.Butil.Tests.Manual.csproj",
-      "tests\\Bit.Butil.Tests.Mcp\\Bit.Butil.Tests.Mcp.csproj"
+      "Tests\\Bit.Butil.Tests.Benchmarks\\Bit.Butil.Tests.Benchmarks.csproj",
+      "Tests\\Bit.Butil.Tests.E2E\\Bit.Butil.Tests.E2E.csproj",
+      "Tests\\Bit.Butil.Tests.Manual\\Bit.Butil.Tests.Manual.csproj",
+      "Tests\\Bit.Butil.Tests.Mcp\\Bit.Butil.Tests.Mcp.csproj"
     ]
   }
 }

@@ -43,14 +43,14 @@ public static class RepoLayout
 
     /// <summary>The Blazor Web App that serves the harness pages in every render mode.</summary>
     public static string WebHarnessProject()
-        => FindUpward(Path.Combine("tests", WebHarnessName, $"{WebHarnessName}.csproj"));
+        => FindUpward(Path.Combine("Tests", WebHarnessName, $"{WebHarnessName}.csproj"));
 
     public static string WebHarnessAssembly(string framework, string configuration)
         => Path.Combine(Path.GetDirectoryName(WebHarnessProject())!, "bin", configuration, framework, $"{WebHarnessName}.dll");
 
     /// <summary>The WinForms BlazorWebView app that serves the harness pages as a hybrid app.</summary>
     public static string HybridHarnessProject()
-        => FindUpward(Path.Combine("tests", HybridHarnessName, $"{HybridHarnessName}.csproj"));
+        => FindUpward(Path.Combine("Tests", HybridHarnessName, $"{HybridHarnessName}.csproj"));
 
     public static string HybridHarnessExecutable(string configuration)
         => Path.Combine(Path.GetDirectoryName(HybridHarnessProject())!, "bin", configuration, "net10.0-windows", $"{HybridHarnessName}.exe");

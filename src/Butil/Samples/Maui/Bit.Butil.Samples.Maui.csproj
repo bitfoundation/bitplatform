@@ -56,4 +56,18 @@
         <ProjectReference Include="..\Core\Bit.Butil.Samples.Core.csproj" />
     </ItemGroup>
 
+    <!-- The worker scripts, frames and stream sample the Core pages load by URL, taken from the standalone sample's
+         wwwroot rather than copied into this project, so every sample host serves the very same files at the very
+         same paths. ContentRoot is what keeps them found wherever the app reads its static web assets from their
+         source folders rather than from a packaged copy: without it, a file from outside the project is recorded
+         against this project's own wwwroot, where it does not exist. An app of your own keeps such files in its own
+         wwwroot and needs none of this. -->
+    <PropertyGroup>
+        <_SamplesWebRoot>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\Web\wwwroot\'))</_SamplesWebRoot>
+    </PropertyGroup>
+    <ItemGroup>
+        <Content Include="$(_SamplesWebRoot)**" Exclude="$(_SamplesWebRoot)index.html"
+                 ContentRoot="$(_SamplesWebRoot)" RelativePath="%(RecursiveDir)%(Filename)%(Extension)" />
+    </ItemGroup>
+
 </Project>

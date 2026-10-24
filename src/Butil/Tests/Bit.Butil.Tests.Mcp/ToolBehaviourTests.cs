@@ -631,11 +631,31 @@ public class ToolBehaviourTests : McpTestBase
             {
                 // The one registration every host calls - the piece most easily got wrong, so it is in every guide.
                 Assert.Contains("### `Sample/Core/Extensions/IServiceCollectionExtensions.cs`", text, $"The '{model}' guide does not quote the shared registration.");
+                // And the router every host page renders, which the hosts' own files name without defining.
+                Assert.Contains("### `Sample/Core/Routes.razor`", text, $"The '{model}' guide does not quote the shared router.");
 
                 foreach (var file in files)
                 {
                     Assert.Contains($"### `{file}`", text, $"The '{model}' guide does not quote {file}.");
                 }
+            }
+        }
+    }
+
+    [TestMethod]
+    public async Task Every_source_file_a_setup_guide_sends_the_reader_to_exists()
+    {
+        // GetButilSourceFile serves exact file paths only. A guide pointing at a folder, or at a file since moved,
+        // hands the agent a "did you mean" instead of the file it was told would show the rest of the shape.
+        foreach (var model in ButilMcp.HostingModels)
+        {
+            var text = Text(await CallAsync("GetButilSetupGuide", new { hostingModel = model }));
+
+            foreach (var path in Regex.Matches(text, "GetButilSourceFile\\(path: \"([^\"]+)\"\\)").Select(match => match.Groups[1].Value))
+            {
+                var file = Text(await CallAsync("GetButilSourceFile", new { path }));
+
+                Assert.IsFalse(file.StartsWith("No source file at", StringComparison.Ordinal), $"The '{model}' guide sends the reader to '{path}', which is not a source file.");
             }
         }
     }

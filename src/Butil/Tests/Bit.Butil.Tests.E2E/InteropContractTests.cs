@@ -27,7 +27,7 @@ public class InteropContractTests
     public void Every_csharp_interop_call_resolves_against_the_bundle_and_its_lazy_module()
     {
         var root = LocateButilRoot();
-        var script = Path.Combine(root, "tests", "Bit.Butil.Tests.E2E", "Infrastructure", "verify-interop-contract.mjs");
+        var script = Path.Combine(root, "Tests", "Bit.Butil.Tests.E2E", "Infrastructure", "verify-interop-contract.mjs");
         var bundle = Path.Combine(root, "Bit.Butil", "wwwroot", "bit-butil.js");
         var sources = Path.Combine(root, "Bit.Butil");
         var modules = Path.Combine(root, "Bit.Butil", "wwwroot", "modules");

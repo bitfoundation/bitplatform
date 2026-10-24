@@ -12,9 +12,18 @@ public static class AssemblySetup
     [AssemblyCleanup]
     public static async Task CleanupAsync()
     {
-        await HarnessHostFactory.DisposeSharedAsync();
 #if NET10_0_OR_GREATER
-        await SampleHostFactories.DisposeAsync();
+        // One host failing to stop still leaves the others to be stopped.
+        try
+        {
+            await HarnessHostFactory.DisposeSharedAsync();
+        }
+        finally
+        {
+            await SampleHostFactories.DisposeAsync();
+        }
+#else
+        await HarnessHostFactory.DisposeSharedAsync();
 #endif
     }
 }

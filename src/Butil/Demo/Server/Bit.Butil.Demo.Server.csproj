@@ -72,10 +72,10 @@
          WebAssembly (Web) and Hybrid (Maui). Their pages are left out on purpose: they are a smaller
          copy of this demo's pages, and the demo itself is embedded above. The shared service
          registration is the exception - it is the piece the setup guide has to show, and the piece
-         most easily got wrong. Error.razor is the template's own error page and says nothing about
-         Butil, and the MAUI app's Platforms\ folder is the template's per-OS entry points. -->
+         most easily got wrong. The MAUI app's Platforms\ folder is the template's per-OS entry
+         points and says nothing about Butil. -->
     <EmbeddedResource Include="..\..\Samples\**\*.cs;..\..\Samples\**\*.csproj;..\..\Samples\**\index.html;..\..\Samples\**\*.razor"
-                      Exclude="..\..\Samples\**\bin\**;..\..\Samples\**\obj\**;..\..\Samples\Core\Pages\**;..\..\Samples\Core\Shared\**;..\..\Samples\**\Error.razor;..\..\Samples\**\Platforms\**">
+                      Exclude="..\..\Samples\**\bin\**;..\..\Samples\**\obj\**;..\..\Samples\Core\Pages\**;..\..\Samples\Core\Shared\**;..\..\Samples\**\Platforms\**">
       <LogicalName>ButilSource/Sample/%(RecursiveDir)%(Filename)%(Extension)</LogicalName>
     </EmbeddedResource>
   </ItemGroup>
