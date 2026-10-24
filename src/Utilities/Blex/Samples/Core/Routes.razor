@@ -1,0 +1,13 @@
+﻿@* The root component every sample host mounts. <BlexProvider> wraps the router, inside the interactive
+   render boundary: it registers the stores, hands the prerendered state to the interactive render,
+   rehydrates the persisted stores, starts undo/redo recording and connects the Redux DevTools bridge.
+   A BlazorWebView has no browser extension to connect to, so the MAUI app skips loading the bridge. *@
+
+<BlexProvider EnableDevTools="@(RendererInfo.Name is not "WebView")">
+    <Router AppAssembly="typeof(Routes).Assembly" NotFoundPage="typeof(NotFound)">
+        <Found Context="routeData">
+            <RouteView RouteData="routeData" DefaultLayout="typeof(MainLayout)" />
+            <FocusOnNavigate RouteData="routeData" Selector="h1" />
+        </Found>
+    </Router>
+</BlexProvider>

@@ -1436,14 +1436,18 @@ If the startup initializer cannot resolve its services (typically a lifetime mis
 | `Bit.Blex.Maui` | .NET MAUI integration: `UseBitBlex()` startup initializer, `Preferences`-backed persistence, XAML-bindable stores. |
 | `Bit.Blex.Testing` | Test harness and assertions (`BlexTestHarness`, `BlexActionLog`). |
 | `Demo` | Documentation website (`Client` + prerendering `Server` host): every feature explained with a live, runnable demo. |
-| `Samples/Bit.Blex.Samples.Wasm` | Minimal Blazor WebAssembly sample (Counter, Todos, Weather). |
+| `Samples` | One `Core` library of stores and pages (Counter, Todos, Weather) hosted unchanged by `Server`, `Wasm` and `Auto` (a Blazor Web App in each interactive render mode), `Standalone` (standalone Blazor WebAssembly) and `MAUI` (.NET MAUI Blazor Hybrid, persisting to `Preferences` through `Bit.Blex.Maui`). |
 | `Tests/Bit.Blex.Tests` | MSTest tests for the runtime, the Blazor/MAUI integrations and the generated code, on every target framework. |
 | `Tests/Bit.Blex.Tests.Generators` | Generator-driver tests: all `BLEX` diagnostics + emission snapshots. |
 | `Tests/Bit.Blex.Tests.Mcp` | MCP server tests, over the real protocol against the demo server's own `Program.cs`. |
 | `Tests/Bit.Blex.Tests.E2E` (+ `Tests/Bit.Blex.Tests.Harness*`) | Playwright suites in every Blazor render mode, Blazor Hybrid (WebView2) and trimmed/AOT publishes. See its [README](Tests/Bit.Blex.Tests.E2E/README.md). |
 | `Tests/Bit.Blex.Benchmarks` | BenchmarkDotNet suites (dispatch, fan-out, serialization, entity adapter). |
 
-Inside this repository the demo, sample, tests and benchmarks reference the generator project
+The samples are the hosting check rather than the docs: the same stores, pages and persistence run in
+every host, and the bar at the top of each page shows which renderer draws it and where persisted state
+goes, so a difference between hosts is visible at a glance.
+
+Inside this repository the demo, samples, tests and benchmarks reference the generator project
 directly as an analyzer (`OutputItemType="Analyzer" ReferenceOutputAssembly="false"`): a
 `ProjectReference` to `Bit.Blex` brings the runtime only, while the package brings the generator too.
 
@@ -1456,7 +1460,11 @@ cd src/Utilities/Blex/Tests/Bit.Blex.Tests.Generators && dotnet test
 cd src/Utilities/Blex/Tests/Bit.Blex.Tests.Mcp && dotnet test
 cd src/Utilities/Blex/Tests/Bit.Blex.Tests.E2E && dotnet test              # needs Playwright Chromium, see its README
 dotnet run --project src/Utilities/Blex/Demo/Server                        # documentation site
-dotnet run --project src/Utilities/Blex/Samples/Bit.Blex.Samples.Wasm      # minimal sample app
+dotnet run --project src/Utilities/Blex/Samples/Server                      # sample app, InteractiveServer
+dotnet run --project src/Utilities/Blex/Samples/Wasm/Bit.Blex.Samples.Wasm  # sample app, InteractiveWebAssembly
+dotnet run --project src/Utilities/Blex/Samples/Auto/Bit.Blex.Samples.Auto  # sample app, InteractiveAuto
+dotnet run --project src/Utilities/Blex/Samples/Standalone                  # sample app, standalone WebAssembly
+dotnet build -t:Run -f net10.0-android src/Utilities/Blex/Samples/MAUI      # sample app, .NET MAUI (needs the MAUI workload)
 dotnet run -c Release --project src/Utilities/Blex/Tests/Bit.Blex.Benchmarks
 ```
 

@@ -152,7 +152,7 @@ public class McpController(HtmlRenderer htmlRenderer) : ControllerBase
 
     [HttpGet]
     [McpServerTool(Name = nameof(GetBlexSourceFile), Title = "Read a source file", ReadOnly = true, OpenWorld = false)]
-    [Description("Gets one working Bit.Blex source file verbatim - e.g. 'Demo/Client/Stores/CartStore.cs' (a store with state, computed values and actions) or 'Demo/Client/Extensions/IServiceCollectionExtensions.cs' (the complete registration of this documentation site). Omit the path for the index of files: the demo's stores, middleware and components, and the minimal standalone WebAssembly sample ('Sample/...'). These are worked examples - for what a member means, GetBlexApi answers in a fraction of the characters.")]
+    [Description("Gets one working Bit.Blex source file verbatim - e.g. 'Demo/Client/Stores/CartStore.cs' (a store with state, computed values and actions) or 'Demo/Client/Extensions/IServiceCollectionExtensions.cs' (the complete registration of this documentation site). Omit the path for the index of files: the demo's stores, middleware and components, and the samples ('Sample/...'): one Core library of stores and pages, hosted unchanged by Blazor Server, WebAssembly, Auto, standalone WebAssembly and a .NET MAUI Blazor Hybrid app. These are worked examples - for what a member means, GetBlexApi answers in a fraction of the characters.")]
     public string GetBlexSourceFile(
         [Description("The file's path as the index lists it, e.g. 'Demo/Client/Stores/CartStore.cs'. Omit it for the index of files.")] string? path = null)
     {

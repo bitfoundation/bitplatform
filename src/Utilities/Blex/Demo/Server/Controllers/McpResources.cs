@@ -50,7 +50,7 @@ public class McpResources(HtmlRenderer htmlRenderer)
     // {+path} rather than {path}: a reserved expansion (RFC 6570) lets the value carry its slashes, so the path
     // a completion offers - Demo/Client/Stores/CartStore.cs - reads as it is written; the encoded form still does.
     [McpServerResource(UriTemplate = "blex://source/{+path}", Name = "blex-source", Title = "Demo source file", MimeType = "text/plain")]
-    [Description("One source file of the demo or of the standalone sample, e.g. blex://source/Demo/Client/Stores/CartStore.cs.")]
+    [Description("One source file of the demo or of the samples, e.g. blex://source/Demo/Client/Stores/CartStore.cs.")]
     public static string Source(string path)
         => BlexSourceCatalog.GetSourceFile(path) ?? $"No source file at '{path}'.";
 
