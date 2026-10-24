@@ -37,6 +37,8 @@ public sealed class BinkEraserTool : BinkDrawTool
     // Reused across the many move samples of one gesture: erasing runs on every pointer move, and a fresh list
     // per sample is pure garbage on the hottest path the tool has.
     private readonly List<BinkDrawingOperation> _operations = new(8);
+    // What undoes each erase of the gesture, so a cancelled gesture can be taken back.
+    private readonly List<BinkDrawingOperation> _inverses = new();
     private IDisposable? _historyGroup;
     private bool _erasing;
     private int _pointerId = -1;
@@ -84,6 +86,7 @@ public sealed class BinkEraserTool : BinkDrawTool
         _pointerId = sample.PointerId;
         _path.Clear();
         _erasedThisGesture.Clear();
+        _inverses.Clear();
         Vector2 p = context.Viewport.ToDocument(sample.Position);
         _lastPosition = p;
         _path.Add(p);
@@ -99,7 +102,9 @@ public sealed class BinkEraserTool : BinkDrawTool
     {
         ArgumentNullException.ThrowIfNull(context);
         if (_activeMode == BinkEraserMode.Pixel) { base.OnPointerMove(context, sample); return; }
-        if (!_erasing || sample.PointerId != _pointerId) return;
+        // A prediction may only ever be drawn. Erasing where the pointer is expected to be would delete ink the
+        // user never touched.
+        if (sample.IsPredicted || !_erasing || sample.PointerId != _pointerId) return;
         Vector2 p = context.Viewport.ToDocument(sample.Position);
         // Keep the swept path short: only the newest segment is needed for each erase pass.
         if (_path.Count > 0 && Vector2.DistanceSquared(_path[^1], p) < 0.01f) return;
@@ -128,7 +133,7 @@ public sealed class BinkEraserTool : BinkDrawTool
         // Only the contact that started the gesture can end it; see DrawTool.OnPointerCancel.
         if (!_erasing || sample.PointerId != _pointerId) return;
         context.ReleasePointer(sample.PointerId);
-        EndGesture(context);
+        CancelGesture(context);
     }
 
     private void EndGesture(IBinkToolContext context)
@@ -139,14 +144,45 @@ public sealed class BinkEraserTool : BinkDrawTool
         _historyGroup = null;
         if (_erasedThisGesture.Count > 0) context.Announce($"Erased {_erasedThisGesture.Count} strokes.");
         _erasedThisGesture.Clear();
+        _inverses.Clear();
         _path.Clear();
         context.InvalidateOverlay();
+    }
+
+    /// <summary>
+    /// Takes the gesture back. A cancel is a contact the system or the palm rejection withdrew, such as a palm that
+    /// landed before the pen, or a touch that turned into a pinch; what it erased was never meant to be erased, so it
+    /// is restored and leaves no undo step, as a cancelled stroke or drag does.
+    /// </summary>
+    private void CancelGesture(IBinkToolContext context)
+    {
+        if (_inverses.Count > 0)
+        {
+            var undo = new BinkDrawingOperation[_inverses.Count];
+            for (int i = 0; i < undo.Length; i++) undo[i] = _inverses[_inverses.Count - 1 - i];
+            try
+            {
+                context.Document.Apply(new BinkBatchOperation(undo, "Cancel"));
+                // The erase and its reversal were both collected into the gesture's group; dropping the group
+                // leaves the undo stack as it was.
+                context.History.CancelGroup();
+            }
+            catch (InvalidOperationException)
+            {
+                // The document moved on underneath the gesture, typically a collaborator removing what was erased.
+                // The batch restored nothing, so the erase stays and stays undoable.
+            }
+            context.InvalidateDocument();
+        }
+        _erasedThisGesture.Clear();
+        EndGesture(context);
     }
 
     /// <inheritdoc />
     public override void Deactivate(IBinkToolContext context)
     {
-        if (_erasing) EndGesture(context);
+        // Being replaced mid-gesture, or interrupted by the canvas (a second finger, a new document), is a cancel.
+        if (_erasing) CancelGesture(context);
         // Always release the history group, even if the gesture flag was already cleared by an earlier path.
         _historyGroup?.Dispose();
         _historyGroup = null;
@@ -170,7 +206,8 @@ public sealed class BinkEraserTool : BinkDrawTool
             for (int i = elements.Count - 1; i >= 0; i--)
             {
                 BinkElement element = elements[i];
-                if (!element.Bounds.Intersects(area)) continue;
+                // A locked element is protected from every tool, the stroke and segment erasers included.
+                if (element.IsLocked || !element.Bounds.Intersects(area)) continue;
 
                 if (element is BinkStroke stroke && _activeMode == BinkEraserMode.Segment)
                 {
@@ -201,7 +238,7 @@ public sealed class BinkEraserTool : BinkDrawTool
         try
         {
             // BatchOperation keeps the list it is given, so the reused buffer is copied before handing it over.
-            document.Apply(operations.Count == 1 ? operations[0] : new BinkBatchOperation([.. operations], "Erase"));
+            _inverses.Add(document.Apply(operations.Count == 1 ? operations[0] : new BinkBatchOperation([.. operations], "Erase")));
         }
         catch (InvalidOperationException ex)
         {
@@ -216,6 +253,10 @@ public sealed class BinkEraserTool : BinkDrawTool
     private bool HitsElement(BinkElement element, ReadOnlySpan<Vector2> segment)
     {
         if (!element.IsSelectable) return false;
+        // A stroke is tested exactly, with the segment eraser's own geometry: whether the swept circle meets the
+        // ink, in document space and under any transform, without computing the cut it would make. Sampling the
+        // swipe instead let a fast drag step over a thin stroke between two samples.
+        if (element is BinkStroke stroke) return BinkStrokeEditor.Reaches(stroke, segment, Radius);
         foreach (Vector2 p in segment)
         {
             if (element.HitTest(p, Radius)) return true;

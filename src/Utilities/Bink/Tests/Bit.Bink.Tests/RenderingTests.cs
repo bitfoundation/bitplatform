@@ -443,11 +443,16 @@ public class SvgExportTests
         Assert.DoesNotContain("url(http", svg, StringComparison.OrdinalIgnoreCase);
         Assert.DoesNotContain("@import", svg, StringComparison.OrdinalIgnoreCase);
 
-        // With an image, exactly one reference appears, and it is the image's own source.
+        // With an image, exactly one reference appears, and it is the image's own source. It is written both as
+        // href and as xlink:href, for SVG 2 and SVG 1.1 consumers.
         byte[] png = TestData.CreatePng(4, 4, (_, _) => BinkColor.Black);
-        document.AddElement(new BinkImageElement(BinkImageSource.FromBytes(png, "image/png", 4, 4), new BinkRect(0, 0, 50, 50)));
+        var source = BinkImageSource.FromBytes(png, "image/png", 4, 4);
+        document.AddElement(new BinkImageElement(source, new BinkRect(0, 0, 50, 50)));
         string withImage = BinkSvgExporter.Export(document);
-        Assert.ContainsSingle(System.Text.RegularExpressions.Regex.Matches(withImage, "href="));
+        Assert.ContainsSingle(System.Text.RegularExpressions.Regex.Matches(withImage, "<image "));
+        var references = System.Text.RegularExpressions.Regex.Matches(withImage, "href=\"([^\"]*)\"");
+        Assert.HasCount(2, references);
+        foreach (System.Text.RegularExpressions.Match reference in references) Assert.AreEqual(source.Uri, reference.Groups[1].Value);
     }
 
     [TestMethod]

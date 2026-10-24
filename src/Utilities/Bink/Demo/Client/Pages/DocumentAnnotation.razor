@@ -39,7 +39,8 @@
 
     <div class="bink-review">
         <div class="bink-surface">
-            <BinkCanvas @ref="_canvas" Ready="() => StateHasChanged()" HistoryChanged="() => StateHasChanged()"
+            <BinkCanvas @ref="_canvas" Ready="OnReady" HistoryChanged="() => StateHasChanged()"
+                       ViewportChanged="_status?.ViewportChanged ?? default"
                        EnableTouchGestures="true"
                        Document="_document"
                        Height="620px"
@@ -80,7 +81,7 @@
                             {
                                 <textarea rows="2" maxlength="500" aria-label="Comment text"
                                           value="@entry.Text"
-                                          @onchange="e => EditComment(entry.Id, e.Value?.ToString())"></textarea>
+                                          @onchange="e => EditCommentAsync(entry.Id, e.Value?.ToString())"></textarea>
                             }
                             else
                             {
@@ -93,13 +94,41 @@
         </aside>
     </div>
 
-    <CanvasStatus Canvas="_canvas" />
+    <CanvasStatus @ref="_status" Canvas="_canvas" />
 </div>
 
 <div class="bb-note">
     Each annotation carries a description, so the exported SVG and the accessible summary of the canvas both
     report what is on the page. That is how a canvas-based review tool stays usable with a screen reader: the
-    strokes themselves cannot be described, but the objects around them can.
+    strokes themselves cannot be described, but the objects around them can. The panel beside the page is ordinary
+    HTML built from the same elements: ↗ selects an annotation on the page; × deletes it, and a comment's text is
+    edited in its box, each as one undo step.
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Highlights and callouts</h3>
+    <p class="bb-card-desc">
+        A highlight is one or more rectangles drawn with multiply blending, so the text under it stays legible - the
+        right element for marking text, because a line of text is a rectangle. A callout is a text box with a pointer to
+        an anchor, the shape a review comment takes; the pointer leaves whichever edge of the box faces the anchor, so it
+        stays sensible when the callout is moved. Both can be made directly, without a tool:
+    </p>
+    <pre class="bb-code">_document.AddElement(<span class="k">new</span> BinkHighlightElement(lineRects)
+{
+    Color = BinkColor.Parse(<span class="s">"#fde047"</span>),
+    Opacity = 0.5f,
+    Description = <span class="s">"Highlighted: payment terms"</span>,
+}, _annotationLayer);
+
+_document.AddElement(<span class="k">new</span> BinkCalloutElement(box: <span class="k">new</span> BinkRect(320, 100, 200, 70), anchor: <span class="k">new</span> Vector2(280, 130), text: <span class="s">"Please confirm this clause."</span>)
+{
+    Style = <span class="k">new</span> BinkShapeStyle { FillColor = BinkColor.Parse(<span class="s">"#fff9c4"</span>), StrokeColor = BinkColor.Parse(<span class="s">"#785a00"</span>) },
+}, _annotationLayer);</pre>
+    <p class="bb-card-desc">
+        The contract is real text: each line is a <code>BinkTextElement</code> on a locked "Page" layer, so it is
+        exported as text and read by a screen reader, while the review tools can only add to the "Annotations" layer
+        above it. Export SVG writes both, with <code>Title</code> and the per-element descriptions.
+    </p>
 </div>
 
 <div class="bb-card">
@@ -127,6 +156,7 @@
     private sealed record AnnotationEntry(Guid Id, string Kind, string Text, bool Editable);
 
     private BinkCanvas? _canvas;
+    private CanvasStatus? _status;
     private readonly BinkDocument _document = new(new BinkDocumentSettings { Width = 620, Height = 620, Background = BinkColor.White });
     private Guid _pageLayer;
     private Guid _annotationLayer;
@@ -139,6 +169,14 @@
     private int _commentNumber;
 
     private static readonly string[] HighlightColors = ["#fde047", "#86efac", "#93c5fd", "#fca5a5"];
+
+    // A sticky-note yellow with a dark amber edge: a comment reads as a note on the page, not as part of it.
+    private static readonly BinkShapeStyle CalloutStyle = new()
+    {
+        FillColor = BinkColor.Parse("#fff9c4"),
+        StrokeColor = BinkColor.Parse("#785a00"),
+        StrokeWidth = 1.5f,
+    };
 
     private static readonly (string Id, string Label)[] Tools =
     [
@@ -189,6 +227,18 @@
     }
 
     public void Dispose() => _document.Changed -= OnDocumentEdited;
+
+    private void OnReady()
+    {
+        // On a phone the lines are wider than the view: show them whole rather than their beginnings. A pinch, or
+        // Ctrl+0, still gives 100%.
+        if (_canvas is null) return;
+        BinkRect content = _document.ContentBounds;
+        if (content.Right > _canvas.ViewSize.X || content.Bottom > _canvas.ViewSize.Y)
+        {
+            _canvas.SetViewport(BinkViewport.Fit(content, _canvas.ViewSize, 8f, maxZoom: 1f));
+        }
+    }
 
     /// <summary>Lays out the document text as real text elements, so it can be selected, exported and read.</summary>
     private void BuildPage()
@@ -287,6 +337,7 @@
                 {
                     Id = box.Id,
                     Version = box.Version,
+                    Style = CalloutStyle,
                     Description = text,
                 });
                 break;
@@ -324,10 +375,23 @@
         }
     }
 
-    private void EditComment(Guid id, string? text)
+    private async Task EditCommentAsync(Guid id, string? text)
     {
-        if (string.IsNullOrWhiteSpace(text) || !_document.TryGetElement(id, out BinkElement? element)) return;
-        if (element is not BinkCalloutElement callout || callout.Text == text) return;
+        if (!_document.TryGetElement(id, out BinkElement? element) || element is not BinkCalloutElement callout) return;
+        if (string.IsNullOrWhiteSpace(text))
+        {
+            // A comment keeps its text; the × beside it is what deletes it. The box still shows the cleared text, and
+            // rendering the comment's text over the same text rendered last time is no change, so render what the
+            // box shows first, then the comment's own text.
+            int index = _annotations.FindIndex(entry => entry.Id == id);
+            if (index < 0) return;
+            _annotations[index] = _annotations[index] with { Text = text ?? string.Empty };
+            StateHasChanged();
+            await Task.Yield();
+            Reindex();
+            return;
+        }
+        if (callout.Text == text) return;
         _document.ReplaceElement(callout with { Text = text, Description = text });
         _canvas?.Refresh();
     }

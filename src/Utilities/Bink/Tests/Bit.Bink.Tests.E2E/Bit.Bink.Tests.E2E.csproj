@@ -21,6 +21,8 @@
              browser, the contexts and the demo host from its own infrastructure. -->
         <PackageReference Include="Microsoft.Playwright" Version="1.64.0" />
         <PackageReference Include="MSTest" Version="4.5.1" />
+        <!-- axe-core, run inside the page, for the accessibility checks (AccessibilityTests.cs). Test-only. -->
+        <PackageReference Include="Deque.AxeCore.Playwright" Version="4.14.0" />
     </ItemGroup>
 
     <!-- Deliberately no ProjectReference to the demo. The suite boots Bit.Bink.Demo.Server from its build

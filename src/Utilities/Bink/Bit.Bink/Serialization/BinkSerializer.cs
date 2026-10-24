@@ -1,5 +1,6 @@
 ﻿using System.Buffers;
 using System.Numerics;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.Json;
 
@@ -25,11 +26,17 @@ public static class BinkSerializer
     /// <summary>The format identifier written into every document.</summary>
     public const string FormatName = "bink";
 
-    /// <summary>The current schema version.</summary>
-    public const int CurrentVersion = 1;
+    /// <summary>
+    /// The current schema version. Version 2 added the asset table (see <see cref="BinkSerializerOptions.ShareImageData"/>);
+    /// a document that does not use it is still written as version 1, so earlier versions of Bink keep opening it.
+    /// </summary>
+    public const int CurrentVersion = 2;
 
     /// <summary>The oldest schema version this library can read.</summary>
     public const int MinimumSupportedVersion = 1;
+
+    /// <summary>The longest unregistered brush kind kept as it is; a longer one is read as a pen.</summary>
+    private const int MaxBrushKindLength = 256;
 
     /// <summary>Characters never allowed in a font family, because the value is emitted into CSS and SVG.</summary>
     private static readonly SearchValues<char> UnsafeFontCharacters = SearchValues.Create("<>\"'{}();\\");
@@ -97,9 +104,14 @@ public static class BinkSerializer
 
     private static void Write(Utf8JsonWriter writer, BinkDocument document, BinkSerializerOptions options)
     {
+        // The table names only what more than one element shows: a picture shown once gains nothing from it, and a
+        // document without one stays readable by versions from before the table.
+        SortedDictionary<string, string>? table = options.ShareImageData && options.IncludeEmbeddedImages ? SharedImages(document) : null;
+        BinkImageAssets? assets = table is null ? null : new BinkImageAssets { CanRefer = table.ContainsKey };
+
         writer.WriteStartObject();
         writer.WriteString("format", FormatName);
-        writer.WriteNumber("version", CurrentVersion);
+        writer.WriteNumber("version", table is null ? 1 : CurrentVersion);
         writer.WriteString("id", document.Id);
 
         writer.WritePropertyName("settings");
@@ -117,16 +129,45 @@ public static class BinkSerializer
             writer.WriteEndObject();
         }
 
+        if (table is not null)
+        {
+            writer.WritePropertyName("assets");
+            writer.WriteStartObject();
+            foreach ((string id, string uri) in table) writer.WriteString(id, uri);
+            writer.WriteEndObject();
+        }
+
         writer.WritePropertyName("layers");
         writer.WriteStartArray();
-        foreach (BinkLayer layer in document.Layers) WriteLayer(writer, layer, options);
+        foreach (BinkLayer layer in document.Layers) WriteLayer(writer, layer, options, assets);
         writer.WriteEndArray();
 
         writer.WriteEndObject();
         writer.Flush();
     }
 
-    private static void WriteLayer(Utf8JsonWriter writer, BinkLayer layer, BinkSerializerOptions options)
+    /// <summary>The embedded images more than one element shows, by content id; null when there are none.</summary>
+    private static SortedDictionary<string, string>? SharedImages(BinkDocument document)
+    {
+        Dictionary<string, int>? uses = null;
+        foreach (BinkElement element in document.AllElements)
+        {
+            if (element is not BinkImageElement { Source: { IsEmbedded: true } source }) continue;
+            uses ??= new Dictionary<string, int>(StringComparer.Ordinal);
+            CollectionsMarshal.GetValueRefOrAddDefault(uses, source.Uri, out _)++;
+        }
+        if (uses is null) return null;
+        SortedDictionary<string, string>? table = null;
+        foreach ((string uri, int count) in uses)
+        {
+            if (count < 2) continue;
+            // Sorted by id, so the same document is always written the same way.
+            (table ??= new SortedDictionary<string, string>(StringComparer.Ordinal))[BinkImageAssets.IdOf(uri)] = uri;
+        }
+        return table;
+    }
+
+    private static void WriteLayer(Utf8JsonWriter writer, BinkLayer layer, BinkSerializerOptions options, BinkImageAssets? assets)
     {
         writer.WriteStartObject();
         writer.WriteString("id", layer.Id);
@@ -134,11 +175,12 @@ public static class BinkSerializer
         if (!layer.IsVisible) writer.WriteBoolean("visible", false);
         if (layer.IsLocked) writer.WriteBoolean("locked", true);
         if (layer.Opacity < 1f) writer.WriteNumber("opacity", Round(layer.Opacity, 3));
+        if (layer.BlendMode != BinkBlendMode.Normal) writer.WriteString("blend", BlendName(layer.BlendMode));
         WriteMetadata(writer, layer.Properties.Metadata);
 
         writer.WritePropertyName("elements");
         writer.WriteStartArray();
-        foreach (BinkElement element in layer.Elements) WriteElement(writer, element, options);
+        foreach (BinkElement element in layer.Elements) WriteElement(writer, element, options, assets);
         writer.WriteEndArray();
         writer.WriteEndObject();
     }
@@ -154,12 +196,17 @@ public static class BinkSerializer
     {
         ArgumentNullException.ThrowIfNull(writer);
         ArgumentNullException.ThrowIfNull(element);
-        WriteElement(writer, element, options ?? BinkSerializerOptions.Default);
+        WriteElement(writer, element, options ?? BinkSerializerOptions.Default, null);
     }
 
+    /// <summary>Writes a single element, sharing embedded images as <paramref name="assets"/> allows.</summary>
+    internal static void WriteElementTo(Utf8JsonWriter writer, BinkElement element, BinkSerializerOptions options, BinkImageAssets? assets)
+        => WriteElement(writer, element, options, assets);
+
     /// <summary>
-    /// Reads a single element written by <see cref="WriteElementTo"/>. Returns null when the element type is
-    /// unknown and <see cref="BinkDeserializerOptions.PreserveUnknownElements"/> is disabled.
+    /// Reads a single element written by <see cref="WriteElementTo(Utf8JsonWriter, BinkElement, BinkSerializerOptions?)"/>.
+    /// Returns null when the element type is unknown and <see cref="BinkDeserializerOptions.PreserveUnknownElements"/>
+    /// is disabled.
     /// </summary>
     /// <param name="element">The JSON object.</param>
     /// <param name="options">Deserialization options, including the limits applied to untrusted input.</param>
@@ -168,7 +215,7 @@ public static class BinkSerializer
     {
         try
         {
-            return ReadElement(element, options ?? BinkDeserializerOptions.Default);
+            return ReadElement(element, options ?? BinkDeserializerOptions.Default, null);
         }
         catch (BinkFormatException)
         {
@@ -180,7 +227,26 @@ public static class BinkSerializer
         }
     }
 
-    private static void WriteElement(Utf8JsonWriter writer, BinkElement element, BinkSerializerOptions options)
+    /// <summary>Reads a single element whose embedded images may be references, resolved through <paramref name="assets"/>.</summary>
+    /// <exception cref="BinkFormatException">The JSON is not a valid element.</exception>
+    /// <exception cref="BinkMissingAssetException">A reference cannot be resolved and the context asks for that to fail the read.</exception>
+    internal static BinkElement? ReadElementFrom(JsonElement element, BinkDeserializerOptions options, BinkImageAssets? assets)
+    {
+        try
+        {
+            return ReadElement(element, options, assets);
+        }
+        catch (BinkFormatException)
+        {
+            throw;
+        }
+        catch (Exception ex) when (ex is InvalidOperationException or ArgumentException or FormatException or OverflowException)
+        {
+            throw new BinkFormatException("The element is malformed: " + ex.Message, ex);
+        }
+    }
+
+    private static void WriteElement(Utf8JsonWriter writer, BinkElement element, BinkSerializerOptions options, BinkImageAssets? assets)
     {
         if (element is BinkUnknownElement unknown)
         {
@@ -197,13 +263,28 @@ public static class BinkSerializer
             case BinkRectangleShape rect: WriteRectangle(writer, rect, options); break;
             case BinkEllipseShape ellipse: WriteEllipse(writer, ellipse, options); break;
             case BinkLineShape line: WriteLine(writer, line, options); break;
+            case BinkPolygonShape polygon: WritePolygon(writer, polygon, options); break;
+            case BinkPathElement path: WritePath(writer, path, options); break;
             case BinkTextElement text: WriteText(writer, text, options); break;
-            case BinkImageElement image: WriteImage(writer, image, options); break;
+            case BinkImageElement image: WriteImage(writer, image, options, assets); break;
             case BinkHighlightElement highlight: WriteHighlight(writer, highlight, options); break;
             case BinkCalloutElement callout: WriteCallout(writer, callout, options); break;
-            default: throw new InvalidOperationException($"{element.GetType().Name} cannot be serialized. Custom element types must be handled by the application before saving.");
+            default: WriteCustom(writer, element, options); break;
         }
         writer.WriteEndObject();
+    }
+
+    private static void WriteCustom(Utf8JsonWriter writer, BinkElement element, BinkSerializerOptions options)
+    {
+        if (!options.ElementRegistry.TryGet(element.GetType(), out BinkElementRegistry.Entry? entry))
+        {
+            throw new InvalidOperationException($"{element.GetType().Name} cannot be serialized: register a BinkElementConverter for it with BinkElementRegistry, or convert it to built-in elements before saving.");
+        }
+        WriteCommon(writer, entry!.TypeName, element, options);
+        // The bounds let a reader that does not know the type keep the element where it is: it loads as an unknown
+        // element that is preserved, culled and exported in the right place rather than at the origin.
+        WriteRect(writer, "bounds", element.LocalBounds, options.Decimals);
+        entry.Write(writer, element, options);
     }
 
     private static void WriteCommon(Utf8JsonWriter writer, string type, BinkElement element, BinkSerializerOptions options)
@@ -225,6 +306,14 @@ public static class BinkSerializer
             writer.WriteEndArray();
         }
         if (element.Description is { Length: > 0 }) writer.WriteString("description", element.Description);
+        if (element.IsLocked) writer.WriteBoolean("locked", true);
+        if (element.GroupIds.Count > 0)
+        {
+            writer.WritePropertyName("groups");
+            writer.WriteStartArray();
+            foreach (Guid group in element.GroupIds) writer.WriteStringValue(group);
+            writer.WriteEndArray();
+        }
         WriteMetadata(writer, element.Metadata);
     }
 
@@ -290,13 +379,33 @@ public static class BinkSerializer
         writer.WriteString("kind", brush.Kind);
         writer.WriteString("color", brush.Color.ToCss());
         writer.WriteNumber("width", Round(brush.Width, 3));
-        if (brush.Opacity < 1f) writer.WriteNumber("opacity", Round(brush.Opacity, 3));
-        if (brush.BlendMode != BinkBlendMode.Normal) writer.WriteString("blend", BlendName(brush.BlendMode));
-        if (brush.Smoothing != 0.5f) writer.WriteNumber("smoothing", Round(brush.Smoothing, 3));
-        if (brush.Spacing != 0.25f) writer.WriteNumber("spacing", Round(brush.Spacing, 3));
-        if (!brush.SimulatePressure) writer.WriteBoolean("simulatePressure", false);
-        if (brush.TaperStart != 0) writer.WriteNumber("taperStart", Round(brush.TaperStart, 3));
-        if (brush.TaperEnd != 0) writer.WriteNumber("taperEnd", Round(brush.TaperEnd, 3));
+
+        // A field is left out only when it holds BinkBrush's own default, which is what a reader assumes for a
+        // missing field. Older readers assumed the kind's default instead, which differs for most brushes (a pen
+        // tapers its end, a highlighter multiplies at 45%), so a field is also written whenever the kind's default
+        // is not BinkBrush's: both kinds of reader then read the same brush. A kind this build cannot construct
+        // has no known default, so all of its fields are written.
+        BinkBrush? kind = options.BrushRegistry.GetDefault(brush.Kind);
+        BinkBrush standard = BaseBrush;
+        if (Differs(brush.Opacity, standard.Opacity, kind?.Opacity)) writer.WriteNumber("opacity", Round(brush.Opacity, 3));
+        if (Differs(brush.BlendMode, standard.BlendMode, kind?.BlendMode)) writer.WriteString("blend", BlendName(brush.BlendMode));
+        if (Differs(brush.Smoothing, standard.Smoothing, kind?.Smoothing)) writer.WriteNumber("smoothing", Round(brush.Smoothing, 3));
+        if (Differs(brush.Spacing, standard.Spacing, kind?.Spacing)) writer.WriteNumber("spacing", Round(brush.Spacing, 3));
+        if (Differs(brush.SimulatePressure, standard.SimulatePressure, kind?.SimulatePressure)) writer.WriteBoolean("simulatePressure", brush.SimulatePressure);
+        if (Differs(brush.TaperStart, standard.TaperStart, kind?.TaperStart)) writer.WriteNumber("taperStart", Round(brush.TaperStart, 3));
+        if (Differs(brush.TaperEnd, standard.TaperEnd, kind?.TaperEnd)) writer.WriteNumber("taperEnd", Round(brush.TaperEnd, 3));
+
+        // The kind's own settings, in name order so the same brush always writes the same bytes.
+        if (brush.GetParameters() is { Count: > 0 } parameters)
+        {
+            writer.WritePropertyName("params");
+            writer.WriteStartObject();
+            foreach ((string name, float value) in parameters.OrderBy(static p => p.Key, StringComparer.Ordinal))
+            {
+                if (float.IsFinite(value)) writer.WriteNumber(name, Round(value, 4));
+            }
+            writer.WriteEndObject();
+        }
 
         BinkPressureCurve curve = brush.PressureCurve;
         writer.WritePropertyName("pressure");
@@ -309,6 +418,16 @@ public static class BinkSerializer
         writer.WriteEndObject();
     }
 
+    /// <summary>
+    /// A brush holding <see cref="BinkBrush"/>'s own defaults for every field the writer may leave out: the meaning
+    /// of a missing field in every file this format has produced.
+    /// </summary>
+    private static readonly BinkBrush BaseBrush = new BinkFallbackBrush(BinkPenBrush.KindName);
+
+    /// <summary>Whether a brush field has to be written; see <see cref="WriteBrush"/>.</summary>
+    private static bool Differs<T>(T value, T standard, T? kindDefault) where T : struct
+        => kindDefault is not { } fallback || !EqualityComparer<T>.Default.Equals(value, standard) || !EqualityComparer<T>.Default.Equals(fallback, standard);
+
     private static void WriteShapeStyle(Utf8JsonWriter writer, BinkShapeStyle style, BinkSerializerOptions options)
     {
         writer.WritePropertyName("style");
@@ -319,6 +438,8 @@ public static class BinkSerializer
         if (style.Opacity < 1f) writer.WriteNumber("opacity", Round(style.Opacity, 3));
         if (style.BlendMode != BinkBlendMode.Normal) writer.WriteString("blend", BlendName(style.BlendMode));
         if (style.Dash is { Length: > 0 } dash) WriteFloatArray(writer, "dash", dash, 2);
+        if (style.LineCap != BinkLineCap.Round) writer.WriteString("cap", style.LineCap == BinkLineCap.Butt ? "butt" : "square");
+        if (style.LineJoin != BinkLineJoin.Round) writer.WriteString("join", style.LineJoin == BinkLineJoin.Miter ? "miter" : "bevel");
         writer.WriteEndObject();
     }
 
@@ -382,6 +503,35 @@ public static class BinkSerializer
         WriteShapeStyle(writer, shape.Style, options);
     }
 
+    private static void WritePolygon(Utf8JsonWriter writer, BinkPolygonShape shape, BinkSerializerOptions options)
+    {
+        WriteCommon(writer, "polygon", shape, options);
+        // A flat list of coordinates, x then y, as compact as the points of a line.
+        writer.WritePropertyName("points");
+        writer.WriteStartArray();
+        foreach (Vector2 p in shape.Points)
+        {
+            writer.WriteNumberValue(Round(p.X, options.Decimals));
+            writer.WriteNumberValue(Round(p.Y, options.Decimals));
+        }
+        writer.WriteEndArray();
+        if (!shape.IsClosed) writer.WriteBoolean("closed", false);
+        if (shape.Smooth) writer.WriteBoolean("smooth", true);
+        if (shape.StartArrow) writer.WriteBoolean("startArrow", true);
+        if (shape.EndArrow) writer.WriteBoolean("endArrow", true);
+        if (shape.ArrowSize != 5f) writer.WriteNumber("arrowSize", Round(shape.ArrowSize, 3));
+        WriteShapeStyle(writer, shape.Style, options);
+    }
+
+    private static void WritePath(Utf8JsonWriter writer, BinkPathElement path, BinkSerializerOptions options)
+    {
+        WriteCommon(writer, "path", path, options);
+        // SVG path data: compact, readable, and what every vector tool already speaks.
+        writer.WriteString("d", path.Path.ToSvgPathData(options.Decimals));
+        if (path.FillRule == BinkFillRule.EvenOdd) writer.WriteString("fillRule", "evenodd");
+        WriteShapeStyle(writer, path.Style, options);
+    }
+
     private static void WriteText(Utf8JsonWriter writer, BinkTextElement text, BinkSerializerOptions options)
     {
         WriteCommon(writer, "text", text, options);
@@ -394,12 +544,25 @@ public static class BinkSerializer
         WriteTextStyle(writer, text.Style, options);
     }
 
-    private static void WriteImage(Utf8JsonWriter writer, BinkImageElement image, BinkSerializerOptions options)
+    private static void WriteImage(Utf8JsonWriter writer, BinkImageElement image, BinkSerializerOptions options, BinkImageAssets? assets)
     {
         WriteCommon(writer, "image", image, options);
         WriteRect(writer, "rect", image.Rect, options.Decimals);
         bool omit = image.Source.IsOmitted || (image.Source.IsEmbedded && !options.IncludeEmbeddedImages);
-        writer.WriteString("src", omit ? string.Empty : image.Source.Uri);
+        if (!omit && assets is not null && image.Source.IsEmbedded)
+        {
+            string id = BinkImageAssets.IdOf(image.Source.Uri);
+            if (assets.CanRefer?.Invoke(id) == true) writer.WriteString("asset", id);
+            else
+            {
+                writer.WriteString("src", image.Source.Uri);
+                assets.Written?.Invoke(id, image.Source);
+            }
+        }
+        else
+        {
+            writer.WriteString("src", omit ? string.Empty : image.Source.Uri);
+        }
         if (omit) writer.WriteBoolean("srcOmitted", true);
         if (image.Source.Width > 0) writer.WriteNumber("naturalWidth", image.Source.Width);
         if (image.Source.Height > 0) writer.WriteNumber("naturalHeight", image.Source.Height);
@@ -600,18 +763,40 @@ public static class BinkSerializer
         if (!root.TryGetProperty("layers", out JsonElement layers) || layers.ValueKind != JsonValueKind.Array)
             throw new BinkFormatException("The document must contain a \"layers\" array.");
 
+        BinkImageAssets? assets = ReadAssets(root, options);
         int layerCount = 0;
         var seenIds = new HashSet<Guid>();
         foreach (JsonElement layerElement in layers.EnumerateArray())
         {
             if (++layerCount > options.Limits.MaxLayers) throw new BinkFormatException($"The document declares more than {options.Limits.MaxLayers} layers.");
-            ReadLayer(document, layerElement, options, seenIds);
+            ReadLayer(document, layerElement, options, seenIds, assets);
         }
         if (document.Layers.Count == 0) document.InsertLayerCore(Guid.NewGuid(), new BinkLayerProperties { Name = "Drawing" }, null, null);
         return document;
     }
 
-    private static void ReadLayer(BinkDocument document, JsonElement element, BinkDeserializerOptions options, HashSet<Guid> seenIds)
+    /// <summary>
+    /// Reads the asset table, each image once, so every element that refers to it shares one image again. An entry
+    /// that is not an acceptable image is left out, and the elements that refer to it are dropped, as an element whose
+    /// own <c>src</c> is not acceptable is.
+    /// </summary>
+    private static BinkImageAssets? ReadAssets(JsonElement root, BinkDeserializerOptions options)
+    {
+        if (!root.TryGetProperty("assets", out JsonElement table) || table.ValueKind != JsonValueKind.Object) return null;
+        var images = new Dictionary<string, BinkImageSource>(StringComparer.Ordinal);
+        int count = 0;
+        foreach (JsonProperty entry in table.EnumerateObject())
+        {
+            if (++count > options.Limits.MaxElements) throw new BinkFormatException($"The document declares more than {options.Limits.MaxElements} assets.");
+            if (entry.Name.Length is 0 or > BinkImageAssets.MaxIdLength || entry.Value.ValueKind != JsonValueKind.String) continue;
+            // Only embedded pictures are shared this way; a link costs nothing to repeat.
+            if (!BinkImageSource.TryCreate(entry.Value.GetString(), 0, 0, options.AllowSvgImages, out BinkImageSource? source) || source is null || !source.IsEmbedded) continue;
+            images[entry.Name] = source;
+        }
+        return new BinkImageAssets { Resolve = id => images.GetValueOrDefault(id) };
+    }
+
+    private static void ReadLayer(BinkDocument document, JsonElement element, BinkDeserializerOptions options, HashSet<Guid> seenIds, BinkImageAssets? assets)
     {
         if (element.ValueKind != JsonValueKind.Object) throw new BinkFormatException("Each layer must be a JSON object.");
         var properties = new BinkLayerProperties
@@ -620,6 +805,8 @@ public static class BinkSerializer
             IsVisible = ReadBool(element, "visible", true),
             IsLocked = ReadBool(element, "locked", false),
             Opacity = Math.Clamp(ReadFloat(element, "opacity", 1f), 0f, 1f),
+            // Only multiply and screen mean anything for a layer; the document keeps anything else to normal.
+            BlendMode = ReadBlend(element, "blend", BinkBlendMode.Normal),
             Metadata = ReadMetadata(element),
         };
         Guid id = ReadGuid(element, "id") ?? Guid.NewGuid();
@@ -630,7 +817,7 @@ public static class BinkSerializer
         {
             foreach (JsonElement e in elementArray.EnumerateArray())
             {
-                BinkElement? parsed = ReadElement(e, options);
+                BinkElement? parsed = ReadElement(e, options, assets);
                 if (parsed is null) continue;
                 // A duplicate id would make the element unaddressable. Give it a fresh one rather than
                 // rejecting the whole document: the drawing is still perfectly good.
@@ -651,7 +838,7 @@ public static class BinkSerializer
         }
     }
 
-    private static BinkElement? ReadElement(JsonElement element, BinkDeserializerOptions options)
+    private static BinkElement? ReadElement(JsonElement element, BinkDeserializerOptions options, BinkImageAssets? assets)
     {
         if (element.ValueKind != JsonValueKind.Object) throw new BinkFormatException("Each element must be a JSON object.");
         string type = ReadString(element, "type") ?? throw new BinkFormatException("Each element must have a \"type\".");
@@ -662,11 +849,13 @@ public static class BinkSerializer
             "rect" => ReadRectangle(element),
             "ellipse" => ReadEllipse(element),
             "line" => ReadLine(element),
+            "polygon" => ReadPolygon(element),
+            "path" => ReadPathElement(element, options.Limits),
             "text" => ReadText(element),
-            "image" => ReadImage(element, options),
+            "image" => ReadImage(element, options, assets),
             "highlight" => ReadHighlight(element, options.Limits),
             "callout" => ReadCallout(element),
-            _ => options.PreserveUnknownElements ? new BinkUnknownElement(type, element.GetRawText(), ReadRect(element, "bounds") ?? BinkRect.Empty) : null,
+            _ => ReadCustom(type, element, options),
         };
         if (result is null) return null;
 
@@ -680,7 +869,27 @@ public static class BinkSerializer
             Transform = transform,
             Description = ReadString(element, "description"),
             Metadata = ReadMetadata(element),
+            IsLocked = ReadBool(element, "locked", false),
+            GroupIds = ReadGroups(element),
         };
+    }
+
+    /// <summary>
+    /// Reads an element's group chain. Entries that are not ids, and repeats, are dropped rather than failing the
+    /// load; a chain deeper than any edit could produce is refused, because it is not a drawing anyone made.
+    /// </summary>
+    private static Guid[] ReadGroups(JsonElement element)
+    {
+        if (!element.TryGetProperty("groups", out JsonElement groups) || groups.ValueKind != JsonValueKind.Array) return [];
+        int length = groups.GetArrayLength();
+        if (length == 0) return [];
+        if (length > BinkElement.MaxGroupDepth) throw new BinkFormatException($"An element is nested in {length} groups; the limit is {BinkElement.MaxGroupDepth}.");
+        var result = new List<Guid>(length);
+        foreach (JsonElement entry in groups.EnumerateArray())
+        {
+            if (entry.ValueKind == JsonValueKind.String && entry.TryGetGuid(out Guid id) && id != Guid.Empty && !result.Contains(id)) result.Add(id);
+        }
+        return [.. result];
     }
 
     private static BinkStroke ReadStroke(JsonElement element, BinkDeserializerOptions options)
@@ -727,6 +936,13 @@ public static class BinkSerializer
             if (ts.Length != 0 && ts.Length != xs.Length) throw new BinkFormatException("Stroke time array length must match the point count.");
             if (tx.Length != ty.Length || (tx.Length != 0 && tx.Length != xs.Length)) throw new BinkFormatException("Stroke tilt array lengths must match the point count.");
             if (tw.Length != 0 && tw.Length != xs.Length) throw new BinkFormatException("Stroke twist array length must match the point count.");
+            // Only positions are range-checked below. A time the binary encoding cannot carry loaded fine and then
+            // made every save, and every operation a collaborator sent for the stroke, fail; tilt and twist are kept
+            // to the ranges the encoding stores, so both encodings read the same file the same way.
+            ClampAll(ts, -BinkPointCodec.MaxTime, BinkPointCodec.MaxTime);
+            ClampAll(tx, -BinkPointCodec.MaxTilt, BinkPointCodec.MaxTilt);
+            ClampAll(ty, -BinkPointCodec.MaxTilt, BinkPointCodec.MaxTilt);
+            ClampAll(tw, 0f, BinkPointCodec.MaxTwist);
             points = BinkStrokePoints.FromArrays(xs, ys, ps, ts, tx, ty, tw);
         }
 
@@ -746,6 +962,11 @@ public static class BinkSerializer
             input = new BinkStrokeInputInfo(kind, ReadBool(inputElement, "pressure", false));
         }
         return new BinkStroke(points, brush) { Input = input };
+    }
+
+    private static void ClampAll(Span<float> values, float min, float max)
+    {
+        for (int i = 0; i < values.Length; i++) values[i] = Math.Clamp(values[i], min, max);
     }
 
     private static void ValidateCoordinates(BinkStrokePoints points, BinkDocumentLimits limits)
@@ -768,8 +989,10 @@ public static class BinkSerializer
         string kind = ReadString(brushElement, "kind") ?? BinkPenBrush.KindName;
         if (!options.BrushRegistry.TryCreate(kind, out BinkBrush? brush) || brush is null)
         {
-            // An unknown brush still renders with its stored appearance rather than being dropped.
-            brush = new BinkPenBrush();
+            // An unknown brush still renders with its stored appearance rather than being dropped, and keeps its
+            // kind so saving or sending the stroke on does not turn it into a pen for everyone downstream. A blank
+            // kind, which no registration could ever match, or an absurdly long one is read as a plain pen.
+            brush = string.IsNullOrWhiteSpace(kind) || kind.Length > MaxBrushKindLength ? new BinkPenBrush() : new BinkFallbackBrush(kind);
         }
 
         BinkPressureCurve curve = brush.PressureCurve;
@@ -801,19 +1024,43 @@ public static class BinkSerializer
         if (!float.IsFinite(width) || width <= 0) width = 1f;
         width = MathF.Min(width, options.Limits.MaxStrokeWidth);
 
+        // A missing field means BinkBrush's own default, not the kind's: the writer has only ever left a field out
+        // when it held that value. Falling back to the kind's default turned a pen without a taper into one with
+        // a 6-unit taper, and a normal-blend highlighter into a multiplied one at 45%, on every load and on every
+        // collaborator's screen.
+        BinkBrush standard = BaseBrush;
+        if (ReadBrushParameters(brushElement) is { } parameters) brush = brush.WithParameters(parameters);
         return brush with
         {
             Color = ReadColor(brushElement, "color", brush.Color),
             Width = width,
-            Opacity = Math.Clamp(ReadFloat(brushElement, "opacity", brush.Opacity), 0f, 1f),
-            BlendMode = ReadBlend(brushElement, "blend", brush.BlendMode),
-            Smoothing = Math.Clamp(ReadFloat(brushElement, "smoothing", brush.Smoothing), 0f, 1f),
-            Spacing = Math.Clamp(ReadFloat(brushElement, "spacing", brush.Spacing), 0f, 10f),
-            SimulatePressure = ReadBool(brushElement, "simulatePressure", brush.SimulatePressure),
-            TaperStart = MathF.Max(ReadFloat(brushElement, "taperStart", brush.TaperStart), 0f),
-            TaperEnd = MathF.Max(ReadFloat(brushElement, "taperEnd", brush.TaperEnd), 0f),
+            Opacity = Math.Clamp(ReadFloat(brushElement, "opacity", standard.Opacity), 0f, 1f),
+            BlendMode = ReadBlend(brushElement, "blend", standard.BlendMode),
+            Smoothing = Math.Clamp(ReadFloat(brushElement, "smoothing", standard.Smoothing), 0f, 1f),
+            Spacing = Math.Clamp(ReadFloat(brushElement, "spacing", standard.Spacing), 0f, 10f),
+            SimulatePressure = ReadBool(brushElement, "simulatePressure", standard.SimulatePressure),
+            TaperStart = MathF.Max(ReadFloat(brushElement, "taperStart", standard.TaperStart), 0f),
+            TaperEnd = MathF.Max(ReadFloat(brushElement, "taperEnd", standard.TaperEnd), 0f),
             PressureCurve = curve,
         };
+    }
+
+    /// <summary>
+    /// A brush kind's own settings: a handful of named numbers. Bounded and filtered, because they reach application
+    /// code; the brush clamps each value to what it can draw.
+    /// </summary>
+    private static Dictionary<string, float>? ReadBrushParameters(JsonElement brush)
+    {
+        if (!brush.TryGetProperty("params", out JsonElement parameters) || parameters.ValueKind != JsonValueKind.Object) return null;
+        Dictionary<string, float>? result = null;
+        foreach (JsonProperty property in parameters.EnumerateObject())
+        {
+            if (result is { Count: >= 32 }) throw new BinkFormatException("A brush declares more than 32 settings.");
+            if (property.Name.Length is 0 or > 64 || property.Value.ValueKind != JsonValueKind.Number) continue;
+            if (!property.Value.TryGetSingle(out float value) || !float.IsFinite(value)) continue;
+            (result ??= new Dictionary<string, float>(StringComparer.Ordinal))[property.Name] = value;
+        }
+        return result;
     }
 
     private static BinkShapeStyle ReadShapeStyle(JsonElement element)
@@ -828,6 +1075,8 @@ public static class BinkSerializer
             Opacity = Math.Clamp(ReadFloat(style, "opacity", 1f), 0f, 1f),
             BlendMode = ReadBlend(style, "blend", BinkBlendMode.Normal),
             Dash = dash.Length > 0 ? dash : null,
+            LineCap = ReadString(style, "cap") switch { "butt" => BinkLineCap.Butt, "square" => BinkLineCap.Square, _ => BinkLineCap.Round },
+            LineJoin = ReadString(style, "join") switch { "miter" => BinkLineJoin.Miter, "bevel" => BinkLineJoin.Bevel, _ => BinkLineJoin.Round },
         };
     }
 
@@ -862,6 +1111,68 @@ public static class BinkSerializer
             ArrowSize = Math.Clamp(ReadFloat(element, "arrowSize", 5f), 0f, 100f),
         };
 
+    /// <summary>
+    /// Reads an element of a type registered with <see cref="BinkDeserializerOptions.ElementRegistry"/>, or keeps one
+    /// of a type nobody registered as an unknown element, so a document never loses what a newer build or another
+    /// application put in it.
+    /// </summary>
+    private static BinkElement? ReadCustom(string type, JsonElement element, BinkDeserializerOptions options)
+    {
+        if (!options.ElementRegistry.TryGet(type, out BinkElementRegistry.Entry? entry))
+        {
+            return options.PreserveUnknownElements ? new BinkUnknownElement(type, element.GetRawText(), ReadRect(element, "bounds") ?? BinkRect.Empty) : null;
+        }
+        BinkElement custom;
+        try
+        {
+            custom = entry!.Read(element, options);
+        }
+        catch (BinkFormatException)
+        {
+            throw;
+        }
+#pragma warning disable CA1031 // The converter is application code reading untrusted input; whatever it throws is a malformed document to the caller.
+        catch (Exception ex) when (ex is not OutOfMemoryException)
+#pragma warning restore CA1031
+        {
+            throw new BinkFormatException($"A \"{type}\" element could not be read: {ex.Message}", ex);
+        }
+        // A converter handing back another type would be written under a different name, or not at all, next time.
+        if (custom is null || custom.GetType() != entry.ElementType) throw new BinkFormatException($"The converter for \"{type}\" did not produce a {entry.ElementType.Name}.");
+        return custom;
+    }
+
+    private static BinkPolygonShape ReadPolygon(JsonElement element)
+    {
+        float[] coordinates = ReadFloatArray(element, "points", BinkPolygonShape.MaxPoints * 2);
+        if (coordinates.Length < 4 || coordinates.Length % 2 != 0) throw new BinkFormatException("A polygon needs an even number of coordinates, for at least two points.");
+        var points = new Vector2[coordinates.Length / 2];
+        for (int i = 0; i < points.Length; i++) points[i] = new Vector2(coordinates[2 * i], coordinates[2 * i + 1]);
+        return new BinkPolygonShape(points, ReadBool(element, "closed", true))
+        {
+            Smooth = ReadBool(element, "smooth", false),
+            StartArrow = ReadBool(element, "startArrow", false),
+            EndArrow = ReadBool(element, "endArrow", false),
+            ArrowSize = Math.Clamp(ReadFloat(element, "arrowSize", 5f), 0f, 100f),
+            Style = ReadShapeStyle(element),
+        };
+    }
+
+    private static BinkPathElement ReadPathElement(JsonElement element, BinkDocumentLimits limits)
+    {
+        // Path data is a parser of its own, so it gets the same bounds as everything else read from a file.
+        int maxSegments = limits.MaxPathSegments;
+        if (!BinkSvgPathData.TryParse(ReadString(element, "d") ?? string.Empty, out BinkPathGeometry? path, out string? error, maxSegments))
+        {
+            throw new BinkFormatException("A path element's data is malformed: " + error);
+        }
+        return new BinkPathElement(path!)
+        {
+            FillRule = ReadString(element, "fillRule") == "evenodd" ? BinkFillRule.EvenOdd : BinkFillRule.NonZero,
+            Style = ReadShapeStyle(element),
+        };
+    }
+
     private static BinkTextElement ReadText(JsonElement element)
     {
         string text = ReadString(element, "text") ?? string.Empty;
@@ -876,14 +1187,25 @@ public static class BinkSerializer
         };
     }
 
-    private static BinkImageElement? ReadImage(JsonElement element, BinkDeserializerOptions options)
+    private static BinkImageElement? ReadImage(JsonElement element, BinkDeserializerOptions options, BinkImageAssets? assets)
     {
         string uri = ReadString(element, "src") ?? string.Empty;
         BinkRect rect = ReadRect(element, "rect") ?? BinkRect.Empty;
         int naturalWidth = element.TryGetProperty("naturalWidth", out JsonElement nw) && nw.TryGetInt32(out int w) ? w : 0;
         int naturalHeight = element.TryGetProperty("naturalHeight", out JsonElement nh) && nh.TryGetInt32(out int h) ? h : 0;
         BinkImageSource? source;
-        if (uri.Length == 0 && ReadBool(element, "srcOmitted", false))
+        if (uri.Length == 0 && ReadString(element, "asset") is { Length: > 0 } assetId)
+        {
+            // An image written once elsewhere: the document's asset table, or an earlier change from a collaborator.
+            BinkImageSource? shared = assetId.Length <= BinkImageAssets.MaxIdLength ? assets?.Resolve?.Invoke(assetId) : null;
+            if (shared is null)
+            {
+                if (assets?.ThrowWhenMissing == true) throw new BinkMissingAssetException(assetId);
+                return null;
+            }
+            source = assets!.Sized(assetId, shared, naturalWidth, naturalHeight);
+        }
+        else if (uri.Length == 0 && ReadBool(element, "srcOmitted", false))
         {
             // The payload was stripped on save. The element is kept without pixels so the application can
             // re-attach what it stored elsewhere; dropping it would lose the rect, crop and metadata with it.
@@ -893,6 +1215,7 @@ public static class BinkSerializer
         {
             if (!BinkImageSource.TryCreate(uri, naturalWidth, naturalHeight, options.AllowSvgImages, out source) || source is null) return null;
             if (!options.AllowRemoteImages && !source.IsEmbedded) return null;
+            if (source.IsEmbedded) assets?.Read?.Invoke(source);
         }
         return new BinkImageElement(source, rect)
         {

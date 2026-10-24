@@ -155,6 +155,42 @@ public sealed class BinkStrokeBuilder
         return _points.ToStrokePoints();
     }
 
+    /// <summary>
+    /// Appends the browser's prediction of where the pointer is going after the stored points, smoothed the way a
+    /// real sample would be, so the live stroke can be drawn reaching where the pen already is. Every call must be
+    /// paired with <see cref="RemovePrediction"/> before the next real sample.
+    /// </summary>
+    /// <param name="viewPositions">Predicted positions in view coordinates, oldest first.</param>
+    /// <returns>How many points were appended.</returns>
+    internal int AppendPrediction(ReadOnlySpan<Vector2> viewPositions)
+    {
+        if (!IsActive || viewPositions.IsEmpty || _points.Count == 0) return 0;
+        BinkPoint last = _points.Last;
+        Vector2 previous = last.Position;
+        float t = 1f - Math.Clamp(_brush.Smoothing, 0f, 0.95f);
+        // A prediction that runs far ahead is more likely wrong than right, and a wrong one draws a visible spike
+        // that the next frame takes back. It is held to a few stroke widths.
+        float reach = MathF.Max(_brush.Width * 4f, 12f);
+        int added = 0;
+        foreach (Vector2 view in viewPositions)
+        {
+            Vector2 raw = Vector2.Transform(view, _viewToDocument);
+            Vector2 target = previous + (raw - previous) * t;
+            Vector2 lead = target - last.Position;
+            if (lead.LengthSquared() > reach * reach) target = last.Position + Vector2.Normalize(lead) * reach;
+            _points.Add(last with { X = target.X, Y = target.Y });
+            previous = target;
+            added++;
+        }
+        return added;
+    }
+
+    /// <summary>Takes off the points <see cref="AppendPrediction"/> added.</summary>
+    internal void RemovePrediction(int count)
+    {
+        if (count > 0) _points.Truncate(_points.Count - count);
+    }
+
     /// <summary>Ends the stroke without a final sample (used for cancellation or pointer loss).</summary>
     public BinkStrokePoints End()
     {

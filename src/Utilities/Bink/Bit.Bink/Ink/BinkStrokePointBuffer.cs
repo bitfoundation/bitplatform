@@ -137,6 +137,16 @@ public sealed class BinkStrokePointBuffer
         if (point.Y > _maxY) _maxY = point.Y;
     }
 
+    /// <summary>
+    /// Drops the points from <paramref name="count"/> on. Bounds are left as they were, which is conservative and is
+    /// all a live stroke needs: it is how the provisional points of a prediction are taken off again.
+    /// </summary>
+    internal void Truncate(int count)
+    {
+        if (count < 0 || count >= Count) return;
+        Count = count;
+    }
+
     /// <summary>Removes all points while keeping capacity.</summary>
     public void Clear()
     {

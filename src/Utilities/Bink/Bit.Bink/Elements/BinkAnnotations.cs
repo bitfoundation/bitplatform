@@ -40,10 +40,23 @@ public sealed record BinkHighlightElement : BinkElement
     protected override void DrawCore(IBinkRenderContext context)
     {
         if (_rects.Length == 0) return;
-        var b = new BinkPathBuilder(_rects.Length * 5);
-        foreach (BinkRect r in _rects) b.AddRect(r);
-        context.FillPath(b.ToGeometry(), new BinkFillPaint(Color, Opacity, BinkBlendMode.Multiply));
+        context.FillPath(Path, new BinkFillPaint(Color, Opacity, BinkBlendMode.Multiply));
     }
+
+    // The rectangles are fixed at construction and a with expression copies them, so one path serves every
+    // version of the highlight: changing its colour or opacity, or moving it, keeps the path the canvas holds.
+    private BinkPathGeometry Path
+    {
+        get
+        {
+            if (_path is { } path) return path;
+            var b = new BinkPathBuilder(_rects.Length * 5);
+            foreach (BinkRect r in _rects) b.AddRect(r);
+            return _path = b.ToGeometry();
+        }
+    }
+
+    private BinkPathGeometry? _path;
 
     /// <inheritdoc />
     protected override bool HitTestCore(Vector2 localPoint, float tolerance)
@@ -105,15 +118,31 @@ public sealed record BinkCalloutElement : BinkElement
     /// <inheritdoc />
     public override BinkRect LocalBounds => Box.Union(Anchor).Inflate(Style.StrokeWidth + 1f);
 
+    // Built once per geometry and reused by every redraw, so the canvas can keep them in the browser. A with
+    // expression copies the cache, which is why it is keyed by what it was built from.
+    private BinkCachedPath<(BinkRect, Vector2)>? _pointerPath;
+    private BinkCachedPath<BinkRect>? _boxPath;
+
     /// <inheritdoc />
     protected override void DrawCore(IBinkRenderContext context)
     {
         // Pointer from the nearest box edge point to the anchor.
-        Vector2 from = ClosestEdgePoint(Box, Anchor);
-        var pointer = new BinkPathBuilder(4).MoveTo(from).LineTo(Anchor).ToGeometry();
+        BinkPathGeometry pointer;
+        if (_pointerPath is { } cachedPointer && cachedPointer.Matches((Box, Anchor))) pointer = cachedPointer.Path;
+        else
+        {
+            pointer = new BinkPathBuilder(4).MoveTo(ClosestEdgePoint(Box, Anchor)).LineTo(Anchor).ToGeometry();
+            _pointerPath = new((Box, Anchor), pointer);
+        }
         context.StrokePath(pointer, Style.ToStrokePaint());
 
-        var box = new BinkPathBuilder(12).AddRoundedRect(Box, 4f).ToGeometry();
+        BinkPathGeometry box;
+        if (_boxPath is { } cachedBox && cachedBox.Matches(Box)) box = cachedBox.Path;
+        else
+        {
+            box = new BinkPathBuilder(12).AddRoundedRect(Box, 4f).ToGeometry();
+            _boxPath = new(Box, box);
+        }
         if (Style.FillColor is { } fill) context.FillPath(box, new BinkFillPaint(fill, Style.Opacity, Style.BlendMode));
         if (Style.StrokeWidth > 0) context.StrokePath(box, Style.ToStrokePaint());
 
