@@ -180,6 +180,10 @@
     color: $bit-color-primary;
 }
 
+::deep .bit-tag a {
+    color: inherit;
+}
+
 .video-container {
     width: 100%;
     display: flex;
