@@ -43,10 +43,10 @@ public partial class SignInAsAnotherUserUITests : AppPageTest
     }
 
     [TestMethod]
-    public async Task ConfirmingAnotherAccount_OnADeviceForOneAccount_Should_EndTheSessionItReplaces()
+    public async Task ConfirmingAnotherAccount_Should_KeepTheAccountThatWasSignedIn()
     {
         await using var server = new AppTestServer(Context);
-        await server.Build(configureTestConfiguration: configuration => configuration["MaxAccounts"] = "1").Start(TestContext.CancellationToken);
+        await server.Build().Start(TestContext.CancellationToken);
 
         var firstEmail = MagicLinkSignInUtils.NewTestEmail();
         var secondEmail = MagicLinkSignInUtils.NewTestEmail();
@@ -61,8 +61,8 @@ public partial class SignInAsAnotherUserUITests : AppPageTest
         await Page.GotoAsync(new Uri(server.WebAppAddress, confirmation.Link!.PathAndQuery).ToString());
         await Expect(Page.Locator(".bit-prs.persona").First).ToContainTextAsync(secondEmail);
 
-        Assert.AreEqual(0, await CountUserSessions(server, firstEmail),
-            "Confirming another account signs it in, so it must end the session it replaces instead of leaving it behind.");
+        Assert.AreEqual(1, await CountUserSessions(server, firstEmail),
+            "Confirming another account signs it in next to the one that was signed in, which must stay signed in.");
     }
 
     [TestMethod]

@@ -80,21 +80,9 @@
                         }
 
                         <AuthorizeView>
-                            @if (clientCoreSettings.MaxAccounts > 1)
-                            {
-                                <BitActionButton FullWidth
-                                                 IconName="@BitIconName.AddFriend"
-                                                 IsEnabled="@(otherAccounts.Length + 1 < clientCoreSettings.MaxAccounts)"
-                                                 OnClick="WrapHandled(AddAccount)">
-                                    @Localizer[nameof(AppStrings.AddAnotherAccount)]
-                                </BitActionButton>
-                                @if (otherAccounts.Length + 1 >= clientCoreSettings.MaxAccounts)
-                                {
-                                    <BitText Block Typography="BitTypography.Caption1" Foreground="BitColorKind.Secondary" Class="max-accounts-hint">
-                                        @Localizer[nameof(AppStrings.MaxAccountsReached), clientCoreSettings.MaxAccounts]
-                                    </BitText>
-                                }
-                            }
+                            <BitActionButton FullWidth IconName="@BitIconName.AddFriend" OnClick="WrapHandled(AddAccount)">
+                                @Localizer[nameof(AppStrings.AddAnotherAccount)]
+                            </BitActionButton>
 
                             <BitSeparator />
 

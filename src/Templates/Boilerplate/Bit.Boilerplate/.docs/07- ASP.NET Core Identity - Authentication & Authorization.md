@@ -103,8 +103,7 @@ the privileged-session cap, 2FA and elevated access work per account as before. 
 `SOFT_RESTART`, so nothing the previous account loaded stays on the screen, and on the web every tab follows the
 active account. Only the active account signs out, and another account on the device takes its place; the sign-out
 dialog can also sign out every account at once. Push notifications reach every account on the device, realtime
-messages only the active one. `MaxAccounts` in Client.Core's `appsettings.json` (5 by default) caps how many accounts
-a device keeps, and `1` keeps one account at a time.
+messages only the active one.
 
 ### Configuration
 

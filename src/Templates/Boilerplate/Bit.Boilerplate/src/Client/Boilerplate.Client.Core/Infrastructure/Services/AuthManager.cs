@@ -8,7 +8,6 @@ public partial class AuthManager : AuthenticationStateProvider, IAsyncDisposable
     private Action? unsubscribeLocalStorageChanged;
 
     [AutoInject] private PubSubService pubSubService = default!;
-    [AutoInject] private ClientCoreSettings settings = default!;
     [AutoInject] private IStorageService storageService = default!;
     [AutoInject] private IUserController userController = default!;
     [AutoInject] private ILocalHttpServer localHttpServer = default!;
@@ -83,10 +82,7 @@ public partial class AuthManager : AuthenticationStateProvider, IAsyncDisposable
 
         if (currentUser.IsAuthenticated())
         {
-            var keepsCurrentAccount = GetUserId(currentUser) != newUserId
-                                      && (await GetOtherAccounts()).Length + 1 < settings.MaxAccounts;
-
-            if (keepsCurrentAccount)
+            if (GetUserId(currentUser) != newUserId)
             {
                 await KeepActiveAccount();
             }

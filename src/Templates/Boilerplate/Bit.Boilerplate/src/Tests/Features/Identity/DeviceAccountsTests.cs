@@ -103,24 +103,6 @@ public partial class DeviceAccountsTests
     }
 
     [TestMethod]
-    public async Task SigningInOnAFullDevice_Should_ReplaceTheActiveAccount()
-    {
-        await using var server = new AppTestServer();
-        await server.Build(configureTestConfiguration: configuration => configuration["MaxAccounts"] = "2").Start(TestContext.CancellationToken);
-
-        await using var client = server.CreateAppClient();
-
-        var (_, firstUserId) = await TestAccountUtils.CreateAndSignIn(client, TestContext.CancellationToken);
-        var (_, secondUserId) = await TestAccountUtils.CreateAndAddAccount(client, TestContext.CancellationToken);
-        var (_, thirdUserId) = await TestAccountUtils.CreateAndAddAccount(client, TestContext.CancellationToken);
-
-        Assert.AreEqual(thirdUserId, (await CurrentUser(client)).GetUserId());
-        Assert.AreSequenceEqual(new[] { firstUserId }, await OtherAccountIds(client));
-        Assert.AreEqual(0, await CountUserSessions(server, secondUserId), "The account the new one replaced must be signed out, not left behind.");
-        Assert.AreEqual(1, await CountUserSessions(server, firstUserId));
-    }
-
-    [TestMethod]
     public async Task ARevokedRefreshToken_Should_EndItsSession()
     {
         await using var server = new AppTestServer();

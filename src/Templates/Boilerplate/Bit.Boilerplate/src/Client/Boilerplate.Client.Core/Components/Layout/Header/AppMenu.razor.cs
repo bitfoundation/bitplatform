@@ -16,7 +16,6 @@ public partial class AppMenu
 
     [AutoInject] private ThemeService themeService = default!;
     [AutoInject] private CultureService cultureService = default!;
-    [AutoInject] private ClientCoreSettings clientCoreSettings = default!;
     [AutoInject] private IUserController userController = default!;
     [AutoInject] private SignInModalService signInModalService = default!;
     //#if (notification == true)
