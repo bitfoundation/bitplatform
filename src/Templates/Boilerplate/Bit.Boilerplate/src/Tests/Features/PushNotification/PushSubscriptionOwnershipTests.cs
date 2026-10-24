@@ -316,6 +316,12 @@ public partial class PushSubscriptionOwnershipTests
 
             await using (var scope = server.ApiApp.Services.CreateAsyncScope())
             {
+                Guid[] sessionIds = [.. rows.Select(row => row.UserSessionId!.Value)];
+
+                await scope.ServiceProvider.GetRequiredService<AppDbContext>().UserSessions
+                    .Where(us => sessionIds.Contains(us.Id))
+                    .ExecuteUpdateAsync(us => us.SetProperty(x => x.NotificationStatus, UserSessionNotificationStatus.Allowed), TestContext.CancellationToken);
+
                 var pushNotificationService = scope.ServiceProvider.GetRequiredService<PushNotificationService>();
 
                 Assert.AreEqual(1, await pushNotificationService.RequestPush(new() { Message = "For the whole device" }, s => s.DeviceId == deviceId, TestContext.CancellationToken),
