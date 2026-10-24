@@ -28,10 +28,6 @@ namespace Boilerplate.Server.Api.Infrastructure.Data.Migrations
                     b.Property<int>("Kind")
                         .HasColumnType("INTEGER");
 
-                    b.Property<string>("ContentType")
-                        .HasMaxLength(100)
-                        .HasColumnType("TEXT");
-
                     b.Property<long>("CreatedOn")
                         .HasColumnType("INTEGER");
 

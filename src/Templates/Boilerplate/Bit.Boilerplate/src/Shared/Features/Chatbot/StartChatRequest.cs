@@ -44,8 +44,11 @@ public abstract class AiChatItem
 /// </summary>
 public class AiChatMessage : AiChatItem
 {
+    public const int MaxContentLength = 10_000;
+
     public AiChatMessageRole Role { get; set; }
 
+    [StringLength(MaxContentLength)]
     public string? Content { get; set; }
 
     /// <summary>

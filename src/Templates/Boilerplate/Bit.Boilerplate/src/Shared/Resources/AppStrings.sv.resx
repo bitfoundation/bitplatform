@@ -398,12 +398,6 @@ Efter att ha nått {0} kommer extra inloggningar att ha reducerade funktioner.</
   <data name="InvalidUserCredentials" xml:space="preserve">
     <value>Ogiltiga användaruppgifter</value>
   </data>
-  <data name="EmailAlreadyConfirmed" xml:space="preserve">
-    <value>Din e-post är redan bekräftad.</value>
-  </data>
-  <data name="PhoneNumberAlreadyConfirmed" xml:space="preserve">
-    <value>Ditt telefonnummer är redan bekräftat.</value>
-  </data>
   <data name="Title" xml:space="preserve">
     <value>Titel</value>
   </data>
@@ -1209,6 +1203,9 @@ Efter att ha nått {0} kommer extra inloggningar att ha reducerade funktioner.</
   </data>
   <data name="AiChatPanelVoiceCallAssistantFailed" xml:space="preserve">
     <value>Assistenten kunde inte svara. Försök igen.</value>
+  </data>
+  <data name="AiChatTooManyRequests" xml:space="preserve">
+    <value>Du chattar för snabbt. Vänta en minut och försök igen.</value>
   </data>
   <data name="AiChatHumanFollowUpPrompt" xml:space="preserve">
     <value>Lämna dina kontaktuppgifter så hör en handläggare av sig till dig.</value>
@@ -2086,5 +2083,11 @@ Efter att ha nått {0} kommer extra inloggningar att ha reducerade funktioner.</
   </data>
     <data name="UploadImageAsIs" xml:space="preserve">
     <value>Ladda upp som den är</value>
+  </data>
+    <data name="ResetPasswordTwoFactorCodeRequired" xml:space="preserve">
+    <value>Tvåfaktorsautentisering är aktiverad för det här kontot. Ange en kod från din autentiseringsapp eller en av dina återställningskoder.</value>
+  </data>
+    <data name="AccountAlreadyExistsShortText" xml:space="preserve">
+    <value>Du har redan ett Boilerplate-konto med det här telefonnumret. Om du just försökte registrera dig, logga in i stället.</value>
   </data>
 </root>

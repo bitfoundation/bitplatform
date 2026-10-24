@@ -517,6 +517,8 @@ Each platform has its own implementation:
 
 **Location**: [`src/Server/Boilerplate.Server.Api/Features/PushNotification/PushNotificationService.cs`](/src/Server/Boilerplate.Server.Api/Features/PushNotification/PushNotificationService.cs)
 
+The server posts each web push to the address in the browser's subscription, so `Subscribe` only accepts an `https` address of a browser push service (Google, Mozilla, Microsoft or Apple). The push endpoints are rate limited.
+
 ---
 
 ## 6. Bit.Butil.Notification - Browser Notification API

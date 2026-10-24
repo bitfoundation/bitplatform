@@ -12,6 +12,10 @@ public static class RateLimitOptionsExtensions
     /// </summary>
     public const string IDENTITY = "identity";
 
+    //#if (notification == true)
+    public const string PUSH_NOTIFICATION = "pushNotification";
+    //#endif
+
     //#if (signalR == true)
     /// <summary>
     /// Applied with <c>[EnableRateLimiting(RateLimitOptionsExtensions.SPEECH)]</c> to the two endpoints of the AI chat
@@ -42,6 +46,17 @@ public static class RateLimitOptionsExtensions
                         PermitLimit = 30,
                         Window = TimeSpan.FromMinutes(1)
                     }));
+
+            //#if (notification == true)
+            options.AddPolicy(PUSH_NOTIFICATION, context =>
+                RateLimitPartition.GetFixedWindowLimiter(
+                    partitionKey: GetPartitionKey(context),
+                    factory: _ => new FixedWindowRateLimiterOptions
+                    {
+                        PermitLimit = 30,
+                        Window = TimeSpan.FromMinutes(1)
+                    }));
+            //#endif
 
             //#if (signalR == true)
             // These endpoints are authenticated, so a user id is what a caller really is here. The ip fallback in
@@ -85,7 +100,7 @@ public static class RateLimitOptionsExtensions
     /// A signed-in caller is counted as that user, so neither a shared nat nor a changing ip decides what they are
     /// allowed. Anyone else is counted as the address the request arrived from, which is all a stranger really is.
     /// </summary>
-    private static string GetPartitionKey(HttpContext context)
+    public static string GetPartitionKey(HttpContext context)
         => context.User.IsAuthenticated()
             ? $"user:{context.User.GetUserId()}"
             : $"ip:{context.Connection.RemoteIpAddress}";

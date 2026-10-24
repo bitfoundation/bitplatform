@@ -83,6 +83,11 @@ id used to push notifications to that device.
 
 Its id travels in both tokens as the `s-id` claim, which is what makes **session revocation** possible: delete the
 row and that device can no longer refresh. Users manage their own sessions from the Settings page.
+<!--#if (signalR == true)-->
+
+The SignalR hub checks the same row too, and closes the connection of a revoked session, or of one whose password or
+2FA settings changed.
+<!--#endif-->
 
 **Privileged sessions** cap how many devices get full access at once (3 by default,
 `Identity:MaxPrivilegedSessionsCount`, overridable per user with the `mx-p-s` claim; `-1` means unlimited). Older
@@ -317,6 +322,20 @@ Everything else follows from that single trick:
 In practice: a reset requested at 10:00 stops working the moment another is requested at 10:05, and the 10:05 one
 dies the instant it is used.
 
+The codes themselves are derived from the user's security stamp, which also travels inside every access and
+refresh token. So
+[`AppUserManager`](/src/Server/Boilerplate.Server.Api/Features/Identity/Services/AppUserManager.cs) mixes the
+stamp with a secret derived from the app certificate first: reading a token is not enough to compute a code.
+
+A few rules sit on top of the mechanism:
+
+- **Resetting the password of an account with 2FA on** also takes a code from the authenticator app or one of the
+  recovery codes. A code sent by email or SMS alone would hand the account to whoever controls that inbox or phone
+  number.
+- **Asking for a code doesn't tell whether an account exists.** The endpoints that send one answer an unknown email
+  or phone number the way they answer a known one. Signing up with an identifier that already has an account looks
+  like any other sign-up, and the owner gets an email (or SMS) saying someone tried.
+
 ---
 
 ## 6. External providers
@@ -395,7 +414,8 @@ for delegating access to other apps, not a full identity server - no OIDC, no `i
 
 Run the project and walk through these - it is faster than reading:
 
-- **Sign up** with email or phone, confirm it, then try signing up again with the same identifier.
+- **Sign up** with email or phone, confirm it, then try signing up again with the same identifier: the page moves
+  on as usual, and the inbox gets a "you already have an account" email instead of a code.
 - **Sign in** with a password, then with a magic link. Get the password wrong repeatedly and watch lockout kick in.
 - **Enable 2FA** in Settings with an authenticator app, then sign in again. Try a recovery code.
 - **Sign in from several browsers**, list the sessions in Settings, revoke one, and watch that device drop out.
