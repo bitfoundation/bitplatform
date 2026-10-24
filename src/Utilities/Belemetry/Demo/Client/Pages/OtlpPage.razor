@@ -82,12 +82,13 @@
         interactions, web vitals, custom events, exceptions), spans and metrics are not logs to a log level and always pass.
     </p>
     <div class="bb-note bb-note-warn">
-        Headers the browser script uses are visible to anyone who opens the page. Never put a credential in an
-        exporter the browser exports to: set <code>IncludeInBrowser = false</code> on it and give the browser a
-        credential-free route (a collector in front of the vendor), or use the
-        <a href="/transport">Relay transport</a>, which hands browser records to .NET. Relay only hides the key when
-        .NET runs outside the browser - Blazor Server or Hybrid. In WebAssembly the .NET pipeline is itself in the
-        browser, and so is its configuration.
+        Headers the browser script uses are visible to anyone who opens the page. A server therefore keeps
+        <code>Headers</code> (and <code>OTEL_EXPORTER_OTLP_HEADERS</code>) to itself and hands the script only
+        <code>BrowserHeaders</code>, for a key that is meant to be public. In WebAssembly the .NET pipeline is
+        itself in the browser, and so is its configuration: never put a credential in a client's exporter. Give
+        the browser a credential-free route (a collector in front of the vendor, <code>IncludeInBrowser = false</code>
+        on the keyed exporter), or use the <a href="/transport">Relay transport</a>, which hands browser records to
+        .NET - which only hides the key when .NET runs outside the browser, on Blazor Server or in Hybrid.
     </div>
     <CodeSnippet Code="@HeadersCode" Language="C#" />
 </div>
@@ -127,8 +128,9 @@
         The dashboard is an OTLP receiver with a UI - the quickest way to see traces, logs and metrics locally. Use its
         OTLP/HTTP endpoint with protobuf. The browser posts to it from your app's origin, so allow that origin with
         <code>DASHBOARD__OTLP__CORS__ALLOWEDORIGINS</code> (and <code>DASHBOARD__OTLP__CORS__ALLOWEDHEADERS</code> if
-        you send headers). If the dashboard requires an OTLP API key, the browser would have to carry it - keep the
-        browser on the Relay transport or on an unsecured local endpoint.
+        you send headers). If the dashboard requires an OTLP API key, the browser would have to carry it - a server
+        does not hand the key from <code>OTEL_EXPORTER_OTLP_HEADERS</code> to the page, so keep the browser on the
+        Relay transport or on an unsecured local endpoint.
     </p>
     <CodeSnippet Code="@AspireShellCode" Language="Shell" />
     <CodeSnippet Code="@AspireCode" Language="C#" />

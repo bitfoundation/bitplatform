@@ -13,6 +13,18 @@ window.blDemo = {
         setTimeout(function () { throw new TypeError(message || 'A deliberate error from the demo page'); }, 0);
     },
 
+    // An error loop: the same TypeError from the same line, as a timer or a render loop would throw it. The script
+    // records it once per duplicate window (Errors.DuplicateWindow), not once per throw.
+    throwErrorLoop: function (message, count) {
+        for (let i = 0; i < (count || 20); i++) {
+            setTimeout(function () { throw new TypeError(message || 'A deliberate error loop from the demo page'); }, 0);
+        }
+    },
+
+    stats: function () {
+        return window.BitBelemetry ? window.BitBelemetry.getStats() : null;
+    },
+
     rejectPromise: function (message) {
         Promise.reject(new Error(message || 'A deliberate unhandled rejection from the demo page'));
     },

@@ -66,6 +66,9 @@
         The name comes from <code>data-bit-belemetry-name</code>, then <code>aria-label</code>, then <code>name</code>.
         The element's text is recorded only with <code>CaptureInteractionText</code>, because text can be personal
         data, and input values are never read. Anything under <code>data-bit-belemetry-ignore</code> is skipped.
+        Three clicks on one element within a second also record one <code>browser.rage_click</code> event
+        (<code>TrackRageClicks</code>, on by default) - the frustration signal of a user who expected something to
+        happen; press Pay three times quickly.
     </p>
     <div class="bb-demo">
         <div class="bb-demo-bar"><span class="bb-demo-label">Live<span class="demo-sample-title">Interactions</span></span></div>
@@ -202,8 +205,11 @@
         become log records with severity ERROR, the event name <code>exception</code>, and
         <code>exception.type</code>, <code>exception.message</code> and <code>exception.stacktrace</code> - scrubbed by
         the <a href="/privacy">privacy rules</a> first. Messages matching <code>IgnoreErrorMessages</code> are dropped;
-        the default list has the harmless <code>ResizeObserver loop</code> warning every browser raises. Handled .NET
-        exceptions go through <code>IBelemetry.TrackException</code>.
+        the default list has the harmless <code>ResizeObserver loop</code> warning every browser raises and the
+        empty <code>Script error.</code> of a cross-origin script. Handled .NET exceptions go through
+        <code>IBelemetry.TrackException</code>. An error thrown in a loop is recorded once per
+        <code>Errors.DuplicateWindow</code> (5 s), and at most <code>Errors.MaxPerMinute</code> (100) errors a minute
+        leave the page, so a broken timer cannot flood the queue or the backend.
     </p>
     <div class="bb-demo">
         <div class="bb-demo-bar"><span class="bb-demo-label">Live<span class="demo-sample-title">Errors</span></span></div>
@@ -211,6 +217,7 @@
             <button type="button" class="btn demo-btn-danger" disabled="@(RendererInfo.IsInteractive is false)" @onclick="ThrowError">Throw a TypeError</button>
             <button type="button" class="btn demo-btn-danger" disabled="@(RendererInfo.IsInteractive is false)" @onclick="RejectPromise">Reject a promise</button>
             <button type="button" class="btn btn-secondary" disabled="@(RendererInfo.IsInteractive is false)" @onclick="ThrowIgnored">Throw "ResizeObserver loop ..." (ignored)</button>
+            <button type="button" class="btn demo-btn-danger" disabled="@(RendererInfo.IsInteractive is false)" @onclick="ThrowErrorLoop">Throw the same error 20 times (recorded once)</button>
             <button type="button" class="btn btn-primary" disabled="@(RendererInfo.IsInteractive is false)" @onclick="TrackHandledException">IBelemetry.TrackException</button>
         </div>
         <TelemetryFeedView Compact="true" Match="@IsError"
@@ -262,6 +269,27 @@
 </div>
 
 <div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Diagnostics</h3>
+    <p>
+        <code>BitBelemetry.getStats()</code> says what the script dropped since the page loaded and why
+        (<code>not_consented</code>, <code>error_limit</code>, <code>queue_full</code>, <code>sampled_out</code>, ...)
+        and what became of its requests (<code>delivered</code>, <code>rejected</code>, <code>kept</code> for a later
+        retry, <code>dropped</code>) - the first thing to look at when telemetry does not arrive. On the .NET side the
+        same counts are metrics on the <code>Bit.Belemetry</code> meter, once it is added to <code>Metrics.Meters</code>.
+    </p>
+    <div class="bb-demo">
+        <div class="bb-demo-bar"><span class="bb-demo-label">Live<span class="demo-sample-title">getStats()</span></span></div>
+        <div class="bb-toolbar">
+            <button type="button" class="btn btn-primary" disabled="@(RendererInfo.IsInteractive is false)" @onclick="ReadStatsAsync">Read BitBelemetry.getStats()</button>
+        </div>
+        @if (_stats is not null)
+        {
+            <pre class="demo-json" aria-live="polite">@_stats</pre>
+        }
+    </div>
+</div>
+
+<div class="bb-card">
     <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> API</h3>
     <p>Every option of the script lives on <code>options.Browser</code>:</p>
     <ApiTable TypeName="BelemetryBrowserOptions" />
@@ -270,6 +298,7 @@
 </div>
 
 @code {
+    private string? _stats;
     private int _ignoredClicks;
     private int _events;
     private CallResult? _call;
@@ -280,7 +309,7 @@
 
     private static bool IsPageView(TelemetryRecord r) => r.Name.StartsWith("browser.page_view", StringComparison.Ordinal);
 
-    private static bool IsInteraction(TelemetryRecord r) => r.Name.StartsWith("browser.user_interaction", StringComparison.Ordinal);
+    private static bool IsInteraction(TelemetryRecord r) => r.Name.StartsWith("browser.user_interaction", StringComparison.Ordinal) || r.Name.StartsWith("browser.rage_click", StringComparison.Ordinal);
 
     private static bool IsWebVital(TelemetryRecord r) => r.Name.StartsWith("browser.web_vital", StringComparison.Ordinal);
 
@@ -371,6 +400,36 @@
     private async Task ThrowIgnored()
     {
         try { await JS.InvokeVoidAsync("blDemo.throwError", "ResizeObserver loop completed with undelivered notifications."); } catch { }
+    }
+
+    private async Task ThrowErrorLoop()
+    {
+        try { await JS.InvokeVoidAsync("blDemo.throwErrorLoop", "Cannot read properties of null (reading 'tick')", 20); } catch { }
+    }
+
+    private async Task ReadStatsAsync()
+    {
+        try
+        {
+            var stats = await JS.InvokeAsync<System.Text.Json.JsonElement>("blDemo.stats");
+            if (stats.ValueKind != System.Text.Json.JsonValueKind.Object)
+            {
+                _stats = "The script has not started.";
+                return;
+            }
+
+            // Written by hand rather than with JsonSerializer, which needs reflection a trimmed client does not have.
+            using var buffer = new MemoryStream();
+            using (var writer = new System.Text.Json.Utf8JsonWriter(buffer, new System.Text.Json.JsonWriterOptions { Indented = true }))
+            {
+                stats.WriteTo(writer);
+            }
+            _stats = System.Text.Encoding.UTF8.GetString(buffer.ToArray());
+        }
+        catch
+        {
+            _stats = "The script is not available.";
+        }
     }
 
     private void TrackHandledException()

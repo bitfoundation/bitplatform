@@ -22,6 +22,8 @@ internal sealed class BelemetryPipeline : IAsyncDisposable
     private readonly IServiceProvider _services;
     private readonly BelemetryConsentState _consent;
     private readonly BelemetryPrivacy _privacy;
+    private readonly BelemetryErrorLimiter? _errors;
+    private readonly System.Collections.Concurrent.ConcurrentDictionary<IBelemetryProcessor, byte> _failedProcessors = new(ReferenceEqualityComparer.Instance);
 
     private BelemetryExporterSet? _exporters;
     private BelemetryActivityCollector? _activities;
@@ -30,6 +32,7 @@ internal sealed class BelemetryPipeline : IAsyncDisposable
     private ILogger? _diagnostics;
     private Task? _loop;
     private int _started;
+    private int _disposed;
     private int _queuedSpans;
     private int _queuedLogs;
 
@@ -39,6 +42,10 @@ internal sealed class BelemetryPipeline : IAsyncDisposable
         _consent = consent;
         _services = services;
         _privacy = new BelemetryPrivacy(settings.Options.Privacy);
+
+        // One user's app floods only its own queue and backend quota; a server's errors are every user's, and a cap
+        // there would hide real failures under load.
+        _errors = settings.IsServer ? null : new BelemetryErrorLimiter(settings.Options.Errors);
         _consent.Changed += OnConsentChanged;
     }
 
@@ -48,6 +55,9 @@ internal sealed class BelemetryPipeline : IAsyncDisposable
     public bool IsCollecting => _started == 1 && Settings.CollectDotnet && Settings.HasExporters;
 
     internal BelemetryExporterSet Exporters => _exporters ??= new BelemetryExporterSet(Settings, _services, this);
+
+    /// <summary>Belemetry's own health metrics (the <c>Bit.Belemetry</c> meter).</summary>
+    internal BelemetrySelfTelemetry Self { get; } = new();
 
     /// <summary>Raised for every record accepted into the queue (used by live metrics).</summary>
     internal event Action<object>? RecordAccepted;
@@ -71,7 +81,23 @@ internal sealed class BelemetryPipeline : IAsyncDisposable
             }
         }
 
-        _loop = RunAsync(_stopping.Token);
+        // The loop outlives whoever started it - the first resolution of the logger factory, which can happen on a
+        // MAUI/WPF/WinForms UI thread or inside a request. Started as is, every await in it would resume on that
+        // thread's SynchronizationContext (serialization, gzip and file I/O on the UI thread) and carry its ambient
+        // state for good (Activity.Current, AsyncLocal values). Task.Run with the flow suppressed gives it a clean
+        // context; in single-threaded WebAssembly it still runs on the one thread, after the current work.
+        // SuppressFlow throws when the flow is suppressed already - and then Task.Run captures nothing anyway.
+        if (ExecutionContext.IsFlowSuppressed())
+        {
+            _loop = Task.Run(() => RunAsync(_stopping.Token));
+        }
+        else
+        {
+            using (ExecutionContext.SuppressFlow())
+            {
+                _loop = Task.Run(() => RunAsync(_stopping.Token));
+            }
+        }
     }
 
     /// <summary>
@@ -94,17 +120,23 @@ internal sealed class BelemetryPipeline : IAsyncDisposable
         if (preConsented is false && CanRecord(span.Feature, allowPending: true) is false) return;
 
         _privacy.Apply(span);
+        BelemetryValueLimit.Apply(span, Settings.Options.MaxValueLength);
         if (Settings.IsServer is false) Enrich(span.Attributes);
 
         foreach (var processor in Settings.Options.Processors)
         {
             try
             {
-                if (processor.OnSpan(span) is false) return;
+                if (processor.OnSpan(span) is false)
+                {
+                    Self.Dropped("filtered", span: true);
+                    return;
+                }
             }
-            catch
+            catch (Exception ex)
             {
-                // A faulty processor skips this record rather than breaking the pipeline.
+                // A faulty processor is skipped for this record rather than breaking the pipeline.
+                ReportProcessorFailure(processor, ex);
             }
         }
 
@@ -115,32 +147,114 @@ internal sealed class BelemetryPipeline : IAsyncDisposable
     {
         if (preConsented is false && CanRecord(log.Feature, allowPending: true) is false) return;
 
+        // A relayed record was limited by the script already.
+        if (preConsented is false && log.Feature == BelemetryFeatures.Errors && _errors?.ShouldRecord(log) is false)
+        {
+            Self.Dropped("error_limit", span: false);
+            return;
+        }
+
         _privacy.Apply(log);
+        BelemetryValueLimit.Apply(log, Settings.Options.MaxValueLength);
         if (Settings.IsServer is false) Enrich(log.Attributes);
 
         foreach (var processor in Settings.Options.Processors)
         {
             try
             {
-                if (processor.OnLog(log) is false) return;
+                if (processor.OnLog(log) is false)
+                {
+                    Self.Dropped("filtered", span: false);
+                    return;
+                }
             }
-            catch
+            catch (Exception ex)
             {
-                // A faulty processor skips this record rather than breaking the pipeline.
+                // A faulty processor is skipped for this record rather than breaking the pipeline.
+                ReportProcessorFailure(processor, ex);
             }
         }
 
         Add(new Entry(log, resource ?? Settings.Resource, log.Feature, preConsented));
     }
 
-    /// <summary>Accepts a batch the browser script relayed (its consent was already applied in the page).</summary>
-    public void Relay(BelemetryRelayBatch batch)
+    /// <summary>
+    /// Accepts a batch the browser script relayed (its consent was already applied in the page). With a
+    /// <paramref name="source"/>, the page's rate limit applies and its resource is reused across batches.
+    /// </summary>
+    public void Relay(BelemetryRelayBatch batch, BelemetryRelaySource? source = null)
     {
         if (Settings.Options.Enabled is false || Settings.HasExporters is false) return;
 
-        var resource = Settings.Resource.Merge(BelemetryRelayConverter.ToAttributes(batch.Resource));
-        foreach (var span in BelemetryRelayConverter.ToSpans(batch)) Enqueue(span, resource, preConsented: true);
-        foreach (var log in BelemetryRelayConverter.ToLogs(batch)) Enqueue(log, resource, preConsented: true);
+        var budget = int.MaxValue;
+        if (source?.Limiter is { } limiter)
+        {
+            var logCount = Math.Min(BelemetryRelayConverter.MaxRecordsPerBatch, batch.Logs?.Count ?? 0);
+            var spanCount = Math.Min(BelemetryRelayConverter.MaxRecordsPerBatch, batch.Spans?.Count ?? 0);
+            budget = limiter.Take(logCount + spanCount);
+            if (budget < logCount + spanCount)
+            {
+                if (source.Dropped == 0) LogDiagnostic(null, "A page relays more records than its rate limit allows; the excess is dropped.", LogLevel.Warning);
+                source.Dropped += logCount + spanCount - budget;
+                Self.Dropped("relay_limit", span: false, Math.Max(0, logCount - budget));
+                Self.Dropped("relay_limit", span: true, Math.Min(spanCount, logCount + spanCount - budget));
+            }
+            if (budget == 0) return;
+        }
+
+        var resource = RelayResource(batch, source);
+
+        // Logs first: errors, page views and events are worth more than dependency spans when the budget runs out. A
+        // feature the configuration switched off is dropped even though the page says it consented: a page can be
+        // anything that speaks the interop protocol.
+        foreach (var log in BelemetryRelayConverter.ToLogs(batch))
+        {
+            if (budget-- <= 0) return;
+            if ((Settings.ConfiguredFeatures & log.Feature) != 0) Enqueue(log, resource, preConsented: true);
+        }
+
+        foreach (var span in BelemetryRelayConverter.ToSpans(batch))
+        {
+            if (budget-- <= 0) return;
+            if ((Settings.ConfiguredFeatures & span.Feature) != 0) Enqueue(span, resource, preConsented: true);
+        }
+    }
+
+    // The resource keys that say which service a record belongs to.
+    private static readonly string[] _serviceIdentity =
+    [
+        BelemetrySemanticConventions.ServiceName, BelemetrySemanticConventions.ServiceNamespace,
+        BelemetrySemanticConventions.ServiceVersion, BelemetrySemanticConventions.DeploymentEnvironmentName,
+    ];
+
+    private BelemetryResource RelayResource(BelemetryRelayBatch batch, BelemetryRelaySource? source)
+    {
+        var key = batch.Resource is null ? string.Empty : string.Join('\u0001', batch.Resource.Select(p => p.Key + '\u0002' + p.Value.GetRawText()));
+        if (source is { Resource: { } cached } && source.ResourceKey == key) return cached;
+
+        var browser = BelemetryRelayConverter.ToAttributes(batch.Resource);
+        BelemetryResource resource;
+        if (Settings.IsServer)
+        {
+            // Anyone can open a server's pages: a page describes itself (browser, language, its tab's instance id), but
+            // which service it belongs to is the server's to say. And the server's own host, process and cloud
+            // attributes describe the server, not the page, so they are not added - as with the Direct transport.
+            resource = new BelemetryResource(browser);
+            foreach (var name in _serviceIdentity) resource.Attributes.Set(name, Settings.Resource.Attributes[name]);
+        }
+        else
+        {
+            // WebAssembly and Hybrid: the page runs on the device the process describes.
+            resource = Settings.Resource.Merge(browser);
+        }
+
+        if (source is not null)
+        {
+            source.ResourceKey = key;
+            source.Resource = resource;
+        }
+
+        return resource;
     }
 
     /// <summary>Exports everything queued (and, with <paramref name="includeMetrics"/>, collects and exports metrics) now.</summary>
@@ -200,7 +314,16 @@ internal sealed class BelemetryPipeline : IAsyncDisposable
             if (held)
             {
                 // Not decided yet: keep it in memory - never on the wire, never on disk - until the user chooses.
-                if (_pending.Count >= Math.Max(0, Settings.Options.Consent.PendingLimit)) _pending.RemoveAt(0);
+                if (Settings.Options.Consent.PendingLimit <= 0)
+                {
+                    Self.Dropped("pending_full", entry.Record is BelemetrySpan);
+                    return;
+                }
+                if (_pending.Count >= Settings.Options.Consent.PendingLimit)
+                {
+                    Self.Dropped("pending_full", _pending[0].Record is BelemetrySpan);
+                    _pending.RemoveAt(0);
+                }
                 _pending.Add(entry);
                 return;
             }
@@ -227,6 +350,7 @@ internal sealed class BelemetryPipeline : IAsyncDisposable
                 {
                     _queue.Remove(node);
                     if (isSpan) _queuedSpans--; else _queuedLogs--;
+                    Self.Dropped("queue_full", isSpan);
                     break;
                 }
             }
@@ -264,6 +388,7 @@ internal sealed class BelemetryPipeline : IAsyncDisposable
                     {
                         _queue.Remove(node);
                         if (node.Value.Record is BelemetrySpan) _queuedSpans--; else _queuedLogs--;
+                        Self.Dropped("consent_revoked", node.Value.Record is BelemetrySpan);
                     }
                     node = next;
                 }
@@ -274,6 +399,7 @@ internal sealed class BelemetryPipeline : IAsyncDisposable
                 foreach (var entry in _pending)
                 {
                     if (_consent.IsGranted(entry.Feature)) AddToQueue(entry);
+                    else Self.Dropped("not_consented", entry.Record is BelemetrySpan);
                 }
                 _pending.Clear();
             }
@@ -297,9 +423,6 @@ internal sealed class BelemetryPipeline : IAsyncDisposable
 
     private async Task RunAsync(CancellationToken stopping)
     {
-        // Yield first so Start() returns immediately; on WebAssembly this also lets the app finish booting.
-        await Task.Yield();
-
         // Said here rather than in Start(), which runs while the logger factory is still being built. A warning, not a
         // diagnostic: it is a misconfiguration that loses a whole signal without any other symptom.
         if (_meters is not null && Settings.Meters.Count > 0 && Settings.MetricsSupported is false)
@@ -404,11 +527,22 @@ internal sealed class BelemetryPipeline : IAsyncDisposable
             {
                 return p.OnMetric(metric);
             }
-            catch
+            catch (Exception ex)
             {
+                ReportProcessorFailure(p, ex);
                 return true;
             }
         })).ToList();
+    }
+
+    /// <summary>
+    /// Says once per processor that it threw: silently, a broken enrichment or filter would look like data that is
+    /// just not there. Once, because it runs for every record and would otherwise flood the log it is reported to.
+    /// </summary>
+    private void ReportProcessorFailure(IBelemetryProcessor processor, Exception exception)
+    {
+        if (_failedProcessors.TryAdd(processor, 0) is false) return;
+        LogDiagnostic(exception, $"The processor {processor.GetType().FullName} threw; it is skipped for every record it throws on (only this first failure is logged).", LogLevel.Warning);
     }
 
     private async Task ExportAsync(BelemetryBatch batch, CancellationToken cancellationToken)
@@ -471,6 +605,9 @@ internal sealed class BelemetryPipeline : IAsyncDisposable
 
     public async ValueTask DisposeAsync()
     {
+        // Idempotent: a host may dispose the container while the app disposes the pipeline it resolved itself.
+        if (Interlocked.Exchange(ref _disposed, 1) == 1) return;
+
         _consent.Changed -= OnConsentChanged;
         _activities?.Dispose();
         _requests?.Dispose();
@@ -500,6 +637,7 @@ internal sealed class BelemetryPipeline : IAsyncDisposable
         }
 
         if (_exporters is not null) await _exporters.DisposeAsync();
+        Self.Dispose();
         _stopping.Dispose();
     }
 

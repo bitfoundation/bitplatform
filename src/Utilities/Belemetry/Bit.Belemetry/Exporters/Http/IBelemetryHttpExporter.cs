@@ -18,6 +18,15 @@ internal interface IBelemetryHttpExporter
     /// <summary>The items of a partial-success response worth retrying, as a new request; null when none are.</summary>
     BelemetryHttpRequest? GetRetryForPartialSuccess(BelemetryHttpRequest request, int statusCode, string? responseBody);
 
+    /// <summary>Whether an HTTP error status is transient for this backend (retried, then persisted) rather than final (dropped).</summary>
+    bool IsRetryable(int statusCode);
+
+    /// <summary>
+    /// What a successful response says the backend nevertheless rejected (an OTLP <c>partial_success</c>), for the
+    /// diagnostics; null when nothing was. <paramref name="body"/> is the bare message (a gRPC frame is removed).
+    /// </summary>
+    string? DescribePartialSuccess(string? mediaType, ReadOnlySpan<byte> body);
+
     /// <summary>The maximum time one request may take.</summary>
     TimeSpan Timeout { get; }
 

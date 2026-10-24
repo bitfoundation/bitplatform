@@ -2,7 +2,7 @@
 import { installErrors } from '../../Bit.Belemetry/Scripts/instrumentations/errors.ts';
 import { describeTarget, installInteractions, resolveTarget, xpath } from '../../Bit.Belemetry/Scripts/instrumentations/interactions.ts';
 import { installPageViews, resetPageViewState, trackPageView, trackPageVisitTime } from '../../Bit.Belemetry/Scripts/instrumentations/page-views.ts';
-import { ClsAccumulator, InpAccumulator, rate, THRESHOLDS } from '../../Bit.Belemetry/Scripts/instrumentations/web-vitals.ts';
+import { ClsAccumulator, InpAccumulator, installWebVitals, rate, resetWebVitalsState, THRESHOLDS } from '../../Bit.Belemetry/Scripts/instrumentations/web-vitals.ts';
 import { installConsole } from '../../Bit.Belemetry/Scripts/instrumentations/console.ts';
 import { fakeContext } from './helpers.js';
 
@@ -126,7 +126,34 @@ describe('page views', () => {
         const durations = ctx.records.filter(r => r.eventName === 'browser.page_visit_time').map(r => r.attributes['page.visit.duration']);
         expect(durations).toEqual([2000, 3000]);
     });
+
+    it('counts a back/forward-cache restore as a page view, and the stay in the cache as nobody\'s visit', () => {
+        const ctx = fakeContext({ pageViews: { trackVisitTime: true } });
+        let t = 1000;
+        vi.spyOn(performance, 'now').mockImplementation(() => t);
+        uninstall = installPageViews(ctx);
+        t += 2000;
+        window.dispatchEvent(pageTransition('pagehide', true));
+        t += 600000;
+        window.dispatchEvent(pageTransition('pageshow', false)); // an ordinary load: nothing new
+        window.dispatchEvent(pageTransition('pageshow', true));
+        t += 4000;
+        trackPageView(ctx, 'push', { url: '/next' });
+
+        const views = ctx.records.filter(r => r.eventName === 'browser.page_view');
+        expect(views.map(r => r.attributes['browser.navigation.type'])).toEqual(['initial', 'restore', 'push']);
+        expect(views[1].attributes['url.path']).toBe('/start');
+        const durations = ctx.records.filter(r => r.eventName === 'browser.page_visit_time').map(r => r.attributes['page.visit.duration']);
+        expect(durations).toEqual([2000, 4000]);
+    });
 });
+
+function pageTransition(type, persisted, timeStamp) {
+    const event = new Event(type);
+    Object.defineProperty(event, 'persisted', { value: persisted });
+    if (timeStamp !== undefined) Object.defineProperty(event, 'timeStamp', { value: timeStamp });
+    return event;
+}
 
 describe('interactions', () => {
     it('resolves the nearest interactive ancestor', () => {
@@ -170,6 +197,41 @@ describe('interactions', () => {
         expect(ctx.records).toHaveLength(1);
         expect(ctx.records[0]).toMatchObject({ eventName: 'browser.user_interaction', feature: 4, attributes: { 'target.id': 'b', 'event.type': 'click' } });
     });
+
+    it('reports a rage click once per burst of 3 clicks on one element within a second', () => {
+        document.body.innerHTML = '<button id="pay" data-bit-belemetry-name="checkout.pay">Pay</button><button id="other">Other</button>';
+        const ctx = fakeContext();
+        uninstall = installInteractions(ctx);
+        const click = (id, timeStamp) => {
+            const event = new MouseEvent('click', { bubbles: true });
+            Object.defineProperty(event, 'timeStamp', { value: timeStamp });
+            document.getElementById(id).dispatchEvent(event);
+        };
+
+        click('pay', 1000);
+        click('pay', 1300);
+        click('other', 1400); // another element breaks the burst
+        click('pay', 1500);
+        click('pay', 1700);
+        click('pay', 1900); // the third in a row within a second: rage
+        click('pay', 2100); // the same burst: no second report
+        click('pay', 3500); // a new burst
+        click('pay', 3600);
+
+        const rages = ctx.records.filter(r => r.eventName === 'browser.rage_click');
+        expect(rages).toHaveLength(1);
+        expect(rages[0]).toMatchObject({
+            feature: 4, severityNumber: 9, body: 'rage click checkout.pay',
+            attributes: { 'event.type': 'rage_click', 'target.name': 'checkout.pay', 'interaction.click_count': 3 },
+        });
+        expect(ctx.records.filter(r => r.eventName === 'browser.user_interaction')).toHaveLength(9);
+
+        const off = fakeContext({ interactions: { rageClicks: false } });
+        uninstall();
+        uninstall = installInteractions(off);
+        for (const t of [5000, 5100, 5200, 5300]) click('pay', t);
+        expect(off.records.filter(r => r.eventName === 'browser.rage_click')).toHaveLength(0);
+    });
 });
 
 describe('web vitals', () => {
@@ -186,6 +248,32 @@ describe('web vitals', () => {
         expect(rate('CLS', 0.26)).toBe('poor');
         expect(rate('FCP', 1900)).toBe('needs-improvement');
         expect(rate('TTFB', 1801)).toBe('poor');
+    });
+
+    it('starts a new generation after a back/forward-cache restore: FCP and LCP to the next painted frame, new ids', () => {
+        resetWebVitalsState();
+        let t = 50000;
+        vi.spyOn(performance, 'now').mockImplementation(() => t);
+        const frames = [];
+        vi.stubGlobal('requestAnimationFrame', callback => frames.push(callback));
+        const ctx = fakeContext();
+        uninstall = installWebVitals(ctx);
+        const before = ctx.records.length;
+
+        window.dispatchEvent(pageTransition('pageshow', false, t));
+        expect(frames).toHaveLength(0);
+        window.dispatchEvent(pageTransition('pageshow', true, t));
+        frames.shift()(); // before the restored page is painted
+        t += 35;
+        frames.shift()(); // after
+
+        const vitals = ctx.records.slice(before).filter(r => r.eventName === 'browser.web_vital');
+        expect(vitals.map(r => r.attributes['web_vital.name'])).toEqual(['FCP', 'LCP']);
+        for (const vital of vitals) {
+            expect(vital.attributes).toMatchObject({ 'web_vital.value': 35, 'web_vital.delta': 35, 'web_vital.rating': 'good', 'web_vital.navigation_type': 'back-forward-cache' });
+        }
+        expect(vitals[0].attributes['web_vital.id']).not.toBe(vitals[1].attributes['web_vital.id']);
+        vi.unstubAllGlobals();
     });
 
     it('computes CLS as the largest session window', () => {

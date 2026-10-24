@@ -236,3 +236,114 @@ describe('public API', () => {
         await expect(api.flush()).resolves.toBeUndefined();
     });
 });
+
+describe('a second start', () => {
+    it('adds the ignored URLs it brings (a WebAssembly client\'s exporters) to those of the first', async () => {
+        await load();
+        vi.stubGlobal('fetch', mockFetch(200));
+        api.start(relayConfig({ consent: { default: 4095 }, dependencies: { fetch: true, xhr: false } }));
+        api.start(relayConfig({ consent: { default: 4095 }, dependencies: { ignoreUrls: ['/_framework/', '^https://wasm-collector\\.test/'] } }));
+        expect(api._getState().config.dependencies.ignoreUrls).toEqual(['/_framework/', '/_blazor', '/_content/', '^https://wasm-collector\\.test/']);
+
+        const before = api._getState().pipeline.size;
+        await window.fetch('https://wasm-collector.test/v1/logs', { method: 'POST' });
+        await window.fetch('https://api.test/items');
+        const spans = api._getState().pipeline.queue.slice(before);
+        expect(spans.map(s => s.attributes['url.full'])).toEqual(['https://api.test/items']);
+    });
+});
+
+describe('getStats', () => {
+    it('says what was dropped and why, and what became of the requests', async () => {
+        await load();
+        const fetch = mockFetch(200, 400);
+        vi.stubGlobal('fetch', fetch);
+        api.start({
+            service: { name: 'shop' },
+            performance: { webVitals: false, documentLoad: false },
+            dependencies: { fetch: false, xhr: false },
+            consent: { default: 0, pendingLimit: 2 },
+            exporters: [{ type: 'otlp', endpoint: 'https://collector.test' }],
+        });
+        // Held before the decision: the initial page view plus 3 events, in a hold of 2.
+        api.trackEvent('a');
+        api.trackEvent('b');
+        api.trackEvent('c');
+        api.addProcessor(record => record.eventName !== 'c');
+        // Errors only: the held page view and event are not consented.
+        api.setConsent(1);
+        api.trackEvent('after');
+        for (let i = 0; i < 3; i++) api.trackException('TypeError', 'boom', 'TypeError: boom\n    at loop (app.js:1:2)');
+        await api.flush();
+        await api._getState().transport.idle();
+
+        // pending_full: the page view and 'a' made room for 'b' and 'c'; not_consented: 'b' and 'c' at the decision,
+        // then 'after'; error_limit: the loop's two duplicates.
+        expect(api.getStats()).toEqual({
+            dropped: { pending_full: 2, not_consented: 3, error_limit: 2 },
+            requests: { delivered: 1 },
+            queued: 0,
+            pending: 0,
+        });
+
+        api.trackException('RangeError', 'other');
+        await api.flush();
+        await api._getState().transport.idle();
+        expect(api.getStats().requests).toEqual({ delivered: 1, rejected: 1 });
+    });
+});
+
+describe('processors and global attributes', () => {
+    const relayed = dotnet => dotnet.calls.filter(c => c[0] === 'Belemetry.Relay').flatMap(c => c[1].logs);
+
+    it('runs the processors at export, so one added after the start still sees the initial page view', async () => {
+        await load();
+        api.start(relayConfig({ consent: { default: 4095 } }));
+        const seen = [];
+        api.addProcessor(record => {
+            seen.push(record.eventName);
+            record.attributes['app.processed'] = true;
+        });
+        const remove = api.addProcessor(record => record.eventName !== 'noise');
+        api.addProcessor(() => {
+            throw new Error('broken processor');
+        });
+        api.trackEvent('noise');
+        api.trackEvent('checkout');
+
+        const dotnet = fakeDotNet();
+        api.attachDotNet(dotnet, { relay: true });
+        await api.flush();
+        expect(seen).toEqual(['browser.page_view', 'noise', 'checkout']);
+        expect(relayed(dotnet).map(l => l.eventName)).toEqual(['browser.page_view', 'checkout']);
+        expect(relayed(dotnet).every(l => l.attributes['app.processed'] === true)).toBe(true);
+
+        remove();
+        api.trackEvent('noise');
+        await api.flush();
+        expect(relayed(dotnet).map(l => l.eventName)).toEqual(['browser.page_view', 'checkout', 'noise']);
+    });
+
+    it('adds global attributes to every record, scrubbed, never over the record or the consent-governed ids', async () => {
+        await load();
+        api.setAttributes({ 'app.tenant': 'contoso', 'app.contact': 'ops@contoso.test', 'user.id': 'sneaky', 'event.kind': 'global' });
+        api.start(relayConfig({ consent: { default: 4095 }, pageViews: { trackHashChanges: false } }));
+        api.trackEvent('checkout', { 'event.kind': 'own' });
+        api.setAttributes({ 'app.tenant': null, 'app.flag': true });
+        api.trackEvent('later');
+
+        const dotnet = fakeDotNet();
+        api.attachDotNet(dotnet, { relay: true });
+        await api.flush();
+        const [, checkout, later] = relayed(dotnet);
+        expect(checkout.attributes).toMatchObject({ 'app.tenant': 'contoso', 'app.contact': '[email]', 'event.kind': 'own' });
+        expect(checkout.attributes['user.id']).toBeUndefined();
+        expect(later.attributes['app.tenant']).toBeUndefined();
+        expect(later.attributes['app.flag']).toBe(true);
+
+        api.setAttributes(null);
+        api.trackEvent('last');
+        await api.flush();
+        expect(relayed(dotnet).pop().attributes['app.contact']).toBeUndefined();
+    });
+});

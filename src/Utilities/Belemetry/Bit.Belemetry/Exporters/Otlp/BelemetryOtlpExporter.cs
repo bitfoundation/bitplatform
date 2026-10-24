@@ -32,23 +32,29 @@ internal sealed class BelemetryOtlpExporter(BelemetryOtlpExporterOptions options
         if (batch.Spans.Count > 0 && options.Signals.HasFlag(BelemetrySignals.Traces))
         {
             yield return Create(Resolve(options.TracesEndpoint, options.Endpoint, protocol, BelemetrySignals.Traces), contentType,
-                json ? OtlpJsonSerializer.SerializeTraces(batch) : OtlpProtobufSerializer.SerializeTraces(batch));
+                json ? OtlpJsonSerializer.SerializeTraces(batch) : OtlpProtobufSerializer.SerializeTraces(batch), batch.Spans.Count);
         }
 
         if (batch.Logs.Count > 0 && options.Signals.HasFlag(BelemetrySignals.Logs))
         {
             yield return Create(Resolve(options.LogsEndpoint, options.Endpoint, protocol, BelemetrySignals.Logs), contentType,
-                json ? OtlpJsonSerializer.SerializeLogs(batch) : OtlpProtobufSerializer.SerializeLogs(batch));
+                json ? OtlpJsonSerializer.SerializeLogs(batch) : OtlpProtobufSerializer.SerializeLogs(batch), batch.Logs.Count);
         }
 
         if (batch.Metrics.Count > 0 && options.Signals.HasFlag(BelemetrySignals.Metrics))
         {
             yield return Create(Resolve(options.MetricsEndpoint, options.Endpoint, protocol, BelemetrySignals.Metrics), contentType,
-                json ? OtlpJsonSerializer.SerializeMetrics(batch, temporality) : OtlpProtobufSerializer.SerializeMetrics(batch, temporality));
+                json ? OtlpJsonSerializer.SerializeMetrics(batch, temporality) : OtlpProtobufSerializer.SerializeMetrics(batch, temporality),
+                batch.Metrics.Sum(m => m.Points.Count));
         }
     }
 
     public ValueTask PrepareAsync(HttpRequestMessage message, CancellationToken cancellationToken) => ValueTask.CompletedTask;
+
+    public bool IsRetryable(int statusCode) => BelemetryHttpSender.IsOtlpRetryable(statusCode);
+
+    public string? DescribePartialSuccess(string? mediaType, ReadOnlySpan<byte> body) =>
+        body.IsEmpty ? null : OtlpPartialSuccess.Describe(body, json: mediaType?.Contains("json", StringComparison.OrdinalIgnoreCase) is true);
 
     public BelemetryHttpRequest? GetRetryForPartialSuccess(BelemetryHttpRequest request, int statusCode, string? responseBody)
     {
@@ -57,7 +63,7 @@ internal sealed class BelemetryOtlpExporter(BelemetryOtlpExporterOptions options
         return null;
     }
 
-    private BelemetryHttpRequest Create(string url, string contentType, byte[] body)
+    private BelemetryHttpRequest Create(string url, string contentType, byte[] body, int count)
     {
         return new BelemetryHttpRequest
         {
@@ -66,6 +72,7 @@ internal sealed class BelemetryOtlpExporter(BelemetryOtlpExporterOptions options
             ContentType = contentType,
             ContentEncoding = options.Compression == BelemetryCompression.Gzip ? "gzip" : null,
             Body = body,
+            Count = count,
         };
     }
 

@@ -73,11 +73,13 @@
     <div class="bb-note bb-note-warn">
         <p>
             <strong>Everything the script exports with is in the page.</strong> The browser configuration is
-            written into the HTML by <code>&lt;BelemetryScript /&gt;</code>, so an exporter's <code>Headers</code> -
-            a vendor API key, say - are readable by anyone who opens it. For browser traffic, use a collector
-            that needs no credentials, set <code>IncludeInBrowser = false</code> on the exporter that carries
-            them, or switch to Relay. An Azure Monitor exporter with an <code>AccessTokenProvider</code> is never
-            handed to the script.
+            written into the HTML by <code>&lt;BelemetryScript /&gt;</code>, so a server never puts an exporter's
+            <code>Headers</code> - server configuration, often a vendor API key - into it: the page sends only the
+            exporter's <code>BrowserHeaders</code>, which are public by definition (a startup warning names an
+            exporter whose page would now go without its headers). A WebAssembly client's own configuration ships
+            to the browser anyway, so there the script sends both. For a real credential, use a collector that
+            needs none, set <code>IncludeInBrowser = false</code> on the exporter that carries it, or switch to
+            Relay. An Azure Monitor exporter with an <code>AccessTokenProvider</code> is never handed to the script.
         </p>
     </div>
 </div>

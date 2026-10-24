@@ -274,6 +274,62 @@ public class BelemetryPipelineTests
     }
 
     [TestMethod]
+    public async Task AProcessorThatThrows_IsReportedOnce()
+    {
+        // Silently, a broken enrichment would look like data that is just not there.
+        var capture = new CapturingLoggerProvider();
+        await using var host = TestHost.Create(o => o.AddProcessor(new ThrowingProcessor()), configureServices: s => s.AddSingleton<ILoggerProvider>(capture));
+        host.StartLogging();
+
+        for (var i = 0; i < 5; i++) host.Pipeline.Enqueue(Log("kept", BelemetryFeatures.Logs));
+        host.Pipeline.Enqueue(Records.Span());
+        await host.FlushAsync();
+
+        Assert.HasCount(5, host.Memory.Logs, "A record is kept when a processor throws on it.");
+        var reports = capture.Entries.Where(e => e.Category == BelemetryLogger.DiagnosticsCategory && e.Message.Contains(nameof(ThrowingProcessor), StringComparison.Ordinal)).ToList();
+        Assert.HasCount(1, reports);
+        Assert.AreEqual(LogLevel.Warning, reports[0].Level);
+    }
+
+    [TestMethod]
+    public async Task SelfTelemetry_CountsDropsAndExports_OnTheBitBelemetryMeter()
+    {
+        await using var host = TestHost.Create(o =>
+        {
+            o.Metrics.Meters.Add(BelemetrySelfTelemetry.MeterName);
+            o.Batch.MaxQueueSize = 2;
+            o.AddProcessor(new TestProcessor()); // drops "drop"
+        });
+        host.StartLogging();
+
+        host.Pipeline.Enqueue(Log("drop", BelemetryFeatures.Logs));
+        for (var i = 0; i < 3; i++) host.Pipeline.Enqueue(Log("x" + i, BelemetryFeatures.Logs));
+        await host.FlushAsync();
+        await host.FlushAsync(includeMetrics: true);
+
+        long Value(string name, string key, string value) => host.Memory.Metrics.Last(m => m.Name == name).Points
+            .Single(p => p.Attributes.GetString(key) == value).LongValue;
+        Assert.AreEqual(1, Value("belemetry.records.dropped", "belemetry.reason", "filtered"));
+        Assert.AreEqual(1, Value("belemetry.records.dropped", "belemetry.reason", "queue_full"));
+        Assert.AreEqual(2, Value("belemetry.records.exported", "belemetry.outcome", "delivered"), "Counted inside the export, where other measurements are suppressed.");
+        Assert.AreEqual("in-memory", host.Memory.Metrics.Last(m => m.Name == "belemetry.records.exported").Points[0].Attributes.GetString("belemetry.exporter"));
+    }
+
+    [TestMethod]
+    public async Task APendingLimitOfZero_HoldsNothing_AndDoesNotThrow()
+    {
+        // It used to remove the first element of an empty list on the first undecided record.
+        await using var host = TestHost.Create(o => o.Consent.PendingLimit = 0, consentDefault: BelemetryFeatures.None);
+
+        host.Pipeline.Enqueue(Log("undecided", BelemetryFeatures.Logs));
+        host.Consent.Decide(BelemetryFeatures.All);
+        host.Pipeline.Enqueue(Log("decided", BelemetryFeatures.Logs));
+        await host.FlushAsync();
+
+        Assert.AreEqual("decided", host.Memory.Logs.Single().Body);
+    }
+
+    [TestMethod]
     public async Task MetricProcessors_CanDrop_AndMetricsNeedConsent()
     {
         using var meter = new Meter("Tests.Pipeline." + Guid.NewGuid().ToString("N"));
@@ -393,6 +449,138 @@ public class BelemetryPipelineTests
         Assert.AreEqual("exception", logs[2].EventName);
         Assert.AreEqual(BelemetryFeatures.Errors, logs[2].Feature);
         Assert.AreEqual("System.InvalidOperationException", logs[2].Attributes["exception.type"]);
+    }
+
+    [TestMethod]
+    public async Task ExportLoop_RunsOffTheStartersContext()
+    {
+        // The pipeline starts with the first resolution of the logger factory - on a MAUI/WPF UI thread, or inside a
+        // request. The loop must not resume on that thread's SynchronizationContext, nor carry its ambient Activity.
+        var probe = new ContextProbe();
+        await using var host = TestHost.Create(o =>
+        {
+            o.AddExporter(probe);
+            o.Batch.MaxBatchSize = 1;
+        });
+
+        var ui = new RecordingContext();
+        var previous = SynchronizationContext.Current;
+        var starter = new Activity("starter").Start();
+        SynchronizationContext.SetSynchronizationContext(ui);
+        try
+        {
+            host.StartLogging();
+        }
+        finally
+        {
+            SynchronizationContext.SetSynchronizationContext(previous);
+            starter.Stop();
+        }
+
+        host.Pipeline.Enqueue(Log("a", BelemetryFeatures.Logs)); // a full batch wakes the loop
+        var deadline = DateTime.UtcNow.AddSeconds(5);
+        while (probe.Exports == 0 && DateTime.UtcNow < deadline) await Task.Delay(20);
+
+        Assert.AreEqual(1, probe.Exports, "The loop exported the full batch on its own.");
+        Assert.IsFalse(probe.SawContext, "The export ran on the starter's SynchronizationContext.");
+        Assert.IsNull(probe.Activity, "The export carried the starter's Activity.Current.");
+        Assert.AreEqual(0, ui.Posts);
+    }
+
+    [TestMethod]
+    public async Task Start_WithTheFlowAlreadySuppressed_StillStartsTheLoop()
+    {
+        // ExecutionContext.SuppressFlow throws when the flow is suppressed already - a library resolving services
+        // lazily inside its own suppressed block must not break logging.
+        var probe = new ContextProbe();
+        await using var host = TestHost.Create(o =>
+        {
+            o.AddExporter(probe);
+            o.Batch.MaxBatchSize = 1;
+        });
+
+        using (ExecutionContext.SuppressFlow())
+        {
+            host.StartLogging();
+        }
+
+        host.Pipeline.Enqueue(Log("a", BelemetryFeatures.Logs));
+        var deadline = DateTime.UtcNow.AddSeconds(5);
+        while (probe.Exports == 0 && DateTime.UtcNow < deadline) await Task.Delay(20);
+        Assert.AreEqual(1, probe.Exports);
+    }
+
+    [TestMethod]
+    public void ExporterNames_AreTheContractTheScriptRetriesBy()
+    {
+        // transport.ts picks Azure Monitor's retry policy for requests .NET hands it by these names
+        // (/^azuremonitor\d*$/i); renaming an exporter would silently give its requests the OTLP policy.
+        var settings = TestHost.CreateSettings(o =>
+        {
+            o.AddOtlpExporter("http://a.test:4318");
+            o.AddOtlpExporter("http://b.test:4318");
+            o.AddAzureMonitorExporter("InstrumentationKey=00000000-0000-0000-0000-000000000001");
+            o.AddAzureMonitorExporter("InstrumentationKey=00000000-0000-0000-0000-000000000002");
+        });
+        var services = new ServiceCollection().AddLogging().BuildServiceProvider();
+        var pipeline = new BelemetryPipeline(settings, new BelemetryConsentState(BelemetryFeatures.All, decided: true), services);
+
+        var names = pipeline.Exporters.HttpExporters.Select(e => e.Name).ToArray();
+
+        CollectionAssert.AreEqual(new[] { "otlp", "otlp1", "azuremonitor", "azuremonitor1" }, names);
+        Assert.IsTrue(names.Where(n => n.StartsWith("azure", StringComparison.Ordinal)).All(n => System.Text.RegularExpressions.Regex.IsMatch(n, @"^azuremonitor\d*$", System.Text.RegularExpressions.RegexOptions.IgnoreCase)));
+        Assert.IsFalse(names.Where(n => n.StartsWith("otlp", StringComparison.Ordinal)).Any(n => System.Text.RegularExpressions.Regex.IsMatch(n, @"^azuremonitor\d*$", System.Text.RegularExpressions.RegexOptions.IgnoreCase)));
+    }
+
+    [TestMethod]
+    public async Task Dispose_FlushesOnce_AndIsIdempotent()
+    {
+        await using var host = TestHost.Create();
+        host.StartLogging();
+        host.Pipeline.Enqueue(Log("a", BelemetryFeatures.Logs));
+
+        await host.Pipeline.DisposeAsync();
+        Assert.AreEqual("a", host.Memory.Logs.Single().Body, "Disposing flushes.");
+
+        // Again, and once more when the container disposes it.
+        await host.Pipeline.DisposeAsync();
+    }
+
+    private sealed class ContextProbe : IBelemetryExporter
+    {
+        public string Name => "context-probe";
+
+        public int Exports { get; private set; }
+
+        public bool SawContext { get; private set; }
+
+        public Activity? Activity { get; private set; }
+
+        public ValueTask<BelemetryExportResult> ExportAsync(BelemetryBatch batch, CancellationToken cancellationToken)
+        {
+            SawContext |= SynchronizationContext.Current is RecordingContext;
+            Activity ??= Activity.Current;
+            Exports++;
+            return ValueTask.FromResult(BelemetryExportResult.Success);
+        }
+    }
+
+    /// <summary>Stands for a UI thread's context: runs posted work on the thread pool, as itself.</summary>
+    private sealed class RecordingContext : SynchronizationContext
+    {
+        private int _posts;
+
+        public int Posts => _posts;
+
+        public override void Post(SendOrPostCallback d, object? state)
+        {
+            Interlocked.Increment(ref _posts);
+            ThreadPool.QueueUserWorkItem(_ =>
+            {
+                SetSynchronizationContext(this);
+                d(state);
+            });
+        }
     }
 
     private sealed class TestProcessor : IBelemetryProcessor

@@ -2,7 +2,7 @@
 import { resolveConfig } from '../../Bit.Belemetry/Scripts/config.ts';
 import { createOtlpExporter } from '../../Bit.Belemetry/Scripts/exporters/otlp.ts';
 import { encodeUtf8 } from '../../Bit.Belemetry/Scripts/exporters/protobuf.ts';
-import { fromBase64, gunzip, loadPersisted, parseRetryAfter, toBase64, Transport } from '../../Bit.Belemetry/Scripts/transport.ts';
+import { _keepaliveInFlight, fromBase64, gunzip, loadPersisted, parseRetryAfter, toBase64, Transport } from '../../Bit.Belemetry/Scripts/transport.ts';
 import { log, mockFetch, span } from './helpers.js';
 
 const persistence = { enabled: true, maxBytes: 1048576, maxAgeHours: 48 };
@@ -35,13 +35,78 @@ describe('Transport', () => {
         expect(init.headers).toEqual({ 'x-api-key': 'k', 'Content-Type': 'application/x-protobuf', 'Content-Encoding': 'gzip' });
     });
 
-    it('uses keepalive above 60 KB only during unload', async () => {
+    it('sends a body above the keepalive budget without keepalive, and stores it instead during unload', async () => {
         const fetch = mockFetch(200);
         vi.stubGlobal('fetch', fetch);
         const t = transport();
         await t.send(request({ body: new Uint8Array(70 * 1024) }));
+        expect(fetch.calls.map(c => c.init.keepalive)).toEqual([false]);
+
+        // A browser would refuse it with keepalive and cancel it without: kept for the next visit.
         await t.send(request({ body: new Uint8Array(70 * 1024) }), true);
-        expect(fetch.calls.map(c => c.init.keepalive)).toEqual([false, true]);
+        expect(fetch.calls).toHaveLength(1);
+        expect(loadPersisted()).toHaveLength(1);
+
+        // Without persistence a plain request is still the best chance - the page may only be hidden.
+        await transport({ canPersist: () => false }).send(request({ body: new Uint8Array(70 * 1024) }), true);
+        expect(fetch.calls.map(c => c.init.keepalive)).toEqual([false, false]);
+    });
+
+    it('shares the 64 KiB keepalive budget between requests in flight, and gives it back', async () => {
+        let release;
+        const pending = new Promise(resolve => (release = resolve));
+        const calls = [];
+        vi.stubGlobal('fetch', (url, init) => {
+            calls.push(init);
+            return pending.then(() => new Response(null, { status: 200 }));
+        });
+        const t = transport();
+        const first = t.send(request({ body: new Uint8Array(40 * 1024) }));
+        const second = t.send(request({ body: new Uint8Array(40 * 1024) }));
+        const third = t.send(request({ body: new Uint8Array(10 * 1024) }));
+        expect(calls.map(c => c.keepalive)).toEqual([true, false, true]);
+        expect(_keepaliveInFlight()).toBe(50 * 1024);
+
+        release();
+        await Promise.all([first, second, third]);
+        expect(_keepaliveInFlight()).toBe(0);
+    });
+
+    it('claims keepalive for at most 9 requests in flight, however small', async () => {
+        let release;
+        const pending = new Promise(resolve => (release = resolve));
+        const calls = [];
+        vi.stubGlobal('fetch', (url, init) => {
+            calls.push(init);
+            return pending.then(() => new Response(null, { status: 200 }));
+        });
+        const t = transport();
+        const sends = Array.from({ length: 10 }, () => t.send(request()));
+        expect(calls.map(c => c.keepalive)).toEqual([...Array(9).fill(true), false]);
+        release();
+        await Promise.all(sends);
+        await t.send(request());
+        expect(calls[10].keepalive).toBe(true);
+    });
+
+    it('resends the stored requests in order and stops at the first failure', async () => {
+        const stored = [1, 2, 3].map(n => ({ id: 'r' + n, exporter: 'otlp', url: 'https://collector.test/v1/logs', contentType: 'c', body: toBase64(new Uint8Array([n])), time: Date.now() - n }));
+        localStorage.setItem('bit-belemetry-queue', JSON.stringify(stored));
+
+        const down = mockFetch(503);
+        vi.stubGlobal('fetch', down);
+        const t = transport();
+        await t.resendPersisted();
+        expect(down.calls).toHaveLength(1); // one attempt, then the backlog waits
+        expect(t.sleeps).toEqual([]);
+        expect(loadPersisted().map(e => Array.from(fromBase64(e.body))[0])).toEqual([1, 2, 3]);
+        expect(loadPersisted().map(e => e.time)).toEqual(stored.map(e => e.time));
+
+        const up = mockFetch(200);
+        vi.stubGlobal('fetch', up);
+        await t.resendPersisted();
+        expect(up.calls.map(c => Array.from(c.init.body)[0])).toEqual([1, 2, 3]);
+        expect(localStorage.getItem('bit-belemetry-queue')).toBeNull();
     });
 
     it('retries retryable statuses with backoff and honors Retry-After', async () => {
@@ -56,6 +121,21 @@ describe('Transport', () => {
         expect(loadPersisted()).toEqual([]);
     });
 
+    it('retries what each backend asks to: OTLP only 429/502/503/504, Azure Monitor 408/439/500 too', async () => {
+        for (const status of [408, 439, 500]) {
+            const otlp = mockFetch(status);
+            vi.stubGlobal('fetch', otlp);
+            await transport().send(request());
+            expect(otlp.calls).toHaveLength(1); // the OTLP spec: "MUST NOT be retried"
+
+            const azure = mockFetch(status, 200);
+            vi.stubGlobal('fetch', azure);
+            await transport().send(request({ exporter: 'azuremonitor1', contentType: 'application/json' }));
+            expect(azure.calls).toHaveLength(2);
+        }
+        expect(loadPersisted()).toEqual([]);
+    });
+
     it('drops non-retryable failures without persisting', async () => {
         const fetch = mockFetch(400);
         vi.stubGlobal('fetch', fetch);
@@ -65,7 +145,7 @@ describe('Transport', () => {
     });
 
     it('persists after exhausted retries and resends later', async () => {
-        vi.stubGlobal('fetch', mockFetch(500));
+        vi.stubGlobal('fetch', mockFetch(503));
         const t = transport({ headersFor: () => ({ 'x-api-key': 'k' }) });
         await t.send(request());
         const stored = loadPersisted();
@@ -104,19 +184,19 @@ describe('Transport', () => {
     });
 
     it('drops instead of persisting without consent', async () => {
-        vi.stubGlobal('fetch', mockFetch(500));
+        vi.stubGlobal('fetch', mockFetch(503));
         await transport({ canPersist: () => false }).send(request());
         expect(localStorage.getItem('bit-belemetry-queue')).toBeNull();
     });
 
     it('persists the uncompressed body of a gzip request', async () => {
-        vi.stubGlobal('fetch', mockFetch(500));
+        vi.stubGlobal('fetch', mockFetch(503));
         await transport().send(request({ contentEncoding: 'gzip', body: new Uint8Array([9]), raw: new Uint8Array([1, 2]) }));
         expect(Array.from(fromBase64(loadPersisted()[0].body))).toEqual([1, 2]);
     });
 
     it('evicts old and oversized entries', async () => {
-        vi.stubGlobal('fetch', mockFetch(500));
+        vi.stubGlobal('fetch', mockFetch(503));
         const old = { id: 'x', exporter: 'otlp', url: 'u', contentType: 'c', body: 'AA==', time: Date.now() - 49 * 3600000 };
         localStorage.setItem('bit-belemetry-queue', JSON.stringify([old]));
         const t = transport({ persistence: { ...persistence, maxBytes: 600 } });

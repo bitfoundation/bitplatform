@@ -2,6 +2,7 @@
 import { isRetryable, rebuildPartial, RETRYABLE_STATUS } from './exporters/azure';
 import { newSpanId } from './ids';
 import { debug } from './log';
+import { countRequest } from './stats';
 import { readItem, removeItem, StorageKeys, writeItem } from './storage';
 
 /** A serialized export request, built by a JS exporter or by .NET (`sendRequests`, `DrainForUnload`). */
@@ -39,8 +40,27 @@ export interface TransportOptions {
 
 export { isRetryable, RETRYABLE_STATUS };
 
+/**
+ * The OTLP specification's retryable statuses - shorter than Azure Monitor's: "All other 4xx or 5xx response status
+ * codes MUST NOT be retried".
+ */
+export const OTLP_RETRYABLE_STATUS = [429, 502, 503, 504];
+
+/** Whether a request went to Azure Monitor: the script's exporter is `azureMonitor`, .NET's are `azuremonitor`, `azuremonitor1`, ... */
+export function isAzure(exporter: string): boolean {
+    return /^azuremonitor\d*$/i.test(exporter);
+}
+
+/** Whether a status is transient for the backend a request went to. */
+export function isRetryableFor(exporter: string, status: number): boolean {
+    return isAzure(exporter) ? isRetryable(status) : OTLP_RETRYABLE_STATUS.indexOf(status) >= 0;
+}
+
 export const MAX_ATTEMPTS = 3;
 const KEEPALIVE_LIMIT = 60 * 1024;
+// Chromium also caps the number of keepalive requests in flight (9, as the OpenTelemetry and Faro browser exporters
+// assume); past it they fail like an over-budget body.
+const KEEPALIVE_MAX_REQUESTS = 9;
 const MAX_RETRY_AFTER_MS = 60000;
 
 let suppressed = 0;
@@ -103,26 +123,52 @@ export async function gunzip(bytes: Uint8Array): Promise<Uint8Array | null> {
     }
 }
 
-function post(request: OutgoingRequest, unload: boolean): Promise<Response> {
+// keepalive lets a request outlive the page, but a browser caps the bodies of all the page's in-flight keepalive
+// requests together at 64 KiB, and refuses (TypeError) the one that does not fit - spuriously failing parallel batches
+// that each fit on their own. So the budget is tracked here, and a request claims it only when it fits.
+let keepaliveInFlight = 0;
+let keepaliveRequests = 0;
+
+/** The keepalive bytes in flight (tests only). */
+export function _keepaliveInFlight(): number {
+    return keepaliveInFlight;
+}
+
+function fitsKeepalive(request: OutgoingRequest): boolean {
+    return request.body.length <= KEEPALIVE_LIMIT - keepaliveInFlight && keepaliveRequests < KEEPALIVE_MAX_REQUESTS;
+}
+
+function post(request: OutgoingRequest): Promise<Response> {
     const headers: Record<string, string> = {};
     const extra = request.headers || {};
     for (const key of Object.keys(extra)) headers[key] = extra[key];
     headers['Content-Type'] = request.contentType;
     if (request.contentEncoding) headers['Content-Encoding'] = request.contentEncoding;
+    const keepalive = fitsKeepalive(request);
+    const size = request.body.length;
+    const release = () => {
+        keepaliveInFlight = Math.max(0, keepaliveInFlight - size);
+        keepaliveRequests = Math.max(0, keepaliveRequests - 1);
+    };
+    if (keepalive) {
+        keepaliveInFlight += size;
+        keepaliveRequests++;
+    }
     suppressed++;
     try {
-        return fetch(request.url, {
-            method: 'POST',
-            headers,
-            body: request.body as BodyInit,
-            // keepalive lets the request outlive the page, but browsers cap in-flight keepalive bodies at 64 KB.
-            keepalive: unload || request.body.length <= KEEPALIVE_LIMIT,
-            credentials: 'omit',
-        });
+        const response = fetch(request.url, { method: 'POST', headers, body: request.body as BodyInit, keepalive, credentials: 'omit' });
+        if (keepalive) response.then(release, release);
+        return response;
+    } catch (e) {
+        if (keepalive) release();
+        throw e;
     } finally {
         suppressed--;
     }
 }
+
+/** What became of a request: accepted, refused for good, stored for later, or lost (no persistence). */
+type Outcome = 'delivered' | 'rejected' | 'kept' | 'dropped';
 
 export function loadPersisted(): PersistedRequest[] {
     const raw = readItem('local', StorageKeys.queue);
@@ -166,7 +212,7 @@ export class Transport {
     /** Sends a request. During unload there is one keepalive attempt and no waiting. Never rejects. */
     send(request: OutgoingRequest, unload = false): Promise<void> {
         // deliver() calls fetch before its first await, so during unload the request starts synchronously.
-        const promise: Promise<void> = this.deliver(request, unload).catch(e => debug('send failed', e)).then(() => {
+        const promise: Promise<void> = this.deliver(request, unload).then(countRequest, e => debug('send failed', e)).then(() => {
             const index = this.inflight.indexOf(promise);
             if (index >= 0) this.inflight.splice(index, 1);
         });
@@ -179,19 +225,26 @@ export class Transport {
         return Promise.all(this.inflight.slice()).then(() => undefined);
     }
 
-    private async deliver(request: OutgoingRequest, unload: boolean): Promise<void> {
+    private canPersist(): boolean {
+        return this.options.persistence.enabled && this.options.canPersist();
+    }
+
+    private async deliver(request: OutgoingRequest, unload: boolean, maxAttempts = MAX_ATTEMPTS): Promise<Outcome> {
+        // A request that cannot have keepalive while the page unloads would be cancelled with the page: stored, it is
+        // sent on the next visit. Without persistence a plain request is still worth it - the page may only be hidden.
+        if (unload && !fitsKeepalive(request) && this.canPersist()) return this.persist(request);
         let current = request;
         for (let attempt = 1; ; attempt++) {
             let response: Response | null = null;
             try {
-                response = await post(current, unload);
+                response = await post(current);
             } catch (e) {
                 debug('network error', current.url, e);
             }
             let delay: number | null = null;
             if (response) {
                 const status = response.status;
-                if (status === 206 && current.exporter === 'azureMonitor') {
+                if (status === 206 && isAzure(current.exporter)) {
                     let next: OutgoingRequest | null = null;
                     try {
                         const text = await response.text();
@@ -200,20 +253,19 @@ export class Transport {
                     } catch {
                         // An unreadable 206 body: the accepted items are in, nothing to retry.
                     }
-                    if (!next) return;
+                    if (!next) return 'delivered';
                     current = next;
                 } else if (status >= 200 && status < 300) {
-                    return;
-                } else if (!isRetryable(status)) {
+                    return 'delivered';
+                } else if (!isRetryableFor(current.exporter, status)) {
                     debug('dropped request, status', status, current.url);
-                    return;
+                    return 'rejected';
                 }
                 delay = parseRetryAfter(response.headers.get('Retry-After'));
             }
             const offline = !response && typeof navigator !== 'undefined' && navigator.onLine === false;
-            if (unload || offline || attempt >= MAX_ATTEMPTS || (delay !== null && delay > MAX_RETRY_AFTER_MS)) {
-                await this.persist(current);
-                return;
+            if (unload || offline || attempt >= maxAttempts || (delay !== null && delay > MAX_RETRY_AFTER_MS)) {
+                return this.persist(current);
             }
             const wait = delay !== null ? delay : backoff(attempt);
             await (this.options.sleep ? this.options.sleep(wait) : new Promise<void>(resolve => setTimeout(resolve, wait)));
@@ -221,14 +273,14 @@ export class Transport {
     }
 
     /** Stores a request for a later resend, if persistence is configured and consented; otherwise drops it. */
-    async persist(request: OutgoingRequest): Promise<void> {
-        if (!this.options.persistence.enabled || !this.options.canPersist()) {
+    async persist(request: OutgoingRequest): Promise<Outcome> {
+        if (!this.canPersist()) {
             debug('dropped request (no persistence)', request.url);
-            return;
+            return 'dropped';
         }
         let body: Uint8Array | null = request.raw || null;
         if (!body) body = !request.contentEncoding ? request.body : request.contentEncoding === 'gzip' ? await gunzip(request.body) : null;
-        if (!body) return;
+        if (!body) return 'dropped';
         const list = loadPersisted();
         list.push({
             id: newSpanId(),
@@ -239,33 +291,54 @@ export class Transport {
             time: request.time || Date.now(),
         });
         savePersisted(list, this.options.persistence);
+        return 'kept';
     }
 
-    /** Resends the persisted requests (on start and when the browser comes back online). */
+    /**
+     * Resends the persisted requests (on start, periodically, and when the browser comes back online): oldest first,
+     * one attempt each, stopping at the first that fails - the backend is still unreachable, and hammering it with the
+     * whole backlog (each request with its own retries) would only waste the user's network. The rest stay stored.
+     */
     resendPersisted(): Promise<void> {
-        if (this.resending || !this.options.persistence.enabled || !this.options.canPersist()) return Promise.resolve();
+        if (this.resending || !this.canPersist()) return Promise.resolve();
         const list = savePersisted(loadPersisted(), this.options.persistence);
         if (!list.length) return Promise.resolve();
         removeItem('local', StorageKeys.queue);
         this.resending = true;
+        const promise: Promise<void> = this.resend(list).catch(e => debug('resend failed', e)).then(() => {
+            this.resending = false;
+            const index = this.inflight.indexOf(promise);
+            if (index >= 0) this.inflight.splice(index, 1);
+        });
+        this.inflight.push(promise);
+        return promise;
+    }
+
+    private async resend(list: PersistedRequest[]): Promise<void> {
         const headersFor = this.options.headersFor;
-        return Promise.all(list.map(entry => {
+        for (let i = 0; i < list.length; i++) {
+            const entry = list[i];
             let body: Uint8Array;
             try {
                 body = fromBase64(entry.body);
             } catch {
-                return undefined;
+                continue;
             }
-            return this.send({
+            const outcome = await this.deliver({
                 exporter: entry.exporter,
                 url: entry.url,
                 contentType: entry.contentType,
                 headers: headersFor ? headersFor(entry.exporter, entry.url) : null,
                 body,
                 time: entry.time,
-            });
-        })).then(() => {
-            this.resending = false;
-        });
+            }, false, 1);
+            // A stored request was counted as kept when it was stored; a failed resend just stays that way.
+            if (outcome !== 'kept') countRequest(outcome);
+            if (outcome === 'kept') {
+                // Back behind the one that just failed, in their order and with their age.
+                savePersisted(loadPersisted().concat(list.slice(i + 1)), this.options.persistence);
+                return;
+            }
+        }
     }
 }

@@ -32,6 +32,13 @@ public sealed class BelemetryBrowserOptions
     /// <summary>The maximum length of recorded element text. Defaults to 64.</summary>
     public int MaxInteractionTextLength { get; set; } = 64;
 
+    /// <summary>
+    /// Whether three clicks on one element within a second also emit a <c>browser.rage_click</c> event (feature
+    /// <see cref="BelemetryFeatures.Interactions"/>) - the frustration signal of a user who expected something to
+    /// happen. Once per burst; the clicks themselves are still recorded. Defaults to <see langword="true"/>.
+    /// </summary>
+    public bool TrackRageClicks { get; set; } = true;
+
     /// <summary>Whether web vitals (LCP, INP, CLS, FCP, TTFB) are recorded. Defaults to <see langword="true"/>.</summary>
     public bool WebVitals { get; set; } = true;
 
@@ -60,8 +67,12 @@ public sealed class BelemetryBrowserOptions
     /// <summary>Regular expressions of URLs never recorded as dependencies. Defaults to the Blazor framework routes.</summary>
     public List<string> IgnoreUrls { get; } = ["/_framework/", "/_blazor", "/_content/"];
 
-    /// <summary>Regular expressions of JS error messages never recorded.</summary>
-    public List<string> IgnoreErrorMessages { get; } = ["ResizeObserver loop"];
+    /// <summary>
+    /// Regular expressions of JS error messages never recorded. Defaults to the benign <c>ResizeObserver loop</c>
+    /// warnings and to <c>Script error.</c> - what the browser reports, with no stack or location, for an error in a
+    /// cross-origin script loaded without CORS: nothing in it can be acted on.
+    /// </summary>
+    public List<string> IgnoreErrorMessages { get; } = ["ResizeObserver loop", @"^Script error\.?$"];
 
     /// <summary>Whether <c>console</c> calls are recorded as logs. Defaults to <see langword="false"/>.</summary>
     public bool CaptureConsole { get; set; }

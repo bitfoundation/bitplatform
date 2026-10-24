@@ -1,6 +1,7 @@
 ﻿import type { ConsentConfig } from './config';
 import { Features } from './features';
 import type { TelemetryRecord } from './model';
+import { countDropped } from './stats';
 import { readItem, removeItem, StorageKeys, writeItem } from './storage';
 
 /** Called after every consent change with the records held before the decision that the new consent allows. */
@@ -64,9 +65,15 @@ export class ConsentManager {
 
     /** Holds a record until the decision. The oldest record is dropped when `pendingLimit` is exceeded. */
     hold(record: TelemetryRecord): void {
-        if (this.config.pendingLimit <= 0) return;
+        if (this.config.pendingLimit <= 0) {
+            countDropped('pending_full');
+            return;
+        }
         this.pending.push(record);
-        if (this.pending.length > this.config.pendingLimit) this.pending.shift();
+        if (this.pending.length > this.config.pendingLimit) {
+            this.pending.shift();
+            countDropped('pending_full');
+        }
     }
 
     get pendingCount(): number {
@@ -99,6 +106,7 @@ export class ConsentManager {
         purgeStorage(previous & ~next);
         // After a decision nothing stays held. Before one (a new default), only what became granted leaves.
         const released = this.pending.filter(r => (next & r.feature) !== 0);
+        if (this.decided) countDropped('not_consented', this.pending.length - released.length);
         this.pending = this.decided ? [] : this.pending.filter(r => (next & r.feature) === 0);
         for (const listener of this.listeners) {
             try {

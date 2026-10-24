@@ -33,6 +33,9 @@ internal sealed class BelemetryHttpRequest
     /// <summary>When the request was created, in Unix milliseconds (persisted requests expire by it).</summary>
     public long Time { get; set; } = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
 
+    /// <summary>The number of records (spans, log records or metric data points) it carries, for the self-telemetry; 0 when unknown.</summary>
+    public int Count { get; set; }
+
     /// <summary>A copy with <paramref name="headers"/> merged under its own <see cref="Headers"/>.</summary>
     internal BelemetryHttpRequest WithHeaders(IReadOnlyDictionary<string, string> headers)
     {
@@ -58,5 +61,6 @@ internal sealed class BelemetryHttpRequest
         Headers = headers,
         Body = Body,
         Time = Time,
+        Count = Count,
     };
 }

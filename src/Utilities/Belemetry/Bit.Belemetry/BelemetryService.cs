@@ -19,7 +19,7 @@ internal sealed class BelemetryService(BelemetrySettings settings, BelemetryPipe
 
         var record = CreateRecord(BelemetryFeatures.Events, BelemetrySeverity.Info, name, attributes);
         record.EventName = name;
-        pipeline.Enqueue(record);
+        Enqueue(record);
     }
 
     public void TrackPageView(string? name = null, string? url = null, IReadOnlyDictionary<string, object?>? attributes = null)
@@ -39,7 +39,7 @@ internal sealed class BelemetryService(BelemetrySettings settings, BelemetryPipe
             record.Attributes.Set(BelemetrySemanticConventions.UrlFull, url);
             if (Uri.TryCreate(url, UriKind.Absolute, out var uri)) record.Attributes.Set(BelemetrySemanticConventions.UrlPath, uri.AbsolutePath);
         }
-        pipeline.Enqueue(record);
+        Enqueue(record);
     }
 
     public void TrackException(Exception exception, IReadOnlyDictionary<string, object?>? attributes = null)
@@ -58,7 +58,20 @@ internal sealed class BelemetryService(BelemetrySettings settings, BelemetryPipe
         record.Attributes.Set(BelemetrySemanticConventions.ExceptionType, exception.GetType().FullName);
         record.Attributes.Set(BelemetrySemanticConventions.ExceptionMessage, exception.Message);
         record.Attributes.Set(BelemetrySemanticConventions.ExceptionStacktrace, exception.ToString());
-        pipeline.Enqueue(record);
+        Enqueue(record);
+    }
+
+    /// <summary>Telemetry never fails the code that records it: past argument validation, a failure is a diagnostic.</summary>
+    private void Enqueue(BelemetryLogRecord record)
+    {
+        try
+        {
+            pipeline.Enqueue(record);
+        }
+        catch (Exception ex)
+        {
+            pipeline.LogDiagnostic(ex, "Recording a manual event failed; it is dropped.");
+        }
     }
 
     public async ValueTask SetUserAsync(string? userId)

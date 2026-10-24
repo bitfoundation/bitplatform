@@ -19,7 +19,8 @@ internal sealed class BelemetryExporterSet : IAsyncDisposable
     {
         _settings = settings;
         _pipeline = pipeline;
-        _sender = new BelemetryHttpSender(services.GetService<BelemetryHttpMessageHandlerProvider>()?.Handler, pipeline.LogDiagnostic);
+        _sender = new BelemetryHttpSender(services.GetService<BelemetryHttpMessageHandlerProvider>()?.Handler, pipeline.LogDiagnostic,
+                                          (ex, message) => pipeline.LogDiagnostic(ex, message, Microsoft.Extensions.Logging.LogLevel.Warning));
 
         var options = settings.Options;
 
@@ -72,36 +73,52 @@ internal sealed class BelemetryExporterSet : IAsyncDisposable
     {
         foreach (var exporter in _httpExporters)
         {
-            foreach (var request in exporter.CreateRequests(WithMinimumSeverity(batch, exporter.MinimumSeverity)))
+            foreach (var created in exporter.CreateRequests(WithMinimumSeverity(batch, exporter.MinimumSeverity)))
             {
-                var outcome = await _sender.SendAsync(exporter, request, retry: true, cancellationToken);
+                // After a partial success only the rejected items are left to store: the accepted ones are in.
+                var (outcome, request) = await _sender.SendWithRemainderAsync(exporter, created, retry: true, cancellationToken);
+                if (ReferenceEquals(request, created) is false) _pipeline.Self.Exported(exporter.Name, "delivered", created.Count - request.Count);
+
+                var result = outcome switch
+                {
+                    BelemetrySendOutcome.Delivered => "delivered",
+                    BelemetrySendOutcome.Rejected => "rejected",
+                    _ => "failed",
+                };
+
                 if (outcome == BelemetrySendOutcome.Failed && persistenceAllowed && Store is not null)
                 {
                     try
                     {
                         // The browser store sends the request itself, so it needs the headers; a file store must not get them.
                         await Store.SaveAsync(Store is BelemetryBrowserRequestStore ? request.WithHeaders(exporter.Headers) : request, cancellationToken);
+                        result = "stored";
                     }
                     catch (Exception ex)
                     {
                         _pipeline.LogDiagnostic(ex, "Persisting an undelivered request failed; it is dropped.");
                     }
                 }
+
+                _pipeline.Self.Exported(exporter.Name, result, request.Count);
             }
         }
 
         foreach (var exporter in _exporters)
         {
+            var result = "failed";
             try
             {
                 using var timeout = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
                 timeout.CancelAfter(TimeSpan.FromSeconds(30));
-                await exporter.ExportAsync(batch, timeout.Token);
+                result = await exporter.ExportAsync(batch, timeout.Token) == BelemetryExportResult.Success ? "delivered" : "failed";
             }
             catch (Exception ex) when (ex is not OperationCanceledException || cancellationToken.IsCancellationRequested is false)
             {
                 _pipeline.LogDiagnostic(ex, $"The exporter '{exporter.Name}' failed.");
             }
+
+            _pipeline.Self.Exported(exporter.Name, result, batch.Spans.Count + batch.Logs.Count + batch.Metrics.Sum(m => m.Points.Count));
         }
     }
 
@@ -157,13 +174,23 @@ internal sealed class BelemetryExporterSet : IAsyncDisposable
             }
 
             using var _ = BelemetrySuppression.Begin();
-            var outcome = await _sender.SendAsync(exporter, request, retry: false, cancellationToken);
+            var (outcome, remaining) = await _sender.SendWithRemainderAsync(exporter, request, retry: false, cancellationToken);
+            if (ReferenceEquals(remaining, request) is false) _pipeline.Self.Exported(exporter.Name, "delivered", request.Count - remaining.Count);
+
             if (outcome != BelemetrySendOutcome.Failed)
             {
                 await Store.DeleteAsync(request.Id, cancellationToken);
+                _pipeline.Self.Exported(exporter.Name, outcome == BelemetrySendOutcome.Delivered ? "delivered" : "rejected", remaining.Count);
             }
             else
             {
+                if (ReferenceEquals(remaining, request) is false)
+                {
+                    // Partly delivered: keep only what is left, or the accepted items would be resent every pass.
+                    await Store.DeleteAsync(request.Id, cancellationToken);
+                    await Store.SaveAsync(remaining, cancellationToken);
+                }
+
                 // Still offline: stop here rather than hammering the network with the rest of the backlog.
                 break;
             }

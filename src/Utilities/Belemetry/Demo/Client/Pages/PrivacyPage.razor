@@ -69,9 +69,9 @@
     <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Pattern scrubbing</h3>
     <p>
         With <code>ScrubPatterns</code> (on) these patterns are replaced wherever free text can carry them - log
-        bodies, exception messages and stack traces, span status messages and URLs. In the browser every string
-        attribute is scrubbed (the session and user ids excepted); on the .NET side, the URL attributes,
-        <code>exception.message</code>, <code>exception.stacktrace</code>, <code>url.query</code> and the log body.
+        bodies, span status messages, and every string attribute (structured log values and event attributes
+        included), in the browser script and in the .NET pipeline alike. Only the session and user ids,
+        <code>server.address</code> and <code>user_agent.original</code> are kept verbatim.
     </p>
     <div class="bb-scroll">
         <table class="bb-table">

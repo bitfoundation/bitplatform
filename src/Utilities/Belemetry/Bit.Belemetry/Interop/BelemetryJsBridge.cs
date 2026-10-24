@@ -21,6 +21,7 @@ internal sealed class BelemetryJsBridge : IAsyncDisposable
     private readonly BelemetryConsentState _consent;
     private readonly BelemetryBrowserBridgeRegistry _registry;
     private readonly SemaphoreSlim _startLock = new(1, 1);
+    private readonly BelemetryRelaySource _relaySource;
     private IJSObjectReference? _module;
     private DotNetObjectReference<BelemetryJsCallbacks>? _callbacks;
     private bool _disposed;
@@ -41,6 +42,13 @@ internal sealed class BelemetryJsBridge : IAsyncDisposable
         _pipeline = pipeline;
         _consent = consent;
         _registry = registry;
+
+        // On a server the page at the other end of the circuit can be anything that speaks the interop protocol, and
+        // the queue it relays into is shared by every user: it gets the most an honest page sends at once (a full
+        // queue plus the records a consent decision releases) as a burst, and that much per minute after it.
+        _relaySource = new BelemetryRelaySource(settings.IsServer
+            ? new BelemetryRateLimiter(Math.Max(1, settings.Options.Browser.MaxQueueSize) + Math.Max(0, settings.Options.Consent.PendingLimit), TimeSpan.FromMinutes(1))
+            : null);
     }
 
     /// <summary>The last context the script reported (per circuit on Blazor Server).</summary>
@@ -174,9 +182,13 @@ internal sealed class BelemetryJsBridge : IAsyncDisposable
 
     internal Task RelayAsync(JsonElement payload)
     {
+        // Only a page told to relay sends batches. The callback object is handed to every page, whatever the transport,
+        // so without this check any client of a server could feed the pipeline directly.
+        if (_settings.BrowserTransport != BelemetryBrowserTransport.Relay) return Task.CompletedTask;
+
         try
         {
-            if (payload.Deserialize(BelemetryJsonContext.Default.BelemetryRelayBatch) is { } batch) _pipeline.Relay(batch);
+            if (payload.Deserialize(BelemetryJsonContext.Default.BelemetryRelayBatch) is { } batch) _pipeline.Relay(batch, _relaySource);
         }
         catch (JsonException ex)
         {
