@@ -5,7 +5,7 @@ namespace Bit.Butil.Tests.E2E;
 
 /// <summary>
 /// Drives the harness against the document in
-/// <c>Bit.Butil.Samples.Web/wwwroot/frames/e2e-frame.html</c> - cross-document messaging needs a
+/// <c>Samples/Web/wwwroot/frames/e2e-frame.html</c> - cross-document messaging needs a
 /// second document, so the harness has to have one.
 /// </summary>
 [TestClass]

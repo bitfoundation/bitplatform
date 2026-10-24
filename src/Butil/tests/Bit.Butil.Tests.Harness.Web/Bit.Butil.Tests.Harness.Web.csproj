@@ -29,7 +29,7 @@
 
     <ItemGroup>
         <ProjectReference Include="..\Bit.Butil.Tests.Harness.Web.Client\Bit.Butil.Tests.Harness.Web.Client.csproj" />
-        <ProjectReference Include="..\..\Samples\Bit.Butil.Samples.Core\Bit.Butil.Samples.Core.csproj" />
+        <ProjectReference Include="..\..\Samples\Core\Bit.Butil.Samples.Core.csproj" />
     </ItemGroup>
 
     <!-- The documents the harness pages load by URL - the worker scripts, the frame WindowMessaging talks to and
@@ -38,7 +38,7 @@
          Copied next to the assembly and served from there by Program.cs, not linked into wwwroot: a linked static
          web asset is recorded against this project's own wwwroot folder, which in a build output does not exist. -->
     <PropertyGroup>
-        <_SamplesWebRoot>$(MSBuildThisFileDirectory)..\..\Samples\Bit.Butil.Samples.Web\wwwroot\</_SamplesWebRoot>
+        <_SamplesWebRoot>$(MSBuildThisFileDirectory)..\..\Samples\Web\wwwroot\</_SamplesWebRoot>
     </PropertyGroup>
     <ItemGroup>
         <None Include="$(_SamplesWebRoot)workers\**" Link="harness-files\workers\%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />

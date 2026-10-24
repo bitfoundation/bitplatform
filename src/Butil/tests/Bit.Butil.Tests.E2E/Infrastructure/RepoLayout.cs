@@ -14,7 +14,7 @@ public static class RepoLayout
     /// <summary>
     /// The full path of <paramref name="relativePath"/> under the nearest ancestor of the output
     /// directory that has it. <c>Bit.Butil/Bit.Butil.csproj</c> resolves to the library's project
-    /// file, <c>Samples/Bit.Butil.Samples.Web/Bit.Butil.Samples.Web.csproj</c> to the sample's.
+    /// file, <c>Samples/Web/Bit.Butil.Samples.Web.csproj</c> to the sample's.
     /// </summary>
     public static string FindUpward(string relativePath)
     {
@@ -36,7 +36,7 @@ public static class RepoLayout
 
     /// <summary>The project file of the standalone WebAssembly sample the browser suites drive.</summary>
     public static string SampleWebProject()
-        => FindUpward(Path.Combine("Samples", "Bit.Butil.Samples.Web", "Bit.Butil.Samples.Web.csproj"));
+        => FindUpward(Path.Combine("Samples", "Web", "Bit.Butil.Samples.Web.csproj"));
 
     public const string WebHarnessName = "Bit.Butil.Tests.Harness.Web";
     public const string HybridHarnessName = "Bit.Butil.Tests.Harness.Hybrid";

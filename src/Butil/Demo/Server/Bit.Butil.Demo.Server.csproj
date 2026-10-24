@@ -68,12 +68,14 @@
       <LogicalName>ButilSource/Demo/Server/wwwroot/frames/%(Filename)%(Extension)</LogicalName>
     </EmbeddedResource>
 
-    <!-- The minimal hosting samples - standalone WebAssembly and Hybrid (MAUI). Their pages are
-         left out on purpose: they are a smaller copy of this demo's pages, and the demo itself is
-         embedded above. The shared service registration is the exception - it is the piece the
-         setup guide has to show, and the piece most easily got wrong. -->
+    <!-- The minimal hosting samples - one per Blazor render mode (Server, Wasm, Auto), standalone
+         WebAssembly (Web) and Hybrid (Maui). Their pages are left out on purpose: they are a smaller
+         copy of this demo's pages, and the demo itself is embedded above. The shared service
+         registration is the exception - it is the piece the setup guide has to show, and the piece
+         most easily got wrong. Error.razor is the template's own error page and says nothing about
+         Butil, and the MAUI app's Platforms\ folder is the template's per-OS entry points. -->
     <EmbeddedResource Include="..\..\Samples\**\*.cs;..\..\Samples\**\*.csproj;..\..\Samples\**\index.html;..\..\Samples\**\*.razor"
-                      Exclude="..\..\Samples\**\bin\**;..\..\Samples\**\obj\**;..\..\Samples\Bit.Butil.Samples.Core\Pages\**;..\..\Samples\Bit.Butil.Samples.Core\Shared\**;..\..\Samples\Bit.Butil.Samples.Maui\Platforms\**">
+                      Exclude="..\..\Samples\**\bin\**;..\..\Samples\**\obj\**;..\..\Samples\Core\Pages\**;..\..\Samples\Core\Shared\**;..\..\Samples\**\Error.razor;..\..\Samples\**\Platforms\**">
       <LogicalName>ButilSource/Sample/%(RecursiveDir)%(Filename)%(Extension)</LogicalName>
     </EmbeddedResource>
   </ItemGroup>

@@ -25,7 +25,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\..\Samples\Bit.Butil.Samples.Core\Bit.Butil.Samples.Core.csproj" />
+        <ProjectReference Include="..\..\Samples\Core\Bit.Butil.Samples.Core.csproj" />
     </ItemGroup>
 
     <ItemGroup>
@@ -38,7 +38,7 @@
          wwwroot. BlazorWebView serves the files next to its host page from disk, so copying them into the output's
          wwwroot is all it takes for the pages to find them at the same paths. -->
     <PropertyGroup>
-        <_SamplesWebRoot>$(MSBuildThisFileDirectory)..\..\Samples\Bit.Butil.Samples.Web\wwwroot\</_SamplesWebRoot>
+        <_SamplesWebRoot>$(MSBuildThisFileDirectory)..\..\Samples\Web\wwwroot\</_SamplesWebRoot>
     </PropertyGroup>
     <ItemGroup>
         <None Include="$(_SamplesWebRoot)workers\**" Link="wwwroot\workers\%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />

@@ -56,7 +56,7 @@ public static partial class ButilSetupGuide
                 from a script so that one build can be driven in both script-loading modes by the end-to-end
                 suite. Yours is the plain `<script>` tag of step 2, or no tag at all under lazy scripts.
                 """,
-                ["Sample/Bit.Butil.Samples.Web/", "Sample/Bit.Butil.Samples.Core/Extentions/"]),
+                ["Sample/Web/", "Sample/Core/Extensions/"]),
 
             "web-app" => Compose(
                 "Blazor Web App (InteractiveWebAssembly / InteractiveAuto, with prerendering)",
@@ -70,17 +70,6 @@ public static partial class ButilSetupGuide
                 The host page is `Components/App.razor`, and the Butil script goes in it before `blazor.web.js`.
                 Because the page is prerendered, every browser call has to happen in `OnAfterRenderAsync` or in an
                 event handler - during the prerender pass there is no JS runtime and reads return safe defaults.
-
-                The host's own `Program.cs` needs three lines of it:
-
-                ```csharp
-                builder.Services.AddRazorComponents()
-                    .AddInteractiveWebAssemblyComponents();
-
-                // The prerender pass instantiates the client's components in THIS container, so it has to
-                // register the very same services the WebAssembly container does.
-                builder.Services.AddDemoServices();
-                ```
 
                 The same "both containers" rule governs the JavaScript tree-shaking of step 2:
                 `<BitButilLazyScripts>true</BitButilLazyScripts>` belongs in both `.csproj` files, because both of
@@ -101,13 +90,43 @@ public static partial class ButilSetupGuide
                 </PropertyGroup>
                 ```
 
-                The files below are this documentation site itself, which is exactly that shape. Its full host
-                `Program.cs` is `GetButilSourceFile(path: "Demo/Server/Program.cs")` - it carries endpoints of its
-                own that have nothing to do with Butil, which is why only the part that matters is quoted above.
+                The files below are the InteractiveAuto sample, the shape that has both: its host registers the
+                Server and the WebAssembly runtimes alike, and both `Program.cs` files call the one shared
+                `AddCoreServices()`. An InteractiveWebAssembly-only app is the same pair of projects without the
+                Server half - `Sample/Wasm/` in `GetButilSourceFile` - and this documentation site is that shape too,
+                at `Demo/Server/` and `Demo/Client/`.
                 """,
-                ["Demo/Server/Components/", "Demo/Client/Program.cs", "Demo/Client/Extensions/"]),
+                ["Sample/Auto/", "Sample/Core/Extensions/"]),
 
-            "server" => Server(),
+            "server" => Compose(
+                "Blazor Server (InteractiveServer)",
+                """
+                One project, one DI container. Every browser call is a round trip over the circuit, so the wrappers behave
+                exactly as they do under WebAssembly but each one costs a network hop - batch what you can, and do not put
+                a Butil read inside a tight render loop. `BitButil.UseFastInvoke()` is a no-op here: there is no in-process
+                JavaScript to call synchronously.
+
+                The host page is `Components/App.razor` in a Blazor Web App, or `Pages/_Host.cshtml` in a classic
+                (pre-.NET 8) Blazor Server app. If the app prerenders - the default - the same rule as everywhere else
+                applies: touch the browser from `OnAfterRenderAsync`, not from `OnInitializedAsync`.
+
+                Nothing here is ever trimmed, so the JavaScript tree-shaking of step 2 works from a scan of the app's
+                own assemblies instead - `<BitButilScriptScan>`, which defaults to `TypeReferences` wherever the trimming
+                is on and reads the Bit.Butil classes those assemblies reference. Turning the trimming on is therefore
+                the whole of it; it is off by default here, since this is not a WebAssembly project. Lazy scripts are the
+                alternative, and cost one request per API instead of a bundle.
+
+                ```xml
+                <PropertyGroup>
+                  <BitButilTrimScripts>true</BitButilTrimScripts>
+                </PropertyGroup>
+                ```
+
+                No `_Imports.razor` entry is required - Butil services can be injected by their full name
+                (`@inject Bit.Butil.Clipboard clipboard`). Adding `@using Bit.Butil` lets you write
+                `@inject Clipboard clipboard` instead, and brings the enums and option types into scope.
+                """,
+                ["Sample/Server/", "Sample/Core/Extensions/"]),
 
             "hybrid" => Compose(
                 "Blazor Hybrid (MAUI, WPF, WinForms)",
@@ -132,7 +151,7 @@ public static partial class ButilSetupGuide
                 head's own JavaScript rather than from C# - `window.BitButil.webAuthn` called from a `.ts` file of
                 yours - is present regardless. There is nothing to keep alive with `<BitButilScriptModule>`.
                 """,
-                ["Sample/Bit.Butil.Samples.Maui/", "Sample/Bit.Butil.Samples.Core/Extentions/"]),
+                ["Sample/Maui/", "Sample/Core/Extensions/"]),
 
             _ => null
         };
@@ -194,96 +213,6 @@ public static partial class ButilSetupGuide
             || name.Equals("App.razor", StringComparison.OrdinalIgnoreCase)
             || name.Equals("IServiceCollectionExtensions.cs", StringComparison.OrdinalIgnoreCase)
             || name.EndsWith(".csproj", StringComparison.OrdinalIgnoreCase);
-    }
-
-    private static string Server()
-    {
-        var builder = new StringBuilder();
-
-        builder.AppendLine("# Setting Butil up - Blazor Server (InteractiveServer)").AppendLine();
-        builder.AppendLine("""
-            One project, one DI container. Every browser call is a round trip over the circuit, so the wrappers behave
-            exactly as they do under WebAssembly but each one costs a network hop - batch what you can, and do not put
-            a Butil read inside a tight render loop. `BitButil.UseFastInvoke()` is a no-op here: there is no in-process
-            JavaScript to call synchronously.
-
-            The host page is `Components/App.razor` in a Blazor Web App, or `Pages/_Host.cshtml` in a classic
-            (pre-.NET 8) Blazor Server app. If the app prerenders - the default - the same rule as everywhere else
-            applies: touch the browser from `OnAfterRenderAsync`, not from `OnInitializedAsync`.
-
-            Nothing here is ever trimmed, so the JavaScript tree-shaking of step 2 works from a scan of the app's
-            own assemblies instead - `<BitButilScriptScan>`, which defaults to `TypeReferences` wherever the trimming
-            is on and reads the Bit.Butil classes those assemblies reference. Turning the trimming on is therefore
-            the whole of it; it is off by default here, since this is not a WebAssembly project. Lazy scripts are the
-            alternative, and cost one request per API instead of a bundle.
-
-            ```xml
-            <PropertyGroup>
-              <BitButilTrimScripts>true</BitButilTrimScripts>
-            </PropertyGroup>
-            ```
-            """).AppendLine();
-        builder.AppendLine(Checklist).AppendLine();
-        builder.AppendLine("""
-            ## The files
-
-            ### `Program.cs`
-
-            ```csharp
-            using Bit.Butil;
-            // Where App.razor lives, so MapRazorComponents<App>() below resolves.
-            using MyApp.Components;
-
-            var builder = WebApplication.CreateBuilder(args);
-
-            builder.Services.AddRazorComponents()
-                .AddInteractiveServerComponents();
-
-            // One container, so one registration - unlike a Web App with an interactive client.
-            builder.Services.AddBitButilServices();
-
-            var app = builder.Build();
-
-            app.UseStaticFiles();
-            app.UseAntiforgery();
-
-            app.MapRazorComponents<App>()
-                .AddInteractiveServerRenderMode();
-
-            app.Run();
-            ```
-
-            ### `Components/App.razor`
-
-            ```razor
-            <!DOCTYPE html>
-            <html lang="en">
-
-            <head>
-                <base href="/" />
-                <HeadOutlet @rendermode="InteractiveServer" />
-            </head>
-
-            <body>
-                <Routes @rendermode="InteractiveServer" />
-
-                @* Before the Blazor script: the app boots as soon as that second script runs, so
-                   window.BitButil has to exist by then. *@
-                <script src="_content/Bit.Butil/bit-butil.js"></script>
-                <script src="_framework/blazor.web.js"></script>
-            </body>
-
-            </html>
-            ```
-
-            ### `_Imports.razor`
-
-            Nothing is required - Butil services are injected by their full name (`@inject Bit.Butil.Clipboard clipboard`)
-            so no using directive is needed. Adding `@using Bit.Butil` lets you write `@inject Clipboard clipboard`
-            instead, and brings the enums and option types into scope.
-            """);
-
-        return builder.ToString();
     }
 
     private const string Checklist = """

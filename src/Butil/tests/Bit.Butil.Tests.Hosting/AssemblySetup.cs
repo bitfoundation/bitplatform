@@ -10,5 +10,11 @@ namespace ButilTests.Hosting;
 public static class AssemblySetup
 {
     [AssemblyCleanup]
-    public static async Task CleanupAsync() => await HarnessHostFactory.DisposeSharedAsync();
+    public static async Task CleanupAsync()
+    {
+        await HarnessHostFactory.DisposeSharedAsync();
+#if NET10_0_OR_GREATER
+        await SampleHostFactories.DisposeAsync();
+#endif
+    }
 }

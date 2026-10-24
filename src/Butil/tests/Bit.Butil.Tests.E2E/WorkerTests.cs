@@ -5,7 +5,7 @@ namespace Bit.Butil.Tests.E2E;
 
 /// <summary>
 /// Drives the harness against the worker scripts in
-/// <c>Bit.Butil.Samples.Web/wwwroot/workers</c> - a worker runs a script you supply, so the harness
+/// <c>Samples/Web/wwwroot/workers</c> - a worker runs a script you supply, so the harness
 /// has to supply one.
 /// </summary>
 [TestClass]

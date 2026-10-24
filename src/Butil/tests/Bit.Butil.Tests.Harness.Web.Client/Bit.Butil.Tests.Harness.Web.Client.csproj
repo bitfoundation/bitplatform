@@ -22,7 +22,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\..\Samples\Bit.Butil.Samples.Core\Bit.Butil.Samples.Core.csproj" />
+        <ProjectReference Include="..\..\Samples\Core\Bit.Butil.Samples.Core.csproj" />
     </ItemGroup>
 
 </Project>

@@ -607,6 +607,40 @@ public class ToolBehaviourTests : McpTestBase
     }
 
     [TestMethod]
+    public async Task Every_setup_guide_quotes_the_files_of_its_sample_project()
+    {
+        // The guide picks its files by path prefix into the embedded samples. A sample moved or renamed leaves
+        // the guide with its prose and checklist but none of the files it promises, and every other assertion
+        // on it still passes.
+        var expected = new Dictionary<string, string[]>(StringComparer.Ordinal)
+        {
+            ["wasm"] = ["Sample/Web/Program.cs", "Sample/Web/wwwroot/index.html"],
+            ["web-app"] = ["Sample/Auto/Bit.Butil.Samples.Auto/Program.cs", "Sample/Auto/Bit.Butil.Samples.Auto/Components/App.razor",
+                           "Sample/Auto/Bit.Butil.Samples.Auto.Client/Program.cs"],
+            ["server"] = ["Sample/Server/Program.cs", "Sample/Server/Components/App.razor"],
+            ["hybrid"] = ["Sample/Maui/MauiProgram.cs", "Sample/Maui/wwwroot/index.html"],
+        };
+
+        CollectionAssert.AreEquivalent(ButilMcp.HostingModels, expected.Keys.ToArray(), "A hosting model has no expected sample files here.");
+
+        foreach (var (model, files) in expected)
+        {
+            var text = Text(await CallAsync("GetButilSetupGuide", new { hostingModel = model }));
+
+            using (Assert.Scope())
+            {
+                // The one registration every host calls - the piece most easily got wrong, so it is in every guide.
+                Assert.Contains("### `Sample/Core/Extensions/IServiceCollectionExtensions.cs`", text, $"The '{model}' guide does not quote the shared registration.");
+
+                foreach (var file in files)
+                {
+                    Assert.Contains($"### `{file}`", text, $"The '{model}' guide does not quote {file}.");
+                }
+            }
+        }
+    }
+
+    [TestMethod]
     public async Task Web_app_guide_leads_with_the_mistake_that_hosting_model_invites()
     {
         // Two DI containers is the thing that goes wrong in a Blazor Web App, and it goes wrong

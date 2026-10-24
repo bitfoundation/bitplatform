@@ -7,7 +7,7 @@ namespace Bit.Butil.Tests.E2E;
 /// <summary>
 /// The lazy script-loading mode, end to end: the harness page is opened with <c>?lazy=1</c>, so the app
 /// starts with no <c>bit-butil.js</c> on the page and <c>BitButil.UseLazyScripts()</c> on (see
-/// <c>Bit.Butil.Samples.Web/Program.cs</c>). Every <c>BitButil.*</c> namespace present in the browser is
+/// <c>Samples/Web/Program.cs</c>). Every <c>BitButil.*</c> namespace present in the browser is
 /// then there only because the library <c>import()</c>ed that module on first use.
 /// </summary>
 /// <remarks>

@@ -37,7 +37,7 @@ page with Playwright. Environment variables:
 
 ## What it measures, and where from
 
-The timings are taken **in .NET, on the page** ([`BenchmarkPage.razor`](../../Samples/Bit.Butil.Samples.Core/Pages/BenchmarkPage.razor)),
+The timings are taken **in .NET, on the page** ([`BenchmarkPage.razor`](../../Samples/Core/Pages/BenchmarkPage.razor)),
 not out in the runner. The round trip is the thing being measured, and timing it from Playwright would put
 the automation channel inside every figure. The page emits one machine-readable line per measurement -
 `name|iterations=…|totalMs=…|perOpUs=…` - and the runner parses those and holds them against

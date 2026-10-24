@@ -1,7 +1,7 @@
 # Bit.Butil end-to-end tests
 
 MSTest + Microsoft.Playwright suite that drives two deterministic harness pages (`/e2e` and `/e2e-observers`, in
-`Bit.Butil.Samples.Core/Pages`) in a real browser. The same tests run against **every way a Blazor app can host
+`Samples/Core/Pages`) in a real browser. The same tests run against **every way a Blazor app can host
 Bit.Butil** - the host is picked per run with `BUTIL_E2E_HOST`. Uses the **Microsoft.Testing.Platform** runner
 (mandated by the repo `global.json`) via `EnableMSTestRunner`.
 
@@ -114,7 +114,7 @@ build, MCP and hosting tests only.
 
 ## Harness pages
 
-Two deterministic pages live in `Bit.Butil.Samples.Core/Pages`:
+Two deterministic pages live in `Samples/Core/Pages`:
 
 * `/e2e` - storage (round-trip, typed JSON, removeItem, length/key/containsKey, clear), cookie, crypto (UUID, random bytes, SHA-256, AES-GCM, AES-CBC, HMAC, ECDSA, PBKDF2), performance.now, window (base64, inner size, secure context, matchMedia), document (title, visibility/charset/url), location (href + protocol/pathname/origin), history (pushState, replaceState + state, scrollRestoration),
   AbortController (abort + reason, listeners including a late one, a shared signal, `Any`, `Timeout`, and
@@ -126,14 +126,14 @@ Two deterministic pages live in `Bit.Butil.Samples.Core/Pages`:
   transferred bytes both ways, an uncaught throw that leaves the
   worker running, a port handed over, a shared worker's connection count, and posting to a terminated one)
   and MessageChannel (queue-then-start ordering, binary across a port, and a transferred port going dead on
-  the sending side). The worker scripts live in `Bit.Butil.Samples.Web/wwwroot/workers` - a worker runs a
+  the sending side). The worker scripts live in `Samples/Web/wwwroot/workers` - a worker runs a
   script you supply, so the harness has to supply one. WindowMessaging (a round trip through an iframe,
   bytes, a port transferred to the frame, a top-level page being its own parent, and a message from an
   origin not on the allow-list never reaching the callback), against
-  `Bit.Butil.Samples.Web/wwwroot/frames/e2e-frame.html`. Streams (a response body read to its end,
+  `Samples/Web/wwwroot/frames/e2e-frame.html`. Streams (a response body read to its end,
   reading locking the stream so `Tee` refuses, `Tee` giving both branches every chunk, a gzip/gunzip
   round trip into a C# sink, writing by hand, and a 404 reporting its status), against
-  `Bit.Butil.Samples.Web/wwwroot/data/stream-sample.txt` - exactly 1024 bytes, so the assertions are
+  `Samples/Web/wwwroot/data/stream-sample.txt` - exactly 1024 bytes, so the assertions are
   exact numbers. (The Web App and hybrid hosts serve those same files at the same paths, from that same folder.)
   Scheduler (a single frame, a loop that stops when disposed, an idle callback reporting
   slack on an idle page and `DidTimeout` on a busy one, a posted task, a task whose signal is already

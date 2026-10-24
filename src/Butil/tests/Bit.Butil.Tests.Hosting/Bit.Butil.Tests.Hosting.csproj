@@ -1,10 +1,10 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-    <!-- In-process HTTP tests: the real Blazor Web App harness host booted with WebApplicationFactory, in every
-         render mode, asserting what only a server response can show - what the first response already contains,
-         which static assets are served and as what, whether every page renders statically without an error in
-         the server log, and whether every member of every Butil service keeps the prerendering contract. No
-         browser, so this runs on every target framework in the regular CI job. -->
+    <!-- In-process HTTP tests: the real Blazor Web App harness host (and the real hosting samples) booted with
+         WebApplicationFactory, in every render mode, asserting what only a server response can show - what the
+         first response already contains, which static assets are served and as what, whether every page renders
+         statically without an error in the server log, and whether every member of every Butil service keeps the
+         prerendering contract. No browser, so this runs on every target framework in the regular CI job. -->
 
     <PropertyGroup>
         <TargetFrameworks>net10.0;net9.0;net8.0</TargetFrameworks>
@@ -31,6 +31,13 @@
 
     <ItemGroup>
         <ProjectReference Include="..\Bit.Butil.Tests.Harness.Web\Bit.Butil.Tests.Harness.Web.csproj" />
+    </ItemGroup>
+
+    <!-- The hosting samples only target net10.0. -->
+    <ItemGroup Condition="'$(TargetFramework)' == 'net10.0'">
+        <ProjectReference Include="..\..\Samples\Server\Bit.Butil.Samples.Server.csproj" />
+        <ProjectReference Include="..\..\Samples\Wasm\Bit.Butil.Samples.Wasm\Bit.Butil.Samples.Wasm.csproj" />
+        <ProjectReference Include="..\..\Samples\Auto\Bit.Butil.Samples.Auto\Bit.Butil.Samples.Auto.csproj" />
     </ItemGroup>
 
 </Project>
