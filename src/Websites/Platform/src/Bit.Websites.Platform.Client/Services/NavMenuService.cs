@@ -24,11 +24,12 @@ public class NavMenuService
 
     public bool IsTemplateDocRoute { get; private set; }
     public bool IsBesqlDocRoute { get; private set; }
+    public bool IsToolingsDocRoute { get; private set; }
 
     /// <summary>
     /// Docs routes get the docs nav menu (hamburger).
     /// </summary>
-    public bool IsDocsRoute => IsTemplateDocRoute || IsBesqlDocRoute;
+    public bool IsDocsRoute => IsTemplateDocRoute || IsBesqlDocRoute || IsToolingsDocRoute;
 
     public bool IsProductsRoute => IsDocsRoute;
 
@@ -47,5 +48,6 @@ public class NavMenuService
 
         IsTemplateDocRoute = currentUrl.Contains("/templates") || currentUrl.Contains("/boilerplate");
         IsBesqlDocRoute = currentUrl.Contains("/besql");
+        IsToolingsDocRoute = currentUrl.Contains("/toolings");
     }
 }

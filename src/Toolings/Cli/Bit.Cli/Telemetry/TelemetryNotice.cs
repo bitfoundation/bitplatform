@@ -7,7 +7,7 @@ public static class TelemetryNotice
 {
     public const int Version = 1;
 
-    public const string DocsUrl = $"{BuildInfo.RepositoryUrl}/tree/develop/src/Cli#telemetry";
+    public const string DocsUrl = $"{BuildInfo.RepositoryUrl}/tree/develop/src/Toolings/Cli#telemetry";
 
     public static bool ShouldShow(TelemetryDecision decision, CliSettings settings)
     {
