@@ -14,7 +14,8 @@
     windows   Opens each Windows app that is behind and taps its version in the nav panel, which makes it update itself
               from its feed and restart.
     e2e       Runs Boilerplate.Tests.E2E stage by stage, as RunTests.bat does, keeping each stage's log and TRX.
-    mcp       One call to https://bitplatform.dev/mcp: tools/list, or tools/call when -Tool is given.
+    mcp       One call to https://bitplatform.dev/mcp: tools/list, or tools/call when -Tool is given. -AllLibraries
+              lists every bit library's tools, as the website's chat does, not only BlazorUI's and Butil's.
     devcontainer
               Creates a project with bit new, brings bit Boilerplate's dev container up on a Linux Docker engine
               with the devcontainers CLI, and runs bit doctor in it. With -Sha, bit and the template come from that
@@ -23,6 +24,9 @@
               finds something missing.
     aspire    Runs a new project's Aspire app host three times: the second run reuses the first one's containers, they
               stop once it sits idle, and the third run brings them back on the same volumes. -Sha and -Keep as above.
+    agents    Creates a project with bit new, then hands each scenario of agent-scenarios.json to a headless Claude Code
+              that sees nothing but that project, in a copy of its own, and checks what it did: which skills it read,
+              which tools it called and which files it changed after each turn. -Sha and -Keep as above.
 
     What is deployed where is read from those CD workflows and from the E2E suite's DeployedApps.cs and
     RunTests.bat rather than repeated here, so this script follows them.
@@ -38,12 +42,14 @@
 .EXAMPLE
     pwsh .github/agents/test-platform/test-platform.ps1 aspire -Sha 465ce237c
 .EXAMPLE
+    pwsh .github/agents/test-platform/test-platform.ps1 agents -Sha 465ce237c -Scenario known-bug,crud-feature -Model sonnet,opus
+.EXAMPLE
     pwsh .github/agents/test-platform/test-platform.ps1 mcp -McpVersion 10.6.1 -Tool GetBitBlazorUIComponent -Arguments '{"name":"BitAccordion"}'
 #>
 [CmdletBinding()]
 param(
     [Parameter(Mandatory, Position = 0)]
-    [ValidateSet('versions', 'android', 'windows', 'e2e', 'mcp', 'devcontainer', 'aspire')]
+    [ValidateSet('versions', 'android', 'windows', 'e2e', 'mcp', 'devcontainer', 'aspire', 'agents')]
     [string] $Command,
 
     # What everything must be at. The repository's APP_VERSION variable when omitted.
@@ -81,9 +87,25 @@ param(
     # mcp: the tool's arguments, as json.
     [string] $Arguments = '{}',
 
+    [switch] $AllLibraries,
+
     [switch] $PrereleasePackages,
 
-    [switch] $Keep
+    [switch] $Keep,
+
+    # agents: the scenarios of agent-scenarios.json to run; every one but the baselines when omitted.
+    [string[]] $Scenario,
+
+    # agents: the models each scenario runs with, as Claude Code names them.
+    [string[]] $Model = @('sonnet'),
+
+    # agents: also sends the turns that have the agent build a whole feature, up to an hour each.
+    [switch] $Long,
+
+    # agents: runs one scenario of the lab that -Lab names; the command starts these itself.
+    [switch] $Worker,
+
+    [string] $Lab
 )
 
 $ErrorActionPreference = 'Stop'
@@ -808,7 +830,8 @@ function Invoke-E2EStages {
 #region MCP
 
 function Invoke-BitMcp([string] $version, [string] $method, [string] $parameters = '{}') {
-    $endpoint = 'https://bitplatform.dev/mcp' + $(if ($version) { "?v=$version" })
+    $query = @($(if ($version) { "v=$version" }), $(if ($AllLibraries) { 'libraries=all' })) | Where-Object { $_ }
+    $endpoint = 'https://bitplatform.dev/mcp' + $(if ($query) { '?' + ($query -join '&') })
     $headers = @{ Accept = 'application/json, text/event-stream' }
 
     $initialize = Invoke-WebRequest $endpoint -Method Post -ContentType 'application/json' -Headers $headers -TimeoutSec 120 `
@@ -995,7 +1018,7 @@ function Set-BitUnderTestFeed([string] $project, [string] $feed) {
 "@
 }
 
-function New-BitProject([string] $lab, $bit, [string] $name, [string[]] $options = @()) {
+function New-BitProject([string] $lab, $bit, [string] $name, [string[]] $options = @(), [switch] $setup) {
     Write-Host "Creating $name with bit new..."
     $env:BIT_CLI_HOME = Join-Path $lab 'home'
     $env:BIT_CLI_NO_UPDATE = '1'
@@ -1005,7 +1028,8 @@ function New-BitProject([string] $lab, $bit, [string] $name, [string[]] $options
     $templateArguments = $bit.TemplateArguments
 
     try {
-        & $bit.Path new $name --yes --no-open --no-trust --no-setup @options @templateArguments *> (Join-Path $lab 'new.log')
+        $setupArguments = $setup ? @('--no-tools', '--no-workloads', '--ide', 'none') : @('--no-setup')
+        & $bit.Path new $name --yes --no-open --no-trust @setupArguments @options @templateArguments *> (Join-Path $lab 'new.log')
         $newExitCode = $LASTEXITCODE
     }
     finally {
@@ -1390,6 +1414,369 @@ function Invoke-AspireTest {
 
 #endregion
 
+#region Agent instructions
+
+$agentScenariosFile = Join-Path $PSScriptRoot 'agent-scenarios.json'
+
+function Get-ClaudeCli {
+    $claude = Get-Command claude -ErrorAction SilentlyContinue | Select-Object -First 1 -ExpandProperty Source
+
+    if (-not $claude) {
+        $claude = Join-Path $HOME ($IsWindows ? '.local\bin\claude.exe' : '.local/bin/claude')
+    }
+
+    if (-not (Test-Path $claude)) {
+        throw 'Claude Code (claude) is not installed.'
+    }
+
+    $claude
+}
+
+function Get-ClaudeProjectFolder([string] $folder) {
+    Join-Path $HOME ".claude\projects\$($folder -replace '[^A-Za-z0-9]', '-')"
+}
+
+function Stop-FolderProcesses([string] $folder) {
+    Get-CimInstance Win32_Process |
+        Where-Object { $_.ProcessId -ne $PID -and $_.CommandLine -and $_.CommandLine.Contains($folder, [StringComparison]::OrdinalIgnoreCase) } |
+        ForEach-Object { taskkill /PID $_.ProcessId /T /F 2>&1 | Out-Null }
+}
+
+function Get-ChangedPaths([string] $folder, [string] $since) {
+    @(git -C $folder diff --name-only $since) + @(git -C $folder ls-files --others --exclude-standard) |
+        Where-Object { $_ -and $_ -notlike '.playwright-mcp/*' -and $_ -ne '.claude/settings.local.json' } |
+        Sort-Object -Unique
+}
+
+function Install-AgentFixture([string] $folder, $scenario, $scenarios) {
+    $git = @('-C', $folder, '-c', "user.name=$($scenarios.author.name)", '-c', "user.email=$($scenarios.author.email)")
+
+    if ($scenario.baseline) {
+        $paths = $scenarios.baselineRemoves | Where-Object { Test-Path (Join-Path $folder $_) }
+        git @git rm -rq @paths
+        git @git commit -q --amend --no-edit
+    }
+
+    $fixture = $scenario.fixture
+
+    if (-not $fixture) {
+        return
+    }
+
+    if ($fixture.branch) {
+        git -C $folder checkout -q -b $fixture.branch
+    }
+
+    foreach ($edit in $fixture.edits) {
+        $path = Join-Path $folder $edit.path
+        $text = [IO.File]::ReadAllText($path)
+        $lf = $text.Replace("`r`n", "`n")
+
+        if ($lf.IndexOf($edit.find, [StringComparison]::Ordinal) -lt 0) {
+            throw "The fixture of $($scenario.id) no longer matches $($edit.path): $(($edit.find -split "`n")[0])"
+        }
+
+        $changed = $lf.Replace($edit.find, $edit.replace)
+        [IO.File]::WriteAllText($path, $text.Contains("`r`n") ? $changed.Replace("`n", "`r`n") : $changed, [Text.UTF8Encoding]::new($false))
+    }
+
+    foreach ($file in $fixture.files) {
+        $path = Join-Path $folder $file.path
+        New-Item -ItemType Directory -Force (Split-Path $path) | Out-Null
+        [IO.File]::WriteAllText($path, $file.content, [Text.UTF8Encoding]::new($false))
+    }
+
+    git @git add -A
+    git @git commit -q -m $fixture.commit
+}
+
+function Set-AgentMemory([string] $folder, $scenario) {
+    if ($scenario.memory -eq 'none') {
+        return
+    }
+
+    $memory = Join-Path (Get-ClaudeProjectFolder $folder) 'memory'
+    New-Item -ItemType Directory -Force $memory | Out-Null
+    Set-Content (Join-Path $memory 'user-role.md') -Encoding utf8NoBOM -Value @'
+---
+name: user-role
+description: The user's role on this project is Developer
+metadata:
+  type: user
+---
+
+The user is a Developer on this project.
+'@
+    Set-Content (Join-Path $memory 'MEMORY.md') -Encoding utf8NoBOM -Value '- [User role](user-role.md) - Developer'
+}
+
+function ConvertTo-CallInput($value) {
+    ($value | ConvertTo-Json -Depth 32 -Compress) -replace '\\\\', '/'
+}
+
+function Read-AgentTranscript([string] $log) {
+    $calls = [Collections.Generic.List[object]]::new()
+    $texts = [Collections.Generic.List[string]]::new()
+    $session = $final = $cost = $null
+
+    foreach ($line in Get-Content $log -Encoding utf8) {
+        if (-not $line.StartsWith('{')) {
+            continue
+        }
+
+        try {
+            $event = $line | ConvertFrom-Json -Depth 64
+        }
+        catch {
+            continue
+        }
+
+        if ($event.session_id) {
+            $session = $event.session_id
+        }
+
+        if ($event.type -eq 'assistant') {
+            foreach ($use in $event.message.content | Where-Object type -eq 'tool_use') {
+                $calls.Add([pscustomobject]@{ Name = $use.name; Input = ConvertTo-CallInput $use.input })
+            }
+
+            if (-not $event.parent_tool_use_id) {
+                $event.message.content | Where-Object type -eq 'text' | ForEach-Object { $texts.Add($_.text) }
+            }
+        }
+        elseif ($event.type -eq 'result') {
+            $final = $event.result
+            $cost = $event.total_cost_usd
+        }
+    }
+
+    [pscustomobject]@{ Session = $session; Cost = $cost; Final = $final; Texts = @($texts); Calls = $calls }
+}
+
+function Invoke-AgentTurn([string] $folder, [string] $model, [string] $prompt, [string] $session, [double] $budget, [string] $log) {
+    $arguments = @('-p', $prompt, '--model', $model, '--output-format', 'stream-json', '--verbose',
+        '--setting-sources', 'project,local', '--strict-mcp-config', '--mcp-config', (Join-Path $folder '.mcp.json'),
+        '--permission-mode', 'auto', '--permission-prompts', 'none', '--max-budget-usd', "$budget",
+        '--disallowedTools', 'mcp__aspire', 'Bash(aspire *)', 'PowerShell(aspire *)', 'Bash(git push *)', 'PowerShell(git push *)',
+        '--allowedTools', 'Read', 'Glob', 'Grep', 'Edit', 'Write', 'TodoWrite', 'Skill', 'Agent', 'WebFetch', 'WebSearch', 'ToolSearch',
+        'mcp__bitplatform', 'mcp__playwright', 'mcp__dev-mcp')
+
+    if ($session) {
+        $arguments += '--resume', $session
+    }
+
+    Push-Location $folder
+
+    try {
+        & (Get-ClaudeCli) @arguments *> $log
+    }
+    finally {
+        Pop-Location
+        Stop-FolderProcesses $folder
+    }
+
+    Read-AgentTranscript $log
+}
+
+function Test-AgentCheck($check, $folder, $turns, $handoff, $states) {
+    $scope = $check.handoff ? @($handoff) : @($turns)
+    $calls = @($scope | Where-Object { $_ } | ForEach-Object { $_.Calls })
+    $state = $check.handoff ? $states['handoff'] : $states[[int]($check.afterTurn ?? $turns.Count)]
+    $finals = @(@($scope | Where-Object { $_ } | ForEach-Object Final) + @($scope | Where-Object { $_ } | ForEach-Object Texts) + @($calls | Where-Object Name -eq 'ReportFindings' | ForEach-Object Input) | Where-Object { $_ })
+    $root = ($folder -replace '\\', '/').TrimEnd('/') + '/'
+
+    $usedSkill = {
+        param($name)
+        [bool]($calls | Where-Object { ($_.Name -eq 'Skill' -and $_.Input -like "*`"skill`":`"$name`"*") -or $_.Input -like "*agents/$name.agent.md*" -or $_.Input -like "*skills/$name/*" })
+    }
+
+    switch ($check.PSObject.Properties.Name | Where-Object { $_ -notin 'afterTurn', 'handoff', 'long' } | Select-Object -First 1) {
+        'skill' { return & $usedSkill $check.skill }
+        'noSkill' { return -not (& $usedSkill $check.noSkill) }
+        'called' { return [bool]($calls | Where-Object { $_.Name -like "*__$($check.called)" -or ($_.Name -in 'Bash', 'PowerShell', 'powershell', 'bash' -and $_.Input -like "*$($check.called)*") }) }
+        'mentions' { return [bool]($calls | Where-Object Input -like "*$($check.mentions)*") -or [bool]($finals -like "*$($check.mentions)*") }
+        'read' {
+            return [bool]($calls | Where-Object {
+                    $paths = [regex]::Matches($_.Input, '"(?:file_path|path)":"([^"]+)"') | ForEach-Object { $_.Groups[1].Value -replace "^$([regex]::Escape($root))", '' }
+                    ($paths | Where-Object { $_ -like $check.read }) -or $_.Input -like "*$($check.read)*"
+                })
+        }
+        'readChanged' {
+            $written = @($states[$turns.Count] | Where-Object { $_ -like $check.readChanged })
+            return [bool]($written -and ($calls | Where-Object { $callInput = $_.Input; $written | Where-Object { $callInput -like "*$_*" } }))
+        }
+        'changed' { return [bool]($state | Where-Object { $_ -like $check.changed }) }
+        'unchanged' { return -not ($state | Where-Object { $_ -like $check.unchanged }) }
+        'onlyChanged' { return -not ($state | Where-Object { $_ -notlike $check.onlyChanged }) }
+        'noChanges' { return -not $state }
+        'finalMatches' { return [bool]($finals -match $check.finalMatches) }
+        'fileLacks' {
+            $path = Join-Path $folder $check.fileLacks.path
+            return (Test-Path $path) -and -not ($check.fileLacks.patterns | Where-Object { (Get-Content $path -Raw).Contains($_) })
+        }
+    }
+
+    throw "Unknown check: $($check | ConvertTo-Json -Compress)"
+}
+
+function Invoke-AgentScenario([string] $lab, [string] $id, [string] $model) {
+    $scenarios = Get-Content $agentScenariosFile -Raw | ConvertFrom-Json -Depth 32
+    $scenario = $scenarios.scenarios | Where-Object id -eq $id
+    $results = Join-Path $lab "results\$id-$model"
+    $folder = Join-Path $lab "runs\$id-$model\$($scenarios.project)"
+    New-Item -ItemType Directory -Force $results | Out-Null
+
+    Get-ChildItem Env: | Where-Object { $_.Name -like 'CLAUDE*' -or $_.Name -eq 'OpenAI__ApiKey' } | ForEach-Object { Remove-Item "Env:$($_.Name)" }
+    [Console]::OutputEncoding = [Text.Encoding]::UTF8
+
+    robocopy (Join-Path $lab $scenarios.project) $folder /E /XD bin obj node_modules .vs /NFL /NDL /NJH /NJS /NC /NS /NP | Out-Null
+    Install-AgentFixture $folder $scenario $scenarios
+    Set-AgentMemory $folder $scenario
+    $since = git -C $folder rev-parse HEAD
+
+    $prompts = @($scenario.prompt) + @($scenario.turns | Where-Object { $_ }) + @($(if ($Long) { $scenario.longTurns | Where-Object { $_ } }))
+    $budget = $scenario.budget ?? 15
+    $turns = [Collections.Generic.List[object]]::new()
+    $states = @{}
+    $session = $null
+    $started = Get-Date
+
+    for ($i = 0; $i -lt $prompts.Count; $i++) {
+        $turn = Invoke-AgentTurn $folder $model $prompts[$i] $session $budget (Join-Path $results "turn$($i + 1).jsonl")
+        $session = $turn.Session ?? $session
+        $turns.Add($turn)
+        $states[$i + 1] = @(Get-ChangedPaths $folder $since)
+    }
+
+    $handoff = $null
+
+    if ($scenario.handoff) {
+        $handoff = Invoke-AgentTurn $folder $model $scenario.handoff.prompt $null $budget (Join-Path $results 'handoff.jsonl')
+        $states['handoff'] = @(Get-ChangedPaths $folder $since)
+    }
+
+    $checks = foreach ($check in $scenario.checks) {
+        $verdict = if ($check.long -and -not $Long) { 'skipped' }
+        elseif ($check.handoff -and -not $handoff) { 'skipped' }
+        elseif (Test-AgentCheck $check $folder $turns $handoff $states) { 'pass' }
+        else { 'fail' }
+
+        [pscustomobject]@{ Check = ($check | ConvertTo-Json -Compress -Depth 8); Verdict = $verdict }
+    }
+
+    [pscustomobject]@{
+        Scenario = $id
+        Model = $model
+        Minutes = [Math]::Round(((Get-Date) - $started).TotalMinutes, 1)
+        Cost = [Math]::Round((@($turns) + @($handoff) | Where-Object { $_ -and $_.Cost } | Measure-Object Cost -Sum).Sum, 2)
+        Checks = @($checks)
+        Changed = $states[$turns.Count]
+        Finals = @($turns | ForEach-Object Final) + @($(if ($handoff) { $handoff.Final }))
+    } | ConvertTo-Json -Depth 8 | Set-Content (Join-Path $results 'result.json') -Encoding utf8NoBOM
+}
+
+function Invoke-AgentsTest {
+    $scenarios = Get-Content $agentScenariosFile -Raw | ConvertFrom-Json -Depth 32
+    $ids = $Scenario ? $Scenario : @($scenarios.scenarios | Where-Object { -not $_.baseline } | ForEach-Object id)
+
+    foreach ($id in $ids | Where-Object { $_ -notin $scenarios.scenarios.id }) {
+        throw "No scenario $id in $agentScenariosFile."
+    }
+
+    $lab = Join-Path ([IO.Path]::GetTempPath()) ('bit-agents-{0:MMdd-HHmm}' -f (Get-Date))
+    New-Item -ItemType Directory -Force $lab | Out-Null
+    $nugetPackages = $env:NUGET_PACKAGES
+    $runs = foreach ($id in $ids) {
+        $definition = $scenarios.scenarios | Where-Object id -eq $id
+
+        foreach ($name in $Model) {
+            [pscustomobject]@{ Id = $id; Model = $name; Heavy = [bool]($definition.heavy -or ($Long -and $definition.longTurns)) }
+        }
+    }
+
+    try {
+        $bit = Install-BitUnderTest $lab
+
+        if ($PrereleasePackages) {
+            Use-PrereleaseFeedForNewProjects $lab
+        }
+
+        New-BitProject $lab $bit $scenarios.project $scenarios.options -setup | Out-Null
+        Write-Host "Running $($runs.Count) agent runs in $lab..."
+
+        $pwsh = (Get-Process -Id $PID).Path
+        $pending = [Collections.Generic.List[object]]::new([object[]] @($runs))
+        $running = [Collections.Generic.List[object]]::new()
+
+        while ($pending.Count -or $running.Count) {
+            foreach ($run in @($running | Where-Object { $_.Process.HasExited -or ((Get-Date) - $_.Started).TotalMinutes -gt 120 })) {
+                if (-not $run.Process.HasExited) {
+                    taskkill /PID $run.Process.Id /T /F 2>&1 | Out-Null
+                    Stop-FolderProcesses (Join-Path $lab "runs\$($run.Id)-$($run.Model)")
+                }
+
+                $running.Remove($run) | Out-Null
+                Write-Host "Done: $($run.Id) with $($run.Model) in $([int]((Get-Date) - $run.Started).TotalMinutes) min."
+            }
+
+            while ($running.Count -lt 3 -and ($run = $pending | Where-Object { -not $_.Heavy -or -not ($running | Where-Object Heavy) } | Select-Object -First 1)) {
+                $pending.Remove($run) | Out-Null
+                $arguments = @('-NoProfile', '-File', "`"$PSCommandPath`"", 'agents', '-Worker', '-Lab', "`"$lab`"", '-Scenario', $run.Id, '-Model', $run.Model) + @($(if ($Long) { '-Long' }))
+                $log = Join-Path $lab "worker-$($run.Id)-$($run.Model).log"
+                $process = Start-Process $pwsh -ArgumentList $arguments -PassThru -NoNewWindow -RedirectStandardOutput $log -RedirectStandardError "$log.err"
+                $running.Add(($run | Add-Member -PassThru Process $process | Add-Member -PassThru Started (Get-Date)))
+                Write-Host "Started: $($run.Id) with $($run.Model)."
+            }
+
+            Start-Sleep -Seconds 10
+        }
+
+        $results = Get-ChildItem (Join-Path $lab 'results') -Filter result.json -Recurse -ErrorAction SilentlyContinue | ForEach-Object { Get-Content $_ -Raw | ConvertFrom-Json -Depth 8 }
+        $missing = $runs | Where-Object { -not ($results | Where-Object Scenario -eq $_.Id | Where-Object Model -eq $_.Model) }
+
+        $results | Sort-Object Scenario, Model | ForEach-Object {
+            [pscustomobject]@{
+                Scenario = $_.Scenario
+                Model = $_.Model
+                Passed = "$(@($_.Checks | Where-Object Verdict -eq 'pass').Count)/$(@($_.Checks | Where-Object Verdict -ne 'skipped').Count)"
+                Minutes = $_.Minutes
+                Cost = $_.Cost
+                Failed = (@($_.Checks | Where-Object Verdict -eq 'fail' | ForEach-Object Check) -join '; ')
+            }
+        } | Format-Table -AutoSize -Wrap | Out-String -Width 250 | Write-Host
+
+        foreach ($run in $missing) {
+            Write-Host "No result for $($run.Id) with $($run.Model); see $(Join-Path $lab "worker-$($run.Id)-$($run.Model).log.err")."
+        }
+
+        Write-Host "Transcripts, final messages and changed files: $(Join-Path $lab 'results')"
+
+        if ($missing -or ($results.Checks | Where-Object Verdict -eq 'fail')) {
+            $script:agentsFailed = $true
+        }
+    }
+    finally {
+        $env:NUGET_PACKAGES = $nugetPackages
+
+        if (-not $Keep) {
+            Get-ChildItem (Join-Path $lab 'runs') -Directory -ErrorAction SilentlyContinue | ForEach-Object {
+                Stop-FolderProcesses $_.FullName
+                Remove-Item (Get-ClaudeProjectFolder (Join-Path $_.FullName $scenarios.project)) -Recurse -Force -ErrorAction SilentlyContinue
+                Remove-Item $_.FullName -Recurse -Force -ErrorAction SilentlyContinue
+            }
+
+            Remove-Item (Join-Path $lab $scenarios.project) -Recurse -Force -ErrorAction SilentlyContinue
+            Remove-BitUnderTest $lab
+        }
+    }
+
+    if ($script:agentsFailed) {
+        exit 1
+    }
+}
+
+#endregion
+
 switch ($Command) {
     'versions' {
         $script:expectedVersion = Get-ExpectedVersion
@@ -1455,6 +1842,18 @@ switch ($Command) {
 
     'aspire' {
         Invoke-AspireTest
+    }
+
+    'agents' {
+        $Scenario = @($Scenario | ForEach-Object { $_ -split ',' } | Where-Object { $_ })
+        $Model = @($Model | ForEach-Object { $_ -split ',' } | Where-Object { $_ })
+
+        if ($Worker) {
+            Invoke-AgentScenario $Lab $Scenario[0] $Model[0]
+        }
+        else {
+            Invoke-AgentsTest
+        }
     }
 
     'mcp' {

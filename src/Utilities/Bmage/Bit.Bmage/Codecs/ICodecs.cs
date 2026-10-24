@@ -35,6 +35,17 @@ public sealed record DecodeOptions
 
     /// <summary>File name of the source, stored in metadata for convenience.</summary>
     public string? FileName { get; init; }
+
+    /// <summary>
+    /// The most threads the managed decoders may spread the work after decoding over, such as turning a photo upright,
+    /// or null for <see cref="Operations.OperationContext.DefaultMaxDegreeOfParallelism"/>. An
+    /// <see cref="Pipeline.ImageProcessor"/> fills it in from its own <see cref="Pipeline.ImageProcessor.MaxDegreeOfParallelism"/>.
+    /// </summary>
+    public int? MaxDegreeOfParallelism
+    {
+        get;
+        init => field = value is < 1 ? throw new ArgumentOutOfRangeException(nameof(MaxDegreeOfParallelism), "At least one thread is needed.") : value;
+    }
 }
 
 /// <summary>Options controlling encoding / export.</summary>

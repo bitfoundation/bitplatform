@@ -149,8 +149,7 @@ Blazor events; the browser layer only answers questions C# cannot.
 
 The demo hosts a [Model Context Protocol](https://modelcontextprotocol.io) server at
 `https://blow.bitplatform.dev/mcp`, so an AI agent writing flow code reads the library itself - its API, this
-guide and the demo's working pages - instead of guessing at an API it half remembers. It is also served, next to
-the other bit libraries, through the aggregated `https://bitplatform.dev/mcp` endpoint.
+guide and the demo's working pages - instead of guessing at an API it half remembers.
 
 ```json
 {

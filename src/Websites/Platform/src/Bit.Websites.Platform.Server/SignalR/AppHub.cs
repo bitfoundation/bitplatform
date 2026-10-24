@@ -46,10 +46,10 @@ public partial class AppHub : Hub
         var httpRequest = Context.GetHttpContext()!.Request;
         // Named rather than left to the endpoint's default, so the release this chatbot answers from is in
         // the log next to its answers. Empty on a host that prepares no version, which leaves that default.
-        var version = mcpVersions.Latest is { } latest ? $"?v={latest.Name}" : "";
+        var version = mcpVersions.Latest is { } latest ? $"&v={latest.Name}" : "";
         Uri mcpEndpoint = webHostEnvironment.IsDevelopment()
-            ? new($"{httpRequest.Scheme}://{httpRequest.Host}/mcp{version}")
-            : new($"https://bitplatform.dev/mcp{version}");
+            ? new($"{httpRequest.Scheme}://{httpRequest.Host}/mcp?libraries=all{version}")
+            : new($"https://bitplatform.dev/mcp?libraries=all{version}");
 
         await using var bitplatformMcp = await McpClient.CreateAsync(new HttpClientTransport(new()
         {

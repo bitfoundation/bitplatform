@@ -128,6 +128,9 @@
   <data name="MaxLengthAttribute_InvalidMaxLength" xml:space="preserve">
     <value>MaxLengthAttribute muss einen Längenwert haben, der größer als Null ist. Verwenden Sie MaxLength() ohne Parameter, um anzugeben, dass der String oder das Array die maximale zulässige Länge haben kann.</value>
   </data>
+  <data name="MaxLengthAttribute_ValidationError" xml:space="preserve">
+    <value>Das Feld {0} muss ein String- oder Array-Typ mit einer maximalen Länge von '{1}' sein.</value>
+  </data>
   <data name="MinLengthAttribute_ValidationError" xml:space="preserve">
     <value>Das Feld {0} muss ein String- oder Array-Typ mit einer Mindestlänge von '{1}' sein.</value>
   </data>

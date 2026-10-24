@@ -1,6 +1,6 @@
 ---
 name: test-platform
-description: Test one build of bitplatform end to end on the demo host - fix what its All CI run failed on, start an All CD run at a new APP_VERSION when asked to, roll its web, Android and Windows apps out to APP_VERSION, run the Boilerplate E2E suite against the deployed demos, check that bitplatform.dev/mcp answers each release from that release's own code, check that a new bit Boilerplate project's dev container sets itself up with bit and runs the app, check that its Aspire containers are reused from one run to the next and stopped once it sits idle, on Windows and inside the dev container, and check that bit diff compares two bit Boilerplate versions. It first asks which of these to do and how. Use when asked to test the platform or to start the e2e tests, or when handed an All CI and/or All CD run link.
+description: Test one build of bitplatform end to end on the demo host - fix what its All CI run failed on, start an All CD run at a new APP_VERSION when asked to, roll its web, Android and Windows apps out to APP_VERSION, run the Boilerplate E2E suite against the deployed demos, check that bitplatform.dev/mcp answers each release from that release's own code, check that a new bit Boilerplate project's dev container sets itself up with bit and runs the app, check that its Aspire containers are reused from one run to the next and stopped once it sits idle, on Windows and inside the dev container, check that bit diff compares two bit Boilerplate versions, and check that AI agents follow a new project's AGENTS.md and skills. It first asks which of these to do and how. Use when asked to test the platform or to start the e2e tests, or when handed an All CI and/or All CD run link.
 ---
 
 # Test the platform
@@ -58,8 +58,10 @@ answer, and repeat the plan back before starting:
    checkout of that branch, pulled first: the helper takes the suite, its stages and the CD workflows from the
    checkout it runs in.
 2. **The tests**: any of the CI run (step 1), the CD rollout and its versions check (step 2), the E2E suite (step 3,
-   every stage or some), bitplatform.dev/mcp (step 4), the dev container (step 5), the Aspire containers (step 6)
-   and `bit diff` (step 7).
+   every stage or some), bitplatform.dev/mcp (step 4), the dev container (step 5), the Aspire containers (step 6),
+   `bit diff` (step 7) and the agent instructions (step 8: every scenario or some, with which models, and whether
+   `-Long`; it draws on the usage limits of this machine's Claude Code login, about 40 minutes per model and as much
+   again with `-Long`).
 3. **The Bit packages**: nuget.org's, or the build of a Prerelease nuget packages run (`prerelease_packages`). The
    latter needs a successful prerelease run on the branch under test first. It publishes the branch's version to
    nuget.org only when nuget.org doesn't have it yet, so at a version that is already there it builds packages and
@@ -69,7 +71,7 @@ answer, and repeat the plan back before starting:
    or none, which tests what is deployed now. Say which branch and `APP_VERSION` that is, from the last All CD run
    (`gh run list -R bitfoundation/bitplatform -w all.cd.yml -L 1`): it is often another branch than the one under test.
 6. **`APP_VERSION`**, for a new CD run: raise it, and to which version, or keep it.
-7. **Steps 5, 6 and 7**: from the commit under test (`-Sha`) or from nuget.org. With `-Sha` the other Bit packages still
+7. **Steps 5 to 8**: from the commit under test (`-Sha`) or from nuget.org. With `-Sha` the other Bit packages still
    come from nuget.org at the template's version; when nuget.org's build of that version is older than the commit's
    libraries, `-PrereleasePackages` takes them from the newest Prerelease nuget packages run instead.
 
@@ -80,10 +82,12 @@ until the report. Then go in this order:
    `gh workflow run prerelease.nuget.org.yml -R bitfoundation/bitplatform --ref <branch>`. Wait for it to succeed
    (`gh run watch <run-id> -R bitfoundation/bitplatform --exit-status`) before anything that takes its packages.
 2. `APP_VERSION`, then All CI and All CD together, both with the chosen `prerelease_packages`. All CI's inputs name
-   its jobs and all default to on; `-f <job>=false` leaves one out.
+   its jobs and default to on, except `e2e` (the E2E suites), which is off; `-f <job>=false` leaves one out and
+   `-f e2e=true` adds the E2E suites.
 3. While they run: step 1 as CI jobs fail.
 4. Once CD is done: step 2, then steps 3 and 4, with step 6 in the background next to the web stages of step 3.
-   Step 7 needs no CD and is light: do it while CI and CD run.
+   Step 7 needs no CD and is light: do it while CI and CD run. Step 8 needs no CD either: start it in the background
+   while they run, never next to step 5 or the Android stage.
 5. Step 5 last, on its own.
 
 Every CD job builds with `-p:Version=$APP_VERSION`, so a complete rollout shows that version everywhere: as
@@ -105,9 +109,10 @@ websites - is checked. Every command prints what it checked and exits non-zero o
 | `android -CdRun <id or url>` | Downloads the run's APKs, boots the emulator when no device is up, installs them and checks their versions. |
 | `windows [-Force]` | Opens each Windows app that is behind and taps its version, which updates it and restarts it. |
 | `e2e [-Stage <stages>] [-Filter <filter>] [-PrereleasePackages]` | Signs the global admin in once, then runs the E2E suite stage by stage like `RunTests.bat` - skipping the mac's stages when its Playwright server is down or on another version - keeping each stage's log and TRX. With `-PrereleasePackages`, it builds the suite with the Bit packages of the newest Prerelease nuget packages run. |
-| `mcp [-McpVersion <x.y.z>] [-Tool <name> -Arguments <json>]` | One `tools/list` or `tools/call` on `https://bitplatform.dev/mcp`. |
+| `mcp [-McpVersion <x.y.z>] [-Tool <name> -Arguments <json>] [-AllLibraries]` | One `tools/list` or `tools/call` on `https://bitplatform.dev/mcp`. `-AllLibraries` lists every bit library's tools, as the website's chat does; without it BlazorUI's and Butil's are the only library tools listed. |
 | `devcontainer [-Sha <sha> [-PrereleasePackages]] [-Keep]` | Creates a project with `bit new`, brings its dev container up with the devcontainers CLI and runs `bit doctor` in it, with bit and the template from that commit or from nuget.org. Then removes the container, its volumes and its image, and keeps the logs. |
 | `aspire [-Sha <sha> [-PrereleasePackages]] [-Keep]` | Creates a project with `bit new` the same way and runs its Aspire app host three times with `dotnet run`: the second run must reuse the first one's containers, they must stop once the app host has sat idle for its idle time, and the third run must bring them back on the same volumes. Then removes the project, its containers and their volumes, and keeps the logs. |
+| `agents [-Sha <sha> [-PrereleasePackages]] [-Scenario <ids>] [-Model <models>] [-Long] [-Keep]` | Creates a project with `bit new` as users get it and hands each scenario of `agent-scenarios.json` to a headless Claude Code that sees nothing but a copy of that project, then checks which skills it read, which tools it called and which files it changed after each turn. Keeps the transcripts and final messages. |
 
 ## 1. The CI run
 
@@ -376,16 +381,18 @@ versions.
 ## 4. bitplatform.dev/mcp
 
 The platform website serves one set of tools per release tag `v-X.Y.Z` at or above `Mcp:MinimumVersion`, each from
-that tag's own worktree, source index and documentation servers. Prerelease tags are never served, and a `?v=` it
+that tag's own worktree, source index and BlazorUI and Butil documentation servers. Every other library's tools come
+from its deployed site, `https://<name>.bitplatform.dev/mcp`, whichever tag was asked for. Prerelease tags are never served, and a `?v=` it
 does not serve silently gets the newest one it does.
 
 1. **What it should serve.** The plain `v-X.Y.Z` tags of
    `git ls-remote --tags https://github.com/bitfoundation/bitplatform.git 'v-*'`. Check that the newest
    `feat(release): v-X.Y.Z` commit on `develop` has its tag: an untagged release is answered by the previous one,
    without a word.
-2. **What it does serve.** `mcp -McpVersion X.Y.Z` for each. The library tools (`Search*`, `Get*` and `Inspect*` of BlazorUI,
-   Brouter, Butil, Bswup, Bmotion and - from the first release that ships them - Bink, Balette, BbScanner, Bdnd, BlazeDb, Blow, Borm, Bcrdt, Bonboarding, Bortable, Blex, Bmage and Bsqlite) and the source tools (`FindBitPlatformSymbols`, `GetBitPlatformSymbolSource`,
-   `SearchBitPlatformCode`) must all be there. Only the five shared ones (`AskGitHubRepository`,
+2. **What it does serve.** `mcp -McpVersion X.Y.Z -AllLibraries` for each, and once without `-AllLibraries`, whose
+   library tools must be BlazorUI's and Butil's alone. The library tools (`Search*`, `Get*` and `Inspect*` of BlazorUI,
+   Butil, Brouter, Bswup, Bmotion, Bink, Balette, BbScanner, Bdnd, BlazeDb, Blow, Borm, Bcrdt, Bonboarding, Bortable, Blex, Bmage, Bsqlite and Belemetry) and the source tools (`FindBitPlatformSymbols`, `GetBitPlatformSymbolSource`,
+   `SearchBitPlatformCode`) must all be there. Without `-AllLibraries`, only the five shared ones (`AskGitHubRepository`,
    `SendBitPlatformFeedback`, `microsoft_docs_*`) means no release is served at all, and the README's
    *PlatformWebsite's MCP* section says why that happens. The server version it reports is the website's own build,
    which must be `APP_VERSION`.
@@ -397,14 +404,14 @@ does not serve silently gets the newest one it does.
 
    `BitAccordion.Busy` came in 10.6.1, so
    `mcp -McpVersion 10.6.1 -Tool GetBitBlazorUIComponent -Arguments '{"name":"BitAccordion"}'` lists `Busy` and the
-   same call on 10.6.0 does not. Pick a new difference for each new pair of releases; the other libraries work the
-   same way (`src/Butil/Bit.Butil/Publics`, ...). The `source:` link of the same answer points at that release's
+   same call on 10.6.0 does not. Pick a new difference for each new pair of releases; Butil works the same way
+   (`src/Butil/Bit.Butil/Publics`). The other libraries answer from their deployed site, the same for every tag. The `source:` link of the same answer points at that release's
    code too - its tag (`blob/v-10.6.1/...`), never `develop`.
 4. **The answers are good.** Put one real task to each library's `Search` tool, worded the way a developer would
    describe it - BlazorUI "a dropdown the user can also type into", Butil "copy text to the clipboard", Bmotion "fade
    a list item in", Brouter "a route parameter that must be a number", Bswup "show the download progress of the app's
    update", Bink "a signature pad that exports a PNG", Balette "a command that asks for a name before it runs", BbScanner "scan a QR code from an uploaded photo", Bdnd "reorder a list by dragging its items", BlazeDb "a todo list that survives a page reload", Blow "a flow chart that lays itself out left to right", Borm "a field that only shows when a checkbox is ticked", Bcrdt "a text field two people can edit at once without losing either's words", Bonboarding "a step that waits for a panel that loads later", Bortable "a kanban board whose cards move between columns", Blex "a counter whose value survives a page reload", Bmage "shrink an uploaded photo under 200 KB without its location", Bsqlite "keep the database when OPFS is not available" - follow up with the `Get` tool it points to, and ask `SearchBitPlatformCode` about the Boilerplate. An
-   answer must be on topic, specific and true to the version asked for; one that answers wrongly is a failure too.
+   answer must be on topic, specific and true to the version asked for (for BlazorUI and Butil) or to the newest build (for the rest); one that answers wrongly is a failure too.
 
 Like an E2E failure, an MCP problem is fixed in `src/Websites/Platform` or in the library's own MCP server, and goes
 away only after the next CD.
@@ -513,7 +520,47 @@ for it, so check it by hand, with bit and the template of the commit under test,
 
 A failure is fixed in bit like a CI failure.
 
-## 8. Report
+## 8. bit Boilerplate's agent instructions
+
+A new project's `AGENTS.md`, its skills in `.github/agents/` and its `specs/` folder decide what an AI agent does with
+a request. `agents` checks that the way a user meets them, with an agent that knows nothing but that project:
+
+- It creates a project with `bit new` as users get it - git with `develop` and `main`, the formatted code and the
+  initial migration - without Aspire, and gives each scenario of `agent-scenarios.json` a copy of its own, since an
+  agent's memory is kept per folder. A scenario is a request in a user's words, the fixture it starts from (a planted
+  bug, a branch to review, a plan left half done), the replies of a scripted user, and its checks. The scripted
+  replies give only facts or "Looks good, go ahead", never a hint about the process, and the checks are fixed before
+  a run: never adjust one to a result.
+- The agent is Claude Code in print mode with only the project's own settings, MCP servers and memory, so nothing of
+  this machine's own Claude setup reaches it, in auto permission mode with Aspire and `git push` denied, and a budget
+  per turn. Nothing tells it that it is being tested. Its memory already holds the user's role, as a returning user's
+  does, except in `trivial-edit`, which watches the role question of AGENTS.md section 6.
+- `design-chat` then hands its folder to a new session with no memory of the first, which has to pick the product
+  decisions up from `specs/`, as the team's other tools and the next session would.
+- The checks are mechanical: the skills it read, the tools it called (a `ToolSearch` that only loads a tool doesn't
+  count), the files changed after each turn, words in its final message. They say whether it followed the
+  instructions, not how good its work is: for that, read each scenario's final messages and changed files in
+  `results` against its request. A check that fails once and passes on the next run or with the other model is
+  variance; one that fails twice is a finding.
+- `-Model sonnet,opus` runs every scenario with both, and their habits differ: Sonnet tends to write the plan before
+  its questions are answered, Opus asks first. `-Long` also lets `crud-feature` build the whole feature after the
+  approval, which takes up to an hour. The two baselines run only when named: the same requests in the same project
+  with every agent instruction removed, to show what the instructions add.
+- The Bit packages are as for `devcontainer`. A library packed on this machine is not a stand-in for a prerelease:
+  `Bit.BlazorES2019` gets its scripts from building aspnetcore in the prerelease workflow, and a local pack has none,
+  so every page renders blank.
+- The agents run on this machine's Claude Code login, not on an API key, so they draw on that account's usage limits.
+  The budget per turn is Claude Code's estimate at API prices and only caps the turn: report the runs by count and
+  time, not in dollars. Every scenario once with one model takes about 40 minutes, three at a time but only one that
+  builds, tests or runs the app, and half of its usage is `resume` reaching its budget. `-Long` adds about as much again. A turn that runs out of budget
+  leaves its builds, test runs or app behind; the helper stops every process started from the scenario's folder
+  after each turn, and afterwards removes the folders and the agents' memory unless `-Keep` is given.
+
+A failure is fixed in the template's agent files - `AGENTS.md`, `.github/agents/` and the bridges in `.claude/skills/`,
+`.agents/skills/` and `.gemini/commands/` - and the next `agents -Sha` on the fix shows whether it worked. Keep the
+scenario as it is while fixing, so the two runs compare.
+
+## 9. Report
 
 Lead with the verdict, then:
 
@@ -529,7 +576,10 @@ Lead with the verdict, then:
    reused every container, how long after the last run they stopped, and per failure its cause and fix.
 7. **bit diff**: the versions compared, the size of the change, whether `bit.json`'s values were read, any
    difference that is neither an upgrade nor random per run, and per failure its cause and fix.
-8. **Waiting for a CD**: every fix that only the next CD can prove, and for a library fix whether it can be tried
+8. **Agent instructions**: the commit or the nuget.org version tested, per scenario and model the checks passed and
+   failed, its time, what its final messages and changes show beyond the checks, and per failure whether it
+   is the instructions' fault (quote the line) or the agent's.
+9. **Waiting for a CD**: every fix that only the next CD can prove, and for a library fix whether it can be tried
    through `prerelease_packages` before its release.
 
 Anything that looks like a defect in a bit platform library or in the `bit-bp` template itself: say so, and offer to

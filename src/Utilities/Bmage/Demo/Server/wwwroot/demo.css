@@ -403,6 +403,16 @@ svg.icon {
     font-variant-numeric: tabular-nums;
 }
 
+/* A sampled colour shown beside the sentence that names it: a dot rather than a labelled pill. */
+.demo-swatch.retouch-swatch {
+    min-height: 0;
+    width: .875rem;
+    height: .875rem;
+    padding: 0;
+    margin-inline-end: .375rem;
+    vertical-align: -.125rem;
+}
+
 .demo-small {
     font-size: var(--fl-font-size-200);
     line-height: 1.5;
@@ -422,6 +432,14 @@ svg.icon {
     clip: rect(0 0 0 0);
     clip-path: inset(50%);
     white-space: nowrap;
+}
+
+/* A table's scrolling box has to be the containing block of the visually hidden text in it - the
+   upload table's "Actions" column header. Positioned against the page instead, that text sits past
+   the box's edge where its overflow cannot clip it, and a phone's page scrolls sideways by as much
+   as the table overflows. */
+.bb-scroll {
+    position: relative;
 }
 
 /* Shown next to a result while it is being recomputed, so a slow run never looks like a frozen
@@ -622,6 +640,8 @@ div.preview-image[aria-busy="true"] {
 
 .headless-description {
     margin: .5rem 0 .25rem;
+    /* The placeholder's description quotes its token, one long word that must wrap inside the card. */
+    overflow-wrap: anywhere;
 }
 
 /* Pipelines: the playground's readouts. */
@@ -636,6 +656,12 @@ div.preview-image[aria-busy="true"] {
 
 .playground-stats {
     margin-top: 1rem;
+}
+
+/* Layers and masks: the document as JSON grows with every choice, so it scrolls rather than pushing the page. */
+.layers-json {
+    max-height: 18rem;
+    overflow-y: auto;
 }
 
 /* Getting started: the snippet's output beside its numbers. */
@@ -884,4 +910,25 @@ textarea.mcp-input {
     color: var(--bb-text-muted);
     font-size: var(--fl-font-size-200);
     line-height: 1.55;
+}
+
+/* A file input as a button: the native input covers the label, transparent, so it keeps its keyboard and screen
+   reader behaviour, and the label shows its focus. */
+.demo-file-button {
+    position: relative;
+    overflow: hidden;
+}
+
+.demo-file-input {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    cursor: pointer;
+}
+
+.demo-file-button:focus-within {
+    outline: 2px solid currentColor;
+    outline-offset: 2px;
 }

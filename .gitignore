@@ -36,7 +36,7 @@ bld/
 *.VisualState.xml
 TestResult.xml
 
-# BenchmarkDotNet results (written next to wherever `dotnet run` was started)
+# BenchmarkDotNet results, written wherever a benchmark is run from
 BenchmarkDotNet.Artifacts/
 
 # Build Results of an ATL Project

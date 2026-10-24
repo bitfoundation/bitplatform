@@ -158,8 +158,24 @@ The rule is simple: you own what you are returned from `LoadAsync`, `ExecuteAsyn
 ## Text renders as blank boxes, or not at all
 
 Using `FontTextRasterizer` with no font registered throws a clear exception. Using it with a CFF (PostScript) OpenType
-font also throws, because only `glyf` outlines are supported. Either register a TrueType font, or use
-`BrowserTextRasterizer` in a browser, which uses the platform's own text engine and needs no font file.
+font also throws, because only `glyf` outlines are supported. Either register a TrueType font, or, for text you draw
+yourself, use `BrowserTextRasterizer` in a browser, which uses the platform's own text engine and needs no font file.
+
+`BmageEditor` draws text and step numbers as outlines, so its text tools need a TrueType font registered with the
+`FontTextRasterizer` the services provide (or one passed as its `TextRasterizer`); until then it says so when the Text
+tool is used, and step markers have no number. Fetching the font in the background is fine: text appears from the
+next render once it is registered. The demo site does exactly that:
+
+```csharp
+// fonts: the FontTextRasterizer from dependency injection. The first family is what "sans-serif" means; a character it
+// lacks, such as every Persian letter, comes from the next family that has it.
+fonts.Register("Noto Sans", FontFile.Load(await http.GetByteArrayAsync("fonts/NotoSans-Regular.ttf")))
+     .Register("Vazirmatn", FontFile.Load(await http.GetByteArrayAsync("fonts/Vazirmatn-Regular.ttf")));
+await editor.RefreshAsync();   // redraws text added before the fonts arrived
+```
+
+Boxes in place of letters mean no registered font has those characters: Persian or Arabic text needs a font with
+Arabic letters (Vazirmatn, Noto Sans Arabic), registered beside the Latin one.
 
 ## Annotations move when I crop
 

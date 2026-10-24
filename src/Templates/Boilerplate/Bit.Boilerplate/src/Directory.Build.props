@@ -42,6 +42,7 @@
         <StaticWebAssetsFingerprintContent>false</StaticWebAssetsFingerprintContent>
         <StaticWebAssetFingerprintingEnabled>false</StaticWebAssetFingerprintingEnabled>
         <DefaultItemExcludes>$(DefaultItemExcludes);**/App_Data/**</DefaultItemExcludes>
+        <DefaultItemExcludes Condition=" '$(InvariantGlobalization)' == 'true' ">$(DefaultItemExcludes);**/*.*.resx</DefaultItemExcludes>
 
         <!-- Publish only the bit-butil.js modules and the bit BlazorUI scripts, styles and icons the app uses. -->
         <BitButilTrimScripts>true</BitButilTrimScripts>

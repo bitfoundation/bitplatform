@@ -1,0 +1,91 @@
+﻿@page "/engine"
+
+<PageTitle>Engine · Bmage samples</PageTitle>
+
+<h1>Engine</h1>
+
+<p>
+    The managed engine needs no browser. This scene is drawn with <code>ImageCanvas</code>, run through an
+    <code>ImagePipeline</code> and encoded to PNG by an <code>ImageProcessor</code> built on the managed codecs, all in
+    <code>OnInitializedAsync</code>. While prerendering that happens on the server and the PNG is already in the
+    served HTML; once interactive it happens again wherever the component runs.
+</p>
+
+<div class="row">
+    @foreach (var look in Looks)
+    {
+        <button type="button" class="btn" aria-pressed="@(_result?.Look == look.Name ? "true" : "false")"
+                disabled="@(_busy || RendererInfo.IsInteractive is false)" @onclick="() => RenderAsync(look)">
+            @look.Name
+        </button>
+    }
+</div>
+
+@if (_error is not null)
+{
+    <p class="card error" role="alert">@_error</p>
+}
+
+@if (_result is not null)
+{
+    <figure class="card">
+        <img id="engine-output" src="@_result.DataUrl" width="@_result.Width" height="@_result.Height" alt="The sample scene, @_result.Look.ToLowerInvariant()" />
+        <figcaption id="engine-caption">
+            @_result.Look: @_result.Width × @_result.Height PNG, @_result.Length.ToString("N0") bytes,
+            encoded on <strong>@_result.RanOn</strong> in @_result.Elapsed.TotalMilliseconds.ToString("0") ms.
+        </figcaption>
+    </figure>
+}
+
+@code {
+    private sealed record Look(string Name, ImagePipeline Pipeline);
+
+    private sealed record Result(string Look, string DataUrl, int Width, int Height, long Length, string RanOn, TimeSpan Elapsed);
+
+    private static readonly Look[] Looks =
+    [
+        new("Original", ImagePipeline.Create().MaxSize(360, 360)),
+        new("Grayscale", ImagePipeline.Create().MaxSize(360, 360).Grayscale()),
+        new("Sepia", ImagePipeline.Create().MaxSize(360, 360).Sepia()),
+        new("Duotone", ImagePipeline.Create().MaxSize(360, 360).Duotone(new Rgba32(24, 32, 88), new Rgba32(250, 214, 140))),
+        new("Vignette", ImagePipeline.Create().MaxSize(360, 360).Vignette(0.6f)),
+    ];
+
+    // The managed codecs only: the same PNG encoder runs on the server and in the browser.
+    private readonly ImageProcessor _processor = new();
+
+    private Result? _result;
+    private string? _error;
+    private bool _busy;
+
+    private string RanOn => OperatingSystem.IsBrowser() ? "WebAssembly, in this browser"
+        : RendererInfo.Name == "WebView" ? "the device, in the app's own process"
+        : "the server";
+
+    protected override Task OnInitializedAsync() => RenderAsync(Looks[0]);
+
+    private async Task RenderAsync(Look look)
+    {
+        _busy = true;
+        _error = null;
+
+        try
+        {
+            var started = Stopwatch.GetTimestamp();
+
+            using var scene = SampleScene.Draw(720, 480);
+            using var processed = await look.Pipeline.ExecuteAsync(scene);
+            var encoded = await _processor.EncodeAsync(processed, ImageExportOptions.Png);
+
+            _result = new(look.Name, encoded.ToDataUrl(), encoded.Width, encoded.Height, encoded.Length, RanOn, Stopwatch.GetElapsedTime(started));
+        }
+        catch (Exception ex)
+        {
+            _error = $"{look.Name} failed: {ex.Message}";
+        }
+        finally
+        {
+            _busy = false;
+        }
+    }
+}

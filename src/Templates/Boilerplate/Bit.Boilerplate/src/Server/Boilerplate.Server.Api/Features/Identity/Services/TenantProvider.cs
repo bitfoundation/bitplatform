@@ -71,8 +71,8 @@ public partial class TenantProvider
     {
         return fusionCache.GetOrSet(TENANTS_CACHE_KEY, _ =>
         {
-            using var dbContext = dbContextFactory.CreateDbContext();
 #pragma warning disable NonAsyncEFCoreMethodsUsageAnalyzer
+            using var dbContext = dbContextFactory.CreateDbContext();
             // Inactive tenants are excluded, so their sub domains / custom domains no longer serve their data to anonymous requests.
             var tenants = dbContext.Tenants.Where(t => t.IsActive).Select(t => new { t.Id, t.Name, t.Domain }).ToArray();
 #pragma warning restore NonAsyncEFCoreMethodsUsageAnalyzer

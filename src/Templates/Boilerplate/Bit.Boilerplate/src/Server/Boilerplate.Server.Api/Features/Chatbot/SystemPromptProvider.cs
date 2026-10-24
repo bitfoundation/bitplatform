@@ -54,7 +54,9 @@ public static partial class SystemPromptProvider
         var result = cache.GetOrSet(
             cacheKey, _ =>
             {
+#pragma warning disable NonAsyncEFCoreMethodsUsageAnalyzer
                 var prompt = dbContext.SystemPrompts.FirstOrDefault(p => p.PromptKind == promptKind);
+#pragma warning restore NonAsyncEFCoreMethodsUsageAnalyzer
                 return prompt?.Markdown ?? throw new ResourceNotFoundException().WithData("Reason", $"System prompt for '{promptKind}' not found.");
             },
             options => options.SetDuration(TimeSpan.FromHours(1)).SetPriority(CacheItemPriority.High));

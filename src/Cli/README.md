@@ -252,7 +252,7 @@ In a pipeline:
 
 ## bit decode
 
-Reads a stack trace of an app minified by [Bit.Minifier](https://github.com/bitfoundation/bitplatform/tree/develop/src/Minifier) back into the names its source has:
+Reads a stack trace of an app minified by [Bit.Minifier](https://github.com/bitfoundation/bitplatform/tree/develop/src/Cli/Minifier) back into the names its source has:
 
 ```bash
 bit decode bit-minifier.map trace.txt
@@ -260,6 +260,8 @@ bit decode < trace.txt
 ```
 
 Without a map, the newest `obj/**/bit-minifier.map` under the current folder is used. Without a trace file, the trace is read from standard input.
+
+The map's first line names the Bit.Minifier that wrote it, and `bit decode` runs that version from the NuGet cache, restoring it first when it isn't there, so a map is always read the way it was written.
 
 ## Staying up to date
 

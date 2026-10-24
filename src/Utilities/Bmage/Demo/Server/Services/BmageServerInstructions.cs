@@ -27,11 +27,12 @@ public static class BmageServerInstructions
         ?? "unknown").Split('+')[0];
 
     public static readonly string Text = $"""
-        Bit.Bmage is image processing for Blazor, written in C#: load, crop, resize, adjust, filter, draw, annotate,
-        redact and export images on the user's device, or headlessly on a server. One package, Bit.Bmage: the engine
-        (pixels, pipelines, managed PNG/JPEG/BMP/GIF codecs, metadata, drawing), the browser integration (ImageLoader,
-        ImageExporter, the browser's WebP/AVIF codecs, capability probing) and the BmageEditor component (namespace
-        Bit.Bmage.Editor.Components, styled by the opt-in _content/Bit.Bmage/bit-bmage-editor.css).
+        Bit.Bmage is image processing for Blazor, written in C#: load, crop, resize, adjust, filter, mask, layer, draw,
+        annotate, redact and export images on the user's device, or headlessly on a server. One package, Bit.Bmage:
+        the engine (pixels, pipelines, masks, layers, managed PNG/JPEG/BMP/GIF codecs, metadata, drawing, JSON edits),
+        the browser integration (ImageLoader, ImageExporter, the browser's WebP/AVIF codecs in Web Workers, capability
+        probing) and the BmageEditor component (namespace Bit.Bmage.Editor.Components, styled by the opt-in
+        _content/Bit.Bmage/bit-bmage-editor.css).
 
         Every answer here is read out of Bit.Bmage {BmageVersion} as loaded in this server - the XML documentation of the
         assembly, the README and docs/ guides, the demo's sources - or measured by running its engine. Where what
@@ -42,7 +43,8 @@ public static class BmageServerInstructions
         - Start with `SearchBmage` unless you already know the type, guide or recipe you want; every hit names the exact
           follow-up call. `GetBmageRecipe` has complete, correct code for the common features (thumbnail, upload
           optimisation, avatar crop with a size budget, stripping GPS, screenshot annotation and redaction, batch
-          processing, editor customisation, server-side processing).
+          processing, editor customisation, server-side processing, masked edits, layers and blend modes, saving an edit
+          as JSON to replay on a server, and batches in bounded memory).
         - Call `GetBmageSetupGuide` before writing any wiring. Browser apps register `AddBitBmageServices` - in BOTH
           containers of a Blazor Web App, because prerendering instantiates components on the server. Servers, console
           apps and workers register `AddBitBmageHeadlessServices` instead; it registers `ImageProcessor` and none of the

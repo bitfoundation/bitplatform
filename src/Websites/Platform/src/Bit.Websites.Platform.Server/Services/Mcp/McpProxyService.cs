@@ -12,7 +12,8 @@ namespace Bit.Websites.Platform.Server.Services.Mcp;
 /// <summary>
 /// Backs this site's /mcp endpoint by fanning it out to the MCP servers below: the documentation servers
 /// of the bit platform libraries plus the third party ones the team relies on. A single connection to
-/// bitplatform.dev/mcp therefore exposes the tools of all of them at once. An upstream is either an http
+/// bitplatform.dev/mcp therefore exposes the tools of all of them at once, though of the bit libraries only BlazorUI's
+/// and Butil's unless it asks for every library. An upstream is either an http
 /// server - deployed, or one <see cref="McpVersionsService"/> runs on loopback for a released version -
 /// or a local stdio process this site spawns and keeps alive. An upstream may be narrowed down to a subset
 /// of its tools, and such a tool is then exposed under a name and a description written here.
@@ -45,14 +46,14 @@ public partial class McpProxyService : IAsyncDisposable
         - keycloak/keycloak: Keycloak and realm configuration.
         - microsoft/agent-framework: agent creation, multi agent orchestration, workflows, tools and function calling, MCP, A2A communication, memory and context, and provider integrations.
         Do not ask it about the bit platform libraries themselves: BlazorUI, Bmotion, Bink, Balette, BbScanner, Bdnd, BlazeDb, Blow, Borm, Bcrdt, Bonboarding, Bortable, Blex, Bmage, Bsqlite, Butil, Bswup, Brouter and Belemetry each have
-        their own dedicated tools on this server, and those are written from the library rather than inferred from it.
+        their own dedicated tools, BlazorUI's and Butil's on this server and every other library's on its own server at https://<name>.bitplatform.dev/mcp, and those are written from the library rather than inferred from it.
         """;
 
     /// <summary>
     /// Ends the description of every CodebaseMemory tool: an agent may also have a codebase-memory server of its
     /// own, which answers about its own project.
     /// </summary>
-    private const string bitPlatformSourceScope = "It reads the source code of the bitfoundation/bitplatform GitHub repository at the release this connection asked for (the v query of this endpoint, the newest release when it names none or one not served yet, as the server instructions say), never the caller's own workspace, not even a project created from a bit template. Of that repository it holds the bit Boilerplate project template, the bit platform websites, the build time projects and two bit libraries, Besql (src/Besql) and BlazorES2019 (src/BlazorES2019), but none of the other bit libraries: BlazorUI, Bmotion, Bink, Balette, BbScanner, Bdnd, BlazeDb, Blow, Borm, Bcrdt, Bonboarding, Bortable, Blex, Bmage, Bsqlite, Brouter, Butil, Bswup and Belemetry each answer for themselves through their own tools on this server, so a question about a component, a theme, an animation, a drawing canvas, a command palette, a barcode scanner, drag and drop, a browser database, a node-based editor, a schema-driven form, real-time collaboration, a sortable list, a product tour, state management, image processing, an EF Core database in the browser, routing, the service worker or telemetry goes to those rather than to a search here.";
+    private const string bitPlatformSourceScope = "It reads the source code of the bitfoundation/bitplatform GitHub repository at the release this connection asked for (the v query of this endpoint, the newest release when it names none or one not served yet, as the server instructions say), never the caller's own workspace, not even a project created from a bit template. Of that repository it holds the bit Boilerplate project template, the bit platform websites, the build time projects and two bit libraries, Besql (src/Besql) and BlazorES2019 (src/Toolings/BlazorES2019), but none of the other bit libraries: BlazorUI, Bmotion, Bink, Balette, BbScanner, Bdnd, BlazeDb, Blow, Borm, Bcrdt, Bonboarding, Bortable, Blex, Bmage, Bsqlite, Brouter, Butil, Bswup and Belemetry each answer for themselves through their own tools, BlazorUI's and Butil's on this server and every other library's on its own server at https://<name>.bitplatform.dev/mcp, so a question about a component, a theme, an animation, a drawing canvas, a command palette, a barcode scanner, drag and drop, a browser database, a node-based editor, a schema-driven form, real-time collaboration, a sortable list, a product tour, state management, image processing, an EF Core database in the browser, routing, the service worker or telemetry goes to those rather than to a search here.";
 
     /// <summary>
     /// Every tool of this upstream takes a project argument naming the index to answer from, a deployment
@@ -98,6 +99,12 @@ public partial class McpProxyService : IAsyncDisposable
         new("DeepWiki", new("https://mcp.deepwiki.com/mcp"), [new("ask_wiki_question", "AskGitHubRepository", askQuestionDescription)])
     ];
 
+    private readonly Upstream[] deployedLibraryUpstreams =
+    [
+        .. new[] { "Bmotion", "Bswup", "Brouter", "Bmage", "Bink", "Balette", "BbScanner", "Bdnd", "BlazeDb", "Blow", "Borm", "Bcrdt", "Bonboarding", "Bortable", "Blex", "Bsqlite", "Belemetry" }
+            .Select(library => new Upstream($"bit{library}", new($"https://{library.ToLowerInvariant()}.bitplatform.dev/mcp")))
+    ];
+
     /// <summary>
     /// The per release upstreams, keyed by release name - plus the empty key, for a caller who arrives before
     /// any release is ready. Each holds the session this site keeps open to that server.
@@ -116,8 +123,12 @@ public partial class McpProxyService : IAsyncDisposable
     /// </summary>
     private Upstream? codebaseMemoryUpstream;
 
-    public async ValueTask<IReadOnlyList<Tool>> ListTools(string? requestedVersion, CancellationToken cancellationToken)
-        => (await ToolsOf(versions.Resolve(requestedVersion), cancellationToken)).Tools;
+    public async ValueTask<IReadOnlyList<Tool>> ListTools(string? requestedVersion, bool everyLibrary, CancellationToken cancellationToken)
+    {
+        var toolSet = await ToolsOf(versions.Resolve(requestedVersion), cancellationToken);
+
+        return everyLibrary ? toolSet.Tools : toolSet.DefaultTools;
+    }
 
     /// <summary>
     /// Answers one tool call. <paramref name="requestServices"/> belongs to the request being served and is
@@ -208,15 +219,15 @@ public partial class McpProxyService : IAsyncDisposable
 
             // A release whose sites restarted comes back as a new record on new ports, so the sessions held
             // against the old ones are dropped. The shared ones, and the one stdio process, stay.
-            foreach (var stale in entry.Upstreams.Where(upstream => upstream.Url is not null && sharedUpstreams.Contains(upstream) is false))
+            foreach (var stale in entry.Upstreams.Where(upstream => upstream.Url is not null && sharedUpstreams.Contains(upstream) is false && deployedLibraryUpstreams.Contains(upstream) is false))
             {
                 _ = Disconnect(stale);
             }
 
             entry.Version = version;
             entry.Upstreams = version is null
-                ? sharedUpstreams
-                : [.. sharedUpstreams, .. version.DocumentationEndpoints.Select(site => new Upstream(site.Key, site.Value)), CodebaseMemoryUpstream()];
+                ? [.. sharedUpstreams, .. deployedLibraryUpstreams]
+                : [.. sharedUpstreams, .. deployedLibraryUpstreams, .. version.DocumentationEndpoints.Select(site => new Upstream(site.Key, site.Value)), CodebaseMemoryUpstream()];
 
             return entry.Upstreams;
         }
@@ -329,6 +340,7 @@ public partial class McpProxyService : IAsyncDisposable
 
             // This site's own tools lead the list; the upstreams fill in the rest behind it.
             List<Tool> mergedTools = [McpFeedbackTool.Definition, McpReleasesTool.Definition];
+            List<Tool> defaultTools = [.. mergedTools];
             Dictionary<string, Upstream> mergedUpstreamPerToolName = new(StringComparer.Ordinal);
 
             foreach (var (upstream, upstreamTools) in toolsPerUpstream)
@@ -345,10 +357,16 @@ public partial class McpProxyService : IAsyncDisposable
                     }
 
                     mergedTools.Add(tool);
+
+                    if (deployedLibraryUpstreams.Contains(upstream) is false)
+                    {
+                        defaultTools.Add(tool);
+                    }
                 }
             }
 
             toolSet.Tools = [.. mergedTools];
+            toolSet.DefaultTools = [.. defaultTools];
             toolSet.UpstreamPerToolName = mergedUpstreamPerToolName;
             toolSet.Generation = versions.Generation;
             toolSet.ExpiresAt = DateTimeOffset.UtcNow + (toolsPerUpstream.Any(t => t.tools is null) ? failedToolsCacheLifetime : toolsCacheLifetime);
@@ -506,7 +524,7 @@ public partial class McpProxyService : IAsyncDisposable
 
     public async ValueTask DisposeAsync()
     {
-        foreach (var upstream in sharedUpstreams.Concat(upstreamsPerVersion.Values.SelectMany(entry => entry.Upstreams)).Distinct())
+        foreach (var upstream in sharedUpstreams.Concat(deployedLibraryUpstreams).Concat(upstreamsPerVersion.Values.SelectMany(entry => entry.Upstreams)).Distinct())
         {
             await Disconnect(upstream);
         }
@@ -528,6 +546,8 @@ public partial class McpProxyService : IAsyncDisposable
     private sealed class ToolSet
     {
         public Tool[] Tools { get; set; } = [];
+
+        public Tool[] DefaultTools { get; set; } = [];
 
         public Dictionary<string, Upstream> UpstreamPerToolName { get; set; } = new(StringComparer.Ordinal);
 

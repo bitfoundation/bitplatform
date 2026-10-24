@@ -88,7 +88,7 @@
                             var closeIcon = BitIconInfo.From(CloseIcon, CloseIconName ?? "Cancel");
                             var closeTitle = CloseButtonTitle ?? DefaultCloseButtonTitle;
 
-                            var closeDisabled = Disabled || _isLoading;
+                            var closeDisabled = IsCloseButtonDisabled;
                             <button @ref="_closeButtonRef" @onclick="HandleOnCloseClick"
                                     style="@Styles?.CloseButton"
                                     class="bit-dlg-cls @Classes?.CloseButton"
@@ -127,7 +127,7 @@
                                waits: it is the element the focus is on when it is pressed, and a button
                                that turns disabled drops the focus onto the page behind the Dialog. The
                                click handler refuses a second press on its own. *@
-                            var okDisabled = Disabled || IsOkButtonEnabled is false;
+                            var okDisabled = IsOkButtonDisabled;
                             <button @ref="_okButtonRef" @onclick="HandleOnOkClick"
                                     type="button"
                                     disabled="@okDisabled"
@@ -152,7 +152,7 @@
                             @* Disabled while the Ok callback is running: a Cancel let through there would
                                answer a showing the Ok has already answered, and hand that second answer to
                                an awaiter while the first one is still doing its work. *@
-                            var cancelDisabled = Disabled || IsCancelButtonEnabled is false || _isLoading;
+                            var cancelDisabled = IsCancelButtonDisabled;
                             <button @ref="_cancelButtonRef" @onclick="HandleOnCancelClick"
                                     type="button"
                                     disabled="@cancelDisabled"

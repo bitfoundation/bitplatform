@@ -57,6 +57,18 @@ different lengths and corrupt its offsets, asserting only that nothing escapes.
 The GIF LZW decoder bounds its code table and dictionary explicitly, because the classic GIF attack is a stream that
 drives the decoder past the end of its tables.
 
+Project files (`BmageProject`) are ZIP archives, which brings the archive attacks with it. A project is read from
+memory, never extracted to disk, so path traversal cannot write anything; even so only the files the manifest names
+are read, and only names under `images/` made of letters, digits, `-` and `_`. The files in the archive's directory are
+counted before .NET opens it, which builds an object for each, and ZIP64 archives, which no project needs, are
+refused. Each file's unpacked size and the total are bounded by `BmageProjectOptions` and counted as the bytes unpack,
+because the sizes an archive declares are the attacker's to choose: a zip bomb stops at the budget, not at the end of
+the bomb. Only the images the document uses are decoded. Each is checked against `ImageLimits`, and all of them
+together against `MaxTotalPixels` (four times `ImageLimits.MaxPixels` unless set), before it is decoded: a PNG of one
+colour compresses to almost nothing, so a small file could otherwise ask for many large images. The document is
+validated as any JSON document is, anything malformed, a damaged archive included, is an
+`ImageDocumentFormatException`, and a project that fails to load returns every buffer it had decoded.
+
 ## SVG is refused
 
 ```csharp
@@ -98,6 +110,24 @@ defences are structural:
 - `ImageCapabilities.SuggestedMaxWorkingDimension` reports a device-appropriate cap based on reported memory.
 - `MaxCanvasDimension` is probed, because exceeding a browser's canvas limit silently produces a blank image.
 
+`ImageLimits` refuses absurd dimensions; a `BudgetedPixelAllocator` refuses absurd totals. Give each request on a server,
+or each editor session in a browser, its own budget, and an image that would need more than its share fails with
+`ImageMemoryBudgetExceededException` before anything is allocated, instead of taking memory from everyone else:
+
+```csharp
+var budget = new BudgetedPixelAllocator(256L * 1024 * 1024);
+var processor = new ImageProcessor(ImageCodecRegistry.CreateDefault(), budget, ImageLimits.Default);
+```
+
+The services take theirs from `BitBmageOptions`: the processors, the loader and every `BmageEditor` session allocate
+through `Allocator` and are bound by `Limits`. Those options are one instance for the application, which in a
+WebAssembly app means one browser tab, so `options.Allocator = new BudgetedPixelAllocator(...)` gives the tab's editor
+and loads one budget between them. On Blazor Server the same instance serves every circuit; give each its own session
+there instead, with an `ImageEditSession` built from `ImageEditSessionOptions { Allocator = ... }`.
+
+A batch can be admitted by memory too: with `BatchOptions.MaxMemoryBytes` an image only starts when its estimated need,
+read from its header before anything is decoded, fits beside the ones already running.
+
 ## Redaction
 
 The redaction annotation replaces the pixels underneath it. The hidden content is genuinely absent from the exported
@@ -129,15 +159,17 @@ thinking about it is safe rather than a location disclosure. See [metadata-and-p
 
 ## The JavaScript boundary
 
-One module, loaded from the library's own static web assets. It executes no caller-supplied code, builds no HTML from
-input, and does not use `eval` or `innerHTML`. Bytes cross as streams with a size cap
+One module, loaded from the library's own static web assets, and one codec worker beside it. Neither executes
+caller-supplied code, builds HTML from input, or uses `eval` or `innerHTML`. Bytes cross as streams with a size cap
 (`BrowserImageInterop.MaxStreamBytes`, 512 MB by default) so a hostile or buggy page cannot stream unbounded data into
 the .NET heap.
 
-The library adds no `<script>` tag to your page, and its module is served from your origin. Your Content Security Policy
-needs `blob:` in two places. In `img-src`, because an image that `createImageBitmap` can't decode, such as an SVG, is
-decoded through an `<img>` element with a `blob:` URL. In `connect-src`, when you hand the editor a `blob:` URL, such as
-the preview URL of a file the user picked, since the library fetches it.
+The library adds no `<script>` tag to your page, and its module and worker are served from your origin. Your Content
+Security Policy needs `blob:` in two places. In `img-src`, because an image that `createImageBitmap` can't decode, such
+as an SVG, is decoded through an `<img>` element with a `blob:` URL. In `connect-src`, when you hand the editor a `blob:`
+URL, such as the preview URL of a file the user picked, since the library fetches it. The codec worker needs
+`worker-src 'self'`, or a `script-src 'self'` it falls back to; where the policy blocks it, codec work simply stays on the
+page's thread.
 
 ## Server-side use
 

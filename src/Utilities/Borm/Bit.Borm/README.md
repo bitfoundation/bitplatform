@@ -69,8 +69,8 @@ builder.Services.AddBorm();
 
 ## For AI agents
 
-The demo site hosts an MCP server at `https://borm.bitplatform.dev/mcp` (also served through
-`https://bitplatform.dev/mcp`) that answers from the shipped library: its API, its guide, its theme properties and
+The demo site hosts an MCP server at `https://borm.bitplatform.dev/mcp`
+that answers from the shipped library: its API, its guide, its theme properties and
 the demo's working forms, and it can inspect a JSON Schema document you hand it.
 
 ## Documentation

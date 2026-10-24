@@ -183,7 +183,8 @@ public static class Resampler
         var (factorX, factorY) = GetPrescaleFactors(extentX, extentY, destinationRect.Size);
         if (factorX > 1 || factorY > 1)
         {
-            using var reduced = BoxReduce(source, sourceRect, factorX, factorY, context);
+            // The resample that follows reports the progress; the reduction is a step inside it.
+            using var reduced = BoxReduce(source, sourceRect, factorX, factorY, context.WithProgress(null));
             ResampleCore(reduced, reduced.Bounds, extentX / factorX, extentY / factorY, destination, destinationRect, filter, context);
             return;
         }
@@ -191,6 +192,24 @@ public static class Resampler
         var kx = BuildKernel(filter, sourceRect.X, sourceRect.Width, extentX, destinationRect.Width, lanes: true);
         var ky = BuildKernel(filter, sourceRect.Y, sourceRect.Height, extentY, destinationRect.Height, lanes: false);
 
+        try
+        {
+            // Every output row is computed from the source and the kernels alone, so the rows split into bands that run
+            // side by side, each with its own rows of scratch. The work per row is the taps of both passes.
+            var work = ((long)sourceRect.Width * ky.MaxTaps + (long)clip.Width * kx.MaxTaps) / 4;
+            ParallelRows.For(context, clip.Top, clip.Bottom, work, (start, end, band) =>
+                ResampleRows(source, sourceRect, destination, destinationRect, clip, kx, ky, start, end, band));
+            context.ReportProgress(1);
+        }
+        finally
+        {
+            ArrayPool<Vector4>.Shared.Return(kx.Lanes);
+        }
+    }
+
+    /// <summary>Resamples output rows <paramref name="start"/> to <paramref name="end"/> of the clip.</summary>
+    private static void ResampleRows(ImageBuffer source, Rectangle sourceRect, ImageBuffer destination, Rectangle destinationRect, Rectangle clip, Kernel kx, Kernel ky, int start, int end, OperationContext context)
+    {
         var srcW = sourceRect.Width;
         var pool = ArrayPool<Vector4>.Shared;
         var accum = pool.Rent(srcW);
@@ -203,9 +222,9 @@ public static class Resampler
         {
             var accumSpan = accum.AsSpan(0, srcW);
             var outSpan = outRow.AsSpan(0, destinationRect.Width);
-            for (var dy = clip.Top; dy < clip.Bottom; dy++)
+            for (var dy = start; dy < end; dy++)
             {
-                if ((dy & 15) == 0)
+                if (((dy - start) & 15) == 0)
                 {
                     context.ThrowIfCancellationRequested();
                     context.ReportProgress((dy - clip.Top) / (double)clip.Height);
@@ -240,14 +259,12 @@ public static class Resampler
                 // Un-premultiply and store.
                 PixelRows.StoreUnpremultiplied(outSpan.Slice(clip.Left - destinationRect.X, clip.Width), destination.GetRow(dy).Slice(clip.Left, clip.Width));
             }
-            context.ReportProgress(1);
         }
         finally
         {
             pool.Return(accum);
             pool.Return(outRow);
             foreach (var r in cacheRows) pool.Return(r);
-            pool.Return(kx.Lanes);
         }
     }
 
@@ -280,51 +297,58 @@ public static class Resampler
         var output = context.Allocate(width, height, clear: false);
         try
         {
-            // The whole image as one span, so each block reads its rows by offset: fetching a row span per output pixel
-            // and source row was most of the cost on WebAssembly's interpreter.
-            ReadOnlySpan<Rgba32> pixels = source.Pixels;
-            var stride = source.Width;
-            for (var y = 0; y < height; y++)
-            {
-                if ((y & 31) == 0) context.ThrowIfCancellationRequested();
-                var y0 = sourceRect.Y + y * factorY;
-                var y1 = Math.Min(y0 + factorY, sourceRect.Bottom);
-                var dst = output.GetRow(y);
-                for (var x = 0; x < width; x++)
-                {
-                    var x0 = sourceRect.X + x * factorX;
-                    var x1 = Math.Min(x0 + factorX, sourceRect.Right);
-                    long r = 0, g = 0, b = 0, a = 0;
-                    var count = 0;
-                    for (var sy = y0; sy < y1; sy++)
-                    {
-                        var row = pixels.Slice(sy * stride + x0, x1 - x0);
-                        for (var i = 0; i < row.Length; i++)
-                        {
-                            var p = row[i];
-                            // Premultiply so fully transparent pixels contribute no colour.
-                            r += p.R * p.A;
-                            g += p.G * p.A;
-                            b += p.B * p.A;
-                            a += p.A;
-                        }
-                        count += row.Length;
-                    }
-                    if (count == 0 || a == 0)
-                    {
-                        dst[x] = Rgba32.Transparent;
-                        continue;
-                    }
-                    var half = a / 2;
-                    dst[x] = new Rgba32((byte)((r + half) / a), (byte)((g + half) / a), (byte)((b + half) / a), (byte)((a + count / 2) / count));
-                }
-            }
+            // Each output row reads its own block of source rows, so bands of them run side by side.
+            ParallelRows.For(context, 0, height, (long)sourceRect.Width * factorY, (start, end, band) => BoxReduceRows(source, sourceRect, factorX, factorY, output, start, end, band));
             return output;
         }
         catch
         {
             output.Dispose();
             throw;
+        }
+    }
+
+    private static void BoxReduceRows(ImageBuffer source, Rectangle sourceRect, int factorX, int factorY, ImageBuffer output, int start, int end, OperationContext context)
+    {
+        var width = output.Width;
+        // The whole image as one span, so each block reads its rows by offset: fetching a row span per output pixel
+        // and source row was most of the cost on WebAssembly's interpreter.
+        ReadOnlySpan<Rgba32> pixels = source.Pixels;
+        var stride = source.Width;
+        for (var y = start; y < end; y++)
+        {
+            if (((y - start) & 31) == 0) context.ThrowIfCancellationRequested();
+            var y0 = sourceRect.Y + y * factorY;
+            var y1 = Math.Min(y0 + factorY, sourceRect.Bottom);
+            var dst = output.GetRow(y);
+            for (var x = 0; x < width; x++)
+            {
+                var x0 = sourceRect.X + x * factorX;
+                var x1 = Math.Min(x0 + factorX, sourceRect.Right);
+                long r = 0, g = 0, b = 0, a = 0;
+                var count = 0;
+                for (var sy = y0; sy < y1; sy++)
+                {
+                    var row = pixels.Slice(sy * stride + x0, x1 - x0);
+                    for (var i = 0; i < row.Length; i++)
+                    {
+                        var p = row[i];
+                        // Premultiply so fully transparent pixels contribute no colour.
+                        r += p.R * p.A;
+                        g += p.G * p.A;
+                        b += p.B * p.A;
+                        a += p.A;
+                    }
+                    count += row.Length;
+                }
+                if (count == 0 || a == 0)
+                {
+                    dst[x] = Rgba32.Transparent;
+                    continue;
+                }
+                var half = a / 2;
+                dst[x] = new Rgba32((byte)((r + half) / a), (byte)((g + half) / a), (byte)((b + half) / a), (byte)((a + count / 2) / count));
+            }
         }
     }
 
@@ -347,14 +371,18 @@ public static class Resampler
         var xmap = new int[clip.Width];
         for (var dx = 0; dx < clip.Width; dx++)
             xmap[dx] = Math.Clamp(sourceRect.X + (int)((dx + clip.Left - destinationRect.X + 0.5) * sx), sourceRect.Left, sourceRect.Right - 1);
-        for (var dy = clip.Top; dy < clip.Bottom; dy++)
+        // A copy per pixel is cheap, so a band needs four times the rows to be worth handing out.
+        ParallelRows.For(context, clip.Top, clip.Bottom, clip.Width / 4, (start, end, band) =>
         {
-            if ((dy & 63) == 0) context.ThrowIfCancellationRequested();
-            var srcY = Math.Clamp(sourceRect.Y + (int)((dy - destinationRect.Y + 0.5) * sy), sourceRect.Top, sourceRect.Bottom - 1);
-            var srcRow = source.GetRow(srcY);
-            var dst = destination.GetRow(dy);
-            for (var dx = 0; dx < clip.Width; dx++) dst[clip.Left + dx] = srcRow[xmap[dx]];
-        }
+            for (var dy = start; dy < end; dy++)
+            {
+                if (((dy - start) & 63) == 0) band.ThrowIfCancellationRequested();
+                var srcY = Math.Clamp(sourceRect.Y + (int)((dy - destinationRect.Y + 0.5) * sy), sourceRect.Top, sourceRect.Bottom - 1);
+                var srcRow = source.GetRow(srcY);
+                var dst = destination.GetRow(dy);
+                for (var dx = 0; dx < clip.Width; dx++) dst[clip.Left + dx] = srcRow[xmap[dx]];
+            }
+        });
         context.ReportProgress(1);
     }
 }

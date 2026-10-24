@@ -58,8 +58,8 @@ var result = decoder.Decode(rgbaPixels, width, height, BbPixelFormat.Rgba32);
 
 ## For AI agents
 
-The demo site hosts an MCP server at `https://bbscanner.bitplatform.dev/mcp` (also served through
-`https://bitplatform.dev/mcp`) that answers from the shipped library: its API, its guide, its symbologies, a decode
+The demo site hosts an MCP server at `https://bbscanner.bitplatform.dev/mcp`
+that answers from the shipped library: its API, its guide, its symbologies, a decode
 lab and the demo's working pages.
 
 ## Documentation
