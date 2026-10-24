@@ -1,6 +1,8 @@
 ﻿using System.Globalization;
 using System.Numerics;
+using System.Text;
 using Bit.Bmage.Drawing;
+using Bit.Bmage.Text.Unicode;
 
 namespace Bit.Bmage.Text;
 
@@ -9,14 +11,30 @@ namespace Bit.Bmage.Text;
 /// with no browser involvement. Register fonts by family name and let the style pick one.
 /// </summary>
 /// <remarks>
-/// Layout is left-to-right with kerning and optional word wrapping. Complex script shaping (Arabic joining, Indic
-/// reordering) and bidirectional reordering are not performed; for those, use the browser-backed rasteriser from the
-/// Blazor package, which delegates to the platform's text engine.
+/// <para>
+/// Text is shaped with each font's OpenType tables: Arabic and Persian letters take their joining forms and
+/// ligatures, contextual alternates, kerning and mark positioning apply, and mixed right-to-left and left-to-right
+/// text is ordered by the Unicode Bidirectional Algorithm. A character the style's font lacks is drawn with the first
+/// other registered font that has it, so registering a Latin font and an Arabic one covers text that mixes the two.
+/// </para>
+/// <para>
+/// Scripts that reorder or stack glyphs within a word (Indic, Southeast Asian) and cursive attachment (Nastaliq) are
+/// not shaped; for those, use the browser-backed rasteriser, which delegates to the platform's text engine.
+/// </para>
 /// </remarks>
 public sealed class FontTextRasterizer : ITextRasterizer
 {
     private readonly Dictionary<string, FontVariants> _families = new(StringComparer.OrdinalIgnoreCase);
+    // The families in the order they were registered: the order a character missing from the style's font is looked for.
+    private readonly List<FontVariants> _order = [];
     private FontFile? _fallback;
+    // The family registered first, which answers a style that names no registered family with its own bold or italic
+    // face - "sans-serif", the default, included. Null once SetFallback has chosen a single font.
+    private FontVariants? _fallbackFamily;
+    private readonly object _sync = new();
+    // Laid out text by its content and style: the editor draws the same labels on every frame of a drag.
+    private readonly Dictionary<LayoutKey, LayoutResult> _layouts = [];
+    private const int MaxCachedLayouts = 128;
 
     private sealed class FontVariants
     {
@@ -39,15 +57,30 @@ public sealed class FontTextRasterizer : ITextRasterizer
         }
     }
 
-    /// <summary>Registers a font under a family name. The first font registered also becomes the fallback.</summary>
+    /// <summary>
+    /// Registers a font under a family name. The first family registered also becomes the fallback, with each of its
+    /// faces: bold text in a family that is not registered is drawn with the fallback family's bold face. Characters
+    /// a style's font lacks are looked for in the other families, in the order they were registered.
+    /// </summary>
     public FontTextRasterizer Register(string familyName, FontFile font, bool bold = false, bool italic = false)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(familyName);
         ArgumentNullException.ThrowIfNull(font);
-        if (!_families.TryGetValue(familyName, out var variants))
-            _families[familyName] = variants = new FontVariants();
-        variants.Set(font, bold, italic);
-        _fallback ??= font;
+        lock (_sync)
+        {
+            if (!_families.TryGetValue(familyName, out var variants))
+            {
+                _families[familyName] = variants = new FontVariants();
+                _order.Add(variants);
+            }
+            variants.Set(font, bold, italic);
+            if (_fallback is null)
+            {
+                _fallback = font;
+                _fallbackFamily = variants;
+            }
+            _layouts.Clear();
+        }
         return this;
     }
 
@@ -58,10 +91,16 @@ public sealed class FontTextRasterizer : ITextRasterizer
         return Register(font.FamilyName ?? font.FullName ?? "default", font, bold, italic);
     }
 
-    /// <summary>Sets the font used when a requested family is not registered.</summary>
+    /// <summary>Sets the font used, whatever the weight or style, when a requested family is not registered.</summary>
     public FontTextRasterizer SetFallback(FontFile font)
     {
-        _fallback = font ?? throw new ArgumentNullException(nameof(font));
+        ArgumentNullException.ThrowIfNull(font);
+        lock (_sync)
+        {
+            _fallback = font;
+            _fallbackFamily = null;
+            _layouts.Clear();
+        }
         return this;
     }
 
@@ -83,7 +122,7 @@ public sealed class FontTextRasterizer : ITextRasterizer
             var family = name.Trim('\'', '"');
             if (_families.TryGetValue(family, out var variants) && variants.Get(style.Bold, style.Italic) is { } font) return font;
         }
-        return _fallback;
+        return _fallbackFamily?.Get(style.Bold, style.Italic) ?? _fallback;
     }
 
     /// <inheritdoc />
@@ -92,8 +131,7 @@ public sealed class FontTextRasterizer : ITextRasterizer
         ArgumentNullException.ThrowIfNull(style);
         var font = ResolveFont(style);
         if (font is null || string.IsNullOrEmpty(text)) return new TextMetrics(0, 0, 0, 0, 0);
-        var layout = Layout(text, style, font);
-        return layout.Metrics;
+        return GetLayout(text, style, font).Metrics;
     }
 
     /// <inheritdoc />
@@ -104,140 +142,179 @@ public sealed class FontTextRasterizer : ITextRasterizer
             ?? throw new ImageCapabilityException("No font is registered. Call Register with a TrueType font, or use a browser-backed text rasteriser.");
         if (string.IsNullOrEmpty(text)) return null;
 
-        var layout = Layout(text, style, font);
+        var layout = GetLayout(text, style, font);
         if (layout.Lines.Count == 0) return null;
-        var scale = style.FontSize / font.UnitsPerEm;
         var builder = new PathBuilder { FlatteningTolerance = 0.15f };
+        var metrics = layout.Metrics;
 
         var originY = origin.Y + style.Baseline switch
         {
-            TextBaseline.Top => font.Ascender * scale,
-            TextBaseline.Middle => (font.Ascender * scale) - layout.Metrics.Height / 2,
-            TextBaseline.Bottom => -(layout.Metrics.Height - font.Ascender * scale),
+            TextBaseline.Top => metrics.Ascent,
+            TextBaseline.Middle => metrics.Ascent - metrics.Height / 2,
+            TextBaseline.Bottom => -(metrics.Height - metrics.Ascent),
             _ => 0f,
         };
 
-        for (var i = 0; i < layout.Lines.Count; i++)
+        // Glyph outlines are cached by their font, which is not safe to share between threads.
+        lock (_sync)
         {
-            var line = layout.Lines[i];
-            var x = origin.X + style.Alignment switch
+            for (var i = 0; i < layout.Lines.Count; i++)
             {
-                TextAlignment.Center => -line.Width / 2,
-                TextAlignment.Right => -line.Width,
-                _ => 0f,
-            };
-            var y = originY + i * style.FontSize * style.LineHeight;
-            foreach (var g in line.Glyphs)
-            {
-                var outline = font.GetGlyphOutline(g.GlyphIndex);
-                outline?.AppendTo(builder, new Vector2(x + g.Offset, y), scale);
+                var line = layout.Lines[i];
+                var x = origin.X + style.Alignment switch
+                {
+                    TextAlignment.Center => -line.Width / 2,
+                    TextAlignment.Right => -line.Width,
+                    _ => 0f,
+                };
+                var y = originY + i * style.FontSize * style.LineHeight;
+                foreach (var g in line.Glyphs)
+                {
+                    var outline = g.Font.GetGlyphOutline(g.Glyph);
+                    outline?.AppendTo(builder, new Vector2(x + g.X, y + g.Y), style.FontSize / g.Font.UnitsPerEm);
+                }
             }
         }
         var path = builder.Build();
         return path.IsEmpty ? null : path;
     }
 
-    private readonly record struct PositionedGlyph(ushort GlyphIndex, float Offset);
+    private readonly record struct LayoutKey(string Text, string Family, bool Bold, bool Italic, float Size, float? MaxWidth, float LetterSpacing, float LineHeight);
 
-    private sealed class Line
+    private sealed record LayoutResult(List<ShapedLine> Lines, TextMetrics Metrics);
+
+    private LayoutResult GetLayout(string text, TextStyle style, FontFile font)
     {
-        public List<PositionedGlyph> Glyphs { get; } = [];
-        public float Width;
+        var key = new LayoutKey(text, style.FontFamily, style.Bold, style.Italic, style.FontSize, style.MaxWidth, style.LetterSpacing, style.LineHeight);
+        lock (_sync)
+        {
+            if (_layouts.TryGetValue(key, out var cached)) return cached;
+            var layout = Layout(text, style, FallbackChain(font, style));
+            if (_layouts.Count >= MaxCachedLayouts) _layouts.Clear();
+            _layouts[key] = layout;
+            return layout;
+        }
     }
 
-    private readonly record struct LayoutResult(List<Line> Lines, TextMetrics Metrics);
-
-    private static LayoutResult Layout(string text, TextStyle style, FontFile font)
+    /// <summary>The fonts to look for a character in: the style's own, then every registered family's matching face.</summary>
+    private List<FontFile> FallbackChain(FontFile primary, TextStyle style)
     {
-        var scale = style.FontSize / font.UnitsPerEm;
-        var lines = new List<Line>();
-        var maxWidth = style.MaxWidth;
+        var chain = new List<FontFile> { primary };
+        foreach (var family in _order)
+            if (family.Get(style.Bold, style.Italic) is { } face && !chain.Contains(face)) chain.Add(face);
+        if (_fallback is { } fallback && !chain.Contains(fallback)) chain.Add(fallback);
+        return chain;
+    }
 
-        foreach (var rawLine in SplitLines(text))
+    private static LayoutResult Layout(string text, TextStyle style, List<FontFile> fonts)
+    {
+        var lines = new List<ShapedLine>();
+        foreach (var paragraph in SplitLines(text))
         {
-            if (maxWidth is not { } limit || limit <= 0)
+            // Each line of the text is a paragraph of its own, with its own direction (rules P2 and P3).
+            var codePoints = TextShaper.CodePoints(paragraph);
+            var bidi = BidiParagraph.Create(codePoints);
+            ShapedLine Line(int start, int end) => TextShaper.LayoutLine(fonts, codePoints, bidi.GetLineLevels(start, end), start, end, style.FontSize, style.LetterSpacing);
+
+            if (style.MaxWidth is not { } limit || limit <= 0)
             {
-                lines.Add(BuildLine(rawLine, font, scale, style.LetterSpacing));
+                lines.Add(Line(0, codePoints.Length));
                 continue;
             }
-            // Greedy word wrapping; a single word longer than the limit is broken by character.
-            var current = string.Empty;
-            foreach (var word in SplitWords(rawLine))
-            {
-                var candidate = current + word;
-                if (current.Length == 0 || BuildLine(candidate.TrimEnd(), font, scale, style.LetterSpacing).Width <= limit)
-                {
-                    current = candidate;
-                }
-                else
-                {
-                    lines.Add(BuildLine(current.TrimEnd(), font, scale, style.LetterSpacing));
-                    current = word.TrimStart();
-                }
-
-                // Only a lone word can be too wide here, whether it started the text or was just wrapped: break it,
-                // keeping its trailing space so the next word is not glued to it.
-                var trimmed = current.TrimEnd();
-                if (trimmed.Length > 0 && BuildLine(trimmed, font, scale, style.LetterSpacing).Width > limit)
-                {
-                    var broken = BreakWord(trimmed, font, scale, style.LetterSpacing, limit);
-                    if (broken.Count == 0) continue;
-                    for (var i = 0; i < broken.Count - 1; i++) lines.Add(BuildLine(broken[i], font, scale, style.LetterSpacing));
-                    current = broken[^1] + current[trimmed.Length..];
-                }
-            }
-            lines.Add(BuildLine(current.TrimEnd(), font, scale, style.LetterSpacing));
+            // The paragraph is shaped once to measure the candidate lines, then each line on its own as it is drawn.
+            var advances = TextShaper.MeasureAdvances(fonts, codePoints, bidi.GetLineLevels(0, codePoints.Length), 0, codePoints.Length, style.FontSize, style.LetterSpacing);
+            foreach (var (start, end) in Wrap(codePoints, limit, advances, (s, e) => Line(s, e).Width)) lines.Add(Line(start, end));
         }
 
         var width = lines.Count == 0 ? 0 : lines.Max(l => l.Width);
-        var ascent = font.Ascender * scale;
-        var descent = -font.Descender * scale;
+        var ascent = lines.Count == 0 ? 0 : lines.Max(l => l.Ascent);
+        var descent = lines.Count == 0 ? 0 : lines.Max(l => l.Descent);
         var height = lines.Count == 0 ? 0 : (lines.Count - 1) * style.FontSize * style.LineHeight + ascent + descent;
         return new LayoutResult(lines, new TextMetrics(width, height, ascent, descent, lines.Count));
     }
 
-    private static List<string> BreakWord(string word, FontFile font, float scale, float letterSpacing, float limit)
+    /// <summary>
+    /// Greedy word wrapping of one paragraph into lines no wider than <paramref name="limit"/>. A candidate line is
+    /// measured as the sum of its code points' <paramref name="advances"/>, from one shaping of the whole paragraph; a
+    /// line about to be kept is measured as it will be drawn, with <paramref name="width"/>, and gives up its last words
+    /// when its edges shape wider on their own. A line's trailing spaces do not count; a single word wider than the
+    /// limit is broken between characters.
+    /// </summary>
+    private static List<(int Start, int End)> Wrap(int[] codePoints, float limit, float[] advances, Func<int, int, float> width)
     {
-        var parts = new List<string>();
-        var current = string.Empty;
-        foreach (var element in EnumerateTextElements(word))
+        var prefix = new float[codePoints.Length + 1];
+        for (var i = 0; i < codePoints.Length; i++) prefix[i + 1] = prefix[i] + advances[i];
+        float Estimate(int start, int end) => prefix[end] - prefix[start];
+
+        var lines = new List<(int, int)>();
+        // The words of the line being filled.
+        var words = new List<(int Start, int End)>();
+        var p = 0;
+        while (true)
         {
-            var candidate = current + element;
-            if (current.Length > 0 && BuildLine(candidate, font, scale, letterSpacing).Width > limit)
+            if (p < codePoints.Length)
             {
-                parts.Add(current);
-                current = element;
+                var wordStart = p;
+                while (p < codePoints.Length && !Rune.IsWhiteSpace(new Rune(codePoints[p]))) p++;
+                var wordEnd = p;
+                while (p < codePoints.Length && Rune.IsWhiteSpace(new Rune(codePoints[p]))) p++;
+                if (words.Count == 0 || Estimate(words[0].Start, wordEnd) <= limit)
+                {
+                    words.Add((wordStart, wordEnd));
+                    // Only a lone word can be too wide here, whether it started the text or was just wrapped: break it.
+                    if (words.Count == 1 && Estimate(wordStart, wordEnd) > limit)
+                    {
+                        var pieces = BreakWord(codePoints, wordStart, wordEnd, limit, Estimate);
+                        for (var k = 0; k < pieces.Count - 1; k++) lines.Add(pieces[k]);
+                        words[0] = pieces[^1];
+                    }
+                    continue;
+                }
+                // The line is full: the word starts the next one.
+                p = wordStart;
             }
-            else current = candidate;
+            else if (words.Count == 0)
+            {
+                // Out of words; a paragraph without any is still a line.
+                if (lines.Count == 0) lines.Add((0, 0));
+                return lines;
+            }
+            // Shaped on its own the line may come out wider than its estimate, kerning and joining forms differing at
+            // its edges; then its last words move down.
+            var kept = words.Count;
+            while (kept > 1 && width(words[0].Start, words[kept - 1].End) > limit) kept--;
+            lines.Add((words[0].Start, words[kept - 1].End));
+            if (kept < words.Count) p = words[kept].Start;
+            words.Clear();
         }
-        parts.Add(current);
-        return parts;
     }
 
-    private static IEnumerable<string> EnumerateTextElements(string s)
+    /// <summary>Breaks a word between its grapheme clusters into pieces that fit, the last one possibly shorter.</summary>
+    private static List<(int, int)> BreakWord(int[] codePoints, int start, int end, float limit, Func<int, int, float> width)
     {
-        var e = StringInfo.GetTextElementEnumerator(s);
-        while (e.MoveNext()) yield return (string)e.Current;
-    }
+        var text = new StringBuilder();
+        for (var i = start; i < end; i++) text.Append(char.ConvertFromUtf32(codePoints[i]));
+        var word = text.ToString();
 
-    private static Line BuildLine(string text, FontFile font, float scale, float letterSpacing)
-    {
-        var line = new Line();
-        var x = 0f;
-        ushort previous = 0;
-        var first = true;
-        foreach (var rune in text.EnumerateRunes())
+        var pieces = new List<(int, int)>();
+        var pieceStart = start;
+        var position = start;
+        for (var offset = 0; offset < word.Length;)
         {
-            var glyph = font.GetGlyphIndex(rune.Value);
-            if (!first && font.HasKerning) x += font.GetKerning(previous, glyph) * scale;
-            line.Glyphs.Add(new PositionedGlyph(glyph, x));
-            x += font.GetAdvanceWidth(glyph) * scale + letterSpacing;
-            previous = glyph;
-            first = false;
+            var length = StringInfo.GetNextTextElementLength(word, offset);
+            var runes = 0;
+            foreach (var _ in word.AsSpan(offset, length).EnumerateRunes()) runes++;
+            var next = position + runes;
+            if (position > pieceStart && width(pieceStart, next) > limit)
+            {
+                pieces.Add((pieceStart, position));
+                pieceStart = position;
+            }
+            position = next;
+            offset += length;
         }
-        // Trailing letter spacing is not part of the visible width.
-        line.Width = Math.Max(0, x - (line.Glyphs.Count > 0 ? letterSpacing : 0));
-        return line;
+        pieces.Add((pieceStart, end));
+        return pieces;
     }
 
     private static IEnumerable<string> SplitLines(string text)
@@ -253,20 +330,5 @@ public sealed class FontTextRasterizer : ITextRasterizer
             }
         }
         yield return text[start..];
-    }
-
-    /// <summary>Splits into words keeping the trailing whitespace with each word, so wrapping preserves spacing.</summary>
-    private static IEnumerable<string> SplitWords(string line)
-    {
-        var start = 0;
-        var i = 0;
-        while (i < line.Length)
-        {
-            while (i < line.Length && !char.IsWhiteSpace(line[i])) i++;
-            while (i < line.Length && char.IsWhiteSpace(line[i])) i++;
-            yield return line[start..i];
-            start = i;
-        }
-        if (start == 0 && line.Length == 0) yield return string.Empty;
     }
 }

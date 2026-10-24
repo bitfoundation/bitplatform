@@ -170,7 +170,7 @@ public static class McpResources
     }
 
     [McpServerResource(UriTemplate = "bmage://setup/{renderMode}", Name = "Setup guide", MimeType = "text/markdown")]
-    [Description("The complete wiring for one hosting model, e.g. bmage://setup/wasm, bmage://setup/server or bmage://setup/headless.")]
+    [Description("The complete wiring for one hosting model, e.g. bmage://setup/wasm, bmage://setup/server, bmage://setup/hybrid or bmage://setup/headless.")]
     public static string Setup(string renderMode)
         => BmageSetupGuide.Get(renderMode)
            ?? $"'{renderMode}' is not a known hosting model. Use one of: {string.Join(", ", BmageSetupGuide.RenderModes)}.";

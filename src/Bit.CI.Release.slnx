@@ -44,6 +44,21 @@
     <Project Path="Utilities/Bmage/Bit.Bmage/Bit.Bmage.csproj" />
     <Project Path="Utilities/Bmage/Tests/Bit.Bmage.Tests/Bit.Bmage.Tests.csproj" />
   </Folder>
+  <Folder Name="/Utilities/Bmage/Samples/" />
+  <Folder Name="/Utilities/Bmage/Samples/Auto/">
+    <Project Path="Utilities/Bmage/Samples/Auto/Bit.Bmage.Samples.Auto/Bit.Bmage.Samples.Auto.csproj" />
+    <Project Path="Utilities/Bmage/Samples/Auto/Bit.Bmage.Samples.Auto.Client/Bit.Bmage.Samples.Auto.Client.csproj" />
+  </Folder>
+  <Folder Name="/Utilities/Bmage/Samples/Core/">
+    <Project Path="Utilities/Bmage/Samples/Core/Bit.Bmage.Samples.Core.csproj" />
+  </Folder>
+  <Folder Name="/Utilities/Bmage/Samples/Server/">
+    <Project Path="Utilities/Bmage/Samples/Server/Bit.Bmage.Samples.Server.csproj" />
+  </Folder>
+  <Folder Name="/Utilities/Bmage/Samples/Wasm/">
+    <Project Path="Utilities/Bmage/Samples/Wasm/Bit.Bmage.Samples.Wasm/Bit.Bmage.Samples.Wasm.csproj" />
+    <Project Path="Utilities/Bmage/Samples/Wasm/Bit.Bmage.Samples.Wasm.Client/Bit.Bmage.Samples.Wasm.Client.csproj" />
+  </Folder>
   <Folder Name="/Utilities/Bsqlite/">
     <File Path="Utilities/Bsqlite/README.md" />
     <Project Path="Utilities/Bsqlite/Demo/Client/Bit.Bsqlite.Demo.Client.csproj" />

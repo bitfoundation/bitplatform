@@ -1,12 +1,14 @@
 ﻿using System.Collections;
 using System.Collections.Immutable;
 using System.Drawing;
+using System.Numerics;
 using Bit.Bmage.Geometry;
 using Bit.Bmage.Operations;
 using Bit.Bmage.Operations.Adjustments;
 using Bit.Bmage.Operations.Filters;
 using Bit.Bmage.Operations.Transforms;
 using Bit.Bmage.Analysis;
+using Bit.Bmage.Masks;
 
 namespace Bit.Bmage.Pipeline;
 
@@ -126,6 +128,26 @@ public sealed class ImagePipeline : IReadOnlyList<IImageOperation>
     /// <summary>Shears the image by the given angles in degrees.</summary>
     public ImagePipeline Skew(double degreesX, double degreesY, Rgba32 background = default) => Add(new SkewOperation(degreesX, degreesY, background));
 
+    /// <summary>
+    /// Levels a tilt of up to 45 degrees either way, cropping to the largest rectangle of the image's aspect ratio the
+    /// rotated image covers, so no corner is left empty.
+    /// </summary>
+    public ImagePipeline Straighten(double degrees) => Add(new StraightenOperation(degrees));
+
+    /// <summary>
+    /// Sets the canvas to an absolute size without scaling the image, placing it by <paramref name="anchor"/>: the new
+    /// area is filled with <paramref name="background"/>, and an image larger than the canvas is cut at its edges.
+    /// </summary>
+    public ImagePipeline CanvasSize(int width, int height, Anchor anchor = Anchor.Center, Rgba32 background = default)
+        => Add(new CanvasSizeOperation(width, height, anchor, background));
+
+    /// <summary>Adds a border of <paramref name="all"/> pixels on every side, filled with <paramref name="background"/>.</summary>
+    public ImagePipeline Pad(int all, Rgba32 background = default) => Add(CanvasSizeOperation.Margins(all, background));
+
+    /// <summary>Adds margins to each side, filled with <paramref name="background"/>. A negative margin cuts into the image.</summary>
+    public ImagePipeline Pad(int left, int top, int right, int bottom, Rgba32 background = default)
+        => Add(CanvasSizeOperation.Margins(left, top, right, bottom, background));
+
     /// <summary>Adds a constant to the RGB channels. Amount in [-1,1].</summary>
     public ImagePipeline Brightness(float amount) => Add(new BrightnessAdjustment(amount));
 
@@ -155,6 +177,32 @@ public sealed class ImagePipeline : IReadOnlyList<IImageOperation>
 
     /// <summary>Boosts muted colours without over-saturating already vivid ones.</summary>
     public ImagePipeline Vibrance(float amount) => Add(new VibranceAdjustment(amount));
+
+    /// <summary>Moves the brightest and darkest tones, each amount in [-1,1]: where highlights clip to white and shadows to black.</summary>
+    public ImagePipeline WhitesBlacks(float whites, float blacks) => Add(new WhitesBlacksAdjustment(whites, blacks));
+
+    /// <summary>Changes the hue (degrees), saturation and lightness ([-1,1]) of one band of colours, leaving the others.</summary>
+    public ImagePipeline Hsl(HueBand band, float hue = 0f, float saturation = 0f, float lightness = 0f)
+        => Add(new HslAdjustment().With(band, new HslShift(hue, saturation, lightness)));
+
+    /// <summary>Makes <paramref name="neutral"/>, a colour that should be grey, grey: a white balance from a picked colour.</summary>
+    public ImagePipeline WhiteBalance(Rgba32 neutral, float strength = 1f) => Add(WhiteBalanceAdjustment.FromNeutral(neutral, strength));
+
+    /// <summary>Removes a colour cast by making the average of the mid-tones grey, by <paramref name="strength"/> in [0,1].</summary>
+    public ImagePipeline AutoWhiteBalance(float strength = 0.8f) => Add(new AutoWhiteBalanceOperation(strength));
+
+    /// <summary>Mixes each output channel from the input channels with the given weights.</summary>
+    public ImagePipeline ChannelMixer(Vector3 red, Vector3 green, Vector3 blue) => Add(new ChannelMixerAdjustment(red, green, blue));
+
+    /// <summary>A black and white conversion mixing the channels in the given proportions.</summary>
+    public ImagePipeline BlackAndWhite(float red = 0.3f, float green = 0.59f, float blue = 0.11f) => Add(ChannelMixerAdjustment.Monochrome(red, green, blue));
+
+    /// <summary>Gives the image one hue (degrees) and saturation, keeping its lightness: a tint of any colour.</summary>
+    public ImagePipeline Colorize(float hue, float saturation = 0.25f, float lightness = 0f, float amount = 1f)
+        => Add(new ColorizeAdjustment(hue, saturation, lightness, amount));
+
+    /// <summary>Maps the shadows to <paramref name="shadows"/> and the highlights to <paramref name="highlights"/>.</summary>
+    public ImagePipeline Duotone(Rgba32 shadows, Rgba32 highlights, float amount = 1f) => Add(GradientMapOperation.Duotone(shadows, highlights, amount));
 
     /// <summary>Lifts shadows and recovers highlights. Both amounts in [-1,1].</summary>
     public ImagePipeline ShadowsHighlights(float shadows, float highlights) => Add(new ShadowsHighlightsAdjustment(shadows, highlights));
@@ -186,6 +234,15 @@ public sealed class ImagePipeline : IReadOnlyList<IImageOperation>
     /// <summary>Adds deterministic noise.</summary>
     public ImagePipeline Noise(float amount, bool monochrome = false, int seed = 0, Rectangle? region = null) => Add(new NoiseFilter(amount, monochrome, seed, region));
 
+    /// <summary>
+    /// Blurs along a line <paramref name="distance"/> pixels long at <paramref name="angle"/> degrees (0 horizontal, 90
+    /// vertical), as motion during an exposure does.
+    /// </summary>
+    public ImagePipeline MotionBlur(float distance, float angle = 0, Rectangle? region = null) => Add(new MotionBlurFilter(distance, angle, region));
+
+    /// <summary>Keeps only detail finer than <paramref name="radius"/>, around mid grey: edges and texture.</summary>
+    public ImagePipeline HighPass(float radius = 3f, Rectangle? region = null) => Add(new HighPassFilter(radius, region));
+
     /// <summary>Applies a median filter for noise reduction.</summary>
     public ImagePipeline DenoiseMedian(int radius = 1, Rectangle? region = null) => Add(new MedianFilter(radius, region));
 
@@ -208,6 +265,51 @@ public sealed class ImagePipeline : IReadOnlyList<IImageOperation>
 
     /// <summary>Applies a custom per-pixel operation.</summary>
     public ImagePipeline Apply(IImageOperation operation) => Add(operation);
+
+    // ---- Masks ----
+
+    /// <summary>
+    /// Applies <paramref name="operation"/> only where <paramref name="mask"/> covers the image, fading with its
+    /// coverage. The operation must keep the image's size.
+    /// </summary>
+    public ImagePipeline Masked(Mask mask, IImageOperation operation) => Add(new MaskedOperation(operation, mask));
+
+    /// <summary>
+    /// Applies the operations <paramref name="edit"/> adds only where <paramref name="mask"/> covers the image: a
+    /// selective adjustment. Adjustments run in one pass, and only over the rows and columns the mask reaches.
+    /// </summary>
+    /// <example>
+    /// <code>
+    /// // Darken and enrich the sky, fading out towards the horizon.
+    /// pipeline.Masked(Mask.Gradient(new(0, 0), new(0, 0.55f)), sky => sky.Exposure(-0.6f).Saturation(0.25f));
+    /// </code>
+    /// </example>
+    public ImagePipeline Masked(Mask mask, Func<ImagePipeline, ImagePipeline> edit)
+    {
+        ArgumentNullException.ThrowIfNull(edit);
+        var inner = edit(Empty) ?? throw new InvalidOperationException("The edit returned no pipeline.");
+        return Add(new MaskedOperation(inner.Count == 1 ? inner[0] : new PipelineOperation(inner), mask));
+    }
+
+    /// <summary>
+    /// Multiplies the image's alpha by <paramref name="mask"/>, making everything outside it transparent: for example
+    /// <c>.Cover(256, 256).ApplyMask(Mask.Ellipse())</c> for a round avatar.
+    /// </summary>
+    public ImagePipeline ApplyMask(Mask mask) => Add(new AlphaMaskOperation(mask));
+
+    /// <summary>
+    /// Makes a plain background transparent: the region of the corners' colour, within <paramref name="tolerance"/>,
+    /// flooded in from the four corners. For product photos, logos and scans on a uniform backdrop; a subject that touches
+    /// a corner in the backdrop's colour is taken with it.
+    /// </summary>
+    public ImagePipeline RemoveBackground(float tolerance = 0.1f, float feather = 0.6f)
+        => Add(new AlphaMaskOperation(new FloodMask([new(0, 0), new(1, 0), new(0, 1), new(1, 1)])
+        {
+            Units = MaskUnits.Relative,
+            Tolerance = tolerance,
+            Feather = feather,
+            Inverted = true,
+        }));
 
     // ---- Analysis ----
 
@@ -243,6 +345,51 @@ public sealed class ImagePipeline : IReadOnlyList<IImageOperation>
     }
 
     /// <summary>
+    /// The affine map from coordinates of an input of <paramref name="inputSize"/> to coordinates of the output: where
+    /// the pipeline's crops, turns, flips, resizes and warps move each point of the image. Steps that keep the size
+    /// without being geometric, such as adjustments, filters and masked edits, leave every point where it is. False
+    /// when a step's effect on coordinates is not affine or not known: a perspective warp, a content-aware crop, an
+    /// orientation read from metadata, or an operation that changes the size without saying how.
+    /// </summary>
+    public bool TryGetTransform(Size inputSize, out Matrix3x2 transform)
+    {
+        transform = Matrix3x2.Identity;
+        var size = inputSize;
+        foreach (var operation in _operations)
+        {
+            Size next;
+            Matrix3x2 step;
+            try
+            {
+                next = operation.GetOutputSize(size);
+                switch (operation)
+                {
+                    case PipelineOperation nested:
+                        if (!nested.Pipeline.TryGetTransform(size, out step)) return false;
+                        break;
+                    case IGeometricOperation geometric:
+                        if (geometric.GetTransform(size) is not { } matrix) return false;
+                        step = matrix;
+                        break;
+                    case AutoOrientOperation:
+                        return false;
+                    default:
+                        if (next != size) return false;
+                        step = Matrix3x2.Identity;
+                        break;
+                }
+            }
+            catch (ArgumentException)
+            {
+                return false;
+            }
+            transform *= step;
+            size = next;
+        }
+        return true;
+    }
+
+    /// <summary>
     /// Returns an equivalent pipeline for an image scaled by <paramref name="scale"/>. Used to preview full-resolution
     /// edits on a downscaled proxy.
     /// </summary>
@@ -252,6 +399,74 @@ public sealed class ImagePipeline : IReadOnlyList<IImageOperation>
         var builder = ImmutableArray.CreateBuilder<IImageOperation>(_operations.Length);
         foreach (var op in _operations) builder.Add(op.ForScale(scale));
         return new ImagePipeline(builder.MoveToImmutable());
+    }
+
+    /// <summary>
+    /// Estimates the pixel memory a run on an image of <paramref name="inputSize"/> allocates at its peak, and the size
+    /// of its result, without touching a pixel. The source image itself is not counted: the caller already holds it.
+    /// </summary>
+    /// <remarks>
+    /// The estimate follows the buffers each step holds: the image it receives, the one it produces, and the working
+    /// copies the heavier operations take (a mask, a copy of a region for a median or convolution). It is what a
+    /// <see cref="Memory.BudgetedPixelAllocator"/> would see, to within the small rows of scratch operations rent from the
+    /// shared pool, and it is what <see cref="BatchOptions.MaxMemoryBytes"/> admits images by. An
+    /// <see cref="AutoOrient"/> step is taken to cost nothing, since decoders already turn the pixels upright.
+    /// </remarks>
+    /// <exception cref="ArgumentException">An operation cannot be applied to the size it would receive.</exception>
+    public PipelineMemoryEstimate EstimateMemory(Size inputSize, bool optimize = true)
+    {
+        var steps = optimize ? Optimize(inputSize) : this;
+        static long Bytes(Size size) => 4L * size.Width * size.Height;
+        if (steps.IsEmpty) return new PipelineMemoryEstimate(Bytes(inputSize), Bytes(inputSize), inputSize);
+
+        var current = inputSize;
+        long peak = 0;
+        // Until a step has produced a buffer of the run's own, steps read the caller's.
+        var owned = false;
+        foreach (var operation in steps)
+        {
+            // Decoders apply the EXIF orientation as they decode, and a run skips orienting pixels that are upright.
+            if (operation is AutoOrientOperation) continue;
+            var output = operation.GetOutputSize(current);
+            var held = owned ? Bytes(current) : 0;
+            // A per-pixel step on a buffer the run owns writes over it rather than allocating another.
+            var produced = owned && output == current && operation is PointOperation ? 0 : Bytes(output);
+            peak = Math.Max(peak, held + produced + WorkingBytes(operation, current));
+            current = output;
+            owned = true;
+        }
+        // Nothing ran, so the result is a copy of the source.
+        return new PipelineMemoryEstimate(owned ? peak : Bytes(current), Bytes(current), current);
+    }
+
+    /// <summary>
+    /// What rendering a mask holds at once: its own byte per pixel, the masks drawing it holds beside that (see
+    /// <see cref="Masks.Mask.MasksHeld"/>), each taken at the image's size, and the largest of its bitmaps' mattes at
+    /// their own size. A mask drawn only over the area an edit reaches holds less.
+    /// </summary>
+    private static long MaskBytes(Masks.Mask mask, long pixels) => pixels * (1 + mask.MasksHeld()) + MatteBytes(mask);
+
+    private static long MatteBytes(Masks.Mask mask) => mask switch
+    {
+        Masks.CombinedMask combined => Math.Max(MatteBytes(combined.First), MatteBytes(combined.Second)),
+        Masks.BitmapMask bitmap => (long)bitmap.Image.Width * bitmap.Image.Height,
+        _ => 0,
+    };
+
+    /// <summary>What an operation allocates beyond its output while it runs.</summary>
+    private static long WorkingBytes(IImageOperation operation, Size input)
+    {
+        var pixels = (long)input.Width * input.Height;
+        return operation switch
+        {
+            // The rendered mask, and whatever the masked edit itself works with.
+            Masks.MaskedOperation masked => MaskBytes(masked.Mask, pixels) + WorkingBytes(masked.Operation, input),
+            Masks.AlphaMaskOperation alpha => MaskBytes(alpha.Mask, pixels),
+            // Both read a copy of the region they filter.
+            MedianFilter or ConvolutionFilter => 4 * pixels,
+            PipelineOperation nested => nested.Pipeline.EstimateMemory(input).PeakBytes,
+            _ => 0,
+        };
     }
 
     /// <summary>
@@ -275,47 +490,63 @@ public sealed class ImagePipeline : IReadOnlyList<IImageOperation>
         options ??= PipelineExecutionOptions.Default;
         var pipeline = options.Optimize ? Optimize(source.Size) : this;
         if (pipeline.IsEmpty) return source.Clone(options.Allocator);
+        var result = Run(pipeline, source, new OperationContext(options.Allocator, options.Limits, options.CancellationToken, options.Progress, canMutateSource: false, options.MaxDegreeOfParallelism));
+        return ReferenceEquals(result, source) ? source.Clone(options.Allocator) : result;
+    }
 
+    /// <summary>
+    /// Runs <paramref name="steps"/>, already optimised, one after another: the loop of <see cref="Execute"/>, which a
+    /// nested pipeline runs too. The source is changed in place only when <paramref name="context"/> allows it, and
+    /// is returned itself when no step produced another buffer; every buffer in between is released.
+    /// </summary>
+    internal static ImageBuffer Run(ImagePipeline steps, ImageBuffer source, OperationContext context)
+    {
         var current = source;
-        var owned = false;
-        var count = pipeline.Count;
         try
         {
-            for (var i = 0; i < count; i++)
-            {
-                var op = pipeline[i];
-                options.CancellationToken.ThrowIfCancellationRequested();
-                if (IsUprightAlready(op, current))
-                {
-                    options.Progress?.Report((i + 1) / (double)count);
-                    continue;
-                }
-                var stageProgress = options.Progress is null ? null : new StageProgress(options.Progress, i, count);
-                var context = new OperationContext(options.Allocator, options.Limits, options.CancellationToken, stageProgress, canMutateSource: owned);
-                ImageBuffer next;
-                try
-                {
-                    next = op.Apply(current, context);
-                }
-                catch (Exception ex) when (ex is not (OperationCanceledException or ImageException))
-                {
-                    throw new ImageException($"Operation '{op.Name}' (step {i + 1} of {count}) failed: {ex.Message}", ex);
-                }
-                if (!ReferenceEquals(next, current))
-                {
-                    if (owned) current.Dispose();
-                    current = next;
-                    owned = true;
-                }
-                options.Progress?.Report((i + 1) / (double)count);
-            }
-            if (!owned) current = source.Clone(options.Allocator);
+            for (var i = 0; i < steps.Count; i++) current = RunStep(steps, i, current, source, context);
             return current;
         }
         catch
         {
-            if (owned) current.Dispose();
+            if (!ReferenceEquals(current, source)) current.Dispose();
             throw;
+        }
+    }
+
+    /// <summary>
+    /// Runs step <paramref name="i"/> of <paramref name="steps"/> on <paramref name="current"/> and returns what the
+    /// pipeline holds after it: the step's result, or <paramref name="current"/> itself when the step changed nothing or
+    /// was skipped. A buffer between steps is released as soon as the next one replaces it; the source is the caller's.
+    /// </summary>
+    private static ImageBuffer RunStep(ImagePipeline steps, int i, ImageBuffer current, ImageBuffer source, OperationContext context)
+    {
+        var op = steps[i];
+        context.ThrowIfCancellationRequested();
+        if (!IsUprightAlready(op, current))
+        {
+            var next = ApplyStep(op, current, i, steps.Count, ReferenceEquals(current, source) ? context.CanMutateSource : true, context);
+            if (!ReferenceEquals(next, current) && !ReferenceEquals(current, source)) current.Dispose();
+            current = next;
+        }
+        context.ReportProgress((i + 1) / (double)steps.Count);
+        return current;
+    }
+
+    /// <summary>
+    /// Applies step <paramref name="index"/> of <paramref name="count"/>, reporting its progress within the step's share
+    /// of <paramref name="context"/>'s, and naming the step in any failure that is not already an image error.
+    /// </summary>
+    private static ImageBuffer ApplyStep(IImageOperation op, ImageBuffer current, int index, int count, bool canMutate, OperationContext context)
+    {
+        var stageProgress = context.Progress is null ? null : new StageProgress(context.Progress, index, count);
+        try
+        {
+            return op.Apply(current, new OperationContext(context.Allocator, context.Limits, context.CancellationToken, stageProgress, canMutate, context.MaxDegreeOfParallelism));
+        }
+        catch (Exception ex) when (ex is not (OperationCanceledException or ImageException))
+        {
+            throw new ImageException($"Operation '{op.Name}' (step {index + 1} of {count}) failed: {ex.Message}", ex);
         }
     }
 
@@ -327,46 +558,22 @@ public sealed class ImagePipeline : IReadOnlyList<IImageOperation>
         var pipeline = options.Optimize ? Optimize(source.Size) : this;
         if (pipeline.IsEmpty) return source.Clone(options.Allocator);
 
+        // The loop of Run, with a yield between the steps.
         var current = source;
-        var owned = false;
         var count = pipeline.Count;
+        var run = new OperationContext(options.Allocator, options.Limits, options.CancellationToken, options.Progress, canMutateSource: false, options.MaxDegreeOfParallelism);
         try
         {
             for (var i = 0; i < count; i++)
             {
-                var op = pipeline[i];
-                options.CancellationToken.ThrowIfCancellationRequested();
-                if (IsUprightAlready(op, current))
-                {
-                    options.Progress?.Report((i + 1) / (double)count);
-                    continue;
-                }
-                var stageProgress = options.Progress is null ? null : new StageProgress(options.Progress, i, count);
-                var context = new OperationContext(options.Allocator, options.Limits, options.CancellationToken, stageProgress, canMutateSource: owned);
-                ImageBuffer next;
-                try
-                {
-                    next = op.Apply(current, context);
-                }
-                catch (Exception ex) when (ex is not (OperationCanceledException or ImageException))
-                {
-                    throw new ImageException($"Operation '{op.Name}' (step {i + 1} of {count}) failed: {ex.Message}", ex);
-                }
-                if (!ReferenceEquals(next, current))
-                {
-                    if (owned) current.Dispose();
-                    current = next;
-                    owned = true;
-                }
-                options.Progress?.Report((i + 1) / (double)count);
+                current = RunStep(pipeline, i, current, source, run);
                 if (options.YieldBetweenOperations && i + 1 < count) await options.Yield().ConfigureAwait(false);
             }
-            if (!owned) current = source.Clone(options.Allocator);
-            return current;
+            return ReferenceEquals(current, source) ? source.Clone(options.Allocator) : current;
         }
         catch
         {
-            if (owned) current.Dispose();
+            if (!ReferenceEquals(current, source)) current.Dispose();
             throw;
         }
     }
@@ -388,6 +595,12 @@ public sealed class ImagePipeline : IReadOnlyList<IImageOperation>
     }
 }
 
+/// <summary>What a pipeline run is expected to allocate, from <see cref="ImagePipeline.EstimateMemory"/>.</summary>
+/// <param name="PeakBytes">The most pixel memory the run holds at once, its result included, the source not.</param>
+/// <param name="OutputBytes">The size of the result.</param>
+/// <param name="OutputSize">The dimensions of the result.</param>
+public sealed record PipelineMemoryEstimate(long PeakBytes, long OutputBytes, Size OutputSize);
+
 /// <summary>Options controlling a pipeline run.</summary>
 public sealed record PipelineExecutionOptions
 {
@@ -407,6 +620,18 @@ public sealed record PipelineExecutionOptions
 
     /// <summary>Run the optimiser before executing. Default true.</summary>
     public bool Optimize { get; init; } = true;
+
+    /// <summary>
+    /// The most threads an operation may spread its rows over. Null uses
+    /// <see cref="OperationContext.DefaultMaxDegreeOfParallelism"/>, one, which keeps a run on the calling thread. The
+    /// pixels are identical whatever the value; set <see cref="Environment.ProcessorCount"/> to finish one large image
+    /// sooner where nothing else needs the cores, but not on a server already busy with many requests at once.
+    /// </summary>
+    public int? MaxDegreeOfParallelism
+    {
+        get;
+        init => field = value is < 1 ? throw new ArgumentOutOfRangeException(nameof(MaxDegreeOfParallelism), "At least one thread is needed.") : value;
+    }
 
     /// <summary>Yield to the scheduler between operations so a single-threaded UI can repaint. Default true.</summary>
     public bool YieldBetweenOperations { get; init; } = true;

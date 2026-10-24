@@ -296,6 +296,10 @@
     .bb-docs-sidebar.bb-open {
         visibility: visible;
         transform: translateX(0);
+        /* Visible at once when opening - the focus moves into the panel as it opens, and a panel
+           still hidden cannot take it - and hidden only after the slide when closing. */
+        transition: transform var(--bb-motion-duration) var(--bb-motion-enter),
+                    visibility 0s;
     }
 
     .bb-docs-scrim {

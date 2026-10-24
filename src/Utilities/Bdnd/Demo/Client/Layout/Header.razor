@@ -47,8 +47,8 @@
                 </svg>
             </button>
 
-            <button type="button" class="bb-menu-btn" aria-label="Site menu" aria-expanded="@(_menuOpen ? "true" : "false")"
-                    aria-controls="bb-header-drawer" @onclick="() => _menuOpen = !_menuOpen">
+            <button @ref="_menuButton" type="button" class="bb-menu-btn" aria-label="Site menu" aria-expanded="@(_menuOpen ? "true" : "false")"
+                    aria-controls="bb-header-drawer" @onclick="ToggleMenu" @onkeydown="OnKeyDown">
                 @if (_menuOpen)
                 {
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
@@ -69,8 +69,8 @@
        rest of the time - a drawer that is merely translated off-screen still holds focus. *@
     @if (_menuOpen)
     {
-        <div class="bb-header-scrim" @onclick="() => _menuOpen = false"></div>
-        <nav id="bb-header-drawer" class="bb-header-drawer" aria-label="Site">
+        <div class="bb-header-scrim" @onclick="CloseMenu"></div>
+        <nav @ref="_drawer" id="bb-header-drawer" class="bb-header-drawer" aria-label="Site" tabindex="-1" @onkeydown="OnKeyDown">
             @foreach (var item in SiteInfo.Primary)
             {
                 <a @key="item.Href" href="@item.Href" class="@(IsActive(item) ? "active" : null)">@item.Label</a>
@@ -83,6 +83,10 @@
 
 @code {
     private bool _menuOpen;
+    private bool _restorePending;
+    private bool _focusDrawerPending;
+    private ElementReference _menuButton;
+    private ElementReference _drawer;
     private string _path = "";
 
     protected override void OnInitialized()
@@ -109,6 +113,54 @@
         _path = DocsCatalog.PathOf(Nav);
         _menuOpen = false;
         _ = InvokeAsync(StateHasChanged);
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (_focusDrawerPending)
+        {
+            _focusDrawerPending = false;
+            await _drawer.FocusAsync(preventScroll: true);
+        }
+        else if (_restorePending)
+        {
+            _restorePending = false;
+            await _menuButton.FocusAsync();
+        }
+    }
+
+    /// <summary>
+    /// Opening the drawer takes the focus into it. Safari does not focus a button it is clicking, so
+    /// the focus would otherwise stay on the page behind the scrim, where neither Escape nor Tab
+    /// reaches the drawer.
+    /// </summary>
+    private void ToggleMenu()
+    {
+        _menuOpen = !_menuOpen;
+        if (_menuOpen) _focusDrawerPending = true;
+        else _restorePending = true;
+    }
+
+    private void CloseMenu()
+    {
+        _menuOpen = false;
+        _restorePending = true;
+    }
+
+    /// <summary>
+    /// Escape closes the narrow-width drawer, as it closes the docs drawer and the search palette. The
+    /// handler sits on the menu button and on the drawer, which between them hold the focus while the
+    /// drawer is open (see ToggleMenu), rather than on the whole header, where every key typed into the
+    /// search trigger would be an event and a render of the header.
+    /// </summary>
+    private void OnKeyDown(KeyboardEventArgs args)
+    {
+        if (_menuOpen is false || args.Key != "Escape") return;
+
+        _menuOpen = false;
+        // The drawer's links leave the page with it, so focus that was on one would fall to <body> and
+        // the next Tab would restart at the top - hence the trip back to the button that opened it.
+        _restorePending = true;
     }
 
     public void Dispose() => Nav.LocationChanged -= OnLocationChanged;

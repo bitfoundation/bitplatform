@@ -35,6 +35,13 @@ public sealed record RectangleAnnotation : Annotation
         Style = Style.ForScale(scale),
     };
 
+    public override Annotation Transform(Matrix3x2 matrix)
+    {
+        if (!MapsUpright(matrix)) return base.Transform(matrix);
+        var s = ScaleOf(matrix);
+        return this with { Rectangle = MapUpright(Rectangle, matrix), CornerRadius = CornerRadius * s, Style = Style.ForScale(s) };
+    }
+
     internal static RectangleF Offset(RectangleF r, float dx, float dy) => new(r.X + dx, r.Y + dy, r.Width, r.Height);
     internal static RectangleF Scale(RectangleF r, double s) => new((float)(r.X * s), (float)(r.Y * s), (float)(r.Width * s), (float)(r.Height * s));
 }
@@ -57,6 +64,9 @@ public sealed record EllipseAnnotation : Annotation
 
     public override Annotation Translate(float dx, float dy) => this with { Rectangle = RectangleAnnotation.Offset(Rectangle, dx, dy) };
     public override Annotation ForScale(double scale) => scale == 1 ? this : this with { Rectangle = RectangleAnnotation.Scale(Rectangle, scale), Style = Style.ForScale(scale) };
+
+    public override Annotation Transform(Matrix3x2 matrix)
+        => MapsUpright(matrix) ? this with { Rectangle = MapUpright(Rectangle, matrix), Style = Style.ForScale(ScaleOf(matrix)) } : base.Transform(matrix);
 
     public override bool HitTest(Vector2 point, float tolerance = 4f)
     {
@@ -90,6 +100,12 @@ public sealed record LineAnnotation : Annotation
 
     public override Annotation Translate(float dx, float dy) => this with { Start = Start + new Vector2(dx, dy), End = End + new Vector2(dx, dy) };
     public override Annotation ForScale(double scale) => scale == 1 ? this : this with { Start = Start * (float)scale, End = End * (float)scale, Style = Style.ForScale(scale) };
+
+    public override Annotation Transform(Matrix3x2 matrix)
+    {
+        var m = Through(matrix);
+        return this with { Start = Vector2.Transform(Start, m), End = Vector2.Transform(End, m), Style = Style.ForScale(ScaleOf(matrix)), Rotation = 0 };
+    }
 
     public override bool HitTest(Vector2 point, float tolerance = 4f)
         => DistanceToSegment(ToLocal(point), Start, End) <= tolerance + Style.Stroke.Width / 2;
@@ -133,6 +149,12 @@ public sealed record ArrowAnnotation : Annotation
 
     public override Annotation Translate(float dx, float dy) => this with { Start = Start + new Vector2(dx, dy), End = End + new Vector2(dx, dy) };
     public override Annotation ForScale(double scale) => scale == 1 ? this : this with { Start = Start * (float)scale, End = End * (float)scale, Style = Style.ForScale(scale) };
+
+    public override Annotation Transform(Matrix3x2 matrix)
+    {
+        var m = Through(matrix);
+        return this with { Start = Vector2.Transform(Start, m), End = Vector2.Transform(End, m), Style = Style.ForScale(ScaleOf(matrix)), Rotation = 0 };
+    }
 
     public override bool HitTest(Vector2 point, float tolerance = 4f)
         => LineAnnotation.DistanceToSegment(ToLocal(point), Start, End) <= tolerance + Style.Stroke.Width;
@@ -199,15 +221,36 @@ public sealed record FreehandAnnotation : Annotation
         builder.MoveTo(points[0]);
         for (var i = 0; i < points.Count - 1; i++)
         {
-            var p0 = points[Math.Max(i - 1, 0)];
-            var p1 = points[i];
-            var p2 = points[i + 1];
-            var p3 = points[Math.Min(i + 2, points.Count - 1)];
-            var c1 = p1 + (p2 - p0) / 6f;
-            var c2 = p2 - (p3 - p1) / 6f;
-            builder.CubicTo(c1, c2, p2);
+            var (c1, c2) = ControlPoints(points, i);
+            builder.CubicTo(c1, c2, points[i + 1]);
         }
         if (closed) builder.Close();
+    }
+
+    /// <summary>
+    /// The points and the control points <see cref="AppendSmoothed"/> draws its curves through. A cubic never leaves the
+    /// hull of its control points, so the bounds of these hold the whole curve, bulges at sharp turns included.
+    /// </summary>
+    internal static IEnumerable<Vector2> SmoothingHull(IReadOnlyList<Vector2> points)
+    {
+        foreach (var p in points) yield return p;
+        if (points.Count < 3) yield break;
+        for (var i = 0; i < points.Count - 1; i++)
+        {
+            var (c1, c2) = ControlPoints(points, i);
+            yield return c1;
+            yield return c2;
+        }
+    }
+
+    /// <summary>The control points of the curve from point <paramref name="i"/> to the next.</summary>
+    private static (Vector2, Vector2) ControlPoints(IReadOnlyList<Vector2> points, int i)
+    {
+        var p0 = points[Math.Max(i - 1, 0)];
+        var p1 = points[i];
+        var p2 = points[i + 1];
+        var p3 = points[Math.Min(i + 2, points.Count - 1)];
+        return (p1 + (p2 - p0) / 6f, p2 - (p3 - p1) / 6f);
     }
 
     public override Annotation Translate(float dx, float dy)
@@ -221,6 +264,12 @@ public sealed record FreehandAnnotation : Annotation
         Points = _points.Select(p => p * (float)scale).ToArray(),
         Style = Style.ForScale(scale),
     };
+
+    public override Annotation Transform(Matrix3x2 matrix)
+    {
+        var m = Through(matrix);
+        return this with { Points = [.. _points.Select(p => Vector2.Transform(p, m))], Style = Style.ForScale(ScaleOf(matrix)), Rotation = 0 };
+    }
 
     public override bool HitTest(Vector2 point, float tolerance = 4f)
     {
@@ -279,6 +328,12 @@ public sealed record PolygonAnnotation : Annotation
         Points = _points.Select(p => p * (float)scale).ToArray(),
         Style = Style.ForScale(scale),
     };
+
+    public override Annotation Transform(Matrix3x2 matrix)
+    {
+        var m = Through(matrix);
+        return this with { Points = [.. _points.Select(p => Vector2.Transform(p, m))], Style = Style.ForScale(ScaleOf(matrix)), Rotation = 0 };
+    }
 }
 
 /// <summary>A text label, optionally with a background box.</summary>
@@ -381,6 +436,9 @@ public sealed record HighlightAnnotation : Annotation
 
     public override Annotation Translate(float dx, float dy) => this with { Rectangle = RectangleAnnotation.Offset(Rectangle, dx, dy) };
     public override Annotation ForScale(double scale) => scale == 1 ? this : this with { Rectangle = RectangleAnnotation.Scale(Rectangle, scale) };
+
+    public override Annotation Transform(Matrix3x2 matrix)
+        => MapsUpright(matrix) ? this with { Rectangle = MapUpright(Rectangle, matrix) } : base.Transform(matrix);
 }
 
 /// <summary>How a redaction hides the underlying content.</summary>
@@ -434,13 +492,13 @@ public sealed record RedactionAnnotation : Annotation
         var axisAligned = transform.M12 == 0 && transform.M21 == 0;
         if (axisAligned)
         {
-            Redact(canvas.Buffer, device);
+            Redact(canvas.Buffer, device, context.Operation);
             return;
         }
 
         // Rotated: filter the bounding box on a copy, then blend it back only inside the rotated outline.
         using var filtered = canvas.Buffer.CopyRegion(device);
-        Redact(filtered, new System.Drawing.Rectangle(System.Drawing.Point.Empty, filtered.Size));
+        Redact(filtered, new System.Drawing.Rectangle(System.Drawing.Point.Empty, filtered.Size), context.Operation);
         var target = canvas.Buffer;
         Rasterizer.Rasterize(outline, device, FillRule.NonZero, (y, x0, coverage) =>
         {
@@ -463,12 +521,12 @@ public sealed record RedactionAnnotation : Annotation
         (byte)MathF.Round(from.A + (to.A - from.A) * t));
 
     /// <summary>Pixelates or blurs a region of a buffer in place.</summary>
-    private void Redact(ImageBuffer buffer, System.Drawing.Rectangle region)
+    private void Redact(ImageBuffer buffer, System.Drawing.Rectangle region, Operations.OperationContext context)
     {
         Operations.IImageOperation filter = Mode == RedactionMode.Pixelate
             ? new PixelateFilter(Math.Max(2, (int)Strength), region)
             : new BlurFilter(Math.Max(1f, Strength), region);
-        filter.Apply(buffer, new Operations.OperationContext(canMutateSource: true));
+        filter.Apply(buffer, context.WithProgress(null).WithMutation(true));
     }
 
     public override Annotation Translate(float dx, float dy) => this with { Rectangle = RectangleAnnotation.Offset(Rectangle, dx, dy) };
@@ -478,6 +536,13 @@ public sealed record RedactionAnnotation : Annotation
         Rectangle = RectangleAnnotation.Scale(Rectangle, scale),
         Strength = (float)Math.Max(1, Strength * scale),
     };
+
+    /// <remarks>
+    /// Upright, the rectangle maps exactly. Turned by an angle that is not a quarter turn, the redaction keeps its own
+    /// rotation and is drawn over every device pixel its turned outline touches, so nothing it covered comes back into view.
+    /// </remarks>
+    public override Annotation Transform(Matrix3x2 matrix)
+        => MapsUpright(matrix) ? this with { Rectangle = MapUpright(Rectangle, matrix), Strength = Math.Max(1, Strength * ScaleOf(matrix)) } : base.Transform(matrix);
 }
 
 /// <summary>A rectangle or ellipse with a leader line pointing at something, plus a text label.</summary>
@@ -547,6 +612,24 @@ public sealed record CalloutAnnotation : Annotation
         Style = Style.ForScale(scale),
         CornerRadius = (float)(CornerRadius * scale),
     };
+
+    /// <summary>The leader keeps pointing at its target; the bubble's centre follows the image and the bubble stays upright, so its text stays readable.</summary>
+    public override Annotation Transform(Matrix3x2 matrix)
+    {
+        var m = Through(matrix);
+        var s = ScaleOf(matrix);
+        var centre = Vector2.Transform(new Vector2(Bubble.X + Bubble.Width / 2, Bubble.Y + Bubble.Height / 2), m);
+        var size = new SizeF(Bubble.Width * s, Bubble.Height * s);
+        return this with
+        {
+            Target = Vector2.Transform(Target, m),
+            Bubble = new RectangleF(centre.X - size.Width / 2, centre.Y - size.Height / 2, size.Width, size.Height),
+            TextStyle = TextStyle.ForScale(s),
+            Style = Style.ForScale(s),
+            CornerRadius = CornerRadius * s,
+            Rotation = 0,
+        };
+    }
 }
 
 /// <summary>A numbered step marker, for tutorials and bug reports.</summary>
@@ -581,6 +664,13 @@ public sealed record StepAnnotation : Annotation
         TextStyle = TextStyle.ForScale(scale),
     };
 
+    /// <summary>The marker follows the image and keeps its number upright.</summary>
+    public override Annotation Transform(Matrix3x2 matrix)
+    {
+        var s = ScaleOf(matrix);
+        return this with { Center = Vector2.Transform(Center, Through(matrix)), Radius = Radius * s, TextStyle = TextStyle.ForScale(s), Rotation = 0 };
+    }
+
     public override bool HitTest(Vector2 point, float tolerance = 4f) => Vector2.Distance(point, Center) <= Radius + tolerance;
 }
 
@@ -602,4 +692,11 @@ public sealed record ImageAnnotation : Annotation
 
     public override Annotation Translate(float dx, float dy) => this with { Rectangle = RectangleAnnotation.Offset(Rectangle, dx, dy) };
     public override Annotation ForScale(double scale) => scale == 1 ? this : this with { Rectangle = RectangleAnnotation.Scale(Rectangle, scale) };
+
+    /// <summary>
+    /// A move or a scale maps the stamp's rectangle exactly; a turn or a mirror turns the stamp with the image without
+    /// mirroring its pixels, so a logo stays readable.
+    /// </summary>
+    public override Annotation Transform(Matrix3x2 matrix)
+        => Rotation == 0 && AffineParts.IsScaleAndTranslation(matrix) ? this with { Rectangle = MapUpright(Rectangle, matrix) } : base.Transform(matrix);
 }
