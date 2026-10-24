@@ -67,12 +67,12 @@ public class McpController(HtmlRenderer htmlRenderer, IOptions<BrouterOptions> b
 
     [HttpGet]
     [McpServerTool(Name = nameof(GetBrouterSetupGuide), Title = "Setup guide for one render mode", ReadOnly = true, OpenWorld = false)]
-    [Description("Gets the complete wiring needed to add Bit.Brouter to a Blazor app in one render mode, as the real files of a working project: 'server' (Blazor Web App, InteractiveServer), 'wasm' (InteractiveWebAssembly), 'auto' (InteractiveAuto) or 'standalone-wasm'. Call this before writing any setup code - which DI container registers the services and where the catch-all host page lives differ per render mode. It stands in for several shorter answers: do not also fetch the getting-started page for the same task.")]
+    [Description("Gets the complete wiring needed to add Bit.Brouter to a Blazor app in one render mode, as the real files of a working project: 'server' (Blazor Web App, InteractiveServer), 'wasm' (InteractiveWebAssembly), 'auto' (InteractiveAuto), 'standalone-wasm' or 'hybrid' (Blazor Hybrid: MAUI, WPF, WinForms). Call this before writing any setup code - which DI container registers the services and where the catch-all host page lives differ per render mode. It stands in for several shorter answers: do not also fetch the getting-started page for the same task.")]
     public string GetBrouterSetupGuide(
-        // Declared rather than merely described: the four values then sit in the JSON schema itself,
-        // where a model cannot pass a fifth past them, and a client offers them as completions
+        // Declared rather than merely described: the values then sit in the JSON schema itself,
+        // where a model cannot pass another one past them, and a client offers them as completions
         // instead of asking a person to remember how this server spells "standalone-wasm".
-        [AllowedValues("server", "wasm", "auto", "standalone-wasm")]
+        [AllowedValues("server", "wasm", "auto", "standalone-wasm", "hybrid")]
         [Description("The app's Blazor render mode.")] string renderMode)
     {
         return BrouterSetupGuide.Get(renderMode)
@@ -197,7 +197,7 @@ public class McpController(HtmlRenderer htmlRenderer, IOptions<BrouterOptions> b
 
     [HttpGet]
     [McpServerTool(Name = nameof(GetBrouterSourceFile), Title = "Read a source file", ReadOnly = true, OpenWorld = false)]
-    [Description("Gets one working Bit.Brouter source file verbatim - e.g. 'Demo/Client/AppRouter.razor', the complete route table of this documentation site, which exercises nearly every feature. Omit the path for the index of files: the demo's route table and the pages it routes to, and the minimal hosting samples for each Blazor render mode ('Sample/Wasm/...', 'Sample/Server/...', 'Sample/Auto/...'). These are worked examples - for what a parameter means, GetBrouterApi answers in a fraction of the characters.")]
+    [Description("Gets one working Bit.Brouter source file verbatim - e.g. 'Demo/Client/AppRouter.razor', the complete route table of this documentation site, which exercises nearly every feature. Omit the path for the index of files: the demo's route table and the pages it routes to, and the minimal hosting samples for each Blazor render mode ('Sample/Wasm/...', 'Sample/Server/...', 'Sample/Auto/...') and for Blazor Hybrid ('Sample/Maui/...'). These are worked examples - for what a parameter means, GetBrouterApi answers in a fraction of the characters.")]
     public string GetBrouterSourceFile(
         [Description("The file's path as the index lists it, e.g. 'Demo/Client/AppRouter.razor'. Omit it for the index of files.")] string? path = null)
     {

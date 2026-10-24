@@ -169,7 +169,7 @@ public partial class McpDocumentationToolTests
 
         StringAssert.Contains(index, "`Demo/Client/AppRouter.razor`");
 
-        foreach (var prefix in new[] { "Sample/Server/", "Sample/Wasm/", "Sample/Auto/", "Sample/Core/Extensions/" })
+        foreach (var prefix in new[] { "Sample/Server/", "Sample/Wasm/", "Sample/Auto/", "Sample/Maui/", "Sample/Core/Extensions/" })
         {
             StringAssert.Contains(index, $"`{prefix}",
                 $"No source file under '{prefix}' was embedded, so the setup guide that quotes it has nothing to show.");
@@ -248,10 +248,11 @@ public partial class McpDocumentationToolTests
     {
         // Prose about which container registers what is exactly the thing people get wrong; the guide
         // is supposed to hand over a compiling project instead.
-        foreach (var renderMode in new[] { "server", "wasm", "auto" })
+        foreach (var renderMode in new[] { "server", "wasm", "auto", "hybrid" })
         {
             var guide = await McpCall.TextAsync("GetBrouterSetupGuide", new() { ["renderMode"] = renderMode });
 
+            // MauiProgram.cs included: it is the Hybrid app's Program.cs.
             StringAssert.Contains(guide, "Program.cs", $"The '{renderMode}' guide quotes no Program.cs.");
             StringAssert.Contains(guide, "```csharp", $"The '{renderMode}' guide contains no C# code block.");
             StringAssert.Contains(guide, "Sample/Core/Extensions/IServiceCollectionExtensions.cs",
@@ -269,7 +270,21 @@ public partial class McpDocumentationToolTests
     }
 
     [TestMethod]
-    public async Task An_unknown_render_mode_answers_with_the_four_that_exist()
+    public async Task A_hybrid_app_is_told_it_needs_no_host_page_and_shown_its_root_component()
+    {
+        var guide = await McpCall.TextAsync("GetBrouterSetupGuide", new() { ["renderMode"] = "hybrid" });
+
+        StringAssert.Contains(guide, "no catch-all host page");
+
+        // The WebView's root component and its host page are where a Hybrid setup differs from a
+        // Web App's; a guide without them leaves the reader to guess at both.
+        StringAssert.Contains(guide, "### `Sample/Maui/MainPage.xaml`");
+        StringAssert.Contains(guide, "### `Sample/Maui/wwwroot/index.html`");
+        StringAssert.Contains(guide, "BlazorWebView");
+    }
+
+    [TestMethod]
+    public async Task An_unknown_render_mode_answers_with_the_ones_that_exist()
     {
         var answer = await McpCall.TextAsync("GetBrouterSetupGuide", new() { ["renderMode"] = "blazor" });
 

@@ -54,8 +54,9 @@ builder.Services.AddBitBrouterServices(o =&gt;
     <p class="bb-card-desc">
         In a Blazor Web App, a single catch-all host page routes <em>every</em> URL to Brouter
         (this is exactly how this site is wired). In a standalone WebAssembly app, render
-        <code>&lt;Brouter&gt;</code> directly from <code>App.razor</code> instead - no host page
-        needed.
+        <code>&lt;Brouter&gt;</code> directly from <code>App.razor</code> instead, and in a Blazor
+        Hybrid app (MAUI, WPF, WinForms) from the <code>BlazorWebView</code>'s root component - no
+        host page needed in either.
     </p>
     <pre class="bb-code"><span class="c">@@* Host.razor - the built-in router maps every URL here; Brouter takes over. *@@</span>
 <span class="k">@@page</span> <span class="s">"/"</span>

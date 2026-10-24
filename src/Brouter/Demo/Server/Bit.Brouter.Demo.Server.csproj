@@ -59,14 +59,17 @@
             <LogicalName>BrouterSource/Demo/Server/Components/%(RecursiveDir)%(Filename)%(Extension)</LogicalName>
         </EmbeddedResource>
 
-        <!-- The minimal hosting samples - one per Blazor render mode. The rest of Samples\Core is
-             left out on purpose: it is a smaller copy of this demo's pages, and the demo itself is
-             embedded above. Its service registration is the exception - it is the shared method the
-             two containers of a Web App both call, which is exactly what the setup guide has to show. -->
+        <!-- The minimal hosting samples - one per Blazor render mode, plus the MAUI app for Blazor
+             Hybrid. The rest of Samples\Core is left out on purpose: it is a smaller copy of this
+             demo's pages, and the demo itself is embedded above. Its service registration is the
+             exception - it is the shared method the two containers of a Web App both call, which is
+             exactly what the setup guide has to show. -->
         <!-- Error.razor is the template's own error page: every setup guide would quote it whole,
-             and it says nothing about routing. -->
-        <EmbeddedResource Include="..\..\Samples\**\*.razor;..\..\Samples\**\Program.cs;..\..\Samples\**\*.csproj"
-                          Exclude="..\..\Samples\Core\*.razor;..\..\Samples\Core\Pages\**;..\..\Samples\Core\Shared\**;..\..\Samples\**\bin\**;..\..\Samples\**\obj\**;..\..\Samples\**\Error.razor">
+             and it says nothing about routing. The MAUI app's Platforms\ folder - the template's
+             per-OS entry points - is left out for the same reason; what a Hybrid setup does need is
+             its MainPage.xaml (the WebView's root component) and wwwroot\index.html (its host page). -->
+        <EmbeddedResource Include="..\..\Samples\**\*.razor;..\..\Samples\**\Program.cs;..\..\Samples\**\*.csproj;..\..\Samples\**\MauiProgram.cs;..\..\Samples\**\MainPage.xaml;..\..\Samples\**\index.html"
+                          Exclude="..\..\Samples\Core\*.razor;..\..\Samples\Core\Pages\**;..\..\Samples\Core\Shared\**;..\..\Samples\**\bin\**;..\..\Samples\**\obj\**;..\..\Samples\**\Error.razor;..\..\Samples\**\Platforms\**">
             <LogicalName>BrouterSource/Sample/%(RecursiveDir)%(Filename)%(Extension)</LogicalName>
         </EmbeddedResource>
 

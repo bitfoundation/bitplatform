@@ -20,10 +20,10 @@ public static class McpPrompts
     [McpServerPrompt(Name = "add-brouter-to-app", Title = "Add Bit.Brouter to a Blazor app")]
     [Description("Walks through adding Bit.Brouter to an existing Blazor app, in the right order for its render mode.")]
     public static string AddBrouterToApp(
-        // The five values go into the prompt's own argument schema, which is what a client offers as
+        // The six values go into the prompt's own argument schema, which is what a client offers as
         // completions - so picking the mode is a choice from a list rather than a spelling test.
-        [AllowedValues("unknown", "server", "wasm", "auto", "standalone-wasm")]
-        [Description("The app's Blazor render mode: server, wasm, auto or standalone-wasm. Pass 'unknown' to have it determined from the project first.")] string renderMode = "unknown")
+        [AllowedValues("unknown", "server", "wasm", "auto", "standalone-wasm", "hybrid")]
+        [Description("The app's Blazor render mode: server, wasm, auto, standalone-wasm or hybrid (MAUI, WPF, WinForms). Pass 'unknown' to have it determined from the project first.")] string renderMode = "unknown")
     {
         return $"""
             Add Bit.Brouter to this Blazor app. Its render mode is: {renderMode}.
@@ -32,11 +32,13 @@ public static class McpPrompts
 
             1. If the render mode is 'unknown', determine it from the project first: look for
                AddInteractiveServerComponents / AddInteractiveWebAssemblyComponents in Program.cs and for a separate
-               .Client project, then continue with what you find.
+               .Client project - or for AddMauiBlazorWebView / AddWpfBlazorWebView / AddWindowsFormsBlazorWebView,
+               which make it a Blazor Hybrid app - then continue with what you find.
             2. Call `GetBrouterSetupGuide` with that render mode and follow it. Registering the services in only one
                of a Blazor Web App's two DI containers is the single most common setup bug - it fails during
                prerendering, not at compile time.
-            3. Replace Blazor's built-in `<Router>`: add the catch-all host page and render `<Brouter>` from it. Do
+            3. Replace Blazor's built-in `<Router>`: add the catch-all host page and render `<Brouter>` from it (a
+               standalone WebAssembly or Blazor Hybrid app has no host page - render it from the root component). Do
                not leave both routers in the tree.
             4. Keep the app's existing `@page` components working by pointing `AppAssembly` (and
                `AdditionalAssemblies` for any razor class libraries) at their assemblies - templates are

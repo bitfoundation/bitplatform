@@ -45,7 +45,8 @@
     <p class="bb-card-desc">
         <code>net8.0</code>, <code>net9.0</code> and <code>net10.0</code>; Server, WebAssembly and
         Auto, with or without prerendering. This site is the proof - the same pages run under all
-        three hosts. Features that need a DOM (scroll, focus, view transitions, lifecycle
+        three hosts. Blazor Hybrid (MAUI, WPF, WinForms) works too: the repository's MAUI sample
+        runs the same routes inside a <code>BlazorWebView</code>. Features that need a DOM (scroll, focus, view transitions, lifecycle
         callbacks) are simply skipped during static prerender, and on .NET 10 an unmatched URL
         during static SSR produces a real HTTP 404.
     </p>
