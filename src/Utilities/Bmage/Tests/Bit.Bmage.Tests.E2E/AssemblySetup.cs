@@ -28,5 +28,6 @@ public static class AssemblySetup
     {
         await PlaywrightSession.StopAsync();
         await DemoHost.StopAsync();
+        await SampleHosts.StopAsync();
     }
 }

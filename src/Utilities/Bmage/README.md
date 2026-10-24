@@ -221,6 +221,16 @@ median filter 8.5×. In the browser, decoding and encoding run in Web Workers, o
 | Prerendering | Managed codecs only, and capability detection reports `Prerendering`; call browser features from `OnAfterRenderAsync` |
 | ASP.NET Core, console, worker | Headless API with the managed codecs, no browser involved |
 
+[`Samples`](https://github.com/bitfoundation/bitplatform/tree/develop/src/Utilities/Bmage/Samples/) is the render-mode
+harness rather than the docs: one shared [Core](https://github.com/bitfoundation/bitplatform/tree/develop/src/Utilities/Bmage/Samples/Core/)
+project of pages (the capability probe, the managed engine, loading, processing and export, and the editor), hosted
+unchanged under [Server](https://github.com/bitfoundation/bitplatform/tree/develop/src/Utilities/Bmage/Samples/Server/),
+[Wasm](https://github.com/bitfoundation/bitplatform/tree/develop/src/Utilities/Bmage/Samples/Wasm/) and
+[Auto](https://github.com/bitfoundation/bitplatform/tree/develop/src/Utilities/Bmage/Samples/Auto/) so the same code
+runs, prerendered first, in each render mode, and under [MAUI](https://github.com/bitfoundation/bitplatform/tree/develop/src/Utilities/Bmage/Samples/MAUI/),
+a Blazor Hybrid app for Android, iOS, macOS and Windows. Each host is also a minimal example of the wiring that
+platform needs.
+
 ## MCP server (for AI agents)
 
 The demo website hosts a [Model Context Protocol](https://modelcontextprotocol.io) server at
@@ -231,8 +241,9 @@ and setup guides, and review Bmage code. See the MCP server page of the demo web
 
 ```bash
 cd src/Utilities/Bmage/Tests/Bit.Bmage.Tests && dotnet test        # engine tests, no browser needed
-cd src/Utilities/Bmage/Tests/Bit.Bmage.Tests.E2E && dotnet test    # drives a real browser against the demo website
+cd src/Utilities/Bmage/Tests/Bit.Bmage.Tests.E2E && dotnet test    # drives a real browser against the demo website and the samples
 cd src/Utilities/Bmage/Tests/Bit.Bmage.Tests.Mcp && dotnet test    # the MCP server, hosted in-memory
+cd src/Utilities/Bmage/Tests/Bit.Bmage.Tests.Hosting && dotnet test    # the samples in every render mode, hosted in-memory
 dotnet run --project src/Utilities/Bmage/Tests/Bit.Bmage.Benchmarks -c Release -- --filter "*"
 ```
 

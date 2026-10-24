@@ -1,7 +1,7 @@
 ﻿# Bit.Bmage end-to-end tests
 
-MSTest + Microsoft.Playwright suite that drives the Bmage demo site (`src/Utilities/Bmage/Demo`) in a real
-Chromium. It covers what the unit tests in `Bit.Bmage.Tests` cannot: the `bit-bmage.js` browser bridge, the
+MSTest + Microsoft.Playwright suite that drives the Bmage demo site (`src/Utilities/Bmage/Demo`) and the hosting
+samples (`src/Utilities/Bmage/Samples`) in a real Chromium. It covers what the unit tests in `Bit.Bmage.Tests` cannot: the `bit-bmage.js` browser bridge, the
 browser's own codecs, canvas rendering, pointer and keyboard input on the editor, and the demo pages as a reader
 uses them. Uses the **Microsoft.Testing.Platform** runner (mandated by the repo `global.json`) via
 `EnableMSTestRunner`.
@@ -18,6 +18,7 @@ uses them. Uses the **Microsoft.Testing.Platform** runner (mandated by the repo 
 | `EditorLifecycleTests` | Repeated navigation, named and reachable controls, roving tab focus, keyboard focus, and rapid input. |
 | `DemoRegressionTests` | Defects found by driving the demo: overlay alignment, crop handles, pan, selection, undo of a move, history, paste, failing batches, toggle state, the headless examples, the editor page's readout and export defaults, step numbers drawn with the site's font, a file that is not a project, searching on Enter, the upload table on a narrow phone, a Persian label drawn into the image, a stopped batch keeping what it finished, Escape closing the site menu, and the newer tools - straighten, borders, colour tools, a clipped group, a picked white balance and a trim, a duotone look - running from their demo pages. |
 | `EditingToolTests` | The brush, eraser, fill, eyedropper and compare tools, straighten and canvas size from the Transform tab, an arrow staying on its target through a quarter turn, a layer's opacity and blend mode, clipping and grouping layers, the selection tools and actions, the histogram, the busy state of a long action, accessible names of the new controls, and a project saved, reopened and still editable. |
+| `SamplesBrowserTests` | The hosting samples under Interactive Server, WebAssembly and Auto: each becomes interactive on its own renderer and probes the browser, Auto moves to WebAssembly once the runtime is downloaded, and in every mode the managed engine runs where the component does, an image is loaded (generated and uploaded), processed, encoded and downloaded, and the editor loads, rotates and exports. Each sample is built and started on a free port the first time a test needs it. |
 | `PerformanceMeasurements` | Opt-in (`BMAGE_E2E_MEASURE=1`): runs the editing tools' benchmark on the performance page and writes the timings to a file, for the WebAssembly columns of `docs/performance.md`. Inconclusive otherwise. |
 
 ## First-time setup
@@ -65,7 +66,7 @@ ahead of time) is several times faster.
 | --- | --- |
 | `BMAGE_E2E_HOST_URL` | An already-running demo to drive instead of building and booting one. When unset, the suite starts `Bit.Bmage.Demo.Server` on a free port on 127.0.0.1 - never on the launch profile's port, which other checkouts may hold. |
 | `BMAGE_E2E_CONFIGURATION` | Build configuration of the demo host the suite boots; defaults to the test assembly's. |
-| `BMAGE_E2E_SKIP_BUILD` | `1`: the demo host was built beforehand (as CI does); do not rebuild it. |
+| `BMAGE_E2E_SKIP_BUILD` | `1`: the demo host and the hosting samples were built beforehand (as CI does); do not rebuild them. |
 | `BMAGE_E2E_CHANNEL` | Launch an installed browser channel instead - e.g. `chrome`, `msedge`. When unset the suite tries Playwright's bundled Chromium, then Chrome, then Edge. |
 | `BMAGE_E2E_EXECUTABLE` | Full path to a chromium-family executable. |
 | `BMAGE_E2E_HEADED` | `1`: watch the run in a visible window. |
@@ -80,7 +81,8 @@ checkout without browsers still runs the rest of the repository's suites.
 
 `.github/workflows/bit.ci.Bmage.e2e.yml` runs the whole suite in Release, and only when started by hand (Actions >
 "bit platform CI - Bmage E2E" > Run workflow); the test results (TRX) and the demo's output are uploaded as an
-artifact. The pull-request pipeline, `bit.ci.Bmage.yml`, runs the build, engine and MCP server tests only.
+artifact. The pull-request pipeline, `bit.ci.Bmage.yml`, runs the build, engine, MCP server and hosting tests only;
+`Bit.Bmage.Tests.Hosting` boots the same samples in-process and checks what their prerendered responses contain.
 
 The workflow drives the demo published the way `bmage.demo.cd.yml` publishes it (ahead of time, and trimmed) rather
 than a build output: only a publish trims the WebAssembly client, so an interop payload the trimmer breaks (an anonymous type whose
@@ -89,9 +91,10 @@ constructor lost its parameter names, a getter nothing but System.Text.Json read
 ```bash
 dotnet publish src/Utilities/Bmage/Demo/Server/Bit.Bmage.Demo.Server.csproj -c Release -o demo -p:InvariantGlobalization=true
 dotnet build src/Utilities/Bmage/Tests/Bit.Bmage.Tests.E2E/Bit.Bmage.Tests.E2E.csproj -c Release
+dotnet build src/Utilities/Bmage/Samples/Server/Bit.Bmage.Samples.Server.csproj -c Release   # and Wasm, Auto
 pwsh src/Utilities/Bmage/Tests/Bit.Bmage.Tests.E2E/bin/Release/net10.0/playwright.ps1 install --with-deps chromium
 (cd demo && dotnet Bit.Bmage.Demo.Server.dll --urls http://127.0.0.1:5000 &)
-cd src/Utilities/Bmage/Tests/Bit.Bmage.Tests.E2E && BMAGE_E2E_HOST_URL=http://127.0.0.1:5000 dotnet test -c Release --no-build --report-trx --report-trx-filename bmage-e2e.trx
+cd src/Utilities/Bmage/Tests/Bit.Bmage.Tests.E2E && BMAGE_E2E_HOST_URL=http://127.0.0.1:5000 BMAGE_E2E_SKIP_BUILD=1 dotnet test -c Release --no-build --report-trx --report-trx-filename bmage-e2e.trx
 ```
 
 ## Layout
@@ -106,6 +109,8 @@ cd src/Utilities/Bmage/Tests/Bit.Bmage.Tests.E2E && BMAGE_E2E_HOST_URL=http://12
   HTML is on screen well before a single handler is attached); the sample upload; and loading it into an editor,
   which scrolls the editor to just under the sticky header so pointer-driven tests can reach every part of the
   canvas.
+* `Infrastructure/SampleHosts.cs` - the three hosting samples, each built (unless told not to) and started on a free
+  port the first time a test asks for it, with the same development manifest as the demo host.
 * `Infrastructure/SampleImage.cs` - the deterministic 800 x 600 gradient PNG every upload uses, built with the
   library's own encoder.
 * `Infrastructure/PlaywrightSession.cs`, `ChildProcess.cs`, `RepoLayout.cs`, `E2EEnvironment.cs`, `DemoBuild.cs` -

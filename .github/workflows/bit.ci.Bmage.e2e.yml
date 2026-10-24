@@ -1,6 +1,6 @@
 name: bit platform CI - Bmage E2E
 
-# The demo website driven in Chromium. It takes far longer than the build-and-unit pipeline (bit.ci.Bmage.yml), so
+# The demo website and the hosting samples driven in Chromium. It takes far longer than the build-and-unit pipeline (bit.ci.Bmage.yml), so
 # it runs only when started by hand. See src/Utilities/Bmage/Tests/Bit.Bmage.Tests.E2E/README.md for what the suite covers and
 # how to run it locally.
 
@@ -48,6 +48,14 @@ jobs:
 
     - name: Build the E2E suite
       run: dotnet build src/Utilities/Bmage/Tests/Bit.Bmage.Tests.E2E/Bit.Bmage.Tests.E2E.csproj -c Release
+
+    # SamplesBrowserTests starts each hosting sample itself (Interactive Server, WebAssembly and Auto); with
+    # BMAGE_E2E_SKIP_BUILD set below it expects them built already.
+    - name: Build the hosting samples
+      run: |
+        dotnet build src/Utilities/Bmage/Samples/Server/Bit.Bmage.Samples.Server.csproj -c Release
+        dotnet build src/Utilities/Bmage/Samples/Wasm/Bit.Bmage.Samples.Wasm/Bit.Bmage.Samples.Wasm.csproj -c Release
+        dotnet build src/Utilities/Bmage/Samples/Auto/Bit.Bmage.Samples.Auto/Bit.Bmage.Samples.Auto.csproj -c Release
 
     - name: Install Playwright Chromium
       run: pwsh src/Utilities/Bmage/Tests/Bit.Bmage.Tests.E2E/bin/Release/net10.0/playwright.ps1 install --with-deps chromium
