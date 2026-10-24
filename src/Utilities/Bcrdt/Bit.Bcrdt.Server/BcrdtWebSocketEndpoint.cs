@@ -22,9 +22,40 @@ namespace Bit.Bcrdt.Server;
 /// <returns><see langword="true"/> to accept the socket.</returns>
 public delegate ValueTask<bool> BcrdtWebSocketAuthorization(HttpContext context, string documentId);
 
+/// <summary>
+/// Decides what a request may do with a document - nothing, read it, or read and change it - before the
+/// socket is accepted.
+/// </summary>
+/// <param name="context">The upgrade request.</param>
+/// <param name="documentId">The document the request is asking for.</param>
+/// <returns>The access to grant; <see cref="BcrdtDocumentAccess.None"/> refuses the request.</returns>
+public delegate ValueTask<BcrdtDocumentAccess> BcrdtWebSocketAccessAuthorization(HttpContext context, string documentId);
+
 /// <summary>Settings for an endpoint mapped with <see cref="BcrdtWebSocketEndpoint.MapBitBcrdtWebSocket"/>.</summary>
 public sealed class BcrdtWebSocketEndpointOptions
 {
+    /// <summary>
+    /// Decides what each request may do with a document. Omitted means read-write for every request the
+    /// <c>authorize</c> callback admits.
+    /// </summary>
+    /// <remarks>
+    /// Consulted after the <c>authorize</c> callback, when both are given. A read-only connection receives
+    /// the document and every change and may publish presence, but every change it sends is dropped. The
+    /// client is told what it was granted as soon as its socket opens.
+    /// </remarks>
+    public BcrdtWebSocketAccessAuthorization? AuthorizeAccess { get; init; }
+
+    /// <summary>
+    /// A host that keeps a persisted, always-present replica of every document this endpoint carries,
+    /// or <see langword="null"/> to only relay. See <see cref="BcrdtDocumentHost"/>.
+    /// </summary>
+    /// <remarks>
+    /// A host is keyed by document identifier alone, so two endpoints given the same host - this one and a
+    /// <see cref="BcrdtHub"/>, say - share its documents, and the host passes changes between their
+    /// clients. Give each its own host when their documents must stay apart.
+    /// </remarks>
+    public BcrdtDocumentHost? DocumentHost { get; init; }
+
     /// <summary>The default largest message a client may send: 16 MB.</summary>
     public const int DefaultMaxMessageSize = BcrdtWebSocketFraming.DefaultMaxMessageSize;
 
@@ -143,6 +174,9 @@ public static class BcrdtWebSocketEndpoint
 
         private readonly BcrdtRoomRegistry<Member> _rooms = new();
 
+        // This mapping, as a document host tells relays apart: its rooms are its own.
+        private readonly string _relayName = "websocket:" + Guid.NewGuid().ToString("N");
+
         public async Task HandleAsync(HttpContext context)
         {
             if (!context.WebSockets.IsWebSocketRequest)
@@ -166,8 +200,43 @@ public static class BcrdtWebSocketEndpoint
                 return;
             }
 
-            using WebSocket socket = await context.WebSockets.AcceptWebSocketAsync().ConfigureAwait(false);
-            await RelayAsync(documentId, socket, context).ConfigureAwait(false);
+            BcrdtDocumentAccess access = options.AuthorizeAccess is { } authorizeAccess
+                ? await authorizeAccess(context, documentId).ConfigureAwait(false)
+                : BcrdtDocumentAccess.ReadWrite;
+
+            if (access == BcrdtDocumentAccess.None)
+            {
+                context.Response.StatusCode = StatusCodes.Status403Forbidden;
+                return;
+            }
+
+            // The hosted replica is loaded before the upgrade, so it is ready for the handshake the
+            // client sends as soon as its socket opens - and a store that cannot load the document is
+            // reported as a status the client retries, not as a socket that opens onto nothing.
+            var connection = new SocketHostConnection(context.Connection.Id, access, UserIdOf(context), _relayName);
+            BcrdtHostSession? session = null;
+            if (options.DocumentHost is { } host)
+            {
+                try
+                {
+                    session = await host.JoinAsync(documentId, connection, context.RequestAborted).ConfigureAwait(false);
+                }
+                catch (Exception) when (!context.RequestAborted.IsCancellationRequested)
+                {
+                    context.Response.StatusCode = StatusCodes.Status503ServiceUnavailable;
+                    return;
+                }
+            }
+
+            try
+            {
+                using WebSocket socket = await context.WebSockets.AcceptWebSocketAsync().ConfigureAwait(false);
+                await RelayAsync(documentId, socket, context, connection, session).ConfigureAwait(false);
+            }
+            finally
+            {
+                session?.Dispose();
+            }
         }
 
         private static string? ResolveDocumentId(HttpContext context)
@@ -181,13 +250,30 @@ public static class BcrdtWebSocketEndpoint
             return context.Request.Query[DocumentIdKey].ToString() is { Length: > 0 } fromQuery ? fromQuery : null;
         }
 
+        /// <summary>The signed-in user, the way SignalR identifies one by default, or null for an anonymous request.</summary>
+        private static string? UserIdOf(HttpContext context) =>
+            context.User.Identity?.IsAuthenticated == true
+                ? context.User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value ?? context.User.Identity.Name
+                : null;
+
         /// <summary>
         /// Serves one client for the life of its socket: pumping its queue while reading its messages
         /// into the room.
         /// </summary>
-        private async Task RelayAsync(string documentId, WebSocket socket, HttpContext context)
+        private async Task RelayAsync(
+            string documentId,
+            WebSocket socket,
+            HttpContext context,
+            SocketHostConnection connection,
+            BcrdtHostSession? session)
         {
             Member member = new(socket, options.OutboundQueueCapacity, options.OutboundQueueByteLimit);
+            connection.Attach(member);
+
+            // The grant goes out before anything else, so the client knows whether it may write before
+            // it hears - and answers - anybody.
+            member.TryEnqueue(BcrdtSyncProtocol.EncodeAuth(connection.Access, null));
+
             BcrdtRoomRegistry<Member>.Room room = _rooms.Join(documentId, member);
 
             using CancellationTokenSource shutdown = CancellationTokenSource.CreateLinkedTokenSource(context.RequestAborted);
@@ -206,7 +292,7 @@ public static class BcrdtWebSocketEndpoint
                 byte[] buffer = new byte[BcrdtWebSocketFraming.DefaultBufferSize];
                 using MemoryStream accumulator = new(BcrdtWebSocketFraming.DefaultBufferSize);
 
-                while (socket.State is WebSocketState.Open && !shutdown.IsCancellationRequested)
+                while (socket.State is WebSocketState.Open && !shutdown.IsCancellationRequested && !connection.Refused)
                 {
                     byte[]? message = await BcrdtWebSocketFraming
                         .ReceiveMessageAsync(socket, buffer, accumulator, options.MaxMessageSize, shutdown.Token)
@@ -219,6 +305,13 @@ public static class BcrdtWebSocketEndpoint
                     // the upgrade; an Auth frame from a client is a forgery that would disconnect the
                     // whole room for good.
                     if (!BcrdtSyncProtocol.IsRelayable(message)) continue;
+
+                    // What a reader writes reaches nobody.
+                    if (connection.Access != BcrdtDocumentAccess.ReadWrite && BcrdtSyncProtocol.IsWrite(message)) continue;
+
+                    // The host sees every message before the room does, so what it refuses - a
+                    // malformed message, a change its validator rejected - is never passed on.
+                    if (session is not null && !await session.ReceiveAsync(message).ConfigureAwait(false)) continue;
 
                     Broadcast(room, member, message);
                 }
@@ -261,7 +354,27 @@ public static class BcrdtWebSocketEndpoint
                     }
                 }
 
+                if (connection.Refused) await CloseRefusedAsync(socket).ConfigureAwait(false);
                 await BcrdtWebSocketFraming.AcknowledgeCloseAsync(socket).ConfigureAwait(false);
+            }
+        }
+
+        /// <summary>Closes a socket the host refused, once the refusal itself has been sent.</summary>
+        private static async Task CloseRefusedAsync(WebSocket socket)
+        {
+            try
+            {
+                if (socket.State is WebSocketState.Open or WebSocketState.CloseReceived)
+                {
+                    using CancellationTokenSource timeout = new(CloseTimeout);
+                    await socket
+                        .CloseOutputAsync(WebSocketCloseStatus.PolicyViolation, "Refused", timeout.Token)
+                        .ConfigureAwait(false);
+                }
+            }
+            catch (Exception)
+            {
+                // The socket is going either way.
             }
         }
 
@@ -326,6 +439,47 @@ public static class BcrdtWebSocketEndpoint
                 // Safe to share one array between members: nothing downstream writes to it.
                 if (!member.TryEnqueue(message) && !member.IsCompleted) member.Evict();
             }
+        }
+    }
+
+    /// <summary>A socket as the document host sees it.</summary>
+    /// <remarks>
+    /// Created before the socket is accepted, so the host can be joined - and the document loaded -
+    /// first; attached to the socket's member once there is one. Anything sent before that is dropped,
+    /// which the client's handshake repairs.
+    /// </remarks>
+    private sealed class SocketHostConnection(string id, BcrdtDocumentAccess access, string? userId, string relay) : IBcrdtHostConnection
+    {
+        private Member? _member;
+        private int _refused;
+
+        public string Id => id;
+
+        public BcrdtDocumentAccess Access => access;
+
+        public string? UserId => userId;
+
+        public string Relay => relay;
+
+        /// <summary>Whether the host refused this connection, so the relay stops reading from it.</summary>
+        public bool Refused => Volatile.Read(ref _refused) != 0;
+
+        public void Attach(Member member) => Volatile.Write(ref _member, member);
+
+        public void Send(byte[] message)
+        {
+            Member? member = Volatile.Read(ref _member);
+            if (member is not null && !member.TryEnqueue(message) && !member.IsCompleted) member.Evict();
+        }
+
+        /// <summary>Queues the refusal as the last thing this client hears; the relay then closes it.</summary>
+        public void Refuse(string reason)
+        {
+            if (Interlocked.Exchange(ref _refused, 1) != 0) return;
+            if (Volatile.Read(ref _member) is not { } member) return;
+
+            member.TryEnqueue(BcrdtSyncProtocol.EncodeAuth(BcrdtDocumentAccess.None, reason));
+            member.Complete();
         }
     }
 

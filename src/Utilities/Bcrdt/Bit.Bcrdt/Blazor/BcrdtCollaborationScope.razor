@@ -9,6 +9,10 @@
         @ChildContent(Document)
     </CascadingValue>
 }
+else if (_openFailure is not null && ErrorContent is not null)
+{
+    @ErrorContent(_openFailure)
+}
 else if (LoadingContent is not null)
 {
     @LoadingContent
@@ -16,6 +20,7 @@ else if (LoadingContent is not null)
 
 @code {
     private readonly List<IDisposable> _documentSubscriptions = [];
+    private Exception? _openFailure;
     private string? _requestedId;
     private string? _heldId;
     private int _generation;
@@ -33,9 +38,20 @@ else if (LoadingContent is not null)
     [Parameter, EditorRequired]
     public RenderFragment<BcrdtCollaborativeDocument> ChildContent { get; set; } = default!;
 
-    /// <summary>Rendered while the document is being opened.</summary>
+    /// <summary>
+    /// Rendered while the document is being opened - and, on .NET 9 and later, while the page is being
+    /// prerendered, because a document is opened only once the component is interactive.
+    /// </summary>
     [Parameter]
     public RenderFragment? LoadingContent { get; set; }
+
+    /// <summary>
+    /// Rendered with the failure if the document cannot be opened - its store failed to load it, say.
+    /// Without it the failure is thrown, for an error boundary to catch. Changing <see cref="DocumentId"/>
+    /// tries again.
+    /// </summary>
+    [Parameter]
+    public RenderFragment<Exception>? ErrorContent { get; set; }
 
     /// <summary>Invoked once the document is open.</summary>
     [Parameter]
@@ -46,6 +62,13 @@ else if (LoadingContent is not null)
 
     protected override async Task OnParametersSetAsync()
     {
+#if NET9_0_OR_GREATER
+        // A prerendered page belongs to a request that is over as soon as it is sent: a document opened
+        // now would connect, publish a presence nobody will ever withdraw, and - backed by a browser
+        // store - fail outright, because there is no browser yet. The interactive render opens it.
+        if (!RendererInfo.IsInteractive) return;
+#endif
+
         if (string.Equals(_requestedId, DocumentId, StringComparison.Ordinal)) return;
 
         // Parameters can change again while an earlier open is still in flight. Each pass takes a
@@ -58,6 +81,7 @@ else if (LoadingContent is not null)
         string? held = _heldId;
         _heldId = null;
         Document = null;
+        _openFailure = null;
         ReleaseDocumentSubscriptions();
 
         // Release a reference rather than force a close: another scope may share the document.
@@ -74,6 +98,13 @@ else if (LoadingContent is not null)
             // Overtaken by a newer identifier, or disposed, while opening: the failure belongs to a
             // document nobody is waiting for any more. Rethrowing it would fail the component - in
             // Blazor Server, the whole circuit - over something already irrelevant.
+            return;
+        }
+        catch (Exception ex) when (ErrorContent is not null)
+        {
+            // Shown in place of the content. The identifier stays requested, so the failure is not
+            // retried on every render; changing it tries again.
+            _openFailure = ex;
             return;
         }
         catch

@@ -260,14 +260,14 @@ public static class BcrdtAnyCodec
             case BcrdtAnyTag.Array:
             {
                 int count = reader.ValidateCount(reader.ReadVarUInt32(), "array element");
-                var items = new List<object?>(count);
+                var items = new List<object?>(BcrdtBufferReader.InitialCapacity(count));
                 for (int i = 0; i < count; i++) items.Add(Read(ref reader, depth + 1));
                 return items;
             }
             case BcrdtAnyTag.Object:
             {
                 int count = reader.ValidateCount(reader.ReadVarUInt32(), "object entry");
-                var map = new Dictionary<string, object?>(count, StringComparer.Ordinal);
+                var map = new Dictionary<string, object?>(BcrdtBufferReader.InitialCapacity(count), StringComparer.Ordinal);
                 for (int i = 0; i < count; i++)
                 {
                     string key = reader.ReadString();
