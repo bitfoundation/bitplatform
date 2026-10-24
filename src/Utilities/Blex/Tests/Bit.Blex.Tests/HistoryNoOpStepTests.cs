@@ -132,4 +132,64 @@ public class HistoryNoOpStepTests
         Assert.AreEqual(0, counter.Count);
         Assert.AreEqual("dark", late.Theme, "undo must not touch a store the step never held");
     }
+
+    [TestMethod]
+    public void The_first_action_of_a_store_that_registered_late_is_undoable()
+    {
+        var manager = new BlexManager();
+        var counter = new CounterStore();
+        manager.Register(counter);
+        var history = new BlexHistory(manager);
+        history.Start();
+
+        var late = new SettingsStore();
+        manager.Register(late);
+        late.SetTheme("dark");
+
+        history.Undo();
+
+        Assert.AreEqual("light", late.Theme);
+        Assert.IsFalse(history.CanUndo);
+    }
+
+    [TestMethod]
+    public void A_late_store_hydrating_after_another_action_is_not_reverted_by_its_undo()
+    {
+        var manager = new BlexManager();
+        var counter = new CounterStore();
+        manager.Register(counter);
+        var history = new BlexHistory(manager);
+        history.Start();
+
+        // The read from storage is still on its way when another store acts.
+        var late = new SettingsStore();
+        manager.Register(late);
+        counter.Increment();
+        late.RestoreState(new JsonObject { ["Theme"] = "dark", ["FontSize"] = 14 });
+
+        Assert.AreEqual("counter/Increment", history.NextUndoLabel);
+        history.Undo();
+        Assert.AreEqual(0, counter.Count);
+        Assert.AreEqual("dark", late.Theme, "undo must not put the declared defaults back over the hydrated state");
+    }
+
+    [TestMethod]
+    public void A_store_registering_closes_the_open_group()
+    {
+        var manager = new BlexManager();
+        var counter = new CounterStore();
+        manager.Register(counter);
+        var history = new BlexHistory(manager, groupBy: _ => "all");
+        history.Start();
+        counter.Increment();
+
+        var late = new SettingsStore();
+        manager.Register(late);
+        late.SetTheme("dark");
+
+        // The open step was taken before the store arrived: folded into it, the theme change could not be undone.
+        history.Undo();
+        Assert.AreEqual("light", late.Theme);
+        Assert.AreEqual(1, counter.Count);
+    }
 }

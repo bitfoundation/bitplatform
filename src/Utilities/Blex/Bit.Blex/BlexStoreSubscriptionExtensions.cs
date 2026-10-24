@@ -78,7 +78,7 @@ internal sealed class BlexSelectorSubscription<T> : IDisposable
     /// <param name="comparer">Decides what counts as a change.</param>
     /// <param name="initial">The selected value at subscription time, which the first change is measured against.</param>
     /// <param name="onSelectorError">
-    /// Receives a selector failure once the subscription has ended over it. Without one, the failure
+    /// Receives a selector or comparer failure once the subscription has ended over it. Without one, the failure
     /// propagates to the store, which reports it and keeps the subscription for the next change.
     /// </param>
     public BlexSelectorSubscription(
@@ -124,9 +124,14 @@ internal sealed class BlexSelectorSubscription<T> : IDisposable
             return;
 
         T current;
+        bool unchanged;
         try
         {
             current = _selector();
+
+            // The comparer is user code too: one that throws ends the subscription like the selector, rather than
+            // being reported and called again on every change after it.
+            unchanged = _comparer.Equals(current, _last);
         }
         catch (Exception ex) when (_onSelectorError is not null)
         {
@@ -135,7 +140,7 @@ internal sealed class BlexSelectorSubscription<T> : IDisposable
             return;
         }
 
-        if (_comparer.Equals(current, _last))
+        if (unchanged)
             return;
 
         var previous = _last;

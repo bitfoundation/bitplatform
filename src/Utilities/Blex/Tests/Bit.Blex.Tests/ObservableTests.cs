@@ -66,6 +66,27 @@ public class ObservableTests
     }
 
     [TestMethod]
+    public void A_comparer_that_throws_ends_the_sequence_with_OnError()
+    {
+        var store = new CounterStore();
+        var recorder = new Recorder<int>();
+        var compared = 0;
+        var comparer = EqualityComparer<int>.Create((_, _) =>
+        {
+            compared++;
+            throw new InvalidOperationException("compare boom");
+        });
+
+        using var sub = store.Observe(() => store.Count, comparer).Subscribe(recorder);
+        store.Add(1);
+        store.Add(1);   // unsubscribed by the failure: never compared again
+
+        CollectionAssert.AreEqual(new[] { 0 }, recorder.Values);
+        Assert.AreEqual("compare boom", recorder.Error?.Message);
+        Assert.AreEqual(1, compared);
+    }
+
+    [TestMethod]
     public void An_observer_whose_first_OnNext_throws_is_detached_before_Subscribe_throws()
     {
         var store = new CounterStore();

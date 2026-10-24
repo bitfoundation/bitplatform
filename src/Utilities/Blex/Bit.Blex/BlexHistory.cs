@@ -82,6 +82,10 @@ public class BlexHistory : IDisposable
     // Weak, so a scoped store that came and went is not kept alive by the cache (its slices in snapshots
     // still are, until those entries roll off).
     private readonly System.Runtime.CompilerServices.ConditionalWeakTable<BlexStoreBase, CachedSlice> _slices = [];
+
+    // The slice a store that registered after recording began joined the present with, until its state arrives:
+    // a restore of a store the present still holds that way is the store hydrating, not moving away from a step.
+    private readonly System.Runtime.CompilerServices.ConditionalWeakTable<IBlexStore, JsonObject> _joined = [];
     private string? _lastGroupKey;
     private Snapshot? _present;
 
@@ -345,9 +349,70 @@ public class BlexHistory : IDisposable
         _present = _boundary = Capture();
         _presentLabel = null;
         _manager.ActionDispatched += OnAction;
+        _manager.StoreRegistered += OnStoreRegistered;
         _manager.StoreRestored += OnStoreRestored;
         _manager.StateRestored += OnExternalRestore;
         _manager.StoreRolledBack += OnRolledBack;
+    }
+
+    /// <summary>
+    /// Takes a store that registers after recording began into the present. Left out, the step its first action pushes
+    /// would hold nothing of it, and undoing that action would leave the store as it is.
+    /// </summary>
+    private void OnStoreRegistered(IBlexStore store)
+    {
+        // A store the present already holds is one coming back under its name: its steps are waiting for it.
+        if (_restoring || _present is null || _present.Slices.ContainsKey(store.Name) || !Covers(store))
+            return;
+
+        try
+        {
+            _joined.AddOrUpdate(store, Join(store));
+
+            // The step a group has open was taken before the store arrived, and could not take back a change to it.
+            _lastGroupKey = null;
+        }
+        catch (Exception ex)
+        {
+            _manager.ReportError("history", ex, store.Name);
+        }
+    }
+
+    /// <summary>
+    /// Adds <paramref name="store"/>'s current slice to the present, and to the boundary when it trails the present
+    /// without one: left without the slice, it would differ from the present by a store nothing moved, and the next
+    /// Checkpoint would push a step that undoes nothing. Returns the slice.
+    /// </summary>
+    private JsonObject Join(IBlexStore store)
+    {
+        var slice = SliceOf(store);
+        var boundaryIsPresent = ReferenceEquals(_boundary, _present);
+        _present = _present!.With(store.Name, slice);
+
+        if (boundaryIsPresent)
+            _boundary = _present;
+        else if (_boundary is not null && !_boundary.Slices.ContainsKey(store.Name))
+            _boundary = _boundary.With(store.Name, slice);
+
+        return slice;
+    }
+
+    /// <summary>Puts <paramref name="repair"/>'s result in place of every snapshot held: the present, the boundary and both stacks.</summary>
+    private void RepairAll(Func<Snapshot, Snapshot> repair)
+    {
+        var present = repair(_present!);
+        _boundary = ReferenceEquals(_boundary, _present) ? present : _boundary is null ? null : repair(_boundary);
+        _present = present;
+
+        // Every entry: the redo stack is not in the order its snapshots were taken. Both are bounded by MaxEntries.
+        Repair(_undo);
+        Repair(_redo);
+
+        void Repair(List<BlexEntry> entries)
+        {
+            for (var i = 0; i < entries.Count; i++)
+                entries[i] = entries[i] with { State = repair(entries[i].State) };
+        }
     }
 
     /// <summary>
@@ -365,24 +430,9 @@ public class BlexHistory : IDisposable
             var restored = SliceOf(store);
             var name = store.Name;
 
-            Snapshot Repair(Snapshot snapshot)
-                => snapshot.Stamp > startedAt && snapshot.Slices.TryGetValue(name, out var slice) && !ReferenceEquals(slice, restored)
-                    ? snapshot.With(name, restored)
-                    : snapshot;
-
-            // Every entry: the redo stack is not in the order its snapshots were taken. A rollback is rare and the
-            // stacks are bounded by MaxEntries.
-            void RepairAll(List<BlexEntry> entries)
-            {
-                for (var i = 0; i < entries.Count; i++)
-                    entries[i] = entries[i] with { State = Repair(entries[i].State) };
-            }
-
-            var present = Repair(_present);
-            _boundary = ReferenceEquals(_boundary, _present) ? present : _boundary is null ? null : Repair(_boundary);
-            _present = present;
-            RepairAll(_undo);
-            RepairAll(_redo);
+            RepairAll(snapshot => snapshot.Stamp > startedAt && snapshot.Slices.TryGetValue(name, out var slice) && !ReferenceEquals(slice, restored)
+                ? snapshot.With(name, restored)
+                : snapshot);
         }
         catch (Exception ex)
         {
@@ -393,28 +443,22 @@ public class BlexHistory : IDisposable
 
     private void OnStoreRestored(IBlexStore store)
     {
-        if (_restoring || _restoredAway || !Covers(store))
+        if (_restoring || !Covers(store))
             return;
 
         try
         {
-            // A store the present has never seen -- one registered after it was taken, a scoped instance
-            // hydrating as its dialog opens -- has not been moved away from anything: it joins the present
-            // (and the boundary) instead of costing the next Undo its label.
+            // Ahead of the restore-away check: the present a restore-away refreshes holds the arrived state as it is,
+            // but the steps pushed since the store joined would still hold its declared defaults.
+            if (TakeArrivedState(store) || _restoredAway)
+                return;
+
+            // A store the present has never seen -- one that registered without joining it, while this history was
+            // restoring, say -- has not been moved away from anything: it joins the present (and the boundary)
+            // instead of costing the next Undo its label.
             if (_present is not null && !_present.Slices.ContainsKey(store.Name))
             {
-                var slice = SliceOf(store);
-                var boundaryIsPresent = ReferenceEquals(_boundary, _present);
-                _present = _present.With(store.Name, slice);
-
-                // The boundary too when it trails the present (a filtered action moved the present off it): left
-                // without the slice, it would differ from the present by a store nothing moved, and the next
-                // Checkpoint would push a step that undoes nothing.
-                if (boundaryIsPresent)
-                    _boundary = _present;
-                else if (_boundary is not null && !_boundary.Slices.ContainsKey(store.Name))
-                    _boundary = _boundary.With(store.Name, slice);
-
+                Join(store);
                 return;
             }
 
@@ -438,6 +482,32 @@ public class BlexHistory : IDisposable
             // break dispatch for observers registered after it.
             _manager.ReportError("history", ex, store.Name);
         }
+    }
+
+    /// <summary>
+    /// Takes in the state of a store that joined as it registered and whose state arrives only now -- a scoped instance
+    /// hydrating as its dialog opens: the present still holds the slice it joined with, and so does every snapshot taken
+    /// since, none of them as a step that moved it. The arrived state takes that slice's place in all of them, so an
+    /// Undo neither puts the declared defaults back over what was just read nor loses its label.
+    /// </summary>
+    private bool TakeArrivedState(IBlexStore store)
+    {
+        if (!_joined.TryGetValue(store, out var joined)
+            || _present is null
+            || !_present.Slices.TryGetValue(store.Name, out var held)
+            || !ReferenceEquals(held, joined))
+        {
+            return false;
+        }
+
+        _joined.Remove(store);
+        var name = store.Name;
+        var arrived = SliceOf(store);
+        RepairAll(snapshot => snapshot.Slices.TryGetValue(name, out var slice) && ReferenceEquals(slice, joined)
+            ? snapshot.With(name, arrived)
+            : snapshot);
+
+        return true;
     }
 
     private void OnExternalRestore()
@@ -821,6 +891,7 @@ public class BlexHistory : IDisposable
         if (_started)
         {
             _manager.ActionDispatched -= OnAction;
+            _manager.StoreRegistered -= OnStoreRegistered;
             _manager.StoreRestored -= OnStoreRestored;
             _manager.StateRestored -= OnExternalRestore;
             _manager.StoreRolledBack -= OnRolledBack;

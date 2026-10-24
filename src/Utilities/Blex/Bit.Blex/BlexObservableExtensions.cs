@@ -22,8 +22,8 @@ public static class BlexObservableExtensions
     /// <param name="comparer">Decides what counts as a change; defaults to <see cref="EqualityComparer{T}.Default"/>.</param>
     /// <remarks>
     /// The sequence never completes on its own -- dispose the subscription to stop observing. A
-    /// selector that throws ends the subscription with <see cref="IObserver{T}.OnError"/>, the Rx
-    /// contract for a failed source, instead of being reported and retried on the next change.
+    /// selector or comparer that throws ends the subscription with <see cref="IObserver{T}.OnError"/>,
+    /// the Rx contract for a failed source, instead of being reported and retried on the next change.
     /// </remarks>
     public static IObservable<T> Observe<T>(this IBlexStore store, Func<T> selector, IEqualityComparer<T>? comparer = null)
     {
@@ -65,7 +65,7 @@ public static class BlexObservableExtensions
                 return Subscription.Empty;
             }
 
-            // A failing selector ends the sequence (OnError) rather than being reported and retried, and
+            // A failing selector or comparer ends the sequence (OnError) rather than being reported and retried, and
             // an observer whose first OnNext throws is detached before the exception leaves Subscribe.
             return new BlexSelectorSubscription<T>(store, selector, (_, current) => observer.OnNext(current), comparer, initial, observer.OnError)
                 .FireImmediately();
