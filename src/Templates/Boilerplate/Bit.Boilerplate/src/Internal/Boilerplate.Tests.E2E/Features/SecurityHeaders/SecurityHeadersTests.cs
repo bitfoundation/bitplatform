@@ -81,7 +81,7 @@ public partial class SecurityHeadersTests
     }
 
     /// <summary>
-    /// The app-wide policy: ContentSecurityPolicy.razor, rendered into App.razor's head. It is stricter than the header's
+    /// The app-wide policy: ContentSecurityPolicy.razor's, which App.razor sends as a second header. It is stricter than the baseline's
     /// (default-src, script-src, connect-src ...) and a browser enforces both. It must name the app's own API, or the
     /// app could not call it.
     /// </summary>
@@ -89,15 +89,17 @@ public partial class SecurityHeadersTests
     [DataRow(App.Todo, DisplayName = "Todo (standalone API)")]
     [DataRow(App.AdminPanel, DisplayName = "AdminPanel (standalone API)")]
     [DataRow(App.Sales, DisplayName = "Sales (integrated API)")]
-    public async Task PrerenderedPage_Should_CarryTheAppWideCspMetaTag(App app)
+    public async Task PrerenderedPage_Should_CarryTheAppWideCspHeader(App app)
     {
         using var response = await Send(HttpMethod.Get, new Uri(new Uri(DeployedApps.AddressOf(app)), "en-US/"));
         var html = await response.Content.ReadAsStringAsync(TestContext.CancellationToken);
 
-        var match = CspMetaTag().Match(html);
-        Assert.IsTrue(match.Success, $"{app}'s prerendered page has no Content-Security-Policy meta tag.");
+        Assert.IsFalse(CspMetaTag().IsMatch(html), $"{app}'s prerendered page has a Content-Security-Policy meta tag, which turns off the browser's preload scanner.");
 
-        var directives = WebUtility.HtmlDecode(match.Groups["content"].Value)
+        var policy = CspPolicies(response).SingleOrDefault(p => p.Contains("default-src"));
+        Assert.IsNotNull(policy, $"{app}'s prerendered page has no app-wide Content-Security-Policy header.");
+
+        var directives = policy
             .Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
             .Select(d => d.Split(' ', 2))
             .ToDictionary(d => d[0], d => d.Length > 1 ? d[1] : "");
@@ -135,6 +137,12 @@ public partial class SecurityHeadersTests
 
         foreach (var (name, expected) in baseline)
         {
+            if (name is "Content-Security-Policy")
+            {
+                Assert.Contains(expected, CspPolicies(response), $"{name} on {uri} ({(int)response.StatusCode}): {HeaderOf(response, name)}");
+                continue;
+            }
+
             Assert.AreEqual(expected, HeaderOf(response, name), $"{name} on {uri} ({(int)response.StatusCode}).");
         }
 
@@ -151,6 +159,9 @@ public partial class SecurityHeadersTests
         Assert.IsFalse(HeaderOf(response, "Server") is string server && (server.Contains("Kestrel", StringComparison.OrdinalIgnoreCase) || server.Contains("IIS", StringComparison.OrdinalIgnoreCase)),
             $"Server on {uri}: {HeaderOf(response, "Server")}");
     }
+
+    private static string[] CspPolicies(HttpResponseMessage response) =>
+        HeaderOf(response, "Content-Security-Policy")?.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries) ?? [];
 
     private static string? HeaderOf(HttpResponseMessage response, string name)
     {

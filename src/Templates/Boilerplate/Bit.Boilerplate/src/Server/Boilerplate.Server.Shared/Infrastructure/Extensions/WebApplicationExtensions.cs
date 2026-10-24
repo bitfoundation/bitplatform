@@ -234,7 +234,7 @@ public static class WebApplicationExtensions
                     headers["Cross-Origin-Resource-Policy"] = "cross-origin";
 
                     // 8. Content-Security-Policy (CSP)
-                    headers.ContentSecurityPolicy = csp;
+                    headers.Append("Content-Security-Policy", csp);
                     // For a stricter, app-wide CSP that also works in all Interactive Blazor rendering modes,
                     // check out the ContentSecurityPolicy.razor component in Client.Core
 

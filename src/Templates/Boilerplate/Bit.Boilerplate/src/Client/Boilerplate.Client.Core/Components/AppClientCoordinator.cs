@@ -182,20 +182,25 @@ public partial class AppClientCoordinator : AppComponentBase
     //#endif
 
     private ClaimsPrincipal? lastPropagatedUser;
+    private ClaimsPrincipal? propagatingUser;
     /// <summary>
     /// This code manages the association of a user with sensitive services, such as SignalR, push notifications, App Insights, and others,
     /// ensuring the user is correctly set or cleared as needed.
     /// </summary>
     public async Task PropagateAuthState(bool firstRun, Task<AuthenticationState> task)
     {
+        ClaimsPrincipal? user = null;
+
         try
         {
-            var user = (await task).User;
+            user = (await task).User;
             var isAuthenticated = user.IsAuthenticated();
             var userId = isAuthenticated ? user.GetUserId() : (Guid?)null;
 
-            if (user.IsTheSame(lastPropagatedUser))
+            if (user.IsTheSame(propagatingUser ?? lastPropagatedUser))
                 return;
+
+            propagatingUser = user;
 
             await Abort(); // Cancels ongoing user id propagation, because the new authentication state is available.
 
@@ -226,24 +231,35 @@ public partial class AppClientCoordinator : AppComponentBase
                 authLogger.LogInformation("Propagating {AuthStateType} {AuthState} authentication state.", firstRun ? "Initial" : "Updated", user.IsAuthenticated() ? "Authenticated" : "Anonymous");
             }
 
+            List<Task> propagations = [];
+
             //#if (signalR == true)
-            await EnsureSignalRStarted();
+            propagations.Add(EnsureSignalRStarted());
             //#endif
 
             //#if (notification == true)
-            await pushNotificationService.Subscribe(CurrentCancellationToken);
+            propagations.Add(pushNotificationService.Subscribe(CurrentCancellationToken));
             //#endif
 
             if (isAuthenticated)
             {
-                await UpdateUserSession();
+                propagations.Add(UpdateUserSession());
             }
+
+            await Task.WhenAll(propagations);
 
             lastPropagatedUser = user;
         }
         catch (Exception exp)
         {
             ExceptionHandler.Handle(exp);
+        }
+        finally
+        {
+            if (ReferenceEquals(propagatingUser, user))
+            {
+                propagatingUser = null;
+            }
         }
     }
 

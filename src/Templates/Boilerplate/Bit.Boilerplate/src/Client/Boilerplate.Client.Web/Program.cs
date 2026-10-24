@@ -54,12 +54,10 @@ public static partial class Program
 
         if (CultureInfoManager.InvariantGlobalization is false)
         {
-            var cultureCookie = CultureService.ExtractUiCulture(await host.Services.GetRequiredService<Cookie>().GetValue(CultureService.CultureCookieName));
-
             var navigationManager = host.Services.GetRequiredService<NavigationManager>();
 
             var culture = new Uri(navigationManager.Uri).GetCulture() ?? // 1- Culture query string OR Route data request culture
-                          cultureCookie ?? // 2- User settings
+                          CultureService.ExtractUiCulture(await host.Services.GetRequiredService<Cookie>().GetValue(CultureService.CultureCookieName)) ?? // 2- User settings
                           CultureInfo.CurrentUICulture.Name; // 3- OS/Browser settings
 
             CultureInfoManager.SetCurrentCulture(culture);
