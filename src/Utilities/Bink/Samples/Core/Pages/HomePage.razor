@@ -1,0 +1,75 @@
+﻿@page "/"
+@using System.Runtime.InteropServices
+
+<PageTitle>Bink samples</PageTitle>
+
+<h1>Bink samples</h1>
+
+<p>
+    The same pages run in every Blazor hosting model: Server, WebAssembly, Auto and MAUI (Blazor Hybrid). Open each
+    page in each host and the canvas should behave the same - only where the engine runs, and therefore the render
+    path below, changes.
+</p>
+
+<section>
+    <h2>This host</h2>
+    <dl class="facts">
+        <dt>Renderer</dt>
+        <dd>@RendererInfo.Name (@(RendererInfo.IsInteractive ? "interactive" : "prerendering"))</dd>
+        <dt>.NET runs on</dt>
+        <dd>@(OperatingSystem.IsBrowser() ? "the browser (WebAssembly)" : RuntimeInformation.OSDescription)</dd>
+        <dt>Runtime</dt>
+        <dd>@RuntimeInformation.FrameworkDescription</dd>
+        <dt>Canvas</dt>
+        <dd>@_state</dd>
+    </dl>
+</section>
+
+<section>
+    <h2>Smoke test</h2>
+    <p>Draw with a mouse, a finger or a pen. Ctrl+Z undoes, Ctrl+Shift+Z redoes.</p>
+
+    <div class="surface">
+        <BinkCanvas @ref="_canvas" Height="240px" AriaLabel="Smoke test canvas"
+                    EnableTouchGestures="true"
+                    Ready="OnReady"
+                    Unavailable="OnUnavailable"
+                    DocumentChanged="() => StateHasChanged()"
+                    HistoryChanged="() => StateHasChanged()" />
+    </div>
+
+    <div class="toolbar">
+        <button disabled="@(_canvas?.History.CanUndo is not true)" @onclick="() => _canvas?.Undo()">Undo</button>
+        <button disabled="@(_canvas?.History.CanRedo is not true)" @onclick="() => _canvas?.Redo()">Redo</button>
+        <button disabled="@(_canvas?.CurrentDocument.IsEmpty is not false)" @onclick="() => _canvas?.Clear()">Clear</button>
+    </div>
+
+    <CanvasStatus Canvas="_canvas" />
+</section>
+
+<section>
+    <h2>What each page checks</h2>
+    <ul class="features">
+        <li><NavLink href="signature">Signature</NavLink> - pressure-aware ink, validation, read-only state and an inline export.</li>
+        <li><NavLink href="whiteboard">Whiteboard</NavLink> - every tool and brush, shapes, text, layers, zoom, grid, snapping and the clipboard.</li>
+        <li><NavLink href="images">Images</NavLink> - images decoded by the browser: one rasterized in .NET, one picked from disk.</li>
+        <li><NavLink href="export">Export</NavLink> - SVG, browser PNG/JPEG/WebP, the pure .NET PNG encoder, JSON round trip and SVG import.</li>
+        <li><NavLink href="collaboration">Collaboration</NavLink> - two canvases kept in step through a collaboration session.</li>
+        <li><NavLink href="autosave">Autosave</NavLink> - a recovery copy kept in the browser's storage and restored on the next visit.</li>
+        <li><NavLink href="lifecycle">Lifecycle</NavLink> - mounting, unmounting, resizing and switching documents and read-only mode.</li>
+    </ul>
+</section>
+
+@code {
+    private BinkCanvas? _canvas;
+    private string _state = "not attached yet";
+
+    private void OnReady(BinkInputCapabilities capabilities)
+    {
+        _state = _canvas?.UsesFastRenderPath is true
+            ? "attached, rendering through the zero-copy WebAssembly path"
+            : "attached, rendering through the standard IJSRuntime path";
+    }
+
+    private void OnUnavailable(string reason) => _state = "unavailable: " + reason;
+}

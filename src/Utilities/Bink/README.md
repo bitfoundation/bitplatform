@@ -104,6 +104,11 @@ document review, two-way collaboration, touch, keyboard and screen reader use, t
 performance page that measures the engine in your browser, and a custom brush, element type and render target.
 Every page explains what it shows, and its source is one click away.
 
+[`Samples`](Samples/) is the hosting harness rather than the docs: one shared [Core](Samples/Core/) project of
+pages (signature, whiteboard, images, export, collaboration, autosave and canvas lifecycle), hosted unchanged under
+[Server](Samples/Server/), [WASM](Samples/Wasm/), [Auto](Samples/Auto/) and [MAUI](Samples/MAUI/) (Blazor Hybrid on
+Android, iOS, macOS and Windows), so the same drawing code can be exercised in every hosting model.
+
 ## How it fits together
 
 ```text

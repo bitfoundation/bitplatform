@@ -1,0 +1,147 @@
+﻿@page "/signature"
+
+<PageTitle>Signature - Bink samples</PageTitle>
+
+<h1>Signature</h1>
+
+<p>
+    Sign above the line. <strong>Accept</strong> is enabled once there is enough ink; accepting makes the field
+    read only and renders the stored vector document back as SVG and PNG.
+</p>
+
+<div class="toolbar">
+    <label>
+        Ink
+        <select @bind="Color" @bind:after="UpdateBrush">
+            <option value="#0f172a">Black</option>
+            <option value="#1d4ed8">Blue</option>
+        </select>
+    </label>
+    <label>
+        Nib
+        <input type="range" min="2" max="8" step="0.5" @bind="Width" @bind:event="oninput" @bind:after="UpdateBrush" />
+    </label>
+    <button disabled="@(_locked || _canvas?.History.CanUndo is not true)" @onclick="() => _canvas?.Undo()">Undo</button>
+    <button disabled="@(_locked || _canvas?.History.CanRedo is not true)" @onclick="() => _canvas?.Redo()">Redo</button>
+    <button disabled="@IsEmpty" @onclick="Clear">@(_locked ? "Sign again" : "Clear")</button>
+</div>
+
+<div class="surface signature">
+    <BinkCanvas @ref="_canvas" Height="200px"
+                AriaLabel="@(_locked ? "Accepted signature" : "Sign here")"
+                Brush="_brush"
+                ReadOnly="_locked"
+                EnableTouchGestures="true"
+                StrokeCompleted="OnStrokeCompleted"
+                DocumentChanged="OnDocumentChanged"
+                Ready="() => StateHasChanged()"
+                HistoryChanged="() => StateHasChanged()" />
+    <div class="signature-line" aria-hidden="true"></div>
+</div>
+
+<CanvasStatus Canvas="_canvas">
+    <span>Ink length <strong>@_ink.Length.ToString("0", CultureInfo.InvariantCulture)</strong></span>
+    <span><strong>@_ink.StrokeCount</strong> strokes</span>
+</CanvasStatus>
+
+<div class="toolbar">
+    <button disabled="@(_locked || IsValid is false)" @onclick="AcceptAsync">Accept signature</button>
+    <span role="status">@_message</span>
+</div>
+
+@if (_svg is not null)
+{
+    <section>
+        <h2>Stored signature</h2>
+        <p>@_json?.Length bytes of JSON. Rendered back from the stored document:</p>
+        <div class="preview-grid">
+            <figure>
+                <div class="preview">@((MarkupString)_svg)</div>
+                <figcaption>SVG (BinkSvgExporter, in .NET)</figcaption>
+            </figure>
+            @if (_png is not null)
+            {
+                <figure>
+                    <img class="preview" src="@_png" alt="Signature as PNG" />
+                    <figcaption>PNG at 2x (rasterized by the browser)</figcaption>
+                </figure>
+            }
+        </div>
+    </section>
+}
+
+@code {
+    private BinkCanvas? _canvas;
+    private BinkBrush _brush = new BinkPenBrush { Width = 3.5f, Color = BinkColor.Parse("#0f172a"), TaperEnd = 8f };
+    private BinkInkMetrics _ink;
+    private bool _locked;
+    private string _message = "Sign to continue.";
+    private string? _svg;
+    private string? _png;
+    private string? _json;
+
+    private string Color { get; set; } = "#0f172a";
+
+    private float Width { get; set; } = 3.5f;
+
+    private bool IsEmpty => _canvas?.CurrentDocument.IsEmpty ?? true;
+
+    // A dot is not a signature: requiring some ink is a validation rule the vector model makes easy to express.
+    private bool IsValid => _ink.Length > 120f;
+
+    private void UpdateBrush() => _brush = _brush with { Color = BinkColor.Parse(Color), Width = Width };
+
+    private void OnStrokeCompleted(BinkStrokeEventArgs args)
+    {
+        MeasureInk();
+        string captured = args.Stroke is { Input.HasRealPressure: true } ? "Captured with pen pressure." : "Captured.";
+        _message = IsValid ? captured : captured + " Keep signing.";
+    }
+
+    private void OnDocumentChanged(BinkDocumentChangedEventArgs args)
+    {
+        MeasureInk();
+        StateHasChanged();
+    }
+
+    private void MeasureInk() => _ink = _canvas is null ? default : BinkDocumentQuery.MeasureInk(_canvas.CurrentDocument);
+
+    private void Clear()
+    {
+        _locked = false;
+        // A read-only canvas ignores Clear, and ReadOnly is only lifted on the next render: clearing the document
+        // itself is the same undoable edit without waiting for it.
+        _canvas?.CurrentDocument.Clear();
+        _message = "Sign to continue.";
+    }
+
+    private async Task AcceptAsync()
+    {
+        if (_canvas is null || IsValid is false) return;
+
+        BinkDocument document = _canvas.CurrentDocument.Clone();
+        document.SetMetadata("signed-at", DateTimeOffset.UtcNow.ToString("O", CultureInfo.InvariantCulture));
+        _json = BinkSerializer.Serialize(document);
+        _svg = BinkSvgExporter.Export(document, new BinkSvgExportOptions
+        {
+            Region = BinkExportRegion.Content,
+            Padding = 12f,
+            Background = BinkColor.Transparent,
+            Title = "Signature",
+        });
+
+        // Encoded by the browser's own canvas and handed back to .NET: over a Blazor Server circuit it comes back
+        // as a stream, so it does not depend on the circuit's message size limit.
+        byte[] png = await _canvas.ExportPngAsync(new BinkPngExportOptions
+        {
+            Region = BinkExportRegion.Content,
+            Padding = 12f,
+            Scale = 2f,
+            Background = BinkColor.Transparent,
+        });
+        _png = "data:image/png;base64," + Convert.ToBase64String(png);
+
+        _locked = true;
+        _message = "Signature accepted.";
+    }
+}

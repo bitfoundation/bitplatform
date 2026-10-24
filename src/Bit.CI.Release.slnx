@@ -68,6 +68,21 @@
     <Project Path="Utilities/Bink/Bit.Bink/Bit.Bink.csproj" />
     <Project Path="Utilities/Bink/Tests/Bit.Bink.Tests/Bit.Bink.Tests.csproj" />
   </Folder>
+  <Folder Name="/Utilities/Bink/Samples/" />
+  <Folder Name="/Utilities/Bink/Samples/Auto/">
+    <Project Path="Utilities/Bink/Samples/Auto/Bit.Bink.Samples.Auto/Bit.Bink.Samples.Auto.csproj" />
+    <Project Path="Utilities/Bink/Samples/Auto/Bit.Bink.Samples.Auto.Client/Bit.Bink.Samples.Auto.Client.csproj" />
+  </Folder>
+  <Folder Name="/Utilities/Bink/Samples/Core/">
+    <Project Path="Utilities/Bink/Samples/Core/Bit.Bink.Samples.Core.csproj" />
+  </Folder>
+  <Folder Name="/Utilities/Bink/Samples/Server/">
+    <Project Path="Utilities/Bink/Samples/Server/Bit.Bink.Samples.Server.csproj" />
+  </Folder>
+  <Folder Name="/Utilities/Bink/Samples/Wasm/">
+    <Project Path="Utilities/Bink/Samples/Wasm/Bit.Bink.Samples.Wasm/Bit.Bink.Samples.Wasm.csproj" />
+    <Project Path="Utilities/Bink/Samples/Wasm/Bit.Bink.Samples.Wasm.Client/Bit.Bink.Samples.Wasm.Client.csproj" />
+  </Folder>
   <Folder Name="/Utilities/Balette/">
     <File Path="Utilities/Balette/README.md" />
     <Project Path="Utilities/Balette/Demo/Client/Bit.Balette.Demo.Client.csproj" />
