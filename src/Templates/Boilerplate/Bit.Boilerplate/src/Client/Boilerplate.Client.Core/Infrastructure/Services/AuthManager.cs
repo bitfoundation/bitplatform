@@ -211,15 +211,11 @@ public partial class AuthManager : AuthenticationStateProvider, IAsyncDisposable
                             //#endif
                         }, default);
 
-                    if (await storageService.GetItem("refresh_token") != refreshToken)
+                    // A sign-out or another sign-in happened meanwhile: storing this answer would bring the old session back.
+                    if (await storageService.GetItem("refresh_token") != refreshToken && await IsCurrentSession(refreshTokenResponse.AccessToken) is false)
                     {
-                        var isCurrentSession = await IsCurrentSession(refreshTokenResponse.AccessToken);
-
-                        if (isCurrentSession is false || hasRequestOfItsOwn is false)
-                        {
-                            currentTsc.TrySetResult(isCurrentSession ? await tokenProvider.GetAccessToken() : null);
-                            return;
-                        }
+                        currentTsc.TrySetResult(null);
+                        return;
                     }
 
                     await StoreTokens(refreshTokenResponse);
