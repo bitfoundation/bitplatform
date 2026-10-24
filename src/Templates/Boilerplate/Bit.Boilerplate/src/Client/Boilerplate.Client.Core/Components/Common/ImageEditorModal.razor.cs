@@ -76,7 +76,7 @@ public partial class ImageEditorModal
 
             var format = editor.BrowserCapabilities?.ChooseEncodableFormat([ImageFormat.WebP]) ?? ImageFormat.Jpeg;
 
-            var image = await editor.ExportAsync(new ImageExportOptions { Format = format, Quality = 0.92, MaxFileSize = MaxFileSize });
+            var image = await editor.ExportAsync(new ImageExportOptions { Format = format, Quality = 1, MaxFileSize = MaxFileSize });
 
             if (image is null) return;
 
