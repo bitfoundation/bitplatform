@@ -1,0 +1,852 @@
+@page "/queries"
+@inherits BlexComponentBase
+@inject BlexQueryClient QueryClient
+@inject InventoryApi Api
+
+<DocPage Href="queries" Title="Server state & queries"
+         Lead="A cache for data the app shows but does not own: fetched once, shared, refreshed when it goes stale, invalidated after a change, and dropped when nobody needs it.">
+
+    <div class="bb-card">
+        <h2 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Two kinds of state</h2>
+        <p>
+            A store holds state the app <em>owns</em> - what the user typed, picked or toggled. That is
+            what undo, persistence and time travel are about. A server's answer is different: a copy of
+            someone else's state with a shelf life. It should be fetched once and shared by every
+            component that shows it, refreshed in the background once it is stale, refetched after a
+            change that may have moved it, and forgotten when nobody has looked at it for a while.
+            Undoing or persisting it would only bring back a stale copy.
+        </p>
+        <p>
+            <code>BlexQueryClient</code> (namespace <code>Bit.Blex.Query</code>, in the same package) is
+            that cache - the model TanStack Query made standard, in idiomatic C#. It is not part of the
+            state tree, DevTools or history; an effect can still read through it.
+        </p>
+        <CodeBlock Code="@Setup" FileName="Program.cs" />
+    </div>
+
+    <div class="bb-card">
+        <h2 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Querying</h2>
+        <p>
+            A query is a <strong>key</strong> - an ordered list of parts, general to specific - and a
+            <strong>fetch</strong>. In a component that inherits <code>BlexComponentBase</code>,
+            <code>UseQuery</code> observes it for the component's lifetime and re-renders as it changes.
+            Call it from <code>OnParametersSet</code>, before any <code>await</code>: a call site keeps an
+            observer per key it asks for, and once a parameter pass is over it releases the keys it stopped
+            asking for - so a key that follows a parameter is swapped, and one call in a loop over items keeps
+            one observer per item.
+        </p>
+        <CodeBlock Code="@UseQuerySample" />
+        <p>Or straight from markup, with no base class:</p>
+        <CodeBlock Code="@ViewSample" Language="razor" />
+
+        <ApiTable Title="What an observer reports" Rows="@StatusRows" />
+
+        <DemoCard Title="One request, two readers"
+                  Description="This page was prerendered: the server fetched the products and handed them over, so the browser started with them and sent no request. Both panels read the key [&quot;products&quot;]; mounting together costs one request. The data stays fresh for 15 seconds, then a refetch shows the cached copy while it runs. Make a change on the &quot;server&quot; and see the cache catch up only when it refetches."
+                  Source="@DemoSource">
+            <div class="bb-toolbar">
+                <button class="btn btn-secondary" @onclick="() => _left.RefetchAsync()">Refetch</button>
+                <button class="btn btn-secondary" @onclick="Invalidate">Invalidate ["products"]</button>
+                <button class="btn btn-outline" @onclick="Api.RestockElsewhere">Restock on the server</button>
+                <button class="btn btn-outline" @onclick="FailNext">Fail the next request</button>
+            </div>
+
+            @* The prerender's count is the server's own requests, not the browser's: shown once the page runs here. *@
+            <div class="bb-stats">
+                <div class="bb-stat"><span class="bb-stat-label">Requests sent</span><span class="bb-stat-value demo-accent">@(RendererInfo.IsInteractive ? Api.Requests.ToString() : "–")</span></div>
+                <div class="bb-stat"><span class="bb-stat-label">Status</span><span class="bb-stat-value">@_left.Status</span></div>
+                <div class="bb-stat"><span class="bb-stat-label">FetchStatus</span><span class="bb-stat-value">@_left.FetchStatus</span></div>
+                <div class="bb-stat"><span class="bb-stat-label">IsStale</span><span class="bb-stat-value">@(_left.IsStale ? "true" : "false")</span></div>
+            </div>
+
+            @if (_left.FailureReason is { } failure)
+            {
+                <p class="bb-card-desc">Attempt @_left.FailureCount failed: @failure.Message</p>
+            }
+
+            <div class="demo-grid-2">
+                @foreach (var panel in new[] { ("Left", _left), ("Right", _right) })
+                {
+                    <div>
+                        <strong>@panel.Item1</strong>
+                        @if (panel.Item2.IsLoading)
+                        {
+                            <p class="bb-card-desc">Loading…</p>
+                        }
+                        else if (panel.Item2.Data is { } products)
+                        {
+                            <ul class="demo-list">
+                                @foreach (var product in products)
+                                {
+                                    <li><span class="demo-list-name">@product.Name</span> <code>@product.Stock in stock</code></li>
+                                }
+                            </ul>
+                        }
+                        else if (panel.Item2.IsPaused)
+                        {
+                            <p class="bb-card-desc">Offline - the list loads once the network is back.</p>
+                        }
+                        else if (panel.Item2.Error is { } error)
+                        {
+                            <p class="bb-card-desc">@error.Message</p>
+                        }
+                    </div>
+                }
+            </div>
+        </DemoCard>
+
+        <DemoCard Title="A third reader, in markup"
+                  Description="The same key from markup, with no UseQuery and no base class: &lt;BlexQueryView&gt; observes [&quot;products&quot;] for as long as it is on the page, so it joins the cache entry the panels above already fill - Requests sent does not move - and renders whichever of its three templates fits."
+                  Source="@ViewDemoSource" SourceLanguage="razor">
+            <BlexQueryView TData="IReadOnlyList<Product>" Key="ProductsKey" Fetch="Api.GetProductsAsync" Options="ProductsOptions">
+                <LoadingContent><p class="bb-card-desc">Loading…</p></LoadingContent>
+                <ErrorContent Context="error"><p class="bb-card-desc">@error.Message</p></ErrorContent>
+                <ChildContent Context="products">
+                    <p class="bb-card-desc">
+                        @products.Count products, @products.Sum(p => p.Stock) units in stock:
+                        @string.Join(", ", products.Select(p => p.Name)).
+                    </p>
+                </ChildContent>
+            </BlexQueryView>
+        </DemoCard>
+
+        <ApiTable Title="&lt;BlexQueryView TData&gt;" Rows="@ViewRows" MemberHeader="Parameter" />
+    </div>
+
+    <div class="bb-card">
+        <h2 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Freshness, retries and garbage collection</h2>
+        <ApiTable Title="BlexQueryOptions (unset values come from AddBitBlexQueries)" Rows="@OptionRows" />
+        <CodeBlock Code="@OptionsSample" Title="Dependent, polling and long-lived queries" />
+        <ApiTable Title="BlexQueryClientOptions (AddBitBlexQueries)" Rows="@ClientOptionRows" MemberHeader="Option" />
+        <p>
+            One fetch runs per key at a time: observers that mount while it runs join it. An explicit
+            refetch or an invalidation cancels a running fetch and starts over, and only the latest
+            fetch's outcome is committed - so a slow response can never overwrite a newer one. A failed
+            refetch keeps the data it had alongside the error; <code>FailureReason</code> is set while a
+            failure is still being retried.
+        </p>
+    </div>
+
+    <div class="bb-card">
+        <h2 class="bb-card-title"><span class="bb-dot bb-dot-danger"></span> Mutations and optimistic updates</h2>
+        <p>
+            A mutation sends a change. <code>OnMutate</code> can apply it to the cache at once with
+            <code>Optimistic</code>, which returns the rollback a failure applies automatically;
+            <code>Invalidates</code> names the keys to refetch once the change settles. The mutation stays
+            pending until those refetches land, so "saved" never shows next to the list from before the
+            save. <code>MutateAsync</code> never throws: a failure lands in <code>Error</code>.
+        </p>
+        <CodeBlock Code="@MutationSample" />
+
+        <DemoCard Title="Optimistic add, with rollback"
+                  Description="The new product appears at once. Tick &quot;server rejects writes&quot; and it disappears again when the server says no."
+                  Source="@MutationSample">
+            <div class="bb-toolbar">
+                <input placeholder="Product name" aria-label="Product name" @bind="_name" @bind:event="oninput" @onkeydown="OnNameKeyDown" class="demo-input-grow" />
+                <button class="btn btn-primary" @onclick="Add" disabled="@(!CanAdd)">Add</button>
+                <label class="bb-check"><input type="checkbox" @bind="Api.RejectWrites" /> Server rejects writes</label>
+            </div>
+            <div class="bb-stats">
+                <div class="bb-stat"><span class="bb-stat-label">Mutation status</span><span class="bb-stat-value">@_add.Status</span></div>
+                <div class="bb-stat"><span class="bb-stat-label">Error</span><span class="bb-stat-value demo-accent">@(_add.Error?.Message ?? "null")</span></div>
+            </div>
+        </DemoCard>
+
+        <Callout Kind="Callout.CalloutKind.Note" Title="Overlapping optimistic updates">
+            <p>
+                Rolling back restores the previous data only while the cache still holds that update's
+                value. If something newer landed meanwhile - a second mutation's optimistic value, a
+                refetch - the key is invalidated instead. Restoring an old snapshot over newer data is how
+                overlapping optimistic updates corrupt each other.
+            </p>
+        </Callout>
+
+        <h3>Rolling back more than the cache</h3>
+        <p>
+            <code>OnMutate</code> returns an <code>IBlexRollback</code> - whatever must be undone if the change
+            fails. <code>Optimistic</code> returns one for a cached key; <code>BlexRollback.From(action)</code>
+            makes one from any code (a store's counter, a toast), and <code>BlexRollback.Combine(...)</code>
+            joins several into one - undone together, the last applied first, and at most once. The callbacks follow the outcome:
+            <code>OnSuccess</code> with the server's answer, <code>OnError</code> with the failure,
+            <code>OnSettled</code> either way.
+        </p>
+        <CodeBlock Code="@RollbackSample" />
+
+        <ApiTable Title="BlexMutationOptions&lt;TArg, TResult&gt;" Rows="@MutationOptionRows" MemberHeader="Option" />
+        <ApiTable Title="BlexMutation&lt;TArg, TResult&gt;" Rows="@MutationRows" />
+    </div>
+
+    <div class="bb-card">
+        <h2 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Invalidation and direct cache access</h2>
+        <p>
+            <code>InvalidateAsync(["todos"])</code> marks every query whose key starts with those parts as
+            stale and refetches the ones being watched; the rest refetch when next observed. Pass
+            <code>exact: true</code> for one key, or a predicate. <code>SetQueryData</code> writes a
+            response you already have (the entity a save returned), <code>GetQueryData</code> reads one,
+            and <code>Cancel</code>/<code>Remove</code> stop or drop queries.
+        </p>
+        <CodeBlock Code="@CacheSample" />
+
+        <DemoCard Title="The cache, inspected"
+                  Description="GetQueries() lists every cached query, and CacheChanged says when to look again - what a devtools panel for the cache is built from. Write into the cache directly, cancel a fetch, drop one query or all of them, and watch the entries and the panels above follow."
+                  Source="@InspectorSource">
+            @{ var cache = QueryClient.GetQueries(); }
+            <div class="bb-toolbar">
+                <button class="btn btn-secondary" @onclick="ZeroStock">SetQueryData: zero the stock here</button>
+                <button class="btn btn-secondary" @onclick="RefetchProducts">RefetchAsync(["products"])</button>
+                <button class="btn btn-secondary" @onclick='() => QueryClient.Cancel(["products"])'>Cancel(["products"])</button>
+                <button class="btn btn-secondary" @onclick='() => QueryClient.Remove(["activity"])'>Remove(["activity"])</button>
+                <button class="btn demo-btn-danger" @onclick="QueryClient.Clear">Clear()</button>
+            </div>
+            <div class="bb-stats">
+                <div class="bb-stat"><span class="bb-stat-label">Cached queries</span><span class="bb-stat-value demo-accent">@cache.Count</span></div>
+                <div class="bb-stat"><span class="bb-stat-label">FetchingCount</span><span class="bb-stat-value">@QueryClient.FetchingCount</span></div>
+                <div class="bb-stat"><span class="bb-stat-label">GetQueryData(["products"])</span><span class="bb-stat-value demo-stat-text">@CachedProducts</span></div>
+            </div>
+            <div class="bb-scroll" tabindex="0" role="region" aria-label="Cached queries">
+                <table class="bb-table">
+                    <thead><tr><th>Key</th><th>Status</th><th>Fetch</th><th>Observers</th><th>Updated (UTC)</th></tr></thead>
+                    <tbody>
+                        @foreach (var query in cache.OrderBy(q => q.Key.ToString(), StringComparer.Ordinal))
+                        {
+                            <tr>
+                                <td class="bb-table-key"><code>@query.Key</code></td>
+                                <td class="bb-nowrap">@query.Status@(query.IsInvalidated ? ", invalidated" : "")</td>
+                                <td class="bb-nowrap">@query.FetchStatus</td>
+                                <td>@query.ObserverCount</td>
+                                <td class="bb-nowrap">@(query.DataUpdatedAt?.ToString("HH:mm:ss") ?? "-")</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+            <p class="bb-card-desc">
+                Zeroing the stock sends nothing: the panels change because the cache did. The next refetch brings
+                the server's numbers back. A removed query that still has an observer starts over on a fresh entry -
+                what <code>Clear()</code> on sign-out relies on, so the next user never sees the last one's data.
+                An entry with no observers is dropped once its <code>GcTime</code> passes (5 minutes by default).
+            </p>
+        </DemoCard>
+
+        <ApiTable Title="BlexQueryClient" Rows="@ClientRows" />
+
+        <p>
+            With <code>options.SyncAcrossTabs = true</code> (in <code>AddBitBlexQueries</code>), an invalidation by key
+            reaches the app's other tabs too - over a <code>BroadcastChannel</code>, through
+            <code>&lt;BlexProvider&gt;</code>, on Blazor Server as well - so a change saved in one tab refetches the
+            list every other tab shows. Keys travel as their text and match part by part, prefixes included; an
+            invalidation by predicate stays in its tab. This site turns it on: open this page in a second tab, press
+            <strong>Invalidate ["products"]</strong> above in this one, and <strong>Requests sent</strong> climbs
+            over there.
+        </p>
+    </div>
+
+    <div class="bb-card">
+        <h2 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Paged and infinite queries</h2>
+        <p>
+            For numbered pages, put the page in the key and turn on <code>KeepPreviousData</code>. Each page is a
+            query of its own - cached, shared and refetched like any other - and while the next one loads, the
+            observer keeps showing the page it had, flagged <code>IsPlaceholderData</code>, instead of flashing
+            back to a spinner. <code>PrefetchAsync</code> fetches the page after it before anyone asks, so the
+            click lands on cached data.
+        </p>
+        <CodeBlock Code="@PagedSample" />
+
+        <DemoCard Title="Page by page, without the flash"
+                  Description="Next page asks for a key nobody has fetched: the list stays, dimmed, flagged IsPlaceholderData, until the new page lands. Go back and the earlier page is served from the cache at once. Prefetch the next page first and stepping onto it is instant too."
+                  Source="@PagedDemoSource" SourceLanguage="razor">
+            <div class="bb-toolbar">
+                <button class="btn btn-secondary" @onclick="() => _activityPage--" disabled="@(_activityPage <= 1)">← Previous page</button>
+                <span class="bb-badge">Page @_activityPage of 4</span>
+                <button class="btn btn-primary" @onclick="() => _activityPage++" disabled="@(_activityPage >= 4)">Next page →</button>
+                <button class="btn btn-outline" @onclick="PrefetchNextPage" disabled="@(_activityPage >= 4)">PrefetchAsync(page @(_activityPage + 1))</button>
+            </div>
+            <ActivityPager Page="_activityPage" />
+        </DemoCard>
+
+        <h3>Infinite queries</h3>
+        <p>
+            A feed, "load more", infinite scroll: <code>UseInfiniteQuery</code> (or
+            <code>QueryClient.InfiniteQuery</code>) keeps the pages loaded so far as one cached query.
+            <code>getNextPageParam</code> reads the next page's param - a page number, a cursor - off the last page,
+            or returns <code>null</code> when there is none, so use a nullable type for a number.
+            <code>FetchNextPageAsync</code> appends the next page; asked again while it loads, it joins that request,
+            and with a fetch already running it waits for it and follows the pages it brings.
+        </p>
+        <p>
+            Everything a query does applies to the pages as a whole - freshness, retries, invalidation, refetch on
+            focus, the prerender handoff. A refetch loads every page again, in order, each param following from the
+            page before as the server returns it now: an item inserted since moves every cursor after it. A failed
+            next page keeps the pages loaded before it, and can simply be asked for again.
+        </p>
+        <CodeBlock Code="@InfiniteSample" />
+
+        <DemoCard Title="Load more"
+                  Description="Each page is one request; &quot;Invalidate&quot; refetches every page loaded so far, in order."
+                  Source="@InfiniteSample">
+            <div class="bb-toolbar">
+                @* No next page before the first one arrives either: IsPending tells "not loaded yet" from "all loaded". *@
+                <button class="btn btn-primary" @onclick="() => _activity.FetchNextPageAsync()" disabled="@(_activity.IsPending || !_activity.HasNextPage || _activity.IsFetchingNextPage)">
+                    @(_activity.IsPending || _activity.IsFetchingNextPage ? "Loading…" : _activity.HasNextPage ? "Load more" : "All loaded")
+                </button>
+                <button class="btn btn-secondary" @onclick="@(() => QueryClient.InvalidateAsync(["activity"]))">Invalidate ["activity"]</button>
+            </div>
+            <div class="bb-stats">
+                <div class="bb-stat"><span class="bb-stat-label">Pages loaded</span><span class="bb-stat-value demo-accent">@_activity.Pages.Count</span></div>
+                <div class="bb-stat"><span class="bb-stat-label">HasNextPage</span><span class="bb-stat-value">@(_activity.HasNextPage ? "true" : "false")</span></div>
+                <div class="bb-stat"><span class="bb-stat-label">FetchStatus</span><span class="bb-stat-value">@_activity.FetchStatus</span></div>
+            </div>
+            @if (_activity.IsLoading)
+            {
+                <p class="bb-card-desc">Loading…</p>
+            }
+            else if (_activity.IsPending && _activity.IsPaused)
+            {
+                <p class="bb-card-desc">Offline - the first page loads once the network is back.</p>
+            }
+            else
+            {
+                <ul class="demo-list">
+                    @foreach (var entry in _activity.Pages.SelectMany(p => p.Entries))
+                    {
+                        <li>@entry</li>
+                    }
+                </ul>
+            }
+        </DemoCard>
+    </div>
+
+    <div class="bb-card">
+        <h2 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Prerendering</h2>
+        <p>
+            With <code>&lt;BlexProvider&gt;</code>, the queries a prerender fetched are handed to the
+            interactive render through <code>PersistentComponentState</code>, so it shows them at once
+            instead of fetching them again. Two things make that work: the prerender has to
+            <em>wait</em> for the fetch, or the HTML carries a spinner and nothing is handed over; and the
+            query needs a stale time, or the handed-over data is stale on arrival and refetched in the
+            background anyway.
+        </p>
+        <CodeBlock Code="@PrerenderSample" />
+        <p>
+            Underneath, the provider calls <code>QueryClient.Dehydrate()</code> at the end of the prerender - the
+            successfully fetched queries as JSON - and <code>Hydrate(...)</code> before the interactive render
+            asks for them. Outside Blazor, the same pair moves a cache from one host to another.
+        </p>
+    </div>
+
+    <div class="bb-card">
+        <h2 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> From effects, services and tests</h2>
+        <p>
+            <code>FetchAsync</code> is the read-through for code that is not a component: it returns fresh
+            cached data, joins a fetch already running, and throws when the fetch fails.
+            <code>PrefetchAsync</code> warms the cache (on hover, before navigating) and never throws.
+            <code>&lt;BlexProvider&gt;</code> refetches the stale queries being watched when the tab
+            becomes visible again or the browser comes back online; outside a browser, call
+            <code>NotifyFocused()</code> and <code>NotifyReconnected()</code> where your app learns of it.
+        </p>
+        <CodeBlock Code="@EffectSample" />
+        <p>
+            Every wait - staleness, retries, polling, garbage collection - runs on the manager's
+            <code>TimeProvider</code>, and timers run on its <code>Dispatcher</code>. A test hands the
+            client a manager with a fake clock and advances it.
+        </p>
+    </div>
+
+    <div class="bb-card">
+        <h2 class="bb-card-title"><span class="bb-dot bb-dot-danger"></span> Offline</h2>
+        <p>
+            A request that cannot reach the server should not fail - it should wait. While
+            <code>QueryClient.IsOnline</code> is <code>false</code>, fetches and mutations pause
+            (<code>FetchStatus.Paused</code>, <code>IsPaused</code>) instead of spending their retries, and go on
+            from where they were once the network returns; a paused mutation's optimistic update is on screen
+            meanwhile. <code>&lt;BlexProvider&gt;</code> follows the browser's <code>offline</code> and
+            <code>online</code> events where requests leave from the device - WebAssembly and Hybrid. On Blazor
+            Server they leave from the server, so the browser's network does not pause them. A native MAUI app calls
+            <code>NotifyOffline()</code> and <code>NotifyReconnected()</code> from
+            <code>Connectivity.ConnectivityChanged</code>.
+        </p>
+        <CodeBlock Code="@OfflineSample" />
+
+        <DemoCard Title="Offline, on demand"
+                  Description="NotifyOffline() is what the browser's offline event does for you. Go offline, then refetch the products: the fetch pauses instead of failing. Add a product: the mutation pauses too, its optimistic row already on screen. Back online, both carry on from where they were. Leaving the page puts the network back."
+                  Source="@OfflineDemoSource">
+            <div class="bb-toolbar">
+                <button class="btn demo-btn-danger" @onclick="GoOffline" disabled="@(!QueryClient.IsOnline)">NotifyOffline()</button>
+                <button class="btn btn-primary" @onclick="QueryClient.NotifyReconnected" disabled="@QueryClient.IsOnline">NotifyReconnected()</button>
+                <button class="btn btn-secondary" @onclick="() => _left.RefetchAsync()">Refetch the products</button>
+                <button class="btn btn-secondary" @onclick='() => _add.MutateAsync("Offline item")' disabled="@_add.IsPending">Add "Offline item"</button>
+            </div>
+            <div class="bb-stats">
+                <div class="bb-stat"><span class="bb-stat-label">IsOnline</span><span class="bb-stat-value demo-accent">@(QueryClient.IsOnline ? "true" : "false")</span></div>
+                <div class="bb-stat"><span class="bb-stat-label">products FetchStatus</span><span class="bb-stat-value">@_left.FetchStatus</span></div>
+                <div class="bb-stat"><span class="bb-stat-label">mutation</span><span class="bb-stat-value">@_add.Status@(_add.IsPaused ? ", paused" : "")</span></div>
+                <div class="bb-stat"><span class="bb-stat-label">Products shown</span><span class="bb-stat-value">@(_left.Data?.Count ?? 0)</span></div>
+            </div>
+        </DemoCard>
+    </div>
+
+</DocPage>
+
+@code {
+    private static readonly BlexQueryOptions ProductsOptions = new() { StaleTime = TimeSpan.FromSeconds(15) };
+    private static readonly BlexQueryKey ProductsKey = ["products"];
+
+    private BlexQuery<IReadOnlyList<Product>> _left = default!;
+    private BlexQuery<IReadOnlyList<Product>> _right = default!;
+    private BlexMutation<string, Product> _add = default!;
+    private BlexInfiniteQuery<ActivityPage, int?> _activity = default!;
+    private string _name = "";
+    private int _activityPage = 1;
+
+    // Whether this page took the cache offline: it gives the network back when it closes, so no other page is
+    // left with every request paused.
+    private bool _wentOffline;
+
+    protected override void OnInitialized()
+    {
+        _add = Watch(QueryClient.Mutation<string, Product>(
+            (name, ct) => Api.AddProductAsync(name, ct),
+            new()
+            {
+                OnMutate = name => QueryClient.Optimistic<IReadOnlyList<Product>>(
+                    ["products"], products => [.. products ?? [], new Product(-1, name, 0)]),
+                Invalidates = ["products"],
+            }));
+
+        // The inspector reads the whole cache, which no single query reports on.
+        QueryClient.CacheChanged += OnCacheChanged;
+    }
+
+    private void OnCacheChanged() => _ = InvokeAsync(StateHasChanged);
+
+    protected override void Dispose(bool disposing)
+    {
+        QueryClient.CacheChanged -= OnCacheChanged;
+
+        if (_wentOffline && !QueryClient.IsOnline)
+            QueryClient.NotifyReconnected();
+    }
+
+    private void GoOffline()
+    {
+        _wentOffline = true;
+        QueryClient.NotifyOffline();
+    }
+
+    private string CachedProducts
+        => QueryClient.GetQueryData<IReadOnlyList<Product>>(ProductsKey) is { } products
+            ? $"{products.Count} products, {products.Sum(p => p.Stock)} in stock"
+            : "null";
+
+    private void ZeroStock()
+        => QueryClient.SetQueryData<IReadOnlyList<Product>>(ProductsKey, products => [.. (products ?? []).Select(p => p with { Stock = 0 })]);
+
+    private Task RefetchProducts() => QueryClient.RefetchAsync(ProductsKey);
+
+    private Task PrefetchNextPage()
+    {
+        var next = _activityPage + 1;
+        return QueryClient.PrefetchAsync(["activity-page", next], ct => Api.GetActivityPageAsync(next, ct), new BlexQueryOptions { StaleTime = TimeSpan.FromSeconds(15) });
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        _left = UseQuery(["products"], Api.GetProductsAsync, ProductsOptions);
+        _right = UseQuery(["products"], Api.GetProductsAsync, ProductsOptions);
+        _activity = UseInfiniteQuery<ActivityPage, int?>(["activity"], Api.GetActivityPageAsync, 1, (last, _) => last.Next, ProductsOptions);
+
+        // The prerender waits for both queries, so the HTML carries them and <BlexProvider> hands them to the
+        // browser: it starts with the list and the first page, and no request of its own (see "Requests sent").
+        await Task.WhenAll(_left.WhenSettledAsync(), _activity.WhenSettledAsync());
+    }
+
+    private bool CanAdd => !_add.IsPending && !string.IsNullOrWhiteSpace(_name);
+
+    private async Task OnNameKeyDown(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter" && CanAdd)
+            await Add();
+    }
+
+    private Task Invalidate() => QueryClient.InvalidateAsync(["products"]);
+
+    private Task FailNext()
+    {
+        Api.FailNextRead = true;
+        return _left.RefetchAsync();
+    }
+
+    private async Task Add()
+    {
+        var name = _name.Trim();
+        _name = "";
+        await _add.MutateAsync(name);
+    }
+
+    private static readonly IReadOnlyList<ApiTable.Row> StatusRows =
+    [
+        new("Data / HasData", "The cached data (or the previous key's, with <code>KeepPreviousData</code>)."),
+        new("Status", "<code>Pending</code> (no data yet), <code>Error</code> (the last fetch failed), <code>Success</code>."),
+        new("FetchStatus", "<code>Idle</code> or <code>Fetching</code> - independent of <code>Status</code>: a background refetch is <code>Success</code> and <code>Fetching</code> at once."),
+        new("IsLoading / IsRefetching", "Fetching with no data to show, versus fetching while showing data."),
+        new("IsStale / DataUpdatedAt", "Whether the data is older than the stale time (or invalidated), and when it was fetched."),
+        new("Error / FailureCount / FailureReason", "The last fetch's error; how many attempts failed; the latest failure while it is still being retried."),
+        new("RefetchAsync() / WhenSettledAsync()", "Fetch again now; wait until no fetch is running. Neither throws."),
+    ];
+
+    private static readonly IReadOnlyList<ApiTable.Row> OptionRows =
+    [
+        new("StaleTime", "How long fetched data counts as fresh. Fresh data is served without a request; stale data is served too, and refetched in the background on mount and focus. Default <code>0</code>; <code>TimeSpan.MaxValue</code> keeps it fresh until invalidated."),
+        new("GcTime", "How long a query nobody observes stays cached. Default 5 minutes."),
+        new("RetryCount / RetryDelay", "Failed fetches are retried with exponential backoff (doubling, up to 30 s). Default 3 retries, 1 s."),
+        new("Enabled", "Off: the observer reads what is cached but never fetches - a dependent query waiting for its input."),
+        new("RefetchInterval", "Polls while observed."),
+        new("RefetchOnMount / RefetchOnFocus", "Whether a new observer, or the tab becoming visible / the network returning, refetches stale data. Default on."),
+        new("KeepPreviousData", "When the key changes (the next page), keep showing the previous key's data, flagged <code>IsPlaceholderData</code>, until the new one arrives."),
+        new("NetworkMode", "<code>Online</code> (the default): while offline the fetch waits, <code>Paused</code>, and goes on once the network returns. <code>Always</code>: fetches whatever the network - for data that does not come from it."),
+    ];
+
+    private static readonly IReadOnlyList<ApiTable.Row> ClientOptionRows =
+    [
+        new("TimeSpan StaleTime", "The default stale time of every query. Default <code>0</code>: always stale, refetched on every mount and focus."),
+        new("TimeSpan GcTime", "How long an unobserved query stays cached. Default 5 minutes."),
+        new("int RetryCount / TimeSpan RetryDelay", "Retries for a failed fetch, with exponential backoff from the delay up to 30 s. Default 3 and 1 s. A mutation does not inherit them: it retries only when its own options say so."),
+        new("BlexNetworkMode NetworkMode", "<code>Online</code> (the default) pauses fetches and mutations while offline; <code>Always</code> never does."),
+        new("bool SyncAcrossTabs", "Passes invalidations by key on to the app's other tabs over a <code>BroadcastChannel</code>. Default off."),
+    ];
+
+    private static readonly IReadOnlyList<ApiTable.Row> ViewRows =
+    [
+        new("BlexQueryKey Key", "Required. Which query; a new key moves the view to that query, keeping the previous data meanwhile with <code>KeepPreviousData</code>."),
+        new("Func&lt;CancellationToken, Task&lt;TData&gt;&gt; Fetch", "Required. Fetches the data; the closure from the latest render is the one used."),
+        new("BlexQueryOptions? Options", "How to fetch it - stale time, retries, polling, <code>Enabled</code>."),
+        new("RenderFragment&lt;TData&gt;? ChildContent", "Rendered with the data once there is some. Data wins over an error: a failed refetch keeps showing what was fetched before."),
+        new("RenderFragment? LoadingContent", "Rendered while there is neither data nor an error."),
+        new("RenderFragment&lt;Exception&gt;? ErrorContent", "Rendered with the error when the query failed and has no data to show instead."),
+        new("BlexQuery&lt;TData&gt;? Query", "Not a parameter: the observer, through a <code>@ref</code>, for a \"refreshing\" hint from <code>IsRefetching</code>."),
+    ];
+
+    private static readonly IReadOnlyList<ApiTable.Row> MutationOptionRows =
+    [
+        new("Func&lt;TArg, IBlexRollback?&gt;? OnMutate", "Runs before the change is sent - the place for an optimistic update. Return what a failure must undo."),
+        new("Action&lt;TResult, TArg&gt;? OnSuccess", "Runs with the server's answer - the place to <code>SetQueryData</code> the entity it returned."),
+        new("Action&lt;Exception, TArg&gt;? OnError", "Runs after a failure, once the optimistic update has been rolled back."),
+        new("Action&lt;TArg&gt;? OnSettled", "Runs last, whichever way it went."),
+        new("IReadOnlyList&lt;BlexQueryKey&gt;? Invalidates", "Keys to invalidate once the change settles, success or failure. The mutation stays pending until the observed ones have refetched - unless the app is offline, where it settles without waiting for them."),
+        new("int RetryCount / TimeSpan RetryDelay", "Retries for a failed call. Default <code>0</code>: a change is not repeated unless asked to."),
+        new("BlexNetworkMode? NetworkMode", "Whether a call waits for the network while offline (paused, its optimistic update shown). <code>null</code> uses the client's."),
+    ];
+
+    private static readonly IReadOnlyList<ApiTable.Row> MutationRows =
+    [
+        new("Task MutateAsync(TArg, CancellationToken)", "Sends the change: <code>OnMutate</code>, the call (with retries), the success or error callback - rolling back on failure - the invalidations, then <code>OnSettled</code>. Never throws. A cancelled call rolls back and returns to <code>Idle</code>, not <code>Error</code>."),
+        new("BlexMutationStatus Status", "<code>Idle</code>, <code>Pending</code>, <code>Success</code> or <code>Error</code> - of the latest call, when calls overlap."),
+        new("bool IsIdle / IsPending / IsSuccess / IsError", "<code>Status</code>, one flag at a time."),
+        new("bool IsPaused", "Pending, and waiting for the network to return."),
+        new("TResult? Data / Exception? Error / TArg? Arg", "The latest call's answer, failure and argument."),
+        new("void Reset()", "Back to <code>Idle</code>, forgetting the latest outcome; a call still running no longer reports to it."),
+        new("event Action? Changed / PropertyChanged", "Raised on every change - <code>Watch(...)</code> re-renders a component on it, and XAML binds to it."),
+    ];
+
+    private static readonly IReadOnlyList<ApiTable.Row> ClientRows =
+    [
+        new("BlexQuery&lt;T&gt; Query&lt;T&gt;(key, fetch, options?)", "Observes a query by hand - what <code>UseQuery</code> does for a component. Dispose the observer when done."),
+        new("BlexInfiniteQuery&lt;TPage, TParam&gt; InfiniteQuery(key, fetchPage, initialPageParam, getNextPageParam, options?)", "The same for a paged query - what <code>UseInfiniteQuery</code> wraps."),
+        new("Task&lt;T&gt; FetchAsync&lt;T&gt;(key, fetch, options?, cancellationToken)", "The read-through for effects and services: fresh cached data, or a fetch - joining one already running. Throws when the fetch fails or is cancelled."),
+        new("Task PrefetchAsync&lt;T&gt;(key, fetch, options?)", "Warms the cache for a query nobody shows yet. Never throws."),
+        new("T? GetQueryData&lt;T&gt;(key) / bool TryGetQueryData&lt;T&gt;(key, out T?)", "Reads what is cached, without fetching."),
+        new("void SetQueryData&lt;T&gt;(key, T) / SetQueryData&lt;T&gt;(key, Func&lt;T?, T&gt;)", "Writes data you already have - the entity a save returned - as fresh, notifying every observer."),
+        new("BlexOptimisticUpdate&lt;T&gt; Optimistic&lt;T&gt;(key, Func&lt;T?, T&gt;)", "Writes an optimistic value and returns its rollback - for <code>OnMutate</code>."),
+        new("BlexMutation&lt;TArg, TResult&gt; Mutation(mutate, options?)", "Creates a mutation."),
+        new("Task InvalidateAsync(key, exact = false) / InvalidateAsync(Func&lt;BlexQueryKey, bool&gt;)", "Marks the covered queries stale and refetches the observed ones; completes once those refetches settle."),
+        new("Task RefetchAsync(key, exact = false)", "Refetches the observed queries the key covers now, without marking the rest stale."),
+        new("void Cancel(key, exact = false)", "Cancels their running fetches; they keep the data they had."),
+        new("void Remove(key, exact = false) / void Clear()", "Drops queries from the cache; an observer still watching one starts over on a fresh entry - the sign-out move."),
+        new("bool IsOnline / NotifyOffline() / NotifyReconnected()", "The network as the cache was told. <code>&lt;BlexProvider&gt;</code> calls them from the browser's events where requests leave from the device."),
+        new("void NotifyFocused()", "Refetches the stale observed queries whose observers ask for <code>RefetchOnFocus</code>. <code>&lt;BlexProvider&gt;</code> calls it when the tab becomes visible."),
+        new("IReadOnlyList&lt;BlexQueryInfo&gt; GetQueries() / int FetchingCount / event CacheChanged", "Inspection: every cached query, how many are fetching, and when anything changed."),
+        new("JsonObject Dehydrate() / void Hydrate(JsonObject)", "The fetched queries as JSON, and back - what the prerender handoff uses."),
+        new("BlexQueryClientOptions Options", "The defaults every query starts from."),
+    ];
+
+    private const string ViewDemoSource = """
+        @* No base class, no UseQuery - the component observes the key while it is on the page. *@
+        <BlexQueryView TData="IReadOnlyList<Product>" Key="ProductsKey" Fetch="Api.GetProductsAsync" Options="ProductsOptions">
+            <LoadingContent>Loading…</LoadingContent>
+            <ErrorContent Context="error">@error.Message</ErrorContent>
+            <ChildContent Context="products">
+                @products.Count products, @products.Sum(p => p.Stock) units in stock
+            </ChildContent>
+        </BlexQueryView>
+
+        @code {
+            private static readonly BlexQueryKey ProductsKey = ["products"];
+            private static readonly BlexQueryOptions ProductsOptions = new() { StaleTime = TimeSpan.FromSeconds(15) };
+        }
+        """;
+
+    private const string OptionsSample = """
+        // Dependent: waits until there is a user to load the orders of. Enabled flips on with the id,
+        // and the same call site starts fetching.
+        _orders = UseQuery(["orders", UserId], ct => Api.GetOrdersAsync(UserId!.Value, ct),
+            new BlexQueryOptions { Enabled = UserId is not null });
+
+        // Polling: refetched every 10 s while something observes it - and never while nothing does.
+        _status = UseQuery(["build-status", BuildId], ct => Api.GetStatusAsync(BuildId, ct),
+            new BlexQueryOptions { RefetchInterval = TimeSpan.FromSeconds(10) });
+
+        // Reference data: fresh until invalidated, kept an hour after the last observer left,
+        // and not refetched just because the tab came back.
+        _countries = UseQuery(["countries"], Api.GetCountriesAsync, new BlexQueryOptions
+        {
+            StaleTime = TimeSpan.MaxValue,
+            GcTime = TimeSpan.FromHours(1),
+            RefetchOnFocus = false,
+        });
+        """;
+
+    private const string RollbackSample = """
+        _add = Watch(QueryClient.Mutation<Todo, Todo>(
+            (todo, ct) => Api.AddAsync(todo, ct),
+            new()
+            {
+                OnMutate = todo =>
+                {
+                    var list = QueryClient.Optimistic<IReadOnlyList<Todo>>(["todos"], todos => [.. todos ?? [], todo]);
+                    Badge.Increment();                                      // a store, outside the cache
+
+                    // Undone together on failure, the badge first.
+                    return BlexRollback.Combine(list, BlexRollback.From(Badge.Decrement));
+                },
+                OnSuccess = (saved, _) => QueryClient.SetQueryData(["todos", saved.Id], saved),
+                OnError = (error, todo) => Toasts.Show($"\"{todo.Title}\" was not saved: {error.Message}"),
+                OnSettled = _ => _input = "",
+                Invalidates = ["todos"],
+                RetryCount = 2,
+            }));
+        """;
+
+    private const string InspectorSource = """
+        @inject BlexQueryClient QueryClient
+
+        @foreach (var query in QueryClient.GetQueries())
+        {
+            <tr>
+                <td>@query.Key</td> <td>@query.Status</td> <td>@query.FetchStatus</td>
+                <td>@query.ObserverCount</td> <td>@query.IsInvalidated</td> <td>@query.DataUpdatedAt</td>
+            </tr>
+        }
+
+        @code {
+            protected override void OnInitialized() => QueryClient.CacheChanged += OnCacheChanged;
+
+            private void OnCacheChanged() => _ = InvokeAsync(StateHasChanged);
+
+            protected override void Dispose(bool disposing) => QueryClient.CacheChanged -= OnCacheChanged;
+
+            // Local only: the observers re-render from the cache, and nothing is sent.
+            private void ZeroStock() => QueryClient.SetQueryData<IReadOnlyList<Product>>(
+                ["products"], products => [.. (products ?? []).Select(p => p with { Stock = 0 })]);
+        }
+
+        <button @onclick='() => QueryClient.Remove(["activity"])'>Remove(["activity"])</button>
+        <button @onclick="QueryClient.Clear">Clear()</button>
+        """;
+
+    private const string PagedSample = """
+        // ActivityPager.razor - the page is a parameter, so each new number is a new key at this call site.
+        [Parameter] public int Page { get; set; } = 1;
+
+        protected override void OnParametersSet()
+            => _page = UseQuery(["activity-page", Page], ct => Api.GetActivityPageAsync(Page, ct),
+                   new BlexQueryOptions { KeepPreviousData = true, StaleTime = TimeSpan.FromSeconds(15) });
+
+        // While the next page loads: _page.Data is the previous page, and _page.IsPlaceholderData is true.
+
+        // Before the user asks for it:
+        await QueryClient.PrefetchAsync(["activity-page", Page + 1], ct => Api.GetActivityPageAsync(Page + 1, ct));
+        """;
+
+    private const string PagedDemoSource = """
+        @* The page *@
+        <button @onclick="() => _page--">Previous page</button>
+        <button @onclick="() => _page++">Next page</button>
+        <button @onclick="PrefetchNextPage">PrefetchAsync(next page)</button>
+
+        <ActivityPager Page="_page" />
+
+        @* ActivityPager.razor *@
+        @inherits BlexComponentBase
+
+        <span>@_page.Key · IsPlaceholderData: @_page.IsPlaceholderData</span>
+        @if (_page.Data is { } page)
+        {
+            <ul class="@(_page.IsPlaceholderData ? "dimmed" : null)">
+                @foreach (var entry in page.Entries) { <li>@entry</li> }
+            </ul>
+        }
+
+        @code {
+            [Parameter] public int Page { get; set; } = 1;
+            private BlexQuery<ActivityPage> _page = default!;
+
+            protected override void OnParametersSet()
+                => _page = UseQuery(["activity-page", Page], ct => Api.GetActivityPageAsync(Page, ct),
+                       new BlexQueryOptions { KeepPreviousData = true, StaleTime = TimeSpan.FromSeconds(15) });
+        }
+        """;
+
+    private const string OfflineDemoSource = """
+        @inject BlexQueryClient QueryClient
+
+        <button @onclick="QueryClient.NotifyOffline">NotifyOffline()</button>
+        <button @onclick="QueryClient.NotifyReconnected">NotifyReconnected()</button>
+
+        <p>IsOnline: @QueryClient.IsOnline</p>
+        <p>products: @_products.FetchStatus</p>                      @* Paused, not Error *@
+        <p>mutation: @_add.Status @(_add.IsPaused ? "(paused)" : "")</p>   @* Pending, paused *@
+        """;
+
+    private const string Setup = """
+        builder.Services.AddBitBlexServices();
+        builder.Services.AddBitBlexQueries(options =>
+        {
+            options.StaleTime = TimeSpan.FromSeconds(30);   // defaults for every query
+        });
+        """;
+
+    private const string UseQuerySample = """
+        @inherits BlexComponentBase
+        @inject TodoApi Api
+
+        @if (_todo.IsLoading) { <Spinner /> }
+        else if (_todo.Data is { } todo) { <h2>@todo.Title</h2> }
+        else if (_todo.Error is { } error) { <p>@error.Message</p> }
+
+        @code {
+            [Parameter] public int Id { get; set; }
+            private BlexQuery<Todo> _todo = default!;
+
+            protected override void OnParametersSet()
+                => _todo = UseQuery(["todos", Id], ct => Api.GetTodoAsync(Id, ct));
+        }
+        """;
+
+    private const string ViewSample = """
+        <BlexQueryView TData="Todo" Key="@(["todos", Id])" Fetch="ct => Api.GetTodoAsync(Id, ct)">
+            <LoadingContent><Spinner /></LoadingContent>
+            <ErrorContent Context="error">@error.Message</ErrorContent>
+            <ChildContent Context="todo"><h2>@todo.Title</h2></ChildContent>
+        </BlexQueryView>
+        """;
+
+    private const string DemoSource = """
+        private static readonly BlexQueryOptions Options = new() { StaleTime = TimeSpan.FromSeconds(15) };
+
+        protected override async Task OnParametersSetAsync()
+        {
+            _left  = UseQuery(["products"], Api.GetProductsAsync, Options);
+            _right = UseQuery(["products"], Api.GetProductsAsync, Options);   // joins the same request
+
+            await _left.WhenSettledAsync();   // the prerender waits, so the HTML carries the list and hands it over
+        }
+
+        private Task Invalidate() => QueryClient.InvalidateAsync(["products"]);
+        """;
+
+    private const string MutationSample = """
+        _add = Watch(QueryClient.Mutation<string, Product>(
+            (name, ct) => Api.AddProductAsync(name, ct),
+            new()
+            {
+                // Shown at once; rolled back automatically if the server says no.
+                OnMutate = name => QueryClient.Optimistic<IReadOnlyList<Product>>(
+                    ["products"], products => [.. products ?? [], new Product(-1, name, 0)]),
+
+                // Whatever happened, the server's list has moved: refetch it.
+                Invalidates = ["products"],
+            }));
+
+        private async Task Add() => await _add.MutateAsync(_name);
+        """;
+
+    private const string CacheSample = """
+        await queries.InvalidateAsync(["todos"]);                 // every todos query
+        await queries.InvalidateAsync(["todos", 42], exact: true); // just this one
+
+        var saved = await api.SaveAsync(todo, ct);
+        queries.SetQueryData(["todos", saved.Id], saved);           // no refetch needed for this one
+
+        var cached = queries.GetQueryData<Todo>(["todos", 42]);
+        """;
+
+    private const string InfiniteSample = """
+        @inherits BlexComponentBase
+
+        @foreach (var entry in _activity.Pages.SelectMany(p => p.Entries))
+        {
+            <li>@entry</li>
+        }
+        @* IsPending: before the first page arrives there is no next page either, but nothing is "all loaded". *@
+        <button @onclick="() => _activity.FetchNextPageAsync()"
+                disabled="@(_activity.IsPending || !_activity.HasNextPage || _activity.IsFetchingNextPage)">Load more</button>
+
+        @code {
+            private BlexInfiniteQuery<ActivityPage, int?> _activity = default!;
+
+            protected override void OnParametersSet()
+                => _activity = UseInfiniteQuery<ActivityPage, int?>(
+                    ["activity"],
+                    (page, ct) => Api.GetActivityPageAsync(page, ct),
+                    initialPageParam: 1,
+                    getNextPageParam: (last, _) => last.Next);   // null on the last page
+        }
+        """;
+
+    private const string PrerenderSample = """
+        protected override async Task OnParametersSetAsync()
+        {
+            _todo = UseQuery(["todos", Id], ct => Api.GetTodoAsync(Id, ct),
+                             new BlexQueryOptions { StaleTime = TimeSpan.FromMinutes(1) });
+
+            await _todo.WhenSettledAsync();   // the prerendered HTML carries the data, and so does the handoff
+        }
+        """;
+
+    private const string EffectSample = """
+        [BlexStore(Name = "checkout")]
+        public partial class CheckoutStore(BlexQueryClient queries, ShopApi api)
+        {
+            [BlexState] private decimal _shipping;
+
+            [BlexEffect]
+            private async Task OnQuote(string country, CancellationToken ct)
+            {
+                // Shares the cache - and any request already running - with the components showing rates.
+                var rates = await queries.FetchAsync(["rates", country], c => api.GetRatesAsync(country, c), cancellationToken: ct);
+                Shipping = rates.Standard;
+            }
+        }
+        """;
+
+    private const string OfflineSample = """
+        @if (_todos.IsPaused)
+        {
+            <p>Offline - the list will load once you are back.</p>
+        }
+        @if (_save.IsPaused)
+        {
+            <p>Saved here; it is sent as soon as the network returns.</p>
+        }
+
+        // Data that does not come from the network runs offline too:
+        UseQuery(["drafts"], ct => Drafts.LoadFromIndexedDbAsync(ct), new BlexQueryOptions { NetworkMode = BlexNetworkMode.Always });
+
+        // Native MAUI: tell the cache yourself.
+        Connectivity.ConnectivityChanged += (_, e) =>
+        {
+            if (e.NetworkAccess == NetworkAccess.Internet) queries.NotifyReconnected();
+            else queries.NotifyOffline();
+        };
+        """;
+}

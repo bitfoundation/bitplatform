@@ -85,7 +85,7 @@ public sealed class BrowserImageDecoder : IImageDecoder
         if (format == ImageFormat.Unknown)
             throw new ImageDecodeException("The data does not look like a supported image format.");
         if (format == ImageFormat.Svg)
-            throw new ImageDecodeException("SVG input is not decoded by Bmage because rasterising untrusted SVG can execute embedded scripts and fetch remote resources. Rasterise it yourself and pass the pixels instead.");
+            throw new ImageDecodeException(ImageFormats.SvgRefused);
 
         // The browser can decode straight to a smaller bitmap, which is what keeps a 48 megapixel phone photo from
         // ever existing at full size on a memory constrained device. It only preserves the aspect ratio when told a

@@ -1,7 +1,7 @@
 ﻿# Bit.Bmage end-to-end tests
 
-MSTest + Microsoft.Playwright suite that drives the Bmage demo site (`src/Utilities/Bmage/Demo`) in a real
-Chromium. It covers what the unit tests in `Bit.Bmage.Tests` cannot: the `bit-bmage.js` browser bridge, the
+MSTest + Microsoft.Playwright suite that drives the Bmage demo site (`src/Utilities/Bmage/Demo`) and the hosting
+samples (`src/Utilities/Bmage/Samples`) in a real Chromium, and the MAUI sample in its WebView2 on Windows. It covers what the unit tests in `Bit.Bmage.Tests` cannot: the `bit-bmage.js` browser bridge, the
 browser's own codecs, canvas rendering, pointer and keyboard input on the editor, and the demo pages as a reader
 uses them. Uses the **Microsoft.Testing.Platform** runner (mandated by the repo `global.json`) via
 `EnableMSTestRunner`.
@@ -16,7 +16,11 @@ uses them. Uses the **Microsoft.Testing.Platform** runner (mandated by the repo 
 | `DemoPageTests` | Every page loads without a console error or an error banner, and fits a 320px wide phone without horizontal scrolling. |
 | `JsModuleContractTests` | The JS module's own contracts: aspect-preserving decode limits, natural-size decode, no silent PNG substitution, no resource or heap growth. |
 | `EditorLifecycleTests` | Repeated navigation, named and reachable controls, roving tab focus, keyboard focus, and rapid input. |
-| `DemoRegressionTests` | Defects found by driving the demo: overlay alignment, crop handles, pan, selection, undo of a move, history, paste, failing batches, toggle state, the headless examples. |
+| `DemoRegressionTests` | Defects found by driving the demo: overlay alignment, crop handles, pan, selection, undo of a move, history, paste, failing batches, toggle state, the headless examples, the editor page's readout and export defaults, step numbers drawn with the site's font, a file that is not a project, searching on Enter, the upload table on a narrow phone, a Persian label drawn into the image, a stopped batch keeping what it finished, Escape closing the site menu, and the newer tools - straighten, borders, colour tools, a clipped group, a picked white balance and a trim, a duotone look - running from their demo pages. |
+| `EditingToolTests` | The brush, eraser, fill, eyedropper and compare tools, straighten and canvas size from the Transform tab, an arrow staying on its target through a quarter turn, a layer's opacity and blend mode, clipping and grouping layers, the selection tools and actions, the histogram, the busy state of a long action, accessible names of the new controls, and a project saved, reopened and still editable. |
+| `SamplesBrowserTests` | The hosting samples under Interactive Server, WebAssembly and Auto: each becomes interactive on its own renderer and probes the browser, Auto moves to WebAssembly once the runtime is downloaded, and in every mode the managed engine runs where the component does, an image is loaded (generated and uploaded), processed, encoded and downloaded, and the editor loads, rotates and exports. Each sample is built and started on a free port the first time a test needs it. |
+| `SamplesMauiTests` | The MAUI sample as a Windows app, its WebView2 driven over the DevTools Protocol: the pages run on the Blazor Hybrid renderer with Bmage reporting `BrowserServer`, the managed engine runs in the app's process, an image is loaded (generated and uploaded), processed, encoded to WebP by the WebView and downloaded, and the editor loads, rotates and exports. Windows only (Inconclusive elsewhere); needs the MAUI workloads to build the app and the WebView2 Runtime to run it. |
+| `PerformanceMeasurements` | Opt-in (`BMAGE_E2E_MEASURE=1`): runs the editing tools' benchmark on the performance page and writes the timings to a file, for the WebAssembly columns of `docs/performance.md`. Inconclusive otherwise. |
 
 ## First-time setup
 
@@ -34,7 +38,8 @@ Without `pwsh`, `node .\bin\Debug\net10.0\.playwright\package\cli.js install chr
 Run from inside `src` (so `src/global.json` selects the test runner):
 
 ```powershell
-# Builds Bit.Bmage.Demo.Server, starts it on a free 127.0.0.1 port, runs every test, stops it.
+# Builds each host the tests need (the demo, the samples, the MAUI app) the first time one needs it,
+# starts it on a free 127.0.0.1 port, runs every test, stops them all.
 dotnet test --project Utilities\Bmage\Tests\Bit.Bmage.Tests.E2E\Bit.Bmage.Tests.E2E.csproj
 
 # One class, or one test.
@@ -63,10 +68,14 @@ ahead of time) is several times faster.
 | --- | --- |
 | `BMAGE_E2E_HOST_URL` | An already-running demo to drive instead of building and booting one. When unset, the suite starts `Bit.Bmage.Demo.Server` on a free port on 127.0.0.1 - never on the launch profile's port, which other checkouts may hold. |
 | `BMAGE_E2E_CONFIGURATION` | Build configuration of the demo host the suite boots; defaults to the test assembly's. |
-| `BMAGE_E2E_SKIP_BUILD` | `1`: the demo host was built beforehand (as CI does); do not rebuild it. |
+| `BMAGE_E2E_SKIP_BUILD` | `1`: the demo host and the hosting samples were built beforehand (as CI does); do not rebuild them. |
 | `BMAGE_E2E_CHANNEL` | Launch an installed browser channel instead - e.g. `chrome`, `msedge`. When unset the suite tries Playwright's bundled Chromium, then Chrome, then Edge. |
 | `BMAGE_E2E_EXECUTABLE` | Full path to a chromium-family executable. |
 | `BMAGE_E2E_HEADED` | `1`: watch the run in a visible window. |
+| `BMAGE_E2E_MAUI_DEBUGGING_PORT` | The WebView2 debugging port the MAUI sample was given from outside. Otherwise the suite opens a free one through `WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS`, which WebView2 ignores in an elevated process; elevated, set the `HKLM\SOFTWARE\Policies\Microsoft\Edge\WebView2\AdditionalBrowserArguments` policy to `--remote-debugging-port=<port>` and name the port here, as CI does. (In code it cannot be done: MAUI builds a WebView2 environment from `BlazorWebViewInitializing`'s options on Windows but initializes the control without it.) |
+| `BMAGE_E2E_BROWSER` | `chromium` (the default), `firefox` or `webkit`: run the suite in Playwright's build of that engine. Install it first with `playwright.ps1 install firefox` or `install webkit`. A channel or an executable applies to Chromium only. |
+| `BMAGE_E2E_MEASURE` | `1`: run `PerformanceMeasurements`. Point `BMAGE_E2E_HOST_URL` at a Release publish of the demo: AOT by default, the interpreter with `-p:RunAOTCompilation=false`. |
+| `BMAGE_E2E_MEASURE_OUT` | Where the measurements are written, tab separated; `bmage-measurements.tsv` in the temporary folder by default. |
 
 When no browser can be launched at all, every test reports **Inconclusive** with the reason rather than failing, so a
 checkout without browsers still runs the rest of the repository's suites.
@@ -75,7 +84,10 @@ checkout without browsers still runs the rest of the repository's suites.
 
 `.github/workflows/bit.ci.Bmage.e2e.yml` runs the whole suite in Release, and only when started by hand (Actions >
 "bit platform CI - Bmage E2E" > Run workflow); the test results (TRX) and the demo's output are uploaded as an
-artifact. The pull-request pipeline, `bit.ci.Bmage.yml`, runs the build, engine and MCP server tests only.
+artifact. Its `e2e` job runs everything but `SamplesMauiTests` on Linux; its `e2e-maui` job runs those on
+`windows-2025`, with the MAUI workloads, the WebView2 Runtime and the debugging-port policy set up first. The
+pull-request pipeline, `bit.ci.Bmage.yml`, runs the build, engine, MCP server and hosting tests only;
+`Bit.Bmage.Tests.Hosting` boots the same samples in-process and checks what their prerendered responses contain.
 
 The workflow drives the demo published the way `bmage.demo.cd.yml` publishes it (ahead of time, and trimmed) rather
 than a build output: only a publish trims the WebAssembly client, so an interop payload the trimmer breaks (an anonymous type whose
@@ -84,15 +96,16 @@ constructor lost its parameter names, a getter nothing but System.Text.Json read
 ```bash
 dotnet publish src/Utilities/Bmage/Demo/Server/Bit.Bmage.Demo.Server.csproj -c Release -o demo -p:InvariantGlobalization=true
 dotnet build src/Utilities/Bmage/Tests/Bit.Bmage.Tests.E2E/Bit.Bmage.Tests.E2E.csproj -c Release
+dotnet build src/Utilities/Bmage/Samples/Server/Bit.Bmage.Samples.Server.csproj -c Release   # and Wasm, Auto
 pwsh src/Utilities/Bmage/Tests/Bit.Bmage.Tests.E2E/bin/Release/net10.0/playwright.ps1 install --with-deps chromium
 (cd demo && dotnet Bit.Bmage.Demo.Server.dll --urls http://127.0.0.1:5000 &)
-cd src/Utilities/Bmage/Tests/Bit.Bmage.Tests.E2E && BMAGE_E2E_HOST_URL=http://127.0.0.1:5000 dotnet test -c Release --no-build --report-trx --report-trx-filename bmage-e2e.trx
+cd src/Utilities/Bmage/Tests/Bit.Bmage.Tests.E2E && BMAGE_E2E_HOST_URL=http://127.0.0.1:5000 BMAGE_E2E_SKIP_BUILD=1 dotnet test -c Release --no-build --report-trx --report-trx-filename bmage-e2e.trx
 ```
 
 ## Layout
 
-* `AssemblySetup.cs` - builds the demo host (unless told not to) and starts it once for the whole run; stops it and
-  the browser at the end.
+* `AssemblySetup.cs` - stops the browser and every host at the end of the run. Each host is built (unless told not
+  to) and started by the first test that needs it, so a run filtered to one kind of test never builds the others.
 * `Infrastructure/DemoHost.cs` - the demo every test drives: an external URL, or the built server started with
   `ASPNETCORE_ENVIRONMENT=Development` (a build output finds its static web assets - the client's `_framework`,
   `bit-bmage.js`, the editor's stylesheet - through the development manifest).
@@ -101,6 +114,10 @@ cd src/Utilities/Bmage/Tests/Bit.Bmage.Tests.E2E && BMAGE_E2E_HOST_URL=http://12
   HTML is on screen well before a single handler is attached); the sample upload; and loading it into an editor,
   which scrolls the editor to just under the sticky header so pointer-driven tests can reach every part of the
   canvas.
+* `Infrastructure/SampleHosts.cs` - the three hosting samples, each built (unless told not to) and started on a free
+  port the first time a test asks for it, with the same development manifest as the demo host.
+* `Infrastructure/MauiSampleApp.cs` - the MAUI sample built for Windows, unpackaged and with the Windows App SDK
+  inside it, started with its WebView2's debugging port open, and attached to over CDP; one app for the whole run.
 * `Infrastructure/SampleImage.cs` - the deterministic 800 x 600 gradient PNG every upload uses, built with the
   library's own encoder.
 * `Infrastructure/PlaywrightSession.cs`, `ChildProcess.cs`, `RepoLayout.cs`, `E2EEnvironment.cs`, `DemoBuild.cs` -

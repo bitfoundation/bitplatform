@@ -22,7 +22,7 @@ namespace Bit.Bmage.Demo.Server.Services;
 public static class BmageSetupGuide
 {
     /// <summary>The hosting models a guide exists for.</summary>
-    public static readonly string[] RenderModes = ["wasm", "server", "auto", "standalone-wasm", "headless"];
+    public static readonly string[] RenderModes = ["wasm", "server", "auto", "standalone-wasm", "hybrid", "headless"];
 
     private static readonly FrozenDictionary<string, string> _aliases = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
     {
@@ -40,6 +40,18 @@ public static class BmageSetupGuide
         ["standalone"] = "standalone-wasm",
         ["standalone wasm"] = "standalone-wasm",
         ["blazorwasm"] = "standalone-wasm",
+        ["hybrid"] = "hybrid",
+        ["blazor hybrid"] = "hybrid",
+        ["blazorhybrid"] = "hybrid",
+        ["maui"] = "hybrid",
+        [".net maui"] = "hybrid",
+        ["maui blazor"] = "hybrid",
+        ["maui hybrid"] = "hybrid",
+        ["blazorwebview"] = "hybrid",
+        ["webview"] = "hybrid",
+        ["wpf"] = "hybrid",
+        ["winforms"] = "hybrid",
+        ["windows forms"] = "hybrid",
         ["headless"] = "headless",
         ["console"] = "headless",
         ["aspnetcore"] = "headless",
@@ -62,6 +74,7 @@ public static class BmageSetupGuide
             "server" => Compose(ServerHeader, Install, ServerRegistration, Stylesheet, ServerWhen, FirstImage, ServerCapabilities),
             "auto" => Compose(AutoHeader, Install, AutoRegistration, Stylesheet, Aot, PrerenderRule, FirstImage, AutoGuidance),
             "standalone-wasm" => Compose(StandaloneHeader, Install, StandaloneRegistration, StandaloneStylesheet, Aot, FirstImage, StandaloneCapabilities),
+            "hybrid" => Compose(HybridHeader, Install, HybridRegistration, StandaloneStylesheet, HybridSaving, HybridPerformance, FirstImage, HybridCapabilities),
             "headless" => Compose(HeadlessHeader, HeadlessInstall, HeadlessRegistration, HeadlessEndpoint, HeadlessConsole, HeadlessCapabilities),
             "wasm" => Compose(WasmHeader, Install, WasmRegistration, Stylesheet, Aot, PrerenderRule, FirstImage, WasmCapabilities),
             _ => null
@@ -505,6 +518,103 @@ public static class BmageSetupGuide
         clipboard, the camera, downloads and the editor. Probe rather than assume - `IImageCapabilityProvider`
         encodes a real pixel in each format, because browsers asked for a format they cannot write silently
         hand back a PNG.
+        """;
+
+    // -- Blazor Hybrid ---------------------------------------------------------
+
+    private const string HybridHeader = """
+        # Bit.Bmage in a Blazor Hybrid app - MAUI, WPF, Windows Forms
+
+        The components run in compiled .NET inside the app's own process and render into a WebView, which Bmage reaches
+        over JavaScript interop. That is the Interactive Server position without the network: `IImageCapabilityProvider`
+        reports `ImageEnvironment.BrowserServer`, PNG, JPEG, BMP and GIF are coded by the managed codecs in the app, and
+        WebP, AVIF and photos with a colour profile other than sRGB by the WebView - their pixels, and the editor's
+        previews, copied through the WebView's message channel. There is one DI container, and the pages render straight
+        into the WebView.
+
+        A working MAUI app over the same pages as the Web App samples: `GetBmageSourceFile(path: "Samples/MAUI/MauiProgram.cs")`,
+        `GetBmageSourceFile(path: "Samples/MAUI/MainPage.xaml")` and `GetBmageSourceFile(path: "Samples/MAUI/wwwroot/index.html")`.
+        """;
+
+    private const string HybridRegistration = """
+        ## 2. Register the services - once
+
+        ```csharp
+        // MauiProgram.cs
+        using Bit.Bmage;
+
+        public static class MauiProgram
+        {
+            public static MauiApp CreateMauiApp()
+            {
+                var builder = MauiApp.CreateBuilder();
+                builder.UseMauiApp<App>();
+
+                builder.Services.AddMauiBlazorWebView();
+
+                builder.Services.AddBitBmageServices(options =>
+                {
+                    options.Limits = ImageLimits.Default with { MaxPixels = 40_000_000 };
+                    // The pixel loops run on the device's CPU, not in WebAssembly: give an image every core.
+                    options.MaxDegreeOfParallelism = Environment.ProcessorCount;
+                });
+
+                return builder.Build();
+            }
+        }
+        ```
+
+        `AddBitBmageServices`, not `AddBitBmageHeadlessServices`: the components still talk to a browser - the WebView.
+        Services are scoped, one set per BlazorWebView. In WPF or Windows Forms the same call goes next to
+        `AddWpfBlazorWebView()` or `AddWindowsFormsBlazorWebView()`.
+
+        The sample splits this the way an app that shares its pages with a Web App would: the pages and their
+        registration in a Razor class library (`GetBmageSourceFile(path: "Samples/Core/Extensions/IServiceCollectionExtensions.cs")`),
+        and the MAUI app adding its own options (`GetBmageSourceFile(path: "Samples/MAUI/Extensions/IServiceCollectionExtensions.cs")`).
+        """;
+
+    private const string HybridSaving = """
+        ## 4. Save files through the platform on mobile
+
+        `ImageExporter.DownloadAsync` and `BmageEditor.DownloadAsync` hand the file to the WebView as a browser download.
+        WebView2 on Windows saves it as Edge would; Android's WebView and iOS's WKWebView leave downloads to the app, so
+        there nothing happens. Encode instead, and save the bytes with the platform:
+
+        ```csharp
+        // Or: var encoded = await editor.ExportAsync(options);
+        var encoded = await Exporter.EncodeWithFallbackAsync(image, [ImageFormat.WebP, ImageFormat.Jpeg]);
+
+        var path = Path.Combine(FileSystem.CacheDirectory, "photo" + encoded.Extension);
+        await File.WriteAllBytesAsync(path, encoded.Data);
+
+        await Share.Default.RequestAsync(new ShareFileRequest { Title = "Save the image", File = new ShareFile(path) });
+        ```
+
+        When the pages live in a Razor class library without MAUI references, put that behind an interface of your own
+        and register the MAUI implementation in `MauiProgram.cs`.
+        """;
+
+    private const string HybridPerformance = """
+        ## 5. Judge performance on a Release build
+
+        There is no WebAssembly, so `RunAOTCompilation` does not apply: .NET runs compiled on the device. But the MAUI
+        template sets `<UseInterpreter Condition="'$(Configuration)' == 'Debug'">True</UseInterpreter>` for Hot Reload,
+        which on Android, iOS and Mac Catalyst runs Bmage's pixel loops on the Mono interpreter - the one Blazor
+        WebAssembly uses, 10 to 35 times slower than compiled code. A Debug build there says nothing about speed.
+        """;
+
+    private const string HybridCapabilities = """
+        ## Writing for this mode
+
+        1. Probe, do not assume by platform: the WebView's engine decides WebP and AVIF - Chromium in WebView2 and the
+           Android System WebView, Safari's in WKWebView on iOS and Mac Catalyst, with its tighter canvas limits. Use
+           `EncodeWithFallbackAsync` or `ChooseEncodableFormat`.
+        2. Prefer PNG and JPEG for work that stays in the app: the managed codecs code them, so their pixels never cross
+           the WebView's bridge. Load with `DecodeOptions.MaxSize` when the full size is not needed, so a WebP or AVIF is
+           scaled down by the WebView before its pixels cross.
+        3. The WebView is there from the first render, so the probe always answers for it. Components shared with a Web
+           App still do their browser work in `OnAfterRenderAsync`, which works in both.
+        4. The editor works unchanged; `MaxInteractiveDimension` caps the previews it copies to the WebView.
         """;
 
     // -- Headless --------------------------------------------------------------

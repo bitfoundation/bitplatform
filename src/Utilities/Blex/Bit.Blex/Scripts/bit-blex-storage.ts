@@ -4,6 +4,7 @@
 type BlexStorageArea = 'local' | 'session';
 
 interface DotNetObjectReference {
+    invokeMethod(methodName: string, ...args: unknown[]): unknown;
     invokeMethodAsync(methodName: string, ...args: unknown[]): Promise<unknown>;
 }
 
@@ -77,4 +78,49 @@ export function unwatch(handle: number): void {
 
     watchers.delete(handle);
     window.removeEventListener('storage', listener);
+}
+
+// Page hide. A debounced save still waiting when the tab is closed or reloaded is lost unless it is
+// written while the page is going away, and nothing asynchronous is guaranteed to run by then. So the
+// .NET side is called synchronously (invokeMethod), which WebAssembly supports: the writes it starts
+// reach storage before the handler returns. Blazor Server cannot take a synchronous call, so there it
+// falls back to a best-effort asynchronous one.
+//
+// visibilitychange as well as pagehide: a backgrounded tab (on a phone, almost every tab) may be
+// discarded without ever seeing pagehide. Flushing early on hide only writes what would be written anyway.
+const hideWatchers = new Map<number, { onHide: () => void; onVisibility: () => void }>();
+let nextHideHandle = 1;
+
+export function watchHide(handler: DotNetObjectReference): number {
+    const onHide = () => {
+        try {
+            handler.invokeMethod('OnPageHiding');
+        } catch {
+            handler.invokeMethodAsync('OnPageHiding').catch(() => { });
+        }
+    };
+
+    const onVisibility = () => {
+        if (document.visibilityState === 'hidden') {
+            onHide();
+        }
+    };
+
+    window.addEventListener('pagehide', onHide);
+    document.addEventListener('visibilitychange', onVisibility);
+
+    const handle = nextHideHandle++;
+    hideWatchers.set(handle, { onHide, onVisibility });
+    return handle;
+}
+
+export function unwatchHide(handle: number): void {
+    const entry = hideWatchers.get(handle);
+    if (!entry) {
+        return;
+    }
+
+    hideWatchers.delete(handle);
+    window.removeEventListener('pagehide', entry.onHide);
+    document.removeEventListener('visibilitychange', entry.onVisibility);
 }

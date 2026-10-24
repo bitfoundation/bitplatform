@@ -190,7 +190,10 @@ public record BmageSourceFileDto
     /// <summary>The path to pass to GetBmageSourceFile.</summary>
     public required string Path { get; init; }
 
-    /// <summary>"Demo page", "Demo", "Host" or "Site chrome" (the documentation site's own shell, under Demo/Client/Layout/).</summary>
+    /// <summary>
+    /// "Demo page", "Demo", "Host", "Site chrome" (the documentation site's own shell, under Demo/Client/Layout/) or
+    /// "Sample" (the hosting samples' wiring, under Samples/, such as the MAUI app).
+    /// </summary>
     public required string Kind { get; init; }
 
     /// <summary>What the file is. For a demo page, what the page demonstrates.</summary>

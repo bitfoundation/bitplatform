@@ -115,6 +115,22 @@ public class SourceCatalogTests
     }
 
     [TestMethod]
+    public void Sources_TheMauiSamplesWiring_IsEmbedded_AsSamples()
+    {
+        StringAssert.Contains(BmageSourceCatalog.GetSourceFile("Samples/MAUI/MauiProgram.cs"), "AddMauiBlazorWebView");
+        StringAssert.Contains(BmageSourceCatalog.GetSourceFile("Samples/MAUI/MainPage.xaml"), "BlazorWebView");
+        StringAssert.Contains(BmageSourceCatalog.GetSourceFile("Samples/MAUI/wwwroot/index.html"), "bit-bmage-editor.css");
+        StringAssert.Contains(BmageSourceCatalog.GetSourceFile("Samples/MAUI/Extensions/IServiceCollectionExtensions.cs"), "MaxDegreeOfParallelism");
+        StringAssert.Contains(BmageSourceCatalog.GetSourceFile("Samples/MAUI/Bit.Bmage.Samples.Maui.csproj"), "<UseMaui>true</UseMaui>");
+        StringAssert.Contains(BmageSourceCatalog.GetSourceFile("Samples/Core/Extensions/IServiceCollectionExtensions.cs"), "AddBitBmageServices");
+
+        var samples = BmageSourceCatalog.SourceFiles.Where(file => file.Path.StartsWith("Samples/", StringComparison.Ordinal)).ToArray();
+        Assert.HasCount(6, samples);
+        Assert.IsTrue(samples.All(file => file.Kind == "Sample"), string.Join(", ", samples.Select(file => $"{file.Path}: {file.Kind}")));
+        StringAssert.Contains(samples.Single(file => file.Path.EndsWith(".csproj", StringComparison.Ordinal)).Description, "MAUI");
+    }
+
+    [TestMethod]
     public void Sources_PathsAreForgiving_AndLineCountsAreReal()
     {
         Assert.IsNotNull(BmageSourceCatalog.GetSourceFile("demo\\client\\pages\\avatar.razor"));

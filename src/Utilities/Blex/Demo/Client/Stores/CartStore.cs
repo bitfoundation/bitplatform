@@ -24,6 +24,11 @@ public partial class CartStore
     [BlexStateAttribute] private decimal _discountRate;
 
     /// <summary>How many times each compute method has actually run (not a <c>[BlexStateAttribute]</c> field).</summary>
+    /// <remarks>
+    /// The compute methods only bump the counters, in a statement of their own, so the generator does not count
+    /// them as inputs: <see cref="Subtotal"/> still depends on <see cref="Lines"/> alone. Reading one in a compute
+    /// method would make that computed stale on every write.
+    /// </remarks>
     public int SubtotalEvaluations { get; private set; }
 
     /// <summary>Evaluation counter for <see cref="Total"/>.</summary>
@@ -46,9 +51,20 @@ public partial class CartStore
 
     [BlexComputedAttribute] private int ComputeItemCount() => Lines.Sum(l => l.Quantity);
 
+    /// <summary>
+    /// Sets one line's quantity, never below zero. A quantity the line already has assigns nothing, so the action
+    /// records and invalidates nothing: a rebuilt list would be a new reference, which change detection counts as a
+    /// change.
+    /// </summary>
     [BlexActionAttribute]
     private void OnSetQuantity(string sku, int quantity)
-        => Lines = [.. Lines.Select(l => l.Sku == sku ? l with { Quantity = Math.Max(0, quantity) } : l)];
+    {
+        quantity = Math.Max(0, quantity);
+        if (Lines.All(l => l.Sku != sku || l.Quantity == quantity))
+            return;
+
+        Lines = [.. Lines.Select(l => l.Sku == sku ? l with { Quantity = quantity } : l)];
+    }
 
     [BlexActionAttribute] private void OnSetDiscount(decimal rate) => DiscountRate = Math.Clamp(rate, 0m, 0.9m);
 

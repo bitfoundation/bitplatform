@@ -29,6 +29,14 @@ public abstract class PointOperation : ImageOperation
     /// <summary>True for the library's own types, whose <see cref="ProcessRow"/> no other assembly can have replaced.</summary>
     private protected bool IsBuiltIn => GetType().Assembly == typeof(PointOperation).Assembly;
 
+    /// <summary>
+    /// True when <see cref="ProcessRow"/> may run on several rows at once from different threads, which lets the
+    /// operation spread over <see cref="OperationContext.MaxDegreeOfParallelism"/> threads. The library's own operations
+    /// keep no state between calls and say so; a custom operation keeps running on one thread unless it overrides this,
+    /// which it should whenever its <see cref="ProcessRow"/> only reads its own fields.
+    /// </summary>
+    public virtual bool CanProcessRowsConcurrently => IsBuiltIn;
+
     /// <inheritdoc />
     public sealed override ImageBuffer Apply(ImageBuffer source, OperationContext context)
         => PointOperationExecutor.Run(source, context, this);
@@ -58,8 +66,33 @@ internal static class PointOperationExecutor
         if (!ReferenceEquals(output, source)) output.Metadata = source.Metadata;
         try
         {
-            if (operation.IsChannelSeparable) RunTables(source, output, context, operation);
-            else RunRows(source, output, context, operation);
+            using var processor = new RowProcessor(operation);
+            var width = source.Width;
+            var height = source.Height;
+            // The tables are only read once built, so every band shares them; each band has its own row. A table
+            // lookup is cheap, so a band of those needs four times the rows to be worth handing out.
+            ParallelRows.For(processor.Context(context), 0, height, processor.UsesTablesOnly ? width / 4 : width, (start, end, band) =>
+            {
+                var rowArray = processor.UsesTablesOnly ? null : ArrayPool<Vector4>.Shared.Rent(width);
+                try
+                {
+                    var row = rowArray.AsSpan(0, rowArray is null ? 0 : width);
+                    var check = processor.UsesTablesOnly ? 63 : 15;
+                    for (var y = start; y < end; y++)
+                    {
+                        if (((y - start) & check) == 0)
+                        {
+                            band.ThrowIfCancellationRequested();
+                            band.ReportProgress(y / (double)height);
+                        }
+                        processor.Process(source.GetRow(y), output.GetRow(y), row);
+                    }
+                }
+                finally
+                {
+                    if (rowArray is not null) ArrayPool<Vector4>.Shared.Return(rowArray);
+                }
+            });
             context.ReportProgress(1);
             return output;
         }
@@ -70,68 +103,77 @@ internal static class PointOperationExecutor
         }
     }
 
-    private static void RunRows(ImageBuffer source, ImageBuffer output, OperationContext context, PointOperation operation)
+    /// <summary>
+    /// Applies a point operation to one row at a time, producing exactly the pixels <see cref="Run"/> does for that row.
+    /// Built once per run, with whatever tables the operation allows; safe to use from several threads at once when the
+    /// operation <see cref="PointOperation.CanProcessRowsConcurrently">can process rows concurrently</see>, each with its
+    /// own scratch row.
+    /// </summary>
+    internal sealed class RowProcessor : IDisposable
     {
-        var width = source.Width;
-        var height = source.Height;
-        var fused = operation as FusedPointOperation;
-        var prefix = fused?.SeparablePrefixLength ?? 0;
-        // Only reached with at least one stage that mixes channels, so the closing curves never overlap the prefix.
-        var suffix = fused?.CurveSuffixStart ?? 1;
-        float[][]? prefixTables = null;
-        ByteTables? suffixTables = null;
+        private readonly PointOperation _operation;
+        private readonly FusedPointOperation? _fused;
+        private readonly int _prefix;
+        private readonly int _suffix;
+        private readonly ByteTables? _tables;
+        private readonly float[][]? _prefixTables;
+        private readonly ByteTables? _suffixTables;
 
-        var pool = ArrayPool<Vector4>.Shared;
-        var rowArray = pool.Rent(width);
-        try
+        public RowProcessor(PointOperation operation)
         {
-            if (prefix > 0) prefixTables = BuildPrefixTables(fused!, prefix);
-            if (fused is not null && suffix < fused.Stages.Count) suffixTables = Tabulate(fused, suffix);
-            var row = rowArray.AsSpan(0, width);
-            for (var y = 0; y < height; y++)
+            _operation = operation;
+            if (operation.IsChannelSeparable)
             {
-                if ((y & 15) == 0)
-                {
-                    context.ThrowIfCancellationRequested();
-                    context.ReportProgress(y / (double)height);
-                }
-                var target = output.GetRow(y);
-                if (fused is null)
-                {
-                    PixelRows.Load(source.GetRow(y), row);
-                    operation.ProcessRow(row);
-                    PixelRows.Store(row, target);
-                    continue;
-                }
-                if (prefixTables is null) PixelRows.Load(source.GetRow(y), row);
-                else LoadThroughTables(source.GetRow(y), row, prefixTables);
-                // Storing clamps exactly as the stage boundary would, so the last stage's clamp is skipped.
-                fused.ProcessRowRange(prefix, suffix, row, clampLast: false);
+                _tables = Tabulate(operation, 0);
+                return;
+            }
+            _fused = operation as FusedPointOperation;
+            _prefix = _fused?.SeparablePrefixLength ?? 0;
+            // Only reached with at least one stage that mixes channels, so the closing curves never overlap the prefix.
+            _suffix = _fused?.CurveSuffixStart ?? 1;
+            if (_prefix > 0) _prefixTables = BuildPrefixTables(_fused!, _prefix);
+            if (_fused is not null && _suffix < _fused.Stages.Count) _suffixTables = Tabulate(_fused, _suffix);
+        }
+
+        /// <summary>True when every channel goes through a table, so <see cref="Process"/> needs no scratch row.</summary>
+        public bool UsesTablesOnly => _tables is not null;
+
+        /// <summary>The context to run under: one thread unless the operation allows several.</summary>
+        public OperationContext Context(OperationContext context)
+            => UsesTablesOnly || _operation.CanProcessRowsConcurrently ? context : context.WithParallelism(1);
+
+        /// <summary>
+        /// Maps <paramref name="source"/> into <paramref name="target"/>, which may be the same row. <paramref name="scratch"/>
+        /// must hold at least a row's worth of values unless <see cref="UsesTablesOnly"/>.
+        /// </summary>
+        public void Process(ReadOnlySpan<Rgba32> source, Span<Rgba32> target, Span<Vector4> scratch)
+        {
+            if (_tables is not null)
+            {
+                MapThroughTables(source, target, _tables);
+                return;
+            }
+            var row = scratch[..source.Length];
+            if (_fused is null)
+            {
+                PixelRows.Load(source, row);
+                _operation.ProcessRow(row);
                 PixelRows.Store(row, target);
-                if (suffixTables is not null) MapThroughTables(target, target, suffixTables);
+                return;
             }
+            if (_prefixTables is null) PixelRows.Load(source, row);
+            else LoadThroughTables(source, row, _prefixTables);
+            // Storing clamps exactly as the stage boundary would, so the last stage's clamp is skipped.
+            _fused.ProcessRowRange(_prefix, _suffix, row, clampLast: false);
+            PixelRows.Store(row, target);
+            if (_suffixTables is not null) MapThroughTables(target, target, _suffixTables);
         }
-        finally
-        {
-            pool.Return(rowArray);
-            if (prefixTables is not null) foreach (var table in prefixTables) ArrayPool<float>.Shared.Return(table);
-            suffixTables?.Dispose();
-        }
-    }
 
-    private static void RunTables(ImageBuffer source, ImageBuffer output, OperationContext context, PointOperation operation)
-    {
-        using var tables = Tabulate(operation, 0);
-
-        var height = source.Height;
-        for (var y = 0; y < height; y++)
+        public void Dispose()
         {
-            if ((y & 63) == 0)
-            {
-                context.ThrowIfCancellationRequested();
-                context.ReportProgress(y / (double)height);
-            }
-            MapThroughTables(source.GetRow(y), output.GetRow(y), tables);
+            _tables?.Dispose();
+            if (_prefixTables is not null) foreach (var table in _prefixTables) ArrayPool<float>.Shared.Return(table);
+            _suffixTables?.Dispose();
         }
     }
 
@@ -288,6 +330,9 @@ public sealed class FusedPointOperation : PointOperation
     public override string Name => "Adjustments (" + string.Join(", ", Stages.Select(s => s.Name)) + ")";
 
     public override bool IsIdentity => Stages.All(s => s.IsIdentity);
+
+    /// <summary>True when every stage may run on several rows at once.</summary>
+    public override bool CanProcessRowsConcurrently => Stages.All(s => s.CanProcessRowsConcurrently);
 
     /// <summary>
     /// Runs every stage over the row. Values are clamped to [0,1] between stages so that fusing operations produces

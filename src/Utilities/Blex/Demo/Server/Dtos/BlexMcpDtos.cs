@@ -39,7 +39,10 @@ public record BlexApiMemberDto
 {
     public required string Name { get; init; }
 
-    /// <summary>Parameter, Property, Field, Method, Event or EnumValue. "Parameter" means a Blazor [Parameter].</summary>
+    /// <summary>
+    /// Parameter, Property, Field, Method, Event or EnumValue -- or, for a member only a derived type can reach,
+    /// Protected property, Protected field, Protected method or Protected event. "Parameter" means a Blazor [Parameter].
+    /// </summary>
     public required string Kind { get; init; }
 
     /// <summary>The C# type of the member, or the signature's return type for a method.</summary>
@@ -88,7 +91,7 @@ public record BlexSourceFileDto
     /// <summary>The path to pass to GetBlexSourceFile, e.g. "Demo/Client/Stores/CartStore.cs".</summary>
     public required string Path { get; init; }
 
-    /// <summary>Demo (this documentation site) or Sample (the minimal standalone WebAssembly sample).</summary>
+    /// <summary>Demo (this documentation site) or Sample (the sample apps, one per hosting model).</summary>
     public required string Kind { get; init; }
 
     /// <summary>The file's own header comment or page title, when it has one.</summary>

@@ -36,6 +36,9 @@ bld/
 *.VisualState.xml
 TestResult.xml
 
+# BenchmarkDotNet results, written wherever a benchmark is run from
+BenchmarkDotNet.Artifacts/
+
 # Build Results of an ATL Project
 [Dd]ebugPS/
 [Rr]eleasePS/

@@ -50,8 +50,28 @@
     <Project Path="Utilities/Blex/Demo/Client/Bit.Blex.Demo.Client.csproj" />
     <Project Path="Utilities/Blex/Demo/Server/Bit.Blex.Demo.Server.csproj" />
   </Folder>
-  <Folder Name="/Utilities/Blex/Samples/">
-    <Project Path="Utilities/Blex/Samples/Bit.Blex.Samples.Wasm/Bit.Blex.Samples.Wasm.csproj" />
+  <Folder Name="/Utilities/Blex/Samples/" />
+  <Folder Name="/Utilities/Blex/Samples/Auto/">
+    <Project Path="Utilities/Blex/Samples/Auto/Bit.Blex.Samples.Auto/Bit.Blex.Samples.Auto.csproj" />
+    <Project Path="Utilities/Blex/Samples/Auto/Bit.Blex.Samples.Auto.Client/Bit.Blex.Samples.Auto.Client.csproj" />
+  </Folder>
+  <Folder Name="/Utilities/Blex/Samples/Core/">
+    <Project Path="Utilities/Blex/Samples/Core/Bit.Blex.Samples.Core.csproj" />
+  </Folder>
+  <Folder Name="/Utilities/Blex/Samples/MAUI/">
+    <Project Path="Utilities/Blex/Samples/MAUI/Bit.Blex.Samples.Maui.csproj">
+      <Deploy />
+    </Project>
+  </Folder>
+  <Folder Name="/Utilities/Blex/Samples/Server/">
+    <Project Path="Utilities/Blex/Samples/Server/Bit.Blex.Samples.Server.csproj" />
+  </Folder>
+  <Folder Name="/Utilities/Blex/Samples/Standalone/">
+    <Project Path="Utilities/Blex/Samples/Standalone/Bit.Blex.Samples.Standalone.csproj" />
+  </Folder>
+  <Folder Name="/Utilities/Blex/Samples/Wasm/">
+    <Project Path="Utilities/Blex/Samples/Wasm/Bit.Blex.Samples.Wasm/Bit.Blex.Samples.Wasm.csproj" />
+    <Project Path="Utilities/Blex/Samples/Wasm/Bit.Blex.Samples.Wasm.Client/Bit.Blex.Samples.Wasm.Client.csproj" />
   </Folder>
   <Folder Name="/Utilities/Blex/Tests/">
     <Project Path="Utilities/Blex/Tests/Bit.Blex.Benchmarks/Bit.Blex.Benchmarks.csproj" />
@@ -74,10 +94,30 @@
     <Project Path="Utilities/Bmage/Demo/Client/Bit.Bmage.Demo.Client.csproj" />
     <Project Path="Utilities/Bmage/Demo/Server/Bit.Bmage.Demo.Server.csproj" />
   </Folder>
+  <Folder Name="/Utilities/Bmage/Samples/">
+    <Project Path="Utilities/Bmage/Samples/MAUI/Bit.Bmage.Samples.Maui.csproj">
+      <Deploy />
+    </Project>
+  </Folder>
+  <Folder Name="/Utilities/Bmage/Samples/Auto/">
+    <Project Path="Utilities/Bmage/Samples/Auto/Bit.Bmage.Samples.Auto/Bit.Bmage.Samples.Auto.csproj" />
+    <Project Path="Utilities/Bmage/Samples/Auto/Bit.Bmage.Samples.Auto.Client/Bit.Bmage.Samples.Auto.Client.csproj" />
+  </Folder>
+  <Folder Name="/Utilities/Bmage/Samples/Core/">
+    <Project Path="Utilities/Bmage/Samples/Core/Bit.Bmage.Samples.Core.csproj" />
+  </Folder>
+  <Folder Name="/Utilities/Bmage/Samples/Server/">
+    <Project Path="Utilities/Bmage/Samples/Server/Bit.Bmage.Samples.Server.csproj" />
+  </Folder>
+  <Folder Name="/Utilities/Bmage/Samples/Wasm/">
+    <Project Path="Utilities/Bmage/Samples/Wasm/Bit.Bmage.Samples.Wasm/Bit.Bmage.Samples.Wasm.csproj" />
+    <Project Path="Utilities/Bmage/Samples/Wasm/Bit.Bmage.Samples.Wasm.Client/Bit.Bmage.Samples.Wasm.Client.csproj" />
+  </Folder>
   <Folder Name="/Utilities/Bmage/Tests/">
     <Project Path="Utilities/Bmage/Tests/Bit.Bmage.Benchmarks/Bit.Bmage.Benchmarks.csproj" />
     <Project Path="Utilities/Bmage/Tests/Bit.Bmage.Tests/Bit.Bmage.Tests.csproj" />
     <Project Path="Utilities/Bmage/Tests/Bit.Bmage.Tests.E2E/Bit.Bmage.Tests.E2E.csproj" />
+    <Project Path="Utilities/Bmage/Tests/Bit.Bmage.Tests.Hosting/Bit.Bmage.Tests.Hosting.csproj" />
     <Project Path="Utilities/Bmage/Tests/Bit.Bmage.Tests.Mcp/Bit.Bmage.Tests.Mcp.csproj" />
   </Folder>
   <Folder Name="/Utilities/Bsqlite/">

@@ -9,7 +9,14 @@
 <Router AppAssembly="typeof(Program).Assembly" NotFoundPage="typeof(Pages.NotFound)">
     <Found Context="routeData">
         <RouteView RouteData="routeData" DefaultLayout="typeof(Layout.DocsLayout)" />
-        <FocusOnNavigate RouteData="routeData" Selector="h1" />
+        @* Not on arrival: <FocusOnNavigate> also fires on its first render, which here is the
+           moment the app turns interactive - seconds after the page appeared - and it would pull
+           focus away from wherever the reader had already tabbed to, the skip link included. It
+           joins the tree with the first navigation, and its first render then is that one. *@
+        @if (_navigated)
+        {
+            <FocusOnNavigate RouteData="routeData" Selector="h1" />
+        }
     </Found>
 </Router>
 
@@ -20,12 +27,19 @@
 <BevToolsPanel />
 
 @code {
+    private bool _navigated;
+
     // Every navigation is also a named state change of AppState ("Visit"), so the State panel has a
-    // history to show on every page, not only on the ones that change state themselves.
+    // history to show on every page, not only on the ones that change state themselves. Subscribed
+    // ahead of the router (a parent initializes before the children it renders), so _navigated is
+    // already set when the router renders the page the navigation asked for.
     protected override void OnInitialized() => Navigation.LocationChanged += OnLocationChanged;
 
     private void OnLocationChanged(object? sender, LocationChangedEventArgs e)
-        => AppState.Visit("/" + Navigation.ToBaseRelativePath(e.Location));
+    {
+        _navigated = true;
+        AppState.Visit("/" + Navigation.ToBaseRelativePath(e.Location));
+    }
 
     public void Dispose() => Navigation.LocationChanged -= OnLocationChanged;
 }

@@ -32,9 +32,10 @@ public class DispatchPipelineBenchmarks
         _idle.Register(_idleStore);
         FillStores(_idle, StoreCount - 1);
 
-        // Full pipeline: a middleware forces CaptureGlobalState() on every action.
+        // Full pipeline: a middleware that reads the global state, which is captured lazily -- one that never
+        // reads it would not pay for the capture at all.
         long sink = 0;
-        _withMiddleware = new BlexManager(new[] { new BlexDelegateMiddleware(_ => sink++) });
+        _withMiddleware = new BlexManager(new[] { new BlexDelegateMiddleware(ctx => sink += ctx.GlobalState.Count) });
         _pipelineStore = new BenchCounterStore();
         _withMiddleware.Register(_pipelineStore);
         FillStores(_withMiddleware, StoreCount - 1);
@@ -42,11 +43,13 @@ public class DispatchPipelineBenchmarks
 
     private static void FillStores(BlexManager manager, int extra)
     {
+        // Scoped instances, so each has a name of its own ("benchWide:0", ...). Registered under one name they
+        // would share a single slice of the captured tree, and StoreCount would not grow the state at all.
         for (var i = 0; i < extra; i++)
         {
             var w = new BenchWideStore();
             w.Touch(i);
-            manager.Register(w);
+            manager.CreateScope(w, i.ToString(System.Globalization.CultureInfo.InvariantCulture));
         }
     }
 

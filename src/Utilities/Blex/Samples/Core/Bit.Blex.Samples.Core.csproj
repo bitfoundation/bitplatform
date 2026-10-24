@@ -1,0 +1,23 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
+
+    <!-- The one set of stores, pages and layout every sample host renders unchanged: Blazor Server,
+         WebAssembly and Auto (Samples/Server, Samples/Wasm, Samples/Auto), a standalone WebAssembly app
+         (Samples/Standalone) and a .NET MAUI Blazor Hybrid app (Samples/MAUI). -->
+
+    <PropertyGroup>
+        <TargetFramework>net10.0</TargetFramework>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <SupportedPlatform Include="browser" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\..\Bit.Blex\Bit.Blex.csproj" />
+        <!-- The Bit.Blex package carries the generator as an analyzer; inside the repo it is the analyzer project. -->
+        <ProjectReference Include="..\..\Bit.Blex.Generators\Bit.Blex.Generators.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+    </ItemGroup>
+
+</Project>

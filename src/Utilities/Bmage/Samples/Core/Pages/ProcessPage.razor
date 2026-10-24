@@ -1,0 +1,210 @@
+﻿@page "/process"
+@implements IAsyncDisposable
+@inject ImageLoader Loader
+@inject ImageExporter Exporter
+
+<PageTitle>Process · Bmage samples</PageTitle>
+
+<h1>Process</h1>
+
+<p>
+    Load an image with <code>ImageLoader</code>, run it through an <code>ImagePipeline</code>, encode it with
+    <code>ImageExporter</code> - WebP where this browser can write it, JPEG otherwise - and preview it through an
+    object URL or download it. Under Interactive WebAssembly every codec is the browser's; under Interactive Server
+    and in the MAUI app, PNG, JPEG, BMP and GIF are coded by .NET and only WebP and AVIF go through the browser.
+</p>
+
+<div class="card">
+    <h2>Source</h2>
+    <div class="row">
+        <BmageDropZone OnFilesSelected="OnFilesSelected" Label="Drop an image, or click to choose one" />
+        <button type="button" id="process-sample" class="btn" disabled="@(_busy || IsInteractive is false)" @onclick="UseSampleAsync">
+            Use the sample scene
+        </button>
+    </div>
+    @if (_source is not null)
+    {
+        <p id="process-source">@_sourceName: @_source.Width × @_source.Height</p>
+    }
+</div>
+
+<div class="card">
+    <h2>Pipeline</h2>
+    <div class="row">
+        <label>
+            Longest edge
+            <input type="range" min="64" max="1600" step="16" disabled="@(IsInteractive is false)"
+                   @bind="_maxEdge" @bind:event="onchange" @bind:after="ProcessAsync" />
+            @_maxEdge px
+        </label>
+        <label>
+            Look
+            <select id="process-look" disabled="@(IsInteractive is false)" @bind="_look" @bind:after="ProcessAsync">
+                @foreach (var look in Looks)
+                {
+                    <option value="@look">@look</option>
+                }
+            </select>
+        </label>
+    </div>
+</div>
+
+@if (_error is not null)
+{
+    <p class="card error" role="alert">@_error</p>
+}
+
+@if (_busy)
+{
+    <p role="status"><em>Working…</em></p>
+}
+
+@if (_encoded is not null && _previewUrl is not null)
+{
+    <div class="card">
+        <h2>Result</h2>
+        <img id="process-output" class="preview" src="@_previewUrl" alt="The processed image" />
+        <p id="process-result">
+            @_encoded.Width × @_encoded.Height @_encoded.Format, @_encoded.Length.ToString("N0") bytes,
+            in @_elapsed.TotalMilliseconds.ToString("0") ms.
+        </p>
+        <button type="button" id="process-download" class="btn" disabled="@_busy" @onclick="DownloadAsync">Download</button>
+    </div>
+}
+
+@code {
+    private static readonly string[] Looks = ["None", "Grayscale", "Sepia", "Sharpen", "Vignette"];
+
+    private ImageBuffer? _source;
+    private string? _sourceName;
+    private int _maxEdge = 800;
+    private string _look = "None";
+    private EncodedImage? _encoded;
+    private string? _previewUrl;
+    private TimeSpan _elapsed;
+    private string? _error;
+    private bool _busy;
+    private int _version;
+
+    private bool IsInteractive => RendererInfo.IsInteractive;
+
+    private async Task OnFilesSelected(IReadOnlyList<IBrowserFile> files)
+    {
+        if (files.Count == 0) return;
+
+        await LoadAsync(files[0].Name, () => Loader.LoadAsync(files[0]));
+    }
+
+    // The scene is drawn, encoded to PNG and loaded back through ImageLoader, the same path an upload takes.
+    private Task UseSampleAsync() => LoadAsync("Sample scene", async () =>
+    {
+        using var scene = SampleScene.Draw(1600, 1066);
+        var png = await Exporter.EncodeAsync(scene, ImageExportOptions.Png);
+        return await Loader.LoadAsync(png.Data);
+    });
+
+    private async Task LoadAsync(string name, Func<ValueTask<ImageBuffer>> load)
+    {
+        _busy = true;
+        _error = null;
+        StateHasChanged();
+
+        try
+        {
+            var image = await load();
+            _source?.Dispose();
+            _source = image;
+            _sourceName = name;
+        }
+        catch (Exception ex)
+        {
+            _error = $"Loading failed: {ex.Message}";
+            _busy = false;
+            return;
+        }
+
+        await ProcessAsync();
+    }
+
+    private async Task ProcessAsync()
+    {
+        if (_source is null) return;
+
+        var version = ++_version;
+        _busy = true;
+        _error = null;
+
+        try
+        {
+            var started = Stopwatch.GetTimestamp();
+
+            var pipeline = ImagePipeline.Create().AutoOrient().MaxSize(_maxEdge, _maxEdge);
+            pipeline = _look switch
+            {
+                "Grayscale" => pipeline.Grayscale(),
+                "Sepia" => pipeline.Sepia(),
+                "Sharpen" => pipeline.Sharpen(0.6f),
+                "Vignette" => pipeline.Vignette(0.6f),
+                _ => pipeline,
+            };
+
+            using var processed = await pipeline.ExecuteAsync(_source);
+            var encoded = await Exporter.EncodeWithFallbackAsync(processed, [ImageFormat.WebP, ImageFormat.Jpeg],
+                new ImageExportOptions { Quality = 0.85 });
+
+            // A newer change superseded this one while it ran.
+            if (version != _version) return;
+
+            var previewUrl = await Exporter.CreateObjectUrlAsync(encoded);
+            await ReleasePreviewAsync();
+            _previewUrl = previewUrl;
+            _encoded = encoded;
+            _elapsed = Stopwatch.GetElapsedTime(started);
+        }
+        catch (Exception ex)
+        {
+            if (version == _version) _error = $"Processing failed: {ex.Message}";
+        }
+        finally
+        {
+            if (version == _version) _busy = false;
+        }
+    }
+
+    private async Task DownloadAsync()
+    {
+        if (_encoded is null) return;
+
+        try
+        {
+            await Exporter.DownloadAsync(_encoded, "bmage-sample");
+        }
+        catch (Exception ex)
+        {
+            _error = $"Download failed: {ex.Message}";
+        }
+    }
+
+    private async Task ReleasePreviewAsync()
+    {
+        if (_previewUrl is null) return;
+
+        var url = _previewUrl;
+        _previewUrl = null;
+        await Exporter.ReleaseObjectUrlAsync(url);
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        _source?.Dispose();
+
+        try
+        {
+            await ReleasePreviewAsync();
+        }
+        catch (JSDisconnectedException)
+        {
+            // The circuit is gone, and the page with it.
+        }
+    }
+}
