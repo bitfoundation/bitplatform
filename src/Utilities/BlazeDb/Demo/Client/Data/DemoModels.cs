@@ -104,7 +104,7 @@ public partial class Setting
 
 /// <summary>
 /// Proves the source generator is optional: this table's descriptor is written by
-/// hand, so a positional record (which the generator rejects) works fine.
+/// hand, serializer and all, for a positional record.
 /// </summary>
 public sealed record Metric(int Id, string Name, double Value, DateTime At);
 

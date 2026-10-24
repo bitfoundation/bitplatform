@@ -235,27 +235,45 @@ public static class BlazeDbTableInspector
             wireTypes[number] = wire.Name.Identifier.ValueText;
         }
 
-        var initializer = reader.DescendantNodes().OfType<InitializerExpressionSyntax>().LastOrDefault(i => i.IsKind(SyntaxKind.ObjectInitializerExpression));
-        if (initializer is null) return [];
+        // The reader ends in `return new T(...) { ... }`: properties set in the initializer, and - for a
+        // type built through a constructor, a positional record say - the rest passed as its arguments.
+        if (reader.Body?.Statements.OfType<ReturnStatementSyntax>().LastOrDefault()?.Expression is not ObjectCreationExpressionSyntax creation) return [];
+
+        var assigned = new List<(string Property, ExpressionSyntax Value)>();
+
+        if (creation.ArgumentList is { Arguments.Count: > 0 } arguments)
+        {
+            var constructor = type.InstanceConstructors.FirstOrDefault(c => c.Parameters.Length == arguments.Arguments.Count);
+            for (var i = 0; constructor is not null && i < arguments.Arguments.Count; i++)
+            {
+                var parameter = constructor.Parameters[i];
+                var property = type.GetMembers().OfType<IPropertySymbol>()
+                    .FirstOrDefault(p => string.Equals(p.Name, parameter.Name, StringComparison.OrdinalIgnoreCase));
+                if (property is not null) assigned.Add((property.Name, arguments.Arguments[i].Expression));
+            }
+        }
+
+        foreach (var assignment in creation.Initializer?.Expressions.OfType<AssignmentExpressionSyntax>() ?? [])
+        {
+            if (assignment.Left is IdentifierNameSyntax target) assigned.Add((target.Identifier.ValueText, assignment.Right));
+        }
 
         var fields = new List<BlazeDbInspectedFieldDto>();
 
-        foreach (var assignment in initializer.Expressions.OfType<AssignmentExpressionSyntax>())
+        foreach (var (name, value) in assigned)
         {
-            if (assignment.Left is not IdentifierNameSyntax target) continue;
-
-            var local = assignment.Right.DescendantNodesAndSelf().OfType<IdentifierNameSyntax>()
+            var local = value.DescendantNodesAndSelf().OfType<IdentifierNameSyntax>()
                 .Select(identifier => identifier.Identifier.ValueText)
                 .FirstOrDefault(name => name.StartsWith("__v", StringComparison.Ordinal));
 
             if (local is null || int.TryParse(local.AsSpan(3), System.Globalization.NumberStyles.None, System.Globalization.CultureInfo.InvariantCulture, out var number) is false) continue;
 
-            var property = type.GetMembers(target.Identifier.ValueText).OfType<IPropertySymbol>().FirstOrDefault();
+            var property = type.GetMembers(name).OfType<IPropertySymbol>().FirstOrDefault();
             var attributes = property?.GetAttributes() ?? [];
 
             fields.Add(new BlazeDbInspectedFieldDto
             {
-                Property = target.Identifier.ValueText,
+                Property = name,
                 Type = property?.Type.ToDisplayString(_typeFormat) ?? "?",
                 FieldNumber = number,
                 Explicit = attributes.Any(attribute => attribute.AttributeClass?.ToDisplayString() == FieldAttribute),

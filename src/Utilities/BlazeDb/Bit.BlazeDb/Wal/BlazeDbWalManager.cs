@@ -42,9 +42,11 @@ internal sealed class BlazeDbWalManager : IAsyncDisposable
 
     // Pending WAL bytes not yet flushed; guarded by _db.SyncRoot.
     private readonly BlazeDbBufferWriter _pending = new(16 * 1024);
-    private readonly BlazeDbBufferWriter _recordScratch = new(4 * 1024);
-    private readonly BlazeDbBufferWriter _payloadScratch = new(4 * 1024);
     private readonly BlazeDbBufferWriter _valueScratch = new(1024);
+
+    // The size of the last snapshot, so the next one is written into a buffer of about the right size
+    // rather than one that doubles its way there - each doubling a copy of everything so far.
+    private int _lastSnapshotSize = 64 * 1024;
 
     // Serializes all storage I/O (flushes vs checkpoints).
     private readonly SemaphoreSlim _ioLock = new(1, 1);
@@ -122,26 +124,44 @@ internal sealed class BlazeDbWalManager : IAsyncDisposable
     {
         var lsn = _lastLsn + 1;
 
-        _payloadScratch.Reset();
-        _payloadScratch.WriteVarUInt((ulong)ops.Count);
-        foreach (var op in ops)
+        // The record is encoded straight into the buffer behind a header whose length and checksum
+        // are filled in once the payload is there - one copy of each row rather than three. A failure
+        // part-way through encoding (a row that cannot be serialized, or a transaction too large to
+        // grow the buffer for) cuts the buffer back to where the record began, and the LSN is only
+        // taken once the record is whole, so the log never holds a header without its payload.
+        var start = _pending.Length;
+        try
         {
-            op.EncodeRedo(_payloadScratch, _valueScratch);
+            _pending.WriteRaw(RecordMagic);
+            var header = _pending.Length;
+            _pending.WriteFixed32(0);
+            _pending.WriteFixed64((ulong)lsn);
+            _pending.WriteFixed32(0);
+            var payloadStart = _pending.Length;
+            _pending.WriteVarUInt((ulong)ops.Count);
+            foreach (var op in ops)
+            {
+                op.EncodeRedo(_pending, _valueScratch);
+            }
+            var payloadLength = _pending.Length - payloadStart;
+            if (payloadLength > MaxRecordSize)
+            {
+                throw new BlazeDbException(
+                    $"The commit encodes to {payloadLength} bytes, more than a log record may hold ({MaxRecordSize}). " +
+                    "Split the transaction into smaller ones.");
+            }
+
+            _pending.PatchFixed32(header, (uint)payloadLength);
+            var written = _pending.WrittenSpan;
+            _pending.PatchFixed32(header + RecordChecksummedSize, BlazeDbCrc32.Compute(
+                written.Slice(header, RecordChecksummedSize),
+                written.Slice(payloadStart, payloadLength)));
         }
-        var payload = _payloadScratch.WrittenSpan;
-
-        // The record is assembled in full before it joins the buffer, and the LSN is only taken
-        // once it has: a failure part-way through encoding - a transaction too large to grow the
-        // buffer for - must not leave a header in the log ahead of a payload that never arrived.
-        _recordScratch.Reset();
-        _recordScratch.WriteRaw(RecordMagic);
-        _recordScratch.WriteFixed32((uint)payload.Length);
-        _recordScratch.WriteFixed64((ulong)lsn);
-        _recordScratch.WriteFixed32(
-            BlazeDbCrc32.Compute(_recordScratch.WrittenSpan.Slice(RecordMagicSize), payload));
-        _recordScratch.WriteRaw(payload);
-
-        _pending.WriteRaw(_recordScratch.WrittenSpan);
+        catch
+        {
+            _pending.Truncate(start);
+            throw;
+        }
         _lastLsn = lsn;
     }
 
@@ -455,7 +475,7 @@ internal sealed class BlazeDbWalManager : IAsyncDisposable
         await _ioLock.WaitAsync(ct).ConfigureAwait(false);
         try
         {
-            byte[] snapshotBytes;
+            ReadOnlyMemory<byte> snapshotBytes;
             byte[] supersededPending;
             long snapshotLsn;
             ulong newGeneration;
@@ -465,9 +485,17 @@ internal sealed class BlazeDbWalManager : IAsyncDisposable
                 {
                     return false;
                 }
+                if (_db.UndoFailure is { } cause)
+                {
+                    // A snapshot of memory now could make a write durable that the log never recorded.
+                    throw new BlazeDbException(
+                        "Cannot checkpoint: an earlier rollback could not undo a write, so memory may hold one the log " +
+                        "never recorded. Reopen the database from storage.", cause);
+                }
                 snapshotLsn = _lastLsn;
                 newGeneration = _generation + 1;
-                snapshotBytes = BuildSnapshot(snapshotLsn);
+                snapshotBytes = BuildSnapshot(_db.TableList, snapshotLsn, _lastSnapshotSize + _lastSnapshotSize / 8);
+                _lastSnapshotSize = snapshotBytes.Length;
                 // Everything buffered so far has LSN <= snapshotLsn and is superseded by the
                 // snapshot - but only once that snapshot is actually durable, so keep a copy.
                 supersededPending = _pending.ToArray();
@@ -834,21 +862,60 @@ internal sealed class BlazeDbWalManager : IAsyncDisposable
 
     // ---- Snapshot / manifest encoding ----
 
-    private byte[] BuildSnapshot(long lsn)
+    /// <summary>
+    /// Serializes <paramref name="tables"/> into a snapshot, for a checkpoint or an export. Called under the
+    /// database's lock. <paramref name="sizeHint"/> sizes the buffer - a checkpoint passes a little over the
+    /// last snapshot's size, since a database mostly grows between checkpoints - and the written bytes are
+    /// returned as they are, without a copy into an exact-size array: the buffer belongs to this one
+    /// snapshot and is dropped once it has been written out.
+    /// <para>
+    /// The engine's own table is left out while it is empty, so a database that never used it writes the
+    /// same snapshot an earlier version of the engine would, and opens there without an unregistered table.
+    /// </para>
+    /// </summary>
+    internal static ReadOnlyMemory<byte> BuildSnapshot(IReadOnlyList<IBlazeDbTableInternal> tables, long lsn, int sizeHint)
     {
-        var writer = new BlazeDbBufferWriter(64 * 1024);
+        var writer = new BlazeDbBufferWriter(sizeHint);
+        var scratch = new BlazeDbBufferWriter(1024);
         writer.WriteRaw(SnapshotMagic);
         writer.WriteByte(BlazeDbSnapshotFormat.Current);
         writer.WriteVarUInt((ulong)lsn);
-        var tables = _db.TableList;
-        writer.WriteVarUInt((ulong)tables.Count);
-        foreach (var table in tables)
+        var written = tables.Where(table => table.Count > 0 || table.Name != BlazeDbMetaTable.Name).ToList();
+        writer.WriteVarUInt((ulong)written.Count);
+        foreach (var table in written)
         {
             writer.WriteString(table.Name);
-            table.WriteSnapshot(writer, _valueScratch);
+            table.WriteSnapshot(writer, scratch);
         }
         writer.WriteFixed32(BlazeDbCrc32.Compute(writer.WrittenSpan));
-        return writer.ToArray();
+        return writer.WrittenMemory;
+    }
+
+    /// <summary>
+    /// Makes <paramref name="snapshot"/> - a file <see cref="BlazeDbDatabase.ExportAsync"/> wrote - the
+    /// first generation of a new database on <paramref name="storage"/>. The snapshot is checked first, and a
+    /// backend that already holds a database is refused, so an import can neither land corrupt data nor
+    /// overwrite a database. The manifest is written last: until it is, the backend still holds no database.
+    /// </summary>
+    internal static async ValueTask ImportAsync(IBlazeDbStorage storage, ReadOnlyMemory<byte> snapshot, CancellationToken ct)
+    {
+        var bytes = snapshot.ToArray();
+        VerifySnapshot(bytes, "import");
+        var reader = new BlazeDbBufferReader(bytes.AsSpan(SnapshotMagic.Length + 1));
+        var lsn = (long)reader.ReadVarUInt();
+
+        if (await storage.ReadAsync(ManifestFile, ct).ConfigureAwait(false) is not null)
+        {
+            throw new InvalidOperationException(
+                "The destination already holds a database. Delete it first with BlazeDbDatabase.DeleteAsync, or import somewhere else.");
+        }
+        const string SnapshotFile = "snapshot-1.blz";
+        const string WalFile = "wal-1.blz";
+        // A first-generation log left by a database that was only partly deleted would otherwise be
+        // replayed on top of the imported rows.
+        await storage.DeleteAsync(WalFile, ct).ConfigureAwait(false);
+        await storage.WriteAtomicAsync(SnapshotFile, bytes, ct).ConfigureAwait(false);
+        await storage.WriteAtomicAsync(ManifestFile, BuildManifest(1, SnapshotFile, WalFile, lsn), ct).ConfigureAwait(false);
     }
 
     /// <summary>

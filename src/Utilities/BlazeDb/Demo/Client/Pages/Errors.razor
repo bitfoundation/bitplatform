@@ -179,7 +179,7 @@
 
         new("nested", "Transactions", "Opening a transaction inside a transaction",
             "db.BeginTransaction()", nameof(InvalidOperationException),
-            "The engine is single-writer, so there is exactly one ambient transaction. Nesting is a design error rather than a savepoint request.",
+            "The engine is single-writer, so there is exactly one ambient transaction. To nest a unit of work, use RunInTransaction or a savepoint, which compose inside it.",
             static p => p.NestedTransactionAsync()),
 
         new("reuse", "Transactions", "Committing the same transaction twice",

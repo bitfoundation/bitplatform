@@ -158,7 +158,7 @@ else
     </Section>
 
     <Section Title="Ordered indexes - ranges and sort order"
-             Lead="Range takes two inclusive bounds and walks the index in either direction. An unbounded end leaves the range open, and an implicit conversion means a bare value is accepted wherever a bound is expected.">
+             Lead="Range takes two bounds - inclusive unless made with BlazeDbBound.Exclusive - and walks the index in either direction. An unbounded end leaves the range open, and an implicit conversion means a bare value is accepted wherever a bound is expected.">
         <div class="bd-main-side">
             <Panel Title="Compose a range" IconName="filter">
                 <div class="bb-fields">
@@ -700,5 +700,11 @@ else
 
         // Reverse traversal.
         todos.Range(index, 40, 100, descending: true);
+
+        // Exclusive ends: strictly after 40, strictly before 100 - the next page of a keyset pager.
+        todos.Range(index, BlazeDbBound<int>.Exclusive(40), BlazeDbBound<int>.Exclusive(100));
+
+        // Ordinal prefix scan, over an ordered index on a string property.
+        todos.StartsWith(titleIndex, "Wire");
         """;
 }

@@ -22,7 +22,17 @@ internal sealed class BlazeDbEfTransaction : IDbContextTransaction
 
     public void Commit()
     {
-        _transaction.Commit();
+        try
+        {
+            _transaction.Commit();
+        }
+        catch (BlazeDbChangeHandlerException)
+        {
+            // Committed; a Changed handler failed while it was reported. The transaction is not
+            // rolled back, so disposing it must not make the tracker forget what was saved.
+            _completed = true;
+            throw;
+        }
         _completed = true;
     }
 

@@ -7,7 +7,7 @@
             Lead="A transaction makes a group of writes atomic in the log. Writes still land in memory immediately, so reads inside the batch see them - but nothing is durable until commit, and a rollback reverts every change through an undo log.">
     <span class="bb-badge bd-badge-neutral">Single writer</span>
     <span class="bb-badge bd-badge-neutral">Ambient enrolment</span>
-    <span class="bb-badge bd-badge-neutral">No nesting, no savepoints</span>
+    <span class="bb-badge bd-badge-neutral">Savepoints, no nested BeginTransaction</span>
 </PageHeader>
 
 <Section Title="Run a scenario"
@@ -193,11 +193,20 @@
             <CodeBlock Code="@AmbientSnippet" />
         </Panel>
 
+        <Panel Title="Composing atomic units" IconName="txn">
+            <p>
+                <code>RunInTransaction</code> runs a block as one atomic unit: alone it commits as one transaction,
+                inside an open one it joins it behind a savepoint, so a failure takes back only that block's writes.
+                Savepoints are also there to take by hand.
+            </p>
+            <CodeBlock Code="@ComposeSnippet" />
+        </Panel>
+
         <Panel Title="Deliberate omissions" IconName="close">
             <ul class="bb-detail-list">
-                <li><strong>No nesting.</strong> A second <code>BeginTransaction</code> throws.</li>
-                <li><strong>No savepoints.</strong> Rollback is all or nothing.</li>
-                <li><strong>No isolation levels.</strong> There is one writer, so there is nothing to isolate from.</li>
+                <li><strong>No nested <code>BeginTransaction</code>.</strong> A second one throws; compose with <code>RunInTransaction</code> or a savepoint instead.</li>
+                <li><strong>No asynchronous transaction body.</strong> An <code>await</code> inside a transaction lets other code run, and its writes would join the transaction.</li>
+                <li><strong>No isolation levels.</strong> There is one writer, so there is nothing to isolate from - and reads during an open transaction see its writes.</li>
                 <li><strong>No long-running readers.</strong> Reads see live objects, not a snapshot; materialise with <code>ToList()</code> before mutating.</li>
                 <li><strong>No checkpoint while open.</strong> <code>CheckpointAsync</code> throws inside a transaction.</li>
             </ul>
@@ -206,6 +215,23 @@
 </Section>
 
 @code {
+    private const string ComposeSnippet = """
+        // One atomic unit: commits as one log record, or - if it throws - leaves nothing behind.
+        db.RunInTransaction(() =>
+        {
+            todos.Insert(order);
+            stock.Update(lowered);
+        });
+
+        // Inside a transaction, a savepoint undoes part of it and keeps the rest.
+        using var txn = db.BeginTransaction();
+        todos.Insert(first);
+        var savepoint = txn.CreateSavepoint();
+        todos.Insert(second);
+        txn.RollbackTo(savepoint);    // second is gone, first stays
+        txn.Commit();
+        """;
+
     private sealed record Scenario(
         string Key,
         string Title,

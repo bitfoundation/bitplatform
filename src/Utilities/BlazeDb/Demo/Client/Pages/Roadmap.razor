@@ -121,11 +121,11 @@
             "todos", "See it driving a real app"),
 
         new("Source-generated schema", "Bit.BlazeDb.Generators",
-            "An incremental Roslyn generator turns [BlazeDbTable], [BlazeDbKey], [BlazeDbIndex], [BlazeDbOrderedIndex], [BlazeDbField] and [BlazeDbIgnore] into a descriptor with binary serializers, a key extractor and index definitions. No runtime reflection, so trimming and AOT are safe.",
+            "An incremental Roslyn generator turns [BlazeDbTable], [BlazeDbKey], [BlazeDbIndex], [BlazeDbOrderedIndex], [BlazeDbField] and [BlazeDbIgnore] into a descriptor with binary serializers, a key extractor and index definitions - for classes, records (positional ones too, through their constructor) and structs, with index-only computed properties. No runtime reflection, so trimming and AOT are safe.",
             "schema", "Inspect the generated descriptor"),
 
         new("Hash and ordered indexes", "Bit.BlazeDb",
-            "Equality lookups in O(1) and range scans in O(log n) with inclusive or open bounds, maintained automatically on every mutation including rollback.",
+            "Equality lookups in O(1), range scans in O(log n) with inclusive, exclusive or open bounds for keyset paging, ordinal prefix scans, and per-value counts - maintained automatically on every mutation including rollback.",
             "indexes", "Try the lookups live"),
 
         new("Composable query plans", "Bit.BlazeDb.Querying",
@@ -133,8 +133,20 @@
             "queries", "Build a query"),
 
         new("Atomic transactions", "Bit.BlazeDb",
-            "An ambient single-writer transaction with commit, rollback and reverse-order undo of both rows and index entries. A committed batch is one log record.",
+            "An ambient single-writer transaction with commit, rollback and reverse-order undo of both rows and index entries, savepoints, and RunInTransaction for atomic units that compose. A committed batch is one log record.",
             "transactions", "Watch commit and rollback"),
+        new("Conditional and bulk writes", "Bit.BlazeDb",
+            "TryInsert and TryUpdate that report instead of throwing, optimistic concurrency through TryUpdate(row, comparisonValue) and TryDelete, and atomic InsertMany, UpsertMany, DeleteMany, DeleteWhere and DeleteAll.",
+            null, ""),
+        new("Change notifications and live queries", "Bit.BlazeDb",
+            "Changed events on every table and on the database, with the net change of each commit and never a rolled-back write, and Watch for queries that re-run only when a commit concerns them.",
+            "changes", "Watch the change feed"),
+        new("Backups and migrations", "Bit.BlazeDb",
+            "ExportAsync and ImportAsync move a whole database through one checksummed file; a UserVersion stored with the data and AddMigration bring it forward on open, one transaction per step.",
+            null, ""),
+        new("Integrity checks", "Bit.BlazeDb",
+            "VerifyIntegrity compares every row with every index entry and names what disagrees - the trace a row changed in place leaves behind.",
+            null, ""),
 
         new("Write-ahead log and snapshots", "Bit.BlazeDb.Wal",
             "Group-committed WAL records with per-record CRC32, atomic manifest updates, snapshot compaction, torn-tail truncation and replay on open.",
@@ -201,7 +213,7 @@
             "The whole dataset lives in memory by design. That is the right trade for a client-side application working with its own user's data, and the wrong one for a shared multi-tenant database."),
 
         new("Sync and conflict resolution", "distribution",
-            "Replication is an application concern with application-specific merge rules. The engine gives you a durable local store and stays out of the way."),
+            "Replication is an application concern with application-specific merge rules. The engine gives you a durable local store and a change feed to build an outbox on, and stays out of the way."),
 
         new("Lazy loading from storage", "architecture",
             "Everything is loaded on open. Partial loading would put I/O back on the read path and make every accessor async - the exact cost this engine exists to avoid."),

@@ -1,6 +1,7 @@
 ﻿using System.Linq.Expressions;
 using Bit.BlazeDb.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.EntityFrameworkCore.Update;
@@ -21,11 +22,13 @@ internal sealed class BlazeDbEfCoreDatabase : IDatabase
 {
     private readonly IBlazeDbTableCache _tables;
     private readonly IDbContextTransactionManager _transactions;
+    private readonly ICurrentDbContext _currentContext;
 
-    public BlazeDbEfCoreDatabase(IBlazeDbTableCache tables, IDbContextTransactionManager transactions)
+    public BlazeDbEfCoreDatabase(IBlazeDbTableCache tables, IDbContextTransactionManager transactions, ICurrentDbContext currentContext)
     {
         _tables = tables;
         _transactions = transactions;
+        _currentContext = currentContext;
     }
 
     public int SaveChanges(IList<IUpdateEntry> entries)
@@ -55,17 +58,52 @@ internal sealed class BlazeDbEfCoreDatabase : IDatabase
         }
 
         using var transaction = outer is null ? database.BeginTransaction() : null;
-        var savepoint = outer?.Savepoint() ?? 0;
+        var unit = outer?.BeginUnit() ?? 0;
+        int count;
         try
         {
-            var count = Apply(entries);
-            transaction?.Commit();
-            return count;
+            count = Apply(entries);
         }
         catch when (outer is not null)
         {
-            outer.RollbackTo(savepoint);
+            outer.RollbackUnit(unit);
             throw;
+        }
+        outer?.EndUnit(unit);
+
+        try
+        {
+            transaction?.Commit();
+        }
+        catch (BlazeDbChangeHandlerException ex)
+        {
+            // The save committed; only a Changed handler failed while it was reported. Failing the save
+            // here would leave the tracker believing nothing was written - entities still Added, and a
+            // retry refused as a duplicate. So the save completes, EF accepts its changes, and the
+            // handler's exception is rethrown once it has (see OnSavedChanges).
+            DeferUntilSaved(ex);
+        }
+        return count;
+    }
+
+    private BlazeDbChangeHandlerException? _deferredHandlerError;
+    private bool _listeningForSaved;
+
+    private void DeferUntilSaved(BlazeDbChangeHandlerException error)
+    {
+        _deferredHandlerError = error;
+        if (!_listeningForSaved)
+        {
+            _currentContext.Context.SavedChanges += OnSavedChanges;
+            _listeningForSaved = true;
+        }
+    }
+
+    private void OnSavedChanges(object? sender, SavedChangesEventArgs e)
+    {
+        if (Interlocked.Exchange(ref _deferredHandlerError, null) is { } error)
+        {
+            System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw(error);
         }
     }
 

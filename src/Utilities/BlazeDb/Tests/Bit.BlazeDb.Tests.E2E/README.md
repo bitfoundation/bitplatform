@@ -20,6 +20,7 @@ WebAssembly without prerendering) and drives it in Chromium with Playwright.
 |---|---|
 | `PersistenceTests` | A row inserted on OPFS survives a reload, read back out of the write-ahead log; a second tab of the same origin loses the Web Lock and falls back to memory instead of writing the same files; a closed tab releases the lock for the next one. |
 | `BrowserModuleTests` | The four modules the package ships, called the way the `[JSImport]` bindings call them: IndexedDB and OPFS writes, appends, reads and deletes, and their no-create opens; the Web Lock won once and handed over on release; AES-GCM sealing through WebCrypto, with a tampered frame and a frame moved to another file both refused; a BroadcastChannel announcement reaching the other tab and not echoing back. |
+| `ChangeFeedTests` | The `/changes` page on WebAssembly: each commit reported once in the database's change feed, a rolled-back transaction and an insert-then-delete reported not at all, and a live query re-running only for the commits that concern it. |
 | `DemoPageTests` | Every page of the site renders through the navigation without a console error or the error UI; a deep link opens its page; an unknown route answers 404 with the site's own page; the host page carries the boot screen and nothing prerendered; the modules are served as static web assets. |
 
 Nothing is prerendered, so the app replacing the boot screen is the app running. Each test then waits

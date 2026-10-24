@@ -22,6 +22,7 @@ public class DemoPageTests : BlazeDbTest
         ("queries", "Querying without a query language"),
         ("efcore", "The same engine, reached through LINQ"),
         ("transactions", "One writer, one ambient batch"),
+        ("changes", "Every commit, reported once"),
         ("durability", "Crash it on purpose"),
         ("storage", "Four methods are the entire storage contract"),
         ("serialization", "See the bytes a row becomes"),

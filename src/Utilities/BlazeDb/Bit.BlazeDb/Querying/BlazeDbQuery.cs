@@ -17,12 +17,21 @@ public sealed class BlazeDbQuery<TKey, TRow>
     private bool _sourceOrdered;
     private List<Func<TRow, bool>>? _predicates;
     private Func<IEnumerable<TRow>, IOrderedEnumerable<TRow>>? _order;
+    private int _orderKeys;
     private int _skip;
     private int _take = -1;
 
+    // What Explain reports about the source. Names indexes and bound kinds, never values: a plan
+    // description ends up in logs, and the values are the application's data.
+    private string _sourceDescription = "full scan";
+
     private BlazeDbQuery(BlazeDbTable<TKey, TRow> table) => _table = table;
 
-    public static BlazeDbQuery<TKey, TRow> From(BlazeDbTable<TKey, TRow> table) => new(table);
+    public static BlazeDbQuery<TKey, TRow> From(BlazeDbTable<TKey, TRow> table)
+    {
+        ArgumentNullException.ThrowIfNull(table);
+        return new(table);
+    }
 
     /// <summary>
     /// Sources at most one row: the one with primary key <paramref name="key"/>. This is the
@@ -33,6 +42,7 @@ public sealed class BlazeDbQuery<TKey, TRow>
     {
         EnsureNoSource();
         _source = () => _table.TryGet(key, out var row) ? [row] : [];
+        _sourceDescription = "primary key lookup";
         return this;
     }
 
@@ -46,6 +56,7 @@ public sealed class BlazeDbQuery<TKey, TRow>
         ArgumentNullException.ThrowIfNull(keys);
         EnsureNoSource();
         _source = () => LookupKeys(keys);
+        _sourceDescription = "primary key lookups for a list of keys";
         return this;
     }
 
@@ -66,6 +77,7 @@ public sealed class BlazeDbQuery<TKey, TRow>
     {
         EnsureNoSource();
         _source = () => _table.Lookup(index, equals);
+        _sourceDescription = $"hash index '{index.Name}' lookup";
         return this;
     }
 
@@ -79,8 +91,29 @@ public sealed class BlazeDbQuery<TKey, TRow>
         EnsureNoSource();
         _source = () => _table.Range(index, from, to, descending);
         _sourceOrdered = true;
+        _sourceDescription = $"ordered index '{index.Name}' range {Describe(from, lower: true)}, {Describe(to, lower: false)}{(descending ? " descending" : "")}";
         return this;
     }
+
+    /// <summary>
+    /// Sources the rows whose indexed string starts with <paramref name="prefix"/>, in index order.
+    /// See <see cref="BlazeDbTable{TKey, TRow}.StartsWith"/> for the rules.
+    /// </summary>
+    public BlazeDbQuery<TKey, TRow> UseIndexPrefix(BlazeDbOrderedIndexDefinition<TRow, string> index, string prefix, bool descending = false)
+    {
+        ArgumentNullException.ThrowIfNull(index);
+        ArgumentNullException.ThrowIfNull(prefix);
+        EnsureNoSource();
+        _source = () => _table.StartsWith(index, prefix, descending);
+        _sourceOrdered = true;
+        _sourceDescription = $"ordered index '{index.Name}' prefix scan{(descending ? " descending" : "")}";
+        return this;
+    }
+
+    private static string Describe<T>(BlazeDbBound<T> bound, bool lower) =>
+        !bound.HasValue ? (lower ? "(unbounded" : "unbounded)")
+        : lower ? (bound.IsExclusive ? "(from" : "[from")
+        : bound.IsExclusive ? "to)" : "to]";
 
     /// <summary>
     /// Sources rows from an index picked at runtime, with the key boxed. The EF Core provider uses
@@ -91,6 +124,7 @@ public sealed class BlazeDbQuery<TKey, TRow>
     {
         EnsureNoSource();
         _source = () => _table.LookupBoxed(index, key);
+        _sourceDescription = $"index '{index.Name}' lookup";
         return this;
     }
 
@@ -105,6 +139,7 @@ public sealed class BlazeDbQuery<TKey, TRow>
         EnsureNoSource();
         var store = _table.GetIndexStore(index);
         _source = () => keys.SelectMany(store.LookupBoxed);
+        _sourceDescription = $"index '{index.Name}' lookups for a list of values";
         return this;
     }
 
@@ -115,12 +150,14 @@ public sealed class BlazeDbQuery<TKey, TRow>
         EnsureNoSource();
         _source = () => _table.RangeBoxed(index, hasFrom, from, hasTo, to, descending);
         _sourceOrdered = true;
+        _sourceDescription = $"ordered index '{index.Name}' range {(hasFrom ? "[from" : "(unbounded")}, {(hasTo ? "to]" : "unbounded)")}{(descending ? " descending" : "")}";
         return this;
     }
 
     /// <summary>Adds a residual filter (multiple calls are ANDed).</summary>
     public BlazeDbQuery<TKey, TRow> Where(Func<TRow, bool> predicate)
     {
+        ArgumentNullException.ThrowIfNull(predicate);
         (_predicates ??= []).Add(predicate);
         return this;
     }
@@ -131,19 +168,39 @@ public sealed class BlazeDbQuery<TKey, TRow>
     /// </summary>
     public BlazeDbQuery<TKey, TRow> OrderBy<TSortKey>(Func<TRow, TSortKey> keySelector, bool descending = false)
     {
+        ArgumentNullException.ThrowIfNull(keySelector);
         _order = descending
             ? rows => rows.OrderByDescending(keySelector)
             : rows => rows.OrderBy(keySelector);
+        _orderKeys = 1;
         return this;
     }
 
     /// <summary>
-    /// Sorts with a caller-supplied ordering step, for composite sorts (<c>ThenBy</c>) the single
-    /// key-selector overload cannot express.
+    /// Breaks ties left by the previous ordering with another key, as LINQ's <c>ThenBy</c> does. It
+    /// needs an <see cref="OrderBy{TSortKey}(Func{TRow, TSortKey}, bool)"/> before it: an ordered-index
+    /// source sorts by the index alone and gives this query nothing to refine.
+    /// </summary>
+    public BlazeDbQuery<TKey, TRow> ThenBy<TSortKey>(Func<TRow, TSortKey> keySelector, bool descending = false)
+    {
+        ArgumentNullException.ThrowIfNull(keySelector);
+        var previous = _order ?? throw new InvalidOperationException("ThenBy refines an ordering; call OrderBy first.");
+        _order = descending
+            ? rows => previous(rows).ThenByDescending(keySelector)
+            : rows => previous(rows).ThenBy(keySelector);
+        _orderKeys++;
+        return this;
+    }
+
+    /// <summary>
+    /// Sorts with a caller-supplied ordering step, for sorts the key-selector overloads cannot
+    /// express - a custom comparer, say.
     /// </summary>
     public BlazeDbQuery<TKey, TRow> OrderBy(Func<IEnumerable<TRow>, IOrderedEnumerable<TRow>> order)
     {
+        ArgumentNullException.ThrowIfNull(order);
         _order = order;
+        _orderKeys = 1;
         return this;
     }
 
@@ -163,6 +220,39 @@ public sealed class BlazeDbQuery<TKey, TRow>
 
     /// <summary>True when results arrive in index order without a post-sort.</summary>
     public bool IsIndexOrdered => _sourceOrdered && _order is null;
+
+    /// <summary>
+    /// Describes how the query will run - where its rows come from, what is filtered and sorted in
+    /// memory, and the paging - one step per line, for diagnostics and for checking that a query uses
+    /// the index meant for it. It names indexes but never the values a query compares against.
+    /// <code>
+    /// source: ordered index 'CreatedAt' range [from, unbounded) descending
+    /// filter: 1 predicate, evaluated on each source row
+    /// order: index order, no sort
+    /// skip: 20
+    /// take: 10
+    /// </code>
+    /// </summary>
+    public string Explain()
+    {
+        var lines = new List<string> { $"source: {_sourceDescription}" };
+        if (_predicates is { Count: > 0 })
+        {
+            lines.Add($"filter: {_predicates.Count} predicate{(_predicates.Count == 1 ? "" : "s")}, evaluated on each source row");
+        }
+        lines.Add(_order is not null
+            ? $"order: sorted in memory by {_orderKeys} key{(_orderKeys == 1 ? "" : "s")}"
+            : _sourceOrdered ? "order: index order, no sort" : "order: unspecified");
+        if (_skip > 0)
+        {
+            lines.Add($"skip: {_skip}");
+        }
+        if (_take >= 0)
+        {
+            lines.Add($"take: {_take}");
+        }
+        return string.Join(Environment.NewLine, lines);
+    }
 
     public IEnumerable<TRow> Execute()
     {
@@ -196,9 +286,15 @@ public sealed class BlazeDbQuery<TKey, TRow>
     /// Streams results, handing control back to the host every <paramref name="batchSize"/> rows
     /// so a large scan cannot freeze the UI. On WebAssembly there is only one thread, so a
     /// synchronous scan of a big table blocks rendering and input until it finishes; yielding
-    /// lets the browser paint between batches. The trade-off is that the table must not be
-    /// written to while the stream is open, exactly as with a <c>foreach</c> over
-    /// <see cref="Execute"/> - batches resume the same underlying enumerator.
+    /// lets the browser paint between batches.
+    /// <para>
+    /// The batches resume one underlying enumerator, which a write to the table can invalidate. The
+    /// consumer's own loop body may write - exactly what a <c>foreach</c> over <see cref="Execute"/>
+    /// tolerates - but a write made by other code while the stream had yielded (another event handler)
+    /// would leave the rest of the results describing neither the table as it was nor as it is, so the
+    /// stream detects it and throws <see cref="InvalidOperationException"/> instead. Re-run the query,
+    /// or materialize it first, when other code may write meanwhile.
+    /// </para>
     /// </summary>
     /// <param name="batchSize">Rows to emit between yields. Larger is faster, smaller is smoother.</param>
     /// <param name="cancellationToken">Checked once per row, between yields.</param>
@@ -219,7 +315,15 @@ public sealed class BlazeDbQuery<TKey, TRow>
             if (++sinceYield == batchSize)
             {
                 sinceYield = 0;
+                var version = _table.Version;
                 await Task.Yield();
+                if (_table.Version != version)
+                {
+                    throw new InvalidOperationException(
+                        $"Table '{_table.Name}' was written to while this streaming query had yielded to other work, " +
+                        "so the rest of its results would no longer be consistent. Run the query again, or materialize " +
+                        "it with ToList() when other code may write to the table meanwhile.");
+                }
             }
         }
     }

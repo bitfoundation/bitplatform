@@ -224,14 +224,15 @@
         </div>
     </Panel>
     <Callout Tone="info" Title="Requirements at a glance.">
-        A table type must be <code>partial</code>, top level, non-generic, have exactly one
-        <code>[BlazeDbKey]</code> and - if it is a class - a parameterless constructor. Records work as long
-        as they are not positional-only.
+        A table type must be <code>partial</code>, top level, non-generic and have exactly one
+        <code>[BlazeDbKey]</code>. Rows are built through a parameterless constructor, or else through the
+        constructor whose parameters all name properties - so positional records work, and so do classes that
+        take their get-only properties in the constructor.
     </Callout>
 </Section>
 
 <Section Title="The generator is optional"
-         Lead="A BlazeDbTableDescriptor is a plain object. Write one by hand and positional records, custom comparers and computed keys all become available.">
+         Lead="A BlazeDbTableDescriptor is a plain object. Write one by hand and custom serializers, custom comparers and computed keys all become available.">
     <div class="bb-flex">
         <CodeBlock Title="Hand-written descriptor" Code="@ManualSource" />
 
