@@ -83,7 +83,7 @@ public partial class ConfirmPage
                 Token = emailModel.Token
             }, CurrentCancellationToken);
 
-            await AuthManager.StoreTokens(signInResponse, true);
+            await AuthManager.CompleteSignIn(signInResponse, true);
 
             NavigationManager.NavigateTo(GetSafeReturnUrl(), replace: true);
 
@@ -113,7 +113,7 @@ public partial class ConfirmPage
                 PhoneNumber = phoneModel.PhoneNumber
             }, CurrentCancellationToken);
 
-            await AuthManager.StoreTokens(signInResponse, true);
+            await AuthManager.CompleteSignIn(signInResponse, true);
 
             NavigationManager.NavigateTo(GetSafeReturnUrl(), replace: true);
 

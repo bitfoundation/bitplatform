@@ -54,13 +54,21 @@ public partial class IdentityController : AppControllerBase, IIdentityController
             if (await userConfirmation.IsConfirmedAsync(userManager, existingUser) is false)
             {
                 await SetUnconfirmedAccountPassword(existingUser, request.Password, cancellationToken);
-                await SendConfirmationToken(existingUser, request.ReturnUrl, cancellationToken);
-                throw new BadRequestException(Localizer[nameof(AppStrings.UserIsNotConfirmed)]).WithData("UserId", existingUser.Id);
+                try
+                {
+                    await SendConfirmationToken(existingUser, request.ReturnUrl, cancellationToken);
+                }
+                catch (TooManyRequestsException) { }
             }
             else
             {
-                throw new BadRequestException(Localizer[nameof(AppStrings.DuplicateEmailOrPhoneNumber)]).WithData("UserId", existingUser.Id);
+                await ValidatePassword(existingUser, request.Password!);
+                _ = userManager.PasswordHasher.HashPassword(existingUser, request.Password!);
+
+                await SendAccountAlreadyExists(existingUser, isEmail: string.IsNullOrWhiteSpace(request.Email) is false, cancellationToken);
             }
+
+            return;
         }
 
         var userToAdd = new User { LockoutEnabled = true };
@@ -510,7 +518,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
         request.PhoneNumber = phoneService.NormalizePhoneNumber(request.PhoneNumber);
 
         var user = await userManager.FindUser(request)
-                    ?? throw new ResourceNotFoundException(Localizer[nameof(AppStrings.UserNotFound)]).WithData("Identifier", request);
+                    ?? throw new BadRequestException().WithData("Identifier", request.ToString());
 
         await SendTwoFactorToken(request, user, cancellationToken);
     }
@@ -615,6 +623,32 @@ public partial class IdentityController : AppControllerBase, IIdentityController
         }
     }
 
+    private async Task SendAccountAlreadyExists(User user, bool isEmail, CancellationToken cancellationToken)
+    {
+        if (isEmail ? await userManager.IsEmailConfirmedAsync(user) is false : await userManager.IsPhoneNumberConfirmedAsync(user) is false)
+            return;
+
+        var cacheKey = $"AccountAlreadyExists_{user.Id}_{(isEmail ? "Email" : "Sms")}";
+
+        if ((await cache.TryGetAsync<bool>(cacheKey, token: cancellationToken)).HasValue)
+            return;
+
+        await cache.SetAsync(cacheKey, true, options => options.SetDuration(TimeSpan.FromHours(1)), token: cancellationToken);
+
+        if (isEmail)
+        {
+            var webAppUrl = HttpContext.Request.GetWebAppUrl();
+            var signInLink = new Uri(webAppUrl, $"{PageUrls.SignIn}?email={Uri.EscapeDataString(user.Email!)}&culture={CultureInfo.CurrentUICulture.Name}");
+            var forgotPasswordLink = new Uri(webAppUrl, $"{PageUrls.ForgotPassword}?culture={CultureInfo.CurrentUICulture.Name}");
+
+            await emailService.SendAccountAlreadyExists(user, signInLink, forgotPasswordLink, cancellationToken);
+        }
+        else
+        {
+            await phoneService.SendSms(Localizer[nameof(AppStrings.AccountAlreadyExistsShortText)].ToString(), user.PhoneNumber!);
+        }
+    }
+
     /// <summary>
     /// Whoever last asks an unconfirmed account for its confirmation decides its password: the one they typed, or none.
     /// Set through the store, so the security stamp and the confirmation code already sent stay valid.
@@ -623,13 +657,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
     {
         if (string.IsNullOrEmpty(password) is false)
         {
-            foreach (var passwordValidator in userManager.PasswordValidators)
-            {
-                var validationResult = await passwordValidator.ValidateAsync(userManager, user, password);
-
-                if (validationResult.Succeeded is false)
-                    throw new ResourceValidationException(validationResult.Errors.Select(e => new LocalizedString(e.Code, e.Description)).ToArray()).WithData("UserId", user.Id);
-            }
+            await ValidatePassword(user, password);
         }
 
         await ((IUserPasswordStore<User>)userStore).SetPasswordHashAsync(user, string.IsNullOrEmpty(password) ? null : userManager.PasswordHasher.HashPassword(user, password), cancellationToken);
@@ -638,5 +666,16 @@ public partial class IdentityController : AppControllerBase, IIdentityController
 
         if (result.Succeeded is false)
             throw new ResourceValidationException(result.Errors.Select(e => new LocalizedString(e.Code, e.Description)).ToArray()).WithData("UserId", user.Id);
+    }
+
+    private async Task ValidatePassword(User user, string password)
+    {
+        foreach (var passwordValidator in userManager.PasswordValidators)
+        {
+            var validationResult = await passwordValidator.ValidateAsync(userManager, user, password);
+
+            if (validationResult.Succeeded is false)
+                throw new ResourceValidationException(validationResult.Errors.Select(e => new LocalizedString(e.Code, e.Description)).ToArray()).WithData("UserId", user.Id);
+        }
     }
 }

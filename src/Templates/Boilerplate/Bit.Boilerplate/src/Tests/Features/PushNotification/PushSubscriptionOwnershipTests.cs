@@ -220,7 +220,7 @@ public partial class PushSubscriptionOwnershipTests
         // The browser derives its channel from Endpoint + P256dh + Auth, and VapidSubscription.FromParameters accepts
         // nulls without complaining, so a partial triple would otherwise be stored as an undeliverable subscription.
         await Assert.ThrowsExactlyAsync<BadRequestException>(() => pushNotificationController.Subscribe(
-            new() { DeviceId = $"push-nochannel-{Guid.NewGuid():N}", Platform = "browser", Endpoint = "https://push.example/endpoint" }, TestContext.CancellationToken));
+            new() { DeviceId = $"push-nochannel-{Guid.NewGuid():N}", Platform = "browser", Endpoint = "https://fcm.googleapis.com/fcm/send/missing-keys" }, TestContext.CancellationToken));
     }
 
     /// <summary>

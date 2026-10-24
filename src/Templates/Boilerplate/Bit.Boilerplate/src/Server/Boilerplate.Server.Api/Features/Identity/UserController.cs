@@ -95,7 +95,7 @@ public partial class UserController : AppControllerBase, IUserController
         if (userSession.SignalRConnectionId is not null)
         {
             await appHubContext.Clients.Client(userSession.SignalRConnectionId)
-                .Publish(SharedAppMessages.SESSION_REVOKED, null, cancellationToken);
+                .Publish(SharedAppMessages.SESSION_REVOKED, userSession.Id, cancellationToken);
         }
         //#endif
     }

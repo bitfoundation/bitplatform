@@ -97,9 +97,13 @@ public partial class MainLayout : IAsyncDisposable
             {
                 if (payload is null) return;
 
-                currentUser = payload is JsonElement jsonDocument
+                var updatedUser = payload is JsonElement jsonDocument
                     ? jsonDocument.Deserialize(jsonSerializerOptions.GetTypeInfo<UserDto>())! /* Message gets published from server through SignalR */
                     : (UserDto)payload;
+
+                if (updatedUser.Id != currentUser?.Id) return;
+
+                currentUser = updatedUser;
 
                 await InvokeAsync(StateHasChanged);
             }));

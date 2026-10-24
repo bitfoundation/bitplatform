@@ -11,8 +11,17 @@ import { App } from './App';
         navigator.serviceWorker.addEventListener('message', handleMessage);
     }
 
+    window.addEventListener('storage', handleStorage);
+
     function handleLoad() {
         setCssWindowSizes();
+    }
+
+    // Fires only in the other tabs, so they follow a sign-in or sign-out made in this one (See AuthManager).
+    function handleStorage(e: StorageEvent) {
+        if (e.storageArea !== window.localStorage) return;
+
+        App.publishMessage('LOCAL_STORAGE_CHANGED', e.key);
     }
 
     // Enable publishing messages from JavaScript to the C# `PubSubService`.

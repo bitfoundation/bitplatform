@@ -59,9 +59,8 @@ public class PersonalDataExportTests
         Assert.IsNotNull(archive.GetEntry("files/attachments/UserProfileImageSmall.webp"),
             "The profile picture was uploaded above and is the person's own data - exporting only its row leaves them with a description of a photograph.");
 
-        // The original is stored under a path with no extension, so its name is read back from the bytes - a png here,
-        // whatever the upload was. Without it the subject receives a file that opens in nothing by double-click.
-        Assert.IsNotNull(archive.GetEntry("files/attachments/UserProfileImageOriginal.png"),
+        // Without the extension the subject receives a file that opens in nothing by double-click.
+        Assert.IsNotNull(archive.GetEntry("files/attachments/UserProfileImageOriginal.webp"),
             "The original profile image is in the export without the extension of the format it is stored in.");
 
         foreach (var (key, section) in sections.AsObject())
@@ -185,7 +184,7 @@ public class PersonalDataExportTests
 
     private async Task UploadProfilePicture(HttpClient httpClient)
     {
-        using var image = new MagickImage(MagickColors.Red, 512, 512);
+        using var image = TestImageFactory.Solid(MagickColors.Red, 512, 512);
 
         using var form = new MultipartFormDataContent();
         using var fileContent = new ByteArrayContent(image.ToByteArray(MagickFormat.Png));

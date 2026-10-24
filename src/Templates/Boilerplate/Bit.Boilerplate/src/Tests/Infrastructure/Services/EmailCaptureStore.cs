@@ -3,7 +3,7 @@ using System.Collections.Concurrent;
 namespace Boilerplate.Tests.Infrastructure.Services;
 
 /// <summary>The identity e-mail that <see cref="TestIdentityEmailService"/> captured.</summary>
-public enum CapturedEmailKind { ResetPassword, Otp, TwoFactor, EmailToken, ElevatedAccess, TenantInvitation }
+public enum CapturedEmailKind { ResetPassword, Otp, TwoFactor, EmailToken, ElevatedAccess, TenantInvitation, AccountAlreadyExists }
 
 /// <summary>
 /// A single e-mail captured in tests. It holds the values a test actually needs (the token and the link) directly, taken

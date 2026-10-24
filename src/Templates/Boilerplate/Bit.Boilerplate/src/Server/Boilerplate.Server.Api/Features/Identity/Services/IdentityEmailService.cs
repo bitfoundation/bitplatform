@@ -114,6 +114,29 @@ public partial class IdentityEmailService
         await SendEmail(body, user.Email!, user.DisplayName!, subject);
     }
 
+    public virtual async Task SendAccountAlreadyExists(User user, Uri signInLink, Uri forgotPasswordLink, CancellationToken cancellationToken)
+    {
+        var subject = emailLocalizer[EmailStrings.AccountAlreadyExistsEmailSubject];
+
+        if (hostEnvironment.IsDevelopment())
+        {
+            LogSendEmail(logger, subject, user.Email!, "AccountAlreadyExists", signInLink.ToString());
+        }
+
+        var body = await BuildBody<AccountAlreadyExistsTemplate>(new Dictionary<string, object?>()
+        {
+            [nameof(AccountAlreadyExistsTemplate.Model)] = new AccountAlreadyExistsTemplateModel
+            {
+                DisplayName = user.DisplayName!,
+                SignInLink = signInLink,
+                ForgotPasswordLink = forgotPasswordLink
+            },
+            [nameof(AccountAlreadyExistsTemplate.HttpContext)] = httpContextAccessor.HttpContext
+        });
+
+        await SendEmail(body, user.Email!, user.DisplayName!, subject);
+    }
+
     //#if (multitenant == true)
     public virtual async Task SendTenantInvitation(User user, string inviterDisplayName, string tenantTitle, Uri link, CancellationToken cancellationToken)
     {

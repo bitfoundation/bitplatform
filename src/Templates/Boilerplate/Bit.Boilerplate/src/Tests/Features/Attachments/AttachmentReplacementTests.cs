@@ -161,7 +161,7 @@ public class AttachmentReplacementTests
     /// <summary>A solid-colour PNG, so two uploads differ in content in a way the served WebP cannot hide.</summary>
     private static byte[] SolidImage(MagickColor color, uint size = 512)
     {
-        using var image = new MagickImage(color, size, size);
+        using var image = TestImageFactory.Solid(color, size, size);
         return image.ToByteArray(MagickFormat.Png);
     }
 

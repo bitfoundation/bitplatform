@@ -22,6 +22,41 @@ variables:
 
 jobs:
 
+- job: test
+  displayName: 'test'
+
+  pool:
+    vmImage: 'ubuntu-24.04'
+
+  steps:
+  - task: UseDotNet@2
+    displayName: 'Setup .NET'
+    inputs:
+      useGlobalJson: true
+      workingDirectory: 'src'
+
+  - pwsh: |
+      Write-Host "##vso[task.prependpath]$(Agent.ToolsDirectory)/bit-cli"
+      dotnet tool install Bit.Cli --tool-path "$(Agent.ToolsDirectory)/bit-cli"
+    displayName: 'Install the bit CLI'
+
+  - script: bit setup --yes
+    displayName: 'Prepare this machine and build with bit setup'
+
+  - task: Bash@3
+    name: test
+    displayName: 'Test'
+    inputs:
+      targetType: 'inline'
+      script: 'cd src/Tests && dotnet test'
+
+  - task: PublishPipelineArtifact@1
+    displayName: 'Upload Tests Artifact'
+    condition: failed()
+    inputs:
+      targetPath: 'src/Tests/TestResults'
+      artifactName: 'tests-artifact'
+
 - job: build_api_blazor
   displayName: 'build api + blazor web'
 
@@ -37,7 +72,7 @@ jobs:
 
   - pwsh: |
       Write-Host "##vso[task.prependpath]$(Agent.ToolsDirectory)/bit-cli"
-      dotnet tool install Bit.Cli --prerelease --tool-path "$(Agent.ToolsDirectory)/bit-cli"
+      dotnet tool install Bit.Cli --tool-path "$(Agent.ToolsDirectory)/bit-cli"
     displayName: 'Install the bit CLI'
 
   - script: bit setup --no-build --yes
@@ -70,9 +105,24 @@ jobs:
       targetPath: 'server'
       artifact: 'server-bundle'
       publishLocation: 'pipeline'
+#if (api == "Integrated" && database != "Sqlite" && database != "Other")
+
+  - task: Bash@3
+    displayName: 'Create the database migrations bundle'
+    inputs:
+      targetType: 'inline'
+      script: 'dnx dotnet-ef@10.0.13 -- migrations bundle --project src/Server/Boilerplate.Server.Api/Boilerplate.Server.Api.csproj --configuration Release --self-contained --target-runtime linux-x64 --output efbundle --verbose'
+
+  - task: PublishPipelineArtifact@1
+    displayName: Upload migrations bundle
+    inputs:
+      targetPath: 'efbundle'
+      artifact: 'migrations-bundle'
+      publishLocation: 'pipeline'
+#endif
 
 - job: deploy_api_blazor
-  dependsOn: build_api_blazor
+  dependsOn: [build_api_blazor, test]
   displayName: 'deploy api + blazor'
 
   pool:
@@ -96,6 +146,27 @@ jobs:
       folderPath: './'
       enableXmlTransform: false
       jsonTargetFiles: 'appsettings.json'
+#if (api == "Integrated" && database != "Sqlite" && database != "Other")
+
+  - task: DownloadPipelineArtifact@2
+    displayName: Retrieve migrations bundle
+    inputs:
+      artifact: 'migrations-bundle'
+      path: ./
+
+  - script: chmod +x efbundle && ./efbundle && rm efbundle
+    env:
+#if (database == "SqlServer")
+      ConnectionStrings__mssqldb: $(DATABASE_CONNECTION_STRING)
+#endif
+#if (database == "PostgreSQL")
+      ConnectionStrings__postgresdb: $(DATABASE_CONNECTION_STRING)
+#endif
+#if (database == "MySql")
+      ConnectionStrings__mysqldb: $(DATABASE_CONNECTION_STRING)
+#endif
+    displayName: Apply database migrations
+#endif
 
   - task: AzureRmWebAppDeployment@5
     displayName: 'Deploy to App Service'
@@ -134,7 +205,7 @@ jobs:
 
   - pwsh: |
       Write-Host "##vso[task.prependpath]$(Agent.ToolsDirectory)/bit-cli"
-      dotnet tool install Bit.Cli --prerelease --tool-path "$(Agent.ToolsDirectory)/bit-cli"
+      dotnet tool install Bit.Cli --tool-path "$(Agent.ToolsDirectory)/bit-cli"
     displayName: 'Install the bit CLI'
 
   - script: bit setup --platforms windows --no-build --yes
@@ -210,7 +281,7 @@ jobs:
 
   - pwsh: |
       Write-Host "##vso[task.prependpath]$(Agent.ToolsDirectory)/bit-cli"
-      dotnet tool install Bit.Cli --prerelease --tool-path "$(Agent.ToolsDirectory)/bit-cli"
+      dotnet tool install Bit.Cli --tool-path "$(Agent.ToolsDirectory)/bit-cli"
     displayName: 'Install the bit CLI'
 
   - script: bit setup --platforms android --no-build --yes
