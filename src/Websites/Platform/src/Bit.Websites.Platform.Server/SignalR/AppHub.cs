@@ -219,7 +219,7 @@ public partial class AppHub : Hub
 
     private static int GetChatbotPriority(string toolName) => toolName switch
     {
-        McpFeedbackTool.ToolName => 5,
+        McpFeedbackTool.ToolName => 0,
         _ when Regex.IsMatch(toolName, "^(Inspect|Simulate|Analyze|Run|Review|Check|Plan|Compare|Generate)") => 4,
         _ when Regex.IsMatch(toolName, "^Search|Overview$|BitPlatform|BlazorUI") => 0,
         _ when Regex.IsMatch(toolName, "Guide|Docs?Page$|Document$|Api") => 1,
