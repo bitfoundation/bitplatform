@@ -56,14 +56,6 @@ public partial class TenantController : AppControllerBase, ITenantController
         };
         await DbContext.Roles.AddAsync(tenantAdminRole, cancellationToken);
 
-        // Unlimited privileged sessions for the tenant's admins (Just like the seeded default tenant).
-        await DbContext.RoleClaims.AddAsync(new()
-        {
-            RoleId = tenantAdminRole.Id,
-            ClaimType = AppClaimTypes.MAX_PRIVILEGED_SESSIONS,
-            ClaimValue = AppClaimTypes.UNLIMITED_PRIVILEGED_SESSIONS.ToString(CultureInfo.InvariantCulture)
-        }, cancellationToken);
-
         await DbContext.UserRoles.AddAsync(new() { UserId = userId, RoleId = tenantAdminRole.Id, TenantId = tenantToAdd.Id }, cancellationToken);
 
         var demoRole = new Role
