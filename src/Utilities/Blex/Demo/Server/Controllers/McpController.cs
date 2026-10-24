@@ -83,7 +83,7 @@ public class McpController(HtmlRenderer htmlRenderer) : ControllerBase
 
     [HttpGet]
     [McpServerTool(Name = nameof(GetBlexDocsPage), Title = "Read a documentation page", ReadOnly = true, OpenWorld = false)]
-    [Description("Gets one page of the Bit.Blex documentation site as Markdown, code samples included - the narrative behind the guide: 'stores', 'computed', 'actions', 'effects', 'subscriptions', 'cross-store', 'entities', 'middleware', 'errors', 'persistence', 'history', 'devtools', 'testing', 'diagnostics', 'api', plus 'introduction', 'installation', 'quick-start' and 'mcp'. Omit the slug for the index of pages.")]
+    [Description("Gets one page of the Bit.Blex documentation site as Markdown, code samples included - the narrative behind the guide: 'stores', 'computed', 'actions', 'effects', 'queries', 'scoped-stores', 'subscriptions', 'cross-store', 'entities', 'middleware', 'errors', 'persistence', 'history', 'devtools', 'testing', 'diagnostics', 'api', plus 'introduction', 'installation', 'quick-start', 'maui' and 'mcp'. Omit the slug for the index of pages.")]
     public async Task<string> GetBlexDocsPage(
         [Description("The page's slug, e.g. 'effects'. Omit it for the index of pages.")] string? slug = null)
     {
@@ -152,7 +152,7 @@ public class McpController(HtmlRenderer htmlRenderer) : ControllerBase
 
     [HttpGet]
     [McpServerTool(Name = nameof(GetBlexSourceFile), Title = "Read a source file", ReadOnly = true, OpenWorld = false)]
-    [Description("Gets one working Bit.Blex source file verbatim - e.g. 'Demo/Client/Stores/CartStore.cs' (a store with state, computed values and actions) or 'Demo/Client/Extensions/IServiceCollectionExtensions.cs' (the complete registration of this documentation site). Omit the path for the index of files: the demo's stores, middleware and components, and the minimal standalone WebAssembly sample ('Sample/...'). These are worked examples - for what a member means, GetBlexApi answers in a fraction of the characters.")]
+    [Description("Gets one working Bit.Blex source file verbatim - e.g. 'Demo/Client/Stores/CartStore.cs' (a store with state, computed values and actions) or 'Demo/Client/Extensions/IServiceCollectionExtensions.cs' (the complete registration of this documentation site). Omit the path for the index of files: the demo's stores, middleware and components, and the samples ('Sample/...'): one Core library of stores and pages, hosted unchanged by Blazor Server, WebAssembly, Auto, standalone WebAssembly and a .NET MAUI Blazor Hybrid app. These are worked examples - for what a member means, GetBlexApi answers in a fraction of the characters.")]
     public string GetBlexSourceFile(
         [Description("The file's path as the index lists it, e.g. 'Demo/Client/Stores/CartStore.cs'. Omit it for the index of files.")] string? path = null)
     {

@@ -14,7 +14,11 @@ namespace Boilerplate.Server.Shared.Infrastructure.Services;
 /// Configures FusionCache L2, Distributed Locking and Backplanes to share a single Redis connection enriched with logging and retry policies.
 /// </summary>
 public class AppRedisCacheConfigurator(
-    [FromKeyedServices("redis-cache")] IConnectionMultiplexer redisCacheConnectionMultiplexer) :
+    [FromKeyedServices("redis-cache")] IConnectionMultiplexer redisCacheConnectionMultiplexer
+    //#if (signalR == true)
+    , IOptionsMonitor<ConfigurationOptions> redisConfigurationOptions
+    //#endif
+    ) :
         IPostConfigureOptions<RedisCacheOptions>,
         IPostConfigureOptions<RedisDistributedLockerOptions>,
         IPostConfigureOptions<RedisBackplaneOptions>
@@ -44,7 +48,7 @@ public class AppRedisCacheConfigurator(
     public void PostConfigure(string? name, RedisOptions options)
     {
         // Redis backplane for SignalR, used for scaling out SignalR across multiple server instances.
-        options.ConnectionFactory = async _ => redisCacheConnectionMultiplexer;
+        options.ConnectionFactory = async writer => await ConnectionMultiplexer.ConnectAsync(redisConfigurationOptions.Get("redis-cache").Clone(), writer);
     }
     //#endif
 }

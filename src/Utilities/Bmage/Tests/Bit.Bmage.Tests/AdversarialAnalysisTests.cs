@@ -334,6 +334,8 @@ public sealed class AdversarialAnalysisTests
         var svg = "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"10\" height=\"10\"><rect width=\"10\" height=\"10\"/></svg>"u8.ToArray();
         Assert.AreEqual(ImageFormat.Svg, ImageFormats.Detect(svg));
         var ex = await Capture.ExceptionAsync(async () => (await processor.DecodeAsync(svg)).Dispose());
-        Assert.IsInstanceOfType<ImageException>(ex);
+        // The refusal docs/security.md quotes, not "no decoder is registered": no registry has one to register.
+        Assert.IsInstanceOfType<ImageDecodeException>(ex);
+        Assert.Contains("rasterising untrusted SVG", ex!.Message, StringComparison.Ordinal);
     }
 }

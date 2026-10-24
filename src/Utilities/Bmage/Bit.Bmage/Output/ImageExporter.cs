@@ -61,6 +61,14 @@ public sealed class ImageExporter : IAsyncDisposable
         await _interop.InvokeVoidAsync("download", cancellationToken, encoded.Data, name, encoded.MimeType).ConfigureAwait(false);
     }
 
+    /// <summary>Triggers a browser download of any bytes, such as a <see cref="Serialization.BmageProject"/>.</summary>
+    public async ValueTask DownloadFileAsync(byte[] bytes, string fileName, string mimeType = "application/octet-stream", CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(bytes);
+        ArgumentException.ThrowIfNullOrWhiteSpace(fileName);
+        await _interop.InvokeVoidAsync("download", cancellationToken, bytes, fileName, mimeType).ConfigureAwait(false);
+    }
+
     /// <summary>
     /// Saves through the File System Access API when available, falling back to a download. Returns false when the user
     /// cancelled the save dialog.

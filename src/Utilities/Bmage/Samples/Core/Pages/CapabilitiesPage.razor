@@ -1,0 +1,99 @@
+﻿@page "/capabilities"
+@inject IImageCapabilityProvider Capabilities
+
+<PageTitle>Capabilities · Bmage samples</PageTitle>
+
+<h1>Capabilities</h1>
+
+<p>
+    What <code>IImageCapabilityProvider</code> measured in this browser: every format is confirmed by encoding (or
+    decoding) a pixel, and the canvas limit by allocating until the browser refuses. While prerendering there is no
+    browser, so the provider reports the managed codecs with the <code>Prerendering</code> environment and the probe
+    runs again once the page is interactive.
+</p>
+
+@if (_capabilities is { } caps)
+{
+    <div class="card">
+        <h2>Environment</h2>
+        <dl>
+            <dt>Environment</dt>
+            <dd id="capabilities-environment">@caps.Environment</dd>
+            <dt>Device pixel ratio</dt>
+            <dd>@caps.DevicePixelRatio.ToString("0.##")</dd>
+            <dt>Logical processors</dt>
+            <dd>@(caps.HardwareConcurrency?.ToString() ?? "unknown")</dd>
+            <dt>Max canvas edge</dt>
+            <dd>@caps.MaxCanvasDimension px</dd>
+            <dt>Suggested working size</dt>
+            <dd>@caps.SuggestedMaxWorkingDimension px</dd>
+            <dt>Best of AVIF, WebP, JPEG</dt>
+            <dd id="capabilities-choice">@caps.ChooseEncodableFormat([ImageFormat.Avif, ImageFormat.WebP, ImageFormat.Jpeg])</dd>
+        </dl>
+    </div>
+
+    <div class="card">
+        <h2>Formats</h2>
+        <table>
+            <thead>
+                <tr><th scope="col">Format</th><th scope="col">Decode</th><th scope="col">Encode</th></tr>
+            </thead>
+            <tbody>
+                @foreach (var format in Formats)
+                {
+                    <tr>
+                        <th scope="row">@format</th>
+                        <td>@YesNo(caps.CanDecode(format))</td>
+                        <td>@YesNo(caps.CanEncode(format))</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    <div class="card">
+        <h2>Platform features</h2>
+        <table>
+            <tbody>
+                <tr><th scope="row">OffscreenCanvas</th><td>@YesNo(caps.SupportsOffscreenCanvas)</td></tr>
+                <tr><th scope="row">Web Workers</th><td>@YesNo(caps.SupportsWebWorkers)</td></tr>
+                <tr><th scope="row">createImageBitmap</th><td>@YesNo(caps.SupportsImageBitmap)</td></tr>
+                <tr><th scope="row">WebCodecs ImageDecoder</th><td>@YesNo(caps.SupportsWebCodecs)</td></tr>
+                <tr><th scope="row">Clipboard read</th><td>@YesNo(caps.SupportsClipboardRead)</td></tr>
+                <tr><th scope="row">Clipboard write</th><td>@YesNo(caps.SupportsClipboardWrite)</td></tr>
+                <tr><th scope="row">Camera capture</th><td>@YesNo(caps.SupportsCamera)</td></tr>
+            </tbody>
+        </table>
+    </div>
+}
+else
+{
+    <p role="status"><em>Probing this browser…</em></p>
+}
+
+@code {
+    private static readonly ImageFormat[] Formats =
+    [
+        ImageFormat.Png, ImageFormat.Jpeg, ImageFormat.WebP, ImageFormat.Avif, ImageFormat.Gif, ImageFormat.Bmp,
+    ];
+
+    private ImageCapabilities? _capabilities;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (RendererInfo.IsInteractive is false)
+        {
+            _capabilities = await Capabilities.GetAsync();
+        }
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender is false || RendererInfo.IsInteractive is false) return;
+
+        _capabilities = await Capabilities.GetAsync();
+        StateHasChanged();
+    }
+
+    private static string YesNo(bool value) => value ? "yes" : "no";
+}

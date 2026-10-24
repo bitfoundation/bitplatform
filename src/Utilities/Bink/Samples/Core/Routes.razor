@@ -1,0 +1,9 @@
+﻿@* The interactive root of every sample. Bink needs nothing here: no service, no initializer component and no
+   stylesheet link - the package's Blazor JS initializer adds _content/Bit.Bink/bit-bink.css to the page by itself. *@
+
+<Router AppAssembly="typeof(Routes).Assembly" NotFoundPage="typeof(NotFoundPage)">
+    <Found Context="routeData">
+        <RouteView RouteData="routeData" DefaultLayout="typeof(MainLayout)" />
+        <FocusOnNavigate RouteData="routeData" Selector="h1" />
+    </Found>
+</Router>

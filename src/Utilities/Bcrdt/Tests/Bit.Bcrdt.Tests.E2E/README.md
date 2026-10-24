@@ -35,9 +35,9 @@ a tab opened its socket to.
 
 Every page is prerendered, so its heading and explanations are on screen before anything listens to a click, and
 the replica panels are not there at all (the prerendered page shows an "Opening…" placeholder instead). Each test
-waits until the page has rendered in the browser - the router's `FocusOnNavigate` has then moved the focus to the
-page's `h1`, making it focusable with `tabindex="-1"`, which the prerendered markup never carries - and then until
-the page's replica panels are there and every one of their connection badges reads "synced".
+waits until the page has rendered in the browser - the layout's `data-interactive` marker on the site shell's `.page`
+element turns true once the WebAssembly renderer has taken the page over - and then until the page's replica panels
+are there and every one of their connection badges reads "synced".
 
 Every test also fails on any uncaught page error and on any console error in which Blazor reports an unhandled
 exception, whatever the test was looking at: an exception that escapes a handler or a change notification can leave

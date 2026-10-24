@@ -1,6 +1,6 @@
 ﻿# bit CLI
 
-Create [bit platform](https://bitplatform.dev) projects that are ready to run on Windows, macOS and Linux, translate `.resx` files with an LLM, and decode stack traces minified by Bit.Minifier.
+Create [bit platform](https://bitplatform.dev) projects that are ready to run on Windows, macOS and Linux, translate `.resx` files with an LLM, decode stack traces minified by Bit.Minifier, and write the profiles that compile Blazor WebAssembly apps ahead of time.
 
 ```bash
 dotnet tool install --global Bit.Cli --prerelease
@@ -252,7 +252,7 @@ In a pipeline:
 
 ## bit decode
 
-Reads a stack trace of an app minified by [Bit.Minifier](https://github.com/bitfoundation/bitplatform/tree/develop/src/Minifier) back into the names its source has:
+Reads a stack trace of an app minified by [Bit.Minifier](https://github.com/bitfoundation/bitplatform/tree/develop/src/Cli/Minifier) back into the names its source has:
 
 ```bash
 bit decode bit-minifier.map trace.txt
@@ -260,6 +260,26 @@ bit decode < trace.txt
 ```
 
 Without a map, the newest `obj/**/bit-minifier.map` under the current folder is used. Without a trace file, the trace is read from standard input.
+
+The map's first line names the Bit.Minifier that wrote it, and `bit decode` runs that version from the NuGet cache, restoring it first when it isn't there, so a map is always read the way it was written.
+
+## bit aot-profile
+
+Writes the profile that profile-guided AOT compiles a Blazor WebAssembly app with. Compiling every method ahead of time makes the app fast but its download much bigger. With a profile, only the methods the app really runs are compiled and the rest stay on the interpreter, so the download stays small and the code that runs is still compiled.
+
+```bash
+bit aot-profile src/Client/MyApp.Client.Web/MyApp.Client.Web.csproj -o app.aotprofile -p:InvariantGlobalization=true
+dotnet publish src/Client/MyApp.Client.Web/MyApp.Client.Web.csproj -c Release -p:RunAOTCompilation=true -p:InvariantGlobalization=true -p:WasmAotProfilePath=app.aotprofile
+```
+
+1. Publishes the project in Release on the interpreter, with Mono's AOT profiler in it. Pass the `-p` properties the AOT publish gets: both publishes then trim alike and, with Bit.Minifier, minify to the same names, and the profile names methods by those names.
+2. Starts it. A server project runs on a free local port. A standalone Blazor WebAssembly app is served from its `wwwroot` by the browser itself at `--origin`, `http://localhost:5000` by default; pass the address the app is deployed at when its API only accepts requests from there.
+3. Opens it in a headless Chromium, Chrome or Edge without its service worker, waits for .NET to start, and follows the app's links to every page it reaches, up to `--max-pages` (50). Then it does the `--step`s, each a path, `click:<css selector>`, `key:<key>` or `wait:<milliseconds>`. A link that reloads the app is left out and the visit starts over without it.
+4. Writes the profile: every method that ran, every `[UnmanagedCallersOnly]` method, which the compiled app calls directly and can't run without, and with `--include <assembly>` every method of that assembly, run or not.
+
+The app needs no change for it. The browser is Playwright's Chromium when it's installed (`bit setup` installs it for a bit Boilerplate project's UI tests), then Chrome, then Edge, or `--browser <path>`. The publish goes to the temp folder and is deleted at the end.
+
+Collect the profile in the job that publishes the app, right before the AOT publish, rather than keeping one in the repository: a profile describes one build of the app.
 
 ## Staying up to date
 

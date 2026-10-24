@@ -12,17 +12,20 @@
 
    The highlighter tells more kinds apart than the kit's four (keyword, string, comment, parameter),
    so the extra ones get colors of their own here, light and dark, picked to hold their contrast on
-   --bb-code-bg in both themes. */
+   --bb-code-bg in both themes. The primary hue is among them: the kit's --bb-primary falls just short
+   of 4.5:1 on the light code surface. */
 :root {
     --demo-code-type: #8250DF;
     --demo-code-fn: #A21CAF;
     --demo-code-number: #CF222E;
+    --demo-code-primary: #0B6AB4;
 }
 
 :root[bit-theme="dark"] {
     --demo-code-type: #D2A8FF;
     --demo-code-fn: #F0ABFC;
     --demo-code-number: #FF7B72;
+    --demo-code-primary: #4FA3F4;
 }
 
 .c-kw,
@@ -81,6 +84,14 @@
    column widens the table, which then scrolls inside its .bb-scroll. */
 .demo-api-title {
     margin: 1.5rem 0 .5rem;
+}
+
+/* A docs page's outline runs h1 (the page), h2 (each section's card title), h3 (a part of a section,
+   an API table's title). The parts keep the size they are read at - the kit's Subtitle2, the step
+   below the section titles - rather than the h3 size the kit gives a heading of their level. */
+.bb-docs-content h3:not(.bb-card-title) {
+    font-size: var(--fl-font-size-300);
+    line-height: 1.5;
 }
 
 .demo-api-table td:first-child {
@@ -142,6 +153,13 @@
     text-align: center;
     font-variant-numeric: tabular-nums;
     color: var(--bb-text);
+}
+
+/* Two panels side by side - the queries page's two readers of one key - stacked on narrow screens. */
+.demo-grid-2 {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(240px, 100%), 1fr));
+    gap: 1rem;
 }
 
 /* A tile nested in a sample ends flush with its frame. */
@@ -217,9 +235,15 @@
 
 .timeline li {
     display: flex;
-    gap: .75rem;
+    flex-wrap: wrap;
+    gap: 0 .75rem;
     padding: .125rem 0;
     border-bottom: 1px dashed var(--bb-border);
+}
+
+/* A cell never breaks inside ("run 1", "cancelled"): on a narrow screen the line wraps between cells. */
+.timeline li > span {
+    white-space: nowrap;
 }
 
 .timeline li:last-child {
@@ -228,7 +252,7 @@
 
 .timeline__at { min-width: 4.5rem; color: var(--bb-code-comment); }
 .timeline__mode { min-width: 5rem; font-weight: var(--fl-weight-semibold); }
-.timeline__mode--Parallel { color: var(--bb-primary); }
+.timeline__mode--Parallel { color: var(--demo-code-primary); }
 .timeline__mode--Latest { color: var(--demo-code-type); }
 .timeline__mode--Drop { color: var(--bb-warning-text); }
 .timeline__mode--Queue { color: var(--bb-success-text); }
@@ -429,4 +453,49 @@
     .dock {
         display: none;
     }
+}
+
+/* ---------- A persisted value before the stored state is in ----------
+
+   What <Persisted> (Components/Persisted.razor) draws in place of a value a persisted store has not
+   been given yet: a short block the size of a few digits, so the line does not jump when the value
+   arrives. The words "loading" beside it are for screen readers only. */
+.demo-pending {
+    display: inline-block;
+    min-width: 2.5ch;
+    height: .9em;
+    vertical-align: -0.05em;
+    background: var(--bb-surface-sunken);
+    border-radius: var(--bb-radius-sm);
+    animation: demo-pending-pulse 1.4s ease-in-out infinite;
+}
+
+@keyframes demo-pending-pulse {
+    50% { opacity: .5; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .demo-pending {
+        animation: none;
+    }
+}
+
+/* Data on screen that is standing in for newer data on its way: the previous page of a KeepPreviousData query
+   while the next one loads. Dimmed rather than hidden, so the layout does not jump. */
+.demo-dimmed {
+    opacity: .55;
+    transition: opacity .15s ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .demo-dimmed {
+        transition: none;
+    }
+}
+
+/* A table whose first column is a short phrase rather than an identifier (bb-compare makes it prose): wide
+   enough that the phrase wraps between words, not inside one, however long the column beside it runs. */
+.demo-key-wide td:first-child {
+    min-width: 10rem;
+    overflow-wrap: normal;
 }

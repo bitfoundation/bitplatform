@@ -116,9 +116,9 @@ public class McpController : ControllerBase
     [HttpGet]
     [McpServerTool(Name = nameof(GetBmageSetupGuide), Title = "Setup guide for one render mode",
                    ReadOnly = true, Destructive = false, Idempotent = true, OpenWorld = false)]
-    [Description("Gets the complete wiring for adding Bit.Bmage to an app in one hosting model, as the real files: 'wasm' (Blazor Web App, InteractiveWebAssembly), 'server' (InteractiveServer), 'auto' (InteractiveAuto), 'standalone-wasm', or 'headless' (ASP.NET Core API, console app, worker - no browser). Call this before writing any setup code: which DI containers register the services, which registration to use, and which codecs exist at all all differ per host.")]
+    [Description("Gets the complete wiring for adding Bit.Bmage to an app in one hosting model, as the real files: 'wasm' (Blazor Web App, InteractiveWebAssembly), 'server' (InteractiveServer), 'auto' (InteractiveAuto), 'standalone-wasm', 'hybrid' (Blazor Hybrid: MAUI, WPF, Windows Forms), or 'headless' (ASP.NET Core API, console app, worker - no browser). Call this before writing any setup code: which DI containers register the services, which registration to use, and which codecs exist at all all differ per host.")]
     public string GetBmageSetupGuide(
-        [Description("The hosting model: wasm, server, auto, standalone-wasm or headless. Aliases such as 'InteractiveServer', 'console' or 'aspnetcore' are accepted.")] string renderMode)
+        [Description("The hosting model: wasm, server, auto, standalone-wasm, hybrid or headless. Aliases such as 'InteractiveServer', 'maui', 'console' or 'aspnetcore' are accepted.")] string renderMode)
     {
         return BmageSetupGuide.Get(renderMode)
             ?? $"'{renderMode}' is not a known hosting model. Use one of: {string.Join(", ", BmageSetupGuide.RenderModes)}.";
@@ -261,9 +261,9 @@ public class McpController : ControllerBase
     [HttpGet]
     [McpServerTool(Name = nameof(GetBmageSourceFiles), Title = "List the demo source files",
                    ReadOnly = true, Destructive = false, Idempotent = true, OpenWorld = false)]
-    [Description("Lists the working Bit.Bmage source files this server can hand out: every page of the demo site - one per feature, each a complete working example (avatar, upload optimisation, screenshot annotation, batch, the editor, headless use, metadata, formats, pipelines) - plus the shared components, the documentation site's own shell and the host wiring. Demo pages carry the route they are served at and the terms they cover. Use it to pick the path to pass to GetBmageSourceFile.")]
+    [Description("Lists the working Bit.Bmage source files this server can hand out: every page of the demo site - one per feature, each a complete working example (avatar, upload optimisation, screenshot annotation, batch, the editor, headless use, metadata, formats, pipelines) - plus the shared components, the documentation site's own shell, the host wiring and the MAUI sample's wiring (a Blazor Hybrid app). Demo pages carry the route they are served at and the terms they cover. Use it to pick the path to pass to GetBmageSourceFile.")]
     public BmageSourceFileDto[] GetBmageSourceFiles(
-        [Description("Optional. 'Demo page' for only the feature pages, 'Host' for the server wiring, 'Demo' for the shared components and the site's page catalog, 'Site chrome' for the documentation site's header, nav, search palette and footer, or any substring of a path, a title or a page's keywords. Omitted, every file is returned.")] string? filter = null)
+        [Description("Optional. 'Demo page' for only the feature pages, 'Host' for the server wiring, 'Demo' for the shared components and the site's page catalog, 'Site chrome' for the documentation site's header, nav, search palette and footer, 'Sample' for the hosting samples' wiring (the MAUI app), or any substring of a path, a title or a page's keywords. Omitted, every file is returned.")] string? filter = null)
     {
         var files = BmageSourceCatalog.SourceFiles;
 

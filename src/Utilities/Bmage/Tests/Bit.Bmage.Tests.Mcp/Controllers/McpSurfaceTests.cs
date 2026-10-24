@@ -189,7 +189,9 @@ public class McpSurfaceTests
 
         foreach (var document in BmageSourceCatalog.Documents)
         {
-            Assert.AreEqual(controller.GetBmageDocument(document.Name), McpResources.Document(document.Name),
+            // A guide longer than one read is cut at the same place by both. Only the notice after the cut differs, by
+            // design: a resource is read by clients that need not have the tools, so it names resources to read on.
+            Assert.AreEqual(BeforeTruncation(controller.GetBmageDocument(document.Name)), BeforeTruncation(McpResources.Document(document.Name)),
                             $"The guide '{document.Name}' reads differently through the resource.");
         }
 
@@ -241,7 +243,7 @@ public class McpSurfaceTests
         StringAssert.Contains(McpResources.Source("nowhere.razor"), "No source file at");
         StringAssert.Contains(McpResources.Recipe("teleport"), "no recipe called");
 
-        var setup = McpResources.Setup("maui");
+        var setup = McpResources.Setup("electron");
 
         foreach (var mode in BmageSetupGuide.RenderModes)
         {
@@ -302,6 +304,13 @@ public class McpSurfaceTests
                 CollectionAssert.Contains(ToolNames, tool, $"The hit '{hit.Title}' for '{query}' sends the agent to '{tool}'.");
             }
         }
+    }
+
+    /// <summary>The text a read returns up to the notice that it was cut, which names how to read on.</summary>
+    private static string BeforeTruncation(string text)
+    {
+        var notice = text.LastIndexOf("\n\n[truncated at line ", StringComparison.Ordinal);
+        return notice < 0 ? text : text[..notice];
     }
 
     private static void AssertEveryToolReferenceResolves(string text, string where)

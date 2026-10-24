@@ -17,4 +17,7 @@ public partial class ResetPasswordRequestDto : IdentityRequestDto
     [Compare(nameof(Password), ErrorMessage = nameof(AppStrings.CompareAttribute_ValidationError))]
     [Display(Name = nameof(AppStrings.ConfirmNewPassword))]
     public string? ConfirmPassword { get; set; }
+
+    [Display(Name = nameof(AppStrings.TwoFactorCode))]
+    public string? TwoFactorCode { get; set; }
 }

@@ -1,0 +1,21 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <base href="/" />
+    <link rel="stylesheet" href="_content/Bit.Butil.Samples.Core/app.css" />
+    <HeadOutlet @rendermode="InteractiveWebAssembly" />
+</head>
+
+<body>
+    <Routes @rendermode="InteractiveWebAssembly" />
+
+    @* Before the Blazor script: the app boots as soon as that second script runs, so
+       window.BitButil has to exist by then. *@
+    <script src="_content/Bit.Butil/bit-butil.js"></script>
+    <script src="_framework/blazor.web.js"></script>
+</body>
+
+</html>

@@ -27,11 +27,19 @@ public partial class EffectLabStore
 
     [BlexComputedAttribute] private int ComputeEventCount() => Events.Count;
 
+    // The token of the most recently started Parallel run while it is still going: the only run the generated
+    // CancelRunParallel() can reach. Once that one ends, older overlapping runs carry on beyond its reach.
+    private CancellationToken _cancellableParallelRun;
+
+    /// <summary>Whether <c>CancelRunParallel()</c> has a run to cancel: the most recently started one is still going.</summary>
+    public bool CanCancelRunParallel => _cancellableParallelRun.CanBeCanceled && !_cancellableParallelRun.IsCancellationRequested;
+
     /// <summary>mergeMap: every invocation runs to completion, overlapping freely.</summary>
     [BlexEffectAttribute]
     private async Task OnRunParallel(CancellationToken ct)
     {
         var run = ++_parallelRuns;
+        _cancellableParallelRun = ct;
         Log("Parallel", run, "started");
         try
         {
@@ -41,6 +49,11 @@ public partial class EffectLabStore
         {
             Log("Parallel", run, "cancelled");
             throw;
+        }
+        finally
+        {
+            if (_cancellableParallelRun == ct)
+                _cancellableParallelRun = default;
         }
 
         Log("Parallel", run, "finished");
@@ -83,6 +96,54 @@ public partial class EffectLabStore
         Log("Queue", run, "started");
         await Task.Delay(JobDuration);
         Log("Queue", run, "finished");
+    }
+
+    private int _flakyAttempts;
+
+    /// <summary>How many attempts of <c>FetchFlaky</c> fail before one succeeds.</summary>
+    [BlexStateAttribute] private int _failuresToSimulate = 2;
+
+    /// <summary>Whether those attempts hang past the two-second timeout instead of failing outright.</summary>
+    [BlexStateAttribute] private bool _hangInsteadOfFailing;
+
+    [BlexStateAttribute] private IReadOnlyList<string> _attempts = [];
+
+    /// <summary>
+    /// A request that fails <see cref="FailuresToSimulate"/> times before it succeeds: three retries,
+    /// 400 ms backoff doubling each time, and two seconds per attempt. A hanging attempt never answers, so the
+    /// timeout cancels its token and it fails with a <see cref="TimeoutException"/> - retried like any failure.
+    /// </summary>
+    [BlexEffectAttribute(RetryCount = 3, RetryDelayMilliseconds = 400, TimeoutMilliseconds = 2000)]
+    private async Task OnFetchFlaky(CancellationToken ct)
+    {
+        var attempt = ++_flakyAttempts;
+        Attempts = [.. Attempts, $"{_clock.ElapsedMilliseconds,5} ms  attempt {attempt} started"];
+
+        if (attempt <= FailuresToSimulate && HangInsteadOfFailing)
+        {
+            Attempts = [.. Attempts, $"{_clock.ElapsedMilliseconds,5} ms  attempt {attempt} hangs past the 2000 ms timeout"];
+            await Task.Delay(TimeSpan.FromSeconds(10), ct);   // the timeout cancels ct long before this ends
+        }
+
+        await Task.Delay(300, ct);   // the "network"
+
+        if (attempt <= FailuresToSimulate)
+        {
+            Attempts = [.. Attempts, $"{_clock.ElapsedMilliseconds,5} ms  attempt {attempt} failed"];
+            throw new InvalidOperationException($"The server failed attempt {attempt}.");
+        }
+
+        Attempts = [.. Attempts, $"{_clock.ElapsedMilliseconds,5} ms  attempt {attempt} succeeded"];
+    }
+
+    [BlexActionAttribute]
+    private void OnPrepareFlaky(int failures, bool hang = false)
+    {
+        FailuresToSimulate = failures;
+        HangInsteadOfFailing = hang;
+        Attempts = [];
+        _flakyAttempts = 0;
+        _clock.Restart();
     }
 
     /// <summary>Records a click that <c>Drop</c> mode swallowed (the wrapper returns without running).</summary>

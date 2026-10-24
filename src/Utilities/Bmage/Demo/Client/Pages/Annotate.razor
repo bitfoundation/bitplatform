@@ -2,6 +2,7 @@
 @implements IAsyncDisposable
 @inject ImageLoader Loader
 @inject IImageCapabilityProvider Capabilities
+@inject DemoFonts Fonts
 
 @* A bug report's screenshot: paste it in, point at the problem, black out what must not be shared.
    The page is the editor component plus three things a host adds around it - a page-wide paste
@@ -39,7 +40,13 @@
                 title="Reads the clipboard directly; the browser asks for permission the first time">Paste from clipboard</button>
         <button type="button" class="btn btn-secondary" disabled="@(HasImage || IsHydrating)" @onclick="UseSample">Use a sample image</button>
         <button type="button" class="btn btn-secondary" disabled="@(!HasImage)" @onclick="AddSampleAnnotations">Add a worked example</button>
+        <button type="button" class="btn btn-secondary" disabled="@(!HasImage || _capabilities?.SupportsClipboardWrite != true)" @onclick="CopyResultAsync"
+                title="Exports the annotated image as PNG and puts it on the clipboard, ready to paste into a bug report">Copy the result</button>
         <button type="button" class="btn btn-secondary" disabled="@(!HasImage)" @onclick="Clear">Start over</button>
+        @if (_copied)
+        {
+            <span class="demo-small bb-muted" role="status">Copied - paste it into the bug report.</span>
+        }
     </div>
 
     <div class="editor-frame bb-page-wide">
@@ -55,10 +62,12 @@
     <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Redaction that actually redacts</h3>
     <p>
         The redaction tool replaces the pixels underneath it, so the hidden content is genuinely gone
-        from the exported file rather than covered by a layer someone can move. Solid blocks are the
-        safe choice: a strong blur is usually irreversible in practice, but a solid rectangle removes
-        all doubt. Redactions are always drawn before other annotations, so an arrow you place on top
-        is never blurred away.
+        from the exported file rather than covered by a layer someone can move. It comes in three modes -
+        <code>Solid</code>, <code>Pixelate</code> and <code>Blur</code>; the worked example uses the first
+        two. Solid blocks are the safe choice: pixelation and a strong blur are usually irreversible in
+        practice, but text can sometimes be recovered when its possible values are few, and a solid
+        rectangle removes all doubt. Redactions are always drawn before other annotations, so an arrow
+        you place on top is never blurred away.
     </p>
     <div class="bb-note">
         <p>
@@ -70,13 +79,44 @@
 </div>
 
 <div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Every kind of annotation</h3>
+    <p>
+        Annotations are records drawn over the image and its layers, each one selectable, movable,
+        rotatable, fadable, lockable and reorderable until export - in the editor with the pointer or
+        the keyboard, and from code with <code>AddAnnotationAsync</code>, <code>UpdateAnnotationAsync</code>
+        and <code>DeleteAnnotationAsync</code>.
+    </p>
+    <div class="bb-scroll" tabindex="0" role="region" aria-label="Annotation types">
+        <table class="bb-table">
+            <thead>
+                <tr><th scope="col">Record</th><th scope="col">Draws</th></tr>
+            </thead>
+            <tbody>
+                <tr><th scope="row"><code>RectangleAnnotation</code>, <code>EllipseAnnotation</code></th><td>A shape, outlined or filled, solid or dashed.</td></tr>
+                <tr><th scope="row"><code>LineAnnotation</code>, <code>ArrowAnnotation</code></th><td>A straight line, or one with an arrow head at its end.</td></tr>
+                <tr><th scope="row"><code>FreehandAnnotation</code>, <code>PolygonAnnotation</code></th><td>A smoothed pen stroke, or a closed outline through points.</td></tr>
+                <tr><th scope="row"><code>TextAnnotation</code></th><td>A label in any registered font, wrapped, with an optional background box - shaped right to left where the text is.</td></tr>
+                <tr><th scope="row"><code>CalloutAnnotation</code></th><td>A speech bubble with text and a leader line to what it explains.</td></tr>
+                <tr><th scope="row"><code>StepAnnotation</code></th><td>A numbered marker for the order of a tutorial or a reproduction.</td></tr>
+                <tr><th scope="row"><code>HighlightAnnotation</code></th><td>A translucent block, like a marker pen.</td></tr>
+                <tr><th scope="row"><code>RedactionAnnotation</code></th><td>Hidden content: solid, pixelated or blurred, in the pixels themselves.</td></tr>
+                <tr><th scope="row"><code>ImageAnnotation</code></th><td>An image stamped in a rectangle: a logo, a sticker, a signature.</td></tr>
+            </tbody>
+        </table>
+    </div>
+    <CodeSnippet Code="@MoreSnippet" Language="C#" />
+</div>
+
+<div class="bb-card">
     <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Pasting from anywhere on the page</h3>
     <p>
         <code>ListenForPasteAsync</code> listens for the browser's own paste event, which carries the
         image with it - so <strong>Ctrl+V</strong> works without the clipboard permission prompt.
         <code>LoadFromClipboardAsync</code>, behind the button, reads the clipboard directly; that
         needs the permission, which is why the button is only enabled where the capability probe
-        found the API.
+        found the API. <strong>Copy the result</strong> closes the loop the other way:
+        <code>CopyToClipboardAsync</code> renders the edit at full resolution and puts it on the clipboard
+        as PNG, the format browsers reliably accept, ready to paste into the report.
     </p>
     <CodeSnippet Code="@PasteSnippet" Language="Razor" />
 </div>
@@ -87,6 +127,7 @@
     private ImageCapabilities? _capabilities;
     private IAsyncDisposable? _pasteListener;
     private string? _error;
+    private bool _copied;
 
     /// <summary>The editor owns the image once loaded, whether it came from here or from its own drop zone.</summary>
     private bool HasImage => _editor?.Session is not null;
@@ -119,6 +160,36 @@
             Center = new Vector2(340, 400),
             Number = 1,
         });
+
+        await editor.AddAnnotationAsync(new CalloutAnnotation
+        {
+            Bubble    = new RectangleF(620, 420, 260, 64),
+            Target    = new Vector2(700, 330),   // where the leader line points
+            Text      = "Total shows 0",
+            TextStyle = new TextStyle { FontSize = 22, Bold = true, Alignment = TextAlignment.Center, Baseline = TextBaseline.Middle },
+        });
+        """;
+
+    private const string MoreSnippet = """
+        await editor.AddAnnotationAsync(new TextAnnotation
+        {
+            Text            = "Steps to reproduce",
+            Position        = new Vector2(40, 60),
+            Style           = new TextStyle { FontSize = 28, Bold = true, FillColor = Rgba32.White, MaxWidth = 400 },
+            BackgroundColor = new Rgba32(20, 20, 20, 200),
+        });
+
+        await editor.AddAnnotationAsync(new EllipseAnnotation
+        {
+            Rectangle = new RectangleF(500, 200, 160, 90),
+            Style     = ShapeStyle.Default with { Stroke = new StrokeStyle { Width = 4, DashPattern = [10f, 6f] } },
+        });
+
+        await editor.AddAnnotationAsync(new ImageAnnotation { Image = logo, Rectangle = new RectangleF(20, 20, 96, 96) });
+
+        // Every annotation is a record: change one with `with`, and the edit is one undo step.
+        var arrow = (ArrowAnnotation)editor.Document!.FindAnnotation(id)!;
+        await editor.UpdateAnnotationAsync(arrow with { Rotation = 15, Opacity = 0.8f, IsLocked = true });
         """;
 
     private const string PasteSnippet = """
@@ -141,6 +212,9 @@
                     image => _editor!.LoadImageAsync(image));
             }
 
+            // Back out: the annotated image, as PNG, on the clipboard.
+            private Task CopyAsync() => _editor!.CopyToClipboardAsync();
+
             public async ValueTask DisposeAsync()
             {
                 if (_paste is not null) await _paste.DisposeAsync();
@@ -159,6 +233,18 @@
             return Task.CompletedTask;
         });
         StateHasChanged();
+
+        // The font the step numbers and text labels are drawn with (see Shared/DemoFonts.cs).
+        try
+        {
+            await Fonts.EnsureAsync();
+        }
+        catch (Exception)
+        {
+            // Without it the editor says why its text cannot be drawn.
+            return;
+        }
+        if (_editor?.Session is not null) await _editor.RefreshAsync();
     }
 
     private Task OnPastedAsync(ImageBuffer image)
@@ -237,6 +323,36 @@
         {
             Rectangle = new System.Drawing.RectangleF(w * 0.06f, h * 0.60f, w * 0.30f, h * 0.05f),
         }, "Highlight");
+
+        // The second redaction mode, beside the solid block above: the blocks are coarse enough that nothing reads.
+        await _editor.AddAnnotationAsync(new RedactionAnnotation
+        {
+            Rectangle = new System.Drawing.RectangleF(w * 0.56f, h * 0.10f, w * 0.34f, h * 0.06f),
+            Mode = RedactionMode.Pixelate,
+        }, "Redact");
+
+        // A callout under the outlined area, saying what is wrong there, its text sized to fit the bubble on one line
+        // whatever the screenshot's shape.
+        var bubbleWidth = w * 0.30f;
+        var fontSize = MathF.Max(10, MathF.Min(h / 26f, bubbleWidth / 9.5f));
+        await _editor.AddAnnotationAsync(new CalloutAnnotation
+        {
+            Bubble = new System.Drawing.RectangleF(w * 0.60f, h * 0.64f, bubbleWidth, fontSize * 2.2f),
+            Target = new Vector2(w * 0.70f, h * 0.52f),
+            Text = "Wrong total here",
+            TextStyle = new TextStyle { FontSize = fontSize, Bold = true, Alignment = TextAlignment.Center, Baseline = TextBaseline.Middle },
+            Style = ShapeStyle.Default with { FillColor = Rgba32.White, Stroke = new StrokeStyle { Width = MathF.Max(2, w / 400f) } },
+        }, "Callout");
+    }
+
+    private async Task CopyResultAsync()
+    {
+        if (_editor is null) return;
+        _copied = false;
+        _error = null;
+        // The editor reports a refusal (the browser's permission, say) through OnError, like every action it runs.
+        await _editor.CopyToClipboardAsync();
+        _copied = _error is null;
     }
 
     private void OnEditorError(Exception ex) => _error = Describe(ex);

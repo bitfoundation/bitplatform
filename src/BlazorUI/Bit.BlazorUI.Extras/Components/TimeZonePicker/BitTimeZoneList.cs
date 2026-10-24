@@ -30,6 +30,10 @@ internal sealed class BitTimeZoneList
     // unfiltered list draws the rule that sets them apart from the rest.
     private int _preferredCount;
 
+    private bool _built;
+
+    private List<BitTimeZone> _all = [];
+
     private Entry[] _entries = [];
 
     // The offset of each time zone of All, which every row of an open list reads on every render.
@@ -50,7 +54,16 @@ internal sealed class BitTimeZoneList
     /// <summary>
     /// Every time zone the list offers, in the order it shows them unfiltered.
     /// </summary>
-    internal List<BitTimeZone> All { get; private set; } = [];
+    internal List<BitTimeZone> All
+    {
+        get
+        {
+            EnsureBuilt();
+            return _all;
+        }
+    }
+
+    internal int Version { get; private set; }
 
     /// <summary>
     /// The time zones the current search term leaves, in the order the list shows them.
@@ -92,8 +105,8 @@ internal sealed class BitTimeZoneList
 
 
     /// <summary>
-    /// Builds the list again when the collections it is built from are not the ones it was last built from, or when
-    /// the moment its offsets are computed for has moved on.
+    /// Builds the list again, the next time it is read, when the collections it is built from are not the ones it was
+    /// last built from, or when the moment its offsets are computed for has moved on.
     /// </summary>
     internal void Update(ICollection<BitTimeZone> timeZones, ICollection<string>? preferredTimeZones, DateTimeOffset? referenceDate)
     {
@@ -109,7 +122,9 @@ internal sealed class BitTimeZoneList
         _lastReferenceDate = referenceDate;
         _offsetsHour = hour;
 
-        Build(timeZones, preferredTimeZones, referenceDate ?? DateTimeOffset.UtcNow);
+        _built = false;
+        _viewValid = false;
+        Version++;
     }
 
     /// <summary>
@@ -122,7 +137,16 @@ internal sealed class BitTimeZoneList
 
         var canonical = CanonicalId(id.Trim());
 
-        return All.Find(z => string.Equals(CanonicalId(z.Id), canonical, StringComparison.OrdinalIgnoreCase));
+        if (_built) return _all.Find(z => string.Equals(CanonicalId(z.Id), canonical, StringComparison.OrdinalIgnoreCase));
+
+        foreach (var zone in _lastTimeZones ?? [])
+        {
+            if (zone is null || string.Equals(CanonicalId(zone.Id), canonical, StringComparison.OrdinalIgnoreCase) is false) continue;
+
+            return zone.GetUtcOffset(_lastReferenceDate ?? DateTimeOffset.UtcNow) is null ? null : zone;
+        }
+
+        return null;
     }
 
     /// <summary>
@@ -130,7 +154,7 @@ internal sealed class BitTimeZoneList
     /// </summary>
     internal TimeSpan GetOffset(BitTimeZone zone)
     {
-        if (_offsets.TryGetValue(zone, out var offset)) return offset;
+        if (_built && _offsets.TryGetValue(zone, out var offset)) return offset;
 
         return zone.GetUtcOffset(_lastReferenceDate ?? DateTimeOffset.UtcNow) ?? TimeSpan.Zero;
     }
@@ -184,9 +208,9 @@ internal sealed class BitTimeZoneList
     /// the unfiltered list has such a boundary: a search orders its matches by how close they are, wherever they came
     /// from.
     /// </summary>
-    internal bool IsLastPreferred(int index) => _preferredCount > 0
+    internal bool IsLastPreferred(int index) => index < All.Count - 1
+                                                && _preferredCount > 0
                                                 && index == _preferredCount - 1
-                                                && index < All.Count - 1
                                                 && ReferenceEquals(View, All);
 
     /// <summary>
@@ -349,8 +373,17 @@ internal sealed class BitTimeZoneList
 
         _entries = [.. entries];
         _offsets = _entries.ToDictionary<Entry, BitTimeZone, TimeSpan>(e => e.Zone, e => e.Offset, ReferenceEqualityComparer.Instance);
-        All = [.. entries.Select(e => e.Zone)];
+        _all = [.. entries.Select(e => e.Zone)];
         _viewValid = false;
+    }
+
+    private void EnsureBuilt()
+    {
+        if (_built) return;
+
+        _built = true;
+        Build(_lastTimeZones ?? [], _lastPreferredTimeZones, _lastReferenceDate ?? DateTimeOffset.UtcNow);
+        Version++;
     }
 
     private void Move(int offset, bool clamp)
@@ -379,6 +412,8 @@ internal sealed class BitTimeZoneList
 
     private void Filter()
     {
+        EnsureBuilt();
+
         if (_viewValid && _viewKey == SearchText) return;
 
         _viewValid = true;

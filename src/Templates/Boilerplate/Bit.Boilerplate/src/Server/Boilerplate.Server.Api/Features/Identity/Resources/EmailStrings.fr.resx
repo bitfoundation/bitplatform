@@ -196,6 +196,24 @@
   <data name="DefaultFromName" xml:space="preserve">
     <value>Application Boilerplate</value>
   </data>
+  <data name="AccountAlreadyExistsEmailSubject" xml:space="preserve">
+    <value>Boilerplate - Vous avez déjà un compte</value>
+  </data>
+  <data name="AccountAlreadyExistsTitle" xml:space="preserve">
+    <value>Bonjour {0}</value>
+  </data>
+  <data name="AccountAlreadyExistsSubtitle" xml:space="preserve">
+    <value>Quelqu’un vient d’essayer de s’inscrire avec votre adresse e-mail, mais elle appartient déjà à votre compte.</value>
+  </data>
+  <data name="AccountAlreadyExistsBody" xml:space="preserve">
+    <value>Si ce n’était pas vous, vous pouvez ignorer cet e-mail.</value>
+  </data>
+  <data name="AccountAlreadyExistsSignInLinkMessage" xml:space="preserve">
+    <value>Si c’était vous, vous pouvez vous connecter avec le lien suivant.</value>
+  </data>
+  <data name="AccountAlreadyExistsForgotPasswordLinkMessage" xml:space="preserve">
+    <value>Si vous avez oublié votre mot de passe, vous pouvez le réinitialiser avec le lien suivant.</value>
+  </data>
   <!--#if (multitenant == true) -->
   <data name="TenantInvitationEmailSubject" xml:space="preserve">
     <value>Vous avez été invité à rejoindre {0}</value>

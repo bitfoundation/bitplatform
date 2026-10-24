@@ -5,6 +5,7 @@ namespace Boilerplate.Client.Core.Infrastructure.Services;
 public partial class AuthManager : AuthenticationStateProvider, IAsyncDisposable
 {
     private Action? unsubscribe;
+    private Action? unsubscribeLocalStorageChanged;
 
     [AutoInject] private PubSubService pubSubService = default!;
     [AutoInject] private IStorageService storageService = default!;
@@ -22,8 +23,31 @@ public partial class AuthManager : AuthenticationStateProvider, IAsyncDisposable
     {
         // Example for method call after object instantiation with dependency injection.
 
+        unsubscribeLocalStorageChanged = pubSubService.Subscribe(ClientAppMessages.LOCAL_STORAGE_CHANGED, async payload =>
+        {
+            if (payload is string key && IAuthTokenProvider.IsTokenStorageKey(key) is false)
+                return;
+
+            NotifyAuthenticationStateChanged(Task.FromResult(await GetAuthenticationStateAsync()));
+        });
+
         //#if (signalR == true)
-        unsubscribe = pubSubService.Subscribe(SharedAppMessages.SESSION_REVOKED, _ => SignOut(default));
+        unsubscribe = pubSubService.Subscribe(SharedAppMessages.SESSION_REVOKED, async payload =>
+        {
+            var revokedUserSessionId = payload switch
+            {
+                Guid id => id,
+                JsonElement { ValueKind: JsonValueKind.String } json when json.TryGetGuid(out var id) => id,
+                _ => (Guid?)null
+            };
+
+            var user = (await GetAuthenticationStateAsync()).User;
+
+            if (user.IsAuthenticated() && user.GetSessionId() == revokedUserSessionId)
+            {
+                await SignOut(default);
+            }
+        });
         //#endif
     }
 
@@ -37,9 +61,29 @@ public partial class AuthManager : AuthenticationStateProvider, IAsyncDisposable
 
         if (response.RequiresTwoFactor) return true;
 
-        await StoreTokens(response!, request.RememberMe);
+        await CompleteSignIn(response!, request.RememberMe);
 
         return false;
+    }
+
+    public async Task CompleteSignIn(TokenResponseDto response, bool rememberMe)
+    {
+        if (string.IsNullOrWhiteSpace(response.AccessToken))
+            return;
+
+        if ((await GetAuthenticationStateAsync()).User.IsAuthenticated())
+        {
+            try
+            {
+                await SignOut(default);
+            }
+            catch (Exception exp)
+            {
+                authLogger.LogWarning(exp, "Failed to sign out the previous session before signing in.");
+            }
+        }
+
+        await StoreTokens(response, rememberMe);
     }
 
     public async Task StoreTokens(TokenResponseDto response, bool? rememberMe = null)
@@ -166,6 +210,14 @@ public partial class AuthManager : AuthenticationStateProvider, IAsyncDisposable
                             RequestedTenantId = requestedTenantId,
                             //#endif
                         }, default);
+
+                    // A sign-out or another sign-in happened meanwhile: storing this answer would bring the old session back.
+                    if (await storageService.GetItem("refresh_token") != refreshToken && await IsCurrentSession(refreshTokenResponse.AccessToken) is false)
+                    {
+                        currentTsc.TrySetResult(null);
+                        return;
+                    }
+
                     await StoreTokens(refreshTokenResponse);
                     currentTsc.TrySetResult(refreshTokenResponse.AccessToken!);
                 }
@@ -180,7 +232,7 @@ public partial class AuthManager : AuthenticationStateProvider, IAsyncDisposable
                         }, displayKind: ExceptionDisplayKind.NonInterrupting);
                     }
 
-                    if (exp is UnauthorizedException) // refresh token is also invalid
+                    if (exp is UnauthorizedException && await storageService.GetItem("refresh_token") == refreshToken) // refresh token is also invalid
                     {
                         await ClearTokens();
                     }
@@ -276,9 +328,22 @@ public partial class AuthManager : AuthenticationStateProvider, IAsyncDisposable
         NotifyAuthenticationStateChanged(Task.FromResult(await GetAuthenticationStateAsync()));
     }
 
+    private async Task<bool> IsCurrentSession(string? accessToken)
+    {
+        var currentSessionId = GetSessionId(await tokenProvider.GetAccessToken());
+
+        return currentSessionId is not null && currentSessionId == GetSessionId(accessToken);
+    }
+
+    private static Guid? GetSessionId(string? accessToken)
+    {
+        return Guid.TryParse(IAuthTokenProvider.ParseAccessToken(accessToken, validateExpiry: false).FindFirst(AppClaimTypes.SESSION_ID)?.Value, out var sessionId) ? sessionId : null;
+    }
+
     public async ValueTask DisposeAsync()
     {
         semaphore.Dispose();
         unsubscribe?.Invoke();
+        unsubscribeLocalStorageChanged?.Invoke();
     }
 }

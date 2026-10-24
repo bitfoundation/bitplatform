@@ -85,7 +85,12 @@ app.UseStatusCodePagesWithReExecute("/not-found");
 
 app.UseForwardedHeaders();
 
-app.UseHttpsRedirection();
+// Locally the MCP server and its HTTP mirror answer on the plain-HTTP port as well, which is the address the docs
+// give: a redirect would have an MCP client re-send its POST to https://localhost:7280 - which not every client
+// does - and then trust the development certificate. Everything else, and everything in production, is redirected.
+app.UseWhen(context => app.Environment.IsDevelopment() is false
+                       || (context.Request.Path.StartsWithSegments("/mcp") || context.Request.Path.StartsWithSegments("/api/mcp")) is false,
+    https => https.UseHttpsRedirection());
 
 app.UseAntiforgery();
 

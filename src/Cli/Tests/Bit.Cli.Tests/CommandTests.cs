@@ -1,4 +1,5 @@
-﻿using Bit.Cli.Commands;
+﻿using System.Text.Json;
+using Bit.Cli.Commands;
 using Bit.Cli.Infrastructure;
 using Bit.Cli.Tests.Infrastructure;
 
@@ -13,7 +14,7 @@ public class CommandTests
         var root = CliApp.BuildRootCommand(() => throw new InvalidOperationException());
 
         CollectionAssert.AreEquivalent(
-            new[] { "new", "setup", "diff", "doctor", "trust", "clean", "rename", "remove", "translate", "decode", "telemetry", "update", "about" },
+            new[] { "new", "setup", "diff", "doctor", "trust", "clean", "rename", "remove", "translate", "decode", "aot-profile", "telemetry", "update", "about" },
             root.Subcommands.Select(c => c.Name).ToArray());
     }
 
@@ -199,18 +200,76 @@ public class CommandTests
     }
 
     [TestMethod]
-    public async Task Decode_Should_ReadATraceBackIntoSourceNames()
+    public async Task Decode_Should_RunTheBitMinifierThatWroteTheMap()
     {
         using var host = new TestHost();
-        var map = Path.Combine(host.WorkingDirectory, "bit-minifier.map");
-        var trace = Path.Combine(host.WorkingDirectory, "trace.txt");
-        File.WriteAllLines(map, ["App\tM\tApp.Services.Worker::Process\taa", "App\tT\tApp.Services.Worker\t_a"]);
-        File.WriteAllText(trace, "   at _a.aa(String name)\n");
+        var packages = Path.Combine(host.Home, ".nuget", "packages");
+        var minifier = Path.Combine(Directory.CreateDirectory(Path.Combine(packages, "bit.minifier", "10.8.0-pre-01", "tools")).FullName, "Bit.Minifier.dll");
+        File.WriteAllText(minifier, "");
+        var map = WriteMap(host, "# Bit.Minifier 10.8.0-PRE-01");
+        File.WriteAllText(Path.Combine(host.WorkingDirectory, "trace.txt"), "   at _a.aa(String name)\n");
 
-        var output = await CaptureConsoleAsync(() => host.RunAsync("decode", map, trace));
+        Assert.AreEqual(0, await host.RunAsync("decode", map, "trace.txt"));
 
-        Assert.AreEqual(0, output.ExitCode);
-        Assert.AreEqual("   at App.Services.Worker.Process(String name)\n", output.Text.Replace("\r\n", "\n", StringComparison.Ordinal));
+        var run = host.Runner.Calls.Single();
+        Assert.AreEqual("dotnet", run.FileName);
+        CollectionAssert.AreEqual(new[] { minifier, "--decode", map, Path.Combine(host.WorkingDirectory, "trace.txt") }, run.Arguments.ToArray());
+        Assert.IsTrue(run.Interactive);
+    }
+
+    [TestMethod]
+    public async Task Decode_Should_RestoreTheBitMinifierTheCacheDoesNotHave()
+    {
+        using var host = new TestHost();
+        var packages = Path.Combine(host.Root, "packages");
+        var minifier = Path.Combine(packages, "bit.minifier", "10.8.0", "tools", "Bit.Minifier.dll");
+        var map = WriteMap(host, "# Bit.Minifier 10.8.0");
+        string? project = null;
+        host.Runner.On("dotnet", "restore", spec =>
+        {
+            project = File.ReadAllText(Path.Combine(spec.WorkingDirectory!, "restore.csproj"));
+            Directory.CreateDirectory(Path.GetDirectoryName(minifier)!);
+            File.WriteAllText(minifier, "");
+            Directory.CreateDirectory(Path.Combine(spec.WorkingDirectory!, "obj"));
+            File.WriteAllText(Path.Combine(spec.WorkingDirectory!, "obj", "project.assets.json"), JsonSerializer.Serialize(new { packageFolders = new Dictionary<string, object> { [packages + Path.DirectorySeparatorChar] = new { } } }));
+            return new ProcessResult { ExitCode = 0 };
+        });
+
+        Assert.AreEqual(0, await host.RunAsync("decode", map));
+
+        StringAssert.Contains(project, "<PackageDownload Include=\"Bit.Minifier\" Version=\"[10.8.0]\" />");
+        CollectionAssert.Contains(host.Runner.Calls[0].Arguments.ToArray(), $"-p:RestoreRootConfigDirectory={host.WorkingDirectory}");
+        Assert.IsFalse(Directory.Exists(host.Runner.Calls[0].WorkingDirectory));
+        CollectionAssert.AreEqual(new[] { minifier, "--decode", map }, host.Runner.Calls[1].Arguments.ToArray());
+    }
+
+    [TestMethod]
+    public async Task Decode_Should_SayWhyTheBitMinifierCouldNotBeRestored()
+    {
+        using var host = new TestHost();
+        var map = WriteMap(host, "# Bit.Minifier 99.0.0");
+        host.Runner.On("dotnet", "restore", 1, "  Determining projects to restore...\n  restore.csproj : error NU1102: Unable to find package Bit.Minifier with version (= 99.0.0)\n");
+
+        Assert.AreEqual(CliApp.ExitFailed, await host.RunAsync("decode", map));
+
+        StringAssert.Contains(host.FlatOutput, "Couldn't restore Bit.Minifier 99.0.0");
+        StringAssert.Contains(host.FlatOutput, "error NU1102");
+        Assert.HasCount(1, host.Runner.Calls);
+    }
+
+    [TestMethod]
+    [DataRow("App\tT\tApp.Services.Worker\t_a")]
+    [DataRow("# Bit.Minifier ../../evil")]
+    [DataRow("# Bit.Minifier 10.8.0\" />")]
+    public async Task Decode_Should_RefuseAMapThatDoesNotNameItsBitMinifier(string firstLine)
+    {
+        using var host = new TestHost();
+        var map = WriteMap(host, firstLine);
+
+        Assert.AreEqual(CliApp.ExitUsage, await host.RunAsync("decode", map));
+
+        StringAssert.Contains(host.FlatOutput, "doesn't name the Bit.Minifier that wrote it");
+        Assert.IsEmpty(host.Runner.Calls);
     }
 
     [TestMethod]
@@ -227,20 +286,10 @@ public class CommandTests
         Assert.AreEqual(newer, DecodeCommand.FindMap(host.WorkingDirectory));
     }
 
-    private static async Task<(int ExitCode, string Text)> CaptureConsoleAsync(Func<Task<int>> run)
+    private static string WriteMap(TestHost host, string firstLine)
     {
-        var original = Console.Out;
-        var writer = new StringWriter();
-        Console.SetOut(writer);
-
-        try
-        {
-            var exitCode = await run();
-            return (exitCode, writer.ToString());
-        }
-        finally
-        {
-            Console.SetOut(original);
-        }
+        var map = Path.Combine(host.WorkingDirectory, "bit-minifier.map");
+        File.WriteAllLines(map, [firstLine, "App\tT\tApp.Services.Worker\t_a"]);
+        return map;
     }
 }

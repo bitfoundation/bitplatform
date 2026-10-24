@@ -35,6 +35,9 @@ public partial class AppChatbot
     [AutoInject] private ServerApiSettings appSettings = default!;
     [AutoInject] private IConfiguration configuration = default!;
     [AutoInject] private IServiceProvider serviceProvider = default!;
+    [AutoInject] private ChatbotRateLimiter rateLimiter = default!;
+    [AutoInject] private IHubContext<AppHub> hubContext = default!;
+    [AutoInject] private IStringLocalizer<AppStrings> localizer = default!;
     [AutoInject] private IHttpContextAccessor httpContextAccessor = default!;
     [AutoInject] private ApiServerExceptionHandler exceptionHandler = default!;
     [AutoInject] private IOptionsMonitor<BearerTokenOptions> bearerTokenOptions = default!;
@@ -63,6 +66,9 @@ public partial class AppChatbot
         string? signalRConnectionId,
         CancellationToken cancellationToken)
     {
+        if (rateLimiter.TryStartChat(httpContextAccessor.HttpContext!) is false)
+            throw new TooManyRequestsException(localizer[nameof(AppStrings.AiChatTooManyRequests)]);
+
         chatMessages = [];
 
         foreach (var message in BelievableHistory(request.ChatMessagesHistory))
@@ -103,7 +109,7 @@ public partial class AppChatbot
     /// </summary>
     public AiChatMessage[] BelievableHistory(IEnumerable<AiChatMessage> history)
     {
-        return [.. history.Where(c => c.Successful && (string.IsNullOrWhiteSpace(c.Content) is false || c.AttachmentId is not null))
+        return [.. history.Where(c => c.Successful && (string.IsNullOrWhiteSpace(c.Content) is false || c.AttachmentId is not null) && (c.Content?.Length ?? 0) <= AiChatMessage.MaxContentLength)
                           .TakeLast(MaxMessagesInHistory)
                           .Select(AsProvablySaid)];
     }
@@ -150,6 +156,13 @@ public partial class AppChatbot
         {
             if (string.IsNullOrWhiteSpace(variablesDefault))
                 throw new InvalidOperationException($"Chat session must be started before processing messages. Call {nameof(StartChat)} method first.");
+
+            if (Refusal(incomingMessage) is KnownException refusal)
+            {
+                await SendExceptionToClient(refusal, cancellationToken);
+                await CloseTurn(answer, opened, successful: false);
+                return;
+            }
 
             supportAgent ??= serviceProvider.GetRequiredKeyedService<AIAgent>("SupportAgent");
 
@@ -265,6 +278,27 @@ public partial class AppChatbot
 
         return SendStringToClient($$"""{{rest}},"signature":{{signature}},"successful":{{(successful ? "true" : "false")}}}""",
                                   CancellationToken.None);
+    }
+
+    private KnownException? Refusal(AiChatMessage incomingMessage)
+    {
+        if (incomingMessage.Content?.Length > AiChatMessage.MaxContentLength)
+            return new BadRequestException();
+
+        if (rateLimiter.TryProcessMessage(httpContextAccessor.HttpContext!) is false)
+            return new TooManyRequestsException(localizer[nameof(AppStrings.AiChatTooManyRequests)]);
+
+        return null;
+    }
+
+    private async Task SendExceptionToClient(KnownException exception, CancellationToken cancellationToken)
+    {
+        var problemDetails = exceptionHandler.Handle(exception, new() { { "SignalRConnectionId", signalRConnectionId } });
+
+        if (signalRConnectionId is null)
+            return;
+
+        await hubContext.Clients.Client(signalRConnectionId).Publish(SharedAppMessages.EXCEPTION_THROWN, problemDetails, cancellationToken);
     }
 
     /// <summary>

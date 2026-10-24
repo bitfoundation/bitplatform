@@ -10,11 +10,10 @@ public partial class IdentityController
     [HttpPost, EnableRateLimiting(RateLimitOptionsExtensions.IDENTITY)]
     public async Task SendConfirmEmailToken(SendEmailTokenRequestDto request, CancellationToken cancellationToken)
     {
-        var user = await userManager.FindByEmailAsync(request.Email!)
-            ?? throw new BadRequestException(Localizer[nameof(AppStrings.UserNotFound)]).WithData("Email", request.Email);
+        var user = await userManager.FindByEmailAsync(request.Email!);
 
-        if (await userManager.IsEmailConfirmedAsync(user))
-            throw new BadRequestException(Localizer[nameof(AppStrings.EmailAlreadyConfirmed)]).WithData("UserId", user.Id);
+        if (user is null || await userManager.IsEmailConfirmedAsync(user))
+            return;
 
         await SendConfirmEmailToken(user, request.ReturnUrl, cancellationToken);
     }
@@ -23,7 +22,7 @@ public partial class IdentityController
     public async Task ConfirmEmail(ConfirmEmailRequestDto request, CancellationToken cancellationToken)
     {
         var user = await userManager.FindByEmailAsync(request.Email!)
-            ?? throw new BadRequestException(Localizer[nameof(AppStrings.UserNotFound)]).WithData("Email", request.Email);
+            ?? throw new BadRequestException(nameof(AppStrings.ExpiredToken)).WithData("Email", request.Email);
 
         var expired = user.EmailTokenRequestedOn is null ||
                       (TimeProvider.GetUtcNow() - user.EmailTokenRequestedOn.Value) > AppSettings.Identity.EmailTokenLifetime;

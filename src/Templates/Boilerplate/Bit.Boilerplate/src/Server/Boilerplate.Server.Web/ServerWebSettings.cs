@@ -3,6 +3,7 @@ using Boilerplate.Client.Web;
 using Boilerplate.Client.Core;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
+using Microsoft.Extensions.Options;
 
 namespace Boilerplate.Server.Web;
 
@@ -24,15 +25,11 @@ public partial class ServerWebSettings : ClientWebSettings
     /// This optional setting allows overriding HttpClient's BaseAddress specifically for the server project.
     /// </summary>
     public string? ServerSideHttpClientBaseAddress { get; set; }
+}
 
-    public override IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
-    {
-        var validationResults = base.Validate(validationContext).ToList();
-
-        Validator.TryValidateObject(WebAppRender, new ValidationContext(WebAppRender), validationResults, true);
-
-        return validationResults;
-    }
+[OptionsValidator]
+public partial class ServerWebSettingsValidator : IValidateOptions<ServerWebSettings>
+{
 }
 
 public partial class WebAppRenderOptions

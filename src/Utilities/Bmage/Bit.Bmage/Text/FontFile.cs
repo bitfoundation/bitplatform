@@ -5,9 +5,9 @@ using System.Text;
 namespace Bit.Bmage.Text;
 
 /// <summary>
-/// A parsed TrueType or OpenType font: character mapping, glyph outlines and horizontal metrics. Enough of the format is
-/// implemented to lay out and rasterise text without any external dependency. CFF (PostScript) outlines and complex
-/// script shaping are out of scope; use a browser-backed rasteriser for those.
+/// A parsed TrueType or OpenType font: character mapping, glyph outlines, horizontal metrics and the OpenType layout
+/// tables. Enough of the format is implemented to shape, lay out and rasterise text without any external dependency.
+/// CFF (PostScript) outlines are out of scope; use a browser-backed rasteriser for those.
 /// </summary>
 public sealed class FontFile
 {
@@ -115,6 +115,14 @@ public sealed class FontFile
         if (!_tables.TryGetValue(name, out var t)) return default;
         return Data.Slice(t.Offset, t.Length);
     }
+
+    /// <summary>The bytes of a table, or none when the font does not have it.</summary>
+    internal ReadOnlySpan<byte> GetTable(string name) => Table(name);
+
+    private OpenTypeLayout? _layout;
+
+    /// <summary>The OpenType layout tables (GDEF, GSUB, GPOS), read the first time text is shaped with the font.</summary>
+    internal OpenTypeLayout Layout => LazyInitializer.EnsureInitialized(ref _layout, () => new OpenTypeLayout(this));
 
     private void ParseHead()
     {

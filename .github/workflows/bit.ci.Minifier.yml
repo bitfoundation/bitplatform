@@ -5,7 +5,7 @@ on:
   workflow_call:
   pull_request:
     paths:
-    - 'src/Minifier/**'
+    - 'src/Cli/Minifier/**'
 
 env:
   DOTNET_SYSTEM_CONSOLE_ALLOW_ANSI_COLOR_REDIRECTION: true
@@ -32,7 +32,7 @@ jobs:
         global-json-file: src/global.json
 
     - name: dotnet build
-      run: dotnet build src/Minifier/Bit.Minifier.slnx
+      run: dotnet build src/Cli/Minifier/Bit.Minifier.slnx
 
     - name: dotnet test
-      run: cd src/Minifier/Tests/Bit.Minifier.Tests && dotnet test --no-build
+      run: cd src/Cli/Minifier/Tests/Bit.Minifier.Tests && dotnet test --no-build

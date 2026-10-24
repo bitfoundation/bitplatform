@@ -1,5 +1,6 @@
 ﻿@page "/serialization"
 @using System.Numerics
+@using System.Text.Json
 @inject FileDownloads Downloads
 
 <PageTitle>Serialization · Bink</PageTitle>
@@ -9,7 +10,7 @@
     <p class="bb-subtitle">
         Drawings are vector documents, not pictures. Draw on the left, then save, reload and export on the right.
         The compact format stores a handwriting point in a few bytes; the readable format is the same data as plain
-        JSON for diffing and inspection.
+        JSON for diffing and inspection. Edit what was saved, or open a file, to see the loader validate it.
     </p>
 </div>
 
@@ -17,8 +18,9 @@
     <div class="bink-pair">
         <div class="bink-peer">
             <div class="bb-toolbar bink-toolbar">
-                <span class="bink-hint">Draw something, then save it.</span>
+                <span class="bink-hint">@SaveState</span>
                 <span class="bb-spacer"></span>
+                <button type="button" class="btn btn-secondary" disabled="@(_canvas is null)" title="Show the same picture twice: it is stored once, in the document's asset table" @onclick="AddPictureTwiceAsync">Add a picture twice</button>
                 <div class="bink-group" role="group" aria-label="History">
                     <button type="button" class="btn btn-secondary" disabled="@(_canvas is not { History.CanUndo: true })" @onclick="() => _canvas?.Undo()">Undo</button>
                     <button type="button" class="btn btn-secondary bink-danger" disabled="@(_canvas is null || _canvas.CurrentDocument.IsEmpty)" @onclick="() => _canvas?.Clear()">Clear</button>
@@ -26,10 +28,11 @@
             </div>
             <div class="bink-surface">
                 <BinkCanvas @ref="_canvas" HistoryChanged="() => StateHasChanged()" Height="340px" Brush="_brush" AriaLabel="Source drawing"
+                           ViewportChanged="_status?.ViewportChanged ?? default"
                            DocumentChanged="() => StateHasChanged()"
                            Ready="() => StateHasChanged()" />
             </div>
-            <CanvasStatus Canvas="_canvas" />
+            <CanvasStatus @ref="_status" Canvas="_canvas" />
         </div>
 
         <div class="bink-peer">
@@ -46,6 +49,10 @@
                     <input type="checkbox" checked="@_readable" @onchange="OnReadableChanged" />
                     Readable JSON
                 </label>
+                <label class="bb-check" title="Load with limits of @StrictLimits.MaxElements elements and no remote pictures, as a server taking documents from strangers might">
+                    <input type="checkbox" checked="@_strict" @onchange="e => _strict = e.Value is true" />
+                    Strict limits
+                </label>
             </div>
 
             <div class="bink-pane">
@@ -54,11 +61,12 @@
                     <dl class="bb-params">
                         <dt>Elements</dt><dd>@_stats.Elements</dd>
                         <dt>Stroke points</dt><dd>@_stats.Points</dd>
+                        <dt>Format version</dt><dd>@(_stats.Version)@(_stats.Assets > 0 ? $", with {_stats.Assets} picture{(_stats.Assets == 1 ? "" : "s")} stored once for several elements" : null)</dd>
                         <dt>Compact document</dt><dd>@FormatBytes(_stats.CompactBytes)</dd>
                         <dt>Readable document</dt><dd>@FormatBytes(_stats.ReadableBytes)</dd>
                         <dt>Bytes per point (compact)</dt><dd>@(_stats.Points == 0 ? "-" : (_stats.CompactBytes / (double)_stats.Points).ToString("0.0"))</dd>
                         <dt>SVG export</dt><dd>@FormatBytes(_stats.SvgBytes)</dd>
-                        <dt>PNG export (1x)</dt><dd>@FormatBytes(_stats.PngBytes)</dd>
+                        <dt>PNG export (pure .NET, 1x)</dt><dd>@FormatBytes(_stats.PngBytes)@(_stats.PngSkipped > 0 ? $", {_stats.PngSkipped} element{(_stats.PngSkipped == 1 ? "" : "s")} it could not draw" : null)</dd>
                         <dt>Round trip identical</dt><dd>@(_stats.RoundTripStable ? "yes" : "no")</dd>
                     </dl>
                 }
@@ -82,7 +90,8 @@
         <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Stored document</h3>
         <p class="bb-card-desc">
             This is the text that was saved, and you can edit it. Change a number and load it to see the edit take
-            effect, or break the JSON to see the loader refuse it with a reason instead of loading half a drawing.
+            effect, or break the JSON to see the loader refuse it with a reason instead of loading half a drawing. With
+            <strong>Strict limits</strong> on, a drawing of more than @StrictLimits.MaxElements elements is refused too.
         </p>
         <textarea class="bink-json" aria-label="Stored document" spellcheck="false" rows="14"
                   value="@_saved" @onchange="e => _saved = e.Value?.ToString()"></textarea>
@@ -93,36 +102,127 @@
     <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> The API</h3>
     <p class="bb-card-desc">
         Saving is one call and so is loading. For anything that came from outside your own code - a file a person
-        opened, a request body - use <code>TryDeserialize</code>, which reports a message instead of throwing.
+        opened, a request body - use <code>TryDeserialize</code>, which reports a message instead of throwing. The
+        UTF-8 and stream overloads avoid a string the size of the document when it goes to a file or over the network.
     </p>
     <pre class="bb-code"><span class="k">string</span> compact = BinkSerializer.Serialize(document);
 <span class="k">string</span> readable = BinkSerializer.Serialize(document, BinkSerializerOptions.Readable);
+<span class="k">byte</span>[] utf8 = BinkSerializer.SerializeToUtf8Bytes(document);
+<span class="k">await</span> BinkSerializer.SerializeAsync(document, stream);
+BinkDocument fromStream = <span class="k">await</span> BinkSerializer.DeserializeAsync(stream);
 
 <span class="k">if</span> (BinkSerializer.TryDeserialize(json, <span class="k">out</span> BinkDocument? loaded, <span class="k">out string</span>? error) &amp;&amp; loaded <span class="k">is not null</span>)
 {
-    _canvas.LoadDocument(loaded);
+    _canvas.LoadDocument(loaded);   <span class="c">// resets history and selection</span>
+}</pre>
+    <p class="bb-card-desc">
+        Your own information travels with it: metadata on the document and on any element, and a
+        <code>Description</code> that is also what screen readers and the exported SVG report.
+    </p>
+    <pre class="bb-code">document.SetMetadata(<span class="s">"case-id"</span>, <span class="s">"2026-114"</span>);
+document.ReplaceElement(stroke <span class="k">with</span>
+{
+    Description = <span class="s">"Signature of Jane Doe"</span>,
+    Metadata = <span class="k">new</span> Dictionary&lt;<span class="k">string</span>, <span class="k">string</span>&gt; { [<span class="s">"signer"</span>] = <span class="s">"jane"</span> },
+});</pre>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> The format</h3>
+    <p class="bb-card-desc">
+        Versioned JSON, a stable contract rather than a projection of the library's classes: every element has a
+        <code>type</code> and only documented fields. Stroke points are quantized to 64 steps a document unit and
+        delta-encoded as varints, so a handwriting point costs a few bytes against 30 or more as a JSON array; pressure is
+        one byte, and tilt and twist are only written when the device produced them. The encoding is deterministic, so
+        the same drawing always saves to the same bytes, which is what "Round trip identical" checks.
+    </p>
+    <p class="bb-card-desc">
+        A picture shown by several elements is written once, in an <code>assets</code> table keyed by a hash of its
+        content - try <strong>Add a picture twice</strong>, then save. A file with that table is version 2, which older
+        builds refuse with a message rather than opening without its pictures; every other file is version 1.
+        <code>ShareImageData = false</code> always writes version 1, and <code>IncludeEmbeddedImages = false</code> leaves
+        the pictures out for an application that stores them elsewhere.
+    </p>
+    <pre class="bb-code"><span class="k">var</span> options = <span class="k">new</span> BinkSerializerOptions
+{
+    ShareImageData = <span class="k">false</span>,           <span class="c">// version 1 even with repeated pictures, for older readers</span>
+    IncludeEmbeddedImages = <span class="k">false</span>,    <span class="c">// pictures load as BinkImageSource.Omitted, to be re-attached</span>
+};
+
+<span class="k">foreach</span> (BinkImageElement image <span class="k">in</span> loaded.AllElements.OfType&lt;BinkImageElement&gt;())
+{
+    <span class="k">if</span> (image.Source.IsOmitted) loaded.ReplaceElement(image <span class="k">with</span> { Source = LoadStoredImage(image.Id) });
 }</pre>
 </div>
 
 <div class="bb-card">
-    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Compatibility</h3>
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Untrusted input</h3>
+    <p class="bb-card-desc">
+        Loading is a parser's attack surface, so everything is validated: the input size before parsing, the number of
+        layers, elements and points, every coordinate, brush widths, picture URIs (SVG pictures are opt-in, remote ones
+        can be refused), font family names and transforms. Malformed input is refused with a message that says what is
+        wrong, and a hostile size field never makes the reader allocate for it. <strong>Strict limits</strong> loads
+        with options like these:
+    </p>
+    <pre class="bb-code"><span class="k">var</span> options = <span class="k">new</span> BinkDeserializerOptions
+{
+    Limits = <span class="k">new</span> BinkDocumentLimits { MaxElements = @StrictLimits.MaxElements, MaxPointsPerStroke = 20_000 },
+    AllowRemoteImages = <span class="k">false</span>,
+    AllowSvgImages = <span class="k">false</span>,
+};
+<span class="k">bool</span> ok = BinkSerializer.TryDeserialize(json, <span class="k">out</span> BinkDocument? document, <span class="k">out string</span>? error, options);</pre>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-danger"></span> Compatibility</h3>
     <p class="bb-card-desc">
         The format carries a schema version. A document written by a newer version is refused with an explanation
-        rather than being partially read, and elements of unknown types are preserved untouched through a load and
-        save, so an old build never silently destroys work made by a new one.
+        rather than being partially read. Elements of unknown types are preserved untouched through a load and save
+        (<code>PreserveUnknownElements</code>), and a brush kind this build does not know draws like a pen with the
+        stored colour and width while keeping its kind, so an old build never silently destroys work made by a new one.
+        Unknown fields are ignored, so adding a field is not a breaking change. The <a href="extending">extending</a>
+        page shows both from the other side, with an element type and a brush of its own read by an application that
+        does not know them.
     </p>
 </div>
 
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Unsaved changes</h3>
+    <p class="bb-card-desc">
+        The line above the drawing reads <code>IsDirty</code>: whether anything changed since <code>MarkSaved</code>,
+        which this page calls when it saves. Any change counts, an undo included, so undoing back to the saved state
+        still reads as changed. For a save that takes time, pass the revision that was serialized, so what changed
+        while the bytes were on their way stays unsaved.
+    </p>
+    <pre class="bb-code"><span class="k">long</span> revision = document.Revision;
+<span class="k">await</span> SaveToServerAsync(BinkSerializer.SerializeToUtf8Bytes(document));
+document.MarkSaved(revision);</pre>
+</div>
+
 @code {
-    private sealed record Stats(int Elements, long Points, int CompactBytes, int ReadableBytes, int SvgBytes, int PngBytes, bool RoundTripStable);
+    private sealed record Stats(int Elements, long Points, int Version, int Assets, int CompactBytes, int ReadableBytes, int SvgBytes, int PngBytes, int PngSkipped, bool RoundTripStable);
 
     private BinkCanvas? _canvas;
+    private CanvasStatus? _status;
     private readonly BinkBrush _brush = new BinkPenBrush { Width = 4f, Color = BinkColor.Parse("#111827") };
     private BinkDocument? _snapshot;
     private string? _saved;
     private string? _error;
     private bool _readable;
+    private bool _strict;
     private Stats? _stats;
+
+    /// <summary>The limits "Strict limits" loads with: few enough elements that a drawing soon exceeds them.</summary>
+    private static readonly BinkDocumentLimits StrictLimits = new() { MaxElements = 25, MaxPointsPerStroke = 20_000 };
+
+    // A small picture to show twice. Generated, so the page needs no file of its own.
+    private static readonly byte[] StampPng = CreateStamp(48);
+
+    private string SaveState => _canvas?.CurrentDocument is not { } document
+        ? ""
+        : document.IsDirty
+            ? _snapshot is null ? "Not saved yet." : "Changed since it was last saved."
+            : _snapshot is null ? "Draw something, then save it." : "Saved: nothing has changed since.";
 
     private void OnReadableChanged(ChangeEventArgs e)
     {
@@ -137,6 +237,7 @@
         _error = null;
         _snapshot = _canvas.CurrentDocument.Clone();
         Show(_snapshot);
+        _canvas.CurrentDocument.MarkSaved();
     }
 
     private void Show(BinkDocument document)
@@ -148,20 +249,35 @@
         // A round trip must be byte-for-byte stable, otherwise saving twice would create spurious changes.
         string again = BinkSerializer.Serialize(BinkSerializer.Deserialize(compact));
 
+        // The version the file declares, and its table of pictures stored once, read back from the JSON itself.
+        int version = 0, assets = 0;
+        using (JsonDocument json = JsonDocument.Parse(compact))
+        {
+            if (json.RootElement.TryGetProperty("version", out JsonElement v)) version = v.GetInt32();
+            if (json.RootElement.TryGetProperty("assets", out JsonElement a) && a.ValueKind == JsonValueKind.Object) assets = a.EnumerateObject().Count();
+        }
+
+        // The pure .NET rasterizer has no font engine, and says what it could not draw rather than leaving it out quietly.
+        BinkPngExportResult png = BinkPngExporter.ExportWithDetails(document);
+
         _stats = new Stats(
             document.ElementCount,
             document.TotalPointCount,
+            version,
+            assets,
             System.Text.Encoding.UTF8.GetByteCount(compact),
             System.Text.Encoding.UTF8.GetByteCount(readable),
             System.Text.Encoding.UTF8.GetByteCount(BinkSvgExporter.Export(document)),
-            BinkPngExporter.Export(document).Length,
+            png.Bytes.Length,
+            png.SkippedTextElements + png.SkippedImages,
             string.Equals(compact, again, StringComparison.Ordinal));
     }
 
     private void Load()
     {
         if (_canvas is null || _saved is null) return;
-        if (BinkSerializer.TryDeserialize(_saved, out BinkDocument? document, out string? error) && document is not null)
+        BinkDeserializerOptions? options = _strict ? new BinkDeserializerOptions { Limits = StrictLimits, AllowRemoteImages = false } : null;
+        if (BinkSerializer.TryDeserialize(_saved, out BinkDocument? document, out string? error, options) && document is not null)
         {
             _error = null;
             _canvas.LoadDocument(document);
@@ -172,6 +288,44 @@
             // The text stays as it is, so the mistake can be found and fixed.
             _error = "Could not load: " + error;
         }
+    }
+
+    private async Task AddPictureTwiceAsync()
+    {
+        if (_canvas is null) return;
+        // Decoded by the browser first, so it is drawn as soon as it is added.
+        BinkImageSource stamp = await _canvas.LoadImageAsync(BinkImageSource.FromBytes(StampPng, "image/png", 48, 48));
+        BinkDocument document = _canvas.CurrentDocument;
+        Vector2 at = new(24 + document.ElementCount % 6 * 40, 24);
+        // One batch: one undo step, one change, one redraw.
+        using (document.BeginBatch("Add a picture twice"))
+        {
+            document.AddElement(new BinkImageElement(stamp, new BinkRect(at.X, at.Y, 48, 48)) { Description = "Stamp" });
+            document.AddElement(new BinkImageElement(stamp, new BinkRect(at.X + 64, at.Y, 48, 48)) { Description = "The same stamp again" });
+        }
+        _canvas.Refresh();
+    }
+
+    private static byte[] CreateStamp(int size)
+    {
+        byte[] rgba = new byte[size * size * 4];
+        float r = size / 2f;
+        for (int y = 0; y < size; y++)
+        {
+            for (int x = 0; x < size; x++)
+            {
+                float dx = x + 0.5f - r, dy = y + 0.5f - r;
+                float d = MathF.Sqrt(dx * dx + dy * dy);
+                int o = (y * size + x) * 4;
+                // A ring with a dot: obviously one picture, wherever it is shown.
+                bool ink = d < r - 1 && (d > r - 8 || d < 7);
+                rgba[o] = ink ? (byte)37 : (byte)0;
+                rgba[o + 1] = ink ? (byte)99 : (byte)0;
+                rgba[o + 2] = ink ? (byte)235 : (byte)0;
+                rgba[o + 3] = ink ? (byte)255 : (byte)0;
+            }
+        }
+        return BinkPngCodec.Encode(rgba, size, size);
     }
 
     private async Task DownloadAsync()

@@ -125,7 +125,7 @@ bit Boilerplate, bit BlazorUI and every other bit library ship together under on
 
 ## Rules
 - This project was created with `bit new`, so its code is already formatted, git has `develop` and `main`, and the server has its Initial EF Core migration. Only if the user says it was created another way, do those first: `dotnet format Boilerplate.slnx --exclude-diagnostics BL0016`, the two branches, and the migration from `.docs/01- Entity Framework Core.md`
-- CI runs on `develop` (`.github/workflows/ci.yml`, `.azure-devops/workflows/ci.yml`), production CD on `main` and test CD on `test`; protect `main` and `test` with a required status check on `ci.yml`, because the CD workflows never run the tests. See `.docs/16- CI-CD Pipeline and Environments.md`
+- CI runs on `develop` (`.github/workflows/ci.yml`, `.azure-devops/workflows/ci.yml`), production CD on `main` and test CD on `test`; the production CD runs the tests and deploys only when they pass, the test CD does not, so protect `test` with a required status check on `ci.yml`. See `.docs/16- CI-CD Pipeline and Environments.md`
 - On the full track, always complete phases 1-2 before writing any code
 - Keep the user informed of phase transitions
 - If blocked, explain why and propose alternatives - never silently skip work

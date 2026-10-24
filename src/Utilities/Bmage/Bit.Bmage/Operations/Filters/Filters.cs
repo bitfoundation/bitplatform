@@ -582,12 +582,15 @@ public sealed class MedianFilter : RegionOperation
     /// per pixel. Edges repeat the border pixels, exactly as the general path does.
     /// </summary>
     private static void Median3x3(ImageBuffer input, ImageBuffer output, Rectangle region, OperationContext context)
+        => ParallelRows.For(context, 0, input.Height, input.Width * 9L, (start, end, band) => Median3x3Rows(input, output, region, start, end, band));
+
+    private static void Median3x3Rows(ImageBuffer input, ImageBuffer output, Rectangle region, int start, int end, OperationContext context)
     {
         int w = input.Width, h = input.Height;
         ReadOnlySpan<Rgba32> src = input.Pixels;
-        for (var y = 0; y < h; y++)
+        for (var y = start; y < end; y++)
         {
-            if ((y & 15) == 0) { context.ThrowIfCancellationRequested(); context.ReportProgress(y / (double)h); }
+            if (((y - start) & 15) == 0) { context.ThrowIfCancellationRequested(); context.ReportProgress(y / (double)h); }
             var above = src.Slice(Math.Max(y - 1, 0) * w, w);
             var row = src.Slice(y * w, w);
             var below = src.Slice(Math.Min(y + 1, h - 1) * w, w);
@@ -630,6 +633,10 @@ public sealed class MedianFilter : RegionOperation
     /// window is the same edge-repeating multiset the direct method sorts, so the result is identical.
     /// </summary>
     private static void MedianSliding(ImageBuffer input, ImageBuffer output, Rectangle region, int radius, OperationContext context)
+        => ParallelRows.For(context, 0, input.Height, input.Width * (2L * radius + 1) * 6, (start, end, band) => MedianSlidingRows(input, output, region, radius, start, end, band));
+
+    /// <summary>Every row builds its histograms afresh, so bands of rows are independent.</summary>
+    private static void MedianSlidingRows(ImageBuffer input, ImageBuffer output, Rectangle region, int radius, int start, int end, OperationContext context)
     {
         int w = input.Width, h = input.Height;
         var size = 2 * radius + 1;
@@ -641,9 +648,9 @@ public sealed class MedianFilter : RegionOperation
         {
             var hist = histograms.AsSpan(0, 3 * 256);
             ReadOnlySpan<Rgba32> src = input.Pixels;
-            for (var y = 0; y < h; y++)
+            for (var y = start; y < end; y++)
             {
-                if ((y & 15) == 0) { context.ThrowIfCancellationRequested(); context.ReportProgress(y / (double)h); }
+                if (((y - start) & 15) == 0) { context.ThrowIfCancellationRequested(); context.ReportProgress(y / (double)h); }
                 for (var i = 0; i < size; i++) rows[i] = Math.Clamp(y + i - radius, 0, h - 1) * w;
 
                 hist.Clear();
@@ -728,7 +735,8 @@ public sealed class ConvolutionFilter : RegionOperation
     {
         ArgumentNullException.ThrowIfNull(kernel);
         if (kernelWidth < 1 || kernelHeight < 1 || kernelWidth % 2 == 0 || kernelHeight % 2 == 0) throw new ArgumentException("Kernel dimensions must be odd and positive.");
-        if (kernel.Length != kernelWidth * kernelHeight) throw new ArgumentException("Kernel length does not match dimensions.", nameof(kernel));
+        // In long: two large dimensions would overflow int and pass for a short kernel.
+        if (kernel.Length != (long)kernelWidth * kernelHeight) throw new ArgumentException("Kernel length does not match dimensions.", nameof(kernel));
         if (divisor == 0) throw new ArgumentOutOfRangeException(nameof(divisor));
         _kernel = (float[])kernel.Clone();
         KernelWidth = kernelWidth; KernelHeight = kernelHeight; Divisor = divisor; Bias = bias;
@@ -757,30 +765,34 @@ public sealed class ConvolutionFilter : RegionOperation
         if (region.IsEmptyArea()) return output;
         using var input = source.CopyRegion(region, context.Allocator);
         int w = input.Width, h = input.Height, kw = KernelWidth, kh = KernelHeight, rx = kw / 2, ry = kh / 2;
-        var src = input.Pixels;
         var inv = 1f / Divisor;
         var bias = Bias * 255f;
-        for (var y = 0; y < h; y++)
+        // Every output pixel reads the copy of the input, never the output, so bands of rows run side by side.
+        ParallelRows.For(context, 0, h, (long)w * kw * kh, (start, end, band) =>
         {
-            if ((y & 15) == 0) { context.ThrowIfCancellationRequested(); context.ReportProgress(y / (double)h); }
-            var dst = output.GetRow(region.Y + y).Slice(region.X, w);
-            for (var x = 0; x < w; x++)
+            var src = input.Pixels;
+            for (var y = start; y < end; y++)
             {
-                float r = 0, g = 0, b = 0;
-                for (var ky = 0; ky < kh; ky++)
+                if (((y - start) & 15) == 0) { band.ThrowIfCancellationRequested(); band.ReportProgress(y / (double)h); }
+                var dst = output.GetRow(region.Y + y).Slice(region.X, w);
+                for (var x = 0; x < w; x++)
                 {
-                    var sy = Math.Clamp(y + ky - ry, 0, h - 1);
-                    for (var kx = 0; kx < kw; kx++)
+                    float r = 0, g = 0, b = 0;
+                    for (var ky = 0; ky < kh; ky++)
                     {
-                        var sx = Math.Clamp(x + kx - rx, 0, w - 1);
-                        var k = _kernel[ky * kw + kx];
-                        var p = src[sy * w + sx];
-                        r += p.R * k; g += p.G * k; b += p.B * k;
+                        var sy = Math.Clamp(y + ky - ry, 0, h - 1);
+                        for (var kx = 0; kx < kw; kx++)
+                        {
+                            var sx = Math.Clamp(x + kx - rx, 0, w - 1);
+                            var k = _kernel[ky * kw + kx];
+                            var p = src[sy * w + sx];
+                            r += p.R * k; g += p.G * k; b += p.B * k;
+                        }
                     }
+                    dst[x] = new Rgba32(Rgba32.ClampToByte(r * inv + bias), Rgba32.ClampToByte(g * inv + bias), Rgba32.ClampToByte(b * inv + bias), src[y * w + x].A);
                 }
-                dst[x] = new Rgba32(Rgba32.ClampToByte(r * inv + bias), Rgba32.ClampToByte(g * inv + bias), Rgba32.ClampToByte(b * inv + bias), src[y * w + x].A);
             }
-        }
+        });
         context.ReportProgress(1);
         return output;
     }
@@ -820,22 +832,27 @@ public sealed class VignetteFilter : ImageOperation
         var end = Radius * halfDiag;
         var invRange = 1f / MathF.Max(1e-3f, end - start);
         var cr = Color.R; var cg = Color.G; var cb = Color.B;
-        for (var y = 0; y < h; y++)
+        var amount = Amount;
+        // Each pixel depends on its own position and value alone.
+        ParallelRows.For(context, 0, h, w, (first, last, band) =>
         {
-            if ((y & 31) == 0) context.ThrowIfCancellationRequested();
-            var row = target.GetRow(y);
-            var dy = y + 0.5f - cy;
-            for (var x = 0; x < w; x++)
+            for (var y = first; y < last; y++)
             {
-                var dx = x + 0.5f - cx;
-                var d = MathF.Sqrt(dx * dx + dy * dy);
-                var t = Math.Clamp((d - start) * invRange, 0f, 1f);
-                t = t * t * (3f - 2f * t) * Amount;
-                if (t <= 0f) continue;
-                var p = row[x];
-                row[x] = new Rgba32((byte)(p.R + (cr - p.R) * t), (byte)(p.G + (cg - p.G) * t), (byte)(p.B + (cb - p.B) * t), p.A);
+                if (((y - first) & 31) == 0) band.ThrowIfCancellationRequested();
+                var row = target.GetRow(y);
+                var dy = y + 0.5f - cy;
+                for (var x = 0; x < w; x++)
+                {
+                    var dx = x + 0.5f - cx;
+                    var d = MathF.Sqrt(dx * dx + dy * dy);
+                    var t = Math.Clamp((d - start) * invRange, 0f, 1f);
+                    t = t * t * (3f - 2f * t) * amount;
+                    if (t <= 0f) continue;
+                    var p = row[x];
+                    row[x] = new Rgba32((byte)(p.R + (cr - p.R) * t), (byte)(p.G + (cg - p.G) * t), (byte)(p.B + (cb - p.B) * t), p.A);
+                }
             }
-        }
+        });
         return target;
     }
 }

@@ -1,0 +1,407 @@
+﻿@page "/extending"
+@using System.Numerics
+
+<PageTitle>Extending Bink · Bink</PageTitle>
+
+<div class="bb-intro">
+    <h1>Extending Bink</h1>
+    <p class="bb-subtitle">
+        Six extension points cover what applications actually need to change, and none of them touches the engine. This
+        page uses three of them live: a brush of its own, an element type of its own, and a render target of its own. Draw
+        with the dashed pen, add sticky notes and vote on them, then save and reload - with the extensions, and as an
+        application that has never heard of them.
+    </p>
+</div>
+
+<div class="bb-demo bink-editor bb-page-wide">
+    <div class="bb-toolbar bink-toolbar" role="toolbar" aria-label="Extensions">
+        <div class="bb-segmented" role="group" aria-label="Tool">
+            @foreach ((string id, string label, string title) in Tools)
+            {
+                <button type="button" title="@title" aria-pressed="@(_toolId == id ? "true" : "false")"
+                        @onclick="() => SelectTool(id)">@label</button>
+            }
+        </div>
+        @if (_toolId == "dashed")
+        {
+            <label class="bink-field" title="DashLength, a setting of the brush's own, saved with every stroke">
+                Dash
+                <input type="range" min="4" max="40" step="1" value="@_dashLength" aria-label="Dash length" @onchange="OnDashChanged" />
+                <span class="bink-field-value">@_dashLength.ToString("0")</span>
+            </label>
+        }
+        <span class="bink-sep" aria-hidden="true"></span>
+        <button type="button" class="btn btn-secondary" @onclick="AddNote">Add a sticky note</button>
+        <button type="button" class="btn btn-secondary" disabled="@(SelectedNote is null)" title="Add a vote to the selected sticky note" @onclick="Vote">Vote</button>
+        <span class="bb-spacer"></span>
+        <div class="bink-group" role="group" aria-label="History">
+            <button type="button" class="btn btn-secondary" disabled="@(_canvas is not { History.CanUndo: true })" @onclick="() => _canvas?.Undo()">Undo</button>
+            <button type="button" class="btn btn-secondary" disabled="@(_canvas is not { History.CanRedo: true })" @onclick="() => _canvas?.Redo()">Redo</button>
+            <button type="button" class="btn btn-secondary bink-danger" disabled="@_document.IsEmpty" @onclick="() => _canvas?.Clear()">Clear</button>
+        </div>
+    </div>
+
+    <div class="bb-toolbar bink-toolbar" role="toolbar" aria-label="Save, read and render">
+        <button type="button" class="btn btn-primary" title="Save with this page's registries and read it back with them" @onclick="SaveAndReload">Save and reload</button>
+        <button type="button" class="btn btn-secondary" title="Read what was saved with the default registries, which know neither the brush nor the note" @onclick="ReloadWithoutExtensions">Reload without the extensions</button>
+        <button type="button" class="btn btn-secondary" disabled="@_document.IsEmpty" title="Render the drawing into a render target that counts what it is asked to do" @onclick="CountDrawCalls">Count draw calls</button>
+        @if (_message is not null)
+        {
+            <span class="bink-hint" role="status">@_message</span>
+        }
+    </div>
+
+    <div class="bink-surface">
+        <BinkCanvas @ref="_canvas"
+                   ViewportChanged="_status?.ViewportChanged ?? default"
+                   Document="_document"
+                   Height="420px"
+                   Tool="_tool"
+                   Brush="_brush"
+                   EnableTouchGestures="true"
+                   AriaLabel="Retrospective board"
+                   Ready="OnReady"
+                   DocumentChanged="() => StateHasChanged()"
+                   SelectionChanged="() => StateHasChanged()"
+                   HistoryChanged="() => StateHasChanged()" />
+    </div>
+
+    <CanvasStatus @ref="_status" Canvas="_canvas">
+        <span><strong>@NoteCount</strong> sticky notes</span>
+        <span><strong>@DashedCount</strong> dashed strokes</span>
+        @if (UnknownCount > 0)
+        {
+            <span><strong>@UnknownCount</strong> elements kept but not understood</span>
+        }
+    </CanvasStatus>
+</div>
+
+@if (_counter is not null)
+{
+    <div class="bb-card">
+        <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> What the renderer asked for</h3>
+        <p class="bb-card-desc">
+            The whole drawing, rendered into <code>DrawCallCounter</code> (<code>Extending/DrawCallCounter.cs</code>) by
+            <code>BinkDocumentRenderer.Render</code> - the same walk the screen and PNG export take.
+        </p>
+        <dl class="bb-params">
+            <dt>Paths filled</dt><dd>@_counter.Fills</dd>
+            <dt>Paths stroked</dt><dd>@_counter.Strokes</dd>
+            <dt>Path segments</dt><dd>@_counter.Segments.ToString("N0")</dd>
+            <dt>Text drawn</dt><dd>@_counter.Texts</dd>
+            <dt>Pictures drawn</dt><dd>@_counter.Images</dd>
+            <dt>Isolated groups</dt><dd>@_counter.Groups</dd>
+            <dt>Transforms</dt><dd>@_counter.Transforms</dd>
+        </dl>
+    </div>
+}
+
+@if (_saved is not null)
+{
+    <div class="bb-card">
+        <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> What was saved</h3>
+        <p class="bb-card-desc">
+            Look for <code>"kind": "@DashedBrush.KindName"</code> with its <code>params</code>, and
+            <code>"type": "@StickyNoteConverter.Name"</code> with its text, votes and <code>bounds</code>. The stroke points
+            are the compact binary encoding.
+        </p>
+        <pre class="bb-code bink-output">@_saved</pre>
+    </div>
+}
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> A brush of your own</h3>
+    <p class="bb-card-desc">
+        Derive from <code>BinkBrush</code>, give it a unique <code>Kind</code>, and build the stroke's geometry from its
+        points: a filled outline, or a centerline stroked at the brush's width as here. Colour, width, opacity, blend
+        mode, smoothing, spacing, taper and pressure curve are the base record's and are saved for it; settings of its
+        own are saved once it names them in <code>GetParameters</code>, and come back through
+        <code>WithParameters</code>, which clamps them because a file or a collaborator can say anything.
+        <code>BinkCalligraphyBrush</code> is built exactly this way.
+    </p>
+    <pre class="bb-code"><span class="k">public sealed record</span> DashedBrush : BinkBrush
+{
+    <span class="k">public override string</span> Kind =&gt; <span class="s">"demo-dashed"</span>;
+    <span class="k">public float</span> DashLength { <span class="k">get</span>; <span class="k">init</span>; } = 12f;
+
+    <span class="k">public override</span> BinkStrokeGeometry BuildGeometry(BinkStrokePointsView points, BinkPathBuilder builder)
+    {
+        <span class="c">// walk points.PositionAt(i), MoveTo at the start of each dash and LineTo along it</span>
+        <span class="k">return new</span> BinkStrokeGeometry(builder.ToGeometry(), BinkStrokeGeometryMode.Centerline, Width,
+            BinkLineCap.Round, BinkLineJoin.Round, points.Bounds.Inflate(Width));
+    }
+
+    <span class="k">public override</span> IReadOnlyDictionary&lt;<span class="k">string</span>, <span class="k">float</span>&gt; GetParameters() =&gt; <span class="k">new</span> Dictionary&lt;<span class="k">string</span>, <span class="k">float</span>&gt; { [<span class="s">"dashLength"</span>] = DashLength };
+    <span class="k">public override</span> BinkBrush WithParameters(IReadOnlyDictionary&lt;<span class="k">string</span>, <span class="k">float</span>&gt; p)
+        =&gt; <span class="k">this with</span> { DashLength = p.TryGetValue(<span class="s">"dashLength"</span>, <span class="k">out float</span> d) ? Math.Clamp(d, 2f, 80f) : DashLength };
+}
+
+BinkBrushRegistry.Default.Register&lt;DashedBrush&gt;();   <span class="c">// so documents that use it load back as this brush</span></pre>
+    <p class="bb-card-desc">
+        The points view gives positions, pressure and time; tilt and twist are on the stroke's <code>Points</code>, for a
+        brush that follows the pen's angle. Geometry is built once per stroke and brush and cached, so it costs nothing on
+        later frames.
+    </p>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> An element type of your own</h3>
+    <p class="bb-card-desc">
+        <code>BinkElement</code> is an abstract record. A sticky note supplies its bounds, how it draws and how it is hit,
+        in its own coordinates, and from then on it moves, resizes, rotates, groups, locks, duplicates and undoes like any
+        built-in element - try it with Select. To save it, paste it and send it to collaborators, register a converter:
+        the serializer writes the type and every shared field (id, version, transform, description, metadata, lock,
+        groups) and the bounds itself, and the converter only the note's own fields. Whatever it reads is untrusted, so it
+        checks every value and throws <code>FormatException</code>, which is reported as a malformed document.
+    </p>
+    <pre class="bb-code"><span class="k">public sealed record</span> StickyNote(BinkRect Rect, <span class="k">string</span> Text) : BinkElement
+{
+    <span class="k">public override</span> BinkRect LocalBounds =&gt; Rect;
+    <span class="k">public override string</span> TypeName =&gt; <span class="s">"Sticky note"</span>;
+    <span class="k">protected override void</span> DrawCore(IBinkRenderContext context) { <span class="c">/* FillPath, StrokePath, DrawText */</span> }
+    <span class="k">protected override bool</span> HitTestCore(Vector2 point, <span class="k">float</span> tolerance) =&gt; Rect.Inflate(tolerance).Contains(point);
+}
+
+<span class="k">public sealed class</span> StickyNoteConverter : BinkElementConverter&lt;StickyNote&gt;
+{
+    <span class="k">public override string</span> TypeName =&gt; <span class="s">"demo-sticky-note"</span>;
+    <span class="k">public override void</span> Write(Utf8JsonWriter writer, StickyNote note, BinkSerializerOptions options) { <span class="c">/* rect, text, votes */</span> }
+    <span class="k">public override</span> StickyNote Read(JsonElement json, BinkDeserializerOptions options) { <span class="c">/* validate, bound, build */</span> }
+}
+
+BinkElementRegistry.Default.Register(<span class="k">new</span> StickyNoteConverter());</pre>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Read by an application that does not know them</h3>
+    <p class="bb-card-desc">
+        <strong>Reload without the extensions</strong> reads the drawing the way another application, or an older build,
+        would: with registries that have never heard of the brush or the note. The dashed strokes draw as plain pens in
+        their own colour and width, and keep their kind and their <code>dashLength</code>; each note becomes a
+        <code>BinkUnknownElement</code>, not drawn and not selectable, but kept in its place and written back exactly as it
+        was read. <strong>Save and reload</strong> then brings everything back unchanged, because nothing was lost on the way
+        through.
+    </p>
+    <pre class="bb-code"><span class="k">var</span> write = <span class="k">new</span> BinkSerializerOptions { BrushRegistry = _brushes, ElementRegistry = _elements };
+<span class="k">var</span> read = <span class="k">new</span> BinkDeserializerOptions { BrushRegistry = _brushes, ElementRegistry = _elements };
+<span class="k">string</span> json = BinkSerializer.Serialize(document, write);
+
+BinkDocument elsewhere = BinkSerializer.Deserialize(json);   <span class="c">// the default registries: neither extension</span></pre>
+    <p class="bb-card-desc">
+        Most applications register once, in <code>BinkBrushRegistry.Default</code> and <code>BinkElementRegistry.Default</code>,
+        which the canvas's clipboard and collaboration use too. This page keeps its extensions in registries of its own and
+        passes them through the options instead - the way an application that keeps several sets apart does - so the
+        site's other pages, and the MCP server it hosts, never see them. A custom element with no converter at all cannot
+        be saved, deliberately: nothing could read it back.
+    </p>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-danger"></span> A render target of your own</h3>
+    <p class="bb-card-desc">
+        <code>IBinkRenderContext</code> is the only surface the engine knows: fill a path, stroke a path, draw an image,
+        draw text, transform, clip and isolate a group. The browser canvas, SVG export and the built-in rasterizer each
+        implement it, which is why an export always matches the screen; a PDF writer or a printer would be a fourth.
+        <strong>Count draw calls</strong> renders the drawing into the smallest one possible, which counts. Two rules matter
+        for a real one: <code>PushGroup</code> must genuinely isolate, because content inside it may erase, and fills must
+        honour <code>BinkFillRule.NonZero</code>, which keeps a self-overlapping stroke solid.
+    </p>
+    <pre class="bb-code"><span class="k">var</span> counter = <span class="k">new</span> DrawCallCounter();
+BinkDocumentRenderer.Render(_document, counter);
+
+<span class="c">// Server-side PNG export has no font engine of its own; give it one to draw text:</span>
+<span class="k">var</span> png = BinkPngExporter.Export(document, <span class="k">new</span> BinkPngExportOptions { TextRasterizer = <span class="k">new</span> SkiaTextRasterizer() });</pre>
+    <p class="bb-card-desc">
+        <code>IBinkTextRasterizer</code> is the related extension point: two methods, draw a string into a surface and
+        measure one, which is all <code>BinkPngExporter</code> needs to render text on a server.
+    </p>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Tools, transports, and what stays closed</h3>
+    <p class="bb-card-desc">
+        The other two extension points have pages of their own. A <strong>custom tool</strong> implements
+        <code>IBinkTool</code>, or derives from <code>BinkToolBase</code>: the diagram surface builds its node and connector
+        tools that way, with their own overlay previews and snapping. A <strong>collaboration transport</strong> implements
+        <code>IBinkCollaborationTransport</code> over SignalR, WebSockets or anything else; the collaboration page runs on an
+        in-memory one.
+    </p>
+    <div class="bb-try">
+        <a href="diagram" class="btn btn-outline">Custom tools →</a>
+        <a href="collaboration" class="btn btn-outline">A transport →</a>
+    </div>
+    <p class="bb-card-desc">
+        What stays closed is the operation set. <code>BinkDrawingOperation</code> cannot be subclassed from outside the
+        library, because undo, saving and synchronization all depend on knowing every operation's inverse and wire format.
+        Everything above composes the existing operations - adding, replacing, removing - so it is undoable and
+        synchronizable with no extra work.
+    </p>
+</div>
+
+@code {
+    private BinkCanvas? _canvas;
+    private CanvasStatus? _status;
+    private BinkDocument _document = CreateDocument();
+    private string _toolId = "dashed";
+    private IBinkTool _tool = new BinkDrawTool();
+    private float _dashLength = 12f;
+    private BinkBrush _brush = new DashedBrush { Color = BinkColor.Parse("#7c3aed"), Width = 3f };
+    private string? _saved;
+    private string? _message;
+    private DrawCallCounter? _counter;
+    private int _notesAdded;
+
+    // This page's own registries: the built-in brushes and the dashed one, and the sticky note's converter. Passed
+    // through the serializer options, they leave the shared defaults - and every other page - untouched.
+    private static readonly BinkBrushRegistry Brushes = CreateBrushRegistry();
+    private static readonly BinkElementRegistry Elements = CreateElementRegistry();
+
+    private static readonly BinkSerializerOptions WriteOptions = new() { Indented = true, BrushRegistry = Brushes, ElementRegistry = Elements };
+    private static readonly BinkDeserializerOptions ReadOptions = new() { BrushRegistry = Brushes, ElementRegistry = Elements };
+
+    private static readonly (string Id, string Label, string Title)[] Tools =
+    [
+        ("dashed", "Dashed pen", "A brush of this page's own"),
+        ("pen", "Pen", "The built-in pen, for comparison"),
+        ("select", "Select", "Move, resize and rotate notes and strokes alike"),
+    ];
+
+    private static readonly string[] NoteTexts = ["Ship the beta", "Fix the\nlogin bug", "Write the\nrelease notes", "Try it on\na phone", "Keep the\nretro short"];
+
+    private static BinkBrushRegistry CreateBrushRegistry()
+    {
+        var registry = new BinkBrushRegistry();
+        foreach (string kind in BinkBrushRegistry.Default.Kinds)
+        {
+            registry.Register(kind, () => BinkBrushRegistry.Default.TryCreate(kind, out BinkBrush? brush) && brush is not null ? brush : new BinkPenBrush());
+        }
+        registry.Register<DashedBrush>();
+        return registry;
+    }
+
+    private static BinkElementRegistry CreateElementRegistry()
+    {
+        var registry = new BinkElementRegistry();
+        registry.Register(new StickyNoteConverter());
+        return registry;
+    }
+
+    private static BinkDocument CreateDocument()
+    {
+        var document = new BinkDocument(new BinkDocumentSettings { Width = 900, Height = 420, Background = BinkColor.White });
+        document.AddElement(new StickyNote(new BinkRect(60, 60, 190, 110), "Drag me with\nSelect") { Votes = 2 });
+
+        // A dashed scribble, so the brush is on the board from the start.
+        var points = new List<Vector2>();
+        for (int i = 0; i <= 40; i++) points.Add(new Vector2(320 + i * 11, 210 + MathF.Sin(i / 4f) * 50));
+        document.AddElement(new BinkStroke(BinkStrokePoints.FromPositions(points.ToArray()), new DashedBrush { Color = BinkColor.Parse("#7c3aed"), Width = 3f }));
+        return document;
+    }
+
+    private int NoteCount => _document.AllElements.Count(e => e is StickyNote);
+
+    private int DashedCount => _document.AllElements.Count(e => e is BinkStroke { Brush.Kind: DashedBrush.KindName });
+
+    private int UnknownCount => _document.AllElements.Count(e => e is BinkUnknownElement);
+
+    private StickyNote? SelectedNote
+        => _canvas is { Selection.Count: 1 } canvas && canvas.Selection.Elements.FirstOrDefault() is StickyNote note ? note : null;
+
+    private void OnReady()
+    {
+        // On a phone the board is wider than the view: show all of it. A pinch, or Ctrl+0, still gives 100%.
+        if (_canvas is null) return;
+        BinkRect content = _document.ContentBounds;
+        if (content.Right > _canvas.ViewSize.X || content.Bottom > _canvas.ViewSize.Y)
+        {
+            _canvas.SetViewport(BinkViewport.Fit(content, _canvas.ViewSize, 8f, maxZoom: 1f));
+        }
+    }
+
+    private void SelectTool(string id)
+    {
+        _toolId = id;
+        switch (id)
+        {
+            case "dashed":
+                _brush = new DashedBrush { Color = BinkColor.Parse("#7c3aed"), Width = 3f, DashLength = _dashLength };
+                _tool = new BinkDrawTool();
+                break;
+            case "pen":
+                _brush = new BinkPenBrush { Color = BinkColor.Parse("#111827"), Width = 4f };
+                _tool = new BinkDrawTool();
+                break;
+            default:
+                _tool = new BinkSelectTool();
+                break;
+        }
+    }
+
+    private void OnDashChanged(ChangeEventArgs e)
+    {
+        if (float.TryParse(e.Value?.ToString(), System.Globalization.CultureInfo.InvariantCulture, out float value))
+        {
+            _dashLength = value;
+            SelectTool("dashed");
+        }
+    }
+
+    private void AddNote()
+    {
+        int n = _notesAdded++;
+        var note = new StickyNote(new BinkRect(60 + n % 4 * 210, 230 - n % 2 * 20, 180, 110), NoteTexts[n % NoteTexts.Length]);
+        _document.AddElement(note);
+        // Selected, with the select tool, so it can be dragged straight away.
+        SelectTool("select");
+        _canvas?.Selection.Set(note.Id);
+        _message = "Added a sticky note: an element type the library knows nothing about.";
+    }
+
+    private void Vote()
+    {
+        if (SelectedNote is not { } note) return;
+        // An ordinary replacement: one undo step, and what a collaborator would receive.
+        int votes = note.Votes + 1;
+        _document.ReplaceElement(note with { Votes = votes });
+        _message = $"\"{note.Text.Replace('\n', ' ')}\" has {votes} {(votes == 1 ? "vote" : "votes")}.";
+    }
+
+    private void SaveAndReload()
+    {
+        string json = BinkSerializer.Serialize(_document, WriteOptions);
+        if (!BinkSerializer.TryDeserialize(json, out BinkDocument? loaded, out string? error, ReadOptions) || loaded is null)
+        {
+            _message = "It could not be read back: " + error;
+            return;
+        }
+        _saved = json;
+        _document = loaded;
+        _counter = null;
+        _message = $"Saved {json.Length / 1024.0:0.#} KB and read it back: {NoteCount} sticky notes and {DashedCount} dashed strokes, exactly as they were.";
+    }
+
+    private void ReloadWithoutExtensions()
+    {
+        // Written with this page's registries, then read with the defaults, which know neither extension.
+        string json = BinkSerializer.Serialize(_document, WriteOptions);
+        if (!BinkSerializer.TryDeserialize(json, out BinkDocument? loaded, out string? error) || loaded is null)
+        {
+            _message = "It could not be read: " + error;
+            return;
+        }
+        _saved = json;
+        _document = loaded;
+        _counter = null;
+        int unknown = loaded.AllElements.Count(e => e is BinkUnknownElement);
+        int plain = loaded.AllElements.Count(e => e is BinkStroke { Brush: not DashedBrush, Brush.Kind: DashedBrush.KindName });
+        _message = $"Read without the extensions: {unknown} notes kept in place but not drawn, {plain} dashed strokes drawn as plain pens. Save and reload brings them back.";
+    }
+
+    private void CountDrawCalls()
+    {
+        var counter = new DrawCallCounter();
+        BinkDocumentRenderer.Render(_document, counter);
+        _counter = counter;
+        _message = null;
+    }
+}

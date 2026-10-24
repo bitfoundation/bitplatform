@@ -52,11 +52,14 @@ public static partial class BlexSetupGuide
             "standalone-wasm" => FromFiles(
                 "standalone Blazor WebAssembly",
                 """
-                One project, one DI container, no prerendering. Register Blex in `Program.cs` and wrap the router in
-                `<BlexProvider>` in `App.razor`. This is the minimal sample in the repository, complete.
+                One project, one DI container, no prerendering. Register Blex in `Program.cs` - here through the
+                extension method every sample host shares - and wrap the router in `<BlexProvider>` in the root
+                component (`Routes.razor`). This is the standalone sample in the repository; its stores and pages live
+                in the `Core` library the Server, WebAssembly, Auto and MAUI samples host too.
                 """,
-                ["Sample/Bit.Blex.Samples.Wasm.csproj", "Sample/Program.cs", "Sample/App.razor", "Sample/_Imports.razor",
-                 "Sample/Stores/CounterStore.cs", "Sample/Pages/Counter.razor"]),
+                ["Sample/Standalone/Bit.Blex.Samples.Standalone.csproj", "Sample/Standalone/Program.cs",
+                 "Sample/Core/Extensions/IServiceCollectionExtensions.cs", "Sample/Core/Routes.razor",
+                 "Sample/Core/Stores/CounterStore.cs", "Sample/Core/Pages/Counter.razor"]),
             "maui-hybrid" => FromGuide(
                 ".NET MAUI Blazor Hybrid",
                 """

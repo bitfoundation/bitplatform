@@ -236,11 +236,14 @@ public static class DiagnosticsCatalog
                 => Value = int.TryParse(text, out var value) ? value : 0;
             """),
 
-        new("BLEX014", "Generic action/effect methods are not supported", true,
-            "The generated wrapper cannot carry type parameters.",
+        new("BLEX014", "Generic action/effect/computed methods are not supported", true,
+            "The generated member cannot carry type parameters: an action or effect becomes a wrapper method with a typed descriptor, and a computed becomes a property - which cannot be generic at all.",
             """
             [BlexAction]
             private void OnSet<T>(T value) { }        // BLEX014
+
+            [BlexComputed]
+            private T ComputeFirst<T>() => default!;  // BLEX014
             """,
             """
             [BlexAction]
@@ -248,6 +251,9 @@ public static class DiagnosticsCatalog
 
             [BlexAction]
             private void OnSetCount(int value) => Count = value;
+
+            [BlexComputed]
+            private string ComputeInitial() => Name[..1];
             """),
 
         new("BLEX015", "Store must be a plain class", true,
@@ -346,6 +352,75 @@ public static class DiagnosticsCatalog
             // 0 (the default) means "no debouncing":
             [BlexEffect]
             private async Task OnSearch(string query) { }
+            """),
+
+        new("BLEX020", "Typed action descriptors are not generated", false,
+            "The generator puts a typed descriptor for every action and effect into a nested <code>Actions</code> class (<code>CartStore.Actions.Add</code>), which subscribers, filters and tests match instead of a string. A store that already has a member called <code>Actions</code> - a property, a method, a nested type, or state whose generated property is <code>Actions</code> - keeps compiling exactly as before, but goes without the typed descriptors. Its actions can still be dispatched by name. Rename the member to get them.",
+            """
+            [BlexStore]
+            public partial class AuditStore                // BLEX020
+            {
+                [BlexState] private string[] _actions = [];  // generates "Actions"
+
+                [BlexAction] private void OnLog(string entry) => Actions = [.. Actions, entry];
+            }
+            """,
+            """
+            [BlexStore]
+            public partial class AuditStore
+            {
+                [BlexState] private string[] _entries = [];
+
+                [BlexAction] private void OnLog(string entry) => Entries = [.. Entries, entry];
+            }
+
+            // AuditStore.Actions.Log is now a BlexAction<AuditStore, string>.
+            """),
+
+        new("BLEX021", "Action name is used more than once", true,
+            "An action's name - its <code>Name</code>, or the wrapper name derived from the method - is what identifies it everywhere outside C#: <code>SubscribeToAction</code>, a descriptor's <code>Matches</code>, DevTools, <code>DispatchAsync</code> and a replayed log. Two actions dispatched under one name cannot be told apart there: dispatching by that name always runs the first, and a subscription to either fires for both. Wrapper names are checked by <code>BLEX005</code>, but a display label is free text, and a direct assignment to a state property <code>X</code> is dispatched as <code>Set X</code> (except in a store that sets <code>EnforceActions</code>, which records none).",
+            """
+            [BlexAction(Name = "Save it")]
+            private void OnSaveDraft() { }
+
+            [BlexAction(Name = "Save it")]                // BLEX021
+            private void OnSaveFinal(int version) { }
+
+            // With [BlexState] private int _count, a direct assignment is "Set Count" already:
+            [BlexAction(Name = "Set Count")]              // BLEX021
+            private void OnChangeCount(int value) => Count = value;
+            """,
+            """
+            [BlexAction(Name = "Save draft")]
+            private void OnSaveDraft() { }
+
+            [BlexAction(Name = "Save final")]
+            private void OnSaveFinal(int version) { }
+
+            [BlexAction(Name = "Change count")]
+            private void OnChangeCount(int value) => Count = value;
+            """),
+
+        new("BLEX022", "Effect retry and timeout values cannot be negative", true,
+            "<code>RetryCount</code>, <code>RetryDelayMilliseconds</code> and <code>TimeoutMilliseconds</code> are counts and durations. A negative one would only fail at runtime, deep inside the generated wrapper; <code>0</code> is how to turn retries, the backoff or the timeout off.",
+            """
+            [BlexEffect(RetryCount = -1)]                 // BLEX022
+            private async Task OnLoad(CancellationToken ct) => Orders = await _api.GetOrdersAsync(ct);
+            """,
+            """
+            [BlexEffect(RetryCount = 3, RetryDelayMilliseconds = 500)]
+            private async Task OnLoad(CancellationToken ct) => Orders = await _api.GetOrdersAsync(ct);
+            """),
+
+        new("BLEX023", "Effect timeout needs a CancellationToken", true,
+            "A timeout stops an attempt by cancelling the token the attempt was handed. An effect without a trailing <code>CancellationToken</code> parameter has nothing to cancel: the timed-out attempt would carry on and change state after its run had already failed. Add the parameter and pass it to the work the effect awaits.",
+            """
+            [BlexEffect(TimeoutMilliseconds = 5000)]      // BLEX023
+            private async Task OnLoad() => Orders = await _api.GetOrdersAsync();
+            """,
+            """
+            [BlexEffect(TimeoutMilliseconds = 5000)]
+            private async Task OnLoad(CancellationToken ct) => Orders = await _api.GetOrdersAsync(ct);
             """),
     ];
 

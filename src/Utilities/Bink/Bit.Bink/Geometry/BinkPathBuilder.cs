@@ -230,6 +230,29 @@ public sealed class BinkPathBuilder
         return this;
     }
 
+    /// <summary>
+    /// Adds a closed, smooth curve through the given points (Catmull-Rom converted to cubic Béziers), which, unlike
+    /// <see cref="AddSmoothPolygon"/>, passes through every vertex.
+    /// </summary>
+    /// <param name="points">Points to pass through, in order; the curve returns to the first.</param>
+    /// <param name="tension">0 = standard Catmull-Rom (smooth), 1 = straight segments.</param>
+    public BinkPathBuilder AddClosedCatmullRom(ReadOnlySpan<Vector2> points, float tension = 0f)
+    {
+        int n = points.Length;
+        if (n < 3) return AddPolygon(points);
+        float s = (1f - Math.Clamp(tension, 0f, 1f)) / 6f;
+        MoveTo(points[0]);
+        for (int i = 0; i < n; i++)
+        {
+            Vector2 p0 = points[(i + n - 1) % n];
+            Vector2 p1 = points[i];
+            Vector2 p2 = points[(i + 1) % n];
+            Vector2 p3 = points[(i + 2) % n];
+            CubicTo(p1 + (p2 - p0) * s, p2 - (p3 - p1) * s, p2);
+        }
+        return Close();
+    }
+
     /// <summary>Appends another path.</summary>
     public BinkPathBuilder AddPath(BinkPathGeometry path)
     {

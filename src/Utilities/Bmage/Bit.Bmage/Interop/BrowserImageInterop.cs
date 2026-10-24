@@ -25,11 +25,20 @@ public sealed class BrowserImageInterop : IAsyncDisposable
         DynamicallyAccessedMemberTypes.PublicProperties;
 
     private readonly IJSRuntime _jsRuntime;
+    private readonly BitBmageOptions? _options;
     private readonly SemaphoreSlim _moduleLock = new(1, 1);
     private IJSObjectReference? _module;
     private bool _disposed;
 
-    public BrowserImageInterop(IJSRuntime jsRuntime) => _jsRuntime = jsRuntime ?? throw new ArgumentNullException(nameof(jsRuntime));
+    public BrowserImageInterop(IJSRuntime jsRuntime) : this(jsRuntime, null) { }
+
+    /// <param name="jsRuntime">The runtime the module is loaded through.</param>
+    /// <param name="options">Settings the module is configured with once loaded, such as <see cref="BitBmageOptions.MaxCodecWorkers"/>.</param>
+    public BrowserImageInterop(IJSRuntime jsRuntime, BitBmageOptions? options)
+    {
+        _jsRuntime = jsRuntime ?? throw new ArgumentNullException(nameof(jsRuntime));
+        _options = options;
+    }
 
     /// <summary>
     /// Maximum number of bytes accepted from a single JavaScript stream. Guards against a hostile or buggy page
@@ -59,8 +68,27 @@ public sealed class BrowserImageInterop : IAsyncDisposable
                 {
                     // Disposal ran while the import was in flight. Release what we just imported rather than
                     // storing it, or the reference would outlive the object that owns it.
-                    await module.DisposeAsync().ConfigureAwait(false);
+                    await DisposeModuleQuietlyAsync(module).ConfigureAwait(false);
                     throw new ObjectDisposedException(nameof(BrowserImageInterop));
+                }
+                // Configured before anyone else can use it, so no codec work starts under the defaults first.
+                if (_options?.MaxCodecWorkers is { } workers)
+                {
+                    try
+                    {
+                        await module.InvokeVoidAsync("configureWorkers", cancellationToken, workers).ConfigureAwait(false);
+                    }
+                    catch (JSException)
+                    {
+                        // A module older than this package, still served from a browser or service worker cache, has no
+                        // configureWorkers. Its codecs work all the same, under their own defaults.
+                    }
+                    catch
+                    {
+                        // Cancelled, or the circuit went away: nothing holds the module, so release it before giving up.
+                        await DisposeModuleQuietlyAsync(module).ConfigureAwait(false);
+                        throw;
+                    }
                 }
                 _module = module;
                 return module;
@@ -191,6 +219,17 @@ public sealed class BrowserImageInterop : IAsyncDisposable
             catch (ObjectDisposedException) { /* runtime shutting down */ }
         }
         _moduleLock.Dispose();
+    }
+
+    private static async ValueTask DisposeModuleQuietlyAsync(IJSObjectReference module)
+    {
+        try
+        {
+            await module.DisposeAsync().ConfigureAwait(false);
+        }
+        catch (JSDisconnectedException) { /* circuit already closed */ }
+        catch (JSException) { /* page navigating away */ }
+        catch (ObjectDisposedException) { /* runtime shutting down */ }
     }
 }
 

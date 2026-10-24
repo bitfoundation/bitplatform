@@ -12,7 +12,6 @@
         <PackageReference Include="Microsoft.Extensions.Localization" />
         <PackageReference Include="Microsoft.Extensions.Configuration.Json" />
         <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" />
-        <PackageReference Include="Microsoft.Extensions.Options.DataAnnotations" />
         <PackageReference Include="Riok.Mapperly" PrivateAssets="all" ExcludeAssets="runtime">
           <IncludeAssets>compile; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>

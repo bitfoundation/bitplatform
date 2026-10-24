@@ -63,7 +63,7 @@ Console.WriteLine(encoded.Format);   // whichever one this browser can actually 
 ```csharp
 var c = await capabilityProvider.GetAsync();
 
-c.Environment                  // BrowserWebAssembly, BrowserServer, Server or Prerendering
+c.Environment                  // BrowserWebAssembly, BrowserServer (Interactive Server, Blazor Hybrid), Server or Prerendering
 c.DecodableFormats             // probed with real 1x1 images
 c.EncodableFormats             // probed by really encoding
 c.SupportsOffscreenCanvas

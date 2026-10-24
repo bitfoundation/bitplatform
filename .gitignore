@@ -32,9 +32,15 @@ bld/
 [Tt]est[Rr]esult*/
 [Bb]uild[Ll]og.*
 
+# BenchmarkDotNet results: the Markdown, CSV and HTML reports and logs of every run
+BenchmarkDotNet.Artifacts/
+
 # NUNIT
 *.VisualState.xml
 TestResult.xml
+
+# BenchmarkDotNet results, written wherever a benchmark is run from
+BenchmarkDotNet.Artifacts/
 
 # Build Results of an ATL Project
 [Dd]ebugPS/

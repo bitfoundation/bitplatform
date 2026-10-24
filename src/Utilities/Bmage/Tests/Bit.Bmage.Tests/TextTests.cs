@@ -257,6 +257,31 @@ public sealed class FontTextRasterizerTests
     }
 
     [TestMethod]
+    public void TheFallbackKeepsTheWeightAndStyleItIsAskedFor()
+    {
+        // The default family is "sans-serif", so with fonts registered under their own name every style of the editor
+        // lands on the fallback: a bold step number must still get the bold face.
+        static FontFile LoadFont() => FontFile.Load(File.ReadAllBytes("Assets/BmageTest.ttf"));
+        var regular = LoadFont();
+        var bold = LoadFont();
+        var italic = LoadFont();
+        var rasterizer = new FontTextRasterizer()
+            .Register("Body", regular)
+            .Register("Body", bold, bold: true)
+            .Register("Body", italic, italic: true);
+
+        Assert.AreSame(regular, rasterizer.ResolveFont(Style() with { FontFamily = "sans-serif" }));
+        Assert.AreSame(bold, rasterizer.ResolveFont(Style() with { FontFamily = "sans-serif", Bold = true }));
+        Assert.AreSame(italic, rasterizer.ResolveFont(Style() with { FontFamily = "sans-serif", Italic = true }));
+
+        // A fallback chosen explicitly is one font, whatever the style asks for.
+        var chosen = LoadFont();
+        rasterizer.SetFallback(chosen);
+        Assert.AreSame(chosen, rasterizer.ResolveFont(Style() with { FontFamily = "sans-serif", Bold = true }));
+        Assert.AreSame(bold, rasterizer.ResolveFont(Style() with { FontFamily = "Body", Bold = true }));
+    }
+
+    [TestMethod]
     public void LetterSpacingWidensTheLine()
     {
         var rasterizer = CreateRasterizer();

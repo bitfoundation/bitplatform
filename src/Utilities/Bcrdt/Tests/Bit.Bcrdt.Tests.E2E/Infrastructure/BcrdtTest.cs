@@ -123,13 +123,12 @@ public abstract class BcrdtTest
 
     /// <summary>
     /// Waits until the page runs in the browser. Every page is prerendered, so its heading and its explanations are
-    /// on screen long before anything listens to a click. The router's <c>FocusOnNavigate</c> is what says the
-    /// interactive render happened: once the page has rendered in the browser it moves the focus to the page's
-    /// <c>h1</c>, which it first makes programmatically focusable with <c>tabindex="-1"</c>. The prerendered markup
-    /// never carries that attribute.
+    /// on screen long before anything listens to a click. The layout's <c>data-interactive</c> marker turns true
+    /// once the WebAssembly renderer has taken the page over. Not the router's <c>FocusOnNavigate</c>: it joins the
+    /// tree only with the first navigation (Routes.razor), so on arrival nothing marks the <c>h1</c>.
     /// </summary>
     protected static Task WaitForInteractiveAsync(IPage page) => page.WaitForFunctionAsync(
-        "() => document.querySelector('h1')?.getAttribute('tabindex') === '-1'",
+        "() => document.querySelector('.page')?.dataset.interactive === 'true'",
         null, new PageWaitForFunctionOptions { Timeout = 90_000 });
 
     /// <summary>

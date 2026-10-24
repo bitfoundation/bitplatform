@@ -10,10 +10,10 @@ public partial class ContentSecurityPolicy
 
     protected override void OnInitialized()
     {
-        BuildCspString();
+        CspContent = BuildCspString(settings, absoluteServerAddressProvider);
     }
 
-    private void BuildCspString()
+    public static string BuildCspString(ClientCoreSettings settings, AbsoluteServerAddressProvider absoluteServerAddressProvider)
     {
         var apiUrl = absoluteServerAddressProvider.GetAddress().ToString();
         var webAppUrl = settings.WebAppUrl?.ToString();
@@ -82,7 +82,7 @@ public partial class ContentSecurityPolicy
         }
 
         // Construct the final CSP string
-        CspContent = $"default-src {string.Join(" ", ownOrigins)}; " + // Fallback for all directives.
+        var policy = $"default-src {string.Join(" ", ownOrigins)}; " + // Fallback for all directives.
                      $"script-src {string.Join(" ", scriptSrc)}; " +   // Defines valid sources for executable JavaScript.
                      $"style-src {string.Join(" ", styleSrc)}; " +     // Specifies trusted sources for CSS stylesheets.
                      $"font-src {string.Join(" ", fontSrc)}; " +       // Controls where web fonts (e.g., Google Fonts) can be loaded from.
@@ -97,7 +97,9 @@ public partial class ContentSecurityPolicy
 
         if (AppEnvironment.IsDevelopment() is false)
         {
-            CspContent += "upgrade-insecure-requests; ";               // Tells browsers to treat all of this site's insecure URLs (those over HTTP) as though they have been replaced with secure URLs.
+            policy += "upgrade-insecure-requests; ";                   // Tells browsers to treat all of this site's insecure URLs (those over HTTP) as though they have been replaced with secure URLs.
         }
+
+        return policy;
     }
 }

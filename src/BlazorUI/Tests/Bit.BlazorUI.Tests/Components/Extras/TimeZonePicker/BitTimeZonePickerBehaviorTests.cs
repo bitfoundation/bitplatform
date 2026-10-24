@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using Bunit;
@@ -1316,6 +1317,53 @@ public class BitTimeZonePickerBehaviorTests : BunitTestContext
 
     #endregion
 
+    #region Building the list
+
+    [TestMethod]
+    public void BitTimeZonePickerShouldNotBuildItsListUntilItOpens()
+    {
+        var timeZones = new CountingTimeZones(SevenTimeZones);
+
+        var component = RenderComponent<BitTimeZonePicker<string>>(parameters =>
+        {
+            parameters.Add(p => p.TimeZones, timeZones);
+            parameters.Add(p => p.ReferenceDate, January);
+            parameters.Add(p => p.Value, "Asia/Tokyo");
+        });
+
+        Assert.AreEqual(BitTimeZones.Find("Asia/Tokyo")!.Name, component.Find(".bit-tzp-txt").TextContent);
+        Assert.AreEqual(1, timeZones.Read);
+
+        component.Find("button.bit-tzp-fld").Click();
+
+        Assert.HasCount(7, component.FindAll("button.bit-tzp-itm"));
+        Assert.IsGreaterThanOrEqualTo(8, timeZones.Read);
+    }
+
+    [TestMethod]
+    public void BitTimeZonePickerShouldNotKeepASelectedTimeZoneItsListNoLongerOffers()
+    {
+        var timeZones = new List<BitTimeZone>(SevenTimeZones);
+
+        var component = RenderComponent<BitTimeZonePicker<string>>(parameters =>
+        {
+            parameters.Add(p => p.TimeZones, timeZones);
+            parameters.Add(p => p.ReferenceDate, January);
+            parameters.Add(p => p.Value, "Asia/Tokyo");
+        });
+
+        Assert.AreEqual("Asia/Tokyo", component.Instance.SelectedTimeZone?.Id);
+
+        timeZones.RemoveAll(z => z.Id == "Asia/Tokyo");
+
+        component.Find("button.bit-tzp-fld").Click();
+
+        Assert.HasCount(6, component.FindAll("button.bit-tzp-itm"));
+        Assert.IsNull(component.Instance.SelectedTimeZone);
+    }
+
+    #endregion
+
 
 
     private IRenderedComponent<BitTimeZonePicker<TValue>> RenderPicker<TValue>(Action<ComponentParameterCollectionBuilder<BitTimeZonePicker<TValue>>>? parameterBuilder = null)
@@ -1326,6 +1374,36 @@ public class BitTimeZonePickerBehaviorTests : BunitTestContext
             parameters.Add(p => p.ReferenceDate, January);
             parameterBuilder?.Invoke(parameters);
         });
+    }
+
+    private sealed class CountingTimeZones(List<BitTimeZone> timeZones) : ICollection<BitTimeZone>
+    {
+        public int Read { get; private set; }
+
+        public int Count => timeZones.Count;
+
+        public bool IsReadOnly => true;
+
+        public IEnumerator<BitTimeZone> GetEnumerator()
+        {
+            foreach (var zone in timeZones)
+            {
+                Read++;
+                yield return zone;
+            }
+        }
+
+        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+
+        public bool Contains(BitTimeZone item) => timeZones.Contains(item);
+
+        public void CopyTo(BitTimeZone[] array, int arrayIndex) => timeZones.CopyTo(array, arrayIndex);
+
+        public void Add(BitTimeZone item) => throw new NotSupportedException();
+
+        public bool Remove(BitTimeZone item) => throw new NotSupportedException();
+
+        public void Clear() => throw new NotSupportedException();
     }
 
     private static void PickItem<TValue>(IRenderedComponent<BitTimeZonePicker<TValue>> component, string name)

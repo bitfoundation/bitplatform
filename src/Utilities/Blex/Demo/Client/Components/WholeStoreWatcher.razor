@@ -3,15 +3,17 @@
 
 @*
     Subscribe(store): re-renders on ANY change to the store, including fields this component
-    never displays.
+    never displays. Renders are counted while rendering, so the figure includes the render that
+    drew it - the same count MarkupWatcher shows beside it.
 *@
+@{ _renders++; }
 <div class="bb-card">
     <p class="bb-card-title"><code>Subscribe(Store)</code></p>
     <p class="bb-card-desc">Renders on any change to the store.</p>
     <div class="bb-stats">
         <div class="bb-stat">
             <span class="bb-stat-label">Count (displayed)</span>
-            <span class="bb-stat-value">@Counter.Count</span>
+            <span class="bb-stat-value"><Persisted>@Counter.Count</Persisted></span>
         </div>
         <div class="bb-stat">
             <span class="bb-stat-label">Renders</span>
@@ -24,6 +26,4 @@
     private int _renders;
 
     protected override void OnInitialized() => Subscribe(Counter);
-
-    protected override void OnAfterRender(bool firstRender) => _renders++;
 }

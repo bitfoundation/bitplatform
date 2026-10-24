@@ -33,7 +33,13 @@
     <HeadOutlet @rendermode="InteractiveAuto" />
 </head>
 
-<body>
+@* data-enhance-nav="false": a link followed before the runtime has started - the Blazor Server
+   circuit on a first visit, the WebAssembly runtime once it is cached - is a plain page load rather
+   than an enhanced one. Enhanced navigation fetches and merges the next page while the runtime is
+   still starting, and the router the runtime then attaches can render the address it read before
+   the merge - the URL says /getting-started and the page is the landing page. Once the app is
+   interactive its router handles every link itself and this attribute is not consulted. *@
+<body data-enhance-nav="false">
     @* InteractiveAuto, as the scenarios need: a first visit runs on a Blazor Server circuit (the
        Circuit page and the reconnect UI depend on it), and once the WebAssembly runtime is cached
        the same pages run in the browser, so both render paths can be inspected. *@
