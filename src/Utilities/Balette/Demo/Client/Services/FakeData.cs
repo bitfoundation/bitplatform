@@ -59,7 +59,9 @@ public sealed class FakeDirectory
         new("Keyboard shortcuts", "/keyboard#shortcuts", "Global chords and sequences like G then I."),
         new("Accessibility", "/keyboard#accessibility", "ARIA combobox pattern, focus management, live announcements."),
         new("Theming", "/theming", "CSS custom properties, dark mode, templates, unstyled mode."),
+        new("Localization", "/localization", "Every label and announcement translated, and right-to-left layouts."),
         new("Large registries", "/performance", "Thousands of commands, measured per keystroke."),
+        new("Options and security", "/options", "Every option with its default, and what the palette does to keep text and links safe."),
     ];
 }
 

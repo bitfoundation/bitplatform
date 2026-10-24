@@ -106,10 +106,12 @@ The full walkthrough is in [getting started](#getting-started).
 ## The demo
 
 The demo site, [balette.bitplatform.dev](https://balette.bitplatform.dev), has one global palette and a page per
-area: registering commands (fluent and declarative, page-scoped, toggles that stay in sync), nested pages and
-multi-step flows, search and ranking with a live view of the matcher's scores, modes and async sources, the
-keyboard, theming and templates, and a large-registry page that times a search over thousands of commands in your
-browser.
+area: registering commands (fluent and declarative, page-scoped, shown only when they apply, toggles that stay in
+sync), nested pages and multi-step flows (prompts, multi-select, long-running and failing commands, recents and pins),
+search and ranking with a live view of the matcher's scores, modes and async sources (paged, failing, timed out), the
+keyboard, theming with every template and an unstyled palette running, localization and right-to-left text, an
+options reference with the site's live values, and a large-registry page that times a search over thousands of
+commands in your browser.
 
 ## How it fits together
 

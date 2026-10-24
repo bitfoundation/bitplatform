@@ -40,9 +40,9 @@ shows after a command ran.
 Every page is prerendered, so its markup - the trigger and the mode buttons included - is on screen before anything
 handles a click, and the browser layer that hears `Ctrl+K` starts a moment after the page turns interactive. Each test
 waits for both: `data-interactive="true"` on the site shell's `.page` element and `data-ready="true"` on every palette -
-the layout's dialog, and the inline palette of /commands. Not for the platform being detected
-(`IBaletteService.PlatformDetected`): either palette reports it, the inline one often first, while the dialog's key
-listener is still a few milliseconds away.
+the layout's dialog, and the inline palettes of /commands, /theming, /localization and /options. Not for the platform
+being detected (`IBaletteService.PlatformDetected`): any palette reports it, an inline one often first, while the
+dialog's key listener is still a few milliseconds away.
 
 Every test also fails on any uncaught page error and on any console error in which Blazor reports an unhandled
 exception, whatever the test was looking at: an exception that escapes a handler can leave every later keystroke

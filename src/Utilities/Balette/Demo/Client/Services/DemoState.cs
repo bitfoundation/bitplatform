@@ -68,6 +68,12 @@ public sealed class DemoState
 
     public bool Virtualize { get; private set; }
 
+    /// <summary>The palette's Density parameter: null for the options' (<c>comfortable</c>), or <c>compact</c>.</summary>
+    public string? Density { get; private set; }
+
+    /// <summary>The palette's ShowShortcuts parameter: the key caps at the end of a row.</summary>
+    public bool ShowShortcuts { get; private set; } = true;
+
     /// <summary>
     /// The palette's Style parameter: inline custom properties on the dialog, which win over every rule in the
     /// stylesheet. The soft accent and the highlight are derived from the accent so one choice recolours all three.
@@ -223,6 +229,10 @@ public sealed class DemoState
 
     public void SetVirtualize(bool value) => Set(() => Virtualize = value);
 
+    public void SetDensity(string? density) => Set(() => Density = density);
+
+    public void SetShowShortcuts(bool value) => Set(() => ShowShortcuts = value);
+
     public void ResetPresentation() => Set(() =>
     {
         PaletteTheme = null;
@@ -234,6 +244,8 @@ public sealed class DemoState
         HighlightMatches = true;
         GroupWhenSearching = true;
         Virtualize = false;
+        Density = null;
+        ShowShortcuts = true;
     });
 
     // ---- Activity log --------------------------------------------------------------------------------------------

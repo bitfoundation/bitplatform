@@ -360,6 +360,31 @@ palette closed shows nothing, as documented ("a toast that stays open" opens it)
 feedback there. The site kit's `Layout/CommandPalette.razor` is the same file in every Utilities demo; only this copy
 is bound (fix 6), as only this demo runs on Blazor Server - on WebAssembly a key's render lands before the next key.
 
+## Iteration 12 (2026-10-24) - the demo shows and explains every feature
+
+Each demo page was read against the README and the public API, member by member. Many features were described only in
+the README, or named on a page without anything to try. The demo now runs each one on a page and explains it there:
+
+| Page | Added |
+|---|---|
+| Getting started | Requirements; live `BaletteTrigger`s with `Query`, `PageCommandId`, `ShowShortcut` and `ChildContent`; `ExecuteAsync` by id; hosting models (Web App per-page interactivity, Hybrid, CSP); troubleshooting. |
+| Registering commands | The whole command model, each member with an example in the app; ids worked out live by the builder (`C#`/`C++`, `🚀`, parents); `With` + `Update` (the counter's badges, *Reset counter* disabled at zero); `VisibleWhen` + `Refresh()` with a selection and `Alt+M`; `Confirm`; the service's events; group ordering (including *Suggestions*); the inline palette's rules. |
+| Nested pages & flows | Page-scoped flows: long-running and cancellable (*Generate report…*), a throwing handler and a user-facing `ValidationException` through `CommandFailed` (marked handled, logged on the page), a lazy page that fails every other load (*Try again*), a prompt that answers with a multi-select page (*Create webhook…*), and `Reset` (*Add a to-do…* registers a command). `Error` in the results table, the handler context, moving between pages, and recents/pins read live from `BaletteHistory` with *Clear recent commands*. |
+| Search & ranking | The lab shows `BaletteQuery.Parse`'s terms and nested paths, and adds a literal (`Normalize = false`) matcher; `a \| b` and negated phrases; Latin and Arabic-script folding to try; typo rules; the scoring constants and the frecency table; nested search; a custom matcher. |
+| Modes & sources | Mode properties; a page-scoped `$` mode (`RegisterMode`) paging 60 packages through `BaletteDelegateSource` ("Show 50 more…"); a `RegisterSource`d status source that answers, throws or hangs past `SourceTimeoutMs`; a *Failed* outcome in the call log; `BaletteSourceContext`, `AddBitBaletteSource<T>`. |
+| Keyboard & shortcuts | `Space`, links in a new tab, RTL arrows; `SequencePending` live; a shortcut parser (`TryParse`, both platforms' hints, normalized form); layouts, held keys and IME; conflicts; `Loop` and `ShowSequenceHint`; the full accessibility list. |
+| Theming & templates | `Density` and `ShowShortcuts` on this site's palette; every token; contrast, forced colours, reduced motion, small screens and RTL; an inline palette using every template but the detail pane (`ItemTemplate` switchable to show `IconTemplate`), and a live unstyled palette styled from `demo.css`. |
+| Localization & RTL (new) | One palette switching between English, German and Persian (right to left) through `Strings`, with translated commands keeping their English names and stable ids; a `ResultsAnnouncementFor` override; `IStringLocalizer` and plural samples; every `BaletteStrings` property with where it shows. |
+| Options & security (new) | Every option with this site's value and the default; the per-palette parameters and the component's own API, shown by an inline finder driven by `@ref`/`SetQueryAsync`/`OnQueryChanged`/`OnCommandExecuted` with a `DetailTemplate`; security. |
+| Large registry | The same data served by a `BaletteStaticSource`, timed beside the registry; what keeps a keystroke cheap. |
+| Home, MCP server | Cards for the new pages and FAQ answers on languages and failures; the MCP resources and prompts listed. |
+
+**Verified**: E2E in Chromium on WebAssembly, 91 passed (the page walk now covers /localization and /options); MCP 92
+passed; the demo builds in Release with 0 warnings. Every new flow was also driven by a Playwright script with
+screenshots at 1280 and 390 px: busy, failure, retry, webhook, to-do, paging, failing source, templates, unstyled,
+German and Persian, the options finder. The only console output is the status source's deliberate warning, and no page
+overflows sideways.
+
 ## Where it stands
 
 Ten iterations, the mission's limit, and an eleventh across browser engines. Every P0 and P1 finding is fixed and

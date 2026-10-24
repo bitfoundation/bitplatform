@@ -1,0 +1,457 @@
+﻿@page "/localization"
+@using System.Globalization
+@inject IBaletteService Palette
+@inject DemoState State
+
+<PageTitle>Localization and RTL · Balette</PageTitle>
+
+<div class="bb-intro">
+    <h1>Localization &amp; RTL</h1>
+    <p class="bb-subtitle">
+        Every label and announcement of the palette - the ones only screen readers hear included - is a property of
+        <code>BaletteStrings</code>, and every rule of its stylesheet uses logical properties, so a palette in German or in
+        Persian, right to left, is a matter of handing it other strings and setting <code>dir</code>. The palette below
+        switches language as you click.
+    </p>
+</div>
+
+<PaletteBar />
+
+<div class="bb-demo">
+    <div class="bb-demo-bar"><span class="bb-demo-label">One palette, three languages</span></div>
+    <div class="bb-segmented" role="group" aria-label="Palette language">
+        @foreach (var language in Languages)
+        {
+            <button type="button" lang="@language.Code" aria-pressed="@(_language == language ? "true" : "false")" @onclick="() => SetLanguage(language)">@language.Name</button>
+        }
+    </div>
+    <p>
+        Its footer hints, placeholder, empty state, confirmation, disabled reason, the back button, the switch's spoken
+        <em>@_language.Strings.On</em> and <em>@_language.Strings.Off</em>, and the word between the keys of
+        <kbd>G</kbd> <kbd>S</kbd> all come from <code>BaletteStrings</code>. Type <code>xyz</code> for the empty state, open
+        the export page, or arm the destructive row. The titles are translated too, with the English title as a keyword: type
+        <code>settings</code> or <code>dark</code> in any of the three.
+    </p>
+    <div class="demo-inline-palette" dir="@(_language.Rtl ? "rtl" : "ltr")" lang="@_language.Code">
+        <Balette Inline="true"
+                 IncludeRegisteredCommands="false"
+                 EnableHistory="false"
+                 Strings="_language.Strings"
+                 Style="--bit-balette-max-height: 260px"
+                 Commands="_commands" />
+    </div>
+    <p class="bb-muted demo-small">
+        The ids are the same in every language (<code>l10n:settings</code>, <code>l10n:export</code>…), so the active row and a
+        page that is open survive a switch - and recents and pins would too.
+    </p>
+</div>
+
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Handing the palette its strings</h3>
+    <p>
+        Set <code>options.Strings</code> for every palette, or the palette's <code>Strings</code> parameter for one - the
+        palette above uses the parameter. <code>BaletteShortcutHint</code> takes a <code>Strings</code> parameter as well,
+        for the word between the chords of a sequence.
+    </p>
+    <pre class="bb-code">@OptionsExample</pre>
+    <p>
+        Every property is <code>virtual</code>, so a subclass can read them from an <code>IStringLocalizer</code> - the usual
+        resource files - instead:
+    </p>
+    <pre class="bb-code">@LocalizerExample</pre>
+</section>
+
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Counts and plural forms</h3>
+    <p>
+        The result count is announced after every search. By default <code>ResultsAnnouncementFor(count)</code> picks
+        <code>NoResultsAnnouncement</code>, <code>OneResultAnnouncement</code> or <code>ResultsAnnouncement</code>; a
+        language whose plural forms one template per count cannot express overrides it. Polish has three:
+    </p>
+    <pre class="bb-code">@PluralExample</pre>
+    <p>
+        The Persian strings above override it too, to announce the count in Persian digits
+        (<code>@PersianDigits(12)</code>) - a screen reader reading Persian expects them.
+    </p>
+</section>
+
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Translated commands</h3>
+    <p>
+        When titles are translated, add the untranslated title as a keyword - <code>.Keywords("Open settings")</code> on
+        <em>Einstellungen öffnen</em> - so people who learned the English name still find it, as VS Code does with its English
+        aliases. Give translated commands explicit ids, too: an id derived from the title would change with the language,
+        and recents, pins and the active row with it.
+    </p>
+    <pre class="bb-code">@CommandsExample</pre>
+</section>
+
+<section class="bb-card" id="rtl">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Right to left</h3>
+    <ul class="bb-detail-list">
+        <li>Every rule uses logical properties, so <code>dir="rtl"</code> on the palette or anything around it lays it out
+            from the right: the footer's last hint, the detail pane's border and the switch's knob all follow, and arrows and
+            chevrons are mirrored.</li>
+        <li>User text - titles, subtitles, badges, values, breadcrumbs, headings - isolates its own direction
+            (<code>dir="auto"</code>), so an English title in a Persian UI keeps its punctuation where it belongs. Shortcut key
+            caps always read left to right, as on the keys.</li>
+        <li><kbd>←</kbd> and <kbd>→</kbd> trade places: <kbd>→</kbd> points back to the start of the line, so in
+            right-to-left text it goes back a page, and <kbd>←</kbd> on an empty box opens the action panel.</li>
+        <li>Search folds the Arabic and Persian forms of a letter and Persian digits (see <a href="search#folding">Search &amp;
+            ranking</a>), and a shortcut such as <kbd>G</kbd> <kbd>S</kbd> works when a Persian layout types
+            <code>ل</code> <code>س</code> (see <a href="keyboard#layouts">Keyboard</a>).</li>
+    </ul>
+    <p>
+        This site's own palette goes right to left with the page: pick <em>Language › فارسی</em> or <em>العربية</em> in it, and
+        the whole site turns around - the palette included.
+    </p>
+    <div class="bb-try">
+        <button type="button" class="btn btn-secondary" @onclick='() => Palette.OpenAsync(pageCommandId: "preferences.language")'>Open the Language page</button>
+    </div>
+    <p class="bb-muted demo-small" role="status">This site's language is <strong>@State.Language</strong>.</p>
+</section>
+
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Every string</h3>
+    <p>
+        Every property of <code>BaletteStrings</code>, with the library's English and, beside it, the language picked above.
+        <code>{0}</code> and <code>{1}</code> are filled in with <code>string.Format</code> in the current culture.
+    </p>
+    <div class="bb-scroll">
+        <table class="bb-table">
+            <thead>
+                <tr><th>Property</th><th>Where</th><th>English</th>@if (_language != Languages[0]) { <th lang="@_language.Code">@_language.Name</th> }</tr>
+            </thead>
+            <tbody>
+                @foreach (var (name, shownIn, read) in AllStrings)
+                {
+                    <tr>
+                        <td class="bb-table-key"><code>@name</code></td>
+                        <td>@shownIn</td>
+                        <td>@read(Languages[0].Strings)</td>
+                        @if (_language != Languages[0])
+                        {
+                            <td lang="@_language.Code" dir="auto">@read(_language.Strings)</td>
+                        }
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</section>
+
+@code {
+    private sealed record Language(string Code, string Name, bool Rtl, BaletteStrings Strings, Texts Texts);
+
+    /// <summary>What the sample commands say, in one language.</summary>
+    private sealed record Texts(
+        string General, string DangerZone,
+        string OpenSettings, string SettingsOpened,
+        string DarkMode,
+        string Export, string ChooseFormat, string AsPdf, string ExportedPdf, string AsCsv, string NeedsPro,
+        string DeleteFiles, string ConfirmDelete, string Deleted);
+
+    private static readonly Texts EnglishTexts = new(
+        "General", "Danger zone",
+        "Open settings", "Settings opened",
+        "Dark mode",
+        "Export…", "Choose a format…", "As PDF", "Exported as PDF", "As CSV", "Requires the Pro plan",
+        "Delete all files", "Delete every file for good?", "Deleted (not really)");
+
+    private static readonly Language[] Languages =
+    [
+        new("en", "English", false, new BaletteStrings(), EnglishTexts),
+        new("de", "Deutsch", false, new BaletteStrings
+        {
+            Placeholder = "Befehl eingeben oder suchen…",
+            PromptPlaceholder = "Wert eingeben und Eingabetaste drücken…",
+            NoResults = "Keine Ergebnisse für „{0}“",
+            NoResultsHint = "Versuchen Sie eine andere Suche, oder prüfen Sie die Schreibweise.",
+            Empty = "Noch nichts anzuzeigen.",
+            Loading = "Wird gesucht…",
+            Recent = "Zuletzt verwendet",
+            Pinned = "Angeheftet",
+            Suggestions = "Vorschläge",
+            Modes = "Modi",
+            Actions = "Aktionen",
+            Results = "Ergebnisse",
+            Other = "Sonstiges",
+            Navigate = "zum Navigieren",
+            Select = "zum Auswählen",
+            Close = "zum Schließen",
+            ClearQuery = "zum Leeren",
+            Back = "zurück",
+            OpenActions = "für Aktionen",
+            Toggle = "zum Umschalten",
+            Apply = "zum Anwenden",
+            Pin = "Oben anheften",
+            Unpin = "Lösen",
+            RemoveFromRecents = "Aus „Zuletzt verwendet“ entfernen",
+            ClearRecents = "Zuletzt verwendete Befehle löschen",
+            ConfirmPrefix = "Bestätigen: ",
+            ConfirmHint = "Zum Bestätigen erneut die Eingabetaste drücken, Esc zum Abbrechen",
+            SelectedCount = "{0} ausgewählt",
+            ResultsAnnouncement = "{0} Ergebnisse verfügbar",
+            OneResultAnnouncement = "1 Ergebnis verfügbar",
+            NoResultsAnnouncement = "Keine Ergebnisse",
+            Disabled = "Nicht verfügbar",
+            DialogLabel = "Befehlspalette",
+            InputLabel = "Befehle durchsuchen",
+            CloseButton = "Schließen",
+            BackButton = "Zurück",
+            Breadcrumb = "Navigationspfad",
+            OpenPalette = "Befehlspalette öffnen",
+            Search = "Suchen",
+            Home = "Start",
+            MoreResults = "{0} weitere anzeigen…",
+            LoadMore = "Mehr anzeigen…",
+            SequencePending = "wartet auf die nächste Taste…",
+            CommandFailed = "„{0}“ konnte nicht ausgeführt werden.",
+            LoadFailed = "Diese Liste konnte nicht geladen werden.",
+            Retry = "Erneut versuchen",
+            ApproximateResults = "Keine genauen Treffer. Ähnliche werden angezeigt.",
+            Running = "Wird ausgeführt…",
+            SourceFailed = "{0} konnte nicht durchsucht werden",
+            On = "Ein",
+            Off = "Aus",
+            ShortcutThen = "dann",
+        }, new(
+            "Allgemein", "Gefahrenbereich",
+            "Einstellungen öffnen", "Einstellungen geöffnet",
+            "Dunkelmodus",
+            "Exportieren…", "Format wählen…", "Als PDF", "Als PDF exportiert", "Als CSV", "Erfordert den Pro-Tarif",
+            "Alle Dateien löschen", "Wirklich alle Dateien endgültig löschen?", "Gelöscht (nicht wirklich)")),
+        new("fa", "فارسی", true, new PersianStrings
+        {
+            Placeholder = "فرمانی بنویسید یا جست‌وجو کنید…",
+            PromptPlaceholder = "مقداری بنویسید و Enter را بزنید…",
+            NoResults = "نتیجه‌ای برای «{0}» نیست",
+            NoResultsHint = "عبارت دیگری را امتحان کنید، یا املای آن را بررسی کنید.",
+            Empty = "هنوز چیزی برای نمایش نیست.",
+            Loading = "در حال جست‌وجو…",
+            Recent = "اخیر",
+            Pinned = "سنجاق‌شده",
+            Suggestions = "پیشنهادها",
+            Modes = "حالت‌ها",
+            Actions = "کارها",
+            Results = "نتایج",
+            Other = "سایر",
+            Navigate = "برای حرکت",
+            Select = "برای انتخاب",
+            Close = "برای بستن",
+            ClearQuery = "برای پاک کردن",
+            Back = "برای بازگشت",
+            OpenActions = "برای کارها",
+            Toggle = "برای تغییر وضعیت",
+            Apply = "برای اعمال",
+            Pin = "سنجاق کردن به بالا",
+            Unpin = "برداشتن سنجاق",
+            RemoveFromRecents = "حذف از اخیر",
+            ClearRecents = "پاک کردن فرمان‌های اخیر",
+            ConfirmPrefix = "تأیید: ",
+            ConfirmHint = "برای تأیید دوباره Enter و برای لغو Esc را بزنید",
+            SelectedCount = "{0} مورد انتخاب شد",
+            ResultsAnnouncement = "{0} نتیجه موجود است",
+            OneResultAnnouncement = "یک نتیجه موجود است",
+            NoResultsAnnouncement = "نتیجه‌ای نیست",
+            Disabled = "در دسترس نیست",
+            DialogLabel = "پالت فرمان",
+            InputLabel = "جست‌وجوی فرمان‌ها",
+            CloseButton = "بستن",
+            BackButton = "بازگشت",
+            Breadcrumb = "مسیر",
+            OpenPalette = "باز کردن پالت فرمان",
+            Search = "جست‌وجو",
+            Home = "خانه",
+            MoreResults = "نمایش {0} مورد دیگر…",
+            LoadMore = "نمایش بیشتر…",
+            SequencePending = "در انتظار کلید بعدی…",
+            CommandFailed = "اجرای «{0}» ممکن نشد.",
+            LoadFailed = "این فهرست بارگذاری نشد.",
+            Retry = "تلاش دوباره",
+            ApproximateResults = "تطابق دقیقی پیدا نشد؛ نزدیک‌ترین‌ها نمایش داده می‌شوند.",
+            Running = "در حال انجام…",
+            SourceFailed = "جست‌وجو در {0} ممکن نشد",
+            On = "روشن",
+            Off = "خاموش",
+            ShortcutThen = "سپس",
+        }, new(
+            "عمومی", "منطقه خطر",
+            "باز کردن تنظیمات", "تنظیمات باز شد",
+            "حالت تاریک",
+            "خروجی گرفتن…", "قالبی را انتخاب کنید…", "به صورت PDF", "خروجی PDF گرفته شد", "به صورت CSV", "به طرح Pro نیاز دارد",
+            "حذف همه فایل‌ها", "همه فایل‌ها برای همیشه حذف شوند؟", "حذف شد (نه واقعاً)")),
+    ];
+
+    /// <summary>Persian strings that announce the result count in Persian digits.</summary>
+    private sealed class PersianStrings : BaletteStrings
+    {
+        public override string ResultsAnnouncementFor(int count) => count switch
+        {
+            0 => NoResultsAnnouncement,
+            1 => OneResultAnnouncement,
+            _ => Format(ResultsAnnouncement, PersianDigits(count)),
+        };
+    }
+
+    private static string PersianDigits(int value)
+        => string.Concat(value.ToString(CultureInfo.InvariantCulture).Select(c => char.IsAsciiDigit(c) ? (char)('۰' + (c - '0')) : c));
+
+    // Every property of BaletteStrings, read through a delegate rather than reflection, which trimming would make unreliable.
+    private static readonly (string Name, string Where, Func<BaletteStrings, string> Read)[] AllStrings =
+    [
+        ("Placeholder", "The search box", s => s.Placeholder),
+        ("PromptPlaceholder", "The box on a prompt without a placeholder", s => s.PromptPlaceholder),
+        ("NoResults", "The empty state, with the query", s => s.NoResults),
+        ("NoResultsHint", "Under it", s => s.NoResultsHint),
+        ("Empty", "A page with nothing to list", s => s.Empty),
+        ("Loading", "A lazy page while it loads", s => s.Loading),
+        ("Recent", "The recents' heading", s => s.Recent),
+        ("Pinned", "The pins' heading, and a pinned row (spoken)", s => s.Pinned),
+        ("Suggestions", "The heading of ungrouped commands under the pinned and recent ones", s => s.Suggestions),
+        ("Modes", "The mode hints' heading", s => s.Modes),
+        ("Actions", "The action panel's placeholder", s => s.Actions),
+        ("Results", "The listbox's name on the root page", s => s.Results),
+        ("Other", "For templates", s => s.Other),
+        ("Navigate", "Footer hint after ↑ ↓", s => s.Navigate),
+        ("Select", "Footer hint after Enter", s => s.Select),
+        ("Close", "Footer hint after Esc", s => s.Close),
+        ("ClearQuery", "Footer hint after Esc, inline", s => s.ClearQuery),
+        ("Back", "Footer hint after Esc on a page", s => s.Back),
+        ("OpenActions", "Footer hint after Tab", s => s.OpenActions),
+        ("Toggle", "Footer hint on a multi-select page", s => s.Toggle),
+        ("Apply", "Footer hint after Ctrl+Enter", s => s.Apply),
+        ("Pin", "Action panel", s => s.Pin),
+        ("Unpin", "Action panel", s => s.Unpin),
+        ("RemoveFromRecents", "Action panel", s => s.RemoveFromRecents),
+        ("ClearRecents", "Action panel", s => s.ClearRecents),
+        ("ConfirmPrefix", "Before an armed destructive row's title", s => s.ConfirmPrefix),
+        ("ConfirmHint", "Announced when it is armed", s => s.ConfirmHint),
+        ("SelectedCount", "Next to the box on a multi-select page", s => s.SelectedCount),
+        ("ResultsAnnouncement", "Announced after a search", s => s.ResultsAnnouncement),
+        ("OneResultAnnouncement", "Announced after a search", s => s.OneResultAnnouncement),
+        ("NoResultsAnnouncement", "Announced after a search", s => s.NoResultsAnnouncement),
+        ("PageAnnouncement", "Announced when a page opens: title, count", s => s.PageAnnouncement),
+        ("Disabled", "The footer's answer to Enter on a disabled row without a reason", s => s.Disabled),
+        ("ModeHintTitle", "For templates: a mode hint's title", s => s.ModeHintTitle),
+        ("DialogLabel", "The dialog's name", s => s.DialogLabel),
+        ("InputLabel", "The search box's name", s => s.InputLabel),
+        ("CloseButton", "The close button", s => s.CloseButton),
+        ("BackButton", "The back button", s => s.BackButton),
+        ("Breadcrumb", "The breadcrumbs' name", s => s.Breadcrumb),
+        ("OpenPalette", "The trigger's name", s => s.OpenPalette),
+        ("Search", "The trigger's default label", s => s.Search),
+        ("Home", "The root page's title", s => s.Home),
+        ("MoreResults", "A source's next page, with the count left", s => s.MoreResults),
+        ("LoadMore", "A source's next page, count unknown", s => s.LoadMore),
+        ("SequencePending", "The status after the first key of a sequence", s => s.SequencePending),
+        ("CommandFailed", "A failed command", s => s.CommandFailed),
+        ("LoadFailed", "A page that failed to load", s => s.LoadFailed),
+        ("Retry", "Its button", s => s.Retry),
+        ("ApproximateResults", "Over typo-tolerant results", s => s.ApproximateResults),
+        ("ApproximateResultsAnnouncement", "Announced with them: count, notice", s => s.ApproximateResultsAnnouncement),
+        ("Running", "Announced while a handler runs", s => s.Running),
+        ("SourceFailed", "The row of a failed source", s => s.SourceFailed),
+        ("On", "A switch that is on (spoken)", s => s.On),
+        ("Off", "A switch that is off (spoken)", s => s.Off),
+        ("ShortcutThen", "Between the chords of a sequence", s => s.ShortcutThen),
+    ];
+
+    private const string OptionsExample = """
+        // Every palette.
+        builder.Services.AddBitBaletteServices(options =>
+        {
+            options.Strings = new BaletteStrings
+            {
+                Placeholder = "Befehl eingeben oder suchen…",
+                NoResults = "Keine Ergebnisse für „{0}“",
+                ResultsAnnouncement = "{0} Ergebnisse verfügbar",
+                On = "Ein",
+                Off = "Aus",
+                ShortcutThen = "dann",
+            };
+        });
+
+        // One palette.
+        <Balette Strings="_german" />
+        """;
+
+    private const string LocalizerExample = """
+        public sealed class LocalizedBaletteStrings(IStringLocalizer<LocalizedBaletteStrings> localizer) : BaletteStrings
+        {
+            public override string Placeholder => localizer[nameof(Placeholder)];
+            public override string NoResults => localizer[nameof(NoResults)];
+            public override string ResultsAnnouncement => localizer[nameof(ResultsAnnouncement)];
+            // ...
+        }
+
+        @inject IStringLocalizer<LocalizedBaletteStrings> Localizer
+
+        <Balette Strings="new LocalizedBaletteStrings(Localizer)" />
+        """;
+
+    private const string PluralExample = """
+        public sealed class PolishStrings : BaletteStrings
+        {
+            public override string ResultsAnnouncementFor(int count) => count switch
+            {
+                0 => "Brak wyników",
+                1 => "1 wynik",
+                _ when count % 10 is >= 2 and <= 4 && count % 100 is < 12 or > 14 => $"{count} wyniki",
+                _ => $"{count} wyników",
+            };
+        }
+        """;
+
+    private const string CommandsExample = """
+        BaletteCmd.New("Einstellungen öffnen")
+            .Id("l10n:settings")         // the same in every language
+            .Keywords("Open settings")   // the English name still finds it
+            .Group("Allgemein")
+            .Shortcut("G S", global: false)
+        """;
+
+    private Language _language = Languages[0];
+    private List<BaletteCommand> _commands = [];
+    private bool _dark;
+
+    protected override void OnInitialized() => _commands = BuildCommands();
+
+    private void SetLanguage(Language language)
+    {
+        _language = language;
+        // A new list: the palette re-reads Commands when it is handed a new collection.
+        _commands = BuildCommands();
+    }
+
+    private List<BaletteCommand> BuildCommands()
+    {
+        var t = _language.Texts;
+        var english = EnglishTexts;
+
+        return
+        [
+            BaletteCmd.New(t.OpenSettings).Id("l10n:settings").Group(t.General).Keywords(english.OpenSettings)
+                .Shortcut("G S", global: false)
+                .Handler(_ => Task.FromResult(BaletteCommandResult.Toast(t.SettingsOpened, keepOpen: true))),
+            BaletteCmd.New(t.DarkMode).Id("l10n:dark").Group(t.General).Keywords(english.DarkMode)
+                .Checked(_dark)
+                .Handler(_ =>
+                {
+                    _dark = !_dark;
+                    _commands = BuildCommands();
+                    StateHasChanged();
+                    return Task.FromResult(BaletteCommandResult.KeepOpen);
+                }),
+            BaletteCmd.New(t.Export).Id("l10n:export").Group(t.General).Keywords(english.Export)
+                .ChildrenPlaceholder(t.ChooseFormat)
+                .Children(
+                    BaletteCmd.New(t.AsPdf).Id("l10n:export.pdf").Keywords(english.AsPdf)
+                        .Handler(_ => Task.FromResult(BaletteCommandResult.Toast(t.ExportedPdf, keepOpen: true))),
+                    BaletteCmd.New(t.AsCsv).Id("l10n:export.csv").Keywords(english.AsCsv).Disabled(true, t.NeedsPro)),
+            BaletteCmd.New(t.DeleteFiles).Id("l10n:delete").Group(t.DangerZone).Keywords(english.DeleteFiles)
+                .Destructive(t.ConfirmDelete)
+                .Handler(_ => Task.FromResult(BaletteCommandResult.Toast(t.Deleted, keepOpen: true))),
+        ];
+    }
+}

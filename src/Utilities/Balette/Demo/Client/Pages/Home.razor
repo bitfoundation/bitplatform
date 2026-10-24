@@ -100,24 +100,25 @@
             <section class="bb-card">
                 <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Registering commands</h3>
                 <p class="bb-card-desc">
-                    A fluent builder, declarative <code>BaletteItem</code> markup, and commands that exist only while a
-                    page is on screen - merged into one list.
+                    A fluent builder, declarative <code>BaletteItem</code> markup, commands that exist only while a page is
+                    on screen or only when they apply, and toggles that stay in sync - merged into one list.
                 </p>
                 <a href="commands" class="btn btn-outline">Registering commands →</a>
             </section>
             <section class="bb-card">
                 <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Nested pages &amp; flows</h3>
                 <p class="bb-card-desc">
-                    Static, lazy and ad-hoc pages, free-text prompts, multi-select, confirmations, toasts and a Raycast-style
-                    action panel - every step in the same box.
+                    Static, lazy and searching pages, prompts, multi-select, confirmations, long-running and failing
+                    commands, recents, pins and a Raycast-style action panel - every step in the same box.
                 </p>
                 <a href="pages" class="btn btn-outline">Nested pages →</a>
             </section>
             <section class="bb-card">
                 <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Search &amp; ranking</h3>
                 <p class="bb-card-desc">
-                    An fzf-style fuzzy matcher with <code>'exact</code>, <code>^prefix</code>, <code>suffix$</code> and
-                    <code>!negate</code>, weighted fields, priority and frecency - every score shown live.
+                    An fzf-style fuzzy matcher with <code>'exact</code>, <code>^prefix</code>, <code>suffix$</code>,
+                    <code>!negate</code>, <code>"phrases"</code> and <code>a | b</code>, accents and typos forgiven, weighted
+                    fields, priority and frecency - every score shown live.
                 </p>
                 <a href="search" class="btn btn-outline">Search &amp; ranking →</a>
             </section>
@@ -125,7 +126,7 @@
                 <h3 class="bb-card-title"><span class="bb-dot bb-dot-danger"></span> Modes &amp; sources</h3>
                 <p class="bb-card-desc">
                     Typed prefixes - <code>&gt;</code> <code>#</code> <code>@@</code> <code>?</code> - that scope the palette,
-                    and async sources that are debounced, cancelled and merged.
+                    and async sources that are debounced, cancelled, paged, timed out and retried.
                 </p>
                 <a href="modes" class="btn btn-outline">Modes &amp; sources →</a>
             </section>
@@ -133,17 +134,33 @@
                 <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Keyboard &amp; shortcuts</h3>
                 <p class="bb-card-desc">
                     Every key inside the palette, global chords such as <kbd>Alt</kbd> <kbd>Z</kbd> and G-then-X sequences,
-                    matched in the browser and shown in the platform's own symbols.
+                    matched in the browser on any keyboard layout and shown in the platform's own symbols.
                 </p>
                 <a href="keyboard" class="btn btn-outline">Keyboard &amp; shortcuts →</a>
             </section>
             <section class="bb-card">
                 <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Theming &amp; templates</h3>
                 <p class="bb-card-desc">
-                    Light and dark, CSS custom properties changed live on this site's palette, the detail pane, eight
-                    templates and a fully unstyled mode.
+                    Light and dark, CSS custom properties and density changed live on this site's palette, the detail pane,
+                    eight templates and a fully unstyled mode - each one running.
                 </p>
                 <a href="theming" class="btn btn-outline">Theming &amp; templates →</a>
+            </section>
+            <section class="bb-card">
+                <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Localization &amp; RTL</h3>
+                <p class="bb-card-desc">
+                    Every label and announcement in another language, plural forms, translated commands that keep their
+                    English names, and right-to-left layouts.
+                </p>
+                <a href="localization" class="btn btn-outline">Localization &amp; RTL →</a>
+            </section>
+            <section class="bb-card">
+                <h3 class="bb-card-title"><span class="bb-dot bb-dot-danger"></span> Large registry</h3>
+                <p class="bb-card-desc">
+                    Thousands of commands registered, or served from a static source, and what one keystroke costs -
+                    measured in your browser.
+                </p>
+                <a href="performance" class="btn btn-outline">Large registry →</a>
             </section>
         </div>
     </section>
@@ -304,6 +321,23 @@
                     Thousands. Only the best <code>MaxResults</code> rows are rendered, <code>Virtualize</code> renders just
                     the visible ones, and on WebAssembly a search that takes longer than a frame lets the keystroke paint
                     first. The <a href="performance">large registry</a> page measures it in your browser.
+                </p>
+            </details>
+            <details>
+                <summary>Does it work in other languages, and right to left?</summary>
+                <p>
+                    Yes. Every label and announcement - the ones only screen readers hear included - is a property of
+                    <code>BaletteStrings</code>, every rule of the stylesheet uses logical properties, and search treats the
+                    Arabic and Persian forms of a letter and Persian digits as one. The <a href="localization">localization</a>
+                    page switches a palette between English, German and Persian as you watch.
+                </p>
+            </details>
+            <details>
+                <summary>What happens when a command or an API fails?</summary>
+                <p>
+                    It is logged and reported in the palette - a generic message, never the exception's text, unless you choose
+                    to show it - and it never ends a Blazor Server circuit. A page that failed to load and a source that threw
+                    or timed out offer a retry, and the rest of the list stays. <a href="pages#failures">Try it</a>.
                 </p>
             </details>
             <details>

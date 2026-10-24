@@ -20,7 +20,9 @@ public sealed class DemoPagesTests : BaletteTest
     [DataRow("/modes", "Modes & sources")]
     [DataRow("/keyboard", "Keyboard & shortcuts")]
     [DataRow("/theming", "Theming & templates")]
+    [DataRow("/localization", "Localization & RTL")]
     [DataRow("/performance", "Large registry")]
+    [DataRow("/options", "Options & security")]
     [DataRow("/mcp-server", "MCP server")]
     public async Task Every_demo_page_loads_and_every_button_on_it_runs_without_console_errors(string path, string heading)
     {
