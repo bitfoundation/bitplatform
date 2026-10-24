@@ -329,6 +329,39 @@ public class BitSwipeTrapTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitSwipeTrapShouldNotReSetupJsWhileItsSetupIsPending()
+    {
+        var setup = Context.JSInterop.SetupVoid("BitBlazorUI.SwipeTrap.setup", _ => true);
+        Context.JSInterop.SetupVoid("BitBlazorUI.SwipeTrap.dispose");
+
+        var component = RenderComponent<BitSwipeTrap>();
+
+        component.Render();
+        component.Render();
+
+        setup.SetVoidResult();
+
+        var setups = Context.JSInterop.Invocations.Where(i => i.Identifier == "BitBlazorUI.SwipeTrap.setup").ToList();
+        var disposes = Context.JSInterop.Invocations.Where(i => i.Identifier == "BitBlazorUI.SwipeTrap.dispose").ToList();
+        Assert.AreEqual(1, setups.Count);
+        Assert.AreEqual(0, disposes.Count);
+    }
+
+    [TestMethod]
+    public void BitSwipeTrapShouldReSetupJsAfterAFailedSetup()
+    {
+        Context.JSInterop.SetupVoid("BitBlazorUI.SwipeTrap.setup", _ => true).SetException(new JSDisconnectedException("Disconnected"));
+        Context.JSInterop.SetupVoid("BitBlazorUI.SwipeTrap.dispose");
+
+        var component = RenderComponent<BitSwipeTrap>();
+
+        component.Render();
+
+        var setups = Context.JSInterop.Invocations.Where(i => i.Identifier == "BitBlazorUI.SwipeTrap.setup").ToList();
+        Assert.AreEqual(2, setups.Count);
+    }
+
+    [TestMethod]
     public void BitSwipeTrapShouldReSetupJsOnFilteringParameterChange()
     {
         Context.JSInterop.SetupVoid("BitBlazorUI.SwipeTrap.setup");

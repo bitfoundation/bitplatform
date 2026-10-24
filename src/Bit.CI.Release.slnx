@@ -186,9 +186,6 @@
     <Project Path="Utilities/BevTools/Demo/Server/Bit.BevTools.Demo.Server.csproj" />
     <Project Path="Utilities/BevTools/Tests/Bit.BevTools.Tests/Bit.BevTools.Tests.csproj" />
   </Folder>
-  <Folder Name="/BlazorES2019/">
-    <Project Path="BlazorES2019/Bit.BlazorES2019/Bit.BlazorES2019.csproj" />
-  </Folder>
   <Folder Name="/BlazorUI/">
     <File Path="BlazorUI/Clean.bat" />
     <File Path="BlazorUI/README.md" />
@@ -251,12 +248,16 @@
   <Folder Name="/Cli/Minifier/">
     <Project Path="Cli/Minifier/Bit.Minifier/Bit.Minifier.csproj" />
   </Folder>
-  <Folder Name="/CodeAnalyzers/">
-    <File Path="CodeAnalyzers/README.md" />
-    <Project Path="CodeAnalyzers/Bit.CodeAnalyzers/Bit.CodeAnalyzers.csproj" />
+  <Folder Name="/Toolings/" />
+  <Folder Name="/Toolings/BlazorES2019/">
+    <Project Path="Toolings/BlazorES2019/Bit.BlazorES2019/Bit.BlazorES2019.csproj" />
   </Folder>
-  <Folder Name="/SourceGenerators/">
-    <File Path="SourceGenerators/README.md" />
-    <Project Path="SourceGenerators/Bit.SourceGenerators/Bit.SourceGenerators.csproj" />
+  <Folder Name="/Toolings/CodeAnalyzers/">
+    <File Path="Toolings/CodeAnalyzers/README.md" />
+    <Project Path="Toolings/CodeAnalyzers/Bit.CodeAnalyzers/Bit.CodeAnalyzers.csproj" />
+  </Folder>
+  <Folder Name="/Toolings/SourceGenerators/">
+    <File Path="Toolings/SourceGenerators/README.md" />
+    <Project Path="Toolings/SourceGenerators/Bit.SourceGenerators/Bit.SourceGenerators.csproj" />
   </Folder>
 </Solution>

@@ -1516,6 +1516,7 @@ function ConvertTo-CallInput($value) {
 
 function Read-AgentTranscript([string] $log) {
     $calls = [Collections.Generic.List[object]]::new()
+    $texts = [Collections.Generic.List[string]]::new()
     $session = $final = $cost = $null
 
     foreach ($line in Get-Content $log -Encoding utf8) {
@@ -1538,6 +1539,10 @@ function Read-AgentTranscript([string] $log) {
             foreach ($use in $event.message.content | Where-Object type -eq 'tool_use') {
                 $calls.Add([pscustomobject]@{ Name = $use.name; Input = ConvertTo-CallInput $use.input })
             }
+
+            if (-not $event.parent_tool_use_id) {
+                $event.message.content | Where-Object type -eq 'text' | ForEach-Object { $texts.Add($_.text) }
+            }
         }
         elseif ($event.type -eq 'result') {
             $final = $event.result
@@ -1545,7 +1550,7 @@ function Read-AgentTranscript([string] $log) {
         }
     }
 
-    [pscustomobject]@{ Session = $session; Cost = $cost; Final = $final; Calls = $calls }
+    [pscustomobject]@{ Session = $session; Cost = $cost; Final = $final; Texts = @($texts); Calls = $calls }
 }
 
 function Invoke-AgentTurn([string] $folder, [string] $model, [string] $prompt, [string] $session, [double] $budget, [string] $log) {
@@ -1577,7 +1582,7 @@ function Test-AgentCheck($check, $folder, $turns, $handoff, $states) {
     $scope = $check.handoff ? @($handoff) : @($turns)
     $calls = @($scope | Where-Object { $_ } | ForEach-Object { $_.Calls })
     $state = $check.handoff ? $states['handoff'] : $states[[int]($check.afterTurn ?? $turns.Count)]
-    $finals = (@($scope | Where-Object { $_ } | ForEach-Object Final) + @($calls | Where-Object Name -eq 'ReportFindings' | ForEach-Object Input)) -join "`n"
+    $finals = @(@($scope | Where-Object { $_ } | ForEach-Object Final) + @($scope | Where-Object { $_ } | ForEach-Object Texts) + @($calls | Where-Object Name -eq 'ReportFindings' | ForEach-Object Input) | Where-Object { $_ })
     $root = ($folder -replace '\\', '/').TrimEnd('/') + '/'
 
     $usedSkill = {
@@ -1589,7 +1594,7 @@ function Test-AgentCheck($check, $folder, $turns, $handoff, $states) {
         'skill' { return & $usedSkill $check.skill }
         'noSkill' { return -not (& $usedSkill $check.noSkill) }
         'called' { return [bool]($calls | Where-Object { $_.Name -like "*__$($check.called)" -or ($_.Name -in 'Bash', 'PowerShell', 'powershell', 'bash' -and $_.Input -like "*$($check.called)*") }) }
-        'mentions' { return [bool]($calls | Where-Object Input -like "*$($check.mentions)*") }
+        'mentions' { return [bool]($calls | Where-Object Input -like "*$($check.mentions)*") -or [bool]($finals -like "*$($check.mentions)*") }
         'read' {
             return [bool]($calls | Where-Object {
                     $paths = [regex]::Matches($_.Input, '"(?:file_path|path)":"([^"]+)"') | ForEach-Object { $_.Groups[1].Value -replace "^$([regex]::Escape($root))", '' }
@@ -1604,7 +1609,7 @@ function Test-AgentCheck($check, $folder, $turns, $handoff, $states) {
         'unchanged' { return -not ($state | Where-Object { $_ -like $check.unchanged }) }
         'onlyChanged' { return -not ($state | Where-Object { $_ -notlike $check.onlyChanged }) }
         'noChanges' { return -not $state }
-        'finalMatches' { return $finals -match $check.finalMatches }
+        'finalMatches' { return [bool]($finals -match $check.finalMatches) }
         'fileLacks' {
             $path = Join-Path $folder $check.fileLacks.path
             return (Test-Path $path) -and -not ($check.fileLacks.patterns | Where-Object { (Get-Content $path -Raw).Contains($_) })

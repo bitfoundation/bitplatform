@@ -263,7 +263,7 @@ public sealed class ProcessRunner(CliEnvironment environment, CliLog log) : IPro
                 process.Kill(entireProcessTree: true);
             }
         }
-        catch (Exception exp) when (exp is InvalidOperationException or Win32Exception or NotSupportedException)
+        catch (Exception exp) when (exp is InvalidOperationException or Win32Exception or NotSupportedException or AggregateException)
         {
         }
     }
