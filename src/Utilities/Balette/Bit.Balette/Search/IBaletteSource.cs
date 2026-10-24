@@ -23,6 +23,26 @@ public interface IBaletteSource
 
     /// <summary>Search for commands matching <paramref name="query"/>.</summary>
     Task<IReadOnlyList<BaletteCommand>> SearchAsync(string query, BaletteSourceContext context, CancellationToken cancellationToken);
+
+    /// <summary>
+    /// Searches one page of results: the first when <paramref name="cursor"/> is null, the one after an earlier page when
+    /// it is that page's <see cref="BaletteSourcePage.NextCursor"/>. A page with a cursor of its own gets a "Show more…" row
+    /// that asks for the next one, so a server never has to send everything it found. By default a single page: what
+    /// <see cref="SearchAsync"/> returns, and no more.
+    /// </summary>
+    async Task<BaletteSourcePage> SearchPageAsync(string query, string? cursor, BaletteSourceContext context, CancellationToken cancellationToken)
+        => cursor is null ? new BaletteSourcePage(await SearchAsync(query, context, cancellationToken).ConfigureAwait(false)) : new BaletteSourcePage([]);
+}
+
+/// <summary>
+/// One page of an <see cref="IBaletteSource"/>'s results (see <see cref="IBaletteSource.SearchPageAsync"/>): the commands,
+/// the cursor of the page after it - null when there is none - and, when the source knows it, how many results there
+/// are in all, which the "Show 37 more…" row counts down from.
+/// </summary>
+public sealed record BaletteSourcePage(IReadOnlyList<BaletteCommand> Commands, string? NextCursor = null, int? TotalCount = null)
+{
+    /// <summary>Whether there is a page after this one.</summary>
+    public bool HasMore => NextCursor is not null;
 }
 
 /// <summary>Extra information available to sources.</summary>
@@ -32,6 +52,7 @@ public sealed record BaletteSourceContext(string? ModePrefix, string? ParentComm
 public sealed class BaletteDelegateSource : IBaletteSource
 {
     private readonly Func<string, BaletteSourceContext, CancellationToken, Task<IReadOnlyList<BaletteCommand>>> _search;
+    private readonly Func<string, string?, BaletteSourceContext, CancellationToken, Task<BaletteSourcePage>>? _searchPage;
 
     /// <summary>Creates a source from a delegate that takes the query.</summary>
     public BaletteDelegateSource(string name, Func<string, CancellationToken, Task<IReadOnlyList<BaletteCommand>>> search, int minQueryLength = 1, int maxResults = 20, bool applyMatcher = false)
@@ -49,6 +70,17 @@ public sealed class BaletteDelegateSource : IBaletteSource
         ApplyMatcher = applyMatcher;
     }
 
+    /// <summary>
+    /// Creates a source that answers in pages: the delegate takes the query and the cursor of the page to load (null for
+    /// the first) and returns a <see cref="BaletteSourcePage"/>, whose <see cref="BaletteSourcePage.NextCursor"/> - when
+    /// there is one - the palette offers to load with a "Show more…" row.
+    /// </summary>
+    public BaletteDelegateSource(string name, Func<string, string?, BaletteSourceContext, CancellationToken, Task<BaletteSourcePage>> searchPage, int minQueryLength = 1, int maxResults = 20, bool applyMatcher = false)
+        : this(name, async (q, ctx, ct) => (await searchPage(q, null, ctx, ct).ConfigureAwait(false)).Commands, minQueryLength, maxResults, applyMatcher)
+    {
+        _searchPage = searchPage;
+    }
+
     /// <summary>The group heading of the source's results.</summary>
     public string Name { get; }
 
@@ -64,6 +96,17 @@ public sealed class BaletteDelegateSource : IBaletteSource
     /// <summary>Runs the delegate.</summary>
     public Task<IReadOnlyList<BaletteCommand>> SearchAsync(string query, BaletteSourceContext context, CancellationToken cancellationToken)
         => _search(query, context, cancellationToken);
+
+    /// <summary>Runs the paging delegate, or - for a source made from one that returns a list - answers a single page.</summary>
+    public async Task<BaletteSourcePage> SearchPageAsync(string query, string? cursor, BaletteSourceContext context, CancellationToken cancellationToken)
+    {
+        if (_searchPage is not null)
+        {
+            return await _searchPage(query, cursor, context, cancellationToken).ConfigureAwait(false);
+        }
+
+        return cursor is null ? new BaletteSourcePage(await _search(query, context, cancellationToken).ConfigureAwait(false)) : new BaletteSourcePage([]);
+    }
 }
 
 /// <summary>A source backed by an in-memory list, filtered with the palette's matcher (useful for large static datasets).</summary>

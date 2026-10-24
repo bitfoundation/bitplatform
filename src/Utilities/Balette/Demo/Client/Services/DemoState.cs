@@ -36,6 +36,9 @@ public sealed class DemoState
 
     public string ProjectName { get; private set; } = "Acme Dashboard";
 
+    /// <summary>The interface language the Language command shows; a right-to-left one sets <c>dir="rtl"</c> on the page.</summary>
+    public string Language { get; private set; } = "English";
+
     public IReadOnlyList<string> Labels { get; private set; } = ["bug"];
 
     /// <summary>Newest first, capped at 30 entries.</summary>
@@ -114,6 +117,24 @@ public sealed class DemoState
         Record($"Theme set to {theme}");
     }
 
+    // ---- Clipboard -----------------------------------------------------------------------------------------------
+
+    /// <summary>
+    /// Writes <paramref name="text"/> to the clipboard, and answers whether the browser let it: a write is allowed only
+    /// shortly after a key press or a click, and a browser may refuse it even then.
+    /// </summary>
+    public async Task<bool> CopyToClipboardAsync(string text)
+    {
+        try
+        {
+            return await _js.InvokeAsync<bool>("baletteDemo.copyText", text);
+        }
+        catch (Exception ex) when (ex is JSException or InvalidOperationException or JSDisconnectedException)
+        {
+            return false;
+        }
+    }
+
     /// <summary>
     /// The site theme changed without this state being asked - the header's toggle, the OS, or the theme theme.js
     /// applied from storage before the first paint, reported once the palette is interactive - so a reload does not
@@ -153,6 +174,21 @@ public sealed class DemoState
         Notifications = false;
         ShowMinimap = true;
         await SetThemeAsync("auto");
+    }
+
+    public async Task SetLanguageAsync(string language, bool rtl)
+    {
+        Language = language;
+        try
+        {
+            await _js.InvokeVoidAsync("document.documentElement.setAttribute", "dir", rtl ? "rtl" : "ltr");
+        }
+        catch (JSException)
+        {
+            // The page is gone; the language is still recorded.
+        }
+
+        Record($"Language: {language}");
     }
 
     public void Rename(string name)

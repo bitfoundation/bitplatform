@@ -68,15 +68,16 @@ public class McpToolTests
     {
         var index = await McpCall.TextAsync("GetBaletteApi");
 
-        foreach (var type in new[] { "Balette", "BaletteTrigger", "BaletteGroup", "BaletteItem", "BaletteCommands", "BaletteCommand", "BaletteCmd", "BaletteCommandResult", "BaletteCommandMode", "IBaletteService", "BaletteOptions", "IBaletteSource", "BaletteFuzzyMatcher", "BaletteSubstringMatcher", "BaletteMatcherExtensions", "BaletteRanker", "BaletteKeyboardShortcut" })
+        foreach (var type in new[] { "Balette", "BaletteTrigger", "BaletteGroup", "BaletteItem", "BaletteCommands", "BaletteCommand", "BaletteCmd", "BaletteCommandResult", "BaletteCommandMode", "IBaletteService", "BaletteOptions", "IBaletteSource", "BaletteFuzzyMatcher", "BaletteSubstringMatcher", "BaletteMatcherExtensions", "BaletteRanker", "BaletteKeyboardShortcut", "BaletteQuery", "BaletteSourcePage" })
         {
             Assert.Contains($"**{type}**", index);
         }
 
         // Internal machinery stays out of the reference, and so does the class Razor makes of _Imports.razor.
-        Assert.DoesNotContain("BaletteQuery", index);
-        Assert.DoesNotContain("BaletteCommandIdGenerator", index);
-        Assert.DoesNotContain("_Imports", index);
+        foreach (var type in new[] { "BaletteCommandIdGenerator", "BaletteTextFold", "BaletteTypoTolerantMatcher", "BaletteUrl", "BaletteLog", "_Imports" })
+        {
+            Assert.DoesNotContain(type, index);
+        }
     }
 
     [TestMethod]

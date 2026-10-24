@@ -121,6 +121,22 @@
         </label>
     </div>
 
+    <p>
+        Or search them, with a palette in the page rather than over it: <code>Inline="true"</code>, listing only its own
+        commands (<code>IncludeRegisteredCommands="false"</code>) in the compact density. It stays out of the layout's
+        palette's way - <code>Ctrl+K</code> still opens that one, and <code>Alt+Z</code> still toggles word wrap once.
+    </p>
+    <div class="demo-inline-palette">
+        <Balette Inline="true"
+                 IncludeRegisteredCommands="false"
+                 Density="compact"
+                 ShowFooter="false"
+                 EnableHistory="false"
+                 Placeholder="Search these settings…"
+                 Style="--bit-balette-max-height: 260px"
+                 Commands="_settingsCommands" />
+    </div>
+
     <div class="bb-note">
         Rebuilding the whole list is the simplest way to keep it current, and cheap: it is a few dozen records.
         <code>IBaletteService.Update(command)</code> replaces a single command by id instead, which suits a registry
@@ -189,9 +205,11 @@
     private int _executed;
     private string? _lastExecuted;
     private List<BaletteCommand> _pageCommands = [];
+    private List<BaletteCommand> _settingsCommands = [];
 
     protected override void OnInitialized()
     {
+        _settingsCommands = SettingsCommands();
         _pageCommands =
         [
             BaletteCmd.New("Increment counter").Group("This page").Shortcut("Ctrl+Up").Keywords("plus", "add")
@@ -210,7 +228,7 @@
                 }),
         ];
 
-        State.Changed += Refresh;
+        State.Changed += OnStateChanged;
         Palette.CommandExecuted += OnExecuted;
         Palette.CommandsChanged += Refresh;
         Palette.Opened += Refresh;
@@ -239,11 +257,34 @@
 
     private void Refresh() => _ = InvokeAsync(StateHasChanged);
 
+    // A new list for the inline palette, so its switches show the new state: it re-reads Commands when handed a new one.
+    private void OnStateChanged() => _ = InvokeAsync(() =>
+    {
+        _settingsCommands = SettingsCommands();
+        StateHasChanged();
+    });
+
+    private List<BaletteCommand> SettingsCommands() =>
+    [
+        BaletteCmd.New("Word wrap").Id("setting:wordwrap").Keywords("soft wrap lines").Checked(State.WordWrap)
+            .Handler(_ => { State.ToggleWordWrap(); return Task.FromResult(BaletteCommandResult.KeepOpen); }),
+        BaletteCmd.New("Desktop notifications").Id("setting:notifications").Keywords("alerts push").Checked(State.Notifications)
+            .Handler(_ => { State.ToggleNotifications(); return Task.FromResult(BaletteCommandResult.KeepOpen); }),
+        BaletteCmd.New("Show minimap").Id("setting:minimap").Keywords("outline overview").Checked(State.ShowMinimap)
+            .Handler(_ => { State.ToggleMinimap(); return Task.FromResult(BaletteCommandResult.KeepOpen); }),
+        .. new[] { "auto", "light", "dark" }.Select(theme => BaletteCmd.New($"Theme: {char.ToUpperInvariant(theme[0])}{theme[1..]}")
+            .Id($"setting:theme-{theme}")
+            .Keywords("appearance", "color scheme")
+            .Checked(State.Theme == theme)
+            .Handler(async _ => { await State.SetThemeAsync(theme); return BaletteCommandResult.KeepOpen; })
+            .Build()),
+    ];
+
     private Task OnThemeChanged(ChangeEventArgs e) => State.SetThemeAsync(e.Value?.ToString() ?? "auto");
 
     public void Dispose()
     {
-        State.Changed -= Refresh;
+        State.Changed -= OnStateChanged;
         Palette.CommandExecuted -= OnExecuted;
         Palette.CommandsChanged -= Refresh;
         Palette.Opened -= Refresh;

@@ -1,4 +1,6 @@
-﻿namespace Bit.Balette.Demo.Client.Services;
+﻿using Microsoft.AspNetCore.Components;
+
+namespace Bit.Balette.Demo.Client.Services;
 
 /// <summary>
 /// The commands the layout registers for the whole app, written with the fluent builder end to end. They are
@@ -39,17 +41,26 @@ public static class DemoCommands
             .Shortcut("F2")
             .Keywords("title", "name")
             .Tags(CommandTag)
-            // A prompt: the input turns into a text box pre-filled with the current name, and Enter submits it.
+            // A prompt: the input turns into a text box pre-filled with the current name, and Enter submits it - once
+            // the validator accepts it. A name the "server" refuses comes back as an Error result, and the prompt stays.
             .Handler(_ => Task.FromResult(BaletteCommandResult.Prompt(
                 "New project name",
                 ctx =>
                 {
-                    if (!string.IsNullOrWhiteSpace(ctx.PromptValue))
+                    var name = ctx.PromptValue!.Trim();
+                    if (string.Equals(name, "admin", StringComparison.OrdinalIgnoreCase))
                     {
-                        state.Rename(ctx.PromptValue.Trim());
+                        return Task.FromResult(BaletteCommandResult.Error("“admin” is reserved. Pick another name."));
                     }
 
-                    return Task.FromResult(BaletteCommandResult.Toast($"Renamed to “{ctx.PromptValue}”"));
+                    state.Rename(name);
+                    return Task.FromResult(BaletteCommandResult.Toast($"Renamed to “{name}”"));
+                },
+                validate: value => value.Trim() switch
+                {
+                    "" => "A project needs a name.",
+                    { Length: > 40 } => "At most 40 characters.",
+                    _ => null,
                 },
                 placeholder: "Project name…",
                 initialValue: state.ProjectName))),
@@ -70,7 +81,7 @@ public static class DemoCommands
             .Handler(ctx =>
             {
                 state.SetLabels(ctx.SelectedCommands.Select(c => c.Title));
-                return Task.FromResult(BaletteCommandResult.Toast($"{ctx.SelectedCommands.Count} labels applied"));
+                return Task.FromResult(BaletteCommandResult.Toast(ctx.SelectedCommands.Count == 1 ? "1 label applied" : $"{ctx.SelectedCommands.Count} labels applied"));
             }),
 
         BaletteCmd.New("Assign to…")
@@ -96,15 +107,49 @@ public static class DemoCommands
                     .ToList();
             }, placeholder: "Pick an assignee…"),
 
+        BaletteCmd.New("Find a person…")
+            .Group("Actions")
+            .Keywords("search", "directory", "people", "user")
+            .Tags(CommandTag)
+            .ChildrenPlaceholder("Search the directory…")
+            // A page that searches as you type rather than loading everything up front: the source is asked for every
+            // query (debounced, cancelled when overtaken), as an API with thousands of people would be.
+            .Source("Directory", async (query, ct) =>
+            {
+                await Task.Delay(250, ct);
+                return FakeDirectory.Shared.People
+                    .Where(p => query.Length == 0 || p.Name.Contains(query, StringComparison.OrdinalIgnoreCase) || p.Role.Contains(query, StringComparison.OrdinalIgnoreCase))
+                    .Select(p => BaletteCmd.New(p.Name)
+                        .Id($"person:{p.Email}")
+                        .Subtitle(p.Role)
+                        .Icon("demo-avatar")
+                        .Data(p)
+                        .ExcludeFromHistory()
+                        .Handler(_ =>
+                        {
+                            state.Record($"Opened {p.Name}");
+                            return Task.FromResult(BaletteCommandResult.Toast($"Opened {p.Name}"));
+                        })
+                        .Build())
+                    .ToList();
+            }),
+
         BaletteCmd.New("Copy share link")
             .Group("Actions")
             .Shortcut("Mod+Shift+C")
             .Keywords("url", "clipboard")
             .Tags(CommandTag)
-            .Handler(_ =>
+            .Handler(async ctx =>
             {
+                // The address of the page the palette is open on: what a share button copies.
+                if (await state.CopyToClipboardAsync(ctx.GetRequiredService<NavigationManager>().Uri) is false)
+                {
+                    // Expected - a browser may refuse the clipboard - so a message rather than an exception.
+                    return BaletteCommandResult.Error("The browser did not let the link be copied.");
+                }
+
                 state.Record("Share link copied");
-                return Task.FromResult(BaletteCommandResult.Toast("Link copied to clipboard"));
+                return BaletteCommandResult.Toast("Link copied to clipboard");
             }),
 
         BaletteCmd.New("Export…")
@@ -129,6 +174,24 @@ public static class DemoCommands
                 ThemeOption(state, "auto", "Follow the operating system"),
                 ThemeOption(state, "light", "Always light"),
                 ThemeOption(state, "dark", "Always dark")),
+
+        // Names as their speakers write them: "francais" or "turkce" finds them from the root (nested search, and
+        // diacritics folded), and a right-to-left one turns the whole site - the palette included - right to left.
+        BaletteCmd.New("Language")
+            .Group("Preferences")
+            .Keywords("locale", "translation", "rtl", "direction")
+            .Tags(CommandTag)
+            .Value(state.Language)
+            .Children(
+                LanguageOption(state, "English", rtl: false),
+                LanguageOption(state, "Deutsch", rtl: false),
+                LanguageOption(state, "Français", rtl: false),
+                LanguageOption(state, "Español", rtl: false),
+                LanguageOption(state, "Português (Brasil)", rtl: false),
+                LanguageOption(state, "Türkçe", rtl: false),
+                LanguageOption(state, "Polski", rtl: false),
+                LanguageOption(state, "فارسی", rtl: true, "Persian"),
+                LanguageOption(state, "العربية", rtl: true, "Arabic")),
 
         Toggle("Word wrap", "wordwrap", state.WordWrap, state.ToggleWordWrap, "Alt+Z", "soft wrap lines"),
         Toggle("Desktop notifications", "notifications", state.Notifications, state.ToggleNotifications, null, "alerts push"),
@@ -182,6 +245,27 @@ public static class DemoCommands
             .Priority(BaletteCommandPriority.Lowest)
             .Handler(ctx => Task.FromResult(BaletteCommandResult.Toast(ctx.Query.Length > 0 ? $"Thanks! We logged “{ctx.Query}”." : "Thanks for the feedback!"))),
     ];
+
+    private static BaletteCommand LanguageOption(DemoState state, string name, bool rtl, string? english = null)
+    {
+        var option = BaletteCmd.New(name)
+            .Id($"language:{english ?? name}")
+            .Subtitle(rtl ? "Right to left" : null)
+            .Checked(state.Language == name)
+            .Handler(async _ =>
+            {
+                await state.SetLanguageAsync(name, rtl);
+                return BaletteCommandResult.Back;
+            });
+
+        // The English name as a keyword, so people who do not read the script still find it.
+        if (english is not null)
+        {
+            option.Keywords(english);
+        }
+
+        return option.Build();
+    }
 
     private static BaletteCommand ThemeOption(DemoState state, string theme, string subtitle) =>
         BaletteCmd.New(Capitalize(theme))

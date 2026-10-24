@@ -43,12 +43,13 @@ public class BaletteBrowserLayerTests : BunitContext
 
         // Positional, and nothing whose shape the serializer would have to discover through reflection.
         var args = InitArguments();
-        Assert.HasCount(7, args);
+        Assert.HasCount(8, args);
         Assert.Contains("mod+k", (IEnumerable<string>)args[2]!);
         AssertSequence.AreEqual(["f2"], (IEnumerable<string>)args[3]!);
         Assert.AreEqual(false, args[4]);
         Assert.AreEqual(750, args[5]);
         Assert.AreEqual(true, args[6]);
+        Assert.AreEqual(false, args[7]); // not inline
     }
 
     [TestMethod]
@@ -104,6 +105,59 @@ public class BaletteBrowserLayerTests : BunitContext
         await cut.InvokeAsync(() => _service.OpenAsync());
 
         AssertSequence.AreEqual(["f3", "f4"], LastSyncedShortcuts(handle));
+    }
+
+    [TestMethod]
+    public async Task Typing_neither_rereads_the_registry_nor_reevaluates_the_shortcuts()
+    {
+        var evaluations = 0;
+        _service.Register(
+            BaletteCmd.New("Merge").Shortcut("Mod+M").VisibleWhen(() => { evaluations++; return true; }),
+            BaletteCmd.New("Alpha"), BaletteCmd.New("Beta"));
+        var handle = SetupInit();
+        var cut = Render<Balette>();
+        await cut.InvokeAsync(() => _service.OpenAsync());
+        var syncs = handle.Invocations.Count(i => i.Identifier == "setCommandShortcuts");
+        var before = evaluations;
+
+        foreach (var query in new[] { "a", "al", "alp", "alph", "alpha" })
+        {
+            await cut.InvokeAsync(() => cut.Instance.SetQueryAsync(query));
+        }
+
+        // Each keystroke evaluates the predicate once, to list the command or not - not again for its shortcut.
+        Assert.AreEqual(before + 5, evaluations);
+        Assert.AreEqual(syncs, handle.Invocations.Count(i => i.Identifier == "setCommandShortcuts"));
+    }
+
+    [TestMethod]
+    public async Task A_command_that_changes_what_is_visible_updates_the_shortcuts_when_it_has_run()
+    {
+        var signedIn = false;
+        _service.Register(
+            BaletteCmd.Action("Sign in", () => signedIn = true),
+            BaletteCmd.New("Sign out").Shortcut("Mod+Shift+Q").VisibleWhen(() => signedIn));
+        var handle = SetupInit();
+        var cut = Render<Balette>();
+        await cut.InvokeAsync(() => _service.OpenAsync("sign in"));
+
+        await cut.InvokeAsync(() => cut.Instance.OnKeyDown("Enter", false, false, false, false));
+
+        AssertSequence.AreEqual(["mod+shift+q"], LastSyncedShortcuts(handle));
+    }
+
+    [TestMethod]
+    public async Task A_command_registered_later_reaches_the_snapshot_and_the_shortcuts()
+    {
+        var handle = SetupInit();
+        var cut = Render<Balette>();
+        await cut.InvokeAsync(() => _service.OpenAsync("late"));
+        Assert.IsEmpty(cut.FindAll("[data-balette=item]"));
+
+        await cut.InvokeAsync(() => _service.Register(BaletteCmd.New("Late arrival").Shortcut("F7")));
+
+        cut.WaitForAssertion(() => Assert.ContainsSingle(cut.FindAll("[data-balette=item]")));
+        AssertSequence.AreEqual(["f7"], LastSyncedShortcuts(handle));
     }
 
     [TestMethod]

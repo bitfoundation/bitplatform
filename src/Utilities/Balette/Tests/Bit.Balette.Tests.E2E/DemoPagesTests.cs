@@ -25,9 +25,10 @@ public sealed class DemoPagesTests : BaletteTest
     public async Task Every_demo_page_loads_and_every_button_on_it_runs_without_console_errors(string path, string heading)
     {
         // The copy button the site kit puts on every code sample writes to the clipboard, which a browser lets a
-        // click do; headless Chromium asks for the permission first, and refuses the write without it.
+        // click do; headless Chromium asks for the permission first, and refuses the write without it. Firefox and
+        // WebKit grant it to the click itself, and know no such permission.
         var options = DefaultContextOptions();
-        options.Permissions = ["clipboard-read", "clipboard-write"];
+        if (E2EEnvironment.IsChromium) options.Permissions = ["clipboard-read", "clipboard-write"];
         var page = await NewPageAsync(await NewContextAsync(options));
 
         var problems = new List<string>();
@@ -59,6 +60,11 @@ public sealed class DemoPagesTests : BaletteTest
             {
                 // The button was disabled or re-rendered away between the count and the click; that is not a page error.
             }
+
+            // What the click opens is looked for next, so it has to be on screen first: on Blazor Server it renders a
+            // round trip after the click, and a search found missing then left its own Close button to be the next one
+            // clicked.
+            await SettleAsync(page);
         }
 
         // Let what the last click started - a source search, a measurement - finish and report.
@@ -91,6 +97,18 @@ public sealed class DemoPagesTests : BaletteTest
         await Assertions.Expect(page.Locator("h1")).ToHaveTextAsync(LandingHeading);
     }
 
+    /// <summary>Waits until the page has not changed for 150 ms - what the last click started has rendered - or 3 s have passed.</summary>
+    private static Task SettleAsync(IPage page) => page.EvaluateAsync(
+        """
+        () => new Promise(resolve => {
+          const done = () => { observer.disconnect(); clearTimeout(quiet); clearTimeout(cap); resolve(); };
+          const observer = new MutationObserver(() => { clearTimeout(quiet); quiet = setTimeout(done, 150); });
+          let quiet = setTimeout(done, 150);
+          const cap = setTimeout(done, 3000);
+          observer.observe(document.body, { subtree: true, childList: true, attributes: true, characterData: true });
+        })
+        """);
+
     /// <summary>The landing page's title (Pages/Home.razor).</summary>
     private const string LandingHeading = "A command palette for Blazor, every decision in C#.";
 
@@ -102,6 +120,9 @@ public sealed class DemoPagesTests : BaletteTest
     {
         if (await SiteSearch(page).IsVisibleAsync())
         {
+            // Its Esc handler is on the search itself, which takes the focus a moment after it shows - on Blazor Server a
+            // round trip after - and an Esc pressed before that lands on the button that opened it.
+            await Assertions.Expect(SiteSearch(page).Locator("input")).ToBeFocusedAsync();
             await page.Keyboard.PressAsync("Escape");
             await Assertions.Expect(SiteSearch(page)).ToHaveCountAsync(0);
         }
