@@ -28,6 +28,13 @@ public static class E2EEnvironment
     public static bool SkipBuild { get; } = Read("BMAGE_E2E_SKIP_BUILD") == "1";
 
     /// <summary>
+    /// <c>BMAGE_E2E_MAUI_DEBUGGING_PORT</c>: the WebView2 debugging port the MAUI sample was given from outside - by the
+    /// machine-wide <c>AdditionalBrowserArguments</c> policy, as CI sets it. Needed when the suite runs elevated: WebView2
+    /// then ignores <c>WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS</c>, which is how the suite opens a free port otherwise.
+    /// </summary>
+    public static int? MauiDebuggingPort { get; } = int.TryParse(Read("BMAGE_E2E_MAUI_DEBUGGING_PORT"), out var port) ? port : null;
+
+    /// <summary>
     /// <c>BMAGE_E2E_CHANNEL</c>: e.g. chrome / msedge, to use an installed browser. When unset the suite
     /// tries Playwright's bundled Chromium first and then an installed Chrome and Edge, and reports the
     /// run as inconclusive if none of them launches.

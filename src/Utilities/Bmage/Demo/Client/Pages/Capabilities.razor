@@ -127,7 +127,7 @@
             </thead>
             <tbody>
                 <tr><th scope="row"><code>BrowserWebAssembly</code></th><td>.NET runs in the browser: everything is local, and the probe's answers are this browser's.</td></tr>
-                <tr><th scope="row"><code>BrowserServer</code></th><td>Interactive Server: the browser's codecs are reached over the circuit, and pixels cross it.</td></tr>
+                <tr><th scope="row"><code>BrowserServer</code></th><td>Interactive Server or Blazor Hybrid: .NET runs outside the browser and reaches its codecs over JavaScript interop - across the circuit, or the WebView's bridge inside a MAUI app - and pixels cross it.</td></tr>
                 <tr><th scope="row"><code>Prerendering</code></th><td>No browser yet: the managed set is reported instead of an error. Probe again once interactive.</td></tr>
                 <tr><th scope="row"><code>Server</code></th><td>A headless host: PNG, JPEG, BMP and GIF from the managed codecs, no browser involved.</td></tr>
             </tbody>

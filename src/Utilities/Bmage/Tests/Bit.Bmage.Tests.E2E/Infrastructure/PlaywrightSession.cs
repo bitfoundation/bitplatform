@@ -18,6 +18,9 @@ public static class PlaywrightSession
     private static readonly Lazy<Task<IPlaywright>> _playwright = new(Playwright.CreateAsync);
     private static readonly Lazy<Task<(IBrowser? Browser, string? Failure)>> _browser = new(LaunchAsync);
 
+    /// <summary>The shared Playwright driver, for attaching to a browser the suite did not launch (the MAUI sample's WebView2).</summary>
+    public static Task<IPlaywright> PlaywrightAsync() => _playwright.Value;
+
     /// <summary>The shared browser, or null with the reason when no browser could be launched.</summary>
     public static Task<(IBrowser? Browser, string? Failure)> BrowserAsync() => _browser.Value;
 

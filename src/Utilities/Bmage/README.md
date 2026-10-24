@@ -26,7 +26,8 @@ stripped, and the result is a WebP that fits the size budget you asked for.
 
 > Targets **.NET 8, 9, and 10** · Everything works on **Blazor WebAssembly** and **Interactive Auto** once interactive.
 > **Interactive Server** works too: PNG, JPEG, BMP and GIF are coded on the server, while WebP, AVIF and editor previews
-> cross the circuit. Prerendering, ASP.NET Core and console hosts get the headless API with the managed codecs.
+> cross the circuit. So does **Blazor Hybrid** (MAUI, WPF, Windows Forms), the same way but inside the app.
+> Prerendering, ASP.NET Core and console hosts get the headless API with the managed codecs.
 
 Bmage's documentation website lives in [`Demo`](https://github.com/bitfoundation/bitplatform/tree/develop/src/Utilities/Bmage/Demo/) - run the
 `Demo/Server` project, or visit [bmage.bitplatform.dev](https://bmage.bitplatform.dev).
@@ -218,6 +219,7 @@ median filter 8.5×. In the browser, decoding and encoding run in Web Workers, o
 | Blazor Web App, Interactive WebAssembly | Everything |
 | Blazor Web App, Interactive Auto | Everything once interactive |
 | Blazor Web App, Interactive Server | Everything; PNG, JPEG, BMP and GIF are coded on the server, WebP, AVIF and editor previews cross the circuit; see [docs/browser-support.md](https://github.com/bitfoundation/bitplatform/blob/develop/src/Utilities/Bmage/docs/browser-support.md) |
+| Blazor Hybrid (MAUI, WPF, Windows Forms) | Everything; as Interactive Server, but .NET runs in the app and reaches the WebView without a network; saving a file on Android and iOS is the app's job; see [docs/browser-support.md](https://github.com/bitfoundation/bitplatform/blob/develop/src/Utilities/Bmage/docs/browser-support.md#blazor-hybrid-maui-wpf-windows-forms) |
 | Prerendering | Managed codecs only, and capability detection reports `Prerendering`; call browser features from `OnAfterRenderAsync` |
 | ASP.NET Core, console, worker | Headless API with the managed codecs, no browser involved |
 

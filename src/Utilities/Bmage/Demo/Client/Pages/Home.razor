@@ -291,15 +291,17 @@
                 <p>
                     Not on WebAssembly, which is where Bmage is meant to run: the file is decoded, processed
                     and encoded in the browser, and only the result goes wherever your code sends it.
-                    Interactive Server works too, but there the pixels cross the circuit to be processed.
+                    Interactive Server works too, but there the pixels cross the circuit to be processed. In
+                    a Blazor Hybrid (MAUI) app they stay on the device as well: .NET runs inside the app.
                 </p>
             </details>
             <details>
                 <summary>Which frameworks and render modes are supported?</summary>
                 <p>
                     .NET 8, 9 and 10. Everything works on Blazor WebAssembly and on Interactive Auto once
-                    interactive; prerendering, ASP.NET Core and console hosts get the headless API with the
-                    managed PNG, JPEG, BMP and GIF codecs.
+                    interactive, and on Interactive Server and Blazor Hybrid (MAUI, WPF, Windows Forms), where
+                    .NET reaches the browser over interop; prerendering, ASP.NET Core and console hosts get the
+                    headless API with the managed PNG, JPEG, BMP and GIF codecs.
                 </p>
             </details>
             <details>

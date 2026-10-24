@@ -23,7 +23,7 @@ public class SetupGuideTests
     [TestMethod]
     public void TheBrowserModes_UseTheBrowserRegistration_AndWarnAboutPrerendering()
     {
-        foreach (var mode in new[] { "wasm", "server", "auto", "standalone-wasm" })
+        foreach (var mode in new[] { "wasm", "server", "auto", "standalone-wasm", "hybrid" })
         {
             var guide = BmageSetupGuide.Get(mode)!;
 
@@ -74,11 +74,29 @@ public class SetupGuideTests
     }
 
     [TestMethod]
+    public void TheHybridMode_RegistersOnce_AndSavesThroughThePlatform()
+    {
+        var guide = BmageSetupGuide.Get("hybrid")!;
+
+        StringAssert.Contains(guide, "AddMauiBlazorWebView()");
+        StringAssert.Contains(guide, "ImageEnvironment.BrowserServer");
+        StringAssert.Contains(guide, "wwwroot/index.html");
+        StringAssert.Contains(guide, "Share.Default.RequestAsync");
+        StringAssert.Contains(guide, "UseInterpreter");
+        Assert.IsFalse(guide.Contains("BOTH containers", StringComparison.Ordinal), "The hybrid guide asks for a second container a hybrid app does not have.");
+        Assert.IsFalse(guide.Contains("<RunAOTCompilation>true", StringComparison.Ordinal), "The hybrid guide turns on WebAssembly AOT, which does not apply.");
+    }
+
+    [TestMethod]
     [DataRow("InteractiveWebAssembly", "wasm")]
     [DataRow("WebAssembly", "wasm")]
     [DataRow("interactiveserver", "server")]
     [DataRow("InteractiveAuto", "auto")]
     [DataRow("standalone", "standalone-wasm")]
+    [DataRow("MAUI", "hybrid")]
+    [DataRow("Blazor Hybrid", "hybrid")]
+    [DataRow("wpf", "hybrid")]
+    [DataRow("Windows Forms", "hybrid")]
     [DataRow("console", "headless")]
     [DataRow(" ASP.NET Core ", "headless")]
     [DataRow("worker", "headless")]
@@ -91,7 +109,7 @@ public class SetupGuideTests
     [TestMethod]
     public void AnUnknownMode_IsNull()
     {
-        Assert.IsNull(BmageSetupGuide.Get("maui"));
+        Assert.IsNull(BmageSetupGuide.Get("electron"));
         Assert.IsNull(BmageSetupGuide.Get(null));
     }
 

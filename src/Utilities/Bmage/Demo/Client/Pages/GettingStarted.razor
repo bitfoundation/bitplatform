@@ -27,7 +27,8 @@
     <CodeSnippet Code="dotnet add package Bit.Bmage" Language="Shell" Expanded="true" />
     <p>
         It targets .NET 8, 9 and 10. Everything works on Blazor WebAssembly and on Interactive
-        Auto once interactive; Interactive Server works too, with pixel data crossing the circuit.
+        Auto once interactive; Interactive Server works too, with pixel data crossing the circuit,
+        and so does Blazor Hybrid in a MAUI, WPF or Windows Forms app.
         <a href="/hosting">Hosting models</a> covers each.
     </p>
 </div>
@@ -37,7 +38,8 @@
     <p>
         In <code>Program.cs</code> of the project that runs in the browser. For a Blazor Web App using
         WebAssembly or Auto render modes that is the client project - and the server project too when
-        it prerenders, or when any component uses Interactive Server.
+        it prerenders, or when any component uses Interactive Server. A Blazor Hybrid app has one
+        container: register it once, in <code>MauiProgram.cs</code> or its equivalent.
     </p>
     <CodeSnippet Code="@RegisterSnippet" Language="C#" Expanded="true" />
     <p>

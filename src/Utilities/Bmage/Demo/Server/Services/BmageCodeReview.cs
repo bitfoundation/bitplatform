@@ -968,7 +968,9 @@ public static partial class BmageCodeReview
     [GeneratedRegex(@"\bLoadImageAsync\s*\(\s*(?<name>\w+)\s*(?:\)|,\s*(?:takeOwnership\s*:\s*)?true\s*\))")]
     private static partial Regex LoadImageRegex();
 
-    [GeneratedRegex(@"href\s*=\s*""(?<href>[^""]*(?:_content/Bit\.Bmage[^""]*|bit-bmage[^""]*)\.css)""", RegexOptions.IgnoreCase)]
+    // A stylesheet meant to be Bmage's: one in the package's _content folder (or the Bit.Bmage.Editor one people guess),
+    // or one named after it. Not any _content/Bit.Bmage.* folder: an app's own project can be called Bit.Bmage.Something.
+    [GeneratedRegex(@"href\s*=\s*""(?<href>[^""]*(?:_content/Bit\.Bmage(?:\.Editor)?/[^""]*|bit-bmage[^""/]*)\.css)""", RegexOptions.IgnoreCase)]
     private static partial Regex BmageStylesheetRegex();
 
     [GeneratedRegex(@"<head\b", RegexOptions.IgnoreCase)]

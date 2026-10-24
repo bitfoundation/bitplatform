@@ -10,6 +10,8 @@ public class CompletionsTests
     [DataRow("path", "Avatar", "Demo/Client/Pages/Avatar.razor")]
     [DataRow("id", "avatar", "avatar-crop")]
     [DataRow("renderMode", "stand", "standalone-wasm")]
+    [DataRow("renderMode", "hyb", "hybrid")]
+    [DataRow("path", "MauiProgram", "Samples/MAUI/MauiProgram.cs")]
     [DataRow("source", "scr", "screenshot")]
     [DataRow("format", "jp", "jpeg")]
     public void Complete_OffersTheValuesOfItsSet(string argument, string typed, string expected)

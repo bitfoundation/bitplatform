@@ -8,6 +8,7 @@
 | Blazor Web App, `InteractiveWebAssembly` | Everything | Same as above once the component is interactive. |
 | Blazor Web App, `InteractiveAuto` | Everything once interactive | The first visit runs on the server while the runtime downloads; see the Server row. |
 | Blazor Web App, `InteractiveServer` | Everything | Works, but pixels cross the circuit. See below. |
+| Blazor Hybrid (MAUI, WPF, Windows Forms) | Everything | .NET runs in the app and reaches the WebView over its interop bridge; no network involved. See below. |
 | Prerendering | Managed codecs only | No browser exists yet. Call browser features from `OnAfterRenderAsync`. |
 | ASP.NET Core, console, worker | Headless API | `AddBitBmageHeadlessServices`. Managed codecs only, no JavaScript. |
 
@@ -30,6 +31,54 @@ If you are targeting Interactive Server and images are central to your applicati
 
 The library does not pretend a browser API works where it does not: `IImageCapabilityProvider` reports
 `ImageEnvironment.BrowserServer` so you can adapt.
+
+### Blazor Hybrid (MAUI, WPF, Windows Forms)
+
+Everything works. The components run in compiled .NET inside the app's own process and render into a WebView, which
+Bmage reaches over JavaScript interop - the same position as Interactive Server, so `IImageCapabilityProvider` reports
+`ImageEnvironment.BrowserServer` and the codecs are chosen the same way. PNG, JPEG, BMP and GIF are decoded and encoded
+by the managed codecs in the app; WebP, AVIF and photos with a colour profile other than sRGB go through the WebView.
+Nothing crosses a network, but those pixels, and the editor's previews, are copied through the WebView's message
+channel, so the managed formats are the cheaper ones here.
+
+Setting it up differs from a Web App in three places:
+
+- **One container, and the WebView is there from the first render.** Register the services once, next to the
+  WebView; the capability probe always answers for it:
+
+  ```csharp
+  // MauiProgram.cs
+  builder.Services.AddMauiBlazorWebView();
+  builder.Services.AddBitBmageServices(options =>
+  {
+      // The pixel loops run on the device's CPU, not in WebAssembly, so give an image every core.
+      options.MaxDegreeOfParallelism = Environment.ProcessorCount;
+  });
+  ```
+
+- **The stylesheet goes in `wwwroot/index.html`**, the page the WebView hosts, as in standalone WebAssembly. Do not add
+  a script tag for `bit-bmage.js`: the library imports it on demand, and the codec workers load from the same
+  `_content/Bit.Bmage/` folder of the app package.
+- **Saving a file is the platform's job on mobile.** `ImageExporter.DownloadAsync` and the editor's download hand the
+  file to the WebView. WebView2 on Windows saves it as Edge would; Android's WebView and iOS's WKWebView leave
+  downloads to the app, so there encode with `EncodeWithFallbackAsync` (or the editor's `ExportAsync`) and save the
+  bytes with the platform's APIs:
+
+  ```csharp
+  var encoded = await Exporter.EncodeWithFallbackAsync(image, [ImageFormat.WebP, ImageFormat.Jpeg]);
+  var path = Path.Combine(FileSystem.CacheDirectory, "photo" + encoded.Extension);
+  await File.WriteAllBytesAsync(path, encoded.Data);
+  await Share.Default.RequestAsync(new ShareFileRequest { Title = "Save the image", File = new ShareFile(path) });
+  ```
+
+Which formats the WebView codes depends on its engine: WebView2 on Windows and the Android System WebView are
+Chromium, and iOS and Mac Catalyst use WKWebView, Safari's engine, with its tighter canvas limits. The probe measures
+whichever one the app runs in, so pick formats with `ChooseEncodableFormat` or `EncodeWithFallbackAsync` rather than
+by platform. The MAUI template turns on `UseInterpreter` in Debug builds for Hot Reload, which runs the pixel loops
+interpreted: judge performance on a Release build.
+
+[`Samples/MAUI`](https://github.com/bitfoundation/bitplatform/tree/develop/src/Utilities/Bmage/Samples/MAUI/) is a
+working MAUI app over the same pages as the Web App samples, and the E2E suite drives it on Windows.
 
 ### Prerendering
 

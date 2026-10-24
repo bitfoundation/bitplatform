@@ -23,6 +23,17 @@ public static class RepoLayout
     public static string SampleAssembly(string sample, string configuration) =>
         Path.Combine(Path.GetDirectoryName(SampleProject(sample))!, "bin", configuration, "net10.0", $"{Path.GetFileNameWithoutExtension(SampleProject(sample))}.dll");
 
+    public static string MauiSampleProject() => FindUpward(Path.Combine("Samples", "MAUI", "Bit.Bmage.Samples.Maui.csproj"));
+
+    /// <summary>The MAUI sample's Windows executable, under its runtime identifier's folder, or null when it is not built.</summary>
+    public static string? MauiSampleExecutable(string configuration)
+    {
+        var output = Path.Combine(Path.GetDirectoryName(MauiSampleProject())!, "bin", configuration, MauiSampleApp.TargetFramework);
+        return Directory.Exists(output)
+            ? Directory.EnumerateFiles(output, "Bit.Bmage.Samples.Maui.exe", SearchOption.AllDirectories).FirstOrDefault()
+            : null;
+    }
+
     private static string FindUpward(string relativePath)
     {
         for (var directory = new DirectoryInfo(AppContext.BaseDirectory); directory is not null; directory = directory.Parent)

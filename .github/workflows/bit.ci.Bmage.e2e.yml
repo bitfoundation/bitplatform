@@ -1,6 +1,6 @@
 name: bit platform CI - Bmage E2E
 
-# The demo website and the hosting samples driven in Chromium. It takes far longer than the build-and-unit pipeline (bit.ci.Bmage.yml), so
+# The demo website and the hosting samples driven in Chromium, and the MAUI sample driven in its WebView2. It takes far longer than the build-and-unit pipeline (bit.ci.Bmage.yml), so
 # it runs only when started by hand. See src/Utilities/Bmage/Tests/Bit.Bmage.Tests.E2E/README.md for what the suite covers and
 # how to run it locally.
 
@@ -81,6 +81,7 @@ jobs:
       run: >
         cd src/Utilities/Bmage/Tests/Bit.Bmage.Tests.E2E &&
         dotnet test -c Release --no-build
+        --filter "FullyQualifiedName!~SamplesMauiTests"
         --report-trx --report-trx-filename bmage-e2e.trx
 
     - name: Upload test results
@@ -91,4 +92,85 @@ jobs:
         path: |
           **/bmage-e2e.trx
           demo.log
+        if-no-files-found: ignore
+
+  # The MAUI sample as a Windows app (Blazor Hybrid), its WebView2 driven over the DevTools Protocol.
+  e2e-maui:
+    name: Bmage E2E - MAUI sample (Windows, WebView2)
+    runs-on: windows-2025
+    timeout-minutes: 60
+
+    steps:
+
+    - name: Checkout source code
+      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      with:
+          persist-credentials: false
+
+    - name: Setup .NET 10.0
+      uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+      with:
+        global-json-file: src/global.json
+
+    - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+      with:
+        node-version: 24
+
+    # Every workload the MAUI project's target frameworks need on Windows: restore evaluates all of them, even for a
+    # build of the Windows one alone.
+    - name: dotnet workload restore
+      run: cd src/Utilities/Bmage/Samples/MAUI && dotnet workload restore
+
+    # windows-2025 ships the Edge browser but not the WebView2 Runtime, which BlazorWebView needs.
+    - name: Install the WebView2 Runtime
+      shell: pwsh
+      run: |
+        $clientKey = 'HKLM:\SOFTWARE\WOW6432Node\Microsoft\EdgeUpdate\Clients\{F3017226-FE2A-4295-8BDF-00C3A9A7E4C5}'
+        $version = (Get-ItemProperty $clientKey -ErrorAction SilentlyContinue).pv
+        if (-not $version -or $version -eq '0.0.0.0') {
+          $installer = Join-Path $env:RUNNER_TEMP 'MicrosoftEdgeWebview2Setup.exe'
+          Invoke-WebRequest 'https://go.microsoft.com/fwlink/p/?LinkId=2124703' -OutFile $installer
+          Start-Process $installer -ArgumentList '/silent', '/install' -Wait
+          $version = (Get-ItemProperty $clientKey -ErrorAction SilentlyContinue).pv
+        }
+        if (-not $version -or $version -eq '0.0.0.0') { throw 'The WebView2 Runtime did not install.' }
+        Write-Host "WebView2 Runtime $version"
+
+    # The runner is elevated, and an elevated app's WebView2 ignores WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS, which is how
+    # the suite opens the debugging port elsewhere. The machine-wide policy is honoured; "*" covers whichever app id
+    # WebView2 resolves the sample to, and nothing else on this throwaway runner uses WebView2.
+    - name: Open the WebView2 debugging port by policy
+      shell: pwsh
+      run: |
+        $key = 'HKLM:\SOFTWARE\Policies\Microsoft\Edge\WebView2\AdditionalBrowserArguments'
+        New-Item -Path $key -Force | Out-Null
+        Set-ItemProperty -Path $key -Name '*' -Value '--remote-debugging-port=9333'
+
+    # Unpackaged, with the Windows App SDK inside it, so the suite can start the executable without installing an MSIX.
+    - name: Build the MAUI sample
+      run: >
+        dotnet build src/Utilities/Bmage/Samples/MAUI/Bit.Bmage.Samples.Maui.csproj -c Release
+        -f net10.0-windows10.0.19041.0 -p:WindowsPackageType=None -p:WindowsAppSDKSelfContained=true
+
+    - name: Build the E2E suite
+      run: dotnet build src/Utilities/Bmage/Tests/Bit.Bmage.Tests.E2E/Bit.Bmage.Tests.E2E.csproj -c Release
+
+    # No Playwright browser download: it attaches to the WebView2 Runtime installed above.
+    - name: Run MAUI E2E tests
+      env:
+        BMAGE_E2E_CONFIGURATION: Release
+        BMAGE_E2E_SKIP_BUILD: 1
+        BMAGE_E2E_MAUI_DEBUGGING_PORT: 9333
+      run: >
+        cd src/Utilities/Bmage/Tests/Bit.Bmage.Tests.E2E &&
+        dotnet test -c Release --no-build
+        --filter "FullyQualifiedName~SamplesMauiTests"
+        --report-trx --report-trx-filename bmage-e2e-maui.trx
+
+    - name: Upload test results
+      if: always()
+      uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+      with:
+        name: bmage-e2e-maui
+        path: '**/bmage-e2e-maui.trx'
         if-no-files-found: ignore

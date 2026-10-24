@@ -243,7 +243,7 @@ public class McpSurfaceTests
         StringAssert.Contains(McpResources.Source("nowhere.razor"), "No source file at");
         StringAssert.Contains(McpResources.Recipe("teleport"), "no recipe called");
 
-        var setup = McpResources.Setup("maui");
+        var setup = McpResources.Setup("electron");
 
         foreach (var mode in BmageSetupGuide.RenderModes)
         {
