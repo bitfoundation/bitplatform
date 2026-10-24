@@ -9,7 +9,7 @@
 <div class="bev-split">
     <div class="bev-left" style="flex-basis:58%">
         <div class="bev-toolbar">
-            <input type="text" aria-label="Filter requests" placeholder='Filter: url text, method:GET, status:failed|cancelled|pending|2xx|4xx|5xx' value="@Query" @oninput="OnQuery" />
+            <input type="text" aria-label="Filter requests" placeholder='Filter: url text, method:GET, status:failed|cancelled|pending|2xx|4xx|5xx' @bind:get="Query" @bind:set="OnQuery" @bind:event="oninput" />
             <span class="bev-segmented" role="group" aria-label="Show">
                 <button type="button" aria-pressed="@(View.ByEndpoint ? "false" : "true")" @onclick="() => ShowEndpoints(false)">Requests</button>
                 <button type="button" aria-pressed="@(View.ByEndpoint ? "true" : "false")" title="One row per endpoint, with ids in the path as {id}: counts, failures, p50/p95 durations, bytes" @onclick="() => ShowEndpoints(true)">Endpoints</button>
@@ -232,9 +232,9 @@
         _duplicates = _selected is null ? 0 : _all.Count(r => r.Signature == _selected.Signature);
     }
 
-    private void OnQuery(ChangeEventArgs e)
+    private void OnQuery(string? value)
     {
-        Ui.SetQuery("network", e.Value?.ToString());
+        Ui.SetQuery("network", value);
         OnParametersSet();
     }
 

@@ -309,6 +309,42 @@ describe('external frontends', () => {
         expect(events).toContain('targets');
         hub.detach();
     });
+
+    it("call nothing in a Server runtime while its circuit's connection is closed, and are told so at once", async () => {
+        vi.useFakeTimers();
+        installPage();
+        const hub = await loadHub();
+        const server = runtime(1, { hello: { protocol: 1 } });
+        const wasm = runtime(2, { hello: { protocol: 1 } });
+        const { targetId } = hub.attach(server, { platform: 'Server', label: 'Server circuit' });
+        const { targetId: wasmId } = hub.attach(wasm, { platform: 'WebAssembly' });
+        const socket = new window.WebSocket('wss://app.example/_blazor?id=x');
+        socket.send(frame(arr(int(6))));
+        socket.close(1006, '');
+        vi.advanceTimersByTime(2100);
+
+        // Blazor's send would reject where nothing catches it: an unhandled rejection on the application's page.
+        expect(server.reported('ReportTraffic'), 'no call into the closed circuit').toHaveLength(0);
+        expect(wasm.reported('ReportTraffic'), 'the WebAssembly runtime still hears it').toHaveLength(1);
+        await expect(window.__BIT_BEVTOOLS__.request(targetId, 'hello')).rejects.toThrow('is disconnected');
+        expect(await window.__BIT_BEVTOOLS__.request(wasmId, 'hello')).toEqual({ protocol: 1 });
+
+        new window.WebSocket('wss://app.example/_blazor?id=y');
+        expect(await window.__BIT_BEVTOOLS__.request(targetId, 'hello'), 'reconnected').toEqual({ protocol: 1 });
+        hub.detach();
+    });
+
+    it('give up on a runtime that never answers instead of waiting forever', async () => {
+        vi.useFakeTimers();
+        installPage();
+        const hub = await loadHub();
+        const { targetId } = hub.attach({ invokeMethodAsync: () => new Promise(() => { }) }, { label: 'Silent runtime' });
+        const answer = window.__BIT_BEVTOOLS__.request(targetId, 'hello');
+        const settled = expect(answer).rejects.toThrow('Silent runtime did not answer within 30 s');
+        vi.advanceTimersByTime(30_000);
+        await settled;
+        hub.detach();
+    });
 });
 
 describe('redaction in the hub', () => {

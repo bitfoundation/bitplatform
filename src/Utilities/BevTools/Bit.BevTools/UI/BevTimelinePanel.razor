@@ -4,7 +4,7 @@
 <div class="bev-split">
     <div class="bev-left" style="flex-basis:58%">
         <div class="bev-toolbar">
-            <input type="text" aria-label="Filter timeline events" placeholder='Filter: text, kind:render, component:12, severity:error, id:45' value="@Query" @oninput="OnQuery" />
+            <input type="text" aria-label="Filter timeline events" placeholder='Filter: text, kind:render, component:12, severity:error, id:45' @bind:get="Query" @bind:set="OnQuery" @bind:event="oninput" />
             <button type="button" @onclick="() => Session.Timeline.Clear()" title="Clear timeline">Clear</button>
             <label><input type="checkbox" checked="@_showLanes" @onchange='e => { _showLanes = e.Value is true; OnParametersSet(); }' /> lanes</label>
             <span class="bev-muted bev-nowrap">@_events.Count / @_all.Length</span>
@@ -281,9 +281,9 @@
         _bars = bars;
     }
 
-    private void OnQuery(ChangeEventArgs e)
+    private void OnQuery(string? value)
     {
-        Ui.SetQuery("timeline", e.Value?.ToString());
+        Ui.SetQuery("timeline", value);
         OnParametersSet();
     }
 

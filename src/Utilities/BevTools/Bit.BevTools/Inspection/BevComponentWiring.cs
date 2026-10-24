@@ -114,8 +114,13 @@ internal static class BevComponentWiringReader
         var target = DescribeElement(frames, elementIndex);
         if (attribute.AttributeEventUpdatesAttributeName is { Length: > 0 } updates)
         {
-            // @bind compiles to a framework binder around the setter, which names the binder, not the component's code.
-            return new BevEventBinding(target, attribute.AttributeName, "@bind-" + updates + ": writes the element's " + updates + " back into the component", BevEventBindingKind.Bind);
+            // @bind compiles to a framework binder around the setter, which names the binder, not the component's code. A
+            // setter the component wrote as a method (@bind:set="OnQuery") is named; the assignment @bind compiles to is not.
+            var handler = attribute.AttributeValue as Delegate ?? (IsCallable(attribute.AttributeValue) ? BlazorReflection.EventCallbackDelegate(attribute.AttributeValue!) : null);
+            var setter = handler is null ? null : BlazorReflection.BindSetter(handler);
+            return setter is not null && !setter.Method.Name.StartsWith('<')
+                ? new BevEventBinding(target, attribute.AttributeName, "@bind-" + updates + " → " + BevEventCallbacks.Method(setter), BevEventBindingKind.Bind) { HandlerMethod = setter.Method }
+                : new BevEventBinding(target, attribute.AttributeName, "@bind-" + updates + ": writes the element's " + updates + " back into the component", BevEventBindingKind.Bind);
         }
 
         return new BevEventBinding(target, attribute.AttributeName, DescribeHandler(attribute.AttributeValue), BevEventBindingKind.DomEvent) { HandlerMethod = HandlerMethodOf(attribute.AttributeValue) };
@@ -223,6 +228,12 @@ public static class BevEventCallbacks
     /// </summary>
     public static string Method(Delegate handler)
     {
+        // @bind runs a lambda of the framework's binder; what the developer wrote is the setter it calls.
+        if (BlazorReflection.BindSetter(handler) is { } setter)
+        {
+            return Method(setter) + " (@bind)";
+        }
+
         var method = handler.Method;
         var declaring = method.DeclaringType;
         while (declaring is not null && declaring.IsDefined(typeof(CompilerGeneratedAttribute), false) && declaring.DeclaringType is not null)

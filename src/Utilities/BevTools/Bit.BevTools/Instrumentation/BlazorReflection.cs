@@ -294,6 +294,42 @@ internal static class BlazorReflection
     private static readonly ConcurrentDictionary<Type, FieldInfo?> TypedCallbackDelegateFields = new();
 
     /// <summary>
+    /// The setter an <c>@bind</c> handler runs. The handler itself is a lambda of the framework's binder
+    /// (<c>EventCallbackFactoryBinderExtensions</c>), which converts the browser's value and passes it to the setter the
+    /// component wrote (<c>@bind:set</c>, or the assignment <c>@bind</c> compiles to), captured in its closure; a
+    /// <c>@bind:set</c> method arrives wrapped once more by <c>RuntimeHelpers.CreateInferredBindSetter</c>. Null for any
+    /// other handler, or when the closures no longer have that shape.
+    /// </summary>
+    public static Delegate? BindSetter(Delegate handler)
+    {
+        try
+        {
+            if (Captured(handler, typeof(EventCallbackFactoryBinderExtensions), "setter") is not { } setter)
+            {
+                return null;
+            }
+
+            return Captured(setter, typeof(Microsoft.AspNetCore.Components.CompilerServices.RuntimeHelpers), "callback") ?? setter;
+        }
+        catch
+        {
+            return null;
+        }
+
+        // The delegate a lambda of the framework's `owner` captured as `field`.
+        static Delegate? Captured(Delegate lambda, Type owner, string field)
+        {
+            var declaring = lambda.Method.DeclaringType;
+            while (declaring is not null && declaring.IsDefined(typeof(System.Runtime.CompilerServices.CompilerGeneratedAttribute), false) && declaring.DeclaringType is not null)
+            {
+                declaring = declaring.DeclaringType;
+            }
+
+            return declaring == owner && lambda.Target is { } closure ? closure.GetType().GetField(field, Instance)?.GetValue(closure) as Delegate : null;
+        }
+    }
+
+    /// <summary>
     /// The delegate an <c>EventCallback</c> or <c>EventCallback&lt;T&gt;</c> invokes, which says what it is bound to
     /// ("ProductList.OnSelected"); the struct keeps it in an internal field. Null when unbound or unreadable.
     /// </summary>
@@ -332,6 +368,29 @@ internal static class BlazorReflection
         {
             return null;
         }
+    }
+
+    /// <summary>
+    /// The render mode that starts at <paramref name="component"/>: what the renderer assigned to it, unless its parent
+    /// has the same one. A renderer answers for a whole subtree - an interactive renderer with its own mode for every
+    /// component it runs, the prerendering renderer with the mode of the nearest boundary above - so a mode is only
+    /// assigned where it differs from the parent's. The prerendering renderer wraps each boundary in a component of its
+    /// own that reports the mode too; the component the application wrote <c>@rendermode</c> on is the one below it.
+    /// </summary>
+    public static IComponentRenderMode? OwnRenderMode(Renderer renderer, IComponent component)
+    {
+        if (AssignedRenderMode(renderer, component) is not { } mode)
+        {
+            return null;
+        }
+
+        var parent = ResolveState(renderer, component)?.ParentComponentState;
+        while (parent is not null && parent.Component.GetType().Name == "SSRRenderModeBoundary")
+        {
+            parent = parent.ParentComponentState;
+        }
+
+        return parent is not null && BevRenderModes.Describe(AssignedRenderMode(renderer, parent.Component)) == BevRenderModes.Describe(mode) ? null : mode;
     }
 
     private static readonly PropertyInfo? JSObjectIdProperty = typeof(Microsoft.JSInterop.Implementation.JSObjectReference).GetProperty("Id", Instance) is { } id && id.PropertyType == typeof(long) ? id : null;

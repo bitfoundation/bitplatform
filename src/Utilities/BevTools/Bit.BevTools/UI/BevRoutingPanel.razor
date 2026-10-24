@@ -2,7 +2,7 @@
 @inherits BevToolsTab
 
 <div class="bev-toolbar">
-    <input type="text" aria-label="Filter routes" placeholder="Filter routes (template, page, policy)…" value="@Query" @oninput="OnQuery" />
+    <input type="text" aria-label="Filter routes" placeholder="Filter routes (template, page, policy)…" @bind:get="Query" @bind:set="OnQuery" @bind:event="oninput" />
     <span class="bev-muted bev-nowrap">@_visibleRoutes.Count / @_snapshot.Routes.Count routes</span>
 </div>
 <div class="bev-scroll" style="flex:1">
@@ -274,9 +274,9 @@
             .ToList();
     }
 
-    private void OnQuery(ChangeEventArgs e)
+    private void OnQuery(string? value)
     {
-        Ui.SetQuery("routing", e.Value?.ToString());
+        Ui.SetQuery("routing", value);
         Filter();
     }
 

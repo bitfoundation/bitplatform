@@ -4,7 +4,7 @@
 <div class="bev-split">
     <div class="bev-left" style="flex-basis:50%">
         <div class="bev-toolbar">
-            <input type="text" aria-label="Filter errors" placeholder="Filter: text, source:render|blazor|error-boundary|http|javascript|resource|csp|circuit|signalr|js-interop" value="@Query" @oninput="OnQuery" />
+            <input type="text" aria-label="Filter errors" placeholder="Filter: text, source:render|blazor|error-boundary|http|javascript|resource|csp|circuit|signalr|js-interop" @bind:get="Query" @bind:set="OnQuery" @bind:event="oninput" />
             <span class="bev-segmented" role="group" aria-label="Show">
                 <button type="button" aria-pressed="@(View.ByGroup ? "false" : "true")" @onclick="() => ShowGroups(false)">Errors</button>
                 <button type="button" aria-pressed="@(View.ByGroup ? "true" : "false")" title="Errors that are one problem although their messages differ in ids, numbers or quoted values, thrown from the same place" @onclick="() => ShowGroups(true)">Groups</button>
@@ -200,9 +200,9 @@
         }
     }
 
-    private void OnQuery(ChangeEventArgs e)
+    private void OnQuery(string? value)
     {
-        Ui.SetQuery("errors", e.Value?.ToString());
+        Ui.SetQuery("errors", value);
         OnParametersSet();
     }
 

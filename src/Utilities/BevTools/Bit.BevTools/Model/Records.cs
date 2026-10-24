@@ -21,7 +21,24 @@ public sealed class BevErrorRecord
 
     public string? StackTrace { get; init; }
 
-    public string? SourceLocation { get; init; }
+    private string? _sourceLocation;
+
+    /// <summary>
+    /// Where it was thrown ("ErrorScenarios.razor:44"): from the stack trace's "in file:line", else from
+    /// <see cref="ThrowSite"/> once the app's symbols are there.
+    /// </summary>
+    public string? SourceLocation
+    {
+        get => _sourceLocation ??= ThrowSite?.Resolve();
+        init => _sourceLocation = value;
+    }
+
+    /// <summary>
+    /// The first application frame of the exception, for when the stack trace's text names no file: a runtime with no
+    /// symbols loaded (Blazor loads them into WebAssembly only in a browser it can debug) still knows each frame's
+    /// method and IL offset, and BevTools reads the app's symbols itself - on WebAssembly they may arrive after the error.
+    /// </summary>
+    internal BevThrowSite? ThrowSite { get; init; }
 
     public long? ComponentInstanceId { get; init; }
 

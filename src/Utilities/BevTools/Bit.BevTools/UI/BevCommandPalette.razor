@@ -7,7 +7,7 @@
         <span tabindex="0" class="bev-focus-sentinel" @onfocus="FocusInputAsync"></span>
         <input type="text" @ref="_input" placeholder="Search components, errors, requests… or type > for commands" aria-label="Search, or type > for commands"
                role="combobox" aria-expanded="true" aria-controls="bev-palette-list" aria-autocomplete="list" aria-activedescendant="@(_items.Count > 0 ? "bev-palette-item-" + _active : null)"
-               value="@_text" @oninput="OnInput" autocomplete="off" spellcheck="false" />
+               @bind:get="_text" @bind:set="OnInput" @bind:event="oninput" autocomplete="off" spellcheck="false" />
         <div class="bev-palette-list" id="bev-palette-list" role="listbox" aria-label="Results">
             @{ var index = 0; }
             @foreach (var item in _items)
@@ -66,9 +66,9 @@
         }
     }
 
-    private void OnInput(ChangeEventArgs e)
+    private void OnInput(string? value)
     {
-        _text = e.Value?.ToString() ?? "";
+        _text = value ?? "";
         _active = 0;
         Rebuild();
     }

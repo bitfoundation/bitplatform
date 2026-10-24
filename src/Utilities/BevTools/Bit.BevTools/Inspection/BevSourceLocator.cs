@@ -117,6 +117,45 @@ internal static partial class BevSourceLocator
     }
 
     /// <summary>
+    /// The statement at an IL offset of a method: the last visible sequence point at or before it. What a stack frame
+    /// says when its text carries no "in file:line" - the runtime had no symbols loaded - but its method and offset are
+    /// known. Null without symbols or without a sequence point there.
+    /// </summary>
+    public static BevSourceLocation? At(MethodBase method, int ilOffset, string? editorUrlTemplate)
+    {
+        if (ilOffset < 0 || SymbolsOf(method.Module.Assembly) is not { } symbols)
+        {
+            return null;
+        }
+
+        try
+        {
+            var reader = symbols.Reader;
+            var definition = MetadataTokens.MethodDefinitionHandle(method.MetadataToken & 0x00FFFFFF);
+            (string Path, int Line, int Column)? found = null;
+            foreach (var point in reader.GetMethodDebugInformation(definition.ToDebugInformationHandle()).GetSequencePoints())
+            {
+                if (point.Offset > ilOffset)
+                {
+                    break;
+                }
+
+                if (!point.IsHidden && !point.Document.IsNil)
+                {
+                    found = (reader.GetString(reader.GetDocument(point.Document).Name), point.StartLine, point.StartColumn);
+                }
+            }
+
+            return found is { } at ? Location(at, editorUrlTemplate) with { MayHaveMoved = Edited.ContainsKey(method.Module.Assembly) } : null;
+        }
+        catch
+        {
+            // A method the symbols do not describe (generated, or a token past their tables): no location.
+            return null;
+        }
+    }
+
+    /// <summary>
     /// The files a component type is written in, its markup first: the <c>.razor</c> file of <c>BuildRenderTree</c>, then
     /// a code-behind <c>.cs</c> when its methods are written elsewhere; each with the first line written there.
     /// </summary>

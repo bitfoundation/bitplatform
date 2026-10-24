@@ -8,17 +8,19 @@
     private DateTime _now = DateTime.Now;
     private Timer? _timer;
 
-    [Parameter] public EventCallback OnTick { get; set; }
+    // A plain delegate, not an EventCallback: an EventCallback re-renders the component that handles it after every
+    // call, so the whole dashboard would render on each tick whether or not the dashboard asked for it.
+    [Parameter] public Action? OnTick { get; set; }
 
     protected override void OnAfterRender(bool firstRender)
     {
         if (firstRender && RendererInfo.IsInteractive)
         {
-            _timer = new Timer(_ => InvokeAsync(async () =>
+            _timer = new Timer(_ => InvokeAsync(() =>
             {
                 _now = DateTime.Now;
                 StateHasChanged();
-                await OnTick.InvokeAsync();
+                OnTick?.Invoke();
             }), null, 500, 500);
         }
     }

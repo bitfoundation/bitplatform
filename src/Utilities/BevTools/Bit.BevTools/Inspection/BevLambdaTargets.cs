@@ -94,9 +94,14 @@ internal static class BevLambdaTargets
             if (FindType(componentTypeName) is { } type)
             {
                 var shortType = TypeNames.Short(type);
-                title = FindLambda(type, methodName) is { } lambda && CalledMethod(lambda) is { } target
+                var lambda = FindLambda(type, methodName);
+                title = lambda is not null && CalledMethod(lambda) is { } target
                     ? shortType + "." + target.Name + " (lambda)"
-                    : "lambda in " + shortType + "." + outer;
+                    // Not the component's: @bind's handler is a lambda of the framework's binder, and the event names
+                    // only the method, not the setter that binder calls (the inspector, which has the delegate, does).
+                    : lambda is null && outer.StartsWith("CreateBinderCore", StringComparison.Ordinal)
+                        ? shortType + " (@bind)"
+                        : "lambda in " + shortType + "." + outer;
             }
         }
         catch (Exception ex) when (ex is not OutOfMemoryException)

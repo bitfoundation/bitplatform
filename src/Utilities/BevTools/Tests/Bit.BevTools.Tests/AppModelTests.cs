@@ -40,9 +40,11 @@ public class AppModelTests : BunitContext
         Assert.Contains(b => b is { Target: "<button#save>", Event: "onclick", Handler: "WiringComponent.Save", Kind: BevEventBindingKind.DomEvent }, wiring.Bindings);
         Assert.Contains(b => b is { Target: "<input>", Event: "onchange", Kind: BevEventBindingKind.Bind } && b.Handler.StartsWith("@bind-value", StringComparison.Ordinal), wiring.Bindings);
         Assert.Contains(b => b is { Target: "<a.nav>", Event: "onclick", Handler: "lambda in WiringComponent.BuildRenderTree" }, wiring.Bindings);
+        var setter = wiring.Bindings.Single(b => b.Target == "<input.search>");
+        Assert.AreEqual(("oninput", "@bind-value → WiringComponent.OnQuery", BevEventBindingKind.Bind, "OnQuery"), (setter.Event, setter.Handler, setter.Kind, setter.HandlerMethod?.Name), "the setter @bind:set names, and where it is written");
         var callback = wiring.Bindings.Single(b => b.Kind == BevEventBindingKind.ChildCallback);
         Assert.AreEqual(("CallbackChild", "OnSelected", "WiringComponent.OnChildSelected", child.InstanceId), (callback.Target, callback.Event, callback.Handler, callback.ChildInstanceId));
-        Assert.AreEqual(4, wiring.TotalBindings, "child content and plain attributes are not bindings");
+        Assert.AreEqual(5, wiring.TotalBindings, "child content and plain attributes are not bindings");
     }
 
     [TestMethod]
@@ -239,7 +241,11 @@ public class AppModelTests : BunitContext
     {
         public string Name { get; set; } = "";
 
+        public string? Query { get; private set; }
+
         public int Saved { get; private set; }
+
+        private void OnQuery(string? value) => Query = value;
 
         private void Save() => Saved++;
 
@@ -264,6 +270,13 @@ public class AppModelTests : BunitContext
             builder.OpenElement(10, "a");
             builder.AddAttribute(11, "class", "nav link");
             builder.AddAttribute(12, "onclick", () => Saved++);
+            builder.CloseElement();
+            // @bind:get="Query" @bind:set="OnQuery" @bind:event="oninput", as the Razor compiler emits it.
+            builder.OpenElement(13, "input");
+            builder.AddAttribute(14, "class", "search");
+            builder.AddAttribute(15, "value", BindConverter.FormatValue(Query));
+            builder.AddAttribute(16, "oninput", EventCallback.Factory.CreateBinder(this, Microsoft.AspNetCore.Components.CompilerServices.RuntimeHelpers.CreateInferredBindSetter(callback: OnQuery, value: Query), Query ?? ""));
+            builder.SetUpdatesAttributeName("value");
             builder.CloseElement();
         }
     }

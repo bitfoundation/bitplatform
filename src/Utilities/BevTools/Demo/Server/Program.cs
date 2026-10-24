@@ -4,6 +4,8 @@ using Bit.BevTools.Demo.Client.Services;
 using Bit.BevTools.Demo.Server.Components;
 using Microsoft.AspNetCore.HttpOverrides;
 
+DemoCulture.Apply();
+
 var builder = WebApplication.CreateBuilder(args);
 
 // ValidateOnBuild is off so the intentionally broken registrations (captive dependency, cycle) that the

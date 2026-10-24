@@ -5,8 +5,9 @@ namespace Bit.BevTools.Tests;
 [TestClass]
 public class DiagnosticsRulesTests
 {
-    private static BevToolsEvent Render(long componentId, string name, string cause, double ms = 1) => new()
+    private static BevToolsEvent Render(long componentId, string name, string cause, double ms = 1, long? at = null) => new()
     {
+        StartTicks = at ?? System.Diagnostics.Stopwatch.GetTimestamp(),
         Kind = BevToolsEventKind.Render,
         Category = "render",
         Title = name + " re-rendered",
@@ -42,6 +43,57 @@ public class DiagnosticsRulesTests
             Assert.Contains("ShouldRender", finding.Diagnostic.Suggestion!);
         }
     }
+
+    /// <summary>
+    /// The rules run when the panel is shown. A storm measured over the window that ends "now" was gone by the time a
+    /// developer opened Diagnostics to look for it; the busiest window of the last half minute is what they came for.
+    /// </summary>
+    [TestMethod]
+    public void A_render_storm_is_still_reported_when_the_rules_run_seconds_later()
+    {
+        var (session, scope) = TestHelpers.CreateSession(o => o.Diagnostics.RenderStormCount = 10);
+        using (scope)
+        {
+            var fiveSecondsAgo = System.Diagnostics.Stopwatch.GetTimestamp() - 5 * System.Diagnostics.Stopwatch.Frequency;
+            for (var i = 0; i < 12; i++)
+            {
+                session.Timeline.Record(Render(7, "ProductList", "UiEvent", at: fiveSecondsAgo + i * System.Diagnostics.Stopwatch.Frequency / 20));
+            }
+
+            session.Diagnostics.Evaluate(force: true);
+            var finding = Assert.ContainsSingle(f => f.Diagnostic.RuleId == "render.storm", session.Diagnostics.Findings);
+            Assert.Contains("ProductList rendered 12 times in 2 s", finding.Diagnostic.Title);
+        }
+    }
+
+    [TestMethod]
+    public void A_burst_of_interop_calls_is_reported_after_other_calls_followed_it()
+    {
+        var (session, scope) = TestHelpers.CreateSession(o => o.Diagnostics.ExcessiveJsInteropCount = 50);
+        using (scope)
+        {
+            var now = System.Diagnostics.Stopwatch.GetTimestamp();
+            var freq = System.Diagnostics.Stopwatch.Frequency;
+            for (var i = 0; i < 60; i++)
+            {
+                session.Timeline.Record(Interop("→ JS module.ping", now - 6 * freq + i * freq / 200));
+            }
+
+            // The same number of calls to another function, spread over half a minute: no burst.
+            for (var i = 0; i < 60; i++)
+            {
+                session.Timeline.Record(Interop("→ JS module.tick", now - 29 * freq + i * freq / 2));
+            }
+
+            session.Timeline.Record(Interop("→ JS module.slowCall"));
+            session.Diagnostics.Evaluate(force: true);
+            var finding = Assert.ContainsSingle(f => f.Diagnostic.RuleId == "jsinterop.excessive", session.Diagnostics.Findings);
+            Assert.AreEqual("→ JS module.ping called 60 times in 1 s", finding.Diagnostic.Title);
+        }
+    }
+
+    private static BevToolsEvent Interop(string title, long? at = null) =>
+        new() { Kind = BevToolsEventKind.JsInterop, Category = "js", Title = title, DurationMs = 1, StartTicks = at ?? System.Diagnostics.Stopwatch.GetTimestamp() };
 
     [TestMethod]
     public void Below_threshold_produces_no_storm_finding()

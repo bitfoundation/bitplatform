@@ -59,8 +59,9 @@
                        aria-activedescendant="@(_results.Length > 0 ? $"bb-palette-option-{_activeIndex}" : null)"
                        autocomplete="off"
                        spellcheck="false"
-                       value="@_query"
-                       @oninput="OnInput" />
+                       @bind:get="_query"
+                       @bind:set="OnInput"
+                       @bind:event="oninput" />
                 <button type="button" class="bb-palette-esc" @ref="_escape" @onclick="() => Close()" aria-label="Close search">Esc</button>
             </div>
 
@@ -215,9 +216,9 @@
     /// </summary>
     private void LockScroll(bool locked) => _ = JSRuntime.InvokeVoidAsync("bitDemoSite.lockScroll", locked);
 
-    private void OnInput(ChangeEventArgs e)
+    private void OnInput(string? value)
     {
-        _query = e.Value?.ToString() ?? "";
+        _query = value ?? "";
         _results = _query.Trim().Length == 0 ? Suggest() : Find(_query.Trim());
         _activeIndex = 0;
     }

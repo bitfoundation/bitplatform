@@ -8,7 +8,8 @@
     {
         <span class="bev-chip bev-warn">disposed @BevFmt.Ago(Record.DisposedAt)</span>
     }
-    @if (Record.Parent is { } parent)
+    @* The parent the tree shows: framework plumbing in between is hidden there unless internals are shown. *@
+    @if ((Host.Ui.ShowHiddenComponents ? Record.Parent : NearestVisibleAncestor(Record)) is { } parent)
     {
         <span class="bev-muted">in</span> <button type="button" class="bev-link" @onclick="() => Host.SelectComponent(parent.InstanceId)">@parent.DisplayName</button>
     }
@@ -203,6 +204,12 @@
                     }
                 </tbody>
             </table>
+            @* The instances themselves, through the same inspector as the component's state: what this component sees in
+               its services is often the question, and a member such as a token is redacted here as everywhere else. *@
+            @foreach (var s in _services)
+            {
+                <BevValueTree Root="s.Value" Name="@s.Name" Inspector="Session.Inspector" Member="s.Property" />
+            }
         }
     </BevInspectorSection>
     <BevInspectorSection Title="@($"Rendering ({Record.RenderCount} renders, {BevFmt.Ms(Record.TotalRenderMs)})")">
@@ -308,7 +315,7 @@
 @code {
     private sealed record MemberValue(string Name, object? Value, MemberInfo MemberInfo);
 
-    private sealed record ServiceRow(string Name, string ServiceName, string? Lifetime, string? Implementation);
+    private sealed record ServiceRow(string Name, string ServiceName, string? Lifetime, string? Implementation, object? Value, MemberInfo Property);
 
     private sealed record CauseRow(string Cause, int Count, string Detail);
 
@@ -375,7 +382,7 @@
             var service = graph?.Services.LastOrDefault(s => s.ServiceType == p.PropertyType && !s.IsKeyed);
             var value = BevComponentMembers.SafeGet(p, component);
             var impl = value is BevTrackingJSRuntime tracking ? TypeNames.Short(tracking.Inner.GetType()) + " (tracked by BevTools)" : value is null ? null : TypeNames.Short(value.GetType());
-            return new ServiceRow(p.Name, TypeNames.Short(p.PropertyType), service is null ? null : BevFmt.Lifetime(service.Lifetime), impl ?? service?.ImplementationName);
+            return new ServiceRow(p.Name, TypeNames.Short(p.PropertyType), service is null ? null : BevFmt.Lifetime(service.Lifetime), impl ?? service?.ImplementationName, value, p);
         }).ToList();
 
         var renders = Record.Renders;

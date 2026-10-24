@@ -196,6 +196,15 @@ internal sealed class ComponentRegistry
             {
                 record.Parent = parent;
                 record.ParentResolved = true;
+
+                // A component that does not derive from ComponentBase (a CascadingValue) has no render of its own to
+                // link it at, only the next refresh; until then a render's walk up to the ancestor that re-rendered
+                // it would stop there, and the render would be put down to StateHasChanged. Linking it links its own
+                // unlinked parent in turn.
+                if (!parent.ParentResolved && parent.Component is not ComponentBase)
+                {
+                    ResolveHierarchy(parent, now);
+                }
             }
             // A renderer can expose the child before its parent has been registered by our activator.
             // Leave the link unresolved so a later refresh can repair the tree.

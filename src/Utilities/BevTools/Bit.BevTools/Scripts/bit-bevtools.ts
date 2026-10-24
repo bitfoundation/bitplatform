@@ -111,7 +111,26 @@ function on(target: EventTarget, type: string, handler: (e: any) => void, option
     listeners.push(() => target.removeEventListener(type, handler, options));
 }
 
+/**
+ * Whether the page's Blazor circuit has no open connection: a circuit socket was seen, and every one seen is closed
+ * (a circuit that ended, or one between a dropped connection and its reconnect). A call into a Server runtime then
+ * goes nowhere - Blazor's send fails where nothing catches it, an unhandled rejection on the application's page, and
+ * the call's own promise never settles. Pages on another transport have no socket to judge by and are never "down".
+ */
+function circuitDown(): boolean {
+    let seen = false;
+    for (const s of sockets.values()) {
+        if (s.kind !== "blazor-circuit") continue;
+        if (s.closedAt === null) return false;
+        seen = true;
+    }
+    return seen;
+}
+
+const unreachable = (target: BevTarget) => target.platform === "Server" && circuitDown();
+
 function invoke(target: BevTarget, method: string, ...args: any[]) {
+    if (unreachable(target)) return;
     try {
         const p = target.ref.invokeMethodAsync(method, ...args);
         if (p && p.catch) p.catch(() => { /* circuit gone */ });
@@ -1835,12 +1854,24 @@ export function focusIn(targetId: string, selector: string, onlyFromPanel?: bool
 
 // ----- the protocol for external frontends -----
 
+/** How long a frontend waits for a runtime's answer; one that never comes would otherwise hold the frontend forever. */
+const REQUEST_TIMEOUT_MS = 30_000;
+
 /** Sends one protocol request to a runtime; it answers in .NET (BevToolsProtocol) with JSON. */
 export async function request(targetId: string, method: string, params?: any): Promise<any> {
     const t = targets.get(targetId);
     if (!t) throw new Error("No BevTools runtime " + targetId + " on this page.");
-    const json = await t.ref.invokeMethodAsync("Protocol", method, params === undefined ? null : JSON.stringify(params));
-    return typeof json === "string" ? JSON.parse(json) : json;
+    if (unreachable(t)) throw new Error("The circuit of " + t.label + " is disconnected: it cannot answer until it reconnects.");
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    const timeout = new Promise<never>((_, reject) => {
+        timer = setTimeout(() => reject(new Error(t.label + " did not answer within " + REQUEST_TIMEOUT_MS / 1000 + " s.")), REQUEST_TIMEOUT_MS);
+    });
+    try {
+        const json = await Promise.race([t.ref.invokeMethodAsync("Protocol", method, params === undefined ? null : JSON.stringify(params)), timeout]);
+        return typeof json === "string" ? JSON.parse(json) : json;
+    } finally {
+        clearTimeout(timer);
+    }
 }
 
 export function subscribe(listener: (event: { type: string; [key: string]: any }) => void) {

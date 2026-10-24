@@ -322,6 +322,31 @@ internal static class BuiltInRules
 
     private static string Ms(double value) => value.ToString("0.#") + " ms";
 
+    /// <summary>How far back the rate rules look for a burst: the rules run when the panel is shown, not as it happens.</summary>
+    private static readonly TimeSpan BurstLookback = TimeSpan.FromSeconds(30);
+
+    /// <summary>The events of the busiest stretch of <paramref name="window"/> among <paramref name="events"/>, oldest first.</summary>
+    private static List<BevToolsEvent> DensestWindow(IEnumerable<BevToolsEvent> events, TimeSpan window)
+    {
+        var ordered = events.OrderBy(e => e.StartTicks).ToList();
+        var span = (long)(window.TotalSeconds * System.Diagnostics.Stopwatch.Frequency);
+        var (bestStart, bestCount, start) = (0, 0, 0);
+        for (var end = 0; end < ordered.Count; end++)
+        {
+            while (ordered[end].StartTicks - ordered[start].StartTicks > span)
+            {
+                start++;
+            }
+
+            if (end - start + 1 > bestCount)
+            {
+                (bestStart, bestCount) = (start, end - start + 1);
+            }
+        }
+
+        return ordered.GetRange(bestStart, bestCount);
+    }
+
     /// <summary>
     /// A component that only ever re-renders because an ancestor did. This is the most common avoidable cost in a
     /// Blazor application and it is invisible to a rate-based rule: a dashboard re-rendering twice a second never
@@ -340,6 +365,7 @@ internal static class BuiltInRules
             var options = Opt(context);
             var window = TimeSpan.FromSeconds(10);
             var renders = context.EventsInWindow(BevToolsEventKind.Render, window).Where(e => e.ComponentInstanceId is not null).ToList();
+            var driven = new List<(long InstanceId, string Name, string Ancestor, List<BevToolsEvent> Renders, int ParentDriven)>();
             foreach (var group in renders.GroupBy(e => e.ComponentInstanceId!.Value))
             {
                 if (context.IsFrameworkInternal(group.Key))
@@ -354,8 +380,16 @@ internal static class BuiltInRules
                     continue;
                 }
 
-                var name = all[0].ComponentName ?? "component";
                 var ancestor = all.Select(e => e.Detail).FirstOrDefault(d => d is not null)?.Replace(" re-rendered (parameters re-applied)", "") ?? "its parent";
+                driven.Add((group.Key, all[0].ComponentName ?? "component", ancestor, all, parentDriven));
+            }
+
+            // The rows of a list share their type and their parent, and so the fix: one finding for the 120 of them,
+            // not 120 findings that bury every other one.
+            foreach (var same in driven.GroupBy(d => (d.Name, d.Ancestor)))
+            {
+                var instances = same.OrderByDescending(d => d.ParentDriven).ToList();
+                var all = instances.SelectMany(d => d.Renders).ToList();
                 var totalMs = all.Sum(e => e.DurationMs ?? 0);
                 // Parameter comparison only runs while the component is inspected, so this is extra evidence when
                 // present and silence when absent, never a guess.
@@ -367,16 +401,23 @@ internal static class BuiltInRules
                         ? $"All {compared} renders whose parameters were compared received values identical to the previous render: pure waste."
                         : $"{unchanged} of {compared} compared renders received identical parameter values; the others got new values.";
                 var severity = compared > 0 && unchanged == compared ? BevDiagnosticSeverity.Warning : BevDiagnosticSeverity.Info;
+                var (name, ancestor) = same.Key;
+                var most = instances[0].ParentDriven;
+                var fewest = instances[^1].ParentDriven;
+                var title = instances.Count == 1
+                    ? $"{name} re-rendered {most} times, every one of them because {ancestor} re-rendered"
+                    : $"{name} ×{instances.Count} instances re-rendered {(fewest == most ? "" : "up to ")}{most} times each, every one of them because {ancestor} re-rendered";
                 yield return new BevDiagnostic(
                     Id,
                     severity,
-                    $"{name} re-rendered {parentDriven} times, every one of them because {ancestor} re-rendered",
-                    $"None of these renders came from an event, navigation or its own state; total build time {Ms(totalMs)} in the last 10 s. "
+                    title,
+                    $"None of these renders came from an event, navigation or its own state; total build time {Ms(totalMs)} in the last 10 s"
+                        + (instances.Count == 1 ? ". " : $" across the {instances.Count} instances. ")
                         + "The parent re-applies parameters on every one of its own renders, and Blazor cannot know the values are equivalent. "
                         + parameterEvidence,
                     "Override ShouldRender, pass values the parent does not recreate per render (no new lambdas, collections or anonymous objects), or move the fast-changing state out of the parent so it does not re-render at all.",
-                    Fingerprint: $"{Id}:{group.Key}",
-                    ComponentInstanceId: group.Key,
+                    Fingerprint: $"{Id}:{name}:{ancestor}",
+                    ComponentInstanceId: instances[0].InstanceId,
                     RelatedEventIds: all.Take(20).Select(e => e.Id).ToList());
             }
         }
@@ -394,17 +435,19 @@ internal static class BuiltInRules
         public IEnumerable<BevDiagnostic> Evaluate(IBevDiagnosticContext context)
         {
             var options = Opt(context);
-            var window = TimeSpan.FromMilliseconds(options.RenderStormWindowMs);
-            var renders = context.EventsInWindow(BevToolsEventKind.Render, window).Where(e => e.ComponentInstanceId is not null).ToList();
-            foreach (var group in renders.GroupBy(e => e.ComponentInstanceId!.Value))
+            // The rules run when the panel is shown, often seconds after the storm: the densest window of the last
+            // half minute, not the one that ends now.
+            var renders = context.EventsInWindow(BevToolsEventKind.Render, BurstLookback).Where(e => e.ComponentInstanceId is not null).ToList();
+            foreach (var instance in renders.GroupBy(e => e.ComponentInstanceId!.Value))
             {
-                var count = group.Count();
+                var group = DensestWindow(instance, TimeSpan.FromMilliseconds(options.RenderStormWindowMs));
+                var count = group.Count;
                 if (count < options.RenderStormCount)
                 {
                     continue;
                 }
 
-                var name = group.First().ComponentName ?? "component";
+                var name = group[0].ComponentName ?? "component";
                 var causes = group.GroupBy(e => e.DataString("cause") ?? "Unknown").OrderByDescending(g => g.Count()).ToList();
                 var breakdown = string.Join("; ", causes.Select(c => $"{c.Count()} × {Describe(c.Key, c)}"));
                 var totalMs = group.Sum(e => e.DurationMs ?? 0);
@@ -421,8 +464,8 @@ internal static class BuiltInRules
                     $"{name} rendered {count} times in {options.RenderStormWindowMs / 1000.0:0.#} s",
                     $"{breakdown}. Total build time {Ms(totalMs)}.",
                     suggestion,
-                    Fingerprint: $"{Id}:{group.Key}",
-                    ComponentInstanceId: group.Key,
+                    Fingerprint: $"{Id}:{instance.Key}",
+                    ComponentInstanceId: instance.Key,
                     RelatedEventIds: group.Take(20).Select(e => e.Id).ToList());
             }
         }
@@ -449,6 +492,7 @@ internal static class BuiltInRules
         public IEnumerable<BevDiagnostic> Evaluate(IBevDiagnosticContext context)
         {
             var options = Opt(context);
+            var cascades = new List<(BevToolsEvent Batch, int Count, BevToolsEvent? Root, string? First)>();
             foreach (var batch in context.EventsInWindow(BevToolsEventKind.RenderBatch, TimeSpan.FromSeconds(30)))
             {
                 if (batch.Data is null || !batch.Data.TryGetValue("count", out var countObj) || countObj is not int count || count < options.RenderCascadeSize)
@@ -456,17 +500,29 @@ internal static class BuiltInRules
                     continue;
                 }
 
-                var renders = context.Events.Where(e => e.Kind == BevToolsEventKind.Render && e.ParentEventId == batch.Id).ToList();
                 var root = context.Events.FirstOrDefault(e => e.Id == batch.ParentEventId);
-                var first = renders.FirstOrDefault();
+                var first = context.Events.FirstOrDefault(e => e.Kind == BevToolsEventKind.Render && e.ParentEventId == batch.Id)?.ComponentName;
+                cascades.Add((batch, count, root, first));
+            }
+
+            // Every keystroke into a list's filter is a batch of the same cascade, from the same event: one finding for
+            // what they share, not one per keystroke.
+            foreach (var same in cascades.GroupBy(c => c.Root?.Title ?? "started with " + c.First))
+            {
+                var batches = same.ToList();
+                var largest = batches.Max(b => b.Count);
+                var root = batches[^1].Root;
+                var first = batches[^1].First;
+                var slowest = batches.Max(b => b.Batch.DurationMs ?? 0);
                 yield return new BevDiagnostic(
                     Id,
                     BevDiagnosticSeverity.Warning,
-                    $"Render batch touched {count} components",
-                    (root is not null ? $"Triggered by {root.Title}. " : "") + (first is not null ? $"Started with {first.ComponentName}. " : "") + $"Building took {Ms(batch.DurationMs ?? 0)}.",
+                    batches.Count == 1 ? $"Render batch touched {largest} components" : $"{batches.Count} render batches touched up to {largest} components each",
+                    (root is not null ? $"Triggered by {root.Title}{(batches.Count == 1 ? "" : " each time")}. " : "") + (first is not null ? $"Started with {first}. " : "")
+                        + (batches.Count == 1 ? $"Building took {Ms(slowest)}." : $"Building took up to {Ms(slowest)} per batch."),
                     "A cascade usually means a high-level component (layout, cascading value provider) re-rendered. Narrow what changes: cascade immutable values, or give children ShouldRender/keyed parameters.",
-                    Fingerprint: $"{Id}:{batch.Id}",
-                    RelatedEventIds: [batch.Id]);
+                    Fingerprint: $"{Id}:{same.Key}",
+                    RelatedEventIds: batches.TakeLast(20).Select(b => b.Batch.Id).ToList());
             }
         }
     }
@@ -870,13 +926,15 @@ internal static class BuiltInRules
         public IEnumerable<BevDiagnostic> Evaluate(IBevDiagnosticContext context)
         {
             var options = Opt(context);
-            foreach (var group in context.EventsInWindow(BevToolsEventKind.JsInterop, TimeSpan.FromSeconds(1)).GroupBy(e => e.Title))
+            // The busiest second of the last half minute: a burst is over before anyone opens the panel to look.
+            foreach (var identifier in context.EventsInWindow(BevToolsEventKind.JsInterop, BurstLookback).GroupBy(e => e.Title))
             {
-                var count = group.Count();
+                var group = DensestWindow(identifier, TimeSpan.FromSeconds(1));
+                var count = group.Count;
                 if (count >= options.ExcessiveJsInteropCount)
                 {
                     var components = group.Select(e => e.ComponentName).Where(n => n is not null).Distinct().ToList();
-                    yield return new BevDiagnostic(Id, BevDiagnosticSeverity.Warning, $"{group.Key} called {count} times in 1 s", components.Count > 0 ? "From " + string.Join(", ", components) + "." : "Origin not attributable to a component.", "Throttle, batch arguments into one call, or keep the loop in JavaScript.", Fingerprint: $"{Id}:{group.Key}", RelatedEventIds: group.Take(10).Select(e => e.Id).ToList());
+                    yield return new BevDiagnostic(Id, BevDiagnosticSeverity.Warning, $"{identifier.Key} called {count} times in 1 s", components.Count > 0 ? "From " + string.Join(", ", components) + "." : "Origin not attributable to a component.", "Throttle, batch arguments into one call, or keep the loop in JavaScript.", Fingerprint: $"{Id}:{identifier.Key}", RelatedEventIds: group.Take(10).Select(e => e.Id).ToList());
                 }
             }
         }

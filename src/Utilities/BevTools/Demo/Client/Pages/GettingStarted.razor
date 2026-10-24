@@ -94,8 +94,12 @@ builder.Services.AddBitBevToolsServices(o =&gt;
         enables it explicitly instead of relying on the Development environment. The panel sits in
         <code>Routes.razor</code>, after the router, so it survives every navigation.
     </p>
-    <pre class="bb-code"><span class="c">// Demo/Server/Program.cs</span>
-builder.Services.AddBitBevToolsServerServices(o =&gt; o.Enabled = <span class="k">true</span>);
+    <pre class="bb-code"><span class="c">// Demo/Server/Program.cs (made-up data: values readable outside Development too)</span>
+builder.Services.AddBitBevToolsServerServices(o =&gt;
+{
+    o.Enabled = <span class="k">true</span>;
+    o.ValueAccess = BevValueAccess.Full;
+});
 
 <span class="c">// Demo/Client/Program.cs</span>
 builder.Services.AddBitBevToolsServices(options =&gt;

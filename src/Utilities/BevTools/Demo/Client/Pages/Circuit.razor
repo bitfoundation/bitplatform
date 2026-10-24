@@ -26,8 +26,8 @@
     {
         <p class="bb-card-desc">
             Each user of a Blazor Server app has one circuit, and it processes one message at a time: while a handler
-            blocks, nothing else for that user is handled. The last button ends the circuit for good - the reconnect
-            dialog follows.
+            blocks, nothing else for that user is handled. The last button ends the circuit for good: Blazor shows its
+            error bar rather than the reconnect dialog, because a circuit that failed is not coming back.
         </p>
     }
 
@@ -55,9 +55,11 @@
 <div class="bb-card">
     <h3 class="bb-card-title"><span class="bb-dot bb-dot-danger"></span> Killing: the circuit's last moments</h3>
     <p class="bb-card-desc">
-        Kill the circuit. <strong>Errors</strong> shows the logged circuit exception; <strong>Browser</strong> and
-        <strong>Circuit</strong> show the reconnect state changes. Each circuit has a BevTools session of its own, so
-        the session ends with the circuit; the page that comes back starts a new one.
+        Each circuit has a BevTools session of its own, and the panel renders over that circuit, so when the circuit
+        dies the panel stops where it was. Open the <strong>companion window</strong> (⧉ in the panel header) first,
+        then kill the circuit: the companion reads the page itself, so <strong>Network → WebSockets</strong> shows the
+        circuit's last message, a <code>JS.Error</code>, and its socket closing, and the status line says the runtime
+        is disconnected. Reload for a new circuit and a new session.
     </p>
     <div class="bb-try">
         <a href="problems#problem-9" class="btn btn-outline">Problem 9 →</a>

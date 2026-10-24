@@ -4,7 +4,7 @@
 <div class="bev-split">
     <div class="bev-left">
         <div class="bev-toolbar">
-            <input type="text" placeholder="Filter components (name)…" aria-label="Filter components" value="@Query" @oninput="OnQuery" />
+            <input type="text" placeholder="Filter components (name)…" aria-label="Filter components" @bind:get="Query" @bind:set="OnQuery" @bind:event="oninput" />
             <label title="Show framework/library components that are hidden by default"><input type="checkbox" checked="@Ui.ShowHiddenComponents" @onchange="ToggleHidden" /> internals</label>
             <label title="Outline components in the page as they render: blue once, green 2–3, amber 4–9, red 10 or more times since the previous outline"><input type="checkbox" checked="@Ui.FlashRenders" @onchange="Host.ToggleFlashRenders" /> flash renders</label>
             <span class="bev-muted bev-nowrap">@_visible.Count / @_liveCount</span>
@@ -126,9 +126,9 @@
         return true;
     }
 
-    private void OnQuery(ChangeEventArgs e)
+    private void OnQuery(string? value)
     {
-        Ui.SetQuery("components", e.Value?.ToString());
+        Ui.SetQuery("components", value);
         Rebuild();
     }
 

@@ -2,6 +2,8 @@
 using Bit.BevTools.Demo.Client.Services;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 
+DemoCulture.Apply();
+
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 
 // Match the server host: the demo deliberately registers a captive dependency and a cycle so the Services panel can

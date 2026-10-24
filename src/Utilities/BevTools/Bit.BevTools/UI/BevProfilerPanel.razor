@@ -5,7 +5,7 @@
 <div class="bev-split">
     <div class="bev-left" style="flex-basis:62%">
         <div class="bev-toolbar">
-            <input type="text" aria-label="Filter profiler" placeholder='Filter: name, "renders>20", "sort:max|total|renders|avg|p95|last|instances"' value="@Query" @oninput="OnQuery" />
+            <input type="text" aria-label="Filter profiler" placeholder='Filter: name, "renders>20", "sort:max|total|renders|avg|p95|last|instances"' @bind:get="Query" @bind:set="OnQuery" @bind:event="oninput" />
             <label title="Aggregate all instances of a type into one row: the only way to see what 500 rows of a list cost together"><input type="checkbox" aria-label="Group by type" checked="@View.ByType" @onchange='e => { View.ByType = e.Value is true; OnParametersSet(); }' /> by type</label>
             <label><input type="checkbox" checked="@View.IncludeDisposed" @onchange='e => { View.IncludeDisposed = e.Value is true; OnParametersSet(); }' /> disposed</label>
             <label class="bev-file" title="Compare what rendered here with an export saved earlier (Export in the About tab, or the session.export command): which components now render more often or for longer">
@@ -671,9 +671,9 @@
         OnParametersSet();
     }
 
-    private void OnQuery(ChangeEventArgs e)
+    private void OnQuery(string? value)
     {
-        Ui.SetQuery("profiler", e.Value?.ToString());
+        Ui.SetQuery("profiler", value);
         OnParametersSet();
     }
 

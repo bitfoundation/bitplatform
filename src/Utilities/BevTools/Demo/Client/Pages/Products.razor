@@ -47,8 +47,9 @@
     <p class="bb-card-desc">
         Open the <strong>Profiler</strong>, press <em>Reset</em>, type one character and read <em>since reset</em>; tick
         <em>by type</em> to see all the rows as one line - what 120 <code>ProductRow</code>s cost together, and that every
-        one of their renders was a parent re-render. <strong>Diagnostics</strong> names the pattern: a render storm on
-        <code>ProductList</code> and a render cascade of 100+ components per batch.
+        one of their renders was a parent re-render. <strong>Diagnostics</strong> names the pattern: a render cascade - a
+        keystroke's batch renders the list and every row it shows - and the rows re-rendered only because the list did. Drag the max price slider and
+        a render storm on <code>ProductList</code> joins them: every step of the slider is a notification.
     </p>
 </div>
 

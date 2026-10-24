@@ -58,7 +58,7 @@
     </p>
     <ul class="bb-detail-list">
         <li>Select a <code>StatsCard</code>: its parameters (<code>Title</code>, <code>Value</code>, <code>Trend</code>), the cascading <code>DashboardSettings</code> it reads, and <em>Why did it render?</em> for every render it has had.</li>
-        <li>Select <code>UserProfile</code>: its injected <code>UserSession</code> shows <code>AccessToken</code> and <code>Nickname</code> redacted - one by its name, the other by <code>[BevToolsSensitive]</code>.</li>
+        <li>Select <code>UserProfile</code> and expand <code>Session</code> under <em>Injected services</em>: its <code>UserSession</code> shows <code>AccessToken</code> and <code>Nickname</code> redacted - one by its name, the other by <code>[BevToolsSensitive]</code>.</li>
         <li>Press <em>Toggle dense</em> or <em>Change accent</em>: the cascading value changes and every card that reads it renders again.</li>
     </ul>
 </div>
@@ -70,7 +70,7 @@
         card climb together. Selected in the inspector, the Revenue card says <em>Parent Dashboard re-rendered
         (parameters re-applied)</em> and marks those renders <em>forced</em>, because none of its parameter values
         changed - unlike the Visitors card, whose <code>Value</code> does. <strong>Diagnostics</strong> reports
-        <em>Renders driven only by the parent</em> for each card.
+        <em>Renders driven only by the parent</em> for the cards, the three of them as one finding.
     </p>
     <div class="bb-try">
         <a href="problems#problem-1" class="btn btn-outline">Problem 1, step by step →</a>

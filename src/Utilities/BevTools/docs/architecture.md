@@ -70,9 +70,10 @@ bare `Diagnostic` or `CommandPalette` into an application's scope.
 A render sample's cause is decided in this order, and the label says which rule matched:
 
 1. First render → *Initial*.
-2. An ancestor rendered earlier **in the same batch** → *Parent re-rendered (parameters re-applied)*. This is exactly
+2. An ancestor rendered earlier **in the same batch** → *Parent X re-rendered (parameters re-applied)*. This is exactly
    what the renderer does: the parent's diff calls `SetParametersAsync` on the child, which queues the child in the same
-   batch.
+   batch. *Parent* when only hidden framework components (a `CascadingValue`) sit between the two, as in the tree;
+   *Ancestor* when a component the tree shows does.
 3. A `HandleEvent`/`Navigate` activity is running on the session, or it has stopped and this batch renders what it had
    queued → *Event: onclick → Type.Method* / *Navigation*. The second half exists because the framework stops a
    synchronous handler's activity before it renders the components the handler queued; `ActivityObserver` reads the
@@ -200,11 +201,14 @@ over files: exit codes, Markdown out, no connection to a running app.
 Rules implement `IBevDiagnosticRule.Evaluate(IBevDiagnosticContext)` over component snapshots and recent events; findings are
 deduplicated by fingerprint, dismissable, mirrored into the timeline once and bounded by `MaxFindings` (the ones no rule
 has reported for the longest time go first, since several rules report one finding per occurrence). Built-ins: render storm (with cause
-breakdown), renders driven only by the parent (the steady avoidable re-render that no rate threshold catches), render
-cascade, slow render, slow event handler, duplicate HTTP, slow HTTP, repeated HTTP failure, slow JS interop, excessive
+breakdown), renders driven only by the parent (the steady avoidable re-render that no rate threshold catches; one finding
+per component type and ancestor, so the rows of a list are one finding), render cascade (one per trigger, however many
+batches it caused), slow render, slow event handler, duplicate HTTP, slow HTTP, repeated HTTP failure, slow JS interop, excessive
 JS interop, repeated error; the server package adds circuit instability/blocking; the DI
 graph adds captive dependency, cycle, transient-disposable and large-constructor findings. Thresholds live in
-`BevDiagnosticsOptions`; rules can be disabled by id.
+`BevDiagnosticsOptions`; rules can be disabled by id. The rate rules (render storm, excessive JS interop, duplicate
+HTTP) report the busiest window of the last 30 s rather than the window that ends when they run: the rules run when the
+panel is shown, usually after the burst a developer opened it to look at.
 
 ### UI (`Bit.BevTools/UI`)
 
@@ -370,7 +374,9 @@ written in, the `.razor` file first. Symbols are trusted only when they belong t
 beside the assembly or at the path its CodeView entry records, whose `DebugMetadataHeader` id matches that entry's;
 on WebAssembly, where assemblies have no files, the PDB the runtime's `getConfig().resources.pdb` lists, fetched by
 the hub and handed over (`Provide`) when the inspector first needs it (the protocol asks the panel to do the same and
-answers `sourcesPending` meanwhile). Readers are cached per assembly for the life of the process.
+answers `sourcesPending` meanwhile). Readers are cached per assembly for the life of the process. An error whose
+stack trace names no file is located by its first application frame: its method and IL offset map to the sequence
+point at or before that offset (`At`), and on WebAssembly recording the error is what asks for the PDB.
 
 ### Leaks (`Session/BevLeakTracker.cs`, `Inspection/BevRetentionAnalyzer.cs`)
 

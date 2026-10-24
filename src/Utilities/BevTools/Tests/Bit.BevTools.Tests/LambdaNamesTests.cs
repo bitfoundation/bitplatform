@@ -45,6 +45,36 @@ public class LambdaNamesTests
         Assert.AreEqual("lambda in Missing.BuildRenderTree", BevLambdaTargets.DescribeEventHandler("App.Missing", "<BuildRenderTree>b__0_1"), "a type that cannot be found");
     }
 
+    /// <summary>
+    /// <c>@bind</c> (and <c>@bind:get</c>/<c>@bind:set</c>) hands the element a lambda of the framework's binder, which
+    /// converts the value and calls the setter the component wrote. Named by its compiled name, every bound input read
+    /// "lambda in FilterBar.CreateBinderCoreAsync": the component's type with a method of the framework's.
+    /// </summary>
+    [TestMethod]
+    public void A_bound_input_is_named_after_the_setter_the_component_wrote()
+    {
+        var box = new BoundBox();
+
+        // What the Razor compiler emits for @bind:get="Query" @bind:set="OnQuery" and for @bind="Query".
+        var withSetter = BlazorReflection.EventCallbackDelegate(EventCallback.Factory.CreateBinder(box,
+            Microsoft.AspNetCore.Components.CompilerServices.RuntimeHelpers.CreateInferredBindSetter(callback: box.OnQuery, value: box.Query), box.Query ?? ""))!;
+        var assignment = BlazorReflection.EventCallbackDelegate(EventCallback.Factory.CreateBinder(box, value => box.Query = value, box.Query ?? ""))!;
+
+        Assert.AreEqual("BoundBox.OnQuery (@bind)", BevEventCallbacks.Method(withSetter));
+        Assert.EndsWith(" (@bind)", BevEventCallbacks.Method(assignment));
+        Assert.DoesNotContain("CreateBinderCore", BevEventCallbacks.Method(assignment), StringComparison.Ordinal);
+
+        // A UI event carries only the method's compiled name, which cannot say which setter: the component is named.
+        Assert.AreEqual("BoundBox (@bind)", BevLambdaTargets.DescribeEventHandler(typeof(BoundBox).FullName!, withSetter.Method.Name));
+    }
+
+    public sealed class BoundBox
+    {
+        public string? Query { get; set; }
+
+        public void OnQuery(string? value) => Query = value;
+    }
+
     [TestMethod]
     public void A_compiled_name_that_more_than_one_lambda_carries_is_not_named()
     {
