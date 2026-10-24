@@ -1652,7 +1652,16 @@ function Invoke-AgentScenario([string] $lab, [string] $id, [string] $model) {
     $handoff = $null
 
     if ($scenario.handoff) {
-        $handoff = Invoke-AgentTurn $folder $model $scenario.handoff.prompt $null $budget (Join-Path $results 'handoff.jsonl')
+        $handoffPrompts = @($scenario.handoff.prompt) + @($scenario.handoff.turns | Where-Object { $_ })
+        $handoff = [Collections.Generic.List[object]]::new()
+        $handoffSession = $null
+
+        for ($i = 0; $i -lt $handoffPrompts.Count; $i++) {
+            $turn = Invoke-AgentTurn $folder $model $handoffPrompts[$i] $handoffSession $budget (Join-Path $results "handoff$(if ($i) { $i + 1 }).jsonl")
+            $handoffSession = $turn.Session ?? $handoffSession
+            $handoff.Add($turn)
+        }
+
         $states['handoff'] = @(Get-ChangedPaths $folder $since)
     }
 
