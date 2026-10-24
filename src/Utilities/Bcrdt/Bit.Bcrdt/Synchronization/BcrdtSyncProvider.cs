@@ -1,4 +1,6 @@
-﻿namespace Bit.Bcrdt;
+﻿using System.Diagnostics;
+
+namespace Bit.Bcrdt;
 
 /// <summary>The connection lifecycle as an application sees it.</summary>
 public enum BcrdtConnectionStatus
@@ -60,6 +62,17 @@ public sealed class BcrdtSyncProviderOptions
 
     /// <summary>Whether presence is exchanged over the same connection, in both directions.</summary>
     public bool SyncAwareness { get; init; } = true;
+
+    /// <summary>
+    /// The largest message the provider sends, in bytes; a larger change or handshake answer goes out as
+    /// several. Zero sends every message whole.
+    /// </summary>
+    /// <remarks>
+    /// Relays limit what a client may send - a message over the limit gets the client disconnected - and
+    /// a document's full state, or one large paste, can exceed any limit. Keep this below the relay's.
+    /// Defaults to <see cref="BcrdtSyncProtocol.DefaultMaxMessageSize"/>.
+    /// </remarks>
+    public int MaxMessageSize { get; init; } = BcrdtSyncProtocol.DefaultMaxMessageSize;
 }
 
 /// <summary>
@@ -121,6 +134,7 @@ public sealed class BcrdtSyncProvider : IAsyncDisposable
     private readonly Queue<Action> _deferred = new();
     private bool _flushing;
     private int _status;
+    private int _access = (int)BcrdtDocumentAccess.ReadWrite;
     private bool _wantConnection;
     private bool _stopRequested;
     private bool _refused;
@@ -128,7 +142,12 @@ public sealed class BcrdtSyncProvider : IAsyncDisposable
     private CancellationTokenSource? _reconnectAttempt;
     private CancellationTokenSource? _connectAttempt;
     private int _handshakeGeneration;
+    private int _handshakeRetries;
     private bool _handshakeAnswered;
+    private bool _handshakeDeltaApplied;
+    private bool _repairResyncPending;
+    private long _handshakeStarted;
+    private long _lastSynced;
     private BcrdtStateVector? _awaitedVector;
     private IReadOnlyDictionary<string, object?>? _stashedPresence;
     private Task? _heartbeatLoop;
@@ -170,6 +189,20 @@ public sealed class BcrdtSyncProvider : IAsyncDisposable
     /// <summary>Whether the document is currently believed to match the peer's.</summary>
     public bool IsSynced => Status == BcrdtConnectionStatus.Synced;
 
+    /// <summary>When the provider last completed a handshake, or <see langword="null"/> if it never has.</summary>
+    /// <remarks>
+    /// Useful for telling a user how fresh their copy is while offline, and for spotting a client that
+    /// has been connected for a long time without ever catching up.
+    /// </remarks>
+    public DateTimeOffset? LastSyncedAt
+    {
+        get
+        {
+            long ticks = Interlocked.Read(ref _lastSynced);
+            return ticks == 0 ? null : new DateTimeOffset(ticks, TimeSpan.Zero);
+        }
+    }
+
     /// <summary>Raised whenever <see cref="Status"/> changes.</summary>
     public event Action<BcrdtConnectionStatus>? StatusChanged;
 
@@ -185,6 +218,22 @@ public sealed class BcrdtSyncProvider : IAsyncDisposable
 
     /// <summary>Raised when a peer refuses the connection. The provider stops reconnecting.</summary>
     public event Action<string>? AuthorizationDenied;
+
+    /// <summary>What the server last said this connection may do with the document.</summary>
+    /// <remarks>
+    /// <see cref="BcrdtDocumentAccess.ReadWrite"/> until a server says otherwise, which is also what a
+    /// relay that predates access levels - or a transport with no server at all - amounts to. The grant
+    /// is kept across reconnections, because a server that grants access announces it on every join.
+    /// While it is <see cref="BcrdtDocumentAccess.ReadOnly"/> the provider sends nothing that would
+    /// change another replica: the relay would drop it anyway. A local change made meanwhile stays in
+    /// this replica only, and is reported through <see cref="Error"/> rather than lost quietly.
+    /// </remarks>
+    public BcrdtDocumentAccess Access => (BcrdtDocumentAccess)Volatile.Read(ref _access);
+
+    /// <summary>Raised when <see cref="Access"/> changes.</summary>
+    public event Action<BcrdtDocumentAccess>? AccessChanged;
+
+    private bool IsReadOnly => Access == BcrdtDocumentAccess.ReadOnly;
 
     private bool SyncsAwareness => _awareness is not null && _options.SyncAwareness;
 
@@ -313,10 +362,12 @@ public sealed class BcrdtSyncProvider : IAsyncDisposable
         await _transport.DisconnectAsync(cancellationToken).ConfigureAwait(false);
 
         // Posted, not awaited: this continuation may be on a pool thread, and a host that disposes
-        // synchronously blocks the very context the status update would wait for.
+        // synchronously blocks the very context the status update would wait for. A connection asked
+        // for since - a ConnectAsync that did not wait for this one - owns the status by then, and a
+        // late "disconnected" must not overwrite its progress.
         Post(() =>
         {
-            if (!_refused) SetStatus(BcrdtConnectionStatus.Disconnected);
+            if (!_refused && !_wantConnection) SetStatus(BcrdtConnectionStatus.Disconnected);
         });
     }
 
@@ -343,14 +394,36 @@ public sealed class BcrdtSyncProvider : IAsyncDisposable
     {
         // Never echo a peer's own update back to it.
         if (ReferenceEquals(args.Origin, this)) return;
-        Send(BcrdtSyncProtocol.EncodeUpdate(args.Update));
+
+        if (IsReadOnly)
+        {
+            // The relay drops what a reader writes, so sending it would only cost bandwidth. A local
+            // edit is the application's to know about: it will not reach anybody else.
+            if (args.Transaction.Local)
+            {
+                ReportError(new InvalidOperationException(
+                    "The document was changed locally, but this connection is read-only: the change stays in this replica and is not sent to anyone."));
+            }
+            return;
+        }
+
+        foreach (byte[] message in BcrdtSyncProtocol.EncodeDelta(BcrdtSyncMessageKind.Update, args.Update, _options.MaxMessageSize))
+        {
+            Send(message);
+        }
     }
 
     private void OnAwarenessUpdated(byte[] update) => Send(BcrdtSyncProtocol.EncodeAwarenessUpdate(update));
 
     private void OnTransportStateChanged(BcrdtTransportStateChange change) => Post(() => HandleTransportStateChanged(change));
 
-    private void OnMessageReceived(ReadOnlyMemory<byte> message) => Post(() => HandleMessage(message));
+    private void OnMessageReceived(ReadOnlyMemory<byte> message)
+    {
+        KeyValuePair<string, object?> kind = BcrdtDiagnostics.Kind(message.Span);
+        BcrdtDiagnostics.MessagesReceived.Add(1, kind);
+        BcrdtDiagnostics.BytesReceived.Add(message.Length, kind);
+        Post(() => HandleMessage(message));
+    }
 
     private void HandleTransportStateChanged(BcrdtTransportStateChange change)
     {
@@ -359,7 +432,10 @@ public sealed class BcrdtSyncProvider : IAsyncDisposable
         switch (change.State)
         {
             case BcrdtTransportState.Connected:
-                _reconnectAttempts = 0;
+                // The attempt count is deliberately not reset here but once the handshake completes: a
+                // server that accepts the connection and then drops it - an oversized message, a proxy
+                // cutting it, an eviction - would otherwise be retried at the first, shortest delay
+                // forever instead of backing off.
 
                 // The attempt that produced this connection is over; a later drop needs a new one.
                 _reconnectAttempt = null;
@@ -404,7 +480,10 @@ public sealed class BcrdtSyncProvider : IAsyncDisposable
     private void BeginHandshake()
     {
         int generation = ++_handshakeGeneration;
+        _handshakeStarted = Stopwatch.GetTimestamp();
+        _handshakeRetries = 0;
         _handshakeAnswered = false;
+        _handshakeDeltaApplied = false;
         _awaitedVector = null;
 
         try
@@ -443,8 +522,16 @@ public sealed class BcrdtSyncProvider : IAsyncDisposable
     {
         TimeSpan timeout = _options.HandshakeTimeout;
         if (timeout <= TimeSpan.Zero) return;
-        _ = HandshakeTimeoutAsync(timeout, generation);
+
+        // Each repeat waits twice as long, up to a minute: a peer that has answered but whose data is
+        // slow to arrive - a large document on a slow link - must not be asked for all of it again
+        // every couple of seconds, which would only slow it down further.
+        long ticks = Math.Min(timeout.Ticks << Math.Min(_handshakeRetries, 5), Math.Max(timeout.Ticks, MaxHandshakeTimeout.Ticks));
+        _ = HandshakeTimeoutAsync(TimeSpan.FromTicks(ticks), generation);
     }
+
+    /// <summary>The longest a repeated handshake waits for its answer.</summary>
+    private static readonly TimeSpan MaxHandshakeTimeout = TimeSpan.FromMinutes(1);
 
     private async Task HandshakeTimeoutAsync(TimeSpan timeout, int generation)
     {
@@ -475,9 +562,11 @@ public sealed class BcrdtSyncProvider : IAsyncDisposable
             return;
         }
 
-        // A peer answered, but what it holds has not all arrived - a lost message, most likely.
+        // A peer answered, but what it holds has not all arrived - a lost message, or a slow one.
         int next = ++_handshakeGeneration;
+        _handshakeRetries++;
         _handshakeAnswered = false;
+        _handshakeDeltaApplied = false;
         _awaitedVector = null;
         Send(BcrdtSyncExchange.CreateAnnouncement(_doc));
         StartHandshakeTimer(next);
@@ -510,10 +599,11 @@ public sealed class BcrdtSyncProvider : IAsyncDisposable
 
                 case BcrdtSyncMessageKind.Auth:
                 {
-                    (bool permitted, string reason) = BcrdtSyncProtocol.DecodeAuth(message.Payload);
+                    (BcrdtDocumentAccess access, string reason) = BcrdtSyncProtocol.DecodeAuthAccess(message.Payload);
 
                     // Refusal is final: retrying would only produce the same answer.
-                    if (!permitted) Refuse(reason);
+                    if (access == BcrdtDocumentAccess.None) Refuse(reason);
+                    else SetAccess(access);
                     break;
                 }
 
@@ -538,11 +628,18 @@ public sealed class BcrdtSyncProvider : IAsyncDisposable
         BcrdtSyncExchangeResult result = default;
         try
         {
-            result = BcrdtSyncExchange.Handle(_doc, message, this, replies);
+            result = BcrdtSyncExchange.Handle(_doc, message, this, replies, _options.MaxMessageSize);
         }
         finally
         {
-            foreach (byte[] reply in replies) Send(reply);
+            // A reader answers nobody. Its content would be dropped by the relay, and its statement of what
+            // it holds would promise others content they will never receive - a local edit it made, or one
+            // it made offline before it learned it was read-only - so they would wait for it for ever. It
+            // still announces itself and applies what it is sent.
+            if (!IsReadOnly)
+            {
+                foreach (byte[] reply in replies) Send(reply);
+            }
             UpdateHandshakeProgress(result);
         }
     }
@@ -551,15 +648,26 @@ public sealed class BcrdtSyncProvider : IAsyncDisposable
     /// Decides whether the handshake is complete.
     /// </summary>
     /// <remarks>
+    /// <para>
     /// Only a <see cref="BcrdtSyncMessageKind.SyncStep1Reply"/> proves anything: it states what a peer
-    /// holds, so once this replica's state vector covers it - and the delta that preceded it, carrying
-    /// the peer's whole delete set, has been applied - the replica holds everything that peer does.
-    /// A <see cref="BcrdtSyncMessageKind.Update"/> proves nothing, and a relay delivers every peer's
+    /// holds, so once this replica's state vector covers it - and a delta carrying the peer's whole
+    /// delete set has been applied - the replica holds everything that peer does. A
+    /// <see cref="BcrdtSyncMessageKind.Update"/> proves nothing, and a relay delivers every peer's
     /// <see cref="BcrdtSyncMessageKind.SyncStep2"/> to everyone, computed against somebody else's state.
+    /// </para>
+    /// <para>
+    /// A peer sends its small reply before its delta, so the reply arrives quickly even when the delta
+    /// is large and the link slow - which is what stops the handshake timeout from concluding that
+    /// nobody is there while the document is still on its way. Waiting for a delta as well keeps a
+    /// replica that already has every block, but not every deletion, from claiming to be synced in the
+    /// moment between the two.
+    /// </para>
     /// </remarks>
     private void UpdateHandshakeProgress(BcrdtSyncExchangeResult result)
     {
         if (CurrentStatus != BcrdtConnectionStatus.Handshaking) return;
+
+        if (result.AppliedDelta) _handshakeDeltaApplied = true;
 
         if (result.PeerStateVector is { } peer)
         {
@@ -569,6 +677,7 @@ public sealed class BcrdtSyncProvider : IAsyncDisposable
         }
 
         if (_handshakeAnswered &&
+            _handshakeDeltaApplied &&
             _awaitedVector is not null &&
             _doc.GetStateVector().IsSupersetOf(_awaitedVector))
         {
@@ -606,6 +715,12 @@ public sealed class BcrdtSyncProvider : IAsyncDisposable
         {
             // The store is already gone, and with it anything to announce.
         }
+    }
+
+    private void SetAccess(BcrdtDocumentAccess access)
+    {
+        if (Interlocked.Exchange(ref _access, (int)access) == (int)access) return;
+        Defer(() => AccessChanged?.Invoke(access));
     }
 
     private void Refuse(string reason)
@@ -670,6 +785,7 @@ public sealed class BcrdtSyncProvider : IAsyncDisposable
         }
 
         int number = ++_reconnectAttempts;
+        BcrdtDiagnostics.Reconnects.Add(1);
         _reconnectAttempt = attempt;
         SetStatus(BcrdtConnectionStatus.Reconnecting);
         _reconnectLoop = Task.Run(() => ReconnectAsync(attempt, number), CancellationToken.None);
@@ -875,6 +991,20 @@ public sealed class BcrdtSyncProvider : IAsyncDisposable
         if (CurrentStatus == value) return;
         Volatile.Write(ref _status, (int)value);
 
+        // A connection that got as far as a completed handshake was a success; the next drop starts
+        // the backoff afresh.
+        if (value == BcrdtConnectionStatus.Synced)
+        {
+            _reconnectAttempts = 0;
+            Interlocked.Exchange(ref _lastSynced, DateTimeOffset.UtcNow.UtcTicks);
+
+            if (_handshakeStarted != 0)
+            {
+                BcrdtDiagnostics.HandshakeDuration.Record(Stopwatch.GetElapsedTime(_handshakeStarted).TotalMilliseconds);
+                _handshakeStarted = 0;
+            }
+        }
+
         Defer(() =>
         {
             StatusChanged?.Invoke(value);
@@ -902,6 +1032,45 @@ public sealed class BcrdtSyncProvider : IAsyncDisposable
         try
         {
             await _transport.SendAsync(message).ConfigureAwait(false);
+
+            KeyValuePair<string, object?> kind = BcrdtDiagnostics.Kind(message);
+            BcrdtDiagnostics.MessagesSent.Add(1, kind);
+            BcrdtDiagnostics.BytesSent.Add(message.Length, kind);
+        }
+        catch (Exception ex)
+        {
+            ReportError(ex);
+
+            // A send that failed on a connection that stayed up is a message the peers will never ask
+            // for: nothing else would make them. A handshake shortly afterwards brings it back.
+            Post(ScheduleRepair);
+        }
+    }
+
+    /// <summary>Re-runs the handshake soon, once, however many sends failed meanwhile.</summary>
+    private void ScheduleRepair()
+    {
+        if (_disposed || _repairResyncPending) return;
+        _repairResyncPending = true;
+        _ = RepairAsync();
+    }
+
+    private async Task RepairAsync()
+    {
+        try
+        {
+            CancellationToken token = ShutdownToken;
+            TimeSpan delay = _options.HandshakeTimeout > TimeSpan.Zero ? _options.HandshakeTimeout : TimeSpan.FromSeconds(2);
+            await Task.Delay(delay, token).ConfigureAwait(false);
+            await RunAsync(() =>
+            {
+                _repairResyncPending = false;
+                if (!_disposed && _transport.State == BcrdtTransportState.Connected) Send(BcrdtSyncExchange.CreateAnnouncement(_doc));
+            }, token).ConfigureAwait(false);
+        }
+        catch (OperationCanceledException)
+        {
+            // Shutting down.
         }
         catch (Exception ex)
         {
@@ -922,6 +1091,8 @@ public sealed class BcrdtSyncProvider : IAsyncDisposable
 
     private void RaiseError(Exception error)
     {
+        BcrdtDiagnostics.SyncErrors.Add(1, new KeyValuePair<string, object?>("error.type", error.GetType().Name));
+
         try
         {
             Error?.Invoke(error);
@@ -1118,5 +1289,6 @@ public sealed class BcrdtSyncProvider : IAsyncDisposable
         Synced = null;
         Error = null;
         AuthorizationDenied = null;
+        AccessChanged = null;
     }
 }

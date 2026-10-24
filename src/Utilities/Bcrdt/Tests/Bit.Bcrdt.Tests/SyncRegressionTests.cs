@@ -369,8 +369,9 @@ public class SyncRegressionTests
 
         List<byte[]> fromHolder = [];
         BcrdtSyncExchange.Handle(holder, BcrdtSyncProtocol.Decode(BcrdtSyncExchange.CreateAnnouncement(joiner)), "holder", fromHolder);
+        // The small reply first, so a joiner on a slow link learns somebody is here before the delta lands.
         Assert.AreSequenceEqual(
-            [BcrdtSyncMessageKind.SyncStep2, BcrdtSyncMessageKind.SyncStep1Reply],
+            [BcrdtSyncMessageKind.SyncStep1Reply, BcrdtSyncMessageKind.SyncStep2],
             fromHolder.Select(message => BcrdtSyncProtocol.Decode(message).Kind));
 
         // Applied in order, the joiner holds everything the holder does: nothing is owed back.
@@ -383,7 +384,7 @@ public class SyncRegressionTests
 
         // A deletion the holder lacks changes nothing a state vector can see, but the digest shows it.
         joiner.GetText("t").Delete(0, 1);
-        BcrdtSyncExchange.Handle(joiner, BcrdtSyncProtocol.Decode(fromHolder[1]), "joiner", fromJoiner);
+        BcrdtSyncExchange.Handle(joiner, BcrdtSyncProtocol.Decode(fromHolder[0]), "joiner", fromJoiner);
         Assert.AreSequenceEqual([BcrdtSyncMessageKind.SyncStep2], fromJoiner.Select(message => BcrdtSyncProtocol.Decode(message).Kind));
     }
 
@@ -642,8 +643,7 @@ public class SyncRegressionTests
             "/ws/{documentId}",
             options: new BcrdtWebSocketEndpointOptions { MaxMessageSize = 64 * 1024 }));
 
-        using var client = new ClientWebSocket();
-        await client.ConnectAsync(new Uri(host.WebSocketBase + "/ws/doc"), CancellationToken.None);
+        using ClientWebSocket client = await ConnectRawAsync(host.WebSocketBase + "/ws/doc");
 
         // One byte over: the server reads all of it before refusing, so nothing is left unread to
         // turn its close into a connection reset.
@@ -703,12 +703,15 @@ public class SyncRegressionTests
     }
 
     [TestMethod]
-    public void Only_an_auth_message_is_withheld_from_relaying()
+    public void Only_auth_and_liveness_messages_are_withheld_from_relaying()
     {
+        // An Auth verdict relayed from a client is a forgery; a ping relayed to a room is answered by
+        // everyone to everyone.
+        BcrdtSyncMessageKind[] withheld = [BcrdtSyncMessageKind.Auth, BcrdtSyncMessageKind.Ping, BcrdtSyncMessageKind.Pong];
         foreach (BcrdtSyncMessageKind kind in Enum.GetValues<BcrdtSyncMessageKind>())
         {
             byte[] message = [BcrdtSyncProtocol.Version, (byte)kind];
-            Assert.AreEqual(kind != BcrdtSyncMessageKind.Auth, BcrdtSyncProtocol.IsRelayable(message), kind.ToString());
+            Assert.AreEqual(!withheld.Contains(kind), BcrdtSyncProtocol.IsRelayable(message), kind.ToString());
         }
     }
 
@@ -1008,7 +1011,11 @@ public class SyncRegressionTests
         int adminReceived = 0;
         int intruderReceived = 0;
         admin.On<byte[]>(BcrdtHub.ReceiveMethod, _ => Interlocked.Increment(ref adminReceived));
-        intruder.On<byte[]>(BcrdtHub.ReceiveMethod, _ => Interlocked.Increment(ref intruderReceived));
+        intruder.On<byte[]>(BcrdtHub.ReceiveMethod, message =>
+        {
+            // The grant answering its own join is the hub talking to it, not the group.
+            if (BcrdtSyncProtocol.Decode(message).Kind != BcrdtSyncMessageKind.Auth) Interlocked.Increment(ref intruderReceived);
+        });
         await admin.StartAsync();
         await intruder.StartAsync();
 
@@ -1167,11 +1174,21 @@ public class SyncRegressionTests
         }
     }
 
-    private static async Task<ClientWebSocket> ConnectRawAsync(string address, string? key = null)
+    /// <summary>Connects a bare socket to a relay and reads past the access grant every relay sends first.</summary>
+    private static async Task<ClientWebSocket> ConnectRawAsync(
+        string address,
+        string? key = null,
+        BcrdtDocumentAccess expectedAccess = BcrdtDocumentAccess.ReadWrite)
     {
         var socket = new ClientWebSocket();
         if (key is not null) socket.Options.SetRequestHeader("X-Key", key);
         await socket.ConnectAsync(new Uri(address), CancellationToken.None);
+
+        byte[] buffer = new byte[256];
+        WebSocketReceiveResult result = await socket.ReceiveAsync(new ArraySegment<byte>(buffer), CancellationToken.None).WaitAsync(Patience);
+        BcrdtSyncMessage grant = BcrdtSyncProtocol.Decode(buffer.AsMemory(0, result.Count));
+        Assert.AreEqual(BcrdtSyncMessageKind.Auth, grant.Kind);
+        Assert.AreEqual(expectedAccess, BcrdtSyncProtocol.DecodeAuthAccess(grant.Payload).Access);
         return socket;
     }
 
@@ -1345,7 +1362,7 @@ public class SyncRegressionTests
     }
 
     /// <summary>A Kestrel host on a loopback port chosen by the operating system.</summary>
-    private sealed class LoopbackHost : IAsyncDisposable
+    internal sealed class LoopbackHost : IAsyncDisposable
     {
         private LoopbackHost(WebApplication app)
         {

@@ -42,11 +42,33 @@ public static class BcrdtSyncExchange
     /// <param name="origin">The origin to apply remote changes with, so they are not echoed back.</param>
     /// <param name="replies">Receives the messages owed in answer, in the order they should be sent.</param>
     /// <exception cref="BcrdtFormatException">The payload is malformed.</exception>
+    /// <remarks>
+    /// A reply larger than <see cref="BcrdtSyncProtocol.DefaultMaxMessageSize"/> is sent as several
+    /// messages.
+    /// </remarks>
     public static BcrdtSyncExchangeResult Handle(
         BcrdtDocument doc,
         BcrdtSyncMessage message,
         object? origin,
-        ICollection<byte[]> replies)
+        ICollection<byte[]> replies) =>
+        Handle(doc, message, origin, replies, BcrdtSyncProtocol.DefaultMaxMessageSize);
+
+    /// <summary>
+    /// Handles a document message, applying whatever it carries and collecting the replies it calls for,
+    /// none of them larger than <paramref name="maxMessageSize"/> where the content can be divided.
+    /// </summary>
+    /// <param name="doc">The local replica.</param>
+    /// <param name="message">A decoded message. Kinds other than the four document kinds are ignored.</param>
+    /// <param name="origin">The origin to apply remote changes with, so they are not echoed back.</param>
+    /// <param name="replies">Receives the messages owed in answer, in the order they should be sent.</param>
+    /// <param name="maxMessageSize">The most one reply may take, or zero for no limit.</param>
+    /// <exception cref="BcrdtFormatException">The payload is malformed.</exception>
+    public static BcrdtSyncExchangeResult Handle(
+        BcrdtDocument doc,
+        BcrdtSyncMessage message,
+        object? origin,
+        ICollection<byte[]> replies,
+        int maxMessageSize)
     {
         ArgumentNullException.ThrowIfNull(doc);
         ArgumentNullException.ThrowIfNull(replies);
@@ -55,12 +77,15 @@ public static class BcrdtSyncExchange
         {
             case BcrdtSyncMessageKind.SyncStep1:
             {
-                // An announcement: answer with what the announcer lacks, then state what we have so
-                // that it can answer in turn. The reply goes out even when our state vector is
-                // behind on nothing, because only the deletion digest can reveal deletions it holds.
+                // An announcement: state what we have, so that the announcer can answer in turn, and
+                // send what it lacks. The reply goes out even when our state vector is behind on
+                // nothing, because only the deletion digest can reveal deletions it holds. It goes
+                // first because it is small: on a slow link a large delta can take longer than the
+                // announcer's handshake timeout, and hearing the reply tells it somebody is here and
+                // what to wait for.
                 BcrdtStateVector remote = BcrdtStateVector.Decode(message.Payload);
-                replies.Add(BcrdtSyncProtocol.EncodeSyncStep2(doc.EncodeStateAsUpdate(remote)));
                 replies.Add(BcrdtSyncProtocol.EncodeSyncStep1Reply(doc.GetStateVector(), ComputeDeletionDigest(doc)));
+                AddDelta(replies, doc.EncodeStateAsUpdate(remote), maxMessageSize);
                 return new BcrdtSyncExchangeResult(true, false, null);
             }
 
@@ -76,7 +101,7 @@ public static class BcrdtSyncExchange
 
                 if (!replierIsComplete)
                 {
-                    replies.Add(BcrdtSyncProtocol.EncodeSyncStep2(doc.EncodeStateAsUpdate(remote)));
+                    AddDelta(replies, doc.EncodeStateAsUpdate(remote), maxMessageSize);
                 }
                 return new BcrdtSyncExchangeResult(true, false, remote);
             }
@@ -91,6 +116,14 @@ public static class BcrdtSyncExchange
 
             default:
                 return default;
+        }
+    }
+
+    private static void AddDelta(ICollection<byte[]> replies, byte[] update, int maxMessageSize)
+    {
+        foreach (byte[] message in BcrdtSyncProtocol.EncodeDelta(BcrdtSyncMessageKind.SyncStep2, update, maxMessageSize))
+        {
+            replies.Add(message);
         }
     }
 }

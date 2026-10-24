@@ -74,7 +74,7 @@
                         @if (!_online)
                         {
                             <span class="metric metric-warn">
-                                editing offline - changes are held locally until this tab reconnects
+                                editing offline - changes are stored in this browser and sent when this tab reconnects, even after a reload
                             </span>
                         }
                         <span class="panel-client" title="The engine's per-session client identifier. Every tab has its own.">
@@ -89,7 +89,8 @@
     <div class="bb-note bb-note-warn">
         <strong>The thing worth trying.</strong> Take one tab offline, type a paragraph into it, type something
         else into another tab, then bring the first one back. Both paragraphs survive, in the same order in every
-        tab - the handshake sends each side what the other is missing, in both directions.
+        tab - the handshake sends each side what the other is missing, in both directions. Reload the offline tab
+        before bringing it back, or close every tab and open the link again: nothing is lost either way.
     </div>
 </div>
 
@@ -98,9 +99,14 @@
     <p class="bb-card-desc">
         The document comes from the app's own <code>AddBitBcrdtServices</code> registration and is opened by
         <code>BcrdtCollaborationScope</code>; the editor is <code>BcrdtTextArea</code> and the list of people is
-        <code>BcrdtPresenceView</code>. The server only relays: <code>BcrdtHub</code> from <code>Bit.Bcrdt.Server</code>
-        forwards each message to the other tabs on the document without decoding it, and no copy of the document
-        lives on the server - when the last tab closes, it is gone.
+        <code>BcrdtPresenceView</code>. Each tab keeps its copy in the browser's IndexedDB
+        (<code>UseIndexedDbStore</code>), so a reload - online or not - starts from where it left off.
+    </p>
+    <p class="bb-card-desc">
+        On the server, <code>BcrdtHub</code> from <code>Bit.Bcrdt.Server</code> relays each message to the other tabs,
+        and a <code>BcrdtDocumentHost</code> behind it keeps one more replica of every live document: it answers each
+        joining tab with the whole document, writes every change to a store, and keeps the document when the last
+        tab closes. A newcomer to an empty room still gets everything that was ever typed into it.
     </p>
 </div>
 
@@ -113,11 +119,18 @@
     </p>
     <pre class="bb-code"><span class="c">// Demo/Server/Program.cs</span>
 builder.Services.AddBitBcrdtHub();   <span class="c">// AddSignalR, with a receive limit sized for sync messages</span>
+builder.Services.AddBitBcrdtDocumentHost(_ =&gt; new BcrdtDocumentHostOptions
+{
+    Store = new BcrdtInMemoryDocumentStore(maxDocuments: 500),   <span class="c">// an app gives it a durable store</span>
+});
 <span class="c">// ...</span>
 app.UseWebSockets();
 
-app.MapHub&lt;BcrdtHub&gt;(<span class="s">"/hub/bcrdt"</span>);
-app.MapBitBcrdtWebSocket(<span class="s">"/ws/bcrdt/{documentId}"</span>);</pre>
+app.MapHub&lt;BcrdtHub&gt;(<span class="s">"/hub/bcrdt"</span>);   <span class="c">// picks the host up from the container</span>
+app.MapBitBcrdtWebSocket(<span class="s">"/ws/bcrdt/{documentId}"</span>, options: new()
+{
+    DocumentHost = app.Services.GetRequiredService&lt;BcrdtDocumentHost&gt;(),
+});</pre>
 </div>
 
 @code {

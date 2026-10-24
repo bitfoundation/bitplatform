@@ -224,6 +224,112 @@ public class UndoRedoTests
         Assert.AreEqual("recoverable", text.ToString());
     }
 
+    [TestMethod]
+    public void Undo_never_deletes_what_a_peer_wrote_even_when_it_arrived_inside_a_tracked_transaction()
+    {
+        using BcrdtDocument doc = Doc(1);
+        using BcrdtDocument peer = Doc(2);
+        BcrdtText text = doc.GetText("body");
+        using var undo = new BcrdtUndoManager(text, Immediate);
+
+        peer.GetText("body").Insert(0, "theirs");
+        byte[] theirs = peer.EncodeStateAsUpdate();
+
+        // The hazard the transaction docs warn about: an await inside an open local transaction lets a
+        // peer's update join it, so the transaction advances the peer's clock as well as ours.
+        doc.Transact(_ =>
+        {
+            text.Insert(0, "mine ");
+            doc.ApplyUpdate(theirs);
+        });
+
+        undo.Undo();
+        Assert.AreEqual("theirs", text.ToString());
+    }
+
+    [TestMethod]
+    public void A_bounded_stack_drops_its_oldest_step_and_releases_what_it_kept()
+    {
+        using BcrdtDocument doc = Doc(1);
+        BcrdtText text = doc.GetText("body");
+        using var undo = new BcrdtUndoManager(text, new BcrdtUndoManagerOptions { CaptureTimeout = TimeSpan.Zero, MaxStackItems = 2 });
+
+        text.Insert(0, "first");
+        text.Delete(0, 5);
+        BcrdtItem firstDeleted = doc.Store.GetClientStructs(1)!.OfType<BcrdtItem>().First();
+        Assert.IsTrue(firstDeleted.Keep, "the step that deleted it keeps it");
+
+        text.Insert(0, "second");
+        text.Insert(6, "third");
+
+        Assert.AreEqual(2, undo.UndoCount);
+        Assert.IsFalse(firstDeleted.Keep);
+        Assert.IsInstanceOfType<BcrdtContentDeleted>(firstDeleted.Content, "released content is reclaimed, not kept for ever");
+
+        // What remains still undoes.
+        undo.Undo();
+        undo.Undo();
+        Assert.AreEqual("", text.ToString());
+        Assert.IsFalse(undo.CanUndo);
+    }
+
+    [TestMethod]
+    public void Disposing_an_undo_manager_releases_what_it_kept()
+    {
+        using BcrdtDocument doc = Doc(1);
+        BcrdtText text = doc.GetText("body");
+        var undo = new BcrdtUndoManager(text, Immediate);
+
+        text.Insert(0, "gone");
+        text.Delete(0, 4);
+        BcrdtItem deleted = doc.Store.GetClientStructs(1)!.OfType<BcrdtItem>().First();
+        Assert.IsTrue(deleted.Keep);
+
+        undo.Dispose();
+
+        Assert.IsFalse(deleted.Keep);
+        Assert.IsInstanceOfType<BcrdtContentDeleted>(deleted.Content);
+    }
+
+    [TestMethod]
+    public void Releasing_one_undo_managers_steps_leaves_another_managers_undo_intact()
+    {
+        using BcrdtDocument doc = Doc(1);
+        BcrdtText text = doc.GetText("body");
+
+        // Two managers over the same text and the same origin - a document-wide one and one per field -
+        // both keep the deleted content.
+        using var wide = new BcrdtUndoManager(text, Immediate);
+        var field = new BcrdtUndoManager(text, Immediate);
+
+        text.Insert(0, "keep me");
+        text.Delete(0, 7);
+
+        // The field's editor goes away; its manager lets go of what it kept.
+        field.Dispose();
+
+        // The other manager can still bring it back.
+        wide.Undo();
+        Assert.AreEqual("keep me", text.ToString());
+    }
+
+    [TestMethod]
+    public void A_bounded_stack_releases_nothing_a_newer_step_still_needs()
+    {
+        using BcrdtDocument doc = Doc(1);
+        BcrdtMap root = doc.GetMap("m");
+        using var undo = new BcrdtUndoManager(root, new BcrdtUndoManagerOptions { CaptureTimeout = TimeSpan.Zero, MaxStackItems = 1 });
+
+        BcrdtText nested = root.EnsureText("t");
+        nested.Insert(0, "abc");
+        nested.Delete(0, 1);
+        nested.Delete(0, 1);
+
+        // Only the last deletion is left to undo, and it must still find what it deleted.
+        undo.Undo();
+        Assert.AreEqual("bc", nested.ToString());
+    }
+
     private static void Sync(BcrdtDocument from, BcrdtDocument to) =>
         to.ApplyUpdate(from.EncodeStateAsUpdate(to.GetStateVector()), origin: "sync");
 }

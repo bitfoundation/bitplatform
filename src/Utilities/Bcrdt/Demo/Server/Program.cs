@@ -20,9 +20,17 @@ builder.Services.AddRazorComponents()
 // they are prerendered here.
 builder.Services.AddDemoServices();
 
-// The relay the live page's tabs talk through. It only forwards messages between the clients of a
-// document - it never decodes one, and no document lives on the server.
+// The relays the live page's tabs talk through, and a document host behind them: one more replica of
+// every live document, always present, so a document outlives every tab that had it open and a tab
+// that joins an empty room is handed the document by the server alone. Its store is in memory and
+// bounded - this server is public, and anyone can make a room - so the least recently used rooms are
+// forgotten first; an application would give it a durable store instead.
 builder.Services.AddBitBcrdtHub();
+builder.Services.AddBitBcrdtDocumentHost(_ => new BcrdtDocumentHostOptions
+{
+    Store = new BcrdtInMemoryDocumentStore(maxDocuments: 500),
+    UnloadDelay = TimeSpan.FromMinutes(1),
+});
 
 // The MCP server (Controllers/McpController.cs) and the plain HTTP endpoints that mirror it. A
 // member with nothing in it is left out of the JSON, exactly as the MCP transport leaves it out, so
@@ -96,8 +104,13 @@ app.UseAntiforgery();
 
 app.MapStaticAssets();
 
+// The hub picks the registered host up by itself; the WebSocket endpoint is given it, so both relays
+// share one replica of each live document.
 app.MapHub<BcrdtHub>("/hub/bcrdt");
-app.MapBitBcrdtWebSocket("/ws/bcrdt/{documentId}");
+app.MapBitBcrdtWebSocket("/ws/bcrdt/{documentId}", options: new BcrdtWebSocketEndpointOptions
+{
+    DocumentHost = app.Services.GetRequiredService<BcrdtDocumentHost>(),
+});
 
 // Both are literal routes, so they are matched before any component route regardless of order;
 // declaring them first says so out loud.

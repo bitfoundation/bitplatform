@@ -205,6 +205,18 @@ public sealed class BcrdtSignalRTransport : IBcrdtTransport
             SetState(BcrdtTransportState.Connected, null);
             handlers.Decide(connected: true);
         }
+        catch (HttpRequestException ex) when (ex.StatusCode is System.Net.HttpStatusCode.Unauthorized or System.Net.HttpStatusCode.Forbidden)
+        {
+            // The server refused the negotiation - an endpoint behind RequireAuthorization, say. That
+            // answer will not change by asking again, so it is reported as a refusal, which stops the
+            // provider instead of retrying it forever. A fresh ConnectAsync - once the user has signed
+            // in again, or a token has been renewed - tries afresh.
+            handlers?.Decide(connected: false);
+            await DiscardConnectionAsync().ConfigureAwait(false);
+            lock (_stateGate) Volatile.Write(ref _state, (int)BcrdtTransportState.Disconnected);
+            throw new BcrdtTransportAuthorizationException(
+                $"The hub refused the connection ({(int)ex.StatusCode!.Value} {ex.StatusCode}).", ex);
+        }
         catch
         {
             // The thrown exception is the whole failure signal; the held-back Closed event is

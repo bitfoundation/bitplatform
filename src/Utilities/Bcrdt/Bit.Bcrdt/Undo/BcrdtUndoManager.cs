@@ -44,6 +44,17 @@ public sealed class BcrdtUndoManagerOptions
     public Func<BcrdtItem, bool>? DeleteFilter { get; init; }
 
     /// <summary>
+    /// How many steps each stack keeps; the oldest is dropped when another is added. Zero keeps every
+    /// step.
+    /// </summary>
+    /// <remarks>
+    /// Every step pins the content it deleted so that undoing it can bring that content back, which is
+    /// memory a long session never gets back otherwise. A dropped step releases what it pinned, and the
+    /// content is reclaimed.
+    /// </remarks>
+    public int MaxStackItems { get; init; } = 100;
+
+    /// <summary>
     /// Whether a map key redone locally should ignore a concurrent remote write to the same key.
     /// </summary>
     /// <remarks>
@@ -114,6 +125,7 @@ public sealed class BcrdtUndoManager : IDisposable
         _trackedOrigins = [.. _options.TrackedOrigins, this];
 
         _doc.AfterTransaction += OnAfterTransaction;
+        _doc.UndoManagers.Add(this);
     }
 
     private readonly HashSet<object?> _trackedOrigins;
@@ -194,21 +206,52 @@ public sealed class BcrdtUndoManager : IDisposable
 
         _doc.Transact(transaction =>
         {
-            void Release(List<BcrdtUndoStackItem> stack)
-            {
-                foreach (BcrdtUndoStackItem item in stack)
-                {
-                    item.Deletions.IterateDeletedStructs(transaction, block =>
-                    {
-                        if (block is BcrdtItem target && IsInScope(target)) SetKeep(target, false);
-                    });
-                }
-                stack.Clear();
-            }
-
-            if (clearUndo) Release(_undoStack);
-            if (clearRedo) Release(_redoStack);
+            if (clearUndo) Release(transaction, _undoStack, _undoStack.Count);
+            if (clearRedo) Release(transaction, _redoStack, _redoStack.Count);
         }, origin: this);
+    }
+
+    /// <summary>
+    /// Drops the oldest <paramref name="count"/> steps of a stack, releasing the deleted content they
+    /// kept so the collector can reclaim it now rather than never.
+    /// </summary>
+    /// <remarks>
+    /// The keep flag is shared: two managers over overlapping scopes keep the same deleted block, and one
+    /// step's container is often another step's too. So a block is released only once no step left on
+    /// any manager of the document could still restore it, and containers are not released at all - they
+    /// are few, and pinned by whichever step reaches them.
+    /// </remarks>
+    private void Release(BcrdtTransaction transaction, List<BcrdtUndoStackItem> stack, int count)
+    {
+        BcrdtUndoStackItem[] released = [.. stack.Take(count)];
+        stack.RemoveRange(0, count);
+
+        foreach (BcrdtUndoStackItem step in released)
+        {
+            step.Deletions.IterateDeletedStructs(transaction, block =>
+            {
+                if (block is BcrdtItem { Keep: true } target && IsInScope(target) && !IsStillNeeded(target)) target.Keep = false;
+            });
+            transaction.ReleaseForCollection(step.Deletions);
+        }
+    }
+
+    /// <summary>Whether any step of any undo manager on this document could still restore a block.</summary>
+    private bool IsStillNeeded(BcrdtItem item)
+    {
+        foreach (BcrdtUndoManager manager in _doc.UndoManagers)
+        {
+            if (!manager.IsInScope(item)) continue;
+            foreach (BcrdtUndoStackItem step in manager._undoStack)
+            {
+                if (step.Deletions.IsDeleted(item.Id)) return true;
+            }
+            foreach (BcrdtUndoStackItem step in manager._redoStack)
+            {
+                if (step.Deletions.IsDeleted(item.Id)) return true;
+            }
+        }
+        return false;
     }
 
     private void OnAfterTransaction(BcrdtTransaction transaction)
@@ -237,13 +280,13 @@ public sealed class BcrdtUndoManager : IDisposable
             Clear(clearUndo: false, clearRedo: true);
         }
 
+        // Only what this replica created. A tracked transaction normally creates nothing else, but one
+        // that had a peer's update applied inside it - an await inside an open transaction, say - also
+        // advanced the peer's clock, and undoing that would delete the peer's work.
         var insertions = new BcrdtDeleteSet();
-        foreach ((ulong client, long endClock) in transaction.AfterState)
-        {
-            long startClock = transaction.BeforeState.Get(client);
-            if (endClock > startClock) insertions.Add(client, startClock, endClock - startClock);
-        }
-        insertions.SortAndMerge();
+        long ownStart = transaction.BeforeState.Get(_doc.ClientId);
+        long ownEnd = transaction.AfterState.Get(_doc.ClientId);
+        if (ownEnd > ownStart) insertions.Add(_doc.ClientId, ownStart, ownEnd - ownStart);
 
         long now = DateTime.UtcNow.Ticks;
         bool withinCaptureWindow =
@@ -276,7 +319,16 @@ public sealed class BcrdtUndoManager : IDisposable
             if (block is BcrdtItem target && IsInScope(target)) SetKeep(target, true);
         });
 
-        var args = new BcrdtUndoStackEventArgs(stack[^1], _undoing, transaction.Origin);
+        BcrdtUndoStackItem current = stack[^1];
+
+        // The oldest step makes way. This transaction is still being settled, so what that step kept
+        // is reclaimed in the same collection pass as anything the transaction deleted itself.
+        if (_options.MaxStackItems > 0 && stack.Count > _options.MaxStackItems)
+        {
+            Release(transaction, stack, stack.Count - _options.MaxStackItems);
+        }
+
+        var args = new BcrdtUndoStackEventArgs(current, _undoing, transaction.Origin);
         if (added) StackItemAdded?.Invoke(args);
         else StackItemUpdated?.Invoke(args);
     }
@@ -531,6 +583,19 @@ public sealed class BcrdtUndoManager : IDisposable
         _disposed = true;
 
         _doc.AfterTransaction -= OnAfterTransaction;
+
+        // Release what the stacks kept, so a document that outlives its undo manager can reclaim it -
+        // except what another manager's steps still need.
+        try
+        {
+            Clear();
+        }
+        catch (ObjectDisposedException)
+        {
+            // The document went first; there is nothing left to reclaim.
+        }
+        _doc.UndoManagers.Remove(this);
+
         _undoStack.Clear();
         _redoStack.Clear();
         StackItemAdded = null;
