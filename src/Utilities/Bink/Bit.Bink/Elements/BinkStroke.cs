@@ -99,6 +99,29 @@ public sealed record BinkStroke : BinkElement
         return false;
     }
 
+    /// <summary>
+    /// Measures in the document under a stretching transform. Each segment's ink reaches its own distance from the
+    /// centerline there (a stroke stretched sideways is fatter across than along), so the tolerance is added to that
+    /// rather than converted into local units by a single factor.
+    /// </summary>
+    protected override bool HitTestStretched(Vector2 point, float tolerance)
+    {
+        int n = Points.Count;
+        if (n == 0 || !Matrix3x2.Invert(Transform, out Matrix3x2 inverse)) return false;
+        float half = Brush.HitTestWidth / 2f;
+        ReadOnlySpan<float> xs = Points.X;
+        ReadOnlySpan<float> ys = Points.Y;
+        var previous = new Vector2(xs[0], ys[0]);
+        if (n == 1) return BinkGeometryMath.WithinTransformedDot(point - Vector2.Transform(previous, Transform), inverse, half, tolerance);
+        for (int i = 1; i < n; i++)
+        {
+            var next = new Vector2(xs[i], ys[i]);
+            if (BinkGeometryMath.NearTransformedSegment(point, previous, next, Transform, inverse, half, tolerance)) return true;
+            previous = next;
+        }
+        return false;
+    }
+
     /// <inheritdoc />
     public override bool IntersectsRect(BinkRect rect)
     {
@@ -106,30 +129,36 @@ public sealed record BinkStroke : BinkElement
         if (rect.Contains(Bounds)) return true;
 
         // Test in document space. Mapping the rectangle into local space instead and taking its bounding box
-        // would, under rotation, cover far more than the rectangle and select strokes it does not touch.
+        // would, under rotation, cover far more than the rectangle and select strokes it does not touch. The ink
+        // around each segment is measured the way the transform draws it, which under a stretch differs per segment.
         Matrix3x2 transform = Transform;
         bool identity = transform.IsIdentity;
-        float scale = identity ? 1f : MathF.Sqrt(MathF.Abs(transform.GetDeterminant()));
-        if (!float.IsFinite(scale) || scale < BinkGeometryMath.Epsilon) scale = 1f;
-        BinkRect padded = rect.Inflate(Brush.HitTestWidth / 2f * scale);
+        float half = Brush.HitTestWidth / 2f;
         int n = Points.Count;
         ReadOnlySpan<float> xs = Points.X;
         ReadOnlySpan<float> ys = Points.Y;
         if (n == 0) return false;
-        Vector2 previous = new(xs[0], ys[0]);
-        if (!identity) previous = Vector2.Transform(previous, transform);
-        if (n == 1) return padded.Contains(previous);
+        var previousLocal = new Vector2(xs[0], ys[0]);
+        Vector2 previous = identity ? previousLocal : Vector2.Transform(previousLocal, transform);
+        if (n == 1) return rect.Inflate(BinkGeometryMath.TransformedHalfWidth(previousLocal, previousLocal, transform, half)).Contains(previous);
         for (int i = 1; i < n; i++)
         {
-            Vector2 next = new(xs[i], ys[i]);
-            if (!identity) next = Vector2.Transform(next, transform);
-            if (BinkGeometryMath.SegmentIntersectsRect(previous, next, padded)) return true;
+            var nextLocal = new Vector2(xs[i], ys[i]);
+            Vector2 next = identity ? nextLocal : Vector2.Transform(nextLocal, transform);
+            float reach = identity ? half : BinkGeometryMath.TransformedHalfWidth(previousLocal, nextLocal, transform, half);
+            if (BinkGeometryMath.SegmentIntersectsRect(previous, next, rect.Inflate(reach))) return true;
+            previousLocal = nextLocal;
             previous = next;
         }
         return false;
     }
 
     /// <summary>Returns a stroke whose points have the transform baked in (transform becomes identity).</summary>
+    /// <remarks>
+    /// The brush width is scaled by the transform's average scale. Under an even scale and rotation the result looks
+    /// exactly like the original; under a transform that stretches one direction more than another, it does not:
+    /// a stroke has a single width, so ink that the stretch made wider one way than the other cannot be expressed.
+    /// </remarks>
     public BinkStroke Flatten()
     {
         if (Transform.IsIdentity) return this;

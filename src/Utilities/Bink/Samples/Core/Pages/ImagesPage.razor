@@ -1,0 +1,127 @@
+﻿@page "/images"
+
+<PageTitle>Images - Bink samples</PageTitle>
+
+<h1>Images</h1>
+
+<p>
+    Images are decoded by the browser and drawn on the canvas like any other element. The generated picture is
+    rasterized in .NET by Bink's own PNG encoder first, so it also checks that the managed rasterizer runs in this
+    host. Mark either image up with the highlighter, then select and move or resize it.
+</p>
+
+<div class="toolbar">
+    <button @onclick="InsertGeneratedAsync">Insert generated image</button>
+    <label class="file-button">
+        Insert an image file
+        <InputFile OnChange="InsertFileAsync" accept="image/png,image/jpeg,image/webp,image/gif" />
+    </label>
+    <span class="spacer"></span>
+    <div class="segmented" role="group" aria-label="Tool">
+        <button aria-pressed="@(_toolId == "select" ? "true" : "false")" @onclick="UseSelect">Select</button>
+        <button aria-pressed="@(_toolId == "highlighter" ? "true" : "false")" @onclick="UseHighlighter">Highlighter</button>
+        <button aria-pressed="@(_toolId == "pen" ? "true" : "false")" @onclick="UsePen">Pen</button>
+    </div>
+    <button disabled="@(_canvas?.History.CanUndo is not true)" @onclick="() => _canvas?.Undo()">Undo</button>
+    <button disabled="@_document.IsEmpty" @onclick="() => _canvas?.Clear()">Clear</button>
+</div>
+
+<div class="surface">
+    <BinkCanvas @ref="_canvas"
+                Document="_document"
+                Height="420px"
+                AriaLabel="Image markup"
+                Tool="_tool"
+                Brush="_brush"
+                EnableTouchGestures="true"
+                EnableDrop="true"
+                DocumentChanged="() => StateHasChanged()"
+                Ready="() => StateHasChanged()"
+                HistoryChanged="() => StateHasChanged()" />
+</div>
+
+<CanvasStatus Canvas="_canvas" />
+
+@if (_message is not null)
+{
+    <p class="status" role="status">@_message</p>
+}
+
+@code {
+    private const long MaxFileBytes = 10 * 1024 * 1024;
+
+    private BinkCanvas? _canvas;
+    private readonly BinkDocument _document = new(new BinkDocumentSettings { Width = 1000, Height = 700, Background = BinkColor.White });
+    private string _toolId = "highlighter";
+    private IBinkTool _tool = new BinkDrawTool();
+    private BinkBrush _brush = new BinkHighlighterBrush { Width = 18f, Color = BinkColor.Parse("#fde047") };
+    private string? _message;
+
+    private void UseSelect()
+    {
+        _toolId = "select";
+        _tool = new BinkSelectTool();
+    }
+
+    private void UseHighlighter()
+    {
+        _toolId = "highlighter";
+        _tool = new BinkDrawTool();
+        _brush = new BinkHighlighterBrush { Width = 18f, Color = BinkColor.Parse("#fde047") };
+    }
+
+    private void UsePen()
+    {
+        _toolId = "pen";
+        _tool = new BinkDrawTool();
+        _brush = new BinkPenBrush { Width = 3f, Color = BinkColor.Parse("#dc2626") };
+    }
+
+    private async Task InsertGeneratedAsync()
+    {
+        if (_canvas is null) return;
+
+        // A small drawing made in code and rasterized by BinkPngExporter: no browser and no System.Drawing involved.
+        var picture = new BinkDocument(new BinkDocumentSettings { Width = 320, Height = 200, Background = BinkColor.Parse("#e0f2fe") });
+        picture.AddElement(new BinkRectangleShape(new BinkRect(24, 24, 120, 80))
+        {
+            Style = new BinkShapeStyle { StrokeColor = BinkColor.Parse("#1d4ed8"), StrokeWidth = 4f, FillColor = BinkColor.Parse("#93c5fd") },
+        });
+        picture.AddElement(new BinkEllipseShape(new BinkRect(176, 60, 120, 110))
+        {
+            Style = new BinkShapeStyle { StrokeColor = BinkColor.Parse("#15803d"), StrokeWidth = 4f, FillColor = BinkColor.Parse("#86efac") },
+        });
+        picture.AddElement(new BinkLineShape(new Vector2(40, 170), new Vector2(160, 130))
+        {
+            EndArrow = true,
+            Style = new BinkShapeStyle { StrokeColor = BinkColor.Parse("#b91c1c"), StrokeWidth = 4f },
+        });
+
+        BinkPngExportResult png = BinkPngExporter.ExportWithDetails(picture, new BinkPngExportOptions { Scale = 2f });
+        BinkImageSource source = BinkImageSource.FromBytes(png.Bytes, "image/png", png.Width, png.Height);
+        BinkImageElement? image = await _canvas.AddImageAsync(source, maxWidth: 400f);
+        _message = image is null
+            ? "The active layer does not accept new elements."
+            : $"Inserted a {png.Width}x{png.Height} PNG of {png.Bytes.Length:N0} bytes encoded in .NET.";
+    }
+
+    private async Task InsertFileAsync(InputFileChangeEventArgs e)
+    {
+        if (_canvas is null) return;
+
+        try
+        {
+            using var stream = new MemoryStream();
+            await e.File.OpenReadStream(MaxFileBytes).CopyToAsync(stream);
+
+            // The natural size is left at 0: AddImageAsync has the browser decode the image and fills it in.
+            BinkImageSource source = BinkImageSource.FromBytes(stream.ToArray(), e.File.ContentType, 0, 0);
+            BinkImageElement? image = await _canvas.AddImageAsync(source, maxWidth: 600f);
+            _message = image is null ? "The active layer does not accept new elements." : $"Inserted {e.File.Name}.";
+        }
+        catch (Exception ex) when (ex is ArgumentException or IOException)
+        {
+            _message = $"{e.File.Name} could not be inserted: {ex.Message}";
+        }
+    }
+}

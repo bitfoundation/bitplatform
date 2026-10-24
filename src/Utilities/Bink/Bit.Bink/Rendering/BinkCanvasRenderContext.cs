@@ -1,4 +1,5 @@
 ﻿using System.Numerics;
+using System.Runtime.InteropServices;
 
 namespace Bit.Bink;
 
@@ -25,6 +26,18 @@ internal enum BinkCanvasCommand : byte
     SetTransform = 17,
     SetDash = 18,
     ClearRect = 19,
+    /// <summary>Slot: the path verbs that follow build a retained path instead of the current one.</summary>
+    DefinePath = 20,
+    /// <summary>Ends the retained path started by <see cref="DefinePath"/>.</summary>
+    EndPath = 21,
+    /// <summary>Slot: the next fill or stroke paints a retained path.</summary>
+    UsePath = 22,
+    /// <summary>Count, then that many path slots the browser can release.</summary>
+    FreePaths = 23,
+    /// <summary>Slot, string index: keeps a string of this frame's table under a slot.</summary>
+    RetainString = 24,
+    /// <summary>Count, then that many string slots the browser can release.</summary>
+    FreeStrings = 25,
 }
 
 /// <summary>
@@ -39,6 +52,15 @@ internal enum BinkCanvasCommand : byte
 /// WebAssembly.
 /// </para>
 /// <para>
+/// Every value is exact in a 32-bit float (colours travel as a 24-bit RGB value and an alpha byte), so the buffer can
+/// cross a serialization boundary as packed floats rather than JSON numbers.
+/// </para>
+/// <para>
+/// The canvas component records its document surface with a resource cache: a path is sent to the browser once,
+/// kept there as a <c>Path2D</c>, and referred to by slot in every later frame. A context created with the public
+/// constructor has no cache and records every path in full, which is what an export or a custom host wants.
+/// </para>
+/// <para>
 /// This is the only rendering path the on-screen canvas uses. The engine never calls canvas APIs directly, which
 /// is what allows the same drawing code to produce SVG and PNG output.
 /// </para>
@@ -49,11 +71,20 @@ public sealed class BinkCanvasRenderContext : IBinkRenderContext, IBinkRenderCon
     private int _count;
     private readonly List<string> _strings = new();
     private readonly Dictionary<string, int> _stringIndex = new(StringComparer.Ordinal);
+    private readonly BinkCanvasResourceCache? _resources;
+    private readonly List<int> _freedPaths = new();
+    private readonly List<int> _freedStrings = new();
 
     /// <summary>Creates a context with an initial capacity.</summary>
     public BinkCanvasRenderContext(int capacity = 4096)
     {
         _buffer = new double[Math.Max(capacity, 64)];
+    }
+
+    /// <summary>Creates a context that refers to paths and long strings the browser already holds.</summary>
+    internal BinkCanvasRenderContext(int capacity, BinkCanvasResourceCache resources) : this(capacity)
+    {
+        _resources = resources;
     }
 
     /// <summary>The recorded commands.</summary>
@@ -83,13 +114,54 @@ public sealed class BinkCanvasRenderContext : IBinkRenderContext, IBinkRenderCon
         _count = 0;
         _strings.Clear();
         _stringIndex.Clear();
+        _resources?.BeginFrame();
+    }
+
+    /// <summary>
+    /// Ends a frame recorded with a resource cache: tells the browser which retained paths and strings it can
+    /// release. Does nothing for a context without one.
+    /// </summary>
+    internal void EndFrame()
+    {
+        if (_resources is null) return;
+        _freedPaths.Clear();
+        _freedStrings.Clear();
+        _resources.EndFrame(_freedPaths, _freedStrings);
+        WriteSlots(BinkCanvasCommand.FreePaths, _freedPaths);
+        WriteSlots(BinkCanvasCommand.FreeStrings, _freedStrings);
+    }
+
+    private void WriteSlots(BinkCanvasCommand command, List<int> slots)
+    {
+        if (slots.Count == 0) return;
+        Write(command);
+        Write(slots.Count);
+        foreach (int slot in slots) Write(slot);
+    }
+
+    /// <summary>
+    /// The recorded values packed as little-endian 32-bit floats: a quarter of the size of the same buffer as
+    /// JSON numbers and nothing to parse, for the interop paths that serialize.
+    /// </summary>
+    internal byte[] ToSingleBytes()
+    {
+        var bytes = new byte[_count * sizeof(float)];
+        Span<float> values = MemoryMarshal.Cast<byte, float>(bytes.AsSpan());
+        ReadOnlySpan<double> source = _buffer.AsSpan(0, _count);
+        for (int i = 0; i < source.Length; i++) values[i] = (float)source[i];
+        if (!BitConverter.IsLittleEndian)
+        {
+            Span<int> words = MemoryMarshal.Cast<byte, int>(bytes.AsSpan());
+            for (int i = 0; i < words.Length; i++) words[i] = System.Buffers.Binary.BinaryPrimitives.ReverseEndianness(words[i]);
+        }
+        return bytes;
     }
 
     /// <summary>Clears the whole surface to a color (transparent erases it).</summary>
     public void Clear(BinkColor color)
     {
         Write(BinkCanvasCommand.Clear);
-        Write(color.ToArgb());
+        Write(color);
     }
 
     /// <summary>Clears a rectangle in the current coordinate space.</summary>
@@ -152,7 +224,7 @@ public sealed class BinkCanvasRenderContext : IBinkRenderContext, IBinkRenderCon
         if (alpha <= 0 && paint.Blend != BinkBlendMode.DestinationOut) return;
         WritePath(path);
         Write(BinkCanvasCommand.Fill);
-        Write(paint.Color.ToArgb());
+        Write(paint.Color);
         Write(alpha);
         Write((int)paint.Blend);
         Write(paint.Rule == BinkFillRule.EvenOdd ? 1 : 0);
@@ -173,7 +245,7 @@ public sealed class BinkCanvasRenderContext : IBinkRenderContext, IBinkRenderCon
         }
         WritePath(path);
         Write(BinkCanvasCommand.Stroke);
-        Write(paint.Color.ToArgb());
+        Write(paint.Color);
         Write(paint.Width);
         Write(alpha);
         Write((int)paint.Blend);
@@ -186,8 +258,10 @@ public sealed class BinkCanvasRenderContext : IBinkRenderContext, IBinkRenderCon
     {
         ArgumentNullException.ThrowIfNull(image);
         if (destination.IsEmpty || opacity <= 0 || image.IsOmitted) return;
+        // Resolved before the opcode: keeping a long URI may emit a command of its own, which has to come first.
+        int uri = StringReference(image.Uri);
         Write(BinkCanvasCommand.DrawImage);
-        Write(InternString(image.Uri));
+        Write(uri);
         Write(destination.X);
         Write(destination.Y);
         Write(destination.Width);
@@ -205,14 +279,16 @@ public sealed class BinkCanvasRenderContext : IBinkRenderContext, IBinkRenderCon
     public void DrawText(string text, Vector2 origin, in BinkTextStyle style, float opacity)
     {
         if (string.IsNullOrEmpty(text) || opacity <= 0) return;
+        int textReference = StringReference(text);
+        int fontReference = StringReference(ToCssFont(style));
         Write(BinkCanvasCommand.DrawText);
-        Write(InternString(text));
-        Write(InternString(ToCssFont(style)));
+        Write(textReference);
+        Write(fontReference);
         Write(origin.X);
         Write(origin.Y);
         Write(style.FontSize);
         Write(style.FontSize * style.LineHeight);
-        Write(style.Color.ToArgb());
+        Write(style.Color);
         Write(Math.Clamp(opacity, 0f, 1f));
         Write((int)style.Align);
     }
@@ -239,7 +315,26 @@ public sealed class BinkCanvasRenderContext : IBinkRenderContext, IBinkRenderCon
 
     private void WritePath(BinkPathGeometry path)
     {
+        if (_resources is { } resources)
+        {
+            if (!resources.TryUsePath(path, out int slot))
+            {
+                slot = resources.AddPath(path);
+                Write(BinkCanvasCommand.DefinePath);
+                Write(slot);
+                WriteVerbs(path);
+                Write(BinkCanvasCommand.EndPath);
+            }
+            Write(BinkCanvasCommand.UsePath);
+            Write(slot);
+            return;
+        }
         Write(BinkCanvasCommand.BeginPath);
+        WriteVerbs(path);
+    }
+
+    private void WriteVerbs(BinkPathGeometry path)
+    {
         ReadOnlySpan<float> coords = path.Coordinates;
         int c = 0;
         foreach (BinkPathVerb verb in path.Verbs)
@@ -274,6 +369,25 @@ public sealed class BinkCanvasRenderContext : IBinkRenderContext, IBinkRenderCon
         }
     }
 
+    /// <summary>
+    /// Returns how a command refers to a string: its index in this frame's table, or, for a long string the
+    /// browser keeps, <c>-(slot + 1)</c>. An embedded image is a data URI of megabytes; without retaining it, it
+    /// crossed the interop boundary again on every redraw of the page it sat on.
+    /// </summary>
+    private int StringReference(string value)
+    {
+        if (_resources is not { } resources || value.Length < BinkCanvasResourceCache.RetainedStringLength) return InternString(value);
+        if (!resources.TryUseString(value, out int slot))
+        {
+            slot = resources.AddString(value);
+            int index = InternString(value);
+            Write(BinkCanvasCommand.RetainString);
+            Write(slot);
+            Write(index);
+        }
+        return -(slot + 1);
+    }
+
     private int InternString(string value)
     {
         if (_stringIndex.TryGetValue(value, out int index)) return index;
@@ -285,11 +399,16 @@ public sealed class BinkCanvasRenderContext : IBinkRenderContext, IBinkRenderCon
 
     private void Write(BinkCanvasCommand command) => Write((double)(byte)command);
 
+    // A colour is two values, 24-bit RGB and the alpha byte, because packed ARGB does not fit a 32-bit float exactly.
+    private void Write(BinkColor color)
+    {
+        Write((double)(((uint)color.R << 16) | ((uint)color.G << 8) | color.B));
+        Write((double)color.A);
+    }
+
     private void Write(float value) => Write((double)value);
 
     private void Write(int value) => Write((double)value);
-
-    private void Write(uint value) => Write((double)value);
 
     private void Write(double value)
     {

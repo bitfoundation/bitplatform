@@ -261,7 +261,7 @@ public record BinkDocumentReportDto
     /// <summary>The schema version the document declares.</summary>
     public int? SchemaVersion { get; init; }
 
-    /// <summary>The schema versions this build of the library reads, e.g. "1..1".</summary>
+    /// <summary>The schema versions this build of the library reads, e.g. "1..2".</summary>
     public required string SupportedVersions { get; init; }
 
     public string? Id { get; init; }

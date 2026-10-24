@@ -33,7 +33,9 @@ public class McpDocumentLabTests
 
         Assert.IsTrue(report.Valid);
         Assert.AreEqual("bink", report.Format);
-        Assert.AreEqual(BinkSerializer.CurrentVersion, report.SchemaVersion);
+        // The version the document declares: the sample shows no picture twice, so it needs no asset table and is
+        // written as version 1, which every version of Bink reads.
+        Assert.AreEqual(1, report.SchemaVersion);
         Assert.AreEqual(320, report.Width);
         Assert.AreEqual(200, report.Height);
         Assert.AreEqual(2, Count(report.Elements, "Stroke"));

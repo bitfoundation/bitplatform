@@ -1,0 +1,100 @@
+﻿@page "/lifecycle"
+
+<PageTitle>Lifecycle - Bink samples</PageTitle>
+
+<h1>Lifecycle</h1>
+
+<p>
+    The parts of a canvas's life that differ most between hosts: attaching to the browser, being disposed while an
+    attach or a render is still in flight, resizing, and swapping its document and read-only state. Each attach
+    raises <code>Ready</code> once; nothing here should throw or leave a blank canvas behind.
+</p>
+
+<div class="toolbar">
+    <label><input type="checkbox" @bind="_mounted" /> Mounted</label>
+    <button disabled="@(_mounted is false || _busy)" @onclick="Remount">Remount</button>
+    <button disabled="@(_mounted is false || _busy)" @onclick="RemountRepeatedlyAsync">Remount 10 times quickly</button>
+    <label><input type="checkbox" @bind="_readOnly" /> Read only</label>
+    <label><input type="checkbox" @bind="_tall" /> Tall</label>
+    <label><input type="checkbox" @bind="_narrow" /> Narrow</label>
+    <button @onclick="SwapDocument">Show document @(_showingFirst ? "B" : "A")</button>
+</div>
+
+<p class="status" role="status">
+    Ready raised <strong>@_readyCount</strong> times, canvas instance <strong>@_instance</strong>,
+    showing document <strong>@(_showingFirst ? "A" : "B")</strong>.
+    @if (_unavailable is not null)
+    {
+        <span>Unavailable: @_unavailable</span>
+    }
+</p>
+
+@if (_mounted)
+{
+    <div class="surface @(_narrow ? "narrow" : null)">
+        <BinkCanvas @key="_instance"
+                    @ref="_canvas"
+                    Document="@(_showingFirst ? _first : _second)"
+                    Height="@(_tall ? "480px" : "240px")"
+                    ReadOnly="_readOnly"
+                    AriaLabel="Lifecycle canvas"
+                    EnableTouchGestures="true"
+                    Ready="OnReady"
+                    Unavailable="reason => _unavailable = reason"
+                    DocumentChanged="() => StateHasChanged()"
+                    HistoryChanged="() => StateHasChanged()" />
+    </div>
+
+    <CanvasStatus Canvas="_canvas" />
+}
+
+@code {
+    private BinkCanvas? _canvas;
+    private readonly BinkDocument _first = CreateDocument("#2563eb");
+    private readonly BinkDocument _second = CreateDocument("#dc2626");
+    private bool _mounted = true;
+    private bool _readOnly;
+    private bool _tall;
+    private bool _narrow;
+    private bool _showingFirst = true;
+    private bool _busy;
+    private int _instance = 1;
+    private int _readyCount;
+    private string? _unavailable;
+
+    // Each document starts with a frame in its own colour, so swapping them is visible before anything is drawn.
+    private static BinkDocument CreateDocument(string color)
+    {
+        var document = new BinkDocument(new BinkDocumentSettings { Width = 800, Height = 480, Background = BinkColor.White });
+        document.AddElement(new BinkRectangleShape(new BinkRect(20, 20, 760, 440))
+        {
+            Style = new BinkShapeStyle { StrokeColor = BinkColor.Parse(color), StrokeWidth = 6f },
+        });
+        return document;
+    }
+
+    private void OnReady() => _readyCount++;
+
+    private void SwapDocument() => _showingFirst = _showingFirst is false;
+
+    private void Remount() => _instance++;
+
+    // Disposes each canvas while its module import, attach or first render may still be under way.
+    private async Task RemountRepeatedlyAsync()
+    {
+        _busy = true;
+        try
+        {
+            for (int i = 0; i < 10; i++)
+            {
+                _instance++;
+                StateHasChanged();
+                await Task.Delay(30);
+            }
+        }
+        finally
+        {
+            _busy = false;
+        }
+    }
+}
