@@ -47,6 +47,10 @@ public sealed class BitAiChatSession : IAsyncDisposable
     /// <param name="approvalPolicy">Decides which calls need a human decision.</param>
     /// <param name="services">Scoped services made available to tools.</param>
     /// <param name="logger">Where to log transport and tool failures.</param>
+    /// <param name="timeProvider">
+    /// The clock the processor holds tool results by (<see cref="BitAiChatSessionOptions.ToolResultHoldTime"/>), or
+    /// <see langword="null"/> for the system clock. A test passes a fake one to move time on.
+    /// </param>
     public BitAiChatSession(
         IBitAiTransport transport,
         BitAiConversation? conversation = null,
@@ -54,7 +58,8 @@ public sealed class BitAiChatSession : IAsyncDisposable
         IBitAiToolRegistry? tools = null,
         IBitAiToolApprovalPolicy? approvalPolicy = null,
         IServiceProvider? services = null,
-        ILogger<BitAiChatSession>? logger = null)
+        ILogger<BitAiChatSession>? logger = null,
+        TimeProvider? timeProvider = null)
     {
         ArgumentNullException.ThrowIfNull(transport);
         _transport = transport;
@@ -65,7 +70,7 @@ public sealed class BitAiChatSession : IAsyncDisposable
 
         Conversation = conversation ?? new BitAiConversation();
         Options = options ?? new BitAiChatSessionOptions();
-        Processor = new BitAiConversationStreamProcessor(Conversation);
+        Processor = new BitAiConversationStreamProcessor(Conversation, timeProvider);
         Processor.ToolResultDropped += OnToolResultDropped;
     }
 
@@ -77,6 +82,9 @@ public sealed class BitAiChatSession : IAsyncDisposable
 
     /// <summary>The reducer applying events to the conversation.</summary>
     public BitAiConversationStreamProcessor Processor { get; }
+
+    /// <summary>The text of the errors the session writes itself (<see cref="BitAiChatSessionOptions.Strings"/>).</summary>
+    public BitAiStrings Strings => Options.Strings ?? BitAiStrings.Default;
 
     /// <summary><see langword="true"/> while a turn is in flight.</summary>
     public bool IsGenerating => Volatile.Read(ref _cts) is not null;
@@ -374,8 +382,7 @@ public sealed class BitAiChatSession : IAsyncDisposable
                 if (!Options.ExecuteTools || ready.Count == 0) break;
                 if (round == Options.MaxToolRoundtrips)
                 {
-                    assistant.AddPart(new BitAiErrorPart(new BitAiError(
-                        $"Stopped after {Options.MaxToolRoundtrips} tool round trips.")
+                    assistant.AddPart(new BitAiErrorPart(new BitAiError(Strings.ToolLoopLimitReached(Options.MaxToolRoundtrips))
                     {
                         Code = "tool_loop_limit",
                         Kind = BitAiErrorKind.Tool,
@@ -392,25 +399,34 @@ public sealed class BitAiChatSession : IAsyncDisposable
         {
             var timedOut = timeout is { IsCancellationRequested: true } && !cancellationToken.IsCancellationRequested;
             LastError = timedOut
-                ? new BitAiError("The request timed out.") { Kind = BitAiErrorKind.Timeout, Code = "timeout", IsRetryable = true }
-                : new BitAiError("Generation stopped.") { Kind = BitAiErrorKind.Cancelled, Code = "cancelled" };
+                ? new BitAiError(Strings.RequestTimedOut) { Kind = BitAiErrorKind.Timeout, Code = "timeout", IsRetryable = true }
+                : new BitAiError(Strings.GenerationStopped) { Kind = BitAiErrorKind.Cancelled, Code = "cancelled" };
 
             assistant?.CompleteOpenParts();
             if (timedOut) assistant?.SetError(LastError);
             else assistant?.SetStatus(BitAiMessageStatus.Cancelled);
             Processor.EndGeneration(timedOut ? BitAiMessageStatus.Failed : BitAiMessageStatus.Cancelled);
         }
-        catch (Exception exception) when (Options.CatchTransportExceptions)
+        catch (Exception exception)
         {
+            // The generation is closed either way - the message failed, its open parts completed, the processor's
+            // current message released - so a caller that takes the exception is never left with a reply still streaming.
             _logger.LogError(exception, "The transport failed while generating a reply.");
             LastError = BitAiError.FromException(exception);
             assistant?.CompleteOpenParts();
             assistant?.SetError(LastError);
             Processor.EndGeneration(BitAiMessageStatus.Failed);
+
+            if (!Options.CatchTransportExceptions) throw;
         }
         finally
         {
             Release(cts, timeout);
+
+            // Disposal discards the results held for their call, but an event the turn was applying as it was disposed
+            // may have held one after that: the turn, which is what applied it, discards it as it unwinds.
+            if (_disposed) Processor.DiscardHeldToolResults();
+
             RaiseStateChanged();
             if (assistant is not null && !_disposed) TurnCompleted?.Invoke(assistant);
         }
@@ -485,19 +501,28 @@ public sealed class BitAiChatSession : IAsyncDisposable
 
         try
         {
-            if (await NeedsApprovalAsync(tool.Definition, invocation, cancellationToken).ConfigureAwait(false))
+            // A decision the user already recorded on the call (Approve, while the stream was still coming in) stands.
+            // Without one, the call waits when the transport asked for approval (a BitAiToolApprovalRequestedEvent put it
+            // in AwaitingApproval) as much as when the local policy does: the server's request is not the policy's to
+            // override.
+            var decision = call.Approval;
+            if (decision is BitAiApprovalDecision.Undecided
+                && (call.Status is BitAiToolCallStatus.AwaitingApproval
+                    || await NeedsApprovalAsync(tool.Definition, invocation, cancellationToken).ConfigureAwait(false)))
             {
-                var decision = await WaitForApprovalAsync(call, cancellationToken).ConfigureAwait(false);
-                if (decision is BitAiApprovalDecision.Rejected or BitAiApprovalDecision.Undecided)
+                decision = await WaitForApprovalAsync(call, cancellationToken).ConfigureAwait(false);
+                if (decision is BitAiApprovalDecision.Undecided) decision = BitAiApprovalDecision.Rejected;
+            }
+
+            if (decision is BitAiApprovalDecision.Rejected)
+            {
+                call.SetResult(BitAiToolOutcome.Failure(new BitAiError(Strings.ToolCallDeclined)
                 {
-                    call.SetResult(BitAiToolOutcome.Failure(new BitAiError("The user declined this tool call.")
-                    {
-                        Code = "rejected",
-                        Kind = BitAiErrorKind.Tool,
-                    }));
-                    call.SetStatus(BitAiToolCallStatus.Rejected);
-                    return;
-                }
+                    Code = "rejected",
+                    Kind = BitAiErrorKind.Tool,
+                }));
+                call.SetStatus(BitAiToolCallStatus.Rejected);
+                return;
             }
 
             call.SetStatus(BitAiToolCallStatus.Running);
@@ -625,6 +650,7 @@ public sealed class BitAiChatSession : IAsyncDisposable
         }
 
         // A result still held for its call would otherwise be dropped onto the conversation after the session is gone.
+        // The turn cancelled above discards again as it unwinds (RunTurnAsync), for a result it held after this.
         Processor.DiscardHeldToolResults();
 
         await Task.CompletedTask.ConfigureAwait(false);

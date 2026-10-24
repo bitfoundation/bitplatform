@@ -12,8 +12,9 @@
 /// worth a placeholder of its own, so one the policy does not show outright is left out.
 /// </para>
 /// <para>
-/// Script-capable URL schemes are neutralised regardless of the policy. Inline <c>data:</c> images
-/// are fetched from nowhere, so they are shown under every policy except <see cref="BitAiImageMode.Block"/>.
+/// Script-capable URL schemes are neutralised regardless of the policy. Inline <c>data:</c> images, and the browser's
+/// own <c>blob:</c> ones (the preview of a file the user attached), are fetched from nowhere, so they are shown under
+/// every policy except <see cref="BitAiImageMode.Block"/>.
 /// </para>
 /// </remarks>
 public sealed record BitAiImagePolicy
@@ -33,7 +34,7 @@ public sealed record BitAiImagePolicy
 
 
 
-    /// <summary>Whether inline <c>data:</c> images are shown. They involve no network request.</summary>
+    /// <summary>Whether inline <c>data:</c> and <c>blob:</c> images are shown. They involve no network request.</summary>
     public bool AllowDataImages { get; init; } = true;
 
     /// <summary>The hosts allowed under <see cref="BitAiImageMode.AllowListedHosts"/>.</summary>
@@ -75,7 +76,7 @@ public sealed record BitAiImagePolicy
     /// <returns>Whether to show it, show a placeholder that loads it on request, or hide it.</returns>
     public BitAiImageDecision Decide(string url)
     {
-        if (url.StartsWith("data:", StringComparison.OrdinalIgnoreCase))
+        if (url.StartsWith("data:", StringComparison.OrdinalIgnoreCase) || url.StartsWith("blob:", StringComparison.OrdinalIgnoreCase))
         {
             return AllowDataImages && Mode != BitAiImageMode.Block ? BitAiImageDecision.Show : BitAiImageDecision.Hide;
         }

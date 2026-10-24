@@ -80,8 +80,22 @@ public partial class BitAiAttachmentChip : BitAiComponentBase
 
     private bool IsFailed => Attachment.Status is BitAiAttachmentStatus.Failed;
 
-    // Only an image is drawn from its own content, and a thumbnail is preferred over the full picture.
-    private string? Preview => Attachment.Kind is BitAiAttachmentKind.Image ? Attachment.ThumbnailUrl ?? Attachment.Url : null;
+    // Only an image is drawn from its own content, and a thumbnail is preferred over the full picture. The address comes
+    // from the transport as much as from the user (a file part of a reply), so it is read as every image source is
+    // (BitAiSafeUrls.Image) and shown only where the image policy shows it outright: a chip is too small for a
+    // placeholder, so one the policy holds back or hides shows the glyph of its kind instead.
+    private string? Preview
+    {
+        get
+        {
+            if (Attachment.Kind is not BitAiAttachmentKind.Image) return null;
+            if ((Attachment.ThumbnailUrl ?? Attachment.Url) is not { } url) return null;
+
+            var source = BitAiSafeUrls.Image(url);
+
+            return source != BitAiSafeUrls.BlankImage && DecideImageSource(source) == BitAiImageDecision.Show ? source : null;
+        }
+    }
 
     // The glyphs come from the icon font of this package, since the one of the core carries only the few its own
     // components draw.

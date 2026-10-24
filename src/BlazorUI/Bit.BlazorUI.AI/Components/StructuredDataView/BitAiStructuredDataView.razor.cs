@@ -20,8 +20,6 @@ public partial class BitAiStructuredDataView : BitAiComponentBase
 
 
 
-    [Inject] private BitAiRendererRegistry _renderers { get; set; } = default!;
-
 
 
     /// <summary>
@@ -77,8 +75,8 @@ public partial class BitAiStructuredDataView : BitAiComponentBase
     {
         CascadingParameters?.UpdateParameters(this);
 
-        _custom = _renderers.FindStructured(Part.SchemaName)
-                           ?.Invoke(new BitAiStructuredDataContext(Part, Message ?? new BitAiMessage(BitAiRole.Assistant)));
+        _custom = Renderers.FindStructured(Part.SchemaName)
+                          ?.Invoke(new BitAiStructuredDataContext(Part, Message ?? new BitAiMessage(BitAiRole.Assistant)));
 
         base.OnParametersSet();
     }

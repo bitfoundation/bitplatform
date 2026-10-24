@@ -271,6 +271,7 @@ public partial class BitAiVoiceInput : BitAiComponentBase
             }
         }
         catch (JSDisconnectedException) { } // the circuit is gone, and the microphone of its page with it
+        catch (ObjectDisposedException) { } // the JS runtime of a WebAssembly host may go first
         finally
         {
             _dotnetObj?.Dispose();

@@ -69,13 +69,16 @@ private readonly BitAiMarkdownDocument footnotesDocument = BitAiMarkdownParser.P
     private readonly string example5RazorCode = @"
 @using System.Text
 @using System.Text.RegularExpressions
-@implements IDisposable
 
 <BitToggle @bind-Value=""typesetMath"" @bind-Value:after=""ToggleMathRenderer"" Text=""Use a math renderer of my own"" />
 
-<BitAiMarkdownView Document=""mathDocument"" />";
+<CascadingValue Value=""pageRenderers"" IsFixed=""true"">
+    <BitAiMarkdownView Document=""mathDocument"" />
+</CascadingValue>";
     private readonly string example5CsharpCode = @"
-[Inject] private BitAiRendererRegistry Renderers { get; set; } = default!;
+// An app registers its renderers once, at startup: AddBitBlazorUIAIServices(ai => ai.ConfigureRenderers(...)). That
+// registry is one instance for the whole app, so a page that wants renderers of its own cascades a registry of its own.
+private readonly BitAiRendererRegistry pageRenderers = new();
 
 private const string mathMarkdown = """"""
     The energy of a body at rest is $E = mc^2$, and the area of a circle is $\pi r^2$.
@@ -88,26 +91,8 @@ private const string mathMarkdown = """"""
 private readonly BitAiMarkdownDocument mathDocument = BitAiMarkdownParser.Parse(mathMarkdown);
 
 private bool typesetMath;
-private BitAiMathRenderer? previousMathRenderer;
 
-private void ToggleMathRenderer()
-{
-    if (typesetMath)
-    {
-        previousMathRenderer = Renderers.MathRenderer;
-        Renderers.MathRenderer = RenderMath;
-    }
-    else
-    {
-        Renderers.MathRenderer = previousMathRenderer;
-    }
-}
-
-public void Dispose()
-{
-    // The registry is app-wide: leave it as this page found it.
-    if (typesetMath) Renderers.MathRenderer = previousMathRenderer;
-}
+private void ToggleMathRenderer() => pageRenderers.MathRenderer = typesetMath ? RenderMath : null;
 
 private static readonly Dictionary<string, string> mathSymbols = new()
 {
@@ -172,11 +157,13 @@ private static string Symbols(string tex) =>
     Regex.Replace(tex, @""\\([a-zA-Z]+)"", m => mathSymbols.GetValueOrDefault(m.Groups[1].Value, m.Groups[1].Value));";
 
     private readonly string example6RazorCode = @"
-<BitAiMarkdownView Document=""barsDocument"" />
+<CascadingValue Value=""pageRenderers"" IsFixed=""true"">
+    <BitAiMarkdownView Document=""barsDocument"" />
 
-<BitAiMarkdownView Document=""openBarsDocument"" />";
+    <BitAiMarkdownView Document=""openBarsDocument"" />
+</CascadingValue>";
     private readonly string example6CsharpCode = @"
-[Inject] private BitAiRendererRegistry Renderers { get; set; } = default!;
+private readonly BitAiRendererRegistry pageRenderers = new();
 
 private const string barsMarkdown = """"""
     Where the time of a first visit goes:
@@ -203,7 +190,7 @@ private readonly BitAiMarkdownDocument openBarsDocument = BitAiMarkdownParser.Pa
 protected override void OnInitialized()
 {
     // An app registers its renderers once, at startup: AddBitBlazorUIAIServices(ai => ai.ConfigureRenderers(...)).
-    Renderers.RegisterCodeLanguage(""bars"", RenderBars);
+    pageRenderers.RegisterCodeLanguage(""bars"", RenderBars);
 }
 
 // Renders a ```bars block - one ""label: value"" a line - as a bar chart, and waits for the block to be complete.
@@ -280,42 +267,25 @@ private readonly BitAiCitation[] citations =
 private string? clickedSource;";
 
     private readonly string example8RazorCode = @"
-@implements IDisposable
-
 <BitToggle @bind-Value=""customChips"" @bind-Value:after=""ToggleCitationRenderer"" Text=""Use a citation chip of my own"" />
 
-<BitAiMarkdownView Document=""citedDocument""
-                   Citations=""citations""
-                   OnCitationClick=""(BitAiCitation citation) => chipSource = citation.Source.Title"" />
+<CascadingValue Value=""pageRenderers"" IsFixed=""true"">
+    <BitAiMarkdownView Document=""citedDocument""
+                       Citations=""citations""
+                       OnCitationClick=""(BitAiCitation citation) => chipSource = citation.Source.Title"" />
+</CascadingValue>
 
 <div>Activated: <b>@(chipSource ?? ""none yet"")</b></div>";
     private readonly string example8CsharpCode = @"
-[Inject] private BitAiRendererRegistry Renderers { get; set; } = default!;
+// The registered registry is one instance for the whole app: a page with renderers of its own cascades its own.
+private readonly BitAiRendererRegistry pageRenderers = new();
 
 // citedMarkdown, citedDocument and citations as in the previous example.
 
 private bool customChips;
-private BitAiCitationRenderer? previousCitationRenderer;
 private string? chipSource;
 
-private void ToggleCitationRenderer()
-{
-    if (customChips)
-    {
-        previousCitationRenderer = Renderers.CitationRenderer;
-        Renderers.CitationRenderer = RenderCitationChip;
-    }
-    else
-    {
-        Renderers.CitationRenderer = previousCitationRenderer;
-    }
-}
-
-public void Dispose()
-{
-    // The registry is app-wide: leave it as this page found it.
-    if (customChips) Renderers.CitationRenderer = previousCitationRenderer;
-}
+private void ToggleCitationRenderer() => pageRenderers.CitationRenderer = customChips ? RenderCitationChip : null;
 
 // A pill naming the site of the source beside its number. ActivateAsync raises the OnCitationClick of the view the chip
 // is drawn in, as a click on the built-in chip does. The source is model output, so it is only ever written as text.

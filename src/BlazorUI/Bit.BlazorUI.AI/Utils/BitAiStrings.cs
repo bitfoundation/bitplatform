@@ -414,6 +414,20 @@ public class BitAiStrings
     /// <summary>Label for dismissing a notice.</summary>
     public virtual string Dismiss => "Dismiss";
 
+    /// <summary>The error a turn ends with when it ran out of the session's time (<see cref="BitAiChatSessionOptions.Timeout"/>).</summary>
+    public virtual string RequestTimedOut => "The request timed out.";
+
+    /// <summary>The error a turn ends with when the user stopped it.</summary>
+    public virtual string GenerationStopped => "Generation stopped.";
+
+    /// <summary>The error left on a reply whose tool calls went round more times than the session allows.</summary>
+    /// <param name="roundTrips">How many round trips were allowed (<see cref="BitAiChatSessionOptions.MaxToolRoundtrips"/>).</param>
+    /// <returns>The message.</returns>
+    public virtual string ToolLoopLimitReached(int roundTrips) => $"Stopped after {roundTrips} tool round trips.";
+
+    /// <summary>The result of a tool call the user declined when it asked for approval.</summary>
+    public virtual string ToolCallDeclined => "The user declined this tool call.";
+
     /// <summary>Shown under an error that can be retried after a delay.</summary>
     /// <param name="wait">How long to wait.</param>
     /// <returns>The message.</returns>

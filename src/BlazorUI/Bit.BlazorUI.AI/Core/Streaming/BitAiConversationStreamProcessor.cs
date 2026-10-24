@@ -42,7 +42,9 @@ public sealed class BitAiConversationStreamProcessor
     private readonly Dictionary<string, HeldToolResult> _resultsAwaitingArguments = new(StringComparer.Ordinal);
 
     // The calls that became ready, and the results dropped, while the gate was held: raised as ToolCallReady and
-    // ToolResultDropped once it is released, so no handler runs while the processor is held.
+    // ToolResultDropped once it is released, so neither handler runs while the processor is held. (The Changed handlers
+    // of the messages and parts do run under it - on the thread applying the event, as they did before there was a
+    // gate, or on the timer's when it drops a result.)
     private List<BitAiToolCallPart>? _readyCalls;
     private List<BitAiOrphanedToolResultException>? _droppedResults;
 
@@ -87,6 +89,9 @@ public sealed class BitAiConversationStreamProcessor
     /// <remarks>
     /// The processor never executes tools itself: it only records what the model asked for. The
     /// chat session subscribes to this to run them, which keeps the reducer free of side effects.
+    /// A call the transport answered ahead of its arguments (see <see cref="ToolResultHoldTime"/>) is raised with its
+    /// <see cref="BitAiToolCallPart.Result"/> set already: a subscriber that runs tools skips those, as the session does,
+    /// or it would run here a tool the server ran.
     /// </remarks>
     public event Action<BitAiToolCallPart>? ToolCallReady;
 
@@ -112,8 +117,8 @@ public sealed class BitAiConversationStreamProcessor
     /// A call that starts within this time is given the result as soon as its arguments are complete, and is not run
     /// again. When none has started by then, the result is dropped: an error part carrying a
     /// <see cref="BitAiOrphanedToolResultException"/> is added to the message it arrived for, and
-    /// <see cref="ToolResultDropped"/> is raised. <see cref="TimeSpan.Zero"/> drops such a result at once. A change applies
-    /// to the results held from then on.
+    /// <see cref="ToolResultDropped"/> is raised. <see cref="TimeSpan.Zero"/> drops such a result at once; there is no
+    /// upper bound. A change applies to the results held from then on.
     /// </remarks>
     /// <exception cref="ArgumentOutOfRangeException">The value is negative.</exception>
     public TimeSpan ToolResultHoldTime
@@ -194,17 +199,20 @@ public sealed class BitAiConversationStreamProcessor
     {
         ArgumentNullException.ThrowIfNull(evt);
 
+        List<BitAiToolCallPart>? ready;
+        List<BitAiOrphanedToolResultException>? dropped;
+
         lock (_gate)
         {
             // A held result whose time is up is dropped ahead of the event, whether or not the timer has fired yet, so a
             // call arriving after that never takes it.
-            DropExpiredResults();
+            if (DropExpiredResults()) ScheduleHeldResultsTimer();
 
             ApplyEvent(evt);
+            (ready, dropped) = TakePending();
         }
 
-        RaiseReadyCalls();
-        RaiseDroppedResults();
+        Raise(ready, dropped);
         EventApplied?.Invoke(evt);
     }
 
@@ -258,19 +266,23 @@ public sealed class BitAiConversationStreamProcessor
 
     private void EndGenerationCore(BitAiMessageStatus status)
     {
-        if (Current is not { } message) return;
+        var message = Current;
+        message?.CompleteOpenParts();
+        if (message is { Status: BitAiMessageStatus.Pending or BitAiMessageStatus.Streaming }) message.SetStatus(status);
 
-        message.CompleteOpenParts();
-        if (message.Status is BitAiMessageStatus.Pending or BitAiMessageStatus.Streaming) message.SetStatus(status);
-
-        // No more of their arguments will come: the calls still streaming them were completed just above, and a result
-        // waiting for them is given now.
+        // No more of their arguments will come: the calls still streaming them are completed - just above when they are
+        // on the message being generated, here when the stream put them on another one - and a result waiting for them
+        // is given now. Whether or not a message is being generated: the stream may have named existing messages only.
         foreach (var (toolCallId, awaiting) in _resultsAwaitingArguments)
         {
-            if (FindToolCall(toolCallId) is { } call) GiveResult(call, awaiting);
+            if (FindToolCall(toolCallId) is not { } call) continue;
+            if (call.IsStreaming) call.CompleteArguments();
+            GiveResult(call, awaiting);
         }
 
         _resultsAwaitingArguments.Clear();
+
+        if (message is null) return;
 
         // A run interrupted mid-flight never receives its completion event, and would otherwise
         // show as running for as long as the conversation is on screen.
@@ -332,12 +344,18 @@ public sealed class BitAiConversationStreamProcessor
 
     private void OnMessageStarted(BitAiMessageStartedEvent evt)
     {
-        if (Current is null || (evt.MessageId is not null && Current.MessageId != evt.MessageId))
+        if (evt.MessageId is { } id && Current?.MessageId != id && _conversation.FindMessage(id) is { } existing)
         {
-            Current = evt.MessageId is not null
-                ? _conversation.FindMessage(evt.MessageId) ?? _conversation.AddMessage(new BitAiMessage(evt.Role, evt.MessageId))
-                : _conversation.AddMessage(new BitAiMessage(evt.Role));
+            Current = existing;
         }
+        else if (Current is null)
+        {
+            Current = _conversation.AddMessage(new BitAiMessage(evt.Role, evt.MessageId));
+        }
+
+        // Otherwise the message the generation began with takes the stream, whatever id the transport gave the message
+        // on its side - as every other event carrying an id the conversation does not know lands on it (Target). Adding
+        // another would leave the first one pending, with nothing ever coming for it.
 
         Current.SetStatus(BitAiMessageStatus.Streaming);
     }
@@ -443,11 +461,14 @@ public sealed class BitAiConversationStreamProcessor
 
     private void OnToolResult(BitAiToolResultEvent evt)
     {
+        // A result never opens a message of its own (Target would): one applied after the turn has ended - a late push,
+        // a replayed fixture - goes to its call, or is held, and the transcript gains no empty assistant message for it.
         // A later result for the same call replaces an earlier one, held or not, as it does on a call that has one.
-        var result = new HeldToolResult(evt, Target(evt), _time.GetTimestamp(), ToolResultHoldTime);
-
         if (FindToolCall(evt.ToolCallId) is { } part)
         {
+            // What the result carries for a message (its citations) is the call's message's.
+            var result = new HeldToolResult(evt, part.Message ?? FindTarget(evt), _time.GetTimestamp(), ToolResultHoldTime);
+
             // A call still streaming its arguments takes no more of them once its result is set, so the result waits for
             // them (GiveHeldResult); every other call takes it now.
             if (part.IsStreaming) _resultsAwaitingArguments[evt.ToolCallId] = result;
@@ -458,9 +479,14 @@ public sealed class BitAiConversationStreamProcessor
 
         // A result ahead of its call - parallel streams merged out of order - is held for the call rather than shown on
         // its own, and given to it once it has started (GiveHeldResult). A hold time of zero drops it at once.
-        _heldResults[evt.ToolCallId] = result;
+        _heldResults[evt.ToolCallId] = new HeldToolResult(evt, FindTarget(evt), _time.GetTimestamp(), ToolResultHoldTime);
         DropExpiredResults();
+        ScheduleHeldResultsTimer();
     }
+
+    // The message an event is for, when there is one: the one of its id, else the one being generated. Never adds one.
+    private BitAiMessage? FindTarget(BitAiEvent evt) =>
+        (evt.MessageId is { } id ? _conversation.FindMessage(id) : null) ?? Current;
 
     // The arguments of the call are complete: a result that came ahead of them is given to it now, so the session does
     // not run it again.
@@ -480,12 +506,22 @@ public sealed class BitAiConversationStreamProcessor
     }
 
     // Under the gate. A held result whose time is up and no call of its id has started for is dropped, leaving an error
-    // part on the message it arrived for.
-    private void DropExpiredResults()
+    // part on the message it arrived for. Returns whether any was, for the caller to set the timer again then: with
+    // nothing dropped it is still due when the oldest result's time is up. Allocates nothing on the way through a stream
+    // that holds a result not yet due, which is every event of the hold.
+    private bool DropExpiredResults()
     {
-        if (_heldResults.Count == 0) return;
+        if (_heldResults.Count == 0) return false;
 
-        foreach (var held in _heldResults.Values.Where(h => _time.GetElapsedTime(h.HeldAt) >= h.HoldTime).ToArray())
+        List<HeldToolResult>? expired = null;
+        foreach (var held in _heldResults.Values)
+        {
+            if (_time.GetElapsedTime(held.HeldAt) >= held.HoldTime) (expired ??= []).Add(held);
+        }
+
+        if (expired is null) return false;
+
+        foreach (var held in expired)
         {
             _heldResults.Remove(held.Event.ToolCallId);
 
@@ -501,7 +537,7 @@ public sealed class BitAiConversationStreamProcessor
             (_droppedResults ??= []).Add(exception);
         }
 
-        ScheduleHeldResultsTimer();
+        return true;
     }
 
     // Under the gate. One timer, due when the oldest held result's time is up; none while nothing is held.
@@ -514,55 +550,71 @@ public sealed class BitAiConversationStreamProcessor
             return;
         }
 
+        // A timer waits at most 49.7 days (uint.MaxValue - 1 milliseconds) at a time, and throws for more: a longer hold
+        // is waited for in such stretches, each finding nothing due yet and setting the next.
         var due = _heldResults.Values.Min(h => h.HoldTime - _time.GetElapsedTime(h.HeldAt));
+        if (due < TimeSpan.Zero) due = TimeSpan.Zero;
+        else if (due > MaxTimerDueTime) due = MaxTimerDueTime;
 
         _heldResultsTimer ??= _time.CreateTimer(static state => ((BitAiConversationStreamProcessor)state!).OnHeldResultsTimer(),
                                                 this,
                                                 Timeout.InfiniteTimeSpan,
                                                 Timeout.InfiniteTimeSpan);
-        _heldResultsTimer.Change(due > TimeSpan.Zero ? due : TimeSpan.Zero, Timeout.InfiniteTimeSpan);
+        _heldResultsTimer.Change(due, Timeout.InfiniteTimeSpan);
     }
+
+    private static readonly TimeSpan MaxTimerDueTime = TimeSpan.FromMilliseconds(uint.MaxValue - 1);
 
     // The timer of the held results, for when no event arrives to drop them: a stream that went quiet, or a turn that
     // ended.
     private void OnHeldResultsTimer()
     {
-        lock (_gate) DropExpiredResults();
-
-        RaiseDroppedResults();
-    }
-
-    // Outside the gate, like RaiseDroppedResults: the session's handler only collects the call, but an app's may run the
-    // tool or wait on another thread that applies events.
-    private void RaiseReadyCalls()
-    {
         List<BitAiToolCallPart>? ready;
-
-        lock (_gate)
-        {
-            ready = _readyCalls;
-            _readyCalls = null;
-        }
-
-        if (ready is null) return;
-
-        foreach (var call in ready) ToolCallReady?.Invoke(call);
-    }
-
-    // Outside the gate, so a handler that logs, renders or applies another event never runs while the processor is held.
-    private void RaiseDroppedResults()
-    {
         List<BitAiOrphanedToolResultException>? dropped;
 
-        lock (_gate)
+        try
         {
-            dropped = _droppedResults;
-            _droppedResults = null;
+            lock (_gate)
+            {
+                DropExpiredResults();
+                ScheduleHeldResultsTimer();
+                (ready, dropped) = TakePending();
+            }
+
+            Raise(ready, dropped);
+        }
+        catch
+        {
+            // On the timer's thread an exception has no caller to reach: unhandled, it would end the process. What can
+            // throw here is the app's own - a Changed handler of the message, a ToolResultDropped handler - which throws
+            // to the caller applying an event otherwise. The result is dropped either way; what a handler left undone is
+            // its own to guard.
+        }
+    }
+
+    // Under the gate: the calls the event or the timer made ready and the results it dropped, taken to be raised once
+    // the gate is released.
+    private (List<BitAiToolCallPart>? Ready, List<BitAiOrphanedToolResultException>? Dropped) TakePending()
+    {
+        var pending = (_readyCalls, _droppedResults);
+        _readyCalls = null;
+        _droppedResults = null;
+        return pending;
+    }
+
+    // Outside the gate: the session's handlers only collect the call and log the drop, but an app's may run the tool,
+    // render, apply another event, or wait on another thread that does.
+    private void Raise(List<BitAiToolCallPart>? ready, List<BitAiOrphanedToolResultException>? dropped)
+    {
+        if (ready is not null)
+        {
+            foreach (var call in ready) ToolCallReady?.Invoke(call);
         }
 
-        if (dropped is null) return;
-
-        foreach (var exception in dropped) ToolResultDropped?.Invoke(exception);
+        if (dropped is not null)
+        {
+            foreach (var exception in dropped) ToolResultDropped?.Invoke(exception);
+        }
     }
 
     private static void AddCitations(BitAiMessage? message, BitAiToolOutcome outcome)

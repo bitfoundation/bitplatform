@@ -200,6 +200,30 @@ public class BitAiChatTests : BitAiTestBase
     }
 
     [TestMethod]
+    public async Task BitAiChatShouldEndTheSessionItCreatedOnceOneIsSupplied()
+    {
+        Services.AddSingleton<IBitAiTransport>(new SilentTransport());
+        Interactive();
+
+        var component = RenderComponent<BitAiChat>();
+        var owned = component.Instance.ActiveSession;
+        var supplied = NewSession();
+
+        component.Render(p => p.Add(c => c.Session, supplied));
+
+        Assert.AreSame(supplied, component.Instance.ActiveSession);
+        // A disposed session starts no turn.
+        Assert.IsNull(await owned.SubmitAsync("go"));
+
+        component.Render(p => p.Add(c => c.Session, null));
+
+        Assert.AreNotSame(owned, component.Instance.ActiveSession);
+        Assert.AreNotSame(supplied, component.Instance.ActiveSession);
+
+        await supplied.DisposeAsync();
+    }
+
+    [TestMethod]
     public void BitAiChatShouldPassItsDisabledToWhatItComposes()
     {
         Interactive();

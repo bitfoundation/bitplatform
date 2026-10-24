@@ -493,4 +493,50 @@ public class BitAiHeldToolResultTests
         Assert.ThrowsExactly<ArgumentException>(() => new BitAiOrphanedToolResultException(" ", outcome, TimeSpan.Zero));
         Assert.ThrowsExactly<ArgumentNullException>(() => new BitAiOrphanedToolResultException("c1", null!, TimeSpan.Zero));
     }
+
+    [TestMethod]
+    public void AHoldLongerThanATimerCanWaitAtOnceIsHeld()
+    {
+        // The system clock: its timer is the one that takes at most 49.7 days at a time, and throws for more.
+        var conversation = new BitAiConversation();
+        var processor = new BitAiConversationStreamProcessor(conversation, TimeProvider.System)
+        {
+            ToolResultHoldTime = TimeSpan.MaxValue,
+        };
+        var dropped = RecordDrops(processor);
+
+        processor.BeginGeneration();
+        processor.Apply(Result("c1"));
+        processor.Apply(new BitAiTextDeltaEvent("Done."));
+        processor.EndGeneration();
+
+        var message = Assert.ContainsSingle(conversation.Messages);
+        Assert.IsEmpty(dropped);
+        Assert.IsEmpty(message.PartsOf<BitAiErrorPart>());
+
+        processor.DiscardHeldToolResults();
+    }
+
+    [TestMethod]
+    public void AResultWaitingForTheArgumentsOfACallOnAnExistingMessageIsGivenWhenTheGenerationEnds()
+    {
+        // A stream that names existing messages only never has a current one: the generation ends with none, and the
+        // results waiting for arguments are given all the same.
+        var (conversation, processor, _) = Create();
+        var existing = conversation.AddMessage(new BitAiMessage(BitAiRole.Assistant, "m1"));
+
+        processor.Apply(new BitAiToolCallStartedEvent("c1", "search") { MessageId = "m1" });
+        processor.Apply(new BitAiToolCallDeltaEvent("c1", """{"q":"docs"}""") { MessageId = "m1" });
+        var result = Result("c1") with { MessageId = "m1" };
+        processor.Apply(result);
+        Assert.IsNull(processor.Current);
+
+        processor.EndGeneration();
+
+        var call = existing.FindToolCall("c1")!;
+        Assert.IsFalse(call.IsStreaming);
+        Assert.AreEqual("docs", call.Arguments!.Value.GetProperty("q").GetString());
+        Assert.AreSame(result.Outcome, call.Result);
+        Assert.ContainsSingle(conversation.Messages);
+    }
 }

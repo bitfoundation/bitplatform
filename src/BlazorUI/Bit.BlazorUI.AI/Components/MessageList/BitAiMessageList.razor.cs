@@ -21,6 +21,9 @@ public partial class BitAiMessageList : BitAiComponentBase
     // The messages added since the list was opened on its conversation, the only ones that play the entrance: the history
     // it opened on (restored, or there before the first render) keeps still through every later render.
     private readonly HashSet<BitAiMessage> _entering = new(ReferenceEqualityComparer.Instance);
+    // The newest message of the list, kept beside it for the one handler that runs off the renderer's dispatcher
+    // (OnMessageUpdated): a read of the list itself there would race the mutations made on it.
+    private BitAiMessage? _latest;
     private DotNetObjectReference<BitAiMessageList>? _dotnetObj;
     private BitAiConversation? _subscribed;
     private bool? _appliedHideSystemMessages;
@@ -280,8 +283,11 @@ public partial class BitAiMessageList : BitAiComponentBase
             _messages.Add(message);
         }
 
+        UpdateLatest();
         UpdateVirtualization();
     }
+
+    private void UpdateLatest() => Volatile.Write(ref _latest, _messages.Count > 0 ? _messages[^1] : null);
 
     // The session raises these from whatever thread the stream is on. The list is enumerated during rendering, so it is
     // only ever mutated on the renderer's dispatcher.
@@ -293,6 +299,7 @@ public partial class BitAiMessageList : BitAiComponentBase
 
         _messages.Add(message);
         if (_initialised && _prerendering is false) _entering.Add(message);
+        UpdateLatest();
         UpdateVirtualization();
         RequestRender();
     });
@@ -304,15 +311,18 @@ public partial class BitAiMessageList : BitAiComponentBase
 
         _entering.Remove(message);
 
+        UpdateLatest();
         UpdateVirtualization();
         RequestRender();
     });
 
+    // Runs on the thread of the stream, on every token: it reads nothing of the list (mutated on the dispatcher), only
+    // the newest message kept beside it, and asks for a render, which is safe from any thread.
     private void OnMessageUpdated(BitAiConversation conversation, BitAiMessage message)
     {
         // Only the last message can change the scroll height enough to matter while streaming; everything else is
         // handled by the part components re-rendering themselves.
-        if (ReferenceEquals(message, _messages.Count > 0 ? _messages[^1] : null)) RequestRender();
+        if (ReferenceEquals(message, Volatile.Read(ref _latest))) RequestRender();
     }
 
     /// <summary>

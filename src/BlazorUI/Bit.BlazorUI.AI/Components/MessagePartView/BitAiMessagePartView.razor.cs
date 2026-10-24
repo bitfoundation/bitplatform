@@ -28,8 +28,6 @@ public partial class BitAiMessagePartView : BitAiComponentBase
 
 
 
-    [Inject] private BitAiRendererRegistry _renderers { get; set; } = default!;
-
 
 
     /// <summary>
@@ -119,7 +117,7 @@ public partial class BitAiMessagePartView : BitAiComponentBase
             _subscribed.Changed += OnPartChanged;
         }
 
-        _custom = _renderers.FindPart(Part.Kind)?.Invoke(new BitAiMessagePartContext(Part, Message, Conversation, Session));
+        _custom = Renderers.FindPart(Part.Kind)?.Invoke(new BitAiMessagePartContext(Part, Message, Conversation, Session));
 
         base.OnParametersSet();
     }

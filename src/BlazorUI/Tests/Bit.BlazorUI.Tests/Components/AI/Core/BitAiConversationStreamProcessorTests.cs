@@ -581,4 +581,65 @@ public class BitAiConversationStreamProcessorTests
 
         Assert.ContainsSingle(conversation.FindArtifact("art1")!.Versions);
     }
+
+    [TestMethod]
+    public void AMessageStartedWithTheTransportsOwnIdFillsTheMessageTheGenerationBegan()
+    {
+        var (conversation, processor) = Create();
+        var began = processor.BeginGeneration();
+
+        // A provider that assigns its own ids names one the conversation does not know: the generation's message takes
+        // the stream rather than staying pending beside a second one.
+        processor.Apply(new BitAiMessageStartedEvent { MessageId = "msg_abc" });
+        processor.Apply(new BitAiTextDeltaEvent("Hi"));
+        processor.EndGeneration();
+
+        var message = Assert.ContainsSingle(conversation.Messages);
+        Assert.AreSame(began, message);
+        Assert.AreEqual("Hi", message.GetText());
+        Assert.AreEqual(BitAiMessageStatus.Complete, message.Status);
+    }
+
+    [TestMethod]
+    public void AMessageStartedWithTheIdOfAnEarlierMessageStreamsIntoIt()
+    {
+        var (conversation, processor) = Create();
+        var earlier = conversation.AddMessage(new BitAiMessage(BitAiRole.Assistant, "m1"));
+        processor.BeginGeneration();
+
+        processor.Apply(new BitAiMessageStartedEvent { MessageId = "m1" });
+        processor.Apply(new BitAiTextDeltaEvent("again"));
+        processor.EndGeneration();
+
+        Assert.AreEqual("again", earlier.GetText());
+    }
+
+    [TestMethod]
+    public void AToolResultAppliedAfterTheGenerationEndedAddsNoMessage()
+    {
+        var (conversation, processor) = Create();
+        processor.BeginGeneration();
+        processor.Apply(new BitAiToolCallStartedEvent("c1", "search") { Arguments = JsonDocument.Parse("{}").RootElement });
+        processor.EndGeneration();
+
+        processor.Apply(new BitAiToolResultEvent("c1", BitAiToolOutcome.FromText("late")));
+
+        var message = Assert.ContainsSingle(conversation.Messages);
+        Assert.AreEqual("late", message.FindToolCall("c1")!.Result!.Text);
+        Assert.IsNull(processor.Current);
+    }
+
+    [TestMethod]
+    public void AToolResultAheadOfItsCallAfterTheGenerationEndedAddsNoMessage()
+    {
+        var (conversation, processor) = Create();
+        processor.BeginGeneration();
+        processor.Apply(new BitAiTextDeltaEvent("Done."));
+        processor.EndGeneration();
+
+        processor.Apply(new BitAiToolResultEvent("ghost", BitAiToolOutcome.FromText("late")));
+
+        Assert.ContainsSingle(conversation.Messages);
+        Assert.IsNull(processor.Current);
+    }
 }

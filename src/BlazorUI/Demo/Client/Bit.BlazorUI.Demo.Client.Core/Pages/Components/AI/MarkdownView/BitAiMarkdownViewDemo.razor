@@ -1,5 +1,4 @@
 ﻿@page "/components/ai/markdownview"
-@implements IDisposable
 
 <PageOutlet Url="components/ai/markdownview"
             Title="AiMarkdownView"
@@ -88,12 +87,15 @@
                 Dollar-delimited mathematics - <b>$inline$</b> and <b>$$display$$</b> - is left as its source, in monospace, with a
                 <b>data-math</b> attribute a script can typeset from. <b>BitAiRendererRegistry.MathRenderer</b> replaces that
                 fallback with a renderer of your own, handed a <b>BitAiMathContext</b>; the one here is a tiny typesetter of
-                superscripts, subscripts and symbols, where an app would use KaTeX or MathJax. The registry is app-wide, so an app
-                sets it once at startup; this page swaps it in and out with the toggle.
+                superscripts, subscripts and symbols, where an app would use KaTeX or MathJax. The registered registry is app-wide,
+                so an app sets it once at startup; this page cascades a registry of its own to the views of these examples
+                (a <b>CascadingValue</b> of a <b>BitAiRendererRegistry</b>), and the toggle sets the renderer on that one.
             </div>
             <br />
             <BitToggle @bind-Value="typesetMath" @bind-Value:after="ToggleMathRenderer" Text="Use a math renderer of my own" />
-            <BitAiMarkdownView Document="mathDocument" />
+            <CascadingValue Value="pageRenderers" IsFixed="true">
+                <BitAiMarkdownView Document="mathDocument" />
+            </CascadingValue>
         </DemoExample>
 
         <DemoExample Title="Code languages" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
@@ -101,12 +103,14 @@
                 <b>BitAiRendererRegistry.RegisterCodeLanguage</b> renders the fenced blocks of one language - a chart, a diagram -
                 with a renderer of your own in place of the code view, handed a <b>BitAiCodeBlockContext</b>. A half-written diagram
                 is a syntax error, so a renderer waits for <b>IsStreaming</b> to turn false: the second block below has not been
-                closed yet. This page registers a <b>bars</b> language as it initializes.
+                closed yet. This page registers a <b>bars</b> language on the registry it cascades to its views as it initializes.
             </div>
             <br />
-            <BitAiMarkdownView Document="barsDocument" />
-            <br />
-            <BitAiMarkdownView Document="openBarsDocument" />
+            <CascadingValue Value="pageRenderers" IsFixed="true">
+                <BitAiMarkdownView Document="barsDocument" />
+                <br />
+                <BitAiMarkdownView Document="openBarsDocument" />
+            </CascadingValue>
         </DemoExample>
 
         <DemoExample Title="Citations" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
@@ -128,14 +132,17 @@
                 <b>BitAiRendererRegistry.CitationRenderer</b> draws the chips with a renderer of your own, handed a
                 <b>BitAiCitationContext</b>: the <b>Citation</b>, and <b>OnActivate</b> - the <b>OnCitationClick</b> of the view - which
                 the chip raises through <b>ActivateAsync()</b>, so it acts the way the built-in one does. The one here is a pill naming
-                the site. The registry is app-wide, so an app sets it once at startup; this page swaps it in and out with the toggle,
-                and the chips of the example above change with it.
+                the site. The registered registry is app-wide, so an app sets it once at startup; this page cascades a registry of
+                its own to the view below, and the toggle sets the renderer on that one - the chips of the example above, which
+                reads the registered registry, stay as they are.
             </div>
             <br />
             <BitToggle @bind-Value="customChips" @bind-Value:after="ToggleCitationRenderer" Text="Use a citation chip of my own" />
-            <BitAiMarkdownView Document="citedDocument"
-                               Citations="citations"
-                               OnCitationClick="(BitAiCitation citation) => chipSource = citation.Source.Title" />
+            <CascadingValue Value="pageRenderers" IsFixed="true">
+                <BitAiMarkdownView Document="citedDocument"
+                                   Citations="citations"
+                                   OnCitationClick="(BitAiCitation citation) => chipSource = citation.Source.Title" />
+            </CascadingValue>
             <br />
             <div>Activated: <b>@(chipSource ?? "none yet")</b></div>
         </DemoExample>

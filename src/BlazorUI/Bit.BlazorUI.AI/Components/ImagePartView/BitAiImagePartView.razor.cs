@@ -82,12 +82,4 @@ public partial class BitAiImagePartView : BitAiComponentBase
     // again only when the app's change, so the button is not handed a new instance on every render.
     private BitActionButtonClassStyles ImagePlaceholderClasses =>
         _imagePlaceholderClasses.Get("bit-icon-ai bit-icon-ai--Photo2", Classes?.ImagePlaceholder, BitAiIconClasses.With);
-
-    // The source asked for is the one shown once the user loaded it, so a part handed another image asks again.
-    private BitAiImageDecision DecideImage(string source)
-    {
-        var decision = DecideImageSource(source);
-
-        return decision == BitAiImageDecision.AskFirst && _loaded == source ? BitAiImageDecision.Show : decision;
-    }
 }

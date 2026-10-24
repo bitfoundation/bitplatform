@@ -44,8 +44,6 @@ public partial class BitAiToolCallView : BitAiComponentBase
 
 
 
-    [Inject] private BitAiRendererRegistry _renderers { get; set; } = default!;
-
 
 
     /// <summary>
@@ -123,7 +121,7 @@ public partial class BitAiToolCallView : BitAiComponentBase
             _subscribed.Changed += OnCallChanged;
         }
 
-        _custom = _renderers.FindTool(Call.ToolName)
+        _custom = Renderers.FindTool(Call.ToolName)
                            ?.Invoke(new BitAiToolCallContext(Call, Message ?? new BitAiMessage(BitAiRole.Assistant), Session));
 
         if (_initialized is false)

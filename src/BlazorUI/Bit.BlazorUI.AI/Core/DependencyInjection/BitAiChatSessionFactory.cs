@@ -41,18 +41,34 @@ public sealed class BitAiChatSessionFactory
         _loggerFactory = loggerFactory;
     }
 
+    /// <summary>The settings a session is created with when <see cref="Create"/> is given none: the configured defaults.</summary>
+    public BitAiChatSessionOptions Defaults => _options;
+
     /// <summary>
     /// Creates a session for a conversation.
     /// </summary>
     /// <param name="conversation">The conversation to drive, or <see langword="null"/> for a new one.</param>
-    /// <param name="options">Overrides for this session only.</param>
+    /// <param name="options">
+    /// Overrides for this session only, in place of <see cref="Defaults"/>. Options naming no
+    /// <see cref="BitAiChatSessionOptions.Strings"/> take the registered UI options' (<see cref="BitAiUiOptions.Strings"/>).
+    /// </param>
     /// <returns>The session.</returns>
-    public BitAiChatSession Create(BitAiConversation? conversation = null, BitAiChatSessionOptions? options = null) => new(
-        _transport,
-        conversation,
-        options ?? _options,
-        _tools,
-        _approvalPolicy,
-        _services,
-        _loggerFactory.CreateLogger<BitAiChatSession>());
+    public BitAiChatSession Create(BitAiConversation? conversation = null, BitAiChatSessionOptions? options = null)
+    {
+        options ??= _options;
+
+        if (options.Strings is null && _services.GetService(typeof(BitAiUiOptions)) is BitAiUiOptions ui)
+        {
+            options = options with { Strings = ui.Strings };
+        }
+
+        return new(
+            _transport,
+            conversation,
+            options,
+            _tools,
+            _approvalPolicy,
+            _services,
+            _loggerFactory.CreateLogger<BitAiChatSession>());
+    }
 }

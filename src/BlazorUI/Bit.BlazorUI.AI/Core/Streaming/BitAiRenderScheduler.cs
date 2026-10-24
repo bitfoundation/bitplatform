@@ -98,13 +98,19 @@ public sealed class BitAiRenderScheduler : IAsyncDisposable
         await InvokeFlushAsync().ConfigureAwait(false);
     }
 
+    // Under the lock. The source of the last timer is done with by now - its delay elapsed, or FlushAsync cancelled it -
+    // so it is released here rather than left behind, one per coalescing cycle.
     private CancellationToken ScheduleLocked()
     {
         _scheduled = true;
+        _cts?.Dispose();
         _cts = new CancellationTokenSource();
         return _cts.Token;
     }
 
+    // Runs unobserved (Request fires it and moves on), so nothing it throws reaches anyone: a render that cannot happen
+    // any more - the component disposed, the circuit torn down while a stream was still asking - is the end of the
+    // scheduler's work, not a failure to report through the unobserved-task exception.
     private async Task RunAsync(CancellationToken cancellationToken)
     {
         try
@@ -124,7 +130,11 @@ public sealed class BitAiRenderScheduler : IAsyncDisposable
             _scheduled = false;
         }
 
-        await InvokeFlushAsync().ConfigureAwait(false);
+        try
+        {
+            await InvokeFlushAsync().ConfigureAwait(false);
+        }
+        catch (Exception) { }
     }
 
     private async Task InvokeFlushAsync()

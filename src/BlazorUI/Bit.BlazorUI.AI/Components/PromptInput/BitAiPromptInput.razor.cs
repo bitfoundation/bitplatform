@@ -1117,6 +1117,7 @@ public partial class BitAiPromptInput : BitAiComponentBase
             }
         }
         catch (JSDisconnectedException) { } // the circuit is gone, and the listeners of its page with it
+        catch (ObjectDisposedException) { } // the JS runtime of a WebAssembly host may go first
         finally
         {
             foreach (var staged in _staged.Values)

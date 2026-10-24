@@ -68,7 +68,7 @@
                 break;
 
             case BitAiCodeBlock fenced:
-                @if (_renderers.FindCodeLanguage(fenced.Language) is { } codeRenderer)
+                @if (Renderers.FindCodeLanguage(fenced.Language) is { } codeRenderer)
                 {
                     @* A renderer of the app's own is handed what the model wrote, so a shape it did not expect costs that
                        block alone. *@
@@ -104,7 +104,7 @@
                 break;
 
             case BitAiMathBlock math:
-                @if (_renderers.MathRenderer is { } mathRenderer)
+                @if (Renderers.MathRenderer is { } mathRenderer)
                 {
                     <BitAiRendererBoundary Label="@Strings.RendererFailed(MathRendererName)">
                         @mathRenderer(new BitAiMathContext(math.Expression, IsBlock: true))
@@ -286,7 +286,7 @@
                 break;
 
             case BitAiMathInline math:
-                @if (_renderers.MathRenderer is { } mathRenderer)
+                @if (Renderers.MathRenderer is { } mathRenderer)
                 {
                     <BitAiRendererBoundary Label="@Strings.RendererFailed(MathRendererName)" Class="bit-aimdv-rbi">
                         @mathRenderer(new BitAiMathContext(math.Expression, IsBlock: false))
@@ -325,7 +325,7 @@
     {
         var source = BitAiSafeUrls.Image(image.Url);
 
-        switch (DecideImage(source))
+        switch (DecideImage(source, _loadedImages.Contains(source)))
         {
             case BitAiImageDecision.Show:
                 @* Blazor sets the attributes in the order they are written, and an engine that sees the source before the
@@ -364,7 +364,7 @@
         {
             @($"[{marker.Number}]")
         }
-        else if (_renderers.CitationRenderer is { } citationRenderer)
+        else if (Renderers.CitationRenderer is { } citationRenderer)
         {
             <BitAiRendererBoundary Label="@Strings.RendererFailed(CitationRendererName)" Class="bit-aimdv-rbi">
                 @citationRenderer(new BitAiCitationContext(citation, OnActivate: OnCitationClick))

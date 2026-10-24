@@ -35,8 +35,6 @@ public partial class BitAiMarkdownView : BitAiComponentBase
 
 
 
-    [Inject] private BitAiRendererRegistry _renderers { get; set; } = default!;
-
     [Inject] private IJSRuntime _js { get; set; } = default!;
 
 
@@ -158,11 +156,4 @@ public partial class BitAiMarkdownView : BitAiComponentBase
                 _ => null,
             }
             : null;
-
-    private BitAiImageDecision DecideImage(string source)
-    {
-        var decision = DecideImageSource(source);
-
-        return decision == BitAiImageDecision.AskFirst && _loadedImages.Contains(source) ? BitAiImageDecision.Show : decision;
-    }
 }

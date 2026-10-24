@@ -515,6 +515,13 @@ public partial class BitAiChatDemo
                 },
                 new()
                 {
+                    Name = "Strings",
+                    Type = "BitAiStrings?",
+                    DefaultValue = "null",
+                    Description = "The text of the errors the session writes itself: a stopped or timed-out turn, a declined tool call, the tool loop limit. Null uses the strings of the UI options in force where the session is created by the factory or a BitAiChat, else BitAiStrings.Default."
+                },
+                new()
+                {
                     Name = "Timeout",
                     Type = "TimeSpan?",
                     DefaultValue = "null",

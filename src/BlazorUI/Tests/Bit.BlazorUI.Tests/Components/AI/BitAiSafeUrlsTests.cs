@@ -179,6 +179,36 @@ public class BitAiSafeUrlsTests : BitAiTestBase
         Assert.AreEqual(expected, Resolve(source, navigation));
     }
 
+    // Uri reads these as paths on the app's own host; a browser fetches them from evil.com (the WHATWG URL standard: a
+    // backslash is a slash, a tab or a line break is nothing). The host list is asked about what the browser fetches.
+    [TestMethod,
+        DataRow("/\\evil.com/a.png", "https://evil.com/a.png"),
+        DataRow("\\\\evil.com\\a.png", "https://evil.com/a.png"),
+        DataRow("/\t/evil.com/a.png", "https://evil.com/a.png"),
+        DataRow("/\r\n/evil.com/a.png", "https://evil.com/a.png"),
+        DataRow(" \t//evil.com/a.png \n", "https://evil.com/a.png"),
+        DataRow("https:\\\\evil.com\\a.png", "https://evil.com/a.png"),
+        DataRow("ht\ttps://evil.com/a.png", "https://evil.com/a.png")]
+    public void ASourceIsResolvedTheWayTheBrowserReadsIt(string source, string expected)
+    {
+        var navigation = new InitializedNavigationManager("https://app.x.dev/base/", "https://app.x.dev/base/chat");
+
+        Assert.AreEqual(expected, Resolve(source, navigation));
+        Assert.AreEqual(BitAiImageDecision.AskFirst, Decide(BitAiImagePolicy.AllowListedHosts("app.x.dev"), source, navigation));
+        Assert.AreEqual(BitAiImageDecision.Show, Decide(BitAiImagePolicy.AllowListedHosts("evil.com"), source, navigation));
+    }
+
+    [TestMethod]
+    public void ASourceWithNothingToNormaliseIsResolvedAsItIs()
+    {
+        var navigation = new InitializedNavigationManager("https://app.x.dev/base/", "https://app.x.dev/base/chat");
+        var data = "data:image/png;base64,AAA";
+
+        Assert.AreSame(data, Resolve(data, navigation));
+        Assert.AreEqual("https://cdn.x.dev/a.png", Resolve(" https://cdn.x.dev/a.png ", navigation));
+        Assert.AreEqual("mailto:a\\b@x.dev", Resolve("mailto:a\\b@x.dev", navigation));
+    }
+
     [TestMethod]
     public void TheAppsOwnHostListedShowsItsRelativeImages()
     {

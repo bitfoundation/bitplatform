@@ -84,5 +84,16 @@ public sealed record BitAiChatSessionOptions
     /// <summary>
     /// Whether a failed turn leaves a retryable error on the assistant message rather than throwing.
     /// </summary>
+    /// <remarks>
+    /// Either way the assistant message ends up failed, with the error on it, and the generation is closed; this only
+    /// decides whether the exception reaches the caller of the turn as well.
+    /// </remarks>
     public bool CatchTransportExceptions { get; init; } = true;
+
+    /// <summary>
+    /// The text of the errors the session writes itself: a stopped or timed-out turn, a declined tool call, the tool loop
+    /// limit. <see langword="null"/> uses the strings of the registered UI options (<see cref="BitAiUiOptions.Strings"/>)
+    /// where the session is created by the factory or a <see cref="BitAiChat"/>, else <see cref="BitAiStrings.Default"/>.
+    /// </summary>
+    public BitAiStrings? Strings { get; init; }
 }

@@ -81,6 +81,24 @@ public class BitAiRenderSchedulerTests
     }
 
     [TestMethod]
+    public async Task AFlushThatThrowsDoesNotStopTheNextRender()
+    {
+        var flushes = 0;
+        await using var scheduler = new BitAiRenderScheduler(
+            () => Interlocked.Increment(ref flushes) == 1 ? throw new ObjectDisposedException("circuit") : Task.CompletedTask,
+            TimeSpan.FromMilliseconds(1));
+
+        scheduler.Request();
+        var deadline = DateTime.UtcNow.AddSeconds(10);
+        while (Volatile.Read(ref flushes) < 1 && DateTime.UtcNow < deadline) await Task.Delay(5);
+
+        scheduler.Request();
+        while (Volatile.Read(ref flushes) < 2 && DateTime.UtcNow < deadline) await Task.Delay(5);
+
+        Assert.AreEqual(2, Volatile.Read(ref flushes));
+    }
+
+    [TestMethod]
     public async Task RequestsRacingDisposalNeverThrow()
     {
         for (var i = 0; i < 200; i++)

@@ -323,7 +323,10 @@ public partial class BitAiMarkdownViewDemo
 
     private readonly BitAiMarkdownDocument footnotesDocument = BitAiMarkdownParser.Parse(footnotesMarkdown);
 
-    [Inject] private BitAiRendererRegistry Renderers { get; set; } = default!;
+    // The registered registry is one instance for the whole app - every circuit of a server-side app - so a renderer set
+    // on it from a toggle here would change the views of every other user. The examples below cascade this one of the
+    // page's own instead, and the toggles set their renderers on it.
+    private readonly BitAiRendererRegistry pageRenderers = new();
 
     private const string mathMarkdown = """
         The energy of a body at rest is $E = mc^2$, and the area of a circle is $\pi r^2$.
@@ -336,27 +339,8 @@ public partial class BitAiMarkdownViewDemo
     private readonly BitAiMarkdownDocument mathDocument = BitAiMarkdownParser.Parse(mathMarkdown);
 
     private bool typesetMath;
-    private BitAiMathRenderer? previousMathRenderer;
 
-    private void ToggleMathRenderer()
-    {
-        if (typesetMath)
-        {
-            previousMathRenderer = Renderers.MathRenderer;
-            Renderers.MathRenderer = RenderMath;
-        }
-        else
-        {
-            Renderers.MathRenderer = previousMathRenderer;
-        }
-    }
-
-    public void Dispose()
-    {
-        // The registry is app-wide: leave it as this page found it.
-        if (typesetMath) Renderers.MathRenderer = previousMathRenderer;
-        if (customChips) Renderers.CitationRenderer = previousCitationRenderer;
-    }
+    private void ToggleMathRenderer() => pageRenderers.MathRenderer = typesetMath ? RenderMath : null;
 
     private static readonly Dictionary<string, string> mathSymbols = new()
     {
@@ -445,7 +429,7 @@ public partial class BitAiMarkdownViewDemo
     protected override void OnInitialized()
     {
         // An app registers its renderers once, at startup: AddBitBlazorUIAIServices(ai => ai.ConfigureRenderers(...)).
-        Renderers.RegisterCodeLanguage("bars", RenderBars);
+        pageRenderers.RegisterCodeLanguage("bars", RenderBars);
     }
 
     // Renders a ```bars block - one "label: value" a line - as a bar chart, and waits for the block to be complete.
@@ -515,21 +499,9 @@ public partial class BitAiMarkdownViewDemo
     private string? clickedSource;
 
     private bool customChips;
-    private BitAiCitationRenderer? previousCitationRenderer;
     private string? chipSource;
 
-    private void ToggleCitationRenderer()
-    {
-        if (customChips)
-        {
-            previousCitationRenderer = Renderers.CitationRenderer;
-            Renderers.CitationRenderer = RenderCitationChip;
-        }
-        else
-        {
-            Renderers.CitationRenderer = previousCitationRenderer;
-        }
-    }
+    private void ToggleCitationRenderer() => pageRenderers.CitationRenderer = customChips ? RenderCitationChip : null;
 
     // A pill naming the site of the source beside its number. ActivateAsync raises the OnCitationClick of the view the chip
     // is drawn in, as a click on the built-in chip does. The source is model output, so it is only ever written as text.

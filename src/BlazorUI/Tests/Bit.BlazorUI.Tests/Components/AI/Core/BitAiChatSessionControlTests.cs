@@ -476,18 +476,22 @@ public class BitAiChatSessionControlTests
     [TestMethod]
     public async Task AResultStillHeldWhenTheSessionIsDisposedIsDiscarded()
     {
+        var clock = new BitAiManualTimeProvider();
         var session = new BitAiChatSession(
             new BitAiFakeTransport(new BitAiMessageCompletedEvent()),
             null,
-            Immediate with { ToolResultHoldTime = TimeSpan.FromMilliseconds(300) });
+            Immediate with { ToolResultHoldTime = TimeSpan.FromMilliseconds(300) },
+            timeProvider: clock);
 
         var assistant = await session.SubmitAsync("go");
         session.Processor.Apply(new BitAiToolResultEvent("late", BitAiToolOutcome.FromText("server")) { MessageId = assistant!.MessageId });
+        Assert.AreEqual(1, clock.ActiveTimers);
 
         await session.DisposeAsync();
 
-        // Past the hold time: the timer of the processor would have dropped the result onto the message by now.
-        await Task.Delay(TimeSpan.FromMilliseconds(600));
+        // Discarded with its timer: past the hold time, nothing drops it onto the message.
+        Assert.AreEqual(0, clock.ActiveTimers);
+        clock.Advance(TimeSpan.FromMilliseconds(600));
 
         Assert.IsEmpty(assistant.PartsOf<BitAiErrorPart>());
     }
@@ -620,6 +624,81 @@ public class BitAiChatSessionControlTests
         {
             lock (Entries) Entries.Add((logLevel, exception));
         }
+    }
+
+    [TestMethod]
+    public async Task ATransportFailureThrownToTheCallerStillClosesTheGeneration()
+    {
+        var transport = new BitAiFakeTransport { Throw = new InvalidOperationException("boom") };
+        await using var session = new BitAiChatSession(transport, null, Immediate with { CatchTransportExceptions = false });
+
+        await Assert.ThrowsExactlyAsync<InvalidOperationException>(() => session.SubmitAsync("go"));
+
+        var assistant = session.Conversation.Messages[1];
+        Assert.AreEqual(BitAiMessageStatus.Failed, assistant.Status);
+        Assert.AreEqual("boom", assistant.Error!.Message);
+        Assert.AreEqual("boom", session.LastError!.Message);
+        Assert.IsNull(session.Processor.Current);
+        Assert.IsFalse(session.IsGenerating);
+    }
+
+    [TestMethod]
+    public async Task AToolTheTransportFlaggedForApprovalWaitsWhateverTheLocalPolicySays()
+    {
+        var executed = false;
+        var registry = new BitAiToolRegistry();
+        registry.Register(BitAiTool.Create(
+            new BitAiToolDefinition("delete_file"),
+            (_, _) =>
+            {
+                executed = true;
+                return ValueTask.FromResult(BitAiToolOutcome.FromText("deleted"));
+            }));
+
+        var round = 0;
+        var transport = new BitAiFakeTransport(_ => round++ == 0
+            ?
+            [
+                new BitAiToolCallStartedEvent("c1", "delete_file") { Arguments = System.Text.Json.JsonDocument.Parse("{}").RootElement },
+                new BitAiToolApprovalRequestedEvent("c1") { Reason = "deletes 40 files" },
+                new BitAiMessageCompletedEvent(BitAiFinishReason.ToolCalls),
+            ]
+            : [new BitAiMessageCompletedEvent()]);
+
+        await using var session = new BitAiChatSession(transport, null, Immediate, registry);
+        BitAiToolCallPart? awaiting = null;
+        session.ApprovalRequested += call => awaiting = call;
+
+        var turn = session.SubmitAsync("clean up");
+        await WaitFor(() => awaiting is not null);
+
+        Assert.IsFalse(executed);
+        Assert.AreEqual(BitAiToolCallStatus.AwaitingApproval, awaiting!.Status);
+        Assert.AreEqual("deletes 40 files", awaiting.ApprovalReason);
+
+        session.Approve("c1", BitAiApprovalDecision.Rejected);
+        await turn;
+
+        Assert.IsFalse(executed);
+        Assert.AreEqual(BitAiToolCallStatus.Rejected, awaiting.Status);
+        Assert.AreEqual("rejected", awaiting.Result!.Error!.Code);
+    }
+
+    [TestMethod]
+    public async Task TheErrorsTheSessionWritesReadInItsStrings()
+    {
+        var transport = new BitAiFakeTransport { Throw = new OperationCanceledException() };
+        await using var session = new BitAiChatSession(transport, null, Immediate with { Strings = new OwnStrings() });
+
+        await session.SubmitAsync("go");
+
+        Assert.AreEqual("Angehalten.", session.LastError!.Message);
+        Assert.AreEqual(BitAiErrorKind.Cancelled, session.LastError.Kind);
+    }
+
+    private sealed class OwnStrings : BitAiStrings
+    {
+        public override string GenerationStopped => "Angehalten.";
     }
 
     // The deadline only bounds a failing run; a passing one returns as soon as the condition holds.

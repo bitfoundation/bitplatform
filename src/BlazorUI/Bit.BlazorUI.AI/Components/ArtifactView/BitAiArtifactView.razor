@@ -81,7 +81,7 @@
         </div>
 
         <div style="@Styles?.Body" class="bit-aiatv-bdy @Classes?.Body" aria-busy="@(IsStreaming ? "true" : null)">
-            @if (_renderers.FindArtifact(Artifact.Kind) is { } renderer)
+            @if (Renderers.FindArtifact(Artifact.Kind) is { } renderer)
             {
                 <BitAiRendererBoundary Label="@Strings.RendererFailed(Artifact.Kind.ToString())">
                     @renderer(new BitAiArtifactContext(Artifact, _expanded))
@@ -206,7 +206,8 @@
     // loads it when the policy asks first (named after the artifact, which is what it shows), or the title alone.
     private RenderFragment RenderImage(string source) => __builder =>
     {
-        switch (DecideImage(source))
+        @* The source asked for is the one shown once the user loaded it, so another version or artifact asks again. *@
+        switch (DecideImage(source, _loadedImage == source))
         {
             case BitAiImageDecision.Show:
                 <img src="@source" alt="@Artifact.Title" style="@Styles?.Image" class="bit-aiatv-img @Classes?.Image" />

@@ -247,9 +247,13 @@ public partial class BitAiChat : BitAiComponentBase
 
         if (UiOptions is not null) CascadedOptions = UiOptions;
 
-        // A different Conversation parameter on an owned session means the host switched threads: the owned session is
-        // replaced rather than kept driving the old conversation.
-        if (Session is null && _owned is not null && Conversation is not null && ReferenceEquals(_owned.Conversation, Conversation) is false)
+        // A session this chat created is ended once the host supplies its own: it would otherwise live on, with its
+        // conversation and its timers, for as long as the chat does, and come back as the active session - its old
+        // conversation with it - were the Session parameter ever unset again. A different Conversation parameter on an
+        // owned session means the host switched threads: the owned session is replaced rather than kept driving the old
+        // conversation.
+        if (_owned is not null
+            && (Session is not null || (Conversation is not null && ReferenceEquals(_owned.Conversation, Conversation) is false)))
         {
             var stale = _owned;
             _owned = null;
@@ -279,18 +283,23 @@ public partial class BitAiChat : BitAiComponentBase
     {
         if (_services.GetService(typeof(BitAiChatSessionFactory)) is BitAiChatSessionFactory factory)
         {
-            return factory.Create(Conversation, SessionOptions);
+            return factory.Create(Conversation, WithStrings(SessionOptions ?? factory.Defaults));
         }
 
         if (_services.GetService(typeof(IBitAiTransport)) is IBitAiTransport transport)
         {
-            return new BitAiChatSession(transport, Conversation, SessionOptions);
+            return new BitAiChatSession(transport, Conversation, WithStrings(SessionOptions ?? new BitAiChatSessionOptions()));
         }
 
         throw new InvalidOperationException(
             "BitAiChat needs a session or a registered IBitAiTransport. Call services.AddBitBlazorUIAIServices(ai => ai.UseTransport<T>()) " +
             "during startup, or pass a Session parameter.");
     }
+
+    // The errors a session of this chat's own writes read in the words of the UI options in force here, which is what
+    // the transcript renders them with, unless the session options name their own.
+    private BitAiChatSessionOptions WithStrings(BitAiChatSessionOptions options) =>
+        options.Strings is null ? options with { Strings = Strings } : options;
 
     private void OnSessionStateChanged() => RequestRender();
 

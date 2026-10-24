@@ -1,4 +1,6 @@
-﻿namespace Bit.BlazorUI;
+﻿using System.Text;
+
+namespace Bit.BlazorUI;
 
 /// <summary>
 /// The one reading of the addresses a model, a tool or a retrieval hands the views - the links and images of its
@@ -35,14 +37,19 @@ internal static class BitAiSafeUrls
     }
 
     /// <summary>
-    /// Blocks the image sources that can execute script, while still allowing inline image data URLs.
+    /// Blocks the image sources that can execute script, while still allowing inline image data URLs and the browser's
+    /// own <c>blob:</c> ones (the preview of a file the user attached).
     /// </summary>
     /// <param name="url">The source to check.</param>
     /// <returns>The source, or <see cref="BlankImage"/> when its scheme is not safe.</returns>
     internal static string Image(string url)
     {
         var trimmed = url.TrimStart();
-        if (trimmed.StartsWith("data:image/", StringComparison.OrdinalIgnoreCase)) return url;
+        if (trimmed.StartsWith("data:image/", StringComparison.OrdinalIgnoreCase)
+            || trimmed.StartsWith("blob:", StringComparison.OrdinalIgnoreCase))
+        {
+            return url;
+        }
 
         var safe = Link(url);
         return safe == "#" ? BlankImage : safe;
@@ -68,25 +75,56 @@ internal static class BitAiSafeUrls
     }
 
     /// <summary>
-    /// The address the browser fetches for a source: the source itself when it names its scheme, and the source
-    /// resolved against the base address of the document otherwise.
+    /// The address the browser fetches for a source: the source as the browser reads it when it names its scheme, and
+    /// the source resolved against the base address of the document otherwise.
     /// </summary>
     /// <param name="source">The source, absolute or relative.</param>
     /// <param name="baseUri">Reads the base address of the document, or null where there is none.</param>
     /// <returns>The absolute address, or the source as it was when it cannot be resolved.</returns>
     internal static string Resolve(string source, Func<string?> baseUri)
     {
-        var trimmed = source.Trim();
+        var normalized = AsBrowserReadsIt(source);
 
         // An absolute address is never resolved, so the base address is not read for it.
-        if (SchemeOf(trimmed) is not null) return source;
+        if (SchemeOf(normalized) is not null) return normalized;
 
         return baseUri() is { } address
                && Uri.TryCreate(address, UriKind.Absolute, out var baseAddress)
-               && Uri.TryCreate(baseAddress, trimmed, out var absolute)
+               && Uri.TryCreate(baseAddress, normalized, out var absolute)
             ? absolute.AbsoluteUri
             : source;
     }
+
+    // The source as the browser parses it (the WHATWG URL standard), which is what a host list has to be asked about:
+    // leading and trailing controls and spaces are dropped, so are tabs and line breaks anywhere in it, and a backslash is
+    // a slash in a relative address or one of the schemes a browser treats specially. Uri reads "/\evil.com/a.png" as a
+    // path on the app's own host and "/<tab>/evil.com/a.png" as one too; a browser fetches both from evil.com.
+    internal static string AsBrowserReadsIt(string source)
+    {
+        var start = 0;
+        var end = source.Length;
+        while (start < end && source[start] <= ' ') start++;
+        while (end > start && source[end - 1] <= ' ') end--;
+
+        var trimmed = source.AsSpan(start, end - start);
+        if (trimmed.IndexOfAny("\t\n\r\\") < 0) return start == 0 && end == source.Length ? source : trimmed.ToString();
+
+        var builder = new StringBuilder(trimmed.Length);
+        foreach (var c in trimmed)
+        {
+            if (c is not ('\t' or '\n' or '\r')) builder.Append(c);
+        }
+
+        var normalized = builder.ToString();
+        var scheme = SchemeOf(normalized);
+
+        return scheme is null || SpecialSchemes.Contains(scheme, StringComparer.OrdinalIgnoreCase)
+            ? normalized.Replace('\\', '/')
+            : normalized;
+    }
+
+    // The schemes whose addresses a browser parses with a host, and in which it reads a backslash as a slash.
+    private static readonly string[] SpecialSchemes = ["http", "https", "ftp", "ws", "wss", "file"];
 
     /// <summary>
     /// The host an address points at, for naming what a placeholder would load.

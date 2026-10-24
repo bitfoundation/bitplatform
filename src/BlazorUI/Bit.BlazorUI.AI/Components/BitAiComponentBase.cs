@@ -14,6 +14,7 @@ public abstract class BitAiComponentBase : BitComponentBase
 {
     private BitAiRenderScheduler? _scheduler;
     private BitAiUiOptions? _registeredOptions;
+    private BitAiRendererRegistry? _registeredRenderers;
 
 
 
@@ -21,6 +22,17 @@ public abstract class BitAiComponentBase : BitComponentBase
     /// The AI options cascaded by the nearest <see cref="BitAiOptionsProvider"/>, if any.
     /// </summary>
     [CascadingParameter] public BitAiUiOptions? CascadedOptions { get; set; }
+
+    /// <summary>
+    /// The renderer registry cascaded to this component (a <c>CascadingValue</c> of a <see cref="BitAiRendererRegistry"/>),
+    /// if any.
+    /// </summary>
+    /// <remarks>
+    /// The registered registry is app-wide - one instance for every user of a server-side app - so a page or a test that
+    /// wants renderers of its own cascades a registry of its own rather than changing the registered one under every
+    /// other view.
+    /// </remarks>
+    [CascadingParameter] public BitAiRendererRegistry? CascadedRenderers { get; set; }
 
     [Inject] private IServiceProvider _serviceProvider { get; set; } = default!;
 
@@ -64,13 +76,35 @@ public abstract class BitAiComponentBase : BitComponentBase
         BitAiSafeUrls.Decide(Options.Images, source, () => DocumentBaseUri);
 
     /// <summary>
+    /// What the policy decides about an image source already made safe, once the user may have asked for it: an image
+    /// the policy asks about first is shown once the user loaded it (<paramref name="loaded"/>), and a view handed
+    /// another source asks again.
+    /// </summary>
+    private protected BitAiImageDecision DecideImage(string source, bool loaded)
+    {
+        var decision = DecideImageSource(source);
+
+        return decision == BitAiImageDecision.AskFirst && loaded ? BitAiImageDecision.Show : decision;
+    }
+
+    /// <summary>
     /// The host an image source would be fetched from, for naming the placeholder of an image the policy holds back.
     /// </summary>
     private protected string ImageHostOf(string source) =>
         BitAiSafeUrls.HostOf(BitAiSafeUrls.Resolve(source, () => DocumentBaseUri));
 
+    /// <summary>
+    /// The renderers this component uses: the cascaded registry (<see cref="CascadedRenderers"/>), else the one registered
+    /// with <c>AddBitBlazorUIAIServices</c> (<see cref="BitAiBuilder.ConfigureRenderers"/>).
+    /// </summary>
+    private protected BitAiRendererRegistry Renderers => CascadedRenderers ?? RegisteredRenderers;
+
     private BitAiUiOptions RegisteredOptions => _registeredOptions ??=
         _serviceProvider?.GetService(typeof(BitAiUiOptions)) as BitAiUiOptions ?? BitAiUiOptions.Default;
+
+    private BitAiRendererRegistry RegisteredRenderers => _registeredRenderers ??=
+        _serviceProvider?.GetService(typeof(BitAiRendererRegistry)) as BitAiRendererRegistry
+        ?? throw new InvalidOperationException("No BitAiRendererRegistry is registered: call AddBitBlazorUIAIServices at startup, or cascade a registry to the component.");
 
 
 
@@ -82,6 +116,10 @@ public abstract class BitAiComponentBase : BitComponentBase
 
         CascadedOptions = parametersDictionary.Remove(nameof(CascadedOptions), out var cascadedOptions)
             ? (BitAiUiOptions?)cascadedOptions
+            : null;
+
+        CascadedRenderers = parametersDictionary.Remove(nameof(CascadedRenderers), out var cascadedRenderers)
+            ? (BitAiRendererRegistry?)cascadedRenderers
             : null;
 
         ParametersCache = parametersDictionary;

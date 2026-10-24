@@ -45,8 +45,6 @@ public partial class BitAiArtifactView : BitAiComponentBase
 
     [Inject] private IJSRuntime _js { get; set; } = default!;
 
-    [Inject] private BitAiRendererRegistry _renderers { get; set; } = default!;
-
 
 
     /// <summary>
@@ -233,16 +231,6 @@ public partial class BitAiArtifactView : BitAiComponentBase
 
     private BitActionButtonClassStyles _ImagePlaceholderClasses =>
         _imagePlaceholderClasses.Get("bit-icon-ai bit-icon-ai--Photo2", Classes?.ImagePlaceholder, BitAiIconClasses.With);
-
-    // The source asked for is the one shown once the user loaded it, so another version or artifact asks again.
-    private BitAiImageDecision DecideImage(string source)
-    {
-        var decision = DecideImageSource(source);
-
-        return decision == BitAiImageDecision.AskFirst && _loadedImage == source ? BitAiImageDecision.Show : decision;
-    }
-
-
 
     private void HandleOnArtifactChanged(BitAiArtifact artifact) => RequestRender();
 

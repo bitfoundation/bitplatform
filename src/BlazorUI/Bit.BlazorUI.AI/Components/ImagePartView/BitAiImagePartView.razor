@@ -11,7 +11,8 @@
         style="@StyleBuilder.Value"
         class="@ClassBuilder.Value"
         dir="@Dir?.ToString().ToLower()">
-    @switch (DecideImage(source))
+    @* The source asked for is the one shown once the user loaded it, so a part handed another image asks again. *@
+    @switch (DecideImage(source, _loaded == source))
     {
         case BitAiImageDecision.Show:
             @* The intrinsic size is declared where it is known, so the message list does not jump as the image decodes.
