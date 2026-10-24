@@ -765,7 +765,7 @@ jobs:
 
     # App Store submission stays manual.
     - name: Upload to TestFlight
-      uses: apple-actions/upload-testflight-build@155ea93be9ee6d5186c71f660a612f5eddb14510 # v5.6.0
+      uses: apple-actions/upload-testflight-build@acf1166e95edc302069b74b258a788004fe39a08 # v5.7.0
       with:
         app-path: ${{ steps.ipa.outputs.path }}
         app-type: ios
