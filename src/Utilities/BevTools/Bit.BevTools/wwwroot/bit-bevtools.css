@@ -299,10 +299,11 @@ body:has(#blazor-error-ui[style*="display: block"]) .bev-badge { bottom: 60px; }
 .bev-stat .bev-stat-label { color: var(--bev-fg2); font-size: 11px; }
 .bev-panel-host { display: flex; flex-direction: column; flex: 1; min-height: 0; overflow: hidden; }
 
-/* The page overlay: component outlines, picking, render flashes. Outside every element the app renders, above it,
-   never in the way of the pointer. Fixed colours: it is drawn over the app, not inside the themed panel. */
+/* The page overlay: component outlines, picking, render flashes. Outside every element the app renders, above it but
+   below the panel and the badge (one step under their z-index), so an outline never covers BevTools' own UI; never in
+   the way of the pointer. Fixed colours: it is drawn over the app, not inside the themed panel. */
 
-.bev-overlay { position: fixed; left: 0; top: 0; width: 0; height: 0; z-index: 2147483646; pointer-events: none; }
+.bev-overlay { position: fixed; left: 0; top: 0; width: 0; height: 0; z-index: 2147482999; pointer-events: none; }
 html:has(> body > .bev-overlay[data-picking]), html:has(> body > .bev-overlay[data-picking]) * { cursor: crosshair !important; }
 .bev-overlay .bev-hl { position: fixed; border: 2px solid #2f81f7; background: rgba(47, 129, 247, .16); border-radius: 2px; }
 .bev-overlay .bev-hl.bev-hl-empty { display: none; }

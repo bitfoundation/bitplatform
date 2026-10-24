@@ -62,12 +62,13 @@ function h(tag: string, attrs?: { [key: string]: any } | null, ...children: Chil
     return el;
 }
 
-function append(el: Node, children: Child[]) {
+// Element.append inserts a string as a Text node and never parses it; appendChild would leave that to a type check
+// that static analysis cannot follow, and reads to it as application text handed to an HTML sink.
+function append(el: Element, children: Child[]) {
     for (const child of children) {
         if (child === null || child === undefined || child === false) continue;
         if (Array.isArray(child)) append(el, child);
-        else if (child instanceof Node) el.appendChild(child);
-        else el.appendChild(document.createTextNode(String(child)));
+        else el.append(child instanceof Node ? child : String(child));
     }
 }
 
