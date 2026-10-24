@@ -163,7 +163,7 @@ public partial class DeviceAccountsTests
         TokenResponseDto? heldAnswer = null;
 
         await using var server = new AppTestServer();
-        await server.Build(configureTestServices: services =>
+        await server.Build(configureTestWebAppServices: services =>
         {
             var original = services.Single(service => service.ServiceType == typeof(IIdentityController));
             services.Remove(original);

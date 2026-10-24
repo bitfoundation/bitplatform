@@ -5,6 +5,9 @@ using Boilerplate.Server.Api.Features.PushNotification;
 using System.Collections.Concurrent;
 using AdsPush;
 using AdsPush.Abstraction;
+using Hangfire;
+using Hangfire.Common;
+using Hangfire.States;
 using Boilerplate.Shared.Features.Identity.Dtos;
 
 namespace Boilerplate.Tests.Features.PushNotification;
@@ -282,7 +285,7 @@ public partial class PushSubscriptionOwnershipTests
 
         await using var server = new AppTestServer();
 
-        await server.Build(configureTestServices: services => services.Replace(ServiceDescriptor.Singleton(adsPushSender))).Start(TestContext.CancellationToken);
+        await server.Build().Start(TestContext.CancellationToken);
 
         var deviceId = $"push-accounts-{Guid.NewGuid():N}";
         var channel = $"channel-{Guid.NewGuid():N}";
@@ -322,19 +325,25 @@ public partial class PushSubscriptionOwnershipTests
                     .Where(us => sessionIds.Contains(us.Id))
                     .ExecuteUpdateAsync(us => us.SetProperty(x => x.NotificationStatus, UserSessionNotificationStatus.Allowed), TestContext.CancellationToken);
 
-                var pushNotificationService = scope.ServiceProvider.GetRequiredService<PushNotificationService>();
+                List<Job> enqueuedJobs = [];
+                var backgroundJobClient = A.Fake<IBackgroundJobClient>();
+                A.CallTo(() => backgroundJobClient.Create(A<Job>._, A<IState>._))
+                    .Invokes((Job job, IState _) => enqueuedJobs.Add(job))
+                    .Returns("captured-job-id");
+
+                var pushNotificationService = ActivatorUtilities.CreateInstance<PushNotificationService>(scope.ServiceProvider, backgroundJobClient);
 
                 Assert.AreEqual(1, await pushNotificationService.RequestPush(new() { Message = "For the whole device" }, s => s.DeviceId == deviceId, TestContext.CancellationToken),
                     "A device with several accounts has several rows, and still has to get the push once.");
 
                 Assert.AreEqual(1, await pushNotificationService.RequestPush(new() { Message = "For the first account", PageUrl = PageUrls.Settings, UserRelatedPush = true },
                     s => s.UserSession!.UserId == firstUserId, TestContext.CancellationToken));
-            }
 
-            var deadline = DateTimeOffset.UtcNow.AddSeconds(30);
-            while (sentPushes.Count < 2 && DateTimeOffset.UtcNow < deadline)
-            {
-                await Task.Delay(100, TestContext.CancellationToken);
+                foreach (var job in enqueuedJobs)
+                {
+                    var pushNotificationJobRunner = ActivatorUtilities.CreateInstance<PushNotificationJobRunner>(scope.ServiceProvider, adsPushSender);
+                    await pushNotificationJobRunner.RequestPush((int[])job.Args[0], (PushNotificationRequest)job.Args[1], cancellationToken: TestContext.CancellationToken);
+                }
             }
 
             Assert.HasCount(2, sentPushes);
