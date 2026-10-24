@@ -332,6 +332,7 @@ public abstract class BlexComponentBase : ComponentBase, IDisposable
     protected TimeSpan RenderInterval { get; set; }
 
     private BlexRenderThrottle? _throttle;
+    private TimeProvider? _throttleClock;
 
     private void OnWatchedChanged(object? sender, PropertyChangedEventArgs e) => OnStoreChanged();
 
@@ -346,9 +347,12 @@ public abstract class BlexComponentBase : ComponentBase, IDisposable
             return;
         }
 
-        // Changes arrive on any thread; one throttle per component, whichever change creates it.
-        LazyInitializer.EnsureInitialized(ref _throttle, () => new BlexRenderThrottle(RequestRender))
-            .Request(RenderInterval, BlexServices.GetService<BlexManager>()?.TimeProvider ?? TimeProvider.System);
+        // Changes arrive on any thread; one throttle per component, whichever change creates it. The clock is
+        // looked up once: this is the path a store changing many times a second takes, and resolving the manager
+        // from the container on every change would cost what the throttle is there to save. A race here writes
+        // the same clock twice.
+        var clock = _throttleClock ??= BlexServices.GetService<BlexManager>()?.TimeProvider ?? TimeProvider.System;
+        LazyInitializer.EnsureInitialized(ref _throttle, () => new BlexRenderThrottle(RequestRender)).Request(RenderInterval, clock);
     }
 
     private void RequestRender() => BlexRender.Observe(InvokeAsync(StateHasChanged), DispatchExceptionAsync);

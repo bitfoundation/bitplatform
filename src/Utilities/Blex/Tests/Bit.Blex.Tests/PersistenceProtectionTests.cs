@@ -253,4 +253,27 @@ public class PersistenceProtectionTests
         Assert.IsTrue(storage.Data.ContainsKey("blex:settings"), "the other tab's value is left for it to judge");
         Assert.HasCount(1, errors);
     }
+
+
+    [TestMethod]
+    public async Task A_store_joining_again_under_its_name_reads_the_save_its_previous_instance_queued()
+    {
+        var storage = new Storage();
+        var protector = new SealingProtector();
+        var (store, manager, errors) = App();
+        await using var persistor = new BlexStatePersistor(manager, storage, new() { Protector = protector });
+        await persistor.StartAsync();
+
+        // A scope closes with an edit still debounced -- its save is queued as the store unregisters -- and opens
+        // again at once. Protecting is asynchronous, so that write is still on its way when the new instance
+        // hydrates: read before it lands, storage would hand back the state before the edit.
+        store.SetTheme("dark");
+        manager.Unregister(store);
+        var reopened = new SettingsStore();
+        manager.Register(reopened);
+
+        await persistor.FlushAsync();
+        Assert.AreEqual("dark", reopened.Theme, "hydrated from the save queued before it registered");
+        Assert.IsEmpty(errors);
+    }
 }

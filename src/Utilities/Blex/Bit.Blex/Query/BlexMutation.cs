@@ -158,8 +158,6 @@ public sealed record BlexMutationOptions<TArg, TResult>
 /// </remarks>
 public sealed class BlexMutation<TArg, TResult> : INotifyPropertyChanged
 {
-    private static readonly PropertyChangedEventArgs AllPropertiesChanged = new(string.Empty);
-
     private readonly BlexQueryClient _client;
     private readonly Func<TArg, CancellationToken, Task<TResult>> _mutate;
     private readonly BlexMutationOptions<TArg, TResult> _options;
@@ -328,20 +326,7 @@ public sealed class BlexMutation<TArg, TResult> : INotifyPropertyChanged
         RaiseChanged();
     }
 
-    private void RaiseChanged()
-    {
-        if (Changed is { } changed)
-        {
-            foreach (var handler in changed.GetInvocationList())
-                Isolated((Action)handler);
-        }
-
-        if (PropertyChanged is { } propertyChanged)
-        {
-            foreach (var handler in propertyChanged.GetInvocationList())
-                Isolated(() => ((PropertyChangedEventHandler)handler)(this, AllPropertiesChanged));
-        }
-    }
+    private void RaiseChanged() => _client.RaiseIsolated(Changed, PropertyChanged, this, null);
 
     private void Isolated(Action action)
     {

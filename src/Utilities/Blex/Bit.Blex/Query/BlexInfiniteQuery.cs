@@ -122,9 +122,20 @@ public sealed class BlexInfiniteQuery<TPage, TParam> : BlexQuery
         RaiseChanged();
         try
         {
-            await _pages.WhenSettledAsync().ConfigureAwait(true);
-            if (!_disposed && HasNextPage)
-                await _pages.FetchOnceAsync(FetchNextPageDataAsync).ConfigureAwait(true);
+            // A fetch that starts between the running one settling and this asking -- a focus refetch, an invalidation
+            // posted to the same dispatcher -- is waited for in turn, rather than taken for the next page's fetch.
+            while (true)
+            {
+                await _pages.WhenSettledAsync().ConfigureAwait(true);
+                if (_disposed || !HasNextPage)
+                    return;
+
+                if (_pages.TryFetchOnceAsync(FetchNextPageDataAsync) is { } fetch)
+                {
+                    await fetch.ConfigureAwait(true);
+                    return;
+                }
+            }
         }
         finally
         {

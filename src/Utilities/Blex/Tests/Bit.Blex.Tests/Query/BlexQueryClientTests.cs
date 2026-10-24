@@ -491,6 +491,93 @@ public class BlexQueryClientTests
         Assert.AreEqual(0, client.FetchingCount);
     }
 
+    [TestMethod]
+    public async Task A_gc_time_longer_than_a_timer_can_wait_is_waited_out()
+    {
+        // A timer cannot wait more than about 49 days; a longer GC time used to throw as the fetch settled.
+        var (client, clock, errors) = Client(o => o.GcTime = TimeSpan.FromDays(60));
+        var server = new FakeServer<string>();
+
+        var query = client.Query(["n"], server.Fetch());
+        server.Respond(0, "cached");
+        await query.WhenSettledAsync();
+        query.Dispose();
+
+        clock.Advance(TimeSpan.FromDays(59));
+        Assert.AreEqual("cached", client.GetQueryData<string>(["n"]));
+
+        clock.Advance(TimeSpan.FromDays(1));
+        Assert.IsFalse(client.TryGetQueryData<string>(["n"], out _));
+        Assert.IsEmpty(errors);
+    }
+
+    [TestMethod]
+    public async Task A_refetch_interval_longer_than_a_timer_can_wait_polls_on_time()
+    {
+        var (client, clock, _) = Client();
+        var server = new FakeServer<int>();
+
+        using var query = client.Query(["n"], server.Fetch(), new BlexQueryOptions { RefetchInterval = TimeSpan.FromDays(60), StaleTime = TimeSpan.MaxValue });
+        server.Respond(0, 1);
+        await query.WhenSettledAsync();
+
+        clock.Advance(TimeSpan.FromDays(59));
+        Assert.AreEqual(1, server.Calls, "not before the interval has passed");
+
+        clock.Advance(TimeSpan.FromDays(1));
+        Assert.AreEqual(2, server.Calls);
+    }
+
+    [TestMethod]
+    public void A_handoff_is_kept_for_a_gc_time_longer_than_a_timer_can_wait()
+    {
+        var (prerender, _, _) = Client();
+        prerender.SetQueryData<string>(["quote"], "prerendered");
+        prerender.SetQueryData<string>(["other"], "prerendered");
+
+        var (interactive, clock, errors) = Client(o => o.GcTime = TimeSpan.FromDays(60));
+        interactive.Hydrate(prerender.Dehydrate());
+
+        clock.Advance(TimeSpan.FromDays(59));
+        using var quote = interactive.Query(["quote"], new FakeServer<string>().Fetch());
+        Assert.AreEqual("prerendered", quote.Data, "still handed over before the GC time");
+
+        clock.Advance(TimeSpan.FromDays(1));
+        using var other = interactive.Query(["other"], new FakeServer<string>().Fetch());
+        Assert.IsTrue(other.IsPending, "dropped once the GC time has passed");
+        Assert.IsEmpty(errors);
+    }
+
+    [TestMethod]
+    public async Task A_failed_query_keeps_its_error_while_it_is_fetched_again()
+    {
+        var (client, _, _) = Client();
+        var server = new FakeServer<int>();
+        using var query = client.Query(["n"], server.Fetch());
+        server.Fail(0, new InvalidOperationException("down"));
+        await query.WhenSettledAsync();
+        Assert.IsTrue(query.IsError);
+
+        // A focus, a mount, an explicit refetch: the error stays on screen until the retry has an answer, rather
+        // than giving way to a loading state that comes straight back to the error when the retry fails too.
+        var refetch = query.RefetchAsync();
+        Assert.IsTrue(query.IsError);
+        Assert.AreEqual("down", query.Error?.Message);
+        Assert.IsTrue(query.IsRefetching);
+        Assert.IsFalse(query.IsLoading);
+
+        server.Fail(1, new InvalidOperationException("still down"));
+        await refetch;
+        Assert.AreEqual("still down", query.Error?.Message);
+
+        var again = query.RefetchAsync();
+        server.Respond(2, 1);
+        await again;
+        Assert.IsTrue(query.IsSuccess);
+        Assert.IsNull(query.Error);
+        Assert.AreEqual(1, query.Data);
+    }
+
     private sealed class CountingDispatcher : IBlexDispatcher
     {
         public int Invocations { get; private set; }

@@ -14,8 +14,6 @@ namespace Bit.Blex.Query;
 /// </remarks>
 public abstract class BlexQuery : INotifyPropertyChanged, IDisposable
 {
-    private static readonly PropertyChangedEventArgs AllPropertiesChanged = new(string.Empty);
-
     private protected BlexQuery(BlexQueryClient client, BlexQueryOptions options)
     {
         Client = client;
@@ -72,7 +70,7 @@ public abstract class BlexQuery : INotifyPropertyChanged, IDisposable
     /// <summary>The first fetch is running: nothing to show but a loading state.</summary>
     public bool IsLoading => IsFetching && IsPending;
 
-    /// <summary>Data is shown and a newer copy is being fetched.</summary>
+    /// <summary>Data -- or the error of the last fetch -- is shown and a newer answer is being fetched.</summary>
     public bool IsRefetching => IsFetching && !IsPending;
 
     /// <summary>A fetch is waiting for the network to come back (<see cref="BlexFetchStatus.Paused"/>).</summary>
@@ -107,38 +105,7 @@ public abstract class BlexQuery : INotifyPropertyChanged, IDisposable
     /// <summary>Stops polling for good: the client was disposed, and an observer nobody disposed must not keep it alive.</summary>
     internal abstract void StopPolling();
 
-    private protected void RaiseChanged()
-    {
-        if (Changed is { } changed)
-        {
-            foreach (var handler in changed.GetInvocationList())
-            {
-                try
-                {
-                    ((Action)handler)();
-                }
-                catch (Exception ex)
-                {
-                    Client.ReportError(ex, Key);
-                }
-            }
-        }
-
-        if (PropertyChanged is { } propertyChanged)
-        {
-            foreach (var handler in propertyChanged.GetInvocationList())
-            {
-                try
-                {
-                    ((PropertyChangedEventHandler)handler)(this, AllPropertiesChanged);
-                }
-                catch (Exception ex)
-                {
-                    Client.ReportError(ex, Key);
-                }
-            }
-        }
-    }
+    private protected void RaiseChanged() => Client.RaiseIsolated(Changed, PropertyChanged, this, Key);
 }
 
 /// <summary>
@@ -154,6 +121,7 @@ public sealed class BlexQuery<T> : BlexQuery
     private T? _placeholder;
     private bool _hasPlaceholder;
     private ITimer? _interval;
+    private int _intervalGeneration;
     private ITimer? _staleTimer;
     private bool _disposed;
 
@@ -284,9 +252,12 @@ public sealed class BlexQuery<T> : BlexQuery
     internal Task FetchAsync(bool cancelRunning)
         => _entry.FetchAsync(_fetch, Client.RetryCountFor(Options), Client.RetryDelayFor(Options), cancelRunning, networkMode: Options.NetworkMode);
 
-    /// <summary>Runs <paramref name="fetch"/> once, keeping the fetch refetches use; joins a fetch already running.</summary>
-    internal Task FetchOnceAsync(Func<CancellationToken, Task<T>> fetch)
-        => _entry.FetchAsync(fetch, Client.RetryCountFor(Options), Client.RetryDelayFor(Options), cancelRunning: false, once: true, networkMode: Options.NetworkMode);
+    /// <summary>
+    /// Runs <paramref name="fetch"/> once, keeping the fetch refetches use -- or returns <c>null</c> while a fetch is
+    /// running: the caller waits for that one and asks again, rather than take its answer for this one's.
+    /// </summary>
+    internal Task? TryFetchOnceAsync(Func<CancellationToken, Task<T>> fetch)
+        => _entry.TryFetchOnceAsync(fetch, Client.RetryCountFor(Options), Client.RetryDelayFor(Options), Options.NetworkMode);
 
     /// <inheritdoc />
     public override Task RefetchAsync() => _disposed ? Task.CompletedTask : FetchAsync(cancelRunning: true);
@@ -345,8 +316,8 @@ public sealed class BlexQuery<T> : BlexQuery
             return; // stale already, and the notification that delivered the data said so
 
         // A timer cannot wait longer than this; a stale time beyond it is waited out in more than one go.
-        if (due > MaxTimerDue)
-            due = MaxTimerDue;
+        if (due > BlexQueryClient.MaxTimerDue)
+            due = BlexQueryClient.MaxTimerDue;
 
         _staleTimer = Client.TimeProvider.CreateTimer(
             static state => ((BlexQuery<T>)state!).OnStale(),
@@ -354,8 +325,6 @@ public sealed class BlexQuery<T> : BlexQuery
             due,
             Timeout.InfiniteTimeSpan);
     }
-
-    private static readonly TimeSpan MaxTimerDue = TimeSpan.FromMilliseconds(uint.MaxValue - 1);
 
     private void OnStale()
         => Client.Post(() =>
@@ -374,22 +343,54 @@ public sealed class BlexQuery<T> : BlexQuery
     {
         _interval?.Dispose();
         _interval = null;
+        _intervalGeneration++;
 
         if (_disposed || Client.IsDisposed || !Options.Enabled || Options.RefetchInterval is not { } interval || interval <= TimeSpan.Zero)
             return;
 
-        _interval = Client.TimeProvider.CreateTimer(
-            static state => ((BlexQuery<T>)state!).OnInterval(),
-            this,
-            interval,
-            interval);
+        ScheduleIntervalTick(interval, interval);
     }
 
-    private void OnInterval()
+    /// <summary>
+    /// Fetches once <paramref name="due"/> has passed, then every <paramref name="interval"/>. One-shot timers, each
+    /// scheduling the next: a timer cannot wait longer than <see cref="BlexQueryClient.MaxTimerDue"/>, so a longer
+    /// interval is waited out in more than one go, and a tick scheduled before the polling was restarted is ignored.
+    /// </summary>
+    private void ScheduleIntervalTick(TimeSpan due, TimeSpan interval)
+    {
+        var wait = due > BlexQueryClient.MaxTimerDue ? BlexQueryClient.MaxTimerDue : due;
+        var dueAt = due > BlexQueryClient.MaxTimerDue ? Client.DueAt(due) : (DateTimeOffset?)null;
+        _interval = Client.TimeProvider.CreateTimer(
+            static state =>
+            {
+                var (query, generation, dueAt, interval) = ((BlexQuery<T>, int, DateTimeOffset?, TimeSpan))state!;
+                query.OnInterval(generation, dueAt, interval);
+            },
+            (this, _intervalGeneration, dueAt, interval),
+            wait,
+            Timeout.InfiniteTimeSpan);
+    }
+
+    private void OnInterval(int generation, DateTimeOffset? dueAt, TimeSpan interval)
         => Client.Post(() =>
         {
-            if (!_disposed && Options.Enabled)
-                _ = FetchAsync(cancelRunning: false);
+            // Restarted (new options, a rebind) or stopped since this tick was scheduled: the newer schedule owns the polling.
+            if (_disposed || Client.IsDisposed || generation != _intervalGeneration || !Options.Enabled)
+                return;
+
+            _interval?.Dispose();
+            _interval = null;
+
+            // The wait was capped: the rest of it first.
+            var remaining = dueAt is { } at ? at - Client.TimeProvider.GetUtcNow() : TimeSpan.Zero;
+            if (remaining > TimeSpan.Zero)
+            {
+                ScheduleIntervalTick(remaining, interval);
+                return;
+            }
+
+            ScheduleIntervalTick(interval, interval);
+            _ = FetchAsync(cancelRunning: false);
         });
 
     /// <inheritdoc />

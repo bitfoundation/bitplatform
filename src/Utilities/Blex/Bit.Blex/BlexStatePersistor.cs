@@ -642,6 +642,16 @@ public sealed class BlexStatePersistor : IAsyncDisposable, IDisposable
     {
         await previous.ConfigureAwait(true);
 
+        // After the writes queued so far as well: the previous instance under this name (a scope closed and
+        // opened again) had its last save queued as it unregistered, and with an asynchronous protector that
+        // write may still be on its way -- read before it lands, storage hands back the state before the
+        // user's last edits, which the next save would then overwrite.
+        Task writes;
+        lock (_saveGate)
+            writes = _writeChain;
+
+        await writes.ConfigureAwait(true);
+
         try
         {
             // It may have left again while it waited its turn. Hydrating lifts the store's hold.

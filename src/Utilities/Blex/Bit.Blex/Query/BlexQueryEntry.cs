@@ -41,6 +41,12 @@ internal abstract class BlexQueryEntry(BlexQueryClient client, BlexQueryKey key)
     /// <summary>The removal scheduled for when nobody observes the entry; guarded by the gate.</summary>
     public ITimer? GcTimer { get; set; }
 
+    /// <summary>
+    /// When the GC wait ends, for one longer than a timer can wait (<see cref="BlexQueryClient.MaxTimerDue"/>): the
+    /// timer fires early, and the rest is waited from here; <c>null</c> when the timer waits the whole time. Guarded by the gate.
+    /// </summary>
+    public DateTimeOffset? GcDueAt { get; set; }
+
     /// <summary>Whether the data is older than <paramref name="staleTime"/>, missing, or invalidated.</summary>
     public bool IsStale(TimeSpan staleTime, DateTimeOffset now)
     {
@@ -213,6 +219,28 @@ internal sealed class BlexQueryEntry<T>(BlexQueryClient client, BlexQueryKey key
         bool cancelRunning,
         bool once = false,
         BlexNetworkMode? networkMode = null)
+        => FetchCore(fetch, retryCount, retryDelay, cancelRunning, once, networkMode, joinRunning: true)!;
+
+    /// <summary>
+    /// Runs <paramref name="fetch"/> this time only, as <see cref="FetchAsync"/> with <c>once</c> does -- or returns
+    /// <c>null</c> while a fetch is running, rather than hand that fetch back as if it were this one: an infinite
+    /// query's next page must follow the pages a refetch brings, not be mistaken for the refetch.
+    /// </summary>
+    public Task<FetchResult>? TryFetchOnceAsync(
+        Func<CancellationToken, Task<T>> fetch,
+        int retryCount,
+        TimeSpan retryDelay,
+        BlexNetworkMode? networkMode)
+        => FetchCore(fetch, retryCount, retryDelay, cancelRunning: false, once: true, networkMode, joinRunning: false);
+
+    private Task<FetchResult>? FetchCore(
+        Func<CancellationToken, Task<T>>? fetch,
+        int retryCount,
+        TimeSpan retryDelay,
+        bool cancelRunning,
+        bool once,
+        BlexNetworkMode? networkMode,
+        bool joinRunning)
     {
         TaskCompletionSource<FetchResult> done;
         CancellationTokenSource cts;
@@ -230,7 +258,7 @@ internal sealed class BlexQueryEntry<T>(BlexQueryClient client, BlexQueryKey key
             if (_inFlight is not null && _done is not null)
             {
                 if (!cancelRunning)
-                    return _inFlight;
+                    return joinRunning ? _inFlight : null;
 
                 // Superseded: its outcome is ignored once it settles, whatever it turns out to be. The new fetch
                 // takes over its completion, so whoever awaits it waits for an answer as of now, not for the
@@ -257,11 +285,12 @@ internal sealed class BlexQueryEntry<T>(BlexQueryClient client, BlexQueryKey key
             FetchStatus = pausesOffline && !Client.IsOnline ? BlexFetchStatus.Paused : BlexFetchStatus.Fetching;
             FailureCount = 0;
             FailureReason = null;
-            if (!_hasData)
-            {
+
+            // An entry that failed keeps its error, and its Error status, until the new answer lands: the retry
+            // is a refetch of what is showing (IsRefetching), not a return to loading, so the error does not give
+            // way to a spinner on every focus or mount only to come back when the retry fails too.
+            if (!_hasData && Status != BlexQueryStatus.Error)
                 Status = BlexQueryStatus.Pending;
-                Error = null;
-            }
 
             GcTimer?.Dispose();
             GcTimer = null;

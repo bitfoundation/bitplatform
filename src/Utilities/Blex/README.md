@@ -554,7 +554,7 @@ keys it stopped asking for - so a key that follows a parameter is swapped, and o
 keeps one observer per item. `<BlexQueryView TData Key Fetch>` does the same from markup
 (`LoadingContent`, `ErrorContent`, `ChildContent` with the data). An observer reports `Data`, `Status`
 (`Pending`/`Error`/`Success`) and, independently, `FetchStatus` (`Idle`/`Fetching`) - so `IsLoading` (nothing
-to show yet) and `IsRefetching` (data shown, newer on its way) differ - plus `IsStale`, `DataUpdatedAt`,
+to show yet) and `IsRefetching` (data, or the last error, shown and a newer answer on its way) differ - plus `IsStale`, `DataUpdatedAt`,
 `FailureCount`/`FailureReason`, `RefetchAsync()` and `WhenSettledAsync()`.
 
 - **One request per key**: observers that mount while a fetch runs join it. An explicit refetch or an

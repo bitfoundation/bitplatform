@@ -1,0 +1,79 @@
+.bit-bink-canvas {
+  position: relative;
+  display: block;
+  overflow: hidden;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+  -webkit-tap-highlight-color: transparent;
+  background: transparent;
+}
+.bit-bink-canvas:focus-visible {
+  outline: 2px solid #1d4ed8;
+  outline-offset: 2px;
+  box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.9);
+}
+@media (forced-colors: active) {
+  .bit-bink-canvas:focus-visible {
+    outline: 3px solid Highlight;
+    box-shadow: none;
+  }
+}
+.bit-bink-layer {
+  position: absolute;
+  inset: 0;
+  display: block;
+  pointer-events: none;
+}
+.bit-bink-document {
+  z-index: 0;
+}
+.bit-bink-overlay {
+  z-index: 1;
+}
+.bit-bink-input {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  cursor: inherit;
+}
+.bit-bink-content {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  pointer-events: none;
+}
+.bit-bink-content > * {
+  pointer-events: auto;
+}
+.bit-bink-text-editor {
+  position: absolute;
+  z-index: 4;
+  margin: 0;
+  padding: 0;
+  border: 1px solid Highlight;
+  outline: none;
+  background: transparent;
+  color: inherit;
+  overflow: hidden;
+  resize: none;
+  white-space: pre;
+  line-height: inherit;
+}
+.bit-bink-visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+@media (forced-colors: active) {
+  .bit-bink-canvas {
+    forced-color-adjust: none;
+  }
+}

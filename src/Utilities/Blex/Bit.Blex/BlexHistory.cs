@@ -400,13 +400,21 @@ public class BlexHistory : IDisposable
         {
             // A store the present has never seen -- one registered after it was taken, a scoped instance
             // hydrating as its dialog opens -- has not been moved away from anything: it joins the present
-            // (and the boundary, when that is the same state) instead of costing the next Undo its label.
+            // (and the boundary) instead of costing the next Undo its label.
             if (_present is not null && !_present.Slices.ContainsKey(store.Name))
             {
+                var slice = SliceOf(store);
                 var boundaryIsPresent = ReferenceEquals(_boundary, _present);
-                _present = _present.With(store.Name, SliceOf(store));
+                _present = _present.With(store.Name, slice);
+
+                // The boundary too when it trails the present (a filtered action moved the present off it): left
+                // without the slice, it would differ from the present by a store nothing moved, and the next
+                // Checkpoint would push a step that undoes nothing.
                 if (boundaryIsPresent)
                     _boundary = _present;
+                else if (_boundary is not null && !_boundary.Slices.ContainsKey(store.Name))
+                    _boundary = _boundary.With(store.Name, slice);
+
                 return;
             }
 
@@ -477,6 +485,14 @@ public class BlexHistory : IDisposable
 
         try
         {
+            // An action that left the covered state as it was -- a value set to what it already held, an outer
+            // action whose nested one this history recorded first -- is no step: the present it would push is the
+            // present, and a step back to it would spend a slot, and a click, on restoring what is showing. Only
+            // the stores that changed are serialized again; a scoped history covers its own stores only.
+            var captured = Capture();
+            if (_present is not null && captured.SameAs(_present))
+                return;
+
             var record = Allows(context);
 
             // A grouped action joins the step already open instead of starting a new one, so a
@@ -494,9 +510,8 @@ public class BlexHistory : IDisposable
             // The present always advances -- a filtered action changed the state just as much as a
             // recorded one, and leaving a stale present behind would make the next Undo restore a
             // snapshot the user never saw. Only the undo *step* is skipped. The label is left alone
-            // for the same reason: it names the boundary the next Undo actually returns to. Only the
-            // stores that changed are serialized again; a scoped history covers its own stores only.
-            _present = Capture();
+            // for the same reason: it names the boundary the next Undo actually returns to.
+            _present = captured;
             if (record)
             {
                 _presentLabel = context.QualifiedName;
@@ -650,9 +665,9 @@ public class BlexHistory : IDisposable
             return;
 
         // Landed on a state that changes nothing on screen: the steps walked belong to stores that have since
-        // left the manager (a closed dialog's scoped store, another document's), which a restore skips, or they
-        // recorded no visible change at all. Spending the click on that would look like a broken button, so
-        // keep going in the same direction until a step does change something live, or the stack runs out.
+        // left the manager (a closed dialog's scoped store, another document's), which a restore skips.
+        // Spending the click on that would look like a broken button, so keep going in the same direction
+        // until a step does change something live, or the stack runs out.
         while (!ChangesLiveState(_present))
         {
             if (steps < 0 && _undo.Count > 0)

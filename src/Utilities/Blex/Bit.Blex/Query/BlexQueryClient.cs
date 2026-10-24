@@ -1,3 +1,4 @@
+using System.ComponentModel;
 using System.Globalization;
 using System.Runtime.ExceptionServices;
 using System.Text.Json.Nodes;
@@ -736,6 +737,17 @@ public sealed class BlexQueryClient : IDisposable
         if (IsDisposed)
             return;
 
+        // The cache's keys as text, indexed once: scanning every entry per handed-over key was O(keys x entries)
+        // under the gate, and a handoff of a few hundred queries into a cache of as many is ordinary. An entry
+        // created for a handed-over key while this runs is missed, as the scan missed it one lock later.
+        Dictionary<string, BlexQueryEntry> byText;
+        lock (Gate)
+        {
+            byText = new Dictionary<string, BlexQueryEntry>(_entries.Count, StringComparer.Ordinal);
+            foreach (var entry in _entries.Values)
+                byText[entry.Key.ToString()] = entry;
+        }
+
         var pending = new List<string>();
         foreach (var (key, value) in state)
         {
@@ -748,26 +760,7 @@ public sealed class BlexQueryClient : IDisposable
             }
 
             var data = item["data"]?.DeepClone();
-            BlexQueryEntry? existing = null;
-            lock (Gate)
-            {
-                foreach (var entry in _entries.Values)
-                {
-                    if (entry.Key.ToString() == key)
-                    {
-                        existing = entry;
-                        break;
-                    }
-                }
-
-                if (existing is null)
-                {
-                    _hydration[key] = (data, updatedAt);
-                    pending.Add(key);
-                }
-            }
-
-            if (existing is not null)
+            if (byText.TryGetValue(key, out var existing))
             {
                 try
                 {
@@ -777,6 +770,14 @@ public sealed class BlexQueryClient : IDisposable
                 {
                     ReportError(ex, existing.Key);
                 }
+
+                continue;
+            }
+
+            lock (Gate)
+            {
+                _hydration[key] = (data, updatedAt);
+                pending.Add(key);
             }
         }
 
@@ -794,34 +795,56 @@ public sealed class BlexQueryClient : IDisposable
                 _hydrationKeys = pending;
             }
 
-            var timer = TimeProvider.CreateTimer(static state =>
+            ScheduleHydrationDrop(pending, Options.GcTime < TimeSpan.Zero ? TimeSpan.Zero : Options.GcTime);
+        }
+    }
+
+    /// <summary>
+    /// Drops what is still unclaimed of the handed-over queries in <paramref name="keys"/> after <paramref name="due"/>
+    /// -- waited out in more than one go when that is longer than a timer can wait (<see cref="MaxTimerDue"/>).
+    /// </summary>
+    private void ScheduleHydrationDrop(List<string> keys, TimeSpan due)
+    {
+        var wait = due > MaxTimerDue ? MaxTimerDue : due;
+        var dueAt = due > MaxTimerDue ? DueAt(due) : (DateTimeOffset?)null;
+        var timer = TimeProvider.CreateTimer(static state =>
+        {
+            var (client, keys, dueAt) = ((BlexQueryClient, List<string>, DateTimeOffset?))state!;
+            client.Post(() =>
             {
-                var (client, keys) = ((BlexQueryClient, List<string>))state!;
-                client.Post(() =>
+                var remaining = dueAt is { } at ? at - client.TimeProvider.GetUtcNow() : TimeSpan.Zero;
+                lock (client.Gate)
                 {
-                    lock (client.Gate)
+                    // A later handoff took the keys over, with a timer of its own; or the client is disposed.
+                    if (!ReferenceEquals(client._hydrationKeys, keys))
+                        return;
+
+                    if (remaining <= TimeSpan.Zero)
                     {
                         // Only what the handoffs left unclaimed; entries already asked for took theirs.
                         foreach (var key in keys)
                             client._hydration.Remove(key);
 
-                        if (ReferenceEquals(client._hydrationKeys, keys))
-                            client._hydrationKeys = null;
+                        client._hydrationKeys = null;
+                        return;
                     }
-                });
-            }, (this, pending), Options.GcTime < TimeSpan.Zero ? TimeSpan.Zero : Options.GcTime, Timeout.InfiniteTimeSpan);
+                }
 
-            ITimer? previous;
-            lock (Gate)
-            {
-                previous = _hydrationTimer;
-                _hydrationTimer = IsDisposed ? null : timer;
-            }
+                // The wait was capped: the rest of it.
+                client.ScheduleHydrationDrop(keys, remaining);
+            });
+        }, (this, keys, dueAt), wait, Timeout.InfiniteTimeSpan);
 
-            previous?.Dispose();
-            if (IsDisposed)
-                timer.Dispose();
+        ITimer? previous;
+        lock (Gate)
+        {
+            previous = _hydrationTimer;
+            _hydrationTimer = IsDisposed ? null : timer;
         }
+
+        previous?.Dispose();
+        if (IsDisposed)
+            timer.Dispose();
     }
 
     /// <summary>Stops every fetch and timer and empties the cache. Idempotent.</summary>
@@ -919,9 +942,9 @@ public sealed class BlexQueryClient : IDisposable
     /// timer is created outside the gate -- a zero due time can fire at once, on another thread -- and only
     /// kept if the entry still needs it by then.
     /// </summary>
-    private void ScheduleGc(BlexQueryEntry entry)
+    private void ScheduleGc(BlexQueryEntry entry, TimeSpan? remaining = null)
     {
-        TimeSpan due;
+        TimeSpan wait;
         object ticket;
         lock (Gate)
         {
@@ -932,7 +955,11 @@ public sealed class BlexQueryClient : IDisposable
                 return;
             }
 
-            due = entry.GcTime < TimeSpan.Zero ? TimeSpan.Zero : entry.GcTime;
+            var due = remaining ?? (entry.GcTime < TimeSpan.Zero ? TimeSpan.Zero : entry.GcTime);
+
+            // A timer cannot wait longer than MaxTimerDue; a longer GC time is waited out in more than one go.
+            wait = due > MaxTimerDue ? MaxTimerDue : due;
+            entry.GcDueAt = due > MaxTimerDue ? DueAt(due) : null;
 
             // Reserved before the timer exists, so a timer that fires before it is stored still finds its ticket.
             ticket = entry.GcTicket = new object();
@@ -942,7 +969,7 @@ public sealed class BlexQueryClient : IDisposable
         {
             var (client, target, ticket) = ((BlexQueryClient, BlexQueryEntry, object))state!;
             client.Post(() => client.Collect(target, ticket));
-        }, (this, entry, ticket), due, Timeout.InfiniteTimeSpan);
+        }, (this, entry, ticket), wait, Timeout.InfiniteTimeSpan);
 
         lock (Gate)
         {
@@ -960,6 +987,7 @@ public sealed class BlexQueryClient : IDisposable
     private void Collect(BlexQueryEntry entry, object ticket)
     {
         bool removed;
+        TimeSpan rest;
         lock (Gate)
         {
             // Touched since this removal was scheduled: a newer schedule, or none, owns it now.
@@ -968,13 +996,23 @@ public sealed class BlexQueryClient : IDisposable
 
             // Spent either way; declining leaves the entry free to be scheduled again once it is idle.
             CancelGc(entry);
-            removed = entry.ObserverCount == 0
+            rest = entry.GcDueAt is { } dueAt ? dueAt - TimeProvider.GetUtcNow() : TimeSpan.Zero;
+            removed = rest <= TimeSpan.Zero
+                && entry.ObserverCount == 0
                 && entry.FetchStatus == BlexFetchStatus.Idle
                 && _entries.TryGetValue(entry.Key, out var current)
                 && ReferenceEquals(current, entry);
 
             if (removed)
                 _entries.Remove(entry.Key);
+        }
+
+        // The wait was capped: the rest of it, from a new timer -- unless the entry is in use again, which the
+        // schedule checks; then its next idle spell starts the GC time over.
+        if (rest > TimeSpan.Zero)
+        {
+            ScheduleGc(entry, rest);
+            return;
         }
 
         if (removed)
@@ -1049,6 +1087,57 @@ public sealed class BlexQueryClient : IDisposable
             manager.ReportError("query", exception, key?.ToString());
         else
             Console.Error.WriteLine($"[Blex] query failed{(key is null ? "" : $" ({key})")}: {exception.Message}");
+    }
+
+    /// <summary>The longest a timer can wait (about 49 days); a longer wait is made in more than one go.</summary>
+    internal static readonly TimeSpan MaxTimerDue = TimeSpan.FromMilliseconds(uint.MaxValue - 1);
+
+    /// <summary>When a wait of <paramref name="due"/> from now ends -- the end of time, for one that would not fit a date.</summary>
+    internal DateTimeOffset DueAt(TimeSpan due)
+    {
+        var now = TimeProvider.GetUtcNow();
+        return due >= DateTimeOffset.MaxValue - now ? DateTimeOffset.MaxValue : now + due;
+    }
+
+    private static readonly PropertyChangedEventArgs AllPropertiesChanged = new(string.Empty);
+
+    /// <summary>
+    /// Raises an observer's change notification -- its <c>Changed</c> event and its
+    /// <see cref="INotifyPropertyChanged.PropertyChanged"/>, always with an empty property name ("all properties
+    /// changed") so XAML bindings can bind straight to it -- with every handler isolated: one that throws is reported
+    /// against <paramref name="key"/>, and the rest still run.
+    /// </summary>
+    internal void RaiseIsolated(Action? changed, PropertyChangedEventHandler? propertyChanged, object sender, BlexQueryKey? key)
+    {
+        if (changed is not null)
+        {
+            foreach (var handler in changed.GetInvocationList())
+            {
+                try
+                {
+                    ((Action)handler)();
+                }
+                catch (Exception ex)
+                {
+                    ReportError(ex, key);
+                }
+            }
+        }
+
+        if (propertyChanged is not null)
+        {
+            foreach (var handler in propertyChanged.GetInvocationList())
+            {
+                try
+                {
+                    ((PropertyChangedEventHandler)handler)(sender, AllPropertiesChanged);
+                }
+                catch (Exception ex)
+                {
+                    ReportError(ex, key);
+                }
+            }
+        }
     }
 
     private static TimeSpan Max(TimeSpan a, TimeSpan b) => a >= b ? a : b;
