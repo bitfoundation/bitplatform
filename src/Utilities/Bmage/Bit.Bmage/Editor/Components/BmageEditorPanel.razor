@@ -691,7 +691,7 @@
             {
                 var p = row[x];
                 if (p.A == 0) continue;
-                bins[(p.R * 54 + p.G * 183 + p.B * 19 + 128) >> 8]++;
+                bins[Masks.MaskBuffer.Luma(p)]++;
                 total++;
             }
         }
@@ -768,14 +768,16 @@
         if (selected != _shownSelection && selected is not null && _activeTab != PanelTab.Layers) _activeTab = PanelTab.Style;
         _shownSelection = selected;
 
-        // By value: a host that writes its options inline hands in an equal copy on every render.
-        if (_exportDefaults != Context.ExportOptions)
+        // By the values the tab shows: a host that writes its options inline hands in a fresh copy on every render,
+        // one its dictionary of extensions makes unequal as a record even when nothing changed.
+        var options = Context.ExportOptions;
+        if (_exportDefaults is null || options.Format != _exportDefaults.Format || options.Quality != _exportDefaults.Quality || options.Metadata != _exportDefaults.Metadata)
         {
-            _exportDefaults = Context.ExportOptions;
-            _exportFormat = _exportDefaults.Format;
-            _exportQuality = _exportDefaults.Quality;
-            _metadataPolicy = _exportDefaults.Metadata;
+            _exportFormat = options.Format;
+            _exportQuality = options.Quality;
+            _metadataPolicy = options.Metadata;
         }
+        _exportDefaults = options;
     }
 
     private Task UpdateSelected(Func<Annotation, Annotation> change, bool transient)

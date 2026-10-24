@@ -577,7 +577,9 @@ public sealed class AdversarialPipelineTests
 
         using var cts = new CancellationTokenSource();
         await cts.CancelAsync();
-        var result = await processor.ProcessBatchAsync(items, ImagePipeline.Create().MaxSize(64, 64), null, cts.Token);
+        var stopped = await Assert.ThrowsExactlyAsync<BatchCancelledException>(async () =>
+            await processor.ProcessBatchAsync(items, ImagePipeline.Create().MaxSize(64, 64), null, cts.Token));
+        var result = stopped.Result;
 
         Assert.IsTrue(result.WasCancelled);
         Assert.AreEqual(50, result.Results.Count);

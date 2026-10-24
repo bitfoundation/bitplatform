@@ -221,7 +221,9 @@ public sealed class FontTextRasterizer : ITextRasterizer
                 lines.Add(Line(0, codePoints.Length));
                 continue;
             }
-            foreach (var (start, end) in Wrap(codePoints, limit, (s, e) => Line(s, e).Width)) lines.Add(Line(start, end));
+            // The paragraph is shaped once to measure the candidate lines, then each line on its own as it is drawn.
+            var advances = TextShaper.MeasureAdvances(fonts, codePoints, bidi.GetLineLevels(0, codePoints.Length), 0, codePoints.Length, style.FontSize, style.LetterSpacing);
+            foreach (var (start, end) in Wrap(codePoints, limit, advances, (s, e) => Line(s, e).Width)) lines.Add(Line(start, end));
         }
 
         var width = lines.Count == 0 ? 0 : lines.Max(l => l.Width);
@@ -232,47 +234,59 @@ public sealed class FontTextRasterizer : ITextRasterizer
     }
 
     /// <summary>
-    /// Greedy word wrapping of one paragraph into lines no wider than <paramref name="limit"/>, measured as they will be
-    /// drawn. A line's trailing spaces do not count; a single word wider than the limit is broken between characters.
+    /// Greedy word wrapping of one paragraph into lines no wider than <paramref name="limit"/>. A candidate line is
+    /// measured as the sum of its code points' <paramref name="advances"/>, from one shaping of the whole paragraph; a
+    /// line about to be kept is measured as it will be drawn, with <paramref name="width"/>, and gives up its last words
+    /// when its edges shape wider on their own. A line's trailing spaces do not count; a single word wider than the
+    /// limit is broken between characters.
     /// </summary>
-    private static List<(int Start, int End)> Wrap(int[] codePoints, float limit, Func<int, int, float> width)
+    private static List<(int Start, int End)> Wrap(int[] codePoints, float limit, float[] advances, Func<int, int, float> width)
     {
+        var prefix = new float[codePoints.Length + 1];
+        for (var i = 0; i < codePoints.Length; i++) prefix[i + 1] = prefix[i] + advances[i];
+        float Estimate(int start, int end) => prefix[end] - prefix[start];
+
         var lines = new List<(int, int)>();
-        int lineStart = 0, lineEnd = 0;
-        var empty = true;
-        for (var p = 0; p < codePoints.Length;)
+        // The words of the line being filled.
+        var words = new List<(int Start, int End)>();
+        var p = 0;
+        while (true)
         {
-            var wordStart = p;
-            while (p < codePoints.Length && !Rune.IsWhiteSpace(new Rune(codePoints[p]))) p++;
-            var wordEnd = p;
-            while (p < codePoints.Length && Rune.IsWhiteSpace(new Rune(codePoints[p]))) p++;
-
-            if (empty)
+            if (p < codePoints.Length)
             {
-                lineEnd = wordEnd;
-                empty = false;
+                var wordStart = p;
+                while (p < codePoints.Length && !Rune.IsWhiteSpace(new Rune(codePoints[p]))) p++;
+                var wordEnd = p;
+                while (p < codePoints.Length && Rune.IsWhiteSpace(new Rune(codePoints[p]))) p++;
+                if (words.Count == 0 || Estimate(words[0].Start, wordEnd) <= limit)
+                {
+                    words.Add((wordStart, wordEnd));
+                    // Only a lone word can be too wide here, whether it started the text or was just wrapped: break it.
+                    if (words.Count == 1 && Estimate(wordStart, wordEnd) > limit)
+                    {
+                        var pieces = BreakWord(codePoints, wordStart, wordEnd, limit, Estimate);
+                        for (var k = 0; k < pieces.Count - 1; k++) lines.Add(pieces[k]);
+                        words[0] = pieces[^1];
+                    }
+                    continue;
+                }
+                // The line is full: the word starts the next one.
+                p = wordStart;
             }
-            else if (width(lineStart, wordEnd) <= limit)
+            else if (words.Count == 0)
             {
-                lineEnd = wordEnd;
+                // Out of words; a paragraph without any is still a line.
+                if (lines.Count == 0) lines.Add((0, 0));
+                return lines;
             }
-            else
-            {
-                lines.Add((lineStart, lineEnd));
-                lineStart = wordStart;
-                lineEnd = wordEnd;
-            }
-
-            // Only a lone word can be too wide here, whether it started the text or was just wrapped: break it.
-            if (lineEnd > lineStart && width(lineStart, lineEnd) > limit)
-            {
-                var pieces = BreakWord(codePoints, lineStart, lineEnd, limit, width);
-                for (var k = 0; k < pieces.Count - 1; k++) lines.Add(pieces[k]);
-                (lineStart, lineEnd) = pieces[^1];
-            }
+            // Shaped on its own the line may come out wider than its estimate, kerning and joining forms differing at
+            // its edges; then its last words move down.
+            var kept = words.Count;
+            while (kept > 1 && width(words[0].Start, words[kept - 1].End) > limit) kept--;
+            lines.Add((words[0].Start, words[kept - 1].End));
+            if (kept < words.Count) p = words[kept].Start;
+            words.Clear();
         }
-        lines.Add((lineStart, lineEnd));
-        return lines;
     }
 
     /// <summary>Breaks a word between its grapheme clusters into pieces that fit, the last one possibly shorter.</summary>

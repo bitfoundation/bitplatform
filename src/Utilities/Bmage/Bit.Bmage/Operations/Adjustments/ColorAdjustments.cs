@@ -194,11 +194,14 @@ public sealed class AutoWhiteBalanceOperation : ImageOperation
 /// </remarks>
 public sealed class WhitesBlacksAdjustment : CurveOperation
 {
-    public WhitesBlacksAdjustment(float whites, float blacks)
-        : base(Table(Clamp(whites), Clamp(blacks)), Table(Clamp(whites), Clamp(blacks)), Table(Clamp(whites), Clamp(blacks)), null, "Whites/Blacks")
+    public WhitesBlacksAdjustment(float whites, float blacks) : this(Clamp(whites), Clamp(blacks), null) { }
+
+    // The same curve moves every channel, so one table serves all three.
+    private WhitesBlacksAdjustment(float whites, float blacks, float[]? table)
+        : base(table ??= Table(whites, blacks), table, table, null, "Whites/Blacks")
     {
-        Whites = Clamp(whites);
-        Blacks = Clamp(blacks);
+        Whites = whites;
+        Blacks = blacks;
     }
 
     public float Whites { get; }

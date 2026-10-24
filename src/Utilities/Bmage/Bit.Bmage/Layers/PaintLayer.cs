@@ -100,26 +100,10 @@ public sealed record PaintStroke
     {
         // The smoothing curves bulge past the points at sharp turns, but a cubic never leaves the hull of its control
         // points, so those are included too.
-        var bounds = MaskRasterizer.BoundsOf(SmoothingHull());
+        var bounds = MaskRasterizer.BoundsOf(FreehandAnnotation.SmoothingHull(_points));
         var reach = Size / 2 + 2;
         bounds.Inflate(reach, reach);
         return bounds;
-    }
-
-    /// <summary>The points and the control points <see cref="FreehandAnnotation.AppendSmoothed"/> draws its curves through.</summary>
-    private IEnumerable<Vector2> SmoothingHull()
-    {
-        foreach (var p in _points) yield return p;
-        if (_points.Length < 3) yield break;
-        for (var i = 0; i < _points.Length - 1; i++)
-        {
-            var p0 = _points[Math.Max(i - 1, 0)];
-            var p1 = _points[i];
-            var p2 = _points[i + 1];
-            var p3 = _points[Math.Min(i + 2, _points.Length - 1)];
-            yield return p1 + (p2 - p0) / 6f;
-            yield return p2 - (p3 - p1) / 6f;
-        }
     }
 
     internal PaintStroke Scale(double scale) => this with { Points = [.. _points.Select(p => p * (float)scale)], Size = (float)Math.Max(0.01, Size * scale) };

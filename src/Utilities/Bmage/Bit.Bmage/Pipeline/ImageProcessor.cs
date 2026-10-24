@@ -199,10 +199,10 @@ public class ImageProcessor
     /// </summary>
     /// <remarks>
     /// <para>
-    /// Cancelling <paramref name="cancellationToken"/> stops the batch without losing what it finished: the result
-    /// keeps every image that completed, reports the ones in flight and the ones never started as
-    /// <see cref="BatchItemResult.WasCancelled"/>, and says so with <see cref="BatchResult.WasCancelled"/>. Nothing is
-    /// thrown for it, as nothing is for a file that fails - a Stop button needs no <c>catch</c>.
+    /// Cancelling <paramref name="cancellationToken"/> stops the batch without losing what it finished: it throws a
+    /// <see cref="BatchCancelledException"/>, an <see cref="OperationCanceledException"/> like any other cancelled
+    /// method's, whose <see cref="BatchCancelledException.Result"/> keeps every image that completed and reports the
+    /// ones in flight and the ones never started as <see cref="BatchItemResult.WasCancelled"/>.
     /// </para>
     /// <para>
     /// Every output is kept until the batch ends. For a batch too large for that, use
@@ -227,8 +227,8 @@ public class ImageProcessor
         var stopped = false;
         try
         {
-            await foreach (var (index, result) in RunBatchAsync(ToAsync(list), list.Count, pipeline, options, cancellationToken).ConfigureAwait(false))
-                results[index] = result;
+            await foreach (var (index, item) in RunBatchAsync(ToAsync(list), list.Count, pipeline, options, cancellationToken).ConfigureAwait(false))
+                results[index] = item;
         }
         catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
         {
@@ -237,11 +237,13 @@ public class ImageProcessor
         }
         for (var i = 0; i < results.Length; i++)
             results[i] ??= BatchItemResult.Cancelled(list[i] ?? MissingItem);
-        return new BatchResult(results, stopwatch.Elapsed)
+        var result = new BatchResult(results, stopwatch.Elapsed)
         {
             // A token cancelled as the last image finished stopped nothing.
             WasCancelled = stopped && results.Any(r => r.WasCancelled),
         };
+        if (result.WasCancelled) throw new BatchCancelledException(result, cancellationToken);
+        return result;
     }
 
     /// <summary>What a result reports as its item when the caller passed null in its place.</summary>
@@ -659,6 +661,23 @@ public sealed class BatchItemResult
 }
 
 /// <summary>The aggregate outcome of a batch run.</summary>
+/// <summary>
+/// Thrown by <see cref="ImageProcessor.ProcessBatchAsync"/> when its token is cancelled before every item finished.
+/// <see cref="Result"/> is what the batch had done by then: every image that completed keeps its output or its error,
+/// and the rest are its <see cref="BatchResult.Cancelled"/>.
+/// </summary>
+public sealed class BatchCancelledException : OperationCanceledException
+{
+    public BatchCancelledException(BatchResult result, CancellationToken cancellationToken)
+        : base("The batch was cancelled before every item finished.", cancellationToken)
+    {
+        Result = result ?? throw new ArgumentNullException(nameof(result));
+    }
+
+    /// <summary>The batch as it stood when it was stopped, with <see cref="BatchResult.WasCancelled"/> set.</summary>
+    public BatchResult Result { get; }
+}
+
 public sealed class BatchResult
 {
     public BatchResult(IReadOnlyList<BatchItemResult> results, TimeSpan duration)

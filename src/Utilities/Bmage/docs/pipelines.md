@@ -280,19 +280,26 @@ megapixel photos means roughly 400 MB of live pixels. Two is a safe default on p
 
 One bad file does not lose the rest. Every item comes back with its own outcome, and `StopOnFirstError` is opt-in.
 
-Stopping a batch does not lose what it finished either. Cancelling the token makes `ProcessBatchAsync` return rather
-than throw: every image that completed keeps its output or its error, the ones in flight and the ones never started
-come back with `WasCancelled`, and `result.WasCancelled` says the token stopped it - so a Stop button needs no `catch`,
-and what was done is still there to save:
+Stopping a batch does not lose what it finished either. Cancelling the token makes `ProcessBatchAsync` throw a
+`BatchCancelledException` - an `OperationCanceledException`, so a `catch` written for any cancelled call still works -
+whose `Result` is the batch as it stood: every image that completed keeps its output or its error, the ones in flight
+and the ones never started come back with `WasCancelled`, and `result.WasCancelled` says the token stopped it. What was
+done is still there to save:
 
 ```csharp
-var result = await processor.ProcessBatchAsync(items, pipeline, options, stop.Token);
-
-foreach (var item in result.Succeeded) Save(item.Output!);
-if (result.WasCancelled) Requeue(result.Cancelled.Select(item => item.Item));   // never ran
+try
+{
+    var result = await processor.ProcessBatchAsync(items, pipeline, options, stop.Token);
+    foreach (var item in result.Succeeded) Save(item.Output!);
+}
+catch (BatchCancelledException stopped)
+{
+    foreach (var item in stopped.Result.Succeeded) Save(item.Output!);
+    Requeue(stopped.Result.Cancelled.Select(item => item.Item));   // never ran
+}
 ```
 
-`StopOnFirstError` marks the items it skipped the same way, with `result.WasCancelled` left false.
+`StopOnFirstError` marks the items it skipped the same way, without throwing and with `result.WasCancelled` left false.
 
 ### Batches of any length
 

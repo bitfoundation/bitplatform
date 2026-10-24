@@ -113,6 +113,29 @@ internal static class TextShaper
         return new ShapedLine([.. placed], Math.Max(0, x - trailing), ascent, descent);
     }
 
+    /// <summary>
+    /// How much each code point adds to the width of the line, shaped as a whole: a ligature's or a joined form's advance
+    /// is on its first code point, a mark's on nothing. A wrap measures its candidate lines as sums of these instead of
+    /// shaping every candidate on its own, which the breaks it then settles on are shaped as.
+    /// </summary>
+    public static float[] MeasureAdvances(IReadOnlyList<FontFile> fonts, int[] codePoints, ReadOnlySpan<byte> levels, int start, int end, float fontSize, float letterSpacing)
+    {
+        var advances = new float[codePoints.Length];
+        foreach (var run in Itemize(fonts, codePoints, levels, start, end))
+        {
+            var scale = fontSize / run.Font.UnitsPerEm;
+            var spacing = run.Script == UnicodeScript.Arabic ? 0f : letterSpacing;
+            var glyphs = ShapeRun(run.Font, codePoints, run.Start, run.End, run.Script, rtl: (run.Level & 1) == 1).AsSpan();
+            for (var i = 0; i < glyphs.Length; i++)
+            {
+                ref var g = ref glyphs[i];
+                if (g.AttachTo >= 0 || g.Hidden || g.XAdvance == 0) continue;
+                advances[Math.Clamp(g.Cluster, run.Start, run.End - 1)] += g.XAdvance * scale + spacing;
+            }
+        }
+        return advances;
+    }
+
     private static (float X, float Y) MarkPosition(Span<ShapingGlyph> glyphs, (float X, float Y)[] positions, int i, float scale, int depth)
     {
         ref var g = ref glyphs[i];

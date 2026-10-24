@@ -191,9 +191,9 @@
         <code>ImageProcessorFactory.GetAsync()</code> once the codec probe has run; on a server,
         <code>AddBitBmageHeadlessServices</code> registers it directly. Every item comes back with its
         own outcome - <code>Output</code>, <code>Error</code> or <code>WasCancelled</code> - and
-        <code>StopOnFirstError</code> is opt-in. Cancelling the token is not an error either: the batch stops
-        and returns what it finished, with <code>WasCancelled</code> on the result and on every item it did
-        not get to, so a Stop button needs no <code>catch</code>.
+        <code>StopOnFirstError</code> is opt-in. Cancelling the token throws <code>BatchCancelledException</code>,
+        an <code>OperationCanceledException</code> like any other cancelled call's, whose <code>Result</code> keeps
+        what the batch finished, with <code>WasCancelled</code> on it and on every item it did not get to.
     </p>
     <CodeSnippet Code="@Snippet" Language="C#" Expanded="true" />
     <div class="bb-note">
@@ -251,24 +251,30 @@
             return (ReadOnlyMemory<byte>)buffer.ToArray();
         }, file.Name));
 
-        var result = await processor.ProcessBatchAsync(items, pipeline, new BatchOptions
+        try
         {
-            MaxConcurrency   = 2,
-            MaxMemoryBytes   = 512L * 1024 * 1024,   // optional: admit images by their expected peak
-            StopOnFirstError = false,                // one bad file must not lose the rest
-            ExportOptions    = exportOptions,
-            Progress = new Progress<BatchProgress>(p =>
+            var result = await processor.ProcessBatchAsync(items, pipeline, new BatchOptions
             {
-                completed = p.Completed;
-                if (p.Last.Error is { } error) Log(p.Last.FileName, error);
-            }),
-        }, cancellationToken);
+                MaxConcurrency   = 2,
+                MaxMemoryBytes   = 512L * 1024 * 1024,   // optional: admit images by their expected peak
+                StopOnFirstError = false,                // one bad file must not lose the rest
+                ExportOptions    = exportOptions,
+                Progress = new Progress<BatchProgress>(p =>
+                {
+                    completed = p.Completed;
+                    if (p.Last.Error is { } error) Log(p.Last.FileName, error);
+                }),
+            }, cancellationToken);
 
-        foreach (var item in result.Succeeded) Save(item.Output!);
-        foreach (var item in result.Failed)    Report(item.FileName, item.Error!);
-
-        // Stopped by the token: what finished is above; these never ran.
-        if (result.WasCancelled) Retry(result.Cancelled.Select(item => item.Item));
+            foreach (var item in result.Succeeded) Save(item.Output!);
+            foreach (var item in result.Failed)    Report(item.FileName, item.Error!);
+        }
+        catch (BatchCancelledException stopped)
+        {
+            // Stopped by the token: what finished is in the result it carries; these never ran.
+            foreach (var item in stopped.Result.Succeeded) Save(item.Output!);
+            Retry(stopped.Result.Cancelled.Select(item => item.Item));
+        }
         """;
 
     private const string StreamSnippet = """
@@ -366,6 +372,11 @@
                     InvokeAsync(StateHasChanged);
                 }),
             }, _cts.Token);
+        }
+        catch (BatchCancelledException stopped)
+        {
+            // Stopped by the button: what the batch finished is in the result it carries.
+            _result = stopped.Result;
         }
         catch (OperationCanceledException)
         {

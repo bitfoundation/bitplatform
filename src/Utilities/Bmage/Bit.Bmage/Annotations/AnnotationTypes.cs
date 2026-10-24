@@ -221,15 +221,36 @@ public sealed record FreehandAnnotation : Annotation
         builder.MoveTo(points[0]);
         for (var i = 0; i < points.Count - 1; i++)
         {
-            var p0 = points[Math.Max(i - 1, 0)];
-            var p1 = points[i];
-            var p2 = points[i + 1];
-            var p3 = points[Math.Min(i + 2, points.Count - 1)];
-            var c1 = p1 + (p2 - p0) / 6f;
-            var c2 = p2 - (p3 - p1) / 6f;
-            builder.CubicTo(c1, c2, p2);
+            var (c1, c2) = ControlPoints(points, i);
+            builder.CubicTo(c1, c2, points[i + 1]);
         }
         if (closed) builder.Close();
+    }
+
+    /// <summary>
+    /// The points and the control points <see cref="AppendSmoothed"/> draws its curves through. A cubic never leaves the
+    /// hull of its control points, so the bounds of these hold the whole curve, bulges at sharp turns included.
+    /// </summary>
+    internal static IEnumerable<Vector2> SmoothingHull(IReadOnlyList<Vector2> points)
+    {
+        foreach (var p in points) yield return p;
+        if (points.Count < 3) yield break;
+        for (var i = 0; i < points.Count - 1; i++)
+        {
+            var (c1, c2) = ControlPoints(points, i);
+            yield return c1;
+            yield return c2;
+        }
+    }
+
+    /// <summary>The control points of the curve from point <paramref name="i"/> to the next.</summary>
+    private static (Vector2, Vector2) ControlPoints(IReadOnlyList<Vector2> points, int i)
+    {
+        var p0 = points[Math.Max(i - 1, 0)];
+        var p1 = points[i];
+        var p2 = points[i + 1];
+        var p3 = points[Math.Min(i + 2, points.Count - 1)];
+        return (p1 + (p2 - p0) / 6f, p2 - (p3 - p1) / 6f);
     }
 
     public override Annotation Translate(float dx, float dy)

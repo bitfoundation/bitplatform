@@ -240,6 +240,8 @@ public abstract record Mask
         var full = new Rectangle(Point.Empty, size);
         if (IsEmpty) return Rectangle.Empty;
         if (Inverted || GetCoverageBounds(size) is not { } bounds) return full;
+        // A shape without area, such as a brush before its first stroke, draws nothing, however far it would feather.
+        if (bounds.Width <= 0 || bounds.Height <= 0) return Rectangle.Empty;
         // A gaussian reaches about three standard deviations before its weight rounds to nothing in 8 bits.
         var spread = Feather * 3 + 1;
         bounds.Inflate(spread, spread);

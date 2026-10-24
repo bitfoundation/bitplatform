@@ -247,8 +247,11 @@ public sealed class ScenarioTests
             if (Interlocked.Increment(ref completed) >= 5) cts.Cancel();
         });
 
-        var result = await processor.ProcessBatchAsync(items, ImagePipeline.Create().MaxSize(200, 200),
-            new BatchOptions { MaxConcurrency = 2, ExportOptions = ImageExportOptions.Jpeg, Progress = progress }, cts.Token);
+        // Cancelled like any other method, so a caller's catch for the token still works - with what finished attached.
+        var stopped = await Assert.ThrowsExactlyAsync<BatchCancelledException>(async () =>
+            await processor.ProcessBatchAsync(items, ImagePipeline.Create().MaxSize(200, 200),
+                new BatchOptions { MaxConcurrency = 2, ExportOptions = ImageExportOptions.Jpeg, Progress = progress }, cts.Token));
+        var result = stopped.Result;
 
         Assert.IsTrue(result.WasCancelled);
         Assert.AreEqual(60, result.Results.Count);

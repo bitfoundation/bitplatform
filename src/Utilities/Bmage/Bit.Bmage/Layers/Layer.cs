@@ -201,17 +201,19 @@ public sealed record ImageLayer : Layer
     public override bool IsNoOp => base.IsNoOp || Bounds.Width <= 0 || Bounds.Height <= 0;
 
     /// <summary>The area the layer covers on an image, after rotation.</summary>
-    public RectangleF GetRotatedBounds()
+    public RectangleF GetRotatedBounds() => Rotation == 0 ? Bounds : MaskRasterizer.BoundsOf(RotatedCorners());
+
+    /// <summary>The corners of <see cref="Bounds"/> turned by <see cref="Rotation"/> about its centre, from the top left clockwise.</summary>
+    private Vector2[] RotatedCorners()
     {
-        if (Rotation == 0) return Bounds;
         var m = Matrix3x2.CreateRotation(Rotation * MathF.PI / 180f, new Vector2(Bounds.X + Bounds.Width / 2, Bounds.Y + Bounds.Height / 2));
-        return MaskRasterizer.BoundsOf(
+        return
         [
             Vector2.Transform(new Vector2(Bounds.Left, Bounds.Top), m),
             Vector2.Transform(new Vector2(Bounds.Right, Bounds.Top), m),
             Vector2.Transform(new Vector2(Bounds.Right, Bounds.Bottom), m),
             Vector2.Transform(new Vector2(Bounds.Left, Bounds.Bottom), m),
-        ]);
+        ];
     }
 
     protected internal override void CompositeCore(ImageBuffer target, OperationContext context) => Composite(target, context, cache: null);
@@ -280,17 +282,7 @@ public sealed record ImageLayer : Layer
     }
 
     /// <summary>The layer's rotated rectangle, in pixels.</summary>
-    private PolygonMask Outline()
-    {
-        var m = Matrix3x2.CreateRotation(Rotation * MathF.PI / 180f, new Vector2(Bounds.X + Bounds.Width / 2, Bounds.Y + Bounds.Height / 2));
-        return new PolygonMask(
-        [
-            Vector2.Transform(new Vector2(Bounds.Left, Bounds.Top), m),
-            Vector2.Transform(new Vector2(Bounds.Right, Bounds.Top), m),
-            Vector2.Transform(new Vector2(Bounds.Right, Bounds.Bottom), m),
-            Vector2.Transform(new Vector2(Bounds.Left, Bounds.Bottom), m),
-        ]);
-    }
+    private PolygonMask Outline() => new(RotatedCorners());
 
     /// <summary>
     /// How far the image is shrunk before its pipeline runs: to the size the pipeline's result is drawn at, when that is

@@ -235,28 +235,10 @@ public sealed record BrushMask : Mask
         if (painted.Length == 0) return RectangleF.Empty;
         // The smoothing curves bulge past the points at sharp turns, but a cubic never leaves the hull of its control
         // points, so those are included too.
-        var bounds = MaskRasterizer.BoundsOf(painted.SelectMany(s => SmoothingHull(s.Points)));
+        var bounds = MaskRasterizer.BoundsOf(painted.SelectMany(s => FreehandAnnotation.SmoothingHull(s.Points)));
         var reach = painted.Max(s => s.Width) / 2 + 2;
         bounds.Inflate(reach, reach);
         return MaskRasterizer.Transform(bounds, MaskRasterizer.ToPixels(Units, size));
-    }
-
-    /// <summary>
-    /// The points and the control points <see cref="FreehandAnnotation.AppendSmoothed"/> draws its curves through.
-    /// </summary>
-    private static IEnumerable<Vector2> SmoothingHull(IReadOnlyList<Vector2> points)
-    {
-        foreach (var p in points) yield return p;
-        if (points.Count < 3) yield break;
-        for (var i = 0; i < points.Count - 1; i++)
-        {
-            var p0 = points[Math.Max(i - 1, 0)];
-            var p1 = points[i];
-            var p2 = points[i + 1];
-            var p3 = points[Math.Min(i + 2, points.Count - 1)];
-            yield return p1 + (p2 - p0) / 6f;
-            yield return p2 - (p3 - p1) / 6f;
-        }
     }
 
     protected override Mask ScaleGeometry(double scale) => this with { Strokes = [.. _strokes.Select(s => s.Scale(scale))] };
@@ -600,12 +582,7 @@ internal static class MaskRasterizer
     public static Matrix3x2 ToPixels(MaskUnits units, Size size)
         => units == MaskUnits.Relative ? Matrix3x2.CreateScale(size.Width, size.Height) : Matrix3x2.Identity;
 
-    public static RectangleF Transform(RectangleF rect, Matrix3x2 m)
-    {
-        var a = Vector2.Transform(new Vector2(rect.Left, rect.Top), m);
-        var b = Vector2.Transform(new Vector2(rect.Right, rect.Bottom), m);
-        return RectangleF.FromLTRB(MathF.Min(a.X, b.X), MathF.Min(a.Y, b.Y), MathF.Max(a.X, b.X), MathF.Max(a.Y, b.Y));
-    }
+    public static RectangleF Transform(RectangleF rect, Matrix3x2 m) => AffineParts.MapRectangle(rect, m);
 
     public static RectangleF BoundsOf(IEnumerable<Vector2> points)
     {

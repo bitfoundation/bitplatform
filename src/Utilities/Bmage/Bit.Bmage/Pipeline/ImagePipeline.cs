@@ -502,22 +502,9 @@ public sealed class ImagePipeline : IReadOnlyList<IImageOperation>
     internal static ImageBuffer Run(ImagePipeline steps, ImageBuffer source, OperationContext context)
     {
         var current = source;
-        var count = steps.Count;
         try
         {
-            for (var i = 0; i < count; i++)
-            {
-                var op = steps[i];
-                context.ThrowIfCancellationRequested();
-                if (!IsUprightAlready(op, current))
-                {
-                    var next = ApplyStep(op, current, i, count, ReferenceEquals(current, source) ? context.CanMutateSource : true, context);
-                    // The caller releases the source; the buffers in between are the run's own.
-                    if (!ReferenceEquals(next, current) && !ReferenceEquals(current, source)) current.Dispose();
-                    current = next;
-                }
-                context.ReportProgress((i + 1) / (double)count);
-            }
+            for (var i = 0; i < steps.Count; i++) current = RunStep(steps, i, current, source, context);
             return current;
         }
         catch
@@ -525,6 +512,25 @@ public sealed class ImagePipeline : IReadOnlyList<IImageOperation>
             if (!ReferenceEquals(current, source)) current.Dispose();
             throw;
         }
+    }
+
+    /// <summary>
+    /// Runs step <paramref name="i"/> of <paramref name="steps"/> on <paramref name="current"/> and returns what the
+    /// pipeline holds after it: the step's result, or <paramref name="current"/> itself when the step changed nothing or
+    /// was skipped. A buffer between steps is released as soon as the next one replaces it; the source is the caller's.
+    /// </summary>
+    private static ImageBuffer RunStep(ImagePipeline steps, int i, ImageBuffer current, ImageBuffer source, OperationContext context)
+    {
+        var op = steps[i];
+        context.ThrowIfCancellationRequested();
+        if (!IsUprightAlready(op, current))
+        {
+            var next = ApplyStep(op, current, i, steps.Count, ReferenceEquals(current, source) ? context.CanMutateSource : true, context);
+            if (!ReferenceEquals(next, current) && !ReferenceEquals(current, source)) current.Dispose();
+            current = next;
+        }
+        context.ReportProgress((i + 1) / (double)steps.Count);
+        return current;
     }
 
     /// <summary>
@@ -552,37 +558,22 @@ public sealed class ImagePipeline : IReadOnlyList<IImageOperation>
         var pipeline = options.Optimize ? Optimize(source.Size) : this;
         if (pipeline.IsEmpty) return source.Clone(options.Allocator);
 
+        // The loop of Run, with a yield between the steps.
         var current = source;
-        var owned = false;
         var count = pipeline.Count;
         var run = new OperationContext(options.Allocator, options.Limits, options.CancellationToken, options.Progress, canMutateSource: false, options.MaxDegreeOfParallelism);
         try
         {
             for (var i = 0; i < count; i++)
             {
-                var op = pipeline[i];
-                options.CancellationToken.ThrowIfCancellationRequested();
-                if (IsUprightAlready(op, current))
-                {
-                    options.Progress?.Report((i + 1) / (double)count);
-                    continue;
-                }
-                var next = ApplyStep(op, current, i, count, canMutate: owned, run);
-                if (!ReferenceEquals(next, current))
-                {
-                    if (owned) current.Dispose();
-                    current = next;
-                    owned = true;
-                }
-                options.Progress?.Report((i + 1) / (double)count);
+                current = RunStep(pipeline, i, current, source, run);
                 if (options.YieldBetweenOperations && i + 1 < count) await options.Yield().ConfigureAwait(false);
             }
-            if (!owned) current = source.Clone(options.Allocator);
-            return current;
+            return ReferenceEquals(current, source) ? source.Clone(options.Allocator) : current;
         }
         catch
         {
-            if (owned) current.Dispose();
+            if (!ReferenceEquals(current, source)) current.Dispose();
             throw;
         }
     }

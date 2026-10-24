@@ -438,6 +438,9 @@ public sealed class ImageCanvas : IDisposable
         if (area.IsEmptyArea()) return this;
 
         var opacity = _state.Opacity;
+        // A copy at partial opacity is drawn over what is there, as a canvas always did: it never punches the image's
+        // transparent pixels into the target. A layer that must is composited through Compositor.BlendRow.
+        var over = blend == BlendMode.SourceOver || (blend == BlendMode.Copy && opacity < 1f);
         var sw = source.Width;
         var sh = source.Height;
         // Every pixel is sampled from the image alone, so the rows split into bands; the work per pixel is a few samples.
@@ -452,8 +455,8 @@ public sealed class ImageCanvas : IDisposable
                     var sp = Vector2.Transform(new Vector2(x + 0.5f, y + 0.5f), inverse);
                     if (sp.X < -0.5f || sp.Y < -0.5f || sp.X > sw + 0.5f || sp.Y > sh + 0.5f) continue;
                     var color = SampleBilinear(image, source, sp.X - 0.5f, sp.Y - 0.5f, filter);
-                    if (color.A == 0 && blend == BlendMode.SourceOver) continue;
-                    dst[x] = Compositor.Blend(dst[x], color, blend, opacity);
+                    if (color.A == 0 && over) continue;
+                    dst[x] = over ? Compositor.SourceOver(dst[x], color, opacity) : Compositor.Blend(dst[x], color, blend, opacity);
                 }
             }
         });
@@ -504,6 +507,9 @@ public sealed class ImageCanvas : IDisposable
                 for (var i = 0; i < src.Length; i++) dst[i] = Compositor.Erase(dst[i], src[i].A / 255f * opacity);
                 break;
             case BlendMode.SourceOver:
+            // A copy at partial opacity is drawn over what is there, as a canvas always did: it never punches the
+            // image's transparent pixels into the target. A layer that must is composited through Compositor.BlendRow.
+            case BlendMode.Copy:
                 for (var i = 0; i < src.Length; i++)
                 {
                     var s = src[i];
