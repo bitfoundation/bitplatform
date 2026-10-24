@@ -33,6 +33,25 @@
 
     <section class="section-card">
         <div class="section-card-txt">
+            <BitText Typography="BitTypography.H5" Gutter>Async database calls</BitText>
+            <code>NonAsyncEFCoreMethodsUsageAnalyzer</code>, warning.
+            <br />
+            <br />
+            Scalability matters: the same server should serve ten users today and ten thousand tomorrow.
+            A synchronous Entity Framework Core call, like <code>ToList</code>, <code>First</code>, <code>Count</code> or <code>SaveChanges</code>,
+            holds a thread for as long as the database takes to answer, doing nothing. Under load those waiting threads pile up until the server
+            has none left for new requests, and it stops scaling however strong the machine is.
+            The async twin of each call gives the thread back while the database works, so the same server handles far more requests at once:
+            <CodeBox HideCopyButton>var products = await dbContext.Products
+    .Where(p => p.Price > 50)
+    .ToListAsync(cancellationToken);</CodeBox>
+            It looks at queries, <code>DbContext</code>, its <code>Database</code>, change tracking entries and context factories.
+            A call inside an expression that EF Core turns into SQL, such as a <code>Count()</code> in a <code>Select</code>, isn't reported.
+        </div>
+    </section>
+
+    <section class="section-card">
+        <div class="section-card-txt">
             <BitText Typography="BitTypography.H5" Gutter>No async void</BitText>
             <code>AsyncVoidMethodAnalyzer1</code> and <code>AsyncVoidMethodAnalyzer2</code>, errors.
             <br />
@@ -56,23 +75,6 @@
         exceptionHandler.Handle(exp);
     }
 }</CodeBox>
-        </div>
-    </section>
-
-    <section class="section-card">
-        <div class="section-card-txt">
-            <BitText Typography="BitTypography.H5" Gutter>Async database calls</BitText>
-            <code>NonAsyncEFCoreMethodsUsageAnalyzer</code>, warning.
-            <br />
-            <br />
-            A synchronous Entity Framework Core call, like <code>ToList</code>, <code>First</code>, <code>Count</code> or <code>SaveChanges</code>,
-            holds a thread while the database answers. Under load a server runs out of threads that way and stops scaling.
-            The rule asks for the async twin of each one:
-            <CodeBox HideCopyButton>var products = await dbContext.Products
-    .Where(p => p.Price > 50)
-    .ToListAsync(cancellationToken);</CodeBox>
-            It looks at queries, <code>DbContext</code>, its <code>Database</code>, change tracking entries and context factories.
-            A call inside an expression that EF Core turns into SQL, such as a <code>Count()</code> in a <code>Select</code>, isn't reported.
         </div>
     </section>
 
