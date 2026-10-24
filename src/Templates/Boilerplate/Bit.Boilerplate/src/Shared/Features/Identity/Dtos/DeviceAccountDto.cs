@@ -1,5 +1,8 @@
 namespace Boilerplate.Shared.Features.Identity.Dtos;
 
+/// <summary>
+/// An account signed in on this device besides the active one (See AuthManager.MultiAccount.cs).
+/// </summary>
 public partial class DeviceAccountDto
 {
     public const string QueryParameter = "account";
