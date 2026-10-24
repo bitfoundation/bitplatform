@@ -1,4 +1,5 @@
 @*+:cnd:noEmit*@
+@* Kept out of Routes.razor's LayoutView, so this component has no parameters and a re-render of MainLayout or AppShell doesn't re-render the router and all of its routes. *@
 <AppRouter AppAssembly="@GetType().Assembly"
            AdditionalAssemblies="@(AssemblyLoadContext.Default.Assemblies.Where(asm => asm.GetName().Name?.Contains("Boilerplate.Client") is true))">
     @*#if (brouter == true)*@
