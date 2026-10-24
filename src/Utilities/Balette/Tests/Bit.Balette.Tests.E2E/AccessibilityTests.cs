@@ -1,6 +1,4 @@
 ﻿using Bit.Balette.Tests.E2E.Infrastructure;
-using Deque.AxeCore.Commons;
-using Deque.AxeCore.Playwright;
 using Microsoft.Playwright;
 
 namespace Bit.Balette.Tests.E2E;
@@ -15,15 +13,9 @@ namespace Bit.Balette.Tests.E2E;
 [TestClass]
 public sealed class AccessibilityTests : BaletteTest
 {
-    private static readonly List<string> WcagTags = ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa"];
-
     private static async Task ExpectNoViolationsAsync(IPage page, string state)
     {
-        var result = await Dialog(page).RunAxe(new AxeRunOptions { RunOnly = new RunOnlyOptions { Type = "tag", Values = WcagTags } });
-        var violations = result.Violations
-            .Select(v => $"{v.Id} ({v.Impact}): {v.Help}{Environment.NewLine}    " +
-                         string.Join(Environment.NewLine + "    ", v.Nodes.Take(3).Select(n => n.Html)))
-            .ToList();
+        var violations = await Axe.ViolationsAsync(Dialog(page));
         Assert.IsEmpty(violations, $"axe-core found violations in {state}:{Environment.NewLine}{string.Join(Environment.NewLine, violations)}");
     }
 
@@ -99,9 +91,20 @@ public sealed class AccessibilityTests : BaletteTest
         await OpenPaletteAsync(page);
 
         var outline = await ActiveItem(page).EvaluateAsync<string[]>(
-            "e => { const s = getComputedStyle(e); return [s.outlineStyle, s.outlineWidth]; }");
+            """
+            e => {
+              const s = getComputedStyle(e);
+              const probe = document.body.appendChild(document.createElement('span'));
+              probe.style.color = 'Highlight';
+              const highlight = getComputedStyle(probe).color;
+              probe.remove();
+              return [s.outlineStyle, s.outlineColor === highlight ? 'Highlight' : s.outlineColor, s.outlineWidth];
+            }
+            """);
 
-        AssertSequence(["solid", "2px"], outline);
+        AssertSequence(["solid", "Highlight"], outline[..2]);
+        // 2px as authored; Firefox snaps a width to whole device pixels and can report a fraction under it (1.83333px).
+        AssertInRange(double.Parse(outline[2].TrimEnd('p', 'x'), System.Globalization.CultureInfo.InvariantCulture), 1.5, 2, "the outline's width");
         var border = await Dialog(page).EvaluateAsync<string>("e => getComputedStyle(e).borderTopStyle");
         Assert.AreEqual("solid", border);
     }

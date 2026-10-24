@@ -117,6 +117,24 @@ public sealed class DemoState
         Record($"Theme set to {theme}");
     }
 
+    // ---- Clipboard -----------------------------------------------------------------------------------------------
+
+    /// <summary>
+    /// Writes <paramref name="text"/> to the clipboard, and answers whether the browser let it: a write is allowed only
+    /// shortly after a key press or a click, and a browser may refuse it even then.
+    /// </summary>
+    public async Task<bool> CopyToClipboardAsync(string text)
+    {
+        try
+        {
+            return await _js.InvokeAsync<bool>("baletteDemo.copyText", text);
+        }
+        catch (Exception ex) when (ex is JSException or InvalidOperationException or JSDisconnectedException)
+        {
+            return false;
+        }
+    }
+
     /// <summary>
     /// The site theme changed without this state being asked - the header's toggle, the OS, or the theme theme.js
     /// applied from storage before the first paint, reported once the palette is interactive - so a reload does not

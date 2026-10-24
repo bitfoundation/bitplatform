@@ -26,7 +26,8 @@
     <div class="bb-fields" role="toolbar" aria-label="Search lab">
         <label class="bb-field demo-grow">
             Query
-            <input type="text" value="@_query" @oninput="OnQueryInput" placeholder="Type to search the registry…"
+            @* Bound, not value + @oninput, so on Blazor Server a render answering an earlier key never overwrites the keys since. *@
+            <input type="text" @bind="_query" @bind:event="oninput" @bind:after="Run" placeholder="Type to search the registry…"
                    aria-label="Query" autocomplete="off" spellcheck="false" />
         </label>
         <label class="bb-field">
@@ -243,12 +244,6 @@
         _results = Ranker.Rank(matches, _query.Trim().Length > 0, id => History.IsLoaded ? History.Frecency(id) : 0);
         _elapsed = Stopwatch.GetElapsedTime(started);
         _candidates = candidates.Count;
-    }
-
-    private void OnQueryInput(ChangeEventArgs e)
-    {
-        _query = e.Value?.ToString() ?? string.Empty;
-        Run();
     }
 
     private void OnMatcherChanged(ChangeEventArgs e)

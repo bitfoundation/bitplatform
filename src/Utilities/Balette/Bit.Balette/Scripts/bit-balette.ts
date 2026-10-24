@@ -215,6 +215,8 @@ export function init(dialog: HTMLElement, dotnet: DotNetObjectReference, toggles
     let buffer: string[][] = [];
     let bufferTimer: ReturnType<typeof setTimeout> | null = null;
     let previouslyFocused: Element | null = null;
+    // The focusable element the last pointer press landed on (see onPointerDown).
+    let lastPressed: Element | null = null;
     let inputEl: HTMLInputElement | null = null;
     let disposed = false;
     let reportedSuspension: string | null = null;
@@ -418,6 +420,22 @@ export function init(dialog: HTMLElement, dotnet: DotNetObjectReference, toggles
         }
     }
 
+    // Safari, and Firefox on macOS, do not focus a button that is clicked: the focus goes to its nearest focusable ancestor
+    // (a <main tabindex="-1">) or to nothing, so a trigger or an app's own "Search" button that opened the palette would
+    // not get it back on close. The control the pointer pressed last stands in for it.
+    function onPointerDown(e: PointerEvent): void {
+        const target = e.target instanceof Element ? e.target : null;
+        lastPressed = target ? target.closest('button, a[href], input, select, textarea, summary, [tabindex]') : null;
+    }
+
+    /** What had the focus before the palette opened - or the control just pressed, when the press did not focus it. */
+    function invoker(): Element | null {
+        const active = document.activeElement;
+        const pressed = lastPressed && lastPressed.isConnected && !dialog.contains(lastPressed) ? lastPressed : null;
+        if (pressed && (!active || active === document.body || active === document.documentElement || active.contains(pressed))) return pressed;
+        return active;
+    }
+
     // Hover selection is suspended while a new query moves rows under a resting pointer, and each suspension renders
     // a fresh value on the dialog. Only the first move of each crosses to .NET: every other one would be a round
     // trip under Blazor Server for nothing.
@@ -444,6 +462,7 @@ export function init(dialog: HTMLElement, dotnet: DotNetObjectReference, toggles
 
     if (!isInline) {
         document.addEventListener('keydown', onDocumentKeyDown, true);
+        document.addEventListener('pointerdown', onPointerDown, true);
         dialog.addEventListener('cancel', onCancel);
         dialog.addEventListener('click', onDialogClick);
     } else {
@@ -464,7 +483,7 @@ export function init(dialog: HTMLElement, dotnet: DotNetObjectReference, toggles
                 if (inputEl) inputEl.focus({ preventScroll: true });
                 return;
             }
-            previouslyFocused = document.activeElement;
+            previouslyFocused = invoker();
             if (!modal.open) {
                 try {
                     modal.showModal();
@@ -566,6 +585,7 @@ export function init(dialog: HTMLElement, dotnet: DotNetObjectReference, toggles
         dispose() {
             disposed = true;
             document.removeEventListener('keydown', onDocumentKeyDown, true);
+            document.removeEventListener('pointerdown', onPointerDown, true);
             dialog.removeEventListener('keydown', onDialogKeyDown);
             dialog.removeEventListener('cancel', onCancel);
             dialog.removeEventListener('click', onDialogClick);

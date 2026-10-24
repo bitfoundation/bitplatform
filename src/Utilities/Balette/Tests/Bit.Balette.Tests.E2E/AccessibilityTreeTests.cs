@@ -78,6 +78,15 @@ public sealed class AccessibilityTreeTests : BaletteTest
 
     private static string Describe(IEnumerable<AxNode> nodes) => string.Join(" | ", nodes.Select(n => $"{n.Role} '{n.Name}'"));
 
+    /// <summary>Runs after the base class has opened the session.</summary>
+    [TestInitialize]
+    public void RequireChromium()
+    {
+        // Firefox and WebKit hand their accessibility trees to no protocol Playwright exposes.
+        if (E2EEnvironment.IsChromium is false)
+            Assert.Inconclusive($"The accessibility tree is read through the DevTools protocol, which {E2EEnvironment.Browser} does not have.");
+    }
+
     [TestMethod]
     public async Task The_search_box_is_a_named_expanded_combobox_whose_active_option_is_named_by_its_row()
     {

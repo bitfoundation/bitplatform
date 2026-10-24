@@ -312,7 +312,7 @@ public partial class Balette : ComponentBase, IAsyncDisposable
         }
     }
 
-    // A keystroke whose search is still deferred (see OnInput) renders together with its results.
+    // A keystroke whose search is still deferred (see OnInputAsync) renders together with its results.
     protected override bool ShouldRender() => !_inputPending;
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -726,9 +726,9 @@ public partial class Balette : ComponentBase, IAsyncDisposable
 
     // ---- Input ------------------------------------------------------------------------------------
 
-    private async Task OnInput(ChangeEventArgs e)
+    /// <summary>After a key typed into the input: the binding has already put its text in <see cref="_query"/>.</summary>
+    private async Task OnInputAsync()
     {
-        _query = e.Value?.ToString() ?? string.Empty;
         if (_handle is null || _lastSearchCost < SlowSearchThreshold)
         {
             await OnQueryUpdatedAsync();

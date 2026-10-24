@@ -544,7 +544,7 @@ BaletteCmd.New("Set labels…")
     .Handler(ctx =>
     {
         state.SetLabels(ctx.SelectedCommands.Select(c => c.Title));
-        return Task.FromResult(BaletteCommandResult.Toast($"{ctx.SelectedCommands.Count} labels applied"));
+        return Task.FromResult(BaletteCommandResult.Toast(ctx.SelectedCommands.Count == 1 ? "1 label applied" : $"{ctx.SelectedCommands.Count} labels applied"));
     });
 ```
 
@@ -1006,11 +1006,11 @@ it:
 | `--bit-balette-font`, `--bit-balette-font-size`, `--bit-balette-mono` | system stacks, `14px` | Typography. |
 | `--bit-balette-z` | `1000` | Stacking order. |
 | `--bit-balette-bg`, `--bit-balette-bg-elevated` | `#ffffff`, `#f6f7f9` | Surfaces. |
-| `--bit-balette-fg`, `--bit-balette-fg-muted`, `--bit-balette-fg-subtle` | `#111318`, `#6b7280`, `#9ca3af` | Text. |
+| `--bit-balette-fg`, `--bit-balette-fg-muted`, `--bit-balette-fg-subtle` | `#111318`, `#5f6673`, `#6b7280` | Text. |
 | `--bit-balette-border` | `rgba(17, 19, 24, 0.08)` | Dividers. |
 | `--bit-balette-accent`, `--bit-balette-accent-fg`, `--bit-balette-accent-soft` | `#4f46e5`, ... | Highlights, badges, the mode chip. |
 | `--bit-balette-active-bg` | `rgba(17, 19, 24, 0.06)` | The active row. |
-| `--bit-balette-danger`, `--bit-balette-danger-soft` | `#dc2626`, ... | Destructive commands. |
+| `--bit-balette-danger`, `--bit-balette-danger-soft` | `#c81e1e`, ... | Destructive commands. |
 | `--bit-balette-mark-bg` | `rgba(79, 70, 229, 0.18)` | Highlighted characters. |
 | `--bit-balette-kbd-bg`, `--bit-balette-kbd-fg`, `--bit-balette-kbd-border` | `#f3f4f6`, ... | Key caps. |
 | `--bit-balette-backdrop`, `--bit-balette-shadow`, `--bit-balette-scrollbar` | ... | The overlay, the dialog's shadow, the list's scrollbar. |
@@ -1063,8 +1063,9 @@ inline palette; `comfortable` is the default. The value is exposed as `data-dens
 `mark`, `badge`, `shortcut`, `empty`, `loading`, `error`, `retry`, `prompt`, `prompt-error`, `footer`, `toast`,
 `status`, `alert`, `detail`, and `trigger` on the trigger button - and state attributes on the rows: `data-active`,
 `data-checked`, `data-disabled`, `data-destructive`, `data-confirming`, `data-running`, `data-error`, `data-kind` and
-`data-value` (the command's id). The dialog carries `data-open`, `data-busy`, `data-density`, `data-theme` and
-`data-multiselect`. Those attributes are also the stable hooks for tests.
+`data-value` (the command's id). The dialog carries `data-open`, `data-busy`, `data-density`, `data-theme`,
+`data-multiselect` and `data-ready` - set once its browser layer listens for keys, which is what a test waits for
+before pressing `Ctrl+K` on a page that was prerendered. Those attributes are also the stable hooks for tests.
 
 ## Templates
 
@@ -1158,7 +1159,9 @@ responsive with thousands of commands.
 ### Blazor Server
 
 The same setup. Shortcuts and navigation keys are handled in the browser, so only the query itself and the
-selected command cross the connection. Handlers run on the server, in the circuit's scope.
+selected command cross the connection. Handlers run on the server, in the circuit's scope. Keys typed faster than
+the round trip are all kept: the input is bound, so a render answering an earlier key never writes its value over the
+keys typed since.
 
 ### Blazor Web App
 
@@ -1172,7 +1175,8 @@ palette needs an interactive render mode:
   interactive mode, and register commands from components that run in the same mode, because the registry is
   scoped to one circuit or one WebAssembly runtime.
 
-While prerendering, the palette renders a closed dialog; it attaches its keyboard handling once it is interactive.
+While prerendering, the palette renders a closed dialog; it attaches its keyboard handling once it is interactive, and
+marks the dialog `data-ready="true"` when it has - what an end-to-end test waits for before pressing `Ctrl+K`.
 
 The browser suite runs against Blazor Server as well as WebAssembly (`BALETTE_E2E_RENDER_MODE=Server`, see the E2E
 README): every key the palette handles then crosses the circuit.

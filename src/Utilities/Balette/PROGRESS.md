@@ -308,10 +308,62 @@ page's root also reports the focus). MCP 92 passed (its API-index test now expec
 checks that the internals - `BaletteTextFold`, `BaletteUrl`, `BaletteTypoTolerantMatcher`, `BaletteLog` - stay out).
 `dotnet build -c Release`: 0 warnings with the trim and AOT analyzers; `dotnet pack` succeeds.
 
+## Iteration 11 (2026-10-23) - every demo page in Chromium, Firefox and WebKit
+
+The browser suite had only ever run in Chromium. It now runs in any of Playwright's three engines
+(`BALETTE_E2E_BROWSER`), and `bit.ci.Balette.e2e.yml` runs all three in both render modes. Past the suite, every demo
+page was driven by Playwright scripts in each engine: screenshots at 1280, 820 and 390 px in light and dark; console
+errors, failed requests and horizontal overflow on every page; what each page's controls do (the Try chips, the
+counter and the inline palette, the search lab, the theming controls, registering 2,000 commands then measuring and
+virtualizing them, the source call log, the docs search, drawer, rail, pager and copy buttons, every flow on /pages);
+the macOS key path with the platform faked; and the clipboard.
+
+**Found and fixed**
+
+| # | Where | Defect | Fix |
+|---|---|---|---|
+| 1 | WebKit (Safari), Firefox on macOS | A click does not focus the button it lands on - the focus goes to its nearest focusable ancestor, here `<main tabindex="-1">` - so closing the palette opened from the trigger, a mode button or any page button gave the focus to that ancestor, and the next `Tab` started from the top of the page. | The browser layer remembers the control the last pointer press landed on, and gives the focus back to it when the focus sits on its ancestor or nowhere. |
+| 2 | Every engine | The demo's `data-palette-ready`, which the suite waits for before pressing `Ctrl+K`, followed `IBaletteService.PlatformDetected` - which every palette raises. On /commands the inline palette often started first while the modal palette's key listener was 3-50 ms away: a `Ctrl+K` pressed then was lost (4 of 6 WebKit loads, 2 of 6 Chromium ones). | The dialog and the inline section carry `data-ready` once their own browser layer listens for keys; the suite waits for it on every palette of the page (0 of 20 loads early since), and the demo's flag is gone. |
+| 3 | Demo | "Copy share link" (`Mod+Shift+C`) said "Link copied to clipboard" and copied nothing. | It writes the page's address to the clipboard, and answers with `Error` when the browser refuses; it writes in all three engines, from the palette and from the chord. |
+| 4 | Demo | Applying one label said "1 labels applied". | Singular for one, in the demo, its sample on /pages and the README. |
+| 5 | Docs | The Theming page and the README gave `--bit-balette-fg-muted` as `#6b7280` (it is `#5f6673`), the README `-fg-subtle` as `#9ca3af` (`#6b7280`) and `-danger` as `#dc2626` (`#c81e1e`); the trigger's fallback colour was the old one. | Corrected. |
+| 6 | Blazor Server, every engine | Keys typed faster than the circuit's round trip were lost: the render answering one key wrote its older value into the input over the keys typed since ("theme" became "teme", "nuget" "nuet"). Firefox and WebKit, which dispatch keys closer together, showed it on localhost (2 of 5 Firefox runs); over a real network's latency any browser would. The input was `value` + `@oninput`, and only a binding tells the renderer what the field holds when each key's event arrives. | `@bind` with `@bind:event="oninput"` and `@bind:after`; 0 of 20 runs lose a key since, and a new test types a long query. The demo's two other text fields - the site's docs search and the search lab - had the same pattern and are bound too. |
+
+**The suite in other engines** (its own assumptions, not palette defects)
+
+- axe-core through `Deque.AxeCore.Playwright` ran the test process out of memory under WebKit and closed the browser -
+  its partial run hands each frame's results to a page of its own. axe now runs inside the page under test
+  (`Infrastructure/Axe.cs`, with the script `Deque.AxeCore.Commons` bundles): the same rules and results.
+- A browser that a test crashed is launched again for the next test, so one crash fails one test.
+- `AccessibilityTreeTests` reads Chromium's accessibility tree through the DevTools protocol: Inconclusive elsewhere.
+- Firefox computes a 2px outline as 1.83333px (it snaps to device pixels), so the forced-colours test takes 1.5-2px -
+  and now also checks the outline is the system `Highlight`.
+- Headless Chromium refuses a clipboard write without the permission; the test that copies grants it.
+- Playwright's Firefox driver can miss the end of a client-side navigation on Blazor Server: `WaitForURLAsync` timed out
+  with the page already on the new address and rendered. The tests poll the URL instead (`ExpectUrlAsync`).
+- On Blazor Server a click's effect renders a round trip later. The page walk looked for an open palette right after
+  each click, found none, and clicked the docs search's own Close button next; it now waits until the page has been
+  still for 150 ms after a click, and for the search's input to have the focus before its `Esc`.
+- New: a page button that opened the palette gets the focus back (fix 1); keys typed faster than the palette renders
+  are all kept (fix 6); `data-ready` is rendered (bUnit).
+
+**Verified**: E2E, 89 tests in each of the six combinations - Chromium 89 passed, Firefox and WebKit 84 passed with
+the 5 DevTools tests inconclusive - on WebAssembly and on Blazor Server alike (before the fixes, Firefox on Server failed
+13 and WebKit on Server 8). The page walk, which had raced on Server, passed 33 of 33 since in WebKit. Every demo page
+in every engine at 1280, 820 and 390 px, light and dark: no console error, no failed request, no horizontal overflow
+(the only error is the 404 of the not-found page, on purpose). The page scripts: 12 of 12 in each engine.
+`Bit.Balette.Tests` 828 passed; MCP 92 passed; `dotnet build -c Release` of the library: 0 warnings.
+
+**Seen and left**: Firefox logs on every page that the WebAssembly runtime's legacy `try` instruction is deprecated -
+that is .NET's `dotnet.native.wasm`, not this code. A closing toast from a command run by its shortcut with the
+palette closed shows nothing, as documented ("a toast that stays open" opens it); the demo's activity log is the
+feedback there. The site kit's `Layout/CommandPalette.razor` is the same file in every Utilities demo; only this copy
+is bound (fix 6), as only this demo runs on Blazor Server - on WebAssembly a key's render lands before the next key.
+
 ## Where it stands
 
-Ten iterations, the mission's limit. Every P0 and P1 finding is fixed and verified, and so are the P2 and P3 ones except
-those below.
+Ten iterations, the mission's limit, and an eleventh across browser engines. Every P0 and P1 finding is fixed and
+verified, and so are the P2 and P3 ones except those below.
 
 **Definition of done**
 
@@ -323,10 +375,11 @@ those below.
 - Accessibility, keyboard, focus, localization, RTL: axe-core clean in every audited state, and the accessibility tree
   Chromium hands screen readers asserted directly; no manual screen reader pass (below).
 - Theming: tokens documented; forced colours, more contrast, density, inline.
-- Hosting: WebAssembly and Blazor Server both driven in a browser; Hybrid and .NET 8/9 by the unit suite.
+- Hosting: WebAssembly and Blazor Server both driven in Chromium, Firefox and WebKit; Hybrid and .NET 8/9 by the unit
+  suite.
 - Security, privacy, lifecycle, errors: URL schemes, generic error text, sanitized history, clearing recents from the
   palette, guarded interop.
-- Tests: 825 unit and component, 87 browser tests in each of two render modes, 92 MCP.
+- Tests: 828 unit and component, 89 browser tests in each of three engines and two render modes, 92 MCP.
 - Documentation and demo: README, package README, benchmark and E2E READMEs, demo pages, the E2E workflow.
 
 **Remaining gaps**

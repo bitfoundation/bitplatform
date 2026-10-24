@@ -1,4 +1,5 @@
-﻿using Microsoft.Playwright;
+﻿using System.Text.RegularExpressions;
+using Microsoft.Playwright;
 
 namespace Bit.Balette.Tests.E2E.Infrastructure;
 
@@ -43,7 +44,8 @@ public abstract class BaletteTest
     public async Task OpenSessionAsync()
     {
         _session = await PlaywrightSession.GetAsync();
-        if (_session.Unavailable is not { } reason) return;
+        var reason = _session.Unavailable ?? await PlaywrightSession.EnsureBrowserAsync(_session);
+        if (reason is null) return;
 
         // A build server must not report a suite that never ran as anything but a failure.
         if (E2EEnvironment.IsContinuousIntegration) Assert.Fail("The browser tests could not run: " + reason);
@@ -115,16 +117,27 @@ public abstract class BaletteTest
         page.GotoAsync(BaseUrl + path, new PageGotoOptions { WaitUntil = WaitUntilState.NetworkIdle, Timeout = 90_000 });
 
     /// <summary>
-    /// Waits until the page runs in the browser and the palette's browser layer listens for keys. Every page is
-    /// prerendered, so its markup - the trigger and the mode buttons included - is on screen long before anything
-    /// handles a click, and the layer that hears Ctrl+K starts a moment after the page turns interactive. The layout
-    /// says the first (data-interactive on the site shell's .page), the palette host the second (data-palette-ready).
+    /// Waits until the page runs in the browser and every palette on it - the layout's modal one, and an inline one where
+    /// a page has it - listens for keys. Every page is prerendered, so its markup - the trigger and the mode buttons
+    /// included - is on screen long before anything handles a click, and the layer that hears Ctrl+K starts a moment
+    /// after the page turns interactive. The layout says the first (data-interactive on the site shell's .page), each
+    /// palette the second (data-ready). Not the platform being detected: either palette reports that, the inline one on
+    /// /commands often first, and the modal one's listener was then still a few milliseconds away.
     /// </summary>
     protected static Task WaitForReadyAsync(IPage page) => page.WaitForFunctionAsync(
         """
         () => document.querySelector('.page')?.dataset.interactive === 'true'
-           && document.querySelector('[data-palette-ready]')?.dataset.paletteReady === 'true'
+           && document.querySelector('dialog[data-balette="dialog"]')?.dataset.ready === 'true'
+           && [...document.querySelectorAll('[data-balette="inline"]')].every(e => e.dataset.ready === 'true')
         """, null, new PageWaitForFunctionOptions { Timeout = 90_000 });
+
+    /// <summary>
+    /// Waits until the address ends with <paramref name="path"/>. Polls the page's URL rather than waiting for a navigation
+    /// event: Playwright's Firefox driver can miss the end of a client-side navigation on Blazor Server, and wait on long
+    /// after the page has moved and rendered.
+    /// </summary>
+    protected static Task ExpectUrlAsync(IPage page, string path) =>
+        Assertions.Expect(page).ToHaveURLAsync(new Regex(Regex.Escape(path) + "$"));
 
     protected static async Task ReloadAsync(IPage page)
     {

@@ -19,7 +19,7 @@ public sealed class GlobalShortcutTests : BaletteTest
         await page.Keyboard.PressAsync("g");
         await page.Keyboard.PressAsync("s");
 
-        await page.WaitForURLAsync("**/commands#settings");
+        await ExpectUrlAsync(page, "/commands#settings");
         await Assertions.Expect(page.Locator("h1")).ToHaveTextAsync("Registering commands");
         await ExpectClosedAsync(page);
     }
@@ -40,7 +40,7 @@ public sealed class GlobalShortcutTests : BaletteTest
 
         // Completed, the sequence runs and the hint goes; so it does when the sequence times out.
         await page.Keyboard.PressAsync("s");
-        await page.WaitForURLAsync("**/commands#settings");
+        await ExpectUrlAsync(page, "/commands#settings");
         await Assertions.Expect(hint).Not.ToHaveAttributeAsync("data-pending", "true");
 
         await page.Keyboard.PressAsync("g");
@@ -72,7 +72,7 @@ public sealed class GlobalShortcutTests : BaletteTest
         await field.BlurAsync();
         await page.Keyboard.PressAsync("g");
         await page.Keyboard.PressAsync("s");
-        await page.WaitForURLAsync("**/commands#settings");
+        await ExpectUrlAsync(page, "/commands#settings");
     }
 
     [TestMethod]
@@ -112,7 +112,7 @@ public sealed class GlobalShortcutTests : BaletteTest
 
         await page.Keyboard.PressAsync("Control+/");
 
-        await page.WaitForURLAsync("**/keyboard#shortcuts");
+        await ExpectUrlAsync(page, "/keyboard#shortcuts");
         await Assertions.Expect(page.Locator("h1")).ToHaveTextAsync("Keyboard & shortcuts");
         await ExpectClosedAsync(page);
     }

@@ -28,6 +28,7 @@
              data-theme="@EffectiveTheme"
              data-density="@EffectiveDensity"
              data-open="true"
+             data-ready="@(_handle is not null ? "true" : null)"
              data-multiselect="@(CurrentPage.MultiSelect ? "true" : "false")"
              data-has-detail="@(DetailTemplate is not null ? "true" : "false")"
              data-busy="@(_busy ? "true" : null)"
@@ -39,6 +40,8 @@
 }
 else
 {
+    @* data-ready: the browser layer listens for keys. Until then Ctrl+K and the global shortcuts reach nothing - the page
+       is prerendered and turns interactive first - and another palette on the page may have started already. *@
     <dialog @ref="_dialogEl"
             id="@_id"
             class="@RootClass"
@@ -47,6 +50,7 @@ else
             data-theme="@EffectiveTheme"
             data-density="@EffectiveDensity"
             data-open="@(_isOpen ? "true" : "false")"
+            data-ready="@(_handle is not null ? "true" : null)"
             data-multiselect="@(CurrentPage.MultiSelect ? "true" : "false")"
             data-has-detail="@(DetailTemplate is not null ? "true" : "false")"
             data-busy="@(_busy ? "true" : null)"
@@ -114,6 +118,9 @@ else
                                 @IconSvg("search")
                             }
                         </span>
+                        @* @bind rather than value + @oninput: only a binding tells the renderer what the field holds when each key's
+                           event arrives, so on Blazor Server a render answering an earlier key never writes its older value over
+                           the keys typed since ("th" turned back into "t", then "teme"). *@
                         <input @ref="_inputEl"
                                class="bit-balette-input"
                                data-balette="input"
@@ -133,8 +140,9 @@ else
                                aria-invalid="@(_promptError is not null ? "true" : null)"
                                aria-describedby="@(_promptError is not null ? $"{_id}-prompt-error" : null)"
                                placeholder="@EffectivePlaceholder"
-                               value="@_query"
-                               @oninput="OnInput" />
+                               @bind="_query"
+                               @bind:event="oninput"
+                               @bind:after="OnInputAsync" />
                         @if (frame.MultiSelect && frame.Selected.Count > 0)
                         {
                             <span class="bit-balette-selected-count" data-balette="selected-count">@S.Format(S.SelectedCount, frame.Selected.Count)</span>

@@ -45,7 +45,7 @@ public sealed class KeyboardLayoutTests : BaletteTest
         await KeyDownAsync(page, "ل", "KeyG", selector: "body");
         await KeyDownAsync(page, "س", "KeyS", selector: "body");
 
-        await page.WaitForURLAsync("**/commands#settings");
+        await ExpectUrlAsync(page, "/commands#settings");
     }
 
     [TestMethod]
@@ -95,7 +95,7 @@ public sealed class KeyboardLayoutTests : BaletteTest
         // Not vacuous: the same keys outside a composition are the settings sequence.
         await KeyDownAsync(page, "g", "KeyG", selector: "body");
         await KeyDownAsync(page, "s", "KeyS", selector: "body");
-        await page.WaitForURLAsync("**/commands#settings");
+        await ExpectUrlAsync(page, "/commands#settings");
     }
 
     [TestMethod]

@@ -1,6 +1,4 @@
 ﻿using Bit.Balette.Tests.E2E.Infrastructure;
-using Deque.AxeCore.Commons;
-using Deque.AxeCore.Playwright;
 using Microsoft.Playwright;
 
 namespace Bit.Balette.Tests.E2E;
@@ -121,12 +119,7 @@ public sealed class InlinePaletteTests : BaletteTest
         await InlineInput(page).PressSequentiallyAsync("theme");
         await Assertions.Expect(Inline(page).Locator("[data-balette='item']")).ToHaveCountAsync(3);
 
-        var result = await Inline(page).RunAxe(new AxeRunOptions
-        {
-            RunOnly = new RunOnlyOptions { Type = "tag", Values = ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa"] },
-        });
-
-        var violations = result.Violations.Select(v => $"{v.Id}: {v.Help} - {string.Join(" | ", v.Nodes.Take(3).Select(n => n.Html))}").ToList();
+        var violations = await Axe.ViolationsAsync(Inline(page));
         Assert.IsEmpty(violations, string.Join(Environment.NewLine, violations));
     }
 }

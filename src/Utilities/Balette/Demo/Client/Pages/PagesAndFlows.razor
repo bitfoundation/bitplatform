@@ -182,7 +182,7 @@
             .Handler(ctx =>
             {
                 state.SetLabels(ctx.SelectedCommands.Select(c => c.Title));
-                return Task.FromResult(BaletteCommandResult.Toast($"{ctx.SelectedCommands.Count} labels applied"));
+                return Task.FromResult(BaletteCommandResult.Toast(ctx.SelectedCommands.Count == 1 ? "1 label applied" : $"{ctx.SelectedCommands.Count} labels applied"));
             })
         """;
 

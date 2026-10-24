@@ -538,7 +538,7 @@ html.bit-balette-scroll-lock { overflow: hidden; }
     border-radius: 8px;
     border: 1px solid var(--bit-balette-kbd-border, rgba(0, 0, 0, 0.12));
     background: var(--bit-balette-kbd-bg, #f3f4f6);
-    color: var(--bit-balette-fg-muted, #6b7280);
+    color: var(--bit-balette-fg-muted, #5f6673);
     font: inherit;
     font-size: 13px;
     cursor: pointer;

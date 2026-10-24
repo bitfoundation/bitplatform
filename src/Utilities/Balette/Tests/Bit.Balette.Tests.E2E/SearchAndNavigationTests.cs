@@ -12,6 +12,22 @@ namespace Bit.Balette.Tests.E2E;
 public sealed class SearchAndNavigationTests : BaletteTest
 {
     [TestMethod]
+    public async Task Keys_typed_faster_than_the_palette_renders_are_all_kept()
+    {
+        // On Blazor Server each key's render arrives a round trip after the key. One answering an earlier key once wrote its
+        // older value over the keys typed since - "theme" came out as "teme" in Firefox and WebKit - because the input was
+        // not bound, so the renderer never learnt what the field held when each key's event arrived.
+        var page = await OpenAsync("/");
+        await OpenPaletteAsync(page);
+
+        const string Typed = "keyboard and shortcuts";
+        await TypeAsync(page, Typed);
+
+        await Assertions.Expect(Input(page)).ToHaveValueAsync(Typed);
+        await ExpectFirstItemAsync(page, "navigation.keyboard-and-shortcuts");
+    }
+
+    [TestMethod]
     public async Task Typing_filters_the_list_and_ranks_the_best_match_first()
     {
         var page = await OpenAsync("/");

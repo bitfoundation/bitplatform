@@ -1,4 +1,6 @@
-﻿namespace Bit.Balette.Demo.Client.Services;
+﻿using Microsoft.AspNetCore.Components;
+
+namespace Bit.Balette.Demo.Client.Services;
 
 /// <summary>
 /// The commands the layout registers for the whole app, written with the fluent builder end to end. They are
@@ -79,7 +81,7 @@ public static class DemoCommands
             .Handler(ctx =>
             {
                 state.SetLabels(ctx.SelectedCommands.Select(c => c.Title));
-                return Task.FromResult(BaletteCommandResult.Toast($"{ctx.SelectedCommands.Count} labels applied"));
+                return Task.FromResult(BaletteCommandResult.Toast(ctx.SelectedCommands.Count == 1 ? "1 label applied" : $"{ctx.SelectedCommands.Count} labels applied"));
             }),
 
         BaletteCmd.New("Assign to…")
@@ -137,10 +139,17 @@ public static class DemoCommands
             .Shortcut("Mod+Shift+C")
             .Keywords("url", "clipboard")
             .Tags(CommandTag)
-            .Handler(_ =>
+            .Handler(async ctx =>
             {
+                // The address of the page the palette is open on: what a share button copies.
+                if (await state.CopyToClipboardAsync(ctx.GetRequiredService<NavigationManager>().Uri) is false)
+                {
+                    // Expected - a browser may refuse the clipboard - so a message rather than an exception.
+                    return BaletteCommandResult.Error("The browser did not let the link be copied.");
+                }
+
                 state.Record("Share link copied");
-                return Task.FromResult(BaletteCommandResult.Toast("Link copied to clipboard"));
+                return BaletteCommandResult.Toast("Link copied to clipboard");
             }),
 
         BaletteCmd.New("Export…")
