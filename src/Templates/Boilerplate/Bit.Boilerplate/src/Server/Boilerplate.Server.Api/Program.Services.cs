@@ -1075,13 +1075,8 @@ public static partial class Program
         ResourceLimits.Area = 16384 * 16384;
     }
 
-    private static int imageMagickSecurityPolicyConfigured;
-
     private static void ConfigureImageMagickSecurityPolicy()
     {
-        if (Interlocked.Exchange(ref imageMagickSecurityPolicyConfigured, 1) is 1)
-            return;
-
         var allowedCoders = string.Join(',', AttachmentController.AllowedImageFormats.Select(format => format.ToString().ToUpperInvariant()));
 
         var configurationFiles = ConfigurationFiles.Default;

@@ -74,6 +74,7 @@ public partial class ImageEditorModal
                 await editor.ApplyCropAsync();
             }
 
+            // Nothing was edited, so the picked file goes up as it is instead of a re-encoded copy of it.
             if (editor.Session.History.CanUndo is false)
             {
                 KeepOriginal();

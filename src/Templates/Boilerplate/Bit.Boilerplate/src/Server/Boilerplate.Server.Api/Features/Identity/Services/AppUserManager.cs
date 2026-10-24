@@ -18,6 +18,7 @@ public partial class AppUserManager(IUserStore<User> store,
 {
     public override async Task<byte[]> CreateSecurityTokenAsync(User user)
     {
+        // Plain Identity keys the codes on the stamp alone, safe there since its tokens are encrypted; ours are readable JWTs that carry the stamp (See AppJwtSecureDataFormat).
         return HMACSHA256.HashData(AppCertificateService.GetSecurityTokenKey(configuration), await base.CreateSecurityTokenAsync(user));
     }
 
