@@ -1,5 +1,6 @@
 ﻿using System.Runtime.CompilerServices;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Channels;
 using Bit.Websites.Platform.Client.Services.Contracts;
 using Bit.Websites.Platform.Server.Services;
@@ -16,6 +17,8 @@ namespace Bit.Websites.Platform.Server.SignalR;
 [AllowAnonymous]
 public partial class AppHub : Hub
 {
+    private const int maxToolsCount = 128;
+
     [AutoInject] private IServiceProvider serviceProvider = default!;
     [AutoInject] private IConfiguration configuration = default!;
 
@@ -57,7 +60,9 @@ public partial class AppHub : Hub
             Endpoint = mcpEndpoint,
             TransportMode = HttpTransportMode.StreamableHttp
         }), new() { }, loggerFactory, cancellationToken); // provides the per product tools (bit BlazorUI, Bmotion, Bink, Balette, BbScanner, Bdnd, BlazeDb, Blow, Borm, Bcrdt, Bonboarding, Bortable, Blex, Bmage, Bsqlite, Brouter, Butil, Bswup, Belemetry, ...), the bitplatform source code tools and the general AskGitHubRepository tool
-        var bitplatformMcpTools = await bitplatformMcp.ListToolsAsync(cancellationToken: cancellationToken);
+        var bitplatformMcpTools = (await bitplatformMcp.ListToolsAsync(cancellationToken: cancellationToken))
+            .OrderBy(tool => GetChatbotPriority(tool.Name))
+            .ToArray();
 
 
         async Task ReadIncomingMessages()
@@ -91,32 +96,34 @@ public partial class AppHub : Hub
                 {
                     chatMessages.Add(new(ChatRole.User, incomingMessage));
 
+                    AITool[] chatbotTools = [
+                        AIFunctionFactory.Create(async (string emailAddress, string conversationHistory) =>
+                        {
+                            if (messageSpecificCancellationToken.IsCancellationRequested)
+                                return;
+
+                            await using var scope = serviceProvider.CreateAsyncScope();
+
+                            await scope.ServiceProvider.GetRequiredService<TelegramBotService>()
+                                .SendContactUsMessage(emailAddress, conversationHistory, messageSpecificCancellationToken);
+
+                        }, name: "AskForSupport", description: "Saves the user's email address and the conversation history for future support. Parameters: emailAddress (string), conversationHistory (string)"),
+                        AIFunctionFactory.Create(async (string emailAddress, string conversationHistory) =>
+                        {
+                            if (messageSpecificCancellationToken.IsCancellationRequested)
+                                return;
+
+                            await using var scope = serviceProvider.CreateAsyncScope();
+
+                            await scope.ServiceProvider.GetRequiredService<TelegramBotService>()
+                                .SendBuyPackageMessage("Default", emailAddress, conversationHistory, messageSpecificCancellationToken);
+
+                        }, name: "AskForSales", description: "Saves the user's email address and the conversation history for future susales. Parameters: emailAddress (string), conversationHistory (string)")
+                    ];
+
                     ChatOptions chatOptions = new()
                     {
-                        Tools = [..bitplatformMcpTools,
-                                AIFunctionFactory.Create(async (string emailAddress, string conversationHistory) =>
-                                {
-                                    if (messageSpecificCancellationToken.IsCancellationRequested)
-                                        return;
-
-                                    await using var scope = serviceProvider.CreateAsyncScope();
-
-                                    await scope.ServiceProvider.GetRequiredService<TelegramBotService>()
-                                        .SendContactUsMessage(emailAddress, conversationHistory, messageSpecificCancellationToken);
-
-                                }, name: "AskForSupport", description: "Saves the user's email address and the conversation history for future support. Parameters: emailAddress (string), conversationHistory (string)"),
-                                AIFunctionFactory.Create(async (string emailAddress, string conversationHistory) =>
-                                {
-                                    if (messageSpecificCancellationToken.IsCancellationRequested)
-                                        return;
-
-                                    await using var scope = serviceProvider.CreateAsyncScope();
-
-                                    await scope.ServiceProvider.GetRequiredService<TelegramBotService>()
-                                        .SendBuyPackageMessage("Default", emailAddress, conversationHistory, messageSpecificCancellationToken);
-
-                                }, name: "AskForSales", description: "Saves the user's email address and the conversation history for future susales. Parameters: emailAddress (string), conversationHistory (string)")
-                        ]
+                        Tools = [.. bitplatformMcpTools.Take(maxToolsCount - chatbotTools.Length), .. chatbotTools]
                     };
 
                     configuration.GetRequiredSection("AppSettings:ChatOptions").Bind(chatOptions);
@@ -209,6 +216,16 @@ public partial class AppHub : Hub
             yield return str;
         }
     }
+
+    private static int GetChatbotPriority(string toolName) => toolName switch
+    {
+        McpFeedbackTool.ToolName => 5,
+        _ when Regex.IsMatch(toolName, "^(Inspect|Simulate|Analyze|Run|Review|Check|Plan|Compare|Generate)") => 4,
+        _ when Regex.IsMatch(toolName, "^Search|Overview$|BitPlatform|BlazorUI") => 0,
+        _ when Regex.IsMatch(toolName, "Guide|Docs?Page$|Document$|Api") => 1,
+        _ when Regex.IsMatch(toolName, "SourceFile$|Recipes?$|^AskGitHubRepository$|^microsoft_docs_") => 2,
+        _ => 3
+    };
 
     private async Task HandleException(Exception exp)
     {
