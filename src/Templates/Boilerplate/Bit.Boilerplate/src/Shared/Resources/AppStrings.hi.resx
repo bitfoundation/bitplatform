@@ -2090,4 +2090,13 @@
     <data name="AccountAlreadyExistsShortText" xml:space="preserve">
     <value>इस फ़ोन नंबर से आपका पहले से एक Boilerplate खाता है। अगर आपने अभी साइन अप करने की कोशिश की थी, तो इसके बजाय साइन इन करें।</value>
   </data>
+    <data name="AddAnotherAccount" xml:space="preserve">
+    <value>दूसरा खाता जोड़ें</value>
+  </data>
+    <data name="MaxAccountsReached" xml:space="preserve">
+    <value>आप इस डिवाइस पर अधिकतम {0} खाते रख सकते हैं।</value>
+  </data>
+    <data name="SignOutOfAllAccounts" xml:space="preserve">
+    <value>इस डिवाइस के सभी खातों से साइन आउट करें</value>
+  </data>
 </root>

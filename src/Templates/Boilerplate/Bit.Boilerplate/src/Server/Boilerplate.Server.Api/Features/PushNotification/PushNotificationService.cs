@@ -38,16 +38,20 @@ public partial class PushNotificationService
         if (dto.Platform is "browser" && IsPushServiceEndpoint(dto.Endpoint) is false)
             throw new BadRequestException().WithData("Reason", "A browser push subscription's endpoint is not an https address of a known push service.");
 
-        // DeviceId and UserSessionId are both unique, so at most two rows can match: the device's own row, and the
-        // caller's session row from before its DeviceId changed (pushManager's subscription has been renewed).
+        // Each account signed in on the device has a row of its own, plus at most one row for nobody. The caller's
+        // session row may still carry the DeviceId the device had before pushManager's subscription was renewed.
+        var ownRow = userSessionId is null
+            ? null
+            : await dbContext.PushNotificationSubscriptions.FirstOrDefaultAsync(s => s.UserSessionId == userSessionId, cancellationToken);
+
+        var previousDeviceId = ownRow?.DeviceId ?? dto.DeviceId;
+
         var matches = await dbContext.PushNotificationSubscriptions
-            .WhereIf(userSessionId is null, s => s.DeviceId == dto.DeviceId)
-            .WhereIf(userSessionId is not null, s => s.UserSessionId == userSessionId || s.DeviceId == dto.DeviceId)
+            .Where(s => s.DeviceId == dto.DeviceId || s.DeviceId == previousDeviceId)
             .ToArrayAsync(cancellationToken);
 
-        // The device's own row wins; failing that, the row this session is still attached to gets renamed onto the new
-        // DeviceId rather than left behind as an orphan.
-        var subscription = matches.FirstOrDefault(s => s.DeviceId == dto.DeviceId) ?? matches.FirstOrDefault();
+        // The caller's own row wins; failing that, the device's row for nobody is taken over.
+        var subscription = ownRow ?? matches.FirstOrDefault(s => s.UserSessionId == null);
 
         // ─── READ THIS BEFORE ADDING AN OWNERSHIP CHECK HERE ────────────────────────────────────────────────────────
         // There is deliberately NO "does this row belong to the caller" check, even though the endpoint is anonymous
@@ -69,13 +73,6 @@ public partial class PushNotificationService
         //    the previous user's sign out is not guaranteed to have happened.
         //
         // ────────────────────────────────────────────────────────────────────────────────────────────────────────────
-
-        // UserSessionId is unique too, so the row this session held before its device reported a new DeviceId has to
-        // let go of it first.
-        foreach (var staleSubscription in matches.Where(s => ReferenceEquals(s, subscription) is false))
-        {
-            staleSubscription.UserSessionId = null;
-        }
 
         subscription ??= (await dbContext.PushNotificationSubscriptions.AddAsync(new()
         {
@@ -109,6 +106,29 @@ public partial class PushNotificationService
         subscription.RenewedOn = now.ToUnixTimeSeconds();
         subscription.ExpirationTime = now.AddMonths(1).ToUnixTimeSeconds();
 
+        // The device's other rows follow its new channel, except those of accounts the device says it no longer has.
+        foreach (var otherRow in matches.Where(s => ReferenceEquals(s, subscription) is false))
+        {
+            if (otherRow.UserSessionId is not Guid otherSessionId || dto.UserSessionIds.Contains(otherSessionId) is false)
+            {
+                dbContext.PushNotificationSubscriptions.Remove(otherRow);
+                continue;
+            }
+
+            otherRow.DeviceId = subscription.DeviceId;
+            otherRow.Platform = subscription.Platform;
+            otherRow.PushChannel = subscription.PushChannel;
+            otherRow.P256dh = subscription.P256dh;
+            otherRow.Auth = subscription.Auth;
+            otherRow.Endpoint = subscription.Endpoint;
+            otherRow.Tags = [.. subscription.Tags];
+            otherRow.IP = subscription.IP;
+            otherRow.Address = subscription.Address;
+            otherRow.AppVersionCode = subscription.AppVersionCode;
+            otherRow.RenewedOn = subscription.RenewedOn;
+            otherRow.ExpirationTime = subscription.ExpirationTime;
+        }
+
         await dbContext.SaveChangesAsync(cancellationToken);
     }
 
@@ -139,19 +159,24 @@ public partial class PushNotificationService
             .WhereIf(customSubscriptionFilter is not null, customSubscriptionFilter!)
             .WhereIf(request.UserRelatedPush is true, sub => (now - sub.RenewedOn) < serverApiSettings.Identity.RefreshTokenExpiration.TotalSeconds);
 
+        //#if (multitenant == true)
         if (customSubscriptionFilter is null)
         {
-            //#if (multitenant == true)
             var tenantId = tenantProvider.GetCurrentTenantId();
             query = query.Where(sub => sub.UserSessionId != null
                 ? sub.UserSession!.TenantId == tenantId
                 : sub.TenantId == tenantId);
-            //#endif
+        }
+        //#endif
 
-            query = query.OrderBy(_ => EF.Functions.Random()).Take(100);
+        var idsQuery = query.GroupBy(sub => sub.DeviceId).Select(device => device.Max(sub => sub.Id));
+
+        if (customSubscriptionFilter is null)
+        {
+            idsQuery = idsQuery.OrderBy(_ => EF.Functions.Random()).Take(100);
         }
 
-        var pushNotificationSubscriptionIds = await query.Select(pns => pns.Id).ToArrayAsync(cancellationToken);
+        var pushNotificationSubscriptionIds = await idsQuery.ToArrayAsync(cancellationToken);
 
         if (pushNotificationSubscriptionIds.Length is 0)
             return 0;

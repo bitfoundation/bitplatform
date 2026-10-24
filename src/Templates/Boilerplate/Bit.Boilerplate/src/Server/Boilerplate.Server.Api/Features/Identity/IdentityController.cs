@@ -448,6 +448,25 @@ public partial class IdentityController : AppControllerBase, IIdentityController
         }
     }
 
+    [HttpPost]
+    public async Task RevokeRefreshToken(RefreshTokenRequestDto request, CancellationToken cancellationToken)
+    {
+        var refreshTicket = bearerTokenOptions.Get(IdentityConstants.BearerScheme).RefreshTokenProtector.Unprotect(request.RefreshToken);
+
+        if (refreshTicket?.Principal?.IsAuthenticated() is not true)
+            return;
+
+        var sessionId = refreshTicket.Principal.GetSessionId();
+
+        var userSession = await DbContext.UserSessions.FirstOrDefaultAsync(us => us.Id == sessionId, cancellationToken);
+
+        if (userSession is null)
+            return;
+
+        DbContext.UserSessions.Remove(userSession);
+        await DbContext.SaveChangesAsync(cancellationToken);
+    }
+
     /// <summary>
     /// For either otp or magic link
     /// </summary>

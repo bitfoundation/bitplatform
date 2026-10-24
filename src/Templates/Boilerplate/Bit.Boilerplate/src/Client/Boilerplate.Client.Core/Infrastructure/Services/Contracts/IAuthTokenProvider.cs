@@ -9,7 +9,7 @@ public interface IAuthTokenProvider
 
     public static ClaimsPrincipal Anonymous() => new(new ClaimsIdentity());
 
-    public static bool IsTokenStorageKey(string key) => key is "access_token" or "refresh_token";
+    public static bool IsTokenStorageKey(string key) => key is "access_token" or "refresh_token" or "accounts" or "temp_accounts";
 
     private const string RoleType = "role";
     private const string NameType = "name";

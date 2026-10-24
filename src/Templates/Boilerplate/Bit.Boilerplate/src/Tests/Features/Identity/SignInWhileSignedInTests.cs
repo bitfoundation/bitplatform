@@ -31,10 +31,10 @@ public partial class SignInWhileSignedInTests
     }
 
     [TestMethod]
-    public async Task ASuccessfulSignInAsSomebodyElse_Should_EndTheSessionItReplaces()
+    public async Task ASuccessfulSignInAsSomebodyElse_OnADeviceForOneAccount_Should_EndTheSessionItReplaces()
     {
         await using var server = new AppTestServer();
-        await server.Build().Start(TestContext.CancellationToken);
+        await server.Build(configureTestConfiguration: configuration => configuration["MaxAccounts"] = "1").Start(TestContext.CancellationToken);
 
         await using var client = server.CreateAppClient();
 

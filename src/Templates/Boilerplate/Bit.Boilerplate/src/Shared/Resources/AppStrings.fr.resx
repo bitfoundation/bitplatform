@@ -2090,4 +2090,13 @@ Après avoir atteint {0}, les connexions supplémentaires auront des fonctions r
     <data name="AccountAlreadyExistsShortText" xml:space="preserve">
     <value>Vous avez déjà un compte Boilerplate avec ce numéro de téléphone. Si vous venez d’essayer de vous inscrire, connectez-vous plutôt.</value>
   </data>
+    <data name="AddAnotherAccount" xml:space="preserve">
+    <value>Ajouter un autre compte</value>
+  </data>
+    <data name="MaxAccountsReached" xml:space="preserve">
+    <value>Vous pouvez conserver jusqu'à {0} comptes sur cet appareil.</value>
+  </data>
+    <data name="SignOutOfAllAccounts" xml:space="preserve">
+    <value>Se déconnecter de tous les comptes de cet appareil</value>
+  </data>
 </root>

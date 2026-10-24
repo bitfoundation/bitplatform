@@ -2090,4 +2090,13 @@ Después de alcanzar {0}, los inicios de sesión adicionales tendrán funciones 
     <data name="AccountAlreadyExistsShortText" xml:space="preserve">
     <value>Ya tienes una cuenta de Boilerplate con este número de teléfono. Si acabas de intentar registrarte, inicia sesión en su lugar.</value>
   </data>
+    <data name="AddAnotherAccount" xml:space="preserve">
+    <value>Añadir otra cuenta</value>
+  </data>
+    <data name="MaxAccountsReached" xml:space="preserve">
+    <value>Puedes mantener hasta {0} cuentas en este dispositivo.</value>
+  </data>
+    <data name="SignOutOfAllAccounts" xml:space="preserve">
+    <value>Cerrar sesión en todas las cuentas de este dispositivo</value>
+  </data>
 </root>

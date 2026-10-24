@@ -31,6 +31,9 @@ public partial class ClientCoreSettings : SharedSettings
     /// </summary>
     public Uri? WebAppUrl { get; set; }
 
+    [Range(1, 10)]
+    public int MaxAccounts { get; set; } = 5;
+
     public override IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
     {
         var validationResults = base.Validate(validationContext).ToList();
