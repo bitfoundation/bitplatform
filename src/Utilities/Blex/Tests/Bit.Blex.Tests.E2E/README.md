@@ -38,6 +38,9 @@ the hybrid app from `BlexBrowserStorage.DisposeAsync`.
 | DevTools bridge: connect, `init`, `send` per action, `JUMP_TO_STATE` time-travel (fake extension) | yes | yes | yes |
 | Store state in the prerendered response, and handed to the interactive render | prerendered modes | - | yes |
 | A later Auto visit on WebAssembly rehydrates what the Server visit persisted | `auto` | - | yes |
+| A query loads, and a refetch replaces its answer through the host's dispatcher | yes | yes | yes |
+| A query the prerender fetched is handed over, not fetched again | prerendered modes | - | yes |
+| A stale query refetches when the page becomes visible again (`bit-blex-query.js`) | yes | yes | yes |
 | Static SSR renders store state and requests no Blex module | `ssr` | - | yes |
 
 ## Running locally

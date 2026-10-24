@@ -356,6 +356,8 @@ The untrimmed run has to come first: a trimmed run with no usable manifest to co
 because it would otherwise report `PASS` having verified none of the interop contract - and a manifest
 read only partly would report `PASS` having verified less of it than the output claims.
 
+CI runs both, in that order, in the `Butil trimming harness` job of `.github/workflows/bit.ci.Butil.e2e.yml`.
+
 ## Reference results
 
 These are the figures from a full run of both modes: the sizes and per-run counts move with the

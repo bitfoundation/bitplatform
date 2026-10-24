@@ -48,15 +48,15 @@
                     <div class="bb-stats">
                         <div class="bb-stat">
                             <span class="bb-stat-label">Count</span>
-                            <span class="bb-stat-value demo-accent">@Counter.Count</span>
+                            <span class="bb-stat-value demo-accent"><Persisted>@Counter.Count</Persisted></span>
                         </div>
                         <div class="bb-stat">
                             <span class="bb-stat-label">DoubleCount</span>
-                            <span class="bb-stat-value">@Counter.DoubleCount</span>
+                            <span class="bb-stat-value"><Persisted>@Counter.DoubleCount</Persisted></span>
                         </div>
                         <div class="bb-stat">
                             <span class="bb-stat-label">IsEven</span>
-                            <span class="bb-stat-value">@Counter.IsEven</span>
+                            <span class="bb-stat-value"><Persisted>@Counter.IsEven</Persisted></span>
                         </div>
                     </div>
                     <div class="bb-toolbar">
@@ -104,7 +104,8 @@
                 <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Batched, named actions</h3>
                 <p class="bb-card-desc">
                     Every mutation inside an <code>[BlexAction]</code> folds into one notification, one render
-                    and one history entry, with its arguments captured as the payload.
+                    and one history entry, with its arguments captured as the payload - and a generated, typed
+                    descriptor to match it and dispatch it as data.
                 </p>
                 <a href="actions" class="btn btn-outline">Actions →</a>
             </section>
@@ -113,15 +114,25 @@
                 <p class="bb-card-desc">
                     <code>[BlexEffect]</code> generates <code>XxxIsLoading</code>, <code>XxxError</code> and
                     <code>CancelXxx()</code>, with <code>Latest</code>, <code>Drop</code> and <code>Queue</code>
-                    concurrency and a built-in debounce.
+                    concurrency, a built-in debounce, retries with backoff and timeouts.
                 </p>
                 <a href="effects" class="btn btn-outline">Effects →</a>
+            </section>
+            <section class="bb-card">
+                <h3 class="bb-card-title"><span class="bb-dot bb-dot-danger"></span> Server state</h3>
+                <p class="bb-card-desc">
+                    <code>UseQuery</code> caches what the server says: one request per key, background refetch
+                    when stale, invalidation after a change, mutations with optimistic rollback, and prerendered
+                    data handed to the browser instead of fetched twice.
+                </p>
+                <a href="queries" class="btn btn-outline">Server state &amp; queries →</a>
             </section>
             <section class="bb-card">
                 <h3 class="bb-card-title"><span class="bb-dot bb-dot-danger"></span> Selectors</h3>
                 <p class="bb-card-desc">
                     Subscribe a component to a projection and it re-renders only when that value changes -
-                    across stores too, with <code>CreateSelector</code>.
+                    or let <code>&lt;BlexSelect&gt;</code> re-render just one fragment of it, and go across
+                    stores with <code>CreateSelector</code>.
                 </p>
                 <a href="subscriptions" class="btn btn-outline">Components &amp; selectors →</a>
             </section>
@@ -136,8 +147,8 @@
             <section class="bb-card">
                 <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Undo, redo and time travel</h3>
                 <p class="bb-card-desc">
-                    <code>BlexHistory</code> steps the whole state tree back and forth in the app; the
-                    DevTools bridge rewinds it from the browser extension.
+                    <code>BlexHistory</code> steps the state tree - or just the stores being edited - back and
+                    forth in the app; the DevTools bridge rewinds it from the browser extension.
                 </p>
                 <a href="history" class="btn btn-outline">Undo &amp; redo →</a>
             </section>

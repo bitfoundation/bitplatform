@@ -114,6 +114,31 @@
     </p>
 </div>
 
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Where the code is running</h3>
+    <p>
+        <code>Environment</code> says which of the hosts on <a href="/hosting">Hosting models</a> the provider
+        found, so one component can adapt to all of them:
+    </p>
+    <div class="bb-scroll" tabindex="0" role="region" aria-label="Image environments">
+        <table class="bb-table">
+            <thead>
+                <tr><th scope="col">Value</th><th scope="col">Meaning</th></tr>
+            </thead>
+            <tbody>
+                <tr><th scope="row"><code>BrowserWebAssembly</code></th><td>.NET runs in the browser: everything is local, and the probe's answers are this browser's.</td></tr>
+                <tr><th scope="row"><code>BrowserServer</code></th><td>Interactive Server or Blazor Hybrid: .NET runs outside the browser and reaches its codecs over JavaScript interop - across the circuit, or the WebView's bridge inside a MAUI app - and pixels cross it.</td></tr>
+                <tr><th scope="row"><code>Prerendering</code></th><td>No browser yet: the managed set is reported instead of an error. Probe again once interactive.</td></tr>
+                <tr><th scope="row"><code>Server</code></th><td>A headless host: PNG, JPEG, BMP and GIF from the managed codecs, no browser involved.</td></tr>
+            </tbody>
+        </table>
+    </div>
+    <p>
+        <code>HardwareConcurrency</code> is also what sizes the pool of Web Workers the browser codecs run in -
+        one per spare core, at most four, unless <code>BitBmageOptions.MaxCodecWorkers</code> says otherwise.
+    </p>
+</div>
+
 @code {
     private ImageCapabilities? _capabilities;
 

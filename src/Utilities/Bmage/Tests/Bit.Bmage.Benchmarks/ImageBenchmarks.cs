@@ -24,6 +24,12 @@ namespace Bit.Bmage.Benchmarks;
 /// </summary>
 public static class Images
 {
+    /// <summary>
+    /// One thread, so these benchmarks keep measuring what the published tables do, and what the browser runs by
+    /// default. <see cref="ParallelBenchmarks"/> measures the same operations on every core.
+    /// </summary>
+    public static OperationContext OneThread { get; } = new(maxDegreeOfParallelism: 1);
+
     /// <summary>Builds a deterministic photo-like image: smooth gradients plus high frequency detail.</summary>
     public static ImageBuffer Create(int width, int height)
     {
@@ -79,13 +85,13 @@ public class ResizeBenchmarks
     [Benchmark(Description = "Thumbnail to 200 (auto)")]
     public int Thumbnail()
     {
-        using var result = new ResizeOperation(200, 200, ResizeMode.Fit).Apply(_source, OperationContext.Default);
+        using var result = new ResizeOperation(200, 200, ResizeMode.Fit).Apply(_source, Images.OneThread);
         return result.Width;
     }
 
     private int Run(ResamplingFilter filter)
     {
-        using var result = new ResizeOperation(1280, 1280, ResizeMode.Fit, filter).Apply(_source, OperationContext.Default);
+        using var result = new ResizeOperation(1280, 1280, ResizeMode.Fit, filter).Apply(_source, Images.OneThread);
         return result.Width;
     }
 }
@@ -112,7 +118,7 @@ public class OperationBenchmarks
     [Benchmark(Baseline = true, Description = "Brightness (single point op)")]
     public int Brightness()
     {
-        using var result = new BrightnessAdjustment(0.15f).Apply(_source, OperationContext.Default);
+        using var result = new BrightnessAdjustment(0.15f).Apply(_source, Images.OneThread);
         return result.Width;
     }
 
@@ -120,7 +126,7 @@ public class OperationBenchmarks
     public int AdjustmentsUnfused()
     {
         using var result = ImagePipeline.Create().Brightness(0.1f).Contrast(0.12f).Saturation(0.15f).Gamma(1.1f)
-            .Execute(_source, new PipelineExecutionOptions { Optimize = false });
+            .Execute(_source, new PipelineExecutionOptions { Optimize = false, MaxDegreeOfParallelism = 1 });
         return result.Width;
     }
 
@@ -128,35 +134,35 @@ public class OperationBenchmarks
     public int AdjustmentsFused()
     {
         using var result = ImagePipeline.Create().Brightness(0.1f).Contrast(0.12f).Saturation(0.15f).Gamma(1.1f)
-            .Execute(_source, new PipelineExecutionOptions { Optimize = true });
+            .Execute(_source, new PipelineExecutionOptions { Optimize = true, MaxDegreeOfParallelism = 1 });
         return result.Width;
     }
 
     [Benchmark(Description = "Gaussian blur, radius 8")]
     public int Blur()
     {
-        using var result = new BlurFilter(8f).Apply(_source, OperationContext.Default.WithMutation(false));
+        using var result = new BlurFilter(8f).Apply(_source, Images.OneThread);
         return result.Width;
     }
 
     [Benchmark(Description = "Unsharp mask")]
     public int Sharpen()
     {
-        using var result = new SharpenFilter(0.5f, 1.5f).Apply(_source, OperationContext.Default);
+        using var result = new SharpenFilter(0.5f, 1.5f).Apply(_source, Images.OneThread);
         return result.Width;
     }
 
     [Benchmark(Description = "Rotate 90 (lossless)")]
     public int Rotate90()
     {
-        using var result = OrientationOperation.Rotate90.Apply(_source, OperationContext.Default);
+        using var result = OrientationOperation.Rotate90.Apply(_source, Images.OneThread);
         return result.Width;
     }
 
     [Benchmark(Description = "Rotate 37 (resampled)")]
     public int RotateArbitrary()
     {
-        using var result = new RotateOperation(37).Apply(_source, OperationContext.Default);
+        using var result = new RotateOperation(37).Apply(_source, Images.OneThread);
         return result.Width;
     }
 
@@ -165,7 +171,7 @@ public class OperationBenchmarks
     {
         var w = _source.Width / 2;
         var h = _source.Height / 2;
-        using var result = new CropOperation(w / 2, h / 2, w, h).Apply(_source, OperationContext.Default);
+        using var result = new CropOperation(w / 2, h / 2, w, h).Apply(_source, Images.OneThread);
         return result.Width;
     }
 }
@@ -196,28 +202,28 @@ public class PipelineBenchmarks
     [Benchmark(Baseline = true, Description = "Upload pipeline (optimised)")]
     public int UploadOptimised()
     {
-        using var result = Upload.Execute(_source, new PipelineExecutionOptions { Optimize = true });
+        using var result = Upload.Execute(_source, new PipelineExecutionOptions { Optimize = true, MaxDegreeOfParallelism = 1 });
         return result.Width;
     }
 
     [Benchmark(Description = "Upload pipeline (unoptimised)")]
     public int UploadUnoptimised()
     {
-        using var result = Upload.Execute(_source, new PipelineExecutionOptions { Optimize = false });
+        using var result = Upload.Execute(_source, new PipelineExecutionOptions { Optimize = false, MaxDegreeOfParallelism = 1 });
         return result.Width;
     }
 
     [Benchmark(Description = "Resize+crop fused")]
     public int FusedResizeCrop()
     {
-        using var result = ResizeThenCrop.Execute(_source, new PipelineExecutionOptions { Optimize = true });
+        using var result = ResizeThenCrop.Execute(_source, new PipelineExecutionOptions { Optimize = true, MaxDegreeOfParallelism = 1 });
         return result.Width;
     }
 
     [Benchmark(Description = "Resize+crop separate")]
     public int SeparateResizeCrop()
     {
-        using var result = ResizeThenCrop.Execute(_source, new PipelineExecutionOptions { Optimize = false });
+        using var result = ResizeThenCrop.Execute(_source, new PipelineExecutionOptions { Optimize = false, MaxDegreeOfParallelism = 1 });
         return result.Width;
     }
 }
@@ -326,6 +332,215 @@ public class DrawingBenchmarks
     {
         _canvas.FillPath(_complexPath, new Rgba32(10, 120, 90, 90));
         return 1;
+    }
+}
+
+/// <summary>
+/// The operations that spread their rows over threads, on one thread and on every core, plus what masks and layers
+/// cost on top of the edit they shape. The pixels are identical either way; only the time changes.
+/// </summary>
+[MemoryDiagnoser]
+public class ParallelBenchmarks
+{
+    private ImageBuffer _photo = null!;
+    private ImageBuffer _uhd = null!;
+    private ImageBuffer _hd = null!;
+    private OperationContext _context = null!;
+    private PipelineExecutionOptions _options = null!;
+    private Layers.Layer[] _layers = null!;
+
+    /// <summary>One thread, as in the browser by default, and every core this machine has.</summary>
+    [Params(1, 0)]
+    public int Threads { get; set; }
+
+    private int Degree => Threads == 0 ? Environment.ProcessorCount : Threads;
+
+    [GlobalSetup]
+    public void Setup()
+    {
+        _photo = Images.Create(6000, 4000);
+        _uhd = Images.Create(3840, 2160);
+        _hd = Images.Create(1920, 1080);
+        _context = new OperationContext(maxDegreeOfParallelism: Degree);
+        _options = new PipelineExecutionOptions { MaxDegreeOfParallelism = Degree };
+        _layers =
+        [
+            new Layers.FillLayer(new Rgba32(255, 120, 40)) { BlendMode = BlendMode.Screen, Opacity = 0.5f, Mask = Masks.Mask.Gradient(new(0, 0.75f), new(0, 0.3f)) },
+            new Layers.AdjustmentLayer(ImagePipeline.Create().Contrast(0.3f).Saturation(0.2f)) { Mask = Masks.Mask.Ellipse() with { Feather = 20 } },
+        ];
+    }
+
+    [GlobalCleanup]
+    public void Cleanup()
+    {
+        _photo.Dispose();
+        _uhd.Dispose();
+        _hd.Dispose();
+    }
+
+    [Benchmark(Description = "Downscale 6000x4000 to 1280 (lanczos3)")]
+    public int Downscale()
+    {
+        using var r = new ResizeOperation(1280, 1280, ResizeMode.Max, ResamplingFilter.Lanczos3).Apply(_photo, _context);
+        return r.Width;
+    }
+
+    [Benchmark(Description = "Rotate 3840x2160 by 37 degrees (bicubic)")]
+    public int Rotate()
+    {
+        using var r = new RotateOperation(37).Apply(_uhd, _context);
+        return r.Width;
+    }
+
+    [Benchmark(Description = "Saturation and hue, 3840x2160")]
+    public int Adjust()
+    {
+        using var r = new FusedPointOperation([new SaturationAdjustment(0.3f), new HueAdjustment(20)]).Apply(_uhd, _context);
+        return r.Width;
+    }
+
+    [Benchmark(Description = "Median radius 1, 1920x1080")]
+    public int Median()
+    {
+        using var r = new MedianFilter(1).Apply(_hd, _context);
+        return r.Width;
+    }
+
+    [Benchmark(Description = "Exposure through a gradient mask, 3840x2160")]
+    public int MaskedAdjustment()
+    {
+        using var r = ImagePipeline.Create().Masked(Masks.Mask.Gradient(new(0, 0), new(0, 0.5f)), p => p.Exposure(-0.7f)).Execute(_uhd, _options);
+        return r.Width;
+    }
+
+    [Benchmark(Description = "Two masked layers composited, 3840x2160")]
+    public int CompositeLayers()
+    {
+        using var target = _uhd.Clone();
+        Layers.LayerCompositor.Composite(target, _layers, _context);
+        return target.Width;
+    }
+}
+
+/// <summary>
+/// The editing tools: colour and tone, the directional filters, canvas geometry, selection and painting, on one thread at
+/// the sizes the editor's proxy (1080p) and an export (4K) run them at.
+/// </summary>
+[MemoryDiagnoser]
+[Orderer(SummaryOrderPolicy.FastestToSlowest)]
+public class EditingToolBenchmarks
+{
+    private ImageBuffer _source = null!;
+    private ImageBuffer _product = null!;
+    private Layers.PaintLayer _paint = null!;
+    private Layers.GroupLayer _group = null!;
+    private Layers.Layer[] _clipped = null!;
+
+    [Params("1920x1080", "3840x2160")]
+    public string Size { get; set; } = "1920x1080";
+
+    [GlobalSetup]
+    public void Setup()
+    {
+        var parts = Size.Split('x');
+        int width = int.Parse(parts[0]), height = int.Parse(parts[1]);
+        _source = Images.Create(width, height);
+        // A product shot: a subject on a near-white backdrop, for the wand, the background removal and trimming.
+        _product = ImageBuffer.Create(width, height, new Rgba32(248, 248, 246));
+        _product.Fill(new System.Drawing.Rectangle(width / 4, height / 5, width / 2, height * 3 / 5), new Rgba32(40, 90, 160));
+        var strokes = new List<Layers.PaintStroke>();
+        var rng = new Random(7);
+        for (var i = 0; i < 20; i++)
+        {
+            var points = Enumerable.Range(0, 40).Select(j => new Vector2(rng.Next(width), rng.Next(height)) * 0.1f + new Vector2(j * width / 50f, i * height / 25f)).ToArray();
+            strokes.Add(new Layers.PaintStroke(points, 24, new Rgba32(200, 40, 40)) { Hardness = 0.6f });
+        }
+        _paint = new Layers.PaintLayer(strokes);
+        _group = new Layers.GroupLayer([_paint, new Layers.FillLayer(new Rgba32(250, 220, 160)) { BlendMode = Drawing.BlendMode.Multiply }]) { Isolated = true };
+        _clipped = [_paint, new Layers.FillLayer(new Rgba32(40, 90, 200)) { ClipToLayerBelow = true }];
+    }
+
+    [GlobalCleanup]
+    public void Cleanup()
+    {
+        _source.Dispose();
+        _product.Dispose();
+    }
+
+    private int Run(IImageOperation operation, ImageBuffer? source = null)
+    {
+        using var result = operation.Apply(source ?? _source, Images.OneThread.WithMutation(false));
+        return result.Width;
+    }
+
+    [Benchmark(Baseline = true, Description = "Whites/blacks (tables)")]
+    public int WhitesBlacks() => Run(new WhitesBlacksAdjustment(0.3f, -0.2f));
+
+    [Benchmark(Description = "Vibrance (an existing per-pixel adjustment, for reference)")]
+    public int Vibrance() => Run(new VibranceAdjustment(0.4f));
+
+    [Benchmark(Description = "HSL, two bands")]
+    public int Hsl() => Run(new HslAdjustment().With(HueBand.Blues, new HslShift(-10, 0.3f, -0.2f)).With(HueBand.Greens, new HslShift(15, -0.2f, 0)));
+
+    [Benchmark(Description = "Duotone")]
+    public int Duotone() => Run(GradientMapOperation.Duotone(new Rgba32(20, 30, 90), new Rgba32(250, 210, 120)));
+
+    [Benchmark(Description = "Colorize")]
+    public int Colorize() => Run(new ColorizeAdjustment(30, 0.4f));
+
+    [Benchmark(Description = "Auto white balance")]
+    public int AutoWhiteBalance() => Run(new AutoWhiteBalanceOperation());
+
+    [Benchmark(Description = "Straighten 5 degrees")]
+    public int Straighten() => Run(new StraightenOperation(5));
+
+    [Benchmark(Description = "Canvas: 40px border")]
+    public int Border() => Run(CanvasSizeOperation.Margins(40, Rgba32.White));
+
+    [Benchmark(Description = "Motion blur 20px, horizontal")]
+    public int MotionBlurHorizontal() => Run(new MotionBlurFilter(20, 0));
+
+    [Benchmark(Description = "Motion blur 20px, 30 degrees")]
+    public int MotionBlurAngled() => Run(new MotionBlurFilter(20, 30));
+
+    [Benchmark(Description = "High pass, radius 3")]
+    public int HighPass() => Run(new HighPassFilter(3));
+
+    [Benchmark(Description = "Remove plain background (corner flood)")]
+    public int RemoveBackground() => Run(new Masks.AlphaMaskOperation(new Masks.FloodMask([new(0, 0), new(1, 0), new(0, 1), new(1, 1)]) { Units = Masks.MaskUnits.Relative, Inverted = true }), _product);
+
+    [Benchmark(Description = "Mask expand by 10px")]
+    public int Expand()
+    {
+        using var mask = new Masks.EllipseMask(new System.Drawing.RectangleF(100, 100, 800, 600)).Expand(10).Render(_source.Size, null, Images.OneThread);
+        return mask.Width;
+    }
+
+    [Benchmark(Description = "Paint layer, 20 strokes")]
+    public int Paint()
+    {
+        using var target = _source.Clone();
+        _paint.Composite(target, Images.OneThread);
+        return target.Width;
+    }
+
+    [Benchmark(Description = "Trim bounds")]
+    public int Trim() => Analysis.ContentBounds.Find(_product)!.Value.Width;
+
+    [Benchmark(Description = "Isolated group: paint and a multiplied fill")]
+    public int Group()
+    {
+        using var target = _source.Clone();
+        _group.Composite(target, Images.OneThread);
+        return target.Width;
+    }
+
+    [Benchmark(Description = "A fill clipped to the paint layer")]
+    public int Clipped()
+    {
+        using var target = _source.Clone();
+        Layers.LayerCompositor.Composite(target, _clipped, Images.OneThread);
+        return target.Width;
     }
 }
 

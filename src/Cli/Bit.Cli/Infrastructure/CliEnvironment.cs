@@ -60,11 +60,18 @@ public sealed class CliEnvironment
         return Variables.TryGetValue(name, out var value) && string.IsNullOrEmpty(value) is false ? value : null;
     }
 
-    public void PrependToPath(IEnumerable<string> directories)
+    public void PrependToPath(IEnumerable<string> directories, bool moveToFront = false)
     {
         var current = (GetVariable("PATH") ?? "").Split(Path.PathSeparator, StringSplitOptions.RemoveEmptyEntries).ToList();
         var comparer = IsWindows ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal;
-        var added = directories.Where(d => Directory.Exists(d) && current.Contains(d, comparer) is false).ToList();
+        var existing = directories.Where(Directory.Exists).ToList();
+
+        if (moveToFront)
+        {
+            current.RemoveAll(d => existing.Contains(d, comparer));
+        }
+
+        var added = existing.Where(d => current.Contains(d, comparer) is false).ToList();
 
         if (added.Count == 0)
             return;

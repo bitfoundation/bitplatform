@@ -8,6 +8,7 @@ name: bit platform CI - Bink E2E
 
 on:
   workflow_dispatch:
+  workflow_call:
 
 env:
   DOTNET_SYSTEM_CONSOLE_ALLOW_ANSI_COLOR_REDIRECTION: true

@@ -49,6 +49,9 @@ public static class ImageFormats
     /// <summary>True for formats that can store an alpha channel.</summary>
     public static bool SupportsAlpha(this ImageFormat format) => format is ImageFormat.Png or ImageFormat.WebP or ImageFormat.Avif or ImageFormat.Gif or ImageFormat.Svg or ImageFormat.Tiff;
 
+    /// <summary>Why an SVG is refused, in the words every decode path uses: docs/security.md quotes it.</summary>
+    internal const string SvgRefused = "SVG input is not decoded by Bmage because rasterising untrusted SVG can execute embedded scripts and fetch remote resources. Rasterise it yourself and pass the pixels instead.";
+
     /// <summary>True for formats that use lossy compression controlled by a quality setting.</summary>
     public static bool IsLossy(this ImageFormat format) => format is ImageFormat.Jpeg or ImageFormat.WebP or ImageFormat.Avif;
 

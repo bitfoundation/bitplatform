@@ -49,6 +49,8 @@ dotnet exec bin/Debug/net10.0/Bit.BlazorUI.Tests.Trimming.dll
 (`dotnet test` reports zero tests under the Microsoft.Testing.Platform runner this repository mandates; run the built
 assembly, or `dotnet run`.) The publishes take a few minutes in all.
 
+CI runs it with both variables below set, in the `trimming` job of `.github/workflows/bit.ci.BlazorUI.e2e.yml`.
+
 | Variable | Adds |
 | --- | --- |
 | `RUN_BROWSER_TESTS=1` | the trimmed WebAssembly and server apps run in Chromium, Firefox and WebKit, each driven through the components whose scripts the trimming kept (Playwright's browsers installed, as for `Tests/Performance`) |

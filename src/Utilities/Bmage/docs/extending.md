@@ -15,11 +15,19 @@ public sealed class DuotoneOperation : PointOperation
 
     public DuotoneOperation(Rgba32 shadow, Rgba32 highlight)
     {
+        Shadow = shadow;
+        Highlight = highlight;
         _shadow = new Vector4(shadow.R, shadow.G, shadow.B, 0) / 255f;
         _highlight = new Vector4(highlight.R, highlight.G, highlight.B, 0) / 255f;
     }
 
+    public Rgba32 Shadow { get; }
+    public Rgba32 Highlight { get; }
+
     public override string Name => "Duotone";
+
+    // ProcessRow only reads its own fields, so rows may run on several threads at once.
+    public override bool CanProcessRowsConcurrently => true;
 
     public override void ProcessRow(Span<Vector4> pixels)
     {
@@ -34,6 +42,11 @@ public sealed class DuotoneOperation : PointOperation
     }
 }
 ```
+
+Operations spread their rows over several threads where .NET has them. The library's own per-pixel operations keep no
+state between calls and say so; a custom one runs on one thread unless it overrides `CanProcessRowsConcurrently`, as
+above, which it should whenever `ProcessRow` only reads its own fields. Nothing else changes: the pixels are the same on
+any number of threads.
 
 For anything that reads neighbouring pixels or changes the size, implement `ImageOperation`:
 
@@ -186,6 +199,19 @@ public sealed record MeasurementAnnotation : Annotation
 Note `ForScale` on `UnitsPerPixel`: the geometry shrinks with the proxy, so the scale factor has to grow to keep the
 reported measurement the same. This is the kind of detail that only shows up when previews and exports disagree.
 
+When the image is cropped, turned, flipped or resized with its overlays attached, each annotation's `Transform` is
+called with the affine map from the old output to the new one. The default moves the annotation's centre, scales it by
+`ForScale` and turns its `Rotation`, which is right for most shapes; one made of points should map them exactly:
+
+```csharp
+    public override Annotation Transform(Matrix3x2 matrix)
+    {
+        var m = Through(matrix);   // its own rotation, then the image's transform
+        return this with { Start = Vector2.Transform(Start, m), End = Vector2.Transform(End, m), Rotation = 0,
+                           Style = Style.ForScale(ScaleOf(matrix)), UnitsPerPixel = UnitsPerPixel / ScaleOf(matrix) };
+    }
+```
+
 ## A custom editor tool
 
 ```csharp
@@ -256,30 +282,112 @@ builder.Services.AddSingleton<IImageCapabilityProvider, FixedCapabilityProvider>
 
 Handy for tests, and for forcing a conservative configuration.
 
+## A custom mask
+
+Derive from `Mask` and write the plain coverage; `Render` applies the feather, inversion and opacity afterwards, and
+the mask works with `Masked`, `ApplyMask`, layers and combinations like any built-in one.
+
+```csharp
+/// Covers a checkerboard of squares, for a test pattern or a stylised reveal.
+public sealed record CheckerMask(float CellSize) : Mask
+{
+    public override string Kind => "Checker";
+
+    protected override void RenderCoverage(MaskBuffer target, MaskRenderContext context)
+    {
+        var cell = Math.Max(1, (int)CellSize);
+        for (var y = 0; y < target.Height; y++)
+        {
+            var row = target.GetRow(y);
+            for (var x = 0; x < target.Width; x++)
+                row[x] = ((x / cell) + (y / cell)) % 2 == 0 ? (byte)255 : (byte)0;
+        }
+    }
+
+    // Keeps the pattern the same size relative to the image when previewed on a proxy.
+    protected override Mask ScaleGeometry(double scale) => this with { CellSize = (float)(CellSize * scale) };
+}
+```
+
+`MaskRenderContext.Source` is the image the mask applies to, for a mask that selects by content, and
+`GetCoverageBounds` lets an edit through the mask skip what it cannot reach.
+
+## A custom layer
+
+Derive from `Layer`, produce the layer's pixels in `CompositeCore`, and hand them to `BlendRows`, which applies the blend
+mode, opacity and mask, on as many threads as the context allows. Visibility and the mask's rescaling for a proxy are
+handled before `CompositeCore` is ever called.
+
+```csharp
+/// Film grain laid over the image through the layer's blend mode: Overlay or SoftLight look best.
+public sealed record GrainLayer(float Amount) : Layer
+{
+    public override string Kind => "Grain";
+
+    protected override void CompositeCore(ImageBuffer target, OperationContext context)
+    {
+        using var grain = ImageBuffer.Create(target.Width, target.Height, new Rgba32(128, 128, 128), context.Allocator);
+        new NoiseFilter(Amount, monochrome: true).Apply(grain, context.WithMutation(true));
+        BlendRows(target, target.Bounds, context, y => grain.GetRow(y));
+    }
+
+    protected override Layer ScaleCore(double scale) => this;
+}
+```
+
+A layer with geometry of its own overrides `TransformCore` too, so it follows the image through a crop or a turn; a
+mask with geometry overrides `TransformGeometry`. Both default to staying put, which is right for something that covers
+the whole image.
+
+## Writing your own types as JSON
+
+`BmageJson` writes every built-in operation, mask, layer and annotation. A custom one is written once it has a codec,
+and refused with a clear `NotSupportedException` until then, so a document never silently loses a step:
+
+```csharp
+var options = new BmageJsonOptions()
+    .Add<DuotoneOperation>("acme.duotone",
+        (writer, d) => writer.Write("shadow", d.Shadow).Write("highlight", d.Highlight),
+        reader => new DuotoneOperation(reader.GetColor("shadow"), reader.GetColor("highlight")))
+    .Add<CheckerMask>("acme.checker",
+        (writer, m) => writer.Write("cellSize", m.CellSize),
+        reader => new CheckerMask(reader.GetSingle("cellSize")));
+
+var json = BmageJson.Serialize(document, options);
+var back = BmageJson.DeserializeDocument(json, options);
+```
+
+`BmageJsonWriter` and `BmageJsonReader` handle the library's value types: colours, points, sizes, rectangles, point
+lists, enums, nested operations, pipelines and masks, and images by reference. Namespacing the type name keeps it
+clear of the built-in ones. A mask's or layer's own codec writes only its own properties; the common ones (feather,
+inversion, opacity, blend mode and so on) are written for it.
+
 ## Background removal
 
 This is an extension point, not an implementation. A model good enough to be useful is several megabytes and would
-dominate the bundle for everyone who does not use it, so none is shipped.
-
-The intended shape:
+dominate the bundle for everyone who does not use it, so none is shipped. What it plugs into is a mask: a model
+produces a matte, and a `BitmapMask` stretches that matte over the photo whatever its resolution.
 
 ```csharp
 public interface IBackgroundRemovalProvider
 {
-    ValueTask<ImageBuffer> RemoveBackgroundAsync(ImageBuffer image, CancellationToken cancellationToken = default);
+    /// Returns a matte: opaque where the subject is, at any resolution.
+    ValueTask<ImageBuffer> SegmentAsync(ImageBuffer image, CancellationToken cancellationToken = default);
 }
-```
 
-Wrap it as an `ImageOperation` and it composes with everything else:
+using var matte = await provider.SegmentAsync(photo);
 
-```csharp
-public sealed class RemoveBackgroundOperation : ImageOperation
-{
-    public override string Name => "Remove background";
-    public override ImageBuffer Apply(ImageBuffer source, OperationContext context)
-        => _provider.RemoveBackgroundAsync(source, context.CancellationToken).GetAwaiter().GetResult();
-}
+// Cut the subject out...
+using var cutOut = ImagePipeline.Create().ApplyMask(new BitmapMask(matte) { Feather = 1.5f }).Execute(photo);
+
+// ...or blur only the background behind it.
+using var portrait = ImagePipeline.Create()
+    .Masked(new BitmapMask(matte).Invert(), background => background.Blur(12))
+    .Execute(photo);
 ```
 
 Shipping a poor implementation would be worse than shipping none: it would look like a feature and behave like a
 disappointment. If you have a model that meets your bundle and latency budget, this is where it plugs in.
+
+A subject on a plain backdrop - a product shot, a logo, a scan - needs no model: `ImagePipeline.RemoveBackground`
+floods the backdrop in from the four corners with a `FloodMask` and cuts it out.

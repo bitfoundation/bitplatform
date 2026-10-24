@@ -1,0 +1,39 @@
+﻿@inherits BlexComponentBase
+
+@*
+    A descendant of <BlexScope TStore="DraftStore">. It never names an instance: the scope cascades
+    whichever one it created, so the same component edits the left draft, the right draft or document 3.
+*@
+<div class="bb-card">
+    <p class="bb-card-title"><code>@Draft.Name</code></p>
+    <div class="bb-toolbar">
+        @* Named after the instance: two editors side by side would otherwise read as two identical fields. *@
+        <input type="text" placeholder="Write something…" aria-label="@($"Text of {Draft.Name}")" value="@Draft.Text"
+               class="demo-input-grow" @oninput="e => Draft.Write(e.Value?.ToString() ?? string.Empty)" />
+        <button type="button" class="btn btn-secondary" aria-label="@($"Clear {Draft.Name}")" @onclick="Draft.Clear"
+                disabled="@(Draft.Length == 0)">Clear</button>
+    </div>
+    <div class="bb-stats">
+        <div class="bb-stat">
+            <span class="bb-stat-label">Words</span>
+            <span class="bb-stat-value demo-accent">@Draft.Words</span>
+        </div>
+        <div class="bb-stat">
+            <span class="bb-stat-label">Edits</span>
+            <span class="bb-stat-value">@Draft.Edits</span>
+        </div>
+        <div class="bb-stat">
+            <span class="bb-stat-label">InstanceKey</span>
+            <span class="bb-stat-value demo-stat-text">@Draft.InstanceKey</span>
+        </div>
+    </div>
+</div>
+
+@code {
+    /// <summary>The instance the enclosing scope created.</summary>
+    [CascadingParameter] public DraftStore Draft { get; set; } = default!;
+
+    // The scope keys its subtree to the instance, so a new store means a new editor: subscribing
+    // once is enough.
+    protected override void OnInitialized() => Subscribe(Draft);
+}

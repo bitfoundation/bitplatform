@@ -27,6 +27,13 @@
     {
         <div class="bb-note bb-note-danger demo-error" role="alert">@_error</div>
     }
+    @if (_result is { WasCancelled: true } stopped)
+    {
+        <div class="bb-note batch-stopped" role="status">
+            Stopped with @(stopped.SuccessCount + stopped.FailureCount) of @stopped.Results.Count finished: their
+            results are below and kept, and the @stopped.CancelledCount that never finished are marked <em>stopped</em>.
+        </div>
+    }
 
     <div class="bb-demo bb-page-wide">
         <div class="bb-demo-bar"><span class="bb-demo-label">Live</span></div>
@@ -107,7 +114,7 @@
                                                 <span class="bb-badge bb-badge-danger">@Describe(item.Error!)</span>
                                             }
                                         </td>
-                                        <td class="demo-num">@Display.Bytes(item.Item.Data.Length)</td>
+                                        <td class="demo-num">@(item.InputBytes > 0 ? Display.Bytes(item.InputBytes) : "—")</td>
                                         <td class="demo-num">@(item.Output is null ? "—" : Display.Bytes(item.Output.Length))</td>
                                         <td class="demo-num">@item.Duration.TotalMilliseconds.ToString("0")ms</td>
                                     </tr>
@@ -137,6 +144,20 @@
                     <label class="demo-field-label" for="conc">Concurrency <span class="demo-field-value">@_concurrency</span></label>
                     <input id="conc" type="range" min="1" max="8" step="1" value="@_concurrency" @oninput="e => SetInt(ref _concurrency, e)" aria-describedby="conc-hint" />
                     <span class="bb-field-hint" id="conc-hint">Each worker holds a decoded image, so this is a memory dial as much as a speed dial.</span>
+                </div>
+
+                <div class="demo-field">
+                    <label class="demo-field-label" for="budget">Memory budget</label>
+                    <select id="budget" @onchange="OnBudgetChanged" aria-describedby="budget-hint">
+                        @foreach (var (label, megabytes) in Budgets)
+                        {
+                            <option value="@megabytes" selected="@(_budgetMb == megabytes)">@label</option>
+                        }
+                    </select>
+                    <span class="bb-field-hint" id="budget-hint">
+                        <code>MaxMemoryBytes</code>: each image is admitted by its expected peak, read from its header
+                        before decoding, so small photos run several at a time and a large one waits for room.
+                    </span>
                 </div>
 
                 <div class="demo-field">
@@ -170,21 +191,39 @@
         <code>ImageProcessorFactory.GetAsync()</code> once the codec probe has run; on a server,
         <code>AddBitBmageHeadlessServices</code> registers it directly. Every item comes back with its
         own outcome - <code>Output</code>, <code>Error</code> or <code>WasCancelled</code> - and
-        <code>StopOnFirstError</code> is opt-in.
+        <code>StopOnFirstError</code> is opt-in. Cancelling the token throws <code>BatchCancelledException</code>,
+        an <code>OperationCanceledException</code> like any other cancelled call's, whose <code>Result</code> keeps
+        what the batch finished, with <code>WasCancelled</code> on it and on every item it did not get to.
     </p>
     <CodeSnippet Code="@Snippet" Language="C#" Expanded="true" />
     <div class="bb-note">
         <p>
             Size <code>MaxConcurrency</code> against memory, not cores: four workers on 24 megapixel
-            photos is roughly 400 MB of live pixels. Two is a safe default on phones.
+            photos is roughly 400 MB of live pixels. Two is a safe default on phones - or set
+            <code>MaxMemoryBytes</code> and let the size of each image decide.
         </p>
     </div>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Batches of any length</h3>
+    <p>
+        Three things keep a batch's memory to the images in flight, however many files it has - and this
+        page uses the first two:
+    </p>
+    <ul class="bb-detail-list">
+        <li><strong>Deferred items</strong> read their file only when the batch reaches them, so a thousand photos are never a thousand files in memory. <code>BatchItem.Deferred</code> takes the function that reads one.</li>
+        <li><strong><code>MaxMemoryBytes</code></strong> admits images by their expected peak - the file, its pixels, the pipeline's working buffers and an allowance for encoding - in the order they come. One larger than the whole budget runs alone rather than never. For a hard ceiling on what is really allocated, give the processor a <code>BudgetedPixelAllocator</code> as well.</li>
+        <li><strong><code>ProcessBatchStreamAsync</code></strong> hands each result over as it completes and keeps none of them, so outputs do not pile up either. Its source can itself be an <code>IAsyncEnumerable&lt;BatchItem&gt;</code>, such as files arriving from an upload.</li>
+    </ul>
+    <CodeSnippet Code="@StreamSnippet" Language="C#" Expanded="true" />
 </div>
 
 @code {
     private BatchResult? _result;
     private int _maxEdge = 1600;
     private int _concurrency = 2;
+    private int _budgetMb;
     private ImageFormat _format = ImageFormat.WebP;
     private bool _grayscale;
     private bool _stopOnFirstError;
@@ -203,21 +242,67 @@
     private const string Snippet = """
         var processor = await processorFactory.GetAsync();
 
-        var result = await processor.ProcessBatchAsync(items, pipeline, new BatchOptions
+        // Each file is read when the batch reaches it, not all of them up front.
+        var items = files.Select(file => BatchItem.Deferred(async ct =>
         {
-            MaxConcurrency   = 2,
-            StopOnFirstError = false,        // one bad file must not lose the rest
-            ExportOptions    = exportOptions,
-            Progress = new Progress<BatchProgress>(p =>
-            {
-                completed = p.Completed;
-                if (p.Last.Error is { } error) Log(p.Last.FileName, error);
-            }),
-        }, cancellationToken);
+            await using var stream = file.OpenReadStream(64 * 1024 * 1024, ct);
+            using var buffer = new MemoryStream();
+            await stream.CopyToAsync(buffer, ct);
+            return (ReadOnlyMemory<byte>)buffer.ToArray();
+        }, file.Name));
 
-        foreach (var item in result.Succeeded) Save(item.Output!);
-        foreach (var item in result.Failed)    Report(item.FileName, item.Error!);
+        try
+        {
+            var result = await processor.ProcessBatchAsync(items, pipeline, new BatchOptions
+            {
+                MaxConcurrency   = 2,
+                MaxMemoryBytes   = 512L * 1024 * 1024,   // optional: admit images by their expected peak
+                StopOnFirstError = false,                // one bad file must not lose the rest
+                ExportOptions    = exportOptions,
+                Progress = new Progress<BatchProgress>(p =>
+                {
+                    completed = p.Completed;
+                    if (p.Last.Error is { } error) Log(p.Last.FileName, error);
+                }),
+            }, cancellationToken);
+
+            foreach (var item in result.Succeeded) Save(item.Output!);
+            foreach (var item in result.Failed)    Report(item.FileName, item.Error!);
+        }
+        catch (BatchCancelledException stopped)
+        {
+            // Stopped by the token: what finished is in the result it carries; these never ran.
+            foreach (var item in stopped.Result.Succeeded) Save(item.Output!);
+            Retry(stopped.Result.Cancelled.Select(item => item.Item));
+        }
         """;
+
+    private const string StreamSnippet = """
+        // On a server: a folder of any size, each result saved and let go as soon as it is ready.
+        var items = Directory.EnumerateFiles(folder, "*.jpg").Select(path =>
+            BatchItem.Deferred(async ct => (ReadOnlyMemory<byte>)await File.ReadAllBytesAsync(path, ct), Path.GetFileName(path)));
+
+        await foreach (var result in processor.ProcessBatchStreamAsync(items, pipeline, new BatchOptions
+        {
+            MaxConcurrency = 4,
+            MaxMemoryBytes = 768L * 1024 * 1024,
+            ExportOptions  = new ImageExportOptions { Format = ImageFormat.Jpeg, Quality = 0.82 },
+        }, cancellationToken))
+        {
+            if (result.Output is { } output) await File.WriteAllBytesAsync(Path.Combine(outputFolder, result.FileName!), output.Data, cancellationToken);
+            else if (result.Error is { } error) logger.LogWarning(error, "Skipped {File}", result.FileName);
+        }
+        """;
+
+    private static readonly (string Label, int Megabytes)[] Budgets =
+    [
+        ("No budget, concurrency only", 0),
+        ("256 MB", 256),
+        ("512 MB", 512),
+        ("1 GB", 1024),
+    ];
+
+    private const long MaxFileBytes = 64 * 1024 * 1024;
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -237,6 +322,11 @@
         if (e.Value is string value && Enum.TryParse<ImageFormat>(value, out var format)) _format = format;
     }
 
+    private void OnBudgetChanged(ChangeEventArgs e)
+    {
+        if (int.TryParse(e.Value?.ToString(), out var megabytes)) _budgetMb = megabytes;
+    }
+
     private async Task OnFilesSelected(IReadOnlyList<IBrowserFile> files)
     {
         if (files.Count == 0 || _running) return;
@@ -250,16 +340,15 @@
 
         try
         {
-            // Read every file first so the batch measures processing, not disk. A real upload flow would stream
-            // them in instead, but the point here is the concurrency and error behaviour.
-            var items = new List<BatchItem>(files.Count);
-            foreach (var file in files)
+            // Each file is read only when the batch reaches it, so the files in memory are those of the images in
+            // flight - and a file too large to read is that file's failure, not the end of the batch.
+            var items = files.Select(file => BatchItem.Deferred(async ct =>
             {
-                await using var stream = file.OpenReadStream(64 * 1024 * 1024, _cts.Token);
-                using var ms = new MemoryStream();
-                await stream.CopyToAsync(ms, _cts.Token);
-                items.Add(new BatchItem(ms.ToArray(), file.Name));
-            }
+                await using var stream = file.OpenReadStream(MaxFileBytes, ct);
+                using var buffer = new MemoryStream();
+                await stream.CopyToAsync(buffer, ct);
+                return (ReadOnlyMemory<byte>)buffer.ToArray();
+            }, file.Name)).ToList();
 
             var pipeline = ImagePipeline.Create().AutoOrient().MaxSize(_maxEdge, _maxEdge);
             if (_grayscale) pipeline = pipeline.Grayscale();
@@ -268,6 +357,7 @@
             _result = await processor.ProcessBatchAsync(items, pipeline, new BatchOptions
             {
                 MaxConcurrency = _concurrency,
+                MaxMemoryBytes = _budgetMb > 0 ? _budgetMb * 1024L * 1024 : null,
                 StopOnFirstError = _stopOnFirstError,
                 ExportOptions = new ImageExportOptions
                 {
@@ -283,9 +373,15 @@
                 }),
             }, _cts.Token);
         }
+        catch (BatchCancelledException stopped)
+        {
+            // Stopped by the button: what the batch finished is in the result it carries.
+            _result = stopped.Result;
+        }
         catch (OperationCanceledException)
         {
-            _error = "The batch was stopped.";
+            // Stopped while the processor was still being prepared, before the batch had anything to keep.
+            _error = "The batch was stopped before it started.";
         }
         catch (Exception ex)
         {

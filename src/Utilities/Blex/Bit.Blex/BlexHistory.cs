@@ -8,29 +8,99 @@ namespace Bit.Blex;
 /// snapshot does not record a new action, so undo/redo never pollutes the history.
 /// </summary>
 /// <remarks>
+/// <para>
 /// Call <see cref="Start"/> once after all stores are registered to capture the baseline snapshot.
 /// Single-threaded dispatch is assumed (Blazor's model).
+/// </para>
+/// <para>
+/// By default the history spans every store, so an undo reverts whatever changed last anywhere in the
+/// app -- and restores the whole tree, session and theme included. Give it a scope
+/// (<see cref="BlexHistory(BlexManager, Func{IBlexStore, bool}, int, Func{BlexActionContext, bool}, Func{BlexActionContext, string})"/>,
+/// or <see cref="BlexHistory{TStore}"/> for one store type) to keep undo inside the part of the app
+/// the user is actually editing.
+/// </para>
 /// </remarks>
-public sealed class BlexHistory : IDisposable
+public class BlexHistory : IDisposable
 {
-    private readonly record struct BlexEntry(JsonObject State, string? Label);
+    private readonly record struct BlexEntry(Snapshot State, string? Label);
+
+    /// <summary>
+    /// The covered stores' state, one slice per store name. Slices are never mutated -- a restore applies
+    /// a copy -- so snapshots taken while a store did not change share that store's slice: an undo stack
+    /// costs what changed, step by step, not a copy of the whole tree per step.
+    /// </summary>
+    private sealed class Snapshot(Dictionary<string, JsonObject> slices, long stamp)
+    {
+        public IReadOnlyDictionary<string, JsonObject> Slices { get; } = slices;
+
+        /// <summary>The manager's <see cref="BlexManager.StateVersion"/> when it was taken.</summary>
+        public long Stamp { get; } = stamp;
+
+        /// <summary>A copy with <paramref name="name"/>'s slice replaced; every other slice stays shared.</summary>
+        public Snapshot With(string name, JsonObject slice)
+            => new(new Dictionary<string, JsonObject>(Slices, StringComparer.Ordinal) { [name] = slice }, Stamp);
+
+        /// <summary>Whether both hold the same state, comparing shared slices by reference and the rest as text.</summary>
+        public bool SameAs(Snapshot other)
+        {
+            if (ReferenceEquals(this, other))
+                return true;
+
+            if (other.Slices.Count != Slices.Count)
+                return false;
+
+            foreach (var (name, slice) in Slices)
+            {
+                // Compared as text rather than with JsonNode.DeepEquals, which only exists from .NET 9; both
+                // come from the same SerializeState, so their property order matches.
+                if (!other.Slices.TryGetValue(name, out var theirs)
+                    || (!ReferenceEquals(slice, theirs) && slice.ToJsonString() != theirs.ToJsonString()))
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+    }
+
+    /// <summary>A store's slice as last serialized, and the <see cref="BlexStoreBase.ChangeVersion"/> it was serialized at.</summary>
+    private sealed class CachedSlice(long version, JsonObject state)
+    {
+        public long Version { get; } = version;
+
+        public JsonObject State { get; } = state;
+    }
 
     private readonly BlexManager _manager;
     private readonly List<BlexEntry> _undo = [];
     private readonly List<BlexEntry> _redo = [];
     private readonly Func<BlexActionContext, bool>? _filter;
     private readonly Func<BlexActionContext, string?>? _groupBy;
+    private readonly Func<IBlexStore, bool>? _scope;
+
+    // Weak, so a scoped store that came and went is not kept alive by the cache (its slices in snapshots
+    // still are, until those entries roll off).
+    private readonly System.Runtime.CompilerServices.ConditionalWeakTable<BlexStoreBase, CachedSlice> _slices = [];
+
+    // The slice a store that registered after recording began joined the present with, until its state arrives:
+    // a restore of a store the present still holds that way is the store hydrating, not moving away from a step.
+    private readonly System.Runtime.CompilerServices.ConditionalWeakTable<IBlexStore, JsonObject> _joined = [];
     private string? _lastGroupKey;
-    private JsonObject? _present;
+    private Snapshot? _present;
 
     // The state as of the last undo boundary (a recorded action, a checkpoint, a restore). It
     // trails _present across filtered actions, which advance the present without creating a step;
     // Checkpoint needs it to know whether anything has actually happened since the last boundary,
     // and which state that boundary should push.
-    private JsonObject? _boundary;
+    private Snapshot? _boundary;
     private string? _presentLabel;
     private bool _started;
     private bool _restoring;
+
+    // Set when a restore moved a covered store away from what the present holds, and settled by the
+    // StateRestored that follows every restore.
+    private bool _restoredAway;
 
     /// <summary>Creates a history bound to a manager. Set <paramref name="maxEntries"/> to cap memory.</summary>
     /// <param name="manager">The manager whose actions are recorded.</param>
@@ -61,6 +131,53 @@ public sealed class BlexHistory : IDisposable
         int maxEntries = 100,
         Func<BlexActionContext, bool>? filter = null,
         Func<BlexActionContext, string?>? groupBy = null)
+        : this(manager, maxEntries, filter, groupBy, scope: null)
+    {
+    }
+
+    /// <summary>
+    /// Creates a history that covers only the stores <paramref name="scope"/> admits: their actions
+    /// become undo steps, and an undo restores only their slices. Every other store's actions are
+    /// ignored, and its state is never touched by an undo or a redo.
+    /// </summary>
+    /// <param name="manager">The manager whose actions are recorded.</param>
+    /// <param name="scope">
+    /// Decides which stores the history covers -- by type (<c>s =&gt; s is EditorStore</c>), by name, or
+    /// by exclusion (<c>s =&gt; s is not SessionStore</c>). It is consulted on every action and
+    /// snapshot, so stores registered later (lazily loaded features, scoped instances) are covered as
+    /// soon as they match. A predicate that throws counts as "not covered", and the failure is reported.
+    /// </param>
+    /// <param name="maxEntries">Maximum number of undo entries retained; older entries are discarded.</param>
+    /// <param name="filter">Optional predicate deciding which covered actions get their own undo step.</param>
+    /// <param name="groupBy">Optional key selector that merges consecutive covered actions into one step.</param>
+    /// <remarks>
+    /// A whole-application undo is rarely what a user means: undoing an edit should not sign them out,
+    /// switch the theme back or empty a cart that a background refresh just filled -- yet restoring the
+    /// whole tree does all of that. Scope the history to the document being edited instead.
+    /// </remarks>
+    /// <example><code>
+    /// // Undo inside the editor only:
+    /// var history = new BlexHistory(manager, scope: s => s is EditorStore);
+    ///
+    /// // Everything except the stores undo must never revert:
+    /// var history = new BlexHistory(manager, scope: s => s is not SessionStore and not ThemeStore);
+    /// </code></example>
+    public BlexHistory(
+        BlexManager manager,
+        Func<IBlexStore, bool> scope,
+        int maxEntries = 100,
+        Func<BlexActionContext, bool>? filter = null,
+        Func<BlexActionContext, string?>? groupBy = null)
+        : this(manager, maxEntries, filter, groupBy, scope ?? throw new ArgumentNullException(nameof(scope)))
+    {
+    }
+
+    private BlexHistory(
+        BlexManager manager,
+        int maxEntries,
+        Func<BlexActionContext, bool>? filter,
+        Func<BlexActionContext, string?>? groupBy,
+        Func<IBlexStore, bool>? scope)
     {
         ArgumentNullException.ThrowIfNull(manager);
         if (maxEntries < 1)
@@ -69,6 +186,61 @@ public sealed class BlexHistory : IDisposable
         MaxEntries = maxEntries;
         _filter = filter;
         _groupBy = groupBy;
+        _scope = scope;
+    }
+
+    /// <summary>Whether this history covers only some stores (see the scoped constructor).</summary>
+    public bool IsScoped => _scope is not null;
+
+    /// <summary>Whether <paramref name="store"/> is one this history records and restores.</summary>
+    public bool Covers(IBlexStore store)
+    {
+        ArgumentNullException.ThrowIfNull(store);
+        if (_scope is null)
+            return true;
+
+        try
+        {
+            return _scope(store);
+        }
+        catch (Exception ex)
+        {
+            // Fail closed: a store the history cannot decide about is left alone rather than reverted.
+            _manager.ReportError("history", ex, $"history scope for '{store.Name}'");
+            return false;
+        }
+    }
+
+    /// <summary>
+    /// Snapshots what this history covers: every store, or only the stores in scope -- which a restore
+    /// applies without touching any other store. Only a store that changed since its last snapshot is
+    /// serialized again; the others hand over the slice they already have.
+    /// </summary>
+    private Snapshot Capture()
+    {
+        var slices = new Dictionary<string, JsonObject>(StringComparer.Ordinal);
+        foreach (var store in _manager.Stores)
+        {
+            if (Covers(store))
+                slices[store.Name] = SliceOf(store);
+        }
+
+        return new Snapshot(slices, _manager.StateVersion);
+    }
+
+    private JsonObject SliceOf(IBlexStore store)
+    {
+        // A hand-written IBlexStore has no change stamp to trust; serialize it every time.
+        if (store is not BlexStoreBase sb)
+            return store.SerializeState();
+
+        if (_slices.TryGetValue(sb, out var cached) && cached.Version == sb.ChangeVersion)
+            return cached.State;
+
+        var version = sb.ChangeVersion;
+        var state = sb.SerializeState();
+        _slices.AddOrUpdate(sb, new CachedSlice(version, state));
+        return state;
     }
 
     /// <summary>Maximum number of undo entries retained; older entries are discarded.</summary>
@@ -174,31 +346,199 @@ public sealed class BlexHistory : IDisposable
         if (_started)
             return;
         _started = true;
-        _present = _boundary = _manager.CaptureGlobalState();
+        _present = _boundary = Capture();
         _presentLabel = null;
         _manager.ActionDispatched += OnAction;
+        _manager.StoreRegistered += OnStoreRegistered;
+        _manager.StoreRestored += OnStoreRestored;
         _manager.StateRestored += OnExternalRestore;
+        _manager.StoreRolledBack += OnRolledBack;
     }
 
-    private void OnExternalRestore()
+    /// <summary>
+    /// Takes a store that registers after recording began into the present. Left out, the step its first action pushes
+    /// would hold nothing of it, and undoing that action would leave the store as it is.
+    /// </summary>
+    private void OnStoreRegistered(IBlexStore store)
     {
-        if (_restoring)
+        // A store the present already holds is one coming back under its name: its steps are waiting for it.
+        if (_restoring || _present is null || _present.Slices.ContainsKey(store.Name) || !Covers(store))
             return;
 
         try
         {
-            // An external restore (DevTools time-travel, manual RestoreGlobalState) changed the
-            // state without an action. Refresh the present snapshot so the next Undo diffs from
-            // what the user actually sees rather than a stale pre-jump state.
-            _present = _boundary = _manager.CaptureGlobalState();
-            _presentLabel = null;
+            _joined.AddOrUpdate(store, Join(store));
+
+            // The step a group has open was taken before the store arrived, and could not take back a change to it.
             _lastGroupKey = null;
-            RaiseChanged();
+        }
+        catch (Exception ex)
+        {
+            _manager.ReportError("history", ex, store.Name);
+        }
+    }
+
+    /// <summary>
+    /// Adds <paramref name="store"/>'s current slice to the present, and to the boundary when it trails the present
+    /// without one: left without the slice, it would differ from the present by a store nothing moved, and the next
+    /// Checkpoint would push a step that undoes nothing. Returns the slice.
+    /// </summary>
+    private JsonObject Join(IBlexStore store)
+    {
+        var slice = SliceOf(store);
+        var boundaryIsPresent = ReferenceEquals(_boundary, _present);
+        _present = _present!.With(store.Name, slice);
+
+        if (boundaryIsPresent)
+            _boundary = _present;
+        else if (_boundary is not null && !_boundary.Slices.ContainsKey(store.Name))
+            _boundary = _boundary.With(store.Name, slice);
+
+        return slice;
+    }
+
+    /// <summary>Puts <paramref name="repair"/>'s result in place of every snapshot held: the present, the boundary and both stacks.</summary>
+    private void RepairAll(Func<Snapshot, Snapshot> repair)
+    {
+        var present = repair(_present!);
+        _boundary = ReferenceEquals(_boundary, _present) ? present : _boundary is null ? null : repair(_boundary);
+        _present = present;
+
+        // Every entry: the redo stack is not in the order its snapshots were taken. Both are bounded by MaxEntries.
+        Repair(_undo);
+        Repair(_redo);
+
+        void Repair(List<BlexEntry> entries)
+        {
+            for (var i = 0; i < entries.Count; i++)
+                entries[i] = entries[i] with { State = repair(entries[i].State) };
+        }
+    }
+
+    /// <summary>
+    /// Takes back what a rolled-back action left in the snapshots: each one taken since it began -- another store's
+    /// action recording partway through its body -- holds the state the rollback undid, which an undo or redo would
+    /// otherwise put back. Its slice in those becomes the rolled-back one; nothing else moves, no step is added.
+    /// </summary>
+    private void OnRolledBack(BlexStoreBase store, long startedAt)
+    {
+        if (_restoring || _present is null || !Covers(store))
+            return;
+
+        try
+        {
+            var restored = SliceOf(store);
+            var name = store.Name;
+
+            RepairAll(snapshot => snapshot.Stamp > startedAt && snapshot.Slices.TryGetValue(name, out var slice) && !ReferenceEquals(slice, restored)
+                ? snapshot.With(name, restored)
+                : snapshot);
+        }
+        catch (Exception ex)
+        {
+            // Raised from inside the dispatch pipeline, like the handlers above.
+            _manager.ReportError("history", ex, store.Name);
+        }
+    }
+
+    private void OnStoreRestored(IBlexStore store)
+    {
+        if (_restoring || !Covers(store))
+            return;
+
+        try
+        {
+            // Ahead of the restore-away check: the present a restore-away refreshes holds the arrived state as it is,
+            // but the steps pushed since the store joined would still hold its declared defaults.
+            if (TakeArrivedState(store) || _restoredAway)
+                return;
+
+            // A store the present has never seen -- one that registered without joining it, while this history was
+            // restoring, say -- has not been moved away from anything: it joins the present (and the boundary)
+            // instead of costing the next Undo its label.
+            if (_present is not null && !_present.Slices.ContainsKey(store.Name))
+            {
+                Join(store);
+                return;
+            }
+
+            // A restore this history did not make (DevTools time-travel, another history's undo,
+            // hydration, a cross-tab change) moved a store without an action. Only that store's slice is
+            // compared -- one store hydrating must not cost a serialization of every store, twice -- and
+            // a store outside the scope is not compared at all: a scoped history watching the editor must
+            // not lose its "Undo Rename" label because the theme store just hydrated. Compared as text
+            // rather than with JsonNode.DeepEquals, which only exists from .NET 9; both come from the same
+            // SerializeState, so their property order matches.
+            if (_present is null
+                || !_present.Slices.TryGetValue(store.Name, out var before)
+                || before.ToJsonString() != SliceOf(store).ToJsonString())
+            {
+                _restoredAway = true;
+            }
         }
         catch (Exception ex)
         {
             // This handler sits directly on the pipeline events; an escaping exception would
             // break dispatch for observers registered after it.
+            _manager.ReportError("history", ex, store.Name);
+        }
+    }
+
+    /// <summary>
+    /// Takes in the state of a store that joined as it registered and whose state arrives only now -- a scoped instance
+    /// hydrating as its dialog opens: the present still holds the slice it joined with, and so does every snapshot taken
+    /// since, none of them as a step that moved it. The arrived state takes that slice's place in all of them, so an
+    /// Undo neither puts the declared defaults back over what was just read nor loses its label.
+    /// </summary>
+    private bool TakeArrivedState(IBlexStore store)
+    {
+        if (!_joined.TryGetValue(store, out var joined)
+            || _present is null
+            || !_present.Slices.TryGetValue(store.Name, out var held)
+            || !ReferenceEquals(held, joined))
+        {
+            return false;
+        }
+
+        _joined.Remove(store);
+        var name = store.Name;
+        var arrived = SliceOf(store);
+        RepairAll(snapshot => snapshot.Slices.TryGetValue(name, out var slice) && ReferenceEquals(slice, joined)
+            ? snapshot.With(name, arrived)
+            : snapshot);
+
+        return true;
+    }
+
+    private void OnExternalRestore()
+    {
+        if (_restoring || !_restoredAway)
+            return;
+
+        _restoredAway = false;
+        try
+        {
+            // Refresh the present snapshot so the next Undo diffs from what the user actually sees
+            // rather than a stale pre-jump state.
+            _present = _boundary = Capture();
+            _presentLabel = null;
+            _lastGroupKey = null;
+
+            // The restore may have landed exactly on a state this history already holds: another history
+            // over the same stores undid the step this one would undo next, or DevTools jumped one back.
+            // That entry is the present now, so it comes off the stack -- left there, the next Undo would
+            // restore what is already showing, change nothing and use up a step -- and its label, the action
+            // that produced it, is what the next Undo reverts.
+            while (_undo.Count > 0 && _undo[^1].State.SameAs(_present))
+            {
+                _presentLabel = _undo[^1].Label;
+                _undo.RemoveAt(_undo.Count - 1);
+            }
+
+            RaiseChanged();
+        }
+        catch (Exception ex)
+        {
             _manager.ReportError("history", ex);
         }
     }
@@ -208,8 +548,21 @@ public sealed class BlexHistory : IDisposable
         if (_restoring)
             return;
 
+        // An action of a store outside the scope is not this history's business at all: it creates
+        // no step and does not move the present, which holds only the covered slices.
+        if (_scope is not null && !Covers(context.Store))
+            return;
+
         try
         {
+            // An action that left the covered state as it was -- a value set to what it already held, an outer
+            // action whose nested one this history recorded first -- is no step: the present it would push is the
+            // present, and a step back to it would spend a slot, and a click, on restoring what is showing. Only
+            // the stores that changed are serialized again; a scoped history covers its own stores only.
+            var captured = Capture();
+            if (_present is not null && captured.SameAs(_present))
+                return;
+
             var record = Allows(context);
 
             // A grouped action joins the step already open instead of starting a new one, so a
@@ -228,7 +581,7 @@ public sealed class BlexHistory : IDisposable
             // recorded one, and leaving a stale present behind would make the next Undo restore a
             // snapshot the user never saw. Only the undo *step* is skipped. The label is left alone
             // for the same reason: it names the boundary the next Undo actually returns to.
-            _present = context.GlobalState;
+            _present = captured;
             if (record)
             {
                 _presentLabel = context.QualifiedName;
@@ -309,7 +662,7 @@ public sealed class BlexHistory : IDisposable
     /// </remarks>
     public void Checkpoint(string? label = null)
     {
-        _present = _manager.CaptureGlobalState();
+        _present = Capture();
 
         // An explicit checkpoint always closes whatever group is open -- including the no-op case
         // below. The caller is naming a boundary; the next action must start a fresh step even
@@ -317,10 +670,8 @@ public sealed class BlexHistory : IDisposable
         _lastGroupKey = null;
 
         // Nothing moved since the last boundary -- a checkpoint here would be an undo step that
-        // reverts to the state it was taken from. Compared as text rather than with
-        // JsonNode.DeepEquals, which only exists from .NET 9; both trees come from the same
-        // CaptureGlobalState, so their property order matches.
-        if (_boundary is not null && _boundary.ToJsonString() == _present.ToJsonString())
+        // reverts to the state it was taken from.
+        if (_boundary is not null && _boundary.SameAs(_present))
             return;
 
         if (_boundary is not null)
@@ -356,12 +707,17 @@ public sealed class BlexHistory : IDisposable
         if (steps == 0)
             return;
 
+        // What to put back if the walk turns out to belong wholly to stores that are gone (see below).
+        var before = (Undo: _undo.ToArray(), Redo: _redo.ToArray(), Present: _present, Boundary: _boundary, Label: _presentLabel);
+        var touchedAbsent = _present is not null && HoldsAbsentStores(_present);
+
         var moved = 0;
         if (steps < 0)
         {
             for (var i = 0; i < -steps && _undo.Count > 0; i++)
             {
                 StepBack();
+                touchedAbsent |= HoldsAbsentStores(_present!);
                 moved++;
             }
         }
@@ -370,12 +726,44 @@ public sealed class BlexHistory : IDisposable
             for (var i = 0; i < steps && _redo.Count > 0; i++)
             {
                 StepForward();
+                touchedAbsent |= HoldsAbsentStores(_present!);
                 moved++;
             }
         }
 
         if (moved == 0 || _present is null)
             return;
+
+        // Landed on a state that changes nothing on screen: the steps walked belong to stores that have since
+        // left the manager (a closed dialog's scoped store, another document's), which a restore skips.
+        // Spending the click on that would look like a broken button, so keep going in the same direction
+        // until a step does change something live, or the stack runs out.
+        while (!ChangesLiveState(_present))
+        {
+            if (steps < 0 && _undo.Count > 0)
+                StepBack();
+            else if (steps > 0 && _redo.Count > 0)
+                StepForward();
+            else
+                break;
+
+            touchedAbsent |= HoldsAbsentStores(_present);
+        }
+
+        // Nothing live anywhere in that direction, only steps of stores that are gone: walking through them
+        // would change nothing now and strand them on the other stack, where the store -- reopened -- would no
+        // longer find them. Leave the history as it was; they are undoable again once their store is back.
+        if (touchedAbsent && !ChangesLiveState(_present))
+        {
+            _undo.Clear();
+            _undo.AddRange(before.Undo);
+            _redo.Clear();
+            _redo.AddRange(before.Redo);
+            _present = before.Present;
+            _boundary = before.Boundary;
+            _presentLabel = before.Label;
+            return;
+        }
 
         // Landing somewhere by hand ends whatever group was open; the next action must not be
         // folded into a step the user has already stepped away from.
@@ -422,23 +810,74 @@ public sealed class BlexHistory : IDisposable
         _presentLabel = entry.Label;
     }
 
+    /// <summary>
+    /// Whether restoring <paramref name="state"/> would change a store that is registered now -- what
+    /// <see cref="Restore"/> would actually apply, since it skips the stores that are gone.
+    /// </summary>
+    private bool ChangesLiveState(Snapshot state)
+    {
+        foreach (var store in _manager.Stores)
+        {
+            if (!state.Slices.TryGetValue(store.Name, out var slice))
+                continue;
+
+            var current = SliceOf(store);
+            if (!ReferenceEquals(current, slice) && current.ToJsonString() != slice.ToJsonString())
+                return true;
+        }
+
+        return false;
+    }
+
+    /// <summary>Whether <paramref name="state"/> holds a slice of a store that is not registered now.</summary>
+    private bool HoldsAbsentStores(Snapshot state)
+    {
+        foreach (var name in state.Slices.Keys)
+        {
+            if (_manager.GetStore(name) is null)
+                return true;
+        }
+
+        return false;
+    }
+
     /// <summary>Clears all undo/redo history, keeping the current state as the new baseline.</summary>
     public void Clear()
     {
         _undo.Clear();
         _redo.Clear();
-        _present = _boundary = _manager.CaptureGlobalState();
+        _present = _boundary = Capture();
         _presentLabel = null;
         _lastGroupKey = null;
         RaiseChanged();
     }
 
-    private void Restore(JsonObject state)
+    private void Restore(Snapshot state)
     {
+        // Only the stores that are not already there: a slice that is the very one cached for the store's current
+        // version is its state now. Restoring it again would cost a deserialization, a notification and a storage
+        // write-back per store -- the whole tree for an undo that changed one store.
+        var changed = new Dictionary<string, JsonObject>(StringComparer.Ordinal);
+        foreach (var store in _manager.Stores)
+        {
+            if (!state.Slices.TryGetValue(store.Name, out var slice))
+                continue;
+
+            if (store is BlexStoreBase sb
+                && _slices.TryGetValue(sb, out var cached)
+                && cached.Version == sb.ChangeVersion
+                && ReferenceEquals(cached.State, slice))
+            {
+                continue;
+            }
+
+            changed[store.Name] = slice;
+        }
+
         _restoring = true;
         try
         {
-            _manager.RestoreGlobalState(state);
+            _manager.RestoreSlices(changed);
         }
         finally
         {
@@ -452,8 +891,44 @@ public sealed class BlexHistory : IDisposable
         if (_started)
         {
             _manager.ActionDispatched -= OnAction;
+            _manager.StoreRegistered -= OnStoreRegistered;
+            _manager.StoreRestored -= OnStoreRestored;
             _manager.StateRestored -= OnExternalRestore;
+            _manager.StoreRolledBack -= OnRolledBack;
             _started = false;
         }
+
+        GC.SuppressFinalize(this);
+    }
+}
+
+/// <summary>
+/// Undo/redo for the stores of one type only -- an editor's undo stack that never reverts the session,
+/// the theme or a cart. Every instance of <typeparamref name="TStore"/> is covered, scoped instances
+/// included. Register it with <c>AddBitBlexHistory&lt;TStore&gt;()</c> and inject
+/// <c>BlexHistory&lt;TStore&gt;</c>; the registration starts recording as soon as it is resolved.
+/// </summary>
+/// <typeparam name="TStore">The store type whose actions are recorded and restored.</typeparam>
+/// <example><code>
+/// builder.Services.AddBitBlexHistory&lt;EditorStore&gt;();
+///
+/// @inject BlexHistory&lt;EditorStore&gt; History
+/// &lt;button @onclick="History.Undo" disabled="@(!History.CanUndo)"&gt;Undo&lt;/button&gt;
+/// </code></example>
+public sealed class BlexHistory<TStore> : BlexHistory
+    where TStore : class, IBlexStore
+{
+    /// <summary>Creates a history covering every <typeparamref name="TStore"/> registered with <paramref name="manager"/>.</summary>
+    /// <param name="manager">The manager whose actions are recorded.</param>
+    /// <param name="maxEntries">Maximum number of undo entries retained; older entries are discarded.</param>
+    /// <param name="filter">Optional predicate deciding which actions get their own undo step.</param>
+    /// <param name="groupBy">Optional key selector that merges consecutive actions into one step.</param>
+    public BlexHistory(
+        BlexManager manager,
+        int maxEntries = 100,
+        Func<BlexActionContext, bool>? filter = null,
+        Func<BlexActionContext, string?>? groupBy = null)
+        : base(manager, static store => store is TStore, maxEntries, filter, groupBy)
+    {
     }
 }

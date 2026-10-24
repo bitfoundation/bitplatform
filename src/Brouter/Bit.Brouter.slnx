@@ -7,11 +7,14 @@
     <File Path="README.md" />
   </Folder>
   <Folder Name="/Demo/">
-    <Project Path="Bit.Brouter.Demo/Client/Bit.Brouter.Demo.Client.csproj" />
-    <Project Path="Bit.Brouter.Demo/Server/Bit.Brouter.Demo.Server.csproj" />
+    <Project Path="Demo/Client/Bit.Brouter.Demo.Client.csproj" />
+    <Project Path="Demo/Server/Bit.Brouter.Demo.Server.csproj" />
   </Folder>
   <Folder Name="/Samples/">
     <Project Path="Samples/Core/Bit.Brouter.Samples.Core.csproj" />
+    <Project Path="Samples/Maui/Bit.Brouter.Samples.Maui.csproj">
+      <Deploy />
+    </Project>
   </Folder>
   <Folder Name="/Samples/Auto/">
     <Project Path="Samples/Auto/Bit.Brouter.Samples.Auto.Client/Bit.Brouter.Samples.Auto.Client.csproj" />

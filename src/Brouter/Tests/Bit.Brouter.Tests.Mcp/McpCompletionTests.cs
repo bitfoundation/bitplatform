@@ -82,7 +82,7 @@ public class McpCompletionTests
         // with those rather than replace them - the same value offered to someone twice.
         var completion = await CompletePromptAsync("add-brouter-to-app", "renderMode", "");
 
-        CollectionAssert.AreEquivalent(new[] { "unknown", "server", "wasm", "auto", "standalone-wasm" }, completion.Values.ToArray());
+        CollectionAssert.AreEquivalent(new[] { "unknown", "server", "wasm", "auto", "standalone-wasm", "hybrid" }, completion.Values.ToArray());
         CollectionAssert.AreEqual(completion.Values.Distinct().ToArray(), completion.Values.ToArray(), "A value is being offered twice.");
     }
 

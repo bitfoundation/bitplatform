@@ -370,6 +370,9 @@ namespace Boilerplate.Server.Api.Infrastructure.Data.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("CreatedOn")
+                        .HasFilter("NOT [EmailConfirmed] AND NOT [PhoneNumberConfirmed]");
+
                     b.HasIndex("NormalizedEmail")
                         .IsUnique()
                         .HasDatabaseName("EmailIndex")
@@ -476,6 +479,8 @@ namespace Boilerplate.Server.Api.Infrastructure.Data.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("TenantId");
+
+                    b.HasIndex("UserId", "TenantId");
 
                     b.HasIndex("UserId", "ClaimType", "ClaimValue")
                         .IsUnique()
@@ -601,6 +606,9 @@ namespace Boilerplate.Server.Api.Infrastructure.Data.Migrations
                         .HasColumnType("TEXT");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("SignalRConnectionId")
+                        .HasFilter("[SignalRConnectionId] IS NOT NULL");
 
                     b.HasIndex("TenantId");
 
@@ -740,6 +748,8 @@ namespace Boilerplate.Server.Api.Infrastructure.Data.Migrations
                     b.HasIndex("CodeHash")
                         .IsUnique();
 
+                    b.HasIndex("ExpiresOn");
+
                     b.HasIndex("TenantId");
 
                     b.HasIndex("UserId");
@@ -775,6 +785,8 @@ namespace Boilerplate.Server.Api.Infrastructure.Data.Migrations
                         .HasColumnType("TEXT");
 
                     b.HasKey("UserSessionId");
+
+                    b.HasIndex("ClientId");
 
                     b.ToTable("OAuthGrants");
                 });
@@ -1704,6 +1716,8 @@ namespace Boilerplate.Server.Api.Infrastructure.Data.Migrations
                     b.HasIndex("DeviceId")
                         .IsUnique();
 
+                    b.HasIndex("ExpirationTime");
+
                     b.HasIndex("TenantId");
 
                     b.HasIndex("UserSessionId")
@@ -1783,6 +1797,9 @@ namespace Boilerplate.Server.Api.Infrastructure.Data.Migrations
                     b.HasIndex("TenantId", "UserId")
                         .IsUnique();
 
+                    b.HasIndex(new[] { "TenantId", "UserId" }, "IX_TenantUsers_TenantId_UserId_Accepted")
+                        .HasFilter("[AcceptedOn] IS NOT NULL");
+
                     b.ToTable("TenantUsers");
 
                     b.HasData(
@@ -1836,7 +1853,7 @@ namespace Boilerplate.Server.Api.Infrastructure.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("UserId");
+                    b.HasIndex("UserId", "UpdatedAt");
 
                     b.ToTable("TodoItems");
                 });

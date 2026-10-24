@@ -44,6 +44,21 @@
     <Project Path="Utilities/Bmage/Bit.Bmage/Bit.Bmage.csproj" />
     <Project Path="Utilities/Bmage/Tests/Bit.Bmage.Tests/Bit.Bmage.Tests.csproj" />
   </Folder>
+  <Folder Name="/Utilities/Bmage/Samples/" />
+  <Folder Name="/Utilities/Bmage/Samples/Auto/">
+    <Project Path="Utilities/Bmage/Samples/Auto/Bit.Bmage.Samples.Auto/Bit.Bmage.Samples.Auto.csproj" />
+    <Project Path="Utilities/Bmage/Samples/Auto/Bit.Bmage.Samples.Auto.Client/Bit.Bmage.Samples.Auto.Client.csproj" />
+  </Folder>
+  <Folder Name="/Utilities/Bmage/Samples/Core/">
+    <Project Path="Utilities/Bmage/Samples/Core/Bit.Bmage.Samples.Core.csproj" />
+  </Folder>
+  <Folder Name="/Utilities/Bmage/Samples/Server/">
+    <Project Path="Utilities/Bmage/Samples/Server/Bit.Bmage.Samples.Server.csproj" />
+  </Folder>
+  <Folder Name="/Utilities/Bmage/Samples/Wasm/">
+    <Project Path="Utilities/Bmage/Samples/Wasm/Bit.Bmage.Samples.Wasm/Bit.Bmage.Samples.Wasm.csproj" />
+    <Project Path="Utilities/Bmage/Samples/Wasm/Bit.Bmage.Samples.Wasm.Client/Bit.Bmage.Samples.Wasm.Client.csproj" />
+  </Folder>
   <Folder Name="/Utilities/Bsqlite/">
     <File Path="Utilities/Bsqlite/README.md" />
     <Project Path="Utilities/Bsqlite/Demo/Client/Bit.Bsqlite.Demo.Client.csproj" />
@@ -186,9 +201,6 @@
     <Project Path="Utilities/BevTools/Demo/Server/Bit.BevTools.Demo.Server.csproj" />
     <Project Path="Utilities/BevTools/Tests/Bit.BevTools.Tests/Bit.BevTools.Tests.csproj" />
   </Folder>
-  <Folder Name="/BlazorES2019/">
-    <Project Path="BlazorES2019/Bit.BlazorES2019/Bit.BlazorES2019.csproj" />
-  </Folder>
   <Folder Name="/BlazorUI/">
     <File Path="BlazorUI/Clean.bat" />
     <File Path="BlazorUI/README.md" />
@@ -248,15 +260,19 @@
     <File Path="Cli/README.md" />
     <Project Path="Cli/Bit.Cli/Bit.Cli.csproj" />
   </Folder>
-  <Folder Name="/CodeAnalyzers/">
-    <File Path="CodeAnalyzers/README.md" />
-    <Project Path="CodeAnalyzers/Bit.CodeAnalyzers/Bit.CodeAnalyzers.csproj" />
+  <Folder Name="/Cli/Minifier/">
+    <Project Path="Cli/Minifier/Bit.Minifier/Bit.Minifier.csproj" />
   </Folder>
-  <Folder Name="/Minifier/">
-    <Project Path="Minifier/Bit.Minifier/Bit.Minifier.csproj" />
+  <Folder Name="/Toolings/" />
+  <Folder Name="/Toolings/BlazorES2019/">
+    <Project Path="Toolings/BlazorES2019/Bit.BlazorES2019/Bit.BlazorES2019.csproj" />
   </Folder>
-  <Folder Name="/SourceGenerators/">
-    <File Path="SourceGenerators/README.md" />
-    <Project Path="SourceGenerators/Bit.SourceGenerators/Bit.SourceGenerators.csproj" />
+  <Folder Name="/Toolings/CodeAnalyzers/">
+    <File Path="Toolings/CodeAnalyzers/README.md" />
+    <Project Path="Toolings/CodeAnalyzers/Bit.CodeAnalyzers/Bit.CodeAnalyzers.csproj" />
+  </Folder>
+  <Folder Name="/Toolings/SourceGenerators/">
+    <File Path="Toolings/SourceGenerators/README.md" />
+    <Project Path="Toolings/SourceGenerators/Bit.SourceGenerators/Bit.SourceGenerators.csproj" />
   </Folder>
 </Solution>
