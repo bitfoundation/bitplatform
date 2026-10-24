@@ -1,0 +1,51 @@
+﻿@page "/sortable/virtualized"
+
+<PageTitle>Sortable - Virtualized list · Bdnd</PageTitle>
+
+<div class="bb-intro">
+    <h1>Sortable - Virtualized list</h1>
+    <p class="bb-subtitle">
+        A thousand rows in <code>Virtualize</code>: only the rows in view (and a few around them) are rendered, each a
+        drop target with <code>Edges="BdndEdges.Vertical"</code> around a draggable. Rows scrolled out unregister,
+        rows scrolled in register - and the row being dragged stays registered until its drag ends. The rows drag with
+        the pointer (<code>PointerDrag="BdndPointerDrag.All"</code>), so holding a row near the top or bottom of the
+        list scrolls it, and the copy that follows the pointer keeps to the list's axis
+        (<code>PreviewAxis="BdndAxis.Vertical"</code>); with the keyboard, each move scrolls the place it lands on into
+        view.
+    </p>
+</div>
+
+<DemoCode />
+
+<div class="bb-demo">
+    <BdndProvider>
+        <div class="virtual-list">
+            <Virtualize Items="_rows" ItemSize="44" OverscanCount="4" Context="row">
+                <BdndDropTarget TItem="string" Accept="row" Edges="BdndEdges.Vertical" Label="@row" class="virtual-slot"
+                                OnDrop="@(e => Drop(e, row))" @key="row" Context="slot">
+                    <BdndDraggable TItem="string" Type="row" Item="row" Label="@row" PointerDrag="BdndPointerDrag.All"
+                                   PreviewAxis="BdndAxis.Vertical" class="virtual-row" Context="drag">
+                        @row
+                    </BdndDraggable>
+                </BdndDropTarget>
+            </Virtualize>
+        </div>
+    </BdndProvider>
+
+    <p class="demo-caption virtual-status">@_status</p>
+</div>
+
+@code {
+    private readonly List<string> _rows = [.. Enumerable.Range(1, 1000).Select(i => $"Row {i}")];
+    private string _status = "Nothing moved yet.";
+
+    // Dropped on a row: before or after it, as the edge says.
+    private void Drop(BdndDropEventArgs<string> e, string target)
+    {
+        if (e.Item is not { } row) return;
+        if (BdndList.Move(_rows, _rows.IndexOf(row), _rows, BdndList.InsertionIndex(_rows.IndexOf(target), e.ClosestEdge)))
+        {
+            _status = $"{row} moved to place {_rows.IndexOf(row) + 1}.";
+        }
+    }
+}

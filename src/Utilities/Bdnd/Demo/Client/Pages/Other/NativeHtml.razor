@@ -8,7 +8,9 @@
         The target below accepts <code>BdndNativeTypes.Html</code>, <code>BdndNativeTypes.Text</code> and
         <code>BdndNativeTypes.Url</code>. Select some text on another page (or in the box on the right)
         and drag it here, or drag a link / image - the dropped HTML, plain text and any URLs
-        are read from the native <code>DataTransfer</code>.
+        are read from the native <code>DataTransfer</code>. The HTML is shown as text: dropped markup is untrusted
+        input, to be sanitized before it is ever rendered. The box at the bottom goes the other way: its
+        <code>NativeData</code> is what it carries out of the page.
     </p>
 </div>
 
@@ -30,6 +32,14 @@
                     <a href="https://react-dnd.github.io/react-dnd" target="_blank" rel="noopener">link inside</a>.</p>
             </div>
         </div>
+
+        @* NativeData: what this in-app drag carries for destinations outside the page. Dropped on the target above
+           it is still the in-app drag it is - the target takes native drags only - but a text field, another
+           application or the address bar of another tab read the text and the link. *@
+        <BdndDraggable TItem="string" Type="@ItemTypes.Card" Item="@("out")" NativeData="_outData" DropEffect="copy"
+                       class="box native-out" Context="drag">
+            Drag me into a text editor, or onto another tab's address bar
+        </BdndDraggable>
     </BdndProvider>
 
     @if (_last is not null)
@@ -58,6 +68,12 @@
 @code {
     private readonly string[] _accepted =
         [BdndNativeTypes.Html, BdndNativeTypes.Text, BdndNativeTypes.Url];
+
+    private readonly Dictionary<string, string> _outData = new()
+    {
+        ["text/plain"] = "Bdnd drags carry text for other applications.",
+        ["text/uri-list"] = "https://bdnd.bitplatform.dev/",
+    };
 
     private BdndNativeDropEventArgs? _last;
 

@@ -50,6 +50,42 @@ public sealed class BdndInterop : IAsyncDisposable
             "registerDropTarget", element, dotNetRef, options);
     }
 
+    /// <summary>
+    /// Moves a keyboard drag of the source behind <paramref name="registration"/> to another place among the
+    /// <paramref name="candidates"/> - a target, or an edge of a target that has edges - in document order from where
+    /// it is (<paramref name="currentId"/> and <paramref name="currentEdge"/>): <paramref name="command"/> is
+    /// <c>next</c>, <c>previous</c>, <c>first</c>, <c>last</c> or <c>stay</c>. <paramref name="sourceTargets"/> are the
+    /// targets around the source, by which the place the item already has is told apart. The target landed on is
+    /// scrolled into view. Null when no candidate is in the document.
+    /// </summary>
+    internal async ValueTask<BdndKeyboardTarget?> KeyboardNavigateAsync(IJSObjectReference registration,
+        BdndKeyboardCandidate[] candidates, string[] sourceTargets, string? currentId, string? currentEdge, string command)
+        => await registration.InvokeAsync<BdndKeyboardTarget?>("keyboardNavigate", candidates, sourceTargets, currentId, currentEdge, command);
+
+    /// <summary>
+    /// A stream of the contents of file <paramref name="index"/> of native drop <paramref name="dropId"/>. Takes no
+    /// cancellation token: a reference handed out after a cancellation would be lost, with the file it holds.
+    /// </summary>
+    internal async ValueTask<IJSStreamReference> ReadNativeFileAsync(string dropId, int index)
+    {
+        var module = await GetModuleAsync();
+        return await module.InvokeAsync<IJSStreamReference>("readNativeFile", dropId, index);
+    }
+
+    /// <summary>The descriptions of the files of native drop <paramref name="dropId"/> from <paramref name="offset"/> on, one page.</summary>
+    internal async ValueTask<BdndNativeFile[]> GetNativeDropFilesAsync(string dropId, int offset, int count)
+    {
+        var module = await GetModuleAsync();
+        return await module.InvokeAsync<BdndNativeFile[]>("nativeDropFiles", dropId, offset, count);
+    }
+
+    /// <summary>Has screen readers read <paramref name="text"/> out, through the module's live region.</summary>
+    internal async ValueTask AnnounceAsync(string text)
+    {
+        var module = await GetModuleAsync();
+        await module.InvokeVoidAsync("announce", text);
+    }
+
     // A failed import is retried by the next call instead of being cached for the whole scope.
     private Task<IJSObjectReference> GetModuleAsync()
     {

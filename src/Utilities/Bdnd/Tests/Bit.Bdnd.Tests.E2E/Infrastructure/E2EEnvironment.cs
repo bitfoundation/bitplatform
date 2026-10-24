@@ -39,6 +39,13 @@ public static class E2EEnvironment
     /// </summary>
     public static string? Channel { get; } = Read("BDND_E2E_CHANNEL");
 
+    /// <summary>
+    /// <c>BDND_E2E_BROWSER</c>: <c>chromium</c> (the default), <c>firefox</c> or <c>webkit</c> - the browser engine the
+    /// suite drives, from the browsers Playwright installed (<c>playwright.ps1 install firefox webkit</c>). The tests
+    /// that synthesize touches through the DevTools protocol run on Chromium only.
+    /// </summary>
+    public static string BrowserEngine { get; } = Read("BDND_E2E_BROWSER")?.ToLowerInvariant() ?? "chromium";
+
     /// <summary><c>BDND_E2E_EXECUTABLE</c>: full path to a chromium-family executable.</summary>
     public static string? Executable { get; } = Read("BDND_E2E_EXECUTABLE");
 

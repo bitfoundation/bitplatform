@@ -1,4 +1,7 @@
 ﻿@inherits LayoutComponentBase
+@implements IDisposable
+@inject NavigationManager Navigation
+@inject IJSRuntime JS
 
 @* The app shell - part of the site kit every Utilities demo shares (see wwwroot/app.css): a skip
    link, the sticky header, the content band, and the footer. The landing page renders straight
@@ -28,3 +31,54 @@
 
     <Footer />
 </div>
+
+@code {
+    private IDisposable? _navigation;
+    private bool _reloading;
+
+    // The site runs on WebAssembly except /hosting/server-check, which the server's App.razor serves with
+    // InteractiveServer. The render mode is picked when a page is loaded, and the interactive router would render
+    // the next page in whatever mode the current one has - so moving between the two loads the page afresh.
+    protected override void OnInitialized()
+    {
+        if (RendererInfo.IsInteractive is false) return;
+        if (WrongRenderer(Navigation.Uri))
+        {
+            // already at the address: a reload (a forced load of the same address with a #fragment would only scroll)
+            _reloading = true;
+            _ = JS.InvokeVoidAsync("location.reload");
+            return;
+        }
+        _navigation = Navigation.RegisterLocationChangingHandler(OnLocationChanging);
+    }
+
+    private ValueTask OnLocationChanging(LocationChangingContext context)
+    {
+        if (_reloading is false && WrongRenderer(context.TargetLocation))
+        {
+            context.PreventNavigation();
+            Reload(context.TargetLocation, replace: false);
+        }
+        return ValueTask.CompletedTask;
+    }
+
+    private void Reload(string uri, bool replace)
+    {
+        // The forced load goes through the location-changing handlers too; this one lets it pass. The page unloads
+        // right after, so the flag is never reset.
+        _reloading = true;
+        Navigation.NavigateTo(uri, forceLoad: true, replace: replace);
+    }
+
+    private bool WrongRenderer(string uri)
+    {
+        var absolute = Navigation.ToAbsoluteUri(uri).GetLeftPart(UriPartial.Path);
+        if (absolute.StartsWith(Navigation.BaseUri, StringComparison.OrdinalIgnoreCase) is false) return false; // another site
+        var path = Navigation.ToBaseRelativePath(absolute);
+        var serverPage = path.Equals("hosting/server-check", StringComparison.OrdinalIgnoreCase)
+                         || path.StartsWith("hosting/server-check/", StringComparison.OrdinalIgnoreCase);
+        return serverPage != (RendererInfo.Name == "Server");
+    }
+
+    public void Dispose() => _navigation?.Dispose();
+}

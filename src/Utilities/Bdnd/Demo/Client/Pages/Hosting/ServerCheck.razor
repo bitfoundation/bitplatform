@@ -1,0 +1,116 @@
+﻿@page "/hosting/server-check"
+@using System.Globalization
+
+<PageTitle>Blazor Server check · Bdnd</PageTitle>
+
+<div class="bb-intro">
+    <h1>Blazor Server check</h1>
+    <p class="bb-subtitle">
+        Every other page of this site runs on WebAssembly. This one is served with <code>InteractiveServer</code> -
+        the site's <code>App.razor</code> picks the render mode by path, so open it by its address - and every drag
+        below goes through a SignalR circuit: the module's reports, the callbacks and the file contents travel between
+        the browser and the server. Running on: <strong class="server-check-renderer">@RendererInfo.Name</strong>.
+    </p>
+</div>
+
+<DemoCode />
+
+<div class="bb-demo">
+    <BdndProvider>
+        <h2 class="demo-result-title">Mouse, keyboard and touch</h2>
+        <div class="row-wrap">
+            @foreach (var box in Boxes)
+            {
+                <BdndDraggable TItem="string" Type="@ItemTypes.Box" Item="box" Label="@box" class="box server-check-box" Context="drag">
+                    @box
+                </BdndDraggable>
+            }
+            <BdndDraggable TItem="string" Type="@ItemTypes.Box" Item="@("Pointer")" Label="Pointer" PointerDrag="BdndPointerDrag.All"
+                           class="box server-check-pointer" Context="drag">
+                Pointer
+            </BdndDraggable>
+            <BdndDraggable TItem="string" Type="@Layered" Item="@("Layered")" Label="Layered" UseCustomDragLayer="true"
+                           class="box server-check-layered" Context="drag">
+                Layered
+            </BdndDraggable>
+        </div>
+
+        <BdndDropTarget TItem="string" AcceptTypes="@BinTypes" Label="the bin" class="native-zone server-check-bin"
+                        OnDrop="@(e => _dropped = $"{e.Item} ({e.Monitor.GetDragInput()})")" Context="bin">
+            @(bin.IsOver ? "Release" : _dropped is null ? "Drop a box here" : $"Dropped: {_dropped}")
+        </BdndDropTarget>
+
+        @* Accept: only the drags it draws send their pointer moves over the circuit *@
+        <BdndDragLayer TItem="string" Accept="@Layered" Context="layer">
+            @if (layer.IsDragging && layer.SourceClientOffset is { } at)
+            {
+                <div class="box server-check-preview" style="position:fixed;pointer-events:none;left:@(at.X.ToString("0", CultureInfo.InvariantCulture))px;top:@(at.Y.ToString("0", CultureInfo.InvariantCulture))px;">
+                    preview
+                </div>
+            }
+        </BdndDragLayer>
+
+        <h2 class="demo-result-title">Insertion edges</h2>
+        <div class="server-check-list">
+            @for (var i = 0; i < _list.Count; i++)
+            {
+                var index = i;
+                var item = _list[i];
+                <BdndDropTarget TItem="string" Accept="row" Edges="BdndEdges.Vertical" Label="@item" class="indicator-slot"
+                                OnDrop="@(e => _ = BdndList.Move(_list, _list.IndexOf(e.Item!), _list, BdndList.InsertionIndex(index, e.ClosestEdge)))"
+                                @key="item" Context="slot">
+                    <BdndDraggable TItem="string" Type="row" Item="item" Label="@item" class="sortable-card indicator-card server-check-row" Context="drag">
+                        @item
+                    </BdndDraggable>
+                </BdndDropTarget>
+            }
+        </div>
+        <p class="demo-caption server-check-order">Order: @string.Join(", ", _list)</p>
+
+        <h2 class="demo-result-title">Files</h2>
+        <BdndDropTarget TItem="object" Accept="@BdndNativeTypes.File" AcceptFileTypes="@TextFiles" MaxFiles="5"
+                        class="native-zone server-check-files" OnNativeDrop="ReadFiles" Context="files">
+            @(files.IsOver ? "Release the files" : "Drop up to 5 text files here")
+        </BdndDropTarget>
+        <p class="demo-caption server-check-file-contents">@_contents</p>
+    </BdndProvider>
+</div>
+
+@code {
+    private static readonly string[] Boxes = ["Glass", "Banana"];
+    private static readonly string[] TextFiles = ["text/plain"];
+    private const string Layered = "layered";
+    private static readonly string[] BinTypes = [ItemTypes.Box, Layered];
+    private const int Shown = 200;
+
+    private readonly List<string> _list = ["One", "Two", "Three"];
+    private string? _dropped;
+    private string _contents = "";
+    private int _drops;
+
+    // The contents stream over the circuit. Only the first characters of each file are read and shown: what a
+    // visitor drops is untrusted, and a file past the read limit, or gone from the browser, fails on its own.
+    private async Task ReadFiles(BdndNativeDropEventArgs e)
+    {
+        var drop = ++_drops;
+        var parts = new List<string>();
+        foreach (var file in e.Files.Where(f => f.CanRead))
+        {
+            try
+            {
+                await using var stream = await file.OpenReadStreamAsync();
+                using var reader = new StreamReader(stream);
+                // one character more than shown tells a longer file (the stream reads asynchronously only)
+                var buffer = new char[Shown + 1];
+                var read = await reader.ReadBlockAsync(buffer, 0, buffer.Length);
+                parts.Add($"{file.Name}: {new string(buffer, 0, Math.Min(read, Shown))}{(read > Shown ? "…" : "")}");
+            }
+            catch (Exception ex) when (ex is IOException or InvalidOperationException or TimeoutException or JSException or OperationCanceledException)
+            {
+                parts.Add($"{file.Name}: could not be read ({ex.Message})");
+            }
+        }
+        // a later drop that finished first keeps its contents
+        if (drop == _drops) _contents = string.Join(" | ", parts);
+    }
+}

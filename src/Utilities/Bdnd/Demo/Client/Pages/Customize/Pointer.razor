@@ -1,0 +1,65 @@
+﻿@page "/customize/pointer"
+
+<PageTitle>Touch and pointer drags · Bdnd</PageTitle>
+
+<div class="bb-intro">
+    <h1>Touch and pointer drags</h1>
+    <p class="bb-subtitle">
+        Touch and pen drag every <code>BdndDraggable</code> through pointer events, since most touch browsers raise no
+        native drag events: press a box for a moment, then drag it. These boxes set
+        <code>PointerDrag="BdndPointerDrag.All"</code>, so the mouse drags them the same way - a copy of the box follows
+        the pointer, Escape cancels, and the tray scrolls while the pointer is near its top or bottom edge. The copy is
+        styled through <code>[data-bit-bdnd-preview]</code>; the "info" corner is a <code>data-bit-bdnd-no-drag</code>
+        region a press there never drags from.
+    </p>
+</div>
+
+<DemoCode />
+
+<div class="bb-demo">
+    <BdndProvider>
+        <div class="row-wrap pointer-palette">
+            @foreach (var box in Boxes)
+            {
+                <BdndDraggable TItem="string" Type="@ItemTypes.Box" Item="box" Label="@box" PointerDrag="BdndPointerDrag.All"
+                               class="box pointer-box" Context="drag">
+                    @box
+                    <button type="button" class="pointer-box__info" data-bit-bdnd-no-drag
+                            aria-label="@($"About {box}")" @onclick="() => ShowInfo(box)">i</button>
+                </BdndDraggable>
+            }
+        </div>
+
+        <div class="pointer-tray" tabindex="-1">
+            @for (var i = 1; i <= SlotCount; i++)
+            {
+                var slot = i;
+                <BdndDropTarget TItem="string" Accept="@ItemTypes.Box" Label="@($"Slot {slot}")" class="pointer-slot"
+                                OnDrop="@(e => Put(e.Item!, slot))" Context="drop">
+                    <span>Slot @slot</span>
+                    <span class="pointer-slot__content">@(_slots.TryGetValue(slot, out var content) ? content : "empty")</span>
+                </BdndDropTarget>
+            }
+        </div>
+    </BdndProvider>
+
+    <p class="demo-caption pointer-status">@_status</p>
+</div>
+
+@code {
+    private static readonly string[] Boxes = ["Glass", "Banana", "Paper"];
+
+    private const int SlotCount = 20;
+
+    private readonly Dictionary<int, string> _slots = [];
+
+    private string _status = "Nothing put anywhere yet.";
+
+    private void ShowInfo(string box) => _status = $"{box} is a box.";
+
+    private void Put(string box, int slot)
+    {
+        _slots[slot] = box;
+        _status = $"{box} put in slot {slot}.";
+    }
+}

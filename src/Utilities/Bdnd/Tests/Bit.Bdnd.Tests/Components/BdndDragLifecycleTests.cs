@@ -507,9 +507,11 @@ public class BdndDragLifecycleTests : BdndComponentTestBase
 
         Assert.IsFalse(Manager.IsDragging());
         Assert.IsFalse(_binStates.Last.IsOver, "an async OnEnd must not keep targets highlighted");
+        // the end report completes once the drag is over: the module starts the next drag after it, which an
+        // OnEnd still saving something must not hold up
+        await end.WaitAsync(WaitLimit);
         gate.SetResult();
-        await end;
-        Assert.AreSequenceEqual(new[] { "begin:crate", "end:True", "after:False" }, _log);
+        cut.WaitForAssertion(() => Assert.AreSequenceEqual(new[] { "begin:crate", "end:True", "after:False" }, _log));
     }
 
     [TestMethod]
@@ -655,6 +657,53 @@ public class BdndDragLifecycleTests : BdndComponentTestBase
         await StartDragAsync(Source(cut));
 
         Assert.IsTrue(SourceUpdates[^1].TrackPointer, "the drag started with a layer listening");
+    }
+
+    [TestMethod]
+    public async Task ALayerDrawingOtherTypesNeitherSeesTheDragNorHasItsMovesSent()
+    {
+        var states = new List<BdndDragLayerState<string>>();
+        var renders = 0;
+        var cut = RenderProvider(p => p
+            .AddChildContent<BdndDraggable<string>>(d => d.Add(x => x.Type, "box").Add(x => x.Item, "crate"))
+            .AddChildContent(Fragment<BdndDragLayer<string>>(
+                ("Accept", "card"),
+                ("ChildContent", (RenderFragment<BdndDragLayerState<string>>)(state => _ =>
+                {
+                    renders++;
+                    states.Add(state);
+                })))));
+        var source = Source(cut);
+
+        await StartDragAsync(source, 10, 10);
+        var rendersAtStart = renders;
+        await source.InvokeAsync(() => source.Instance.HandleDragMove(150, 90));
+
+        Assert.IsFalse(SourceUpdates.Concat(SourceRegistrations).Any(o => o.TrackPointer), "the only layer draws cards: the box's moves stay in the browser");
+        Assert.IsTrue(Manager.IsDragging());
+        Assert.IsFalse(states[^1].IsDragging, "a box drag is no drag to a layer of cards");
+        Assert.IsNull(states[^1].Item);
+        Assert.AreEqual(rendersAtStart, renders, "a move of a box drag does not re-render the layer");
+    }
+
+    [TestMethod]
+    public async Task ALayerDrawingTheDraggedTypeFollowsItsMoves()
+    {
+        var states = new List<BdndDragLayerState<string>>();
+        var cut = RenderProvider(p => p
+            .AddChildContent<BdndDraggable<string>>(d => d.Add(x => x.Type, "box").Add(x => x.Item, "crate"))
+            .AddChildContent(Fragment<BdndDragLayer<string>>(
+                ("AcceptTypes", new[] { "card", "box" }),
+                ("ChildContent", (RenderFragment<BdndDragLayerState<string>>)(state => _ => states.Add(state))))));
+        var source = Source(cut);
+
+        await StartDragAsync(source, 10, 10);
+        await source.InvokeAsync(() => source.Instance.HandleDragMove(150, 90));
+
+        Assert.IsTrue((SourceUpdates.LastOrDefault() ?? SourceRegistrations[^1]).TrackPointer);
+        cut.WaitForAssertion(() => Assert.AreEqual(new BdndXYCoord(150, 90), states[^1].ClientOffset));
+        Assert.IsTrue(states[^1].IsDragging);
+        Assert.AreEqual("crate", states[^1].Item);
     }
 
     [TestMethod]

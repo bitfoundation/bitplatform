@@ -1,0 +1,104 @@
+﻿@page "/accessibility/keyboard"
+
+<PageTitle>Keyboard and screen readers · Bdnd</PageTitle>
+
+<div class="bb-intro">
+    <h1>Keyboard and screen readers</h1>
+    <p class="bb-subtitle">
+        Every draggable can be dragged without a pointer. Tab to a card, press <kbd>Space</kbd> or <kbd>Enter</kbd>
+        to pick it up, use the arrow keys to move it between the columns that can take it, and press
+        <kbd>Space</kbd> or <kbd>Enter</kbd> to drop it or <kbd>Escape</kbd> to cancel. A live region tells screen
+        readers what happens, using each source's and target's <code>Label</code>. The arrow buttons on each card
+        are the single-pointer alternative WCAG 2.5.7 asks for: the same move, without dragging. The columns are
+        styled from the <code>data-bit-bdnd-*</code> attributes alone.
+    </p>
+</div>
+
+<DemoCode />
+
+<div class="bb-demo">
+    <BdndProvider>
+        <div class="kanban">
+            @foreach (var column in Columns)
+            {
+                <BdndDropTarget TItem="KanbanTask" Accept="task" Tag="section" Label="@column" class="kanban-column" Context="drop"
+                                CanDropPredicate="@((task, _) => CanMove(task, column))"
+                                OnDrop="@(e => Move(e.Item!, column))" aria-label="@column">
+                    <h2 class="kanban-column__title">
+                        @column
+                        <small>@TasksIn(column).Count()@(column == "Doing" ? $" of {DoingLimit}" : "")</small>
+                    </h2>
+                    @foreach (var task in TasksIn(column))
+                    {
+                        <BdndDraggable TItem="KanbanTask" Type="task" Item="task" Label="@task.Title" Tag="article"
+                                       class="kanban-card" @key="task" Context="drag">
+                            <span class="kanban-card__title">@task.Title</span>
+                            <span class="kanban-card__moves">
+                                <button type="button" class="kanban-card__move" disabled="@(PreviousOf(task) is null)"
+                                        aria-label="@($"Move {task.Title} to {PreviousOf(task)}")"
+                                        @onclick="() => Move(task, PreviousOf(task)!)">&larr;</button>
+                                <button type="button" class="kanban-card__move" disabled="@(NextOf(task) is null)"
+                                        aria-label="@($"Move {task.Title} to {NextOf(task)}")"
+                                        @onclick="() => Move(task, NextOf(task)!)">&rarr;</button>
+                            </span>
+                        </BdndDraggable>
+                    }
+                </BdndDropTarget>
+            }
+        </div>
+    </BdndProvider>
+
+    <p class="demo-caption kanban-status" aria-live="polite">@_status</p>
+</div>
+
+@code {
+    public sealed class KanbanTask
+    {
+        public required string Title { get; init; }
+        public required string Column { get; set; }
+    }
+
+    private static readonly string[] Columns = ["To do", "Doing", "Done"];
+
+    // "Doing" takes at most this many tasks: a full column cannot be dropped on, and says so to the keyboard
+    // too (it is skipped by the arrow keys).
+    private const int DoingLimit = 2;
+
+    private readonly List<KanbanTask> _tasks =
+    [
+        new() { Title = "Write the docs", Column = "To do" },
+        new() { Title = "Review the PR", Column = "To do" },
+        new() { Title = "Fix the build", Column = "Doing" },
+        new() { Title = "Ship the release", Column = "Done" },
+    ];
+
+    private string _status = "Nothing moved yet.";
+
+    private IEnumerable<KanbanTask> TasksIn(string column) => _tasks.Where(t => t.Column == column);
+
+    private bool CanMove(KanbanTask? task, string column) =>
+        task is not null && (task.Column == column || column != "Doing" || TasksIn("Doing").Count() < DoingLimit);
+
+    private string? PreviousOf(KanbanTask task)
+    {
+        var index = Array.IndexOf(Columns, task.Column);
+        return index > 0 && CanMove(task, Columns[index - 1]) ? Columns[index - 1] : null;
+    }
+
+    private string? NextOf(KanbanTask task)
+    {
+        var index = Array.IndexOf(Columns, task.Column);
+        return index < Columns.Length - 1 && CanMove(task, Columns[index + 1]) ? Columns[index + 1] : null;
+    }
+
+    // One move for the drop and the buttons alike: the task goes to the end of the column.
+    private void Move(KanbanTask task, string column)
+    {
+        if (task.Column == column) return;
+        var from = task.Column;
+        _tasks.Remove(task);
+        task.Column = column;
+        _tasks.Add(task);
+        _status = $"Moved {task.Title} from {from} to {column}.";
+    }
+}

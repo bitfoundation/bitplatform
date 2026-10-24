@@ -1,4 +1,5 @@
 ﻿@namespace Bit.Bdnd
+@implements IDisposable
 
 <CascadingValue Value="_manager" IsFixed="true">
     @ChildContent
@@ -8,10 +9,58 @@
     /// <summary>Optional externally-owned manager. When omitted, one is created for this subtree.</summary>
     [Parameter] public BdndDragDropManager? Manager { get; set; }
 
+    /// <summary>
+    /// The texts screen readers are given about keyboard drags - the instructions and the announcements - for
+    /// translating or rewording them. When omitted the manager keeps its own (<see cref="BdndAnnouncements.Default"/>
+    /// unless it was given others).
+    /// </summary>
+    [Parameter] public BdndAnnouncements? Announcements { get; set; }
+
+    /// <summary>
+    /// Called when any drag of this context begins - right after it is published and its source's <c>OnBegin</c>
+    /// started - for what watches every drag rather than one source.
+    /// </summary>
+    [Parameter] public EventCallback<BdndDragEventArgs> OnDragStart { get; set; }
+
+    /// <summary>
+    /// Called when any drag of this context ends - dropped or cancelled - once the drag state is cleared and its
+    /// source's <c>OnEnd</c> began, with <c>DidDrop</c> and the drop result: where an undo history records the moves,
+    /// or analytics count them.
+    /// </summary>
+    [Parameter] public EventCallback<BdndDragEventArgs> OnDragEnd { get; set; }
+
     /// <summary>The drag-and-drop content: the draggables, drop targets and drag layers of this context.</summary>
     [Parameter] public RenderFragment? ChildContent { get; set; }
 
     private BdndDragDropManager? _manager;
+    private Func<Exception, Task>? _exceptionSink;
+    private bool _subscribed;
+
+    // The manager raises these while it updates its state. The callbacks run once that update is over - a yield
+    // later - so what they render, or throw, does not land in the middle of it; their exceptions reach the renderer
+    // like an event handler's.
+    private void OnStarted(BdndDragEventArgs e)
+    {
+        if (OnDragStart.HasDelegate) _ = InvokeAsync(() => RunAsync(OnDragStart, e));
+    }
+
+    private void OnEnded(BdndDragEventArgs e)
+    {
+        if (OnDragEnd.HasDelegate) _ = InvokeAsync(() => RunAsync(OnDragEnd, e));
+    }
+
+    private async Task RunAsync(EventCallback<BdndDragEventArgs> callback, BdndDragEventArgs e)
+    {
+        try
+        {
+            await Task.Yield();
+            await callback.InvokeAsync(e);
+        }
+        catch (Exception exception)
+        {
+            await DispatchExceptionAsync(exception);
+        }
+    }
 
     protected override void OnParametersSet()
     {
@@ -21,5 +70,30 @@
             throw new InvalidOperationException(
                 $"The {nameof(Manager)} of a {nameof(BdndProvider)} cannot be changed after it has been set.");
         _manager = manager;
+        if (Announcements is not null) manager.Announcements = Announcements;
+        if (_subscribed is false)
+        {
+            _subscribed = true;
+            manager.DragStarted += OnStarted;
+            manager.DragEnded += OnEnded;
+        }
+        if (_exceptionSink is null)
+        {
+            // the exceptions of callbacks whose component is already gone (a source a drop re-rendered away runs
+            // its OnEnd all the same) reach the renderer through the provider
+            _exceptionSink = DispatchExceptionAsync;
+            manager.AddExceptionSink(_exceptionSink);
+        }
+    }
+
+    public void Dispose()
+    {
+        if (_manager is null) return;
+        if (_exceptionSink is not null) _manager.RemoveExceptionSink(_exceptionSink);
+        if (_subscribed)
+        {
+            _manager.DragStarted -= OnStarted;
+            _manager.DragEnded -= OnEnded;
+        }
     }
 }

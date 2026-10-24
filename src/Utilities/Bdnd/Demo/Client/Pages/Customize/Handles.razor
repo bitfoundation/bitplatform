@@ -7,7 +7,8 @@
     <p class="bb-subtitle">
         With <code>UseHandle="true"</code> a draggable can only be picked up by a nested
         <code>&lt;BdndDragHandle&gt;</code>. The rest of the element stays interactive. Compare the two
-        boxes below: the first drags from anywhere, the second only from its grip.
+        boxes below: the first drags from anywhere, the second only from its grip. The third drags from anywhere but
+        its text field, where a press selects text as in any field.
     </p>
 </div>
 
@@ -29,6 +30,13 @@
                         <span class="handle">⠿</span>
                     </BdndDragHandle>
                     <span>Only the grip drags me</span>
+                </div>
+            </BdndDraggable>
+
+            <BdndDraggable TItem="string" Type="@ItemTypes.Box" Item="@("note")" Context="d">
+                <div class="box handles-note" style="opacity:@(d.IsDragging ? "0.4" : "1");width:13rem;">
+                    <span>Drag me, or edit my note</span>
+                    <input class="handles-note__field" aria-label="Note" value="Select this text" />
                 </div>
             </BdndDraggable>
         </div>

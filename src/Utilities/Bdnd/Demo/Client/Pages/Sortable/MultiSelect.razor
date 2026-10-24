@@ -1,0 +1,62 @@
+﻿@page "/sortable/multi-select"
+
+<PageTitle>Sortable - Dragging several items · Bdnd</PageTitle>
+
+<div class="bb-intro">
+    <h1>Sortable - Dragging several items</h1>
+    <p class="bb-subtitle">
+        A drag carries one item, and that item can be a list. Tick some cards and drag one of them: its
+        <code>ItemFactory</code> hands over the whole selection, <code>IsDraggingOverride</code> marks every selected
+        card as dragged, and the archive receives them all. A card that is not ticked drags alone. The keyboard does
+        the same: Space on a ticked card picks the selection up.
+    </p>
+</div>
+
+<DemoCode />
+
+<div class="bb-demo">
+    <BdndProvider>
+        <div class="multi-board">
+            <ul class="multi-list" aria-label="Cards">
+                @foreach (var card in _cards)
+                {
+                    <li class="multi-row" @key="card">
+                        <input type="checkbox" class="multi-check" checked="@_selected.Contains(card)"
+                               aria-label="@($"Select {card}")" @onchange="() => Toggle(card)" />
+                        <BdndDraggable TItem="IReadOnlyList<string>" Type="cards" Label="@card"
+                                       ItemFactory="@(() => _selected.Contains(card) ? _cards.Where(_selected.Contains).ToList() : [card])"
+                                       IsDraggingOverride="@(m => m.GetItem<IReadOnlyList<string>>()?.Contains(card) == true)"
+                                       class="@($"multi-card {(_selected.Contains(card) ? "multi-card--selected" : "")}")" Context="drag">
+                            @card
+                        </BdndDraggable>
+                    </li>
+                }
+            </ul>
+
+            <BdndDropTarget TItem="IReadOnlyList<string>" Accept="cards" Label="the archive" class="multi-archive"
+                            OnDrop="@(e => Archive(e.Item!))" Context="archive">
+                @(archive.IsOver ? $"Release to archive {archive.Item?.Count} card(s)" : "Archive")
+            </BdndDropTarget>
+        </div>
+    </BdndProvider>
+
+    <p class="demo-caption multi-archived">Archived: @(_archived.Count == 0 ? "nothing yet" : string.Join(", ", _archived))</p>
+</div>
+
+@code {
+    private readonly List<string> _cards = ["Alpha", "Bravo", "Charlie", "Delta", "Echo", "Foxtrot"];
+    private readonly HashSet<string> _selected = [];
+    private readonly List<string> _archived = [];
+
+    private void Toggle(string card)
+    {
+        if (_selected.Add(card) is false) _selected.Remove(card);
+    }
+
+    private void Archive(IReadOnlyList<string> cards)
+    {
+        foreach (var card in cards) _cards.Remove(card);
+        _selected.ExceptWith(cards);
+        _archived.AddRange(cards);
+    }
+}
