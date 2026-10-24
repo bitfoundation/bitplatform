@@ -31,7 +31,11 @@ public partial class BitAiArtifactView : BitAiComponentBase
     private (int Count, int Version, BitAiStrings Strings)? _versionsKey;
     private BitAiIconClassesCache<BitButtonClassStyles> _downloadButtonClasses;
     private BitAiIconClassesCache<BitButtonClassStyles> _expandButtonClasses;
+    private BitAiIconClassesCache<BitActionButtonClassStyles> _imagePlaceholderClasses;
     private List<BitDropdownItem<int>> _versionItems = [];
+
+    // The image source the user asked to load under an image policy that asks first.
+    private string? _loadedImage;
 
     // Which Escapes something inside the panel claimed first (see _OnEscapeVerdict), for HandleOnKeyDown. Made the first
     // time the panel is expanded, so a panel that never is starts no listener.
@@ -226,6 +230,17 @@ public partial class BitAiArtifactView : BitAiComponentBase
         _expandButtonClasses.Get(_expanded ? "bit-icon-ai bit-icon-ai--BackToWindow" : "bit-icon-ai bit-icon-ai--FullScreen",
                                  Classes?.ExpandButton,
                                  BitAiIconClasses.With);
+
+    private BitActionButtonClassStyles _ImagePlaceholderClasses =>
+        _imagePlaceholderClasses.Get("bit-icon-ai bit-icon-ai--Photo2", Classes?.ImagePlaceholder, BitAiIconClasses.With);
+
+    // The source asked for is the one shown once the user loaded it, so another version or artifact asks again.
+    private BitAiImageDecision DecideImage(string source)
+    {
+        var decision = DecideImageSource(source);
+
+        return decision == BitAiImageDecision.AskFirst && _loadedImage == source ? BitAiImageDecision.Show : decision;
+    }
 
 
 

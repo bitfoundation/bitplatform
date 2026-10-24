@@ -50,13 +50,16 @@ public class BitAiConversationStreamProcessorTests
         Assert.AreEqual("Here it is.", Assert.IsExactInstanceOfType<BitAiTextPart>(message.Parts[2]).Text);
     }
 
-    // A result part of its own is only ever built for a call the conversation has not seen, which is why it carries no
-    // tool name: the event names none and there is no call to take one from. A call the conversation holds - in the
-    // message being generated or an earlier one - takes the result itself.
+    // A call the conversation holds - in the message being generated or an earlier one - takes the result itself. A
+    // result for a call the conversation has not seen never becomes a part of its own: it is held for that call (see
+    // BitAiHeldToolResultTests), and dropped, leaving an error, when the call never starts.
     [TestMethod]
-    public void AResultIsReconciledOntoItsCallAndOnlyAnUnseenCallGetsAResultPartOfItsOwn()
+    public void AResultIsReconciledOntoItsCallAndOneForAnUnseenCallIsNeverAPartOfItsOwn()
     {
-        var (conversation, processor) = Create();
+        var conversation = new BitAiConversation();
+        var clock = new BitAiManualTimeProvider();
+        var processor = new BitAiConversationStreamProcessor(conversation, clock);
+
         processor.BeginGeneration();
         processor.Apply(new BitAiToolCallStartedEvent("call1", "search") { Arguments = JsonDocument.Parse("{}").RootElement });
         processor.EndGeneration();
@@ -68,11 +71,14 @@ public class BitAiConversationStreamProcessorTests
 
         Assert.AreEqual("found", conversation.Messages[0].FindToolCall("call1")!.Result!.Text);
         Assert.IsEmpty(conversation.Messages[0].PartsOf<BitAiToolResultPart>());
+        Assert.IsEmpty(conversation.Messages[1].PartsOf<BitAiToolResultPart>());
+        Assert.IsEmpty(conversation.Messages[1].PartsOf<BitAiErrorPart>());
 
-        var orphan = Assert.ContainsSingle(conversation.Messages[1].PartsOf<BitAiToolResultPart>());
-        Assert.AreEqual("call2", orphan.ToolCallId);
-        Assert.AreEqual("remote", orphan.Outcome.Text);
-        Assert.IsNull(orphan.ToolName);
+        clock.Advance(processor.ToolResultHoldTime);
+
+        Assert.IsEmpty(conversation.Messages[1].PartsOf<BitAiToolResultPart>());
+        var dropped = Assert.ContainsSingle(conversation.Messages[1].PartsOf<BitAiErrorPart>());
+        Assert.AreEqual("call2", Assert.IsExactInstanceOfType<BitAiOrphanedToolResultException>(dropped.Error.Exception).ToolCallId);
     }
 
     [TestMethod]

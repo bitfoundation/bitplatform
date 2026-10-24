@@ -57,6 +57,22 @@ public partial class BitAiImagePartViewDemo
                 },
                 new()
                 {
+                    Name = "ImagePlaceholder",
+                    Type = "BitActionButtonClassStyles?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the button (a BitActionButton) the BitAiImagePartView shows in place of an image the image policy loads only on request.",
+                    LinkType = LinkType.Link,
+                    Href = "/components/actionbutton/#class-styles",
+                },
+                new()
+                {
+                    Name = "BlockedImage",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the alternative text the BitAiImagePartView shows in place of an image the image policy blocks.",
+                },
+                new()
+                {
                     Name = "Caption",
                     Type = "string?",
                     DefaultValue = "null",
@@ -76,7 +92,7 @@ public partial class BitAiImagePartViewDemo
                     Name = "Url",
                     Type = "string",
                     DefaultValue = "",
-                    Description = "The source of the image: an absolute, relative or data URL. Set through the constructor.",
+                    Description = "The source of the image: an absolute, relative or data URL, loaded as the image policy of the options decides. Set through the constructor.",
                 },
                 new()
                 {
@@ -129,6 +145,7 @@ public partial class BitAiImagePartViewDemo
         new() { Name = "--bit-AiImagePartView-radius", DefaultValue = "var(--bit-shp-radius-surface)", Description = "Corner radius of the image." },
         new() { Name = "--bit-AiImagePartView-caption-color", DefaultValue = "var(--bit-clr-fg-ter)", Description = "Text color of the caption." },
         new() { Name = "--bit-AiImagePartView-caption-font-size", DefaultValue = "var(--bit-tpg-fs-xs)", Description = "Text size of the caption." },
+        new() { Name = "--bit-AiImagePartView-muted-color", DefaultValue = "var(--bit-clr-fg-sec)", Description = "Text color of the alternative text shown in place of an image the image policy blocks." },
     ];
 
 
@@ -157,6 +174,17 @@ public partial class BitAiImagePartViewDemo
         Width = 320,
         Height = 120,
     };
+
+    private readonly BitAiImagePart policyImage = new("_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img2.jpg")
+    {
+        Alt = "A range of snow-covered peaks under a blue sky",
+        Caption = "Shown only as the image policy allows.",
+        Width = 1000,
+        Height = 350,
+    };
+
+    private readonly BitAiUiOptions clickToLoadOptions = BitAiUiOptions.Default with { Images = BitAiImagePolicy.ClickToLoad };
+    private readonly BitAiUiOptions blockOptions = BitAiUiOptions.Default with { Images = BitAiImagePolicy.Block };
 
     private readonly BitAiImagePart styledImage = new("_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img4.jpg")
     {

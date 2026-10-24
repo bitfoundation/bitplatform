@@ -11,6 +11,7 @@
 public sealed record BitAiChatSessionOptions
 {
     private readonly BitAiTextPacingOptions? _pacing = BitAiTextPacingOptions.Default;
+    private readonly TimeSpan _toolResultHoldTime = BitAiConversationStreamProcessor.DefaultToolResultHoldTime;
 
     /// <summary>Generation settings passed to the transport on every request.</summary>
     public BitAiRequestOptions? RequestOptions { get; init; }
@@ -30,6 +31,28 @@ public sealed record BitAiChatSessionOptions
     /// should raise it deliberately.
     /// </remarks>
     public int MaxToolRoundtrips { get; init; } = 10;
+
+    /// <summary>
+    /// How long a tool result the transport reports before the call it answers is held for that call to start. The
+    /// default is ten seconds.
+    /// </summary>
+    /// <remarks>
+    /// A call that starts in time is given the result and is not run again. When none has started by then, the result
+    /// is dropped: an error part carrying a <see cref="BitAiOrphanedToolResultException"/> is added to the message it
+    /// arrived for, and the session logs it. Read at the start of every turn
+    /// (<see cref="BitAiConversationStreamProcessor.ToolResultHoldTime"/>).
+    /// </remarks>
+    /// <exception cref="ArgumentOutOfRangeException">The value is negative.</exception>
+    public TimeSpan ToolResultHoldTime
+    {
+        get => _toolResultHoldTime;
+        init
+        {
+            // Validated here so a misconfiguration fails at startup, not on the first reply.
+            ArgumentOutOfRangeException.ThrowIfLessThan(value, TimeSpan.Zero);
+            _toolResultHoldTime = value;
+        }
+    }
 
     /// <summary>
     /// Evens out bursty text output. Set to <see langword="null"/> to render deltas exactly as the

@@ -1,13 +1,16 @@
-﻿namespace Bit.BlazorUI.Tests.E2E.AI;
+﻿using System.Text.RegularExpressions;
+
+namespace Bit.BlazorUI.Tests.E2E.AI;
 
 /// <summary>
 /// Drives BitAiMessagePartView at /e2e/aimessagepartview in a real browser: every part of the everything script's
 /// streamed reply (reasoning, cited text, an artifact, structured data, generative UI) drawn by the view of its kind, a
 /// part of every other kind (text, Markdown, reasoning, code, a tool call and a tool result, an image, a file, structured
-/// data, sources, an error) dispatched the same way, a kind no view knows shown as its text, a part nothing is drawn for
-/// (a silent kind, a citation) leaving no element at all, a registered
-/// renderer drawing its kind inside a boundary and a change of one part rendering that part's view and no other, Styles
-/// and Classes, a wide part scrolling inside its own view, and RTL.
+/// data, sources, an error, a citation) dispatched the same way, a kind no view knows shown as its text, a part nothing
+/// is drawn for (a silent kind) leaving no element at all, a citation part drawn as the card of its source with its quote
+/// and locator - a link to the source, or a button handing the citation to OnCitationClick - restyled through its public
+/// variables and mirrored right to left, a registered renderer drawing its kind inside a boundary and a change of one
+/// part rendering that part's view and no other, Styles and Classes, a wide part scrolling inside its own view, and RTL.
 /// </summary>
 [TestClass]
 public class BitAiMessagePartViewE2ETests : E2ETestBase
@@ -75,6 +78,7 @@ public class BitAiMessagePartViewE2ETests : E2ETestBase
             ("kind-structured", "bit-aisdv", "WebAssembly"),
             ("kind-sources", "bit-aisrl", "Render modes"),
             ("kind-error", "bit-aierv", "The tool loop stopped."),
+            ("kind-citation", "bit-aimpv-cit", "Render modes"),
         ];
 
         foreach (var (id, viewClass, text) in expected)
@@ -106,16 +110,113 @@ public class BitAiMessagePartViewE2ETests : E2ETestBase
         await Expect(fallback).ToHaveCSSAsync("white-space", "pre-wrap");
         await Expect(fallback).ToHaveCSSAsync("margin-top", "0px");
 
-        // A part nothing is drawn for - a kind with no text to show, a citation (which its text and the source list
-        // show) - leaves no element behind, rather than an empty one among the parts of the message.
-        foreach (var id in new[] { "kind-unknown-silent", "kind-citation" })
-        {
-            await Expect(View(id)).ToHaveCountAsync(0);
-        }
+        // A part nothing is drawn for - a kind with no text to show - leaves no element behind, rather than an empty one
+        // among the parts of the message.
+        await Expect(View("kind-unknown-silent")).ToHaveCountAsync(0);
 
-        await Expect(Page.Locator("#kinds > div > .bit-aimpv")).ToHaveCountAsync(13);
+        await Expect(Page.Locator("#kinds > div > .bit-aimpv")).ToHaveCountAsync(14);
         var emptyViews = await Page.Locator("#kinds .bit-aimpv").EvaluateAllAsync<int>("views => views.filter(v => v.childElementCount === 0).length");
         Assert.AreEqual(0, emptyViews, "No part view is left empty.");
+    }
+
+    [TestMethod]
+    public async Task Citation_ACitationPart_IsTheCardOfItsSource_ALinkToIt()
+    {
+        await OpenAsync(Route);
+
+        var citation = Inner("kind-citation");
+        await Expect(citation).ToHaveClassAsync(HasClass("bit-aimpv-cit"));
+        await Expect(citation.Locator(":scope > .bit-aisrc")).ToHaveCountAsync(1);
+        await Expect(citation.Locator(".bit-aisrc-ttl")).ToHaveTextAsync("Render modes");
+
+        // Not handed OnCitationClick, the card is a link to the source, into a new tab, as a card of the source list is.
+        var link = citation.Locator("a.bit-crd-lnk");
+        await Expect(link).ToHaveAttributeAsync("href", "https://learn.microsoft.com/aspnet/core/blazor/components/render-modes");
+        await Expect(link).ToHaveAttributeAsync("target", "_blank");
+        await Expect(citation.Locator("button")).ToHaveCountAsync(0);
+
+        // The message holds no citation of its id and it carries no number, so it shows none; with no quote and no
+        // locator, the card is all there is.
+        await Expect(citation.Locator(".bit-aisrc-idx")).ToHaveCountAsync(0);
+        await Expect(citation.Locator("blockquote, .bit-aimpv-clc")).ToHaveCountAsync(0);
+    }
+
+    [TestMethod]
+    public async Task Citation_WithOnCitationClick_TheCardIsAButtonThatHandsTheCitationToThePage()
+    {
+        await OpenAsync(Route);
+
+        var view = View("cit-button");
+        var button = view.Locator("button.bit-crd-lnk");
+        await Expect(button).ToHaveCountAsync(1);
+        await Expect(view.Locator("a")).ToHaveCountAsync(0);
+        await Expect(button).ToHaveAccessibleNameAsync(new Regex(@"1.*Render modes.*Microsoft Learn"));
+
+        // Numbered as the message numbers the citation, the quote and the locator under the card.
+        await Expect(view.Locator(".bit-aisrc-idx")).ToHaveTextAsync("1");
+        await Expect(view.Locator(".bit-aimpv-cit > blockquote.bit-aimpv-cqt")).ToHaveTextAsync("Every component runs on the server or in the browser.");
+        await Expect(view.Locator(".bit-aimpv-cit > .bit-aimpv-clc")).ToHaveTextAsync("Render modes, section 2");
+
+        await view.Locator(".bit-aisrc-ttl").ClickAsync();
+        await Expect(Page.Locator("#cit-clicked")).ToHaveTextAsync("cit-e2e-mpv");
+        await Expect(Page.Locator("#cit-clicks")).ToHaveTextAsync("1");
+
+        await button.FocusAsync();
+        await Page.Keyboard.PressAsync("Enter");
+        await Expect(Page.Locator("#cit-clicks")).ToHaveTextAsync("2");
+    }
+
+    [TestMethod]
+    public async Task Citation_TheQuoteAndTheLocator_AreDrawnUnderTheCardInTheThemeTokens()
+    {
+        await OpenAsync(Route);
+
+        var view = View("cit-button");
+        var container = view.Locator(".bit-aimpv-cit");
+        await Expect(container).ToHaveCSSAsync("display", "flex");
+        await Expect(container).ToHaveCSSAsync("flex-direction", "column");
+        Assert.AreNotEqual("0px", await container.EvaluateAsync<string>("e => getComputedStyle(e).rowGap"), "The card, the quote and the locator are spaced apart.");
+
+        var card = await view.Locator(".bit-aisrc").RectAsync();
+        var quoteBox = await view.Locator(".bit-aimpv-cqt").RectAsync();
+        var locatorBox = await view.Locator(".bit-aimpv-clc").RectAsync();
+        Assert.IsTrue(card.Bottom <= quoteBox.Top && quoteBox.Bottom <= locatorBox.Top, "The quote is under the card, the locator under the quote.");
+
+        var quote = view.Locator(".bit-aimpv-cqt");
+        await Expect(quote).ToHaveCSSAsync("font-style", "italic");
+        await Expect(quote).ToHaveCSSAsync("margin-top", "0px");
+        await Expect(quote).ToHaveCSSAsync("color", await Page.ResolveColorAsync("var(--bit-clr-fg-sec)"));
+        await Expect(quote).ToHaveCSSAsync("border-left-color", await Page.ResolveColorAsync("var(--bit-clr-brd-pri)"));
+        await Expect(quote).ToHaveCSSAsync("border-left-width", await quote.ResolveLengthInAsync("var(--bit-shp-brd-width-thick)"));
+        await Expect(quote).ToHaveCSSAsync("border-right-width", "0px");
+
+        var locator = view.Locator(".bit-aimpv-clc");
+        await Expect(locator).ToHaveCSSAsync("color", await Page.ResolveColorAsync("var(--bit-clr-fg-sec)"));
+        await Expect(locator).ToHaveCSSAsync("font-size", await locator.ResolveLengthInAsync("var(--bit-tpg-fs-xs)"));
+    }
+
+    [TestMethod]
+    public async Task Citation_ThePublicVariables_RestyleTheRoomTheQuoteAndTheLocator()
+    {
+        await OpenAsync(Route);
+
+        var view = View("cit-vars");
+        await Expect(view.Locator(".bit-aimpv-cit")).ToHaveCSSAsync("row-gap", "21px");
+        await Expect(view.Locator(".bit-aimpv-cqt")).ToHaveCSSAsync("color", "rgb(1, 2, 3)");
+        await Expect(view.Locator(".bit-aimpv-cqt")).ToHaveCSSAsync("border-left-color", "rgb(4, 5, 6)");
+        await Expect(view.Locator(".bit-aimpv-clc")).ToHaveCSSAsync("color", "rgb(7, 8, 9)");
+    }
+
+    [TestMethod]
+    public async Task Citation_RightToLeft_TheBarOfTheQuoteIsOnTheRight()
+    {
+        await OpenAsync(Route);
+
+        var quote = View("cit-rtl").Locator(".bit-aimpv-cqt");
+        await Expect(quote).ToHaveCSSAsync("direction", "rtl");
+        await Expect(quote).ToHaveCSSAsync("border-right-width", await quote.ResolveLengthInAsync("var(--bit-shp-brd-width-thick)"));
+        await Expect(quote).ToHaveCSSAsync("border-left-width", "0px");
+        await Expect(quote).ToHaveCSSAsync("border-right-color", await Page.ResolveColorAsync("var(--bit-clr-brd-pri)"));
     }
 
     [TestMethod]

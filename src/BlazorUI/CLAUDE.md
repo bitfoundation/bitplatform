@@ -190,6 +190,11 @@ its own:
   is a persisted wire format and stays byte for byte what it was. An API that serializes a caller's type is
   `[RequiresUnreferencedCode]`/`[RequiresDynamicCode]` (messages in `BitAiTrimming`) beside a trim-safe overload
   taking a `JsonTypeInfo<T>`; no suppression stands in for either.
+- **An address a model, a tool or a retrieval hands a view is never written into an `href` or a `src` as given.** It
+  goes through a scheme check - `BitAiSafeUrls.Link` / `Image`, or `BitAiSourceCard`'s stricter web-only one - and an
+  image through `BitAiSafeUrls.Decide`, which asks the `BitAiUiOptions.Images` policy about the address the browser would
+  fetch (a relative one resolved against the base address). Markdown images, image parts, image artifacts and source
+  favicons all follow the policy that way.
 - **The demo** has a page per component under `/components/ai/<name>` and the scenario pages under
   `/ai/scenarios/<name>` (prose pages, outside `/components/`, so the catalog does not count them), all driven by
   the scripted transports of `Demo/.../Services/AI`; the E2E host has its own (`E2EAiTransport`, a script per page).

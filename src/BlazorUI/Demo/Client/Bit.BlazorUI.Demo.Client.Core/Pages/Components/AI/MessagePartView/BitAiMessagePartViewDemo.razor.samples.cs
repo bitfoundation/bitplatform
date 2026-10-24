@@ -143,12 +143,20 @@ private static BitAiMessage CreateCitedMessage()
         Url = "https://example.com/docs/render-modes",
         SiteName = "Product documentation",
     }));
-    message.AddCitation(new BitAiCitation("cit_prerender", new BitAiCitationSource("prerendering", "Prerendering")
+    var prerendering = message.AddCitation(new BitAiCitation("cit_prerender", new BitAiCitationSource("prerendering", "Prerendering")
     {
         Url = "https://example.com/docs/prerendering",
         SiteName = "Product documentation",
-    }));
+    })
+    {
+        Quote = "Prerendering renders the page on the server first, so it is painted before its components become interactive.",
+        Locator = "Section 3: Prerendering",
+    });
     message.AddPart(new BitAiTextPart("Interactive Server keeps the components on the server [1], and prerendering paints them once before they become interactive [2]."));
+
+    // The second citation placed where it sits, between the parts: the card of its source, numbered 2 as the message
+    // numbers it, with the quote and the locator under it.
+    message.AddPart(new BitAiCitationPart(prerendering));
 
     return message;
 }
@@ -355,6 +363,12 @@ private static BitAiMessage CreateBrokenMessage()
 <BitAiMessagePartView Part="styleMessage.Parts[1]" Message="styleMessage" Styles="@(new() { Fallback = "font-style: italic; color: #6d28d9" })" />
 
 <BitAiMessagePartView Part="styleMessage.Parts[1]" Message="styleMessage" Classes="@(new() { Root = "custom-part-root", Fallback = "custom-part-fallback" })" />
+
+<BitAiMessagePartView Part="styleMessage.Parts[2]" Message="styleMessage" Styles="@(new() { CitationQuote = "font-style: normal; color: #6d28d9", CitationLocator = "font-weight: bold" })" />
+
+<div style="--bit-AiMessagePartView-citation-gap: 0.25rem; --bit-AiMessagePartView-quote-color: #0b7a75; --bit-AiMessagePartView-quote-border-color: #0b7a75; --bit-AiMessagePartView-locator-color: #0b7a75">
+    <BitAiMessagePartView Part="styleMessage.Parts[2]" Message="styleMessage" />
+</div>
 """;
     private readonly string example7CsharpCode = """
 private readonly BitAiMessage styleMessage = CreateStyleMessage();
@@ -363,8 +377,18 @@ private static BitAiMessage CreateStyleMessage()
 {
     var message = new BitAiMessage(BitAiRole.Assistant);
 
+    var forecast = message.AddCitation(new BitAiCitation("cit_forecast", new BitAiCitationSource("forecast", "Oslo forecast")
+    {
+        Url = "https://example.com/weather/oslo",
+        SiteName = "Weather service",
+    })
+    {
+        Quote = "Snow showers through the afternoon, -3 °C.",
+        Locator = "Today, 14:00",
+    });
     message.AddPart(new BitAiTextPart("It is **-3 °C** and snowing in Oslo."));
     message.AddPart(new BitAiCustomPart<string[]>("demo:poll", ["Tuesday", "Thursday"]) { Text = "Poll: which day suits you, Tuesday or Thursday?" });
+    message.AddPart(new BitAiCitationPart(forecast));
 
     return message;
 }

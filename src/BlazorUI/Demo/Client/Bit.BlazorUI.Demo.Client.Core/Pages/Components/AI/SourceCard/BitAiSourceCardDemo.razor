@@ -5,7 +5,7 @@
             Description="BitAiSourceCard shows one source an AI answer cited - its number, its title and the site it comes from - as a card that links to the source or reveals it in place." />
 
 <DemoPage Name="AiSourceCard"
-          Description="BitAiSourceCard shows one source a message cited - the number its citation markers carry, its title, and the site it comes from with its favicon - on a BitCard. The card is a link to the source when the source is addressable, so the browser gives the user the usual middle click and context menu, and a button when OnActivate is set. Source URLs come from the model or from retrieved content, so only a web address ever becomes a link, and only a web address or an inline raster image is ever loaded as the favicon. BitAiSourceList renders one per source."
+          Description="BitAiSourceCard shows one source a message cited - the number its citation markers carry, its title, and the site it comes from with its favicon - on a BitCard. The card is a link to the source when the source is addressable, so the browser gives the user the usual middle click and context menu, and a button when OnActivate is set. Source URLs come from the model or from retrieved content, so only a web address ever becomes a link, and only a web address or an inline raster image is ever loaded as the favicon - when the image policy of the options shows it outright. BitAiSourceList renders one per source."
           Parameters="componentParameters"
           SubClasses="componentSubClasses"
           SubEnums="componentSubEnums"
@@ -30,7 +30,10 @@
             <BitLink Href="/components/ai/citationmarker">AiCitationMarker</BitLink>). Security: a source is untrusted input, so
             only an absolute <b>http</b> or <b>https</b> URL becomes an <b>href</b> (opened in a new tab with
             <b>noopener noreferrer</b>) - a <b>javascript:</b> one renders a plain card - and the favicon is loaded only from a
-            web address or an inline raster <b>data:image/</b> (never SVG), without a referrer. Accessibility: the link or the
+            web address or an inline raster <b>data:image/</b> (never SVG), without a referrer, and only when the image policy of
+            the options (<b>BitAiUiOptions.Images</b>, a <BitLink Href="/components/ai/markdownview#image-policy">BitAiImagePolicy</BitLink>)
+            shows it outright - a favicon is not worth a placeholder of its own, so one the policy would load on request or block
+            is left out. Accessibility: the link or the
             button covers the whole card and is named after everything the card says (its number, title and site), unless an
             <b>AriaLabel</b> names it. See the cards under an answer in the
             <BitLink Href="/ai/scenarios/citations">Citations</BitLink> scenario.
@@ -62,7 +65,9 @@
         <DemoExample Title="Site & favicon" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
             <div>
                 The line under the title is the <b>SiteName</b>, else the host of the <b>Url</b>, else the <b>Kind</b> of the
-                source; <b>IconUrl</b> adds a favicon before it. A source with no web address is a plain card.
+                source; <b>IconUrl</b> adds a favicon before it, when the image policy of the options shows it outright (under
+                <b>ClickToLoad</b> or <b>Block</b> the card goes without it, with no placeholder). A source with no web address is a
+                plain card.
             </div>
             <br />
             <div class="example-grid">

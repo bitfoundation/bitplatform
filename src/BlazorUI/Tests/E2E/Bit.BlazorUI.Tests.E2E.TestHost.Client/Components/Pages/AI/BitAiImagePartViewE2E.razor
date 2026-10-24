@@ -50,6 +50,28 @@
     </div>
 </E2ESection>
 
+@* The image policy over a part (served by the tests too): asked first, the image is a button that loads it, and
+   nothing is fetched until it is pressed; blocked, its alternative text is all that is left of it - restyled through
+   the muted color in the last one. *@
+<E2ESection Id="policy" Title="Image policy">
+    <BitAiOptionsProvider UiOptions="_clickToLoad">
+        <div style="width:200px">
+            <BitAiImagePartView Id="ipv-ask" Part="_asked" />
+        </div>
+    </BitAiOptionsProvider>
+    <BitAiOptionsProvider UiOptions="_block">
+        <div style="width:200px">
+            <BitAiImagePartView Id="ipv-block" Part="_blocked" />
+        </div>
+        <div style="width:200px">
+            <BitAiImagePartView Id="ipv-block-noalt" Part="_blockedNoAlt" />
+        </div>
+        <div style="width:200px; --bit-AiImagePartView-muted-color: rgb(10, 20, 30)">
+            <BitAiImagePartView Id="ipv-block-vars" Part="_blocked" />
+        </div>
+    </BitAiOptionsProvider>
+</E2ESection>
+
 @* The image script, played by the transport: a sentence, then an image part. *@
 <E2ESection Id="transport" Title="Streamed by the transport">
     <button id="ipv-send" @onclick="SendAsync">Send</button>
@@ -74,6 +96,12 @@
     private readonly BitAiImagePart _lazy = new("https://images.e2e.test/lazy.svg") { Alt = "Far below", Width = 640, Height = 320 };
     private readonly BitAiImagePart _rtl = new(DataImage) { Alt = "یک مربع آبی", Caption = "یک مربع آبی در گوشه", Width = 48, Height = 48 };
     private readonly BitAiImagePart _styled = new(DataImage) { Alt = "A styled square", Caption = "A styled caption", Width = 48, Height = 48 };
+    private readonly BitAiImagePart _asked = new("https://images.e2e.test/policy/asked.svg") { Alt = "A chart asked for", Caption = "Asked first", Width = 640, Height = 320 };
+    private readonly BitAiImagePart _blocked = new("https://images.e2e.test/policy/blocked.svg") { Alt = "A blocked chart", Caption = "Blocked" };
+    private readonly BitAiImagePart _blockedNoAlt = new("https://images.e2e.test/policy/blocked-noalt.svg") { Caption = "Blocked, with nothing to say" };
+
+    private readonly BitAiUiOptions _clickToLoad = BitAiUiOptions.Default with { Images = BitAiImagePolicy.ClickToLoad };
+    private readonly BitAiUiOptions _block = BitAiUiOptions.Default with { Images = BitAiImagePolicy.Block };
 
     private readonly BitAiChatSession _session = new(E2EAiTransport.For(E2EAiScripts.Image));
     private BitAiRenderScheduler? _scheduler;

@@ -109,6 +109,67 @@ public class BitAiSourceCardTests : BitAiTestBase
         }
     }
 
+    // A favicon follows the image policy, but is never worth a placeholder of its own: one the policy does not show
+    // outright is left out, and the card is otherwise the same.
+    [TestMethod,
+        DataRow(BitAiImageMode.Allow, true),
+        DataRow(BitAiImageMode.ClickToLoad, false),
+        DataRow(BitAiImageMode.Block, false),
+        DataRow(BitAiImageMode.AllowListedHosts, false)]
+    public void ARemoteFaviconIsShownOnlyWhenThePolicyShowsItOutright(BitAiImageMode mode, bool shown)
+    {
+        var policy = mode switch
+        {
+            BitAiImageMode.ClickToLoad => BitAiImagePolicy.ClickToLoad,
+            BitAiImageMode.Block => BitAiImagePolicy.Block,
+            BitAiImageMode.AllowListedHosts => BitAiImagePolicy.AllowListedHosts("other.dev"),
+            _ => BitAiImagePolicy.Allow,
+        };
+        var source = new BitAiCitationSource("s1", "Docs") { Url = "https://example.com", IconUrl = "https://example.com/favicon.ico" };
+
+        var component = RenderComponent<BitAiSourceCard>(p => p
+            .Add(c => c.Source, source)
+            .Add(c => c.CascadedOptions, BitAiUiOptions.Default with { Images = policy }));
+
+        Assert.HasCount(shown ? 1 : 0, component.FindAll("img.bit-aisrc-fav"));
+        Assert.IsEmpty(component.FindAll("button.bit-acb"));
+        StringAssert.Contains(component.Find(".bit-aisrc-sit").TextContent, "example.com");
+    }
+
+    [TestMethod]
+    public void AFaviconOfAListedHostIsShown()
+    {
+        var source = new BitAiCitationSource("s1", "Docs") { Url = "https://example.com", IconUrl = "https://icons.example.com/favicon.ico" };
+
+        var component = RenderComponent<BitAiSourceCard>(p => p
+            .Add(c => c.Source, source)
+            .Add(c => c.CascadedOptions, BitAiUiOptions.Default with { Images = BitAiImagePolicy.AllowListedHosts("*.example.com") }));
+
+        Assert.AreEqual("https://icons.example.com/favicon.ico", component.Find("img.bit-aisrc-fav").GetAttribute("src"));
+    }
+
+    [TestMethod,
+        DataRow(BitAiImageMode.Allow, true, true),
+        DataRow(BitAiImageMode.ClickToLoad, true, true),
+        DataRow(BitAiImageMode.Block, true, false),
+        DataRow(BitAiImageMode.Allow, false, false)]
+    public void AnInlineFaviconFollowsWhetherThePolicyShowsInlineImages(BitAiImageMode mode, bool allowDataImages, bool shown)
+    {
+        var policy = (mode switch
+        {
+            BitAiImageMode.ClickToLoad => BitAiImagePolicy.ClickToLoad,
+            BitAiImageMode.Block => BitAiImagePolicy.Block,
+            _ => BitAiImagePolicy.Allow,
+        }) with { AllowDataImages = allowDataImages };
+        var source = new BitAiCitationSource("s1", "Docs") { Url = "https://example.com", IconUrl = "data:image/png;base64,iVBORw0KGgo=" };
+
+        var component = RenderComponent<BitAiSourceCard>(p => p
+            .Add(c => c.Source, source)
+            .Add(c => c.CascadedOptions, BitAiUiOptions.Default with { Images = policy }));
+
+        Assert.HasCount(shown ? 1 : 0, component.FindAll("img.bit-aisrc-fav"));
+    }
+
     [TestMethod]
     public void AnActivatableCardIsAButtonRatherThanALink()
     {

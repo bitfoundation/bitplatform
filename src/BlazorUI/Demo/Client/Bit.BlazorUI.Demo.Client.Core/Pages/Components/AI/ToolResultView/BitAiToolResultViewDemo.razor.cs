@@ -91,7 +91,7 @@ public partial class BitAiToolResultViewDemo
         {
             Id = "tool-result-part",
             Title = "BitAiToolResultPart",
-            Description = "A tool result carried on its own (Kind \"tool-result\"), for providers that emit results as tool messages of their own. The stream processor reconciles a result onto the BitAiToolCallPart it answers whenever it finds one, and adds one of these to the message when it does not.",
+            Description = "A tool result carried on its own (Kind \"tool-result\") rather than on the BitAiToolCallPart it answers. The stream processor never adds one: it gives a result to the call of its id, holding one that arrives ahead of its call for ToolResultHoldTime and dropping one whose call never starts. An app adds one to a message it builds itself - a conversation imported from a store that keeps each result as a message of its own.",
             Parameters =
             [
                 new()

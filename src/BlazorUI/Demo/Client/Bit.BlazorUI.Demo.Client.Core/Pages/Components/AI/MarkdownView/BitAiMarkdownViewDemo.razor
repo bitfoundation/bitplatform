@@ -123,14 +123,32 @@
             <div>Activated: <b>@(clickedSource ?? "none yet")</b></div>
         </DemoExample>
 
-        <DemoExample Title="Images" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
+        <DemoExample Title="Custom citation chip" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
+            <div>
+                <b>BitAiRendererRegistry.CitationRenderer</b> draws the chips with a renderer of your own, handed a
+                <b>BitAiCitationContext</b>: the <b>Citation</b>, and <b>OnActivate</b> - the <b>OnCitationClick</b> of the view - which
+                the chip raises through <b>ActivateAsync()</b>, so it acts the way the built-in one does. The one here is a pill naming
+                the site. The registry is app-wide, so an app sets it once at startup; this page swaps it in and out with the toggle,
+                and the chips of the example above change with it.
+            </div>
+            <br />
+            <BitToggle @bind-Value="customChips" @bind-Value:after="ToggleCitationRenderer" Text="Use a citation chip of my own" />
+            <BitAiMarkdownView Document="citedDocument"
+                               Citations="citations"
+                               OnCitationClick="(BitAiCitation citation) => chipSource = citation.Source.Title" />
+            <br />
+            <div>Activated: <b>@(chipSource ?? "none yet")</b></div>
+        </DemoExample>
+
+        <DemoExample Title="Images" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
             <div>
                 <b>BitAiUiOptions.Images</b> is the <b>BitAiImagePolicy</b> the images of the Markdown follow. <b>Allow</b> (the
                 default) shows them all; <b>AllowListedHosts</b> shows the images of the listed hosts and a placeholder for the
                 rest; <b>ClickToLoad</b> fetches nothing until the reader asks; <b>Block</b> shows the alternative text instead. A
-                placeholder is a button that loads the image, named after its alternative text. Inline <b>data:</b> images are
-                fetched from nowhere, so they are shown under every policy but <b>Block</b> - unless <b>AllowDataImages</b> is off.
-                Script-capable URL schemes are neutralised whatever the policy.
+                placeholder is a button that loads the image, named after its alternative text. A relative URL is resolved against
+                the base address of the page before the policy is asked, so the host list here names this site's own host too.
+                Inline <b>data:</b> images are fetched from nowhere, so they are shown under every policy but <b>Block</b> - unless
+                <b>AllowDataImages</b> is off. Script-capable URL schemes are neutralised whatever the policy.
             </div>
             <br />
             <BitChoiceGroup Label="Policy" Items="imageModeItems" @bind-Value="imageMode" @bind-Value:after="UpdateImageOptions" Horizontal />
@@ -140,7 +158,7 @@
             </BitAiOptionsProvider>
         </DemoExample>
 
-        <DemoExample Title="Untrusted content" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
+        <DemoExample Title="Untrusted content" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
             <div>
                 Model output is untrusted. A <b>javascript:</b> link is neutralised to <b>#</b>, and raw HTML - inline or a block - is
                 shown as the text it is. Rendering it takes <b>AllowRawHtml</b> in both the options the document is parsed with and
@@ -154,7 +172,7 @@
             </BitAiOptionsProvider>
         </DemoExample>
 
-        <DemoExample Title="Markdown options" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
+        <DemoExample Title="Markdown options" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
             <div>
                 <b>BitAiMarkdownOptions</b> picks the extensions the parser reads: pipe tables, task lists, strikethrough, bare URLs
                 as links, mathematics, footnotes, citation markers and heading ids are on by default, and
@@ -174,7 +192,7 @@
             <BitAiMarkdownView Document="optionsDocument" />
         </DemoExample>
 
-        <DemoExample Title="Cascading parameters" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
+        <DemoExample Title="Cascading parameters" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12">
             <div>
                 <b>BitParams</b> with a <b>BitAiMarkdownViewParams</b> sets the defaults of every Markdown view inside it - here the
                 styles of its links and quotes - and a parameter of the view itself still wins.
@@ -187,7 +205,7 @@
             </BitParams>
         </DemoExample>
 
-        <DemoExample Title="Style & Class" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12">
+        <DemoExample Title="Style & Class" RazorCode="@example13RazorCode" CsharpCode="@example13CsharpCode" Id="example13">
             <div>
                 <b>Style</b> and <b>Class</b> reach the root, <b>Styles</b> and <b>Classes</b> every element the view renders - each
                 under a class of its own, so the prose styles never reach into what a registered renderer draws. The public
@@ -213,7 +231,7 @@
             </div>
         </DemoExample>
 
-        <DemoExample Title="RTL" RazorCode="@example13RazorCode" CsharpCode="@example13CsharpCode" Id="example13">
+        <DemoExample Title="RTL" RazorCode="@example14RazorCode" CsharpCode="@example14CsharpCode" Id="example14">
             <div>
                 In right-to-left text the Markdown reads from the right - list markers, the bar of a quote, the columns of a table
                 and its end-aligned cells - whether the direction comes from <b>Dir</b> or from a <b>dir</b> attribute around it.

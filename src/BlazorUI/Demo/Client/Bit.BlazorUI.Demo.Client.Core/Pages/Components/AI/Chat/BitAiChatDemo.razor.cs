@@ -519,6 +519,13 @@ public partial class BitAiChatDemo
                     Type = "TimeSpan?",
                     DefaultValue = "null",
                     Description = "How long to wait for the whole turn, tool round trips included. Null sets no limit beyond what the transport enforces."
+                },
+                new()
+                {
+                    Name = "ToolResultHoldTime",
+                    Type = "TimeSpan",
+                    DefaultValue = "10 seconds",
+                    Description = "How long a tool result the transport reports ahead of the call it answers is held for that call to start. A call that starts in time is given the result and is not run again; when none has, the result is dropped, leaving an error part (code orphaned_tool_result, carrying a BitAiOrphanedToolResultException) on the message, and the session logs it. Zero drops such a result at once; a negative value throws when the options are built."
                 }
             ]
         }

@@ -41,7 +41,10 @@
             <b>Security</b>: an HTML artifact is generated markup, so it is previewed in an <b>iframe</b> with
             <b>sandbox="allow-scripts allow-forms allow-popups"</b> - its scripts run, but it is denied same-origin access to the
             page, its storage and its cookies - and only once it has finished streaming. An SVG is shown through an <b>img</b>,
-            which never runs a script inside it.
+            which never runs a script inside it. An image or an SVG follows the image policy of the options
+            (<b>BitAiUiOptions.Images</b>, a <BitLink Href="/components/ai/markdownview#image-policy">BitAiImagePolicy</BitLink>),
+            as the images of a message do: one the policy loads only on request is a button that loads it, one it blocks is
+            replaced by the title of the artifact, and a source of a scheme that can run script is never loaded.
         </BitText>
         <br />
         <BitText>
@@ -99,7 +102,9 @@
         <DemoExample Title="Images" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
             <div>
                 An <b>Image</b> is shown from its <b>Url</b> (or a data URL as its content), named by its title. An <b>Svg</b>
-                written as markup is shown as an image too, so a script inside it never runs, and downloads as an .svg file.
+                written as markup is shown as an image too, so a script inside it never runs, and downloads as an .svg file. Both
+                follow the image policy of the options, as the images of a message do: under <b>ClickToLoad</b> the body is a button,
+                named after the artifact, that loads the image, and under <b>Block</b> it is the title alone.
             </div>
             <br />
             <BitAiArtifactView Artifact="imageArtifact" />

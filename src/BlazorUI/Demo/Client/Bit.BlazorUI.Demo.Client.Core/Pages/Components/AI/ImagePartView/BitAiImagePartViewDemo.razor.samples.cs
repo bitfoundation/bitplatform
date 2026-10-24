@@ -40,6 +40,28 @@ private readonly BitAiImagePart chartImage = new(""data:image/svg+xml,%3Csvg xml
 };";
 
     private readonly string example5RazorCode = @"
+<BitAiOptionsProvider UiOptions=""clickToLoadOptions"">
+    <BitAiImagePartView Part=""policyImage"" />
+</BitAiOptionsProvider>
+
+<BitAiOptionsProvider UiOptions=""blockOptions"">
+    <BitAiImagePartView Part=""policyImage"" />
+</BitAiOptionsProvider>";
+    private readonly string example5CsharpCode = @"
+private readonly BitAiImagePart policyImage = new(""_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img2.jpg"")
+{
+    Alt = ""A range of snow-covered peaks under a blue sky"",
+    Caption = ""Shown only as the image policy allows."",
+    Width = 1000,
+    Height = 350,
+};
+
+// An app sets the policy once, for every view (AddBitBlazorUIAIServices(ai => ai.ConfigureUi(...)) or a provider
+// around the whole chat); here each provider sets its own.
+private readonly BitAiUiOptions clickToLoadOptions = BitAiUiOptions.Default with { Images = BitAiImagePolicy.ClickToLoad };
+private readonly BitAiUiOptions blockOptions = BitAiUiOptions.Default with { Images = BitAiImagePolicy.Block };";
+
+    private readonly string example6RazorCode = @"
 <style>
     .custom-class {
         max-width: 18rem;
@@ -77,7 +99,7 @@ private readonly BitAiImagePart chartImage = new(""data:image/svg+xml,%3Csvg xml
 <div style=""max-width: 18rem; --bit-AiImagePartView-radius: 2rem; --bit-AiImagePartView-caption-color: mediumseagreen; --bit-AiImagePartView-caption-font-size: 1rem;"">
     <BitAiImagePartView Part=""styledImage"" />
 </div>";
-    private readonly string example5CsharpCode = @"
+    private readonly string example6CsharpCode = @"
 private readonly BitAiImagePart styledImage = new(""_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img4.jpg"")
 {
     Alt = ""A winding road above a lake between hills, snowy mountains behind"",
@@ -86,9 +108,9 @@ private readonly BitAiImagePart styledImage = new(""_content/Bit.BlazorUI.Demo.C
     Height = 350,
 };";
 
-    private readonly string example6RazorCode = @"
+    private readonly string example7RazorCode = @"
 <BitAiImagePartView Dir=""BitDir.Rtl"" Part=""rtlImage"" />";
-    private readonly string example6CsharpCode = @"
+    private readonly string example7CsharpCode = @"
 private readonly BitAiImagePart rtlImage = new(""_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img1.jpg"")
 {
     Alt = ""شفق قطبی سبز بر فراز تپه‌ای برفی در شب"",

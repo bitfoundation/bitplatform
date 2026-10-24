@@ -16,9 +16,10 @@ namespace Bit.BlazorUI;
 /// inside a <see cref="BitAiRendererBoundary"/>. A part of a kind this view does not know is shown as its text when it
 /// carries one.
 /// <br />
-/// A part there is nothing to draw for - a <see cref="BitAiCitationPart"/> with no renderer registered for its kind, or
-/// a part of an unknown kind that carries no text - renders nothing at all, not even the root element, so it leaves no
-/// empty box among the parts of the message.
+/// A <see cref="BitAiCitationPart"/> is drawn as the <see cref="BitAiSourceCard"/> of its source, with the quote and
+/// the locator of the citation under it. A part there is nothing to draw for - a part of an unknown kind that carries
+/// no text - renders nothing at all, not even the root element, so it leaves no empty box among the parts of the
+/// message.
 /// </remarks>
 public partial class BitAiMessagePartView : BitAiComponentBase
 {
@@ -63,8 +64,12 @@ public partial class BitAiMessagePartView : BitAiComponentBase
     public BitAiMessage Message { get; set; } = default!;
 
     /// <summary>
-    /// Raised when the user activates a citation inside this part.
+    /// Raised when the user activates a citation inside this part: a citation chip of a text part, or the card of a
+    /// citation part.
     /// </summary>
+    /// <remarks>
+    /// While it is not set, the card of a citation part is a link to its source instead.
+    /// </remarks>
     [Parameter] public EventCallback<BitAiCitation> OnCitationClick { get; set; }
 
     /// <summary>
@@ -142,4 +147,9 @@ public partial class BitAiMessagePartView : BitAiComponentBase
         part.CitationIds is { Count: > 0 } ids
             ? Message.Citations.Where(c => ids.Contains(c.CitationId)).ToArray()
             : Message.Citations;
+
+    // The number the message gave the citation when it was added to it (BitAiMessage.AddCitation), which the chips of its
+    // text and its source list show too; the citation's own, if any, when the message does not hold it.
+    private int? NumberOf(BitAiCitation citation) =>
+        Message.Citations.FirstOrDefault(c => c.CitationId == citation.CitationId)?.Number ?? citation.Number;
 }

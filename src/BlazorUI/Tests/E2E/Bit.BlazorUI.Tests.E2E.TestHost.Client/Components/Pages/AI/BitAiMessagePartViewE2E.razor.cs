@@ -28,6 +28,9 @@ public partial class BitAiMessagePartViewE2E : IAsyncDisposable
     private BitAiCustomPart<Note> _secondNote = default!;
     private BitAiCustomPart<string> _fallback = default!;
     private BitAiCodePart _wideCode = default!;
+    private BitAiCitationPart _citedPart = default!;
+    private string _citationClicked = "none";
+    private int _citationClicks;
     private int _renders;
 
     private BitAiMessage? LastAssistant => _session.Conversation.Messages.LastOrDefault(m => m.Role.IsAssistant);
@@ -80,6 +83,13 @@ public partial class BitAiMessagePartViewE2E : IAsyncDisposable
         Add("kind-citation", new BitAiCitationPart(new BitAiCitation("cit-e2e-part", source)));
         Add("kind-custom", new BitAiCustomPart<Note>(NoteKind, new Note("A note drawn by the page's own renderer.")));
 
+        // The citation the message holds, so its card takes the number the message gave it (1).
+        _citedPart = new BitAiCitationPart(new BitAiCitation("cit-e2e-mpv", source)
+        {
+            Quote = "Every component runs on the server or in the browser.",
+            Locator = "Render modes, section 2",
+        });
+
         _firstNote = new BitAiCustomPart<Note>(NoteKind, new Note("First note"), "part-e2e-first");
         _secondNote = new BitAiCustomPart<Note>(NoteKind, new Note("Second note"), "part-e2e-second");
     }
@@ -87,6 +97,12 @@ public partial class BitAiMessagePartViewE2E : IAsyncDisposable
     private void Add(string id, BitAiMessagePart part) => _kinds.Add((id, _message.AddPart(part)));
 
     private Task AskAsync() => _session.SubmitAsync("Show me everything");
+
+    private void OnCitationClick(BitAiCitation citation)
+    {
+        _citationClicked = citation.CitationId;
+        _citationClicks++;
+    }
 
     private void ChangeFirstInBackground()
     {

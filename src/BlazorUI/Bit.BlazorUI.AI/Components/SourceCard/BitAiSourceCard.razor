@@ -3,7 +3,10 @@
 
 @{
     var number = Number is { } n && n != int.MaxValue ? n : (int?)null;
-    var iconUrl = SafeIconUrl(Source.IconUrl);
+    @* The favicon follows the image policy, but is never worth a placeholder of its own: one the policy does not show
+       outright is left out. *@
+    var iconUrl = SafeIconUrl(Source.IconUrl) is { } icon
+                  && DecideImageSource(icon) == BitAiImageDecision.Show ? icon : null;
 
     @* A link when the source is addressable and nothing else is asked of the card, so the browser gives the user the
        usual middle click and context menu; a button when OnActivate is set; and neither when there is nothing to do with

@@ -21,7 +21,9 @@ public sealed record BitAiUiOptions
     /// <summary>Which Markdown extensions to enable.</summary>
     public BitAiMarkdownOptions Markdown { get; init; } = BitAiMarkdownOptions.Default;
 
-    /// <summary>Which images in Markdown are fetched and shown.</summary>
+    /// <summary>
+    /// Which images are fetched and shown: those of Markdown, image parts, image artifacts, and the favicons of sources.
+    /// </summary>
     /// <remarks>
     /// Images are allowed by default. A host handling sensitive conversations can restrict them to
     /// listed hosts, load them only on request, or block them; see <see cref="BitAiImagePolicy"/>.

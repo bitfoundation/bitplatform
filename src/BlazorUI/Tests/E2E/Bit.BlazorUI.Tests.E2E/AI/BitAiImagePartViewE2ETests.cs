@@ -4,8 +4,9 @@
 /// Drives BitAiImagePartView at /e2e/aiimagepartview in a real browser: an image part as a figure with its image,
 /// alternative text and caption, its box sized from the declared intrinsic size before the image arrives (nothing
 /// jumps), the image fetched only once it is scrolled near, a decorative image left out of the accessibility tree,
-/// the image script played by the transport, right to left, the --bit-AiImagePartView-* variables, Classes/Styles and
-/// print.
+/// the image policy (a button that loads the image only when pressed, or the alternative text of a blocked one, neither
+/// fetching anything), the image script played by the transport, right to left, the --bit-AiImagePartView-* variables,
+/// Classes/Styles and print.
 /// </summary>
 [TestClass]
 public class BitAiImagePartViewE2ETests : E2ETestBase
@@ -123,6 +124,59 @@ public class BitAiImagePartViewE2ETests : E2ETestBase
 
         await ExpectLoadedAsync(image);
         Assert.IsTrue(Requested("/lazy.svg"));
+    }
+
+    [TestMethod]
+    public async Task Policy_ClickToLoad_IsAButtonThatLoadsTheImageOnlyWhenPressed()
+    {
+        await OpenAsync(Route);
+
+        var figure = Page.Locator("#ipv-ask");
+        var button = figure.GetByRole(AriaRole.Button, new() { Name = "Load image: A chart asked for" });
+        await Expect(button).ToBeVisibleAsync();
+        await Expect(button).ToHaveAttributeAsync("title", "https://images.e2e.test/policy/asked.svg");
+        await button.Locator(".bit-icon-ai--Photo2").AssertAiGlyphAsync("Photo2");
+        await Expect(figure.Locator("img")).ToHaveCountAsync(0);
+        await Expect(figure.Locator("figcaption")).ToHaveTextAsync("Asked first");
+
+        await ExpectLoadedAsync(Page.Locator("#ipv-basic img"));
+        await NextFramesAsync();
+        Assert.IsFalse(Requested("/policy/asked.svg"), "Nothing is fetched before the reader asks.");
+
+        await button.ClickAsync();
+
+        var image = figure.Locator("img.bit-aiipv-img");
+        await Expect(image).ToHaveAttributeAsync("src", "https://images.e2e.test/policy/asked.svg");
+        await Expect(image).ToHaveAttributeAsync("alt", "A chart asked for");
+        await Expect(button).ToHaveCountAsync(0);
+        await image.ScrollIntoViewIfNeededAsync();
+        await ExpectLoadedAsync(image);
+        Assert.IsTrue(Requested("/policy/asked.svg"));
+    }
+
+    [TestMethod]
+    public async Task Policy_Block_LeavesTheAlternativeTextAndFetchesNothing()
+    {
+        await OpenAsync(Route);
+
+        var blocked = Page.Locator("#ipv-block");
+        var text = blocked.Locator(":scope > span.bit-aiipv-imb");
+        await Expect(text).ToHaveTextAsync("A blocked chart");
+        await Expect(text).ToHaveCSSAsync("font-style", "italic");
+        await Expect(text).ToHaveCSSAsync("color", await Page.ResolveColorAsync("var(--bit-clr-fg-sec)"));
+        await Expect(blocked.Locator("img, button")).ToHaveCountAsync(0);
+        await Expect(blocked.Locator("figcaption")).ToHaveTextAsync("Blocked");
+
+        // With no alternative text to show, the caption is all that is left.
+        var noAlt = Page.Locator("#ipv-block-noalt");
+        await Expect(noAlt.Locator(":scope > *")).ToHaveCountAsync(1);
+        await Expect(noAlt.Locator(":scope > figcaption")).ToHaveTextAsync("Blocked, with nothing to say");
+
+        // The muted color is a public variable.
+        await Expect(Page.Locator("#ipv-block-vars span.bit-aiipv-imb")).ToHaveCSSAsync("color", "rgb(10, 20, 30)");
+
+        await NextFramesAsync();
+        Assert.IsFalse(Requested("/policy/blocked"), "A blocked image is never fetched.");
     }
 
     [TestMethod]

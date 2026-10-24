@@ -48,7 +48,7 @@ public partial class BitAiOptionsProviderDemo
                     Name = "Images",
                     Type = "BitAiImagePolicy",
                     DefaultValue = "BitAiImagePolicy.Allow",
-                    Description = "Which images of the Markdown are fetched and shown: allowed by default; a host handling sensitive conversations can restrict them to listed hosts (AllowListedHosts), load them only on request (ClickToLoad) or block them. Script-capable URL schemes are neutralized whatever the policy.",
+                    Description = "Which images are fetched and shown - the images of Markdown, image parts, image and SVG artifacts, and the favicons of sources (a favicon only when the policy shows it outright, never as a placeholder): allowed by default; a host handling sensitive conversations can restrict them to listed hosts (AllowListedHosts), load them only on request (ClickToLoad) or block them. Script-capable URL schemes are neutralized whatever the policy.",
                     LinkType = LinkType.Link,
                     Href = "/components/ai/markdownview#image-policy",
                 },

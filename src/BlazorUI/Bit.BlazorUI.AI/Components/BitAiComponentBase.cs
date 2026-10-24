@@ -37,6 +37,38 @@ public abstract class BitAiComponentBase : BitComponentBase
     /// </summary>
     protected BitAiStrings Strings => Options.Strings;
 
+    // The base address of the document, which a relative image is fetched against - or null where there is none to read:
+    // no NavigationManager registered (a component rendered by an HtmlRenderer of the app's own), or one never
+    // initialized. Looked up rather than injected for that reason, and only read when a policy needs the host of a
+    // relative image (BitAiSafeUrls.Decide) or a placeholder names it.
+    private string? DocumentBaseUri
+    {
+        get
+        {
+            try
+            {
+                return (_serviceProvider.GetService(typeof(NavigationManager)) as NavigationManager)?.BaseUri;
+            }
+            catch (InvalidOperationException)
+            {
+                return null;
+            }
+        }
+    }
+
+    /// <summary>
+    /// What the <see cref="BitAiUiOptions.Images"/> policy in force decides about an image source already made safe
+    /// (<see cref="BitAiSafeUrls.Image"/>).
+    /// </summary>
+    private protected BitAiImageDecision DecideImageSource(string source) =>
+        BitAiSafeUrls.Decide(Options.Images, source, () => DocumentBaseUri);
+
+    /// <summary>
+    /// The host an image source would be fetched from, for naming the placeholder of an image the policy holds back.
+    /// </summary>
+    private protected string ImageHostOf(string source) =>
+        BitAiSafeUrls.HostOf(BitAiSafeUrls.Resolve(source, () => DocumentBaseUri));
+
     private BitAiUiOptions RegisteredOptions => _registeredOptions ??=
         _serviceProvider?.GetService(typeof(BitAiUiOptions)) as BitAiUiOptions ?? BitAiUiOptions.Default;
 

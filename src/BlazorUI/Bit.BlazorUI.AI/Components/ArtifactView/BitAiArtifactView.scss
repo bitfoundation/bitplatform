@@ -17,7 +17,9 @@
 //   --bit-AiArtifactView-title-font-size       size of the title                             (default: $tg-fs-sm)
 //   --bit-AiArtifactView-title-font-weight     weight of the title                           (default: $tg-fw-semibold)
 //   --bit-AiArtifactView-max-height            height past which the body scrolls inline     (default: spacing(64))
-//   --bit-AiArtifactView-content-padding       inset of a document or a JSON tree            (default: spacing(1.5) spacing(2))
+//   --bit-AiArtifactView-content-padding       inset of a document, a JSON tree and the      (default: spacing(1.5) spacing(2))
+//                                              stand-in of an image the policy holds back
+//   --bit-AiArtifactView-muted-color           title of an image artifact the policy blocks  (default: $clr-fg-sec)
 //   --bit-AiArtifactView-frame-height          height of the frame of an HTML page inline    (default: spacing(52))
 //   --bit-AiArtifactView-frame-background      background of the frame of an HTML page       (default: white, the page a
 //                                                                                              generated document expects)
@@ -87,6 +89,18 @@
     display: block;
     max-width: 100%;
     margin-inline: auto;
+}
+
+// Where an image the policy holds back would be: the button that loads it, or the title of a blocked one.
+.bit-aiatv-imh {
+    display: flex;
+    justify-content: center;
+    padding: var(--bit-AiArtifactView-content-padding, #{spacing(1.5) spacing(2)});
+}
+
+.bit-aiatv-imb {
+    font-style: italic;
+    color: var(--bit-AiArtifactView-muted-color, #{$clr-fg-sec});
 }
 
 // A generated page is written for the white page a browser opens on, so the frame keeps one under a dark theme too,

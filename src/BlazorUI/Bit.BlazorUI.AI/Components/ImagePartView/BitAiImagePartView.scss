@@ -5,6 +5,10 @@
 //   --bit-AiImagePartView-radius               corner radius of the image     (default: $shp-radius-surface)
 //   --bit-AiImagePartView-caption-color        text color of the caption      (default: $clr-fg-ter)
 //   --bit-AiImagePartView-caption-font-size    text size of the caption       (default: $tg-fs-xs)
+//   --bit-AiImagePartView-muted-color          text of a blocked image        (default: $clr-fg-sec)
+//
+// The button shown in place of an image the policy loads only on request is a BitActionButton, restyled through the
+// --bit-ActionButton-* variables or Classes.ImagePlaceholder.
 
 .bit-aiipv {
     margin: 0;
@@ -17,6 +21,12 @@
     display: block;
     max-width: 100%;
     border-radius: var(--bit-AiImagePartView-radius, #{$shp-radius-surface});
+}
+
+// What is left of an image the policy blocks: its alternative text.
+.bit-aiipv-imb {
+    font-style: italic;
+    color: var(--bit-AiImagePartView-muted-color, #{$clr-fg-sec});
 }
 
 .bit-aiipv-cap {

@@ -66,6 +66,7 @@ public sealed class BitAiChatSession : IAsyncDisposable
         Conversation = conversation ?? new BitAiConversation();
         Options = options ?? new BitAiChatSessionOptions();
         Processor = new BitAiConversationStreamProcessor(Conversation);
+        Processor.ToolResultDropped += OnToolResultDropped;
     }
 
     /// <summary>The conversation this session drives.</summary>
@@ -343,6 +344,7 @@ public sealed class BitAiChatSession : IAsyncDisposable
         BitAiMessage? assistant = null;
         try
         {
+            Processor.ToolResultHoldTime = Options.ToolResultHoldTime;
             assistant = Processor.BeginGeneration();
             RaiseStateChanged();
 
@@ -622,7 +624,18 @@ public sealed class BitAiChatSession : IAsyncDisposable
             _approvals.Clear();
         }
 
+        // A result still held for its call would otherwise be dropped onto the conversation after the session is gone.
+        Processor.DiscardHeldToolResults();
+
         await Task.CompletedTask.ConfigureAwait(false);
+    }
+
+    // A result the transport reported for a call it never made. The processor has put the error on the message already,
+    // possibly after the turn ended (the hold runs out on a timer), so the UI is told about it too.
+    private void OnToolResultDropped(BitAiOrphanedToolResultException exception)
+    {
+        _logger.LogWarning(exception, "The transport reported a result for the tool call {ToolCallId}, which never started; the result was dropped.", exception.ToolCallId);
+        RaiseStateChanged();
     }
 
     private void RaiseStateChanged()

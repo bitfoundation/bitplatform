@@ -45,7 +45,22 @@ public sealed record BitAiStructuredDataContext(BitAiStructuredDataPart Part, Bi
 /// </summary>
 /// <param name="Citation">The citation.</param>
 /// <param name="Message">The message it belongs to.</param>
-public sealed record BitAiCitationContext(BitAiCitation Citation, BitAiMessage? Message = null);
+/// <param name="OnActivate">
+/// What activating the citation does where it is drawn - the <c>OnCitationClick</c> of the view drawing it - so the chip
+/// a renderer draws can act the way the built-in one does. Call it through <see cref="ActivateAsync"/>.
+/// </param>
+public sealed record BitAiCitationContext(
+    BitAiCitation Citation,
+    BitAiMessage? Message = null,
+    EventCallback<BitAiCitation> OnActivate = default)
+{
+    /// <summary>
+    /// Activates the citation the way the built-in chip does when it is clicked: raises <see cref="OnActivate"/> with
+    /// <see cref="Citation"/>. Does nothing when the view drawing it was given no callback.
+    /// </summary>
+    /// <returns>A task that completes when the callback has run.</returns>
+    public Task ActivateAsync() => OnActivate.InvokeAsync(Citation);
+}
 
 /// <summary>Renders a message part.</summary>
 /// <param name="context">The part and its surroundings.</param>

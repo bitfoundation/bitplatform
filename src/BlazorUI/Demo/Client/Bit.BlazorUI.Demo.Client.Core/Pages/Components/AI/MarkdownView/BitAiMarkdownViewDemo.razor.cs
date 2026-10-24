@@ -12,7 +12,7 @@ public partial class BitAiMarkdownViewDemo
             Name = "Citations",
             Type = "IReadOnlyList<BitAiCitation>?",
             DefaultValue = "null",
-            Description = "The citations that the inline citation markers of the document resolve against. A marker whose number matches the Number of a citation is drawn as a BitAiCitationMarker (unless BitAiUiOptions.InlineCitations is off); one that matches none stays the literal text it was.",
+            Description = "The citations that the inline citation markers of the document resolve against. A marker whose number matches the Number of a citation is drawn as a BitAiCitationMarker - or by the BitAiRendererRegistry.CitationRenderer, when the app registered one - unless BitAiUiOptions.InlineCitations is off; one that matches none stays the literal text it was.",
             LinkType = LinkType.Link,
             Href = "/components/ai/citationmarker",
         },
@@ -39,7 +39,7 @@ public partial class BitAiMarkdownViewDemo
             Name = "OnCitationClick",
             Type = "EventCallback<BitAiCitation>",
             DefaultValue = "",
-            Description = "The callback for when the user activates an inline citation marker, with the citation it stands for.",
+            Description = "The callback for when the user activates an inline citation marker, with the citation it stands for. A chip drawn by a registered CitationRenderer is handed it as the OnActivate of its BitAiCitationContext, which the chip raises through ActivateAsync().",
         },
         new()
         {
@@ -148,17 +148,17 @@ public partial class BitAiMarkdownViewDemo
         {
             Id = "image-policy",
             Title = "BitAiImagePolicy",
-            Description = "Which images of the Markdown are fetched - the Images of BitAiUiOptions. A model can be talked into emitting an image URL, and a browser fetching it leaks the reader's address and the fact that they read the message to whoever controls the host. The default allows images; a host handling sensitive conversations restricts them to its own CDN, asks before loading, or blocks them. Script-capable URL schemes are neutralised whatever the policy.",
+            Description = "Which images are fetched - the Images of BitAiUiOptions, which the images of the Markdown follow, and the image parts, the image and SVG artifacts and the favicons of sources too (a favicon only when the policy shows it outright, never as a placeholder). A model can be talked into emitting an image URL, and a browser fetching it leaks the reader's address and the fact that they read the message to whoever controls the host. The default allows images; a host handling sensitive conversations restricts them to its own CDN, asks before loading, or blocks them. Script-capable URL schemes are neutralised whatever the policy.",
             Parameters =
             [
                 new() { Name = "Allow", Type = "BitAiImagePolicy", DefaultValue = "", Description = "Static: shows every image whose URL scheme is safe. The default policy." },
                 new() { Name = "Block", Type = "BitAiImagePolicy", DefaultValue = "", Description = "Static: shows no remote image (nor a data image); each one is replaced by its alternative text." },
                 new() { Name = "ClickToLoad", Type = "BitAiImagePolicy", DefaultValue = "", Description = "Static: loads each remote image only when the reader activates its placeholder." },
-                new() { Name = "AllowListedHosts(params string[] hosts)", Type = "BitAiImagePolicy", DefaultValue = "", Description = "Static: shows the remote images of the given hosts (compared without regard to case; a leading *. matches subdomains) and a click-to-load placeholder for the rest. A relative URL has no host, so it gets the placeholder too." },
+                new() { Name = "AllowListedHosts(params string[] hosts)", Type = "BitAiImagePolicy", DefaultValue = "", Description = "Static: shows the remote images of the given hosts (compared without regard to case; a leading *. matches subdomains) and a click-to-load placeholder for the rest. A relative URL is fetched from the host of the document's base address, which is what the views ask about it: list the app's own host to show its images." },
                 new() { Name = "AllowDataImages", Type = "bool", DefaultValue = "true", Description = "Whether inline data: images are shown. They involve no network request, so they are shown under every policy but Block while this is on." },
                 new() { Name = "Hosts", Type = "IReadOnlyCollection<string>", DefaultValue = "[]", Description = "The hosts allowed under AllowListedHosts." },
                 new() { Name = "Mode", Type = "BitAiImageMode", DefaultValue = "BitAiImageMode.Allow", Description = "How images are treated.", LinkType = LinkType.Link, Href = "#image-mode-enum" },
-                new() { Name = "Decide(string url)", Type = "BitAiImageDecision", DefaultValue = "", Description = "Decides what to do with one image source (already checked for a safe scheme): show it, show a placeholder that loads it on request, or hide it.", LinkType = LinkType.Link, Href = "#image-decision-enum" },
+                new() { Name = "Decide(string url)", Type = "BitAiImageDecision", DefaultValue = "", Description = "Decides what to do with one image source (already checked for a safe scheme): show it, show a placeholder that loads it on request, or hide it. The views ask about the address the browser fetches - a relative or protocol-relative source resolved against the document's base address; a source handed to it still relative has no host, so no host list shows it.", LinkType = LinkType.Link, Href = "#image-decision-enum" },
             ]
         },
         new()
@@ -187,12 +187,26 @@ public partial class BitAiMarkdownViewDemo
         },
         new()
         {
+            Id = "citation-context",
+            Title = "BitAiCitationContext",
+            Description = "What a citation renderer is handed (a sealed record). The renderer is a BitAiCitationRenderer - delegate RenderFragment BitAiCitationRenderer(BitAiCitationContext context) - set as BitAiRendererRegistry.CitationRenderer, which draws the chip of every resolved citation marker in place of the BitAiCitationMarker, inside a boundary of its own. The source list under a message and the card of a citation part are not drawn by it.",
+            Parameters =
+            [
+                new() { Name = "Citation", Type = "BitAiCitation", DefaultValue = "", Description = "The citation the marker resolved to: its Number, its Source, its Quote and its Locator.", LinkType = LinkType.Link, Href = "/components/ai/citationmarker#citation" },
+                new() { Name = "Message", Type = "BitAiMessage?", DefaultValue = "null", Description = "The message the citation belongs to - always null from the Markdown view, which is handed the citations rather than a message." },
+                new() { Name = "OnActivate", Type = "EventCallback<BitAiCitation>", DefaultValue = "", Description = "What activating the citation does where it is drawn: the OnCitationClick of the view. Raise it through ActivateAsync()." },
+                new() { Name = "ActivateAsync()", Type = "Task", DefaultValue = "", Description = "Activates the citation the way the built-in chip does when it is clicked: raises OnActivate with the Citation. Does nothing when the view was given no OnCitationClick." },
+            ]
+        },
+        new()
+        {
             Id = "renderer-registry",
             Title = "BitAiRendererRegistry",
-            Description = "The members of the renderer registry the Markdown view reads (it also holds the renderers of parts, tools, artifacts, structured data and citations). The registry is a singleton service: register at startup, through ConfigureRenderers of AddBitBlazorUIAIServices, and treat the entries as immutable afterwards.",
+            Description = "The members of the renderer registry the Markdown view reads (it also holds the renderers of parts, tools, artifacts and structured data). The registry is a singleton service: register at startup, through ConfigureRenderers of AddBitBlazorUIAIServices, and treat the entries as immutable afterwards.",
             Parameters =
             [
                 new() { Name = "MathRenderer", Type = "BitAiMathRenderer?", DefaultValue = "null", Description = "Renders the mathematics of every view when set, in place of the fallback (the source in monospace, under bit-aimdv-mth / bit-aimdv-mtb with a data-math attribute a script can typeset from).", LinkType = LinkType.Link, Href = "#math-context" },
+                new() { Name = "CitationRenderer", Type = "BitAiCitationRenderer?", DefaultValue = "null", Description = "Draws the chip of every resolved citation marker of every view when set, in place of the BitAiCitationMarker - handed the OnCitationClick of the view as OnActivate, so its chip acts the way the built-in one does.", LinkType = LinkType.Link, Href = "#citation-context" },
                 new() { Name = "RegisterCodeLanguage(string language, BitAiCodeBlockRenderer renderer)", Type = "void", DefaultValue = "", Description = "Registers a renderer for the fenced blocks of one language (mermaid, vega, ...), matched without regard to case, in place of the code view.", LinkType = LinkType.Link, Href = "#code-block-context" },
                 new() { Name = "FindCodeLanguage(string? language)", Type = "BitAiCodeBlockRenderer?", DefaultValue = "", Description = "The renderer registered for a language, or null for the built-in code view." },
             ]
@@ -205,7 +219,7 @@ public partial class BitAiMarkdownViewDemo
         {
             Id = "image-mode-enum",
             Name = "BitAiImageMode",
-            Description = "How the images of the Markdown are treated (the Mode of a BitAiImagePolicy).",
+            Description = "How images are treated (the Mode of a BitAiImagePolicy).",
             Items =
             [
                 new() { Name = "Allow", Value = "0", Description = "Show every image whose URL scheme is safe." },
@@ -341,6 +355,7 @@ public partial class BitAiMarkdownViewDemo
     {
         // The registry is app-wide: leave it as this page found it.
         if (typesetMath) Renderers.MathRenderer = previousMathRenderer;
+        if (customChips) Renderers.CitationRenderer = previousCitationRenderer;
     }
 
     private static readonly Dictionary<string, string> mathSymbols = new()
@@ -499,6 +514,40 @@ public partial class BitAiMarkdownViewDemo
 
     private string? clickedSource;
 
+    private bool customChips;
+    private BitAiCitationRenderer? previousCitationRenderer;
+    private string? chipSource;
+
+    private void ToggleCitationRenderer()
+    {
+        if (customChips)
+        {
+            previousCitationRenderer = Renderers.CitationRenderer;
+            Renderers.CitationRenderer = RenderCitationChip;
+        }
+        else
+        {
+            Renderers.CitationRenderer = previousCitationRenderer;
+        }
+    }
+
+    // A pill naming the site of the source beside its number. ActivateAsync raises the OnCitationClick of the view the chip
+    // is drawn in, as a click on the built-in chip does. The source is model output, so it is only ever written as text.
+    private static RenderFragment RenderCitationChip(BitAiCitationContext context) => builder =>
+    {
+        var citation = context.Citation;
+
+        builder.OpenElement(0, "button");
+        builder.AddAttribute(1, "type", "button");
+        builder.AddAttribute(2, "title", citation.Source.Title);
+        builder.AddAttribute(3, "style", "margin-inline: 0.125rem; padding: 0 0.5rem; border: none; border-radius: 1rem; font: inherit; font-size: 0.75em; line-height: 1.5; cursor: pointer; color: var(--bit-clr-pri-text); background-color: var(--bit-clr-pri);");
+        builder.AddAttribute(4, "onclick", EventCallback.Factory.Create(context, context.ActivateAsync));
+        builder.AddContent(5, $"{citation.Number} · {citation.Source.SiteName ?? citation.Source.Title}");
+        builder.CloseElement();
+    };
+
+    [Inject] private NavigationManager Navigation { get; set; } = default!;
+
     private const string imagesMarkdown = """
         From this site: ![A portrait of a woman](_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female-72.png)
 
@@ -527,7 +576,8 @@ public partial class BitAiMarkdownViewDemo
     {
         var policy = imageMode switch
         {
-            nameof(BitAiImageMode.AllowListedHosts) => BitAiImagePolicy.AllowListedHosts("static2.sharepointonline.com"),
+            // A relative image is fetched from the host of the page, so that host is listed beside the CDN.
+            nameof(BitAiImageMode.AllowListedHosts) => BitAiImagePolicy.AllowListedHosts("static2.sharepointonline.com", new Uri(Navigation.BaseUri).Host),
             nameof(BitAiImageMode.ClickToLoad) => BitAiImagePolicy.ClickToLoad,
             nameof(BitAiImageMode.Block) => BitAiImagePolicy.Block,
             _ => BitAiImagePolicy.Allow,

@@ -1,7 +1,14 @@
 ﻿@import '../../../Bit.BlazorUI/Styles/functions.scss';
 
-// The part view reads no public CSS variables of its own: what it shows is drawn by the view of the kind of the part,
-// each restyled through its own variables.
+// Public CSS variables, read with a fallback and never declared here, so a value set on :root restyles the citation
+// parts of every message, one set on an ancestor the ones inside it, and one set on the Style of an instance that one:
+//   --bit-AiMessagePartView-citation-gap            room between the card, the quote and the locator (default: spacing(0.75))
+//   --bit-AiMessagePartView-quote-color             text color of the quote of a citation part       (default: $clr-fg-sec)
+//   --bit-AiMessagePartView-quote-border-color      bar down the start edge of that quote            (default: $clr-brd-pri)
+//   --bit-AiMessagePartView-locator-color           text color of the locator of a citation part     (default: $clr-fg-sec)
+//
+// Everything else a part shows is drawn by the view of its kind, each restyled through its own variables - the card of
+// a citation part through the --bit-AiSourceCard-* ones.
 
 // One block per part, laid out by the message around it. It may shrink below what its content asks for, so a wide
 // code block or table scrolls inside its own view rather than widening the whole message.
@@ -16,4 +23,27 @@
     margin: 0;
     white-space: pre-wrap;
     overflow-wrap: anywhere;
+}
+
+// A citation part: the card of its source, and under it the passage the claim rests on and where in the source it is.
+.bit-aimpv-cit {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--bit-AiMessagePartView-citation-gap, #{spacing(0.75)});
+}
+
+.bit-aimpv-cqt {
+    margin: 0;
+    padding-inline-start: spacing(1.5);
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+    font-style: italic;
+    color: var(--bit-AiMessagePartView-quote-color, #{$clr-fg-sec});
+    border-inline-start: $shp-border-width-thick $shp-border-style var(--bit-AiMessagePartView-quote-border-color, #{$clr-brd-pri});
+}
+
+.bit-aimpv-clc {
+    font-size: $tg-fs-xs;
+    color: var(--bit-AiMessagePartView-locator-color, #{$clr-fg-sec});
 }

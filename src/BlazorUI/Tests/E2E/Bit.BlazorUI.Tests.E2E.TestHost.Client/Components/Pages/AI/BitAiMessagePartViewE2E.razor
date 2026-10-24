@@ -40,6 +40,24 @@
     </div>
 </E2ESection>
 
+@* A citation part: the card of its source, numbered as the message numbers that citation, with the passage it quotes
+   and where in the source that is. Handed OnCitationClick, the card is a button that hands the citation to the page;
+   the public variables restyle the room between the three and the quote and locator; right to left mirrors the bar
+   of the quote. *@
+<E2ESection Id="citation" Title="A citation part">
+    <p>Clicked: <span id="cit-clicked">@_citationClicked</span> (<span id="cit-clicks">@_citationClicks</span>)</p>
+    <div style="width:640px">
+        <BitAiMessagePartView Id="cit-button" Part="_citedPart" Message="_message" OnCitationClick="OnCitationClick" />
+        <div style="--bit-AiMessagePartView-citation-gap: 21px;
+                    --bit-AiMessagePartView-quote-color: rgb(1, 2, 3);
+                    --bit-AiMessagePartView-quote-border-color: rgb(4, 5, 6);
+                    --bit-AiMessagePartView-locator-color: rgb(7, 8, 9)">
+            <BitAiMessagePartView Id="cit-vars" Part="_citedPart" Message="_message" />
+        </div>
+        <BitAiMessagePartView Id="cit-rtl" Dir="BitDir.Rtl" Part="_citedPart" Message="_message" />
+    </div>
+</E2ESection>
+
 @* Two parts of a kind a renderer is registered for, which counts its own renders on the part it draws: a change of one
    of them, made off the renderer's thread, renders that one's view and nothing else. The change is asked for by a
    button of its own (Trigger), whose click renders that button alone rather than the page. *@

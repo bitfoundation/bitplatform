@@ -36,11 +36,13 @@ public sealed class BitAiArtifactPart : BitAiMessagePart
 }
 
 /// <summary>
-/// A tool result carried on its own, for providers that emit results as separate tool messages.
+/// A tool result carried on its own rather than on the <see cref="BitAiToolCallPart"/> it answers.
 /// </summary>
 /// <remarks>
-/// The framework reconciles these onto the originating <see cref="BitAiToolCallPart"/> when it can find
-/// one, and renders them standalone when it cannot.
+/// The stream processor never adds one: it gives a result to the call of its id, holding one that arrives before its
+/// call for <see cref="BitAiConversationStreamProcessor.ToolResultHoldTime"/>, and drops one whose call never starts. A
+/// part of this kind is for an app that builds a message itself - a conversation imported from a store that keeps each
+/// result as a message of its own - and is shown by a <see cref="BitAiToolResultView"/>.
 /// </remarks>
 public sealed class BitAiToolResultPart : BitAiMessagePart
 {

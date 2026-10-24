@@ -3,11 +3,13 @@
 namespace Bit.BlazorUI;
 
 /// <summary>
-/// BitAiToolResultView shows a tool result that arrived without a matching call, which happens with providers that
-/// emit tool output as its own message.
+/// BitAiToolResultView shows a tool result carried on its own (a <see cref="BitAiToolResultPart"/>) rather than on the
+/// call it answers - a conversation an app imported from a store that keeps each result as a message of its own.
 /// </summary>
 /// <remarks>
-/// A result that does belong to a call is shown by the <see cref="BitAiToolCallView"/> of that call instead. A failed
+/// A result streamed in by a transport always goes to its call, and is shown by the <see cref="BitAiToolCallView"/> of
+/// that call: the stream processor holds one that arrives ahead of its call until the call starts, and drops one whose
+/// call never does (<see cref="BitAiConversationStreamProcessor.ToolResultHoldTime"/>). A failed
 /// result is shown as a compact <see cref="BitAiErrorView"/>, a textual one as it was written, and a structured one
 /// as a <see cref="BitAiJsonView"/>.
 /// </remarks>

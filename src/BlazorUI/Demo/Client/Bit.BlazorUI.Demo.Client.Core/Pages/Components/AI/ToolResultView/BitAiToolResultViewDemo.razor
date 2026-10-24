@@ -25,10 +25,13 @@
         </BitText>
         <br />
         <BitText>
-            The stream processor reconciles a tool result onto the <BitLink Href="/components/ai/toolcallview">BitAiToolCallView</BitLink>
-            of its call by <b>ToolCallId</b> whenever it can, so this view is only rendered - by <b>BitAiMessagePartView</b>, for a part of the
-            <b>tool-result</b> kind - for one it cannot place. The result is the tool's: it is shown as text and as a JSON tree, never as markup.
-            See the <BitLink Href="/ai/scenarios/tools">Tools</BitLink> scenario.
+            A tool result a transport streams in always goes to the <BitLink Href="/components/ai/toolcallview">BitAiToolCallView</BitLink>
+            of its call, matched by <b>ToolCallId</b>: the stream processor holds a result that arrives ahead of its call until the call starts,
+            and drops one whose call never does (<b>BitAiChatSessionOptions.ToolResultHoldTime</b>, ten seconds by default) with an error part on
+            the message. This view is for a result carried on its own - a part of the <b>tool-result</b> kind an app adds itself, for a
+            conversation imported from a store that keeps each result as a message of its own - and <b>BitAiMessagePartView</b> renders it
+            for such a part. The result is the tool's: it is shown as text and as a JSON tree, never as markup. See the
+            <BitLink Href="/ai/scenarios/tools">Tools</BitLink> scenario.
         </BitText>
     </NotesTemplate>
     <Examples>

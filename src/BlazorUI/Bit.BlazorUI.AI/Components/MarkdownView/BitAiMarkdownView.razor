@@ -265,7 +265,7 @@
                 break;
 
             case BitAiLinkInline link:
-                <a href="@Sanitize(link.Url)"
+                <a href="@BitAiSafeUrls.Link(link.Url)"
                    title="@link.Title"
                    target="_blank"
                    rel="noopener noreferrer nofollow"
@@ -323,7 +323,7 @@
     // text, the host it would be fetched from) - never the image itself, which would already have been fetched.
     private RenderFragment RenderImage(BitAiImageInline image) => __builder =>
     {
-        var source = SanitizeImage(image.Url);
+        var source = BitAiSafeUrls.Image(image.Url);
 
         switch (DecideImage(source))
         {
@@ -339,7 +339,7 @@
                                  OnClick="() => _loadedImages.Add(source)"
                                  Classes="@ImagePlaceholderClasses"
                                  Styles="@Styles?.ImagePlaceholder">
-                    @Strings.LoadImage(string.IsNullOrWhiteSpace(image.Alt) ? HostOf(source) : image.Alt)
+                    @Strings.LoadImage(string.IsNullOrWhiteSpace(image.Alt) ? ImageHostOf(source) : image.Alt)
                 </BitActionButton>
                 break;
 
@@ -354,7 +354,8 @@
 
     // A marker resolves to a chip only when its source is known and inline citations are on; otherwise it stays the
     // text the model wrote. The chip is the app's own when it registered a citation renderer, which is handed the
-    // citation as any other renderer of the app's is handed its subject: inside a boundary of its own.
+    // citation as any other renderer of the app's is handed its subject: inside a boundary of its own - and, so its chip
+    // can act as the built-in one does, the OnCitationClick of this view.
     private RenderFragment RenderCitation(BitAiCitationMarkerInline marker) => __builder =>
     {
         var citation = Options.InlineCitations ? Citations?.FirstOrDefault(c => c.Number == marker.Number) : null;
@@ -366,7 +367,7 @@
         else if (_renderers.CitationRenderer is { } citationRenderer)
         {
             <BitAiRendererBoundary Label="@Strings.RendererFailed(CitationRendererName)" Class="bit-aimdv-rbi">
-                @citationRenderer(new BitAiCitationContext(citation))
+                @citationRenderer(new BitAiCitationContext(citation, OnActivate: OnCitationClick))
             </BitAiRendererBoundary>
         }
         else

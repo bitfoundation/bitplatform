@@ -5,7 +5,7 @@
             Description="BitAiImagePartView shows an image part of an AI message - one a model generated or a tool returned - lazily loaded, at its intrinsic size, with its caption." />
 
 <DemoPage Name="AiImagePartView"
-          Description="BitAiImagePartView shows an image part of a message - one a model generated or a tool returned - in a figure with its caption. It declares the intrinsic size of the image where the part knows it, so the message list does not jump as the image decodes, and loads it lazily, so a long transcript only fetches the images that scroll into view. The alternative text of the part is the accessible name of the image."
+          Description="BitAiImagePartView shows an image part of a message - one a model generated or a tool returned - in a figure with its caption. It declares the intrinsic size of the image where the part knows it, so the message list does not jump as the image decodes, and loads it lazily, so a long transcript only fetches the images that scroll into view. The alternative text of the part is the accessible name of the image. Like the images of Markdown, it follows the image policy of the options: an image the policy holds back is a button that loads it, and one it blocks is its alternative text."
           Parameters="componentParameters"
           SubClasses="componentSubClasses"
           CssVariables="componentCssVariables"
@@ -32,9 +32,12 @@
         </BitText>
         <br />
         <BitText>
-            The image is fetched from the URL of the part as it is. The image policy of the options
-            (<BitLink Href="/components/ai/markdownview">BitAiImagePolicy</BitLink>) governs the images written inside Markdown;
-            an image part comes from your own transport, which is where a URL a model was talked into is checked.
+            The image follows the image policy of the options (<b>BitAiUiOptions.Images</b>, a
+            <BitLink Href="/components/ai/markdownview#image-policy">BitAiImagePolicy</BitLink>), as the images written inside
+            Markdown do: one the policy loads only on request is a placeholder that loads it on click, and one it blocks is replaced
+            by its alternative text. A relative URL is resolved against the base address of the document before the policy is
+            asked, so listing the app's own host with <b>AllowListedHosts</b> shows its images; a URL of a scheme that can run
+            script is never loaded, whatever the policy.
         </BitText>
     </NotesTemplate>
     <Examples>
@@ -75,11 +78,32 @@
             <BitAiImagePartView Part="chartImage" />
         </DemoExample>
 
-        <DemoExample Title="Style & Class" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
+        <DemoExample Title="Image policy" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
+            <div>
+                The image follows <b>BitAiUiOptions.Images</b>, the
+                <BitLink Href="/components/ai/markdownview#image-policy">BitAiImagePolicy</BitLink> the images of Markdown follow
+                too, cascaded here by a <BitLink Href="/components/ai/optionsprovider">BitAiOptionsProvider</BitLink>. Under
+                <b>ClickToLoad</b> (the first) nothing is fetched until the reader presses the placeholder, a button named after the
+                <b>Alt</b> of the part; under <b>Block</b> (the second) the alternative text stands in for the image. The caption is
+                shown either way. A relative URL, like this one, is resolved against the base address of the page before the policy
+                is asked, so <b>AllowListedHosts</b> with the app's own host shows it.
+            </div>
+            <br />
+            <BitAiOptionsProvider UiOptions="clickToLoadOptions">
+                <BitAiImagePartView Part="policyImage" />
+            </BitAiOptionsProvider>
+            <br />
+            <BitAiOptionsProvider UiOptions="blockOptions">
+                <BitAiImagePartView Part="policyImage" />
+            </BitAiOptionsProvider>
+        </DemoExample>
+
+        <DemoExample Title="Style & Class" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
             <div>
                 <b>Style</b> and <b>Class</b> reach the root figure, <b>Styles</b> and <b>Classes</b> its <b>Image</b> and its
-                <b>Caption</b>. The public <b>--bit-AiImagePartView-*</b> variables (see the CSS variables table) restyle every image
-                part view under the element they are set on.
+                <b>Caption</b> - and <b>ImagePlaceholder</b> and <b>BlockedImage</b>, what stands in for an image the policy holds
+                back. The public <b>--bit-AiImagePartView-*</b> variables (see the CSS variables table) restyle every image part view
+                under the element they are set on.
             </div>
             <br />
             <div class="example-content">
@@ -102,7 +126,7 @@
             </div>
         </DemoExample>
 
-        <DemoExample Title="RTL" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
+        <DemoExample Title="RTL" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
             <div>
                 In right-to-left text the caption is set from the right, whether the direction comes from <b>Dir</b> or from a
                 <b>dir</b> attribute around the figure.

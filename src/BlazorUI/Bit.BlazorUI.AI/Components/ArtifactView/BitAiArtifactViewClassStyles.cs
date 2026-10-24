@@ -68,6 +68,18 @@ public class BitAiArtifactViewClassStyles
     public string? Image { get; set; }
 
     /// <summary>
+    /// Custom CSS classes/styles for the button the BitAiArtifactView shows in place of an image or an SVG artifact the
+    /// image policy loads only on request.
+    /// </summary>
+    public BitActionButtonClassStyles? ImagePlaceholder { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the title the BitAiArtifactView shows in place of an image or an SVG artifact the
+    /// image policy blocks.
+    /// </summary>
+    public string? BlockedImage { get; set; }
+
+    /// <summary>
     /// Custom CSS classes/styles for the sandboxed frame an HTML artifact is previewed in by the BitAiArtifactView.
     /// </summary>
     public string? Frame { get; set; }

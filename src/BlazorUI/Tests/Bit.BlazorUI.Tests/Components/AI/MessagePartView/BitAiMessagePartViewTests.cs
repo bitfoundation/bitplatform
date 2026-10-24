@@ -15,6 +15,8 @@ namespace Bit.BlazorUI.Tests.Components.AI.MessagePartView;
 [TestClass]
 public class BitAiMessagePartViewTests : BitAiTestBase
 {
+    private static readonly BitAiCitationSource DocsSource = new("s1", "Docs") { Url = "https://learn.microsoft.com/aspnet" };
+
     private static (BitAiConversation Conversation, BitAiMessage Message, BitAiArtifactPart Part) WithArtifact(
         BitAiArtifactKind kind, string title, string content)
     {
@@ -147,13 +149,147 @@ public class BitAiMessagePartViewTests : BitAiTestBase
     }
 
     [TestMethod]
-    public void ACitationPartRendersNothingAtAll()
+    public void ACitationPartIsTheCardOfItsSourceWithItsQuoteAndLocatorUnderIt()
     {
-        var citation = new BitAiCitationPart(new BitAiCitation("c1", new BitAiCitationSource("s1", "Docs")));
+        var citation = new BitAiCitationPart(new BitAiCitation("c1", DocsSource) { Quote = "Every component runs somewhere.", Locator = "Section 2" });
 
         var component = RenderComponent<BitAiMessagePartView>(p => p.Add(c => c.Part, citation).Add(c => c.Message, Assistant(citation)));
 
-        Assert.AreEqual(string.Empty, component.Markup.Trim());
+        var container = component.Find(".bit-aimpv > .bit-aimpv-cit");
+        var children = container.Children.ToArray();
+
+        Assert.HasCount(3, children);
+        Assert.IsTrue(children[0].ClassList.Contains("bit-aisrc"));
+        Assert.AreEqual("BLOCKQUOTE", children[1].TagName);
+        Assert.IsTrue(children[1].ClassList.Contains("bit-aimpv-cqt"));
+        Assert.AreEqual("Every component runs somewhere.", children[1].TextContent);
+        Assert.AreEqual("DIV", children[2].TagName);
+        Assert.IsTrue(children[2].ClassList.Contains("bit-aimpv-clc"));
+        Assert.AreEqual("Section 2", children[2].TextContent);
+
+        var card = component.FindComponent<BitAiSourceCard>();
+        Assert.AreSame(DocsSource, card.Instance.Source);
+        Assert.AreEqual("Docs", component.Find(".bit-aisrc-ttl").TextContent);
+    }
+
+    [TestMethod,
+        DataRow(null, null),
+        DataRow("", "")]
+    public void ACitationWithoutAQuoteOrALocatorShowsTheCardAlone(string? quote, string? locator)
+    {
+        var citation = new BitAiCitationPart(new BitAiCitation("c1", DocsSource) { Quote = quote, Locator = locator });
+
+        var component = RenderComponent<BitAiMessagePartView>(p => p.Add(c => c.Part, citation).Add(c => c.Message, Assistant(citation)));
+
+        Assert.HasCount(1, component.Find(".bit-aimpv-cit").Children);
+        Assert.IsEmpty(component.FindAll(".bit-aimpv-cqt"));
+        Assert.IsEmpty(component.FindAll(".bit-aimpv-clc"));
+        Assert.IsEmpty(component.FindAll("blockquote"));
+    }
+
+    [TestMethod]
+    public void TheCardOfACitationIsNumberedAsTheMessageNumbersThatCitation()
+    {
+        // Two other sources come first, so the message numbers the citation 3, whatever number the part carries.
+        var message = Assistant();
+        message.AddCitation(new BitAiCitation("c-a", new BitAiCitationSource("s-a", "A")));
+        message.AddCitation(new BitAiCitation("c-b", new BitAiCitationSource("s-b", "B")));
+        message.AddCitation(new BitAiCitation("c1", DocsSource));
+
+        var citation = message.AddPart(new BitAiCitationPart(new BitAiCitation("c1", DocsSource) { Number = 9 }));
+
+        var component = RenderComponent<BitAiMessagePartView>(p => p.Add(c => c.Part, citation).Add(c => c.Message, message));
+
+        Assert.AreEqual(3, component.FindComponent<BitAiSourceCard>().Instance.Number);
+        Assert.AreEqual("3", component.Find(".bit-aisrc-idx").TextContent);
+    }
+
+    [TestMethod]
+    public void TheCardOfACitationTheMessageDoesNotHoldTakesTheCitationsOwnNumber()
+    {
+        var numbered = new BitAiCitationPart(new BitAiCitation("c1", DocsSource) { Number = 9 });
+        var unnumbered = new BitAiCitationPart(new BitAiCitation("c2", DocsSource));
+
+        // The message numbers a citation of another id only.
+        var message = Assistant(numbered, unnumbered);
+        message.AddCitation(new BitAiCitation("other", DocsSource));
+
+        var withNumber = RenderComponent<BitAiMessagePartView>(p => p.Add(c => c.Part, numbered).Add(c => c.Message, message));
+        var withoutNumber = RenderComponent<BitAiMessagePartView>(p => p.Add(c => c.Part, unnumbered).Add(c => c.Message, message));
+
+        Assert.AreEqual("9", withNumber.Find(".bit-aisrc-idx").TextContent);
+        Assert.IsEmpty(withoutNumber.FindAll(".bit-aisrc-idx"));
+    }
+
+    [TestMethod]
+    public void WithOnCitationClickTheCardIsAButtonThatHandsOverTheCitation()
+    {
+        var citation = new BitAiCitationPart(new BitAiCitation("c1", DocsSource) { Quote = "quoted" });
+        BitAiCitation? clicked = null;
+
+        var component = RenderComponent<BitAiMessagePartView>(p => p
+            .Add(c => c.Part, citation)
+            .Add(c => c.Message, Assistant(citation))
+            .Add(c => c.OnCitationClick, c => clicked = c));
+
+        Assert.IsEmpty(component.FindAll(".bit-aimpv-cit a"));
+        Assert.IsEmpty(component.FindAll("[href]"));
+        Assert.IsNotNull(component.Find(".bit-aimpv-cit button.bit-crd-lnk"));
+
+        component.Find(".bit-aimpv-cit .bit-crd").Click();
+
+        Assert.AreSame(citation.Citation, clicked);
+    }
+
+    [TestMethod]
+    public void WithoutOnCitationClickTheCardIsALinkToTheSource()
+    {
+        var citation = new BitAiCitationPart(new BitAiCitation("c1", DocsSource));
+
+        var component = RenderComponent<BitAiMessagePartView>(p => p.Add(c => c.Part, citation).Add(c => c.Message, Assistant(citation)));
+
+        var link = component.Find(".bit-aimpv-cit a.bit-crd-lnk");
+        Assert.AreEqual("https://learn.microsoft.com/aspnet", link.GetAttribute("href"));
+        Assert.AreEqual("_blank", link.GetAttribute("target"));
+        Assert.IsEmpty(component.FindAll(".bit-aimpv-cit button"));
+    }
+
+    [TestMethod]
+    public void TheClassesAndStylesOfACitationPartReachItsParts()
+    {
+        var citation = new BitAiCitationPart(new BitAiCitation("c1", DocsSource) { Quote = "quoted", Locator = "p. 4" });
+
+        var component = RenderComponent<BitAiMessagePartView>(p => p
+            .Add(c => c.Part, citation)
+            .Add(c => c.Message, Assistant(citation))
+            .Add(c => c.Classes, new()
+            {
+                Citation = "c-citation",
+                CitationCard = new() { Root = "c-card", Title = "c-title" },
+                CitationQuote = "c-quote",
+                CitationLocator = "c-locator",
+            })
+            .Add(c => c.Styles, new()
+            {
+                Citation = "margin: 1px",
+                CitationCard = new() { Root = "margin: 2px" },
+                CitationQuote = "margin: 3px",
+                CitationLocator = "margin: 4px",
+            }));
+
+        var container = component.Find(".bit-aimpv-cit");
+        Assert.IsTrue(container.ClassList.Contains("c-citation"));
+        Assert.AreEqual("margin: 1px", container.GetAttribute("style"));
+
+        var card = component.Find(".bit-aimpv-cit > .bit-aisrc");
+        Assert.IsTrue(card.ClassList.Contains("c-card"));
+        StringAssert.Contains(card.GetAttribute("style"), "margin: 2px");
+        Assert.IsTrue(component.Find(".bit-aisrc-ttl").ClassList.Contains("c-title"));
+
+        Assert.IsTrue(component.Find(".bit-aimpv-cqt").ClassList.Contains("c-quote"));
+        Assert.AreEqual("margin: 3px", component.Find(".bit-aimpv-cqt").GetAttribute("style"));
+        Assert.IsTrue(component.Find(".bit-aimpv-clc").ClassList.Contains("c-locator"));
+        Assert.AreEqual("margin: 4px", component.Find(".bit-aimpv-clc").GetAttribute("style"));
     }
 
     [TestMethod]

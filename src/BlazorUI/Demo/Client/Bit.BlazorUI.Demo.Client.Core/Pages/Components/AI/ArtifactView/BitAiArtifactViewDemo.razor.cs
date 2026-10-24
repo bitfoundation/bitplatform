@@ -151,6 +151,22 @@ public partial class BitAiArtifactViewDemo
                 },
                 new()
                 {
+                    Name = "ImagePlaceholder",
+                    Type = "BitActionButtonClassStyles?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the button (a BitActionButton) the BitAiArtifactView shows in place of an image or an SVG artifact the image policy loads only on request.",
+                    LinkType = LinkType.Link,
+                    Href = "/components/actionbutton/#class-styles"
+                },
+                new()
+                {
+                    Name = "BlockedImage",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the title the BitAiArtifactView shows in place of an image or an SVG artifact the image policy blocks."
+                },
+                new()
+                {
                     Name = "Frame",
                     Type = "string?",
                     DefaultValue = "null",
@@ -411,8 +427,8 @@ public partial class BitAiArtifactViewDemo
                 new() { Name = "Json", Value = "\"json\"", Description = "A JSON value, rendered as a collapsible tree and downloaded as .json." },
                 new() { Name = "Table", Value = "\"table\"", Description = "Tabular data: CSV (or TSV when the Language is tsv) as a table whose first row is the header, or a JSON array of objects as a BitAiDataTable; downloaded as .csv, .tsv or .json." },
                 new() { Name = "Chart", Value = "\"chart\"", Description = "A chart specification, for a renderer the app registers; shown as its code otherwise." },
-                new() { Name = "Image", Value = "\"image\"", Description = "A raster or vector image, shown from its Url or from a data URL as its content." },
-                new() { Name = "Svg", Value = "\"svg\"", Description = "SVG markup, shown through an img once complete - so no script inside it runs - and downloaded as .svg." },
+                new() { Name = "Image", Value = "\"image\"", Description = "A raster or vector image, shown from its Url or from a data URL as its content, as the image policy of the options decides." },
+                new() { Name = "Svg", Value = "\"svg\"", Description = "SVG markup, shown through an img once complete - so no script inside it runs - as the image policy of the options decides, and downloaded as .svg." },
                 new() { Name = "Diagram", Value = "\"diagram\"", Description = "A diagram description, for a renderer the app registers; shown as its code otherwise." },
             ]
         },
@@ -432,7 +448,8 @@ public partial class BitAiArtifactViewDemo
         new() { Name = "--bit-AiArtifactView-title-font-size", DefaultValue = "var(--bit-tpg-fs-sm)", Description = "Size of the title." },
         new() { Name = "--bit-AiArtifactView-title-font-weight", DefaultValue = "var(--bit-tpg-fw-semibold)", Description = "Weight of the title." },
         new() { Name = "--bit-AiArtifactView-max-height", DefaultValue = "spacing(64)", Description = "Height past which the body of an inline panel scrolls; the full-screen panel fills the screen instead." },
-        new() { Name = "--bit-AiArtifactView-content-padding", DefaultValue = "spacing(1.5) spacing(2)", Description = "Inset of a document or a JSON tree in the body." },
+        new() { Name = "--bit-AiArtifactView-content-padding", DefaultValue = "spacing(1.5) spacing(2)", Description = "Inset of a document or a JSON tree in the body, and of what stands in for an image or an SVG artifact the image policy holds back (its placeholder button or its title)." },
+        new() { Name = "--bit-AiArtifactView-muted-color", DefaultValue = "var(--bit-clr-fg-sec)", Description = "Color of the title shown in place of an image or an SVG artifact the image policy blocks." },
         new() { Name = "--bit-AiArtifactView-frame-height", DefaultValue = "spacing(52)", Description = "Height of the frame of an HTML page in an inline panel; the full-screen panel stretches it to the body." },
         new() { Name = "--bit-AiArtifactView-frame-background", DefaultValue = "white", Description = "Background of the frame of an HTML page - the white page a generated document expects, kept in a dark theme too." },
         new() { Name = "--bit-AiArtifactView-expanded-inset", DefaultValue = "spacing(2); none on a small screen", Description = "Room between the full-screen panel and the edges of the screen." },

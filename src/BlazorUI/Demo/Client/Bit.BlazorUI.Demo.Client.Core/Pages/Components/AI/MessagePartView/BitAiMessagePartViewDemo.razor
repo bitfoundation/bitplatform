@@ -5,9 +5,10 @@
             Description="BitAiMessagePartView renders one part of an AI message with the view of its kind - text, reasoning, code, a tool call, an error - or with a renderer the app registered, and re-renders only when that part changes." />
 
 <DemoPage Name="AiMessagePartView"
-          Description="BitAiMessagePartView renders one part of a message with the view of its kind: Markdown text, a reasoning panel, a code block, a tool call card, a tool result, an image, a file chip, an artifact card, structured data, a generated component, a source list or an error. It listens to its part rather than to the message, so a token arriving in the last paragraph of a long answer re-renders that paragraph alone, at most once per render interval. A renderer the app registers for a part kind replaces the built-in view, inside a boundary that contains its failures; a kind no view knows is shown as the text it carries."
+          Description="BitAiMessagePartView renders one part of a message with the view of its kind: Markdown text, a reasoning panel, a code block, a tool call card, a tool result, an image, a file chip, an artifact card, structured data, a generated component, a source list, the card of a citation or an error. It listens to its part rather than to the message, so a token arriving in the last paragraph of a long answer re-renders that paragraph alone, at most once per render interval. A renderer the app registers for a part kind replaces the built-in view, inside a boundary that contains its failures; a kind no view knows is shown as the text it carries."
           Parameters="componentParameters"
           SubClasses="componentSubClasses"
+          CssVariables="componentCssVariables"
           GitHubAIUrl="MessagePartView/BitAiMessagePartView.razor"
           GitHubDemoUrl="AI/MessagePartView/BitAiMessagePartViewDemo.razor">
     <NotesTemplate>
@@ -82,8 +83,10 @@
 
         <DemoExample Title="Citations" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
             <div>
-                The bracketed numbers of a text part are chips for the citations of its message (<b>BitAiMessage.AddCitation</b> numbers them),
-                and <b>OnCitationClick</b> reports the one the user activates.
+                The bracketed numbers of a text part are chips for the citations of its message (<b>BitAiMessage.AddCitation</b> numbers them).
+                A <b>BitAiCitationPart</b> places one citation where it sits between the parts instead: the card of its source, numbered as
+                the message numbers it, with the <b>Quote</b> and the <b>Locator</b> of the citation under it. <b>OnCitationClick</b> reports
+                the one the user activates, a chip or the card; while it is not set, the card is a link to the source.
             </div>
             <br />
             <div class="example-message">
@@ -133,8 +136,10 @@
         <DemoExample Title="Style & Class" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
             <div>
                 <b>Style</b> and <b>Class</b> land on the root, the block each part is laid out in; <b>Styles.Fallback</b> and
-                <b>Classes.Fallback</b> on the text shown for a kind no view knows. What a part shows is drawn by the view of its kind, restyled
-                through that view's own parameters and variables.
+                <b>Classes.Fallback</b> on the text shown for a kind no view knows; <b>Citation</b>, <b>CitationCard</b>,
+                <b>CitationQuote</b> and <b>CitationLocator</b> on what a citation part shows, which the public
+                <b>--bit-AiMessagePartView-*</b> variables (see the CSS variables table) restyle too. What any other part shows is drawn
+                by the view of its kind, restyled through that view's own parameters and variables.
             </div>
             <br />
             <div class="example-message">
@@ -145,6 +150,12 @@
                 <BitAiMessagePartView Part="styleMessage.Parts[1]" Message="styleMessage" Styles="@(new() { Fallback = "font-style: italic; color: #6d28d9" })" />
 
                 <BitAiMessagePartView Part="styleMessage.Parts[1]" Message="styleMessage" Classes="@(new() { Root = "custom-part-root", Fallback = "custom-part-fallback" })" />
+
+                <BitAiMessagePartView Part="styleMessage.Parts[2]" Message="styleMessage" Styles="@(new() { CitationQuote = "font-style: normal; color: #6d28d9", CitationLocator = "font-weight: bold" })" />
+
+                <div style="--bit-AiMessagePartView-citation-gap: 0.25rem; --bit-AiMessagePartView-quote-color: #0b7a75; --bit-AiMessagePartView-quote-border-color: #0b7a75; --bit-AiMessagePartView-locator-color: #0b7a75">
+                    <BitAiMessagePartView Part="styleMessage.Parts[2]" Message="styleMessage" />
+                </div>
             </div>
         </DemoExample>
 

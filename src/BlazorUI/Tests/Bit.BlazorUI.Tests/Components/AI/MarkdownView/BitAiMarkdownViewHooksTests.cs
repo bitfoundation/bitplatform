@@ -1,6 +1,9 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Bunit;
+using Microsoft.AspNetCore.Components;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Bit.BlazorUI.Tests.Components.AI.MarkdownView;
@@ -155,6 +158,74 @@ public class BitAiMarkdownViewHooksTests : BitAiTestBase
 
         // A number no citation answers to stays the text the model wrote, renderer or not.
         StringAssert.Contains(component.Find(".bit-aimdv-par").TextContent, "[7]");
+    }
+
+    [TestMethod]
+    public void ACitationRendererIsHandedTheOnCitationClickOfTheViewForItsChipToRaise()
+    {
+        var citation = new BitAiCitation("c1", new BitAiCitationSource("s1", "The Docs")) { Number = 1 };
+        BitAiCitation? clicked = null;
+        BitAiCitationContext? handed = null;
+        Renderers.CitationRenderer = context => builder =>
+        {
+            handed = context;
+            builder.OpenElement(0, "button");
+            builder.AddAttribute(1, "class", "my-chip");
+            builder.AddAttribute(2, "onclick", (Func<Task>)context.ActivateAsync);
+            builder.AddContent(3, context.Citation.Number);
+            builder.CloseElement();
+        };
+
+        var component = RenderComponent<BitAiMarkdownView>(parameters => parameters
+            .Add(p => p.Document, BitAiMarkdownParser.Parse("as stated [1] here"))
+            .Add(p => p.Citations, new[] { citation })
+            .Add(p => p.OnCitationClick, c => clicked = c));
+
+        Assert.IsTrue(handed!.OnActivate.HasDelegate);
+        Assert.IsNull(handed.Message);
+
+        component.Find("button.my-chip").Click();
+
+        // The same callback the built-in chip raises, with the citation the chip was drawn for.
+        Assert.AreSame(citation, clicked);
+    }
+
+    [TestMethod]
+    public async Task WithoutOnCitationClickActivatingTheChipOfACitationRendererDoesNothing()
+    {
+        var citation = new BitAiCitation("c1", new BitAiCitationSource("s1", "The Docs")) { Number = 1 };
+        BitAiCitationContext? handed = null;
+        Renderers.CitationRenderer = context => builder =>
+        {
+            handed = context;
+            builder.OpenElement(0, "button");
+            builder.AddAttribute(1, "class", "my-chip");
+            builder.AddAttribute(2, "onclick", (Func<Task>)context.ActivateAsync);
+            builder.CloseElement();
+        };
+
+        var component = RenderComponent<BitAiMarkdownView>(parameters => parameters
+            .Add(p => p.Document, BitAiMarkdownParser.Parse("as stated [1] here"))
+            .Add(p => p.Citations, new[] { citation }));
+
+        Assert.IsFalse(handed!.OnActivate.HasDelegate);
+
+        await handed.ActivateAsync();
+        component.Find("button.my-chip").Click();
+
+        Assert.AreSame(citation, handed.Citation);
+    }
+
+    [TestMethod]
+    public async Task TheContextOfACitationActivatesItThroughTheCallbackItWasHanded()
+    {
+        var citation = new BitAiCitation("c1", new BitAiCitationSource("s1", "The Docs"));
+        var activated = new List<BitAiCitation>();
+
+        await new BitAiCitationContext(citation).ActivateAsync();
+        await new BitAiCitationContext(citation, OnActivate: new EventCallback<BitAiCitation>(null, (Action<BitAiCitation>)activated.Add)).ActivateAsync();
+
+        Assert.AreSame(citation, Assert.ContainsSingle(activated));
     }
 
     [TestMethod]
@@ -460,6 +531,29 @@ public class BitAiMarkdownViewHooksTests : BitAiTestBase
 
         CollectionAssert.AreEqual(new[] { "https://cdn.x.dev/a.png", "https://img.trusted.org/b.png" }, sources);
         Assert.HasCount(1, component.FindAll("button.bit-acb"));
+    }
+
+    [TestMethod]
+    public void TheHostListPolicyAsksAboutARelativeImageAsTheAddressTheBrowserFetches()
+    {
+        // bUnit's base address is http://localhost/, which is where the browser would fetch these from.
+        var own = RenderMarkdown("![a](/img/a.png) ![b](img/b.png)", ui: BitAiUiOptions.Default with { Images = BitAiImagePolicy.AllowListedHosts("localhost") });
+        var cdn = RenderMarkdown("![a](/img/a.png)", ui: BitAiUiOptions.Default with { Images = BitAiImagePolicy.AllowListedHosts("cdn.x.dev") });
+
+        // Shown as written: the browser resolves it.
+        CollectionAssert.AreEqual(new[] { "/img/a.png", "img/b.png" }, own.FindAll("img.bit-aimdv-img").Select(i => i.GetAttribute("src")).ToArray());
+        Assert.IsEmpty(own.FindAll("button.bit-acb"));
+
+        Assert.IsEmpty(cdn.FindAll("img"));
+        Assert.AreEqual("/img/a.png", cdn.Find("button.bit-acb").GetAttribute("title"));
+    }
+
+    [TestMethod]
+    public void APlaceholderOfARelativeImageWithoutAlternativeTextIsNamedAfterTheHostOfTheApp()
+    {
+        var component = RenderMarkdown("![](/img/a.png)", ui: BitAiUiOptions.Default with { Images = BitAiImagePolicy.ClickToLoad });
+
+        Assert.AreEqual("Load image: localhost", component.Find("button.bit-acb").TextContent.Trim());
     }
 
     [TestMethod]

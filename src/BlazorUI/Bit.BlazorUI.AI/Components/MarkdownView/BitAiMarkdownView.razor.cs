@@ -23,13 +23,6 @@ namespace Bit.BlazorUI;
 /// </remarks>
 public partial class BitAiMarkdownView : BitAiComponentBase
 {
-    // Scheme names a link or an image may use; everything else (javascript:, vbscript:, data: for a link...) is
-    // neutralised. Allowing the known-safe ones is cheaper and more reliable than detecting the dangerous ones.
-    private static readonly string[] AllowedSchemes = ["http", "https", "mailto", "tel", "ftp"];
-
-    // What a neutralised image source becomes: a transparent pixel, so the image keeps its alternative text.
-    private const string BlankImage = "data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==";
-
     // What the notice of a registered renderer that failed names it after (a code block's renderer is named after its
     // language): the BitAiRendererRegistry members the renderers are registered through.
     private const string MathRendererName = "math";
@@ -86,8 +79,9 @@ public partial class BitAiMarkdownView : BitAiComponentBase
     /// The callback for when the user activates an inline citation marker.
     /// </summary>
     /// <remarks>
-    /// A chip drawn by the <see cref="BitAiRendererRegistry.CitationRenderer"/> is the app's own, and acts the way
-    /// that renderer makes it act.
+    /// A chip drawn by the <see cref="BitAiRendererRegistry.CitationRenderer"/> is the app's own: the renderer is handed
+    /// this callback (<see cref="BitAiCitationContext.OnActivate"/>), which its chip raises through
+    /// <see cref="BitAiCitationContext.ActivateAsync"/>.
     /// </remarks>
     [Parameter] public EventCallback<BitAiCitation> OnCitationClick { get; set; }
 
@@ -165,49 +159,10 @@ public partial class BitAiMarkdownView : BitAiComponentBase
             }
             : null;
 
-    private static string HostOf(string url) =>
-        Uri.TryCreate(url, UriKind.Absolute, out var uri) && uri.Host.Length > 0 ? uri.Host : url;
-
     private BitAiImageDecision DecideImage(string source)
     {
-        var decision = source == BlankImage ? BitAiImageDecision.Show : Options.Images.Decide(source);
+        var decision = DecideImageSource(source);
 
         return decision == BitAiImageDecision.AskFirst && _loadedImages.Contains(source) ? BitAiImageDecision.Show : decision;
-    }
-
-    /// <summary>
-    /// Blocks link and image schemes that can execute script.
-    /// </summary>
-    /// <remarks>
-    /// A model can be persuaded to emit a javascript: URL. Allowing only known-safe schemes is
-    /// cheaper and more reliable than trying to detect the dangerous ones.
-    /// </remarks>
-    private static string Sanitize(string url)
-    {
-        var trimmed = url.TrimStart();
-        if (trimmed.Length == 0) return "#";
-
-        var colon = trimmed.IndexOf(':');
-        if (colon < 0) return url;
-
-        var slash = trimmed.IndexOfAny(['/', '?', '#']);
-        if (slash >= 0 && slash < colon) return url;
-
-        var scheme = trimmed[..colon];
-        return AllowedSchemes.Contains(scheme, StringComparer.OrdinalIgnoreCase) ? url : "#";
-    }
-
-    /// <summary>
-    /// Blocks image sources that can execute script, while still allowing inline image data URLs.
-    /// </summary>
-    /// <param name="url">The source to check.</param>
-    /// <returns>The source, or a blank data URL when the scheme is not safe.</returns>
-    private static string SanitizeImage(string url)
-    {
-        var trimmed = url.TrimStart();
-        if (trimmed.StartsWith("data:image/", StringComparison.OrdinalIgnoreCase)) return url;
-
-        var safe = Sanitize(url);
-        return safe == "#" ? BlankImage : safe;
     }
 }

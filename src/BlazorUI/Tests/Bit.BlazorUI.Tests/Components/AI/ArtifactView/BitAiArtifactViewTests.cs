@@ -327,6 +327,137 @@ public class BitAiArtifactViewTests : BitAiTestBase
     }
 
     [TestMethod]
+    public void AnImageArtifactIsShownUnderTheAllowPolicy()
+    {
+        var view = RenderImageArtifact(ImageAt("https://img.x.dev/chart.png", "Chart"), BitAiImagePolicy.Allow);
+
+        var image = view.Find(".bit-aiatv-bdy > img.bit-aiatv-img");
+        Assert.AreEqual("https://img.x.dev/chart.png", image.GetAttribute("src"));
+        Assert.AreEqual("Chart", image.GetAttribute("alt"));
+        Assert.IsEmpty(view.FindAll(".bit-aiatv-imh"));
+    }
+
+    [TestMethod]
+    public void AnImageArtifactTheClickToLoadPolicyHoldsBackIsAButtonThatLoadsIt()
+    {
+        var view = RenderImageArtifact(ImageAt("https://img.x.dev/chart.png", "Chart"), BitAiImagePolicy.ClickToLoad);
+
+        Assert.IsEmpty(view.FindAll("img"));
+        var placeholder = view.Find(".bit-aiatv-bdy > .bit-aiatv-imh > button.bit-acb");
+        Assert.AreEqual("Load image: Chart", placeholder.TextContent.Trim());
+        Assert.AreEqual("https://img.x.dev/chart.png", placeholder.GetAttribute("title"));
+        Assert.IsTrue(placeholder.QuerySelector(".bit-acb-ico")!.ClassList.Contains("bit-icon-ai--Photo2"));
+
+        placeholder.Click();
+
+        Assert.AreEqual("https://img.x.dev/chart.png", view.Find("img.bit-aiatv-img").GetAttribute("src"));
+        Assert.IsEmpty(view.FindAll(".bit-aiatv-imh"));
+    }
+
+    [TestMethod]
+    public void APlaceholderOfAnUntitledImageArtifactIsNamedAfterItsHost()
+    {
+        var view = RenderImageArtifact(ImageAt("https://img.x.dev/chart.png", ""), BitAiImagePolicy.ClickToLoad);
+
+        Assert.AreEqual("Load image: img.x.dev", view.Find(".bit-aiatv-imh button.bit-acb").TextContent.Trim());
+    }
+
+    [TestMethod]
+    public void AnImageArtifactTheBlockPolicyHidesLeavesItsTitle()
+    {
+        var view = RenderImageArtifact(ImageAt("https://img.x.dev/chart.png", "Chart"), BitAiImagePolicy.Block);
+
+        Assert.IsEmpty(view.FindAll("img"));
+        Assert.IsEmpty(view.FindAll(".bit-aiatv-bdy button"));
+        Assert.AreEqual("Chart", view.Find(".bit-aiatv-bdy > .bit-aiatv-imh > span.bit-aiatv-imb").TextContent);
+    }
+
+    [TestMethod]
+    public void AnSvgArtifactFollowsThePolicyToo()
+    {
+        var conversation = new BitAiConversation();
+        var remote = conversation.GetOrAddArtifact("a1", BitAiArtifactKind.Svg, "Logo");
+        remote.Url = "https://img.x.dev/logo.svg";
+        remote.Complete();
+
+        var asked = RenderImageArtifact(remote, BitAiImagePolicy.ClickToLoad);
+        Assert.IsEmpty(asked.FindAll("img"));
+        Assert.AreEqual("Load image: Logo", asked.Find(".bit-aiatv-imh button.bit-acb").TextContent.Trim());
+
+        // Markup the model wrote is shown inline from data, which fetches nothing - unless images are blocked.
+        var inline = Completed(BitAiArtifactKind.Svg, "Logo", "<svg></svg>");
+        StringAssert.StartsWith(RenderImageArtifact(inline, BitAiImagePolicy.ClickToLoad).Find("img.bit-aiatv-img").GetAttribute("src"), "data:image/svg+xml;base64,");
+
+        var blocked = RenderImageArtifact(inline, BitAiImagePolicy.Block);
+        Assert.IsEmpty(blocked.FindAll("img"));
+        Assert.AreEqual("Logo", blocked.Find(".bit-aiatv-imb").TextContent);
+    }
+
+    [TestMethod]
+    public void AnImageArtifactOfTheAppsOwnHostIsShownWhenThatHostIsListed()
+    {
+        var own = RenderImageArtifact(ImageAt("/charts/a.png", "Chart"), BitAiImagePolicy.AllowListedHosts("localhost"));
+        var other = RenderImageArtifact(ImageAt("/charts/a.png", "Chart"), BitAiImagePolicy.AllowListedHosts("cdn.x.dev"));
+
+        Assert.AreEqual("/charts/a.png", own.Find("img.bit-aiatv-img").GetAttribute("src"));
+        Assert.IsEmpty(other.FindAll("img"));
+        Assert.IsNotNull(other.Find(".bit-aiatv-imh button.bit-acb"));
+    }
+
+    [TestMethod]
+    public void AScriptSourceOfAnImageArtifactIsNeverLoaded()
+    {
+        var view = RenderImageArtifact(ImageAt("javascript:alert(1)", "Chart"), BitAiImagePolicy.Allow);
+
+        StringAssert.StartsWith(view.Find("img.bit-aiatv-img").GetAttribute("src"), "data:image/gif;base64,");
+        Assert.IsFalse(view.Markup.Contains("javascript:", System.StringComparison.OrdinalIgnoreCase));
+    }
+
+    [TestMethod]
+    public void ThePlaceholderAndTheBlockedTitleTakeTheClassesAndStylesOfTheirParts()
+    {
+        var artifact = ImageAt("https://img.x.dev/chart.png", "Chart");
+        var classes = new BitAiArtifactViewClassStyles { ImagePlaceholder = new() { Root = "c-placeholder", Icon = "c-icon" }, BlockedImage = "c-blocked" };
+        var styles = new BitAiArtifactViewClassStyles { ImagePlaceholder = new() { Root = "margin: 1px" }, BlockedImage = "margin: 2px" };
+
+        var asked = RenderComponent<BitAiArtifactView>(p => p
+            .Add(c => c.Artifact, artifact)
+            .Add(c => c.CascadedOptions, BitAiUiOptions.Default with { Images = BitAiImagePolicy.ClickToLoad })
+            .Add(c => c.Classes, classes)
+            .Add(c => c.Styles, styles));
+        var blocked = RenderComponent<BitAiArtifactView>(p => p
+            .Add(c => c.Artifact, artifact)
+            .Add(c => c.CascadedOptions, BitAiUiOptions.Default with { Images = BitAiImagePolicy.Block })
+            .Add(c => c.Classes, classes)
+            .Add(c => c.Styles, styles));
+
+        var placeholder = asked.Find(".bit-aiatv-imh button.bit-acb");
+        Assert.IsTrue(placeholder.ClassList.Contains("c-placeholder"));
+        StringAssert.Contains(placeholder.GetAttribute("style"), "margin: 1px");
+        var icon = placeholder.QuerySelector(".bit-acb-ico")!;
+        Assert.IsTrue(icon.ClassList.Contains("bit-icon-ai--Photo2"));
+        Assert.IsTrue(icon.ClassList.Contains("c-icon"));
+
+        var title = blocked.Find(".bit-aiatv-imb");
+        Assert.IsTrue(title.ClassList.Contains("c-blocked"));
+        Assert.AreEqual("margin: 2px", title.GetAttribute("style"));
+    }
+
+    private static BitAiArtifact ImageAt(string url, string title)
+    {
+        var conversation = new BitAiConversation();
+        var artifact = conversation.GetOrAddArtifact("a1", BitAiArtifactKind.Image, title);
+        artifact.Url = url;
+        artifact.Complete();
+        return artifact;
+    }
+
+    private IRenderedComponent<BitAiArtifactView> RenderImageArtifact(BitAiArtifact artifact, BitAiImagePolicy policy) =>
+        RenderComponent<BitAiArtifactView>(p => p
+            .Add(c => c.Artifact, artifact)
+            .Add(c => c.CascadedOptions, BitAiUiOptions.Default with { Images = policy }));
+
+    [TestMethod]
     public void AnArtifactWithNoContentYetHasNothingToCopyOrDownloadUntilItHasSome()
     {
         var conversation = new BitAiConversation();

@@ -107,16 +107,16 @@
         {
             if ((Artifact.Url ?? content) is { Length: > 0 } source)
             {
-                <img src="@source" alt="@Artifact.Title" style="@Styles?.Image" class="bit-aiatv-img @Classes?.Image" />
+                @RenderImage(BitAiSafeUrls.Image(source))
             }
 
             return;
         }
 
-        if (kind == BitAiArtifactKind.Svg && IsStreaming is false && (content is { Length: > 0 } || Artifact.Url is { Length: > 0 }))
+        if (kind == BitAiArtifactKind.Svg && IsStreaming is false && SvgSource(content, Artifact.Url) is { Length: > 0 } svg)
         {
             // An image element never runs a script inside the SVG, which inline markup would.
-            <img src="@SvgSource(content, Artifact.Url)" alt="@Artifact.Title" style="@Styles?.Image" class="bit-aiatv-img @Classes?.Image" />
+            @RenderImage(BitAiSafeUrls.Image(svg))
             return;
         }
 
@@ -200,5 +200,35 @@
                 </tbody>
             </table>
         </div>
+    };
+
+    // An image or an SVG artifact as the image policy decides, as the images of a message are: shown, a button that
+    // loads it when the policy asks first (named after the artifact, which is what it shows), or the title alone.
+    private RenderFragment RenderImage(string source) => __builder =>
+    {
+        switch (DecideImage(source))
+        {
+            case BitAiImageDecision.Show:
+                <img src="@source" alt="@Artifact.Title" style="@Styles?.Image" class="bit-aiatv-img @Classes?.Image" />
+                break;
+
+            case BitAiImageDecision.AskFirst:
+                <div class="bit-aiatv-imh">
+                    <BitActionButton IconName="Photo2"
+                                     Title="@source"
+                                     OnClick="() => _loadedImage = source"
+                                     Classes="@_ImagePlaceholderClasses"
+                                     Styles="@Styles?.ImagePlaceholder">
+                        @Strings.LoadImage(string.IsNullOrWhiteSpace(Artifact.Title) ? ImageHostOf(source) : Artifact.Title)
+                    </BitActionButton>
+                </div>
+                break;
+
+            default:
+                <div class="bit-aiatv-imh">
+                    <span style="@Styles?.BlockedImage" class="bit-aiatv-imb @Classes?.BlockedImage">@Artifact.Title</span>
+                </div>
+                break;
+        }
     };
 }

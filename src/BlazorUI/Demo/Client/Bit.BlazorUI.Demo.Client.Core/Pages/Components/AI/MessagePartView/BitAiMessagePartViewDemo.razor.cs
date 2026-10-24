@@ -36,7 +36,7 @@ public partial class BitAiMessagePartViewDemo
             Name = "OnCitationClick",
             Type = "EventCallback<BitAiCitation>",
             DefaultValue = "",
-            Description = "Raised when the user activates a citation chip inside a text part of this view.",
+            Description = "Raised when the user activates a citation inside this view: a citation chip of a text part, or the card of a citation part. While it is not set, the card of a citation part is a link to its source instead.",
         },
         new()
         {
@@ -88,6 +88,36 @@ public partial class BitAiMessagePartViewDemo
                     Type = "string?",
                     DefaultValue = "null",
                     Description = "Custom CSS classes/styles for the text the BitAiMessagePartView shows for a part of a kind it does not know.",
+                },
+                new()
+                {
+                    Name = "Citation",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the container of a citation part of the BitAiMessagePartView.",
+                },
+                new()
+                {
+                    Name = "CitationCard",
+                    Type = "BitAiSourceCardClassStyles?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the BitAiSourceCard of a citation part of the BitAiMessagePartView.",
+                    LinkType = LinkType.Link,
+                    Href = "/components/ai/sourcecard#class-styles",
+                },
+                new()
+                {
+                    Name = "CitationQuote",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the quote of a citation part of the BitAiMessagePartView.",
+                },
+                new()
+                {
+                    Name = "CitationLocator",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the locator (a page, a section) of a citation part of the BitAiMessagePartView.",
                 },
             ],
         },
@@ -150,10 +180,10 @@ public partial class BitAiMessagePartViewDemo
                 new() { Name = "Code", Type = "\"code\"", DefaultValue = "", Description = "A BitAiCodePart, a standalone code block with a language and an optional file name: a BitAiCodeBlockView." },
                 new() { Name = "Image", Type = "\"image\"", DefaultValue = "", Description = "A BitAiImagePart: a BitAiImagePartView." },
                 new() { Name = "File", Type = "\"file\"", DefaultValue = "", Description = "A BitAiFilePart: a BitAiAttachmentChip of its attachment." },
-                new() { Name = "Citation", Type = "\"citation\"", DefaultValue = "", Description = "A BitAiCitationPart, a single citation placed inline. This view has no view for it; the citations of a message are shown by its text parts and its sources part." },
+                new() { Name = "Citation", Type = "\"citation\"", DefaultValue = "", Description = "A BitAiCitationPart, a single citation placed where it sits between the parts: the BitAiSourceCard of its source, numbered as the message numbers it, with the Quote and the Locator of the citation under it. The card raises OnCitationClick when that is set, and links to the source otherwise." },
                 new() { Name = "Sources", Type = "\"sources\"", DefaultValue = "", Description = "A BitAiSourcesPart, where the source list of the message goes: a BitAiSourceList of the citations it names, or of all the message's citations." },
                 new() { Name = "ToolCall", Type = "\"tool-call\"", DefaultValue = "", Description = "A BitAiToolCallPart: a BitAiToolCallView, or the renderer registered for its tool." },
-                new() { Name = "ToolResult", Type = "\"tool-result\"", DefaultValue = "", Description = "A BitAiToolResultPart, a result no call of the message could be matched to: a BitAiToolResultView." },
+                new() { Name = "ToolResult", Type = "\"tool-result\"", DefaultValue = "", Description = "A BitAiToolResultPart, a result carried on its own rather than on its call (the stream processor never adds one; an app does, for a conversation it imports): a BitAiToolResultView." },
                 new() { Name = "Artifact", Type = "\"artifact\"", DefaultValue = "", Description = "A BitAiArtifactPart, pointing at an artifact of the Conversation: a BitAiArtifactPartView." },
                 new() { Name = "StructuredData", Type = "\"structured-data\"", DefaultValue = "", Description = "A BitAiStructuredDataPart, a JSON value that may still be streaming: a BitAiStructuredDataView, or the renderer registered for its schema." },
                 new() { Name = "GenerativeUi", Type = "\"generative-ui\"", DefaultValue = "", Description = "A BitAiGenerativeUiPart, a component the model chose with the properties it supplied: a BitAiGenerativeUiView." },
@@ -303,6 +333,14 @@ public partial class BitAiMessagePartViewDemo
         },
     ];
 
+    private readonly List<ComponentCssVariable> componentCssVariables =
+    [
+        new() { Name = "--bit-AiMessagePartView-citation-gap", DefaultValue = "spacing(0.75)", Description = "Room between the card, the quote and the locator of a citation part." },
+        new() { Name = "--bit-AiMessagePartView-quote-color", DefaultValue = "var(--bit-clr-fg-sec)", Description = "Text color of the quote of a citation part." },
+        new() { Name = "--bit-AiMessagePartView-quote-border-color", DefaultValue = "var(--bit-clr-brd-pri)", Description = "Bar down the start edge of the quote of a citation part." },
+        new() { Name = "--bit-AiMessagePartView-locator-color", DefaultValue = "var(--bit-clr-fg-sec)", Description = "Text color of the locator (a page, a section) of a citation part." },
+    ];
+
 
 
     private static JsonElement Json(string json) => JsonDocument.Parse(json).RootElement;
@@ -413,12 +451,17 @@ public partial class BitAiMessagePartViewDemo
             Url = "https://example.com/docs/render-modes",
             SiteName = "Product documentation",
         }));
-        message.AddCitation(new BitAiCitation("cit_prerender", new BitAiCitationSource("prerendering", "Prerendering")
+        var prerendering = message.AddCitation(new BitAiCitation("cit_prerender", new BitAiCitationSource("prerendering", "Prerendering")
         {
             Url = "https://example.com/docs/prerendering",
             SiteName = "Product documentation",
-        }));
+        })
+        {
+            Quote = "Prerendering renders the page on the server first, so it is painted before its components become interactive.",
+            Locator = "Section 3: Prerendering",
+        });
         message.AddPart(new BitAiTextPart("Interactive Server keeps the components on the server [1], and prerendering paints them once before they become interactive [2]."));
+        message.AddPart(new BitAiCitationPart(prerendering));
 
         return message;
     }
@@ -479,8 +522,18 @@ public partial class BitAiMessagePartViewDemo
     {
         var message = new BitAiMessage(BitAiRole.Assistant);
 
+        var forecast = message.AddCitation(new BitAiCitation("cit_forecast", new BitAiCitationSource("forecast", "Oslo forecast")
+        {
+            Url = "https://example.com/weather/oslo",
+            SiteName = "Weather service",
+        })
+        {
+            Quote = "Snow showers through the afternoon, -3 °C.",
+            Locator = "Today, 14:00",
+        });
         message.AddPart(new BitAiTextPart("It is **-3 °C** and snowing in Oslo."));
         message.AddPart(new BitAiCustomPart<string[]>("demo:poll", ["Tuesday", "Thursday"]) { Text = "Poll: which day suits you, Tuesday or Thursday?" });
+        message.AddPart(new BitAiCitationPart(forecast));
 
         return message;
     }

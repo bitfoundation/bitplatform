@@ -10,7 +10,8 @@ namespace Bit.BlazorUI;
 /// The card is a link to the source when the source is addressable, so the browser gives the user the usual middle
 /// click and context menu, and a button when <see cref="OnActivate"/> is set. Source URLs come from the model or from
 /// retrieved content, so only a web address ever becomes a link, and only a web address or an inline raster image is
-/// ever loaded as the favicon.
+/// ever loaded as the favicon - and only when the <see cref="BitAiUiOptions.Images"/> policy shows it outright: a
+/// favicon is not worth a placeholder of its own.
 /// </remarks>
 public partial class BitAiSourceCard : BitAiComponentBase
 {

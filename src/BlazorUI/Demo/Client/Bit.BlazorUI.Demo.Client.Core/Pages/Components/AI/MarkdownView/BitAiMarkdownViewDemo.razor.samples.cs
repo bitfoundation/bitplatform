@@ -280,13 +280,68 @@ private readonly BitAiCitation[] citations =
 private string? clickedSource;";
 
     private readonly string example8RazorCode = @"
+@implements IDisposable
+
+<BitToggle @bind-Value=""customChips"" @bind-Value:after=""ToggleCitationRenderer"" Text=""Use a citation chip of my own"" />
+
+<BitAiMarkdownView Document=""citedDocument""
+                   Citations=""citations""
+                   OnCitationClick=""(BitAiCitation citation) => chipSource = citation.Source.Title"" />
+
+<div>Activated: <b>@(chipSource ?? ""none yet"")</b></div>";
+    private readonly string example8CsharpCode = @"
+[Inject] private BitAiRendererRegistry Renderers { get; set; } = default!;
+
+// citedMarkdown, citedDocument and citations as in the previous example.
+
+private bool customChips;
+private BitAiCitationRenderer? previousCitationRenderer;
+private string? chipSource;
+
+private void ToggleCitationRenderer()
+{
+    if (customChips)
+    {
+        previousCitationRenderer = Renderers.CitationRenderer;
+        Renderers.CitationRenderer = RenderCitationChip;
+    }
+    else
+    {
+        Renderers.CitationRenderer = previousCitationRenderer;
+    }
+}
+
+public void Dispose()
+{
+    // The registry is app-wide: leave it as this page found it.
+    if (customChips) Renderers.CitationRenderer = previousCitationRenderer;
+}
+
+// A pill naming the site of the source beside its number. ActivateAsync raises the OnCitationClick of the view the chip
+// is drawn in, as a click on the built-in chip does. The source is model output, so it is only ever written as text.
+private static RenderFragment RenderCitationChip(BitAiCitationContext context) => builder =>
+{
+    var citation = context.Citation;
+
+    builder.OpenElement(0, ""button"");
+    builder.AddAttribute(1, ""type"", ""button"");
+    builder.AddAttribute(2, ""title"", citation.Source.Title);
+    builder.AddAttribute(3, ""style"", ""margin-inline: 0.125rem; padding: 0 0.5rem; border: none; border-radius: 1rem; font: inherit; font-size: 0.75em; line-height: 1.5; cursor: pointer; color: var(--bit-clr-pri-text); background-color: var(--bit-clr-pri);"");
+    builder.AddAttribute(4, ""onclick"", EventCallback.Factory.Create(context, context.ActivateAsync));
+    builder.AddContent(5, $""{citation.Number} · {citation.Source.SiteName ?? citation.Source.Title}"");
+    builder.CloseElement();
+};";
+
+    private readonly string example9RazorCode = @"
 <BitChoiceGroup Label=""Policy"" Items=""imageModeItems"" @bind-Value=""imageMode"" @bind-Value:after=""UpdateImageOptions"" Horizontal />
 <BitToggle @bind-Value=""allowDataImages"" @bind-Value:after=""UpdateImageOptions"" Text=""AllowDataImages"" />
 
 <BitAiOptionsProvider UiOptions=""imageOptions"">
     <BitAiMarkdownView Document=""imagesDocument"" />
 </BitAiOptionsProvider>";
-    private readonly string example8CsharpCode = @"
+    private readonly string example9CsharpCode = @"
+[Inject] private NavigationManager Navigation { get; set; } = default!;
+
 private const string imagesMarkdown = """"""
     From this site: ![A portrait of a woman](_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female-72.png)
 
@@ -315,7 +370,8 @@ private void UpdateImageOptions()
 {
     var policy = imageMode switch
     {
-        nameof(BitAiImageMode.AllowListedHosts) => BitAiImagePolicy.AllowListedHosts(""static2.sharepointonline.com""),
+        // A relative image is fetched from the host of the page, so that host is listed beside the CDN.
+        nameof(BitAiImageMode.AllowListedHosts) => BitAiImagePolicy.AllowListedHosts(""static2.sharepointonline.com"", new Uri(Navigation.BaseUri).Host),
         nameof(BitAiImageMode.ClickToLoad) => BitAiImagePolicy.ClickToLoad,
         nameof(BitAiImageMode.Block) => BitAiImagePolicy.Block,
         _ => BitAiImagePolicy.Allow,
@@ -324,13 +380,13 @@ private void UpdateImageOptions()
     imageOptions = BitAiUiOptions.Default with { Images = policy with { AllowDataImages = allowDataImages } };
 }";
 
-    private readonly string example9RazorCode = @"
+    private readonly string example10RazorCode = @"
 <BitToggle @bind-Value=""allowRawHtml"" @bind-Value:after=""UpdateRawHtml"" Text=""AllowRawHtml (trusted Markdown only)"" />
 
 <BitAiOptionsProvider UiOptions=""rawHtmlOptions"">
     <BitAiMarkdownView Document=""untrustedDocument"" />
 </BitAiOptionsProvider>";
-    private readonly string example9CsharpCode = @"
+    private readonly string example10CsharpCode = @"
 private const string untrustedMarkdown = """"""
     A link a model was talked into: [claim your prize](javascript:alert('pwned')).
 
@@ -354,7 +410,7 @@ private void UpdateRawHtml()
     rawHtmlOptions = BitAiUiOptions.Default with { Markdown = markdownOptions };
 }";
 
-    private readonly string example10RazorCode = @"
+    private readonly string example11RazorCode = @"
 <BitStack Horizontal Wrap AutoHeight Gap=""0.5rem 1.5rem"">
     <BitToggle @bind-Value=""parseTables"" @bind-Value:after=""Reparse"" Text=""Tables"" />
     <BitToggle @bind-Value=""parseTaskLists"" @bind-Value:after=""Reparse"" Text=""TaskLists"" />
@@ -365,7 +421,7 @@ private void UpdateRawHtml()
 </BitStack>
 
 <BitAiMarkdownView Document=""optionsDocument"" />";
-    private readonly string example10CsharpCode = @"
+    private readonly string example11CsharpCode = @"
 private const string optionsMarkdown = """"""
     | Option | Default |
     | --- | --- |
@@ -402,13 +458,13 @@ private void Reparse()
     optionsDocument = BitAiMarkdownParser.Parse(optionsMarkdown, options);
 }";
 
-    private readonly string example11RazorCode = @"
+    private readonly string example12RazorCode = @"
 <BitParams Parameters=""markdownParams"">
     <BitAiMarkdownView Document=""paramsDocument"" />
 
     <BitAiMarkdownView Document=""paramsDocument"" Styles=""@(new() { Link = ""color: mediumseagreen;"" })"" />
 </BitParams>";
-    private readonly string example11CsharpCode = @"
+    private readonly string example12CsharpCode = @"
 private const string paramsMarkdown = """"""
     > Every link of a view inside the BitParams, such as [this one](https://bitplatform.dev), is bold.
     """""";
@@ -420,7 +476,7 @@ private readonly BitAiMarkdownViewParams[] markdownParams =
     new() { Styles = new() { Link = ""font-weight: bold;"", Quote = ""font-style: italic;"" } },
 ];";
 
-    private readonly string example12RazorCode = @"
+    private readonly string example13RazorCode = @"
 <style>
     .custom-class {
         padding: 0.5rem 1rem;
@@ -457,7 +513,7 @@ private readonly BitAiMarkdownViewParams[] markdownParams =
 <div style=""--bit-AiMarkdownView-heading-color: rebeccapurple; --bit-AiMarkdownView-link-color: rebeccapurple; --bit-AiMarkdownView-quote-border-color: rebeccapurple; --bit-AiMarkdownView-code-background: #ede9fe; --bit-AiMarkdownView-block-spacing: 0.5rem;"">
     <BitAiMarkdownView Document=""styleDocument"" />
 </div>";
-    private readonly string example12CsharpCode = @"
+    private readonly string example13CsharpCode = @"
 private const string styleMarkdown = """"""
     #### A styled answer
 
@@ -471,9 +527,9 @@ private const string styleMarkdown = """"""
 
 private readonly BitAiMarkdownDocument styleDocument = BitAiMarkdownParser.Parse(styleMarkdown);";
 
-    private readonly string example13RazorCode = @"
+    private readonly string example14RazorCode = @"
 <BitAiMarkdownView Dir=""BitDir.Rtl"" Document=""rtlDocument"" />";
-    private readonly string example13CsharpCode = @"
+    private readonly string example14CsharpCode = @"
 private const string rtlMarkdown = """"""
     #### دو حالت رندر
 

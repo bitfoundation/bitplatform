@@ -11,7 +11,7 @@
 public sealed class BitAiImagePart : BitAiMessagePart, IBitAiTextualPart
 {
     /// <summary>Creates an image part.</summary>
-    /// <param name="url">An absolute or data URL.</param>
+    /// <param name="url">An absolute, relative or data URL.</param>
     /// <param name="partId">The identifier, or <see langword="null"/> to generate one.</param>
     public BitAiImagePart(string url, string? partId = null) : base(partId)
     {
@@ -22,7 +22,10 @@ public sealed class BitAiImagePart : BitAiMessagePart, IBitAiTextualPart
     /// <inheritdoc />
     public override string Kind => BitAiMessagePartKinds.Image;
 
-    /// <summary>An absolute or data URL.</summary>
+    /// <summary>
+    /// An absolute, relative or data URL. A relative one is resolved against the base address of the document, as the
+    /// browser resolves it, and the image is shown as the <see cref="BitAiUiOptions.Images"/> policy decides.
+    /// </summary>
     public string Url { get; }
 
     /// <summary>Alternative text, which becomes the accessible name of the image.</summary>

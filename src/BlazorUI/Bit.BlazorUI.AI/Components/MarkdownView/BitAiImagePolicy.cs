@@ -1,14 +1,15 @@
 ﻿namespace Bit.BlazorUI;
 
 /// <summary>
-/// Which images a Markdown renderer fetches.
+/// Which images the views fetch: those of Markdown, image parts, image artifacts, and the favicons of sources.
 /// </summary>
 /// <remarks>
 /// <para>
 /// A model can be talked into emitting an image URL, and a browser fetching that URL leaks the
 /// user's address and the fact that they read the message to whoever controls the host. The
 /// default allows images, as a chat UI is expected to; a host handling sensitive conversations can
-/// restrict them to its own CDN, ask before loading, or block them outright.
+/// restrict them to its own CDN, ask before loading, or block them outright. A favicon is never
+/// worth a placeholder of its own, so one the policy does not show outright is left out.
 /// </para>
 /// <para>
 /// Script-capable URL schemes are neutralised regardless of the policy. Inline <c>data:</c> images
@@ -46,6 +47,10 @@ public sealed record BitAiImagePolicy
     /// <summary>Show remote images only from the given hosts, and a placeholder for the rest.</summary>
     /// <param name="hosts">Host names, compared without regard to case. A leading <c>*.</c> matches subdomains.</param>
     /// <returns>The policy.</returns>
+    /// <remarks>
+    /// A relative image is fetched from the host of the document's base address, which is what the views ask about it:
+    /// list that host to show the app's own images.
+    /// </remarks>
     public static BitAiImagePolicy AllowListedHosts(params string[] hosts)
     {
         ArgumentNullException.ThrowIfNull(hosts);
@@ -62,7 +67,11 @@ public sealed record BitAiImagePolicy
     /// <summary>
     /// Decides what to do with one image.
     /// </summary>
-    /// <param name="url">The image source, already checked for a safe scheme.</param>
+    /// <param name="url">
+    /// The image source, already checked for a safe scheme. The views ask about the address the browser fetches: a
+    /// relative or protocol-relative source resolved against the base address of the document. One handed in still
+    /// relative has no host, so no host list shows it.
+    /// </param>
     /// <returns>Whether to show it, show a placeholder that loads it on request, or hide it.</returns>
     public BitAiImageDecision Decide(string url)
     {

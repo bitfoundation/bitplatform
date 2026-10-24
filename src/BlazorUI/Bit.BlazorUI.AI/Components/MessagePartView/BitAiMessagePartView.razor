@@ -5,9 +5,8 @@
     var builtIn = _custom is null ? BuiltInView() : null;
 }
 
-@* A part nothing is drawn for - a citation, which the text it is attributed in and the source list already show, or a
-   kind this view does not know that carries no text - leaves no element behind either, rather than an empty one
-   among the parts of the message. *@
+@* A part nothing is drawn for - a kind this view does not know that carries no text - leaves no element behind either,
+   rather than an empty one among the parts of the message. *@
 @if (_custom is not null || builtIn is not null)
 {
     <div @ref="RootElement" @attributes="HtmlAttributes"
@@ -71,6 +70,9 @@
             case BitAiSourcesPart sources:
                 return @<BitAiSourceList Citations="GetCitations(sources)" />;
 
+            case BitAiCitationPart cited:
+                return CitationView(cited.Citation);
+
             case BitAiErrorPart error:
                 return @<BitAiErrorView Error="error.Error" />;
 
@@ -83,4 +85,30 @@
                 return null;
         }
     }
+
+    // A citation placed where it sits: the card of its source, numbered as the message numbers it, with the passage the
+    // claim rests on and where in the source it was found under it. The card hands the citation to OnCitationClick when
+    // that is set, and is a link to the source otherwise - the way a card of the source list is.
+    private RenderFragment CitationView(BitAiCitation citation) => __builder =>
+    {
+        var onActivate = OnCitationClick.HasDelegate
+            ? EventCallback.Factory.Create<BitAiCitationSource>(this, () => OnCitationClick.InvokeAsync(citation))
+            : default;
+
+        <div style="@Styles?.Citation" class="bit-aimpv-cit @Classes?.Citation">
+            <BitAiSourceCard Source="citation.Source"
+                             Number="NumberOf(citation)"
+                             OnActivate="onActivate"
+                             Styles="@Styles?.CitationCard"
+                             Classes="@Classes?.CitationCard" />
+            @if (citation.Quote is { Length: > 0 } quote)
+            {
+                <blockquote style="@Styles?.CitationQuote" class="bit-aimpv-cqt @Classes?.CitationQuote">@quote</blockquote>
+            }
+            @if (citation.Locator is { Length: > 0 } locator)
+            {
+                <div style="@Styles?.CitationLocator" class="bit-aimpv-clc @Classes?.CitationLocator">@locator</div>
+            }
+        </div>
+    };
 }

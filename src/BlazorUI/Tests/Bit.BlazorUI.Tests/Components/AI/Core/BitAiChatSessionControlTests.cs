@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Bit.BlazorUI.Tests.Components.AI.Core;
@@ -338,6 +339,159 @@ public class BitAiChatSessionControlTests
         Assert.AreEqual("server", assistant!.FindToolCall("c1")!.Result!.Text);
     }
 
+    // Parallel streams merged out of order: the result of a call the server ran arrives ahead of the call itself, which
+    // starts with its arguments or streams them in afterwards. Either way the call is answered before it is ready.
+    [TestMethod,
+        DataRow(false),
+        DataRow(true)]
+    public async Task AToolTheServerAnsweredAheadOfItsCallIsNotExecutedEither(bool streamedArguments)
+    {
+        var executions = 0;
+        var registry = new BitAiToolRegistry();
+        registry.Register(BitAiTool.Create(
+            new BitAiToolDefinition("search"),
+            (_, _) =>
+            {
+                executions++;
+                return ValueTask.FromResult(BitAiToolOutcome.FromText("client"));
+            }));
+
+        var arguments = JsonDocument.Parse("""{"q":"x"}""").RootElement;
+        BitAiEvent[] call = streamedArguments
+            ?
+            [
+                new BitAiToolCallStartedEvent("c1", "search"),
+                new BitAiToolCallDeltaEvent("c1", """{"q":"x"}"""),
+                new BitAiToolCallCompletedEvent("c1"),
+            ]
+            : [new BitAiToolCallStartedEvent("c1", "search") { Arguments = arguments }];
+
+        var transport = new BitAiFakeTransport(_ =>
+        [
+            new BitAiToolResultEvent("c1", BitAiToolOutcome.FromText("server")),
+            .. call,
+            new BitAiTextDeltaEvent("Found it."),
+            new BitAiMessageCompletedEvent(),
+        ]);
+
+        await using var session = new BitAiChatSession(transport, null, Immediate, registry);
+        var assistant = await session.SubmitAsync("go");
+
+        Assert.AreEqual(0, executions);
+        Assert.ContainsSingle(transport.Requests);
+        Assert.AreEqual("server", assistant!.FindToolCall("c1")!.Result!.Text);
+        Assert.AreEqual(BitAiToolCallStatus.Completed, assistant.FindToolCall("c1")!.Status);
+        Assert.IsEmpty(assistant.PartsOf<BitAiErrorPart>());
+        Assert.IsEmpty(assistant.PartsOf<BitAiToolResultPart>());
+    }
+
+    [TestMethod]
+    public void TheHoldTimeOfAToolResultIsTenSecondsByDefaultAndNeverNegative()
+    {
+        Assert.AreEqual(TimeSpan.FromSeconds(10), new BitAiChatSessionOptions().ToolResultHoldTime);
+        Assert.AreEqual(TimeSpan.Zero, new BitAiChatSessionOptions { ToolResultHoldTime = TimeSpan.Zero }.ToolResultHoldTime);
+        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => new BitAiChatSessionOptions { ToolResultHoldTime = TimeSpan.FromMilliseconds(-1) });
+    }
+
+    [TestMethod]
+    public async Task TheHoldTimeOfTheOptionsIsHandedToTheProcessorAtTheStartOfEveryTurn()
+    {
+        await using var session = new BitAiChatSession(
+            new BitAiFakeTransport(new BitAiTextDeltaEvent("Hi."), new BitAiMessageCompletedEvent()),
+            null,
+            Immediate with { ToolResultHoldTime = TimeSpan.FromSeconds(3) });
+
+        Assert.AreEqual(BitAiConversationStreamProcessor.DefaultToolResultHoldTime, session.Processor.ToolResultHoldTime);
+
+        await session.SubmitAsync("go");
+        Assert.AreEqual(TimeSpan.FromSeconds(3), session.Processor.ToolResultHoldTime);
+
+        // Options changed between turns are read by the next one.
+        session.Options = session.Options with { ToolResultHoldTime = TimeSpan.FromSeconds(1) };
+        Assert.AreEqual(TimeSpan.FromSeconds(3), session.Processor.ToolResultHoldTime);
+
+        await session.SubmitAsync("again");
+        Assert.AreEqual(TimeSpan.FromSeconds(1), session.Processor.ToolResultHoldTime);
+    }
+
+    // A hold time of zero drops a result for a call that never started at once, so the session's part of it is told
+    // without waiting for a clock: the error on the answer, the warning in the log, and a StateChanged for the UI - also
+    // for a drop after the turn ended, which is what the timer of the processor does.
+    [TestMethod]
+    public async Task AResultForACallThatNeverStartsLeavesAnErrorAndRendersTheSession()
+    {
+        var logger = new RecordingLogger();
+        var transport = new BitAiFakeTransport(
+            new BitAiToolResultEvent("ghost", BitAiToolOutcome.FromText("server")),
+            new BitAiTextDeltaEvent("Done."),
+            new BitAiMessageCompletedEvent());
+
+        await using var session = new BitAiChatSession(
+            transport, null, Immediate with { ToolResultHoldTime = TimeSpan.Zero }, logger: logger);
+
+        var assistant = await session.SubmitAsync("go");
+
+        // The turn goes on: the answer is complete, with the error beside it.
+        Assert.AreEqual(BitAiMessageStatus.Complete, assistant!.Status);
+        Assert.IsNull(session.LastError);
+        Assert.AreEqual("Done.", assistant.GetText());
+        var error = Assert.ContainsSingle(assistant.PartsOf<BitAiErrorPart>()).Error;
+        Assert.AreEqual(BitAiOrphanedToolResultException.ErrorCode, error.Code);
+        Assert.AreEqual("ghost", Assert.IsExactInstanceOfType<BitAiOrphanedToolResultException>(error.Exception).ToolCallId);
+
+        var warning = Assert.ContainsSingle(logger.Entries);
+        Assert.AreEqual(LogLevel.Warning, warning.Level);
+        Assert.AreSame(error.Exception, warning.Exception);
+
+        var changes = 0;
+        session.StateChanged += () => changes++;
+
+        session.Processor.Apply(new BitAiToolResultEvent("late", BitAiToolOutcome.FromText("server")) { MessageId = assistant.MessageId });
+
+        Assert.AreEqual(1, changes);
+        Assert.HasCount(2, assistant.PartsOf<BitAiErrorPart>().ToList());
+        Assert.HasCount(2, logger.Entries);
+    }
+
+    [TestMethod]
+    public async Task ADroppedResultRendersNothingOnceTheSessionIsDisposed()
+    {
+        var session = new BitAiChatSession(
+            new BitAiFakeTransport(new BitAiMessageCompletedEvent()),
+            null,
+            Immediate with { ToolResultHoldTime = TimeSpan.Zero });
+
+        var assistant = await session.SubmitAsync("go");
+
+        var changes = 0;
+        session.StateChanged += () => changes++;
+        await session.DisposeAsync();
+
+        session.Processor.Apply(new BitAiToolResultEvent("late", BitAiToolOutcome.FromText("server")) { MessageId = assistant!.MessageId });
+
+        Assert.ContainsSingle(assistant.PartsOf<BitAiErrorPart>());
+        Assert.AreEqual(0, changes);
+    }
+
+    [TestMethod]
+    public async Task AResultStillHeldWhenTheSessionIsDisposedIsDiscarded()
+    {
+        var session = new BitAiChatSession(
+            new BitAiFakeTransport(new BitAiMessageCompletedEvent()),
+            null,
+            Immediate with { ToolResultHoldTime = TimeSpan.FromMilliseconds(300) });
+
+        var assistant = await session.SubmitAsync("go");
+        session.Processor.Apply(new BitAiToolResultEvent("late", BitAiToolOutcome.FromText("server")) { MessageId = assistant!.MessageId });
+
+        await session.DisposeAsync();
+
+        // Past the hold time: the timer of the processor would have dropped the result onto the message by now.
+        await Task.Delay(TimeSpan.FromMilliseconds(600));
+
+        Assert.IsEmpty(assistant.PartsOf<BitAiErrorPart>());
+    }
+
     [TestMethod]
     public async Task UsageAcrossToolRoundTripsIsTheSumOfEachRequestsFinalReport()
     {
@@ -450,6 +604,21 @@ public class BitAiChatSessionControlTests
             blocked.TrySetResult();
             await Task.Delay(Timeout.Infinite, cancellationToken);
             yield break;
+        }
+    }
+
+    /// <summary>Keeps what the session logs.</summary>
+    private sealed class RecordingLogger : ILogger<BitAiChatSession>
+    {
+        public List<(LogLevel Level, Exception? Exception)> Entries { get; } = [];
+
+        public IDisposable? BeginScope<TState>(TState state) where TState : notnull => null;
+
+        public bool IsEnabled(LogLevel logLevel) => true;
+
+        public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter)
+        {
+            lock (Entries) Entries.Add((logLevel, exception));
         }
     }
 

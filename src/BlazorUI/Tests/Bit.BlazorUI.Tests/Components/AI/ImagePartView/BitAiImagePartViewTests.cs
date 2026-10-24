@@ -1,6 +1,8 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Bunit;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Bit.BlazorUI.Tests.Components.AI.ImagePartView;
@@ -67,6 +69,225 @@ public class BitAiImagePartViewTests : BitAiTestBase
 
         Assert.AreEqual("A cat on a mat", component.Find(".bit-aiipv > figcaption.bit-aiipv-cap").TextContent);
     }
+
+    [TestMethod]
+    public void TheAllowPolicyShowsTheImage()
+    {
+        var part = new BitAiImagePart("https://img.x.dev/cat.png") { Alt = "A cat" };
+
+        var component = RenderImage(part, BitAiImagePolicy.Allow);
+
+        Assert.AreEqual("https://img.x.dev/cat.png", component.Find("img.bit-aiipv-img").GetAttribute("src"));
+        Assert.IsEmpty(component.FindAll("button"));
+        Assert.IsEmpty(component.FindAll(".bit-aiipv-imb"));
+    }
+
+    [TestMethod]
+    public void TheClickToLoadPolicyShowsAButtonThatLoadsTheImage()
+    {
+        var part = new BitAiImagePart("https://img.x.dev/cat.png") { Alt = "A cat", Width = 640, Height = 480 };
+
+        var component = RenderImage(part, BitAiImagePolicy.ClickToLoad);
+
+        // Nothing is fetched until the user asks.
+        Assert.IsEmpty(component.FindAll("img"));
+        var placeholder = component.Find(".bit-aiipv > button.bit-acb");
+        Assert.AreEqual("Load image: A cat", placeholder.TextContent.Trim());
+        Assert.AreEqual("https://img.x.dev/cat.png", placeholder.GetAttribute("title"));
+
+        // The glyph is drawn from the package's own icon subset.
+        var icon = placeholder.QuerySelector(".bit-acb-ico")!;
+        Assert.IsTrue(icon.ClassList.Contains("bit-icon-ai"));
+        Assert.IsTrue(icon.ClassList.Contains("bit-icon-ai--Photo2"));
+
+        placeholder.Click();
+
+        var image = component.Find("img.bit-aiipv-img");
+        Assert.AreEqual("https://img.x.dev/cat.png", image.GetAttribute("src"));
+        Assert.AreEqual("A cat", image.GetAttribute("alt"));
+        Assert.AreEqual("640", image.GetAttribute("width"));
+        Assert.IsEmpty(component.FindAll("button.bit-acb"));
+    }
+
+    [TestMethod]
+    public void APlaceholderWithoutAlternativeTextIsNamedAfterTheHostTheImageComesFrom()
+    {
+        var remote = RenderImage(new BitAiImagePart("https://img.x.dev/cat.png"), BitAiImagePolicy.ClickToLoad);
+        var relative = RenderImage(new BitAiImagePart("/img/cat.png") { Alt = " " }, BitAiImagePolicy.ClickToLoad);
+
+        Assert.AreEqual("Load image: img.x.dev", remote.Find("button.bit-acb").TextContent.Trim());
+
+        // A relative image is fetched from the app's own host, the base address of the document.
+        Assert.AreEqual("Load image: localhost", relative.Find("button.bit-acb").TextContent.Trim());
+        Assert.AreEqual("/img/cat.png", relative.Find("button.bit-acb").GetAttribute("title"));
+    }
+
+    [TestMethod]
+    public void APartHandedAnotherImageAsksAgain()
+    {
+        Services.AddSingleton(BitAiUiOptions.Default with { Images = BitAiImagePolicy.ClickToLoad });
+        var component = RenderComponent<BitAiImagePartView>(p => p.Add(c => c.Part, new BitAiImagePart("https://img.x.dev/cat.png") { Alt = "A cat" }));
+
+        component.Find("button.bit-acb").Click();
+        Assert.IsNotNull(component.Find("img"));
+
+        component.Render(p => p.Add(c => c.Part, new BitAiImagePart("https://img.x.dev/dog.png") { Alt = "A dog" }));
+
+        Assert.IsEmpty(component.FindAll("img"));
+        Assert.AreEqual("Load image: A dog", component.Find("button.bit-acb").TextContent.Trim());
+    }
+
+    [TestMethod]
+    public void TheBlockPolicyShowsTheAlternativeTextInPlaceOfTheImage()
+    {
+        var withAlt = RenderImage(new BitAiImagePart("https://img.x.dev/cat.png") { Alt = "A cat" }, BitAiImagePolicy.Block);
+        var withoutAlt = RenderImage(new BitAiImagePart("https://img.x.dev/cat.png"), BitAiImagePolicy.Block);
+
+        Assert.IsEmpty(withAlt.FindAll("img"));
+        Assert.IsEmpty(withAlt.FindAll("button"));
+        var blocked = withAlt.Find(".bit-aiipv > span.bit-aiipv-imb");
+        Assert.AreEqual("A cat", blocked.TextContent);
+
+        // With nothing to say about the image, nothing is left of it.
+        Assert.IsEmpty(withoutAlt.FindAll("img"));
+        Assert.IsEmpty(withoutAlt.FindAll(".bit-aiipv-imb"));
+        Assert.AreEqual(0, withoutAlt.Find(".bit-aiipv").ChildElementCount);
+    }
+
+    [TestMethod]
+    public void TheHostListPolicyShowsARelativeImageOfTheAppsOwnHost()
+    {
+        // bUnit's base address is http://localhost/.
+        var own = RenderImage(new BitAiImagePart("/img/cat.png") { Alt = "A cat" }, BitAiImagePolicy.AllowListedHosts("localhost"));
+        var cdn = RenderImage(new BitAiImagePart("/img/cat.png") { Alt = "A cat" }, BitAiImagePolicy.AllowListedHosts("cdn.x.dev"));
+        var listed = RenderImage(new BitAiImagePart("https://cdn.x.dev/cat.png") { Alt = "A cat" }, BitAiImagePolicy.AllowListedHosts("cdn.x.dev"));
+
+        Assert.AreEqual("/img/cat.png", own.Find("img.bit-aiipv-img").GetAttribute("src"));
+        Assert.IsEmpty(cdn.FindAll("img"));
+        Assert.AreEqual("Load image: A cat", cdn.Find("button.bit-acb").TextContent.Trim());
+        Assert.AreEqual("https://cdn.x.dev/cat.png", listed.Find("img.bit-aiipv-img").GetAttribute("src"));
+    }
+
+    [TestMethod]
+    public void ARelativeImageRendersWhereThereIsNoBaseAddressToRead()
+    {
+        // A navigation manager that was never initialized - a view an HtmlRenderer of the app's own renders - throws on
+        // its base address. The view never reads it unless a host list needs it, and then takes it for unknown.
+        Services.AddSingleton<Microsoft.AspNetCore.Components.NavigationManager>(new UninitializedNavigationManager());
+
+        var allowed = RenderImage(new BitAiImagePart("/img/cat.png") { Alt = "A cat" }, BitAiImagePolicy.Allow);
+        var listed = RenderImage(new BitAiImagePart("/img/cat.png"), BitAiImagePolicy.AllowListedHosts("localhost"));
+
+        Assert.AreEqual("/img/cat.png", allowed.Find("img.bit-aiipv-img").GetAttribute("src"));
+        Assert.IsEmpty(listed.FindAll("img"));
+        Assert.AreEqual("Load image: /img/cat.png", listed.Find("button.bit-acb").TextContent.Trim());
+    }
+
+    [TestMethod]
+    public void InlineImageDataIsShownUnlessThePolicyBlocksItOrItsData()
+    {
+        const string data = "data:image/png;base64,iVBORw0KGgo=";
+
+        Assert.AreEqual(data, RenderImage(new BitAiImagePart(data), BitAiImagePolicy.ClickToLoad).Find("img").GetAttribute("src"));
+        Assert.AreEqual(data, RenderImage(new BitAiImagePart(data), BitAiImagePolicy.AllowListedHosts("cdn.x.dev")).Find("img").GetAttribute("src"));
+        Assert.IsEmpty(RenderImage(new BitAiImagePart(data) { Alt = "x" }, BitAiImagePolicy.Block).FindAll("img"));
+        Assert.IsEmpty(RenderImage(new BitAiImagePart(data) { Alt = "x" }, BitAiImagePolicy.Allow with { AllowDataImages = false }).FindAll("img"));
+    }
+
+    [TestMethod,
+        DataRow(BitAiImageMode.Allow),
+        DataRow(BitAiImageMode.ClickToLoad),
+        DataRow(BitAiImageMode.Block),
+        DataRow(BitAiImageMode.AllowListedHosts)]
+    public void TheCaptionIsRenderedUnderEveryPolicy(BitAiImageMode mode)
+    {
+        var part = new BitAiImagePart("https://img.x.dev/cat.png") { Alt = "A cat", Caption = "A cat on a mat" };
+
+        var component = RenderImage(part, Policy(mode));
+
+        Assert.AreEqual("A cat on a mat", component.Find(".bit-aiipv > figcaption.bit-aiipv-cap").TextContent);
+    }
+
+    [TestMethod,
+        DataRow(BitAiImageMode.Allow),
+        DataRow(BitAiImageMode.ClickToLoad),
+        DataRow(BitAiImageMode.Block),
+        DataRow(BitAiImageMode.AllowListedHosts)]
+    public void AScriptSourceNeverReachesTheImageUnderAnyPolicy(BitAiImageMode mode)
+    {
+        var part = new BitAiImagePart("javascript:alert(document.cookie)") { Alt = "x" };
+
+        var component = RenderImage(part, Policy(mode));
+
+        // The blank pixel stands in for it, which fetches nothing and so is shown under every policy.
+        Assert.IsFalse(component.Markup.Contains("javascript:", StringComparison.OrdinalIgnoreCase));
+        StringAssert.StartsWith(component.Find("img.bit-aiipv-img").GetAttribute("src"), "data:image/gif;base64,");
+    }
+
+    [TestMethod]
+    public void ThePlaceholderAndTheBlockedImageTakeTheClassesAndStylesOfTheirParts()
+    {
+        var part = new BitAiImagePart("https://img.x.dev/cat.png") { Alt = "A cat" };
+        var classes = new BitAiImagePartViewClassStyles { ImagePlaceholder = new() { Root = "c-placeholder", Icon = "c-icon" }, BlockedImage = "c-blocked" };
+        var styles = new BitAiImagePartViewClassStyles { ImagePlaceholder = new() { Root = "margin: 1px" }, BlockedImage = "margin: 2px" };
+
+        var asked = RenderComponent<BitAiImagePartView>(p => p
+            .Add(c => c.Part, part)
+            .Add(c => c.CascadedOptions, BitAiUiOptions.Default with { Images = BitAiImagePolicy.ClickToLoad })
+            .Add(c => c.Classes, classes)
+            .Add(c => c.Styles, styles));
+        var blocked = RenderComponent<BitAiImagePartView>(p => p
+            .Add(c => c.Part, part)
+            .Add(c => c.CascadedOptions, BitAiUiOptions.Default with { Images = BitAiImagePolicy.Block })
+            .Add(c => c.Classes, classes)
+            .Add(c => c.Styles, styles));
+
+        var placeholder = asked.Find("button.bit-acb");
+        Assert.IsTrue(placeholder.ClassList.Contains("c-placeholder"));
+        StringAssert.Contains(placeholder.GetAttribute("style"), "margin: 1px");
+
+        // The app's icon classes beside the glyph's.
+        var icon = asked.Find("button.bit-acb .bit-acb-ico");
+        Assert.IsTrue(icon.ClassList.Contains("bit-icon-ai--Photo2"));
+        Assert.IsTrue(icon.ClassList.Contains("c-icon"));
+
+        var span = blocked.Find(".bit-aiipv-imb");
+        Assert.IsTrue(span.ClassList.Contains("c-blocked"));
+        Assert.AreEqual("margin: 2px", span.GetAttribute("style"));
+    }
+
+    [TestMethod]
+    public void ThePolicyIsReadFromTheRegisteredOptionsAndFromAProvider()
+    {
+        var part = new BitAiImagePart("https://img.x.dev/cat.png") { Alt = "A cat" };
+        Services.AddSingleton(BitAiUiOptions.Default with { Images = BitAiImagePolicy.Block });
+
+        var registered = RenderComponent<BitAiImagePartView>(p => p.Add(c => c.Part, part));
+        var provided = RenderComponent<BitAiOptionsProvider>(p => p
+            .Add(c => c.UiOptions, BitAiUiOptions.Default with { Images = BitAiImagePolicy.ClickToLoad })
+            .AddChildContent<BitAiImagePartView>(c => c.Add(x => x.Part, part)));
+
+        Assert.AreEqual("A cat", registered.Find(".bit-aiipv-imb").TextContent);
+        Assert.AreEqual("Load image: A cat", provided.Find("button.bit-acb").TextContent.Trim());
+    }
+
+    private IRenderedComponent<BitAiImagePartView> RenderImage(BitAiImagePart part, BitAiImagePolicy policy) =>
+        RenderComponent<BitAiImagePartView>(p => p
+            .Add(c => c.Part, part)
+            .Add(c => c.CascadedOptions, BitAiUiOptions.Default with { Images = policy }));
+
+    private sealed class UninitializedNavigationManager : Microsoft.AspNetCore.Components.NavigationManager
+    {
+        protected override void NavigateToCore(string uri, Microsoft.AspNetCore.Components.NavigationOptions options) => throw new NotSupportedException();
+    }
+
+    private static BitAiImagePolicy Policy(BitAiImageMode mode) => mode switch
+    {
+        BitAiImageMode.ClickToLoad => BitAiImagePolicy.ClickToLoad,
+        BitAiImageMode.Block => BitAiImagePolicy.Block,
+        BitAiImageMode.AllowListedHosts => BitAiImagePolicy.AllowListedHosts("cdn.x.dev"),
+        _ => BitAiImagePolicy.Allow,
+    };
 
     [TestMethod]
     public void BitAiImagePartViewShouldApplyTheClassesAndStylesOfItsParts()

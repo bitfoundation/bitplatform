@@ -10,9 +10,20 @@ namespace Bit.BlazorUI;
 /// during streaming, and it is loaded lazily, so a long transcript only fetches the images that scroll into view. The
 /// alternative text of the part (<see cref="BitAiImagePart.Alt"/>) is its accessible name: a model will not always
 /// provide one, so ask for it in the prompt or supply a fallback.
+/// <br />
+/// The image follows the <see cref="BitAiUiOptions.Images"/> policy, as the images of Markdown do: one the policy loads
+/// only on request is a button that loads it, and one it blocks is replaced by its alternative text. A source of a
+/// scheme that can run script is never loaded.
 /// </remarks>
 public partial class BitAiImagePartView : BitAiComponentBase
 {
+    // The source the user asked to load under a policy that asks first.
+    private string? _loaded;
+
+    private BitAiIconClassesCache<BitActionButtonClassStyles> _imagePlaceholderClasses;
+
+
+
     /// <summary>
     /// Gets or sets the cascading parameters for the image part view component.
     /// </summary>
@@ -62,5 +73,21 @@ public partial class BitAiImagePartView : BitAiComponentBase
         CascadingParameters?.UpdateParameters(this);
 
         base.OnParametersSet();
+    }
+
+
+
+    // The classes handed to the image placeholder: the app's own for that part with the glyph's added - it ships with
+    // this package's own icon subset rather than with the icon font of the core library (see BitAiIconClasses) - built
+    // again only when the app's change, so the button is not handed a new instance on every render.
+    private BitActionButtonClassStyles ImagePlaceholderClasses =>
+        _imagePlaceholderClasses.Get("bit-icon-ai bit-icon-ai--Photo2", Classes?.ImagePlaceholder, BitAiIconClasses.With);
+
+    // The source asked for is the one shown once the user loaded it, so a part handed another image asks again.
+    private BitAiImageDecision DecideImage(string source)
+    {
+        var decision = DecideImageSource(source);
+
+        return decision == BitAiImageDecision.AskFirst && _loaded == source ? BitAiImageDecision.Show : decision;
     }
 }

@@ -40,8 +40,10 @@ public sealed class BitAiRendererRegistry
     /// <remarks>
     /// It draws the numbered markers the answer's Markdown resolves against the citations of its message, in place of
     /// the <see cref="BitAiCitationMarker"/> the <see cref="BitAiMarkdownView"/> renders otherwise, inside a
-    /// <see cref="BitAiRendererBoundary"/>. It is handed the citation alone (no <see cref="BitAiCitationContext.Message"/>),
-    /// and the chip it draws acts the way it makes it act. The source list under a message is not drawn by it.
+    /// <see cref="BitAiRendererBoundary"/>. It is handed the citation (no <see cref="BitAiCitationContext.Message"/>) and
+    /// what activating it does there (<see cref="BitAiCitationContext.OnActivate"/>, the <c>OnCitationClick</c> of the
+    /// view): the chip it draws calls <see cref="BitAiCitationContext.ActivateAsync"/> to act the way the built-in chip
+    /// does. The source list under a message, and the card of a <see cref="BitAiCitationPart"/>, are not drawn by it.
     /// </remarks>
     public BitAiCitationRenderer? CitationRenderer { get; set; }
 
