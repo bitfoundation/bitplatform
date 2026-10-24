@@ -334,7 +334,7 @@ public class AztecDecoderTests
         var decode = decoder.GetMethod("Decode", Internal)!;
         var size = decoder.GetMethod("Size", Internal)!;
         var wrong = new List<string>();
-        foreach (var symbol in ReferenceSymbols.All.Where(s => s.BarcodeFormat == BbBarcodeFormat.Aztec && s.Width < 45))
+        foreach (var symbol in ReferenceSymbols.All.Where(s => s.BarcodeFormat == BbBarcodeFormat.Aztec && s.Width < 45 && !s.Id.StartsWith("aztec-rune", StringComparison.Ordinal)))
         {
             using var grid = symbol.ToMatrix();
 
@@ -406,5 +406,72 @@ public class AztecDecoderTests
         using var image = SyntheticImage.FromMatrix(symbol, 3);
 
         Assert.AreEqual(content, Decode(image, BbScannerOptions.ForStillImages())?.Text);
+    }
+    [TestMethod]
+    [DataRow("aztec-compact-1")]
+    [DataRow("aztec-compact-4")]
+    [DataRow("aztec-full-4")]
+    [DataRow("aztec-full-12")]
+    [DataRow("aztec-boarding-pass")]
+    [DataRow("aztec-rune-25")]
+    public void AMirroredSymbolReadsAtEveryQuarterTurn(string id)
+    {
+        // Printed on the back of a transparent label, or seen through one, a symbol is its own mirror image: its
+        // orientation modules match no turn of the upright pattern, and its layers run the other way round.
+        var symbol = ReferenceSymbols.Get(id);
+        using var grid = symbol.ToMatrix();
+        using var mirrored = new BbBitMatrix(grid.Width, grid.Height);
+        for (var y = 0; y < grid.Height; y++)
+        {
+            for (var x = 0; x < grid.Width; x++)
+            {
+                mirrored[grid.Width - 1 - x, y] = grid[x, y];
+            }
+        }
+
+        using var rendered = SyntheticImage.FromMatrix(mirrored, 4);
+        var failures = new List<string>();
+        for (var degrees = 7; degrees < 360; degrees += 90)
+        {
+            using var rotated = ImageTransforms.Rotate(rendered, degrees);
+            foreach (var (name, options) in new[] { ("live", new BbScannerOptions()), ("still", BbScannerOptions.ForStillImages()) })
+            {
+                if (Decode(rotated, options)?.Text != symbol.Expected)
+                {
+                    failures.Add($"{degrees} degrees, {name}");
+                }
+            }
+        }
+
+        Assert.IsEmpty(failures, $"{id} mirrored was not read at: {string.Join(", ", failures)}");
+    }
+
+    [TestMethod]
+    public void ARuneIsReadAsItsNumberAndOnlyWithAQuietZone()
+    {
+        // A rune is the bare compact core: its mode message carries a number, and outside it there is nothing.
+        var symbol = ReferenceSymbols.Get("aztec-rune-170");
+        using var grid = symbol.ToMatrix();
+        using var rendered = SyntheticImage.FromMatrix(grid, 4);
+        var read = Decode(rendered, BbScannerOptions.ForStillImages());
+        Assert.AreEqual("170", read?.Text);
+        Assert.AreEqual("Rune", read!.Metadata!.SymbolVersion);
+        CollectionAssert.AreEqual(new byte[] { 170 }, read.RawBytes.ToArray());
+
+        // The same core with data around it, where a compact symbol's first layer would be, is not a rune: it is a
+        // compact symbol whose mode message does not decode.
+        using var crowded = new BbBitMatrix(grid.Width + 4, grid.Height + 4);
+        var random = new Random(8);
+        for (var y = 0; y < crowded.Height; y++)
+        {
+            for (var x = 0; x < crowded.Width; x++)
+            {
+                var inside = x >= 2 && y >= 2 && x < grid.Width + 2 && y < grid.Height + 2;
+                crowded[x, y] = inside ? grid[x - 2, y - 2] : random.Next(2) == 0;
+            }
+        }
+
+        using var crowdedImage = SyntheticImage.FromMatrix(crowded, 4);
+        Assert.IsNull(Decode(crowdedImage, BbScannerOptions.ForStillImages()));
     }
 }

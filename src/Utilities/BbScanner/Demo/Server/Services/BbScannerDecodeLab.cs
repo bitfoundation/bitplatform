@@ -83,7 +83,7 @@ public static class BbScannerDecodeLab
             return TooLarge(dto.Name, payload, moduleSize, outputWidth, outputHeight);
         }
 
-        using var symbol = Render(matrix, modules, moduleSize);
+        using var symbol = Render(symbology, matrix, modules, moduleSize);
 
         // A camera frame rather than a tightly cropped symbol: the detectors look for a symbol, so the lab gives
         // them one to find, with background around it as a real frame has.
@@ -148,8 +148,8 @@ public static class BbScannerDecodeLab
             BbBarcodeFormat.Ean8 when payload.Length == 7 => payload + LinearEncoders.EanCheckDigit(payload),
             BbBarcodeFormat.UpcA when payload.Length == 11 => payload + LinearEncoders.EanCheckDigit("0" + payload),
             // DataBar reads back as the GS1 element string: application identifier 01 and the GTIN-14.
-            BbBarcodeFormat.DataBar when payload.Length == 13 => "01" + payload + LinearEncoders.EanCheckDigit(payload),
-            BbBarcodeFormat.DataBar when payload.Length == 14 => "01" + payload,
+            BbBarcodeFormat.DataBar or BbBarcodeFormat.DataBarLimited when payload.Length == 13 => "01" + payload + LinearEncoders.EanCheckDigit(payload),
+            BbBarcodeFormat.DataBar or BbBarcodeFormat.DataBarLimited when payload.Length == 14 => "01" + payload,
             _ => payload
         };
     }
@@ -160,6 +160,8 @@ public static class BbScannerDecodeLab
         BbBarcodeFormat.DataMatrix => (DataMatrixEncoder.Encode(payload), null),
         BbBarcodeFormat.Pdf417 => (Pdf417Encoder.Encode(payload, rowHeightModules: 4), null),
         BbBarcodeFormat.Aztec => (AztecEncoder.Encode(payload), null),
+        BbBarcodeFormat.MaxiCode => (MaxiCodeEncoder.Encode(payload), null),
+        BbBarcodeFormat.MicroQrCode => (MicroQrEncoder.Encode(payload), null),
         BbBarcodeFormat.Code128 => (null, LinearEncoders.Code128(payload)),
         BbBarcodeFormat.Code39 => (null, LinearEncoders.Code39(payload)),
         BbBarcodeFormat.Ean13 => (null, LinearEncoders.Ean13(payload)),
@@ -170,6 +172,8 @@ public static class BbScannerDecodeLab
         BbBarcodeFormat.Codabar => (null, LinearEncoders.Codabar(payload)),
         BbBarcodeFormat.Code93 => (null, LinearEncoders.Code93(payload)),
         BbBarcodeFormat.DataBar => (null, LinearEncoders.DataBar(Gtin(payload))),
+        BbBarcodeFormat.DataBarLimited => (null, LinearEncoders.DataBarLimited(Gtin(payload))),
+        BbBarcodeFormat.DataBarExpanded => (null, LinearEncoders.DataBarExpanded(payload)),
         _ => throw new ArgumentException($"The lab has no encoder for {format}.", nameof(format)),
     };
 
@@ -210,13 +214,16 @@ public static class BbScannerDecodeLab
         return ((int)Math.Ceiling((width * cos) + (height * sin)), (int)Math.Ceiling((width * sin) + (height * cos)));
     }
 
-    private static BbLuminanceBuffer Render(BbBitMatrix? matrix, bool[]? modules, int moduleSize)
+    private static BbLuminanceBuffer Render(BbBarcodeFormat format, BbBitMatrix? matrix, bool[]? modules, int moduleSize)
     {
         if (matrix is not null)
         {
             using (matrix)
             {
-                return SyntheticImage.FromMatrix(matrix, scale: moduleSize);
+                // MaxiCode's modules are hexagons round a bullseye, a module size the width of one.
+                return format == BbBarcodeFormat.MaxiCode
+                    ? SyntheticImage.FromMaxiCode(matrix, moduleWidth: moduleSize, quietZoneModules: 4)
+                    : SyntheticImage.FromMatrix(matrix, scale: moduleSize);
             }
         }
 
@@ -325,8 +332,9 @@ public static class BbScannerDecodeLab
         var offSideways = Math.Abs(halfTurn - 90);
         if (dto.Family == "Linear" && offUpright > 20 && offSideways > 12)
         {
-            notes.Add("Live scanning reads a linear symbol within about 30 degrees of upright, and within 15 to 30 of sideways depending on " +
-                      "how long it is; ForStillImages sweeps every ten degrees.");
+            notes.Add("A live frame reads a linear symbol within about 30 degrees of upright, and within 15 to 30 of sideways depending on " +
+                      "how long it is; the angles in between are tried one a frame, in turn, so live scanning reads one held there within four " +
+                      "frames, which this single live attempt may not show. ForStillImages sweeps every ten degrees.");
         }
 
         if (format == BbBarcodeFormat.Itf && new BbScannerOptions().ItfLengths is { Count: > 0 } lengths && lengths.Contains(payload.Length) is false)

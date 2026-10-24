@@ -120,7 +120,10 @@ internal sealed record ReferenceSymbol
         return matrix;
     }
 
-    /// <summary>Renders the symbol with its quiet zone, at <paramref name="scale"/> pixels per module.</summary>
+    /// <summary>
+    /// Renders the symbol with its quiet zone, at <paramref name="scale"/> pixels per module - MaxiCode's hexagons at
+    /// twice that, the smallest that are hexagons at all being several pixels wide.
+    /// </summary>
     public BbLuminanceBuffer Render(int scale)
     {
         if (IsLinear)
@@ -129,7 +132,9 @@ internal sealed record ReferenceSymbol
         }
 
         using var matrix = ToMatrix();
-        return SyntheticImage.FromMatrix(matrix, scale);
+        return BarcodeFormat == BbBarcodeFormat.MaxiCode
+            ? SyntheticImage.FromMaxiCode(matrix, moduleWidth: 2 * scale)
+            : SyntheticImage.FromMatrix(matrix, scale);
     }
 
     public override string ToString() => Id;

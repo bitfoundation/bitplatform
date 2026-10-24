@@ -49,6 +49,97 @@ public static class SyntheticImage
         return buffer;
     }
 
+    /// <summary>
+    /// Renders a MaxiCode symbol: its 33 rows of 30 hexagonal modules, every odd row half a module to the right, and the
+    /// bullseye's three rings round the place of the module at row 16, column 14. Each pixel is sampled four by four,
+    /// so edges fall between pixels the way a camera sees them.
+    /// </summary>
+    /// <param name="modules">The 30 by 33 grid; <see langword="true"/> is a dark module.</param>
+    /// <param name="moduleWidth">The width of a module, in pixels; a row is 0.866 of it below the last.</param>
+    /// <param name="quietZoneModules">Light border width in module widths on each side.</param>
+    public static BbLuminanceBuffer FromMaxiCode(BbBitMatrix modules, double moduleWidth = 6, int quietZoneModules = 2)
+    {
+        ArgumentNullException.ThrowIfNull(modules);
+        const double Pitch = 0.8660254037844386;
+        const double HexRadius = 0.5773502691896258; // centre to corner of a hexagon a module wide
+        const double Gap = 0.9; // the hexagons drawn a little smaller than their cells, as printers leave them
+        double[] rings = [0.5774, 1.3359, 2.1058, 2.8644, 3.6229, 4.3814];
+
+        var margin = quietZoneModules * moduleWidth;
+        var width = (int)Math.Ceiling((30.5 * moduleWidth) + (2 * margin));
+        var height = (int)Math.Ceiling(((32 * Pitch) + (2 * HexRadius)) * moduleWidth + (2 * margin));
+        var buffer = BbLuminanceBuffer.Rent(width, height);
+        var pixels = buffer.Pixels;
+
+        double CentreX(int row, int column) => margin + ((column + 0.5 + ((row & 1) == 1 ? 0.5 : 0)) * moduleWidth);
+        double CentreY(int row) => margin + ((HexRadius + (row * Pitch)) * moduleWidth);
+        var (bullseyeX, bullseyeY) = (CentreX(16, 14), CentreY(16));
+
+        bool IsDark(double x, double y)
+        {
+            // The rings first: dark between the first and second circle, the third and fourth, the fifth and sixth.
+            var distance = Math.Sqrt(((x - bullseyeX) * (x - bullseyeX)) + ((y - bullseyeY) * (y - bullseyeY))) / moduleWidth;
+            for (var ring = 0; ring < 6; ring += 2)
+            {
+                if (distance >= rings[ring] && distance < rings[ring + 1])
+                {
+                    return true;
+                }
+            }
+
+            // Then the hexagon whose row and column the point is nearest.
+            var row = (int)Math.Round(((y - margin) / moduleWidth - HexRadius) / Pitch);
+            for (var r = row - 1; r <= row + 1; r++)
+            {
+                if (r < 0 || r >= modules.Height)
+                {
+                    continue;
+                }
+
+                var column = (int)Math.Round(((x - margin) / moduleWidth) - 0.5 - ((r & 1) == 1 ? 0.5 : 0));
+                for (var c = column - 1; c <= column + 1; c++)
+                {
+                    if (c < 0 || c >= modules.Width || !modules[c, r])
+                    {
+                        continue;
+                    }
+
+                    // A hexagon standing on a corner: within half its width across, and below the slanted edges.
+                    var dx = Math.Abs(x - CentreX(r, c)) / (moduleWidth * Gap);
+                    var dy = Math.Abs(y - CentreY(r)) / (moduleWidth * Gap);
+                    if (dx <= 0.5 && dy <= HexRadius - (dx / Math.Sqrt(3)))
+                    {
+                        return true;
+                    }
+                }
+            }
+
+            return false;
+        }
+
+        for (var py = 0; py < height; py++)
+        {
+            for (var px = 0; px < width; px++)
+            {
+                var dark = 0;
+                for (var sy = 0; sy < 4; sy++)
+                {
+                    for (var sx = 0; sx < 4; sx++)
+                    {
+                        if (IsDark(px + ((sx + 0.5) / 4), py + ((sy + 0.5) / 4)))
+                        {
+                            dark++;
+                        }
+                    }
+                }
+
+                pixels[(py * width) + px] = (byte)(255 - (dark * 255 / 16));
+            }
+        }
+
+        return buffer;
+    }
+
     /// <summary>Renders a linear symbol into a grayscale image.</summary>
     /// <param name="modules">One entry per module; <see langword="true"/> is a bar.</param>
     /// <param name="scale">Pixels per module.</param>

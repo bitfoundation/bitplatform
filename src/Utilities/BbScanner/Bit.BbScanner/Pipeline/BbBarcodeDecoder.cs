@@ -1,4 +1,5 @@
-﻿using System.Diagnostics;
+﻿using System.Buffers;
+using System.Diagnostics;
 
 namespace Bit.BbScanner;
 
@@ -35,6 +36,24 @@ public sealed class BbBarcodeDecoder : IDisposable
     private BbLuminanceBuffer? _masked;
     private BbBitRow? _scanLine;
     private BbBitRow? _confirmLine;
+    private BbBitRow? _followLine;
+
+    /// <summary>How many times this image's lines have been followed up; see <see cref="FollowUp"/>.</summary>
+    private int _followUps;
+
+    /// <summary>
+    /// The most follow-ups an image gets: each is up to a hundred lines - forty parallel, sixteen turned and forty along
+    /// the axis those find - and noise can ask for them too.
+    /// </summary>
+    private const int MaxFollowUps = 4;
+
+    /// <summary>
+    /// How far, in degrees, a follow-up turns its lines about a part's middle either way, and in what steps: a half of a
+    /// DataBar Stacked row, five modules tall, is crossed whole within six degrees of its axis through its middle.
+    /// </summary>
+    private const int MaxFollowTurn = 16;
+
+    private const int FollowTurnStep = 2;
     private byte[] _lineBuffer = [];
     private bool _disposed;
 
@@ -49,9 +68,10 @@ public sealed class BbBarcodeDecoder : IDisposable
 
         // Only the decoders that can produce a requested format are instantiated, so a scanner
         // configured for a single symbology carries no cost for the others.
-        if ((_options.Formats & BbBarcodeFormat.QrCode) != 0)
+        // One reader for QR Code and Micro QR: they share the finder pattern search.
+        if ((_options.Formats & (BbBarcodeFormat.QrCode | BbBarcodeFormat.MicroQrCode)) != 0)
         {
-            _matrixDecoders.Add(new BbQrCodeReader());
+            _matrixDecoders.Add(new BbQrCodeReader(_options.Formats));
         }
 
         if ((_options.Formats & BbBarcodeFormat.DataMatrix) != 0)
@@ -70,6 +90,11 @@ public sealed class BbBarcodeDecoder : IDisposable
         if ((_options.Formats & BbBarcodeFormat.Aztec) != 0)
         {
             _matrixDecoders.Add(new BbAztecReader());
+        }
+
+        if ((_options.Formats & BbBarcodeFormat.MaxiCode) != 0)
+        {
+            _matrixDecoders.Add(new BbMaxiCodeReader());
         }
 
         if ((_options.Formats & BbBarcodeFormat.Code128) != 0)
@@ -105,6 +130,16 @@ public sealed class BbBarcodeDecoder : IDisposable
         if ((_options.Formats & BbBarcodeFormat.DataBar) != 0)
         {
             _rowDecoders.Add(new BbDataBarReader());
+        }
+
+        if ((_options.Formats & BbBarcodeFormat.DataBarLimited) != 0)
+        {
+            _rowDecoders.Add(new BbDataBarLimitedReader());
+        }
+
+        if ((_options.Formats & BbBarcodeFormat.DataBarExpanded) != 0)
+        {
+            _rowDecoders.Add(new BbDataBarExpandedReader());
         }
     }
 
@@ -455,7 +490,173 @@ public sealed class BbBarcodeDecoder : IDisposable
         }
 
         matrixTicks += Stopwatch.GetTimestamp() - afterBinarize;
-        return symbol;
+        return symbol ?? DecodeEnlarged(view, ref binarizeTicks, ref matrixTicks);
+    }
+
+    /// <summary>The symbologies a second look at an enlarged copy of the frame helps; see <see cref="DecodeEnlarged"/>.</summary>
+    private const BbBarcodeFormat EnlargedFormats = BbBarcodeFormat.QrCode | BbBarcodeFormat.MicroQrCode | BbBarcodeFormat.DataMatrix | BbBarcodeFormat.Aztec;
+
+    /// <summary>The most pixels of a still image, before doubling, its second look takes: the middle of a larger one.</summary>
+    private const int MaxEnlargedStillArea = 1_000_000;
+
+    /// <summary>The enlarged copy of part of the frame; see <see cref="DecodeEnlarged"/>.</summary>
+    private BbLuminanceBuffer? _enlarged;
+
+    /// <summary>Counts the live frames whose matrix stage found nothing, for <see cref="DecodeEnlarged"/>.</summary>
+    private int _enlargeTurn;
+
+    /// <summary>
+    /// Tries the QR Code, Data Matrix and Aztec readers again on part of the frame enlarged twice, when the frame itself
+    /// gave them nothing: all of a still image up to a megapixel, and the middle of a larger one; on a live frame, every
+    /// fourth one, the middle quarter of it.
+    /// </summary>
+    /// <remarks>
+    /// At two pixels a module, turned, a finder pattern's runs come out of the binariser a pixel too wide or too narrow
+    /// on nearly every line, and the finders, which take a run for a module only within half a module of its width,
+    /// find nothing. Enlarged by interpolation, the same symbol is four pixels a module with edges the binariser places
+    /// within a pixel: every QR reference symbol up to 57 modules reads at every one of 51 angles that way, where some
+    /// fifth of the angles failed before. PDF417 resamples the luminance of a candidate itself, and the linear readers
+    /// have their own lines, so they are not tried again. A live frame looks again only every fourth time, and only
+    /// where a user aims, so that the second look costs a frame with nothing in it a quarter of a frame's matrix stage.
+    /// </remarks>
+    private BbSymbolDecodeResult? DecodeEnlarged(in BbLuminanceView view, ref long binarizeTicks, ref long matrixTicks)
+    {
+        if ((_options.Formats & EnlargedFormats) == 0 || (!_options.TryHarder && (_enlargeTurn++ & 3) != 3))
+        {
+            return null;
+        }
+
+        var (width, height) = _options.TryHarder
+            ? Fit(view.Width, view.Height, MaxEnlargedStillArea)
+            : (view.Width / 2, view.Height / 2);
+        if (width < 16 || height < 16)
+        {
+            return null;
+        }
+
+        var (left, top) = ((view.Width - width) / 2, (view.Height - height) / 2);
+        if (_enlarged is null || _enlarged.Width != 2 * width || _enlarged.Height != 2 * height)
+        {
+            _enlarged?.Dispose();
+            _enlarged = BbLuminanceBuffer.Rent(2 * width, 2 * height);
+        }
+
+        var beforeBinarize = Stopwatch.GetTimestamp();
+        Enlarge(view, left, top, width, height, _enlarged);
+        var enlarged = _enlarged.View;
+        BbSymbolDecodeResult? symbol = null;
+        try
+        {
+            using var binary = _matrixBinarizer.GetBlackMatrix(enlarged);
+            var afterBinarize = Stopwatch.GetTimestamp();
+            binarizeTicks += afterBinarize - beforeBinarize;
+            if (binary is not null)
+            {
+                var matrixOptions = new BbMatrixDecodeOptions(_options.TryHarder, _options.AllowInverted);
+                foreach (var decoder in _matrixDecoders)
+                {
+                    if ((decoder.Formats & EnlargedFormats) == 0)
+                    {
+                        continue;
+                    }
+
+                    symbol = decoder is IBbLuminanceMatrixDecoder resampling
+                        ? resampling.Decode(binary, enlarged, matrixOptions)
+                        : decoder.Decode(binary, matrixOptions);
+                    if (symbol is not null)
+                    {
+                        break;
+                    }
+                }
+            }
+
+            matrixTicks += Stopwatch.GetTimestamp() - afterBinarize;
+        }
+        finally
+        {
+            // What the copy holds is the frame's.
+            _enlarged.Clear();
+        }
+
+        if (symbol is null)
+        {
+            return null;
+        }
+
+        // A point of the enlarged copy is twice as far from the part's corner as the same point of the frame.
+        var points = new BbScanPoint[symbol.Points.Length];
+        for (var i = 0; i < points.Length; i++)
+        {
+            points[i] = new BbScanPoint(left + (symbol.Points[i].X / 2), top + (symbol.Points[i].Y / 2));
+        }
+
+        return symbol with { Points = points };
+
+        // The largest part of the frame, its proportions kept, with no more than area pixels.
+        static (int Width, int Height) Fit(int width, int height, int area)
+        {
+            if ((long)width * height <= area)
+            {
+                return (width, height);
+            }
+
+            var shrink = MathF.Sqrt(area / ((float)width * height));
+            return ((int)(width * shrink), (int)(height * shrink));
+        }
+    }
+
+    /// <summary>
+    /// Writes the <paramref name="width"/> by <paramref name="height"/> part of <paramref name="view"/> whose top-left is
+    /// at (<paramref name="left"/>, <paramref name="top"/>) into <paramref name="target"/>, twice as wide and twice as
+    /// tall, interpolated: each new pixel three parts of the old one it falls in and one of the neighbour it is nearer,
+    /// across and down, which is bilinear interpolation at exactly twice the size.
+    /// </summary>
+    private static void Enlarge(in BbLuminanceView view, int left, int top, int width, int height, BbLuminanceBuffer target)
+    {
+        var doubled = 2 * width;
+        var rows = ArrayPool<int>.Shared.Rent(3 * doubled);
+        try
+        {
+            // Three rows doubled across in turn - the one above, this one and the one below - the edges repeating.
+            var all = rows.AsSpan(0, 3 * doubled);
+            var output = target.Pixels;
+            var (above, at, below) = (0, doubled, 2 * doubled);
+            Across(view, left, top, width, all.Slice(at, doubled));
+            all.Slice(at, doubled).CopyTo(all.Slice(above, doubled));
+            for (var y = 0; y < height; y++)
+            {
+                Across(view, left, top + Math.Min(y + 1, height - 1), width, all.Slice(below, doubled));
+                var up = all.Slice(above, doubled);
+                var here = all.Slice(at, doubled);
+                var down = all.Slice(below, doubled);
+                var upper = output.Slice(2 * y * doubled, doubled);
+                var lower = output.Slice(((2 * y) + 1) * doubled, doubled);
+                for (var x = 0; x < doubled; x++)
+                {
+                    upper[x] = (byte)(((3 * here[x]) + up[x] + 8) >> 4);
+                    lower[x] = (byte)(((3 * here[x]) + down[x] + 8) >> 4);
+                }
+
+                (above, at, below) = (at, below, above);
+            }
+        }
+        finally
+        {
+            // What the rows hold is the frame's.
+            ArrayPool<int>.Shared.Return(rows, clearArray: true);
+        }
+
+        // One row doubled across, each value four times the pixel it stands for, so that the second pass divides once.
+        static void Across(in BbLuminanceView view, int left, int y, int width, Span<int> doubled)
+        {
+            var row = view.GetRow(y).Slice(left, width);
+            for (var x = 0; x < width; x++)
+            {
+                var (before, here, after) = (row[Math.Max(x - 1, 0)], row[x], row[Math.Min(x + 1, width - 1)]);
+                doubled[2 * x] = (3 * here) + before;
+                doubled[(2 * x) + 1] = (3 * here) + after;
+            }
+        }
     }
 
     /// <summary>
@@ -626,9 +827,30 @@ public sealed class BbBarcodeDecoder : IDisposable
         var height = view.Height;
         _scanLine ??= new BbBitRow(width + height);
 
-        var angles = _options.TryHarder ? ThoroughAngles : LiveAngles;
-        foreach (var angle in angles)
+        // Decoders that piece a symbol together from several lines start the image with nothing pieced.
+        _followUps = 0;
+        foreach (var decoder in _rowDecoders)
         {
+            (decoder as IBbLineAwareRowDecoder)?.BeginImage();
+        }
+
+        // A live frame also tries one of the angles between the ones it always tries, a different one each frame, so a
+        // symbol held at any angle at all is crossed within four frames - a tenth of a second at thirty a second - for
+        // the cost of one more angle a frame rather than four. And it shifts its lines across by a fraction of their
+        // spacing, a different one each frame, so that a symbol thinner than that spacing, which one frame's lines can
+        // all miss, is crossed within four frames too; the in-between angles go through the fractions over sixteen.
+        var angles = _options.TryHarder ? ThoroughAngles : LiveAngles;
+        var count = angles.Length + (_options.TryHarder ? 0 : 1);
+        var frame = _options.TryHarder ? 0 : _liveFrame++;
+        var phase = LinePhases[frame & 3];
+        for (var a = 0; a < count; a++)
+        {
+            if (a == angles.Length)
+            {
+                phase = LinePhases[(frame + (frame >> 2)) & 3];
+            }
+
+            var angle = a < angles.Length ? angles[a] : InBetweenAngles[frame & 3];
             if (!_options.TryVerticalLines && angle != 0f)
             {
                 continue;
@@ -641,7 +863,7 @@ public sealed class BbBarcodeDecoder : IDisposable
                 ? _options.MaxScanLines
                 : ScaledBudget(view, angle, _options.MaxScanLines / (_options.TryHarder ? 2 : 3));
 
-            var result = ScanParallelLines(view, angle, budget, ref rowsScanned, collect, limit);
+            var result = ScanParallelLines(view, angle, budget, phase, ref rowsScanned, collect, limit);
             if (result is not null && collect is null)
             {
                 return result;
@@ -689,6 +911,21 @@ public sealed class BbBarcodeDecoder : IDisposable
     private static readonly float[] LiveAngles = [0f, 90f, 15f, 165f, 30f, 150f, 75f, 105f];
 
     /// <summary>
+    /// The live angles' gaps: the diagonals and the angles either side of them. One of them is tried each frame, in
+    /// turn; see <see cref="ScanRows"/>.
+    /// </summary>
+    private static readonly float[] InBetweenAngles = [45f, 135f, 60f, 120f];
+
+    /// <summary>
+    /// How far across, in units of their spacing, a live frame shifts its lines: none, half, and a quarter either way,
+    /// so that four frames between them leave no gap wider than a quarter of the spacing.
+    /// </summary>
+    private static readonly float[] LinePhases = [0f, 0.5f, -0.25f, 0.25f];
+
+    /// <summary>Counts the live frames scanned, for <see cref="InBetweenAngles"/> and <see cref="LinePhases"/>.</summary>
+    private int _liveFrame;
+
+    /// <summary>
     /// Orientations tried on a still image: every ten degrees and both diagonals, ordered so that
     /// the most likely ones are reached first.
     /// </summary>
@@ -718,12 +955,13 @@ public sealed class BbBarcodeDecoder : IDisposable
     }
 
     /// <summary>
-    /// Reads a spread of parallel lines at one angle, outwards from the middle. Returns the first
-    /// symbol read, or - collecting - adds each distinct one to <paramref name="collect"/> and
-    /// returns a symbol only once <paramref name="limit"/> is reached.
+    /// Reads a spread of parallel lines at one angle, outwards from the middle, shifted across by
+    /// <paramref name="phase"/> of their spacing. Returns the first symbol read, or - collecting -
+    /// adds each distinct one to <paramref name="collect"/> and returns a symbol only once
+    /// <paramref name="limit"/> is reached.
     /// </summary>
     private BbSymbolDecodeResult? ScanParallelLines(
-        in BbLuminanceView view, float angleDegrees, int maxScanLines, ref int linesScanned,
+        in BbLuminanceView view, float angleDegrees, int maxScanLines, float phase, ref int linesScanned,
         List<BbSymbolDecodeResult>? collect, int limit)
     {
         var width = view.Width;
@@ -753,7 +991,7 @@ public sealed class BbBarcodeDecoder : IDisposable
         {
             // 0, +1, -1, +2, -2 ... in units of spacing.
             var delta = ((attempt + 1) / 2) * spacing;
-            var offset = (attempt & 1) == 0 ? delta : -delta;
+            var offset = ((attempt & 1) == 0 ? delta : -delta) + (phase * spacing);
             var px = centerX + (nx * offset);
             var py = centerY + (ny * offset);
             if (dy == 0)
@@ -783,12 +1021,22 @@ public sealed class BbBarcodeDecoder : IDisposable
                 continue;
             }
 
-            var result = DecodeLine(scanLine, geometry);
+            var result = DecodeLine(scanLine, geometry, inverted: false);
             if (result is not null && IsConfirmed(view, result, px, py, nx, ny, dx, dy, inverted: false))
             {
                 if (Take(result, collect, limit))
                 {
                     return result;
+                }
+
+                continue;
+            }
+
+            if (result is null && FollowUp(view, dx, dy, inverted: false) is { } pieced)
+            {
+                if (Take(pieced, collect, limit))
+                {
+                    return pieced;
                 }
 
                 continue;
@@ -805,11 +1053,17 @@ public sealed class BbBarcodeDecoder : IDisposable
                 continue;
             }
 
-            result = DecodeLine(scanLine, geometry);
+            result = DecodeLine(scanLine, geometry, inverted: true);
             if (result is not null && IsConfirmed(view, result, px, py, nx, ny, dx, dy, inverted: true) &&
                 Take(result, collect, limit))
             {
                 return result;
+            }
+
+            if (result is null && FollowUp(view, dx, dy, inverted: true) is { } invertedPiece &&
+                Take(invertedPiece, collect, limit))
+            {
+                return invertedPiece;
             }
         }
 
@@ -839,8 +1093,10 @@ public sealed class BbBarcodeDecoder : IDisposable
     /// can assemble a shorter, internally valid value; the same accident almost never repeats a
     /// few pixels away, whereas a genuine symbol reads identically on every line that crosses it.
     /// UPC-E is included because the left half of a damaged EAN-13 reads as one, and GS1 DataBar
-    /// because its only check is a modulo 79 checksum, which the hundreds of candidate positions
-    /// of a noisy frame pass by chance often enough to matter.
+    /// because its only check is a modulo 79 checksum - DataBar Limited's, modulo 89 - which the
+    /// hundreds of candidate positions of a noisy frame pass by chance often enough to matter.
+    /// DataBar Expanded checks far more, but a symbol it puts together from several lines is held
+    /// to the same rule as the rest of the family.
     /// </summary>
     /// <remarks>
     /// <para>
@@ -861,7 +1117,8 @@ public sealed class BbBarcodeDecoder : IDisposable
         in BbLuminanceView view, BbSymbolDecodeResult result,
         float px, float py, float nx, float ny, float dx, float dy, bool inverted)
     {
-        var needsConfirmation = result.Format is BbBarcodeFormat.Itf or BbBarcodeFormat.UpcE or BbBarcodeFormat.Codabar or BbBarcodeFormat.DataBar ||
+        var needsConfirmation = result.Format is BbBarcodeFormat.Itf or BbBarcodeFormat.UpcE or BbBarcodeFormat.Codabar or
+                                    BbBarcodeFormat.DataBar or BbBarcodeFormat.DataBarLimited or BbBarcodeFormat.DataBarExpanded ||
                                 (result.Format == BbBarcodeFormat.Code39 && !_options.Code39CheckDigit);
         if (!needsConfirmation)
         {
@@ -894,7 +1151,7 @@ public sealed class BbBarcodeDecoder : IDisposable
             }
         }
 
-        if (agreed || result.Format != BbBarcodeFormat.DataBar || result.Points is not [var start, var end])
+        if (agreed || result.Format is not (BbBarcodeFormat.DataBar or BbBarcodeFormat.DataBarLimited) || result.Points is not [var start, var end])
         {
             return agreed;
         }
@@ -904,8 +1161,8 @@ public sealed class BbBarcodeDecoder : IDisposable
         Span<float> turns = [4f, -4f];
         foreach (var turn in turns)
         {
-            var (sin, cos) = MathF.SinCos(turn * MathF.PI / 180f);
-            switch (ReadAgain(view, result, mx, my, (dx * cos) - (dy * sin), (dx * sin) + (dy * cos), inverted))
+            var (tdx, tdy) = Turn(dx, dy, turn);
+            switch (ReadAgain(view, result, mx, my, tdx, tdy, inverted))
             {
                 case Agreement.Differs:
                     return false;
@@ -945,12 +1202,133 @@ public sealed class BbBarcodeDecoder : IDisposable
             return Agreement.Silent;
         }
 
-        if (DecodeLine(_confirmLine!, geometry, result.Format) is not { } again || again.Format != result.Format)
+        if (DecodeLine(_confirmLine!, geometry, inverted, result.Format) is not { } again || again.Format != result.Format)
         {
             return Agreement.Silent;
         }
 
         return string.Equals(again.Payload.Text, result.Payload.Text, StringComparison.Ordinal) ? Agreement.Same : Agreement.Differs;
+    }
+
+    /// <summary>
+    /// Reads more lines about one that read part of a symbol but not all of it, when a decoder asks. First the lines
+    /// either side, parallel to it: the other row of a stacked symbol, which the frame's own lines - a few tens of
+    /// pixels apart - may all miss, or the other end of a short symbol turned too far for one line to cross whole. Then,
+    /// when those piece nothing together, lines turned about the part's middle: the turns that read part of the symbol
+    /// again bracket the symbol's own axis, and lines along that axis, either side of the middle, cross rows too short
+    /// for a line at any of the frame's angles to cross whole. Whatever they read is confirmed like any other read.
+    /// </summary>
+    private BbSymbolDecodeResult? FollowUp(in BbLuminanceView view, float dx, float dy, bool inverted)
+    {
+        if (_followUps >= MaxFollowUps || Partial() is not { } part)
+        {
+            return null;
+        }
+
+        _followUps++;
+        _followLine ??= new BbBitRow(view.Width + view.Height);
+        if (ReadAcross(view, part, dx, dy, inverted, middle: false) is { } result)
+        {
+            return result;
+        }
+
+        // Where the turned lines start the part traces its edge, which gives the decoder the axis; failing that, the
+        // turns that read it at all bracket the axis.
+        var (lowest, highest) = (0, 0);
+        var aim = part;
+        for (var turn = -MaxFollowTurn; turn <= MaxFollowTurn; turn += FollowTurnStep)
+        {
+            if (turn == 0)
+            {
+                continue;
+            }
+
+            var (tdx, tdy) = Turn(dx, dy, turn);
+            if (ReadFollowLine(view, part.X, part.Y, tdx, tdy, inverted) is { } turned)
+            {
+                return turned;
+            }
+
+            if (Partial() is { } again)
+            {
+                (lowest, highest) = (Math.Min(lowest, turn), Math.Max(highest, turn));
+                aim = again.HasAxis ? again : aim;
+            }
+        }
+
+        var (adx, ady) = aim.HasAxis ? (aim.AxisX, aim.AxisY) : Turn(dx, dy, (lowest + highest) / 2f);
+
+        // Along the line already: its parallels have been read.
+        if ((adx * dx) + (ady * dy) > MathF.Cos(FollowTurnStep * MathF.PI / 180f))
+        {
+            return null;
+        }
+
+        return ReadAcross(view, part, adx, ady, inverted, middle: true);
+    }
+
+    /// <summary>The part of a symbol the last line read, as the first decoder that pieces symbols together saw it.</summary>
+    private BbPartialRead? Partial()
+    {
+        foreach (var decoder in _rowDecoders)
+        {
+            if (decoder is IBbLineAwareRowDecoder { Partial: { } part })
+            {
+                return part;
+            }
+        }
+
+        return null;
+    }
+
+    /// <summary>
+    /// Reads the lines along <c>(dx, dy)</c> either side of <paramref name="part"/>'s middle, out to its reach, and the
+    /// one through the middle too when <paramref name="middle"/> is set.
+    /// </summary>
+    private BbSymbolDecodeResult? ReadAcross(in BbLuminanceView view, BbPartialRead part, float dx, float dy, bool inverted, bool middle)
+    {
+        for (var step = middle ? 0 : 1; step * part.Spacing <= part.Reach; step++)
+        {
+            foreach (var sign in (ReadOnlySpan<float>)[1f, -1f])
+            {
+                if (step == 0 && sign < 0)
+                {
+                    continue;
+                }
+
+                var offset = sign * step * part.Spacing;
+                if (ReadFollowLine(view, part.X - (dy * offset), part.Y + (dx * offset), dx, dy, inverted) is { } result)
+                {
+                    return result;
+                }
+            }
+        }
+
+        return null;
+    }
+
+    /// <summary>Reads the line through <c>(cx, cy)</c> along <c>(dx, dy)</c>, and confirms what it reads.</summary>
+    private BbSymbolDecodeResult? ReadFollowLine(in BbLuminanceView view, float cx, float cy, float dx, float dy, bool inverted)
+    {
+        if (!TryClipLine(cx, cy, dx, dy, view.Width, view.Height, out var startT, out var endT))
+        {
+            return null;
+        }
+
+        var geometry = new LineGeometry(cx + (dx * startT), cy + (dy * startT), dx, dy, (int)(endT - startT) + 1);
+        if (geometry.Length < 8 || !TryBinarizeLine(view, geometry, _followLine!, inverted))
+        {
+            return null;
+        }
+
+        return DecodeLine(_followLine!, geometry, inverted) is { } result && IsConfirmed(view, result, cx, cy, -dy, dx, dx, dy, inverted) ? result : null;
+    }
+
+    /// <summary>The direction <c>(dx, dy)</c> turned by <paramref name="degrees"/>.</summary>
+    private static (float DX, float DY) Turn(float dx, float dy, float degrees)
+    {
+        var (sin, cos) = MathF.SinCos(degrees * MathF.PI / 180f);
+        return ((dx * cos) - (dy * sin), (dx * sin) + (dy * cos));
     }
 
     /// <summary>Liang-Barsky clip of the line <c>(px, py) + t (dx, dy)</c> against the image rectangle.</summary>
@@ -1126,12 +1504,13 @@ public sealed class BbBarcodeDecoder : IDisposable
     /// </summary>
     /// <param name="scanLine">The binarised line.</param>
     /// <param name="geometry">Where the line runs in the image.</param>
+    /// <param name="inverted">Whether the line was binarised the other way round, for a light symbol on a dark ground.</param>
     /// <param name="decoders">
     /// Only the decoders that can produce one of these: a line confirming a read must not be won
     /// by another symbol it also crosses. Each decoder still gets every enabled format, so what it
     /// reports does not change.
     /// </param>
-    private BbSymbolDecodeResult? DecodeLine(BbBitRow scanLine, in LineGeometry geometry, BbBarcodeFormat decoders = BbBarcodeFormat.All)
+    private BbSymbolDecodeResult? DecodeLine(BbBitRow scanLine, in LineGeometry geometry, bool inverted, BbBarcodeFormat decoders = BbBarcodeFormat.All)
     {
         foreach (var decoder in _rowDecoders)
         {
@@ -1140,6 +1519,7 @@ public sealed class BbBarcodeDecoder : IDisposable
                 continue;
             }
 
+            (decoder as IBbLineAwareRowDecoder)?.SetLine(geometry.X0, geometry.Y0, geometry.DX, geometry.DY, geometry.Length, reversed: false, inverted);
             var result = decoder.DecodeRow(0, scanLine, _options.Formats);
             if (result is not null)
             {
@@ -1164,6 +1544,7 @@ public sealed class BbBarcodeDecoder : IDisposable
                     continue;
                 }
 
+                (decoder as IBbLineAwareRowDecoder)?.SetLine(geometry.X0, geometry.Y0, geometry.DX, geometry.DY, geometry.Length, reversed: true, inverted);
                 var result = decoder.DecodeRow(0, scanLine, _options.Formats);
                 if (result is not null)
                 {
@@ -1217,6 +1598,8 @@ public sealed class BbBarcodeDecoder : IDisposable
         _masked?.Clear();
         _scanLine?.Clear();
         _confirmLine?.Clear();
+        _followLine?.Clear();
+        _enlarged?.Clear();
         Array.Clear(_lineBuffer);
         _matrixBinarizer.ForgetImage();
         _rowBinarizer.ForgetImage();
@@ -1246,6 +1629,8 @@ public sealed class BbBarcodeDecoder : IDisposable
         _grayscale = null;
         _masked?.Dispose();
         _masked = null;
+        _enlarged?.Dispose();
+        _enlarged = null;
         _scanLine = null;
         _confirmLine = null;
         _lineBuffer = [];

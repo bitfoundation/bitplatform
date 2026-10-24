@@ -189,6 +189,40 @@ internal static class BbAztecDecoder
         return true;
     }
 
+    /// <summary>
+    /// Reads an Aztec Rune: the bare compact core, whose mode message carries a number from 0 to 255 instead of the
+    /// symbol's size - the two data words of a compact mode message and their five check words, every word turned by
+    /// <c>1010</c>. That pattern is not itself a codeword, so a rune and a compact symbol's mode message cannot be
+    /// mistaken for one another undamaged; damaged, a rune is only accepted with one word repaired, not two.
+    /// </summary>
+    /// <param name="sides">The four side values of an upright symbol, from <see cref="ReadModeRing"/>.</param>
+    /// <param name="value">Receives the rune's number.</param>
+    /// <param name="errorsCorrected">Receives the number of words repaired.</param>
+    internal static bool TryReadRune(ReadOnlySpan<int> sides, out int value, out int errorsCorrected)
+    {
+        value = 0;
+        long bits = 0;
+        foreach (var side in sides)
+        {
+            bits = (bits << 7) | (uint)((side >> 1) & 0x7F);
+        }
+
+        var received = new int[7];
+        for (var i = 6; i >= 0; i--)
+        {
+            received[i] = (int)(bits & 0xF) ^ 0b1010;
+            bits >>= 4;
+        }
+
+        if (!ModeMessageCorrection.TryDecode(received, 5, out errorsCorrected) || errorsCorrected > 1)
+        {
+            return false;
+        }
+
+        value = (received[0] << 4) | received[1];
+        return true;
+    }
+
     /// <summary>Decodes the data of an upright module grid.</summary>
     /// <param name="grid">The whole symbol, upright.</param>
     /// <param name="compact">Whether the symbol is a compact one.</param>

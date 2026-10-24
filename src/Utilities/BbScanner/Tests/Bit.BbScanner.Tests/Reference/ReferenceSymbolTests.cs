@@ -16,6 +16,9 @@ public class ReferenceSymbolTests
 
     public static IEnumerable<object[]> MatrixSymbols => ReferenceSymbols.All.Where(s => !s.IsLinear).Select(s => new object[] { s.Id });
 
+    /// <summary>The fixtures of the matrix symbologies, which report four corners; a stacked linear symbol reports its two ends.</summary>
+    public static IEnumerable<object[]> MatrixSymbologySymbols => ReferenceSymbols.All.Where(s => (s.BarcodeFormat & BbBarcodeFormat.AllMatrix) != 0).Select(s => new object[] { s.Id });
+
     [TestMethod]
     [DynamicData(nameof(Symbols))]
     public void DecodesTheSymbolAsWrittenByAnIndependentEncoder(string id)
@@ -219,7 +222,7 @@ public class ReferenceSymbolTests
         var misreads = new List<string>();
         var reads = 0;
         var attempts = 0;
-        foreach (var symbol in ReferenceSymbols.All.Where(s => s.BarcodeFormat == BbBarcodeFormat.DataBar))
+        foreach (var symbol in ReferenceSymbols.All.Where(s => s.BarcodeFormat == BbBarcodeFormat.DataBar && s.IsLinear))
         {
             var modulesTall = symbol.Encoder == "databartruncated" ? 13 : 33;
             foreach (var scale in new[] { 2, 3 })
@@ -263,17 +266,20 @@ public class ReferenceSymbolTests
     }
 
     [TestMethod]
-    public void NoOtherSymbologyIsReadAsDataBar()
+    [DataRow(BbBarcodeFormat.DataBar)]
+    [DataRow(BbBarcodeFormat.DataBarLimited)]
+    [DataRow(BbBarcodeFormat.DataBarExpanded)]
+    public void NoOtherSymbologyIsReadAsADataBarSymbology(BbBarcodeFormat format)
     {
-        // DataBar has no start or stop character, only two finder patterns that the bars of another symbology can
-        // resemble, and only a modulo 79 checksum behind them; every other fixture is scanned for it with the
-        // exhaustive still image settings.
+        // DataBar has no start or stop character, only finder patterns that the bars of another symbology can resemble
+        // - DataBar Limited not even those - and only a modulo 79, 89 or 211 checksum behind them; every other fixture,
+        // the other DataBar symbologies' among them, is scanned for each with the exhaustive still image settings.
         var misreads = new List<string>();
-        foreach (var symbol in ReferenceSymbols.All.Where(s => s.BarcodeFormat != BbBarcodeFormat.DataBar))
+        foreach (var symbol in ReferenceSymbols.All.Where(s => s.BarcodeFormat != format))
         {
             using var image = symbol.Render(scale: symbol.IsLinear ? 3 : 4);
             var options = BbScannerOptions.ForStillImages();
-            options.Formats = BbBarcodeFormat.DataBar;
+            options.Formats = format;
             using var decoder = new BbBarcodeDecoder(options);
             if (decoder.Decode(image.View, suppressDuplicates: false) is { } result)
             {
@@ -285,9 +291,9 @@ public class ReferenceSymbolTests
     }
 
     [TestMethod]
-    public void DataBarIsReportedAsDataBarWithEverySymbologyEnabled()
+    public void EveryDataBarSymbologyIsReportedAsItselfWithEverySymbologyEnabled()
     {
-        foreach (var symbol in ReferenceSymbols.All.Where(s => s.BarcodeFormat == BbBarcodeFormat.DataBar))
+        foreach (var symbol in ReferenceSymbols.All.Where(s => (s.BarcodeFormat & DataBarFamily) != 0))
         {
             using var image = symbol.Render(scale: 3);
             var options = BbScannerOptions.ForStillImages();
@@ -295,10 +301,12 @@ public class ReferenceSymbolTests
             using var decoder = new BbBarcodeDecoder(options);
             var result = decoder.Decode(image.View, suppressDuplicates: false);
 
-            Assert.AreEqual(BbBarcodeFormat.DataBar, result?.Format, symbol.Id);
+            Assert.AreEqual(symbol.BarcodeFormat, result?.Format, symbol.Id);
             Assert.AreEqual(symbol.Expected, result?.Text, symbol.Id);
         }
     }
+
+    private const BbBarcodeFormat DataBarFamily = BbBarcodeFormat.DataBar | BbBarcodeFormat.DataBarLimited | BbBarcodeFormat.DataBarExpanded;
 
     private static List<string> LiveFailures(ReferenceSymbol symbol, int modulesTall, int[] scales, IEnumerable<int> angles)
     {
@@ -321,6 +329,47 @@ public class ReferenceSymbolTests
     }
 
     [TestMethod]
+    [DataRow("qr-v1-numeric")]
+    [DataRow("qr-v7-version-info")]
+    [DataRow("qr-v10-mixed-modes")]
+    [DataRow("dm-10x10")]
+    [DataRow("dm-c40")]
+    [DataRow("dm-64x64")]
+    [DataRow("aztec-compact-1")]
+    [DataRow("aztec-full-4")]
+    [DataRow("microqr-m1")]
+    [DataRow("microqr-m3-l")]
+    [DataRow("microqr-m4-q")]
+    public void MatrixSymbolsReadTurnedAtTwoPixelsAModule(string id)
+    {
+        // At two pixels a module, turned, a finder pattern's runs come out of the binariser a pixel off on nearly every
+        // line: a fifth of the angles were lost before the matrix stage took a second look at the frame enlarged twice.
+        // A still image is read at every angle, and a live camera within four frames, the second look being taken on
+        // every fourth frame that holds nothing else.
+        var symbol = ReferenceSymbols.Get(id);
+        using var rendered = symbol.Render(scale: 2);
+        var failures = new List<string>();
+        for (var degrees = 3; degrees < 360; degrees += 14)
+        {
+            using var rotated = ImageTransforms.Rotate(rendered, degrees);
+            using var frame = ImageTransforms.Frame(rotated, Math.Max(640, rotated.Width), Math.Max(480, rotated.Height));
+            if (Decode(symbol, rotated, BbScannerOptions.ForStillImages())?.Text != symbol.Expected)
+            {
+                failures.Add($"{degrees} still");
+            }
+
+            var options = new BbScannerOptions { Formats = symbol.BarcodeFormat, DuplicateSuppressionWindow = TimeSpan.Zero };
+            using var decoder = new BbBarcodeDecoder(options);
+            if (Enumerable.Range(0, 4).Select(_ => decoder.Decode(frame.View, suppressDuplicates: false)).FirstOrDefault(r => r is not null)?.Text != symbol.Expected)
+            {
+                failures.Add($"{degrees} live");
+            }
+        }
+
+        Assert.IsEmpty(failures, $"{id} was not read at {string.Join(", ", failures)} degrees.");
+    }
+
+    [TestMethod]
     [DataRow("qr-v10-mixed-modes")]
     [DataRow("qr-v25")]
     [DataRow("qr-v40")]
@@ -331,6 +380,12 @@ public class ReferenceSymbolTests
     [DataRow("aztec-compact-4")]
     [DataRow("aztec-full-23")]
     [DataRow("aztec-full-32")]
+    [DataRow("aztec-rune-25")]
+    [DataRow("aztec-rune-170")]
+    [DataRow("microqr-m2-l")]
+    [DataRow("microqr-m4-q")]
+    [DataRow("maxicode-mode2")]
+    [DataRow("maxicode-mode5")]
     public void MatrixSymbolsReadAtEveryOrientation(string id)
     {
         // The two failure modes this guards against were both orientation dependent and both invisible to tests
@@ -353,7 +408,7 @@ public class ReferenceSymbolTests
     }
 
     [TestMethod]
-    [DynamicData(nameof(MatrixSymbols))]
+    [DynamicData(nameof(MatrixSymbologySymbols))]
     public void ReportsTheSymbolCornersClockwiseFromItsOwnTopLeft(string id)
     {
         // Corners are what an application draws an outline with, or crops a scan to, so they have to be the
@@ -363,8 +418,10 @@ public class ReferenceSymbolTests
         const int QuietZone = 4 * Scale;
         var symbol = ReferenceSymbols.Get(id);
         using var rendered = symbol.Render(Scale);
-        var width = symbol.Width * Scale;
-        var height = symbol.Rows!.Length * Scale;
+        // MaxiCode is drawn two pixels a module wider a scale, its rows of hexagons nested 0.866 of a module apart.
+        var (width, height) = symbol.BarcodeFormat == BbBarcodeFormat.MaxiCode
+            ? (30.5 * 2 * Scale, ((32 * 0.8660254) + (2 * 0.5773503)) * 2 * Scale)
+            : (symbol.Width * Scale, symbol.Rows!.Length * Scale);
 
         foreach (var degrees in new[] { 0.0, 20, 90, 180, 270 })
         {

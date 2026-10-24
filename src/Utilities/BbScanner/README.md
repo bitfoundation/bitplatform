@@ -20,16 +20,18 @@ Reed-Solomon correction and bit stream parsing - is managed code you can step in
 ## What it is for
 
 Reading the barcodes an application meets: a QR code on a ticket, the EAN-13 of a product, the Code 128 of a
-shipping label, the Data Matrix on a part, the PDF417 on a driving licence, the Aztec code on a boarding pass or a rail
-ticket, the ITF-14 of a carton, the GS1 DataBar on a pack of loose produce.
+shipping label, the MaxiCode on a parcel, the Data Matrix or Micro QR on a part, the PDF417 on a driving licence, the
+Aztec code on a boarding pass or a rail ticket, the ITF-14 of a carton, the GS1 DataBar on a pack of loose produce and
+the DataBar Expanded that carries a pack of meat's weight and price.
 From the camera continuously, from a photo the user picks, or from pixels the application already has - in the
 browser or on a server.
 
 ## Highlights
 
-- **Fourteen symbologies read to specification**: QR Code, Data Matrix, PDF417, Aztec, Code 128 (including GS1-128), Code 39,
-  Code 93, Codabar, EAN-13, EAN-8, UPC-A, UPC-E (with EAN-2 and EAN-5 add-ons), ITF and GS1 DataBar - checked against
-  symbols written by an independent encoder, not only against the library's own test encoders.
+- **Eighteen symbologies read to specification**: QR Code, Micro QR, Data Matrix, PDF417, Aztec, MaxiCode, Code 128
+  (including GS1-128), Code 39, Code 93, Codabar, EAN-13, EAN-8, UPC-A, UPC-E (with EAN-2 and EAN-5 add-ons), ITF, GS1
+  DataBar (including its stacked forms), DataBar Limited and DataBar Expanded (including Expanded Stacked) - checked
+  against symbols written by an independent encoder, not only against the library's own test encoders.
 - **One copy per frame.** JavaScript writes the frame straight into managed memory through a `[JSImport]` memory
   view: no JSON, no base64, no second buffer.
 - **No garbage per frame.** Buffers, bit planes, detectors and scan lines are reused across frames, so a frame
@@ -227,6 +229,7 @@ Narrow `Formats` to the symbologies you need - it is the single most effective s
 | Symbology | Status | Notes |
 | --- | --- | --- |
 | QR Code | Supported | Versions 1-40, all four error correction levels, all eight masks, ECI, structured append, mirrored symbols |
+| Micro QR | Supported | M1 to M4, every error correction level each has, all four masks, numeric, alphanumeric, byte and Kanji segments; `Metadata.SymbolVersion` is `M1` to `M4`. Looked for round the finder patterns the QR Code search found, and only when no QR symbol was read, so it costs QR Code nothing; the grid is laid by the perspective the four sides of its one finder pattern give, its size and angle put right by the timing patterns. Each variant is trusted to repair only as many codewords as the specification gives it - none in M1, whose two check codewords only detect errors |
 | Data Matrix | Supported | ECC 200, all 24 square and 6 rectangular shapes, ASCII / C40 / Text / X12 / EDIFACT / Base 256, ECI, structured append, GS1 |
 | Code 128 | Supported | Code sets A, B and C, shifts, FNC1 (GS1-128) |
 | Code 39 | Supported | Optional modulo 43 check character, optional full ASCII extension |
@@ -238,8 +241,11 @@ Narrow `Formats` to the symbologies you need - it is the single most effective s
 | UPC-E | Supported | Expanded and check-digit verified against its UPC-A form; add-ons read |
 | ITF | Supported | Configurable accepted lengths |
 | PDF417 | Supported | Any orientation, 1-30 columns and 3-90 rows, security levels 0-8, text / byte / numeric compaction, ECI, Macro PDF417 segment numbering; not compact (truncated) PDF417 or MicroPDF417 - see [PDF417 status](#pdf417-status) |
-| Aztec Code | Supported | Compact (1-4 layers) and full range (1-32 layers), any orientation, every character mode, ECI, GS1 (FNC1); not Aztec Runes or mirrored symbols, and structured append is not interpreted. A symbol written at an encoder's lowest error correction level - three check codewords - is only read undamaged: so few cannot tell a repaired block from a wrong one |
-| GS1 DataBar | Supported | Omnidirectional and Truncated; the GTIN-14 reported as the GS1 element string `01` followed by its fourteen digits, check digit included, with `Metadata.IsGs1` set. The modulo 79 checksum is verified, and as it is the only check, every read is confirmed on a second scan line; bars printed wider or narrower than their modules are measured on the guards and finder patterns and corrected for. A module and a half of light is wanted beyond each guard bar, although DataBar itself needs no quiet zone: a symbol printed right up against other ink is missed rather than risked. Not the stacked forms, DataBar Limited or DataBar Expanded |
+| Aztec Code | Supported | Compact (1-4 layers) and full range (1-32 layers), any orientation, every character mode, ECI, GS1 (FNC1), mirrored symbols, and Aztec Runes, reported as their number from 0 to 255; structured append is not interpreted. A symbol written at an encoder's lowest error correction level - three check codewords - is only read undamaged: so few cannot tell a repaired block from a wrong one |
+| MaxiCode | Supported | Modes 2 to 5: the structured carrier message of modes 2 and 3 - postal code, country and class of service - reported as the carrier writes it, after the `[)>` header; standard and enhanced error correction; the five code sets with their shifts and locks, the numeric shift and ECI. `Metadata.SymbolVersion` is `Mode 2` to `Mode 5`. Found by its bullseye at any angle, the four diameters of its rings giving the grid's shape and their edges, to a fraction of a pixel, its scale; the grid's foreshortening away from the rings is searched for when it does not read flat. Mode 6, which programs a reader, is not read, and structured append is not interpreted |
+| GS1 DataBar | Supported | Omnidirectional, Truncated, Stacked and Stacked Omnidirectional; the GTIN-14 reported as the GS1 element string `01` followed by its fourteen digits, check digit included, with `Metadata.IsGs1` set and `Metadata.SymbolVersion` `Stacked` for a symbol read from two rows. The modulo 79 checksum is verified, and as it is the only check, every read is confirmed on a second scan line; bars printed wider or narrower than their modules are measured on the guards and finder patterns and corrected for. A stacked symbol's rows, and the halves of a short symbol turned further off a line than one line can cross whole, are read on different lines and put together by where they lie - along the symbol's own axis, which the lines' starts trace - and the checksum between them; each half has to be read on two lines and more than twice as often as anything else its place reads as. A module and a half of light is wanted beyond each guard bar, although DataBar itself needs no quiet zone: a symbol printed right up against other ink is missed rather than risked. The linear part of a GS1 Composite symbol is not read |
+| GS1 DataBar Limited | Supported | A GTIN-14 starting with 0 or 1, reported as DataBar's is. The modulo 89 check character is verified and every read confirmed on a second scan line; the symbol has no finder pattern, so a candidate has to show its guards, its single-module elements, the five modules of light after it and each character's width before anything is rounded. The linear part of a GS1 Composite symbol is not read |
+| GS1 DataBar Expanded | Supported | Expanded and Expanded Stacked, every encodation method: the compressed forms for a GTIN with a weight, a price or a date, and the general purpose field in its numeric, alphanumeric and ISO/IEC 646 modes. Reported as the GS1 element string, with a group separator after every element that is not of a predefined length but the last, and `Metadata.IsGs1` set. The modulo 211 checksum, the character count the check character carries, the finder pattern sequence and the data are verified to the last bit and the padding; a stacked symbol's rows, and a long one turned off the lines, are put together from the lines that read them - only along characters some line read one after the other, so that two labels with the same GTIN are not mixed. Confirmed on a second scan line. The linear part of a GS1 Composite symbol is not read |
 
 `BbBarcodeFormat` is a flags enum, so a set of symbologies is one value: `BbBarcodeFormat.QrCode | BbBarcodeFormat.Ean13`.
 `AllLinear`, `AllMatrix` and `All` are the composites, and `All` is the default. Only the readers of the requested
@@ -729,27 +735,51 @@ off-centre and on cluttered backgrounds - rather than only against clean round t
 
 - **Rotation.** QR Code - every version, up to 40 - square Data Matrix up to 144 by 144, and PDF417 read at every
   orientation from three pixels a module up, and PDF417 from two; the reference symbols are swept round the full
-  circle to check it. At two pixels a module a rotated QR code or Data Matrix is at the edge of what can be
-  sampled, and a good share of orientations fail, so a small symbol needs the camera resolution
-  (`MaxProcessingSize`) or the distance to give it three. The thinnest rectangular Data Matrix shape, 8 by 32,
-  still misses a few orientations at three and four pixels a module. Aztec Code, compact and full range up to its
-  largest, 151 by 151 modules, reads at every orientation from three pixels a module, with the camera settings as
-  well as the still image ones; at two pixels a module a share of orientations fail, as with QR Code. Linear symbols
+  circle to check it. At two pixels a module a turned QR code, Data Matrix or Aztec symbol comes out of the binariser
+  with its finder patterns' edges a pixel out on nearly every line, so when a frame gives the matrix readers nothing
+  they look again at it enlarged twice by interpolation: all of a still image up to a megapixel, the middle of a
+  larger one, and on a live camera the middle quarter of every fourth frame that held nothing. Swept round 51 angles
+  at two pixels a module, every QR reference symbol up to 57 modules then reads at every angle - from a still image,
+  and live within four frames - where a fifth of the angles were lost before; Data Matrix 1 001 of 1 020 renders,
+  the thinnest rectangle, 8 by 32, missing most of the rest; Aztec 1 810 of 1 836, the four layer compact symbol
+  missing most. The 8 by 32 Data Matrix also misses a few orientations at three and four pixels a module. Aztec Code,
+  compact and full range up to its largest, 151 by 151 modules, reads at every orientation from three pixels a
+  module, with the camera settings as well as the still image ones. MaxiCode reads at every angle from three pixels a
+  module and Micro QR from two: swept round 36 angles at three, four and six pixels a module, all 756 renders of the
+  seven MaxiCode reference symbols read from a still image and live within four frames; at two, three and four, 862
+  of the 864 of the eight Micro QR symbols from a still image and all of them live - with every symbology enabled, and
+  not one misread. Linear symbols
   read within about 30 degrees of upright while scanning live, which is the range a hand actually produces, and at
   any angle with `ForStillImages()`, which sweeps every ten degrees plus both diagonals. Sideways - bars running
   across the frame - live scanning tries vertical lines and lines fifteen degrees either side of them, so how far off
   sideways a symbol reads depends on its proportions: about 15 degrees for a 19 character Code 128 at two pixels a
-  module, about 30 for an EAN-13. How far off its axis a line can cross a linear symbol depends on how tall it is: GS1
-  DataBar Omnidirectional, 33 modules tall, reads live at every angle but within some ten degrees of the diagonals
-  from two pixels a module, whereas Truncated DataBar, 13 modules tall, reads within about 35 degrees of upright and
+  module, about 30 for an EAN-13. Between those angles each live frame also tries one of 45, 135, 60 and 120 degrees,
+  a different one each frame, so a linear symbol held at any angle at all is read within four frames - a tenth of a
+  second at thirty frames a second - for the cost of one more angle a frame. How far off its axis a line can cross a
+  linear symbol depends on how tall it is: GS1 DataBar Omnidirectional, 33 modules tall, reads live in every frame at
+  every angle but some ten degrees around the diagonals, and there within four frames, from two pixels a module, whereas Truncated DataBar, 13 modules tall, reads within about 35 degrees of upright and
   20 of sideways from three pixels a module, and at two pixels a module leaves gaps between the angles the live scan
-  tries. Both read at every angle from a still image. A DataBar symbol has to be crossed whole by one line: the two
-  halves are not yet pieced together from different lines, as dedicated DataBar scanners do.
+  tries. Both read at every angle from a still image. A DataBar symbol no single line crosses whole - the two rows of
+  a stacked one, the rows of DataBar Expanded Stacked, or a short or long symbol turned further off a line than one
+  line can cross it - is pieced together from what different lines read of it. A live frame follows a line that read
+  part of such a symbol with lines either side of it, then lines turned about it, and then lines along the symbol's
+  own axis, which the starts of those lines trace; and the live lines shift across by a fraction of their spacing from
+  frame to frame, so that a symbol thinner than that spacing is crossed within four frames. Over two to four pixels a
+  module, nine angles to 240 degrees, blur to 1.3 pixels and noise to 45 (four live frames, or a still image):
+  Omnidirectional 96 % of renders, Stacked Omnidirectional and Stacked together 86 % - Stacked's rows are five and
+  seven modules tall, and live it is missed around 50 degrees, which no frame's lines run close enough to - DataBar
+  Limited, ten modules tall, 88 %, DataBar Expanded 92 % and Expanded Stacked 68 %, its rows at 30 to 50 degrees,
+  blurred and noisy, mostly lost. None of those 12 636 decodes was a misread, nor any of 1 395 values read off
+  sheets of four DataBar symbols close together, 919 of them off labels of one product carrying the same GTIN.
 - **Perspective.** Matrix symbols tolerate roughly 30 degrees of tilt. An Aztec symbol is fitted through its reference
   grid when it is large enough to have one, and through its outline when it is not. Tilted 30 degrees, every Aztec
   reference fixture reads at every rotation tried; tilted 40, all but one of 102 renders. The outline needs a quiet
   zone, which the specification does not insist on: framed by other ink right up to its edge, the largest compact
-  symbol still reads square on and tilted 15 degrees, but only at 8 of 12 rotations tilted 30.
+  symbol still reads square on and tilted 15 degrees, but only at 8 of 12 rotations tilted 30. MaxiCode has no
+  outline or corners to fit: its grid is the ellipse its rings make, and how it is foreshortened away from them is
+  searched for, the foreshortening taken being the one under which the modules' samples lie furthest from the
+  threshold. At four pixels a module, turned to twelve angles, 83, 84 and 84 of the 84 MaxiCode renders read tilted
+  20, 30 and 40 degrees; Micro QR, laid by its finder pattern's four sides, 96, 94 and 91 of 96.
 - **Position.** A symbol anywhere in the frame is found, not only one in the middle.
 - **Lighting.** Strong gradients, low contrast and underexposure are handled by the adaptive binarizers; the block
   threshold estimates the frame's noise floor so that grainy blank paper is still recognised as blank.
@@ -757,8 +787,8 @@ off-centre and on cluttered backgrounds - rather than only against clean round t
   modules.
 
 What it does not do: read symbols whose modules are below about two pixels, recover from blur much wider than a
-module, or read a linear symbol rotated more than about 30 degrees from upright, or more than 15 to 30 from sideways,
-during live scanning. Misreading is treated as worse than missing throughout: ITF, Codabar, UPC-E, GS1 DataBar and
+module, or read in every frame a linear symbol rotated more than about 30 degrees from upright, or more than 15 to 30
+from sideways - one held there is read within four frames. Misreading is treated as worse than missing throughout: ITF, Codabar, UPC-E, the GS1 DataBar family and
 unchecked Code 39 results must repeat on a second scan line before they are reported, and a line beside it that reads
 the same symbology differently - one clear of a spot the first line ran through - vetoes the read; guard patterns must
 be adjacent rather than merely present, a Reed-Solomon correction is only accepted when the corrected block
@@ -839,8 +869,8 @@ cost, which is what an application compiled ahead of time, a server or a desktop
 The "linear only" column on a frame that holds a matrix symbol is the cost of looking for something that is not
 there at every orientation, which is the price of reading tilted symbols - and turned off sideways, which live
 scanning has tried since it added two angles there, for about a third more on such a frame. It is only paid when no enabled symbology
-matches, and narrowing `Formats` removes it. Matrix symbologies are tried in the order QR Code, Data Matrix, PDF417,
-Aztec, so a symbol of a later one also pays for the earlier ones looking first. Each symbology costs little on a
+matches, and narrowing `Formats` removes it. Matrix symbologies are tried in the order QR Code and Micro QR, Data
+Matrix, PDF417, Aztec, MaxiCode, so a symbol of a later one also pays for the earlier ones looking first. Each symbology costs little on a
 frame without it - Aztec about 30 us on an empty frame, 60 to 100 us on one holding other symbols and some 220 us on
 one of pure noise. GS1 DataBar, the last added, costs nothing measurable on an empty frame or one holding another
 linear symbol; the most it adds is on the noisy QR frame scanned for linear symbols only, where every line is a
@@ -949,8 +979,11 @@ if it had been printed straight. Every reference symbol reads at every orientati
 full circle, at two and at four pixels a module, with the live camera settings.
 
 **Not read.** Compact (truncated) PDF417, which drops the right row indicator and most of the stop pattern, and
-MicroPDF417, which is a different symbology. Two symbols printed side by side and offset by a fraction of their height
-can both be missed while scanning live: the line along a row of the first runs on into the second's stop pattern.
+MicroPDF417, which is a different symbology.
+
+**Side by side.** A line along a row of one symbol runs on into the stop pattern of a symbol printed beside it, and
+paired with that the quad comes out sheared. A stop pattern spans the same rows as its own start pattern, give or take
+what perspective takes off one side, so the stop that is clearly best aligned with the start is the one used.
 
 ## Building and testing
 

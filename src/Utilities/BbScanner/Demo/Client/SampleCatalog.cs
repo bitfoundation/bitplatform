@@ -35,6 +35,17 @@ public static class SampleCatalog
     public static IEnumerable<BarcodeSample> ForFormats(BbBarcodeFormat formats) =>
         All.Where(s => (s.Format & formats) != 0);
 
+    /// <summary>
+    /// Rasterises a two dimensional sample, <paramref name="scale"/> pixels a module: square modules, or MaxiCode's
+    /// hexagons round its bullseye.
+    /// </summary>
+    /// <param name="sample">A sample with a <see cref="BarcodeSample.Matrix"/>.</param>
+    /// <param name="scale">Pixels a module.</param>
+    public static BbLuminanceBuffer RenderMatrix(BarcodeSample sample, int scale) =>
+        sample.Format == BbBarcodeFormat.MaxiCode
+            ? SyntheticImage.FromMaxiCode(sample.Matrix!, moduleWidth: scale, quietZoneModules: 4)
+            : SyntheticImage.FromMatrix(sample.Matrix!, scale: scale);
+
     private static List<BarcodeSample> Build() =>
     [
         new(BbBarcodeFormat.QrCode, "QR Code", "https://bbscanner.bitplatform.dev",
@@ -83,6 +94,14 @@ public static class SampleCatalog
         new(BbBarcodeFormat.DataBar, "GS1 DataBar", "0109521234543213",
             null, LinearEncoders.DataBar("09521234543213")),
 
+        // DataBar Limited holds a GTIN-14 starting with 0 or 1, in a symbol small enough for a pharmacy pack.
+        new(BbBarcodeFormat.DataBarLimited, "GS1 DataBar Limited", "0115012345678907",
+            null, LinearEncoders.DataBarLimited("15012345678907")),
+
+        // DataBar Expanded holds any GS1 element string: here a GTIN and a batch number.
+        new(BbBarcodeFormat.DataBarExpanded, "GS1 DataBar Expanded", "010952123454321310ABC123",
+            null, LinearEncoders.DataBarExpanded("010952123454321310ABC123")),
+
         new(BbBarcodeFormat.Aztec, "Aztec (compact)", "M1DEMO/BBSCANNER EABC123 AMSJFKKL 0641",
             AztecEncoder.Encode("M1DEMO/BBSCANNER EABC123 AMSJFKKL 0641", compact: true), null),
 
@@ -92,6 +111,14 @@ public static class SampleCatalog
         new(BbBarcodeFormat.Pdf417, "PDF417", "PDF FOUR ONE SEVEN",
             Pdf417Encoder.Encode("PDF FOUR ONE SEVEN", columns: 4, errorCorrectionLevel: 2, rowHeightModules: 4),
             null),
+
+        // MaxiCode: the parcel sorting symbol, hexagons round a bullseye, always the same size.
+        new(BbBarcodeFormat.MaxiCode, "MaxiCode", "MAXICODE DEMO PARCEL 1Z00004951",
+            MaxiCodeEncoder.Encode("MAXICODE DEMO PARCEL 1Z00004951"), null),
+
+        // Micro QR: one finder pattern, for a short value in a small space.
+        new(BbBarcodeFormat.MicroQrCode, "Micro QR", "MICRO QR 42",
+            MicroQrEncoder.Encode("MICRO QR 42"), null),
     ];
 
     private static string Ean13Value { get; } = Complete("400638133393");

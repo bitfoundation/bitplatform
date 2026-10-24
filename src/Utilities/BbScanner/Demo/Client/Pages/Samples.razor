@@ -24,7 +24,7 @@
     <div class="sample-grid">
         @foreach (var sample in SampleCatalog.All.Where(s => (s.Format & BbBarcodeFormat.AllMatrix) != 0))
         {
-            <BarcodeSvg Matrix="sample.Matrix" Caption="@sample.Caption" Value="@sample.Value" Size="200" />
+            <BarcodeSvg Matrix="sample.Matrix" Format="sample.Format" Caption="@sample.Caption" Value="@sample.Value" Size="200" />
         }
     </div>
 </div>
@@ -119,7 +119,7 @@
         foreach (var sample in SampleCatalog.All)
         {
             using var image = sample.Matrix is not null
-                ? Bit.BbScanner.TestKit.SyntheticImage.FromMatrix(sample.Matrix, scale: 6)
+                ? SampleCatalog.RenderMatrix(sample, scale: 6)
                 : Bit.BbScanner.TestKit.SyntheticImage.FromLinear(sample.Modules!, scale: 3, height: 90);
 
             var start = System.Diagnostics.Stopwatch.GetTimestamp();

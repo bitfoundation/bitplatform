@@ -101,7 +101,7 @@ public class McpDecodeLabTests
     [TestMethod]
     public async Task An_unknown_symbology_lists_the_real_ones()
     {
-        var report = await InspectAsync(new() { ["format"] = "maxicode" });
+        var report = await InspectAsync(new() { ["format"] = "dotcode" });
 
         Assert.IsFalse(report.Encoded);
         Assert.IsTrue(report.Notes.Any(note => note.Contains("QrCode", StringComparison.Ordinal)));

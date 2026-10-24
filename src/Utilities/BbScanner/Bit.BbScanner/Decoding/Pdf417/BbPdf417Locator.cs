@@ -59,6 +59,13 @@ internal sealed class BbPdf417Locator
     private readonly List<Vector2> _outerEdges = [];
     private readonly List<Vector2> _innerEdges = [];
     private readonly List<Candidate> _candidates = [];
+
+    /// <summary>
+    /// Candidates a start pattern gave when no stop pattern could be found for it, as compact symbols. They are offered
+    /// only after every other: a full symbol's start pattern seen where its stop pattern cannot be traced - the frame's
+    /// edge, a crease - would be taken for a compact symbol too, and, offered first, hide the symbol it belongs to.
+    /// </summary>
+    private readonly List<Candidate> _compactCandidates = [];
     private readonly RunBuffer _scan = new();
     private readonly RunBuffer _row = new();
     private BbLuminanceBuffer? _upright;
@@ -91,6 +98,7 @@ internal sealed class BbPdf417Locator
     public IReadOnlyList<Candidate> Locate(BbBitMatrix image, bool thorough)
     {
         _candidates.Clear();
+        _compactCandidates.Clear();
         _attempts = 0;
 
         var angles = thorough ? ThoroughAngles : LiveAngles;
@@ -121,6 +129,19 @@ internal sealed class BbPdf417Locator
                 {
                     return _candidates;
                 }
+            }
+        }
+
+        foreach (var compact in _compactCandidates)
+        {
+            if (_candidates.Count >= MaxCandidates)
+            {
+                break;
+            }
+
+            if (!IsInsideKnownCandidate(Vector2.Lerp(compact.TopLeft, compact.BottomRight, 0.5f)))
+            {
+                _candidates.Add(compact);
             }
         }
 
@@ -407,7 +428,13 @@ internal sealed class BbPdf417Locator
 
             // A line that is a fraction of a degree off the rows can still drift across them on
             // a wide symbol and assemble something stop-shaped in the middle of it. The real stop
-            // pattern is the last one on the line, and it is as tall as the start pattern.
+            // pattern is the last one on the line, and it is as tall as the start pattern - unless
+            // the last one is a neighbouring symbol's, printed beside this one a little higher or
+            // lower: paired with that, the quad comes out sheared and reads as neither. A stop
+            // spans the same rows as its own start pattern, give or take what perspective takes
+            // off one side, so an earlier stop that is clearly better aligned is preferred.
+            var best = default(Candidate);
+            var bestMisalignment = float.MaxValue;
             for (var s = found - 1; s >= 0; s--)
             {
                 var stopInner = origin + (rows * (from + _row.Starts[stops[s]]));
@@ -428,20 +455,150 @@ internal sealed class BbPdf417Locator
                 }
 
                 var (rightTop, rightBottom) = Vector2.Dot(stopBottom - stopTop, columns) >= 0 ? (stopTop, stopBottom) : (stopBottom, stopTop);
+                var misalignment = MathF.Max(
+                    MathF.Abs(Vector2.Dot(rightTop - top, columns)),
+                    MathF.Abs(Vector2.Dot(rightBottom - bottom, columns))) - (MathF.Abs(stopHeight - height) / 2);
+                if (misalignment > 0.5f * height || misalignment > bestMisalignment - (0.1f * height))
+                {
+                    continue;
+                }
+
                 var stopWidth = rows * (18 * stopModule);
-                candidate = new Candidate(top, rightTop + stopWidth, rightBottom + stopWidth, bottom, (module + stopModule) / 2);
+                var paired = new Candidate(top, rightTop + stopWidth, rightBottom + stopWidth, bottom, (module + stopModule) / 2);
 
                 // Start, two row indicators, one to thirty data columns and stop: 86 to 579 modules.
-                var symbolModules = Vector2.Distance(candidate.TopLeft, candidate.TopRight) / candidate.ModuleSize;
+                var symbolModules = Vector2.Distance(paired.TopLeft, paired.TopRight) / paired.ModuleSize;
                 if (symbolModules >= 60 && symbolModules <= MaxSymbolModules)
                 {
-                    return true;
+                    best = paired;
+                    bestMisalignment = misalignment;
                 }
+            }
+
+            if (bestMisalignment < float.MaxValue)
+            {
+                candidate = best;
+                return true;
+            }
+        }
+
+        // No stop pattern: a compact symbol's is a single bar. Kept aside, once, until every other candidate is in.
+        if (TryResolveCompact(image, top, bottom, rows, module, out var compact))
+        {
+            var known = false;
+            foreach (var other in _compactCandidates)
+            {
+                known |= IsInside(Vector2.Lerp(compact.TopLeft, compact.BottomLeft, 0.5f), other.TopLeft, other.TopRight, other.BottomRight, other.BottomLeft, other.ModuleSize * 4);
+            }
+
+            if (!known)
+            {
+                _compactCandidates.Add(compact);
             }
         }
 
         candidate = default;
         return false;
+    }
+
+    /// <summary>
+    /// Finds the right edge of a compact symbol, one whose start pattern has no stop pattern on its rows: compact PDF417
+    /// drops the right row indicator and cuts the stop pattern to a single bar. Its rows end at their last bar before
+    /// light wider than any space in a codeword - seven modules - or light that runs on to the edge of the frame, and the
+    /// right edge is the line through where three rows end, which have to agree to within a module and a half.
+    /// </summary>
+    private bool TryResolveCompact(BbBitMatrix image, Vector2 top, Vector2 bottom, Vector2 rows, float module, out Candidate candidate)
+    {
+        candidate = default;
+        Span<Vector2> ends = stackalloc Vector2[3];
+        ReadOnlySpan<float> fractions = [0.25f, 0.5f, 0.75f];
+        var found = 0;
+        foreach (var fraction in fractions)
+        {
+            var left = Vector2.Lerp(top, bottom, fraction);
+            var origin = left - (rows * (2 * module));
+            if (!TryClip(origin, rows, image.Width, image.Height, out var from, out var to))
+            {
+                continue;
+            }
+
+            var runCount = _row.Read(image, origin + (rows * from), rows, (int)(to - from) + 1, out var firstBlack);
+            var startAt = -1;
+            for (var i = 0; i + 8 <= runCount && i < 4; i++)
+            {
+                if (((i & 1) == 0) == firstBlack && Matches(_row.Runs.AsSpan(i, 8), StartPattern))
+                {
+                    startAt = i;
+                    break;
+                }
+            }
+
+            if (startAt < 0)
+            {
+                continue;
+            }
+
+            // The end: the start of the first light run after the start pattern that is seven modules wide or runs on to
+            // the edge of the frame - a quiet zone, which need only be two modules wide - or the line's end.
+            var end = _row.Starts[runCount];
+            for (var i = startAt + 8; i < runCount; i++)
+            {
+                if (((i & 1) == 0) != firstBlack && (_row.Runs[i] >= 7 * module || (i == runCount - 1 && _row.Runs[i] >= 2 * module)))
+                {
+                    end = _row.Starts[i];
+                    break;
+                }
+            }
+
+            ends[found++] = origin + (rows * (from + end));
+        }
+
+        if (found < 2)
+        {
+            return false;
+        }
+
+        // The right edge runs from the first end to the last; any end between has to lie on it.
+        var (first, last) = (ends[0], ends[found - 1]);
+        var edge = Vector2.Normalize(last - first);
+        for (var i = 1; i < found - 1; i++)
+        {
+            var off = ends[i] - first;
+            if (MathF.Abs((off.X * edge.Y) - (off.Y * edge.X)) > 1.5f * module)
+            {
+                return false;
+            }
+        }
+
+        // Where the edge meets the top and bottom rows, which run along rows from the left corners.
+        if (!Meet(top, rows, first, edge, out var rightTop) || !Meet(bottom, rows, first, edge, out var rightBottom))
+        {
+            return false;
+        }
+
+        // Start, left row indicator, one to thirty data columns and the stop bar: 52 to 545 modules.
+        var symbolModules = Vector2.Distance(top, rightTop) / module;
+        if (symbolModules < 50 || symbolModules > MaxSymbolModules || Vector2.Distance(bottom, rightBottom) / module < 50)
+        {
+            return false;
+        }
+
+        candidate = new Candidate(top, rightTop, rightBottom, bottom, module);
+        return true;
+
+        static bool Meet(Vector2 origin, Vector2 direction, Vector2 point, Vector2 along, out Vector2 meeting)
+        {
+            var cross = (direction.X * along.Y) - (direction.Y * along.X);
+            if (MathF.Abs(cross) < 0.3f)
+            {
+                meeting = default;
+                return false;
+            }
+
+            var between = point - origin;
+            meeting = origin + (direction * (((between.X * along.Y) - (between.Y * along.X)) / cross));
+            return true;
+        }
     }
 
     /// <summary>

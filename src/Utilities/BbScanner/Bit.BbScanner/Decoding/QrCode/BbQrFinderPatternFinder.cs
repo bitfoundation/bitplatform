@@ -61,6 +61,9 @@ public sealed class BbQrFinderPatternFinder
         static (a, b) => a.EstimatedModuleSize.CompareTo(b.EstimatedModuleSize);
 
     private readonly List<BbQrFinderPattern> _possibleCenters = new(8);
+
+    /// <summary>Every finder pattern centre the last search confirmed, triple or not.</summary>
+    internal ReadOnlySpan<BbQrFinderPattern> Centers => System.Runtime.InteropServices.CollectionsMarshal.AsSpan(_possibleCenters);
     private readonly int[] _crossCheckStateCount = new int[5];
     private readonly Triple[] _candidates = new Triple[MaxCandidates];
 
@@ -279,8 +282,10 @@ public sealed class BbQrFinderPatternFinder
             return false;
         }
 
+        // Half a module either way; but a pixel at least, which is what the edges of a two pixel module turned off the rows
+        // move by on every line, and which half of two pixels does not allow.
         var moduleSize = totalModuleSize / 7.0f;
-        var maxVariance = moduleSize / 2.0f;
+        var maxVariance = MathF.Max(moduleSize / 2.0f, 1.01f);
 
         return Math.Abs(moduleSize - stateCount[0]) < maxVariance
             && Math.Abs(moduleSize - stateCount[1]) < maxVariance

@@ -299,7 +299,7 @@ public class LinearMisreadTests
         // of modules wide is not rounded the other way to put that right: that would leave the modulo 79 checksum
         // alone between the damage and a wrong GTIN. Every edge of every fixture is moved both ways.
         var misreads = new List<string>();
-        foreach (var symbol in ReferenceSymbols.All.Where(s => s.BarcodeFormat == BbBarcodeFormat.DataBar))
+        foreach (var symbol in ReferenceSymbols.All.Where(s => s.BarcodeFormat == BbBarcodeFormat.DataBar && s.IsLinear))
         {
             var widths = symbol.Widths!;
             for (var edge = 1; edge + 1 < widths.Length; edge++)

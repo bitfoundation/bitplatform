@@ -135,7 +135,7 @@ public class LinearDecoderTests
     {
         // The test kit's encoder and BWIPP must put down the same modules for the same GTIN; otherwise the round trips
         // above would only prove that the decoder agrees with the test kit.
-        foreach (var symbol in ReferenceSymbols.All.Where(s => s.BarcodeFormat == BbBarcodeFormat.DataBar))
+        foreach (var symbol in ReferenceSymbols.All.Where(s => s.BarcodeFormat == BbBarcodeFormat.DataBar && s.IsLinear))
         {
             var expected = SyntheticImage.ExpandWidths(symbol.Widths);
             var actual = LinearEncoders.DataBar(symbol.Expected![2..]);

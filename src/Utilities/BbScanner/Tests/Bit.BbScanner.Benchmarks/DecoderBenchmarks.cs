@@ -22,7 +22,7 @@ public class DecoderBenchmarks
     private BbBarcodeDecoder _linearButDataBar = null!;
 
     /// <summary>The frame case to decode.</summary>
-    [Params("QrSmall", "QrLarge", "QrNoisy", "DataMatrix", "Pdf417", "Aztec", "Code128", "Ean13", "DataBar", "Empty")]
+    [Params("QrSmall", "QrLarge", "QrNoisy", "DataMatrix", "Pdf417", "Aztec", "Code128", "Ean13", "DataBar", "DataBarExpanded", "Empty")]
     public string Case { get; set; } = "QrSmall";
 
     [GlobalSetup]
@@ -40,6 +40,8 @@ public class DecoderBenchmarks
             "EAN-13", BbBarcodeFormat.Ean13, LinearEncoders.Ean13("4006381333931"), "4006381333931");
         _frames["DataBar"] = FrameFactory.Linear(
             "GS1 DataBar", BbBarcodeFormat.DataBar, LinearEncoders.DataBar("09521234543213"), "0109521234543213");
+        _frames["DataBarExpanded"] = FrameFactory.Linear(
+            "GS1 DataBar Expanded", BbBarcodeFormat.DataBarExpanded, LinearEncoders.DataBarExpanded("010952123454321310ABC123"), "010952123454321310ABC123");
         _frames["Empty"] = FrameFactory.Empty();
 
         _allFormats = new BbBarcodeDecoder(new BbScannerOptions
@@ -86,7 +88,7 @@ public class DecoderBenchmarks
 
         _linearButDataBar = new BbBarcodeDecoder(new BbScannerOptions
         {
-            Formats = BbBarcodeFormat.AllLinear & ~BbBarcodeFormat.DataBar,
+            Formats = BbBarcodeFormat.AllLinear & ~(BbBarcodeFormat.DataBar | BbBarcodeFormat.DataBarLimited | BbBarcodeFormat.DataBarExpanded),
             DuplicateSuppressionWindow = TimeSpan.Zero,
         });
     }
@@ -167,8 +169,9 @@ public class DecoderBenchmarks
     }
 
     /// <summary>
-    /// Every linear symbology but GS1 DataBar, which is what the linear formats cost before DataBar was read; the
-    /// difference from <see cref="LinearOnly"/> is what DataBar adds to a frame.
+    /// Every linear symbology but the GS1 DataBar family - DataBar, Limited and Expanded - which is what the linear
+    /// formats cost before DataBar was read; the difference from <see cref="LinearOnly"/> is what the family adds to a
+    /// frame.
     /// </summary>
     [Benchmark]
     public BbBarcodeResult? LinearButDataBar()

@@ -314,7 +314,7 @@
     private static byte[] BuildFrame(BarcodeSample sample, int width, int height)
     {
         using var symbol = sample.Matrix is not null
-            ? Bit.BbScanner.TestKit.SyntheticImage.FromMatrix(sample.Matrix, scale: MatrixScale(sample, width, height))
+            ? SampleCatalog.RenderMatrix(sample, scale: MatrixScale(sample, width, height))
             : Bit.BbScanner.TestKit.SyntheticImage.FromLinear(sample.Modules!, scale: LinearScale(sample, width), height: 80);
 
         var frame = new byte[width * height];

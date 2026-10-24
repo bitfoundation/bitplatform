@@ -8,6 +8,33 @@ public sealed class BbQrDetector
     private readonly BbQrFinderPatternFinder _finder = new();
     private BbBitMatrix _image;
 
+    /// <summary>
+    /// The luminance plane the image was binarised from, when the caller has one, and whether the symbol sought is light
+    /// on dark; see <see cref="UseLuminance"/>.
+    /// </summary>
+    private BbLuminanceView _luminance;
+    private bool _hasLuminance;
+    private bool _inverted;
+
+    /// <summary>The module size, in pixels, below which a grid the binarised image does not decode is sampled from luminance.</summary>
+    private const float MaxLuminanceModule = 3.5f;
+
+    /// <summary>
+    /// Lets the next detection sample a grid the binarised image does not decode from the luminance plane it was made
+    /// from, when the symbol's modules are small enough for binarisation to have lost some; see
+    /// <see cref="BbGridSampler.SampleLuminance"/>. <see cref="ForgetLuminance"/> lets go of it.
+    /// </summary>
+    internal void UseLuminance(in BbLuminanceView luminance, bool inverted)
+    {
+        (_luminance, _hasLuminance, _inverted) = (luminance, true, inverted);
+    }
+
+    /// <summary>Lets go of the luminance plane, so the detector holds no reference to the frame between frames.</summary>
+    internal void ForgetLuminance()
+    {
+        (_luminance, _hasLuminance, _inverted) = (default, false, false);
+    }
+
     /// <summary>Creates a detector over a binarised image.</summary>
     /// <param name="image">The binarised image.</param>
     public BbQrDetector(BbBitMatrix image)
@@ -25,6 +52,17 @@ public sealed class BbQrDetector
     {
         ArgumentNullException.ThrowIfNull(image);
         _image = image;
+    }
+
+    /// <summary>The finder pattern centres the last <see cref="Detect(bool, Func{BbDetectorResult, bool})"/> found, a Micro QR symbol's among them.</summary>
+    internal ReadOnlySpan<BbQrFinderPattern> FinderCenters => _finder.Centers;
+
+    /// <summary>Searches the image for finder patterns without trying them as a QR symbol's; see <see cref="FinderCenters"/>.</summary>
+    internal ReadOnlySpan<BbQrFinderPattern> ScanFinders(bool tryHarder)
+    {
+        _finder.Reset(_image);
+        _finder.FindCandidates(tryHarder);
+        return _finder.Centers;
     }
 
     /// <summary>Detects and samples a symbol.</summary>
@@ -203,7 +241,22 @@ public sealed class BbQrDetector
         Func<BbDetectorResult, bool> accept)
     {
         var transform = CreateTransform(topLeft, topRight, bottomLeft, alignmentPattern, dimension);
-        var bits = BbGridSampler.Sample(_image, dimension, dimension, transform);
+        if (TryGrid(BbGridSampler.Sample(_image, dimension, dimension, transform), transform, dimension, accept) is { } result)
+        {
+            return result;
+        }
+
+        // At two or three pixels a module a turned symbol's binarised image has lost modules its luminance still tells
+        // apart, so a grid that did not decode is sampled again from that.
+        var module = BbScanPoint.Distance(transform.Transform(new BbScanPoint(0, 0)), transform.Transform(new BbScanPoint(dimension, 0))) / dimension;
+        return _hasLuminance && module < MaxLuminanceModule
+            ? TryGrid(BbGridSampler.SampleLuminance(_luminance, dimension, dimension, transform, _inverted), transform, dimension, accept)
+            : null;
+    }
+
+    /// <summary>Checks a sampled grid's timing patterns and hands it to <paramref name="accept"/> with its corners.</summary>
+    private static BbDetectorResult? TryGrid(BbBitMatrix? bits, BbPerspectiveTransform transform, int dimension, Func<BbDetectorResult, bool> accept)
+    {
         if (bits is null)
         {
             return null;

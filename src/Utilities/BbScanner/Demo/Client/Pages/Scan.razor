@@ -288,7 +288,8 @@
         BbBarcodeFormat.QrCode, BbBarcodeFormat.DataMatrix, BbBarcodeFormat.Code128, BbBarcodeFormat.Code39,
         BbBarcodeFormat.Ean13, BbBarcodeFormat.Ean8, BbBarcodeFormat.UpcA, BbBarcodeFormat.UpcE, BbBarcodeFormat.Itf,
         BbBarcodeFormat.Pdf417, BbBarcodeFormat.Aztec, BbBarcodeFormat.Code93, BbBarcodeFormat.Codabar,
-        BbBarcodeFormat.DataBar,
+        BbBarcodeFormat.DataBar, BbBarcodeFormat.DataBarLimited, BbBarcodeFormat.DataBarExpanded,
+        BbBarcodeFormat.MaxiCode, BbBarcodeFormat.MicroQrCode,
     ];
 
     private readonly List<BbBarcodeResult> _results = [];
@@ -396,6 +397,10 @@
         BbBarcodeFormat.Aztec => "Aztec",
         BbBarcodeFormat.Code93 => "Code 93",
         BbBarcodeFormat.DataBar => "GS1 DataBar",
+        BbBarcodeFormat.DataBarLimited => "DataBar Limited",
+        BbBarcodeFormat.DataBarExpanded => "DataBar Expanded",
+        BbBarcodeFormat.MaxiCode => "MaxiCode",
+        BbBarcodeFormat.MicroQrCode => "Micro QR",
         _ => format.ToString(),
     };
 }

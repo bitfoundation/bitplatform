@@ -8,7 +8,8 @@
 /// <para>
 /// The structure of a PDF417 symbol is carried by its row indicators rather than by a header: the
 /// first three rows' left indicators between them encode the row count, the security level and
-/// the column count. Everything else follows from those.
+/// the column count. Everything else follows from those - which is what lets a compact (truncated)
+/// symbol, with no right row indicators and its stop pattern cut to one bar, be read the same way.
 /// </para>
 /// <para>
 /// <b>Conformance.</b> This reader is only as correct as the symbol character table it is given,
@@ -135,7 +136,8 @@ public sealed class BbPdf417Reader : IBbMatrixDecoder, IBbLuminanceMatrixDecoder
         Array.Fill(codewords, BbPdf417Detector.Erasure);
         foreach (var row in rows)
         {
-            if (row.RowNumber >= rowCount || row.Codewords.Length != columnCount + 2)
+            // A compact row has the left row indicator only.
+            if (row.RowNumber >= rowCount || row.Codewords.Length != columnCount + (row.Compact ? 1 : 2))
             {
                 continue;
             }
@@ -197,7 +199,8 @@ public sealed class BbPdf417Reader : IBbMatrixDecoder, IBbLuminanceMatrixDecoder
     /// three, and the left and right indicators of a row carry different thirds. Reading both
     /// sides of every row gives each value many times over, and every reading votes: a single
     /// indicator misread as another valid codeword is outvoted by the rest instead of deciding
-    /// the symbol's shape. An indicator the detector could not read is skipped.
+    /// the symbol's shape. An indicator the detector could not read is skipped, and a compact
+    /// symbol's rows have no right one.
     /// </remarks>
     private static bool TryReadStructure(
         IReadOnlyList<BbPdf417Detector.SymbolRow> rows, out int rowCount, out int columnCount, out int errorCorrectionLevel)
@@ -223,7 +226,7 @@ public sealed class BbPdf417Reader : IBbMatrixDecoder, IBbLuminanceMatrixDecoder
                 votes[(phase * 30) + (left % 30)]++;
             }
 
-            if (right != BbPdf417Detector.Erasure)
+            if (right != BbPdf417Detector.Erasure && !row.Compact)
             {
                 votes[(((phase + 2) % 3) * 30) + (right % 30)]++;
             }

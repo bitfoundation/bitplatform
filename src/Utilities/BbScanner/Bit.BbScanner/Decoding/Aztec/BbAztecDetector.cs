@@ -290,13 +290,23 @@ internal sealed class BbAztecDetector
         var (full, compact) = CastRays(image, candidate);
 
         // A full range bullseye also passes as a compact one, so it is tried first when the rays say it may be one;
-        // a compact symbol only passes the full range test by accident, which its mode message then refuses.
-        if (full >= RayCount * 0.7f && TryRead(image, candidate, compact: false) is { } fullRange)
+        // a compact symbol only passes the full range test by accident, which its mode message then refuses. Each is
+        // read as printed and then, failing that, as its mirror image: a symbol printed on the back of a transparent
+        // label, or seen through one, whose orientation modules then match no turn of the upright pattern.
+        foreach (var mirrored in (ReadOnlySpan<bool>)[false, true])
         {
-            return fullRange;
+            if (full >= RayCount * 0.7f && TryRead(image, candidate, compact: false, mirrored) is { } fullRange)
+            {
+                return fullRange;
+            }
+
+            if (compact >= RayCount * 0.6f && TryRead(image, candidate, compact: true, mirrored) is { } small)
+            {
+                return small;
+            }
         }
 
-        return compact >= RayCount * 0.6f ? TryRead(image, candidate, compact: true) : null;
+        return null;
     }
 
     /// <summary>
@@ -369,7 +379,7 @@ internal sealed class BbAztecDetector
         return true;
     }
 
-    private BbSymbolDecodeResult? TryRead(BbBitMatrix image, Candidate candidate, bool compact)
+    private BbSymbolDecodeResult? TryRead(BbBitMatrix image, Candidate candidate, bool compact, bool mirrored)
     {
         // The middle of the outermost light ring, which no data module touches: the third on a full range symbol, the
         // second on a compact one. A middle, not an edge, because binarisation that fattens dark modules moves the
@@ -380,6 +390,13 @@ internal sealed class BbAztecDetector
         if (!FitSquare(candidate, edge, square))
         {
             return null;
+        }
+
+        // The corners in the opposite order are the mirror image's: every fit and sample below then reads the symbol
+        // the right way round, and only the corners reported need putting back in the image's own order.
+        if (mirrored)
+        {
+            square.Reverse();
         }
 
         // Affine, not projective: four corners a few modules apart carry noise that a projective fit would read as
@@ -403,7 +420,7 @@ internal sealed class BbAztecDetector
 
         if (!BbAztecDecoder.TryReadModeMessage(upright, compact, out var layers, out var dataCodewords, out var modeErrors))
         {
-            return null;
+            return compact ? TryReadRune(image, affine, upright, turns, mirrored) : null;
         }
 
         var size = BbAztecDecoder.Size(compact, layers);
@@ -411,7 +428,7 @@ internal sealed class BbAztecDetector
         var gridFitted = false;
         if (!compact && size / 2 >= 16 && RefineWithGrid(image, affine, square, half, size) is { } refined)
         {
-            if (TrySample(image, refined, compact, layers, dataCodewords, modeErrors, turns, size) is { } gridded)
+            if (TrySample(image, refined, compact, layers, dataCodewords, modeErrors, turns, size, mirrored) is { } gridded)
             {
                 return gridded;
             }
@@ -419,7 +436,7 @@ internal sealed class BbAztecDetector
             best = refined;
             gridFitted = true;
         }
-        else if (TrySample(image, affine, compact, layers, dataCodewords, modeErrors, turns, size) is { } flat)
+        else if (TrySample(image, affine, compact, layers, dataCodewords, modeErrors, turns, size, mirrored) is { } flat)
         {
             return flat;
         }
@@ -427,12 +444,12 @@ internal sealed class BbAztecDetector
         // Seen at an angle, a symbol without enough reference grid to fit its perspective from needs it from
         // somewhere else, and its outline is the one other thing whose geometry is known.
         if (RefineWithOutline(image, best, square, half, size) is { } outlined &&
-            TrySample(image, outlined, compact, layers, dataCodewords, modeErrors, turns, size) is { } perspective)
+            TrySample(image, outlined, compact, layers, dataCodewords, modeErrors, turns, size, mirrored) is { } perspective)
         {
             return perspective;
         }
 
-        return gridFitted ? TrySample(image, affine, compact, layers, dataCodewords, modeErrors, turns, size) : null;
+        return gridFitted ? TrySample(image, affine, compact, layers, dataCodewords, modeErrors, turns, size, mirrored) : null;
     }
 
     /// <summary>
@@ -632,8 +649,66 @@ internal sealed class BbAztecDetector
     private static float Distance(BbScanPoint a, BbScanPoint b) =>
         MathF.Sqrt(((a.X - b.X) * (a.X - b.X)) + ((a.Y - b.Y) * (a.Y - b.Y)));
 
+    /// <summary>
+    /// Reads the compact core as an Aztec Rune. A rune has no data layers, so the two rings just outside the core are
+    /// its quiet zone, where a compact symbol has its first layer of data: they have to be light, which keeps a damaged
+    /// compact mode message from passing as a rune.
+    /// </summary>
+    private static BbSymbolDecodeResult? TryReadRune(BbBitMatrix image, Projection projection, ReadOnlySpan<int> upright, int turns, bool mirrored)
+    {
+        if (!BbAztecDecoder.TryReadRune(upright, out var value, out var errors))
+        {
+            return null;
+        }
+
+        var dark = 0;
+        var total = 0;
+        for (var ring = 6; ring <= 7; ring++)
+        {
+            for (var i = -ring; i < ring; i++)
+            {
+                foreach (var (u, v) in (ReadOnlySpan<(int, int)>)[(i, -ring), (ring, i), (-i, ring), (-ring, -i)])
+                {
+                    total++;
+                    if (projection.IsDark(image, u, v))
+                    {
+                        dark++;
+                    }
+                }
+            }
+        }
+
+        if (dark * 10 > total)
+        {
+            return null;
+        }
+
+        var payload = new BbDecoderResult([(byte)value], value.ToString(System.Globalization.CultureInfo.InvariantCulture))
+        {
+            SymbolVersion = "Rune",
+            ErrorsCorrected = errors,
+        };
+
+        return new BbSymbolDecodeResult(payload, BbBarcodeFormat.Aztec, Corners(projection, 11, turns, mirrored));
+    }
+
+    /// <summary>
+    /// The symbol's corners in the image, clockwise from its own top left - which, for a symbol read mirrored, are the
+    /// projection's in the other direction.
+    /// </summary>
+    private static BbScanPoint[] Corners(Projection projection, int size, int turns, bool mirrored)
+    {
+        var halfSize = size / 2f;
+        var corners = new BbScanPoint[4];
+        corners[0] = projection.Map(Turn(-halfSize, -halfSize, turns));
+        corners[1] = projection.Map(Turn(halfSize, -halfSize, turns));
+        corners[2] = projection.Map(Turn(halfSize, halfSize, turns));
+        corners[3] = projection.Map(Turn(-halfSize, halfSize, turns));
+        return mirrored ? [corners[0], corners[3], corners[2], corners[1]] : corners;
+    }
+
     private static BbSymbolDecodeResult? TrySample(
-        BbBitMatrix image, Projection projection, bool compact, int layers, int dataCodewords, int modeErrors, int turns, int size)
+        BbBitMatrix image, Projection projection, bool compact, int layers, int dataCodewords, int modeErrors, int turns, int size, bool mirrored)
     {
         var halfSize = size / 2f;
         var corners = new BbScanPoint[4];
@@ -652,7 +727,7 @@ internal sealed class BbAztecDetector
             return null;
         }
 
-        return new BbSymbolDecodeResult(payload, BbBarcodeFormat.Aztec, corners);
+        return new BbSymbolDecodeResult(payload, BbBarcodeFormat.Aztec, mirrored ? [corners[0], corners[3], corners[2], corners[1]] : corners);
     }
 
     /// <summary>

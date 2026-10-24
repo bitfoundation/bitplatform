@@ -452,4 +452,44 @@ public class Pdf417DecoderTests
         Assert.IsNotNull(upright, "The stripes were never resampled, so this test no longer tests.");
         Assert.IsLessThanOrEqualTo(Math.Max(640 * 480 * 3 / 2, 512 * 1024), upright.Width * upright.Height);
     }
+    [TestMethod]
+    [DataRow(0.15)]
+    [DataRow(0.25)]
+    [DataRow(0.35)]
+    public void TwoSymbolsSideBySideAndOffsetAreBothRead(double offset)
+    {
+        // A line along a row of the left symbol runs on into the right one's stop pattern; paired with that, the quad
+        // came out sheared and neither symbol read. A stop spans the same rows as its own start.
+        using var left = SyntheticImage.FromMatrix(Pdf417Encoder.Encode("LEFT SYMBOL 0001", columns: 3), 2);
+        using var right = SyntheticImage.FromMatrix(Pdf417Encoder.Encode("RIGHT SYMBOL 0002", columns: 3), 2);
+        var shift = (int)(left.Height * offset);
+        using var sheet = BbLuminanceBuffer.Rent(left.Width + right.Width + 40, Math.Max(left.Height, right.Height) + shift + 40);
+        sheet.Pixels.Fill(255);
+        ImageTransforms.Paste(left, sheet, 10, 10);
+        ImageTransforms.Paste(right, sheet, left.Width + 30, 10 + shift);
+        using var frame = ImageTransforms.Frame(sheet, Math.Max(640, sheet.Width), Math.Max(480, sheet.Height));
+
+        using var decoder = new BbBarcodeDecoder(new BbScannerOptions { Formats = BbBarcodeFormat.Pdf417, DuplicateSuppressionWindow = TimeSpan.Zero });
+        var values = decoder.DecodeAll(frame.View, maxSymbols: 2, suppressDuplicates: false).Select(r => r.Text).Order().ToList();
+
+        CollectionAssert.AreEqual(new[] { "LEFT SYMBOL 0001", "RIGHT SYMBOL 0002" }, values);
+    }
+    [TestMethod]
+    public void ByteCompactionRoundTripsEveryLength()
+    {
+        // Under latch 901 the last one to five bytes are a codeword each, and five of them look just like a packed
+        // group of six: read as one, a text eleven or seventeen bytes long came back with rubbish for its last five.
+        var failures = new List<string>();
+        for (var length = 1; length <= 25; length++)
+        {
+            var content = string.Concat(Enumerable.Range(0, length).Select(i => "abcdefghij0123456789"[i % 20]));
+            using var matrix = Pdf417Encoder.Encode(content);
+            if (new BbPdf417Reader().Decode(matrix, BbMatrixDecodeOptions.Live)?.Payload.Text is var text && text != content)
+            {
+                failures.Add($"{length}: {text}");
+            }
+        }
+
+        Assert.IsEmpty(failures, string.Join(" | ", failures));
+    }
 }

@@ -36,6 +36,17 @@ public sealed class BbDataMatrixDetector
 
     private BbBitMatrix _image;
     private readonly BbDarkRegionFinder _regionFinder;
+
+    /// <summary>
+    /// The luminance plane the image was binarised from, when the caller has one, and whether the symbol sought is light
+    /// on dark; see <see cref="UseLuminance"/>.
+    /// </summary>
+    private BbLuminanceView _luminance;
+    private bool _hasLuminance;
+    private bool _inverted;
+
+    /// <summary>The module size, in pixels, below which a grid the binarised image does not decode is sampled from luminance.</summary>
+    private const float MaxLuminanceModule = 3.5f;
     private readonly List<BbScanPoint> _samples;
     private readonly List<BbScanPoint> _hull;
     private readonly List<BbScanPoint> _edgeSamples;
@@ -68,6 +79,22 @@ public sealed class BbDataMatrixDetector
     {
         ArgumentNullException.ThrowIfNull(image);
         _image = image;
+    }
+
+    /// <summary>
+    /// Lets the next detection sample a grid the binarised image does not decode from the luminance plane it was made
+    /// from, when the symbol's modules are small enough for binarisation to have lost some; see
+    /// <see cref="BbGridSampler.SampleLuminance"/>. <see cref="ForgetLuminance"/> lets go of it.
+    /// </summary>
+    internal void UseLuminance(in BbLuminanceView luminance, bool inverted)
+    {
+        (_luminance, _hasLuminance, _inverted) = (luminance, true, inverted);
+    }
+
+    /// <summary>Lets go of the luminance plane, so the detector holds no reference to the frame between frames.</summary>
+    internal void ForgetLuminance()
+    {
+        (_luminance, _hasLuminance, _inverted) = (default, false, false);
     }
 
     /// <summary>Detects and samples the first symbol found.</summary>
@@ -318,13 +345,30 @@ public sealed class BbDataMatrixDetector
                 bottomRight.X, bottomRight.Y,
                 bottomLeft.X, bottomLeft.Y);
 
-            var bits = BbGridSampler.Sample(_image, columns, rows, transform);
-            if (bits is null)
+            if (TryGrid(BbGridSampler.Sample(_image, columns, rows, transform)) is { } result)
             {
-                continue;
+                return result;
             }
 
-            // Reported clockwise from the symbol's own top-left, the order every matrix symbology uses.
+            // At two or three pixels a module a turned symbol's binarised image has lost modules its luminance still
+            // tells apart, so a grid that did not decode is sampled again from that.
+            if (_hasLuminance && Math.Min(pitchAcross, pitchDown) < MaxLuminanceModule &&
+                TryGrid(BbGridSampler.SampleLuminance(_luminance, columns, rows, transform, _inverted)) is { } fromLuminance)
+            {
+                return fromLuminance;
+            }
+        }
+
+        return null;
+
+        // Reported clockwise from the symbol's own top-left, the order every matrix symbology uses.
+        BbDetectorResult? TryGrid(BbBitMatrix? bits)
+        {
+            if (bits is null)
+            {
+                return null;
+            }
+
             var result = new BbDetectorResult(bits, [topLeft, topRight, bottomRight, bottomLeft]);
             if (accept(result))
             {
@@ -332,9 +376,8 @@ public sealed class BbDataMatrixDetector
             }
 
             result.Dispose();
+            return null;
         }
-
-        return null;
     }
 
     /// <summary>The nine sizes up to two modules away from a measurement in either dimension.</summary>

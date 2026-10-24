@@ -139,6 +139,11 @@ public sealed class BbScannerTexts
         BbBarcodeFormat.UpcE => "UPC-E",
         BbBarcodeFormat.Itf => "ITF",
         BbBarcodeFormat.DataBar => "GS1 DataBar",
+        BbBarcodeFormat.DataBarLimited => "GS1 DataBar Limited",
+        BbBarcodeFormat.DataBarExpanded => "GS1 DataBar Expanded",
+        BbBarcodeFormat.MaxiCode => "MaxiCode",
+        BbBarcodeFormat.MicroQrCode => "Micro QR",
+        BbBarcodeFormat.MicroPdf417 => "MicroPDF417",
         _ => format.ToString(),
     };
 }

@@ -25,6 +25,8 @@ public static class Verification
             FrameFactory.Linear("Code 128", BbBarcodeFormat.Code128, LinearEncoders.Code128("BARCODE-SCANNER-128"), "BARCODE-SCANNER-128"),
             FrameFactory.Linear("EAN-13", BbBarcodeFormat.Ean13, LinearEncoders.Ean13("4006381333931"), "4006381333931"),
             FrameFactory.Linear("GS1 DataBar", BbBarcodeFormat.DataBar, LinearEncoders.DataBar("09521234543213"), "0109521234543213"),
+            FrameFactory.Linear(
+                "GS1 DataBar Expanded", BbBarcodeFormat.DataBarExpanded, LinearEncoders.DataBarExpanded("010952123454321310ABC123"), "010952123454321310ABC123"),
             FrameFactory.Empty(),
         };
 

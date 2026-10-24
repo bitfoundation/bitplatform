@@ -560,6 +560,317 @@ public static class LinearEncoders
         return SyntheticImage.ExpandWidths(System.Runtime.InteropServices.CollectionsMarshal.AsSpan(widths));
     }
 
+    /// <summary>
+    /// Encodes GS1 DataBar Limited: a GTIN-14 that starts with 0 or 1, with or without its check digit, which the
+    /// symbol does not carry. The five modules of light the right guard ends with are the quiet zone's to give.
+    /// </summary>
+    /// <param name="gtin">Thirteen or fourteen digits, the first 0 or 1.</param>
+    public static bool[] DataBarLimited(string gtin)
+    {
+        ArgumentNullException.ThrowIfNull(gtin);
+        if (gtin.Length is not (13 or 14) || !gtin.All(char.IsAsciiDigit) || gtin[0] > '1')
+        {
+            throw new ArgumentException("GS1 DataBar Limited carries a GTIN-14 that starts with 0 or 1.", nameof(gtin));
+        }
+
+        var value = long.Parse(gtin[..13], System.Globalization.CultureInfo.InvariantCulture);
+        var left = LimitedCharacter((int)(value / 2013571));
+        var right = LimitedCharacter((int)(value % 2013571));
+
+        int[] weights =
+        [
+            1, 3, 9, 27, 81, 65, 17, 51, 64, 14, 42, 37, 22, 66,
+            20, 60, 2, 6, 18, 54, 73, 41, 34, 13, 39, 28, 84, 74,
+        ];
+        int[] sequence =
+        [
+            .. Enumerable.Range(0, 44), 45, 52, 57, 63, 64, 65, 66, 73, 74, 75, 76, 77, 78, 79, 82,
+            126, 127, 128, 129, 130, 132, 141, 142, 143, 144, 145, 146, 210, 211, 212, 213, 214, 215, 216, 217, 220,
+            316, 317, 318, 319, 320, 322, 323, 326, 337,
+        ];
+
+        var checksum = 0;
+        for (var i = 0; i < 14; i++)
+        {
+            checksum += (left[i] * weights[i]) + (right[i] * weights[14 + i]);
+        }
+
+        var arrangement = sequence[checksum % 89];
+        var spaces = RssWidths(arrangement / 21, 8, 3, noNarrow: false, elements: 6);
+        var bars = RssWidths(arrangement % 21, 8, 3, noNarrow: false, elements: 6);
+
+        // Bar first: the left guard's bar (its module of light is the quiet zone's), the left character, the check
+        // character - six spaces and bars and a single module of each - the right character, and the right guard.
+        var widths = new List<int> { 1 };
+        widths.AddRange(left);
+        for (var i = 0; i < 6; i++)
+        {
+            widths.AddRange([spaces[i], bars[i]]);
+        }
+
+        widths.AddRange([1, 1]);
+        widths.AddRange(right);
+        widths.AddRange([1, 1]);
+        return SyntheticImage.ExpandWidths(System.Runtime.InteropServices.CollectionsMarshal.AsSpan(widths));
+    }
+
+    private static int[] LimitedCharacter(int value)
+    {
+        // Per group: the largest value, the first, odd and even modules, widest odd and even, odd and even arrangements.
+        int[][] groups =
+        [
+            [183063, 0, 17, 9, 6, 3, 6538, 28], [820063, 183064, 13, 13, 5, 4, 875, 728], [1000775, 820064, 9, 17, 3, 6, 28, 6454],
+            [1491020, 1000776, 15, 11, 5, 4, 2415, 203], [1979844, 1491021, 11, 15, 4, 5, 203, 2408],
+            [1996938, 1979845, 19, 7, 8, 1, 17094, 1], [2013570, 1996939, 7, 19, 1, 8, 1, 16632],
+        ];
+        var group = groups.First(g => value <= g[0]);
+        var offset = value - group[1];
+        var odd = RssWidths(offset / group[7], group[2], group[4], noNarrow: false, elements: 7);
+        var even = RssWidths(offset % group[7], group[3], group[5], noNarrow: true, elements: 7);
+
+        var widths = new int[14];
+        for (var i = 0; i < 7; i++)
+        {
+            (widths[2 * i], widths[(2 * i) + 1]) = (odd[i], even[i]);
+        }
+
+        return widths;
+    }
+
+    /// <summary>
+    /// Encodes GS1 DataBar Expanded in a single row: a GS1 element string, with a group separator (<c>\u001d</c>) after
+    /// every variable length element but the last. A string that starts with a GTIN, <c>01</c> and fourteen digits,
+    /// is written in the compressed form for one; the rest goes in the general purpose field, in numeric,
+    /// alphanumeric and ISO/IEC 646 runs. The other compressed forms - a weight, a price or a date with a variable
+    /// measure GTIN - and the stacked layout are not written here: the reference fixtures carry those.
+    /// </summary>
+    /// <param name="elementString">The element string, its check digits included.</param>
+    public static bool[] DataBarExpanded(string elementString)
+    {
+        ArgumentNullException.ThrowIfNull(elementString);
+        const char GroupSeparator = '\u001d';
+        var bits = new List<bool>();
+        void Put(int value, int count)
+        {
+            for (var i = count - 1; i >= 0; i--)
+            {
+                bits.Add(((value >> i) & 1) != 0);
+            }
+        }
+
+        // The linkage flag, clear: there is no composite part. Then the method, and two bits for the length.
+        Put(0, 1);
+        string rest;
+        int lengthBits;
+        if (elementString.Length >= 16 && elementString.StartsWith("01", StringComparison.Ordinal) && elementString[2..16].All(char.IsAsciiDigit))
+        {
+            var gtin = elementString[2..16];
+            if (gtin[13] != EanCheckDigit(gtin[..13]))
+            {
+                throw new ArgumentException($"The GTIN-14 {gtin} has the wrong check digit.", nameof(elementString));
+            }
+
+            Put(1, 1);
+            lengthBits = bits.Count;
+            Put(0, 2);
+            Put(gtin[0] - '0', 4);
+            for (var group = 0; group < 4; group++)
+            {
+                Put(int.Parse(gtin.AsSpan(1 + (3 * group), 3), System.Globalization.CultureInfo.InvariantCulture), 10);
+            }
+
+            rest = elementString[16..];
+        }
+        else
+        {
+            Put(0, 2);
+            lengthBits = bits.Count;
+            Put(0, 2);
+            rest = elementString;
+        }
+
+        // The general purpose field: numeric pairs while they last, alphanumeric for what it holds, ISO/IEC 646 for the
+        // rest; a function 1 in either of the last two goes back to numeric.
+        const string IsoSymbols = "!\"%&'()*+,-./:;<=>?_ ";
+        var mode = 0;
+        for (var i = 0; i < rest.Length;)
+        {
+            var c = rest[i];
+            var digitsAhead = rest.Skip(i).TakeWhile(char.IsAsciiDigit).Count();
+            if (mode == 0)
+            {
+                if (i + 1 < rest.Length && IsNumeric(c) && IsNumeric(rest[i + 1]) && !(c == GroupSeparator && rest[i + 1] == GroupSeparator))
+                {
+                    Put(8 + (11 * Digit(c)) + Digit(rest[i + 1]), 7);
+                    i += 2;
+                }
+                else if (i + 1 == rest.Length && char.IsAsciiDigit(c))
+                {
+                    Put(8 + (11 * Digit(c)) + 10, 7);
+                    i++;
+                }
+                else
+                {
+                    Put(0, 4);
+                    mode = 1;
+                }
+            }
+            else if (c == GroupSeparator)
+            {
+                Put(15, 5);
+                mode = 0;
+                i++;
+            }
+            else if (digitsAhead >= 4)
+            {
+                Put(0, 3);
+                mode = 0;
+            }
+            else if (char.IsAsciiDigit(c))
+            {
+                Put(c - 43, 5);
+                i++;
+            }
+            else if (mode == 1 && (char.IsAsciiLetterUpper(c) || "*,-./".Contains(c, StringComparison.Ordinal)))
+            {
+                Put(char.IsAsciiLetterUpper(c) ? c - 33 : c == '*' ? 58 : c + 15, 6);
+                i++;
+            }
+            else if (mode == 1)
+            {
+                Put(4, 5);
+                mode = 2;
+            }
+            else if (char.IsAsciiLetter(c))
+            {
+                Put(char.IsAsciiLetterUpper(c) ? c - 1 : c - 7, 7);
+                i++;
+            }
+            else if (IsoSymbols.IndexOf(c, StringComparison.Ordinal) is var symbol and >= 0)
+            {
+                Put(232 + symbol, 8);
+                i++;
+            }
+            else
+            {
+                throw new ArgumentException($"GS1 DataBar Expanded cannot hold '{c}'.", nameof(elementString));
+            }
+        }
+
+        // Three data characters at least, and padding to the last bit: a latch out of numeric, then 00100 repeated.
+        var data = Math.Max(3, (bits.Count + 11) / 12);
+        if (data > 21)
+        {
+            throw new ArgumentException("The element string is too long for GS1 DataBar Expanded.", nameof(elementString));
+        }
+
+        var pad = (12 * data) - bits.Count;
+        var padding = (mode == 0 ? "0000" : string.Empty) + string.Concat(Enumerable.Repeat("00100", 6));
+        bits.AddRange(padding.Take(pad).Select(bit => bit == '1'));
+        bits[lengthBits] = ((data + 1) & 1) == 1;
+        bits[lengthBits + 1] = data + 1 > 14;
+
+        var values = new int[data];
+        for (var i = 0; i < bits.Count; i++)
+        {
+            values[i / 12] = (values[i / 12] << 1) | (bits[i] ? 1 : 0);
+        }
+
+        return ExpandedSymbol(values);
+
+        static bool IsNumeric(char c) => char.IsAsciiDigit(c) || c == GroupSeparator;
+
+        static int Digit(char c) => c == GroupSeparator ? 10 : c - '0';
+    }
+
+    private static bool[] ExpandedSymbol(int[] data)
+    {
+        int[][] finders = [[1, 8, 4, 1, 1], [3, 6, 4, 1, 1], [3, 4, 6, 1, 1], [3, 2, 8, 1, 1], [2, 6, 5, 1, 1], [2, 2, 9, 1, 1]];
+        int[][] sequences =
+        [
+            [0, 1], [0, 3, 2], [0, 5, 2, 7], [0, 9, 2, 7, 4], [0, 9, 2, 7, 6, 11], [0, 9, 2, 7, 8, 11, 10],
+            [0, 1, 2, 3, 4, 5, 6, 7], [0, 1, 2, 3, 4, 5, 6, 9, 8], [0, 1, 2, 3, 4, 5, 6, 9, 10, 11], [0, 1, 2, 3, 4, 7, 6, 9, 8, 11, 10],
+        ];
+        int[] weights =
+        [
+            -1, -1, -1, -1, -1, -1, -1, -1, 77, 96, 32, 81, 27, 9, 3, 1,
+            20, 60, 180, 118, 143, 7, 21, 63, 205, 209, 140, 117, 39, 13, 145, 189,
+            193, 157, 49, 147, 19, 57, 171, 91, 132, 44, 85, 169, 197, 136, 186, 62,
+            185, 133, 188, 142, 4, 12, 36, 108, 50, 87, 29, 80, 97, 173, 128, 113,
+            150, 28, 84, 41, 123, 158, 52, 156, 166, 196, 206, 139, 187, 203, 138, 46,
+            76, 17, 51, 153, 37, 111, 122, 155, 146, 119, 110, 107, 106, 176, 129, 43,
+            16, 48, 144, 10, 30, 90, 59, 177, 164, 125, 112, 178, 200, 137, 116, 109,
+            70, 210, 208, 202, 184, 130, 179, 115, 190, 204, 68, 93, 31, 151, 191, 134,
+            148, 22, 66, 198, 172, 94, 71, 2, 40, 154, 192, 64, 162, 54, 18, 6,
+            120, 149, 25, 75, 14, 42, 126, 167, 175, 199, 207, 69, 23, 78, 26, 79,
+            103, 98, 83, 38, 114, 131, 182, 124, 159, 53, 88, 170, 127, 183, 61, 161,
+            55, 165, 73, 8, 24, 72, 5, 15, 89, 100, 174, 58, 160, 194, 135, 45,
+        ];
+
+        // The characters as drawn: a left one odd element first, a right one mirrored. The first pair's left character is
+        // the check character, which carries the count of characters and the weighted sum of every other one's widths.
+        var characters = data.Length + 1;
+        var sequence = sequences[((characters + 1) / 2) - 2];
+        var drawn = new int[characters][];
+        var checksum = 0;
+        for (var place = 1; place < characters; place++)
+        {
+            drawn[place] = ExpandedCharacter(data[place - 1], right: (place & 1) == 1);
+            var offset = (sequence[place / 2] * 16) + ((place & 1) == 1 ? 8 : 0);
+            for (var i = 0; i < 8; i++)
+            {
+                checksum += drawn[place][i] * weights[offset + i];
+            }
+        }
+
+        drawn[0] = ExpandedCharacter((211 * (data.Length - 3)) + (checksum % 211), right: false);
+
+        // Bar first: the left guard's bar (its module of light is the quiet zone's), each pair's left character, finder
+        // pattern - the second way round mirrored - and right character, and the right guard.
+        var widths = new List<int> { 1 };
+        for (var place = 0; place < characters; place++)
+        {
+            widths.AddRange(drawn[place]);
+            if ((place & 1) == 0)
+            {
+                var finder = sequence[place / 2];
+                widths.AddRange((finder & 1) == 0 ? finders[finder / 2] : finders[finder / 2].Reverse());
+            }
+        }
+
+        widths.AddRange([1, 1]);
+        return SyntheticImage.ExpandWidths(System.Runtime.InteropServices.CollectionsMarshal.AsSpan(widths));
+    }
+
+    private static int[] ExpandedCharacter(int value, bool right)
+    {
+        // Per group: the largest value, the first, odd and even modules, widest odd and even, odd and even arrangements.
+        int[][] groups =
+        [
+            [347, 0, 12, 5, 7, 2, 87, 4], [1387, 348, 10, 7, 5, 4, 52, 20], [2947, 1388, 8, 9, 4, 5, 30, 52],
+            [3987, 2948, 6, 11, 3, 6, 10, 104], [4191, 3988, 4, 13, 1, 8, 1, 204],
+        ];
+        var group = groups.First(g => value <= g[0]);
+        var offset = value - group[1];
+        var odd = RssWidths(offset / group[7], group[2], group[4], noNarrow: true);
+        var even = RssWidths(offset % group[7], group[3], group[5], noNarrow: false);
+
+        var widths = new int[8];
+        for (var i = 0; i < 4; i++)
+        {
+            if (right)
+            {
+                (widths[7 - (2 * i)], widths[6 - (2 * i)]) = (odd[i], even[i]);
+            }
+            else
+            {
+                (widths[2 * i], widths[(2 * i) + 1]) = (odd[i], even[i]);
+            }
+        }
+
+        return widths;
+    }
+
     private static int[] DataBarCharacter(int value, bool outside, bool oddFirst)
     {
         // Per group: the largest value, the first, odd and even modules, widest odd and even, odd and even arrangements.

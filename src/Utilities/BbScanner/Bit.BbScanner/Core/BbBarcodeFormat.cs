@@ -20,7 +20,7 @@ public enum BbBarcodeFormat
     /// <summary>Data Matrix ECC 200 (ISO/IEC 16022).</summary>
     DataMatrix = 1 << 1,
 
-    /// <summary>PDF417 (ISO/IEC 15438).</summary>
+    /// <summary>PDF417 (ISO/IEC 15438), including compact (truncated) PDF417.</summary>
     Pdf417 = 1 << 2,
 
     /// <summary>Code 128 (ISO/IEC 15417), including GS1-128.</summary>
@@ -56,16 +56,46 @@ public enum BbBarcodeFormat
     Aztec = 1 << 12,
 
     /// <summary>
-    /// GS1 DataBar Omnidirectional and Truncated (ISO/IEC 24724): a GTIN-14 on loose produce and small retail items.
-    /// The stacked forms are not read.
+    /// GS1 DataBar Omnidirectional and Truncated (ISO/IEC 24724), and their two-row forms Stacked Omnidirectional and
+    /// Stacked: a GTIN-14 on loose produce and small retail items.
     /// </summary>
     DataBar = 1 << 13,
 
+    /// <summary>
+    /// GS1 DataBar Limited (ISO/IEC 24724): a GTIN-14 starting with 0 or 1 in a symbol small enough for pharmaceuticals
+    /// and cosmetics.
+    /// </summary>
+    DataBarLimited = 1 << 14,
+
+    /// <summary>
+    /// GS1 DataBar Expanded and Expanded Stacked (ISO/IEC 24724): any GS1 element string - a GTIN with a weight, a
+    /// price, a batch or a best before date - on variable measure fresh foods and coupons.
+    /// </summary>
+    DataBarExpanded = 1 << 15,
+
+    /// <summary>
+    /// MaxiCode (ISO/IEC 16023): the fixed size hexagonal symbol round a bullseye on parcel labels, modes 2 to 5 - the
+    /// structured carrier message, standard and enhanced error correction.
+    /// </summary>
+    MaxiCode = 1 << 16,
+
+    /// <summary>
+    /// Micro QR (ISO/IEC 18004), M1 to M4: QR Code's small sibling with one finder pattern, 11 to 17 modules square, on
+    /// parts and components too small for a QR symbol.
+    /// </summary>
+    MicroQrCode = 1 << 17,
+
+    /// <summary>
+    /// MicroPDF417 (ISO/IEC 24728): one to four columns of PDF417 codewords between row address patterns, with no start
+    /// or stop pattern, on small items and in GS1 composite symbols.
+    /// </summary>
+    MicroPdf417 = 1 << 18,
+
     /// <summary>All linear (one dimensional) symbologies.</summary>
-    AllLinear = Code128 | Code39 | Ean13 | Ean8 | UpcA | UpcE | Itf | Codabar | Code93 | DataBar,
+    AllLinear = Code128 | Code39 | Ean13 | Ean8 | UpcA | UpcE | Itf | Codabar | Code93 | DataBar | DataBarLimited | DataBarExpanded,
 
     /// <summary>All matrix (two dimensional) symbologies.</summary>
-    AllMatrix = QrCode | DataMatrix | Pdf417 | Aztec,
+    AllMatrix = QrCode | DataMatrix | Pdf417 | Aztec | MaxiCode | MicroQrCode | MicroPdf417,
 
     /// <summary>Every supported symbology.</summary>
     All = AllLinear | AllMatrix,

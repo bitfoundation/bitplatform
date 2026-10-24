@@ -54,6 +54,8 @@ public static class BbScannerFormatCatalog
         [BbBarcodeFormat.DataMatrix] = new("Data Matrix", "BIT-BBSCANNER-DM", _matrix),
         [BbBarcodeFormat.Pdf417] = new("PDF417", "PDF FOUR ONE SEVEN", _matrix),
         [BbBarcodeFormat.Aztec] = new("Aztec Code", "M1BITPLATFORM/AZTEC EABC123 AMSJFKKL 0641", _matrix),
+        [BbBarcodeFormat.MaxiCode] = new("MaxiCode", "MAXICODE DEMO PARCEL 1Z00004951", _matrix),
+        [BbBarcodeFormat.MicroQrCode] = new("Micro QR", "MICRO QR 42", _matrix),
         [BbBarcodeFormat.Code128] = new("Code 128", "BIT-BBSCANNER-128", _linear),
         [BbBarcodeFormat.Code39] = new("Code 39", "CODE39 DEMO",
         [
@@ -77,6 +79,8 @@ public static class BbScannerFormatCatalog
         ]),
         [BbBarcodeFormat.Code93] = new("Code 93", "CODE 93 DEMO", _linear),
         [BbBarcodeFormat.DataBar] = new("GS1 DataBar", "0109521234543213", _linear),
+        [BbBarcodeFormat.DataBarLimited] = new("GS1 DataBar Limited", "0115012345678907", _linear),
+        [BbBarcodeFormat.DataBarExpanded] = new("GS1 DataBar Expanded", "010952123454321310ABC123", _linear),
     };
 
     private static readonly Lazy<BbScannerFormatDto[]> _formats = new(Build);
@@ -98,7 +102,11 @@ public static class BbScannerFormatCatalog
             ?? (key is "qr" ? Formats.FirstOrDefault(f => f.Name == nameof(BbBarcodeFormat.QrCode))
               : key is "dm" or "datamatrix" ? Formats.FirstOrDefault(f => f.Name == nameof(BbBarcodeFormat.DataMatrix))
               : key is "interleaved2of5" or "i2of5" ? Formats.FirstOrDefault(f => f.Name == nameof(BbBarcodeFormat.Itf))
-              : key is "rss14" or "rss" or "databaromnidirectional" ? Formats.FirstOrDefault(f => f.Name == nameof(BbBarcodeFormat.DataBar))
+              : key is "rss14" or "rss" or "databaromnidirectional" or "databartruncated" or "databarstacked" or "databarstackedomnidirectional"
+                  ? Formats.FirstOrDefault(f => f.Name == nameof(BbBarcodeFormat.DataBar))
+              : key is "rsslimited" ? Formats.FirstOrDefault(f => f.Name == nameof(BbBarcodeFormat.DataBarLimited))
+              : key is "microqr" or "mqr" ? Formats.FirstOrDefault(f => f.Name == nameof(BbBarcodeFormat.MicroQrCode))
+              : key is "rssexpanded" or "databarexpandedstacked" ? Formats.FirstOrDefault(f => f.Name == nameof(BbBarcodeFormat.DataBarExpanded))
               : null);
     }
 

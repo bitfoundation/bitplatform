@@ -187,9 +187,9 @@ public class McpToolTests
     [TestMethod]
     public async Task An_unknown_format_lists_the_real_ones()
     {
-        var answer = await McpCall.TextAsync("GetBbScannerFormats", new() { ["format"] = "maxicode" });
+        var answer = await McpCall.TextAsync("GetBbScannerFormats", new() { ["format"] = "dotcode" });
 
-        Assert.Contains("no symbology called 'maxicode'", answer);
+        Assert.Contains("no symbology called 'dotcode'", answer);
         foreach (var format in BbScannerFormatCatalog.Formats) Assert.Contains(format.Name, answer);
     }
 
