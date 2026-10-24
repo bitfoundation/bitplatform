@@ -145,8 +145,9 @@ internal static class ActivityObserver
         attribute ??= fromDisplayName.Attribute;
 
         // Interacting with the BevTools panel is not application activity; recording it would bury the developer's
-        // own events under the clicks they made to look for them.
-        if (componentType is not null && IsBevToolsOwnComponent(componentType))
+        // own events under the clicks they made to look for them. That includes a panel an extension contributed from
+        // its own assembly, and what such a panel renders: the registry knows those types only as BevTools'.
+        if (componentType is not null && (IsBevToolsOwnComponent(componentType) || session.Components.IsBevToolsOnlyType(TypeKey(componentType))))
         {
             activity.SetCustomProperty(EventProperty, IgnoredEvent);
             return null;
@@ -528,7 +529,9 @@ internal static class ActivityObserver
                     }
                 }
 
-                if (type is null)
+                // BevTools' own panels, and the framework components only they render, update their parameters on
+                // every refresh; that is not the application's cost.
+                if (type is null || IsBevToolsOwnComponent(TypeKey(type)) || session.Components.IsBevToolsOnlyType(TypeKey(type)))
                 {
                     return;
                 }

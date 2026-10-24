@@ -81,15 +81,16 @@ builder.Services.AddBitBevToolsServerServices();
                 <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Why did it render?</h3>
                 <p class="bb-card-desc">
                     The component tree with parameters, cascading values, state and services - and for every render its
-                    cause: an event, a parent re-render, a navigation or <code>StateHasChanged</code>.
+                    cause: an event, a parent re-render, a navigation or <code>StateHasChanged</code>. Pick a component
+                    in the page, or watch them flash as they render.
                 </p>
                 <a href="dashboard" class="btn btn-outline">Dashboard →</a>
             </section>
             <section class="bb-card">
                 <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> What did this keystroke cost?</h3>
                 <p class="bb-card-desc">
-                    A profiler per instance and per type, render batches with their diff cost, and the rules that spot
-                    render storms, cascades and renders forced by a parent.
+                    A profiler per instance and per type, each render batch as a cost tree, the rules that spot render
+                    storms, cascades and renders forced by a parent - and a comparison with the recording before your fix.
                 </p>
                 <a href="products" class="btn btn-outline">Products →</a>
             </section>
@@ -102,10 +103,11 @@ builder.Services.AddBitBevToolsServerServices();
                 <a href="counter" class="btn btn-outline">Counter →</a>
             </section>
             <section class="bb-card">
-                <h3 class="bb-card-title"><span class="bb-dot bb-dot-danger"></span> Which request failed?</h3>
+                <h3 class="bb-card-title"><span class="bb-dot bb-dot-danger"></span> Which request failed, and who sent it?</h3>
                 <p class="bb-card-desc">
-                    Every <code>IHttpClientFactory</code> request with status, duration, headers (redacted) and the UI
-                    event that sent it - including the ones a Blazor Server app makes on the server.
+                    Every <code>IHttpClientFactory</code> request with status, duration, headers (redacted), the UI event
+                    and the component that sent it, and per endpoint the p95 - including the requests a Blazor Server app
+                    makes on the server.
                 </p>
                 <a href="orders" class="btn btn-outline">Orders →</a>
             </section>
@@ -116,6 +118,14 @@ builder.Services.AddBitBevToolsServerServices();
                     before/after diffs and the click behind each one.
                 </p>
                 <a href="checkout" class="btn btn-outline">Checkout →</a>
+            </section>
+            <section class="bb-card">
+                <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Which route is this, and who is signed in?</h3>
+                <p class="bb-card-desc">
+                    The page, template, route values and query, the route table, each navigation and what it rendered,
+                    the guards that can stop one, redirect loops - and the user's roles and claims.
+                </p>
+                <a href="routing" class="btn btn-outline">Routing &amp; sign-in →</a>
             </section>
             <section class="bb-card">
                 <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Which JS call is slow?</h3>
@@ -140,6 +150,22 @@ builder.Services.AddBitBevToolsServerServices();
                     the reconnect attempts the browser reports.
                 </p>
                 <a href="circuit" class="btn btn-outline">Circuit →</a>
+            </section>
+            <section class="bb-card">
+                <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Does my form check what it should?</h3>
+                <p class="bb-card-desc">
+                    Every <code>EditForm</code> with what validates it, what shows its messages and each validation's
+                    outcome - and a check of the page for fields and buttons a screen reader cannot name.
+                </p>
+                <a href="problems#problem-17" class="btn btn-outline">Problem 17 →</a>
+            </section>
+            <section class="bb-card">
+                <h3 class="bb-card-title"><span class="bb-dot bb-dot-danger"></span> What keeps a disposed component alive?</h3>
+                <p class="bb-card-desc">
+                    Components the renderer let go that the garbage collector cannot free, with what holds each one: an
+                    event handler on a service, a lambda, a timer, a <code>DotNetObjectReference</code>.
+                </p>
+                <a href="problems#problem-16" class="btn btn-outline">Problem 16 →</a>
             </section>
             <section class="bb-card">
                 <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Is my DI set up right?</h3>
@@ -234,6 +260,7 @@ builder.Services.AddBevToolsStateProvider&lt;CartState&gt;();</pre>
                 </thead>
                 <tbody>
                     <tr><td>Which components exist, with what parameters?</td><td>DOM elements only</td><td>The component tree, parameters, cascading values, state and services</td></tr>
+                    <tr><td>Which component rendered this element?</td><td>The element, not its component</td><td>⌖ Pick it in the page, or select it in the Elements panel with the browser extension</td></tr>
                     <tr><td>Why did this component render?</td><td>Not visible</td><td>A cause per render: event, parent, navigation, <code>StateHasChanged</code></td></tr>
                     <tr><td>HTTP calls of a Blazor Server app</td><td>Not visible - they are made by the server</td><td>Every <code>IHttpClientFactory</code> request with the UI event that sent it</td></tr>
                     <tr><td>JS interop on Blazor Server</td><td>SignalR frames</td><td>Calls per identifier, with duration, result and component</td></tr>
@@ -257,13 +284,13 @@ builder.Services.AddBevToolsStateProvider&lt;CartState&gt;();</pre>
             </section>
             <section class="bb-card">
                 <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Want to practise first?</h3>
-                <p class="bb-card-desc">Twenty real problems are planted in this app, each with the steps from the symptom to its cause.</p>
+                <p class="bb-card-desc">Twenty-four real problems are planted in this app, each with the steps from the symptom to its cause.</p>
                 <a href="problems" class="btn btn-outline">Problems to diagnose →</a>
             </section>
             <section class="bb-card">
                 <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Writing a library?</h3>
-                <p class="bb-card-desc">Contribute panels, state providers, diagnostic rules and commands through <code>IBevToolsExtension</code>.</p>
-                <a href="@($"{SiteInfo.ProjectUrl}#extending")" class="btn btn-outline" target="_blank" rel="noopener noreferrer">Extending BevTools ↗</a>
+                <p class="bb-card-desc">Contribute panels, state providers, diagnostic rules, commands and timeline events through <code>IBevToolsExtension</code> - this site registers one.</p>
+                <a href="extending" class="btn btn-outline">Extending →</a>
             </section>
         </div>
     </section>
@@ -280,7 +307,26 @@ builder.Services.AddBevToolsStateProvider&lt;CartState&gt;();</pre>
                     Only if you ask it to. It is enabled when the host environment is <code>Development</code> unless
                     <code>options.Enabled</code> says otherwise, renders nothing during prerendering, and when disabled
                     registers no activator, handler or logger - a referenced but disabled BevTools measured at about 2 %
-                    in the benchmark, inside its noise. This site turns it on explicitly so that you can try it.
+                    in the benchmark, inside its noise. This site turns it on explicitly so that you can try it. To have
+                    it in production without anyone downloading it until they ask, <code>Bit.BevTools.Loader</code> opens
+                    it on demand - on Blazor Server only for the people an <code>Authorize</code> callback lets in.
+                </p>
+            </details>
+            <details>
+                <summary>Do I have to look at it inside the app?</summary>
+                <p>
+                    No. The companion window (⧉ in the panel header) shows every BevTools runtime of the page in a window
+                    of its own, and opens exported sessions offline; the browser extension adds a <em>Blazor</em> panel to
+                    Chromium and Firefox DevTools. Both read the same data through the same redaction as the panel.
+                </p>
+            </details>
+            <details>
+                <summary>Can CI use what it finds?</summary>
+                <p>
+                    Yes. Export the session after a test run and <code>bevtools check session.json</code> fails the build
+                    on the rules' findings; <code>bevtools compare before.json after.json</code> fails it when a component
+                    renders more often, or clearly longer, than before. The same checks run in a test through
+                    <code>BevSessionCheck</code> and <code>BevProfileComparison</code>.
                 </p>
             </details>
             <details>

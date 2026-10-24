@@ -37,7 +37,10 @@ measured overhead - keep all of them accurate when behaviour changes.
    (`SessionResolver.BeginBevToolsWork`, e.g. asking the `AuthenticationStateProvider`). `PanelInteractionTests.BevTools_own_ui_never_appears_as_application_activity` guards this. Ownership is
    decided by assembly and by namespace: every BevTools component lives directly in `Bit.BevTools` (the server
    package's included), and only there - `Bit.BevTools.Demo.*`, `Bit.BevTools.Tests` or an application's
-   `Bit.BevTools.Anything` is application code. Never match the product namespace as a prefix.
+   `Bit.BevTools.Anything` is application code. Never match the product namespace as a prefix. The one other owner is a
+   panel an extension contributes (`BevToolsPanelDescriptor`), with what it renders: the framework's activities and
+   meters name only a component type, so `ComponentRegistry.IsBevToolsOnlyType` tells their measurements apart
+   (`ExtensibilityTests.An_extension_panel_is_never_recorded_as_application_activity`).
 3. **Never leak secrets.** Redaction happens at capture time (`BevRedactor`: names, `[BevToolsSensitive]`, credential
    shapes, sensitive pairs; browser-side storage and URL redaction), and `BevObjectInspector` never walks configuration
    or key material. Every application value reaches a panel, export, trace or protocol answer through the inspector,

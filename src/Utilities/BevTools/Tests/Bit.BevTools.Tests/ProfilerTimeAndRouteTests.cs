@@ -203,6 +203,43 @@ public class ProfilerTimeAndRouteTests : BunitContext
         var routes = panel.FindAll(".bev-section").Single(s => s.TextContent.Contains("Costliest there", StringComparison.Ordinal));
         Assert.IsGreaterThan(0, routes.QuerySelectorAll("tbody tr").Length);
     }
+
+    /// <summary>
+    /// Renders per page rebuilds at most once a second, and what was captured within that second shows when it is over,
+    /// with nothing else happening. That trailing rebuild once asked the interval again; when its timer fired a
+    /// fraction of a millisecond early, it scheduled itself for that fraction - a Task.Delay(0) that completes at once -
+    /// on the same stack, until a stack overflow ended the process (seen on the demo's Blazor Server host).
+    /// </summary>
+    [TestMethod]
+    public void Renders_per_page_shows_what_changed_within_the_second_once_it_is_over()
+    {
+        Services.AddBitBevToolsServices(o =>
+        {
+            o.Enabled = true;
+            o.Ui.OpenByDefault = true;
+            o.Ui.RefreshIntervalMs = 600_000;
+        });
+        JSInterop.Mode = JSRuntimeMode.Loose;
+        this.UseRenderer("Server");
+        var module = JSInterop.SetupModule("./_content/Bit.BevTools/bit-bevtools.js");
+        module.Setup<BevBrowserSnapshot>("attach", _ => true).SetResult(new BevBrowserSnapshot { Online = true });
+        module.Setup<string?>("loadPrefs", _ => true).SetResult(null);
+        var panel = Render<BevToolsPanel>();
+        var cut = Render<ParentComponent>();
+        panel.FindAll(".bev-tab").First(t => t.TextContent.Contains("Profiler", StringComparison.Ordinal)).Click();
+        panel.FindAll("button").Single(b => b.TextContent == "Show" && b.GetAttribute("aria-expanded") == "false").Click();
+        var before = RendersPerPage(panel);
+
+        cut.InvokeAsync(() => cut.Instance.Increment());
+        panel.Find("button[aria-label='Refresh captured data']").Click();
+
+        panel.WaitForAssertion(() => Assert.AreEqual(before + 2, RendersPerPage(panel), "the parent and its child, a second later"), TimeSpan.FromSeconds(10));
+    }
+
+    private static int RendersPerPage(IRenderedComponent<BevToolsPanel> panel) => panel.FindAll(".bev-section")
+        .Single(s => s.TextContent.Contains("Costliest there", StringComparison.Ordinal))
+        .QuerySelectorAll("tbody tr")
+        .Sum(row => int.Parse(row.QuerySelectorAll("td")[2].TextContent.Trim(), System.Globalization.CultureInfo.InvariantCulture));
 }
 
 public class RoutedShell : ComponentBase

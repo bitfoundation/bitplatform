@@ -43,11 +43,15 @@ const originalSend = FakeSocket.prototype.send;
 
 function eventTarget() {
     const listeners = new Map();
+    // The types listened to in the capture phase: the only way to hear an event that does not bubble from below.
+    const captured = new Set();
     return {
         listeners,
-        addEventListener(type, handler) {
+        captured,
+        addEventListener(type, handler, options) {
             if (!listeners.has(type)) listeners.set(type, []);
             listeners.get(type).push(handler);
+            if (options === true || options?.capture) captured.add(type);
         },
         removeEventListener(type, handler) {
             const list = listeners.get(type) || [];
@@ -187,6 +191,71 @@ describe('browser failures', () => {
         expect(csp.type).toBe('CspViolation');
         expect(csp.message).toContain('script-src');
         expect(csp.message).not.toContain('xyz');
+        hub.detach();
+    });
+});
+
+describe('reconnects', () => {
+    // Blazor's own name, dispatched on the app's reconnect dialog without bubbling. The hub once listened for
+    // "components:reconnect-state-changed", which no Blazor version dispatches, so no reconnect was ever reported.
+    it('hears Blazor\'s reconnect state on the dialog, in the capture phase', async () => {
+        const { doc } = installPage();
+        const hub = await loadHub();
+        const ref = runtime(1);
+        hub.attach(ref, null);
+
+        expect(doc.captured.has('components-reconnect-state-changed')).toBe(true);
+        doc.dispatch('components-reconnect-state-changed', { detail: { state: 'retrying', currentAttempt: 2, secondsToNextAttempt: 5 } });
+
+        expect(ref.reported('OnReconnectState')).toEqual([['OnReconnectState', 'retrying', 2, 5, expect.any(Number)]]);
+        hub.detach();
+    });
+
+    // "show" and "retrying" happen while the connection is down, when a circuit cannot be called: they once never
+    // arrived, so the panel showed only "hide" and counted no reconnect.
+    it('tells a circuit the states of its dropped connection once it is back, in order and with their age', async () => {
+        installPage();
+        const hub = await loadHub();
+        const ref = runtime(1);
+        hub.attach(ref, { platform: 'Server' });
+        const first = new globalThis.window.WebSocket('wss://app.example/_blazor?id=abc');
+        first.send(frame(arr(int(6))));
+        first.close(1006, '');
+
+        globalThis.document.dispatch('components-reconnect-state-changed', { detail: { state: 'show' } });
+        globalThis.document.dispatch('components-reconnect-state-changed', { detail: { state: 'retrying', currentAttempt: 1 } });
+        expect(ref.reported('OnReconnectState')).toEqual([]);
+
+        new globalThis.window.WebSocket('wss://app.example/_blazor?id=abc');
+        await new Promise(r => setTimeout(r, 20));
+        globalThis.document.dispatch('components-reconnect-state-changed', { detail: { state: 'hide' } });
+
+        const states = ref.reported('OnReconnectState');
+        expect(states.map(c => c[1])).toEqual(['show', 'retrying', 'hide']);
+        expect(states[0][4]).toBeGreaterThanOrEqual(states[2][4]);
+        expect(states[0][4]).toBeGreaterThanOrEqual(20);
+        hub.detach();
+    });
+
+    // Found in a real browser: SignalR's close handler (onclose, set when the socket opened) can run before the hub's
+    // listener on a socket that existed before BevTools attached, and Blazor raises "show" from it - while the hub
+    // still counts the socket open. The state itself says the connection is down.
+    it('holds "show" for a circuit even before the hub hears its socket close', async () => {
+        installPage();
+        const hub = await loadHub();
+        const server = runtime(1);
+        const wasm = runtime(2);
+        hub.attach(server, { platform: 'Server' });
+        hub.attach(wasm, { platform: 'WebAssembly' });
+        const socket = new globalThis.window.WebSocket('wss://app.example/_blazor?id=abc');
+        socket.send(frame(arr(int(6))));
+
+        globalThis.document.dispatch('components-reconnect-state-changed', { detail: { state: 'show' } });
+        expect(server.reported('OnReconnectState'), 'not into a connection that is down').toEqual([]);
+        expect(wasm.reported('OnReconnectState').map(c => c[1]), 'a WebAssembly runtime hears it at once').toEqual(['show']);
+
+        globalThis.document.dispatch('components-reconnect-state-changed', { detail: { state: 'hide' } });
+        expect(server.reported('OnReconnectState').map(c => c[1])).toEqual(['show', 'hide']);
         hub.detach();
     });
 });

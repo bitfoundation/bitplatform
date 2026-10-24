@@ -394,9 +394,7 @@
         var since = System.Diagnostics.Stopwatch.GetElapsedTime(_routesBuiltAt);
         if (_routesVersion == -1 || since >= RoutesInterval)
         {
-            _routes = BevRouteProfile.Build(Session);
-            _routesVersion = Session.Version;
-            _routesBuiltAt = System.Diagnostics.Stopwatch.GetTimestamp();
+            BuildRoutes();
         }
         else if (!_routesRebuildPending)
         {
@@ -404,6 +402,13 @@
             _routesRebuildPending = true;
             _ = RebuildRoutesLaterAsync(RoutesInterval - since);
         }
+    }
+
+    private void BuildRoutes()
+    {
+        _routes = BevRouteProfile.Build(Session);
+        _routesVersion = Session.Version;
+        _routesBuiltAt = System.Diagnostics.Stopwatch.GetTimestamp();
     }
 
     private async Task RebuildRoutesLaterAsync(TimeSpan delay)
@@ -414,8 +419,14 @@
             await InvokeAsync(() =>
             {
                 _routesRebuildPending = false;
-                RefreshRoutes();
-                StateHasChanged();
+                // Builds, rather than asking RefreshRoutes again: the timer can fire a fraction of a millisecond before
+                // the stopwatch agrees the second is over, and a rebuild scheduled for that fraction is a Task.Delay(0)
+                // that completes at once - on the dispatcher, on this stack, again and again until the process dies.
+                if (View.ShowRoutes && _routesVersion != Session.Version)
+                {
+                    BuildRoutes();
+                    StateHasChanged();
+                }
             });
         }
         catch (Exception ex) when (ex is ObjectDisposedException or InvalidOperationException)
@@ -584,7 +595,9 @@
 
         _maxTotal = _rows.Count == 0 ? 0 : _rows.Max(r => r.TotalRenderMs);
         _batches = Session.Timeline.Snapshot().Where(e => e.Kind == BevToolsEventKind.RenderBatch).Reverse().Take(25).ToArray();
-        _typeMetrics = Session.TypeMetrics.Values.OrderByDescending(m => m.ParameterUpdateMs + m.EventHandlerMs).Take(30).ToArray();
+        // The framework's metric names a type, never an instance: what a framework component that only BevTools' own UI
+        // renders (Virtualize in the component tree) measured before the registry knew it was BevTools' is not the app's.
+        _typeMetrics = Session.TypeMetrics.Values.Where(m => !Session.Components.IsBevToolsOnlyType(m.TypeName)).OrderByDescending(m => m.ParameterUpdateMs + m.EventHandlerMs).Take(30).ToArray();
         if (View.BatchEventId is { } batchEvent && Session.Timeline.Find(batchEvent) is null)
         {
             // The timeline was cleared (or let the batch go): there is nothing left to show for it.

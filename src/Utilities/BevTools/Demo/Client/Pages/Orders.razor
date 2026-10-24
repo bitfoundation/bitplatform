@@ -8,8 +8,9 @@
     <h1>Orders</h1>
     <p class="bb-subtitle">
         Network problems to diagnose: a slow endpoint, a flaky endpoint that fails two thirds of the time, a burst of
-        identical requests and a 404. Every request goes through <code>IHttpClientFactory</code>, so BevTools sees it
-        with no change to the code that sends it.
+        identical requests, a 404, a load you can cancel and a table whose rows each load their own details. Every
+        request goes through <code>IHttpClientFactory</code>, so BevTools sees it with no change to the code that sends
+        it.
     </p>
 </div>
 
@@ -38,7 +39,10 @@
 
         @if (_loading)
         {
-            <p class="bb-muted demo-loading"><span class="bb-spinner" aria-hidden="true"></span> loading…</p>
+            <div class="bb-toolbar">
+                <p class="bb-muted demo-loading"><span class="bb-spinner" aria-hidden="true"></span> loading…</p>
+                <button type="button" class="btn btn-outline" @onclick="CancelLoad">Cancel loading</button>
+            </div>
         }
 
         @if (_orders is not null)
@@ -79,8 +83,25 @@
 <div class="bb-card">
     <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Network: durations, statuses, triggers</h3>
     <p class="bb-card-desc">
-        The <strong>Network</strong> panel lists every request with its method, address, status, duration, headers -
-        sensitive ones redacted, bodies never captured - and the UI event that triggered it.
+        The <strong>Network</strong> panel lists every request with its method, address, status, duration and size,
+        and the UI event that triggered it - <em>onclick → Orders.Flaky</em>, or <em>onclick → Orders.Load (lambda)</em>
+        for a button whose handler is a lambda that calls <code>Load</code>. Select a request for its headers (sensitive
+        ones redacted; bodies are never captured) and the code that sent it. The column headers sort the list, and
+        the filter box narrows it.
+    </p>
+    <ul class="bb-detail-list">
+        <li>Press <em>Load orders (very slow)</em>, then <em>Cancel loading</em>: the request is shown as <em>cancelled</em>, not as a failure, and nothing reaches the Errors panel.</li>
+        <li>Tick <em>each row loads its own details</em> and load the orders. The click rendered the rows, so the Trigger column links all 25 requests to it; select one and <em>Sent from</em> names the code that actually sent it - <em>OrderRow.OnInitializedAsync via ProductApi.GetOrderDetailsAsync</em> - which no trigger can tell you. A request no click caused shows its sender in the Trigger column itself, like the dashboard's <em>from RecentOrders.Reload</em>.</li>
+    </ul>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Network → Endpoints: requests per endpoint</h3>
+    <p class="bb-card-desc">
+        <em>Endpoints</em> groups the same requests by method and path, with the ids in the path as <code>{id}</code>:
+        the 25 calls to <code>GET /api/orders/{id}</code> are one row, with their failures, cancellations, p50, p95 and
+        maximum durations, the bytes received and the component that sent them most. Select an endpoint for its
+        requests.
     </p>
 </div>
 
@@ -88,27 +109,34 @@
     <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Errors and Diagnostics: what went wrong</h3>
     <ul class="bb-detail-list">
         <li><strong>Errors</strong>: the failed flaky calls and the 404, each with the UI event that preceded it.</li>
-        <li><strong>Diagnostics</strong>: slow HTTP (the 4 s load), repeated failures (call the flaky endpoint a few times), duplicate requests (the burst of 8) and one request per item (load the orders with <em>each row loads its own details</em> ticked).</li>
-        <li><strong>Network → Endpoints</strong>: the same requests per endpoint, ids in the path as <code>{id}</code>: 25 calls to <code>GET /api/orders/{id}</code> are one row, with their p50 and p95.</li>
+        <li><strong>Diagnostics</strong>: <em>slow HTTP request</em> and <em>slow event handler</em> (the loads, the 4 s one above all), <em>repeated HTTP failures</em> (call the flaky endpoint a few times), <em>duplicate HTTP requests</em> (the burst of 8 identical ones) and <em>one request per item</em> (load the orders with <em>each row loads its own details</em> ticked).</li>
     </ul>
     <div class="bb-try">
         <a href="problems#problem-4" class="btn btn-outline">Problem 4 →</a>
+        <a href="problems#problem-19" class="btn btn-outline">Problem 19 →</a>
     </div>
 </div>
 
 @code {
     private List<Order>? _orders;
     private bool _loading;
+    private CancellationTokenSource? _load;
     private bool _detailsPerRow;
     private readonly List<string> _log = [];
 
     private async Task Load(int delay = 0)
     {
+        _load?.Cancel();
+        var load = _load = new CancellationTokenSource();
         _loading = true;
         try
         {
-            _orders = await Api.GetOrdersAsync(delay);
+            _orders = await Api.GetOrdersAsync(delay, load.Token);
             Log($"loaded {_orders.Count} orders");
+        }
+        catch (OperationCanceledException) when (load.IsCancellationRequested)
+        {
+            Log("load cancelled");
         }
         catch (Exception ex)
         {
@@ -116,9 +144,18 @@
         }
         finally
         {
-            _loading = false;
+            // A newer load may have replaced this one; it clears the spinner itself.
+            if (_load == load)
+            {
+                _loading = false;
+                _load = null;
+            }
+
+            load.Dispose();
         }
     }
+
+    private void CancelLoad() => _load?.Cancel();
 
     private async Task Flaky()
     {

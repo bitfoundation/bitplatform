@@ -1,4 +1,5 @@
 ﻿using Bit.BevTools;
+using Bit.BevTools.Demo.Client.Extension;
 using Bit.BevTools.Demo.Client.Models;
 using Bit.BevTools.Demo.Client.Services;
 using Bit.BevTools.Demo.Server.Components;
@@ -26,6 +27,8 @@ builder.Services.AddBitBevToolsServerServices(o =>
 {
     o.Enabled = true;
     o.ValueAccess = BevValueAccess.Full;
+    // The same extension the client registers, so its panel, rule and commands are there on either runtime.
+    o.Extensions.Add(new DemoBevToolsExtension());
 });
 
 builder.Services.Configure<ForwardedHeadersOptions>(options =>
@@ -48,6 +51,15 @@ else
     app.UseExceptionHandler("/Error", createScopeForErrors: true);
     app.UseHsts();
 }
+
+// A Content Security Policy that forbids frames: the site embeds none, and the Errors page's "Embed a frame the CSP
+// forbids" gives BevTools a real violation to report. It carries Blazor's own frame-ancestors directive too (switched off
+// below), so the response has one policy header: a browser that keeps only one of several would otherwise drop a part.
+app.Use((context, next) =>
+{
+    context.Response.Headers.ContentSecurityPolicy = "frame-src 'none'; frame-ancestors 'self'";
+    return next(context);
+});
 
 app.UseStatusCodePagesWithReExecute("/not-found", createScopeForStatusCodePages: true);
 app.UseForwardedHeaders();
@@ -80,7 +92,7 @@ api.MapGet("/flaky", () => Random.Shared.Next(3) == 0 ? Results.Ok("ok") : Resul
 api.MapGet("/profile", () => new Profile("ada.lovelace", "ada@example.com", "secret-access-token-from-api", "Pro"));
 
 app.MapRazorComponents<App>()
-    .AddInteractiveServerRenderMode()
+    .AddInteractiveServerRenderMode(o => o.ContentSecurityFrameAncestorsPolicy = null)
     .AddInteractiveWebAssemblyRenderMode()
     .AddAdditionalAssemblies(typeof(Bit.BevTools.Demo.Client._Imports).Assembly);
 

@@ -1,4 +1,5 @@
 ﻿using Bit.BevTools;
+using Bit.BevTools.Demo.Client.Extension;
 using Bit.BevTools.Demo.Client.Services;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 
@@ -20,6 +21,8 @@ builder.Services.AddBitBevToolsServices(options =>
 {
     options.Enabled = true;
     options.Ui.OpenByDefault = false;
+    // What a library contributes to BevTools: the Extending page walks through it.
+    options.Extensions.Add(new DemoBevToolsExtension());
 });
 
 await builder.Build().RunAsync();

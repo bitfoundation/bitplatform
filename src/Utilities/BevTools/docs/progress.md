@@ -526,3 +526,56 @@ across an await inside a service is not named (roadmap).
   as after round 10).
 - Browser: every check in Chromium, Firefox and WebKit, Server and WebAssembly (see the rounds above); WebKit's
   accessibility run: 0 findings in the app, 0 in BevTools' own UI.
+
+## Review of the demo
+
+Every demo page was read against what the panels show, and every claim checked in a browser.
+
+**Claims that were wrong.** The product search's requests were called duplicate HTTP requests; they are a burst
+(`http.burst`, different query values). Problem 13 pointed at the route table's `[Authorize]` column, which no demo
+page fills. The Errors page left out its own *Open a missing order* and *Groups*; the Circuit page left out
+`circuit.blocked`, and *Block 5× in a row* times only its first block as an inbound message. The Orders page said no
+click waits on the per-row requests: the click rendered the rows, so they are linked to it, and *Sent from* is what
+names the row. Calls on a JS object read `new module.Tally`; palette commands need `>`.
+
+**What no page showed, now shown.** Picking, outlining and flashing components; *Type & source* and handler links;
+Lifecycle; a batch's cost tree and time axis; renders per page; *Compare…* against a fix the Products page switches on
+(`ProductRow.ShouldRender`); *Sent from*; a cancelled request; route values, a token in a query string, navigation
+guards and sign-in (a new *Routing & sign-in* page); the accessibility check (a planted coupon box on Checkout); a
+resource that fails to load and a CSP violation (the demo's server sends `frame-src 'none'`); a dropped circuit
+connection that comes back (the Circuit page closes the socket from the browser, as a network hiccup would - the
+browser's offline mode leaves an open WebSocket alone, so the page no longer suggests it); .NET 10 `new`/`get`/`set`
+interop; `[BevToolsIgnore]`; the companion window, the browser extension, the exports, the CLI and the page hub (*Share
+& automate*); and an extension of the demo's own - a panel, a state adapter for `FilterState`, a rule over
+`IBevToolsTimeline` events, commands and a value formatter (*Extending*). Getting started gained the loader, the value
+access levels, the header's controls and a table of every tab. Problems 21-24 are new; 15 is back in order.
+
+**Defects the review found in BevTools, fixed with tests.**
+
+- Showing *Renders per page* could end a Blazor Server process with a stack overflow: the trailing rebuild asked the
+  one-second interval again, and when its timer fired a fraction of a millisecond early it scheduled a `Task.Delay(0)`,
+  which completes on the same stack, again and again. It now builds directly.
+- Clicks in an extension's panel were recorded as application UI events, and the profiler's *Lifecycle cost per type*
+  listed BevTools' own panels and the `Virtualize` of its component tree: the framework's activity and meter name only a
+  component type. The registry now remembers the types only BevTools' own UI rendered (`IsBevToolsOnlyType`).
+- About → Capabilities said source locations were inferred from type names, that requests from lifecycle methods have
+  no origin and that component ↔ DOM mapping was not implemented; it had no rows for forms, page accessibility, retained
+  components, navigation guards, error groups, endpoints or comparisons.
+- The badge covered the dismiss button of Blazor's own error bar (`#blazor-error-ui`): it moves above the bar while the
+  bar shows.
+- No reconnect was ever recorded: the hub listened for `components:reconnect-state-changed`, a name no Blazor version
+  dispatches. Blazor's is `components-reconnect-state-changed`, raised on the app's reconnect dialog without bubbling,
+  so the hub listens in the capture phase. Its *show* and *retrying* happen while the connection is down, when a
+  circuit cannot be called - Blazor raises *show* from the socket's close handler, sometimes before the hub hears the
+  close - so the hub holds a Server runtime's states until *hide* and delivers them with their age.
+
+The demo itself: the cart's product names broke letter by letter in its narrow pane (now a wrapping list), and with
+two Content Security Policy headers - the demo's and Blazor's `frame-ancestors` - WebKit kept only the last (now one
+policy).
+
+**Verification.** .NET tests: net10.0 496/496, net8.0 480/480, net9.0 482/482; vitest 65/65. A Playwright check of
+each page's claims - about 110 of them, on a Server circuit and on WebAssembly - passes in Chromium and WebKit (WebKit's
+WebAssembly run on the interop, errors, routing, checkout and extension pages); in Firefox all but a row click lost
+while the request list was still filling, which passes on its own. At phone width no page scrolls sideways, and the
+page's accessibility check finds nothing on any page but the two planted problems on Checkout. Benchmark allocations
+unchanged (23.9, 23.9, 142.0 and 209.1 MB).

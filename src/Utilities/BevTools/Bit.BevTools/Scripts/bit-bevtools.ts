@@ -60,6 +60,8 @@ interface BevTarget extends BevTargetInfo {
     moduleObjectId: number | null;
     jsToDotNetBatch: BevJsCallEntry[];
     flushTimer: ReturnType<typeof setTimeout> | null;
+    /** Reconnect states that arrived while the circuit was down, delivered in order once it is back. */
+    pendingReconnectStates: any[][];
 }
 
 interface BevMessageStat {
@@ -1042,10 +1044,29 @@ function installPageListeners() {
     on(window, "online", () => broadcast("OnBrowserEvent", "online", null));
     on(window, "offline", () => broadcast("OnBrowserEvent", "offline", null));
     on(document, "visibilitychange", () => broadcast("OnBrowserEvent", "visibility", document.visibilityState));
-    on(document, "components:reconnect-state-changed", (e: CustomEvent) => {
+    // Blazor dispatches it on the app's own reconnect dialog (#components-reconnect-modal, in the .NET 10 templates)
+    // and it does not bubble: only a capture listener above the dialog hears it. Without such a dialog Blazor shows its
+    // default one and dispatches nothing; the circuit's own Connection down/up events still come from the server.
+    on(document, "components-reconnect-state-changed", (e: CustomEvent) => {
         const d = e.detail || {};
-        broadcast("OnReconnectState", d.state || "unknown", d.currentAttempt || 0, d.secondsToNextAttempt || 0);
-    });
+        const state = [d.state || "unknown", d.currentAttempt || 0, d.secondsToNextAttempt || 0, Date.now()];
+        // The last argument is how long ago it happened: a circuit's server need not share the browser's clock.
+        const send = (t: BevTarget, s: any[]) => invoke(t, "OnReconnectState", s[0], s[1], s[2], Date.now() - s[3]);
+        // Every state but "hide" means the connection is down. Blazor raises "show" from the socket's own close handler,
+        // which can run before the hub hears that close, so the state itself is the evidence, not the hub's sockets.
+        const connectionDown = state[0] !== "hide";
+        targets.forEach(t => {
+            // While the connection is down a circuit cannot be told, so its states wait for it to come back (then
+            // "hide" arrives), and are told in order with their age.
+            if (t.platform === "Server" && (connectionDown || unreachable(t))) {
+                t.pendingReconnectStates.push(state);
+                if (t.pendingReconnectStates.length > 20) t.pendingReconnectStates.shift();
+                return;
+            }
+            for (const pending of t.pendingReconnectStates.splice(0)) send(t, pending);
+            send(t, state);
+        });
+    }, true);
     on(document, "keydown", (e: KeyboardEvent) => {
         // The panel's tab list moves with the arrow keys (handled by the panel); the page must not scroll as well.
         const element = e.target as Element | null;
@@ -1769,6 +1790,7 @@ export function attach(ref: any, options: BevAttachOptions | null) {
         attachedAt: Date.now(),
         jsToDotNetBatch: [],
         flushTimer: null,
+        pendingReconnectStates: [],
     };
     targets.set(id, target);
 

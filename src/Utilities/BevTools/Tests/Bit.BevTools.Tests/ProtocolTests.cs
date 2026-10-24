@@ -154,6 +154,28 @@ public class ProtocolTests : BunitContext
         Assert.Contains(f => f.Diagnostic.RuleId == "circuit.large-render-batch", Session.Diagnostics.Findings);
     }
 
+    /// <summary>
+    /// The states of a dropped connection reach a circuit only once it is back, so each carries its age: the reconnect
+    /// is counted, and each state is put on the timeline when the browser saw it, by the server's own clock.
+    /// </summary>
+    [TestMethod]
+    public void Reconnect_states_are_counted_and_dated_by_their_age()
+    {
+        var bridge = new BevJsBridge(Session, () => { });
+        var before = DateTimeOffset.UtcNow;
+
+        bridge.OnReconnectState("show", 0, 0, 3000);
+        bridge.OnReconnectState("retrying", 1, 0, 2000);
+        bridge.OnReconnectState("hide", 0, 0, 0);
+
+        Assert.AreEqual(1, Session.Browser.ReconnectCount);
+        Assert.AreEqual("hide", Session.Browser.ReconnectState);
+        var states = Session.Timeline.Snapshot().Where(e => e.Category == "reconnect").ToList();
+        CollectionAssert.AreEqual(new[] { "Reconnect show", "Reconnect retrying (attempt 1)", "Reconnect hide" }, states.Select(e => e.Title).ToArray());
+        Assert.IsTrue(states[0].Timestamp <= before.AddSeconds(-2.9), $"{states[0].Timestamp:O} is three seconds before {before:O}");
+        Assert.IsTrue(states[0].StartTicks < states[1].StartTicks && states[1].StartTicks < states[2].StartTicks, "in the order they happened");
+    }
+
     [TestMethod]
     public void Resource_failures_CSP_violations_and_enhanced_navigation_are_recorded_by_kind()
     {

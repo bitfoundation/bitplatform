@@ -190,13 +190,19 @@ public sealed class BevJsBridge(BevToolsSession session, Action toggle, Action? 
         });
     }
 
+    /// <summary>
+    /// One of Blazor's reconnect states. <paramref name="ageMs"/> is how long ago the browser saw it: the states of a
+    /// dropped connection ("show", "retrying") reach a circuit only once it is back, together with "hide".
+    /// </summary>
     [JSInvokable]
-    public void OnReconnectState(string state, int attempt, int secondsToNext)
+    public void OnReconnectState(string state, int attempt, int secondsToNext, double ageMs)
     {
+        var age = TimeSpan.FromMilliseconds(Math.Max(0, ageMs));
+        var at = DateTimeOffset.UtcNow - age;
         var browser = session.Browser;
         browser.ReconnectState = state;
         browser.ReconnectAttempt = attempt;
-        browser.ReconnectStateChangedAt = DateTimeOffset.UtcNow;
+        browser.ReconnectStateChangedAt = at;
         if (state == "show")
         {
             browser.ReconnectCount++;
@@ -204,6 +210,8 @@ public sealed class BevJsBridge(BevToolsSession session, Action toggle, Action? 
 
         session.Timeline.Record(new BevToolsEvent
         {
+            Timestamp = at,
+            StartTicks = System.Diagnostics.Stopwatch.GetTimestamp() - (long)(age.TotalSeconds * System.Diagnostics.Stopwatch.Frequency),
             Kind = BevToolsEventKind.Circuit,
             Category = "reconnect",
             Title = "Reconnect " + state + (attempt > 0 ? " (attempt " + attempt + ")" : ""),

@@ -51,6 +51,10 @@ public sealed class UserSession
 
     [BevToolsSensitive]
     public string Nickname { get; set; } = "hidden by attribute";
+
+    // Left out of BevTools altogether: the inspector does not list it, not even as redacted.
+    [BevToolsIgnore]
+    public string SupportNotes { get; set; } = "never listed by BevTools";
 }
 
 public sealed class LeakyCache(UserSession session)
@@ -89,7 +93,7 @@ public sealed class FilterState
         set
         {
             _query = value;
-            Changed?.Invoke();
+            Notify();
         }
     }
 
@@ -99,7 +103,7 @@ public sealed class FilterState
         set
         {
             _category = value;
-            Changed?.Invoke();
+            Notify();
         }
     }
 
@@ -109,15 +113,28 @@ public sealed class FilterState
         set
         {
             _maxPrice = value;
-            Changed?.Invoke();
+            Notify();
         }
     }
 
+    /// <summary>How many times <see cref="Touch"/> notified without changing anything.</summary>
     public int ChangeCount { get; private set; }
+
+    /// <summary>Every notification, whatever raised it.</summary>
+    public int Notifications { get; private set; }
+
+    /// <summary>The handlers subscribed to <see cref="Changed"/> right now, for the demo's BevTools panel (Extension/DemoStorePanel).</summary>
+    internal Delegate[] Subscribers => Changed?.GetInvocationList() ?? [];
 
     public void Touch()
     {
         ChangeCount++;
+        Notify();
+    }
+
+    private void Notify()
+    {
+        Notifications++;
         Changed?.Invoke();
     }
 }

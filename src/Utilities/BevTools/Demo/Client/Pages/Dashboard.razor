@@ -53,13 +53,30 @@
     <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Components: the tree and the inspector</h3>
     <p class="bb-card-desc">
         Open BevTools (<kbd>Ctrl</kbd><kbd>Shift</kbd><kbd>D</kbd>) on the <strong>Components</strong> tab.
-        <code>Dashboard</code> sits under the site's layouts with its children: three <code>StatsCard</code>s,
-        <code>LiveClock</code>, <code>UserProfile</code> and <code>RecentOrders</code>.
+        <code>Dashboard</code> sits under the site's layouts (<code>Routes</code> → <code>MainLayout</code> →
+        <code>DocsLayout</code>) with its children: three <code>StatsCard</code>s, <code>LiveClock</code>,
+        <code>UserProfile</code> and <code>RecentOrders</code>. Each row says how many times the component rendered and
+        how long its last render took; ⚡ on <code>Routes</code> marks where the interactive render mode starts, with the
+        runtime this visit got (<em>Server</em> or <em>WASM</em>).
     </p>
     <ul class="bb-detail-list">
-        <li>Select a <code>StatsCard</code>: its parameters (<code>Title</code>, <code>Value</code>, <code>Trend</code>), the cascading <code>DashboardSettings</code> it reads, and <em>Why did it render?</em> for every render it has had.</li>
-        <li>Select <code>UserProfile</code> and expand <code>Session</code> under <em>Injected services</em>: its <code>UserSession</code> shows <code>AccessToken</code> and <code>Nickname</code> redacted - one by its name, the other by <code>[BevToolsSensitive]</code>.</li>
+        <li>Select a <code>StatsCard</code>: its <em>Parameters</em> (<code>Title</code>, <code>Value</code>, <code>Trend</code>), the cascading <code>DashboardSettings</code> it reads, and under <em>Rendering</em> the cause of every render it has had (<em>Why did it render?</em>, then <em>Recent renders</em> with the batch of each).</li>
+        <li>The same inspector answers where and when: <em>Type &amp; source</em> links <code>StatsCard.razor</code> (it opens in your editor) and names the render mode it inherits and from whom; <em>Lifecycle</em> says when it was created, initialized and first and last rendered, whether a render is queued, and what its <code>SetParametersAsync</code> costs per type.</li>
+        <li>Select <code>UserProfile</code> and expand <code>Session</code> under <em>Injected services</em>: its <code>UserSession</code> shows <code>AccessToken</code> and <code>Nickname</code> redacted - one by its name, the other by <code>[BevToolsSensitive]</code> - and does not list <code>SupportNotes</code> at all, which is marked <code>[BevToolsIgnore]</code>.</li>
         <li>Press <em>Toggle dense</em> or <em>Change accent</em>: the cascading value changes and every card that reads it renders again.</li>
+    </ul>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Components in the page: pick, outline, flash</h3>
+    <p class="bb-card-desc">
+        The tree and the page point at each other. BevTools follows Blazor's own record of which component rendered
+        which part of the page, so nothing has to be added to the markup.
+    </p>
+    <ul class="bb-detail-list">
+        <li>Press <strong>⌖ Pick</strong> in the panel header (or <code>&gt;pick</code> in <kbd>Ctrl</kbd><kbd>K</kbd>), hover the page - each component is outlined with its name - and click the clock: the inspector opens on <code>LiveClock</code>. <kbd>Esc</kbd> cancels.</li>
+        <li>Hover a row of the tree and its component is outlined in the page; <em>⌖ Show in page</em> in the inspector scrolls to it first.</li>
+        <li>Tick <em>flash renders</em> in the Components toolbar, then tick <em>clock re-renders whole dashboard</em>: every card flashes twice a second. The colour counts the renders since the previous flash: blue once, green 2-3, amber 4-9, red 10 or more.</li>
     </ul>
 </div>
 
@@ -82,9 +99,13 @@
     <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> State, Network and Services</h3>
     <ul class="bb-detail-list">
         <li><strong>State</strong> → <code>AppState</code>: every press of <em>Click counter</em> is a named <code>Click</code> change, and every navigation a <code>Visit</code>. Its <code>ApiKey</code> is redacted.</li>
-        <li><strong>Network</strong>: <code>GET /api/orders</code>, slow on purpose, and <code>GET /api/profile</code>, whose <code>Authorization</code> header is redacted.</li>
-        <li><strong>Services</strong>: search <code>LeakyCache</code> and <code>ReportService</code> - a singleton capturing a scoped service and a circular dependency, registered in this app and never resolved.</li>
+        <li><strong>Network</strong>: <code>GET /api/orders</code>, slow on purpose, and <code>GET /api/profile</code>, whose <code>Authorization</code> header is redacted. No click sent them, so the Trigger column names the component method that did: <em>from RecentOrders.Reload</em>, <em>from UserProfile.OnAfterRenderAsync</em>.</li>
+        <li><strong>Services</strong>: every registration with its lifetime, implementation and how many services it depends on and is used by. Search <code>LeakyCache</code> and <code>ReportService</code> and select them: the dependency tree shows a singleton capturing a scoped service and a circular dependency, registered in this app and never resolved. <strong>Diagnostics</strong> lists both.</li>
     </ul>
+    <div class="bb-try">
+        <a href="problems#problem-7" class="btn btn-outline">Problem 7: secrets →</a>
+        <a href="problems#problem-8" class="btn btn-outline">Problem 8: DI mistakes →</a>
+    </div>
 </div>
 
 @code {

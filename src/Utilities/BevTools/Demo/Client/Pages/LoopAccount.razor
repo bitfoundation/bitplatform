@@ -9,7 +9,16 @@
 <div class="bb-intro">
     <p class="bb-overline">Scenario · Navigation</p>
     <h1>Account</h1>
-    <p class="bb-subtitle">Arrived after @Counter.Hops redirects between this page and the login page. Open BevTools → Diagnostics: <em>Navigation loop</em>.</p>
+    <p class="bb-subtitle">
+        Arrived after @Counter.Hops redirects between this page and the login page. Open BevTools →
+        <strong>Diagnostics</strong>: <em>Navigation loop</em>, and <strong>Routing</strong> → <em>Navigation
+        history</em> for each hop.
+    </p>
+    <div class="bb-try">
+        <button type="button" class="btn btn-secondary" @onclick="RunAgain">Run the loop again</button>
+        <a href="problems#problem-18" class="btn btn-outline">Problem 18 →</a>
+        <a href="routing" class="btn btn-outline">Routing &amp; sign-in →</a>
+    </div>
 </div>
 
 @code {
@@ -21,5 +30,12 @@
             Counter.Hops++;
             Navigation.NavigateTo("loop/login");
         }
+    }
+
+    // The counter lives as long as the circuit or the app, so the loop runs once per session unless it is re-armed.
+    private void RunAgain()
+    {
+        Counter.Hops = 0;
+        Navigation.NavigateTo("loop/login");
     }
 }

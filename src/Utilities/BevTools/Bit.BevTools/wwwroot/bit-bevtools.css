@@ -117,6 +117,9 @@
 /* Badge (closed state) */
 .bev-badge { position: fixed; right: 12px; bottom: 12px; z-index: 2147483000; background: var(--bev-bg2); color: var(--bev-fg); border: 1px solid var(--bev-border); border-radius: 999px; padding: 4px 10px; font-family: var(--bev-sans); font-size: 12px; display: flex; gap: 8px; align-items: center; box-shadow: 0 2px 8px rgba(0,0,0,.2); cursor: pointer; }
 .bev-badge .bev-pill { padding: 0 6px; border-radius: 999px; font-weight: 600; }
+/* Blazor's own error bar (#blazor-error-ui in every project template, shown with display: block) runs along the bottom
+   with its dismiss button at the right, where the badge sits: the badge moves above it while it shows. */
+body:has(#blazor-error-ui[style*="display: block"]) .bev-badge { bottom: 60px; }
 
 /* Panel shell */
 .bev-panel { position: fixed; z-index: 2147483000; background: var(--bev-bg); color: var(--bev-fg); border: 1px solid var(--bev-border); display: flex; flex-direction: column; box-shadow: 0 -2px 12px rgba(0,0,0,.2); overflow: hidden; }

@@ -1,4 +1,5 @@
 ﻿@page "/circuit"
+@inject IJSRuntime JS
 
 <PageTitle>Circuit · BevTools</PageTitle>
 
@@ -6,9 +7,9 @@
     <p class="bb-overline">Scenario · Blazor Server</p>
     <h1>Circuit</h1>
     <p class="bb-subtitle">
-        Circuit problems: blocking the circuit's single thread, and killing the circuit with an unhandled exception.
-        BevTools → Circuit and the Timeline show the circuit's events, the time each inbound message took, and the
-        reconnect state reported by the browser.
+        Circuit problems: blocking the circuit's single thread, dropping its connection, and killing the circuit with
+        an unhandled exception. BevTools → Circuit and the Timeline show the circuit's events, the time each inbound
+        message took, and the reconnect state reported by the browser.
     </p>
 </div>
 
@@ -37,6 +38,7 @@
         <div class="bb-toolbar">
             <button type="button" class="btn btn-secondary" @onclick="Block">Block the circuit for 800 ms (Thread.Sleep in a handler)</button>
             <button type="button" class="btn btn-secondary" @onclick="BlockRepeatedly">Block 5× in a row</button>
+            <button type="button" class="btn btn-secondary" @onclick="DropConnection">Drop the connection (as a network hiccup would)</button>
             <button type="button" class="btn demo-btn-danger" @onclick="Kill">Unhandled exception in a background task (terminates the circuit)</button>
         </div>
         <p class="bb-muted">Blocked: @_blocked times. Renderer: @RendererInfo.Name, interactive: @RendererInfo.IsInteractive.</p>
@@ -47,8 +49,36 @@
     <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Blocking: slow inbound messages</h3>
     <p class="bb-card-desc">
         Block the circuit. The <strong>Timeline</strong> shows a <em>Slow inbound message</em>, the
-        <strong>Circuit</strong> panel the maximum inbound processing time, and <strong>Diagnostics</strong> the slow
-        event handler. The fix: never block in a handler - await the work instead.
+        <strong>Circuit</strong> panel the maximum inbound processing time, and <strong>Diagnostics</strong> a
+        <em>slow event handler</em>. Block it three times within a minute and Diagnostics adds <em>3 inbound messages
+        blocked the circuit for ≥ 100 ms each</em>. The fix: never block in a handler - await the work instead.
+    </p>
+    <p class="bb-card-desc">
+        <em>Block 5× in a row</em> shows where the circuit's own timing stops: only the first block is part of the
+        click's inbound message, because the handler awaits after it; the other four run in continuations, which no
+        inbound message contains - a message that arrives meanwhile, such as the browser acknowledging a render, waits
+        for them, and that wait is what its time shows. The slow event handler's duration spans all five.
+    </p>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> The Circuit panel and the server process</h3>
+    <ul class="bb-detail-list">
+        <li><strong>Circuit</strong> (Server only): this circuit's connection, age, disconnects, inbound messages with their average and maximum time, the browser's reconnect state, and what the browser received - bytes and render batches, the largest one, and <em>traffic ↗</em> to Network → WebSockets. Below it every circuit of the process, with its lifecycle counters only, and this circuit's events.</li>
+        <li><strong>Runtime → Server process</strong>, shared by every circuit: the thread pool and its queue, lock contention, the working set, processors and the GC mode, next to the managed heap and collections.</li>
+    </ul>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Dropping: a connection that comes back</h3>
+    <p class="bb-card-desc">
+        <em>Drop the connection</em> closes the circuit's WebSocket from the browser, as a network hiccup, a laptop that
+        slept or a proxy that cuts idle sockets would; the circuit itself stays on the server. Blazor shows its reconnect
+        dialog and reconnects in a moment. The <strong>Circuit</strong> panel then counts the disconnect,
+        <strong>Browser</strong> shows the reconnect state and how many reconnects there were, the <strong>Timeline</strong>
+        has the circuit's <em>Connection down</em> and <em>Connection restored</em> with Blazor's own reconnect states in between (<em>Reconnect show</em>, <em>retrying</em>, <em>hide</em>), and <strong>Network → WebSockets</strong> shows
+        the old socket closed and a new one carrying the circuit. Drop it twice within two minutes and
+        <strong>Diagnostics</strong> reports <em>circuit instability</em>.
     </p>
 </div>
 
@@ -86,6 +116,9 @@
             await Task.Delay(50);
         }
     }
+
+    // Fire-and-forget: the socket closes a moment after the call returns (wwwroot/js/connection.js).
+    private async Task DropConnection() => await JS.InvokeVoidAsync("bitDemoConnection.drop");
 
     private void Kill()
     {

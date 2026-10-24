@@ -32,7 +32,10 @@ that machine: *without BevTools* alone measured between 9.0 and 13.7 µs per bat
 table, and the two builds overlapped within that spread. The table keeps the earlier, steadier measurement.
 Re-measured after round 15 on the same machine: allocations again 23.9, 23.9, 142.0 and 209.1 MB - the HTTP senders,
 the profiler's time axis and renders per page, and the CI check are off the render path - and times as noisy as
-before (9.08 µs per batch without BevTools).
+before (9.08 µs per batch without BevTools). Re-measured after the demo review (`docs/progress.md`), twice: allocations
+again 23.9, 23.9, 142.0 and 209.1 MB - telling BevTools' own component types from the application's costs a lookup per
+parameter-update measurement and per hierarchy resolution, and allocates nothing per render - and times as noisy (8.8
+µs per batch without BevTools; the disabled configuration 13 to 20 % above it, which touches none of the changed code).
 
 Read these carefully:
 

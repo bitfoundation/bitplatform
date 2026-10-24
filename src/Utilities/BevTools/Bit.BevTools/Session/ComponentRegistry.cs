@@ -42,6 +42,13 @@ internal sealed class ComponentRegistry
     private bool _treeCacheIncludesHidden;
     private WeakReference<Renderer>? _renderer;
 
+    // The framework's activities and meters name a component type, never an instance. These remember, past the records
+    // themselves, which types the application rendered and which only BevTools' own UI did - its panels, an extension's
+    // panel, and the framework components they render (Virtualize in the component tree) - so that what the latter do
+    // is not put down to the application.
+    private readonly ConcurrentDictionary<string, byte> _applicationTypes = new(StringComparer.Ordinal);
+    private readonly ConcurrentDictionary<string, byte> _bevToolsTypes = new(StringComparer.Ordinal);
+
     public ComponentRegistry(BevToolsSession session, BitBevToolsOptions options)
     {
         _session = session;
@@ -71,9 +78,20 @@ internal sealed class ComponentRegistry
         var record = new BevComponentRecord(Interlocked.Increment(ref _nextInstanceId), component, type, _options.MaxRendersPerComponent, isBevTools, isHidden);
         _byComponent.AddOrUpdate(component, record);
         _byId[record.InstanceId] = record;
+        if (isBevTools)
+        {
+            _bevToolsTypes.TryAdd(record.TypeName, 0);
+        }
+
         _session.Touch();
         return record;
     }
+
+    /// <summary>
+    /// Whether components of this type (its full name) were rendered only by BevTools' own UI in this session: known as
+    /// BevTools', never as the application's. A type not seen at all yet is not.
+    /// </summary>
+    public bool IsBevToolsOnlyType(string typeName) => _bevToolsTypes.ContainsKey(typeName) && !_applicationTypes.ContainsKey(typeName);
 
     public bool TryGet(IComponent component, out BevComponentRecord record) => _byComponent.TryGetValue(component, out record!);
 
@@ -215,6 +233,15 @@ internal sealed class ComponentRegistry
         if (!record.IsBevTools && record.Parent?.IsBevTools == true)
         {
             record.MarkBevToolsOwned();
+        }
+
+        if (record.IsBevTools)
+        {
+            _bevToolsTypes.TryAdd(record.TypeName, 0);
+        }
+        else if (record.ParentResolved)
+        {
+            _applicationTypes.TryAdd(record.TypeName, 0);
         }
     }
 

@@ -258,6 +258,33 @@ public class PanelInteractionTests : BunitContext
         Assert.IsEmpty(Session.Components.BuildTree(includeHidden: true));
     }
 
+#if NET10_0_OR_GREATER
+    /// <summary>
+    /// The framework's update_parameters meter names a component type, never an instance. The profiler's lifecycle
+    /// table once listed BevTools' own panels and the framework components only they render (the component tree's
+    /// Virtualize), whose parameters change on every refresh, as if the application had spent that time.
+    /// </summary>
+    [TestMethod]
+    public void The_lifecycle_cost_per_type_lists_no_type_only_BevTools_renders()
+    {
+        var cut = RenderPanel();
+        Render<ParentComponent>();
+        foreach (var tab in new[] { "Components", "Timeline", "Components", "Profiler" })
+        {
+            cut.FindAll(".bev-tab").First(t => t.TextContent.Contains(tab, StringComparison.Ordinal)).Click();
+            cut.Find("button[aria-label='Refresh captured data']").Click();
+        }
+
+        var types = cut.FindAll(".bev-section")
+            .Single(s => s.TextContent.StartsWith("Lifecycle cost per type", StringComparison.Ordinal))
+            .QuerySelectorAll("tbody tr td:first-child")
+            .Select(td => td.TextContent.Trim())
+            .ToList();
+        Assert.Contains("ParentComponent", types, "the application's own component is measured");
+        Assert.DoesNotContain(t => t.StartsWith("Bev", StringComparison.Ordinal) || t.StartsWith("Virtualize", StringComparison.Ordinal), types, string.Join(", ", types));
+    }
+#endif
+
     /// <summary>The inverse: the propagation must not swallow the application's own use of the same framework components.</summary>
     [TestMethod]
     public void Application_components_under_a_cascading_value_are_still_application_activity()

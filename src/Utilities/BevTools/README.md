@@ -269,7 +269,7 @@ How the information is obtained, in short:
   concrete type.
 * **Errors**: render wrapper + Blazor's own logger categories + browser `error`/`unhandledrejection`.
 * **Circuits**: `CircuitHandler` (lifecycle, connection state, inbound message processing time) +
-  `components:reconnect-state-changed` in the browser.
+  Blazor's `components-reconnect-state-changed` in the browser (dispatched on the app's own reconnect dialog).
 * **Event handlers and callbacks**: the frames of the component's latest render, which the renderer keeps
   (`ComponentState.CurrentRenderTree`, through `BlazorReflection`): attribute frames with event handlers, `@bind`'s
   change handlers, and `EventCallback` parameters on child component frames, each named by the method it runs.
@@ -433,9 +433,11 @@ See [CLAUDE.md](CLAUDE.md) for the principles every change has to respect.
 ## Status
 
 The component tree and inspector (parameters, cascading values, state, services, event handlers and callbacks,
-lifecycle, render modes), render tracking and profiler, event timeline, error inspection (resource and CSP failures
-included), state inspection (authentication included), routing, network with WebSocket/SignalR traffic, JS interop,
-search/commands, DI inspection, circuit, runtime and prerendering diagnostics, the rules engine, session and trace
-export, the companion window and the browser extension. See [docs/architecture.md](docs/architecture.md) for the
-design and the list of deliberate non-goals (component ↔ DOM highlighting, request bodies, SignalR payloads,
-time-travel state restoration).
+lifecycle, render modes, source locations), components in the page (picking, outlines, render flashing), render
+tracking and profiler (batch cost trees, renders per page, comparison of two recordings), event timeline, error
+inspection and groups (resource and CSP failures included), state inspection (authentication included), forms and
+validation, routing and navigation guards, network with endpoints, senders and WebSocket/SignalR traffic, JS interop,
+search/commands, DI inspection, circuit, runtime, prerendering and retained-component diagnostics, accessibility checks
+of the page, the rules engine, session and trace export, the CI tool, the companion window and the browser extension.
+The demo shows each of them. See [docs/architecture.md](docs/architecture.md) for the design and the list of deliberate
+non-goals (request bodies, SignalR payloads, time-travel state restoration, editing component state).
