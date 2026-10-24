@@ -15,9 +15,14 @@ public sealed class DuotoneOperation : PointOperation
 
     public DuotoneOperation(Rgba32 shadow, Rgba32 highlight)
     {
+        Shadow = shadow;
+        Highlight = highlight;
         _shadow = new Vector4(shadow.R, shadow.G, shadow.B, 0) / 255f;
         _highlight = new Vector4(highlight.R, highlight.G, highlight.B, 0) / 255f;
     }
+
+    public Rgba32 Shadow { get; }
+    public Rgba32 Highlight { get; }
 
     public override string Name => "Duotone";
 
