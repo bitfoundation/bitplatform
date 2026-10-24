@@ -28,6 +28,9 @@ public sealed partial class BrowserSession : IAsyncDisposable
     // back (and the console line some engines log for it) says nothing about the trimming.
     private static bool IsFavicon(string? text) => text?.Contains("/favicon.ico", StringComparison.OrdinalIgnoreCase) is true;
 
+    // The notice an engine raises when a ResizeObserver's callback resizes what it observes and the rest of its notifications
+    // wait for the next frame. Nothing failed, though WebKit reports it as an uncaught error (Belemetry ignores it by default
+    // for the same reason), and it says nothing about the trimming.
     private static bool IsResizeObserverLoop(string? text) => text?.Contains("ResizeObserver loop", StringComparison.Ordinal) is true;
 
     /// <summary>The engines a trimmed app is run in: every one Playwright drives.</summary>

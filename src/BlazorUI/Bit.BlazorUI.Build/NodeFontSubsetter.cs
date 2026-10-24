@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 
 namespace Bit.BlazorUI.Build;
 
@@ -17,6 +18,10 @@ public static class NodeFontSubsetter
 {
     private static readonly TimeSpan InstallTimeout = TimeSpan.FromMinutes(5);
     private static readonly TimeSpan SubsetTimeout = TimeSpan.FromMinutes(2);
+
+    // A line saying what went wrong: the last of a Python traceback (FileNotFoundError: [Errno 44] ..., or a fontTools
+    // one, fontTools.ttLib.TTLibError: ...), or the first of a JavaScript error (Error: Cannot find module ...).
+    private static readonly Regex ErrorLine = new(@"^[\w.]*(Error|Exception): ", RegexOptions.CultureInvariant);
 
     // npm's own defaults retry a request it cannot make for over two minutes before giving up, which an offline build
     // would pay on every publish: one quick retry, then the .NET cut takes over.
@@ -100,6 +105,10 @@ public static class NodeFontSubsetter
         var tool = Install(pin, nodePath, out error);
         if (tool is null) return false;
 
+        // pyftsubset sees no folder but the one it runs in, the only one Pyodide mounts, so everything it reads and writes
+        // is there and named relative to it: the font copied in beside the output, and the list of its codepoints. An
+        // absolute path names nothing on Pyodide's file system - Errno 44 on Linux and macOS, and on Windows a path Node.js
+        // only happens to resolve back to the file.
         var unicodes = output + ".unicodes";
         var source = output + ".source";
         try
@@ -113,7 +122,7 @@ public static class NodeFontSubsetter
                                                Path.GetDirectoryName(output)!, SubsetTimeout, environment: null);
             if (failure is not null || exitCode != 0 || File.Exists(output) is false)
             {
-                error = failure ?? $"pyftsubset exited with {exitCode}: {Tail(log)}";
+                error = failure ?? $"pyftsubset exited with {exitCode}: {Excerpt(log)}";
                 return false;
             }
             return true;
@@ -171,7 +180,7 @@ public static class NodeFontSubsetter
             var (exitCode, log, failure) = RunNpm(nodePath, ["ci", "--ignore-scripts", "--no-audit", "--no-fund", "--loglevel=error"], staging);
             if (failure is not null || exitCode != 0)
             {
-                error = failure ?? $"npm ci of {pin.Tool} exited with {exitCode}: {Tail(log)}";
+                error = failure ?? $"npm ci of {pin.Tool} exited with {exitCode}: {Excerpt(log)}";
                 WriteFailure(failed, node, error);
                 return null;
             }
@@ -294,9 +303,21 @@ public static class NodeFontSubsetter
     // An argument as the Windows command line and .NET's own parsing on Unix read it back.
     private static string Quote(string argument) => argument.Length > 0 && argument.IndexOfAny([' ', '\t', '"']) < 0 ? argument : "\"" + argument.Replace("\"", "\\\"") + "\"";
 
-    private static string Tail(string log)
+    // What a failed run said, in a line: the last lines of its log, after the last line naming an error where that is not
+    // among them. An error of Python's on Pyodide ends with the stack of the JavaScript that raised it, so the line of the
+    // traceback saying what went wrong is above the last lines; and Node.js prints the line of source an uncaught error
+    // was thrown from, a megabyte of Pyodide's minified one, so every line is cut short.
+    private static string Excerpt(string log)
     {
-        var lines = log.Split(['\r', '\n'], StringSplitOptions.RemoveEmptyEntries);
-        return string.Join(" ", lines.Skip(Math.Max(0, lines.Length - 5)));
+        var lines = log.Split(['\r', '\n'], StringSplitOptions.RemoveEmptyEntries)
+                       .Select(l => l.Trim())
+                       .Where(l => l.Length > 0)
+                       .Select(l => l.Length <= 300 ? l : l.Substring(0, 300) + "...")
+                       .ToList();
+
+        var excerpt = lines.Skip(Math.Max(0, lines.Count - 5)).ToList();
+        var error = lines.LastOrDefault(ErrorLine.IsMatch);
+        if (error is not null && excerpt.Contains(error) is false) excerpt.Insert(0, error);
+        return string.Join(" ", excerpt);
     }
 }
