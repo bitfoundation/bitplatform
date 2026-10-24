@@ -4,7 +4,7 @@
          Lead="Stores are plain objects, so they test like plain objects - and Bit.Blex.Testing adds a harness for asserting on the dispatch pipeline itself.">
 
     <div class="bb-card">
-        <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> The simplest test</h3>
+        <h2 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> The simplest test</h2>
         <p>
             A store needs no host, no DI container and no Blazor. Construct it, call an action, assert on
             a property.
@@ -18,7 +18,7 @@
     </div>
 
     <div class="bb-card">
-        <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> The harness</h3>
+        <h2 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> The harness</h2>
         <p>
             <code>BlexTestHarness&lt;TStore&gt;</code> creates a fresh <code>BlexManager</code>,
             registers your store with it, and starts recording every action.
@@ -28,7 +28,7 @@
     </div>
 
     <div class="bb-card">
-        <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> The action log</h3>
+        <h2 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> The action log</h2>
         <p>
             <code>BlexActionLog</code> records each dispatch with its name, sequence, arguments and the global
             state immediately afterwards.
@@ -39,7 +39,7 @@
     </div>
 
     <div class="bb-card">
-        <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Asserting on payloads</h3>
+        <h2 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Asserting on payloads</h2>
         <p>Action arguments are captured automatically, so you can assert on exactly what was dispatched.</p>
         <CodeBlock Code="@Payload" />
 
@@ -54,7 +54,7 @@
     </div>
 
     <div class="bb-card" id="time">
-        <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Deterministic time</h3>
+        <h2 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Deterministic time</h2>
         <p>
             A <code>DebounceMilliseconds</code> effect waits for real time to pass, and so does a debounced
             persistor. A test that waits along with them is slow, and on a loaded CI runner it is flaky.
@@ -72,7 +72,7 @@
     </div>
 
     <div class="bb-card" id="replay">
-        <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Replaying actions</h3>
+        <h2 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Replaying actions</h2>
         <p>
             The defining property of a predictable state model is that the same actions, applied to the same
             initial state, arrive at the same state - whichever session produced them. Because every action
@@ -100,7 +100,7 @@
     </div>
 
     <div class="bb-card">
-        <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Testing effects</h3>
+        <h2 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Testing effects</h2>
         <p>
             Awaiting the effect wrapper is usually enough. When you need to observe an intermediate state
             - a loading flag, say - <code>WaitForAsync</code> beats sprinkling <code>Task.Delay</code>
@@ -109,12 +109,12 @@
         </p>
         <CodeBlock Code="@Effects" />
 
-        <h4>Errors and cancellation</h4>
+        <h3>Errors and cancellation</h3>
         <CodeBlock Code="@EffectErrors" />
     </div>
 
     <div class="bb-card">
-        <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Asserting on batching</h3>
+        <h2 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Asserting on batching</h2>
         <p>
             <code>CountNotifications</code> counts how many times a store raised
             <code>StateChanged</code> while an action ran - the direct way to prove that a multi-field
@@ -124,7 +124,7 @@
     </div>
 
     <div class="bb-card">
-        <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Testing middleware</h3>
+        <h2 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Testing middleware</h2>
         <p>
             A store is rarely alone in production - a veto filter, an audit logger or a metrics recorder
             usually wraps it, and those guard rails deserve tests too.
@@ -140,7 +140,7 @@
     </div>
 
     <div class="bb-card">
-        <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> More than one store</h3>
+        <h2 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> More than one store</h2>
         <p>
             Cross-store coordination is exactly the kind of thing worth testing, and abandoning the
             harness to hand-wire a manager for it defeats the point. <code>harness.Register(store)</code>
@@ -157,7 +157,7 @@
     </div>
 
     <div class="bb-card">
-        <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Asserting on failures</h3>
+        <h2 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Asserting on failures</h2>
         <p>
             An effect captures its exception into <code>XxxError</code> instead of propagating it, so a
             test that only watches for a throw sees nothing at all. <code>harness.Failures</code> records
@@ -167,7 +167,7 @@
     </div>
 
     <div class="bb-card">
-        <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Testing persistence</h3>
+        <h2 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Testing persistence</h2>
         <p>
             <code>IBlexStorage</code> is a three-method interface, so an in-memory fake is trivial.
             Remember to <code>FlushAsync</code> when the persistor is debounced.
@@ -176,12 +176,12 @@
     </div>
 
     <div class="bb-card">
-        <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Testing undo/redo</h3>
+        <h2 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Testing undo/redo</h2>
         <CodeBlock Code="@HistoryTest" />
     </div>
 
     <div class="bb-card">
-        <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Extension methods</h3>
+        <h2 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Extension methods</h2>
         <ApiTable Title="BlexTestExtensions" Rows="@ExtensionRows" />
 
         <Callout Kind="Callout.CalloutKind.Tip" Title="Snapshots make good assertions">
@@ -202,7 +202,7 @@
     </div>
 
     <div class="bb-card">
-        <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Testing components</h3>
+        <h2 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Testing components</h2>
         <p>
             For component-level tests with bUnit, register the store the same way the app does and let
             the component subscribe. There is nothing Blex-specific to mock.

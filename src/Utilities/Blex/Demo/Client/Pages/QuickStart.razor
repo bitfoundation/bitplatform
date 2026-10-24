@@ -6,7 +6,7 @@
          Lead="A complete, reactive, time-travelable counter in three files and about twenty lines.">
 
     <div class="bb-card">
-        <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> 1. Write the store</h3>
+        <h2 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> 1. Write the store</h2>
         <p>
             A store is a <code>partial class</code> marked <code>[BlexStore]</code>. Fields marked
             <code>[BlexState]</code> become reactive properties; methods marked <code>[BlexAction]</code> become
@@ -30,12 +30,12 @@
     </div>
 
     <div class="bb-card">
-        <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> 2. Register it</h3>
+        <h2 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> 2. Register it</h2>
         <CodeBlock Code="@Step2" FileName="Program.cs" />
     </div>
 
     <div class="bb-card">
-        <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> 3. Wrap the app and use the store</h3>
+        <h2 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> 3. Wrap the app and use the store</h2>
         <CodeBlock Code="@Step3" Language="razor" FileName="App.razor" />
         <CodeBlock Code="@Step4" Language="razor" FileName="Pages/Counter.razor" />
 
@@ -51,15 +51,15 @@
             <div class="bb-stats">
                 <div class="bb-stat">
                     <span class="bb-stat-label">Count</span>
-                    <span class="bb-stat-value demo-accent">@Counter.Count</span>
+                    <span class="bb-stat-value demo-accent"><Persisted>@Counter.Count</Persisted></span>
                 </div>
                 <div class="bb-stat">
                     <span class="bb-stat-label">DoubleCount</span>
-                    <span class="bb-stat-value">@Counter.DoubleCount</span>
+                    <span class="bb-stat-value"><Persisted>@Counter.DoubleCount</Persisted></span>
                 </div>
                 <div class="bb-stat">
                     <span class="bb-stat-label">IsEven</span>
-                    <span class="bb-stat-value">@Counter.IsEven</span>
+                    <span class="bb-stat-value"><Persisted>@Counter.IsEven</Persisted></span>
                 </div>
             </div>
             <div class="bb-toolbar">
@@ -71,7 +71,7 @@
     </div>
 
     <div class="bb-card">
-        <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> What you got for free</h3>
+        <h2 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> What you got for free</h2>
         <div class="bb-grid">
             <div class="bb-card">
                 <p class="bb-card-title">Batched renders</p>
@@ -105,7 +105,7 @@
     </div>
 
     <div class="bb-card">
-        <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Where to next</h3>
+        <h2 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Where to next</h2>
         <div class="bb-grid">
             <a class="bb-card" href="stores"><p class="bb-card-title">Stores &amp; state</p><p class="bb-card-desc">The container, its options and everything the generator emits.</p></a>
             <a class="bb-card" href="effects"><p class="bb-card-title">Effects</p><p class="bb-card-desc">Async work with generated loading, error and cancellation.</p></a>

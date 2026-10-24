@@ -10,12 +10,11 @@ namespace Bit.Blex;
 /// decorate a partial class with <see cref="BlexStoreAttribute"/> and the generator does it for you.
 /// </summary>
 /// <remarks>
-/// Dispatch is assumed to be single-threaded, matching Blazor's rendering model. The depth
-/// counters that drive batching (<c>_recordDepth</c>/<c>_notifyDepth</c>) are not synchronized.
-/// In particular, while a <see cref="DispatchAsync(string, Func{Task})"/> action is awaiting,
-/// any state mutation made from elsewhere is folded into that in-flight action rather than
-/// recorded as its own action. Avoid mutating a store from outside while one of its async
-/// actions is in progress.
+/// Dispatch is assumed to be single-threaded, matching Blazor's rendering model; the counters that
+/// drive batching are not synchronized. An action is recorded when it ends, and what it records is
+/// what its own asynchronous flow changed: actions that overlap -- two runs of a <c>Parallel</c>
+/// effect, a click handled while an effect awaits -- are each recorded as their own action, while
+/// an action dispatched from inside another one's body (in the same flow) is part of it.
 /// </remarks>
 public abstract class BlexStoreBase : IBlexStore, INotifyPropertyChanged, IDisposable
 {
@@ -32,9 +31,29 @@ public abstract class BlexStoreBase : IBlexStore, INotifyPropertyChanged, IDispo
             return Task.CompletedTask;
         });
 
-    private int _recordDepth;
+    /// <summary>
+    /// One action of this store in progress, with every action dispatched from inside its body: they are
+    /// recorded together, as the action that began it -- unless one of them outlives it (an effect it
+    /// started and did not await), which then records what it changes after that on its own.
+    /// </summary>
+    private sealed class ActionFrame
+    {
+        /// <summary>How many of the frame's dispatches have not ended yet; at zero the frame is over.</summary>
+        public int Depth;
+
+        /// <summary>Whether state changed since the frame last recorded.</summary>
+        public bool Dirty;
+    }
+
+    // The action frame of the current asynchronous flow. Flowing with the execution context rather
+    // than counted per store is what tells an assignment in an action's own body (after an await,
+    // say) from one made elsewhere while that action awaits -- the second is an action of its own.
+    private readonly AsyncLocal<ActionFrame?> _action = new();
+
+    // Frames of this store in progress in any flow: an unannounced change waits for all of them.
+    private int _openActions;
+
     private int _notifyDepth;
-    private bool _dirty;
     private bool _disposed;
     private BlexManager? _manager;
     private JsonObject? _initialState;
@@ -253,16 +272,64 @@ public abstract class BlexStoreBase : IBlexStore, INotifyPropertyChanged, IDispo
     /// </summary>
     private void AnnounceUnrecorded()
     {
-        if (_recordDepth > 0)
+        if (_openActions > 0)
             _announcementDeferred = true;
         else
             _manager?.OnUnannouncedChange(this);
     }
 
-    /// <summary>Called as the outermost action of this store ends, after it recorded itself (or not).</summary>
+    /// <summary>
+    /// The action of this store running in the current flow, or <c>null</c> outside one. A frame that is over
+    /// can still be the flow's value -- work an action started and did not await keeps the context it was
+    /// started in -- and counts as none: what that work assigns afterwards is not part of the action.
+    /// </summary>
+    private ActionFrame? CurrentAction => _action.Value is { Depth: > 0 } frame ? frame : null;
+
+    /// <summary>
+    /// Enters an action: the current flow's frame when one is running (the action is part of it), or a new one.
+    /// Returns whether it began the frame -- and with it the duty to clear the flow's frame on exit.
+    /// </summary>
+    private ActionFrame EnterAction(out bool begins)
+    {
+        var frame = CurrentAction;
+        begins = frame is null;
+        if (frame is null)
+        {
+            frame = new ActionFrame();
+            _action.Value = frame;
+            _openActions++;
+        }
+
+        frame.Depth++;
+        return frame;
+    }
+
+    /// <summary>
+    /// Leaves an action, and reports whether it records now: the one that began the frame always does (when
+    /// anything changed) -- it has ended -- and so does whichever dispatch of the frame ends last.
+    /// </summary>
+    private bool ExitAction(ActionFrame frame, bool began)
+    {
+        frame.Depth--;
+        var record = (began || frame.Depth == 0) && frame.Dirty;
+        if (record)
+            frame.Dirty = false;
+
+        if (frame.Depth == 0)
+            _openActions--;
+
+        // A synchronous action shares its caller's context: the frame must not outlive it there. (In an async
+        // action the assignment only reaches its own context, which is about to end anyway.)
+        if (began)
+            _action.Value = null;
+
+        return record;
+    }
+
+    /// <summary>Called as an action of this store ends, after it recorded itself (or not); settles once none is left.</summary>
     private void SettleDeferredAnnouncement(bool recorded)
     {
-        if (!_announcementDeferred || _recordDepth != 0)
+        if (!_announcementDeferred || _openActions != 0)
             return;
 
         _announcementDeferred = false;
@@ -363,25 +430,26 @@ public abstract class BlexStoreBase : IBlexStore, INotifyPropertyChanged, IDispo
         if (EqualityComparer<T>.Default.Equals(field, value))
             return;
 
+        var action = CurrentAction;
+
         // EnforceActions: outside code cannot reach the (private) setter at all, so an assignment
         // here outside any action is the store's own non-action code. Only once registered: a
         // constructor setting up its initial state is not a mutation anyone observes.
-        if (_recordDepth == 0 && _manager is not null && EnforcesActions)
+        if (action is null && _manager is not null && EnforcesActions)
         {
             throw new InvalidOperationException(
                 $"The store '{Name}' enforces actions, so '{propertyName}' can only change inside one of its actions. Move the assignment into a [BlexAction] method.");
         }
 
-        // A record depth above zero means an action of this store is running -- either lexically
-        // around this assignment or still awaiting -- and the assignment belongs to it. Unlike a
-        // named action (see BeginAction), a raw property write carries no way to tell "the action's
-        // own body" from "somebody else mutating mid-await", so it is always attributed to the
-        // action in flight rather than re-offered to the filters as a separate "Set X".
-        if (_recordDepth == 0 && _manager is { HasObservers: true } manager)
+        // An action of this store running in this flow -- around the assignment, or the async action
+        // whose body this is, after an await -- owns the assignment. Anything else is an action of its
+        // own: an assignment made elsewhere while an async action of this store awaits is not that
+        // action's doing, and is offered to the filters and recorded as its own "Set X".
+        if (action is null && _manager is { HasObservers: true } manager)
         {
             // A standalone set is its own action; give middleware a chance to veto it before
             // applying. The label/args are only materialized when something is listening.
-            // (_notifyDepth is always 0 here: a non-zero notify depth implies a record depth.)
+            // (_notifyDepth is always 0 here: a synchronous batch is an action of this flow.)
             var label = "Set " + propertyName;
             var args = new[] { new BlexActionArg(propertyName ?? "value", (object?)value) };
             if (!manager.BeforeAction(this, label, args))
@@ -410,8 +478,8 @@ public abstract class BlexStoreBase : IBlexStore, INotifyPropertyChanged, IDispo
         // Inside a sync batch we defer the render until the action completes (single re-render).
         // The dirty flag only matters inside a dispatch; a standalone set with nothing listening
         // records nothing, and must not leak the flag into a later dispatch.
-        if (_recordDepth > 0)
-            _dirty = true;
+        if (action is not null)
+            action.Dirty = true;
 
         if (_notifyDepth == 0)
         {
@@ -420,9 +488,9 @@ public abstract class BlexStoreBase : IBlexStore, INotifyPropertyChanged, IDispo
             // the action that caused it (DevTools order, undo steps). Outside one, nothing records actions
             // at all, and the manager is told here. Components see the change now either way.
             InvalidateComputed(propertyName);
-            NotifyStateChanged(announced: _recordDepth > 0);
+            NotifyStateChanged(announced: action is not null);
 
-            if (_recordDepth == 0)
+            if (action is null)
                 BlexDiagnostics.CountUnrecordedSet(this, propertyName);
         }
         else
@@ -598,10 +666,8 @@ public abstract class BlexStoreBase : IBlexStore, INotifyPropertyChanged, IDispo
         if (!BeginAction(actionName, args))
             return;
 
-        // RollbackOnError: what to put back if the body throws, and whether a change was already waiting to
-        // be notified (by an async action of this store still running) before this one began.
+        // RollbackOnError: what to put back if the body throws.
         var rollback = CaptureRollbackState();
-        var dirtyBefore = _dirty;
         var rolledBack = false;
 
         // When it began, on the manager's clock: a snapshot taken since may hold the state a rollback undoes.
@@ -609,7 +675,11 @@ public abstract class BlexStoreBase : IBlexStore, INotifyPropertyChanged, IDispo
         var inPlace = _notifyDepth == 0 && _manager is { DetectInPlaceMutations: true } ? BeginInPlaceCheck() : default;
         var telemetry = BlexDiagnostics.StartAction(this, actionName);
 
-        _recordDepth++;
+        var frame = EnterAction(out var began);
+
+        // Whether a change was already waiting to be recorded -- by the async action of this flow this one
+        // runs inside -- before this one began, which a rollback must leave as it found it.
+        var dirtyBefore = frame.Dirty;
         _notifyDepth++;
         var body = _manager?.EnterActionBody() ?? default;
         try
@@ -624,7 +694,7 @@ public abstract class BlexStoreBase : IBlexStore, INotifyPropertyChanged, IDispo
             if (rollback is not null)
             {
                 ApplyRollbackState(rollback);
-                _dirty = dirtyBefore;
+                frame.Dirty = dirtyBefore;
                 rolledBack = true;
 
                 // Before the error hooks run: one reading a computed or a cross-store selector must see the
@@ -642,7 +712,10 @@ public abstract class BlexStoreBase : IBlexStore, INotifyPropertyChanged, IDispo
             // Before this action records itself, so it is not taken for one nested in its own body.
             body.Exit();
             _notifyDepth--;
-            _recordDepth--;
+
+            // Read before leaving: leaving resets the flag when this action records.
+            var changed = frame.Dirty;
+            var record = ExitAction(frame, began);
 
             // A subscription that saw the undone state mid-body -- through a nested action of another store,
             // which recorded -- re-evaluates and lands back on what is really there. Inside an async action of
@@ -652,18 +725,14 @@ public abstract class BlexStoreBase : IBlexStore, INotifyPropertyChanged, IDispo
 
             var recorded = false;
 
-            // Flush the deferred notification when this was the outermost *sync* batch, even if
-            // an async action is still in flight above us (it keeps _recordDepth > 0 but does not
-            // hold _notifyDepth, so its nested sync actions must render on completion).
-            // A non-zero notify depth implies a record depth, so the notify-flush check covers
-            // every dirty case here.
-            if (_dirty && _notifyDepth == 0)
+            // Flush the deferred notification when this was the outermost *sync* batch, even inside an
+            // async action of this flow still running around it (that one does not hold _notifyDepth, so
+            // its nested sync actions must render on completion). A non-zero notify depth means an
+            // enclosing sync action of this flow, which flushes for both.
+            if (changed && _notifyDepth == 0)
             {
                 // No InvalidateComputed here: every write already invalidated what reads it, as it happened.
-                var record = _recordDepth == 0;
-                if (record)
-                    _dirty = false; // reset before notifying so a throwing subscriber can't leak it
-
+                // The flag was reset before notifying (ExitAction), so a throwing subscriber can't leak it.
                 try
                 {
                     // Announced by this action's record -- or, when an async action of this store is still
@@ -678,6 +747,13 @@ public abstract class BlexStoreBase : IBlexStore, INotifyPropertyChanged, IDispo
                         recorded = true;
                     }
                 }
+            }
+            else if (record)
+            {
+                // A frame this action began while a sync batch of another flow was open around it -- which a
+                // single-threaded dispatcher never interleaves -- still owes its record.
+                _manager?.RecordAction(this, actionName, args);
+                recorded = true;
             }
 
             SettleDeferredAnnouncement(recorded);
@@ -733,7 +809,8 @@ public abstract class BlexStoreBase : IBlexStore, INotifyPropertyChanged, IDispo
                 InvalidateComputed();
                 ChangeVersion++;
                 _manager?.MarkStateChanged();
-                _dirty = true;
+                if (CurrentAction is { } action)
+                    action.Dirty = true;
             }
         }, null);
     }
@@ -743,9 +820,9 @@ public abstract class BlexStoreBase : IBlexStore, INotifyPropertyChanged, IDispo
     /// await), but the whole operation is recorded as one named action for time-travel.
     /// </summary>
     /// <remarks>
-    /// Because the operation spans <c>await</c> points, any state mutation that occurs from
-    /// outside this store while the action is awaiting is attributed to this action. Treat a
-    /// store as owned by its in-flight async action until it completes.
+    /// What the action records is what its own body changed, across its awaits. Another action of the
+    /// store started while this one awaits -- a second run of the same effect, a click handled in the
+    /// meantime -- is recorded as its own action, not folded into this one.
     /// </remarks>
     protected Task DispatchAsync(string actionName, Func<Task> mutation)
         => DispatchAsync(actionName, mutation, null);
@@ -772,13 +849,11 @@ public abstract class BlexStoreBase : IBlexStore, INotifyPropertyChanged, IDispo
     /// </summary>
     protected bool BeginAction(string actionName, BlexActionArg[]? args)
     {
-        // Gate the veto on the *synchronous* nesting depth, not the record depth. A record depth
-        // above zero can mean either "lexically nested inside a running action" (must not re-veto:
-        // the enclosing action already passed the filters) or "another async action of this store
-        // is still awaiting" -- and in the latter case skipping the check would silently bypass
-        // every veto filter, which is the common case since Parallel is the default effect
-        // concurrency. Only a synchronous Dispatch body raises _notifyDepth, so it distinguishes
-        // the two exactly.
+        // Gate the veto on the *synchronous* nesting depth. An action lexically nested in a running
+        // synchronous one must not re-veto: the enclosing action already passed the filters. Any other
+        // action -- one started while another async action of this store awaits included, the common
+        // case since Parallel is the default effect concurrency -- faces them. Only a synchronous
+        // Dispatch body raises _notifyDepth, so it distinguishes the two exactly.
         return _notifyDepth != 0
             || _manager is null
             || _manager.BeforeAction(this, actionName, args);
@@ -786,15 +861,18 @@ public abstract class BlexStoreBase : IBlexStore, INotifyPropertyChanged, IDispo
 
     /// <summary>
     /// Async dispatch for a body whose veto decision has already been taken by
-    /// <see cref="BeginAction"/>. Records the action when the outermost dispatch completes.
+    /// <see cref="BeginAction"/>. Records the action when it completes, unless it runs inside another
+    /// action of this flow, which records it.
     /// </summary>
     protected async Task DispatchApprovedAsync(string actionName, Func<Task> mutation, BlexActionArg[]? args)
     {
         ArgumentNullException.ThrowIfNull(mutation);
 
-        var inPlace = _recordDepth == 0 && _manager is { DetectInPlaceMutations: true } ? BeginInPlaceCheck() : default;
+        // Entered here, before the first await, so the body -- invoked below -- runs in the frame; the
+        // assignment reaches only this method's own context, never its caller's.
+        var frame = EnterAction(out var began);
+        var inPlace = began && _manager is { DetectInPlaceMutations: true } ? BeginInPlaceCheck() : default;
         var telemetry = BlexDiagnostics.StartAction(this, actionName);
-        _recordDepth++;
         var body = _manager?.EnterActionBody() ?? default;
         try
         {
@@ -810,11 +888,9 @@ public abstract class BlexStoreBase : IBlexStore, INotifyPropertyChanged, IDispo
         finally
         {
             body.Exit();
-            _recordDepth--;
             var recorded = false;
-            if (_recordDepth == 0 && _dirty)
+            if (ExitAction(frame, began))
             {
-                _dirty = false;
                 _manager?.RecordAction(this, actionName, args);
                 recorded = true;
             }

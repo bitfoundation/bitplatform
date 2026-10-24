@@ -8,7 +8,7 @@
          Lead="Every action streams into the Redux DevTools extension with its payload and the resulting state tree - and the slider rewinds your app.">
 
     <div class="bb-card">
-        <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Getting connected</h3>
+        <h2 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Getting connected</h2>
         <ol class="bb-detail-list">
             <li>Install the <a href="https://github.com/reduxjs/redux-devtools" target="_blank" rel="noopener">Redux DevTools</a> browser extension.</li>
             <li>Run the app with <code>&lt;BlexProvider&gt;</code> in place and <code>EnableDevTools</code> left at its default.</li>
@@ -38,11 +38,11 @@
             <div class="bb-stats">
                 <div class="bb-stat">
                     <span class="bb-stat-label">Count</span>
-                    <span class="bb-stat-value demo-accent">@Counter.Count</span>
+                    <span class="bb-stat-value demo-accent"><Persisted>@Counter.Count</Persisted></span>
                 </div>
                 <div class="bb-stat">
                     <span class="bb-stat-label">Step</span>
-                    <span class="bb-stat-value">@Counter.Step</span>
+                    <span class="bb-stat-value"><Persisted>@Counter.Step</Persisted></span>
                 </div>
                 <div class="bb-stat">
                     <span class="bb-stat-label">settings.Token (real value)</span>
@@ -57,7 +57,7 @@
     </div>
 
     <div class="bb-card">
-        <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> What travels over the bridge</h3>
+        <h2 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> What travels over the bridge</h2>
         <p>
             On connect, the manager sends the current tree as the initial state. After that, each
             recorded action sends an action object and the resulting tree:
@@ -70,7 +70,7 @@
     </div>
 
     <div class="bb-card">
-        <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Messages Blex handles</h3>
+        <h2 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Messages Blex handles</h2>
         <p>
             Time-travel is driven by the extension sending messages back. <code>HandleDevToolsMessage</code>
             interprets these:
@@ -97,7 +97,7 @@
             skipped; the rest still restore.
         </p>
 
-        <h4>Pause and lock</h4>
+        <h3>Pause and lock</h3>
         <p>
             The monitor's two recording controls are different in kind, and the difference matters when
             you are hunting a bug. <strong>Pause recording</strong> is about the <em>timeline</em>: the
@@ -125,7 +125,7 @@
             <div class="bb-stats">
                 <div class="bb-stat">
                     <span class="bb-stat-label">counter/Count</span>
-                    <span class="bb-stat-value demo-accent">@Counter.Count</span>
+                    <span class="bb-stat-value demo-accent"><Persisted>@Counter.Count</Persisted></span>
                 </div>
                 <div class="bb-stat">
                     <span class="bb-stat-label">IsDevTools<wbr />Paused</span>
@@ -151,7 +151,7 @@
             </p>
         </Callout>
 
-        <h4 id="dispatcher">The dispatcher</h4>
+        <h3 id="dispatcher">The dispatcher</h3>
         <p>
             The monitor's dispatcher button fires an action against the running app - handy for driving a
             store into a state that is awkward to reach through the UI. It works because every generated
@@ -177,7 +177,7 @@
     </div>
 
     <div class="bb-card">
-        <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Redacting sensitive state</h3>
+        <h2 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Redacting sensitive state</h2>
         <p>
             The state tree is handed to a browser extension. Anything in it is visible to that extension.
             Blex gives you two hooks plus a shorthand.
@@ -230,7 +230,7 @@
     </div>
 
     <div class="bb-card">
-        <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Turning it off</h3>
+        <h2 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Turning it off</h2>
         <p>
             For production, disable the connection outright. Nothing is serialized and nothing is sent.
         </p>
@@ -238,7 +238,7 @@
     </div>
 
     <div class="bb-card">
-        <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Under the hood</h3>
+        <h2 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Under the hood</h2>
         <p>
             The manager has no JS dependency - it only knows the <code>IBlexDevTools</code>
             interface. <code>BlexReduxDevToolsConnector</code>, in the <code>Bit.Blex.Blazor</code> namespace,
@@ -257,7 +257,7 @@
     </div>
 
     <div class="bb-card">
-        <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Connecting a different sink</h3>
+        <h2 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Connecting a different sink</h2>
         <p>
             <code>IBlexDevTools</code> is public, so the manager can feed anything - a server-side
             session recorder, a test double, a custom monitor.

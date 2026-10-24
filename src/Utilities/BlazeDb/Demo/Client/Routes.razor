@@ -4,12 +4,33 @@
 
    StorageStatus sits beside the router rather than inside a layout: it opens the tab's demo
    database once, whichever page the visitor lands on, and stays mounted across navigations. *@
+@inject NavigationManager Nav
+@implements IDisposable
 
 <Router AppAssembly="typeof(Program).Assembly" NotFoundPage="typeof(Pages.NotFound)">
     <Found Context="routeData">
         <RouteView RouteData="routeData" DefaultLayout="typeof(Layout.DocsLayout)" />
-        <FocusOnNavigate RouteData="routeData" Selector="h1" />
+        @* Not on arrival: <FocusOnNavigate> also fires on its first render, which here - nothing is
+           prerendered - is the app's very first one, and it would start a keyboard reader on the h1,
+           past the skip link, the header and the docs nav, before they had pressed a key. It joins
+           the tree with the first navigation, and its first render then is that one. *@
+        @if (_navigated)
+        {
+            <FocusOnNavigate RouteData="routeData" Selector="h1" />
+        }
     </Found>
 </Router>
 
 <StorageStatus />
+
+@code {
+    private bool _navigated;
+
+    // Subscribed ahead of the router (a parent initializes before the children it renders), so the
+    // flag is already set when the router renders the page the navigation asked for.
+    protected override void OnInitialized() => Nav.LocationChanged += OnLocationChanged;
+
+    private void OnLocationChanged(object? sender, LocationChangedEventArgs e) => _navigated = true;
+
+    public void Dispose() => Nav.LocationChanged -= OnLocationChanged;
+}

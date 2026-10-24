@@ -7,7 +7,7 @@
          Lead="Derived values that recompute only when they have to - when the state they read changes.">
 
     <div class="bb-card">
-        <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> The convention</h3>
+        <h2 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> The convention</h2>
         <p>
             Mark a parameterless method named <code>ComputeXxx()</code> or <code>GetXxx()</code> with
             <code>[BlexComputed]</code> and the generator emits a memoized public property <code>Xxx</code>.
@@ -22,7 +22,7 @@
     </div>
 
     <div class="bb-card">
-        <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Memoization in practice</h3>
+        <h2 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Memoization in practice</h2>
         <p>
             Reading a computed property ten times evaluates it once. Only a change to the state it reads
             makes it stale. The counters below are incremented <em>inside</em> the compute methods, so they
@@ -86,7 +86,7 @@
     </div>
 
     <div class="bb-card">
-        <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Composing computed values</h3>
+        <h2 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Composing computed values</h2>
         <p>
             A computed method may read other computed properties. <code>ComputeTotal()</code> above reads
             <code>Subtotal</code>, so the first read of <code>Total</code> after a change to <code>Lines</code>
@@ -122,7 +122,7 @@
     </div>
 
     <div class="bb-card">
-        <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Rules</h3>
+        <h2 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Rules</h2>
         <ul class="bb-detail-list">
             <li>The method must be <strong>parameterless</strong> - a computed value backs a property, so there is nowhere to pass arguments (<code>BLEX004</code>).</li>
             <li>The name must start with <code>Compute</code> or <code>Get</code> and have something after it (<code>BLEX003</code>).</li>
@@ -135,7 +135,7 @@
     </div>
 
     <div class="bb-card">
-        <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Computed values are not serialized</h3>
+        <h2 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Computed values are not serialized</h2>
         <p>
             Only <code>[BlexState]</code> fields go into <code>SerializeState()</code>. Computed values are
             derived, so they are recalculated after a restore rather than stored - which means a

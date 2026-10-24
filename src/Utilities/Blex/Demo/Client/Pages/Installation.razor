@@ -4,7 +4,7 @@
          Lead="One package, one DI call per store, and one component wrapped around your router.">
 
     <div class="bb-card">
-        <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Packages</h3>
+        <h2 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Packages</h2>
         <p>
             Reference <code>Bit.Blex</code>. It carries the runtime, the source generator that turns your
             <code>[BlexStore]</code> classes into reactive stores, and the Blazor integration (the
@@ -31,7 +31,7 @@
     </div>
 
     <div class="bb-card">
-        <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Register the services</h3>
+        <h2 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Register the services</h2>
         <p>
             <code>AddBitBlexServices</code> registers the manager and the middleware pipeline;
             <code>AddBitBlexStore&lt;T&gt;</code> registers each store as a scoped service exposed both as
@@ -46,7 +46,7 @@
     </div>
 
     <div class="bb-card">
-        <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Add the provider</h3>
+        <h2 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Add the provider</h2>
         <p>
             <code>&lt;BlexProvider&gt;</code> goes once, near the root of the app, wrapping the router.
             On initialization it registers every <code>IBlexStore</code> with the manager, restores
@@ -69,7 +69,7 @@
     </div>
 
     <div class="bb-card">
-        <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Without Blazor</h3>
+        <h2 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Without Blazor</h2>
         <p>
             Stores, the manager and persistence never touch Blazor or JavaScript - only the
             <code>Bit.Blex.Blazor</code> namespace does. In a console app, worker or test, resolve
@@ -82,7 +82,7 @@
     </div>
 
     <div class="bb-card">
-        <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Trimming and AOT</h3>
+        <h2 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Trimming and AOT</h2>
         <p>
             Snapshots - <code>SerializeState</code>, persistence, the DevTools payload - go through
             <code>System.Text.Json</code>. By default that is the reflection-based serializer, whose
@@ -103,7 +103,7 @@
     </div>
 
     <div class="bb-card">
-        <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Requirements</h3>
+        <h2 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Requirements</h2>
         <ul class="bb-detail-list">
             <li><strong>.NET 8, 9 or 10</strong> for <code>Bit.Blex</code>, <code>Bit.Blex.Maui</code> and <code>Bit.Blex.Testing</code> - each ships <code>net8.0</code>, <code>net9.0</code> and <code>net10.0</code> builds.</li>
             <li><strong>netstandard2.0</strong> for the generator, as Roslyn analyzers require.</li>

@@ -10,7 +10,7 @@
          Lead="A hook on every action: observe it after it applies, or veto it before it runs.">
 
     <div class="bb-card">
-        <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> The interface</h3>
+        <h2 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> The interface</h2>
         <p>
             Middleware runs synchronously on the dispatch path. <code>BeforeAction</code> sees an action
             that is about to mutate state and can cancel it; <code>OnAction</code> sees one that already
@@ -21,7 +21,7 @@
     </div>
 
     <div class="bb-card">
-        <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Registering</h3>
+        <h2 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Registering</h2>
         <p>Four ways, depending on what the middleware needs:</p>
         <CodeBlock Code="@Register" FileName="Program.cs" />
 
@@ -40,7 +40,7 @@
     </div>
 
     <div class="bb-card">
-        <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Observing</h3>
+        <h2 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Observing</h2>
         <p>
             This is how you get logging, analytics or an audit trail. The Inspector at the bottom of this
             page is exactly this - an <code>ActionFeedMiddleware</code> registered in the site's
@@ -79,7 +79,7 @@
     </div>
 
     <div class="bb-card">
-        <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Vetoing</h3>
+        <h2 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Vetoing</h2>
         <p>
             <code>BeforeAction</code> runs ahead of the mutation. Calling <code>Cancel()</code> stops the
             action completely: the body never runs, nothing changes, nothing is recorded and no
@@ -109,7 +109,7 @@
             <div class="bb-stats">
                 <div class="bb-stat">
                     <span class="bb-stat-label">Count</span>
-                    <span class="bb-stat-value demo-accent">@Counter.Count</span>
+                    <span class="bb-stat-value demo-accent"><Persisted>@Counter.Count</Persisted></span>
                 </div>
                 <div class="bb-stat">
                     <span class="bb-stat-label">Actions blocked</span>
@@ -134,7 +134,7 @@
     </div>
 
     <div class="bb-card">
-        <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> The pre-action context</h3>
+        <h2 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> The pre-action context</h2>
         <ApiTable Title="BlexPreActionContext" Rows="@PreRows" />
 
         <p>
@@ -154,7 +154,7 @@
     </div>
 
     <div class="bb-card">
-        <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> When the action itself throws</h3>
+        <h2 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> When the action itself throws</h2>
         <p>
             The third hook, <code>OnActionError</code>, fires when an action <em>body</em> throws. It is
             the counterpart to Pinia's <code>$onAction</code> <code>onError</code>, and it is where a
@@ -234,7 +234,7 @@
     </div>
 
     <div class="bb-card">
-        <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Error isolation</h3>
+        <h2 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Error isolation</h2>
         <p>
             Middleware must not be able to break dispatch. An exception thrown from
             <code>BeforeAction</code> or <code>OnAction</code> is caught, reported to
@@ -245,7 +245,7 @@
     </div>
 
     <div class="bb-card">
-        <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Cost when nothing is listening</h3>
+        <h2 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Cost when nothing is listening</h2>
         <p>
             With no middleware, no DevTools connection and no subscribers, the manager reports
             <code>HasObservers == false</code> and the whole recording step is skipped. Generated

@@ -65,25 +65,28 @@ public class ManagerNotificationCoverageTests
     }
 
     [TestMethod]
-    public async Task Subscription_SeesAnAsyncActionsChangesWhenItIsRecorded()
+    public async Task Subscription_SeesEachOverlappingActionsChangeWhenThatActionIsRecorded()
     {
         var manager = new BlexManager();
         var store = new GatedStore();
         manager.Register(store);
 
         var seen = new List<int>();
+        var recorded = new List<string>();
         using var sub = manager.Subscribe(() => store.Count, seen.Add);
+        using var log = manager.Subscribe(ctx => recorded.Add(ctx.QualifiedName));
         using var selector = manager.CreateSelector(() => store.Count);
 
         var run = store.Slow();     // parks on the gate: the store's async action is in flight
-        store.Bump();               // its own action, folded into the one in flight
+        store.Bump();               // an action of its own, recorded as it ends - not folded into the one in flight
 
         Assert.AreEqual(100, selector.Value, "a pull-based selector sees the change at once");
-        Assert.IsEmpty(seen, "a push subscription waits for the record, so a follow-up cannot overtake its cause");
+        Assert.AreSequenceEqual([100], seen, "a push subscription hears it with its record: the cause is recorded before any follow-up");
 
         store.Gate.SetResult();
         await run;
-        Assert.AreSequenceEqual([101], seen);
+        Assert.AreSequenceEqual([100, 101], seen);
+        Assert.AreSequenceEqual(["gated/Bump", "gated/Slow"], recorded);
     }
 
     [TestMethod]

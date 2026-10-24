@@ -17,7 +17,7 @@ public class McpCompletionTests
         CollectionAssert.Contains((await CompleteResourceAsync("blex://guide/{heading}", "heading", "")).Values.ToArray(), "Persistence");
         CollectionAssert.Contains((await CompleteResourceAsync("blex://api/{typeName}", "typeName", "")).Values.ToArray(), "BlexOptions");
         CollectionAssert.Contains((await CompleteResourceAsync("blex://diagnostics/{code}", "code", "")).Values.ToArray(), "BLEX001");
-        CollectionAssert.Contains((await CompleteResourceAsync("blex://source/{path}", "path", "")).Values.ToArray(), "Demo/Client/Stores/CartStore.cs");
+        CollectionAssert.Contains((await CompleteResourceAsync("blex://source/{+path}", "path", "")).Values.ToArray(), "Demo/Client/Stores/CartStore.cs");
     }
 
     [TestMethod]

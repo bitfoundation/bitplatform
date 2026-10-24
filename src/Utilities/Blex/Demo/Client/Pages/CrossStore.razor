@@ -10,7 +10,7 @@
          Lead="Let one store react to another's actions without either of them knowing the other exists.">
 
     <div class="bb-card">
-        <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> BlexManager</h3>
+        <h2 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> BlexManager</h2>
         <p>
             The manager aggregates every registered store into one global state tree, runs the middleware
             pipeline, feeds the DevTools bridge and applies time-travel snapshots. Most application code
@@ -24,7 +24,7 @@
     </div>
 
     <div class="bb-card">
-        <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Subscribing to actions</h3>
+        <h2 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Subscribing to actions</h2>
         <p>
             <code>Subscribe</code> and its filtered variants are the building block for coordination:
             react to one store's action and drive another. Handler exceptions are isolated and routed to
@@ -97,7 +97,7 @@
     </div>
 
     <div class="bb-card">
-        <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> The action context</h3>
+        <h2 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> The action context</h2>
         <p>Every observer receives a <code>BlexActionContext</code> describing what just happened.</p>
         <ApiTable Title="BlexActionContext" Rows="@ContextRows" />
 
@@ -112,7 +112,7 @@
     </div>
 
     <div class="bb-card">
-        <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Async reactors</h3>
+        <h2 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Async reactors</h2>
         <p>
             <code>SubscribeAsync</code> lets a reactor start async work - typically an effect on another
             store. The returned task is observed, so a failure is reported through <code>OnError</code>
@@ -131,7 +131,7 @@
     </div>
 
     <div class="bb-card" id="when">
-        <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Waiting for a condition</h3>
+        <h2 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Waiting for a condition</h2>
         <p>
             A reactor answers "every time this happens". A workflow often needs "once, when this holds":
             the checkout that waits for sign-in, the import that waits for both lookups to load.
@@ -149,7 +149,7 @@
     </div>
 
     <div class="bb-card">
-        <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Derived values that span stores</h3>
+        <h2 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Derived values that span stores</h2>
         <p>
             A subscription answers "tell me when this changed". The other half of the problem is "give me
             this value, cheaply, from several places at once" - and that is what
@@ -214,7 +214,7 @@
     </div>
 
     <div class="bb-card">
-        <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Where to put the wiring</h3>
+        <h2 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Where to put the wiring</h2>
         <p>Three practical options, in rough order of preference:</p>
         <ul class="bb-detail-list">
             <li>
@@ -235,7 +235,7 @@
     </div>
 
     <div class="bb-card">
-        <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Dynamic registration</h3>
+        <h2 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Dynamic registration</h2>
         <p>
             Stores register themselves when first resolved from DI, and
             <code>&lt;BlexProvider&gt;</code> registers everything up front. For a lazily-loaded

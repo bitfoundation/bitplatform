@@ -23,7 +23,7 @@
         <BlexView Store="Counter">
             @{ _viewRenders++; }
             <div class="bb-stat">
-                <span class="bb-stat-label">BlexView: @Counter.Count / step @Counter.Step</span>
+                <span class="bb-stat-label">BlexView: <Persisted>@Counter.Count</Persisted> / step <Persisted>@Counter.Step</Persisted></span>
                 <span class="bb-stat-value demo-accent">@_viewRenders renders</span>
             </div>
         </BlexView>

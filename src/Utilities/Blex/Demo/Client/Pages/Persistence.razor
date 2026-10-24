@@ -8,7 +8,7 @@
          Lead="Opt a store in, register a storage provider, and its state survives a reload - with debouncing, versioning and migrations included.">
 
     <div class="bb-card">
-        <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Opting in</h3>
+        <h2 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Opting in</h2>
         <p>
             Set <code>Persist = true</code> on the store and register a provider. The store is rehydrated
             during startup and written back after every action that touches it.
@@ -22,13 +22,15 @@
         <DemoCard Title="This page's settings are persisted"
                   Description="Change something, then reload the browser. The values come back - and so does the raw payload below, read straight out of localStorage. The store's Token is marked Persist = false, so it never appears there."
                   Source="@StoreSource">
+            @* No choice shows as made until the stored one is in: before that the store holds the declared
+               defaults, which are not the reader's settings (see Components/Persisted.razor). *@
             <div class="bb-toolbar">
                 <span class="bb-overline">Accent</span>
                 <div class="bb-segmented" role="group" aria-label="Accent">
                     @foreach (var accent in Accents)
                     {
                         var current = accent;
-                        <button type="button" aria-pressed="@(Settings.Accent == current ? "true" : "false")"
+                        <button type="button" aria-pressed="@(Persistor.HasHydrated && Settings.Accent == current ? "true" : "false")"
                                 @onclick="() => Settings.SetAccent(current)">@current</button>
                     }
                 </div>
@@ -36,13 +38,13 @@
             <div class="bb-toolbar">
                 <span class="bb-overline">Density</span>
                 <div class="bb-segmented" role="group" aria-label="Density">
-                    <button type="button" aria-pressed="@(Settings.Density == Density.Comfortable ? "true" : "false")"
+                    <button type="button" aria-pressed="@(Persistor.HasHydrated && Settings.Density == Density.Comfortable ? "true" : "false")"
                             @onclick="() => Settings.SetDensity(Density.Comfortable)">Comfortable</button>
-                    <button type="button" aria-pressed="@(Settings.Density == Density.Compact ? "true" : "false")"
+                    <button type="button" aria-pressed="@(Persistor.HasHydrated && Settings.Density == Density.Compact ? "true" : "false")"
                             @onclick="() => Settings.SetDensity(Density.Compact)">Compact</button>
                 </div>
                 <label class="bb-check">
-                    <input type="checkbox" checked="@Settings.ShowLineNumbers" @onchange="_ => Settings.ToggleLineNumbers()" />
+                    <input type="checkbox" checked="@(Persistor.HasHydrated && Settings.ShowLineNumbers)" @onchange="_ => Settings.ToggleLineNumbers()" />
                     Line numbers
                 </label>
             </div>
@@ -50,7 +52,7 @@
             <div class="bb-stats">
                 <div class="bb-stat">
                     <span class="bb-stat-label">Summary (computed)</span>
-                    <span class="bb-stat-value demo-stat-text">@Settings.Summary</span>
+                    <span class="bb-stat-value demo-stat-text"><Persisted>@Settings.Summary</Persisted></span>
                 </div>
                 <div class="bb-stat">
                     <span class="bb-stat-label">Storage key</span>
@@ -86,10 +88,10 @@
     </div>
 
     <div class="bb-card">
-        <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Options</h3>
+        <h2 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Options</h2>
         <ApiTable Title="BlexPersistenceOptions" Rows="@OptionRows" />
 
-        <h4>Debouncing</h4>
+        <h3>Debouncing</h3>
         <p>
             Without a debounce, every action writes. For a store that changes on every keystroke or drag
             that is a lot of serialization and a lot of storage churn. <code>DebounceInterval</code>
@@ -105,7 +107,7 @@
             to the quiet period.
         </p>
 
-        <h4>Versioning and migrations</h4>
+        <h3>Versioning and migrations</h3>
         <p>
             When a persisted store's shape changes, bump <code>Version</code>. On load, a payload whose
             stored version differs is handed to <code>Migrate</code>; return the upgraded state, or
@@ -122,7 +124,7 @@
             </p>
         </Callout>
 
-        <h4 id="transient">Persisting only part of a store</h4>
+        <h3 id="transient">Persisting only part of a store</h3>
         <p>
             Some state belongs to one visit: a search box's text, an "is the drawer open" flag, a cached
             response that must be re-fetched rather than restored. Mark such a field
@@ -152,7 +154,7 @@
             </p>
         </Callout>
 
-        <h4>Reacting to rehydration</h4>
+        <h3>Reacting to rehydration</h3>
         <p>
             <code>OnRehydrated</code> fires once per persistent store as <code>StartAsync</code> applies
             it, with the slice that was applied - or <code>null</code> when nothing was stored, which is
@@ -162,7 +164,7 @@
         </p>
         <CodeBlock Code="@OnRehydrated" Title="First visit vs returning" />
 
-        <h4>Deferring hydration</h4>
+        <h3>Deferring hydration</h3>
         <p>
             Sometimes state must not be restored at startup: a per-user payload that only makes sense
             once sign-in resolves, or a draft the user should be asked about before it reappears. Set
@@ -171,7 +173,7 @@
         </p>
         <CodeBlock Code="@SkipHydration" Title="Hydrate after sign-in" />
 
-        <h4>Two tabs, one state</h4>
+        <h3>Two tabs, one state</h3>
         <p>
             By default, two open tabs of the same app quietly fight. Each saves its own state after every
             action, so whichever tab acted last wins and the other's changes disappear on its next
@@ -198,7 +200,7 @@
             </p>
         </Callout>
 
-        <h4>Knowing when the real state has landed</h4>
+        <h3>Knowing when the real state has landed</h3>
         <p>
             Hydration is not instantaneous: browser storage sits behind JS interop, a Blazor Server
             prerender cannot reach it at all, and <code>SkipHydration</code> defers it on purpose. Until
@@ -208,6 +210,13 @@
             re-render from, and <code>WhenHydratedAsync()</code> the awaitable form.
         </p>
         <CodeBlock Code="@Hydration" Language="razor" />
+        <p>
+            This site applies it to every value a persisted store gives it: each one is rendered through a
+            small <code>&lt;Persisted&gt;</code> component that shows a placeholder until
+            <code>HasHydrated</code> and re-renders on <code>Hydrated</code>. Reload any page with a changed
+            counter: it never reads 0 first, on screen or to a screen reader. The demo below shows the flag
+            itself, so it is left as it is.
+        </p>
 
         <DemoCard Title="This page's own hydration state"
                   Description="Pick an accent above, then reload and watch this flip. Neither the prerender nor the first interactive render has read localStorage yet, so it starts out False, beside the declared default; when the stored state lands, Persistor.Hydrated re-renders it as True, beside the stored accent."
@@ -224,7 +233,7 @@
             </div>
         </DemoCard>
 
-        <h4>Deciding how stored state meets live state</h4>
+        <h3>Deciding how stored state meets live state</h3>
         <p>
             The default is already a shallow merge: the generated deserializer only writes the properties
             the payload actually contains, so a key it omits keeps whatever the store currently holds.
@@ -243,7 +252,7 @@
     </div>
 
     <div class="bb-card">
-        <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> BlexStatePersistor</h3>
+        <h2 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> BlexStatePersistor</h2>
         <p>Resolve it from DI when you need to control persistence directly.</p>
         <ApiTable Rows="@PersistorRows" />
 
@@ -265,7 +274,7 @@
     </div>
 
     <div class="bb-card">
-        <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Custom storage</h3>
+        <h2 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Custom storage</h2>
         <p>
             <code>IBlexStorage</code> is the whole contract; <code>BlexBrowserStorage</code>, in the
             <code>Bit.Blex.Blazor</code> namespace, is the browser implementation. Anything else - a file,
@@ -286,7 +295,7 @@
     </div>
 
     <div class="bb-card">
-        <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Protecting what is stored</h3>
+        <h2 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Protecting what is stored</h2>
         <p>
             Browser storage is readable by anyone with the device and by every script on the page. An
             <code>IBlexStateProtector</code> encrypts and tamper-proofs each payload on its way to storage and
@@ -306,7 +315,7 @@
     </div>
 
     <div class="bb-card">
-        <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Prerendering</h3>
+        <h2 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Prerendering</h2>
         <p>
             <code>&lt;BlexProvider&gt;</code> also bridges to Blazor's
             <code>PersistentComponentState</code>. State produced during prerendering is handed to the
@@ -323,7 +332,7 @@
     </div>
 
     <div class="bb-card">
-        <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> What you can rely on</h3>
+        <h2 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> What you can rely on</h2>
         <ul class="bb-detail-list">
             <li><strong>Corrupt data never breaks startup.</strong> An unreadable payload - malformed JSON, something other than an object, or a value the store's fields cannot take - is reported through <code>OnError</code>, discarded and removed from storage.</li>
             <li><strong>Restores are written back.</strong> Undo/redo, DevTools time-travel and a manual <code>RestoreState</code> save the restored state, so a reload cannot resurrect the pre-restore state.</li>

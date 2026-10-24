@@ -7,7 +7,7 @@
          Lead="A cache for data the app shows but does not own: fetched once, shared, refreshed when it goes stale, invalidated after a change, and dropped when nobody needs it.">
 
     <div class="bb-card">
-        <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Two kinds of state</h3>
+        <h2 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Two kinds of state</h2>
         <p>
             A store holds state the app <em>owns</em> - what the user typed, picked or toggled. That is
             what undo, persistence and time travel are about. A server's answer is different: a copy of
@@ -25,7 +25,7 @@
     </div>
 
     <div class="bb-card">
-        <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Querying</h3>
+        <h2 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Querying</h2>
         <p>
             A query is a <strong>key</strong> - an ordered list of parts, general to specific - and a
             <strong>fetch</strong>. In a component that inherits <code>BlexComponentBase</code>,
@@ -97,7 +97,7 @@
     </div>
 
     <div class="bb-card">
-        <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Freshness, retries and garbage collection</h3>
+        <h2 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Freshness, retries and garbage collection</h2>
         <ApiTable Title="BlexQueryOptions (unset values come from AddBitBlexQueries)" Rows="@OptionRows" />
         <p>
             One fetch runs per key at a time: observers that mount while it runs join it. An explicit
@@ -109,7 +109,7 @@
     </div>
 
     <div class="bb-card">
-        <h3 class="bb-card-title"><span class="bb-dot bb-dot-danger"></span> Mutations and optimistic updates</h3>
+        <h2 class="bb-card-title"><span class="bb-dot bb-dot-danger"></span> Mutations and optimistic updates</h2>
         <p>
             A mutation sends a change. <code>OnMutate</code> can apply it to the cache at once with
             <code>Optimistic</code>, which returns the rollback a failure applies automatically;
@@ -144,7 +144,7 @@
     </div>
 
     <div class="bb-card">
-        <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Invalidation and direct cache access</h3>
+        <h2 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Invalidation and direct cache access</h2>
         <p>
             <code>InvalidateAsync(["todos"])</code> marks every query whose key starts with those parts as
             stale and refetches the ones being watched; the rest refetch when next observed. Pass
@@ -165,7 +165,7 @@
     </div>
 
     <div class="bb-card">
-        <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Paged and infinite queries</h3>
+        <h2 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Paged and infinite queries</h2>
         <p>
             A feed, "load more", infinite scroll: <code>UseInfiniteQuery</code> (or
             <code>QueryClient.InfiniteQuery</code>) keeps the pages loaded so far as one cached query.
@@ -218,7 +218,7 @@
     </div>
 
     <div class="bb-card">
-        <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Prerendering</h3>
+        <h2 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Prerendering</h2>
         <p>
             With <code>&lt;BlexProvider&gt;</code>, the queries a prerender fetched are handed to the
             interactive render through <code>PersistentComponentState</code>, so it shows them at once
@@ -231,7 +231,7 @@
     </div>
 
     <div class="bb-card">
-        <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> From effects, services and tests</h3>
+        <h2 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> From effects, services and tests</h2>
         <p>
             <code>FetchAsync</code> is the read-through for code that is not a component: it returns fresh
             cached data, joins a fetch already running, and throws when the fetch fails.
@@ -249,7 +249,7 @@
     </div>
 
     <div class="bb-card">
-        <h3 class="bb-card-title"><span class="bb-dot bb-dot-danger"></span> Offline</h3>
+        <h2 class="bb-card-title"><span class="bb-dot bb-dot-danger"></span> Offline</h2>
         <p>
             A request that cannot reach the server should not fail - it should wait. While
             <code>QueryClient.IsOnline</code> is <code>false</code>, fetches and mutations pause

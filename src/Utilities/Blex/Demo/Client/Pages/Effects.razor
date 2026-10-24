@@ -7,7 +7,7 @@
          Lead="Async work with a loading flag, an error slot, a cancellation method and a concurrency policy - all generated.">
 
     <div class="bb-card">
-        <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> The convention</h3>
+        <h2 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> The convention</h2>
         <p>
             Mark an async method named <code>OnXxx</code> returning <code>Task</code> or
             <code>ValueTask</code> with <code>[BlexEffect]</code>. You get a public <code>Xxx(...)</code>
@@ -27,7 +27,7 @@
     </div>
 
     <div class="bb-card">
-        <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Loading is reference-counted</h3>
+        <h2 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Loading is reference-counted</h2>
         <p>
             <code>XxxIsLoading</code> stays <code>true</code> until the <em>last</em> in-flight run
             finishes, so overlapping invocations do not flip it off early. It is set through
@@ -37,7 +37,7 @@
     </div>
 
     <div class="bb-card">
-        <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Cancellation</h3>
+        <h2 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Cancellation</h2>
         <p>
             Give the effect a <strong>trailing</strong> <code>CancellationToken</code> parameter and the
             generator supplies the token itself - it does not appear on the public wrapper - and emits a
@@ -69,7 +69,7 @@
     </div>
 
     <div class="bb-card">
-        <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Concurrency</h3>
+        <h2 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Concurrency</h2>
         <p>
             <code>[BlexEffect(Concurrency = …)]</code> decides what happens when a run starts while another
             is still going, mirroring the RxJS flattening operators NgRx effects are built on.
@@ -133,7 +133,7 @@
             }
         </DemoCard>
 
-        <h4>What you should see</h4>
+        <h3>What you should see</h3>
         <ul class="bb-detail-list">
             <li><strong>Parallel</strong> - three clicks give three <code>started</code> lines immediately and three <code>finished</code> lines ~1.2 s later.</li>
             <li><strong>Latest</strong> - each click <code>cancelled</code>s the previous run; only the last one finishes.</li>
@@ -141,23 +141,20 @@
             <li><strong>Queue</strong> - the runs start ~1.2 s apart, strictly in the order you clicked.</li>
         </ul>
 
-        <Callout Kind="Callout.CalloutKind.Note" Title="Overlapping runs share one record">
+        <Callout Kind="Callout.CalloutKind.Note" Title="Every run is its own record">
             <p>
-                While an effect of a store is awaiting, every other action of the <em>same</em> store that
-                overlaps it - another run of this effect or of another one, or a synchronous action dispatched
-                mid-await - is folded into a single recorded action, the one that ends last. Three quick
-                <strong>Parallel</strong> clicks, <strong>Latest</strong> clicks that supersede each other, or
-                <strong>Drop</strong> with its <code>dropped</code> notes therefore show up as one entry in the
-                Inspector's feed, in middleware <code>OnAction</code>, in DevTools and in the undo history.
-                <strong>Queue</strong> runs record one each, because a queued run starts only once the one before it
-                has ended. Actions of other stores are recorded on their own as usual, and the timeline above -
-                written by the runs themselves - still shows every run.
+                A run is recorded when it ends, with what its own flow changed - across its awaits, and nothing
+                else. Three quick <strong>Parallel</strong> clicks are three entries in the Inspector's feed, in
+                middleware <code>OnAction</code>, in DevTools and in the undo history, in the order they finished;
+                a <strong>Drop</strong> click's <code>dropped</code> note is an entry of its own, and so is
+                anything you click while a run awaits. Only an action dispatched from <em>inside</em> a run's body
+                is part of that run's record.
             </p>
         </Callout>
     </div>
 
     <div class="bb-card">
-        <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> A realistic type-ahead</h3>
+        <h2 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> A realistic type-ahead</h2>
         <p>
             <code>Latest</code> plus a token is the whole recipe for search-as-you-type: an obsolete
             request cannot land after a newer one and overwrite the results.
@@ -218,7 +215,7 @@
     </div>
 
     <div class="bb-card">
-        <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Debouncing</h3>
+        <h2 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Debouncing</h2>
         <p>
             <code>Latest</code> stops a stale response from landing, but it still sends a request per
             keystroke. <code>DebounceMilliseconds</code> waits for a quiet period first, so only the
@@ -287,7 +284,7 @@
     </div>
 
     <div class="bb-card">
-        <h3 class="bb-card-title"><span class="bb-dot bb-dot-danger"></span> Retries and timeouts</h3>
+        <h2 class="bb-card-title"><span class="bb-dot bb-dot-danger"></span> Retries and timeouts</h2>
         <p>
             Networks fail transiently. <code>RetryCount</code> runs a failed body again, waiting
             <code>RetryDelayMilliseconds</code> before the first retry and doubling the wait before each
@@ -345,7 +342,7 @@
     </div>
 
     <div class="bb-card">
-        <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Rules</h3>
+        <h2 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Rules</h2>
         <ul class="bb-detail-list">
             <li>
                 The return type must be non-generic <code>Task</code> or <code>ValueTask</code>
@@ -378,7 +375,7 @@
     </div>
 
     <div class="bb-card">
-        <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> The generated wrapper</h3>
+        <h2 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> The generated wrapper</h2>
         <p>Roughly what the generator emits for a <code>Latest</code> effect with a token:</p>
         <CodeBlock Code="@GeneratedEffect" Title="Generated (simplified)" />
     </div>

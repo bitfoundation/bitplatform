@@ -128,10 +128,25 @@
     private ElementReference _close;
     private DocsPageInfo? _current;
 
+    [CascadingParameter] private MainLayout.Drawers? Drawers { get; set; }
+
     protected override void OnInitialized()
     {
         Recompute();
         Nav.LocationChanged += OnLocationChanged;
+        if (Drawers is not null)
+            Drawers.Opened += OnDrawerOpened;
+    }
+
+    // The header's menu opened: this drawer gives the page up to it.
+    private void OnDrawerOpened(object owner)
+    {
+        if (ReferenceEquals(owner, this) || _menuOpen is false)
+            return;
+
+        _menuOpen = false;
+        _focusDrawerPending = false;
+        _ = InvokeAsync(StateHasChanged);
     }
 
     // Collapse the narrow-width panel after a link in it commits: a drawer that survives the
@@ -167,6 +182,8 @@
     {
         _menuOpen = !_menuOpen;
         _focusDrawerPending = _menuOpen;
+        if (_menuOpen)
+            Drawers?.Open(this);
     }
 
     /// <summary>The drawer's close button and the scrim: the drawer closes and focus returns to its toggle.</summary>
@@ -195,5 +212,10 @@
 
     private void Recompute() => _current = DocsCatalog.FindByPath(DocsCatalog.PathOf(Nav));
 
-    public void Dispose() => Nav.LocationChanged -= OnLocationChanged;
+    public void Dispose()
+    {
+        Nav.LocationChanged -= OnLocationChanged;
+        if (Drawers is not null)
+            Drawers.Opened -= OnDrawerOpened;
+    }
 }

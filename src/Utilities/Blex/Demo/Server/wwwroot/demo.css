@@ -86,6 +86,14 @@
     margin: 1.5rem 0 .5rem;
 }
 
+/* A docs page's outline runs h1 (the page), h2 (each section's card title), h3 (a part of a section,
+   an API table's title). The parts keep the size they are read at - the kit's Subtitle2, the step
+   below the section titles - rather than the h3 size the kit gives a heading of their level. */
+.bb-docs-content h3:not(.bb-card-title) {
+    font-size: var(--fl-font-size-300);
+    line-height: 1.5;
+}
+
 .demo-api-table td:first-child {
     width: 38%;
     overflow-wrap: normal;
@@ -444,5 +452,30 @@
 @media print {
     .dock {
         display: none;
+    }
+}
+
+/* ---------- A persisted value before the stored state is in ----------
+
+   What <Persisted> (Components/Persisted.razor) draws in place of a value a persisted store has not
+   been given yet: a short block the size of a few digits, so the line does not jump when the value
+   arrives. The words "loading" beside it are for screen readers only. */
+.demo-pending {
+    display: inline-block;
+    min-width: 2.5ch;
+    height: .9em;
+    vertical-align: -0.05em;
+    background: var(--bb-surface-sunken);
+    border-radius: var(--bb-radius-sm);
+    animation: demo-pending-pulse 1.4s ease-in-out infinite;
+}
+
+@keyframes demo-pending-pulse {
+    50% { opacity: .5; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .demo-pending {
+        animation: none;
     }
 }

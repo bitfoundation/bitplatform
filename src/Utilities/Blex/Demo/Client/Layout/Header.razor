@@ -94,10 +94,25 @@
     private ElementReference _menuButton;
     private ElementReference _drawer;
 
+    [CascadingParameter] private MainLayout.Drawers? Drawers { get; set; }
+
     protected override void OnInitialized()
     {
         _path = DocsCatalog.PathOf(Nav);
         Nav.LocationChanged += OnLocationChanged;
+        if (Drawers is not null)
+            Drawers.Opened += OnDrawerOpened;
+    }
+
+    // The docs nav panel opened: this drawer gives the page up to it.
+    private void OnDrawerOpened(object owner)
+    {
+        if (ReferenceEquals(owner, this) || _menuOpen is false)
+            return;
+
+        _menuOpen = false;
+        _focusDrawerPending = false;
+        _ = InvokeAsync(StateHasChanged);
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -133,6 +148,8 @@
     {
         _menuOpen = !_menuOpen;
         _focusDrawerPending = _menuOpen;
+        if (_menuOpen)
+            Drawers?.Open(this);
     }
 
     /// <summary>
@@ -167,7 +184,12 @@
         _ = InvokeAsync(StateHasChanged);
     }
 
-    public void Dispose() => Nav.LocationChanged -= OnLocationChanged;
+    public void Dispose()
+    {
+        Nav.LocationChanged -= OnLocationChanged;
+        if (Drawers is not null)
+            Drawers.Opened -= OnDrawerOpened;
+    }
 
     private async Task ToggleTheme()
     {

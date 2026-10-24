@@ -10,7 +10,7 @@
          Lead="In-app history over the application state - or the part of it the user is editing - independent of the browser extension.">
 
     <div class="bb-card">
-        <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Setup</h3>
+        <h2 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Setup</h2>
         <p>
             Register it once. <code>&lt;BlexProvider&gt;</code> calls <code>Start()</code> for you -
             deliberately <em>after</em> rehydration, so the baseline that undo ultimately returns to is
@@ -50,7 +50,7 @@
 
             <div class="bb-grid">
                 <div class="bb-card">
-                    <p class="bb-card-title">counter <span class="bb-badge">Count = @Counter.Count</span></p>
+                    <p class="bb-card-title">counter <span class="bb-badge">Count = <Persisted>@Counter.Count</Persisted></span></p>
                     <div class="bb-toolbar">
                         <button class="btn btn-secondary" @onclick="Counter.Increment">Increment</button>
                         <button class="btn btn-secondary" @onclick="Counter.Decrement">Decrement</button>
@@ -73,7 +73,7 @@
     </div>
 
     <div class="bb-card">
-        <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Jumping several steps at once</h3>
+        <h2 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Jumping several steps at once</h2>
         <p>
             <code>Undo()</code> and <code>Redo()</code> are the one-step cases of <code>Jump(n)</code>:
             negative walks back, positive walks forward. The intermediate states are never applied - the
@@ -142,7 +142,7 @@
             <div class="bb-stats">
                 <div class="bb-stat">
                     <span class="bb-stat-label">counter/Count</span>
-                    <span class="bb-stat-value demo-accent">@Counter.Count</span>
+                    <span class="bb-stat-value demo-accent"><Persisted>@Counter.Count</Persisted></span>
                 </div>
                 <div class="bb-stat">
                     <span class="bb-stat-label">contacts</span>
@@ -153,7 +153,7 @@
     </div>
 
     <div class="bb-card">
-        <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Grouping keystrokes into one step</h3>
+        <h2 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Grouping keystrokes into one step</h2>
         <p>
             A filter removes an action from the stack entirely. <em>Grouping</em> keeps it but folds it
             into the step already open, so a burst of related actions - every keystroke in one field,
@@ -182,12 +182,12 @@
     </div>
 
     <div class="bb-card">
-        <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> API</h3>
+        <h2 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> API</h2>
         <ApiTable Title="BlexHistory" Rows="@HistoryRows" />
     </div>
 
     <div class="bb-card">
-        <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> How it works</h3>
+        <h2 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> How it works</h2>
         <ol class="bb-detail-list">
             <li><code>Start()</code> captures the current global state as the baseline and subscribes to the manager.</li>
             <li>After each action, the previous snapshot is pushed onto the undo stack and the new one becomes the present. The redo stack is cleared, because you have branched away from it.</li>
@@ -205,7 +205,7 @@
     </div>
 
     <div class="bb-card">
-        <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Labels</h3>
+        <h2 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Labels</h2>
         <p>
             Each entry remembers the qualified name of the action that produced it, so a button can say
             what it is about to undo rather than just "Undo".
@@ -237,7 +237,7 @@
     </div>
 
     <div class="bb-card">
-        <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Choosing what earns an undo step</h3>
+        <h2 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Choosing what earns an undo step</h2>
         <p>
             By default every action becomes its own step. That is rarely what a user means by "undo" once
             a text box is involved: typing "hello" into a <code>@@bind</code>-ed property records five
@@ -263,7 +263,7 @@
             </p>
         </Callout>
 
-        <h4>Marking your own boundaries</h4>
+        <h3>Marking your own boundaries</h3>
         <p>
             A filter alone leaves the filtered work with no boundary of its own, so the next recorded
             action swallows it: undo would discard the whole typed edit <em>and</em> the button press
@@ -301,14 +301,14 @@
                 </div>
                 <div class="bb-stat">
                     <span class="bb-stat-label">counter/Count</span>
-                    <span class="bb-stat-value">@Counter.Count</span>
+                    <span class="bb-stat-value"><Persisted>@Counter.Count</Persisted></span>
                 </div>
             </div>
         </DemoCard>
     </div>
 
     <div class="bb-card" id="scope">
-        <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Scoping history to part of the app</h3>
+        <h2 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Scoping history to part of the app</h2>
         <p>
             By default <code>BlexHistory</code> covers every store, which is what the demos above show - and
             rarely what a user means. Undoing a text edit restores the <em>whole</em> tree, so it can also
@@ -349,7 +349,7 @@
             <div class="bb-stats">
                 <div class="bb-stat">
                     <span class="bb-stat-label">counter/Count</span>
-                    <span class="bb-stat-value demo-accent">@Counter.Count</span>
+                    <span class="bb-stat-value demo-accent"><Persisted>@Counter.Count</Persisted></span>
                 </div>
                 <div class="bb-stat">
                     <span class="bb-stat-label">contacts</span>

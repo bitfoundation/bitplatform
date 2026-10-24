@@ -7,7 +7,7 @@
          Lead="Re-render on the state you actually use - from a whole store down to a single projected value.">
 
     <div class="bb-card">
-        <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> BlexComponentBase</h3>
+        <h2 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> BlexComponentBase</h2>
         <p>
             Inherit from <code>BlexComponentBase</code> and call <code>Subscribe(...)</code> in
             <code>OnInitialized</code>. The component re-renders whenever a subscribed store changes and
@@ -24,7 +24,7 @@
     </div>
 
     <div class="bb-card">
-        <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Selector subscriptions</h3>
+        <h2 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Selector subscriptions</h2>
         <p>
             <code>Subscribe(store)</code> fires on <em>any</em> change to that store. On a store with
             many independent fields - or one big collection - that re-renders components that do not care.
@@ -51,18 +51,18 @@
             <div class="bb-stats">
                 <div class="bb-stat">
                     <span class="bb-stat-label">Count</span>
-                    <span class="bb-stat-value">@Counter.Count</span>
+                    <span class="bb-stat-value"><Persisted>@Counter.Count</Persisted></span>
                 </div>
                 <div class="bb-stat">
                     <span class="bb-stat-label">Step</span>
-                    <span class="bb-stat-value">@Counter.Step</span>
+                    <span class="bb-stat-value"><Persisted>@Counter.Step</Persisted></span>
                 </div>
             </div>
         </DemoCard>
     </div>
 
     <div class="bb-card" id="markup">
-        <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Selective rendering in markup</h3>
+        <h2 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Selective rendering in markup</h2>
         <p>
             <code>BlexComponentBase</code> re-renders the <em>whole</em> component, and it has to be the
             component's base class - which is a non-starter for an app whose components already derive from
@@ -95,7 +95,7 @@
     </div>
 
     <div class="bb-card">
-        <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Outside components</h3>
+        <h2 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Outside components</h2>
         <p>
             The same primitive is a plain extension method on <code>IBlexStore</code>, usable anywhere. It
             returns a token - dispose it to stop observing.
@@ -105,7 +105,7 @@
 
         <ApiTable Title="BlexStoreSubscriptionExtensions" Rows="@ExtensionRows" />
 
-        <h4>Previous and current</h4>
+        <h3>Previous and current</h3>
         <p>
             The two-argument overload delivers <code>(previous, current)</code>, which is what you want
             for transition logic - analytics, animations, "changed from X to Y" logging. This is MobX's
@@ -113,7 +113,7 @@
         </p>
         <CodeBlock Code="@PrevCurrent" />
 
-        <h4>Custom equality</h4>
+        <h3>Custom equality</h3>
         <p>
             Both overloads take an optional <code>IEqualityComparer&lt;T&gt;</code>. Supply one when the
             projection returns something whose default equality is not what you mean - a collection, for
@@ -164,7 +164,7 @@
             </p>
         </DemoCard>
 
-        <h4>fireImmediately</h4>
+        <h3>fireImmediately</h3>
         <p>
             Pass <code>fireImmediately: true</code> to invoke the callback once at subscription time with
             the current value, so an observer does not have to seed itself. With the two-argument
@@ -173,7 +173,7 @@
             caller never received a token, so a handler left attached would be unstoppable.
         </p>
 
-        <h4>Across stores</h4>
+        <h3>Across stores</h3>
         <p>
             <code>BlexManager</code> carries the same pair of overloads for a projection that spans
             stores. Without it, a value derived from two stores has to be recomputed on every action of
@@ -192,7 +192,7 @@
     </div>
 
     <div class="bb-card" id="observable">
-        <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> IObservable, for Rx</h3>
+        <h2 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> IObservable, for Rx</h2>
         <p>
             Code that already composes change streams with Reactive Extensions - <code>System.Reactive</code>,
             ReactiveUI - can take a store's changes as an <code>IObservable&lt;T&gt;</code> and use every Rx
@@ -207,7 +207,7 @@
     </div>
 
     <div class="bb-card">
-        <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Owning other subscriptions</h3>
+        <h2 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Owning other subscriptions</h2>
         <p>
             <code>OwnsSubscription(IDisposable)</code> hands any token to the component so it is disposed
             along with it - a manager subscription, a selector token you made yourself, anything.
@@ -216,7 +216,7 @@
     </div>
 
     <div class="bb-card">
-        <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> The raw event</h3>
+        <h2 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> The raw event</h2>
         <p>
             Under everything is <code>IBlexStore.StateChanged</code>, a plain <code>Action</code> raised once
             per action after the state has settled. Use it directly when you want no machinery at all -

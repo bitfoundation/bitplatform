@@ -6,7 +6,7 @@
          Lead="Blex is lightweight, source-generator-powered state management for Blazor and .NET MAUI. You write one [BlexState] field and one [BlexAction] method; the generator writes the reactive properties, the dispatch plumbing, the JSON snapshots and the loading and error lifecycle - and Redux DevTools time travel is built in.">
 
     <div class="bb-card">
-        <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> The whole store</h3>
+        <h2 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> The whole store</h2>
         <p>
             This is a complete store, not a sketch of one - it compiles and runs as it stands. There are
             no action classes, no reducers, no feature registrations and no selector boilerplate.
@@ -30,26 +30,26 @@
             <div class="bb-stats">
                 <div class="bb-stat">
                     <span class="bb-stat-label">Count</span>
-                    <span class="bb-stat-value demo-accent">@Counter.Count</span>
+                    <span class="bb-stat-value demo-accent"><Persisted>@Counter.Count</Persisted></span>
                 </div>
                 <div class="bb-stat">
                     <span class="bb-stat-label">DoubleCount</span>
-                    <span class="bb-stat-value">@Counter.DoubleCount</span>
+                    <span class="bb-stat-value"><Persisted>@Counter.DoubleCount</Persisted></span>
                 </div>
                 <div class="bb-stat">
                     <span class="bb-stat-label">IsEven</span>
-                    <span class="bb-stat-value">@Counter.IsEven</span>
+                    <span class="bb-stat-value"><Persisted>@Counter.IsEven</Persisted></span>
                 </div>
                 <div class="bb-stat">
                     <span class="bb-stat-label">Step</span>
-                    <span class="bb-stat-value">@Counter.Step</span>
+                    <span class="bb-stat-value"><Persisted>@Counter.Step</Persisted></span>
                 </div>
             </div>
             <div class="bb-toolbar">
-                <button class="btn btn-primary" @onclick="Counter.Increment">+ @Counter.Step</button>
-                <button class="btn btn-secondary" @onclick="Counter.Decrement">− @Counter.Step</button>
+                <button class="btn btn-primary" @onclick="Counter.Increment">+ <Persisted>@Counter.Step</Persisted></button>
+                <button class="btn btn-secondary" @onclick="Counter.Decrement">− <Persisted>@Counter.Step</Persisted></button>
                 <button class="btn btn-secondary" @onclick="() => Counter.SetStep(Counter.Step == 1 ? 5 : 1)">
-                    Step → @(Counter.Step == 1 ? 5 : 1)
+                    Step → <Persisted>@(Counter.Step == 1 ? 5 : 1)</Persisted>
                 </button>
                 <button class="btn btn-secondary" @onclick="Counter.ResetState">Reset</button>
             </div>
@@ -60,7 +60,7 @@
     </div>
 
     <div class="bb-card">
-        <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Why it exists</h3>
+        <h2 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Why it exists</h2>
         <p>
             Fluxor is the de-facto Redux implementation for Blazor, and it works - but a single counter
             costs you a state class, an action class, a reducer and often an effect class, and there is no
@@ -100,7 +100,7 @@
     </div>
 
     <div class="bb-card">
-        <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> What's in the box</h3>
+        <h2 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> What's in the box</h2>
         <div class="bb-grid">
             @foreach (var entry in DocsCatalog.AllPages.Where(entry => entry.PageType != typeof(Introduction)))
             {
@@ -113,7 +113,7 @@
     </div>
 
     <div class="bb-card">
-        <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Packages</h3>
+        <h2 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Packages</h2>
         <ApiTable Rows="@Packages" MemberHeader="Package" />
 
         <Callout Kind="Callout.CalloutKind.Tip" Title="The docs site is the demo">

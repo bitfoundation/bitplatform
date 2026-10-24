@@ -11,7 +11,7 @@
     </Callout>
 
     <div class="bb-card">
-        <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Blex - attributes</h3>
+        <h2 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Blex - attributes</h2>
         <p>Namespace <code>Bit.Blex</code>. These are the entire authoring surface of a store.</p>
         <ApiTable Rows="@Attributes" MemberHeader="Type" />
 
@@ -19,61 +19,61 @@
     </div>
 
     <div class="bb-card">
-        <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Blex - core</h3>
+        <h2 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Blex - core</h2>
         <ApiTable Rows="@Core" MemberHeader="Type" />
     </div>
 
     <div class="bb-card">
-        <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Blex - middleware</h3>
+        <h2 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Blex - middleware</h2>
         <ApiTable Rows="@MiddlewareTypes" MemberHeader="Type" />
     </div>
 
     <div class="bb-card">
-        <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Blex - collections</h3>
+        <h2 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Blex - collections</h2>
         <ApiTable Rows="@Collections" MemberHeader="Type" />
     </div>
 
     <div class="bb-card">
-        <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Blex - persistence</h3>
+        <h2 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Blex - persistence</h2>
         <ApiTable Rows="@PersistenceTypes" MemberHeader="Type" />
     </div>
 
     <div class="bb-card">
-        <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Blex - history</h3>
+        <h2 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Blex - history</h2>
         <ApiTable Rows="@HistoryTypes" MemberHeader="Type" />
     </div>
 
     <div class="bb-card">
-        <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Blex - queries</h3>
+        <h2 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Blex - queries</h2>
         <p>Namespace <code>Bit.Blex.Query</code>: the server-state cache, kept apart from stores on purpose.</p>
         <ApiTable Rows="@QueryTypes" MemberHeader="Type" />
     </div>
 
     <div class="bb-card">
-        <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Blex - extension methods</h3>
+        <h2 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Blex - extension methods</h2>
         <ApiTable Rows="@Extensions" MemberHeader="Type" />
     </div>
 
     <div class="bb-card">
-        <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Blex - Blazor</h3>
+        <h2 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Blex - Blazor</h2>
         <p>Namespace <code>Bit.Blex.Blazor</code>, in the same <code>Bit.Blex</code> package. Everything that touches JavaScript or the Blazor render tree lives here; the rest of Blex never does.</p>
         <ApiTable Rows="@BlazorTypes" MemberHeader="Type" />
     </div>
 
     <div class="bb-card">
-        <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Bit.Blex.Maui</h3>
+        <h2 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Bit.Blex.Maui</h2>
         <p>Namespace <code>Bit.Blex.Maui</code>. A native .NET MAUI app has no <code>&lt;BlexProvider&gt;</code> and no DI scopes, so these register Blex as singletons; a Blazor Hybrid app keeps the scoped core registrations and only takes the preferences storage from here.</p>
         <ApiTable Rows="@MauiTypes" MemberHeader="Type" />
     </div>
 
     <div class="bb-card">
-        <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Bit.Blex.Testing</h3>
+        <h2 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Bit.Blex.Testing</h2>
         <p>Namespace <code>Bit.Blex.Testing</code>.</p>
         <ApiTable Rows="@TestingTypes" MemberHeader="Type" />
     </div>
 
     <div class="bb-card">
-        <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Generated members, by declaration</h3>
+        <h2 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Generated members, by declaration</h2>
         <p>What the generator adds to your partial class, for each thing you declare.</p>
         <div class="bb-scroll">
             <table class="bb-table">
@@ -145,7 +145,7 @@
     </div>
 
     <div class="bb-card">
-        <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Reserved names</h3>
+        <h2 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Reserved names</h2>
         <p>
             A generated member may not take one of these - they are inherited from <code>BlexStoreBase</code>
             or emitted by the generator itself. Collisions are reported as <code>BLEX005</code>. The name
@@ -155,7 +155,7 @@
     </div>
 
     <div class="bb-card">
-        <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> JSON conventions</h3>
+        <h2 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> JSON conventions</h2>
         <p>
             Snapshots use <code>BlexJson.Options</code>: <code>JsonSerializerDefaults.Web</code>,
             case-insensitive property matching and enums written as strings. Slices are keyed by the

@@ -6,7 +6,7 @@
          Lead="Normalized, immutable collections with generated CRUD - the same idea as Redux Toolkit's createEntityAdapter.">
 
     <div class="bb-card">
-        <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Why normalize</h3>
+        <h2 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Why normalize</h2>
         <p>
             Keeping a collection as a flat <code>List&lt;T&gt;</code> means every update is a scan, every
             lookup by id is a scan, and every mutation risks being done in place - which
@@ -20,7 +20,7 @@
     </div>
 
     <div class="bb-card">
-        <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Declaring one</h3>
+        <h2 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Declaring one</h2>
         <p>
             The adapter holds the id selector, so it is not serializable - keep it as a
             <code>static readonly</code> field. The <code>[BlexState]</code> field holds the state itself.
@@ -30,7 +30,7 @@
     </div>
 
     <div class="bb-card">
-        <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Sorting</h3>
+        <h2 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Sorting</h2>
         <p>
             Pass an <code>IComparer&lt;TEntity&gt;</code> and the adapter re-sorts <code>Ids</code> after
             every operation, so iteration order is always correct without sorting in the view. Without
@@ -128,12 +128,12 @@
     </div>
 
     <div class="bb-card">
-        <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> BlexEntityState members</h3>
+        <h2 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> BlexEntityState members</h2>
         <ApiTable Rows="@StateRows" />
     </div>
 
     <div class="bb-card">
-        <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> BlexEntityAdapter operations</h3>
+        <h2 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> BlexEntityAdapter operations</h2>
         <p>
             Every operation takes the current state and returns the next one. Assign the result back to
             the <code>[BlexState]</code> property - that assignment is what makes the change visible.
@@ -151,7 +151,7 @@
             </p>
         </Callout>
 
-        <h4>Set vs Upsert</h4>
+        <h3>Set vs Upsert</h3>
         <p>
             <code>UpsertOne</code> inserts an unknown id; <code>SetOne</code> refuses to. That is the
             difference between "save this, wherever it came from" and "apply this update to a row I
@@ -162,7 +162,7 @@
         </p>
         <CodeBlock Code="@SetVsUpsert" Title="A late response must not resurrect a deleted row" />
 
-        <h4>Writing the same value twice costs nothing</h4>
+        <h3>Writing the same value twice costs nothing</h3>
         <p>
             Every write operation compares before it commits. Re-applying a value that is already there -
             <code>SetAll</code> with an unchanged server response, <code>UpsertMany</code> where only one
@@ -172,7 +172,7 @@
         </p>
         <CodeBlock Code="@NoOpIdentity" Title="Idempotent reseeding" />
 
-        <h4>Changing an entity's id</h4>
+        <h3>Changing an entity's id</h3>
         <p>
             <code>UpdateOne</code> handles an update function that changes the id: the entity moves to
             the new key and keeps its position in the order. If the new id already belongs to another
@@ -182,7 +182,7 @@
     </div>
 
     <div class="bb-card">
-        <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Serialization</h3>
+        <h2 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Serialization</h2>
         <p>
             <code>BlexEntityState</code> round-trips through JSON as <code>{ "ids": [...], "entities":
             { ... } }</code>, so a normalized collection persists and time-travels like any other state.
@@ -200,7 +200,7 @@
     </div>
 
     <div class="bb-card">
-        <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Deriving views</h3>
+        <h2 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Deriving views</h2>
         <p>
             Pair the adapter with <a href="computed"><code>[BlexComputed]</code></a> to project filtered or
             aggregated views. They are memoized, so a filtered list is rebuilt once per change rather

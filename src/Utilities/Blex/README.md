@@ -513,9 +513,10 @@ the token is how an overrunning attempt is told to stop.
 Every invocation is offered to the middleware/veto pipeline independently, including one started
 while another async action of the same store is still awaiting. A vetoed invocation leaves no
 trace: it never flips `IsLoading`, never clears `Error`, never supersedes a `Latest` run in flight
-and never takes a `Queue` slot. Time-travel *recording*, however, is coalesced: overlapping runs on
-one store are folded into the outermost in-flight action, so DevTools shows a single entry for
-them. Use `Queue`, `Drop` or `Latest` - or separate stores - when each run needs its own entry.
+and never takes a `Queue` slot. Each invocation is also *recorded* on its own, when it ends, with
+what its own flow changed: two overlapping `Parallel` runs are two entries in DevTools, the
+middleware's `OnAction` and the undo history, and so is an action handled while an effect awaits.
+Only an action dispatched from inside another one's body is part of it.
 
 ## Server state (queries)
 

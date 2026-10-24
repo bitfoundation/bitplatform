@@ -8,7 +8,7 @@
          Lead="Blex refuses to let a misbehaving observer break dispatch. Everything it swallows is handed to you instead.">
 
     <div class="bb-card">
-        <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> The problem</h3>
+        <h2 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> The problem</h2>
         <p>
             A dispatch fans out to middleware, the DevTools bridge, persistence, history and every
             subscriber. If any one of them throws and the exception escapes, the observers registered
@@ -27,13 +27,13 @@
     </div>
 
     <div class="bb-card">
-        <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> BlexError</h3>
+        <h2 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> BlexError</h2>
         <CodeBlock Code="@Record" />
         <ApiTable Rows="@ErrorRows" />
     </div>
 
     <div class="bb-card">
-        <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> What gets reported</h3>
+        <h2 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> What gets reported</h2>
         <div class="bb-scroll">
             <table class="bb-table">
                 <thead><tr><th>Source</th><th>Raised when</th></tr></thead>
@@ -69,7 +69,7 @@
             <div class="bb-stats">
                 <div class="bb-stat">
                     <span class="bb-stat-label">Count</span>
-                    <span class="bb-stat-value demo-accent">@Counter.Count</span>
+                    <span class="bb-stat-value demo-accent"><Persisted>@Counter.Count</Persisted></span>
                 </div>
                 <div class="bb-stat">
                     <span class="bb-stat-label">Errors captured</span>
@@ -98,7 +98,7 @@
     </div>
 
     <div class="bb-card">
-        <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Guarantees</h3>
+        <h2 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Guarantees</h2>
         <ul class="bb-detail-list">
             <li>
                 <strong>The mutation is recorded even if a subscriber throws.</strong> A standalone
@@ -125,7 +125,7 @@
     </div>
 
     <div class="bb-card">
-        <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> A realistic handler</h3>
+        <h2 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> A realistic handler</h2>
         <CodeBlock Code="@Logging" />
 
         <Callout Kind="Callout.CalloutKind.Gotcha" Title="OnError is captured on the singleton options">
@@ -141,7 +141,7 @@
     </div>
 
     <div class="bb-card" id="observability">
-        <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Logging and tracing</h3>
+        <h2 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Logging and tracing</h2>
         <p>
             <code>options.UseLogging()</code> does the handler above for you, through the host's
             <code>ILogger</code> (category <code>Bit.Blex</code>): every action at <code>Debug</code> - or
@@ -168,7 +168,7 @@
     </div>
 
     <div class="bb-card">
-        <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Setting it per scope</h3>
+        <h2 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Setting it per scope</h2>
         <p>
             <code>OnError</code> is also a settable property on <code>BlexManager</code>, so a scoped
             component or service can install its own handler where a scoped dependency is genuinely

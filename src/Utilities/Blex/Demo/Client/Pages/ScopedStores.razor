@@ -4,7 +4,7 @@
          Lead="Most state belongs to the app. Some belongs to one part of the page - and needs its own instance for every part that shows it.">
 
     <div class="bb-card">
-        <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> One instance is not always enough</h3>
+        <h2 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> One instance is not always enough</h2>
         <p>
             <code>AddBitBlexStore&lt;T&gt;</code> gives each DI scope one instance of a store, keyed in the
             state tree, in DevTools and in storage by its name. That is right for a cart or a profile. It is
@@ -20,7 +20,7 @@
     </div>
 
     <div class="bb-card">
-        <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> &lt;BlexScope&gt;</h3>
+        <h2 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> &lt;BlexScope&gt;</h2>
         <p>
             Wrap the part of the page that owns the state. The scope creates an instance from DI when it
             appears (constructor dependencies are resolved as usual), registers it with the manager,
@@ -54,7 +54,7 @@
     </div>
 
     <div class="bb-card">
-        <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Keys</h3>
+        <h2 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Keys</h2>
         <p>
             The key is an id of whatever the store is about - an order id, a document id, a tab index.
             Changing <code>Key</code> replaces the instance: the outgoing one is unregistered (writing any
@@ -83,7 +83,7 @@
     </div>
 
     <div class="bb-card">
-        <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Without Blazor: CreateScope</h3>
+        <h2 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Without Blazor: CreateScope</h2>
         <p>
             <code>&lt;BlexScope&gt;</code> is a thin layer over <code>BlexManager.CreateScope</code>, which
             works anywhere - a MAUI page, a worker, a test.
@@ -96,7 +96,7 @@
     </div>
 
     <div class="bb-card">
-        <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Persistence</h3>
+        <h2 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Persistence</h2>
         <p>
             A scoped store marked <code>Persist = true</code> is saved under its keyed name and hydrated as
             soon as it registers - not only at startup, which is when every other store is hydrated. The
@@ -113,7 +113,7 @@
     </div>
 
     <div class="bb-card">
-        <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> A full citizen</h3>
+        <h2 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> A full citizen</h2>
         <p>
             Scoping changes the name and the lifetime, nothing else. A scoped instance's actions pass the
             filters, reach middleware and subscribers, stream to DevTools as <code>draft:left/Write</code>

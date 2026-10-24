@@ -28,8 +28,8 @@
           Code="@Snippets.Admin.List">
     <Description>
         Names come from the provider, so a backend that has never been used reports empty
-        rather than failing. Related <code>-journal</code> files are not databases and do
-        not appear.
+        rather than failing, and one this browser cannot use says why. Related
+        <code>-journal</code> files are not databases and do not appear.
     </Description>
     <ChildContent>
         <div class="bb-toolbar">
@@ -40,7 +40,11 @@
             {
                 <dt>@group.Name</dt>
                 <dd>
-                    @if (group.Names.Count == 0)
+                    @if (group.UnavailableReason is not null)
+                    {
+                        <span class="bb-soft">unavailable here: @group.UnavailableReason</span>
+                    }
+                    else if (group.Names.Count == 0)
                     {
                         <span class="bb-soft">empty</span>
                     }
@@ -124,7 +128,7 @@
 </DemoCard>
 
 @code {
-    private readonly List<(string Name, IReadOnlyList<string> Names)> _lists = [];
+    private readonly List<(string Name, IReadOnlyList<string> Names, string? UnavailableReason)> _lists = [];
     private string? _error;
     private string? _info;
     private bool _busy;
@@ -157,8 +161,18 @@
         {
             foreach (var provider in Database.Providers)
             {
+                // A backend this browser cannot use (OPFS without navigator.storage.getDirectory,
+                // say) has no files to list. Its probe says why, as a result; asking it to list
+                // would throw instead, and the backends after it would not be listed at all.
+                var probe = await provider.ProbeAsync();
+                if (!probe.IsAvailable)
+                {
+                    _lists.Add((provider.Name, [], probe.UnavailableReason));
+                    continue;
+                }
+
                 var names = await provider.Admin.ListAsync();
-                _lists.Add((provider.Name, names));
+                _lists.Add((provider.Name, names, null));
             }
         }
         catch (Exception ex)

@@ -6,7 +6,8 @@
 *@
 @if (!string.IsNullOrEmpty(Title))
 {
-    <h4 class="demo-api-title">@Title</h4>
+    @* An h3: the table sits in a section whose title is the page's h2. *@
+    <h3 class="demo-api-title">@Title</h3>
 }
 <div class="bb-scroll" tabindex="0" role="region" aria-label="@(Title ?? $"{MemberHeader} reference")">
     <table class="bb-table demo-api-table">

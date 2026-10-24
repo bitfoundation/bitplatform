@@ -204,8 +204,34 @@ public sealed class BlexStatePersistor : IAsyncDisposable, IDisposable
             _subscribed = true;
         }
 
-        await StartWatchingSuspensionAsync(cancellationToken).ConfigureAwait(false);
         await StartWatchingAsync(cancellationToken).ConfigureAwait(false);
+
+        // Not awaited: writing a debounced save as the page goes is best-effort, and what follows StartAsync -- the
+        // history's baseline above all, which <BlexProvider> takes once this returns -- must not wait a round trip
+        // for it (on Blazor Server every interop call is one), or the first actions after the page turns
+        // interactive land before the history is recording them.
+        WatchSuspensionInBackground(cancellationToken);
+    }
+
+    private void WatchSuspensionInBackground(CancellationToken cancellationToken)
+    {
+        if (_watchingSuspension || _storage is not IBlexStorageSuspension)
+            return;
+
+        _ = Watch();
+
+        async Task Watch()
+        {
+            try
+            {
+                await StartWatchingSuspensionAsync(cancellationToken).ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                // Rolled back by StartWatchingSuspensionAsync, so the next StartAsync tries again.
+                _manager.ReportError("persistence", ex, "watching for the page being hidden");
+            }
+        }
     }
 
     /// <summary>

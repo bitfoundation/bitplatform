@@ -7,7 +7,7 @@
          Lead="An action is a named, batched, recorded unit of change. Everything that mutates state becomes one - even a direct property assignment.">
 
     <div class="bb-card">
-        <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> The convention</h3>
+        <h2 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> The convention</h2>
         <p>
             Mark a method named <code>OnXxx</code> with <code>[BlexAction]</code>. The generator emits a
             public <code>Xxx(...)</code> wrapper that runs your method inside a dispatch: all the
@@ -19,7 +19,7 @@
     </div>
 
     <div class="bb-card">
-        <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Naming</h3>
+        <h2 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Naming</h2>
         <p>
             The wrapper name comes from the method name with the <code>On</code> prefix stripped, or from
             <code>[BlexAction(Name = "…")]</code>. The <code>Name</code> is used in two different ways
@@ -45,7 +45,7 @@
     </div>
 
     <div class="bb-card">
-        <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Arguments become the payload</h3>
+        <h2 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Arguments become the payload</h2>
         <p>
             Action parameters are captured as name/value pairs and travel with the action to middleware,
             subscribers, the test harness and the DevTools monitor. Nothing to declare.
@@ -68,7 +68,7 @@
     </div>
 
     <div class="bb-card" id="typed-actions">
-        <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Typed actions</h3>
+        <h2 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Typed actions</h2>
         <p>
             A method call is only half of what an action is. Middleware, subscribers, history filters and
             tests also need to <em>recognize</em> an action after the fact and read its payload - and a
@@ -122,7 +122,7 @@
     </div>
 
     <div class="bb-card" id="dispatch-by-name">
-        <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Dispatching by name</h3>
+        <h2 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Dispatching by name</h2>
         <p>
             Because every action is described as data, it can also be <em>sent</em> as data:
             <code>manager.DispatchAsync("store/Action", payload)</code> finds the action by its qualified
@@ -152,8 +152,10 @@
                 }
             </div>
             <div class="bb-toolbar">
-                <input type="text" aria-label="Qualified action name" value="@_dispatchName" @oninput="e => _dispatchName = e.Value?.ToString() ?? string.Empty" class="demo-input-name" />
-                <input type="text" aria-label="JSON payload" value="@_dispatchPayload" @oninput="e => _dispatchPayload = e.Value?.ToString() ?? string.Empty" class="demo-input-grow" />
+                @* Enter in either box dispatches. A key handler rather than a <form>: a form renders its action
+                   from the NavigationManager, which the MCP server's renderer of this page does not have. *@
+                <input type="text" aria-label="Qualified action name" value="@_dispatchName" @oninput="e => _dispatchName = e.Value?.ToString() ?? string.Empty" @onkeydown="OnDispatchKeyDown" class="demo-input-name" />
+                <input type="text" aria-label="JSON payload" value="@_dispatchPayload" @oninput="e => _dispatchPayload = e.Value?.ToString() ?? string.Empty" @onkeydown="OnDispatchKeyDown" class="demo-input-grow" />
                 <button class="btn btn-primary" @onclick="DispatchByName">DispatchAsync</button>
             </div>
 
@@ -168,11 +170,11 @@
             <div class="bb-stats">
                 <div class="bb-stat">
                     <span class="bb-stat-label">Count</span>
-                    <span class="bb-stat-value demo-accent">@Counter.Count</span>
+                    <span class="bb-stat-value demo-accent"><Persisted>@Counter.Count</Persisted></span>
                 </div>
                 <div class="bb-stat">
                     <span class="bb-stat-label">Step</span>
-                    <span class="bb-stat-value">@Counter.Step</span>
+                    <span class="bb-stat-value"><Persisted>@Counter.Step</Persisted></span>
                 </div>
                 <div class="bb-stat">
                     <span class="bb-stat-label">Last Apply preset payload</span>
@@ -187,7 +189,7 @@
     </div>
 
     <div class="bb-card">
-        <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Batching</h3>
+        <h2 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Batching</h2>
         <p>
             This is the point of actions. Assigning three fields directly produces three actions and
             three renders; doing it inside one action produces one of each.
@@ -199,11 +201,11 @@
             <div class="bb-stats">
                 <div class="bb-stat">
                     <span class="bb-stat-label">Count</span>
-                    <span class="bb-stat-value demo-accent">@Counter.Count</span>
+                    <span class="bb-stat-value demo-accent"><Persisted>@Counter.Count</Persisted></span>
                 </div>
                 <div class="bb-stat">
                     <span class="bb-stat-label">Step</span>
-                    <span class="bb-stat-value">@Counter.Step</span>
+                    <span class="bb-stat-value"><Persisted>@Counter.Step</Persisted></span>
                 </div>
                 <div class="bb-stat">
                     <span class="bb-stat-label">Notifications from last click</span>
@@ -229,7 +231,7 @@
     </div>
 
     <div class="bb-card">
-        <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Direct assignment: the "Set X" action</h3>
+        <h2 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Direct assignment: the "Set X" action</h2>
         <p>
             Generated properties have public setters (unless the store
             <a href="actions#enforce-actions">enforces actions</a>), and assigning one from outside any
@@ -241,7 +243,7 @@
     </div>
 
     <div class="bb-card" id="enforce-actions">
-        <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Enforcing actions</h3>
+        <h2 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Enforcing actions</h2>
         <p>
             A <code>Set X</code> is still an anonymous change: it says <em>what</em> moved, never
             <em>why</em>, and any component holding the store can make one. A Flux store is supposed to
@@ -262,7 +264,7 @@
     </div>
 
     <div class="bb-card">
-        <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Batch: ad-hoc grouping</h3>
+        <h2 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Batch: ad-hoc grouping</h2>
         <p>
             When the grouping is a caller's concern rather than the store's, <code>Batch</code> wraps any
             set of mutations into one named action - Pinia's <code>$patch</code> or MobX's
@@ -272,7 +274,7 @@
     </div>
 
     <div class="bb-card">
-        <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> ResetState</h3>
+        <h2 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> ResetState</h2>
         <p>
             Every store snapshots itself the first time it is registered with the manager.
             <code>ResetState()</code> restores that snapshot as a normal <code>ResetState</code> action:
@@ -292,7 +294,7 @@
     </div>
 
     <div class="bb-card" id="rollback">
-        <h3 class="bb-card-title"><span class="bb-dot bb-dot-danger"></span> When an action throws</h3>
+        <h2 class="bb-card-title"><span class="bb-dot bb-dot-danger"></span> When an action throws</h2>
         <p>
             An action is a C# method, and by default it behaves like one: what it changed before the throw
             stays changed - and, since it did change state, it is notified, recorded and persisted like any
@@ -316,7 +318,7 @@
             </p>
         </Callout>
 
-        <h4 id="transactions">Across stores</h4>
+        <h3 id="transactions">Across stores</h3>
         <p>
             <code>manager.Transaction(...)</code> is the same promise for a unit of work that spans stores: if the
             body throws, every store it changed is put back the way it was when the transaction began, and the
@@ -330,7 +332,7 @@
     </div>
 
     <div class="bb-card">
-        <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Async actions</h3>
+        <h2 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Async actions</h2>
         <p>
             An <code>[BlexAction]</code> may return <code>Task</code> or <code>ValueTask</code>. State changes
             made before and after an <code>await</code> update the UI as they happen, but the whole
@@ -365,10 +367,10 @@
     </div>
 
     <div class="bb-card">
-        <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> What a dispatch actually does</h3>
+        <h2 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> What a dispatch actually does</h2>
         <ol class="bb-detail-list">
             <li>Runs every middleware's <code>BeforeAction</code>. If one calls <code>Cancel()</code>, the action stops here - nothing mutates.</li>
-            <li>Raises the record and notify depth, then runs your method body. Nested actions fold into the outermost one.</li>
+            <li>Opens the action for the current flow, then runs your method body. Actions dispatched from inside it are part of it; an action started elsewhere meanwhile is its own.</li>
             <li>On completion, invalidates computed values and raises <code>StateChanged</code> once.</li>
             <li>Records the action: middleware <code>OnAction</code> hooks run, then DevTools receives it, then subscribers.</li>
         </ol>
@@ -424,6 +426,8 @@
         _dispatchPayload = preset.Payload;
         return DispatchByName();
     }
+
+    private Task OnDispatchKeyDown(KeyboardEventArgs e) => e.Key == "Enter" ? DispatchByName() : Task.CompletedTask;
 
     private async Task DispatchByName()
     {

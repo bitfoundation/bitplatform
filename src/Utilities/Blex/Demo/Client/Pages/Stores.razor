@@ -8,7 +8,7 @@
          Lead="A store is a partial class that owns a slice of state. The generator turns its fields into reactive properties and gives it a JSON identity.">
 
     <div class="bb-card">
-        <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> The [BlexStore] attribute</h3>
+        <h2 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> The [BlexStore] attribute</h2>
         <p>
             Mark a <code>partial class</code> with <code>[BlexStore]</code> and the generator makes it derive
             from <code>BlexStoreBase</code>, emits the reactive members and implements the snapshot methods.
@@ -30,7 +30,7 @@
     </div>
 
     <div class="bb-card">
-        <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Shape requirements</h3>
+        <h2 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Shape requirements</h2>
         <p>The generator writes a flat, top-level partial declaration, so the class must be one it can extend:</p>
         <ul class="bb-detail-list">
             <li>declared <code>partial</code> - otherwise <code>BLEX001</code>;</li>
@@ -48,7 +48,7 @@
     </div>
 
     <div class="bb-card">
-        <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> [BlexState] fields</h3>
+        <h2 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> [BlexState] fields</h2>
         <p>
             Each <code>[BlexState]</code> field becomes a public property whose setter runs through the
             dispatch pipeline: it compares, assigns, invalidates computed values, notifies subscribers
@@ -88,7 +88,7 @@
     </div>
 
     <div class="bb-card" id="change-detection">
-        <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Change detection</h3>
+        <h2 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Change detection</h2>
         <p>
             Setters compare with <code>EqualityComparer&lt;T&gt;.Default</code>. For value types and
             records that is structural equality, which is what you want. For a <code>List&lt;T&gt;</code>,
@@ -146,7 +146,7 @@
     </div>
 
     <div class="bb-card">
-        <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Serialization</h3>
+        <h2 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Serialization</h2>
         <p>
             Every store gets generated <code>SerializeState()</code> and <code>DeserializeState()</code>
             methods keyed by the <em>property</em> names. This is the identity used for DevTools, undo/redo
@@ -174,7 +174,7 @@
     </div>
 
     <div class="bb-card">
-        <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> BlexStoreBase API</h3>
+        <h2 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> BlexStoreBase API</h2>
         <p>
             Your store inherits these. The <code>public</code> members are meant for callers; the
             <code>protected</code> ones are what the generated code calls, and are available if you hand-write
@@ -186,7 +186,7 @@
     </div>
 
     <div class="bb-card">
-        <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> The IBlexStore interface</h3>
+        <h2 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> The IBlexStore interface</h2>
         <p>
             Everything the manager needs from a store. Implement it directly only if you want a store
             outside the generator's conventions - you then also give up batching and action recording
@@ -196,7 +196,7 @@
     </div>
 
     <div class="bb-card">
-        <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Lifetime</h3>
+        <h2 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Lifetime</h2>
         <p>
             <code>AddBitBlexStore&lt;T&gt;</code> registers the store as <strong>scoped</strong>. In Blazor
             WebAssembly there is one scope for the whole app, so a store is effectively a singleton. In
@@ -212,7 +212,7 @@
     </div>
 
     <div class="bb-card" id="dispatcher">
-        <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Threads and the dispatcher</h3>
+        <h2 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Threads and the dispatcher</h2>
         <p>
             Stores are not synchronized, and neither is the dispatch pipeline: a Blazor Server circuit
             and a BlazorWebView keep them consistent by running every event handler, lifecycle method
