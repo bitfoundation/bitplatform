@@ -56,9 +56,25 @@ public partial class ContactsStore
     private void OnAdd(string name, string team)
         => Contacts = Adapter.AddOne(Contacts, new Contact(NextId, name, team, false));
 
+    /// <summary>Two contacts in one call. <c>AddMany</c> skips an id that already exists, as <c>AddOne</c> does.</summary>
+    [BlexActionAttribute]
+    private void OnAddPair()
+        => Contacts = Adapter.AddMany(Contacts,
+        [
+            new(NextId, "Edsger Dijkstra", "Languages", false),
+            new(NextId + 1, "Frances Allen", "Compilers", false),
+        ]);
+
     [BlexActionAttribute]
     private void OnToggleStar(int id)
         => Contacts = Adapter.UpdateOne(Contacts, id, c => c with { Starred = !c.Starred });
+
+    /// <summary>One transform over the listed ids; an id that is not there is skipped.</summary>
+    [BlexActionAttribute]
+    private void OnStarTeam(string team)
+        => Contacts = Adapter.UpdateMany(Contacts,
+            [.. Contacts.All.Where(c => c.Team == team).Select(c => c.Id)],
+            c => c with { Starred = true });
 
     [BlexActionAttribute] private void OnRemove(int id) => Contacts = Adapter.RemoveOne(Contacts, id);
 
@@ -79,7 +95,23 @@ public partial class ContactsStore
     /// </summary>
     [BlexActionAttribute]
     private void OnLateSaveResponse(int id)
-        => Contacts = Adapter.SetOne(Contacts, new Contact(id, $"Contact {id} (saved)", "Research", true));
+        => Contacts = Adapter.SetOne(Contacts, Saved(id));
+
+    /// <summary>The same late response through <c>UpsertOne</c>, which inserts an id it does not have - resurrecting a removed row.</summary>
+    [BlexActionAttribute]
+    private void OnLateUpsertResponse(int id)
+        => Contacts = Adapter.UpsertOne(Contacts, Saved(id));
+
+    /// <summary>A late batch for ids 1 and 99: <c>SetMany</c> replaces the ids that are still there and ignores the rest.</summary>
+    [BlexActionAttribute]
+    private void OnLateBatchSetMany() => Contacts = Adapter.SetMany(Contacts, [Saved(1), Saved(99)]);
+
+    /// <summary>The same batch through <c>UpsertMany</c>: replaces id 1 and inserts id 99.</summary>
+    [BlexActionAttribute]
+    private void OnLateBatchUpsertMany() => Contacts = Adapter.UpsertMany(Contacts, [Saved(1), Saved(99)]);
+
+    /// <summary>What the "server" answers a save of <paramref name="id"/> with.</summary>
+    private static Contact Saved(int id) => new(id, $"Contact {id} (saved)", "Research", true);
 
     /// <summary>
     /// Reseeds with the exact same four contacts. The adapter compares before it commits, so this

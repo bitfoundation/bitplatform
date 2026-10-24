@@ -28,7 +28,8 @@
         </Callout>
 
         <DemoCard Title="Generate some history"
-                  Description="Dispatch a few actions, then rewind them from the extension's timeline.">
+                  Description="Dispatch a few actions, then rewind them from the extension's timeline."
+                  Source="@HistorySource">
             <div class="bb-toolbar">
                 <button class="btn btn-primary" @onclick="Counter.Increment">counter/Increment</button>
                 <button class="btn btn-secondary" @onclick="() => Counter.SetStep(Counter.Step + 1)">counter/SetStep</button>
@@ -298,6 +299,24 @@
         new("options.DevToolsStateSanitizer", "<code>Func&lt;JsonObject, JsonObject&gt;</code>. Full control over the tree before it is sent. Display only."),
         new("options.DevToolsActionSanitizer", "<code>Func&lt;string, string&gt;</code>. Rewrites the action label - useful for stripping ids out of names."),
     ];
+
+    private const string HistorySource = """
+        // Program.cs - the instance name, and the one key this site keeps out of the monitor.
+        builder.Services.AddBitBlexServices(options =>
+        {
+            options.DevToolsName = "Blex Docs";
+            options.RedactDevToolsKeys("Token");
+        });
+
+        // App.razor - EnableDevTools defaults to true; the bridge connects on the provider's first render.
+        <BlexProvider>
+            <Router ... />
+        </BlexProvider>
+
+        // Every button is an ordinary action; each lands in the monitor with its payload:
+        Counter.SetStep(Counter.Step + 1);   // { "type": "counter/SetStep", "payload": { "step": 2 } }
+        Settings.RotateToken();              // the tree shows "Token": "<redacted>"
+        """;
 
     private const string Dispatcher = """
         // Arguments in "payload", keyed by parameter name:

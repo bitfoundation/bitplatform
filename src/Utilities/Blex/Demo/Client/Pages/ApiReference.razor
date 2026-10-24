@@ -98,6 +98,10 @@
                         <td>every state setter is <code>private set</code>, <code>override bool EnforcesActions =&gt; true</code>, and no <code>"Set Foo"</code> descriptors</td>
                     </tr>
                     <tr>
+                        <td><code>[BlexStore(RollbackOnError = true)]</code></td>
+                        <td><code>override object?[]? CaptureRollbackState()</code> and <code>override void ApplyRollbackState(object?[])</code> - the shallow copy of the state fields a synchronous action starts from, put back when it throws</td>
+                    </tr>
+                    <tr>
                         <td><code>[BlexState] private T _foo;</code></td>
                         <td><code>public T Foo { get; set; }</code> - the setter routes through <code>SetState</code>; the field is included in both snapshot methods</td>
                     </tr>
@@ -107,7 +111,7 @@
                     </tr>
                     <tr>
                         <td><code>[BlexComputed] T ComputeFoo()</code></td>
-                        <td><code>public T Foo { get; }</code> plus <code>__FooValid</code> / <code>__FooValue</code>, and an entry in <code>InvalidateComputed()</code></td>
+                        <td><code>public T Foo { get; }</code> plus <code>__FooValid</code> / <code>__FooValue</code>, an entry in <code>InvalidateComputed()</code>, and one in <code>InvalidateComputed(string?)</code> under every state property its body reads</td>
                     </tr>
                     <tr>
                         <td><code>[BlexAction] void OnFoo(A a)</code></td>
@@ -127,7 +131,11 @@
                     </tr>
                     <tr>
                         <td><code>[BlexEffect] Task OnFoo(A a, CancellationToken ct)</code></td>
-                        <td>the above, plus <code>public void CancelFoo()</code> - and note the token is <em>not</em> on the public signature</td>
+                        <td>the above, plus <code>public void CancelFoo()</code> - and note the token is <em>not</em> on the public signature - and an entry in the <code>override CancelEffects()</code> that disposing the store calls</td>
+                    </tr>
+                    <tr>
+                        <td><code>[BlexEffect(DebounceMilliseconds = 300)] Task OnFoo(A a)</code></td>
+                        <td>the effect members, plus <code>public void CancelFoo()</code> even without a token - it cancels the invocation still waiting out its quiet period</td>
                     </tr>
                     <tr>
                         <td>any <code>[BlexAction]</code> or <code>[BlexEffect]</code></td>
@@ -171,7 +179,7 @@
     private static readonly IReadOnlyList<ApiTable.Row> Attributes =
     [
         new("BlexStoreAttribute", "Marks a partial class as a store. Properties: <code>Name</code>, <code>Persist</code>, <code>EnforceActions</code>, <code>RollbackOnError</code>. See <a href=\"stores\">Stores &amp; state</a>."),
-        new("BlexStateAttribute", "Marks a field as reactive state. Property: <code>Persist</code> (set <code>false</code> to keep the field out of storage). See <a href=\"stores\">Stores &amp; state</a>."),
+        new("BlexStateAttribute", "Marks a field as reactive state. Property: <code>Persist</code> (set <code>false</code> to keep the field out of storage). See <a href=\"stores\">Stores &amp; state</a> and <a href=\"persistence#transient\">Persisting only part of a store</a>."),
         new("BlexComputedAttribute", "Marks a parameterless <code>ComputeXxx()</code>/<code>GetXxx()</code> method as memoized derived state. See <a href=\"computed\">Computed state</a>."),
         new("BlexActionAttribute", "Marks an <code>OnXxx</code> method as an action. Property: <code>Name</code>. See <a href=\"actions\">Actions</a>."),
         new("BlexEffectAttribute", "Marks an async <code>OnXxx</code> method as an effect. Properties: <code>Name</code>, <code>Concurrency</code>, <code>DebounceMilliseconds</code>, <code>RetryCount</code>, <code>RetryDelayMilliseconds</code>, <code>TimeoutMilliseconds</code>. See <a href=\"effects\">Effects</a>."),
@@ -181,9 +189,9 @@
     private static readonly IReadOnlyList<ApiTable.Row> Core =
     [
         new("IBlexStore", "The store contract: <code>Name</code>, <code>Persist</code>, <code>StateChanged</code>, <code>SerializeState()</code>, <code>DeserializeState()</code>."),
-        new("BlexStoreBase", "Base class for every store. Change notification, batched dispatch, <code>Batch</code>, <code>ResetState</code>, <code>RestoreState</code>, <code>InstanceKey</code>, <code>ActionDescriptors</code> / <code>FindAction</code>, <code>Dispose()</code> (cancels in-flight effects) and the protected hooks the generator uses."),
+        new("BlexStoreBase", "Base class for every store. Change notification, batched dispatch, <code>Batch</code>, <code>ResetState</code>, <code>RestoreState</code>, <code>InstanceKey</code>, <code>ActionDescriptors</code> / <code>FindAction</code>, <code>Dispose()</code> (cancels in-flight effects), <code>INotifyPropertyChanged</code> (raised with an empty name after every change, for XAML) and the protected hooks the generator uses. See <a href=\"stores\">Stores &amp; state</a>."),
         new("BlexManager", "The central manager: store registry, <code>CreateScope</code>, middleware pipeline, action subscriptions (typed ones included), <code>DispatchAsync</code> by name, global state capture and restore, <code>ResetAll</code>, <code>TimeProvider</code>, <code>Dispatcher</code> / <code>InvokeAsync</code>, <code>WhenAsync</code>, <code>Transaction</code>, <code>CreateSelectorFamily</code>, <code>DetectInPlaceMutations</code>, DevTools connection, error sink. See <a href=\"cross-store\">Cross-store coordination</a>."),
-        new("BlexActionDescriptor", "One action described as data: <code>Name</code>, <code>StoreType</code>, <code>ParameterNames</code>, <code>Matches(...)</code> and an untyped <code>InvokeAsync(store, args)</code>. See <a href=\"actions#typed-actions\">Typed actions</a>."),
+        new("BlexActionDescriptor", "One action described as data: <code>Name</code>, <code>StoreType</code>, <code>ParameterNames</code>, <code>Matches(...)</code>, an untyped <code>InvokeAsync(store, args)</code>, and the static <code>GetArg&lt;T&gt;</code> / <code>GetArgOrDefault&lt;T&gt;</code> generated descriptors read a payload with. See <a href=\"actions#typed-actions\">Typed actions</a>."),
         new("BlexAction&lt;TStore&gt;", "The generated descriptor of a parameterless action (<code>CounterStore.Actions.Increment</code>): <code>InvokeAsync(store)</code>."),
         new("BlexAction&lt;TStore, TPayload&gt;", "The generated descriptor of an action with arguments: <code>TryGetPayload</code>, <code>GetPayload</code>, <code>ReadPayload</code>, <code>InvokeAsync(store, payload)</code>. The payload is the single argument, or a tuple named after the parameters."),
         new("BlexStoreScope&lt;TStore&gt;", "One instance of a store registered under <code>\"{name}:{key}\"</code> by <code>manager.CreateScope</code>: <code>Store</code>, <code>Key</code>, <code>Dispose()</code>. See <a href=\"scoped-stores\">Scoped stores</a>."),
@@ -196,7 +204,7 @@
         new("BlexSelector&lt;T&gt;", "A lazy, memoized derived value over the whole state tree, created with <code>manager.CreateSelector(...)</code>: <code>Value</code>, <code>IsValid</code>, <code>Invalidate()</code>, <code>Dispose()</code>. See <a href=\"cross-store\">Cross-store coordination</a>."),
         new("BlexSelectorFamily&lt;TArg, T&gt;", "One memoized selector per argument, created with <code>manager.CreateSelectorFamily(...)</code> and read with <code>family[arg]</code>; bounded by <code>MaxSize</code> (least recently read evicted first). <code>Remove</code>, <code>Invalidate</code>, <code>Clear</code>, <code>IsValid(arg)</code>, <code>Count</code>. See <a href=\"cross-store\">Cross-store coordination</a>."),
         new("BlexError", "<code>readonly record struct (string Source, Exception Exception, string? Detail)</code> - an isolated pipeline failure. See <a href=\"errors\">Error isolation</a>."),
-        new("BlexJson", "The shared <code>JsonSerializerOptions</code> used by generated serialization."),
+        new("BlexJson", "The shared <code>JsonSerializerOptions</code> used by generated serialization: <code>Options</code>, <code>Configure(...)</code> (a source-generated context for trimming and AOT, custom converters) and <code>Reset()</code>. See <a href=\"installation\">Installation</a>."),
         new("IBlexDevTools", "The DevTools sink abstraction: <code>Init</code>, <code>Send</code> and the defaulted <code>SendLiftedState</code> (an imported session, handed back). See <a href=\"devtools\">DevTools</a>."),
         new("BlexDiagnostics", "<code>SourceName</code> (<code>\"Bit.Blex\"</code>): the <code>ActivitySource</code> and <code>Meter</code> every action, effect and query fetch is traced and measured on. See <a href=\"errors#observability\">Logging and tracing</a>."),
         new("IBlexDispatcher","The execution context the state belongs to: <code>CheckAccess()</code>, <code>InvokeAsync(...)</code>. <code>&lt;BlexProvider&gt;</code> binds the renderer's. See <a href=\"stores#dispatcher\">Threads and the dispatcher</a>."),
@@ -204,18 +212,18 @@
 
     private static readonly IReadOnlyList<ApiTable.Row> QueryTypes =
     [
-        new("BlexQueryClient", "The server-state cache: <code>Query</code>, <code>InfiniteQuery</code>, <code>FetchAsync</code>, <code>PrefetchAsync</code>, <code>GetQueryData</code> / <code>SetQueryData</code>, <code>Optimistic</code>, <code>Mutation</code>, <code>InvalidateAsync</code>, <code>RefetchAsync</code>, <code>Cancel</code>, <code>Remove</code>, <code>NotifyFocused</code>, <code>NotifyOffline</code> / <code>NotifyReconnected</code> / <code>IsOnline</code>, <code>GetQueries</code>, <code>Dehydrate</code> / <code>Hydrate</code>. See <a href=\"queries\">Server state &amp; queries</a>."),
+        new("BlexQueryClient", "The server-state cache: <code>Query</code>, <code>InfiniteQuery</code>, <code>FetchAsync</code>, <code>PrefetchAsync</code>, <code>GetQueryData</code> / <code>SetQueryData</code>, <code>TryGetQueryData</code>, <code>Optimistic</code>, <code>Mutation</code>, <code>InvalidateAsync</code>, <code>RefetchAsync</code>, <code>Cancel</code>, <code>Remove</code> / <code>Clear</code>, <code>NotifyFocused</code>, <code>NotifyOffline</code> / <code>NotifyReconnected</code> / <code>IsOnline</code>, <code>GetQueries</code> / <code>FetchingCount</code> / <code>CacheChanged</code>, <code>Dehydrate</code> / <code>Hydrate</code>, <code>Options</code>. See <a href=\"queries\">Server state &amp; queries</a>."),
         new("BlexQueryKey", "An ordered list of parts identifying a query (<code>[\"todos\", 42]</code>): value equality, <code>StartsWith</code> for prefix invalidation."),
         new("BlexQuery / BlexQuery&lt;T&gt;", "An observer of one cached query: <code>Data</code>, <code>Status</code>, <code>FetchStatus</code>, <code>Error</code>, <code>IsLoading</code>, <code>IsRefetching</code>, <code>IsStale</code>, <code>IsPlaceholderData</code>, <code>RefetchAsync</code>, <code>WhenSettledAsync</code>, <code>Update</code>, <code>Changed</code>."),
         new("BlexInfiniteQuery&lt;TPage, TParam&gt;", "An observer of a paged query (<code>InfiniteQuery</code> / <code>UseInfiniteQuery</code>): <code>Pages</code>, <code>PageParams</code>, <code>HasNextPage</code>, <code>IsFetchingNextPage</code>, <code>FetchNextPageAsync</code>, plus everything a <code>BlexQuery</code> reports. See <a href=\"queries\">Server state &amp; queries</a>."),
         new("BlexInfiniteData&lt;TPage, TParam&gt;", "The data of a paged query - its <code>Data</code>, and what <code>GetQueryData</code> and <code>SetQueryData</code> see under its key: <code>Pages</code>, the <code>PageParams</code> each was fetched with, and <code>Empty</code>."),
-        new("BlexQueryOptions", "Per-observer: <code>StaleTime</code>, <code>GcTime</code>, <code>RetryCount</code>, <code>RetryDelay</code>, <code>Enabled</code>, <code>RefetchInterval</code>, <code>RefetchOnMount</code>, <code>RefetchOnFocus</code>, <code>KeepPreviousData</code>."),
+        new("BlexQueryOptions", "Per-observer: <code>StaleTime</code>, <code>GcTime</code>, <code>RetryCount</code>, <code>RetryDelay</code>, <code>Enabled</code>, <code>RefetchInterval</code>, <code>RefetchOnMount</code>, <code>RefetchOnFocus</code>, <code>KeepPreviousData</code>, <code>NetworkMode</code>."),
         new("BlexQueryClientOptions", "The defaults: <code>StaleTime</code> (0), <code>GcTime</code> (5 min), <code>RetryCount</code> (3), <code>RetryDelay</code> (1 s), <code>NetworkMode</code> (<code>Online</code>: requests wait while offline), <code>SyncAcrossTabs</code> (off: invalidations stay in their tab)."),
         new("BlexNetworkMode", "Enum: <code>Online</code> (the default: requests wait while the app is offline - paused, not failed) and <code>Always</code> (requests run whatever the network, for data that does not come from it)."),
         new("BlexQueryStatus / BlexFetchStatus", "<code>Pending</code>/<code>Error</code>/<code>Success</code>, and independently <code>Idle</code>/<code>Fetching</code>."),
         new("BlexQueryInfo", "A cached query as <code>GetQueries()</code> reports it, for inspection."),
-        new("BlexMutation&lt;TArg, TResult&gt;", "A change sent to the server: <code>MutateAsync</code> (never throws), <code>Status</code>, <code>Data</code>, <code>Error</code>, <code>Arg</code>, <code>Reset</code>, <code>Changed</code>."),
-        new("BlexMutationOptions&lt;TArg, TResult&gt;", "<code>OnMutate</code> (returns the rollback), <code>OnSuccess</code>, <code>OnError</code>, <code>OnSettled</code>, <code>Invalidates</code>, <code>RetryCount</code>, <code>RetryDelay</code>."),
+        new("BlexMutation&lt;TArg, TResult&gt;", "A change sent to the server: <code>MutateAsync</code> (never throws), <code>Status</code> and <code>IsIdle</code> / <code>IsPending</code> / <code>IsSuccess</code> / <code>IsError</code>, <code>IsPaused</code>, <code>Data</code>, <code>Error</code>, <code>Arg</code>, <code>Reset</code>, <code>Changed</code> / <code>PropertyChanged</code>."),
+        new("BlexMutationOptions&lt;TArg, TResult&gt;", "<code>OnMutate</code> (returns the rollback), <code>OnSuccess</code>, <code>OnError</code>, <code>OnSettled</code>, <code>Invalidates</code>, <code>RetryCount</code>, <code>RetryDelay</code>, <code>NetworkMode</code>."),
         new("BlexMutationStatus", "<code>Idle</code>, <code>Pending</code>, <code>Error</code>, <code>Success</code>."),
         new("IBlexRollback / BlexRollback", "What a failed mutation undoes; <code>BlexRollback.From(action)</code> and <code>Combine(...)</code>."),
         new("BlexOptimisticUpdate&lt;T&gt;", "Returned by <code>Optimistic</code>: <code>Key</code>, <code>Value</code>, <code>Rollback()</code> - which restores only while the cache still holds this update's value, and refetches otherwise."),
@@ -261,9 +269,9 @@
     private static readonly IReadOnlyList<ApiTable.Row> BlazorTypes =
     [
         new("BlexProvider", "Root component: registers stores, restores prerendered and persisted state, starts history, connects DevTools. Parameters: <code>EnableDevTools</code>, <code>PersistComponentState</code>, <code>ChildContent</code>."),
-        new("BlexComponentBase", "Optional component base with <code>Subscribe</code>, selector <code>Subscribe</code>, <code>UseQuery</code>, <code>Watch</code>, <code>OwnsSubscription</code>, <code>RenderInterval</code> (render throttling) and a <code>Dispose(bool)</code> hook."),
-        new("BlexSelect&lt;TValue&gt;", "Renders its content from a projection of a store and re-renders only that content, only when the projection changes. Parameters: <code>Store</code>, <code>Selector</code>, <code>Comparer</code>, <code>ChildContent</code>. See <a href=\"subscriptions#markup\">Components &amp; selectors</a>."),
-        new("BlexView", "Re-renders its content on any change to <code>Store</code> / <code>Stores</code> - no base class required."),
+        new("BlexComponentBase", "Optional component base with <code>Subscribe</code>, selector <code>Subscribe</code>, <code>UseQuery</code>, <code>UseInfiniteQuery</code>, <code>Watch</code>, <code>OwnsSubscription</code>, <code>RenderInterval</code> (render throttling) and a <code>Dispose(bool)</code> hook."),
+        new("BlexSelect&lt;TValue&gt;", "Renders its content from a projection of a store and re-renders only that content, only when the projection changes. Parameters: <code>Store</code>, <code>Selector</code>, <code>Comparer</code>, <code>RenderInterval</code>, <code>ChildContent</code>. See <a href=\"subscriptions#markup\">Components &amp; selectors</a>."),
+        new("BlexView", "Re-renders its content on any change to <code>Store</code> / <code>Stores</code> - no base class required. Parameters: <code>Store</code>, <code>Stores</code>, <code>RenderInterval</code>, <code>ChildContent</code>. See <a href=\"subscriptions#throttle\">Throttling renders</a>."),
         new("BlexScope&lt;TStore&gt;", "Gives its content its own instance of a store - created from DI, registered as <code>\"{name}:{key}\"</code>, cascaded, and disposed with the scope. Parameters: <code>Key</code>, <code>Factory</code>, <code>ChildContent</code>. See <a href=\"scoped-stores\">Scoped stores</a>."),
         new("BlexBrowserStorage", "<code>IBlexStorage</code> over <code>localStorage</code>/<code>sessionStorage</code> through a small JS module. Also implements <code>IBlexExternalStorageChange</code> via the browser's <code>storage</code> event, which powers <code>SyncAcrossTabs</code>, and <code>IBlexStorageSuspension</code> via <code>pagehide</code> and <code>visibilitychange</code>."),
         new("BlexBrowserStorageKind", "Enum: <code>Local</code>, <code>Session</code>."),
@@ -276,7 +284,7 @@
 
     private static readonly IReadOnlyList<ApiTable.Row> MauiTypes =
     [
-        new("BitBlexMaui", "<code>UseBitBlex</code> (the manager, plus the startup initializer that registers the stores, rehydrates them and starts history when the app is built), <code>AddBitBlexStore&lt;TStore&gt;</code>, <code>AddBitBlexPreferencesPersistence</code>, <code>AddBitBlexHistory</code> (with an optional <code>scope</code>), <code>AddBitBlexHistory&lt;TStore&gt;</code>, <code>AddBitBlexQueries</code>, <code>AddBitBlexMauiInitializer</code>."),
+        new("BitBlexMaui", "<code>UseBitBlex</code> (the manager, plus the startup initializer that registers the stores, rehydrates them and starts history when the app is built), <code>AddBitBlexStore&lt;TStore&gt;</code>, <code>AddBitBlexPreferencesPersistence</code>, <code>AddBitBlexHistory</code> (with an optional <code>scope</code>), <code>AddBitBlexHistory&lt;TStore&gt;</code>, <code>AddBitBlexQueries</code>, <code>AddBitBlexMauiInitializer</code>. See <a href=\"maui\">.NET MAUI</a>."),
         new("BlexPreferencesStorage", "<code>IBlexStorage</code> over MAUI <code>Preferences</code>: SharedPreferences on Android, NSUserDefaults on iOS and Mac Catalyst, the local settings store on Windows."),
     ];
 

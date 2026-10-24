@@ -105,18 +105,35 @@
             }
 
             <div class="bb-toolbar">
+                <button class="btn btn-secondary" @onclick="() => Run(Contacts.AddPair, AddPairNote)">AddMany - add two</button>
+                <button class="btn btn-secondary" @onclick='() => Run(() => Contacts.StarTeam("Research"), StarTeamNote)'>UpdateMany - star Research</button>
                 <button class="btn btn-secondary" @onclick="Contacts.StarAll">Map - star everyone</button>
                 <button class="btn btn-secondary" @onclick="Contacts.RemoveUnstarred">RemoveMany - drop unstarred</button>
                 <button class="btn demo-btn-danger" @onclick="Contacts.RemoveAll">RemoveAll</button>
                 <button class="btn btn-secondary" @onclick="Contacts.Reseed">SetAll - reseed</button>
             </div>
 
+            <p class="bb-card-desc">
+                A late response for a row the user may have removed: remove a contact above, or try id 99 - which was
+                never there - and compare the two answers.
+            </p>
             <div class="bb-toolbar">
-                <button class="btn btn-secondary" title="SetOne with an id that exists" @onclick="() => LateSave(1)">
+                <button class="btn btn-secondary" title="SetOne with an id that exists" @onclick="() => LateSave(1, upsert: false)">
                     SetOne - late save for id 1
                 </button>
-                <button class="btn btn-secondary" title="SetOne with an id that does not exist" @onclick="() => LateSave(99)">
+                <button class="btn btn-secondary" title="SetOne with an id that does not exist" @onclick="() => LateSave(99, upsert: false)">
                     SetOne - late save for id 99
+                </button>
+                <button class="btn btn-secondary" title="UpsertOne with an id that does not exist" @onclick="() => LateSave(99, upsert: true)">
+                    UpsertOne - late save for id 99
+                </button>
+            </div>
+            <div class="bb-toolbar">
+                <button class="btn btn-secondary" title="SetMany with ids 1 and 99" @onclick="() => LateBatch(upsert: false)">
+                    SetMany - late batch for ids 1 and 99
+                </button>
+                <button class="btn btn-secondary" title="UpsertMany with ids 1 and 99" @onclick="() => LateBatch(upsert: true)">
+                    UpsertMany - late batch for ids 1 and 99
                 </button>
                 <button class="btn btn-secondary" @onclick="ReseedIdentical">SetAll - identical payload</button>
             </div>
@@ -246,20 +263,57 @@
 
     private string _setNote = "";
 
-    private void LateSave(int id)
+    private void LateSave(int id, bool upsert)
     {
         // The same instance back means "nothing to do" for two reasons - an absent id, or a present one
         // that already holds exactly this value - so ask which before the call.
         var present = Contacts.Contacts.Contains(id);
         var before = Contacts.Contacts;
-        Contacts.LateSaveResponse(id);
+        if (upsert)
+            Contacts.LateUpsertResponse(id);
+        else
+            Contacts.LateSaveResponse(id);
 
-        _setNote = !present
-            ? $"id {id} is not in the collection - SetOne returned the same state instance, so nothing was notified or recorded."
-            : ReferenceEquals(before, Contacts.Contacts)
-                ? $"id {id} already holds exactly this value - SetOne returned the same state instance, so nothing was notified or recorded."
-                : $"id {id} was present, so it was replaced in place.";
+        var op = upsert ? "UpsertOne" : "SetOne";
+        _setNote = ReferenceEquals(before, Contacts.Contacts)
+            ? present
+                ? $"id {id} already holds exactly this value - {op} returned the same state instance, so nothing was notified or recorded."
+                : $"id {id} is not in the collection - {op} returned the same state instance, so nothing was notified or recorded."
+            : present
+                ? $"id {id} was present, so {op} replaced it in place."
+                : $"id {id} was not there, and {op} inserted it - a removed row is back. That is the response SetOne refuses.";
     }
+
+    private void LateBatch(bool upsert)
+    {
+        var before = Contacts.Contacts;
+        var had99 = before.Contains(99);
+        if (upsert)
+            Contacts.LateBatchUpsertMany();
+        else
+            Contacts.LateBatchSetMany();
+
+        var op = upsert ? "UpsertMany" : "SetMany";
+        _setNote = ReferenceEquals(before, Contacts.Contacts)
+            ? $"Nothing to apply - {op} returned the same state instance: no notification, no action, no undo step."
+            : upsert && !had99
+                ? $"{op} replaced id 1 where it was and inserted id 99, which was not."
+                : $"{op} replaced what it found among ids 1 and 99, and ignored the rest.";
+    }
+
+    /// <summary>Runs one adapter action and notes whether it changed the collection at all.</summary>
+    private void Run(Action act, string changed)
+    {
+        var before = Contacts.Contacts;
+        act();
+        _setNote = ReferenceEquals(before, Contacts.Contacts)
+            ? "Nothing to change - the adapter returned the same state instance, so nothing was notified or recorded."
+            : changed;
+    }
+
+    private const string AddPairNote = "AddMany appended two contacts in one action; the comparer kept Ids sorted by name.";
+
+    private const string StarTeamNote = "UpdateMany applied one transform to every Research id, in one action.";
 
     private void ReseedIdentical()
     {
@@ -372,6 +426,23 @@
             [BlexAction] private void OnRemoveUnstarred()
                 => Contacts = Adapter.RemoveMany(Contacts,
                        [.. Contacts.All.Where(c => !c.Starred).Select(c => c.Id)]);
+
+            [BlexAction] private void OnAddPair()
+                => Contacts = Adapter.AddMany(Contacts,
+                       [new(NextId, "Edsger Dijkstra", "Languages", false), new(NextId + 1, "Frances Allen", "Compilers", false)]);
+
+            [BlexAction] private void OnStarTeam(string team)
+                => Contacts = Adapter.UpdateMany(Contacts,
+                       [.. Contacts.All.Where(c => c.Team == team).Select(c => c.Id)],
+                       c => c with { Starred = true });
+
+            // A late save response: SetOne ignores an id that is gone, UpsertOne puts it back.
+            [BlexAction] private void OnLateSaveResponse(int id)   => Contacts = Adapter.SetOne(Contacts, Saved(id));
+            [BlexAction] private void OnLateUpsertResponse(int id) => Contacts = Adapter.UpsertOne(Contacts, Saved(id));
+
+            // The same for a batch of ids 1 and 99.
+            [BlexAction] private void OnLateBatchSetMany()    => Contacts = Adapter.SetMany(Contacts, [Saved(1), Saved(99)]);
+            [BlexAction] private void OnLateBatchUpsertMany() => Contacts = Adapter.UpsertMany(Contacts, [Saved(1), Saved(99)]);
         }
         """;
 
@@ -396,7 +467,7 @@
         """;
 
     private const string NoOpIdentity = """
-        [BlexEffect(Mode = BlexEffectConcurrency.Drop)]
+        [BlexEffect(Concurrency = BlexEffectConcurrency.Drop)]
         private async Task OnPoll()
         {
             var fresh = await _api.GetTodosAsync();

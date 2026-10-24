@@ -479,3 +479,23 @@
         animation: none;
     }
 }
+
+/* Data on screen that is standing in for newer data on its way: the previous page of a KeepPreviousData query
+   while the next one loads. Dimmed rather than hidden, so the layout does not jump. */
+.demo-dimmed {
+    opacity: .55;
+    transition: opacity .15s ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .demo-dimmed {
+        transition: none;
+    }
+}
+
+/* A table whose first column is a short phrase rather than an identifier (bb-compare makes it prose): wide
+   enough that the phrase wraps between words, not inside one, however long the column beside it runs. */
+.demo-key-wide td:first-child {
+    min-width: 10rem;
+    overflow-wrap: normal;
+}

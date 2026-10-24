@@ -80,6 +80,27 @@
                 <DraftEditor />
             </BlexScope>
         </DemoCard>
+
+        <DemoCard Title="A fresh instance every time"
+                  Description="A wizard, a dialog that must start empty: no Key at all. Open the scratchpad and write something; close it and the instance is unregistered and disposed; open it again and it is a new one, under a newly assigned key, with nothing in it - an instance whose key was assigned for it is never persisted."
+                  Source="@UnkeyedSource" SourceLanguage="razor">
+            <div class="bb-toolbar">
+                <button type="button" class="btn btn-primary" aria-pressed="@(_scratchpadOpen ? "true" : "false")"
+                        @onclick="() => _scratchpadOpen = !_scratchpadOpen">
+                    @(_scratchpadOpen ? "Close the scratchpad" : "Open the scratchpad")
+                </button>
+            </div>
+            @if (_scratchpadOpen)
+            {
+                <BlexScope TStore="DraftStore">
+                    <DraftEditor />
+                </BlexScope>
+            }
+            else
+            {
+                <p class="bb-card-desc">Closed - no <code>draft:…</code> instance exists for it now. Check the Inspector's state tree.</p>
+            }
+        </DemoCard>
     </div>
 
     <div class="bb-card">
@@ -149,6 +170,20 @@
 
 @code {
     private int _document = 1;
+    private bool _scratchpadOpen;
+
+    private const string UnkeyedSource = """
+        @if (_open)
+        {
+            @* No Key: one is assigned ("draft:1", "draft:2", ...), kept for the scope's lifetime, never persisted. *@
+            <BlexScope TStore="DraftStore">
+                <DraftEditor />
+            </BlexScope>
+        }
+
+        @* Closing it disposes the scope: the instance is unregistered and disposed with it. *@
+        <button @onclick="() => _open = !_open">Open / close</button>
+        """;
 
     private static readonly IReadOnlyList<ApiTable.Row> ManagerRows =
     [

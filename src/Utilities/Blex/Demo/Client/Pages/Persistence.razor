@@ -294,7 +294,7 @@
         <CodeBlock Code="@WatchableStorage" Title="Reporting external changes" />
     </div>
 
-    <div class="bb-card">
+    <div class="bb-card" id="protection">
         <h2 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Protecting what is stored</h2>
         <p>
             Browser storage is readable by anyone with the device and by every script on the page. An
@@ -410,6 +410,7 @@
         new("bool SyncAcrossTabs", "Apply state written by another tab as soon as it lands, instead of only at the next startup. Requires a storage implementing <code>IBlexExternalStorageChange</code> (the browser <code>localStorage</code> provider does). Default <code>false</code>."),
         new("Action&lt;string, JsonObject&gt;? OnExternalChange", "Called after another tab's state has been applied, with the store name and the applied slice."),
         new("Func&lt;string, JsonObject, JsonObject, JsonObject?&gt;? Merge", "Combines a stored payload with the store's current state before it is applied. Receives the store name, the stored slice and a fresh snapshot of the live store; return what to apply, or <code>null</code> to discard. Runs for cross-tab changes too."),
+        new("IBlexStateProtector? Protector", "Encrypts and tamper-proofs every payload on its way to storage and checks it on the way back. Default <code>null</code>; an <code>IBlexStateProtector</code> registered in DI is used when this is unset. See <a href=\"persistence#protection\">Protecting what is stored</a>."),
     ];
 
     private static readonly IReadOnlyList<ApiTable.Row> PersistorRows =

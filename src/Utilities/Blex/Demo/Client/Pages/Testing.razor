@@ -208,6 +208,17 @@
             the component subscribe. There is nothing Blex-specific to mock.
         </p>
         <CodeBlock Code="@Bunit" />
+
+        <Callout Kind="Callout.CalloutKind.Gotcha" Title="Rendering &lt;BlexProvider&gt;? Change stores on the renderer's dispatcher">
+            <p>
+                <code>&lt;BlexProvider&gt;</code> binds the renderer's dispatcher to the manager, and the test's own
+                thread is outside it - just as a timer callback would be. So a store changed straight from the test
+                body is reported through <code>OnError</code> (source <code>"dispatcher"</code>; see
+                <a href="stores#dispatcher">Threads and the dispatcher</a>). Change state through
+                <code>cut.InvokeAsync(() => store.Increment())</code>, as bUnit recommends for any state change, or
+                set <code>options.ReportOffDispatcherChanges = false</code> for the suite.
+            </p>
+        </Callout>
     </div>
 
 </DocPage>
@@ -219,6 +230,7 @@
         new("BlexTestHarness.For(store)", "Creates a harness around an already-constructed store - use this when the store has dependencies."),
         new("BlexTestHarness.WithFilter&lt;TStore&gt;(predicate)", "A harness whose manager vetoes any action the predicate rejects. The shorthand for testing a store together with its guard rails."),
         new("BlexTestHarness.WithMiddleware&lt;TStore&gt;(…)", "A harness whose manager runs the given middleware. Also accepts an already-constructed store."),
+        new("new BlexTestHarness&lt;TStore&gt;(store, middleware?)", "The constructor the factories call: a store, and optionally the middleware its manager runs."),
         new("TStore Store", "The store under test."),
         new("BlexManager Manager", "The manager backing the harness. Use it to add middleware assertions or extra subscriptions."),
         new("BlexActionLog Log", "Records every dispatch."),

@@ -97,8 +97,9 @@
             <div class="bb-card">
                 <p class="bb-card-title">Compile-time safety</p>
                 <p class="bb-card-desc">
-                    Twenty-three diagnostics - nineteen of them errors - catch a malformed store at build
-                    time rather than emitting code that does not compile. See <a href="diagnostics">Diagnostics</a>.
+                    @DiagnosticsCatalog.All.Count diagnostics - @(DiagnosticsCatalog.All.Count(d => d.IsError)) of them
+                    errors - catch a malformed store at build time rather than emitting code that does not compile.
+                    See <a href="diagnostics">Diagnostics</a>.
                 </p>
             </div>
         </div>

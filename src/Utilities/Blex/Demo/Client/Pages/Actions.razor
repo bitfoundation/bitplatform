@@ -2,6 +2,10 @@
 @using System.Text.Json.Nodes
 @inherits BlexComponentBase
 @inject CounterStore Counter
+@inject AccountStore Account
+@inject WalletStore Wallet
+@inject LedgerStore Ledger
+@inject ProgressStore Progress
 
 <DocPage Href="actions" Title="Actions"
          Lead="An action is a named, batched, recorded unit of change. Everything that mutates state becomes one - even a direct property assignment.">
@@ -261,6 +265,36 @@
             Two-way binding needs a setter, so bind such a store's state through an action instead:
         </p>
         <CodeBlock Code="@EnforceBind" Language="razor" />
+
+        <DemoCard Title="An enforcing store at runtime"
+                  Description="This site's AccountStore is [BlexStore(EnforceActions = true)]. Deposit and Withdraw are actions and work. SneakBonus() is the store's own code assigning Balance outside any action - it compiles, and throws. The compile-time half cannot run in a browser: account.Balance = 0 from this page would not build."
+                  Source="@EnforceSource">
+            <div class="bb-toolbar">
+                <button class="btn btn-primary" @onclick="() => RunEnforced(() => Account.Deposit(10))">Deposit(10)</button>
+                <button class="btn btn-secondary" @onclick="() => RunEnforced(() => Account.Withdraw(10))">Withdraw(10)</button>
+                <button class="btn demo-btn-danger" @onclick="() => RunEnforced(Account.SneakBonus)">SneakBonus() - outside an action</button>
+                <button class="btn btn-secondary" @onclick="() => RunEnforced(Account.ResetState)">ResetState()</button>
+            </div>
+
+            @if (_enforceError is not null)
+            {
+                <div class="bb-note bb-note-danger" role="alert">
+                    <strong class="demo-note-title">InvalidOperationException</strong>
+                    <p>@_enforceError</p>
+                </div>
+            }
+
+            <div class="bb-stats">
+                <div class="bb-stat">
+                    <span class="bb-stat-label">account/Balance</span>
+                    <span class="bb-stat-value demo-accent">@Account.Balance.ToString("0.00")</span>
+                </div>
+            </div>
+            <p class="bb-card-desc">
+                Dispatchable on <code>account</code>: @string.Join(", ", Account.ActionDescriptors.Select(a => a.Name))
+                - and no <code>Set Balance</code>, since nothing can ever have recorded one.
+            </p>
+        </DemoCard>
     </div>
 
     <div class="bb-card">
@@ -308,6 +342,55 @@
             caller's own changes stay.
         </p>
         <CodeBlock Code="@Rollback" />
+
+        <DemoCard Title="The same throw, with and without RollbackOnError"
+                  Description="Two stores, one Withdraw each: take the money out, write the entry, then check the balance. Both start at 100.00. Withdraw 150 from each and compare what the throw leaves behind - and what it recorded."
+                  Source="@RollbackDemoSource">
+            <div class="bb-grid">
+                <div class="bb-card">
+                    <p class="bb-card-title">wallet <span class="bb-badge">default</span></p>
+                    <div class="bb-stats">
+                        <div class="bb-stat">
+                            <span class="bb-stat-label">Balance</span>
+                            <span class="bb-stat-value demo-accent">@Wallet.Balance.ToString("0.00")</span>
+                        </div>
+                        <div class="bb-stat">
+                            <span class="bb-stat-label">Entries</span>
+                            <span class="bb-stat-value">@Wallet.Entries.Count</span>
+                        </div>
+                    </div>
+                    <div class="bb-toolbar">
+                        <button class="btn btn-secondary" @onclick='() => _rollbackNote = Attempt("wallet", () => Wallet.Withdraw(30))'>Withdraw(30)</button>
+                        <button class="btn demo-btn-danger" @onclick='() => _rollbackNote = Attempt("wallet", () => Wallet.Withdraw(150))'>Withdraw(150) - throws</button>
+                    </div>
+                </div>
+                <div class="bb-card">
+                    <p class="bb-card-title">ledger <span class="bb-badge bb-badge-success">RollbackOnError</span></p>
+                    <div class="bb-stats">
+                        <div class="bb-stat">
+                            <span class="bb-stat-label">Balance</span>
+                            <span class="bb-stat-value demo-accent">@Ledger.Balance.ToString("0.00")</span>
+                        </div>
+                        <div class="bb-stat">
+                            <span class="bb-stat-label">Entries</span>
+                            <span class="bb-stat-value">@Ledger.Entries.Count</span>
+                        </div>
+                    </div>
+                    <div class="bb-toolbar">
+                        <button class="btn btn-secondary" @onclick='() => _rollbackNote = Attempt("ledger", () => Ledger.Withdraw(30))'>Withdraw(30)</button>
+                        <button class="btn demo-btn-danger" @onclick='() => _rollbackNote = Attempt("ledger", () => Ledger.Withdraw(150))'>Withdraw(150) - throws</button>
+                    </div>
+                </div>
+            </div>
+            <div class="bb-toolbar">
+                <button class="btn btn-secondary" @onclick="ResetLedgers">ResetState() both</button>
+            </div>
+            @if (_rollbackNote.Length > 0)
+            {
+                <p class="bb-card-desc" role="status">@_rollbackNote</p>
+            }
+        </DemoCard>
+
         <Callout Kind="Callout.CalloutKind.Note" Title="What a rollback covers">
             <p>
                 The snapshot is a shallow copy of the <code>[BlexState]</code> fields - one small array per
@@ -329,6 +412,31 @@
             <code>RollbackOnError</code>, it is synchronous only.
         </p>
         <CodeBlock Code="@TransactionSample" />
+
+        <DemoCard Title="One unit of work across two stores"
+                  Description="Each button runs one transfer inside manager.Transaction: Withdraw from the wallet, Deposit into the ledger. Whatever throws in the body - the bank declining afterwards, or the wallet's own Withdraw - puts both stores back where the transaction found them, though the wallet has no RollbackOnError of its own."
+                  Source="@TransactionDemoSource">
+            <div class="bb-toolbar">
+                <button class="btn btn-primary" @onclick="() => Transfer(20, decline: false)">Transfer 20</button>
+                <button class="btn demo-btn-danger" @onclick="() => Transfer(20, decline: true)">Transfer 20, then the bank declines</button>
+                <button class="btn demo-btn-danger" @onclick="() => Transfer(500, decline: false)">Transfer 500 - more than the wallet holds</button>
+                <button class="btn btn-secondary" @onclick="ResetLedgers">ResetState() both</button>
+            </div>
+            <div class="bb-stats">
+                <div class="bb-stat">
+                    <span class="bb-stat-label">wallet/Balance</span>
+                    <span class="bb-stat-value demo-accent">@Wallet.Balance.ToString("0.00")</span>
+                </div>
+                <div class="bb-stat">
+                    <span class="bb-stat-label">ledger/Balance</span>
+                    <span class="bb-stat-value demo-accent">@Ledger.Balance.ToString("0.00")</span>
+                </div>
+            </div>
+            @if (_transactionNote.Length > 0)
+            {
+                <p class="bb-card-desc" role="status">@_transactionNote</p>
+            }
+        </DemoCard>
     </div>
 
     <div class="bb-card">
@@ -340,18 +448,52 @@
         </p>
         <CodeBlock Code="@AsyncAction" />
 
+        <DemoCard Title="An async action, rendered as it goes"
+                  Description="ProgressStore.Run is an async [BlexAction] that moves Percent from 0 to 100 in 20 steps, 100 ms apart. Every step re-renders this page the moment it lands - count the StateChanged notifications - yet the run is recorded once, as progress/Run, when it ends."
+                  Source="@AsyncDemoSource">
+            <div class="bb-toolbar">
+                <button class="btn btn-primary" @onclick="RunProgress" disabled="@Progress.IsRunning">
+                    @(Progress.IsRunning ? "Running…" : "Run(steps: 20, delayMilliseconds: 100)")
+                </button>
+                <progress max="100" value="@Progress.Percent" aria-label="Run progress"></progress>
+            </div>
+            <div class="bb-stats">
+                <div class="bb-stat">
+                    <span class="bb-stat-label">progress/Percent</span>
+                    <span class="bb-stat-value">@Progress.Percent%</span>
+                </div>
+                <div class="bb-stat">
+                    <span class="bb-stat-label">StateChanged this run</span>
+                    <span class="bb-stat-value demo-accent">@_progressNotifications</span>
+                </div>
+                <div class="bb-stat">
+                    <span class="bb-stat-label">Actions recorded this run</span>
+                    <span class="bb-stat-value demo-accent">@_progressActions</span>
+                </div>
+            </div>
+            <p class="bb-card-desc">
+                The undo history gains one step for the whole run, and the Redux DevTools one entry carrying its
+                payload, <code>{ "steps": 20, "delayMilliseconds": 100 }</code>. The <a href="subscriptions#throttle">render
+                throttling demo</a> runs the same action faster, to show <code>RenderInterval</code> capping the
+                renders it causes.
+            </p>
+        </DemoCard>
+
         <p>
             If what you are writing is a side-effect with a loading and error lifecycle, reach for
             <a href="effects"><code>[BlexEffect]</code></a> instead - it generates all of that for you.
         </p>
 
-        <Callout Kind="Callout.CalloutKind.Gotcha" Title="A store is owned by its in-flight async action">
+        <Callout Kind="Callout.CalloutKind.Note" Title="Each async action records what its own flow changed">
             <p>
-                Dispatch is single-threaded, matching Blazor's rendering model. While an async action is
-                awaiting, its store's record depth stays raised - so a mutation made from
-                <em>elsewhere</em> during that window is attributed to the in-flight action instead of
-                being recorded as its own. Treat a store as owned by its running async action until it
-                completes.
+                An async action is recorded when it ends, with what its own body changed - across its awaits, and
+                nothing else. A click handled while it awaits, another action of the same store, a second run of
+                it started meanwhile: each is recorded as an action of its own (an assignment as its own
+                <code>Set X</code>, offered to the filters like any other), in the order they finish. Only an
+                action dispatched from <em>inside</em> its body is part of it. Rollback is synchronous only:
+                <code>RollbackOnError</code> leaves an async action alone and <code>Transaction</code> takes a
+                synchronous body, since an async action has already shown the UI what it changed before its first
+                <code>await</code>.
             </p>
         </Callout>
 
@@ -407,17 +549,100 @@
     private string? _dispatchError;
     private string _lastPreset = "-";
 
+    private string? _enforceError;
+    private string _rollbackNote = "";
+    private string _transactionNote = "";
+    private int _progressNotifications;
+    private int _progressActions;
+
     protected override void OnInitialized()
     {
-        Subscribe(Counter);
+        Subscribe(Counter, Account, Wallet, Ledger, Progress);
         Counter.StateChanged += CountNotification;
+        Progress.StateChanged += CountProgressNotification;
 
         // OwnsSubscription hands the token to the base class, which disposes it with the component.
         OwnsSubscription(Manager.SubscribeTo<CounterStore>(_ => _actions++));
+        OwnsSubscription(Manager.SubscribeTo<ProgressStore>(_ => _progressActions++));
 
         // Typed: the payload arrives as the (int Count, int Step) tuple the action takes.
         OwnsSubscription(Manager.SubscribeToAction(CounterStore.Actions.ApplyPreset,
             (_, preset) => _lastPreset = $"Count {preset.Count}, Step {preset.Step}"));
+    }
+
+    private void RunEnforced(Action act)
+    {
+        _enforceError = null;
+        try
+        {
+            act();
+        }
+        catch (InvalidOperationException ex)
+        {
+            _enforceError = ex.Message;
+        }
+    }
+
+    /// <summary>
+    /// Runs one withdrawal and says what it left behind: whether it threw, and which actions it recorded - the
+    /// difference between a store that keeps a failed action's changes and one that rolls them back.
+    /// </summary>
+    private string Attempt(string store, Action act)
+    {
+        var recorded = new List<string>();
+        using var recording = Manager.Subscribe(ctx => recorded.Add(ctx.QualifiedName));
+        try
+        {
+            act();
+            return $"Withdrawn from {store}, and recorded as {string.Join(", ", recorded)}.";
+        }
+        catch (InvalidOperationException ex)
+        {
+            return recorded.Count == 0
+                ? $"\"{ex.Message}\" reached the caller, and {store} is exactly as it was: nothing was notified, recorded, persisted or added to the undo history."
+                : $"\"{ex.Message}\" reached the caller - and {store} kept what the action changed before the throw, recorded as {string.Join(", ", recorded)}.";
+        }
+    }
+
+    private void Transfer(decimal amount, bool decline)
+    {
+        var recorded = new List<string>();
+        using var recording = Manager.Subscribe(ctx => recorded.Add(ctx.QualifiedName));
+        try
+        {
+            Manager.Transaction(() =>
+            {
+                Wallet.Withdraw(amount);
+                Ledger.Deposit(amount);
+
+                if (decline)
+                    throw new InvalidOperationException("The bank declined the transfer.");
+            });
+
+            _transactionNote = $"Committed: {string.Join(", ", recorded)}.";
+        }
+        catch (InvalidOperationException ex)
+        {
+            _transactionNote = $"\"{ex.Message}\" - after {(recorded.Count == 0 ? "no action" : string.Join(", ", recorded))}. "
+                + "Every store the body changed was put back in one restore, so both balances are what they were before the transfer.";
+        }
+    }
+
+    private void ResetLedgers()
+    {
+        Wallet.ResetState();
+        Ledger.ResetState();
+        _rollbackNote = "";
+        _transactionNote = "";
+    }
+
+    private void CountProgressNotification() => _progressNotifications++;
+
+    private async Task RunProgress()
+    {
+        _progressNotifications = 0;
+        _progressActions = 0;
+        await Progress.Run(20, 100);
     }
 
     private Task Preset(DispatchPreset preset)
@@ -476,7 +701,106 @@
 
     // BlexComponentBase owns IDisposable; this is its hook for extra cleanup.
     protected override void Dispose(bool disposing)
-        => Counter.StateChanged -= CountNotification;
+    {
+        Counter.StateChanged -= CountNotification;
+        Progress.StateChanged -= CountProgressNotification;
+    }
+
+    private const string EnforceSource = """
+        [BlexStore(Name = "account", EnforceActions = true)]
+        public partial class AccountStore
+        {
+            [BlexState] private decimal _balance;
+
+            [BlexAction] private void OnDeposit(decimal amount)  => Balance += amount;
+            [BlexAction] private void OnWithdraw(decimal amount) => Balance -= amount;
+
+            // The store's own code, outside any action: compiles, throws InvalidOperationException.
+            public void SneakBonus() => Balance += 1000m;
+        }
+
+        account.Deposit(10);        // fine
+        account.SneakBonus();       // throws - "...can only change inside one of its actions"
+        account.Balance = 0;        // CS0272 - does not compile
+        """;
+
+    private const string RollbackDemoSource = """
+        // Two stores, the same body - only the attribute differs.
+        [BlexStore(Name = "wallet")]                           // default
+        [BlexStore(Name = "ledger", RollbackOnError = true)]   // a transaction per synchronous action
+
+        [BlexAction]
+        private void OnWithdraw(decimal amount)
+        {
+            Balance -= amount;
+            Entries = [.. Entries, new LedgerEntry("withdrawal", -amount)];
+
+            if (Balance < 0)
+                throw new InvalidOperationException("Insufficient funds: ...");
+        }
+
+        // wallet.Withdraw(150): throws; Balance is -50.00, the entry stays, "wallet/Withdraw" is recorded.
+        // ledger.Withdraw(150): throws; Balance is 100.00, no entry, nothing recorded.
+        """;
+
+    private const string TransactionDemoSource = """
+        @inject BlexManager Manager
+
+        private void Transfer(decimal amount, bool decline)
+        {
+            try
+            {
+                Manager.Transaction(() =>
+                {
+                    Wallet.Withdraw(amount);     // recorded
+                    Ledger.Deposit(amount);      // recorded
+
+                    if (decline)
+                        throw new InvalidOperationException("The bank declined the transfer.");
+                });
+            }
+            catch (InvalidOperationException ex)
+            {
+                // Both stores are back where the transaction found them - the wallet included,
+                // although only the ledger is RollbackOnError.
+                _note = ex.Message;
+            }
+        }
+        """;
+
+    private const string AsyncDemoSource = """
+        [BlexStore(Name = "progress")]
+        public partial class ProgressStore
+        {
+            [BlexState] private int _percent;
+            [BlexState] private bool _isRunning;
+
+            [BlexAction]
+            private async Task OnRun(int steps, int delayMilliseconds)
+            {
+                IsRunning = true;
+                Percent = 0;
+
+                for (var step = 1; step <= steps; step++)
+                {
+                    await Task.Delay(delayMilliseconds);
+                    Percent = step * 100 / steps;    // renders now
+                }
+
+                IsRunning = false;                   // ...and the run is recorded once, here
+            }
+        }
+
+        @* The page *@
+        protected override void OnInitialized()
+        {
+            Subscribe(Progress);
+            Progress.StateChanged += () => _notifications++;
+            OwnsSubscription(Manager.SubscribeTo<ProgressStore>(_ => _actions++));
+        }
+
+        <button @onclick="() => Progress.Run(20, 100)" disabled="@Progress.IsRunning">Run</button>
+        """;
 
     private const string Rollback = """
         [BlexStore(Name = "ledger", RollbackOnError = true)]

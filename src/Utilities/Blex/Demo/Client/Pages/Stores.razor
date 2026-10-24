@@ -1,8 +1,11 @@
 ﻿@page "/stores"
 @using System.Text.Json
+@using System.Text.Json.Nodes
 @inherits BlexComponentBase
 @inject CounterStore Counter
 @inject EqualityDemoStore Equality
+@inject BlexManager Manager
+@inject ErrorLog Errors
 
 <DocPage Href="stores" Title="Stores & state"
          Lead="A store is a partial class that owns a slice of state. The generator turns its fields into reactive properties and gives it a JSON identity.">
@@ -134,15 +137,42 @@
             </p>
         </Callout>
 
-        <Callout Kind="Callout.CalloutKind.Note" Title="Let Blex catch it while you develop">
-            <p>
-                <code>options.DetectInPlaceMutations = true</code> reports, through <code>OnError</code>
-                (source <code>"mutation"</code>), every action that changed its store's state without
-                assigning a property - the red button above. It serializes the store around each action,
-                so turn it on in development only:
-                <code>options.DetectInPlaceMutations = builder.HostEnvironment.IsDevelopment();</code>
+        <h3>Let Blex catch it while you develop</h3>
+        <p>
+            <code>options.DetectInPlaceMutations = true</code> reports, through <code>OnError</code> (source
+            <code>"mutation"</code>), every action that changed its store's state without assigning a property -
+            exactly what the red button above does. It serializes the store before and after each action, so turn
+            it on in development only. It catches an action that assigned nothing at all; one that assigned a
+            property and also mutated another in place is announced anyway, through the property it did assign.
+        </p>
+        <CodeBlock Code="@DetectSample" FileName="Program.cs" />
+
+        <DemoCard Title="In-place mutations, reported"
+                  Description="Turn detection on and press the red button above again. The action still changes nothing anyone can see - but this time OnError hears about it, with the fix in the message, and so does the Inspector's Errors tab."
+                  Source="@DetectSource">
+            <div class="bb-toolbar">
+                <label class="bb-check">
+                    <input type="checkbox" checked="@Manager.DetectInPlaceMutations" @onchange="OnDetectToggle" />
+                    <strong>manager.DetectInPlaceMutations</strong>
+                </label>
+                <button class="btn demo-btn-danger" @onclick="Equality.MutateInPlace">Items.Add(…) - in place</button>
+            </div>
+            @if (LastMutationReport is { } report)
+            {
+                <div class="bb-note bb-note-danger" role="status">
+                    <strong class="demo-note-title">OnError("mutation", @report.Detail)</strong>
+                    <p>@report.Exception.Message</p>
+                </div>
+            }
+            else
+            {
+                <p class="bb-card-desc">Nothing reported yet.</p>
+            }
+            <p class="bb-card-desc">
+                The switch sets the property on this app's manager while this page is open, and puts it back when
+                you leave - so the rest of the site keeps the default, off.
             </p>
-        </Callout>
+        </DemoCard>
     </div>
 
     <div class="bb-card">
@@ -154,14 +184,32 @@
             <code>BlexJson.Options</code> (web defaults, case-insensitive, enums as strings).
         </p>
 
-        <DemoCard Title="Live snapshot" Description="SerializeState() on the counter store, re-read on every change.">
+        <DemoCard Title="Live snapshot"
+                  Description="SerializeState() on the counter store, re-read on every change. Keep a copy, change the counter, then put the copy back with RestoreState: the counter jumps back at once, yet the Inspector's feed gains no entry - a restore is not an action."
+                  Source="@SnapshotSource">
             <CodeBlock Code="@CounterJson" Language="json" />
             <div class="bb-toolbar">
                 <button class="btn btn-secondary" @onclick="Counter.Increment">Increment</button>
                 <button class="btn btn-secondary" @onclick="() => Counter.SetStep(Counter.Step + 1)">Step + 1</button>
                 <button class="btn btn-secondary" @onclick="Counter.ResetState">ResetState()</button>
             </div>
+            <div class="bb-toolbar">
+                <button class="btn btn-primary" @onclick="KeepSnapshot">Keep a copy: SerializeState()</button>
+                <button class="btn btn-primary" @onclick="RestoreSnapshot" disabled="@(_snapshot is null)">RestoreState(copy)</button>
+                @if (_snapshot is not null)
+                {
+                    <code>@_snapshot.ToJsonString()</code>
+                }
+            </div>
         </DemoCard>
+
+        <p>
+            <code>RestoreState</code> is the public way to put a snapshot back by hand: it applies the values,
+            invalidates the computed ones and raises <code>StateChanged</code> once, then
+            <code>StoreRestored</code> and <code>StateRestored</code> on the manager - so cross-store selectors,
+            undo/redo and persistence (which writes the restored state back) all follow. It records no action.
+            <code>DeserializeState</code> is the raw half underneath: field writes and nothing else.
+        </p>
 
         <Callout Kind="Callout.CalloutKind.Gotcha" Title="Present-but-null vs. missing">
             <p>
@@ -242,7 +290,40 @@
 @code {
     private static readonly JsonSerializerOptions Indented = new() { WriteIndented = true };
 
-    protected override void OnInitialized() => Subscribe(Counter, Equality);
+    // The manager's own setting when the page opened, put back when it closes: detection is this page's
+    // demonstration, not something the rest of the site should pay for.
+    private bool _detectBefore;
+    private JsonObject? _snapshot;
+
+    protected override void OnInitialized()
+    {
+        Subscribe(Counter, Equality);
+        _detectBefore = Manager.DetectInPlaceMutations;
+
+        // The report lands in the site's OnError sink, which is no store: re-render when it moves.
+        Errors.Changed += OnErrorsChanged;
+    }
+
+    private void OnErrorsChanged() => _ = InvokeAsync(StateHasChanged);
+
+    protected override void Dispose(bool disposing)
+    {
+        Errors.Changed -= OnErrorsChanged;
+        Manager.DetectInPlaceMutations = _detectBefore;
+    }
+
+    private void OnDetectToggle(ChangeEventArgs e) => Manager.DetectInPlaceMutations = (bool)(e.Value ?? false);
+
+    private BlexError? LastMutationReport => Errors.Errors.FirstOrDefault(e => e.Source == "mutation") is { Exception: not null } error ? error : null;
+
+    private void KeepSnapshot() => _snapshot = Counter.SerializeState();
+
+    // A copy of the copy: the store must not end up sharing the instance this page keeps showing.
+    private void RestoreSnapshot()
+    {
+        if (_snapshot is not null)
+            Counter.RestoreState((JsonObject)_snapshot.DeepClone());
+    }
 
     private string CounterJson => Counter.SerializeState().ToJsonString(Indented);
 
@@ -259,6 +340,7 @@
         new("string Name", "The store's slice key."),
         new("bool Persist", "Whether the store opts in to durable persistence."),
         new("event Action? StateChanged", "Raised after state changes so views can re-render. Fires once per action, not once per field."),
+        new("event PropertyChangedEventHandler? PropertyChanged", "<code>INotifyPropertyChanged</code>, raised right after <code>StateChanged</code> with an empty property name - \"everything may have changed\" - so a XAML binding refreshes computed and effect-lifecycle properties too. What <a href=\"maui\">.NET MAUI</a> binds to."),
         new("JsonObject SerializeState()", "Captures the current state as JSON. Generated."),
         new("void DeserializeState(JsonObject)", "Raw field writes from a snapshot, without notification. Generated. Prefer <code>RestoreState</code>."),
         new("void RestoreState(JsonObject)", "The safe public way to hydrate a store by hand: applies the snapshot, invalidates computed values and raises <code>StateChanged</code> exactly once, without recording an action."),
@@ -267,7 +349,7 @@
         new("string? InstanceKey", "The key of a <a href=\"scoped-stores\">scoped</a> instance, or <code>null</code> for the usual single instance."),
         new("IReadOnlyList&lt;BlexActionDescriptor&gt; ActionDescriptors", "Every action of the store as data: its actions and effects, a <code>Set X</code> per assignable property, and <code>ResetState</code>. What dispatch by name uses."),
         new("BlexActionDescriptor? FindAction(string)", "The descriptor of the action dispatched under that name, or <code>null</code>."),
-        new("void Dispose()", "Cancels in-flight effects and pending debounce waits. The DI container calls it when the scope ends."),
+        new("void Dispose()", "Cancels in-flight effects and pending debounce waits. The DI container calls it when the scope ends. The store stays usable - disposal is a quiesce, not a kill - and a second call does nothing."),
     ];
 
     private static readonly IReadOnlyList<ApiTable.Row> ProtectedRows =
@@ -282,13 +364,52 @@
         new("void SetState&lt;T&gt;(ref T, T, string?)", "The generated property setter. Compares, assigns, invalidates, notifies, and records a standalone <code>Set X</code> action when called outside a dispatch."),
         new("void SetEffectState&lt;T&gt;(ref T, T)", "Assigns a transient effect field (loading/error). Notifies, but never records a time-travel action."),
         new("void BeginEffect(ref int) / EndEffect(ref int)", "Reference-count an effect's in-flight runs so <code>IsLoading</code> stays true until the last one finishes."),
+        new("Task DebounceEffectAsync(int, CancellationToken)", "Waits out an effect's <code>DebounceMilliseconds</code> on the manager's <code>TimeProvider</code> - at once during a replay."),
+        new("Task RunEffectAttemptsAsync(attempt, token, retryCount, retryDelayMilliseconds, timeoutMilliseconds)", "Runs an effect body with its retries, exponential backoff and per-attempt timeout, all inside one recorded action."),
         new("void Dispatch(string, Action, BlexActionArg[]?)", "Runs a mutation as one named, batched, recorded action."),
         new("Task DispatchAsync(string, Func&lt;Task&gt;, BlexActionArg[]?)", "The async variant: state changes render as they happen, but the whole operation records as one action."),
+        new("bool BeginAction(string, BlexActionArg[]?) / Task DispatchApprovedAsync(...)", "The two halves of <code>DispatchAsync</code>: the veto decision first, then the body. An effect wrapper asks before it touches anything observable, so a vetoed invocation leaves no trace."),
         new("void InvalidateComputed()", "Generated override that marks every memoized computed value stale - after a restore, a reset, a rollback or an effect's loading flags."),
         new("void InvalidateComputed(string?)", "Generated override that marks stale only the computed values that read the named property, as found in their bodies. What a setter calls; an unknown name falls back to <code>InvalidateComputed()</code>."),
         new("object?[]? CaptureRollbackState() / ApplyRollbackState(object?[])", "Generated for <code>RollbackOnError</code> stores: the shallow copy of the state fields a synchronous action starts from, and putting it back when the action throws."),
         new("void NotifyRestored()", "Invalidates computed values and raises <code>StateChanged</code> - for hand-written stores that restore state out of band."),
+        new("void CancelEffects()", "Generated override cancelling every in-flight effect and pending debounce. What <code>Dispose</code> calls."),
+        new("bool IsDisposed / void Dispose(bool)", "Whether <code>Dispose</code> has run, and the hook to release resources of your own - call the base, which cancels the effects."),
     ];
+
+    private const string DetectSample = """
+        builder.Services.AddBitBlexServices(options =>
+        {
+            // Development only: every action serializes its store before and after.
+            options.DetectInPlaceMutations = builder.HostEnvironment.IsDevelopment();
+            options.OnError = error => logger.LogWarning(error.Exception, "[blex:{Source}] {Detail}", error.Source, error.Detail);
+        });
+
+        // OnError("mutation", "equalityDemo/MutateInPlace"):
+        //   The action 'equalityDemo/MutateInPlace' changed the store's state without assigning any
+        //   [BlexState] property ... Assign a new value instead: Items = [.. Items, item].
+        """;
+
+    private const string DetectSource = """
+        @inject BlexManager Manager
+
+        @* The option is a settable property on the manager too, read on every action. *@
+        <input type="checkbox" checked="@Manager.DetectInPlaceMutations"
+               @onchange="e => Manager.DetectInPlaceMutations = (bool)(e.Value ?? false)" />
+
+        <button @onclick="Equality.MutateInPlace">Items.Add(…) - in place</button>
+
+        [BlexAction] private void OnMutateInPlace() => Items.Add($"item {Items.Count}");
+        """;
+
+    private const string SnapshotSource = """
+        private JsonObject? _snapshot;
+
+        private void Keep() => _snapshot = Counter.SerializeState();       // { "Count": 3, "Step": 1 }
+
+        private void Restore()
+            => Counter.RestoreState((JsonObject)_snapshot!.DeepClone());   // no action, one StateChanged
+        """;
 
     private const string DispatcherSample = """
         public sealed class OrderFeed(HubConnection hub, BlexManager manager, OrdersStore orders)

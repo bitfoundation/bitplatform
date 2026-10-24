@@ -18,6 +18,7 @@
         </p>
 
         <CodeBlock Code="@Setup" FileName="Program.cs" />
+        <ApiTable Title="Registration" Rows="@RegistrationRows" MemberHeader="Call" />
         <CodeBlock Code="@Usage" Language="razor" />
 
         <DemoCard Title="Undo across every store at once"
@@ -169,6 +170,34 @@
             quietly absorbing new work.
         </p>
         <CodeBlock Code="@GroupBySemantics" Title="What the user experiences" />
+
+        <DemoCard Title="Bursts folded into one step"
+                  Description="This page keeps another history of its own over the counter, grouping direct assignments by what they assign. Press Count += 1 several times: one step. Step += 1 is a different key, so it opens a step of its own; Increment is ungrouped, and closes whatever group was open. Then walk the stack back."
+                  Source="@GroupDemoSource" SourceLanguage="razor">
+            <div class="bb-toolbar">
+                <button class="btn btn-secondary" @ref="_groupAssign" @onclick="AssignCount">Count += 1</button>
+                <button class="btn btn-secondary" @onclick="() => Counter.Step += 1">Step += 1</button>
+                <button class="btn btn-secondary" @onclick="Counter.Increment">Increment</button>
+                <button class="btn btn-primary" @onclick="() => Undo(_grouped, () => _groupAssign)" disabled="@(!_grouped.CanUndo)">
+                    ↶ Undo @_grouped.NextUndoLabel
+                </button>
+            </div>
+
+            <div class="bb-stats">
+                <div class="bb-stat">
+                    <span class="bb-stat-label">Undo depth</span>
+                    <span class="bb-stat-value demo-accent">@_grouped.UndoCount</span>
+                </div>
+                <div class="bb-stat">
+                    <span class="bb-stat-label">counter</span>
+                    <span class="bb-stat-value demo-stat-text">Count <Persisted>@Counter.Count</Persisted> · Step <Persisted>@Counter.Step</Persisted></span>
+                </div>
+                <div class="bb-stat">
+                    <span class="bb-stat-label">UndoLabels</span>
+                    <span class="bb-stat-value demo-stat-text">@(_grouped.UndoCount == 0 ? "-" : string.Join(", ", _grouped.UndoLabels))</span>
+                </div>
+            </div>
+        </DemoCard>
 
         <Callout Kind="Callout.CalloutKind.Tip" Title="Filter, group or checkpoint?">
             <p>
@@ -398,6 +427,11 @@
     // assignments out of the stack, which is what leaves a checkpoint something to commit.
     private BlexHistory _edits = default!;
 
+    // The grouping demo's own history: the counter only, with consecutive assignments to one property
+    // folded into one step.
+    private BlexHistory _grouped = default!;
+    private ElementReference _groupAssign;
+
     // A button that turns disabled under the keyboard (Undo with nothing left) or is removed (a history
     // panel step that was jumped past) drops focus to <body>. The handler names where focus goes
     // instead; it is resolved after the render, once that target is enabled or exists.
@@ -419,6 +453,11 @@
             filter: ctx => !ctx.ActionName.StartsWith("Set ", StringComparison.Ordinal));
         _edits.Start();
         _edits.Changed += OnHistoryChanged;
+
+        _grouped = new BlexHistory(Manager, scope: s => s is CounterStore,
+            groupBy: ctx => ctx.ActionName.StartsWith("Set ", StringComparison.Ordinal) ? ctx.QualifiedName : null);
+        _grouped.Start();
+        _grouped.Changed += OnHistoryChanged;
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -495,10 +534,53 @@
         CounterHistory.Changed -= OnHistoryChanged;
         _edits.Changed -= OnHistoryChanged;
         _edits.Dispose();
+        _grouped.Changed -= OnHistoryChanged;
+        _grouped.Dispose();
     }
+
+    private const string GroupDemoSource = """
+        @inject BlexManager Manager
+        @inject CounterStore Counter
+
+        <button @onclick="() => Counter.Count += 1">Count += 1</button>   @* "Set Count": grouped *@
+        <button @onclick="() => Counter.Step += 1">Step += 1</button>     @* "Set Step": another group *@
+        <button @onclick="Counter.Increment">Increment</button>           @* ungrouped: its own step *@
+        <button @onclick="_grouped.Undo" disabled="@(!_grouped.CanUndo)">Undo @_grouped.NextUndoLabel</button>
+
+        @code {
+            private BlexHistory _grouped = default!;
+
+            protected override void OnInitialized()
+            {
+                // Consecutive assignments to one property are one step; anything else is a step of its own.
+                _grouped = new BlexHistory(Manager, scope: s => s is CounterStore,
+                    groupBy: ctx => ctx.ActionName.StartsWith("Set ") ? ctx.QualifiedName : null);
+                _grouped.Start();
+                _grouped.Changed += OnHistoryChanged;
+            }
+
+            private void OnHistoryChanged() => _ = InvokeAsync(StateHasChanged);
+
+            protected override void Dispose(bool disposing)
+            {
+                _grouped.Changed -= OnHistoryChanged;
+                _grouped.Dispose();
+            }
+        }
+        """;
+
+    private static readonly IReadOnlyList<ApiTable.Row> RegistrationRows =
+    [
+        new("AddBitBlexHistory(int maxEntries = 100, ServiceLifetime lifetime = Scoped, filter?, groupBy?)", "One history over every store. <code>&lt;BlexProvider&gt;</code> starts it once rehydration finishes. The lifetime must match <code>AddBitBlexServices</code>'."),
+        new("AddBitBlexHistory(Func&lt;IBlexStore, bool&gt; scope, int maxEntries = 100, lifetime, filter?, groupBy?)", "The same, covering only the stores the scope admits. See <a href=\"history#scope\">Scoping history</a>."),
+        new("AddBitBlexHistory&lt;TStore&gt;(int maxEntries = 100, lifetime, filter?, groupBy?)", "A <code>BlexHistory&lt;TStore&gt;</code> beside (or instead of) the app-wide one, covering every instance of one store type. Starts recording when it is first resolved."),
+        new("builder.AddBitBlexHistory(...)", "Native .NET MAUI: the same three, on <code>MauiAppBuilder</code>, as singletons. See <a href=\"maui\">.NET MAUI</a>."),
+    ];
 
     private static readonly IReadOnlyList<ApiTable.Row> HistoryRows =
     [
+        new("new BlexHistory(manager, maxEntries = 100, filter?, groupBy?)", "A history over every store of a manager, outside DI. Call <code>Start()</code>; dispose it when done."),
+        new("new BlexHistory(manager, scope, maxEntries = 100, filter?, groupBy?)", "One over the stores <code>scope</code> admits - what each demo on this page builds for itself."),
         new("void Start()", "Captures the baseline and begins recording. Idempotent. Called by <code>&lt;BlexProvider&gt;</code> after rehydration."),
         new("void Undo()", "Restores the previous state. No-op when <code>CanUndo</code> is false. Shorthand for <code>Jump(-1)</code>."),
         new("void Redo()", "Re-applies the most recently undone state. No-op when <code>CanRedo</code> is false. Shorthand for <code>Jump(1)</code>."),

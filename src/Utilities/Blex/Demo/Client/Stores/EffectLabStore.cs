@@ -103,17 +103,28 @@ public partial class EffectLabStore
     /// <summary>How many attempts of <c>FetchFlaky</c> fail before one succeeds.</summary>
     [BlexStateAttribute] private int _failuresToSimulate = 2;
 
+    /// <summary>Whether those attempts hang past the two-second timeout instead of failing outright.</summary>
+    [BlexStateAttribute] private bool _hangInsteadOfFailing;
+
     [BlexStateAttribute] private IReadOnlyList<string> _attempts = [];
 
     /// <summary>
     /// A request that fails <see cref="FailuresToSimulate"/> times before it succeeds: three retries,
-    /// 400 ms backoff doubling each time, and two seconds per attempt.
+    /// 400 ms backoff doubling each time, and two seconds per attempt. A hanging attempt never answers, so the
+    /// timeout cancels its token and it fails with a <see cref="TimeoutException"/> - retried like any failure.
     /// </summary>
     [BlexEffectAttribute(RetryCount = 3, RetryDelayMilliseconds = 400, TimeoutMilliseconds = 2000)]
     private async Task OnFetchFlaky(CancellationToken ct)
     {
         var attempt = ++_flakyAttempts;
         Attempts = [.. Attempts, $"{_clock.ElapsedMilliseconds,5} ms  attempt {attempt} started"];
+
+        if (attempt <= FailuresToSimulate && HangInsteadOfFailing)
+        {
+            Attempts = [.. Attempts, $"{_clock.ElapsedMilliseconds,5} ms  attempt {attempt} hangs past the 2000 ms timeout"];
+            await Task.Delay(TimeSpan.FromSeconds(10), ct);   // the timeout cancels ct long before this ends
+        }
+
         await Task.Delay(300, ct);   // the "network"
 
         if (attempt <= FailuresToSimulate)
@@ -126,9 +137,10 @@ public partial class EffectLabStore
     }
 
     [BlexActionAttribute]
-    private void OnPrepareFlaky(int failures)
+    private void OnPrepareFlaky(int failures, bool hang = false)
     {
         FailuresToSimulate = failures;
+        HangInsteadOfFailing = hang;
         Attempts = [];
         _flakyAttempts = 0;
         _clock.Restart();

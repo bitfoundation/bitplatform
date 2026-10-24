@@ -40,6 +40,10 @@ public static class IServiceCollectionExtensions
             // Veto middleware: cancels actions while the demo's read-only guard is on.
             options.UseMiddleware<GuardMiddleware>();
 
+            // A typed filter: one action, named by its generated descriptor, handed the store and the payload as the
+            // decimal the action takes. Every other action passes it untouched.
+            options.UseFilter(AccountStore.Actions.Deposit, (account, amount) => amount is > 0 and <= 1000);
+
             // Display-only redaction: the settings store's Token never reaches the DevTools monitor.
             options.RedactDevToolsKeys("Token");
 
@@ -60,6 +64,10 @@ public static class IServiceCollectionExtensions
         services.AddBitBlexStore<SettingsStore>();
         services.AddBitBlexStore<OrdersStore>();
         services.AddBitBlexStore<NotificationsStore>();
+        services.AddBitBlexStore<WalletStore>();
+        services.AddBitBlexStore<LedgerStore>();
+        services.AddBitBlexStore<AccountStore>();
+        services.AddBitBlexStore<ProgressStore>();
 
         // Durable persistence for [BlexStoreAttribute(Persist = true)] stores, with debounced writes and a
         // versioned envelope so the shape can evolve without stranding visitors on old payloads.

@@ -618,8 +618,8 @@ invalidated queries have refetched, so "saved" never shows next to the list from
 `PersistentComponentState`. Await `query.WhenSettledAsync()` while prerendering so the response carries the
 data, and give the query a `StaleTime` so the handed-over data is not refetched on arrival.
 
-Not built in (yet): infinite/paged-cursor queries (page with `KeepPreviousData` and a page number in the key
-meanwhile) and pausing mutations while offline.
+Numbered pages need no special support: put the page number in the key and set `KeepPreviousData`, so the page
+on screen stays (flagged `IsPlaceholderData`) while the next one loads, and `PrefetchAsync` the page after it.
 
 ## Normalized collections (entity adapter)
 

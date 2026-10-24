@@ -146,6 +146,26 @@
             It lets go of the pipeline as soon as it completes or is cancelled, and a condition that throws
             faults the task rather than being retried - the caller asked for it.
         </p>
+
+        <DemoCard Title="Wait for three orders"
+                  Description="Start waiting, then place orders - here or in the demo above. The wait completes on the action that makes the condition true, not before and not on a timer; with three already placed it completes at once. Cancel stops the wait."
+                  Source="@WhenDemoSource">
+            <div class="bb-toolbar">
+                <button class="btn btn-primary" @onclick="StartWaiting" disabled="@(_waiting is not null)">WhenAsync(() =&gt; Orders.Count &gt;= 3)</button>
+                <button class="btn btn-secondary" @onclick="PlaceOrder">Place an order</button>
+                <button class="btn btn-secondary" @onclick="() => _waiting?.Cancel()" disabled="@(_waiting is null)">Cancel the wait</button>
+            </div>
+            <div class="bb-stats">
+                <div class="bb-stat">
+                    <span class="bb-stat-label">orders/Count</span>
+                    <span class="bb-stat-value demo-accent">@Orders.Count</span>
+                </div>
+                <div class="bb-stat">
+                    <span class="bb-stat-label">The wait</span>
+                    <span class="bb-stat-value demo-stat-text">@_waitNote</span>
+                </div>
+            </div>
+        </DemoCard>
     </div>
 
     <div class="bb-card">
@@ -211,6 +231,47 @@
             alive; <code>Remove(id)</code> drops one as soon as its entity is gone.
         </p>
         <CodeBlock Code="@FamilySample" />
+
+        <DemoCard Title="One memoized value per order"
+                  Description="Each order below is read through a selector family - twice per row, as two components showing the same line would. A family member computes once per change for its id, however many readers it has; the family holds at most five ids and drops the least recently read beyond that. Cancel last removes the cancelled order's member at once."
+                  Source="@FamilyDemoSource">
+            <div class="bb-toolbar">
+                <button class="btn btn-primary" @onclick="PlaceOrder">Place an order</button>
+                <button class="btn btn-secondary" @onclick="CancelLastOrder" disabled="@(Orders.Count == 0)">Cancel last</button>
+                <button class="btn btn-secondary" @onclick="() => _familyRuns = 0">Reset counter</button>
+            </div>
+            @if (Orders.Orders.Count == 0)
+            {
+                <p class="bb-card-desc">No orders yet.</p>
+            }
+            else
+            {
+                <ul class="demo-list">
+                    @foreach (var order in Orders.Orders.TakeLast(FamilySize))
+                    {
+                        <li>
+                            <span class="demo-list-name">@LineText[order.Id]</span>
+                            <span class="demo-list-meta">@LineText[order.Id]</span>
+                        </li>
+                    }
+                </ul>
+            }
+            <div class="bb-stats">
+                <div class="bb-stat">
+                    <span class="bb-stat-label">Computations</span>
+                    <span class="bb-stat-value demo-accent">@_familyRuns</span>
+                </div>
+                <div class="bb-stat">
+                    <span class="bb-stat-label">Members held (Count / MaxSize)</span>
+                    <span class="bb-stat-value">@LineText.Count / @LineText.MaxSize</span>
+                </div>
+            </div>
+            <p class="bb-card-desc">
+                The list shows the last @FamilySize orders, so the family never has to evict one it is still showing.
+                Any change recomputes each member at most once - placing an order runs the members that are read
+                again, not one per reader.
+            </p>
+        </DemoCard>
     </div>
 
     <div class="bb-card">
@@ -271,11 +332,20 @@
     private int _renders;
     private int _placed;
 
+    private const int FamilySize = 5;
+    private int _familyRuns;
+
+    private CancellationTokenSource? _waiting;
+    private string _waitNote = "not waiting";
+
     /// <summary>
     /// A cross-store derived value, memoized by the manager. Every reader below shares it, and it
     /// recomputes at most once per action - lazily, so an action nobody reads costs nothing.
     /// </summary>
     private BlexSelector<string> Summary { get; set; } = default!;
+
+    /// <summary>One memoized line per order id, at most <see cref="FamilySize"/> of them held at a time.</summary>
+    private BlexSelectorFamily<int, string> LineText { get; set; } = default!;
 
     protected override void OnInitialized()
     {
@@ -289,6 +359,16 @@
 
         // The selector subscribes to nothing; disposing it with the component drops the value it memoized.
         OwnsSubscription(Summary);
+
+        LineText = Manager.CreateSelectorFamily((int id) =>
+        {
+            _familyRuns++;
+            return Orders.Orders.FirstOrDefault(o => o.Id == id) is { } order
+                ? $"#{order.Id} {order.Quantity}× {order.Item}"
+                : $"#{id} (gone)";
+        }, maxSize: FamilySize);
+
+        OwnsSubscription(LineText);
 
         // The wiring: react to one store's actions by driving another. Matched by the generated
         // descriptors, so the payload arrives as the (string Item, int Quantity) the action takes, and the
@@ -304,6 +384,41 @@
     private void PlaceOrder() => Orders.Place($"Gadget {++_placed}", 2);
 
     private void ResetSelectorCounter() => _selectorRuns = 0;
+
+    /// <summary>Cancels the last order and drops its family member at once, rather than waiting for it to be evicted.</summary>
+    private void CancelLastOrder()
+    {
+        if (Orders.Orders.Count == 0)
+            return;
+
+        var id = Orders.Orders[^1].Id;
+        Orders.CancelLast();
+        LineText.Remove(id);
+    }
+
+    private async Task StartWaiting()
+    {
+        using var cancellation = new CancellationTokenSource();
+        _waiting = cancellation;
+        _waitNote = "waiting…";
+        try
+        {
+            await Manager.WhenAsync(() => Orders.Count >= 3, cancellation.Token);
+            _waitNote = $"completed - {Orders.Count} orders";
+        }
+        catch (OperationCanceledException)
+        {
+            _waitNote = "cancelled";
+        }
+        finally
+        {
+            _waiting = null;
+        }
+    }
+
+    // A wait still pending when the page goes away would otherwise stay registered with the manager until an
+    // order count it no longer has anyone to tell about.
+    protected override void Dispose(bool disposing) => _waiting?.Cancel();
 
     private void OnItemInput(ChangeEventArgs e) => _item = e.Value?.ToString() ?? "";
 
@@ -396,6 +511,7 @@
         new("int Sequence", "Monotonic action number."),
         new("DateTimeOffset Timestamp", "When the action completed, in UTC."),
         new("JsonObject GlobalState", "The whole state tree immediately after the action. Captured lazily on first access."),
+        new("bool IsNested", "Whether it ran inside the body of another action - <code>cart.Checkout()</code> calling <code>orders.Place()</code>. It is recorded in its own right, but a <a href=\"testing#replay\">replay</a> skips it, since replaying the outer action runs it again. An action a subscriber dispatches in reaction is not nested: the one it reacts to has finished."),
     ];
 
     private const string SelectorSample = """
@@ -493,6 +609,54 @@
         {
             await _manager.WhenAsync(() => _session.IsSignedIn, ct);   // shows the sign-in dialog meanwhile
             await _api.CheckoutAsync(Lines, ct);
+        }
+        """;
+
+    private const string WhenDemoSource = """
+        @inject BlexManager Manager
+
+        private CancellationTokenSource? _waiting;
+
+        private async Task StartWaiting()
+        {
+            using var cancellation = new CancellationTokenSource();
+            _waiting = cancellation;
+            try
+            {
+                await Manager.WhenAsync(() => Orders.Count >= 3, cancellation.Token);
+                _note = "completed";      // on the very action that made it true
+            }
+            catch (OperationCanceledException)
+            {
+                _note = "cancelled";      // _waiting.Cancel() from the Cancel button
+            }
+        }
+        """;
+
+    private const string FamilyDemoSource = """
+        private BlexSelectorFamily<int, string> LineText { get; set; } = default!;
+
+        protected override void OnInitialized()
+        {
+            LineText = Manager.CreateSelectorFamily((int id) =>
+                Orders.Orders.FirstOrDefault(o => o.Id == id) is { } order
+                    ? $"#{order.Id} {order.Quantity}× {order.Item}"
+                    : $"#{id} (gone)",
+                maxSize: 5);
+
+            OwnsSubscription(LineText);   // disposed with the component
+        }
+
+        @foreach (var order in Orders.Orders.TakeLast(5))
+        {
+            <li>@LineText[order.Id] - @LineText[order.Id]</li>   @* two readers, one computation *@
+        }
+
+        private void CancelLast()
+        {
+            var id = Orders.Orders[^1].Id;
+            Orders.CancelLast();
+            LineText.Remove(id);   // gone: drop it now rather than wait for eviction
         }
         """;
 

@@ -22,17 +22,22 @@
         <p>
             The wrapper never throws: an exception from the body is captured into <code>XxxError</code>
             instead of propagating. That is deliberate - an effect is usually fired from an event handler
-            where nothing would catch it.
+            where nothing would catch it. The failure still reaches <a href="middleware">OnActionError</a>,
+            which is where a crash reporter hears about it.
         </p>
+
+        <ApiTable Title="[BlexEffect] properties" Rows="@AttributeRows" MemberHeader="Property" />
     </div>
 
     <div class="bb-card">
         <h2 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Loading is reference-counted</h2>
         <p>
             <code>XxxIsLoading</code> stays <code>true</code> until the <em>last</em> in-flight run
-            finishes, so overlapping invocations do not flip it off early. It is set through
-            <code>SetEffectState</code>, which notifies the UI but never records a time-travel action -
-            a spinner turning on is not something you want to rewind to.
+            finishes, so overlapping invocations do not flip it off early - click <strong>Parallel</strong>
+            in the lab below three times and its <code>running</code> badge stays on until the third run
+            ends. The flag and the error slot are set through <code>SetEffectState</code>, which notifies the
+            UI but never records a time-travel action - a spinner turning on is not something you want to
+            rewind to, nor an undo step.
         </p>
     </div>
 
@@ -68,7 +73,7 @@
         </Callout>
     </div>
 
-    <div class="bb-card">
+    <div class="bb-card" id="concurrency">
         <h2 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Concurrency</h2>
         <p>
             <code>[BlexEffect(Concurrency = …)]</code> decides what happens when a run starts while another
@@ -214,7 +219,7 @@
         </DemoCard>
     </div>
 
-    <div class="bb-card">
+    <div class="bb-card" id="debounce">
         <h2 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Debouncing</h2>
         <p>
             <code>Latest</code> stops a stale response from landing, but it still sends a request per
@@ -303,12 +308,13 @@
         </p>
 
         <DemoCard Title="A flaky endpoint"
-                  Description="Pick how many attempts the server fails. Three retries cover up to three failures; the fourth reaches XxxError."
+                  Description="Pick how many attempts the server fails. Three retries cover up to three failures; the fourth reaches XxxError. Time out twice makes the first two attempts hang instead: each is cut off at 2000 ms with a TimeoutException and retried like any other failure. Cancel ends the run - mid-attempt or mid-wait - and leaves the error slot empty."
                   Source="@RetrySource">
             <div class="bb-toolbar">
                 <button class="btn btn-secondary" @onclick="() => RunFlaky(0)" disabled="@Lab.FetchFlakyIsLoading">Succeed at once</button>
                 <button class="btn btn-secondary" @onclick="() => RunFlaky(2)" disabled="@Lab.FetchFlakyIsLoading">Fail twice</button>
                 <button class="btn btn-secondary" @onclick="() => RunFlaky(4)" disabled="@Lab.FetchFlakyIsLoading">Fail four times</button>
+                <button class="btn btn-secondary" @onclick="() => RunFlaky(2, hang: true)" disabled="@Lab.FetchFlakyIsLoading">Time out twice</button>
                 <button class="btn btn-outline" @onclick="Lab.CancelFetchFlaky" disabled="@(!Lab.FetchFlakyIsLoading)">Cancel</button>
             </div>
 
@@ -355,6 +361,9 @@
                 keeps executing because nothing can observe the cancellation.
             </li>
             <li>Effects cannot be <code>static</code> (<code>BLEX008</code>) or generic (<code>BLEX014</code>), and cannot take by-ref parameters (<code>BLEX013</code>).</li>
+            <li><code>async void</code> is rejected: an effect returning <code>void</code> is <code>BLEX007</code> like any other non-<code>Task</code> return, and an action is <code>BLEX010</code> - nothing could await it, or know when to record it.</li>
+            <li><code>DebounceMilliseconds</code> cannot be negative (<code>BLEX019</code>), nor can <code>RetryCount</code>, <code>RetryDelayMilliseconds</code> or <code>TimeoutMilliseconds</code> (<code>BLEX022</code>).</li>
+            <li><code>TimeoutMilliseconds</code> needs a trailing <code>CancellationToken</code> parameter (<code>BLEX023</code>) - the token is how an overrunning attempt is told to stop.</li>
         </ul>
 
         <Callout Kind="Callout.CalloutKind.Warning" Title="A Queue effect must never invoke itself">
@@ -365,11 +374,15 @@
             </p>
         </Callout>
 
-        <Callout Kind="Callout.CalloutKind.Note" Title="Latest cancels on invocation, not on approval">
+        <Callout Kind="Callout.CalloutKind.Note" Title="A vetoed invocation leaves no trace">
             <p>
-                In <code>Latest</code> mode the previous run is cancelled the moment a new invocation
-                starts - even if middleware later vetoes that new action. A veto stops the mutation; it
-                does not resurrect the run it superseded.
+                Every invocation is offered to the middleware and filters on its own - one made while another run
+                of the same effect still awaits included - and the wrapper asks <em>before</em> it touches anything
+                observable. So a vetoed invocation never flips <code>XxxIsLoading</code>, never clears
+                <code>XxxError</code>, never cancels the <code>Latest</code> run in flight and never takes a
+                <code>Queue</code> slot: the run already going keeps going. An invocation <code>Drop</code> ignores,
+                or a debounced one a newer call superseded, never reaches the middleware at all - nothing was
+                dispatched.
             </p>
         </Callout>
     </div>
@@ -378,6 +391,14 @@
         <h2 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> The generated wrapper</h2>
         <p>Roughly what the generator emits for a <code>Latest</code> effect with a token:</p>
         <CodeBlock Code="@GeneratedEffect" Title="Generated (simplified)" />
+        <p>
+            The other options slot into the same shape. <code>DebounceMilliseconds</code> adds a wait on the
+            manager's clock at the very top, before the veto, which a newer invocation cancels;
+            <code>Drop</code> returns early while a run is pending; <code>Queue</code> awaits the previous
+            invocation's gate before clearing the error; and <code>RetryCount</code> /
+            <code>TimeoutMilliseconds</code> wrap the body in <code>RunEffectAttemptsAsync</code>. Disposing the
+            store cancels every effect's source through the generated <code>CancelEffects()</code>.
+        </p>
     </div>
 
 </DocPage>
@@ -444,11 +465,21 @@
         Search.ClearTypeAhead();
     }
 
-    private async Task RunFlaky(int failures)
+    private async Task RunFlaky(int failures, bool hang = false)
     {
-        Lab.PrepareFlaky(failures);
+        Lab.PrepareFlaky(failures, hang);
         await Lab.FetchFlaky();
     }
+
+    private static readonly IReadOnlyList<ApiTable.Row> AttributeRows =
+    [
+        new("string? Name", "An explicit name. A valid C# identifier becomes the wrapper's name and the label; one with spaces is the label only, and the wrapper still comes from the <code>On</code> prefix - exactly as for <a href=\"actions\"><code>[BlexAction]</code></a>."),
+        new("BlexEffectConcurrency Concurrency", "What a run started while another is in flight does: <code>Parallel</code> (the default), <code>Latest</code>, <code>Drop</code> or <code>Queue</code>. See <a href=\"effects#concurrency\">Concurrency</a>."),
+        new("int DebounceMilliseconds", "Waits for this quiet period before running, restarting the wait on every invocation; only the last of a burst runs. <code>0</code> (the default) runs at once. See <a href=\"effects#debounce\">Debouncing</a>."),
+        new("int RetryCount", "How many times a failed run is retried before its exception lands in <code>XxxError</code>. <code>0</code> (the default) runs once."),
+        new("int RetryDelayMilliseconds", "The wait before the first retry, doubling before each further one, up to 30 seconds. Default <code>1000</code>; <code>0</code> retries at once."),
+        new("int TimeoutMilliseconds", "How long one attempt may take before its token is cancelled and it fails with a <code>TimeoutException</code>. <code>0</code> (the default) sets no limit. Needs a <code>CancellationToken</code> parameter."),
+    ];
 
     private const string Retry = """
         [BlexEffect(RetryCount = 3, RetryDelayMilliseconds = 500, TimeoutMilliseconds = 10_000)]
@@ -467,6 +498,11 @@
         {
             var attempt = ++_flakyAttempts;
             Attempts = [.. Attempts, $"attempt {attempt} started"];
+
+            // "Time out twice": the timeout cancels ct at 2000 ms, and the attempt fails with a TimeoutException.
+            if (attempt <= FailuresToSimulate && HangInsteadOfFailing)
+                await Task.Delay(TimeSpan.FromSeconds(10), ct);
+
             await Task.Delay(300, ct);   // the "network"
 
             if (attempt <= FailuresToSimulate)
@@ -624,6 +660,12 @@
 
         public async Task Search(string query)
         {
+            // The veto first, before anything observable: a vetoed invocation flips no loading flag,
+            // clears no error and cancels no run in flight.
+            var args = IsObserved ? new[] { new BlexActionArg("query", query) } : null;
+            if (!BeginAction("Search", args))
+                return;
+
             var version = ++__SearchVersion;    // stale runs must not clobber newer error state
             __SearchCts?.Cancel();              // Latest: supersede the previous run
             var cts = new CancellationTokenSource();
@@ -634,8 +676,7 @@
             {
                 BeginEffect(ref __SearchPending);
                 SetEffectState(ref __SearchError, null);
-                await DispatchAsync("Search", () => OnSearch(query, ct),
-                                    IsObserved ? [new BlexActionArg("query", query)] : null);
+                await DispatchApprovedAsync("Search", () => OnSearch(query, ct), args);   // already approved
             }
             catch (OperationCanceledException) when (ct.IsCancellationRequested)
             {
