@@ -176,20 +176,20 @@ public class McpToolTests
     }
 
     [TestMethod]
-    public async Task Pdf417_says_why_the_pipeline_does_not_read_it()
+    public async Task Pdf417_is_described_as_read_by_default()
     {
         var pdf417 = await McpCall.TextAsync("GetBbScannerFormats", new() { ["format"] = "Pdf417" });
 
-        Assert.Contains("The pipeline does not create this reader", pdf417);
-        Assert.Contains("BbPdf417SymbolTable.Register", pdf417);
+        Assert.Contains("Enabled by default", pdf417);
+        Assert.DoesNotContain("The pipeline does not create this reader", pdf417);
     }
 
     [TestMethod]
     public async Task An_unknown_format_lists_the_real_ones()
     {
-        var answer = await McpCall.TextAsync("GetBbScannerFormats", new() { ["format"] = "aztec" });
+        var answer = await McpCall.TextAsync("GetBbScannerFormats", new() { ["format"] = "maxicode" });
 
-        Assert.Contains("no symbology called 'aztec'", answer);
+        Assert.Contains("no symbology called 'maxicode'", answer);
         foreach (var format in BbScannerFormatCatalog.Formats) Assert.Contains(format.Name, answer);
     }
 

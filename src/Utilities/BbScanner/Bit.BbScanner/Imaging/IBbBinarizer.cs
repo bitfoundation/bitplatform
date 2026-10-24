@@ -4,9 +4,11 @@
 /// Turns a grayscale image into black and white.
 /// </summary>
 /// <remarks>
-/// Binarisation is the stage where most real world scans succeed or fail, so it is an
-/// extension point. Implementations must be safe to reuse across frames and should avoid
-/// allocating per frame; the pipeline calls them on every captured frame.
+/// Binarisation is the stage where most real world scans succeed or fail, so the strategies are
+/// separate, interchangeable types that a pipeline of an application's own can choose between;
+/// <see cref="BbBarcodeDecoder"/> uses its own fixed pair. Implementations must be safe to reuse
+/// across frames and should avoid allocating per frame, since a pipeline calls them on every
+/// captured frame.
 /// </remarks>
 public interface IBbBinarizer
 {

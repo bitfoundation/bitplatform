@@ -134,7 +134,17 @@
                         <button class="btn btn-secondary" type="button" disabled="@(_camera?.SupportsTorch != true)" @onclick="ToggleTorch">
                             @(_scanner?.IsTorchOn == true ? "Torch off" : "Torch on")
                         </button>
+                        <button class="btn btn-secondary" type="button" id="scan-full-frame" disabled="@(_camera is null)" @onclick="ScanFullFrame">
+                            Scan full frame
+                        </button>
                     </div>
+
+                    @if (_captured is not null)
+                    {
+                        <p class="bb-card-desc" id="full-frame-result">
+                            @(_captured.Count == 0 ? "Nothing in the full frame either." : string.Join(", ", _captured.Select(r => $"{r.Format}: {r.Text}")))
+                        </p>
+                    }
 
                     @if (_camera?.SupportsZoom == true)
                     {
@@ -152,6 +162,9 @@
                     <p class="bb-card-desc">
                         Torch and zoom are almost always rear-camera-only, and support varies by browser.
                         Both calls report whether the browser accepted them rather than throwing.
+                        <em>Scan full frame</em> calls <code>ScanCurrentFrameAsync</code>, which reads the
+                        current frame at the camera's own resolution - for a code too dense or too far
+                        away for the scaled-down live frames.
                     </p>
                 </section>
             </div>
@@ -166,6 +179,15 @@
     private BbBarcodeResult? _last;
     private BbScannerException? _error;
     private BbCameraFacing _facing = BbCameraFacing.Rear;
+    private IReadOnlyList<BbBarcodeResult>? _captured;
+
+    private async Task ScanFullFrame()
+    {
+        if (_scanner is not null && _camera is not null)
+        {
+            _captured = await _scanner.ScanCurrentFrameAsync();
+        }
+    }
 
     private async Task RefreshCameras()
     {

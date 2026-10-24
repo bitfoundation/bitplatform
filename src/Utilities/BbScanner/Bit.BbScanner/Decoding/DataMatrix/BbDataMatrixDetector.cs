@@ -186,35 +186,67 @@ public sealed class BbDataMatrixDetector
         var centroidX = (corners[0].X + corners[1].X + corners[2].X + corners[3].X) / 4;
         var centroidY = (corners[0].Y + corners[1].Y + corners[2].Y + corners[3].Y) / 4;
 
+        for (var i = 0; i < 4; i++)
+        {
+            if (BbScanPoint.Distance(corners[i], corners[(i + 1) & 3]) < 8)
+            {
+                return null;
+            }
+        }
+
+        // Refine each edge into a line through its boundary samples, then intersect, before
+        // anything is measured along it. The rough corners are vertices of the outline's convex
+        // hull, which on a symbol turned towards forty-five degrees is a staircase whose corners
+        // sit a module or more off the real ones; a scan along an edge drawn between them wanders
+        // into the data region and counts transitions a solid arm of the L does not have, and the
+        // L was then not recognised at all. Every edge keeps its outer cluster of samples, which
+        // is the whole edge on a solid arm and the dark modules on a dashed one.
+        Span<Line> lines = stackalloc Line[4];
+        for (var i = 0; i < 4; i++)
+        {
+            if (!FitEdge(corners[i], corners[(i + 1) & 3], centroidX, centroidY, dashed: true, out lines[i]))
+            {
+                return null;
+            }
+        }
+
+        Span<BbScanPoint> refined = stackalloc BbScanPoint[4];
+        for (var i = 0; i < 4; i++)
+        {
+            if (!Line.TryIntersect(lines[(i + 3) & 3], lines[i], out refined[i]) || !IsInside(refined[i], 2))
+            {
+                return null;
+            }
+        }
+
         // A first, shallow scan of every edge: the busiest edge is a dashed one and its
         // transition count gives a first estimate of the module pitch.
         Span<int> transitions = stackalloc int[4];
-        Span<float> lengths = stackalloc float[4];
         var pitch = float.MaxValue;
         for (var i = 0; i < 4; i++)
         {
-            var a = corners[i];
-            var b = corners[(i + 1) & 3];
-            lengths[i] = BbScanPoint.Distance(a, b);
-            if (lengths[i] < 8)
+            var a = refined[i];
+            var b = refined[(i + 1) & 3];
+            var length = BbScanPoint.Distance(a, b);
+            if (length < 8)
             {
                 return null;
             }
 
             transitions[i] = TransitionsAlongEdge(a, b, centroidX, centroidY, ShallowInset);
-            pitch = Math.Min(pitch, lengths[i] / (transitions[i] + 1));
+            pitch = Math.Min(pitch, length / (transitions[i] + 1));
         }
 
         // Scan again half a module in, where the timing pattern is read most reliably, but never
-        // deeper than four pixels: the corners are still rough and a deep scan along an
-        // inaccurate edge would wander into the data region. Half the pitch keeps the scan out
-        // of the data region whatever the module size.
+        // deeper than four pixels, so that a scan along an edge still a pixel or two off cannot
+        // wander into the data region. Half the pitch keeps the scan out of the data region
+        // whatever the module size.
         var inset = Math.Clamp(pitch / 2, ShallowInset, 4f);
         if (inset > ShallowInset)
         {
             for (var i = 0; i < 4; i++)
             {
-                transitions[i] = TransitionsAlongEdge(corners[i], corners[(i + 1) & 3], centroidX, centroidY, inset);
+                transitions[i] = TransitionsAlongEdge(refined[i], refined[(i + 1) & 3], centroidX, centroidY, inset);
             }
         }
 
@@ -239,26 +271,6 @@ public sealed class BbDataMatrixDetector
             Math.Max(solidA, solidB) * 3 > Math.Min(dashedA, dashedB))
         {
             return null;
-        }
-
-        // Refine each edge into a line through its boundary samples, then intersect.
-        Span<Line> lines = stackalloc Line[4];
-        for (var i = 0; i < 4; i++)
-        {
-            var dashed = i != solidStart && i != ((solidStart + 1) & 3);
-            if (!FitEdge(corners[i], corners[(i + 1) & 3], centroidX, centroidY, dashed, out lines[i]))
-            {
-                return null;
-            }
-        }
-
-        Span<BbScanPoint> refined = stackalloc BbScanPoint[4];
-        for (var i = 0; i < 4; i++)
-        {
-            if (!Line.TryIntersect(lines[(i + 3) & 3], lines[i], out refined[i]) || !IsInside(refined[i], 2))
-            {
-                return null;
-            }
         }
 
         // The corner shared by the solid edges is the bottom-left of the symbol; the rest follow
@@ -289,13 +301,10 @@ public sealed class BbDataMatrixDetector
 
         // Aspect ratios between 2:3 and 3:2 can only come from a square symbol measured
         // imprecisely, because no rectangular shape is that close to square.
-        if (4 * columns < 6 * rows && 4 * rows < 6 * columns)
-        {
-            columns = rows = Math.Max(columns, rows);
-        }
-
         Span<(int Rows, int Columns)> sizes = stackalloc (int, int)[MaxSizeCandidates];
-        var sizeCount = LegalSizesNear(rows, columns, pitchDown, pitchAcross, sizes);
+        var sizeCount = 4 * columns < 6 * rows && 4 * rows < 6 * columns
+            ? SquareSizesNear(rows, columns, sizes)
+            : RectangleSizesNear(rows, columns, pitchDown, pitchAcross, sizes);
         for (var i = 0; i < sizeCount; i++)
         {
             (rows, columns) = sizes[i];
@@ -315,7 +324,8 @@ public sealed class BbDataMatrixDetector
                 continue;
             }
 
-            var result = new BbDetectorResult(bits, [topLeft, bottomLeft, bottomRight, topRight]);
+            // Reported clockwise from the symbol's own top-left, the order every matrix symbology uses.
+            var result = new BbDetectorResult(bits, [topLeft, topRight, bottomRight, bottomLeft]);
             if (accept(result))
             {
                 return result;
@@ -327,71 +337,111 @@ public sealed class BbDataMatrixDetector
         return null;
     }
 
-    /// <summary>The eight sizes two modules away from a measurement in either dimension.</summary>
-    private const int MaxSizeCandidates = 8;
+    /// <summary>The nine sizes up to two modules away from a measurement in either dimension.</summary>
+    private const int MaxSizeCandidates = 9;
 
     /// <summary>
-    /// Lists the legal symbol sizes the measured one could be, nearest first; a measured size
-    /// that is itself legal is the only candidate.
+    /// Lists the legal square sizes near two measurements of a square symbol, nearest their mean
+    /// first.
     /// </summary>
     /// <remarks>
-    /// Timing patterns are counted to within a module or two, which can leave the measurement
-    /// between two legal sizes: 14 by 36 is as close to 12 by 36 as to 16 by 36. Equally near
-    /// sizes are ordered by how well their module pitch agrees between the two measured edges,
-    /// and every one of them is offered for decoding.
+    /// The two dashed edges of a square symbol are counted separately, and on a rotated or tilted
+    /// symbol either count can be a module or two out, the corner modules being half in and half
+    /// out of the scan. Neither count is privileged: the sizes between and just beyond them are
+    /// offered, the nearest first, and decoding settles which is real. Large squares are further
+    /// apart than two modules, so the reach grows with the size.
     /// </remarks>
-    private static int LegalSizesNear(int rows, int columns, float lengthDownPerRow, float lengthAcrossPerColumn, Span<(int Rows, int Columns)> sizes)
+    private static int SquareSizesNear(int rows, int columns, Span<(int Rows, int Columns)> sizes)
     {
-        if (BbDataMatrixVersion.GetVersionForDimensions(rows, columns) is not null)
-        {
-            sizes[0] = (rows, columns);
-            return 1;
-        }
-
-        var lengthDown = lengthDownPerRow * rows;
-        var lengthAcross = lengthAcrossPerColumn * columns;
-
-        Span<float> costs = stackalloc float[MaxSizeCandidates];
+        var mean = (rows + columns) / 2f;
+        var reach = Math.Max(Math.Abs(rows - columns) / 2f, mean * 0.04f) + 2.5f;
+        Span<float> distances = stackalloc float[sizes.Length];
         var count = 0;
-        for (var dr = -2; dr <= 2; dr += 2)
+
+        foreach (var version in BbDataMatrixVersion.All)
         {
-            for (var dc = -2; dc <= 2; dc += 2)
+            var side = version.SymbolSizeRows;
+            var distance = MathF.Abs(side - mean);
+            if (side != version.SymbolSizeColumns || distance > reach)
             {
-                var r = rows + dr;
-                var c = columns + dc;
-                if (BbDataMatrixVersion.GetVersionForDimensions(r, c) is null)
+                continue;
+            }
+
+            if (count == sizes.Length)
+            {
+                if (distance >= distances[count - 1])
                 {
                     continue;
                 }
 
-                // Whole modules of error first, pitch disagreement (always under one) as the
-                // tie breaker. Insertion sort keeps the list ordered as it grows.
-                var pitchDown = lengthDown / r;
-                var pitchAcross = lengthAcross / c;
-                var cost = Math.Abs(dr) + Math.Abs(dc) + (Math.Abs(pitchDown - pitchAcross) / Math.Max(pitchDown, pitchAcross));
-
-                var at = count++;
-                while (at > 0 && costs[at - 1] > cost)
-                {
-                    costs[at] = costs[at - 1];
-                    sizes[at] = sizes[at - 1];
-                    at--;
-                }
-
-                costs[at] = cost;
-                sizes[at] = (r, c);
+                count--;
             }
+
+            var at = count++;
+            while (at > 0 && distances[at - 1] > distance)
+            {
+                distances[at] = distances[at - 1];
+                sizes[at] = sizes[at - 1];
+                at--;
+            }
+
+            distances[at] = distance;
+            sizes[at] = (side, side);
         }
 
-        // Only the nearest sizes are worth sampling; a whole module further out is a different
-        // symbol.
-        var limit = 0;
-        while (limit < count && costs[limit] - costs[0] < 1)
+        return count;
+    }
+
+    /// <summary>
+    /// Lists the rectangular symbol sizes a measurement could be, the likeliest first.
+    /// </summary>
+    /// <remarks>
+    /// There are only six rectangular shapes and they are far apart, so every one is weighed
+    /// rather than only those within a module or two: a short dashed edge counted four modules
+    /// short - twelve for sixteen, which a rotated symbol produces when its corner modules fall
+    /// half outside the scan - is still recognisably 16 by 48 and nothing else. A shape is a
+    /// candidate when each of its dimensions is within about a third of what was measured, and
+    /// candidates are ordered by their relative error plus how well their module pitch agrees
+    /// between the two measured edges.
+    /// </remarks>
+    private static int RectangleSizesNear(int rows, int columns, float lengthDownPerRow, float lengthAcrossPerColumn, Span<(int Rows, int Columns)> sizes)
+    {
+        var lengthDown = lengthDownPerRow * rows;
+        var lengthAcross = lengthAcrossPerColumn * columns;
+
+        Span<float> costs = stackalloc float[sizes.Length];
+        var count = 0;
+        foreach (var version in BbDataMatrixVersion.All)
         {
-            limit++;
+            var r = version.SymbolSizeRows;
+            var c = version.SymbolSizeColumns;
+            var rowError = Math.Abs(r - rows);
+            var columnError = Math.Abs(c - columns);
+            if (r == c || count == sizes.Length ||
+                rowError > Math.Max(2, r * 0.3f) || columnError > Math.Max(2, c * 0.3f))
+            {
+                continue;
+            }
+
+            // Insertion sort keeps the list ordered as it grows.
+            var pitchDown = lengthDown / r;
+            var pitchAcross = lengthAcross / c;
+            var cost = ((float)rowError / r) + ((float)columnError / c) +
+                       (Math.Abs(pitchDown - pitchAcross) / Math.Max(pitchDown, pitchAcross));
+
+            var at = count++;
+            while (at > 0 && costs[at - 1] > cost)
+            {
+                costs[at] = costs[at - 1];
+                sizes[at] = sizes[at - 1];
+                at--;
+            }
+
+            costs[at] = cost;
+            sizes[at] = (r, c);
         }
 
-        return limit;
+        return count;
     }
 
     /// <summary>

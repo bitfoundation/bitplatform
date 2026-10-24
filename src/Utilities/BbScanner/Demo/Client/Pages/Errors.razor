@@ -50,6 +50,18 @@
                         To see a permission denial, block camera access for this site in the browser and
                         press <em>Start normally</em>.
                     </p>
+                    <div class="bb-toolbar">
+                        <button class="btn btn-secondary" type="button" id="check-permission" @onclick="CheckPermission">Check camera permission</button>
+                        @if (_permission is { } permission)
+                        {
+                            <output id="camera-permission">@permission</output>
+                        }
+                    </div>
+                    <p class="bb-card-desc">
+                        <code>GetCameraPermissionAsync</code> asks the browser what a start would do -
+                        <code>Prompt</code>, <code>Granted</code> or <code>Denied</code> - without asking the
+                        user, so a page can explain the prompt before it appears.
+                    </p>
                 </section>
 
                 <section class="scan-panel">
@@ -109,6 +121,15 @@
     private BbScanner? _scanner;
     private BbScannerException? _error;
     private BbScannerStatus _status = BbScannerStatus.Idle;
+    private BbCameraPermission? _permission;
+
+    private async Task CheckPermission()
+    {
+        if (_scanner is not null)
+        {
+            _permission = await _scanner.GetCameraPermissionAsync();
+        }
+    }
     private string? _deviceId;
     private int _width = 1280;
     private int _height = 720;

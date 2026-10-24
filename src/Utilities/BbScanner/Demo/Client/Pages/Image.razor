@@ -24,6 +24,7 @@
                            ShowStatusBar="true"
                            Formats="BbBarcodeFormat.All"
                            EnableFileScanning="true"
+                           MaxSymbolsPerFrame="@(_everySymbol ? 16 : 1)"
                            OnScan="HandleScan"
                            OnError="e => _error = e" />
 
@@ -48,8 +49,23 @@
                     <p class="bb-card-desc">
                         The second button skips the picker entirely: it renders a symbol into a pixel
                         buffer and hands it to <code>DecodeImage</code>, which is the path an application
-                        uses when it sources images itself.
+                        uses when it sources images itself. An image file dragged onto the scanner is
+                        scanned too.
                     </p>
+                    <label class="bb-check">
+                        <input type="checkbox" id="every-symbol" @bind="_everySymbol" />
+                        Read every symbol in the image (<code>MaxSymbolsPerFrame="16"</code>)
+                    </label>
+                </section>
+
+                <section class="scan-panel">
+                    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Blazor's InputFile</h3>
+                    <p class="bb-card-desc">
+                        An image the application already holds - from <code>InputFile</code>, an upload, a
+                        download - goes to <code>ScanImageAsync</code>, which decodes it in the browser like a
+                        picked file and returns every symbol in it. No camera, so no permission prompt.
+                    </p>
+                    <InputFile id="scan-image-input" accept="image/*" OnChange="ScanUploadAsync" />
                 </section>
             </div>
         </div>
@@ -118,9 +134,44 @@ options.Formats = BbBarcodeFormat.QrCode;
         }
     }
 
+    /// <summary>
+    /// Scans a file chosen through Blazor's own <see cref="InputFile"/>, through
+    /// <see cref="BbScanner.ScanImageAsync(Stream, int, CancellationToken)"/>.
+    /// </summary>
+    private async Task ScanUploadAsync(InputFileChangeEventArgs args)
+    {
+        _error = null;
+        if (_scanner is null)
+        {
+            return;
+        }
+
+        try
+        {
+            await using var stream = args.File.OpenReadStream(_scanner.MaxImageFileSize);
+            var results = await _scanner.ScanImageAsync(stream);
+            if (results.Count == 0)
+            {
+                _error = new BbScannerException(BbScannerErrorKind.Unknown, $"No barcode found in {args.File.Name}.");
+            }
+
+            _results.InsertRange(0, results);
+        }
+        catch (BbScannerException ex)
+        {
+            _error = ex;
+        }
+        catch (IOException ex)
+        {
+            // InputFile's own size limit, which is the scanner's.
+            _error = new BbScannerException(BbScannerErrorKind.InvalidImage, ex.Message, ex);
+        }
+    }
+
     private readonly List<BbBarcodeResult> _results = [];
     private BbScanner? _scanner;
     private BbScannerException? _error;
+    private bool _everySymbol;
 
     private Task OpenPicker() => _scanner is null ? Task.CompletedTask : _scanner.OpenFilePickerAsync();
 

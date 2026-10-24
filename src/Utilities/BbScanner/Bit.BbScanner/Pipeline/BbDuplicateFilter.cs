@@ -25,16 +25,31 @@ public sealed class BbDuplicateFilter
     /// </summary>
     private const int Capacity = 16;
 
+    /// <summary>
+    /// How many values a filter that never forgets remembers: enough for a stocktake, few enough
+    /// that a scanner left running all day cannot grow without bound.
+    /// </summary>
+    public const int SessionCapacity = 4096;
+
     private readonly List<Entry> _recent = [];
+    private readonly HashSet<(string Text, BbBarcodeFormat Format)> _session = [];
+    private readonly Queue<(string Text, BbBarcodeFormat Format)> _sessionOrder = new();
 
     /// <summary>Creates a filter.</summary>
-    /// <param name="window">How long an identical value stays suppressed. Zero disables suppression.</param>
+    /// <param name="window">
+    /// How long an identical value stays suppressed. Zero disables suppression;
+    /// <see cref="Timeout.InfiniteTimeSpan"/> reports every value once until <see cref="Reset"/>.
+    /// </param>
     public BbDuplicateFilter(TimeSpan window)
     {
         Window = window;
     }
 
-    /// <summary>How long an identical value stays suppressed.</summary>
+    /// <summary>
+    /// How long an identical value stays suppressed. <see cref="Timeout.InfiniteTimeSpan"/>
+    /// suppresses it until <see cref="Reset"/>, remembering up to <see cref="SessionCapacity"/>
+    /// values, the oldest forgotten first.
+    /// </summary>
     public TimeSpan Window { get; set; }
 
     /// <summary>
@@ -45,6 +60,23 @@ public sealed class BbDuplicateFilter
     /// <param name="timestamp">A monotonic timestamp, normally <see cref="Environment.TickCount64"/>.</param>
     public bool ShouldReport(string text, BbBarcodeFormat format, long timestamp)
     {
+        if (Window == Timeout.InfiniteTimeSpan)
+        {
+            // Once per session: a stocktake, a check-in desk, a sweep along a shelf.
+            if (!_session.Add((text, format)))
+            {
+                return false;
+            }
+
+            _sessionOrder.Enqueue((text, format));
+            if (_sessionOrder.Count > SessionCapacity)
+            {
+                _session.Remove(_sessionOrder.Dequeue());
+            }
+
+            return true;
+        }
+
         if (Window <= TimeSpan.Zero)
         {
             return true;
@@ -89,7 +121,12 @@ public sealed class BbDuplicateFilter
     }
 
     /// <summary>Forgets every reported value, so the next scan of any of them reports immediately.</summary>
-    public void Reset() => _recent.Clear();
+    public void Reset()
+    {
+        _recent.Clear();
+        _session.Clear();
+        _sessionOrder.Clear();
+    }
 
     private readonly record struct Entry(string Text, BbBarcodeFormat Format, long Timestamp);
 }

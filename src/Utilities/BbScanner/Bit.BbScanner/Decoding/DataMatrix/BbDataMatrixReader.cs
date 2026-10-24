@@ -3,7 +3,7 @@
 /// <summary>
 /// The Data Matrix entry point: detection followed by decoding.
 /// </summary>
-public sealed class BbDataMatrixReader : IBbMatrixDecoder
+public sealed class BbDataMatrixReader : IBbMatrixDecoder, IBbImageHolder
 {
     private readonly BbReedSolomonDecoder _reedSolomon = new(BbGenericGF.DataMatrixField256);
     private readonly BbDarkRegionFinder _regionFinder = new();
@@ -18,6 +18,9 @@ public sealed class BbDataMatrixReader : IBbMatrixDecoder
         // Cached once: a lambda here would allocate a closure and a delegate on every frame.
         _accept = AcceptCandidate;
     }
+
+    /// <inheritdoc />
+    void IBbImageHolder.ForgetImage() => _regionFinder.ForgetImage();
 
     private bool AcceptCandidate(BbDetectorResult candidate)
     {

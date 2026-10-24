@@ -147,6 +147,9 @@ public static class BbScannerDecodeLab
             BbBarcodeFormat.Ean13 when payload.Length == 12 => payload + LinearEncoders.EanCheckDigit(payload),
             BbBarcodeFormat.Ean8 when payload.Length == 7 => payload + LinearEncoders.EanCheckDigit(payload),
             BbBarcodeFormat.UpcA when payload.Length == 11 => payload + LinearEncoders.EanCheckDigit("0" + payload),
+            // DataBar reads back as the GS1 element string: application identifier 01 and the GTIN-14.
+            BbBarcodeFormat.DataBar when payload.Length == 13 => "01" + payload + LinearEncoders.EanCheckDigit(payload),
+            BbBarcodeFormat.DataBar when payload.Length == 14 => "01" + payload,
             _ => payload
         };
     }
@@ -156,6 +159,7 @@ public static class BbScannerDecodeLab
         BbBarcodeFormat.QrCode => (QrEncoder.Encode(payload, BbQrErrorCorrectionLevel.M, maskPattern: 2), null),
         BbBarcodeFormat.DataMatrix => (DataMatrixEncoder.Encode(payload), null),
         BbBarcodeFormat.Pdf417 => (Pdf417Encoder.Encode(payload, rowHeightModules: 4), null),
+        BbBarcodeFormat.Aztec => (AztecEncoder.Encode(payload), null),
         BbBarcodeFormat.Code128 => (null, LinearEncoders.Code128(payload)),
         BbBarcodeFormat.Code39 => (null, LinearEncoders.Code39(payload)),
         BbBarcodeFormat.Ean13 => (null, LinearEncoders.Ean13(payload)),
@@ -163,8 +167,31 @@ public static class BbScannerDecodeLab
         BbBarcodeFormat.UpcA => (null, LinearEncoders.UpcA(payload)),
         BbBarcodeFormat.UpcE => (null, LinearEncoders.UpcE(payload)),
         BbBarcodeFormat.Itf => (null, LinearEncoders.Itf(payload)),
+        BbBarcodeFormat.Codabar => (null, LinearEncoders.Codabar(payload)),
+        BbBarcodeFormat.Code93 => (null, LinearEncoders.Code93(payload)),
+        BbBarcodeFormat.DataBar => (null, LinearEncoders.DataBar(Gtin(payload))),
         _ => throw new ArgumentException($"The lab has no encoder for {format}.", nameof(format)),
     };
+
+    /// <summary>
+    /// The GTIN-14 of a DataBar payload, which is the element string 01 and fourteen digits. The symbol does not carry
+    /// the check digit, so a wrong one is refused rather than silently replaced by the right one on the way back.
+    /// </summary>
+    private static string Gtin(string payload)
+    {
+        if (payload.Length != 16 || payload.StartsWith("01", StringComparison.Ordinal) is false || payload.All(char.IsAsciiDigit) is false)
+        {
+            throw new ArgumentException("GS1 DataBar carries a GTIN: give thirteen digits, a GTIN-14, or the element string 01 followed by the GTIN-14.", nameof(payload));
+        }
+
+        var check = LinearEncoders.EanCheckDigit(payload[2..15]);
+        if (payload[15] != check)
+        {
+            throw new ArgumentException($"The GTIN-14 {payload[2..]} ends in {payload[15]}, but its check digit is {check}.", nameof(payload));
+        }
+
+        return payload[2..];
+    }
 
     // The quiet zones and the linear height match the defaults Render draws with.
     private static (int Width, int Height) SymbolSize(BbBitMatrix? matrix, bool[]? modules, int moduleSize) => matrix is not null
@@ -257,9 +284,9 @@ public static class BbScannerDecodeLab
 
         if (dto.Active is false)
         {
-            notes.Add("BbBarcodeDecoder does not create its PDF417 reader while the registered symbol character table is the generated " +
-                      "placeholder, so neither attempt can read this symbol. That is deliberate - see GetBbScannerGuideSection(heading: " +
-                      "\"PDF417 status\") for registering the ISO/IEC 15438 table.");
+            notes.Add("BbBarcodeDecoder does not create its PDF417 reader while the registered symbol character table is not the " +
+                      "specification's, so neither attempt can read this symbol. That is deliberate - see GetBbScannerGuideSection(heading: " +
+                      "\"PDF417 status\"); BbPdf417SymbolTable.Register(BbPdf417SymbolTable.Specification) restores the shipped table.");
         }
         else if (live.Decoded && still.Decoded)
         {
@@ -274,7 +301,7 @@ public static class BbScannerDecodeLab
         else if (live.Decoded is false)
         {
             notes.Add("Neither attempt read it. Modules below about two pixels, blur wider than a module, and - while scanning live - a linear " +
-                      "symbol rotated more than about 30 degrees are outside what the decoders read; see GetBbScannerGuideSection(heading: " +
+                      "symbol rotated more than about 30 degrees from upright or 15 to 30 from sideways are outside what the decoders read; see GetBbScannerGuideSection(heading: " +
                       "\"What it reads, and what it does not\").");
         }
 
@@ -291,11 +318,15 @@ public static class BbScannerDecodeLab
             }
         }
 
-        // How far the bars are from upright or sideways, the two orientations live scanning sweeps around.
-        var offAxis = Math.Abs(rotation % 90);
-        if (dto.Family == "Linear" && Math.Min(offAxis, 90 - offAxis) > 20)
+        // How far the bars are from upright and from sideways: live scanning tilts its lines up to 30 degrees around
+        // upright and 15 around sideways.
+        var halfTurn = ((rotation % 180) + 180) % 180;
+        var offUpright = Math.Min(halfTurn, 180 - halfTurn);
+        var offSideways = Math.Abs(halfTurn - 90);
+        if (dto.Family == "Linear" && offUpright > 20 && offSideways > 12)
         {
-            notes.Add("Live scanning reads a linear symbol within about 30 degrees of upright or sideways; ForStillImages sweeps every ten degrees.");
+            notes.Add("Live scanning reads a linear symbol within about 30 degrees of upright, and within 15 to 30 of sideways depending on " +
+                      "how long it is; ForStillImages sweeps every ten degrees.");
         }
 
         if (format == BbBarcodeFormat.Itf && new BbScannerOptions().ItfLengths is { Count: > 0 } lengths && lengths.Contains(payload.Length) is false)

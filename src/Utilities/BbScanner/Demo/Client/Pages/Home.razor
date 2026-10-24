@@ -86,7 +86,7 @@
     <section class="bb-proof">
         <div><strong>Decoding in C#</strong><span>no barcode SDK, no JavaScript scanner library</span></div>
         <div><strong>One copy per frame</strong><span>a <code>[JSImport]</code> memory view, no JSON or base64</span></div>
-        <div><strong>Nine symbologies</strong><span>read to specification, check digits verified</span></div>
+        <div><strong>Fourteen symbologies</strong><span>read to specification, check digits verified</span></div>
         <div><strong>Runs anywhere .NET runs</strong><span><code>BbBarcodeDecoder</code> needs no browser</span></div>
     </section>
 
@@ -295,9 +295,27 @@
             <details>
                 <summary>Does it read PDF417?</summary>
                 <p>
-                    PDF417 is implemented end to end except its symbol character table, which is specification data
-                    the library cannot derive. It ships a placeholder table, does not create the PDF417 reader while
-                    that is the case, and reads real symbols once the specification table is registered.
+                    Yes - the kind on driving licences, boarding passes and shipping labels. The library ships the
+                    specification's symbol character table, finds a symbol at any rotation before reading it row by
+                    row, and repairs damaged rows with the symbol's own error correction. Compact (truncated) PDF417
+                    and MicroPDF417 are not read.
+                </p>
+            </details>
+            <details>
+                <summary>Does it read Aztec?</summary>
+                <p>
+                    Yes - the code on boarding passes and rail and transit tickets, compact and full range, at any
+                    rotation and seen at an angle. Its bullseye is found wherever it is in the frame, and a large symbol
+                    is fitted through its own reference grid. Aztec Runes and mirrored symbols are not read.
+                </p>
+            </details>
+            <details>
+                <summary>Does it read GS1 DataBar?</summary>
+                <p>
+                    The Omnidirectional and Truncated forms, yes - the small barcode on loose produce and coupons. The
+                    GTIN comes back as the GS1 element string, <code>01</code> and fourteen digits. The stacked forms,
+                    DataBar Limited and DataBar Expanded are not read, and a DataBar symbol has to be crossed whole by
+                    one scan line, so hold a short Truncated one roughly level.
                 </p>
             </details>
         </div>

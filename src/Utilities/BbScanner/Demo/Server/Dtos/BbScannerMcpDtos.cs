@@ -172,8 +172,8 @@ public record BbScannerFormatDto
     public required bool EnabledByDefault { get; init; }
 
     /// <summary>
-    /// True when BbBarcodeDecoder creates a reader for it. False only for PDF417 while the registered symbol
-    /// character table is not the specification one (BbPdf417SymbolTable.Current.IsSpecificationTable).
+    /// True when BbBarcodeDecoder creates a reader for it. False only for PDF417, and only when an application
+    /// registered a symbol character table that is not the specification one (BbPdf417SymbolTable.Current.IsSpecificationTable).
     /// </summary>
     public required bool Active { get; init; }
 

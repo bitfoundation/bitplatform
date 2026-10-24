@@ -71,6 +71,138 @@ public static class LinearEncoders
         [2, 1, 2, 1, 1], [1, 2, 2, 1, 1], [1, 1, 1, 2, 2], [2, 1, 1, 2, 1], [1, 2, 1, 2, 1],
     ];
 
+    private const string CodabarAlphabet = "0123456789-$:/.+ABCD";
+
+    /// <summary>Codabar characters: bit <c>6 - i</c> is set when element <c>i</c> is wide, bar first.</summary>
+    private static readonly int[] CodabarEncodings =
+    [
+        0x03, 0x06, 0x09, 0x60, 0x12, 0x42, 0x21, 0x24, 0x30, 0x48,
+        0x0C, 0x18, 0x45, 0x51, 0x54, 0x15, 0x1A, 0x29, 0x0B, 0x0E,
+    ];
+
+    private const string Code93Alphabet = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ-. $/+%";
+
+    /// <summary>
+    /// Code 93 characters as bar and space widths, bar first: the alphabet, the four shifts
+    /// ($), (%), (/), (+), then the start and stop character.
+    /// </summary>
+    private static readonly string[] Code93Encodings =
+    [
+        "131112", "111213", "111312", "111411", "121113", "121212", "121311", "111114", "131211", "141111",
+        "211113", "211212", "211311", "221112", "221211", "231111", "112113", "112212", "112311", "122112",
+        "132111", "111123", "111222", "111321", "121122", "131121", "212112", "212211", "211122", "211221",
+        "221121", "222111", "112122", "112221", "122121", "123111", "121131", "311112", "311211", "321111",
+        "112131", "113121", "211131", "121221", "312111", "311121", "122211", "111141",
+    ];
+
+    /// <summary>Encodes Codabar data between a start and a stop character.</summary>
+    /// <param name="data">Digits and <c>- $ : / . +</c>.</param>
+    /// <param name="start">The start character, <c>A</c> to <c>D</c>.</param>
+    /// <param name="stop">The stop character, <c>A</c> to <c>D</c>.</param>
+    /// <param name="wideRatio">Width of a wide element in narrow modules.</param>
+    public static bool[] Codabar(string data, char start = 'A', char stop = 'B', int wideRatio = 3)
+    {
+        ArgumentNullException.ThrowIfNull(data);
+
+        var widths = new List<int>();
+        var text = $"{start}{data}{stop}";
+        for (var c = 0; c < text.Length; c++)
+        {
+            var index = CodabarAlphabet.IndexOf(char.ToUpperInvariant(text[c]));
+            if (index < 0 || (index >= 16) != (c == 0 || c == text.Length - 1))
+            {
+                throw new ArgumentException($"'{text[c]}' cannot appear there in a Codabar symbol.", nameof(data));
+            }
+
+            if (c > 0)
+            {
+                widths.Add(1); // Inter-character gap.
+            }
+
+            for (var i = 0; i < 7; i++)
+            {
+                widths.Add(((CodabarEncodings[index] >> (6 - i)) & 1) != 0 ? wideRatio : 1);
+            }
+        }
+
+        return SyntheticImage.ExpandWidths(System.Runtime.InteropServices.CollectionsMarshal.AsSpan(widths));
+    }
+
+    /// <summary>
+    /// Encodes ASCII text as Code 93, with the two check characters and, for characters outside
+    /// its alphabet, the full ASCII shift pairs.
+    /// </summary>
+    /// <param name="content">Any ASCII text.</param>
+    public static bool[] Code93(string content)
+    {
+        ArgumentNullException.ThrowIfNull(content);
+
+        var values = new List<int>();
+        foreach (var c in content)
+        {
+            var direct = Code93Alphabet.IndexOf(c);
+            if (direct >= 0)
+            {
+                values.Add(direct);
+                continue;
+            }
+
+            var (shift, letter) = c switch
+            {
+                >= 'a' and <= 'z' => (46, (char)(c - 32)),
+                >= (char)1 and <= (char)26 => (43, (char)(c + 64)),
+                (char)0 => (44, 'U'),
+                >= (char)27 and <= (char)31 => (44, (char)(c + 38)),
+                >= ';' and <= '?' => (44, (char)(c + 11)),
+                >= '[' and <= '_' => (44, (char)(c - 16)),
+                >= '{' and <= (char)127 => (44, (char)(c - 43)),
+                '@' => (44, 'V'),
+                '`' => (44, 'W'),
+                >= '!' and <= ',' => (45, (char)(c + 32)),
+                ':' => (45, 'Z'),
+                _ => throw new ArgumentException($"'{c}' is not ASCII.", nameof(content)),
+            };
+
+            values.Add(shift);
+            values.Add(Code93Alphabet.IndexOf(letter));
+        }
+
+        values.Add(Code93Check(values, 20));
+        values.Add(Code93Check(values, 15));
+
+        var widths = new List<int>();
+        Append(47);
+        foreach (var value in values)
+        {
+            Append(value);
+        }
+
+        Append(47);
+        widths.Add(1); // Termination bar.
+        return SyntheticImage.ExpandWidths(System.Runtime.InteropServices.CollectionsMarshal.AsSpan(widths));
+
+        void Append(int value)
+        {
+            foreach (var digit in Code93Encodings[value])
+            {
+                widths.Add(digit - '0');
+            }
+        }
+
+        static int Code93Check(List<int> values, int maxWeight)
+        {
+            var sum = 0;
+            var weight = 1;
+            for (var i = values.Count - 1; i >= 0; i--)
+            {
+                sum += values[i] * weight;
+                weight = weight == maxWeight ? 1 : weight + 1;
+            }
+
+            return sum % 47;
+        }
+    }
+
     /// <summary>Encodes text as Code 128, choosing code set B or C automatically.</summary>
     /// <param name="content">ASCII text, or digits for the compact numeric code set.</param>
     public static bool[] Code128(string content)
@@ -363,6 +495,168 @@ public static class LinearEncoders
         widths.Add(1);
 
         return SyntheticImage.ExpandWidths(System.Runtime.InteropServices.CollectionsMarshal.AsSpan(widths));
+    }
+
+    /// <summary>
+    /// Encodes GS1 DataBar Omnidirectional: a GTIN-14, with or without its check digit, which the symbol does not
+    /// carry. Truncated DataBar is the same modules, drawn shorter.
+    /// </summary>
+    /// <param name="gtin">Thirteen or fourteen digits.</param>
+    public static bool[] DataBar(string gtin)
+    {
+        ArgumentNullException.ThrowIfNull(gtin);
+        if (gtin.Length is not (13 or 14) || !gtin.All(char.IsAsciiDigit))
+        {
+            throw new ArgumentException("A GTIN-14 is thirteen digits and a check digit.", nameof(gtin));
+        }
+
+        var value = long.Parse(gtin[..13], System.Globalization.CultureInfo.InvariantCulture);
+        var left = value / 4537077;
+        var right = value % 4537077;
+        var d1w = DataBarCharacter((int)(left / 1597), outside: true, oddFirst: true);
+        var d2w = DataBarCharacter((int)(left % 1597), outside: false, oddFirst: false);
+        var d3w = DataBarCharacter((int)(right / 1597), outside: true, oddFirst: false);
+        var d4w = DataBarCharacter((int)(right % 1597), outside: false, oddFirst: true);
+
+        int[] weights =
+        [
+            1, 3, 9, 27, 2, 6, 18, 54, 58, 72, 24, 8, 29, 36, 12, 4,
+            74, 51, 17, 32, 37, 65, 48, 16, 64, 34, 23, 69, 49, 68, 46, 59,
+        ];
+        int[][] finders =
+        [
+            [3, 8, 2, 1, 1], [3, 5, 5, 1, 1], [3, 3, 7, 1, 1], [3, 1, 9, 1, 1], [2, 7, 4, 1, 1],
+            [2, 5, 6, 1, 1], [2, 3, 8, 1, 1], [1, 5, 7, 1, 1], [1, 3, 9, 1, 1],
+        ];
+
+        var checksum = 0;
+        var all = d1w.Concat(d2w).Concat(d3w).Concat(d4w).ToArray();
+        for (var i = 0; i < 32; i++)
+        {
+            checksum += all[i] * weights[i];
+        }
+
+        checksum %= 79;
+        if (checksum >= 8)
+        {
+            checksum++;
+        }
+
+        if (checksum >= 72)
+        {
+            checksum++;
+        }
+
+        // Bar first: the left guard's bar (its space is the quiet zone), then the characters and finders as drawn,
+        // the right finder mirrored, and the right guard's space and bar.
+        var widths = new List<int> { 1 };
+        widths.AddRange(d1w);
+        widths.AddRange(finders[checksum / 9]);
+        widths.AddRange(d2w);
+        widths.AddRange(d4w);
+        widths.AddRange(finders[checksum % 9].Reverse());
+        widths.AddRange(d3w);
+        widths.AddRange([1, 1]);
+        return SyntheticImage.ExpandWidths(System.Runtime.InteropServices.CollectionsMarshal.AsSpan(widths));
+    }
+
+    private static int[] DataBarCharacter(int value, bool outside, bool oddFirst)
+    {
+        // Per group: the largest value, the first, odd and even modules, widest odd and even, odd and even arrangements.
+        int[][] groups = outside
+            ? [[160, 0, 12, 4, 8, 1, 161, 1], [960, 161, 10, 6, 6, 3, 80, 10], [2014, 961, 8, 8, 4, 5, 31, 34], [2714, 2015, 6, 10, 3, 6, 10, 70], [2840, 2715, 4, 12, 1, 8, 1, 126]]
+            : [[335, 0, 5, 10, 2, 7, 4, 84], [1035, 336, 7, 8, 4, 5, 20, 35], [1515, 1036, 9, 6, 6, 3, 48, 10], [1596, 1516, 11, 4, 8, 1, 81, 1]];
+        var group = groups.First(g => value <= g[0]);
+        var offset = value - group[1];
+        var (vOdd, vEven) = outside ? (offset / group[7], offset % group[7]) : (offset % group[6], offset / group[6]);
+        var odd = RssWidths(vOdd, group[2], group[4], noNarrow: !outside);
+        var even = RssWidths(vEven, group[3], group[5], noNarrow: outside);
+
+        var widths = new int[8];
+        for (var i = 0; i < 4; i++)
+        {
+            if (oddFirst)
+            {
+                widths[2 * i] = odd[i];
+                widths[(2 * i) + 1] = even[i];
+            }
+            else
+            {
+                widths[7 - (2 * i)] = odd[i];
+                widths[6 - (2 * i)] = even[i];
+            }
+        }
+
+        return widths;
+    }
+
+    /// <summary>The widths of the arrangement numbered <paramref name="value"/> - the inverse of the decoder's value.</summary>
+    private static int[] RssWidths(int value, int modules, int maxWidth, bool noNarrow, int elements = 4)
+    {
+        var widths = new int[elements];
+        var mask = 0;
+        for (var bar = 0; bar < elements - 1; bar++)
+        {
+            var width = 1;
+            mask |= 1 << bar;
+            int sub;
+            while (true)
+            {
+                sub = Combinations(modules - width - 1, elements - bar - 2);
+                if (noNarrow && mask == 0 && modules - width - (elements * 2) + (bar * 2) >= -2)
+                {
+                    sub -= Combinations(modules - width - elements + bar, elements - bar - 2);
+                }
+
+                if (elements - bar > 2)
+                {
+                    var less = 0;
+                    for (var widest = modules - width - elements + bar + 2; widest >= maxWidth + 1; widest--)
+                    {
+                        less += Combinations(modules - widest - width - 1, elements - bar - 3);
+                    }
+
+                    sub -= less * (elements - bar - 1);
+                }
+                else if (modules - width > maxWidth)
+                {
+                    sub--;
+                }
+
+                value -= sub;
+                if (value < 0)
+                {
+                    break;
+                }
+
+                width++;
+                mask &= ~(1 << bar);
+            }
+
+            value += sub;
+            modules -= width;
+            widths[bar] = width;
+        }
+
+        widths[elements - 1] = modules;
+        return widths;
+    }
+
+    private static int Combinations(int n, int r)
+    {
+        if (r < 0 || n < r)
+        {
+            return 0;
+        }
+
+        long value = 1;
+        r = Math.Min(r, n - r);
+        for (var i = 1; i <= r; i++)
+        {
+            value = value * (n - r + i) / i;
+        }
+
+        return (int)value;
     }
 
     /// <summary>Computes the modulo 10 check digit used by the EAN and UPC family.</summary>

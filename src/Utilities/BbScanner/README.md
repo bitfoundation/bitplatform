@@ -20,14 +20,16 @@ Reed-Solomon correction and bit stream parsing - is managed code you can step in
 ## What it is for
 
 Reading the barcodes an application meets: a QR code on a ticket, the EAN-13 of a product, the Code 128 of a
-shipping label, the Data Matrix on a part, the ITF-14 of a carton. From the camera continuously, from a photo the
-user picks, or from pixels the application already has - in the browser or on a server.
+shipping label, the Data Matrix on a part, the PDF417 on a driving licence, the Aztec code on a boarding pass or a rail
+ticket, the ITF-14 of a carton, the GS1 DataBar on a pack of loose produce.
+From the camera continuously, from a photo the user picks, or from pixels the application already has - in the
+browser or on a server.
 
 ## Highlights
 
-- **Nine symbologies read to specification**: QR Code, Data Matrix, Code 128 (including GS1-128), Code 39, EAN-13,
-  EAN-8, UPC-A, UPC-E and ITF. PDF417 is implemented apart from its symbol character table; see
-  [PDF417 status](#pdf417-status).
+- **Fourteen symbologies read to specification**: QR Code, Data Matrix, PDF417, Aztec, Code 128 (including GS1-128), Code 39,
+  Code 93, Codabar, EAN-13, EAN-8, UPC-A, UPC-E (with EAN-2 and EAN-5 add-ons), ITF and GS1 DataBar - checked against
+  symbols written by an independent encoder, not only against the library's own test encoders.
 - **One copy per frame.** JavaScript writes the frame straight into managed memory through a `[JSImport]` memory
   view: no JSON, no base64, no second buffer.
 - **No garbage per frame.** Buffers, bit planes, detectors and scan lines are reused across frames, so a frame
@@ -38,8 +40,12 @@ user picks, or from pixels the application already has - in the browser or on a 
 - **Still images**: a built-in file picker, and `DecodeImage` for pixels the application sources itself.
 - **Scan regions, overlays and theming**: aim with a region, replace the reticle and the messages with render
   fragments, restyle everything through CSS custom properties.
-- **Accessible**: a labelled region, real buttons with pressed state, results announced through a polite live
-  region, right-to-left layouts, reduced motion and forced colours.
+- **Accessible and translatable**: a labelled region, real buttons with pressed state and focus that survives
+  stopping, results and outcomes announced politely and failures as alerts, every text replaceable through
+  `BbScannerTexts`, right-to-left layouts, reduced motion and forced colours. An optional vibration or beep confirms
+  a scan.
+- **Resilient**: a camera the phone ends when the page goes into the background is reopened when it comes back,
+  and the camera can be released whenever the page is hidden.
 - **A decoder that runs anywhere .NET runs**: `BbBarcodeDecoder` has no dependency on Blazor, JavaScript or a
   camera.
 
@@ -77,6 +83,8 @@ automatically by the package's Blazor initializer. The full walkthrough is in [g
   Under Blazor Server and Blazor Hybrid the component reports `NotSupported`, and `BbBarcodeDecoder` decodes
   pixels in-process instead - see [hosting models](#hosting-models).
 - A secure context: the page served over HTTPS, or from `localhost`.
+- For camera scanning in production, the WebAssembly client compiled ahead of time (`RunAOTCompilation`): on
+  Blazor's default interpreter a frame costs about a hundred times more - see [performance](#performance).
 
 ## The demo
 
@@ -90,18 +98,18 @@ in-browser decoder benchmark, customisation and error handling.
 Browser                          | Managed
 ---------------------------------+---------------------------------------------------------
 getUserMedia -> <video>          |
-canvas.drawImage (scales down)   |
-canvas.getImageData              |
+WebGL: scale + luminance shader  |
+  (2D canvas: scale, RGBA)       |
         |                        |
         +-- JSImport MemoryView -+--> byte[] (reused, one per session)
                                  |        |
-                                 |        +- BbPixelConverter       RGBA -> luminance, optional subsample
+                                 |        +- BbPixelConverter       luminance as is; RGBA -> luminance, optional subsample
                                  |        +- BbHybridBinarizer      8x8 adaptive blocks, noise floor   (matrix codes)
                                  |        |  BbAdaptiveRowBinarizer per-segment thresholds            (linear codes)
                                  |        +- BbDarkRegionFinder     connected ink, for symbols with no finder
-                                 |        +- Detectors              finder patterns, edge fitting, line sweep
+                                 |        +- Detectors              finder patterns, bullseyes, edge fitting, line sweep
                                  |        +- BbGridSampler          perspective transform + sampling
-                                 |        +- BbReedSolomonDecoder   GF(256) and GF(929)
+                                 |        +- BbReedSolomonDecoder   GF(2^4) to GF(2^12), and GF(929)
                                  |        +- Bit stream parsers per symbology
                                  |                 |
                                  |                 +--> BbBarcodeResult
@@ -149,6 +157,7 @@ library's own decoder and returns the `BbBarcodeResult` it produced. Every tool 
 - [Using the decoder without Blazor](#using-the-decoder-without-blazor)
 - [Hosting models](#hosting-models)
 - [Errors and permissions](#errors-and-permissions)
+- [Privacy and security](#privacy-and-security)
 - [What it reads, and what it does not](#what-it-reads-and-what-it-does-not)
 - [Performance](#performance)
 - [Architecture](#architecture)
@@ -221,12 +230,16 @@ Narrow `Formats` to the symbologies you need - it is the single most effective s
 | Data Matrix | Supported | ECC 200, all 24 square and 6 rectangular shapes, ASCII / C40 / Text / X12 / EDIFACT / Base 256, ECI, structured append, GS1 |
 | Code 128 | Supported | Code sets A, B and C, shifts, FNC1 (GS1-128) |
 | Code 39 | Supported | Optional modulo 43 check character, optional full ASCII extension |
-| EAN-13 | Supported | Check digit verified |
-| EAN-8 | Supported | Check digit verified |
-| UPC-A | Supported | Reported as UPC-A rather than as a zero-prefixed EAN-13 |
-| UPC-E | Supported | Expanded and check-digit verified against its UPC-A form |
+| Code 93 | Supported | Full ASCII, both modulo 47 check characters verified and stripped |
+| Codabar | Supported | Start and stop characters A to D (or T, N, *, E) stripped unless `CodabarStartStop`; no check character, so confirmed on a second scan line |
+| EAN-13 | Supported | Check digit verified; EAN-2 and EAN-5 add-ons read into `Metadata.Extension` |
+| EAN-8 | Supported | Check digit verified; add-ons read |
+| UPC-A | Supported | Reported as UPC-A rather than as a zero-prefixed EAN-13; add-ons read |
+| UPC-E | Supported | Expanded and check-digit verified against its UPC-A form; add-ons read |
 | ITF | Supported | Configurable accepted lengths |
-| PDF417 | **Partial** | Fully implemented except the symbol character table; see PDF417 status |
+| PDF417 | Supported | Any orientation, 1-30 columns and 3-90 rows, security levels 0-8, text / byte / numeric compaction, ECI, Macro PDF417 segment numbering; not compact (truncated) PDF417 or MicroPDF417 - see [PDF417 status](#pdf417-status) |
+| Aztec Code | Supported | Compact (1-4 layers) and full range (1-32 layers), any orientation, every character mode, ECI, GS1 (FNC1); not Aztec Runes or mirrored symbols, and structured append is not interpreted. A symbol written at an encoder's lowest error correction level - three check codewords - is only read undamaged: so few cannot tell a repaired block from a wrong one |
+| GS1 DataBar | Supported | Omnidirectional and Truncated; the GTIN-14 reported as the GS1 element string `01` followed by its fourteen digits, check digit included, with `Metadata.IsGs1` set. The modulo 79 checksum is verified, and as it is the only check, every read is confirmed on a second scan line; bars printed wider or narrower than their modules are measured on the guards and finder patterns and corrected for. A module and a half of light is wanted beyond each guard bar, although DataBar itself needs no quiet zone: a symbol printed right up against other ink is missed rather than risked. Not the stacked forms, DataBar Limited or DataBar Expanded |
 
 `BbBarcodeFormat` is a flags enum, so a set of symbologies is one value: `BbBarcodeFormat.QrCode | BbBarcodeFormat.Ean13`.
 `AllLinear`, `AllMatrix` and `All` are the composites, and `All` is the default. Only the readers of the requested
@@ -248,9 +261,16 @@ against a misread between similar linear symbologies.
 | `Facing` | `BbCameraFacing` | `Rear` | Preferred camera when no device id is given. |
 | `DeviceId` | `string?` | `null` | A specific camera to open. Changing it while running switches cameras. |
 | `AutoStart` | `bool` | `true` | Open the camera as soon as the component is ready. |
-| `DuplicateSuppressionWindow` | `TimeSpan?` | `null` (2 s) | How long an identical value stays suppressed. When set it overrides `Options`; when not, `Options` decides, else 2 s. |
+| `DuplicateSuppressionWindow` | `TimeSpan?` | `null` (2 s) | How long an identical value stays suppressed. When set it overrides `Options`; when not, `Options` decides, else 2 s. `Timeout.InfiniteTimeSpan` reports each value once for as long as the camera stays open. |
+| `MaxSymbolsPerFrame` | `int` | `1` | The most symbols read from one frame or image; more reads every code in view, each reported and outlined on its own. |
+| `AfterScan` | `BbAfterScan` | `Continue` | What happens after a reported scan: keep scanning, `Pause` (camera stays open) or `Stop` (camera released). |
+| `AcceptResult` | `Func<BbBarcodeResult, bool>?` | `null` | Decides which results are reported; one it turns down is ignored as if it were not there. |
+| `Feedback` | `BbScanFeedback` | `None` | `Vibrate`, `Beep` or both on every reported scan, where the browser allows it. |
+| `ReleaseCameraWhenHidden` | `bool` | `false` | Close the camera while the page is hidden and reopen it when the page is shown again. |
+| `Texts` | `BbScannerTexts?` | `null` (English) | Every label, status, notice, error message and announcement, for another language. |
 | `ShowControls`, `ShowStatusBar`, `ShowReticle`, `ShowMask`, `HighlightResults` | `bool` | `true` | Built-in chrome. |
-| `EnableFileScanning` | `bool` | `true` | Offer still image scanning. |
+| `EnableFileScanning` | `bool` | `true` | Offer still image scanning: the *Scan image* button and dropping an image onto the scanner. |
+| `MaxImageFileSize` | `long` | 32 MB | The largest image file accepted, checked before it is decoded. Zero accepts any size. |
 | `Fill` | `bool` | `false` | Fill the parent instead of keeping the camera's aspect ratio. |
 | `AriaLabel` | `string` | `"Barcode scanner"` | Accessible name for the scanner region. |
 | `CssClass` | `string?` | `null` | Extra classes for the root element. |
@@ -286,7 +306,13 @@ Task<bool>        SetTorchAsync(bool on)
 Task<bool>        SetZoomAsync(double zoom)
 Task              OpenFilePickerAsync()
 Task<IReadOnlyList<BbCameraDevice>> GetCamerasAsync()
+Task<BbCameraPermission>             GetCameraPermissionAsync()
+void              ResetDuplicateFilter()
 BbBarcodeResult?  DecodeImage(ReadOnlySpan<byte> pixels, int width, int height, BbPixelFormat format)
+IReadOnlyList<BbBarcodeResult>        DecodeAllInImage(ReadOnlySpan<byte> pixels, int width, int height, BbPixelFormat format, int maxSymbols = 16)
+Task<IReadOnlyList<BbBarcodeResult>>  ScanImageAsync(Stream image, int maxSymbols = 16, CancellationToken cancellationToken = default)
+Task<IReadOnlyList<BbBarcodeResult>>  ScanImageAsync(ReadOnlyMemory<byte> image, string? contentType = null, int maxSymbols = 16, CancellationToken cancellationToken = default)
+Task<IReadOnlyList<BbBarcodeResult>>  ScanCurrentFrameAsync(int maxSymbols = 16)
 
 BbScannerStatus                Status
 BbCameraInfo?                  Camera
@@ -322,9 +348,14 @@ public sealed class BbBarcodeResult
 ```
 
 Corner points are always reported in the coordinates of the frame the camera produced, not of a cropped scan
-region, so an overlay drawn from them lines up with what the user sees. Matrix codes report their corners clockwise
-from the top-left; linear codes report the two ends of the scanned line. The built-in highlight also accounts for
-a mirrored front camera and for cropping under `Fill`.
+region, so an overlay drawn from them lines up with what the user sees. Matrix codes report their four outer
+corners clockwise from the symbol's own top-left - the corner of the QR code that carries no finder pattern is the
+third, whichever way up the symbol is held - and linear codes report the two ends of the scanned line. The built-in
+highlight also accounts for a mirrored front camera and for cropping under `Fill`.
+
+> Earlier pre-releases reported, for QR codes, the centres of the three finder patterns (and of the bottom-right
+> alignment pattern) instead of the corners, and listed Data Matrix corners counter-clockwise. Code that drew
+> `Corners` or `BoundingBox` now gets the whole symbol, in the documented order.
 
 ### Scan region
 
@@ -341,7 +372,16 @@ file picker are always searched in full.
 `Facing` picks the rear or the front camera when no `DeviceId` is set; `GetCamerasAsync` lists the cameras the
 browser will open, and setting `DeviceId` (or calling `SwitchCameraAsync`) switches between them without tearing
 the component down. Browsers withhold camera labels until permission has been granted once, so a list read before
-the first start carries generic names.
+the first start carries generic names (`BbScannerTexts.UnnamedCamera`, "Camera 1" in English). A camera plugged in
+or unplugged while scanning appears in, or leaves, the built-in camera picker without a restart.
+
+Phones end a page's camera when the page goes into the background - another app, a locked screen. A camera ended
+while the page was hidden is not reported as lost: `Status` reads `Starting` while the page stays hidden, and the
+same camera is opened again, paused if it was paused, when the page is shown. `ReleaseCameraWhenHidden` does the
+same on purpose wherever the page is hidden, a background tab included, so the camera indicator goes out and the
+battery is spared; the cost is a moment's restart, and a permission prompt again on a browser that did not
+remember the user's answer. A camera that is lost while the page is in view is still reported as
+`CameraUnavailable`.
 
 Torch and zoom are capabilities of the running track. `Camera` (and `OnCameraChanged`) says what the browser
 negotiated - resolution, frame rate, facing mode, and whether the track supports a torch and a zoom range - and the
@@ -350,15 +390,57 @@ browser accepted the request.
 
 ### Scanning still images
 
-With `EnableFileScanning` on, the control bar offers a *Scan image* button, and `OpenFilePickerAsync` opens the same
-hidden file input from a button of your own. Large photographs are scaled down in the browser before they cross
-into managed code: a twelve megapixel image carries no more barcode detail than a two megapixel one. A transparent
-image is read as if printed on white, which is what a code generator's PNG means. The outcome - "No barcode found",
-or a file that is not an image - is shown for a few seconds without replacing the scanner's own status message.
+With `EnableFileScanning` on, the control bar offers a *Scan image* button, an image file dragged onto the scanner
+is scanned too, and `OpenFilePickerAsync` opens the same hidden file input from a button of your own. Large
+photographs are scaled down in the browser before they cross into managed code: a twelve megapixel image carries no
+more barcode detail than a two megapixel one. A transparent image is read as if printed on white, which is what a
+code generator's PNG means. The outcome - "No barcode found", or a file that is refused - is shown for a few seconds
+without replacing the scanner's own status message. None of this opens the camera, so a page that only scans
+images (`AutoStart="false"`) never asks for camera permission.
 
-`DecodeImage` decodes pixels the application already has - from a canvas, an upload or a generated buffer - with
-the scanner's symbologies and options. Both paths use the still image tuning, which flips the latency trade-offs a
-live frame makes: more scan lines, the exhaustive detector path, every ten degrees of rotation and inverted symbols.
+Files are untrusted input, so each is checked before it is decoded: one that declares a type other than an image is
+refused, as is one larger than `MaxImageFileSize` (32 MB by default), and an image that decodes to more than about
+268 megapixels - a small file can declare an enormous image - is refused before its pixels are copied anywhere.
+
+An image the application already holds goes to `ScanImageAsync`: the bytes of a PNG, JPEG, WebP or any format the
+browser decodes, from a `Stream` or from memory. It is decoded in the browser exactly like a picked file, under the
+same limits, and returns every symbol in it rather than raising `OnScan`; a refused or undecodable image throws a
+`BbScannerException` of kind `InvalidImage`. With Blazor's `InputFile`:
+
+```razor
+@* Only images: the camera never starts, and no permission is asked for. *@
+<BbScanner @ref="_scanner" AutoStart="false" ShowControls="false" />
+<InputFile accept="image/*" OnChange="ScanAsync" />
+
+@code {
+    private BbScanner _scanner = default!;
+
+    private async Task ScanAsync(InputFileChangeEventArgs args)
+    {
+        await using var stream = args.File.OpenReadStream(_scanner.MaxImageFileSize);
+        foreach (var result in await _scanner.ScanImageAsync(stream))
+        {
+            Console.WriteLine($"{result.Format}: {result.Text}");
+        }
+    }
+}
+```
+
+`DecodeImage` and `DecodeAllInImage` decode pixels the application already has - from a canvas or a generated
+buffer - with the scanner's symbologies and options. `ScanCurrentFrameAsync` reads the camera's current frame at the
+camera's own resolution, for a code too dense or too far away for the live frames, which are scaled down to
+`MaxProcessingSize`; it makes a good "capture" button beside the viewfinder. All of these use the still image
+tuning, which flips the latency trade-offs a live frame makes: more scan lines, the exhaustive detector path, every
+ten degrees of rotation and inverted symbols.
+
+### Several symbols at once
+
+`MaxSymbolsPerFrame` above one reads every symbol in view - a sheet of tickets, a carton with several labels, a shelf
+- and reports each through `OnScan` with its own outline; still images follow it too. A matrix symbol once read is
+painted out of a working copy of the frame and the frame searched again, so each pass finds the next one, and linear
+symbols are gathered from every scan line in one pass; two copies of the same code in different places are two
+results. The cost is one more matrix pass than reading a single symbol - the pass that finds nothing else - so the
+default stays at one.
 
 ### Duplicates and the lifecycle
 
@@ -368,12 +450,33 @@ stays in view. Every symbol seen within the window is remembered, so two codes i
 once, however the frames alternate between them. Set it to `TimeSpan.Zero` to report every frame that decodes.
 `Resume` and `StartAsync` reset the filter, so the symbol that was in view when scanning paused is reported again.
 
+`Timeout.InfiniteTimeSpan` turns the window into a session: each value is reported once for as long as the camera
+stays open - a stocktake, a check-in desk - remembering up to 4 096 values. `StartAsync` and `ResetDuplicateFilter`
+start a new session; `Resume` does not, since the point is that a value already counted stays counted.
+
+`AfterScan` decides what a reported scan does to the scanner: `Continue` (the default), `Pause`, which stops
+decoding and keeps the camera open so a "scan another" button's `Resume` is instant, or `Stop`, which releases the
+camera. `AcceptResult` filters before any of that happens: a result it turns down is not reported, outlined or
+announced, and does not count as a scan, so a page that expects a ticket number can ignore every other code in view.
+
+```razor
+<BbScanner AfterScan="BbAfterScan.Stop"
+           AcceptResult="@(r => r.Text.StartsWith("TICKET-", StringComparison.Ordinal))"
+           OnScan="CheckIn" />
+```
+
 The highlight follows a symbol while it stays in view, and goes away a moment after it leaves. A frame the decoder
 fails on is skipped rather than ending the session; only a decoder that fails frame after frame faults the scanner.
 Options that fail `Validate` are reported as a fault before the camera is opened.
 
 `Status` moves through `Idle`, `Starting`, `Scanning`, `Paused`, `Stopped` and `Faulted`; `OnStatusChanged` reports
 each change, and the root element carries it as `data-status`.
+
+`Feedback` adds a short vibration (`BbScanFeedback.Vibrate`), a short tone (`Beep`) or both to every reported scan -
+once per frame, however many symbols it reported. The tone is synthesised with the Web Audio API, so nothing is
+downloaded. Both are best effort: browsers only let a page make a sound after the user has interacted with it, so a
+scanner that starts on its own can be silent until the first tap, and Safari does not vibrate at all. The outline and
+the screen reader announcement are always there as well, so neither is ever the only signal.
 
 ### Customising the look
 
@@ -391,6 +494,51 @@ open camera and the current zoom without extra plumbing. `MessageTemplate` rende
     </MessageTemplate>
 </BbScanner>
 ```
+
+### Language and accessibility
+
+Every text the scanner shows or speaks comes from a `BbScannerTexts`: the button labels, the accessible names of
+the camera picker and the zoom slider, the status, the still image notices, the message shown when it fails and
+what a screen reader announces for a scan. Set the ones a language needs - anything left out stays English - and
+share one instance per language between every scanner. Texts that carry a value are functions, so word order,
+number formatting and plurals stay the translator's:
+
+```razor
+<BbScanner Texts="German" />
+
+@code {
+    private static readonly BbScannerTexts German = new()
+    {
+        StartButton = "Starten",
+        StopButton = "Beenden",
+        PauseButton = "Pause",
+        ResumeButton = "Fortsetzen",
+        ScanImageButton = "Bild scannen",
+        StatusScanning = "Scannen",
+        NoBarcodeFound = "Kein Barcode im Bild gefunden.",
+        ErrorMessage = e => e.Kind switch
+        {
+            BbScannerErrorKind.PermissionDenied => "Der Zugriff auf die Kamera wurde verweigert.",
+            BbScannerErrorKind.NoCamera => "Keine Kamera gefunden.",
+            _ => "Die Kamera konnte nicht gestartet werden.",
+        },
+        ScanAnnouncement = r => $"{r.Format} gelesen: {r.Text}",
+    };
+}
+```
+
+The strings can as well come from an `IStringLocalizer`; build the instance once the culture is known. `ErrorMessage`
+only changes what the user sees: `OnError` still receives the exception with its own message. A text function that
+throws falls back to English and its exception is routed to the renderer, so a translation mistake cannot stop the
+scanner. The layout follows the document's direction, so a right-to-left language needs `dir="rtl"` on the page or
+an ancestor and nothing else. The demo's customisation page switches between English, Spanish and Persian.
+
+For assistive technology, the scanner is a region named by `AriaLabel`; its controls are real buttons and inputs,
+reachable and operable from the keyboard with a visible focus ring, and Start and Stop are one button, so stopping
+from the keyboard leaves focus where it was. Two live regions are always in the document: a polite one announces the
+camera opening, every reported scan - the same value scanned twice is announced twice - and the outcome of a still
+image, and an alert announces a failure. Frames are never announced. The highlight is not the only sign of a scan,
+and colour is never the only sign of a state: the status bar spells it out.
 
 ## Styling
 
@@ -412,9 +560,8 @@ Because the properties are read on the root element, setting them on an ancestor
 scanner itself (through `style`) always wins. The full list is in
 [`bit-bbscanner.css`](Bit.BbScanner/Styles/bit-bbscanner.css) and on the demo's customisation page.
 
-The component is a labelled region, the controls are real buttons with pressed state, results are announced through
-a polite live region, and the layout uses logical properties throughout, so a right-to-left document needs no extra
-work. Animation is suppressed under `prefers-reduced-motion`. Under `forced-colors` the reticle, highlight and
+The layout uses logical properties throughout, so a right-to-left document needs no extra work (see
+[language and accessibility](#language-and-accessibility)). Animation is suppressed under `prefers-reduced-motion`. Under `forced-colors` the reticle, highlight and
 control borders switch to system colours, focus rings stay visible, and the video and its dimming mask opt out of
 colour substitution so the viewfinder is still a viewfinder.
 
@@ -438,7 +585,16 @@ if (result is not null)
 }
 ```
 
-`Decode` accepts `Rgba32`, `Bgra32`, `Rgb24` and `Gray8` pixels, or a `BbLuminanceView` over a grayscale buffer.
+`DecodeAll` returns every symbol in the frame instead of the first, up to a limit:
+
+```csharp
+foreach (var label in decoder.DecodeAll(rgbaPixels, width, height, BbPixelFormat.Rgba32, maxSymbols: 16))
+{
+    Console.WriteLine($"{label.Format} at {label.BoundingBox}: {label.Text}");
+}
+```
+
+`Decode` and `DecodeAll` accept `Rgba32`, `Bgra32`, `Rgb24` and `Gray8` pixels, or a `BbLuminanceView` over a grayscale buffer.
 One instance owns all the scratch state a frame needs and is **not** thread safe; use one per scanning session.
 `BbScannerOptions.ForStillImages()` flips the trade-offs for one-shot decoding: more scan lines, every ten degrees of
 rotation, the exhaustive detector path, and inverted symbols allowed.
@@ -458,6 +614,8 @@ rotation, the exhaustive detector path, and inverted symbols allowed.
 | `ItfLengths` | 6-20 even | Digit counts an ITF result may have. ITF has no check character, so this is the main defence against a truncated read. |
 | `Code39CheckDigit` | `false` | Require and strip the optional modulo 43 check character. |
 | `Code39ExtendedMode` | `false` | Interpret Code 39 as full ASCII. |
+| `CodabarStartStop` | `false` | Keep Codabar's start and stop characters in the text. |
+| `RequireEanExtension` | `false` | Report EAN/UPC symbols only together with their EAN-2 or EAN-5 add-on. |
 | `DuplicateSuppressionWindow` | 2 s | How long an identical value stays suppressed. |
 
 `Validate` throws when a value is outside its supported range, and `Clone` copies an instance so a running scanner
@@ -506,23 +664,92 @@ Camera failures are ordinary and expected, so the component classifies each one 
 | `CameraUnavailable` | A device exists but is held by something else, or stopped delivering frames. | Ask the user to close other applications using the camera, then retry. |
 | `ConstraintsUnsatisfied` | No camera can meet the requested constraints - typically a `DeviceId` that is gone. | Drop the `DeviceId` and start again with `Facing`. |
 | `NotSupported` | No camera API, the page is not a secure context, or the component is not running on WebAssembly. | Serve over HTTPS, render the page on WebAssembly, or hide the scanner. |
+| `InvalidImage` | An image given to `ScanImageAsync` is not an image, is larger than `MaxImageFileSize`, decodes to too many pixels, or could not be decoded. | Tell the user which; the built-in picker shows the same reasons as a notice. |
 | `Unknown` | Anything the browser did not classify. | Log the inner exception and offer a retry. |
 
 Browsers only expose `getUserMedia` over HTTPS or on `localhost`. Served any other way the component reports
 `NotSupported` immediately, with a message that says exactly that, instead of hanging on a permission prompt that
 will never appear. `RequestedWidth` and `RequestedHeight` are *ideal* constraints, so an unreachable resolution is
 negotiated down rather than refused; resolution alone never produces an error. A camera that is unplugged or claimed
-by another application while scanning is reported as `CameraUnavailable` rather than leaving the scanner spinning.
+by another application while scanning is reported as `CameraUnavailable` rather than leaving the scanner spinning;
+one the browser ends because the page went into the background is reopened instead (see
+[camera, torch and zoom](#camera-torch-and-zoom)). The message shown for each kind can be translated through
+`BbScannerTexts.ErrorMessage`.
+
+`GetCameraPermissionAsync` asks the browser what a start would do - `Prompt`, `Granted` or `Denied` - without asking
+the user, so a page can explain why it needs the camera before the prompt appears, or say how to allow it in the
+site settings once it has been refused. Where the browser will not say (an older Firefox, say) it returns `Unknown`,
+and starting the camera is the only way to find out. A browser that grants the camera for one visit at a time can
+report such a grant as `Granted`.
+
+A page inside a cross-origin `<iframe>` needs the camera delegated to it - `<iframe allow="camera">` - and a
+`Permissions-Policy` header that forbids the camera makes every start fail with `PermissionDenied`.
+
+## Privacy and security
+
+- **Everything happens on the device.** Frames are copied from the video element into the application's own
+  WebAssembly memory and decoded there; still images are decoded by the browser and then by the same decoder. The
+  library makes no network request of its own - the only files it loads are its script and its stylesheet, from the
+  application's own `_content/Bit.BbScanner/` - and it has no telemetry. Nothing is uploaded, and a value read is
+  only ever handed to the application's `OnScan`.
+- **Nothing is recorded or kept.** The camera stream is never recorded. Frames pass through buffers that are reused
+  from one frame to the next - the frame itself and the decoder's grayscale, masked and thresholded copies of it, its
+  block statistics and its scan lines - and when the camera closes (a stop, a fault, a page hidden with
+  `ReleaseCameraWhenHidden`, disposal) every one of them is zeroed, not just let go of, since freed memory keeps its
+  contents until it is reused. The browser-side readback array is zeroed and its canvas emptied, and the WebGL context
+  that drew the frame is released. Buffers the decoder hands back to .NET's shared array pools go back cleared, so no
+  other code in the application can rent a frame. A picked or captured still image is zeroed as soon as it has been
+  decoded, in the browser and in .NET; one handed over as encoded bytes (`ScanImageAsync`) waits in the browser as
+  a Blob, which cannot be overwritten, and is released once decoded. The decoder keeps no history of values beyond
+  the duplicate filter, which holds values, not images: it is cleared on every start the application asks for, and by
+  `ResetDuplicateFilter`. A camera the browser ended in the background and the scanner reopened carries on the same
+  session, as `Resume` does: under an infinite `DuplicateSuppressionWindow` nothing is reported twice across it.
+- **Untrusted images are bounded.** A file over `MaxImageFileSize` (32 MB by default) is refused before it is
+  decoded, a file that declares itself to be something other than an image is refused, an image that decodes to more
+  than about 268 megapixels is refused before its pixels are copied, and large images are scaled to 1 600 pixels
+  before they are scanned. An image built to defeat the search - tiled with thousands of QR finder patterns or Aztec
+  bullseyes, each of which every other has to be weighed against - is given up on after a few dozen of them: such a
+  3000 pixel image took seven and a half minutes, and now takes half a second. A pair of start and stop shaped stripes
+  is a PDF417 candidate on every frame it is in, and resampling one upright to read cost a large share of a second a
+  frame; the candidates of a frame now share a budget of a frame and a half of pixels (eight for a still image).
+- **Barcode contents are untrusted input.** A value is whatever someone printed. The component renders it as text
+  only - in the live region and nowhere else - and never navigates to a URL, opens a link or runs anything it reads.
+  Do the same: render values with Razor's default encoding rather than `MarkupString`, and before acting on a URL,
+  check its scheme against an allow list (`https` only, say) and show the user where it leads.
+- **Content Security Policy.** The script is a module served from the application itself and uses no `eval`, so
+  `script-src 'self'` covers it (Blazor WebAssembly itself also needs `'wasm-unsafe-eval'`). The overlays are
+  positioned with inline `style` attributes, so `style-src` (or `style-src-attr`) has to allow `'unsafe-inline'`.
+- **Secure contexts only.** The camera is only offered to pages served over HTTPS or from `localhost`; elsewhere the
+  scanner says so instead of waiting for a prompt that will never come. Still image scanning works either way.
 
 ## What it reads, and what it does not
 
 The decoders are exercised against transformed renders - rotated, tilted, blurred, noisy, unevenly lit, scaled,
 off-centre and on cluttered backgrounds - rather than only against clean round trips. What that establishes:
 
-- **Rotation.** Matrix symbols read at any angle. Linear symbols read within about 30 degrees of upright or
-  sideways while scanning live, which is the range a hand actually produces, and at any angle with
-  `ForStillImages()`, which sweeps every ten degrees plus both diagonals.
-- **Perspective.** Matrix symbols tolerate roughly 30 degrees of tilt.
+- **Rotation.** QR Code - every version, up to 40 - square Data Matrix up to 144 by 144, and PDF417 read at every
+  orientation from three pixels a module up, and PDF417 from two; the reference symbols are swept round the full
+  circle to check it. At two pixels a module a rotated QR code or Data Matrix is at the edge of what can be
+  sampled, and a good share of orientations fail, so a small symbol needs the camera resolution
+  (`MaxProcessingSize`) or the distance to give it three. The thinnest rectangular Data Matrix shape, 8 by 32,
+  still misses a few orientations at three and four pixels a module. Aztec Code, compact and full range up to its
+  largest, 151 by 151 modules, reads at every orientation from three pixels a module, with the camera settings as
+  well as the still image ones; at two pixels a module a share of orientations fail, as with QR Code. Linear symbols
+  read within about 30 degrees of upright while scanning live, which is the range a hand actually produces, and at
+  any angle with `ForStillImages()`, which sweeps every ten degrees plus both diagonals. Sideways - bars running
+  across the frame - live scanning tries vertical lines and lines fifteen degrees either side of them, so how far off
+  sideways a symbol reads depends on its proportions: about 15 degrees for a 19 character Code 128 at two pixels a
+  module, about 30 for an EAN-13. How far off its axis a line can cross a linear symbol depends on how tall it is: GS1
+  DataBar Omnidirectional, 33 modules tall, reads live at every angle but within some ten degrees of the diagonals
+  from two pixels a module, whereas Truncated DataBar, 13 modules tall, reads within about 35 degrees of upright and
+  20 of sideways from three pixels a module, and at two pixels a module leaves gaps between the angles the live scan
+  tries. Both read at every angle from a still image. A DataBar symbol has to be crossed whole by one line: the two
+  halves are not yet pieced together from different lines, as dedicated DataBar scanners do.
+- **Perspective.** Matrix symbols tolerate roughly 30 degrees of tilt. An Aztec symbol is fitted through its reference
+  grid when it is large enough to have one, and through its outline when it is not. Tilted 30 degrees, every Aztec
+  reference fixture reads at every rotation tried; tilted 40, all but one of 102 renders. The outline needs a quiet
+  zone, which the specification does not insist on: framed by other ink right up to its edge, the largest compact
+  symbol still reads square on and tilted 15 degrees, but only at 8 of 12 rotations tilted 30.
 - **Position.** A symbol anywhere in the frame is found, not only one in the middle.
 - **Lighting.** Strong gradients, low contrast and underexposure are handled by the adaptive binarizers; the block
   threshold estimates the frame's noise floor so that grainy blank paper is still recognised as blank.
@@ -530,11 +757,14 @@ off-centre and on cluttered backgrounds - rather than only against clean round t
   modules.
 
 What it does not do: read symbols whose modules are below about two pixels, recover from blur much wider than a
-module, or read a linear symbol rotated more than 30 degrees during live scanning. Misreading is treated as worse
-than missing throughout: ITF, UPC-E and unchecked Code 39 results must repeat on a second scan line before they are
-reported, guard patterns must be adjacent rather than merely present, a Reed-Solomon correction is only accepted
-when the corrected block re-verifies, and a Data Matrix grid must have a plausible finder and timing pattern before
-its codewords are trusted.
+module, or read a linear symbol rotated more than about 30 degrees from upright, or more than 15 to 30 from sideways,
+during live scanning. Misreading is treated as worse than missing throughout: ITF, Codabar, UPC-E, GS1 DataBar and
+unchecked Code 39 results must repeat on a second scan line before they are reported, and a line beside it that reads
+the same symbology differently - one clear of a spot the first line ran through - vetoes the read; guard patterns must
+be adjacent rather than merely present, a Reed-Solomon correction is only accepted when the corrected block
+re-verifies and never for more errors than its check codewords can locate (an Aztec block also only while it has
+check codewords to spare for telling a repair from a miscorrection), and a Data Matrix grid must have a plausible
+finder and timing pattern before its codewords are trusted.
 
 Character sets: UTF-8, ISO-8859-1, UTF-16BE and ASCII are always available. QR Kanji and Hanzi segments and the
 East Asian ECIs (Shift JIS, GB 2312, Big5, KS X 1001, GB 18030) decode to text when the application has registered
@@ -543,22 +773,79 @@ segments and `RawBytes` carries the exact bytes, so nothing is lost.
 
 ## Performance
 
-Measured with BenchmarkDotNet on .NET 10, x64, 640x480 grayscale frames with the symbol centred. Absolute numbers on
-WebAssembly are several times larger; the ratios are what transfer.
+### In the browser: compile ahead of time
+
+Every stage of the decoder is C# working through pixels, and how the application is built decides what that costs
+far more than anything else here. Blazor WebAssembly runs .NET on an IL interpreter by default, and on it those
+loops are about a hundred times slower than compiled code. Measured in Chromium on a desktop, with the demo's own
+pages built for Release:
+
+| | Interpreted (Blazor's default) | Compiled ahead of time |
+| --- | ---: | ---: |
+| 640x480 camera frame, all formats, QR code in view | 68 ms | 0.8 ms |
+| 640x480 camera frame, all formats, nothing in view | 104 ms | 1.0 ms |
+| ... of which grayscale, binarization, matrix, linear | 1.5, 53, 50, 6 ms | 0.1, 0.2, 0.7, 0.1 ms |
+| 1600x1200 photo of a QR code, picked from a file | 0.3 s | 0.1 s |
+| 1600x1200 cluttered photo with no code in it | 10.8 s, of it one 9.3 s block | 0.6 s, at most 0.23 s at a time |
+
+Interpreted, a desktop scans at about nine frames a second and the page stalls for a tenth of a second each time;
+a phone is several times slower again. Compiled, the same frame uses well under a tenth of a 15 frames a second
+budget. So an application that scans with the camera - above all one used on phones - should publish its client
+compiled ahead of time:
+
+```xml
+<!-- The project that runs in the browser: the .Client project of a Blazor Web App, or a standalone app. -->
+<PropertyGroup Condition="'$(Configuration)' == 'Release'">
+  <RunAOTCompilation>true</RunAOTCompilation>
+</PropertyGroup>
+```
+
+It needs the `wasm-tools` workload (`dotnet workload install wasm-tools`), adds minutes to a publish, and makes the
+download bigger: the demo goes from 1.9 MB to 4.2 MB, compressed. The demo is published that way.
+
+Either way, the scanner keeps the browser's work to what only the browser can do and its own to what it must:
+
+- **Grayscale on the GPU.** Where WebGL is available, the frame is read back through a shader that writes each
+  pixel's luminance - four to a texel - so a frame crosses into managed memory as the one byte a pixel the decoder
+  works on, a quarter of the RGBA frame, with nothing left to convert. A 2D canvas, the fallback, hands over RGBA.
+- **Vectors where there are any.** The binarizer measures and thresholds two 8x8 blocks at a time with
+  `Vector128`, which WebAssembly SIMD supports: binarizing a frame went from 0.8 to 0.2 ms compiled, and from about
+  84 to 53 ms interpreted.
+- **A quick look at a still image first.** When one symbol is wanted, a picked or dropped image is read at half size
+  with the camera's settings before the exhaustive pass, and most photographs of a code are read by that look alone.
+  When it finds nothing, the browser gets a turn - the "Reading image" notice is on screen - before the exhaustive
+  pass, which is the long one interpreted.
+
+The demo's performance page runs the frame benchmark in your own browser.
+
+### On .NET
+
+Measured with BenchmarkDotNet on .NET 10, x64, 640x480 grayscale frames with the symbol centred: the decoder's own
+cost, which is what an application compiled ahead of time, a server or a desktop application pays.
 
 | Frame | All formats | QR only | Linear only |
 | --- | ---: | ---: | ---: |
-| QR, 29x29 modules | 603 us | 546 us | 206 us |
-| QR, 57x57 modules | 701 us | 646 us | 569 us |
-| QR with sensor noise | 702 us | 748 us | 4 509 us |
-| Data Matrix | 793 us | 618 us | 222 us |
-| Code 128 | 940 us | 695 us | 21 us |
-| EAN-13 | 837 us | 697 us | 13 us |
-| Empty frame | 876 us | 572 us | 38 us |
+| QR, 29x29 modules | 297 us | 299 us | 290 us |
+| QR, 57x57 modules | 373 us | 377 us | 801 us |
+| QR with sensor noise | 362 us | 359 us | 7 735 us |
+| Data Matrix | 550 us | 335 us | 315 us |
+| PDF417, turned 8 degrees | 1 516 us | 349 us | 507 us |
+| Aztec, turned 12 degrees | 964 us | 344 us | 398 us |
+| Code 128 | 885 us | 369 us | 19 us |
+| EAN-13 | 705 us | 342 us | 12 us |
+| GS1 DataBar | 712 us | 344 us | 24 us |
+| Empty frame | 607 us | 311 us | 45 us |
 
 The "linear only" column on a frame that holds a matrix symbol is the cost of looking for something that is not
-there at every orientation, which is the price of reading tilted symbols. It is only paid when no enabled symbology
-matches, and narrowing `Formats` removes it.
+there at every orientation, which is the price of reading tilted symbols - and turned off sideways, which live
+scanning has tried since it added two angles there, for about a third more on such a frame. It is only paid when no enabled symbology
+matches, and narrowing `Formats` removes it. Matrix symbologies are tried in the order QR Code, Data Matrix, PDF417,
+Aztec, so a symbol of a later one also pays for the earlier ones looking first. Each symbology costs little on a
+frame without it - Aztec about 30 us on an empty frame, 60 to 100 us on one holding other symbols and some 220 us on
+one of pure noise. GS1 DataBar, the last added, costs nothing measurable on an empty frame or one holding another
+linear symbol; the most it adds is on the noisy QR frame scanned for linear symbols only, where every line is a
+long run of short bars, and there it was measured at 300 to 550 us of the 6 to 8 ms (`LinearButDataBar` in the
+benchmarks).
 
 Allocation per frame:
 
@@ -566,8 +853,8 @@ Allocation per frame:
 | --- | ---: |
 | Linear only, no symbol found | **0 B** |
 | QR only, empty frame | 40 B |
-| All formats, empty frame | 152 B |
-| Linear only, EAN-13 found | 496 B |
+| All formats, empty frame | 88 B |
+| Linear only, EAN-13 found | 504 B |
 | All formats, QR found | 2 552 B |
 
 A frame that finds nothing is the common case while a user is still aiming. It allocates nothing at all on the
@@ -579,13 +866,14 @@ Where the time goes on a 640x480 frame:
 
 | Stage | Cost |
 | --- | ---: |
-| Grayscale conversion from RGBA | 328 us |
-| Grayscale with 2x subsampling | 120 us |
-| Adaptive block binarization | 494 us |
+| Grayscale conversion from RGBA (skipped when the GPU hands over luminance) | 275 us |
+| Grayscale with 2x subsampling | 113 us |
+| Adaptive block binarization | 197 us |
 | Binarizing one scan line | 1.0 us |
-| QR detection and decode, symbol present | 82 us |
-| Data Matrix detection, nothing present | 204 us |
+| QR detection and decode, symbol present | 83 us |
+| Data Matrix detection, nothing present | 241 us |
 | Code 128 on a row with no symbol | 1.5 us |
+| EAN/UPC on a row with no symbol | 1.4 us |
 
 The two whole-image stages dominate, which is why `MaxProcessingSize` and `DownsampleFactor` are the controls that
 matter most:
@@ -611,8 +899,8 @@ listens. The benchmark suite is in `Tests/Bit.BbScanner.Benchmarks`.
 
 - **One copy per frame.** `[JSImport]` with a `JSType.MemoryView` parameter hands JavaScript a view straight onto
   the managed buffer. No JSON, no base64, no intermediate array.
-- **The browser downsamples.** Frames are scaled to `MaxProcessingSize` by the canvas before they cross the boundary,
-  so the expensive stages never see pixels they do not need.
+- **The browser downsamples, and converts.** Frames are scaled to `MaxProcessingSize` by the GPU before they cross the
+  boundary, and arrive as luminance, so the expensive stages never see pixels - or colour channels - they do not need.
 - **Backpressure by construction.** The frame loop asks for the *latest* frame on a timer and gets zero back when
   nothing new has arrived. A slow decode misses ticks rather than building a queue of stale frames.
 - **Renders are rare.** Frames never enter the render tree.
@@ -622,39 +910,47 @@ listens. The benchmark suite is in `Tests/Bit.BbScanner.Benchmarks`.
   readable.
 - **Failure is not exceptional.** Most frames contain no barcode, so every decode path reports failure by returning
   `null`, never by throwing.
+- **One decoder everywhere, not the browser's.** The Barcode Detection API (`BarcodeDetector`) would hand decoding to
+  the platform, but it is only there for some of the users an application has: in Chrome on Android, macOS and
+  ChromeOS, not on Windows or Linux, behind a flag in Safari, and not in Firefox; and where it is, which formats it
+  reads, how it treats check digits and misreads and what it reports as corners are the platform's. An engine that
+  only some users get, with results that differ between them, would make every behaviour above conditional, so the
+  library reads every symbol itself, the same way in every browser.
 
-### Extension points
+### Building blocks
 
-`IBbRowDecoder` adds a linear symbology, `IBbMatrixDecoder` a matrix one, and `IBbBinarizer` a different thresholding
-strategy. All three receive already-prepared input, so a new reader only contributes its own tables and structure.
+The readers and binarizers are public building blocks rather than plug-ins: each implements `IBbRowDecoder` (one
+binarized scan line in, a symbol out), `IBbMatrixDecoder` (a binarized image in) or `IBbBinarizer`, and can be
+driven directly by a pipeline of your own - `new BbQrCodeReader().Decode(bits, BbMatrixDecodeOptions.Thorough)`.
+`BbBarcodeDecoder` composes the built-in ones from `Formats` and does not accept others: the frame budget, the
+scan-line geometry and the misread guards it applies are tuned to the symbologies it knows.
 
 ## PDF417 status
 
-PDF417 is implemented end to end - row detection, row indicator interpretation, Reed-Solomon over GF(929), and the
-text, byte and numeric compaction modes - with one exception: **the symbol character table**.
+PDF417 is read end to end, by default: locating the symbol at any orientation, row detection, row indicator
+interpretation, Reed-Solomon over GF(929), the text, byte and numeric compaction modes, ECI and the Macro PDF417
+control block.
 
-That table maps the 2 787 legal seventeen-module patterns to codeword values, and it is pure specification data from
-ISO/IEC 15438. It cannot be derived from the structural rules: of the 10 480 patterns that satisfy every structural
-constraint, the three usable clusters hold 1 484, 1 002 and 1 002 members, and no linear function of the eight
-element widths selects 929 from each; the specification simply lists them.
+**The symbol character table.** It maps the 2 787 legal seventeen-module patterns to codeword values, and it is
+specification data from ISO/IEC 15438 rather than a rule: of the 10 480 patterns that satisfy every structural
+constraint, the three usable clusters hold 1 484, 1 002 and 1 002 members, and the specification lists which 929 of
+each are used. The library ships that list as `BbPdf417SymbolTable.Specification`, reproduced from BWIPP (Barcode
+Writer in Pure PostScript, MIT licensed) and checked entry for entry against the independent table in ZXing's
+encoder; the tests check every entry against the structural rules again and read symbols BWIPP wrote.
+`BbPdf417SymbolTable.Register` remains for an application that needs a table of its own; `BbBarcodeDecoder` leaves
+PDF417 off while the registered table does not report `IsSpecificationTable`, rather than misread with it.
 
-So the library ships a **generated placeholder** table. It is internally consistent - it round trips against the
-matching encoder and exercises every other part of the implementation - but it does not match the specification and
-will not read real PDF417 symbols. To avoid pretending otherwise:
+**Orientation.** A PDF417 row is three modules tall and often more than a hundred wide, so reading along rows of
+pixels only works within about a degree of upright. A locator therefore runs first: scan lines at a handful of angles
+find a start pattern, its eight-module bar is traced along its length to get the symbol's left edge and the direction
+of its columns, a line along a row finds the stop pattern, whose bar is traced for the right edge, and the four
+corners that come out of that are resampled upright from the grayscale image. The symbol is then read row by row as
+if it had been printed straight. Every reference symbol reads at every orientation, in fifteen degree steps round the
+full circle, at two and at four pixels a module, with the live camera settings.
 
-- `BbPdf417SymbolTable.Current.IsSpecificationTable` is `false`.
-- `BbBarcodeDecoder` does **not** create its PDF417 reader while that is the case, so enabling
-  `BbBarcodeFormat.Pdf417` costs nothing and silently finds nothing rather than burning CPU.
-
-Supplying the real table makes PDF417 fully functional:
-
-```csharp
-BbPdf417SymbolTable.Register(
-    BbPdf417SymbolTable.FromPatterns(cluster0, cluster3, cluster6, isSpecificationTable: true));
-```
-
-Each argument is 929 seventeen-bit patterns indexed by codeword value, most significant bit first, starting with a
-bar.
+**Not read.** Compact (truncated) PDF417, which drops the right row indicator and most of the stop pattern, and
+MicroPDF417, which is a different symbology. Two symbols printed side by side and offset by a fraction of their height
+can both be missed while scanning live: the line along a row of the first runs on into the second's stop pattern.
 
 ## Building and testing
 
@@ -683,6 +979,11 @@ dotnet run --project Demo/Server
 
 What the tests cover:
 
+- Every symbology reads symbols written by an independent encoder - BWIPP, through bwip-js - as well as the test
+  kit's own: clean, with the live camera settings in a 640x480 frame, and rotated, blurred and noisy. A mistake made
+  identically by a test kit encoder and the matching decoder would pass every round trip; it cannot pass these. The
+  fixtures are module grids and bar widths in `Tests/Bit.BbScanner.Tests/Reference`, next to the script that
+  regenerates them; bwip-js is not a dependency of anything in the repository.
 - Every symbology round trips from a generated symbol through a rendered image.
 - Every symbology is decoded again through camera-like transforms: rotation, perspective, blur, sensor noise,
   lighting gradients, low contrast, inversion, scaling, off-centre placement and cluttered backgrounds.

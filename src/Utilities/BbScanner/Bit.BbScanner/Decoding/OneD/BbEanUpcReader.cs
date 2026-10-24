@@ -55,9 +55,39 @@ public sealed class BbEanUpcReader : IBbRowDecoder
         [0x07, 0x0B, 0x0D, 0x0E, 0x13, 0x19, 0x1C, 0x15, 0x16, 0x1A],
     ];
 
+    /// <summary>The guard an EAN-2 or EAN-5 add-on opens with.</summary>
+    private static readonly int[] ExtensionStartPattern = [1, 1, 2];
+
+    /// <summary>The two modules between the digits of an add-on.</summary>
+    private static readonly int[] ExtensionSeparatorPattern = [1, 1];
+
+    /// <summary>
+    /// Which of an EAN-5 add-on's five digits use the even parity encoding, the first digit in
+    /// the highest bit, by the add-on's checksum.
+    /// </summary>
+    private static readonly int[] Ean5Parities = [0x18, 0x14, 0x12, 0x11, 0x0C, 0x06, 0x03, 0x0A, 0x09, 0x05];
+
+    private readonly bool _requireExtension;
     private readonly int[] _counters = new int[4];
     private readonly int[] _guardCounters = new int[6];
     private readonly StringBuilder _builder = new(16);
+    private readonly StringBuilder _extension = new(5);
+
+    /// <summary>Creates a reader that reads an add-on whenever one is there.</summary>
+    public BbEanUpcReader()
+        : this(requireExtension: false)
+    {
+    }
+
+    /// <summary>Creates a reader.</summary>
+    /// <param name="requireExtension">
+    /// When <see langword="true"/> a symbol is only reported together with its EAN-2 or EAN-5
+    /// add-on; otherwise the add-on is read when it is there and its absence is no failure.
+    /// </param>
+    public BbEanUpcReader(bool requireExtension)
+    {
+        _requireExtension = requireExtension;
+    }
 
     /// <inheritdoc />
     public BbBarcodeFormat Formats =>
@@ -187,7 +217,7 @@ public sealed class BbEanUpcReader : IBbRowDecoder
         // caller asked for, preferring UPC-A because that is the more specific reading.
         if (text[0] == '0' && (wanted & BbBarcodeFormat.UpcA) != 0)
         {
-            return Build(rowNumber, text[1..], BbBarcodeFormat.UpcA, guardStart, guardEnd, symbolEnd);
+            return Build(rowNumber, row, text[1..], BbBarcodeFormat.UpcA, guardStart, guardEnd, symbolEnd);
         }
 
         if ((wanted & BbBarcodeFormat.Ean13) == 0)
@@ -195,7 +225,7 @@ public sealed class BbEanUpcReader : IBbRowDecoder
             return null;
         }
 
-        return Build(rowNumber, text, BbBarcodeFormat.Ean13, guardStart, guardEnd, symbolEnd);
+        return Build(rowNumber, row, text, BbBarcodeFormat.Ean13, guardStart, guardEnd, symbolEnd);
     }
 
     private BbSymbolDecodeResult? TryDecodeEan8(int rowNumber, BbBitRow row, int guardStart, int guardEnd)
@@ -250,7 +280,7 @@ public sealed class BbEanUpcReader : IBbRowDecoder
             return null;
         }
 
-        return Build(rowNumber, result.ToString(), BbBarcodeFormat.Ean8, guardStart, guardEnd, symbolEnd);
+        return Build(rowNumber, row, result.ToString(), BbBarcodeFormat.Ean8, guardStart, guardEnd, symbolEnd);
     }
 
     private BbSymbolDecodeResult? TryDecodeUpcE(int rowNumber, BbBitRow row, int guardStart, int guardEnd)
@@ -319,7 +349,7 @@ public sealed class BbEanUpcReader : IBbRowDecoder
             return null;
         }
 
-        return Build(rowNumber, text, BbBarcodeFormat.UpcE, guardStart, guardEnd, symbolEnd);
+        return Build(rowNumber, row, text, BbBarcodeFormat.UpcE, guardStart, guardEnd, symbolEnd);
     }
 
     /// <summary>
@@ -367,15 +397,114 @@ public sealed class BbEanUpcReader : IBbRowDecoder
         return result.ToString();
     }
 
-    private BbSymbolDecodeResult Build(
-        int rowNumber, string text, BbBarcodeFormat format, int guardStart, int guardEnd, int symbolEnd)
+    /// <summary>
+    /// Finishes a symbol, with the add-on printed beside it when there is one; returns
+    /// <see langword="null"/> when an add-on is required and none could be read.
+    /// </summary>
+    private BbSymbolDecodeResult? Build(
+        int rowNumber, BbBitRow row, string text, BbBarcodeFormat format, int guardStart, int guardEnd, int symbolEnd)
     {
-        var payload = new BbDecoderResult(Encoding.ASCII.GetBytes(text), text);
+        var moduleWidth = (guardEnd - guardStart) / 3.0f;
+        var extension = TryReadExtension(row, symbolEnd, moduleWidth, out var extensionEnd);
+        if (extension is null && _requireExtension)
+        {
+            return null;
+        }
+
+        var payload = new BbDecoderResult(Encoding.ASCII.GetBytes(text), text) { Extension = extension };
         var left = (guardStart + guardEnd) / 2.0f;
         return new BbSymbolDecodeResult(
             payload,
             format,
-            [new BbScanPoint(left, rowNumber), new BbScanPoint(symbolEnd, rowNumber)]);
+            [new BbScanPoint(left, rowNumber), new BbScanPoint(extension is null ? symbolEnd : extensionEnd, rowNumber)]);
+    }
+
+    /// <summary>
+    /// Reads the EAN-2 or EAN-5 add-on that follows a symbol, or returns <see langword="null"/>
+    /// when there is none.
+    /// </summary>
+    /// <remarks>
+    /// An add-on sits seven to twelve modules after the main symbol's end guard, opens with a
+    /// guard of its own and separates its digits with two modules; each digit is a left-hand
+    /// encoding, odd or even parity. The parities are the add-on's only check: for two digits
+    /// they spell the value modulo four, for five a checksum of the digits, so an add-on whose
+    /// parities disagree with its digits is a misread and is dropped rather than reported.
+    /// </remarks>
+    private string? TryReadExtension(BbBitRow row, int symbolEnd, float moduleWidth, out int end)
+    {
+        end = symbolEnd;
+        var start = row.GetNextSet(symbolEnd);
+        var gap = (start - symbolEnd) / moduleWidth;
+        if (start >= row.Size || gap < 5 || gap > 16 ||
+            !TryMatchGuardAt(row, start, whiteFirst: false, ExtensionStartPattern, out var offset))
+        {
+            return null;
+        }
+
+        var digits = _extension;
+        digits.Clear();
+        var counters = _counters;
+        var evenParity = 0;
+        for (var i = 0; i < 5; i++)
+        {
+            if (offset >= row.Size ||
+                !TryDecodeDigit(row, counters, offset, LAndGPatterns, out var match) ||
+                !IsDigitWidthPlausible(counters, moduleWidth))
+            {
+                return null;
+            }
+
+            digits.Append((char)('0' + (match % 10)));
+            evenParity = (evenParity << 1) | (match >= 10 ? 1 : 0);
+            offset += counters[0] + counters[1] + counters[2] + counters[3];
+
+            if (i == 4)
+            {
+                break;
+            }
+
+            if (!TryMatchGuardAt(row, offset, whiteFirst: true, ExtensionSeparatorPattern, out var afterSeparator))
+            {
+                // No separator after the second digit is the end of an EAN-2; anywhere else, the
+                // add-on is broken.
+                if (i != 1)
+                {
+                    return null;
+                }
+
+                break;
+            }
+
+            offset = afterSeparator;
+        }
+
+        var valid = digits.Length switch
+        {
+            2 => evenParity == ((digits[0] - '0') * 10 + (digits[1] - '0')) % 4,
+            5 => evenParity == Ean5Parities[Ean5Checksum(digits)],
+            _ => false,
+        };
+
+        // A quiet zone of five modules closes the add-on, inside the row.
+        var quietEnd = (int)MathF.Ceiling(offset + (moduleWidth * 5));
+        if (!valid || quietEnd > row.Size || !row.IsRange(offset, quietEnd, false))
+        {
+            return null;
+        }
+
+        end = offset;
+        return digits.ToString();
+
+        static int Ean5Checksum(StringBuilder digits)
+        {
+            var sum = 0;
+            for (var i = 0; i < 5; i++)
+            {
+                sum += (digits[i] - '0') * (i % 2 == 0 ? 3 : 9);
+            }
+
+            return sum % 10;
+        }
     }
 
     private bool TryVerifyEndGuard(BbBitRow row, int rowOffset, bool whiteFirst, int[] pattern, out int symbolEnd)

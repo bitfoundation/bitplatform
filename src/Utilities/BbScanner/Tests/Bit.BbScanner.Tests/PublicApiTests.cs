@@ -192,6 +192,61 @@ public class PublicApiTests
     }
 
     [TestMethod]
+    public void AnInfiniteWindowReportsEachValueOnceUntilReset()
+    {
+        var filter = new BbDuplicateFilter(Timeout.InfiniteTimeSpan);
+
+        Assert.IsTrue(filter.ShouldReport("A", BbBarcodeFormat.QrCode, 0));
+        Assert.IsFalse(filter.ShouldReport("A", BbBarcodeFormat.QrCode, long.MaxValue / 2), "However long it is out of view.");
+        Assert.IsTrue(filter.ShouldReport("A", BbBarcodeFormat.DataMatrix, 0), "The same text in another symbology is another code.");
+
+        filter.Reset();
+        Assert.IsTrue(filter.ShouldReport("A", BbBarcodeFormat.QrCode, 0));
+    }
+
+    [TestMethod]
+    public void AnInfiniteWindowRemembersFarMoreThanTheLiveFilterDoes()
+    {
+        // A stocktake sweeps past hundreds of distinct labels; the live window's sixteen would forget the first
+        // ones and count them twice.
+        var filter = new BbDuplicateFilter(Timeout.InfiniteTimeSpan);
+        for (var i = 0; i < 1000; i++)
+        {
+            Assert.IsTrue(filter.ShouldReport($"ITEM-{i}", BbBarcodeFormat.Code128, i));
+        }
+
+        for (var i = 0; i < 1000; i++)
+        {
+            Assert.IsFalse(filter.ShouldReport($"ITEM-{i}", BbBarcodeFormat.Code128, 2000 + i), $"ITEM-{i} was counted twice.");
+        }
+    }
+
+    [TestMethod]
+    public void AnInfiniteWindowIsBoundedAndForgetsTheOldestFirst()
+    {
+        var filter = new BbDuplicateFilter(Timeout.InfiniteTimeSpan);
+        for (var i = 0; i <= BbDuplicateFilter.SessionCapacity; i++)
+        {
+            filter.ShouldReport($"V{i}", BbBarcodeFormat.QrCode, i);
+        }
+
+        Assert.IsTrue(filter.ShouldReport("V0", BbBarcodeFormat.QrCode, 0), "The oldest value made room for the newest.");
+        Assert.IsFalse(filter.ShouldReport($"V{BbDuplicateFilter.SessionCapacity}", BbBarcodeFormat.QrCode, 0));
+    }
+
+    [TestMethod]
+    public void AnInfiniteWindowIsAValidOption()
+    {
+        new BbScannerOptions { DuplicateSuppressionWindow = Timeout.InfiniteTimeSpan }.Validate();
+
+        using var decoder = new BbBarcodeDecoder(new BbScannerOptions { DuplicateSuppressionWindow = Timeout.InfiniteTimeSpan });
+        decoder.DuplicateSuppressionWindow = Timeout.InfiniteTimeSpan;
+
+        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() =>
+            new BbScannerOptions { DuplicateSuppressionWindow = TimeSpan.FromMilliseconds(-2) }.Validate());
+    }
+
+    [TestMethod]
     public void ResultsCarryTheirGeometryInFrameCoordinates()
     {
         using var qr = Qr("GEOMETRY");
@@ -388,12 +443,10 @@ public class PublicApiTests
     }
 
     [TestMethod]
-    public void EnablingPdf417CostsNothingWhileTheTableIsAPlaceholder()
+    public void Pdf417DoesNotReportASymbolOfAnotherSymbology()
     {
-        // The shipped symbol character table is generated, not the specification's, so the reader
-        // is deliberately not created; the format must simply find nothing rather than misread.
-        Assert.IsFalse(BbPdf417SymbolTable.Current.IsSpecificationTable);
-
+        // PDF417 is read by default now that the specification table ships, so asking for it alone has to find
+        // nothing in a frame that holds a different symbol rather than misread it.
         using var decoder = new BbBarcodeDecoder(new BbScannerOptions
         {
             Formats = BbBarcodeFormat.Pdf417,

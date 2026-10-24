@@ -82,6 +82,60 @@ public static class SyntheticImage
         return buffer;
     }
 
+    /// <summary>
+    /// Renders a linear symbol with every bar drawn wider or narrower than its modules, as ink spread, a thermal
+    /// printer's dot gain or an underexposed photograph make it: every bar's width changes by
+    /// <paramref name="barGain"/> pixels, half on each side and the odd pixel on the right, and the spaces give or
+    /// take the difference.
+    /// </summary>
+    /// <param name="modules">One entry per module; <see langword="true"/> is a bar.</param>
+    /// <param name="scale">Pixels per module.</param>
+    /// <param name="barGain">Pixels added to every bar; negative narrows them.</param>
+    /// <param name="height">Image height in pixels.</param>
+    /// <param name="quietZoneModules">Light border width in modules on each side.</param>
+    public static BbLuminanceBuffer FromLinearWithBarGain(
+        ReadOnlySpan<bool> modules,
+        int scale,
+        int barGain,
+        int height = 60,
+        int quietZoneModules = 12)
+    {
+        var width = (modules.Length + (2 * quietZoneModules)) * scale;
+        var buffer = BbLuminanceBuffer.Rent(width, height);
+        var pixels = buffer.Pixels;
+        pixels.Fill(255);
+
+        var left = barGain / 2;
+        var right = barGain - left;
+        for (var i = 0; i < modules.Length; i++)
+        {
+            if (!modules[i] || (i > 0 && modules[i - 1]))
+            {
+                continue;
+            }
+
+            var end = i;
+            while (end < modules.Length && modules[end])
+            {
+                end++;
+            }
+
+            var from = ((i + quietZoneModules) * scale) - left;
+            var to = ((end + quietZoneModules) * scale) + right;
+            if (to <= from)
+            {
+                continue;
+            }
+
+            for (var y = 0; y < height; y++)
+            {
+                pixels.Slice((y * width) + from, to - from).Fill(0);
+            }
+        }
+
+        return buffer;
+    }
+
     /// <summary>Expands run-length element widths into a module array, starting with a bar.</summary>
     /// <param name="widths">Element widths in modules, bar first.</param>
     public static bool[] ExpandWidths(ReadOnlySpan<int> widths)

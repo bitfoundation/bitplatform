@@ -11,27 +11,40 @@
 /// the column count. Everything else follows from those.
 /// </para>
 /// <para>
-/// <b>Conformance.</b> This reader is only as correct as the symbol character table it is given.
-/// The table that ships with the library is a generated placeholder, so
-/// <see cref="BbBarcodeDecoder"/> leaves PDF417 disabled until a specification table is
-/// installed through <see cref="BbPdf417SymbolTable.Register"/>. See
-/// <see cref="BbPdf417SymbolTable"/> for why the table cannot be derived.
+/// <b>Conformance.</b> This reader is only as correct as the symbol character table it is given,
+/// which is <see cref="BbPdf417SymbolTable.Current"/>: the specification table unless an
+/// application registered another. See <see cref="BbPdf417SymbolTable"/> for why the table is
+/// data rather than a rule.
 /// </para>
 /// </remarks>
-public sealed class BbPdf417Reader : IBbMatrixDecoder
+public sealed class BbPdf417Reader : IBbMatrixDecoder, IBbLuminanceMatrixDecoder, IBbImageHolder
 {
     private readonly BbPdf417Detector _detector = new();
     private readonly BbPdf417ErrorCorrection _errorCorrection = new();
+    private readonly BbPdf417Locator _locator = new();
+
+    /// <inheritdoc />
+    void IBbImageHolder.ForgetImage() => _locator.ForgetImage();
 
     /// <inheritdoc />
     public BbBarcodeFormat Formats => BbBarcodeFormat.Pdf417;
 
     /// <inheritdoc />
-    public BbSymbolDecodeResult? Decode(BbBitMatrix image, BbMatrixDecodeOptions options)
+    /// <remarks>
+    /// Without the luminance plane the binarised image came from, a rotated symbol is resampled
+    /// from the binarised image itself, which reads slightly smaller modules less reliably.
+    /// </remarks>
+    public BbSymbolDecodeResult? Decode(BbBitMatrix image, BbMatrixDecodeOptions options) => Decode(image, default, options);
+
+    /// <inheritdoc />
+    BbSymbolDecodeResult? IBbLuminanceMatrixDecoder.Decode(BbBitMatrix image, in BbLuminanceView luminance, BbMatrixDecodeOptions options) =>
+        Decode(image, luminance, options);
+
+    private BbSymbolDecodeResult? Decode(BbBitMatrix image, in BbLuminanceView luminance, BbMatrixDecodeOptions options)
     {
         ArgumentNullException.ThrowIfNull(image);
 
-        var result = TryDecode(image);
+        var result = DecodeAtAnyOrientation(image, luminance, options.TryHarder, inverted: false);
         if (result is not null || !options.AllowInverted)
         {
             return result;
@@ -40,12 +53,62 @@ public sealed class BbPdf417Reader : IBbMatrixDecoder
         image.Invert();
         try
         {
-            return TryDecode(image);
+            return DecodeAtAnyOrientation(image, luminance, options.TryHarder, inverted: true);
         }
         finally
         {
             image.Invert();
         }
+    }
+
+    /// <summary>
+    /// Locates the symbols in the frame, resamples each one upright and reads it, mapping the
+    /// corners it reports back onto the frame.
+    /// </summary>
+    private BbSymbolDecodeResult? DecodeAtAnyOrientation(BbBitMatrix image, in BbLuminanceView luminance, bool thorough, bool inverted)
+    {
+        // Resampling a candidate upright and reading every row of it costs about a hundred nanoseconds a pixel, and
+        // a pair of start and stop shaped stripes - a poster, a crafted file - is a candidate like any real symbol. So
+        // the candidates of a frame share a budget: a frame and a half of pixels live, which bounds a frame's PDF417
+        // work to tens of milliseconds whatever it shows, and eight frames' worth for a still image. A small image
+        // still gets the half megapixel - or four, still - that resampling a small symbol at three pixels a module
+        // can take, since small modules are exactly what the resampling is for.
+        var budget = thorough
+            ? Math.Max((long)image.Width * image.Height * 8, 4L * 1024 * 1024)
+            : Math.Max((long)image.Width * image.Height * 3 / 2, 512L * 1024);
+        foreach (var candidate in _locator.Locate(image, thorough))
+        {
+            if (budget <= 0)
+            {
+                break;
+            }
+
+            using var upright = _locator.Rectify(candidate, luminance, image, inverted, budget, out var toImage);
+            if (upright is null)
+            {
+                continue;
+            }
+
+            budget -= (long)upright.Width * upright.Height;
+
+            var result = TryDecode(upright);
+            if (result is null)
+            {
+                continue;
+            }
+
+            var points = new BbScanPoint[result.Points.Length];
+            for (var i = 0; i < points.Length; i++)
+            {
+                points[i] = toImage(result.Points[i]);
+            }
+
+            return result with { Points = points };
+        }
+
+        // A still image is worth one more look: an upright symbol whose start pattern is too
+        // damaged to locate can still have enough intact rows to read where it lies.
+        return thorough ? TryDecode(image) : null;
     }
 
     private BbSymbolDecodeResult? TryDecode(BbBitMatrix image)
@@ -132,8 +195,9 @@ public sealed class BbPdf417Reader : IBbMatrixDecoder
     /// <remarks>
     /// Each row indicator carries one third of the structure, chosen by the row number modulo
     /// three, and the left and right indicators of a row carry different thirds. Reading both
-    /// sides of every row gives each value many times over, which is what makes this robust on a
-    /// symbol whose edge is partly damaged; an indicator the detector could not read is skipped.
+    /// sides of every row gives each value many times over, and every reading votes: a single
+    /// indicator misread as another valid codeword is outvoted by the rest instead of deciding
+    /// the symbol's shape. An indicator the detector could not read is skipped.
     /// </remarks>
     private static bool TryReadStructure(
         IReadOnlyList<BbPdf417Detector.SymbolRow> rows, out int rowCount, out int columnCount, out int errorCorrectionLevel)
@@ -142,10 +206,9 @@ public sealed class BbPdf417Reader : IBbMatrixDecoder
         columnCount = 0;
         errorCorrectionLevel = -1;
 
-        int? rowsDiv3 = null;
-        int? rowsMod3 = null;
-        int? level = null;
-        int? columns = null;
+        // One tally per field, each over the thirty values an indicator's remainder can take.
+        Span<int> votes = stackalloc int[3 * 30];
+        votes.Clear();
 
         foreach (var row in rows)
         {
@@ -153,53 +216,49 @@ public sealed class BbPdf417Reader : IBbMatrixDecoder
             var left = row.Codewords[0];
             var right = row.Codewords[^1];
 
+            // The left indicator of phase p carries field p; the right indicator carries the
+            // field two rows along, so between them each row holds two of the three fields.
             if (left != BbPdf417Detector.Erasure)
             {
-                Apply(phase, left % 30, isLeft: true);
+                votes[(phase * 30) + (left % 30)]++;
             }
 
             if (right != BbPdf417Detector.Erasure)
             {
-                Apply(phase, right % 30, isLeft: false);
-            }
-
-            if (rowsDiv3 is not null && rowsMod3 is not null && level is not null && columns is not null)
-            {
-                break;
+                votes[(((phase + 2) % 3) * 30) + (right % 30)]++;
             }
         }
 
-        if (rowsDiv3 is null || rowsMod3 is null || level is null || columns is null)
+        var rowsDiv3 = Winner(votes[..30]);
+        var levelAndRowsMod3 = Winner(votes.Slice(30, 30));
+        var columns = Winner(votes.Slice(60, 30));
+        if (rowsDiv3 < 0 || levelAndRowsMod3 < 0 || columns < 0)
         {
             return false;
         }
 
-        rowCount = (3 * rowsDiv3.Value) + rowsMod3.Value + 1;
-        columnCount = columns.Value + 1;
-        errorCorrectionLevel = level.Value;
+        rowCount = (3 * rowsDiv3) + (levelAndRowsMod3 % 3) + 1;
+        columnCount = columns + 1;
+        errorCorrectionLevel = levelAndRowsMod3 / 3;
 
         return rowCount is >= 3 and <= 90
             && columnCount is >= 1 and <= 30
             && errorCorrectionLevel is >= 0 and <= 8;
 
-        // The left indicator of phase p carries field p; the right indicator carries the field
-        // two rows along, so between them each row holds two of the three fields.
-        void Apply(int phase, int value, bool isLeft)
+        static int Winner(ReadOnlySpan<int> tally)
         {
-            var field = isLeft ? phase : (phase + 2) % 3;
-            switch (field)
+            var best = -1;
+            var bestCount = 0;
+            for (var value = 0; value < tally.Length; value++)
             {
-                case 0:
-                    rowsDiv3 ??= value;
-                    break;
-                case 1:
-                    level ??= value / 3;
-                    rowsMod3 ??= value % 3;
-                    break;
-                default:
-                    columns ??= value;
-                    break;
+                if (tally[value] > bestCount)
+                {
+                    best = value;
+                    bestCount = tally[value];
+                }
             }
+
+            return best;
         }
     }
 }

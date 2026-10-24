@@ -31,6 +31,14 @@ public sealed class BbQrFinderPatternFinder
     public const int MaxCandidates = 4;
 
     /// <summary>
+    /// The most distinct centres collected from one image. Choosing the finder patterns tries every triple of them, so
+    /// an image tiled with finder patterns - which no photograph of real symbols is, but a file anyone can pick may be
+    /// - cost the cube of their number: seven and a half minutes for a 3000 pixel one. Genuine symbols, version 40
+    /// included, leave at most five, at any orientation; a frame of several symbols, three each.
+    /// </summary>
+    private const int MaxCenters = 32;
+
+    /// <summary>
     /// The centres of a version 1 symbol are fourteen modules apart along each edge, so no two
     /// finder patterns of one symbol can be closer than that.
     /// </summary>
@@ -323,6 +331,11 @@ public sealed class BbQrFinderPatternFinder
                 _possibleCenters[index] = center.CombineEstimate(centerI, centerJ, estimatedModuleSize);
                 return true;
             }
+        }
+
+        if (_possibleCenters.Count >= MaxCenters)
+        {
+            return false;
         }
 
         _possibleCenters.Add(new BbQrFinderPattern(centerJ, centerI, estimatedModuleSize));

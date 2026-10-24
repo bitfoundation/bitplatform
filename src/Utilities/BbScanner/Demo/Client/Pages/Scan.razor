@@ -31,6 +31,8 @@
                                TargetFrameRate="_frameRate"
                                MaxProcessingSize="_processingSize"
                                DuplicateSuppressionWindow="TimeSpan.FromSeconds(_duplicateSeconds)"
+                               MaxSymbolsPerFrame="_symbolsPerFrame"
+                               AfterScan="_afterScan"
                                Facing="_facing"
                                ShowControls="_showControls"
                                ShowStatusBar="_showStatus"
@@ -68,8 +70,8 @@
                     <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Formats</h3>
                     <p class="bb-card-desc">
                         Narrowing the set is the cheapest speed-up available: an unused symbology costs
-                        nothing because its decoder is never created. PDF417 stays inert until a
-                        specification symbol character table is registered; see the README for why.
+                        nothing because its decoder is never created, and it is the main guard against
+                        a misread between similar linear symbologies.
                     </p>
                     <div class="scan-checks scan-checks-grid">
                         @foreach (var format in Formats)
@@ -117,6 +119,23 @@
                         <input id="dupe" type="range" min="0" max="10" step="1"
                                value="@_duplicateSeconds" @onchange="e => _duplicateSeconds = ToInt(e, 2)" />
                         <small>Zero reports every frame that decodes, which is useful for measuring throughput.</small>
+                    </label>
+
+                    <label class="bb-field">
+                        <span class="scan-field-head"><span>Symbols per frame</span><output>@_symbolsPerFrame</output></span>
+                        <input id="symbols" type="range" min="1" max="8" step="1"
+                               value="@_symbolsPerFrame" @onchange="e => _symbolsPerFrame = ToInt(e, 1)" />
+                        <small>More than one reads every code in view, each outlined and reported on its own.</small>
+                    </label>
+
+                    <label class="bb-field">
+                        <span>After a scan</span>
+                        <select id="after-scan" value="@_afterScan" @onchange="OnAfterScanChanged">
+                            <option value="@BbAfterScan.Continue">Keep scanning</option>
+                            <option value="@BbAfterScan.Pause">Pause</option>
+                            <option value="@BbAfterScan.Stop">Stop the camera</option>
+                        </select>
+                        <small>Pause keeps the camera open, so Resume is instant.</small>
                     </label>
 
                     <label class="bb-field">
@@ -268,7 +287,8 @@
     [
         BbBarcodeFormat.QrCode, BbBarcodeFormat.DataMatrix, BbBarcodeFormat.Code128, BbBarcodeFormat.Code39,
         BbBarcodeFormat.Ean13, BbBarcodeFormat.Ean8, BbBarcodeFormat.UpcA, BbBarcodeFormat.UpcE, BbBarcodeFormat.Itf,
-        BbBarcodeFormat.Pdf417,
+        BbBarcodeFormat.Pdf417, BbBarcodeFormat.Aztec, BbBarcodeFormat.Code93, BbBarcodeFormat.Codabar,
+        BbBarcodeFormat.DataBar,
     ];
 
     private readonly List<BbBarcodeResult> _results = [];
@@ -284,6 +304,8 @@
     private int _frameRate = 15;
     private int _processingSize = 640;
     private int _duplicateSeconds = 2;
+    private int _symbolsPerFrame = 1;
+    private BbAfterScan _afterScan = BbAfterScan.Continue;
     private bool _showControls = true;
     private bool _showStatus = true;
     private bool _showReticle = true;
@@ -346,6 +368,14 @@
         }
     }
 
+    private void OnAfterScanChanged(ChangeEventArgs args)
+    {
+        if (Enum.TryParse<BbAfterScan>(args.Value?.ToString(), out var afterScan))
+        {
+            _afterScan = afterScan;
+        }
+    }
+
     private Task OpenPicker() => _scanner is null ? Task.CompletedTask : _scanner.OpenFilePickerAsync();
 
     private static int ToInt(ChangeEventArgs args, int fallback) =>
@@ -362,7 +392,10 @@
         BbBarcodeFormat.UpcA => "UPC-A",
         BbBarcodeFormat.UpcE => "UPC-E",
         BbBarcodeFormat.Itf => "ITF",
-        BbBarcodeFormat.Pdf417 => "PDF417 (needs table)",
+        BbBarcodeFormat.Pdf417 => "PDF417",
+        BbBarcodeFormat.Aztec => "Aztec",
+        BbBarcodeFormat.Code93 => "Code 93",
+        BbBarcodeFormat.DataBar => "GS1 DataBar",
         _ => format.ToString(),
     };
 }

@@ -103,6 +103,28 @@ public class RealWorldImageTests
     }
 
     [TestMethod]
+    [DataRow(75)]
+    [DataRow(80)]
+    [DataRow(100)]
+    [DataRow(105)]
+    [DataRow(255)]
+    [DataRow(285)]
+    public void LinearSymbolsDecodeTurnedOffSideways(double degrees)
+    {
+        // A phone held across a label turns the bars off sideways as readily as off upright; a straight vertical line
+        // alone crosses a long symbol whole only within a few degrees of it.
+        using var code128 = Code128();
+        using var rotatedCode128 = ImageTransforms.Rotate(code128, degrees);
+        using var code128Frame = ImageTransforms.Frame(rotatedCode128, 640, 480);
+        Assert.AreEqual(Code128Payload, Decode(code128Frame, BbBarcodeFormat.Code128));
+
+        using var ean = Ean13();
+        using var rotatedEan = ImageTransforms.Rotate(ean, degrees);
+        using var eanFrame = ImageTransforms.Frame(rotatedEan, 640, 480);
+        Assert.AreEqual(Ean13Payload, Decode(eanFrame, BbBarcodeFormat.Ean13));
+    }
+
+    [TestMethod]
     public void TurningOffVerticalScanningGivesUpRotatedSymbols()
     {
         using var symbol = Ean13();

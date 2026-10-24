@@ -92,79 +92,103 @@ public sealed class BbQrDetector
             return null;
         }
 
-        if (!TryComputeDimension(topLeft, topRight, bottomLeft, moduleSize, out var dimension))
-        {
-            return null;
-        }
+        // Every dimension near the estimate is a candidate, nearest first, and the timing check
+        // in TryCandidate turns the wrong ones away for the price of two lines of modules.
+        Span<int> dimensions = stackalloc int[MaxDimensionCandidates];
+        var count = CandidateDimensions(EstimateDimension(topLeft, topRight, bottomLeft, moduleSize), dimensions);
 
-        var provisionalVersion = BbQrVersion.GetProvisionalVersionForDimension(dimension);
-        if (provisionalVersion is null)
-        {
-            return null;
-        }
-
-        var alignmentPattern = provisionalVersion.AlignmentPatternCenters.Length > 0
-            ? FindAlignment(topLeft, topRight, bottomLeft, provisionalVersion, moduleSize)
-            : null;
-
-        // Preferred first: the alignment pattern corrects for perspective when it is real.
-        if (alignmentPattern is not null &&
-            TryCandidate(topLeft, topRight, bottomLeft, alignmentPattern, dimension, accept) is { } withAlignment)
-        {
-            return withAlignment;
-        }
-
-        // The affine grid, which ignores the alignment pattern entirely. This is the one that
-        // works when the alignment search found noise.
-        if (TryCandidate(topLeft, topRight, bottomLeft, null, dimension, accept) is { } affine)
-        {
-            return affine;
-        }
-
-        // Finally, let the symbol say how big it is. Version information is only present from
-        // version 7 up, which is exactly where the dimension estimate becomes unreliable.
-        if (dimension < 45)
-        {
-            return null;
-        }
-
-        Span<int> candidates = stackalloc int[DimensionDeltas.Length];
-        var count = NearbyDimensions(dimension, candidates);
+        BbQrFinderPattern? alignmentPattern = null;
+        var alignmentSearched = false;
         for (var i = 0; i < count; i++)
         {
-            var candidateDimension = candidates[i];
-            if (alignmentPattern is not null &&
-                TryCandidate(topLeft, topRight, bottomLeft, alignmentPattern, candidateDimension, accept) is { } resized)
+            var dimension = dimensions[i];
+            var version = BbQrVersion.GetProvisionalVersionForDimension(dimension);
+            if (version is null)
             {
-                return resized;
+                continue;
             }
 
-            if (TryCandidate(topLeft, topRight, bottomLeft, null, candidateDimension, accept) is { } resizedAffine)
+            var hasAlignment = version.AlignmentPatternCenters.Length > 0;
+
+            // Searched for once: where the bottom right alignment pattern sits moves by a fraction
+            // of a pixel between neighbouring dimensions, far less than the search allows for.
+            if (hasAlignment && !alignmentSearched)
             {
-                return resizedAffine;
+                alignmentPattern = FindAlignment(topLeft, topRight, bottomLeft, version, moduleSize);
+                alignmentSearched = true;
+            }
+
+            // Preferred first: the alignment pattern corrects for perspective when it is real.
+            if (hasAlignment && alignmentPattern is not null &&
+                TryCandidate(topLeft, topRight, bottomLeft, alignmentPattern, dimension, accept) is { } withAlignment)
+            {
+                return withAlignment;
+            }
+
+            // The affine grid, which ignores the alignment pattern entirely. This is the one that
+            // works when the alignment search found noise.
+            if (TryCandidate(topLeft, topRight, bottomLeft, null, dimension, accept) is { } affine)
+            {
+                return affine;
             }
         }
 
         return null;
     }
 
-    /// <summary>Offsets from the estimated dimension to retry, nearest first.</summary>
-    private static readonly int[] DimensionDeltas = [4, -4, 8, -8];
+    /// <summary>The most dimensions tried for one finder pattern triple: the estimate's and two either side.</summary>
+    private const int MaxDimensionCandidates = 5;
 
     /// <summary>
-    /// Writes the legal dimensions within eight modules of the estimate into
-    /// <paramref name="candidates"/>, nearest first, and returns how many there are.
+    /// The symbol's dimension as the finder pattern spacing gives it: the centres are seven modules
+    /// in from the corners between them, so the spacing in modules plus seven. Unrounded, so that
+    /// the legal dimension it falls nearest can be told apart from the one it merely rounds to.
     /// </summary>
-    private static int NearbyDimensions(int dimension, Span<int> candidates)
+    private static float EstimateDimension(
+        BbQrFinderPattern topLeft,
+        BbQrFinderPattern topRight,
+        BbQrFinderPattern bottomLeft,
+        float moduleSize)
     {
-        var count = 0;
-        foreach (var delta in DimensionDeltas)
+        var tlTr = BbMathUtils.Distance(topLeft.X, topLeft.Y, topRight.X, topRight.Y) / moduleSize;
+        var tlBl = BbMathUtils.Distance(topLeft.X, topLeft.Y, bottomLeft.X, bottomLeft.Y) / moduleSize;
+        return ((tlTr + tlBl) / 2) + 7;
+    }
+
+    /// <summary>
+    /// Writes the legal dimensions near an estimate into <paramref name="candidates"/>, nearest
+    /// first, and returns how many there are.
+    /// </summary>
+    /// <remarks>
+    /// Legal dimensions are four apart, and the estimate is a ratio of measured distances, so its
+    /// error grows with the symbol: a module size two per cent off is a fraction of a module on
+    /// a version 1 symbol and two and a half modules on a version 25 one. An estimate two modules
+    /// from either neighbour is the ordinary case on a rotated large symbol, not a sign the triple
+    /// is false, so both neighbours are tried, and then the ones beyond them. Small symbols are
+    /// searched within four modules, large ones - where the estimate drifts furthest - within
+    /// eight.
+    /// </remarks>
+    private static int CandidateDimensions(float estimate, Span<int> candidates)
+    {
+        if (!float.IsFinite(estimate))
         {
-            var candidate = dimension + delta;
-            if (candidate is >= 21 and <= 177 && BbQrVersion.GetProvisionalVersionForDimension(candidate) is not null)
+            return 0;
+        }
+
+        var reach = estimate < 45 ? 4.5f : 8.5f;
+        var count = 0;
+        var first = Math.Max(21, (int)MathF.Ceiling((estimate - reach - 17) / 4) * 4 + 17);
+        for (var dimension = first; dimension <= 177 && dimension <= estimate + reach && count < candidates.Length; dimension += 4)
+        {
+            // Insertion sort by distance from the estimate keeps the list ordered as it grows.
+            var at = count++;
+            while (at > 0 && MathF.Abs(candidates[at - 1] - estimate) > MathF.Abs(dimension - estimate))
             {
-                candidates[count++] = candidate;
+                candidates[at] = candidates[at - 1];
+                at--;
             }
+
+            candidates[at] = dimension;
         }
 
         return count;
@@ -191,9 +215,17 @@ public sealed class BbQrDetector
             return null;
         }
 
-        BbScanPoint[] points = alignmentPattern is null
-            ? [bottomLeft.Point, topLeft.Point, topRight.Point]
-            : [bottomLeft.Point, topLeft.Point, topRight.Point, alignmentPattern.Point];
+        // The symbol's own corners, clockwise from its top-left: where the module grid the
+        // transform samples begins and ends. The finder pattern centres the transform was built
+        // from sit three and a half modules inside them, and a box drawn through those would
+        // cut the symbol's outer modules off.
+        BbScanPoint[] points =
+        [
+            transform.Transform(new BbScanPoint(0, 0)),
+            transform.Transform(new BbScanPoint(dimension, 0)),
+            transform.Transform(new BbScanPoint(dimension, dimension)),
+            transform.Transform(new BbScanPoint(0, dimension)),
+        ];
 
         var result = new BbDetectorResult(bits, points);
         if (accept(result))
@@ -314,34 +346,6 @@ public sealed class BbQrDetector
             topRight.X, topRight.Y,
             bottomRightX, bottomRightY,
             bottomLeft.X, bottomLeft.Y);
-    }
-
-    private static bool TryComputeDimension(
-        BbQrFinderPattern topLeft,
-        BbQrFinderPattern topRight,
-        BbQrFinderPattern bottomLeft,
-        float moduleSize,
-        out int dimension)
-    {
-        var tlTr = BbMathUtils.Round(BbMathUtils.Distance(topLeft.X, topLeft.Y, topRight.X, topRight.Y) / moduleSize);
-        var tlBl = BbMathUtils.Round(BbMathUtils.Distance(topLeft.X, topLeft.Y, bottomLeft.X, bottomLeft.Y) / moduleSize);
-        dimension = ((tlTr + tlBl) / 2) + 7;
-
-        // Every legal QR dimension is congruent to 1 modulo 4, so a result that is off by one can
-        // be snapped; being off by two means the estimate is not trustworthy at all.
-        switch (dimension & 0x03)
-        {
-            case 0:
-                dimension++;
-                break;
-            case 2:
-                dimension--;
-                break;
-            case 3:
-                return false;
-        }
-
-        return dimension is >= 21 and <= 177;
     }
 
     private float CalculateModuleSize(BbQrFinderPattern topLeft, BbQrFinderPattern topRight, BbQrFinderPattern bottomLeft) =>

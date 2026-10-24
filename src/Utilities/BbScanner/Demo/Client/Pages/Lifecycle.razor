@@ -22,7 +22,10 @@
                 <BbScanner @ref="_scanner"
                            AutoStart="false"
                            ShowControls="false"
-                           DuplicateSuppressionWindow="TimeSpan.FromSeconds(_windowSeconds)"
+                           DuplicateSuppressionWindow="@(_oncePerSession ? Timeout.InfiniteTimeSpan : TimeSpan.FromSeconds(_windowSeconds))"
+                           AcceptResult="@(r => r.Text.StartsWith(_prefix, StringComparison.Ordinal))"
+                           ReleaseCameraWhenHidden="_releaseWhenHidden"
+                           Feedback="Feedback"
                            OnScan="HandleScan"
                            OnStatusChanged="HandleStatus" />
 
@@ -50,6 +53,39 @@
                         Set it to zero and the scanner reports every frame that decodes, which is the
                         right setting for measuring throughput.
                     </p>
+                    <label class="bb-check">
+                        <input type="checkbox" id="once-per-session" @bind="_oncePerSession" />
+                        Each value once until restarted (<code>Timeout.InfiniteTimeSpan</code>)
+                    </label>
+                    <label class="bb-field">
+                        <span>Only accept codes starting with</span>
+                        <input type="text" id="accept-prefix" @bind="_prefix" placeholder="(anything)" />
+                        <small>
+                            <code>AcceptResult</code> turns every other code down: it is not reported, outlined
+                            or counted, as if it were not there.
+                        </small>
+                    </label>
+                </section>
+
+                <section class="scan-panel">
+                    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Background and feedback</h3>
+                    <label class="bb-check">
+                        <input type="checkbox" id="release-when-hidden" @bind="_releaseWhenHidden" />
+                        Close the camera while the page is hidden (<code>ReleaseCameraWhenHidden</code>)
+                    </label>
+                    <p class="bb-card-desc">
+                        Switch to another tab and back: the camera indicator goes out and the scanner picks up
+                        where it left off. Either way, a camera the phone ends when the page goes into the
+                        background is reopened when it returns rather than reported as lost.
+                    </p>
+                    <label class="bb-check">
+                        <input type="checkbox" id="feedback-vibrate" @bind="_vibrate" />
+                        Vibrate on a scan
+                    </label>
+                    <label class="bb-check">
+                        <input type="checkbox" id="feedback-beep" @bind="_beep" />
+                        Beep on a scan
+                    </label>
                 </section>
 
                 <section class="scan-panel">
@@ -91,8 +127,16 @@
 
     private BbScanner? _scanner;
     private int _windowSeconds = 2;
+    private bool _oncePerSession;
+    private string _prefix = string.Empty;
     private int _reported;
     private int _statusChanges;
+    private bool _releaseWhenHidden;
+    private bool _vibrate;
+    private bool _beep;
+
+    private BbScanFeedback Feedback =>
+        (_vibrate ? BbScanFeedback.Vibrate : BbScanFeedback.None) | (_beep ? BbScanFeedback.Beep : BbScanFeedback.None);
 
     private Task Start() => _scanner?.StartAsync() ?? Task.CompletedTask;
 

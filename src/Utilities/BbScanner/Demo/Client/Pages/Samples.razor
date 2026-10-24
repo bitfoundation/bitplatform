@@ -17,13 +17,6 @@
     trip and so that this page has something real to show.
 </div>
 
-<div class="bb-note bb-note-warn">
-    The PDF417 sample is drawn with the library's <em>placeholder</em> symbol character table. It
-    round trips here, which is what validates the detector, the GF(929) error correction and the
-    compaction modes, but it is not a conforming PDF417 symbol and no other scanner will read it.
-    See the PDF417 section of the README for why the real table cannot be derived.
-</div>
-
 @* The linear symbols are drawn at two pixels a module, up to 720 wide: the page gives up the
    "on this page" rail for the width. *@
 <div class="bb-card bb-page-wide">
@@ -130,30 +123,15 @@
                 : Bit.BbScanner.TestKit.SyntheticImage.FromLinear(sample.Modules!, scale: 3, height: 90);
 
             var start = System.Diagnostics.Stopwatch.GetTimestamp();
-            string? text;
 
-            if (sample.Format == BbBarcodeFormat.Pdf417)
+            using var decoder = new BbBarcodeDecoder(new BbScannerOptions
             {
-                // The pipeline deliberately leaves PDF417 disabled while the symbol table is a
-                // placeholder, so this sample goes straight to the reader to show that everything
-                // apart from that table works.
-                using var binary = new BbHybridBinarizer().GetBlackMatrix(image.View);
-                text = binary is null
-                    ? null
-                    : new BbPdf417Reader()
-                        .Decode(binary, BbMatrixDecodeOptions.Thorough)?.Payload.Text;
-            }
-            else
-            {
-                using var decoder = new BbBarcodeDecoder(new BbScannerOptions
-                {
-                    Formats = BbBarcodeFormat.All,
-                    DuplicateSuppressionWindow = TimeSpan.Zero,
-                    MaxScanLines = 30,
-                });
+                Formats = BbBarcodeFormat.All,
+                DuplicateSuppressionWindow = TimeSpan.Zero,
+                MaxScanLines = 30,
+            });
 
-                text = decoder.Decode(image.View, suppressDuplicates: false)?.Text;
-            }
+            var text = decoder.Decode(image.View, suppressDuplicates: false)?.Text;
 
             var elapsed = System.Diagnostics.Stopwatch.GetElapsedTime(start).TotalMilliseconds;
 

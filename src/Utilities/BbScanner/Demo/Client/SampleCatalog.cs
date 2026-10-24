@@ -73,9 +73,23 @@ public static class SampleCatalog
         new(BbBarcodeFormat.Itf, "ITF (Interleaved 2 of 5)", "1234567890",
             null, LinearEncoders.Itf("1234567890")),
 
-        // Rendered with the placeholder symbol character table, so this one is only readable by
-        // this library, not by a conforming scanner. See the PDF417 note on the samples page.
-        new(BbBarcodeFormat.Pdf417, "PDF417 (placeholder table)", "PDF FOUR ONE SEVEN",
+        new(BbBarcodeFormat.Code93, "Code 93", "CODE 93 SAMPLE",
+            null, LinearEncoders.Code93("CODE 93 SAMPLE")),
+
+        new(BbBarcodeFormat.Codabar, "Codabar", "31234000123457",
+            null, LinearEncoders.Codabar("31234000123457")),
+
+        // DataBar carries a GTIN-14 and reads back as the GS1 element string: application identifier 01, then the GTIN.
+        new(BbBarcodeFormat.DataBar, "GS1 DataBar", "0109521234543213",
+            null, LinearEncoders.DataBar("09521234543213")),
+
+        new(BbBarcodeFormat.Aztec, "Aztec (compact)", "M1DEMO/BBSCANNER EABC123 AMSJFKKL 0641",
+            AztecEncoder.Encode("M1DEMO/BBSCANNER EABC123 AMSJFKKL 0641", compact: true), null),
+
+        new(BbBarcodeFormat.Aztec, "Aztec (full range)", "Aztec Code, full range, read at any angle: bbscanner.bitplatform.dev",
+            AztecEncoder.Encode("Aztec Code, full range, read at any angle: bbscanner.bitplatform.dev", compact: false), null),
+
+        new(BbBarcodeFormat.Pdf417, "PDF417", "PDF FOUR ONE SEVEN",
             Pdf417Encoder.Encode("PDF FOUR ONE SEVEN", columns: 4, errorCorrectionLevel: 2, rowHeightModules: 4),
             null),
     ];

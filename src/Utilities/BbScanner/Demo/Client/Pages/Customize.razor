@@ -20,15 +20,18 @@
             <div class="scan-view">
 @* The custom properties are set on the scanner itself, through the unmatched attribute
    capture, because a declaration on the element always beats one inherited from an ancestor. *@
-                <BbScanner Formats="BbBarcodeFormat.All"
-                           Region="BbScanRegion.CenteredSquare(0.72)"
-                           ShowControls="_showControls"
-                           CssClass="demo-scanner"
-                           AriaLabel="Customisable barcode scanner"
-                           Overlay="CurrentOverlay"
-                           MessageTemplate="MessageTemplate"
-                           style="@ThemeStyle()"
-                           OnScan="r => _last = r" />
+                <div id="scanner-language" lang="@_language" dir="@(_language == "fa" ? "rtl" : "ltr")">
+                    <BbScanner Formats="BbBarcodeFormat.All"
+                               Region="BbScanRegion.CenteredSquare(0.72)"
+                               ShowControls="_showControls"
+                               CssClass="demo-scanner"
+                               AriaLabel="Customisable barcode scanner"
+                               Overlay="CurrentOverlay"
+                               MessageTemplate="MessageTemplate"
+                               Texts="CurrentTexts"
+                               style="@ThemeStyle()"
+                               OnScan="r => _last = r" />
+                </div>
 
                 @if (_last is not null)
                 {
@@ -93,6 +96,23 @@
                     <p class="bb-card-desc">
                         The <code>Overlay</code> fragment receives the scanner itself, so a custom overlay
                         can read the status, the open camera and the current zoom without extra plumbing.
+                    </p>
+                </section>
+
+                <section class="scan-panel">
+                    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Language</h3>
+                    <label class="bb-field">
+                        <span>Scanner texts</span>
+                        <select id="scanner-texts" value="@_language" @onchange="e => _language = e.Value?.ToString() ?? _language">
+                            <option value="en">English (the default)</option>
+                            <option value="es">Español</option>
+                            <option value="fa">فارسی (right to left)</option>
+                        </select>
+                    </label>
+                    <p class="bb-card-desc">
+                        Every label, status, notice, error message and screen reader announcement comes from
+                        <code>Texts</code>, a <code>BbScannerTexts</code>. The layout follows the
+                        document's direction, so a right-to-left language needs nothing more than <code>dir="rtl"</code>.
                     </p>
                 </section>
 
@@ -166,6 +186,15 @@
 
     private BbBarcodeResult? _last;
     private OverlayStyle _overlayStyle = OverlayStyle.Default;
+    private string _language = "en";
+
+    /// <summary>The texts for the selected language; null keeps the English defaults.</summary>
+    private BbScannerTexts? CurrentTexts => _language switch
+    {
+        "es" => ScannerTranslations.Spanish,
+        "fa" => ScannerTranslations.Persian,
+        _ => null,
+    };
 
     /// <summary>The overlay fragment for the selected style, or null to keep the built-in reticle.</summary>
     private RenderFragment<BbScanner>? CurrentOverlay => _overlayStyle switch

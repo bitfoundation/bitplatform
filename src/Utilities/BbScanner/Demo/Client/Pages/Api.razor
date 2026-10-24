@@ -166,11 +166,12 @@ options.Validate()                <span class="c">// throws on an out of range v
 </div>
 
 <div class="bb-card">
-    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Extending the decoder</h3>
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Building blocks</h3>
     <p class="bb-card-desc">
-        A new symbology implements <code>IBbRowDecoder</code> for a linear code or
-        <code>IBbMatrixDecoder</code> for a two dimensional one. Both receive already binarised input,
-        so a new reader only has to contribute its own character table and structure.
+        Every reader implements <code>IBbRowDecoder</code> for a linear code or
+        <code>IBbMatrixDecoder</code> for a two dimensional one, and can be driven directly by a
+        pipeline of your own. <code>BbBarcodeDecoder</code> composes the built-in readers from
+        <code>Formats</code> and does not accept others.
     </p>
     <pre class="bb-code"><span class="k">public interface</span> IBbRowDecoder
 {
@@ -184,7 +185,7 @@ options.Validate()                <span class="c">// throws on an out of range v
     BbSymbolDecodeResult? Decode(BbBitMatrix image, BbMatrixDecodeOptions options);
 }</pre>
     <p class="bb-card-desc">
-        Binarisation is an extension point too: <code>IBbBinarizer</code> has one implementation tuned
-        for matrix codes and one for linear rows, and a replacement can be substituted for either.
+        Binarisation follows the same shape: <code>IBbBinarizer</code> has one implementation tuned for
+        matrix codes, one for linear rows and a global histogram fallback, each usable on its own.
     </p>
 </div>

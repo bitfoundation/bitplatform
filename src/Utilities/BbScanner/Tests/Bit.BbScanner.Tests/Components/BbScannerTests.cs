@@ -146,6 +146,7 @@ public class BbScannerTests : BunitContext
         Assert.AreEqual(before, scanner.Instance.Status);
         Assert.IsFalse(await scanner.InvokeAsync(() => scanner.Instance.SetTorchAsync(true)));
         Assert.IsFalse(await scanner.InvokeAsync(() => scanner.Instance.SetZoomAsync(2)));
+        Assert.AreEqual(BbCameraPermission.Unknown, await scanner.InvokeAsync(() => scanner.Instance.GetCameraPermissionAsync()));
     }
 
     [TestMethod]
@@ -163,6 +164,84 @@ public class BbScannerTests : BunitContext
         Assert.AreEqual("BUNIT-DECODE-IMAGE", result.Text);
         Assert.AreEqual(BbBarcodeFormat.QrCode, result.Format);
         Assert.IsNull(linear.Instance.DecodeImage(rgba, image.Width, image.Height, BbPixelFormat.Rgba32), "A scanner looking for linear symbols only must not report a QR code.");
+    }
+
+    [TestMethod]
+    public void DecodeAllInImage_reads_every_symbol_with_the_scanner_formats()
+    {
+        using var frame = BbLuminanceBuffer.Rent(900, 400);
+        frame.Pixels.Fill(255);
+        using (var left = SyntheticImage.FromMatrix(QrEncoder.Encode("LEFT"), scale: 5))
+        using (var right = SyntheticImage.FromMatrix(QrEncoder.Encode("RIGHT"), scale: 5))
+        {
+            ImageTransforms.Paste(left, frame, 40, 60);
+            ImageTransforms.Paste(right, frame, 560, 60);
+        }
+
+        var rgba = ImageTransforms.ToRgba(frame, tint: false);
+        var qr = RenderPrerendered(parameters => parameters.Add(p => p.Formats, BbBarcodeFormat.QrCode));
+
+        var results = qr.Instance.DecodeAllInImage(rgba, frame.Width, frame.Height, BbPixelFormat.Rgba32);
+
+        CollectionAssert.AreEquivalent(new[] { "LEFT", "RIGHT" }, results.Select(r => r.Text).ToArray());
+        Assert.HasCount(1, qr.Instance.DecodeAllInImage(rgba, frame.Width, frame.Height, BbPixelFormat.Rgba32, maxSymbols: 1));
+    }
+
+    [TestMethod]
+    public async Task Scanning_an_encoded_image_outside_a_browser_says_it_cannot()
+    {
+        var scanner = RenderPrerendered();
+
+        var error = await Assert.ThrowsExactlyAsync<BbScannerException>(() =>
+            scanner.InvokeAsync(() => scanner.Instance.ScanImageAsync(new byte[] { 0x89, 0x50, 0x4E, 0x47 }, "image/png")));
+
+        Assert.AreEqual(BbScannerErrorKind.NotSupported, error.Kind);
+        Assert.Contains("DecodeAllInImage", error.Message, "The message points at what does work here.");
+    }
+
+    [TestMethod]
+    public async Task An_image_stream_over_the_size_limit_is_refused_while_it_is_read()
+    {
+        var scanner = RenderPrerendered(parameters => parameters.Add(p => p.MaxImageFileSize, 1024));
+        using var stream = new MemoryStream(new byte[4096]);
+
+        var error = await Assert.ThrowsExactlyAsync<BbScannerException>(() =>
+            scanner.InvokeAsync(() => scanner.Instance.ScanImageAsync(stream)));
+
+        Assert.AreEqual(BbScannerErrorKind.InvalidImage, error.Kind);
+        Assert.Contains("larger than", error.Message);
+    }
+
+    [TestMethod]
+    public void Capturing_a_frame_without_a_camera_is_an_error_rather_than_an_empty_result()
+    {
+        var scanner = RenderPrerendered();
+
+        Assert.ThrowsExactly<InvalidOperationException>(() => scanner.Instance.ScanCurrentFrameAsync());
+    }
+
+    [TestMethod]
+    public void The_root_carries_an_id_for_the_drop_target_unless_the_application_gave_it_one()
+    {
+        var own = RenderPrerendered();
+        var given = RenderPrerendered(parameters => parameters.AddUnmatched("id", "my-scanner"));
+
+        StringAssert.StartsWith(own.Find(".bit-bbscanner").Id, "bit-bbscanner-");
+        Assert.AreEqual("my-scanner", given.Find(".bit-bbscanner").Id);
+    }
+
+    [TestMethod]
+    public void The_scan_behaviour_parameters_are_accepted()
+    {
+        var scanner = RenderPrerendered(parameters => parameters
+            .Add(p => p.MaxSymbolsPerFrame, 4)
+            .Add(p => p.AfterScan, BbAfterScan.Stop)
+            .Add(p => p.AcceptResult, r => r.Text.StartsWith("TICKET-", StringComparison.Ordinal))
+            .Add(p => p.DuplicateSuppressionWindow, Timeout.InfiniteTimeSpan));
+
+        Assert.AreEqual(4, scanner.Instance.MaxSymbolsPerFrame);
+        Assert.AreEqual(BbAfterScan.Stop, scanner.Instance.AfterScan);
+        scanner.Instance.ResetDuplicateFilter();
     }
 
     [TestMethod]
