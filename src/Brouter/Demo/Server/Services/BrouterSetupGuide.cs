@@ -4,8 +4,8 @@ using System.Text.RegularExpressions;
 namespace Bit.Brouter.Demo.Server.Services;
 
 /// <summary>
-/// Assembles the wiring for one Blazor render mode: the checklist, plus the real files of the
-/// matching project under Samples/.
+/// Assembles the wiring for one Blazor render mode (or Blazor Hybrid): the checklist, plus the
+/// real files of the matching project under Samples/.
 /// <para>
 /// Setting a router up is where a render mode's differences actually bite - which DI container has
 /// to register the services, which assembly holds the catch-all host page, which assemblies the
@@ -15,7 +15,7 @@ namespace Bit.Brouter.Demo.Server.Services;
 /// </summary>
 public static partial class BrouterSetupGuide
 {
-    public static readonly string[] RenderModes = ["server", "wasm", "auto", "standalone-wasm"];
+    public static readonly string[] RenderModes = ["server", "wasm", "auto", "standalone-wasm", "hybrid"];
 
     public static string? Get(string? renderMode)
     {
@@ -27,6 +27,7 @@ public static partial class BrouterSetupGuide
             "webassembly" or "interactivewebassembly" or "blazor-wasm" => "wasm",
             "interactiveauto" => "auto",
             "standalone" or "standalone-webassembly" or "standalone-wasm-app" => "standalone-wasm",
+            "maui" or "blazor-hybrid" or "wpf" or "winforms" or "blazorwebview" => "hybrid",
             _ => mode
         };
 
@@ -61,6 +62,17 @@ public static partial class BrouterSetupGuide
                 "Sample/Auto/"),
 
             "standalone-wasm" => StandaloneWasm(),
+
+            "hybrid" => Compose(
+                "Blazor Hybrid (MAUI, WPF, WinForms)",
+                """
+                One app, one DI container, and no server: a `BlazorWebView` renders the components inside the app's
+                own process, so `AddBitBrouterServices` goes next to `AddMauiBlazorWebView` (or its WPF/WinForms
+                counterpart) and nowhere else. Nothing is prerendered and no URL reaches an endpoint, so there is
+                no catch-all host page either: the WebView's root component renders `<Brouter>` directly, and its
+                `StartPath` decides the URL the app opens at.
+                """,
+                "Sample/Maui/"),
 
             _ => null
         };
@@ -100,8 +112,8 @@ public static partial class BrouterSetupGuide
         }
 
         builder.AppendLine("""
-            The routes themselves (`AppRouter.razor` and the pages it renders) live in a shared project both of the
-            above reference - call `GetBrouterSourceFile(path: "Demo/Client/AppRouter.razor")` for a route table that
+            The routes themselves (`AppRouter.razor` and the pages it renders) live in a shared project every sample
+            host references - call `GetBrouterSourceFile(path: "Demo/Client/AppRouter.razor")` for a route table that
             exercises nearly every feature, or `GetBrouterGuideSection(heading: "Quick start")` for the smallest one.
             """);
 
@@ -180,9 +192,11 @@ public static partial class BrouterSetupGuide
            with an interactive client has two of them, and a missing registration surfaces as a failure to resolve
            `IBrouter` during prerendering.
         3. Add `@using Bit.Brouter` to `_Imports.razor` of every project that declares routes.
-        4. Give Brouter the whole URL space: one catch-all host page (`@page "/"` + `@page "/{*path}"`) that renders
-           your `<Brouter>` component - it is what makes deep links work, because every URL then matches a Razor
-           component endpoint and Brouter resolves the real route (including its own 404) from there.
+        4. Give Brouter the whole URL space. In a Blazor Web App that is one catch-all host page (`@page "/"` +
+           `@page "/{*path}"`) that renders your `<Brouter>` component - it is what makes deep links work, because
+           every URL then matches a Razor component endpoint and Brouter resolves the real route (including its own
+           404) from there. A standalone WebAssembly or Blazor Hybrid app has no endpoints to match: render
+           `<Brouter>` from the root component instead.
         5. Declare the routes, and/or point `AppAssembly`/`AdditionalAssemblies` at the assemblies whose `@page`
            components should be discovered.
         6. Do not also render Blazor's built-in `<Router>`; Brouter replaces it.
@@ -204,7 +218,8 @@ public static partial class BrouterSetupGuide
     {
         ".razor" => "razor",
         ".cs" => "csharp",
-        ".csproj" => "xml",
+        ".csproj" or ".xaml" => "xml",
+        ".html" => "html",
         ".css" => "css",
         ".js" => "javascript",
         _ => string.Empty

@@ -27,8 +27,8 @@ builder.Services.AddBitBrouterServices(o =>
 });
 ```
 
-Brouter's documentation website lives in [`Bit.Brouter.Demo`](Bit.Brouter.Demo/) - run the
-[Server](Bit.Brouter.Demo/Server/) project (`dotnet run`) for the full site: a landing page, a
+Brouter's documentation website lives in [`Demo`](Demo/) - run the
+[Server](Demo/Server/) project (`dotnet run`) for the full site: a landing page, a
 docs hub under `/docs` with a page per feature area (plus an API reference, recipes and a
 troubleshooting guide), and a `/playground` index of live, clickable demo routes. It is a
 self-contained Blazor WebAssembly app with prerendering - and it is routed by Brouter itself, so
@@ -40,7 +40,8 @@ also a plain HTTP GET under `/api/mcp/...` if you just want to look. It offers:
 
 - **Search** across everything at once (`SearchBrouter`) - the guide below, the docs pages, every
   public member, the constraints and the demo's sources - with the exact follow-up call on each hit.
-- **Setup** per Blazor render mode (`GetBrouterSetupGuide`), as the real files of a working project.
+- **Setup** per Blazor render mode, Blazor Hybrid included (`GetBrouterSetupGuide`), as the real
+  files of a working project.
 - **The exact API** (`GetBrouterApi`), reflected out of the shipped assembly with every parameter's
   type, default value and XML documentation.
 - **Route-template checking** (`InspectBrouterRouteTemplates`) using Brouter's own parser: one
@@ -57,7 +58,7 @@ also a plain HTTP GET under `/api/mcp/...` if you just want to look. It offers:
 
 Eight tools, and one rule across the reference ones: pass the key of the thing you want and you get
 that thing; leave it out and you get the index of what there is. Start with `SearchBrouter`. See
-[McpController](Bit.Brouter.Demo/Server/Controllers/McpController.cs). The site's `/docs/mcp` page
+[McpController](Demo/Server/Controllers/McpController.cs). The site's `/docs/mcp` page
 is a live MCP client for that same endpoint: it handshakes, lists the tools, resources and prompts,
 calls them and prints every JSON-RPC message in both directions - so the server can be tried, and
 watched, without wiring up a client first.
@@ -65,7 +66,8 @@ watched, without wiring up a client first.
 [`Samples`](Samples/) is the render-mode harness rather than the docs: one shared
 [Core](Samples/Core/) project of demo routes, hosted unchanged under
 [Server](Samples/Server/), [WASM](Samples/Wasm/) and [Auto](Samples/Auto/) so the same routing
-code can be exercised in each render mode.
+code can be exercised in each render mode - and under [MAUI](Samples/Maui/) (Android, iOS,
+Mac Catalyst and Windows), where a `BlazorWebView` runs it as a Blazor Hybrid app.
 
 ## Quick start
 

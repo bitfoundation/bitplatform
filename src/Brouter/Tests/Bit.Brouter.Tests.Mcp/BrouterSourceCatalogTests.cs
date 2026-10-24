@@ -116,6 +116,9 @@ public class BrouterSourceCatalogTests
             "Demo/Server/Program.cs",
             "Demo/Server/Components/Pages/Host.razor",
             "Sample/Core/Extensions/IServiceCollectionExtensions.cs",
+            "Sample/Maui/MauiProgram.cs",
+            "Sample/Maui/MainPage.xaml",
+            "Sample/Maui/wwwroot/index.html",
         })
         {
             CollectionAssert.Contains(paths, expected, $"'{expected}' is not embedded.");
@@ -141,8 +144,9 @@ public class BrouterSourceCatalogTests
                 $"'{component}' is a documentation page, and is being handed out as source as well as rendered.");
         }
 
-        // Stylesheets, scripts and the site's own chrome answer no question about Brouter either.
-        foreach (var noise in new[] { ".css", ".js", "/Shared/", "McpDemoClient.cs" })
+        // Stylesheets, scripts, the site's own chrome and the MAUI template's per-OS entry points
+        // answer no question about Brouter either.
+        foreach (var noise in new[] { ".css", ".js", "/Shared/", "McpDemoClient.cs", "/Platforms/" })
         {
             Assert.IsFalse(paths.Any(path => path.Contains(noise, StringComparison.OrdinalIgnoreCase)),
                 $"'{noise}' files are embedded, and there is no question about routing they answer.");

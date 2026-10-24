@@ -376,9 +376,9 @@
     <Project Path="Brouter/Bit.Brouter.Generators/Bit.Brouter.Generators.csproj" />
     <Project Path="Brouter/Bit.Brouter/Bit.Brouter.csproj" />
   </Folder>
-  <Folder Name="/Brouter/Bit.Brouter.Demo/">
-    <Project Path="Brouter/Bit.Brouter.Demo/Client/Bit.Brouter.Demo.Client.csproj" />
-    <Project Path="Brouter/Bit.Brouter.Demo/Server/Bit.Brouter.Demo.Server.csproj" />
+  <Folder Name="/Brouter/Demo/">
+    <Project Path="Brouter/Demo/Client/Bit.Brouter.Demo.Client.csproj" />
+    <Project Path="Brouter/Demo/Server/Bit.Brouter.Demo.Server.csproj" />
   </Folder>
   <Folder Name="/Brouter/Samples/" />
   <Folder Name="/Brouter/Samples/Auto/">
@@ -387,6 +387,11 @@
   </Folder>
   <Folder Name="/Brouter/Samples/Core/">
     <Project Path="Brouter/Samples/Core/Bit.Brouter.Samples.Core.csproj" />
+  </Folder>
+  <Folder Name="/Brouter/Samples/Maui/">
+    <Project Path="Brouter/Samples/Maui/Bit.Brouter.Samples.Maui.csproj">
+      <Deploy />
+    </Project>
   </Folder>
   <Folder Name="/Brouter/Samples/Server/">
     <Project Path="Brouter/Samples/Server/Bit.Brouter.Samples.Server.csproj" />

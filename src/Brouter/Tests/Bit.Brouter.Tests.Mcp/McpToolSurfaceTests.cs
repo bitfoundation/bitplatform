@@ -180,14 +180,14 @@ public class McpToolSurfaceTests
     [TestMethod]
     public void The_render_mode_argument_is_a_closed_set_in_the_schema()
     {
-        // Declared with [AllowedValues] rather than merely described, so a client offers the four
-        // modes as a choice and a model cannot pass a fifth past them.
+        // Declared with [AllowedValues] rather than merely described, so a client offers the modes
+        // as a choice and a model cannot pass another one past them.
         var tool = _tools.Single(t => t.Name == "GetBrouterSetupGuide");
         var values = tool.JsonSchema.GetProperty("properties").GetProperty("renderMode").GetProperty("enum")
                          .EnumerateArray().Select(value => value.GetString()).ToArray();
 
 
-        CollectionAssert.AreEquivalent(new[] { "server", "wasm", "auto", "standalone-wasm" }, values);
+        CollectionAssert.AreEquivalent(new[] { "server", "wasm", "auto", "standalone-wasm", "hybrid" }, values);
     }
 
     [TestMethod]
