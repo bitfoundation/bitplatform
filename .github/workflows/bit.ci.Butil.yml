@@ -71,7 +71,7 @@ jobs:
       env:
         BUTIL_MCP_ARTIFACTS_PATH: ${{ runner.temp }}/bit-butil-mcp-tests
       run: >
-        cd src/Butil/tests/Bit.Butil.Tests.Mcp &&
+        cd src/Butil/Tests/Bit.Butil.Tests.Mcp &&
         dotnet test
         --no-build
         --report-trx --report-trx-filename butil-mcp.trx
@@ -89,7 +89,7 @@ jobs:
     # and trimmed/AOT publish coverage is in bit.ci.Butil.e2e.yml.
     - name: Hosting tests
       run: >
-        cd src/Butil/tests/Bit.Butil.Tests.Hosting &&
+        cd src/Butil/Tests/Bit.Butil.Tests.Hosting &&
         dotnet test
         --no-build
         --report-trx --report-trx-filename butil-hosting.trx

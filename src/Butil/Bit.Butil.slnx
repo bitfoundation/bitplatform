@@ -7,27 +7,38 @@
     <File Path="README.md" />
   </Folder>
   <Folder Name="/Samples/">
-    <Project Path="Samples/Bit.Butil.Samples.Core/Bit.Butil.Samples.Core.csproj" />
-    <Project Path="Samples/Bit.Butil.Samples.Maui/Bit.Butil.Samples.Maui.csproj">
+    <Project Path="Samples/Core/Bit.Butil.Samples.Core.csproj" />
+    <Project Path="Samples/Maui/Bit.Butil.Samples.Maui.csproj">
       <Deploy />
     </Project>
-    <Project Path="Samples/Bit.Butil.Samples.Web/Bit.Butil.Samples.Web.csproj" />
+    <Project Path="Samples/Web/Bit.Butil.Samples.Web.csproj" />
+  </Folder>
+  <Folder Name="/Samples/Auto/">
+    <Project Path="Samples/Auto/Bit.Butil.Samples.Auto.Client/Bit.Butil.Samples.Auto.Client.csproj" />
+    <Project Path="Samples/Auto/Bit.Butil.Samples.Auto/Bit.Butil.Samples.Auto.csproj" />
+  </Folder>
+  <Folder Name="/Samples/Server/">
+    <Project Path="Samples/Server/Bit.Butil.Samples.Server.csproj" />
+  </Folder>
+  <Folder Name="/Samples/Wasm/">
+    <Project Path="Samples/Wasm/Bit.Butil.Samples.Wasm.Client/Bit.Butil.Samples.Wasm.Client.csproj" />
+    <Project Path="Samples/Wasm/Bit.Butil.Samples.Wasm/Bit.Butil.Samples.Wasm.csproj" />
   </Folder>
   <Folder Name="/Demo/">
     <Project Path="Demo/Client/Bit.Butil.Demo.Client.csproj" />
     <Project Path="Demo/Server/Bit.Butil.Demo.Server.csproj" />
   </Folder>
   <Folder Name="/Tests/">
-    <Project Path="tests/Bit.Butil.Tests.Benchmarks/Bit.Butil.Tests.Benchmarks.csproj" />
-    <Project Path="tests/Bit.Butil.Tests.E2E/Bit.Butil.Tests.E2E.csproj" />
-    <Project Path="tests/Bit.Butil.Tests.Hosting/Bit.Butil.Tests.Hosting.csproj" />
-    <Project Path="tests/Bit.Butil.Tests.Manual/Bit.Butil.Tests.Manual.csproj" />
-    <Project Path="tests/Bit.Butil.Tests.Mcp/Bit.Butil.Tests.Mcp.csproj" />
+    <Project Path="Tests/Bit.Butil.Tests.Benchmarks/Bit.Butil.Tests.Benchmarks.csproj" />
+    <Project Path="Tests/Bit.Butil.Tests.E2E/Bit.Butil.Tests.E2E.csproj" />
+    <Project Path="Tests/Bit.Butil.Tests.Hosting/Bit.Butil.Tests.Hosting.csproj" />
+    <Project Path="Tests/Bit.Butil.Tests.Manual/Bit.Butil.Tests.Manual.csproj" />
+    <Project Path="Tests/Bit.Butil.Tests.Mcp/Bit.Butil.Tests.Mcp.csproj" />
   </Folder>
   <Folder Name="/Tests/Harness/">
-    <Project Path="tests/Bit.Butil.Tests.Harness.Hybrid/Bit.Butil.Tests.Harness.Hybrid.csproj" />
-    <Project Path="tests/Bit.Butil.Tests.Harness.Web.Client/Bit.Butil.Tests.Harness.Web.Client.csproj" />
-    <Project Path="tests/Bit.Butil.Tests.Harness.Web/Bit.Butil.Tests.Harness.Web.csproj" />
+    <Project Path="Tests/Bit.Butil.Tests.Harness.Hybrid/Bit.Butil.Tests.Harness.Hybrid.csproj" />
+    <Project Path="Tests/Bit.Butil.Tests.Harness.Web.Client/Bit.Butil.Tests.Harness.Web.Client.csproj" />
+    <Project Path="Tests/Bit.Butil.Tests.Harness.Web/Bit.Butil.Tests.Harness.Web.csproj" />
   </Folder>
   <Project Path="Bit.Butil/Bit.Butil.csproj" />
   <Project Path="Bit.Butil.Build/Bit.Butil.Build.csproj" />
