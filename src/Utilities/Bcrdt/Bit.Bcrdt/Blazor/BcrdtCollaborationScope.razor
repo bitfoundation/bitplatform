@@ -39,8 +39,8 @@ else if (LoadingContent is not null)
     public RenderFragment<BcrdtCollaborativeDocument> ChildContent { get; set; } = default!;
 
     /// <summary>
-    /// Rendered while the document is being opened - and, on .NET 9 and later, while the page is being
-    /// prerendered, because a document is opened only once the component is interactive.
+    /// Rendered while the document is being opened - and while the page is being prerendered, because a
+    /// document is opened only once the component is interactive.
     /// </summary>
     [Parameter]
     public RenderFragment? LoadingContent { get; set; }
@@ -60,15 +60,18 @@ else if (LoadingContent is not null)
     /// <summary>The open document, or null while it is still opening.</summary>
     public BcrdtCollaborativeDocument? Document { get; private set; }
 
-    protected override async Task OnParametersSetAsync()
+    protected override Task OnParametersSetAsync()
     {
-#if NET9_0_OR_GREATER
         // A prerendered page belongs to a request that is over as soon as it is sent: a document opened
         // now would connect, publish a presence nobody will ever withdraw, and - backed by a browser
         // store - fail outright, because there is no browser yet. The interactive render opens it.
-        if (!RendererInfo.IsInteractive) return;
-#endif
+        if (!IsInteractive) return Task.CompletedTask;
 
+        return FollowDocumentIdAsync();
+    }
+
+    private async Task FollowDocumentIdAsync()
+    {
         if (string.Equals(_requestedId, DocumentId, StringComparison.Ordinal)) return;
 
         // Parameters can change again while an earlier open is still in flight. Each pass takes a

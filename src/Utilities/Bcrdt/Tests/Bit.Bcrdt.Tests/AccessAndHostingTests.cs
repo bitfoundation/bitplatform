@@ -587,6 +587,59 @@ public class AccessAndHostingTests
         await AssertEventuallyAsync(() => newcomerProvider.IsSynced, "and the newcomer should be synced");
     }
 
+    [TestMethod]
+    public async Task A_hosted_document_larger_than_a_clients_queue_still_reaches_it_in_one_connection()
+    {
+        // The host answers in far more parts, and far more bytes, than the queue in front of one client
+        // may hold - all produced at once.
+        await using var documentHost = new BcrdtDocumentHost(new BcrdtDocumentHostOptions { MaxMessageSize = 16 * 1024 });
+        await documentHost.EditAsync("big", doc =>
+            doc.GetText("body").Insert(0, string.Concat(Enumerable.Repeat("The quick brown fox jumps over the lazy dog. ", 20_000))));
+        await using LoopbackHost host = await LoopbackHost.StartAsync(app => app.MapBitBcrdtWebSocket(
+            "/ws/{documentId}",
+            options: new BcrdtWebSocketEndpointOptions
+            {
+                DocumentHost = documentHost,
+                MaxMessageSize = 64 * 1024,
+                OutboundQueueCapacity = 4,
+                OutboundQueueByteLimit = 64 * 1024,
+            }));
+
+        using var newcomer = new BcrdtDocument(new BcrdtDocumentOptions { ClientId = 2 });
+        await using var transport = new BcrdtWebSocketTransport(new Uri(host.WebSocketBase + "/ws/big"));
+        int connections = 0;
+        transport.StateChanged += change =>
+        {
+            if (change.State == BcrdtTransportState.Connected) Interlocked.Increment(ref connections);
+        };
+        await using BcrdtSyncProvider provider = await ProviderAsync(newcomer, transport);
+        await provider.ConnectAsync();
+
+        int expected = await documentHost.ReadAsync("big", doc => doc.GetText("body").Count);
+        await AssertEventuallyAsync(() => newcomer.GetText("body").Count == expected, "the whole document should arrive");
+        await AssertEventuallyAsync(() => provider.IsSynced, "and the newcomer should be synced");
+        Assert.AreEqual(1, Volatile.Read(ref connections), "the answer must not disconnect the client it was meant for");
+    }
+
+    [TestMethod]
+    public async Task A_message_delivered_after_the_host_is_disposed_is_dropped_quietly()
+    {
+        var documentHost = new BcrdtDocumentHost();
+        var connection = new RecordingConnection();
+        BcrdtHostSession session = await documentHost.JoinAsync("closing", connection);
+
+        // The application stops while a relay is still delivering what its client sent.
+        await documentHost.DisposeAsync();
+
+        using var author = new BcrdtDocument(new BcrdtDocumentOptions { ClientId = 1 });
+        author.GetText("body").Insert(0, "late");
+        Assert.IsFalse(await session.ReceiveAsync(BcrdtSyncProtocol.EncodeUpdate(author.EncodeStateAsUpdate())));
+        Assert.IsFalse(await session.ReceiveAsync(BcrdtSyncProtocol.EncodeSyncStep1(new BcrdtStateVector())));
+        Assert.IsEmpty(connection.Sent);
+
+        session.Dispose();
+    }
+
     // ---------------------------------------------------------------------------------------------
     // Helpers
     // ---------------------------------------------------------------------------------------------
@@ -660,6 +713,24 @@ public class AccessAndHostingTests
             if (result.MessageType == WebSocketMessageType.Close) return null;
             return BcrdtSyncProtocol.Decode(pending.Buffer.AsMemory(0, result.Count).ToArray());
         }
+    }
+
+    /// <summary>A host connection that records what it is sent, with no relay behind it.</summary>
+    private sealed class RecordingConnection : IBcrdtHostConnection
+    {
+        public ConcurrentQueue<byte[]> Sent { get; } = new();
+
+        public string Id => "recording";
+
+        public BcrdtDocumentAccess Access => BcrdtDocumentAccess.ReadWrite;
+
+        public string? UserId => null;
+
+        public string Relay => "test";
+
+        public void Send(byte[] message) => Sent.Enqueue(message);
+
+        public void Refuse(string reason) { }
     }
 
     /// <summary>A transport whose every connection is lost the moment it is made.</summary>

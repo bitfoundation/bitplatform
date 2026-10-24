@@ -226,9 +226,9 @@ tag to add: the one small module `BcrdtTextArea` needs (`_content/Bit.Bcrdt/bit-
 
 Where a page is prerendered and then becomes interactive, a document must be opened only once the component is
 interactive (`RendererInfo.IsInteractive`) - a document opened while prerendering belongs to a request that is
-already over, and a browser store cannot be reached at all. On .NET 9 and later `BcrdtCollaborationScope` does this
-by itself and shows `LoadingContent` while prerendering; on .NET 8, render it only once interactive. Give it
-`ErrorContent` to show a document that cannot be opened instead of failing the page.
+already over, and a browser store cannot be reached at all. `BcrdtCollaborationScope` does this by itself and shows
+`LoadingContent` while prerendering - on .NET 8, where there is no `RendererInfo`, by waiting for its first render in
+the browser. Give it `ErrorContent` to show a document that cannot be opened instead of failing the page.
 
 `BcrdtTextArea` turns read-only - still showing everyone else's changes - when its `ReadOnly` parameter says so, or
 when the server granted the cascaded document's connection read-only access. If its small browser module cannot be
@@ -332,7 +332,10 @@ each direction however long the document is. That matters in Blazor Server, wher
 than the circuit's limit (32 KB by default) drops the connection. Every change the browser reports is numbered, and an
 update built in .NET quotes the number it was built after; the browser refuses one built before something the user has
 typed since, so a remote change can never land on top of a keystroke it did not know about - even when the text has
-come back to exactly what it was. `BcrdtTextInputBinding.TryApplyInputChange` is the .NET half, for a control of your own.
+come back to exactly what it was. The numbers also show when a report went missing - lost while the connection
+dropped - and when a change will not fit one message - a big paste. Either way .NET reads the control's whole value
+back as a stream, which Blazor delivers in chunks under the limit, and edits reported meanwhile are replayed on top of
+it. `BcrdtTextInputBinding.TryApplyInputChange` is the .NET half, for a control of your own.
 
 `BcrdtListBinding<T>` projects a `BcrdtArray` as an `IReadOnlyList<T>` with `INotifyCollectionChanged`, and
 `BcrdtObjectBinding<T>` binds the properties of a plain object to the keys of a `BcrdtMap` with
@@ -385,7 +388,9 @@ replayed packets.
 `IsSynced` report where it stands, and `Sync.LastSyncedAt` when it last caught up. A transport that is refused - an
 HTTP 401 or 403, from the WebSocket upgrade or the SignalR negotiation - throws `BcrdtTransportAuthorizationException`,
 and the provider stops rather than backing off forever; a fresh `ConnectAsync`, once the user has signed in again,
-tries afresh.
+tries afresh. Over SignalR a 403 is final at once, but a 401 is first retried with the backoff, each attempt asking the
+token provider for a fresh token, because an access token that expired while the device slept is renewed on the next
+negotiation. Only the third 401 in a row counts as a refusal.
 
 The backoff only resets once a connection has completed its handshake, so a server that accepts a connection and drops
 it straight away is retried with growing delays rather than hammered. A message the transport failed to send on a
@@ -416,7 +421,7 @@ Three stores ship:
 |---|---|---|
 | `BcrdtIndexedDbDocumentStore` (`UseIndexedDbStore()`) | The browser's IndexedDB | For Blazor WebAssembly: a document - and what was typed into it offline - survives a reload, a closed tab and a restarted browser. Every write commits with strict durability, a few milliseconds after the change - a tab closed in that moment loses the change from this browser (not from a peer or server it reached); `FlushAsync` waits for it. Several tabs may share a document; each is its own replica and what any of them loads is the union of what all of them stored. Reached through interop, so open documents only once interactive (`BcrdtCollaborationScope` does). A full storage quota is reported as an `IOException` saying so, and the write is retried. |
 | `BcrdtFileSystemDocumentStore` | A directory of append-only log files | For servers, desktop and MAUI. One lock per file across every instance in the process. Damage that an interrupted append cannot explain - intact records after a bad one - is never truncated away: the log is copied aside untouched (`*.corrupt`), repaired around the damage, and `CorruptionDetected` reports it. One directory per process. |
-| `BcrdtInMemoryDocumentStore` | Process memory | Tests, and server-side hosts whose documents need not outlive the process. `new BcrdtInMemoryDocumentStore(maxDocuments)` forgets the least recently used document beyond a bound, for anything the public can create documents through. |
+| `BcrdtInMemoryDocumentStore` | Process memory | Tests, and server-side hosts whose documents need not outlive the process. `new BcrdtInMemoryDocumentStore(maxDocuments)` forgets the least recently used document beyond a bound, for anything the public can create documents through - never one still attached to a `BcrdtDocumentPersistence` (open in a document host or a collaboration service), and never one used in the last minute. |
 
 `FlushAsync` (and `CommitAsync`) wait for the changes made before the call, not for the queue to empty, so they complete
 even while collaborators keep the document busy. A compaction that fails is not retried after every write but after
@@ -1040,7 +1045,9 @@ does not advance a state vector: a replica that has only *deleted* things while 
 as if it held nothing new. A `SyncStep1Reply` is answered with a `SyncStep2` - never with another reply, which is what
 makes the exchange terminate - and that answer is skipped only when the replier's state vector covers the answerer's
 and the two digests match. Over a broadcast relay this keeps replicas that are already in sync quiet instead of
-costing a cubic number of deliveries per join.
+costing a cubic number of deliveries per join. A provider weighs a reply's digest only once the replier's delta has
+arrived, so a replica returning to a room that deleted text in its absence does not send the room's own deletions back
+to everyone.
 
 A replica counts as **Synced** once it has applied a delta and its own state vector covers every state vector it has
 been shown in a reply *so far*. Over a relay that can be the first peer to answer: a better-informed peer's reply that
@@ -1133,7 +1140,8 @@ concurrent work. `BcrdtUndoManager` implements **selective, per-origin undo**:
 4. **Snapshot compaction** (persistence layer). Replace an update log with one merged update.
 
 A `BcrdtUndoManager` marks the deleted content its stack could still restore as `Keep`, so undo works on a collecting
-document; the protection is enforced by the flag rather than by convention, and is released when the step is dropped.
+document; the protection is enforced by the flag rather than by convention, and is released when the step is dropped,
+together with the containers it pinned above that content, unless another step still needs them.
 
 ### Performance
 
@@ -1273,7 +1281,9 @@ What bit Bcrdt does not do, deliberately or not yet:
 - **One process per file-store directory.**
 - **SignalR fan-out waits for the slowest member.** The hub sends to a document's group through SignalR, which completes
   a send once every member's connection has taken it; a client that stops reading slows the senders in its group until
-  SignalR's own timeouts drop it. The WebSocket relay queues per member and evicts one that falls behind.
+  SignalR's own timeouts drop it. The WebSocket relay queues per member and evicts one that falls behind. A document
+  host's answer to a client's own handshake is not counted against that queue: it is queued as the client drains it,
+  and the client's next message waits until it is.
 - **Pending updates are held without a bound.** Changes that wait for something they build on are kept until it
   arrives, as in Yjs; a peer that sends many of them on purpose grows the receiver's memory. Rate-limit untrusted
   writers at the server.
@@ -1291,7 +1301,8 @@ Changes since the previous release that an application may notice:
 - **`BcrdtHub.OnDisconnectedAsync` is overridden.** A subclass overriding it must call the base implementation.
 - **`BcrdtUndoManagerOptions.MaxStackItems` defaults to 100.** Set it to zero for the previous unbounded stacks.
 - **Collaborative types nest at most 128 levels.** Deeper nesting throws locally and is dropped when it arrives.
-- **`BcrdtCollaborationScope` does not open documents while prerendering** on .NET 9 and later.
+- **`BcrdtCollaborationScope` does not open documents while prerendering.** On .NET 8 it opens them after its first
+  interactive render.
 - **`EncodeStateAsUpdate` includes updates a replica is still waiting to place**, as Yjs does.
 - **The browser module's exports changed.** It is internal to the components; the unused `getSelection`,
   `setSelection`, `setValuePreservingSelection`, `focus` and `measureCaret` are gone.

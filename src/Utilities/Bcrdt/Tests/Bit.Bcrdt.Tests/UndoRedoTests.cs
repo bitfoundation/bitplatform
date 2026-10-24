@@ -330,6 +330,46 @@ public class UndoRedoTests
         Assert.AreEqual("bc", nested.ToString());
     }
 
+    [TestMethod]
+    public void A_dropped_step_releases_the_containers_it_pinned()
+    {
+        using BcrdtDocument doc = Doc(1);
+        BcrdtMap root = doc.GetMap("m");
+        using var undo = new BcrdtUndoManager(root, new BcrdtUndoManagerOptions { CaptureTimeout = TimeSpan.Zero, MaxStackItems = 1 });
+
+        BcrdtText nested = root.EnsureText("t");
+        BcrdtItem container = nested.ContainingItem!;
+        nested.Insert(0, "abc");
+        nested.Delete(0, 1);
+        Assert.IsTrue(container.Keep, "deleting inside the text pins the entry holding it");
+
+        // A step that deleted nothing pushes the deletion off the stack.
+        root.Set("other", "x");
+        Assert.IsFalse(container.Keep, "no remaining step needs the container");
+
+        // So once somebody else deletes it, it is reclaimed like anything else.
+        doc.Transact(_ => root.Delete("t"), origin: "someone else");
+        Assert.IsInstanceOfType<BcrdtContentDeleted>(container.Content);
+    }
+
+    [TestMethod]
+    public void A_dropped_step_keeps_a_container_a_remaining_step_still_restores_into()
+    {
+        using BcrdtDocument doc = Doc(1);
+        BcrdtMap root = doc.GetMap("m");
+        using var undo = new BcrdtUndoManager(root, new BcrdtUndoManagerOptions { CaptureTimeout = TimeSpan.Zero, MaxStackItems = 1 });
+
+        BcrdtText nested = root.EnsureText("t");
+        BcrdtItem container = nested.ContainingItem!;
+        nested.Insert(0, "abc");
+        nested.Delete(0, 1);
+        nested.Delete(0, 1);
+
+        Assert.IsTrue(container.Keep, "the remaining step deleted inside the same container");
+        doc.Transact(_ => root.Delete("t"), origin: "someone else");
+        Assert.IsInstanceOfType<BcrdtContentType>(container.Content);
+    }
+
     private static void Sync(BcrdtDocument from, BcrdtDocument to) =>
         to.ApplyUpdate(from.EncodeStateAsUpdate(to.GetStateVector()), origin: "sync");
 }

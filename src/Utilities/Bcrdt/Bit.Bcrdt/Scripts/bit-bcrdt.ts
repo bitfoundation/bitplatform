@@ -34,11 +34,21 @@ interface ControlState {
     onCompositionEnd: () => void;
 }
 
-// What setValue says: applied, refused because the user typed since the update was built, or refused because an input
-// method is composing - in which case .NET waits to hear that the composition ended instead of retrying.
+// What setValue says: applied; refused because the user typed since the update was built; refused because an input
+// method is composing - in which case .NET waits to hear that the composition ended instead of retrying; or refused
+// because the control does not hold what .NET believes it does, in which case .NET reads the value back.
 const Applied = 1;
 const Stale = 0;
 const Composing = -1;
+const Drifted = 2;
+
+// The most an edit inserts and still goes to .NET as a change. One message from the browser larger than Blazor Server's
+// limit (32 KB by default) drops the connection, and a character can take six bytes as JSON. A larger edit - a big
+// paste - has .NET read the whole value back instead, as a stream, which Blazor delivers in chunks.
+const MaxInlineEdit = 4096;
+
+// readValue's header: inputs, selection start, selection end, backward and the last applied update, as float64s.
+const ValueHeaderSize = 40;
 
 const states = new WeakMap<TextControl, ControlState>();
 const selectionEvents = ['select', 'keyup', 'mouseup', 'focus'];
@@ -120,6 +130,13 @@ export function attach(element: TextControl | null, dotnetRef: DotNetReference, 
             }
 
             const change = diff(state.known, current);
+            if (change.inserted.length > MaxInlineEdit) {
+                // Nothing moves on here: the read records what it took, and an edit reported after it is a change
+                // to that. Until then every further keystroke asks again, so a request lost on the way is repeated.
+                send('OnControlEditTooLarge', state.inputs);
+                return;
+            }
+
             state.known = current;
             state.inputs++;
             read();
@@ -185,30 +202,47 @@ export function reset(element: TextControl | null, generation: number, value: st
     element.value = value;
 }
 
-// Asks the control to report its whole value, for when .NET could not apply an edit as a change - its idea of the
-// control's content had drifted. The control's current content then becomes the shared starting point again.
-export function reportValue(element: TextControl | null, generation: number): void {
+// Reads the control's whole value back, for when .NET's idea of it has drifted - a report lost on the way, or an edit
+// too large to report as a change. The value becomes the shared starting point again: counted as an input, so an update
+// built before it is refused, and what later edits are changes to.
+//
+// .NET asks for the result as a stream reference, which Blazor makes of the array itself, so a long text reaches .NET in
+// chunks and never as one oversized message. Layout: the header - inputs, selection start, selection end, backward (0 or
+// 1) and the last applied update, each a little-endian float64 - then the value as UTF-16 code units, little-endian, which
+// keeps even a lone surrogate exactly. Never empty, which Blazor would refuse to stream: a control no longer bound to
+// `generation` answers the header alone, with inputs -1.
+export function readValue(element: TextControl | null, generation: number): Uint8Array {
     const state = element ? states.get(element) : undefined;
-    if (!element || !state || state.generation !== generation) return;
+    if (!element || !state || state.generation !== generation) {
+        const unbound = new Uint8Array(ValueHeaderSize);
+        new DataView(unbound.buffer).setFloat64(0, -1, true);
+        return unbound;
+    }
 
-    state.known = element.value;
+    const value = element.value;
+    state.known = value;
     state.inputs++;
     state.start = element.selectionStart ?? 0;
     state.end = element.selectionEnd ?? 0;
     state.backward = element.selectionDirection === 'backward';
-    try {
-        const pending = state.ref.invokeMethodAsync('OnControlInput', generation, state.known, state.start, state.end, state.backward, state.applied, state.inputs);
-        if (pending && typeof pending.catch === 'function') pending.catch(() => { });
-    } catch {
-        // The .NET side has gone away.
-    }
+
+    const bytes = new Uint8Array(ValueHeaderSize + value.length * 2);
+    const view = new DataView(bytes.buffer);
+    view.setFloat64(0, state.inputs, true);
+    view.setFloat64(8, state.start, true);
+    view.setFloat64(16, state.end, true);
+    view.setFloat64(24, state.backward ? 1 : 0, true);
+    view.setFloat64(32, state.applied, true);
+    for (let i = 0; i < value.length; i++) view.setUint16(ValueHeaderSize + i * 2, value.charCodeAt(i), true);
+    return bytes;
 }
 
 // Applies a change .NET computed - but only if the control still holds exactly what .NET built it against, and no
 // input method is composing. `inputs` is the number of edits .NET had received; if the control has reported more, the
 // user typed since, that input reaches .NET first, and the update is refused rather than allowed to overwrite it.
-// The length and the replaced text are checked as well, so a control that somehow drifted is never patched blindly.
-// `id` is recorded when the update is applied and reported back with every later report.
+// The content, its length and the replaced text are checked as well, so a control that drifted is never patched
+// blindly: that refusal says so, and .NET reads the value back. `id` is recorded when the update is applied and
+// reported back with every later report.
 export function setValue(
     element: TextControl | null,
     generation: number,
@@ -224,9 +258,11 @@ export function setValue(
     if (!element || !state || state.generation !== generation) return Stale;
     if (state.composing) return Composing;
 
+    if (state.inputs !== inputs) return Stale;
+
     const current = element.value;
-    if (state.inputs !== inputs || current !== state.known || current.length !== expectedLength) return Stale;
-    if (current.substr(start, removed.length) !== removed) return Stale;
+    if (current !== state.known || current.length !== expectedLength) return Drifted;
+    if (current.substr(start, removed.length) !== removed) return Drifted;
 
     const value = current.slice(0, start) + inserted + current.slice(start + removed.length);
     const focused = document.activeElement === element;

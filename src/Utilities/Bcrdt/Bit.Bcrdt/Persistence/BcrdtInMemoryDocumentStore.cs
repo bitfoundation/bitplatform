@@ -13,14 +13,20 @@ namespace Bit.Bcrdt;
 /// step, so concurrent appends and compactions - two sessions persisting the same document - never
 /// lose a record.
 /// </remarks>
-public sealed class BcrdtInMemoryDocumentStore : IBcrdtDocumentStore
+public sealed class BcrdtInMemoryDocumentStore : IBcrdtDocumentStore, IBcrdtAttachedDocumentTracker
 {
+    /// <summary>How recently a document must have been used to be safe from eviction.</summary>
+    private static readonly TimeSpan EvictionGrace = TimeSpan.FromMinutes(1);
+
     private readonly ConcurrentDictionary<string, Log> _documents = new(StringComparer.Ordinal);
     private readonly int _maxDocuments;
+    private readonly TimeProvider _time;
     private long _clock;
 
-    /// <summary>How recently a document must have been used to be safe from eviction.</summary>
-    private const long EvictionGraceMilliseconds = 60_000;
+    // How many persistence bindings each document is attached to. Guarded by itself; eviction reads it
+    // while holding the candidate's log, so a document attached concurrently is either seen as attached
+    // or finds its log already gone when it loads.
+    private readonly Dictionary<string, int> _attached = new(StringComparer.Ordinal);
 
     /// <summary>Creates a store that keeps every document it is given.</summary>
     public BcrdtInMemoryDocumentStore() : this(0) { }
@@ -30,12 +36,18 @@ public sealed class BcrdtInMemoryDocumentStore : IBcrdtDocumentStore
     /// How many documents to keep; the one used least recently is dropped to make room for a new one.
     /// Zero keeps every document. A bound is what makes the store safe behind something anyone can create
     /// documents through - a public demo, a room per visitor - where an unbounded one would grow with every
-    /// identifier ever used until the process ran out of memory.
+    /// identifier ever used until the process ran out of memory. A document still attached to a
+    /// <see cref="BcrdtDocumentPersistence"/> - open in a document host or a collaboration service - is
+    /// never dropped, so while more documents than the bound are open the store holds more than the bound.
     /// </param>
-    public BcrdtInMemoryDocumentStore(int maxDocuments)
+    public BcrdtInMemoryDocumentStore(int maxDocuments) : this(maxDocuments, TimeProvider.System) { }
+
+    internal BcrdtInMemoryDocumentStore(int maxDocuments, TimeProvider timeProvider)
     {
         ArgumentOutOfRangeException.ThrowIfNegative(maxDocuments);
+        ArgumentNullException.ThrowIfNull(timeProvider);
         _maxDocuments = maxDocuments;
+        _time = timeProvider;
     }
 
     /// <summary>How many documents the store holds.</summary>
@@ -44,23 +56,28 @@ public sealed class BcrdtInMemoryDocumentStore : IBcrdtDocumentStore
     /// <inheritdoc/>
     public ValueTask<BcrdtStoredDocument> LoadAsync(string documentId, CancellationToken cancellationToken = default)
     {
-        if (!_documents.TryGetValue(documentId, out Log? log)) return new ValueTask<BcrdtStoredDocument>(default(BcrdtStoredDocument));
-
-        byte[][] snapshot;
-        lock (log)
+        while (true)
         {
-            if (log.Records.Count == 0) return new ValueTask<BcrdtStoredDocument>(default(BcrdtStoredDocument));
-            log.LastUsed = Interlocked.Increment(ref _clock);
-            log.LastUsedAt = Environment.TickCount64;
-            snapshot = [.. log.Records];
+            if (!_documents.TryGetValue(documentId, out Log? log)) return new ValueTask<BcrdtStoredDocument>(default(BcrdtStoredDocument));
+
+            byte[][] snapshot;
+            lock (log)
+            {
+                // Evicted or deleted between the lookup and the lock. Handing out what it held would let
+                // the caller append to a fresh log that lacks it; look again instead.
+                if (log.Deleted) continue;
+                if (log.Records.Count == 0) return new ValueTask<BcrdtStoredDocument>(default(BcrdtStoredDocument));
+                Touch(log);
+                snapshot = [.. log.Records];
+            }
+
+            // A copy, so a caller that modifies the buffer cannot corrupt what the store holds.
+            byte[] merged = snapshot.Length == 1
+                ? (byte[])snapshot[0].Clone()
+                : BcrdtUpdateOperations.Merge([.. snapshot.Select(r => (ReadOnlyMemory<byte>)r)]);
+
+            return new ValueTask<BcrdtStoredDocument>(new BcrdtStoredDocument(merged, snapshot.Length));
         }
-
-        // A copy, so a caller that modifies the buffer cannot corrupt what the store holds.
-        byte[] merged = snapshot.Length == 1
-            ? (byte[])snapshot[0].Clone()
-            : BcrdtUpdateOperations.Merge([.. snapshot.Select(r => (ReadOnlyMemory<byte>)r)]);
-
-        return new ValueTask<BcrdtStoredDocument>(new BcrdtStoredDocument(merged, snapshot.Length));
     }
 
     /// <inheritdoc/>
@@ -79,8 +96,7 @@ public sealed class BcrdtInMemoryDocumentStore : IBcrdtDocumentStore
                 // record would vanish with the discarded log.
                 if (log.Deleted) continue;
                 log.Records.Add(record);
-                log.LastUsed = Interlocked.Increment(ref _clock);
-                log.LastUsedAt = Environment.TickCount64;
+                Touch(log);
             }
 
             if (_maxDocuments > 0 && _documents.Count > _maxDocuments) EvictLeastRecentlyUsed(log);
@@ -89,32 +105,85 @@ public sealed class BcrdtInMemoryDocumentStore : IBcrdtDocumentStore
     }
 
     /// <summary>
-    /// Drops the documents used longest ago until the store is back within its bound - but never one used
-    /// in the last minute.
+    /// Drops the documents used longest ago until the store is back within its bound - but never one
+    /// that is attached, and never one used in the last minute.
     /// </summary>
     /// <remarks>
-    /// A document still being written to - open somewhere, with its writer appending - must not lose its
-    /// log: the next record would start a new one holding changes without what they build on, and the
-    /// document would load empty. While more documents than the bound are that busy, the store holds more
-    /// than the bound.
+    /// <para>
+    /// A document still in use must not lose its log: the next record would start a new one holding
+    /// changes without what they build on, and the document would load empty or partial. A document
+    /// attached to a <see cref="BcrdtDocumentPersistence"/> is in use for as long as it stays attached,
+    /// however long it sits idle; the minute's grace covers callers that append without one.
+    /// </para>
+    /// <para>
+    /// The victim is removed under its own lock, and only if nothing used it since it was chosen, so an
+    /// append that races the eviction either lands first and saves the document, or finds the log gone
+    /// and starts the replacement - it is never reported stored and then dropped with the log.
+    /// </para>
     /// </remarks>
     private void EvictLeastRecentlyUsed(Log keep)
     {
-        long now = Environment.TickCount64;
         while (_documents.Count > _maxDocuments)
         {
             KeyValuePair<string, Log>? oldest = null;
+            long oldestUse = 0;
             foreach (KeyValuePair<string, Log> entry in _documents)
             {
-                if (ReferenceEquals(entry.Value, keep) || now - entry.Value.LastUsedAt < EvictionGraceMilliseconds) continue;
-                if (oldest is null || entry.Value.LastUsed < oldest.Value.Value.LastUsed) oldest = entry;
+                if (ReferenceEquals(entry.Value, keep) || IsAttached(entry.Key)) continue;
+
+                long lastUsed;
+                long lastUsedAt;
+                lock (entry.Value)
+                {
+                    lastUsed = entry.Value.LastUsed;
+                    lastUsedAt = entry.Value.LastUsedAt;
+                }
+
+                if (_time.GetElapsedTime(lastUsedAt) < EvictionGrace) continue;
+                if (oldest is null || lastUsed < oldestUse)
+                {
+                    oldest = entry;
+                    oldestUse = lastUsed;
+                }
             }
 
             if (oldest is not { } victim) return;
-            if (_documents.TryRemove(victim))
+
+            lock (victim.Value)
             {
-                lock (victim.Value) victim.Value.Deleted = true;
+                // Used or attached since it was chosen: choose again.
+                if (victim.Value.Deleted || victim.Value.LastUsed != oldestUse || IsAttached(victim.Key)) continue;
+                if (_documents.TryRemove(victim)) victim.Value.Deleted = true;
             }
+        }
+    }
+
+    private void Touch(Log log)
+    {
+        log.LastUsed = Interlocked.Increment(ref _clock);
+        log.LastUsedAt = _time.GetTimestamp();
+    }
+
+    private bool IsAttached(string documentId)
+    {
+        lock (_attached) return _attached.ContainsKey(documentId);
+    }
+
+    void IBcrdtAttachedDocumentTracker.OnAttached(string documentId)
+    {
+        lock (_attached)
+        {
+            _attached[documentId] = _attached.TryGetValue(documentId, out int count) ? count + 1 : 1;
+        }
+    }
+
+    void IBcrdtAttachedDocumentTracker.OnDetached(string documentId)
+    {
+        lock (_attached)
+        {
+            if (!_attached.TryGetValue(documentId, out int count)) return;
+            if (count > 1) _attached[documentId] = count - 1;
+            else _attached.Remove(documentId);
         }
     }
 
@@ -158,7 +227,7 @@ public sealed class BcrdtInMemoryDocumentStore : IBcrdtDocumentStore
         /// <summary>When the document was last read or written, by the store's own counter.</summary>
         public long LastUsed { get; set; }
 
-        /// <summary>When the document was last read or written, by <see cref="Environment.TickCount64"/>.</summary>
+        /// <summary>When the document was last read or written, as a <see cref="TimeProvider"/> timestamp.</summary>
         public long LastUsedAt { get; set; }
     }
 }

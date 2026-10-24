@@ -67,9 +67,13 @@ public sealed class BcrdtSignalRTransport : IBcrdtTransport
     private readonly SemaphoreSlim _lifecycle = new(1, 1);
     private readonly object _stateGate = new();
 
+    /// <summary>How many 401 answers in a row make a refusal; see <see cref="IsRefusal"/>.</summary>
+    private const int MaxUnauthorizedAttempts = 3;
+
     private HubConnection? _connection;
     private ConnectionHandlers? _handlers;
     private int _state = (int)BcrdtTransportState.Disconnected;
+    private int _unauthorizedAttempts;
     private volatile bool _disposed;
 
     /// <summary>Creates a transport over a caller-built hub connection.</summary>
@@ -202,22 +206,11 @@ public sealed class BcrdtSignalRTransport : IBcrdtTransport
             await connection.StartAsync(cancellationToken).ConfigureAwait(false);
             await connection.InvokeAsync(JoinMethod, _documentId, cancellationToken).ConfigureAwait(false);
 
+            _unauthorizedAttempts = 0;
             SetState(BcrdtTransportState.Connected, null);
             handlers.Decide(connected: true);
         }
-        catch (HttpRequestException ex) when (ex.StatusCode is System.Net.HttpStatusCode.Unauthorized or System.Net.HttpStatusCode.Forbidden)
-        {
-            // The server refused the negotiation - an endpoint behind RequireAuthorization, say. That
-            // answer will not change by asking again, so it is reported as a refusal, which stops the
-            // provider instead of retrying it forever. A fresh ConnectAsync - once the user has signed
-            // in again, or a token has been renewed - tries afresh.
-            handlers?.Decide(connected: false);
-            await DiscardConnectionAsync().ConfigureAwait(false);
-            lock (_stateGate) Volatile.Write(ref _state, (int)BcrdtTransportState.Disconnected);
-            throw new BcrdtTransportAuthorizationException(
-                $"The hub refused the connection ({(int)ex.StatusCode!.Value} {ex.StatusCode}).", ex);
-        }
-        catch
+        catch (Exception ex)
         {
             // The thrown exception is the whole failure signal; the held-back Closed event is
             // dropped, because a provider that both catches this and observes a terminal transition
@@ -225,6 +218,16 @@ public sealed class BcrdtSignalRTransport : IBcrdtTransport
             handlers?.Decide(connected: false);
             await DiscardConnectionAsync().ConfigureAwait(false);
             lock (_stateGate) Volatile.Write(ref _state, (int)BcrdtTransportState.Disconnected);
+
+            // The server refused the negotiation - an endpoint behind RequireAuthorization, say. An
+            // answer that will not change by asking again is reported as a refusal, which stops the
+            // provider instead of retrying it forever. A fresh ConnectAsync - once the user has signed
+            // in again, or a token has been renewed - tries afresh.
+            if (ex is HttpRequestException { StatusCode: { } status } && IsRefusal(status))
+            {
+                throw new BcrdtTransportAuthorizationException(
+                    $"The hub refused the connection ({(int)status} {status}).", ex);
+            }
             throw;
         }
         finally
@@ -290,6 +293,35 @@ public sealed class BcrdtSignalRTransport : IBcrdtTransport
         {
             _lifecycle.Release();
         }
+    }
+
+    /// <summary>
+    /// Whether a negotiation turned away with <paramref name="status"/> is a refusal, rather than a
+    /// failed attempt to retry.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// A 403 is: the server knows who is asking and says no. A 401 only says the credentials did not
+    /// do, and the commonest reason on a reconnect is an access token that expired while the device
+    /// slept - which the connection factory's token provider renews on the next attempt. So a 401 is
+    /// retried with the provider's backoff, each attempt building a fresh connection and so asking for a
+    /// fresh token, and becomes a refusal only after <see cref="MaxUnauthorizedAttempts"/> in a row:
+    /// a user who is simply not signed in is still told so, a few seconds later.
+    /// </para>
+    /// <para>
+    /// Called under the lifecycle lock, so the count needs no synchronization of its own.
+    /// </para>
+    /// </remarks>
+    private bool IsRefusal(System.Net.HttpStatusCode status)
+    {
+        if (status == System.Net.HttpStatusCode.Forbidden) return true;
+        if (status != System.Net.HttpStatusCode.Unauthorized) return false;
+
+        if (++_unauthorizedAttempts < MaxUnauthorizedAttempts) return false;
+
+        // A fresh ConnectAsync after the refusal - once the user has signed in again - starts a new count.
+        _unauthorizedAttempts = 0;
+        return true;
     }
 
     private void OnReceive(byte[] message)

@@ -206,12 +206,19 @@ public static class BcrdtUpdateOperations
         Dictionary<ulong, BcrdtClientBlocks> groups = BcrdtUpdateCodec.ReadClientBlocks(ref reader);
         BcrdtDeleteSet deleteSet = BcrdtDeleteSet.Read(ref reader);
 
-        // Room for a part's framing: the group counts and each group's client and starting clock.
-        int budget = maxBytes - 32;
+        // Every size is counted exactly, except a part's group count, which is reserved at its widest.
+        // The first part carries the delete set and every later one an empty one.
+        int deleteSetSize = MeasureDeleteSet(deleteSet);
+        int emptyDeleteSetSize = MeasureDeleteSet(new BcrdtDeleteSet());
+        bool hasDeletions = deleteSetSize > emptyDeleteSetSize;
+
+        // What one piece may take: a later part of its own, under the widest group header there is - a
+        // block count, a 64-bit client and a 64-bit starting clock.
+        int budget = maxBytes - MaxCountSize - (MaxCountSize + 2 * MaxVarUIntSize) - emptyDeleteSetSize;
 
         List<byte[]> parts = [];
         List<(ulong Client, long FromClock, List<(BcrdtAbstractStruct Block, int Offset)> Blocks)> current = [];
-        int currentSize = MeasureDeleteSet(deleteSet);
+        int currentSize = MaxCountSize + deleteSetSize;
 
         void Flush()
         {
@@ -227,7 +234,20 @@ public static class BcrdtUpdateOperations
                 writer.Dispose();
             }
             current = [];
-            currentSize = 0;
+            currentSize = MaxCountSize + emptyDeleteSetSize;
+        }
+
+        // What a piece adds to the part being filled: its own size, and either a new group's header or
+        // whatever the current group's block count grows by.
+        int Cost(ulong client, BcrdtAbstractStruct piece, int size)
+        {
+            if (current.Count > 0 && current[^1].Client == client)
+            {
+                int count = current[^1].Blocks.Count;
+                return size + VarUIntSize((ulong)count + 1) - VarUIntSize((ulong)count);
+            }
+
+            return size + VarUIntSize(1) + VarUIntSize(client) + VarUIntSize((ulong)piece.Id.Clock);
         }
 
         // The same order the encoder writes groups in, so the parts read like the original.
@@ -238,23 +258,40 @@ public static class BcrdtUpdateOperations
                 foreach (BcrdtAbstractStruct piece in Pieces(block, budget))
                 {
                     int size = MeasureBlock(piece);
-                    if (current.Count > 0 && currentSize + size > budget) Flush();
 
-                    // A part that starts partway through a client's run starts a new group for it.
-                    if (current.Count == 0 || current[^1].Client != client)
-                    {
-                        current.Add((client, piece.Id.Clock, []));
-                        currentSize += 16;
-                    }
+                    // A first part that holds nothing but the delete set is still worth sending alone
+                    // when the piece does not fit beside it; an empty later part never is.
+                    bool holdsSomething = current.Count > 0 || (parts.Count == 0 && hasDeletions);
+                    if (holdsSomething && currentSize + Cost(client, piece, size) > maxBytes) Flush();
 
+                    // Counted before the piece joins: a part that starts partway through a client's run
+                    // starts a new group for it.
+                    currentSize += Cost(client, piece, size);
+                    if (current.Count == 0 || current[^1].Client != client) current.Add((client, piece.Id.Clock, []));
                     current[^1].Blocks.Add((piece, 0));
-                    currentSize += size;
                 }
             }
         }
 
         if (current.Count > 0 || parts.Count == 0) Flush();
         return parts;
+    }
+
+    /// <summary>The widest a 32-bit count is as a varuint.</summary>
+    private const int MaxCountSize = 5;
+
+    /// <summary>The widest a 64-bit value is as a varuint.</summary>
+    private const int MaxVarUIntSize = 10;
+
+    private static int VarUIntSize(ulong value)
+    {
+        int size = 1;
+        while (value >= 0x80)
+        {
+            value >>= 7;
+            size++;
+        }
+        return size;
     }
 
     private static int MeasureDeleteSet(BcrdtDeleteSet deleteSet)

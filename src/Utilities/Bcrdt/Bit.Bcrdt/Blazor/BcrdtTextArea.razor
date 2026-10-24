@@ -1,5 +1,6 @@
 ﻿@namespace Bit.Bcrdt.Blazor
 @inherits BcrdtComponentBase
+@using System.Buffers.Binary
 
 @*
     The value is rendered once per text field; after that the textarea's content is kept in step by
@@ -24,6 +25,18 @@
     // What the module's setValue answers.
     private const int SetValueApplied = 1;
     private const int SetValueComposing = -1;
+    private const int SetValueDrifted = 2;
+
+    // How many times in a row an update may be refused for edits the module has reported but this side
+    // has not received, before one of them is taken to be lost: about two seconds of retries, where an
+    // edit in flight arrives within a round trip.
+    private const int RefusalsBeforeReadingBack = 20;
+
+    // The largest value read back from the module, as UTF-16: a billion characters.
+    private const long MaxValueBytes = 1L << 31;
+
+    // The header of what the module's readValue answers: five float64s.
+    private const int ValueHeaderSize = 40;
 
     private ElementReference _element;
     private IJSObjectReference? _module;
@@ -40,11 +53,19 @@
     private IDisposable? _syncSubscription;
 
     // How many edits the module has reported for the current field. An update quotes it, and the
-    // module refuses one built before an edit it has since reported.
+    // module refuses one built before an edit it has since reported. Edits are numbered, so one that
+    // does not follow the last is seen to have come after a report that went missing.
     private int _inputsReceived;
 
-    // Why the browser side could not be set up, if it could not; the control is disabled then.
+    // Set while the control's whole value is being read back. Edits reported meanwhile wait here and
+    // are replayed on top of it: those it already includes are skipped by their number.
+    private bool _readingBack;
+    private readonly List<ControlEdit> _heldEdits = [];
+
+    // Why the browser side could not be set up, if it could not, and for which field; the control is
+    // disabled then.
     private Exception? _bridgeFailure;
+    private int _failedGeneration = -1;
 
     /// <summary>The collaborative text field this control edits.</summary>
     /// <remarks>
@@ -153,6 +174,10 @@
         // until the latest field is attached, so nothing a later render needed is lost.
         if (_initialization is { IsCompleted: false }) return _initialization;
 
+        // A failed setup is not retried on every render: reporting the failure renders, so that would
+        // retry for ever. It is tried again once the control is bound to another field.
+        if (_bridgeFailure is not null && _failedGeneration == _generation) return Task.CompletedTask;
+
         _initialization = InitializeAsync();
         return _initialization;
     }
@@ -182,6 +207,7 @@
                 int generation = _generation;
                 string value = binding.Value;
                 _inputsReceived = 0;
+                _heldEdits.Clear();
 
                 // Attaching keeps whatever the textarea holds: if the user typed between the render and
                 // now, the module reports it as input rather than overwriting it. Rebinding to another
@@ -199,7 +225,16 @@
                 _attachedGeneration = generation;
             }
 
-            if (!_isDisposed && _binding is { HasPendingChanges: true }) SchedulePush();
+            if (_isDisposed) return;
+
+            if (_bridgeFailure is not null)
+            {
+                // An earlier attempt failed, and this one - for another field - got through.
+                _bridgeFailure = null;
+                StateHasChanged();
+            }
+
+            if (_binding is { HasPendingChanges: true }) SchedulePush();
         }
         catch (JSDisconnectedException)
         {
@@ -211,6 +246,7 @@
             // missing static asset, a timed-out call. Typing into the control would then reach nobody
             // and be lost silently, so it is disabled, and the failure is handed to the application.
             _bridgeFailure = ex;
+            _failedGeneration = _generation;
             StateHasChanged();
             if (OnError.HasDelegate) await OnError.InvokeAsync(ex);
         }
@@ -227,59 +263,43 @@
     /// <param name="appliedUpdate">The last update the control applied, so a lost confirmation can be recovered.</param>
     /// <param name="inputs">How many edits the control has reported for this field, this one included.</param>
     [JSInvokable]
-    public async Task OnControlEdit(
+    public Task OnControlEdit(
         int generation, int index, int removedLength, string inserted,
         int selectionStart, int selectionEnd, bool backward, long appliedUpdate, int inputs)
     {
-        if (_isDisposed || generation != _generation || _binding is null) return;
+        if (_isDisposed || generation != _generation || _binding is null) return Task.CompletedTask;
 
-        _inputsReceived = inputs;
-
-        // Settle an update whose answer never arrived before reading the edit, so the edit is read
-        // against the content the control really had.
-        _binding.Resolve(appliedUpdate);
-        if (!_binding.TryApplyInputChange(index, removedLength, inserted ?? string.Empty, selectionStart, selectionEnd))
+        ControlEdit edit = new(inputs, index, removedLength, inserted ?? string.Empty, selectionStart, selectionEnd, backward, appliedUpdate);
+        if (_readingBack)
         {
-            // The change does not fit what the control is believed to hold, so the two have drifted
-            // apart. Ask for the whole value; it arrives as an ordinary input and becomes the shared
-            // starting point again.
-            if (_module is not null)
-            {
-                try
-                {
-                    await _module.InvokeVoidAsync("reportValue", _element, _generation);
-                }
-                catch (Exception ex) when (ex is JSDisconnectedException or JSException or TaskCanceledException or ObjectDisposedException)
-                {
-                    // The control went away; there is nothing left to bring back in step.
-                }
-            }
-            return;
+            _heldEdits.Add(edit);
+            return Task.CompletedTask;
         }
 
-        PublishSelection(backward);
+        if (!TryApply(edit)) return ReadBackAsync();
+
         if (_binding.HasPendingChanges) SchedulePush();
+        return Task.CompletedTask;
     }
 
-    /// <summary>Applies the control's whole value, when the module was asked for it. Called by the module.</summary>
+    /// <summary>
+    /// Reads the control's whole value back after an edit too large to report as a change. Called by the module.
+    /// </summary>
     /// <param name="generation">Which text field the control was bound to when the input happened.</param>
-    /// <param name="value">The control's whole value.</param>
-    /// <param name="selectionStart">The selection start.</param>
-    /// <param name="selectionEnd">The selection end.</param>
-    /// <param name="backward">Whether the selection was made backwards.</param>
-    /// <param name="appliedUpdate">The last update the control applied, so a lost confirmation can be recovered.</param>
-    /// <param name="inputs">How many edits the control has reported for this field, this one included.</param>
+    /// <param name="inputs">How many edits the control had reported for this field before this one.</param>
     [JSInvokable]
-    public void OnControlInput(int generation, string value, int selectionStart, int selectionEnd, bool backward, long appliedUpdate, int inputs)
+    public Task OnControlEditTooLarge(int generation, int inputs)
     {
-        if (_isDisposed || generation != _generation || _binding is null) return;
+        if (_isDisposed || generation != _generation || _binding is null) return Task.CompletedTask;
 
-        _inputsReceived = inputs;
-        _binding.Resolve(appliedUpdate);
-        _binding.ApplyInput(value ?? string.Empty, selectionStart, selectionEnd);
-        PublishSelection(backward);
+        ControlEdit request = ControlEdit.ReadRequest(inputs);
+        if (_readingBack)
+        {
+            _heldEdits.Add(request);
+            return Task.CompletedTask;
+        }
 
-        if (_binding.HasPendingChanges) SchedulePush();
+        return TryApply(request) ? Task.CompletedTask : ReadBackAsync();
     }
 
     /// <summary>Records a selection change. Called by the module.</summary>
@@ -305,6 +325,120 @@
         Presence?.ClearSelection();
     }
 
+    /// <summary>
+    /// Applies an edit the module reported, unless it cannot be applied as a change - a report before it
+    /// went missing, or it does not fit what the control is believed to hold - and the control's value
+    /// has to be read back instead.
+    /// </summary>
+    private bool TryApply(ControlEdit edit)
+    {
+        // A request to read the value back is answered by any read since it was made, and an edit is
+        // part of the value of any read since.
+        if (edit.IsReadRequest) return edit.Inputs < _inputsReceived;
+        if (edit.Inputs <= _inputsReceived) return true;
+
+        // An edit is a change to the content as of the edit before it. If that one never arrived - lost
+        // while the connection dropped, say - this change would land in the wrong place.
+        if (edit.Inputs != _inputsReceived + 1) return false;
+
+        // Settle an update whose answer never arrived before reading the edit, so the edit is read
+        // against the content the control really had.
+        _binding!.Resolve(edit.AppliedUpdate);
+        if (!_binding.TryApplyInputChange(edit.Index, edit.RemovedLength, edit.Inserted, edit.SelectionStart, edit.SelectionEnd)) return false;
+
+        _inputsReceived = edit.Inputs;
+        PublishSelection(edit.Backward);
+        return true;
+    }
+
+    /// <summary>
+    /// Reads the control's whole value back and makes it the shared starting point again, for when the
+    /// two sides have drifted apart. Edits reported meanwhile are replayed on top of it.
+    /// </summary>
+    /// <remarks>
+    /// The value arrives as a stream, in chunks, so a long text never travels as one message larger than
+    /// Blazor Server's limit - which would drop the connection rather than repair anything.
+    /// </remarks>
+    private async Task ReadBackAsync()
+    {
+        if (_readingBack || _isDisposed || _module is null || _binding is null) return;
+
+        _readingBack = true;
+        BcrdtTextInputBinding binding = _binding;
+        int generation = _generation;
+        try
+        {
+            while (true)
+            {
+                IJSStreamReference reference = await _module.InvokeAsync<IJSStreamReference>("readValue", _element, generation);
+                ControlValue value;
+                await using (reference)
+                {
+                    await using Stream stream = await reference.OpenReadStreamAsync(MaxValueBytes);
+                    using MemoryStream buffer = new();
+                    await stream.CopyToAsync(buffer);
+                    if (!TryReadControlValue(buffer.GetBuffer().AsSpan(0, (int)buffer.Length), out value)) return;
+                }
+
+                // Rebound or unbound meanwhile: the next attach starts afresh.
+                if (_isDisposed || !ReferenceEquals(binding, _binding) || value.Inputs < 0) return;
+
+                binding.Resolve(value.AppliedUpdate);
+                binding.ApplyInput(value.Value, value.SelectionStart, value.SelectionEnd);
+                _inputsReceived = value.Inputs;
+                PublishSelection(value.Backward);
+
+                // What arrived while the value was on its way. Should one of them not apply, the next read
+                // includes it and everything after it.
+                ControlEdit[] held = [.. _heldEdits];
+                _heldEdits.Clear();
+
+                bool caughtUp = true;
+                foreach (ControlEdit edit in held)
+                {
+                    if (TryApply(edit)) continue;
+                    caughtUp = false;
+                    break;
+                }
+
+                if (caughtUp) break;
+            }
+        }
+        catch (Exception ex) when (ex is JSDisconnectedException or JSException or TaskCanceledException or ObjectDisposedException or IOException)
+        {
+            // The circuit or the element went away, or the read was cut short. A later edit that does not
+            // follow on, or an update the control keeps refusing, reads the value again.
+        }
+        finally
+        {
+            _readingBack = false;
+            _heldEdits.Clear();
+        }
+
+        if (!_isDisposed && ReferenceEquals(binding, _binding) && binding.HasPendingChanges) SchedulePush();
+    }
+
+    /// <summary>Reads what the module's <c>readValue</c> answers: a header, then the value as UTF-16.</summary>
+    internal static bool TryReadControlValue(ReadOnlySpan<byte> data, out ControlValue value)
+    {
+        value = default;
+        if (data.Length < ValueHeaderSize || (data.Length - ValueHeaderSize) % 2 != 0) return false;
+
+        double inputs = BinaryPrimitives.ReadDoubleLittleEndian(data);
+        double start = BinaryPrimitives.ReadDoubleLittleEndian(data[8..]);
+        double end = BinaryPrimitives.ReadDoubleLittleEndian(data[16..]);
+        double backward = BinaryPrimitives.ReadDoubleLittleEndian(data[24..]);
+        double applied = BinaryPrimitives.ReadDoubleLittleEndian(data[32..]);
+
+        // Decoded unit by unit rather than through an encoding, which would replace a lone surrogate.
+        ReadOnlySpan<byte> units = data[ValueHeaderSize..];
+        char[] chars = new char[units.Length / 2];
+        for (int i = 0; i < chars.Length; i++) chars[i] = (char)BinaryPrimitives.ReadUInt16LittleEndian(units[(i * 2)..]);
+
+        value = new ControlValue((int)inputs, new string(chars), (int)start, (int)end, backward != 0, (long)applied);
+        return true;
+    }
+
     private void SchedulePush()
     {
         if (_pushing || _isDisposed || _module is null || _attachedGeneration != _generation) return;
@@ -327,6 +461,8 @@
         try
         {
             bool refused = false;
+            int refusals = 0;
+            int refusedAt = -1;
             while (!_isDisposed && _module is not null && _binding is { HasPendingChanges: true } binding)
             {
                 // Coalesce a burst of remote changes into one update of the control.
@@ -387,6 +523,31 @@
                 // An input method is composing. Retrying would only be refused again until it finishes,
                 // and the module reports the end of the composition, which schedules the next attempt.
                 if (outcome == SetValueComposing) break;
+
+                // The control does not hold what the update was built against, and retrying would never
+                // change that: read its value back, then build the update again.
+                if (outcome == SetValueDrifted)
+                {
+                    await ReadBackAsync();
+                    refused = true;
+                    continue;
+                }
+
+                // Refused for edits the control has reported and this side has not received. They arrive
+                // within a round trip - unless one was lost, and then only reading the value back brings the
+                // two in step again.
+                if (refusedAt != _inputsReceived)
+                {
+                    refusedAt = _inputsReceived;
+                    refusals = 0;
+                }
+
+                if (++refusals >= RefusalsBeforeReadingBack)
+                {
+                    refusals = 0;
+                    await ReadBackAsync();
+                }
+
                 refused = true;
             }
         }
@@ -471,4 +632,17 @@
 
         _self?.Dispose();
     }
+
+    // An edit the module reported, numbered; or, with no change, its request to read the value back
+    // after an edit too large to report, numbered after the last edit it did report.
+    private readonly record struct ControlEdit(
+        int Inputs, int Index, int RemovedLength, string Inserted,
+        int SelectionStart, int SelectionEnd, bool Backward, long AppliedUpdate, bool IsReadRequest = false)
+    {
+        public static ControlEdit ReadRequest(int inputs) => new(inputs, 0, 0, string.Empty, 0, 0, false, 0, IsReadRequest: true);
+    }
+
+    /// <summary>The control's whole value as the module read it back, with its state at that moment.</summary>
+    internal readonly record struct ControlValue(
+        int Inputs, string Value, int SelectionStart, int SelectionEnd, bool Backward, long AppliedUpdate);
 }

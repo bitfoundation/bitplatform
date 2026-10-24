@@ -217,24 +217,89 @@ public sealed class BcrdtUndoManager : IDisposable
     /// </summary>
     /// <remarks>
     /// The keep flag is shared: two managers over overlapping scopes keep the same deleted block, and one
-    /// step's container is often another step's too. So a block is released only once no step left on
-    /// any manager of the document could still restore it, and containers are not released at all - they
-    /// are few, and pinned by whichever step reaches them.
+    /// step's container is often another step's too. So a step releases what it pinned - each block it
+    /// could restore and the containers above it - except what a step left on any manager of the
+    /// document could still restore, or still needs a container of to restore into.
     /// </remarks>
     private void Release(BcrdtTransaction transaction, List<BcrdtUndoStackItem> stack, int count)
     {
         BcrdtUndoStackItem[] released = [.. stack.Take(count)];
         stack.RemoveRange(0, count);
 
-        foreach (BcrdtUndoStackItem step in released)
+        foreach (BcrdtUndoStackItem step in released) transaction.ReleaseForCollection(step.Deletions);
+
+        HashSet<BcrdtItem> pinned = PinnedBy(transaction, released);
+        if (pinned.Count == 0) return;
+
+        // A leaf is still needed only if a remaining step deleted it, which is a cheap lookup. A container
+        // is needed by whatever any remaining step deleted inside it, which takes walking those steps -
+        // and that walk can split released blocks further, so they are gathered again after it.
+        HashSet<BcrdtItem>? needed = null;
+        if (pinned.Any(static item => item.Content is BcrdtContentType))
+        {
+            needed = StillPinned(transaction);
+            pinned = PinnedBy(transaction, released);
+        }
+
+        BcrdtDeleteSet? containers = null;
+        foreach (BcrdtItem item in pinned)
+        {
+            if (needed?.Contains(item) ?? IsStillNeeded(item)) continue;
+            item.Keep = false;
+
+            // A container deleted while it was pinned is not in any range the steps released, and the
+            // collector looks at nothing else.
+            if (item.Deleted && item.Content is BcrdtContentType)
+            {
+                (containers ??= new BcrdtDeleteSet()).Add(item.Id.Client, item.Id.Clock, item.Length);
+            }
+        }
+
+        if (containers is not null) transaction.ReleaseForCollection(containers);
+    }
+
+    /// <summary>
+    /// What the given steps keep: every block in scope they could restore, and every kept container above
+    /// one.
+    /// </summary>
+    private HashSet<BcrdtItem> PinnedBy(BcrdtTransaction transaction, IEnumerable<BcrdtUndoStackItem> steps)
+    {
+        HashSet<BcrdtItem> pinned = [];
+        foreach (BcrdtUndoStackItem step in steps)
         {
             step.Deletions.IterateDeletedStructs(transaction, block =>
             {
-                if (block is BcrdtItem { Keep: true } target && IsInScope(target) && !IsStillNeeded(target)) target.Keep = false;
+                if (block is not BcrdtItem target || !IsInScope(target)) return;
+
+                // Stops at a container already gathered: the chain above it was gathered with it.
+                for (BcrdtItem? item = target; item is { Keep: true } && pinned.Add(item); item = ContainerOf(item)) { }
             });
-            transaction.ReleaseForCollection(step.Deletions);
         }
+        return pinned;
     }
+
+    /// <summary>
+    /// Every block a step left on any undo manager of this document could restore, with the containers
+    /// above it.
+    /// </summary>
+    private HashSet<BcrdtItem> StillPinned(BcrdtTransaction transaction)
+    {
+        HashSet<BcrdtItem> needed = [];
+        foreach (BcrdtUndoManager manager in _doc.UndoManagers)
+        {
+            foreach (BcrdtUndoStackItem step in manager._undoStack.Concat(manager._redoStack))
+            {
+                step.Deletions.IterateDeletedStructs(transaction, block =>
+                {
+                    if (block is not BcrdtItem target || !manager.IsInScope(target)) return;
+                    for (BcrdtItem? item = target; item is not null && needed.Add(item); item = ContainerOf(item)) { }
+                });
+            }
+        }
+        return needed;
+    }
+
+    private static BcrdtItem? ContainerOf(BcrdtItem item) => (item.Parent as BcrdtAbstractType)?.ContainingItem;
 
     /// <summary>Whether any step of any undo manager on this document could still restore a block.</summary>
     private bool IsStillNeeded(BcrdtItem item)
@@ -572,7 +637,7 @@ public sealed class BcrdtUndoManager : IDisposable
         while (item is not null && item.Keep != keep)
         {
             item.Keep = keep;
-            item = (item.Parent as BcrdtAbstractType)?.ContainingItem;
+            item = ContainerOf(item);
         }
     }
 

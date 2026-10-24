@@ -296,6 +296,58 @@ public class HardeningTests
         BcrdtConvergenceHarness.AssertStructurallyIdentical(doc, rebuilt);
     }
 
+    [TestMethod]
+    public void A_split_part_stays_within_its_limit_however_wide_its_group_headers()
+    {
+        // Hundreds of clients with the widest identifiers and clocks there are, one small block each:
+        // a group header takes twenty bytes here, and every part holds dozens of them. Budgeting a fixed
+        // sixteen bytes a group let a part overshoot by far more than its slack, and a relay limit set
+        // just above the provider's would then disconnect the client the split was meant to protect.
+        const int Clients = 300;
+        const long Clock = 1L << 60;
+        byte[] update = Build((ref BcrdtBufferWriter writer) =>
+        {
+            writer.WriteVarUInt(Clients);
+            for (int i = 0; i < Clients; i++)
+            {
+                writer.WriteVarUInt(1);
+                writer.WriteVarUInt(ulong.MaxValue - (ulong)i);
+                writer.WriteVarUInt((ulong)(Clock + i));
+                writer.WriteByte((byte)BcrdtContentRef.GarbageCollected);
+                writer.WriteVarUInt(1);
+            }
+
+            // A delete set as wide, for the first part to carry as well.
+            writer.WriteVarUInt(20);
+            for (int i = 0; i < 20; i++)
+            {
+                writer.WriteVarUInt(ulong.MaxValue - 1_000 - (ulong)i);
+                writer.WriteVarUInt(1);
+                writer.WriteVarUInt((ulong)Clock);
+                writer.WriteVarUInt(0);
+            }
+        });
+
+        const int MaxBytes = 1_000;
+        IReadOnlyList<byte[]> parts = BcrdtUpdateOperations.Split(update, MaxBytes);
+
+        Assert.IsGreaterThan(1, parts.Count);
+        foreach (byte[] part in parts) Assert.IsLessThanOrEqualTo(MaxBytes, part.Length, $"a part of {part.Length} bytes for a limit of {MaxBytes}");
+
+        // Nothing was lost on the way: every block once, at its clock, and the deletions in the first part.
+        Dictionary<ulong, long> clocks = [];
+        foreach (byte[] part in parts)
+        {
+            foreach ((ulong client, IReadOnlyList<BcrdtAbstractStruct> blocks) in BcrdtUpdateOperations.DecodeBlocks(part))
+            {
+                foreach (BcrdtAbstractStruct block in blocks) clocks.Add(client, block.Id.Clock);
+            }
+        }
+        Assert.HasCount(Clients, clocks);
+        for (int i = 0; i < Clients; i++) Assert.AreEqual(Clock + i, clocks[ulong.MaxValue - (ulong)i]);
+        Assert.HasCount(20, BcrdtUpdateOperations.DecodeDeleteSet(parts[0]).Clients);
+    }
+
     // ---------------------------------------------------------------- index caches
 
     [TestMethod]

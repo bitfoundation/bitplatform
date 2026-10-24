@@ -1,4 +1,6 @@
-﻿namespace Bit.Bcrdt.Tests;
+﻿using Microsoft.Extensions.Time.Testing;
+
+namespace Bit.Bcrdt.Tests;
 
 /// <summary>
 /// Storing a document, losing power halfway through, and getting it back.
@@ -344,6 +346,110 @@ public class PersistenceTests : IDisposable
         Assert.IsGreaterThanOrEqualTo(1, store.CompactionAttempts);
     }
 
+    [TestMethod]
+    public async Task A_torn_tail_is_cut_off_in_one_pass_however_large_the_torn_record()
+    {
+        var store = new BcrdtFileSystemDocumentStore(_root, flushToDisk: false);
+        var corruptions = new List<BcrdtStoreCorruption>();
+        store.CorruptionDetected += corruptions.Add;
+
+        byte[] first = CreateUpdate("kept");
+        await store.AppendUpdateAsync("doc", first);
+
+        // Power lost while a multi-megabyte record was being written: its header promises 4 MB, and 2 MB
+        // of zero-rich binary payload made it to disk. Nearly every other offset in it reads as a header
+        // whose length fits in what is left, which made a checksum at each of them take minutes.
+        string logPath = Directory.EnumerateFiles(_root, "*.bcl").Single();
+        var random = new Random(1);
+        byte[] torn = new byte[8 + 2 * 1024 * 1024];
+        System.Buffers.Binary.BinaryPrimitives.WriteInt32LittleEndian(torn, 4 * 1024 * 1024);
+        for (int i = 8; i + 4 <= torn.Length; i += 4)
+        {
+            torn[i] = (byte)random.Next(256);
+            torn[i + 1] = (byte)random.Next(256);
+        }
+        await File.WriteAllBytesAsync(logPath, [.. await File.ReadAllBytesAsync(logPath), .. torn]);
+
+        var watch = System.Diagnostics.Stopwatch.StartNew();
+        BcrdtStoredDocument stored = await store.LoadAsync("doc");
+        watch.Stop();
+
+        Assert.IsLessThan(TimeSpan.FromSeconds(5), watch.Elapsed, $"loading took {watch.Elapsed}");
+        Assert.AreEqual("kept", Text(stored.Update!));
+        Assert.AreEqual(8 + first.Length, new FileInfo(logPath).Length);
+        Assert.IsEmpty(corruptions, "an interrupted append is not corruption");
+    }
+
+    [TestMethod]
+    public async Task A_bounded_in_memory_store_never_forgets_an_attached_document_however_long_it_sits_idle()
+    {
+        var time = new FakeTimeProvider();
+        var store = new BcrdtInMemoryDocumentStore(maxDocuments: 1, time);
+
+        using var doc = new BcrdtDocument(new BcrdtDocumentOptions { ClientId = 1 });
+        await using (BcrdtDocumentPersistence persistence = await BcrdtDocumentPersistence.AttachAsync(doc, store, "open"))
+        {
+            doc.GetText("body").Insert(0, "base");
+            await persistence.FlushAsync();
+
+            // Open but idle for long past the grace period while other documents fill the store.
+            time.Advance(TimeSpan.FromMinutes(10));
+            await store.AppendUpdateAsync("other-1", CreateUpdate("x", clientId: 2));
+            time.Advance(TimeSpan.FromMinutes(10));
+            await store.AppendUpdateAsync("other-2", CreateUpdate("y", clientId: 3));
+
+            // The next change builds on what the store already holds; that must still be there.
+            doc.GetText("body").Insert(4, " and more");
+            await persistence.FlushAsync();
+        }
+
+        Assert.AreEqual("base and more", Text((await store.LoadAsync("open")).Update!));
+    }
+
+    [TestMethod]
+    public async Task A_bounded_in_memory_store_forgets_an_idle_detached_document()
+    {
+        var time = new FakeTimeProvider();
+        var store = new BcrdtInMemoryDocumentStore(maxDocuments: 1, time);
+
+        using (var doc = new BcrdtDocument(new BcrdtDocumentOptions { ClientId = 1 }))
+        {
+            await using BcrdtDocumentPersistence persistence = await BcrdtDocumentPersistence.AttachAsync(doc, store, "closed");
+            doc.GetText("body").Insert(0, "gone");
+            await persistence.FlushAsync();
+        }
+
+        time.Advance(TimeSpan.FromMinutes(2));
+        await store.AppendUpdateAsync("new", CreateUpdate("here", clientId: 2));
+
+        Assert.AreEqual(1, store.Count);
+        Assert.IsTrue((await store.LoadAsync("closed")).IsEmpty);
+    }
+
+    [TestMethod]
+    public async Task A_flush_after_a_change_was_refused_outright_says_so_once()
+    {
+        var store = new RefusingStore();
+        using var doc = new BcrdtDocument(new BcrdtDocumentOptions { ClientId = 1 });
+        await using BcrdtDocumentPersistence persistence = await BcrdtDocumentPersistence.AttachAsync(doc, store, "doc");
+
+        var refused = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        persistence.WriteFailed += _ => refused.TrySetResult();
+        store.RefuseNext = true;
+        doc.GetText("body").Insert(0, "lost");
+        await refused.Task.WaitAsync(TimeSpan.FromSeconds(10));
+
+        // Settled by now - given up on - but never reported to anyone: the flush is the one to say so.
+        await Task.Delay(50);
+        await Assert.ThrowsExactlyAsync<IOException>(() => persistence.FlushAsync());
+
+        // Said once; a flush called after that reports only what happens from then on.
+        await persistence.FlushAsync();
+        doc.GetText("body").Insert(0, "more ");
+        await persistence.FlushAsync();
+        Assert.AreEqual(1, persistence.RecordCount);
+    }
+
     private static string Text(byte[] update)
     {
         using var doc = new BcrdtDocument();
@@ -370,6 +476,36 @@ public class PersistenceTests : IDisposable
         {
             await Task.Delay(latency, cancellationToken);
             await _inner.AppendUpdateAsync(documentId, update, cancellationToken);
+        }
+
+        public ValueTask CompactAsync(string documentId, CancellationToken cancellationToken = default) =>
+            _inner.CompactAsync(documentId, cancellationToken);
+
+        public ValueTask DeleteAsync(string documentId, CancellationToken cancellationToken = default) =>
+            _inner.DeleteAsync(documentId, cancellationToken);
+
+        public ValueTask<IReadOnlyList<string>> ListAsync(CancellationToken cancellationToken = default) =>
+            _inner.ListAsync(cancellationToken);
+    }
+
+    /// <summary>An in-memory store that refuses the next append outright, as one over its size limit.</summary>
+    private sealed class RefusingStore : IBcrdtDocumentStore
+    {
+        private readonly BcrdtInMemoryDocumentStore _inner = new();
+
+        public bool RefuseNext { get; set; }
+
+        public ValueTask<BcrdtStoredDocument> LoadAsync(string documentId, CancellationToken cancellationToken = default) =>
+            _inner.LoadAsync(documentId, cancellationToken);
+
+        public ValueTask AppendUpdateAsync(string documentId, ReadOnlyMemory<byte> update, CancellationToken cancellationToken = default)
+        {
+            if (RefuseNext)
+            {
+                RefuseNext = false;
+                throw new ArgumentException("The record is too large.");
+            }
+            return _inner.AppendUpdateAsync(documentId, update, cancellationToken);
         }
 
         public ValueTask CompactAsync(string documentId, CancellationToken cancellationToken = default) =>

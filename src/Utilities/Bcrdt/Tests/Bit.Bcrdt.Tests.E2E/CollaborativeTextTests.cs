@@ -93,4 +93,29 @@ public sealed class CollaborativeTextTests : BcrdtTest
         await ExpectConvergedAsync(editors, "After the clear.");
         Assert.AreEqual("After the clear.", await Editor(a).InputValueAsync());
     }
+
+    [TestMethod]
+    public async Task A_paste_too_large_to_report_as_a_change_reaches_the_others_and_typing_carries_on()
+    {
+        var page = await OpenReplicasAsync("/text", 3);
+        ILocator a = Replica(page, "Replica A"), b = Replica(page, "Replica B"), c = Replica(page, "Replica C");
+        ILocator[] editors = [Editor(a), Editor(b), Editor(c)];
+
+        await TypeAtEndAsync(Editor(a), "Before. ");
+        await ExpectConvergedAsync(editors, "Before. ");
+
+        // Far more than the module reports as a change - over Blazor Server's message limit, too - so .NET reads the
+        // control's value back as a stream instead. Every character of it arrives.
+        string pasted = string.Concat(Enumerable.Repeat("A long pasted paragraph, 😀 included. ", 500));
+        await Editor(a).EvaluateAsync(
+            "(element, text) => { element.value += text; element.dispatchEvent(new Event('input', { bubbles: true })); }", pasted);
+
+        string merged = await ExpectConvergedAsync(editors, "Before. ", pasted);
+        Assert.AreEqual("Before. " + pasted, merged);
+
+        // Keystrokes after it are ordinary changes again, on top of the value read back.
+        await TypeAtEndAsync(Editor(b), " After.");
+        merged = await ExpectConvergedAsync(editors, " After.");
+        Assert.AreEqual("Before. " + pasted + " After.", merged);
+    }
 }

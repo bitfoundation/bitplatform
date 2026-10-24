@@ -69,8 +69,16 @@ public sealed class BcrdtWebSocketEndpointOptions
     /// How many messages may be queued for one client before it is disconnected.
     /// </summary>
     /// <remarks>
+    /// <para>
     /// Generous enough to absorb an ordinary latency spike, and finite because an unbounded queue in
     /// front of a client that never drains simply relocates the problem into the server's memory.
+    /// </para>
+    /// <para>
+    /// A <see cref="DocumentHost"/>'s answer to a client's own handshake does not count: it can be the
+    /// whole document in many parts, all produced at once, and would disconnect the client it was meant
+    /// for - again on every reconnection. It is queued as the client drains, within a budget of this
+    /// many messages of its own, and the client's next message is not read until it is.
+    /// </para>
     /// </remarks>
     public int OutboundQueueCapacity { get; init; } = 256;
 
@@ -81,7 +89,8 @@ public sealed class BcrdtWebSocketEndpointOptions
     /// The message count alone does not bound memory - 256 messages of up to
     /// <see cref="MaxMessageSize"/> each could pin gigabytes behind one client that has stopped
     /// reading. Must be at least <see cref="MaxMessageSize"/>, or a single large message would always
-    /// disconnect its recipients.
+    /// disconnect its recipients. A host's handshake answer is paced within a budget of this many bytes
+    /// of its own, as for <see cref="OutboundQueueCapacity"/>.
     /// </remarks>
     public long OutboundQueueByteLimit { get; init; } = 64L * 1024 * 1024;
 
@@ -309,11 +318,31 @@ public static class BcrdtWebSocketEndpoint
                     // What a reader writes reaches nobody.
                     if (connection.Access != BcrdtDocumentAccess.ReadWrite && BcrdtSyncProtocol.IsWrite(message)) continue;
 
+                    if (session is null)
+                    {
+                        Broadcast(room, member, message);
+                        continue;
+                    }
+
                     // The host sees every message before the room does, so what it refuses - a
                     // malformed message, a change its validator rejected - is never passed on.
-                    if (session is not null && !await session.ReceiveAsync(message).ConfigureAwait(false)) continue;
+                    bool relay;
+                    List<byte[]>? answer;
+                    connection.BeginAnswer();
+                    try
+                    {
+                        relay = await session.ReceiveAsync(message).ConfigureAwait(false);
+                    }
+                    finally
+                    {
+                        answer = connection.EndAnswer();
+                    }
 
-                    Broadcast(room, member, message);
+                    if (relay) Broadcast(room, member, message);
+
+                    // What the host answered is queued before this client is heard again, so however
+                    // often it asks, it has at most one answer waiting on the server.
+                    await connection.DeliverAnswerAsync(answer, shutdown.Token).ConfigureAwait(false);
                 }
             }
             catch (OperationCanceledException)
@@ -450,8 +479,14 @@ public static class BcrdtWebSocketEndpoint
     /// </remarks>
     private sealed class SocketHostConnection(string id, BcrdtDocumentAccess access, string? userId, string relay) : IBcrdtHostConnection
     {
+        private readonly object _gate = new();
         private Member? _member;
         private int _refused;
+
+        // While the host handles a message this client sent, what it sends here - the answer to a
+        // handshake, above all - is held, and then queued as the client drains rather than all at once.
+        private bool _answering;
+        private List<byte[]>? _answer;
 
         public string Id => id;
 
@@ -468,8 +503,50 @@ public static class BcrdtWebSocketEndpoint
 
         public void Send(byte[] message)
         {
+            lock (_gate)
+            {
+                if (_answering)
+                {
+                    (_answer ??= []).Add(message);
+                    return;
+                }
+            }
+
             Member? member = Volatile.Read(ref _member);
             if (member is not null && !member.TryEnqueue(message) && !member.IsCompleted) member.Evict();
+        }
+
+        /// <summary>Starts holding what the host sends, while it handles a message this client sent.</summary>
+        public void BeginAnswer()
+        {
+            lock (_gate) _answering = true;
+        }
+
+        /// <summary>Stops holding, and returns what was held for <see cref="DeliverAnswerAsync"/>.</summary>
+        public List<byte[]>? EndAnswer()
+        {
+            lock (_gate)
+            {
+                List<byte[]>? answer = _answer;
+                _answering = false;
+                _answer = null;
+                return answer;
+            }
+        }
+
+        /// <summary>
+        /// Queues what the host answered, waiting for the client to drain each part rather than
+        /// overflowing its queue - which would disconnect the very client that asked, and again each
+        /// time it came back and asked once more.
+        /// </summary>
+        public async Task DeliverAnswerAsync(List<byte[]>? answer, CancellationToken cancellationToken)
+        {
+            if (answer is null || Volatile.Read(ref _member) is not { } member) return;
+
+            foreach (byte[] message in answer)
+            {
+                if (!await member.EnqueueAnswerAsync(message, cancellationToken).ConfigureAwait(false)) return;
+            }
         }
 
         /// <summary>Queues the refusal as the last thing this client hears; the relay then closes it.</summary>
@@ -489,23 +566,30 @@ public static class BcrdtWebSocketEndpoint
     private sealed class Member
     {
         private readonly WebSocket _socket;
-        private readonly Channel<byte[]> _outbound;
+        private readonly Channel<Outbound> _outbound;
+        private readonly int _capacity;
         private readonly long _byteLimit;
+
+        // Two budgets: one for what the room and the host send unasked, which a client that falls behind
+        // is disconnected for exceeding, and one for the answer to its own handshake, which is paced.
+        private int _queuedCount;
         private long _queuedBytes;
+        private int _answerCount;
+        private long _answerBytes;
+
+        private TaskCompletionSource? _drained;
         private int _completed;
 
         public Member(WebSocket socket, int capacity, long byteLimit)
         {
             _socket = socket;
+            _capacity = capacity;
             _byteLimit = byteLimit;
 
-            // Single reader because the pump is the only consumer, which is also what satisfies the
-            // WebSocket rule that one socket may have only one send in flight.
-            _outbound = Channel.CreateBounded<byte[]>(new BoundedChannelOptions(capacity)
-            {
-                SingleReader = true,
-                FullMode = BoundedChannelFullMode.Wait,
-            });
+            // Unbounded because both budgets are counted here instead. Single reader because the pump is
+            // the only consumer, which is also what satisfies the WebSocket rule that one socket may have
+            // only one send in flight.
+            _outbound = Channel.CreateUnbounded<Outbound>(new UnboundedChannelOptions { SingleReader = true });
         }
 
         /// <summary>Whether no more messages will be queued for this member.</summary>
@@ -517,23 +601,74 @@ public static class BcrdtWebSocketEndpoint
         /// </summary>
         public bool TryEnqueue(byte[] message)
         {
-            if (Interlocked.Add(ref _queuedBytes, message.Length) > _byteLimit)
+            if (Interlocked.Increment(ref _queuedCount) > _capacity)
             {
-                Interlocked.Add(ref _queuedBytes, -message.Length);
+                Interlocked.Decrement(ref _queuedCount);
                 return false;
             }
 
-            if (_outbound.Writer.TryWrite(message)) return true;
+            if (Interlocked.Add(ref _queuedBytes, message.Length) <= _byteLimit &&
+                _outbound.Writer.TryWrite(new Outbound(message, Answer: false)))
+            {
+                return true;
+            }
 
+            Interlocked.Decrement(ref _queuedCount);
             Interlocked.Add(ref _queuedBytes, -message.Length);
             return false;
         }
+
+        /// <summary>
+        /// Queues part of the answer to this client's own handshake once the parts before it have
+        /// drained far enough, reporting <see langword="false"/> if the member is gone meanwhile.
+        /// </summary>
+        /// <remarks>
+        /// Called by the member's own relay loop only, one part at a time. A part is admitted alone
+        /// whatever its size, so one larger than the whole budget is still sent rather than waited on
+        /// for ever.
+        /// </remarks>
+        public async ValueTask<bool> EnqueueAnswerAsync(byte[] message, CancellationToken cancellationToken)
+        {
+            while (!IsCompleted && !HasRoomForAnswer(message.Length))
+            {
+                // Taken before the second look, so a part the pump takes in between still wakes this.
+                Task drained = Drained();
+                if (IsCompleted || HasRoomForAnswer(message.Length)) break;
+                await drained.WaitAsync(cancellationToken).ConfigureAwait(false);
+            }
+
+            if (IsCompleted) return false;
+
+            Interlocked.Increment(ref _answerCount);
+            Interlocked.Add(ref _answerBytes, message.Length);
+            if (_outbound.Writer.TryWrite(new Outbound(message, Answer: true))) return true;
+
+            Interlocked.Decrement(ref _answerCount);
+            Interlocked.Add(ref _answerBytes, -message.Length);
+            return false;
+        }
+
+        private bool HasRoomForAnswer(int length)
+        {
+            int count = Volatile.Read(ref _answerCount);
+            return count == 0 || (count < _capacity && Interlocked.Read(ref _answerBytes) + length <= _byteLimit);
+        }
+
+        private Task Drained()
+        {
+            if (Volatile.Read(ref _drained) is { } current) return current.Task;
+            var created = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            return (Interlocked.CompareExchange(ref _drained, created, null) ?? created).Task;
+        }
+
+        private void SignalDrained() => Interlocked.Exchange(ref _drained, null)?.TrySetResult();
 
         /// <summary>Signals that no more messages will be queued, letting the pump finish and return.</summary>
         public void Complete()
         {
             Volatile.Write(ref _completed, 1);
             _outbound.Writer.TryComplete();
+            SignalDrained();
         }
 
         /// <summary>
@@ -549,6 +684,7 @@ public static class BcrdtWebSocketEndpoint
             if (Interlocked.Exchange(ref _completed, 1) != 0) return;
 
             _outbound.Writer.TryComplete();
+            SignalDrained();
             _socket.Abort();
         }
 
@@ -557,11 +693,23 @@ public static class BcrdtWebSocketEndpoint
         {
             try
             {
-                await foreach (byte[] message in _outbound.Reader
+                await foreach (Outbound item in _outbound.Reader
                     .ReadAllAsync(cancellationToken)
                     .ConfigureAwait(false))
                 {
-                    Interlocked.Add(ref _queuedBytes, -message.Length);
+                    byte[] message = item.Message;
+                    if (item.Answer)
+                    {
+                        Interlocked.Decrement(ref _answerCount);
+                        Interlocked.Add(ref _answerBytes, -message.Length);
+                        SignalDrained();
+                    }
+                    else
+                    {
+                        Interlocked.Decrement(ref _queuedCount);
+                        Interlocked.Add(ref _queuedBytes, -message.Length);
+                    }
+
                     if (_socket.State is not WebSocketState.Open) return;
 
                     await _socket
@@ -579,6 +727,14 @@ public static class BcrdtWebSocketEndpoint
                 // removes it from the room; the other members are unaffected, which is the point of
                 // giving each one its own pump.
             }
+            finally
+            {
+                // Nothing queued from now on would be sent, and an answer waiting for room must not wait
+                // for a pump that has stopped.
+                Complete();
+            }
         }
+
+        private readonly record struct Outbound(byte[] Message, bool Answer);
     }
 }

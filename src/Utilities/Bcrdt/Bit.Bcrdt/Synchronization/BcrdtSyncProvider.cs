@@ -149,6 +149,7 @@ public sealed class BcrdtSyncProvider : IAsyncDisposable
     private long _handshakeStarted;
     private long _lastSynced;
     private BcrdtStateVector? _awaitedVector;
+    private List<(BcrdtStateVector Vector, ulong Digest)>? _deferredAnswers;
     private IReadOnlyDictionary<string, object?>? _stashedPresence;
     private Task? _heartbeatLoop;
     private Task? _reconnectLoop;
@@ -462,6 +463,7 @@ public sealed class BcrdtSyncProvider : IAsyncDisposable
 
                 _handshakeGeneration++;
                 _awaitedVector = null;
+                _deferredAnswers = null;
                 ScheduleReconnect();
                 break;
 
@@ -485,6 +487,7 @@ public sealed class BcrdtSyncProvider : IAsyncDisposable
         _handshakeAnswered = false;
         _handshakeDeltaApplied = false;
         _awaitedVector = null;
+        _deferredAnswers = null;
 
         try
         {
@@ -568,6 +571,9 @@ public sealed class BcrdtSyncProvider : IAsyncDisposable
         _handshakeAnswered = false;
         _handshakeDeltaApplied = false;
         _awaitedVector = null;
+
+        // The peers answer the repeat afresh, and their answers are weighed afresh.
+        _deferredAnswers = null;
         Send(BcrdtSyncExchange.CreateAnnouncement(_doc));
         StartHandshakeTimer(next);
     }
@@ -628,7 +634,9 @@ public sealed class BcrdtSyncProvider : IAsyncDisposable
         BcrdtSyncExchangeResult result = default;
         try
         {
-            result = BcrdtSyncExchange.Handle(_doc, message, this, replies, _options.MaxMessageSize);
+            result = BcrdtSyncExchange.Handle(_doc, message, this, replies, _options.MaxMessageSize, deferDeletionAnswer: true);
+            if (result.DeferredDigest != 0) HoldBackAnswer(result.PeerStateVector!, result.DeferredDigest);
+            else if (result.AppliedDelta) AnswerDeferred(replies);
         }
         finally
         {
@@ -641,6 +649,72 @@ public sealed class BcrdtSyncProvider : IAsyncDisposable
                 foreach (byte[] reply in replies) Send(reply);
             }
             UpdateHandshakeProgress(result);
+        }
+    }
+
+    /// <summary>
+    /// Answers the replies held back until a delta arrived, now that one has been applied.
+    /// </summary>
+    /// <remarks>
+    /// A peer that holds every block this replica does is answered only once its delta - sent straight
+    /// after its reply, with its deletions in the first part - has been applied. Before that, a replica
+    /// returning to a room where others deleted text cannot match the peer's digest, and would send its
+    /// whole delete set to everyone the relay serves for nothing. After it, a mismatch means the peer
+    /// really lacks a deletion made here - offline, say - and it is sent.
+    /// </remarks>
+    private void AnswerDeferred(List<byte[]> replies)
+    {
+        if (_deferredAnswers is not { } deferred) return;
+        _deferredAnswers = null;
+        BcrdtSyncExchange.AnswerDeferred(_doc, deferred, replies, _options.MaxMessageSize);
+    }
+
+    /// <summary>Holds back the answer to a reply until a delta has been applied, or a while has passed.</summary>
+    private void HoldBackAnswer(BcrdtStateVector vector, ulong digest)
+    {
+        if (_deferredAnswers is null)
+        {
+            _deferredAnswers = [];
+            _ = AnswerDeferredLaterAsync(_deferredAnswers);
+        }
+        _deferredAnswers.Add((vector, digest));
+    }
+
+    /// <summary>
+    /// Answers held-back replies that no delta has settled by the time a handshake would have timed out.
+    /// </summary>
+    /// <remarks>
+    /// A peer that predates replying first sends its delta before its reply, so nothing follows the
+    /// reply to settle it; and a delta can be lost. Either way the answer is owed, and the delta it
+    /// waited for has arrived by now if it is coming at all.
+    /// </remarks>
+    private async Task AnswerDeferredLaterAsync(List<(BcrdtStateVector Vector, ulong Digest)> deferred)
+    {
+        try
+        {
+            CancellationToken token = ShutdownToken;
+            TimeSpan delay = _options.HandshakeTimeout > TimeSpan.Zero ? _options.HandshakeTimeout : TimeSpan.FromSeconds(2);
+            await Task.Delay(delay, token).ConfigureAwait(false);
+            await RunAsync(() =>
+            {
+                // Settled by a delta meanwhile, or dropped with the handshake it belonged to.
+                if (_disposed || !ReferenceEquals(_deferredAnswers, deferred)) return;
+
+                List<byte[]> replies = [];
+                AnswerDeferred(replies);
+                if (!IsReadOnly)
+                {
+                    foreach (byte[] reply in replies) Send(reply);
+                }
+            }, token).ConfigureAwait(false);
+        }
+        catch (OperationCanceledException)
+        {
+            // Shutting down.
+        }
+        catch (Exception ex)
+        {
+            ReportError(ex);
         }
     }
 
@@ -1057,6 +1131,7 @@ public sealed class BcrdtSyncProvider : IAsyncDisposable
 
     private async Task RepairAsync()
     {
+        bool ran = false;
         try
         {
             CancellationToken token = ShutdownToken;
@@ -1064,6 +1139,7 @@ public sealed class BcrdtSyncProvider : IAsyncDisposable
             await Task.Delay(delay, token).ConfigureAwait(false);
             await RunAsync(() =>
             {
+                ran = true;
                 _repairResyncPending = false;
                 if (!_disposed && _transport.State == BcrdtTransportState.Connected) Send(BcrdtSyncExchange.CreateAnnouncement(_doc));
             }, token).ConfigureAwait(false);
@@ -1075,6 +1151,16 @@ public sealed class BcrdtSyncProvider : IAsyncDisposable
         catch (Exception ex)
         {
             ReportError(ex);
+        }
+        finally
+        {
+            // A repair that never got to run - its context gone, say - must not stand in for every
+            // later one: the flag only coalesces failures while a repair is still on its way. One that
+            // did run cleared the flag itself, and a repair scheduled since owns it now.
+            if (!ran)
+            {
+                lock (_gate) _repairResyncPending = false;
+            }
         }
     }
 

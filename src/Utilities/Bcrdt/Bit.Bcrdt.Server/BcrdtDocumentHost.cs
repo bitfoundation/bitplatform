@@ -215,6 +215,10 @@ public sealed class BcrdtDocumentHost : IAsyncDisposable
     private readonly ILogger _logger;
     private readonly CancellationTokenSource _shutdown = new();
 
+    // Taken from the source once, so a message a relay delivers after disposal tests a cancelled token
+    // instead of reading the token of a disposed source, which throws.
+    private readonly CancellationToken _stopping;
+
     private static readonly UpDownCounter<long> LoadedDocumentsMetric = BcrdtDiagnostics.Meter.CreateUpDownCounter<long>(
         "bcrdt.host.documents", "{document}", "Documents a document host has loaded.");
 
@@ -243,6 +247,7 @@ public sealed class BcrdtDocumentHost : IAsyncDisposable
 
         _store = _options.Store ?? new BcrdtInMemoryDocumentStore();
         _logger = (ILogger?)logger ?? NullLogger.Instance;
+        _stopping = _shutdown.Token;
 
         BcrdtDocumentPersistenceOptions given = _options.Persistence ?? new BcrdtDocumentPersistenceOptions();
         _persistence = new BcrdtDocumentPersistenceOptions
@@ -287,6 +292,7 @@ public sealed class BcrdtDocumentHost : IAsyncDisposable
     /// The callback runs under the document's lock, so it sees a state no client change is halfway
     /// through. Keep it short: every client of the document waits for it.
     /// </remarks>
+    /// <exception cref="ObjectDisposedException">The host has been disposed.</exception>
     public async ValueTask<T> ReadAsync<T>(string documentId, Func<BcrdtDocument, T> read, CancellationToken cancellationToken = default)
     {
         ArgumentException.ThrowIfNullOrEmpty(documentId);
@@ -298,6 +304,8 @@ public sealed class BcrdtDocumentHost : IAsyncDisposable
             await document.Lock.WaitAsync(cancellationToken).ConfigureAwait(false);
             try
             {
+                // The host was disposed while this waited for the document.
+                ObjectDisposedException.ThrowIf(document.Closed, this);
                 return read(document.Crdt);
             }
             finally
@@ -321,6 +329,7 @@ public sealed class BcrdtDocumentHost : IAsyncDisposable
     /// applied and handed to the connections - not once it is stored; the store is written in the
     /// background like any other change.
     /// </remarks>
+    /// <exception cref="ObjectDisposedException">The host has been disposed.</exception>
     public async ValueTask EditAsync(string documentId, Action<BcrdtDocument> edit, CancellationToken cancellationToken = default)
     {
         ArgumentException.ThrowIfNullOrEmpty(documentId);
@@ -332,6 +341,7 @@ public sealed class BcrdtDocumentHost : IAsyncDisposable
             await document.Lock.WaitAsync(cancellationToken).ConfigureAwait(false);
             try
             {
+                ObjectDisposedException.ThrowIf(document.Closed, this);
                 document.Crdt.Transact(_ => edit(document.Crdt), EditOrigin);
             }
             finally
@@ -537,9 +547,34 @@ public sealed class BcrdtDocumentHost : IAsyncDisposable
     /// </summary>
     private const int MaxAwarenessClientsPerConnection = 4;
 
+    /// <summary>
+    /// Takes a document's lock for a message a connection sent, or reports that the document is closed:
+    /// the host was disposed, and the relay delivering the message has not noticed yet.
+    /// </summary>
+    /// <remarks>
+    /// A message arriving then is dropped quietly - its client reconnects to whatever serves the
+    /// document next and repairs the loss in the handshake - rather than failing the relay's call.
+    /// </remarks>
+    private async ValueTask<bool> TryEnterAsync(HostedDocument document)
+    {
+        try
+        {
+            await document.Lock.WaitAsync(_stopping).ConfigureAwait(false);
+        }
+        catch (OperationCanceledException)
+        {
+            return false;
+        }
+
+        if (!document.Closed) return true;
+
+        document.Lock.Release();
+        return false;
+    }
+
     private async ValueTask<bool> ApplyAsync(HostedDocument document, IBcrdtHostConnection connection, BcrdtSyncMessage message)
     {
-        await document.Lock.WaitAsync(_shutdown.Token).ConfigureAwait(false);
+        if (!await TryEnterAsync(document).ConfigureAwait(false)) return Drop("closed");
         try
         {
             if (_options.ValidateUpdate is { } validate)
@@ -611,7 +646,7 @@ public sealed class BcrdtDocumentHost : IAsyncDisposable
     private async ValueTask AnswerAsync(HostedDocument document, IBcrdtHostConnection connection, BcrdtSyncMessage message)
     {
         List<byte[]> replies = [];
-        await document.Lock.WaitAsync(_shutdown.Token).ConfigureAwait(false);
+        if (!await TryEnterAsync(document).ConfigureAwait(false)) return;
         try
         {
             BcrdtSyncExchange.Handle(document.Crdt, message, connection, replies, _options.MaxMessageSize);
@@ -796,7 +831,7 @@ public sealed class BcrdtDocumentHost : IAsyncDisposable
         try
         {
             document.Persistence = await BcrdtDocumentPersistence
-                .AttachAsync(crdt, _store, document.Id, _persistence, _shutdown.Token)
+                .AttachAsync(crdt, _store, document.Id, _persistence, _stopping)
                 .ConfigureAwait(false);
 
             document.Persistence.WriteFailed += error =>
@@ -837,6 +872,9 @@ public sealed class BcrdtDocumentHost : IAsyncDisposable
         await document.Lock.WaitAsync().ConfigureAwait(false);
         try
         {
+            // First, so whatever is waiting for the lock finds the document gone rather than a replica
+            // and a writer halfway through being disposed.
+            document.Closed = true;
             if (document.Persistence is { } persistence) await persistence.DisposeAsync().ConfigureAwait(false);
             if (document.Crdt is { } crdt)
             {
@@ -932,6 +970,9 @@ public sealed class BcrdtDocumentHost : IAsyncDisposable
 
         /// <summary>Set once the document has been taken out of the host. Guarded by the host's gate.</summary>
         public bool Retired { get; set; }
+
+        /// <summary>Set once the replica and its writer are disposed, or about to be. Guarded by <see cref="Lock"/>.</summary>
+        public bool Closed { get; set; }
 
         public void ScheduleUnload(TimeSpan delay, Action unload)
         {

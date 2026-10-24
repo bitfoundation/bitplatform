@@ -1,4 +1,5 @@
 ﻿using System.Buffers.Binary;
+using System.Collections;
 using System.Security.Cryptography;
 using System.Text;
 
@@ -31,8 +32,10 @@ public sealed record BcrdtStoreCorruption(string DocumentId, string QuarantinePa
 /// last one can be torn - but corruption: a bad sector, an external program writing to the file. Then
 /// nothing is thrown away blindly. The log is copied aside untouched, the store finds the next intact
 /// record and carries on from there, the log is rewritten with every intact record it holds, and
-/// <see cref="CorruptionDetected"/> says what happened. A record that is intact on disk but is not a
-/// valid update is set aside the same way rather than making the document impossible to open.
+/// <see cref="CorruptionDetected"/> says what happened. A damaged tail longer than any one record could
+/// be is no torn append either, and is set aside the same way. So is a record that is intact on disk but
+/// is not a valid update, rather than making the document impossible to open. Finding where intact
+/// records resume costs one pass over the damaged bytes, not a checksum at each of them.
 /// </para>
 /// <para>
 /// Compaction reads, merges and replaces the log as one step that no append can interleave with. It
@@ -216,7 +219,9 @@ public sealed class BcrdtFileSystemDocumentStore : IBcrdtDocumentStore
         byte[] contents = await File.ReadAllBytesAsync(path, cancellationToken).ConfigureAwait(false);
         List<ReadOnlyMemory<byte>> records = ReadRecords(contents, out int intactEnd, out long skipped);
 
-        if (skipped > 0)
+        // A damaged tail longer than any record cannot be one interrupted append: it is corruption
+        // that left nothing recognizable after it, and it is kept aside rather than cut off unseen.
+        if (skipped > 0 || contents.Length - intactEnd > HeaderSize + MaxRecordSize)
         {
             await QuarantineAsync(documentId, path, records, skipped + (contents.Length - intactEnd), cancellationToken).ConfigureAwait(false);
             return records;
@@ -302,6 +307,7 @@ public sealed class BcrdtFileSystemDocumentStore : IBcrdtDocumentStore
         int offset = 0;
         intactEnd = 0;
         skipped = 0;
+        RecordChains? chains = null;
 
         while (offset + HeaderSize <= contents.Length)
         {
@@ -315,7 +321,8 @@ public sealed class BcrdtFileSystemDocumentStore : IBcrdtDocumentStore
 
             // Damage. If an intact record follows somewhere, this is corruption in the middle of the
             // log and everything from that record on is still good; if none does, it is a torn tail.
-            int next = FindNextRecord(contents, offset + 1);
+            chains ??= new RecordChains(contents, offset + 1);
+            int next = chains.FindNextRecord(offset + 1);
             if (next < 0) break;
 
             skipped += next - offset;
@@ -341,14 +348,50 @@ public sealed class BcrdtFileSystemDocumentStore : IBcrdtDocumentStore
         return true;
     }
 
-    /// <summary>The offset of the next intact record at or after <paramref name="from"/>, or -1.</summary>
-    private static int FindNextRecord(byte[] contents, int from)
+    /// <summary>
+    /// Finds where intact records resume after damage, checksumming a candidate only if the headers
+    /// from it on lead exactly to the end of the log.
+    /// </summary>
+    /// <remarks>
+    /// Every record appended after the damage is intact and each one's length leads to the next, the
+    /// last ending exactly at the end of the file: the record the search is after starts such a chain.
+    /// Bytes inside a torn or damaged record almost never form one, so the costly part - a checksum over
+    /// the whole candidate - is skipped at nearly every offset, and a torn tail costs one pass over its
+    /// bytes rather than a checksum at each of them. Which offsets chain to the end is worked out once,
+    /// from the end backwards, for every search in the same log.
+    /// </remarks>
+    private sealed class RecordChains
     {
-        for (int offset = from; offset + HeaderSize <= contents.Length; offset++)
+        private readonly byte[] _contents;
+        private readonly int _start;
+        private readonly BitArray _reachesEnd;
+
+        public RecordChains(byte[] contents, int start)
         {
-            if (TryReadRecord(contents, offset, out _)) return offset;
+            _contents = contents;
+            _start = start;
+
+            // One bit for each offset from the start up to and including the end of the log.
+            _reachesEnd = new BitArray(contents.Length - start + 1);
+            _reachesEnd[contents.Length - start] = true;
+
+            for (int offset = contents.Length - HeaderSize; offset >= start; offset--)
+            {
+                int length = BinaryPrimitives.ReadInt32LittleEndian(contents.AsSpan(offset, 4));
+                if (length <= 0 || length > MaxRecordSize || length > contents.Length - offset - HeaderSize) continue;
+                _reachesEnd[offset - start] = _reachesEnd[offset + HeaderSize + length - start];
+            }
         }
-        return -1;
+
+        /// <summary>The offset of the next intact record at or after <paramref name="from"/>, or -1.</summary>
+        public int FindNextRecord(int from)
+        {
+            for (int offset = Math.Max(from, _start); offset + HeaderSize <= _contents.Length; offset++)
+            {
+                if (_reachesEnd[offset - _start] && TryReadRecord(_contents, offset, out _)) return offset;
+            }
+            return -1;
+        }
     }
 
     private static bool IsDecodable(ReadOnlyMemory<byte> record)
