@@ -224,6 +224,24 @@
     font-weight: 600;
 }
 
+/* Opened by the button, focused by script: the drawer is not a control, so it draws no ring of its
+   own - the links inside it draw theirs. */
+.bb-header-drawer:focus,
+.bb-header-drawer:focus-visible {
+    outline: none;
+}
+
+/* The drawer and its scrim exist only at the widths that have the button to close them. A drawer
+   opened on a narrow window that is then widened - a tablet turned to landscape - would otherwise
+   stay across the full-width bar with no button left to dismiss it; it comes back as it was if the
+   window narrows again. */
+@media (min-width: 901px) {
+    .bb-header-drawer,
+    .bb-header-scrim {
+        display: none;
+    }
+}
+
 @keyframes bb-fade-in {
     from { opacity: 0; }
     to { opacity: 1; }

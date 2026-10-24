@@ -14,7 +14,18 @@
    page rendered - see the note on the <nav> below. *@
 
 <div class="bb-docs">
-    <aside @ref="_panel" class="bb-docs-sidebar @(_menuOpen ? "bb-open" : null)" id="bb-docs-nav" aria-label="Documentation navigation" tabindex="-1" @onkeydown="OnKeyDown">
+    <aside class="bb-docs-sidebar @(_menuOpen ? "bb-open" : null)" id="bb-docs-nav" aria-label="Documentation navigation" @onkeydown="OnKeyDown">
+        @* The drawer's own way out, shown only at the widths where the panel is a drawer. The
+           "Hide docs" toggle that opened it sits under the drawer once it is open, so without this
+           a pointer could close it only through the scrim. It is also where focus goes on opening:
+           the panel precedes the toggle in the DOM, so Tab from the toggle would walk into the page
+           behind the drawer instead of into it. *@
+        <button type="button" class="bb-docs-close" @ref="_close" aria-label="Close documentation navigation" @onclick="CloseFromDrawer">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+                <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+            </svg>
+        </button>
+
         <p class="bb-overline bb-docs-nav-title">Documentation</p>
 
         @foreach (var section in DocsCatalog.Sections)
@@ -106,21 +117,36 @@
 
 @if (_menuOpen)
 {
-    <div class="bb-docs-scrim" @onclick="CloseMenu"></div>
+    <div class="bb-docs-scrim" @onclick="CloseFromDrawer"></div>
 }
 
 @code {
     private bool _menuOpen;
+    private bool _focusDrawerPending;
     private bool _restorePending;
-    private bool _focusPanelPending;
     private ElementReference _toggle;
-    private ElementReference _panel;
+    private ElementReference _close;
     private DocsPageInfo? _current;
+
+    [CascadingParameter] private MainLayout.Drawers? Drawers { get; set; }
 
     protected override void OnInitialized()
     {
         Recompute();
         Nav.LocationChanged += OnLocationChanged;
+        if (Drawers is not null)
+            Drawers.Opened += OnDrawerOpened;
+    }
+
+    // The header's menu opened: this drawer gives the page up to it.
+    private void OnDrawerOpened(object owner)
+    {
+        if (ReferenceEquals(owner, this) || _menuOpen is false)
+            return;
+
+        _menuOpen = false;
+        _focusDrawerPending = false;
+        _ = InvokeAsync(StateHasChanged);
     }
 
     // Collapse the narrow-width panel after a link in it commits: a drawer that survives the
@@ -134,12 +160,13 @@
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (_focusPanelPending)
+        if (_focusDrawerPending)
         {
-            _focusPanelPending = false;
-            await _panel.FocusAsync(preventScroll: true);
+            _focusDrawerPending = false;
+            await _close.FocusAsync();
         }
-        else if (_restorePending)
+
+        if (_restorePending)
         {
             _restorePending = false;
             await _toggle.FocusAsync();
@@ -147,18 +174,20 @@
     }
 
     /// <summary>
-    /// Opening the drawer takes the focus into it. Safari does not focus a button it is clicking, so
-    /// the focus would otherwise stay on the page behind the scrim, where neither Escape nor Tab
-    /// reaches the drawer.
+    /// Opens or closes the narrow-width drawer. Opening hands focus to the drawer's close button (see
+    /// the note on it in the markup), which also puts the Escape handler on the panel within reach of
+    /// a browser that does not focus the button it was clicked on.
     /// </summary>
     private void ToggleMenu()
     {
         _menuOpen = !_menuOpen;
-        if (_menuOpen) _focusPanelPending = true;
-        else _restorePending = true;
+        _focusDrawerPending = _menuOpen;
+        if (_menuOpen)
+            Drawers?.Open(this);
     }
 
-    private void CloseMenu()
+    /// <summary>The drawer's close button and the scrim: the drawer closes and focus returns to its toggle.</summary>
+    private void CloseFromDrawer()
     {
         _menuOpen = false;
         _restorePending = true;
@@ -183,5 +212,10 @@
 
     private void Recompute() => _current = DocsCatalog.FindByPath(DocsCatalog.PathOf(Nav));
 
-    public void Dispose() => Nav.LocationChanged -= OnLocationChanged;
+    public void Dispose()
+    {
+        Nav.LocationChanged -= OnLocationChanged;
+        if (Drawers is not null)
+            Drawers.Opened -= OnDrawerOpened;
+    }
 }

@@ -38,7 +38,12 @@
     <HeadOutlet @rendermode="InteractiveWebAssembly" />
 </head>
 
-<body>
+@* data-enhance-nav="false": a link followed before the WebAssembly runtime has started is a plain
+   page load rather than an enhanced one. Enhanced navigation fetches and merges the next page while
+   the runtime is still starting, and the router the runtime then attaches can render the address
+   it read before the merge - the URL says /getting-started and the page is the landing page. Once the
+   app is interactive its router handles every link itself and this attribute is not consulted. *@
+<body data-enhance-nav="false">
     @* InteractiveWebAssembly rather than Auto or Server: dragover fires continuously during a drag,
        and on WebAssembly none of its handlers waits on a network round trip. The pages are still
        prerendered, so the first response carries them. *@

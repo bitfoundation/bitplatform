@@ -42,6 +42,10 @@ internal sealed class BlexMauiInitializer : IMauiInitializeService
 
         if (persistor is not null)
         {
+            // Hydration resumes on the captured context, where it applies state. Blocking the UI thread
+            // on it with that context in place would deadlock the first time storage really is async.
+            var context = SynchronizationContext.Current;
+            SynchronizationContext.SetSynchronizationContext(null);
             try
             {
                 // BlexPreferencesStorage completes synchronously, so this never actually blocks.
@@ -55,6 +59,10 @@ internal sealed class BlexMauiInitializer : IMauiInitializeService
                 // with default state, mirroring <BlexProvider>'s containment. This is a
                 // persistence failure, not a wiring one, so it keeps the "persistence" source.
                 Report(services, ex, "hydrating at startup", source: "persistence");
+            }
+            finally
+            {
+                SynchronizationContext.SetSynchronizationContext(context);
             }
         }
 

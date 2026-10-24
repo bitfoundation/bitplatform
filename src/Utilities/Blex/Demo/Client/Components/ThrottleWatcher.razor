@@ -1,0 +1,63 @@
+@inject ProgressStore Progress
+
+@*
+    Two <BlexView>s over the same burst of changes, one of them throttled. A plain ComponentBase that never
+    subscribes: only the content inside each view follows the store, so the renders counted there are the ones the
+    store's changes caused. Run is the run number the page passes in - a new one is a parameter pass that zeroes the
+    counters, and that pass renders both views once, so each figure starts the run at 1.
+*@
+<div class="bb-grid">
+    <div class="bb-card">
+        <p class="bb-card-title"><code>&lt;BlexView Store="Progress"&gt;</code></p>
+        <BlexView Store="Progress">
+            @{ _plainRenders++; }
+            <div class="bb-stats">
+                <div class="bb-stat">
+                    <span class="bb-stat-label">Percent shown</span>
+                    <span class="bb-stat-value">@Progress.Percent%</span>
+                </div>
+                <div class="bb-stat">
+                    <span class="bb-stat-label">Renders this run</span>
+                    <span class="bb-stat-value demo-accent">@_plainRenders</span>
+                </div>
+            </div>
+        </BlexView>
+    </div>
+    <div class="bb-card">
+        <p class="bb-card-title"><code>RenderInterval="250 ms"</code></p>
+        <BlexView Store="Progress" RenderInterval="Interval">
+            @{ _throttledRenders++; }
+            <div class="bb-stats">
+                <div class="bb-stat">
+                    <span class="bb-stat-label">Percent shown</span>
+                    <span class="bb-stat-value">@Progress.Percent%</span>
+                </div>
+                <div class="bb-stat">
+                    <span class="bb-stat-label">Renders this run</span>
+                    <span class="bb-stat-value demo-accent">@_throttledRenders</span>
+                </div>
+            </div>
+        </BlexView>
+    </div>
+</div>
+
+@code {
+    private static readonly TimeSpan Interval = TimeSpan.FromMilliseconds(250);
+
+    private int _run = -1;
+    private int _plainRenders;
+    private int _throttledRenders;
+
+    /// <summary>The run number; a new one starts the counters over.</summary>
+    [Parameter] public int Run { get; set; }
+
+    protected override void OnParametersSet()
+    {
+        if (Run == _run)
+            return;
+
+        _run = Run;
+        _plainRenders = 0;
+        _throttledRenders = 0;
+    }
+}

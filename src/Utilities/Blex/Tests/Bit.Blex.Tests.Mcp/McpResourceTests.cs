@@ -46,7 +46,7 @@ public class McpResourceTests
         var templates = await McpTestHost.Client.ListResourceTemplatesAsync();
 
         CollectionAssert.AreEquivalent(
-            new[] { "blex://guide/{heading}", "blex://api/{typeName}", "blex://diagnostics/{code}", "blex://docs/{slug}", "blex://source/{path}" },
+            new[] { "blex://guide/{heading}", "blex://api/{typeName}", "blex://diagnostics/{code}", "blex://docs/{slug}", "blex://source/{+path}" },
             templates.Select(template => template.UriTemplate).ToArray());
 
         foreach (var template in templates)
@@ -55,7 +55,7 @@ public class McpResourceTests
         }
 
         // Source, not prose: a client that renders Markdown would eat its indentation.
-        Assert.AreEqual("text/plain", templates.Single(t => t.UriTemplate == "blex://source/{path}").MimeType);
+        Assert.AreEqual("text/plain", templates.Single(t => t.UriTemplate == "blex://source/{+path}").MimeType);
     }
 
     [TestMethod]
@@ -79,6 +79,16 @@ public class McpResourceTests
         StringAssert.StartsWith(await ReadAsync("blex://diagnostics/BLEX001"), "# BLEX001");
         StringAssert.Contains(await ReadAsync("blex://source/Demo%2FClient%2FStores%2FCartStore.cs"), "[BlexStore");
         StringAssert.Contains(await ReadAsync("blex://docs/effects"), "# Effects");
+    }
+
+    [TestMethod]
+    public async Task A_source_path_reads_with_its_slashes_as_written()
+    {
+        // What completion offers is the path as it is written; a client that pastes it into the template
+        // without encoding it must land on the same file as one that encodes it.
+        Assert.AreEqual(await ReadAsync("blex://source/Demo%2FClient%2FStores%2FCartStore.cs"),
+                        await ReadAsync("blex://source/Demo/Client/Stores/CartStore.cs"));
+        StringAssert.Contains(await ReadAsync("blex://source/Demo/Client/Stores/CartStore.cs"), "[BlexStore");
     }
 
     [TestMethod]
