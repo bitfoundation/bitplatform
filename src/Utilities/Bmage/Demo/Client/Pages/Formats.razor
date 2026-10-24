@@ -156,6 +156,26 @@
             </tbody>
         </table>
     </div>
+    <p>
+        PNG is lossless, so quality does not apply; <code>PngCompressionLevel</code> trades time for size
+        instead, from 0 to 9. Level 1 is several times faster than the default 6 for a modestly larger file -
+        right for a preview on screen for a moment, while 6 suits the file the user keeps.
+    </p>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Getting the result out</h3>
+    <p>
+        An <code>EncodedImage</code> is the bytes, with the format, dimensions and quality used. From there it
+        goes wherever your code sends it - nothing is uploaded by the library.
+    </p>
+    <CodeSnippet Code="@OutputSnippet" Language="C#" Expanded="true" />
+    <p>
+        <code>SaveAsAsync</code> uses the browser's save dialog where the File System Access API exists and
+        falls back to a plain download elsewhere, returning false when the user cancels. The clipboard takes
+        PNG in practice, and <code>ImageCapabilities.SupportsClipboardWrite</code> says whether it can be
+        written at all.
+    </p>
 </div>
 
 <div class="bb-card">
@@ -243,6 +263,21 @@
         });
 
         Console.WriteLine($"{encoded.Length} bytes at quality {encoded.Quality}");
+        """;
+
+    private const string OutputSnippet = """
+        var encoded = await exporter.EncodeAsync(image, new ImageExportOptions { Format = ImageFormat.Png, PngCompressionLevel = 1 });
+
+        byte[] bytes = encoded.Data;                    // upload it, store it
+        using var stream = encoded.AsStream();          // hand it to an API that takes a stream
+        Console.WriteLine($"{encoded.Width}×{encoded.Height} {encoded.MimeType}, {encoded.Length} bytes");
+
+        var url = await exporter.CreateObjectUrlAsync(encoded);   // <img src="@url">
+        await exporter.ReleaseObjectUrlAsync(url);                // when the preview goes away
+
+        await exporter.DownloadAsync(encoded, "photo");           // extension from the format
+        var saved = await exporter.SaveAsAsync(encoded, "photo"); // a save dialog where there is one
+        await exporter.CopyToClipboardAsync(encoded);             // paste it into a chat or a document
         """;
 
     private const string DetectSnippet = """

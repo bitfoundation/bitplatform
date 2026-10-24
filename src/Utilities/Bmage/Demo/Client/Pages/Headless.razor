@@ -119,7 +119,12 @@
                 <tr><th scope="row"><code>ImageCodecRegistry</code></th><td>Which decoders and encoders are available; register your own to take precedence.</td></tr>
                 <tr><th scope="row"><code>ImageDocument</code></th><td>A non-destructive edit: a pipeline, the layers over it, and annotations.</td></tr>
                 <tr><th scope="row"><code>DocumentRenderer</code></th><td>Renders a document against a source image.</td></tr>
+                <tr><th scope="row"><code>LayerCompositor</code></th><td>Composites layers onto any buffer, or builds an image from layers alone - see <a href="/layers-and-masks">Layers and masks</a>.</td></tr>
                 <tr><th scope="row"><code>EditHistory</code></th><td>Undo and redo over documents.</td></tr>
+                <tr><th scope="row"><code>ImageEditSession</code></th><td>What the editor runs on: an original, a display-sized proxy, cached previews and the history - for an editing UI of your own.</td></tr>
+                <tr><th scope="row"><code>BmageJson</code>, <code>BmageProject</code></th><td>A document as JSON that references its images, or one file with the images inside.</td></tr>
+                <tr><th scope="row"><code>ImageStatistics</code>, <code>ColorSampler</code>, <code>ContentBounds</code>, <code>SmartCrop</code>, <code>ImagePlaceholder</code></th><td>Analysis: histograms and palettes, the colour at a point, the rectangle inside a border, the crop around a subject, a tiny placeholder.</td></tr>
+                <tr><th scope="row"><code>BudgetedPixelAllocator</code></th><td>A hard ceiling on the pixel memory a request, a session or a batch may take.</td></tr>
                 <tr><th scope="row"><code>FontTextRasterizer</code></th><td>Text from a font file, no browser needed.</td></tr>
             </tbody>
         </table>
@@ -149,10 +154,17 @@
     <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Analysing an image</h3>
     <p>
         <code>ImageStatistics</code> samples on a regular grid by default, which keeps a 24 megapixel
-        photo well under a frame while staying indistinguishable from a full pass. The dominant
-        colours on the <a href="/avatar">Avatar</a> page come from here.
+        photo well under a frame while staying indistinguishable from a full pass. Each channel and the
+        luminance come back as a 256-bucket <code>Histogram</code> - the one the editor's Adjust tab
+        draws - and the dominant colours on the <a href="/avatar">Avatar</a> page come from here too.
     </p>
     <CodeSnippet Code="@StatsSnippet" Language="C#" />
+    <p>
+        Three more measurements feed edits: the colour at a point (the eyedropper, and the neutral a white
+        balance needs), the rectangle inside a transparent or uniform border (a trim), and the crop
+        around a subject, with its score.
+    </p>
+    <CodeSnippet Code="@MeasureSnippet" Language="C#" />
     <p>
         <code>ImagePlaceholder</code> is the low-quality image placeholder pattern: a 67 character
         token for a 4&times;4 grid, small enough to return from a list endpoint, that renders the right
@@ -182,7 +194,7 @@
     private bool _busy;
     // Identifies the newest run, so a second image dropped mid-run does not mix its examples with the first one's.
     private int _run;
-    private const int ExampleCount = 7;
+    private const int ExampleCount = 11;
 
     private bool IsHydrating => RendererInfo.IsInteractive is false;
 
@@ -258,6 +270,26 @@
 
         var palette = ImageStatistics.GetDominantColors(image, count: 5, ignoreNearWhiteAndBlack: true);
         foreach (var c in palette) Console.WriteLine($"{c.Color.ToHex(false)} {c.Percent:0.#}%");
+
+        // A histogram: draw it, or read clipping from its ends.
+        var luminance = stats.Luminance;
+        double[] heights = luminance.ToNormalized();               // 256 values, the tallest 1
+        var clippedBlack = luminance[0] * 100.0 / luminance.Total;  // % of pixels at pure black
+        Console.WriteLine($"median {luminance.Median}, peak at {luminance.Peak}");
+        """;
+
+    private const string MeasureSnippet = """
+        // The eyedropper: a 7 × 7 average around a point, alpha-weighted.
+        var colour = ColorSampler.Sample(image, new Point(120, 80), radius: 3);
+
+        // Trim: the content inside a transparent or uniform border, or null when there is only border.
+        if (ContentBounds.Find(image, new TrimOptions { Mode = TrimMode.Auto, Tolerance = 0.05f, Padding = 8 }) is { } content)
+            pipeline = pipeline.Crop(content);
+
+        // Smart cropping as a measurement: where the subject is, and how sure the heuristic is.
+        var crop = SmartCrop.FindCrop(image, AspectRatio.Ratio16x9);
+        Console.WriteLine($"{crop.Rectangle} scored {crop.Score:0.00}");
+        pipeline = pipeline.Apply(crop.ToOperation());
         """;
 
     private const string PlaceholderSnippet = """
@@ -375,13 +407,51 @@
             "ImagePipeline.Create()\n    .MaxSize(360, 360)\n    .Pixelate(14, new Rectangle(0, 0, 180, 90))",
             ImagePipeline.Create().MaxSize(360, 360).Pixelate(14, new System.Drawing.Rectangle(0, 0, 180, 90)));
 
+        await Add(run, "Straightened 6°",
+            "Levels a tilt and crops to the largest rectangle the turned image covers, so no corner is left empty.",
+            "ImagePipeline.Create()\n    .MaxSize(360, 360)\n    .Straighten(6)",
+            ImagePipeline.Create().MaxSize(360, 360).Straighten(6));
+
+        await Add(run, "Framed",
+            "Pad grows the canvas without scaling the image: a white mount, then a thin dark frame.",
+            "ImagePipeline.Create()\n    .MaxSize(320, 320)\n    .Pad(18, Rgba32.White)\n    .Pad(3, new Rgba32(40, 40, 46))",
+            ImagePipeline.Create().MaxSize(320, 320).Pad(18, Rgba32.White).Pad(3, new Rgba32(40, 40, 46)));
+
+        await Add(run, "Duotone",
+            "The image's tones mapped onto two colours: shadows to the first, highlights to the second.",
+            "ImagePipeline.Create()\n    .MaxSize(360, 360)\n    .Duotone(new Rgba32(24, 32, 88),\n             new Rgba32(250, 214, 140))",
+            ImagePipeline.Create().MaxSize(360, 360).Duotone(new Rgba32(24, 32, 88), new Rgba32(250, 214, 140)));
+
+        await AddPlaceholder(run);
+
         await AddComposed(run);
+    }
+
+    /// <summary>
+    /// The placeholder pattern end to end: the token a list endpoint would send, and the picture rebuilt from it
+    /// with no image request at all.
+    /// </summary>
+    private async Task AddPlaceholder(int run)
+    {
+        if (run != _run || _source is not { } source) return;
+        var token = ImagePlaceholder.Create(source).ToCompactString();
+        var height = (int)Math.Round(360.0 * source.Height / Math.Max(1, source.Width));
+        var image = ImagePlaceholder.Parse(token, source.Width, source.Height)!.Render(360, Math.Clamp(height, 1, 720));
+        await AddImage(run, "Placeholder",
+            $"Rebuilt from the {token.Length} character token \"{token}\" - the colours and shape before the image arrives.",
+            "var token = ImagePlaceholder.Create(image)\n    .ToCompactString();\n\nusing var blurred = ImagePlaceholder\n    .Parse(token, width, height)!\n    .Render(360, 240);",
+            image);
     }
 
     private async Task Add(int run, string title, string description, string code, ImagePipeline pipeline)
     {
         if (run != _run || _source is not { } source) return;
-        var image = await pipeline.ExecuteAsync(source);
+        await AddImage(run, title, description, code, await pipeline.ExecuteAsync(source));
+    }
+
+    /// <summary>Encodes an example's result to report its size and adds it to the grid. Takes ownership of the image.</summary>
+    private async Task AddImage(int run, string title, string description, string code, ImageBuffer image)
+    {
         try
         {
             var encoded = await Exporter.EncodeAsync(image, new ImageExportOptions { Format = ImageFormat.Png });

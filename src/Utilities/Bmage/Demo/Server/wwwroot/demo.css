@@ -403,6 +403,16 @@ svg.icon {
     font-variant-numeric: tabular-nums;
 }
 
+/* A sampled colour shown beside the sentence that names it: a dot rather than a labelled pill. */
+.demo-swatch.retouch-swatch {
+    min-height: 0;
+    width: .875rem;
+    height: .875rem;
+    padding: 0;
+    margin-inline-end: .375rem;
+    vertical-align: -.125rem;
+}
+
 .demo-small {
     font-size: var(--fl-font-size-200);
     line-height: 1.5;
@@ -630,6 +640,8 @@ div.preview-image[aria-busy="true"] {
 
 .headless-description {
     margin: .5rem 0 .25rem;
+    /* The placeholder's description quotes its token, one long word that must wrap inside the card. */
+    overflow-wrap: anywhere;
 }
 
 /* Pipelines: the playground's readouts. */

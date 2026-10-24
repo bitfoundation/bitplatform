@@ -3,18 +3,19 @@
 @implements IDisposable
 @inject ImageExporter Exporter
 
-@* A product shot made ready for a catalogue: levelled, colour corrected, its backdrop removed, its label
-   recoloured with the magic wand and a stroke painted by hand - every step an editable value in one
-   ImageDocument, saved and reopened as a project file with everything still editable. *@
+@* A product shot made ready for a catalogue: levelled, colour corrected, its backdrop removed and trimmed
+   away, its label recoloured with the magic wand and a stroke painted by hand - every step an editable value
+   in one ImageDocument, saved and reopened as a project file with everything still editable. *@
 
 <PageTitle>Retouching and selections · Bmage</PageTitle>
 
 <div class="bb-intro">
     <h1>Retouching and selections</h1>
     <p class="bb-subtitle">
-        Level a tilted shot, neutralise a colour cast, lift a product off a plain backdrop, recolour one region
-        with the <strong>magic wand</strong> and paint by hand - then save the whole edit as a
-        <strong>project file</strong> that reopens with every step still editable.
+        Level a tilted shot, neutralise a colour cast - automatically or from a colour you pick - lift a product
+        off a plain backdrop and trim to it, recolour one region with the <strong>magic wand</strong> and paint
+        by hand - then save the whole edit as a <strong>project file</strong> that reopens with every step
+        still editable.
     </p>
 </div>
 
@@ -84,9 +85,21 @@
                     <input id="straighten" type="range" min="-10" max="10" step="0.5"
                            value="@_straighten.ToString(System.Globalization.CultureInfo.InvariantCulture)" @oninput="e => SetNumber(v => _straighten = v, e)" />
                 </div>
-                <div class="demo-field demo-field-inline">
-                    <input id="balance" type="checkbox" checked="@_whiteBalance" @onchange="e => Set(() => _whiteBalance = (bool)(e.Value ?? false))" />
-                    <label class="demo-field-label" for="balance">Automatic white balance</label>
+                <div class="demo-field" role="group" aria-labelledby="balance-label">
+                    <span class="demo-field-label" id="balance-label">White balance</span>
+                    <div class="bb-segmented">
+                        @foreach (var option in BalanceOptions)
+                        {
+                            <button type="button" aria-pressed="@(_balance == option ? "true" : "false")" @onclick="() => Set(() => _balance = option)">@option</button>
+                        }
+                    </div>
+                    @if (_balance == PickedBalance && _opened is null && PickedNeutral is { } neutral)
+                    {
+                        <span class="bb-field-hint">
+                            <span class="demo-swatch retouch-swatch" style="background:@neutral.ToHex(false)" aria-hidden="true"></span>
+                            The eyedropper read @neutral.ToHex(false) from the backdrop's corner; white balance turns that colour grey.
+                        </span>
+                    }
                 </div>
 
                 <hr class="demo-divider" />
@@ -99,6 +112,10 @@
                     <label class="demo-field-label" for="tolerance">Tolerance <span class="demo-field-value">@_tolerance.ToString("0.00")</span></label>
                     <input id="tolerance" type="range" min="0" max="0.4" step="0.01"
                            value="@_tolerance.ToString(System.Globalization.CultureInfo.InvariantCulture)" @oninput="e => SetNumber(v => _tolerance = (float)v, e)" />
+                </div>
+                <div class="demo-field demo-field-inline">
+                    <input id="trim" type="checkbox" checked="@_trim" @onchange="e => Set(() => _trim = (bool)(e.Value ?? false))" />
+                    <label class="demo-field-label" for="trim">Trim to the product</label>
                 </div>
                 <div class="demo-field" role="group" aria-label="Label colour">
                     <span class="demo-field-label">Label colour, by magic wand</span>
@@ -124,6 +141,19 @@
             </div>
         </div>
     </div>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Colour from a sample, edges from the content</h3>
+    <p>
+        Two measurements turn into edits. <code>ColorSampler.Sample</code> is the eyedropper: it averages a
+        few pixels around a point so sensor noise does not decide the colour, and
+        <code>WhiteBalance</code> scales the channels so that colour becomes neutral - or
+        <code>AutoWhiteBalance</code> finds the neutral itself. <code>ContentBounds.Find</code> measures
+        the transparent or uniform border around the subject, and a <code>Crop</code> to what it returns
+        is the trim. The editor's Adjust tab has the same picker, and its Transform tab the trim.
+    </p>
+    <CodeSnippet Code="@MeasureSnippet" Language="C#" Expanded="true" />
 </div>
 
 <div class="bb-card">
@@ -160,16 +190,25 @@
 
 @code {
     private static readonly string[] LabelColors = ["Original", "Teal", "Purple"];
+    private const string PickedBalance = "From the backdrop";
+    private static readonly string[] BalanceOptions = ["Off", "Automatic", PickedBalance];
     private static readonly System.Drawing.Size SourceSize = new(900, 640);
     // A point inside the label, which the wand seeds from.
     private static readonly Vector2 LabelSeed = new(450, 360);
+    // A point on the backdrop, away from the mug, which the eyedropper reads: it should be neutral, and is warm.
+    private static readonly System.Drawing.Point BackdropPoint = new(40, 40);
+    // Background kept around the product when trimming, so it is not cut off at its edge.
+    private static readonly TrimOptions Trim = new() { Padding = 16 };
 
     private ImageBuffer? _source;
     private ImageBuffer? _preview;
     private long _previewVersion;
     private double _straighten = 4;
-    private bool _whiteBalance = true;
+    private string _balance = "Automatic";
     private bool _removeBackground = true;
+    private bool _trim;
+    // The rectangle the last render measured for the trim, for the document the page shows and saves.
+    private Rectangle? _trimBounds;
     private float _tolerance = 0.12f;
     private string _label = "Teal";
     private bool _paint = true;
@@ -190,12 +229,17 @@
 
     private bool IsHydrating => RendererInfo.IsInteractive is false;
 
-    private ImageDocument Document => _opened ?? Build();
+    private ImageDocument Document => _opened ?? Build(_trim ? _trimBounds : null);
 
-    private ImageDocument Build()
+    /// <summary>The eyedropper's reading of the backdrop, which the picked white balance neutralises.</summary>
+    private Rgba32? PickedNeutral => _source is { IsDisposed: false } source ? ColorSampler.Sample(source, BackdropPoint, radius: 4) : null;
+
+    /// <param name="trimTo">The rectangle a trim measured on the untrimmed render, or null for none.</param>
+    private ImageDocument Build(Rectangle? trimTo)
     {
         var pipeline = ImagePipeline.Create();
-        if (_whiteBalance) pipeline = pipeline.AutoWhiteBalance(0.9f);
+        if (_balance == "Automatic") pipeline = pipeline.AutoWhiteBalance(0.9f);
+        else if (_balance == PickedBalance && PickedNeutral is { } neutral) pipeline = pipeline.WhiteBalance(neutral);
         if (_removeBackground) pipeline = pipeline.RemoveBackground(_tolerance, feather: 0.8f);
         var document = ImageDocument.Create(SourceSize).WithPipeline(pipeline);
         if (_label != "Original")
@@ -215,7 +259,9 @@
             document = document.AddLayer(new PaintLayer([new PaintStroke(points, 14, new Rgba32(230, 120, 40)) { Hardness = _hardness, Pressures = pressures }]) { Name = "Flourish" });
         }
         // Straightened last, with the overlays carried along: the flourish and the label colour stay where they were painted.
-        return _straighten == 0 ? document : document.AddOperation(new StraightenOperation(_straighten), keepOverlaysAttached: true);
+        if (_straighten != 0) document = document.AddOperation(new StraightenOperation(_straighten), keepOverlaysAttached: true);
+        // The trim crops to what ContentBounds measured on the render without it, the overlays again carried along.
+        return trimTo is { } bounds ? document.AddOperation(new CropOperation(bounds), keepOverlaysAttached: true) : document;
     }
 
     private const string SelectionSnippet = """
@@ -232,6 +278,19 @@
         // Select by colour anywhere, contract the selection, outline it.
         var reds = new FloodMask([seed]) { Contiguous = false }.Contract(2);
         var outline = reds.Border(6);
+        """;
+
+    private const string MeasureSnippet = """
+        // White balance from a colour that should be grey: a 9 × 9 average around a point on the backdrop.
+        var neutral = ColorSampler.Sample(photo, new Point(40, 40), radius: 4);
+        pipeline = pipeline.WhiteBalance(neutral);           // or .AutoWhiteBalance(0.9f)
+
+        // Trim: render, measure the border, crop to the content - keeping layers and paint where they were.
+        using var untrimmed = await new DocumentRenderer().RenderAsync(document, photo);
+        if (ContentBounds.Find(untrimmed, new TrimOptions { Padding = 16 }) is { } content)
+            document = document.AddOperation(new CropOperation(content), keepOverlaysAttached: true);
+
+        // A trim is a measurement and then a crop, because an operation's output size must be known without the pixels.
         """;
 
     private const string PaintSnippet = """
@@ -288,6 +347,8 @@
     private void Set(Action change)
     {
         change();
+        // The trim was measured on the edit as it was; the next render measures it again.
+        _trimBounds = null;
         CloseOpened();
         // A project of another image was opened: the controls edit the sample again.
         if (_source is { } source && source.Size != SourceSize)
@@ -347,7 +408,7 @@
         try
         {
             var started = System.Diagnostics.Stopwatch.StartNew();
-            var rendering = new DocumentRenderer().RenderAsync(Document, source).AsTask();
+            var rendering = RenderAsync(source, run);
             _rendering = rendering;
             var result = await rendering;
             started.Stop();
@@ -377,6 +438,23 @@
                 StateHasChanged();
             }
         }
+    }
+
+    /// <summary>
+    /// Renders the document shown. With the trim on, that is two renders: one without it, which
+    /// <see cref="ContentBounds"/> measures, and one cropped to what it found - the order the editor's Trim button
+    /// follows too.
+    /// </summary>
+    private async Task<ImageBuffer> RenderAsync(ImageBuffer source, int run)
+    {
+        var renderer = new DocumentRenderer();
+        if (_opened is not null || !_trim) return await renderer.RenderAsync(Document, source);
+
+        Rectangle? bounds;
+        using (var untrimmed = await renderer.RenderAsync(Build(trimTo: null), source))
+            bounds = ContentBounds.Find(untrimmed, Trim);
+        if (run == _run) _trimBounds = bounds;
+        return await renderer.RenderAsync(Build(bounds), source);
     }
 
     private async Task SaveProjectAsync()

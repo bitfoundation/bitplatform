@@ -52,6 +52,11 @@
         Services are scoped. In WebAssembly a scope lasts for the whole application; in Server there
         is one per circuit, so browser state is never shared between users.
     </p>
+    <p>
+        Threads, workers and memory budgets are covered on <a href="/performance#threads-workers-and-memory">Performance</a>;
+        a WebAssembly app whose only use of Bmage is the editor can skip the registration and
+        <a href="/hosting#lazy-loading">lazy load</a> the library instead.
+    </p>
 </div>
 
 <div class="bb-card">
@@ -190,6 +195,14 @@
 
             // Longest edge used for interactive editing; larger images edit through a proxy.
             options.MaxInteractiveDimension = 2048;
+
+            // Threads one operation may spread its rows over: one by default, identical pixels at any number.
+            // Environment.ProcessorCount uses every core - in a browser only when the app is built with threads.
+            options.MaxDegreeOfParallelism = null;
+
+            // Web Workers the browser codecs may use: one per spare core, at most four, by default.
+            // 0 keeps decoding and encoding on the page's thread.
+            options.MaxCodecWorkers = null;
         });
         """;
 

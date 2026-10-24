@@ -378,8 +378,73 @@ public class DemoRegressionTests : DemoTest
     {
         var page = await OpenAsync("headless");
         await page.GetByRole(AriaRole.Button, new PageGetByRoleOptions { Name = "Use a sample image" }).ClickAsync();
-        await page.WaitForFunctionAsync("() => document.querySelectorAll('.headless-results .headless-result img').length === 7 && !document.querySelector('.working')", null,
+        await page.WaitForFunctionAsync("() => document.querySelectorAll('.headless-results .headless-result img').length === 11 && !document.querySelector('.working')", null,
             new PageWaitForFunctionOptions { Timeout = 180_000 });
-        Assert.AreEqual(7, await page.Locator(".headless-results .headless-result").CountAsync());
+        Assert.AreEqual(11, await page.Locator(".headless-results .headless-result").CountAsync());
+    }
+
+    [TestMethod]
+    public async Task TheNewerToolsRunFromTheirDemoPages()
+    {
+        // Each page's live sample drives the operations, layers and measurements it documents; any of them throwing
+        // shows as the page's error banner or a console error.
+        static async Task SettleAsync(IPage page)
+        {
+            // Debounced, then a spinner until the render is done.
+            await page.WaitForTimeoutAsync(300);
+            await page.WaitForSelectorAsync(".working", new PageWaitForSelectorOptions { State = WaitForSelectorState.Detached, Timeout = 60_000 });
+        }
+
+        static async Task AssertCleanAsync(IPage page, List<string> errors)
+        {
+            Assert.IsEmpty(errors, string.Join(" | ", errors));
+            Assert.IsEmpty(await page.Locator(".demo-error").AllInnerTextsAsync());
+        }
+
+        var pipelines = await OpenAsync("pipelines");
+        var errors = CollectErrors(pipelines);
+        await pipelines.GetByRole(AriaRole.Button, new() { Name = "Run on a sample image" }).ClickAsync(new LocatorClickOptions { Timeout = 60_000 });
+        await pipelines.WaitForSelectorAsync("img.pipeline-preview", new PageWaitForSelectorOptions { Timeout = 60_000 });
+        foreach (var geometry in new[] { "Straighten 6°", "Pad 40px" })
+        {
+            await pipelines.GetByRole(AriaRole.Button, new() { Name = geometry, Exact = true }).ClickAsync();
+            await SettleAsync(pipelines);
+        }
+        foreach (var step in new[] { "balance", "hsl", "bw", "duotone", "motion" })
+            await pipelines.Locator($"#step-{step}").CheckAsync();
+        await SettleAsync(pipelines);
+        await AssertCleanAsync(pipelines, errors);
+
+        var layers = await OpenAsync("layers-and-masks");
+        errors = CollectErrors(layers);
+        await layers.GetByRole(AriaRole.Button, new() { Name = "Run on a sample image" }).ClickAsync(new LocatorClickOptions { Timeout = 60_000 });
+        await layers.WaitForSelectorAsync("img.preview-image", new PageWaitForSelectorOptions { Timeout = 60_000 });
+        await layers.GetByRole(AriaRole.Button, new() { Name = "Clipped group", Exact = true }).ClickAsync();
+        await SettleAsync(layers);
+        var json = await layers.Locator(".layers-json").InnerTextAsync();
+        StringAssert.Contains(json, "\"type\": \"group\"");
+        StringAssert.Contains(json, "\"clipToLayerBelow\": true");
+        await AssertCleanAsync(layers, errors);
+
+        // Retouch: the eyedropper's white balance, then the trim, which crops the cut-out product to its bounds.
+        var retouch = await OpenAsync("retouch");
+        errors = CollectErrors(retouch);
+        await retouch.GetByRole(AriaRole.Button, new() { Name = "Run on a sample image" }).ClickAsync(new LocatorClickOptions { Timeout = 60_000 });
+        await retouch.WaitForSelectorAsync("img.pipeline-preview", new PageWaitForSelectorOptions { Timeout = 60_000 });
+        await retouch.GetByRole(AriaRole.Button, new() { Name = "From the backdrop", Exact = true }).ClickAsync();
+        await retouch.GetByText("The eyedropper read").WaitForAsync(new LocatorWaitForOptions { Timeout = 10_000 });
+        const string OutputWidth = "() => parseInt(document.querySelectorAll('.playground-stats .bb-stat-value')[1].textContent)";
+        var untrimmed = await retouch.EvaluateAsync<int>(OutputWidth);
+        await retouch.Locator("#trim").CheckAsync();
+        await retouch.WaitForFunctionAsync($"() => ({OutputWidth})() < {untrimmed}", null, new PageWaitForFunctionOptions { Timeout = 60_000 });
+        await AssertCleanAsync(retouch, errors);
+
+        var social = await OpenAsync("social");
+        errors = CollectErrors(social);
+        await social.GetByRole(AriaRole.Button, new() { Name = "Use a sample image" }).ClickAsync(new LocatorClickOptions { Timeout = 60_000 });
+        await social.WaitForSelectorAsync("img.social-preview", new PageWaitForSelectorOptions { Timeout = 60_000 });
+        await social.GetByRole(AriaRole.Button, new() { Name = "Duotone", Exact = true }).ClickAsync();
+        await SettleAsync(social);
+        await AssertCleanAsync(social, errors);
     }
 }

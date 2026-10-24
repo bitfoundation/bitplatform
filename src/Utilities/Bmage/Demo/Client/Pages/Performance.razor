@@ -220,6 +220,62 @@
     </p>
 </div>
 
+<div class="bb-card" id="threads-workers-and-memory">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Threads, workers and memory</h3>
+    <p>
+        Every number above is on <strong>one thread</strong>, the default. Operations whose rows are
+        independent - resampling, rotation and warps, per-pixel adjustments, convolution, median,
+        vignette, masks, layer compositing and drawing images - split their rows over
+        <code>MaxDegreeOfParallelism</code> threads, each band with scratch of its own, so the pixels are
+        identical however many run; a test asserts it for every one of them. Measured on a 10 core,
+        20 thread desktop:
+    </p>
+    <div class="bb-scroll" tabindex="0" role="region" aria-label="Parallel speed-ups">
+        <table class="bb-table">
+            <thead>
+                <tr><th scope="col">Operation</th><th scope="col" class="demo-num">1 thread</th><th scope="col" class="demo-num">20 threads</th><th scope="col" class="demo-num">Speed-up</th></tr>
+            </thead>
+            <tbody>
+                <tr><th scope="row">Downscale 6000&times;4000 to 1280, Lanczos3</th><td class="demo-num">251 ms</td><td class="demo-num"><strong>54 ms</strong></td><td class="demo-num">4.7&times;</td></tr>
+                <tr><th scope="row">Rotate 3840&times;2160 by 37&deg;, bicubic</th><td class="demo-num">450 ms</td><td class="demo-num"><strong>74 ms</strong></td><td class="demo-num">6.1&times;</td></tr>
+                <tr><th scope="row">Saturation and hue, 3840&times;2160</th><td class="demo-num">95 ms</td><td class="demo-num"><strong>15 ms</strong></td><td class="demo-num">6.3&times;</td></tr>
+                <tr><th scope="row">Median, radius 1, 1920&times;1080</th><td class="demo-num">132 ms</td><td class="demo-num"><strong>16 ms</strong></td><td class="demo-num">8.5&times;</td></tr>
+                <tr><th scope="row">Exposure through a gradient mask, 3840&times;2160</th><td class="demo-num">40 ms</td><td class="demo-num"><strong>7.6 ms</strong></td><td class="demo-num">5.2&times;</td></tr>
+                <tr><th scope="row">Two masked layers composited, 3840&times;2160</th><td class="demo-num">487 ms</td><td class="demo-num"><strong>83 ms</strong></td><td class="demo-num">5.9&times;</td></tr>
+            </tbody>
+        </table>
+    </div>
+    <p>
+        Blurs and sharpening stay on one thread: they stream rows through running sums, and splitting them
+        would change the sums and so the pixels. One thread is the default because it is right for a
+        server, where requests and circuits already run side by side, and for the browser, where
+        WebAssembly runs .NET on the page's thread; a desktop app, a background job or a WebAssembly app
+        built with <code>WasmEnableThreads</code> should raise it.
+    </p>
+    <CodeSnippet Code="@ThreadsSnippet" Language="C#" Expanded="true" />
+    <h4>Web Workers</h4>
+    <p>
+        In the browser, decoding, encoding and building the editor's working copy run in a small pool of
+        Web Workers, so the page keeps painting and handling input while a photo decodes, and the several
+        decodes a batch makes spread over several cores. The pool starts with one worker and grows, while
+        all are busy, to one per spare core and at most four. Files and pixels are transferred, not
+        copied. Without <code>OffscreenCanvas</code>, or where a Content Security Policy blocks workers,
+        the same work runs on the page's thread. <code>MaxCodecWorkers</code> caps the pool, and 0 turns
+        it off.
+    </p>
+    <h4>Memory you can predict</h4>
+    <p>
+        A pipeline estimates the most pixel memory its run will hold before it runs, following the
+        buffers each step keeps - a test holds the estimate between what a run really allocates and twice
+        that. A <code>BudgetedPixelAllocator</code> enforces a ceiling: every buffer and mask an operation
+        makes comes from the allocator in its context, so one budget bounds a request, a session or a batch,
+        on any number of threads, and an allocation that would pass it is refused with
+        <code>ImageMemoryBudgetExceededException</code> before it is made. A batch can also admit
+        images by their expected peak with <code>MaxMemoryBytes</code> - see <a href="/batch">Batch processing</a>.
+    </p>
+    <CodeSnippet Code="@MemorySnippet" Language="C#" Expanded="true" />
+</div>
+
 <div class="bb-card">
     <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Interactive editing</h3>
     <p>
@@ -237,7 +293,8 @@
         <li><strong>Cap dimensions before anything else.</strong> Every later operation costs proportionally less.</li>
         <li><strong>Group adjustments together.</strong> Consecutive per-pixel operations fuse into one pass; a geometric operation between them prevents that.</li>
         <li><strong>Prefer right angles.</strong> <code>Rotate(90)</code> takes the lossless path; <code>Rotate(90.5)</code> resamples the whole image.</li>
-        <li><strong>Keep batch concurrency low.</strong> Each worker holds a decoded image; four on 24 megapixel photos is roughly 400 MB of live pixels.</li>
+        <li><strong>Keep batch concurrency low, or budget it.</strong> Each worker holds a decoded image; four on 24 megapixel photos is roughly 400 MB of live pixels. <code>MaxMemoryBytes</code> lets the size of each image decide instead.</li>
+        <li><strong>Add threads where one image at a time should finish sooner</strong> - a desktop app or a background job - not on a busy server.</li>
         <li><strong>Dispose buffers</strong>, and <strong>use object URLs</strong>, not data URLs.</li>
     </ul>
     <CodeSnippet Code="ImagePipeline.Create().AutoOrient().MaxSize(1920, 1920).Sharpen(0.3f)" Language="C#" Expanded="true" />
@@ -346,6 +403,31 @@
         <PropertyGroup>
           <RunAOTCompilation>true</RunAOTCompilation>
         </PropertyGroup>
+        """;
+
+    private const string ThreadsSnippet = """
+        // For every operation the services run: processors, loaders and editors.
+        builder.Services.AddBitBmageServices(options =>
+        {
+            options.MaxDegreeOfParallelism = Environment.ProcessorCount;
+            options.MaxCodecWorkers = 2;          // the browser codecs' Web Workers; 0 keeps them on the page
+        });
+
+        // For one run:
+        using var result = pipeline.Execute(image, new PipelineExecutionOptions { MaxDegreeOfParallelism = 8 });
+
+        // In a batch every image in flight uses that many: MaxConcurrency × MaxDegreeOfParallelism threads.
+        """;
+
+    private const string MemorySnippet = """
+        var estimate = pipeline.EstimateMemory(new Size(6000, 4000));
+        estimate.PeakBytes;     // the most pixel memory the run holds at once, its result included
+        estimate.OutputBytes;   // the result
+
+        // A hard ceiling: an allocation past it throws ImageMemoryBudgetExceededException before it is made.
+        var budget = new BudgetedPixelAllocator(256L * 1024 * 1024);
+        using var result = pipeline.Execute(source, new PipelineExecutionOptions { Allocator = budget });
+        Console.WriteLine($"{budget.PeakBytes / 1048576.0:0.0} MB at the peak");
         """;
 
     private async Task RunAsync()

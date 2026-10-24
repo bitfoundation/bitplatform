@@ -176,9 +176,31 @@
                 <tr><th scope="row"><code>FillLayer</code></th><td>A colour over the whole image, usually shaped by a mask: a colour wash, a gradient fade, a duotone.</td></tr>
                 <tr><th scope="row"><code>AdjustmentLayer</code></th><td>An edit of everything beneath it, which can be reordered, hidden or faded without touching anything else.</td></tr>
                 <tr><th scope="row"><code>PaintLayer</code></th><td>Brush strokes with hardness and pen pressure, and an eraser that removes the layer's own paint - kept as strokes, not pixels.</td></tr>
+                <tr><th scope="row"><code>GroupLayer</code></th><td>Other layers, bottom first, shown, hidden, faded, masked and moved as one - groups nest up to ten deep.</td></tr>
             </tbody>
         </table>
     </div>
+    <p>
+        Every layer has a <code>Name</code>, a <code>BlendMode</code>, an <code>Opacity</code>, an optional
+        <code>Mask</code>, <code>IsVisible</code> and <code>IsLocked</code>, and can be clipped to the layer
+        below it. The document edits them by id, into and out of groups as well:
+    </p>
+    <CodeSnippet Code="@DocumentLayersSnippet" Language="C#" Expanded="true" />
+    <h4>Groups and clipping</h4>
+    <p>
+        A group <strong>passes through</strong> by default: its layers blend onto what is beneath exactly as
+        they would without it, an adjustment layer inside it edits everything below, and the group's opacity
+        and mask fade the result back. Set <code>Isolated</code>, or give the group a blend mode other than
+        <code>SourceOver</code>, and its layers composite on their own first - an adjustment inside then edits
+        only the group - and that picture is blended in as one.
+    </p>
+    <p>
+        <code>ClipToLayerBelow</code> limits a layer to where the nearest unclipped layer below it - its base -
+        has pixels: a texture inside lettering, a colour on one sticker, an adjustment of one layer alone. The
+        <strong>Clipped group</strong> above is both: a fill clipped to the badge, so only the badge takes the
+        gradient, grouped so the blend mode and opacity apply to the pair.
+    </p>
+    <CodeSnippet Code="@GroupSnippet" Language="C#" Expanded="true" />
     <p>
         The blend modes are those of CSS <code>mix-blend-mode</code>: <code>Multiply</code>, <code>Screen</code>,
         <code>Overlay</code>, <code>Darken</code>, <code>Lighten</code>, <code>ColorDodge</code>,
@@ -199,11 +221,22 @@
         embedded.
     </p>
     <CodeSnippet Code="@JsonSnippet" Language="C#" Expanded="true" />
+    <p>
+        Malformed input is refused with an <code>ImageDocumentFormatException</code> that names where it went
+        wrong, such as <code>$.pipeline[2].rectangle</code>. A custom operation, mask, layer or annotation is
+        written once it has a codec (<code>BmageJsonOptions.Add</code>, shown on
+        <a href="/pipelines">Pipelines</a>); until then serialising one throws rather than silently dropping a step.
+    </p>
+    <p>
+        When the images should travel with the edit, <code>BmageProject</code> writes the original, the document
+        and every image it refers to into one <code>.bmage</code> file that reopens with every layer, mask and
+        stroke still editable - <a href="/retouch">Retouching and selections</a> saves and opens one.
+    </p>
 </div>
 
 @code {
     private static readonly string[] EditOptions = ["None", "Graduated sky", "Spotlight", "Lift shadows", "Colour pop"];
-    private static readonly string[] LayerOptions = ["None", "Colour wash", "Sunset glow", "Watermark", "Adjustment"];
+    private static readonly string[] LayerOptions = ["None", "Colour wash", "Sunset glow", "Watermark", "Adjustment", "Clipped group"];
     private static readonly BlendMode[] BlendModes = [.. Enum.GetValues<BlendMode>().Where(m => m is not (BlendMode.Copy or BlendMode.Erase))];
 
     private static readonly System.Drawing.Size SourceSize = new(900, 600);
@@ -270,6 +303,21 @@
             ? new ImageLayer { Image = stamp, Bounds = new RectangleF(SourceSize.Width - 230, SourceSize.Height - 230, 200, 200), Rotation = -12, Name = "Watermark" }
             : null,
         "Adjustment" => new AdjustmentLayer(ImagePipeline.Create().Contrast(0.45f).Vibrance(0.6f)) { Name = "Punch", Mask = Mask.Ellipse() with { Feather = 30 } },
+        // A fill clipped to the badge below it, so only the badge takes the gradient; the group carries the
+        // blend mode and opacity for the pair.
+        "Clipped group" => _stamp is { } badge
+            ? new GroupLayer(
+              [
+                  new ImageLayer { Image = badge, Bounds = new RectangleF(SourceSize.Width / 2 - 130, SourceSize.Height / 2 - 130, 260, 260), Name = "Badge" },
+                  new FillLayer(new Rgba32(230, 60, 120))
+                  {
+                      Name = "Badge tint",
+                      ClipToLayerBelow = true,
+                      BlendMode = BlendMode.Color,
+                      Mask = Mask.Gradient(new(0, 0.3f), new(0, 0.7f)),
+                  },
+              ]) { Name = "Clipped group" }
+            : null,
         _ => null,
     } is { } layer ? layer with { BlendMode = EffectiveBlend, Opacity = _opacity } : null;
 
@@ -324,8 +372,36 @@
 
         using var rendered = new DocumentRenderer().Render(document, photo);
 
-        // In the editor, the same through its context:
-        await editor.AddLayerAsync(new FillLayer(new Rgba32(40, 110, 220)) { BlendMode = BlendMode.Color, Opacity = 0.4f });
+        // In the editor, the same through the BmageEditorContext a Toolbar, Panel or Footer receives:
+        await context.AddLayerAsync(new FillLayer(new Rgba32(40, 110, 220)) { BlendMode = BlendMode.Color, Opacity = 0.4f });
+        await context.UpdateLayerAsync(layer with { Opacity = value }, transient: true);   // while a slider is dragged
+        """;
+
+    private const string DocumentLayersSnippet = """
+        document = document
+            .UpdateLayer(logo with { Opacity = 0.5f, IsVisible = true })
+            .MoveLayer(logo.Id, 0)                       // to the bottom of the stack
+            .DuplicateLayer(glow.Id, out var copyId)
+            .RemoveLayer(copyId!.Value);
+
+        var found = document.FindLayer(logo.Id);         // also inside groups
+        """;
+
+    private const string GroupSnippet = """
+        // Group layers already in the document, then fade them together.
+        document = document.GroupLayers([plate.Id, caption.Id], out var groupId, name: "Caption");
+        document = document.UpdateLayer(document.FindLayer(groupId!.Value)! with { Opacity = 0.8f });
+
+        document = document.MoveLayerIntoGroup(logo.Id, groupId.Value);   // on top of the group's layers
+        document = document.MoveLayerOutOfGroup(logo.Id);                 // directly above the group again
+        document = document.Ungroup(groupId.Value);                       // its layers, where it was
+
+        // Or build one: a texture shown only inside lettering, and the pair blended as one picture.
+        var title = new GroupLayer(
+        [
+            new ImageLayer { Image = lettering, Bounds = titleArea },
+            new ImageLayer { Image = woodTexture, Bounds = titleArea, ClipToLayerBelow = true },
+        ]) { Isolated = true, BlendMode = BlendMode.Overlay };
         """;
 
     private const string JsonSnippet = """
@@ -343,8 +419,8 @@
         using var original = await processor.DecodeAsync(upload);
         using var rendered = new DocumentRenderer(fonts).Render(document, original);
 
-        // Or reopen the editor where the user left off.
-        await editor.RestoreDocumentAsync(document);
+        // Or reopen the editor where the user left off, through its BmageEditorContext.
+        await context.RestoreDocumentAsync(document);
         """;
 
     private async Task StartAsync()

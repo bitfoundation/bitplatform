@@ -278,7 +278,8 @@ public class EditorTests : DemoTest
         var layers = await page.Locator(".bmg-layer-name").AllInnerTextsAsync();
         Assert.Contains("Redaction", layers);
         Assert.Contains("Arrow", layers);
-        Assert.HasCount(5, layers);
+        Assert.Contains("Callout", layers);
+        Assert.HasCount(7, layers);
 
         // The redaction must have replaced the pixels, not merely covered them in the DOM.
         var redacted = await page.EvaluateAsync<int[]>("""
@@ -299,15 +300,15 @@ public class EditorTests : DemoTest
         await page.WaitForTimeoutAsync(2500);
 
         await page.GetByRole(AriaRole.Tab, new PageGetByRoleOptions { Name = "Layers" }).ClickAsync();
-        Assert.AreEqual(5, await page.Locator(".bmg-layer").CountAsync());
+        Assert.AreEqual(7, await page.Locator(".bmg-layer").CountAsync());
 
         await page.Locator(".bmg-tool[title=Undo]").ClickAsync();
         await page.WaitForTimeoutAsync(1200);
-        Assert.AreEqual(4, await page.Locator(".bmg-layer").CountAsync());
+        Assert.AreEqual(6, await page.Locator(".bmg-layer").CountAsync());
 
         await page.Locator(".bmg-tool[title=Redo]").ClickAsync();
         await page.WaitForTimeoutAsync(1200);
-        Assert.AreEqual(5, await page.Locator(".bmg-layer").CountAsync());
+        Assert.AreEqual(7, await page.Locator(".bmg-layer").CountAsync());
     }
 
     [TestMethod]

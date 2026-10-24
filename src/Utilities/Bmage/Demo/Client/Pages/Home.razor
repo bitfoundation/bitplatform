@@ -95,7 +95,7 @@
         <p class="bb-overline">Capabilities</p>
         <h2>An image platform, not an interop wrapper</h2>
         <p class="bb-section-sub">
-            Six decisions run through the whole library. Every tile links to the page that shows the
+            Nine decisions run through the whole library. Every tile links to the page that shows the
             decision paying off - with a sample that runs on your own image.
         </p>
         <div class="bb-grid home-grid">
@@ -111,9 +111,9 @@
             <section class="bb-card">
                 <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> A complete editor component</h3>
                 <p class="bb-card-desc">
-                    <code>BmageEditor</code> crops, rotates, adjusts, filters, draws, annotates, redacts and
-                    exports - themed through CSS custom properties, localised, keyboard accessible and
-                    right-to-left aware.
+                    <code>BmageEditor</code> crops, straightens, adjusts, filters, selects, paints, annotates,
+                    redacts, layers and exports, and saves projects that reopen editable - themed through CSS
+                    custom properties, localised, keyboard accessible and right-to-left aware.
                 </p>
                 <a href="editor" class="btn btn-outline">The editor →</a>
             </section>
@@ -148,6 +148,32 @@
                     handler, a thumbnail service or a console tool with the managed codecs.
                 </p>
                 <a href="headless" class="btn btn-outline">Headless API →</a>
+            </section>
+            <section class="bb-card">
+                <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Selective edits and layers</h3>
+                <p class="bb-card-desc">
+                    Any edit applies through a mask - a gradient, a spotlight, a tone or colour range, a magic
+                    wand - and image, fill, adjustment and paint layers composite with the W3C blend modes,
+                    in groups and clipped to the layer below.
+                </p>
+                <a href="layers-and-masks" class="btn btn-outline">Layers and masks →</a>
+            </section>
+            <section class="bb-card">
+                <h3 class="bb-card-title"><span class="bb-dot bb-dot-danger"></span> Edits are data</h3>
+                <p class="bb-card-desc">
+                    A whole edit - pipeline, layers, masks and annotations - writes to JSON and reads back as
+                    the same edit, so the browser can send the edit instead of the pixels, and a project file
+                    reopens with every step still editable.
+                </p>
+                <a href="retouch" class="btn btn-outline">Retouching and projects →</a>
+            </section>
+            <section class="bb-card">
+                <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Every core, predictable memory</h3>
+                <p class="bb-card-desc">
+                    Operations spread their rows over as many threads as you allow with identical pixels,
+                    browser codecs run in Web Workers, and a pipeline estimates its peak memory before it runs.
+                </p>
+                <a href="performance#threads-workers-and-memory" class="btn btn-outline">Threads and memory →</a>
             </section>
         </div>
     </section>
@@ -238,7 +264,7 @@
             </section>
             <section class="bb-card">
                 <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Building a feature?</h3>
-                <p class="bb-card-desc">Avatars, screenshots, upload optimisation, product and social images, batches - each a working page with its source.</p>
+                <p class="bb-card-desc">Avatars, screenshots, upload optimisation, product and social images, retouching, batches - each a working page with its source.</p>
                 <a href="avatar" class="btn btn-outline">Open the workflows →</a>
             </section>
             <section class="bb-card">
@@ -291,6 +317,15 @@
                     Through the browser's own codecs, wherever the browser can - which Bmage probes rather
                     than assumes. Ask for a preference order with <code>EncodeWithFallbackAsync</code>, or
                     get an <code>ImageCapabilityException</code> instead of a silently substituted PNG.
+                </p>
+            </details>
+            <details>
+                <summary>Can an edit be saved and reopened later?</summary>
+                <p>
+                    Yes, two ways. <code>BmageJson</code> writes the edit itself - pipeline, layers, masks and
+                    annotations - as JSON that references its images, so a server can replay it on the original
+                    at full resolution. <code>BmageProject</code> writes one file with the original and every
+                    image inside, and the editor reopens it with each step still editable.
                 </p>
             </details>
             <details>

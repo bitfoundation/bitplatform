@@ -112,7 +112,7 @@
                 @if (_dominant.Count > 0)
                 {
                     <div class="demo-field">
-                        <span class="demo-field-label">Dominant colours</span>
+                        <span class="demo-field-label">Dominant colours, and the share of the photo each covers</span>
                         <div class="demo-swatches">
                             @foreach (var colour in _dominant)
                             {
@@ -184,6 +184,7 @@
         <li><strong>Frame the subject, not the centre.</strong> <code>SmartCrop</code> is a heuristic, not face recognition; if you have a detector, pass its rectangle to <code>SmartCrop.FindCrop</code> as <code>mustInclude</code>.</li>
         <li><strong>Budget in bytes, not quality.</strong> <code>MaxFileSize</code> reports the quality it settled on, and throws <code>ImageEncodeException</code> rather than handing back an oversized file when the target is impossible.</li>
         <li><strong>Remove metadata.</strong> An avatar is published to everyone; <code>MetadataPolicy.Remove</code> is the default for a reason. See <a href="/metadata">Metadata and privacy</a>.</li>
+        <li><strong>Show something before the image arrives.</strong> The swatches are <code>ImageStatistics.GetDominantColors</code>: the first makes a fitting background for the circle while the file loads, and <a href="/headless">the headless API</a> goes further with a 67 character blurred placeholder.</li>
     </ul>
 </div>
 
@@ -244,6 +245,9 @@
                 Metadata    = MetadataPolicy.Remove,
                 Background  = Rgba32.White,
             });
+
+        // The swatches: the photo's main colours, for a placeholder or a profile's accent.
+        var palette = ImageStatistics.GetDominantColors(source, count: 5, ignoreNearWhiteAndBlack: true);
         """;
 
     private async Task OnFilesSelected(IReadOnlyList<IBrowserFile> files)

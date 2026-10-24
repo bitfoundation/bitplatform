@@ -114,6 +114,42 @@
     <CodeSnippet Code="@IndexHtmlSnippet" Language="HTML" Expanded="true" />
 </div>
 
+<div class="bb-card" id="lazy-loading">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Lazy loading on WebAssembly</h3>
+    <p>
+        <code>BmageEditor</code> also works without the registration, so a WebAssembly app can download
+        Bmage only when someone opens the editor. When <code>ImageLoader</code> is not registered, the
+        editor builds every service it needs itself, once per browser connection, with the
+        <code>BitBmageOptions</code> the app registered or the defaults. Mark the assembly as lazy
+        loaded, and load it before the editor first renders:
+    </p>
+    <CodeSnippet Code="@LazyProjectSnippet" Language="XML" Expanded="true" />
+    <CodeSnippet Code="@LazyLoadSnippet" Language="Razor" Expanded="true" />
+    <ul class="bb-detail-list">
+        <li>Leave <code>AddBitBmageServices</code> out of that project's <code>Program.cs</code>: calling it references Bmage's types before the assembly is there.</li>
+        <li>Code of your own that injects <code>ImageLoader</code> or <code>ImageExporter</code> needs the registration, so lazy loading suits an app whose only use of Bmage is the editor.</li>
+        <li>Do not lazy load in an AOT build. AOT compiles every assembly into <code>dotnet.native.wasm</code>, so there is nothing left to download later, and lazy loading an AOT-compiled assembly can fail at startup.</li>
+    </ul>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Web Workers and a Content Security Policy</h3>
+    <p>
+        In the browser, decoding, encoding and building the editor's working copy run in a small pool of
+        Web Workers loaded from <code>_content/Bit.Bmage/bit-bmage-worker.js</code>, so the page's thread -
+        which on WebAssembly is also .NET's - keeps painting while a photo decodes. A Content Security
+        Policy that lists sources explicitly has to allow them, with <code>worker-src 'self'</code> or a
+        <code>script-src 'self'</code> it falls back to; Blob URLs are never used for workers.
+    </p>
+    <CodeSnippet Code="Content-Security-Policy: worker-src 'self'" Language="Shell" Expanded="true" />
+    <p>
+        Nothing breaks without them: where workers are blocked or the browser has no
+        <code>OffscreenCanvas</code>, the same work runs on the page's thread. Cap the pool, or turn it
+        off, with <code>BitBmageOptions.MaxCodecWorkers</code> - see
+        <a href="/performance#threads-workers-and-memory">Performance</a>.
+    </p>
+</div>
+
 <div class="bb-card">
     <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Compile ahead of time</h3>
     <p>
@@ -267,6 +303,32 @@
             ...
             <link rel="stylesheet" href="_content/Bit.Bmage/bit-bmage-editor.css" />
         </head>
+        """;
+
+    private const string LazyProjectSnippet = """
+        <!-- The browser project's .csproj -->
+        <ItemGroup>
+          <BlazorWebAssemblyLazyLoad Include="Bit.Bmage.wasm" />
+        </ItemGroup>
+        """;
+
+    private const string LazyLoadSnippet = """
+        @* App.razor: the router waits for OnNavigateAsync before it renders the page. *@
+        @using Microsoft.AspNetCore.Components.WebAssembly.Services
+        @inject LazyAssemblyLoader LazyAssemblyLoader
+
+        <Router AppAssembly="typeof(App).Assembly" OnNavigateAsync="OnNavigateAsync">
+            ...
+        </Router>
+
+        @code {
+            private async Task OnNavigateAsync(NavigationContext context)
+            {
+                // The page with the editor on it: fetch Bmage before it renders.
+                if (context.Path == "edit")
+                    await LazyAssemblyLoader.LoadAssembliesAsync(["Bit.Bmage.wasm"]);
+            }
+        }
         """;
 
     private const string AotSnippet = """
