@@ -238,6 +238,7 @@ public partial class AppClientCoordinator : AppComponentBase
 
             //#if (brouter == true)
             brouter.TryClearKeepAlive();
+            brouter.ClearLoaderCache();
             //#endif
 
             TelemetryContext.UserId = userId;

@@ -80,23 +80,21 @@ public partial class AuthManager : AuthenticationStateProvider, IAsyncDisposable
 
         var currentUser = (await GetAuthenticationStateAsync()).User;
 
-        if (currentUser.IsAuthenticated())
+        if (currentUser.IsAuthenticated() && GetUserId(currentUser) == newUserId)
         {
-            if (GetUserId(currentUser) != newUserId)
+            try
             {
-                await KeepActiveAccount();
+                await SignOut(activateNextAccount: false, default);
             }
-            else
+            catch (Exception exp)
             {
-                try
-                {
-                    await SignOut(activateNextAccount: false, default);
-                }
-                catch (Exception exp)
-                {
-                    authLogger.LogWarning(exp, "Failed to sign out the previous session before signing in.");
-                }
+                authLogger.LogWarning(exp, "Failed to sign out the previous session before signing in.");
             }
+        }
+
+        if (GetUserId(await storageService.GetItem("access_token")) is Guid activeUserId && activeUserId != newUserId)
+        {
+            await KeepActiveAccount();
         }
 
         await StoreTokens(response, rememberMe);
@@ -124,6 +122,8 @@ public partial class AuthManager : AuthenticationStateProvider, IAsyncDisposable
 
     private async Task SignOut(bool activateNextAccount, CancellationToken cancellationToken)
     {
+        var sessionId = GetSessionId(await tokenProvider.GetAccessToken());
+
         try
         {
             await userController.SignOut(cancellationToken);
@@ -136,7 +136,10 @@ public partial class AuthManager : AuthenticationStateProvider, IAsyncDisposable
         }
         finally
         {
-            await ClearTokens(activateNextAccount);
+            if (GetSessionId(await tokenProvider.GetAccessToken()) == sessionId)
+            {
+                await ClearTokens(activateNextAccount);
+            }
         }
     }
 
@@ -229,14 +232,12 @@ public partial class AuthManager : AuthenticationStateProvider, IAsyncDisposable
                         }, default);
 
                     // A sign-out or another sign-in happened meanwhile: storing this answer would bring the old session back.
-                    if (await storageService.GetItem("refresh_token") != refreshToken && await IsCurrentSession(refreshTokenResponse.AccessToken) is false)
+                    if (await StoreRefreshedTokens(refreshToken, refreshTokenResponse) is false)
                     {
-                        await KeepRefreshedAccount(refreshTokenResponse);
                         currentTsc.TrySetResult(null);
                         return;
                     }
 
-                    await StoreTokens(refreshTokenResponse);
                     currentTsc.TrySetResult(refreshTokenResponse.AccessToken!);
                 }
                 catch (Exception exp)
@@ -353,32 +354,25 @@ public partial class AuthManager : AuthenticationStateProvider, IAsyncDisposable
 
     private async Task ClearTokens(bool activateNextAccount = true)
     {
-        var nextAccountActivated = false;
+        var nextAccount = activateNextAccount ? (await GetOtherAccounts()).FirstOrDefault() : null;
 
-        await accountsLock.WaitAsync();
-        try
+        if (nextAccount is null)
         {
             await storageService.RemoveItem("access_token");
             await storageService.RemoveItem("refresh_token");
-
-            if (activateNextAccount && (await GetOtherAccountsCore()).FirstOrDefault() is { } nextAccount)
-            {
-                var (account, persistent) = await FindAccount(nextAccount.User.Id);
-
-                await RemoveAccount(nextAccount.User.Id);
-
-                await WriteActiveTokens(account!.AccessToken, account.RefreshToken, persistent);
-
-                activeAccountProfile = account.User;
-                nextAccountActivated = true;
-            }
         }
-        finally
+        else
         {
-            accountsLock.Release();
+            var (_, persistent) = await FindAccount(nextAccount.User.Id);
+
+            await RemoveAccount(nextAccount.User.Id);
+
+            await WriteActiveTokens(nextAccount.AccessToken, nextAccount.RefreshToken, persistent);
+
+            activeAccountProfile = nextAccount.User;
         }
 
-        await NotifyActiveAccountChanged(softRestartOnSwitch: nextAccountActivated);
+        await NotifyActiveAccountChanged(softRestartOnSwitch: nextAccount is not null);
     }
 
     private async Task<bool> IsCurrentSession(string? accessToken)
@@ -402,7 +396,6 @@ public partial class AuthManager : AuthenticationStateProvider, IAsyncDisposable
     public async ValueTask DisposeAsync()
     {
         semaphore.Dispose();
-        accountsLock.Dispose();
         unsubscribe?.Invoke();
         unsubscribeLocalStorageChanged?.Invoke();
     }

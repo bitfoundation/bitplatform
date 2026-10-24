@@ -354,6 +354,42 @@ public partial class PushSubscriptionOwnershipTests
     }
 
     [TestMethod]
+    public async Task TabsSubscribingTheSameAccountAtOnce_Should_AllSucceed()
+    {
+        await using var server = new AppTestServer();
+
+        await server.Build().Start(TestContext.CancellationToken);
+
+        var deviceId = $"push-tabs-{Guid.NewGuid():N}";
+
+        try
+        {
+            await using var client = server.CreateAppClient();
+            var pushNotificationController = client.GetController<IPushNotificationController>();
+
+            await TestAccountUtils.CreateAndSignIn(client, TestContext.CancellationToken);
+
+            var sessionIds = await client.AuthManager.GetDeviceSessionIds();
+
+            await Task.WhenAll(Enumerable.Range(0, 4).Select(_ => pushNotificationController.Subscribe(new()
+            {
+                DeviceId = deviceId,
+                Platform = "fcmV1",
+                PushChannel = "the-channel",
+                UserSessionIds = sessionIds
+            }, TestContext.CancellationToken)));
+
+            Assert.HasCount(1, await ReadSubscriptions(server, deviceId, TestContext.CancellationToken));
+        }
+        finally
+        {
+            await using var scopeApiAppCleanup = server.ApiApp.Services.CreateAsyncScope();
+            var dbContext = scopeApiAppCleanup.ServiceProvider.GetRequiredService<AppDbContext>();
+            await dbContext.PushNotificationSubscriptions.Where(s => s.DeviceId == deviceId).ExecuteDeleteAsync(TestContext.CancellationToken);
+        }
+    }
+
+    [TestMethod]
     public async Task AnAccountThatLeftTheDevice_Should_LoseItsRow_AndTheOthers_Should_FollowTheNewChannel()
     {
         await using var server = new AppTestServer();

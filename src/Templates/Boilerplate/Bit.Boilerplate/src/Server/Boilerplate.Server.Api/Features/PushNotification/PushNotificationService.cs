@@ -129,7 +129,17 @@ public partial class PushNotificationService
             otherRow.ExpirationTime = subscription.ExpirationTime;
         }
 
-        await dbContext.SaveChangesAsync(cancellationToken);
+        try
+        {
+            await dbContext.SaveChangesAsync(cancellationToken);
+        }
+        catch (DbUpdateException) when (ownRow is null && userSessionId is not null)
+        {
+            dbContext.ChangeTracker.Clear();
+
+            if (await dbContext.PushNotificationSubscriptions.AnyAsync(s => s.UserSessionId == userSessionId, cancellationToken) is false)
+                throw;
+        }
     }
 
     public async Task Unsubscribe(string deviceId, CancellationToken cancellationToken)

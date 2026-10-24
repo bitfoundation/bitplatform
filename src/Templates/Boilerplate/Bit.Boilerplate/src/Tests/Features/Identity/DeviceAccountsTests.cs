@@ -103,6 +103,36 @@ public partial class DeviceAccountsTests
     }
 
     [TestMethod]
+    public async Task SigningInAgainToTheActiveAccount_Should_KeepTheOtherAccounts()
+    {
+        await using var server = new AppTestServer();
+        await server.Build().Start(TestContext.CancellationToken);
+
+        await using var client = server.CreateAppClient();
+
+        var (firstEmail, firstUserId) = await TestAccountUtils.CreateAndSignIn(client, TestContext.CancellationToken);
+        var (_, secondUserId) = await TestAccountUtils.CreateAndAddAccount(client, TestContext.CancellationToken);
+
+        Assert.IsTrue(await client.AuthManager.SwitchAccount(firstUserId));
+
+        var firstSessionId = (await CurrentUser(client)).GetSessionId();
+
+        await client.GetController<IIdentityController>().SendOtp(new() { Email = firstEmail }, null, TestContext.CancellationToken);
+
+        var otp = await server.WaitForCapturedEmail(firstEmail, e => e.Kind is CapturedEmailKind.Otp, TestContext.CancellationToken);
+
+        Assert.IsFalse(await client.AuthManager.SignIn(new() { Email = firstEmail, Otp = otp.Token }, TestContext.CancellationToken));
+
+        var user = await CurrentUser(client);
+
+        Assert.AreEqual(firstUserId, user.GetUserId());
+        Assert.AreNotEqual(firstSessionId, user.GetSessionId());
+        Assert.AreEqual(1, await CountUserSessions(server, firstUserId));
+        Assert.AreSequenceEqual(new[] { secondUserId }, await OtherAccountIds(client), "Signing in again to the active account must not touch the other accounts on the device.");
+        Assert.AreEqual(1, await CountUserSessions(server, secondUserId));
+    }
+
+    [TestMethod]
     public async Task ARevokedRefreshToken_Should_EndItsSession()
     {
         await using var server = new AppTestServer();

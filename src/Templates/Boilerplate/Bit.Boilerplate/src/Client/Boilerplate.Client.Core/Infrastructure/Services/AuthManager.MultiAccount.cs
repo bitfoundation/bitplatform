@@ -6,20 +6,11 @@ public partial class AuthManager
 {
     public async Task SignOutAll(CancellationToken cancellationToken)
     {
-        List<DeviceAccountDto> otherAccounts = [];
+        var otherAccounts = await GetOtherAccounts();
 
-        await accountsLock.WaitAsync(CancellationToken.None);
-        try
+        foreach (var account in otherAccounts)
         {
-            foreach (var persistent in (bool[])[true, false])
-            {
-                otherAccounts.AddRange(await ReadAccounts(persistent));
-                await WriteAccounts(persistent, []);
-            }
-        }
-        finally
-        {
-            accountsLock.Release();
+            await RemoveAccount(account.User.Id);
         }
 
         await Task.WhenAll(otherAccounts.Select(account => RevokeQuietly(account.RefreshToken)));
@@ -29,15 +20,17 @@ public partial class AuthManager
 
     public async Task<DeviceAccountDto[]> GetOtherAccounts()
     {
-        await accountsLock.WaitAsync();
-        try
+        var activeUserId = GetUserId(await storageService.GetItem("access_token"));
+
+        List<DeviceAccountDto> accounts = [];
+
+        foreach (var persistent in (bool[])[true, false])
         {
-            return await GetOtherAccountsCore();
+            accounts.AddRange(await ReadAccounts(persistent));
         }
-        finally
-        {
-            accountsLock.Release();
-        }
+
+        return [.. accounts.Where(account => account.User.Id != activeUserId)
+                           .OrderBy(account => account.User.DisplayName, StringComparer.CurrentCultureIgnoreCase)];
     }
 
     //#if (notification == true)
@@ -51,29 +44,21 @@ public partial class AuthManager
 
     public async Task<bool> SwitchAccount(Guid userId)
     {
-        await accountsLock.WaitAsync();
-        try
-        {
-            if (GetUserId(await storageService.GetItem("access_token")) == userId)
-                return true;
+        if (GetUserId(await storageService.GetItem("access_token")) == userId)
+            return true;
 
-            var (account, persistent) = await FindAccount(userId);
+        var (account, persistent) = await FindAccount(userId);
 
-            if (account is null)
-                return false;
+        if (account is null)
+            return false;
 
-            await RemoveAccount(userId);
+        await RemoveAccount(userId);
 
-            await KeepActiveAccountCore();
+        await KeepActiveAccount();
 
-            await WriteActiveTokens(account.AccessToken, account.RefreshToken, persistent);
+        await WriteActiveTokens(account.AccessToken, account.RefreshToken, persistent);
 
-            activeAccountProfile = account.User;
-        }
-        finally
-        {
-            accountsLock.Release();
-        }
+        activeAccountProfile = account.User;
 
         await NotifyActiveAccountChanged(softRestartOnSwitch: true);
 
@@ -97,6 +82,7 @@ public partial class AuthManager
         return Guid.TryParse((user.FindFirst(ClaimTypes.NameIdentifier) ?? user.FindFirst("nameid"))?.Value, out var userId) ? userId : null;
     }
 
+    // False until the first GetAuthenticationStateAsync records the user the app started with.
     private bool isNotifiedUserKnown;
     private Guid? notifiedUserId;
 
@@ -106,33 +92,21 @@ public partial class AuthManager
 
         var state = await GetAuthenticationStateAsync();
 
-        notifiedUserId = GetUserId(state.User);
-
-        if (softRestartOnSwitch && previousUserId is not null && notifiedUserId is not null && previousUserId != notifiedUserId)
+        if (GetUserId(state.User) is Guid userId)
         {
-            accessTokenTsc = null;
-            pubSubService.Publish(ClientAppMessages.SOFT_RESTART);
+            notifiedUserId = userId;
+
+            if (softRestartOnSwitch && previousUserId is not null && previousUserId != userId)
+            {
+                accessTokenTsc = null;
+                pubSubService.Publish(ClientAppMessages.SOFT_RESTART);
+            }
         }
 
         NotifyAuthenticationStateChanged(Task.FromResult(state));
     }
 
-    private readonly SemaphoreSlim accountsLock = new(1, 1);
-
     private async Task KeepActiveAccount()
-    {
-        await accountsLock.WaitAsync();
-        try
-        {
-            await KeepActiveAccountCore();
-        }
-        finally
-        {
-            accountsLock.Release();
-        }
-    }
-
-    private async Task KeepActiveAccountCore()
     {
         var accessToken = await storageService.GetItem("access_token");
         var refreshToken = await storageService.GetItem("refresh_token");
@@ -149,77 +123,45 @@ public partial class AuthManager
         }, await storageService.IsPersistent("refresh_token"));
     }
 
-    private async Task KeepRefreshedAccount(TokenResponseDto refreshTokenResponse)
+    private async Task<bool> StoreRefreshedTokens(string? sentRefreshToken, TokenResponseDto refreshTokenResponse)
     {
-        await accountsLock.WaitAsync();
-        try
+        if (await storageService.GetItem("refresh_token") == sentRefreshToken || await IsCurrentSession(refreshTokenResponse.AccessToken))
         {
-            if (GetUserId(refreshTokenResponse.AccessToken) is not Guid userId)
-                return;
-
-            var (account, persistent) = await FindAccount(userId);
-
-            if (account is null || GetSessionId(account.AccessToken) != GetSessionId(refreshTokenResponse.AccessToken))
-                return;
-
-            account.AccessToken = refreshTokenResponse.AccessToken;
-            account.RefreshToken = refreshTokenResponse.RefreshToken;
-
-            await RemoveAccount(userId);
-            await AddAccount(account, persistent);
+            await StoreTokens(refreshTokenResponse);
+            return true;
         }
-        finally
-        {
-            accountsLock.Release();
-        }
+
+        if (GetUserId(refreshTokenResponse.AccessToken) is not Guid userId)
+            return false;
+
+        var (account, persistent) = await FindAccount(userId);
+
+        if (account is null || GetSessionId(account.AccessToken) != GetSessionId(refreshTokenResponse.AccessToken))
+            return false;
+
+        account.AccessToken = refreshTokenResponse.AccessToken;
+        account.RefreshToken = refreshTokenResponse.RefreshToken;
+
+        await AddAccount(account, persistent);
+
+        return false;
     }
 
     private async Task ForgetAccount(string? refreshToken)
     {
-        await accountsLock.WaitAsync();
-        try
+        if ((await GetOtherAccounts()).FirstOrDefault(account => account.RefreshToken == refreshToken) is { } account)
         {
-            if ((await GetOtherAccountsCore()).FirstOrDefault(account => account.RefreshToken == refreshToken) is { } account)
-            {
-                await RemoveAccount(account.User.Id);
-            }
-        }
-        finally
-        {
-            accountsLock.Release();
+            await RemoveAccount(account.User.Id);
         }
     }
 
     private async Task<DeviceAccountDto?> TakeAccount(Guid userId)
     {
-        await accountsLock.WaitAsync();
-        try
-        {
-            var (account, _) = await FindAccount(userId);
+        var (account, _) = await FindAccount(userId);
 
-            await RemoveAccount(userId);
+        await RemoveAccount(userId);
 
-            return account;
-        }
-        finally
-        {
-            accountsLock.Release();
-        }
-    }
-
-    private async Task<DeviceAccountDto[]> GetOtherAccountsCore()
-    {
-        var activeUserId = GetUserId(await storageService.GetItem("access_token"));
-
-        List<DeviceAccountDto> accounts = [];
-
-        foreach (var persistent in (bool[])[true, false])
-        {
-            accounts.AddRange(await ReadAccounts(persistent));
-        }
-
-        return [.. accounts.Where(account => account.User.Id != activeUserId)
-                           .OrderBy(account => account.User.DisplayName, StringComparer.CurrentCultureIgnoreCase)];
+        return account;
     }
 
     private async Task<(DeviceAccountDto? Account, bool Persistent)> FindAccount(Guid userId)
@@ -237,6 +179,9 @@ public partial class AuthManager
     {
         await RemoveAccount(account.User.Id);
 
+        await storageService.SetItem(AccountTokenKey(account.User.Id, "refresh_token"), account.RefreshToken, persistent);
+        await storageService.SetItem(AccountTokenKey(account.User.Id, "access_token"), account.AccessToken, persistent);
+
         await WriteAccounts(persistent, [.. await ReadAccounts(persistent), account]);
     }
 
@@ -251,6 +196,9 @@ public partial class AuthManager
                 await WriteAccounts(persistent, accounts);
             }
         }
+
+        await storageService.RemoveItem(AccountTokenKey(userId, "access_token"));
+        await storageService.RemoveItem(AccountTokenKey(userId, "refresh_token"));
     }
 
     private async Task<List<DeviceAccountDto>> ReadAccounts(bool persistent)
@@ -272,8 +220,23 @@ public partial class AuthManager
             accounts = [];
         }
 
-        if (accounts.RemoveAll(account => IAuthTokenProvider.ParseAccessToken(account.RefreshToken, validateExpiry: true).IsAuthenticated() is false) > 0)
+        foreach (var account in accounts)
         {
+            account.AccessToken = await storageService.GetItem(AccountTokenKey(account.User.Id, "access_token"));
+            account.RefreshToken = await storageService.GetItem(AccountTokenKey(account.User.Id, "refresh_token"));
+        }
+
+        var endedAccounts = accounts.Where(account => IAuthTokenProvider.ParseAccessToken(account.RefreshToken, validateExpiry: true).IsAuthenticated() is false).ToArray();
+
+        if (endedAccounts.Length > 0)
+        {
+            foreach (var account in endedAccounts)
+            {
+                accounts.Remove(account);
+                await storageService.RemoveItem(AccountTokenKey(account.User.Id, "access_token"));
+                await storageService.RemoveItem(AccountTokenKey(account.User.Id, "refresh_token"));
+            }
+
             await WriteAccounts(persistent, accounts);
         }
 
@@ -290,8 +253,12 @@ public partial class AuthManager
             return;
         }
 
-        await storageService.SetItem(key, JsonSerializer.Serialize(accounts, IdentityJsonContext.Default.ListDeviceAccountDto), persistent);
+        List<DeviceAccountDto> profiles = [.. accounts.Select(account => new DeviceAccountDto { User = account.User })];
+
+        await storageService.SetItem(key, JsonSerializer.Serialize(profiles, IdentityJsonContext.Default.ListDeviceAccountDto), persistent);
     }
+
+    private static string AccountTokenKey(Guid userId, string token) => $"account:{userId}:{token}";
 
     private async Task RevokeQuietly(string? refreshToken)
     {
