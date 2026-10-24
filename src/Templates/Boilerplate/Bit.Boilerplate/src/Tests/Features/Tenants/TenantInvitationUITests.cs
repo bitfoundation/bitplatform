@@ -14,7 +14,7 @@ public partial class TenantInvitationUITests : AppPageTest
     /// <list type="number">
     /// <item>The tenant admin signs in and creates a brand-new tenant (which needs an elevated access token).</item>
     /// <item>The admin invites a brand-new e-mail address; nobody owns it yet, so the invitation itself registers the account as a pending member (See TenantController.InviteUser), and while the invitation is pending she does NOT appear in the tenant's users list.</item>
-    /// <item>That freshly-created account signs in for the first time with a magic link (OTP), the same way as the identity test - proving a user created by an invitation is a fully functional account - yet with the invitation still pending she can't reach the Dashboard.</item>
+    /// <item>That freshly-created account follows the mailed link signed out, signs in for the first time with a magic link (OTP), the same way as the identity test - proving a user created by an invitation is a fully functional account - and lands back on the "manage my tenants" page with the invitation waiting, yet with the invitation still pending she can't reach the Dashboard.</item>
     /// <item>She accepts the invitation from the "manage my tenants" page, which lets her reach the Dashboard and makes her show up in the admin's users list.</item>
     /// <item>She leaves the tenant (which also needs an elevated access token); the Dashboard becomes off-limits again and she disappears from the users list.</item>
     /// </list>
@@ -43,10 +43,23 @@ public partial class TenantInvitationUITests : AppPageTest
         await using var invitedContext = await NewBrowserContext(server);
         var invitedPage = await invitedContext.NewPageAsync();
 
+        var invitation = await server.WaitForCapturedEmail(invitedEmail, capturedEmail => capturedEmail.Kind is CapturedEmailKind.TenantInvitation, TestContext.CancellationToken);
+        Assert.AreEqual(PageUrls.ManageMyTenants, invitation.Link!.AbsolutePath, "The invitation has to lead to the page that accepts it, not to the home page.");
+
+        await invitedPage.GotoAsync(new Uri(serverAddress, invitation.Link.PathAndQuery).ToString(), new() { WaitUntil = WaitUntilState.NetworkIdle });
+        await invitedPage.WaitForBlazorInteractive();
+        await invitedPage.Locator("section").Filter(new() { HasText = AppStrings.YouAreNotAuthorized })
+            .GetByRole(AriaRole.Button, new() { Name = AppStrings.SignIn }).ClickAsync();
+
         // The account the invitation just created signs in for the very first time with the magic link OTP, exactly the
         // way a self-registered user would (the same flow as MagicLinkSignInTests). Getting signed in proves that a user
         // created by an invitation is a fully functional account, not merely a placeholder membership row.
-        await MagicLinkSignInUtils.SignInViaMagicLinkOtp(invitedPage, server, invitedEmail, TestContext.CancellationToken);
+        await MagicLinkSignInUtils.RequestMagicLinkAndOtpOnCurrentPanel(invitedPage, invitedEmail);
+        var (_, otpCode) = await MagicLinkSignInUtils.ReadConfirmationEmail(server, invitedEmail, TestContext.CancellationToken);
+        await BitOtpInputUtils.FillOtpInputs(invitedPage, otpCode);
+
+        await invitedPage.WaitForURLAsync(url => new Uri(url).AbsolutePath.EndsWith(PageUrls.ManageMyTenants, StringComparison.OrdinalIgnoreCase));
+        await Expect(invitedPage.GetByRole(AriaRole.Button, new() { Name = AppStrings.AcceptInvitation })).ToBeVisibleAsync();
 
         //#if (module == "Admin")
         // Her invitation is still pending (she hasn't switched into the tenant), so no tenant is selected for her (See
