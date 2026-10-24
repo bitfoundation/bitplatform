@@ -577,6 +577,20 @@ _document.MarkSaved(revision);   <span class="c">// what changed while it was be
             _store = null;
             _autosaveStatus = "This browser cannot keep the drawing on the device: " + ex.Message;
         }
+        catch (IOException ex)
+        {
+            // Too large or cut off, so it would fail the same way on every visit: it is removed and the board starts
+            // empty.
+            _autosaveStatus = "The drawing kept on this device could not be read, so it was removed: " + ex.Message;
+            try
+            {
+                await _store.DeleteAsync(AutosaveKey);
+            }
+            catch (JSException)
+            {
+                // Left in place; the next autosave writes over it.
+            }
+        }
         await StartAutosaveAsync();
         StateHasChanged();
     }

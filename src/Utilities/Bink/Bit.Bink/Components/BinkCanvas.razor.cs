@@ -460,11 +460,12 @@ public sealed partial class BinkCanvas : ComponentBase, IAsyncDisposable, IBinkI
         if (ReadOnly) return false;
         string? payload = CopySelectionCore();
         if (payload is null) return false;
+        // Taken before the clipboard round trip, in which the selection can change: what is cut is what was copied.
+        IReadOnlyList<Guid> ids = _selection.Ids;
         await ProvideClipboardAsync(payload).ConfigureAwait(true);
         if (_disposed) return false;
-        int count = _selection.Count;
-        _document.RemoveElements(_selection.Ids);
-        Announce($"Cut {count} elements.");
+        _document.RemoveElements(ids);
+        Announce($"Cut {ids.Count} elements.");
         InvalidateAll();
         return true;
     }
@@ -1677,11 +1678,11 @@ public sealed partial class BinkCanvas : ComponentBase, IAsyncDisposable, IBinkI
     {
         if (!EnableClipboard) return;
         string? payload = CopySelectionCore();
+        IReadOnlyList<Guid> ids = _selection.Ids;
         await ProvideClipboardAsync(payload).ConfigureAwait(true);
         if (payload is null || _disposed) return;
-        int count = _selection.Count;
-        _document.RemoveElements(_selection.Ids);
-        Announce($"Cut {count} elements.");
+        _document.RemoveElements(ids);
+        Announce($"Cut {ids.Count} elements.");
         InvalidateAll();
     }
 
@@ -1710,7 +1711,8 @@ public sealed partial class BinkCanvas : ComponentBase, IAsyncDisposable, IBinkI
                 {
                     BinkImageSource? source = await ReadRasterImageAsync(data, mediaType, "That image type cannot be pasted.").ConfigureAwait(true);
                     if (source is null) return;
-                    await InvokeAsync(() => AddImageAsync(source)).ConfigureAwait(true);
+                    // Selected once added, as a dropped picture and pasted elements are.
+                    await InvokeAsync(() => AddImageCenteredAsync(source, _viewport.ToDocument(ViewSize / 2f))).ConfigureAwait(true);
                     return;
                 }
                 case "bink" or "text":

@@ -355,6 +355,7 @@ class Surface {
     onFocusOut: (event: FocusEvent) => void;
     onWheel: (event: WheelEvent) => void;
     onPaste: (event: ClipboardEvent) => void;
+    onClipboardElsewhere: (event: Event) => void;
     onDragOver: (event: DragEvent) => void;
     onDrop: (event: DragEvent) => void;
     onFrame: () => void;
@@ -420,6 +421,7 @@ class Surface {
         this.onFocusOut = this.handleFocusOut.bind(this);
         this.onWheel = this.handleWheel.bind(this);
         this.onPaste = this.handlePaste.bind(this);
+        this.onClipboardElsewhere = this.handleClipboardElsewhere.bind(this);
         this.onDragOver = this.handleDragOver.bind(this);
         this.onDrop = this.handleDrop.bind(this);
         this.onFrame = this.flush.bind(this);
@@ -440,6 +442,11 @@ class Surface {
         root.addEventListener('keydown', this.onKeyDown);
         root.addEventListener('focusout', this.onFocusOut);
         root.addEventListener('paste', this.onPaste);
+        // Coming back from another window, or copying elsewhere on the page, may have put something newer on the
+        // system clipboard than the copy that failed to reach it.
+        window.addEventListener('focus', this.onClipboardElsewhere);
+        document.addEventListener('copy', this.onClipboardElsewhere);
+        document.addEventListener('cut', this.onClipboardElsewhere);
         root.addEventListener('dragover', this.onDragOver);
         root.addEventListener('drop', this.onDrop);
         // A browser may discard a canvas's backing store (GPU reset, a long-backgrounded tab on a phone) and later
@@ -896,6 +903,13 @@ class Surface {
     noteClipboardWrite(failed: boolean): void {
         this.clipboardWriteFailed = failed;
         if (!failed) this.staleClipboardText = null;
+    }
+
+    // The user may have copied something else, so the next paste takes what the system clipboard holds rather than
+    // the copy .NET kept. A copy or cut inside this canvas is its own and changes nothing.
+    handleClipboardElsewhere(event: Event): void {
+        if (event.type !== 'focus' && event.target instanceof Node && this.root.contains(event.target)) return;
+        this.clipboardWriteFailed = false;
     }
 
     settleClipboard(text: string | null, image: Promise<Blob | null> | null = null): void {
@@ -1537,6 +1551,9 @@ class Surface {
         this.root.removeEventListener('keydown', this.onKeyDown);
         this.root.removeEventListener('focusout', this.onFocusOut);
         this.root.removeEventListener('paste', this.onPaste);
+        window.removeEventListener('focus', this.onClipboardElsewhere);
+        document.removeEventListener('copy', this.onClipboardElsewhere);
+        document.removeEventListener('cut', this.onClipboardElsewhere);
         this.root.removeEventListener('dragover', this.onDragOver);
         this.root.removeEventListener('drop', this.onDrop);
         this.settleClipboard(null);
