@@ -9,8 +9,6 @@ namespace Boilerplate.Client.Core.Components.Common;
 
 public partial class ImageEditorModal
 {
-    private const long MaxFileSize = 1024 * 1024 * 10;
-
     [Parameter] public string ImageUrl { get; set; } = default!;
 
     [Parameter] public string FileName { get; set; } = default!;
@@ -74,9 +72,15 @@ public partial class ImageEditorModal
                 await editor.ApplyCropAsync();
             }
 
+            if (editor.Session.History.CanUndo is false)
+            {
+                KeepOriginal();
+                return;
+            }
+
             var format = editor.BrowserCapabilities?.ChooseEncodableFormat([ImageFormat.WebP]) ?? ImageFormat.Jpeg;
 
-            var image = await editor.ExportAsync(new ImageExportOptions { Format = format, Quality = 1, MaxFileSize = MaxFileSize });
+            var image = await editor.ExportAsync(new ImageExportOptions { Format = format, Quality = 1 });
 
             if (image is null) return;
 

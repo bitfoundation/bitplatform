@@ -9,7 +9,7 @@ namespace Boilerplate.Tests.Features.Attachments;
 public class UploadFormatAllowListTests
 {
     [TestMethod]
-    public async Task EveryAllowedFormat_Should_BeAccepted_AndKeptAsTheOriginal()
+    public async Task EveryAllowedFormat_Should_BeAccepted_AndKeptAsAFullSizeWebPOriginal()
     {
         await using var server = await StartServer();
         await using var client = server.CreateAppClient();
@@ -27,7 +27,8 @@ public class UploadFormatAllowListTests
 
                 using var original = new MagickImage(await Download(httpClient, userId, AttachmentKind.UserProfileImageOriginal));
 
-                Assert.AreEqual(format, original.Format, $"A {format} upload must be accepted and served back as {format}.");
+                Assert.AreEqual(MagickFormat.WebP, original.Format, $"A {format} upload must be accepted and its original stored as WebP.");
+                Assert.AreEqual((512u, 512u), (original.Width, original.Height), $"The original of a {format} upload must keep its full size.");
             }
         }
         finally

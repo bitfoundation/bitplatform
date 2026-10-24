@@ -50,7 +50,7 @@ public partial class AttachmentsPersonalDataSource : IPersonalDataSource
             .AsNoTracking()
             .Where(attachment => attachment.Id == userId && profileImageKinds.Contains(attachment.Kind))
             .OrderBy(attachment => attachment.Kind)
-            .Select(attachment => new { attachment.Kind, attachment.CreatedOn, attachment.Path, attachment.ContentType })
+            .Select(attachment => new { attachment.Kind, attachment.CreatedOn, attachment.Path })
             .ToArrayAsync(cancellationToken);
 
         List<object> export = [];
@@ -62,7 +62,7 @@ public partial class AttachmentsPersonalDataSource : IPersonalDataSource
                 attachment.Kind,
                 attachment.CreatedOn,
                 // Name of the image inside files/attachments/, or null when the stored file could not be found.
-                File = attachment.Path is null ? null : BuildFileName(attachment.Kind, attachment.ContentType)
+                File = attachment.Path is null ? null : BuildFileName(attachment.Kind)
             });
         }
 
@@ -74,7 +74,7 @@ public partial class AttachmentsPersonalDataSource : IPersonalDataSource
         var blobs = await dbContext.Attachments
             .AsNoTracking()
             .Where(attachment => attachment.Id == userId && profileImageKinds.Contains(attachment.Kind) && attachment.Path != null)
-            .Select(attachment => new { attachment.Kind, Path = attachment.Path!, attachment.ContentType })
+            .Select(attachment => new { attachment.Kind, Path = attachment.Path! })
             .ToArrayAsync(cancellationToken);
 
         List<PersonalDataFile> files = [];
@@ -86,7 +86,7 @@ public partial class AttachmentsPersonalDataSource : IPersonalDataSource
             if (await blobStorage.ObjectExists(blob.Path, cancellationToken) is false)
                 continue;
 
-            files.Add(new(BuildFileName(blob.Kind, blob.ContentType), ct => blobStorage.OpenRead(blob.Path, ct)));
+            files.Add(new(BuildFileName(blob.Kind), ct => blobStorage.OpenRead(blob.Path, ct)));
         }
 
         return [.. files];
@@ -96,13 +96,7 @@ public partial class AttachmentsPersonalDataSource : IPersonalDataSource
     /// The kind is the name, so the two profile images do not arrive as two unrelated files. A file the subject has
     /// to guess the format of is a poor answer to an Article 20 request, hence the extension.
     /// </summary>
-    private static string BuildFileName(AttachmentKind kind, string? contentType)
-    {
-        // From the row: the *Original kinds' key carries no extension (See AttachmentController.GetFilePath).
-        var extension = string.IsNullOrEmpty(contentType) ? string.Empty : $".{contentType.Split('/')[^1].Split('+')[0]}";
-
-        return $"{kind}{extension}";
-    }
+    private static string BuildFileName(AttachmentKind kind) => $"{kind}.webp"; // Every kind is stored as WebP (See AttachmentController.GetFilePath).
 
     public async Task PrepareErase(PersonalDataErasureContext context, CancellationToken cancellationToken)
     {
