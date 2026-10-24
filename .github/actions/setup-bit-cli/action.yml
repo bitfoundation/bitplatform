@@ -13,7 +13,7 @@ runs:
         $packages = Join-Path $env:RUNNER_TEMP 'bit-cli-packages'
         $tools = Join-Path $env:RUNNER_TEMP 'bit-cli'
 
-        dotnet pack src/Cli/Bit.Cli/Bit.Cli.csproj -c Release -o $packages -p:ReleaseVersion=0.0.0 -p:PackageVersion=0.0.0
+        dotnet pack src/Toolings/Cli/Bit.Cli/Bit.Cli.csproj -c Release -o $packages -p:ReleaseVersion=0.0.0 -p:PackageVersion=0.0.0
         dotnet tool install Bit.Cli --tool-path $tools --add-source $packages --version 0.0.0
 
         Add-Content $env:GITHUB_PATH $tools

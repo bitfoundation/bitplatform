@@ -7,13 +7,15 @@ public partial class Header : IDisposable
 {
     private bool isHeaderMenuOpen;
     private bool isProductsMenuOpen;
-    private bool isUtilitiesMenuOpen;
     private bool isMobileProductsOpen;
-    private bool isMobileUtilitiesOpen;
     private bool isProductsMenuForceClosed;
+    private ProductSubMenu? openSubMenu;
+    private ProductSubMenu? openMobileSubMenu;
 
 
     private sealed record ProductMenuItem(string Title, string Description, string Url, bool External = false, bool Disabled = false);
+
+    private sealed record ProductSubMenu(string Id, string Title, string Description, ProductMenuItem[] Items);
 
     private static readonly ProductMenuItem[] mainProductMenuItems =
     [
@@ -46,7 +48,20 @@ public partial class Header : IDisposable
         new("Belemetry", "OpenTelemetry for every Blazor app", Urls.Belemetry, External: true),
     ];
 
-    private static readonly string utilitiesMenuDescription = $"{utilityMenuItems.Length} focused Blazor libraries";
+    private static readonly ProductMenuItem[] toolingMenuItems =
+    [
+        new("bit CLI", "Ready-to-run projects in one command", Urls.Cli),
+        new("Minifier", "Smaller Blazor WebAssembly downloads", Urls.Minifier),
+        new("BlazorES2019", "Blazor apps on older browsers", Urls.BlazorES2019),
+        new("Code Analyzers", "Best practices checked as you type", Urls.CodeAnalyzers),
+        new("Source Generators", "Less code to write and review", Urls.SourceGenerators),
+    ];
+
+    private static readonly ProductSubMenu[] productSubMenus =
+    [
+        new("utilities", "Utilities", $"{utilityMenuItems.Length} focused Blazor libraries", utilityMenuItems),
+        new("toolings", "Toolings", $"{toolingMenuItems.Length} tools to build apps with", toolingMenuItems),
+    ];
 
 
     [AutoInject] public NavMenuService navMenuService = default!;
@@ -77,9 +92,9 @@ public partial class Header : IDisposable
     private void CloseMenus()
     {
         isProductsMenuOpen = false;
-        isUtilitiesMenuOpen = false;
+        openSubMenu = null;
         isMobileProductsOpen = false;
-        isMobileUtilitiesOpen = false;
+        openMobileSubMenu = null;
 
         if (isHeaderMenuOpen)
         {
@@ -96,7 +111,7 @@ public partial class Header : IDisposable
     private async Task ToggleProductsMenu()
     {
         isProductsMenuOpen = !isProductsMenuOpen;
-        isUtilitiesMenuOpen = false;
+        openSubMenu = null;
 
         if (isProductsMenuOpen)
         {
@@ -113,14 +128,14 @@ public partial class Header : IDisposable
         if (e.Key is not "Escape") return;
 
         isProductsMenuOpen = false;
-        isUtilitiesMenuOpen = false;
+        openSubMenu = null;
         await SuppressProductsMenu();
     }
 
     // Only the click/tap/Enter path goes through here; a mouse hover opens the submenu with pure CSS.
-    private void ToggleUtilitiesMenu()
+    private void ToggleSubMenu(ProductSubMenu subMenu)
     {
-        isUtilitiesMenuOpen = !isUtilitiesMenuOpen;
+        openSubMenu = openSubMenu == subMenu ? null : subMenu;
     }
 
     // The popup is also held open by the :hover / :focus-within CSS rules, so closing takes both:
@@ -146,19 +161,19 @@ public partial class Header : IDisposable
 
         if (isMobileProductsOpen is false)
         {
-            isMobileUtilitiesOpen = false;
+            openMobileSubMenu = null;
         }
     }
 
-    private void ToggleMobileUtilities()
+    private void ToggleMobileSubMenu(ProductSubMenu subMenu)
     {
-        isMobileUtilitiesOpen = !isMobileUtilitiesOpen;
+        openMobileSubMenu = openMobileSubMenu == subMenu ? null : subMenu;
     }
 
     private async Task HandleProductMenuItemClick()
     {
         isProductsMenuOpen = false;
-        isUtilitiesMenuOpen = false;
+        openSubMenu = null;
         await SuppressProductsMenu();
     }
 
@@ -179,8 +194,10 @@ public partial class Header : IDisposable
         if (item.Url == Urls.Templates) return navMenuService.IsTemplateDocRoute;
         if (item.Url == Urls.Besql) return navMenuService.IsBesqlDocRoute;
 
-        return false;
+        return item.External is false && navMenuService.CurrentUrl == item.Url;
     }
+
+    private bool IsSubMenuActive(ProductSubMenu subMenu) => subMenu.Items.Any(IsMenuItemActive);
 
     private string GetActiveRouteName()
     {
@@ -208,7 +225,7 @@ public partial class Header : IDisposable
         if (isHeaderMenuOpen is false)
         {
             isMobileProductsOpen = false;
-            isMobileUtilitiesOpen = false;
+            openMobileSubMenu = null;
         }
 
         await JSRuntime.ToggleBodyOverflow(isHeaderMenuOpen);

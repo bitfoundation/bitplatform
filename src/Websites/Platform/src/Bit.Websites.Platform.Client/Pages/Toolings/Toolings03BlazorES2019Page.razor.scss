@@ -1,0 +1,47 @@
+﻿@import '../../Styles/abstracts/_media-queries.scss';
+@import '../../Styles/abstracts/_functions.scss';
+@import '../../Styles/abstracts/_colors.scss';
+@import '../../Styles/abstracts/_mixins.scss';
+
+.page-container {
+    @include PageContainer;
+}
+
+.section-card {
+    @include SectionCard;
+}
+
+.section-card-txt {
+    @include SectionCardText;
+}
+
+::deep {
+    a {
+        color: $bit-color-primary;
+    }
+}
+
+.table-container {
+    width: 100%;
+    overflow-x: auto;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+th,
+td {
+    text-align: left;
+    padding: rem2(8px) rem2(12px);
+    border-bottom: 1px solid $bit-color-border-secondary;
+}
+
+th {
+    font-weight: 600;
+}
+
+.num {
+    text-align: right;
+}

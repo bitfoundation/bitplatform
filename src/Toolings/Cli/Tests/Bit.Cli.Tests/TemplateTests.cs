@@ -42,10 +42,10 @@ public class TemplateTests
     [TestMethod]
     public void TheReadme_Should_ListEveryTemplateOption()
     {
-        var readme = File.ReadAllText(TestHost.RepositoryFile("src", "Cli", "README.md"));
+        var readme = File.ReadAllText(TestHost.RepositoryFile("src", "Toolings", "Cli", "README.md"));
         var missing = TemplateManifest.Embedded.Parameters.Where(p => readme.Contains($"`--{p.Name}`", StringComparison.Ordinal) is false).Select(p => p.Name).ToList();
 
-        Assert.IsEmpty(missing, "src/Cli/README.md's options table misses: " + string.Join(", ", missing));
+        Assert.IsEmpty(missing, "src/Toolings/Cli/README.md's options table misses: " + string.Join(", ", missing));
     }
 
     [TestMethod]

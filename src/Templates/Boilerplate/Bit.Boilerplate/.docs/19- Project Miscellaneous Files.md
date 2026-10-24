@@ -333,7 +333,7 @@ chmod +x Clean.sh  # Make it executable (first time only)
 
 **AI Provider**: Uses OpenAI's GPT-4.1-mini model (or Azure OpenAI)
 
-**Learn more**: See [bit translate documentation](https://github.com/bitfoundation/bitplatform/tree/develop/src/Cli#bit-translate)
+**Learn more**: See [bit translate documentation](https://github.com/bitfoundation/bitplatform/tree/develop/src/Toolings/Cli#bit-translate)
 
 **Installation and Usage**:
 

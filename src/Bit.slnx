@@ -514,25 +514,16 @@
     <Project Path="Butil/Tests/Bit.Butil.Tests.Harness.Web.Client/Bit.Butil.Tests.Harness.Web.Client.csproj" />
     <Project Path="Butil/Tests/Bit.Butil.Tests.Harness.Web/Bit.Butil.Tests.Harness.Web.csproj" />
   </Folder>
-  <Folder Name="/Cli/">
-    <File Path="Cli/README.md" />
-    <Project Path="Cli/Bit.Cli/Bit.Cli.csproj" />
-  </Folder>
-  <Folder Name="/Cli/Minifier/">
-    <File Path="Cli/Minifier/README.md" />
-    <Project Path="Cli/Minifier/Bit.Minifier/Bit.Minifier.csproj" />
-  </Folder>
-  <Folder Name="/Cli/Minifier/Tests/">
-    <Project Path="Cli/Minifier/Tests/Bit.Minifier.Tests/Bit.Minifier.Tests.csproj" />
-    <Project Path="Cli/Minifier/Tests/Bit.Minifier.Tests.Friend/Bit.Minifier.Tests.Friend.csproj" />
-    <Project Path="Cli/Minifier/Tests/Bit.Minifier.Tests.Library/Bit.Minifier.Tests.Library.csproj" />
-  </Folder>
-  <Folder Name="/Cli/Tests/">
-    <Project Path="Cli/Tests/Bit.Cli.Tests/Bit.Cli.Tests.csproj" />
-  </Folder>
   <Folder Name="/Toolings/" />
   <Folder Name="/Toolings/BlazorES2019/">
     <Project Path="Toolings/BlazorES2019/Bit.BlazorES2019/Bit.BlazorES2019.csproj" />
+  </Folder>
+  <Folder Name="/Toolings/Cli/">
+    <File Path="Toolings/Cli/README.md" />
+    <Project Path="Toolings/Cli/Bit.Cli/Bit.Cli.csproj" />
+  </Folder>
+  <Folder Name="/Toolings/Cli/Tests/">
+    <Project Path="Toolings/Cli/Tests/Bit.Cli.Tests/Bit.Cli.Tests.csproj" />
   </Folder>
   <Folder Name="/Toolings/CodeAnalyzers/">
     <File Path="Toolings/CodeAnalyzers/README.md" />
@@ -540,6 +531,15 @@
   </Folder>
   <Folder Name="/Toolings/CodeAnalyzers/Tests/">
     <Project Path="Toolings/CodeAnalyzers/Tests/Bit.CodeAnalyzers.Tests/Bit.CodeAnalyzers.Tests.csproj" />
+  </Folder>
+  <Folder Name="/Toolings/Minifier/">
+    <File Path="Toolings/Minifier/README.md" />
+    <Project Path="Toolings/Minifier/Bit.Minifier/Bit.Minifier.csproj" />
+  </Folder>
+  <Folder Name="/Toolings/Minifier/Tests/">
+    <Project Path="Toolings/Minifier/Tests/Bit.Minifier.Tests/Bit.Minifier.Tests.csproj" />
+    <Project Path="Toolings/Minifier/Tests/Bit.Minifier.Tests.Friend/Bit.Minifier.Tests.Friend.csproj" />
+    <Project Path="Toolings/Minifier/Tests/Bit.Minifier.Tests.Library/Bit.Minifier.Tests.Library.csproj" />
   </Folder>
   <Folder Name="/Toolings/SourceGenerators/">
     <File Path="Toolings/SourceGenerators/README.md" />

@@ -938,7 +938,8 @@ function Install-BitUnderTest([string] $lab) {
             throw "$Sha isn't a commit of this repository."
         }
 
-        dotnet pack (Join-Path $source 'src\Cli\Bit.Cli\Bit.Cli.csproj') -c Release -o $feed -p:ReleaseVersion=0.0.0 -p:PackageVersion=0.0.0 -nologo -v q > (Join-Path $lab 'pack.log')
+        $cliProject = 'src\Toolings\Cli\Bit.Cli\Bit.Cli.csproj', 'src\Cli\Bit.Cli\Bit.Cli.csproj' | ForEach-Object { Join-Path $source $_ } | Where-Object { Test-Path $_ } | Select-Object -First 1
+        dotnet pack $cliProject -c Release -o $feed -p:ReleaseVersion=0.0.0 -p:PackageVersion=0.0.0 -nologo -v q > (Join-Path $lab 'pack.log')
 
         if ($LASTEXITCODE -ne 0) {
             throw "bit doesn't pack from $Sha; see $(Join-Path $lab 'pack.log')."

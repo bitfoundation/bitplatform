@@ -1,0 +1,112 @@
+﻿@page "/toolings/code-analyzers"
+@inherits AppComponentBase
+
+<PageOutlet Url="toolings/code-analyzers"
+            Title="bit Code Analyzers - Toolings"
+            Description="bit Code Analyzers turn the bit platform team's rules for quality code into build errors and warnings, shown as you type, for every developer and every AI assistant." />
+
+<div class="page-container">
+    <BitText Typography="BitTypography.H3" Element="h1" Gutter>bit Code Analyzers</BitText>
+    <br />
+    <BitText Typography="BitTypography.H5" Gutter>Mistakes caught while you type, not after you ship</BitText>
+    <br />
+    <BitText Typography="BitTypography.Subtitle1" Gutter>
+        We care about code quality, and a rule that lives only in a review checklist gets missed sooner or later.
+        bit Code Analyzers put our rules into the compiler instead: the build fails or warns, right in the editor,
+        whether the code was written by a new teammate, a senior developer or an AI assistant.
+    </BitText>
+    <CodeBox>dotnet add package Bit.CodeAnalyzers</CodeBox>
+    Every bit Boilerplate project has it already.
+    <br />
+    <br />
+
+    <section class="section-card">
+        <div class="section-card-txt">
+            <BitText Typography="BitTypography.H5" Gutter>Why rules belong in the compiler</BitText>
+            <ul>
+                <li><b>The same rules for everyone.</b> People and AI assistants get the same feedback, in the editor and in CI.</li>
+                <li><b>Right away.</b> A mistake shows while the code is still on the screen, not in a review days later.</li>
+                <li><b>Cheaper than a bug.</b> An app crash or a server that stops scaling is found in seconds, before it reaches production.</li>
+            </ul>
+        </div>
+    </section>
+
+    <section class="section-card">
+        <div class="section-card-txt">
+            <BitText Typography="BitTypography.H5" Gutter>No async void</BitText>
+            <code>AsyncVoidMethodAnalyzer1</code> and <code>AsyncVoidMethodAnalyzer2</code>, errors.
+            <br />
+            <br />
+            An exception thrown in an <code>async void</code> method can't be caught by its caller, so it takes the whole app down.
+            Return a <code>Task</code> instead:
+            <CodeBox HideCopyButton>async Task SaveAsync()
+{
+    await productController.Update(product, cancellationToken);
+}</CodeBox>
+            When it has to be <code>async void</code>, like an event handler, the whole body goes in a <code>try</code>/<code>catch</code>,
+            and a statement left outside the <code>try</code> is reported too:
+            <CodeBox HideCopyButton>async void OnTimerElapsed(object? sender, ElapsedEventArgs e)
+{
+    try
+    {
+        await RefreshAsync();
+    }
+    catch (Exception exp)
+    {
+        exceptionHandler.Handle(exp);
+    }
+}</CodeBox>
+        </div>
+    </section>
+
+    <section class="section-card">
+        <div class="section-card-txt">
+            <BitText Typography="BitTypography.H5" Gutter>Async database calls</BitText>
+            <code>NonAsyncEFCoreMethodsUsageAnalyzer</code>, warning.
+            <br />
+            <br />
+            A synchronous Entity Framework Core call, like <code>ToList</code>, <code>First</code>, <code>Count</code> or <code>SaveChanges</code>,
+            holds a thread while the database answers. Under load a server runs out of threads that way and stops scaling.
+            The rule asks for the async twin of each one:
+            <CodeBox HideCopyButton>var products = await dbContext.Products
+    .Where(p => p.Price > 50)
+    .ToListAsync(cancellationToken);</CodeBox>
+            It looks at queries, <code>DbContext</code>, its <code>Database</code>, change tracking entries and context factories.
+            A call inside an expression that EF Core turns into SQL, such as a <code>Count()</code> in a <code>Select</code>, isn't reported.
+        </div>
+    </section>
+
+    <section class="section-card">
+        <div class="section-card-txt">
+            <BitText Typography="BitTypography.H5" Gutter>Classes say who can use them</BitText>
+            <code>ClassWithoutModifierAnalyzer</code>, error, with a quick fix.
+            <br />
+            <br />
+            A class or record with no modifier at all is reported, so who can use it is always written down rather than left to the language's default.
+            The editor's quick fix adds <code>public</code>.
+        </div>
+    </section>
+
+    <section class="section-card">
+        <div class="section-card-txt">
+            <BitText Typography="BitTypography.H5" Gutter>No internal accessors</BitText>
+            <code>PropertyAccessorsInternalModifierAnalyzer</code>, error.
+            <br />
+            <br />
+            A property accessor can't be <code>internal</code>, as in <code>public string Name { get; internal set; }</code>.
+            JSON deserialization, for one, skips such a setter without a word and leaves the property empty.
+            Make the whole property <code>internal</code>, or the accessor <code>private</code> or <code>protected</code>.
+        </div>
+    </section>
+
+    <section class="section-card">
+        <div class="section-card-txt">
+            <BitText Typography="BitTypography.H5" Gutter>Changing a rule's severity</BitText>
+            Each rule's severity can be raised or lowered in <code>.editorconfig</code>, like any compiler rule:
+            <CodeBox>[*.cs]
+dotnet_diagnostic.NonAsyncEFCoreMethodsUsageAnalyzer.severity = error</CodeBox>
+        </div>
+    </section>
+</div>
+
+<NavigationButtons Prev="BlazorES2019" PrevUrl="@Urls.BlazorES2019" Next="Source Generators" NextUrl="@Urls.SourceGenerators" />

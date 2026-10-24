@@ -1,0 +1,117 @@
+﻿@page "/toolings/source-generators"
+@inherits AppComponentBase
+
+<PageOutlet Url="toolings/source-generators"
+            Title="bit Source Generators - Toolings"
+            Description="bit Source Generators write the repetitive code of a Blazor app at compile time, so developers and AI assistants write, read and pay for less code." />
+
+<div class="page-container">
+    <BitText Typography="BitTypography.H3" Element="h1" Gutter>bit Source Generators</BitText>
+    <br />
+    <BitText Typography="BitTypography.H5" Gutter>Less code to write, read and pay for</BitText>
+    <br />
+    <BitText Typography="BitTypography.Subtitle1" Gutter>
+        We care about how much code it takes to build an app. Every line a developer or an AI assistant writes has to be read, reviewed and kept working,
+        and with AI every line is also tokens you pay for. bit Source Generators write the repetitive code while your app compiles,
+        so you and your assistant only write what's specific to your app.
+    </BitText>
+    <CodeBox>dotnet add package Bit.SourceGenerators</CodeBox>
+    Every bit Boilerplate project has it already.
+    <br />
+    <br />
+
+    <section class="section-card">
+        <div class="section-card-txt">
+            <BitText Typography="BitTypography.H5" Gutter>Why less code matters</BitText>
+            <ul>
+                <li><b>Lower AI costs.</b> An assistant reads and writes fewer lines, so it uses fewer tokens, finishes sooner and has less room to get things wrong.</li>
+                <li><b>Faster reviews.</b> What's left to review is the code that matters.</li>
+                <li><b>Never out of date.</b> Generated code follows your declarations on every build, so a constructor or an API client can't drift from what it serves.</li>
+                <li><b>Faster apps.</b> Generated code does at compile time what would otherwise take reflection at runtime.</li>
+            </ul>
+        </div>
+    </section>
+
+    <section class="section-card">
+        <div class="section-card-txt">
+            <BitText Typography="BitTypography.H5" Gutter>[AutoInject]</BitText>
+            Instead of a constructor that lists every service and assigns each one, mark the fields:
+            <CodeBox HideCopyButton>public partial class OrderService
+{
+    [AutoInject] private IOrderController orderController = default!;
+    [AutoInject] private ILogger&lt;OrderService> logger = default!;
+}</CodeBox>
+            In a class, the generator writes the constructor, and passes on whatever a base class injects as well.
+            In a Blazor component, it writes the <code>[Inject]</code> property behind each field, so a component injects services the same way.
+            The class has to be <code>partial</code>, and <code>BITGEN001</code> says so when it isn't.
+            <br />
+            <br />
+            The attribute is your project's own, in the <code>Microsoft.Extensions.DependencyInjection</code> namespace:
+            <CodeBox>namespace Microsoft.Extensions.DependencyInjection;
+
+[AttributeUsage(AttributeTargets.Field | AttributeTargets.Property, Inherited = false, AllowMultiple = false)]
+public sealed class AutoInjectAttribute : Attribute
+{
+}</CodeBox>
+        </div>
+    </section>
+
+    <section class="section-card">
+        <div class="section-card-txt">
+            <BitText Typography="BitTypography.H5" Gutter>Fast Blazor parameters</BitText>
+            Blazor sets a component's parameters through reflection.
+            For every <code>partial</code> component with <code>[Parameter]</code> or <code>[CascadingParameter]</code> properties,
+            the generator writes a <code>SetParametersAsync</code> that assigns each one directly instead:
+            <CodeBox HideCopyButton>public override Task SetParametersAsync(ParameterView parameters)
+{
+    var __hasUnknownParameters = false;
+    foreach (var parameter in parameters)
+    {
+        switch (parameter.Name)
+        {
+            case nameof(Title):
+               Title = (string)parameter.Value!;
+               break;
+            default:
+               __hasUnknownParameters = true;
+               break;
+        }
+    }
+
+    return base.SetParametersAsync(__hasUnknownParameters ? parameters : ParameterView.Empty);
+}</CodeBox>
+            There's nothing to write but <code>partial</code>, and components render faster, most of all in the browser, where reflection costs the most.
+            A component that declares its own <code>SetParametersAsync</code> keeps it.
+        </div>
+    </section>
+
+    <section class="section-card">
+        <div class="section-card-txt">
+            <BitText Typography="BitTypography.H5" Gutter>API clients, written for you</BitText>
+            In a bit Boilerplate project, an API is declared once, as an interface the server and the client share:
+            <CodeBox HideCopyButton>[Route("api/[controller]/[action]/")]
+public interface IProductController : IAppController
+{
+    [HttpGet("{id}")]
+    Task&lt;ProductDto> Get(Guid id, CancellationToken cancellationToken);
+
+    [HttpPost]
+    Task&lt;ProductDto> Create(ProductDto dto, CancellationToken cancellationToken);
+}</CodeBox>
+            The server's controller implements it, and the generator writes the client's side of every method: the URL, the query string,
+            the JSON body and the response. <code>services.AddTypedHttpClients()</code> registers them all, and the client calls the API like a local service:
+            <CodeBox HideCopyButton>[AutoInject] private IProductController productController = default!;
+
+var product = await productController.Get(id, CurrentCancellationToken);</CodeBox>
+            <ul>
+                <li>Route and query parameters, JSON bodies and streamed <code>IAsyncEnumerable</code> responses all work.</li>
+                <li>While a page prerenders, the response the server already fetched is handed to the browser, so the page doesn't ask twice.</li>
+                <li>A route template that isn't valid fails the build with <code>BITGEN003</code>, rather than a request at runtime.</li>
+            </ul>
+            It builds on the types a bit Boilerplate project defines, so it comes with bit Boilerplate.
+            Its <a href="/templates/wiki#api-odata">wiki</a> covers the rest.
+        </div>
+    </section>
+</div>
+
+<NavigationButtons Prev="Code Analyzers" PrevUrl="@Urls.CodeAnalyzers" />
