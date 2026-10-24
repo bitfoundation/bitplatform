@@ -157,7 +157,10 @@ websites - is checked. Every command prints what it checked and exits non-zero o
 
    - The template tree's tests start its Aspire app host first, with every container it has (SQL Server, PostgreSQL,
      MySQL, Keycloak, both Redis, the S3 storage, MailPit), so they need Docker and are slow to start; that
-     start once hung for over 15 minutes. A generated project starts only its own few containers.
+     start once hung for over 15 minutes. A test process at 0% CPU that has printed nothing is that hang: stop it and
+     run again once the containers are up. A generated project starts only its own few containers.
+   - The template tree's tests keep their Sqlite database in `%TEMP%\BoilerplateDb.db`, which every worktree shares.
+     After testing a branch that edited a migration in place, delete it, or its old schema fails unrelated tests.
    - Install a packed template with `--debug:custom-hive <folder>` on both `dotnet new install` and `dotnet new`, so
      the machine's own Bit.Boilerplate template stays as it is; `bit new` already uses a private hive in its home
      (`BIT_CLI_HOME`).
