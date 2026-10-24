@@ -11,6 +11,23 @@
     <Project Path="Demo/Client/Bit.BevTools.Demo.Client.csproj" />
     <Project Path="Demo/Server/Bit.BevTools.Demo.Server.csproj" />
   </Folder>
+  <Folder Name="/Samples/">
+    <Project Path="Samples/Core/Bit.BevTools.Samples.Core.csproj" />
+    <Project Path="Samples/MAUI/Bit.BevTools.Samples.Maui.csproj">
+      <Deploy />
+    </Project>
+  </Folder>
+  <Folder Name="/Samples/Auto/">
+    <Project Path="Samples/Auto/Bit.BevTools.Samples.Auto.Client/Bit.BevTools.Samples.Auto.Client.csproj" />
+    <Project Path="Samples/Auto/Bit.BevTools.Samples.Auto/Bit.BevTools.Samples.Auto.csproj" />
+  </Folder>
+  <Folder Name="/Samples/Server/">
+    <Project Path="Samples/Server/Bit.BevTools.Samples.Server.csproj" />
+  </Folder>
+  <Folder Name="/Samples/Wasm/">
+    <Project Path="Samples/Wasm/Bit.BevTools.Samples.Wasm.Client/Bit.BevTools.Samples.Wasm.Client.csproj" />
+    <Project Path="Samples/Wasm/Bit.BevTools.Samples.Wasm/Bit.BevTools.Samples.Wasm.csproj" />
+  </Folder>
   <Folder Name="/docs/">
     <File Path="docs/architecture.md" />
     <File Path="docs/capabilities.md" />

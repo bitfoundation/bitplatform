@@ -406,6 +406,8 @@ Bit.BevTools.Loader           trimmable startup half for opening BevTools on dem
 Bit.BevTools.Extension        the browser extension (Manifest V3, Chromium and Firefox): the companion in a DevTools panel
 Bit.BevTools.Cli              the bevtools .NET tool for CI: an export's findings (check), two recordings (compare)
 Demo                          Blazor Web App (Interactive Auto, Server + Client) with a "Problems to diagnose" index
+Samples                       the same pages (Core) in every host, each with its own BevTools setup in Program.cs:
+                              Server, Wasm (+ Client), Auto (+ Client) and MAUI (Blazor Hybrid)
 Tests/Bit.BevTools.Tests      MSTest + bUnit on net8.0/net9.0/net10.0: instrumentation, tree, rendering, timeline,
                               state, network, interop, diagnostics, DI graph, concurrency, overhead, memory bounds,
                               scale, panel interaction, framework-diagnostics attribution, extensibility, forced-render
@@ -418,7 +420,10 @@ Tests/Bit.BevTools.Benchmarks reproducible overhead measurement (dotnet run -c R
 docs/                         capability matrix, architecture, performance; audit, roadmap, progress
 ```
 
-Run the demo with `dotnet run --project src/Utilities/BevTools/Demo/Server`, then open `/problems`. The tests:
+Run the demo with `dotnet run --project src/Utilities/BevTools/Demo/Server`, then open `/problems`. To see BevTools in
+one hosting model, run its sample: `dotnet run --project src/Utilities/BevTools/Samples/Server` (or
+`Samples/Wasm/Bit.BevTools.Samples.Wasm`, `Samples/Auto/Bit.BevTools.Samples.Auto`), and `Samples/MAUI` from Visual
+Studio or with `dotnet build -t:Run -f <target framework>`. The tests:
 
 ```bash
 cd src/Utilities/BevTools/Tests/Bit.BevTools.Tests && dotnet test     # run from inside src, so global.json's test runner applies

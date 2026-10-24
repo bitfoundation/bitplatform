@@ -171,6 +171,21 @@
     <Project Path="Utilities/BevTools/Demo/Server/Bit.BevTools.Demo.Server.csproj" />
     <Project Path="Utilities/BevTools/Tests/Bit.BevTools.Tests/Bit.BevTools.Tests.csproj" />
   </Folder>
+  <Folder Name="/Utilities/BevTools/Samples/" />
+  <Folder Name="/Utilities/BevTools/Samples/Auto/">
+    <Project Path="Utilities/BevTools/Samples/Auto/Bit.BevTools.Samples.Auto/Bit.BevTools.Samples.Auto.csproj" />
+    <Project Path="Utilities/BevTools/Samples/Auto/Bit.BevTools.Samples.Auto.Client/Bit.BevTools.Samples.Auto.Client.csproj" />
+  </Folder>
+  <Folder Name="/Utilities/BevTools/Samples/Core/">
+    <Project Path="Utilities/BevTools/Samples/Core/Bit.BevTools.Samples.Core.csproj" />
+  </Folder>
+  <Folder Name="/Utilities/BevTools/Samples/Server/">
+    <Project Path="Utilities/BevTools/Samples/Server/Bit.BevTools.Samples.Server.csproj" />
+  </Folder>
+  <Folder Name="/Utilities/BevTools/Samples/Wasm/">
+    <Project Path="Utilities/BevTools/Samples/Wasm/Bit.BevTools.Samples.Wasm/Bit.BevTools.Samples.Wasm.csproj" />
+    <Project Path="Utilities/BevTools/Samples/Wasm/Bit.BevTools.Samples.Wasm.Client/Bit.BevTools.Samples.Wasm.Client.csproj" />
+  </Folder>
   <Folder Name="/BlazorES2019/">
     <Project Path="BlazorES2019/Bit.BlazorES2019/Bit.BlazorES2019.csproj" />
   </Folder>

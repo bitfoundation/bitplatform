@@ -1,0 +1,12 @@
+﻿@* The interactive root of every sample. <BevToolsPanel /> is placed once, here, outside the layout: it has to sit
+   inside an interactive component, and it survives every navigation this way. It renders nothing while prerendering
+   and nothing at all when BevTools is off. Press Ctrl+Shift+D or click the badge to open it. *@
+
+<Router AppAssembly="typeof(Routes).Assembly" NotFoundPage="typeof(NotFoundPage)">
+    <Found Context="routeData">
+        <RouteView RouteData="routeData" DefaultLayout="typeof(MainLayout)" />
+        <FocusOnNavigate RouteData="routeData" Selector="h1" />
+    </Found>
+</Router>
+
+<BevToolsPanel />
