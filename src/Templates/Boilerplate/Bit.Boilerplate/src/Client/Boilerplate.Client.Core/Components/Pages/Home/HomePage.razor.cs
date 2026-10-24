@@ -53,6 +53,8 @@ public partial class HomePage
     private NugetStatsDto? nugetStats;
     private bool isLoadingNuget = true;
     private bool isLoadingGitHub = true;
+    private BitPivotItem? gitHubPivotItem;
+    private Task? loadGitHub;
 
 
     [AutoInject] private IStatisticsController statisticsController = default!;
@@ -71,7 +73,19 @@ public partial class HomePage
         // However, the logic in other HTTP message handlers, such as **LoggingDelegatingHandler** and **RetryDelegatingHandler**,
         // effectively cover all requests regardless of their destination.
 
-        await Task.WhenAll(LoadNuget(), LoadGitHub());
+        await LoadNuget();
+    }
+
+    private async Task HandleOnPivotChange(BitPivotItem item)
+    {
+        if (item != gitHubPivotItem || gitHubStats is not null) return;
+
+        if (loadGitHub is null || loadGitHub.IsCompleted)
+        {
+            loadGitHub = LoadGitHub();
+        }
+
+        await loadGitHub;
     }
 
 
@@ -90,14 +104,13 @@ public partial class HomePage
 
     private async Task LoadGitHub()
     {
+        isLoadingGitHub = true;
+
         try
         {
             // GitHub results (2nd Bit Pivot tab) aren't shown by default and aren't critical for SEO,
-            // so we can skip it in pre-rendering to save time.
-            if (InPrerenderSession is false)
-            {
-                gitHubStats = await statisticsController.GetGitHubStats(CurrentCancellationToken);
-            }
+            // so they are loaded once that tab is opened.
+            gitHubStats = await statisticsController.GetGitHubStats(CurrentCancellationToken);
         }
         catch
         {

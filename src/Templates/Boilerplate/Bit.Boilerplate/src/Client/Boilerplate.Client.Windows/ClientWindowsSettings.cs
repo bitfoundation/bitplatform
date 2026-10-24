@@ -1,23 +1,17 @@
 //+:cnd:noEmit
 using Boilerplate.Client.Core;
+using Microsoft.Extensions.Options;
 
 namespace Boilerplate.Client.Windows;
 
 public class ClientWindowsSettings : ClientCoreSettings
 {
     public WindowsUpdateOptions? WindowsUpdate { get; set; }
+}
 
-    public override IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
-    {
-        var validationResults = base.Validate(validationContext).ToList();
-
-        if (WindowsUpdate is not null)
-        {
-            Validator.TryValidateObject(WindowsUpdate, new ValidationContext(WindowsUpdate), validationResults, true);
-        }
-
-        return validationResults;
-    }
+[OptionsValidator]
+public partial class ClientWindowsSettingsValidator : IValidateOptions<ClientWindowsSettings>
+{
 }
 
 public partial class WindowsUpdateOptions

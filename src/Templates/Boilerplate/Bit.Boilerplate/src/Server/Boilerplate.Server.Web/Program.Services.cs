@@ -112,9 +112,9 @@ public static partial class Program
         //#endif
         //#endif
 
+        services.AddSingleton<IValidateOptions<ServerWebSettings>, ServerWebSettingsValidator>();
         services.AddOptions<ServerWebSettings>()
             .Bind(configuration)
-            .ValidateDataAnnotations()
             .ValidateOnStart();
 
         services.AddSingleton(sp => sp.GetRequiredService<IOptions<ServerWebSettings>>().Value);

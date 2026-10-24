@@ -64,7 +64,7 @@
             <BitCard FullWidth Style="padding:2rem">
                 <BitStack>
                     <BitText Typography="BitTypography.H5">Statistics</BitText>
-                    <BitPivot Style="width:100%" Styles="@(new() { Body = "overflow:auto" })">
+                    <BitPivot Style="width:100%" Styles="@(new() { Body = "overflow:auto" })" OnChange="HandleOnPivotChange">
                         <BitPivotItem HeaderText="Nuget">
                             @if (isLoadingNuget)
                             {
@@ -95,7 +95,7 @@
                                 <BitText Typography="BitTypography.H4">Nuget stats could not be loaded.</BitText>
                             }
                         </BitPivotItem>
-                        <BitPivotItem HeaderText="GitHub">
+                        <BitPivotItem HeaderText="GitHub" @ref="gitHubPivotItem">
                             @if (isLoadingGitHub)
                             {
                                 <BitStack HorizontalAlign="BitAlignment.Center">

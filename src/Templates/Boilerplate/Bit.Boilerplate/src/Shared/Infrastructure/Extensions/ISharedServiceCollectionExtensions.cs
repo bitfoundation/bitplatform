@@ -30,9 +30,9 @@ public static partial class ISharedServiceCollectionExtensions
                 return options;
             });
 
+            services.AddSingleton<IValidateOptions<SharedSettings>, SharedSettingsValidator>();
             services.AddOptions<SharedSettings>()
                 .Bind(configuration)
-                .ValidateDataAnnotations()
                 .ValidateOnStart();
 
             services.ConfigureAuthorizationCore();

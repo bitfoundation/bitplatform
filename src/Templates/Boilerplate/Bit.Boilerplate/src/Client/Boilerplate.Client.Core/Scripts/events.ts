@@ -3,19 +3,12 @@
 import { App } from './App';
 
 (function () {
-    window.addEventListener('load', handleLoad);
-    window.addEventListener('resize', setCssWindowSizes);
-
     window.addEventListener('message', handleMessage);
     if ('serviceWorker' in navigator) {
         navigator.serviceWorker.addEventListener('message', handleMessage);
     }
 
     window.addEventListener('storage', handleStorage);
-
-    function handleLoad() {
-        setCssWindowSizes();
-    }
 
     // Fires only in the other tabs, so they follow a sign-in or sign-out made in this one (See AuthManager).
     function handleStorage(e: StorageEvent) {
@@ -41,10 +34,5 @@ import { App } from './App';
         if (e.data?.key === 'PUBLISH_MESSAGE') {
             App.publishMessage(e.data?.message, e.data?.payload);
         }
-    }
-
-    function setCssWindowSizes() {
-        document.documentElement.style.setProperty('--win-width', `${window.innerWidth}px`);
-        document.documentElement.style.setProperty('--win-height', `${window.innerHeight}px`);
     }
 }());

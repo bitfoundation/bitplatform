@@ -5,7 +5,7 @@ namespace Boilerplate.Client.Core.Components.Pages;
 ///
 /// <para>
 /// Brouter treats routing as more than "match a URL and mount a component". A route can be marked
-/// <c>KeepAlive</c> (see <c>Routes.razor</c>): instead of being torn down when you navigate away, the
+/// <c>KeepAlive</c> (see <c>AppRoutes.razor</c>): instead of being torn down when you navigate away, the
 /// page's component instance is retained and merely <em>hidden</em>, then <em>revealed</em> again on
 /// return - so scroll position, grid paging/sorting/filtering, unsaved input, in-flight state, etc. all
 /// survive the round-trip. And whether a page is kept alive or not, Brouter gives it a much richer
