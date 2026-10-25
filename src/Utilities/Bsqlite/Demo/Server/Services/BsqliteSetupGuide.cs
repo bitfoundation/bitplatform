@@ -144,7 +144,7 @@ public static partial class BsqliteSetupGuide
             `AddBitBsqliteServices` adds the `file-system` backend (`BsqliteFileSystemStorageProvider`, namespace
             `Bit.Bsqlite.Storage.FileSystem`) and ranks it ahead of the browser backends - which need .NET running in the
             browser and are passed over without being probed. The database is a SQLite file in the app's own folder,
-            opened in-process by the native SQLite the package brings for Android, iOS, Mac Catalyst, Windows and macOS.
+            opened in-process by the native SQLite the app brings for Android, iOS, Mac Catalyst, Windows and macOS.
             So the registration a WebAssembly client uses - typically one extension method in a shared Razor class
             library - serves the Hybrid app unchanged, and so do the pages.
             """,
@@ -331,20 +331,24 @@ public static partial class BsqliteSetupGuide
         ## Checklist
 
         1. `dotnet add package Bit.Bsqlite` to the project that registers the services - the MAUI, WPF or Windows Forms
-           app, or the Razor class library it shares with a WebAssembly client. Nothing else: the native SQLite engine for
-           the app's platform comes with it (`SQLitePCLRaw.bundle_e_sqlite3`).
+           app, or the Razor class library it shares with a WebAssembly client - and `dotnet add package
+           SQLitePCLRaw.bundle_e_sqlite3` beside it: the native SQLite engine, which NuGet builds for the app's platform
+           and keeps out of a WebAssembly client's build. An app already on another SQLitePCLRaw bundle, such as
+           `bundle_e_sqlcipher`, keeps that one instead.
         2. Register exactly as for WebAssembly - `AddBitBsqliteServices` with the browser backends and their preference,
            `AddDatabase`, `AddBitBsqliteDbContext`. Do not add `BsqliteFileSystemStorageProvider` or rank `file-system`
            yourself: it is registered and put first for a Blazor Hybrid app, and never offered anywhere else.
         3. Optionally move the folder with `ConfigureFileSystemStorage(o => o.RootDirectory = ...)`. The default is
-           `{local application data}/{entry assembly name}/bit-bsqlite`; a database name is a path under it, without `..`.
+           `{local application data}/{entry assembly name}/bit-bsqlite`; a database name is a path under it, without `..`,
+           without `<>:"|?*` or control characters, and without a segment ending in a dot or a space.
         4. Keep the async API - `ToListAsync`, `SaveChangesAsync`, `MigrateAsync` - as in the browser: synchronous members
            throw here too, so one code path serves both hosts, and the UI thread never waits on the disk.
         5. A page may open the database whenever it likes - there is no prerendering in a Hybrid app. Two windows are two
            scopes on one file: migrations and first-use steps take a lock shared between them, and live queries in each
            re-run on the other's writes.
         6. `Database.Resolution` names `file-system` and the folder; `provider.Admin` exports and imports the files as
-           plain SQLite databases, for backups or a pre-populated database.
+           plain SQLite databases, for backups or a pre-populated database - inside `Database.WhileClosedAsync`, and with
+           the database closed in every other window too: while one still has the file open, they throw.
         """;
 
     private const string StorageChecklist = """

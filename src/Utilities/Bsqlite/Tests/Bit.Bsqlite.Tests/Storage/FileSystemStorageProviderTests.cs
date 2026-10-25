@@ -1,4 +1,5 @@
-﻿using Bit.Bsqlite.Storage.FileSystem;
+﻿using Bit.Bsqlite.Interop;
+using Bit.Bsqlite.Storage.FileSystem;
 using Microsoft.Data.Sqlite;
 
 namespace Bit.Bsqlite.Storage.Tests;
@@ -82,6 +83,38 @@ public sealed class FileSystemStorageProviderTests
         Assert.ThrowsExactly<ArgumentException>(() => Provider().GetDatabasePath("data/C:/elsewhere.db"));
     }
 
+    /// <summary>
+    /// Held to what every platform keeps as written: on Windows a ':' names an alternate data stream of another
+    /// file, and a trailing dot or space is dropped, so two names would share one file.
+    /// </summary>
+    [TestMethod]
+    [DataRow("tenant:1.db")]
+    [DataRow("data/tenant:1.db")]
+    [DataRow("what?.db")]
+    [DataRow("all*.db")]
+    [DataRow("a|b.db")]
+    [DataRow("a\"b.db")]
+    [DataRow("a<b>.db")]
+    [DataRow("tab\t.db")]
+    [DataRow("app.db.")]
+    [DataRow("data /app.db")]
+    public void DatabaseName_IsAFileNameOnEveryPlatform(string name)
+    {
+        var error = Assert.ThrowsExactly<ArgumentException>(() => Provider().GetDatabasePath(name));
+
+        Assert.Contains("relative to", error.Message);
+    }
+
+    [TestMethod]
+    public void Root_CanBeADriveOrTheFileSystemRoot()
+    {
+        var root = Path.GetPathRoot(_root.Path)!;
+        var provider = new BsqliteFileSystemStorageProvider(new() { RootDirectory = root });
+
+        Assert.AreEqual(Path.Combine(root, "app.db"), provider.GetDatabasePath("app.db"));
+        Assert.AreEqual(Path.Combine(root, "data", "app.db"), provider.GetDatabasePath("data/app.db"));
+    }
+
     [TestMethod]
     public async Task Probe_IsAvailable_WhereDotNetRunsNatively_AndNamesTheEngine()
     {
@@ -107,6 +140,95 @@ public sealed class FileSystemStorageProviderTests
         CollectionAssert.AreEqual(
             new[] { "App_Data/AppOffline.db", "app.db" },
             (await provider.Admin.ListAsync(Ct)).ToArray());
+    }
+
+    /// <summary>
+    /// An empty file cannot be told from any other empty file of the app, and the bindings a Blazor Hybrid app keeps
+    /// in the root are not a database either.
+    /// </summary>
+    [TestMethod]
+    public async Task List_LeavesOutEmptyFilesAndTheBindings()
+    {
+        var provider = Provider();
+        await provider.Admin.ImportAsync("app.db", SqliteImage(), Ct);
+        await File.WriteAllBytesAsync(Path.Combine(_root.Path, "placeholder.txt"), [], Ct);
+
+        var bindings = new BsqliteFileStorageBindingStore(Path.Combine(_root.Path, BsqliteFileStorageBindingStore.FileName));
+        await bindings.SetProviderNameAsync("app.db", "file-system", Ct);
+        CollectionAssert.AreEqual(new[] { "app.db" }, (await provider.Admin.ListAsync(Ct)).ToArray());
+
+        await bindings.RemoveAsync("app.db", Ct);
+        CollectionAssert.AreEqual(new[] { "app.db" }, (await provider.Admin.ListAsync(Ct)).ToArray());
+    }
+
+    [TestMethod]
+    public async Task Delete_SucceedsQuietly_WhenTheFolderWasNeverCreated()
+    {
+        var provider = Provider();
+
+        await provider.Admin.DeleteAsync("App_Data/AppOffline.db", Ct);
+
+        Assert.IsFalse(Directory.Exists(_root.Path));
+    }
+
+    /// <summary>
+    /// A file a stock EF Core app - Bit.Besql's, on a device - wrote in WAL mode may hold committed rows in its log
+    /// alone. Exporting the file without them, and then deleting the source with its log, would lose them.
+    /// </summary>
+    [TestMethod]
+    public async Task Export_FoldsTheWriteAheadLogIntoTheImage()
+    {
+        var provider = Provider();
+        var path = provider.GetDatabasePath("app.db");
+        Directory.CreateDirectory(_root.Path);
+
+        await using (var connection = new SqliteConnection($"Data Source={path};Pooling=False"))
+        {
+            await connection.OpenAsync(Ct);
+
+            // What a process killed before its last connection closed leaves behind: the log, not checkpointed.
+            Assert.AreEqual(SQLitePCL.raw.SQLITE_OK, SQLitePCL.raw.sqlite3_db_config(connection.Handle!, 1006 /* SQLITE_DBCONFIG_NO_CKPT_ON_CLOSE */, 1, out _));
+
+            await using var command = connection.CreateCommand();
+            command.CommandText = "PRAGMA journal_mode = WAL; CREATE TABLE t (x); INSERT INTO t VALUES (42);";
+            await command.ExecuteNonQueryAsync(Ct);
+        }
+
+        Assert.IsTrue(new FileInfo(path + "-wal").Length > 0, "The test needs the rows in the log.");
+
+        var image = await provider.Admin.ExportAsync("app.db", Ct);
+
+        var copy = Path.Combine(_root.Path, "copy.db");
+        await File.WriteAllBytesAsync(copy, image, Ct);
+        await using var reader = new SqliteConnection($"Data Source={copy};Pooling=False");
+        await reader.OpenAsync(Ct);
+        await using var query = reader.CreateCommand();
+        query.CommandText = "SELECT x FROM t";
+        Assert.AreEqual(42L, await query.ExecuteScalarAsync(Ct));
+    }
+
+    /// <summary>
+    /// Two windows of a Blazor Hybrid app share the file. Replacing or deleting it under the one still open would
+    /// send its writes to a file that is no longer the database - or, on Windows, fail half way.
+    /// </summary>
+    [TestMethod]
+    public async Task Admin_WaitsForEveryWindowToCloseTheFile()
+    {
+        var provider = Provider();
+        await provider.Admin.ImportAsync("app.db", ReadOnlyMemory<byte>.Empty, Ct);
+
+        var otherWindow = new BsqliteNativeTransport(provider);
+        await otherWindow.OpenAsync("app.db", Ct);
+
+        await Assert.ThrowsExactlyAsync<IOException>(async () => await provider.Admin.ImportAsync("app.db", SqliteImage(), Ct));
+        await Assert.ThrowsExactlyAsync<IOException>(async () => await provider.Admin.ExportAsync("app.db", Ct));
+        await Assert.ThrowsExactlyAsync<IOException>(async () => await provider.Admin.DeleteAsync("app.db", Ct));
+        Assert.IsTrue(await provider.Admin.ExistsAsync("app.db", Ct));
+
+        await otherWindow.DisposeAsync();
+
+        await provider.Admin.DeleteAsync("app.db", Ct);
+        Assert.IsFalse(await provider.Admin.ExistsAsync("app.db", Ct));
     }
 
     /// <summary>A journal left by a crash would be rolled back into whatever file next takes the name.</summary>

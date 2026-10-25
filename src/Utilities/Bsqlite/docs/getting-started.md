@@ -2,13 +2,21 @@
 
 ## Install
 
-Reference `Bit.Bsqlite` - the ADO.NET surface, the EF Core integration, the worker transport, every browser storage backend (OPFS, IndexedDB, Cache Storage and in-memory), and the file system backend and native SQLite a Blazor Hybrid app runs on, in one package.
+Reference `Bit.Bsqlite` - the ADO.NET surface, the EF Core integration, the worker transport, every browser storage backend (OPFS, IndexedDB, Cache Storage and in-memory), and the file system backend a Blazor Hybrid app runs on, in one package.
 
 ```
 dotnet add package Bit.Bsqlite
 ```
 
-The engine (`.wasm` and the worker) and the backends' VFSes are served as static web assets under `_content/Bit.Bsqlite/`, each imported on demand: a session downloads one engine build and the VFS of the backend it selected, never the others. Nothing needs to be added to the host page. The native SQLite the package brings for Blazor Hybrid stays out of the WebAssembly build.
+The engine (`.wasm` and the worker) and the backends' VFSes are served as static web assets under `_content/Bit.Bsqlite/`, each imported on demand: a session downloads one engine build and the VFS of the backend it selected, never the others. Nothing needs to be added to the host page.
+
+A Blazor Hybrid app also brings the native SQLite engine it opens its files with, as an app on `Microsoft.EntityFrameworkCore.Sqlite.Core` does:
+
+```
+dotnet add package SQLitePCLRaw.bundle_e_sqlite3
+```
+
+- or keeps the SQLitePCLRaw bundle it already uses, such as `bundle_e_sqlcipher`. Added to a Razor class library shared with a WebAssembly client, the bundle stays out of the WebAssembly build.
 
 Bit.Bsqlite targets .NET 8, 9 and 10, each with the EF Core of the same major version.
 
@@ -37,7 +45,7 @@ builder.Services.AddBitBsqliteDbContext<AppDbContext>(options =>
 });
 ```
 
-Register them in the project that runs on WebAssembly. In a Blazor Hybrid app - MAUI, WPF, Windows Forms - the same registration works unchanged: .NET runs natively there, so Bsqlite adds the `file-system` backend, ranks it ahead of the browser ones, and keeps the database as a SQLite file in the app's own folder, opened in-process by the native SQLite the package brings (see [Storage](storage.md#file-system-blazor-hybrid)). A Razor class library shared by a WebAssembly client and a Hybrid app registers Bsqlite once for both.
+Register them in the project that runs on WebAssembly. In a Blazor Hybrid app - MAUI, WPF, Windows Forms - the same registration works unchanged: .NET runs natively there, so Bsqlite adds the `file-system` backend, ranks it ahead of the browser ones, and keeps the database as a SQLite file in the app's own folder, opened in-process by the native SQLite the app brings (see [Install](#install) and [Storage](storage.md#file-system-blazor-hybrid)). A Razor class library shared by a WebAssembly client and a Hybrid app registers Bsqlite once for both.
 
 In a Blazor Web App whose pages are prerendered, register them in the server project as well: the prerender pass instantiates the pages there, so what they inject has to resolve, and nothing touches the browser until a page opens the database - which it should do only once the page runs in the browser: `RendererInfo.IsInteractive` on Interactive WebAssembly, and `OperatingSystem.IsBrowser()` on Interactive Auto, where a page on the server circuit is interactive too (and on .NET 8, which has no `RendererInfo`).
 

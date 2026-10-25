@@ -1,4 +1,5 @@
 ﻿using Bit.Bsqlite.Storage;
+using Bit.Bsqlite.Storage.FileSystem;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 
@@ -28,7 +29,9 @@ namespace Bit.Bsqlite.Interop;
 /// worker; in a Blazor Hybrid app, where .NET runs natively, those that keep files on the device -
 /// ranked ahead of the configured preference, which names the browser backends the same registration
 /// uses on WebAssembly. A backend that cannot serve the host is reported unavailable without being
-/// probed.
+/// probed - except that a Blazor Hybrid app's database already bound to a browser backend, kept in its
+/// web view before the app's databases moved to the device, is still served there, so its data is not
+/// left behind for an empty file; a backend on the device then ranks above it, ready to migrate to.
 /// </para>
 /// <para>
 /// <see cref="ResolveAsync"/> makes no changes, so it is safe to call for diagnostics. The chosen
@@ -69,13 +72,26 @@ public sealed class BsqliteStorageProviderResolver
 
         foreach (var provider in providers)
         {
-            if (!_providers.TryAdd(provider.Name, provider))
+            if (!_providers.TryGetValue(provider.Name, out var registered))
+            {
+                _providers.Add(provider.Name, provider);
+            }
+            else if (IsDefault(registered) && !IsDefault(provider))
+            {
+                // The file system backend a Blazor Hybrid app gets on its own gives way to one the app
+                // registered itself - through a factory, say, which registration cannot see into.
+                _providers[provider.Name] = provider;
+            }
+            else if (!IsDefault(provider))
             {
                 throw new InvalidOperationException(
                     $"Two storage providers are registered under the name '{provider.Name}'. "
                     + "Provider names identify where a database lives, so they must be unique.");
             }
         }
+
+        static bool IsDefault(IBsqliteStorageProvider provider)
+            => provider is BsqliteFileSystemStorageProvider { IsDefault: true };
     }
 
     /// <summary>Chooses a backend for <paramref name="databaseName"/> without changing anything.</summary>
@@ -227,7 +243,7 @@ public sealed class BsqliteStorageProviderResolver
                 ]);
         }
 
-        var probe = await ProbeAsync(bound, cancellationToken).ConfigureAwait(false);
+        var probe = await ProbeAsync(bound, cancellationToken, holdsData: true).ConfigureAwait(false);
 
         if (!probe.IsAvailable)
         {
@@ -429,48 +445,54 @@ public sealed class BsqliteStorageProviderResolver
     }
 
     /// <summary>Why <paramref name="provider"/> cannot serve this host at all, or <see langword="null"/> when it can.</summary>
-    private string? UnservableReason(IBsqliteStorageProvider provider)
-    {
-        var runsInBrowser = (provider.Capabilities.SupportedContexts & ~BsqliteExecutionContexts.NativeProcess)
-            != BsqliteExecutionContexts.None;
-
-        return _host switch
+    /// <param name="provider">The backend.</param>
+    /// <param name="holdsData">
+    /// Whether the database is bound to <paramref name="provider"/> already. A Blazor Hybrid app that ran Bsqlite in
+    /// its web view before kept its databases on a browser backend there, which keeps serving them - existing data
+    /// outranks where new databases go - until they are migrated to the device.
+    /// </param>
+    private string? UnservableReason(IBsqliteStorageProvider provider, bool holdsData)
+        => _host switch
         {
-            BsqliteHostKind.BlazorHybrid when !RunsNatively(provider) =>
+            BsqliteHostKind.BlazorHybrid when !RunsNatively(provider) && !(holdsData && RunsInBrowser(provider)) =>
                 $"'{provider.Name}' needs .NET running in the browser. This is a Blazor Hybrid app, where .NET runs "
                 + "natively, so its databases are kept on the device instead.",
-            BsqliteHostKind.Browser when !runsInBrowser =>
+            BsqliteHostKind.Browser when !RunsInBrowser(provider) =>
                 $"'{provider.Name}' needs .NET running natively, as in a Blazor Hybrid app; here .NET runs in the browser.",
-            BsqliteHostKind.Other when !runsInBrowser =>
+            BsqliteHostKind.Other when !RunsInBrowser(provider) =>
                 $"'{provider.Name}' keeps databases on the device of a Blazor Hybrid app, and this process is not "
                 + "one. On a server, a user's database lives in their browser: open it once the page runs there.",
             _ => null,
         };
-    }
 
-    private static bool RunsNatively(IBsqliteStorageProvider provider)
+    /// <summary>Whether <paramref name="provider"/> runs where .NET runs natively, on files of the app's own.</summary>
+    internal static bool RunsNatively(IBsqliteStorageProvider provider)
         => provider.Capabilities.SupportedContexts.HasFlag(BsqliteExecutionContexts.NativeProcess);
+
+    /// <summary>Whether <paramref name="provider"/> runs in the browser, in any of its contexts.</summary>
+    internal static bool RunsInBrowser(IBsqliteStorageProvider provider)
+        => (provider.Capabilities.SupportedContexts & ~BsqliteExecutionContexts.NativeProcess) != BsqliteExecutionContexts.None;
 
     private async ValueTask<BsqliteProbeResult> ProbeAsync(
         IBsqliteStorageProvider provider,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken,
+        bool holdsData = false)
     {
-        if (_probeCache.TryGetValue(provider.Name, out var cached))
-        {
-            return cached;
-        }
-
-        if (UnservableReason(provider) is { } reason)
+        if (UnservableReason(provider, holdsData) is { } reason)
         {
             // Not probed: a browser backend's probe would run in a Blazor Hybrid app's web view, and a
-            // native one's would succeed on a server that must not keep its users' databases.
-            var unservable = BsqliteProbeResult.Unavailable(reason, new Dictionary<string, string>(StringComparer.Ordinal)
+            // native one's would succeed on a server that must not keep its users' databases. Not cached
+            // either, since whether the database is bound there already changes the answer.
+            return BsqliteProbeResult.Unavailable(reason, new Dictionary<string, string>(StringComparer.Ordinal)
             {
                 ["host"] = _host.ToString(),
                 ["supportedContexts"] = provider.Capabilities.SupportedContexts.ToString(),
             });
-            _probeCache[provider.Name] = unservable;
-            return unservable;
+        }
+
+        if (_probeCache.TryGetValue(provider.Name, out var cached))
+        {
+            return cached;
         }
 
         BsqliteProbeResult probe;

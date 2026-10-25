@@ -120,8 +120,9 @@ the backend it selected. Nothing needs to be added to the host page.
 
 The same registration serves a Blazor Hybrid app: .NET runs natively there, so Bsqlite registers the `file-system`
 backend, ranks it ahead of the browser ones, and opens the database as a file in the app's own folder with the native
-SQLite the package brings. `ConfigureFileSystemStorage(o => o.RootDirectory = ...)` moves the folder; nothing else is
-needed. The native engine stays out of the WebAssembly build.
+SQLite the app brings - `SQLitePCLRaw.bundle_e_sqlite3`, or the SQLitePCLRaw bundle it already uses.
+`ConfigureFileSystemStorage(o => o.RootDirectory = ...)` moves the folder; nothing else is needed. The native engine
+stays out of the WebAssembly build.
 
 ## Composition without dependency injection
 

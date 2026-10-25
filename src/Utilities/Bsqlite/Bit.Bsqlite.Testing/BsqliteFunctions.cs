@@ -23,5 +23,5 @@ namespace Bit.Bsqlite.Testing;
 public static class BsqliteFunctions
 {
     /// <summary>Installs every function EF Core's SQLite provider expects to exist.</summary>
-    public static void Register(SqliteConnection connection) => BsqliteNativeFunctions.Register(connection);
+    public static void Register(SqliteConnection connection) => BsqliteNativeTransport.RegisterFunctions(connection);
 }

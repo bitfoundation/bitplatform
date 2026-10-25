@@ -16,9 +16,12 @@
     </ItemGroup>
 
     <ItemGroup>
-        <!-- No SQLite package of its own: the in-process transport is Bit.Bsqlite's native transport, and the native
-             engine it runs on (SQLitePCLRaw.bundle_e_sqlite3) comes with Bit.Bsqlite, the way it does in a Blazor
-             Hybrid app. -->
+        <!-- The native engine the in-process transport runs on - Bit.Bsqlite's native transport, which leaves the engine
+             to the app, as a Blazor Hybrid app brings it. These run on desktop .NET, where the bundled e_sqlite3 is
+             what executes the SQL. Lifted to match the SQLitePCLRaw.core Bit.Bsqlite compiles against: a native
+             provider from an older bundle cannot implement the newer core's ISQLite3Provider, and the transport
+             snapshots the database through raw.sqlite3_serialize, which the older ones do not expose. -->
+        <PackageReference Include="SQLitePCLRaw.bundle_e_sqlite3" Version="[2.1.13,3.0.0)" />
 
         <!-- The conformance kit is a library of tests other projects inherit, not a runnable test project, so
              it takes the framework rather than the runner. -->

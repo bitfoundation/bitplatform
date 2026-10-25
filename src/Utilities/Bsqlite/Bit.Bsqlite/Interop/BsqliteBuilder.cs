@@ -12,6 +12,14 @@ namespace Microsoft.Extensions.DependencyInjection;
 /// <summary>Collects the choices <c>AddBitBsqliteServices</c> turns into registrations.</summary>
 public sealed class BsqliteBuilder
 {
+    // The file system backend a Blazor Hybrid app gets without asking - one delegate, so a second
+    // AddBitBsqliteServices call sees it is there.
+    private static readonly Func<IServiceProvider, IBsqliteStorageProvider> DefaultFileSystemProvider =
+        sp => new BsqliteFileSystemStorageProvider(sp.GetRequiredService<BsqliteFileSystemStorageOptions>())
+        {
+            IsDefault = true,
+        };
+
     private readonly List<string> _onOpenSql = [];
     private readonly List<BsqliteJsModule> _extensions = [];
     private readonly BsqliteFileSystemStorageOptions _fileSystem = new();
@@ -27,9 +35,10 @@ public sealed class BsqliteBuilder
     public IServiceCollection Services { get; }
 
     /// <summary>
-    /// Where the application runs. Detected; tests set it to compose a Blazor Hybrid app on the desktop.
+    /// Where the application runs, or <see langword="null"/> to detect it per scope - see
+    /// <see cref="BsqliteHost.Of"/>. Tests set it to compose a Blazor Hybrid app on the desktop.
     /// </summary>
-    internal BsqliteHostKind Host { get; set; } = BsqliteHost.Current;
+    internal BsqliteHostKind? Host { get; set; }
 
     /// <summary>
     /// Registers a storage provider, scoped like the rest of the stack. Its constructor may take
@@ -197,29 +206,39 @@ public sealed class BsqliteBuilder
 
         var host = Host;
         Services.TryAddSingleton(_fileSystem);
+        Services.TryAddScoped(sp => new BsqliteRuntimeHost(host ?? BsqliteHost.Of(sp)));
 
-        if (host is BsqliteHostKind.BlazorHybrid)
+        if (host is BsqliteHostKind.BlazorHybrid || (host is null && BsqliteHost.MayBeBlazorHybrid))
         {
             // A Blazor Hybrid app keeps its databases on the device whatever else is registered for the
-            // browser, so the same registration serves the WebAssembly client and the native app.
+            // browser, so the same registration serves the WebAssembly client and the native app. Registered
+            // wherever the process may be one; selection offers it only to a scope that is (BsqliteHost.Of).
+            // Registered once across AddBitBsqliteServices calls; one the app registers through a factory,
+            // which cannot be seen into here, takes its place in selection.
             var registered = Services.Any(service => service.ServiceType == typeof(IBsqliteStorageProvider)
+                && !service.IsKeyedService
                 && (service.ImplementationType == typeof(BsqliteFileSystemStorageProvider)
-                    || service.ImplementationInstance is BsqliteFileSystemStorageProvider));
+                    || service.ImplementationInstance is BsqliteFileSystemStorageProvider
+                    || ReferenceEquals(service.ImplementationFactory, DefaultFileSystemProvider)));
             if (!registered)
             {
-                Services.AddScoped<IBsqliteStorageProvider>(sp =>
-                    new BsqliteFileSystemStorageProvider(sp.GetRequiredService<BsqliteFileSystemStorageOptions>()));
+                Services.AddScoped(DefaultFileSystemProvider);
             }
         }
 
         if (!_bindingStoreRegistered)
         {
             // Bindings live with the databases: in localStorage for the browser's, and next to the files for
-            // a Blazor Hybrid app's - not in its web view, which may not be up yet when a database opens.
-            Services.TryAddScoped<IBsqliteStorageBindingStore>(sp => host is BsqliteHostKind.BlazorHybrid
-                ? new BsqliteFileStorageBindingStore(Path.Combine(
-                    new BsqliteFileSystemStorageProvider(sp.GetRequiredService<BsqliteFileSystemStorageOptions>()).RootDirectory,
-                    ".bit-bsqlite-bindings"))
+            // a Blazor Hybrid app's - not in its web view, which may not be up yet when a database opens. A
+            // Hybrid app that kept databases in its web view before keeps finding them through the bindings
+            // it left in localStorage there.
+            Services.TryAddScoped<IBsqliteStorageBindingStore>(sp => sp.GetRequiredService<BsqliteRuntimeHost>().Kind is BsqliteHostKind.BlazorHybrid
+                ? new BsqliteFileStorageBindingStore(
+                    Path.Combine(
+                        new BsqliteFileSystemStorageProvider(sp.GetRequiredService<BsqliteFileSystemStorageOptions>()).RootDirectory,
+                        BsqliteFileStorageBindingStore.FileName),
+                    sp.GetService<IJSRuntime>() is { } jsRuntime ? new BsqliteLocalStorageBindingStore(jsRuntime) : null,
+                    sp.GetService<ILogger<BsqliteFileStorageBindingStore>>())
                 : new BsqliteLocalStorageBindingStore(sp.GetRequiredService<IJSRuntime>()));
         }
 
@@ -238,12 +257,13 @@ public sealed class BsqliteBuilder
         Services.TryAddScoped<IBsqliteTransportFactory>(sp => new BsqliteTransportFactory(
             () => new BsqliteWorkerTransportFactory(sp.GetRequiredService<IJSRuntime>(), defaults),
             defaults,
+            sp.GetRequiredService<BsqliteRuntimeHost>().Kind,
             sp.GetService<ILogger<BsqliteTransportFactory>>()));
         Services.TryAddSingleton<BsqliteStorageMigrator>();
         Services.TryAddScoped(sp => new BsqliteStorageProviderResolver(
             sp.GetServices<IBsqliteStorageProvider>(),
             sp.GetRequiredService<IBsqliteStorageBindingStore>(),
-            host,
+            sp.GetRequiredService<BsqliteRuntimeHost>().Kind,
             sp.GetService<ILogger<BsqliteStorageProviderResolver>>()));
         Services.TryAddScoped<IBsqliteSessionFactory>(sp => new BsqliteSessionFactory(
             sp.GetRequiredService<BsqliteStorageProviderResolver>(),

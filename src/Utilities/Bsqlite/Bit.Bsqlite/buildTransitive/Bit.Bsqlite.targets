@@ -1,8 +1,9 @@
 ﻿<Project>
 
-    <!-- Bit.Bsqlite brings the native SQLite engine (SQLitePCLRaw.bundle_e_sqlite3) for Blazor Hybrid apps, where it
-         opens the app's databases in-process. In the browser the engine is wa-sqlite in a worker instead, and nothing
-         of the bundle is wanted there:
+    <!-- A Blazor Hybrid app brings the native SQLite engine (SQLitePCLRaw.bundle_e_sqlite3) Bit.Bsqlite opens its
+         databases with in-process - and when it does so from a Razor class library it shares with a WebAssembly client,
+         that client gets the bundle too. In the browser the engine is wa-sqlite in a worker instead, and nothing of the
+         bundle is wanted there:
 
          - its e_sqlite3.a, a NativeFileReference for browser-wasm, would turn on WebAssembly native relinking
            (WasmBuildNative) wherever the wasm-tools workload is installed, warn where it is not, and be published

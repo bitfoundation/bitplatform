@@ -106,6 +106,105 @@ public sealed class BlazorHybridTests
         CollectionAssert.AreEquivalent(new[] { "opfs", "indexeddb", "file-system" }, names);
     }
 
+    /// <summary>Each module of an app may register its own database, each with its own AddBitBsqliteServices call.</summary>
+    [TestMethod]
+    public async Task RegisteringTwice_KeepsOneFileSystemBackend()
+    {
+        var services = new ServiceCollection();
+        services.AddBitBsqliteServices(sqlite =>
+        {
+            sqlite.Host = BsqliteHostKind.BlazorHybrid;
+            sqlite
+                .AddStorageProvider<BsqliteOpfsStorageProvider>()
+                .UseStorage(s => s.Prefer(BsqliteOpfsStorageProvider.ProviderName))
+                .ConfigureFileSystemStorage(o => o.RootDirectory = _root.Path)
+                .AddDatabase("first.db");
+        });
+        services.AddBitBsqliteServices(sqlite =>
+        {
+            sqlite.Host = BsqliteHostKind.BlazorHybrid;
+            sqlite
+                .UseStorage(s => s.Prefer(BsqliteOpfsStorageProvider.ProviderName))
+                .AddDatabase("second.db");
+        });
+
+        await using var app = services.BuildServiceProvider();
+
+        Assert.AreEqual(1, app.GetServices<IBsqliteStorageProvider>().Count(provider => provider.Name == "file-system"));
+        foreach (var databaseName in new[] { "first.db", "second.db" })
+        {
+            var session = await app.GetRequiredKeyedService<BsqliteDatabase>(databaseName).OpenAsync(Ct);
+            Assert.AreEqual("file-system", session.Resolution.Provider.Name);
+        }
+    }
+
+    /// <summary>
+    /// A file system backend the app registers itself - through a factory, whose product registration cannot see -
+    /// takes the place of the one a Blazor Hybrid app gets on its own, rather than colliding with it.
+    /// </summary>
+    [TestMethod]
+    public async Task FileSystemBackendRegisteredThroughAFactory_TakesTheDefaultsPlace()
+    {
+        using var ownRoot = new TemporaryDirectory();
+        var services = new ServiceCollection();
+        services.AddBitBsqliteServices(sqlite =>
+        {
+            sqlite.Host = BsqliteHostKind.BlazorHybrid;
+            sqlite
+                .AddStorageProvider(_ => new BsqliteFileSystemStorageProvider(new() { RootDirectory = ownRoot.Path }))
+                .UseStorage(s => s.Prefer(BsqliteFileSystemStorageProvider.ProviderName))
+                .ConfigureFileSystemStorage(o => o.RootDirectory = _root.Path)
+                .AddDatabase("app.db");
+        });
+
+        await using var app = services.BuildServiceProvider();
+        var session = await app.GetRequiredService<BsqliteDatabase>().OpenAsync(Ct);
+
+        Assert.AreEqual("file-system", session.Resolution.Provider.Name);
+        Assert.IsTrue(File.Exists(Path.Combine(ownRoot.Path, "app.db")));
+        Assert.IsFalse(File.Exists(Path.Combine(_root.Path, "app.db")));
+        await app.GetRequiredService<BsqliteDatabase>().CloseAsync(Ct);
+    }
+
+    /// <summary>
+    /// What makes a desktop process a Blazor Hybrid app is its web view's JavaScript runtime, not an assembly it
+    /// ships: a server that references a library built on the web view keeps its users' databases in their browsers.
+    /// </summary>
+    [TestMethod]
+    public void DesktopProcess_WithoutTheWebViewsJSRuntime_IsNotBlazorHybrid()
+    {
+        var services = new ServiceCollection()
+            .AddSingleton<Microsoft.JSInterop.IJSRuntime>(new Bit.Bsqlite.Interop.Tests.ScriptedJsRuntime())
+            .BuildServiceProvider();
+
+        Assert.AreEqual(BsqliteHostKind.Other, BsqliteHost.Of(services));
+    }
+
+    /// <summary>
+    /// A Blazor Hybrid app that ran Bsqlite in its web view before kept its database on a browser backend there.
+    /// Its data is opened where it is - not abandoned for an empty file - and the device ranks above, to move to.
+    /// </summary>
+    [TestMethod]
+    public async Task DatabaseKeptInTheWebViewBefore_IsStillOpenedThere()
+    {
+        var browser = new FakeStorageProvider("browser-backend");
+        var bindings = new BsqliteInMemoryStorageBindingStore();
+        await bindings.SetProviderNameAsync("app.db", "browser-backend", Ct);
+        var resolver = new BsqliteStorageProviderResolver(
+            [browser, new BsqliteFileSystemStorageProvider(new() { RootDirectory = _root.Path })],
+            bindings,
+            BsqliteHostKind.BlazorHybrid);
+
+        var resolution = await resolver.ResolveAsync(
+            "app.db",
+            BsqliteStorageSelectionBuilder.Create(s => s.Prefer("browser-backend")),
+            Ct);
+
+        Assert.AreEqual("browser-backend", resolution.Provider.Name);
+        Assert.IsTrue(resolution.WasDecidedByExistingData);
+        Assert.AreEqual("file-system", resolution.BetterProviderAvailable?.Name);
+    }
+
     [TestMethod]
     public async Task BrowserBackends_AreNotProbed_AndSayWhy()
     {

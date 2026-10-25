@@ -28,9 +28,9 @@ namespace Bit.Bsqlite.Interop;
 /// </para>
 /// <para>
 /// Batches run one at a time, since a SQLite connection serves one caller at once - the worker queues
-/// its messages for the same reason. A transport opened for a file storage provider also runs them on
-/// the thread pool, as the worker keeps SQLite off the browser's main thread, so a Blazor Hybrid UI
-/// thread never waits on the disk.
+/// its messages for the same reason. A transport opened for a file storage provider also opens, runs
+/// batches and snapshots on the thread pool, as the worker keeps SQLite off the browser's main thread, so
+/// a Blazor Hybrid UI thread never waits on the disk.
 /// </para>
 /// </remarks>
 public class BsqliteNativeTransport : IBsqliteTransport, IBsqliteSnapshotSource, IBsqliteLockSource
@@ -39,6 +39,10 @@ public class BsqliteNativeTransport : IBsqliteTransport, IBsqliteSnapshotSource,
     // over the same file share the worker transport's Web Locks and BroadcastChannel.
     private static readonly ConcurrentDictionary<string, SemaphoreSlim> SharedLocks = new(StringComparer.Ordinal);
     private static readonly ConcurrentDictionary<string, List<BsqliteNativeTransport>> SharedPeers = new(StringComparer.Ordinal);
+
+    // Opening a file and the admin surface's work on it take turns, so the file is never replaced or
+    // deleted while a window is opening it.
+    private static readonly ConcurrentDictionary<string, SemaphoreSlim> OpenGates = new(StringComparer.Ordinal);
 
     private readonly Func<string, string> _connectionStringFor;
     private readonly IReadOnlyList<string> _onOpenSql;
@@ -125,19 +129,91 @@ public class BsqliteNativeTransport : IBsqliteTransport, IBsqliteSnapshotSource,
     {
     }
 
+    /// <summary>
+    /// Installs on <paramref name="connection"/> the scalar functions, aggregates and collation EF Core's
+    /// SQLite provider expects - the set this transport installs on every connection it opens.
+    /// </summary>
+    /// <remarks>
+    /// EF's <c>SqliteRelationalConnection</c> installs them only when the connection is literally a
+    /// <see cref="SqliteConnection"/>, so a connection Bsqlite supplies has to bring them itself: without
+    /// them every <see cref="decimal"/> comparison, aggregate and ordering silently produces wrong answers.
+    /// </remarks>
+    public static void RegisterFunctions(SqliteConnection connection) => BsqliteNativeFunctions.Register(connection);
+
     /// <inheritdoc />
-    public Task OpenAsync(string databaseName, CancellationToken cancellationToken = default)
+    public async Task OpenAsync(string databaseName, CancellationToken cancellationToken = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(databaseName);
 
         if (_connection is not null)
         {
-            return Task.CompletedTask;
+            return;
         }
 
         var options = new SqliteConnectionStringBuilder(_connectionStringFor(databaseName));
         ConfigureScope(options);
 
+        var gate = _shared ? OpenGates.GetOrAdd(_scope, _ => new SemaphoreSlim(1, 1)) : null;
+        if (gate is not null)
+        {
+            await gate.WaitAsync(cancellationToken).ConfigureAwait(false);
+        }
+
+        try
+        {
+            if (_offload)
+            {
+                await Task.Run(() => Open(options), cancellationToken).ConfigureAwait(false);
+            }
+            else
+            {
+                Open(options);
+            }
+        }
+        finally
+        {
+            gate?.Release();
+        }
+    }
+
+    /// <summary>
+    /// Runs <paramref name="work"/> on the file at <paramref name="path"/> once no transport in this process
+    /// has it open, keeping any from opening it meanwhile - what the admin surface deletes, imports and
+    /// exports under.
+    /// </summary>
+    /// <exception cref="IOException">A transport in this process - another window's - has the file open.</exception>
+    internal static async Task WhileClosedAsync(string path, Func<Task> work, CancellationToken cancellationToken)
+    {
+        var scope = Path.GetFullPath(path);
+        var gate = OpenGates.GetOrAdd(scope, _ => new SemaphoreSlim(1, 1));
+        await gate.WaitAsync(cancellationToken).ConfigureAwait(false);
+        try
+        {
+            if (SharedPeers.TryGetValue(scope, out var peers))
+            {
+                lock (peers)
+                {
+                    if (peers.Count > 0)
+                    {
+                        throw new IOException(
+                            $"'{path}' is open in {peers.Count} session(s) of this app. Deleting, importing or exporting "
+                            + "it needs it closed in every window first - BsqliteDatabase.CloseAsync, or the work inside "
+                            + "WhileClosedAsync - so writes still coming from one do not land in a file that is no longer "
+                            + "the database.");
+                    }
+                }
+            }
+
+            await work().ConfigureAwait(false);
+        }
+        finally
+        {
+            gate.Release();
+        }
+    }
+
+    private void Open(SqliteConnectionStringBuilder options)
+    {
         if (_shared && options.Mode != SqliteOpenMode.Memory
             && Path.GetDirectoryName(_scope) is { Length: > 0 } directory)
         {
@@ -151,7 +227,7 @@ public class BsqliteNativeTransport : IBsqliteTransport, IBsqliteSnapshotSource,
 
             if (_offload)
             {
-                LeaveWalMode(connection);
+                TryLeaveWalMode(connection);
             }
 
             if (_registerEfFunctions)
@@ -194,8 +270,6 @@ public class BsqliteNativeTransport : IBsqliteTransport, IBsqliteSnapshotSource,
                 peers.Add(this);
             }
         }
-
-        return Task.CompletedTask;
     }
 
     /// <inheritdoc />
@@ -213,11 +287,12 @@ public class BsqliteNativeTransport : IBsqliteTransport, IBsqliteSnapshotSource,
     {
         ArgumentNullException.ThrowIfNull(batch);
 
-        var connection = _connection ?? throw new InvalidOperationException("The transport is not open.");
-
         await _gate.WaitAsync(cancellationToken).ConfigureAwait(false);
         try
         {
+            // Read under the gate: a disposal that got there first has closed it.
+            var connection = _connection ?? throw new InvalidOperationException("The transport is not open.");
+
             return _offload
                 ? await Task.Run(() => ExecuteBatch(connection, batch, cancellationToken), cancellationToken).ConfigureAwait(false)
                 : ExecuteBatch(connection, batch, cancellationToken);
@@ -262,12 +337,14 @@ public class BsqliteNativeTransport : IBsqliteTransport, IBsqliteSnapshotSource,
     /// <inheritdoc />
     public async Task<byte[]> ExportAsync(CancellationToken cancellationToken = default)
     {
-        var connection = _connection ?? throw new InvalidOperationException("The transport is not open.");
-
         await _gate.WaitAsync(cancellationToken).ConfigureAwait(false);
         try
         {
-            return Serialize(connection);
+            var connection = _connection ?? throw new InvalidOperationException("The transport is not open.");
+
+            return _offload
+                ? await Task.Run(() => Serialize(connection), cancellationToken).ConfigureAwait(false)
+                : Serialize(connection);
         }
         finally
         {
@@ -315,7 +392,8 @@ public class BsqliteNativeTransport : IBsqliteTransport, IBsqliteSnapshotSource,
     }
 
     /// <inheritdoc />
-    public ValueTask DisposeAsync()
+    /// <remarks>Waits for a batch or a snapshot in progress, so the connection is never closed under it.</remarks>
+    public async ValueTask DisposeAsync()
     {
         if (_shared && SharedPeers.TryGetValue(_scope, out var peers))
         {
@@ -325,38 +403,51 @@ public class BsqliteNativeTransport : IBsqliteTransport, IBsqliteSnapshotSource,
             }
         }
 
-        _connection?.Dispose();
-        _connection = null;
+        await _gate.WaitAsync().ConfigureAwait(false);
+        try
+        {
+            _connection?.Dispose();
+            _connection = null;
+        }
+        finally
+        {
+            _gate.Release();
+        }
+
         GC.SuppressFinalize(this);
-        return ValueTask.CompletedTask;
     }
 
     /// <summary>
     /// Takes a file that is in WAL mode back to a rollback journal - the mode Bsqlite runs every database in -
-    /// so its committed data is all in the one file the admin surface exports and imports.
+    /// so its committed data is all in the one file the admin surface exports and imports. Whether the file
+    /// is out of WAL mode afterwards.
     /// </summary>
     /// <remarks>
     /// A file arrives in WAL mode when a stock EF Core application created it: Bit.Besql's database on a
     /// device, typically. The switch checkpoints the log into the file; it needs the file to itself, so while
-    /// another window holds it open the file is left as it is and the next open tries again.
+    /// another connection holds it open the file is left as it is and the next open tries again. That is
+    /// known at once - waiting does not change it - so the switch goes straight to the engine rather than
+    /// through a command, which would retry a busy database for its whole timeout.
     /// </remarks>
-    private static void LeaveWalMode(SqliteConnection connection)
+    internal static bool TryLeaveWalMode(SqliteConnection connection)
     {
         using var command = connection.CreateCommand();
         command.CommandText = "PRAGMA journal_mode";
-        if (!string.Equals(command.ExecuteScalar() as string, "wal", StringComparison.OrdinalIgnoreCase))
+        if (!IsWal(command))
         {
-            return;
+            return true;
         }
 
-        try
+        var result = raw.sqlite3_exec(connection.Handle!, "PRAGMA journal_mode = DELETE");
+        if (result is not (raw.SQLITE_OK or raw.SQLITE_BUSY or raw.SQLITE_LOCKED))
         {
-            command.CommandText = "PRAGMA journal_mode = DELETE";
-            command.ExecuteNonQuery();
+            SqliteException.ThrowExceptionForRC(result, connection.Handle);
         }
-        catch (SqliteException ex) when (ex.SqliteErrorCode is raw.SQLITE_BUSY or raw.SQLITE_LOCKED)
-        {
-        }
+
+        return !IsWal(command);
+
+        static bool IsWal(SqliteCommand command)
+            => string.Equals(command.ExecuteScalar() as string, "wal", StringComparison.OrdinalIgnoreCase);
     }
 
     /// <summary>

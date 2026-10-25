@@ -15,7 +15,7 @@ Bit.Bsqlite runs the engine where it fits the host:
 | Host | Bit.Besql | Bit.Bsqlite |
 |---|---|---|
 | Blazor WebAssembly, and a Blazor Web App's pages once they run on WebAssembly | Native SQLite on the main thread; the whole file copied to Cache Storage after each change | wa-sqlite in a dedicated worker; each committed transaction written to OPFS, IndexedDB or Cache Storage page by page |
-| Blazor Hybrid (MAUI, WPF, Windows Forms) | A plain SQLite file at the path in the connection string | A plain SQLite file in the app's own folder, opened in-process by the native SQLite the package brings - selected automatically, with the same registration as the WebAssembly client |
+| Blazor Hybrid (MAUI, WPF, Windows Forms) | A plain SQLite file at the path in the connection string | A plain SQLite file in the app's own folder, opened in-process by the native SQLite the app brings - selected automatically, with the same registration as the WebAssembly client |
 | Blazor Server (Interactive Server) | A SQLite file on the server, shared by every user | Not supported - see [Blazor Server](#blazor-server) |
 
 What you gain: several tabs can use the database at once (Bit.Besql's last tab to write overwrote the others' changes), a
@@ -53,9 +53,10 @@ dotnet remove package Bit.Besql
 dotnet add package Bit.Bsqlite
 ```
 
-The `cache-storage` backend that reads what Bit.Besql left behind ships in `Bit.Bsqlite`, as does the native SQLite a
-Blazor Hybrid app runs on. `Microsoft.EntityFrameworkCore.Sqlite` is no longer needed for the browser or for Blazor
-Hybrid; keep it only for a host Bsqlite does not serve.
+The `cache-storage` backend that reads what Bit.Besql left behind ships in `Bit.Bsqlite`. `Microsoft.EntityFrameworkCore.Sqlite`
+is no longer needed for the browser; keep it only for a host Bsqlite does not serve. A Blazor Hybrid app brings the native
+SQLite it opens its files with - `Microsoft.EntityFrameworkCore.Sqlite` already did, through `SQLitePCLRaw.bundle_e_sqlite3`,
+so keep it there or reference that bundle on its own.
 
 ### 2. Clean the host page and the project file
 
@@ -65,7 +66,7 @@ needs on demand.
 In the WebAssembly project, remove what was there only for Bit.Besql:
 
 - `<WasmBuildNative>true</WasmBuildNative>` - unless something else needs native relinking (AOT sets it on its own). With
-  it left on, the native SQLite the package brings for Blazor Hybrid is linked into `dotnet.native.wasm` for nothing.
+  it left on, a native SQLite bundle the project brings for Blazor Hybrid is linked into `dotnet.native.wasm` for nothing.
 - `<BlazorWebAssemblyLazyLoad Include="System.Private.Xml.wasm" />`, which Bit.Besql's factory loaded.
 - Anything that was switched off because native relinking was on - IL stripping after AOT, a minifier step.
 
@@ -191,9 +192,11 @@ support person can read it.
 
 Nothing needs registering for the device: in a Blazor Hybrid app `AddBitBsqliteServices` adds the `file-system` backend
 (`BsqliteFileSystemStorageProvider`) and ranks it ahead of the browser backends, which need .NET running in the browser.
-The database is a plain SQLite file, opened in-process by the native SQLite the package brings for Android, iOS, Mac
-Catalyst, Windows and macOS. By default it lives under `{local application data}/{entry assembly name}/bit-bsqlite`, and
-the database name is a path under that folder.
+The database is a plain SQLite file, opened in-process by the native SQLite the app brings for Android, iOS, Mac
+Catalyst, Windows and macOS - `SQLitePCLRaw.bundle_e_sqlite3`, which `Microsoft.EntityFrameworkCore.Sqlite` brought for
+Bit.Besql. By default it lives under `{local application data}/{entry assembly name}/bit-bsqlite`, and the database name is a
+path under that folder - one every platform's file system keeps as written: no `<>:"|?*` or control characters, and no
+segment ending in a dot or a space.
 
 Bit.Besql used whatever path the connection string named. To keep that file, point the backend's root at the folder and
 name the rest:
@@ -210,12 +213,14 @@ The browser keeps resolving `App_Data/AppOffline.db` against Bit.Besql's cache k
 `ConfigureFileSystemStorage` changes nothing in the browser.
 
 Bit.Besql's file on a device was created by stock EF Core, in WAL mode. Bsqlite takes it back to a rollback journal the
-first time it opens it - checkpointing the log into the file - so the whole database is in the one file that
-`Admin.ExportAsync` reads.
+first time it opens it - checkpointing the log into the file - so the whole database is in the one file. `Admin.ExportAsync`
+folds a log still next to the file into it first - one written by a Bit.Besql app killed before it closed, read before
+the database first opened in Bsqlite - and fails rather than leave committed rows out while another process holds the file.
 
 On a device the same rules hold as in the browser - async members only, no WAL - so code written once runs on both. Two
-windows of a Hybrid app share the file the way two tabs do: writes in one re-run live queries in the other. JavaScript
-extension modules (`AddExtensionModule`) run only in the browser worker; on a device they are skipped with a warning.
+windows of a Hybrid app share the file the way two tabs do: writes in one re-run live queries in the other, and `Admin`'s
+delete, import and export need the database closed in both - they throw while either still has it open. JavaScript extension modules (`AddExtensionModule`)
+run only in the browser worker; on a device they are skipped with a warning.
 
 ## Blazor Server
 
@@ -235,7 +240,8 @@ A project created with `--offlineDb` registers its `AppOfflineDbContext` with Bi
 and on the server when the app runs in Blazor Server mode. Moving it over:
 
 1. In `Directory.Packages.props` and `Client.Core.csproj`, replace `Bit.Besql` with `Bit.Bsqlite`. Keep
-   `Microsoft.EntityFrameworkCore.Sqlite` only for the Blazor Server registration (step 5 of this list).
+   `Microsoft.EntityFrameworkCore.Sqlite`: the Blazor Server registration (step 5 of this list) uses it, and it brings the
+   native SQLite the MAUI and Windows apps open their files with.
 2. In `Client.Web/wwwroot/index.html`, remove the `bit-besql.js` script.
 3. In `Client.Web.csproj`, remove `WasmBuildNative` and the `System.Private.Xml.wasm` lazy load that `offlineDb` turned on,
    and let `WasmStripILAfterAOT` and `Bit.Minifier` apply as they do without an offline database.

@@ -31,12 +31,12 @@ EF Core (stock SQLite provider)
   │
 BsqliteConnection / Command / Batch
   │  BsqliteCommandRequest[]
-BsqliteNativeTransport  ── thread pool ──▶  native SQLite (SQLitePCLRaw e_sqlite3)
+BsqliteNativeTransport  ── thread pool ──▶  native SQLite (the app's SQLitePCLRaw bundle)
                                               │ EF function set, update and commit hooks
                                               file-system backend: a .db file in the app's folder
 ```
 
-Where .NET runs natively there is no worker to talk to and no reason for one: the native engine opens the file itself. The session factory gives a backend that implements `IBsqliteFileStorageProvider` a `BsqliteNativeTransport` instead of the worker transport, and everything above the transport - the ADO.NET surface, `UseBitBsqlite`, live queries, selection, the admin surface - is the code the browser runs. The transport does the worker's jobs in-process: it installs the `ef_*` functions, the aggregates, the `EF_DECIMAL` collation and `REGEXP`; reports committed writes from the same update and commit hooks; snapshots through `sqlite3_serialize`; and takes named locks shared with every other session on the file. Batches run one at a time on the thread pool, so the UI thread stays free as it does in the browser, and writes committed in one session are raised in the others the way another tab's writes are.
+Where .NET runs natively there is no worker to talk to and no reason for one: the native engine opens the file itself. The session factory gives a backend that runs in the native process a `BsqliteNativeTransport` instead of the worker transport - by where the backend runs and where .NET runs, the rule selection serves it by, so in the browser every backend gets the worker - and everything above the transport - the ADO.NET surface, `UseBitBsqlite`, live queries, selection, the admin surface - is the code the browser runs. The transport does the worker's jobs in-process: it installs the `ef_*` functions, the aggregates, the `EF_DECIMAL` collation and `REGEXP`; reports committed writes from the same update and commit hooks; snapshots through `sqlite3_serialize`; and takes named locks shared with every other session on the file. Opening, batches and snapshots run on the thread pool - batches one at a time - so the UI thread stays free as it does in the browser, and writes committed in one session are raised in the others the way another tab's writes are.
 
 `Bit.Bsqlite.Testing`'s in-process transport is this transport with a record of the statements it ran, which is why the desktop test suites exercise exactly what a Hybrid app runs.
 
