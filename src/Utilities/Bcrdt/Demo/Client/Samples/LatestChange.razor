@@ -1,0 +1,27 @@
+﻿@* The latest change to a text, as a delta. A text raises an event after each transaction that changed it,
+   describing the change as retain, insert and delete steps - so a view can patch exactly what moved instead of
+   re-reading the whole document. Place it inside a BcrdtCollaborationScope, which cascades the open document. *@
+@using Bit.Bcrdt
+@using Bit.Bcrdt.Blazor
+@inherits BcrdtComponentBase
+
+<p>Latest change: @(_latest ?? "nothing yet")</p>
+
+@code {
+    private string? _latest;
+
+    [CascadingParameter] public BcrdtCollaborativeDocument Document { get; set; } = default!;
+
+    protected override void OnInitialized()
+    {
+        // Observe returns the subscription; TrackDisposable ends it with the component.
+        TrackDisposable(Document.Text("body").Observe((change, transaction) =>
+        {
+            // Read the delta inside the handler: it is computed from the blocks the transaction touched,
+            // which are compacted once the transaction settles.
+            string steps = string.Join(", ", change.Delta.Select(step => step.ToString()));
+            _latest = $"{steps} ({(transaction.Local ? "local" : "from another replica")})";
+            RequestRender();
+        }));
+    }
+}

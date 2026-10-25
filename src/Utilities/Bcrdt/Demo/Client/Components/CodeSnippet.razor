@@ -1,0 +1,58 @@
+﻿@* The code of the sample above it, behind the kit's quiet "show the source" disclosure: SyntaxHighlighter's
+   tokens inside the site kit's pre.bb-code, which is what gives it the site's code surface - and the copy
+   button site.js adds to every pre.bb-code. The token colours are in demo.css.
+
+   A snippet is not the page's own source. The pages run several replicas side by side through the demo's
+   own plumbing (DemoReplica, ReplicaPanel); a snippet is what an application writes for the same feature -
+   one participant, through BcrdtCollaborationScope and the AddBitBcrdtServices registration. It is a file of
+   Samples\, compiled with the app so it cannot fall behind the library's API, whose source the project embeds
+   for this component to show. *@
+
+<div class="bb-source demo-snippet">
+    <button type="button" class="btn btn-secondary" @onclick="Toggle"
+            aria-expanded="@(_show ? "true" : "false")" aria-controls="@_bodyId">
+        <span class="demo-snippet-caret" aria-hidden="true">@(_show ? "▾" : "▸")</span>
+        @(_show ? "Hide code" : "Show code")
+        <span class="demo-snippet-lang">@Sample</span>
+    </button>
+
+    @if (_show)
+    {
+        <pre class="bb-code" id="@_bodyId"><code>@_html</code></pre>
+    }
+</div>
+
+@code {
+    /// <summary>The file of Samples\ to show, such as "Notes.razor". A .cs file is shown as C#, anything else as Razor.</summary>
+    [Parameter, EditorRequired] public string Sample { get; set; } = "";
+
+    // The toggle points at the block it opens, so a screen reader following aria-controls lands on
+    // the code rather than on the next thing in the document. Generated per instance because a
+    // page carries several of these.
+    private readonly string _bodyId = $"code-{Guid.NewGuid():N}";
+
+    private bool _show;
+    private string? _rendered;
+    private MarkupString _html;
+
+    private void Toggle()
+    {
+        _show = !_show;
+
+        // Read and highlighted on first opening - a full lexer pass nobody needs until then - and kept after.
+        if (_show is false || _rendered == Sample) return;
+
+        _rendered = Sample;
+        _html = (MarkupString)SyntaxHighlighter.Highlight(Read(Sample).ReplaceLineEndings("\n").Trim('\n'),
+                                                          Sample.EndsWith(".cs", StringComparison.Ordinal) ? "C#" : "Razor");
+    }
+
+    private static string Read(string sample)
+    {
+        using Stream? stream = typeof(CodeSnippet).Assembly.GetManifestResourceStream($"Samples/{sample}");
+        if (stream is null) return $"// No sample named {sample}.";
+
+        using var reader = new StreamReader(stream);
+        return reader.ReadToEnd();
+    }
+}

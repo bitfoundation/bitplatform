@@ -1,0 +1,22 @@
+﻿@* One map as JSON: its entries as values, a nested set as a list of its members and a nested text as a string.
+   Place it inside a BcrdtCollaborationScope, which cascades the open document. *@
+@using System.Text.Json
+@using Bit.Bcrdt
+@using Bit.Bcrdt.Blazor
+@inherits BcrdtComponentBase
+
+<pre>@JsonSerializer.Serialize(_form.ToJson(), Indented)</pre>
+
+@code {
+    private static readonly JsonSerializerOptions Indented = new() { WriteIndented = true };
+
+    private BcrdtMap _form = default!;
+
+    [CascadingParameter] public BcrdtCollaborativeDocument Document { get; set; } = default!;
+
+    protected override void OnInitialized()
+    {
+        _form = Document.GetMap("form");
+        TrackDeep(_form);   // the map, and the set and text nested in it
+    }
+}

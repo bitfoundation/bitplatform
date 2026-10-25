@@ -1,0 +1,64 @@
+﻿@* One participant of the collaborative text: an editor, who else is here, and a connection it can drop and
+   restore. Each panel of the text page is this component, opened by a different user. *@
+@using Bit.Bcrdt
+@using Bit.Bcrdt.Blazor
+
+<BcrdtCollaborationScope DocumentId="demo-text" User="_me" Context="document">
+    <LoadingContent>
+        <p>Opening the document…</p>
+    </LoadingContent>
+    <ChildContent>
+        <header>
+            <strong style="color: @_me.Color">@_me.Name</strong>
+            <span>@document.ConnectionStatus</span>
+            <button type="button" @onclick="() => ToggleAsync(document)">
+                @(_online ? "Go offline" : "Go online")
+            </button>
+        </header>
+
+        <p>
+            Also here:
+            <BcrdtPresenceView Presence="document.Presence" IncludeSelf="false" />
+        </p>
+
+        @* Turns each keystroke into the minimal edit, keeps the caret on its character while somebody
+           types above it, and publishes the caret through presence. *@
+        <BcrdtTextArea Text="@document.Text("body")"
+                       Presence="document.Presence"
+                       Field="body"
+                       Rows="10"
+                       Placeholder="Type here - the other panels will follow." />
+
+        <footer>
+            @document.Text("body").Count characters,
+            @(document.Crdt.Store.Clients.Sum(entry => entry.Value.Count)) blocks,
+            client @document.ClientId
+            @if (!_online)
+            {
+                <em>editing offline - changes are held locally until this replica reconnects</em>
+            }
+        </footer>
+    </ChildContent>
+</BcrdtCollaborationScope>
+
+@code {
+    // Who this participant is. An application publishes its signed-in user.
+    private readonly BcrdtCollaboratorInfo _me = new("u-1", "Ada", BcrdtPresenceService.SuggestColor("u-1"));
+    private bool _online = true;
+
+    // A deliberate disconnect. The document stays editable, and the handshake on reconnect sends each
+    // side whatever the other wrote meanwhile.
+    private async Task ToggleAsync(BcrdtCollaborativeDocument document)
+    {
+        _online = !_online;
+        if (_online)
+        {
+            await document.ConnectAsync();
+            document.Presence.SetUser(_me);   // disconnecting withdrew this user's presence
+        }
+        else
+        {
+            await document.DisconnectAsync();
+        }
+    }
+}

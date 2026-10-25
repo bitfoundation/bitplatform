@@ -41,13 +41,15 @@
     <ItemGroup>
         <EmbeddedResource Include="..\..\README.md" LogicalName="BcrdtDocs/README.md" />
 
-        <!-- Every demo page - each one is a set of real replicas merging for real - plus the replicas,
-             transports and components they share and the client half of the hosting. The MCP page
-             describes this server rather than the library, and the not-found page teaches nothing
-             about collaboration. Nor does the site chrome: Layout\ and the DocsCatalog.cs that drives it
-             are the header, docs shell, search and footer every Utilities demo shares. -->
+        <!-- Every demo page - each one is a set of real replicas merging for real - plus the samples they
+             show under their replicas, the replicas, transports and components they share and the client
+             half of the hosting. The MCP page describes this server rather than the library, and the
+             not-found page teaches nothing about collaboration. Nor does the site chrome: Layout\ and the
+             DocsCatalog.cs that drives it are the header, docs shell, search and footer every Utilities
+             demo shares, and CodeSnippet.razor with its SyntaxHighlighter.cs only draws a sample's code -
+             the code itself is in Samples\. -->
         <EmbeddedResource Include="..\Client\**\*.razor;..\Client\**\*.cs"
-                          Exclude="..\Client\bin\**;..\Client\obj\**;..\Client\Layout\**;..\Client\DocsCatalog.cs;..\Client\Pages\McpServer.razor;..\Client\Pages\NotFound.razor">
+                          Exclude="..\Client\bin\**;..\Client\obj\**;..\Client\Layout\**;..\Client\DocsCatalog.cs;..\Client\Components\CodeSnippet.razor;..\Client\Components\SyntaxHighlighter.cs;..\Client\Pages\McpServer.razor;..\Client\Pages\NotFound.razor">
             <LogicalName>BcrdtSource/Demo/Client/%(RecursiveDir)%(Filename)%(Extension)</LogicalName>
         </EmbeddedResource>
 

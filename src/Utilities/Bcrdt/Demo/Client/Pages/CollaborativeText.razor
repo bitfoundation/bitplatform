@@ -69,6 +69,8 @@
         </div>
     }
 
+    <CodeSnippet Sample="Notes.razor" />
+
     <div class="bb-note bb-note-warn">
         <strong>The thing worth trying.</strong> Take <em>Replica A</em> offline with its
         <em>Go offline</em> button. Type a sentence into it. Now type different sentences into B and
@@ -176,6 +178,7 @@
 {
     (<span class="k">int</span> Start, <span class="k">int</span> End)? range = other.Selection?.Resolve(document.Crdt);   <span class="c">// null until the anchored text arrives</span>
 }</pre>
+        <CodeSnippet Sample="CollaboratorCarets.razor" />
     </div>
 
     <div class="bb-card">
@@ -213,6 +216,7 @@
             <code>IsSynced</code> and <code>Sync.LastSyncedAt</code> - the last of them is how an application tells a
             user how fresh an offline copy is.
         </p>
+        <CodeSnippet Sample="SyncStatus.razor" />
     </div>
 
     <div class="bb-card">
@@ -233,6 +237,7 @@
             reconnect. And a deletion removes only what A could see: text an offline replica typed meanwhile
             survives it.
         </p>
+        <CodeSnippet Sample="ClearDocument.razor" />
     </div>
 }
 

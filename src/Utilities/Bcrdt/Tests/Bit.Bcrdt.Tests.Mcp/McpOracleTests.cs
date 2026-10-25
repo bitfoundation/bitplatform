@@ -338,8 +338,8 @@ public partial class McpOracleTests
     {
         // The pages, the shared collaboration code and the hosting are what the index promises; a new page
         // that the .csproj's patterns miss would silently be absent from every answer. The site chrome - the
-        // shared Layout/ components and the DocsCatalog.cs they are driven by - is left out on purpose, with
-        // the MCP and not-found pages.
+        // shared Layout/ components, the DocsCatalog.cs they are driven by, and the CodeSnippet that draws the
+        // code under each sample - is left out on purpose, with the MCP and not-found pages.
         var client = FindDemoDirectory("Client");
         if (client is null) Assert.Inconclusive("The demo's sources are not next to this build.");
 
@@ -349,6 +349,7 @@ public partial class McpOracleTests
             .Where(path => path.Contains("/bin/", StringComparison.Ordinal) is false && path.Contains("/obj/", StringComparison.Ordinal) is false)
             .Where(path => path.StartsWith("Demo/Client/Layout/", StringComparison.Ordinal) is false)
             .Where(path => path is not "Demo/Client/Pages/McpServer.razor" and not "Demo/Client/Pages/NotFound.razor" and not "Demo/Client/DocsCatalog.cs")
+            .Where(path => path is not "Demo/Client/Components/CodeSnippet.razor" and not "Demo/Client/Components/SyntaxHighlighter.cs")
             .ToArray();
 
         var embedded = BcrdtSourceCatalog.SourceFiles.Select(file => file.Path).Where(path => path.StartsWith("Demo/Client/", StringComparison.Ordinal)).ToArray();

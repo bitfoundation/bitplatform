@@ -92,6 +92,8 @@
             }
         </div>
     }
+
+    <CodeSnippet Sample="DocumentStats.razor" />
 </div>
 
 <div class="bb-card">
@@ -172,6 +174,7 @@
 }                                                          <span class="c">// one update, one round of events</span>
 
 document.Changed += change =&gt; Send(change.Update, change.Origin);</pre>
+        <CodeSnippet Sample="UpdateLog.razor" />
     </div>
 
     <div class="bb-card">
@@ -210,6 +213,7 @@ document.Changed += change =&gt; Send(change.Update, change.Origin);</pre>
             A map's event reports which <code>Keys</code> changed, a set's what was <code>Added</code> and
             <code>Removed</code>, and <code>ObserveDeep</code> on a type hears changes to everything nested inside it.
         </p>
+        <CodeSnippet Sample="LatestChange.razor" />
     </div>
 
     <div class="bb-card">
@@ -248,6 +252,7 @@ document.Changed += change =&gt; Send(change.Update, change.Origin);</pre>
             off by default, so a browser app that wants the numbers sets <code>&lt;MetricsSupport&gt;true&lt;/MetricsSupport&gt;</code>
             in its project file, as this demo does.
         </p>
+        <CodeSnippet Sample="MeterTotals.razor" />
     </div>
 
     <div class="bb-card">
@@ -262,6 +267,7 @@ document.Changed += change =&gt; Send(change.Update, change.Origin);</pre>
                 </div>
             }
         </div>
+        <CodeSnippet Sample="DocumentJson.razor" />
     </div>
 }
 

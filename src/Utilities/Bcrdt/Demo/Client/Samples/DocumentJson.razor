@@ -1,0 +1,18 @@
+﻿@* The whole document as JSON. ToJson() is the document as plain dictionaries, lists and values - what an
+   application serializes or binds to - and two replicas that received the same updates project the same JSON,
+   character for character. Place it inside a BcrdtCollaborationScope, which cascades the open document. *@
+@using System.Text.Json
+@using Bit.Bcrdt
+@using Bit.Bcrdt.Blazor
+@inherits BcrdtComponentBase
+
+<pre>@JsonSerializer.Serialize(Document.ToJson(), Indented)</pre>
+
+@code {
+    private static readonly JsonSerializerOptions Indented = new() { WriteIndented = true };
+
+    [CascadingParameter] public BcrdtCollaborativeDocument Document { get; set; } = default!;
+
+    // Re-render on every update to the document, local or remote.
+    protected override void OnInitialized() => Track(Document);
+}

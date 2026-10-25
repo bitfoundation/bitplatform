@@ -1,0 +1,73 @@
+﻿@* One participant of the collaborative form: three map entries, a nested set and a nested text, each merging
+   its own way. Each panel of the form page is this component, opened by a different user. *@
+@using Bit.Bcrdt
+@using Bit.Bcrdt.Blazor
+
+<BcrdtCollaborationScope DocumentId="demo-form" User="_me" Context="document">
+    @{
+        BcrdtMap form = document.GetMap("form");
+    }
+
+    @* Map entries: different keys never conflict; the same key edited at once keeps one value. *@
+    <label>
+        Title
+        <input type="text" value="@(form.Get<string>("title"))"
+               @oninput="@(args => form.Set("title", args.Value as string ?? string.Empty))" />
+    </label>
+
+    <label>
+        Owner
+        <input type="text" value="@(form.Get<string>("owner"))"
+               @oninput="@(args => form.Set("owner", args.Value as string ?? string.Empty))" />
+    </label>
+
+    <label>
+        Status
+        @* Empty until somebody picks one: without the placeholder the browser would show the first status
+           although nothing is stored, and picking it would raise no change. *@
+        <select value="@(form.Get<string>("status") ?? "")" @onchange="@(args => form.Set("status", args.Value as string ?? string.Empty))">
+            <option value="" disabled>Choose a status…</option>
+            @foreach (string option in Statuses)
+            {
+                <option value="@option">@option</option>
+            }
+        </select>
+    </label>
+
+    @* A nested set: labels ticked by two people at once are both kept. Add and Remove rather than one
+       write of the whole selection, because a set merges per member. *@
+    <fieldset>
+        <legend>Labels</legend>
+        @foreach (string label in Labels)
+        {
+            <label>
+                <input type="checkbox" checked="@form.EnsureSet("labels").Contains(label)"
+                       @onchange="args => ToggleLabel(form, label, args.Value is true)" />
+                @label
+            </label>
+        }
+    </fieldset>
+
+    @* A nested text: two people typing here at once both keep their work. *@
+    <label>
+        Notes
+        <BcrdtTextArea Text="@form.EnsureText("notes")" Presence="document.Presence" Field="notes" Rows="5" />
+    </label>
+</BcrdtCollaborationScope>
+
+@code {
+    private static readonly string[] Statuses = ["Draft", "In review", "Approved", "Archived"];
+    private static readonly string[] Labels = ["urgent", "customer", "internal", "blocked"];
+
+    private readonly BcrdtCollaboratorInfo _me = new("u-1", "Ada", BcrdtPresenceService.SuggestColor("u-1"));
+
+    // EnsureSet and EnsureText create the nested type the first time and return it after that. Two
+    // replicas creating it at once on an empty document race like any map entry, so a real application
+    // creates a document's structure once, when the document is first made.
+    private static void ToggleLabel(BcrdtMap form, string label, bool ticked)
+    {
+        BcrdtSet labels = form.EnsureSet("labels");
+        if (ticked) labels.Add(label);
+        else labels.Remove(label);
+    }
+}
