@@ -487,7 +487,8 @@ back in. Every change is built through the same builder an application uses, and
 
 Read in, an existing schema keeps what the designer has no place for: an options provider, a condition or a rule
 written in code, renderer hints, steps (a new field joins the last one), translations and form-level rules - and a
-field holding such code says so. Objects and repeaters are kept as they are, and edited in JSON.
+field holding such code says so. Objects, repeaters, hidden values and fields drawn by a renderer of their own are kept
+as they are, kind and all - their label, help, conditions and the like can still be changed - and edited in JSON.
 
 The list is a list of buttons first: each field is chosen, moved, copied and deleted with buttons named for it ("Move
 Email up"), focus stays where the user is, and each change is announced ("Email is now number 2 of 3"). Dragging a
@@ -746,12 +747,14 @@ private async Task Save(BormState state, CancellationToken cancellationToken)
 ### How a submit ends
 
 `SubmitOutcome` says how the last submit ended, which is more than valid-or-not: `Invalid` (the form's own rules
-refused it, and the handler never ran), `Rejected` (the handler recorded errors - a server that said no), `Failed`
-(the handler threw; the exception is in `SubmitError` and is rethrown), `Cancelled`, or `Succeeded`. `SubmitAsync`
-returns true only for the last of those, and `IsSubmitSuccessful` is the same thing.
+refused it, and the handler never ran), `Rejected` (the handler recorded errors with `SetServerError` or
+`SetServerErrors` - a server that said no), `Failed` (the handler threw; the exception is in `SubmitError` and is
+rethrown), `Cancelled`, or `Succeeded`. `SubmitAsync` returns true only for the last of those, and
+`IsSubmitSuccessful` is the same thing. An error the user makes while the handler runs - letters typed into a number
+box during a slow save - is theirs to fix, and does not turn a save that went through into a rejected one.
 
-The overload taking `(state, cancellationToken)` hands the handler a token that `CancelSubmit()` and disposing the
-form signal; a handler wired through `BormView.OnValidSubmit` reads it from `state.SubmitCancellationToken`.
+The overload whose handlers take `(state, cancellationToken)` hands them a token that `CancelSubmit()` and disposing
+the form signal; a handler wired through `BormView.OnValidSubmit` reads it from `state.SubmitCancellationToken`.
 `ReadOnlyWhileSubmitting` holds every field still while the handler runs, so a slow save cannot leave the form
 showing values other than the ones sent. Nothing is ever retried behind the application's back, and the values
 are left exactly as they were, so "try again" is simply submitting again.
@@ -1216,7 +1219,8 @@ browser storage, the server, a database - is the application's choice:
 - **Restoring** writes the answers as unsaved changes on top of what the form opened with, so `IsFormDirty` and an
   unsaved-changes prompt stay meaningful and `Reset()` takes them away. Change handlers stay silent and a cascading
   select keeps the answer it is given. What the form has no field for, or can no longer hold, is listed in the
-  result's `Skipped` rather than left on a field as an error the user never made.
+  result's `Skipped` rather than left on a field as an error the user never made - and so are rows past
+  `BormDraft.MaxRows` (10,000, all the draft's repeaters together) and a row count for a row that is not there.
 - **Versions**: a draft records `BormDefinition.Version` (`.Version("3")`, `x-version`). When it differs from the
   form's, `BormDraftOptions.Migrate` gets the draft to bring up to date first:
   `m => { if (m.FromVersion == "2") m.Rename("Phone", "Contact.Phone").Remove("Fax"); }`.
@@ -1392,7 +1396,10 @@ Or send each file as soon as it is chosen, and keep what your storage returns fo
 ```
 
 The field then holds a string - or a list of them for a field taking several files - and never the file itself, so it
-is an answer like any other: it goes into a draft, survives a reload and reaches the server as the id it is. Each file
+is an answer like any other: it goes into a draft, survives a reload and reaches the server as the id it is. A field
+taking several adds each new file to the ones it opened with, which are listed - each with its own Remove - beside
+them; one taking a single file lets go of the one it had as soon as another is chosen, so a replacement that fails
+leaves it empty rather than quietly still holding the file the user replaced. Each file
 is judged by `Accept` and `MaxFileSize` before anything is sent, then listed with a progress bar and a Cancel button
 while it goes, Remove once it is there, and Retry - with the reason - if the uploader throws. Completion and failure
 are announced once each, not per percent. A submit pressed while a file is on its way waits for it, and Cancel,
@@ -1835,8 +1842,10 @@ with an antiforgery token, each control under the name model binding reads (`Mod
 `Model.Lines[0].Product`, `PostedModelName` to change `Model`). On the server the view judges the posted answers
 exactly as an interactive one would and calls `OnValidSubmit`, or renders the page again with every message in place;
 text the binder could not read - letters in a number box - is shown back as the user typed it, with the reason. A
-combobox posts the label the user saw, and it is turned back into its value; tags post one entry each. Interactive,
-the same form is a Blazor form as before.
+combobox posts the label the user saw, and it is turned back into its value; tags post one entry each. A read-only
+select, radio group, checkbox, multi-select or slider - drawn disabled, which a browser never posts - sends its answer
+in a hidden input instead, and so does a signature the field holds; a disabled field posts nothing. Interactive, the
+same form is a Blazor form as before.
 
 With nothing to click, the form shows what a click would have: a wizard's steps, and tabs, as sections one after
 another (an accordion is the browser's own and still opens); a repeater's rows as they stand, every row of a paged one

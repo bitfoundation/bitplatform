@@ -11,6 +11,34 @@ namespace Bit.Borm.Tests;
 public class DefinitionChangeTests
 {
     [TestMethod]
+    public void A_field_swapped_for_another_of_the_same_name_is_the_one_every_part_of_the_form_finds()
+    {
+        var calls = new List<string>();
+        var form = BormBuilder.Create()
+            .Text("name", f => f.OnChange(_ => calls.Add("old")))
+            .Object("address", a => a.Text("city"))
+            .Build();
+        var state = new BormState(form, new BormDictionaryDataAccessor());
+        state.SetValue("name", "a");
+        Assert.IsNotNull(state.FindField("address.city"));
+
+        // Replaced in the list, as the form's own list of fields draws it - without NotifyDefinitionChanged.
+        form.Fields[0] = BormBuilder.Create().Text("name", f => f.OnChange(_ => calls.Add("new"))).Build().Fields[0];
+        state.SetValue("name", "b");
+        CollectionAssert.AreEqual(new[] { "old", "new" }, calls);
+        Assert.AreSame(form.Fields[0], state.FindField("name"));
+
+        var city = new BormFieldDefinition("city", BormFieldType.Select);
+        form.Fields[1].Children[0] = city;
+        Assert.AreSame(city, state.FindField("address.city"));
+
+        // And one renamed in place answers to its new name only.
+        city.Name = "town";
+        Assert.IsNull(state.FindField("address.city"));
+        Assert.AreSame(city, state.FindField("address.town"));
+    }
+
+    [TestMethod]
     public void A_computed_field_added_to_a_live_form_is_computed_once_the_state_is_told()
     {
         var form = BormBuilder.Create().Number("a").Number("b").Build();

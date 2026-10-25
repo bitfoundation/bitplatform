@@ -1,6 +1,7 @@
 ﻿using System.Globalization;
 using System.Security;
 using System.Text;
+using System.Text.RegularExpressions;
 
 namespace Bit.Borm;
 
@@ -25,9 +26,22 @@ public static class BormSignature
     private const double Padding = 8;
     private const string Ink = "#1a1a1a";
 
-    /// <summary>Whether <paramref name="value"/> is a signature image this library would show.</summary>
-    public static bool IsImage(string? value)
-        => value is { Length: > 0 and <= MaxLength } && value.StartsWith(DataUrlPrefix, StringComparison.Ordinal);
+    // The two images FromStrokes and FromTypedName write, and nothing else: a path of moves and lines, or a name
+    // whose markup is escaped. An SVG embedded in a page rather than shown through an <img> runs what it holds,
+    // so a value that only starts like one - posted by anyone who can post the form - is not taken for one.
+    private static readonly Regex Drawn = new(
+        @"\A<svg xmlns='http://www\.w3\.org/2000/svg' viewBox='0 0 [0-9.]+ [0-9.]+' width='[0-9.]+' height='[0-9.]+'>"
+        + @"<path d='[ML0-9. ]*' fill='none' stroke='" + Ink + "' stroke-width='2\\.5' stroke-linecap='round' stroke-linejoin='round'/></svg>\\z",
+        RegexOptions.CultureInvariant | RegexOptions.NonBacktracking);
+
+    private static readonly Regex Typed = new(
+        @"\A<svg xmlns='http://www\.w3\.org/2000/svg' viewBox='0 0 [0-9]+ 72' width='[0-9]+' height='72'>"
+        + @"<text x='12' y='48' font-family='Segoe Script, Brush Script MT, Lucida Handwriting, cursive' font-size='34' fill='" + Ink + "'>"
+        + @"(?:[^<>&""']|&(?:amp|lt|gt|quot|apos);)*</text></svg>\z",
+        RegexOptions.CultureInvariant | RegexOptions.NonBacktracking);
+
+    /// <summary>Whether <paramref name="value"/> is a signature image this library would show: one in the shape it writes.</summary>
+    public static bool IsImage(string? value) => ToSvg(value) is not null;
 
     /// <summary>The signature drawn as <paramref name="strokes"/>, in the pad's coordinates; null when nothing was drawn.</summary>
     public static string? FromStrokes(IEnumerable<IReadOnlyList<(double X, double Y)>> strokes)
@@ -71,18 +85,23 @@ public static class BormSignature
                       + $"{SecurityElement.Escape(text)}</text></svg>");
     }
 
-    /// <summary>The SVG markup of a signature value, or null when <paramref name="value"/> is not one.</summary>
+    /// <summary>
+    /// The SVG markup of a signature value, or null when <paramref name="value"/> is not one - not in the shape
+    /// <see cref="FromStrokes"/> or <see cref="FromTypedName"/> writes it, which is all markup safe to embed.
+    /// </summary>
     public static string? ToSvg(string? value)
     {
-        if (!IsImage(value)) return null;
+        if (value is not { Length: > 0 and <= MaxLength } || !value.StartsWith(DataUrlPrefix, StringComparison.Ordinal)) return null;
+        string svg;
         try
         {
-            return Encoding.UTF8.GetString(Convert.FromBase64String(value![DataUrlPrefix.Length..]));
+            svg = Encoding.UTF8.GetString(Convert.FromBase64String(value[DataUrlPrefix.Length..]));
         }
         catch (FormatException)
         {
             return null;
         }
+        return Drawn.IsMatch(svg) || Typed.IsMatch(svg) ? svg : null;
     }
 
     private static string Encode(string svg) => DataUrlPrefix + Convert.ToBase64String(Encoding.UTF8.GetBytes(svg));

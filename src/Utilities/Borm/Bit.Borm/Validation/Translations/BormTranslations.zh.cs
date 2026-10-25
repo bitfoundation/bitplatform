@@ -158,6 +158,8 @@ internal static partial class BormTranslations
         [Kind("time")] = "时间", [Kind("month")] = "月份", [Kind("week")] = "周", [Kind("checkbox")] = "复选框",
         [Kind("switch")] = "开关", [Kind("select")] = "下拉列表", [Kind("radio")] = "单选", [Kind("combobox")] = "组合框",
         [Kind("multiselect")] = "多选", [Kind("tags")] = "标签组", [Kind("color")] = "颜色", [Kind("file")] = "文件",
-        [Kind("signature")] = "签名", [Kind("static")] = "标题和文本"
+        [Kind("signature")] = "签名", [Kind("static")] = "标题和文本",
+        [Kind("search")] = "搜索", [Kind("hidden")] = "隐藏值", [Kind("object")] = "嵌套字段",
+        [Kind("array")] = "重复行", [Kind("custom")] = "自定义控件"
     };
 }

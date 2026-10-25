@@ -160,6 +160,8 @@ internal static partial class BormTranslations
         [Kind("checkbox")] = "Флажок", [Kind("switch")] = "Переключатель", [Kind("select")] = "Раскрывающийся список",
         [Kind("radio")] = "Выбор", [Kind("combobox")] = "Поле со списком", [Kind("multiselect")] = "Несколько вариантов",
         [Kind("tags")] = "Метки", [Kind("color")] = "Цвет", [Kind("file")] = "Файл", [Kind("signature")] = "Подпись",
-        [Kind("static")] = "Заголовок и текст"
+        [Kind("static")] = "Заголовок и текст",
+        [Kind("search")] = "Поиск", [Kind("hidden")] = "Скрытое значение", [Kind("object")] = "Вложенные поля",
+        [Kind("array")] = "Повторяющиеся строки", [Kind("custom")] = "Свой элемент управления"
     };
 }

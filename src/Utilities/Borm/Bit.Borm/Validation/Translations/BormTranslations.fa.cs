@@ -157,6 +157,8 @@ internal static partial class BormTranslations
         [Kind("time")] = "ساعت", [Kind("month")] = "ماه", [Kind("week")] = "هفته", [Kind("checkbox")] = "کادر انتخاب",
         [Kind("switch")] = "کلید", [Kind("select")] = "فهرست کشویی", [Kind("radio")] = "گزینه", [Kind("combobox")] = "جعبهٔ ترکیبی",
         [Kind("multiselect")] = "چند گزینه", [Kind("tags")] = "برچسب‌ها", [Kind("color")] = "رنگ", [Kind("file")] = "فایل",
-        [Kind("signature")] = "امضا", [Kind("static")] = "سرتیتر و متن"
+        [Kind("signature")] = "امضا", [Kind("static")] = "سرتیتر و متن",
+        [Kind("search")] = "جستجو", [Kind("hidden")] = "مقدار پنهان", [Kind("object")] = "فیلدهای تودرتو",
+        [Kind("array")] = "ردیف‌های تکرارشونده", [Kind("custom")] = "کنترل سفارشی"
     };
 }

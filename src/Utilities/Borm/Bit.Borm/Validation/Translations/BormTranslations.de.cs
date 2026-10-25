@@ -162,6 +162,8 @@ internal static partial class BormTranslations
         [Kind("checkbox")] = "Kontrollkästchen", [Kind("switch")] = "Schalter", [Kind("select")] = "Auswahlliste",
         [Kind("radio")] = "Auswahl", [Kind("combobox")] = "Kombinationsfeld", [Kind("multiselect")] = "Mehrfachauswahl",
         [Kind("tags")] = "Schlagwörter", [Kind("color")] = "Farbe", [Kind("file")] = "Datei", [Kind("signature")] = "Unterschrift",
-        [Kind("static")] = "Überschrift und Text"
+        [Kind("static")] = "Überschrift und Text",
+        [Kind("search")] = "Suche", [Kind("hidden")] = "Verborgener Wert", [Kind("object")] = "Verschachtelte Felder",
+        [Kind("array")] = "Wiederholte Zeilen", [Kind("custom")] = "Eigenes Steuerelement"
     };
 }

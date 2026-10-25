@@ -79,12 +79,24 @@ public sealed class BormDefinition
     /// walking into object children and array item templates. Index segments select the item template,
     /// because every element of an array shares one definition.
     /// </summary>
-    public BormFieldDefinition? FindByPath(string path)
+    public BormFieldDefinition? FindByPath(string path) => Locate(path, null);
+
+    /// <summary>
+    /// <see cref="FindByPath(string)"/>, writing into <paramref name="route"/> every field the walk passed through
+    /// from the top, each with where it was found: its position in the list it was picked from (the form's fields,
+    /// or its parent's children), or -1 for the item template of the list before it.
+    /// </summary>
+    internal BormFieldDefinition? Locate(string path, List<(BormFieldDefinition Field, int Index)>? route)
     {
         // The typed builder can declare a field whose *name* is already a dotted path
         // (`x => x.Address.City`), so an exact match wins before the path is decomposed.
-        var direct = Fields.FirstOrDefault(f => string.Equals(f.Name, path, StringComparison.OrdinalIgnoreCase));
-        if (direct is not null) return direct;
+        var fields = Fields;
+        for (var i = 0; i < fields.Count; i++)
+        {
+            if (!string.Equals(fields[i].Name, path, StringComparison.OrdinalIgnoreCase)) continue;
+            route?.Add((fields[i], i));
+            return fields[i];
+        }
 
         // The same goes for a container: `Object(x => x.Customer.Address, …)` is one top-level field
         // named "Customer.Address", and "Customer.Address.City" lies beneath it. Splitting the whole path
@@ -93,19 +105,23 @@ public sealed class BormDefinition
         // fields skipped validating it. So the walk starts from the top-level field whose name is the
         // longest prefix of the path (ending at a segment boundary), which for an ordinary "Address.City"
         // is simply "Address".
-        foreach (var root in Fields
-                     .Where(f => f.Name.Length > 0
-                                 && f.Name.Length < path.Length
-                                 && path[f.Name.Length] is '.' or '['
-                                 && path.StartsWith(f.Name, StringComparison.OrdinalIgnoreCase))
-                     .OrderByDescending(f => f.Name.Length))
+        foreach (var (root, index) in fields
+                     .Select((f, i) => (Field: f, Index: i))
+                     .Where(r => r.Field.Name.Length > 0
+                                 && r.Field.Name.Length < path.Length
+                                 && path[r.Field.Name.Length] is '.' or '['
+                                 && path.StartsWith(r.Field.Name, StringComparison.OrdinalIgnoreCase))
+                     .OrderByDescending(r => r.Field.Name.Length))
         {
-            if (Walk(root, path[root.Name.Length..]) is { } found) return found;
+            route?.Clear();
+            route?.Add((root, index));
+            if (Walk(root, path[root.Name.Length..], route) is { } found) return found;
         }
 
+        route?.Clear();
         return null;
 
-        static BormFieldDefinition? Walk(BormFieldDefinition start, string rest)
+        static BormFieldDefinition? Walk(BormFieldDefinition start, string rest, List<(BormFieldDefinition, int)>? route)
         {
             var current = start;
             foreach (var seg in BormPath.Parse(rest))
@@ -116,20 +132,25 @@ public sealed class BormDefinition
                     // An array of objects keeps its children on the template itself, so stay there.
                     if (current.ItemTemplate is not { } template) return null;
                     current = template;
+                    route?.Add((template, -1));
                     continue;
                 }
 
-                var candidates = current.Type == BormFieldType.Array && current.ItemTemplate is not null
-                    ? current.ItemTemplate.Children
-                    : current.Children;
-
-                var next = candidates.FirstOrDefault(f => string.Equals(f.Name, seg.Name, StringComparison.OrdinalIgnoreCase));
-                if (next is null) return null;
-                current = next;
+                var candidates = ChildrenOf(current);
+                var at = -1;
+                for (var i = 0; i < candidates.Count && at < 0; i++)
+                    if (string.Equals(candidates[i].Name, seg.Name, StringComparison.OrdinalIgnoreCase)) at = i;
+                if (at < 0) return null;
+                current = candidates[at];
+                route?.Add((current, at));
             }
             return current;
         }
     }
+
+    /// <summary>The fields a path's next name is looked up among, beneath <paramref name="field"/>: a list's are its item template's.</summary>
+    internal static IList<BormFieldDefinition> ChildrenOf(BormFieldDefinition field)
+        => field.Type == BormFieldType.Array && field.ItemTemplate is not null ? field.ItemTemplate.Children : field.Children;
 
     /// <summary>Enumerates every field in the schema, recursing into objects and array item templates.</summary>
     public IEnumerable<BormFieldDefinition> AllFields()

@@ -38,6 +38,13 @@
         <p class="bit-borm-review__empty">@Context.Text(BormMessageKeys.ReviewEmpty)</p>
     }
 
+    @if (Context.InputName is { } posted && !Disabled && Stored is { } signature)
+    {
+        @* Drawn on an SVG and typed into a box whose text is not the value, a signature has no control a form
+           posts: a posted form sends it - one it opened with included - from here. *@
+        <input type="hidden" name="@posted" value="@signature" />
+    }
+
     @if (!DisabledOrReadOnly)
     {
         <div class="bit-borm-signature__actions">

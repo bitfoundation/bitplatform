@@ -159,6 +159,8 @@ internal static partial class BormTranslations
         [Kind("time")] = "وقت", [Kind("month")] = "شهر", [Kind("week")] = "أسبوع", [Kind("checkbox")] = "مربع اختيار",
         [Kind("switch")] = "مفتاح تبديل", [Kind("select")] = "قائمة منسدلة", [Kind("radio")] = "خيار",
         [Kind("combobox")] = "مربع تحرير وسرد", [Kind("multiselect")] = "اختيارات متعددة", [Kind("tags")] = "وسوم",
-        [Kind("color")] = "لون", [Kind("file")] = "ملف", [Kind("signature")] = "توقيع", [Kind("static")] = "عنوان ونص"
+        [Kind("color")] = "لون", [Kind("file")] = "ملف", [Kind("signature")] = "توقيع", [Kind("static")] = "عنوان ونص",
+        [Kind("search")] = "بحث", [Kind("hidden")] = "قيمة مخفية", [Kind("object")] = "حقول متداخلة",
+        [Kind("array")] = "صفوف متكررة", [Kind("custom")] = "عنصر تحكم مخصص"
     };
 }

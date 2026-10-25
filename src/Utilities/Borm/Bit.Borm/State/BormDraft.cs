@@ -38,9 +38,10 @@ public static class BormDraft
     private const int FormatVersion = 1;
 
     /// <summary>
-    /// The most rows a draft may restore into one repeater, whatever it says it had — the same bound the
-    /// JSON Schema importer puts on a whole form. A draft comes back from storage the application does not
-    /// fully control, and "a billion rows" is a few bytes of it.
+    /// The most rows a draft may restore, all its repeaters together, whatever it says they had — the same
+    /// bound the JSON Schema importer puts on a whole form. A draft comes back from storage the application
+    /// does not fully control, and "a billion rows" is a few bytes of it; so is "ten thousand rows, each with
+    /// ten thousand rows of its own", which a bound on each list alone let through.
     /// </summary>
     public const int MaxRows = 10_000;
 
@@ -127,17 +128,20 @@ public static class BormDraft
         var skipped = new List<string>();
         state.Restoring(() =>
         {
-            // Outer lists first, so a row inside a row exists by the time its own rows are counted.
+            var budget = MaxRows;
+            // Outer lists first, so a row inside a row exists by the time its own rows are counted - and a list
+            // inside a row that does not exist, the outer list having been cut short or never having had it, is
+            // skipped like a value there would be, rather than filled in a list that belongs to nothing.
             foreach (var (path, count) in content.Rows.OrderBy(r => r.Key.Count(c => c is '[' or '.')).ThenBy(r => r.Key, StringComparer.Ordinal))
             {
-                if (state.FindField(path) is not { Type: BormFieldType.Array } array || !BormPath.IsValid(path))
+                if (!BormPath.IsValid(path) || state.FindField(path) is not { Type: BormFieldType.Array } array || !state.IsLiveForRestore(path))
                 {
                     skipped.Add(path);
                     continue;
                 }
-                var target = Math.Clamp(count, 0, Math.Min(array.MaxItems ?? MaxRows, MaxRows));
+                var target = Math.Clamp(count, 0, Math.Min(array.MaxItems ?? MaxRows, budget));
                 if (target < count) skipped.Add(path);
-                state.SetRowCount(array, path, target);
+                budget = Math.Max(0, budget - state.SetRowCount(array, path, target));
             }
 
             foreach (var (path, value) in content.Values)

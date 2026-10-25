@@ -40,6 +40,10 @@
         }
     }
 </select>
+@if (ReadOnlyPostedName is { } posted)
+{
+    <input type="hidden" name="@posted" value="@Context.StringValue" />
+}
 
 @code {
     // Options may come from an async provider, so ask for them on first render and again whenever a

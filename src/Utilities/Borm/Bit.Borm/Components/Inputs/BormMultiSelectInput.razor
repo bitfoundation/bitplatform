@@ -37,6 +37,13 @@
             <span>@opt.Label</span>
         </label>
     }
+    @if (ReadOnlyPostedName is { } posted)
+    {
+        @foreach (var value in options.Where(o => selected.Contains(o.Value)))
+        {
+            <input type="hidden" name="@posted" value="@value.Value" />
+        }
+    }
 </div>
 @if (Context.IsRequired)
 {

@@ -1,4 +1,5 @@
 ﻿using Bunit;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Bit.Borm.Tests;
 
@@ -141,6 +142,41 @@ public class DesignerTests : ComponentTestBase
         Assert.IsNotNull(built.FindField("country")!.OptionsProvider);
         Assert.IsNotNull(built.FindField("vat")!.VisibleWhen);
         CollectionAssert.AreEqual(new[] { "country", "vat", "date1" }, built.Steps.Single().Fields.ToArray());
+    }
+
+    [TestMethod]
+    public void Objects_repeaters_hidden_values_and_custom_fields_keep_their_kind_and_what_it_holds()
+    {
+        Services.AddBorm(r => r.RegisterCustom("stars", typeof(BormTextAreaInput)));
+        var start = BormBuilder.Create()
+            .Object("address", a => a.Text("city"), f => f.Label("Address"))
+            .Array("lines", l => l.Text("product"), f => f.Label("Lines").Items(1, 5))
+            .Field("token", BormFieldType.Hidden)
+            .Text("rating", f => f.CustomRenderer("stars"))
+            .Field("query", BormFieldType.Search, f => f.MaxLength(20))
+            .Build();
+        var (cut, last) = Designer(start);
+
+        // Handed out as soon as it is read in: nothing in it turned into a text box.
+        var built = last()!;
+        Assert.AreEqual(BormFieldType.Object, built.FindField("address")!.Type);
+        Assert.AreEqual("city", built.FindField("address")!.Children.Single().Name);
+        Assert.AreEqual(BormFieldType.Array, built.FindField("lines")!.Type);
+        Assert.AreEqual("product", built.FindField("lines")!.ItemTemplate!.Children.Single().Name);
+        Assert.AreEqual(5, built.FindField("lines")!.MaxItems);
+        Assert.AreEqual(BormFieldType.Hidden, built.FindField("token")!.Type);
+        Assert.AreEqual(BormFieldType.Custom, built.FindField("rating")!.Type);
+        Assert.AreEqual("stars", built.FindField("rating")!.CustomRenderer);
+        Assert.AreEqual(BormFieldType.Search, built.FindField("query")!.Type);
+        Assert.AreEqual(20, built.FindField("query")!.MaxLength);
+        StringAssert.Contains(cut.FindAll(".bit-borm-designer__meta")[0].TextContent, "Nested fields");
+
+        // Its kind is shown for what it is and cannot be changed; what the panel does show still can be.
+        Assert.IsTrue(cut.Find("#designer_p_Kind").HasAttribute("disabled"));
+        cut.Find("#designer_p_Label").Change("Postal address");
+        Assert.AreEqual("Postal address", last()!.FindField("address")!.Label);
+        Assert.AreEqual(BormFieldType.Object, last()!.FindField("address")!.Type);
+        Assert.AreEqual(5, last()!.FindField("lines")!.MaxItems);
     }
 
     [TestMethod]

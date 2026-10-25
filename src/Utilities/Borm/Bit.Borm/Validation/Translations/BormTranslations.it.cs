@@ -162,6 +162,8 @@ internal static partial class BormTranslations
         [Kind("checkbox")] = "Casella di controllo", [Kind("switch")] = "Interruttore", [Kind("select")] = "Elenco a discesa",
         [Kind("radio")] = "Scelta", [Kind("combobox")] = "Casella combinata", [Kind("multiselect")] = "Scelte multiple",
         [Kind("tags")] = "Tag", [Kind("color")] = "Colore", [Kind("file")] = "File", [Kind("signature")] = "Firma",
-        [Kind("static")] = "Titolo e testo"
+        [Kind("static")] = "Titolo e testo",
+        [Kind("search")] = "Ricerca", [Kind("hidden")] = "Valore nascosto", [Kind("object")] = "Campi annidati",
+        [Kind("array")] = "Righe ripetute", [Kind("custom")] = "Controllo personalizzato"
     };
 }

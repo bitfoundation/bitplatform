@@ -140,4 +140,31 @@ public class MaskTests : ComponentTestBase
             """, out _, out var error));
         StringAssert.Contains(error, "x-mask of 'code'");
     }
+
+    [TestMethod]
+    [DataRow("SN-SNOW")]
+    [DataRow("SNSNOW")]
+    [DataRow("SNOW")]
+    [DataRow("snow")]
+    public void A_value_that_starts_like_the_masks_letters_still_fills_its_slots(string typed)
+    {
+        var mask = new BormMask("SN-AAAA");
+
+        Assert.IsTrue(mask.TryFormat(typed, out var formatted), typed);
+        Assert.AreEqual("SN-SNOW", formatted);
+        Assert.IsTrue(mask.TryUnmask(typed, out var raw));
+        Assert.AreEqual("SNOW", raw);
+        Assert.IsFalse(mask.TryFormat("SNO", out _));
+        Assert.IsFalse(mask.TryFormat("SNSNOWS", out _));
+    }
+
+    [TestMethod]
+    public async Task A_value_stored_raw_that_starts_like_the_masks_letters_is_not_called_a_misfit()
+    {
+        var form = BormBuilder.Create().Text("code", f => f.Mask("SN-AAAA", storeRaw: true)).Build();
+        var data = new Dictionary<string, object?> { ["code"] = "SNOW" };
+        var state = new BormState(form, new BormDictionaryDataAccessor(data));
+
+        Assert.IsTrue(await state.ValidateAsync());
+    }
 }

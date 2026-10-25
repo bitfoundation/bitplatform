@@ -160,6 +160,8 @@ internal static partial class BormTranslations
         [Kind("checkbox")] = "Onay kutusu", [Kind("switch")] = "Anahtar", [Kind("select")] = "Açılır liste",
         [Kind("radio")] = "Seçim", [Kind("combobox")] = "Birleşik kutu", [Kind("multiselect")] = "Çoklu seçim",
         [Kind("tags")] = "Etiketler", [Kind("color")] = "Renk", [Kind("file")] = "Dosya", [Kind("signature")] = "İmza",
-        [Kind("static")] = "Başlık ve metin"
+        [Kind("static")] = "Başlık ve metin",
+        [Kind("search")] = "Arama", [Kind("hidden")] = "Gizli değer", [Kind("object")] = "İç içe alanlar",
+        [Kind("array")] = "Yinelenen satırlar", [Kind("custom")] = "Özel denetim"
     };
 }

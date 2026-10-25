@@ -259,7 +259,10 @@
         _propertiesState = null;
         if (field is null) return;
 
-        _propertiesState = new BormState(_propertiesForm ??= PropertiesForm(), new BormModelDataAccessor(field), Services)
+        // A kept kind is shown for what it is, and cannot be turned into another here: none of the kinds offered
+        // could hold what it holds.
+        var form = field.IsKept ? PropertiesForm(field.Kind) : _propertiesForm ??= PropertiesForm();
+        _propertiesState = new BormState(form, new BormModelDataAccessor(field), Services)
         {
             ValidationTrigger = BormValidationTrigger.OnChange,
             Language = Language
@@ -345,14 +348,18 @@
         foreach (var field in _fields.Where(f => !placed.Contains(f.Name))) definition.Steps[^1].Fields.Add(field.Name);
     }
 
-    private BormDefinition PropertiesForm()
+    private BormDefinition PropertiesForm(string? keptKind = null)
     {
         static bool Kind(IBormDataReader r, IEnumerable<string> kinds) => r.GetValue("Kind") is string k && kinds.Contains(k);
 
+        var kinds = keptKind is null ? BormDesignerField.Kinds.Select(k => k.Kind) : [keptKind];
         return BormBuilder.For<BormDesignerField>()
             .Columns(2)
-            .Field(x => x.Kind, f => f.Label(P("kind")).AsSelect()
-                .Options([.. BormDesignerField.Kinds.Select(k => new BormSelectOption(k.Kind, T(BormMessageKeys.DesignerKind(k.Kind))))]))
+            .Field(x => x.Kind, f =>
+            {
+                f.Label(P("kind")).AsSelect().Options([.. kinds.Select(k => new BormSelectOption(k, T(BormMessageKeys.DesignerKind(k))))]);
+                if (keptKind is not null) f.ReadOnly();
+            })
             .Field(x => x.Name, f => f.Label(P("name")).Required()
                 .Pattern(@"^[A-Za-z_][A-Za-z0-9_]*$", T(BormMessageKeys.DesignerInvalidName))
                 .Must(v => v is not string name || !_fields.Any(o => !ReferenceEquals(o, _selected) && string.Equals(o.Name, name, StringComparison.OrdinalIgnoreCase)),

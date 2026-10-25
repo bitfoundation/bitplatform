@@ -25,10 +25,21 @@ internal sealed class BormDesignerField
         ("checkbox", BormFieldType.Checkbox), ("switch", BormFieldType.Checkbox), ("select", BormFieldType.Select),
         ("radio", BormFieldType.Radio), ("combobox", BormFieldType.Combobox), ("multiselect", BormFieldType.MultiSelect),
         ("tags", BormFieldType.Tags), ("color", BormFieldType.Color), ("file", BormFieldType.File),
-        ("signature", BormFieldType.Signature), ("static", BormFieldType.Static)
+        ("signature", BormFieldType.Signature), ("static", BormFieldType.Static), ("search", BormFieldType.Search)
     ];
 
-    internal static readonly HashSet<string> Textual = ["text", "textarea", "markdown", "email", "password", "url", "tel"];
+    /// <summary>
+    /// The kinds a schema can hold that the designer keeps but does not offer: what makes one what it is - its
+    /// children, its rows, its renderer - has no place in the properties panel, so it is kept as it was, its type
+    /// with it, and edited in JSON. Taken for text, building it again turned an address into a text box.
+    /// </summary>
+    internal static readonly (string Kind, BormFieldType Type)[] Kept =
+    [
+        ("hidden", BormFieldType.Hidden), ("object", BormFieldType.Object), ("array", BormFieldType.Array),
+        ("custom", BormFieldType.Custom)
+    ];
+
+    internal static readonly HashSet<string> Textual = ["text", "textarea", "markdown", "email", "password", "url", "tel", "search"];
     internal static readonly HashSet<string> Numeric = ["number", "integer", "range"];
     internal static readonly HashSet<string> Choice = ["select", "radio", "combobox", "multiselect"];
 
@@ -65,7 +76,13 @@ internal sealed class BormDesignerField
     /// <summary>Whether the original holds something the designer cannot show - code it keeps as it is.</summary>
     internal bool KeepsCode { get; set; }
 
-    internal BormFieldType Type => Kinds.First(k => k.Kind == Kind).Type;
+    /// <summary>Whether this is a kind the designer keeps rather than offers (see <see cref="Kept"/>).</summary>
+    internal bool IsKept => !Kinds.Any(k => k.Kind == Kind);
+
+    // A kind of field newer than both tables is kept as it is too: its type is the one it was read with.
+    internal BormFieldType Type => Kinds.Concat(Kept).FirstOrDefault(k => k.Kind == Kind) is { Kind: not null } known
+        ? known.Type
+        : Original?.Type ?? BormFieldType.Text;
 
     /// <summary>Builds the field this describes. Throws <see cref="FormatException"/> for an expression or mask that does not read.</summary>
     internal BormFieldDefinition Build()
@@ -84,27 +101,43 @@ internal sealed class BormDesignerField
         field.Group = Blank(Group);
         field.ColumnSpan = ColumnSpan is > 1 ? ColumnSpan : null;
         field.ReadOnly = ReadOnly;
-        field.Required = false;
-        field.MinLength = field.MaxLength = null;
-        field.Min = field.Max = null;
-        field.Pattern = null;
-        field.Mask = null;
-        field.MaskStoresRaw = false;
-        foreach (var key in (string[])["required", "minLength", "maxLength", "range", "pattern", BormMessageKeys.Mask])
-            field.RemoveValidators(key);
-        if (Kind == "switch") field.Attributes["switch"] = true;
-        else field.Attributes.Remove("switch");
 
         var builder = new BormFieldBuilder(field);
-        if (type == BormFieldType.Static)
+        if (IsKept)
         {
-            // A static field's label is its heading and its help is its text, as the builder's Static() makes them.
-            field.HelpText = Blank(Text);
-            field.ShowLabel = !string.IsNullOrWhiteSpace(Label);
-            return field;
+            // Only what the panel shows is written; its lengths, limits, options and rules stay as they were - and
+            // so does how it is required, unless that was changed here.
+            if (Required != field.Required)
+            {
+                field.Required = false;
+                field.RemoveValidators("required");
+                if (Required) builder.Required();
+            }
+        }
+        else
+        {
+            field.Required = false;
+            field.MinLength = field.MaxLength = null;
+            field.Min = field.Max = null;
+            field.Pattern = null;
+            field.Mask = null;
+            field.MaskStoresRaw = false;
+            foreach (var key in (string[])["required", "minLength", "maxLength", "range", "pattern", BormMessageKeys.Mask])
+                field.RemoveValidators(key);
+            if (Kind == "switch") field.Attributes["switch"] = true;
+            else field.Attributes.Remove("switch");
+
+            if (type == BormFieldType.Static)
+            {
+                // A static field's label is its heading and its help is its text, as the builder's Static() makes them.
+                field.HelpText = Blank(Text);
+                field.ShowLabel = !string.IsNullOrWhiteSpace(Label);
+                return field;
+            }
+
+            if (Required) builder.Required();
         }
 
-        if (Required) builder.Required();
         if (Textual.Contains(Kind))
         {
             if (MinLength is > 0 and var min) builder.MinLength(min);
@@ -144,7 +177,7 @@ internal sealed class BormDesignerField
     {
         var kind = field.Type == BormFieldType.Checkbox && field.Attributes.TryGetValue("switch", out var s) && s is true
             ? "switch"
-            : Kinds.FirstOrDefault(k => k.Type == field.Type).Kind ?? "text";
+            : Kinds.Concat(Kept).FirstOrDefault(k => k.Type == field.Type).Kind ?? field.Type.ToString().ToLowerInvariant();
 
         var designer = new BormDesignerField
         {

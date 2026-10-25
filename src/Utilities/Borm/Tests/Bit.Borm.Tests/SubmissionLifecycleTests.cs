@@ -142,6 +142,45 @@ public class SubmissionLifecycleTests
         state.Reset();
         Assert.AreEqual(BormSubmitOutcome.None, state.SubmitOutcome);
     }
+
+    [TestMethod]
+    public async Task An_error_the_user_makes_while_the_handler_runs_leaves_a_save_that_went_through_successful()
+    {
+        var state = new BormState(BormBuilder.Create().Number("qty").Build(), new BormDictionaryDataAccessor());
+        var started = new TaskCompletionSource();
+        var saving = new TaskCompletionSource();
+
+        var submit = state.SubmitAsync(async _ =>
+        {
+            started.SetResult();
+            await saving.Task;
+        });
+        await started.Task;
+        // Typed into a form that is not held still while it saves.
+        state.SetValue("qty", "abc");
+        Assert.IsTrue(state.HasErrors);
+        saving.SetResult();
+
+        Assert.IsTrue(await submit);
+        Assert.AreEqual(BormSubmitOutcome.Succeeded, state.SubmitOutcome);
+    }
+
+    [TestMethod]
+    public async Task A_call_passing_no_valid_handler_means_what_it_did_before_handlers_could_take_a_token()
+    {
+        var state = Form();
+        var invalid = 0;
+
+        Assert.IsFalse(await state.SubmitAsync(null, _ => { invalid++; return Task.CompletedTask; }));
+        Assert.IsFalse(await state.SubmitAsync(onValid: null, onInvalid: _ => { invalid++; return Task.CompletedTask; }));
+        Assert.IsFalse(await state.SubmitAsync(null));
+        Assert.AreEqual(2, invalid);
+
+        // And a handler that takes the token is handed it for either outcome.
+        var token = CancellationToken.None;
+        Assert.IsFalse(await state.SubmitAsync((_, _) => Task.CompletedTask, (_, t) => { token = t; return Task.CompletedTask; }));
+        Assert.IsTrue(token.CanBeCanceled);
+    }
 }
 
 /// <summary>Server errors in the shape a validation response actually arrives in.</summary>

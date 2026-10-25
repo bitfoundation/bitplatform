@@ -95,44 +95,61 @@ public sealed class BormMask
         if (string.IsNullOrEmpty(text)) return false;
 
         var output = new StringBuilder(_tokens.Length);
-        var i = 0;
-        foreach (var (kind, literal) in _tokens)
-        {
-            if (kind == Slot.Literal)
-            {
-                output.Append(literal);
-                // The user typed it: it stands for itself, not for the next slot.
-                if (i < text.Length && char.ToUpperInvariant(text[i]) == char.ToUpperInvariant(literal)) i++;
-                continue;
-            }
-
-            while (i < text.Length && !char.IsLetterOrDigit(text[i])) i++;
-            if (i == text.Length) return false;
-
-            var c = text[i++];
-            switch (kind)
-            {
-                case Slot.Digit when char.IsAsciiDigit(c):
-                    output.Append(c);
-                    break;
-                case Slot.UpperLetter when char.IsLetter(c):
-                    output.Append(char.ToUpperInvariant(c));
-                    break;
-                case Slot.Letter when char.IsLetter(c):
-                case Slot.LetterOrDigit when char.IsLetter(c) || char.IsAsciiDigit(c):
-                    output.Append(c);
-                    break;
-                default:
-                    return false;
-            }
-        }
-
-        for (; i < text.Length; i++)
-            if (char.IsLetterOrDigit(text[i])) return false;
+        // Where the rest of the mask has already been tried against the rest of the text and could not be filled.
+        HashSet<(int Token, int At)>? failed = null;
+        if (!Fill(0, 0)) return false;
 
         formatted = output.ToString();
         return true;
+
+        bool Fill(int t, int i)
+        {
+            if (t == _tokens.Length)
+            {
+                for (; i < text.Length; i++)
+                    if (char.IsLetterOrDigit(text[i])) return false;
+                return true;
+            }
+            if (failed is not null && failed.Contains((t, i))) return false;
+
+            var mark = output.Length;
+            var (kind, literal) = _tokens[t];
+            if (kind == Slot.Literal)
+            {
+                output.Append(literal);
+                // The user typed it: it stands for itself, not for the next slot - unless it is a letter or a digit
+                // and the slots after it cannot be filled without it. "SNOW" in SN-AAAA is the four letters, not
+                // the literal SN and two letters short: the value as a mask that stores it raw keeps it.
+                var typed = i < text.Length && char.ToUpperInvariant(text[i]) == char.ToUpperInvariant(literal);
+                if (typed && Fill(t + 1, i + 1)) return true;
+                // Any other separator the next slot passes over anyway, so that reading is the same one again.
+                if ((!typed || char.IsLetterOrDigit(literal)) && Fill(t + 1, i)) return true;
+            }
+            else
+            {
+                var at = i;
+                while (at < text.Length && !char.IsLetterOrDigit(text[at])) at++;
+                if (at < text.Length && Fits(kind, text[at]) is { } c)
+                {
+                    output.Append(c);
+                    if (Fill(t + 1, at + 1)) return true;
+                }
+            }
+
+            output.Length = mark;
+            (failed ??= []).Add((t, i));
+            return false;
+        }
     }
+
+    private static char? Fits(Slot kind, char c) => kind switch
+    {
+        Slot.Digit when char.IsAsciiDigit(c) => c,
+        Slot.UpperLetter when char.IsLetter(c) => char.ToUpperInvariant(c),
+        Slot.Letter when char.IsLetter(c) => c,
+        Slot.LetterOrDigit when char.IsLetter(c) || char.IsAsciiDigit(c) => c,
+        _ => null
+    };
 
     /// <summary>
     /// The characters that filled the slots, without the literals: <c>5551234567</c> for

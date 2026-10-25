@@ -22,6 +22,10 @@
            @oninput="OnSlide"
            @onblur="OnBlur" />
     <output class="bit-borm-range__value" for="@Context.ElementId" aria-live="off">@Display</output>
+    @if (ReadOnlyPostedName is { } posted)
+    {
+        <input type="hidden" name="@posted" value="@Context.StringValue" />
+    }
 </div>
 
 @code {

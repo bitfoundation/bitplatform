@@ -112,6 +112,25 @@ public class StepLayoutTests : ComponentTestBase
     }
 
     [TestMethod]
+    public void An_accordion_section_opens_and_closes_from_its_summary_and_never_answers_its_own_toggle()
+    {
+        var cut = Render<BormView>(p => p.Add(x => x.Definition, Form(BormStepLayout.Accordion)));
+        var section = (int i) => cut.FindAll("details.bit-borm-section")[i];
+
+        // The browser raises toggle for the open attribute this component renders too; answering it flipped the
+        // section back, which raised it again, forever.
+        Assert.IsTrue(cut.FindAll("details.bit-borm-section").All(d => !d.HasAttribute("blazor:ontoggle")));
+        Assert.IsTrue(section(1).QuerySelector("summary")!.HasAttribute("blazor:onclick"));
+
+        section(1).QuerySelector("summary")!.Click();
+        Assert.IsTrue(section(1).HasAttribute("open"));
+        Assert.IsTrue(section(0).HasAttribute("open"));
+
+        section(1).QuerySelector("summary")!.Click();
+        Assert.IsFalse(section(1).HasAttribute("open"));
+    }
+
+    [TestMethod]
     public void Sections_show_every_visible_step_as_a_titled_region()
     {
         var cut = Render<BormView>(p => p.Add(x => x.Definition, Form(BormStepLayout.Sections)).Add(x => x.TitleLevel, 2));

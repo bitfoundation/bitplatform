@@ -24,7 +24,8 @@
 internal sealed class BormFieldIndex
 {
     private readonly BormDefinition _definition;
-    private readonly Dictionary<string, BormFieldDefinition> _byTemplatePath = new(StringComparer.OrdinalIgnoreCase);
+    private readonly Dictionary<string, CachedField> _byTemplatePath = new(StringComparer.OrdinalIgnoreCase);
+    private readonly List<(BormFieldDefinition Field, int Index)> _route = [];
 
     public BormFieldIndex(BormDefinition definition)
     {
@@ -72,16 +73,54 @@ internal sealed class BormFieldIndex
     /// Only hits are remembered. A path that names nothing yet — a <c>BormField</c> placed before the
     /// field it shows was added to a schema built up at run time — is asked again next time, so it
     /// starts resolving the moment the field exists; the hot paths only ever ask about fields that do.
+    /// Unlike the sweeps, a hit is checked against the schema as it stands now, every field it was reached
+    /// through still where it was found under the name it had — a few comparisons, not the walk. A field
+    /// swapped for another of the same name without <see cref="BormState.NotifyDefinitionChanged"/> is drawn
+    /// by the form's own list from the schema as it is, and every other part asking for it has to get the same
+    /// field, not run the old one's handler and render the old one's control.
     /// </remarks>
     public BormFieldDefinition? Find(string path)
     {
         var key = TemplateKey(path);
-        if (_byTemplatePath.TryGetValue(key, out var field)) return field;
+        if (_byTemplatePath.TryGetValue(key, out var cached) && StillResolves(cached)) return cached.Field;
 
         // A malformed path names no field; FindByPath would say so by throwing from the parser.
-        field = BormPath.IsValid(path) ? _definition.FindByPath(path) : null;
-        if (field is not null) _byTemplatePath[key] = field;
+        _route.Clear();
+        var field = BormPath.IsValid(path) ? _definition.Locate(path, _route) : null;
+        if (field is not null) _byTemplatePath[key] = new CachedField([.. _route]);
+        else _byTemplatePath.Remove(key);
         return field;
+    }
+
+    private bool StillResolves(CachedField cached)
+    {
+        BormFieldDefinition? parent = null;
+        for (var i = 0; i < cached.Route.Length; i++)
+        {
+            var (field, index) = cached.Route[i];
+            if (index < 0)
+            {
+                if (!ReferenceEquals(parent?.ItemTemplate, field)) return false;
+            }
+            else
+            {
+                var owner = parent is null ? _definition.Fields : BormDefinition.ChildrenOf(parent);
+                if (index >= owner.Count || !ReferenceEquals(owner[index], field)) return false;
+            }
+            if (!string.Equals(field.Name, cached.Names[i], StringComparison.Ordinal)) return false;
+            parent = field;
+        }
+        return true;
+    }
+
+    /// <summary>A path's answer, with every field the walk to it passed through and where it found each one.</summary>
+    private sealed class CachedField((BormFieldDefinition Field, int Index)[] route)
+    {
+        public (BormFieldDefinition Field, int Index)[] Route { get; } = route;
+
+        public string[] Names { get; } = Array.ConvertAll(route, r => r.Field.Name);
+
+        public BormFieldDefinition Field => Route[^1].Field;
     }
 
     /// <summary>A path with every row index taken out — <c>Lines[3].Qty</c> becomes <c>Lines[].Qty</c>.</summary>

@@ -93,6 +93,19 @@ public partial class MarkdownAndSignatureTests : ComponentTestBase
     }
 
     [TestMethod]
+    public void Brackets_in_front_of_an_address_that_is_refused_cost_no_more_than_their_length()
+    {
+        var clock = Stopwatch.StartNew();
+        var html = BormMarkdown.ToHtml(new string('[', 200_000) + "](javascript:x)");
+        BormMarkdown.ToHtml(string.Concat(Enumerable.Repeat("[", 100_000)) + "](" + new string('a', 100_000) + ")");
+
+        Assert.IsTrue(clock.Elapsed < TimeSpan.FromSeconds(2), $"took {clock.Elapsed}");
+        Assert.DoesNotContain("href", html);
+        // A link that is one still is.
+        StringAssert.Contains(BormMarkdown.ToHtml("[[a](javascript:x) [b](https://x.y)"), "<a href=\"https://x.y\"");
+    }
+
+    [TestMethod]
     public void Plain_text_is_the_words_without_the_formatting()
         => Assert.AreEqual("Fixed two bugs. See the docs .", BormMarkdown.ToPlainText("Fixed **two** bugs.\n\nSee [the docs](https://x.y)."));
 
@@ -153,6 +166,23 @@ public partial class MarkdownAndSignatureTests : ComponentTestBase
     [DataRow("")]
     public void Only_a_value_in_the_shape_it_writes_is_shown_as_a_signature(string value)
         => Assert.IsFalse(BormSignature.IsImage(value));
+
+    [TestMethod]
+    [DataRow("<svg onload=alert(1)>")]
+    [DataRow("<svg xmlns='http://www.w3.org/2000/svg'><script>alert(1)</script></svg>")]
+    [DataRow("<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 10' width='10' height='10'><path d='M1 1' fill='none' stroke='#1a1a1a' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round' onload='alert(1)'/></svg>")]
+    [DataRow("<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 72' width='120' height='72'><text x='12' y='48' font-family='Segoe Script, Brush Script MT, Lucida Handwriting, cursive' font-size='34' fill='#1a1a1a'>Ada</text><image href='https://evil.example/x.svg'/></svg>")]
+    [DataRow("<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 72' width='120' height='72'><text x='12' y='48' font-family='Segoe Script, Brush Script MT, Lucida Handwriting, cursive' font-size='34' fill='#1a1a1a'><tspan onclick='alert(1)'>Ada</tspan></text></svg>")]
+    public void An_svg_that_only_starts_like_a_signature_is_not_one(string svg)
+    {
+        var value = BormSignature.DataUrlPrefix + Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(svg));
+
+        Assert.IsFalse(BormSignature.IsImage(value));
+        Assert.IsNull(BormSignature.ToSvg(value));
+        // What this library writes is still what it shows.
+        Assert.IsTrue(BormSignature.IsImage(BormSignature.FromTypedName("Ada \"Countess\" O'Lovelace & co <3")));
+        Assert.IsTrue(BormSignature.IsImage(BormSignature.FromStrokes([[(0.25, 1.75), (300.5, 120)]])));
+    }
 
     [TestMethod]
     public void A_signature_is_drawn_stroke_by_stroke_typed_instead_or_cleared()

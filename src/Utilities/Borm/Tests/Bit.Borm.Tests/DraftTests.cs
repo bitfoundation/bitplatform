@@ -148,6 +148,29 @@ public class DraftTests
     }
 
     [TestMethod]
+    public void Nested_repeaters_share_one_bound_and_rows_for_a_row_that_is_not_there_are_skipped()
+    {
+        var form = BormBuilder.Create()
+            .Array("Orders", o => o.Text("Ref").Array("Lines", l => l.Text("Product")))
+            .Build();
+        var state = new BormState(form, new BormDictionaryDataAccessor());
+        const string json = """
+            {"format":"borm-draft","values":{},
+             "rows":{"Orders":3,"Orders[0].Lines":9000,"Orders[1].Lines":9000,"Orders[5].Lines":10}}
+            """;
+
+        var result = BormDraft.Restore(state, json);
+
+        Assert.AreEqual(3, state.ArrayCount("Orders"));
+        Assert.AreEqual(9_000, state.ArrayCount("Orders[0].Lines"));
+        // What is left of the bound once the orders and the first order's lines are counted - not another 9,000.
+        Assert.AreEqual(BormDraft.MaxRows - 3 - 9_000, state.ArrayCount("Orders[1].Lines"));
+        CollectionAssert.Contains(result.Skipped.ToArray(), "Orders[1].Lines");
+        // The draft has no sixth order, and its lines are not filled into a list that belongs to nothing.
+        CollectionAssert.Contains(result.Skipped.ToArray(), "Orders[5].Lines");
+    }
+
+    [TestMethod]
     public void A_document_that_is_not_a_draft_changes_nothing()
     {
         var model = new Application { Name = "Ada" };

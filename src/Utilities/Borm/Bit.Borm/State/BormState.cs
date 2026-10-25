@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Globalization;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 
 namespace Bit.Borm;
 
@@ -474,17 +475,32 @@ public sealed class BormState : IDisposable
     private void RecomputeAll(int maxPasses)
     {
         HashSet<string>? changed = null;
+        // Every value a formula moved, in the order it moved, and where in that list each formula reading its
+        // own output stood when it last ran. Such a formula runs again only for something else it reads that
+        // moved since - never for its own value, as a single edit never re-runs it for that either - or
+        // "{Counter} + 1" was applied once per pass.
+        List<string>? moves = null;
+        Dictionary<string, int>? ranAt = null;
         for (var pass = 0; pass <= maxPasses; pass++)
         {
             var moved = false;
             foreach (var (field, path) in PathsOf(_index.Computed))
             {
-                var next = field.Computed!(new BormComputedContext(Data, path, BormPath.Parent(path)));
+                var scope = BormPath.Parent(path);
+                if (ReadsPath(field.ComputedDependencies, path, scope))
+                {
+                    ranAt ??= new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+                    if (ranAt.TryGetValue(path, out var from) && !MovedSince(from, field, path, scope)) continue;
+                    ranAt[path] = moves?.Count ?? 0;
+                }
+
+                var next = field.Computed!(new BormComputedContext(Data, path, scope));
                 if (SameValue(Data.GetValue(path), next)) continue;
 
                 Data.SetValue(path, next);
                 TrackDirty(path);
                 (changed ??= new HashSet<string>(StringComparer.OrdinalIgnoreCase)).Add(path);
+                (moves ??= []).Add(path);
                 moved = true;
             }
             if (!moved) break;
@@ -497,6 +513,16 @@ public sealed class BormState : IDisposable
             InvalidateDependentOptions(path);
             RunChangeHandler(path);
             FieldChanged?.Invoke(path);
+        }
+
+        bool MovedSince(int from, BormFieldDefinition field, string path, string scope)
+        {
+            for (var i = from; i < (moves?.Count ?? 0); i++)
+            {
+                if (!string.Equals(moves![i], path, StringComparison.OrdinalIgnoreCase) && ReadsPath(field.ComputedDependencies, moves[i], scope))
+                    return true;
+            }
+            return false;
         }
     }
 
@@ -1279,7 +1305,8 @@ public sealed class BormState : IDisposable
     /// <summary>
     /// Uploads files chosen for a field with an <see cref="BormFieldDefinition.Uploader"/>: judged by the field's
     /// file rules first - a file they refuse is not sent - then each on its way at once. A field taking one file
-    /// replaces the one it had; one taking several adds to them. A submit made meanwhile waits for them.
+    /// replaces the one it had, which it no longer holds from then on, whether or not the new one arrives; one
+    /// taking several adds to them, the files it held before included. A submit made meanwhile waits for them.
     /// </summary>
     public async Task UploadAsync(BormFieldDefinition field, string path, IReadOnlyList<Microsoft.AspNetCore.Components.Forms.IBrowserFile> files)
     {
@@ -1308,6 +1335,9 @@ public sealed class BormState : IDisposable
         {
             foreach (var replaced in uploads) replaced.Cancel();
             uploads.Clear();
+            // The file being replaced goes now, with its row: kept until the new one arrived, it was still sent
+            // when that one failed or was stopped, while the field showed only the file that had not made it.
+            if (Data.GetValue(path) is not null) SetValue(path, null);
         }
 
         var started = new List<Task>(files.Count);
@@ -1337,8 +1367,29 @@ public sealed class BormState : IDisposable
         ArgumentNullException.ThrowIfNull(upload);
         upload.Cancel();
         if (_uploads.TryGetValue(path, out var uploads) && uploads.Remove(upload) && upload.Status == BormUploadStatus.Done)
-            StoreUploads(field, path, uploads);
+            Unstore(field, path, upload.Result!);
         NotifyChanged();
+    }
+
+    /// <summary>Takes back a file the field held before anything was uploaded here - one of an edit form's saved files.</summary>
+    public void RemoveStoredUpload(BormFieldDefinition field, string path, string result)
+    {
+        ArgumentNullException.ThrowIfNull(field);
+        ArgumentNullException.ThrowIfNull(result);
+        Unstore(field, path, result);
+        NotifyChanged();
+    }
+
+    /// <summary>
+    /// What the field holds for files sent before - the uploader's results - that no upload chosen here
+    /// produced: an edit form's saved files, which a field taking several keeps beside the new ones.
+    /// </summary>
+    public IReadOnlyList<string> StoredUploadsFor(string path)
+    {
+        var stored = StoredResults(path);
+        foreach (var upload in UploadsFor(path))
+            if (upload.Status == BormUploadStatus.Done) stored.Remove(upload.Result!);
+        return stored;
     }
 
     /// <summary>Stops every upload of the field and forgets them - the field emptied.</summary>
@@ -1356,7 +1407,7 @@ public sealed class BormState : IDisposable
             var result = await uploader(new BormUploadContext(upload, this, field, path, token));
             token.ThrowIfCancellationRequested();
             upload.Finish(result);
-            if (_uploads.TryGetValue(path, out var uploads)) StoreUploads(field, path, uploads);
+            if (_uploads.TryGetValue(path, out var uploads) && uploads.Contains(upload)) Store(field, path, result);
             // Judged as an answer the user just gave: "a file is required" goes as the file arrives.
             if (IsSubmitted || IsTouched(path)) await ValidateFieldAsync(field, path, includeAsync: false);
         }
@@ -1374,11 +1425,34 @@ public sealed class BormState : IDisposable
         NotifyChanged();
     }
 
-    private void StoreUploads(BormFieldDefinition field, string path, List<BormUpload> uploads)
+    // A file that arrived is added to what the field holds, and one taken back is taken out of it - never the
+    // value rebuilt from this page's uploads alone, which threw away every file the field held when it opened.
+    private void Store(BormFieldDefinition field, string path, string result)
     {
-        var results = uploads.Where(u => u.Status == BormUploadStatus.Done).Select(u => u.Result!).ToList();
-        SetValue(path, field.Multiple ? results : results.LastOrDefault());
+        if (!field.Multiple)
+        {
+            SetValue(path, result);
+            return;
+        }
+        var results = StoredResults(path);
+        results.Add(result);
+        SetValue(path, results);
     }
+
+    private void Unstore(BormFieldDefinition field, string path, string result)
+    {
+        var results = StoredResults(path);
+        if (!results.Remove(result)) return;
+        SetValue(path, field.Multiple ? results : null);
+    }
+
+    private List<string> StoredResults(string path) => Data.GetValue(path) switch
+    {
+        string { Length: > 0 } one => [one],
+        string => [],
+        IEnumerable many => many.OfType<string>().Where(s => s.Length > 0).ToList(),
+        _ => []
+    };
 
     // Entries a control is still turning into a value: a search field's text, committed before its results
     // arrived. A submit made meanwhile judged, and sent, the value from before — the click lands while the
@@ -1502,8 +1576,11 @@ public sealed class BormState : IDisposable
             // control ever rendered — a prefill, a restored draft — was still chosen for the old
             // dependency, and leaving it because no list had been fetched yet is how a city survives the
             // country it belongs to.
-            // A draft being restored hands over the answer together with its dependency.
-            if (keepValue || _restoring || Data.GetValue(path) is not { } stale) continue;
+            // A draft being restored hands over the answer together with its dependency, and so does undo or
+            // redo: the step being replayed holds the answer as it stood beside that dependency - the city
+            // the clearing took away is the next thing undo puts back, and emptying it again here, with
+            // nothing recorded, left it gone for good.
+            if (keepValue || _restoring || _replaying || Data.GetValue(path) is not { } stale) continue;
 
             RecordValue(path, stale, null);
             Data.SetValue(path, null);
@@ -2057,10 +2134,15 @@ public sealed class BormState : IDisposable
         }
     }
 
+    // How many errors SetServerError and SetServerErrors have recorded, ever: a submit compares it before and
+    // after its handler to tell the errors the handler reported from those the user made while it ran.
+    private int _serverErrorsRecorded;
+
     /// <summary>Adds a message for a path (used by server-side validation results).</summary>
     public void SetServerError(string path, string message)
     {
         AddMessage(new BormValidationMessage(path, message) { Source = BormValidationSource.Server });
+        _serverErrorsRecorded++;
         _touched.Add(path);
         NotifyChanged();
     }
@@ -2079,7 +2161,9 @@ public sealed class BormState : IDisposable
     {
         ArgumentNullException.ThrowIfNull(messages);
 
-        ReplaceAllMessages(messages.Select(m => m.Source == BormValidationSource.Rule ? m with { Source = BormValidationSource.Server } : m).ToList());
+        var recorded = messages.Select(m => m.Source == BormValidationSource.Rule ? m with { Source = BormValidationSource.Server } : m).ToList();
+        ReplaceAllMessages(recorded);
+        _serverErrorsRecorded += recorded.Count(m => m.Severity == BormValidationSeverity.Error);
         // A value the model could never accept is not something the server has an opinion about — it
         // never reached the server — so replacing the message set must not take its complaint with it,
         // leaving the box showing text the model does not hold and nothing at all to say why.
@@ -2188,6 +2272,9 @@ public sealed class BormState : IDisposable
     /// </summary>
     public CancellationToken SubmitCancellationToken => _submitCts?.Token ?? CancellationToken.None;
 
+    // The overload every call was written against before there was one taking a token, so it wins a call that
+    // fits both - SubmitAsync(null, null). SubmitAsync(null, s => ...) fits only this one, on a compiler that does
+    // not know the priority too: the other's onInvalid takes a token as well.
     /// <summary>
     /// Runs the full submit cycle: marks every field touched, validates, and invokes
     /// <paramref name="onValid"/> or <paramref name="onInvalid"/>. Concurrent calls are ignored while a
@@ -2200,15 +2287,21 @@ public sealed class BormState : IDisposable
     /// raising either callback, and leaves the messages as the earlier attempt left them; check
     /// <see cref="IsSubmitting"/> before calling to tell the two apart.
     /// </returns>
+    [OverloadResolutionPriority(1)]
     public Task<bool> SubmitAsync(
         Func<BormState, Task>? onValid = null,
         Func<BormState, Task>? onInvalid = null)
-        => SubmitAsync(onValid is null ? null : (state, _) => onValid(state), onInvalid);
+        => SubmitAsync(onValid is null ? null : (state, _) => onValid(state), onInvalid is null ? null : (state, _) => onInvalid(state));
+
+    // For a compiler that does not read the priority - C# 12, the default for .NET 8: SubmitAsync(null) fits this one
+    // with no parameter left to its default, which settles it there too.
+    /// <inheritdoc cref="SubmitAsync(Func{BormState, Task}, Func{BormState, Task})"/>
+    [System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
+    public Task<bool> SubmitAsync(Func<BormState, Task>? onValid) => SubmitAsync(onValid, null);
 
     /// <summary>
-    /// Runs the full submit cycle, handing <paramref name="onValid"/> a token that
-    /// <see cref="CancelSubmit"/> and disposing the form signal — the one to pass on to the request the
-    /// handler makes.
+    /// Runs the full submit cycle, handing each handler a token that <see cref="CancelSubmit"/> and
+    /// disposing the form signal — the one to pass on to the request the handler makes.
     /// </summary>
     /// <remarks>
     /// <para>The cycle, in order:</para>
@@ -2217,11 +2310,13 @@ public sealed class BormState : IDisposable
     /// <item>Every field is marked touched and the whole form is validated, async rules included.</item>
     /// <item>Invalid: <paramref name="onInvalid"/> runs, and the outcome is <see cref="BormSubmitOutcome.Invalid"/>.</item>
     /// <item>
-    /// Valid: <paramref name="onValid"/> runs. If it records errors — <see cref="SetServerErrors(IEnumerable{BormValidationMessage})"/>
-    /// with what a rejected request said — the outcome is <see cref="BormSubmitOutcome.Rejected"/>; if it
-    /// throws, <see cref="BormSubmitOutcome.Failed"/>, with the exception in <see cref="SubmitError"/> and
-    /// rethrown; if it stops because the token was cancelled, <see cref="BormSubmitOutcome.Cancelled"/>;
-    /// otherwise <see cref="BormSubmitOutcome.Succeeded"/>.
+    /// Valid: <paramref name="onValid"/> runs. If it records errors — <see cref="SetServerError"/> or
+    /// <see cref="SetServerErrors(IEnumerable{BormValidationMessage})"/> with what a rejected request said —
+    /// the outcome is <see cref="BormSubmitOutcome.Rejected"/>; if it throws, <see cref="BormSubmitOutcome.Failed"/>,
+    /// with the exception in <see cref="SubmitError"/> and rethrown; if it stops because the token was
+    /// cancelled, <see cref="BormSubmitOutcome.Cancelled"/>; otherwise <see cref="BormSubmitOutcome.Succeeded"/>.
+    /// An error the user makes while it runs - text a number box cannot read, typed into a form that is not
+    /// read-only while it saves - is the user's, not the handler's, and leaves a successful save successful.
     /// </item>
     /// </list>
     /// <para>
@@ -2231,7 +2326,7 @@ public sealed class BormState : IDisposable
     /// </remarks>
     public async Task<bool> SubmitAsync(
         Func<BormState, CancellationToken, Task>? onValid,
-        Func<BormState, Task>? onInvalid = null)
+        Func<BormState, CancellationToken, Task>? onInvalid = null)
     {
         if (IsSubmitting) return false;
 
@@ -2257,10 +2352,11 @@ public sealed class BormState : IDisposable
             if (!valid)
             {
                 SubmitOutcome = BormSubmitOutcome.Invalid;
-                if (onInvalid is not null) await onInvalid(this);
+                if (onInvalid is not null) await onInvalid(this, cts.Token);
                 return false;
             }
 
+            var serverErrors = _serverErrorsRecorded;
             if (onValid is not null)
             {
                 try
@@ -2281,8 +2377,10 @@ public sealed class BormState : IDisposable
             }
 
             // A handler that posted the form and was told what was wrong with it put those errors on the
-            // fields; that is a submit that did not go through, whatever the client-side rules thought.
-            if (HasErrors)
+            // fields; that is a submit that did not go through, whatever the client-side rules thought. Only
+            // what it recorded counts: the form's own errors now include whatever the user typed while it
+            // ran, and a save that went through did not stop having gone through because of them.
+            if (_serverErrorsRecorded != serverErrors)
             {
                 SubmitOutcome = BormSubmitOutcome.Rejected;
                 return false;

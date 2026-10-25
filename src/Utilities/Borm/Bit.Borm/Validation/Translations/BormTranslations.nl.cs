@@ -162,6 +162,8 @@ internal static partial class BormTranslations
         [Kind("checkbox")] = "Selectievakje", [Kind("switch")] = "Schakelaar", [Kind("select")] = "Keuzelijst",
         [Kind("radio")] = "Keuze", [Kind("combobox")] = "Combinatievak", [Kind("multiselect")] = "Meerdere keuzes",
         [Kind("tags")] = "Labels", [Kind("color")] = "Kleur", [Kind("file")] = "Bestand", [Kind("signature")] = "Handtekening",
-        [Kind("static")] = "Kop en tekst"
+        [Kind("static")] = "Kop en tekst",
+        [Kind("search")] = "Zoeken", [Kind("hidden")] = "Verborgen waarde", [Kind("object")] = "Geneste velden",
+        [Kind("array")] = "Herhalende rijen", [Kind("custom")] = "Eigen besturingselement"
     };
 }

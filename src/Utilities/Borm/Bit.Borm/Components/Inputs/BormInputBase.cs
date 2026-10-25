@@ -40,6 +40,15 @@ public abstract class BormInputBase : ComponentBase, IDisposable
     /// </summary>
     protected bool DisabledOrReadOnly => Disabled || ReadOnly;
 
+    /// <summary>
+    /// The name a read-only control's answer is posted under when it is drawn as <c>disabled</c> (see
+    /// <see cref="DisabledOrReadOnly"/>), in a form that posts (<see cref="BormFieldContext.InputName"/>): a
+    /// disabled control is never sent, so a hidden input carries the answer instead, as a read-only text box
+    /// sends its own. Null when the control posts for itself, the form does not post, or the field is disabled -
+    /// which is not sent at all.
+    /// </summary>
+    protected string? ReadOnlyPostedName => ReadOnly && !Disabled ? Context.InputName : null;
+
     protected string CssClass => Context.HasError && Context.ShowMessages
         ? "bit-borm-input bit-borm-input--invalid"
         : "bit-borm-input";

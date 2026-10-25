@@ -162,6 +162,8 @@ internal static partial class BormTranslations
         [Kind("week")] = "Semana", [Kind("checkbox")] = "Caixa de seleção", [Kind("switch")] = "Interruptor",
         [Kind("select")] = "Lista suspensa", [Kind("radio")] = "Escolha", [Kind("combobox")] = "Caixa de combinação",
         [Kind("multiselect")] = "Várias escolhas", [Kind("tags")] = "Etiquetas", [Kind("color")] = "Cor",
-        [Kind("file")] = "Arquivo", [Kind("signature")] = "Assinatura", [Kind("static")] = "Título e texto"
+        [Kind("file")] = "Arquivo", [Kind("signature")] = "Assinatura", [Kind("static")] = "Título e texto",
+        [Kind("search")] = "Pesquisa", [Kind("hidden")] = "Valor oculto", [Kind("object")] = "Campos aninhados",
+        [Kind("array")] = "Linhas repetidas", [Kind("custom")] = "Controle personalizado"
     };
 }

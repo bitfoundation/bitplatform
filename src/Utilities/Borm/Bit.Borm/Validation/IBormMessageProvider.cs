@@ -592,7 +592,9 @@ public sealed class BormDefaultMessageProvider : IBormMessageProvider
         ["integer"] = "Whole number", ["range"] = "Slider", ["date"] = "Date", ["datetime"] = "Date and time",
         ["time"] = "Time", ["month"] = "Month", ["week"] = "Week", ["checkbox"] = "Checkbox", ["switch"] = "Switch",
         ["select"] = "Dropdown", ["radio"] = "Choice", ["combobox"] = "Combobox", ["multiselect"] = "Several choices",
-        ["tags"] = "Tags", ["color"] = "Colour", ["file"] = "File", ["signature"] = "Signature", ["static"] = "Heading and text"
+        ["tags"] = "Tags", ["color"] = "Colour", ["file"] = "File", ["signature"] = "Signature", ["static"] = "Heading and text",
+        ["search"] = "Search", ["hidden"] = "Hidden value", ["object"] = "Nested fields", ["array"] = "Repeating rows",
+        ["custom"] = "Custom control"
     };
 }
 

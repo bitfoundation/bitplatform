@@ -236,4 +236,51 @@ public class HistoryTests : ComponentTestBase
         StringAssert.Contains(cut.Find(".bit-borm-form__actions [aria-live]").TextContent, "Undone: Full name");
         Assert.IsNull(cut.FindAll("button").Single(b => b.TextContent == "Redo").GetAttribute("aria-disabled"));
     }
+
+    [TestMethod]
+    public async Task Undoing_the_answer_a_cascading_choice_depends_on_puts_back_the_choice_it_emptied()
+    {
+        var form = BormBuilder.Create()
+            .Text("Country")
+            .Select("City", f => f.OptionsFrom(_ => ValueTask.FromResult<IReadOnlyList<BormSelectOption>>([new("NYC", "New York")]), "Country"))
+            .Build();
+        var data = new Dictionary<string, object?> { ["Country"] = "US", ["City"] = "NYC" };
+        var state = new BormState(form, new BormDictionaryDataAccessor(data)) { HistoryLimit = 50 };
+
+        state.SetValue("Country", "CA");
+        Assert.IsNull(data["City"]);
+
+        // Put back with the country it belongs to, not emptied again by that country coming back.
+        Assert.IsTrue(await state.UndoAsync());
+        Assert.AreEqual("US", data["Country"]);
+        Assert.AreEqual("NYC", data["City"]);
+
+        Assert.IsTrue(await state.RedoAsync());
+        Assert.AreEqual("CA", data["Country"]);
+        Assert.IsNull(data["City"]);
+
+        Assert.IsTrue(await state.UndoAsync());
+        Assert.AreEqual("NYC", data["City"]);
+    }
+
+    [TestMethod]
+    public async Task A_disabled_form_takes_no_change_from_its_Undo_button()
+    {
+        var form = BormBuilder.Create().Text("name").Build();
+        var data = new Dictionary<string, object?>();
+        var cut = Render<BormView>(p => p.Add(x => x.Definition, form).Add(x => x.Data, data).Add(x => x.ShowUndo, true));
+        var undo = () => cut.FindAll("button").Single(b => b.TextContent == "Undo");
+        cut.Find("#borm_name").Change("Ada");
+        var state = cut.Instance.Form;
+
+        // aria-disabled keeps the button focusable, so the click itself is refused.
+        await cut.InvokeAsync(() => state.Disabled = true);
+        Assert.AreEqual("true", undo().GetAttribute("aria-disabled"));
+        undo().Click();
+        Assert.AreEqual("Ada", data["name"]);
+
+        await cut.InvokeAsync(() => state.Disabled = false);
+        undo().Click();
+        cut.WaitForAssertion(() => Assert.IsNull(data["name"]));
+    }
 }

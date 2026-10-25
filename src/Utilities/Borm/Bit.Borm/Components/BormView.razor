@@ -313,10 +313,10 @@ else
     // disabled: undoing the last change would otherwise disable the very button that did it, and drop the focus on
     // the page body. The click is guarded instead.
     private RenderFragment UndoButtons => @<text>
-        <button type="button" class="bit-borm-btn bit-borm-btn--ghost" aria-disabled="@(!FormState.CanUndo || Busy ? "true" : null)"
+        <button type="button" class="bit-borm-btn bit-borm-btn--ghost" aria-disabled="@(!FormState.CanUndo || HistoryLocked ? "true" : null)"
                 aria-label="@HistoryButtonName(BormMessageKeys.UndoField, FormState.NextUndoPath, BormMessageKeys.Undo)"
                 @onclick="Undo">@FormState.Text(BormMessageKeys.Undo)</button>
-        <button type="button" class="bit-borm-btn bit-borm-btn--ghost" aria-disabled="@(!FormState.CanRedo || Busy ? "true" : null)"
+        <button type="button" class="bit-borm-btn bit-borm-btn--ghost" aria-disabled="@(!FormState.CanRedo || HistoryLocked ? "true" : null)"
                 aria-label="@HistoryButtonName(BormMessageKeys.RedoField, FormState.NextRedoPath, BormMessageKeys.Redo)"
                 @onclick="Redo">@FormState.Text(BormMessageKeys.Redo)</button>
         <span class="bit-borm-sr-only" aria-live="polite">@_historyAnnouncement</span>
@@ -330,17 +330,23 @@ else
     private string HistoryLabel(string path)
         => FormState.FindField(path) is { } field ? FormState.LabelOf(field, path) ?? path : path;
 
+    // A disabled form takes no change from these any more than from its fields - nor does a read-only one, which
+    // does not draw them, from a click on a render made before it became read-only.
+    private bool HistoryLocked => Busy || FormState.ReadOnly;
+
     private async Task Undo()
     {
         var path = FormState.NextUndoPath;
-        if (path is not null && await FormState.UndoAsync())
+        if (HistoryLocked || path is null) return;
+        if (await FormState.UndoAsync())
             _historyAnnouncement = FormState.Text(BormMessageKeys.Undone, HistoryLabel(path));
     }
 
     private async Task Redo()
     {
         var path = FormState.NextRedoPath;
-        if (path is not null && await FormState.RedoAsync())
+        if (HistoryLocked || path is null) return;
+        if (await FormState.RedoAsync())
             _historyAnnouncement = FormState.Text(BormMessageKeys.Redone, HistoryLabel(path));
     }
 

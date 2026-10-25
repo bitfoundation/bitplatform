@@ -190,6 +190,13 @@ public static class BormMarkdown
         // would scan a part of what that one scanned, and fail too - so it is not made, and a line of a
         // thousand unmatched asterisks costs one scan rather than a thousand.
         Dictionary<string, int>? missing = null;
+        // Where each marker was last found, and where that search started: there is none between the two, so a
+        // search starting anywhere in that stretch ends in the same place without scanning it again. A thousand
+        // "[" before one "](" that leads nowhere safe otherwise each scanned all the way to it.
+        Dictionary<string, (int From, int At)>? found = null;
+        // The address after the last "](" judged, and the verdict - the same for every "[" in front of it.
+        var judgedAt = -1;
+        string? judgedUrl = null;
 
         var i = 0;
         while (i < text.Length)
@@ -224,8 +231,13 @@ public static class BormMarkdown
         {
             if (from >= text.Length) return null;
             if (missing is not null && missing.TryGetValue(marker, out var failedFrom) && from >= failedFrom) return null;
+            if (found is not null && found.TryGetValue(marker, out var last) && from >= last.From && from <= last.At) return last.At;
             var at = text.IndexOf(marker, from, StringComparison.Ordinal);
-            if (at >= 0) return at;
+            if (at >= 0)
+            {
+                (found ??= [])[marker] = (from, at);
+                return at;
+            }
             (missing ??= [])[marker] = from;
             return null;
         }
@@ -247,13 +259,19 @@ public static class BormMarkdown
 
         bool Link()
         {
-            if (Close("](", i + 1) is not { } middle || Close(")", middle + 2) is not { } end) return false;
-            var label = text[(i + 1)..middle];
-            var url = text[(middle + 2)..end].Trim();
-            if (label.Length == 0 || !IsSafeUrl(url)) return false;
+            if (Close("](", i + 1) is not { } middle || middle == i + 1 || Close(")", middle + 2) is not { } end) return false;
+            // Judged once per address, and the label cut out only for a link that is one: copied out for every "["
+            // that leads to an address refused, it was the whole text again each time.
+            if (middle != judgedAt)
+            {
+                judgedAt = middle;
+                var address = text[(middle + 2)..end].Trim();
+                judgedUrl = IsSafeUrl(address) ? address : null;
+            }
+            if (judgedUrl is not { } url) return false;
 
             html.Append("<a href=\"").Append(Encode(url)).Append("\" rel=\"nofollow noopener noreferrer\">");
-            Inline(label, html, depth + 1);
+            Inline(text[(i + 1)..middle], html, depth + 1);
             html.Append("</a>");
             i = end + 1;
             return true;

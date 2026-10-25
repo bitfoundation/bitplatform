@@ -98,6 +98,59 @@ public class UploadTests : ComponentTestBase
     }
 
     [TestMethod]
+    public async Task A_field_taking_several_files_keeps_the_ones_it_opened_with_beside_the_new_ones()
+    {
+        var (state, data) = Form(Send, f => f.Accept(".pdf", multiple: true));
+        var field = state.Definition.Fields[0];
+        data["resume"] = new List<string> { "id1", "id2" };   // an edit form's saved files
+
+        await Renderer.Dispatcher.InvokeAsync(() => state.UploadAsync(field, "resume", [new FakeFile("c.pdf", 10)]));
+
+        CollectionAssert.AreEqual(new[] { "id1", "id2", "id:c.pdf" }, (System.Collections.ICollection)data["resume"]!);
+        CollectionAssert.AreEqual(new[] { "id1", "id2" }, state.StoredUploadsFor("resume").ToArray());
+
+        state.RemoveStoredUpload(field, "resume", "id1");
+        CollectionAssert.AreEqual(new[] { "id2", "id:c.pdf" }, (System.Collections.ICollection)data["resume"]!);
+        state.RemoveUpload(field, "resume", state.UploadsFor("resume").Single());
+        CollectionAssert.AreEqual(new[] { "id2" }, (System.Collections.ICollection)data["resume"]!);
+    }
+
+    [TestMethod]
+    public void The_files_a_field_opened_with_are_listed_beside_the_new_ones_each_to_be_removed()
+    {
+        var form = BormBuilder.Create()
+            .Field("docs", BormFieldType.File, f => f.Label("Documents").Accept(".pdf", multiple: true).UploadWith(Send))
+            .Build();
+        var data = new Dictionary<string, object?> { ["docs"] = new List<string> { "id1", "id2" } };
+        var cut = Render<BormView>(p => p.Add(x => x.Definition, form).Add(x => x.Data, data));
+
+        cut.FindComponent<InputFile>().UploadFiles(InputFileContent.CreateFromText("hello", "c.pdf"));
+
+        cut.WaitForAssertion(() => CollectionAssert.AreEqual(new[] { "id1", "id2", "id:c.pdf" }, (System.Collections.ICollection)data["docs"]!));
+        cut.WaitForAssertion(() => Assert.HasCount(3, cut.FindAll(".bit-borm-file__item")));
+        cut.Find(".bit-borm-file__item [aria-label='Remove id1']").Click();
+        CollectionAssert.AreEqual(new[] { "id2", "id:c.pdf" }, (System.Collections.ICollection)data["docs"]!);
+    }
+
+    [TestMethod]
+    public async Task Choosing_another_file_lets_go_of_the_one_it_replaces_even_when_the_new_one_fails()
+    {
+        var attempts = 0;
+        var (state, data) = Form(u => ++attempts == 2 ? throw new HttpRequestException("503") : Send(u));
+        var field = state.Definition.Fields[0];
+
+        await state.UploadAsync(field, "resume", [new FakeFile("a.pdf", 10)]);
+        Assert.AreEqual("id:a.pdf", data["resume"]);
+
+        await state.UploadAsync(field, "resume", [new FakeFile("b.pdf", 10)]);
+
+        Assert.AreEqual(BormUploadStatus.Failed, state.UploadsFor("resume").Single().Status);
+        // The field shows only b.pdf, failed; a.pdf is not quietly sent with the form either.
+        Assert.IsNull(data["resume"]);
+        Assert.IsFalse(await state.ValidateAsync());
+    }
+
+    [TestMethod]
     public async Task A_file_the_rules_refuse_is_never_sent()
     {
         var sent = 0;

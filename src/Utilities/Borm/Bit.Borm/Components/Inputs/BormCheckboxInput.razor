@@ -37,6 +37,10 @@
         </span>
     }
 </label>
+@if (ReadOnlyPostedName is { } posted && Context.BoolValue)
+{
+    <input type="hidden" name="@posted" value="true" />
+}
 
 @code {
     private Task OnToggle(ChangeEventArgs e) => Context.SetValueAsync(e.Value is bool b && b);

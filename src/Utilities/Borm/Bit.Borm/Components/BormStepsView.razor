@@ -41,10 +41,14 @@
         {
             var errors = ErrorsIn(step);
             @* The browser's own disclosure widget: keyboard, focus and announcement are the platform's, and
-               the content stays in the page, so a closed section still keeps its values. *@
+               the content stays in the page, so a closed section still keeps its values. Opened and closed by
+               the summary's click - which Enter and Space raise too - and drawn from _open, never by following
+               the toggle event: that fires for every change to the open attribute, the ones this component
+               renders included, so answering each with the opposite one opened and closed a section forever.
+               Rendered with no interactivity, nothing stops the click and the browser toggles it itself. *@
             <details class="bit-borm-section bit-borm-section--collapsible @(errors > 0 ? "has-errors" : "")"
-                     open="@_open.Contains(index)" @ontoggle="() => Toggle(index)">
-                <summary class="bit-borm-section__title">
+                     open="@_open.Contains(index)">
+                <summary class="bit-borm-section__title" @onclick="() => Toggle(index)" @onclick:preventDefault="true">
                     <span role="heading" aria-level="@HeadingLevel">@State.StepTitleOf(step)</span>
                     @if (errors > 0)
                     {

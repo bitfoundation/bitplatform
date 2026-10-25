@@ -157,6 +157,8 @@ internal static partial class BormTranslations
         [Kind("time")] = "時刻", [Kind("month")] = "月", [Kind("week")] = "週", [Kind("checkbox")] = "チェックボックス",
         [Kind("switch")] = "スイッチ", [Kind("select")] = "ドロップダウン", [Kind("radio")] = "ラジオボタン",
         [Kind("combobox")] = "コンボボックス", [Kind("multiselect")] = "複数選択", [Kind("tags")] = "タグ",
-        [Kind("color")] = "色", [Kind("file")] = "ファイル", [Kind("signature")] = "署名", [Kind("static")] = "見出しとテキスト"
+        [Kind("color")] = "色", [Kind("file")] = "ファイル", [Kind("signature")] = "署名", [Kind("static")] = "見出しとテキスト",
+        [Kind("search")] = "検索", [Kind("hidden")] = "非表示の値", [Kind("object")] = "入れ子のフィールド",
+        [Kind("array")] = "繰り返し行", [Kind("custom")] = "カスタム コントロール"
     };
 }

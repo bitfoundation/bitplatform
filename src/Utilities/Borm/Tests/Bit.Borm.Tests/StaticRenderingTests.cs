@@ -84,6 +84,42 @@ public class StaticRenderingTests : ComponentTestBase
     }
 
     [TestMethod]
+    public void A_read_only_choice_and_a_signature_post_their_answers_though_their_controls_cannot()
+    {
+#if NET9_0_OR_GREATER
+        SetRendererInfo(new RendererInfo("Static", isInteractive: false));
+#endif
+        var signature = BormSignature.FromTypedName("Ada")!;
+        var form = BormBuilder.Create()
+            .Select("Plan", f => f.ReadOnly().Options(("solo", "Solo"), ("team", "Team")))
+            .Radio("Size", f => f.ReadOnly().Options(("s", "S"), ("m", "M")))
+            .Checkbox("Agree", f => f.ReadOnly())
+            .MultiSelect("Days", f => f.ReadOnly().Options(("mon", "Mon"), ("tue", "Tue"), ("wed", "Wed")))
+            .Number("Volume", f => f.ReadOnly().AsRange())
+            .Text("Sign", f => f.AsSignature())
+            .Select("Locked", f => f.ReadOnly().DisabledWhen(_ => true).Options(("x", "X")))
+            .Build();
+        var data = new Dictionary<string, object?>
+        {
+            ["Plan"] = "team", ["Size"] = "m", ["Agree"] = true, ["Days"] = new List<string> { "mon", "wed" },
+            ["Volume"] = 7, ["Sign"] = signature, ["Locked"] = "x"
+        };
+        var cut = Render<BormView>(p => p.Add(x => x.Definition, form).Add(x => x.Data, data).Add(x => x.FormName, "plan"));
+        string?[] Posted(string name) => cut.FindAll($"input[type=hidden][name='Model.{name}']").Select(i => i.GetAttribute("value")).ToArray();
+
+        // Drawn disabled - there is no read-only select - and a disabled control is never posted.
+        Assert.IsTrue(cut.Find("#borm_Plan").HasAttribute("disabled"));
+        CollectionAssert.AreEqual(new[] { "team" }, Posted("Plan"));
+        CollectionAssert.AreEqual(new[] { "m" }, Posted("Size"));
+        CollectionAssert.AreEqual(new[] { "true" }, Posted("Agree"));
+        CollectionAssert.AreEqual(new[] { "mon", "wed" }, Posted("Days"));
+        CollectionAssert.AreEqual(new[] { "7" }, Posted("Volume"));
+        CollectionAssert.AreEqual(new[] { signature }, Posted("Sign"));
+        // A disabled field is not part of what the form sends, read-only or not.
+        Assert.IsEmpty(Posted("Locked"));
+    }
+
+    [TestMethod]
     public void A_form_that_is_not_named_posts_nothing_and_names_no_control()
     {
         var cut = Render<BormView>(p => p.Add(x => x.Definition, Form()).Add(x => x.Model, Person()));

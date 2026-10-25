@@ -39,6 +39,10 @@
             <span>@opt.Label</span>
         </label>
     }
+    @if (ReadOnlyPostedName is { } posted)
+    {
+        <input type="hidden" name="@posted" value="@Context.StringValue" />
+    }
 </div>
 
 @code {
