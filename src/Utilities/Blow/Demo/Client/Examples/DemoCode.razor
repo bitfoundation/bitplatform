@@ -1,8 +1,9 @@
 ﻿@namespace Bit.Blow.Demo.Client.Examples
 @inject NavigationManager Nav
 
-@* A collapsible "View code" panel that shows the .razor source of the current demo page.
-   The source is resolved from the build-generated DemoSources lookup, keyed by route. *@
+@* A collapsible "View code" panel under a demo's sample that shows the .razor source of the current page,
+   coloured as a CodeBlock. The source is resolved from the build-generated DemoSources lookup, keyed by
+   route. *@
 
 <div class="bb-source demo-code">
     <button type="button"
@@ -22,7 +23,7 @@
         }
         else
         {
-            <pre class="bb-code demo-code__pre"><code class="demo-code__code">@_source</code></pre>
+            <CodeBlock Code="@_source" Class="demo-code__pre" />
         }
     }
 </div>
