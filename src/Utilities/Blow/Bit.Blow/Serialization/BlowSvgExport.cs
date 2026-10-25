@@ -90,16 +90,20 @@ public static class BlowSvgExport
         // Edges first, so they run beneath the nodes as on the canvas; groups beneath their children. An end folded
         // into a collapsed group is drawn to the group, as the canvas draws it.
         var paths = new List<(BlowEdge Edge, BlowPathResult Path)>();
+        Func<BlowNode, bool> shown = n => rects.ContainsKey(n.Id);
         foreach (var e in edges)
         {
-            if (e.Hidden || Shown(e.Source, rects, index) is not { } from || Shown(e.Target, rects, index) is not { } to) continue;
-            if ((from.Moved || to.Moved) && from.Id == to.Id) continue; // inside the collapsed group
-            var source = index[from.Id];
-            var target = index[to.Id];
-            var s = rects[from.Id];
-            var t = rects[to.Id];
-            var (sx, sy, sp) = Anchor(source, s, BlowHandleType.Source, from.Moved ? null : e.SourceHandle, source.SourcePosition);
-            var (tx, ty, tp) = Anchor(target, t, BlowHandleType.Target, to.Moved ? null : e.TargetHandle, target.TargetPosition);
+            if (e.Hidden
+                || BlowEdgeLayout.DisplayedEnd(index, e.Source, shown, MaxDepth, out var sourceMoved) is not { } source || !shown(source)
+                || BlowEdgeLayout.DisplayedEnd(index, e.Target, shown, MaxDepth, out var targetMoved) is not { } target || !shown(target))
+            {
+                continue;
+            }
+            if ((sourceMoved || targetMoved) && ReferenceEquals(source, target)) continue; // inside the collapsed group
+            var s = rects[source.Id];
+            var t = rects[target.Id];
+            var (sx, sy, sp) = Anchor(source, s, BlowHandleType.Source, sourceMoved ? null : e.SourceHandle, source.SourcePosition);
+            var (tx, ty, tp) = Anchor(target, t, BlowHandleType.Target, targetMoved ? null : e.TargetHandle, target.TargetPosition);
             BlowPathResult path;
             if (ReferenceEquals(source, target))
                 path = BlowEdgePath.Loop(sx, sy, sp, tx, ty, tp, e.PathOptions?.LoopRadius ?? BlowEdgePath.DefaultLoopRadius, s);
@@ -222,21 +226,8 @@ public static class BlowSvgExport
         return sb.ToString();
     }
 
-    /// <summary>
-    /// The node an edge's end is drawn to: the node itself when it is shown, else the nearest collapsed ancestor that
-    /// is shown, with <c>Moved</c> set; null when neither.
-    /// </summary>
-    private static (string Id, bool Moved)? Shown(string id, Dictionary<string, BlowRect> rects, Dictionary<string, BlowNode> index)
-    {
-        if (rects.ContainsKey(id)) return (id, false);
-        if (!index.TryGetValue(id, out var node)) return null;
-        for (var guard = 0; guard < 64 && node.ParentId is { } pid && index.TryGetValue(pid, out var parent); guard++)
-        {
-            if (parent.Collapsed && rects.ContainsKey(pid)) return (pid, true);
-            node = parent;
-        }
-        return null;
-    }
+    /// <summary>How deep a chain of parents is followed before it is taken to be a cycle.</summary>
+    private const int MaxDepth = 64;
 
     /// <summary>
     /// Points whose box holds an SVG path: every end and control point, in absolute coordinates - relative commands,
@@ -407,7 +398,7 @@ public static class BlowSvgExport
     private static bool IsShown(BlowNode node, Dictionary<string, BlowNode> index)
     {
         var current = node;
-        for (var guard = 0; guard < 64; guard++)
+        for (var guard = 0; guard < MaxDepth; guard++)
         {
             if (current.Hidden) return false;
             if (current.ParentId is not { } pid || !index.TryGetValue(pid, out var parent)) return true;
@@ -419,7 +410,7 @@ public static class BlowSvgExport
     private static int Depth(BlowNode node, Dictionary<string, BlowNode> index)
     {
         var depth = 0;
-        for (var current = node; depth < 64 && current.ParentId is { } pid && index.TryGetValue(pid, out var parent); current = parent) depth++;
+        for (var current = node; depth < MaxDepth && current.ParentId is { } pid && index.TryGetValue(pid, out var parent); current = parent) depth++;
         return depth;
     }
 
@@ -452,32 +443,12 @@ public static class BlowSvgExport
         };
     }
 
-    /// <summary>
-    /// What a routed edge goes around, chosen as the canvas chooses it: the shown nodes near its two ends - its own two
-    /// included - less the groups either end is inside.
-    /// </summary>
+    /// <summary>What a routed edge goes around, chosen as the canvas chooses it; see <see cref="BlowEdgeLayout.Obstacles"/>.</summary>
     private static List<BlowRect> Obstacles(Dictionary<string, BlowRect> rects, BlowRect source, BlowRect target, BlowNode from,
         BlowNode to, Dictionary<string, BlowNode> index)
     {
-        var containers = new HashSet<string>(StringComparer.Ordinal);
-        foreach (var end in new[] { from, to })
-        {
-            for (var current = end; current.ParentId is { } pid && index.TryGetValue(pid, out var parent) && containers.Add(pid); current = parent) { }
-        }
-
-        const double Reach = 150;
-        var left = Math.Min(source.Left, target.Left) - Reach;
-        var top = Math.Min(source.Top, target.Top) - Reach;
-        var right = Math.Max(source.Right, target.Right) + Reach;
-        var bottom = Math.Max(source.Bottom, target.Bottom) + Reach;
-
-        var result = new List<BlowRect>();
-        foreach (var (id, r) in rects)
-        {
-            if (containers.Contains(id)) continue;
-            if (r.Left < right && r.Right > left && r.Top < bottom && r.Bottom > top) result.Add(r);
-        }
-        return result;
+        var area = BlowEdgeLayout.ObstacleArea(source, target);
+        return BlowEdgeLayout.Obstacles(rects.Select(r => (r.Key, r.Value)), area, from, to, index, MaxDepth);
     }
 
     private static readonly Regex SafeColor = new(

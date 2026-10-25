@@ -154,7 +154,8 @@ public static class BlowReactFlowFormat
         {
             BlowEdgeType.Straight => "straight",
             BlowEdgeType.Step => "step",
-            BlowEdgeType.SmoothStep => "smoothstep",
+            // React Flow has no routing round nodes; smoothstep is what a Routed edge falls back to.
+            BlowEdgeType.SmoothStep or BlowEdgeType.Routed => "smoothstep",
             BlowEdgeType.SimpleBezier => "simplebezier",
             _ => "default",
         });
@@ -237,25 +238,7 @@ public static class BlowReactFlowFormat
     /// </summary>
     private static JsonObject DataObject(object? data, BlowSerializerOptions o, Func<string> owner)
     {
-        JsonNode? node = data switch
-        {
-            null => null,
-            JsonElement element => JsonNode.Parse(element.GetRawText()),
-            JsonNode n => n.DeepClone(),
-            string s => JsonValue.Create(s),
-            bool b => JsonValue.Create(b),
-            int i => JsonValue.Create(i),
-            long l => JsonValue.Create(l),
-            double d => JsonValue.Create(d),
-            float f => JsonValue.Create(f),
-            decimal m => JsonValue.Create(m),
-            _ => o.Writer(data.GetType()) is { } write
-                ? JsonNode.Parse(write(data).GetRawText())
-                : throw new BlowSerializationException(
-                    $"{owner()} carries data of type '{data.GetType().FullName}', which no mapping says how to save. " +
-                    "Register its JSON contract with BlowSerializerOptions.MapNodeData, MapEdgeData or MapData."),
-        };
-
+        var node = data is null ? null : BlowSerializer.DataToNode(data, o, owner);
         return node switch
         {
             JsonObject obj => obj,
@@ -503,7 +486,7 @@ public static class BlowReactFlowFormat
                         break;
                     case "markerEnd": edge.MarkerEnd = Marker(value, at, edge); break;
                     case "markerStart": edge.MarkerStart = Marker(value, at, edge); break;
-                    case "style": Style(value, edge); break;
+                    case "style": Style(value, at, edge); break;
                     case "className": edge.Class = String(value, at); break;
                     case "zIndex": edge.ZIndex = Int(value, at); break;
                     case "interactionWidth": edge.InteractionWidth = Size(value, at) ?? edge.InteractionWidth; break;
@@ -552,13 +535,13 @@ public static class BlowReactFlowFormat
         }
 
         /// <summary>An edge's style object: stroke and stroke width to their own properties, the rest as CSS.</summary>
-        private void Style(JsonElement value, BlowEdge edge)
+        private void Style(JsonElement value, string path, BlowEdge edge)
         {
             if (value.ValueKind != JsonValueKind.Object) return;
             foreach (var p in value.EnumerateObject())
             {
                 if (Stroke(p)) edge.Stroke = p.Value.GetString();
-                else if (StrokeWidth(p)) edge.StrokeWidth = p.Value.GetDouble();
+                else if (StrokeWidth(p)) edge.StrokeWidth = Size(p.Value, $"{path}.{p.Name}") ?? edge.StrokeWidth;
             }
             edge.Style = CssFromStyle(value, p => Stroke(p) || StrokeWidth(p));
 

@@ -178,7 +178,7 @@ public sealed class BlowConnectionSession
     private readonly BlowEdge? _reconnecting;
     private readonly BlowNode? _from;
     private readonly HashSet<string> _existing = new(StringComparer.Ordinal);
-    private readonly Dictionary<string, int> _counts = new(StringComparer.Ordinal);
+    private readonly BlowHandleCounts _counts;
     private HashSet<string>? _cycleClosers;
 
     internal BlowConnectionSession(BlowGraphIndex graph, string nodeId, string? handleId, BlowHandleType handleType,
@@ -194,13 +194,9 @@ public sealed class BlowConnectionSession
 
         foreach (var e in graph.Edges)
         {
-            if (ReferenceEquals(e, reconnecting)) continue;
-            _existing.Add(Key(e.Source, e.SourceHandle, e.Target, e.TargetHandle));
-            Increment(CountKey(e.Source, BlowHandleType.Source, e.SourceHandle));
-            Increment(CountKey(e.Target, BlowHandleType.Target, e.TargetHandle));
+            if (!ReferenceEquals(e, reconnecting)) _existing.Add(Key(e.Source, e.SourceHandle, e.Target, e.TargetHandle));
         }
-
-        void Increment(string key) => _counts[key] = _counts.GetValueOrDefault(key) + 1;
+        _counts = new BlowHandleCounts(graph.Edges, except: reconnecting);
     }
 
     /// <summary>The node the connection starts from.</summary>
@@ -290,20 +286,7 @@ public sealed class BlowConnectionSession
         => IsFull(node, type, handleId, ResolvePort(node, type, handleId));
 
     private bool IsFull(BlowNode node, BlowHandleType type, string? handleId, BlowPort? port)
-        => port?.MaxConnections is { } max && Count(node.Id, type, handleId) >= max;
-
-    /// <summary>
-    /// The edges attached to a handle: at the end of its own type, or - in loose mode, where any handle can be
-    /// either end of an edge - at either end with its id.
-    /// </summary>
-    private int Count(string nodeId, BlowHandleType type, string? handleId)
-    {
-        var at = _counts.GetValueOrDefault(CountKey(nodeId, type, handleId));
-        if (_policy.Mode != BlowConnectionMode.Loose) return at;
-
-        var other = type == BlowHandleType.Source ? BlowHandleType.Target : BlowHandleType.Source;
-        return at + _counts.GetValueOrDefault(CountKey(nodeId, other, handleId));
-    }
+        => port?.MaxConnections is { } max && _counts.At(node.Id, type, handleId, _policy.Mode) >= max;
 
     /// <summary>
     /// The nodes that, joined to the starting handle, would close a cycle: everything upstream of it when it is the
@@ -334,9 +317,6 @@ public sealed class BlowConnectionSession
     // A unit separator keeps "a" + "b.c" from colliding with "a.b" + "c".
     private static string Key(string source, string? sourceHandle, string target, string? targetHandle)
         => $"{source}\u001f{Normalize(sourceHandle)}\u001f{target}\u001f{Normalize(targetHandle)}";
-
-    private static string CountKey(string nodeId, BlowHandleType type, string? handleId)
-        => $"{nodeId}\u001f{(type == BlowHandleType.Source ? 's' : 't')}\u001f{Normalize(handleId)}";
 
     private static string Normalize(string? handleId) => handleId ?? string.Empty;
 }

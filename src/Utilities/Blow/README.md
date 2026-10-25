@@ -1921,7 +1921,7 @@ invariant round-trip form - so saving the same graph twice produces the same tex
 | `version` | The application's own document version; see migrations below. |
 | `id`, `metadata` | `BlowDocument.Id` and `Metadata`, when set. |
 | `nodes[]` | `id`, `type` (when not `default`), `label`, `position` `{x, y}`, `width`, `height`, `parentId`, `origin`, `extentParent`, `extent` `{x, y, width, height}`, `expandParent`, `sourcePosition`, `targetPosition` (`left`/`top`/`right`/`bottom`), `hidden`, `draggable`, `selectable`, `connectable`, `deletable`, `focusable`, `useCustomDragHandle`, `ariaLabel`, `class`, `style`, `zIndex`, `ports[]` (`id`, `type`, `position`, `label`, `dataType`, `maxConnections`, `minConnections`, `data`), `data`. Booleans and other properties are written only when they differ from the default. |
-| `edges[]` | `id`, `source`, `target`, `sourceHandle`, `targetHandle`, `type` (`bezier`, `straight`, `step`, `smoothstep`, `simplebezier`), `pathOptions`, `label` and its styling, `animated`, the opt-outs, `strokeWidth`, `stroke`, the markers (`markerEnd`, `markerStart`, `markerType` `arrow`/`arrowclosed`, `markerColor`, `markerWidth`, `markerHeight`), `class`, `style`, `interactionWidth`, `zIndex`, `data`. |
+| `edges[]` | `id`, `source`, `target`, `sourceHandle`, `targetHandle`, `type` (`bezier`, `straight`, `step`, `smoothstep`, `simplebezier`, `routed`), `pathOptions`, `label` and its styling, `animated`, the opt-outs, `strokeWidth`, `stroke`, the markers (`markerEnd`, `markerStart`, `markerType` `arrow`/`arrowclosed`, `markerColor`, `markerWidth`, `markerHeight`), `class`, `style`, `interactionWidth`, `zIndex`, `data`. |
 | `viewport` | `{x, y, zoom}`, when the document has one. |
 
 ### Custom data

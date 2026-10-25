@@ -136,12 +136,13 @@
         if (!Attached || e.Button != 0) return;
 
         // A press is the pointer starting something of its own: whatever the keyboard was connecting ends first.
-        Flow.AbandonKeyboardConnection();
+        Flow.PointerPressed();
 
-        // In click-to-connect mode, a second handle click completes the pending connection.
+        // In click-to-connect mode, a second handle click completes the pending connection. A full port is the
+        // canvas's to refuse, with its reason, as a drop on it would be.
         if (Flow.ConnectOnClick && Flow.IsConnecting)
         {
-            if (CanEnd) Complete();
+            if (AcceptsDrops) Complete();
             return;
         }
 
@@ -151,7 +152,7 @@
     private void OnPointerUp(PointerEventArgs e)
     {
         // In click-to-connect mode, completion happens on the next handle's pointer-down.
-        if (!Attached || Flow.ConnectOnClick || !CanEnd) return;
+        if (!Attached || Flow.ConnectOnClick || !AcceptsDrops) return;
         Complete();
     }
 

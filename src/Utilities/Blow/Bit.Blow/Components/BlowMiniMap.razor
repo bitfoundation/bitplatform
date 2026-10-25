@@ -269,6 +269,9 @@
     {
         if (!Attached || e.Button != 0) return;
 
+        // The press never reaches the pane: the canvas is told of it, so what was left waiting ends as it would there.
+        Flow.PointerPressed();
+
         if (Pannable)
         {
             _panning = true;

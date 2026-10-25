@@ -163,7 +163,8 @@ internal abstract class BlowJsonReader(BlowImportLimits limits)
         "step" => BlowEdgeType.Step,
         "smoothstep" => BlowEdgeType.SmoothStep,
         "simplebezier" => BlowEdgeType.SimpleBezier,
-        _ => Invalid<BlowEdgeType?>(path, "Expected \"bezier\", \"straight\", \"step\", \"smoothstep\" or \"simplebezier\"."),
+        "routed" => BlowEdgeType.Routed,
+        _ => Invalid<BlowEdgeType?>(path, "Expected \"bezier\", \"straight\", \"step\", \"smoothstep\", \"simplebezier\" or \"routed\"."),
     };
 
     protected BlowMarkerType? MarkerType(JsonElement value, string path) => Lower(value) switch

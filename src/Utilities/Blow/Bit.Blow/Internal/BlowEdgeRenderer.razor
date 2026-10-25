@@ -95,19 +95,19 @@
 
     /// <summary>
     /// What the edge is drawn from. <see cref="Context"/> is compared by reference: the canvas hands back the same
-    /// context for as long as the edge's geometry is unchanged, and a new one as soon as it is not.
+    /// context for as long as the edge's geometry is unchanged, and a new one as soon as it is not - and so is the data.
     /// </summary>
     private readonly record struct Look(
         object Context, bool Selected, bool Animated, string? Class, string? Style, string? Stroke, double StrokeWidth,
         string? Label, string? LabelStyle, bool LabelShowBg, string? LabelBgStyle, double LabelBgPaddingX,
         double LabelBgPaddingY, double LabelBgBorderRadius, double InteractionWidth, bool Focusable,
-        string Source, string Target, object? Data, object Settings);
+        string Source, string Target, BlowSameReference Data, object Settings);
 
     private Look CurrentLook() => new(
         Context, Edge.Selected, Edge.Animated, Edge.Class, Edge.Style, Edge.Stroke, Edge.StrokeWidth,
         Edge.Label, Edge.LabelStyle, Edge.LabelShowBg, Edge.LabelBgStyle, Edge.LabelBgPaddingX,
         Edge.LabelBgPaddingY, Edge.LabelBgBorderRadius, Edge.InteractionWidth, Edge.Focusable,
-        Edge.Source, Edge.Target, Edge.Data, Settings);
+        Edge.Source, Edge.Target, new(Edge.Data), Settings);
 
     /// <summary>Skips the render when neither the canvas's graph version nor anything the edge is drawn from changed.</summary>
     protected override bool ShouldRender() => CurrentLook() != _renderedLook;

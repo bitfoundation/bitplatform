@@ -220,15 +220,26 @@ public static class BlowSerializer
         if (data is null) return;
 
         // Checked before anything is written, so a failure cannot leave half a property behind in the output.
-        var mapped = data switch
-        {
-            JsonElement or JsonNode or string or bool or int or long or double or float or decimal => null,
-            _ => o.Writer(data.GetType()) ?? throw new BlowSerializationException(
-                $"{owner()} carries data of type '{data.GetType().FullName}', which no mapping says how to save. " +
-                "Register its JSON contract with BlowSerializerOptions.MapNodeData, MapEdgeData or MapData."),
-        };
-
+        var mapped = DataMapping(data, o, owner);
         w.WritePropertyName("data");
+        WriteDataValue(w, data, mapped);
+    }
+
+    /// <summary>
+    /// How an element's data is saved: null for data that is JSON or a primitive already, else the mapping registered
+    /// for its type.
+    /// </summary>
+    /// <exception cref="BlowSerializationException">No mapping says how to save the data's type.</exception>
+    private static Func<object, JsonElement>? DataMapping(object data, BlowSerializerOptions o, Func<string> owner) => data switch
+    {
+        JsonElement or JsonNode or string or bool or int or long or double or float or decimal => null,
+        _ => o.Writer(data.GetType()) ?? throw new BlowSerializationException(
+            $"{owner()} carries data of type '{data.GetType().FullName}', which no mapping says how to save. " +
+            "Register its JSON contract with BlowSerializerOptions.MapNodeData, MapEdgeData or MapData."),
+    };
+
+    private static void WriteDataValue(Utf8JsonWriter w, object data, Func<object, JsonElement>? mapped)
+    {
         switch (data)
         {
             case JsonElement element: element.WriteTo(w); break;
@@ -242,6 +253,22 @@ public static class BlowSerializer
             case decimal m: w.WriteNumberValue(m); break;
             default: mapped!(data).WriteTo(w); break;
         }
+    }
+
+    /// <summary>
+    /// An element's data as a JSON node of its own, written as <see cref="Serialize(BlowDocument, BlowSerializerOptions?)"/>
+    /// writes it.
+    /// </summary>
+    /// <exception cref="BlowSerializationException">No mapping says how to save the data's type.</exception>
+    internal static JsonNode? DataToNode(object data, BlowSerializerOptions o, Func<string> owner)
+    {
+        var mapped = DataMapping(data, o, owner);
+        var buffer = new ArrayBufferWriter<byte>();
+        using (var w = new Utf8JsonWriter(buffer))
+        {
+            WriteDataValue(w, data, mapped);
+        }
+        return JsonNode.Parse(buffer.WrittenSpan);
     }
 
     private static string Name(BlowPosition position) => position switch
@@ -258,6 +285,7 @@ public static class BlowSerializer
         BlowEdgeType.Step => "step",
         BlowEdgeType.SmoothStep => "smoothstep",
         BlowEdgeType.SimpleBezier => "simplebezier",
+        BlowEdgeType.Routed => "routed",
         _ => "bezier",
     };
 
@@ -379,7 +407,8 @@ public static class BlowSerializer
                     $"This is not a Blow document: its root has to be an object whose \"format\" is \"{Format}\".");
             }
 
-            if (!root.TryGetProperty("schemaVersion", out var schema) || !schema.TryGetInt32(out var schemaVersion) || schemaVersion < 1)
+            if (!root.TryGetProperty("schemaVersion", out var schema) || schema.ValueKind != JsonValueKind.Number
+                || !schema.TryGetInt32(out var schemaVersion) || schemaVersion < 1)
                 return Fatal(BlowImportCodes.UnsupportedSchema, "$.schemaVersion", "The document has no valid \"schemaVersion\".");
             if (schemaVersion > SchemaVersion)
             {
@@ -388,7 +417,7 @@ public static class BlowSerializer
             }
 
             var version = 0;
-            if (root.TryGetProperty("version", out var v) && !v.TryGetInt32(out version))
+            if (root.TryGetProperty("version", out var v) && (v.ValueKind != JsonValueKind.Number || !v.TryGetInt32(out version)))
                 return Fatal(BlowImportCodes.InvalidValue, "$.version", "\"version\" has to be a whole number.");
             var sourceVersion = version;
 
@@ -443,7 +472,16 @@ public static class BlowSerializer
                 document["version"] = version;
             }
 
-            return JsonDocument.Parse(document.ToJsonString(), new JsonDocumentOptions { MaxDepth = _limits.MaxDepth + 1 });
+            // A migration can build JSON nested deeper than the limit the document itself was held to.
+            try
+            {
+                return JsonDocument.Parse(document.ToJsonString(), new JsonDocumentOptions { MaxDepth = _limits.MaxDepth + 1 });
+            }
+            catch (Exception ex) when (ex is JsonException or InvalidOperationException)
+            {
+                Error(BlowImportCodes.TooDeep, "$", $"The migrated document nests deeper than {_limits.MaxDepth} levels: {ex.Message}");
+                return null;
+            }
         }
 
         private BlowImportResult ReadDocument(JsonElement root, int sourceVersion)

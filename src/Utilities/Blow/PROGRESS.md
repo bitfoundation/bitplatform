@@ -719,3 +719,46 @@ Final runs, from `src/Utilities/Blow`:
 
 Status at the end: 85 requirements - 83 verified, 2 open (A11Y-12: listening with real screen readers; PERF-08: a
 drag frame of 900 nodes on WebAssembly). No commits were made.
+
+### Round 12 - review of the branch
+
+Review (code review of the whole branch, 15 findings, all fixed):
+
+- Saving and loading:
+  - `Routed` edges were saved as `bezier` and a document saying `"routed"` was refused (now written and read as
+    `routed`; React Flow export writes `smoothstep`, its closest type).
+  - A `schemaVersion` or `version` that was not a number threw instead of being reported.
+  - A React Flow `strokeWidth` no double holds (`1e999`) threw; a migration nesting deeper than the limit threw.
+- Connecting:
+  - Enter on a keyboard aim whose port had filled meanwhile connected to another port of the node (a port that is
+    still there is now judged alone; one that has gone moves the aim, and the next Enter connects).
+  - A drop, and the second click of click-to-connect, were judged against the rules session built when the gesture
+    began, so a port freed or a node added meanwhile refused (the drop rebuilds the session; completing rechecks
+    against the graph as it is now).
+  - A click on a full handle in click-to-connect mode was ignored silently (refused with its reason, as a drop is).
+- Presses: a node press whose click never came (`pointercancel`, a handle press next) was reported as a node click
+  later; a resize control or the minimap left a keyboard connection running. One press hook, `OnPointerPress`
+  (`IBlowContext.PointerPressed` for parts outside the canvas), now does both for every press kept from the pane.
+- History: a remote edit (`recordHistory: false`) during a drag or resize wrote the node's half-way place into every
+  step, so undoing the move left it there (the gesture's nodes go into the rebase as they were before it).
+- `FocusEdgeAsync` read the node index without bringing it up to date.
+- Rendering:
+  - Routed edges built a new context, and rendered again, on every drag frame; and each scanned every node for
+    obstacles (an unchanged route now hands back the context it was drawn with; obstacles come from a spatial grid
+    rebuilt with the index).
+  - Node and edge data was compared with its own `Equals` on every frame - reflection for a boxed `JsonElement` (now
+    by reference).
+  - An announcement re-rendered every node and edge (now the canvas's own markup only).
+- Duplication: obstacle selection and collapsed-end resolution shared by the canvas and the SVG export
+  (`BlowEdgeLayout`); data writing shared by the serializer and the React Flow format; handle counts shared by the
+  canvas, the rules session and the graph index (`BlowHandleCounts`); one `BlowDelegateRule`.
+
+17 regression tests (RoundTwelveReviewTests), 16 of them failing on the code before the fixes; the 17th checks a
+routed edge still goes round a node dragged into its way.
+
+Final runs, from `src/Utilities/Blow`:
+
+- `dotnet test Tests/Bit.Blow.Tests/Bit.Blow.Tests.csproj` (net8.0, net9.0, net10.0): 2,745 / 2,745.
+- `dotnet test Tests/Bit.Blow.Tests.Mcp/Bit.Blow.Tests.Mcp.csproj`: 88 / 88.
+- `dotnet build Bit.Blow.slnx`: 0 warnings, 0 errors.
+- E2E not run this round.

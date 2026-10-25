@@ -175,7 +175,7 @@ public sealed class BlowGraphValidator
 
     /// <summary>Adds a rule written as a function, and returns the validator for chaining.</summary>
     public BlowGraphValidator Add(Func<BlowValidationContext, IEnumerable<BlowValidationIssue>> rule)
-        => Add(new DelegateRule(rule ?? throw new ArgumentNullException(nameof(rule))));
+        => Add(new BlowDelegateRule(rule ?? throw new ArgumentNullException(nameof(rule))));
 
     /// <summary>Validates a graph.</summary>
     /// <exception cref="OperationCanceledException">The token was signalled.</exception>
@@ -197,11 +197,6 @@ public sealed class BlowGraphValidator
             }
         }
         return new BlowValidationResult(issues);
-    }
-
-    private sealed class DelegateRule(Func<BlowValidationContext, IEnumerable<BlowValidationIssue>> rule) : IBlowValidationRule
-    {
-        public IEnumerable<BlowValidationIssue> Validate(BlowValidationContext context) => rule(context);
     }
 }
 
@@ -255,7 +250,7 @@ public static class BlowValidationRules
     /// </summary>
     /// <param name="mode">The canvas's <c>ConnectionMode</c>; in loose mode an edge may name a port of either type.</param>
     public static IBlowValidationRule Structure(BlowConnectionMode mode = BlowConnectionMode.Strict)
-        => new DelegateRule(context => StructureIssues(context, mode));
+        => new BlowDelegateRule(context => StructureIssues(context, mode));
 
     /// <summary>
     /// The declared port an edge's end names: one of the end's own type, or in loose mode - where any handle can be
@@ -378,7 +373,7 @@ public static class BlowValidationRules
     /// </param>
     public static IBlowValidationRule Ports(Func<string?, string?, bool>? typeCompatibility = null,
         BlowConnectionMode mode = BlowConnectionMode.Strict)
-        => new DelegateRule(context => PortIssues(context, typeCompatibility ?? BlowConnectionRules.AreTypesCompatible, mode));
+        => new BlowDelegateRule(context => PortIssues(context, typeCompatibility ?? BlowConnectionRules.AreTypesCompatible, mode));
 
     private static IEnumerable<BlowValidationIssue> PortIssues(BlowValidationContext context, Func<string?, string?, bool> compatible,
         BlowConnectionMode mode)
@@ -391,12 +386,7 @@ public static class BlowValidationRules
             if (n.Ports is not { Count: > 0 } ports) continue;
             foreach (var port in ports)
             {
-                var count = graph.CountAt(n.Id, port.Type, port.Id);
-                if (mode == BlowConnectionMode.Loose)
-                {
-                    var other = port.Type == BlowHandleType.Source ? BlowHandleType.Target : BlowHandleType.Source;
-                    count += graph.CountAt(n.Id, other, port.Id);
-                }
+                var count = graph.HandleCounts.At(n.Id, port.Type, port.Id, mode);
                 var kind = port.Type == BlowHandleType.Source ? "output" : "input";
                 var name = port.Label ?? port.Id ?? "(unnamed)";
 
@@ -435,13 +425,13 @@ public static class BlowValidationRules
 
     /// <summary>Reports every node that lies on a directed cycle (self-loops included).</summary>
     public static IBlowValidationRule NoCycles(BlowValidationSeverity severity = BlowValidationSeverity.Error)
-        => new DelegateRule(context => BlowGraphAlgorithms.FindCycles(context.Graph)
+        => new BlowDelegateRule(context => BlowGraphAlgorithms.FindCycles(context.Graph)
             .SelectMany(cycle => cycle.Select(n => new BlowValidationIssue(BlowValidationCodes.Cycle, severity,
                 $"Node '{n.Id}' is on a cycle: {string.Join(" -> ", cycle.Select(c => c.Id))}.") { NodeId = n.Id })));
 
     /// <summary>Reports every node with no edges at all.</summary>
     public static IBlowValidationRule NoIsolatedNodes(BlowValidationSeverity severity = BlowValidationSeverity.Warning)
-        => new DelegateRule(context => BlowGraphAlgorithms.GetIsolatedNodes(context.Graph)
+        => new BlowDelegateRule(context => BlowGraphAlgorithms.GetIsolatedNodes(context.Graph)
             .Select(n => new BlowValidationIssue(BlowValidationCodes.IsolatedNode, severity,
                 $"Node '{n.Id}' is not connected to anything.") { NodeId = n.Id }));
 
@@ -454,7 +444,7 @@ public static class BlowValidationRules
         BlowValidationSeverity severity = BlowValidationSeverity.Warning)
     {
         ArgumentNullException.ThrowIfNull(isStart);
-        return new DelegateRule(context =>
+        return new BlowDelegateRule(context =>
         {
             var starts = context.Graph.Nodes.Where(isStart).Select(n => n.Id).ToList();
             return BlowGraphAlgorithms.GetUnreachable(context.Graph, starts)
@@ -472,7 +462,7 @@ public static class BlowValidationRules
     {
         ArgumentNullException.ThrowIfNull(code);
         ArgumentNullException.ThrowIfNull(check);
-        return new DelegateRule(context => context.Graph.Nodes
+        return new BlowDelegateRule(context => context.Graph.Nodes
             .Select(n => (Node: n, Message: check(n)))
             .Where(r => r.Message is not null)
             .Select(r => new BlowValidationIssue(code, severity, r.Message!) { NodeId = r.Node.Id }));
@@ -487,15 +477,19 @@ public static class BlowValidationRules
     {
         ArgumentNullException.ThrowIfNull(code);
         ArgumentNullException.ThrowIfNull(check);
-        return new DelegateRule(context => context.Graph.Edges
+        return new BlowDelegateRule(context => context.Graph.Edges
             .Where(e => context.Graph.ContainsNode(e.Source) && context.Graph.ContainsNode(e.Target))
             .Select(e => (Edge: e, Message: check(e, context.Graph.GetNode(e.Source)!, context.Graph.GetNode(e.Target)!)))
             .Where(r => r.Message is not null)
             .Select(r => new BlowValidationIssue(code, severity, r.Message!) { EdgeId = r.Edge.Id }));
     }
+}
 
-    private sealed class DelegateRule(Func<BlowValidationContext, IEnumerable<BlowValidationIssue>> rule) : IBlowValidationRule
-    {
-        public IEnumerable<BlowValidationIssue> Validate(BlowValidationContext context) => rule(context);
-    }
+/// <summary>
+/// A validation rule written as a function - one added with
+/// <see cref="BlowGraphValidator.Add(Func{BlowValidationContext, IEnumerable{BlowValidationIssue}})"/>, or a built-in one.
+/// </summary>
+internal sealed class BlowDelegateRule(Func<BlowValidationContext, IEnumerable<BlowValidationIssue>> rule) : IBlowValidationRule
+{
+    public IEnumerable<BlowValidationIssue> Validate(BlowValidationContext context) => rule(context);
 }

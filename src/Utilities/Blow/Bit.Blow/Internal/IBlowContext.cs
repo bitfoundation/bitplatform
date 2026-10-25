@@ -152,10 +152,11 @@ public interface IBlowContext
     void MarkKeyHandled(string key) { }
 
     /// <summary>
-    /// Tells the canvas the pointer pressed a part inside it that keeps the press from the pane (a handle, say), so a
-    /// connection being made from the keyboard ends - and says so - as a press on the pane would end it.
+    /// Tells the canvas the pointer pressed a part inside it that keeps the press from the pane (a handle, the minimap,
+    /// say), so what an earlier press or the keyboard left waiting ends as a press on the pane would end it: a
+    /// connection being made from the keyboard - which says so - and a node press whose click never came.
     /// </summary>
-    void AbandonKeyboardConnection() { }
+    void PointerPressed() { }
 }
 
 /// <summary>

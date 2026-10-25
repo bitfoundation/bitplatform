@@ -108,12 +108,13 @@ public sealed class BlowGraphIndex
     }
 
     /// <summary>How many edges are attached to one handle of a node.</summary>
-    public int CountAt(string nodeId, BlowHandleType type, string? handleId)
-    {
-        var count = 0;
-        foreach (var _ in EdgesAt(nodeId, type, handleId)) count++;
-        return count;
-    }
+    public int CountAt(string nodeId, BlowHandleType type, string? handleId) => HandleCounts.At(nodeId, type, handleId);
+
+    /// <summary>The edges at every handle - those <see cref="EdgesAt"/> lists - counted on first use.</summary>
+    internal BlowHandleCounts HandleCounts
+        => _handleCounts ??= new BlowHandleCounts(Edges.Except(DanglingEdges));
+
+    private BlowHandleCounts? _handleCounts;
 
     /// <summary>The nodes with an edge into the given node, each once, in edge-list order.</summary>
     public IReadOnlyList<BlowNode> Predecessors(string nodeId) => Distinct(Incoming(nodeId), e => e.Source);

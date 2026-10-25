@@ -166,20 +166,21 @@
     /// Everything the node's markup is drawn from: its geometry and the state the canvas maintains during a
     /// gesture, and the settings it was handed - a new settings object whenever the canvas's graph version, or
     /// anything else in it, changes. The callbacks are left out: which ones are wired up only changes when the
-    /// canvas's parameters do, and that changes the graph version too.
+    /// canvas's parameters do, and that changes the graph version too. The data is compared by reference: a node given
+    /// new data is drawn again, and one whose data was changed in place is drawn again when the canvas next is.
     /// </summary>
     private readonly record struct Look(
         BlowXYPosition Position, double? Width, double? Height, BlowDimensions Measured,
         bool Selected, bool Dragging, bool Resizing, bool Draggable, bool Connectable, bool Focusable, bool Collapsed,
         string Type, string? Label, string? AriaLabel, string? Class, string? Style, int? ZIndex,
-        object? Data, object? Ports, BlowPosition SourcePosition, BlowPosition TargetPosition,
+        BlowSameReference Data, object? Ports, BlowPosition SourcePosition, BlowPosition TargetPosition,
         object Settings);
 
     private Look CurrentLook() => new(
         Node.AbsolutePosition, Node.Width, Node.Height, Node.Measured,
         Node.Selected, Node.Dragging, Node.Resizing, Node.Draggable, Node.Connectable, Node.Focusable, Node.Collapsed,
         Node.Type, Node.Label, Node.AriaLabel, Node.Class, Node.Style, Node.ZIndex,
-        Node.Data, Node.Ports, Node.SourcePosition, Node.TargetPosition,
+        new(Node.Data), Node.Ports, Node.SourcePosition, Node.TargetPosition,
         Settings);
 
     /// <summary>
