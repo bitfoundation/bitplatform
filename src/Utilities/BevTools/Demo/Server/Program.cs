@@ -1,8 +1,11 @@
 ﻿using Bit.BevTools;
+using Bit.BevTools.Demo.Client.Extension;
 using Bit.BevTools.Demo.Client.Models;
 using Bit.BevTools.Demo.Client.Services;
 using Bit.BevTools.Demo.Server.Components;
 using Microsoft.AspNetCore.HttpOverrides;
+
+DemoCulture.Apply();
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -18,7 +21,15 @@ builder.Services.AddDemoServices();
 
 // One line. An application leaves Enabled alone and BevTools turns itself on in Development only; this demo exists to
 // show BevTools, wherever it is deployed (bevtools.bitplatform.dev included), so it is on in every environment.
-builder.Services.AddBitBevToolsServerServices(o => o.Enabled = true);
+// Outside Development a process that serves many users reads no application values unless told to; this demo's data
+// is made up and shown on purpose, so it says so. An application in production would keep that default.
+builder.Services.AddBitBevToolsServerServices(o =>
+{
+    o.Enabled = true;
+    o.ValueAccess = BevValueAccess.Full;
+    // The same extension the client registers, so its panel, rule and commands are there on either runtime.
+    o.Extensions.Add(new DemoBevToolsExtension());
+});
 
 builder.Services.Configure<ForwardedHeadersOptions>(options =>
 {
@@ -41,6 +52,15 @@ else
     app.UseHsts();
 }
 
+// A Content Security Policy that forbids frames: the site embeds none, and the Errors page's "Embed a frame the CSP
+// forbids" gives BevTools a real violation to report. It carries Blazor's own frame-ancestors directive too (switched off
+// below), so the response has one policy header: a browser that keeps only one of several would otherwise drop a part.
+app.Use((context, next) =>
+{
+    context.Response.Headers.ContentSecurityPolicy = "frame-src 'none'; frame-ancestors 'self'";
+    return next(context);
+});
+
 app.UseStatusCodePagesWithReExecute("/not-found", createScopeForStatusCodePages: true);
 app.UseForwardedHeaders();
 app.UseHttpsRedirection();
@@ -61,11 +81,18 @@ api.MapGet("/orders", async (int? delay) =>
     await Task.Delay(delay is > 0 ? Math.Min(delay.Value, 10_000) : Random.Shared.Next(1200, 2600));
     return DemoCatalog.Orders;
 });
+api.MapGet("/orders/{id:int}", async (int id) =>
+{
+    await Task.Delay(Random.Shared.Next(40, 160));
+    return DemoCatalog.Orders.Any(o => o.Id == id)
+        ? Results.Ok(new OrderDetails(id, 1 + id % 5, id % 3 == 0 ? "express" : "standard"))
+        : Results.NotFound();
+});
 api.MapGet("/flaky", () => Random.Shared.Next(3) == 0 ? Results.Ok("ok") : Results.Problem("The flaky endpoint failed (simulated).", statusCode: 500));
 api.MapGet("/profile", () => new Profile("ada.lovelace", "ada@example.com", "secret-access-token-from-api", "Pro"));
 
 app.MapRazorComponents<App>()
-    .AddInteractiveServerRenderMode()
+    .AddInteractiveServerRenderMode(o => o.ContentSecurityFrameAncestorsPolicy = null)
     .AddInteractiveWebAssemblyRenderMode()
     .AddAdditionalAssemblies(typeof(Bit.BevTools.Demo.Client._Imports).Assembly);
 

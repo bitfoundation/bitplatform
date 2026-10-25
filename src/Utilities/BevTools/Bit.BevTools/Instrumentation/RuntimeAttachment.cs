@@ -131,6 +131,7 @@ internal static class RuntimeAttachment
 
         if (session.IsEnabled)
         {
+            AuditMultiUserAttach(services, session);
             var attachment = session.Attachment!;
             attachment.LoggerProviderAdded = AddLoggerProvider(services, session.Registry);
             if (session.Options.TrackHttp)
@@ -141,6 +142,31 @@ internal static class RuntimeAttachment
         }
 
         return session;
+    }
+
+    /// <summary>
+    /// Leaves a trace in the app's own logs whenever BevTools is opened outside Development in a process that serves
+    /// many users: an inspection of production is an event an operator should be able to find afterwards. The
+    /// category is BevTools' own, which its logger provider does not capture, so the line is not shown back to the panel.
+    /// </summary>
+    private static void AuditMultiUserAttach(IServiceProvider services, BevToolsSession session)
+    {
+        try
+        {
+            if (!session.IsInMultiUserHost || services.GetService<Microsoft.Extensions.Hosting.IHostEnvironment>() is not { } environment
+                || Microsoft.Extensions.Hosting.HostEnvironmentEnvExtensions.IsDevelopment(environment))
+            {
+                return;
+            }
+
+            services.GetService<ILoggerFactory>()?.CreateLogger("Bit.BevTools").LogWarning(
+                "BevTools was attached to a running {Environment} app that serves many users: session {SessionId}, value access {ValueAccess}. {Reason}",
+                environment.EnvironmentName, session.Id, session.ValueAccess, session.Registry.EnabledReason);
+        }
+        catch
+        {
+            // An audit line that cannot be written must not stop the attach the app asked for.
+        }
     }
 
     private static BevToolsSession Create(IServiceProvider services, Action<BitBevToolsOptions>? configure, BevToolsLoaderContext? loader, bool openedByLoader)
@@ -190,10 +216,12 @@ internal static class RuntimeAttachment
             return (explicitValue, how + " was called with BitBevToolsOptions.Enabled set to " + explicitValue.ToString().ToLowerInvariant() + ".");
         }
 
+        // A bare attach does not go by the loader's AllowInMultiUserHost: that allowance comes with an Authorize callback,
+        // which only BevToolsLoader.OpenAsync runs. The app's own call vouches for itself with BitBevToolsOptions.Enabled.
         var (allowed, why) = openedByLoader
             ? loader!.ResolveAttach(services)
-            : BevToolsAttachPolicy.Resolve(services, loader?.IsMultiUserHost ?? BevToolsSession.HostsAServer(services), loader?.Options.AllowInMultiUserHost == true,
-                loader is null ? "Set BitBevToolsOptions.Enabled to attach anyway." : "Set BitBevToolsOptions.Enabled, or BitBevToolsLoaderOptions.AllowInMultiUserHost, to attach anyway.");
+            : BevToolsAttachPolicy.Resolve(services, loader?.IsMultiUserHost ?? BevToolsSession.HostsAServer(services), allowInMultiUserHost: false, authorizes: false,
+                "Set BitBevToolsOptions.Enabled to attach anyway, or open it through BevToolsLoader.OpenAsync with BitBevToolsLoaderOptions.AllowInMultiUserHost and Authorize.");
 
         return (allowed, how + (allowed ? " attached it: " : " left it off: ") + why);
     }

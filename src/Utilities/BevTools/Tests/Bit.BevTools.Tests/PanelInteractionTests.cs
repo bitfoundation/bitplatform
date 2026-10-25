@@ -258,6 +258,33 @@ public class PanelInteractionTests : BunitContext
         Assert.IsEmpty(Session.Components.BuildTree(includeHidden: true));
     }
 
+#if NET10_0_OR_GREATER
+    /// <summary>
+    /// The framework's update_parameters meter names a component type, never an instance. The profiler's lifecycle
+    /// table once listed BevTools' own panels and the framework components only they render (the component tree's
+    /// Virtualize), whose parameters change on every refresh, as if the application had spent that time.
+    /// </summary>
+    [TestMethod]
+    public void The_lifecycle_cost_per_type_lists_no_type_only_BevTools_renders()
+    {
+        var cut = RenderPanel();
+        Render<ParentComponent>();
+        foreach (var tab in new[] { "Components", "Timeline", "Components", "Profiler" })
+        {
+            cut.FindAll(".bev-tab").First(t => t.TextContent.Contains(tab, StringComparison.Ordinal)).Click();
+            cut.Find("button[aria-label='Refresh captured data']").Click();
+        }
+
+        var types = cut.FindAll(".bev-section")
+            .Single(s => s.TextContent.StartsWith("Lifecycle cost per type", StringComparison.Ordinal))
+            .QuerySelectorAll("tbody tr td:first-child")
+            .Select(td => td.TextContent.Trim())
+            .ToList();
+        Assert.Contains("ParentComponent", types, "the application's own component is measured");
+        Assert.DoesNotContain(t => t.StartsWith("Bev", StringComparison.Ordinal) || t.StartsWith("Virtualize", StringComparison.Ordinal), types, string.Join(", ", types));
+    }
+#endif
+
     /// <summary>The inverse: the propagation must not swallow the application's own use of the same framework components.</summary>
     [TestMethod]
     public void Application_components_under_a_cascading_value_are_still_application_activity()
@@ -416,6 +443,51 @@ public class PanelInteractionTests : BunitContext
 
         var navigation = Session.Timeline.Snapshot().Last(e => e.Kind == BevToolsEventKind.Navigation);
         Assert.IsNull(navigation.ParentEventId);
+    }
+
+    [TestMethod]
+    public void Notifications_are_announced_and_leave_by_themselves()
+    {
+        var cut = RenderPanel();
+        var region = cut.Find(".bev-notification");
+        Assert.AreEqual("status", region.GetAttribute("role"), "the live region exists before anything is said in it");
+        Assert.AreEqual("", region.TextContent);
+
+        cut.InvokeAsync(() => cut.Instance.Notify("Session exported"));
+        Assert.AreEqual("Session exported", cut.Find(".bev-notification").TextContent);
+
+        Session.Ui.NotificationAt = DateTimeOffset.UtcNow - BevToolsUiState.NotificationLifetime - TimeSpan.FromSeconds(1);
+        cut.WaitForAssertion(() => Assert.AreEqual("", cut.Find(".bev-notification").TextContent), TimeSpan.FromSeconds(3));
+    }
+
+    [TestMethod]
+    public void A_navigation_to_a_path_contained_in_the_previous_one_is_recorded()
+    {
+        RenderPanel();
+        var navigation = Services.GetRequiredService<NavigationManager>();
+
+        navigation.NavigateTo("/products/1");
+        navigation.NavigateTo("/products");
+        navigation.NavigateTo("/");
+
+        var titles = Session.Timeline.Snapshot().Where(e => e.Kind == BevToolsEventKind.Navigation).Select(e => e.Title).ToList();
+        CollectionAssert.AreEqual(new[] { "Navigate to /products/1", "Navigate to /products", "Navigate to /" }, titles);
+    }
+
+    [TestMethod]
+    public void A_navigation_the_framework_activity_recorded_absorbs_exactly_one_location_change()
+    {
+        RenderPanel();
+        var navigation = Services.GetRequiredService<NavigationManager>();
+
+        // What ActivityObserver records when the router's Navigate activity starts (.NET 10), before LocationChanged
+        // reaches the panel.
+        Session.LastNavigationEventId = Session.Timeline.Record(new BevToolsEvent { Kind = BevToolsEventKind.Navigation, Category = "navigation", Title = "Navigate to /products/{id}" });
+        navigation.NavigateTo("/products/1");
+        navigation.NavigateTo("/products/1#reviews");
+
+        var titles = Session.Timeline.Snapshot().Where(e => e.Kind == BevToolsEventKind.Navigation).Select(e => e.Title).ToList();
+        CollectionAssert.AreEqual(new[] { "Navigate to /products/{id}", "Navigate to /products/1#reviews" }, titles);
     }
 
     [TestMethod]

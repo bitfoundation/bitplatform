@@ -11,6 +11,23 @@
     <Project Path="Demo/Client/Bit.BevTools.Demo.Client.csproj" />
     <Project Path="Demo/Server/Bit.BevTools.Demo.Server.csproj" />
   </Folder>
+  <Folder Name="/Samples/">
+    <Project Path="Samples/Core/Bit.BevTools.Samples.Core.csproj" />
+    <Project Path="Samples/MAUI/Bit.BevTools.Samples.Maui.csproj">
+      <Deploy />
+    </Project>
+  </Folder>
+  <Folder Name="/Samples/Auto/">
+    <Project Path="Samples/Auto/Bit.BevTools.Samples.Auto.Client/Bit.BevTools.Samples.Auto.Client.csproj" />
+    <Project Path="Samples/Auto/Bit.BevTools.Samples.Auto/Bit.BevTools.Samples.Auto.csproj" />
+  </Folder>
+  <Folder Name="/Samples/Server/">
+    <Project Path="Samples/Server/Bit.BevTools.Samples.Server.csproj" />
+  </Folder>
+  <Folder Name="/Samples/Wasm/">
+    <Project Path="Samples/Wasm/Bit.BevTools.Samples.Wasm.Client/Bit.BevTools.Samples.Wasm.Client.csproj" />
+    <Project Path="Samples/Wasm/Bit.BevTools.Samples.Wasm/Bit.BevTools.Samples.Wasm.csproj" />
+  </Folder>
   <Folder Name="/docs/">
     <File Path="docs/architecture.md" />
     <File Path="docs/capabilities.md" />
@@ -20,7 +37,18 @@
     <Project Path="Tests/Bit.BevTools.Benchmarks/Bit.BevTools.Benchmarks.csproj" />
     <Project Path="Tests/Bit.BevTools.Tests/Bit.BevTools.Tests.csproj" />
   </Folder>
+  <Folder Name="/Bit.BevTools.Extension/">
+    <File Path="Bit.BevTools.Extension/README.md" />
+    <File Path="Bit.BevTools.Extension/build.mjs" />
+    <File Path="Bit.BevTools.Extension/devtools-source.js" />
+    <File Path="Bit.BevTools.Extension/devtools.html" />
+    <File Path="Bit.BevTools.Extension/devtools.js" />
+    <File Path="Bit.BevTools.Extension/manifest.json" />
+    <File Path="Bit.BevTools.Extension/panel.html" />
+    <File Path="Bit.BevTools.Extension/panel.js" />
+  </Folder>
   <Project Path="Bit.BevTools/Bit.BevTools.csproj" />
+  <Project Path="Bit.BevTools.Cli/Bit.BevTools.Cli.csproj" />
   <Project Path="Bit.BevTools.Loader/Bit.BevTools.Loader.csproj" />
   <Project Path="Bit.BevTools.Server/Bit.BevTools.Server.csproj" />
 </Solution>

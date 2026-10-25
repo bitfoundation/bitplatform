@@ -10,11 +10,25 @@
 </tr>
 
 @code {
+    private Product? _renderedProduct;
+    private bool _renderedHighlight;
+
     [Parameter, EditorRequired] public Product Product { get; set; } = default!;
 
     [Parameter] public bool Highlight { get; set; }
 
     [Parameter] public EventCallback<Product> OnAdd { get; set; }
 
-    // Intentional: no ShouldRender override, so every parent render re-renders all rows even when nothing changed.
+    /// <summary>The fix the Products page can switch on: skip a render when the row would show exactly what it shows.</summary>
+    [Parameter] public bool SkipUnchanged { get; set; }
+
+    // Intentional while SkipUnchanged is off: every parent render re-renders all rows even when nothing changed.
+    // Product is a record, so Equals compares its values: a search that returns the same product again is unchanged.
+    protected override bool ShouldRender() => !SkipUnchanged || !Equals(Product, _renderedProduct) || Highlight != _renderedHighlight;
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        _renderedProduct = Product;
+        _renderedHighlight = Highlight;
+    }
 }

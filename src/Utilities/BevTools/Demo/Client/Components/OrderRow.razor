@@ -1,0 +1,34 @@
+﻿@namespace Bit.BevTools.Demo.Client.Components
+@inject ProductApi Api
+
+<tr>
+    <td>@Order.Id</td>
+    <td>@Order.Customer</td>
+    <td>@Order.Total.ToString("C")</td>
+    <td>@Order.Status</td>
+    <td>@Order.PlacedAt.ToLocalTime().ToString("g")</td>
+    <td>@(_details is null ? "…" : _details.Lines + " lines · " + _details.Shipping)</td>
+</tr>
+
+@code {
+    [Parameter, EditorRequired] public Order Order { get; set; } = default!;
+
+    private OrderDetails? _details;
+
+    // Problem 19: every row loads its own details as it initializes - one request per order, all at once.
+    protected override async Task OnInitializedAsync()
+    {
+        if (!RendererInfo.IsInteractive)
+        {
+            return;
+        }
+
+        try
+        {
+            _details = await Api.GetOrderDetailsAsync(Order.Id);
+        }
+        catch (HttpRequestException)
+        {
+        }
+    }
+}

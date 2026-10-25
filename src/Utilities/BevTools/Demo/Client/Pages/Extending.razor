@@ -1,0 +1,104 @@
+﻿@page "/extending"
+@inject IBevToolsTimeline Timeline
+
+<PageTitle>Extending · BevTools</PageTitle>
+
+<div class="bb-intro">
+    <p class="bb-overline">Beyond the panel</p>
+    <h1>Extending</h1>
+    <p class="bb-subtitle">
+        A library - or an app - can add to BevTools: panels, state providers, diagnostic rules, palette commands, value
+        formatters and timeline events of its own. This site registers such an extension,
+        <code>DemoBevToolsExtension</code>, and every part of it is visible in the panel right now.
+    </p>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Timeline events of your own</h3>
+    <p class="bb-card-desc">
+        Code that does work BevTools cannot see - a sync, a cache refresh, a background job - can put it on the timeline
+        through <code>IBevToolsTimeline</code>, a scoped service. Each button below records an <em>Inventory sync</em>
+        with <code>BeginActivity</code>, which takes its duration when the scope ends.
+    </p>
+
+    <div class="bb-demo">
+        <div class="bb-demo-bar"><span class="bb-demo-label">Live</span><RendererStatus /></div>
+        <div class="bb-toolbar">
+            <button type="button" class="btn btn-primary" @onclick="() => Sync(300)" disabled="@_syncing">Run a sync (300 ms)</button>
+            <button type="button" class="btn btn-secondary" @onclick="() => Sync(1400)" disabled="@_syncing">Run a slow sync (1.4 s)</button>
+            <span class="bb-muted">@(_syncing ? "syncing…" : $"{_syncs} sync(s) run")</span>
+        </div>
+    </div>
+
+    <pre class="bb-code">@@inject IBevToolsTimeline Timeline
+
+<span class="k">using</span> (Timeline.BeginActivity(<span class="s">"sync"</span>, <span class="s">"Inventory sync"</span>, <span class="s">$"{ms} ms of simulated work"</span>))
+{
+    <span class="k">await</span> Task.Delay(ms);
+}</pre>
+    <p class="bb-card-desc">
+        The <strong>Timeline</strong> shows each sync as a <em>custom</em> entry with its duration, caused by the click
+        that started it (the <em>custom</em> chip filters them). <code>Record</code> and <code>Complete</code> do the same
+        in two steps, and <code>IsEnabled</code> says whether to build an event at all.
+    </p>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> What the demo's extension adds</h3>
+    <ul class="bb-detail-list">
+        <li><strong>A panel</strong>: the <em>Store</em> tab, after the built-in ones. It lists who listens to <code>FilterState</code> - open the Products page, show and hide the price alert, and one more <em>lambda in PriceAlert.OnInitialized</em> stays subscribed each time. It inherits <code>BevToolsTab</code>, so it re-reads whenever the panel refreshes, and its renders and clicks never count as the app's.</li>
+        <li><strong>A state provider</strong>: <strong>State → FilterState</strong>, marked <em>extension</em>. <code>FilterState</code> knows nothing about BevTools; an adapter reads it and names each change (<code>SetQuery</code>, <code>SetCategory</code>, <code>SetMaxPrice</code>, <code>Notify</code>), so typing on the Products page builds a history with diffs.</li>
+        <li><strong>A diagnostic rule</strong>: <em>demo.slow-sync</em> turns a sync over a second into a finding - press <em>Run a slow sync</em> and open <strong>Diagnostics</strong>. It appears in the <em>Rules</em> table with the built-in ones.</li>
+        <li><strong>Two commands</strong>: <kbd>Ctrl</kbd><kbd>K</kbd>, then <code>&gt;demo</code> or <code>&gt;cart</code> → <em>Show the demo store</em> and <em>Copy the cart as Markdown</em>, under <em>Demo store</em>. Without the <code>&gt;</code> the palette searches components, events and services. A command can show a panel, select a component or an event, notify, and hand text to the browser (<code>CopyTextAsync</code>, <code>DownloadTextAsync</code>).</li>
+        <li><strong>A value formatter</strong> for <code>Product</code>: select a <code>ProductRow</code>, or open <strong>State → CartState</strong>, and a product reads <em>Rustic Keyboard 2 · $83.99</em> instead of a record to expand.</li>
+    </ul>
+    <p class="bb-card-desc">
+        <strong>About → Session → Extensions</strong> names every extension that is loaded: <em>Demo store</em>, and
+        <em>Blazor Server circuits</em> - the Circuit panel, its rules and command are themselves an extension.
+    </p>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Writing one</h3>
+    <p class="bb-card-desc">
+        A library references <code>Bit.BevTools</code>, implements <code>IBevToolsExtension</code> and is added to the
+        options. This is the demo's, shortened; the whole file is <code>Demo/Client/Extension/DemoBevToolsExtension.cs</code>.
+    </p>
+    <pre class="bb-code"><span class="k">public sealed class</span> DemoBevToolsExtension : IBevToolsExtension
+{
+    <span class="k">public string</span> Name =&gt; <span class="s">"Demo store"</span>;
+
+    <span class="k">public void</span> Configure(IBevToolsExtensionBuilder builder) =&gt; builder
+        .AddPanel(<span class="k">new</span> BevToolsPanelDescriptor(<span class="s">"demo-store"</span>, <span class="s">"Store"</span>, <span class="k">typeof</span>(DemoStorePanel)))
+        .AddStateProvider(services =&gt; <span class="k">new</span> FilterStateAdapter(services.GetRequiredService&lt;FilterState&gt;()))
+        .AddDiagnosticRule(<span class="k">new</span> SlowSyncRule())
+        .AddCommand(<span class="k">new</span> ShowStoreCommand())
+        .AddCommand(<span class="k">new</span> CopyCartCommand())
+        .AddValueFormatter(<span class="k">typeof</span>(Product), v =&gt; v <span class="k">is</span> Product p ? <span class="s">$"{p.Name} · {p.Price:C}"</span> : <span class="k">null</span>);
+}
+
+<span class="c">// Program.cs of every host that runs BevTools - here both the server and the .Client project</span>
+builder.Services.AddBitBevToolsServices(o =&gt; o.Extensions.Add(<span class="k">new</span> DemoBevToolsExtension()));</pre>
+    <ul class="bb-detail-list">
+        <li><code>HideComponentsInNamespace("MyLibrary.Internal")</code> keeps a library's internal components out of the tree; the <em>internals</em> toggle in the Components tab still shows them.</li>
+        <li>On members: <code>[BevToolsSensitive]</code> redacts a value, <code>[BevToolsIgnore]</code> leaves a member - or, on a class, a whole component - out of BevTools. The dashboard's <code>UserSession</code> uses both.</li>
+        <li>From code: <code>session.PauseCapture()</code> / <code>ResumeCapture()</code>, <code>session.UseAmbient()</code> to attribute background work to a session, and <code>BevSessionExporter</code> / <code>BevTraceExporter</code> for the files <em>About</em> exports.</li>
+    </ul>
+</div>
+
+@code {
+    private bool _syncing;
+    private int _syncs;
+
+    private async Task Sync(int ms)
+    {
+        _syncing = true;
+        using (Timeline.BeginActivity("sync", "Inventory sync", $"{ms} ms of simulated work"))
+        {
+            await Task.Delay(ms);
+        }
+
+        _syncing = false;
+        _syncs++;
+    }
+}
