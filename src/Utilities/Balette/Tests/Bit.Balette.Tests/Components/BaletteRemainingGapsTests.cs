@@ -172,10 +172,12 @@ public class BaletteRemainingGapsTests : BunitContext
         await cut.InvokeAsync(() => _service.OpenAsync("person"));
         cut.WaitForAssertion(() => Assert.Contains("Show more…", cut.Find("[data-value='__source-more:People']").TextContent));
 
-        for (var page = 0; page < 4; page++)
+        for (var pages = 2; pages <= 5; pages++)
         {
             await Press(cut, "End");
             await Press(cut, "Enter");
+            // A page loads in the background and a source is asked for one page at a time: wait for it before the next.
+            cut.WaitForAssertion(() => Assert.HasCount(pages * 5, cut.FindAll("[data-balette=item]:not([data-value^='__source-more'])")));
         }
 
         cut.WaitForAssertion(() =>
