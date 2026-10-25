@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk.Web">
 
     <PropertyGroup>
-        <TargetFramework>net11.0</TargetFramework>
+        <TargetFramework>net10.0</TargetFramework>
 
         <!-- SelfContained turns every dev build into a RID-specific one that copies the whole
              runtime into bin, slowing builds; it's only needed for the published output. -->
@@ -27,9 +27,9 @@
         </PackageReference>
         <PackageReference Include="Meziantou.Framework.Win32.Jobs" Version="4.0.6" />
         <PackageReference Include="Microsoft.Extensions.AI.OpenAI" Version="10.11.0" />
-        <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="11.0.0-rc.2.26504.105" />
-        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="11.0.0-rc.2.26504.105" />
-        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="11.0.0-rc.2.26504.105" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="10.0.13" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="10.0.13" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="10.0.13" />
         <PackageReference Include="Microsoft.Extensions.AI" Version="10.11.0" />
         <PackageReference Include="ModelContextProtocol.AspNetCore" Version="2.3.0" />
         <PackageReference Include="NWebsec.AspNetCore.Middleware" Version="3.0.0" />

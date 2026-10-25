@@ -1,11 +1,10 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
 
     <PropertyGroup>
-        <TargetFramework>net11.0</TargetFramework>
-        <UseMonoRuntime>false</UseMonoRuntime>
+        <TargetFramework>net10.0</TargetFramework>
         <NoDefaultLaunchSettingsFile>true</NoDefaultLaunchSettingsFile>
         <StaticWebAssetProjectMode>Default</StaticWebAssetProjectMode>
-        <!-- These two are on the wasm SDK's relink-trigger list: any
+        <!-- Like WasmEnableSIMD below, these two are on the wasm SDK's relink-trigger list: any
              non-default value pulls the native tooling (ManagedToNativeGenerator & co) into every
              incremental build. Trim the runtime in Release only; dev keeps full icu/tz data. -->
         <InvariantTimezone Condition="'$(Configuration)' == 'Release'">true</InvariantTimezone>
@@ -15,6 +14,10 @@
         <WasmFingerprintAssets>false</WasmFingerprintAssets>
         <StaticWebAssetsFingerprintContent>false</StaticWebAssetsFingerprintContent>
         <StaticWebAssetFingerprintingEnabled>false</StaticWebAssetFingerprintingEnabled>
+        <!-- Disabling SIMD flips WasmBuildNative on, which drags the wasm native tooling
+             (ManagedToNativeGenerator & co) into every incremental build (~3s each). Only
+             production needs the SIMD-less runtime for old-browser support, so scope it to Release. -->
+        <WasmEnableSIMD Condition="'$(Configuration)' == 'Release'">false</WasmEnableSIMD>
         <BitMinifyAggressive>true</BitMinifyAggressive>
     </PropertyGroup>
 
@@ -23,7 +26,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="11.0.0-rc.2.26504.105" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="10.0.13" />
     </ItemGroup>
 
     <ItemGroup>
@@ -43,8 +46,8 @@
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="11.0.0-rc.2.26504.105" />
-        <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="11.0.0-rc.2.26504.105" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="10.0.13" />
+        <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="10.0.13" />
 
         <Using Include="System.Net.Http.Json" />
         <Using Include="System.Collections.Concurrent" />

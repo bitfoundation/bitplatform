@@ -88,7 +88,6 @@ jobs:
       uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
       with:
         global-json-file: src/global.json
-        dotnet-version: 10.0.x
 
     - name: Use prerelease packages
       if: inputs.prerelease_packages
@@ -100,7 +99,7 @@ jobs:
       uses: ./.github/actions/setup-bit-cli
 
     - name: Create project with bit new
-      run: bit new TodoSample --framework net10.0 --database PostgreSQL --sample --appInsights --apiServerUrl ${{ env.SERVER_API_ADDRESS }} --webAppUrl ${{ env.SERVER_WEB_ADDRESS }} --filesStorage S3 --notification --captcha reCaptcha --offlineDb --signalR --ads --api Standalone --redis --multitenant false --template-package "${{ env.BIT_TEMPLATE_PACKAGE }}" --yes --no-restore --no-build --no-format --no-migration --no-trust
+      run: bit new TodoSample --framework net11.0 --database PostgreSQL --sample --appInsights --apiServerUrl ${{ env.SERVER_API_ADDRESS }} --webAppUrl ${{ env.SERVER_WEB_ADDRESS }} --filesStorage S3 --notification --captcha reCaptcha --offlineDb --signalR --ads --api Standalone --redis --multitenant false --template-package "${{ env.BIT_TEMPLATE_PACKAGE }}" --yes --no-restore --no-build --no-format --no-migration --no-trust
        
     - name: Translate .resx files
       run: |
@@ -163,7 +162,6 @@ jobs:
       uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
       with:
         global-json-file: src/global.json
-        dotnet-version: 10.0.x
 
     - name: Use prerelease packages
       if: inputs.prerelease_packages
@@ -175,7 +173,7 @@ jobs:
       uses: ./.github/actions/setup-bit-cli
 
     - name: Create project with bit new
-      run: bit new TodoSample --framework net10.0 --database PostgreSQL --sample --appInsights --apiServerUrl ${{ env.SERVER_API_ADDRESS }} --webAppUrl ${{ env.SERVER_WEB_ADDRESS }} --filesStorage S3 --notification --captcha reCaptcha --signalR --ads --api Standalone --multitenant false --template-package "${{ env.BIT_TEMPLATE_PACKAGE }}" --yes --no-build --no-format --no-migration --no-trust
+      run: bit new TodoSample --framework net11.0 --database PostgreSQL --sample --appInsights --apiServerUrl ${{ env.SERVER_API_ADDRESS }} --webAppUrl ${{ env.SERVER_WEB_ADDRESS }} --filesStorage S3 --notification --captcha reCaptcha --signalR --ads --api Standalone --multitenant false --template-package "${{ env.BIT_TEMPLATE_PACKAGE }}" --yes --no-build --no-format --no-migration --no-trust
        
     - name: Translate .resx files
       run: |

@@ -19,7 +19,11 @@ public class Middlewares
     {
         app.UseForwardedHeaders();
 
-        if (env.IsDevelopment() is false)
+        if (env.IsDevelopment())
+        {
+            app.UseWebAssemblyDebugging();
+        }
+        else
         {
             app.UseHttpsRedirection();
             app.UseResponseCompression();
