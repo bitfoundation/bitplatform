@@ -80,6 +80,7 @@
 
     // The Func members are called rather than string-formatted, so a translation is free to
     // reorder or drop the values it is handed - which positional format strings cannot do.
+    // This flow has no validation or run states, so a state is its selection and connections.
     private BlowAriaLabels Labels => _language switch
     {
         "de" => Record(new BlowAriaLabels
@@ -88,6 +89,9 @@
             EdgeRoleDescription = "Kante",
             NodeLabel = name => $"Knoten {name}",
             EdgeLabel = (s, t) => $"Kante von {s} nach {t}",
+            NodeState = s => (s.Node.Selected ? "Ausgewählt. " : "")
+                             + (s.Incoming + s.Outgoing == 0 ? "Nicht verbunden." : $"Verbindungen: {s.Incoming} eingehend, {s.Outgoing} ausgehend."),
+            EdgeState = s => s.Edge.Selected ? "Ausgewählt." : "",
             NodeSelected = name => $"{name} ausgewählt",
             NodeDeselected = name => $"{name} abgewählt",
             EdgeSelected = (s, t) => $"Kante {s} nach {t} ausgewählt",
@@ -98,6 +102,7 @@
             PaneInstructions = "Mit der Tabulatortaste zwischen den Knoten und Kanten des Diagramms wechseln.",
             NodeInstructions = "Eingabe oder Leertaste wählt den Knoten aus, Umschalt mit Eingabe fügt ihn der Auswahl "
                                + "hinzu, die Pfeiltasten verschieben die Auswahl, Entf löscht sie, Escape hebt sie auf.",
+            KeyboardConnectionInstructions = key => $"{key} beginnt eine Verbindung von ihm aus.",
             EdgeInstructions = "Eingabe oder Leertaste wählt die Kante aus, Entf löscht sie, Escape hebt die Auswahl auf.",
         }),
 
@@ -107,6 +112,9 @@
             EdgeRoleDescription = "یال",
             NodeLabel = name => $"گره {name}",
             EdgeLabel = (s, t) => $"یال از {s} به {t}",
+            NodeState = s => (s.Node.Selected ? "انتخاب‌شده. " : "")
+                             + (s.Incoming + s.Outgoing == 0 ? "بدون اتصال." : $"اتصال‌ها: {s.Incoming} ورودی، {s.Outgoing} خروجی."),
+            EdgeState = s => s.Edge.Selected ? "انتخاب‌شده." : "",
             NodeSelected = name => $"{name} انتخاب شد",
             NodeDeselected = name => $"انتخاب {name} برداشته شد",
             EdgeSelected = (s, t) => $"یال {s} به {t} انتخاب شد",
@@ -117,6 +125,7 @@
             PaneInstructions = "برای جابه‌جایی میان گره‌ها و یال‌های نمودار کلید Tab را بزنید.",
             NodeInstructions = "Enter یا فاصله گره را انتخاب می‌کند، Shift همراه Enter آن را به انتخاب می‌افزاید، "
                                + "کلیدهای جهت انتخاب را جابه‌جا می‌کنند، Delete آن را حذف و Escape انتخاب را لغو می‌کند.",
+            KeyboardConnectionInstructions = key => $"{key} اتصالی را از آن آغاز می‌کند.",
             EdgeInstructions = "Enter یا فاصله یال را انتخاب می‌کند، Delete آن را حذف و Escape انتخاب را لغو می‌کند.",
         }),
 
@@ -133,6 +142,8 @@
         EdgeRoleDescription = labels.EdgeRoleDescription,
         NodeLabel = labels.NodeLabel,
         EdgeLabel = labels.EdgeLabel,
+        NodeState = labels.NodeState,
+        EdgeState = labels.EdgeState,
         NodeSelected = name => Show(labels.NodeSelected(name)),
         NodeDeselected = name => Show(labels.NodeDeselected(name)),
         EdgeSelected = (s, t) => Show(labels.EdgeSelected(s, t)),
@@ -142,6 +153,7 @@
         Deleted = (n, e) => Show(labels.Deleted(n, e)),
         PaneInstructions = labels.PaneInstructions,
         NodeInstructions = labels.NodeInstructions,
+        KeyboardConnectionInstructions = labels.KeyboardConnectionInstructions,
         EdgeInstructions = labels.EdgeInstructions,
     };
 

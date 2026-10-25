@@ -136,8 +136,15 @@
 
     private async Task Upload(InputFileChangeEventArgs e)
     {
-        // The limit is enforced while reading: an oversized upload is refused without being buffered whole.
-        await using var stream = e.File.OpenReadStream(maxAllowedSize: Options.Limits.MaxBytes + 1);
+        // Refused before it is opened: OpenReadStream throws for a file larger than it is allowed to read.
+        if (e.File.Size > Options.Limits.MaxBytes)
+        {
+            _issues = [];
+            _status = $"could not load {e.File.Name}: it is larger than the {Options.Limits.MaxBytes:N0} bytes allowed";
+            return;
+        }
+
+        await using var stream = e.File.OpenReadStream(maxAllowedSize: Options.Limits.MaxBytes);
         var result = await BlowSerializer.DeserializeAsync(stream, Options);
         await Apply(result, e.File.Name);
     }

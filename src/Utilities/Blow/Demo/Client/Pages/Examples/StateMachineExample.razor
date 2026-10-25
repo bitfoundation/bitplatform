@@ -36,10 +36,11 @@
 
     protected override void OnInitialized()
     {
+        // States cannot be deleted: the toolbar always names the current one.
         BlowNode State(string id, string label, double x, double y) => new()
         {
             Id = id, Label = label, Position = new(x, y), Width = 120, Height = 44,
-            SourcePosition = BlowPosition.Right, TargetPosition = BlowPosition.Left,
+            SourcePosition = BlowPosition.Right, TargetPosition = BlowPosition.Left, Deletable = false,
         };
         BlowEdge Transition(string from, string to, string on) => new()
         {

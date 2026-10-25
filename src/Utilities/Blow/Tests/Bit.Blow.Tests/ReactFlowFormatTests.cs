@@ -125,6 +125,17 @@ public class ReactFlowFormatTests
     }
 
     [TestMethod]
+    public void CustomPropertiesKeepTheirNamesBothWays()
+    {
+        var imported = BlowReactFlowFormat.Import("""{"nodes":[{"id":"a","style":{"--nodeAccent":"red","borderColor":"var(--nodeAccent)"}}]}""");
+        Assert.AreEqual("--nodeAccent:red;border-color:var(--nodeAccent);", imported.Document!.Nodes[0].Style);
+
+        var exported = JsonNode.Parse(BlowReactFlowFormat.Export(imported.Document))!;
+        Assert.AreEqual("red", (string?)exported["nodes"]![0]!["style"]!["--nodeAccent"]);
+        Assert.AreEqual("var(--nodeAccent)", (string?)exported["nodes"]![0]!["style"]!["borderColor"]);
+    }
+
+    [TestMethod]
     public void ImportsAreBoundedLikeBlowDocuments()
     {
         var options = new BlowSerializerOptions { Limits = { MaxNodes = 1 } };

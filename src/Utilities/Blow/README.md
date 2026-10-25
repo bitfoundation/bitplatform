@@ -1931,7 +1931,11 @@ Anything else needs its JSON contract registered, as a source-generated type inf
 trimmable:
 
 ```csharp
+public record TaskInfo(string Owner, int Hours);
+public record Wire(string Signal);
+
 [JsonSerializable(typeof(TaskInfo))]
+[JsonSerializable(typeof(Wire))]
 internal partial class AppJsonContext : JsonSerializerContext;
 
 var options = new BlowSerializerOptions()

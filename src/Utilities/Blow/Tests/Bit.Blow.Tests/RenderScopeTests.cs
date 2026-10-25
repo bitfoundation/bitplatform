@@ -88,7 +88,7 @@ public class RenderScopeTests : BunitContext
     }
 
     [TestMethod]
-    public async Task ADragFrameRendersTheDraggedNodeAndItsEdgesOnly()
+    public void ADragFrameRendersTheDraggedNodeAndItsEdgesOnly()
     {
         var cut = Render(Nodes(), Edges());
         var before = Counts<BlowNodeRenderer>(cut);
@@ -111,7 +111,7 @@ public class RenderScopeTests : BunitContext
     }
 
     [TestMethod]
-    public async Task LettingGoOfADraggedNodeRendersThatNodeOnly()
+    public void LettingGoOfADraggedNodeRendersThatNodeOnly()
     {
         var stops = 0;
         var cut = Render(Nodes(), Edges(), p => p.Add(c => c.OnNodeDragStop, _ => stops++));

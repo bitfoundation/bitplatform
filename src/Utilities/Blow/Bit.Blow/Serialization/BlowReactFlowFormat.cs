@@ -304,8 +304,12 @@ public static class BlowReactFlowFormat
         return style;
     }
 
+    /// <summary>A custom property (<c>--name</c>) is case-sensitive and named the same in CSS and in React.</summary>
+    private static bool IsCustomProperty(string name) => name.StartsWith("--", StringComparison.Ordinal);
+
     private static string Kebab(string name)
     {
+        if (IsCustomProperty(name)) return name;
         var sb = new StringBuilder(name.Length + 4);
         foreach (var ch in name)
         {
@@ -317,6 +321,7 @@ public static class BlowReactFlowFormat
 
     private static string Camel(string name)
     {
+        if (IsCustomProperty(name)) return name;
         var sb = new StringBuilder(name.Length);
         var upper = false;
         foreach (var ch in name)
