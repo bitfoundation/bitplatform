@@ -247,6 +247,17 @@ public abstract class BormTest
         }
         """);
 
+    /// <summary>
+    /// Stops the test as inconclusive when the browser has no <c>&lt;input type="<paramref name="type"/>"&gt;</c>. The
+    /// WebKit Playwright builds for Windows have no date or time pickers at all, which no browser people use lacks, and
+    /// blazor.web.js throws on every event such an input raises there.
+    /// </summary>
+    protected static async Task AssumeInputTypeAsync(IPage page, string type)
+    {
+        if (await page.EvaluateAsync<bool>("t => { const i = document.createElement('input'); i.type = t; return i.type === t; }", type) is false)
+            Assert.Inconclusive($"this browser has no <input type=\"{type}\">");
+    }
+
     /// <summary>A computed style of the element <paramref name="locator"/> picks, by its CSS name (custom properties included).</summary>
     protected static Task<string> ComputedAsync(ILocator locator, string property) =>
         locator.EvaluateAsync<string>("(e, p) => getComputedStyle(e).getPropertyValue(p).trim()", property);

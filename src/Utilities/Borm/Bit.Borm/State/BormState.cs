@@ -165,7 +165,20 @@ public sealed class BormState : IDisposable
     /// everything at once is what this library has always done and telling the user only half of
     /// what is wrong is a choice, not an improvement.
     /// </remarks>
-    public bool SingleErrorPerField { get; set; }
+    public bool SingleErrorPerField
+    {
+        get => _singleErrorPerField;
+        set
+        {
+            if (_singleErrorPerField == value) return;
+            _singleErrorPerField = value;
+            // The messages on screen were gathered under the other setting, and went on showing two complaints
+            // after it was switched on - or one after it was switched off - until each field was validated again.
+            _ = RejudgeShownMessagesAsync();
+        }
+    }
+
+    private bool _singleErrorPerField;
 
     /// <summary>
     /// Whether a field's asynchronous rules still run when one of its synchronous rules has already
@@ -194,7 +207,22 @@ public sealed class BormState : IDisposable
     private string _idPrefix = "borm_";
 
     /// <summary>Index of the active wizard step (ignored for non-wizard forms).</summary>
-    public int CurrentStepIndex { get; private set; }
+    public int CurrentStepIndex
+    {
+        get => _currentStepIndex;
+        private set
+        {
+            _currentStepIndex = value;
+            _visitedSteps.Add(value);
+        }
+    }
+
+    private int _currentStepIndex;
+
+    // Every step the user has stood on. The furthest index alone could not tell a step walked through from one a
+    // condition put in behind them afterwards - choosing Business back on step 2 inserted a company step the user had
+    // never seen, which the stepper then drew as done and offered as a shortcut past.
+    private readonly HashSet<int> _visitedSteps = [0];
 
     /// <summary>
     /// The furthest step the user has reached. Steps up to it have been validated on the way past, so
@@ -216,12 +244,21 @@ public sealed class BormState : IDisposable
 
     private int _furthestStepIndex;
 
-    /// <summary>Whether a step may be jumped to directly — it has been reached at least once.</summary>
+    /// <summary>
+    /// Whether a step may be jumped to directly: it has been reached, and so has every step shown before it - a
+    /// step that appeared behind the user (a condition met on an earlier one) is reached by Next, like any other,
+    /// rather than skipped past unvalidated.
+    /// </summary>
     public bool IsStepReachable(int index)
-        => index >= 0 && index < Definition.Steps.Count
-           // Only a wizard gates its steps; tabs and sections are all there to be moved between.
-           && (!Definition.IsWizard || index <= FurthestStepIndex)
-           && IsStepVisible(Definition.Steps[index]);
+    {
+        if (index < 0 || index >= Definition.Steps.Count || !IsStepVisible(Definition.Steps[index])) return false;
+        // Only a wizard gates its steps; tabs and sections are all there to be moved between.
+        if (!Definition.IsWizard) return true;
+
+        for (var i = 0; i <= index; i++)
+            if (!_visitedSteps.Contains(i) && IsStepVisible(Definition.Steps[i])) return false;
+        return true;
+    }
 
     /// <summary>Number of times submission has been attempted.</summary>
     public int SubmitCount { get; private set; }
@@ -644,6 +681,9 @@ public sealed class BormState : IDisposable
         }
     }
 
+    /// <summary>The text a field's control offered that the model could not take, while it is still refused.</summary>
+    internal string? RefusedEntry(string path) => _conversionErrors.GetValueOrDefault(path);
+
     private BormValidationMessage ConversionMessage(string path)
         => new(path, Text(BormMessageKeys.Conversion, _conversionErrors[path]))
         {
@@ -735,7 +775,7 @@ public sealed class BormState : IDisposable
             _language = language;
             _validator.Language = language;
             // An entry the model refused is described by the library alone, so it can be said again in the new
-            // language now; a rule's verdict is rewritten when its field is next validated.
+            // language now; a rule's verdict is asked for again below.
             foreach (var path in _conversionErrors.Keys)
             {
                 if (!_messages.TryGetValue(path, out var list)) continue;
@@ -744,7 +784,29 @@ public sealed class BormState : IDisposable
                 _messages[path] = next;
             }
             NotifyChanged();
+            // Left for the field's next validation, the messages on screen stayed in the old language under labels
+            // in the new one - an English "This field is required." in a form whose lang says German.
+            _ = RejudgeShownMessagesAsync();
         }
+    }
+
+    /// <summary>
+    /// Asks again for the verdicts on screen, after a change to how they are worded or gathered (<see cref="Language"/>,
+    /// <see cref="SingleErrorPerField"/>): the whole form when it has been validated as a whole, else each field that
+    /// has something to say. Nothing new is shown: a field the user has not been to stays quiet.
+    /// </summary>
+    private async Task RejudgeShownMessagesAsync()
+    {
+        if (HasValidated)
+        {
+            await ValidateAsync();
+            return;
+        }
+
+        var paths = _messages.Where(p => p.Key.Length > 0 && p.Value.Exists(m => m.Source == BormValidationSource.Rule))
+            .Select(p => p.Key).ToList();
+        foreach (var path in paths)
+            if (FindField(path) is { } field) await ValidateFieldAsync(field, path);
     }
 
     /// <summary>The language the schema's text is read out in right now: <see cref="Language"/>, else the UI culture's.</summary>
@@ -851,6 +913,10 @@ public sealed class BormState : IDisposable
         foreach (var path in _conversionErrors.Keys)
         {
             if (under is not null && !BormPath.IsAtOrUnder(path, under)) continue;
+            // The pass judged the value the model kept, not the text in the box: "Must be between 18 and 120"
+            // under "'1e5' is not a valid value" described a number the user can no longer see. As when the
+            // entry was refused (RecordConversionResult), the refusal is the one thing to say about the field.
+            RemoveMessagesFor(path);
             AddMessage(ConversionMessage(path));
         }
     }
@@ -946,6 +1012,9 @@ public sealed class BormState : IDisposable
         }
 
         if (ReferenceEquals(initial, current)) return true;
+        // A text box emptied writes null (BormValueConverter.FromInputString) where the model may have started on
+        // "": both are no answer, so typing a character and deleting it again leaves the field clean.
+        if (initial is null or "" && current is null or "") return true;
         return initial is not null && current is not null && initial.Equals(current);
     }
 
@@ -1284,7 +1353,9 @@ public sealed class BormState : IDisposable
 
             var options = OptionsFor(field, path);
             if (options.Any(o => string.Equals(o.Value, text, StringComparison.Ordinal))) continue;
-            if (options.FirstOrDefault(o => !o.Disabled && string.Equals(o.Label, text, StringComparison.OrdinalIgnoreCase)) is { } chosen)
+            // By its label, else by its own value in another casing ("FR"), as the interactive control reads it.
+            if ((options.FirstOrDefault(o => !o.Disabled && string.Equals(o.Label, text, StringComparison.OrdinalIgnoreCase))
+                 ?? options.FirstOrDefault(o => !o.Disabled && string.Equals(o.Value, text, StringComparison.OrdinalIgnoreCase))) is { } chosen)
             {
                 RememberChoice(path, chosen);
                 SetValueQuietly(path, chosen.Value);
@@ -1614,8 +1685,22 @@ public sealed class BormState : IDisposable
     public int RegisterSubmitAttempt()
     {
         SubmitCount++;
+        _focusMovesAtSubmit = _focusMoves;
         return SubmitCount;
     }
+
+    private int _focusMoves;
+    private int _focusMovesAtSubmit;
+
+    /// <summary>Notes that the focus moved within a view of this form - counted, never drawn (see BormView).</summary>
+    internal void NoteFocusMove() => _focusMoves++;
+
+    /// <summary>
+    /// Whether the focus has moved within the form since the last submit began: the user went on to something else
+    /// while an async rule was still deciding the verdict, and taking the focus to that verdict now would pull it out
+    /// of the field they are typing in - the keystrokes after it lost.
+    /// </summary>
+    internal bool FocusMovedSinceSubmit => _focusMoves != _focusMovesAtSubmit;
 
     /// <summary>All current validation messages across the form.</summary>
     public IEnumerable<BormValidationMessage> AllMessages => _messages.Values.SelectMany(x => x);
@@ -1837,13 +1922,15 @@ public sealed class BormState : IDisposable
     /// Validates the single field at <paramref name="path"/>, resolving its definition from the schema
     /// — React Hook Form's <c>trigger(name)</c>. Returns false when the path names no field in the
     /// schema, so a caller checking one answer from outside the form does not have to go and find the
-    /// definition first.
+    /// definition first. The field counts as visited, so what the check found is shown on it - as
+    /// <c>trigger</c> shows it - rather than only recorded for a field the user has not been to yet.
     /// </summary>
     public async ValueTask<bool> ValidateFieldAsync(string path, bool includeAsync = true)
     {
         ArgumentException.ThrowIfNullOrEmpty(path);
         if (FindField(path) is not { } field) return false;
 
+        _touched.Add(path);
         await ValidateFieldAsync(field, path, includeAsync);
         return true;
     }
@@ -1870,9 +1957,16 @@ public sealed class BormState : IDisposable
         {
             var messages = await _validator.ValidateFieldAsync(field, path, Data, Services, includeAsync, cts.Token);
             if (cts.IsCancellationRequested) return;
+            // A keystroke's pass leaves the external validator out, as it does a field's async rules: it may well
+            // be one, and it judges the whole model. Only a field that writes as the user types has keystrokes; any
+            // other pass is a committed answer - a radio picked, a box left - which can settle another field's complaint.
+            var keystroke = !includeAsync && field.UpdateOn == BormUpdateTrigger.Input;
+            var external = !keystroke && ExternalValidator is { } validator ? await validator(Definition, Data, Services) : null;
+            if (cts.IsCancellationRequested) return;
 
             RemoveMessagesUnder(path);
             foreach (var m in messages) AddMessage(m);
+            if (external is not null) ReplaceExternalMessages(external);
             // Everything under the path was just cleared, so every rejected entry under it — a child of
             // an object or a row being revalidated as a whole — has to report itself again, not only
             // one standing at the path itself.
@@ -1959,6 +2053,9 @@ public sealed class BormState : IDisposable
             if (!DeclaresPath(field.RevalidateOn, changedPath, BormPath.Parent(path))) continue;
             // Nothing is currently being claimed about this field, so there is nothing to correct.
             if (!IsSubmitted && !IsTouched(path) && MessagesFor(path).Count == 0) continue;
+            // Nor when the form's mode would not judge it now - OnSubmit before the first submit: revalidated for
+            // the field it watches, it showed "The two passwords do not match." before the user had sent anything.
+            if (!ShouldValidate(path, BormValidationTrigger.OnBlur)) continue;
 
             (dependents ??= []).Add((field, path));
         }
@@ -2060,6 +2157,8 @@ public sealed class BormState : IDisposable
     /// </remarks>
     public async ValueTask<bool> FocusAsync(string path)
     {
+        // A control in an accordion's closed section is on the page and takes a call to focus it without taking the focus.
+        if (StepRevealer is { } revealStep && VisibleStepContaining(path) is >= 0 and var step) await revealStep(step);
         if (_focusTargets.TryGetValue(path, out var focus)) return await focus();
         // A row on a page of a paged list that is not showing has no control to focus until its page is.
         if (await RevealAsync(path) && _focusTargets.TryGetValue(path, out focus)) return await focus();
@@ -2528,6 +2627,9 @@ public sealed class BormState : IDisposable
     /// <summary>Whether the paths a draft restore writes are being written right now.</summary>
     private bool _restoring;
 
+    /// <summary>Whether a draft is being put back right now - writes an autosave has nothing to save from.</summary>
+    internal bool IsRestoringDraft => _restoring;
+
     /// <summary>
     /// Runs a draft restore. Change handlers stay silent — the draft already holds whatever they would
     /// write, and running them would overwrite answers it restores — and a cascading select keeps the
@@ -2623,6 +2725,7 @@ public sealed class BormState : IDisposable
         IsSubmitSuccessful = false;
         SubmitOutcome = BormSubmitOutcome.None;
         SubmitError = null;
+        _visitedSteps.Clear();
         CurrentStepIndex = 0;
         FurthestStepIndex = 0;
         ClampStep();
@@ -2940,6 +3043,10 @@ public sealed class BormState : IDisposable
         if (!IsStepVisible(Definition.Steps[index])) return;
         if (index == CurrentStepIndex) return;
 
+        // Asked for explicitly - a draft brought back on its step, a button of the app's own - so the steps shown on
+        // the way there count as reached, as they always have. The stepper offers only steps already reachable.
+        for (var i = 0; i < index; i++)
+            if (IsStepVisible(Definition.Steps[i])) _visitedSteps.Add(i);
         CurrentStepIndex = index;
         FurthestStepIndex = Math.Max(FurthestStepIndex, index);
         NotifyChanged();
@@ -3612,6 +3719,34 @@ public sealed class BormState : IDisposable
             : messages.Concat(external.Where(m => !IsHidden(m.FieldPath, hidden)).Select(AsExternal)).ToList();
     }
 
+    /// <summary>
+    /// Puts what the external validator says now in place of everything it said before, on every field. It judges
+    /// the whole model, so one answer can settle - or raise - a complaint on another field: a field's own pass
+    /// used to drop the external messages under it and never ask again, so a FluentValidation or
+    /// IValidatableObject rule vanished while the value it refused was still there, or stayed on the other field of
+    /// a cross-field rule the user had just satisfied, until the next submit.
+    /// </summary>
+    private void ReplaceExternalMessages(IReadOnlyList<BormValidationMessage> external)
+    {
+        foreach (var key in _messages.Keys.ToList())
+        {
+            var list = _messages[key];
+            if (!list.Exists(m => m.Source == BormValidationSource.External)) continue;
+            var kept = list.FindAll(m => m.Source != BormValidationSource.External);
+            if (kept.Count == 0) _messages.Remove(key);
+            else _messages[key] = kept;
+        }
+
+        if (external.Count == 0) return;
+        var hidden = HiddenFieldPaths();
+        foreach (var message in external)
+        {
+            // A refused entry is the one thing to say about its field (see ReapplyConversionErrors).
+            if (_conversionErrors.ContainsKey(message.FieldPath)) continue;
+            if (hidden.Count == 0 || !IsHidden(message.FieldPath, hidden)) AddMessage(AsExternal(message));
+        }
+    }
+
     /// <summary>Marks a message from an external validator as such, unless it already says where it came from.</summary>
     private static BormValidationMessage AsExternal(BormValidationMessage message)
         => message.Source == BormValidationSource.Rule ? message with { Source = BormValidationSource.External } : message;
@@ -4062,6 +4197,36 @@ public sealed class BormState : IDisposable
     /// it asks to. Set by <see cref="BormView"/> while it shows the form.
     /// </summary>
     internal Action<int>? StepNavigator { get; set; }
+
+    /// <summary>
+    /// How a view showing the steps side by side brings one into view before a field in it is focused - an accordion
+    /// opening its section. Reports whether it had to show anything. Set by <see cref="BormStepsView"/>.
+    /// </summary>
+    internal Func<int, Task<bool>>? StepRevealer { get; set; }
+
+    private List<Action>? _heldRenders;
+
+    /// <summary>
+    /// Whether a mouse button is down in a view of this form, which draws nothing until it is released: the messages a
+    /// field's blur brings drawn mid-press moved the button being pressed out from under the pointer (see BormView).
+    /// </summary>
+    internal bool RendersHeld { get; private set; }
+
+    internal void HoldRenders() => RendersHeld = true;
+
+    /// <summary>Ends a hold, and re-renders every control that skipped a render during it.</summary>
+    internal void ReleaseRenders()
+    {
+        if (!RendersHeld) return;
+        RendersHeld = false;
+        var held = _heldRenders;
+        _heldRenders = null;
+        if (held is null) return;
+        foreach (var render in held) render();
+    }
+
+    /// <summary>Asks for <paramref name="render"/> once the hold ends - from a control whose render it skipped.</summary>
+    internal void RenderAfterHold(Action render) => (_heldRenders ??= []).Add(render);
 
     /// <summary>The Blazor edit context provided for this form, when one is — by a view, or by hand.</summary>
     internal BormEditContextAdapter? EditContextAdapter { get; set; }

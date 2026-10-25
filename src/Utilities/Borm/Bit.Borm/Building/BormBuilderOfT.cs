@@ -63,6 +63,10 @@ public sealed class BormBuilder<TModel> : BormBuilder where TModel : class
         var underlying = Nullable.GetUnderlyingType(valueType) ?? valueType;
         if (underlying.IsEnum)
             builder.OptionsFromEnum(underlying);
+        // A collection of enum members: Resolve() made it a multi-select, and the choices are the element
+        // type's - as the generator gives them. Without them the field rendered a label over nothing.
+        else if (BormFieldTypeResolver.GetEnumElementType(underlying) is { } elementEnum)
+            builder.OptionsFromEnum(elementEnum);
 
         BormDataAnnotationsScanner.Apply(member, def);
         configure?.Invoke(builder);

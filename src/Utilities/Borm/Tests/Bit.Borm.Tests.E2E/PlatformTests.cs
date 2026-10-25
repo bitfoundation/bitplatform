@@ -28,6 +28,15 @@ public sealed class PlatformTests : BormTest
         await Expect(Errors(page, "Hours")).ToHaveTextAsync("Must be between 1 and 40.");
         await Expect(Errors(page, "Address.City")).ToHaveTextAsync("This field is required.");
         await Expect(Result(page)).ToHaveCountAsync(0);
+        // Nothing posted under no field: every complaint in the summary leads to the field it is about.
+        await Expect(Summary(page).Locator("li:not(:has(a))")).ToHaveCountAsync(0);
+
+        // Text model binding cannot read comes back on the field it was typed into, with the reason.
+        await Control(page, "Hours").FillAsync("abc");
+        await submit.ClickAsync();
+        await Expect(Errors(page, "Hours")).ToHaveTextAsync("'abc' is not a valid value for this field.");
+        await Expect(Control(page, "Hours")).ToHaveValueAsync("abc");
+        await Expect(Summary(page).Locator("li:not(:has(a))")).ToHaveCountAsync(0);
 
         await Control(page, "FullName").FillAsync("Ada Lovelace");
         await Control(page, "Email").FillAsync("ada@example.com");
@@ -112,7 +121,9 @@ public sealed class PlatformTests : BormTest
         var undo = Form(page).Locator("button", new() { HasTextString = "Undo" });
         await Expect(undo).ToHaveAttributeAsync("aria-label", new Regex("^Undo the change to "));
         await Expect(undo).ToBeEnabledAsync();
-        await undo.ClickAsync();
+        // From the keyboard: WebKit never focuses a button a mouse clicks, so only there does the focus have a place to stay.
+        await undo.FocusAsync();
+        await page.Keyboard.PressAsync("Enter");
         await Expect(quantity).ToHaveValueAsync(before);
         await Expect(page.Locator(".bit-borm-form__actions [aria-live]")).ToContainTextAsync("Undone:");
         await Expect(undo).ToBeFocusedAsync();

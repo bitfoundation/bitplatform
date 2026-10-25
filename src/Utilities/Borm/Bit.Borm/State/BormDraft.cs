@@ -113,7 +113,15 @@ public static class BormDraft
         {
             content = Read(json);
         }
-        catch (Exception ex) when (ex is JsonException or FormatException or InvalidOperationException or ArgumentException)
+        catch (JsonException ex)
+        {
+            // Said in the library's own words: a trimmed WebAssembly app keeps the runtime's resource keys rather than
+            // its messages, and "ExpectedStartOfPropertyNotFound, n LineNumber: 0" is what the page was shown.
+            return BormDraftRestoreResult.NotADraft(ex.LineNumber is { } line && ex.BytePositionInLine is { } position
+                ? $"The draft is not valid JSON (line {line + 1}, position {position + 1})."
+                : "The draft is not valid JSON.");
+        }
+        catch (Exception ex) when (ex is FormatException or InvalidOperationException or ArgumentException)
         {
             return BormDraftRestoreResult.NotADraft(ex.Message);
         }

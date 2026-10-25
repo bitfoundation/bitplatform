@@ -96,11 +96,14 @@ public class MonthAndWeekTests : ComponentTestBase
 
         var cut = Render<BormView>(p => p.Add(x => x.Definition, form));
 
+        // Capitalised: the browser reads the type case-insensitively, while blazor.web.js would take a lower-case
+        // "month" or "week" as a picker's and throw on every keystroke where the browser has none (Firefox, desktop
+        // Safari) and shows a text box instead.
         var expiry = cut.Find("#borm_expiry");
-        Assert.AreEqual("month", expiry.GetAttribute("type"));
+        Assert.AreEqual("Month", expiry.GetAttribute("type"));
         Assert.AreEqual("2026-01", expiry.GetAttribute("min"));
         Assert.AreEqual("2030-12", expiry.GetAttribute("max"));
-        Assert.AreEqual("week", cut.Find("#borm_slot").GetAttribute("type"));
+        Assert.AreEqual("Week", cut.Find("#borm_slot").GetAttribute("type"));
     }
 
     [TestMethod]

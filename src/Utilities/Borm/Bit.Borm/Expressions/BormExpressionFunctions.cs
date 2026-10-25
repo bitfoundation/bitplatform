@@ -144,7 +144,9 @@ public static class BormExpressionFunctions
         Add("endsWith", 2, 2, static args => BormConditionEvaluator.StartsOrEnds(args[0], args[1], start: false));
         Add("matches", 2, 2, static args =>
         {
-            if (args[0] is null) return false;
+            // Nothing given is not judged, as Pattern() does not judge it: a rule that answered false here put "must
+            // look like this" under "This field is required." on an empty box. A condition reads unknown as false.
+            if (args[0] is null or "") return BormExpressionValue.Unknown;
             var regex = BormRegex.Create(Text(args[1]));
             return BormRegex.IsMatch(regex, Text(args[0])) is { } matched ? matched : BormExpressionValue.Unknown;
         }, check: static args =>

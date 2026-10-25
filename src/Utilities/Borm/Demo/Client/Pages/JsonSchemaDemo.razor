@@ -5,7 +5,7 @@
 <div class="bb-intro">
     <h1>JSON Schema</h1>
     <p class="bb-subtitle">
-        Edit the JSON Schema on the left and the form regenerates on the right — no compiled model
+        Edit the JSON Schema on the left and apply it: the form regenerates on the right — no compiled model
         required. Alongside the standard keywords (<code>$ref</code>, <code>allOf</code>,
         <code>if</code>/<code>then</code>, <code>dependentRequired</code>, <code>enum</code>,
         <code>format</code>…), Borm reads a small set of <code>x-</code> extensions for the UI
@@ -204,6 +204,8 @@
     {
         if (_schema is null) return;
         _json = BormJsonSchemaExporter.Export(_schema);
+        // The box now holds the form's own schema, which is valid: a complaint about what it held before stayed under it.
+        _error = null;
     }
 
     private void LoadConditional()

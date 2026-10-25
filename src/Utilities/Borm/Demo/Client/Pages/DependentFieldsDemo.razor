@@ -151,16 +151,12 @@ var schema = BormBuilder.For<TripRequest>()
                           nameof(TripRequest.Travellers), nameof(TripRequest.Rooms), nameof(TripRequest.CarDays)))
             .Build();
 
-        // The switch: with the dependencies stripped out, the second half of every cross-field rule
-        // never runs again and the page shows the bug this feature exists to fix.
-        if (!_wired)
-            foreach (var field in _schema.AllFields())
-                field.RevalidateOn.Clear();
-
-        _state?.Dispose();
         _state = new BormState(_schema, new BormModelDataAccessor(_model));
         _state.StateChanged += OnStateChanged;
     }
+
+    // What each field revalidates on, while the switch has taken it away.
+    private readonly Dictionary<BormFieldDefinition, string[]> _unwired = new();
 
     private static object? Estimate(BormComputedContext ctx)
     {
@@ -172,10 +168,28 @@ var schema = BormBuilder.For<TripRequest>()
 
     private void OnStateChanged() => InvokeAsync(StateHasChanged);
 
+    /// <summary>
+    /// The switch: with the dependencies stripped out, the second half of every cross-field rule never runs again and
+    /// the page shows the bug this feature exists to fix. Taken out of - and put back into - the schema the form
+    /// already reads, rather than a new form built over the answers so far: that one started from them, so Reset
+    /// emptied nothing, and the messages on screen went with the old form.
+    /// </summary>
     private void ToggleWiring(ChangeEventArgs e)
     {
         _wired = e.Value is bool b && b;
-        Build();
+        foreach (var field in _schema.AllFields())
+        {
+            if (_wired)
+            {
+                if (!_unwired.Remove(field, out var paths)) continue;
+                foreach (var path in paths) field.RevalidateOn.Add(path);
+            }
+            else if (field.RevalidateOn.Count > 0)
+            {
+                _unwired[field] = [.. field.RevalidateOn];
+                field.RevalidateOn.Clear();
+            }
+        }
     }
 
     private void HandleSubmit(BormState state)

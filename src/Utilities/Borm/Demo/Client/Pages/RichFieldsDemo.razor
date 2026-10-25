@@ -55,7 +55,7 @@
             .Text("Iban", f => f.Label("IBAN").Mask("AA00 0000 0000 0000 0000 00", storeRaw: true))
             .Text("CoverLetter", f => f.Label("Cover letter").AsMarkdown().Required().MaxLength(2000).CharacterCount())
             .Field("Resume", BormFieldType.File, f => f.Label("Résumé").Accept(".pdf,.doc,.docx,.txt")
-                .MaxFileSize(20_000_000).Required().UploadWith(SendAsync))
+                .MaxFileSize(20 * 1024 * 1024).Required().UploadWith(SendAsync))
             .Text("Signature", f => f.AsSignature().Required())
             .Build();
 
@@ -89,7 +89,7 @@
             .Text("Iban", f => f.Label("IBAN").Mask("AA00 0000 0000 0000 0000 00", storeRaw: true))
             .Text("CoverLetter", f => f.Label("Cover letter").AsMarkdown().Required().MaxLength(2000).CharacterCount())
             .Field("Resume", BormFieldType.File, f => f.Label("Résumé").Accept(".pdf,.doc,.docx,.txt")
-                .MaxFileSize(20_000_000).Required().UploadWith(SendAsync))
+                .MaxFileSize(20 * 1024 * 1024).Required().UploadWith(SendAsync))
             .Text("Signature", f => f.AsSignature().Required())
             .Build();
 

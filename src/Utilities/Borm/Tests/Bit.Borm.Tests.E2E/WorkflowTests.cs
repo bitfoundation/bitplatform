@@ -65,6 +65,26 @@ public sealed class WorkflowTests : BormTest
     }
 
     [TestMethod]
+    public async Task A_month_and_a_week_are_taken_from_their_pickers_or_as_typed_where_the_browser_has_none()
+    {
+        // Firefox and desktop Safari have no month or week picker and show a text box. blazor.web.js used to throw on
+        // every keystroke typed into one, so the answer never arrived and the month stayed "required" for good.
+        var page = await OpenAsync("/tabs-review");
+        var tabs = Form(page).GetByRole(AriaRole.Tab);
+
+        await tabs.Filter(new() { HasTextString = "Plan & billing" }).ClickAsync();
+        await EnterAsync(Control(page, "BillingFrom"), "2026-11");
+        await tabs.Filter(new() { HasTextString = "Onboarding" }).ClickAsync();
+        await EnterAsync(Control(page, "KickoffWeek"), "2026-W44");
+        await tabs.Filter(new() { HasTextString = "Review" }).ClickAsync();
+
+        var review = Form(page).Locator(".bit-borm-review");
+        await Expect(review).ToContainTextAsync("November");
+        await Expect(review).ToContainTextAsync("2026-W44");
+        await Expect(page.Locator(".bit-borm-message--error")).ToHaveCountAsync(0);
+    }
+
+    [TestMethod]
     public async Task A_lookup_shows_the_stored_record_by_name_searches_as_the_user_types_and_refuses_what_names_none()
     {
         var page = await OpenAsync("/search-lookup");

@@ -1,13 +1,15 @@
 ﻿@namespace Bit.Borm
 @inherits BormInputBase
 
-@* Splat first so the renderer's own attributes below always win. *@
+@* Splat first so the renderer's own attributes below always win. Not disabled while its options load: aria-busy says
+   so, and the "Loading…" placeholder is all there is to choose - disabled, it left the tab order, and a Tab pressed
+   straight after choosing the country it waits for jumped past it. *@
 <select @attributes="ExtraAttributes"
         id="@Context.ElementId"
         name="@Context.InputName"
         @ref="Element"
         class="@CssClass"
-        disabled="@(DisabledOrReadOnly || Context.IsLoadingOptions)"
+        disabled="@DisabledOrReadOnly"
         value="@Context.StringValue"
         autocomplete="@Field.Autocomplete"
         aria-required="@AriaRequired"

@@ -113,7 +113,15 @@ public abstract class BormInputBase : ComponentBase, IDisposable
     /// half-written text with it.
     /// </remarks>
     protected Task OnChange(ChangeEventArgs e)
-        => UpdatesOnInput ? FlushAsync() : Context.SetFromStringAsync(e.Value?.ToString());
+    {
+        if (!UpdatesOnInput) return Context.SetFromStringAsync(e.Value?.ToString());
+        if (!_partialPending) return FlushAsync();
+
+        // The keystrokes left it to this commit (see OnInput): whatever the box holds now - emptied, or never
+        // made into a number - is the answer.
+        _partialPending = false;
+        return Context.SetFromStringAsync(e.Value?.ToString());
+    }
 
     /// <summary>
     /// Handles the browser's <c>input</c> event. It is only wired at all when something needs it (see
@@ -124,8 +132,25 @@ public abstract class BormInputBase : ComponentBase, IDisposable
     {
         var raw = e.Value?.ToString();
         _liveLength = raw?.Length ?? 0;
-        return UpdatesOnInput ? Debounced(raw) : Task.CompletedTask;
+        if (!UpdatesOnInput) return Task.CompletedTask;
+
+        // A number or a date half-typed - "-", "1e", a day with no month yet - is reported as no value at all, and
+        // written that way it put "0" (or nothing) back into the box under the caret: "-5" became 5, "1e3" became
+        // 3. The keystroke is left to the commit, which hears what the box finally holds.
+        if (string.IsNullOrEmpty(raw) && Field.Type is BormFieldType.Integer or BormFieldType.Number
+                or BormFieldType.Date or BormFieldType.DateTime or BormFieldType.Time)
+        {
+            CancelDebounce();
+            _hasPendingRaw = false;
+            _partialPending = true;
+            return Task.CompletedTask;
+        }
+
+        _partialPending = false;
+        return Debounced(raw);
     }
+
+    private bool _partialPending;
 
     /// <summary>
     /// The <c>input</c> handler to bind, or a callback with no delegate — which Blazor omits from the
@@ -330,6 +355,27 @@ public abstract class BormInputBase : ComponentBase, IDisposable
     private IDisposable? _focusRegistration;
     private string? _registeredPath;
     private BormState? _registeredState;
+    private bool _renderHeld;
+
+    /// <summary>
+    /// Skips a render while a mouse button is down in the form, and renders once it is released (see
+    /// <c>BormState.RendersHeld</c>): what leaving this control draws - a typed signature's preview, a counter -
+    /// moved the button being pressed out from under the pointer, and the click was lost.
+    /// </summary>
+    protected override bool ShouldRender()
+    {
+        if (!Context.State.RendersHeld) return true;
+        if (!_renderHeld)
+        {
+            _renderHeld = true;
+            Context.State.RenderAfterHold(() =>
+            {
+                _renderHeld = false;
+                _ = InvokeAsync(StateHasChanged);
+            });
+        }
+        return false;
+    }
 
     /// <summary>
     /// Moves focus to the control once the render in progress has reached the browser — for a control

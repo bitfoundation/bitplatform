@@ -54,7 +54,7 @@
                     var item = upload;
                     <li class="bit-borm-file__item bit-borm-file__item--@(item.Status.ToString().ToLowerInvariant())">
                         <span class="bit-borm-file__name">@item.Name</span>
-                        <span class="bit-borm-file__size">@BormFileRule.FormatSize(item.Size)</span>
+                        <span class="bit-borm-file__size">@BormFileRule.FormatSize(item.Size, roundUp: true)</span>
                         @if (item.Status == BormUploadStatus.Uploading)
                         {
                             <progress class="bit-borm-file__progress" max="100" value="@item.Percent"
@@ -105,7 +105,7 @@
             {
                 <li class="bit-borm-file__item">
                     <span class="bit-borm-file__name">@file.Name</span>
-                    <span class="bit-borm-file__size">@BormFileRule.FormatSize(file.Size)</span>
+                    <span class="bit-borm-file__size">@BormFileRule.FormatSize(file.Size, roundUp: true)</span>
                 </li>
             }
         </ul>
@@ -135,12 +135,15 @@
         if (Field.Uploader is not null)
         {
             var chosen = Field.Multiple ? e.GetMultipleFiles(e.FileCount) : e.FileCount > 0 ? [e.File] : [];
-            // A fresh input for the next choice: the browser keeps the selection, and choosing the same file
-            // again - after a failure, a removal - would otherwise raise no change at all.
-            _generation++;
             var uploading = Context.State.UploadAsync(Field, Context.Path, chosen);
             Watch();
             await uploading;
+            // A fresh input for the next choice: the browser keeps the selection, and choosing the same file
+            // again would otherwise raise no change at all. Only once the files are read, and not while one that
+            // failed may be tried again: a file is read through the input it was chosen in. Replaced before then,
+            // the upload read from an element no longer on the page - so replacing a field's file, whose removal
+            // re-renders the field at once, failed every time, and Retry with it.
+            if (!Uploads.Any(u => u.Status == BormUploadStatus.Failed)) _generation++;
             return;
         }
 
@@ -224,7 +227,16 @@
         StateHasChanged();
     });
 
-    private void Remove(BormUpload upload) => Context.State.RemoveUpload(Field, Context.Path, upload);
+    /// <summary>
+    /// Stops or takes back a file, with a fresh input so the same file can be chosen again. The button pressed goes
+    /// with its row, so the focus goes back to the field rather than falling to the page body.
+    /// </summary>
+    private void Remove(BormUpload upload)
+    {
+        Context.State.RemoveUpload(Field, Context.Path, upload);
+        _generation++;
+        RequestFocusAfterRender();
+    }
 
     private void RemoveStored(string result) => Context.State.RemoveStoredUpload(Field, Context.Path, result);
 
@@ -233,6 +245,8 @@
         var retrying = Context.State.RetryUploadAsync(Field, Context.Path, upload);
         Watch();
         await retrying;
+        // Read at last: the input it was chosen in can make way for a fresh one (see OnFilesSelected).
+        if (!Uploads.Any(u => u.Status == BormUploadStatus.Failed)) _generation++;
     }
 
     public override void Dispose()

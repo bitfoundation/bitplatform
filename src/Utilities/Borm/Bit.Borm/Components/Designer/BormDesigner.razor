@@ -5,15 +5,18 @@
 @* A form designer made of the library itself: a palette of kinds of field, the list of fields - each chosen, moved,
    copied or deleted by buttons first and dragged second - the chosen field's properties as a Borm form, the form's
    own settings, a live preview and the JSON Schema it all comes to. Every change is built into a BormDefinition
-   through the same builder an application uses, and handed out through ValueChanged. *@
-<div class="bit-borm-designer" lang="@Language">
+   through the same builder an application uses, and handed out through ValueChanged.
+   bit-borm-form is what carries the theme's tokens, and the palette, the list and the properties sit outside any
+   form: without it their borders, selection, focus rings and error text were drawn with tokens nothing defined,
+   which drew no border, no selection, no focus ring and no red - and an app's re-tint of its forms missed them. *@
+<div class="bit-borm-form bit-borm-designer" lang="@Language">
     <section class="bit-borm-designer__palette" aria-labelledby="@Id("palette")">
         <h3 class="bit-borm-designer__heading" id="@Id("palette")">@T(BormMessageKeys.DesignerAdd)</h3>
         <div class="bit-borm-designer__kinds">
             @foreach (var (kind, _) in BormDesignerField.Kinds)
             {
                 var chosen = kind;
-                <button type="button" class="bit-borm-btn bit-borm-btn--sm" @onclick="() => Add(chosen)">@T(BormMessageKeys.DesignerKind(chosen))</button>
+                <button type="button" class="bit-borm-btn bit-borm-btn--sm" @ref="_kindButtons[chosen]" @onclick="() => Add(chosen)">@T(BormMessageKeys.DesignerKind(chosen))</button>
             }
         </div>
     </section>
@@ -133,6 +136,11 @@
 
     private readonly List<BormDesignerField> _fields = [];
     private readonly Dictionary<BormDesignerField, ElementReference> _selectButtons = new(ReferenceEqualityComparer.Instance);
+
+    // The palette's buttons, by kind: where the focus goes once the last field is deleted - adding one is all there is
+    // left to do, and the delete button pressed has gone with its field.
+    private readonly Dictionary<string, ElementReference> _kindButtons = new(StringComparer.Ordinal);
+    private bool _focusPalette;
     private readonly Dictionary<string, object?> _previewData = new(StringComparer.OrdinalIgnoreCase);
     private readonly FormSettings _settings = new();
     private BormDefinition? _loadedFrom;
@@ -247,8 +255,9 @@
         var field = _fields[index];
         _fields.RemoveAt(index);
         _announcement = T(BormMessageKeys.DesignerDeleted, NameOf(field));
-        // The field that took its place, or the one before it - never the page body.
+        // The field that took its place, or the one before it - never the page body; the palette once none is left.
         Select(_fields.Count == 0 ? null : _fields[Math.Min(index, _fields.Count - 1)], focus: true);
+        _focusPalette = _fields.Count == 0;
         await RebuildAsync();
     }
 
@@ -419,14 +428,24 @@
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (_focus is not { } field) return;
-        _focus = null;
-        if (!_selectButtons.TryGetValue(field, out var button)) return;
+        ElementReference button;
+        if (_focusPalette)
+        {
+            _focusPalette = false;
+            if (!_kindButtons.TryGetValue(BormDesignerField.Kinds[0].Kind, out button)) return;
+        }
+        else
+        {
+            if (_focus is not { } field) return;
+            _focus = null;
+            if (!_selectButtons.TryGetValue(field, out button)) return;
+        }
+
         try
         {
             await button.FocusAsync();
         }
-        catch (Exception ex) when (ex is InvalidOperationException or JSDisconnectedException or ObjectDisposedException)
+        catch (Exception ex) when (ex is InvalidOperationException or JSDisconnectedException or ObjectDisposedException or JSException)
         {
             // Prerendered, or the designer went away between the click and the render.
         }

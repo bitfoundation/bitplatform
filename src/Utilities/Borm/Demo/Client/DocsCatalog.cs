@@ -103,7 +103,7 @@ public static class DocsCatalog
                 "fluent builder BormBuilder expression field required email pattern radio VisibleWhen condition conditional",
                 typeof(BuilderDemo)),
             new("/json-schema", "JSON Schema",
-                "A live JSON Schema editor: the form regenerates as you type, and Export writes it back out, conditions and steps intact.",
+                "A live JSON Schema editor: the form regenerates from what you apply, and Export writes it back out, conditions and steps intact.",
                 "json schema import export round trip $ref allOf if then dependentRequired enum format x-widget x-visibleWhen x-steps TryImport",
                 typeof(JsonSchemaDemo)),
             new("/designer", "Form designer",

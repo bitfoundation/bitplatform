@@ -175,14 +175,20 @@ public sealed class BormFieldContext
     /// <summary>Resolves a piece of the library's own UI text through the registered message provider.</summary>
     public string Text(string key, params object?[] args) => State.Text(key, args);
 
-    /// <summary>The current value formatted for an HTML input.</summary>
     /// <summary>
     /// The name the control posts its value under when the form is rendered to be posted (<c>BormView FormName</c>) -
     /// <c>Model.Lines[0].Product</c>, which the page's <c>[SupplyParameterFromForm]</c> model binds - or null while it is not.
     /// </summary>
     public string? InputName => State.PostedName is { } model ? (model.Length == 0 ? Path : model + "." + Path) : null;
 
-    public string StringValue => BormValueConverter.ToInputString(Value, Field.Type);
+    /// <summary>
+    /// The current value formatted for an HTML input. A posted form rendered on the server shows the text the model
+    /// refused rather than the value it kept, so the box holds what its message is about; in the browser the control
+    /// already holds that text, and the value it is given is left alone.
+    /// </summary>
+    public string StringValue => State.RendersStatically && State.RefusedEntry(Path) is { } refused
+        ? refused
+        : BormValueConverter.ToInputString(Value, Field.Type);
 
     /// <summary>
     /// The value as a text box shows it: <see cref="StringValue"/>, put back into its mask's shape when the

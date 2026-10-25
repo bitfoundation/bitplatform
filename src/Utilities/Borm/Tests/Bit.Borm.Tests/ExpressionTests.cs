@@ -269,7 +269,8 @@ public class ExpressionFunctionTests
     {
         var data = new Dictionary<string, object?> { ["Zip"] = "12345", ["Evil"] = new string('a', 40) + "!" };
         Assert.AreEqual(true, Eval("matches({Zip}, '^\\d{5}$')", data));
-        Assert.AreEqual(false, Eval("matches({None}, '.*')"));
+        // Nothing to match is not judged - unknown, as Pattern() leaves an empty box to Required().
+        Assert.IsNull(Eval("matches({None}, '.*')"));
         // A pattern written to backtrack is either defused by the regex engine or abandoned at its
         // time limit — answered false or unknown, but answered, never a hang.
         var watch = System.Diagnostics.Stopwatch.StartNew();

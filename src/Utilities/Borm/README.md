@@ -1190,7 +1190,7 @@ browser storage, the server, a database - is the application's choice:
 
 ```razor
 <BormView State="_state" OnValidSubmit="Submit" />
-<BormAutosave State="_state" OnSave="json => drafts.SaveAsync(DraftKey, json)" />
+<BormAutosave State="_state" OnSave="json => drafts.SaveAsync(DraftKey, json)" OnDiscard="() => drafts.DeleteAsync(DraftKey)" />
 <BormUnsavedChangesGuard State="_state" />
 
 @code {
@@ -1226,8 +1226,12 @@ browser storage, the server, a database - is the application's choice:
   `m => { if (m.FromVersion == "2") m.Rename("Phone", "Contact.Phone").Remove("Fax"); }`.
 
 `BormAutosave` writes one a moment after the user stops changing the form (`DelayMilliseconds`, default 1000) -
-only while there are unsaved changes, and once more as the page goes away if a save was still waiting. Clear the
-stored draft once the form is submitted. `BormUnsavedChangesGuard` asks before the user leaves a form with unsaved
+only while there are unsaved changes, and once more as the page goes away if a save was still waiting. A draft
+put back by `BormDraft.Restore` is not saved again, and `OnDiscard` runs once the form is back where it started -
+`Reset()`, or every change undone - so the stored draft can go with it. Clear the
+stored draft once the form is submitted. Autosave and the guard below hear what a field has committed, and a text box commits what is typed
+in it when it is left: give the fields whose half-written answers a draft should keep `UpdateOnInput(300)`, and they
+commit as the user types. `BormUnsavedChangesGuard` asks before the user leaves a form with unsaved
 changes: Blazor's `NavigationLock` gives an external navigation the browser's own "leave site?" prompt, and an
 in-app one asks `OnConfirm` (a dialog of yours) or the browser's `confirm()` with `BormMessageKeys.UnsavedChanges`.
 

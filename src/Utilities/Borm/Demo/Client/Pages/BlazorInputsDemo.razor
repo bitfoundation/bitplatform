@@ -66,13 +66,26 @@
 @* Renderers/BlazorTextInput.razor *@
 @inherits BormInputBase
 
-<InputText id="@Context.ElementId"
+<InputText @ref="_input"
+           id="@Context.ElementId"
            class="@CssClass"
            Value="@Context.StringValue"
            ValueChanged="@((string? value) => Context.SetFromStringAsync(value))"
            ValueExpression="@(Context.ValueExpression<string?>())"
            disabled="@Disabled"
            aria-describedby="@DescribedBy" />
+
+@code {
+    private InputText? _input;
+
+    // A component is no element: hand the form the one InputText renders, so it can be focused.
+    public override async ValueTask<bool> FocusAsync()
+    {
+        if (_input?.Element is not { } element) return false;
+        await element.FocusAsync();
+        return true;
+    }
+}
 """;
 
     private readonly ContactCard _model = new();

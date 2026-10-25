@@ -1,4 +1,5 @@
 ﻿@namespace Bit.Borm
+@implements IDisposable
 
 @{ var steps = VisibleSteps; }
 @switch (Layout)
@@ -13,7 +14,11 @@
                 {
                     var selected = index == State.CurrentStepIndex;
                     var errors = ErrorsIn(step);
-                    <button type="button" role="tab" class="bit-borm-tabs__tab @(selected ? "is-active" : "") @(errors > 0 ? "has-errors" : "")"
+                    @* Keyed by step: a reference is captured when its element is created, and without a key a
+                       tab that a condition took away left the tabs after it on the elements before them - the
+                       last tab's reference pointing at an element no longer on the page, which an arrow key then
+                       tried to focus and threw. *@
+                    <button @key="step" type="button" role="tab" class="bit-borm-tabs__tab @(selected ? "is-active" : "") @(errors > 0 ? "has-errors" : "")"
                             id="@TabId(index)" aria-selected="@(selected ? "true" : "false")" aria-controls="@PanelId"
                             tabindex="@(selected ? 0 : -1)" @ref="_tabs[index]"
                             @onclick="() => Select(index, focus: false)" @onkeydown="e => OnTabKey(e, index)">
@@ -30,7 +35,7 @@
             @if (State.CurrentStep is { } current)
             {
                 <div role="tabpanel" id="@PanelId" aria-labelledby="@TabId(State.CurrentStepIndex)" class="bit-borm-tabs__panel">
-                    @Body(current)
+                    @Body(current, State.CurrentStepIndex)
                 </div>
             }
         </div>
@@ -56,7 +61,7 @@
                         <span class="bit-borm-sr-only">@State.Text(BormMessageKeys.StepErrors, errors)</span>
                     }
                 </summary>
-                <div class="bit-borm-section__body">@Body(step)</div>
+                <div class="bit-borm-section__body">@Body(step, index)</div>
             </details>
         }
         break;
@@ -66,7 +71,7 @@
         {
             <section class="bit-borm-section" aria-labelledby="@TabId(index)">
                 <div class="bit-borm-section__title" id="@TabId(index)" role="heading" aria-level="@HeadingLevel">@State.StepTitleOf(step)</div>
-                <div class="bit-borm-section__body">@Body(step)</div>
+                <div class="bit-borm-section__body">@Body(step, index)</div>
             </section>
         }
         break;
@@ -86,10 +91,12 @@
     [Parameter] public int HeadingLevel { get; set; } = 3;
 
     private readonly Dictionary<int, ElementReference> _tabs = new();
+    private readonly Dictionary<int, ElementReference> _bodies = new();
     private readonly HashSet<int> _open = [];
     private bool _seeded;
     private int _openedForSubmit;
     private int? _focusTab;
+    private int? _focusBody;
 
     private string PanelId => BormFieldContext.FormElementId(State, "tabpanel");
 
@@ -108,6 +115,8 @@
 
     protected override void OnParametersSet()
     {
+        RegisterRevealer();
+
         // The first visible section opens; the rest wait to be asked for.
         if (!_seeded && VisibleSteps is [var first, ..])
         {
@@ -125,7 +134,10 @@
         }
     }
 
-    private RenderFragment Body(BormStep step) => @<div class="bit-borm-step-body @GridClass" style="@GridStyle">
+    // tabindex="-1" so Show can put the focus at the start of a step, as the wizard does with the step it turns to;
+    // keyed so the reference follows the step rather than the place a tab's panel is drawn in.
+    private RenderFragment Body(BormStep step, int index) => @<div @key="step" class="bit-borm-step-body @GridClass" style="@GridStyle"
+                                                                  tabindex="-1" @ref="_bodies[index]">
         @if (State.StepDescriptionOf(step) is { Length: > 0 } description)
         {
             <p class="bit-borm-form__description">@description</p>
@@ -171,7 +183,57 @@
         if (!_open.Remove(index)) _open.Add(index);
     }
 
-    private void OnTabKey(KeyboardEventArgs e, int index)
+    /// <summary>
+    /// Shows a step - its tab selected, its section opened - and puts the focus at its start, as the wizard does with a
+    /// step it turns to. What a review's "Change" does: without it the tabs dropped the focus with the review's panel,
+    /// a closed section stayed closed and one scrolled out of view stayed there, the button pressed and nothing seen.
+    /// </summary>
+    internal void Show(int index)
+    {
+        State.GoToStep(index);
+        _open.Add(index);
+        _focusBody = index;
+        StateHasChanged();
+    }
+
+    // ---- an accordion's closed sections: a control in one is on the page and takes a call to focus it without taking
+    // the focus, so a summary link to it did nothing. The state asks here first (BormState.StepRevealer).
+
+    private BormState? _revealing;
+    private Func<int, Task<bool>>? _revealer;
+    private TaskCompletionSource? _rendered;
+
+    private void RegisterRevealer()
+    {
+        var wanted = Layout == BormStepLayout.Accordion ? State : null;
+        if (ReferenceEquals(_revealing, wanted)) return;
+        UnregisterRevealer();
+        if (wanted is null) return;
+        wanted.StepRevealer = _revealer ??= RevealAsync;
+        _revealing = wanted;
+    }
+
+    private void UnregisterRevealer()
+    {
+        if (_revealing is not null && ReferenceEquals(_revealing.StepRevealer, _revealer)) _revealing.StepRevealer = null;
+        _revealing = null;
+    }
+
+    private async Task<bool> RevealAsync(int index)
+    {
+        if (_open.Contains(index)) return false;
+
+        var rendered = _rendered = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        _open.Add(index);
+        await InvokeAsync(StateHasChanged);
+        // Bounded: a view taken away before it rendered must not leave the caller waiting for ever.
+        await Task.WhenAny(rendered.Task, Task.Delay(2000));
+        return true;
+    }
+
+    public void Dispose() => UnregisterRevealer();
+
+    private async Task OnTabKey(KeyboardEventArgs e, int index)
     {
         var steps = VisibleSteps;
         var at = steps.ToList().FindIndex(s => s.Index == index);
@@ -185,18 +247,42 @@
             "End" => steps[^1].Index,
             _ => -1
         };
-        if (target >= 0) Select(target, focus: true);
+        if (target < 0) return;
+
+        if (e.Key is not ("Home" or "End"))
+        {
+            Select(target, focus: true);
+            return;
+        }
+
+        // Home and End also scroll the page: the key's default, which Blazor cannot cancel for these keys alone
+        // without cancelling Tab and Enter with them. In the browser this handler runs inside the key's event, so the
+        // focus moved first and the page then scrolled to its end, leaving the tab with the focus off screen. Taken
+        // once that scroll has landed - Firefox applies it a frame or two after the event - focusing the tab brings
+        // it back into view. A second press meanwhile lands on the same tab, so nothing is lost by waiting.
+        Select(target, focus: false);
+        await Task.Delay(100);
+        _focusTab = target;
+        StateHasChanged();
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (_focusTab is not { } index || !_tabs.TryGetValue(index, out var tab)) return;
+        _rendered?.TrySetResult();
+        _rendered = null;
+
+        var focusTab = _focusTab is { } tabIndex && _tabs.TryGetValue(tabIndex, out var tab) ? tab : (ElementReference?)null;
+        var focusBody = _focusBody is { } bodyIndex && _bodies.TryGetValue(bodyIndex, out var body) ? body : (ElementReference?)null;
         _focusTab = null;
+        _focusBody = null;
+        if ((focusTab ?? focusBody) is not { } target) return;
+
         try
         {
-            await tab.FocusAsync();
+            await target.FocusAsync();
         }
-        catch (Exception ex) when (ex is InvalidOperationException or JSDisconnectedException or ObjectDisposedException)
+        // A JSException: an element no longer on the page. Focus left where it is beats an unhandled exception.
+        catch (Exception ex) when (ex is InvalidOperationException or JSDisconnectedException or ObjectDisposedException or JSException)
         {
             // Static prerender: nothing to focus.
         }

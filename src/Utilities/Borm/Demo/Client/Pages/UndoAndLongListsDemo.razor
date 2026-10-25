@@ -14,8 +14,9 @@
 
 <div class="bb-note">
     Change a few quantities, remove a line, move one - then press Undo, again and again: each answer comes back with
-    what it set off, a removed line as itself. Clear a line's product on page 7 and press Save: the form turns to that
-    page and puts the caret in the box. Two changes to the same field within a second are one undo.
+    what it set off, a removed line as itself. Clear a line's product on page 7, go back to page 1 and press Save: the summary
+    lists it, and its link turns to that page and puts the caret in the box. Two changes to the same field within a
+    second are one undo.
 </div>
 
 <div class="bb-demo">
@@ -55,7 +56,8 @@
                     .Field(l => l.Description, f => f.Label("Product").Required())
                     .Field(l => l.Quantity, f => f.Range(0, 9999)),
                 f => f.PageSize(20).Attr("itemNoun", "line"))
-            .Computed(x => x.Total, m => m.Lines.Sum(l => (decimal)l.Quantity), dependsOn: [nameof(Invoice.Lines)])
+            .Computed(x => x.Total, m => m.Lines.Sum(l => (decimal)l.Quantity), dependsOn: [nameof(Invoice.Lines)],
+                f => f.Label("Items in stock"))   // the model is an invoice; this list is a stock
             .Build();
 
         _state = new BormState(schema, new BormModelDataAccessor(_model));
@@ -80,7 +82,8 @@
                     .Field(l => l.Description, f => f.Label("Product").Required())
                     .Field(l => l.Quantity, f => f.Range(0, 9999)),
                 f => f.PageSize(20).Attr("itemNoun", "line"))
-            .Computed(x => x.Total, m => m.Lines.Sum(l => (decimal)l.Quantity), dependsOn: [nameof(Invoice.Lines)])
+            .Computed(x => x.Total, m => m.Lines.Sum(l => (decimal)l.Quantity), dependsOn: [nameof(Invoice.Lines)],
+                f => f.Label("Items in stock"))   // the model is an invoice; this list is a stock
             .Build();
 
         _state = new BormState(schema, new BormModelDataAccessor(_model));

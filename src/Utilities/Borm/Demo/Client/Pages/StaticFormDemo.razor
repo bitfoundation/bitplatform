@@ -57,14 +57,16 @@
             .Columns(2)
             .Field(x => x.FullName, f => f.Required().ColumnSpan(2))
             .Field(x => x.Email, f => f.Required().Email())
-            .Field(x => x.Hours, f => f.Range(1, 40))
+            // A text box that brings up the number pad, rather than a number box: a browser posts a number box holding
+            // letters as nothing at all, so the text the user typed would be lost before the server could refuse it.
+            .Field(x => x.Hours, f => f.Range(1, 40).As(BormFieldType.Text).InputMode("numeric"))
             .Field(x => x.Team, f => f.AsRadio()
                 .Options(("events", "Events"), ("kitchen", "Kitchen"), ("drivers", "Drivers")).Required())
             .Field(x => x.Country, f => f.AsCombobox().Options([.. DemoDirectory.Countries]).Required())
             .Field(x => x.Newsletter)
             .Object(x => x.Address, a => a
                 .Field(c => c.City, f => f.Required())
-                .Field(c => c.PostCode, f => f.VisibleWhen("{City} != null")))
+                .Field(c => c.PostCode, f => f.VisibleWhen("isNotEmpty({City})")))
             .Build();
     }
 
@@ -90,14 +92,14 @@
             .Columns(2)
             .Field(x => x.FullName, f => f.Required().ColumnSpan(2))
             .Field(x => x.Email, f => f.Required().Email())
-            .Field(x => x.Hours, f => f.Range(1, 40))
+            .Field(x => x.Hours, f => f.Range(1, 40).As(BormFieldType.Text).InputMode("numeric"))
             .Field(x => x.Team, f => f.AsRadio()
                 .Options(("events", "Events"), ("kitchen", "Kitchen"), ("drivers", "Drivers")).Required())
             .Field(x => x.Country, f => f.AsCombobox().Options([.. DemoDirectory.Countries]).Required())
             .Field(x => x.Newsletter)
             .Object(x => x.Address, a => a
                 .Field(c => c.City, f => f.Required())
-                .Field(c => c.PostCode, f => f.VisibleWhen("{City} != null")))
+                .Field(c => c.PostCode, f => f.VisibleWhen("isNotEmpty({City})")))
             .Build();
     }
 

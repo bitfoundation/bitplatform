@@ -16,7 +16,8 @@
        its name, and this form's submit handler judges it there. Interactive, preventDefault keeps it a Blazor form. *@
     <form method="post" @formname="@formName" lang="@FormState.Language" @attributes="AdditionalAttributes"
           class="bit-borm-form @(Class)" novalidate aria-busy="@(Working ? "true" : null)"
-          @onsubmit="OnFormSubmitted" @onsubmit:preventDefault="true">
+          @onsubmit="OnFormSubmitted" @onsubmit:preventDefault="true" @onmousedown="HoldRenders" @onmouseup="ReleaseRenders"
+          @onfocusin="NoteFocusMove">
         <Microsoft.AspNetCore.Components.Forms.AntiforgeryToken />
         @Body
     </form>
@@ -25,7 +26,8 @@ else
 {
     <form lang="@FormState.Language" @attributes="AdditionalAttributes"
           class="bit-borm-form @(Class)" novalidate aria-busy="@(Working ? "true" : null)"
-          @onsubmit="OnFormSubmitted" @onsubmit:preventDefault="true">
+          @onsubmit="OnFormSubmitted" @onsubmit:preventDefault="true" @onmousedown="HoldRenders" @onmouseup="ReleaseRenders"
+          @onfocusin="NoteFocusMove">
         @Body
     </form>
 }
@@ -97,7 +99,7 @@ else
                 var index = s;
                 number++;
                 var displayNumber = number;
-                <li class="bit-borm-stepper__step @(index == FormState.CurrentStepIndex ? "is-active" : "") @(index != FormState.CurrentStepIndex && index <= FormState.FurthestStepIndex ? "is-done" : "")"
+                <li class="bit-borm-stepper__step @(index == FormState.CurrentStepIndex ? "is-active" : "") @(index != FormState.CurrentStepIndex && FormState.IsStepReachable(index) ? "is-done" : "")"
                     aria-current="@(index == FormState.CurrentStepIndex ? "step" : null)">
                     @if (AllowStepNavigation && index != FormState.CurrentStepIndex && FormState.IsStepReachable(index))
                     {
@@ -180,7 +182,7 @@ else
             @* Tabs, an accordion or sections: one form the user moves around in freely, validated together
                on submit. A failed submit turns to the first tab with something to fix (see
                ShowStepWithFirstError) and opens every section that has some. *@
-            <BormStepsView State="FormState" Layout="StepsLayout" Label="@StepperLabelText"
+            <BormStepsView @ref="_stepsView" State="FormState" Layout="StepsLayout" Label="@StepperLabelText"
                            HeadingLevel="@Math.Clamp(TitleHeadingLevel + 1, 1, 6)" />
         }
         else
@@ -448,12 +450,40 @@ else
     private void ApplyMappingErrors()
     {
         if (MappingContext is null || FormName is not { Length: > 0 } formName) return;
-        var prefix = PostedModelName.Length == 0 ? string.Empty : PostedModelName + ".";
         foreach (var error in MappingContext.GetAllErrors(formName))
         {
-            var path = error.Path.StartsWith(prefix, StringComparison.Ordinal) ? error.Path[prefix.Length..] : error.Path;
-            FormState.RefuseEntry(path, error.AttemptedValue ?? string.Empty);
+            // An empty box is no answer, not a wrong one: the model keeps its default and the field's own rules judge
+            // it, as they do in the browser - where a cleared number box holds 0, not "'' is not a valid value".
+            if (string.IsNullOrEmpty(error.AttemptedValue)) continue;
+            FormState.RefuseEntry(MappedPath(error.Path, error.ErrorMessages), error.AttemptedValue);
         }
+    }
+
+    /// <summary>
+    /// The field a mapping error is about. Blazor files a value it could not convert under the object that holds
+    /// it - <c>Model</c>, <c>Model.Lines[0]</c> - and names the property only in its message ("The value 'abc' is not
+    /// valid for 'Hours'."). Taken as it came, the complaint belonged to no field: it showed in the summary with no
+    /// label and no link, and the box itself showed the model's default under a message about that instead.
+    /// </summary>
+    private string MappedPath(string posted, IReadOnlyList<FormattableString> messages)
+    {
+        var path = PostedModelName.Length == 0 ? posted
+            : posted == PostedModelName ? string.Empty
+            : posted.StartsWith(PostedModelName + ".", StringComparison.Ordinal) ? posted[(PostedModelName.Length + 1)..]
+            : posted;
+
+        if (FormState.FindField(path) is { Type: not (BormFieldType.Object or BormFieldType.Array) }) return path;
+
+        // The property's name is the message's last argument (the attempted value comes first), so it is tried first.
+        foreach (var message in messages)
+            foreach (var argument in Enumerable.Reverse(message.GetArguments()))
+            {
+                if (argument is not string { Length: > 0 } name) continue;
+                var candidate = path.Length == 0 ? name : path + "." + name;
+                if (FormState.FindField(candidate) is not null) return candidate;
+            }
+
+        return path;
     }
 
     [Parameter(CaptureUnmatchedValues = true)] public IDictionary<string, object>? AdditionalAttributes { get; set; }
@@ -526,11 +556,22 @@ else
             if (ShowErrorSummary || (FocusFirstError && !focusMissed)) return null;
             if (!FormState.IsSubmitted || FormState.IsValidating || !FormState.HasErrors) return null;
 
-            var count = FormState.OrderedMessages().Count(m => m.Severity == BormValidationSeverity.Error);
-            return count == 1
+            var errors = FormState.OrderedMessages().Where(m => m.Severity == BormValidationSeverity.Error).ToList();
+            var title = errors.Count == 1
                 ? FormState.Text(BormMessageKeys.SummaryTitleOne)
-                : FormState.Text(BormMessageKeys.SummaryTitleMany, count);
+                : FormState.Text(BormMessageKeys.SummaryTitleMany, errors.Count);
+            // The title introduces a list - "There is a problem with this form:" - and said on its own it ended on
+            // the colon, telling a screen-reader user there was a problem and nothing of what. The first one follows.
+            return errors.Count == 0 ? title : $"{title} {Describe(errors[0])}";
         }
+    }
+
+    /// <summary>A message as the error summary lists it: the field it is about, then what is wrong.</summary>
+    private string Describe(BormValidationMessage message)
+    {
+        var field = FormState.FindField(message.FieldPath);
+        var label = field is null ? null : FormState.LabelOf(field, message.FieldPath) is { Length: > 0 } translated ? translated : field.Name;
+        return string.IsNullOrEmpty(label) ? message.Message : $"{label}: {message.Message}";
     }
 
     /// <summary>
@@ -683,6 +724,57 @@ else
 
     private void OnStateChanged() => InvokeAsync(StateHasChanged);
 
+    // ---- a mouse press in progress
+    //
+    // Pressing a button moves the focus first: the field being left raises its change and its blur, and the messages
+    // they bring - or take away - were drawn above the button before the mouse was released. In the browser that
+    // render runs between mousedown and mouseup, so the button moved out from under the pointer and the click was
+    // lost: Save, Next, Add line, pressed once and doing nothing. So while a mouse button is down in the form, what
+    // changed is drawn once it is released (BormState.RendersHeld - the controls hold theirs too). The answer is taken
+    // at once - only drawing it waits - and the click's target is settled by then. A press released outside the form
+    // gives the render back after a moment.
+
+    private int _press;
+
+    private void HoldRenders()
+    {
+        FormState.HoldRenders();
+        _ = ReleaseLaterAsync(++_press);
+    }
+
+    private void ReleaseRenders() => FormState.ReleaseRenders();
+
+    private async Task ReleaseLaterAsync(int press)
+    {
+        await Task.Delay(1000);
+        if (press != _press || !FormState.RendersHeld) return;
+        await InvokeAsync(() =>
+        {
+            FormState.ReleaseRenders();
+            StateHasChanged();
+        });
+    }
+
+    // Counted so a verdict that arrives after the user has moved on leaves the focus where they put it
+    // (BormState.FocusMovedSinceSubmit). Nothing to draw: the render the event would bring is skipped.
+    private bool _skipRender;
+
+    private void NoteFocusMove()
+    {
+        FormState.NoteFocusMove();
+        _skipRender = true;
+    }
+
+    protected override bool ShouldRender()
+    {
+        if (_skipRender)
+        {
+            _skipRender = false;
+            return false;
+        }
+        return !FormState.RendersHeld;
+    }
+
     /// <summary>
     /// Relays a field change to <see cref="OnFieldChanged"/>. A handler that fails is reported the way any
     /// failing event handler is — through the renderer, to an error boundary or the circuit's log.
@@ -753,10 +845,20 @@ else
 
     private void GoTo(int index)
     {
+        // Tabs, an accordion or sections: the step body to focus is the steps view's, and showing the step may take
+        // more than making it current - a section opened, one scrolled to - even when it is current already.
+        if (!(FormState.Definition.IsWizard && !RendersStatically) && _stepsView is { } steps)
+        {
+            steps.Show(index);
+            return;
+        }
+
         if (index == FormState.CurrentStepIndex) return;
         FormState.GoToStep(index);
         _focusStepBody = true;
     }
+
+    private BormStepsView? _stepsView;
 
     /// <summary>
     /// Moves to a step and takes focus with it, as the stepper does — for a button of your own that
@@ -897,12 +999,17 @@ else
         }
 
         var forSubmit = _focusErrorForSubmit;
-        var wantsErrorFocus = _focusStepErrors || forSubmit != 0;
+        var forStep = _focusStepErrors;
+        var wantsErrorFocus = forStep || forSubmit != 0;
         _focusStepErrors = false;
         _focusErrorForSubmit = 0;
 
         // The summary owns focus when it is showing; two components pulling at it would be a race.
         if (!wantsErrorFocus || !FocusFirstError || ShowErrorSummary) return;
+
+        // A verdict an async rule kept the user waiting for, who has gone on to another field meanwhile: the focus is
+        // theirs now, and the messages are there to be seen.
+        if (!forStep && FormState.FocusMovedSinceSubmit) return;
 
         // Nothing took focus — the errors all belong to objects, rows or hidden fields, which have no
         // control of their own. The submit then has to be announced instead, or it reads as a button

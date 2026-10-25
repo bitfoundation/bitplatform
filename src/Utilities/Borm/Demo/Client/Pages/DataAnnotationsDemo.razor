@@ -53,6 +53,9 @@ public class RoomBooking : IValidatableObject
         if (CheckOut <= CheckIn)
             yield return new("Check out must be after check in.", [nameof(CheckOut)]);
 
+        if (CheckIn < DateOnly.FromDateTime(DateTime.Today))
+            yield return new("Check in cannot be in the past.", [nameof(CheckIn)]);
+
         var capacity = RoomType switch { "single" => 1, "double" => 2, _ => 4 };
         if (Guests > capacity)
             // Naming two members puts the same complaint under both, so whichever one the user is

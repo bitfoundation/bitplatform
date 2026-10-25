@@ -10,9 +10,10 @@
         Choose <em>when</em> a field revalidates, independently for before and after the first submit —
         the same <code>mode</code>/<code>reValidateMode</code> split React Hook Form popularised. The
         summary below lists every error in schema order and links to the control that needs fixing.
-        The username field is <em>debounced</em>, so its async availability check runs once you pause
-        rather than once per character — try <code>ada</code> or <code>admin</code> and watch the
-        indicator below.
+        The username field is <em>debounced</em>, so where a mode validates on change - after the first
+        submit, or with <em>Before submit</em> set to OnChange - its async availability check runs once
+        you pause rather than once per character; before it, OnBlur checks it as you leave the box. Try
+        <code>ada</code> or <code>admin</code> and watch the indicator below.
     </p>
 </div>
 
@@ -60,7 +61,8 @@
     </p>
 </div>
 
-@if (_submitted)
+@* Only while it is still true: Reset, or a later submit that failed, takes back what this said. *@
+@if (_submitted && _state.IsSubmitSuccessful)
 {
     <div class="bb-note bb-note-success demo-result"><strong>Account created ✓</strong><pre>@_json</pre></div>
 }

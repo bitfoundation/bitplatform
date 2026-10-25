@@ -201,6 +201,26 @@ public class TranslationTests : ComponentTestBase
     }
 
     [TestMethod]
+    public async Task A_rules_verdict_already_on_screen_is_said_again_in_the_new_language()
+    {
+        // Left for the field's next validation, the message stayed English under a German label.
+        var form = BormBuilder.Create().Text("name", f => f.Required()).Build();
+        var state = new BormState(form, new BormDictionaryDataAccessor(), Translating());
+        await state.ValidateAsync();
+        Assert.AreEqual("This field is required.", state.MessagesFor("name").Single().Message);
+
+        state.Language = "de";
+
+        await WaitUntil(() => state.MessagesFor("name").Single().Message != "This field is required.");
+        Assert.AreEqual(Translated.Get("de", BormMessageKeys.Required), state.MessagesFor("name").Single().Message);
+    }
+
+    private static async Task WaitUntil(Func<bool> condition)
+    {
+        for (var i = 0; i < 100 && !condition(); i++) await Task.Delay(10);
+    }
+
+    [TestMethod]
     public async Task A_validator_used_on_its_own_answers_in_the_language_it_is_given()
     {
         // Validating a posted form on the server, in the language of the person who filled it in.

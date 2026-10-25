@@ -35,7 +35,7 @@
                    a screen-reader user hearing "remove button" five times learns nothing. *@
                 <button type="button" class="bit-borm-tag__remove"
                         title="@RemoveLabel(value)" aria-label="@RemoveLabel(value)"
-                        @onclick="@(() => RemoveAtAsync(i, value))">×</button>
+                        @onclick="@(() => RemoveChipAsync(i, value))">×</button>
             }
         </span>
     }
@@ -47,7 +47,7 @@
            of them works this way — and without this the first tag a user types would post the form.
            Blazor reads the value through events, never through a native submit, so belonging to no
            form costs the control nothing. *@
-        <input class="bit-borm-tags__entry"
+        <input class="bit-borm-tags__entry" @ref="_entry"
                id="@(Context.ElementId)_entry"
                form="@(Context.ElementId)_none"
                type="text"
@@ -112,7 +112,17 @@
         if (Separators.Length > 0 && raw.IndexOfAny(Separators.ToCharArray()) >= 0)
         {
             var parts = raw.Split(Separators.ToCharArray());
-            _draft = parts[^1];
+            var rest = parts[^1];
+            if (rest == _draft)
+            {
+                // What the box was last drawn with is what it is about to be drawn with again - "" before "p, q,"
+                // was pasted into it - so Blazor, comparing the two, never wrote to the box, and the pasted text
+                // stayed there beside the tags made from it. Drawn once as it stands, it is then emptied for real.
+                _draft = raw;
+                StateHasChanged();
+                await Task.Yield();
+            }
+            _draft = rest;
             for (var i = 0; i < parts.Length - 1; i++) await CommitAsync(parts[i]);
             return;
         }
@@ -163,7 +173,39 @@
         if (tags.Any(t => string.Equals(t, tag, StringComparison.OrdinalIgnoreCase))) return Task.CompletedTask;
 
         tags.Add(tag);
+        // The last one there is room for takes the entry box away, and the focus in it with it.
+        if (Field.MaxItems is { } limit && tags.Count >= limit) RequestFocusAfterRender();
         return Context.SetValueAsync(tags);
+    }
+
+    private ElementReference _entry;
+
+    /// <summary>
+    /// Focuses the entry box, where tags are typed - what an error summary's link to the field leads to - or, with
+    /// no room left for another tag, the group.
+    /// </summary>
+    public override async ValueTask<bool> FocusAsync()
+    {
+        if (!DisabledOrReadOnly && CanAdd)
+        {
+            try
+            {
+                await _entry.FocusAsync();
+                return true;
+            }
+            catch (Exception ex) when (ex is InvalidOperationException or JSDisconnectedException or ObjectDisposedException or JSException)
+            {
+                // Not rendered yet: the group below.
+            }
+        }
+        return await base.FocusAsync();
+    }
+
+    /// <summary>Removes a chip by its × button, which goes with it: the focus goes to the entry box rather than the page body.</summary>
+    private async Task RemoveChipAsync(int index, string tag)
+    {
+        await RemoveAtAsync(index, tag);
+        RequestFocusAfterRender();
     }
 
     /// <summary>

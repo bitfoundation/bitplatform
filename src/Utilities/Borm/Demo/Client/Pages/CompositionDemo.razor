@@ -71,7 +71,9 @@
 
             <div class="bit-borm-form__actions">
                 <button type="button" class="bit-borm-btn bit-borm-btn--primary" @onclick="Submit">Raise ticket</button>
-                <button type="button" class="bit-borm-btn" disabled="@(!_custom.IsDirty("Subject"))" @onclick='() => _custom.ResetField("Subject")'>
+                @* aria-disabled, not disabled: it switches itself off when pressed, and a disabled button drops the focus of
+                   the user who pressed it to the page body. ResetField on a clean field changes nothing. *@
+                <button type="button" class="bit-borm-btn" aria-disabled="@(_custom.IsDirty("Subject") ? null : "true")" @onclick='() => _custom.ResetField("Subject")'>
                     Undo subject
                 </button>
                 <span class="bb-soft">
@@ -131,8 +133,9 @@ state.OptionsLoadFailed += (path, ex) => logger.LogWarning(ex, "Options for {Pat
 </div>
 
 // 4. Per-field undo, and dirtiness that is a comparison rather than a flag: typing a character and
-//    deleting it again leaves the field clean, so this button switches itself off.
-<button disabled="@(!state.IsDirty("Subject"))" @onclick='() => state.ResetField("Subject")'>Undo subject</button>
+//    deleting it again leaves the field clean, so this button switches itself off - aria-disabled, so the focus
+//    stays on it when it does.
+<button aria-disabled="@(state.IsDirty("Subject") ? null : "true")" @onclick='() => state.ResetField("Subject")'>Undo subject</button>
 """;
 
     private readonly SupportTicket _groupedModel = new();
@@ -147,15 +150,16 @@ state.OptionsLoadFailed += (path, ex) => logger.LogWarning(ex, "Options for {Pat
 
     protected override void OnInitialized()
     {
-        _grouped = new BormState(Schema(), new BormModelDataAccessor(_groupedModel));
-        _custom = new BormState(Schema(), new BormModelDataAccessor(_customModel)) { IdPrefix = "custom_" };
+        // Only the right-hand form has the switch that breaks the service and the Retry that recovers from it.
+        _grouped = new BormState(Schema(breakable: false), new BormModelDataAccessor(_groupedModel));
+        _custom = new BormState(Schema(breakable: true), new BormModelDataAccessor(_customModel)) { IdPrefix = "custom_" };
 
         _grouped.StateChanged += OnStateChanged;
         _custom.StateChanged += OnStateChanged;
         _custom.OptionsLoadFailed += OnOptionsLoadFailed;
     }
 
-    private BormDefinition Schema() => BormBuilder.For<SupportTicket>()
+    private BormDefinition Schema(bool breakable) => BormBuilder.For<SupportTicket>()
         .Title("Raise a ticket")
         .Field(x => x.ReporterName, f => f.Required())
         .Field(x => x.ReporterEmail, f => f.AsEmail().Required())
@@ -165,7 +169,7 @@ state.OptionsLoadFailed += (path, ex) => logger.LogWarning(ex, "Options for {Pat
         .Field(x => x.Component, f => f
             .OptionsFrom(
                 load: async ctx => await Directory.GetComponentsAsync(
-                    ctx.Value(nameof(SupportTicket.Team)) as string, _breakTheService, ctx.CancellationToken),
+                    ctx.Value(nameof(SupportTicket.Team)) as string, breakable && _breakTheService, ctx.CancellationToken),
                 value: c => c,
                 label: c => c,
                 dependsOn: nameof(SupportTicket.Team))

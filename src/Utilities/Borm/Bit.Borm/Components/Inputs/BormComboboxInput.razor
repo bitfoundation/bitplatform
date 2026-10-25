@@ -164,7 +164,13 @@
 
             foreach (var opt in Context.Options)
                 if (string.Equals(opt.Value, stored, StringComparison.Ordinal))
+                {
+                    // Remembered as a pick is: a search's results are replaced as soon as the user types, and
+                    // the record the form opened with then showed its bare id - written into the box under the
+                    // caret, so typing over "Northwind Bank" turned "con" into "C-0042".
+                    if (Field.SearchMinLength is not null) Context.State.RememberChoice(Context.Path, opt);
                     return opt.Label;
+                }
 
             // A search field's choice outlives the results it was picked from.
             return Context.State.ChosenOption(Context.Path, stored)?.Label ?? stored;
@@ -229,6 +235,12 @@
         foreach (var opt in Context.Options)
             if (!opt.Disabled && string.Equals(opt.Label, text, StringComparison.OrdinalIgnoreCase))
                 return opt;
+        // An option's own value typed in, in any casing - "FR" for France. Stored as typed, it passed the list's
+        // rule (which compares without regard to case) while the model held a value no option has, and the box
+        // went on showing "FR"; taken as the option, it stores "fr" and shows "France".
+        foreach (var opt in Context.Options)
+            if (!opt.Disabled && string.Equals(opt.Value, text, StringComparison.OrdinalIgnoreCase))
+                return opt;
         return null;
     }
 
@@ -262,7 +274,10 @@
     private async Task Clear()
     {
         await Context.SetValueAsync(null);
-        await FocusAsync();
+        // After the render that empties the box, not before it: Firefox decides whether a later change fires
+        // against the value the box held when it took the focus, so focused while it still showed "France",
+        // typing France again raised nothing, and the field stayed empty with the word in it.
+        RequestFocusAfterRender();
     }
 
     private string Announce(int count) => Context.IsLoadingOptions

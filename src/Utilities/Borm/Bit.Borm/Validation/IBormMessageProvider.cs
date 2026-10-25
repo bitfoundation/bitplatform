@@ -186,7 +186,10 @@ public static class BormMessageKeys
     /// <summary>Accessible name of the button that reveals a password. </summary>
     public const string PasswordShow = "ui.password.show";
 
-    /// <summary>Accessible name of the button that hides a revealed password.</summary>
+    /// <summary>
+    /// "Hide password", for a control of an app's own. The built-in toggle keeps <see cref="PasswordShow"/> as its name
+    /// whichever way it stands and says which with <c>aria-pressed</c>, so it is not read out as "Hide password, pressed".
+    /// </summary>
     public const string PasswordHide = "ui.password.hide";
 
     /// <summary>Accessible name of the button that empties a field.</summary>

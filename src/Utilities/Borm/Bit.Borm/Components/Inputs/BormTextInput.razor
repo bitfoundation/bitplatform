@@ -145,9 +145,9 @@ else
            && Field.Type is not (BormFieldType.Hidden or BormFieldType.Color)
            && !DisabledOrReadOnly;
 
-    private string RevealLabel => Context.Text(_revealed
-        ? BormMessageKeys.PasswordHide
-        : BormMessageKeys.PasswordShow);
+    // One name, whichever way it stands: aria-pressed says whether the password shows. A name that turned into
+    // "Hide password" as well was read out as "Hide password, pressed" - pressed to hide, or hidden?
+    private string RevealLabel => Context.Text(BormMessageKeys.PasswordShow);
 
     private string ClearLabel => Context.Text(BormMessageKeys.Clear);
 
@@ -160,7 +160,10 @@ else
     private async Task Clear()
     {
         await Context.SetValueAsync(null);
-        await FocusAsync();
+        // After the render that empties the box, not before it: Firefox decides whether a later change fires
+        // against the value the box held when it took the focus, so focused while it still showed "France",
+        // typing France again raised nothing, and the field stayed empty with the word in it.
+        RequestFocusAfterRender();
     }
 
     /// <summary>

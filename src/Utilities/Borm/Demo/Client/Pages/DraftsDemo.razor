@@ -17,18 +17,19 @@
 <div class="bb-note">
     Fill in a few answers, wait a second, and reload the page: the browser asks first - that is the guard - and
     then the answers come back. The IBAN and the password never do. They are sensitive, so no draft holds them,
-    which the draft below shows. Submitting clears the draft, and leaves nothing for the guard to ask about.
+    which the draft below shows. Submitting clears the draft, and leaves nothing for the guard to ask about - and so
+    does Reset, which puts the form back where it started.
 </div>
 
 <div class="bb-demo">
     <div class="bb-demo-bar"><span class="bb-demo-label">Live form</span></div>
     <BormView State="_state" OnValidSubmit="HandleSubmit" SubmitText="Apply" ShowResetButton="true" />
-    <BormAutosave State="_state" OnSave="SaveDraftAsync" DelayMilliseconds="800" />
+    <BormAutosave State="_state" OnSave="SaveDraftAsync" OnDiscard="DiscardDraftAsync" DelayMilliseconds="800" />
     <BormUnsavedChangesGuard State="_state" />
 
     <p class="demo-status" role="status">@_status</p>
     <div class="bb-toolbar">
-        <button type="button" class="btn btn-secondary" disabled="@(_draft is null)" @onclick="ForgetDraftAsync">Forget the draft</button>
+        <button type="button" class="btn btn-secondary" aria-disabled="@(_draft is null ? "true" : null)" @onclick="ForgetDraftAsync">Forget the draft</button>
     </div>
     <div class="demo-readout">
         <p class="bb-overline">The draft in this browser's storage</p>
@@ -53,7 +54,7 @@
 @inject IJSRuntime JS
 
 <BormView State="_state" OnValidSubmit="HandleSubmit" SubmitText="Apply" ShowResetButton="true" />
-<BormAutosave State="_state" OnSave="SaveDraftAsync" DelayMilliseconds="800" />
+<BormAutosave State="_state" OnSave="SaveDraftAsync" OnDiscard="DiscardDraftAsync" DelayMilliseconds="800" />
 <BormUnsavedChangesGuard State="_state" />
 
 @code {
@@ -66,13 +67,13 @@
         var schema = BormBuilder.For<MembershipApplication>()
             .Title("Membership application")
             .Version("1")                                   // recorded in every draft
-            .Field(x => x.FullName, f => f.Required())
-            .Field(x => x.Email, f => f.Required().Email())
+            .Field(x => x.FullName, f => f.Required().UpdateOnInput(300))
+            .Field(x => x.Email, f => f.Required().Email().UpdateOnInput(300))
             .Field(x => x.Tier, f => f.AsRadio()
                 .Options(("standard", "Standard"), ("supporter", "Supporter"), ("patron", "Patron")))
-            .Field(x => x.Motivation, f => f.AsTextArea(5).Required().MinLength(40).CharacterCount())
-            .Field(x => x.Iban, f => f.Sensitive())         // never written to a draft
-            .Field(x => x.Password, f => f.AsPassword().Required().MinLength(10))
+            .Field(x => x.Motivation, f => f.AsTextArea(5).Required().MinLength(40).MaxLength(2000).CharacterCount().UpdateOnInput(300))
+            .Field(x => x.Iban, f => f.Sensitive().UpdateOnInput(300))  // never written to a draft
+            .Field(x => x.Password, f => f.AsPassword().Required().MinLength(10).UpdateOnInput(300))
             .Build();
 
         _state = new BormState(schema, new BormModelDataAccessor(_model));
@@ -90,6 +91,9 @@
     }
 
     private async Task SaveDraftAsync(string json) => await JS.InvokeVoidAsync("localStorage.setItem", DraftKey, json);
+
+    // Reset, or every change undone: a draft would only bring back what the user gave up.
+    private async Task DiscardDraftAsync() => await JS.InvokeVoidAsync("localStorage.removeItem", DraftKey);
 
     private async Task HandleSubmit(BormState state)
     {
@@ -116,13 +120,13 @@
         var schema = BormBuilder.For<MembershipApplication>()
             .Title("Membership application")
             .Version("1")
-            .Field(x => x.FullName, f => f.Required())
-            .Field(x => x.Email, f => f.Required().Email())
+            .Field(x => x.FullName, f => f.Required().UpdateOnInput(300))
+            .Field(x => x.Email, f => f.Required().Email().UpdateOnInput(300))
             .Field(x => x.Tier, f => f.AsRadio()
                 .Options(("standard", "Standard"), ("supporter", "Supporter"), ("patron", "Patron")))
-            .Field(x => x.Motivation, f => f.AsTextArea(5).Required().MinLength(40).CharacterCount())
-            .Field(x => x.Iban, f => f.Sensitive())
-            .Field(x => x.Password, f => f.AsPassword().Required().MinLength(10))
+            .Field(x => x.Motivation, f => f.AsTextArea(5).Required().MinLength(40).MaxLength(2000).CharacterCount().UpdateOnInput(300))
+            .Field(x => x.Iban, f => f.Sensitive().UpdateOnInput(300))
+            .Field(x => x.Password, f => f.AsPassword().Required().MinLength(10).UpdateOnInput(300))
             .Build();
 
         _state = new BormState(schema, new BormModelDataAccessor(_model));
@@ -150,8 +154,18 @@
         StateHasChanged();
     }
 
+    private async Task DiscardDraftAsync()
+    {
+        if (_draft is null) return;
+        await JS.InvokeVoidAsync("localStorage.removeItem", DraftKey);
+        _draft = null;
+        _status = "The form is back where it started, so its draft was removed.";
+        StateHasChanged();
+    }
+
     private async Task ForgetDraftAsync()
     {
+        if (_draft is null) return;
         await JS.InvokeVoidAsync("localStorage.removeItem", DraftKey);
         _draft = null;
         _status = "Draft forgotten. The answers on the page are still unsaved changes.";

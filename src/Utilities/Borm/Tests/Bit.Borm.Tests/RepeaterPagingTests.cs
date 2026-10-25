@@ -41,7 +41,8 @@ public class RepeaterPagingTests : ComponentTestBase
         cut.Find(".bit-borm-array__page select").Change("2");
         Assert.HasCount(10, Shown(cut));
         Assert.AreEqual("51–60 of 60", cut.Find(".bit-borm-array__range").TextContent);
-        Assert.IsTrue(cut.FindAll("button").Single(b => b.TextContent.Trim() == "Next page").HasAttribute("disabled"));
+        // aria-disabled, not disabled, so the focus of the user who pressed it stays on it.
+        Assert.AreEqual("true", cut.FindAll("button").Single(b => b.TextContent.Trim() == "Next page").GetAttribute("aria-disabled"));
     }
 
     [TestMethod]

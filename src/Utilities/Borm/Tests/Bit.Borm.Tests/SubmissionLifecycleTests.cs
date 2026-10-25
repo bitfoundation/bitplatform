@@ -270,6 +270,51 @@ public class MessageCodeAndSourceTests
     }
 
     [TestMethod]
+    public async Task A_refused_entry_is_all_a_validation_pass_says_about_its_field()
+    {
+        // The model kept 0, which the range refuses - but the box holds "1e5", and a complaint about a number the
+        // user can no longer see only contradicted the one about what they typed.
+        var form = BormBuilder.Create().Integer("age", f => f.Range(18, 120)).Build();
+        var state = new BormState(form, new BormDictionaryDataAccessor(new Dictionary<string, object?> { ["age"] = 0L }));
+
+        state.SetValue("age", "1e5");
+        await state.ValidateAsync();
+        Assert.AreEqual(BormMessageKeys.Conversion, state.MessagesFor("age").Single().Code);
+
+        await state.ValidateFieldAsync("age");
+        Assert.AreEqual(BormMessageKeys.Conversion, state.MessagesFor("age").Single().Code);
+    }
+
+    [TestMethod]
+    public async Task A_fields_own_pass_asks_the_external_validator_again_and_settles_a_cross_field_rule_on_both_fields()
+    {
+        // One complaint about two answers, as IValidatableObject or FluentValidation reports it: it has to come and go
+        // on both fields together, not vanish from the one revalidated while it stays on the other.
+        var form = BormBuilder.Create().Integer("guests").Text("room").Build();
+        var data = new Dictionary<string, object?> { ["guests"] = 2L, ["room"] = "single" };
+        var state = new BormState(form, new BormDictionaryDataAccessor(data))
+        {
+            ExternalValidator = (_, reader, _) => new ValueTask<IReadOnlyList<BormValidationMessage>>(
+                reader.GetValue("room") as string == "single" && reader.GetValue("guests") is > 1L
+                    ? [new BormValidationMessage("guests", "A single room sleeps 1."), new BormValidationMessage("room", "A single room sleeps 1.")]
+                    : [])
+        };
+
+        await state.ValidateAsync();
+        Assert.ContainsSingle(state.MessagesFor("guests"));
+
+        state.SetValue("guests", 3L);
+        await state.ValidateFieldAsync("guests");
+        Assert.ContainsSingle(state.MessagesFor("guests"), "still refused: the complaint stays on the field revalidated");
+        Assert.ContainsSingle(state.MessagesFor("room"));
+
+        state.SetValue("room", "double");
+        await state.ValidateFieldAsync("room");
+        Assert.IsEmpty(state.MessagesFor("room"));
+        Assert.IsEmpty(state.MessagesFor("guests"), "settled: the other field of the rule clears too");
+    }
+
+    [TestMethod]
     public async Task An_external_validators_messages_are_marked_as_external()
     {
         var form = BormBuilder.Create().Text("name").Build();

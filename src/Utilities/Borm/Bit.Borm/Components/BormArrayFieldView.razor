@@ -110,12 +110,16 @@
            error - which turns to the row's page first. Rows on other pages that need attention are counted
            here, with a way to the first of them, so a problem is never out of sight and out of mind. *@
         <nav class="bit-borm-array__pager" aria-label="@State.Text(BormMessageKeys.ArrayPages, Title)">
-            <button type="button" class="bit-borm-btn bit-borm-btn--sm" disabled="@(_page == 0)" @onclick="() => TurnTo(_page - 1)">
+            @* aria-disabled rather than disabled at the ends, as the move buttons are: a disabled button drops the focus
+               of the user who pressed it to the page body, and TurnTo already ignores a page past either end. *@
+            <button type="button" class="bit-borm-btn bit-borm-btn--sm" aria-disabled="@(_page == 0 ? "true" : null)" @onclick="() => TurnTo(_page - 1)">
                 @State.Text(BormMessageKeys.ArrayPreviousPage)
             </button>
             <label class="bit-borm-array__page">
                 <span class="bit-borm-sr-only">@State.Text(BormMessageKeys.ArrayPage, _page + 1, PageCount)</span>
-                <select class="bit-borm-input" @onchange="OnPagePicked">
+                @* The value, not only each option's selected attribute: once the user has picked a page a browser no longer
+                   follows the attribute, and the box went on showing that page while the buttons turned others. *@
+                <select class="bit-borm-input" value="@_page" @onchange="OnPagePicked">
                     @for (var p = 0; p < PageCount; p++)
                     {
                         var number = p;
@@ -123,7 +127,7 @@
                     }
                 </select>
             </label>
-            <button type="button" class="bit-borm-btn bit-borm-btn--sm" disabled="@(_page >= PageCount - 1)" @onclick="() => TurnTo(_page + 1)">
+            <button type="button" class="bit-borm-btn bit-borm-btn--sm" aria-disabled="@(_page >= PageCount - 1 ? "true" : null)" @onclick="() => TurnTo(_page + 1)">
                 @State.Text(BormMessageKeys.ArrayNextPage)
             </button>
             <span class="bit-borm-array__range" aria-live="polite">@State.Text(BormMessageKeys.ArrayRange, First + 1, End, Count)</span>
@@ -441,7 +445,9 @@
         if (Locked || to < 0 || to >= Count) return;
         State.MoveArrayItem(Path, from, to);
         // Past the edge of the page: the page follows the row, so the button that moved it is still under the hand.
-        if (Paged && PageOf(to) != _page) ShowRow(to);
+        // Only the page - the row's keyed element, and the focus in it, come along by themselves. ShowRow sent the
+        // focus into the row's first box, where the Enter that pressed the button again submitted the form.
+        if (Paged && PageOf(to) != _page) TurnTo(PageOf(to));
         // The count has not changed, so on its own the region would say nothing: say where the row
         // landed instead — the one thing a user who cannot see the list moving needs to know.
         Say(State.Text(BormMessageKeys.ArrayItemGroup, ItemNoun, to + 1));

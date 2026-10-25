@@ -30,25 +30,72 @@
     /// <summary>What the draft keeps and leaves out.</summary>
     [Parameter] public BormDraftOptions? Options { get; set; }
 
+    /// <summary>
+    /// Runs when the form is back where it started after it had changed - reset, or every change undone - so the
+    /// draft kept for it would only bring back what the user gave up: remove it. A clean form is never saved, so
+    /// without this the last draft outlived the reset, and the next visit restored it.
+    /// </summary>
+    [Parameter] public EventCallback OnDiscard { get; set; }
+
     private BormState? _subscribed;
     private CancellationTokenSource? _pending;
+    private bool _wasDirty;
 
     protected override void OnParametersSet()
     {
         if (ReferenceEquals(_subscribed, State)) return;
-        if (_subscribed is not null) _subscribed.FieldChanged -= OnFieldChanged;
+        Unsubscribe();
         _subscribed = State;
+        _wasDirty = State.IsFormDirty;
         _subscribed.FieldChanged += OnFieldChanged;
+        _subscribed.StateChanged += OnStateChanged;
+    }
+
+    private void Unsubscribe()
+    {
+        if (_subscribed is null) return;
+        _subscribed.FieldChanged -= OnFieldChanged;
+        _subscribed.StateChanged -= OnStateChanged;
     }
 
     // The event can be raised off the renderer's thread, so _pending is only ever touched on it.
-    private void OnFieldChanged(string path) => _ = InvokeAsync(() =>
+    private void OnFieldChanged(string path)
     {
-        _pending?.Cancel();
-        _pending?.Dispose();
-        var cts = _pending = new CancellationTokenSource();
-        return SaveAfterPause(cts);
-    });
+        // A draft being put back is the draft already kept. Saved again at once, it came back the next time as
+        // "saved a moment ago", whatever its age.
+        if (_subscribed is { IsRestoringDraft: true }) return;
+
+        _ = InvokeAsync(() =>
+        {
+            _pending?.Cancel();
+            _pending?.Dispose();
+            var cts = _pending = new CancellationTokenSource();
+            return SaveAfterPause(cts);
+        });
+    }
+
+    private void OnStateChanged()
+    {
+        if (_subscribed is not { } state || state.IsFormDirty == _wasDirty) return;
+        _wasDirty = state.IsFormDirty;
+        if (_wasDirty || !OnDiscard.HasDelegate) return;
+
+        _ = InvokeAsync(async () =>
+        {
+            // Nothing left to save either.
+            _pending?.Cancel();
+            _pending?.Dispose();
+            _pending = null;
+            try
+            {
+                await OnDiscard.InvokeAsync();
+            }
+            catch (Exception ex)
+            {
+                await DispatchExceptionAsync(ex);
+            }
+        });
+    }
 
     private async Task SaveAfterPause(CancellationTokenSource cts)
     {
@@ -82,7 +129,7 @@
 
     public async ValueTask DisposeAsync()
     {
-        if (_subscribed is not null) _subscribed.FieldChanged -= OnFieldChanged;
+        Unsubscribe();
 
         // A save still waiting out its pause is made now: the user's last changes are the likeliest to
         // be the ones that matter, and the page they were made on is going away.

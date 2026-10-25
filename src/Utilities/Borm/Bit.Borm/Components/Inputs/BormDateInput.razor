@@ -8,8 +8,8 @@
        name="@Context.InputName"
        @ref="Element"
        class="@CssClass"
-       type="@HtmlType"
-       value="@Context.StringValue"
+       type="@(ShowsAsText ? "text" : HtmlType)"
+       value="@(ShowsAsText ? ReadOnlyText : Context.StringValue)"
        disabled="@Disabled"
        readonly="@ReadOnly"
        min="@Bound(Field.Min)"
@@ -25,14 +25,30 @@
        @onblur="OnBlur" />
 
 @code {
+    // Month and week are capitalised on purpose. Firefox and desktop Safari have no such pickers and give the
+    // element a type of "text"; blazor.web.js decides an input or change event comes from a date-like picker by
+    // the type *attribute* and then throws "Invalid element type 'text'" when the element's type is not one -
+    // so not a keystroke typed into the text box would ever reach the field. The browser reads the attribute
+    // case-insensitively (a month picker wherever there is one), Blazor reads it as written and takes the
+    // value as it stands, which for a month or a week is exactly what its picker path would have returned.
     private string HtmlType => Field.Type switch
     {
         BormFieldType.Date => "date",
         BormFieldType.Time => "time",
-        BormFieldType.Month => "month",
-        BormFieldType.Week => "week",
+        BormFieldType.Month => "Month",
+        BormFieldType.Week => "Week",
         _ => "datetime-local"
     };
+
+    /// <summary>
+    /// A read-only answer is shown in a read-only text box. Firefox gives a read-only date or time picker no focus at
+    /// all, so a locked arrival date dropped out of the tab order and could not be reached to be read or copied there,
+    /// while every other locked answer could; as text it can, in every browser.
+    /// </summary>
+    private bool ShowsAsText => ReadOnly && !Disabled;
+
+    /// <summary>The value as the picker writes it, which reads the same everywhere - a date and a time with a space between.</summary>
+    private string ReadOnlyText => Context.StringValue.Replace('T', ' ');
 
     /// <summary>
     /// The <c>step</c> attribute, in seconds for time-bearing inputs. Omitted unless the schema asks

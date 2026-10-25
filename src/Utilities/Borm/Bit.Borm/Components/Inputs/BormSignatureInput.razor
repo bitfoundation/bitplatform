@@ -48,7 +48,9 @@
     @if (!DisabledOrReadOnly)
     {
         <div class="bit-borm-signature__actions">
-            <button type="button" class="bit-borm-btn bit-borm-btn--sm" disabled="@(!HasSignature)" @onclick="ClearAsync">
+            @* aria-disabled, not disabled: pressing it empties the pad, and a button that disabled itself under the
+               focus dropped the focus to the page body. ClearAsync ignores a press with nothing to clear. *@
+            <button type="button" class="bit-borm-btn bit-borm-btn--sm" aria-disabled="@(HasSignature ? null : "true")" @onclick="ClearAsync">
                 @Context.Text(BormMessageKeys.SignatureClear)
             </button>
             <button type="button" class="bit-borm-btn bit-borm-btn--ghost bit-borm-btn--sm" aria-pressed="@(_typing ? "true" : "false")"
@@ -120,6 +122,7 @@
 
     private async Task ClearAsync()
     {
+        if (!HasSignature) return;
         _strokes.Clear();
         _drawing = null;
         _typedName = null;

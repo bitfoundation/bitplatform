@@ -98,7 +98,12 @@ public sealed class BormFileRule(
     /// A byte count the way people read one — <c>1.5 MB</c>. Shared with the file input's list of chosen
     /// files, so the size a file is shown at and the limit it is told it broke are written alike.
     /// </summary>
-    internal static string FormatSize(long bytes)
+    /// <param name="bytes">The count.</param>
+    /// <param name="roundUp">
+    /// Rounds up rather than to the nearest tenth - for a file's own size, which is then never shown smaller than it
+    /// is: one byte over a 2 MB limit read "2 MB" next to "must be 2 MB or smaller".
+    /// </param>
+    internal static string FormatSize(long bytes, bool roundUp = false)
     {
         string[] units = ["B", "KB", "MB", "GB"];
         double size = bytes;
@@ -108,6 +113,7 @@ public sealed class BormFileRule(
             size /= 1024;
             unit++;
         }
+        if (roundUp) size = Math.Ceiling(size * 10) / 10;
         return $"{size:0.#} {units[unit]}";
     }
 }

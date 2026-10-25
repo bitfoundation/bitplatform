@@ -124,6 +124,20 @@ html:root .bit-borm-input[type="search"]::-webkit-search-cancel-button {
    3. Around the forms
    -------------------------------------------------------------------------------------------- */
 
+/* A toolbar button with nothing to do looks like the kit's disabled one, but stays focusable: a page button that
+   switches itself off when pressed (Save & rebase, Forget the draft) is aria-disabled rather than disabled, which
+   dropped the focus of the user who pressed it to the page body - the library's own buttons do the same. */
+.btn[aria-disabled="true"] {
+    cursor: not-allowed;
+    opacity: .45;
+}
+
+/* The landing page's comparison: three columns of prose and identifiers, which a phone squeezed into one word a line,
+   broken mid-word ("Visibl|eWhen") because the kit's cells may break anywhere. Its scroll region scrolls it instead. */
+.bb-compare {
+    min-width: 36rem;
+}
+
 /* What a valid submit handed the page: the kit's success note, with the model under it. */
 .demo-result strong {
     color: var(--bb-success-text);

@@ -23,7 +23,7 @@
 <div class="bb-demo">
     <div class="bb-demo-bar"><span class="bb-demo-label">Live form</span></div>
     <div class="bb-toolbar">
-        <button type="button" class="btn btn-secondary" @onclick="StartNewDeal" disabled="@_isNew">Start a new deal instead</button>
+        <button type="button" class="btn btn-secondary" @onclick="StartNewDeal" aria-disabled="@(_isNew ? "true" : null)">Start a new deal instead</button>
     </div>
     @* Keyed: a new deal is a new form, not the old one emptied. *@
     <BormView @key="_state" State="_state" OnValidSubmit="HandleSubmit" SubmitText="Save deal" />
@@ -109,6 +109,7 @@
 
     private void StartNewDeal()
     {
+        if (_isNew) return;
         var previous = _state;
         _model = new DealAssignment();
         _state = NewState(_model);
