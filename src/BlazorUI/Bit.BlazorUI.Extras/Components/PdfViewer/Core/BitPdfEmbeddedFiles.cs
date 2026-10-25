@@ -40,6 +40,43 @@ internal static class BitPdfEmbeddedFiles
         return result;
     }
 
+    // Range scans commit one node/page/file at a time. A failed decode has no
+    // externally visible deduplication state for the next parser attempt to skip.
+    internal sealed record NameNode(BitPdfDict Identity, (object? Spec, string? Name)[] Files, object?[] Children);
+    internal sealed record FileResult(object Identity, BitPdfAttachment Attachment);
+
+    internal static object? NameRoot(IBitPdfXRef xref, BitPdfDict catalog)
+        => xref.FetchIfRef(catalog.GetRaw("Names")) is BitPdfDict names ? names.GetRaw("EmbeddedFiles") : null;
+
+    internal static NameNode? ReadNameNode(IBitPdfXRef xref, object? value)
+    {
+        if (xref.FetchIfRef(value) is not BitPdfDict node) return null;
+        var files = new List<(object?, string?)>();
+        if (xref.FetchIfRef(node.GetRaw("Names")) is List<object?> pairs)
+            for (int i = 0; i + 1 < pairs.Count; i += 2)
+                files.Add((pairs[i + 1], (xref.FetchIfRef(pairs[i]) as BitPdfString)?.AsText()));
+        return new(node, files.ToArray(), xref.FetchIfRef(node.GetRaw("Kids")) is List<object?> kids ? kids.ToArray() : []);
+    }
+
+    internal static object?[] PageFiles(IBitPdfXRef xref, BitPdfPage page)
+    {
+        var files = new List<object?>();
+        if (page.Dict.Get("Annots") is List<object?> annots)
+            foreach (var value in annots)
+                if (xref.FetchIfRef(value) is BitPdfDict annotation
+                    && BitPdfPrimitives.IsName(annotation.Get("Subtype"), "FileAttachment"))
+                    files.Add(annotation.GetRaw("FS"));
+        return files.ToArray();
+    }
+
+    internal static FileResult? ReadFile(IBitPdfXRef xref, object? spec, int? page, string? name)
+    {
+        var result = new List<BitPdfAttachment>();
+        var seen = new HashSet<object>(ReferenceEqualityComparer.Instance);
+        Add(xref, spec, result, seen, page, name);
+        return result.Count == 0 ? null : new(seen.Single(), result[0]);
+    }
+
     private static void CollectNameTree(IBitPdfXRef xref, BitPdfDict node, List<BitPdfAttachment> result,
         HashSet<object> seen, HashSet<object> visited, int? pageNumber, int depth)
     {

@@ -426,11 +426,54 @@
                     <b>ObjectDisposedException</b>.
                     <br /><br />
                     This example is for a file accessible to the server. <b>FromUrl</b> keeps its buffered behavior;
-                    HTTP Range loading is a later contribution. Browser uploads keep the <b>FromStreamAsync</b>
+                    add <b>WithRangeLoading()</b> for opt-in HTTP Range loading. Form fields and tagged structure
+                    are deferred until <b>LoadDocumentDetailsAsync()</b>. Browser uploads keep the <b>FromStreamAsync</b>
                     snapshot path because <b>IBrowserFile</b> streams are not seekable and do not support synchronous
                     reads. The viewer coordinates copies with rendering and asynchronous helpers. In a browser,
                     await a copy before reading <b>Document</b> or its raw streams directly.
                 </div>
+            </DemoExample>
+
+            <DemoExample Title="HTTP Range loading" RazorCode="@example21RazorCode" CsharpCode="@example21CsharpCode" Id="example21">
+                <div>
+                    Keep the URL source in a field and add <b>WithRangeLoading()</b> to request PDF bytes as needed.
+                    A first page can appear before the complete file downloads; later pages load during navigation.
+                    The default URL source still downloads the complete file. A linearized PDF can reduce startup
+                    work; the layout and dependencies of each file determine how many ranges are needed.
+                    <br /><br />
+                    <b>CacheSize</b> defaults to 16 MiB of raw bytes, including pinned windows and in-flight buffers.
+                    <b>ChunkSize</b> defaults to 64 KiB. Decoded resources and explicit caller-owned copies are separate.
+                    <b>MaxFallbackSize</b> defaults to null (unlimited); zero disables buffered fallback. Its declared
+                    and actual byte limits apply before publication. A first full response is reused for fallback.
+                    <br /><br />
+                    The endpoint must return byte <b>206</b> responses with a correct <b>Content-Range</b>, total length
+                    and a quoted strong <b>ETag</b>. Every later request sends that exact tag as <b>If-Range</b>, and
+                    every response is validated. Missing, weak or inaccessible validators cause a safe initial full
+                    download. Last-Modified dates are not used as validators. All server/CDN nodes must send the same
+                    ETag for the same bytes. Avoid HTTP content compression that changes byte coordinates.
+                    <br /><br />
+                    For cross-origin WebAssembly, expose <b>Content-Range</b> and <b>ETag</b> in
+                    <b>Access-Control-Expose-Headers</b>, and allow <b>Range</b>, <b>If-Range</b> and any
+                    <b>Authorization</b> header in the CORS preflight. The viewer uses the registered HttpClient and
+                    the source's headers. After publication, a failed range reports an error; a version change
+                    discards the document and raises <b>OnError</b>. Assign a new source to reload it.
+                    <br /><br />
+                    <b>OnDocumentLoaded</b> means the requested page is ready and loading has cleared. The title is
+                    available then; bookmarks, layers and page labels load in the background after the first page.
+                    Metadata/XMP, forms and tagged structure load through <b>LoadDocumentDetailsAsync()</b>;
+                    attachments scan when their panel opens or details are requested. Deferred viewer properties
+                    return null/empty and never start network reads. Direct <b>Document</b> reads require cached bytes
+                    and otherwise throw <b>BitPdfMissingDataException</b>. Use the async rendering/text helpers.
+                    <br /><br />
+                    The initial Range loading bar is indeterminate. <b>OnProgress</b> retains its full-download
+                    meaning and only runs on buffered fallback. <b>GetBytes()</b> returns null in Range mode;
+                    <b>GetBytesAsync()</b> returns an unretained caller-owned copy. Download and whole-document
+                    search/print can acquire the remaining bytes.
+                </div>
+                <br />
+                <BitButton Disabled="rangeSource is not null" OnClick="() => rangeSource = CreateArticleSource().WithRangeLoading()">Load document</BitButton>
+                <br /><br />
+                <BitPdfViewer Source="rangeSource" Height="450px" />
             </DemoExample>
 
             <DemoExample Title="Style & Class" RazorCode="@example19RazorCode" CsharpCode="@example19CsharpCode" Id="example19">

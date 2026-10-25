@@ -57,7 +57,7 @@
                     {
                         <button type="button" class="bit-pdv-btn @(_showAttachments ? "bit-pdv-act" : "") @Classes?.ToolbarButton" style="@Styles?.ToolbarButton"
                                 title="@ActiveTexts.Attachments" aria-label="@ActiveTexts.Attachments" aria-pressed="@AriaBool(_showAttachments)"
-                                @onclick="ToggleAttachments" disabled="@(!HasAttachments)" aria-disabled="@(!HasAttachments ? "true" : null)">
+                                @onclick="ToggleAttachments" disabled="@(!HasAttachments && !HasDeferredAttachments)" aria-disabled="@(!HasAttachments && !HasDeferredAttachments ? "true" : null)">
                             <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 11l-8.5 8.5a5 5 0 0 1-7-7L14 4a3.5 3.5 0 0 1 5 5l-8.5 8.5a2 2 0 0 1-3-3L16 6" /></svg>
                         </button>
                     }
@@ -356,10 +356,10 @@
                 }
             </div>
         }
-        @if (_showAttachments && HasAttachments)
+        @if (_showAttachments && (HasAttachments || HasDeferredAttachments || _rangeAttachmentsLoading))
         {
             <div class="bit-pdv-attachments @Classes?.Attachments" style="@Styles?.Attachments" role="list" aria-label="@ActiveTexts.Attachments"
-                 inert="@(Disabled)">
+                 aria-busy="@AriaBool(_rangeAttachmentsLoading)" inert="@(Disabled)">
                 @foreach (var attachment in _attachments)
                 {
                     var item = attachment;

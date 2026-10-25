@@ -19,6 +19,17 @@ public sealed class BitPdfFontStore
     /// <summary>The accumulated <c>@font-face</c> CSS for the whole document.</summary>
     internal StringBuilder FontFaces { get; } = new();
 
+    // A Range render registers fonts in an attempt-local copy. Only a complete
+    // page publishes it; a missing byte cannot suppress CSS on the next attempt.
+    internal BitPdfFontStore Fork()
+    {
+        var store = new BitPdfFontStore();
+        foreach (var pair in Fonts) store.Fonts.Add(pair.Key, pair.Value);
+        store.EmittedFamilies.UnionWith(EmittedFamilies);
+        store.FontFaces.Append(FontFaces);
+        return store;
+    }
+
     /// <summary>The document-wide <c>@font-face</c> stylesheet, or an empty string.</summary>
     public string FontFaceStyle => FontFaces.Length > 0 ? $"<style>{FontFaces}</style>" : string.Empty;
 }

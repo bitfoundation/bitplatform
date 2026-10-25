@@ -9,7 +9,7 @@ public partial class BitPdfViewer
     private bool UseStreamWorker => BackgroundRendering || !OperatingSystem.IsBrowser();
 
     private bool UseDocumentWorker => BackgroundRendering
-        || (_streamSource is not null && !OperatingSystem.IsBrowser());
+        || (IsNonBuffered && !OperatingSystem.IsBrowser());
 
     private sealed record StreamPreparation(BitPdfDocument Document, string? Title,
         IReadOnlyList<BitPdfOutlineItem> Outline, IReadOnlyList<BitPdfAttachment> Attachments,
@@ -40,10 +40,7 @@ public partial class BitPdfViewer
             try { layers = document.Layers; }
             catch (Exception ex) when (BitPdfByteSourceErrors.IsContentError(ex)) { }
             // Public information getters must not initiate server I/O on a render.
-            try { forms = document.FormFields; }
-            catch (Exception ex) when (BitPdfByteSourceErrors.IsContentError(ex)) { }
-            try { structure = document.StructureTree; }
-            catch (Exception ex) when (BitPdfByteSourceErrors.IsContentError(ex)) { }
+            // Forms and tagged structure are populated explicitly by LoadDocumentDetailsAsync.
             string? title = string.IsNullOrWhiteSpace(metadata?.Title) ? null : metadata.Title;
             return new(document, title, outline, attachments, layers, metadata, labels, forms, structure);
         }
@@ -179,13 +176,14 @@ public partial class BitPdfViewer
 
     /// <summary>
     /// Returns complete original PDF bytes, or null when no document is loaded.
-    /// A stream source is copied asynchronously from its captured origin. That
-    /// array belongs to the caller: the viewer does not retain it, and GetBytes
+    /// A non-buffered source is copied asynchronously (from its captured stream
+    /// origin, or through validated HTTP ranges). That array belongs to the caller: the viewer does not retain it, and GetBytes
     /// continues returning null. Buffered sources return their existing buffer.
     /// </summary>
     public async Task<byte[]?> GetBytesAsync(CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
+        if (_rangeSource is not null) return await GetRangeBytesAsync(cancellationToken);
         var source = _document is null ? null : _streamSource;
         if (source is null) return _bytes;
         int version = _loadVersion;
@@ -214,15 +212,24 @@ public partial class BitPdfViewer
 
     private void RequireBufferedHelper(string asyncMethod)
     {
-        if (_document is not null && _streamSource is not null)
-            throw new InvalidOperationException($"A stream-backed PDF requires {asyncMethod} so reading does not block the circuit.");
+        if (_document is not null && IsNonBuffered)
+            throw new InvalidOperationException($"A stream-backed or Range-backed PDF requires {asyncMethod} so reading does not block the circuit.");
     }
 
-    private async Task<T> RunDocumentWorkAsync<T>(Func<BitPdfDocument, T> build, CancellationToken cancellationToken)
+    private async Task<T> RunDocumentWorkAsync<T>(Func<BitPdfDocument, T> build, CancellationToken cancellationToken, int? pageIndex = null)
     {
         cancellationToken.ThrowIfCancellationRequested();
         int version = _loadVersion;
         var document = _document ?? throw new InvalidOperationException("No PDF is loaded.");
+        if (_rangeSource is { } rangeSource)
+        {
+            try { return await RunRangeWorkAsync(document, build, cancellationToken, pageIndex); }
+            catch (BitPdfRangeVersionException ex)
+            {
+                await FailRangeVersionAsync(rangeSource, version, ex.Message);
+                throw;
+            }
+        }
         var loadToken = _streamLoadCancellation?.Token ?? default;
         using var linked = CancellationTokenSource.CreateLinkedTokenSource(loadToken, cancellationToken);
         await _renderGate.WaitAsync(linked.Token);
@@ -255,7 +262,7 @@ public partial class BitPdfViewer
         {
             TextCoalescing = coalescing,
             HiddenLayers = layers,
-        }.Render(), cancellationToken);
+        }.Render(), cancellationToken, pageNumber - 1);
     }
 
     /// <summary>Extracts one page's text asynchronously; empty when unavailable.</summary>
@@ -263,7 +270,7 @@ public partial class BitPdfViewer
     {
         cancellationToken.ThrowIfCancellationRequested();
         if (_document is null || pageNumber < 1 || pageNumber > _pages.Count) return Task.FromResult(string.Empty);
-        return RunDocumentWorkAsync(document => document.Pages[pageNumber - 1].ExtractText(), cancellationToken);
+        return RunDocumentWorkAsync(document => document.Pages[pageNumber - 1].ExtractText(), cancellationToken, pageNumber - 1);
     }
 
     /// <summary>Extracts all page text asynchronously, preserving the viewer's text index.</summary>
@@ -272,6 +279,18 @@ public partial class BitPdfViewer
         cancellationToken.ThrowIfCancellationRequested();
         if (_document is null) return string.Empty;
         var cached = _pageText?.ToArray();
+        if (_rangeSource is not null)
+        {
+            int version = _loadVersion;
+            var result = new string[_pages.Count];
+            for (int i = 0; i < result.Length; i++)
+            {
+                result[i] = cached?[i] ?? await ExtractPageTextAsync(i + 1, cancellationToken);
+                if (IsDisposed || version != _loadVersion) throw new OperationCanceledException(cancellationToken);
+            }
+            _pageText = result;
+            return string.Join(pageSeparator, result);
+        }
         var text = await RunDocumentWorkAsync(document =>
         {
             var result = new string[document.PageCount];

@@ -138,7 +138,7 @@ public partial class BitPdfViewerDemo
             Name = "OnDocumentLoaded",
             Type = "EventCallback",
             DefaultValue = "",
-            Description = "The callback for when a document has finished loading.",
+            Description = "The callback for when the requested page is ready and loading has cleared. Range details can remain deferred; use LoadDocumentDetailsAsync to await them.",
         },
         new()
         {
@@ -198,7 +198,7 @@ public partial class BitPdfViewerDemo
             Name = "OnProgress",
             Type = "EventCallback<double>",
             DefaultValue = "",
-            Description = "The callback for the download progress of a URL source, as a fraction from 0 to 1. Only raised when the server declares a content length (which is also when the loading bar shows the progress); a chunked response has no total to report against.",
+            Description = "The callback for the download progress of a URL source, as a fraction from 0 to 1. Only raised when the server declares a content length (which is also when the loading bar shows the progress); a chunked response has no total to report against. Range loading uses an indeterminate bar and only raises this event during buffered fallback.",
         },
         new()
         {
@@ -380,7 +380,7 @@ public partial class BitPdfViewerDemo
         {
             Name = "Attachments",
             Type = "IReadOnlyList<BitPdfAttachment>",
-            Description = "The files embedded in the document (the /EmbeddedFiles name tree plus any /FileAttachment annotation), empty when it carries none.",
+            Description = "The files embedded in the document (the /EmbeddedFiles name tree plus any /FileAttachment annotation), empty when it carries none. Deferred Range data returns null/empty (false for flags); await LoadDocumentDetailsAsync when needed.",
             LinkType = LinkType.Link,
             Href = "#pdf-attachment"
         },
@@ -424,25 +424,25 @@ public partial class BitPdfViewerDemo
         {
             Name = "FormFields",
             Type = "IReadOnlyList<BitPdfFormField>",
-            Description = "The interactive form fields (/AcroForm) of the loaded document as a flat list of name/type/value, or an empty list when there is no form.",
+            Description = "The interactive form fields (/AcroForm) of the loaded document as a flat list of name/type/value, or an empty list when there is no form. Deferred stream or Range data returns an empty list; await LoadDocumentDetailsAsync when needed.",
         },
         new()
         {
             Name = "HasAttachments",
             Type = "bool",
-            Description = "Whether the document carries any embedded file.",
+            Description = "Whether the document carries any embedded file. Deferred Range data returns null/empty (false for flags); await LoadDocumentDetailsAsync when needed.",
         },
         new()
         {
             Name = "HasLayers",
             Type = "bool",
-            Description = "Whether the document declares any optional-content group (layer).",
+            Description = "Whether the document declares any optional-content group (layer). Deferred Range data returns null/empty (false for flags); await LoadDocumentDetailsAsync when needed.",
         },
         new()
         {
             Name = "HasOutline",
             Type = "bool",
-            Description = "Whether the document exposes any bookmarks.",
+            Description = "Whether the document exposes any bookmarks. Deferred Range data returns null/empty (false for flags); await LoadDocumentDetailsAsync when needed.",
         },
         new()
         {
@@ -472,7 +472,7 @@ public partial class BitPdfViewerDemo
         {
             Name = "Layers",
             Type = "IReadOnlyList<BitPdfLayer>",
-            Description = "The optional-content groups (layers) the document declares, empty when it declares none.",
+            Description = "The optional-content groups (layers) the document declares, empty when it declares none. Deferred Range data returns null/empty (false for flags); await LoadDocumentDetailsAsync when needed.",
             LinkType = LinkType.Link,
             Href = "#pdf-layer"
         },
@@ -480,13 +480,13 @@ public partial class BitPdfViewerDemo
         {
             Name = "Metadata",
             Type = "BitPdfMetadata?",
-            Description = "The document metadata (/Info fields plus the raw XMP packet), or null when nothing is loaded.",
+            Description = "The document metadata (/Info fields plus the raw XMP packet), or null when nothing is loaded. Deferred Range data returns null/empty (false for flags); await LoadDocumentDetailsAsync when needed.",
         },
         new()
         {
             Name = "Outline",
             Type = "IReadOnlyList<BitPdfOutlineItem>",
-            Description = "The document outline (bookmarks) as a tree, empty when the document has none.",
+            Description = "The document outline (bookmarks) as a tree, empty when the document has none. Deferred Range data returns null/empty (false for flags); await LoadDocumentDetailsAsync when needed.",
         },
         new()
         {
@@ -498,7 +498,7 @@ public partial class BitPdfViewerDemo
         {
             Name = "PageLabels",
             Type = "IReadOnlyList<string>",
-            Description = "The document-defined page labels (e.g. \"i\", \"ii\", \"1\", \"A-1\"), one per page in document order, or an empty list when nothing is loaded.",
+            Description = "The document-defined page labels, one per page in document order. Deferred Range labels return an empty list; await LoadDocumentDetailsAsync when needed.",
         },
         new()
         {
@@ -564,7 +564,7 @@ public partial class BitPdfViewerDemo
         {
             Name = "StructureTree",
             Type = "IReadOnlyList<BitPdfStructElement>",
-            Description = "The tagged-pdf logical structure tree of the loaded document, or an empty list when the document is untagged.",
+            Description = "The tagged-pdf logical structure tree of the loaded document, or an empty list when the document is untagged. Deferred stream or Range data returns an empty list; await LoadDocumentDetailsAsync when needed.",
         },
         new()
         {
@@ -618,7 +618,7 @@ public partial class BitPdfViewerDemo
         {
             Name = "ExtractPageText",
             Type = "string ExtractPageText(int pageNumber)",
-            Description = "Extracts the visible text of a single page (1-based) for search or copy, or an empty string when unavailable. Throws InvalidOperationException for an active stream source; use ExtractPageTextAsync.",
+            Description = "Extracts the visible text of a single page (1-based) for search or copy, or an empty string when unavailable. Throws InvalidOperationException for an active stream or Range source; use ExtractPageTextAsync.",
         },
         new()
         {
@@ -630,7 +630,7 @@ public partial class BitPdfViewerDemo
         {
             Name = "ExtractText",
             Type = "string ExtractText(string pageSeparator = \"\\n\\n\")",
-            Description = "Extracts the visible text of the whole document, one page per entry joined by the separator. Reuses the index the find box builds. Throws InvalidOperationException for an active stream source; use ExtractTextAsync.",
+            Description = "Extracts the visible text of the whole document, one page per entry joined by the separator. Reuses the index the find box builds. Throws InvalidOperationException for an active stream or Range source; use ExtractTextAsync.",
         },
         new()
         {
@@ -664,15 +664,21 @@ public partial class BitPdfViewerDemo
         },
         new()
         {
+            Name = "LoadDocumentDetailsAsync",
+            Type = "Task LoadDocumentDetailsAsync(CancellationToken cancellationToken = default)",
+            Description = "Loads all deferred document details. Range properties return null/empty until populated; form fields and structure are also deferred for seekable streams. Buffered sources complete immediately.",
+        },
+        new()
+        {
             Name = "GetBytesAsync",
             Type = "Task<byte[]?> GetBytesAsync(CancellationToken cancellationToken = default)",
-            Description = "Returns the existing buffered array, or explicitly copies a stream source to a complete caller-owned array. The viewer does not retain the copy; GetBytes stays null for stream sources.",
+            Description = "Returns the existing buffered array, or explicitly copies a stream or Range source to a complete caller-owned array. The viewer does not retain the copy; GetBytes stays null for non-buffered sources.",
         },
         new()
         {
             Name = "GetBytes",
             Type = "byte[]? GetBytes()",
-            Description = "The raw bytes of a buffered document (fetched ones included), or null for a stream source or when nothing is loaded. Use GetBytesAsync for an explicit copy.",
+            Description = "The raw bytes of a buffered document (fetched ones included), or null for a stream or Range source or when nothing is loaded. Use GetBytesAsync for an explicit copy.",
         },
         new()
         {
@@ -740,7 +746,7 @@ public partial class BitPdfViewerDemo
         {
             Name = "RenderPageHtml",
             Type = "string RenderPageHtml(int pageNumber)",
-            Description = "Renders a single page (1-based) to self-contained HTML, or an empty string when no document is loaded or the number is out of range. Throws InvalidOperationException for an active stream source; use RenderPageHtmlAsync.",
+            Description = "Renders a single page (1-based) to self-contained HTML, or an empty string when no document is loaded or the number is out of range. Throws InvalidOperationException for an active stream or Range source; use RenderPageHtmlAsync.",
         },
         new()
         {
@@ -1677,6 +1683,7 @@ public partial class BitPdfViewerDemo
     private BitPdfSource? cascadeSource;
     private BitPdfSource? styleSource;
     private BitPdfSource? rtlSource;
+    private BitPdfSource? rangeSource;
 
     private string? toolbarMessage;
     private string searchTerm = "the";

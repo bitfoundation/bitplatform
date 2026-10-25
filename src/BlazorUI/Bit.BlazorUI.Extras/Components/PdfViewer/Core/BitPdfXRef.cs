@@ -10,7 +10,7 @@ namespace Bit.BlazorUI;
 /// follows <c>/Prev</c> and hybrid <c>/XRefStm</c> chains, and resolves
 /// indirect references - including objects packed inside object streams.
 /// </summary>
-public sealed class BitPdfXRef : IBitPdfXRef
+public sealed partial class BitPdfXRef : IBitPdfXRef
 {
     private enum EntryType { Free, Uncompressed, Compressed }
 
@@ -129,7 +129,7 @@ public sealed class BitPdfXRef : IBitPdfXRef
 
     private void ReadXRefChain()
     {
-        int start = FindStartXRef();
+        int start = ReadLinearizedStart() ?? FindStartXRef();
         if (start < 0)
         {
             Warnings.Add("Could not locate 'startxref'.");
@@ -431,7 +431,7 @@ public sealed class BitPdfXRef : IBitPdfXRef
     public object? Fetch(BitPdfRef reference, bool suppressEncryption = false)
     {
         ThrowIfSourceDisposed();
-        if (_cache.TryGetValue((reference.Num, reference.Gen), out var cached))
+        if (TryGetCachedObject((reference.Num, reference.Gen), out var cached))
         {
             return cached;
         }
@@ -449,7 +449,7 @@ public sealed class BitPdfXRef : IBitPdfXRef
             object? result = entry.Type == EntryType.Compressed
                 ? FetchCompressed(entry)
                 : FetchUncompressed(reference, entry);
-            _cache[(reference.Num, reference.Gen)] = result;
+            (_attemptCache ?? _cache)[(reference.Num, reference.Gen)] = result;
             return result;
         }
         finally
@@ -473,6 +473,7 @@ public sealed class BitPdfXRef : IBitPdfXRef
         {
             if (!_scanned)
             {
+                if (IsPartial) throw new BitPdfRangeFallbackException("The PDF xref requires a complete-file recovery scan.");
                 _scanned = true;
                 RebuildByScanning();
                 if (_entries.TryGetValue(reference.Num, out var corrected))
@@ -629,52 +630,52 @@ public sealed class BitPdfXRef : IBitPdfXRef
 
     private List<object?> GetObjectStream(int streamNum)
     {
-        if (_objStmCache.TryGetValue(streamNum, out var cached))
-        {
-            return cached;
-        }
-
+        if (TryGetCachedObjectStream(streamNum, out var cached)) return cached;
         var result = new List<object?>();
-        _objStmCache[streamNum] = result; // guard re-entrancy
-
-        if (Fetch(new BitPdfRef(streamNum, 0)) is not BitPdfBaseStream stream || stream.Dict is null)
+        if (!_pendingObjectStreams.Add(streamNum)) return result;
+        try
         {
+            if (Fetch(new BitPdfRef(streamNum, 0)) is not BitPdfBaseStream stream || stream.Dict is null)
+            {
+                return result;
+            }
+
+            BitPdfDict dict = stream.Dict;
+            int n = ToInt(dict.Get("N"));
+            int first = ToInt(dict.Get("First"));
+            byte[] data = BitPdfStreamDecoder.Decode(stream);
+
+            // The header is N pairs of "objNum offset"; each needs at least ~4 bytes.
+            // Clamp the declared /N against the decoded length so a hostile /N cannot
+            // drive a huge allocation or multi-billion-iteration loop.
+            n = Math.Clamp(n, 0, data.Length / 4);
+
+            // Header: N pairs of "objNum offset".
+            var headerLexer = new BitPdfLexer(new BitPdfStream(data));
+            var offsets = new List<int>(n);
+            for (int i = 0; i < n; i++)
+            {
+                _ = headerLexer.GetObj();          // object number (unused for positional access)
+                object offTok = headerLexer.GetObj();
+                offsets.Add(offTok is double d ? (int)d : 0);
+            }
+
+            for (int i = 0; i < n; i++)
+            {
+                int objStart = first + offsets[i];
+                if (objStart < 0 || objStart >= data.Length)
+                {
+                    result.Add(null);
+                    continue;
+                }
+                var parser = new BitPdfParser(new BitPdfLexer(new BitPdfStream(data, objStart)), this);
+                result.Add(parser.GetObj());
+            }
+
+            (_attemptObjectStreams ?? _objStmCache)[streamNum] = result;
             return result;
         }
-
-        BitPdfDict dict = stream.Dict;
-        int n = ToInt(dict.Get("N"));
-        int first = ToInt(dict.Get("First"));
-        byte[] data = BitPdfStreamDecoder.Decode(stream);
-
-        // The header is N pairs of "objNum offset"; each needs at least ~4 bytes.
-        // Clamp the declared /N against the decoded length so a hostile /N cannot
-        // drive a huge allocation or multi-billion-iteration loop.
-        n = Math.Clamp(n, 0, data.Length / 4);
-
-        // Header: N pairs of "objNum offset".
-        var headerLexer = new BitPdfLexer(new BitPdfStream(data));
-        var offsets = new List<int>(n);
-        for (int i = 0; i < n; i++)
-        {
-            _ = headerLexer.GetObj();          // object number (unused for positional access)
-            object offTok = headerLexer.GetObj();
-            offsets.Add(offTok is double d ? (int)d : 0);
-        }
-
-        for (int i = 0; i < n; i++)
-        {
-            int objStart = first + offsets[i];
-            if (objStart < 0 || objStart >= data.Length)
-            {
-                result.Add(null);
-                continue;
-            }
-            var parser = new BitPdfParser(new BitPdfLexer(new BitPdfStream(data, objStart)), this);
-            result.Add(parser.GetObj());
-        }
-
-        return result;
+        finally { _pendingObjectStreams.Remove(streamNum); }
     }
 
     // ----- Recovery (pdf.js XRef.indexObjects equivalent) -----
@@ -699,6 +700,7 @@ public sealed class BitPdfXRef : IBitPdfXRef
 
     private void RebuildByScanning()
     {
+        if (IsPartial) throw new BitPdfRangeFallbackException("The PDF xref requires a complete-file recovery scan.");
         _scanned = true;
         Warnings.Add("Rebuilding the cross-reference table by scanning the file.");
         _entries.Clear();
@@ -897,8 +899,12 @@ public sealed class BitPdfXRef : IBitPdfXRef
     {
         var keyword = "startxref"u8.ToArray();
         int searchStart = Math.Max(0, _reader.Length - 2048);
-        using var window = _source.GetMemory(searchStart, _reader.Length - searchStart);
-        var tail = window.Span;
+        // A classic xref commonly begins in the preceding chunk. Acquire the
+        // bounded tail in one request, while keeping the same startxref search.
+        int acquireStart = _source is BitPdfHttpRangeByteSource ranges
+            ? Math.Max(0, _reader.Length - Math.Max(2048, Math.Min(64 * 1024, ranges.ChunkSize))) : searchStart;
+        using var window = _source.GetMemory(acquireStart, _reader.Length - acquireStart);
+        var tail = window.Span[(searchStart - acquireStart)..];
         int index = tail.LastIndexOf(keyword);
         if (index >= 0)
         {

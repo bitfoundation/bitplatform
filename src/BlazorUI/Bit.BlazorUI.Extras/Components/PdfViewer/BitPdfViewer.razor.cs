@@ -454,6 +454,8 @@ public partial class BitPdfViewer : BitComponentBase
     /// <summary>
     /// The callback for when a document has finished loading.
     /// </summary>
+    /// <remarks>In Range mode the initial page is ready, but optional details can remain
+    /// deferred. Await <see cref="LoadDocumentDetailsAsync"/> when those are required.</remarks>
     [Parameter] public EventCallback OnDocumentLoaded { get; set; }
 
     /// <summary>
@@ -509,6 +511,8 @@ public partial class BitPdfViewer : BitComponentBase
     /// <c>0</c> to <c>1</c>. Only raised when the server declares a content length;
     /// a chunked response has no total to report against.
     /// </summary>
+    /// <remarks>Range mode uses an indeterminate loading bar and raises this event only
+    /// when falling back to the existing full download.</remarks>
     [Parameter] public EventCallback<double> OnProgress { get; set; }
 
     /// <summary>
@@ -609,33 +613,45 @@ public partial class BitPdfViewer : BitComponentBase
     /// <summary>
     /// Whether the document exposes any bookmarks.
     /// </summary>
+    /// <remarks>Deferred Range information returns its empty/null value until loaded.
+    /// Use <see cref="LoadDocumentDetailsAsync"/> to await all document details.</remarks>
     public bool HasOutline => _outline.Count > 0;
 
     /// <summary>
     /// The document outline (bookmarks) as a tree, empty when the document has none.
     /// </summary>
+    /// <remarks>Deferred Range information returns its empty/null value until loaded.
+    /// Use <see cref="LoadDocumentDetailsAsync"/> to await all document details.</remarks>
     public IReadOnlyList<BitPdfOutlineItem> Outline => _outline;
 
     /// <summary>
     /// Whether the document carries any embedded file.
     /// </summary>
+    /// <remarks>Deferred Range information returns its empty/null value until loaded.
+    /// Use <see cref="LoadDocumentDetailsAsync"/> to await all document details.</remarks>
     public bool HasAttachments => _attachments.Count > 0;
 
     /// <summary>
     /// The files embedded in the document (the <c>/EmbeddedFiles</c> name tree plus
     /// any <c>/FileAttachment</c> annotation), empty when it carries none.
     /// </summary>
+    /// <remarks>Deferred Range information returns its empty/null value until loaded.
+    /// Use <see cref="LoadDocumentDetailsAsync"/> to await all document details.</remarks>
     public IReadOnlyList<BitPdfAttachment> Attachments => _attachments;
 
     /// <summary>
     /// Whether the document declares any optional-content group (layer).
     /// </summary>
+    /// <remarks>Deferred Range information returns its empty/null value until loaded.
+    /// Use <see cref="LoadDocumentDetailsAsync"/> to await all document details.</remarks>
     public bool HasLayers => _layers.Count > 0;
 
     /// <summary>
     /// The optional-content groups (layers) the document declares, empty when it
     /// declares none.
     /// </summary>
+    /// <remarks>Deferred Range information returns its empty/null value until loaded.
+    /// Use <see cref="LoadDocumentDetailsAsync"/> to await all document details.</remarks>
     public IReadOnlyList<BitPdfLayer> Layers => _layers;
 
     /// <summary>
@@ -693,14 +709,20 @@ public partial class BitPdfViewer : BitComponentBase
     /// </summary>
     /// <remarks>For a stream source, the model, XRef and raw-file streams are valid only
     /// during this viewer load. Released access throws ObjectDisposedException. Use
-    /// the asynchronous viewer helpers for rendering and text extraction on a server.</remarks>
+    /// the asynchronous viewer helpers for rendering and text extraction on a server.
+    /// For Range sources, cached synchronous members work; uncached reads throw
+    /// <see cref="BitPdfMissingDataException"/> without starting HTTP. Use async viewer helpers.
+    /// Retained document/raw-stream references expire with this load. The engine
+    /// model is not thread-safe; do not overlap direct access with viewer work.</remarks>
     public BitPdfDocument? Document => _document;
 
     /// <summary>
     /// The document metadata (<c>/Info</c> fields plus the raw XMP packet), or
     /// <c>null</c> when nothing is loaded.
     /// </summary>
-    public BitPdfMetadata? Metadata => _streamPreparation is { } stream ? stream.Metadata : _document?.Metadata;
+    /// <remarks>Deferred Range information returns its empty/null value until loaded.
+    /// Use <see cref="LoadDocumentDetailsAsync"/> to await all document details.</remarks>
+    public BitPdfMetadata? Metadata => _rangeSource is not null ? _rangeMetadata : _streamPreparation is { } stream ? stream.Metadata : _document?.Metadata;
 
     /// <summary>
     /// The user access permissions of the loaded document. Every permission is
@@ -712,19 +734,25 @@ public partial class BitPdfViewer : BitComponentBase
     /// The document-defined page labels (e.g. "i", "ii", "1", "A-1"), one per page
     /// in document order, or an empty list when nothing is loaded.
     /// </summary>
-    public IReadOnlyList<string> PageLabels => _streamPreparation is { } stream ? stream.PageLabels : _document?.PageLabels ?? [];
+    /// <remarks>Deferred Range information returns its empty/null value until loaded.
+    /// Use <see cref="LoadDocumentDetailsAsync"/> to await all document details.</remarks>
+    public IReadOnlyList<string> PageLabels => _rangeSource is not null ? _rangeLabels : _streamPreparation is { } stream ? stream.PageLabels : _document?.PageLabels ?? [];
 
     /// <summary>
     /// The interactive form fields (<c>/AcroForm</c>) of the loaded document as a
     /// flat list of name/type/value, or an empty list when there is no form.
     /// </summary>
-    public IReadOnlyList<BitPdfFormField> FormFields => _streamPreparation is { } stream ? stream.FormFields : _document?.FormFields ?? [];
+    /// <remarks>Deferred stream or Range form fields return an empty list until loaded.
+    /// Use <see cref="LoadDocumentDetailsAsync"/> to await all document details.</remarks>
+    public IReadOnlyList<BitPdfFormField> FormFields => _rangeSource is not null ? _rangeForms : _streamPreparation is { } stream ? stream.FormFields : _document?.FormFields ?? [];
 
     /// <summary>
     /// The tagged-PDF logical structure tree of the loaded document, or an empty
     /// list when the document is untagged.
     /// </summary>
-    public IReadOnlyList<BitPdfStructElement> StructureTree => _streamPreparation is { } stream ? stream.StructureTree : _document?.StructureTree ?? [];
+    /// <remarks>Deferred stream or Range structure returns an empty list until loaded.
+    /// Use <see cref="LoadDocumentDetailsAsync"/> to await all document details.</remarks>
+    public IReadOnlyList<BitPdfStructElement> StructureTree => _rangeSource is not null ? _rangeStructure : _streamPreparation is { } stream ? stream.StructureTree : _document?.StructureTree ?? [];
 
     /// <summary>
     /// The PDF version the loaded document declares (e.g. "1.7"), or <c>null</c>.
@@ -739,7 +767,8 @@ public partial class BitPdfViewer : BitComponentBase
     /// <summary>
     /// The size in bytes of the loaded document, or <c>0</c> when nothing is loaded.
     /// </summary>
-    public long FileSize => _document is not null && _streamSource is not null ? _streamSource.Length : _bytes?.LongLength ?? 0;
+    public long FileSize => _document is not null && _rangeSource is not null ? _rangeSource.Length
+        : _document is not null && _streamSource is not null ? _streamSource.Length : _bytes?.LongLength ?? 0;
 
     /// <summary>
     /// The non-fatal diagnostics collected while the current document was parsed
@@ -787,7 +816,7 @@ public partial class BitPdfViewer : BitComponentBase
     /// The raw bytes of the loaded document (fetched ones included), or <c>null</c>
     /// when nothing is loaded.
     /// </summary>
-    /// <remarks>Returns null for stream-backed documents. Use <see cref="GetBytesAsync"/> for an explicit, unretained copy.</remarks>
+    /// <remarks>Returns null for non-buffered stream or Range documents. Use <see cref="GetBytesAsync"/> for an explicit, unretained copy.</remarks>
     public byte[]? GetBytes() => _bytes;
 
     // The conditions the toolbar's controls are disabled by, each read by both the disabled and the aria-disabled
@@ -800,7 +829,7 @@ public partial class BitPdfViewer : BitComponentBase
 
     private bool NoSearchMatches => _searchTotal <= 0;
 
-    private bool DownloadDisabled => (_bytes is null && (_document is null || _streamSource is null)) || CanDownload is false;
+    private bool DownloadDisabled => (_bytes is null && (_document is null || !IsNonBuffered)) || CanDownload is false;
 
     private bool PrintDisabled => _pages.Count == 0 || CanPrint is false;
 
@@ -990,7 +1019,7 @@ public partial class BitPdfViewer : BitComponentBase
         BitPdfDestination? destination = null;
         try
         {
-            destination = _streamSource is not null
+            destination = IsNonBuffered
                 ? await RunDocumentWorkAsync(document => document.ResolveDestination(name), default)
                 : _document.ResolveDestination(name);
         }
@@ -1296,6 +1325,7 @@ public partial class BitPdfViewer : BitComponentBase
     {
         // A Ctrl+S (or a toolbar click) while the host's OnDownloading is still deciding
         // - an async rename prompt, say - is not a second download.
+        if (_rangeSource is not null) { await DownloadRangeAsync(); return; }
         if (CanDownload is false || _downloading) return;
 
         // _bytes holds whatever the current document was parsed from, whether it
@@ -1611,7 +1641,7 @@ public partial class BitPdfViewer : BitComponentBase
     /// Renders a single page (1-based) to self-contained HTML, or an
     /// empty string when no document is loaded or the number is out of range.
     /// </summary>
-    /// <exception cref="InvalidOperationException">An active stream source requires <see cref="RenderPageHtmlAsync"/>.</exception>
+    /// <exception cref="InvalidOperationException">An active non-buffered source requires <see cref="RenderPageHtmlAsync"/>.</exception>
     public string RenderPageHtml(int pageNumber)
     {
         RequireBufferedHelper(nameof(RenderPageHtmlAsync));
@@ -1662,7 +1692,7 @@ public partial class BitPdfViewer : BitComponentBase
     /// Extracts the visible text of a single page (1-based) for search or
     /// copy, or an empty string when unavailable.
     /// </summary>
-    /// <exception cref="InvalidOperationException">An active stream source requires <see cref="ExtractPageTextAsync"/>.</exception>
+    /// <exception cref="InvalidOperationException">An active non-buffered source requires <see cref="ExtractPageTextAsync"/>.</exception>
     public string ExtractPageText(int pageNumber)
     {
         RequireBufferedHelper(nameof(ExtractPageTextAsync));
@@ -1678,7 +1708,7 @@ public partial class BitPdfViewer : BitComponentBase
     /// returned sequence joined by <paramref name="pageSeparator"/>. Reuses the
     /// index the find box builds, so a second call after a search is free.
     /// </summary>
-    /// <exception cref="InvalidOperationException">An active stream source requires <see cref="ExtractTextAsync"/>.</exception>
+    /// <exception cref="InvalidOperationException">An active non-buffered source requires <see cref="ExtractTextAsync"/>.</exception>
     public string ExtractText(string pageSeparator = "\n\n")
     {
         RequireBufferedHelper(nameof(ExtractTextAsync));
@@ -1707,7 +1737,7 @@ public partial class BitPdfViewer : BitComponentBase
     {
         // A panel with nothing to show closes the sidebar rather than opening empty.
         if ((sidebar == BitPdfSidebar.Bookmarks && HasOutline is false)
-            || (sidebar == BitPdfSidebar.Attachments && HasAttachments is false)
+            || (sidebar == BitPdfSidebar.Attachments && HasAttachments is false && !HasDeferredAttachments)
             || (sidebar == BitPdfSidebar.Layers && HasLayers is false))
         {
             sidebar = BitPdfSidebar.None;
@@ -1747,6 +1777,7 @@ public partial class BitPdfViewer : BitComponentBase
 
         Repaint();
         await OnSidebarChanged.InvokeAsync(sidebar);
+        if (_showAttachments && HasDeferredAttachments) await LoadRangeAttachmentsForPanelAsync();
     }
 
     /// <summary>
@@ -1904,6 +1935,7 @@ public partial class BitPdfViewer : BitComponentBase
         // A dialog opens with focus inside it, or a keyboard reader is left behind in
         // the toolbar with a modal they cannot reach (and Escape cannot close).
         _focusPropertiesPending = _showProperties;
+        if (_showProperties && IsNonBuffered) _ = LoadDetailsForPropertiesAsync();
         Repaint();
     }
 
@@ -2442,6 +2474,7 @@ public partial class BitPdfViewer : BitComponentBase
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitPdfViewerViewport))]
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
+        int rangeRenderVersion = _loadVersion;
         await base.OnAfterRenderAsync(firstRender);
 
         if (firstRender)
@@ -2739,6 +2772,13 @@ public partial class BitPdfViewer : BitComponentBase
             _canvasPaintSignal = null;
             paintSignal.TrySetResult();
         }
+        if (rangeRenderVersion == _loadVersion && _rangeEssentialsPending && _rangePublished && !_loading
+            && (RenderMode != BitPdfRenderMode.Canvas || _canvasPaintedGen >= _canvasDirtyGen))
+        {
+            _rangeEssentialsPending = false;
+            _rangeBackgroundTask = LoadRangeBackgroundAsync();
+        }
+
     }
 
 
@@ -2758,8 +2798,14 @@ public partial class BitPdfViewer : BitComponentBase
     /// mid-transfer, so the caller drops it rather than parsing a document nobody
     /// asked for any more.
     /// </summary>
-    private async Task<byte[]?> FetchAsync(HttpClient http, BitPdfSource source, int version)
+    private async Task<byte[]?> FetchAsync(HttpClient http, BitPdfSource source, int version,
+        HttpResponseMessage? initialResponse = null, long? maxSize = null, CancellationToken cancellationToken = default)
     {
+        if (maxSize == 0)
+        {
+            initialResponse?.Dispose();
+            throw new BitPdfByteSourceIOException("Buffered PDF fallback is disabled by MaxFallbackSize.");
+        }
         using var request = new HttpRequestMessage(HttpMethod.Get, source.Url);
         if (source.Headers is { Count: > 0 } headers)
         {
@@ -2773,18 +2819,21 @@ public partial class BitPdfViewer : BitComponentBase
 
         // ResponseHeadersRead lets the body be read in chunks, which is what makes a
         // progress report possible at all; without it the whole file arrives at once.
-        using var response = await http.SendAsync(request, HttpCompletionOption.ResponseHeadersRead);
+        using var response = initialResponse ?? await http.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellationToken);
         response.EnsureSuccessStatusCode();
 
         long? length = response.Content.Headers.ContentLength;
-        if (length is not > 0)
+        if (maxSize is long limit && length > limit)
+            throw new BitPdfByteSourceIOException("The buffered PDF fallback exceeds MaxFallbackSize.");
+        bool reportProgress = length is > 0;
+        if (!reportProgress && maxSize is null)
         {
             // Nothing to report against (a chunked response declares no length), so
             // take the simple path.
-            return await response.Content.ReadAsByteArrayAsync();
+            return await response.Content.ReadAsByteArrayAsync(cancellationToken);
         }
 
-        using var body = await response.Content.ReadAsStreamAsync();
+        using var body = await response.Content.ReadAsStreamAsync(cancellationToken);
         // 64 KB is small enough that progress moves visibly on a slow link and large
         // enough that the reports don't become the cost of the download.
         const int chunk = 64 * 1024;
@@ -2794,12 +2843,19 @@ public partial class BitPdfViewer : BitComponentBase
         // NOT what is allocated: a server (or a proxy) is free to declare a gigabyte
         // it never sends, and taking that at its word would allocate it all before the
         // first byte arrives - fatal on WebAssembly. Grow with the bytes instead.
-        long declared = Math.Min(length.Value, int.MaxValue);
-        var buffer = new byte[(int)Math.Min(declared, initialCap)];
+        long declared = Math.Min(length is > 0 ? length.Value : int.MaxValue, int.MaxValue);
+        var buffer = new byte[(int)Math.Min(Math.Min(declared, initialCap), maxSize ?? long.MaxValue)];
         int read = 0;
         long lastPaint = 0;
         while (true)
         {
+            if (maxSize is long cap && read == cap)
+            {
+                var extra = new byte[1];
+                if (await body.ReadAsync(extra, cancellationToken) != 0)
+                    throw new BitPdfByteSourceIOException("The buffered PDF fallback exceeds MaxFallbackSize.");
+                break;
+            }
             if (read == buffer.Length)
             {
                 // Doubling, but never past the declared length while the body is still short
@@ -2812,18 +2868,19 @@ public partial class BitPdfViewer : BitComponentBase
                 {
                     target = Math.Min(target, declared);
                 }
-                int grown = (int)Math.Min(Math.Max(target, chunk), Array.MaxLength);
+                int grown = (int)Math.Min(Math.Min(Math.Max(target, chunk), Array.MaxLength), maxSize ?? long.MaxValue);
                 if (grown <= buffer.Length) break; // a PDF that no array can hold
 
                 Array.Resize(ref buffer, grown);
             }
 
-            int got = await body.ReadAsync(buffer.AsMemory(read, Math.Min(chunk, buffer.Length - read)));
+            int got = await body.ReadAsync(buffer.AsMemory(read, Math.Min(chunk, buffer.Length - read)), cancellationToken);
             if (got <= 0) break; // the body ended; take what came
 
             read += got;
             if (IsDisposed || version != _loadVersion) return null;
             // A body longer than it declared must not report past 100%.
+            if (!reportProgress) continue;
             double fraction = Math.Min(1d, read / (double)declared);
             // The bar moves a whole percent at a time, at most every 100 ms: a render per
             // chunk would cost more than the chunk did on a fast link, and on Blazor Server
@@ -2896,6 +2953,7 @@ public partial class BitPdfViewer : BitComponentBase
             _streamPreparation = null;
             _streamLoadCancellation = null;
             previousDocument?.ReleaseByteWindows();
+            await RetireRangeSourceAsync();
             if (previousStream is not null)
             {
                 await previousStream.DisposeAsync();
@@ -2957,6 +3015,7 @@ public partial class BitPdfViewer : BitComponentBase
         }
 
         // Resolve the bytes: an in-memory buffer, or a URL fetched via HttpClient.
+        string? loadPassword = source.Password;
         byte[]? bytes = source.Bytes;
         if (bytes is null && source.Url is not null)
         {
@@ -2977,7 +3036,14 @@ public partial class BitPdfViewer : BitComponentBase
             }
             try
             {
-                bytes = await FetchAsync(http, source, version);
+                if (source.RangeLoading is not null)
+                {
+                    var loaded = await TryLoadRangeDocumentAsync(http, source, version);
+                    if (loaded.Handled) return;
+                    bytes = loaded.Bytes;
+                    loadPassword = loaded.Password; // reuse a password accepted before a load-time fallback
+                }
+                else bytes = await FetchAsync(http, source, version);
                 if (bytes is null) return; // superseded while fetching
                 _progress = null; // the parse that follows has no measure of its own
             }
@@ -3015,7 +3081,7 @@ public partial class BitPdfViewer : BitComponentBase
         try
         {
             BitPdfDocument document;
-            string? password = source.Password;
+            string? password = loadPassword;
             // Retry as long as a password keeps arriving: a reader who mistypes gets
             // another try instead of one shot and an error. Cancelling (an empty
             // answer, or no prompt at all) rethrows into the outer catch, which is
@@ -3173,6 +3239,7 @@ public partial class BitPdfViewer : BitComponentBase
         _fitPageIndex = -1;   // the page the current fit was measured against is gone
         _hasPageLabels = null; // the page count changed under the label scan
         if (_document is null) return;
+        if (_rangeSource is not null) { PrepareRangeSlots(); return; }
 
         bool swap = Rotation % 180 == 90;
         foreach (var page in _document.Pages)
@@ -3217,7 +3284,7 @@ public partial class BitPdfViewer : BitComponentBase
     /// passed in as a UI-thread snapshot so a background build reads a consistent set
     /// even if the component's state changes while it runs.
     /// </summary>
-    private BitPdfPageBuild BuildPage(int index, int rotation, BitPdfTextCoalescing textCoalescing, BitPdfRenderMode renderMode, bool thumbnail = false)
+    private BitPdfPageBuild BuildPage(int index, int rotation, BitPdfTextCoalescing textCoalescing, BitPdfRenderMode renderMode, bool thumbnail = false, BitPdfFontStore? fontStore = null)
     {
         var doc = _document;
         if (doc is null || index < 0 || index >= doc.Pages.Count)
@@ -3226,7 +3293,7 @@ public partial class BitPdfViewer : BitComponentBase
             // return an empty, discardable result - the caller's guard drops it.
             return new BitPdfPageBuild(string.Empty, null);
         }
-        var store = _fontStore ??= new BitPdfFontStore();
+        var store = fontStore ?? (_fontStore ??= new BitPdfFontStore());
         var page = doc.Pages[index];
         var renderer = new BitPdfHtmlRenderer(page, doc.XRef, store, rotation)
         {
@@ -3285,6 +3352,7 @@ public partial class BitPdfViewer : BitComponentBase
     /// </summary>
     private async Task<bool> RenderPageAsync(int index)
     {
+        if (_rangeSource is not null) return await RenderRangePageAsync(index, thumbnail: false);
         if (index < 0 || index >= _pages.Count || _pages[index] is not null || IsDisposed) return false;
 
         try
@@ -3375,6 +3443,7 @@ public partial class BitPdfViewer : BitComponentBase
     /// </summary>
     private async Task<bool> RenderThumbAsync(int index)
     {
+        if (_rangeSource is not null) return await RenderRangePageAsync(index, thumbnail: true);
         if (index < 0 || index >= _thumbs.Count || _thumbs[index] is not null || IsDisposed) return false;
 
         try
@@ -3454,11 +3523,11 @@ public partial class BitPdfViewer : BitComponentBase
     /// after a load, rotation or mode change instead of a placeholder. Completes
     /// synchronously in the default foreground mode; with <see cref="BackgroundRendering"/>
     /// the loading shimmer covers the brief hop to a worker thread.</summary>
-    private Task RenderCurrentPageEagerlyAsync()
+    private Task RenderCurrentPageEagerlyAsync(bool throwRangeFailures = false)
     {
         if (_pages.Count == 0) return Task.CompletedTask;
         int center = Math.Clamp(CurrentPage - 1, 0, _pages.Count - 1);
-        return RenderPageAsync(center);
+        return _rangeSource is not null ? RenderRangePageAsync(center, thumbnail: false, throwRangeFailures) : RenderPageAsync(center);
     }
 
     // Cap how many pages stay materialized so a large document does not grow the
@@ -3510,11 +3579,11 @@ public partial class BitPdfViewer : BitComponentBase
     /// placeholder - the JS paint targets the MAIN surface only, so a placeholder
     /// would show a blank thumbnail (Compact text keeps the tiny fragments light).
     /// </summary>
-    private BitPdfPageBuild BuildThumb(int index, int rotation, BitPdfTextCoalescing textCoalescing, BitPdfRenderMode renderMode)
+    private BitPdfPageBuild BuildThumb(int index, int rotation, BitPdfTextCoalescing textCoalescing, BitPdfRenderMode renderMode, BitPdfFontStore? fontStore = null)
     {
         if (renderMode != BitPdfRenderMode.Canvas)
         {
-            return BuildPage(index, rotation, textCoalescing, renderMode, thumbnail: true);
+            return BuildPage(index, rotation, textCoalescing, renderMode, thumbnail: true, fontStore);
         }
 
         var doc = _document;
@@ -3522,7 +3591,7 @@ public partial class BitPdfViewer : BitComponentBase
         {
             return new BitPdfPageBuild(string.Empty, null);
         }
-        var store = _fontStore ??= new BitPdfFontStore();
+        var store = fontStore ?? (_fontStore ??= new BitPdfFontStore());
         var renderer = new BitPdfHtmlRenderer(doc.Pages[index], doc.XRef, store, rotation)
         {
             TextCoalescing = BitPdfTextCoalescing.Compact,
@@ -4167,7 +4236,7 @@ public partial class BitPdfViewer : BitComponentBase
                 string text;
                 try
                 {
-                    text = _streamSource is not null
+                    text = IsNonBuffered
                         ? await ExtractPageTextAsync(i + 1)
                         : _document.Pages[i].ExtractText();
                 }
@@ -4698,6 +4767,7 @@ public partial class BitPdfViewer : BitComponentBase
         _streamSource = null;
         _streamPreparation = null;
         previousDocument?.ReleaseByteWindows();
+        await RetireRangeSourceAsync();
         if (previousStream is not null) await previousStream.DisposeAsync();
         _streamLoadCancellation?.Dispose();
         _streamLoadCancellation = null;
