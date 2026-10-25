@@ -14,6 +14,7 @@ namespace Bit.BlazeDb.Benchmarks;
 public class PersistenceBenchmarks
 {
     private BlazeDbInMemoryStorage _storage = null!;
+    private BlazeDbInMemoryStorage _openStorage = null!;
     private BlazeDbDatabase _db = null!;
 
     [Params(10_000, 100_000)]
@@ -34,6 +35,10 @@ public class PersistenceBenchmarks
             txn.Commit();
         }
         await _db.CheckpointAsync();
+        // A copy no other instance writes to, so the open cannot race the one that owns the original's
+        // background loop. Opening a clean checkpoint and disposing with nothing committed writes nothing,
+        // so every iteration opens the same bytes.
+        _openStorage = _storage.Clone();
     }
 
     private static BlazeDbDatabaseOptions Options(IBlazeDbStorage storage) => new BlazeDbDatabaseOptions
@@ -49,8 +54,7 @@ public class PersistenceBenchmarks
     [Benchmark]
     public async Task<int> Open()
     {
-        // A copy, so the open cannot race the instance that owns the original's background loop.
-        await using var db = await BlazeDbDatabase.OpenAsync(Options(_storage.Clone()));
+        await using var db = await BlazeDbDatabase.OpenAsync(Options(_openStorage));
         return db.GetTable(BenchPerson.Table).Count;
     }
 

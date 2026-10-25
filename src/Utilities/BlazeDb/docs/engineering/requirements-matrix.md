@@ -157,7 +157,7 @@ valuable, P3 nice to have. **New** marks work done in this pass; everything else
 | Geospatial, vector search | out of scope | Application-level over live objects |
 | Time series | covered by ordered indexes | Range scans + `CountBy` |
 | TTL / expiry | covered | `DeleteMany(Range(...))` recipe in README |
-| Change history / audit | covered | `BlazeDbDatabase.Changed` |
+| Change history / audit | application responsibility | `BlazeDbDatabase.Changed` is an in-process event, raised after commit and not persisted; durable recording is the application's (write each change to an audit table or outbox) |
 | Soft delete, multi-tenancy | application patterns | Indexed flag / tenant key + compound index |
 | Graph traversal | out of scope | - |
 

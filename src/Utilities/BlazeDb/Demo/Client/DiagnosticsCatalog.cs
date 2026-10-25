@@ -68,7 +68,7 @@ public static class DiagnosticsCatalog
 
         new("BLZ003", "Unsupported property type", true,
             "Dictionary<string, string> Map { get; set; }",
-            "The binary format encodes scalars - <code>bool</code>, the integer types, <code>char</code>, <code>float</code>, <code>double</code>, <code>decimal</code>, <code>string</code>, <code>byte[]</code>, enums, <code>Guid</code>, <code>DateTime</code>, <code>DateTimeOffset</code>, <code>TimeSpan</code> and their nullable forms - plus <code>List&lt;T&gt;</code> and <code>T[]</code> of a non-nullable scalar. Anything else has no encoding: mark it <code>[BlazeDbIgnore]</code>, or store it in a shape the format has.",
+            "The binary format encodes scalars - <code>bool</code>, the integer types, <code>char</code>, <code>float</code>, <code>double</code>, <code>decimal</code>, <code>string</code>, <code>byte[]</code>, enums, <code>Guid</code>, <code>DateTime</code>, <code>DateTimeOffset</code>, <code>TimeSpan</code>, <code>DateOnly</code>, <code>TimeOnly</code>, <code>Half</code>, <code>Int128</code>, <code>UInt128</code> and their nullable forms - plus <code>T[]</code>, <code>List&lt;T&gt;</code>, <code>IList&lt;T&gt;</code>, <code>ICollection&lt;T&gt;</code>, <code>IEnumerable&lt;T&gt;</code>, <code>IReadOnlyList&lt;T&gt;</code>, <code>IReadOnlyCollection&lt;T&gt;</code>, <code>HashSet&lt;T&gt;</code>, <code>ISet&lt;T&gt;</code> and <code>IReadOnlySet&lt;T&gt;</code> of a non-nullable scalar. Anything else has no encoding: mark it <code>[BlazeDbIgnore]</code>, or store it in a shape the format has.",
             """
             [BlazeDbTable("profiles")]
             public partial class Profile
