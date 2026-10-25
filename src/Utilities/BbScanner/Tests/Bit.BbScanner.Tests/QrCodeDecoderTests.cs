@@ -254,7 +254,8 @@ public class QrCodeDecoderTests
     {
         // Choosing the finder patterns tries every triple of the centres found, so a picked file tiled with thousands of
         // them - which no photograph of real symbols is - cost the cube of their number: seven and a half minutes for
-        // this one, half a second once the search keeps a few dozen.
+        // this one, about a second once the search keeps a few dozen. The bound only has to tell those apart, and a
+        // shared build machine running every target framework's tests side by side takes ten times as long.
         const int Period = 8;
         const int Modules = 1500;
         using var tiles = new BbBitMatrix(Modules, Modules);
@@ -275,6 +276,6 @@ public class QrCodeDecoderTests
         decoder.Decode(image.View, suppressDuplicates: false);
         watch.Stop();
 
-        Assert.IsLessThan(TimeSpan.FromSeconds(5), watch.Elapsed, $"Took {watch.Elapsed}.");
+        Assert.IsLessThan(TimeSpan.FromSeconds(60), watch.Elapsed, $"Took {watch.Elapsed}.");
     }
 }

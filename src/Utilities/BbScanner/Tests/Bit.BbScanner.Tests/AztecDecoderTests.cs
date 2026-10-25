@@ -375,7 +375,8 @@ public class AztecDecoderTests
     {
         // Every sighting of a bullseye is checked against those already found, so a picked file tiled with thousands
         // of them - which no photograph of real symbols is - cost the square of their number: 44 seconds for this one,
-        // 0.4 once the search stops at a few dozen.
+        // 0.4 once the search stops at a few dozen. The bound only has to tell those apart, and a shared build machine
+        // running every target framework's tests side by side takes ten times as long.
         const int Period = 8;
         const int Modules = 1500;
         using var tiles = new BbBitMatrix(Modules, Modules);
@@ -393,7 +394,7 @@ public class AztecDecoderTests
         Decode(image, BbScannerOptions.ForStillImages());
         watch.Stop();
 
-        Assert.IsLessThan(TimeSpan.FromSeconds(5), watch.Elapsed, $"Took {watch.Elapsed}.");
+        Assert.IsLessThan(TimeSpan.FromSeconds(20), watch.Elapsed, $"Took {watch.Elapsed}.");
     }
 
     [TestMethod]

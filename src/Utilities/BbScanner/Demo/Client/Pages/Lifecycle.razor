@@ -22,6 +22,7 @@
         <div class="scan-layout">
             <div class="scan-view">
                 <BbScanner @ref="_scanner"
+                           Formats="BbBarcodeFormat.All"
                            AutoStart="false"
                            ShowControls="false"
                            DuplicateSuppressionWindow="@(_oncePerSession ? Timeout.InfiniteTimeSpan : TimeSpan.FromSeconds(_windowSeconds))"
