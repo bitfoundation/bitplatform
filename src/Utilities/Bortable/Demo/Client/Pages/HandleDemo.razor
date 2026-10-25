@@ -5,27 +5,135 @@
 <div class="bb-intro">
     <h1>Handle</h1>
     <p class="bb-subtitle">
-        With <code>Handle=".handle"</code> a row can only be dragged by grabbing the handle icon. The rest of the
-        row stays selectable and clickable.
+        With <code>Handle=".handle"</code> a row can only be dragged by grabbing the handle icon. The rest of the row
+        keeps its normal pointer behaviour: its text can be selected, its inputs focused and typed into, its buttons
+        clicked.
     </p>
 </div>
 
 <DemoCode />
 
-<div class="bb-demo">
-    <Bortable @bind-Items="_items" TItem="string" Handle=".handle" Id="handle-list"
-              Class="demo-list" ItemClass="demo-item" GhostClass="demo-ghost">
-        <ItemTemplate Context="item">
-            <span class="handle">☰</span>@item
-        </ItemTemplate>
-    </Bortable>
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> A drag handle</h3>
+    <p class="bb-card-desc">
+        <code>Handle</code> is a CSS selector, matched inside each item. Press anywhere else on a row and nothing is
+        dragged - select its text instead.
+    </p>
 
-    <p class="demo-order"><strong>Order:</strong> <span id="handle-order">@string.Join(", ", _items)</span></p>
-</div>
+    <div class="bb-demo">
+        <Bortable @bind-Items="_items" TItem="string" Handle=".handle" Id="handle-list"
+                  Class="demo-list" ItemClass="demo-item" GhostClass="demo-ghost">
+            <ItemTemplate Context="item">
+                <span class="handle">☰</span>@item
+            </ItemTemplate>
+        </Bortable>
+
+        <p class="demo-order"><strong>Order:</strong> <span id="handle-order">@string.Join(", ", _items)</span></p>
+    </div>
+</section>
+
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Rows with controls</h3>
+    <p class="bb-card-desc">
+        Where a handle earns its place: rows that hold controls. Each step of this checklist is an input you can click
+        into and edit, with a checkbox to tick - and the grip on the left reorders the steps.
+    </p>
+
+    <div class="bb-demo">
+        <Bortable @bind-Items="_steps" TItem="Step" Handle=".handle" Id="handle-steps" AriaLabel="Checklist"
+                  ItemLabel="s => s.Text"
+                  Class="demo-list" ItemClass="demo-item" GhostClass="demo-ghost">
+            <ItemTemplate Context="step">
+                <span class="demo-row">
+                    <span class="handle" title="Drag to reorder">☰</span>
+                    <input type="checkbox" @bind="step.Done" aria-label="@($"{step.Text} done")" />
+                    <input type="text" @bind="step.Text" @bind:event="oninput" aria-label="Step" />
+                </span>
+            </ItemTemplate>
+        </Bortable>
+
+        <p class="demo-order"><strong>Steps:</strong> <span id="handle-steps-order">@string.Join(", ", _steps.Select(s => s.Done ? $"{s.Text} ✓" : s.Text))</span></p>
+    </div>
+</section>
+
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Try it</h3>
+    <ul class="bb-detail-list">
+        <li>Drag a row of the first list by its body: nothing moves, and the text can be selected. Drag it by ☰: it sorts.</li>
+        <li>
+            In the checklist, click into a step and edit it, tick its box, then reorder it by ☰ - the edit and the tick
+            travel with it, because they live in the item.
+        </li>
+        <li>
+            From the keyboard nothing changes: <kbd>Tab</kbd> to a row (not to the input inside it) and <kbd>Space</kbd>
+            picks it up. Keys pressed inside the input are the input's - <kbd>Space</kbd> types a space.
+        </li>
+        <li>
+            On a touch screen a handle still needs the long press; the <a href="touch">touch</a> page shows a handle that
+            drags at once.
+        </li>
+    </ul>
+</section>
+
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> How it works</h3>
+    <ul class="bb-detail-list">
+        <li>
+            With a <code>Handle</code>, items render as not draggable. Pressing an element that matches the selector
+            makes its item draggable for the drag that follows; the next press starts from undraggable again.
+        </li>
+        <li>
+            The list's container gets the <code>bit-bortable-has-handle</code> class, which the stylesheet uses to take
+            the grab cursor and the no-select rule off the rest of the item. Give the handle its own grab cursor.
+        </li>
+        <li>
+            A handle belongs to the item it sits in: in <a href="nested">nested lists</a>, a handle of an inner list's
+            item never drags the outer item around it.
+        </li>
+        <li>
+            An invalid selector does not break the page: the browser layer warns once in the console, and no item drags.
+        </li>
+        <li>
+            For a handle that a keyboard user reaches as well, make it a <code>&lt;button type="button"&gt;</code> with an
+            accessible name: it picks its item up too.
+        </li>
+    </ul>
+</section>
+
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Parameters on this page</h3>
+    <div class="bb-scroll">
+        <table class="bb-table">
+            <thead>
+                <tr><th>Parameter</th><th>Here</th><th>What it does</th></tr>
+            </thead>
+            <tbody>
+                <tr><td class="bb-table-key"><code>Handle</code></td><td><code>.handle</code></td><td>The CSS selector of the element, inside each item, that starts a drag.</td></tr>
+                <tr><td class="bb-table-key"><code>ItemLabel</code></td><td><code>s =&gt; s.Text</code></td><td>How announcements name a step: by its text, as it is now.</td></tr>
+                <tr><td class="bb-table-key"><code>AriaLabel</code></td><td><code>Checklist</code></td><td>The list's accessible name.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</section>
 
 @code {
     private IList<string> _items = new List<string>
     {
         "Item 1", "Item 2", "Item 3", "Item 4", "Item 5", "Item 6"
     };
+
+    private IList<Step> _steps = new List<Step>
+    {
+        new() { Text = "Pack the tent" },
+        new() { Text = "Check the weather", Done = true },
+        new() { Text = "Fill the water bottles" },
+        new() { Text = "Charge the torch" },
+    };
+
+    // A class: the item is edited in place, and its @key - the object itself - stays the same while its text changes.
+    public sealed class Step
+    {
+        public required string Text { get; set; }
+        public bool Done { get; set; }
+    }
 }

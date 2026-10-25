@@ -38,4 +38,21 @@ public sealed class BortableEventArgs<TItem>
 
     /// <summary><c>true</c> when the item crossed from one list into another.</summary>
     public bool CrossedLists => !string.Equals(FromId, ToId, StringComparison.Ordinal);
+
+    /// <summary>How the drag was made: with a mouse, a finger, a pen, the keyboard, or by code.</summary>
+    public BortableInput Input { get; init; }
+
+    /// <summary>
+    /// <c>true</c> when the move puts a copy of the item into another list (the source's
+    /// <see cref="Bortable{TItem}.Pull"/> is <see cref="BortablePull.Clone"/>) and the original stays. <see cref="Item"/>
+    /// is then the copy in the events that follow the drop, and the original in the ones before it.
+    /// </summary>
+    public bool IsClone { get; init; }
+
+    /// <summary>
+    /// Set on <c>OnEnd</c>: <c>true</c> when the drag ended without keeping any change - it was cancelled (Escape),
+    /// released outside every list of a source with <see cref="Bortable{TItem}.RevertOnSpill"/>, or refused by the
+    /// destination's <see cref="Bortable{TItem}.ConfirmDrop"/> - and every list it touched was put back as it was.
+    /// </summary>
+    public bool Canceled { get; init; }
 }
