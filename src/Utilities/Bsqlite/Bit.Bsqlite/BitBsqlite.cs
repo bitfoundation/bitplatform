@@ -14,6 +14,11 @@
 /// pages that use it are prerendered there: resolving the services is harmless on the server, and only
 /// opening a database needs the browser.
 /// </para>
+/// <para>
+/// A Blazor Hybrid app registers the same thing: there .NET runs natively, so the file system backend is
+/// added and ranked ahead of the browser ones, and databases are SQLite files on the device opened by the
+/// native engine in-process - a scope per web view, like a tab.
+/// </para>
 /// </remarks>
 public static partial class BitBsqlite
 {

@@ -24,8 +24,8 @@ public static class McpPrompts
     public static string AddBsqliteToApp(
         // The values go into the prompt's own argument schema, which is what a client offers as
         // completions - so picking the hosting model is a choice from a list rather than a spelling test.
-        [AllowedValues("unknown", "standalone-wasm", "wasm", "auto", "server")]
-        [Description("How the app is hosted: standalone-wasm, wasm (Blazor Web App on InteractiveWebAssembly), auto or server. Pass 'unknown' to have it determined from the project first.")] string hosting = "unknown")
+        [AllowedValues("unknown", "standalone-wasm", "wasm", "auto", "server", "hybrid")]
+        [Description("How the app is hosted: standalone-wasm, wasm (Blazor Web App on InteractiveWebAssembly), auto, server or hybrid (Blazor Hybrid on MAUI, WPF or Windows Forms). Pass 'unknown' to have it determined from the project first.")] string hosting = "unknown")
     {
         return $"""
             Add Bit.Bsqlite to this Blazor app. Its hosting model is: {hosting}.
@@ -34,7 +34,8 @@ public static class McpPrompts
 
             1. If the hosting model is 'unknown', determine it from the project first: look for
                WebAssemblyHostBuilder (standalone-wasm), AddInteractiveWebAssemblyComponents and a .Client project (wasm),
-               both of those plus AddInteractiveServerComponents (auto), or only AddInteractiveServerComponents (server).
+               both of those plus AddInteractiveServerComponents (auto), only AddInteractiveServerComponents (server), or
+               AddMauiBlazorWebView, AddWpfBlazorWebView or AddWindowsFormsBlazorWebView (hybrid).
             2. Call `GetBsqliteSetupGuide` with that scenario and follow it. For 'server' it explains why the pages that use
                the database have to run on WebAssembly - do not try to make Interactive Server work.
             3. Call `GetBsqliteStorageProviders` and pick the backends: OPFS first and IndexedDB as its fallback is the

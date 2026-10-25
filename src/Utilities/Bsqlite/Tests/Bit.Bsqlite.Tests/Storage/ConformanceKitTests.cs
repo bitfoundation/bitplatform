@@ -50,7 +50,8 @@ public sealed class ConformanceKitTests
         await using (harness)
         {
             harness.NonPersistentBackend_DoesNotOfferRelaxedDurability();
-            harness.Capabilities_SupportTheDedicatedWorker();
+            harness.Capabilities_SupportAContextThatHostsTheEngine();
+            harness.NativeProcessBackend_SaysWhereItsFilesAre();
             await harness.Export_ReturnsACopy_NotAViewOfLiveStorage();
             await harness.Import_ReplacesAnExistingDatabaseEntirely();
             await harness.Admin_RejectsABlankDatabaseName(" ");
@@ -76,10 +77,16 @@ public sealed class ConformanceKitTests
             harness => harness.Capabilities_DeclareAtLeastOneExecutionContext());
 
     [TestMethod]
-    public async Task RejectsABackendThatCannotRunInTheWorker()
+    public async Task RejectsABackendThatCannotRunWhereTheEngineDoes()
         => await RejectsAsync(
             new LyingStorageProvider { SupportedContexts = BsqliteExecutionContexts.Window },
-            harness => harness.Capabilities_SupportTheDedicatedWorker());
+            harness => harness.Capabilities_SupportAContextThatHostsTheEngine());
+
+    [TestMethod]
+    public async Task RejectsANativeProcessBackendThatHasNoFiles()
+        => await RejectsAsync(
+            new LyingStorageProvider { SupportedContexts = BsqliteExecutionContexts.NativeProcess },
+            harness => harness.NativeProcessBackend_SaysWhereItsFilesAre());
 
     [TestMethod]
     public async Task RejectsABlankName()

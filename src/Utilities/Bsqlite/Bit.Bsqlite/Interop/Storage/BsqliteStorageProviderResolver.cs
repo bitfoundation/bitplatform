@@ -24,6 +24,13 @@ namespace Bit.Bsqlite.Interop;
 /// on a backend ranked higher.
 /// </para>
 /// <para>
+/// Where .NET runs decides which backends can serve at all. In the browser, those that run in its
+/// worker; in a Blazor Hybrid app, where .NET runs natively, those that keep files on the device -
+/// ranked ahead of the configured preference, which names the browser backends the same registration
+/// uses on WebAssembly. A backend that cannot serve the host is reported unavailable without being
+/// probed.
+/// </para>
+/// <para>
 /// <see cref="ResolveAsync"/> makes no changes, so it is safe to call for diagnostics. The chosen
 /// backend is recorded only when the caller confirms the database really opened, via
 /// <see cref="CommitBindingAsync"/>.
@@ -33,6 +40,7 @@ public sealed class BsqliteStorageProviderResolver
 {
     private readonly Dictionary<string, IBsqliteStorageProvider> _providers;
     private readonly IBsqliteStorageBindingStore _bindingStore;
+    private readonly BsqliteHostKind _host;
     private readonly ILogger _logger;
     private readonly Dictionary<string, BsqliteProbeResult> _probeCache =
         new(StringComparer.OrdinalIgnoreCase);
@@ -41,11 +49,21 @@ public sealed class BsqliteStorageProviderResolver
         IEnumerable<IBsqliteStorageProvider> providers,
         IBsqliteStorageBindingStore bindingStore,
         ILogger<BsqliteStorageProviderResolver>? logger = null)
+        : this(providers, bindingStore, BsqliteHost.Current, logger)
+    {
+    }
+
+    internal BsqliteStorageProviderResolver(
+        IEnumerable<IBsqliteStorageProvider> providers,
+        IBsqliteStorageBindingStore bindingStore,
+        BsqliteHostKind host,
+        ILogger<BsqliteStorageProviderResolver>? logger = null)
     {
         ArgumentNullException.ThrowIfNull(providers);
         ArgumentNullException.ThrowIfNull(bindingStore);
 
         _bindingStore = bindingStore;
+        _host = host;
         _logger = logger ?? NullLogger<BsqliteStorageProviderResolver>.Instance;
         _providers = new Dictionary<string, IBsqliteStorageProvider>(StringComparer.OrdinalIgnoreCase);
 
@@ -72,17 +90,19 @@ public sealed class BsqliteStorageProviderResolver
         ArgumentException.ThrowIfNullOrWhiteSpace(databaseName);
         ArgumentNullException.ThrowIfNull(selection);
 
+        var candidates = CandidatesFor(selection);
+
         var boundProviderName = await _bindingStore
             .GetProviderNameAsync(databaseName, cancellationToken)
             .ConfigureAwait(false);
 
         if (boundProviderName is not null)
         {
-            return await ResolveExistingDatabaseAsync(databaseName, boundProviderName, selection, cancellationToken)
+            return await ResolveExistingDatabaseAsync(databaseName, boundProviderName, selection, candidates, cancellationToken)
                 .ConfigureAwait(false);
         }
 
-        var holder = await FindUnboundDataAsync(databaseName, selection, cancellationToken).ConfigureAwait(false);
+        var holder = await FindUnboundDataAsync(databaseName, candidates, cancellationToken).ConfigureAwait(false);
         if (holder is not null)
         {
             _logger.LogWarning(
@@ -92,14 +112,14 @@ public sealed class BsqliteStorageProviderResolver
                 databaseName,
                 holder.Name);
 
-            return await ResolveExistingDatabaseAsync(databaseName, holder.Name, selection, cancellationToken)
+            return await ResolveExistingDatabaseAsync(databaseName, holder.Name, selection, candidates, cancellationToken)
                     .ConfigureAwait(false) with
                 {
                     WasFoundWithoutBinding = true,
                 };
         }
 
-        return await ResolveNewDatabaseAsync(databaseName, selection, cancellationToken).ConfigureAwait(false);
+        return await ResolveNewDatabaseAsync(databaseName, selection, candidates, cancellationToken).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -139,10 +159,10 @@ public sealed class BsqliteStorageProviderResolver
     /// </remarks>
     private async ValueTask<IBsqliteStorageProvider?> FindUnboundDataAsync(
         string databaseName,
-        BsqliteStorageSelection selection,
+        IReadOnlyList<string> candidates,
         CancellationToken cancellationToken)
     {
-        var ranked = selection.Candidates
+        var ranked = candidates
             .Select(name => _providers.GetValueOrDefault(name))
             .Concat(_providers.Values)
             .OfType<IBsqliteStorageProvider>()
@@ -185,6 +205,7 @@ public sealed class BsqliteStorageProviderResolver
         string databaseName,
         string boundProviderName,
         BsqliteStorageSelection selection,
+        IReadOnlyList<string> candidates,
         CancellationToken cancellationToken)
     {
         if (!_providers.TryGetValue(boundProviderName, out var bound))
@@ -220,13 +241,13 @@ public sealed class BsqliteStorageProviderResolver
                         Probe = probe,
                         Explanation =
                             $"Database '{databaseName}' lives on storage provider '{bound.Name}', which "
-                            + "is unavailable in this browser. Bsqlite will not open an empty "
+                            + $"is unavailable here ({probe.UnavailableReason}). Bsqlite will not open an empty "
                             + "database on another provider in its place.",
                     },
                 ]);
         }
 
-        var better = await FindBetterProviderAsync(bound.Name, selection, cancellationToken)
+        var better = await FindBetterProviderAsync(bound.Name, candidates, cancellationToken)
             .ConfigureAwait(false);
 
         if (better is not null)
@@ -245,8 +266,8 @@ public sealed class BsqliteStorageProviderResolver
             DatabaseName = databaseName,
             Provider = bound,
             Probe = probe,
-            IsFirstChoice = selection.Candidates.Count > 0
-                && string.Equals(selection.Candidates[0], bound.Name, StringComparison.OrdinalIgnoreCase),
+            IsFirstChoice = candidates.Count > 0
+                && string.Equals(candidates[0], bound.Name, StringComparison.OrdinalIgnoreCase),
             WasDecidedByExistingData = true,
             BetterProviderAvailable = better,
             Attempts =
@@ -265,13 +286,14 @@ public sealed class BsqliteStorageProviderResolver
     private async ValueTask<BsqliteStorageResolution> ResolveNewDatabaseAsync(
         string databaseName,
         BsqliteStorageSelection selection,
+        IReadOnlyList<string> candidates,
         CancellationToken cancellationToken)
     {
-        var attempts = new List<BsqliteStorageCandidateOutcome>(selection.Candidates.Count);
+        var attempts = new List<BsqliteStorageCandidateOutcome>(candidates.Count);
 
-        for (var index = 0; index < selection.Candidates.Count; index++)
+        for (var index = 0; index < candidates.Count; index++)
         {
-            var candidateName = selection.Candidates[index];
+            var candidateName = candidates[index];
 
             if (!_providers.TryGetValue(candidateName, out var provider))
             {
@@ -323,11 +345,11 @@ public sealed class BsqliteStorageProviderResolver
                 Probe = probe,
             });
 
-            for (var rest = index + 1; rest < selection.Candidates.Count; rest++)
+            for (var rest = index + 1; rest < candidates.Count; rest++)
             {
                 attempts.Add(new BsqliteStorageCandidateOutcome
                 {
-                    ProviderName = selection.Candidates[rest],
+                    ProviderName = candidates[rest],
                     Status = BsqliteStorageCandidateStatus.NotProbed,
                     Explanation = $"'{candidateName}' was selected first.",
                 });
@@ -363,10 +385,10 @@ public sealed class BsqliteStorageProviderResolver
     /// </summary>
     private async ValueTask<IBsqliteStorageProvider?> FindBetterProviderAsync(
         string currentProviderName,
-        BsqliteStorageSelection selection,
+        IReadOnlyList<string> candidates,
         CancellationToken cancellationToken)
     {
-        foreach (var candidateName in selection.Candidates)
+        foreach (var candidateName in candidates)
         {
             if (string.Equals(candidateName, currentProviderName, StringComparison.OrdinalIgnoreCase))
             {
@@ -387,6 +409,48 @@ public sealed class BsqliteStorageProviderResolver
         return null;
     }
 
+    /// <summary>
+    /// The candidates in the order this host tries them: the configured ones, and - in a Blazor Hybrid app -
+    /// the backends that keep files on the device ahead of them, unless the configuration ranks them itself.
+    /// </summary>
+    private IReadOnlyList<string> CandidatesFor(BsqliteStorageSelection selection)
+    {
+        if (_host is not BsqliteHostKind.BlazorHybrid
+            || selection.Candidates.Any(name => _providers.TryGetValue(name, out var provider) && RunsNatively(provider)))
+        {
+            return selection.Candidates;
+        }
+
+        return
+        [
+            .. _providers.Values.Where(RunsNatively).Select(provider => provider.Name),
+            .. selection.Candidates,
+        ];
+    }
+
+    /// <summary>Why <paramref name="provider"/> cannot serve this host at all, or <see langword="null"/> when it can.</summary>
+    private string? UnservableReason(IBsqliteStorageProvider provider)
+    {
+        var runsInBrowser = (provider.Capabilities.SupportedContexts & ~BsqliteExecutionContexts.NativeProcess)
+            != BsqliteExecutionContexts.None;
+
+        return _host switch
+        {
+            BsqliteHostKind.BlazorHybrid when !RunsNatively(provider) =>
+                $"'{provider.Name}' needs .NET running in the browser. This is a Blazor Hybrid app, where .NET runs "
+                + "natively, so its databases are kept on the device instead.",
+            BsqliteHostKind.Browser when !runsInBrowser =>
+                $"'{provider.Name}' needs .NET running natively, as in a Blazor Hybrid app; here .NET runs in the browser.",
+            BsqliteHostKind.Other when !runsInBrowser =>
+                $"'{provider.Name}' keeps databases on the device of a Blazor Hybrid app, and this process is not "
+                + "one. On a server, a user's database lives in their browser: open it once the page runs there.",
+            _ => null,
+        };
+    }
+
+    private static bool RunsNatively(IBsqliteStorageProvider provider)
+        => provider.Capabilities.SupportedContexts.HasFlag(BsqliteExecutionContexts.NativeProcess);
+
     private async ValueTask<BsqliteProbeResult> ProbeAsync(
         IBsqliteStorageProvider provider,
         CancellationToken cancellationToken)
@@ -394,6 +458,19 @@ public sealed class BsqliteStorageProviderResolver
         if (_probeCache.TryGetValue(provider.Name, out var cached))
         {
             return cached;
+        }
+
+        if (UnservableReason(provider) is { } reason)
+        {
+            // Not probed: a browser backend's probe would run in a Blazor Hybrid app's web view, and a
+            // native one's would succeed on a server that must not keep its users' databases.
+            var unservable = BsqliteProbeResult.Unavailable(reason, new Dictionary<string, string>(StringComparer.Ordinal)
+            {
+                ["host"] = _host.ToString(),
+                ["supportedContexts"] = provider.Capabilities.SupportedContexts.ToString(),
+            });
+            _probeCache[provider.Name] = unservable;
+            return unservable;
         }
 
         BsqliteProbeResult probe;

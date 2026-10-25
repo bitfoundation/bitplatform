@@ -30,14 +30,6 @@
     <File Path="../.github/workflows/sales.website.cd.yml" />
     <File Path="../.github/workflows/todo-sample.cd.yml" />
   </Folder>
-  <Folder Name="/Besql/">
-    <File Path="Besql/README.md" />
-    <Project Path="Besql/Bit.Besql/Bit.Besql.csproj" />
-  </Folder>
-  <Folder Name="/Besql/Demo/">
-    <Project Path="Besql/Demo/Bit.Besql.Demo.Client/Bit.Besql.Demo.Client.csproj" />
-    <Project Path="Besql/Demo/Bit.Besql.Demo/Bit.Besql.Demo.csproj" />
-  </Folder>
   <Folder Name="/Utilities/" />
   <Folder Name="/Utilities/Blex/">
     <File Path="Utilities/Blex/README.md" />

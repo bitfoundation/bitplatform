@@ -60,10 +60,20 @@ public sealed class CacheStorageTests : BsqliteTest
 
     [TestMethod]
     public async Task Persistence_opens_a_database_that_besql_left_in_bit_Besql()
+        => await OpensABesqlDatabaseAsync(UniqueName("cache-besql"));
+
+    /// <summary>
+    /// Besql keyed its file by the connection string's Data Source without the leading slash - the bit
+    /// Boilerplate's is <c>App_Data/AppOffline.db</c> - so a database name with a folder in it has to find it too.
+    /// </summary>
+    [TestMethod]
+    public async Task Persistence_opens_a_database_that_besql_left_in_bit_Besql_under_a_folder()
+        => await OpensABesqlDatabaseAsync($"App_Data/{UniqueName("cache-besql")}");
+
+    private async Task OpensABesqlDatabaseAsync(string databaseName)
     {
         SkipWhen(BrowserName == "webkit", WebKitDiscardsEntries);
 
-        var databaseName = UniqueName("cache-besql");
         await OpenCacheAsync(Page, databaseName);
         await ExecAsync(Page, "CREATE TABLE product (id INTEGER PRIMARY KEY, name TEXT)");
         await ExecAsync(Page, "INSERT INTO product (name) VALUES ('FromBesql')");

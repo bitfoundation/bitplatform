@@ -22,6 +22,24 @@ OPFS synchronous access handles - the fastest storage the web has - exist only i
 
 One worker owns one database. A second `BsqliteDatabase` or a second session starts a second worker - and so does every other tab, each over the same file; the VFSes coordinate through Web Locks. SQLite's locks last a transaction at most, so work that has to keep other tabs out for longer, like applying EF migrations, takes a named Web Lock through the transport (`IBsqliteLockSource`).
 
+## Blazor Hybrid: the same stack, in-process
+
+```
+.NET (native)
+──────────────────────
+EF Core (stock SQLite provider)
+  │
+BsqliteConnection / Command / Batch
+  │  BsqliteCommandRequest[]
+BsqliteNativeTransport  ── thread pool ──▶  native SQLite (SQLitePCLRaw e_sqlite3)
+                                              │ EF function set, update and commit hooks
+                                              file-system backend: a .db file in the app's folder
+```
+
+Where .NET runs natively there is no worker to talk to and no reason for one: the native engine opens the file itself. The session factory gives a backend that implements `IBsqliteFileStorageProvider` a `BsqliteNativeTransport` instead of the worker transport, and everything above the transport - the ADO.NET surface, `UseBitBsqlite`, live queries, selection, the admin surface - is the code the browser runs. The transport does the worker's jobs in-process: it installs the `ef_*` functions, the aggregates, the `EF_DECIMAL` collation and `REGEXP`; reports committed writes from the same update and commit hooks; snapshots through `sqlite3_serialize`; and takes named locks shared with every other session on the file. Batches run one at a time on the thread pool, so the UI thread stays free as it does in the browser, and writes committed in one session are raised in the others the way another tab's writes are.
+
+`Bit.Bsqlite.Testing`'s in-process transport is this transport with a record of the statements it ran, which is why the desktop test suites exercise exactly what a Hybrid app runs.
+
 ## The binary wire format
 
 Everything the transport sends or receives is one `byte[]`:

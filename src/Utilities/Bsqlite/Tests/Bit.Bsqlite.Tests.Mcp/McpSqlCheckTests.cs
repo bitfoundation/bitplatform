@@ -21,7 +21,7 @@ public class McpSqlCheckTests
 
         foreach (var statement in check.Statements)
         {
-            CollectionAssert.AreEquivalent(new[] { "opfs", "indexeddb", "cache-storage", "in-memory" }, statement.Backends.Select(verdict => verdict.Name).ToArray());
+            CollectionAssert.AreEquivalent(new[] { "opfs", "indexeddb", "cache-storage", "in-memory", "file-system" }, statement.Backends.Select(verdict => verdict.Name).ToArray());
         }
 
         Assert.IsTrue(check.Notes.Any(note => note.Contains("Pass sql", StringComparison.Ordinal)));

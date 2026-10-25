@@ -2,6 +2,7 @@
 using Bit.Bsqlite;
 using Bit.Bsqlite.Interop;
 using Bit.Bsqlite.Storage;
+using Bit.Bsqlite.Storage.FileSystem;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
 using Microsoft.JSInterop;
@@ -13,6 +14,7 @@ public sealed class BsqliteBuilder
 {
     private readonly List<string> _onOpenSql = [];
     private readonly List<BsqliteJsModule> _extensions = [];
+    private readonly BsqliteFileSystemStorageOptions _fileSystem = new();
     private BsqliteStorageSelection? _selection;
     private string? _hostModuleUrl;
     private string? _workerUrl;
@@ -25,8 +27,14 @@ public sealed class BsqliteBuilder
     public IServiceCollection Services { get; }
 
     /// <summary>
+    /// Where the application runs. Detected; tests set it to compose a Blazor Hybrid app on the desktop.
+    /// </summary>
+    internal BsqliteHostKind Host { get; set; } = BsqliteHost.Current;
+
+    /// <summary>
     /// Registers a storage provider, scoped like the rest of the stack. Its constructor may take
-    /// <see cref="IJSRuntime"/>.
+    /// <see cref="IJSRuntime"/>. A Blazor Hybrid app needs none registered: its databases live on the
+    /// device, on <see cref="BsqliteFileSystemStorageProvider"/>, which is registered for it.
     /// </summary>
     public BsqliteBuilder AddStorageProvider<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TProvider>()
         where TProvider : class, IBsqliteStorageProvider
@@ -71,8 +79,9 @@ public sealed class BsqliteBuilder
     }
 
     /// <summary>
-    /// Replaces the sticky-binding store. The default remembers bindings in <c>localStorage</c>,
-    /// which is what production wants; tests use <see cref="BsqliteInMemoryStorageBindingStore"/>.
+    /// Replaces the sticky-binding store. The default remembers bindings in <c>localStorage</c> - and, in a
+    /// Blazor Hybrid app, in a file next to its databases - which is what production wants; tests use
+    /// <see cref="BsqliteInMemoryStorageBindingStore"/>.
     /// </summary>
     public BsqliteBuilder UseBindingStore<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TStore>()
         where TStore : class, IBsqliteStorageBindingStore
@@ -158,6 +167,18 @@ public sealed class BsqliteBuilder
         return this;
     }
 
+    /// <summary>
+    /// Configures the file system backend a Blazor Hybrid app keeps its databases on - registered for it
+    /// automatically - or that <c>AddStorageProvider&lt;BsqliteFileSystemStorageProvider&gt;()</c> registers.
+    /// Optional: by default the databases live in a folder of the app's own under local application data.
+    /// </summary>
+    public BsqliteBuilder ConfigureFileSystemStorage(Action<BsqliteFileSystemStorageOptions> configure)
+    {
+        ArgumentNullException.ThrowIfNull(configure);
+        configure(_fileSystem);
+        return this;
+    }
+
     /// <summary>Overrides where the worker host module and worker script are served from.</summary>
     public BsqliteBuilder UseWorker(string? hostModuleUrl = null, string? workerUrl = null)
     {
@@ -174,10 +195,32 @@ public sealed class BsqliteBuilder
                 "AddBitBsqliteServices needs a storage preference: call UseStorage(s => s.Prefer(\"opfs\")...).");
         }
 
+        var host = Host;
+        Services.TryAddSingleton(_fileSystem);
+
+        if (host is BsqliteHostKind.BlazorHybrid)
+        {
+            // A Blazor Hybrid app keeps its databases on the device whatever else is registered for the
+            // browser, so the same registration serves the WebAssembly client and the native app.
+            var registered = Services.Any(service => service.ServiceType == typeof(IBsqliteStorageProvider)
+                && (service.ImplementationType == typeof(BsqliteFileSystemStorageProvider)
+                    || service.ImplementationInstance is BsqliteFileSystemStorageProvider));
+            if (!registered)
+            {
+                Services.AddScoped<IBsqliteStorageProvider>(sp =>
+                    new BsqliteFileSystemStorageProvider(sp.GetRequiredService<BsqliteFileSystemStorageOptions>()));
+            }
+        }
+
         if (!_bindingStoreRegistered)
         {
-            Services.TryAddScoped<IBsqliteStorageBindingStore>(sp =>
-                new BsqliteLocalStorageBindingStore(sp.GetRequiredService<IJSRuntime>()));
+            // Bindings live with the databases: in localStorage for the browser's, and next to the files for
+            // a Blazor Hybrid app's - not in its web view, which may not be up yet when a database opens.
+            Services.TryAddScoped<IBsqliteStorageBindingStore>(sp => host is BsqliteHostKind.BlazorHybrid
+                ? new BsqliteFileStorageBindingStore(Path.Combine(
+                    new BsqliteFileSystemStorageProvider(sp.GetRequiredService<BsqliteFileSystemStorageOptions>()).RootDirectory,
+                    ".bit-bsqlite-bindings"))
+                : new BsqliteLocalStorageBindingStore(sp.GetRequiredService<IJSRuntime>()));
         }
 
         var selection = _selection;
@@ -192,12 +235,15 @@ public sealed class BsqliteBuilder
 
         Services.TryAddSingleton(selection);
         Services.TryAddSingleton(defaults);
-        Services.TryAddScoped<IBsqliteTransportFactory>(sp =>
-            new BsqliteWorkerTransportFactory(sp.GetRequiredService<IJSRuntime>(), defaults));
+        Services.TryAddScoped<IBsqliteTransportFactory>(sp => new BsqliteTransportFactory(
+            () => new BsqliteWorkerTransportFactory(sp.GetRequiredService<IJSRuntime>(), defaults),
+            defaults,
+            sp.GetService<ILogger<BsqliteTransportFactory>>()));
         Services.TryAddSingleton<BsqliteStorageMigrator>();
         Services.TryAddScoped(sp => new BsqliteStorageProviderResolver(
             sp.GetServices<IBsqliteStorageProvider>(),
             sp.GetRequiredService<IBsqliteStorageBindingStore>(),
+            host,
             sp.GetService<ILogger<BsqliteStorageProviderResolver>>()));
         Services.TryAddScoped<IBsqliteSessionFactory>(sp => new BsqliteSessionFactory(
             sp.GetRequiredService<BsqliteStorageProviderResolver>(),

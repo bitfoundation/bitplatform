@@ -25,4 +25,8 @@
     <ProjectReference Include="..\Data\Bit.Bsqlite.Demo.Data.csproj" />
   </ItemGroup>
 
+  <!-- What the Bit.Bsqlite package imports into every app that references it, and a project reference does not:
+       it keeps the native SQLite the package brings for Blazor Hybrid apps out of this WebAssembly build. -->
+  <Import Project="..\..\Bit.Bsqlite\buildTransitive\Bit.Bsqlite.targets" />
+
 </Project>

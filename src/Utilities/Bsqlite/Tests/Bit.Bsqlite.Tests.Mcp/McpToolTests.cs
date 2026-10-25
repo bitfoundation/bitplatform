@@ -29,7 +29,7 @@ public class McpToolTests
     {
         var guides = BsqliteSourceCatalog.Documents.Where(document => document.Kind == "Guide").Select(document => document.Name).ToArray();
 
-        CollectionAssert.AreEqual(new[] { "getting-started", "storage", "live-queries", "architecture", "limits", "extending" }, guides);
+        CollectionAssert.AreEqual(new[] { "getting-started", "storage", "live-queries", "architecture", "limits", "extending", "migrating-from-besql" }, guides);
     }
 
     [TestMethod]

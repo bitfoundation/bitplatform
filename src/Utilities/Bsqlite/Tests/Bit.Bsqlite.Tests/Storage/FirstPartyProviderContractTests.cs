@@ -1,6 +1,7 @@
 ﻿using Bit.Bsqlite;
 using Bit.Bsqlite.Interop;
 using Bit.Bsqlite.Storage.CacheStorage;
+using Bit.Bsqlite.Storage.FileSystem;
 using Bit.Bsqlite.Storage.IndexedDb;
 using Bit.Bsqlite.Storage.InMemory;
 using Bit.Bsqlite.Storage.Opfs;
@@ -25,6 +26,7 @@ public sealed class FirstPartyProviderContractTests
         Assert.AreEqual("opfs", new BsqliteOpfsStorageProvider().Name);
         Assert.AreEqual("indexeddb", new BsqliteIndexedDbStorageProvider().Name);
         Assert.AreEqual("cache-storage", new BsqliteCacheStorageProvider().Name);
+        Assert.AreEqual("file-system", new BsqliteFileSystemStorageProvider().Name);
     }
 
     [TestMethod]

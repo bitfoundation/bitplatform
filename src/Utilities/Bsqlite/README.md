@@ -1,7 +1,8 @@
 ﻿# bit Bsqlite
 
 SQLite in the browser for Blazor, with EF Core on top. The same entities and the same migrations run on the client as
-on the server, and the database lives in the user's browser tab - in OPFS, IndexedDB, Cache Storage or memory.
+on the server, and the database lives in the user's browser tab - in OPFS, IndexedDB, Cache Storage or memory - or, in a
+Blazor Hybrid app, in a file on the device, with the same registration and the same code.
 
 ```csharp
 // Program.cs
@@ -23,9 +24,10 @@ var open = await db.Orders.Where(o => o.Status == OrderStatus.Open).ToListAsync(
 That query runs in a dedicated worker in the browser: SQLite 3.53 (via [wa-sqlite](https://github.com/rhashimoto/wa-sqlite)
 1.1.2), the stock EF Core SQLite provider, and a storage backend chosen and remembered per database.
 
-> Targets **.NET 8, 9, and 10** with the matching EF Core · Runs on **Blazor WebAssembly**, and in a **Blazor Web App** on
-> **Interactive WebAssembly** or **Interactive Auto** once the page runs on WebAssembly. Prerendered pages render on the
-> server and open their database once interactive.
+> Targets **.NET 8, 9, and 10** with the matching EF Core · Runs on **Blazor WebAssembly**, in a **Blazor Web App** on
+> **Interactive WebAssembly** or **Interactive Auto** once the page runs on WebAssembly, and in **Blazor Hybrid** apps
+> (MAUI, WPF, Windows Forms) on the device's native SQLite. Prerendered pages render on the server and open their database
+> once interactive.
 
 Bsqlite's documentation website lives in [`Demo`](https://github.com/bitfoundation/bitplatform/tree/develop/src/Utilities/Bsqlite/Demo/) - run the
 `Demo/Server` project, or visit [bsqlite.bitplatform.dev](https://bsqlite.bitplatform.dev).
@@ -69,7 +71,7 @@ Bsqlite's documentation website lives in [`Demo`](https://github.com/bitfoundati
 
 | Package | Role |
 | --- | --- |
-| `Bit.Bsqlite` | `AddBitBsqliteServices`, `AddBitBsqliteDbContext`, `UseBitBsqlite(connection)`, ADO.NET and live queries, the worker transport, storage selection and migration, the storage provider contract, the storage backends, and the browser assets (engine, worker, host, VFSes) under `_content/Bit.Bsqlite` |
+| `Bit.Bsqlite` | `AddBitBsqliteServices`, `AddBitBsqliteDbContext`, `UseBitBsqlite(connection)`, ADO.NET and live queries, the worker transport, storage selection and migration, the storage provider contract, the storage backends, the browser assets (engine, worker, host, VFSes) under `_content/Bit.Bsqlite`, and the native transport and SQLite engine Blazor Hybrid apps run on |
 | `Bit.Bsqlite.Testing` | An in-process transport for browser-free unit tests, plus the MSTest conformance kit every storage provider must pass |
 
 The storage backends, each in its own namespace and each registered with `AddStorageProvider<T>()`:
@@ -80,6 +82,7 @@ The storage backends, each in its own namespace and each registered with `AddSto
 | `indexeddb` | `BsqliteIndexedDbStorageProvider` (`Bit.Bsqlite.Storage.IndexedDb`) | Persistent, JSPI or Asyncify engine build, widest reach |
 | `cache-storage` | `BsqliteCacheStorageProvider` (`Bit.Bsqlite.Storage.CacheStorage`) | Persistent, and the migration path off `Bit.Besql` |
 | `in-memory` | `BsqliteInMemoryStorageProvider` (`Bit.Bsqlite.Storage.InMemory`) | Volatile: tests, demos, and a declared last resort |
+| `file-system` | `BsqliteFileSystemStorageProvider` (`Bit.Bsqlite.Storage.FileSystem`) | Blazor Hybrid: plain SQLite files in the app's own folder, registered and selected automatically |
 
 ## Installation
 
@@ -115,6 +118,11 @@ The engine (`.wasm`), the worker and the VFSes are static web assets under `_con
 demand: registering a backend costs nothing until it is selected, and a session downloads one engine build and the VFS of
 the backend it selected. Nothing needs to be added to the host page.
 
+The same registration serves a Blazor Hybrid app: .NET runs natively there, so Bsqlite registers the `file-system`
+backend, ranks it ahead of the browser ones, and opens the database as a file in the app's own folder with the native
+SQLite the package brings. `ConfigureFileSystemStorage(o => o.RootDirectory = ...)` moves the folder; nothing else is
+needed. The native engine stays out of the WebAssembly build.
+
 ## Composition without dependency injection
 
 `AddBitBsqliteServices` registers everything above. Without dependency injection, the same pieces compose by hand:
@@ -147,10 +155,12 @@ live.Changed += (_, rows) => InvokeAsync(StateHasChanged);
 | Blazor Web App, Interactive WebAssembly | Everything |
 | Blazor Web App, Interactive Auto | Everything once the page runs on WebAssembly |
 | Prerendering | Register the services on the server as well; they resolve there, and the database opens once the page runs in the browser (`RendererInfo.IsInteractive` on Interactive WebAssembly, `OperatingSystem.IsBrowser()` on Interactive Auto) |
-| Interactive Server | Not supported: the engine runs in the user's tab, and EF Core on the server would need a native SQLite of its own |
+| Blazor Hybrid (MAUI, WPF, Windows Forms) | Everything, on a SQLite file on the device - the same registration, async rules and live queries as in the browser; two windows share the file the way two tabs do |
+| Interactive Server | Not supported: a user's database lives in their browser, and Bsqlite will not keep one file on the server for every user |
 
 Every service that reaches the browser, or holds a database session, is registered as scoped: one for the whole
-application on WebAssembly, and one per circuit or request on a server, so nothing is ever shared between users.
+application on WebAssembly, one per web view in Blazor Hybrid, and one per circuit or request on a server, so nothing is
+ever shared between users.
 
 EF Core's own feature set follows the target framework. The SQLite provider translates `SUM` over a `decimal` from EF
 Core 9 on and `ORDER BY` a `decimal` from EF Core 10 on; an application on .NET 8 gets the same `NotSupportedException`
@@ -172,10 +182,11 @@ from those queries in the browser as from the stock provider on its server.
 
 ## Moving off Bit.Besql
 
-[Bit.Besql](https://github.com/bitfoundation/bitplatform/tree/develop/src/Besql) keeps a whole SQLite file in Cache Storage
-and syncs it from Blazor's in-memory file system. The `cache-storage` backend (`BsqliteCacheStorageProvider`) reads that
-file: a database Bit.Besql left in its `bit-Besql` cache is imported losslessly into Bsqlite's own page layout the first
-time it is opened, so an application that switches keeps its users' data.
+Bsqlite replaces Bit.Besql. The `cache-storage` backend (`BsqliteCacheStorageProvider`) reads the file Bit.Besql left in
+its `bit-Besql` cache: a database is imported losslessly into Bsqlite's own page layout the first time it is opened, so an
+application that switches keeps its users' data - and in a Blazor Hybrid app, the `file-system` backend opens the SQLite
+file Bit.Besql used on the device in place. The *Moving from Bit.Besql* guide, listed under [Documentation](#documentation),
+maps every Bit.Besql API to its replacement and walks through the move step by step.
 
 ## MCP server (for AI agents)
 
@@ -206,6 +217,7 @@ for the browser matrix, the soak suite and the benchmark page.
 - [Architecture and performance](https://github.com/bitfoundation/bitplatform/blob/develop/src/Utilities/Bsqlite/docs/architecture.md) - the worker, the binary wire format, the statement cache, change tracking
 - [Limits](https://github.com/bitfoundation/bitplatform/blob/develop/src/Utilities/Bsqlite/docs/limits.md) - what the browser cannot do and how the library tells you
 - [Extending](https://github.com/bitfoundation/bitplatform/blob/develop/src/Utilities/Bsqlite/docs/extending.md) - SQL functions from JavaScript, custom transports
+- [Moving from Bit.Besql](https://github.com/bitfoundation/bitplatform/blob/develop/src/Utilities/Bsqlite/docs/migrating-from-besql.md) - what replaces each Bit.Besql API, and keeping users' data
 
 ## License
 

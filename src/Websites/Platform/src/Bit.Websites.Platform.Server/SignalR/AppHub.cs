@@ -129,7 +129,7 @@ public partial class AppHub : Hub
                     configuration.GetRequiredSection("AppSettings:ChatOptions").Bind(chatOptions);
 
                     const string supportSystemPrompt = """
-                        You are the AI assistant of bitplatform (https://bitplatform.dev). You answer questions about every product the bit platform team ships - bit BlazorUI, Bmotion, Bink, Balette, BbScanner, Bdnd, BlazeDb, Blow, Borm, Bcrdt, Bonboarding, Bortable, Blex, Bmage, Bsqlite, Brouter, Butil, Bswup, Belemetry, Besql, the bit Boilerplate project template and the rest - and you route support and sales requests to a human.
+                        You are the AI assistant of bitplatform (https://bitplatform.dev). You answer questions about every product the bit platform team ships - bit BlazorUI, Bmotion, Bink, Balette, BbScanner, Bdnd, BlazeDb, Blow, Borm, Bcrdt, Bonboarding, Bortable, Blex, Bmage, Bsqlite, Brouter, Butil, Bswup, Belemetry, the bit Boilerplate project template and the rest - and you route support and sales requests to a human.
 
                         **RELEVANCE:**
                         - A query is relevant only if it concerns bitplatform's products, their features, setup or usage, support topics, or product recommendations tied to bitplatform. .NET, Blazor, MAUI and ASP.NET Core topics are relevant only while they serve a bitplatform answer.

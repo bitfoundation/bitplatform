@@ -112,6 +112,10 @@ public class Middlewares
         app.MapGet("/butil", () => Results.Redirect(Urls.Butil, permanent: true));
         app.MapGet("/butil/{**rest}", () => Results.Redirect(Urls.Butil, permanent: true));
 
+        // Bit.Besql was replaced by Bit.Bsqlite, whose site documents the move off Besql.
+        app.MapGet("/besql", () => Results.Redirect(Urls.Bsqlite, permanent: true));
+        app.MapGet("/besql/{**rest}", () => Results.Redirect(Urls.Bsqlite, permanent: true));
+
         app.MapGet("/templates/samples", () => Results.Redirect(Urls.Demos, permanent: true));
         app.MapGet("/boilerplate/samples", () => Results.Redirect(Urls.Demos, permanent: true));
     }

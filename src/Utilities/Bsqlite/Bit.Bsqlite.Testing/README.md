@@ -10,7 +10,8 @@ dotnet add package Bit.Bsqlite.Testing
 
 `BsqliteInProcessTransport` is an `IBsqliteTransport` backed by Microsoft.Data.Sqlite that
 stands in for the web-worker transport, so EF Core mappings, migrations, generated SQL, and live
-queries can be tested on desktop .NET.
+queries can be tested on desktop .NET. It is the `BsqliteNativeTransport` a Blazor Hybrid app runs
+on, plus a record of the statements it ran.
 
 ```csharp
 await using var transport = new BsqliteInProcessTransport();
@@ -53,7 +54,8 @@ that trust reasonable.
   the declared capabilities internally coherent, does the admin surface behave the way
   cross-provider migration assumes.
 - `BsqliteStorageEngineConformanceTests` — the claims only a real database can settle: write
-  atomicity, crash safety, concurrency levels. Needs the worker host.
+  atomicity, crash safety, concurrency levels. Needs the worker host, or - for a backend that
+  implements `IBsqliteFileStorageProvider` - a `BsqliteNativeTransport` opened on it.
 
 Providers that cannot run in the current environment report the test inconclusive with an explanation
 rather than failing, so the same suite is meaningful on desktop and in a browser.

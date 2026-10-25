@@ -157,19 +157,40 @@ public abstract class BsqliteStorageProviderConformanceTests : IAsyncDisposable
     }
 
     /// <summary>
-    /// v1 hosts the engine only in a dedicated worker, so a backend that cannot run there cannot be
-    /// selected at all. Asserted rather than left to fail later at connection time.
+    /// The engine runs in one of two places: a dedicated worker in the browser, or the application's
+    /// own process where .NET runs natively. A backend that can run in neither cannot be selected at
+    /// all. Asserted rather than left to fail later at connection time.
     /// </summary>
     [TestMethod]
-    public void Capabilities_SupportTheDedicatedWorker()
+    public void Capabilities_SupportAContextThatHostsTheEngine()
+    {
+        var provider = Provider();
+        var contexts = provider.Capabilities.SupportedContexts;
+
+        Assert.IsTrue(
+            contexts.HasFlag(BsqliteExecutionContexts.DedicatedWorker)
+                || contexts.HasFlag(BsqliteExecutionContexts.NativeProcess),
+            $"'{provider.Name}' can run neither in a dedicated worker nor in the native process, the "
+                + "only contexts that host the engine.");
+    }
+
+    /// <summary>
+    /// The session factory opens a native-process backend's databases as files, so declaring the
+    /// context without saying where the files are would fail every open.
+    /// </summary>
+    [TestMethod]
+    public void NativeProcessBackend_SaysWhereItsFilesAre()
     {
         var provider = Provider();
 
-        Assert.IsTrue(
-            provider.Capabilities.SupportedContexts.HasFlag(
-                BsqliteExecutionContexts.DedicatedWorker),
-            $"'{provider.Name}' cannot run in a dedicated worker, which is the only context that "
-                + "hosts the engine.");
+        if (!provider.Capabilities.SupportedContexts.HasFlag(BsqliteExecutionContexts.NativeProcess))
+        {
+            return;
+        }
+
+        Assert.IsInstanceOfType<IBsqliteFileStorageProvider>(
+            provider,
+            $"'{provider.Name}' declares the native process but does not implement IBsqliteFileStorageProvider.");
     }
 
     /// <summary>
