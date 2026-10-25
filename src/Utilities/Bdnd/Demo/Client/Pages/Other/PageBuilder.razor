@@ -17,8 +17,6 @@
     </p>
 </div>
 
-<DemoCode />
-
 <div class="bb-demo">
     <BdndProvider>
         <div class="builder">
@@ -67,6 +65,8 @@
         @(_blocks.Count < MaxBlocks ? $"{_blocks.Count} of {MaxBlocks} blocks." : $"The page is full ({MaxBlocks} blocks): drop a block into the bin to add another.")
     </p>
 </div>
+
+<DemoCode />
 
 @code {
     private static readonly string[] Kinds = ["Heading", "Text", "Image", "Button"];

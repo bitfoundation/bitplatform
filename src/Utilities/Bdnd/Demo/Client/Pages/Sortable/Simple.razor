@@ -16,8 +16,6 @@
     </p>
 </div>
 
-<DemoCode />
-
 <div class="bb-demo">
     <BdndProvider>
         @* the list accepts cards too, so the gaps between cards are not "no-drop" zones *@
@@ -31,6 +29,8 @@
 
     <p class="demo-caption sortable-order">Order: @string.Join(", ", _cards.Select(c => c.Text))</p>
 </div>
+
+<DemoCode />
 
 @code {
     private readonly List<SortableCard.CardModel> _cards =

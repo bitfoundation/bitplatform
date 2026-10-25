@@ -16,8 +16,6 @@
     </p>
 </div>
 
-<DemoCode />
-
 <div class="bb-demo">
     <BdndProvider>
         <div class="indicator-board">
@@ -69,6 +67,8 @@
 
     <p class="demo-caption indicator-order">@string.Join(" | ", _lists.Select(l => $"{l.Name}: {string.Join(", ", l.Cards.Select(c => c.Title))}"))</p>
 </div>
+
+<DemoCode />
 
 <div class="bb-note">
     Each list is a drop target too: a drop below its cards, or on an empty list, lands on the list, which puts the card

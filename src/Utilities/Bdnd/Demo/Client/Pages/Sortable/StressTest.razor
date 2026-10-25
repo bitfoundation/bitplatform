@@ -12,8 +12,6 @@
     </p>
 </div>
 
-<DemoCode />
-
 <div class="bb-demo">
     <BdndProvider>
         @* the list accepts cards too, so the gaps between cards are not "no-drop" zones *@
@@ -26,6 +24,8 @@
         </BdndDropTarget>
     </BdndProvider>
 </div>
+
+<DemoCode />
 
 @code {
     private readonly List<SortableCard.CardModel> _cards =

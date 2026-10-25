@@ -42,16 +42,7 @@
                     <span class="bb-browser-dots" aria-hidden="true"><i></i><i></i><i></i></span>
                     <span class="bb-browser-url">Board.razor</span>
                 </div>
-                <pre class="bb-code">&lt;<span class="k">BdndDraggable</span> TItem=<span class="s">"Card"</span> Type=<span class="s">"card"</span> Item=<span class="s">"card"</span>&gt;
-    …
-&lt;/<span class="k">BdndDraggable</span>&gt;
-
-&lt;<span class="k">BdndDropTarget</span> TItem=<span class="s">"Card"</span> Accept=<span class="s">"card"</span> OnDrop=<span class="s">"Archive"</span>&gt;
-    …
-&lt;/<span class="k">BdndDropTarget</span>&gt;
-
-<span class="k">private void</span> Archive(BdndDropEventArgs&lt;Card&gt; e)
-    =&gt; _cards.Remove(e.Item!);</pre>
+                <CodeBlock Code="@HeroCode" />
                 <BdndProvider>
                     <div class="home-hero-live">
                         <div class="home-hero-cards">
@@ -201,11 +192,10 @@
                     </p>
                     <a href="getting-started">Getting started →</a>
                 </div>
-                <pre class="bb-code">builder.Services.AddBitBdndServices();   <span class="c">// Program.cs</span>
-
-&lt;<span class="k">BdndProvider</span>&gt;
-    …draggables and drop targets…
-&lt;/<span class="k">BdndProvider</span>&gt;</pre>
+                <div class="home-code-stack">
+                    <CodeBlock Language="csharp" Code="@RegisterCode" />
+                    <CodeBlock Code="@ProviderCode" />
+                </div>
             </div>
             <div class="bb-walkthrough-row">
                 <div class="bb-walkthrough-copy">
@@ -217,14 +207,7 @@
                     </p>
                     <a href="dustbin/multiple">Multiple targets →</a>
                 </div>
-                <pre class="bb-code">&lt;<span class="k">BdndDraggable</span> TItem=<span class="s">"Box"</span> Type=<span class="s">"box"</span> Item=<span class="s">"box"</span> Context=<span class="s">"drag"</span>&gt;
-    &lt;<span class="k">div</span> style=<span class="s">"opacity: @@(drag.IsDragging ? 0.4 : 1)"</span>&gt;@@box.Name&lt;/<span class="k">div</span>&gt;
-&lt;/<span class="k">BdndDraggable</span>&gt;
-
-&lt;<span class="k">BdndDropTarget</span> TItem=<span class="s">"Box"</span> AcceptTypes=<span class="s">"@@(["box", "crate"])"</span>
-                OnDrop=<span class="s">"Store"</span> Context=<span class="s">"drop"</span>&gt;
-    &lt;<span class="k">div</span> class=<span class="s">"bin @@(drop.CanDrop ? "ready" : "")"</span>&gt;Drop here&lt;/<span class="k">div</span>&gt;
-&lt;/<span class="k">BdndDropTarget</span>&gt;</pre>
+                <CodeBlock Code="@SourceAndTargetCode" />
             </div>
             <div class="bb-walkthrough-row">
                 <div class="bb-walkthrough-copy">
@@ -237,12 +220,7 @@
                     </p>
                     <a href="dustbin/copy-or-move">Copy or move →</a>
                 </div>
-                <pre class="bb-code">&lt;<span class="k">BdndDraggable</span> TItem=<span class="s">"Box"</span> Type=<span class="s">"box"</span> Item=<span class="s">"box"</span> OnEnd=<span class="s">"Ended"</span>&gt;…&lt;/<span class="k">BdndDraggable</span>&gt;
-
-<span class="k">private void</span> Ended(BdndDragEndContext&lt;Box&gt; e)
-{
-    <span class="k">if</span> (e.DidDrop) _palette.Remove(e.Item!);   <span class="c">// e.DropResult: what the target set</span>
-}</pre>
+                <CodeBlock Code="@OutcomeCode" />
             </div>
         </div>
     </section>
@@ -397,4 +375,62 @@
         _cards.AddRange(Board);
         _archived = 0;
     }
+
+    // The snippets the page shows, coloured by CodeBlock.
+
+    private const string HeroCode = """
+        @foreach (var card in _cards)
+        {
+            <BdndDraggable TItem="Card" Type="card" Item="card">
+                …
+            </BdndDraggable>
+        }
+
+        <BdndDropTarget TItem="Card" Accept="card" OnDrop="Archive">
+            …
+        </BdndDropTarget>
+
+        @code {
+            private void Archive(BdndDropEventArgs<Card> e)
+                => _cards.Remove(e.Item!);
+        }
+        """;
+
+    private const string RegisterCode = """
+        builder.Services.AddBitBdndServices();   // Program.cs
+        """;
+
+    private const string ProviderCode = """
+        <BdndProvider>
+            …draggables and drop targets…
+        </BdndProvider>
+        """;
+
+    private const string SourceAndTargetCode = """
+        @foreach (var box in _boxes)
+        {
+            <BdndDraggable TItem="Box" Type="box" Item="box" Context="drag">
+                <div style="opacity: @(drag.IsDragging ? 0.4 : 1)">@box.Name</div>
+            </BdndDraggable>
+        }
+
+        <BdndDropTarget TItem="Box" AcceptTypes="@(["box", "crate"])"
+                        OnDrop="Store" Context="drop">
+            <div class="bin @(drop.CanDrop ? "ready" : "")">Drop here</div>
+        </BdndDropTarget>
+        """;
+
+    private const string OutcomeCode = """
+        @foreach (var box in _palette)
+        {
+            <BdndDraggable TItem="Box" Type="box" Item="box" OnEnd="Ended">…</BdndDraggable>
+        }
+
+        @code {
+            private void Ended(BdndDragEndContext<Box> e)
+            {
+                if (e.DidDrop) _palette.Remove(e.Item!);   // e.DropResult: what the target set
+            }
+        }
+        """;
 }
