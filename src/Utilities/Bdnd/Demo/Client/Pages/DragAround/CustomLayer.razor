@@ -17,8 +17,6 @@
     </p>
 </div>
 
-<DemoCode />
-
 <div class="bb-toolbar">
     <span class="bb-segmented" role="group" aria-label="Where the preview may go">
         @foreach (var mode in Enum.GetValues<Mode>())
@@ -84,6 +82,8 @@
         </dl>
     </BdndDragLayer>
 </BdndProvider>
+
+<DemoCode />
 
 @code {
     public class DragBox

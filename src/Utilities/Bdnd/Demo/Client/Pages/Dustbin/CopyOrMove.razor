@@ -15,8 +15,6 @@
     </p>
 </div>
 
-<DemoCode />
-
 <div class="bb-demo">
     <BdndProvider>
         <BdndDropTarget TItem="DragBox" Accept="@ItemTypes.Box" Context="t"
@@ -47,6 +45,8 @@
         </div>
     </BdndProvider>
 </div>
+
+<DemoCode />
 
 @code {
     public enum DropEffect { Copy, Move }

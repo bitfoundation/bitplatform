@@ -1,0 +1,19 @@
+﻿@namespace Bit.Bdnd.Demo.Client.Examples
+
+@* A code sample shown in the page rather than behind a toggle: the site kit's pre.bb-code, which
+   site.js gives a copy button, coloured by SyntaxHighlighter (its token colours are in demo.css). *@
+
+<pre class="bb-code"><code>@_html</code></pre>
+
+@code {
+    private MarkupString _html;
+
+    /// <summary>The source to show.</summary>
+    [Parameter, EditorRequired] public string Code { get; set; } = "";
+
+    /// <summary><c>razor</c> (the default) for markup and Razor, <c>csharp</c> for plain C#.</summary>
+    [Parameter] public string Language { get; set; } = "razor";
+
+    protected override void OnParametersSet() =>
+        _html = (MarkupString)SyntaxHighlighter.Highlight(Code.Trim('\r', '\n'), Language);
+}

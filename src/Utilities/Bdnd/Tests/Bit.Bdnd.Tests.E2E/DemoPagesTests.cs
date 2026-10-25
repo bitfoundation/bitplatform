@@ -37,12 +37,13 @@ public sealed class DemoPagesTests : BdndTest
                 $"{path} has {draggables} draggable(s) but never loaded bit-bdnd.js");
         }
 
-        // "View code" shows the page's own source, stripped of its routing directive.
+        // "View code" shows the page's own source first (then any component of the page's it renders), stripped of
+        // its routing directive.
         var toggle = page.Locator(".demo-code__toggle");
         if (await toggle.CountAsync() > 0)
         {
             await toggle.ClickAsync();
-            var code = page.Locator(".demo-code__code");
+            var code = page.Locator(".demo-code__code").First;
             await Expect(code).ToBeVisibleAsync();
             var source = await code.TextContentAsync() ?? "";
             Assert.IsTrue(source.Length > 100, $"{path} shows a source of only {source.Length} characters");
@@ -77,14 +78,36 @@ public sealed class DemoPagesTests : BdndTest
         await toggle.ClickAsync();
 
         var code = page.Locator(".demo-code__code");
-        await Expect(code).ToBeVisibleAsync();
+        await Expect(code).ToHaveCountAsync(1);
+        await Expect(page.Locator(".demo-code__file")).ToHaveTextAsync("SingleTarget.razor");
         var source = await code.TextContentAsync() ?? "";
         StringAssert.Contains(source, "<BdndDropTarget", "the snippet is not the page's markup");
         StringAssert.Contains(source, "private void HandleDrop(", "the snippet is missing the page's code block");
         Assert.DoesNotContain("@page", source, "the snippet still carries the routing directive");
+        // coloured: the component tag, the keywords and the strings are tokens of their own
+        Assert.IsGreaterThan(0, await code.Locator(".tok-type", new() { HasText = "BdndDropTarget" }).CountAsync(), "the component tag is not coloured");
+        Assert.IsGreaterThan(0, await code.Locator(".tok-key", new() { HasText = "private" }).CountAsync(), "the keywords are not coloured");
+        Assert.IsGreaterThan(0, await code.Locator(".tok-str").CountAsync(), "the strings are not coloured");
 
         await page.GetByRole(AriaRole.Button, new() { Name = "Hide code" }).ClickAsync();
         await Expect(code).ToHaveCountAsync(0);
+    }
+
+    [TestMethod]
+    public async Task View_code_also_shows_the_components_the_page_renders()
+    {
+        var page = await OpenAsync("/sortable/simple");
+
+        // the toggle comes after the sample it shows the code of
+        Assert.IsTrue(await page.EvaluateAsync<bool>(
+            "() => !!(document.querySelector('.bb-demo').compareDocumentPosition(document.querySelector('.demo-code')) & Node.DOCUMENT_POSITION_FOLLOWING)"),
+            "the code toggle is not under the sample");
+
+        await page.GetByRole(AriaRole.Button, new() { Name = "View code" }).ClickAsync();
+
+        await Expect(page.Locator(".demo-code__file")).ToHaveTextAsync(["Simple.razor", "SortableCard.razor"]);
+        var card = await page.Locator(".demo-code__code").Nth(1).TextContentAsync() ?? "";
+        StringAssert.Contains(card, "OnHover", "the second file is not the sortable card");
     }
 
     [TestMethod]
