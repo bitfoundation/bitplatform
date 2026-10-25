@@ -224,6 +224,10 @@
 
     private void OnKeyDown(KeyboardEventArgs e)
     {
+        // While an input method is composing, these keys pick, confirm or cancel its candidate: they are
+        // the composition's, not the palette's.
+        if (e.IsComposing) return;
+
         switch (e.Key)
         {
             case "Escape":

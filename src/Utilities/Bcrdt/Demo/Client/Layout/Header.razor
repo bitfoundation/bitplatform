@@ -47,8 +47,8 @@
                 </svg>
             </button>
 
-            <button type="button" class="bb-menu-btn" aria-label="Site menu" aria-expanded="@(_menuOpen ? "true" : "false")"
-                    aria-controls="bb-header-drawer" @onclick="() => _menuOpen = !_menuOpen">
+            <button @ref="_menuButton" type="button" class="bb-menu-btn" aria-label="Site menu" aria-expanded="@(_menuOpen ? "true" : "false")"
+                    aria-controls="bb-header-drawer" @onclick="ToggleMenu" @onkeydown="OnMenuKeyDown">
                 @if (_menuOpen)
                 {
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
@@ -66,11 +66,12 @@
     </div>
 
     @* The narrow-width menu. Rendered only while open, so its links are out of the tab order the
-       rest of the time - a drawer that is merely translated off-screen still holds focus. *@
+       rest of the time - a drawer that is merely translated off-screen still holds focus. It takes
+       the focus when it opens (tabindex -1: by script only), so Escape closes it from anywhere in it. *@
     @if (_menuOpen)
     {
-        <div class="bb-header-scrim" @onclick="() => _menuOpen = false"></div>
-        <nav id="bb-header-drawer" class="bb-header-drawer" aria-label="Site">
+        <div class="bb-header-scrim" @onclick="CloseMenu"></div>
+        <nav @ref="_drawer" id="bb-header-drawer" class="bb-header-drawer" aria-label="Site" tabindex="-1" @onkeydown="OnMenuKeyDown">
             @foreach (var item in SiteInfo.Primary)
             {
                 <a @key="item.Href" href="@item.Href" class="@(IsActive(item) ? "active" : null)">@item.Label</a>
@@ -83,7 +84,11 @@
 
 @code {
     private bool _menuOpen;
+    private bool _focusDrawerPending;
+    private bool _restorePending;
     private string _path = "";
+    private ElementReference _menuButton;
+    private ElementReference _drawer;
 
     protected override void OnInitialized()
     {
@@ -109,6 +114,55 @@
         _path = DocsCatalog.PathOf(Nav);
         _menuOpen = false;
         _ = InvokeAsync(StateHasChanged);
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (_focusDrawerPending)
+        {
+            _focusDrawerPending = false;
+            await _drawer.FocusAsync(preventScroll: true);
+        }
+
+        if (_restorePending)
+        {
+            _restorePending = false;
+            await _menuButton.FocusAsync();
+        }
+    }
+
+    /// <summary>
+    /// Opens or closes the narrow-width menu. Opening hands the drawer the focus, so the keyboard
+    /// carries on into its links - and so Escape is heard: Safari does not focus a button that is
+    /// clicked, which would leave the focus on &lt;body&gt;, outside every handler here.
+    /// </summary>
+    private void ToggleMenu()
+    {
+        if (_menuOpen)
+        {
+            CloseMenu();
+            return;
+        }
+
+        _menuOpen = true;
+        _focusDrawerPending = true;
+    }
+
+    // An unmounted drawer that held the focus drops it to <body>; hand it back to the button.
+    private void CloseMenu()
+    {
+        _menuOpen = false;
+        _restorePending = true;
+    }
+
+    /// <summary>
+    /// Escape closes the menu, the way every other overlay on the site closes. Heard on the button and
+    /// the drawer only, not on the whole header, which also holds the search dialog: there it would
+    /// hear every key typed into the search.
+    /// </summary>
+    private void OnMenuKeyDown(KeyboardEventArgs args)
+    {
+        if (_menuOpen && args.Key == "Escape") CloseMenu();
     }
 
     public void Dispose() => Nav.LocationChanged -= OnLocationChanged;

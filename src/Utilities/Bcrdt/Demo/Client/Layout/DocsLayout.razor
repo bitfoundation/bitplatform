@@ -14,7 +14,10 @@
    page rendered - see the note on the <nav> below. *@
 
 <div class="bb-docs">
-    <aside class="bb-docs-sidebar @(_menuOpen ? "bb-open" : null)" id="bb-docs-nav" aria-label="Documentation navigation" @onkeydown="OnKeyDown">
+    @* Focusable by script only (tabindex -1), for the drawer to take the focus when it opens - see
+       ToggleMenu. *@
+    <aside @ref="_panel" class="bb-docs-sidebar @(_menuOpen ? "bb-open" : null)" id="bb-docs-nav" aria-label="Documentation navigation"
+           tabindex="-1" @onkeydown="OnKeyDown">
         <p class="bb-overline bb-docs-nav-title">Documentation</p>
 
         @foreach (var section in DocsCatalog.Sections)
@@ -53,7 +56,7 @@
            those widths the two together are the whole "where am I / where else can I go" row. *@
         <div class="bb-docs-topbar" @onkeydown="OnKeyDown">
             <button @ref="_toggle" type="button" class="bb-docs-menu-toggle" aria-expanded="@(_menuOpen ? "true" : "false")"
-                    aria-controls="bb-docs-nav" @onclick="() => _menuOpen = !_menuOpen">
+                    aria-controls="bb-docs-nav" @onclick="ToggleMenu">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
                     <line x1="3" y1="6" x2="21" y2="6" /><line x1="3" y1="12" x2="21" y2="12" /><line x1="3" y1="18" x2="21" y2="18" />
                 </svg>
@@ -106,13 +109,15 @@
 
 @if (_menuOpen)
 {
-    <div class="bb-docs-scrim" @onclick="() => _menuOpen = false"></div>
+    <div class="bb-docs-scrim" @onclick="CloseMenu"></div>
 }
 
 @code {
     private bool _menuOpen;
     private bool _restorePending;
+    private bool _focusPanelPending;
     private ElementReference _toggle;
+    private ElementReference _panel;
     private DocsPageInfo? _current;
 
     protected override void OnInitialized()
@@ -132,10 +137,36 @@
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
+        if (_focusPanelPending)
+        {
+            _focusPanelPending = false;
+            // Without scrolling: the panel is fixed, and still sliding in.
+            await _panel.FocusAsync(preventScroll: true);
+        }
+
         if (_restorePending is false) return;
 
         _restorePending = false;
         await _toggle.FocusAsync();
+    }
+
+    /// <summary>
+    /// Opens or closes the narrow-width drawer. Opening hands it the focus: the drawer precedes the
+    /// page in the tab order, so from the button a keyboard reader would otherwise have to tab
+    /// backwards to reach it - and Safari does not focus a button that is clicked at all, which would
+    /// leave the focus on &lt;body&gt;, where OnKeyDown never hears the Escape that closes the drawer.
+    /// </summary>
+    private void ToggleMenu()
+    {
+        _menuOpen = !_menuOpen;
+        _focusPanelPending = _menuOpen;
+    }
+
+    // The drawer had the focus, and a hidden panel drops it to <body>: hand it back to the button.
+    private void CloseMenu()
+    {
+        _menuOpen = false;
+        _restorePending = true;
     }
 
     /// <summary>

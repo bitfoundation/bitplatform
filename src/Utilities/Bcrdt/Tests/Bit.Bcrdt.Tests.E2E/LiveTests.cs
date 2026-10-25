@@ -112,9 +112,18 @@ public sealed class LiveTests : BcrdtTest
         int recordsBefore = await StoredRecordsAsync(writer.Page);
         await TypeAtEndAsync(Editor(writer.Page), " Offline.");
 
-        // Nobody else has the offline sentence: it exists only in the writer's browser, once its write has landed -
-        // a few milliseconds after the keystroke.
+        // Nobody else has the offline sentence: it exists only in the writer's browser, once its writes have landed -
+        // a few milliseconds after each keystroke, longer in WebKit, whose strictly durable writes wait for the disk.
+        // A reload is only safe once the replica holds every keystroke and the store has stopped growing: the first
+        // record to land may hold only the start of the sentence.
+        await Assertions.Expect(writer.Page.Locator("section.panel .panel-foot .metric").First).ToHaveTextAsync($"{"Online. Offline.".Length} characters");
         await EventuallyAsync(async () => await StoredRecordsAsync(writer.Page) > recordsBefore, () => "the offline edit was stored in IndexedDB");
+        await EventuallyAsync(async () =>
+        {
+            int records = await StoredRecordsAsync(writer.Page);
+            await Task.Delay(500);
+            return await StoredRecordsAsync(writer.Page) == records;
+        }, () => "the offline edit's writes settled");
         await writer.Page.ReloadAsync();
         await WaitForInteractiveAsync(writer.Page);
         await WaitForReplicasAsync(writer.Page, 1);

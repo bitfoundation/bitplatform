@@ -88,8 +88,10 @@ builder.Services.AddBitBcrdtHub();   <span class="c">// AddSignalR, with a recei
 app.MapHub&lt;BcrdtHub&gt;(<span class="s">"/hub/bcrdt"</span>);</pre>
     <p class="bb-card-desc">
         The raw WebSocket transport has its relay in the same package: call <code>app.UseWebSockets()</code> and map
-        it with <code>app.MapBitBcrdtWebSocket("/ws/bcrdt/{documentId}")</code>. Neither relay decodes a message or
-        holds a replica - they only forward bytes between the clients of a document.
+        it with <code>app.MapBitBcrdtWebSocket("/ws/bcrdt/{documentId}")</code>. On its own a relay only relays: a
+        document exists while somebody has it open. To keep every document on the server as well - so the first
+        person into an empty room still gets everything ever written into it - register a document host with
+        <code>AddBitBcrdtDocumentHost</code>, as the <a href="live">live page</a>'s server does.
     </p>
 </div>
 

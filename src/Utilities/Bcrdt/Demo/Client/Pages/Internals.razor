@@ -63,17 +63,17 @@
                             <dt title="What a peer sends to ask for exactly what it is missing.">
                                 State vector
                             </dt>
-                            <dd>@replica.Document.Crdt.GetStateVector().Encode().Length bytes</dd>
+                            <dd>@Bytes(replica.Document.Crdt.GetStateVector().Encode().Length)</dd>
 
                             <dt title="The whole document, encoded. What a brand-new peer would receive.">
                                 Full document
                             </dt>
-                            <dd>@FullSize(replica).ToString("N0") bytes</dd>
+                            <dd>@Bytes(FullSize(replica))</dd>
 
                             <dt title="What this replica would send to a peer that is already up to date.">
                                 Delta for an up-to-date peer
                             </dt>
-                            <dd>@NoOpSize(replica).ToString("N0") bytes</dd>
+                            <dd>@Bytes(NoOpSize(replica))</dd>
                         </dl>
                     </ChildContent>
 
@@ -127,7 +127,7 @@
                         {
                             <tr>
                                 <td class="bb-table-key"><span class="replica-dot" style="--replica-color: @record.Color" aria-hidden="true"></span>@record.Label</td>
-                                <td class="bb-nowrap">@record.Size bytes</td>
+                                <td class="bb-nowrap">@Bytes(record.Size)</td>
                                 <td>@record.Origin</td>
                                 <td class="bb-mono">@record.Preview</td>
                             </tr>
@@ -227,6 +227,8 @@
     // way a lost deletion ever gets repaired.
     private static int NoOpSize(DemoReplica replica) =>
         replica.Document.Crdt.EncodeStateAsUpdate(replica.Document.Crdt.GetStateVector()).Length;
+
+    private static string Bytes(int count) => count == 1 ? "1 byte" : $"{count:N0} bytes";
 
     private static string Ratio(DemoReplica replica)
     {

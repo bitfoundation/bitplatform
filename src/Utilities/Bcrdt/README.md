@@ -1357,7 +1357,7 @@ called without input. Every tool is read-only, and every one is also a plain HTT
 dotnet build src/Utilities/Bcrdt/Bit.Bcrdt.slnx
 cd src/Utilities/Bcrdt/Tests/Bit.Bcrdt.Tests && dotnet test
 cd src/Utilities/Bcrdt/Tests/Bit.Bcrdt.Tests.Mcp && dotnet test
-cd src/Utilities/Bcrdt/Tests/Bit.Bcrdt.Tests.E2E && dotnet test       # needs Playwright Chromium, see its README
+cd src/Utilities/Bcrdt/Tests/Bit.Bcrdt.Tests.E2E && dotnet test       # needs a Playwright browser; BCRDT_E2E_BROWSER=firefox/webkit for the others, see its README
 dotnet run --project src/Utilities/Bcrdt/Demo/Server                    # the demo, at http://localhost:5560
 dotnet run -c Release --project src/Utilities/Bcrdt/Tests/Bit.Bcrdt.Benchmarks -- --filter "*Text*"
 ```

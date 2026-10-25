@@ -293,9 +293,14 @@
                     visibility var(--bb-motion-duration);
     }
 
+    /* Visible from the first frame of the slide, not from its end: the panel takes the focus as it
+       opens (DocsLayout.ToggleMenu), and a browser refuses to focus what is still hidden. Closing
+       keeps the base rule's transition, so the panel stays visible until it has slid away. */
     .bb-docs-sidebar.bb-open {
         visibility: visible;
         transform: translateX(0);
+        transition: transform var(--bb-motion-duration) var(--bb-motion-enter),
+                    visibility 0s;
     }
 
     .bb-docs-scrim {

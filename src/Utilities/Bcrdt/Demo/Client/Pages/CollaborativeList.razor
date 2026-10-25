@@ -189,15 +189,17 @@
 
     private void SetDraft(DemoReplica replica, string? value) => _drafts[replica.Label] = value ?? string.Empty;
 
+    // An Enter that confirms an input method's candidate (Japanese, Chinese, Korean...) belongs to the
+    // composition, not to the form: adding then would add the half-composed title.
     private void OnDraftKey(DemoReplica replica, KeyboardEventArgs args)
     {
-        if (args.Key is "Enter") Add(replica);
+        if (args.Key is "Enter" && !args.IsComposing) Add(replica);
     }
 
     private void Add(DemoReplica replica)
     {
         string title = Draft(replica);
-        if (string.IsNullOrWhiteSpace(title)) title = $"BcrdtItem {++_added} from {replica.Label}";
+        if (string.IsNullOrWhiteSpace(title)) title = $"Item {++_added} from {replica.Label}";
 
         // A detached map can be filled in before it is inserted; the buffered writes replay as real
         // collaborative operations at the moment it joins the document, so the whole item - element

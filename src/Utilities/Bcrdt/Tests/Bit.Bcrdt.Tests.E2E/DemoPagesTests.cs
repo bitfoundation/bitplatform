@@ -119,6 +119,40 @@ public sealed class DemoPagesTests : BcrdtTest
         await Assertions.Expect(websocket.Locator(".live-relay-active")).ToHaveTextAsync("WebSocket endpoint");
     }
 
+    [TestMethod]
+    public async Task The_narrow_width_menus_take_the_focus_and_close_on_escape()
+    {
+        var page = await OpenAsync("/text");
+        await page.SetViewportSizeAsync(390, 844);
+
+        // The docs drawer. It takes the focus as it opens - Safari does not focus a clicked button, so without that
+        // the Escape below would reach <body>, where nothing listens for it - and gives it back to its button.
+        var docsToggle = page.Locator(".bb-docs-menu-toggle");
+        var docsPanel = page.Locator("aside.bb-docs-sidebar");
+        await docsToggle.ClickAsync();
+        await Assertions.Expect(docsPanel).ToHaveClassAsync(new Regex("\\bbb-open\\b"));
+        await Assertions.Expect(docsPanel).ToBeFocusedAsync();
+        await page.Keyboard.PressAsync("Escape");
+        await Assertions.Expect(docsPanel).Not.ToHaveClassAsync(new Regex("\\bbb-open\\b"));
+        await Assertions.Expect(docsToggle).ToBeFocusedAsync();
+
+        // The site menu, the same way.
+        var menuButton = page.Locator(".bb-menu-btn");
+        var drawer = page.Locator("#bb-header-drawer");
+        await menuButton.ClickAsync();
+        await Assertions.Expect(drawer).ToBeFocusedAsync();
+        await page.Keyboard.PressAsync("Escape");
+        await Assertions.Expect(drawer).ToHaveCountAsync(0);
+        await Assertions.Expect(menuButton).ToBeFocusedAsync();
+
+        // A link in the drawer still navigates, and the drawer closes behind it.
+        await docsToggle.ClickAsync();
+        await docsPanel.GetByRole(AriaRole.Link, new() { Name = "Conflict lab", Exact = true }).ClickAsync();
+        await page.WaitForURLAsync(BaseUrl + "/conflicts");
+        await Assertions.Expect(page.Locator("h1")).ToHaveTextAsync("Conflict lab");
+        await Assertions.Expect(docsPanel).Not.ToHaveClassAsync(new Regex("\\bbb-open\\b"));
+    }
+
     private static IEnumerable<string> Addresses(string route)
     {
         var path = Regex.Replace(route, "\\{[^}]+\\}", "e2e-pages");

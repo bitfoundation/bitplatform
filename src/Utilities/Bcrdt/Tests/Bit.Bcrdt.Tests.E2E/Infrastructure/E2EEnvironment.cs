@@ -25,12 +25,19 @@ public static class E2EEnvironment
     public static string? BaseUrl { get; } = Read("BCRDT_E2E_BASE_URL")?.TrimEnd('/');
 
     /// <summary>
+    /// <c>BCRDT_E2E_BROWSER</c>: the engine the suite drives - <c>chromium</c> (the default), <c>firefox</c>
+    /// or <c>webkit</c>. The demo runs on WebAssembly in all three, and each has its own text input, focus and
+    /// IndexedDB behavior, so the suite is meant to be run once per engine.
+    /// </summary>
+    public static string Browser { get; } = Read("BCRDT_E2E_BROWSER")?.ToLowerInvariant() ?? "chromium";
+
+    /// <summary>
     /// <c>BCRDT_E2E_CHANNEL</c>: e.g. chrome / msedge, to use an installed browser. Without it the suite
-    /// uses the Chromium Playwright installed and falls back to an installed Chrome, then Edge.
+    /// uses the Chromium Playwright installed and falls back to an installed Chrome, then Edge. Chromium only.
     /// </summary>
     public static string? Channel { get; } = Read("BCRDT_E2E_CHANNEL");
 
-    /// <summary><c>BCRDT_E2E_EXECUTABLE</c>: full path to a chromium-family executable.</summary>
+    /// <summary><c>BCRDT_E2E_EXECUTABLE</c>: full path to an executable of the engine <see cref="Browser"/> names.</summary>
     public static string? Executable { get; } = Read("BCRDT_E2E_EXECUTABLE");
 
     /// <summary><c>BCRDT_E2E_HEADED=1</c>: show the browser.</summary>

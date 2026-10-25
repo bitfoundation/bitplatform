@@ -95,6 +95,35 @@ public sealed class CollaborativeTextTests : BcrdtTest
     }
 
     [TestMethod]
+    public async Task A_value_set_by_script_merges_as_the_change_it_is_and_leaves_a_collaborators_caret_in_place()
+    {
+        var page = await OpenReplicasAsync("/text", 3);
+        ILocator a = Replica(page, "Replica A"), b = Replica(page, "Replica B"), c = Replica(page, "Replica C");
+        ILocator[] editors = [Editor(a), Editor(b), Editor(c)];
+
+        await TypeAtEndAsync(Editor(a), "hello world");
+        await ExpectConvergedAsync(editors, "hello world");
+
+        // B is typing after "hello". The arrow keys are what tell B's replica where its caret is.
+        await Editor(b).ClickAsync();
+        await Editor(b).EvaluateAsync("element => element.setSelectionRange(5, 5)");
+        await Editor(b).PressAsync("ArrowRight");
+        await Editor(b).PressAsync("ArrowLeft");
+
+        // A script - a browser extension, say - prefixes A's value, which leaves A's caret at the end of the text,
+        // far from the change. The change is still the two characters it is: were it taken to end at the caret it
+        // would replace the whole text, and every caret anchored in it would fall back to the start.
+        await Editor(a).EvaluateAsync(
+            "element => { element.value = 'XX' + element.value; element.dispatchEvent(new Event('input', { bubbles: true })); }");
+        await ExpectConvergedAsync(editors, "XXhello world");
+
+        Assert.AreEqual(7, await Editor(b).EvaluateAsync<int>("element => element.selectionStart"), "B's caret did not stay after \"hello\"");
+        await Editor(b).PressSequentiallyAsync("_");
+        var merged = await ExpectConvergedAsync(editors, "XXhello_ world");
+        Assert.AreEqual("XXhello_ world", merged);
+    }
+
+    [TestMethod]
     public async Task A_paste_too_large_to_report_as_a_change_reaches_the_others_and_typing_carries_on()
     {
         var page = await OpenReplicasAsync("/text", 3);
