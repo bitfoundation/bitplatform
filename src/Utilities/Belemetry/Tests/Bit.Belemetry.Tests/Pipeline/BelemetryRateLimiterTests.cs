@@ -20,6 +20,21 @@ public class BelemetryRateLimiterTests
     }
 
     [TestMethod]
+    public void RefillsAtItsOwnRate_WhenTheRateDiffersFromTheBurst()
+    {
+        long now = 1_000;
+        var limiter = new BelemetryRateLimiter(5, 60, TimeSpan.FromMinutes(1), () => now);
+
+        Assert.AreEqual(5, limiter.Take(100), "The burst is the capacity, not the rate.");
+
+        now += 2_000; // 60 per minute: 2 back in 2 seconds
+        Assert.AreEqual(2, limiter.Take(100));
+
+        now += 60_000; // a minute's 60 tokens, capped at the burst
+        Assert.AreEqual(5, limiter.Take(100));
+    }
+
+    [TestMethod]
     public void IgnoresAClockGoingBackwards_AndNonPositiveRequests()
     {
         long now = 10_000;

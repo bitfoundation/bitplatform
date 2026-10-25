@@ -45,9 +45,10 @@ internal sealed class BelemetryJsBridge : IAsyncDisposable
 
         // On a server the page at the other end of the circuit can be anything that speaks the interop protocol, and
         // the queue it relays into is shared by every user: it gets the most an honest page sends at once (a full
-        // queue plus the records a consent decision releases) as a burst, and that much per minute after it.
+        // queue plus the records a consent decision releases) as a burst, and MaxRelayedPerMinute after it - a rate of
+        // its own, since how many records a page holds says nothing about how fast an honest one produces them.
         _relaySource = new BelemetryRelaySource(settings.IsServer
-            ? new BelemetryRateLimiter(Math.Max(1, settings.Options.Browser.MaxQueueSize) + Math.Max(0, settings.Options.Consent.PendingLimit), TimeSpan.FromMinutes(1))
+            ? new BelemetryRateLimiter(Math.Max(1, settings.Options.Browser.MaxQueueSize) + Math.Max(0, settings.Options.Consent.PendingLimit), settings.Options.Browser.MaxRelayedPerMinute, TimeSpan.FromMinutes(1))
             : null);
     }
 

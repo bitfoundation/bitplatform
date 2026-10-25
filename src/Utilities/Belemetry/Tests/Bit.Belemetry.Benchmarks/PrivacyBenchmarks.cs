@@ -40,7 +40,7 @@ public class PrivacyBenchmarks
         return log;
     }
 
-    private static BelemetrySpan HttpSpan(string url = "https://api.example.com/orders/42?page=2&sort=desc") => new()
+    private static BelemetrySpan HttpSpan(string url = "https://api.example.com/orders/42?page=2&token=abc123") => new()
     {
         TraceId = "0af7651916cd43dd8448eb211c80319c",
         SpanId = "b7ad6b7169203331",

@@ -98,6 +98,15 @@ public sealed class BelemetryBrowserOptions
     /// <summary>How often the script exports. Defaults to 5 seconds (it also exports when the page is hidden).</summary>
     public TimeSpan FlushInterval { get; set; } = TimeSpan.FromSeconds(5);
 
+    /// <summary>
+    /// On Blazor Server with the <see cref="BelemetryBrowserTransport.Relay"/> transport, the most records one circuit
+    /// may relay per minute on average (at least 1); the excess is dropped. The page is untrusted there and the queue it
+    /// relays into serves every user. On top of it a circuit may send a burst of <see cref="MaxQueueSize"/> plus
+    /// <see cref="BelemetryConsentOptions.PendingLimit"/> records - a full queue and what a consent decision releases.
+    /// Defaults to 3000.
+    /// </summary>
+    public int MaxRelayedPerMinute { get; set; } = 3000;
+
     /// <summary>Whether the script writes its own diagnostics to <c>console.debug</c>. Defaults to <see langword="false"/>.</summary>
     public bool Debug { get; set; }
 }

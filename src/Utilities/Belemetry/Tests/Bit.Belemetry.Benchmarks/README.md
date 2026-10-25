@@ -30,7 +30,7 @@ the JIT's optimizations); the ratios between the cases hold roughly.
 | Case | Mean | Allocated | Notes |
 | --- | ---: | ---: | --- |
 | HttpClient span: build | 166 ns | 656 B | the baseline the privacy cases include |
-| HttpClient span: build + privacy | 653 ns | 1752 B | URL with a query to redact |
+| HttpClient span: build + privacy | 950 ns | 2016 B | URL with a `token` query parameter to redact |
 | HttpClient span, URL without a query: build + privacy | 347 ns | 656 B | the common case: nothing rebuilt, nothing allocated |
 | Structured log: build | 121 ns | 480 B | |
 | Structured log: build + privacy | 794 ns | 744 B | an e-mail address to scrub, in the body and an attribute |
@@ -56,5 +56,6 @@ building the record), nearly all of it in the card-number and IPv4 regexes, whic
 3. One cached rule per attribute key (id, redacted name, host, URL, query, version-named, or plain), instead of a
    string comparison per rule for every attribute of every record.
 
-Net privacy cost per span: 867 ns -> 487 ns with a query to redact (-44%), 181 ns and no extra allocation without
-one; per structured log record 973 ns -> 673 ns (-31%); the full `ILogger` entry 1066 ns -> 869 ns (-18%).
+Net privacy cost per span: 867 ns -> 487 ns with a query (`?page=2&sort=desc`, nothing in it to redact; the benchmark
+has since moved to a URL with a `token` to redact) (-44%), 181 ns and no extra allocation without one; per
+structured log record 973 ns -> 673 ns (-31%); the full `ILogger` entry 1066 ns -> 869 ns (-18%).

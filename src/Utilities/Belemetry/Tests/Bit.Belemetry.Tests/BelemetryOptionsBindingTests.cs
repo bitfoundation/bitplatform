@@ -38,7 +38,7 @@ public class BelemetryOptionsBindingTests
               "PropagateTraceContextTo": [ "same-origin", "^https://api\\.shop\\.test/" ], "IgnoreUrls": [ "/cdn/" ], "IgnoreErrorMessages": [ "Script error" ],
               "CaptureConsole": true, "ConsoleLevels": [ "error" ],
               "SessionInactivityTimeout": "00:10:00", "SessionMaxDuration": "08:00:00", "SessionSampleRatio": 0.5,
-              "MaxQueueSize": 256, "MaxBatchSize": 25, "FlushInterval": "00:00:02", "Debug": true
+              "MaxQueueSize": 256, "MaxBatchSize": 25, "FlushInterval": "00:00:02", "MaxRelayedPerMinute": 600, "Debug": true
             },
             "Logs": { "MinimumLevel": "Warning", "IncludeScopes": false, "IncludeMessageTemplate": true, "ExcludedCategories": [ "Microsoft.AspNetCore" ] },
             "Traces": { "Sources": [ "Shop.*" ], "IgnoredActivityNames": [ "Microsoft.AspNetCore.Components.HandleEvent" ], "SamplingRatio": 0.25, "MaxEventsPerSpan": 16, "MaxLinksPerSpan": 8 },
@@ -131,6 +131,7 @@ public class BelemetryOptionsBindingTests
         Assert.AreEqual(256, b.MaxQueueSize);
         Assert.AreEqual(25, b.MaxBatchSize);
         Assert.AreEqual(TimeSpan.FromSeconds(2), b.FlushInterval);
+        Assert.AreEqual(600, b.MaxRelayedPerMinute);
         Assert.IsTrue(b.Debug);
 
         Assert.AreEqual(LogLevel.Warning, o.Logs.MinimumLevel);

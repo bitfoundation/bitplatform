@@ -42,6 +42,7 @@ public class BelemetryRelayTests
             Server(o);
             o.Browser.MaxQueueSize = 10;
             o.Consent.PendingLimit = 5;
+            o.Browser.MaxRelayedPerMinute = 1;
         });
         var bridge = Bridge(host);
         var other = Bridge(host);
@@ -51,8 +52,8 @@ public class BelemetryRelayTests
         await other.RelayAsync(Batch(3));
         await host.FlushAsync();
 
-        // A full page queue plus what a consent decision releases (10 + 5) as a burst; the rest of the minute's
-        // budget refills far slower than this test runs.
+        // A full page queue plus what a consent decision releases (10 + 5) as a burst, whatever the rate; one record a
+        // minute refills far slower than this test runs.
         Assert.AreEqual(15 + 3, host.Memory.Logs.Count, "One page's flood costs the other pages nothing.");
     }
 

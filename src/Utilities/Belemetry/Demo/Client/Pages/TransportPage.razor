@@ -137,8 +137,8 @@
     <ul class="bb-detail-list">
         <li>They are accepted only when <code>Browser.Transport</code> is <code>Relay</code>; with Direct, a page that relays anyway is ignored.</li>
         <li>
-            Each circuit gets a burst of <code>Browser.MaxQueueSize + Consent.PendingLimit</code> records and that many
-            per minute after it. The excess is dropped - counted as <code>relay_limit</code> on the
+            Each circuit gets a burst of <code>Browser.MaxQueueSize + Consent.PendingLimit</code> records and
+            <code>Browser.MaxRelayedPerMinute</code> (3000) per minute after it. The excess is dropped - counted as <code>relay_limit</code> on the
             <code>Bit.Belemetry</code> meter - with one warning per circuit.
         </li>
         <li>Records of features the configuration switched off are dropped, whatever the page claims was granted.</li>

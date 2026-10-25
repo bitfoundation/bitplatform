@@ -604,6 +604,7 @@ services.AddHangfire(configuration => configuration
 | `SessionInactivityTimeout` / `SessionMaxDuration` | 30 min / 24 h | session rotation |
 | `SessionSampleRatio` | `1.0` | fraction of sessions recorded |
 | `FlushInterval`, `MaxBatchSize`, `MaxQueueSize` | 5 s, 100, 1024 | batching |
+| `MaxRelayedPerMinute` | 3000 | records one circuit may relay per minute on Blazor Server (see [Transport](#transport-direct-and-relay)) |
 | `Debug` | `false` | the script's own diagnostics in `console.debug` |
 
 ### Error floods and runaway values
@@ -788,10 +789,11 @@ set it either way), which adds `url.path`, `server.address` and `server.port`.
 On Blazor Server the page at the other end of a circuit can be anything that speaks the interop protocol, and the
 queue it relays into is shared by every user, so the server treats relayed batches as untrusted input: it accepts them
 only with the Relay transport, limits each circuit to a burst of `Browser.MaxQueueSize + Consent.PendingLimit`
-records and that many per minute after it (the excess is dropped, with one warning per circuit), drops features the
-configuration switched off, and decides the service identity itself - `service.name`, `service.namespace`,
-`service.version` and `deployment.environment.name` come from the server, the rest of the resource from the page,
-and none of the server's own host or process attributes are added (as with the Direct transport).
+records and `Browser.MaxRelayedPerMinute` (3000) per minute after it (the excess is dropped, with one warning per
+circuit), drops features the configuration switched off, and decides the service identity itself - `service.name`,
+`service.namespace`, `service.version` and `deployment.environment.name` come from the server, the rest of the
+resource from the page, and none of the server's own host or process attributes are added (as with the Direct
+transport).
 
 ---
 

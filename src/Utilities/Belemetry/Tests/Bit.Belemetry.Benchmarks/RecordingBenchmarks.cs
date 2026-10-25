@@ -50,9 +50,9 @@ public class RecordingBenchmarks
     }
 
     [GlobalCleanup]
-    public void Cleanup()
+    public async Task Cleanup()
     {
-        _services.DisposeAsync().AsTask().GetAwaiter().GetResult();
+        await _services.DisposeAsync();
         _source.Dispose();
         _meter.Dispose();
     }
