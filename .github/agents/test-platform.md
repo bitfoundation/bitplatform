@@ -250,7 +250,8 @@ adds another, so the helper tells them apart by package and takes the newest of 
 where the helper finds it. It is a Google Play image, so after a cold boot it updates Android System WebView on its
 own; note the version (`adb shell dumpsys webviewupdate`) in the report, since a jump explains Android failures that no
 code change does. An APK signed with another key than the installed app, or older than it, goes in only
-after uninstalling the app, which drops its data.
+after uninstalling the app, which drops its data, and so does one the AVD has no room for next to the old copy: its
+system app updates fill it up over time. The helper does both on its own.
 
 **Windows.** `windows`. The apps are Velopack installs in `%LocalAppData%\<AppId>`: the Boilerplate's
 `AdminPanel.Client.Windows`, `SalesModule.Client.Windows` and `TodoSample.Client.Windows`. The nav-panel version

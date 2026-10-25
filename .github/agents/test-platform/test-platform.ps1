@@ -394,12 +394,18 @@ function Install-AndroidApps {
             $output = Invoke-Adb install $apk.Path
         }
 
-        if ($output -match 'INSTALL_FAILED_INSUFFICIENT_STORAGE') {
+        if ($output -match 'INSTALL_FAILED_INSUFFICIENT_STORAGE|not enough space') {
             Write-Host "  $($Matches[0]): retrying with the low-storage limit lowered to 100 MB for this install."
             Invoke-Adb shell settings put global sys_storage_threshold_max_bytes 104857600 | Out-Null
 
             try {
                 $output = Invoke-Adb install -r -d $apk.Path
+
+                if ($output -match 'INSTALL_FAILED_INSUFFICIENT_STORAGE|not enough space') {
+                    Write-Host "  $($Matches[0]) again, with no room for both copies: uninstalling it first, which drops its data."
+                    Invoke-Adb uninstall $apk.Package | Out-Null
+                    $output = Invoke-Adb install $apk.Path
+                }
             }
             finally {
                 Invoke-Adb shell settings delete global sys_storage_threshold_max_bytes | Out-Null
