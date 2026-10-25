@@ -43,6 +43,26 @@ public sealed class RenderingTests : BlowTest
     }
 
     [TestMethod]
+    public async Task Every_arrowhead_is_painted()
+    {
+        // An arrowhead without a colour of its own takes the edge's through context-stroke, which WebKit does not
+        // know: there it has to fall back to a real colour, or every default arrowhead in Safari is invisible.
+        var page = await OpenAsync("/examples/edge-markers");
+
+        var paints = await page.EvaluateAsync<string[]>(
+            """
+            () => [...document.querySelectorAll('.bit-blow marker path')].map(p => {
+              const s = getComputedStyle(p);
+              return p.closest('marker').id + ' stroke=' + s.stroke + ' fill=' + s.fill;
+            })
+            """);
+
+        Assert.IsGreaterThan(1, paints.Length, "the page declares no arrowheads");
+        foreach (var paint in paints)
+            Assert.DoesNotContain("stroke=none", paint, "an arrowhead that is never painted");
+    }
+
+    [TestMethod]
     public async Task The_browser_layer_measures_nodes_and_handles_in_flow_units_at_any_zoom()
     {
         var page = await OpenAsync("/basic-flow");

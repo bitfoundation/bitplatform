@@ -1,0 +1,153 @@
+﻿@page "/touch"
+
+<PageTitle>Touch and pen · Bortable</PageTitle>
+
+<div class="bb-intro">
+    <h1>Touch and pen</h1>
+    <p class="bb-subtitle">
+        A finger or a pen drags with pointer events: the item stays in its list, dimmed, while a copy of it follows the
+        pointer. On a touch screen, rest a finger on an item for a moment (<code>TouchDelay</code>, 200 ms) to pick it
+        up - a quick swipe still scrolls the page. Escape, or the system taking the pointer over, puts the item back.
+    </p>
+</div>
+
+<DemoCode />
+
+<div class="bb-demo">
+    <div class="demo-controls">
+        <label>
+            <code>TouchDelay</code> (Long press): <strong id="touch-delay-value">@_touchDelay ms</strong>
+            <input id="touch-delay" type="range" min="0" max="1000" step="50" value="@_touchDelay"
+                   @oninput="e => _touchDelay = Parse(e, _touchDelay)" />
+        </label>
+        <label>
+            <code>Delay</code> (Long press, mouse and pen): <strong id="mouse-delay-value">@_delay ms</strong>
+            <input id="mouse-delay" type="range" min="0" max="1000" step="50" value="@_delay"
+                   @oninput="e => _delay = Parse(e, _delay)" />
+        </label>
+        <label>
+            <code>DelayTolerance</code> (Long press): <strong id="delay-tolerance-value">@_tolerance px</strong>
+            <input id="delay-tolerance" type="range" min="0" max="40" step="1" value="@_tolerance"
+                   @oninput="e => _tolerance = Parse(e, _tolerance)" />
+        </label>
+    </div>
+
+    <div class="demo-columns">
+        <div class="demo-col">
+            <div class="demo-col-title">Long press</div>
+            <Bortable @bind-Items="_longPress" TItem="string" Id="touch-list" AriaLabel="Long press"
+                      TouchDelay="_touchDelay" Delay="_delay" DelayTolerance="_tolerance"
+                      Class="demo-list" ItemClass="demo-item" GhostClass="demo-ghost">
+                <ItemTemplate Context="item">@item</ItemTemplate>
+            </Bortable>
+        </div>
+        <div class="demo-col">
+            <div class="demo-col-title">Handle, at once</div>
+            <Bortable @bind-Items="_handle" TItem="string" Id="touch-handle-list" AriaLabel="Handle, at once"
+                      Handle=".handle" TouchDelay="0"
+                      Class="demo-list" ItemClass="demo-item" GhostClass="demo-ghost">
+                <ItemTemplate Context="item">
+                    <span class="handle touch-handle">☰</span>@item
+                </ItemTemplate>
+            </Bortable>
+        </div>
+        <div class="demo-col">
+            <div class="demo-col-title">Mouse too (ForceFallback)</div>
+            <Bortable @bind-Items="_fallback" TItem="string" Id="touch-fallback-list" AriaLabel="Mouse too"
+                      ForceFallback="true"
+                      Class="demo-list" ItemClass="demo-item" GhostClass="demo-ghost">
+                <ItemTemplate Context="item">@item</ItemTemplate>
+            </Bortable>
+        </div>
+    </div>
+
+    <p class="demo-order"><strong>Long press:</strong> <span id="touch-order">@string.Join(", ", _longPress)</span></p>
+    <p class="demo-order"><strong>Handle:</strong> <span id="touch-handle-order">@string.Join(", ", _handle)</span></p>
+    <p class="demo-order"><strong>Mouse too:</strong> <span id="touch-fallback-order">@string.Join(", ", _fallback)</span></p>
+</div>
+
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Try it</h3>
+    <ul class="bb-detail-list">
+        <li>
+            On a phone or a tablet, swipe across <strong>Long press</strong>: the page scrolls. Rest a finger on an item
+            until it lifts, then drag it. Raise <code>TouchDelay</code> for a longer press.
+        </li>
+        <li>
+            Raise <code>Delay</code> and drag an item of the same list with the mouse: the press has to be held that long
+            before the item follows. Move more than <code>DelayTolerance</code> pixels before then, and that press drags
+            nothing - on a touch screen, it scrolls the page instead.
+        </li>
+        <li>
+            In <strong>Handle, at once</strong>, a finger on ☰ drags straight away: the handle has
+            <code>touch-action: none</code>, so the browser does not scroll from it, and <code>TouchDelay="0"</code>.
+            The rest of the row still scrolls the page.
+        </li>
+        <li>
+            Drag an item of <strong>Mouse too</strong> with the mouse: with <code>ForceFallback</code> the mouse drags like
+            a finger, with the same preview instead of the browser's drag image. Press <kbd>Escape</kbd> mid-drag: the item
+            goes back.
+        </li>
+    </ul>
+</section>
+
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> How it works</h3>
+    <ul class="bb-detail-list">
+        <li>
+            A mouse drags with the browser's own HTML5 drag and drop, as SortableJS does on the desktop. A finger or a pen
+            drags with pointer events instead, which works the same in every browser and web view, whether or not it
+            supports HTML5 drag and drop on touch. Both feed the same hit test and raise the same events, with
+            <code>Input</code> saying which it was.
+        </li>
+        <li>
+            Once a finger drags an item the page does not scroll under it. Near an edge the drag scrolls the list, a panel
+            around it, or the page (<code>Scroll</code>) - the <a href="large-list">large list</a> page shows it.
+        </li>
+        <li>
+            <kbd>Escape</kbd>, a system gesture that takes the pointer over (<code>pointercancel</code>), or leaving the page
+            cancels a pointer drag and puts everything back.
+        </li>
+        <li>
+            The click a browser sends after a press is swallowed after a drag, so dropping an item does not also click it.
+            A press on a control inside an item - a button, a link, an input - is left to the control.
+        </li>
+        <li>
+            The preview is a copy of the item placed above the page, with the <code>DragClass</code> class
+            (<code>bit-bortable-drag</code>): <code>--bit-bortable-drag-opacity</code> and
+            <code>--bit-bortable-drag-shadow</code> restyle it, and the <a href="styling">styling</a> page passes a class of
+            its own.
+        </li>
+    </ul>
+</section>
+
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Parameters on this page</h3>
+    <div class="bb-scroll">
+        <table class="bb-table">
+            <thead>
+                <tr><th>Parameter</th><th>Default</th><th>What it does</th></tr>
+            </thead>
+            <tbody>
+                <tr><td class="bb-table-key"><code>TouchDelay</code></td><td><code>200</code></td><td>How long (ms) a finger must rest on an item before it drags it, so a swipe over the list still scrolls.</td></tr>
+                <tr><td class="bb-table-key"><code>Delay</code></td><td><code>0</code></td><td>The same for the mouse and a pen (SortableJS <code>delay</code>).</td></tr>
+                <tr><td class="bb-table-key"><code>DelayTolerance</code></td><td><code>5</code></td><td>How far (px) the pointer may move while a delay runs; further, and the press is a scroll or a click.</td></tr>
+                <tr><td class="bb-table-key"><code>ForceFallback</code></td><td><code>false</code></td><td>The mouse drags like a finger, with pointer events and the preview: for a preview of your own style, or a web view without HTML5 drag and drop.</td></tr>
+                <tr><td class="bb-table-key"><code>DragClass</code></td><td><code>bit-bortable-drag</code></td><td>The class of the preview that follows a finger, a pen or a <code>ForceFallback</code> mouse.</td></tr>
+                <tr><td class="bb-table-key"><code>Handle</code></td><td></td><td>With <code>touch-action: none</code> on the handle and <code>TouchDelay="0"</code>, a handle that drags at once.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</section>
+
+@code {
+    private IList<string> _longPress = new List<string> { "Apples", "Bread", "Coffee", "Dates", "Eggs" };
+    private IList<string> _handle = new List<string> { "Flour", "Grapes", "Honey", "Ice", "Jam" };
+    private IList<string> _fallback = new List<string> { "Kale", "Lemons", "Milk", "Nuts", "Oats" };
+
+    private int _touchDelay = 200;
+    private int _delay;
+    private int _tolerance = 5;
+
+    private static int Parse(ChangeEventArgs e, int current) => int.TryParse(e.Value?.ToString(), out var v) ? v : current;
+}

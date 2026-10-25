@@ -18,6 +18,8 @@ a 1600 by 1000 page) rather than convenient straight lines, so the numbers refle
 | `SerializationBenchmarks` | Saving and loading 1,000/10,000-stroke documents, encoding/decoding 10,000 points and SVG export. |
 | `RasterBenchmarks` | The built-in .NET rasterizer (used on servers and in tests) on 200/2,000-stroke documents: rendering to pixels alone, and full PNG export including compression. |
 | `HistoryBenchmarks` | Adding 100 strokes and undoing all of them, the cost of a burst of edits; mutation and undo must not copy the document. |
+| `GroupingBenchmarks` | Widening a click on one member to its whole group, and grouping then ungrouping 100 strokes, on 1,000/10,000-stroke documents with groups among them. |
+| `SvgImportBenchmarks` | Importing an SVG of 100/1,000 filled, transformed paths of curves and arcs into editable elements. |
 
 ## Running it
 
@@ -86,3 +88,25 @@ Document of 10,000 strokes, 600,000 points:
 SVG export is the expensive one, and inherently so: 600,000 points become about 35 million characters of path
 data. Most of that memory is the string itself, twice over, because `Export` returns one; the streaming overload
 avoids the second copy for documents this size.
+
+### Grouping
+
+Documents of handwriting strokes with groups of ten among them. These were measured on a busier machine than the
+tables above, so compare them with each other rather than with those.
+
+| Case | 1,000 strokes | 10,000 strokes |
+| --- | ---: | ---: |
+| A click on a member, widened to its group | 7.9 us, 4.9 KB | 108 us, 33 KB |
+| Grouping 100 strokes and ungrouping them | 125 us, 157 KB | 533 us, 305 KB |
+
+Finding a group's members is a pass over the document, which is still well under a millisecond at 10,000 strokes.
+
+### SVG import
+
+| Paths | Time | Allocated |
+| ---: | ---: | ---: |
+| 100 | 382 us | 278 KB |
+| 1,000 | 4.0 ms | 2.6 MB |
+
+Each path is a filled shape of curves and two arcs with its own transform, so this includes parsing the path data,
+converting arcs to curves and building the elements.

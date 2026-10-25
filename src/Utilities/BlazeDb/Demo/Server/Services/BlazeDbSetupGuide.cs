@@ -215,6 +215,8 @@ public static partial class BlazeDbSetupGuide
            each database on one thread.
         5. Writes reach the files on the flush interval; `await db.FlushAsync()` where you need a durability point -
            and before the process exits, which `DisposeAsync` does.
+        6. `Changed` handlers and live queries (`table.Watch`) run on the thread that committed, so a component
+           subscribed to them re-renders through `InvokeAsync(StateHasChanged)`, and unsubscribes when it is disposed.
         """;
 
     private const string StandaloneFiles = """

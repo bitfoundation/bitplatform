@@ -250,6 +250,8 @@ public partial class Balette : ComponentBase, IAsyncDisposable
     {
         _query = query ?? string.Empty;
         await OnQueryUpdatedAsync();
+        // Called from code rather than from one of this component's events, so nothing else renders it - as with
+        // OpenAsync and CloseAsync. The box shows the new query: it differs from what the browser last sent.
         StateHasChanged();
     });
 
@@ -728,6 +730,9 @@ public partial class Balette : ComponentBase, IAsyncDisposable
 
     // ---- Input ------------------------------------------------------------------------------------
 
+    // A binding, not value="@_query" with an oninput handler: that writes the query back into the box on every render,
+    // and on Blazor Server each render arrives after the keys typed since, which it then erases. A binding leaves the
+    // box's text to the browser and writes only a value that differs from what the browser last sent.
     /// <summary>After a key typed into the input: the binding has already put its text in <see cref="_query"/>.</summary>
     private async Task OnInputAsync()
     {

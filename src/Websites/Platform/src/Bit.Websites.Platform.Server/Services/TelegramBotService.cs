@@ -13,12 +13,11 @@ public partial class TelegramBotService
     /// release the agent was connected for is worth reading next to what it reported.
     /// </summary>
     /// <returns>Whether it was delivered, which the agent is told rather than left to assume.</returns>
-    public async Task<bool> SendMcpFeedbackMessage(string title, string report, string? version, string? email, CancellationToken cancellationToken)
+    public async Task<bool> SendMcpFeedbackMessage(string title, string report, string? version, CancellationToken cancellationToken)
     {
         var messageBuilder = new StringBuilder();
 
         messageBuilder.AppendLine($"🤖 *Feedback via MCP* `{EscapeMarkdown(version ?? "-")}`");
-        messageBuilder.AppendLine($"📥 *Email:* `{EscapeMarkdown(string.IsNullOrEmpty(email) ? "-" : email.Trim())}`");
         messageBuilder.AppendLine($"🐞 *{EscapeMarkdown(title)}*");
         messageBuilder.AppendLine($"📜 *Report*: {EscapeMarkdown(report)}");
 

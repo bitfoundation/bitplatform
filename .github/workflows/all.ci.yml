@@ -43,6 +43,10 @@ on:
         description: Brouter solution
         type: boolean
         default: true
+      e2e:
+        description: E2E suites
+        type: boolean
+        default: false
 
 env:
   DOTNET_SYSTEM_CONSOLE_ALLOW_ANSI_COLOR_REDIRECTION: true
@@ -443,45 +447,6 @@ jobs:
       with:
         node-version: 24
 
-    - name: Generate ES2019 based blazor.*.js files for .NET 9
-      run: |
-        git clone https://github.com/dotnet/aspnetcore.git
-        cd aspnetcore
-        git switch release/9.0
-        git submodule update --init --recursive
-        sed -i 's/"target": "ES2022"/"target": "ES2019"/' src/Components/Shared.JS/tsconfig.json
-        npm install
-        npm run-script build
-        cd src/Components/Web.JS
-        npm install
-        npm run-script build:production
-        cd ../../../../
-        mkdir -p src/BlazorES2019/wwwroot.net9/
-        cp aspnetcore/src/Components/Web.JS/dist/Release/blazor.*.js src/BlazorES2019/wwwroot.net9/
-        rm -rf aspnetcore
-
-    - name: Generate ES2019 based blazor.*.js files for .NET 10
-      run: |
-        git clone https://github.com/dotnet/aspnetcore.git
-        cd aspnetcore
-        git switch release/10.0
-        git submodule update --init --recursive
-        sed -i 's/"target": "ES2024"/"target": "ES2019"/' src/Components/Shared.JS/tsconfig.json
-        npm install
-        npm run-script build
-        cd src/Components/Web.JS
-        npm install
-        npm run-script build:production
-        cd ../../../../
-        mkdir -p src/BlazorES2019/wwwroot.net10/
-        cp aspnetcore/src/Components/Web.JS/dist/Release/blazor.*.js src/BlazorES2019/wwwroot.net10/
-        rm -rf aspnetcore
-
-    - name: Build and pack BlazorES2019
-      run: |
-        dotnet build src/BlazorES2019/Bit.BlazorES2019/Bit.BlazorES2019.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
-        dotnet pack src/BlazorES2019/Bit.BlazorES2019/Bit.BlazorES2019.csproj --output ./packages --configuration Release
-
     - name: Build and pack BlazorUI
       run: |
         dotnet build src/BlazorUI/Bit.BlazorUI/Bit.BlazorUI.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
@@ -532,24 +497,6 @@ jobs:
         dotnet build src/Besql/Bit.Besql/Bit.Besql.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
         dotnet pack src/Besql/Bit.Besql/Bit.Besql.csproj --output ./packages --configuration Release
 
-    - name: Build and pack CodeAnalyzers
-      run: |
-        dotnet build src/CodeAnalyzers/Bit.CodeAnalyzers/Bit.CodeAnalyzers.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
-        dotnet pack src/CodeAnalyzers/Bit.CodeAnalyzers/Bit.CodeAnalyzers.csproj --output ./packages --configuration Release
-
-    - name: Build and pack Minifier
-      run: |
-        dotnet build src/Cli/Minifier/Bit.Minifier/Bit.Minifier.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
-        dotnet pack src/Cli/Minifier/Bit.Minifier/Bit.Minifier.csproj --output ./packages --configuration Release
-
-    - name: Build and pack bit CLI
-      run: |
-        dotnet build src/Cli/Bit.Cli/Bit.Cli.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
-        dotnet pack src/Cli/Bit.Cli/Bit.Cli.csproj --output ./packages --configuration Release
-
-    - name: Build SourceGenerators
-      run: dotnet build src/SourceGenerators/Bit.SourceGenerators/Bit.SourceGenerators.csproj --configuration Release
-
     - name: Pack Boilerplate template
       run: dotnet pack src/Templates/Boilerplate/Bit.Boilerplate.ProjectTemplate.csproj --output ./packages --configuration Release
 
@@ -570,44 +517,50 @@ jobs:
     if: ${{ inputs.blazorui }}
     uses: ./.github/workflows/bit.ci.BlazorUI.yml
 
+  blazorui_e2e:
+    name: blazorui e2e
+    if: ${{ inputs.blazorui && inputs.e2e }}
+    uses: ./.github/workflows/bit.ci.BlazorUI.e2e.yml
+
   bswup:
     name: bswup
     if: ${{ inputs.bswup }}
     uses: ./.github/workflows/bit.ci.Bswup.yml
+
+  bswup_e2e:
+    name: bswup e2e
+    if: ${{ inputs.bswup && inputs.e2e }}
+    uses: ./.github/workflows/bit.ci.Bswup.e2e.yml
 
   butil:
     name: butil
     if: ${{ inputs.butil }}
     uses: ./.github/workflows/bit.ci.Butil.yml
 
+  butil_e2e:
+    name: butil e2e
+    if: ${{ inputs.butil && inputs.e2e }}
+    uses: ./.github/workflows/bit.ci.Butil.e2e.yml
+
   brouter:
     name: brouter
     if: ${{ inputs.brouter }}
     uses: ./.github/workflows/bit.ci.Brouter.yml
 
+  brouter_e2e:
+    name: brouter e2e
+    if: ${{ inputs.brouter && inputs.e2e }}
+    uses: ./.github/workflows/bit.ci.Brouter.e2e.yml
+
   besql:
     name: besql
     uses: ./.github/workflows/bit.ci.Besql.yml
 
-  blazores2019:
-    name: blazores2019
-    uses: ./.github/workflows/bit.ci.BlazorES2019.yml
-
-  codeanalyzers:
-    name: codeanalyzers
-    uses: ./.github/workflows/bit.ci.CodeAnalyzers.yml
-
-  minifier:
-    name: minifier
-    uses: ./.github/workflows/bit.ci.Minifier.yml
-
-  cli:
-    name: cli
-    uses: ./.github/workflows/bit.ci.Cli.yml
-
-  sourcegenerators:
-    name: sourcegenerators
-    uses: ./.github/workflows/bit.ci.SourceGenerators.yml
+  toolings:
+    name: toolings
+    uses: ./.github/workflows/all.ci.toolings.yml
+    with:
+      nuget_packages: ${{ inputs.nuget_packages }}
 
   websites:
     name: websites

@@ -2,6 +2,7 @@
 using Bit.Bmage.Annotations;
 using Bit.Bmage.Drawing;
 using Bit.Bmage.Geometry;
+using Bit.Bmage.Layers;
 using Bit.Bmage.Memory;
 using Bit.Bmage.Operations;
 using Bit.Bmage.Operations.Transforms;
@@ -25,16 +26,18 @@ namespace Bit.Bmage.Editing;
 /// queues work faster than it completes.
 /// </para>
 /// <para>
-/// Previews reuse pixels earlier renders computed for the same operation and annotation instances, which relies on
-/// those being immutable, as every built-in one is. A custom operation must not change in place: replace it with a new
-/// instance instead. When something outside the document changes what it renders to, such as a font registered after
-/// text was drawn, call <see cref="Invalidate"/>.
+/// Previews reuse pixels earlier renders computed for the same operation, layer and annotation instances, which relies
+/// on those being immutable, as every built-in one is. A custom operation must not change in place: replace it with a
+/// new instance instead. The same goes for the pixels an image layer draws, which are kept prepared for its pipeline.
+/// When something outside the document changes what it renders to, such as a font registered after text was drawn, or
+/// the pixels of a layer's image, call <see cref="Invalidate"/>.
 /// </para>
 /// </remarks>
 public sealed class ImageEditSession : IDisposable
 {
     private readonly IPixelAllocator _allocator;
     private readonly ImageLimits _limits;
+    private readonly int? _maxDegreeOfParallelism;
     private readonly DocumentRenderer _renderer;
     private readonly Func<ImageBuffer, Size, CancellationToken, ValueTask<ImageBuffer?>>? _proxyScaler;
     private ImageBuffer _original;
@@ -44,6 +47,9 @@ public sealed class ImageEditSession : IDisposable
     // Never disposed: a render that is still running releases it on the way out, and SemaphoreSlim only needs
     // disposing when its wait handle has been used.
     private readonly SemaphoreSlim _renderLock = new(1, 1);
+    // Full renders in flight. They do not take the render lock, so an export never holds up the preview, but they read
+    // the original and the owned images all the same, so a release waits for those already running.
+    private readonly HashSet<Task> _fullRenders = [];
     private bool _disposed;
     // Incremented whenever the source changes, so a render that started on the old source cannot publish its result.
     private int _sourceVersion;
@@ -58,6 +64,8 @@ public sealed class ImageEditSession : IDisposable
     // Counted by Invalidate; a render that finds more than it last saw starts without anything earlier renders kept.
     private int _invalidations;
     private int _invalidationsSeen;
+    // Buffers the documents refer to that the session releases with its source, such as the pixels of image layers.
+    private List<ImageBuffer> _owned = [];
 
     /// <summary>Creates a session that takes ownership of <paramref name="original"/>.</summary>
     public ImageEditSession(ImageBuffer original, ImageEditSessionOptions? options = null)
@@ -66,6 +74,7 @@ public sealed class ImageEditSession : IDisposable
         var o = options ?? new ImageEditSessionOptions();
         _allocator = o.Allocator ?? PooledPixelAllocator.Shared;
         _limits = o.Limits ?? ImageLimits.Default;
+        _maxDegreeOfParallelism = o.MaxDegreeOfParallelism;
         _renderer = new DocumentRenderer(o.TextRasterizer);
         _proxyScaler = o.ProxyScaler;
         MaxProxyDimension = o.MaxProxyDimension;
@@ -233,15 +242,30 @@ public sealed class ImageEditSession : IDisposable
         History.Clear(ImageDocument.Create(image));
         var releaseProxy = oldProxy is not null && !ReferenceEquals(oldProxy, old) ? oldProxy : null;
         var releaseOriginal = disposeExisting && !ReferenceEquals(old, image) ? old : null;
+        var owned = _owned;
+        _owned = [];
         WhenIdle(() =>
         {
             releaseProxy?.Dispose();
             releaseOriginal?.Dispose();
             oldDraft?.Dispose();
+            foreach (var buffer in owned) buffer.Dispose();
             DisposeStaleCaches();
         });
         MarkPreviewStale();
         DocumentChanged?.Invoke(Document);
+    }
+
+    /// <summary>
+    /// Hands the session a buffer its documents refer to, such as the pixels of an image layer, which no layer owns. The
+    /// session releases it once no render reads it: when the session is disposed, or given a new source, which discards
+    /// the history that refers to it.
+    /// </summary>
+    public void Own(ImageBuffer image)
+    {
+        ArgumentNullException.ThrowIfNull(image);
+        ObjectDisposedException.ThrowIf(_disposed, this);
+        _owned.Add(image);
     }
 
     private void MarkPreviewStale() => IsPreviewStale = true;
@@ -337,6 +361,7 @@ public sealed class ImageEditSession : IDisposable
             {
                 Allocator = _allocator,
                 Limits = _limits,
+                MaxDegreeOfParallelism = _maxDegreeOfParallelism,
                 CancellationToken = cts.Token,
             }).ConfigureAwait(false);
             if (!draft) LastPreviewDuration = System.Diagnostics.Stopwatch.GetElapsedTime(started);
@@ -396,7 +421,7 @@ public sealed class ImageEditSession : IDisposable
         {
             if (!ReferenceEquals(document, baseDocument))
             {
-                if (TryRenderOverBase(baseDocument, document, order, version, options.CancellationToken) is { } overlaid) return overlaid;
+                if (TryRenderOverBase(baseDocument, document, order, version, options) is { } overlaid) return overlaid;
             }
             else
             {
@@ -404,11 +429,11 @@ public sealed class ImageEditSession : IDisposable
             }
         }
 
-        var (pixels, shared) = await RenderPipelineAsync(document.Pipeline, source, scale, layer, version, options, keepOutput: order.Count > 0).ConfigureAwait(false);
+        var (pixels, shared) = await RenderLayersAsync(document, source, scale, layer, version, options, keepOutput: order.Count > 0).ConfigureAwait(false);
         var rendered = shared ? pixels.Clone(_allocator) : pixels;
         try
         {
-            _renderer.RenderAnnotations(ForScale(order, scale), rendered, scale, options.CancellationToken);
+            _renderer.RenderAnnotations(ForScale(order, scale), rendered, scale, DocumentRenderer.ContextFor(options));
             return rendered;
         }
         catch
@@ -416,6 +441,43 @@ public sealed class ImageEditSession : IDisposable
             rendered.Dispose();
             throw;
         }
+    }
+
+    /// <summary>
+    /// The pipeline's output with the document's layers composited onto it, and whether a cache still owns it. With
+    /// annotations to draw over it the composite is kept, so moving an annotation never re-composites the layers.
+    /// </summary>
+    private async ValueTask<(ImageBuffer Pixels, bool Shared)> RenderLayersAsync(ImageDocument document, ImageBuffer source, double scale, RenderLayer layer, int version, PipelineExecutionOptions options, bool keepOutput)
+    {
+        var layers = document.Layers;
+        if (layers.Count == 0)
+        {
+            Replace(ref layer.Composite, null);
+            layer.LayerImages.Clear();
+            return await RenderPipelineAsync(document.Pipeline, source, scale, layer, version, options, keepOutput).ConfigureAwait(false);
+        }
+        if (layer.Composite?.Matches(document.Pipeline, layers, version) == true) return (layer.Composite.Pixels, true);
+
+        // The pipeline's output is kept too: editing a layer re-composites the layers without re-running the pipeline.
+        var (pixels, shared) = await RenderPipelineAsync(document.Pipeline, source, scale, layer, version, options, keepOutput: true).ConfigureAwait(false);
+        var composite = shared ? pixels.Clone(_allocator) : pixels;
+        try
+        {
+            // The images image layers draw are kept prepared, so a layer dragged or faded is only blended again.
+            DocumentRenderer.CompositeLayers(scale == 1 ? layers : [.. layers.Select(l => l.ForScale(scale))], composite, options, cache: layer.LayerImages);
+        }
+        catch
+        {
+            composite.Dispose();
+            throw;
+        }
+        if (!keepOutput)
+        {
+            Replace(ref layer.Composite, null);
+            return (composite, false);
+        }
+        Replace(ref layer.Composite, new CompositeCache(document.Pipeline, layers, version, composite));
+        return (composite, true);
     }
 
     /// <summary>
@@ -465,9 +527,9 @@ public sealed class ImageEditSession : IDisposable
     /// Draws the overlay's extra annotations over a kept preview of <paramref name="baseDocument"/>, or returns null
     /// when the overlay does more than add annotations on top.
     /// </summary>
-    private ImageBuffer? TryRenderOverBase(ImageDocument baseDocument, ImageDocument document, IReadOnlyList<Annotation> order, int version, CancellationToken cancellationToken)
+    private ImageBuffer? TryRenderOverBase(ImageDocument baseDocument, ImageDocument document, IReadOnlyList<Annotation> order, int version, PipelineExecutionOptions options)
     {
-        if (!ReferenceEquals(document.Pipeline, baseDocument.Pipeline)) return null;
+        if (!ReferenceEquals(document.Pipeline, baseDocument.Pipeline) || !ReferenceEquals(document.Layers, baseDocument.Layers)) return null;
         if (_overlayBase is not { } overlayBase || !ReferenceEquals(overlayBase.Document, baseDocument) || overlayBase.SourceVersion != version)
         {
             // The first overlay frame: the current preview shows exactly the document without the overlay, or nothing can be reused.
@@ -486,7 +548,7 @@ public sealed class ImageEditSession : IDisposable
         {
             var added = new Annotation[order.Count - below.Count];
             for (var i = 0; i < added.Length; i++) added[i] = order[below.Count + i];
-            _renderer.RenderAnnotations(ForScale(added, ProxyScale), rendered, ProxyScale, cancellationToken);
+            _renderer.RenderAnnotations(ForScale(added, ProxyScale), rendered, ProxyScale, DocumentRenderer.ContextFor(options));
             return rendered;
         }
         catch
@@ -527,6 +589,13 @@ public sealed class ImageEditSession : IDisposable
         if (!ReferenceEquals(old, next)) old?.Pixels.Dispose();
     }
 
+    private static void Replace(ref CompositeCache? cache, CompositeCache? next)
+    {
+        var old = cache;
+        cache = next;
+        if (!ReferenceEquals(old, next)) old?.Pixels.Dispose();
+    }
+
     private void DisposeOverlayBase()
     {
         _overlayBase?.Pixels.Dispose();
@@ -540,6 +609,7 @@ public sealed class ImageEditSession : IDisposable
         {
             if (layer.Stage is { } stage && stage.SourceVersion != _sourceVersion) Replace(ref layer.Stage, null);
             if (layer.Pipeline is { } pipeline && pipeline.SourceVersion != _sourceVersion) Replace(ref layer.Pipeline, null);
+            if (layer.Composite is { } composite && composite.SourceVersion != _sourceVersion) Replace(ref layer.Composite, null);
         }
         if (_overlayBase is { } overlay && overlay.SourceVersion != _sourceVersion) DisposeOverlayBase();
     }
@@ -550,6 +620,8 @@ public sealed class ImageEditSession : IDisposable
         {
             Replace(ref layer.Stage, null);
             Replace(ref layer.Pipeline, null);
+            Replace(ref layer.Composite, null);
+            layer.LayerImages.Clear();
         }
         DisposeOverlayBase();
     }
@@ -559,6 +631,31 @@ public sealed class ImageEditSession : IDisposable
     {
         public RenderCache? Stage;
         public RenderCache? Pipeline;
+        public CompositeCache? Composite;
+        // The images image layers drew in the last composite, shrunk and run through their pipelines.
+        public readonly LayerImageCache LayerImages = new();
+    }
+
+    /// <summary>The pipeline's output with the document's layers composited onto it.</summary>
+    private sealed class CompositeCache(ImagePipeline pipeline, IReadOnlyList<Layer> layers, int sourceVersion, ImageBuffer pixels)
+    {
+        // Operations and layers are immutable, so the same instances in the same order mean the same pixels.
+        private readonly IImageOperation[] _operations = [.. pipeline];
+        private readonly Layer[] _layers = [.. layers];
+
+        public int SourceVersion { get; } = sourceVersion;
+
+        public ImageBuffer Pixels { get; } = pixels;
+
+        public bool Matches(ImagePipeline otherPipeline, IReadOnlyList<Layer> otherLayers, int sourceVersion)
+        {
+            if (sourceVersion != SourceVersion || otherPipeline.Count != _operations.Length || otherLayers.Count != _layers.Length) return false;
+            for (var i = 0; i < _operations.Length; i++)
+                if (!ReferenceEquals(otherPipeline[i], _operations[i])) return false;
+            for (var i = 0; i < _layers.Length; i++)
+                if (!ReferenceEquals(otherLayers[i], _layers[i])) return false;
+            return true;
+        }
     }
 
     /// <summary>Pixels a pipeline's first operations produced, valid for the same operations on the same source.</summary>
@@ -598,16 +695,50 @@ public sealed class ImageEditSession : IDisposable
     /// Renders the final image at full resolution. Slower than the preview and allocates a full-size buffer, so call it
     /// on export rather than on every change. The caller owns the returned buffer.
     /// </summary>
-    public ValueTask<ImageBuffer> RenderFullAsync(IProgress<double>? progress = null, CancellationToken cancellationToken = default)
+    public async ValueTask<ImageBuffer> RenderFullAsync(IProgress<double>? progress = null, CancellationToken cancellationToken = default)
     {
         ObjectDisposedException.ThrowIf(_disposed, this);
-        return _renderer.RenderAsync(Document, _original, new PipelineExecutionOptions
+        var done = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        lock (_fullRenders) _fullRenders.Add(done.Task);
+        try
         {
-            Allocator = _allocator,
-            Limits = _limits,
-            CancellationToken = cancellationToken,
-            Progress = progress,
-        });
+            // Registered before anything is read: a release that started earlier has already seen the session disposed.
+            ObjectDisposedException.ThrowIf(_disposed, this);
+            return await _renderer.RenderAsync(Document, _original, new PipelineExecutionOptions
+            {
+                Allocator = _allocator,
+                Limits = _limits,
+                MaxDegreeOfParallelism = _maxDegreeOfParallelism,
+                CancellationToken = cancellationToken,
+                Progress = progress,
+            }).ConfigureAwait(false);
+        }
+        finally
+        {
+            lock (_fullRenders) _fullRenders.Remove(done.Task);
+            done.SetResult();
+        }
+    }
+
+    /// <summary>
+    /// The source image at the resolution previews render at, without any edit: what a before and after comparison
+    /// shows as before. The session owns it; it stays valid until the source is replaced or the session disposed. No
+    /// cache of rendered edits is touched, so switching back to the edit costs nothing.
+    /// </summary>
+    /// <exception cref="OperationCanceledException">The caller cancelled, or the session was disposed meanwhile.</exception>
+    public async ValueTask<ImageBuffer> GetSourcePreviewAsync(CancellationToken cancellationToken = default)
+    {
+        ObjectDisposedException.ThrowIf(_disposed, this);
+        await _renderLock.WaitAsync(cancellationToken).ConfigureAwait(false);
+        try
+        {
+            if (_disposed) throw new OperationCanceledException(cancellationToken);
+            return await EnsureProxyAsync(cancellationToken).ConfigureAwait(false);
+        }
+        finally
+        {
+            _renderLock.Release();
+        }
     }
 
     /// <summary>Maps a point in preview coordinates to the full-resolution output coordinates.</summary>
@@ -706,7 +837,7 @@ public sealed class ImageEditSession : IDisposable
             scaled.Dispose();
         }
         return new ResizeOperation(size.Width, size.Height, ResizeMode.Stretch, ResamplingFilter.Auto)
-            .Apply(original, new OperationContext(_allocator, _limits, cancellationToken));
+            .Apply(original, new OperationContext(_allocator, _limits, cancellationToken, maxDegreeOfParallelism: _maxDegreeOfParallelism));
     }
 
     private void DisposePreview()
@@ -731,18 +862,22 @@ public sealed class ImageEditSession : IDisposable
         var original = _original;
         var draft = _draftSource;
         _draftSource = null;
+        var owned = _owned;
+        _owned = [];
         WhenIdle(() =>
         {
             releaseProxy?.Dispose();
             original.Dispose();
             draft?.Dispose();
             DisposeCaches();
+            foreach (var buffer in owned) buffer.Dispose();
         });
     }
 
     /// <summary>
-    /// Releases buffers once no render is reading them. A cancelled render only notices at its next check, and
-    /// returning its input to the pool before then would let another image overwrite the pixels mid-read.
+    /// Releases buffers once no render is reading them: the preview render, if one runs, and every full render already
+    /// running. A cancelled render only notices at its next check, and returning its input to the pool before then would
+    /// let another image overwrite the pixels mid-read.
     /// </summary>
     /// <remarks>
     /// Never waits synchronously: <see cref="SemaphoreSlim.Wait(int)"/> is unsupported on the browser, and .NET 11's
@@ -753,6 +888,9 @@ public sealed class ImageEditSession : IDisposable
 
     private async Task ReleaseAfterRenderAsync(Action release)
     {
+        Task[] reading;
+        lock (_fullRenders) reading = [.. _fullRenders];
+        if (reading.Length > 0) await Task.WhenAll(reading).ConfigureAwait(false);
         await _renderLock.WaitAsync().ConfigureAwait(false);
         try { release(); }
         finally { _renderLock.Release(); }
@@ -779,6 +917,16 @@ public sealed class ImageEditSessionOptions
 
     /// <summary>Rasteriser used for text annotations.</summary>
     public ITextRasterizer? TextRasterizer { get; set; }
+
+    /// <summary>
+    /// The most threads one operation may spread its rows over while rendering, or null for
+    /// <see cref="OperationContext.DefaultMaxDegreeOfParallelism"/>.
+    /// </summary>
+    public int? MaxDegreeOfParallelism
+    {
+        get;
+        set => field = value is < 1 ? throw new ArgumentOutOfRangeException(nameof(MaxDegreeOfParallelism), "At least one thread is needed.") : value;
+    }
 
     /// <summary>
     /// Builds the working proxy, or returns null to leave it to the managed resampler. The editor supplies the

@@ -3,47 +3,130 @@
 <PageTitle>Broken Nodes · Blow</PageTitle>
 
 <ExampleScaffold Title="Broken Nodes"
-                 Summary="Edges that reference missing nodes or handles are simply skipped instead of throwing. Toggle the missing node to see its edges appear and disappear.">
+                 Summary="Edges built from real data can point at things that are not there. Rather than throw, the canvas skips an edge whose node is missing, draws an edge to a missing handle at the middle of the node's side, and draws only the first of two edges sharing an id. What counts as a mistake is reported once through OnError.">
     <Toolbar>
-        <button class="btn btn-secondary" @onclick="ToggleGhost">@(_hasGhost ? "Remove" : "Add") node 3</button>
+        <label>node 3:
+            <select @onchange="OnNode3Change">
+                <option value="missing" selected>missing</option>
+                <option value="hidden">hidden</option>
+                <option value="present">present</option>
+            </select>
+        </label>
+        <label><input type="checkbox" checked="@_missingHandle" @onchange="ToggleMissingHandle" /> e1-2 names a missing handle</label>
+        <label><input type="checkbox" checked="@_duplicate" @onchange="ToggleDuplicate" /> add a second edge with the id e2-4</label>
     </Toolbar>
     <ChildContent>
-        <BlowCanvas Nodes="_nodes" Edges="_edges" FitViewOnInit="true">
-            <BlowBackground />
+        <BlowCanvas @ref="_flow" Nodes="_nodes" Edges="_edges" FitViewOnInit="true" OnError="OnError">
+            <BlowBackground Variant="BlowBackgroundVariant.Dots" Gap="16" />
             <BlowControls />
         </BlowCanvas>
     </ChildContent>
+    <Footer>
+        <strong>Reported through OnError</strong>
+        @if (_errors.Count == 0)
+        {
+            <div>Nothing reported.</div>
+        }
+        @foreach (var error in _errors)
+        {
+            <div><code>@error.Code</code> @error.Message</div>
+        }
+    </Footer>
+    <TryIt>
+        <li>At the start node 3 is <strong>missing</strong>: edge e3-2 names a node that is not in the list, so it is not drawn, nothing breaks, and the footer shows <code>missing-edge-endpoint</code>.</li>
+        <li>Set node 3 to <strong>present</strong>: the node joins the list and its edge to node 2's right-hand handle appears.</li>
+        <li>Set node 3 to <strong>hidden</strong>: it stays in the list but is not drawn, and neither is its edge - and nothing is reported, since hiding a node is not a mistake.</li>
+        <li>Tick <strong>e1-2 names a missing handle</strong>: the edge leaves node 2's left-hand handle and ends at the middle of its top side, between the two real handles. Nothing is reported for this one.</li>
+        <li>Tick <strong>add a second edge with the id e2-4</strong>: the new edge, from node 1 to node 4, never appears - only the first edge with an id is drawn - and <code>duplicate-edge-id</code> is reported.</li>
+        <li>Go back to a broken state you have seen: the footer does not repeat it, because each problem is reported once for the lifetime of the canvas.</li>
+    </TryIt>
+    <HowItWorks>
+        <li><code>OnError</code> receives a <code>BlowError</code>: a stable <code>Code</code> (the <code>BlowErrorCode</code> constants) and a <code>Message</code> naming the ids. It is raised after the render that found the problem, never during it.</li>
+        <li>An edge whose <code>Source</code> or <code>Target</code> names no node is not drawn and is reported as <code>missing-edge-endpoint</code>. An edge to a node with <code>Hidden = true</code> is not drawn either, and is not an error.</li>
+        <li>An edge's <code>TargetHandle</code> and <code>SourceHandle</code> are matched against the ids of the node's handles. With no match, the end is anchored at the middle of the node's <code>TargetPosition</code> or <code>SourcePosition</code> side - where it is also drawn before the node's first measurement - and no error is raised.</li>
+        <li>Node 2 declares its handles through <code>Ports</code>: the built-in node draws one handle per port, and the two target ports sharing the top side are spread a third and two thirds along it, which leaves the fallback anchor visible between them.</li>
+        <li>Of two edges with the same <code>Id</code>, only the first in the list is drawn (<code>duplicate-edge-id</code>); nodes behave the same way (<code>duplicate-node-id</code>). The Diagnostics example breaks a graph in the other ways <code>OnError</code> reports.</li>
+    </HowItWorks>
 </ExampleScaffold>
 
 @code {
+    private BlowCanvas? _flow;
     private List<BlowNode> _nodes = [];
     private List<BlowEdge> _edges = [];
-    private bool _hasGhost;
+    private readonly List<BlowError> _errors = [];
+    private bool _missingHandle;
+    private bool _duplicate;
 
-    protected override void OnInitialized() => Build();
+    // Kept by reference, so the controls can take them out of the lists and put them back.
+    private BlowNode _node3 = default!;
+    private BlowEdge _e12 = default!;
+    private BlowEdge _e32 = default!;
+    private BlowEdge _duplicateEdge = default!;
 
-    private void Build()
+    protected override void OnInitialized()
     {
+        _node3 = new BlowNode { Id = "3", Type = "input", Label = "Node 3", Position = new(260, 0) };
+
+        // Node 3 starts out missing from the list, so e3-2 names a node that is not there.
         _nodes =
         [
-            new BlowNode { Id = "1", Type = "input", Label = "Node 1", Position = new(100, 50) },
-            new BlowNode { Id = "2", Label = "Node 2", Position = new(100, 200) },
+            new BlowNode { Id = "1", Type = "input", Label = "Node 1", Position = new(0, 0) },
+            // Two named target handles, a third and two thirds of the way along the top, leave the middle of that side
+            // empty - which is where an edge naming a handle the node does not have ends up.
+            new BlowNode
+            {
+                Id = "2",
+                Label = "Node 2",
+                Position = new(130, 150),
+                Width = 180,
+                Ports =
+                [
+                    new BlowPort { Id = "a", Type = BlowHandleType.Target, Label = "a" },
+                    new BlowPort { Id = "b", Type = BlowHandleType.Target, Label = "b" },
+                    new BlowPort { Type = BlowHandleType.Source },
+                ],
+            },
+            new BlowNode { Id = "4", Type = "output", Label = "Node 4", Position = new(180, 300) },
         ];
-        if (_hasGhost)
-            _nodes.Add(new BlowNode { Id = "3", Type = "output", Label = "Node 3", Position = new(320, 200) });
 
-        // e1-3 / e3-2 reference node "3" which may not exist; they are skipped gracefully.
-        _edges =
-        [
-            new BlowEdge { Id = "e1-2", Source = "1", Target = "2" },
-            new BlowEdge { Id = "e1-3", Source = "1", Target = "3" },
-            new BlowEdge { Id = "e3-2", Source = "3", Target = "2", TargetHandle = "does-not-exist" },
-        ];
+        _e12 = new BlowEdge { Id = "e1-2", Source = "1", Target = "2", TargetHandle = "a" };
+        _e32 = new BlowEdge { Id = "e3-2", Source = "3", Target = "2", TargetHandle = "b" };
+        _edges = [_e12, _e32, new BlowEdge { Id = "e2-4", Source = "2", Target = "4" }];
+
+        // Shares its id with the edge from node 2 to node 4, which comes first in the list.
+        _duplicateEdge = new BlowEdge { Id = "e2-4", Source = "1", Target = "4" };
     }
 
-    private void ToggleGhost()
+    private void OnError(BlowError error) => _errors.Add(error);
+
+    private async Task OnNode3Change(ChangeEventArgs e)
     {
-        _hasGhost = !_hasGhost;
-        Build();
+        var state = e.Value?.ToString();
+
+        _nodes.Remove(_node3);
+        if (state != "missing") _nodes.Add(_node3);
+        _node3.Hidden = state == "hidden";
+
+        // Deleting node 3 on the canvas takes its edge with it; the edge is put back so every state shows its effect.
+        if (!_edges.Contains(_e32)) _edges.Add(_e32);
+
+        // The view was fitted without node 3; make room for it. The canvas reads the same list, so it already has it.
+        if (state == "present" && _flow is not null) await _flow.FitViewAsync(300);
+    }
+
+    private void ToggleMissingHandle(ChangeEventArgs e)
+    {
+        _missingHandle = (bool)e.Value!;
+
+        // Node 2 has handles "a" and "b" but no "c".
+        _e12.TargetHandle = _missingHandle ? "c" : "a";
+    }
+
+    private void ToggleDuplicate(ChangeEventArgs e)
+    {
+        _duplicate = (bool)e.Value!;
+
+        if (_duplicate) _edges.Add(_duplicateEdge);
+        else _edges.Remove(_duplicateEdge);
     }
 }

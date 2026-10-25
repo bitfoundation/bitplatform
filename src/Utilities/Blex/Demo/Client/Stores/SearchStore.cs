@@ -45,18 +45,30 @@ public partial class SearchStore
     {
         Query = "";
         Results = [];
-        Keystrokes = 0;
-        RequestsStarted = 0;
     }
 
     // ---- Debounced variant -------------------------------------------------------------------
     // Same search, gated behind a quiet period. Latest still matters: once a request does get
-    // through, a later one that also gets through supersedes it.
+    // through, a later one that also gets through supersedes it. Its query and results are its
+    // own, so the two demos never show - or clear - each other's.
 
+    [BlexStateAttribute] private string _typeAheadQuery = "";
+    [BlexStateAttribute] private IReadOnlyList<string> _typeAheadResults = [];
     [BlexStateAttribute] private int _keystrokes;
     [BlexStateAttribute] private int _requestsStarted;
 
+    [BlexComputedAttribute] private bool ComputeHasTypeAheadResults() => TypeAheadResults.Count > 0;
+
     [BlexActionAttribute] private void OnCountKeystroke() => Keystrokes++;
+
+    [BlexActionAttribute]
+    private void OnClearTypeAhead()
+    {
+        TypeAheadQuery = "";
+        TypeAheadResults = [];
+        Keystrokes = 0;
+        RequestsStarted = 0;
+    }
 
     [BlexEffectAttribute(DebounceMilliseconds = 300, Concurrency = BlexEffectConcurrency.Latest)]
     private async Task OnTypeAhead(string query, CancellationToken ct)
@@ -64,14 +76,14 @@ public partial class SearchStore
         // Reached only by the invocation that survived the 300 ms gate, so this counter is the
         // honest count of requests the service would have seen.
         RequestsStarted++;
-        Query = query;
+        TypeAheadQuery = query;
 
         await Task.Delay(700, ct);
 
         if (SimulateFailure)
             throw new InvalidOperationException($"The search service is unavailable (simulated) for '{query}'.");
 
-        Results = string.IsNullOrWhiteSpace(query)
+        TypeAheadResults = string.IsNullOrWhiteSpace(query)
             ? []
             : [.. Catalog.Where(c => c.Contains(query, StringComparison.OrdinalIgnoreCase))];
     }

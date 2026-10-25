@@ -22,8 +22,9 @@
             <p class="bb-hero-sub">
                 Declare what can be dragged and where it can go - <code>BdndDraggable</code>,
                 <code>BdndDropTarget</code>, <code>BdndDragLayer</code>, <code>BdndDragHandle</code> - and render
-                from the state they hand you. Typed items matched by type, custom drag previews, handles, nesting
-                and native file drops, on the browser's own HTML5 drag and drop, with the drag state in C#.
+                from the state they hand you. Typed items matched by type, custom drag previews, handles, nesting,
+                insertion indicators and native file drops - with the mouse, a finger, a pen or the keyboard, and
+                the drag state in C#.
             </p>
             <pre class="bb-code bb-hero-install">dotnet add package Bit.Bdnd</pre>
             <div class="bb-hero-actions">
@@ -41,16 +42,7 @@
                     <span class="bb-browser-dots" aria-hidden="true"><i></i><i></i><i></i></span>
                     <span class="bb-browser-url">Board.razor</span>
                 </div>
-                <pre class="bb-code">&lt;<span class="k">BdndDraggable</span> TItem=<span class="s">"Card"</span> Type=<span class="s">"card"</span> Item=<span class="s">"card"</span>&gt;
-    …
-&lt;/<span class="k">BdndDraggable</span>&gt;
-
-&lt;<span class="k">BdndDropTarget</span> TItem=<span class="s">"Card"</span> Accept=<span class="s">"card"</span> OnDrop=<span class="s">"Archive"</span>&gt;
-    …
-&lt;/<span class="k">BdndDropTarget</span>&gt;
-
-<span class="k">private void</span> Archive(BdndDropEventArgs&lt;Card&gt; e)
-    =&gt; _cards.Remove(e.Item!);</pre>
+                <CodeBlock Code="@HeroCode" />
                 <BdndProvider>
                     <div class="home-hero-live">
                         <div class="home-hero-cards">
@@ -85,6 +77,7 @@
     <section class="bb-proof">
         <div><strong>React DnD's model</strong><span>items, types, monitors and drop results</span></div>
         <div><strong>Drag state in C#</strong><span>the browser layer only does what C# cannot</span></div>
+        <div><strong>Every input</strong><span>mouse, touch, pen and keyboard, with screen-reader announcements</span></div>
         <div><strong>Native OS drags</strong><span>files, text, links and HTML</span></div>
         <div><strong>Every hosting model</strong><span>WebAssembly, Server, Web App and Hybrid</span></div>
     </section>
@@ -136,6 +129,15 @@
                 <a href="sortable/simple" class="btn btn-outline">Sortable →</a>
             </section>
             <section class="bb-card">
+                <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Drop indicators</h3>
+                <p class="bb-card-desc">
+                    A target with <code>Edges</code> reports the edge a drag is closest to - the line that shows
+                    where the item lands - and <code>BdndList</code> turns it into the move, within a list or across
+                    lists, in grids, trees and virtualized lists.
+                </p>
+                <a href="sortable/indicators" class="btn btn-outline">Drop indicators →</a>
+            </section>
+            <section class="bb-card">
                 <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Nesting</h3>
                 <p class="bb-card-desc">
                     Nested sources drag the innermost one; nested targets report <code>IsOver</code> for every
@@ -147,11 +149,29 @@
             <section class="bb-card">
                 <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Native drags</h3>
                 <p class="bb-card-desc">
-                    Accept files from the desktop, and text, links and HTML from any page, with
-                    <code>BdndNativeTypes</code> - read in <code>OnNativeDrop</code> while the browser still lets
-                    them be read.
+                    Accept files from the desktop - streaming their contents, opening up folders, limited to the
+                    types and count you allow - and text, links and HTML from any page, with
+                    <code>BdndNativeTypes</code> and <code>OnNativeDrop</code>.
                 </p>
                 <a href="other/native-files" class="btn btn-outline">Native files →</a>
+            </section>
+            <section class="bb-card">
+                <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Touch and pen</h3>
+                <p class="bb-card-desc">
+                    Most touch browsers raise no HTML5 drag events, so touch and pen drag through pointer events: a
+                    press-and-hold that leaves swipes to scroll, a copy that follows the finger and auto-scrolling.
+                    <code>PointerDrag="All"</code> drags the mouse the same way.
+                </p>
+                <a href="customize/pointer" class="btn btn-outline">Touch and pointer drags →</a>
+            </section>
+            <section class="bb-card">
+                <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Keyboard and screen readers</h3>
+                <p class="bb-card-desc">
+                    Every draggable can be picked up with <kbd>Space</kbd>, moved between the targets that can take
+                    it with the arrow keys and dropped with <kbd>Space</kbd>, while a live region tells screen
+                    readers what happens - in words you can translate.
+                </p>
+                <a href="accessibility/keyboard" class="btn btn-outline">Keyboard dragging →</a>
             </section>
         </div>
     </section>
@@ -172,11 +192,10 @@
                     </p>
                     <a href="getting-started">Getting started →</a>
                 </div>
-                <pre class="bb-code">builder.Services.AddBitBdndServices();   <span class="c">// Program.cs</span>
-
-&lt;<span class="k">BdndProvider</span>&gt;
-    …draggables and drop targets…
-&lt;/<span class="k">BdndProvider</span>&gt;</pre>
+                <div class="home-code-stack">
+                    <CodeBlock Language="csharp" Code="@RegisterCode" />
+                    <CodeBlock Code="@ProviderCode" />
+                </div>
             </div>
             <div class="bb-walkthrough-row">
                 <div class="bb-walkthrough-copy">
@@ -188,14 +207,7 @@
                     </p>
                     <a href="dustbin/multiple">Multiple targets →</a>
                 </div>
-                <pre class="bb-code">&lt;<span class="k">BdndDraggable</span> TItem=<span class="s">"Box"</span> Type=<span class="s">"box"</span> Item=<span class="s">"box"</span> Context=<span class="s">"drag"</span>&gt;
-    &lt;<span class="k">div</span> style=<span class="s">"opacity: @@(drag.IsDragging ? 0.4 : 1)"</span>&gt;@@box.Name&lt;/<span class="k">div</span>&gt;
-&lt;/<span class="k">BdndDraggable</span>&gt;
-
-&lt;<span class="k">BdndDropTarget</span> TItem=<span class="s">"Box"</span> AcceptTypes=<span class="s">"@@(["box", "crate"])"</span>
-                OnDrop=<span class="s">"Store"</span> Context=<span class="s">"drop"</span>&gt;
-    &lt;<span class="k">div</span> class=<span class="s">"bin @@(drop.CanDrop ? "ready" : "")"</span>&gt;Drop here&lt;/<span class="k">div</span>&gt;
-&lt;/<span class="k">BdndDropTarget</span>&gt;</pre>
+                <CodeBlock Code="@SourceAndTargetCode" />
             </div>
             <div class="bb-walkthrough-row">
                 <div class="bb-walkthrough-copy">
@@ -208,12 +220,7 @@
                     </p>
                     <a href="dustbin/copy-or-move">Copy or move →</a>
                 </div>
-                <pre class="bb-code">&lt;<span class="k">BdndDraggable</span> TItem=<span class="s">"Box"</span> Type=<span class="s">"box"</span> Item=<span class="s">"box"</span> OnEnd=<span class="s">"Ended"</span>&gt;…&lt;/<span class="k">BdndDraggable</span>&gt;
-
-<span class="k">private void</span> Ended(BdndDragEndContext&lt;Box&gt; e)
-{
-    <span class="k">if</span> (e.DidDrop) _palette.Remove(e.Item!);   <span class="c">// e.DropResult: what the target set</span>
-}</pre>
+                <CodeBlock Code="@OutcomeCode" />
             </div>
         </div>
     </section>
@@ -240,6 +247,8 @@
                     <tr><td>Only the innermost target</td><td><code>isOver({ shallow: true })</code></td><td><code>IsOverShallow</code></td></tr>
                     <tr><td>Your own preview</td><td><code>getEmptyImage()</code> and <code>useDragLayer</code></td><td><code>UseCustomDragLayer</code> and <code>&lt;BdndDragLayer&gt;</code></td></tr>
                     <tr><td>Files from the desktop</td><td><code>NativeTypes.FILE</code> in <code>drop</code></td><td><code>BdndNativeTypes.File</code> in <code>OnNativeDrop</code></td></tr>
+                    <tr><td>Touch screens</td><td><code>TouchBackend</code>, a backend of its own</td><td>Built in: touch and pen drag through pointer events (<code>PointerDrag</code>)</td></tr>
+                    <tr><td>The keyboard</td><td>Not built in</td><td>Built in: <kbd>Space</kbd>, the arrow keys, <kbd>Space</kbd> - announced to screen readers</td></tr>
                 </tbody>
             </table>
         </div>
@@ -289,23 +298,39 @@
                 <p>
                     Any interactive one, on .NET 8, 9 and 10: WebAssembly is the best fit, since every
                     <code>dragover</code> is handled without a network round trip; Server, Auto and Hybrid work the
-                    same, a round trip later. Prerendered markup shows the idle state and starts working once the
-                    page is interactive.
+                    same, a round trip later - the <a href="hosting/server-check">Blazor Server check</a> page drags
+                    over a SignalR circuit. Prerendered markup shows the idle state and starts working once the page
+                    is interactive.
                 </p>
             </details>
             <details>
                 <summary>Does it work on touch screens?</summary>
                 <p>
-                    Like React DnD's HTML5 backend, Bdnd has no touch backend: it needs a pointer that raises HTML5
-                    drag events - a mouse, a pen or a trackpad.
+                    Yes. Most touch browsers never turn a touch into an HTML5 drag, so Bdnd drags touch and pen
+                    through pointer events of its own: a finger that rests on a draggable for a moment
+                    (<code>TouchDelay</code>, 250 ms) picks it up, so a swipe across a list still scrolls; a copy of the
+                    item follows the finger, and the container under it scrolls near its edges. The mouse keeps the
+                    browser's own drag and drop - or set <code>PointerDrag="All"</code> for the same pointer drag
+                    everywhere.
+                </p>
+            </details>
+            <details>
+                <summary>Can it be used without a mouse?</summary>
+                <p>
+                    Yes. Every draggable is focusable and can be picked up with <kbd>Space</kbd> or
+                    <kbd>Enter</kbd>, moved between the drop targets that can take it with the arrow keys, and dropped
+                    with <kbd>Space</kbd> or cancelled with <kbd>Escape</kbd>. A live region tells screen readers what
+                    happens, in texts you can reword or translate through <code>BdndAnnouncements</code>.
                 </p>
             </details>
             <details>
                 <summary>Can I read the contents of a dropped file?</summary>
                 <p>
-                    During a drop the browser exposes only a file's name, size and MIME type, and that is what
-                    <code>OnNativeDrop</code> receives. To read the contents, use an <code>InputFile</code> - an
-                    invisible one layered over the drop zone, for instance - or your own interop.
+                    Yes. Every dropped file is a <code>BdndNativeFile</code> - its name, size, MIME type and
+                    last-modified date - and <code>OpenReadStreamAsync</code> streams its contents from the browser,
+                    over the circuit on Blazor Server, up to the size you allow. A dropped folder opens up into the
+                    files inside it with <code>ExpandDirectories</code>, and <code>AcceptFileTypes</code> and
+                    <code>MaxFiles</code> limit what a drop hands over.
                 </p>
             </details>
             <details>
@@ -350,4 +375,62 @@
         _cards.AddRange(Board);
         _archived = 0;
     }
+
+    // The snippets the page shows, coloured by CodeBlock.
+
+    private const string HeroCode = """
+        @foreach (var card in _cards)
+        {
+            <BdndDraggable TItem="Card" Type="card" Item="card">
+                …
+            </BdndDraggable>
+        }
+
+        <BdndDropTarget TItem="Card" Accept="card" OnDrop="Archive">
+            …
+        </BdndDropTarget>
+
+        @code {
+            private void Archive(BdndDropEventArgs<Card> e)
+                => _cards.Remove(e.Item!);
+        }
+        """;
+
+    private const string RegisterCode = """
+        builder.Services.AddBitBdndServices();   // Program.cs
+        """;
+
+    private const string ProviderCode = """
+        <BdndProvider>
+            …draggables and drop targets…
+        </BdndProvider>
+        """;
+
+    private const string SourceAndTargetCode = """
+        @foreach (var box in _boxes)
+        {
+            <BdndDraggable TItem="Box" Type="box" Item="box" Context="drag">
+                <div style="opacity: @(drag.IsDragging ? 0.4 : 1)">@box.Name</div>
+            </BdndDraggable>
+        }
+
+        <BdndDropTarget TItem="Box" AcceptTypes="@(["box", "crate"])"
+                        OnDrop="Store" Context="drop">
+            <div class="bin @(drop.CanDrop ? "ready" : "")">Drop here</div>
+        </BdndDropTarget>
+        """;
+
+    private const string OutcomeCode = """
+        @foreach (var box in _palette)
+        {
+            <BdndDraggable TItem="Box" Type="box" Item="box" OnEnd="Ended">…</BdndDraggable>
+        }
+
+        @code {
+            private void Ended(BdndDragEndContext<Box> e)
+            {
+                if (e.DidDrop) _palette.Remove(e.Item!);   // e.DropResult: what the target set
+            }
+        }
+        """;
 }

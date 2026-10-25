@@ -1,12 +1,14 @@
 name: bit platform CI - BlazeDb E2E
 
-# The demo app in Chromium: OPFS persistence across reloads, the Web Lock election between tabs, the browser modules
-# (OPFS, IndexedDB, WebCrypto, BroadcastChannel) and every demo page, against the Release build that ships. It takes
-# far longer than the build-and-unit pipeline (bit.ci.BlazeDb.yml), so it runs only when started by hand. See
-# src/Utilities/BlazeDb/Tests/Bit.BlazeDb.Tests.E2E/README.md for what the suite proves and how to run it locally.
+# The demo app in Chromium, Firefox and WebKit: OPFS persistence across reloads, the Web Lock election between tabs, the
+# browser modules (OPFS, IndexedDB, WebCrypto, BroadcastChannel), every demo page and every button on it, against the
+# demo published the way it ships. It takes far longer than the build-and-unit pipeline (bit.ci.BlazeDb.yml), so it runs
+# only when started by hand. See src/Utilities/BlazeDb/Tests/Bit.BlazeDb.Tests.E2E/README.md for what the suite proves
+# and how to run it locally.
 
 on:
   workflow_dispatch:
+  workflow_call:
 
 env:
   DOTNET_SYSTEM_CONSOLE_ALLOW_ANSI_COLOR_REDIRECTION: true
@@ -17,8 +19,13 @@ permissions:
 jobs:
 
   e2e:
-    name: BlazeDb E2E (Chromium)
+    name: BlazeDb E2E (${{ matrix.browser }})
     runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      matrix:
+        browser: [chromium, firefox, webkit]
 
     steps:
 
@@ -36,25 +43,50 @@ jobs:
       with:
         node-version: 24
 
-    - name: Build the demo and the E2E suite
-      run: |
-        dotnet build src/Utilities/BlazeDb/Demo/Server/Bit.BlazeDb.Demo.Server.csproj -c Release
-        dotnet build src/Utilities/BlazeDb/Tests/Bit.BlazeDb.Tests.E2E/Bit.BlazeDb.Tests.E2E.csproj -c Release
+    - name: Install wasm-tools
+      run: cd src && dotnet workload install wasm-tools
 
-    - name: Install Playwright Chromium
-      run: pwsh src/Utilities/BlazeDb/Tests/Bit.BlazeDb.Tests.E2E/bin/Release/net10.0/playwright.ps1 install --with-deps chromium
+    # The tests drive the demo published the way blazedb.demo.cd.yml publishes it, not a build output: only a publish
+    # trims the WebAssembly client, and what the trimming breaks - a type or a member something reads by reflection -
+    # works in every build and fails only there.
+    - name: Publish the demo
+      run: dotnet publish src/Utilities/BlazeDb/Demo/Server/Bit.BlazeDb.Demo.Server.csproj -c Release -o demo -p:InvariantGlobalization=true
+
+    - name: Build the E2E suite
+      run: dotnet build src/Utilities/BlazeDb/Tests/Bit.BlazeDb.Tests.E2E/Bit.BlazeDb.Tests.E2E.csproj -c Release
+
+    - name: Install Playwright ${{ matrix.browser }}
+      run: pwsh src/Utilities/BlazeDb/Tests/Bit.BlazeDb.Tests.E2E/bin/Release/net10.0/playwright.ps1 install --with-deps ${{ matrix.browser }}
+
+    # localhost rather than 127.0.0.1: OPFS, Web Locks and WebCrypto exist only in a secure context, which a browser
+    # grants http://localhost but not every loopback address spelled as an IP.
+    - name: Start the published demo
+      run: |
+        cd demo
+        nohup dotnet Bit.BlazeDb.Demo.Server.dll --urls http://localhost:5000 > ../demo.log 2>&1 &
+        for attempt in $(seq 1 60); do
+          curl --silent --fail --output /dev/null http://localhost:5000/ && exit 0
+          sleep 2
+        done
+        cat ../demo.log
+        exit 1
 
     - name: Run E2E tests
+      env:
+        BLAZEDB_E2E_BASE_URL: http://localhost:5000
+        BLAZEDB_E2E_BROWSER: ${{ matrix.browser }}
       # Run from inside src so src/global.json's Microsoft.Testing.Platform runner setting applies.
       run: >
         cd src/Utilities/BlazeDb/Tests/Bit.BlazeDb.Tests.E2E &&
         dotnet test -c Release --no-build
-        --report-trx --report-trx-filename blazedb-e2e.trx
+        --report-trx --report-trx-filename blazedb-e2e-${{ matrix.browser }}.trx
 
     - name: Upload test results
       if: always()
       uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
       with:
-        name: blazedb-e2e
-        path: '**/blazedb-e2e.trx'
+        name: blazedb-e2e-${{ matrix.browser }}
+        path: |
+          **/blazedb-e2e-${{ matrix.browser }}.trx
+          demo.log
         if-no-files-found: ignore

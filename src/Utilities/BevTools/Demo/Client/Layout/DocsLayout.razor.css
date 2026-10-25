@@ -209,6 +209,35 @@
     height: 15px;
 }
 
+/* The drawer's close button, in the panel's top corner beside its title. Only the narrow-width
+   rules below show it: on a wide screen the panel is a column, and there is nothing to close. */
+.bb-docs-close {
+    display: none;
+    position: absolute;
+    top: .75rem;
+    inset-inline-end: .75rem;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    border: 1px solid transparent;
+    border-radius: var(--bb-radius);
+    background: transparent;
+    color: var(--bb-text-muted);
+    cursor: pointer;
+}
+
+.bb-docs-close:hover {
+    background: var(--bb-surface-hover);
+    color: var(--bb-text);
+}
+
+.bb-docs-close svg {
+    width: 18px;
+    height: 18px;
+}
+
 /* The drawer's backdrop only exists at the widths where there is a drawer. It is rendered
    whenever the panel is open, so it needs this floor for the case where the reader opens the
    panel on a phone and then widens the window past the breakpoint. */
@@ -273,12 +302,15 @@
         display: inline-flex;
     }
 
+    /* Stacked under the header (1000) and over the Inspector dock (900): the header's own drawer
+       opens from the same bar, and above this one it is the menu the reader just asked for rather
+       than a list painted out of sight beneath the docs panel. */
     .bb-docs-sidebar {
         position: fixed;
         top: var(--bb-header-height);
         bottom: 0;
         inset-inline-start: 0;
-        z-index: 1050;
+        z-index: 990;
         width: min(86vw, 320px);
         max-height: none;
         padding: 1.25rem 1rem 2rem;
@@ -293,16 +325,25 @@
                     visibility var(--bb-motion-duration);
     }
 
+    /* Visible at once on opening, rather than a transition's first frame later: opening moves focus
+       into the panel, and a panel that is still hidden when the focus call arrives refuses it.
+       Closing keeps the transition above, so the panel stays visible while it slides away. */
     .bb-docs-sidebar.bb-open {
         visibility: visible;
         transform: translateX(0);
+        transition: transform var(--bb-motion-duration) var(--bb-motion-enter),
+                    visibility 0s;
+    }
+
+    .bb-docs-close {
+        display: inline-flex;
     }
 
     .bb-docs-scrim {
         display: block;
         position: fixed;
         inset: var(--bb-header-height) 0 0;
-        z-index: 1040;
+        z-index: 980;
         background: var(--bb-scrim);
     }
 }

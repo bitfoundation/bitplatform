@@ -14,7 +14,7 @@
    turns that half off with SiteInfo.PaletteCtrlK. *@
 
 <button type="button" class="bb-search-trigger" @ref="_trigger" @onclick="Open"
-        aria-label="Search documentation" title="@(SiteInfo.PaletteCtrlK ? "Search documentation (Ctrl+K)" : "Search documentation (/)")">
+        aria-label="Search documentation" title="@(SiteInfo.PaletteCtrlK ? $"Search documentation ({(_isApple ? "⌘K" : "Ctrl+K")})" : "Search documentation (/)")">
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
         <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
     </svg>
@@ -59,8 +59,9 @@
                        aria-activedescendant="@(_results.Length > 0 ? $"bb-palette-option-{_activeIndex}" : null)"
                        autocomplete="off"
                        spellcheck="false"
-                       value="@_query"
-                       @oninput="OnInput" />
+                       @bind:get="_query"
+                       @bind:set="OnInput"
+                       @bind:event="oninput" />
                 <button type="button" class="bb-palette-esc" @ref="_escape" @onclick="() => Close()" aria-label="Close search">Esc</button>
             </div>
 
@@ -86,25 +87,35 @@
                     @* Grouped by the section each hit came from, in catalog order, so the list
                        reads as the site's own table of contents rather than as a flat ranking.
                        The keyboard cursor still walks the FLAT order, which is why each row's
-                       position is looked up in _results rather than counted per group. *@
+                       position is looked up in _results rather than counted per group.
+
+                       Each group is a role="group" named by its label: a listbox may hold only
+                       options and groups of them, so a bare label between the rows would be a
+                       stray element to a screen reader rather than the heading of the rows under
+                       it. The label stays the group's first child, which is what
+                       bitDemoSite.revealPaletteOption looks for above a group's first row. *@
+                    var groupIndex = 0;
                     @foreach (var group in _results.GroupBy(hit => hit.Group))
                     {
-                        <p class="bb-overline bb-palette-group" role="presentation" @key="group.Key">@group.Key</p>
-                        @foreach (var hit in group)
-                        {
-                            var position = Array.IndexOf(_results, hit);
-                            <div role="option"
-                                 id="@($"bb-palette-option-{position}")"
-                                 aria-selected="@(position == _activeIndex ? "true" : "false")"
-                                 class="@(position == _activeIndex ? "bb-palette-hit bb-active" : "bb-palette-hit")"
-                                 @key="hit.Url"
-                                 @onmouseenter="() => _activeIndex = position"
-                                 @onmousedown="() => Go(hit)" @onmousedown:preventDefault>
-                                <span class="bb-palette-hit-title">@hit.Title</span>
-                                <span class="bb-palette-hit-desc">@hit.Description</span>
-                                <span class="bb-palette-hit-url">@hit.Url</span>
-                            </div>
-                        }
+                        var labelId = $"bb-palette-group-{groupIndex++}";
+                        <div role="group" aria-labelledby="@labelId" @key="group.Key">
+                            <p class="bb-overline bb-palette-group" id="@labelId">@group.Key</p>
+                            @foreach (var hit in group)
+                            {
+                                var position = Array.IndexOf(_results, hit);
+                                <div role="option"
+                                     id="@($"bb-palette-option-{position}")"
+                                     aria-selected="@(position == _activeIndex ? "true" : "false")"
+                                     class="@(position == _activeIndex ? "bb-palette-hit bb-active" : "bb-palette-hit")"
+                                     @key="hit.Url"
+                                     @onmouseenter="() => _activeIndex = position"
+                                     @onmousedown="() => Go(hit)" @onmousedown:preventDefault>
+                                    <span class="bb-palette-hit-title">@hit.Title</span>
+                                    <span class="bb-palette-hit-desc">@hit.Description</span>
+                                    <span class="bb-palette-hit-url">@hit.Url</span>
+                                </div>
+                            }
+                        </div>
                     }
                 }
             </div>
@@ -137,6 +148,24 @@
     private ElementReference _input;
     private ElementReference _escape;
     private DotNetObjectReference<CommandPalette>? _self;
+
+    protected override void OnInitialized() => Nav.LocationChanged += OnLocationChanged;
+
+    /// <summary>
+    /// A navigation the palette did not start - the browser's Back button, a link the page followed
+    /// on its own - would otherwise leave the dialog open over the new page, with that page's scroll
+    /// still locked. The new page decides where focus belongs, as it does after <see cref="Go"/>.
+    /// </summary>
+    private void OnLocationChanged(object? sender, LocationChangedEventArgs e)
+    {
+        if (_open is false) return;
+
+        _ = InvokeAsync(() =>
+        {
+            Close(restoreFocus: false);
+            StateHasChanged();
+        });
+    }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -215,15 +244,19 @@
     /// </summary>
     private void LockScroll(bool locked) => _ = JSRuntime.InvokeVoidAsync("bitDemoSite.lockScroll", locked);
 
-    private void OnInput(ChangeEventArgs e)
+    private void OnInput(string? value)
     {
-        _query = e.Value?.ToString() ?? "";
+        _query = value ?? "";
         _results = _query.Trim().Length == 0 ? Suggest() : Find(_query.Trim());
         _activeIndex = 0;
     }
 
     private void OnKeyDown(KeyboardEventArgs e)
     {
+        // While an input method is composing, these keys pick, confirm or cancel its candidate: they are
+        // the composition's, not the palette's.
+        if (e.IsComposing) return;
+
         switch (e.Key)
         {
             case "Escape":
@@ -289,6 +322,8 @@
 
     public async ValueTask DisposeAsync()
     {
+        Nav.LocationChanged -= OnLocationChanged;
+
         if (_self is null) return;
 
         try

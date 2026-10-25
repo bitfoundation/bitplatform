@@ -111,7 +111,8 @@ public class BlowEdge
     {
         var fallback = MarkerType == BlowMarkerType.ArrowClosed ? 8 : BlowMarkerSpec.DefaultSize;
         var w = MarkerWidth ?? fallback;
-        return new BlowMarkerSpec(MarkerType, MarkerColor ?? defaultColor, w, MarkerHeight ?? w);
+        var color = MarkerColor ?? defaultColor;
+        return new BlowMarkerSpec(MarkerType, color, w, MarkerHeight ?? w) { FallbackColor = color is null ? Stroke : null };
     }
 
     /// <summary>Additional CSS class(es) applied to the edge group.</summary>

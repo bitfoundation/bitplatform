@@ -130,6 +130,27 @@ public class BelemetryComponentsTests
     }
 
     [TestMethod]
+    public async Task Consent_AdoptsWhatTheScriptKept_WhenItRefusesAGrant()
+    {
+        // Under Global Privacy Control the script never grants Analytics: refusing PageViews leaves its own grant as it
+        // was, so it reports no change - and the .NET pipeline must not go on collecting what the browser refused.
+        await using var context = CreateContext(o => o.Host = BelemetryHostKind.WebAssembly);
+        context.JSInterop.Mode = JSRuntimeMode.Loose;
+        var module = context.JSInterop.SetupModule(ModulePath);
+        var kept = BelemetryFeatures.Diagnostics | BelemetryFeatures.Monitoring | BelemetryFeatures.Persistence;
+        using var contextJson = JsonDocument.Parse($$"""{"consent":{{(int)kept}},"decided":true,"sessionId":"s-1","pseudoId":null,"userId":null}""");
+        module.Setup<JsonElement>("getContext").SetResult(contextJson.RootElement.Clone());
+        context.Render<BelemetryInitializer>();
+        var consent = context.Services.GetRequiredService<IBelemetryConsent>();
+
+        await consent.GrantAsync(BelemetryFeatures.PageViews);
+
+        Assert.AreEqual((int)(kept | BelemetryFeatures.PageViews), module.Invocations["setConsent"][^1].Arguments[0]);
+        Assert.AreEqual(kept, consent.Granted);
+        Assert.AreEqual(kept, context.Services.GetRequiredService<BelemetryConsentState>().Granted);
+    }
+
+    [TestMethod]
     public async Task Initializer_StartsInLooseMode_AndStartIsIdempotent()
     {
         await using var context = CreateContext(o => o.Browser.Transport = BelemetryBrowserTransport.Direct);

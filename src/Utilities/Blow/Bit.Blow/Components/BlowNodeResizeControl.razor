@@ -14,7 +14,8 @@
 
 @code {
     [CascadingParameter] private BlowNodeContext NodeContext { get; set; } = default!;
-    [CascadingParameter] private IBlowContext Flow { get; set; } = default!;
+    [CascadingParameter(Name = BlowCascadingNames.Context)] private IBlowContext Flow { get; set; } = default!;
+    [CascadingParameter(Name = BlowCascadingNames.GraphVersion)] private int GraphVersion { get; set; }
 
     /// <summary>Which side/corner this control resizes.</summary>
     [Parameter] public BlowResizeDirection Position { get; set; } = BlowResizeDirection.BottomRight;

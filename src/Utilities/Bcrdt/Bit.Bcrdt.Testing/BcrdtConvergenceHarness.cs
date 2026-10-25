@@ -19,7 +19,9 @@ public sealed class BcrdtConvergenceException(string message) : Exception(messag
 /// </remarks>
 public static class BcrdtConvergenceHarness
 {
-    private static readonly JsonSerializerOptions Json = new() { WriteIndented = true };
+    // Deep enough for the deepest document the engine accepts: nested types to their limit, with a
+    // value nested to the codec's own limit at the bottom.
+    private static readonly JsonSerializerOptions Json = new() { WriteIndented = true, MaxDepth = BcrdtAbstractType.MaxNestingDepth + 128 };
 
     private static readonly MethodInfo GetRootMethod =
         typeof(BcrdtDocument).GetMethod(nameof(BcrdtDocument.GetRoot))!;

@@ -1,6 +1,7 @@
 ﻿using System.Linq.Expressions;
 using Bit.BlazeDb.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.EntityFrameworkCore.Update;
@@ -21,11 +22,13 @@ internal sealed class BlazeDbEfCoreDatabase : IDatabase
 {
     private readonly IBlazeDbTableCache _tables;
     private readonly IDbContextTransactionManager _transactions;
+    private readonly ICurrentDbContext _currentContext;
 
-    public BlazeDbEfCoreDatabase(IBlazeDbTableCache tables, IDbContextTransactionManager transactions)
+    public BlazeDbEfCoreDatabase(IBlazeDbTableCache tables, IDbContextTransactionManager transactions, ICurrentDbContext currentContext)
     {
         _tables = tables;
         _transactions = transactions;
+        _currentContext = currentContext;
     }
 
     public int SaveChanges(IList<IUpdateEntry> entries)
@@ -44,37 +47,82 @@ internal sealed class BlazeDbEfCoreDatabase : IDatabase
         // as it found it, as a relational provider does with the savepoint it sets around each
         // SaveChanges. A transaction another context opened is a different matter: joining it
         // would report this save as done while leaving its fate to that context's commit or
-        // rollback, with this tracker none the wiser. That is refused.
-        var database = _tables.Database;
-        var outer = database.ActiveTransaction;
-        if (outer is not null && database.ActiveTransactionOwner is { } owner && !ReferenceEquals(owner, _transactions))
+        // rollback, with this tracker none the wiser. That is refused. The check, the join and the
+        // save itself run under the engine's write lock, as RunInTransaction does, so a unit another
+        // thread opens in the same transaction cannot interleave with this one; and when the save
+        // fails, its exception - not one from undoing it - is the one EF sees.
+        //
+        // The tables are looked up first, outside that lock: finding the engine may wait on the engine
+        // cache's gate for this store, whose holder - a context opening the store - goes on to take the
+        // engine's write lock, so waiting on the gate while holding the lock could deadlock.
+        var bindings = new IBlazeDbTableBinding[entries.Count];
+        for (var i = 0; i < bindings.Length; i++)
         {
-            throw new InvalidOperationException(
-                "Another DbContext on the same BlazeDb store has a transaction open. A save cannot join " +
-                "it: the engine allows one transaction at a time, so commit or dispose that one first.");
+            bindings[i] = _tables.GetBinding(entries[i].EntityType);
         }
+        var database = _tables.Database;
+        var count = database.RunInTransactionCore(
+            (Entries: entries, Bindings: bindings),
+            static state => Apply(state.Entries, state.Bindings),
+            joiner: _transactions);
 
-        using var transaction = outer is null ? database.BeginTransaction() : null;
-        var savepoint = outer?.Savepoint() ?? 0;
         try
         {
-            var count = Apply(entries);
-            transaction?.Commit();
-            return count;
+            database.DeliverChanges();
         }
-        catch when (outer is not null)
+        catch (BlazeDbChangeHandlerException ex)
         {
-            outer.RollbackTo(savepoint);
-            throw;
+            // The save committed; only a Changed handler failed while it was reported. Failing the save
+            // here would leave the tracker believing nothing was written - entities still Added, and a
+            // retry refused as a duplicate. So the save completes, EF accepts its changes, and the
+            // handler's exception is rethrown once it has (see OnSavedChanges).
+            DeferUntilSaved(ex);
+        }
+        return count;
+    }
+
+    private BlazeDbChangeHandlerException? _deferredHandlerError;
+
+    // Subscribed for the one save that needs it rather than once for good: a pooled context clears its
+    // events when it goes back to the pool, while this service - and a flag saying it had subscribed -
+    // lives on into the next lease.
+    private void DeferUntilSaved(BlazeDbChangeHandlerException error)
+    {
+        var context = _currentContext.Context;
+        _deferredHandlerError = error;
+        context.SavedChanges -= OnSavedChanges;
+        context.SaveChangesFailed -= OnSaveChangesFailed;
+        context.SavedChanges += OnSavedChanges;
+        context.SaveChangesFailed += OnSaveChangesFailed;
+    }
+
+    private void OnSavedChanges(object? sender, SavedChangesEventArgs e)
+    {
+        if (TakeDeferredHandlerError() is { } error)
+        {
+            System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw(error);
         }
     }
 
-    private int Apply(IList<IUpdateEntry> entries)
+    // A save that fails after the engine committed reports its own failure; the handler's error belongs to
+    // that save and is dropped with it, rather than surfacing from a later, unrelated one.
+    private void OnSaveChangesFailed(object? sender, SaveChangesFailedEventArgs e) => TakeDeferredHandlerError();
+
+    private BlazeDbChangeHandlerException? TakeDeferredHandlerError()
+    {
+        var context = _currentContext.Context;
+        context.SavedChanges -= OnSavedChanges;
+        context.SaveChangesFailed -= OnSaveChangesFailed;
+        return Interlocked.Exchange(ref _deferredHandlerError, null);
+    }
+
+    private static int Apply(IList<IUpdateEntry> entries, IBlazeDbTableBinding[] bindings)
     {
         var count = 0;
-        foreach (var entry in entries)
+        for (var i = 0; i < entries.Count; i++)
         {
-            var binding = _tables.GetBinding(entry.EntityType);
+            var entry = entries[i];
+            var binding = bindings[i];
             var entity = entry.ToEntityEntry().Entity;
             try
             {

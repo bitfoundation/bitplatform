@@ -31,7 +31,7 @@ public static partial class IClientCoreServiceCollectionExtensions
             services.AddScoped<LazyAssemblyLoader>();
             services.AddBitBevToolsLoaderServices(options =>
             {
-                options.RegisterAtStartup = AppEnvironment.IsDevelopment() || AppPlatform.IsAot || AppPlatform.IsBlazorHybrid;
+                options.RegisterAtStartup = AppEnvironment.IsDevelopment() || AppPlatform.IsBlazorHybrid;
                 options.ShowBadge = false;
             });
             services.AddScoped<SignInModalService>();
@@ -79,9 +79,9 @@ public static partial class IClientCoreServiceCollectionExtensions
 
             services.AddSingleton(sp => sp.GetRequiredService<IOptions<ClientCoreSettings>>().Value);
 
+            services.AddSingleton<IValidateOptions<ClientCoreSettings>, ClientCoreSettingsValidator>();
             services.AddOptions<ClientCoreSettings>()
                 .Bind(configuration)
-                .ValidateDataAnnotations()
                 .ValidateOnStart();
 
             services.AddBitButilServices();

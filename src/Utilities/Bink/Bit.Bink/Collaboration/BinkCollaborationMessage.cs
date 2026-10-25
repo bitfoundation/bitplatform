@@ -49,6 +49,14 @@ public sealed record BinkCollaborationMessage
     /// </summary>
     public string? RecipientId { get; init; }
 
+    /// <summary>
+    /// What the sender understands, set by the session: 0, which is also what a message from a version before this
+    /// property reads as, or 1 when the sender can resolve an image referred to by its content id. A session refers
+    /// to images that way, rather than sending their data again, only once every participant it has heard from
+    /// understands it. A transport carries it like every other property.
+    /// </summary>
+    public int Protocol { get; init; }
+
     /// <summary>The serialized operation, for <see cref="BinkCollaborationMessageKind.Operation"/>.</summary>
     public string? Operation { get; init; }
 

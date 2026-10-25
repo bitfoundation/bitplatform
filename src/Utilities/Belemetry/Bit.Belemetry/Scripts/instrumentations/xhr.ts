@@ -1,6 +1,6 @@
 ﻿import { traceparent } from '../ids';
 import { absoluteUrl, noop, type InstrumentationContext, type Uninstall } from './context';
-import { createHttpTracer } from './http';
+import { createHttpTracer, type HttpFailure } from './http';
 
 interface XhrInfo {
     method: string;
@@ -46,15 +46,27 @@ export function installXhr(ctx: InstrumentationContext): Uninstall {
                 const span = tracer.start(data.method, data.url);
                 if (tracer.shouldPropagate(data.url)) originalSetRequestHeader.call(this, 'traceparent', traceparent(span.traceId, span.spanId));
                 const xhr = this;
+                // loadend follows every outcome; which one it was is only known from the event before it.
+                let failure: HttpFailure = { name: 'NetworkError', message: 'XMLHttpRequest failed' };
+                const onAbort = () => {
+                    failure = { name: 'AbortError', message: 'XMLHttpRequest aborted' };
+                };
+                const onTimeout = () => {
+                    failure = { name: 'TimeoutError', message: 'XMLHttpRequest timed out' };
+                };
                 const onEnd = () => {
                     try {
                         xhr.removeEventListener('loadend', onEnd);
+                        xhr.removeEventListener('abort', onAbort);
+                        xhr.removeEventListener('timeout', onTimeout);
                         if (xhr.status > 0) tracer.end(span, xhr.status);
-                        else tracer.end(span, 0, { name: 'NetworkError', message: 'XMLHttpRequest failed' });
+                        else tracer.end(span, 0, failure);
                     } catch {
                         // Never throw into the host page.
                     }
                 };
+                xhr.addEventListener('abort', onAbort);
+                xhr.addEventListener('timeout', onTimeout);
                 xhr.addEventListener('loadend', onEnd);
             }
         } catch {

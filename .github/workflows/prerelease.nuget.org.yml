@@ -57,8 +57,8 @@ jobs:
         npm install
         npm run-script build:production
         cd ../../../../
-        mkdir -p src/BlazorES2019/wwwroot.net9/
-        cp aspnetcore/src/Components/Web.JS/dist/Release/blazor.*.js src/BlazorES2019/wwwroot.net9/
+        mkdir -p src/Toolings/BlazorES2019/wwwroot.net9/
+        cp aspnetcore/src/Components/Web.JS/dist/Release/blazor.*.js src/Toolings/BlazorES2019/wwwroot.net9/
         rm -rf aspnetcore
 
     - name: Generate ES2019 based blazor.*.js files for .NET 10
@@ -74,14 +74,14 @@ jobs:
         npm install
         npm run-script build:production
         cd ../../../../
-        mkdir -p src/BlazorES2019/wwwroot.net10/
-        cp aspnetcore/src/Components/Web.JS/dist/Release/blazor.*.js src/BlazorES2019/wwwroot.net10/
+        mkdir -p src/Toolings/BlazorES2019/wwwroot.net10/
+        cp aspnetcore/src/Components/Web.JS/dist/Release/blazor.*.js src/Toolings/BlazorES2019/wwwroot.net10/
         rm -rf aspnetcore
 
     - name: dotnet pack BlazorES2019
       run: |
-          dotnet build src/BlazorES2019/Bit.BlazorES2019/Bit.BlazorES2019.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
-          dotnet pack src/BlazorES2019/Bit.BlazorES2019/Bit.BlazorES2019.csproj --output . --configuration Release
+          dotnet build src/Toolings/BlazorES2019/Bit.BlazorES2019/Bit.BlazorES2019.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
+          dotnet pack src/Toolings/BlazorES2019/Bit.BlazorES2019/Bit.BlazorES2019.csproj --output . --configuration Release
 
     - name: dotnet build BlazorUI
       run: dotnet build src/BlazorUI/Bit.BlazorUI/Bit.BlazorUI.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
@@ -274,28 +274,28 @@ jobs:
       run: dotnet pack src/Utilities/Belemetry/Bit.Belemetry.Hangfire/Bit.Belemetry.Hangfire.csproj --output . --configuration Release
 
     - name: dotnet build CodeAnalyzers
-      run: dotnet build src/CodeAnalyzers/Bit.CodeAnalyzers/Bit.CodeAnalyzers.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
+      run: dotnet build src/Toolings/CodeAnalyzers/Bit.CodeAnalyzers/Bit.CodeAnalyzers.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
     - name: dotnet pack CodeAnalyzer
-      run: dotnet pack src/CodeAnalyzers/Bit.CodeAnalyzers/Bit.CodeAnalyzers.csproj --output . --configuration Release
+      run: dotnet pack src/Toolings/CodeAnalyzers/Bit.CodeAnalyzers/Bit.CodeAnalyzers.csproj --output . --configuration Release
 
     - name: dotnet build Minifier
-      run: dotnet build src/Cli/Minifier/Bit.Minifier/Bit.Minifier.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
+      run: dotnet build src/Toolings/Minifier/Bit.Minifier/Bit.Minifier.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
     - name: dotnet pack Minifier
-      run: dotnet pack src/Cli/Minifier/Bit.Minifier/Bit.Minifier.csproj --output . --configuration Release
+      run: dotnet pack src/Toolings/Minifier/Bit.Minifier/Bit.Minifier.csproj --output . --configuration Release
 
     - name: dotnet build bit CLI
       env:
         BitCliBuildRunUrl: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
         BitCliTelemetryConnectionString: ${{ secrets.APPLICATION_INSIGHTS_CONNECTION_STRING }}
-      run: dotnet build src/Cli/Bit.Cli/Bit.Cli.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
+      run: dotnet build src/Toolings/Cli/Bit.Cli/Bit.Cli.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
     - name: dotnet pack bit CLI
       env:
         BitCliBuildRunUrl: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
         BitCliTelemetryConnectionString: ${{ secrets.APPLICATION_INSIGHTS_CONNECTION_STRING }}
-      run: dotnet pack src/Cli/Bit.Cli/Bit.Cli.csproj --output . --configuration Release
+      run: dotnet pack src/Toolings/Cli/Bit.Cli/Bit.Cli.csproj --output . --configuration Release
 
     - name: build SourceGenerators nupkg file
-      run: dotnet build src/SourceGenerators/Bit.SourceGenerators/Bit.SourceGenerators.csproj --configuration Release -p:PackageOutputPath=${{ github.workspace }}/
+      run: dotnet build src/Toolings/SourceGenerators/Bit.SourceGenerators/Bit.SourceGenerators.csproj --configuration Release -p:PackageOutputPath=${{ github.workspace }}/
 
     - name: dotnet pack Boilerplate
       run: dotnet pack src/Templates/Boilerplate/Bit.Boilerplate.ProjectTemplate.csproj --output . --configuration Release

@@ -1,0 +1,66 @@
+﻿@* One participant, measured: what its replica stores and what it would send, with buttons that type the ways
+   that matter. Each panel of the internals page is this component, opened by a different user. *@
+@using Bit.Bcrdt
+@using Bit.Bcrdt.Blazor
+
+<BcrdtCollaborationScope DocumentId="demo-internals" User="_me" Context="document">
+    @{
+        BcrdtText text = document.Text("body");
+        BcrdtDocument crdt = document.Crdt;   // the replica itself: no service, no network
+        int blocks = crdt.Store.Clients.Sum(entry => entry.Value.Count);
+    }
+
+    <BcrdtTextArea Text="text" Presence="document.Presence" Field="body" Rows="6"
+                   Placeholder="Type here and watch the numbers below." />
+
+    <div>
+        <button type="button" @onclick="() => TypeBurst(text, 500)">Type 500 characters</button>
+        <button type="button" @onclick="() => TypeInOneTransaction(document, text, 500)">500 insertions in one transaction</button>
+        <button type="button" @onclick="() => Scatter(text, 200)">Make 200 scattered edits</button>
+    </div>
+
+    <dl>
+        <dt>Characters</dt>
+        <dd>@text.Count</dd>
+
+        @* One block per contiguous run: consecutive typing collapses into a single block. *@
+        <dt>Blocks</dt>
+        <dd>@blocks</dd>
+
+        @* What a peer sends to ask for exactly what it is missing - one entry per author. *@
+        <dt>State vector</dt>
+        <dd>@crdt.GetStateVector().Encode().Length bytes</dd>
+
+        @* What a brand-new peer is sent. *@
+        <dt>Full document</dt>
+        <dd>@crdt.EncodeStateAsUpdate().Length bytes</dd>
+
+        @* Not zero: the delete set always travels, because a deletion does not advance a state vector. *@
+        <dt>Delta for an up-to-date peer</dt>
+        <dd>@crdt.EncodeStateAsUpdate(crdt.GetStateVector()).Length bytes</dd>
+    </dl>
+</BcrdtCollaborationScope>
+
+@code {
+    private readonly BcrdtCollaboratorInfo _me = new("u-1", "Ada", BcrdtPresenceService.SuggestColor("u-1"));
+
+    // 500 separate one-character edits at the end, the way a person types: 500 updates.
+    private static void TypeBurst(BcrdtText text, int count)
+    {
+        for (int i = 0; i < count; i++) text.Insert(text.Count, "x");
+    }
+
+    // The same edits inside one transaction: every call joins it, so peers receive one update and every
+    // observer hears about the change once.
+    private static void TypeInOneTransaction(BcrdtCollaborativeDocument document, BcrdtText text, int count)
+    {
+        using BcrdtCollaborativeTransaction transaction = document.BeginTransaction();
+        for (int i = 0; i < count; i++) text.Insert(text.Count, "x");
+    }
+
+    // Edits at random places split runs: the case run-length encoding cannot help.
+    private static void Scatter(BcrdtText text, int count)
+    {
+        for (int i = 0; i < count; i++) text.Insert(text.Count == 0 ? 0 : Random.Shared.Next(text.Count), "*");
+    }
+}

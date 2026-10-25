@@ -1,6 +1,7 @@
 ﻿import type { ConsentConfig } from './config';
 import { Features } from './features';
 import type { TelemetryRecord } from './model';
+import { countDropped } from './stats';
 import { readItem, removeItem, StorageKeys, writeItem } from './storage';
 
 /** Called after every consent change with the records held before the decision that the new consent allows. */
@@ -25,16 +26,23 @@ export class ConsentManager {
     /** Reads the persisted choice (if `persist`). */
     load(): void {
         if (!this.config.persist) return;
-        const raw = readItem('local', StorageKeys.consent);
-        if (!raw) return;
-        try {
-            const stored = JSON.parse(raw);
-            if (stored && stored.v === 1 && typeof stored.features === 'number') {
-                this.decision = stored.features & Features.All & this.available;
-            }
-        } catch {
-            // A corrupt entry counts as "no decision".
-        }
+        const features = parseChoice(readItem('local', StorageKeys.consent));
+        if (features !== null) this.decision = features & Features.All & this.available;
+    }
+
+    /**
+     * Adopts the choice another tab of the app persisted (the `storage` event's new value): a banner answered there is
+     * answered here, and a feature revoked there stops being collected here as well. A removed or unreadable entry
+     * changes nothing.
+     */
+    adopt(raw: string | null): void {
+        const features = this.config.persist ? parseChoice(raw) : null;
+        if (features === null) return;
+        const decision = features & Features.All & this.available;
+        if (decision === this.decision) return;
+        const previous = this.granted();
+        this.decision = decision;
+        this.changed(previous);
     }
 
     get decided(): boolean {
@@ -64,9 +72,15 @@ export class ConsentManager {
 
     /** Holds a record until the decision. The oldest record is dropped when `pendingLimit` is exceeded. */
     hold(record: TelemetryRecord): void {
-        if (this.config.pendingLimit <= 0) return;
+        if (this.config.pendingLimit <= 0) {
+            countDropped('pending_full');
+            return;
+        }
         this.pending.push(record);
-        if (this.pending.length > this.config.pendingLimit) this.pending.shift();
+        if (this.pending.length > this.config.pendingLimit) {
+            this.pending.shift();
+            countDropped('pending_full');
+        }
     }
 
     get pendingCount(): number {
@@ -99,6 +113,7 @@ export class ConsentManager {
         purgeStorage(previous & ~next);
         // After a decision nothing stays held. Before one (a new default), only what became granted leaves.
         const released = this.pending.filter(r => (next & r.feature) !== 0);
+        if (this.decided) countDropped('not_consented', this.pending.length - released.length);
         this.pending = this.decided ? [] : this.pending.filter(r => (next & r.feature) === 0);
         for (const listener of this.listeners) {
             try {
@@ -107,6 +122,18 @@ export class ConsentManager {
                 // Never throw into the host page.
             }
         }
+    }
+}
+
+/** The features of a persisted choice (`bit-belemetry-consent`), or null when the entry is not one. */
+function parseChoice(raw: string | null): number | null {
+    if (!raw) return null;
+    try {
+        const stored = JSON.parse(raw);
+        return stored && stored.v === 1 && typeof stored.features === 'number' ? stored.features : null;
+    } catch {
+        // A corrupt entry counts as "no decision".
+        return null;
     }
 }
 

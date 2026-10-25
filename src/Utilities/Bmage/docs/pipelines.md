@@ -39,8 +39,9 @@ the synchronous form; use it off the UI thread or for small images.
 | `Allocator` | Where intermediate buffers come from. Defaults to the shared pool. |
 | `Limits` | Safety limits applied to every buffer allocated during the run. |
 | `CancellationToken` | Checked between operations and periodically inside them, typically every few rows. |
-| `Progress` | Receives 0 to 1 across the whole run, with each operation's own progress mapped into its slice. |
+| `Progress` | Receives 0 to 1 across the whole run, with each operation's own progress mapped into its slice, always on the thread that started the run. |
 | `Optimize` | Run the optimiser first. Default true. |
+| `MaxDegreeOfParallelism` | The most threads an operation may spread its rows over. Defaults to one; `Environment.ProcessorCount` uses every core. Pixels are identical whatever the value. |
 | `YieldBetweenOperations` | Yield to the scheduler between steps. Default true. |
 | `YieldCallback` | How to yield, if the default `Task.Yield` is not right for your host. |
 
@@ -65,7 +66,22 @@ pipeline.AutoOrient()                       // apply the EXIF rotation so the im
         .Rotate(12.5, background)           // arbitrary angle, canvas expands
         .Orient(Orientation.Rotate90)       // lossless, no resampling
         .FlipHorizontal()
+        .Straighten(-3.5)                   // level a tilt, cropping to the largest rectangle with no empty corners
+        .CanvasSize(1200, 1200, Anchor.Top, Rgba32.White)  // a square canvas, the image at the top, unscaled
+        .Pad(40, Rgba32.White)              // a 40 pixel border; Pad(left, top, right, bottom) for each side
         .Skew(10, 0);
+```
+
+`Straighten` crops by a fraction of the image, the same at every resolution, so a proxy preview frames exactly what the
+export will. `CanvasSize` and `Pad` copy pixels and never resample; a canvas smaller than the image, or a negative
+margin, cuts the edges the anchor leaves out.
+
+Trimming depends on the pixels, so it is an analysis whose result you crop to, rather than an operation (an operation's
+size must be known from its input's size alone):
+
+```csharp
+if (ContentBounds.Find(image, new TrimOptions { Padding = 8 }) is { } content)
+    pipeline = pipeline.Crop(content);       // transparent borders, or a plain one within 4% of the corner's colour
 ```
 
 `AutoOrient` is almost always the first thing you want. Phones record rotation in EXIF rather than rotating the pixels,
@@ -133,6 +149,15 @@ pipeline.AutoContrast(targetMean: 0.5f);  // gentler: move the mean luminance to
 `AutoLevels` ignores the darkest and brightest 0.5% by default, so one hot pixel cannot define the white point, and it
 leaves a flat histogram alone rather than amplifying it into noise.
 
+```csharp
+pipeline.AutoWhiteBalance();                         // make the average of the mid-tones grey, 80% of the way
+pipeline.WhiteBalance(ColorSampler.Sample(image, new Point(420, 310), radius: 2));  // a picked grey becomes grey
+```
+
+`AutoWhiteBalance` leaves clipped highlights, deep shadows and strongly saturated colours out of its average, since they
+say more about the scene than the light; the "grey world" it assumes fails for sunsets and forests, which is why it stops
+short of a full correction by default.
+
 ### Adjustments and filters
 
 ```csharp
@@ -143,7 +168,20 @@ pipeline.Brightness(0.1f).Contrast(0.15f).Saturation(-0.2f).Hue(15)
         .Blur(4f).Sharpen(0.5f).Pixelate(12).Noise(0.05f)
         .DenoiseMedian(1).Vignette(0.4f)
         .ColorMatrix(myMatrix);
+
+pipeline.WhitesBlacks(0.3f, -0.2f)                    // brighten the top of the range, deepen the bottom
+        .Hsl(HueBand.Blues, saturation: 0.3f, lightness: -0.25f)   // a deeper sky, nothing else touched
+        .ChannelMixer(new(0.9f, 0.1f, 0), new(0, 1, 0), new(0, 0.1f, 0.9f))
+        .BlackAndWhite(red: 0.6f, green: 0.3f, blue: 0.1f)          // a red filter: dark skies, light skin
+        .Colorize(30, saturation: 0.35f)                 // one warm tint over everything
+        .Duotone(new Rgba32(20, 30, 90), new Rgba32(250, 210, 120))
+        .MotionBlur(24, angle: 15)                       // a 24 pixel streak, rising slightly to the right
+        .HighPass(3);                                    // only detail finer than 3 pixels, around mid grey
 ```
+
+`HslAdjustment` adjusts eight hue bands; a pixel between two bands takes from both in proportion, and greys are left
+alone. The HSL model is fast and predictable rather than perceptually uniform, the trade simple editors make.
+`GradientMapOperation` takes any number of stops; `Duotone` is the two-stop case.
 
 Adjustment amounts are consistently in [-1, 1] with 0 meaning no change, except where a different unit is natural:
 `Exposure` is in stops, `Hue` is in degrees, `Gamma` is a positive multiplier, and `Blur` is a radius in pixels.
@@ -152,6 +190,25 @@ Filters that take a region only touch that region, which is how redaction works:
 
 ```csharp
 pipeline.Pixelate(14, new Rectangle(40, 120, 300, 40));
+```
+
+### Masks
+
+Any operation that keeps the size, or a whole sub-pipeline, can be applied through a mask, fading with its coverage:
+a graduated sky, a spotlight, highlights only, everything but the red coat.
+
+```csharp
+pipeline.Masked(Mask.Gradient(new(0, 0), new(0, 0.55f)), sky => sky.Exposure(-0.8f).Saturation(0.35f))
+        .Masked(new LuminanceRangeMask(0f, 0.3f), shadows => shadows.Exposure(0.6f))
+        .ApplyMask(Mask.Ellipse());                      // and cut the result out as a circle
+```
+
+A run of adjustments through a mask is still one pass, and only over the rows and columns the mask can reach. The
+masks, from shapes and gradients to brush strokes, the magic wand and a segmentation model's matte, are in
+[layers-and-masks.md](layers-and-masks.md).
+
+```csharp
+pipeline.RemoveBackground(tolerance: 0.1f);   // a product shot on a plain backdrop, the backdrop made transparent
 ```
 
 ## The optimiser
@@ -223,6 +280,82 @@ megapixel photos means roughly 400 MB of live pixels. Two is a safe default on p
 
 One bad file does not lose the rest. Every item comes back with its own outcome, and `StopOnFirstError` is opt-in.
 
+Stopping a batch does not lose what it finished either. Cancelling the token makes `ProcessBatchAsync` throw a
+`BatchCancelledException` - an `OperationCanceledException`, so a `catch` written for any cancelled call still works -
+whose `Result` is the batch as it stood: every image that completed keeps its output or its error, the ones in flight
+and the ones never started come back with `WasCancelled`, and `result.WasCancelled` says the token stopped it. What was
+done is still there to save:
+
+```csharp
+try
+{
+    var result = await processor.ProcessBatchAsync(items, pipeline, options, stop.Token);
+    foreach (var item in result.Succeeded) Save(item.Output!);
+}
+catch (BatchCancelledException stopped)
+{
+    foreach (var item in stopped.Result.Succeeded) Save(item.Output!);
+    Requeue(stopped.Result.Cancelled.Select(item => item.Item));   // never ran
+}
+```
+
+`StopOnFirstError` marks the items it skipped the same way, without throwing and with `result.WasCancelled` left false.
+
+### Batches of any length
+
+`ProcessBatchAsync` keeps every result until the batch ends, and its items hold their files from the start. For a
+batch too large for that, read each file only when its turn comes, hand each result on as it completes, and let the
+memory each image needs decide how many run at once:
+
+```csharp
+var items = files.Select(file => BatchItem.Deferred(ct => ReadAsync(file, ct), file.Name));
+
+await foreach (var result in processor.ProcessBatchStreamAsync(items, pipeline, new BatchOptions
+{
+    MaxConcurrency = 4,
+    MaxMemoryBytes = 512L * 1024 * 1024,
+    ExportOptions = new ImageExportOptions { Format = ImageFormat.WebP, Quality = 0.82 },
+}))
+{
+    if (result.Output is { } output) await SaveAsync(result.FileName, output.Data);
+}
+```
+
+`MaxMemoryBytes` admits images by their expected peak, estimated from each file's header before it is decoded: the
+file, its pixels and the pipeline's working buffers. Small photos then run four at a time, a 48 megapixel one runs with
+room to spare, and one larger than the whole budget runs alone rather than never. The source may also be an
+`IAsyncEnumerable<BatchItem>`, such as files arriving from an upload, in which case `BatchProgress.Total` is -1.
+
+A stream has already handed over every result it finished, so cancelling its token simply ends it, with an
+`OperationCanceledException` from the `await foreach`, as cancelling any other async stream does.
+
+## Memory
+
+A pipeline can say what it will cost before it runs:
+
+```csharp
+var estimate = pipeline.EstimateMemory(new Size(6000, 4000));
+estimate.PeakBytes;     // the most pixel memory the run holds at once, its result included
+estimate.OutputSize;    // what it produces
+```
+
+The estimate follows the buffers each step holds, and the working copies the heavier ones take. To enforce a ceiling
+rather than predict one, run with a `BudgetedPixelAllocator`: every buffer and mask comes from the allocator in the
+context, so a run that would exceed the budget fails with `ImageMemoryBudgetExceededException` before allocating, and
+`PeakBytes` afterwards says what it really took.
+
+```csharp
+var budget = new BudgetedPixelAllocator(256L * 1024 * 1024);
+using var result = pipeline.Execute(source, new PipelineExecutionOptions { Allocator = budget });
+Console.WriteLine($"{budget.PeakBytes / 1048576.0:0.0} MB at the peak");
+```
+
+## Saving a pipeline
+
+`BmageJson.Serialize(pipeline)` writes a pipeline as JSON and `BmageJson.DeserializePipeline` reads it back, every
+built-in operation included, so a preset can live in a database or travel in a request. See
+[layers-and-masks.md](layers-and-masks.md#saving-and-replaying-an-edit).
+
 ## Custom operations
 
 Implement `IImageOperation`, or `PointOperation` if your operation maps each pixel independently and should fuse with
@@ -234,6 +367,9 @@ public sealed class DuotoneOperation : PointOperation
     public DuotoneOperation(Rgba32 shadow, Rgba32 highlight) { /* ... */ }
 
     public override string Name => "Duotone";
+
+    // ProcessRow only reads its own fields, so rows may run on several threads at once.
+    public override bool CanProcessRowsConcurrently => true;
 
     public override void ProcessRow(Span<Vector4> pixels)
     {

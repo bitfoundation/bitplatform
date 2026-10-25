@@ -1,0 +1,30 @@
+﻿@* What a canvas is doing in the host it runs in: whether its browser layer attached, which render path it took
+   and what the device reported. The same page shows different answers on WebAssembly, Server and MAUI, which is
+   the point of running it in each. *@
+
+@if (Canvas is not null)
+{
+    <div class="status-line" aria-live="off">
+        <span><strong>@Canvas.CurrentDocument.ElementCount</strong> elements</span>
+        <span><strong>@Canvas.History.UndoCount</strong> undo steps</span>
+        <span>Zoom <strong>@((Canvas.CurrentViewport.Zoom * 100).ToString("0", CultureInfo.InvariantCulture))%</strong></span>
+        @if (Canvas.AttachFailed is { } reason)
+        {
+            <span class="badge badge-error">unavailable: @reason</span>
+        }
+        else
+        {
+            <span class="badge">@(Canvas.UsesFastRenderPath ? "zero-copy render" : "standard interop")</span>
+            <span class="badge">@(Canvas.Capabilities.PointerEvents ? "pointer events" : "waiting for the browser")</span>
+            <span class="badge">@(Canvas.Capabilities.ObservedPressure ? "pen pressure" : "no pressure observed")</span>
+            <span>DPR <strong>@Canvas.Capabilities.DevicePixelRatio.ToString("0.##", CultureInfo.InvariantCulture)</strong></span>
+        }
+        @ChildContent
+    </div>
+}
+
+@code {
+    [Parameter] public BinkCanvas? Canvas { get; set; }
+
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+}

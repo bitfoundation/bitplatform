@@ -37,6 +37,184 @@ public class EmissionTests
     }
 
     [TestMethod]
+    public void RollbackOnError_SnapshotsEveryStateField()
+    {
+        var result = GeneratorTestHelper.Run(Usings + """
+            namespace App;
+
+            public enum Mode { Off, On }
+
+            [BlexStoreAttribute(Name = "tx", RollbackOnError = true)]
+            public partial class TxStore
+            {
+                [BlexStateAttribute] private int _count;
+                [BlexStateAttribute] private int? _maybe;
+                [BlexStateAttribute] private string? _label;
+                [BlexStateAttribute] private Mode _mode;
+                [BlexStateAttribute] private System.Collections.Generic.List<string> @lock = new();
+
+                [BlexActionAttribute] private void OnIncrement() => Count++;
+            }
+
+            [BlexStoreAttribute(Name = "plain")]
+            public partial class PlainStore
+            {
+                [BlexStateAttribute] private int _count;
+            }
+            """);
+
+        Assert.IsEmpty(result.CompileErrors());
+        var tx = result.GeneratedSources.Single(s => s.Key.Contains("TxStore")).Value;
+        Assert.Contains("protected override object?[]? CaptureRollbackState() => new object?[] { this._count, this._maybe, this._label, this._mode, this.@lock };", tx);
+        Assert.Contains("this._maybe = (int?)state[1]!;", tx);
+        Assert.Contains("this.@lock = (global::System.Collections.Generic.List<string>)state[4]!;", tx);
+        Assert.DoesNotContain("CaptureRollbackState", result.GeneratedSources.Single(s => s.Key.Contains("PlainStore")).Value);
+    }
+
+    [TestMethod]
+    public void A_write_invalidates_only_the_computeds_that_read_it()
+    {
+        var result = GeneratorTestHelper.Run(Usings + """
+            using System.Linq;
+
+            namespace App;
+
+            public interface IRates { decimal Tax { get; } }
+
+            public static class TrackedExtensions
+            {
+                public static int Weighted(this TrackedStore store) => store.A * 3;
+            }
+
+            [BlexStoreAttribute(Name = "tracked")]
+            public partial class TrackedStore(IRates rates)
+            {
+                [BlexStateAttribute] private int _a;
+                [BlexStateAttribute] private int _b;
+                [BlexStateAttribute] private string _label = "";
+                [BlexStateAttribute] private System.Collections.Generic.List<int> _items = new();
+                private readonly int _offset = 1;
+
+                [BlexComputedAttribute] private int ComputeSum() => A + _b;                                   // property and backing field
+                [BlexComputedAttribute] private int ComputeDoubleA() => this.A * 2;
+                [BlexComputedAttribute] private int ComputeChain() => DoubleA + 1;                           // through another computed
+                [BlexComputedAttribute] private int ComputeTotal() => Items.Where(i => i > 0).Sum(i => i * 2); // members off a property
+                [BlexComputedAttribute] private int ComputeHelped() => Helper();                             // a helper: reads everything
+                [BlexComputedAttribute] private int ComputeOffset() => A + _offset;                          // a plain field: everything
+                [BlexComputedAttribute] private decimal ComputeTaxed() => B * rates.Tax;                     // a primary-constructor parameter
+                [BlexComputedAttribute] private string ComputeShout() => System.String.Concat(Label, "!");   // a static call
+                [BlexComputedAttribute] private int ComputeExtended() => this.Weighted();                   // an extension on the store
+                [BlexComputedAttribute] private int ComputeBuilt() => new Box { Value = B }.Value;          // another object's member
+
+                private int Helper() => _b;
+            }
+
+            public sealed class Box { public int Value { get; set; } }
+            """);
+
+        Assert.IsEmpty(result.CompileErrors());
+        var source = result.GeneratedSources.Single(s => s.Key.Contains("TrackedStore")).Value;
+
+        string[] everything = ["Helped", "Offset", "Taxed", "Extended", "Built"];
+        Assert.AreSequenceEqual([.. everything.Prepend("Sum").Prepend("DoubleA").Prepend("Chain").Order()], [.. Invalidated(source, "A").Order()]);
+        Assert.AreSequenceEqual([.. everything.Append("Sum").Order()], [.. Invalidated(source, "B").Order()]);
+        Assert.AreSequenceEqual([.. everything.Append("Shout").Order()], [.. Invalidated(source, "Label").Order()]);
+        Assert.AreSequenceEqual([.. everything.Append("Total").Order()], [.. Invalidated(source, "Items").Order()]);
+        Assert.Contains("default:", source);
+    }
+
+    [TestMethod]
+    public void A_member_a_computed_only_writes_is_not_a_dependency()
+    {
+        var result = GeneratorTestHelper.Run(Usings + """
+            namespace App;
+
+            [BlexStoreAttribute(Name = "cart")]
+            public partial class CartStore
+            {
+                [BlexStateAttribute] private int _lines;
+                [BlexStateAttribute] private int _discount;
+
+                public int SubtotalRuns { get; private set; }
+                private int _totalRuns;
+                private int _last;
+
+                [BlexComputedAttribute] private int ComputeSubtotal() { SubtotalRuns++; return Lines * 10; }
+                [BlexComputedAttribute] private int ComputeTotal() { ++this._totalRuns; _last = Subtotal; _totalRuns += 0; return _last - Discount; }
+                [BlexComputedAttribute] private int ComputeEcho() { _last = Lines; return _last; }   // read back: that read counts
+            }
+            """);
+
+        Assert.IsEmpty(result.CompileErrors());
+        var source = result.SingleGenerated;
+
+        // A write to the discount re-runs only the total; the evaluation counters are not reads.
+        Assert.AreSequenceEqual(["Echo", "Total"], [.. Invalidated(source, "Discount").Order()]);
+        Assert.AreSequenceEqual(["Echo", "Subtotal", "Total"], [.. Invalidated(source, "Lines").Order()]);
+    }
+
+    // The computeds a "case" of the generated InvalidateComputed(string?) switch invalidates.
+    private static IEnumerable<string> Invalidated(string source, string property)
+    {
+        var start = source.IndexOf($"case \"{property}\":", StringComparison.Ordinal);
+        Assert.IsGreaterThanOrEqualTo(0, start, $"no case for {property}");
+        var end = source.IndexOf("break;", start, StringComparison.Ordinal);
+        foreach (System.Text.RegularExpressions.Match match in System.Text.RegularExpressions.Regex.Matches(source[start..end], @"__(\w+)Valid = false;"))
+            yield return match.Groups[1].Value;
+    }
+
+    [TestMethod]
+    public void DeserializeState_reads_every_field_before_it_assigns_any()
+    {
+        var result = GeneratorTestHelper.Run(Usings + """
+            namespace App;
+            [BlexStoreAttribute] public partial class S
+            {
+                [BlexStateAttribute] private string _accent = "violet";
+                [BlexStateAttribute] private int _density;
+            }
+            """);
+
+        Assert.IsEmpty(result.CompileErrors());
+        var generated = result.SingleGenerated;
+        var start = generated.IndexOf("public override void DeserializeState(", StringComparison.Ordinal);
+        var body = generated[start..generated.IndexOf("\n    }", start, StringComparison.Ordinal)];
+
+        // A payload whose second field fails must not leave the first one applied on its own.
+        var lastRead = body.LastIndexOf("Deserialize<", StringComparison.Ordinal);
+        var firstAssign = body.IndexOf("this._accent = ", StringComparison.Ordinal);
+        Assert.IsGreaterThan(lastRead, firstAssign, "fields are assigned only after every one was read");
+        Assert.Contains("this._density = __v1;", body);
+    }
+
+    [TestMethod]
+    public void Cancelling_a_debounced_effect_also_cancels_the_invocation_still_waiting()
+    {
+        var result = GeneratorTestHelper.Run(Usings + """
+            namespace App;
+            [BlexStoreAttribute] public partial class S
+            {
+                [BlexEffectAttribute(DebounceMilliseconds = 300)]
+                private async Task OnTypeAhead(string q, CancellationToken ct) => await Task.Delay(1, ct);
+
+                [BlexEffectAttribute(DebounceMilliseconds = 300)]
+                private async Task OnPing() => await Task.Yield();
+            }
+            """);
+
+        Assert.IsEmpty(result.CompileErrors());
+        var generated = result.SingleGenerated;
+
+        var cancel = generated[generated.IndexOf("public void CancelTypeAhead()", StringComparison.Ordinal)..];
+        cancel = cancel[..cancel.IndexOf('}')];
+        Assert.Contains("__TypeAheadDebounce?.Cancel();", cancel);
+        Assert.Contains("__TypeAheadCts?.Cancel();", cancel);
+
+        // No token to cancel a run with, but a quiet period still worth cancelling.
+        Assert.Contains("public void CancelPing() => __PingDebounce?.Cancel();", generated);
+    }
+
+    [TestMethod]
     public void NullableAnnotations_ArePreserved()
     {
         var result = GeneratorTestHelper.Run(Usings + """

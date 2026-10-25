@@ -19,4 +19,11 @@ public interface IBlexDevTools
     /// The default implementation drops the payload for sinks that predate it.
     /// </summary>
     void Send(string actionName, JsonObject globalState, JsonObject? payload) => Send(actionName, globalState);
+
+    /// <summary>
+    /// Hands an imported session (the monitor's "lifted state": its actions, computed states and commit) back to
+    /// the monitor, which shows it only once the app echoes it. The default implementation does nothing, for sinks
+    /// that have no timeline of their own to replace.
+    /// </summary>
+    void SendLiftedState(JsonObject liftedState) { }
 }

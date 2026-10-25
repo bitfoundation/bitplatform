@@ -332,7 +332,7 @@ public sealed class RadialGradientPaint : IPaint
 }
 
 /// <summary>Alpha compositing helpers operating on straight-alpha RGBA.</summary>
-public static class Compositor
+public static partial class Compositor
 {
     /// <summary>Composites <paramref name="source"/> over <paramref name="destination"/> with an extra coverage/alpha factor.</summary>
     public static Rgba32 SourceOver(Rgba32 destination, Rgba32 source, float alpha)

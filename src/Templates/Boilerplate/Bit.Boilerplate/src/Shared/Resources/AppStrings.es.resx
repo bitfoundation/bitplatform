@@ -398,12 +398,6 @@ Después de alcanzar {0}, los inicios de sesión adicionales tendrán funciones 
   <data name="InvalidUserCredentials" xml:space="preserve">
     <value>Credenciales de usuario inválidas</value>
   </data>
-  <data name="EmailAlreadyConfirmed" xml:space="preserve">
-    <value>Tu correo electrónico ya está confirmado.</value>
-  </data>
-  <data name="PhoneNumberAlreadyConfirmed" xml:space="preserve">
-    <value>Tu número de teléfono ya está confirmado.</value>
-  </data>
   <data name="Title" xml:space="preserve">
     <value>Título</value>
   </data>
@@ -1209,6 +1203,9 @@ Después de alcanzar {0}, los inicios de sesión adicionales tendrán funciones 
   </data>
   <data name="AiChatPanelVoiceCallAssistantFailed" xml:space="preserve">
     <value>El asistente no pudo responder. Inténtalo de nuevo.</value>
+  </data>
+  <data name="AiChatTooManyRequests" xml:space="preserve">
+    <value>Estás chateando demasiado rápido. Espera un minuto e inténtalo de nuevo.</value>
   </data>
   <data name="AiChatHumanFollowUpPrompt" xml:space="preserve">
     <value>Deja tus datos de contacto y un operador se pondrá en contacto contigo.</value>
@@ -2086,5 +2083,17 @@ Después de alcanzar {0}, los inicios de sesión adicionales tendrán funciones 
   </data>
     <data name="UploadImageAsIs" xml:space="preserve">
     <value>Cargar tal cual</value>
+  </data>
+    <data name="ResetPasswordTwoFactorCodeRequired" xml:space="preserve">
+    <value>La autenticación en dos pasos está activada en esta cuenta. Introduce un código de tu app autenticadora o uno de tus códigos de recuperación.</value>
+  </data>
+    <data name="AccountAlreadyExistsShortText" xml:space="preserve">
+    <value>Ya tienes una cuenta de Boilerplate con este número de teléfono. Si acabas de intentar registrarte, inicia sesión en su lugar.</value>
+  </data>
+    <data name="AddAnotherAccount" xml:space="preserve">
+    <value>Añadir otra cuenta</value>
+  </data>
+    <data name="SignOutOfAllAccounts" xml:space="preserve">
+    <value>Cerrar sesión en todas las cuentas de este dispositivo</value>
   </data>
 </root>

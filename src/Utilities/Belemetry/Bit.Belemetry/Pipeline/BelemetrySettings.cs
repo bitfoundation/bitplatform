@@ -29,6 +29,10 @@ internal sealed class BelemetrySettings
 
         var useEnv = options.UseEnvironmentVariables && IsBrowser is false;
 
+        // An operator's kill switch: unlike the variables below, which fill in what the code left unset, it wins over
+        // code, as in the OpenTelemetry SDKs (only "true", in any case, disables).
+        if (useEnv && string.Equals(GetEnv("OTEL_SDK_DISABLED"), "true", StringComparison.OrdinalIgnoreCase)) options.Enabled = false;
+
         ServiceName = options.ServiceName
                       ?? (useEnv ? GetEnv("OTEL_SERVICE_NAME") : null)
                       ?? Assembly.GetEntryAssembly()?.GetName().Name
@@ -59,6 +63,24 @@ internal sealed class BelemetrySettings
 
         OtlpExporters = ResolveOtlp(options, useEnv);
         AzureMonitorExporters = ResolveAzure(options, useEnv);
+
+        if (Host is BelemetryHostKind.Server && options.Browser.Enabled && BrowserTransport == BelemetryBrowserTransport.Direct)
+        {
+            for (var i = 0; i < OtlpExporters.Count; i++)
+            {
+                var otlp = OtlpExporters[i];
+                if (otlp.IncludeInBrowser is false || otlp.Headers.Count == 0 || otlp.BrowserHeaders.Count > 0) continue;
+
+                // Never reaches the page (as BelemetryBrowserConfigFactory decides): gRPC without a BrowserEndpoint, or
+                // none of the signals the browser produces.
+                if (otlp.Protocol == BelemetryOtlpProtocol.Grpc && otlp.BrowserEndpoint is null) continue;
+                if ((otlp.Signals & (BelemetrySignals.Traces | BelemetrySignals.Logs)) == 0) continue;
+
+                StartupWarnings.Add($"The OTLP exporter #{i} to {otlp.BrowserEndpoint ?? otlp.Endpoint} has Headers, which a server does not hand to the browser script " +
+                                    "(the page would publish them to every visitor), so the browser exports to it without them. Put a header the page may expose in BrowserHeaders, " +
+                                    "use the Relay transport, or set IncludeInBrowser = false.");
+            }
+        }
 
         TraceSources = [.. options.Traces.Sources];
         Meters = [.. options.Metrics.Meters];

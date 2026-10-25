@@ -10,7 +10,9 @@
 
 @code {
     [CascadingParameter] private BlowNodeContext NodeContext { get; set; } = default!;
-    [CascadingParameter] private IBlowContext Flow { get; set; } = default!;
+    [CascadingParameter(Name = BlowCascadingNames.Context)] private IBlowContext Flow { get; set; } = default!;
+    [CascadingParameter(Name = BlowCascadingNames.ViewportVersion)] private int ViewportVersion { get; set; }
+    [CascadingParameter(Name = BlowCascadingNames.GraphVersion)] private int GraphVersion { get; set; }
 
     /// <summary>Show the toolbar. When null, it appears only while the node is selected.</summary>
     [Parameter] public bool? Visible { get; set; }

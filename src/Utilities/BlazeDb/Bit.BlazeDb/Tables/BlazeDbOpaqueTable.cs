@@ -61,6 +61,16 @@ internal sealed class BlazeDbOpaqueTable : IBlazeDbTableInternal
 
     public void Clear() => _rows.Clear();
 
+    // Raw bytes have no indexes to disagree with.
+    public void VerifyIntegrity(List<BlazeDbIntegrityIssue> issues)
+    {
+    }
+
+    // Nobody can subscribe to a table that has no descriptor.
+    public void RaiseReset(ref List<Exception>? errors)
+    {
+    }
+
     private sealed class ByteArrayComparer : IEqualityComparer<byte[]>
     {
         public static readonly ByteArrayComparer Instance = new();

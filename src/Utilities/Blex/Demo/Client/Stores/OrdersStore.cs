@@ -10,7 +10,9 @@ public sealed record Order(int Id, string Item, int Quantity);
 [BlexStoreAttribute(Name = "orders")]
 public partial class OrdersStore
 {
-    private int _nextId = 1;
+    // State, not a plain field: ResetAll, undo and time travel put the numbering back together with the
+    // orders it numbered, so an order placed afterwards never gets an id the list or a message already shows.
+    [BlexStateAttribute] private int _nextId = 1;
 
     [BlexStateAttribute] private IReadOnlyList<Order> _orders = [];
 
@@ -20,7 +22,7 @@ public partial class OrdersStore
 
     [BlexActionAttribute]
     private void OnPlace(string item, int quantity)
-        => Orders = [.. Orders, new Order(_nextId++, item, quantity)];
+        => Orders = [.. Orders, new Order(NextId++, item, quantity)];
 
     [BlexActionAttribute] private void OnCancelLast()
     {

@@ -79,6 +79,10 @@ throws `ImageCapabilityException` with a message saying so.
 | `DocumentRenderer` | Renders a document against a source image. |
 | `EditHistory` | Undo and redo over documents. |
 | `FontTextRasterizer` | Text from a font file, no browser needed. |
+| `Mask`, `MaskedOperation` | Where an edit applies: shapes, gradients, tone and colour ranges, brushes, mattes. |
+| `Layer`, `LayerCompositor` | Image, fill and adjustment layers with blend modes, on a document or on their own. |
+| `BmageJson` | Documents and pipelines to and from JSON, to store an edit or replay it elsewhere. |
+| `BudgetedPixelAllocator` | A hard ceiling on the pixel memory a request, session or batch may hold. |
 
 ## Drawing without a UI
 
@@ -133,8 +137,22 @@ TrueType and OpenType fonts with `glyf` outlines are supported, including compos
 12, horizontal metrics and kerning pairs. CFF (PostScript) outlines are not, and the error says so explicitly rather
 than producing blank text.
 
-Layout is left-to-right with kerning and optional word wrapping. Complex script shaping and bidirectional reordering are
-not performed; use `BrowserTextRasterizer` in a browser for those.
+Text is shaped with the font's OpenType tables - joining forms and ligatures for Arabic and Persian, contextual
+alternates, kerning, marks placed on their letters - and each line is ordered by the Unicode Bidirectional Algorithm,
+so right-to-left text, and Latin words and numbers inside it, come out as a browser would draw them. A character the
+style's font lacks is drawn with the next registered font that has it, so a Latin font and an Arabic one together
+cover text mixing the two:
+
+```csharp
+var rasterizer = new FontTextRasterizer()
+    .Register("Noto Sans", FontFile.Load(await File.ReadAllBytesAsync("NotoSans-Regular.ttf")))
+    .Register("Vazirmatn", FontFile.Load(await File.ReadAllBytesAsync("Vazirmatn-Regular.ttf")));
+
+canvas.DrawText("Hello سلام ۱۴۰۵", position, style, rasterizer);
+```
+
+Scripts that reorder glyphs within a word (Indic, Southeast Asian) and cursive attachment (Nastaliq) are not shaped;
+use `BrowserTextRasterizer` in a browser for those.
 
 ## Analysing an image
 
@@ -192,6 +210,50 @@ using var rendered = new DocumentRenderer(textRasterizer)
 A document is a value. Serialise it, send it to a server, or apply it to a different image. Rendering never modifies the
 source.
 
+## Replaying an edit made in the browser
+
+`BmageJson` writes a document as JSON and reads it back as the same edit, so the browser can send the edit instead of the
+pixels and the server can render it on the original upload at full resolution:
+
+```csharp
+app.MapPost("/render/{id}", async (string id, HttpRequest request, ImageProcessor processor, FontTextRasterizer fonts) =>
+{
+    using var reader = new StreamReader(request.Body);
+    var document = BmageJson.DeserializeDocument(await reader.ReadToEndAsync(), new BmageJsonOptions
+    {
+        ImageResolver = reference => assets.Load(reference),   // logos, stamps, mattes the edit refers to
+    });
+
+    using var original = await processor.DecodeAsync(await uploads.ReadAsync(id));
+    if (original.Size != document.SourceSize) return Results.BadRequest("The edit was made for another image.");
+
+    using var rendered = new DocumentRenderer(fonts).Render(document, original);
+    var file = await processor.EncodeAsync(rendered, new ImageExportOptions { Format = ImageFormat.Jpeg, Quality = 0.9 });
+    return Results.File(file.Data, file.MimeType);
+});
+```
+
+A malformed or hostile document is rejected with `ImageDocumentFormatException` saying where, and the pipeline it
+describes is bounded by the same `ImageLimits` as any other.
+
+## Layers and masks
+
+Selective edits, layers and blend modes need no component either:
+
+```csharp
+using var card = LayerCompositor.Flatten(new Size(1200, 630), Rgba32.White,
+[
+    new ImageLayer { Image = photo, Bounds = new RectangleF(0, 0, 1200, 630) },
+    new FillLayer(new Rgba32(10, 20, 60)) { BlendMode = BlendMode.Multiply, Mask = Mask.Gradient(new(0, 1), new(0, 0.3f)) },
+]);
+
+using var graded = ImagePipeline.Create()
+    .Masked(new LuminanceRangeMask(0.75f, 1f), highlights => highlights.Exposure(-0.4f))
+    .Execute(photo);
+```
+
+See [layers-and-masks.md](layers-and-masks.md).
+
 ## Batch
 
 ```csharp
@@ -203,7 +265,53 @@ var result = await processor.ProcessBatchAsync(items, pipeline, new BatchOptions
 ```
 
 On a server you can afford more concurrency than in a browser, but each worker still holds a decoded image. Size it
-against your memory budget, not your core count alone.
+against your memory budget, not your core count alone, and let the budget decide:
+
+```csharp
+var items = Directory.EnumerateFiles(inbox, "*.jpg")
+    .Select(path => BatchItem.Deferred(async ct => (ReadOnlyMemory<byte>)await File.ReadAllBytesAsync(path, ct), path));
+
+await foreach (var result in processor.ProcessBatchStreamAsync(items, pipeline, new BatchOptions
+{
+    MaxConcurrency = 8,
+    MaxMemoryBytes = 1L << 30,   // images start only while their estimated need fits in 1 GB
+    ExportOptions = new ImageExportOptions { Format = ImageFormat.Jpeg, Quality = 0.82 },
+}))
+{
+    if (result.Output is { } output) await File.WriteAllBytesAsync(Path.ChangeExtension(result.FileName!, ".out.jpg"), output.Data);
+}
+```
+
+Deferred items are read only when their turn comes and every result is handed on as it completes, so a folder of ten
+thousand photos holds only the images in flight.
+
+## Threads
+
+Operations run on one thread by default, which is what a service processing many requests at once wants: the requests
+use the cores. A command-line tool or a background job working through one image at a time can spread each operation's
+rows over every core, and a 24 megapixel downscale or a rotation then produces exactly the pixels it would on one:
+
+```csharp
+builder.Services.AddBitBmageHeadlessServices(options => options.MaxDegreeOfParallelism = Environment.ProcessorCount);
+```
+
+Per run, `PipelineExecutionOptions.MaxDegreeOfParallelism` overrides it. In a batch every image in flight uses that
+many threads, decoding included, so keep `MaxConcurrency` times `MaxDegreeOfParallelism` near the cores you have.
+
+## Bounding memory per request
+
+```csharp
+app.MapPost("/thumbnail", async (IFormFile file) =>
+{
+    // Each request may hold at most 200 MB of pixels; beyond that it fails before allocating.
+    var budget = new BudgetedPixelAllocator(200L * 1024 * 1024);
+    var processor = new ImageProcessor(ImageCodecRegistry.CreateDefault(), budget);
+    // ... decode, process and encode as above ...
+});
+```
+
+`ImagePipeline.EstimateMemory(size)` gives the expected peak beforehand, from the dimensions alone, so a request can be
+refused, queued or routed before anything is decoded.
 
 ## Custom codecs
 

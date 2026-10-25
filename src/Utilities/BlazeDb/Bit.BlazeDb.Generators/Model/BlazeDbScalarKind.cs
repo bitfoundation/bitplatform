@@ -22,4 +22,9 @@ internal enum BlazeDbScalarKind
     DateTimeOffset,
     TimeSpan,
     Enum,
+    DateOnly,
+    TimeOnly,
+    Half,
+    Int128,
+    UInt128,
 }

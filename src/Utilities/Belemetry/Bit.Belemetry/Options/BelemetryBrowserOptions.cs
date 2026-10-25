@@ -32,6 +32,13 @@ public sealed class BelemetryBrowserOptions
     /// <summary>The maximum length of recorded element text. Defaults to 64.</summary>
     public int MaxInteractionTextLength { get; set; } = 64;
 
+    /// <summary>
+    /// Whether three clicks on one element within a second also emit a <c>browser.rage_click</c> event (feature
+    /// <see cref="BelemetryFeatures.Interactions"/>) - the frustration signal of a user who expected something to
+    /// happen. Once per burst; the clicks themselves are still recorded. Defaults to <see langword="true"/>.
+    /// </summary>
+    public bool TrackRageClicks { get; set; } = true;
+
     /// <summary>Whether web vitals (LCP, INP, CLS, FCP, TTFB) are recorded. Defaults to <see langword="true"/>.</summary>
     public bool WebVitals { get; set; } = true;
 
@@ -60,8 +67,12 @@ public sealed class BelemetryBrowserOptions
     /// <summary>Regular expressions of URLs never recorded as dependencies. Defaults to the Blazor framework routes.</summary>
     public List<string> IgnoreUrls { get; } = ["/_framework/", "/_blazor", "/_content/"];
 
-    /// <summary>Regular expressions of JS error messages never recorded.</summary>
-    public List<string> IgnoreErrorMessages { get; } = ["ResizeObserver loop"];
+    /// <summary>
+    /// Regular expressions of JS error messages never recorded. Defaults to the benign <c>ResizeObserver loop</c>
+    /// warnings and to <c>Script error.</c> - what the browser reports, with no stack or location, for an error in a
+    /// cross-origin script loaded without CORS: nothing in it can be acted on.
+    /// </summary>
+    public List<string> IgnoreErrorMessages { get; } = ["ResizeObserver loop", @"^Script error\.?$"];
 
     /// <summary>Whether <c>console</c> calls are recorded as logs. Defaults to <see langword="false"/>.</summary>
     public bool CaptureConsole { get; set; }
@@ -86,6 +97,15 @@ public sealed class BelemetryBrowserOptions
 
     /// <summary>How often the script exports. Defaults to 5 seconds (it also exports when the page is hidden).</summary>
     public TimeSpan FlushInterval { get; set; } = TimeSpan.FromSeconds(5);
+
+    /// <summary>
+    /// On Blazor Server with the <see cref="BelemetryBrowserTransport.Relay"/> transport, the most records one circuit
+    /// may relay per minute on average (at least 1); the excess is dropped. The page is untrusted there and the queue it
+    /// relays into serves every user. On top of it a circuit may send a burst of <see cref="MaxQueueSize"/> plus
+    /// <see cref="BelemetryConsentOptions.PendingLimit"/> records - a full queue and what a consent decision releases.
+    /// Defaults to 3000.
+    /// </summary>
+    public int MaxRelayedPerMinute { get; set; } = 3000;
 
     /// <summary>Whether the script writes its own diagnostics to <c>console.debug</c>. Defaults to <see langword="false"/>.</summary>
     public bool Debug { get; set; }

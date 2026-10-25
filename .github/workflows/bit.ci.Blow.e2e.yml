@@ -1,11 +1,12 @@
 name: bit platform CI - Blow E2E
 
-# The browser suite: the demo (prerendered, then running on WebAssembly) driven in Chromium with Playwright. It
-# takes far longer than the build-and-unit pipeline (bit.ci.Blow.yml), so it runs only when started by hand. See
-# src/Utilities/Blow/Tests/Bit.Blow.Tests.E2E/README.md for what it proves and how to run it locally.
+# The browser suite: the demo (prerendered, then running on WebAssembly) driven with Playwright in Chromium, Firefox
+# and WebKit. It takes far longer than the build-and-unit pipeline (bit.ci.Blow.yml), so it runs only when started by
+# hand. See src/Utilities/Blow/Tests/Bit.Blow.Tests.E2E/README.md for what it proves and how to run it locally.
 
 on:
   workflow_dispatch:
+  workflow_call:
 
 env:
   DOTNET_SYSTEM_CONSOLE_ALLOW_ANSI_COLOR_REDIRECTION: true
@@ -16,9 +17,15 @@ permissions:
 jobs:
 
   e2e:
-    name: Blow E2E (Chromium)
+    name: Blow E2E (${{ matrix.browser }})
     runs-on: ubuntu-24.04
     timeout-minutes: 60
+    # Every engine, not just Chromium: Safari has no context-stroke and scrolls a focused <svg> by its unscaled
+    # content, and both broke the demo where Chromium never showed a thing.
+    strategy:
+      fail-fast: false
+      matrix:
+        browser: [chromium, firefox, webkit]
 
     steps:
 
@@ -48,8 +55,8 @@ jobs:
     - name: Build the E2E suite
       run: dotnet build src/Utilities/Blow/Tests/Bit.Blow.Tests.E2E/Bit.Blow.Tests.E2E.csproj -c Release
 
-    - name: Install Playwright Chromium
-      run: pwsh src/Utilities/Blow/Tests/Bit.Blow.Tests.E2E/bin/Release/net10.0/playwright.ps1 install --with-deps chromium
+    - name: Install Playwright ${{ matrix.browser }}
+      run: pwsh src/Utilities/Blow/Tests/Bit.Blow.Tests.E2E/bin/Release/net10.0/playwright.ps1 install --with-deps ${{ matrix.browser }}
 
     - name: Start the published demo
       run: |
@@ -65,18 +72,19 @@ jobs:
     - name: Run E2E tests
       env:
         BLOW_E2E_BASE_URL: http://127.0.0.1:5000
+        BLOW_E2E_BROWSER: ${{ matrix.browser }}
       # Run from inside src so src/global.json's Microsoft.Testing.Platform runner setting applies.
       run: >
         cd src/Utilities/Blow/Tests/Bit.Blow.Tests.E2E &&
         dotnet test -c Release --no-build
-        --report-trx --report-trx-filename blow-e2e.trx
+        --report-trx --report-trx-filename blow-e2e-${{ matrix.browser }}.trx
 
     - name: Upload test results
       if: always()
       uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
       with:
-        name: blow-e2e
+        name: blow-e2e-${{ matrix.browser }}
         path: |
-          **/blow-e2e.trx
+          **/blow-e2e-${{ matrix.browser }}.trx
           demo.log
         if-no-files-found: ignore

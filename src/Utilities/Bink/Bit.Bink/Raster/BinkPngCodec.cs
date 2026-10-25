@@ -165,8 +165,28 @@ public static class BinkPngCodec
     public static bool IsPng(ReadOnlySpan<byte> data) => data.Length >= 8 && data[..8].SequenceEqual(Signature);
 
     /// <summary>
-    /// Decodes an 8-bit non-interlaced PNG (grayscale, RGB, palette or RGBA, with or without an alpha channel).
+    /// Reads the dimensions a PNG declares in its header without decoding it, so a caller can decide whether the
+    /// image is worth decoding at all. The values are only a claim until <see cref="Decode"/> has read the pixels.
     /// </summary>
+    /// <returns>False when the data does not start with a PNG signature and header.</returns>
+    public static bool TryReadSize(ReadOnlySpan<byte> data, out int width, out int height)
+    {
+        width = height = 0;
+        // The header must be the first chunk: signature, length, "IHDR", then width and height.
+        if (!IsPng(data) || data.Length < 24 || !data.Slice(12, 4).SequenceEqual("IHDR"u8)) return false;
+        width = BinaryPrimitives.ReadInt32BigEndian(data[16..]);
+        height = BinaryPrimitives.ReadInt32BigEndian(data[20..]);
+        return width > 0 && height > 0;
+    }
+
+    /// <summary>
+    /// Decodes an 8-bit non-interlaced PNG (grayscale, RGB, palette or RGBA, with or without an alpha channel, and
+    /// with <c>tRNS</c> transparency for palette, grayscale and RGB images).
+    /// </summary>
+    /// <remarks>
+    /// Buffers grow as decompressed rows actually arrive instead of being sized from the header, so a small file
+    /// that claims a huge image but carries little data fails having allocated about what it carried.
+    /// </remarks>
     /// <param name="data">The PNG bytes.</param>
     /// <param name="maxPixels">Rejects images larger than this many pixels, so a malicious file cannot exhaust memory.</param>
     /// <exception cref="FormatException">The data is not a supported PNG.</exception>
@@ -176,7 +196,7 @@ public static class BinkPngCodec
         int offset = 8;
         int width = 0, height = 0, bitDepth = 0, colorType = 0, interlace = 0;
         byte[]? palette = null;
-        byte[]? paletteAlpha = null;
+        byte[]? transparency = null;
         using var idat = new MemoryStream();
         bool sawHeader = false;
 
@@ -205,7 +225,7 @@ public static class BinkPngCodec
                 sawHeader = true;
             }
             else if (type.SequenceEqual("PLTE"u8)) palette = chunk.ToArray();
-            else if (type.SequenceEqual("tRNS"u8)) paletteAlpha = chunk.ToArray();
+            else if (type.SequenceEqual("tRNS"u8)) transparency = chunk.ToArray();
             else if (type.SequenceEqual("IDAT"u8)) idat.Write(chunk);
             else if (type.SequenceEqual("IEND"u8)) break;
         }
@@ -226,40 +246,104 @@ public static class BinkPngCodec
         // they would otherwise wrap and allocate a buffer that does not match the image.
         if ((long)width * height * 4 > Array.MaxLength || ((long)width * channels + 1) * height > Array.MaxLength)
             throw new FormatException($"The PNG is {width} by {height} pixels, which is too large to decode.");
+        var key = new ColorKey(colorType, transparency);
         int stride = width * channels;
-        byte[] raw = new byte[(stride + 1) * height];
+        int rowBytes = width * 4;
+        int total = rowBytes * height;
+
+        // Nothing is sized from the header alone. The first row's buffer grows as its bytes arrive, the other row
+        // buffer is allocated once that row has proved to exist, and the output grows by doubling as rows are
+        // completed, so what is allocated stays within a small factor of the data actually decompressed.
+        byte[] current = new byte[Math.Min(stride, InitialBufferBytes)];
+        byte[]? previous = null;
+        byte[] pixels = new byte[Math.Min(total, InitialBufferBytes)];
         idat.Position = 0;
         try
         {
             using var inflate = new ZLibStream(idat, CompressionMode.Decompress);
-            int read = 0;
-            while (read < raw.Length)
+            for (int y = 0; y < height; y++)
             {
-                int n = inflate.Read(raw, read, raw.Length - read);
-                if (n <= 0) break;
-                read += n;
+                int filter = inflate.ReadByte();
+                if (filter < 0) throw new FormatException("PNG pixel data is truncated.");
+                if (y == 0) current = ReadFirstRow(inflate, current, stride);
+                else if (inflate.ReadAtLeast(current, stride, throwOnEndOfStream: false) < stride) throw new FormatException("PNG pixel data is truncated.");
+
+                previous ??= new byte[stride];
+                Unfilter((byte)filter, current, previous, channels);
+                long end = (long)(y + 1) * rowBytes;
+                if (end > pixels.Length) Array.Resize(ref pixels, (int)Math.Min(total, Math.Max(end, pixels.Length * 2L)));
+                ExpandRow(current, pixels.AsSpan(y * rowBytes, rowBytes), width, colorType, palette, key);
+                (previous, current) = (current, previous);
             }
-            if (read < raw.Length) throw new FormatException("PNG pixel data is truncated.");
         }
         catch (InvalidDataException ex)
         {
             // Corrupt compressed data must look like any other malformed image to callers.
             throw new FormatException("PNG pixel data is not valid compressed data.", ex);
         }
-
-        byte[] pixels = new byte[width * height * 4];
-        byte[] previous = new byte[stride];
-        byte[] current = new byte[stride];
-        for (int y = 0; y < height; y++)
-        {
-            int rowStart = y * (stride + 1);
-            byte filter = raw[rowStart];
-            raw.AsSpan(rowStart + 1, stride).CopyTo(current);
-            Unfilter(filter, current, previous, channels);
-            ExpandRow(current, pixels.AsSpan(y * width * 4), width, colorType, palette, paletteAlpha);
-            (previous, current) = (current, previous);
-        }
         return new DecodedImage(width, height, pixels);
+    }
+
+    /// <summary>What a buffer starts at before the data has shown how much there is.</summary>
+    private const int InitialBufferBytes = 64 * 1024;
+
+    /// <summary>Reads the first row, growing its buffer as bytes arrive. Returns the buffer, exactly a row long.</summary>
+    private static byte[] ReadFirstRow(Stream inflate, byte[] buffer, int stride)
+    {
+        int read = 0;
+        while (read < stride)
+        {
+            if (read == buffer.Length) Array.Resize(ref buffer, (int)Math.Min(stride, buffer.Length * 2L));
+            int n = inflate.Read(buffer, read, buffer.Length - read);
+            if (n <= 0) throw new FormatException("PNG pixel data is truncated.");
+            read += n;
+        }
+        return buffer;
+    }
+
+    /// <summary>
+    /// The transparency a <c>tRNS</c> chunk gives an image: alpha per palette entry, or the one grey level or
+    /// RGB colour that is fully transparent. A key is stored in 16 bits; in an 8-bit image a value above 255 can
+    /// never occur, so it matches nothing.
+    /// </summary>
+    private readonly struct ColorKey
+    {
+        public ColorKey(int colorType, byte[]? chunk)
+        {
+            Gray = R = G = B = -1;
+            PaletteAlpha = null;
+            if (chunk is null) return;
+            switch (colorType)
+            {
+                case 3:
+                    PaletteAlpha = chunk;
+                    break;
+                case 0 when chunk.Length >= 2:
+                {
+                    int gray = BinaryPrimitives.ReadUInt16BigEndian(chunk);
+                    if (gray <= 255) Gray = gray;
+                    break;
+                }
+                case 2 when chunk.Length >= 6:
+                {
+                    int r = BinaryPrimitives.ReadUInt16BigEndian(chunk);
+                    int g = BinaryPrimitives.ReadUInt16BigEndian(chunk.AsSpan(2));
+                    int b = BinaryPrimitives.ReadUInt16BigEndian(chunk.AsSpan(4));
+                    if (r <= 255 && g <= 255 && b <= 255) (R, G, B) = (r, g, b);
+                    break;
+                }
+            }
+        }
+
+        public byte[]? PaletteAlpha { get; }
+
+        public int Gray { get; }
+
+        public int R { get; }
+
+        public int G { get; }
+
+        public int B { get; }
     }
 
     private static void Unfilter(byte filter, Span<byte> current, ReadOnlySpan<byte> previous, int bpp)
@@ -293,7 +377,7 @@ public static class BinkPngCodec
         }
     }
 
-    private static void ExpandRow(ReadOnlySpan<byte> source, Span<byte> destination, int width, int colorType, byte[]? palette, byte[]? paletteAlpha)
+    private static void ExpandRow(ReadOnlySpan<byte> source, Span<byte> destination, int width, int colorType, byte[]? palette, in ColorKey key)
     {
         for (int x = 0; x < width; x++)
         {
@@ -303,13 +387,15 @@ public static class BinkPngCodec
                 case 0:
                 {
                     byte v = source[x];
-                    destination[d] = v; destination[d + 1] = v; destination[d + 2] = v; destination[d + 3] = 255;
+                    destination[d] = v; destination[d + 1] = v; destination[d + 2] = v; destination[d + 3] = v == key.Gray ? (byte)0 : (byte)255;
                     break;
                 }
                 case 2:
                 {
                     int s = x * 3;
-                    destination[d] = source[s]; destination[d + 1] = source[s + 1]; destination[d + 2] = source[s + 2]; destination[d + 3] = 255;
+                    byte r = source[s], g = source[s + 1], b = source[s + 2];
+                    destination[d] = r; destination[d + 1] = g; destination[d + 2] = b;
+                    destination[d + 3] = r == key.R && g == key.G && b == key.B ? (byte)0 : (byte)255;
                     break;
                 }
                 case 3:
@@ -318,7 +404,8 @@ public static class BinkPngCodec
                     int p = index * 3;
                     if (palette is null || p + 2 >= palette.Length) throw new FormatException("A PNG palette index is out of range.");
                     destination[d] = palette[p]; destination[d + 1] = palette[p + 1]; destination[d + 2] = palette[p + 2];
-                    destination[d + 3] = paletteAlpha is not null && index < paletteAlpha.Length ? paletteAlpha[index] : (byte)255;
+                    byte[]? alpha = key.PaletteAlpha;
+                    destination[d + 3] = alpha is not null && index < alpha.Length ? alpha[index] : (byte)255;
                     break;
                 }
                 case 4:

@@ -432,6 +432,11 @@ public static class BmageRecipeCatalog
 
                         foreach (var item in result.Failed) Console.WriteLine($"{item.FileName}: {item.Error!.Message}");
                     }
+                    // Stop throws, as any cancelled call does, with what finished attached: the rest are Result.Cancelled.
+                    catch (BatchCancelledException stopped)
+                    {
+                        Console.WriteLine($"Stopped with {stopped.Result.CancelledCount} not processed.");
+                    }
 
                     public void Dispose()
                     {
@@ -443,8 +448,10 @@ public static class BmageRecipeCatalog
             Notes = "MaxConcurrency is a memory dial as much as a speed dial: four workers on 24 MP photos is about 400 MB " +
                     "of live pixels, which kills a phone's tab. Two is the safe default in a browser; on a server size it " +
                     "against memory, not cores alone. Every item comes back with its own outcome (result.Succeeded, " +
-                    "result.Failed); StopOnFirstError is opt-in. JPEG is used here because it encodes everywhere - for WebP " +
-                    "check the capabilities first, as the batch options take one fixed format."
+                    "result.Failed); StopOnFirstError is opt-in. Cancelling the token throws BatchCancelledException, an " +
+                    "OperationCanceledException that keeps what finished in its Result; the items it never reached are Result.Cancelled. " +
+                    "JPEG is used here because it encodes everywhere - for WebP check the capabilities first, as the batch " +
+                    "options take one fixed format."
         },
         new()
         {
@@ -646,8 +653,8 @@ public static class BmageRecipeCatalog
                 """,
             Notes = "The engine is the same one the browser runs, so a pipeline tested here behaves identically there. " +
                     "Default export metadata is Remove; GPS does not survive. GIF decodes its first frame only; SVG is " +
-                    "refused. Reading every file up front is fine for a folder; for thousands of large files, process them " +
-                    "in chunks so the inputs are not all held at once."
+                    "refused. Reading every file up front is fine for a folder; for thousands of large files, see the " +
+                    "memory-bounded-batch recipe, which reads each file only when its turn comes and streams the results."
         },
         new()
         {
@@ -740,8 +747,8 @@ public static class BmageRecipeCatalog
                 """,
             Notes = "ImageCanvas.FromBuffer draws into the buffer itself, so the encode afterwards sees the caption. " +
                     "BrowserTextRasterizer needs a browser (call it from a handler, never during prerendering); on a server " +
-                    "use FontTextRasterizer with a registered TrueType font and canvas.DrawText - it does no complex-script " +
-                    "shaping or bidi. Open Graph scrapers want JPEG or PNG; do not serve them WebP."
+                    "use FontTextRasterizer with registered TrueType fonts and canvas.DrawText - it shapes Arabic and Persian " +
+                    "and orders right-to-left text, but not Indic scripts. Open Graph scrapers want JPEG or PNG; do not serve them WebP."
         },
         new()
         {
@@ -907,6 +914,268 @@ public static class BmageRecipeCatalog
             Notes = "LoadFromClipboardAsync needs a user gesture and usually a permission prompt, and is missing in some " +
                     "browsers and in insecure contexts - check SupportsClipboardRead and keep a file picker as well. Writing " +
                     "to the clipboard (ImageExporter.CopyToClipboardAsync) is usually PNG only."
+        },
+        new()
+        {
+            Id = "selective-adjustment",
+            Title = "Edit only part of a photo: graduated sky, spotlight, highlights",
+            Intent = "Apply adjustments through a mask - a gradient, a radial spotlight, a brightness or colour range - instead of to the whole image.",
+            Keywords = "mask masked selective adjustment local graduated filter gradient sky radial spotlight vignette luminance highlights shadows colour range brush lasso feather invert",
+            RunsIn = "Anywhere",
+            SeeAlso = "/layers-and-masks",
+            Code = """
+                using System.Numerics;
+                using Bit.Bmage;
+                using Bit.Bmage.Masks;
+                using Bit.Bmage.Pipeline;
+
+                // Relative units (fractions of the image) make one pipeline fit uploads of any size.
+                var sky = Mask.Gradient(new Vector2(0, 0), new Vector2(0, 0.55f));
+                var subject = new RadialGradientMask(new Vector2(0.4f, 0.5f), 0.25f, 0.35f) { Units = MaskUnits.Relative, Feather = 8 };
+
+                var pipeline = ImagePipeline.Create()
+                    .AutoOrient()
+                    .MaxSize(2048, 2048)
+                    // Darken and enrich the sky, fading out towards the horizon.
+                    .Masked(sky, p => p.Exposure(-0.7f).Saturation(0.3f))
+                    // Recover blown highlights only.
+                    .Masked(new LuminanceRangeMask(0.8f, 1f), p => p.Exposure(-0.4f))
+                    // Darken everything around the subject.
+                    .Masked(subject.Invert(), p => p.Exposure(-0.8f));
+
+                using var graded = await pipeline.ExecuteAsync(photo);
+                """,
+            Notes = "Where the mask is 0 the pixels are untouched and where it is 255 they are exactly the edit's; in between " +
+                    "they mix. A run of adjustments through a mask is one pass, and only over the rows the mask reaches. The " +
+                    "masked edit must keep the image's size - no crop or resize inside Masked. Content masks " +
+                    "(LuminanceRangeMask, ColorRangeMask) select from the pixels the step receives. For a cut-out instead of " +
+                    "an edit, ApplyMask multiplies the alpha: .Cover(512, 512).ApplyMask(Mask.Ellipse()) is a round avatar, " +
+                    "and a BitmapMask plugs in a background removal model's matte."
+        },
+        new()
+        {
+            Id = "layers-watermark",
+            Title = "Layers: watermark, colour wash and adjustment layers with blend modes",
+            Intent = "Place a logo on a photo, tint it, or add an adjustment layer, each with a blend mode, opacity and mask.",
+            Keywords = "layer layers watermark logo stamp overlay blend mode multiply screen overlay color luminosity fill adjustment layer opacity composite flatten",
+            RunsIn = "Anywhere",
+            SeeAlso = "/layers-and-masks",
+            Code = """
+                using System.Drawing;
+                using System.Numerics;
+                using Bit.Bmage;
+                using Bit.Bmage.Drawing;
+                using Bit.Bmage.Editing;
+                using Bit.Bmage.Layers;
+                using Bit.Bmage.Masks;
+                using Bit.Bmage.Pipeline;
+
+                var document = ImageDocument.Create(photo)
+                    .AddOperation(new Bit.Bmage.Operations.Transforms.ResizeOperation(1920, 1920, Bit.Bmage.Geometry.ResizeMode.Max))
+                    // Layer coordinates are those of the pipeline's output.
+                    .AddLayer(new ImageLayer
+                    {
+                        Image = logo,                     // not owned: keep it alive while the document is used
+                        Bounds = new RectangleF(40, 40, 160, 160),
+                        BlendMode = BlendMode.Overlay,
+                        Opacity = 0.85f,
+                    })
+                    .AddLayer(new FillLayer(new Rgba32(255, 120, 40))
+                    {
+                        BlendMode = BlendMode.Screen,
+                        Opacity = 0.4f,
+                        Mask = Mask.Gradient(new Vector2(0, 0.8f), new Vector2(0, 0.3f)),
+                    })
+                    .AddLayer(new AdjustmentLayer(ImagePipeline.Create().Contrast(0.3f)) { Mask = new LuminanceRangeMask(0f, 0.35f) });
+
+                using var rendered = new DocumentRenderer().Render(document, photo);
+
+                // Without a document: LayerCompositor.Flatten(size, background, layers) builds an image from layers alone.
+                """,
+            Notes = "Layers composite onto the pipeline's output, bottom first, and annotations draw over them. The blend modes " +
+                    "are CSS mix-blend-mode's (W3C Compositing and Blending). An AdjustmentLayer edits everything beneath it, " +
+                    "layers included, and at full opacity without a mask equals its pipeline exactly. In the editor use " +
+                    "context.AddLayerAsync / UpdateLayerAsync(transient: true) / RemoveLayerAsync; the editor previews layers " +
+                    "on its proxy and exports them at full resolution."
+        },
+        new()
+        {
+            Id = "save-and-replay-edit",
+            Title = "Save an edit as JSON and replay it on the server",
+            Intent = "Send the edit instead of the pixels: serialise the editor's document, then render it on the original upload at full resolution.",
+            Keywords = "json serialize serialise deserialize save load restore persist document edit replay server full resolution bmagejson pipeline preset store database",
+            RunsIn = "Anywhere",
+            SeeAlso = "/layers-and-masks",
+            Code = """
+                using Bit.Bmage;
+                using Bit.Bmage.Codecs;
+                using Bit.Bmage.Editing;
+                using Bit.Bmage.Pipeline;
+                using Bit.Bmage.Serialization;
+
+                // Browser: the edit is a few kilobytes, whatever the photo's size.
+                var json = BmageJson.Serialize(editor.Document!, new BmageJsonOptions
+                {
+                    ImageReferences = image => assets.IdOf(image),    // logos and stamps travel by reference
+                });
+
+                // Server: replay it on the original upload.
+                var document = BmageJson.DeserializeDocument(json, new BmageJsonOptions { ImageResolver = assets.Load });
+                using var original = await processor.DecodeAsync(uploadBytes);
+                if (original.Size != document.SourceSize) throw new InvalidOperationException("The edit was made for another image.");
+
+                using var rendered = new DocumentRenderer(fonts).Render(document, original);
+                var file = await processor.EncodeAsync(rendered, new ImageExportOptions { Format = ImageFormat.Jpeg, Quality = 0.9 });
+
+                // Or reopen the editor where the user left off: await context.RestoreDocumentAsync(document);
+                """,
+            Notes = "Every built-in operation, mask, layer and annotation round-trips exactly; pixels are never embedded, which " +
+                    "is why images go through ImageReferences and ImageResolver. A custom type needs a codec " +
+                    "(BmageJsonOptions.Add<T>) or serialising throws rather than dropping a step. Malformed input throws " +
+                    "ImageDocumentFormatException naming the location. On the server keep to JPEG and PNG - WebP and AVIF " +
+                    "encode in the browser only - and give DocumentRenderer a FontTextRasterizer with fonts registered if " +
+                    "the edit has text."
+        },
+        new()
+        {
+            Id = "memory-bounded-batch",
+            Title = "Batch thousands of photos in bounded memory",
+            Intent = "Process a very large batch without holding every file and result at once, admitting images by the memory they need.",
+            Keywords = "batch thousands large memory budget bounded stream streaming deferred lazy iasyncenumerable maxmemorybytes budgetedpixelallocator estimate peak",
+            RunsIn = "Server",
+            SeeAlso = "/batch",
+            Code = """
+                using Bit.Bmage;
+                using Bit.Bmage.Codecs;
+                using Bit.Bmage.Pipeline;
+
+                var processor = new ImageProcessor();
+                var pipeline = ImagePipeline.Create().AutoOrient().MaxSize(1600, 1600).Sharpen(0.3f);
+
+                // Files are read only when their turn comes.
+                var items = Directory.EnumerateFiles("photos", "*.jpg")
+                    .Select(path => BatchItem.Deferred(async ct => (ReadOnlyMemory<byte>)await File.ReadAllBytesAsync(path, ct), Path.GetFileName(path)));
+
+                // Results arrive as they finish and are not kept: save each and let it go.
+                await foreach (var result in processor.ProcessBatchStreamAsync(items, pipeline, new BatchOptions
+                {
+                    MaxConcurrency = 4,
+                    MaxMemoryBytes = 768L * 1024 * 1024,   // images start only while their estimated need fits
+                    ExportOptions = new ImageExportOptions { Format = ImageFormat.Jpeg, Quality = 0.82 },
+                }))
+                {
+                    if (result.Output is { } output) await File.WriteAllBytesAsync(Path.Combine("out", result.FileName!), output.Data);
+                    else if (result.Error is { } error) Console.Error.WriteLine($"{result.FileName}: {error.Message}");
+                }
+                """,
+            Notes = "MaxMemoryBytes estimates each image's peak from its header before decoding (pipeline.EstimateMemory gives " +
+                    "the same numbers), so small photos run several at a time and a huge one runs alone rather than never. " +
+                    "It schedules by estimate; for a hard ceiling give the processor a BudgetedPixelAllocator, which refuses " +
+                    "an allocation past its budget with ImageMemoryBudgetExceededException. Each image's operations run on " +
+                    "one thread unless the processor's MaxDegreeOfParallelism gives them more, and every image in flight " +
+                    "uses that many: keep MaxConcurrency times MaxDegreeOfParallelism near the cores you have."
+        },
+        new()
+        {
+            Id = "remove-plain-background",
+            Title = "Make a plain backdrop transparent",
+            Intent = "Cut a product, logo or scan out of a uniform background without a segmentation model.",
+            Keywords = "remove background transparent backdrop cut out cutout product logo scan white background magic wand flood floodmask png trim",
+            RunsIn = "Anywhere",
+            SeeAlso = "/retouch",
+            Code = """
+                using Bit.Bmage;
+                using Bit.Bmage.Analysis;
+                using Bit.Bmage.Codecs;
+                using Bit.Bmage.Pipeline;
+
+                var processor = new ImageProcessor();
+                using var photo = await processor.DecodeAsync(uploadBytes);
+
+                // Flood the backdrop in from the four corners, within 10% of their colour, and make it transparent.
+                using var cutout = ImagePipeline.Create()
+                    .RemoveBackground(tolerance: 0.1f, feather: 0.6f)
+                    .Execute(photo);
+
+                // Then trim the transparent border and keep a little room around the subject.
+                var pipeline = ImagePipeline.Create();
+                if (ContentBounds.Find(cutout, new TrimOptions { Mode = TrimMode.Transparent, Padding = 12 }) is { } content)
+                    pipeline = pipeline.Crop(content);
+                using var trimmed = pipeline.Execute(cutout);
+
+                // PNG or WebP keep the transparency; JPEG would fill it with ImageExportOptions.Background.
+                var file = await processor.EncodeAsync(trimmed, ImageExportOptions.Png);
+                """,
+            Notes = "RemoveBackground is a FloodMask seeded at the corners, inverted, through ApplyMask: it removes the region " +
+                    "connected to the corners whose colour is within the tolerance of theirs, so a subject touching a corner in " +
+                    "the backdrop's colour is taken with it. Raise the tolerance for a shaded backdrop, lower it for a pale " +
+                    "subject. For photos of real scenes plug a segmentation model's matte in as a BitmapMask instead. Trimming " +
+                    "reads the pixels, so it is ContentBounds.Find followed by an ordinary crop rather than a pipeline step."
+        },
+        new()
+        {
+            Id = "level-and-colour-correct",
+            Title = "Level a tilted photo and correct its colour",
+            Intent = "Straighten a crooked horizon without empty corners and neutralise a colour cast, automatically or from a picked grey.",
+            Keywords = "straighten level tilt crooked horizon rotate crop white balance colour cast color cast tungsten auto white balance grey card pick neutral hsl whites blacks",
+            RunsIn = "Anywhere",
+            SeeAlso = "/retouch",
+            Code = """
+                using System.Drawing;
+                using Bit.Bmage;
+                using Bit.Bmage.Analysis;
+                using Bit.Bmage.Operations.Adjustments;
+                using Bit.Bmage.Pipeline;
+
+                using var photo = await processor.DecodeAsync(uploadBytes);
+
+                // A grey card, a white wall, a shadow on snow: what should have no colour, sampled 5x5 to average out noise.
+                var neutral = ColorSampler.Sample(photo, new Point(612, 840), radius: 2);
+
+                using var corrected = ImagePipeline.Create()
+                    .AutoOrient()
+                    .WhiteBalance(neutral)                    // or .AutoWhiteBalance() with nothing to pick
+                    .Straighten(-2.5)                         // clockwise degrees; crops to the largest rectangle with no empty corner
+                    .WhitesBlacks(0.15f, -0.1f)
+                    .Hsl(HueBand.Blues, saturation: 0.2f, lightness: -0.15f)
+                    .Execute(photo);
+                """,
+            Notes = "Straighten accepts up to 45 degrees either way and crops by a fraction of the image, so a proxy preview frames " +
+                    "what the export will. White balance gains apply to the encoded sRGB values: a picked colour comes out " +
+                    "exactly neutral and the rest closely follows; AutoWhiteBalance assumes the mid-tones average to grey and " +
+                    "stops at 80% by default, because sunsets and forests are not grey. In an ImageDocument add geometric steps " +
+                    "with AddOperation(op, keepOverlaysAttached: true) so annotations and layers stay on what they mark."
+        },
+        new()
+        {
+            Id = "project-file",
+            Title = "Save and reopen a whole edit as a project file",
+            Intent = "Store the original, the edit and every image it uses in one file that reopens with every layer and stroke still editable.",
+            Keywords = "project save open reopen file bmage zip persist layers editable document original images package archive",
+            RunsIn = "Anywhere",
+            SeeAlso = "/retouch",
+            Code = """
+                using Bit.Bmage;
+                using Bit.Bmage.Editing;
+                using Bit.Bmage.Serialization;
+
+                // Save: the original, the document and the images its layers, masks and annotations use, in one ZIP.
+                await using (var file = File.Create("holiday" + BmageProject.FileExtension))
+                    await BmageProject.SaveAsync(file, original, document);
+
+                // Open: safe on untrusted files - names, file counts, unpacked sizes and image dimensions are all checked.
+                await using var stream = File.OpenRead("holiday.bmage");
+                using var project = await BmageProject.LoadAsync(stream, new BmageProjectOptions { MaxUnpackedBytes = 512L * 1024 * 1024 });
+                using var rendered = new DocumentRenderer().Render(project.Document, project.Original);
+
+                // In the editor the Export tab does both; from code: await editor.SaveProjectAsync("holiday"), editor.OpenProjectAsync(stream).
+                """,
+            Notes = "Images are stored as lossless PNG, which keeps the pixels exactly and makes a project of a large photo tens of " +
+                    "megabytes. The project owns the original and the document's images until disposed; DetachOriginal and " +
+                    "DetachImages hand them on, for instance to an ImageEditSession through Own. The original's metadata is " +
+                    "removed by default (BmageProjectOptions.OriginalMetadata), like an export, so a shared project does not " +
+                    "carry the photo's location. Malformed or hostile archives throw ImageDocumentFormatException and leave " +
+                    "nothing allocated."
         },
     ];
 

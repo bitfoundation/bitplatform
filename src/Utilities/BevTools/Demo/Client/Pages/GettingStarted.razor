@@ -6,8 +6,8 @@
     <h1>Getting started</h1>
     <p class="bb-subtitle">
         A package, one line in <code>Program.cs</code> and one tag in your layout. BevTools then inspects the running
-        app - its components, renders, state, requests, interop calls, errors, services and circuits - with no change
-        to the components themselves.
+        app - its components, renders, state, forms, routes, requests, interop calls, errors, services and circuits -
+        with no change to the components themselves.
     </p>
 </div>
 
@@ -16,9 +16,11 @@
     <p class="bb-card-desc">
         <code>Bit.BevTools</code> works in any Blazor host. <code>Bit.BevTools.Server</code> adds the circuit
         instrumentation of Blazor Server - add it to the server project of a Blazor Server or Interactive Auto app.
+        <code>Bit.BevTools.Loader</code> is only for opening BevTools on demand, below.
     </p>
     <pre class="bb-code">dotnet add package Bit.BevTools          <span class="c"># any Blazor host</span>
-dotnet add package Bit.BevTools.Server   <span class="c"># + Blazor Server circuits</span></pre>
+dotnet add package Bit.BevTools.Server   <span class="c"># + Blazor Server circuits</span>
+dotnet add package Bit.BevTools.Loader   <span class="c"># optional: open it on demand, lazy load it in WebAssembly</span></pre>
 </div>
 
 <div class="bb-card">
@@ -74,16 +76,125 @@ builder.Services.AddBitBevToolsServices(o =&gt;
 <div class="bb-card">
     <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Open it</h3>
     <p class="bb-card-desc">
-        Press <kbd>Ctrl</kbd><kbd>Shift</kbd><kbd>D</kbd> or click the ⚙ BevTools badge in the bottom corner. Inside
-        the panel, <kbd>Ctrl</kbd><kbd>K</kbd> opens search and the command palette - <code>&gt;pause</code> freezes
-        every buffer, <code>&gt;export</code> exports the session. The panel's defaults are options too:
+        Press <kbd>Ctrl</kbd><kbd>Shift</kbd><kbd>D</kbd> or click the ⚙ BevTools badge in the bottom corner; the panel
+        remembers its tab, dock, size and theme. <kbd>Ctrl</kbd><kbd>K</kbd> (or <em>🔍 Search / &gt; command</em>)
+        searches components and runs commands: <code>&gt;pause</code>, <code>&gt;pick</code>, <code>&gt;export</code>,
+        <code>&gt;trace</code>… The header, left to right:
     </p>
+    <ul class="bb-detail-list">
+        <li><em>⏸ Pause</em> freezes every buffer, so what you are reading is not pushed out by a busy app; errors are still collected. <em>▶ Resume</em> says how many renders it skipped.</li>
+        <li><em>live</em> re-reads the open tab as data arrives; turned off, <em>↻ Refresh</em> re-reads it on request.</li>
+        <li><em>⌖ Pick</em> picks a component in the page; ⧉ opens the companion window; then the theme, the dock (bottom or right), the size, and ✕.</li>
+    </ul>
+    <p class="bb-card-desc">The panel's defaults are options too:</p>
     <pre class="bb-code">builder.Services.AddBitBevToolsServerServices(o =&gt;
 {
     o.Ui.ToggleShortcut = <span class="s">"Ctrl+Shift+D"</span>;   <span class="c">// the default</span>
     o.Ui.Dock = BevToolsDock.Right;        <span class="c">// or Bottom (the default)</span>
     o.Ui.Theme = BevToolsTheme.Auto;       <span class="c">// Auto, Light or Dark</span>
     o.Ui.OpenByDefault = <span class="k">false</span>;
+    o.Ui.ShowBadge = <span class="k">true</span>;            <span class="c">// false: only the companion window and the extension show it</span>
+    o.Ui.EditorUrlTemplate = <span class="s">"vscode://file/{path}:{line}:{column}"</span>;   <span class="c">// what source links open</span>
+});</pre>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> The tabs at a glance</h3>
+    <p class="bb-card-desc">Each tab answers one kind of question; every scenario page of this site is built to ask some of them.</p>
+    <div class="bb-scroll" tabindex="0" role="region" aria-label="BevTools' tabs and where this site shows them">
+        <table class="bb-table">
+            <thead><tr><th>Tab</th><th>What it answers</th><th>Try it on</th></tr></thead>
+            <tbody>
+                <tr><td class="bb-table-key">Components</td><td>Which components exist, with their parameters, cascading values, state, services, handlers, lifecycle, source and render mode; why each render happened. ⌖ picks one in the page.</td><td><a href="dashboard">Dashboard</a>, <a href="counter">Counter</a></td></tr>
+                <tr><td class="bb-table-key">Profiler</td><td>Renders and time per component or per type, since a reset; each render batch as a cost tree or on a time axis; renders per page; comparison with an earlier export.</td><td><a href="products">Products</a></td></tr>
+                <tr><td class="bb-table-key">Timeline</td><td>Every render, batch, event, navigation, state change, request, interop call, error and custom event, each linked to its cause and its effects.</td><td><a href="counter">Counter</a>, <a href="products">Products</a></td></tr>
+                <tr><td class="bb-table-key">State</td><td>Registered state containers and the signed-in user: snapshots and a history of named changes with diffs.</td><td><a href="checkout">Checkout</a>, <a href="routing">Routing</a></td></tr>
+                <tr><td class="bb-table-key">Forms</td><td>Every <code>EditForm</code>: its fields, what validates it, what shows its messages, each validation's outcome.</td><td><a href="checkout">Checkout</a></td></tr>
+                <tr><td class="bb-table-key">Routing</td><td>The current page, template, route values and query; the route table; navigation history and guards; who is signed in.</td><td><a href="routing">Routing &amp; sign-in</a></td></tr>
+                <tr><td class="bb-table-key">Network</td><td>Every <code>IHttpClientFactory</code> request with its trigger and sender; requests per endpoint; WebSocket and SignalR traffic.</td><td><a href="orders">Orders</a></td></tr>
+                <tr><td class="bb-table-key">JS Interop</td><td>.NET → JS calls per identifier and component, and JS → .NET calls.</td><td><a href="interop">JS interop</a></td></tr>
+                <tr><td class="bb-table-key">Errors</td><td>Exceptions, failed requests, JS errors, resources that did not load and CSP violations, with what preceded each; groups of the same failure.</td><td><a href="errors">Errors</a></td></tr>
+                <tr><td class="bb-table-key">Services</td><td>Every DI registration with its lifetime, dependencies and consumers; captive dependencies and cycles.</td><td><a href="dashboard">Dashboard</a></td></tr>
+                <tr><td class="bb-table-key">Diagnostics</td><td>Findings with evidence - render storms, request bursts, leaks, loops, forms that do not validate… - and the rules behind them.</td><td>every page</td></tr>
+                <tr><td class="bb-table-key">Runtime</td><td>Where each render mode runs, what prerendering did, the server process or WebAssembly runtime, the heap, and disposed components still alive.</td><td><a href="products">Products</a>, <a href="circuit">Circuit</a></td></tr>
+                <tr><td class="bb-table-key">Browser</td><td>Connectivity, visibility, the JS heap, page load, storage (redacted) and an accessibility check of the page.</td><td><a href="interop">JS interop</a>, <a href="checkout">Checkout</a></td></tr>
+                <tr><td class="bb-table-key">About</td><td>What this session can and cannot observe and why, what BevTools itself costs, and the exports.</td><td><a href="share">Share &amp; automate</a></td></tr>
+                <tr><td class="bb-table-key">Circuit</td><td>Blazor Server only: the circuit's connection, inbound message time, reconnects and the process's other circuits.</td><td><a href="circuit">Circuit</a></td></tr>
+            </tbody>
+        </table>
+    </div>
+    <p class="bb-card-desc">
+        Extensions add tabs after these - on this site, <em>Store</em> (see <a href="extending">Extending</a>). About
+        also lists every piece of information as <em>Available</em>, <em>Partially available</em>, <em>Requires
+        instrumentation</em>, <em>Requires application integration</em>, <em>Requires runtime support</em>, <em>Not
+        technically reliable</em> or <em>Not available</em>, with the reason: what BevTools cannot observe, it says it
+        cannot. The richest answers - UI-event render causes, handler durations, diff and lifecycle timings - need
+        .NET 10; on .NET 8 and 9 those rows say <em>Requires .NET 10</em>.
+    </p>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> How much it reads</h3>
+    <p class="bb-card-desc">
+        Structure, counts, timings, causes, requests and errors are recorded at every level;
+        <code>options.ValueAccess</code> decides how much of the app's own values BevTools reads.
+    </p>
+    <div class="bb-scroll" tabindex="0" role="region" aria-label="Value access levels">
+        <table class="bb-table">
+            <thead><tr><th>Level</th><th>Parameters, fields, state, claims</th><th>Default</th></tr></thead>
+            <tbody>
+                <tr><td><code>Full</code></td><td>Read and shown, member by member, redacted</td><td>Development, and every single-user host (WebAssembly, Blazor Hybrid)</td></tr>
+                <tr><td><code>Shallow</code></td><td>Numbers, booleans, dates and harmless strings only; objects show their type and size</td><td>-</td></tr>
+                <tr><td><code>None</code></td><td>Names and types only</td><td>Outside Development in a process that serves many users</td></tr>
+            </tbody>
+        </table>
+    </div>
+    <p class="bb-card-desc">
+        At every level, values are redacted where they are captured: by name (<code>password</code>, <code>token</code>,
+        <code>authorization</code>, <code>apikey</code>, <code>secret</code>…), by <code>[BevToolsSensitive]</code>, and by
+        shape - JSON Web Tokens, bearer tokens, connection strings, private keys, cloud keys. Configuration, options,
+        credentials, request and response bodies and WebSocket payloads are never read, nothing is sent anywhere, and
+        every export, trace and companion view shows exactly what the panel does. <strong>Runtime</strong> shows the
+        level in force; the <a href="dashboard">dashboard</a> has secrets to look for.
+    </p>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Open it on demand, even in production</h3>
+    <p class="bb-card-desc">
+        With <code>Bit.BevTools.Loader</code>, an app ships BevTools without anyone downloading or running it until
+        they ask. The loader is small, trimmable and AOT compatible; until BevTools is attached it installs only hooks
+        that pass everything through. In Blazor WebAssembly, <code>Bit.BevTools</code> itself can then be lazy loaded.
+    </p>
+    <pre class="bb-code">&lt;<span class="k">BlazorWebAssemblyLazyLoad</span> <span class="k">Include</span>=<span class="s">"Bit.BevTools.wasm"</span> /&gt;   <span class="c">&lt;!-- the WebAssembly project --&gt;</span>
+
+builder.Services.AddBitBevToolsLoaderServices(o =&gt;
+    o.RegisterAtStartup = builder.HostEnvironment.IsDevelopment());
+
+<span class="c">@@* MainLayout.razor, instead of &lt;BevToolsPanel /&gt; *@@</span>
+&lt;<span class="k">BevToolsLoaderPanel</span> /&gt;
+
+<span class="c">@@* the app's own "Open dev tools" button *@@</span>
+<span class="k">@@inject</span> BevToolsLoader BevToolsLoader
+<span class="k">@@if</span> (BevToolsLoader.CanOpen)
+{
+    &lt;<span class="k">button</span> @@onclick=<span class="s">"BevToolsLoader.OpenAsync"</span>&gt;Open dev tools&lt;/<span class="k">button</span>&gt;
+}</pre>
+    <p class="bb-card-desc">
+        Opened later, BevTools reads the components that already exist and sees everything from then on; About lists
+        exactly what such a session can see. On Blazor Server one process serves many users, so outside Development
+        <code>CanOpen</code> stays false unless the app sets <code>AllowInMultiUserHost</code> together with
+        <code>Authorize</code>, a callback that decides who may open it - asked on every open, logged on every attach,
+        and with <code>ValueAccess</code> at <code>None</code> unless the app raises it.
+    </p>
+    <pre class="bb-code">builder.Services.AddBitBevToolsLoaderServices(o =&gt;
+{
+    o.AllowInMultiUserHost = <span class="k">true</span>;
+    o.Authorize = <span class="k">async</span> services =&gt;
+    {
+        <span class="k">var</span> state = <span class="k">await</span> services.GetRequiredService&lt;AuthenticationStateProvider&gt;().GetAuthenticationStateAsync();
+        <span class="k">return</span> state.User.IsInRole(<span class="s">"Developer"</span>);
+    };
 });</pre>
 </div>
 
@@ -91,21 +202,29 @@ builder.Services.AddBitBevToolsServices(o =&gt;
     <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> How this site does it</h3>
     <p class="bb-card-desc">
         This demo is a Blazor Web App in Interactive Auto, and it exists to show BevTools wherever it is deployed, so it
-        enables it explicitly instead of relying on the Development environment. The panel sits in
-        <code>Routes.razor</code>, after the router, so it survives every navigation.
+        enables it explicitly instead of relying on the Development environment, and it registers an extension of its
+        own. The panel sits in <code>Routes.razor</code>, after the router, so it survives every navigation.
     </p>
-    <pre class="bb-code"><span class="c">// Demo/Server/Program.cs</span>
-builder.Services.AddBitBevToolsServerServices(o =&gt; o.Enabled = <span class="k">true</span>);
+    <pre class="bb-code"><span class="c">// Demo/Server/Program.cs (made-up data: values readable outside Development too)</span>
+builder.Services.AddBitBevToolsServerServices(o =&gt;
+{
+    o.Enabled = <span class="k">true</span>;
+    o.ValueAccess = BevValueAccess.Full;
+    o.Extensions.Add(<span class="k">new</span> DemoBevToolsExtension());
+});
 
 <span class="c">// Demo/Client/Program.cs</span>
 builder.Services.AddBitBevToolsServices(options =&gt;
 {
     options.Enabled = <span class="k">true</span>;
     options.Ui.OpenByDefault = <span class="k">false</span>;
+    options.Extensions.Add(<span class="k">new</span> DemoBevToolsExtension());
 });</pre>
     <div class="bb-note">
         The site's own header, docs layout and footer are ordinary application components here, so they appear in
         the Components tree, the Profiler and the JS Interop panel next to the scenarios, as a layout does in any app.
+        Under Interactive Auto a first visit runs on a Server circuit; once the WebAssembly runtime is cached, a full
+        reload runs the same pages in the browser. Every scenario says which renderer it got.
     </div>
 </div>
 
@@ -115,6 +234,7 @@ builder.Services.AddBitBevToolsServices(options =&gt;
         <a href="problems" class="btn btn-primary">Problems to diagnose →</a>
         <a href="dashboard" class="btn btn-outline">Why did it render? →</a>
         <a href="checkout" class="btn btn-outline">Expose your state →</a>
-        <a href="@($"{SiteInfo.ProjectUrl}#extending")" class="btn btn-outline" target="_blank" rel="noopener noreferrer">Extend BevTools ↗</a>
+        <a href="share" class="btn btn-outline">Share &amp; automate →</a>
+        <a href="extending" class="btn btn-outline">Extend BevTools →</a>
     </div>
 </div>

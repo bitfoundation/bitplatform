@@ -1,0 +1,20 @@
+﻿@* One map as JSON: its entries as values, a nested set as a list of its members and a nested text as a string.
+   ProjectionJson.cs, next to this file, writes it out. Place it inside a BcrdtCollaborationScope, which cascades
+   the open document. *@
+@using Bit.Bcrdt
+@using Bit.Bcrdt.Blazor
+@inherits BcrdtComponentBase
+
+<pre>@ProjectionJson.Format(_form.ToJson())</pre>
+
+@code {
+    private BcrdtMap _form = default!;
+
+    [CascadingParameter] public BcrdtCollaborativeDocument Document { get; set; } = default!;
+
+    protected override void OnInitialized()
+    {
+        _form = Document.GetMap("form");
+        TrackDeep(_form);   // the map, and the set and text nested in it
+    }
+}

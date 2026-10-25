@@ -24,6 +24,13 @@
         layout, history and the clipboard - lives in it:
     </p>
     <pre class="bb-code"><span class="k">@@using</span> Bit.Blow</pre>
+    <p class="bb-card-desc">
+        A canvas needs an interactive render mode: a statically rendered page shows its markup but never responds.
+        WebAssembly is the one to choose for editing, since every pointer move of a drag is handled in C# without a
+        network hop; <code>InteractiveAuto</code> works too, and so does Blazor Server, with each move a round trip
+        over the circuit.
+    </p>
+    <pre class="bb-code"><span class="k">@@rendermode</span> InteractiveWebAssembly</pre>
 </div>
 
 <div class="bb-card">
@@ -48,7 +55,9 @@
         or give the canvas one directly with <code>Style="height: 600px"</code>. The graph is plain C#: the canvas
         edits the lists you hand it in place as the user works.
     </p>
-    <pre class="bb-code">&lt;<span class="k">div</span> style=<span class="s">"height: 400px"</span>&gt;
+    <pre class="bb-code">&lt;<span class="k">button</span> @@onclick=<span class="s">"AddStep"</span>&gt;Add step&lt;/<span class="k">button</span>&gt;
+
+&lt;<span class="k">div</span> style=<span class="s">"height: 400px"</span>&gt;
     &lt;<span class="k">BlowCanvas</span> @@ref=<span class="s">"_flow"</span> Nodes=<span class="s">"_nodes"</span> Edges=<span class="s">"_edges"</span> FitViewOnInit=<span class="s">"true"</span>&gt;
         &lt;<span class="k">BlowBackground</span> /&gt;
         &lt;<span class="k">BlowControls</span> /&gt;
@@ -57,6 +66,7 @@
 
 <span class="k">@@code</span> {
     <span class="k">private</span> BlowCanvas? _flow;
+    <span class="k">private int</span> _next = 4;
 
     <span class="k">private</span> List&lt;BlowNode&gt; _nodes =
     [
@@ -70,6 +80,14 @@
         <span class="k">new</span> BlowEdge { Id = <span class="s">"e1-2"</span>, Source = <span class="s">"1"</span>, Target = <span class="s">"2"</span> },
         <span class="k">new</span> BlowEdge { Id = <span class="s">"e2-3"</span>, Source = <span class="s">"2"</span>, Target = <span class="s">"3"</span>, Animated = <span class="k">true</span> },
     ];
+
+    <span class="k">private async</span> Task AddStep()
+    {
+        <span class="k">if</span> (_flow <span class="k">is null</span>) <span class="k">return</span>;
+        <span class="k">var</span> id = (_next++).ToString();
+        _flow.AddNodes(<span class="k">new</span> BlowNode { Id = id, Label = <span class="s">$"Step {id}"</span>, Position = <span class="k">new</span>(220, (_next - 5) * 70) });
+        <span class="k">await</span> _flow.FitViewAsync(300);
+    }
 }</pre>
 
     <div class="bb-demo blow-demo">
@@ -92,6 +110,12 @@
         and two fingers pinch. <kbd>Tab</kbd> reaches every node and edge, <kbd>Enter</kbd> selects, the arrow keys
         move the selection and <kbd>Escape</kbd> clears it.
     </p>
+    <p class="bb-card-desc">
+        <strong>Add step</strong> goes through the canvas captured with <code>@@ref</code>: <code>AddNodes</code> puts
+        a node in the list and <code>FitViewAsync(300)</code> eases the view over 300 milliseconds so the new step is
+        in sight. Adding to <code>_nodes</code> directly works as well - the canvas re-reads the list each time your
+        component renders.
+    </p>
 </div>
 
 <div class="bb-card">
@@ -101,14 +125,21 @@
         has happened:
     </p>
     <ul class="bb-detail-list">
-        <li><code>NodesChanged</code> and <code>EdgesChanged</code> once an edit is complete - a drag released, a resize ended, a connection made, something deleted or pasted. Not on every pointer move.</li>
+        <li><code>NodesChanged</code> and <code>EdgesChanged</code> once an edit is complete - a drag released, a resize ended, a connection made, something deleted, pasted, aligned or nudged with the keyboard. Not on every pointer move.</li>
         <li><code>OnNodeDrag</code>, <code>OnNodeResize</code> and <code>OnMove</code> while a gesture runs, for live readouts.</li>
         <li><code>OnSelectionChange</code> when the selected set actually changes.</li>
         <li><code>OnConnect</code>, <code>OnReconnect</code> and <code>OnDelete</code> for the specific edits. A connection adds its own edge; <code>OnConnect</code> is for side effects.</li>
+        <li><code>OnGraphChanged</code> once per completed edit of any kind, with what kind it was, who made it and the elements it touched - the one place to persist, validate or broadcast from.</li>
     </ul>
     <p class="bb-card-desc">
-        When your own code changes the graph outside a render of your component - a timer, a message from a server -
-        call <code>_flow.Refresh(remeasure: true)</code>, or <code>InvokeAsync(StateHasChanged)</code> on your component.
+        <code>Nodes</code>/<code>NodesChanged</code> and <code>Edges</code>/<code>EdgesChanged</code> are bindable pairs, so
+        <code>@@bind-Nodes="_nodes"</code> compiles - but the list instance never changes, so it is mostly a signal to persist.
+    </p>
+    <p class="bb-card-desc">
+        When your own code changes the graph - adds a node, edits a label, flips <code>Hidden</code> - the usual Blazor
+        rule applies: your component re-renders after its event handler and the canvas re-reads the lists. For a change
+        made outside a render of your component - a timer, a message from a server - call
+        <code>_flow.Refresh(remeasure: true)</code>, or <code>InvokeAsync(StateHasChanged)</code> on your component.
     </p>
 </div>
 
@@ -128,12 +159,18 @@ BlowNode? found = _flow.GetNode(<span class="s">"2"</span>);
 
 BlowSnapshot snapshot = _flow.ToObject();
 <span class="k">await</span> _flow.RestoreAsync(snapshot);</pre>
+    <p class="bb-card-desc">
+        <code>OnInit</code> hands you the same reference once the canvas has rendered and measured for the first time.
+        To drive a flow from a sidebar or a toolbar elsewhere on the page, pass the reference to them; nothing like
+        React Flow's provider is needed (see <a href="examples/provider">Provider</a>).
+    </p>
 </div>
 
 <div class="bb-card">
     <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Where to go next</h3>
     <ul class="bb-link-list">
         <li><a href="basic-flow">Basic Flow</a> - every default gesture on one canvas.</li>
+        <li><a href="interactions">Interactions</a> - the options that change those gestures, with an event log of what the canvas raises.</li>
         <li><a href="custom-nodes">Custom Nodes</a> - your own node markup, with handles wherever you put them.</li>
         <li><a href="examples">All Examples</a> - more than eighty working pages, most of them ports of React Flow's own.</li>
         <li><a href="mcp-server">MCP server</a> - point an AI agent at this site and it reads the library instead of guessing.</li>
@@ -157,9 +194,11 @@ BlowSnapshot snapshot = _flow.ToObject();
         new BlowEdge { Id = "e2-3", Source = "2", Target = "3", Animated = true },
     ];
 
-    private void AddStep()
+    private async Task AddStep()
     {
+        if (_flow is null) return;
         var id = (_next++).ToString();
-        _flow?.AddNodes(new BlowNode { Id = id, Label = $"Step {id}", Position = new(220, (_next - 5) * 70) });
+        _flow.AddNodes(new BlowNode { Id = id, Label = $"Step {id}", Position = new(220, (_next - 5) * 70) });
+        await _flow.FitViewAsync(300);
     }
 }

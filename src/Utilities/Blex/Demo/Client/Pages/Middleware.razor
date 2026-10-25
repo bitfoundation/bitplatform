@@ -5,12 +5,14 @@
 @inject ActionFeed Feed
 @inject SearchStore Search
 @inject FailureLog Failures
+@inject AccountStore Account
+@inject BlexManager Manager
 
 <DocPage Href="middleware" Title="Middleware"
          Lead="A hook on every action: observe it after it applies, or veto it before it runs.">
 
     <div class="bb-card">
-        <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> The interface</h3>
+        <h2 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> The interface</h2>
         <p>
             Middleware runs synchronously on the dispatch path. <code>BeforeAction</code> sees an action
             that is about to mutate state and can cancel it; <code>OnAction</code> sees one that already
@@ -21,7 +23,7 @@
     </div>
 
     <div class="bb-card">
-        <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Registering</h3>
+        <h2 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Registering</h2>
         <p>Four ways, depending on what the middleware needs:</p>
         <CodeBlock Code="@Register" FileName="Program.cs" />
 
@@ -40,7 +42,7 @@
     </div>
 
     <div class="bb-card">
-        <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Observing</h3>
+        <h2 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Observing</h2>
         <p>
             This is how you get logging, analytics or an audit trail. The Inspector at the bottom of this
             page is exactly this - an <code>ActionFeedMiddleware</code> registered in the site's
@@ -79,7 +81,7 @@
     </div>
 
     <div class="bb-card">
-        <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Vetoing</h3>
+        <h2 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Vetoing</h2>
         <p>
             <code>BeforeAction</code> runs ahead of the mutation. Calling <code>Cancel()</code> stops the
             action completely: the body never runs, nothing changes, nothing is recorded and no
@@ -109,7 +111,7 @@
             <div class="bb-stats">
                 <div class="bb-stat">
                     <span class="bb-stat-label">Count</span>
-                    <span class="bb-stat-value demo-accent">@Counter.Count</span>
+                    <span class="bb-stat-value demo-accent"><Persisted>@Counter.Count</Persisted></span>
                 </div>
                 <div class="bb-stat">
                     <span class="bb-stat-label">Actions blocked</span>
@@ -134,7 +136,7 @@
     </div>
 
     <div class="bb-card">
-        <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> The pre-action context</h3>
+        <h2 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> The pre-action context</h2>
         <ApiTable Title="BlexPreActionContext" Rows="@PreRows" />
 
         <p>
@@ -142,10 +144,40 @@
             reject the action rather than letting it write bad state:
         </p>
         <CodeBlock Code="@Validate" />
+
+        <p>
+            Matching a qualified name by string and fishing an argument out by parameter name works, but
+            it fails silently - and open - the day the action or its parameter is renamed. Name the action
+            by its <a href="actions#typed-actions">generated descriptor</a> instead: the filter then runs
+            for that action only, receives the store and the payload as the type the action takes, and a
+            rename becomes a build error.
+        </p>
+        <CodeBlock Code="@TypedFilter" Title="Typed filters" />
+
+        <DemoCard Title="A typed filter, registered at startup"
+                  Description="This site registers options.UseFilter(AccountStore.Actions.Deposit, (account, amount) =&gt; amount is &gt; 0 and &lt;= 1000). A deposit inside the range applies; one outside it is vetoed before the body runs - the balance stays, and the feed gains nothing. Withdraw is another action, so the filter never sees it."
+                  Source="@TypedFilterSource">
+            <div class="bb-toolbar">
+                <button class="btn btn-primary" @onclick="() => TryAccount(() => Account.Deposit(50))">Deposit(50)</button>
+                <button class="btn demo-btn-danger" @onclick="() => TryAccount(() => Account.Deposit(5000))">Deposit(5000)</button>
+                <button class="btn demo-btn-danger" @onclick="() => TryAccount(() => Account.Deposit(-10))">Deposit(-10)</button>
+                <button class="btn btn-secondary" @onclick="() => TryAccount(() => Account.Withdraw(50))">Withdraw(50)</button>
+            </div>
+            <div class="bb-stats">
+                <div class="bb-stat">
+                    <span class="bb-stat-label">account/Balance</span>
+                    <span class="bb-stat-value demo-accent">@Account.Balance.ToString("0.00")</span>
+                </div>
+                <div class="bb-stat">
+                    <span class="bb-stat-label">Last call</span>
+                    <span class="bb-stat-value demo-stat-text">@_accountNote</span>
+                </div>
+            </div>
+        </DemoCard>
     </div>
 
     <div class="bb-card">
-        <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> When the action itself throws</h3>
+        <h2 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> When the action itself throws</h2>
         <p>
             The third hook, <code>OnActionError</code>, fires when an action <em>body</em> throws. It is
             the counterpart to Pinia's <code>$onAction</code> <code>onError</code>, and it is where a
@@ -225,7 +257,7 @@
     </div>
 
     <div class="bb-card">
-        <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Error isolation</h3>
+        <h2 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Error isolation</h2>
         <p>
             Middleware must not be able to break dispatch. An exception thrown from
             <code>BeforeAction</code> or <code>OnAction</code> is caught, reported to
@@ -236,12 +268,12 @@
     </div>
 
     <div class="bb-card">
-        <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Cost when nothing is listening</h3>
+        <h2 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Cost when nothing is listening</h2>
         <p>
-            With no middleware, no DevTools connection and no subscribers, the manager reports
-            <code>HasObservers == false</code> and the whole recording step is skipped. Generated
-            wrappers check the same flag before allocating their <code>BlexActionArg[]</code>, so an app that
-            observes nothing pays nothing for the machinery.
+            With no middleware, no DevTools connection and no subscribers, the manager knows nothing is
+            listening and skips the whole recording step. Generated wrappers ask the same question - through
+            the store's protected <code>IsObserved</code> - before allocating their <code>BlexActionArg[]</code>,
+            so an app that observes nothing pays nothing for the machinery.
         </p>
 
         <Callout Kind="Callout.CalloutKind.Tip" Title="Middleware is also a coordination point">
@@ -256,9 +288,23 @@
 </DocPage>
 
 @code {
+    private string _accountNote = "-";
+
+    /// <summary>Runs one account action and says whether it got through: a vetoed action records nothing.</summary>
+    private void TryAccount(Action act)
+    {
+        var recorded = new List<string>();
+        using (Manager.Subscribe(ctx => recorded.Add(ctx.QualifiedName)))
+            act();
+
+        _accountNote = recorded.Count == 0
+            ? "vetoed - nothing ran, nothing was recorded"
+            : $"applied - recorded {string.Join(", ", recorded)}";
+    }
+
     protected override void OnInitialized()
     {
-        Subscribe(Counter, Search);
+        Subscribe(Counter, Search, Account);
         Guard.Changed += OnExternalChange;
         Feed.Changed += OnExternalChange;
         Failures.Changed += OnExternalChange;
@@ -307,6 +353,9 @@
         new("options.UseMiddleware(instance)", "Registers a pre-built instance. Shared across every scope."),
         new("options.UseMiddleware(Action&lt;BlexActionContext&gt;)", "Wraps a delegate in <code>BlexDelegateMiddleware</code>. Handy for one-line logging."),
         new("options.UseFilter(Func&lt;BlexPreActionContext, bool&gt;)", "Wraps a predicate in <code>BlexFilterMiddleware</code>. Return <code>false</code> to veto."),
+        new("options.UseFilter(BlexAction&lt;TStore, TPayload&gt;, Func&lt;TStore, TPayload, bool&gt;)", "A veto filter for one action, named by its generated descriptor, handed the store and the typed payload. Every other action passes. A <code>BlexAction&lt;TStore&gt;</code> overload takes <code>Func&lt;TStore, bool&gt;</code>."),
+        new("options.UseLogging(LogLevel actionLevel = Debug)", "Adds <code>BlexLoggingMiddleware</code> over the host's <code>ILogger</code>, in its place in the order. See <a href=\"errors#observability\">Logging and tracing</a>."),
+        new("services.AddScoped&lt;IBlexMiddleware, T&gt;()", "Middleware registered straight into the container rather than through the options also runs - after everything the options registered."),
     ];
 
     private static readonly IReadOnlyList<ApiTable.Row> PreRows =
@@ -365,11 +414,16 @@
         [BlexEffect(Concurrency = BlexEffectConcurrency.Latest)]
         private async Task OnSearch(string query, CancellationToken ct)
         {
-            await Task.Delay(700, ct);
-            if (SimulateFailure)
-                throw new InvalidOperationException($"unavailable for '{query}'");
+            Query = query;
 
-            Results = Catalog.Where(c => c.Contains(query)).ToList();
+            await Task.Delay(700, ct);
+
+            if (SimulateFailure)
+                throw new InvalidOperationException($"The search service is unavailable (simulated) for '{query}'.");
+
+            Results = string.IsNullOrWhiteSpace(query)
+                ? []
+                : [.. Catalog.Where(c => c.Contains(query, StringComparison.OrdinalIgnoreCase))];
         }
 
         // Program.cs -- one line, and every failing action is reported.
@@ -458,6 +512,31 @@
 
             var quantity = ctx.Args.FirstOrDefault(a => a.Name == "quantity").Value;
             return quantity is int q && q is >= 0 and <= 99;   // false -> vetoed
+        });
+        """;
+
+    private const string TypedFilterSource = """
+        // Program.cs - AccountStore.Actions.Deposit is a BlexAction<AccountStore, decimal>.
+        builder.Services.AddBitBlexServices(options =>
+            options.UseFilter(AccountStore.Actions.Deposit, (account, amount) => amount is > 0 and <= 1000));
+
+        // The page
+        Account.Deposit(50);     // applied, recorded as account/Deposit
+        Account.Deposit(5000);   // vetoed: the body never runs, nothing is recorded
+        Account.Withdraw(50);    // another action - the filter is not consulted
+        """;
+
+    private const string TypedFilter = """
+        builder.Services.AddBitBlexServices(options =>
+        {
+            // CartStore.Actions.SetQuantity is a BlexAction<CartStore, (string Sku, int Quantity)>.
+            options.UseFilter(CartStore.Actions.SetQuantity, (cart, line) => line.Quantity is >= 0 and <= 99);
+
+            // A single-parameter action's payload is the argument itself.
+            options.UseFilter(CartStore.Actions.SetDiscount, (cart, rate) => rate <= 0.5m);
+
+            // A parameterless action gets the store only.
+            options.UseFilter(CheckoutStore.Actions.Submit, checkout => checkout.Lines.Count > 0);
         });
         """;
 }

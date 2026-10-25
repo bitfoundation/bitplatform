@@ -33,6 +33,8 @@ public class McpControllerTests
     [DataRow("server", "MaxInteractiveDimension = 1200")]
     [DataRow("auto", "InteractiveAuto")]
     [DataRow("standalone-wasm", "wwwroot/index.html")]
+    [DataRow("hybrid", "AddMauiBlazorWebView")]
+    [DataRow("MAUI", "AddMauiBlazorWebView")]
     [DataRow("headless", "AddBitBmageHeadlessServices")]
     [DataRow("InteractiveServer", "InteractiveServer")]
     [DataRow("console", "new ImageProcessor()")]
@@ -44,7 +46,7 @@ public class McpControllerTests
     [TestMethod]
     public void SetupGuide_AnUnknownMode_ListsTheKnownOnes()
     {
-        var answer = _controller.GetBmageSetupGuide("maui");
+        var answer = _controller.GetBmageSetupGuide("electron");
 
         StringAssert.Contains(answer, "not a known hosting model");
 

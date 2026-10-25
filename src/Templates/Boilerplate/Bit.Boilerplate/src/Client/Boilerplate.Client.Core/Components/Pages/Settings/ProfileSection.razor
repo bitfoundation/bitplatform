@@ -1,3 +1,4 @@
+@using Boilerplate.Shared.Features.Attachments
 @inherits AppComponentBase
 
 <section>
@@ -18,9 +19,9 @@
                            AutoReset
                            ShowPreview
                            HideFileView
-                           Accept="image/*"
+                           Accept="@ImageUploadContentTypes.Accept"
                            MaxSize="1024 * 1024 * 10"
-                           AllowedExtensions="@(["image/*"])"
+                           AllowedExtensions="ImageUploadContentTypes.All"
                            UploadUrlProvider="GetUploadUrl"
                            OnFilesChange="WrapHandled((BitFileInfo[] files) => HandleOnFilesChange(files))"
                            OnUploading="() => isUploading = true"

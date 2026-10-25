@@ -106,7 +106,11 @@ public sealed class LevelsAdjustment : CurveOperation
             null, "Levels")
     {
         InputBlack = inputBlack; InputWhite = inputWhite; Gamma = gamma; OutputBlack = outputBlack; OutputWhite = outputWhite;
+        Channels = channels;
     }
+
+    /// <summary>The channels the levels apply to.</summary>
+    public ColorChannels Channels { get; }
 
     public float InputBlack { get; }
     public float InputWhite { get; }

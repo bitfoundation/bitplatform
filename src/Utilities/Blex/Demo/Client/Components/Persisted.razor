@@ -1,0 +1,59 @@
+﻿@inject BlexStatePersistor Persistor
+@implements IDisposable
+
+@*
+    A value read from a persisted store, rendered only once the store holds what the browser had stored.
+    Until then - the whole prerender, and the first moments of the interactive render, since nothing reads
+    localStorage before the app runs in the browser - it is a placeholder, not the declared default: a
+    counter the reader left at 3 must not read 0 for the seconds the runtime takes to start, to the eye or
+    to a screen reader.
+
+    This is the persistence page's own advice applied to the site: HasHydrated is the flag to branch on,
+    Hydrated the event to re-render from.
+*@
+@if (_ready)
+{
+    @ChildContent
+}
+else
+{
+    <span class="demo-pending" aria-hidden="true"></span><span class="bb-visually-hidden">loading</span>
+}
+
+@code {
+    private bool _ready;
+
+    /// <summary>The value, as markup; re-evaluated on every render, so it reads the store's current state.</summary>
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    protected override void OnInitialized()
+    {
+        _ready = Persistor.HasHydrated;
+        if (_ready is false)
+            Persistor.Hydrated += OnHydrated;
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender is false || _ready)
+            return;
+
+        // Bounded: a storage that never answers must not leave the value hidden for good. Hydration itself never
+        // fails on bad data - an unreadable payload is reported and skipped.
+        await Task.WhenAny(Persistor.WhenHydratedAsync(), Task.Delay(TimeSpan.FromSeconds(5)));
+        Show();
+    }
+
+    private void OnHydrated() => _ = InvokeAsync(Show);
+
+    private void Show()
+    {
+        if (_ready)
+            return;
+
+        _ready = true;
+        StateHasChanged();
+    }
+
+    public void Dispose() => Persistor.Hydrated -= OnHydrated;
+}

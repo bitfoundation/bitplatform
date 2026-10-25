@@ -938,7 +938,8 @@ function Install-BitUnderTest([string] $lab) {
             throw "$Sha isn't a commit of this repository."
         }
 
-        dotnet pack (Join-Path $source 'src\Cli\Bit.Cli\Bit.Cli.csproj') -c Release -o $feed -p:ReleaseVersion=0.0.0 -p:PackageVersion=0.0.0 -nologo -v q > (Join-Path $lab 'pack.log')
+        $cliProject = 'src\Toolings\Cli\Bit.Cli\Bit.Cli.csproj', 'src\Cli\Bit.Cli\Bit.Cli.csproj' | ForEach-Object { Join-Path $source $_ } | Where-Object { Test-Path $_ } | Select-Object -First 1
+        dotnet pack $cliProject -c Release -o $feed -p:ReleaseVersion=0.0.0 -p:PackageVersion=0.0.0 -nologo -v q > (Join-Path $lab 'pack.log')
 
         if ($LASTEXITCODE -ne 0) {
             throw "bit doesn't pack from $Sha; see $(Join-Path $lab 'pack.log')."
@@ -953,7 +954,7 @@ function Install-BitUnderTest([string] $lab) {
     }
     else {
         Write-Host 'Installing bit from nuget.org...'
-        dotnet tool install Bit.Cli --tool-path $tools --prerelease | Out-Null
+        dotnet tool install Bit.Cli --tool-path $tools --version 10.7.0-pre-04 | Out-Null
     }
 
     if ($LASTEXITCODE -ne 0) {
@@ -1516,6 +1517,7 @@ function ConvertTo-CallInput($value) {
 
 function Read-AgentTranscript([string] $log) {
     $calls = [Collections.Generic.List[object]]::new()
+    $texts = [Collections.Generic.List[string]]::new()
     $session = $final = $cost = $null
 
     foreach ($line in Get-Content $log -Encoding utf8) {
@@ -1538,6 +1540,10 @@ function Read-AgentTranscript([string] $log) {
             foreach ($use in $event.message.content | Where-Object type -eq 'tool_use') {
                 $calls.Add([pscustomobject]@{ Name = $use.name; Input = ConvertTo-CallInput $use.input })
             }
+
+            if (-not $event.parent_tool_use_id) {
+                $event.message.content | Where-Object type -eq 'text' | ForEach-Object { $texts.Add($_.text) }
+            }
         }
         elseif ($event.type -eq 'result') {
             $final = $event.result
@@ -1545,7 +1551,7 @@ function Read-AgentTranscript([string] $log) {
         }
     }
 
-    [pscustomobject]@{ Session = $session; Cost = $cost; Final = $final; Calls = $calls }
+    [pscustomobject]@{ Session = $session; Cost = $cost; Final = $final; Texts = @($texts); Calls = $calls }
 }
 
 function Invoke-AgentTurn([string] $folder, [string] $model, [string] $prompt, [string] $session, [double] $budget, [string] $log) {
@@ -1577,7 +1583,7 @@ function Test-AgentCheck($check, $folder, $turns, $handoff, $states) {
     $scope = $check.handoff ? @($handoff) : @($turns)
     $calls = @($scope | Where-Object { $_ } | ForEach-Object { $_.Calls })
     $state = $check.handoff ? $states['handoff'] : $states[[int]($check.afterTurn ?? $turns.Count)]
-    $finals = (@($scope | Where-Object { $_ } | ForEach-Object Final) + @($calls | Where-Object Name -eq 'ReportFindings' | ForEach-Object Input)) -join "`n"
+    $finals = @(@($scope | Where-Object { $_ } | ForEach-Object Final) + @($scope | Where-Object { $_ } | ForEach-Object Texts) + @($calls | Where-Object Name -eq 'ReportFindings' | ForEach-Object Input) | Where-Object { $_ })
     $root = ($folder -replace '\\', '/').TrimEnd('/') + '/'
 
     $usedSkill = {
@@ -1589,7 +1595,7 @@ function Test-AgentCheck($check, $folder, $turns, $handoff, $states) {
         'skill' { return & $usedSkill $check.skill }
         'noSkill' { return -not (& $usedSkill $check.noSkill) }
         'called' { return [bool]($calls | Where-Object { $_.Name -like "*__$($check.called)" -or ($_.Name -in 'Bash', 'PowerShell', 'powershell', 'bash' -and $_.Input -like "*$($check.called)*") }) }
-        'mentions' { return [bool]($calls | Where-Object Input -like "*$($check.mentions)*") }
+        'mentions' { return [bool]($calls | Where-Object Input -like "*$($check.mentions)*") -or [bool]($finals -like "*$($check.mentions)*") }
         'read' {
             return [bool]($calls | Where-Object {
                     $paths = [regex]::Matches($_.Input, '"(?:file_path|path)":"([^"]+)"') | ForEach-Object { $_.Groups[1].Value -replace "^$([regex]::Escape($root))", '' }
@@ -1604,7 +1610,7 @@ function Test-AgentCheck($check, $folder, $turns, $handoff, $states) {
         'unchanged' { return -not ($state | Where-Object { $_ -like $check.unchanged }) }
         'onlyChanged' { return -not ($state | Where-Object { $_ -notlike $check.onlyChanged }) }
         'noChanges' { return -not $state }
-        'finalMatches' { return $finals -match $check.finalMatches }
+        'finalMatches' { return [bool]($finals -match $check.finalMatches) }
         'fileLacks' {
             $path = Join-Path $folder $check.fileLacks.path
             return (Test-Path $path) -and -not ($check.fileLacks.patterns | Where-Object { (Get-Content $path -Raw).Contains($_) })
@@ -1646,7 +1652,16 @@ function Invoke-AgentScenario([string] $lab, [string] $id, [string] $model) {
     $handoff = $null
 
     if ($scenario.handoff) {
-        $handoff = Invoke-AgentTurn $folder $model $scenario.handoff.prompt $null $budget (Join-Path $results 'handoff.jsonl')
+        $handoffPrompts = @($scenario.handoff.prompt) + @($scenario.handoff.turns | Where-Object { $_ })
+        $handoff = [Collections.Generic.List[object]]::new()
+        $handoffSession = $null
+
+        for ($i = 0; $i -lt $handoffPrompts.Count; $i++) {
+            $turn = Invoke-AgentTurn $folder $model $handoffPrompts[$i] $handoffSession $budget (Join-Path $results "handoff$(if ($i) { $i + 1 }).jsonl")
+            $handoffSession = $turn.Session ?? $handoffSession
+            $handoff.Add($turn)
+        }
+
         $states['handoff'] = @(Get-ChangedPaths $folder $since)
     }
 

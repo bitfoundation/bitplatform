@@ -36,7 +36,7 @@ To add a new skill: create `.github/agents/<your-skill>.agent.md` with the full 
 
 **What it does**: Generates a complete CRUD (Create, Read, Update, Delete) implementation for a new entity in your project, including all necessary layers from database to UI.
 
-**When to use it**: When you need to add a new data entity to your application with full CRUD functionality.
+**When to use it**: When a new data entity's fields, rules and screens are settled, usually as a task of an `ai-dlc` plan. A new feature whose shape is still open starts with `ai-dlc`, which calls this skill once the entity is pinned down.
 
 **Key capabilities**:
 - Starts from the CRUD entity the project ships, or from the Admin module's when it ships none, and asks whether rows are edited in a modal or on a page of their own

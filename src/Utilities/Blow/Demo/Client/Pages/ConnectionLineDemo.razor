@@ -5,71 +5,122 @@
 <div class="bb-intro">
     <h1>Custom Connection Lines &amp; Live Connection State</h1>
     <p class="bb-subtitle">
-        Showcases three new APIs working together: <code>ConnectionLineTemplate</code> draws the in-progress
-        line, <code>OnConnectionChange</code> reports the live <code>BlowConnectionLineContext</code> every frame,
-        and pressing <kbd>Esc</kbd> while dragging cancels the connection. The end dot turns green only over a
-        valid target (locked nodes reject connections via <code>IsValidConnection</code>).
+        The line drawn while you make a connection, three ways: the built-in line, the built-in line restyled with
+        <code>ConnectionLineStyle</code> and <code>ConnectionLineClass</code>, or SVG of your own from
+        <code>ConnectionLineTemplate</code>. <code>OnConnectionChange</code> reports the live
+        <code>BlowConnectionLineContext</code> - where the line runs, and whether it could connect where it ends.
     </p>
 </div>
 
 <DemoCode />
 
 <div class="bb-demo blow-demo bb-page-wide">
+    <div class="bb-demo-bar example-toolbar">
+        <label>
+            Line
+            <select @bind="_line">
+                <option value="template">Custom template</option>
+                <option value="styled">Restyled built-in line</option>
+                <option value="default">Built-in line</option>
+            </select>
+        </label>
+        <label>
+            Path
+            <select @bind="_lineType">
+                @foreach (var type in LineTypes)
+                {
+                    <option value="@type">@type</option>
+                }
+            </select>
+        </label>
+        <label>
+            Drag threshold
+            <input type="range" min="1" max="60" step="1" @bind="_dragThreshold" @bind:event="oninput" />
+            <strong>@_dragThreshold px</strong>
+        </label>
+    </div>
     <div class="demo-canvas">
         <BlowCanvas Nodes="_nodes" Edges="_edges" FitViewOnInit="true"
                     IsValidConnection="IsValid"
+                    ConnectionLineTemplate="LineTemplate"
+                    ConnectionLineType="_lineType"
+                    ConnectionLineStyle="@LineStyle"
+                    ConnectionLineClass="@LineClass"
+                    ConnectionDragThreshold="_dragThreshold"
                     OnConnectionChange="c => { _conn = c; StateHasChanged(); }">
-            <ConnectionLineTemplate Context="c">
-                <defs>
-                    <linearGradient id="demo-conn-grad" gradientUnits="userSpaceOnUse"
-                                    x1="@Inv(c.From.X)" y1="@Inv(c.From.Y)" x2="@Inv(c.To.X)" y2="@Inv(c.To.Y)">
-                        <stop offset="0%" stop-color="#6366f1" />
-                        <stop offset="100%" stop-color="@(c.IsValid ? "#16a34a" : "#a855f7")" />
-                    </linearGradient>
-                </defs>
-                <path d="@LinePath(c)" fill="none" stroke="url(#demo-conn-grad)" stroke-width="2.5" stroke-dasharray="8 5">
-                    <animate attributeName="stroke-dashoffset" from="13" to="0" dur="0.5s" repeatCount="indefinite" />
-                </path>
-                <circle cx="@Inv(c.To.X)" cy="@Inv(c.To.Y)" r="6"
-                        fill="@(c.IsValid ? "#16a34a" : "#6366f1")" stroke="#fff" stroke-width="2" />
-            </ConnectionLineTemplate>
-
-            <ChildContent>
-                <BlowBackground Variant="BlowBackgroundVariant.Dots" Gap="16" />
-                <BlowControls />
-                <BlowPanel Position="top-right">
-                    <div class="conn-state">
-                        <div class="conn-state__title">Connection state</div>
-                        @if (_conn is null)
+            <BlowBackground Variant="BlowBackgroundVariant.Dots" Gap="16" />
+            <BlowControls />
+            <BlowPanel Position="top-right">
+                <div class="conn-state">
+                    <div class="conn-state__title">Connection state</div>
+                    @if (_conn is null)
+                    {
+                        <div class="bb-muted">idle - drag from a handle</div>
+                    }
+                    else
+                    {
+                        <div><b>from</b> @_conn.FromNode / @_conn.FromHandleType</div>
+                        <div><b>to</b> (@_conn.To.X.ToString("0"), @_conn.To.Y.ToString("0"))</div>
+                        <div><b>valid target</b>
+                            <span class="@(_conn.IsValid ? "ok" : "no")">@(_conn.IsValid ? "yes" : "no")</span>
+                        </div>
+                        @if (!_conn.IsValid)
                         {
-                            <div class="bb-muted">idle - drag from a handle</div>
+                            <div><b>why</b> @Reason(_conn)</div>
                         }
-                        else
-                        {
-                            <div><b>from</b> @_conn.FromNode / @_conn.FromHandleType</div>
-                            <div><b>to</b> (@_conn.To.X.ToString("0"), @_conn.To.Y.ToString("0"))</div>
-                            <div><b>valid target</b>
-                                <span class="@(_conn.IsValid ? "ok" : "no")">@(_conn.IsValid ? "yes" : "no")</span>
-                            </div>
-                        }
-                    </div>
-                </BlowPanel>
-            </ChildContent>
+                    }
+                </div>
+            </BlowPanel>
         </BlowCanvas>
     </div>
 </div>
+
+<DemoNotes>
+    <TryIt>
+        <li><strong>Drag from the bottom handle</strong> of <em>Drag from here</em>: a dashed gradient line follows the pointer, and its end dot turns green over a handle that would accept the connection. Release on the top handle of an <em>Open target</em> to connect.</li>
+        <li>Watch <strong>Connection state</strong> as you drag: where the line starts and ends, whether it could connect, and why not - <em>RejectedByRule</em> over the <em>Locked</em> node, <em>SameHandleType</em> over an <em>Open target</em>'s bottom handle (another source), <em>Duplicate</em> over a target you have already connected, and <em>no handle in reach</em> out on the empty pane.</li>
+        <li>Press <strong>Escape</strong> while dragging: the line disappears, nothing connects and the panel goes back to idle.</li>
+        <li>Switch <strong>Line</strong> to <em>Restyled built-in line</em> for a thicker amber line with marching dashes, or to <em>Built-in line</em> for the plain line in the theme's connection colour.</li>
+        <li>Pick another <strong>Path</strong> - <em>Straight</em>, <em>Step</em>, <em>SmoothStep</em>, <em>SimpleBezier</em> - and the line takes that shape, in all three modes.</li>
+        <li>Raise <strong>Drag threshold</strong> to 40, press a handle and move slowly: no line is drawn, and the panel's <em>to</em> point stays put, until the pointer has travelled 40 pixels.</li>
+    </TryIt>
+    <HowItWorks>
+        <li><code>ConnectionLineType</code> (default <code>Bezier</code>) is the built-in line's path; the template hands the same <code>BlowEdgeType</code> to <code>BlowEdgePath.Compute</code>, so the <strong>Path</strong> select shapes both.</li>
+        <li><code>ConnectionLineStyle</code> is an inline style for the built-in line - here <code>stroke:#f59e0b;stroke-width:3</code> - and <code>ConnectionLineClass</code> adds classes to it - here one whose CSS animates the dashes. Both are ignored while a template draws the line.</li>
+        <li><code>ConnectionLineTemplate</code> is a <code>RenderFragment&lt;BlowConnectionLineContext&gt;</code> drawn in the canvas's edge layer, so it renders SVG in flow coordinates. This page passes a Razor template only while <em>Custom template</em> is chosen; otherwise the parameter is null and the built-in line is drawn.</li>
+        <li><code>BlowConnectionLineContext</code> carries <code>FromNode</code>, <code>FromHandle</code>, <code>FromHandleType</code>, <code>FromPosition</code>, <code>From</code>, <code>To</code>, <code>ToPosition</code>, <code>IsValid</code> and <code>Rejection</code>.</li>
+        <li><code>OnConnectionChange</code> is raised when a connection starts, on every move while it is dragged, and once with null when it ends.</li>
+        <li><code>IsValid</code> is true when the line ends on a handle that would accept it, or within <code>ConnectionRadius</code> (20 screen pixels) of one. <code>Rejection</code>, a <code>BlowConnectionRejection</code>, says why the nearest handle would refuse it: <code>RejectedByRule</code> when <code>IsValidConnection</code> returned false, <code>SameHandleType</code> because <code>ConnectionMode</code> is <code>Strict</code> by default, <code>Duplicate</code> because <code>PreventDuplicateEdges</code> is on by default. It is <code>None</code> when no handle is near.</li>
+        <li><code>IsValidConnection</code> refuses every connection whose target node's <code>Data</code> is <code>"locked"</code>.</li>
+        <li><code>ConnectionDragThreshold</code> (default 1) is how far, in screen pixels, the pointer has to travel before the line is drawn and its moves reported, so a click on a handle does not flash a line.</li>
+        <li><strong>Escape</strong> abandons the gesture in progress - nothing to wire up.</li>
+    </HowItWorks>
+</DemoNotes>
 
 <style>
     .conn-state { background:var(--bit-blow-surface); color:var(--bit-blow-text); border:1px solid var(--bit-blow-border); border-radius:8px; padding:10px 12px; font-size:12px; min-width:200px; box-shadow:0 2px 6px var(--bit-blow-shadow); }
     .conn-state__title { font-weight:700; margin-bottom:6px; }
     .conn-state .ok { color:#16a34a; font-weight:700; }
     .conn-state .no { color:#dc2626; font-weight:700; }
+
+    /* The class half of the restyled line: the dash and its march toward the pointer. The colour and width come
+       from ConnectionLineStyle, which as an inline style would win over this rule for anything both set. */
+    .conn-marching { stroke-dasharray:8 6; animation:conn-march .6s linear infinite; }
+    @@keyframes conn-march { to { stroke-dashoffset:-14; } }
+    @@media (prefers-reduced-motion: reduce) { .conn-marching { animation:none; } }
 </style>
 
 @code {
+    private static readonly BlowEdgeType[] LineTypes =
+        [BlowEdgeType.Bezier, BlowEdgeType.SimpleBezier, BlowEdgeType.Straight, BlowEdgeType.Step, BlowEdgeType.SmoothStep];
+
     private List<BlowNode> _nodes = [];
     private List<BlowEdge> _edges = [];
     private BlowConnectionLineContext? _conn;
+
+    private string _line = "template";
+    private BlowEdgeType _lineType = BlowEdgeType.Bezier;
+    private int _dragThreshold = 1;
 
     protected override void OnInitialized()
     {
@@ -83,6 +134,31 @@
         _edges = [];
     }
 
+    // The canvas draws its own line whenever the template is null, so choosing a mode is choosing what to pass.
+    private RenderFragment<BlowConnectionLineContext>? LineTemplate => _line == "template" ? GradientLine : null;
+
+    private string? LineStyle => _line == "styled" ? "stroke:#f59e0b;stroke-width:3" : null;
+
+    private string? LineClass => _line == "styled" ? "conn-marching" : null;
+
+    // A gradient from the handle to the pointer, finished with a dot that turns green over a handle that would accept
+    // the connection. The gradient spans the line in flow coordinates, so it stretches with it.
+    private RenderFragment<BlowConnectionLineContext> GradientLine => c =>
+        @<g>
+            <defs>
+                <linearGradient id="demo-conn-grad" gradientUnits="userSpaceOnUse"
+                                x1="@Inv(c.From.X)" y1="@Inv(c.From.Y)" x2="@Inv(c.To.X)" y2="@Inv(c.To.Y)">
+                    <stop offset="0%" stop-color="#6366f1" />
+                    <stop offset="100%" stop-color="@(c.IsValid ? "#16a34a" : "#a855f7")" />
+                </linearGradient>
+            </defs>
+            <path d="@LinePath(c)" fill="none" stroke="url(#demo-conn-grad)" stroke-width="2.5" stroke-dasharray="8 5">
+                <animate attributeName="stroke-dashoffset" from="13" to="0" dur="0.5s" repeatCount="indefinite" />
+            </path>
+            <circle cx="@Inv(c.To.X)" cy="@Inv(c.To.Y)" r="6"
+                    fill="@(c.IsValid ? "#16a34a" : "#6366f1")" stroke="#fff" stroke-width="2" />
+        </g>;
+
     // Locked nodes reject incoming connections.
     private bool IsValid(BlowConnection c)
     {
@@ -90,8 +166,12 @@
         return target?.Data as string != "locked";
     }
 
+    // A refusal names the rule; no refusal on an invalid line means there is no handle near enough to judge.
+    private static string Reason(BlowConnectionLineContext c) =>
+        c.Rejection == BlowConnectionRejection.None ? "no handle in reach" : c.Rejection.ToString();
+
     private string LinePath(BlowConnectionLineContext c) =>
-        BlowEdgePath.Compute(BlowEdgeType.Bezier, c.From.X, c.From.Y, c.FromPosition, c.To.X, c.To.Y, c.ToPosition).Path;
+        BlowEdgePath.Compute(_lineType, c.From.X, c.From.Y, c.FromPosition, c.To.X, c.To.Y, c.ToPosition).Path;
 
     private static string Inv(double v) => v.ToString(System.Globalization.CultureInfo.InvariantCulture);
 }

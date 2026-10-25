@@ -56,14 +56,6 @@ public partial class TenantController : AppControllerBase, ITenantController
         };
         await DbContext.Roles.AddAsync(tenantAdminRole, cancellationToken);
 
-        // Unlimited privileged sessions for the tenant's admins (Just like the seeded default tenant).
-        await DbContext.RoleClaims.AddAsync(new()
-        {
-            RoleId = tenantAdminRole.Id,
-            ClaimType = AppClaimTypes.MAX_PRIVILEGED_SESSIONS,
-            ClaimValue = AppClaimTypes.UNLIMITED_PRIVILEGED_SESSIONS.ToString(CultureInfo.InvariantCulture)
-        }, cancellationToken);
-
         await DbContext.UserRoles.AddAsync(new() { UserId = userId, RoleId = tenantAdminRole.Id, TenantId = tenantToAdd.Id }, cancellationToken);
 
         var demoRole = new Role
@@ -165,7 +157,7 @@ public partial class TenantController : AppControllerBase, ITenantController
         // any role. AssignDemoRole is idempotent, so calling it for both is safe (See UserManagerExtensions.AssignDemoRole).
         await userManager.AssignDemoRole(user.Id, tenantId);
 
-        var webAppUrl = HttpContext.Request.GetWebAppUrl();
+        var invitationLink = new Uri(HttpContext.Request.GetWebAppUrl(), PageUrls.ManageMyTenants);
 
         await DbContext.TenantUsers.AddAsync(new()
         {
@@ -183,12 +175,12 @@ public partial class TenantController : AppControllerBase, ITenantController
 
         if (string.IsNullOrWhiteSpace(user.Email) is false)
         {
-            sendMessagesTasks.Add(emailService.SendTenantInvitation(user, inviterDisplayName, tenantTitle, webAppUrl, cancellationToken));
+            sendMessagesTasks.Add(emailService.SendTenantInvitation(user, inviterDisplayName, tenantTitle, invitationLink, cancellationToken));
         }
 
         if (string.IsNullOrWhiteSpace(user.PhoneNumber) is false)
         {
-            var smsMessage = Localizer[nameof(AppStrings.TenantInvitationShortText), inviterDisplayName, tenantTitle, webAppUrl.ToString()].ToString();
+            var smsMessage = Localizer[nameof(AppStrings.TenantInvitationShortText), inviterDisplayName, tenantTitle, invitationLink.ToString()].ToString();
             sendMessagesTasks.Add(phoneService.SendSms(smsMessage, user.PhoneNumber!));
         }
 

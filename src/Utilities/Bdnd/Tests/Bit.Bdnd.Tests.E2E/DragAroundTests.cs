@@ -73,4 +73,47 @@ public sealed class DragAroundTests : BdndTest
         await Expect(box).ToHaveCSSAsync("opacity", "1");
         AssertNear(before.TopLeft.Offset(at.X - start.X, at.Y - start.Y), (await BoxAsync(box)).TopLeft, 1, "the box after the drop");
     }
+
+    [TestMethod]
+    public async Task Snapped_to_the_grid_the_preview_and_the_box_move_by_whole_cells()
+    {
+        var page = await OpenAsync("/drag-around/custom-layer");
+        await page.GetByRole(Microsoft.Playwright.AriaRole.Button, new() { Name = "Snap to grid" }).ClickAsync();
+        var board = await BoxAsync(page.Locator(".drag-around-container"));
+        var box = page.Locator(".drag-around-box", new() { HasText = "Drag me" });
+        var preview = page.Locator(".drag-layer-preview");
+
+        var before = await BoxAsync(box);
+        var grab = before.Centre.Rounded();
+        await StartDragAsync(page, grab);
+        var start = (await DragStartsAsync(page.MainFrame)).Single();
+        var at = grab.Offset(57, 33);
+        await MoveAsync(page, at);
+
+        // the corner the pointer would put the box at, on the board (inside its 1px border), to the nearest 40px cell
+        var left = before.X - board.X - 1 + (at.X - start.X);
+        var top = before.Y - board.Y - 1 + (at.Y - start.Y);
+        var snapped = new Point(board.X + 1 + Math.Round(left / 40) * 40, board.Y + 1 + Math.Round(top / 40) * 40);
+        await EventuallyAsync(async () => (await BoxAsync(preview)).TopLeft.DistanceTo(snapped) <= 1, $"the preview is drawn on the grid at {snapped}");
+
+        await DragToAsync(page, at);
+        AssertNear(snapped, (await BoxAsync(box)).TopLeft, 1, "the box after the drop");
+    }
+
+    [TestMethod]
+    public async Task Kept_to_the_horizontal_axis_the_box_keeps_its_height()
+    {
+        var page = await OpenAsync("/drag-around/custom-layer");
+        await page.GetByRole(Microsoft.Playwright.AriaRole.Button, new() { Name = "Horizontal only" }).ClickAsync();
+        var box = page.Locator(".drag-around-box", new() { HasText = "Drag me" });
+
+        var before = await BoxAsync(box);
+        var grab = before.Centre.Rounded();
+        await StartDragAsync(page, grab);
+        var start = (await DragStartsAsync(page.MainFrame)).Single();
+        var at = grab.Offset(80, 90);
+        await DragToAsync(page, at);
+
+        AssertNear(new Point(before.X + at.X - start.X, before.Y), (await BoxAsync(box)).TopLeft, 1, "the box after the drop");
+    }
 }

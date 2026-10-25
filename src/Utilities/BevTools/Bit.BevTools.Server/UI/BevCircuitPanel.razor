@@ -13,6 +13,11 @@
         <div class="bev-stat"><div class="bev-stat-value">@BevFmt.Num(m.Duration.TotalSeconds) s</div><div class="bev-stat-label">circuit age</div></div>
         <div class="bev-stat"><div class="bev-stat-value">@m.InboundMessages</div><div class="bev-stat-label">inbound messages · avg @BevFmt.Ms(m.InboundMessages == 0 ? 0 : m.InboundProcessingMs / m.InboundMessages) · max @BevFmt.Ms(m.MaxInboundMs)</div></div>
         <div class="bev-stat"><div class="bev-stat-value">@(Session.Browser.ReconnectState ?? "–")</div><div class="bev-stat-label">browser reconnect state · @Session.Browser.ReconnectCount reconnect dialogs</div></div>
+        @if (Session.Browser.Sockets.FirstOrDefault(s => s.Kind == "blazor-circuit" && !s.IsClosed) is { } socket)
+        {
+            @* Counted in the browser: the server sees messages, not their sizes. *@
+            <div class="bev-stat"><div class="bev-stat-value">@BevFmt.Bytes(socket.Received.Bytes)</div><div class="bev-stat-label">received by the browser · @socket.RenderBatches.Count render batches, largest @BevFmt.Bytes(socket.RenderBatches.MaxBytes) · <button type="button" class="bev-link" @onclick='() => { Ui.SetQuery("network-view", "ws"); Host.ShowPanel("network"); }'>traffic ↗</button></div></div>
+        }
     }
     else
     {

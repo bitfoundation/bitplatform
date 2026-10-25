@@ -61,29 +61,56 @@ else
 }
 
 @code {
+    // A field written as the user types is bound on input (see BormInputBase.OnTyped); one written on
+    // change keeps its value attribute, which does not change while the user types.
+    private RenderFragment Control => UpdatesOnInput ? LiveControl : CommittedControl;
+
     // The splat comes first on purpose: Blazor applies duplicate attributes in source order and the
     // last one wins, so everything below overrides what the schema supplied. That is what stops a
     // stray aria-describedby in the schema from unhooking the field's own error message.
-    private RenderFragment Control => @<input @attributes="ExtraAttributes"
-                                              id="@Context.ElementId"
-                                              @ref="Element"
-                                              class="@CssClass"
-                                              type="@HtmlType"
-                                              value="@DisplayValue"
-                                              placeholder="@Field.Placeholder"
-                                              disabled="@Disabled"
-                                              readonly="@ReadOnly"
-                                              maxlength="@MaxLengthAttribute"
-                                              list="@SuggestionsId"
-                                              autocomplete="@Field.Autocomplete"
-                                              inputmode="@Field.InputMode"
-                                              aria-required="@AriaRequired"
-                                              aria-invalid="@AriaInvalid"
-                                              aria-label="@AriaLabel"
-                                              aria-describedby="@DescribedBy"
-                                              @onchange="OnChange"
-                                              @oninput="InputHandler"
-                                              @onblur="OnBlur" />
+    private RenderFragment CommittedControl => @<input @attributes="ExtraAttributes"
+                                                       id="@Context.ElementId"
+                                                       @ref="Element"
+                                                       class="@CssClass"
+                                                       type="@HtmlType"
+                                                       value="@DisplayValue"
+                                                       placeholder="@Field.Placeholder"
+                                                       disabled="@Disabled"
+                                                       readonly="@ReadOnly"
+                                                       maxlength="@MaxLengthAttribute"
+                                                       list="@SuggestionsId"
+                                                       autocomplete="@Field.Autocomplete"
+                                                       inputmode="@Field.InputMode"
+                                                       aria-required="@AriaRequired"
+                                                       aria-invalid="@AriaInvalid"
+                                                       aria-label="@AriaLabel"
+                                                       aria-describedby="@DescribedBy"
+                                                       @onchange="OnChange"
+                                                       @oninput="InputHandler"
+                                                       @onblur="OnBlur" />
+    ;
+
+    private RenderFragment LiveControl => @<input @attributes="ExtraAttributes"
+                                                  id="@Context.ElementId"
+                                                  @ref="Element"
+                                                  class="@CssClass"
+                                                  type="@HtmlType"
+                                                  @bind:get="LiveValue(DisplayValue)"
+                                                  @bind:set="OnTyped"
+                                                  @bind:event="oninput"
+                                                  placeholder="@Field.Placeholder"
+                                                  disabled="@Disabled"
+                                                  readonly="@ReadOnly"
+                                                  maxlength="@MaxLengthAttribute"
+                                                  list="@SuggestionsId"
+                                                  autocomplete="@Field.Autocomplete"
+                                                  inputmode="@Field.InputMode"
+                                                  aria-required="@AriaRequired"
+                                                  aria-invalid="@AriaInvalid"
+                                                  aria-label="@AriaLabel"
+                                                  aria-describedby="@DescribedBy"
+                                                  @onchange="OnChange"
+                                                  @onblur="OnBlur" />
     ;
 
     private string HtmlType => Field.Type switch

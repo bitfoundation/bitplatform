@@ -1,0 +1,393 @@
+@page "/maui"
+@using System.ComponentModel
+@inherits BlexComponentBase
+@inject CounterStore Counter
+
+<DocPage Href="maui" Title=".NET MAUI"
+         Lead="A Blazor Hybrid app uses Blex exactly as any Blazor app does. A native XAML app binds straight to the stores - Bit.Blex.Maui registers them for an app without DI scopes, and does at startup what &lt;BlexProvider&gt; does in Blazor.">
+
+    <div class="bb-card">
+        <h2 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Two ways to build with MAUI</h2>
+        <p>
+            Every runtime package ships plain <code>net8.0</code>, <code>net9.0</code> and <code>net10.0</code> builds,
+            which resolve from every MAUI platform target - Android, iOS, Mac Catalyst and Windows - with no workload on
+            the library side. Which registrations an app needs depends on how it draws its UI:
+        </p>
+        <div class="bb-scroll" tabindex="0" role="region" aria-label="Blazor Hybrid compared with native MAUI">
+            <table class="bb-table bb-compare">
+                <thead><tr><th></th><th>Blazor Hybrid</th><th>Native (XAML)</th></tr></thead>
+                <tbody>
+                    <tr><td class="bb-table-key">UI</td><td>Razor components in a <code>BlazorWebView</code></td><td>XAML pages bound to the stores</td></tr>
+                    <tr><td class="bb-table-key">Packages</td><td><code>Bit.Blex</code> (+ <code>Bit.Blex.Maui</code> for <code>Preferences</code>)</td><td><code>Bit.Blex</code> + <code>Bit.Blex.Maui</code></td></tr>
+                    <tr><td class="bb-table-key">Registration</td><td><code>builder.Services.AddBitBlexServices()</code> - scoped, the WebView creates the scope</td><td><code>builder.UseBitBlex()</code> - singletons, there are no scopes</td></tr>
+                    <tr><td class="bb-table-key">Startup</td><td><code>&lt;BlexProvider&gt;</code> around the router</td><td>The initializer <code>UseBitBlex()</code> registers, run by <code>MauiApp.Build()</code></td></tr>
+                    <tr><td class="bb-table-key">Re-rendering</td><td><code>BlexComponentBase</code>, <code>&lt;BlexSelect&gt;</code>, <code>&lt;BlexView&gt;</code></td><td><code>INotifyPropertyChanged</code> bindings</td></tr>
+                    <tr><td class="bb-table-key">Persistence</td><td>The WebView's <code>localStorage</code>, or <code>Preferences</code></td><td><code>Preferences</code>, or your own <code>IBlexStorage</code></td></tr>
+                    <tr><td class="bb-table-key">Redux DevTools</td><td>No extension in a WebView: <code>EnableDevTools="false"</code></td><td>No browser at all</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="bb-card" id="hybrid">
+        <h2 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Blazor Hybrid</h2>
+        <p>
+            A Blazor Hybrid app is a Blazor app inside a <code>BlazorWebView</code>: register Blex in
+            <code>MauiProgram.cs</code> exactly as a Blazor app does - the default scoped lifetimes are right, because
+            the WebView creates the scope - and wrap the root component's router in <code>&lt;BlexProvider&gt;</code>.
+            Everything else on this site applies unchanged: components, selectors, effects, queries, persistence,
+            undo and redo.
+        </p>
+        <CodeBlock Code="@HybridProgram" FileName="MauiProgram.cs" />
+        <CodeBlock Code="@HybridRoutes" Language="razor" FileName="Components/Routes.razor" />
+        <ul class="bb-detail-list">
+            <li><strong>DevTools.</strong> There is no browser extension inside a WebView; the bridge detects that and disables itself, and <code>EnableDevTools="false"</code> skips loading it at all.</li>
+            <li><strong>Storage.</strong> <code>AddBitBlexLocalStoragePersistence()</code> works - the WebView has a <code>localStorage</code> - but it lives in the WebView's profile. <code>AddBitBlexPreferencesPersistence()</code> from <code>Bit.Blex.Maui</code> writes to the OS-native app preferences instead; its <code>IServiceCollection</code> overload stays scoped, to match the rest.</li>
+            <li><strong>The network.</strong> Requests leave from the device, so <code>&lt;BlexProvider&gt;</code> follows the WebView's <code>offline</code>/<code>online</code> events and <a href="queries">queries</a> pause while offline, as in the browser.</li>
+        </ul>
+    </div>
+
+    <div class="bb-card" id="native">
+        <h2 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Native (XAML)</h2>
+        <p>
+            A native MAUI app has no DI scopes: everything is resolved from the root provider for the life of the
+            process. Register Blex through the <code>MauiAppBuilder</code> extensions of <code>Bit.Blex.Maui</code>,
+            which register everything as <strong>singletons</strong> - the honest lifetime, and the one that keeps the
+            wiring legal when the container is built with <code>ValidateScopes</code>, which refuses to resolve a
+            scoped service from the root provider (exactly what the startup initializer has to do).
+        </p>
+        <CodeBlock Code="@NativeProgram" FileName="MauiProgram.cs" />
+        <p>
+            The core <code>builder.Services.AddBitBlexStore&lt;T&gt;()</code> still works and still defaults to scoped,
+            for Blazor; pass <code>ServiceLifetime.Singleton</code> if you call it directly - and give every Blex
+            registration the same lifetime.
+        </p>
+
+        <h3>Binding XAML to a store</h3>
+        <p>
+            Every store implements <code>INotifyPropertyChanged</code>, raised after each change with an
+            <em>empty</em> property name - "every property may have changed". A binding to a
+            <code>[BlexComputed]</code> property, or to an effect's <code>XxxIsLoading</code>, therefore stays fresh
+            too, though nothing assigns it. Bind to generated state, computed and effect-lifecycle properties alike:
+        </p>
+        <CodeBlock Code="@Xaml" Language="xml" FileName="MainPage.xaml" />
+        <CodeBlock Code="@CodeBehind" FileName="MainPage.xaml.cs" />
+
+        <DemoCard Title="What a XAML binding sees"
+                  Description="This page listens to the counter's PropertyChanged, as a XAML binding does. Every action raises it once, with an empty name, and a binding re-reads whatever it shows - DoubleCount included, though no action assigns it."
+                  Source="@BindingSource">
+            <div class="bb-toolbar">
+                <button class="btn btn-primary" @onclick="Counter.Increment">Increment()</button>
+                <button class="btn btn-secondary" @onclick="() => Counter.SetStep(Counter.Step == 1 ? 5 : 1)">SetStep(…)</button>
+                <button class="btn btn-secondary" @onclick="Counter.ResetState">ResetState()</button>
+            </div>
+            <div class="bb-stats">
+                <div class="bb-stat">
+                    <span class="bb-stat-label">PropertyChanged raised</span>
+                    <span class="bb-stat-value demo-accent">@_raised</span>
+                </div>
+                <div class="bb-stat">
+                    <span class="bb-stat-label">Last PropertyName</span>
+                    <span class="bb-stat-value demo-stat-text">@(_lastName is null ? "-" : _lastName.Length == 0 ? "\"\" (empty: all)" : $"\"{_lastName}\"")</span>
+                </div>
+                <div class="bb-stat">
+                    <span class="bb-stat-label">{Binding DoubleCount}</span>
+                    <span class="bb-stat-value"><Persisted>@_boundDoubleCount</Persisted></span>
+                </div>
+            </div>
+        </DemoCard>
+
+        <h3>What UseBitBlex does when the app is built</h3>
+        <p>
+            <code>UseBitBlex()</code> registers an <code>IMauiInitializeService</code> that mirrors what
+            <code>&lt;BlexProvider&gt;</code> does in Blazor. When <code>MauiApp.Build()</code> runs - before the first
+            page appears - it:
+        </p>
+        <ol class="bb-detail-list">
+            <li>resolves every store registered with <code>AddBitBlexStore</code>, which attaches it to the manager;</li>
+            <li>rehydrates the persisted stores from <code>Preferences</code>;</li>
+            <li>starts <code>BlexHistory</code> recording, when one is registered - after hydration, so undo's baseline is the state the user loaded.</li>
+        </ol>
+        <p>
+            None of it can stop the app from starting. A service it cannot resolve - typically a lifetime mismatch under
+            <code>ValidateScopes</code> - is reported through <code>options.OnError</code> with source
+            <code>"startup"</code> and a detail saying which registration to change; an unreadable payload is reported as
+            <code>"persistence"</code> and discarded; and the app runs on with lazily registered stores and declared
+            defaults. When Blex is registered with the core <code>AddBitBlexServices</code> instead,
+            <code>services.AddBitBlexMauiInitializer()</code> adds the initializer on its own.
+        </p>
+    </div>
+
+    <div class="bb-card" id="persistence">
+        <h2 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Persisting to Preferences</h2>
+        <p>
+            <code>AddBitBlexPreferencesPersistence()</code> persists every <code>Persist = true</code> store to MAUI
+            <code>Preferences</code> through <code>BlexPreferencesStorage</code> - SharedPreferences on Android,
+            NSUserDefaults on iOS and Mac Catalyst, the local settings store on Windows. It takes the same
+            <a href="persistence">options</a> as the browser providers: debounce, versioning and migrations,
+            <code>Partialize</code>, <code>Merge</code>, <code>OnRehydrated</code>, protection.
+        </p>
+        <CodeBlock Code="@CustomStorage" Title="Somewhere else: files, SQLite" />
+        <ul class="bb-detail-list">
+            <li><strong>The first <code>IBlexStorage</code> registration wins</strong>, so register your own before calling <code>AddBitBlexPreferencesPersistence()</code>, with the same lifetime as the rest.</li>
+            <li><strong>Hydrate an asynchronous storage yourself.</strong> <code>Preferences</code> completes synchronously, so the startup initializer can wait on it. A storage that really awaits I/O should be hydrated from app code - <code>await persistor.StartAsync()</code> - rather than relying on that synchronous wait.</li>
+        </ul>
+    </div>
+
+    <div class="bb-card" id="queries">
+        <h2 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Queries in a native app</h2>
+        <p>
+            <code>builder.AddBitBlexQueries()</code> registers the <a href="queries">server-state cache</a> as a
+            singleton. There is no browser to report focus or the network, so tell the cache yourself: call
+            <code>NotifyFocused()</code> when a window activates, and <code>NotifyOffline()</code> /
+            <code>NotifyReconnected()</code> when <code>Connectivity.ConnectivityChanged</code> says the network went
+            or came back - fetches and mutations then wait for it instead of failing. A query observer and a
+            mutation implement <code>INotifyPropertyChanged</code> too, so XAML binds to them directly.
+        </p>
+        <CodeBlock Code="@NativeQueries" FileName="App.xaml.cs" />
+    </div>
+
+    <div class="bb-card" id="dispatcher">
+        <h2 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> The UI thread</h2>
+        <p>
+            Stores are not synchronized. In Blazor, <code>&lt;BlexProvider&gt;</code> binds the renderer's dispatcher to
+            the manager; a native app has no provider, so nothing is checked unless you assign an
+            <code>IBlexDispatcher</code> yourself. Over MAUI's own dispatcher it is two lines - and then
+            <code>manager.InvokeAsync(...)</code> moves a change from a timer or a background task onto the UI thread,
+            and a change made off it anyway is <a href="stores#dispatcher">reported</a> instead of racing the bindings.
+        </p>
+        <CodeBlock Code="@Dispatcher" FileName="App.xaml.cs" />
+    </div>
+
+    <div class="bb-card">
+        <h2 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> API</h2>
+        <ApiTable Title="BitBlexMaui (namespace Bit.Blex.Maui)" Rows="@ApiRows" MemberHeader="Extension" />
+        <ApiTable Title="BlexPreferencesStorage" Rows="@StorageRows" />
+    </div>
+
+</DocPage>
+
+@code {
+    private int _raised;
+    private string? _lastName;
+    private int _boundDoubleCount;
+
+    protected override void OnInitialized()
+    {
+        Subscribe(Counter);
+
+        // What a XAML binding does: listen to PropertyChanged, and re-read the property it shows.
+        _boundDoubleCount = Counter.DoubleCount;
+        ((INotifyPropertyChanged)Counter).PropertyChanged += OnPropertyChanged;
+    }
+
+    private void OnPropertyChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        _raised++;
+        _lastName = e.PropertyName;
+        _boundDoubleCount = Counter.DoubleCount;
+    }
+
+    protected override void Dispose(bool disposing) => ((INotifyPropertyChanged)Counter).PropertyChanged -= OnPropertyChanged;
+
+    private static readonly IReadOnlyList<ApiTable.Row> ApiRows =
+    [
+        new("builder.UseBitBlex(Action&lt;BlexOptions&gt;?)", "The manager and middleware as singletons (<code>AddBitBlexServices</code> with <code>ServiceLifetime.Singleton</code>), plus the startup initializer."),
+        new("builder.AddBitBlexStore&lt;TStore&gt;()", "A store as a singleton, resolvable as itself and as <code>IBlexStore</code>."),
+        new("builder.AddBitBlexPreferencesPersistence(Action&lt;BlexPersistenceOptions&gt;?)", "Persistence to <code>Preferences</code>, as a singleton; adds the initializer if it is not there yet."),
+        new("builder.AddBitBlexQueries(Action&lt;BlexQueryClientOptions&gt;?)", "The server-state cache, as a singleton."),
+        new("builder.AddBitBlexHistory(maxEntries, filter?, groupBy?) / (scope, ...) / AddBitBlexHistory&lt;TStore&gt;(...)", "Undo and redo, app-wide, scoped to some stores, or per store type - as singletons. See <a href=\"history\">Undo &amp; redo</a>."),
+        new("services.AddBitBlexPreferencesPersistence(configure?, lifetime = Scoped)", "The <code>IServiceCollection</code> form, scoped by default - for Blazor Hybrid."),
+        new("services.AddBitBlexMauiInitializer()", "The startup initializer alone, for an app that registers Blex with the core calls. Idempotent."),
+    ];
+
+    private static readonly IReadOnlyList<ApiTable.Row> StorageRows =
+    [
+        new("BlexPreferencesStorage()", "Over <code>Preferences.Default</code>."),
+        new("BlexPreferencesStorage(IPreferences)", "Over the preferences you hand it - a fake one in a test, or a shared container."),
+        new("GetAsync / SetAsync / RemoveAsync", "<code>IBlexStorage</code>, completing synchronously."),
+    ];
+
+    private const string HybridProgram = """
+        using Bit.Blex;
+        using Bit.Blex.Blazor;
+
+        public static class MauiProgram
+        {
+            public static MauiApp CreateMauiApp()
+            {
+                var builder = MauiApp.CreateBuilder();
+                builder.UseMauiApp<App>();
+                builder.Services.AddMauiBlazorWebView();
+
+                // Scoped, exactly as in a Blazor app: the BlazorWebView creates the scope.
+                builder.Services.AddBitBlexServices(options => options.DevToolsName = "My App");
+                builder.Services.AddBitBlexStore<CounterStore>();
+
+                // Either the WebView's localStorage...
+                builder.Services.AddBitBlexLocalStoragePersistence();
+                // ...or, with Bit.Blex.Maui, OS-native Preferences:
+                // builder.Services.AddBitBlexPreferencesPersistence();
+
+                return builder.Build();
+            }
+        }
+        """;
+
+    private const string HybridRoutes = """
+        @* No browser extension exists inside a WebView, so the DevTools bridge is skipped outright. *@
+        <BlexProvider EnableDevTools="false">
+            <Router AppAssembly="typeof(MauiProgram).Assembly">
+                <Found Context="routeData">
+                    <RouteView RouteData="routeData" DefaultLayout="typeof(Layout.MainLayout)" />
+                </Found>
+            </Router>
+        </BlexProvider>
+        """;
+
+    private const string NativeProgram = """
+        using Bit.Blex.Maui;
+
+        public static class MauiProgram
+        {
+            public static MauiApp CreateMauiApp()
+            {
+                var builder = MauiApp.CreateBuilder();
+                builder.UseMauiApp<App>();
+
+                builder.UseBitBlex(options =>                      // manager + startup initializer
+                {
+                    options.OnError = error => Debug.WriteLine($"[blex:{error.Source}] {error.Detail}: {error.Exception.Message}");
+                });
+                builder.AddBitBlexStore<CounterStore>();
+                builder.AddBitBlexPreferencesPersistence();        // OS-native Preferences storage
+                builder.AddBitBlexQueries();                       // optional: the server-state cache
+                builder.AddBitBlexHistory();                       // optional: undo and redo
+
+                builder.Services.AddTransient<MainPage>();
+                return builder.Build();                            // stores registered, hydrated, history started
+            }
+        }
+        """;
+
+    private const string Xaml = """
+        <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+                     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+                     xmlns:stores="clr-namespace:MyApp.Stores"
+                     x:Class="MyApp.MainPage"
+                     x:DataType="stores:CounterStore">
+            <VerticalStackLayout Spacing="12" Padding="24">
+                <Label Text="{Binding Count}" FontSize="32" />
+                <Label Text="{Binding DoubleCount}" />      <!-- [BlexComputed] -->
+                <Label Text="{Binding IsEven}" />
+                <Button Text="Increment" Clicked="OnIncrementClicked" />
+
+                <!-- An effect's lifecycle binds the same way, on a store with [BlexEffect] OnLoad:
+                     <ActivityIndicator IsRunning="{Binding LoadIsLoading}" /> -->
+            </VerticalStackLayout>
+        </ContentPage>
+        """;
+
+    private const string CodeBehind = """
+        public partial class MainPage : ContentPage
+        {
+            private readonly CounterStore _store;
+
+            // Resolved from the container: the very instance the startup initializer registered and hydrated.
+            public MainPage(CounterStore store)
+            {
+                InitializeComponent();
+                BindingContext = _store = store;
+            }
+
+            private void OnIncrementClicked(object? sender, EventArgs e) => _store.Increment();
+        }
+        """;
+
+    private const string BindingSource = """
+        // A XAML binding, by hand: listen to PropertyChanged, re-read the property shown.
+        ((INotifyPropertyChanged)Counter).PropertyChanged += (_, e) =>
+        {
+            _raised++;
+            _lastName = e.PropertyName;            // "" - every property may have changed
+            _doubleCount = Counter.DoubleCount;    // so a computed binding refreshes too
+        };
+        """;
+
+    private const string CustomStorage = """
+        public sealed class FileStorage(string directory) : IBlexStorage
+        {
+            private string PathOf(string key) => Path.Combine(directory, key + ".json");
+
+            public async ValueTask<string?> GetAsync(string key, CancellationToken ct = default)
+                => File.Exists(PathOf(key)) ? await File.ReadAllTextAsync(PathOf(key), ct) : null;
+
+            public async ValueTask SetAsync(string key, string value, CancellationToken ct = default)
+                => await File.WriteAllTextAsync(PathOf(key), value, ct);
+
+            public ValueTask RemoveAsync(string key, CancellationToken ct = default)
+            {
+                File.Delete(PathOf(key));
+                return ValueTask.CompletedTask;
+            }
+        }
+
+        // MauiProgram.cs - registered first, so AddBitBlexPreferencesPersistence keeps it.
+        builder.Services.AddSingleton<IBlexStorage>(new FileStorage(FileSystem.AppDataDirectory));
+        builder.AddBitBlexPreferencesPersistence();
+
+        // ...and hydrated from app code, since it really awaits I/O:
+        await app.Services.GetRequiredService<BlexStatePersistor>().StartAsync();
+        """;
+
+    private const string NativeQueries = """
+        public partial class App : Application
+        {
+            private readonly BlexQueryClient _queries;
+
+            public App(BlexQueryClient queries)
+            {
+                InitializeComponent();
+                _queries = queries;
+
+                // The browser's offline/online events, by hand.
+                Connectivity.ConnectivityChanged += (_, e) =>
+                {
+                    if (e.NetworkAccess == NetworkAccess.Internet) _queries.NotifyReconnected();
+                    else _queries.NotifyOffline();
+                };
+            }
+
+            protected override Window CreateWindow(IActivationState? state)
+            {
+                var window = new Window(new AppShell());
+
+                // The tab becoming visible again: refetch the stale queries being watched.
+                window.Activated += (_, _) => _queries.NotifyFocused();
+                return window;
+            }
+        }
+
+        // A page binds to a query observer like to a store - BlexQuery<T> is INotifyPropertyChanged:
+        BindingContext = queries.Query(["products"], ct => api.GetProductsAsync(ct));   // {Binding Data}, {Binding IsLoading}
+        """;
+
+    private const string Dispatcher = """
+        /// <summary>MAUI's UI-thread dispatcher, as the IBlexDispatcher the manager checks changes against.</summary>
+        public sealed class MauiBlexDispatcher(IDispatcher dispatcher) : IBlexDispatcher
+        {
+            public bool CheckAccess() => !dispatcher.IsDispatchRequired;
+
+            public Task InvokeAsync(Func<Task> workItem) => dispatcher.DispatchAsync(workItem);
+        }
+
+        public App(BlexManager manager)
+        {
+            InitializeComponent();
+            manager.Dispatcher = new MauiBlexDispatcher(Dispatcher);
+        }
+
+        // From a timer or a background service:
+        await manager.InvokeAsync(() => orders.Add(order));
+        """;
+}

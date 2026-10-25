@@ -50,6 +50,10 @@ jobs:
       with:
         node-version: 24
 
+    # The solution includes the .NET MAUI sample (Samples/MAUI), which builds its Android target on Linux.
+    - name: dotnet workload restore
+      run:  cd src/Utilities/Blex && dotnet workload restore
+
     - name: dotnet build
       run: dotnet build src/Utilities/Blex/Bit.Blex.slnx
 

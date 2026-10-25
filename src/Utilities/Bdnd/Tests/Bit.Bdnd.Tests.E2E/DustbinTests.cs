@@ -109,6 +109,51 @@ public sealed class DustbinTests : BdndTest
     }
 
     [TestMethod]
+    public async Task A_drag_released_outside_the_window_ends_as_a_cancel_and_the_next_one_works()
+    {
+        var page = await OpenAsync("/dustbin/single");
+        var bin = page.Locator(".dustbin");
+        var paper = page.Locator(".box", new() { HasText = "Paper" });
+        var binBox = await BoxAsync(bin);
+
+        await StartDragAsync(page, paper);
+        await MoveAsync(page, binBox.Centre);
+        await Expect(bin).ToHaveTextAsync("Release to drop");
+        // held past the first second, in which the module takes no mouse move for the drag's end (Firefox moves the
+        // mouse as a drag starts) - as a person's drag out of the window is
+        await page.WaitForTimeoutAsync(1100);
+        // out of the window past its left edge, and released there
+        await MoveAsync(page, new Point(-40, binBox.Centre.Y));
+        await page.Mouse.UpAsync();
+        // Where the engine reported no end of the drag (Firefox's driver), the module ends it on the button-less move
+        // that came with the release, once no drag event has followed for half a second; Chromium and WebKit report
+        // the end themselves. Then back in: Firefox's driver, still in a drag of its own, sends a dragover with that
+        // move, which a person's Firefox does not - so the move waits until the half second is over.
+        await page.WaitForTimeoutAsync(700);
+        await page.Mouse.MoveAsync(20, (float)binBox.Centre.Y);
+        await EventuallyAsync(async () => await paper.EvaluateAsync<string>("el => getComputedStyle(el).opacity") == "1", "the drag ended");
+        await WaitForQuietAsync(page);
+
+        // the drag ended as a cancel: nothing was dropped, the bin and the box are as before
+        await Expect(bin).ToHaveTextAsync("Drag a box here");
+        await Expect(paper).ToHaveCSSAsync("opacity", "1");
+        await Expect(paper).Not.ToHaveAttributeAsync("data-bit-bdnd-dragging", "");
+        Assert.AreEqual(0, (await DropsAsync(page.MainFrame)).Count, "a drop was raised outside the window");
+
+        // And the next drag is a drag like any other. Not under Firefox's driver: after a release outside the window
+        // it keeps a drag session of its own going, which takes the input - no key or mouse event reaches the page.
+        if (Browser.BrowserType.Name == "firefox") return;
+        await WaitForBdndAsync(page.MainFrame);
+        await page.Locator("[draggable]", new() { Has = page.Locator(".box", new() { HasText = "Paper" }) }).FocusAsync();
+        await page.Keyboard.PressAsync("Space");
+        await Expect(page.Locator("#bit-bdnd-live-region")).ToContainTextAsync("Picked up");
+        await page.Keyboard.PressAsync("ArrowUp"); // the bin is above the boxes
+        await Expect(page.Locator("#bit-bdnd-live-region")).ToContainTextAsync("is over");
+        await page.Keyboard.PressAsync("Enter");
+        await Expect(bin).ToHaveTextAsync("Last dropped: Paper (total 1)");
+    }
+
+    [TestMethod]
     public async Task A_box_lights_up_only_the_bins_that_accept_its_type_and_drops_into_one_of_them()
     {
         var page = await OpenAsync("/dustbin/multiple");
@@ -206,6 +251,26 @@ public sealed class DustbinTests : BdndTest
             await Expect(keep).ToBeVisibleAsync();
         }
         await Expect(bin.Locator(":scope > div > div")).ToHaveTextAsync(["Dropped 3 item(s)", "Banana (take)", "Glass (keep)", "Glass (keep)"]);
+    }
+
+    [TestMethod]
+    public async Task The_dustbin_grows_with_the_list_of_what_it_took()
+    {
+        var page = await OpenAsync("/dustbin/copy-or-move");
+        var bin = page.Locator(".dustbin");
+        var keep = page.Locator(".box", new() { HasText = "Glass (keep)" });
+
+        // more names than the bin's resting height holds
+        for (var dropped = 1; dropped <= 8; dropped++)
+        {
+            await DragAsync(page, keep, bin);
+            await Expect(bin).ToContainTextAsync($"Dropped {dropped} item(s)");
+        }
+
+        // every line inside the bin's fill, the count at its top included
+        Assert.IsTrue(await bin.EvaluateAsync<bool>("el => el.scrollHeight <= el.clientHeight"), "the list spills out of the bin");
+        var count = await BoxAsync(bin.Locator(":scope > div > div").First);
+        Assert.IsGreaterThanOrEqualTo((await BoxAsync(bin)).Y, count.Y, "the count is drawn above the bin");
     }
 
     [TestMethod]

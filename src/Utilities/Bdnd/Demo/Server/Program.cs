@@ -11,7 +11,9 @@ using System.Text.Json.Serialization;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddRazorComponents()
-    .AddInteractiveWebAssemblyComponents();
+    .AddInteractiveWebAssemblyComponents()
+    // only for /hosting/server-check, which shows the library over a circuit (see App.razor)
+    .AddInteractiveServerComponents();
 
 // The same registration as the WebAssembly client, so the components get the same services while
 // they are prerendered here.
@@ -94,6 +96,7 @@ app.MapMcp("/mcp");
 
 app.MapRazorComponents<App>()
     .AddInteractiveWebAssemblyRenderMode()
+    .AddInteractiveServerRenderMode()
     .AddAdditionalAssemblies(typeof(Bit.Bdnd.Demo.Client._Imports).Assembly);
 
 app.Run();

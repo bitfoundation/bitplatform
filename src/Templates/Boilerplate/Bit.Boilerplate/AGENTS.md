@@ -138,7 +138,7 @@ Example 2: `OnClick="WrapHandled(async () => await MyMethod())"` instead of `OnC
 ## 6. Behavioral Directives
 
 -   If you have access to persistent **memory**, at the start of the collaboration you **MUST** ask for the **role** of the person writing the prompts (e.g. Developer, Product Owner, QA, Designer, etc.), store it in memory, and from then on tailor the tone, depth, terminology, and focus of every conversation to that role.
--   **Write product decisions into `specs/`.** When a conversation settles what the product should do - even one where no code is asked for - write it into that feature's spec, and what is still undecided under its open questions (`specs/README.md` describes the files). A decision left only in a chat is lost to the next session and to every other tool.
+-   **Write product decisions into `specs/`.** When a conversation settles what the product should do - even one where no code is asked for - write it into that feature's spec, and what is still undecided under its open questions (`specs/README.md` describes the files). A decision left only in a chat is lost to the next session and to every other tool. Your own proposals are not decisions, so a conversation that has settled nothing yet has nothing to write.
 -   **Never wait unbounded.** Cap every long-running command with `timeout <seconds> <command>` and report the exit code (`124` = hit the cap), and pair the wait with a stall check - a process at ~0% CPU is hung, not slow. Re-arm in ~5 minute slices, inspecting the state between them.
 -   **Report platform bugs upstream.** Whenever something looks like a defect in the section 3 bit platform libraries or in the `bit-bp` template, tell the user, and tell them that if they agree you will write the report and submit it yourself. Once they approve, depending on whether you have GitHub access, either open an issue on <https://github.com/bitfoundation/bitplatform> or submit it through the feedback tool the bit platform MCP server exposes.
 
@@ -149,7 +149,7 @@ This project ships reusable [Agent Skills](https://agentskills.io), canonical in
 | Skill | Read it when | Canonical file |
 | --- | --- | --- |
 | `ai-dlc` | **Every task that is not a small, obvious edit**: building or changing a feature, fixing a reported bug even when its cause turns out obvious (its short track is what adds the regression test), work spanning several files. Only a skill below that covers the whole task replaces it | `.github/agents/ai-dlc.agent.md` |
-| `scaffold-entity` | Adding a new entity or a new feature that needs full CRUD | `.github/agents/scaffold-entity.agent.md` |
+| `scaffold-entity` | Scaffolding a CRUD entity whose fields, rules and screens are already settled, usually as a task of an `ai-dlc` plan. A request for a new feature or section starts with `ai-dlc` | `.github/agents/scaffold-entity.agent.md` |
 | `localize-strings` | Explicitly asked to move user-facing text into `AppStrings.resx`, or the changes are about to be pushed | `.github/agents/localize-strings.agent.md` |
 | `bitify-ui` | Replacing raw HTML/CSS in a Blazor page with Bit.BlazorUI components | `.github/agents/bitify-ui.agent.md` |
 | `review` | Reviewing a diff or PR against this project's conventions | `.github/agents/review.agent.md` |

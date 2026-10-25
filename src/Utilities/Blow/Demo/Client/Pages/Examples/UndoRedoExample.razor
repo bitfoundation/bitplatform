@@ -2,40 +2,54 @@
 <PageTitle>Undo & Redo · Blow</PageTitle>
 
 <ExampleScaffold Title="Undo & Redo"
-                 Summary="BlowHistory holds snapshots and hands back the one to restore. It is something you drive rather than something the canvas does for you, because only your app knows what counts as one undoable step - dragging five nodes is one step, not five hundred pointer moves. Capture when a gesture ends; identical captures are ignored, so pressing undo always does something.">
+                 Summary="Keep the undo stack yourself with BlowHistory: capture the graph after each edit, labelled with what it was, and restore the snapshot Undo or Redo hands back. For an app that already has an undo stack, or wants to decide what one step is; the canvas can also keep one for you (see Built-in Undo & Redo).">
     <Toolbar>
-        <button class="btn btn-primary" disabled="@(!_history.CanUndo)" @onclick="Undo">
-            Undo (@_history.UndoDepth)
-        </button>
-        <button class="btn btn-primary" disabled="@(!_history.CanRedo)" @onclick="Redo">
-            Redo (@_history.RedoDepth)
-        </button>
-        <span class="hist-sep"></span>
+        <button class="btn btn-primary" disabled="@(!_history.CanUndo)" @onclick="Undo">↶ Undo @_history.UndoLabel</button>
+        <button class="btn btn-primary" disabled="@(!_history.CanRedo)" @onclick="Redo">↷ Redo @_history.RedoLabel</button>
+        <span class="hist-depth">@_history.UndoDepth back · @_history.RedoDepth forward · capacity @_history.Capacity</span>
+
+        <span class="hist-label">Edit</span>
         <button class="btn btn-secondary" @onclick="AddNode">Add node</button>
         <button class="btn btn-secondary" @onclick="Scramble">Scramble</button>
+        <button class="btn btn-secondary" @onclick="RemoteEdit">Simulate a remote edit</button>
+        <button class="btn btn-secondary" @onclick="ClearHistory">Clear history</button>
     </Toolbar>
     <ChildContent>
         <BlowCanvas @ref="_flow"
                     Nodes="_nodes"
                     Edges="_edges"
                     FitViewOnInit="true"
-                    OnNodeDragStop="_ => Capture()"
-                    OnConnect="_ => Capture()"
-                    OnDelete="_ => Capture()"
+                    OnGraphChanged="OnGraphChanged"
                     OnInit="OnInit">
             <BlowBackground Variant="BlowBackgroundVariant.Dots" Gap="16" />
             <BlowControls />
         </BlowCanvas>
     </ChildContent>
+    <TryIt>
+        <li><strong>Drag</strong> a node, <strong>drag from a handle</strong> to connect two, or select something and press <strong>Delete</strong>: each is one step, and the Undo button names it - <em>move</em>, <em>connect</em>, <em>delete</em>. Moving five selected nodes together is one step too.</li>
+        <li><strong>Undo</strong> and <strong>Redo</strong> walk the steps; the view stays where you put it. Make an edit after undoing and the redo steps are gone, as in every editor.</li>
+        <li><strong>Add node</strong> and <strong>Scramble</strong> are steps as well. Press Scramble more than ten times: the step count stops at ten, because the oldest step is dropped.</li>
+        <li><strong>Simulate a remote edit</strong> moves Middle to the right as another user's change would. Undo as far as you like: the other steps come back, but Middle stays where the remote edit put it.</li>
+        <li><strong>Clear history</strong> forgets every step and starts again from the graph as it is.</li>
+    </TryIt>
+    <HowItWorks>
+        <li><code>new BlowHistory(capacity: 10)</code> keeps up to ten steps back; past that the oldest is dropped. <code>Capacity</code>, <code>UndoDepth</code>, <code>RedoDepth</code>, <code>CanUndo</code> and <code>CanRedo</code> drive the toolbar.</li>
+        <li><code>Capture(nodes, edges, viewport, label)</code> records the live graph as a step, copying only the nodes and edges that changed since the last one. It returns false and records nothing when nothing changed - selecting is not an edit - so capturing liberally is harmless and Undo always does something.</li>
+        <li>The page captures in <code>OnGraphChanged</code>, raised once per completed edit with a <code>BlowGraphChange</code> whose <code>Label</code> (<code>move</code>, <code>connect</code>, <code>delete</code>, <code>add</code>, ...) becomes the step's label; <code>UndoLabel</code> and <code>RedoLabel</code> name the steps either side. A change of kind <code>Replaced</code> is the page's own restore, and is not captured. Handling <code>OnNodeDragStop</code>, <code>OnConnect</code> and <code>OnDelete</code> would do as well.</li>
+        <li>Add node goes through <code>AddNodes</code>, so it arrives in <code>OnGraphChanged</code> like a user's edit. Scramble moves the nodes directly, which the canvas cannot see, so the page captures it itself, labelled <code>scramble</code>.</li>
+        <li><code>Undo()</code> and <code>Redo()</code> step through the history and return the <code>BlowSnapshot</code> to apply, or null. <code>RestoreAsync(snapshot, restoreViewport: false)</code> puts the graph back in place, as copies, and leaves the viewport alone.</li>
+        <li><code>Rebase(nodes, edges, viewport)</code> writes a change nobody should undo into every step, back and forward; a step whose whole effect it overwrote is dropped. <code>Clear()</code> forgets everything, so the page captures the starting point again - as <code>OnInit</code> does, or the first undo would have nothing to return to.</li>
+    </HowItWorks>
 </ExampleScaffold>
 
 <style>
-    .hist-sep { display: inline-block; width: 1rem; }
+    .hist-depth { font-size: 12px; color: var(--bb-text-soft); }
+    .hist-label { font-size: 11px; text-transform: uppercase; letter-spacing: .04em; color: var(--bb-text-soft); margin-left: .75rem; }
 </style>
 
 @code {
     private BlowCanvas? _flow;
-    private readonly BlowHistory _history = new(capacity: 50);
+    private readonly BlowHistory _history = new(capacity: 10);
     private List<BlowNode> _nodes = [];
     private List<BlowEdge> _edges = [];
     private int _next = 4;
@@ -56,33 +70,40 @@
     }
 
     // The starting point has to be on the stack, or the first undo has nothing to return to.
-    private void OnInit(BlowCanvas flow) => Capture();
+    private void OnInit(BlowCanvas flow) => Capture(null);
 
-    // ToObject() deep-copies by default, so the history keeps describing the graph as it was
-    // rather than following along as the user carries on editing.
-    private void Capture() => _history.Capture(_flow!.ToObject());
+    // The live lists, not a snapshot: the history copies only what changed since the last step and shares the rest.
+    private void Capture(string? label)
+    {
+        if (_flow is not null) _history.Capture(_nodes, _edges, _flow.GetViewport(), label);
+    }
+
+    private void OnGraphChanged(BlowGraphChange change)
+    {
+        // Restoring a step raises a change of its own; recording it would push the step just left back onto the stack.
+        if (change.Kind == BlowChangeKind.Replaced) return;
+        Capture(change.Label);
+    }
 
     private async Task Undo()
     {
-        if (_history.Undo() is { } snapshot) await _flow!.RestoreAsync(snapshot);
+        if (_flow is not null && _history.Undo() is { } snapshot) await _flow.RestoreAsync(snapshot, restoreViewport: false);
     }
 
     private async Task Redo()
     {
-        if (_history.Redo() is { } snapshot) await _flow!.RestoreAsync(snapshot);
+        if (_flow is not null && _history.Redo() is { } snapshot) await _flow.RestoreAsync(snapshot, restoreViewport: false);
     }
 
     private void AddNode()
     {
         var id = (_next++).ToString();
-        _nodes.Add(new BlowNode
+        _flow?.AddNodes(new BlowNode
         {
             Id = id,
             Label = $"Node {id}",
             Position = new(Random.Shared.Next(240, 460), Random.Shared.Next(40, 300)),
         });
-        _flow?.Refresh(remeasure: true);
-        Capture();
     }
 
     private void Scramble()
@@ -90,7 +111,23 @@
         foreach (var node in _nodes)
             node.Position = new BlowXYPosition(Random.Shared.Next(40, 460), Random.Shared.Next(40, 320));
 
-        _flow?.Refresh(remeasure: true);
-        Capture();
+        // The page re-renders after this handler, which redraws the canvas; recording the step is the page's job.
+        Capture("scramble");
+    }
+
+    private void RemoteEdit()
+    {
+        if (_flow is null || _nodes.FirstOrDefault(n => n.Id == "2") is not { } middle) return;
+
+        // What a collaboration adapter would do with another user's change: apply it, then write it into every step
+        // rather than recording a step of its own, so this user's undo never takes it back.
+        middle.Position = new BlowXYPosition(middle.Position.X + 60, middle.Position.Y);
+        _history.Rebase(_nodes, _edges, _flow.GetViewport());
+    }
+
+    private void ClearHistory()
+    {
+        _history.Clear();
+        Capture(null);
     }
 }

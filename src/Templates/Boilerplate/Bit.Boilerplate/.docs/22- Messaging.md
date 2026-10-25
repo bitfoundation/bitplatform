@@ -502,6 +502,8 @@ public async Task Subscribe(CancellationToken cancellationToken)
     if (subscription is null)
         return;
 
+    subscription.UserSessionIds = await authManager.GetDeviceSessionIds();
+
     await pushNotificationController.Subscribe(subscription, cancellationToken);
 }
 ```
@@ -516,6 +518,10 @@ Each platform has its own implementation:
 ### Server-Side Push Notification Service
 
 **Location**: [`src/Server/Boilerplate.Server.Api/Features/PushNotification/PushNotificationService.cs`](/src/Server/Boilerplate.Server.Api/Features/PushNotification/PushNotificationService.cs)
+
+The server posts each web push to the address in the browser's subscription, so `Subscribe` only accepts an `https` address of a browser push service (Google, Mozilla, Microsoft or Apple). The push endpoints are rate limited.
+
+Each account signed in on a device has a row of its own, so a push about an account reaches the device even while another account is active there. The device still gets a push once however many accounts it holds, and on a device with several accounts a push about one of them names the account and opens the app with it.
 
 ---
 
