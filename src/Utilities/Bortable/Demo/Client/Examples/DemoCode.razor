@@ -1,10 +1,11 @@
 ﻿@namespace Bit.Bortable.Demo.Client.Examples
 @inject NavigationManager Nav
 
-@* A collapsible "View code" panel that shows the .razor source of the current demo page.
-   The source is resolved from the build-generated DemoSources lookup, keyed by route. A page
-   built from more than one file names the others in Files (paths relative to Pages, separated
-   by commas), and they are shown after it. *@
+@* A collapsible "View code" panel under a demo's samples that shows the .razor source of the
+   current demo page. The source is resolved from the build-generated DemoSources lookup, keyed
+   by route. A page built from more than one file names the others in Files (paths relative to
+   Pages, separated by commas), and they are shown after it. Each file is a CodeBlock: .razor
+   files are coloured as Razor, .cs files as C#. *@
 
 <div class="bb-source demo-code">
     <button type="button"
@@ -30,7 +31,7 @@
                 {
                     <div class="bb-source-file demo-code__file">@path</div>
                 }
-                <pre class="bb-code demo-code__pre"><code class="demo-code__code">@source</code></pre>
+                <CodeBlock Code="@source" Language="@(path.EndsWith(".cs", StringComparison.OrdinalIgnoreCase) ? "csharp" : "razor")" Class="demo-code__pre" />
             }
         }
     }

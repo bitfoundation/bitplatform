@@ -10,8 +10,6 @@
     </p>
 </div>
 
-<DemoCode />
-
 <section class="bb-card">
     <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> A locked item</h3>
     <p class="bb-card-desc">
@@ -54,6 +52,8 @@
         <p class="demo-order"><strong>Tasks:</strong> <span id="filter-tasks-order">@string.Join(", ", _tasks.Select(t => t.Locked ? $"{t.Title} (locked)" : t.Title))</span></p>
     </div>
 </section>
+
+<DemoCode />
 
 <section class="bb-card">
     <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Try it</h3>

@@ -39,23 +39,40 @@ public sealed class DemoPagesTests : BortableTest
             Assert.IsTrue(await page.Locator($"{ListSelector} > [data-bortable-item]").CountAsync() > 0, $"{path} shows no items");
         }
 
-        // The "View code" panel opens on the page's own source, without its routing directive, and closes again.
+        // The "View code" panel comes after every sample of the page, outside its frame, opens on the page's own
+        // source, without its routing directive, coloured, and closes again.
         var toggle = page.Locator(".demo-code__toggle");
         bool hasCode = await toggle.CountAsync() > 0;
         if (hasCode)
         {
+            Assert.IsTrue(await page.EvaluateAsync<bool>(
+                """
+                () => {
+                    const code = document.querySelector('.demo-code');
+                    return [...document.querySelectorAll('.bb-demo')].every(demo => {
+                        const position = demo.compareDocumentPosition(code);
+                        return (position & Node.DOCUMENT_POSITION_FOLLOWING) && !(position & Node.DOCUMENT_POSITION_CONTAINED_BY);
+                    });
+                }
+                """),
+                $"the code toggle of {path} is not under its samples");
+
             await Expect(toggle).ToHaveTextAsync(new Regex("View code"));
             await toggle.ClickAsync();
             await Expect(toggle).ToHaveAttributeAsync("aria-expanded", "true");
-            var code = page.Locator(".demo-code__code");
+            var code = page.Locator(".demo-code__pre > code");
             await Expect(code.First).ToBeVisibleAsync();
             // A page built from several files shows each of them; its lists may be declared in any one of them.
             var sources = await code.AllTextContentsAsync();
             if (lists > 0) Assert.IsTrue(sources.Any(s => s.Contains("<Bortable", StringComparison.Ordinal)), $"the code of {path} is not the page's markup");
             Assert.DoesNotContain("@page", sources[0], $"the code of {path} still carries the routing directive");
+            for (int i = 0; i < sources.Count; i++)
+            {
+                Assert.IsGreaterThan(0, await code.Nth(i).Locator("[class^='tok-']").CountAsync(), $"file {i + 1} of the code of {path} is not coloured");
+            }
 
             await toggle.ClickAsync();
-            await Expect(page.Locator(".demo-code__code")).ToHaveCountAsync(0);
+            await Expect(code).ToHaveCountAsync(0);
             await Expect(toggle).ToHaveTextAsync(new Regex("View code"));
         }
         await WaitForQuietAsync(page);
@@ -75,9 +92,14 @@ public sealed class DemoPagesTests : BortableTest
         await page.Locator(".demo-code__toggle").ClickAsync();
 
         await Expect(page.Locator(".demo-code__file")).ToHaveTextAsync(["Nested.razor", "NestedList.razor", "NestedItem.cs"]);
-        await Expect(page.Locator(".demo-code__code")).ToHaveCountAsync(3);
-        StringAssert.Contains(await page.Locator(".demo-code__code").Nth(1).TextContentAsync(), "<Bortable");
-        StringAssert.Contains(await page.Locator(".demo-code__code").Nth(2).TextContentAsync(), "class NestedItem");
+        var code = page.Locator(".demo-code__pre > code");
+        await Expect(code).ToHaveCountAsync(3);
+        StringAssert.Contains(await code.Nth(1).TextContentAsync(), "<Bortable");
+        StringAssert.Contains(await code.Nth(2).TextContentAsync(), "class NestedItem");
+
+        // Each file is coloured in its own language: the component's markup as Razor, the model as C#.
+        Assert.IsGreaterThan(0, await code.Nth(1).Locator(".tok-type", new() { HasText = "Bortable" }).CountAsync(), "the component tag is not coloured");
+        Assert.IsGreaterThan(0, await code.Nth(2).Locator(".tok-key", new() { HasText = "class" }).CountAsync(), "the C# model's keywords are not coloured");
     }
 
     [TestMethod]
