@@ -829,6 +829,8 @@ public partial class BitPdfViewer : BitComponentBase
 
     private bool NoSearchMatches => _searchTotal <= 0;
 
+    private bool AttachmentsDisabled => !HasAttachments && !HasDeferredAttachments;
+
     private bool DownloadDisabled => (_bytes is null && (_document is null || !IsNonBuffered)) || CanDownload is false;
 
     private bool PrintDisabled => _pages.Count == 0 || CanPrint is false;

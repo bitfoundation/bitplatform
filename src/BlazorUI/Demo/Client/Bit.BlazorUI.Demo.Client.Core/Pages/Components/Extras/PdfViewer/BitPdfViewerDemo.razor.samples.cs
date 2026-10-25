@@ -469,6 +469,23 @@ private readonly BitPdfSource streamSource = BitPdfSource.FromStreamFactory(
     }, ""document.pdf"");";
 
     private readonly string example19RazorCode = @"
+<BitPdfViewer @ref=""rangeViewer"" Source=""rangeSource"" />";
+    private readonly string example19CsharpCode = @"
+private BitPdfViewer? rangeViewer;
+private readonly BitPdfSource rangeSource = BitPdfSource.FromUrl(""document.pdf"")
+    .WithRangeLoading(new BitPdfRangeLoadingOptions
+    {
+        CacheSize = 16 * 1024 * 1024,
+        ChunkSize = 64 * 1024,
+        MaxFallbackSize = null, // unlimited initial fallback; 0 disables it
+    });
+
+// WithRangeLoading() alone uses those defaults. WithHeaders(headers) can add
+// authentication. The server must supply strong ETag and byte range responses.
+// When the host needs metadata, forms, tagged structure or attachments:
+// await rangeViewer!.LoadDocumentDetailsAsync();";
+
+    private readonly string example20RazorCode = @"
 <style>
     .custom-class {
         box-shadow: 0 0 1rem tomato;
@@ -490,7 +507,7 @@ private readonly BitPdfSource streamSource = BitPdfSource.FromStreamFactory(
                                 ToolbarButton = ""color:var(--bit-clr-pri-text)"" })"" />
 
 <BitPdfViewer Source=""styleSource"" Height=""300px"" Style=""@cssVariablesStyle"" />";
-    private readonly string example19CsharpCode = @"
+    private readonly string example20CsharpCode = @"
 private BitPdfSource? styleSource;
 
 // The same variables set on :root restyle every viewer of the app.
@@ -504,28 +521,11 @@ private const string cssVariablesStyle = ""--bit-PdfViewer-border-radius:1rem;""
                                          ""--bit-PdfViewer-page-filter:invert(1) hue-rotate(180deg);"" +
                                          ""--bit-PdfViewer-search-match-background:gold;"";";
 
-    private readonly string example20RazorCode = @"
+    private readonly string example21RazorCode = @"
 <BitButton Disabled=""rtlSource is not null""
            OnClick='() => rtlSource = BitPdfSource.FromUrl(""url-to-the-pdf-file.pdf"", ""file-name.pdf"")'>Load document</BitButton>
 
 <BitPdfViewer Dir=""BitDir.Rtl"" Source=""rtlSource"" Height=""400px"" />";
-    private readonly string example20CsharpCode = @"
-private BitPdfSource? rtlSource;";
-
-    private readonly string example21RazorCode = @"
-<BitPdfViewer @ref=""rangeViewer"" Source=""rangeSource"" />";
     private readonly string example21CsharpCode = @"
-private BitPdfViewer? rangeViewer;
-private readonly BitPdfSource rangeSource = BitPdfSource.FromUrl(""document.pdf"")
-    .WithRangeLoading(new BitPdfRangeLoadingOptions
-    {
-        CacheSize = 16 * 1024 * 1024,
-        ChunkSize = 64 * 1024,
-        MaxFallbackSize = null, // unlimited initial fallback; 0 disables it
-    });
-
-// WithRangeLoading() alone uses those defaults. WithHeaders(headers) can add
-// authentication. The server must supply strong ETag and byte range responses.
-// When the host needs metadata, forms, tagged structure or attachments:
-// await rangeViewer!.LoadDocumentDetailsAsync();";
+private BitPdfSource? rtlSource;";
 }
