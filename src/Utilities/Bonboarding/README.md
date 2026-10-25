@@ -41,7 +41,7 @@ Every decision about what to show, when to show it, and where to put it is made 
 - **Guidance that stays on the page**: beacons that open hints or tours, onboarding checklists that tick
   themselves off, and a list of tours to start again from a help menu.
 - **Respectful by default**: an automatic tour never interrupts one the user is taking (it queues, by
-  priority), "remind me later" snoozes, and completion is remembered across replays and edits.
+  priority), "remind me later" snoozes, and completion is remembered across replays of the same tour version.
 - **Definitions checked before anyone sees them**, and a user held on a step is told why.
 - **Analytics-grade events**, including how long each step was on screen.
 - Works unchanged on **Blazor Server, Blazor WebAssembly and Blazor Web App**, including while
@@ -2233,6 +2233,18 @@ public sealed class ResourceOnboardingLocalizer(IStringLocalizer<Tours> localize
         StepAnnouncementFormat = localizer["Tour_Announcement"],
         WaitingAnnouncement = localizer["Tour_Waiting"],
         ProgressLabel = localizer["Tour_ProgressLabel"],
+        BeaconLabel = localizer["Beacon_Label"],
+        HintDone = localizer["Hint_Done"],
+        ChecklistProgressFormat = localizer["Checklist_Progress"],
+        ChecklistDismiss = localizer["Checklist_Dismiss"],
+        ChecklistItemDone = localizer["Checklist_ItemDone"],
+        ChecklistItemTodo = localizer["Checklist_ItemTodo"],
+        TourNew = localizer["TourList_New"],
+        TourInProgress = localizer["TourList_InProgress"],
+        TourCompleted = localizer["TourList_Completed"],
+        TourStart = localizer["TourList_Start"],
+        TourResume = localizer["TourList_Resume"],
+        TourReplay = localizer["TourList_Replay"],
     };
 
     // Lets step titles and descriptions be resource keys rather than literals.

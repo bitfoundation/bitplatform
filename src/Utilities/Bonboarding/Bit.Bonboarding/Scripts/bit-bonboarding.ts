@@ -1551,14 +1551,24 @@ function directionOf(element: Element): string {
     }
 }
 
-/** The ancestors that clip an element's overflow, nearest first. */
+/**
+ * The ancestors that clip an element's overflow, nearest first. A fixed element is laid out against the viewport, so no
+ * ancestor's overflow clips it, and an element inside a fixed ancestor is clipped by nothing above that ancestor.
+ */
 function clippingAncestors(element: Element): Element[] {
     const result: Element[] = [];
+
+    try {
+        if (getComputedStyle(element).position === 'fixed') return result;
+    } catch {
+        // Detached; its ancestors are walked as they are.
+    }
 
     for (let node = element.parentElement; node && node !== document.documentElement && node !== document.body; node = node.parentElement) {
         try {
             const style = getComputedStyle(node);
             if (style.overflowX !== 'visible' || style.overflowY !== 'visible') result.push(node);
+            if (style.position === 'fixed') break;
         } catch {
             // Detached mid-walk; whatever was collected still applies.
         }

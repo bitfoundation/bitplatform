@@ -77,6 +77,16 @@ passed. Every test has a three-minute timeout (`testconfig.json`), so a hang is 
 holding up the run.
 
 CI does the same in Release (`.github/workflows/bit.ci.Bonboarding.e2e.yml`), against the demo published the way
-`bonboarding.demo.cd.yml` publishes it rather than a build output: only a publish trims the WebAssembly client. That
-workflow runs only when started by hand, once per engine. The pull-request pipeline, `bit.ci.Bonboarding.yml`, runs
-the build, engine, component and MCP tests on .NET 8, 9 and 10.
+`bonboarding.demo.cd.yml` publishes it rather than a build output: only a publish trims the WebAssembly client, so an
+interop payload the trimmer breaks fails there and nowhere else. That workflow runs only when started by hand, once
+per engine. To run the suite the same way, from the repository root:
+
+```bash
+dotnet publish src/Utilities/Bonboarding/Demo/Server/Bit.Bonboarding.Demo.Server.csproj -c Release -o demo -p:InvariantGlobalization=true
+dotnet build src/Utilities/Bonboarding/Tests/Bit.Bonboarding.Tests.E2E/Bit.Bonboarding.Tests.E2E.csproj -c Release
+(cd demo && dotnet Bit.Bonboarding.Demo.Server.dll --urls http://127.0.0.1:5000 &)
+cd src/Utilities/Bonboarding/Tests/Bit.Bonboarding.Tests.E2E && BONBOARDING_E2E_BASE_URL=http://127.0.0.1:5000 dotnet test -c Release --no-build
+```
+
+The pull-request pipeline, `bit.ci.Bonboarding.yml`, runs the build, engine, component and MCP tests on .NET 8, 9
+and 10.
