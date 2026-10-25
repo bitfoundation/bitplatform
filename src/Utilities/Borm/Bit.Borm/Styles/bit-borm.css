@@ -11,6 +11,7 @@
     --bit-borm-border: #d1d5db;
     --bit-borm-border-focus: var(--bit-borm-accent);
     --bit-borm-error: #dc2626;
+    --bit-borm-error-contrast: #ffffff;
     --bit-borm-error-surface: #fef2f2;
     --bit-borm-warning: #d97706;
     --bit-borm-text: #111827;
@@ -42,6 +43,7 @@
         --bit-borm-surface-disabled: #374151;
         --bit-borm-border: #4b5563;
         --bit-borm-error: #f87171;
+        --bit-borm-error-contrast: #111827;
         --bit-borm-error-surface: #2a1215;
         --bit-borm-warning: #fbbf24;
         --bit-borm-text: #f9fafb;
@@ -56,6 +58,7 @@
     --bit-borm-surface-disabled: #374151;
     --bit-borm-border: #4b5563;
     --bit-borm-error: #f87171;
+    --bit-borm-error-contrast: #111827;
     --bit-borm-error-surface: #2a1215;
     --bit-borm-warning: #fbbf24;
     --bit-borm-text: #f9fafb;
@@ -69,6 +72,7 @@
     --bit-borm-surface-disabled: #f3f4f6;
     --bit-borm-border: #d1d5db;
     --bit-borm-error: #dc2626;
+    --bit-borm-error-contrast: #ffffff;
     --bit-borm-error-surface: #fef2f2;
     --bit-borm-warning: #d97706;
     --bit-borm-text: #111827;
@@ -468,11 +472,12 @@ textarea.bit-borm-input { resize: vertical; min-height: 4.5rem; }
 }
 .bit-borm-tabs__tab:focus-visible { outline: 2px solid var(--bit-borm-accent); outline-offset: 2px; }
 /* The count beside a tab or section holding errors. It is backed by text for assistive technology, so
-   the colour is never the only thing saying something is wrong. */
+   the colour is never the only thing saying something is wrong. Its text has a token of its own: white
+   on the dark theme's lighter red fell short of the 4.5:1 contrast small text needs. */
 .bit-borm-tabs__badge {
     display: inline-flex; align-items: center; justify-content: center; min-width: 1.4rem; height: 1.4rem;
     padding: 0 .35rem; border-radius: 999px; font-size: .75rem; font-weight: 700;
-    background: var(--bit-borm-error); color: var(--bit-borm-accent-contrast);
+    background: var(--bit-borm-error); color: var(--bit-borm-error-contrast);
 }
 .bit-borm-section { border: 1px solid var(--bit-borm-border); border-radius: var(--bit-borm-radius); padding: 1rem 1.25rem; min-width: 0; }
 .bit-borm-section + .bit-borm-section { margin-block-start: var(--bit-borm-gap); }

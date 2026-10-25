@@ -372,7 +372,12 @@ public static class BormJsonSchemaExporter
 
         // An expression is text, so unlike a delegate it travels. A computed value built from one is
         // recognised by the delegate's target, which is the expression itself.
-        if (field.Computed?.Target is BormExpression computed) writer.WriteString("x-computed", computed.Text);
+        if (field.Computed?.Target is BormExpression computed)
+        {
+            writer.WriteString("x-computed", computed.Text);
+            // The importer locks a computed field unless told otherwise, so one the user may override says so.
+            if (!field.ReadOnly) writer.WriteBoolean("readOnly", false);
+        }
         WriteRules(writer, field.Validators, formLevel: false);
     }
 

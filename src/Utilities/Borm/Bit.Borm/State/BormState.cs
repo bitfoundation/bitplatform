@@ -1483,11 +1483,11 @@ public sealed class BormState : IDisposable
     /// Waits for every entry still being committed, including any made while waiting. A failure is not this
     /// caller's to report: the control that made the entry is awaiting it too.
     /// </summary>
-    private async Task SettleEntriesAsync()
+    private async Task SettleEntriesAsync(CancellationToken cancellationToken = default)
     {
-        while (_pendingEntries.Count > 0)
+        while (_pendingEntries.Count > 0 && !cancellationToken.IsCancellationRequested)
         {
-            await Task.WhenAll(_pendingEntries.ToArray())
+            await Task.WhenAll(_pendingEntries.ToArray()).WaitAsync(cancellationToken)
                 .ConfigureAwait(ConfigureAwaitOptions.SuppressThrowing | ConfigureAwaitOptions.ContinueOnCapturedContext);
             _pendingEntries.RemoveAll(entry => entry.IsCompleted);
         }
@@ -2334,20 +2334,26 @@ public sealed class BormState : IDisposable
         IsSubmitSuccessful = false;
         SubmitOutcome = BormSubmitOutcome.None;
         SubmitError = null;
-        // An answer still being committed is part of what is submitted. Waited for while the form already says
-        // it is submitting, so a second press is refused rather than racing the first.
-        await SettleEntriesAsync();
-        RegisterSubmitAttempt();
-        // Tidy first, judge second. A field the user never visited never blurred, so this is the only
-        // chance its normalizer gets — and a value that reaches the handler should be the one that
-        // would have been stored.
-        NormalizeAll();
-        MarkAllTouched();
-        NotifyChanged();
-
+        // Made before anything is awaited, so CancelSubmit reaches a submit still waiting on an entry too.
         var cts = _submitCts = new CancellationTokenSource();
         try
         {
+            // An answer still being committed is part of what is submitted. Waited for while the form already says
+            // it is submitting, so a second press is refused rather than racing the first.
+            await SettleEntriesAsync(cts.Token);
+            if (cts.IsCancellationRequested)
+            {
+                SubmitOutcome = BormSubmitOutcome.Cancelled;
+                return false;
+            }
+            RegisterSubmitAttempt();
+            // Tidy first, judge second. A field the user never visited never blurred, so this is the only
+            // chance its normalizer gets — and a value that reaches the handler should be the one that
+            // would have been stored.
+            NormalizeAll();
+            MarkAllTouched();
+            NotifyChanged();
+
             var valid = await ValidateAsync();
             if (!valid)
             {
@@ -3853,10 +3859,14 @@ public sealed class BormState : IDisposable
             set.Remove(key);
     }
 
-    private void ApplyDefaults()
+    /// <param name="onlyNew">
+    /// Leave every path that already has a baseline as it is — the fields the form had before its schema
+    /// changed — so an answer the user cleared is not filled in again; only a field just added gets its default.
+    /// </param>
+    private void ApplyDefaults(bool onlyNew = false)
     {
         foreach (var field in Definition.Fields)
-            ApplyDefault(field, field.Name);
+            ApplyDefault(field, field.Name, onlyNew: onlyNew);
     }
 
     /// <summary>
@@ -3886,15 +3896,17 @@ public sealed class BormState : IDisposable
     /// distinction a default of 1 could never reach an <c>int</c> — a fresh one already reads as 0, and
     /// 0 is indistinguishable from a deliberate answer.
     /// </summary>
-    private void ApplyDefault(BormFieldDefinition field, string path, bool overwrite = false)
+    private void ApplyDefault(BormFieldDefinition field, string path, bool overwrite = false, bool onlyNew = false)
     {
         // A heading has a name so the schema can address it, not because the model has a property of
         // that name. Writing to it would fail silently on a typed model and litter a dictionary one.
         if (field.IsPresentational) return;
 
-        if (field.DefaultValue is not null && (overwrite || Data.GetValue(path) is null))
+        // An object has no baseline of its own, so it is never kept here; its children are judged one by one.
+        var keep = onlyNew && _initialValues.ContainsKey(path);
+        if (!keep && field.DefaultValue is not null && (overwrite || Data.GetValue(path) is null))
             Data.SetValue(path, CopyDefault(field.DefaultValue));
-        else if (Data is BormDictionaryDataAccessor && !Data.TryGetValue(path, out _))
+        else if (!keep && Data is BormDictionaryDataAccessor && !Data.TryGetValue(path, out _))
             // A dictionary only has the keys someone wrote, and a condition inside a row or an object
             // resolves "Kind" against that container first only when the container *has* a Kind —
             // otherwise it falls back to the root. A fresh row with nothing typed in yet therefore
@@ -3905,14 +3917,14 @@ public sealed class BormState : IDisposable
         if (field.Type == BormFieldType.Object)
         {
             foreach (var child in field.Children)
-                ApplyDefault(child, BormPath.Combine(path, child.Name), overwrite);
+                ApplyDefault(child, BormPath.Combine(path, child.Name), overwrite, onlyNew);
         }
         else if (field.Type == BormFieldType.Array && field.ItemTemplate is not null && !overwrite)
         {
             // Existing rows are completed, never rewritten: a model loaded from storage keeps its data.
             var count = ArrayCount(path);
             for (var i = 0; i < count; i++)
-                ApplyItemDefaults(field, BormPath.Combine(path, i), overwrite: false);
+                ApplyItemDefaults(field, BormPath.Combine(path, i), overwrite: false, onlyNew);
         }
     }
 
@@ -3970,18 +3982,18 @@ public sealed class BormState : IDisposable
     /// Seeds a repeater row from its template's default values, so "quantity starts at 1" holds for
     /// every row the user adds and not only for the ones the form was created with.
     /// </summary>
-    private void ApplyItemDefaults(BormFieldDefinition arrayField, string itemPath, bool overwrite)
+    private void ApplyItemDefaults(BormFieldDefinition arrayField, string itemPath, bool overwrite, bool onlyNew = false)
     {
         if (arrayField.ItemTemplate is not { } template) return;
 
         if (template.Type == BormFieldType.Object)
         {
             foreach (var child in template.Children)
-                ApplyDefault(child, BormPath.Combine(itemPath, child.Name), overwrite);
+                ApplyDefault(child, BormPath.Combine(itemPath, child.Name), overwrite, onlyNew);
         }
         else
         {
-            ApplyDefault(template, itemPath, overwrite);
+            ApplyDefault(template, itemPath, overwrite, onlyNew);
         }
     }
 
@@ -4095,7 +4107,7 @@ public sealed class BormState : IDisposable
         _localizedOptions.Clear();
         DefinitionVersion++;
 
-        ApplyDefaults();
+        ApplyDefaults(onlyNew: true);
         SeedRequiredArrayItems();
         RecomputeValues(changedPath: null);
         CaptureInitialValues(onlyMissing: true);

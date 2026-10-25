@@ -22,9 +22,10 @@
     }
     @if (IsReview)
     {
-        @* "Check your answers": everything the form holds, step by step, minus the step it sits on. *@
+        @* "Check your answers": everything the form holds, step by step, minus the step it sits on - found
+           by what it holds, not by being the current one, since an accordion or sections render every step. *@
         <BormReview State="Context.State" HeadingLevel="@Math.Clamp(Level + 1, 1, 6)"
-                    ExcludeStep="@(Context.State.CurrentStep is { } current && BormState.StepContains(current, Context.Path) ? current : null)" />
+                    ExcludeStep="@(Context.State.Definition.Steps.FirstOrDefault(step => BormState.StepContains(step, Context.Path)))" />
     }
 </div>
 

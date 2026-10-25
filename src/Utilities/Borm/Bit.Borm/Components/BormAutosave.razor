@@ -41,13 +41,14 @@
         _subscribed.FieldChanged += OnFieldChanged;
     }
 
-    private void OnFieldChanged(string path)
+    // The event can be raised off the renderer's thread, so _pending is only ever touched on it.
+    private void OnFieldChanged(string path) => _ = InvokeAsync(() =>
     {
         _pending?.Cancel();
         _pending?.Dispose();
         var cts = _pending = new CancellationTokenSource();
-        _ = InvokeAsync(() => SaveAfterPause(cts));
-    }
+        return SaveAfterPause(cts);
+    });
 
     private async Task SaveAfterPause(CancellationTokenSource cts)
     {

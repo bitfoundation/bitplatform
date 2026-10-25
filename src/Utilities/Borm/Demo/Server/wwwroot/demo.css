@@ -36,6 +36,8 @@ html:root .bit-borm-form {
     --bit-borm-surface-disabled: var(--bb-surface-2);
     --bit-borm-border: var(--bb-border-strong);
     --bit-borm-error: var(--bb-danger);
+    /* What the kit draws on its danger colour as on its primary one: white in light, near-black in dark. */
+    --bit-borm-error-contrast: var(--bb-primary-text);
     --bit-borm-error-surface: var(--bb-danger-soft);
     --bit-borm-warning: var(--bb-warning-text);
     --bit-borm-text: var(--bb-text);

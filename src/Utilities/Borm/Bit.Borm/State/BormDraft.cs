@@ -51,9 +51,9 @@ public static class BormDraft
         ArgumentNullException.ThrowIfNull(state);
         options ??= new BormDraftOptions();
 
-        List<string>? hidden = null;
+        HashSet<string>? visible = null;
         if (options.ExcludeHidden)
-            hidden = state.Snapshot(new BormSnapshotOptions { ExcludeHidden = true }).Keys.ToList();
+            visible = new(state.Snapshot(new BormSnapshotOptions { ExcludeHidden = true }).Keys, StringComparer.OrdinalIgnoreCase);
 
         using var stream = new MemoryStream();
         using (var writer = new Utf8JsonWriter(stream))
@@ -78,7 +78,7 @@ public static class BormDraft
                 }
                 if (field.Computed is not null || field.Type == BormFieldType.File) continue;
                 if (field.IsSensitive && !options.IncludeSensitive) continue;
-                if (hidden is not null && !hidden.Contains(path, StringComparer.OrdinalIgnoreCase)) continue;
+                if (visible is not null && !visible.Contains(path)) continue;
 
                 var value = state.GetValue(path);
                 if (!IsStorable(value)) continue;

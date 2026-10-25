@@ -161,19 +161,23 @@ public sealed class BormValidator
             Language = Language
         };
 
-        // Conditional requiredness is evaluated before the declared rules so its message leads.
-        if (field.RequiredWhen is not null && field.RequiredWhen.Evaluate(scoped) && !field.Required)
-        {
-            var result = await ConditionalRequired.ValidateAsync(ctx);
-            if (!result.IsValid && result.Message is not null)
-                messages.Add(new BormValidationMessage(path, result.Message, result.Severity) { Code = ConditionalRequired.Key });
-        }
-
         // Synchronous rules first, asynchronous ones after — and only when the synchronous ones found no
         // error. A username that does not even match its pattern gains nothing from a round trip to ask
         // whether it is taken: the request costs the server, and its answer is a second complaint about a
         // value the user already has to change. (TanStack Form's default; see RunAsyncRulesOnInvalidFields.)
         var failedSynchronously = false;
+
+        // Conditional requiredness is evaluated before the declared rules so its message leads.
+        if (field.RequiredWhen is not null && field.RequiredWhen.Evaluate(scoped) && !field.Required)
+        {
+            var result = await ConditionalRequired.ValidateAsync(ctx);
+            if (!result.IsValid && result.Message is not null)
+            {
+                messages.Add(new BormValidationMessage(path, result.Message, result.Severity) { Code = ConditionalRequired.Key });
+                if (result.Severity == BormValidationSeverity.Error) failedSynchronously = true;
+            }
+        }
+
         var hasAsync = false;
         foreach (var rule in field.Validators)
         {

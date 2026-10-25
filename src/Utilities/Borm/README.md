@@ -1614,6 +1614,7 @@ instead:
 | `--bit-borm-border` | `#d1d5db` | `#4b5563` | Control and card borders. |
 | `--bit-borm-border-focus` | `var(--bit-borm-accent)` | `var(--bit-borm-accent)` | The border of a focused control. |
 | `--bit-borm-error` | `#dc2626` | `#f87171` | Error text, invalid borders, the required marker. |
+| `--bit-borm-error-contrast` | `#ffffff` | `#111827` | Text drawn on the error colour: a step's error count. |
 | `--bit-borm-error-surface` | `#fef2f2` | `#2a1215` | The error summary's background and a tag's remove button on hover. |
 | `--bit-borm-warning` | `#d97706` | `#fbbf24` | Warning messages. |
 | `--bit-borm-text` | `#111827` | `#f9fafb` | Labels and values. |
